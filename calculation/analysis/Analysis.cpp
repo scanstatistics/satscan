@@ -311,7 +311,7 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
         if (m_pTopClusters[0]->m_nRatio > SimRatios.GetAlpha05())
           ++guwSignificantAt005;
         // if we want dBase report, set the report pointer in cluster
-        if (m_pParameters->GetOutputAreaSpecificDBF())
+        if (m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
           m_pTopClusters[0]->SetAreaReport(pData.get());
         // if we are doing dBase or ASCII
         if (m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
