@@ -94,7 +94,7 @@ const char*      PROSPECTIVE_PURELY_TEMPORAL_ANALYSIS   = "Prospective Purely Te
 const char*      RETROSPECTIVE_SPACETIME_ANALYSIS 	= "Retrospective Space-Time";
 const char*      PROSPECTIVE_SPACETIME_ANALYSIS 	= "Prospective Space-Time";
 const char*      PURELY_SPATIAL_MONOTONE_ANALYSIS 	= "Purely Spatial Monotone";
-const char*      SPATIALVARIATION_TEMPORALTREND         = "Spatial Variation of Temporal Trends";
+const char*      SPATIALVARIATION_TEMPORALTREND         = "Spatial Variation and Temporal Trends";
 
 const char*      POISSON_MODEL                 		= "Poisson";
 const char*      BERNOULLI_MODEL                	= "Bernoulli";
@@ -3275,7 +3275,14 @@ bool CParameters::ValidateSimulationDataParameters(BasePrint & PrintDirection) {
                                     PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
                                   }
                                   break;
-        case FILESOURCE         : if (gsSimulationDataSourceFileName.empty()) {
+        case FILESOURCE         : if (!(geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == SPACETIME || geAnalysisType == PURELYTEMPORAL ||
+                                        geAnalysisType == PROSPECTIVEPURELYTEMPORAL || geAnalysisType == PURELYSPATIAL)) {
+                                     bValid = false;
+                                     PrintDirection.SatScanPrintWarning("Error: Reading simulation data from file not implemented for %s analysis.\n",
+                                                                        GetAnalysisTypeAsString());
+                                     break;
+                                  }
+                                  if (gsSimulationDataSourceFileName.empty()) {
                                     bValid = false;
                                     PrintDirection.SatScanPrintWarning("Error: No simulation data import file specified.\n");
                                   }
@@ -3295,14 +3302,38 @@ bool CParameters::ValidateSimulationDataParameters(BasePrint & PrintDirection) {
       };
       if (giReplications == 0)
         gbOutputSimulationData = false;
-      if (gbOutputSimulationData && gsSimulationDataOutputFilename.empty()) {
+      if (!(geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == SPACETIME || geAnalysisType == PURELYTEMPORAL ||
+            geAnalysisType == PROSPECTIVEPURELYTEMPORAL || geAnalysisType == PURELYSPATIAL) && gbOutputSimulationData) {
+         bValid = false;
+         PrintDirection.SatScanPrintWarning("Error: Printing simulation data to file not implemented for %s analysis.\n",
+                                            GetAnalysisTypeAsString());
+      }
+      else if (gbOutputSimulationData && gsSimulationDataOutputFilename.empty()) {
         bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: No Simulation data output file specified.\n");
+        PrintDirection.SatScanPrintWarning("Error: Simulation data output file not specified.\n");
       }
     }
     else {
-      geSimulationType = STANDARD;
-      gbOutputSimulationData = false;
+      //only standard simulation type permitted for other model types, report errors accordingly
+      switch (geSimulationType) {
+        case STANDARD         : break;
+        case HA_RANDOMIZATION : bValid = false;
+                                PrintDirection.SatScanPrintWarning("Error: The alternative hypothesis method of creating simulation data\n");
+                                PrintDirection.SatScanPrintWarning("       is only implemented for the Poisson model.\n");
+                                break;
+        case FILESOURCE       : bValid = false;
+                                PrintDirection.SatScanPrintWarning("Error: Reading simulation data from file is currently implemented only\n");
+                                PrintDirection.SatScanPrintWarning("       for the Poisson model.\n");
+                                break;
+      }
+      //Printing simulation data to file only permitted for Poisson model right now...
+      //The actual code was modified by none programmer and it's correctness has not been validated,
+      //but writing routine(and rountine for reading) appears be ok for all probability model types. -- check this later
+      if (gbOutputSimulationData) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Printing simulation data to file is currently implemented only\n");
+        PrintDirection.SatScanPrintWarning("       for the Poisson model.\n");
+      }
     }
   }
   catch (ZdException &x) {

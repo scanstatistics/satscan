@@ -675,7 +675,8 @@ void CPoissonModel::PrintSimulationDateToFile(int iSimulationNumber) {
     SSGenerateException("Error: Could not open file simulation output file '%s'.\n", "PrintSimulationDateToFile()",
                         gParameters.GetSimulationDataOutputFilename().c_str());
 
-  if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME || gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PURELYTEMPORAL) {
+  if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME || gParameters.GetAnalysisType() == SPACETIME ||
+      gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL) {
     for (tract=0; tract < gData.m_nTotalTractsAtStart; tract++) {
        for (interval=0; interval < gData.m_nTimeIntervals;interval++)
            SimulationOutputFile << ppSimCases[interval][tract] << " ";
@@ -688,6 +689,9 @@ void CPoissonModel::PrintSimulationDateToFile(int iSimulationNumber) {
        SimulationOutputFile << ppSimCases[0][tract] << " ";
     SimulationOutputFile << "\n";
   }
+  else
+    SSGenerateException("Error: Printing simulation data to file not implemented for %s analysis.\n",
+                        "ReadSimulationDataFromFile()", gParameters.GetAnalysisTypeAsString());
 }
 
 bool CPoissonModel::ReadData() {
@@ -735,7 +739,8 @@ void CPoissonModel::ReadSimulationDataFromFile() {
 
   SimulationDataFile.seekg(glFilePosition);  // puts the file position pointer to the correct simulation
 
-  if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME || gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PURELYTEMPORAL) {
+  if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME || gParameters.GetAnalysisType() == SPACETIME ||
+      gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL) {
      for (t=0; t < gData.m_nTotalTractsAtStart; ++t) {
         for (i=0; i < gData.m_nTimeIntervals; ++i)
            SimulationDataFile >> ppSimCases[i][t];
@@ -745,6 +750,9 @@ void CPoissonModel::ReadSimulationDataFromFile() {
      for (t=0; t < gData.m_nTotalTractsAtStart; ++t)
         SimulationDataFile >> ppSimCases[0][t];
   }
+  else
+    SSGenerateException("Error: Reading simulation data from file not implemented for %s analysis.\n",
+                        "ReadSimulationDataFromFile()", gParameters.GetAnalysisTypeAsString());
 
   glFilePosition = SimulationDataFile.tellg();  // saves the current file location for the next call
 }
