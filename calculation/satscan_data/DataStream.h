@@ -7,6 +7,8 @@
 #include "MultipleDimensionArrayHandler.h"
 #include "PopulationData.h"
 #include "TimeTrend.h"
+#include <iostream>
+#include <fstream>
 
 //typedefs for multiple dimension arrays
 typedef TwoDimensionArrayHandler<count_t>      TwoDimCountArray_t;
@@ -158,7 +160,9 @@ class SimulationDataStream : public DataStream {
     SimulationDataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iStreamIndex);
     virtual ~SimulationDataStream();
 
+    virtual void                ReadSimulationData(const CParameters& Parameters, unsigned int iSimulation);
     void                        ResetCumulativeCaseArray();
+    virtual void                WriteSimulationData(const CParameters& Parameters, int iSimulation) const;
 };
 //*****************************************************************************
 #endif

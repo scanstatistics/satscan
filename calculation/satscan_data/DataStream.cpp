@@ -763,6 +763,49 @@ SimulationDataStream::SimulationDataStream(const SimulationDataStream& thisStrea
 /** destructor */
 SimulationDataStream::~SimulationDataStream() {}
 
+/** Reads number of simulated cases from a text file rather than generating them randomly.
+    NOTE: Data read from the file is not validated. This means that there is potential
+          for the program to behave badly if:
+          1) the data read from file does not match dimensions of ppSimCases
+          2) the case counts read from file is inappropriate given real data -- probably access violations
+          3) file does not actually contains numerical data
+          Use of this feature should be discouraged except from someone who has
+          detailed knowledge of how code works.                                                           */
+void SimulationDataStream::ReadSimulationData(const CParameters& Parameters, unsigned int iSimulation) {
+  unsigned int          i, t, tNumTracts = GetNumTracts(),
+                        tNumTimeIntervals = GetNumTimeIntervals();
+  count_t               c;
+  count_t            ** ppSimCases = GetCaseArray();
+  std::ifstream         InputFile;
+
+  //open file stream
+  if (!InputFile.is_open())
+    InputFile.open(Parameters.GetSimulationDataSourceFilename().c_str());
+  if (!InputFile)
+    SSGenerateException("Error: Could not open file '%s' to read simulated data.\n",
+                        "ReadSimulationDataFromFile()", Parameters.GetSimulationDataSourceFilename().c_str());
+
+  //seek line offset for reading iSimulation'th simulation data
+  t = (tNumTracts + 1) * (iSimulation - 1);
+  for (i=0; i < t; ++i)
+    InputFile.ignore(std::numeric_limits<int>::max(), InputFile.widen('\n'));
+
+  if (Parameters.GetAnalysisType() == PROSPECTIVESPACETIME || Parameters.GetAnalysisType() == SPACETIME ||
+      Parameters.GetAnalysisType() == PURELYTEMPORAL || Parameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL) {
+     for (t=0; t < tNumTracts; ++t) {
+        for (i=0; i < tNumTimeIntervals; ++i)
+           InputFile >> ppSimCases[i][t];
+     }
+  }
+  else if (Parameters.GetAnalysisType() == PURELYSPATIAL) {
+     for (t=0; t < tNumTracts; ++t)
+        InputFile >> ppSimCases[0][t];
+  }
+  else
+    SSGenerateException("Error: Reading simulation data from file not implemented for %s analysis.\n",
+                        "RandomizeData()", Parameters.GetAnalysisTypeAsString());
+}
+
 /** Resets to all zero, the two dimensional array representing simulated case data,
     stratified by time interval index / location index and cumulative by time
     intervals. Throws exception if array not allocated. */
@@ -779,4 +822,46 @@ void SimulationDataStream::ResetCumulativeCaseArray() {
   }
 }
 
+/** Prints the simulated data to a file. Format printed to file matches
+    format expected for read as simulation data source. Truncates file
+    when first opened for each analysis(i.e. first simulation).
+
+    NOTE: The process of writing and reading simulation data to/from file
+          is not well tested. It is known that it is not checking the validity
+          of the files themselves or in relation to the running analysis.
+          Also, not previsions have been made for this code to work for multiple
+          data streams at this time.                                             */
+void SimulationDataStream::WriteSimulationData(const CParameters& Parameters, int iSimulation) const {
+  std::ofstream                 SimulationOutputFile;
+  unsigned int                  tract, interval;
+  count_t                    ** ppSimCases(GetCaseArray());
+
+  //open output file
+  SimulationOutputFile.open(Parameters.GetSimulationDataOutputFilename().c_str(), (iSimulation == 1 ? ios::trunc : ios::ate));
+  if (!SimulationOutputFile)
+    SSGenerateException("Error: Could not open file simulation output file '%s'.\n", "WriteSimulationData()",
+                        Parameters.GetSimulationDataOutputFilename().c_str());
+
+  //print to file for time based analyses
+  if (Parameters.GetAnalysisType() == PROSPECTIVESPACETIME || Parameters.GetAnalysisType() == SPACETIME ||
+      Parameters.GetAnalysisType() == PURELYTEMPORAL || Parameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL) {
+    for (tract=0; tract < GetNumTracts(); ++tract) {
+       for (interval=0; interval < GetNumTimeIntervals(); ++interval)
+           SimulationOutputFile << ppSimCases[interval][tract] << " ";
+       SimulationOutputFile << std::endl;
+    }
+    SimulationOutputFile << std::endl;
+  }
+  //print to file for spatial only analysis
+  else if (Parameters.GetAnalysisType() == PURELYSPATIAL) {
+    for (tract = 0; tract < GetNumTracts(); tract++)
+       SimulationOutputFile << ppSimCases[0][tract] << " ";
+    SimulationOutputFile << std::endl;
+  }
+  else
+    SSGenerateException("Error: Printing simulation data to file not implemented for %s analysis.\n",
+                        "WriteSimulationData()", Parameters.GetAnalysisTypeAsString());
+
+  SimulationOutputFile.close(); //close file before mutex lock goes out of scope
+}
 
