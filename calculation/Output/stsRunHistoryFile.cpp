@@ -71,28 +71,35 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
    try {
       ::CreateNewField(gvFields, RUN_NUMBER_FIELD, ZD_LONG_FLD, 8, 0, uwOffset, true);
       ::CreateNewField(gvFields, RUN_TIME_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
-      ::CreateNewField(gvFields, OUTPUT_FILE_FIELD, ZD_ALPHA_FLD, 254, 0, uwOffset);
-      ::CreateNewField(gvFields, PROB_MODEL_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
-      ::CreateNewField(gvFields, RATES_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      ::CreateNewField(gvFields, COORD_TYPE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+
       ::CreateNewField(gvFields, ANALYSIS_TYPE_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
-      ::CreateNewField(gvFields, NUM_CASES_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
-      ::CreateNewField(gvFields, TOTAL_POP_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
-      ::CreateNewField(gvFields, NUM_GEO_AREAS_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
-      ::CreateNewField(gvFields, PRECISION_TIMES_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      ::CreateNewField(gvFields, PROB_MODEL_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset); 
+      ::CreateNewField(gvFields, RATES_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      ::CreateNewField(gvFields, GRID_FILE_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
       ::CreateNewField(gvFields, MAX_GEO_EXTENT_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
       ::CreateNewField(gvFields, MAX_TIME_EXTENT_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
+      ::CreateNewField(gvFields, INTERVAL_LENGTH_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
+      ::CreateNewField(gvFields, INTERVAL_UNITS_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      ::CreateNewField(gvFields, ALIVE_ONLY_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
       ::CreateNewField(gvFields, TIME_TREND_ADJUSTMENT_FIELD, ZD_ALPHA_FLD, 20, 3, uwOffset);
-      ::CreateNewField(gvFields, GRID_FILE_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
+      // covariates adjusted for
+      ::CreateNewField(gvFields, MONTE_CARLO_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
+
+      ::CreateNewField(gvFields, NUM_GEO_AREAS_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
+      ::CreateNewField(gvFields, COORD_TYPE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
       ::CreateNewField(gvFields, START_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
       ::CreateNewField(gvFields, END_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      ::CreateNewField(gvFields, ALIVE_ONLY_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
-      ::CreateNewField(gvFields, INTERVAL_UNITS_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      ::CreateNewField(gvFields, INTERVAL_LENGTH_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
-      ::CreateNewField(gvFields, MONTE_CARLO_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
+      ::CreateNewField(gvFields, PRECISION_TIMES_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      ::CreateNewField(gvFields, NUM_CASES_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
+      ::CreateNewField(gvFields, TOTAL_POP_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
+
+      // pval most likely cluster
+      ::CreateNewField(gvFields, NUM_SIGNIF_005_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
+      ::CreateNewField(gvFields, OUTPUT_FILE_FIELD, ZD_ALPHA_FLD, 254, 0, uwOffset);
+      // additional text file names
+
       ::CreateNewField(gvFields, CUTOFF_001_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
       ::CreateNewField(gvFields, CUTOFF_005_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
-      ::CreateNewField(gvFields, NUM_SIGNIF_005_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
 
       TXDFile File;
       File.PackFields(gvFields);
@@ -296,7 +303,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, RATES_FIELD));
 
       // coordinate type field
-      sTempValue = ((pAnalysis.GetSatScanData()->m_pParameters->m_nCoordType == CARTESIAN) ? "Cartesian" : "LongLat");
+      sTempValue = ((pAnalysis.GetSatScanData()->m_pParameters->m_nCoordType == CARTESIAN) ? "Cartesian" : "LatLong");
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, COORD_TYPE_FIELD));
 
       // analysis type field
