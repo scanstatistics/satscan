@@ -1,7 +1,7 @@
-//---------------------------------------------------------------------------
-#ifndef ContinuousVariableRandomizerH
-#define ContinuousVariableRandomizerH
-//---------------------------------------------------------------------------
+//******************************************************************************
+#ifndef __ContinuousVariableRandomizer_H
+#define __ContinuousVariableRandomizer_H
+//******************************************************************************
 #include "PermutationDataRandomizer.h"
 
 /** class representing a premuted attribute which is a continuous variable,
@@ -47,76 +47,37 @@ class ContinuousVariableRandomizer : public AbstractPermutedDataRandomizer {
     virtual ~ContinuousVariableRandomizer();
 };
 
-/** Randomizes data of data stream for a 'normal' probablility model.
+/** Randomizes data of dataset for a 'normal' probablility model.
     Instead of assigning data to simulation case structures, assigns
     randomized data to simulation meaure structures. */
 class NormalRandomizer : public ContinuousVariableRandomizer {
   protected:
-    virtual void                                AssignRandomizedData(const RealDataStream& thisRealStream,
-                                                                     SimulationDataStream& thisSimulationStream);
+    virtual void               AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet);
 
   public:
     NormalRandomizer();
     virtual ~NormalRandomizer();
 
-    virtual NormalRandomizer          * Clone() const;
-
-    void                                AddCase(int iTimeInterval, tract_t tTractIndex, measure_t tContinuosVariable);
-    void                                AssignMeasure(measure_t ** ppMeasure, measure_t ** ppSqMeasure, int iNumTimeIntervals, int iNumTracts);
+    virtual NormalRandomizer * Clone() const;
+    void                       AddCase(int iTimeInterval, tract_t tTractIndex, measure_t tContinuosVariable);
+    void                       AssignMeasure(measure_t ** ppMeasure, measure_t ** ppSqMeasure, int iNumTimeIntervals, int iNumTracts);
 };
 
-/** Randomizes data of data stream for a 'normal' probablility model.
+/** Randomizes data of dataset for a 'normal' probablility model.
     Instead of assigning data to simulation case structures, assigns
     randomized data to simulation meaure structures. */
 class RankRandomizer : public ContinuousVariableRandomizer {
   protected:
-    virtual void                                AssignRandomizedData(const RealDataStream& thisRealStream,
-                                                                     SimulationDataStream& thisSimulationStream);
+    virtual void             AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet);
 
   public:
     RankRandomizer();
     virtual ~RankRandomizer();
 
-    virtual RankRandomizer            * Clone() const;
-
-    void                                AddCase(int iTimeInterval, tract_t tTractIndex, measure_t tContinuosVariable);
-    void                                AssignMeasure(measure_t ** ppMeasure, int iNumTimeIntervals, int iNumTracts);
+    virtual RankRandomizer * Clone() const;
+    void                     AddCase(int iTimeInterval, tract_t tTractIndex, measure_t tContinuosVariable);
+    void                     AssignMeasure(measure_t ** ppMeasure, int iNumTimeIntervals, int iNumTracts);
 };
-
-/** class representing a permuted attribute which is a continuous variable
-    and censored atribute. */
-class PermutedSurvivalAttributes : public PermutedVariable {
-  protected:
-    unsigned short            guCensored;
-
-  public:
-    PermutedSurvivalAttributes(double dVariable, unsigned short uCensored);
-    virtual ~PermutedSurvivalAttributes();
-
-    virtual PermutedSurvivalAttributes* Clone() const;
-    inline unsigned short               GetCensored() const {return guCensored;}
-};
-
-/** Randomizes data of data stream for a 'survival' probablility model.
-    Instead of assigning data to simulation case structures, assigns
-    randomized data to simulation meaure structures. */
-class SurvivalRandomizer : public AbstractPermutedDataRandomizer {
-  protected:
-    std::vector<SpaceTimeStationaryAttribute>	gvStationaryAttribute;
-    ZdPointerVector<PermutedSurvivalAttributes> gvPermutedAttribute;
-
-    virtual void                                AssignRandomizedData(const RealDataStream& thisRealStream,
-                                                                     SimulationDataStream& thisSimulationStream);
-    virtual void                                SortPermutedAttribute();
-
-  public:
-    SurvivalRandomizer();
-    virtual ~SurvivalRandomizer();
-
-    virtual SurvivalRandomizer        * Clone() const;
-
-    void                                AddCase(int iTimeInterval, tract_t tTractIndex, measure_t tContinuosVariable, count_t tCensored);
-    void                                Assign(count_t ** ppCases, measure_t ** ppMeasure, int iNumTimeIntervals, int iNumTracts);
-};
-//---------------------------------------------------------------------------
+//******************************************************************************
 #endif
+
