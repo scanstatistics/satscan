@@ -5,12 +5,7 @@
 /**  Construct. This is an alternate constructor for when the varArgs list for sMessage
      has already been prepared. Primarily, this will be used by derived classes.        */
 SSException::SSException ( va_list varArgs, const char *sMessage, const char *sSourceModule, Level iLevel )
-          : ZdException ( varArgs, sMessage, sSourceModule, iLevel ) {
-   SetData ( varArgs, sMessage, sSourceModule, iLevel );
-}
-
-/** Destructor. */
-SSException::~SSException() {}
+          : ZdException ( varArgs, sMessage, sSourceModule, iLevel ) {}
 
 /**  This function will throw the exception with the parameters.  It is equivalent to
      throw ZdException(...), but includes the ability to format the message string.
@@ -34,9 +29,6 @@ UsageException::UsageException() : ZdException () {
                    "         -o -- ignore parameter result filename setting, use next parameter\n"
                    "               ex. c:\\>satscan.exe c:\\parameters.prm -o c:\\alternate.out.txt\n");
 }
-
-/** Destructor. */
-UsageException::~UsageException() {}
 
 /**  This function will throw the exception with the parameters.  It is equivalent to
      throw ZdException(...), but includes the ability to format the message string.

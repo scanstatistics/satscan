@@ -8,19 +8,17 @@
     ZdException : program error, unexpected program problem
     SSException and derived : an issue that the user can resolve
                               problem with user input, data, etc.  */
-class SSException : public virtual ZdException {
+class SSException : public ZdException {
   public:
     SSException ( va_list varArgs, const char *sMessage, const char *sSourceModule, Level iLevel );
-    virtual ~SSException();
 };
 
 void SSGenerateException(const char * sMessage, const char * sSourceModule, ... );
 
 
-class UsageException : public virtual ZdException {
+class UsageException : public ZdException {
   public:
     UsageException();
-    virtual ~UsageException();
 };
 
 void GenerateUsageException();
