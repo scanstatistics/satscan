@@ -17,7 +17,11 @@ class AbstractRandomizer {
 
     virtual AbstractRandomizer* Clone() const = 0;
 
-    virtual void	        RandomizeData(DataStream & thisStream, unsigned int iSimulation) = 0;
+    virtual void	        RandomizeData(const RealDataStream& thisRealStream,
+                                              SimulationDataStream& thisSimulationStream,
+                                              unsigned int iSimulation) = 0;
 };
+
+typedef ZdPointerVector<AbstractRandomizer>     RandomizerContainer_t;
 //---------------------------------------------------------------------------
 #endif
