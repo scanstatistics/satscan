@@ -12,10 +12,12 @@ class stsBaseAnalysisChildForm : public TForm {
       virtual __fastcall stsBaseAnalysisChildForm(TComponent* Owner, TActionList* pList);
       virtual __fastcall ~stsBaseAnalysisChildForm();
 
-   protected :
-      TActionList	*gpList;
+      virtual void      CloseForm(bool bForce=false) {Close();}
 
-      virtual void EnableActions(bool bEnable) = 0;
+   protected :
+      TActionList     * gpList;
+
+      virtual void      EnableActions(bool bEnable) = 0;
 };
 
 #endif
