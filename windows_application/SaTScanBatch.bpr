@@ -129,7 +129,7 @@ LegalTrademarks=
 OriginalFilename=
 ProductName=SaTScan
 ProductVersion=4.0.3
-Comments=Released February 2, 2004
+Comments=Released February 3, 2004
 
 [Excluded Packages]
 $(BCB)\Bin\dcl31w50.bpl=Delphi 1.0 Compatibility Components
