@@ -44,8 +44,10 @@ void __fastcall TfrmStartWindow::btnOpenSavedClick(TObject *Sender){
 
 /** event triggered when key pressed */
 void __fastcall TfrmStartWindow::FormKeyDown(TObject *Sender, WORD &Key,TShiftState Shift) {
-  if (Key == VK_ESCAPE)
+  if (Key == VK_ESCAPE) {
+    geOpenType = TfrmStartWindow::CANCEL;
     Close();
+  }  
 }
 
 /** internal setup function */
