@@ -146,17 +146,17 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 
       // cluster number
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsDouble() = iClusterNumber;
+      fv.AsLong() = iClusterNumber;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // observed
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsDouble() = pCluster->m_nCases;
+      fv.AsLong() = pCluster->m_nCases;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // expected
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsDouble() = pCluster->m_nMeasure;
+      fv.AsLong() = pCluster->m_nMeasure;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // relative risk
@@ -176,12 +176,12 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 
       // number of areas in the cluster
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsDouble() = pCluster->m_nTracts;
+      fv.AsLong() = pCluster->m_nTracts;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // central area id
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsDouble() = pCluster->m_Center;
+      fv.AsLong() = pCluster->m_Center;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // coord north
@@ -270,35 +270,35 @@ void stsClusterLevelDBF::SetupFields(ZdVector<std::pair<ZdString, char> >& vFiel
       vFieldSizes.AddElement(fieldsize);
 
       field.first = "START_DATE";
-      field.second = ZD_NUMBER_FLD;
-      fieldsize.first = 32;
+      field.second = ZD_LONG_FLD;
+      fieldsize.first = 16;
       fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
       vFieldSizes.AddElement(fieldsize);
 
       field.first = "END_DATE";
-      field.second = ZD_NUMBER_FLD;
-      fieldsize.first = 32;
+      field.second = ZD_LONG_FLD;
+      fieldsize.first = 16;
       fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
       vFieldSizes.AddElement(fieldsize);
 
       field.first = "CLUST_NUM";
-      field.second = ZD_NUMBER_FLD;
+      field.second = ZD_LONG_FLD;
       fieldsize.first = 8;
       fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
       vFieldSizes.AddElement(fieldsize);
 
       field.first = "OBSERVED";
-      field.second = ZD_NUMBER_FLD;
+      field.second = ZD_LONG_FLD;
       fieldsize.first = 12;
       fieldsize.second = 2;
       vFieldDescrips.AddElement(field);
       vFieldSizes.AddElement(fieldsize);
 
       field.first = "EXPECTED";
-      field.second = ZD_NUMBER_FLD;
+      field.second = ZD_LONG_FLD;
       fieldsize.first = 12;
       fieldsize.second = 2;
       vFieldDescrips.AddElement(field);
@@ -326,14 +326,14 @@ void stsClusterLevelDBF::SetupFields(ZdVector<std::pair<ZdString, char> >& vFiel
       vFieldSizes.AddElement(fieldsize);
 
       field.first = "NUM_AREAS";
-      field.second = ZD_NUMBER_FLD;
+      field.second = ZD_LONG_FLD;
       fieldsize.first = 12;
       fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
       vFieldSizes.AddElement(fieldsize);
 
       field.first = "AREA_ID";
-      field.second = ZD_NUMBER_FLD;
+      field.second = ZD_LONG_FLD;
       fieldsize.first = 12;
       fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
