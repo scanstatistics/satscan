@@ -44,11 +44,11 @@ ZdFieldValue LogLikelihoodRecord::GetValue(int iFieldNumber) {
 // ============================================================================
 
 // constructor
-__fastcall LogLikelihoodData::LogLikelihoodData(BasePrint *pPrintDirection, const ZdString& sOutputFileName)
-                          : BaseOutputStorageClass(pPrintDirection) {
+__fastcall LogLikelihoodData::LogLikelihoodData(BasePrint *pPrintDirection, const CParameters& Parameters)
+                          : BaseOutputStorageClass(pPrintDirection), gParameters(Parameters) {
    try {
       Init();
-      Setup(sOutputFileName);
+      Setup();
    }
    catch (ZdException &x) {
       if(pPrintDirection) {
@@ -86,10 +86,10 @@ void LogLikelihoodData::Init() {
 }
 
 // internal setup function
-void LogLikelihoodData::Setup(const ZdString& sOutputFileName) {
+void LogLikelihoodData::Setup() {
    try {
-      ZdString sTempName(sOutputFileName);
-      ZdString sExt(ZdFileName(sOutputFileName).GetExtension());
+      ZdString sTempName(gParameters.GetOutputFileName().c_str());
+      ZdString sExt(ZdFileName(gParameters.GetOutputFileName().c_str()).GetExtension());
       if(sExt.GetLength()) 
          sTempName.Replace(sExt, LOG_LIKELIHOOD_FILE_EXT);
       else
@@ -111,7 +111,11 @@ void LogLikelihoodData::SetupFields() {
    unsigned short uwOffset = 0;     // this is altered by the create new field function, so this must be here as is-AJV 9/30/2002
    
    try {
-      ::CreateField(gvFields, LOG_LIKL_FIELD, ZD_NUMBER_FLD, 7, 2, uwOffset);
+     if (gParameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION ||
+         (gParameters.GetNumRequestedEllipses() && gParameters.GetDuczmalCorrectEllipses()))
+       ::CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 7, 2, uwOffset);
+     else  
+       ::CreateField(gvFields, LOG_LIKL_FIELD, ZD_NUMBER_FLD, 7, 2, uwOffset);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupFields()", "LogLikelihoodData");

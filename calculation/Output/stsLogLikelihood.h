@@ -2,6 +2,7 @@
 #define LOGLIKELIHOODDBF_H
 
 #include "stsOutputFileData.h"
+#include "Parameters.h"
 
 extern const char *	LOG_LIKELIHOOD_FILE_EXT;
 
@@ -22,15 +23,17 @@ class LogLikelihoodRecord : public BaseOutputRecord {
 
 class LogLikelihoodData : public BaseOutputStorageClass {
    private:
-      void	Init();
-      void	Setup(const ZdString& sOutputFileName);
+      const CParameters       & gParameters;
+      
+      void	                Init();
+      void	                Setup();
    protected:
       virtual void              SetupFields();
    public:
-      __fastcall LogLikelihoodData(BasePrint *pPrintDirection, const ZdString& sOutputFileName);
+      __fastcall LogLikelihoodData(BasePrint *pPrintDirection, const CParameters& Parameters);
       virtual ~LogLikelihoodData();
-   
-      void	AddLikelihood(const double dLikelihood);	
+
+      void	                AddLikelihood(const double dLikelihood);	
 };
 
 #endif
