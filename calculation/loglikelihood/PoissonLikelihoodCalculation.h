@@ -25,4 +25,3 @@ class PoissonLikelihoodCalculator : public AbstractLikelihoodCalculator {
 };
 //*****************************************************************************
 #endif
- 

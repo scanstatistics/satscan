@@ -15,4 +15,3 @@ class WilcoxonLikelihoodCalculator : public AbstractLikelihoodCalculator {
 };
 //*****************************************************************************
 #endif
- 

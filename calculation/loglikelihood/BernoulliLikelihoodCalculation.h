@@ -16,4 +16,3 @@ class BernoulliLikelihoodCalculator : public AbstractLikelihoodCalculator {
 };
 //*****************************************************************************
 #endif
- 
