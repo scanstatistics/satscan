@@ -169,12 +169,13 @@ void ThreeDimensionArrayHandler<T>::Allocate() {
 
   try {
     gpppData = new T**[g1stDimension];
-    memset(gpppData, 0, sizeof(T***) * g1stDimension);
+    memset(gpppData, 0, sizeof(T**) * g1stDimension);
     for (i=0; i < g1stDimension; ++i) {
       //allocate 2nd dimension at i
       gpppData[i] = new T*[g2ndDimension];
-      for (j=0; j < g2ndDimension; ++j)
-         gpppData[i][j] = 0;
+      memset(gpppData[i], 0, sizeof(T*) * g2ndDimension);
+      //for (j=0; j < g2ndDimension; ++j)
+      //   gpppData[i][j] = 0;
       //allocate 3rd dimension at i for each j, if not zero
       if (g3rdDimension)//with specific intention meant for sorted array
         for (j=0; j < g2ndDimension; ++j)
