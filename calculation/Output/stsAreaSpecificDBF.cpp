@@ -87,8 +87,8 @@ void stsAreaSpecificDBF::CreateDBFFile() {
 void stsAreaSpecificDBF::GetFields() {
    TXDFile*		pFile = 0;
    ZdField*		pField = 0;
-   ZdVector<std::pair<ZdString, char> > vFieldDescrips;
-   ZdVector<std::pair<short, short> > vFieldSizes;
+   ZdVector<std::pair<ZdString, char> > vFieldDescrips;    // field name, field type
+   ZdVector<std::pair<short, short> > vFieldSizes;         // field length, field precision
 
    try {
       CleanupFieldVector();           // empty out the global field vector
@@ -200,8 +200,8 @@ void stsAreaSpecificDBF::Setup(const ZdString& sFileName) {
    unsigned long        ulLastRecordNumber;
 
    try {
-      if(ZdIO::Exists("AnalysisHistory.txd") && ZdIO::Exists("AnalysisHistory.zds"))  {
-         pFile = new TXDFile("AnalysisHistory.txd", ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
+      if(ZdIO::Exists("c:\\AnalysisHistory.txd") && ZdIO::Exists("c:\\AnalysisHistory.zds"))  {
+         pFile = new TXDFile("c:\\AnalysisHistory.txd", ZDIO_OPEN_READ);
 
          // get a record buffer, input data and append the record
          ulLastRecordNumber = pFile->GotoLastRecord(pLastRecord);
