@@ -58,19 +58,19 @@ bool CSaTScanData::ConvertPopulationDateToJulian(const char * sDateString, int i
       default : bValidDate = false;
     }
     if (! bValidDate)
-      gpPrint->PrintInputWarning("Error: Invalid date '%s' in population file, record %d.\n", sDateString, iRecordNumber);
+      gpPrint->PrintInputWarning("Error: Invalid date '%s' in population file, record %ld.\n", sDateString, iRecordNumber);
     else {
       iYear = Ensure4DigitYear(iYear, const_cast<char*>(m_pParameters->GetStudyPeriodStartDate().c_str()), const_cast<char*>(m_pParameters->GetStudyPeriodEndDate().c_str()));
       switch (iYear) {
         case -1 : gpPrint->PrintInputWarning("Error: Due to the study period being greater than 100 years, unable\n");
-                  gpPrint->PrintInputWarning("       to determine century for two digit year '%d' in population file, record %d.\n",
+                  gpPrint->PrintInputWarning("       to determine century for two digit year '%d' in population file, record %ld.\n",
                                                       iYear, iRecordNumber);
                   gpPrint->PrintInputWarning("       Please use four digit years.\n");
                   bValidDate = false;
-        case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in population file, record %d.\n", iYear, iRecordNumber);
+        case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in population file, record %ld.\n", iYear, iRecordNumber);
                   bValidDate = false;
         default : if ((JulianDate = MDYToJulian(iMonth, iDay, iYear)) == 0) {
-                    gpPrint->PrintInputWarning("Error: Invalid date '%s' in population file, record %d.\n", sDateString, iRecordNumber);
+                    gpPrint->PrintInputWarning("Error: Invalid date '%s' in population file, record %ld.\n", sDateString, iRecordNumber);
                     bValidDate = false;
                   }
       }
@@ -114,33 +114,33 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringPa
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
     if ((tid = gpTInfo->tiGetTractIndex(Parser.GetWord(0))) == -1) {
-      gpPrint->PrintInputWarning("Error: Unknown location id in %s file, record %d.\n", szDescription, nRec);
+      gpPrint->PrintInputWarning("Error: Unknown location id in %s file, record %ld.\n", szDescription, nRec);
       gpPrint->PrintInputWarning("       Location '%s' was not specified in the coordinates file.\n", Parser.GetWord(0));
       return false;
     }
     //read and validate count
     if (Parser.GetWord(1) != 0) {
-      if (!sscanf(Parser.GetWord(1), "%i", &nCount)) {
-       gpPrint->PrintInputWarning("Error: Value '%s' of record %d in %s file could not be read as count.\n", Parser.GetWord(1), nRec, szDescription);
+      if (!sscanf(Parser.GetWord(1), "%ld", &nCount)) {
+       gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file could not be read as count.\n", Parser.GetWord(1), nRec, szDescription);
        gpPrint->PrintInputWarning("       Count must be an integer.\n");
        return false;
       }
     }
     else {
-      gpPrint->PrintInputWarning("Error: Record %d in %s file does not contain %s count.\n", nRec, szDescription, szDescription);
+      gpPrint->PrintInputWarning("Error: Record %ld in %s file does not contain %s count.\n", nRec, szDescription, szDescription);
       return false;
     }
     if (nCount < 0) {//validate that count is not negative or exceeds type precision
       if (strstr(Parser.GetWord(1), "-"))
-        gpPrint->PrintInputWarning("Error: Negative count in record %d of %s file.\n", nRec, szDescription);
+        gpPrint->PrintInputWarning("Error: Negative count in record %ld of %s file.\n", nRec, szDescription);
       else
-        gpPrint->PrintInputWarning("Error: Count '%s' exceeds maximum value of %i in record %d of %s file.\n",
+        gpPrint->PrintInputWarning("Error: Count '%s' exceeds maximum value of %ld in record %ld of %s file.\n",
                                    Parser.GetWord(1), std::numeric_limits<count_t>::max(), nRec, szDescription);
       return false;
     }
     //read and validate date
     if (m_pParameters->GetPrecisionOfTimesType() > NONE && !Parser.GetWord(2)) {
-      gpPrint->PrintInputWarning("Error: Record %d in %s file does not contain a date, which is required for a precision of '%s'.\n",
+      gpPrint->PrintInputWarning("Error: Record %ld in %s file does not contain a date, which is required for a precision of '%s'.\n",
                                  nRec, szDescription, m_pParameters->GetDatePrecisionAsString(m_pParameters->GetPrecisionOfTimesType()));
       return false;
     }
@@ -152,7 +152,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringPa
       default : ZdException::Generate("Unknown precision of time type '%d'.","ParseCountLine()", m_pParameters->GetPrecisionOfTimesType());
     };
     if (iScanPrecision < m_pParameters->GetPrecisionOfTimesType()) {
-      gpPrint->PrintInputWarning("Error: Value '%s' of record %d in %s file, could not be read as date with precision '%s'.\n",
+      gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file, could not be read as date with precision '%s'.\n",
                                  Parser.GetWord(2), nRec, szDescription,
                                  m_pParameters->GetDatePrecisionAsString(m_pParameters->GetPrecisionOfTimesType()));
       return false;
@@ -161,16 +161,16 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringPa
     uiYear4 = Ensure4DigitYear(uiYear, m_pParameters->GetStudyPeriodStartDate().c_str(), m_pParameters->GetStudyPeriodEndDate().c_str());
     switch (uiYear4) {
       case -1 : gpPrint->PrintInputWarning("Error: Due to study period greater than 100 years, unable\n"
-                                                    "       to convert two digit year '%d' in %s file, record %d.\n"
+                                                    "       to convert two digit year '%d' in %s file, record %ld.\n"
                                                     "       Please use four digit years.\n", uiYear, szDescription, nRec);
                 return false;
-      case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in %s file, record %d.\n", uiYear, szDescription, nRec);
+      case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in %s file, record %ld.\n", uiYear, szDescription, nRec);
                 return false;
     }
     //validate that date is between study period start and end dates
     nDate = MDYToJulian(uiMonth, uiDay, uiYear4);
     if (!(m_nStartDate <= nDate && nDate <= m_nEndDate)) {
-      gpPrint->PrintInputWarning("Error: Date '%s' in record %d of %s file is not\n", Parser.GetWord(2), nRec, szDescription);
+      gpPrint->PrintInputWarning("Error: Date '%s' in record %ld of %s file is not\n", Parser.GetWord(2), nRec, szDescription);
       gpPrint->PrintInputWarning("       within study period beginning %s and ending %s.\n",
                                  m_pParameters->GetStudyPeriodStartDate().c_str(), m_pParameters->GetStudyPeriodEndDate().c_str());
       return false;
@@ -197,13 +197,13 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringPa
       }
       if (m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
         if (iNumCovariatesScanned) {
-          gpPrint->PrintInputWarning("Error: Record %d of control file contains extra information.\n", nRec);
+          gpPrint->PrintInputWarning("Error: Record %ld of control file contains extra information.\n", nRec);
           gpPrint->PrintInputWarning("       Note that the Bernoulli probability model does not support covariates.\n");
           return false;
         }
       }
       else if (iNumCovariatesScanned != gPopulationCategories.GetNumPopulationCategoryCovariates()) {
-        gpPrint->PrintInputWarning("Error: Record %d of case file contains %d covariate%s but the population file\n",
+        gpPrint->PrintInputWarning("Error: Record %ld of case file contains %d covariate%s but the population file\n",
                                             nRec, iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"));
         gpPrint->PrintInputWarning("       defined the number of covariates as %d.\n",
                                             gPopulationCategories.GetNumPopulationCategoryCovariates());
@@ -217,7 +217,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringPa
           (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION && m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE)) {
         //category should already exist
         if ((iCategoryIndex = gPopulationCategories.GetPopulationCategoryIndex(vCategoryCovariates)) == -1) {
-          gpPrint->PrintInputWarning("Error: Record %d of case file refers to a population category that\n", nRec);
+          gpPrint->PrintInputWarning("Error: Record %ld of case file refers to a population category that\n", nRec);
           gpPrint->PrintInputWarning("       does not match an existing category as read from population file.");
           return false;
         }
@@ -225,7 +225,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringPa
         //identifier / covariates together don't match an existing population record. 
         if (! gpTInfo->tiAddCount(tid, iCategoryIndex, nCount)) {
           std::string sBuffer;
-          gpPrint->PrintInputWarning("Error: Record %d of case file refers to location '%s' with population category '%s',\n",
+          gpPrint->PrintInputWarning("Error: Record %ld of case file refers to location '%s' with population category '%s',\n",
                                               nRec, Parser.GetWord(0), gPopulationCategories.GetPopulationCategoryAsString(iCategoryIndex, sBuffer));
           gpPrint->PrintInputWarning("       but no matching population record with this combination exists.\n");
           return false;
@@ -259,7 +259,7 @@ bool CSaTScanData::ReadCartesianCoordinates(StringParser & Parser, std::vector<d
          iScanCount++; //track num successful scans, caller of function wants this information
        else {
          //unable to read word as double, print error to print direction and return false
-         gpPrint->PrintInputWarning("Error: Value '%s' of record %d in %s file could not be read as ",
+         gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file could not be read as ",
                                              pCoordinate, lRecNum, sSourceFile);
          //we can be specific about which dimension we are attending to read to                                    
          if (i < 2)
@@ -407,7 +407,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
          //validate that we read the correct number of coordinates
          if (iScanCount < m_pParameters->GetDimensionsOfData()) {
            //Note: since the first record defined the number of dimensions, this error could not happen.
-           gpPrint->PrintInputWarning("Error: Record %d in coordinates file contains %d dimension%s but the\n",
+           gpPrint->PrintInputWarning("Error: Record %ld in coordinates file contains %d dimension%s but the\n",
                                                lRecNum, iScanCount, (iScanCount == 1 ? "" : "s"));
            gpPrint->PrintInputWarning("       first record defined the number of dimensions as %d.\n", m_pParameters->GetDimensionsOfData());
            bValid = false;
@@ -415,7 +415,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
          }
          //add the tract identifier and coordinates to trac handler
          if (! gpTInfo->tiInsertTnode(Parser.GetWord(0), vCoordinates)) {
-           gpPrint->PrintInputWarning("Error: For record %d in coordinates file, location '%s' already exists.\n", lRecNum, Parser.GetWord(0));
+           gpPrint->PrintInputWarning("Error: For record %ld in coordinates file, location '%s' already exists.\n", lRecNum, Parser.GetWord(0));
            bValid = false;
            continue;
          }
@@ -482,7 +482,7 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
         }
         //add the tract identifier and coordinates to trac handler
         if (! gpTInfo->tiInsertTnode(Parser.GetWord(0), vCoordinates)) {
-          gpPrint->PrintInputWarning("Error: For record %d in coordinates file, location '%s' already exists.\n", lRecNum, Parser.GetWord(0));
+          gpPrint->PrintInputWarning("Error: For record %ld in coordinates file, location '%s' already exists.\n", lRecNum, Parser.GetWord(0));
           bValid = false;
           continue;
         }
@@ -617,7 +617,7 @@ bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
          }
         //validate that we read the correct number of coordinates as defined by coordinates system or coordinates file
         if (iScanCount < m_pParameters->GetDimensionsOfData()) {
-          gpPrint->PrintInputWarning("Error: Record %d in grid file contains %d dimension%s but the\n",
+          gpPrint->PrintInputWarning("Error: Record %ld in grid file contains %d dimension%s but the\n",
                                      lRecNum, iScanCount, (iScanCount == 1 ? "" : "s"));
           gpPrint->PrintInputWarning("       coordinates file defined the number of dimensions as %d.\n",
                                      m_pParameters->GetDimensionsOfData());
@@ -721,7 +721,7 @@ bool CSaTScanData::ReadLatitudeLongitudeCoordinates(StringParser & Parser, std::
   //read latitude, validating that string can be converted to double
   if ((pCoordinate = Parser.GetWord(iWordOffSet)) != 0) {
     if (! sscanf(pCoordinate, "%lf", &dLatitude)) {
-      gpPrint->PrintInputWarning("Error: Value '%s' of record %d in %s file could not be read as latitude.\n", pCoordinate, lRecNum, sSourceFile);
+      gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file could not be read as latitude.\n", pCoordinate, lRecNum, sSourceFile);
       return false;
     }
   }
@@ -732,28 +732,28 @@ bool CSaTScanData::ReadLatitudeLongitudeCoordinates(StringParser & Parser, std::
   //read longitude, validating that string can be converted to double
   if ((pCoordinate = Parser.GetWord(++iWordOffSet)) != 0) {
     if (! sscanf(pCoordinate, "%lf", &dLongitude)) {
-      gpPrint->PrintInputWarning("Error: Value '%s' of record %d in %s file could not be read as longitude.\n", pCoordinate, lRecNum, sSourceFile);
+      gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file could not be read as longitude.\n", pCoordinate, lRecNum, sSourceFile);
       return false;
     }
   }
   else {
-    gpPrint->PrintInputWarning("Error: Record %d in %s file missing longitude coordinate.\n", lRecNum, sSourceFile);
+    gpPrint->PrintInputWarning("Error: Record %ld in %s file missing longitude coordinate.\n", lRecNum, sSourceFile);
     return false;
   }
   //validate that there is not extra data for record
   if ((pCoordinate = Parser.GetWord(++iWordOffSet)) != 0) {
-    gpPrint->PrintInputWarning("Error: Record %d in %s file contains extra data: '%s'.\n", lRecNum, sSourceFile, pCoordinate);
+    gpPrint->PrintInputWarning("Error: Record %ld in %s file contains extra data: '%s'.\n", lRecNum, sSourceFile, pCoordinate);
     return false;
   }
   //validate range of latitude value
   if ((fabs(dLatitude) > 90.0)) {
-    gpPrint->PrintInputWarning("Error: Latitude %lf, for record %d in %s file, is out of range.\n",  dLatitude, lRecNum, sSourceFile);
+    gpPrint->PrintInputWarning("Error: Latitude %lf, for record %ld in %s file, is out of range.\n",  dLatitude, lRecNum, sSourceFile);
     gpPrint->PrintInputWarning("       Latitude must be between -90 and 90.\n");
     return false;
   }
   //validate range of longitude value
   if ((fabs(dLongitude) > 180.0)) {
-    gpPrint->PrintInputWarning("Error: Longitude %lf, for record %d in %s file, is out of range.\n", dLongitude, lRecNum, sSourceFile);
+    gpPrint->PrintInputWarning("Error: Longitude %lf, for record %ld in %s file, is out of range.\n", dLongitude, lRecNum, sSourceFile);
     gpPrint->PrintInputWarning("       Longitude must be between -180 and 180.\n");
     return false;
   }
@@ -798,7 +798,7 @@ bool CSaTScanData::ReadPopulationFile() {
         bEmpty=false;
         //scan values and validate - population file records must contain tract id, date and population.
         if (!Parser.GetWord(1)) {
-            gpPrint->PrintInputWarning("Error: Record %d of population file missing date.\n", iRecNum);
+            gpPrint->PrintInputWarning("Error: Record %ld of population file missing date.\n", iRecNum);
             bValid = false;
             continue;
         }
@@ -848,9 +848,9 @@ bool CSaTScanData::ReadPopulationFile() {
           //validate that population is not negative or exceeding type precision
           if (fPopulation < 0) {//validate that count is not negative or exceeds type precision
             if (strstr(Parser.GetWord(2), "-"))
-              gpPrint->PrintInputWarning("Error: Negative population in record %d of population file.\n", iRecNum);
+              gpPrint->PrintInputWarning("Error: Negative population in record %ld of population file.\n", iRecNum);
             else
-              gpPrint->PrintInputWarning("Error: Population '%s' exceeds maximum value of %i in record %d of population file.\n",
+              gpPrint->PrintInputWarning("Error: Population '%s' exceeds maximum value of %i in record %ld of population file.\n",
                                          Parser.GetWord(2), std::numeric_limits<float>::max(), iRecNum);
             bValid = false;
             continue;
@@ -863,7 +863,7 @@ bool CSaTScanData::ReadPopulationFile() {
           }
           //Validate that tract identifer is one of those defined in the coordinates file.
           if ((TractIdentifierIndex = gpTInfo->tiGetTractIndex(Parser.GetWord(0))) == -1) {
-            gpPrint->PrintInputWarning("Error: Unknown location identifier in population file, record %d.\n", iRecNum);
+            gpPrint->PrintInputWarning("Error: Unknown location identifier in population file, record %ld.\n", iRecNum);
             gpPrint->PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
             bValid = false;
             continue;
