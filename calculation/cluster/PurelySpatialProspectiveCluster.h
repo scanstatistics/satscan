@@ -38,6 +38,7 @@ class CPurelySpatialProspectiveCluster : public CCluster {
     virtual CPurelySpatialProspectiveCluster * Clone() const;
     inline virtual void                        ComputeBestMeasures(CMeasureList & MeasureList);
     virtual count_t                            GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual int                                GetClusterType() const {return PURELYSPATIAL;}
     virtual measure_t                          GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual void                               Initialize(tract_t nCenter);
     virtual void                               SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals);

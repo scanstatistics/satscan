@@ -58,9 +58,7 @@ CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator=(co
   memcpy(m_pCumMeasure, cluster.m_pCumMeasure, m_nNumIntervals*sizeof(measure_t));
   if (cluster.m_pCumMeasureSquared)
     memcpy(m_pCumMeasureSquared, cluster.m_pCumMeasureSquared, m_nNumIntervals*sizeof(measure_t));
-  m_nSteps                      = cluster.m_nSteps;
   m_bClusterDefined             = cluster.m_bClusterDefined;
-  m_nClusterType                = cluster.m_nClusterType;
   m_iEllipseOffset              = cluster.m_iEllipseOffset;
   m_nProspectiveStartInterval   = cluster.m_nProspectiveStartInterval;
   m_nNumIntervals               = cluster.m_nNumIntervals;     
@@ -133,7 +131,6 @@ measure_t CPurelySpatialProspectiveCluster::GetMeasureForTract(tract_t tTract, c
 /** re-initializes cluster data */
 void CPurelySpatialProspectiveCluster::Initialize(tract_t nCenter = 0) {
   CCluster::Initialize(nCenter);
-  m_nClusterType = PURELYSPATIAL/*PROSPECTIVE*/;
   memset(m_pCumCases, 0, sizeof(count_t) * m_nNumIntervals);
   memset(m_pCumMeasure, 0, sizeof(measure_t) * m_nNumIntervals);
   if (m_pCumMeasureSquared)
