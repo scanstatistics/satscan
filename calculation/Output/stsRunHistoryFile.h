@@ -46,6 +46,7 @@ class stsRunHistoryFile {
       void	Init();
       void      ReplaceExtensionAndAppend(ZdString& sOutputFileNames, const ZdFileName& sSourceFileName, const ZdString& sReplacementExtension);
       void      SetAdditionalOutputFileNameString(ZdString& sOutputFileNames, const CParameters& params);
+      void      SetFileName(const ZdString& sFileName);
       void      SetRunNumber();
       void      StripCRLF(ZdString& sStore);
    protected:

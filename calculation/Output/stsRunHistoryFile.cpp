@@ -44,14 +44,14 @@ const char* ADDITIONAL_OUTPUT_FILES_FIELD        = "ADDIT_OUT";
 
 // constructor
 stsRunHistoryFile::stsRunHistoryFile(const ZdString& sFileName, BasePrint& PrintDirection, bool bPrintPVal)
-                 : gsFilename(sFileName) , gpPrintDirection(&PrintDirection) , gbPrintPVal(bPrintPVal) {
+                 : gpPrintDirection(&PrintDirection) , gbPrintPVal(bPrintPVal) {
    try {
       Init();
+      SetFileName(sFileName);
       SetRunNumber();
    }
    catch (ZdException &x) {
-      x.AddCallpath("Constructor", "stsRunHistoryFile");
-      PrintDirection.SatScanPrintWarning("\nUnable to log analysis history information:\n");
+      PrintDirection.SatScanPrintWarning("The following error occured in attempting to log run history to file:\n");
       PrintDirection.SatScanPrintWarning(x.GetErrorMessage());
       PrintDirection.SatScanPrintWarning("\n");
    }
@@ -108,7 +108,7 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
       File.Close();
    }
    catch (ZdException &x) {
-      x.AddCallpath("CreateRunHistoryFile()", "stsRunHistoryFile");
+      gpPrintDirection->SatScanPrintWarning("Unable to create run history file - %s\n", gsFilename.GetCString());
       throw;
    }
 }
@@ -265,7 +265,7 @@ void stsRunHistoryFile::Init() {
 void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005, double dVal) {
    ZdTransaction	*pTransaction = 0;
    ZdString             sTempValue, sInterval;
-   std::auto_ptr<DBFFile>    pFile(new DBFFile(gsFilename));
+   std::auto_ptr<DBFFile>    pFile;
    bool                 bFound(false);
 
    try {
@@ -274,6 +274,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       // 2) to present my assumptions about the output data in case any happen to be incorrect
       // , so bear with me - AJV 9/3/2002
 
+      pFile.reset(new DBFFile(gsFilename));
       std::auto_ptr<ZdFileRecord> pRecord(pFile->GetNewRecord());
 
       for(unsigned long i = 1; i <= pFile->GetNumRecords() && !bFound; ++i) {
@@ -371,13 +372,12 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       pFile->Close();
    }
    catch(ZdException &x) {
-      gpPrintDirection->SatScanPrintWarning("\nUnable to log analysis information:\n");
+      gpPrintDirection->SatScanPrintWarning("ERROR - Unable to record analysis information to the log history file:\n");
       gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
       gpPrintDirection->SatScanPrintWarning("\n");
       if(pTransaction)
          pFile->EndTransaction(pTransaction);   // if there is a pTransaction then there must be a pFile, so this is valid
       pTransaction = 0;
-      pFile->Close();
    }
 }
 
@@ -443,6 +443,24 @@ void stsRunHistoryFile::SetAdditionalOutputFileNameString(ZdString& sOutputFileN
    }
 }
 
+// sets the global filename variable
+// pre: none
+// post: makes sure the filename has a .dbf extension - will modify the filename if it does not
+void stsRunHistoryFile::SetFileName(const ZdString& sFileName) {
+   try {
+      gsFilename = sFileName;
+      ZdString sExt(ZdFileName(sFileName).GetExtension());
+      if(sExt.GetIsEmpty())
+         gsFilename << ".dbf";
+      else if(sExt != ".dbf")
+         gsFilename.Replace(sExt, ".dbf");
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("SetFileName()", "stsRunHistoryFile");
+      throw;
+   }
+}
+
 // sets the global variable glRunNumber and secures a unique run number in the file
 // by adding a record with that run number to fix the multithreading issue
 // if the file doesn't exist then it creates a new one and sets the run number to 1
@@ -485,8 +503,7 @@ void stsRunHistoryFile::SetRunNumber() {
    catch (ZdException &x) {
       if(pTransaction)
             pFile->EndTransaction(pTransaction);
-         pTransaction = 0;
-      pFile->Close();   
+         pTransaction = 0;   
       x.AddCallpath("SetRunNumber()", "stsRunHistoryFile");
       throw;
    }
