@@ -1,9 +1,11 @@
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//***************************************************************************
 #include "PurelySpatialMonotoneAnalysis.h"
 
-CPSMonotoneAnalysis::CPSMonotoneAnalysis(CParameters*  pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-                    :CPurelySpatialAnalysis(pParameters, pData, pPrintDirection) {
+CPSMonotoneAnalysis::CPSMonotoneAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
+                    :CPurelySpatialAnalysis(Parameters, DataHub, PrintDirection) {
   Init();
 }
 
@@ -34,18 +36,18 @@ const CCluster & CPSMonotoneAnalysis::CalculateTopCluster(tract_t tCenter, const
   count_t                    ** ppCases(DataGateway.GetDataStreamInterface(0/*for now*/).GetCaseArray());
 
   try {
-    if (m_pParameters->GetAreaScanRateType() == HIGHANDLOW) {
-      C_High = new CPSMonotoneCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType());
+    if (gParameters.GetAreaScanRateType() == HIGHANDLOW) {
+      C_High = new CPSMonotoneCluster(gpClusterDataFactory, DataGateway, gParameters.GetAreaScanRateType());
       C_High->SetCenter(tCenter);
-      C_High->AllocateForMaxCircles(m_pData->GetNeighborCountArray()[0][tCenter]+1);
+      C_High->AllocateForMaxCircles(gDataHub.GetNeighborCountArray()[0][tCenter]+1);
       C_High->SetRate(HIGH);
-      C_High->DefineTopCluster(*m_pData, *gpLikelihoodCalculator, ppCases);
+      C_High->DefineTopCluster(gDataHub, *gpLikelihoodCalculator, ppCases);
 
-      C_Low = new CPSMonotoneCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType());
+      C_Low = new CPSMonotoneCluster(gpClusterDataFactory, DataGateway, gParameters.GetAreaScanRateType());
       C_Low->SetCenter(tCenter);
-      C_Low->AllocateForMaxCircles(m_pData->GetNeighborCountArray()[0][tCenter]+1);
+      C_Low->AllocateForMaxCircles(gDataHub.GetNeighborCountArray()[0][tCenter]+1);
       C_Low->SetRate(LOW);
-      C_Low->DefineTopCluster(*m_pData, *gpLikelihoodCalculator, ppCases);
+      C_Low->DefineTopCluster(gDataHub, *gpLikelihoodCalculator, ppCases);
       //    if (C_High->m_nLogLikelihood >= C_Low->m_nLogLikelihood)
       if (C_High->m_nRatio >= C_Low->m_nRatio) {
          delete gpMaxCluster;
@@ -60,14 +62,12 @@ const CCluster & CPSMonotoneAnalysis::CalculateTopCluster(tract_t tCenter, const
     }
     else {
       delete gpMaxCluster; gpMaxCluster=0;
-      gpMaxCluster = new CPSMonotoneCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType());
+      gpMaxCluster = new CPSMonotoneCluster(gpClusterDataFactory, DataGateway, gParameters.GetAreaScanRateType());
       gpMaxCluster->SetCenter(tCenter);
-      gpMaxCluster->AllocateForMaxCircles(m_pData->GetNeighborCountArray()[0][tCenter]+1);
-      gpMaxCluster->SetRate(m_pParameters->GetAreaScanRateType());
-      gpMaxCluster->DefineTopCluster(*m_pData, *gpLikelihoodCalculator, ppCases);
+      gpMaxCluster->AllocateForMaxCircles(gDataHub.GetNeighborCountArray()[0][tCenter]+1);
+      gpMaxCluster->SetRate(gParameters.GetAreaScanRateType());
+      gpMaxCluster->DefineTopCluster(gDataHub, *gpLikelihoodCalculator, ppCases);
     }
-
-    gpMaxCluster->SetStartAndEndDates(m_pData->GetTimeIntervalStartTimes(), m_pData->m_nTimeIntervals);
   }
   catch (ZdException &x) {
     delete C_High; C_High=0;
@@ -82,8 +82,8 @@ const CCluster & CPSMonotoneAnalysis::CalculateTopCluster(tract_t tCenter, const
 }
 
 double CPSMonotoneAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
-   CPSMonotoneCluster           MaxCluster(gpClusterDataFactory, Interface, m_pParameters->GetAreaScanRateType());
-   CPSMonotoneCluster           C(gpClusterDataFactory, Interface, m_pParameters->GetAreaScanRateType());
+   CPSMonotoneCluster           MaxCluster(gpClusterDataFactory, Interface, gParameters.GetAreaScanRateType());
+   CPSMonotoneCluster           C(gpClusterDataFactory, Interface, gParameters.GetAreaScanRateType());
    CPSMonotoneCluster           C_High(gpClusterDataFactory, Interface, HIGH);
    CPSMonotoneCluster           C_Low(gpClusterDataFactory, Interface, LOW);
    count_t                   ** ppSimCases(Interface.GetCaseArray());
@@ -93,21 +93,21 @@ double CPSMonotoneAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
       MaxCluster.Initialize(0);
       MaxCluster.m_nLogLikelihood = gpLikelihoodCalculator->GetLogLikelihoodForTotal();
     
-      C.AllocateForMaxCircles(m_pData->m_nGridTracts+1);
-      C_High.AllocateForMaxCircles(m_pData->m_nGridTracts+1);
-      C_Low.AllocateForMaxCircles(m_pData->m_nGridTracts+1);
+      C.AllocateForMaxCircles(gDataHub.m_nGridTracts+1);
+      C_High.AllocateForMaxCircles(gDataHub.m_nGridTracts+1);
+      C_Low.AllocateForMaxCircles(gDataHub.m_nGridTracts+1);
     
-      for (int i = 0; i<m_pData->m_nGridTracts; i++)
+      for (int i = 0; i<gDataHub.m_nGridTracts; i++)
         {
-        if (m_pParameters->GetAreaScanRateType() == HIGHANDLOW)
+        if (gParameters.GetAreaScanRateType() == HIGHANDLOW)
           {
           C_High.Initialize(i);
           C_High.SetRate(HIGH);
-          C_High.DefineTopCluster(*m_pData, *gpLikelihoodCalculator,  ppSimCases);
+          C_High.DefineTopCluster(gDataHub, *gpLikelihoodCalculator,  ppSimCases);
     
           C_Low.Initialize(i);
           C_Low.SetRate(LOW);
-          C_Low.DefineTopCluster(*m_pData, *gpLikelihoodCalculator,  ppSimCases);
+          C_Low.DefineTopCluster(gDataHub, *gpLikelihoodCalculator,  ppSimCases);
 
           //if (C_High.m_nLogLikelihood >= C_Low.m_nLogLikelihood &&
           //   C_High.m_nLogLikelihood > MaxCluster.m_nLogLikelihood)
@@ -122,8 +122,8 @@ double CPSMonotoneAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
         else
           {
           C.Initialize(i);
-          C.SetRate(m_pParameters->GetAreaScanRateType());
-          C.DefineTopCluster(*m_pData, *gpLikelihoodCalculator, ppSimCases);
+          C.SetRate(gParameters.GetAreaScanRateType());
+          C.DefineTopCluster(gDataHub, *gpLikelihoodCalculator, ppSimCases);
     
           //if (C.m_nLogLikelihood > MaxCluster.m_nLogLikelihood)
           if (C.m_nRatio > MaxCluster.m_nRatio)

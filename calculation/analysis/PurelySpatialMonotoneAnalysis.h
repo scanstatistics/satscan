@@ -15,11 +15,12 @@ class CPSMonotoneAnalysis : public CPurelySpatialAnalysis {
     virtual void             AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway);
     virtual void             AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway);
     virtual const CCluster & CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway);
-    virtual double           MonteCarlo(const DataStreamInterface & Interface);
 
   public:
-    CPSMonotoneAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
+    CPSMonotoneAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CPSMonotoneAnalysis();
+
+    virtual double           MonteCarlo(const DataStreamInterface & Interface);    
 };
 //*****************************************************************************
 #endif
