@@ -1,4 +1,5 @@
-/*  $Id: xbexcept.cpp,v 1.1 2002-09-04 19:54:10 simpson Exp $
+#pragma hdrstop
+/*  $Id: xbexcept.cpp,v 1.2 2002-09-05 13:19:20 hostovic Exp $
 
     Xbase project source code
 

@@ -1,3 +1,4 @@
+#pragma hdrstop
 /* 
     Xbase project source code
 

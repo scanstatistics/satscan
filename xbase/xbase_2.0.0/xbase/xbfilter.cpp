@@ -1,3 +1,4 @@
+#pragma hdrstop
 /*  $Id: xbfilter.cpp
 
     Xbase project source code

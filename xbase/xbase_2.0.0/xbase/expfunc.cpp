@@ -1,4 +1,5 @@
-/*  $Id: expfunc.cpp,v 1.1 2002-09-04 19:54:09 simpson Exp $
+#pragma hdrstop
+/*  $Id: expfunc.cpp,v 1.2 2002-09-05 13:19:19 hostovic Exp $
 
     Xbase project source code
 
