@@ -24,7 +24,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbInputFiles
+    ActivePage = tbScanningWindow
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'

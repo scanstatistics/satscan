@@ -1067,10 +1067,17 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           chkInclPurTempClust->Enabled = false;
           gpParams->m_bIncludePurelyTemporal = false;
           chkInclPurTempClust->Checked = false;
+          edtMaxClusterSize->Enabled = true;
+          edtMaxClusterSize->Color = clWindow;
           // disable time intervals - just turn off the whole group box
           GroupBox6->Enabled = false;
-          // disable temporal - just turn off the whole group box
+          // disable temporal
           GroupBox5->Enabled = false;
+          rdoPercentageTemproal->Enabled = false;
+          rdoTimeTemproal->Enabled = false;
+          chkIncludePurSpacClust->Enabled = false;
+          edtMaxTemporalClusterSize->Enabled = false;
+          edtMaxTemporalClusterSize->Color = clInactiveBorder;
           // disable start date PST
           GroupBox8->Enabled = false;
           break;
@@ -1090,6 +1097,8 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           chkInclPurTempClust->Enabled = false;
           gpParams->m_bIncludePurelySpatial = false;
           chkInclPurTempClust->Checked = false;
+          edtMaxClusterSize->Enabled = false;
+          edtMaxClusterSize->Color = clInactiveBorder;
           // Enables time intervals
           GroupBox6->Enabled = true;
           edtUnitLength->Enabled = true;
@@ -1101,6 +1110,8 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           chkIncludePurSpacClust->Enabled = false;
           gpParams->m_bIncludePurelySpatial = false;
           chkIncludePurSpacClust->Checked = false;
+          edtMaxTemporalClusterSize->Enabled = true;
+          edtMaxTemporalClusterSize->Color = clWindow;
           // Disables Start date PST
           GroupBox8->Enabled = false;
           break;
@@ -1119,6 +1130,8 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           rdoSpatialDistance->Enabled = true;
           chkInclPurTempClust->Enabled = true;
           chkInclPurTempClust->Checked = gpParams->m_bIncludePurelyTemporal;
+          edtMaxClusterSize->Enabled = true;
+          edtMaxClusterSize->Color = clWindow;
           //Enables time intervals
           GroupBox6->Enabled = true;
           edtUnitLength->Enabled = true;
@@ -1131,6 +1144,8 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           rdoTimeTemproal->Checked = (gpParams->m_nMaxClusterSizeType == 0 ? false : true);
           chkIncludePurSpacClust->Enabled = true;
           chkIncludePurSpacClust->Checked = gpParams->m_bIncludePurelySpatial;
+          edtMaxTemporalClusterSize->Enabled = true;
+          edtMaxTemporalClusterSize->Color = clWindow;
           //Disables Start date PST
           GroupBox8->Enabled = false;
           break;
@@ -1148,11 +1163,13 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           rdoSpatialDistance->Checked = true;
           chkInclPurTempClust->Enabled = true;
           chkInclPurTempClust->Checked = gpParams->m_bIncludePurelyTemporal;
+          edtMaxClusterSize->Enabled = true;
+          edtMaxClusterSize->Color = clWindow;
           //Enables time intervals
           GroupBox6->Enabled = true;
           edtUnitLength->Enabled = true;
           edtUnitLength->Color = clWindow;
-          //Enables temporal with checkbox but disable % box
+          //Enables temporal with checkbox but disable % option radio button
           GroupBox5->Enabled = true;
           rdoPercentageTemproal->Enabled = false;
           rdoPercentageTemproal->Checked = false;
@@ -1160,6 +1177,8 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           rdoTimeTemproal->Checked = true;
           chkIncludePurSpacClust->Enabled = true;
           chkIncludePurSpacClust->Checked = gpParams->m_bIncludePurelySpatial;
+          edtMaxTemporalClusterSize->Enabled = true;
+          edtMaxTemporalClusterSize->Color = clWindow;
           //Enables Start Date PST
           GroupBox8->Enabled = true;
           break;
