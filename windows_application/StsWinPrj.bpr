@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="StsWinPrj.exe"/>
+    <OBJFILES value="StsWinPrj.obj Stswin.obj TfrmAnalysis.obj TfrmAbout.obj Utils.obj 
+      CalcThread.obj Calc\tinfo.obj Calc\BernoulliModel.obj Calc\calcmsr.obj 
+      Calc\cats.obj Calc\Cluster.obj Calc\Data.obj Calc\data_display.obj 
+      Calc\data_read.obj Calc\Analysis.obj Calc\RNG.obj Calc\Salloc.obj 
+      Calc\SigRatios05.obj Calc\Sort.obj Calc\ST+PS+PTAnalysis.obj 
+      Calc\ST+PSAnalysis.obj Calc\ST+PTAnalysis.obj Calc\STanalysis.obj 
+      Calc\STCluster.obj Calc\STdata.obj Calc\TIAlive.obj Calc\TIAll.obj 
+      Calc\TimeEstimate.obj Calc\rate.obj Calc\model.obj Calc\Ginfo.obj 
+      Calc\LatLong.obj Calc\Loglikelihood.obj Calc\MakeNeighbors.obj 
+      Calc\MeasureList.obj Calc\GetWord.obj Calc\PSCluster.obj 
+      Calc\PoissonModel.obj Calc\PSanalysis.obj Calc\PSdata.obj 
+      Calc\PSManalysis.obj Calc\PSMCluster.obj Calc\PTanalysis.obj 
+      Calc\PTCluster.obj Calc\PTdata.obj Calc\Randdist.obj xmfrmAnalysisRun.obj 
+      Calc\date.obj Calc\Param.obj Calc\display.obj Calc\BasePrint.obj 
+      PrintWindow.obj Calc\PrintScreen.obj Calc\SSException.obj 
+      xbDlgException.obj xmfrmFileViewer.obj"/>
+    <RESFILES value="StsWinPrj.res"/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES) Stswin.dfm TfrmAnalysis.dfm TfrmAbout.dfm xmfrmAnalysisRun.dfm 
+      xbDlgException.dfm xmfrmFileViewer.dfm"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value="Vcl50.lib"/>
+    <SPARELIBS value="Vcl50.lib"/>
+    <PACKAGES value="Vcl50.bpi bcb2kaxserver50.bpi VCLDB50.bpi VCLBDE50.bpi Vclx50.bpi 
+      vcldbx50.bpi vclie50.bpi Inetdb50.bpi Inet50.bpi TeeUI50.bpi TeeDB50.bpi 
+      Tee50.bpi bcbsmp50.bpi ibsmp50.bpi bcbie50.bpi dclocx50.bpi NMFast50.bpi 
+      Qrpt50.bpi VCLIB50.bpi TeeQR50.bpi TSGC5201.bpi TSDGC5201.bpi"/>
+    <PATHCPP value=".;Calc"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="tlink32"/>
+    <USERDEFINES value="INTEL_BASED"/>
+    <SYSDEFINES value="NO_STRICT"/>
+    <MAINSOURCE value="StsWinPrj.cpp"/>
+    <INCLUDEPATH value="\\Nfsd\imsdev\Basis\Production\Basis540;Calc;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="\\Nfsd\imsdev\Basis\Production\Basis540;Calc;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;&quot;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\&quot;;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <WARNINGS value="-w-par"/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-O2 -Vx -Ve -fp -X- -a8 -5 -b- -k- -vi -c -tW -tWM"/>
+    <PFLAGS value="-$Y- -$L- -$D- -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-D&quot;&quot; -aa -Tpe -x -Gn"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1033
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[HistoryLists\hlIncludePath]
+Count=2
+Item0=\\Nfsd\imsdev\Basis\Production\Basis540;Calc;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl
+Item1=Calc;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=2
+Item0=\\Nfsd\imsdev\Basis\Production\Basis540;Calc;C:\Program Files\Borland\CBuilder5\Projects\;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib
+Item1=Calc;C:\Program Files\Borland\CBuilder5\Projects\;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=11
+Item0=INTEL_BASED
+Item1=INTEL_BASED;_DEBUG
+Item2=INTEL_BASED;DEBUGPROSPECTIVETIME
+Item3=INTEL_BASED;DEBUGANALYSIS
+Item4=OUTPUT_TO_WINDOW;INTEL_BASED
+Item5=OUTPUT_TO_WINDOW;INTEL_BASED;DON_UPDATE
+Item6=DON_UPDATE
+Item7=OUTPUT_TO_WINDOW
+Item8=_DEBUG;OUTPUT_TO_WINDOW
+Item9=_DEBUG;OUTPUT_TO_WINDOW;INTEL_BASED
+Item10=_DEBUG
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>
