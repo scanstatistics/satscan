@@ -29,9 +29,11 @@ void __fastcall TfrmMainForm::ExecuteActionExecute(TObject *Sender) {
 }
 //---------------------------------------------------------------------------
 void TfrmMainForm::ExecuteSession() {
-  TfrmAnalysis *frmBaseForm;
-  CParameters  *pSession;
-  AnsiString    sCaption;
+  TfrmAnalysis                * frmBaseForm;
+  CParameters                 * pSession;
+  AnsiString                    sCaption;
+  TfrmAnalysisRun             * pAnalysisRun=0;
+  CalcThread                  * pThread;
 
   try {
     //make sure window is a session window
@@ -47,12 +49,16 @@ void TfrmMainForm::ExecuteSession() {
         }
         else
           sCaption = "Running Unknown Session Name";
-         new CalcThread(false, *pSession, sCaption.c_str(), new TfrmAnalysisRun(0));
+
+        pAnalysisRun = new TfrmAnalysisRun(this);
+        CalcThread * pThread = new CalcThread(true, *pSession, sCaption.c_str(), pAnalysisRun);
+        pThread->Resume(); // starts the thread
       }
     }
   }
   catch (ZdException & x) {
     x.AddCallpath("ExecuteSession()", "TfrmMainForm");
+    delete pAnalysisRun;
     throw;
   }
 }
