@@ -24,8 +24,31 @@ CSpatialVarTempTrendAnalysis::~CSpatialVarTempTrendAnalysis() {
   catch(...){}
 }
 
+/** Allocates objects used during simulations, instead of repeated allocations
+    for each simulation.
+    NOTE: This analysis has not been optimized to 'pre' allocate objects used in
+          simulation process. This function is only a shell.                     */
+void CSpatialVarTempTrendAnalysis::AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway) {
+}
+
+/** Allocates objects used during calculation of most likely clusters, instead
+    of repeated allocations for each simulation.
+    NOTE: This analysis has not been optimized to 'pre' allocate objects used in
+          process of finding most likely clusters. */
+void CSpatialVarTempTrendAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway) {
+  try {
+    CSVTTCluster thisCluster(DataGateway, m_pData->GetNumTimeIntervals(), gpPrintDirection);
+    thisCluster.InitializeSVTT(0, DataGateway);
+    gpTopShapeClusters->SetTopClusters(thisCluster);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("AllocateTopClustersObjects()","CSpatialVarTempTrendAnalysis");
+    throw;
+  }
+}
+
 /** calculates most likely cluster about central location 'tCenter' */
-void CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCenter, const DataStreamGateway & DataGateway, bool bSimulation) {
+const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway) {
   int                   k;
   tract_t               i, iNumNeighbors;
   CModel              & ProbModel(m_pData->GetProbabilityModel());
@@ -54,18 +77,13 @@ void CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCenter, const Da
     // the ratio needs to be calculated for each circle/cylinder, instead of here !!!!
     CSVTTCluster & Cluster = (CSVTTCluster&)(gpTopShapeClusters->GetTopCluster());
     Cluster.m_nRatio = Cluster.m_nLogLikelihood - m_pData->GetProbabilityModel().GetLogLikelihoodForTotal();
+    Cluster.SetTimeTrend(m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateTopCluster()","CSpatialVarTempTrendAnalysis");
     throw;
   }
-}
-
-/** returns most likely cluster about a centroid, as calculated from last call to CalculateTopCluster() */
-CCluster & CSpatialVarTempTrendAnalysis::GetTopCalculatedCluster() {
-  CSVTTCluster & Cluster = (CSVTTCluster&)(gpTopShapeClusters->GetTopCluster());
-  Cluster.SetTimeTrend(m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
-  return Cluster;
+  return gpTopShapeClusters->GetTopCluster();
 }
 
 /** calculates loglikelihood ratio for simulated data pointed to by DataStreamInterface
@@ -77,8 +95,6 @@ double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataStreamInterface & Inte
   CModel      & ProbModel(m_pData->GetProbabilityModel());  
 
   try {
-    SetTopClusters(Interface, true);
-
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
     for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
        CSVTTCluster thisCluster(Interface, m_pData->GetNumTimeIntervals(), gpPrintDirection);
@@ -112,34 +128,6 @@ double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataStreamInterface & Inte
 double CSpatialVarTempTrendAnalysis::MonteCarloProspective(const DataStreamInterface & Interface) {
   ZdGenerateException("MonteCarloProspective() not implemented.","CSpatialVarTempTrendAnalysis");
   return 0;
-}
-
-/** sets object that contains to cluster list which represents top clusters for
-    the circle and each ellipse shape */
-void CSpatialVarTempTrendAnalysis::SetTopClusters(const DataStreamGateway & DataGateway, bool bSimulation) {
-  try {
-    CSVTTCluster thisCluster(DataGateway, m_pData->GetNumTimeIntervals(), gpPrintDirection);
-    thisCluster.InitializeSVTT(0, DataGateway);
-    gpTopShapeClusters->SetTopClusters(thisCluster);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetTopClusters()","CSpatialVarTempTrendAnalysis");
-    throw;
-  }
-}
-
-/** sets object that contains to cluster list which represents top clusters for
-    the circle and each ellipse shape */
-void CSpatialVarTempTrendAnalysis::SetTopClusters(const DataStreamInterface & Interface, bool bSimulation) {
-  try {
-    CSVTTCluster thisCluster(Interface, m_pData->GetNumTimeIntervals(), gpPrintDirection);
-    thisCluster.InitializeSVTT(0, Interface);
-    gpTopShapeClusters->SetTopClusters(thisCluster);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetTopClusters()","CSpatialVarTempTrendAnalysis");
-    throw;
-  }
 }
 
 /** internal setup function */

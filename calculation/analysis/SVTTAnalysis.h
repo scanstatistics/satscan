@@ -11,15 +11,14 @@ class CSpatialVarTempTrendAnalysis : public CAnalysis {
     TopClustersContainer      * gpTopShapeClusters;
 
     void                        Init() {gpTopShapeClusters=0;}
-    virtual double              MonteCarlo(const DataStreamInterface & Interface);
-    virtual double              MonteCarloProspective(const DataStreamInterface & Interface);
     void                        Setup();
 
   protected:
-    virtual void                CalculateTopCluster(tract_t tCenter, const DataStreamGateway & DataGateway, bool bSimulation);
-    virtual CCluster          & GetTopCalculatedCluster();
-    virtual void                SetTopClusters(const DataStreamGateway & DataGateway, bool bSimulation);
-    virtual void                SetTopClusters(const DataStreamInterface & Interface, bool bSimulation);
+    virtual void                AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway);
+    virtual void                AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway);
+    virtual const CCluster    & CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway);
+    virtual double              MonteCarlo(const DataStreamInterface & Interface);
+    virtual double              MonteCarloProspective(const DataStreamInterface & Interface);
 
   public:
     CSpatialVarTempTrendAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
