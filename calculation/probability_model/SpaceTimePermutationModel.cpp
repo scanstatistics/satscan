@@ -30,12 +30,13 @@ double CSpaceTimePermutationModel::CalcLogLikelihood(count_t n, measure_t u)
     Assigns values to CSatScanData::Measure array. Calculates total measure
     and validates that total measure equals total number of cases in set. */
 bool CSpaceTimePermutationModel::CalculateMeasure() {
-  int                   i, j;
-  count_t            ** ppCases(gData.gpCasesHandler->GetArray());
-  measure_t          ** ppMeasure;  
+  int                   i, j, c, iNumCategories(gData.GetTInfo()->tiGetNumCategories());
+  count_t            ** ppCases(gData.gpCasesHandler->GetArray()),
+                    *** pppCategoryCases(gData.gpCategoryCasesHandler->GetArray());
+  measure_t          ** ppMeasure, T_C;
 
   try {
-    gData.gpMeasureHandler = new TwoDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals+1, gData.m_nTracts);  
+    gData.gpMeasureHandler = new TwoDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals+1, gData.m_nTracts, 0);
     ppMeasure = gData.GetMeasureArray();
     gData.m_nTotalMeasure  = 0;
     gData.m_nTotalPop = 0;
@@ -44,35 +45,31 @@ bool CSpaceTimePermutationModel::CalculateMeasure() {
     // S = number of cases in spacial area irrespective of time
     // T = number of cases in temporal domain irrespective of location
     // C = total number of cases
-    for (i=0; i < gData.m_nTimeIntervals; i++) {
-       ppMeasure[i][0] = 0;
-       // Since all tracts in interval i will have the same T/C, just add up
-       // cases for all tracts in tract 0 then divide by C. After we'll distribute
-       // T/C to rest of tracts in interval i and at the same, multiply by S.
-       for (j=0; j< gData.m_nTracts; j++)
-          ppMeasure[i][0] += ppCases[i][j];
-       //divide by total number of cases
-       ppMeasure[i][0] /= gData.m_nTotalCases;
-      // Copy to rest of measure slots for interval i and rest of tracts while
-      // multiplying each by S at the same time.
-      for (j=1; j< gData.m_nTracts; j++)
-         ppMeasure[i][j] = ppMeasure[i][0] * ppCases[0][j];
-      // don't forget to multiply tract 0 by S
-      ppMeasure[i][0] = ppMeasure[i][0] * ppCases[0][0];
+    for (c=0; c < iNumCategories; ++c) {
+       for (i=0; i < gData.m_nTimeIntervals; ++i) {
+         T_C = pppCategoryCases[i][0][c];
+         //Calculate T/C
+         for (j=1; j < gData.m_nTracts; ++j)
+            T_C += pppCategoryCases[i][j][c];
+         T_C /= gData.GetNumCategoryCases(c);
+         //Multiply T/C by S and add to measure
+         for (j=0; j < gData.m_nTracts; ++j)
+           ppMeasure[i][j] += T_C * pppCategoryCases[0][j][c];
+       }
     }
 
     // calculate total measure
-    for (j=0; j< gData.m_nTracts; j++)
+    for (j=0; j< gData.m_nTracts; ++j)
        gData.m_nTotalMeasure += ppMeasure[0][j];
 
-    /* Ensure that TotalCases=TotalMeasure */
+    // Ensure that TotalCases=TotalMeasure
     if (fabs(gData.m_nTotalCases - gData.m_nTotalMeasure)>0.0001)
       SSGenerateException("Error: The total measure is not equal to the total number of cases.\n"
                           "Total Cases = %i, Total Measure = %.2lf\n", "CalculateMeasure()",
                           gData.m_nTotalCases, gData.m_nTotalMeasure);
   }
   catch (ZdException &x) {
-    gData.gpMeasureHandler; gData.gpMeasureHandler=0;
+    delete gData.gpMeasureHandler; gData.gpMeasureHandler=0;
     x.AddCallpath("CalculateMeasure()","CSpaceTimePermutationModel");
     throw;
   }
