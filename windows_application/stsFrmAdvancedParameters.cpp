@@ -9,10 +9,12 @@
 #pragma link "TSGrid"
 #pragma resource "*.dfm"
 
+/** Maximum number of additional input streams permitted. */
+const int TfrmAdvancedParameters::MAXIMUM_STREAMS = 3;
 
-/** constructor */
-__fastcall TfrmAdvancedParameters::TfrmAdvancedParameters(TfrmAnalysis & AnalysisSettings)
-        : TForm(&AnalysisSettings), gAnalysisSettings(AnalysisSettings) {
+/** class constructor */
+__fastcall TfrmAdvancedParameters::TfrmAdvancedParameters(const TfrmAnalysis& AnalysisSettings)
+        : TForm(const_cast<TfrmAnalysis*>(&AnalysisSettings)), gAnalysisSettings(AnalysisSettings) {
   try {
     Init();
     Setup();
@@ -291,18 +293,19 @@ void __fastcall TfrmAdvancedParameters::btnSetDefaultsClick(TObject *Sender)
 //---------------------------------------------------------------------------
 /** event triggered when 'adjustment for ealier analyses' checkbox if clicked */
 void __fastcall TfrmAdvancedParameters::chkAdjustForEarlierAnalysesClick(TObject *Sender) {
-  EnableProspectiveStartDate(chkAdjustForEarlierAnalyses->Checked);
-  gAnalysisSettings.EnableSettingsForAnalysisModelCombination();
+  EnableSettingsForAnalysisModelCombination();                          
   DoControlExit();
-  }
+}
 //---------------------------------------------------------------------------
 /** event triggered when adjust for known relative risks is clicked */
 void __fastcall TfrmAdvancedParameters::chkAdjustForKnownRelativeRisksClick(TObject *Sender) {
-  lblAdjustmentsByRelativeRisksFile->Enabled = gbEnableAdjustmentsByRR && chkAdjustForKnownRelativeRisks->Checked;
-  edtAdjustmentsByRelativeRisksFile->Enabled = gbEnableAdjustmentsByRR && chkAdjustForKnownRelativeRisks->Checked;
-  edtAdjustmentsByRelativeRisksFile->Color = edtAdjustmentsByRelativeRisksFile->Enabled ? clWindow : clInactiveBorder;
-  btnBrowseAdjustmentsFile->Enabled = gbEnableAdjustmentsByRR && chkAdjustForKnownRelativeRisks->Checked;
-  btnImportAdjustmentsFile->Enabled = gbEnableAdjustmentsByRR && chkAdjustForKnownRelativeRisks->Checked;
+  bool  bEnabled = grpAdjustments->Enabled && chkAdjustForKnownRelativeRisks->Checked;
+  
+  lblAdjustmentsByRelativeRisksFile->Enabled = bEnabled;
+  edtAdjustmentsByRelativeRisksFile->Enabled = bEnabled;
+  edtAdjustmentsByRelativeRisksFile->Color = bEnabled ? clWindow : clInactiveBorder;
+  btnBrowseAdjustmentsFile->Enabled = bEnabled;
+  btnImportAdjustmentsFile->Enabled = bEnabled;
   DoControlExit();
 }
 
@@ -316,7 +319,7 @@ void __fastcall TfrmAdvancedParameters::chkRestrictReportedClustersClick(TObject
 /** event triggered when user selects restrict range check box */
 void __fastcall TfrmAdvancedParameters::chkRestrictTemporalRangeClick(TObject *Sender) {
   EnableSpatialOutputOptions(rdgSpatialOptions->Enabled);
-  RefreshTemporalRangesEnables();
+  EnableDatesByTimePrecisionUnits();
   DoControlExit();
 }
 
@@ -453,27 +456,14 @@ void __fastcall TfrmAdvancedParameters::edtReportClustersSmallerThanExit(TObject
 //---------------------------------------------------------------------------
 /** event triggered when start window end ranges year, month or day control is exited */
 void __fastcall TfrmAdvancedParameters::edtStartRangeEndDateExit(TObject *Sender) {
-   TfrmAnalysis::ValidateDate(*edtStartRangeEndYear, *edtStartRangeEndMonth, *edtStartRangeEndDay);
-   DoControlExit();
+  TfrmAnalysis::ValidateDate(*edtStartRangeEndYear, *edtStartRangeEndMonth, *edtStartRangeEndDay);
+  DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** event triggered when start window start ranges year, month or day control is exited */
 void __fastcall TfrmAdvancedParameters::edtStartRangeStartDateExit(TObject *Sender) {
-   TfrmAnalysis::ValidateDate(*edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay);
-   DoControlExit();
-}
-
-/** Enables/disables TListBox that list defined data streams */
-void TfrmAdvancedParameters::EnableDataStreamList(bool bEnable) {
-  lstInputStreams->Enabled = bEnable;
-  lstInputStreams->Color = lstInputStreams->Enabled ? clWindow : clInactiveBorder;
-}
-
-/** Enables/disables controls that indicate purpose of additional data streams. */
-void TfrmAdvancedParameters::EnableDataStreamPurposeControls(bool bEnable) {
-  lblMultipleStreamPurpose->Enabled = bEnable;
-  rdoMultivariate->Enabled = bEnable;
-  rdoAdjustmentByStreams->Enabled = bEnable;
+  TfrmAnalysis::ValidateDate(*edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay);
+  DoControlExit();
 }
 
 void TfrmAdvancedParameters::EnableAdjustmentForSpatialOptionsGroup(bool bEnable) {
@@ -509,7 +499,6 @@ void TfrmAdvancedParameters::EnableAdjustmentForTimeTrendOptionsGroup(bool bEnab
 //---------------------------------------------------------------------------
 /** enables adjustment options controls */
 void TfrmAdvancedParameters::EnableAdjustmentsGroup(bool bEnable) {
-  gbEnableAdjustmentsByRR = bEnable;
   grpAdjustments->Enabled = bEnable;
   chkAdjustForKnownRelativeRisks->Enabled = bEnable;
   lblAdjustmentsByRelativeRisksFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
@@ -518,7 +507,137 @@ void TfrmAdvancedParameters::EnableAdjustmentsGroup(bool bEnable) {
   btnBrowseAdjustmentsFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
   btnImportAdjustmentsFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
 }
+
+void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
+  bool  bPoisson(gAnalysisSettings.GetModelControlType() == POISSON),
+        bSpaceTimePermutation(gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION);
+
+  try {
+    switch (gAnalysisSettings.GetAnalysisControlType()) {
+      case PURELYSPATIAL             :
+        EnableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
+        EnableAdjustmentForSpatialOptionsGroup(false);
+        EnableSpatialOptionsGroup(true, false, true);
+        EnableTemporalOptionsGroup(false, false, false);
+        EnableProspectiveSurveillanceGroup(false);
+        EnableOutputOptions(true);
+        break;
+      case PURELYTEMPORAL            :
+        EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
+        EnableAdjustmentForSpatialOptionsGroup(false);
+        EnableSpatialOptionsGroup(false, false, false);
+        EnableTemporalOptionsGroup(true, false, true);
+        EnableProspectiveSurveillanceGroup(false);
+        EnableOutputOptions(false);
+        break;
+      case SPACETIME                 :
+        EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
+        EnableAdjustmentForSpatialOptionsGroup(bPoisson);
+        EnableSpatialOptionsGroup(true, !bSpaceTimePermutation, true);
+        EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
+        EnableProspectiveSurveillanceGroup(false);
+        EnableOutputOptions(true);
+        break;
+      case PROSPECTIVESPACETIME      :
+        EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
+        EnableAdjustmentForSpatialOptionsGroup(bPoisson);
+        EnableSpatialOptionsGroup(true, !bSpaceTimePermutation, !chkAdjustForEarlierAnalyses->Checked);
+        EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
+        EnableProspectiveSurveillanceGroup(true);
+        EnableOutputOptions(true);
+        break;
+      case PROSPECTIVEPURELYTEMPORAL :
+        EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
+        EnableAdjustmentForSpatialOptionsGroup(false);
+        EnableSpatialOptionsGroup(false, false, false);
+        EnableTemporalOptionsGroup(true, false, false);
+        EnableProspectiveSurveillanceGroup(true);
+        EnableOutputOptions(false);
+        break;
+      default :
+        ZdGenerateException("Unknown analysis type '%d'.",
+                            "EnableSettingsForAnalysisModelCombination()",gAnalysisSettings.GetAnalysisControlType());
+    }
+    EnableAdjustmentsGroup(bPoisson);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("EnableSettingsForAnalysisModelCombination()","TfrmAdvancedParameters");
+    throw;
+  }
+}
 //---------------------------------------------------------------------------
+/** Enables/disables TListBox that list defined data streams */
+void TfrmAdvancedParameters::EnableDataStreamList(bool bEnable) {
+  lstInputStreams->Enabled = bEnable;
+  lstInputStreams->Color = lstInputStreams->Enabled ? clWindow : clInactiveBorder;
+}
+
+/** Enables/disables controls that indicate purpose of additional data streams. */
+void TfrmAdvancedParameters::EnableDataStreamPurposeControls(bool bEnable) {
+  lblMultipleStreamPurpose->Enabled = bEnable;
+  rdoMultivariate->Enabled = bEnable;
+  rdoAdjustmentByStreams->Enabled = bEnable;
+}
+
+/** Enables dates of flexible temporal window and prospective surveillance groups.
+    Enabling is determined through:
+    - querying the 'precision of time' control contained in the analysis window
+    - the Enabled property of the TGroupBox of which dates are contained
+    - the Enabled and Checked properties of the TCheckBox that indicates whether
+      user wishes to adjust for earlier analyses. */
+void TfrmAdvancedParameters::EnableDatesByTimePrecisionUnits() {
+  bool bYears, bMonths, bDays,
+       bEnable = grpFlexibleTemporalWindowDefinition->Enabled &&
+                 chkRestrictTemporalRange->Enabled && chkRestrictTemporalRange->Checked;
+
+  switch (gAnalysisSettings.GetPrecisionOfTimesControlType()) {
+    case NONE  :
+    case DAY   : bYears = bMonths = bDays = bEnable; break;
+    case YEAR  : bYears = bEnable; bMonths = bDays = false; break;
+    case MONTH : bYears = bMonths = bEnable; bDays = false; break;
+    default    :
+    ZdGenerateException("Time precision type unknown '%d'.","EnableDatesByTimePrecisionUnits()",
+                        gAnalysisSettings.GetPrecisionOfTimesControlType());
+  };
+
+  //enable start range dates
+  edtStartRangeStartYear->Enabled = bYears;
+  edtStartRangeStartYear->Color = edtStartRangeStartYear->Enabled ? clWindow : clInactiveBorder;
+  edtStartRangeStartMonth->Enabled = bMonths;
+  edtStartRangeStartMonth->Color = edtStartRangeStartMonth->Enabled ? clWindow : clInactiveBorder;
+  if (!edtStartRangeStartMonth->Enabled && bEnable) edtStartRangeStartMonth->Text = 1;
+  edtStartRangeStartDay->Enabled = bDays;
+  edtStartRangeStartDay->Color = edtStartRangeStartDay->Enabled ? clWindow : clInactiveBorder;
+  if (!edtStartRangeStartDay->Enabled && bEnable) edtStartRangeStartDay->Text = 1;
+  edtStartRangeEndYear->Enabled = bYears;
+  edtStartRangeEndYear->Color = edtStartRangeEndYear->Enabled ? clWindow : clInactiveBorder;
+  edtStartRangeEndMonth->Enabled = bMonths;
+  edtStartRangeEndMonth->Color = edtStartRangeEndMonth->Enabled ? clWindow : clInactiveBorder;
+  if (!edtStartRangeEndMonth->Enabled && bEnable) edtStartRangeEndMonth->Text = 12;
+  edtStartRangeEndDay->Enabled = bDays;
+  edtStartRangeEndDay->Color = edtStartRangeEndDay->Enabled ? clWindow : clInactiveBorder;
+  if (!edtStartRangeEndDay->Enabled && bEnable) edtStartRangeEndDay->Text = DaysThisMonth(atoi(edtStartRangeEndYear->Text.c_str()), atoi(edtStartRangeEndMonth->Text.c_str()));
+  //enable end range dates
+  edtEndRangeStartYear->Enabled = bYears;
+  edtEndRangeStartYear->Color = edtEndRangeStartYear->Enabled ? clWindow : clInactiveBorder;
+  edtEndRangeStartMonth->Enabled = bMonths;
+  edtEndRangeStartMonth->Color = edtEndRangeStartMonth->Enabled ? clWindow : clInactiveBorder;
+  if (!edtEndRangeStartMonth->Enabled && bEnable) edtEndRangeStartMonth->Text = 1;
+  edtEndRangeStartDay->Enabled = bDays;
+  edtEndRangeStartDay->Color = edtEndRangeStartDay->Enabled ? clWindow : clInactiveBorder;
+  if (!edtEndRangeStartDay->Enabled && bEnable) edtEndRangeStartDay->Text = 1;
+  edtEndRangeEndYear->Enabled = bYears;
+  edtEndRangeEndYear->Color = edtEndRangeEndYear->Enabled ? clWindow : clInactiveBorder;
+  edtEndRangeEndMonth->Enabled = bMonths;
+  edtEndRangeEndMonth->Color = edtEndRangeEndMonth->Enabled ? clWindow : clInactiveBorder;
+  if (!edtEndRangeEndMonth->Enabled && bEnable) edtEndRangeEndMonth->Text = 12;
+  edtEndRangeEndDay->Enabled = bDays;
+  edtEndRangeEndDay->Color = edtEndRangeEndDay->Enabled ? clWindow : clInactiveBorder;
+  if (!edtEndRangeEndDay->Enabled && bEnable) edtEndRangeEndDay->Text = DaysThisMonth(atoi(edtEndRangeEndYear->Text.c_str()), atoi(edtEndRangeEndMonth->Text.c_str()));
+  //enable date contained in prospective surveillance group
+  EnableProspectiveStartDate();
+}
+
 /** enables input tab case/control/pop files edit boxes */
 void TfrmAdvancedParameters::EnableInputFileEdits(bool bEnable) {
    edtCaseFileName->Enabled = bEnable;
@@ -537,7 +656,7 @@ void TfrmAdvancedParameters::EnableInputFileEdits(bool bEnable) {
 //---------------------------------------------------------------------------
 //** enables or disables the New button on the Input tab
 void TfrmAdvancedParameters::EnableNewButton() {
-  btnNewStream->Enabled = (lstInputStreams->Items->Count < MAX_STREAMS) ? true: false;
+  btnNewStream->Enabled = (lstInputStreams->Items->Count < MAXIMUM_STREAMS) ? true: false;
 }
 //---------------------------------------------------------------------------
 /** enables adjustment options controls */
@@ -546,26 +665,42 @@ void TfrmAdvancedParameters::EnableOutputOptions(bool bEnable) {
 }
 //---------------------------------------------------------------------------
 /** enabled prospective start date controls */
-void TfrmAdvancedParameters::EnableProspectiveStartDate(bool bEnable) {
-  //trump enabling based upon earlier analyses adjustment and precision of time controls
-  bEnable = bEnable && chkAdjustForEarlierAnalyses->Checked && gAnalysisSettings.GetPrecisionOfTimesControlType() != NONE;
-  edtProspectiveStartDateYear->Enabled = bEnable;
-  lblProspectiveStartDate->Enabled = bEnable;
-  lblProspectiveStartYear->Enabled = bEnable;
-  lblProspectiveStartMonth->Enabled = bEnable;
-  lblProspectiveStartDay->Enabled = bEnable;
-  edtProspectiveStartDateYear->Color =  edtProspectiveStartDateYear->Enabled ? clWindow : clInactiveBorder;
-  edtProspectiveStartDateMonth->Enabled = bEnable && (gAnalysisSettings.rdoUnitDay->Checked || gAnalysisSettings.rdoUnitMonths->Checked);
-  edtProspectiveStartDateMonth->Color = edtProspectiveStartDateMonth->Enabled ? clWindow : clInactiveBorder;
-  edtProspectiveStartDateDay->Enabled = bEnable &&  gAnalysisSettings.rdoUnitDay->Checked;
-  edtProspectiveStartDateDay->Color =  edtProspectiveStartDateDay->Enabled ? clWindow : clInactiveBorder;
+void TfrmAdvancedParameters::EnableProspectiveStartDate() {
+  bool bYears, bMonths, bDays,
+       bEnable = gbxProspectiveSurveillance->Enabled &&
+                 chkAdjustForEarlierAnalyses->Enabled &&
+                 chkAdjustForEarlierAnalyses->Checked;
+
+  switch (gAnalysisSettings.GetPrecisionOfTimesControlType()) {
+    case NONE  :
+    case DAY   : bYears = bMonths = bDays = bEnable; break;
+    case YEAR  : bYears = bEnable; bMonths = bDays = false; break;
+    case MONTH : bYears = bMonths = bEnable; bDays = false; break;
+    default    :
+    ZdGenerateException("Time precision type unknown '%d'.","EnableProspectiveStartDate()",
+                        gAnalysisSettings.GetPrecisionOfTimesControlType());
+  };
+
+  lblProspectiveStartYear->Enabled = bYears;
+  edtProspectiveStartDateYear->Enabled = bYears;
+  edtProspectiveStartDateYear->Color = bYears ? clWindow : clInactiveBorder;
+  lblProspectiveStartMonth->Enabled = bMonths;
+  edtProspectiveStartDateMonth->Enabled = bMonths;
+  edtProspectiveStartDateMonth->Color = bMonths ? clWindow : clInactiveBorder;
+  if (!bMonths && bEnable)
+    edtProspectiveStartDateMonth->Text = gAnalysisSettings.edtStudyPeriodEndDateMonth->Text;
+  lblProspectiveStartDay->Enabled = bDays;
+  edtProspectiveStartDateDay->Enabled = bDays;
+  edtProspectiveStartDateDay->Color =  bDays ? clWindow : clInactiveBorder;
+  if (!bDays && bEnable)
+    edtProspectiveStartDateDay->Text = DaysThisMonth(StrToInt(edtProspectiveStartDateYear->Text), StrToInt(edtProspectiveStartDateMonth->Text));
 }
 //---------------------------------------------------------------------------
 /** enables or disables the prospective start date group control */
 void TfrmAdvancedParameters::EnableProspectiveSurveillanceGroup(bool bEnable) {
    gbxProspectiveSurveillance->Enabled = bEnable;
    chkAdjustForEarlierAnalyses->Enabled = bEnable;
-   EnableProspectiveStartDate(bEnable);
+   EnableProspectiveStartDate();
 }
 //---------------------------------------------------------------------------
 //** enables or disables the New button on the Input tab
@@ -614,45 +749,15 @@ void TfrmAdvancedParameters::EnableSpatialOutputOptions(bool bEnable) {
 //---------------------------------------------------------------------------
 /** enables temporal options controls */
 void TfrmAdvancedParameters::EnableTemporalRanges(bool bEnable, bool bEnableRanges) {
+  grpFlexibleTemporalWindowDefinition->Enabled = bEnable && bEnableRanges;
   chkRestrictTemporalRange->Enabled = bEnable && bEnableRanges;
-  stStartWindowRange->Enabled = bEnable && bEnableRanges;
-  stStartRangeTo->Enabled = bEnable && bEnableRanges;
-  edtStartRangeStartYear->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeYears;
-  edtStartRangeStartYear->Color = edtStartRangeStartYear->Enabled ? clWindow : clInactiveBorder;
-  edtStartRangeStartMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeMonths;
-  edtStartRangeStartMonth->Color = edtStartRangeStartMonth->Enabled ? clWindow : clInactiveBorder;
-  if (!edtStartRangeStartMonth->Enabled) edtStartRangeStartMonth->Text = 1; 
-  edtStartRangeStartDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeDays;
-  edtStartRangeStartDay->Color = edtStartRangeStartDay->Enabled ? clWindow : clInactiveBorder;
-  if (!edtStartRangeStartDay->Enabled) edtStartRangeStartDay->Text = 1; 
-  edtStartRangeEndYear->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeYears;
-  edtStartRangeEndYear->Color = edtStartRangeEndYear->Enabled ? clWindow : clInactiveBorder;
-  edtStartRangeEndMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeMonths;
-  edtStartRangeEndMonth->Color = edtStartRangeEndMonth->Enabled ? clWindow : clInactiveBorder;
-  if (!edtStartRangeEndMonth->Enabled) edtStartRangeEndMonth->Text = 12;
-  edtStartRangeEndDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeDays;
-  edtStartRangeEndDay->Color = edtStartRangeEndDay->Enabled ? clWindow : clInactiveBorder;
-  if (!edtStartRangeEndDay->Enabled) edtStartRangeEndDay->Text = DaysThisMonth(atoi(edtStartRangeEndYear->Text.c_str()), atoi(edtStartRangeEndMonth->Text.c_str())); 
 
+  stStartWindowRange->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Enabled;
+  stStartRangeTo->Enabled = bEnable && bEnableRanges;
   stEndWindowRange->Enabled = bEnable && bEnableRanges;
   stEndRangeTo->Enabled = bEnable && bEnableRanges;
-  edtEndRangeStartYear->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeYears;
-  edtEndRangeStartYear->Color = edtEndRangeStartYear->Enabled ? clWindow : clInactiveBorder;
-  edtEndRangeStartMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeMonths;
-  edtEndRangeStartMonth->Color = edtEndRangeStartMonth->Enabled ? clWindow : clInactiveBorder;
-  if (!edtEndRangeStartMonth->Enabled) edtEndRangeStartMonth->Text = 1;
-  edtEndRangeStartDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeDays;
-  edtEndRangeStartDay->Color = edtEndRangeStartDay->Enabled ? clWindow : clInactiveBorder;
-  if (!edtEndRangeStartDay->Enabled) edtEndRangeStartDay->Text = 1;
-  edtEndRangeEndYear->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeYears;
-  edtEndRangeEndYear->Color = edtEndRangeEndYear->Enabled ? clWindow : clInactiveBorder;
-  edtEndRangeEndMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeMonths;
-  edtEndRangeEndMonth->Color = edtEndRangeEndMonth->Enabled ? clWindow : clInactiveBorder;
-  if (!edtEndRangeEndMonth->Enabled) edtEndRangeEndMonth->Text = 12;
-  edtEndRangeEndDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeDays;
-  edtEndRangeEndDay->Color = edtEndRangeEndDay->Enabled ? clWindow : clInactiveBorder;
-  if (!edtEndRangeEndDay->Enabled) edtEndRangeEndDay->Text = DaysThisMonth(atoi(edtEndRangeEndYear->Text.c_str()), atoi(edtEndRangeEndMonth->Text.c_str()));
 }
+
 /** enables or disables the temporal options group control */
 void TfrmAdvancedParameters::EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges) {
   rdgTemporalOptions->Enabled = bEnable;
@@ -979,15 +1084,9 @@ void __fastcall TfrmAdvancedParameters::rdoMaxSpatialTypeClick(TObject *Sender) 
   DoControlExit();
 }
 //---------------------------------------------------------------------------
-/** */
-void TfrmAdvancedParameters::RefreshTemporalRangesEnables() {
-  AnalysisType  eType = gAnalysisSettings.GetAnalysisControlType();
-  EnableTemporalRanges(rdgTemporalOptions->Enabled, eType == PURELYTEMPORAL || eType == SPACETIME);
-}
-//---------------------------------------------------------------------------
 /** parameter settings to parameters class */
 void TfrmAdvancedParameters::SaveParameterSettings() {
-  CParameters & ref = gAnalysisSettings.gParameters;
+  CParameters&  ref = const_cast<CParameters&>(gAnalysisSettings.gParameters);
   ZdString      sString;
 
   try {
@@ -1038,6 +1137,7 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
     throw;
   }
 }
+
 //---------------------------------------------------------------------------
 /** Sets default values for Analysis related tabs and their respective controls
     PAG:  pulled these default values from the CParameter class */
@@ -1178,14 +1278,6 @@ void TfrmAdvancedParameters::SetMaxTemporalClusterSizeTypeControl(TemporalSizeTy
     default             : rdoPercentageTemporal->Checked = true;
   }
 }
-//---------------------------------------------------------------------------
-/** */
-void TfrmAdvancedParameters::SetRangeDateEnables(bool bYear, bool bMonth, bool bDay) {
-  gbEnableRangeYears = bYear;
-  gbEnableRangeMonths = bMonth;
-  gbEnableRangeDays = bDay;
-  RefreshTemporalRangesEnables();
-}
 
 /** sets static label that describes what the reporting clusters will be limited as */
 void TfrmAdvancedParameters::SetReportingClustersText(const ZdString& sText) {
@@ -1199,16 +1291,16 @@ void TfrmAdvancedParameters::SetReportingSmallerClustersText() {
 
   switch (GetMaxSpatialClusterSizeControlType()) {
     case PERCENTOFPOPULATIONTYPE     :
-      sTemp.printf("percent of population at risk\n        (<= %s%%)", edtMaxSpatialClusterSize->Text.c_str());
+      sTemp.printf("percent of population at risk (<= %s%%)", edtMaxSpatialClusterSize->Text.c_str());
       break;
     case PERCENTOFPOPULATIONFILETYPE :
-      sTemp.printf("percent of population at risk\n        (<= %s%%)", edtMaxSpatialPercentFile->Text.c_str());
+      sTemp.printf("percent of population at risk (<= %s%%)", edtMaxSpatialPercentFile->Text.c_str());
       break;
     case DISTANCETYPE:
       if (gAnalysisSettings.rgpCoordinates->ItemIndex == CARTESIAN)
-        sTemp.printf("Cartesian units in radius\n        (<= %s)", edtMaxSpatialRadius->Text.c_str());
+        sTemp.printf("Cartesian units in radius (<= %s)", edtMaxSpatialRadius->Text.c_str());
       else
-        sTemp.printf("kilometers in radius\n        (<= %s)", edtMaxSpatialRadius->Text.c_str());
+        sTemp.printf("kilometers in radius (<= %s)", edtMaxSpatialRadius->Text.c_str());
   }
 
   SetReportingClustersText(sTemp);

@@ -173,7 +173,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        EnableAdditionalOutFilesOptionsGroup(bool bRelativeRisks);
     void                        EnableAdvancedButtons();
     void                        EnableAnalysisControlForModelType();
-    void                        EnableDatesByTimeIntervalUnits();
+    void                        EnableDatesByTimePrecisionUnits();
     void                        EnableModelControlForAnalysisType();
     void                        EnableSettingsForAnalysisModelCombination();
     void                        EnableStudyPeriodDates(bool bYear, bool bMonth, bool bDay);
@@ -182,8 +182,8 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     AreaRateType                GetAreaScanRateControlType() const;
     ProbabiltyModelType         GetModelControlType() const;
     DatePrecisionType           GetPrecisionOfTimesControlType() const;
-    ZdDate                    & GetStudyPeriodEndDate(ZdDate & Date);
-    ZdDate                    & GetStudyPeriodStartDate(ZdDate & Date);
+    ZdDate                    & GetStudyPeriodEndDate(ZdDate& Date) const;
+    ZdDate                    & GetStudyPeriodStartDate(ZdDate& Date) const;
     DatePrecisionType           GetTimeIntervalControlType() const;
     void                        Init();
     bool                        IsValidReplicationRequest(int iReplications);
@@ -216,11 +216,14 @@ public:		// User declarations
     void                        SetControlFile(const char * sControlFileName);
     void                        SetCoordinateFile(const char * sCoordinateFileName);
     void                        SetCoordinateType(CoordinatesType eCoordinatesType);
+    void                        SetDayEditText(TEdit& Day, bool bEnablingDay, int iDayText);
     void                        SetMaximumCirclePopulationFile(const char * sMaximumCirclePopulationFileName);
+    void                        SetMonthEditText(TEdit& Month, bool bEnablingMonth, int iMonthText);
     void                        SetPopulationFile(const char * sPopulationFileName);
     void                        SetPrecisionOfTimesControl(DatePrecisionType eDatePrecisionType);
     void                        SetSpecialGridFile(const char * sSpecialGridFileName);
     void                        ShowAdvancedFeaturesDialog();
+    static void                 StoreEditText(TEdit& Month, TEdit& Day);
     static void                 ValidateDate(TEdit& YearControl, TEdit& MonthControl, TEdit& DayControl);
     bool                        ValidateParams();
     void                        WriteSession(const char * sParameterFilename=0);

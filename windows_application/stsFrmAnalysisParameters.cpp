@@ -521,12 +521,16 @@ void __fastcall TfrmAnalysis::edtResultFileChange(TObject *Sender){
 /** event triggered when year control, of study period end date, is exited. */
 void __fastcall TfrmAnalysis::edtStudyPeriodEndDateExit(TObject *Sender) {
   ValidateDate(*edtStudyPeriodEndDateYear, *edtStudyPeriodEndDateMonth, *edtStudyPeriodEndDateDay);
+  //store value in control's Tag property
+  StoreEditText(*edtStudyPeriodEndDateMonth, *edtStudyPeriodEndDateDay);
 }
 
 //---------------------------------------------------------------------------
 /** event triggered when year control, of study period start date, is exited. */
 void __fastcall TfrmAnalysis::edtStudyPeriodStartDateExit(TObject *Sender) {
   ValidateDate(*edtStudyPeriodStartDateYear, *edtStudyPeriodStartDateMonth, *edtStudyPeriodStartDateDay);
+  //store value in control's Tag property
+  StoreEditText(*edtStudyPeriodStartDateMonth, *edtStudyPeriodStartDateDay);
 }
 
 //---------------------------------------------------------------------------
@@ -610,32 +614,18 @@ void TfrmAnalysis::EnableAnalysisControlForModelType() {
 
 //---------------------------------------------------------------------------
 /** enabled study period and prospective date precision based on time interval unit */
-void TfrmAnalysis::EnableDatesByTimeIntervalUnits() {
-  AnalysisType eAnalysisType(GetAnalysisControlType());
-
-  if (eAnalysisType == PURELYSPATIAL) {
-    EnableStudyPeriodDates(true, true, true);
-    gpfrmAdvancedParameters->SetRangeDateEnables(true, true, true);
-  }
-  else if (rdoUnitYear->Checked) {
-    EnableStudyPeriodDates(true, false, false);
-    gpfrmAdvancedParameters->edtProspectiveStartDateMonth->Text = edtStudyPeriodEndDateMonth->Text;
-    gpfrmAdvancedParameters->edtProspectiveStartDateDay->Text = edtStudyPeriodEndDateDay->Text;
-    gpfrmAdvancedParameters->SetRangeDateEnables(true, false, false);
-  }
-  else if (rdoUnitMonths->Checked) {
-    EnableStudyPeriodDates(true, true, false);
-    gpfrmAdvancedParameters->edtProspectiveStartDateDay->Text = DaysThisMonth(atoi(gpfrmAdvancedParameters->edtProspectiveStartDateYear->Text.c_str()), atoi(gpfrmAdvancedParameters->edtProspectiveStartDateMonth->Text.c_str()));
-    gpfrmAdvancedParameters->SetRangeDateEnables(true, true, false);
-  }
-  else if (rdoUnitDay->Checked) {
-    EnableStudyPeriodDates(true, true, true);
-    gpfrmAdvancedParameters->SetRangeDateEnables(true, true, true);
-  }
-  else
-    ZdGenerateException("Time interval units not set.","EnableDatesByTimeIntervalUnits()");
-
-  gpfrmAdvancedParameters->EnableProspectiveSurveillanceGroup(eAnalysisType == PROSPECTIVEPURELYTEMPORAL || eAnalysisType == PROSPECTIVESPACETIME);
+void TfrmAnalysis::EnableDatesByTimePrecisionUnits() {
+  switch (GetPrecisionOfTimesControlType()) {
+    case NONE   :
+    case DAY    : EnableStudyPeriodDates(true, true, true); break;
+    case YEAR   : EnableStudyPeriodDates(true, false, false);
+                  break;
+    case MONTH  : EnableStudyPeriodDates(true, true, false);
+                  break;
+    default     :
+      ZdGenerateException("Time precion type unknown '%d'.","EnableDatesByTimePrecisionUnits()", GetPrecisionOfTimesControlType());
+  };
+  gpfrmAdvancedParameters->EnableDatesByTimePrecisionUnits();
 }
 
 //---------------------------------------------------------------------------
@@ -662,106 +652,67 @@ void TfrmAnalysis::EnableModelControlForAnalysisType() {
 }
 //---------------------------------------------------------------------------
 void TfrmAnalysis::EnableSettingsForAnalysisModelCombination() {
-  bool  bPoisson(GetModelControlType() == POISSON),
-        bSpaceTimePermutation(GetModelControlType() == SPACETIMEPERMUTATION);
-
   try {
-
-    switch (GetAnalysisControlType()) {
-      case PURELYSPATIAL             :
-        gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
-        gpfrmAdvancedParameters->EnableAdjustmentForSpatialOptionsGroup(false);
-        gpfrmAdvancedParameters->EnableSpatialOptionsGroup(true, false, true);
-        EnableTimeIntervalUnitsGroup(false);
-        gpfrmAdvancedParameters->EnableTemporalOptionsGroup(false, false, false);
-        gpfrmAdvancedParameters->EnableOutputOptions(true);
-        break;
-      case PURELYTEMPORAL            :
-        gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
-        gpfrmAdvancedParameters->EnableAdjustmentForSpatialOptionsGroup(false);
-        gpfrmAdvancedParameters->EnableSpatialOptionsGroup(false, false, false);
-        EnableTimeIntervalUnitsGroup(true);
-        gpfrmAdvancedParameters->EnableTemporalOptionsGroup(true, false, true);
-        gpfrmAdvancedParameters->EnableOutputOptions(false);
-        break;
-      case SPACETIME                 :
-        gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
-        gpfrmAdvancedParameters->EnableAdjustmentForSpatialOptionsGroup(bPoisson);
-        gpfrmAdvancedParameters->EnableSpatialOptionsGroup(true, !bSpaceTimePermutation, true);
-        EnableTimeIntervalUnitsGroup(true);
-        gpfrmAdvancedParameters->EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
-        gpfrmAdvancedParameters->EnableOutputOptions(true);
-        break;
-      case PROSPECTIVESPACETIME      :
-        gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
-        gpfrmAdvancedParameters->EnableAdjustmentForSpatialOptionsGroup(bPoisson);
-        gpfrmAdvancedParameters->EnableSpatialOptionsGroup(true, !bSpaceTimePermutation, !gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked);
-        EnableTimeIntervalUnitsGroup(true);
-        gpfrmAdvancedParameters->EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
-        gpfrmAdvancedParameters->EnableOutputOptions(true);
-        break;
-      case PROSPECTIVEPURELYTEMPORAL :
-        gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
-        gpfrmAdvancedParameters->EnableAdjustmentForSpatialOptionsGroup(false);
-        gpfrmAdvancedParameters->EnableSpatialOptionsGroup(false, false, false);
-        EnableTimeIntervalUnitsGroup(true);
-        gpfrmAdvancedParameters->EnableTemporalOptionsGroup(true, false, false);
-        gpfrmAdvancedParameters->EnableOutputOptions(false);
-        break;
-      default : ZdGenerateException("Unknown analysis type '%d'.", "OnAnalysisTypeClick()", GetAnalysisControlType());
-    }
-    EnableAdditionalOutFilesOptionsGroup(!bSpaceTimePermutation);
-    gpfrmAdvancedParameters->EnableAdjustmentsGroup(bPoisson);
+    EnableDatesByTimePrecisionUnits();
+    EnableTimeIntervalUnitsGroup(GetAnalysisControlType() != PURELYSPATIAL);
+    EnableAdditionalOutFilesOptionsGroup(GetModelControlType() != SPACETIMEPERMUTATION);
+    gpfrmAdvancedParameters->EnableSettingsForAnalysisModelCombination();
   }
   catch (ZdException &x) {
     x.AddCallpath("EnableSettingsForAnalysisModelCombination()","TfrmAnalysis");
     throw;
   }
 }
-
 //---------------------------------------------------------------------------
 /** enables or disables the study period group controls */
 void TfrmAnalysis::EnableStudyPeriodDates(bool bYear, bool bMonth, bool bDay) {
+   //enable study period year controls
    edtStudyPeriodStartDateYear->Enabled = bYear;
    edtStudyPeriodStartDateYear->Color = bYear ? clWindow : clInactiveBorder;
    edtStudyPeriodEndDateYear->Enabled = bYear;
    edtStudyPeriodEndDateYear->Color = bYear ? clWindow : clInactiveBorder;
-
+   //store values and restore values or set as default values
+   SetMonthEditText(*edtStudyPeriodStartDateMonth, bMonth, 1);
+   SetDayEditText(*edtStudyPeriodStartDateDay, bDay, 1);
+   SetMonthEditText(*edtStudyPeriodEndDateMonth, bMonth, 12);
+   SetDayEditText(*edtStudyPeriodEndDateDay, bDay, DaysThisMonth(StrToInt(edtStudyPeriodEndDateYear->Text),
+                                                                 StrToInt(edtStudyPeriodEndDateMonth->Text)));
+   //enable study period month controls
    edtStudyPeriodStartDateMonth->Enabled = bMonth;
    edtStudyPeriodStartDateMonth->Color = bMonth ? clWindow : clInactiveBorder;
-   if (!bMonth)
-      edtStudyPeriodStartDateMonth->Text= "1";
    edtStudyPeriodEndDateMonth->Enabled = bMonth;
    edtStudyPeriodEndDateMonth->Color = bMonth ? clWindow : clInactiveBorder;
-   if (!bMonth)
-      edtStudyPeriodEndDateMonth->Text = "12";
-
+   //enable study period day controls
    edtStudyPeriodStartDateDay->Enabled = bDay;
    edtStudyPeriodStartDateDay->Color = bDay ? clWindow : clInactiveBorder;
-   if (!bDay)
-      edtStudyPeriodStartDateDay->Text = "1";
    edtStudyPeriodEndDateDay->Enabled = bDay;
    edtStudyPeriodEndDateDay->Color = bDay ? clWindow : clInactiveBorder;
-   if (!bDay)
-      edtStudyPeriodEndDateDay->Text = DaysThisMonth(atoi(edtStudyPeriodEndDateYear->Text.c_str()), atoi(edtStudyPeriodEndDateMonth->Text.c_str()));
 }
-
 
 //---------------------------------------------------------------------------
 /** enables or disables the time interval group control */
 void TfrmAnalysis::EnableTimeIntervalUnitsGroup(bool bEnable) {
-   //trump enable if precision of times control indicates that there is no dates
-   bEnable = bEnable && GetPrecisionOfTimesControlType() != NONE;
-   rgpTimeIntervalUnits->Enabled = bEnable;
-   lblTimeIntervalUnits->Enabled = bEnable;
-   edtTimeIntervalLength->Enabled = bEnable;
-   edtTimeIntervalLength->Color = bEnable ? clWindow : clInactiveBorder;
-   lblTimeIntervalLength->Enabled = bEnable;
-   rdoUnitYear->Enabled =  bEnable;
-   rdoUnitMonths->Enabled = bEnable;
-   rdoUnitDay->Enabled = bEnable;
-   stUnitText->Enabled = bEnable;
-   EnableDatesByTimeIntervalUnits();
+   DatePrecisionType ePrecisionType = GetPrecisionOfTimesControlType();
+
+   rgpTimeIntervalUnits->Enabled = bEnable && ePrecisionType != NONE;
+   lblTimeIntervalUnits->Enabled =  bEnable && ePrecisionType != NONE;
+
+   edtTimeIntervalLength->Enabled = bEnable && ePrecisionType != NONE;
+   edtTimeIntervalLength->Color = edtTimeIntervalLength->Enabled ? clWindow : clInactiveBorder;
+   lblTimeIntervalLength->Enabled = edtTimeIntervalLength->Enabled;
+   stUnitText->Enabled = edtTimeIntervalLength->Enabled;
+   
+   rdoUnitYear->Enabled =  bEnable && ePrecisionType != NONE;
+   rdoUnitMonths->Enabled = bEnable && ePrecisionType != NONE && ePrecisionType != YEAR;
+   if (rgpTimeIntervalUnits->Enabled && rdoUnitMonths->Checked && !rdoUnitMonths->Enabled)
+     rdoUnitYear->Checked = true;
+   rdoUnitDay->Enabled = bEnable && ePrecisionType == DAY;
+   if (rgpTimeIntervalUnits->Enabled && rdoUnitDay->Checked && !rdoUnitDay->Enabled) {
+     if (rdoUnitMonths->Enabled)
+       rdoUnitMonths->Checked = true;
+     else
+       rdoUnitYear->Checked = true;
+   }
 }
 
 //---------------------------------------------------------------------------
@@ -859,8 +810,10 @@ DatePrecisionType TfrmAnalysis::GetPrecisionOfTimesControlType() const {
   DatePrecisionType eReturn;
 
   switch (rgpPrecisionTimes->ItemIndex) {
-    case 0  : eReturn = DAY; break;
-    case 1  : eReturn = NONE; break;
+    case 0  : eReturn = NONE; break;
+    case 1  : eReturn = YEAR; break;
+    case 2  : eReturn = MONTH; break;
+    case 3  : eReturn = DAY; break;
     default : ZdGenerateException("Unknown index type '%d'.", "GetPrecisionOfTimesControlType()", rgpPrecisionTimes->ItemIndex);
   };
   return eReturn;
@@ -881,7 +834,7 @@ CParameters * TfrmAnalysis::GetSession() {
 
 //---------------------------------------------------------------------------
 /** Sets passed ZdDate to study period end date as defined by TEditBoxes.*/
-ZdDate & TfrmAnalysis::GetStudyPeriodEndDate(ZdDate & Date) {
+ZdDate& TfrmAnalysis::GetStudyPeriodEndDate(ZdDate& Date) const {
   try {
     Date.SetYear(static_cast<unsigned short>(atoi(edtStudyPeriodEndDateYear->Text.c_str())));
     Date.SetMonth(static_cast<unsigned short>(atoi(edtStudyPeriodEndDateMonth->Text.c_str())));
@@ -896,7 +849,7 @@ ZdDate & TfrmAnalysis::GetStudyPeriodEndDate(ZdDate & Date) {
 
 //---------------------------------------------------------------------------
 /** Sets passed ZdDate to study period start date as defined by TEditBoxes.*/
-ZdDate & TfrmAnalysis::GetStudyPeriodStartDate(ZdDate & Date) {
+ZdDate & TfrmAnalysis::GetStudyPeriodStartDate(ZdDate& Date) const {
   try {
     Date.SetYear(static_cast<unsigned short>(atoi(edtStudyPeriodStartDateYear->Text.c_str())));
     Date.SetMonth(static_cast<unsigned short>(atoi(edtStudyPeriodStartDateMonth->Text.c_str())));
@@ -908,7 +861,6 @@ ZdDate & TfrmAnalysis::GetStudyPeriodStartDate(ZdDate & Date) {
   }
   return Date;
 }
-
 //---------------------------------------------------------------------------
 /** return precision type for time intervals */
 DatePrecisionType TfrmAnalysis::GetTimeIntervalControlType() const {
@@ -922,20 +874,16 @@ DatePrecisionType TfrmAnalysis::GetTimeIntervalControlType() const {
     eReturn = DAY;
   return eReturn;
 }
-
 //---------------------------------------------------------------------------
 /** class initialization */
 void TfrmAnalysis::Init() {
-  rgpPrecisionTimes->ItemIndex = -1; //ensures that click event will trigger
   gpfrmAdvancedParameters = 0;
 }
-
 //---------------------------------------------------------------------------
 /** returns whether replications are correct */
 bool TfrmAnalysis::IsValidReplicationRequest(int iReplications) {
   return  (iReplications == 0 || iReplications == 9 || iReplications == 19 || fmod(iReplications+1, 1000) == 0.0);
 }
-
 //---------------------------------------------------------------------------
 /** Modally shows import dialog. */
 void TfrmAnalysis::LaunchImporter(const char * sFileName, InputFileType eFileType) {
@@ -1002,16 +950,17 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
     rdoProspectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
     rdoProspectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
 
-   // switch analysis type to purely spatial if no dates in input data
-   if (eDatePrecisionType == NONE && GetAnalysisControlType() != PURELYSPATIAL)
-     SetAnalysisControl(PURELYSPATIAL);
+    // switch analysis type to purely spatial if no dates in input data
+    if (eDatePrecisionType == NONE && GetAnalysisControlType() != PURELYSPATIAL)
+      SetAnalysisControl(PURELYSPATIAL);
+    EnableTimeIntervalUnitsGroup(GetAnalysisControlType() != PURELYSPATIAL);
+    EnableDatesByTimePrecisionUnits();
   }
   catch(ZdException &x) {
     x.AddCallpath("OnPrecisionTimesClick()","TfrmAnalysis");
     throw;
   }
 }
-
 //---------------------------------------------------------------------------
 /** method called in response to 'probability model' radio group click event */
 void TfrmAnalysis::OnProbabilityModelClick() {
@@ -1075,6 +1024,10 @@ void TfrmAnalysis::ParseDate(const char * szDate, TEdit *pYear, TEdit *pMonth, T
                break;
     };
   }
+  //store intial value in control's Tag property
+  pYear->Tag = StrToInt(pYear->Text);
+  pMonth->Tag = StrToInt(pMonth->Text);
+  pDay->Tag = StrToInt(pDay->Text);
 }
 
 //---------------------------------------------------------------------------
@@ -1094,7 +1047,6 @@ void __fastcall TfrmAnalysis::PositiveFloatKeyPress(TObject *Sender, char &Key) 
 void __fastcall TfrmAnalysis::rdoUnitDayClick(TObject *Sender) {
   gpfrmAdvancedParameters->lblMaxTemporalTimeUnits->Caption = "days";
   stUnitText->Caption = "Days";
-  EnableDatesByTimeIntervalUnits();
 }
 
 //---------------------------------------------------------------------------
@@ -1102,7 +1054,6 @@ void __fastcall TfrmAnalysis::rdoUnitDayClick(TObject *Sender) {
 void __fastcall TfrmAnalysis::rdoUnitMonthsClick(TObject *Sender) {
   gpfrmAdvancedParameters->lblMaxTemporalTimeUnits->Caption = "months";
   stUnitText->Caption = "Months";
-  EnableDatesByTimeIntervalUnits();
 }
 
 //---------------------------------------------------------------------------
@@ -1110,7 +1061,6 @@ void __fastcall TfrmAnalysis::rdoUnitMonthsClick(TObject *Sender) {
 void __fastcall TfrmAnalysis::rdoUnitYearClick(TObject *Sender) {
     gpfrmAdvancedParameters->lblMaxTemporalTimeUnits->Caption = "years";
     stUnitText->Caption = "Years";
-    EnableDatesByTimeIntervalUnits();
 }
 //---------------------------------------------------------------------------
 /** event triggered when 'analysis' type control clicked */
@@ -1214,8 +1164,12 @@ void TfrmAnalysis::SaveParameterSettings() {
     gParameters.SetTimeIntervalUnitsType(GetTimeIntervalControlType());
     gParameters.SetTimeIntervalLength(atoi(edtTimeIntervalLength->Text.c_str()));
     gParameters.SetAdjustForEarlierAnalyses(gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked);
-    sString.printf("%i/%i/%i", atoi(gpfrmAdvancedParameters->edtProspectiveStartDateYear->Text.c_str()),
-                   atoi(gpfrmAdvancedParameters->edtProspectiveStartDateMonth->Text.c_str()), atoi(gpfrmAdvancedParameters->edtProspectiveStartDateDay->Text.c_str()));
+    if (gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked)
+      sString.printf("%i/%i/%i", atoi(gpfrmAdvancedParameters->edtProspectiveStartDateYear->Text.c_str()),
+                     atoi(gpfrmAdvancedParameters->edtProspectiveStartDateMonth->Text.c_str()), atoi(gpfrmAdvancedParameters->edtProspectiveStartDateDay->Text.c_str()));
+    else
+      sString.printf("%i/%i/%i", atoi(edtStudyPeriodEndDateYear->Text.c_str()),
+                     atoi(edtStudyPeriodEndDateMonth->Text.c_str()), atoi(edtStudyPeriodEndDateDay->Text.c_str()));
     gParameters.SetProspectiveStartDate(sString.GetCString());
     //Output File Tab
     gParameters.SetOutputFileName(edtResultFile->Text.c_str());
@@ -1291,6 +1245,19 @@ void TfrmAnalysis::SetCoordinateType(CoordinatesType eCoordinatesType) {
   rgpCoordinates->ItemIndex = eCoordinatesType;
 }
 
+/** Method that helps store/restore specified values and set default value in
+    conjunction with enabling/disabling study period dates. */
+void TfrmAnalysis::SetDayEditText(TEdit& Day, bool bEnablingDay, int iDayText) {
+  try {
+    if (Day.Enabled && !bEnablingDay) {
+      Day.Tag = StrToInt(Day.Text);
+      Day.Text = iDayText;
+    }
+    if (!Day.Enabled && bEnablingDay)
+      Day.Text = Day.Tag;
+  }
+  catch (EConvertError& e){}
+}
 //---------------------------------------------------------------------------
 /** Sets special population filename in interface */
 void TfrmAnalysis::SetMaximumCirclePopulationFile(const char * sMaximumCirclePopulationFileName) {
@@ -1309,6 +1276,20 @@ void TfrmAnalysis::SetModelControl(ProbabiltyModelType eProbabiltyModelType) {
   EnableAnalysisControlForModelType();
 }
 
+/** Method that helps store/restore specified values and set default value in
+    conjunction with enabling/disabling study period dates. */
+void TfrmAnalysis::SetMonthEditText(TEdit& Month, bool bEnablingMonth, int iMonthText) {
+  try {
+    if (Month.Enabled && !bEnablingMonth) {
+      Month.Tag = StrToInt(Month.Text);
+      Month.Text = iMonthText;
+    }
+    if (!Month.Enabled && bEnablingMonth)
+      Month.Text = Month.Tag;
+  }
+  catch (EConvertError& e){}
+}
+
 //---------------------------------------------------------------------------
 /** Sets population filename in interface */
 void TfrmAnalysis::SetPopulationFile(const char * sPopulationFileName) {
@@ -1319,15 +1300,13 @@ void TfrmAnalysis::SetPopulationFile(const char * sPopulationFileName) {
 /** sets precision of times type control for DatePrecisionType */
 void TfrmAnalysis::SetPrecisionOfTimesControl(DatePrecisionType eDatePrecisionType) {
   switch (eDatePrecisionType) {
-    case NONE  : rgpPrecisionTimes->ItemIndex = 1; break;
-    case YEAR  :
-    case MONTH :
-    case DAY   :
+    case YEAR  : rgpPrecisionTimes->ItemIndex = 1; break;
+    case MONTH : rgpPrecisionTimes->ItemIndex = 2; break;
+    case DAY   : rgpPrecisionTimes->ItemIndex = 3; break;
+    case NONE  :
     default    : rgpPrecisionTimes->ItemIndex = 0;
   }
 }
-
-
 
 //---------------------------------------------------------------------------
 /** Sets special grid filename in interface */
@@ -1408,7 +1387,6 @@ void TfrmAnalysis::SetupInterface() {
     chkClustersInColumnFormatDBase->Checked = gParameters.GetOutputClusterLevelDBase();
     chkCensusAreasReportedClustersDBase->Checked = gParameters.GetOutputAreaSpecificDBase();
     EnableSettingsForAnalysisModelCombination();
-    // update the Advanced... buttons
     EnableAdvancedButtons();
   }
   catch (ZdException & x) {
@@ -1425,7 +1403,6 @@ void TfrmAnalysis::ShowAdvancedFeaturesDialog() {
 
    try {
      gpfrmAdvancedParameters->ShowDialog(0, PageControl1->ActivePageIndex+1);
-     // PAG - update Advanced buttons if parameters were set
      EnableAdvancedButtons();
    }
    catch (ZdException & x) {
@@ -1434,7 +1411,17 @@ void TfrmAnalysis::ShowAdvancedFeaturesDialog() {
    }
 }
 
-//---------------------------------------------------------------------------
+/** If controls are enabled, stores Text property of TEdit control in Tag property */
+void TfrmAnalysis::StoreEditText(TEdit& Month, TEdit& Day) {
+  try {
+    if (Month.Enabled)
+      Month.Tag = StrToInt(Month.Text);
+    if (Day.Enabled)
+      Day.Tag = StrToInt(Day.Text);
+  }
+  catch (EConvertError& e){}
+}
+
 /** validates date controls represented by three passed edit controls - prevents an invalid date */
 void TfrmAnalysis::ValidateDate(TEdit& YearControl, TEdit& MonthControl, TEdit& DayControl) {
   int   iDay, iMonth, iYear, iDaysInMonth;
@@ -1560,7 +1547,6 @@ bool TfrmAnalysis::ValidateParams() {
     bReturn = false;
     DisplayBasisException(this, x);
     gpfrmAdvancedParameters->ShowDialog(&x.GetFocusControl(), x.GetTabCategory());
-    // PAG - update Advanced buttons if parameters were changed to fix errors
     EnableAdvancedButtons();
   }
   catch (ZdException &x) {

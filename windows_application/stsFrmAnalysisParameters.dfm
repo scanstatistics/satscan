@@ -80,7 +80,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object Label2: TLabel
           Left = 8
-          Top = 54
+          Top = 58
           Width = 55
           Height = 13
           Caption = 'Control File:'
@@ -89,21 +89,23 @@ object frmAnalysis: TfrmAnalysis
         end
         object Label3: TLabel
           Left = 120
-          Top = 54
+          Top = 58
           Width = 78
           Height = 13
           Caption = '(Bernoulli Model)'
         end
         object rgpPrecisionTimes: TRadioGroup
-          Left = 373
-          Top = 20
-          Width = 100
-          Height = 70
-          Caption = 'Time Included'
+          Left = 354
+          Top = 14
+          Width = 122
+          Height = 81
+          Caption = 'Time Precision'
           ItemIndex = 0
           Items.Strings = (
-            'Yes'
-            'No')
+            'None'
+            'Year'
+            'Month'
+            'Day')
           TabOrder = 6
           OnClick = rgpPrecisionTimesClick
         end
@@ -119,7 +121,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtControlFileName: TEdit
           Left = 8
-          Top = 68
+          Top = 72
           Width = 284
           Height = 21
           ParentShowHint = False
@@ -147,7 +149,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object btnControlBrowse: TButton
           Left = 298
-          Top = 68
+          Top = 72
           Width = 23
           Height = 22
           Hint = 'Browse for control file ...'
@@ -165,8 +167,8 @@ object frmAnalysis: TfrmAnalysis
         end
         object grpStudyPeriod: TGroupBox
           Left = 8
-          Top = 96
-          Width = 465
+          Top = 102
+          Width = 468
           Height = 53
           Caption = 'Study Period'
           TabOrder = 7
@@ -364,7 +366,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object btnControlImport: TBitBtn
           Left = 326
-          Top = 68
+          Top = 72
           Width = 23
           Height = 22
           Hint = 'Import control file ...'
@@ -623,9 +625,9 @@ object frmAnalysis: TfrmAnalysis
       object Label16: TLabel
         Left = 52
         Top = 288
-        Width = 266
+        Width = 271
         Height = 13
-        Caption = 'Monte Carlo replications (9, 999, or value ending in 999):'
+        Caption = 'Monte Carlo Replications (9, 999, or value ending in 999):'
       end
       object edtMontCarloReps: TEdit
         Left = 332
@@ -884,7 +886,7 @@ object frmAnalysis: TfrmAnalysis
         Top = 59
         Width = 477
         Height = 153
-        Caption = 'Additional Optional Output Files:'
+        Caption = 'Optional Output Files:'
         TabOrder = 1
         object lblClustersInColumnFormat: TLabel
           Left = 16
@@ -903,9 +905,9 @@ object frmAnalysis: TfrmAnalysis
         object lblRelativeRiskEstimatesArea: TLabel
           Left = 16
           Top = 96
-          Width = 174
+          Width = 156
           Height = 13
-          Caption = 'Relative Estimates for Each Location'
+          Caption = 'Risk Estimates for Each Location'
         end
         object lblSimulatedLogLikelihoodRatios: TLabel
           Left = 16
@@ -1071,13 +1073,16 @@ object frmAnalysis: TfrmAnalysis
     end
   end
   object OpenDialog1: TOpenDialog
-    Left = 364
+    DefaultExt = '`'
+    Left = 48
+    Top = 344
   end
   object SaveDialog: TSaveDialog
-    DefaultExt = '*.prm'
+    DefaultExt = '`'
     Filter = 'Parameter Files (*.prm)|*.prm'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Title = 'Save Parameter File As'
-    Left = 392
+    Left = 12
+    Top = 344
   end
 end

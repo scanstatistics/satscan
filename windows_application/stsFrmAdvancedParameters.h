@@ -17,7 +17,6 @@
 const int INPUT_TABS     = 1;
 const int ANALYSIS_TABS  = 2;
 const int OUTPUT_TABS    = 3;
-const int MAX_STREAMS    = 3;      /*Maximum number of additional input streams*/
 
 class TfrmAdvancedParameters : public TForm {
 __published:	// IDE-managed Components
@@ -27,7 +26,7 @@ __published:	// IDE-managed Components
    TPageControl *PageControl;
    TTabSheet *tsAdjustments;
    TTabSheet *tsTemporal;
-   TGroupBox *grpScanningWindow;
+   TGroupBox *grpFlexibleTemporalWindowDefinition;
    TCheckBox *chkRestrictTemporalRange;
    TStaticText *stStartRangeTo;
    TEdit *edtStartRangeStartYear;
@@ -86,7 +85,6 @@ __published:	// IDE-managed Components
    TLabel *lblProspectiveStartYear;
    TLabel *lblProspectiveStartMonth;
    TLabel *lblProspectiveStartDay;
-   TLabel *lblProspectiveStartDate;
    TEdit *edtProspectiveStartDateYear;
    TEdit *edtProspectiveStartDateMonth;
    TEdit *edtProspectiveStartDateDay;
@@ -117,8 +115,8 @@ __published:	// IDE-managed Components
    TStaticText *lblMultipleStreamPurpose;
    TRadioButton *rdoMultivariate;
    TRadioButton *rdoAdjustmentByStreams;
-        TCheckBox *chkInclPureTempClust;
-        TCheckBox *chkIncludePureSpacClust;
+   TCheckBox *chkInclPureTempClust;
+   TCheckBox *chkIncludePureSpacClust;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
@@ -170,19 +168,16 @@ __published:	// IDE-managed Components
    void __fastcall edtPopFileNameChange(TObject *Sender);
 
  private:
-
-   TfrmAnalysis           & gAnalysisSettings;
+   const TfrmAnalysis     & gAnalysisSettings;
    TWinControl            * gpFocusControl;
-   int                      giCategory;          /** category - input,analysis,output - of parameters to show */
-   bool                     gbEnableRangeYears;  /** stores enable dictated by main interface */
-   bool                     gbEnableRangeMonths; /** stores enable dictated by main interface */
-   bool                     gbEnableRangeDays;   /** stores enable dictated by main interface */
-   bool                     gbEnableAdjustmentsByRR; /** stores enable dictated by main interface */
+   int                      giCategory;              /** category - input,analysis,output - of parameters to show */
    std::vector<AnsiString>  gvCaseFiles;
    std::vector<AnsiString>  gvControlFiles;
    std::vector<AnsiString>  gvPopFiles;
-   int                      giStreamNum;   /** number of additional input streams added*/
-                                           /** does not go down with removals */
+   int                      giStreamNum;             /** number of additional input streams added
+                                                         does not go down with removals */
+   static const int         MAXIMUM_STREAMS;         /* maximum number of additional input streams */
+
    void                     DoControlExit();
    void                     EnableDataStreamList(bool bEnable);
    void                     EnableDataStreamPurposeControls(bool bEnable);
@@ -193,7 +188,6 @@ __published:	// IDE-managed Components
    void                     Init();
    void                     LaunchImporter(const char * sFileName, InputFileType eFileType) ;
    void                     ParseDate(const std::string& sDate, TEdit& Year, TEdit& Month, TEdit& Day, bool bStartRange);
-   void                     RefreshTemporalRangesEnables();
    void                     SetDefaultsForAnalysisTabs();
    void                     SetDefaultsForInputTab();
    void                     SetDefaultsForOutputTab();
@@ -210,13 +204,15 @@ __published:	// IDE-managed Components
    void                     ValidateTemporalWindowSettings();
 
 public:
-   __fastcall TfrmAdvancedParameters(TfrmAnalysis & AnalysisSettings);
+   __fastcall TfrmAdvancedParameters(const TfrmAnalysis& AnalysisSettings);
 
    void                  EnableAdjustmentsGroup(bool bEnable);
    void                  EnableAdjustmentForSpatialOptionsGroup(bool bEnable);
    void                  EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage, bool bCalculatedLog);
+   void                  EnableSettingsForAnalysisModelCombination();
+   void                  EnableDatesByTimePrecisionUnits();
    void                  EnableOutputOptions(bool bEnable);
-   void                  EnableProspectiveStartDate(bool bEnable);
+   void                  EnableProspectiveStartDate();
    void                  EnableProspectiveSurveillanceGroup(bool bEnable);
    void                  EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal, bool bEnablePercentage);
    void                  EnableSpatialOutputOptions(bool bEnable);
@@ -235,7 +231,6 @@ public:
    void                  SetMaxSpatialClusterSizeTypeControl(SpatialSizeType eSpatialSizeType);
    void                  SetMaxTemporalClusterSizeControl(float fMaxSize);
    void                  SetMaxTemporalClusterSizeTypeControl(TemporalSizeType eTemporalSizeType);
-   void                  SetRangeDateEnables(bool bYear, bool bMonth, bool bDay);
    void                  SetReportingClustersText(const ZdString& sText);
    void                  SetReportingSmallerClustersText();
    void                  SetSpatialDistanceCaption();

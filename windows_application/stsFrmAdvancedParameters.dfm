@@ -526,7 +526,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     object tsTemporal: TTabSheet
       Caption = 'Temporal Window'
       ImageIndex = 1
-      object grpScanningWindow: TGroupBox
+      object grpFlexibleTemporalWindowDefinition: TGroupBox
         Left = 8
         Top = 131
         Width = 421
@@ -799,13 +799,13 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Width = 421
         Height = 107
         Hint = 'Temporal Trend Adjustments'
-        Caption = 'Temporal Trend Adjustment'
+        Caption = 'Temporal Adjustment'
         Enabled = False
         ItemIndex = 0
         Items.Strings = (
           'None'
           'Nonparametric, with time stratified randomization'
-          'Log linear with'
+          'Log linear trend with'
           'Log linear with automatically calculated trend')
         ParentShowHint = False
         ShowHint = True
@@ -814,7 +814,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         OnExit = OnControlExit
       end
       object edtLogLinear: TEdit
-        Left = 109
+        Left = 134
         Top = 68
         Width = 34
         Height = 21
@@ -826,7 +826,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         OnKeyPress = FloatKeyPress
       end
       object lblLogLinear: TStaticText
-        Left = 148
+        Left = 173
         Top = 70
         Width = 67
         Height = 17
@@ -939,14 +939,14 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Top = 8
         Width = 421
         Height = 50
-        Caption = 'Analysis'
+        Caption = 'Early Termination'
         TabOrder = 0
         object chkTerminateEarly: TCheckBox
           Left = 12
           Top = 22
           Width = 245
           Height = 17
-          Caption = 'Terminate replications early for large p-values'
+          Caption = 'Terminate the analysis early for large p-values'
           TabOrder = 0
           OnClick = OnControlExit
         end
@@ -955,12 +955,12 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 8
         Top = 76
         Width = 417
-        Height = 129
+        Height = 103
         Caption = 'Prospective Surveillance'
         TabOrder = 1
         object lblProspectiveStartYear: TLabel
           Left = 48
-          Top = 74
+          Top = 53
           Width = 19
           Height = 11
           Caption = 'Year'
@@ -973,7 +973,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object lblProspectiveStartMonth: TLabel
           Left = 100
-          Top = 74
+          Top = 53
           Width = 28
           Height = 11
           Caption = 'Month'
@@ -986,7 +986,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object lblProspectiveStartDay: TLabel
           Left = 151
-          Top = 74
+          Top = 53
           Width = 16
           Height = 11
           Caption = 'Day'
@@ -997,16 +997,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Font.Style = []
           ParentFont = False
         end
-        object lblProspectiveStartDate: TLabel
-          Left = 39
-          Top = 54
-          Width = 79
-          Height = 13
-          Caption = 'Performed since:'
-        end
         object edtProspectiveStartDateYear: TEdit
           Left = 41
-          Top = 85
+          Top = 64
           Width = 41
           Height = 21
           Enabled = False
@@ -1018,7 +1011,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtProspectiveStartDateMonth: TEdit
           Left = 101
-          Top = 85
+          Top = 64
           Width = 25
           Height = 21
           Enabled = False
@@ -1030,7 +1023,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtProspectiveStartDateDay: TEdit
           Left = 147
-          Top = 85
+          Top = 64
           Width = 25
           Height = 21
           Enabled = False
@@ -1043,9 +1036,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object chkAdjustForEarlierAnalyses: TCheckBox
           Left = 14
           Top = 28
-          Width = 171
+          Width = 227
           Height = 17
-          Caption = 'Adjust for earlier analyses'
+          Caption = 'Adjust for earlier analyses performed since:'
           TabOrder = 0
           OnClick = chkAdjustForEarlierAnalysesClick
         end
@@ -1055,16 +1048,16 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       Caption = 'Clusters Reported'
       ImageIndex = 2
       object lblReportSmallerClusters: TLabel
-        Left = 241
+        Left = 221
         Top = 222
-        Width = 151
+        Width = 213
         Height = 27
         AutoSize = False
         Caption = 'percent of population at risk.'
         WordWrap = True
       end
       object chkRestrictReportedClusters: TCheckBox
-        Left = 20
+        Left = 8
         Top = 222
         Width = 175
         Height = 17
@@ -1073,19 +1066,19 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         OnClick = chkRestrictReportedClustersClick
       end
       object edtReportClustersSmallerThan: TEdit
-        Left = 200
+        Left = 183
         Top = 220
         Width = 34
-        Height = 18
+        Height = 21
         TabOrder = 1
         Text = '50'
         OnExit = edtReportClustersSmallerThanExit
         OnKeyPress = PositiveFloatKeyPress
       end
       object rdgCriteriaSecClusters: TRadioGroup
-        Left = 16
+        Left = 8
         Top = 8
-        Width = 409
+        Width = 421
         Height = 197
         Caption = 'Criteria for Reporting Secondary Clusters'
         Items.Strings = (
