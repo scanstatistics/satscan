@@ -12,18 +12,30 @@ const char *	CLUSTER_FILE_EXT	= ".col";
 
 // this class is a record class to store each cluster info data record
 // cluster level record class
-ClusterRecord::ClusterRecord(const bool bPrintEllipses, const bool bPrintPVal, const bool bIncludeRunHistory) : BaseOutputRecord() {
+ClusterRecord::ClusterRecord(const bool bPrintEllipses, const bool bPrintPVal, const bool bIncludeRunHistory,
+                             const bool bSpaceTimeModel, const bool bDuczmalCorrect)
+             : BaseOutputRecord() , gbSpaceTimeModel(bSpaceTimeModel),  gbDuczmalCorrect(bDuczmalCorrect),
+                                    gbPrintEllipses(bPrintEllipses), gbPrintPVal(bPrintPVal), gbIncludeRunHistory(bIncludeRunHistory)
+{
    Init();
-   gbPrintEllipses = bPrintEllipses;
-   gbPrintPVal = bPrintPVal;
-   gbIncludeRunHistory = bIncludeRunHistory;
 }
 
 ClusterRecord::~ClusterRecord() {
 }
 
-int ClusterRecord::GetNumFields() {
-   return (12 + (gbIncludeRunHistory ? 1 : 0) + (gbPrintEllipses ? 2 : 0) + (gbPrintPVal ? 1 : 0) + gvsAdditCoords.GetNumElements());
+// returns whether or not the field at iFieldNumber should be blank
+// pre : none
+// post : returns true is field should be blank
+bool ClusterRecord::GetFieldIsBlank(int iFieldNumber) {
+   try {
+      if ( iFieldNumber < 0 || (size_t)iFieldNumber >= gvbBlankFields.size())
+         ZdGenerateException("Invalid index, out of range!", "Error!");
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("GetFieldIsBlank()", "AreaSpecificRecord");
+      throw;
+   }
+   return gvbBlankFields[iFieldNumber];
 }
 
 // function to return the field value from the specified field number
@@ -32,11 +44,11 @@ int ClusterRecord::GetNumFields() {
 ZdFieldValue ClusterRecord::GetValue(int iFieldNumber) {
    ZdFieldValue fv;
    
-   try {    
+   try {
       if(iFieldNumber < 0 || iFieldNumber >= GetNumFields())
          ZdGenerateException("Invalid index, out of range", "Error!");
 
-      // if we should include run history number then do so, else skip past to the next field   
+      // if we should include run history number then do so, else skip past to the next field
       if (gbIncludeRunHistory) {
          if (iFieldNumber == 0)
              BaseOutputRecord::SetFieldValueAsDouble(fv, double(glRunNumber));
@@ -61,14 +73,14 @@ ZdFieldValue ClusterRecord::GetValue(int iFieldNumber) {
             BaseOutputRecord::SetFieldValueAsString(fv, gvsAdditCoords[iFieldNumber-5]);
       }
 
-         // subtract out the vector elements from the index and continue on like the vector
-         // wasn't even there - AJV
+      // subtract out the vector elements from the index and continue on like the vector
+      // wasn't even there - AJV
       int iFieldAfterVector = iFieldNumber - gvsAdditCoords.size();
 
-      if (iFieldAfterVector == 5)
+      if (iFieldAfterVector == 5)    // radius field
          BaseOutputRecord::SetFieldValueAsString(fv, gsRadius);
 
-         // if we should print ellipses then do so, else increase the field number to skip past them
+      // if we should print ellipses then do so, else increase the field number to skip past them
       if (gbPrintEllipses) {
          if (iFieldAfterVector == 6)
             BaseOutputRecord::SetFieldValueAsString(fv, gsEllipseAngles);
@@ -88,21 +100,30 @@ ZdFieldValue ClusterRecord::GetValue(int iFieldNumber) {
          case 11:
             BaseOutputRecord::SetFieldValueAsDouble(fv, gdRelRisk); break;
          case 12:
-            BaseOutputRecord::SetFieldValueAsDouble(fv, gdLogLikelihood); break;
+            BaseOutputRecord::SetFieldValueAsDouble(fv, gbSpaceTimeModel ? gdTestStat : gdLogLikelihood); break;
       }
+
+      // if we are doing duczmal correctness with ellipses and we're not in the space time model then set test stat
+      // else just increase the field number to skip past
+      if (gbPrintEllipses && gbDuczmalCorrect && !gbSpaceTimeModel) {
+         if(iFieldAfterVector == 13)
+            BaseOutputRecord::SetFieldValueAsDouble(fv, gdTestStat);
+      }
+      else
+         ++iFieldAfterVector;
 
       // if we need to print the pval then do so, else increase the field number to skip past it
       if (gbPrintPVal) {
-         if(iFieldAfterVector == 13)
+         if(iFieldAfterVector == 14)
             BaseOutputRecord::SetFieldValueAsDouble(fv, gdPValue);
       }
       else
          ++iFieldAfterVector;
 
       switch (iFieldAfterVector) {
-         case 14:
-            BaseOutputRecord::SetFieldValueAsString(fv, gsStartDate); break;
          case 15:
+            BaseOutputRecord::SetFieldValueAsString(fv, gsStartDate); break;
+         case 16:
             BaseOutputRecord::SetFieldValueAsString(fv, gsEndDate); break;
       }
    }
@@ -110,26 +131,39 @@ ZdFieldValue ClusterRecord::GetValue(int iFieldNumber) {
       x.AddCallpath("GetValue()", "ClusterRecord");
       throw;
    }
-   return fv;  
+   return fv;
 }
 
+// internal global variable defaults
 void ClusterRecord::Init() {
-   glRunNumber          = 0;
-   gsLocationID         = "";
+   glRunNumber = glNumAreas = glObserved = 0;
+   gdExpected = gdPValue = gdLogLikelihood = gdRelRisk = 0.0;
    giClusterNumber      = 0;
-   gsFirstCoord         = "";
-   gsSecondCoord        = "";
-   gsRadius             = "";
-   gsEllipseAngles      = "";
-   gsEllipseShapes      = "";
-   glNumAreas           = 0;
-   glObserved           = 0;
-   gdExpected           = 0.0;
-   gdRelRisk            = 0.0;
-   gdLogLikelihood      = 0.0;
-   gdPValue             = 0.0;
-   gsStartDate          = "";
-   gsEndDate            = "";
+
+   // 12 permanent fields plus the optional fields if they are included
+   giNumFields =  (12 + (gbIncludeRunHistory ? 1 : 0) + (gbPrintEllipses ? 2 : 0)
+                      + (!gbSpaceTimeModel && gbPrintEllipses && gbDuczmalCorrect ? 1 : 0)
+                      + (gbPrintPVal ? 1 : 0) + gvsAdditCoords.size());
+
+   gvbBlankFields.reserve(giNumFields);
+   for ( int i = 0; i < giNumFields; ++i )
+      gvbBlankFields.push_back(false);
+}
+
+// sets the field at fieldnumber to either be blank or non-blank
+// pre : none
+// post : sets the iFieldNumber element of the global vector to bBlank
+void ClusterRecord::SetFieldIsBlank(int iFieldNumber, bool bBlank) {
+   try {
+      if (iFieldNumber < 0 || (size_t)iFieldNumber >= gvbBlankFields.size())
+         ZdGenerateException("Invalid index, out of range!", "Error!");
+
+      gvbBlankFields[iFieldNumber] = bBlank;
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("SetFieldIsBlank()", "AreaSpecificRecord");
+      throw;
+   }
 }
 
 
@@ -141,9 +175,9 @@ void ClusterRecord::Init() {
 
 // constructor
 __fastcall stsClusterData::stsClusterData(BasePrint *pPrintDirection, const ZdString& sOutputFileName, const long lRunNumber, const int iCoordType, const int iModelType,
-                                          const int iDimension, const bool bPrintPVal, const bool bPrintEllipses)
+                                          const int iDimension, const bool bPrintPVal, const bool bPrintEllipses, const bool bDuczmalCorrect)
                           : BaseOutputStorageClass(pPrintDirection) , gbPrintEllipses(bPrintEllipses), giModelType(iModelType), giDimension(iDimension),
-                                                                      glRunNumber(lRunNumber), gbPrintPVal(bPrintPVal), giCoordType(iCoordType) {
+                                                                      glRunNumber(lRunNumber), gbPrintPVal(bPrintPVal), giCoordType(iCoordType), gbDuczmalCorrect(bDuczmalCorrect) {
    try {
       Init();
       Setup(sOutputFileName);
@@ -165,18 +199,19 @@ void stsClusterData::Init() {
    gbIncludeRunHistory = false;
 }
 
-// records the calculated data from the cluster into the dBase file
+// records the required data to be stored in the cluster output file, stores the values
+// in the global vector of cluster records
 // pre: pCluster has been initialized with calculated data
-// post: function will record the appropraite data into the dBase record
+// post: function will record the appropriate data into the cluster record
 void stsClusterData::RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber) {
    ZdString                     sRadius, sLatitude, sLongitude;
    float                        fPVal;
    ZdString                     sTempValue, sStartDate, sEndDate, sShape, sAngle;
-   ZdVector<ZdString>           vAdditCoords;
+   std::vector<std::string>     vAdditCoords;
    ClusterRecord* 		pRecord = 0;
 
    try {                  
-      pRecord = new ClusterRecord(gbPrintEllipses, gbPrintPVal, gbIncludeRunHistory);
+      pRecord = new ClusterRecord(gbPrintEllipses, gbPrintPVal, gbIncludeRunHistory, giModelType == SPACETIMEPERMUTATION, gbDuczmalCorrect);
 
       if (gbIncludeRunHistory)
          pRecord->SetRunNumber(double(glRunNumber));
@@ -203,8 +238,22 @@ void stsClusterData::RecordClusterData(const CCluster& pCluster, const CSaTScanD
       pRecord->SetLocationID(sTempValue);
             
       // log likliehood or tst_stat if space-time permutation
-      pRecord->SetLogLikelihood(pCluster.m_nRatio);
-      
+      if(giModelType == SPACETIMEPERMUTATION) {
+         if(pCluster.m_iEllipseOffset !=0 && gbDuczmalCorrect)
+            pRecord->SetTestStat(pCluster.GetDuczmalCompactnessCorrection());
+         else
+            pRecord->SetTestStat(pCluster.m_nRatio);
+      }
+      else {
+         pRecord->SetLogLikelihood(pCluster.m_nRatio);
+         if(gbDuczmalCorrect) {
+            if(pCluster.m_iEllipseOffset !=0)
+               pRecord->SetTestStat(pCluster.GetDuczmalCompactnessCorrection());
+            else
+               pRecord->SetFieldIsBlank(GetFieldNumber(TST_STAT_FIELD), true);
+         }            
+      }
+
       pRecord->SetNumAreas(pCluster.m_nTracts);
            
       // p value
@@ -257,8 +306,8 @@ void stsClusterData::SetAreaID(ZdString& sTempValue, const CCluster& pCluster, c
 // pre : none that I can think of
 // post : sets the values for long, lat, sAdditCoords, and radius
 void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, ZdString& sRadius,
-                                        ZdVector<ZdString>& vAdditCoords,
-                                        const CCluster& pCluster, const CSaTScanData& pData) {
+                                    std::vector<std::string>& vAdditCoords,
+                                    const CCluster& pCluster, const CSaTScanData& pData) {
    double       *pCoords = 0, *pCoords2 = 0;
    float        fLatitude, fLongitude, fRadius;
    char         sLatBuffer[64], sLongBuffer[64], sAdditBuffer[64], sRadBuffer[64];
@@ -287,9 +336,8 @@ void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, Z
          else {              // else we are doing a cartesian purely temporal, print out all n/a's
             sLatitude = "n/a";
             sLongitude = "n/a";
-            for (int i = 2; i < pData.m_pParameters->m_nDimension; ++i) {
+            for (int i = 2; i < pData.m_pParameters->m_nDimension; ++i)
                vAdditCoords.push_back("n/a");
-            }
             sRadius = "n/a";
          }
       }
@@ -325,22 +373,22 @@ void stsClusterData::SetEllipseString(ZdString& sAngle, ZdString& sShape, const 
    char  sAngleBuffer[256], sShapeBuffer[256];
 
    try {
-         if (pCluster.m_nClusterType == PURELYTEMPORAL){
-            sAngle = "n/a";
-            sShape = "n/a";
+      if (pCluster.m_nClusterType == PURELYTEMPORAL){
+         sAngle = "n/a";
+         sShape = "n/a";
+      }
+      else {
+         if(pCluster.m_iEllipseOffset == 0 && pData.m_nNumEllipsoids > 0) {
+            sShape = "1.000";
+            sAngle = "0.000";
          }
          else {
-            if(pCluster.m_iEllipseOffset == 0 && pData.m_nNumEllipsoids > 0) {
-               sShape = "1.000";
-               sAngle = "0.000";
-            }
-            else {
-               sprintf(sAngleBuffer, "%-8.3f", pCluster.ConvertAngleToDegrees(pData.mdE_Angles[pCluster.m_iEllipseOffset-1]));
-               sprintf(sShapeBuffer, "%-8.3f", pData.mdE_Shapes[pCluster.m_iEllipseOffset-1]);
-               sShape = sShapeBuffer;
-               sAngle = sAngleBuffer;
-            }
+            sprintf(sAngleBuffer, "%-8.3f", pCluster.ConvertAngleToDegrees(pData.mdE_Angles[pCluster.m_iEllipseOffset-1]));
+            sprintf(sShapeBuffer, "%-8.3f", pData.mdE_Shapes[pCluster.m_iEllipseOffset-1]);
+            sShape = sShapeBuffer;
+            sAngle = sAngleBuffer;
          }
+      }
    }
    catch (ZdException &x) {
       x.AddCallpath("SetEllipseString()", "stsClusterData");
@@ -437,8 +485,16 @@ void stsClusterData::SetupFields() {
       CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
       CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
       CreateField(gvFields, REL_RISK_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      
       // if model is space time permutation then tst_stat, else log likelihood
-      CreateField(gvFields, (giModelType != SPACETIMEPERMUTATION ? LOG_LIKL_FIELD : TST_STAT_FIELD), ZD_NUMBER_FLD, 16, 6, uwOffset);
+      if(giModelType == SPACETIMEPERMUTATION)
+         CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 16, 6, uwOffset);
+      else {
+         CreateField(gvFields, LOG_LIKL_FIELD, ZD_NUMBER_FLD, 16, 6, uwOffset);
+         // if there are ellipses and duczmal correctness then include both log likelihood and test stat
+         if(gbPrintEllipses && gbDuczmalCorrect)
+            CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 16, 6, uwOffset);
+      }
 
       if(gbPrintPVal)
          CreateField(gvFields, P_VALUE_FLD, ZD_NUMBER_FLD, 12, 5, uwOffset);

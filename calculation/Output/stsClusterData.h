@@ -11,13 +11,13 @@ class CSaTScanData;
 class stsClusterData : public BaseOutputStorageClass {
    private:
       int       giDimension, giModelType, giCoordType;
-      bool      gbPrintEllipses, gbPrintPVal, gbIncludeRunHistory;
+      bool      gbPrintEllipses, gbPrintPVal, gbIncludeRunHistory, gbDuczmalCorrect;
       long	glRunNumber;
       
       void	Init();
       void      SetAreaID(ZdString& sTempValue, const CCluster& pCluster, const CSaTScanData& pData);
       void      SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, ZdString& sRadius,
-                               ZdVector<ZdString>& vAdditCoords,
+                               std::vector<std::string>& vAdditCoords,
                                const CCluster& pCluster, const CSaTScanData& pData);
       void      SetEllipseString(ZdString& sAngle, ZdString& sShape, const CCluster& pCluster, const CSaTScanData& pData);
       void      SetStartAndEndDates(ZdString& sStartDate, ZdString& sEndDate, const CCluster& pCluster, const CSaTScanData& pData);                         
@@ -25,7 +25,7 @@ class stsClusterData : public BaseOutputStorageClass {
       void  	SetupFields();
 
    public:
-      __fastcall stsClusterData(BasePrint *pPrintDirection, const ZdString& sOutputFileName, const long lRunNumber, const int iCoordType, const int iModelType, const int iDimension = 2, const bool bPrintPVal = true, const bool bPrintEllipses = false);
+      __fastcall stsClusterData(BasePrint *pPrintDirection, const ZdString& sOutputFileName, const long lRunNumber, const int iCoordType, const int iModelType, const int iDimension = 2, const bool bPrintPVal = true, const bool bPrintEllipses = false, const bool bDuczmalCorrect = false);
       virtual    ~stsClusterData();
 
       void      RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber);
@@ -38,7 +38,7 @@ class ClusterRecord : public BaseOutputRecord {
       int 			giClusterNumber;
       ZdString 			gsFirstCoord;
       ZdString 			gsSecondCoord;
-      ZdVector<ZdString> 	gvsAdditCoords;
+      std::vector<std::string> 	gvsAdditCoords;
       ZdString 			gsRadius;
       ZdString 			gsEllipseAngles;
       ZdString 			gsEllipseShapes;
@@ -47,21 +47,24 @@ class ClusterRecord : public BaseOutputRecord {
       double 			gdExpected;
       double 			gdRelRisk;
       double 			gdLogLikelihood;
+      double                    gdTestStat;
       double 			gdPValue;
       ZdString 			gsStartDate;
       ZdString 			gsEndDate;
 
-      bool                      gbPrintEllipses, gbPrintPVal, gbIncludeRunHistory;
+      int                       giNumFields;
+      bool                      gbPrintEllipses, gbPrintPVal, gbIncludeRunHistory, gbSpaceTimeModel, gbDuczmalCorrect;
       void		        Init();
    public:
-      ClusterRecord(const bool bPrintEllipses = true, const bool bPrintPVal = true, const bool bIncludeRunHistory = true);
+      ClusterRecord(const bool bPrintEllipses = true, const bool bPrintPVal = true, const bool bIncludeRunHistory = true, const bool bSpaceTimeModel = false, const bool bDuczmalCorrect = false);
       virtual ~ClusterRecord();
 
-      virtual bool GetFieldIsBlank(int iFieldNumber) { return false; }
-      virtual int GetNumFields();
+      virtual bool      GetFieldIsBlank(int iFieldNumber);
+      virtual int       GetNumFields() { return giNumFields; }
       virtual ZdFieldValue GetValue(int iFieldNumber);
-    
-      void	SetAdditionalCoordinates(const ZdVector<ZdString>& vsAdditCoords) { gvsAdditCoords = vsAdditCoords; }
+      void              SetFieldIsBlank(int iFieldNumber, bool bBlank);
+
+      void	SetAdditionalCoordinates(const std::vector<std::string>& vsAdditCoords) { gvsAdditCoords = vsAdditCoords; }
       void	SetClusterNumber(const int iClusterNumber) { giClusterNumber = iClusterNumber; }     
       void 	SetEllipseAngles(const ZdString& sEllipseAngles) { gsEllipseAngles = sEllipseAngles; }
       void	SetEllipseShapes(const ZdString& sEllipseShapes) { gsEllipseShapes = sEllipseShapes; }
@@ -77,7 +80,8 @@ class ClusterRecord : public BaseOutputRecord {
       void	SetRelativeRisk(const double dRelRisk) { gdRelRisk = dRelRisk; }
       void 	SetRunNumber(const long	lRunNumber) { glRunNumber = lRunNumber; }
       void	SetSecondCoordinate(const ZdString& sSecondCoord) { gsSecondCoord = sSecondCoord; }
-      void	SetStartDate(const ZdString& sStartDate) { gsStartDate = sStartDate; }      
+      void	SetStartDate(const ZdString& sStartDate) { gsStartDate = sStartDate; }
+      void      SetTestStat(const double dTestStat) { gdTestStat = dTestStat; }      
 };
 
 #endif
