@@ -38,8 +38,12 @@ bool CSpaceTimePermutationModel::CalculateMeasure() {
   try {
     //calculate total number of cases
     gData.m_nTotalCases=0;
-    for (j=0; j < gData.m_nTracts; j++)
+    for (j=0; j < gData.m_nTracts; j++) {
        gData.m_nTotalCases += ppCases[0][j];
+       // Check to see if total case or control values have wrapped
+       if (gData.m_nTotalCases < 0)
+         SSGenerateException("Error: Total cases greater than maximum allowed of %ld.\n", "CalculateMeasure()", std::numeric_limits<count_t>::max());
+    }
 
     gData.gpMeasureHandler = new TwoDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals+1, gData.m_nTracts, 0);
     ppMeasure = gData.GetMeasureArray();

@@ -34,6 +34,10 @@ int CalcRisk(const TractHandler *pTInfo, double** pRisk, double* pAlpha, int nCa
        fprintf(fp, "%i             %f        %li            %12.25f\n",c, nPop, nCaseCount, (*pRisk)[c]);
 #endif
       *pTotalCases += nCaseCount;
+       // Check to see if total case or control values have wrapped
+       if (*pTotalCases < 0)
+         SSGenerateException("Error: Total cases greater than maximum allowed of %ld.\n", "CalcRisk()", std::numeric_limits<count_t>::max());
+
       *pTotalPop   += nPop;
     }
 #ifdef DEBUGMEASURE

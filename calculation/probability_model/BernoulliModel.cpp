@@ -75,9 +75,9 @@ bool CBernoulliModel::CalculateMeasure() {
 
        // Check to see if total case or control values have wrapped
         if (gData.m_nTotalCases < 0)
-          SSGenerateException("Error: Total cases greater than maximum allowed.\n", "CBernoulliModel");
+          SSGenerateException("Error: Total cases greater than maximum allowed of %ld.\n", "CBernoulliModel", std::numeric_limits<count_t>::max());
         if (gData.m_nTotalControls < 0)
-          SSGenerateException("Error: Total controls greater than maximum allowed.\n", "CBernoulliModel");
+          SSGenerateException("Error: Total controls greater than maximum allowed of %ld.\n", "CBernoulliModel", std::numeric_limits<count_t>::max());
     }
 
     if (gData.m_nTotalControls == 0)

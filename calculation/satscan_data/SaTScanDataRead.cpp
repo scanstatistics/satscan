@@ -11,11 +11,13 @@ const int POPULATION_DATE_PRECISION_YEAR_DEFAULT_MONTH  = 7;
     -- returns false if adjustment could not occur because relative risk
        is zero but there are cases in adjustment interval. */
 bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate) {
-  int           i, j, iMaxTract, iStartInterval, iEndInterval;
-  Julian        EndDayMin, StartDayMax, PeriodDays;
-  measure_t     Adjustment_t, fP;
-  ZdString      s;
+  int                                   i, j, iMaxTract, iStartInterval, iEndInterval;
+  Julian                                EndDayMin, StartDayMax, PeriodDays;
+  measure_t                             Adjustment_t, fP, tMaxMeasure_tValue;
+  ZdString                              s;
+  std::numeric_limits<measure_t>        measure_limit;
 
+  tMaxMeasure_tValue = measure_limit.max();
   //first determine time interval index for period that is being modfied
   SetScanningWindowStartRangeIndex(StartDate, iStartInterval);
   SetScanningWindowEndRangeIndex(EndDate, iEndInterval);
@@ -32,8 +34,12 @@ bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tra
   j = (Tract == -1 ? 0 : Tract);
   iMaxTract = (Tract == -1 ? m_nTracts : Tract + 1);
   for (; j < iMaxTract; ++j)
-     for (i=iStartInterval; i < iEndInterval; ++i)          
+     for (i=iStartInterval; i < iEndInterval; ++i) {
+        if (Adjustment_t && tMaxMeasure_tValue/Adjustment_t <= pNonCumulativeMeasure[i][j])
+          SSGenerateException("Error: Data overflow occurs when adjusting expected number of cases.\n"
+                              "       Is your adjustment file correct?", "AdjustMeasure()");
         pNonCumulativeMeasure[i][j] *= Adjustment_t;
+     }
 
   return true;
 }
@@ -781,6 +787,9 @@ bool CSaTScanData::ReadCounts(FILE * fp, const char* szDescription) {
            if (ParseCountLine(szDescription, Parser, TractIndex, Count, Date, iCategoryIndex)) {
              //cumulatively add count to time by location structure
              pCounts[0][TractIndex] += Count;
+             if (pCounts[0][TractIndex] < 0)
+               SSGenerateException("Error: Total %s greater than maximum allowed of %ld.\n", "ReadCounts()",
+                                   (bCaseFile ? "cases" : "controls"), std::numeric_limits<count_t>::max());
              for (i=1; Date >= m_pIntervalStartTimes[i]; ++i)
                pCounts[i][TractIndex] += Count;
              //record count as a case or control  

@@ -15,12 +15,16 @@ void PopulationCategories::AddCaseCount(int iCategoryIndex, count_t Count) {
   if (iCategoryIndex < 0 || iCategoryIndex > (int)gvCategoryCasesCount.size() - 1)
     ZdGenerateException("Index '%d' out of range.","AddCaseCount()", iCategoryIndex);
   gvCategoryCasesCount[iCategoryIndex] += Count;
+  if (gvCategoryCasesCount[iCategoryIndex] < 0)
+    SSGenerateException("Error: Total cases greater than maximum allowed of %ld.\n", "AddCaseCount()", std::numeric_limits<count_t>::max());
 }
 
 void PopulationCategories::AddControlCount(int iCategoryIndex, count_t Count) {
   if (iCategoryIndex < 0 || iCategoryIndex > (int)gvCategoryControlsCount.size() - 1)
     ZdGenerateException("Index '%d' out of range.","AddControlCount()", iCategoryIndex);
   gvCategoryControlsCount[iCategoryIndex] += Count;
+  if (gvCategoryControlsCount[iCategoryIndex] < 0)
+    SSGenerateException("Error: Total controls greater than maximum allowed of %ld.\n", "AddControlCount()", std::numeric_limits<count_t>::max());
 }
 
 /** Prints formatted text depicting state of population categories. */
