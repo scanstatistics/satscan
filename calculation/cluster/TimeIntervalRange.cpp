@@ -1,14 +1,20 @@
-//*****************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//*****************************************************************************
+//******************************************************************************
 #include "TimeIntervalRange.h"
 #include "SaTScanData.h"
 #include "MeasureList.h"
 #include "cluster.h"
+#include "ClusterData.h"
+#include "NormalClusterData.h"
+#include "MultipleStreamClusterData.h"
+#include "CategoricalClusterData.h"
+#include "MultiSetCategoricalClusterData.h"
+#include "LoglikelihoodRatioUnifier.h"
 
 /** constructor */
-TimeIntervalRange::TimeIntervalRange(const CSaTScanData& Data,
+TemporalDataEvaluator::TemporalDataEvaluator(const CSaTScanData& Data,
                                      AbstractLikelihoodCalculator & Calculator,
                                      IncludeClustersType  eIncludeClustersType)
                   :CTimeIntervals(Data.GetNumTimeIntervals(), Data.GetTimeIntervalCut(), Data.GetParameters().GetAreaScanRateType()),
@@ -18,7 +24,7 @@ TimeIntervalRange::TimeIntervalRange(const CSaTScanData& Data,
 }	
 
 /** destructor */
-TimeIntervalRange::~TimeIntervalRange() {
+TemporalDataEvaluator::~TemporalDataEvaluator() {
   try {
     delete gpMaxWindowLengthIndicator;
   }
@@ -34,7 +40,7 @@ TimeIntervalRange::~TimeIntervalRange() {
           CPurelyTemporalCluster and CSpaceTimeCluster objects should be passed.
           It might be appropriate to introduce a common ancestor class for these
           classes someday.                                                      */
-void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluster) {
+void TemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCluster) {
   int            iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
   count_t        tCases, tTotalCases(gData.GetTotalCases());
   measure_t      tMeasure, tTotalMeasure(gData.GetTotalMeasure());
@@ -68,10 +74,10 @@ void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluste
 /** Iterates through previously defined temporal window for accumulated data of
     AbstractTemporalClusterData object. For each evaluated window, calls method
     CMeasureList::AddMeasure(cases,measure). */
-void TimeIntervalRange::CompareMeasures(TemporalData& StreamData, CMeasureList& MeasureList) {
+void TemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList) {
   int                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  count_t             * pCases = StreamData.gpCases;
-  measure_t           * pMeasure = StreamData.gpMeasure;
+  count_t             * pCases = ((TemporalData&)ClusterData).gpCases;
+  measure_t           * pMeasure = ((TemporalData&)ClusterData).gpMeasure;
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
@@ -85,7 +91,7 @@ void TimeIntervalRange::CompareMeasures(TemporalData& StreamData, CMeasureList& 
 }
 
 /** internal setup function */
-void TimeIntervalRange::Setup(const CSaTScanData& Data, IncludeClustersType  eIncludeClustersType) {
+void TemporalDataEvaluator::Setup(const CSaTScanData& Data, IncludeClustersType  eIncludeClustersType) {
   try {
     if (Data.GetParameters().GetIsProspectiveAnalysis() && eIncludeClustersType == ALLCLUSTERS) {
       // For a prospective analysis with IncludeClustersType of ALLCLUSTERS, this situation indicates
@@ -124,17 +130,18 @@ void TimeIntervalRange::Setup(const CSaTScanData& Data, IncludeClustersType  eIn
   }
   catch (ZdException &x) {
     delete gpMaxWindowLengthIndicator; gpMaxWindowLengthIndicator=0;
-    x.AddCallpath("setup()","TimeIntervalRange");
+    x.AddCallpath("setup()","TemporalDataEvaluator");
     throw;
   }
 }
 
+//******************************************************************************
 
 /** constructor */
-NormalTimeIntervalRange::NormalTimeIntervalRange(const CSaTScanData& Data,
-                                                 AbstractLikelihoodCalculator & Calculator,
-                                                 IncludeClustersType eIncludeClustersType)
-                  : TimeIntervalRange(Data, Calculator, eIncludeClustersType) {}
+MultiSetTemporalDataEvaluator::MultiSetTemporalDataEvaluator(const CSaTScanData& Data,
+                                                             AbstractLikelihoodCalculator & Calculator,
+                                                             IncludeClustersType eIncludeClustersType)
+                              :TemporalDataEvaluator(Data, Calculator, eIncludeClustersType) {}
 
 /** Iterates through defined temporal window for accumulated data of 'Running'
     cluster. Calculates loglikelihood ratio of clusters that have rates of which
@@ -145,64 +152,12 @@ NormalTimeIntervalRange::NormalTimeIntervalRange(const CSaTScanData& Data,
           CPurelyTemporalCluster and CSpaceTimeCluster objects should be passed.
           It might be appropriate to introduce a common ancestor class for these
           classes someday.
-    NOTE: This algorithm is identical to TimeIntervalRange::CompareClusters(...)
-          with the only deviation being the second measure. */
-void NormalTimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluster) {
-  int                  iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  count_t              tCases, tTotalCases(gData.GetTotalCases());
-  measure_t            tMeasure, tMeasure2, tTotalMeasure(gData.GetTotalMeasure());
-  NormalTemporalData * pData = (NormalTemporalData*)Running.GetClusterData(); //dynamic cast ?
-
-  //iterate through windows
-  gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
-     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
-        pData->gtCases = pData->gpCases[iWindowStart] - pData->gpCases[iWindowEnd];
-        pData->gtMeasure = pData->gpMeasure[iWindowStart] - pData->gpMeasure[iWindowEnd];
-        pData->gtSqMeasure = pData->gpSqMeasure[iWindowStart] - pData->gpSqMeasure[iWindowEnd];
-        if (fRateOfInterest(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure)) {
-          Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioEx(pData->gtCases, pData->gtMeasure, pData->gtSqMeasure, tTotalCases, tTotalMeasure);
-          if (Running.m_nRatio  > TopCluster.m_nRatio) {
-            TopCluster.AssignAsType(Running);
-            TopCluster.m_nFirstInterval = iWindowStart;
-            TopCluster.m_nLastInterval = iWindowEnd;
-          }
-        }
-     }
-  }
-}
-
-/** Not implemented - throws ZdException */
-void NormalTimeIntervalRange::CompareMeasures(TemporalData&, CMeasureList&) {
-  ZdGenerateException("CompareMeasures() not implemented.","NormalTimeIntervalRange");
-}
-
-
-
-/** constructor */
-MultiStreamTimeIntervalRange::MultiStreamTimeIntervalRange(const CSaTScanData& Data,
-                                                           AbstractLikelihoodCalculator & Calculator,
-                                                           IncludeClustersType eIncludeClustersType)
-                             :TimeIntervalRange(Data, Calculator, eIncludeClustersType) {}
-
-/** Iterates through defined temporal window for accumulated data of 'Running'
-    cluster. Calculates loglikelihood ratio of clusters that have rates of which
-    we are interested in and compares against current top cluster; re-assigning
-    top cluster to running cluster if calculated llr is greater than that defined
-    by current top cluster.
-    NOTE: Though parameters to this function are base class CCluster objects, only
-          CPurelyTemporalCluster and CSpaceTimeCluster objects should be passed.
-          It might be appropriate to introduce a common ancestor class for these
-          classes someday.
-    NOTE: This algorithm is identical to TimeIntervalRange::CompareClusters(...)
+    NOTE: This algorithm is identical to TemporalDataEvaluator::CompareClusters(...)
           with the deviation being the loop over multipe data sets and process
           of unifying the calculated log likelihood ratios. */
-void MultiStreamTimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluster) {
+void MultiSetTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCluster) {
   int                          iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  MultipleStreamTemporalData * pData = (MultipleStreamTemporalData*)Running.GetClusterData(); //dynamic cast ?
+  MultiSetTemporalData * pData = (MultiSetTemporalData*)Running.GetClusterData(); //dynamic cast ?
   AbstractLoglikelihoodRatioUnifier & Unifier = gLikelihoodCalculator.GetUnifier();
 
   //iterate through windows
@@ -213,8 +168,8 @@ void MultiStreamTimeIntervalRange::CompareClusters(CCluster & Running, CCluster 
      iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         Unifier.Reset();
-        for (size_t t=0; t < pData->gvStreamData.size(); ++t) {
-          TemporalData & Datum = *pData->gvStreamData[t];
+        for (size_t t=0; t < pData->gvSetClusterData.size(); ++t) {
+          TemporalData & Datum = *pData->gvSetClusterData[t];
           Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
           Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
           Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure,
@@ -231,7 +186,164 @@ void MultiStreamTimeIntervalRange::CompareClusters(CCluster & Running, CCluster 
 }
 
 /** Not implemented - throws ZdException */
-void MultiStreamTimeIntervalRange::CompareMeasures(TemporalData&, CMeasureList&) {
-  ZdGenerateException("CompareMeasures() not implemented.","MultiStreamTimeIntervalRange");
+void MultiSetTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) {
+  ZdGenerateException("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","MultiSetTemporalDataEvaluator");
+}
+
+
+//******************************************************************************
+
+/** constructor */
+NormalTemporalDataEvaluator::NormalTemporalDataEvaluator(const CSaTScanData& Data,
+                                                         AbstractLikelihoodCalculator & Calculator,
+                                                         IncludeClustersType eIncludeClustersType)
+                            :TemporalDataEvaluator(Data, Calculator, eIncludeClustersType) {}
+
+/** Iterates through defined temporal window for accumulated data of 'Running'
+    cluster. Calculates loglikelihood ratio of clusters that have rates of which
+    we are interested in and compares against current top cluster; re-assigning
+    top cluster to running cluster if calculated llr is greater than that defined
+    by current top cluster.
+    NOTE: Though parameters to this function are base class CCluster objects, only
+          CPurelyTemporalCluster and CSpaceTimeCluster objects should be passed.
+          It might be appropriate to introduce a common ancestor class for these
+          classes someday.
+    NOTE: This algorithm is identical to TemporalDataEvaluator::CompareClusters(...)
+          with the only deviation being the second measure. */
+void NormalTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCluster) {
+  int                  iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  count_t              tCases, tTotalCases(gData.GetTotalCases());
+  measure_t            tMeasure, tMeasure2, tTotalMeasure(gData.GetTotalMeasure());
+  NormalTemporalData * pData = (NormalTemporalData*)Running.GetClusterData(); //dynamic cast ?
+
+  //iterate through windows
+  gpMaxWindowLengthIndicator->Reset();
+  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+        pData->gtCases = pData->gpCases[iWindowStart] - pData->gpCases[iWindowEnd];
+        pData->gtMeasure = pData->gpMeasure[iWindowStart] - pData->gpMeasure[iWindowEnd];
+        pData->gtSqMeasure = pData->gpSqMeasure[iWindowStart] - pData->gpSqMeasure[iWindowEnd];
+        if (fRateOfInterest(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure)) {
+          Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioNormal(pData->gtCases, pData->gtMeasure, pData->gtSqMeasure, tTotalCases, tTotalMeasure);
+          if (Running.m_nRatio  > TopCluster.m_nRatio) {
+            TopCluster.AssignAsType(Running);
+            TopCluster.m_nFirstInterval = iWindowStart;
+            TopCluster.m_nLastInterval = iWindowEnd;
+          }
+        }
+     }
+  }
+}
+
+/** Not implemented - throws ZdException */
+void NormalTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) {
+  ZdGenerateException("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","NormalTemporalDataEvaluator");
+}
+
+//******************************************************************************
+
+/** constructor */
+CategoricalTemporalDataEvaluator::CategoricalTemporalDataEvaluator(const CSaTScanData& DataHub,
+                                                                   AbstractLikelihoodCalculator & Calculator,
+                                                                   IncludeClustersType eIncludeClustersType)
+                                 :TemporalDataEvaluator(DataHub, Calculator, eIncludeClustersType) {
+
+}
+
+/** Iterates through defined temporal window for accumulated data of 'Running'
+    cluster. Calculates loglikelihood ratio of clusters that have rates of which
+    we are interested in and compares against current top cluster; re-assigning
+    top cluster to running cluster if calculated llr is greater than that defined
+    by current top cluster.
+    NOTE: Though parameters to this function are base class CCluster objects, only
+          CPurelyTemporalCluster and CSpaceTimeCluster objects should be passed.
+          It might be appropriate to introduce a common ancestor class for these
+          classes someday.
+    NOTE: This algorithm is identical to TemporalDataEvaluator::CompareClusters(...)
+          with the only deviation being the second measure. */
+void CategoricalTemporalDataEvaluator::CompareClusters(CCluster& Running, CCluster& TopCluster) {
+  int                       iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  CategoricalTemporalData * pData = (CategoricalTemporalData*)Running.GetClusterData(); //dynamic cast ?
+
+  //iterate through windows
+  gpMaxWindowLengthIndicator->Reset();
+  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+        for (size_t t=0; t < pData->gvCasesPerCategory.size(); ++t)
+          pData->gvCasesPerCategory[t] = pData->gppCategoryCases[t][iWindowStart] - pData->gppCategoryCases[t][iWindowEnd];
+        Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioOrdinal(pData->gvCasesPerCategory, pData->gvTotalCasesPerCategory);
+        if (Running.m_nRatio  > TopCluster.m_nRatio) {
+          TopCluster.AssignAsType(Running);
+          TopCluster.m_nFirstInterval = iWindowStart;
+          TopCluster.m_nLastInterval = iWindowEnd;
+        }
+     }
+  }
+}
+
+/** Not implemented - throws ZdException */
+void CategoricalTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) {
+  ZdGenerateException("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","CategoricalTemporalDataEvaluator");
+}
+
+//******************************************************************************
+
+/** constructor */
+MultiSetCategoricalTemporalDataEvaluator::MultiSetCategoricalTemporalDataEvaluator(const CSaTScanData& DataHub,
+                                                                                   AbstractLikelihoodCalculator& Calculator,
+                                                                                   IncludeClustersType eIncludeClustersType)
+                                         :TemporalDataEvaluator(DataHub, Calculator, eIncludeClustersType) {
+
+}
+
+/** Iterates through defined temporal window for accumulated data of 'Running'
+    cluster. Calculates loglikelihood ratio of clusters that have rates of which
+    we are interested in and compares against current top cluster; re-assigning
+    top cluster to running cluster if calculated llr is greater than that defined
+    by current top cluster.
+    NOTE: Though parameters to this function are base class CCluster objects, only
+          CPurelyTemporalCluster and CSpaceTimeCluster objects should be passed.
+          It might be appropriate to introduce a common ancestor class for these
+          classes someday.
+    NOTE: This algorithm is identical to TemporalDataEvaluator::CompareClusters(...)
+          with the only deviation being the second measure. */
+void MultiSetCategoricalTemporalDataEvaluator::CompareClusters(CCluster& Running, CCluster& TopCluster) {
+  int                       iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  AbstractMultiSetCategoricalTemporalData * pData = (AbstractMultiSetCategoricalTemporalData*)Running.GetClusterData(); //dynamic cast ?
+  AbstractLoglikelihoodRatioUnifier & Unifier = gLikelihoodCalculator.GetUnifier();
+
+  //iterate through windows
+  gpMaxWindowLengthIndicator->Reset();
+  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+        Unifier.Reset();
+        for (size_t t=0; t < pData->gvSetClusterData.size(); ++t) {
+          CategoricalTemporalData& Datum = *pData->gvSetClusterData[t];
+          for (size_t c=0; c < Datum.gvCasesPerCategory.size(); ++c)
+             Datum.gvCasesPerCategory[c] = Datum.gppCategoryCases[c][iWindowStart] - Datum.gppCategoryCases[c][iWindowEnd];
+          Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gvCasesPerCategory, Datum.gvTotalCasesPerCategory);
+        }
+        Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
+        if (Running.m_nRatio > TopCluster.m_nRatio) {
+          TopCluster.AssignAsType(Running);
+          TopCluster.m_nFirstInterval = iWindowStart;
+          TopCluster.m_nLastInterval = iWindowEnd;
+        }
+     }
+  }
+}
+
+/** Not implemented - throws ZdException */
+void MultiSetCategoricalTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) {
+  ZdGenerateException("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","MultiSetCategoricalTemporalDataEvaluator");
 }
 
