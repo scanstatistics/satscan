@@ -736,18 +736,23 @@ void TBDlgDataImporter::OnExitStartPanel() {
     switch (rdgInputFileType->ItemIndex) {
       case Case        : SetupCaseFileFieldDescriptors();
                          rdoCoordinates->Enabled = false;
+                         pnlBottomPanelTopAligned->Visible = false;
                          break;
       case Control     : SetupControlFileFieldDescriptors();
                          rdoCoordinates->Enabled = false;
+                         pnlBottomPanelTopAligned->Visible = false;
                          break;
       case Population  : SetupPopFileFieldDescriptors();
                          rdoCoordinates->Enabled = false;
+                         pnlBottomPanelTopAligned->Visible = false;
                          break;
       case Coordinates : SetupGeoFileFieldDescriptors();
                          rdoCoordinates->Enabled = true;
+                         pnlBottomPanelTopAligned->Visible = true;
                          break;
       case SpecialGrid : SetupGridFileFieldDescriptors();
                          rdoCoordinates->Enabled = true;
+                         pnlBottomPanelTopAligned->Visible = true;
                          break;
       default : ZdGenerateException("Unknown file type index: \"%d\"","OnExitStartPanel()", rdgInputFileType->ItemIndex);
     };
@@ -1050,6 +1055,7 @@ void TBDlgDataImporter::OpenSourceFile() {
       AdjustFileSourceFileAttributes(*gpImportFile);
       gpDataModel = new BGridZdSingleFileModel(gpImportFile);
       gpController = new BZdFileViewController(tsImportFileGrid, gpDataModel);
+      gpController->SetGridMode(Tsgrid::gmBrowse);
      }
      catch (ZdException &x) {
        ImporterException::GenerateException("Import Information\nThe import wizard was unable to read file \"%s\".\nPlease confirm the file format settings for this file.",

@@ -1,4 +1,4 @@
-// $Revision: 1.3 $
+// $Revision: 1.4 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -19,12 +19,8 @@ class TfrmAnalysis;
 class TBDlgDataImporter : public TForm {
   __published:	// IDE-managed Components
      TPanel *pnlImportData;
-     TtsGrid   *tsImportFileGrid;
-     TBevel    *Bevel1;
-     TtsGrid   *tsfieldGrid;
      TPanel *pnlImportWizard;
      TOpenDialog *OpenDialog;
-     TButton *btnClearImports;
      TPanel *pnlFileFormat;
      TPanel *pnlCSVDefs;
      TLabel *Label3;
@@ -59,11 +55,20 @@ class TBDlgDataImporter : public TForm {
      TBitBtn *btnNextPanel;
      TBitBtn *btnCancel;
      TBitBtn *btnExecuteImport;
-     TButton *btnAutoAlign;
-     TRadioGroup *rdoCoordinates;
      TCheckBox *chkFirstRowIsName;
      TButton *btnClearFldDefs;
         TRadioGroup *rdgInputFileType;
+        TPanel *pnlMappingPanelTop;
+        TPanel *pnlMappingPanelClient;
+        TPanel *pnlTopPanelClient;
+        TtsGrid *tsfieldGrid;
+        TButton *btnClearImports;
+        TButton *btnAutoAlign;
+        TPanel *pnlBottomPanelTopAligned;
+        TRadioGroup *rdoCoordinates;
+        TPanel *pnlBottomClient;
+        TtsGrid *tsImportFileGrid;
+        TBevel *Bevel1;
      void __fastcall NumericKeyPressMask(TObject *Sender, char &Key);
      void __fastcall OnAddFldDefClick(TObject *Sender);
      void __fastcall OnAutoAlignClick(TObject *Sender);
