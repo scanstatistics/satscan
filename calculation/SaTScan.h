@@ -16,16 +16,21 @@
 #else
   #include <unistd.h>
 #endif
-#include "Salloc.h"
-#include "BasePrint.h"
+
+//on linux, the library defines std::auto_ptr, so before zd gets included (and
+//declares a std::auto_ptr, we will #define so that zd ends up declaring a
+//"std::zd_auto_ptr" instead.
 #if defined(LINUX_BASED)
+  #include <memory>//declare std::auto_ptr
   #define auto_ptr zd_auto_ptr
   #define auto_ptr_ref zd_auto_ptr_ref
-  #include <memory>
 #endif
+#include "Salloc.h"//now zd543.h will declare std::zd_auto_ptr.
+#include "BasePrint.h"
 #include "SSException.h"
 #include <Basis540Unix.h>
 #if defined(LINUX_BASED)
+//now take away the defs so that the rest of the code references std::auto_ptr :
   #undef auto_ptr
   #undef auto_ptr_ref
 #endif
