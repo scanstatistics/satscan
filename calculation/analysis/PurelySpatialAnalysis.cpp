@@ -83,7 +83,7 @@ double CPurelySpatialAnalysis::MonteCarlo(const DataStreamInterface & Interface)
           C.Initialize(i);
           iNumNeighbors = ppNeighbors[k][i];
           for (j=1; j <= iNumNeighbors; j++) {
-             C.AddNeighbor(m_pData->GetNeighbor(k, i, j), Interface, 0);
+             C.AddNeighbor(m_pData->GetNeighbor(k, i, j), Interface);
              C.ComputeBestMeasures(*pMeasureList);
           }
        }
