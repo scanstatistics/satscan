@@ -10,7 +10,7 @@
 #pragma resource "*.dfm"
 
 /** Maximum number of additional input streams permitted. */
-const int TfrmAdvancedParameters::MAXIMUM_STREAMS = 3;
+const int TfrmAdvancedParameters::MAXIMUM_ADDITIONAL_SETS = 4;
 
 /** class constructor */
 __fastcall TfrmAdvancedParameters::TfrmAdvancedParameters(const TfrmAnalysis& AnalysisSettings)
@@ -664,7 +664,7 @@ void TfrmAdvancedParameters::EnableInputFileEdits(bool bEnable) {
 //---------------------------------------------------------------------------
 //** enables or disables the New button on the Input tab
 void TfrmAdvancedParameters::EnableNewButton() {
-  btnNewStream->Enabled = (lstInputStreams->Items->Count < MAXIMUM_STREAMS) ? true: false;
+  btnNewStream->Enabled = (lstInputStreams->Items->Count < MAXIMUM_ADDITIONAL_SETS) ? true: false;
 }
 //---------------------------------------------------------------------------
 /** enables adjustment options controls */

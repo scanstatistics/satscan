@@ -177,7 +177,7 @@ __published:	// IDE-managed Components
    std::vector<AnsiString>  gvPopFiles;
    int                      giStreamNum;             /** number of additional input streams added
                                                          does not go down with removals */
-   static const int         MAXIMUM_STREAMS;         /* maximum number of additional input streams */
+   static const int         MAXIMUM_ADDITIONAL_SETS;         /* maximum number of additional input sets */
 
    void                     DoControlExit();
    void                     EnableAdjustmentsGroup(bool bEnable);
