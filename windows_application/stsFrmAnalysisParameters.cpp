@@ -1002,7 +1002,6 @@ void TfrmAnalysis::EnableTimeInterval(bool bEnable) {
    rbUnitDay->Enabled = bEnable;
    rbUnitMonths->Enabled = bEnable;
    rbUnitYear->Enabled = bEnable;
-   rbUnitYear->Checked = bEnable;
    edtUnitLength->Enabled = bEnable;
    edtUnitLength->Color = bEnable ? clWindow : clInactiveBorder;
 }
@@ -1244,17 +1243,24 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
 
     //Time intervals same or greater precision enabled if enabled
     if (GroupBox6->Enabled) {
-       rbUnitYear->Enabled = rgPrecisionTimes->ItemIndex == DAY || rgPrecisionTimes->ItemIndex == MONTH || rgPrecisionTimes->ItemIndex == YEAR;
-       rbUnitYear->Checked = gpParams->m_nPrecision == 1;
-       rbUnitMonths->Enabled = rgPrecisionTimes->ItemIndex == DAY || rgPrecisionTimes->ItemIndex == MONTH;
-       rbUnitMonths->Checked = gpParams->m_nPrecision == 2;
-       rbUnitDay->Enabled = rgPrecisionTimes->ItemIndex == DAY;
-       rbUnitDay->Checked = gpParams->m_nPrecision == 3;
-       // set time interval radio button option
-       rbUnitYear->Checked =  true;
-       rbUnitMonths->Checked = false;
-       rbUnitDay->Checked = false;
-       gpParams->m_nIntervalUnits = 1;
+      rbUnitYear->Enabled = rgPrecisionTimes->ItemIndex == DAY || rgPrecisionTimes->ItemIndex == MONTH || rgPrecisionTimes->ItemIndex == YEAR;
+      rbUnitMonths->Enabled = rgPrecisionTimes->ItemIndex == DAY || rgPrecisionTimes->ItemIndex == MONTH;
+      rbUnitDay->Enabled = rgPrecisionTimes->ItemIndex == DAY;
+      switch (gpParams->m_nPrecision) {
+         case 1  : rbUnitYear->Checked = true;
+                   rbUnitMonths->Checked = false;
+                   rbUnitDay->Checked = false;
+                   break;
+         case 2  : if (! rbUnitYear->Checked && ! rbUnitMonths->Checked)
+                     rbUnitMonths->Checked = true;
+                   rbUnitDay->Checked = false;
+                   break;
+         case 3  : if (!rbUnitYear->Checked && !rbUnitMonths->Checked && !rbUnitDay->Checked)
+                     rbUnitDay->Checked = true;
+                   break;
+         default : if (!rbUnitYear->Checked && !rbUnitMonths->Checked && !rbUnitDay->Checked)
+                     rbUnitYear->Checked = true;
+      };
     }
 
     // prospective year group box
