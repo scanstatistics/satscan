@@ -1963,10 +1963,6 @@ bool CParameters::ValidateParameters() {
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for ellipses. Program currently does not support ellipses with lat/long coordinates.\n");
         }
 
-        // If number of ellipsoids > 0, then criteria for reporting secondary clusters must be "No Restrictions"
-        if ((m_nNumEllipses > 0) && (m_iCriteriaSecondClusters != 5))
-           SSGenerateException("  Error: Number of Ellipsiods is greater than zero and Criteria for Secondary Clusters is NOT set to No Restrictions.", "ValidateParameters()");
-
         if (!ValidateReplications(m_nReplicas)) {
            bValid = false;
            if (m_bDisplayErrors)
@@ -2168,6 +2164,11 @@ bool CParameters::ValidateParameters() {
           bValid = false;
           if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for criteria for reporting secondary clusters.\n\tPlease use a value between 0 and 5.\n");
+      }
+      if (m_iCriteriaSecondClusters != 5 && m_nNumEllipses) {
+          bValid = false;
+          if (m_bDisplayErrors)
+              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for criteria for reporting secondary clusters.\n\tAnalyses with ellipses can have no restrictions.\n");
       }
 
       // Verify Character Prospective start date (YYYY/MM/DD).
