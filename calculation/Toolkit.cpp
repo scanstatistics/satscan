@@ -274,6 +274,7 @@ void SaTScanToolkit::ReadParametersHistory() {
 /** internal setup */
 void SaTScanToolkit::Setup(const char * sApplicationFullPath) {
   try {
+    gbRunUpdateOnTerminate = false;
     //set application full path
     gsApplicationFullPath = sApplicationFullPath;
     //Set system ini located at same directory as executable.

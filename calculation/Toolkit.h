@@ -25,6 +25,8 @@ class SaTScanToolkit : public BToolkit {
     ZdString                    gsSystemFileName;
     ZdString                    gsApplicationFullPath;
     ParameterHistory_t          gvParameterHistory;
+    bool                        gbRunUpdateOnTerminate;
+    ZdString                    gsUpdateArchiveFilename;
 
     bool                        InsureRunHistoryFileName();
     bool                        InsureSessionProperty(const char * sSessionProperty, const char * sDefaultValue);
@@ -43,10 +45,14 @@ class SaTScanToolkit : public BToolkit {
    bool                         GetLogRunHistory() const;
    const ParameterHistory_t   & GetParameterHistory() const {return gvParameterHistory;}
    const char                 * GetRunHistoryFileName() /*const*/;
+   bool                         GetRunUpdateOnTerminate() const {return gbRunUpdateOnTerminate;}
    const char                 * GetSubstantiveSupportEmail() const;
    const char                 * GetSystemIniFileName() const {return gsSystemIniFileName;}  
    const char                 * GetTechnicalSupportEmail() const;
+   const ZdString             & GetUpdateArchiveFilename() const {return gsUpdateArchiveFilename;} 
    const char                 * GetWebSite() const;
+   void                         SetRunUpdateOnTerminate(bool b) {gbRunUpdateOnTerminate = b;}
+   void                         SetUpdateArchiveFilename(const char * sArchiveFile) {gsUpdateArchiveFilename = sArchiveFile;} 
 };
 
 SaTScanToolkit & GetToolkit();
