@@ -98,7 +98,7 @@ void CCluster::Display(FILE*     fp,
                        const     CParameters& Parameters,
                        const     CSaTScanData& Data,
                        int       nCluster,
-                       measure_t nMinMeasure)
+                       measure_t nMinMeasure, int iNumSimulations)
 {
    int    nLeftMargin = 26;
    int    nRightMargin = 67;
@@ -123,7 +123,7 @@ void CCluster::Display(FILE*     fp,
       //  fprintf(fp, "Census areas included");
       fprintf(fp, "Location IDs ");
       DisplayCensusTracts(fp, Data, -1, nMinMeasure,
-                          Parameters.GetNumReplicationsRequested(), 0, false, false,
+                          iNumSimulations, 0, false, false,
                           nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
     
       if (Parameters.GetCoordinatesType() == CARTESIAN)
@@ -158,16 +158,16 @@ void CCluster::Display(FILE*     fp,
           fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, GetDuczmalCorrectedLogLikelihoodRatio());
       }
 
-      if (Parameters.GetNumReplicationsRequested())
-        fprintf(fp, "%sMonte Carlo rank......: %ld/%ld\n", szSpacesOnLeft, m_nRank, Parameters.GetNumReplicationsRequested()+1);
+      if (iNumSimulations)
+        fprintf(fp, "%sMonte Carlo rank......: %ld/%ld\n", szSpacesOnLeft, m_nRank, iNumSimulations+1);
 
-      if (Parameters.GetNumReplicationsRequested() > 99)
+      if (iNumSimulations > 99)
         {
         fprintf(fp, "%sP-value...............: ", szSpacesOnLeft);
-        DisplayPVal(fp, Parameters.GetNumReplicationsRequested(), szSpacesOnLeft);
+        DisplayPVal(fp, iNumSimulations, szSpacesOnLeft);
         fprintf(fp, "\n");
         }
-      DisplayNullOccurrence(fp, Data, szSpacesOnLeft);
+      DisplayNullOccurrence(fp, Data, iNumSimulations, szSpacesOnLeft);
       DisplayTimeTrend(fp, szSpacesOnLeft);
       }
    catch (ZdException & x)
@@ -178,7 +178,7 @@ void CCluster::Display(FILE*     fp,
 }
 
 void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
-                                   int nCluster, measure_t nMinMeasure, int nReplicas,
+                                   int nCluster, measure_t nMinMeasure, int iNumSimulations,
                                    long lReportHistoryRunNumber,
                                    bool bIncludeRelRisk, bool bIncludePVal, int nLeftMargin, int nRightMargin,
                                    char cDeliminator, char* szSpacesOnLeft, bool bFormat)
@@ -188,7 +188,7 @@ void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
          fprintf(fp, "included.: ");
 
        DisplayCensusTractsInStep(fp, Data, 1, m_nTracts, nCluster, nMinMeasure,
-                            nReplicas, lReportHistoryRunNumber, bIncludeRelRisk, bIncludePVal,
+                            iNumSimulations, lReportHistoryRunNumber, bIncludeRelRisk, bIncludePVal,
                             nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft, bFormat);
    }
    catch (ZdException & x) {
@@ -199,9 +199,10 @@ void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
 
 void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                                          tract_t nFirstTract, tract_t nLastTract,
-                                         int nCluster, measure_t nMinMeasure, int nReplicas, long lReportHistoryRunNumber, bool bIncludeRelRisk,
-                                         bool bIncludePVal, int nLeftMargin, int nRightMargin, char cDeliminator,
-                                         char* szSpacesOnLeft, bool bFormat)
+                                         int nCluster, measure_t nMinMeasure, int iNumSimulations,
+                                         long lReportHistoryRunNumber, bool bIncludeRelRisk,
+                                         bool bIncludePVal, int nLeftMargin, int nRightMargin,
+                                         char cDeliminator, char* szSpacesOnLeft, bool bFormat)
 {
   int                                  pos  = nLeftMargin, nCount=0;
   tract_t                              tTract;
@@ -256,7 +257,7 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
             }
             if (bIncludePVal) {    // this is only displayed if Reps > 99
               fprintf(fp, "     ");
-              DisplayPVal(fp, nReplicas, szSpacesOnLeft);
+              DisplayPVal(fp, iNumSimulations, szSpacesOnLeft);
             }
             if (bIncludeRelRisk) {  // if we include the cluster rel risk, then we also include obs, exp, and rel_risk as well
               fprintf(fp, "\t %12i", GetCaseCountForTract(tTract, Data));      // area level obeserved clusters
@@ -271,7 +272,7 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
 
        // record DBF output data - AJV
        if(gpAreaData)
-          gpAreaData->RecordClusterData(*this, Data, nCluster, tTract);
+          gpAreaData->RecordClusterData(*this, Data, nCluster, tTract, iNumSimulations);
     }
 
     if (fp != NULL)
@@ -409,14 +410,14 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
 }
 
 /** Prints null occurrence rate for cluster given time interval units. */
-void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft) {
+void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, int iNumSimulations, char* szSpacesOnLeft) {
   float         fUnitsInOccurrence, fYears, fMonths, fDays, fIntervals, fAdjustedP_Value;
 
   try {
     if (Data.m_pParameters->GetIsProspectiveAnalysis() && Data.m_pParameters->GetNumReplicationsRequested() > 99) {
       fprintf(fp, "%sNull Occurrence.......: ", szSpacesOnLeft);
       fIntervals = Data.m_nTimeIntervals - Data.m_nProspectiveIntervalStart + 1;
-      fAdjustedP_Value = 1 - pow(1 - GetPVal(Data.m_pParameters->GetNumReplicationsRequested()), 1/fIntervals);
+      fAdjustedP_Value = 1 - pow(1 - GetPVal(iNumSimulations), 1/fIntervals);
       fUnitsInOccurrence = (fIntervals * Data.m_pParameters->GetTimeIntervalLength())/fAdjustedP_Value;
       switch (Data.m_pParameters->GetTimeIntervalUnitsType()) {
         case YEAR   : fprintf(fp, "Once in %.1f year%s\n", fUnitsInOccurrence, (fUnitsInOccurrence > 1 ? "s" : ""));

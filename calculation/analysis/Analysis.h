@@ -29,8 +29,7 @@ class TopClustersContainer {
     void                        SetTopClusters(const CCluster& InitialCluster);
 };
 
-class CAnalysis
-{
+class CAnalysis {
   protected:
     CParameters*                m_pParameters;
     CSaTScanData*               m_pData;
@@ -40,6 +39,7 @@ class CAnalysis
     tract_t                     m_nMaxClusters, m_nClustersToKeepEachPass, m_nClustersRetained, m_nClustersReported;
     double                      m_nMinRatioToReport;
     int                         m_nAnalysisCount, m_nPower_X_Count, m_nPower_Y_Count;
+    int                         giSimulationNumber;
     ZdString                    gsStartTime;
     FILE*                       m_pDebugFile;
     unsigned short              guwSignificantAt005;
@@ -47,6 +47,7 @@ class CAnalysis
     virtual void                AllocateTopClusterList();
     static int                  CompareClustersByRatio(const void *a, const void *b);
     static int                  CompareClustersByDuzcmalCorrectedRatio(const void *a, const void *b);
+    bool                        CheckForEarlyTermination(int iSimulation) const;
     void                        CreateGridOutputFile(const long lReportHistoryRunNumber);
     bool                        CreateReport(time_t RunTime);
     bool                        FinalizeReport(time_t RunTime);
@@ -74,9 +75,10 @@ class CAnalysis
     void                        DisplayFindClusterHeading();
     void                        DisplayTopClusterLogLikelihood();
     void                        DisplayTopClustersLogLikelihoods(FILE* fp);
-    virtual void                DisplayTopClusters(double nMinRatio, int nReps, const long lReportHistoryRunNumber, FILE* fp=stdout);
-    virtual void                DisplayTopCluster(double nMinRatio, int nReps, const long lReportHistoryRunNumber, FILE* fp=stdout);
+    virtual void                DisplayTopClusters(double nMinRatio, const long lReportHistoryRunNumber, FILE* fp=stdout);
+    virtual void                DisplayTopCluster(double nMinRatio, const long lReportHistoryRunNumber, FILE* fp=stdout);
     bool                        Execute(time_t RunTime);
+    const int                   GetNumSimulationsExecuted() const {return giSimulationNumber;}
     const CSaTScanData*         GetSatScanData() const { return m_pData; }
     const double                GetSimRatio01() const { return SimRatios.GetAlpha01(); }
     const double                GetSimRatio05() const { return SimRatios.GetAlpha05(); }

@@ -78,7 +78,7 @@ void CPurelyTemporalCluster::ComputeBestMeasures(const count_t* pCases, const me
 }
 
 void CPurelyTemporalCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, int nCluster,
-                                                 measure_t nMinMeasure, int nReplicas,
+                                                 measure_t nMinMeasure, int iNumSimulations,
                                                  long lReportHistoryRunNumber, bool bIncludeRelRisk,
                                                  bool bIncludePVal, int nLeftMargin, int nRightMargin,
                                                  char cDeliminator, char* szSpacesOnLeft, bool bFormat) {

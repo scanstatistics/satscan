@@ -108,6 +108,7 @@ CAnalysis::CAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *p
       m_nMinRatioToReport  = 0.001;
       m_nPower_X_Count     = 0;
       m_nPower_Y_Count     = 0;
+      giSimulationNumber   = 0;
 
       guwSignificantAt005       = 0;
 
@@ -172,7 +173,7 @@ bool CAnalysis::Execute(time_t RunTime) {
 #ifdef DEBUGANALYSIS
       DisplayVersion(m_pDebugFile, 0);
       fprintf(m_pDebugFile, "Program run on: %s", ctime(&RunTime));
-      m_pParameters->DisplayParameters(m_pDebugFile);
+      m_pParameters->DisplayParameters(m_pDebugFile, giSimulationNumber);
 #endif
 
 #ifdef INCLUDE_RUN_HISTORY
@@ -216,8 +217,8 @@ bool CAnalysis::Execute(time_t RunTime) {
 #ifdef INCLUDE_RUN_HISTORY
         // log history for first analysis run - AJV 12/27/2002
         if (m_nAnalysisCount == 1) {
-           gpPrintDirection->SatScanPrintf("\nLogging run history...");
-           double dPVal((m_nClustersRetained > 0) ? m_pTopClusters[0]->GetPVal(m_pParameters->GetNumReplicationsRequested()) : 0.0);
+           gpPrintDirection->SatScanPrintf("\nLogging run history...\n");
+           double dPVal((m_nClustersRetained > 0) ? m_pTopClusters[0]->GetPVal(giSimulationNumber) : 0.0);
            historyFile.LogNewHistory(*this, guwSignificantAt005, dPVal);
         }
 #endif
@@ -282,6 +283,25 @@ void CAnalysis::AllocateTopClusterList() {
   return 0;
 } /* CompareClusters() */
 
+
+bool CAnalysis::CheckForEarlyTermination(int iSimulation) const {
+  float fCutOff;
+
+  if (iSimulation == m_pParameters->GetNumReplicationsRequested())
+    return false;
+  if (m_nClustersRetained > 0) {
+    switch (iSimulation) {
+      case 99   : fCutOff = .5; break;
+      case 199  : fCutOff = .4; break;
+      case 499  : fCutOff = .2; break;
+      case 999  : fCutOff = .1; break;
+      default   : return false;
+    }
+    return (m_pTopClusters[0]->GetPVal(iSimulation) > fCutOff);
+  }
+  return false;
+}
+
 //******************************************************************************
 //  Create the Most Likely Cluster Output File
 //******************************************************************************
@@ -290,15 +310,12 @@ void CAnalysis::CreateGridOutputFile(const long lReportHistoryRunNumber) {
       if (m_pParameters->GetOutputClusterLevelFiles()) {
          std::auto_ptr<stsClusterData> pData( new stsClusterData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(),
                                                                  lReportHistoryRunNumber, m_pParameters->GetCoordinatesType(), m_pParameters->GetProbabiltyModelType(),
-                                                                 m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumReplicationsRequested() > 99,
+                                                                 m_pParameters->GetDimensionsOfData(), giSimulationNumber > 99,
                                                                  m_pParameters->GetNumRequestedEllipses() > 0, m_pParameters->GetDuczmalCorrectEllipses()));
-
-         for (int i = 0; i < m_nClustersRetained; ++i) {
-            // print out user notification every 20 recorded clusters to let user know program is still working - AJV 10/3/2002
-            if((i%20) == 0)
-               gpPrintDirection->SatScanPrintf("%i out of %i records recorded to cluster file so far...", i, m_nClustersRetained);
-            pData->RecordClusterData(*m_pTopClusters[i], *m_pData, i+1);
-         }
+         if (m_nClustersRetained)
+           gpPrintDirection->SatScanPrintf("Recording results for %i cluster%s...", m_nClustersRetained, (m_nClustersRetained == 1 ? "" : "s"));
+         for (int i = 0; i < m_nClustersRetained; ++i)
+            pData->RecordClusterData(*m_pTopClusters[i], *m_pData, i+1, giSimulationNumber);
 
          // only append if analysis count is greater than 1 which implies sequential scan is taking place with
          // more than one iteration -- AJV 12/30/2002
@@ -387,7 +404,7 @@ void CAnalysis::DisplayFindClusterHeading() {
 // to area specific output file, if applicable
 // pre: none
 // post: prints the information for the top cluster to the area, if applicable, and result files
-void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long lReportHistoryRunNumber, FILE* fp) {
+void CAnalysis::DisplayTopCluster(double nMinRatio, const long lReportHistoryRunNumber, FILE* fp) {
   measure_t                             nMinMeasure = 0;
   std::auto_ptr<stsAreaSpecificData>    pData;
 
@@ -395,21 +412,21 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long lRepor
     if (m_nClustersRetained > 0) {
       if (m_pParameters->GetOutputAreaSpecificFiles())
         pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->GetNumReplicationsRequested() > 99));
-      if (m_pTopClusters[0]->m_nRatio > nMinRatio && (nReps == 0 || m_pTopClusters[0]->m_nRank  <= nReps)) {
+      if (m_pTopClusters[0]->m_nRatio > nMinRatio && (giSimulationNumber == 0 || m_pTopClusters[0]->m_nRank  <= giSimulationNumber)) {
         ++m_nClustersReported;
         switch(m_nAnalysisCount) {
           case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
           case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
           default : fprintf(fp,"                  _____________________________\n\n");
         }
-        m_pTopClusters[0]->Display(fp, *m_pParameters, *m_pData, m_nClustersReported, nMinMeasure);
+        m_pTopClusters[0]->Display(fp, *m_pParameters, *m_pData, m_nClustersReported, nMinMeasure, giSimulationNumber);
         if (m_pTopClusters[0]->m_nRatio > SimRatios.GetAlpha05())
           ++guwSignificantAt005;
         // if we want area specific report, set the report pointer in cluster
         if (pData.get()) {
           m_pTopClusters[0]->SetAreaReport(pData.get());
-          m_pTopClusters[0]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->GetNumReplicationsRequested(),
-                                                  lReportHistoryRunNumber, true, m_pParameters->GetNumReplicationsRequested() > 99, 0, 0, ' ', NULL, false);
+          m_pTopClusters[0]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, giSimulationNumber,
+                                                  lReportHistoryRunNumber, true, giSimulationNumber > 99, 0, 0, ' ', NULL, false);
         }
       }
       fprintf(fp, "\n");
@@ -433,7 +450,7 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long lRepor
 // to area specific output file, if applicable
 // pre: none
 // post: prints the information for the top clusters to the area, if applicable, and result files
-void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long lReportHistoryRunNumber, FILE* fp) {
+void CAnalysis::DisplayTopClusters(double nMinRatio, const long lReportHistoryRunNumber, FILE* fp) {
   double                               dSignifRatio05;
   std::auto_ptr<stsAreaSpecificData>   pData;
   clock_t                              lStartTime;
@@ -442,29 +459,29 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long lRepo
   try {
     m_nClustersReported = 0;
     if (m_pParameters->GetOutputAreaSpecificFiles())
-      pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->GetNumReplicationsRequested() > 99));
+      pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, giSimulationNumber > 99));
     dSignifRatio05 = SimRatios.GetAlpha05();
     //If  no replications, attempt to display up to top 10 clusters.
-    tract_t tNumClustersToDisplay(nReps == 0 ? std::min(10, m_nClustersRetained) : m_nClustersRetained);
+    tract_t tNumClustersToDisplay(giSimulationNumber == 0 ? std::min(10, m_nClustersRetained) : m_nClustersRetained);
     lStartTime = clock(); //get clock for calculating output time
     for (tract_t i=0; i < tNumClustersToDisplay; ++i) {
        if (i==1)
          ReportTimeEstimate(lStartTime, tNumClustersToDisplay, i, gpPrintDirection);
-       if (m_pTopClusters[i]->m_nRatio > nMinRatio && (nReps == 0 || m_pTopClusters[i]->m_nRank  <= nReps)) {
+       if (m_pTopClusters[i]->m_nRatio > nMinRatio && (giSimulationNumber == 0 || m_pTopClusters[i]->m_nRank  <= giSimulationNumber)) {
          ++m_nClustersReported;
          switch (m_nClustersReported) {
            case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
            case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
            default : fprintf(fp, "\n"); break;
          }
-         m_pTopClusters[i]->Display(fp, *m_pParameters, *m_pData, m_nClustersReported, nMinMeasure);
+         m_pTopClusters[i]->Display(fp, *m_pParameters, *m_pData, m_nClustersReported, nMinMeasure, giSimulationNumber);
          if (m_pTopClusters[i]->m_nRatio > dSignifRatio05)
            ++guwSignificantAt005;
          // if doing area specific output, set the report pointer - not the most effective way to do this, but the least intrusive - AJV
          if (pData.get()) {
            m_pTopClusters[i]->SetAreaReport(pData.get());
-           m_pTopClusters[i]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->GetNumReplicationsRequested(),
-                                                    lReportHistoryRunNumber, true, m_pParameters->GetNumReplicationsRequested() > 99, 0, 0, ' ', NULL, false);
+           m_pTopClusters[i]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, giSimulationNumber,
+                                                    lReportHistoryRunNumber, true, giSimulationNumber > 99, 0, 0, ' ', NULL, false);
          }
        }   // end if top cluster > minratio
     }   // end for loop
@@ -565,7 +582,7 @@ bool CAnalysis::FinalizeReport(time_t RunTime) {
 
       m_pData->GetTInfo()->tiReportDuplicateTracts(fp);
 
-      m_pParameters->DisplayParameters(fp);
+      m_pParameters->DisplayParameters(fp, giSimulationNumber);
 
       time(&CompletionTime);
       nTotalTime = difftime(CompletionTime, RunTime);
@@ -689,7 +706,8 @@ void CAnalysis::PerformSimulations() {
         SimRatios.Initialize();
 
         for (iSimulationNumber=1; (iSimulationNumber <= m_pParameters->GetNumReplicationsRequested()) && !gpPrintDirection->GetIsCanceled(); iSimulationNumber++) {
-          m_pData->MakeData(iSimulationNumber);
+          giSimulationNumber = iSimulationNumber;
+          m_pData->MakeData(giSimulationNumber);
           r = (m_pParameters->GetIsProspectiveAnalysis()) ? MonteCarloProspective() : MonteCarlo();
           UpdateTopClustersRank(r);
           SimRatios.AddRatio(r);
@@ -701,8 +719,8 @@ void CAnalysis::PerformSimulations() {
           fprintf(m_pDebugFile, "%s = %7.21f\n\n",
                   (Parameters.GetLogLikelihoodRatioIsTestStatistic() ? "Test statistic" : "Log Likelihood Ratio"), r);
  #endif
-          if (iSimulationNumber==1) {
-            ReportTimeEstimate(nStartTime, m_pParameters->GetNumReplicationsRequested(), iSimulationNumber, gpPrintDirection);
+          if (giSimulationNumber==1) {
+            ReportTimeEstimate(nStartTime, m_pParameters->GetNumReplicationsRequested(), giSimulationNumber, gpPrintDirection);
             //Simulations taking less than one second to complete hinder user seeing most likely clusters
             //loglikelihood ratio, so pause program.
             if ((clock() - nStartTime)/CLK_TCK < 1)
@@ -712,8 +730,10 @@ void CAnalysis::PerformSimulations() {
               sleep(5);
 #endif
           }
-          gpPrintDirection->SatScanPrintf(sReplicationFormatString, iSimulationNumber, m_pParameters->GetNumReplicationsRequested(), r);
+          gpPrintDirection->SatScanPrintf(sReplicationFormatString, giSimulationNumber, m_pParameters->GetNumReplicationsRequested(), r);
 
+          if (m_pParameters->GetTerminateSimulationsEarly() && CheckForEarlyTermination(giSimulationNumber))
+            break;
           // best to just check if the data pointer is set instead of checking the criteria for setting again so will
           // only have to check that criteria in one place instead of two -- AJV 12/30/2002
           if(pLLRData.get())
@@ -992,8 +1012,8 @@ bool CAnalysis::RepeatAnalysis()
       if (m_pParameters->GetIsSequentialScanning())
          bReturn = ( m_pTopClusters[0] &&
                     (m_nAnalysisCount < m_pParameters->GetNumSequentialScansRequested()) &&
-                    (m_pTopClusters[0]->GetPVal(m_pParameters->GetNumReplicationsRequested()) < m_pParameters->GetSequentialCutOffPValue()) &&
-                    (m_pData->m_nTracts > 1));
+                    (m_pTopClusters[0]->GetPVal(giSimulationNumber) < m_pParameters->GetSequentialCutOffPValue()) &&
+                    (m_pData->m_nTracts > 1) && (giSimulationNumber < m_pParameters->GetNumReplicationsRequested()));
    }
    catch (ZdException & x) {
       x.AddCallpath("RepeatAnalysis()", "CAnalysis");
@@ -1028,18 +1048,18 @@ bool CAnalysis::UpdateReport(const long lReportHistoryRunNumber) {
       OpenReportFile(fp, "a");
 
       if (m_pParameters->GetIsSequentialScanning())
-        DisplayTopCluster(m_nMinRatioToReport, m_pParameters->GetNumReplicationsRequested(), lReportHistoryRunNumber, fp);
+        DisplayTopCluster(m_nMinRatioToReport, lReportHistoryRunNumber, fp);
       else
-        DisplayTopClusters(m_nMinRatioToReport, m_pParameters->GetNumReplicationsRequested(), lReportHistoryRunNumber, fp);
+        DisplayTopClusters(m_nMinRatioToReport, lReportHistoryRunNumber, fp);
 
-      if (m_pParameters->GetNumReplicationsRequested() >= 19 && m_nClustersReported > 0) {
+      if (giSimulationNumber >= 19 && m_nClustersReported > 0) {
         // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
         fprintf(fp, "The %s value required for an observed\n",
                (m_pParameters->GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"));
         fprintf(fp, "cluster to be significant at level\n");
-        if (m_pParameters->GetNumReplicationsRequested() >= 99)
+        if (giSimulationNumber >= 99)
           fprintf(fp,"... 0.01: %f\n", SimRatios.GetAlpha01());
-        if (m_pParameters->GetNumReplicationsRequested() >= 19)
+        if (giSimulationNumber >= 19)
           fprintf(fp,"... 0.05: %f\n", SimRatios.GetAlpha05());
         fprintf(fp, "\n");
       }
@@ -1047,9 +1067,15 @@ bool CAnalysis::UpdateReport(const long lReportHistoryRunNumber) {
       if (m_pParameters->GetIsPowerCalculated()) {
         fprintf(fp,"Percentage of Monte Carlo replications with a likelihood greater than\n");
         fprintf(fp,"... X (%f) : %f\n", m_pParameters->GetPowerCalculationX(),
-                ((double)m_nPower_X_Count)/m_pParameters->GetNumReplicationsRequested());
+                ((double)m_nPower_X_Count)/giSimulationNumber);
         fprintf(fp,"... Y (%f) : %f\n\n", m_pParameters->GetPowerCalculationY(),
-                ((double)m_nPower_Y_Count)/m_pParameters->GetNumReplicationsRequested());
+                ((double)m_nPower_Y_Count)/giSimulationNumber);
+      }
+
+      if (giSimulationNumber < m_pParameters->GetNumReplicationsRequested()) {
+        fprintf(fp, "\nNOTE: The optional sequential procedure was used to terminate the\n");
+        fprintf(fp, "      simulations early for large p-values. This means that the\n");
+        fprintf(fp, "      reported p-values are slightly conservative.\n");
       }
 
       if (!m_pParameters->UseSpecialGrid() && m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME) {

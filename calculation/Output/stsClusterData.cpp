@@ -207,7 +207,7 @@ void stsClusterData::Init() {
 // in the global vector of cluster records
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropriate data into the cluster record
-void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber) {
+void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, int iNumSimulations) {
    ZdString                     sRadius, sLatitude, sLongitude;
    float                        fPVal;
    ZdString                     sTempValue, sStartDate, sEndDate, sShape, sAngle;
@@ -260,7 +260,7 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
            
       // p value
       if (gbPrintPVal) {
-         fPVal = (float) theCluster.GetPVal(theData.m_pParameters->GetNumReplicationsRequested());
+         fPVal = (float) theCluster.GetPVal(iNumSimulations);
          pRecord->SetPValue(fPVal);
       }
                  

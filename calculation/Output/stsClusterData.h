@@ -34,7 +34,7 @@ class stsClusterData : public BaseOutputStorageClass {
                                 const bool bDuczmalCorrect = false);
       virtual    ~stsClusterData();
 
-      void      RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber);
+      void      RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, int iNumSimulations);
 };
 
 class ClusterRecord : public BaseOutputRecord {

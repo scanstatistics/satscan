@@ -35,7 +35,7 @@ class CPurelyTemporalCluster : public CCluster {
     inline virtual void                 ComputeBestMeasures(const count_t* pCases, const measure_t* pMeasure, CMeasureList & MeasureList);
     virtual void                        DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
                                                             int nCluster,  measure_t nMinMeasure,
-                                                            int nReplicas, long lReportHistoryRunNumber,
+                                                            int iNumSimulations, long lReportHistoryRunNumber,
                                                             bool bIncludeRelRisk, bool bIncludePVal,
                                                             int nLeftMargin, int nRightMargin,
                                                             char cDeliminator, char* szSpacesOnLeft, bool bFormat = true);

@@ -57,23 +57,21 @@ class CCluster {
     virtual void        AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {};
     virtual bool        ClusterDefined() {return (m_bClusterDefined==true);}
     const double        ConvertAngleToDegrees(double dAngle) const;
-    virtual void        Display(FILE*     fp,
-                                const     CParameters& Parameters,
-                                const CSaTScanData& Data,
-                                int       nCluster,
-                                 measure_t nMinMeasure);
+    virtual void        Display(FILE* fp, const     CParameters& Parameters,
+                                const CSaTScanData& Data, int nCluster,
+                                measure_t nMinMeasure, int iNumSimulations);
     virtual void        DisplayAnnualTimeTrendWithoutTitle(FILE* fp) {/*stub - no action*/}                                 
     virtual void        DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
-                                            int nCluster,  measure_t nMinMeasure, int nReplicas,
-                                            long lReportHistoryRunNumber,
+                                            int nCluster,  measure_t nMinMeasure,
+                                            int iNumSimulations, long lReportHistoryRunNumber,
                                             bool bIncludeRelRisk, bool bIncludePVal,
                                             int nLeftMargin, int nRightMargin,
                                             char cDeliminator, char* szSpacesOnLeft,
                                             bool bFormat = true);
     void                DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                                                 tract_t nFirstTract, tract_t nLastTract,
-                                                int nCluster, measure_t nMinMeasure, int nReplicas,
-                                                long lReportHistoryRunNumber,
+                                                int nCluster, measure_t nMinMeasure,
+                                                int iNumSimulations, long lReportHistoryRunNumber,
                                                 bool bIncludeRelRisk, bool bIncludePVal,
                                                 int nLeftMargin, int nRightMargin,
                                                 char cDeliminator, char* szSpacesOnLeft,
@@ -84,7 +82,7 @@ class CCluster {
     virtual void        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
                                         int nLeftMargin, int nRightMargin,
                                         char cDeliminator, char* szSpacesOnLeft);
-    virtual void        DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft);
+    virtual void        DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, int iNumSimulations, char* szSpacesOnLeft);
     virtual void        DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft);
     virtual void        DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft);
     virtual void        DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment,

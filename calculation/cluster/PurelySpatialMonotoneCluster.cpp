@@ -287,7 +287,7 @@ void CPSMonotoneCluster::SetTotalTracts()
 
 void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
                                              int nCluster, measure_t nMinMeasure,
-                                             int nReplicas, long lReportHistoryRunNumber,
+                                             int iNumSimulations, long lReportHistoryRunNumber,
                                              bool bIncludeRelRisk, bool bIncludePVal,
                                              int nLeftMargin, int nRightMargin,
                                              char cDeliminator, char* szSpacesOnLeft,
@@ -310,7 +310,7 @@ void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
     
         DisplayCensusTractsInStep(fp, Data, m_pFirstNeighborList[i],
                                   m_pLastNeighborList[i], nCluster, nMinMeasure,
-                                  nReplicas, lReportHistoryRunNumber, bIncludeRelRisk, bIncludePVal,
+                                  iNumSimulations, lReportHistoryRunNumber, bIncludeRelRisk, bIncludePVal,
                                   nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft,
                                   bFormat);
         }

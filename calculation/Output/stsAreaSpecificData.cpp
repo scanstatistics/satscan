@@ -167,7 +167,7 @@ void stsAreaSpecificData::Init() {
 // records the calculated data from the cluster into the dBase file
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
-void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, tract_t tTract) {
+void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, tract_t tTract, int iNumSimulations) {
    ZdString             sTempValue;
    std::string          sBuffer;
    AreaSpecificRecord*	pRecord = 0;
@@ -195,7 +195,7 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CS
 
             // p value
             if(gbPrintPVal) {
-               float fPVal = (float) theCluster.GetPVal(theData.m_pParameters->GetNumReplicationsRequested());
+               float fPVal = (float) theCluster.GetPVal(iNumSimulations);
                pRecord->SetPValue(fPVal);
             }
 
@@ -218,7 +218,7 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CS
 
          // p value
          if(gbPrintPVal) {
-            float fPVal = (float) theCluster.GetPVal(theData.m_pParameters->GetNumReplicationsRequested());
+            float fPVal = (float) theCluster.GetPVal(iNumSimulations);
             pRecord->SetPValue(fPVal);
          }
 

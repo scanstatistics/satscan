@@ -21,7 +21,7 @@ class stsAreaSpecificData : public BaseOutputStorageClass {
       stsAreaSpecificData(BasePrint *pPrintDirection, const ZdString& sOutputFileName, const long lRunNumber, const bool bPrintPVal);
       virtual ~stsAreaSpecificData();
 
-      virtual void   RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, tract_t tTract);
+      virtual void   RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, tract_t tTract, int iNumSimulations);
 };
 
 class AreaSpecificRecord : public BaseOutputRecord {
