@@ -841,21 +841,22 @@ void CSaTScanData::SetMaxCircleSize() {
 }
 
 /* Calculates which time interval the prospectice space-time start date is in.*/
-/* MAKE SURE THIS IS EXECUTED AFTER THE  m_nTimeIntervals VARIABLE HAS BEEN SET */
 int CSaTScanData::CalculateProspectiveIntervalStart() const {
-  int   iDateIndex;
+  int   iDateIndex = m_nTimeIntervals;
 
   try {
-    iDateIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetProspectiveStartDate().c_str()));
+    if (gParameters.GetAdjustForEarlierAnalyses()) {
+       iDateIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetProspectiveStartDate().c_str()));
 
-    if (iDateIndex < 0)
-      GenerateResolvableException("Error: : The start date for prospective analyses '%s' is prior to the study period start date '%s'.\n",
-                                  "SetProspectiveIntervalStart()", gParameters.GetProspectiveStartDate().c_str(),
-                                  gParameters.GetStudyPeriodStartDate().c_str());
-    if (iDateIndex > m_nTimeIntervals)
-      GenerateResolvableException("Error: The start date for prospective analyses '%s' occurs after the study period end date '%s'.\n",
-                                  "SetProspectiveIntervalStart", gParameters.GetProspectiveStartDate().c_str(),
-                                  gParameters.GetStudyPeriodEndDate().c_str());
+      if (iDateIndex < 0)
+        GenerateResolvableException("Error: : The start date for prospective analyses '%s' is prior to the study period start date '%s'.\n",
+                                    "SetProspectiveIntervalStart()", gParameters.GetProspectiveStartDate().c_str(),
+                                    gParameters.GetStudyPeriodStartDate().c_str());
+      if (iDateIndex > m_nTimeIntervals)
+        GenerateResolvableException("Error: The start date for prospective analyses '%s' occurs after the study period end date '%s'.\n",
+                                    "SetProspectiveIntervalStart", gParameters.GetProspectiveStartDate().c_str(),
+                                    gParameters.GetStudyPeriodEndDate().c_str());
+    }
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateProspectiveIntervalStart()","CSaTScanData");
