@@ -27,100 +27,14 @@ void __fastcall TfrmAbout::lblWebSiteClick(TObject *Sender) {
   }
 }
 //---------------------------------------------------------------------------
-
-void __fastcall TfrmAbout::lblEmailClick(TObject *Sender) {
-   PMapiRecipDesc   pRecipient = 0;
-   TMapiMessage     theMapiMessage;
-   ZdString         sMessageText, sMessage;
-   unsigned long    ulError;
-
-   try {
-      Screen->Cursor = crHourGlass;
-      ulError = MapiResolveName ( 0, 0, const_cast<char*>(GetToolkit().GetSubstantiveSupportEmail()), 0, 0, pRecipient );
-      if ( ulError == SUCCESS_SUCCESS ){
-         theMapiMessage.ulReserved = 0;
-         theMapiMessage.lpszSubject = "SaTScan";
-         theMapiMessage.lpszNoteText = 0;
-         theMapiMessage.lpszMessageType = 0;
-         theMapiMessage.lpszDateReceived = 0;
-         theMapiMessage.lpszConversationID = 0;
-         theMapiMessage.flFlags = 0;
-         theMapiMessage.lpOriginator = NULL;
-         theMapiMessage.nRecipCount = 1;
-         theMapiMessage.lpRecips = pRecipient;
-         theMapiMessage.nFileCount = 0;
-         theMapiMessage.lpFiles = NULL;
-
-         Screen->Cursor = crDefault;
-         ulError = MapiSendMail(0, (unsigned int)this->Handle, theMapiMessage, MAPI_DIALOG | MAPI_LOGON_UI, 0);
-         if (ulError != 0) {   //returns zero on success
-            switch(ulError) {
-               case MAPI_E_AMBIGUOUS_RECIPIENT:
-                  sMessage << "Ambiguous recipient";
-                  Application->MessageBox(sMessage.GetCString(), "Error!", MB_OK);
-                  break;
-               case MAPI_E_UNKNOWN_RECIPIENT:
-                  sMessage << "Unknown recipient";
-                  Application->MessageBox(sMessage.GetCString(), "Error!", MB_OK);
-                  break;
-               case MAPI_E_INSUFFICIENT_MEMORY:
-                  sMessage << "Insuficient memory";
-                  Application->MessageBox(sMessage.GetCString(), "Error!", MB_OK);
-                  break;
-               case MAPI_E_LOGIN_FAILURE:
-                  sMessage << "Email login failure";
-                  Application->MessageBox(sMessage.GetCString(), "Error!", MB_OK);
-                  break;
-               case MAPI_E_USER_ABORT:     // user abort, do nothing
-                  break;
-               default:
-                  sMessage << "Email was not able to be sent.";
-                  Application->MessageBox(sMessage.GetCString(), "Error!", MB_OK);
-                  break;
-            }
-         }  // end if error
-      } // end if success
-      else {
-         Screen->Cursor = crDefault;
-         Application->MessageBox("You must open Outlook or your default email service before\n continuing with this email. Please try again.."
-                                 "\nIf this problem persists please contact technical support.", "Warning", MB_OK);
-      }
-
-      MapiFreeBuffer(pRecipient);
-   }
-   catch (ZdException &x) {
-      Screen->Cursor = crDefault;
-      MapiFreeBuffer(pRecipient);
-      x.AddCallpath("OnEmailClick()", "TBdlgTechSupport");
-      throw;
-   }
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfrmAbout::lblLicenseClick(TObject *Sender) {
-   try {
-    int iResult = ( int )ShellExecute(Handle, "open", GetToolkit().GetLicenceWebSite(), 0, 0, SW_SHOWDEFAULT);
-    if (iResult <= 32)
-      ZdException::GenerateNotification("Unable to open SaTScan Web site.\nIf problem persists, please contact technical support.( code %d )", "OnSquishClick()", iResult);
-  }
-  catch (ZdException &x) {
-     x.AddCallpath("lblLicenseClick()", "TfrmAbout");
-     throw;
-  }
-}
-//---------------------------------------------------------------------------
 /** internal setup function */
 void TfrmAbout::Setup() {
-  ZdString      sCaptionText;
-
   try {
-    lblEmail->Caption = GetToolkit().GetSubstantiveSupportEmail();
-    lblVersion->Caption = AnsiString("v.") + VERSION_NUMBER;
-    lblVersionDate->Caption = VERSION_DATE;
+    lblVersion->Caption = AnsiString("SaTScan v") + VERSION_NUMBER;
+    lblVersion->Width = 440;
+    lblTitle->Width = 440;
+    lblReleaseDate->Caption = AnsiString("Release Date: ") + VERSION_DATE;
     lblWebSite->Caption = GetToolkit().GetWebSite();
-    sCaptionText << "SaTScan v." << VERSION_NUMBER << ":  Software for the spatial and space-time";
-    sCaptionText << " scan statistics.\nBethesda, MD;  National Cancer Institute, 2002.";
-    Label5->Caption = sCaptionText.GetCString();
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()", "TfrmAbout");

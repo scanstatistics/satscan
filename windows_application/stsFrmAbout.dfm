@@ -1,9 +1,9 @@
 object frmAbout: TfrmAbout
-  Left = 387
+  Left = 312
   Top = 165
   BorderStyle = bsDialog
   Caption = 'About SaTScan'
-  ClientHeight = 382
+  ClientHeight = 328
   ClientWidth = 474
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -50,25 +50,12 @@ object frmAbout: TfrmAbout
   Position = poScreenCenter
   PixelsPerInch = 96
   TextHeight = 13
-  object Label1: TLabel
-    Left = 24
-    Top = 12
-    Width = 105
-    Height = 29
-    Caption = 'SaTScan '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -24
-    Font.Name = 'MS Sans Serif'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object lblVersionDate: TLabel
-    Left = 64
-    Top = 48
-    Width = 99
+  object lblReleaseDate: TLabel
+    Left = 12
+    Top = 83
+    Width = 192
     Height = 16
-    Caption = 'October 17, 2002'
+    Caption = 'Release Date : January 31, 2003'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -76,68 +63,10 @@ object frmAbout: TfrmAbout
     Font.Style = []
     ParentFont = False
   end
-  object Label12: TLabel
-    Left = 24
-    Top = 140
-    Width = 43
-    Height = 17
-    AutoSize = False
-    Caption = 'Email:'
-    Font.Charset = ANSI_CHARSET
-    Font.Color = clBlack
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = [fsBold]
-    ParentFont = False
-    WordWrap = True
-  end
-  object lblEmail: TLabel
-    Left = 88
-    Top = 140
-    Width = 169
-    Height = 17
-    Cursor = crHandPoint
-    AutoSize = False
-    Caption = 'satscan@nih.gov'
-    Font.Charset = ANSI_CHARSET
-    Font.Color = clBlue
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = [fsUnderline]
-    ParentFont = False
-    WordWrap = True
-    OnClick = lblEmailClick
-  end
-  object Label9: TLabel
-    Left = 24
-    Top = 71
-    Width = 319
-    Height = 16
-    Caption = 'Software for the spatial and space-time scan statistics.'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label10: TLabel
-    Left = 24
-    Top = 94
-    Width = 298
-    Height = 16
-    Caption = 'National Cancer Institute, NIH, Bethesda, Maryland'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label11: TLabel
-    Left = 24
-    Top = 118
-    Width = 73
+  object lblWebSiteLabel: TLabel
+    Left = 12
+    Top = 62
+    Width = 61
     Height = 17
     AutoSize = False
     Caption = 'Web Site:  '
@@ -145,18 +74,17 @@ object frmAbout: TfrmAbout
     Font.Color = clBlack
     Font.Height = -13
     Font.Name = 'MS Sans Serif'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentFont = False
     WordWrap = True
   end
   object lblWebSite: TLabel
-    Left = 96
-    Top = 118
-    Width = 313
-    Height = 17
+    Left = 76
+    Top = 62
+    Width = 136
+    Height = 16
     Cursor = crHandPoint
-    AutoSize = False
-    Caption = 'http://srab.cancer.gov/satscan/'
+    Caption = 'http://www.satscan.org/'
     Font.Charset = ANSI_CHARSET
     Font.Color = clBlue
     Font.Height = -13
@@ -166,46 +94,15 @@ object frmAbout: TfrmAbout
     WordWrap = True
     OnClick = lblWebSiteClick
   end
-  object Label2: TLabel
-    Left = 24
-    Top = 177
-    Width = 431
-    Height = 48
-    Caption = 
-      'Martin Kulldorff, Associate Professor of Biostatistics, Universi' +
-      'ty                      of Connecticut and Information Managemen' +
-      't Services, Inc.,                              Silver Spring, Ma' +
-      'ryland.'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    WordWrap = True
-  end
-  object Label4: TLabel
-    Left = 24
-    Top = 234
-    Width = 377
-    Height = 16
-    Caption = 'This software may be used, at no charge, in accordance with the'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    WordWrap = True
-  end
-  object Label5: TLabel
-    Left = 24
-    Top = 308
-    Width = 415
+  object lblAuthors: TLabel
+    Left = 12
+    Top = 105
+    Width = 450
     Height = 32
     Caption = 
-      'SaTScan v.3.0:  Software for the spatial and space-time scan sta' +
-      'tistics. Bethesda, MD;  National Cancer Institute, 2002.'
+      'Authors: Martin Kulldorff, University of Connecticut,           ' +
+      '                                                            and ' +
+      'Information Management Services Inc, Silver Spring, Maryland.'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -214,12 +111,32 @@ object frmAbout: TfrmAbout
     ParentFont = False
     WordWrap = True
   end
-  object Label6: TLabel
-    Left = 24
-    Top = 272
-    Width = 117
-    Height = 16
-    Caption = 'Suggested citation: '
+  object lblUsuage: TLabel
+    Left = 12
+    Top = 149
+    Width = 450
+    Height = 32
+    Caption = 
+      'This software may be freely used as long as proper citations are' +
+      ' given to both the software and the underlying statistical metho' +
+      'ds.'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+    WordWrap = True
+  end
+  object lblCitation: TLabel
+    Left = 12
+    Top = 193
+    Width = 450
+    Height = 48
+    Caption = 
+      'Suggested software citation: Kulldorff M and Information Managem' +
+      'ent Services Inc., SaTScan v3.1: Software for the spatial and sp' +
+      'ace-time scan statistics. http://www.satscan.org/, 2003. '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -229,85 +146,44 @@ object frmAbout: TfrmAbout
     WordWrap = True
   end
   object lblVersion: TLabel
-    Left = 152
+    Left = 12
     Top = 12
-    Width = 55
-    Height = 29
-    Caption = 'v 3.0'
+    Width = 440
+    Height = 16
+    Alignment = taCenter
+    AutoSize = False
+    Caption = 'SaTScan v3.1.0'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -24
+    Font.Height = -13
     Font.Name = 'MS Sans Serif'
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label7: TLabel
-    Left = 24
-    Top = 48
-    Width = 38
-    Height = 16
-    Caption = 'Date:  '
+  object lblFurtherInfomation: TLabel
+    Left = 12
+    Top = 253
+    Width = 440
+    Height = 32
+    Caption = 
+      'For suggested methodological citations, see the accompanying SaT' +
+      'Scan User Guide.'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
+    WordWrap = True
   end
-  object Label3: TLabel
-    Left = 24
-    Top = 291
-    Width = 322
+  object lblTitle: TLabel
+    Left = 12
+    Top = 32
+    Width = 440
     Height = 16
-    Caption = 'Kulldorff M and Information Management Services, Inc. '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label8: TLabel
-    Left = 24
-    Top = 162
-    Width = 63
-    Height = 16
-    Caption = 'Written By:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-  end
-  object lblTrademark: TLabel
-    Left = 128
-    Top = 10
-    Width = 16
-    Height = 13
-    Caption = 'TM'
-  end
-  object lblLicense: TLabel
-    Left = 24
-    Top = 250
-    Width = 111
-    Height = 16
-    Cursor = crHandPoint
-    Caption = 'license agreement'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlue
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = [fsUnderline]
-    ParentFont = False
-    OnClick = lblLicenseClick
-  end
-  object Label14: TLabel
-    Left = 140
-    Top = 250
-    Width = 213
-    Height = 16
-    Caption = 'as long as a proper citation is given.'
+    Alignment = taCenter
+    AutoSize = False
+    Caption = 'Software for the Spatial and Space-Time Scan Statistics.'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -316,10 +192,10 @@ object frmAbout: TfrmAbout
     ParentFont = False
   end
   object Button1: TButton
-    Left = 368
-    Top = 347
-    Width = 90
-    Height = 25
+    Left = 200
+    Top = 297
+    Width = 70
+    Height = 24
     Caption = 'Ok'
     TabOrder = 0
     OnClick = Button1Click
