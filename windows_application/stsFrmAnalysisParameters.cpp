@@ -163,7 +163,6 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
          CreateTXDFile(sFileName, gvControlFileFieldDescriptors);
          auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
-         pImporter->ShowModal();
          if (pImporter->ShowModal() == mrOk) {
            AttemptFilterDateFields(sFileName.GetFullPath(), "%y/%m/%d", 2);
            strcpy(gpParams->m_szControlFilename, sFileName.GetFullPath());
