@@ -162,6 +162,10 @@ stsAreaSpecificData::~stsAreaSpecificData() {
 
 // global inits
 void stsAreaSpecificData::Init() {
+   //The relational link between the run history file and the location
+   //information file was asked to be removed. For now, leave code in-place
+   //but just turn feature off. 
+  gbIncludeRunHistory = false;
 }
 
 // records the calculated data from the cluster into the dBase file
@@ -201,7 +205,7 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CS
 
             if (gbIncludeRunHistory)
                pRecord->SetRunNumber(glRunNumber);
-               
+
             BaseOutputStorageClass::AddRecord(pRecord);
          }   // end for each identifier
       }
@@ -252,11 +256,6 @@ void stsAreaSpecificData::Setup(const ZdString& sOutputFileName, const long lRun
       
       glRunNumber = lRunNumber;
       gbPrintPVal = bPrintPVal;
-#ifdef INCLUDE_RUN_HISTORY
-      gbIncludeRunHistory = true;
-#else
-      gbIncludeRunHistory = false;
-#endif
       SetupFields();
    }
    catch(ZdException &x) {

@@ -200,6 +200,9 @@ stsClusterData::~stsClusterData() {
 
 // global inits
 void stsClusterData::Init() {
+   //The relational link between the run history file and the cluster information
+   //file was asked to be removed. For now, leave code in-place but just turn
+   //feature off. 
    gbIncludeRunHistory = false;
 }
 
@@ -219,7 +222,7 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
 
       if (gbIncludeRunHistory)
          pRecord->SetRunNumber(double(glRunNumber));
-            
+         
       pRecord->SetClusterNumber(iClusterNumber); 	// cluster number
 
       // ellipse shape and angle      
@@ -434,13 +437,6 @@ void stsClusterData::Setup(const ZdString& sOutputFileName) {
       else
          sTempName << CLUSTER_FILE_EXT;
       gsFileName = sTempName;
-
-#ifdef INCLUDE_RUN_HISTORY
-      gbIncludeRunHistory = true;
-#else
-      gbIncludeRunHistory = false;
-#endif
-
       SetupFields();
    }
    catch(ZdException &x) {
