@@ -68,6 +68,20 @@ double CalculateNonCompactnessPenalty(double dEllipseShape) {
   return ( 4*dEllipseShape/(pow(dEllipseShape + 1, 2)) );
 }
 
+/** Returns date precision as string. */
+const char * GetDatePrecisionAsString(DatePrecisionType eType, ZdString& sString, bool bPlural, bool bCapitalizeFirstLetter) {
+  sString.Clear();
+  switch (eType) {
+    case YEAR  : sString << (bCapitalizeFirstLetter ? "Y" : "y") << "ear"; break;
+    case MONTH : sString << (bCapitalizeFirstLetter ? "M" : "m") << "onth"; break;
+    case DAY   : sString << (bCapitalizeFirstLetter ? "D" : "d") << "ay"; break;
+    default    : sString = "none"; break;
+  };
+  if (bPlural)
+    sString << "s";
+     
+  return sString.GetCString();
+}
 
 /** constructor */
 StringParser::StringParser(BasePrint& Print) : gPrint(Print) {

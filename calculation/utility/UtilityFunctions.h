@@ -6,10 +6,11 @@
 
 #define DEBUGLATLONG 0
 
-double 			CalcLogLikelihood(count_t n, measure_t u, count_t N, measure_t U);
-void 			ConvertFromLatLong(double Latitude, double Longitude, std::vector<double>& vCoordinates);
-void 			ConvertToLatLong(float* Latitude, float* Longitude, double* pCoords);
-double                  CalculateNonCompactnessPenalty(double dEllipseShape);
+double 	     CalcLogLikelihood(count_t n, measure_t u, count_t N, measure_t U);
+void 	     ConvertFromLatLong(double Latitude, double Longitude, std::vector<double>& vCoordinates);
+void 	     ConvertToLatLong(float* Latitude, float* Longitude, double* pCoords);
+double       CalculateNonCompactnessPenalty(double dEllipseShape);
+const char * GetDatePrecisionAsString(DatePrecisionType eType, ZdString& sString, bool bPlural=true, bool bCapitalizeFirstLetter=false);
 
 /** The data read routines of CSaTScanData used to use function:
     const char * GetWord(const char *s, int num, BasePrint *pPrintDirection)
