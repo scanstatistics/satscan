@@ -699,18 +699,24 @@ const char * CParameters::GetProbabiltyModelTypeAsString() const {
     Throws exception if date can not be converted to a valid julian date. */
 Julian CParameters::GetProspectiveStartDateAsJulian() /*const*/ {
   int           iPrecision;
-  UInt          uiYear, uiMonth, uiDay, uiDefaultMonth=1, uiDefaultDay=1;
-  Julian        ProspectiveStartDate;
+  UInt          uiYear, uiMonth, uiDay, uiEDYear, uiEDMonth, uiEDDay;
+  Julian        ProspectiveStartDate, StudyPeriodEndDate;
 
   try {
+    JulianToMDY(&uiEDMonth, &uiEDDay, &uiEDYear, GetStudyPeriodEndDateAsJulian());
     iPrecision = CharToMDY(&uiMonth, &uiDay, &uiYear, gsProspectiveStartDate.c_str());
     switch (iPrecision) {
       case 0  : InvalidParameterException::Generate("Error: Prospective start date value of '%s' does not appear to be a valid date.\n",
                                                     "GetProspectiveStartDateAsJulian()", gsProspectiveStartDate.c_str());
-      case 1  : uiMonth = uiDefaultMonth;
-                uiDay = uiDefaultDay;
+      case 1  : uiMonth = uiEDMonth;
+                //Study period end date year or prospective start date year might be miss matching
+                //in regards to leap year.
+                if (IsLeapYear(uiEDYear) && !IsLeapYear(uiYear) && uiMonth == 2/*Feb.*/ && uiEDDay == 29)
+                  uiDay = 28;
+                else
+                  uiDay = uiEDDay;
                 break;
-      case 2  : uiDay = uiDefaultDay;
+      case 2  : uiDay = DaysThisMonth(uiYear, uiMonth);
                 break;
       case 3  : break;
       default : ZdException::Generate("Precision of '%d' is not defined.\n", "GetProspectiveStartDateAsJulian()", iPrecision);
@@ -1906,7 +1912,7 @@ void CParameters::SetDefaults() {
   giNumberEllipses                      = 0;
   gvEllipseShapes.clear();
   gvEllipseRotations.clear();
-  gsProspectiveStartDate                = "1900/1/1";
+  gsProspectiveStartDate                = "1900/12/31";
   gbOutputAreaSpecificAscii             = false;
   gbOutputClusterLevelAscii             = false;
   geCriteriaSecondClustersType          = NOGEOOVERLAP;
