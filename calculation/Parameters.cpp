@@ -12,18 +12,6 @@ const char*      YES                            	= "y";
 const char*      NO                             	= "n";
 const int        MAXIMUM_SEQUENTIAL_ANALYSES    	= 32000;
 const int        MAXIMUM_ELLIPSOIDS             	= 10;
-const char*      PURELY_SPATIAL_ANALYSIS        	= "Purely Spatial";
-const char*      RETROSPECTIVE_PURELY_TEMPORAL_ANALYSIS = "Retrospective Purely Temporal";
-const char*      PROSPECTIVE_PURELY_TEMPORAL_ANALYSIS   = "Prospective Purely Temporal";
-const char*      RETROSPECTIVE_SPACETIME_ANALYSIS 	= "Retrospective Space-Time";
-const char*      PROSPECTIVE_SPACETIME_ANALYSIS 	= "Prospective Space-Time";
-const char*      SPATIALVARIATION_TEMPORALTREND         = "Spatial Variation and Temporal Trends";
-const char*      POISSON_MODEL                 		= "Poisson";
-const char*      BERNOULLI_MODEL                	= "Bernoulli";
-const char*      SPACETIME_PERMUTATION_MODEL    	= "Space-Time Permutation";
-const char*      NORMAL_MODEL                           = "Normal";
-const char*      SURVIVAL_MODEL                         = "Survival";
-const char*      RANK_MODEL                             = "Rank";
 int CParameters::giNumParameters 			= 68;
 
 /** Constructor */
@@ -93,7 +81,7 @@ void CParameters::Copy(const CParameters &rhs) {
     glTotalNumEllipses                  = rhs.glTotalNumEllipses;
     geAnalysisType                      = rhs.geAnalysisType;
     geAreaScanRate                      = rhs.geAreaScanRate;
-    geProbabiltyModelType               = rhs.geProbabiltyModelType;
+    geProbabilityModelType              = rhs.geProbabilityModelType;
     geRiskFunctionType                  = rhs.geRiskFunctionType;
     giReplications                      = rhs.giReplications;
     gbPowerCalculation                  = rhs.gbPowerCalculation;
@@ -231,7 +219,7 @@ void CParameters::DisplayAnalysisSummary(FILE* fp) const {
 
     fprintf(fp, "scanning for ");
 
-    if (geRiskFunctionType == MONOTONERISK)
+    if (geAnalysisType == PURELYSPATIAL && geRiskFunctionType == MONOTONERISK)
       fprintf(fp, "monotone ");
 
     fprintf(fp, "clusters with ");
@@ -243,14 +231,15 @@ void CParameters::DisplayAnalysisSummary(FILE* fp) const {
       default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "DisplayAnalysisSummary()", geAreaScanRate);
     }
 
-    switch (geProbabiltyModelType) {
+    switch (geProbabilityModelType) {
       case POISSON              : fprintf(fp, "using the Poisson model.\n"); break;
       case BERNOULLI            : fprintf(fp, "using the Bernoulli model.\n"); break;
       case SPACETIMEPERMUTATION : fprintf(fp, "using the Space-Time Permutation model.\n"); break;
-      case NORMAL               : fprintf(fp, "using the Normal model.\n"); break;
+      case ORDINAL              : fprintf(fp, "using the Ordinal model.\n"); break;
       case SURVIVAL             : fprintf(fp, "using the Survival model.\n"); break;
+      case NORMAL               : fprintf(fp, "using the Normal model.\n"); break;
       case RANK                 : fprintf(fp, "using the Rank model.\n"); break;
-      default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayAnalysisSummary()", geProbabiltyModelType);
+      default : ZdException::Generate("Unknown probability model type '%d'.\n", "DisplayAnalysisSummary()", geProbabilityModelType);
     }
 
     if (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME) {
@@ -298,7 +287,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
          fprintf(fp, "  Case File       (data set %i) : %s\n", t + 1, gvCaseFilenames[t].c_str());
     }
 
-    switch (geProbabiltyModelType) {
+    switch (geProbabilityModelType) {
       case POISSON              : if (!UsePopulationFile()) break;
                                   if (gvPopulationFilenames.size() == 1)
                                     fprintf(fp, "  Population File              : %s\n", gvPopulationFilenames[0].c_str());
@@ -315,10 +304,11 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
                                   }
                                   break;
       case SPACETIMEPERMUTATION :
-      case NORMAL               :
+      case ORDINAL              :
       case SURVIVAL             :
+      case NORMAL               :
       case RANK                 : break;
-      default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayParameters()", geProbabiltyModelType);
+      default : ZdException::Generate("Unknown probability model type '%d'.\n", "DisplayParameters()", geProbabilityModelType);
     }
 
     fprintf(fp, "  Coordinates File             : %s\n", gsCoordinatesFileName.c_str());
@@ -367,7 +357,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
     fprintf(fp, "--------\n");
 
     fprintf(fp, "  Type of Analysis    : %s\n", GetAnalysisTypeAsString());
-    fprintf(fp, "  Probability Model   : %s\n", GetProbabiltyModelTypeAsString(geProbabiltyModelType));
+    fprintf(fp, "  Probability Model   : %s\n", GetProbabilityModelTypeAsString(geProbabilityModelType));
 
     if (geAnalysisType != SPATIALVARTEMPTREND) {
       fprintf(fp, "  Scan for Areas with : ");
@@ -411,7 +401,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
       }
     }
 
-    if (geProbabiltyModelType != SPACETIMEPERMUTATION && (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
+    if (geProbabilityModelType != SPACETIMEPERMUTATION && (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
        fprintf(fp, "  Also Include Purely Temporal Clusters : ");
        fprintf(fp, (gbIncludePurelyTemporalClusters ? "Yes\n" : "No\n"));
     }
@@ -429,7 +419,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
       }
     }
 
-    if (geProbabiltyModelType != SPACETIMEPERMUTATION && (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
+    if (geProbabilityModelType != SPACETIMEPERMUTATION && (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
       fprintf(fp, "  Also Include Purely Spatial Clusters  : ");
       fprintf(fp, (gbIncludePurelySpatialClusters ? "Yes\n" : "No\n"));
     }
@@ -465,7 +455,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
 
       fprintf(fp, "  Time Aggregation Length : %i\n\n", glTimeAggregationLength);
 
-      if (geProbabiltyModelType == POISSON) {
+      if (geProbabilityModelType == POISSON) {
         fprintf(fp, "  Temporal Adjustment : ");
         switch (geTimeTrendAdjustType) {
            case NOTADJUSTED :
@@ -487,7 +477,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
       }
     }
 
-    if (geProbabiltyModelType == POISSON && (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
+    if (geProbabilityModelType == POISSON && (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
       fprintf(fp, "  Spatial Adjustment  : ");
       switch (geSpatialAdjustmentType) {
         case NO_SPATIAL_ADJUSTMENT :
@@ -584,7 +574,7 @@ void CParameters::DisplayCalculatedTimeTrend(FILE* fp, const DataStreamHandler& 
 
   //NOTE: Each data stream has own calculated time trend.
 
-  if (StreamHandler.GetNumStreams() == 1) {
+  if (StreamHandler.GetNumDataSets() == 1) {
     if (StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage() < 0)
       sPrintString.printf("Adjusted for time trend with an annual decrease ");
     else
@@ -594,7 +584,7 @@ void CParameters::DisplayCalculatedTimeTrend(FILE* fp, const DataStreamHandler& 
   }
   else {//multiple streams print
     //count number of increasing and decreasing trends
-    for (t=0; t < StreamHandler.GetNumStreams(); ++t) {
+    for (t=0; t < StreamHandler.GetNumDataSets(); ++t) {
        if (StreamHandler.GetStream(t).GetCalculatedTimeTrendPercentage() < 0)
          TrendDecrease.push_back(t);
        else
@@ -654,12 +644,12 @@ const char * CParameters::GetAnalysisTypeAsString() const {
 
   try {
     switch (geAnalysisType) {
-      case PURELYSPATIAL             : sAnalysisType = PURELY_SPATIAL_ANALYSIS; break;
-      case PURELYTEMPORAL            : sAnalysisType = RETROSPECTIVE_PURELY_TEMPORAL_ANALYSIS; break;
-      case SPACETIME                 : sAnalysisType = RETROSPECTIVE_SPACETIME_ANALYSIS; break;
-      case PROSPECTIVESPACETIME      : sAnalysisType = PROSPECTIVE_SPACETIME_ANALYSIS; break;
-      case SPATIALVARTEMPTREND       : sAnalysisType = SPATIALVARIATION_TEMPORALTREND; break;
-      case PROSPECTIVEPURELYTEMPORAL : sAnalysisType = PROSPECTIVE_PURELY_TEMPORAL_ANALYSIS; break;
+      case PURELYSPATIAL             : sAnalysisType = "Purely Spatial"; break;
+      case PURELYTEMPORAL            : sAnalysisType = "Retrospective Purely Temporal"; break;
+      case SPACETIME                 : sAnalysisType = "Retrospective Space-Time"; break;
+      case PROSPECTIVESPACETIME      : sAnalysisType = "Prospective Space-Time"; break;
+      case SPATIALVARTEMPTREND       : sAnalysisType = "Spatial Variation in Temporal Trends"; break;
+      case PROSPECTIVEPURELYTEMPORAL : sAnalysisType = "Prospective Purely Temporal"; break;
       default : ZdException::Generate("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", geAnalysisType);
     }
   }
@@ -711,7 +701,7 @@ bool CParameters::GetIsSpaceTimeAnalysis() const {
 
 /** Returns description for LLR. */
 bool CParameters::GetLogLikelihoodRatioIsTestStatistic() const {
-  return (geProbabiltyModelType == SPACETIMEPERMUTATION || (giNumberEllipses && gbNonCompactnessPenalty));
+  return (geProbabilityModelType == SPACETIMEPERMUTATION || (giNumberEllipses && gbNonCompactnessPenalty));
 }
 
 /** Returns whether any area specific files are outputed. */
@@ -740,9 +730,9 @@ bool CParameters::GetPermitsPurelySpatialCluster(AnalysisType eAnalysisType) con
 }
 
 /** returns whether probability model type permits inclusion of purely spatial cluster */
-bool CParameters::GetPermitsPurelySpatialCluster(ProbabiltyModelType eModelType) const {
+bool CParameters::GetPermitsPurelySpatialCluster(ProbabilityModelType eModelType) const {
   return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL
-         || eModelType == SURVIVAL || eModelType == RANK;
+         || eModelType == SURVIVAL || eModelType == RANK || eModelType == ORDINAL;
 }
 
 /** returns whether analysis type permits inclusion of purely temporal cluster */
@@ -751,9 +741,9 @@ bool CParameters::GetPermitsPurelyTemporalCluster(AnalysisType eAnalysisType) co
 }
 
 /** returns whether probability model type permits inclusion of purely temporal cluster */
-bool CParameters::GetPermitsPurelyTemporalCluster(ProbabiltyModelType eModelType) const {
+bool CParameters::GetPermitsPurelyTemporalCluster(ProbabilityModelType eModelType) const {
   return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL
-         || eModelType == SURVIVAL || eModelType == RANK;
+         || eModelType == SURVIVAL || eModelType == RANK || eModelType == ORDINAL;
 }
 
 const std::string & CParameters::GetPopulationFileName(unsigned int iStream) const {
@@ -768,23 +758,24 @@ const std::string & CParameters::GetPopulationFileName(unsigned int iStream) con
   return gvPopulationFilenames[iStream - 1];
 }
 
-/** Returns probabilty model type as a character array. */
-const char * CParameters::GetProbabiltyModelTypeAsString(ProbabiltyModelType eProbabiltyModelType) const {
+/** Returns probability model type as a character array. */
+const char * CParameters::GetProbabilityModelTypeAsString(ProbabilityModelType eProbabilityModelType) const {
   const char * sProbabilityModel;
 
   try {
-    switch (eProbabiltyModelType) {
-      case POISSON              : sProbabilityModel = POISSON_MODEL; break;
-      case BERNOULLI            : sProbabilityModel = BERNOULLI_MODEL; break;
-      case SPACETIMEPERMUTATION : sProbabilityModel = SPACETIME_PERMUTATION_MODEL; break;
-      case NORMAL               : sProbabilityModel = NORMAL_MODEL; break;
-      case SURVIVAL             : sProbabilityModel = SURVIVAL_MODEL; break;
-      case RANK                 : sProbabilityModel = RANK_MODEL; break;
-      default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "GetProbabiltyModelTypeAsString()", geProbabiltyModelType);
+    switch (eProbabilityModelType) {
+      case POISSON              : sProbabilityModel = "Poisson"; break;
+      case BERNOULLI            : sProbabilityModel = "Bernoulli"; break;
+      case SPACETIMEPERMUTATION : sProbabilityModel = "Space-Time Permutation"; break;
+      case ORDINAL              : sProbabilityModel = "Ordinal"; break;
+      case SURVIVAL             : sProbabilityModel = "Survival"; break;
+      case NORMAL               : sProbabilityModel = "Normal"; break;
+      case RANK                 : sProbabilityModel = "Rank"; break;
+      default : ZdException::Generate("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", geProbabilityModelType);
     }
   }
   catch (ZdException & x) {
-    x.AddCallpath("GetProbabiltyModelTypeAsString()","CParameters");
+    x.AddCallpath("GetProbabilityModelTypeAsString()","CParameters");
     throw;
   }
   return sProbabilityModel;
@@ -993,7 +984,7 @@ void CParameters::SetAsDefaulted() {
   gbOutputSimLogLikeliRatiosDBase       = false;
   gsRunHistoryFilename                  = "";
   gbLogRunHistory                       = true;
-  geProbabiltyModelType                 = POISSON;
+  geProbabilityModelType                 = POISSON;
   geRiskFunctionType                    = STANDARDRISK;
   gbPowerCalculation                    = false;
   gdPower_X                             = 0.0;
@@ -1332,15 +1323,15 @@ void CParameters::SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType) 
   }
 }
 
-/** Sets probabilty model type. Throws exception if out of range. */
-void CParameters::SetProbabilityModelType(ProbabiltyModelType eProbabiltyModelType) {
+/** Sets probability model type. Throws exception if out of range. */
+void CParameters::SetProbabilityModelType(ProbabilityModelType eProbabilityModelType) {
   ZdString      sLabel;
 
   try {
-    if (eProbabiltyModelType < POISSON || eProbabiltyModelType > RANK)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetAnalysisType()", eProbabiltyModelType, POISSON, RANK);
+    if (eProbabilityModelType < POISSON || eProbabilityModelType > RANK)
+      ZdException::Generate("'%d' is out of range(%d - %d).", "SetAnalysisType()", eProbabilityModelType, POISSON, RANK);
 
-    geProbabiltyModelType = eProbabiltyModelType;
+    geProbabilityModelType = eProbabilityModelType;
   }
   catch (ZdException &x) {
     x.AddCallpath("SetProbabilityModelType()","CParameters");
@@ -1818,7 +1809,7 @@ bool CParameters::ValidateFileParameters(BasePrint& PrintDirection) {
        }
     }
     //validate population file for a poisson model.
-    if (geProbabiltyModelType == POISSON ) {
+    if (geProbabilityModelType == POISSON ) {
       //special processing for purely temporal analyses - population file is optional
       if (GetIsPurelyTemporalAnalysis()) {
          //either all data streams omit the population file or specify a filename
@@ -1859,7 +1850,7 @@ bool CParameters::ValidateFileParameters(BasePrint& PrintDirection) {
       }
     }
     //validate control file for a bernoulli model.
-    if (geProbabiltyModelType == BERNOULLI) {
+    if (geProbabilityModelType == BERNOULLI) {
       if (!gvControlFilenames.size()) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: For the Bernoulli model, a Control file must be specified.\n");
@@ -1893,7 +1884,7 @@ bool CParameters::ValidateFileParameters(BasePrint& PrintDirection) {
       PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
     }
     //validate adjustment for known relative risks file
-    if (geProbabiltyModelType == POISSON) {
+    if (geProbabilityModelType == POISSON) {
       if (gbUseAdjustmentsForRRFile && gsAdjustmentsByRelativeRisksFileName.empty()) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: The settings indicate to the use the adjustments file, but a file name not specified.\n");
@@ -1968,12 +1959,12 @@ bool CParameters::ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) 
                                            gfMaxTemporalClusterSize);
         return false;
       }
-      //check maximum temporal cluster size(as percentage of population) is less than maximum for given probabilty model
-      if (gfMaxTemporalClusterSize > (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90)) {
+      //check maximum temporal cluster size(as percentage of population) is less than maximum for given probability model
+      if (gfMaxTemporalClusterSize > (geProbabilityModelType == SPACETIMEPERMUTATION ? 50 : 90)) {
         PrintDirection.SatScanPrintWarning("Error: For the %s model, the maximum temporal cluster size as a percent\n"
                                            "       of the study period is %d percent.\n",
-                                           GetProbabiltyModelTypeAsString(geProbabiltyModelType),
-                                           (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90));
+                                           GetProbabilityModelTypeAsString(geProbabilityModelType),
+                                           (geProbabilityModelType == SPACETIMEPERMUTATION ? 50 : 90));
         return false;
       }
       //validate that the time aggregation length agrees with the study period and maximum temporal cluster size
@@ -2005,14 +1996,14 @@ bool CParameters::ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) 
       dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(CharToJulian(gsStudyPeriodStartDate.c_str()),
                                                                       CharToJulian(gsStudyPeriodEndDate.c_str()),
                                                                       geTimeAggregationUnitsType, 1));
-      dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90)/100.0);
+      dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * (geProbabilityModelType == SPACETIMEPERMUTATION ? 50 : 90)/100.0);
       if (gfMaxTemporalClusterSize > dMaxTemporalLengthInUnits) {
         PrintDirection.SatScanPrintWarning("Error: A maximum temporal cluster size of %d %s%s exceeds\n"
                                            "       %d percent of a %d %s study period.\n"
                                            "       Note that current settings limit the maximum to %d %s%s.\n",
                                            static_cast<int>(gfMaxTemporalClusterSize), sPrecisionString.GetCString(),
                                            (gfMaxTemporalClusterSize == 1 ? "" : "s"),
-                                           (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90),
+                                           (geProbabilityModelType == SPACETIMEPERMUTATION ? 50 : 90),
                                            static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString(),
                                            static_cast<int>(dMaxTemporalLengthInUnits), sPrecisionString.GetCString(),
                                            (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
@@ -2047,7 +2038,11 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Multiple data sets are not permitted with isotonic purely spatial analyses.\n");
       }
-      if (geProbabiltyModelType == NORMAL && GetNumDataStreams() > 1) {
+      if (geProbabilityModelType == ORDINAL && geRiskFunctionType == MONOTONERISK) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Ordinal probablility model does not permit isotonic purely spatial analyses.\n");
+      }
+      if (geProbabilityModelType == NORMAL && GetNumDataStreams() > 1) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Multiple data sets are not permitted with the normal probablility model\n");
         PrintDirection.SatScanPrintWarning("       in this version of SaTScan.\n");
@@ -2078,15 +2073,15 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
         bValid = false;
 
       //validate model parameters
-      if (geProbabiltyModelType == SPACETIMEPERMUTATION) {
+      if (geProbabilityModelType == SPACETIMEPERMUTATION) {
         if (!(geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
           bValid = false;
-          PrintDirection.SatScanPrintWarning("Error: For the %s model, the analysis type must be either %s or %s.\n",
-                                             GetProbabiltyModelTypeAsString(geProbabiltyModelType), RETROSPECTIVE_SPACETIME_ANALYSIS, PROSPECTIVE_SPACETIME_ANALYSIS);
+          PrintDirection.SatScanPrintWarning("Error: For the %s model, the analysis type must be either Retrospective or Prospective Space-Time.\n",
+                                             GetProbabilityModelTypeAsString(geProbabilityModelType));
         }
         if (gbOutputRelativeRisksAscii || gbOutputRelativeRisksDBase) {
           bValid = false;
-          PrintDirection.SatScanPrintWarning("Error: The relative risks output files can not be produced for the %s model.\n", GetProbabiltyModelTypeAsString(geProbabiltyModelType));
+          PrintDirection.SatScanPrintWarning("Error: The relative risks output files can not be produced for the %s model.\n", GetProbabilityModelTypeAsString(geProbabilityModelType));
         }
       }
       //validate range parameters
@@ -2307,80 +2302,56 @@ bool CParameters::ValidateSimulationDataParameters(BasePrint & PrintDirection) {
   bool  bValid=true;
 
   try {
-    if (geProbabiltyModelType == POISSON) {
-      switch (geSimulationType) {
-        case STANDARD           : break;
-        case HA_RANDOMIZATION   : if (gsAdjustmentsByRelativeRisksFileName.empty()) {
-                                    bValid = false;
-                                    PrintDirection.SatScanPrintWarning("Error: No adjustments file specified.\n");
-                                  }
-                                  else if (access(gsAdjustmentsByRelativeRisksFileName.c_str(), 00)) {
-                                    bValid = false;
-                                    PrintDirection.SatScanPrintWarning("Error: The adjustments file '%s' does not exist.\n",
-                                                                       gsAdjustmentsByRelativeRisksFileName.c_str());
-                                    PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
-                                  }
-                                  break;
-        case FILESOURCE         : if (!(geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == SPACETIME || geAnalysisType == PURELYTEMPORAL ||
-                                        geAnalysisType == PROSPECTIVEPURELYTEMPORAL || geAnalysisType == PURELYSPATIAL)) {
-                                     bValid = false;
-                                     PrintDirection.SatScanPrintWarning("Error: The feature to read simulated data from a file is not implemented for a %s analyses.\n",
-                                                                        GetAnalysisTypeAsString());
-                                     break;
-                                  }
-                                  if (GetNumDataStreams() > 1){
-                                    bValid = false;
-                                    PrintDirection.SatScanPrintWarning("Error: The feature to read simulated data from a file is not implemented for analyses\n"
-                                                                       "       that read data from multiple data sets.\n");
-                                  }
-                                  if (gsSimulationDataSourceFileName.empty()) {
-                                    bValid = false;
-                                    PrintDirection.SatScanPrintWarning("Error: The simulated data input file was not specified.\n");
-                                  }
-                                  else if (access(gsSimulationDataSourceFileName.c_str(), 00)) {
-                                    bValid = false;
-                                    PrintDirection.SatScanPrintWarning("Error: The simulated data input file '%s' does not exist.\n",
-                                                                       gsSimulationDataSourceFileName.c_str());
-                                    PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
-                                  }
-                                  if (gbOutputSimulationData && gsSimulationDataSourceFileName == gsSimulationDataOutputFilename) {
-                                    bValid = false;
-                                    PrintDirection.SatScanPrintWarning("Error: : The file '%s' is specified as both\n",
-                                                                       gsSimulationDataSourceFileName.c_str());
-                                    PrintDirection.SatScanPrintWarning("       the input and the output file for simulated data.\n");                                  }
-                                  break;
-        default : ZdGenerateException("Unknown simulation type '%d'.","ValidateSimulationDataParameters()", geSimulationType);
-      };
-      if (giReplications == 0)
-        gbOutputSimulationData = false;
-      if (!(geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == SPACETIME || geAnalysisType == PURELYTEMPORAL ||
-            geAnalysisType == PROSPECTIVEPURELYTEMPORAL || geAnalysisType == PURELYSPATIAL) && gbOutputSimulationData) {
-         bValid = false;
-         PrintDirection.SatScanPrintWarning("Error: Printing simulation data to file not implemented for %s analysis.\n",
-                                            GetAnalysisTypeAsString());
-      }
-      else if (gbOutputSimulationData && gsSimulationDataOutputFilename.empty()) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Simulation data output file not specified.\n");
-      }
+    if (giReplications == 0)
+      gbOutputSimulationData = false;
+    if (gbOutputSimulationData && gsSimulationDataOutputFilename.empty()) {
+      bValid = false;
+      PrintDirection.SatScanPrintWarning("Error: Simulation data output file not specified.\n");
     }
-    else {
-      //only standard simulation type permitted for other model types, report errors accordingly
-      switch (geSimulationType) {
-        case STANDARD         : break;
-        case HA_RANDOMIZATION : bValid = false;
-                                PrintDirection.SatScanPrintWarning("Error: The alternative hypothesis method of creating simulated data\n");
-                                PrintDirection.SatScanPrintWarning("       is only implemented for the Poisson model.\n");
-                                break;
-        case FILESOURCE       : bValid = false;
-                                PrintDirection.SatScanPrintWarning("Error: Reading simulate data from a file is only\n");
-                                PrintDirection.SatScanPrintWarning("       implemented for the Poisson model.\n");
-                                break;
-      }
-      //The code for printing simulation data was modified by none programmer and it's
-      //correctness has not been validated, but writing routine(and rountine for reading)
-      //appears be ok for all probability model types. -- check this later
-    }
+
+    switch (geSimulationType) {
+      case STANDARD         : break;
+      case HA_RANDOMIZATION :
+        if (geProbabilityModelType == POISSON) {
+          if (gsAdjustmentsByRelativeRisksFileName.empty()) {
+            bValid = false;
+            PrintDirection.SatScanPrintWarning("Error: No adjustments file specified.\n");
+          }
+          else if (access(gsAdjustmentsByRelativeRisksFileName.c_str(), 00)) {
+            bValid = false;
+            PrintDirection.SatScanPrintWarning("Error: The adjustments file '%s' does not exist.\n", gsAdjustmentsByRelativeRisksFileName.c_str());
+            PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+          }
+        }
+        else {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: The alternative hypothesis method of creating simulated data\n");
+          PrintDirection.SatScanPrintWarning("       is only implemented for the Poisson model.\n");
+        }
+        break;
+      case FILESOURCE       :
+        if (GetNumDataStreams() > 1){
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: The feature to read simulated data from a file is not implemented for analyses\n"
+                                             "       that read data from multiple data sets.\n");
+        }
+        if (gsSimulationDataSourceFileName.empty()) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: The simulated data input file was not specified.\n");
+        }
+        else if (access(gsSimulationDataSourceFileName.c_str(), 00)) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: The simulated data input file '%s' does not exist.\n", gsSimulationDataSourceFileName.c_str());
+          PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+        }
+        if (gbOutputSimulationData && gsSimulationDataSourceFileName == gsSimulationDataOutputFilename) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: The file '%s' is specified as both\n", gsSimulationDataSourceFileName.c_str());
+          PrintDirection.SatScanPrintWarning("       the input and the output file for simulated data.\n");
+        }
+        break;
+      default : ZdGenerateException("Unknown simulation type '%d'.","ValidateSimulationDataParameters()", geSimulationType);
+    };
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateSimulationDataParameters()","CParameters");
@@ -2464,10 +2435,10 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
     }
 
     if (gbIncludePurelySpatialClusters) {
-      if (!GetPermitsPurelySpatialCluster(geProbabiltyModelType)) {
+      if (!GetPermitsPurelySpatialCluster(geProbabilityModelType)) {
           bValid = false;
           PrintDirection.SatScanPrintWarning("Error: A purely spatial cluster cannot be included for a %s model.\n",
-                                             GetProbabiltyModelTypeAsString(geProbabiltyModelType));
+                                             GetProbabilityModelTypeAsString(geProbabilityModelType));
       }
       else if (!GetPermitsPurelySpatialCluster(geAnalysisType)) {
         bValid = false;
@@ -2595,7 +2566,7 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
     if (!ValidateTimeAggregationUnits(PrintDirection))
       bValid = false;
     //validate time trend adjustment
-    switch (geProbabiltyModelType) {
+    switch (geProbabilityModelType) {
       case BERNOULLI            :
         //The SVTT analysis has hooks for temporal adjustments, but that code needs
         //much closer examination before it can be used, even experimentally.
@@ -2605,12 +2576,13 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
                                              gdTimeTrendAdjustPercentage = 0.0;
         }
         break;
-      case NORMAL               :
+      case ORDINAL              :
       case SURVIVAL             :
+      case NORMAL               :
       case RANK                 :
         if (geTimeTrendAdjustType != NOTADJUSTED) {
           PrintDirection.SatScanPrintWarning("Warning: For the %s model, adjusting for temporal trends is not permitted.\n",
-                                             GetProbabiltyModelTypeAsString(geProbabiltyModelType));
+                                             GetProbabilityModelTypeAsString(geProbabilityModelType));
                                              geTimeTrendAdjustType = NOTADJUSTED;
                                              gdTimeTrendAdjustPercentage = 0.0;
         }
@@ -2659,14 +2631,14 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
           }
         }
         break;
-      default : ZdException::Generate("Unknown model type '%d'.","ValidateTemporalParameters()", geProbabiltyModelType);
+      default : ZdException::Generate("Unknown model type '%d'.","ValidateTemporalParameters()", geProbabilityModelType);
     }
     //validate including purely temporal clusters
     if (gbIncludePurelyTemporalClusters) {
-      if (!GetPermitsPurelyTemporalCluster(geProbabiltyModelType)) {
+      if (!GetPermitsPurelyTemporalCluster(geProbabilityModelType)) {
           bValid = false;
           PrintDirection.SatScanPrintWarning("Error: Looking for purely temporal clusters can not be included when the %s model is used.\n",
-                                             GetProbabiltyModelTypeAsString(geProbabiltyModelType));
+                                             GetProbabilityModelTypeAsString(geProbabilityModelType));
       }
       else if (!GetPermitsPurelyTemporalCluster(geAnalysisType)) {
         bValid = false;
