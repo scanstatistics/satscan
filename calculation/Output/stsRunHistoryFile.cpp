@@ -86,9 +86,9 @@ void stsRunHistoryFile::Init() {
 // renaming the function OpenReportHistoryFile - AJV 9/4/2002
 // pre: none
 // post: records the run history
-void stsRunHistoryFile::LogNewHistory() {
+void stsRunHistoryFile::LogNewHistory(const unsigned short& uwSignificantAt005) {
    try {
-      OpenRunHistoryFile();
+      OpenRunHistoryFile(uwSignificantAt005);
    }
    catch (ZdException &x) {
       x.AddCallpath("LogNewHistory()", "stsRunHistoryFile");
@@ -99,7 +99,7 @@ void stsRunHistoryFile::LogNewHistory() {
 // tries to open the run history file if one exists, if not creates the file
 // pre: none
 // post: opens/creates the run history file and writes to it
-void stsRunHistoryFile::OpenRunHistoryFile() {
+void stsRunHistoryFile::OpenRunHistoryFile(const unsigned short& uwSignificantAt005) {
    ZdTransaction	*pTransaction = 0;
    ZdFileRecord         *pRecord = 0, *pLastRecord = 0;
    unsigned long        ulLastRecordNumber;
@@ -251,7 +251,7 @@ void stsRunHistoryFile::OpenRunHistoryFile() {
 
       // number of clusters significant at tthe .05 llr cutoff field
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsLong() = (long)0;
+      fv.AsLong() = (long)uwSignificantAt005;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       File.AppendRecord(*pTransaction, *pRecord);

@@ -15,13 +15,13 @@ class stsRunHistoryFile {
       void	Setup(const CAnalysis* pAnalysis);
    protected:
       void      CreateRunHistoryFile();
-      void      OpenRunHistoryFile();
+      void      OpenRunHistoryFile(const unsigned short& uwSignificantAt005);
       void 	SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&  vFieldDescrip);
    public:
       stsRunHistoryFile(const CAnalysis* pAnalysis);
       ~stsRunHistoryFile();
 
-      void      LogNewHistory();
+      void      LogNewHistory(const unsigned short& uwSignificantAt005);
 };
 
 //---------------------------------------------------------------------------
