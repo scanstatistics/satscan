@@ -79,18 +79,25 @@ void __fastcall TfrmMainForm::ExecuteActionExecute(TObject *Sender) {
       sOutputFileName = pSession->GetOutputFileName();
       // if we don't already have a thread with the result file running then launch one
       if (gRegistry.IsAlreadyRegistered(sOutputFileName))
-        ZdException::GenerateNotification("The filename you specified for results file is \ncurrently being written to by another analysis.\n"
-                                          "Please choose another results filename." , "Error!");
-
-      sCaption.printf("Running %s", (frmAnalysis->GetFileName() ? frmAnalysis->GetFileName() : "Session"));
-      pAnalysisRun = new TfrmAnalysisRun(this, *pSession, sOutputFileName, gRegistry, ActionList);
-      pAnalysisRun->Caption = sCaption;
-      gRegistry.Register(sOutputFileName);
-      pAnalysisRun->LaunchThread();
+        Application->MessageBox("The results file for this analysis is currently being written.\n"
+                                "Please specify another filename or wait for analysis to complete.",
+                                "Notification", MB_OK);
+      else {
+        sCaption.printf("Running %s", (frmAnalysis->GetFileName() ? frmAnalysis->GetFileName() : "Session"));
+        pAnalysisRun = new TfrmAnalysisRun(this, *pSession, sOutputFileName, gRegistry, ActionList);
+        pAnalysisRun->Caption = sCaption;
+        try {
+          gRegistry.Register(sOutputFileName);
+          pAnalysisRun->LaunchThread();
+        }
+        catch (...) {
+          gRegistry.Release(sOutputFileName);
+          throw;
+        }
+      }
     }
   }
   catch (ZdException & x) {
-    gRegistry.Register(sOutputFileName);
     delete pAnalysisRun;
     x.AddCallpath("ExecuteActionExecute()","TfrmMainForm");
     DisplayBasisException(this, x);
