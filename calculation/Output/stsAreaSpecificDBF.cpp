@@ -14,7 +14,7 @@
 #include <DBFFile.h>
 
 // constructor
-__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const ZdString& sFileName, const int& iCoordType) : DBaseOutput(sFileName, iCoordType) {
+__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const ZdString& sReportHistoryFileName, const int& iCoordType) : DBaseOutput(sReportHistoryFileName, iCoordType) {
    try {
       Init();
       Setup();
@@ -110,7 +110,7 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 
       // relative risk
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsDouble() = pCluster->m_nRatio;
+      fv.AsDouble() = pCluster->GetRelativeRisk(pData->GetMeasureAdjustment());
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       File.AppendRecord(*pTransaction, *pRecord);
@@ -128,6 +128,7 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 // internal setup
 void stsAreaSpecificDBF::Setup() {
    try {
+      gsFileName = AREA_SPECIFIC_DBF_FILE;
       GetFields();
       CreateDBFFile();
    }
@@ -169,7 +170,7 @@ void stsAreaSpecificDBF::SetupFields(ZdVector<std::pair<ZdString, char> >& vFiel
       field.first = "P_VALUE";
       field.second = ZD_NUMBER_FLD;
       fieldsize.first = 12;
-      fieldsize.second = 6;
+      fieldsize.second = 3;
       vFieldDescrips.AddElement(field);
       vFieldSizes.AddElement(fieldsize);
 

@@ -8,9 +8,6 @@
 
 //#define  DEBUGANALYSIS 0
 
-extern const char *    CLUSTER_LEVEL_DBF_FILE;
-extern const char *    AREA_SPECIFIC_DBF_FILE;
-
 class CAnalysis
 {
   protected:
@@ -51,7 +48,7 @@ class CAnalysis
     virtual void                SetMaxNumClusters() {m_nMaxClusters=m_pData->m_nGridTracts;};
     void                        SortTopClusters();
     void                        UpdatePowerCounts(double r);
-    bool                        UpdateReport();
+    bool                        UpdateReport(const ZdString& sReportHistoryFilename);
     void                        UpdateTopClustersRank(double r);
 
 //    CModel*       m_pModel;
@@ -65,8 +62,8 @@ class CAnalysis
     void                        DisplayFindClusterHeading();
     void                        DisplayTopClusterLogLikelihood(FILE* fp);
     void                        DisplayTopClustersLogLikelihoods(FILE* fp);
-    virtual void                DisplayTopClusters(double nMinRatio, int nReps, FILE* fp=stdout, FILE* fpGIS=NULL);
-    virtual void                DisplayTopCluster(double nMinRatio, int nReps, FILE* fp=stdout, FILE* fpGIS=NULL);
+    virtual void                DisplayTopClusters(double nMinRatio, int nReps, FILE* fp=stdout, FILE* fpGIS=NULL, const ZdString& sReportHistoryFilename = "");
+    virtual void                DisplayTopCluster(double nMinRatio, int nReps, FILE* fp=stdout, FILE* fpGIS=NULL, const ZdString& sReportHistoryFilename = "");
 
     bool                        Execute(time_t RunTime);
 

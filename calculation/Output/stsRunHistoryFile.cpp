@@ -12,13 +12,11 @@
 #include "Analysis.h"
 #include "stsRunHistoryFile.h"
 
-const char*      ANALYSIS_HISTORY_FILE  = "c:\\AnalysisHistory.txd";
-
 // constructor
-stsRunHistoryFile::stsRunHistoryFile(const CAnalysis* pAnalysis) {
+stsRunHistoryFile::stsRunHistoryFile(const CAnalysis* pAnalysis, const ZdString& sFileName) {
    try {
       Init();
-      Setup(pAnalysis);
+      Setup(pAnalysis, sFileName);
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsRunHistoryFile");
@@ -72,6 +70,11 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
       x.AddCallpath("CreateRunHistoryFile()", "stsRunHistoryFile");
       throw;
    }
+}
+
+// returns the filename of the run history file
+const ZdString& stsRunHistoryFile::GetRunHistoryFileName() const {
+   return gsFilename;
 }
 
 // global initializations
@@ -270,9 +273,10 @@ void stsRunHistoryFile::OpenRunHistoryFile(const unsigned short& uwSignificantAt
 }
 
 // internal setup
-void stsRunHistoryFile::Setup(const CAnalysis* pAnalysis) {
+void stsRunHistoryFile::Setup(const CAnalysis* pAnalysis, const ZdString& sFileName) {
    try {
-      gsFilename = ANALYSIS_HISTORY_FILE;
+//      gsFilename = ANALYSIS_HISTORY_FILE;
+      gsFilename = sFileName;
       gpAnalysis = const_cast<CAnalysis*>(pAnalysis);
    }
    catch (ZdException &x) {
@@ -300,7 +304,7 @@ void stsRunHistoryFile::SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&
 
       field.first.first = "Output_File";
       field.first.second = ZD_ALPHA_FLD;
-      field.second = 128;
+      field.second = 256;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Prob_Model";

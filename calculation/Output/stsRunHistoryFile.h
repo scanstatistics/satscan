@@ -3,8 +3,6 @@
 #define __stsRunHistoryFile_H
 //---------------------------------------------------------------------------
 
-extern const char*      ANALYSIS_HISTORY_FILE;
-
 class stsRunHistoryFile {
    private:
       ZdString          gsFilename;
@@ -12,16 +10,17 @@ class stsRunHistoryFile {
       long              glRunNumber;
 
       void	Init();
-      void	Setup(const CAnalysis* pAnalysis);
+      void	Setup(const CAnalysis* pAnalysis, const ZdString& sFileName);
    protected:
       void      CreateRunHistoryFile();
       void      OpenRunHistoryFile(const unsigned short& uwSignificantAt005);
       void 	SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&  vFieldDescrip);
    public:
-      stsRunHistoryFile(const CAnalysis* pAnalysis);
+      stsRunHistoryFile(const CAnalysis* pAnalysis, const ZdString& sFileName = "");
       ~stsRunHistoryFile();
 
-      void      LogNewHistory(const unsigned short& uwSignificantAt005);
+      const ZdString&   GetRunHistoryFileName() const;
+      void              LogNewHistory(const unsigned short& uwSignificantAt005);
 };
 
 //---------------------------------------------------------------------------

@@ -7,9 +7,6 @@
 #include "stsRunHistoryFile.h"
 //static int CompClust(const void *a, const void *b);
 
-const char *    CLUSTER_LEVEL_DBF_FILE  =       "ClusterLevel.dbf";
-const char *    AREA_SPECIFIC_DBF_FILE  =       "AreaSpecific.dbf";
-
 CAnalysis::CAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
           :SimRatios(pParameters->m_nReplicas, pPrintDirection)
 {
@@ -104,7 +101,7 @@ bool CAnalysis::Execute(time_t RunTime)
 #endif
 
       // declare variable here because this will have been set up at this point - AJV 9/10/2002
-      stsRunHistoryFile historyFile(this);
+      stsRunHistoryFile historyFile(this, m_pParameters->GetRunHistoryFilename());
 
       do {
         ++m_nAnalysisCount;
@@ -144,7 +141,7 @@ bool CAnalysis::Execute(time_t RunTime)
 //        DisplayTopClusters(-DBL_MAX, INT_MAX, m_pDebugFile, NULL);
 //#endif
     
-        if (gpPrintDirection->GetIsCanceled() || !UpdateReport())
+        if (gpPrintDirection->GetIsCanceled() || !UpdateReport(historyFile.GetRunHistoryFileName()))
           return false;
 
         bContinue = RepeatAnalysis();
@@ -347,17 +344,16 @@ void CAnalysis::DisplayFindClusterHeading()
    }
 }
 
-void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps,
-                                  FILE* fp, FILE* fpGIS)
+void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, FILE* fp, FILE* fpGIS, const ZdString& sReportHistoryFilename)
 {
    try {
       // AJV 9/5/2002
       auto_ptr<stsClusterLevelDBF> pDBFClusterReport;
       if(m_pParameters->GetOutputClusterLevelDBF())
-         pDBFClusterReport.reset(new stsClusterLevelDBF(CLUSTER_LEVEL_DBF_FILE, GetCoordinateType()));
+         pDBFClusterReport.reset(new stsClusterLevelDBF(sReportHistoryFilename, GetCoordinateType()));
       auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;
       if(m_pParameters->GetOutputAreaSpecificDBF())
-         pDBFAreaReport.reset(new stsAreaSpecificDBF(AREA_SPECIFIC_DBF_FILE, GetCoordinateType() ));
+         pDBFAreaReport.reset(new stsAreaSpecificDBF(sReportHistoryFilename, GetCoordinateType() ));
       measure_t nMinMeasure = 0;
 
       if (m_nClustersRetained == 0)
@@ -396,7 +392,7 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps,
    }
 }
 
-void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, FILE* fp, FILE* fpGIS)
+void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, FILE* fp, FILE* fpGIS, const ZdString& sReportHistoryFilename)
 {
    double       dSignifRatio05 = 0.0;
 
@@ -406,10 +402,10 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, FILE* fp, FILE* 
       // AJV 9/5/2002
       auto_ptr<stsClusterLevelDBF> pDBFClusterReport;
       if(m_pParameters->GetOutputClusterLevelDBF())
-         pDBFClusterReport.reset(new stsClusterLevelDBF(CLUSTER_LEVEL_DBF_FILE, GetCoordinateType()));
+         pDBFClusterReport.reset(new stsClusterLevelDBF(sReportHistoryFilename, GetCoordinateType()));
       auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;
       if(m_pParameters->GetOutputAreaSpecificDBF())
-         pDBFAreaReport.reset(new stsAreaSpecificDBF(AREA_SPECIFIC_DBF_FILE, GetCoordinateType()));
+         pDBFAreaReport.reset(new stsAreaSpecificDBF(sReportHistoryFilename, GetCoordinateType()));
 
       dSignifRatio05 = SimRatios.GetAlpha05();
 
@@ -1106,7 +1102,7 @@ void CAnalysis::UpdatePowerCounts(double r)
    }
 }
 
-bool CAnalysis::UpdateReport()
+bool CAnalysis::UpdateReport(const ZdString& sReportHistoryFilename)
 {
    FILE* fp;
    FILE* fpGIS = 0;

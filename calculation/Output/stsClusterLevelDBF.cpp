@@ -15,7 +15,7 @@
 
 
 // constructor
-__fastcall stsClusterLevelDBF::stsClusterLevelDBF(const ZdString& sFileName, const int& iCoordType) : DBaseOutput(sFileName, iCoordType) {
+__fastcall stsClusterLevelDBF::stsClusterLevelDBF(const ZdString& sReportHistoryFileName, const int& iCoordType) : DBaseOutput(sReportHistoryFileName, iCoordType) {
    try {
       Init();
       Setup();
@@ -116,7 +116,7 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 
       // relative risk
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsDouble() = pCluster->m_nRatio;
+      fv.AsDouble() = pCluster->GetRelativeRisk(pData->GetMeasureAdjustment());
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // log likliehood
@@ -143,7 +143,7 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
       (pData->GetTInfo())->tiGetCoords(pData->GetNeighbor(pCluster->m_iEllipseOffset, pCluster->m_Center, pCluster->m_nTracts), &pCoords2);
       fRadius = (float)sqrt((pData->GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
       if(giCoordType == CARTESIAN) {
-         for (int i = 0; i < (pData->m_pParameters->m_nDimension)-1; ++i) {
+         for (int i = 0; i < (pData->m_pParameters->m_nDimension); ++i) {
             if (i == 0)
                fLatitude = pCoords[i];
             else if (i == 1)
@@ -196,6 +196,7 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 // internal setup
 void stsClusterLevelDBF::Setup() {
    try {
+      gsFileName = CLUSTER_LEVEL_DBF_FILE;
       GetFields();
       CreateDBFFile();
    }
@@ -272,7 +273,7 @@ void stsClusterLevelDBF::SetupFields(ZdVector<std::pair<ZdString, char> >& vFiel
       field.first = "P_VALUE";
       field.second = ZD_NUMBER_FLD;
       fieldsize.first = 12;
-      fieldsize.second = 6;
+      fieldsize.second = 3;
       vFieldDescrips.AddElement(field);
       vFieldSizes.AddElement(fieldsize);
 
@@ -306,7 +307,7 @@ void stsClusterLevelDBF::SetupFields(ZdVector<std::pair<ZdString, char> >& vFiel
 
       field.first = "COORD_ADD";
       field.second = ZD_ALPHA_FLD;
-      fieldsize.first = 32;
+      fieldsize.first = 48;
       fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
       vFieldSizes.AddElement(fieldsize);

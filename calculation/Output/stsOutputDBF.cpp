@@ -12,11 +12,14 @@
 #include <DBFFile.h>
 #include "stsOutputDBF.h"
 
+const char *    CLUSTER_LEVEL_DBF_FILE  =       "ClusterLevel.dbf";
+const char *    AREA_SPECIFIC_DBF_FILE  =       "AreaSpecific.dbf";
+
 // constructor
-__fastcall DBaseOutput::DBaseOutput(const ZdString& sFileName, const int& iCoordType) {
+__fastcall DBaseOutput::DBaseOutput(const ZdString& sReportHistoryFileName, const int& iCoordType) {
    try {
       Init();
-      Setup(sFileName, iCoordType);	
+      Setup(sReportHistoryFileName, iCoordType);	
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "DBaseOutput");
@@ -77,15 +80,14 @@ void DBaseOutput::Init() {
 }	
 
 // internal setup function
-void DBaseOutput::Setup(const ZdString& sFileName, const int& iCoordType) {
+void DBaseOutput::Setup(const ZdString& sReportHistoryFileName, const int& iCoordType) {
    try{
-      gsFileName = sFileName;
       giCoordType = iCoordType;
 
       // ugly hack to get the run number from the history file - need a new way to do this - AJV 9/7/2002
       // consider making GetRunHistoryNumber or something of the like a function of the RunHistory file - AJV 9/9/2002
-      if(ZdIO::Exists("c:\\AnalysisHistory.txd") && ZdIO::Exists("c:\\AnalysisHistory.zds"))  {
-         TXDFile File("c:\\AnalysisHistory.txd", ZDIO_OPEN_READ);
+      if(ZdIO::Exists(sReportHistoryFileName))  {
+         TXDFile File(sReportHistoryFileName, ZDIO_OPEN_READ);
 
          // if there's records in the file
          unsigned long ulNumRecords = File.GetNumRecords();
