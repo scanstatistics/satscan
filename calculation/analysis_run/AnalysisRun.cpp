@@ -166,7 +166,7 @@ void AnalysisRunner::CreateReport() {
     AsciiPrintFormat::PrintVersionHeader(fp);
     sStartTime = ctime(&gStartTime);
     fprintf(fp,"\nProgram run on: %s\n", sStartTime.GetCString());
-    gParameters.DisplayAnalysisType(fp);
+    gParameters.DisplayAnalysisSummary(fp);
     gParameters.DisplayAdjustments(fp, gpDataHub->GetDataStreamHandler());
     gpDataHub->DisplaySummary(fp);
     fclose(fp);
