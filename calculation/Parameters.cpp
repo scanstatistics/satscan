@@ -1184,7 +1184,7 @@ void CParameters::DisplayParameters(FILE* fp) {
    
      fprintf(fp, "Input Files\n");
      fprintf(fp, "-----------\n");
-     fprintf(fp, "  Run History File  : %s\n", gsRunHistoryFilename.GetCString());
+
      fprintf(fp, "  Case File        : %s\n", m_szCaseFilename);
    
      if (m_nModel == POISSON ||
@@ -1320,6 +1320,7 @@ void CParameters::DisplayParameters(FILE* fp) {
    
      fprintf(fp, "\nOutput\n");
      fprintf(fp, "------\n");
+     fprintf(fp, "  Run History File  : %s\n", gsRunHistoryFilename.GetCString());
      fprintf(fp, "  Results File : %s\n", m_szOutputFilename);
      if (m_bOutputCensusAreas)  // Output Census areas in Reported Clusters
         fprintf(fp, "  GIS File     : %s\n", m_szGISFilename);
