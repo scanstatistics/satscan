@@ -2,7 +2,7 @@
 #pragma hdrstop
 #include "Analysis.h"
 
-// #define INCLUDE_RUN_HISTORY    // define to determine whether or not we should log run history, if included
+#define INCLUDE_RUN_HISTORY    // define to determine whether or not we should log run history, if included
                                   // then we will, if not then we won't - AJV 10/4/2002
 
 #include "stsRunHistoryFile.h"
@@ -100,7 +100,7 @@ bool CAnalysis::Execute(time_t RunTime) {
         ++m_nAnalysisCount;
 #ifdef INCLUDE_RUN_HISTORY
          // declare variable for each analysis - AJV 9/10/2002
-        stsRunHistoryFile historyFile(m_pParameters->GetRunHistoryFilename(), *gpPrintDirection);
+        stsRunHistoryFile historyFile(m_pParameters->GetRunHistoryFilename(), *gpPrintDirection, m_pParameters->m_nReplicas > 99);
 #endif
 
 #ifdef DEBUGANALYSIS
@@ -147,8 +147,8 @@ bool CAnalysis::Execute(time_t RunTime) {
         // log new history for each analysis run - AJV 9/10/2002
         gpPrintDirection->SatScanPrintf("\nLogging run history...");
         
-        float fPVal = (m_nClustersRetained > 0) ? m_pTopClusters[0]->GetPVal(m_pParameters->m_nReplicas): 0.0;
-        historyFile.LogNewHistory(*this, guwSignificantAt005);
+        double dPVal((m_nClustersRetained > 0) ? m_pTopClusters[0]->GetPVal(m_pParameters->m_nReplicas): 0.0);
+        historyFile.LogNewHistory(*this, guwSignificantAt005, dPVal);
         // reset the number of significants back to zero for each analysis - AJV 9/10/2002
         guwSignificantAt005 = 0;
 #endif
@@ -319,7 +319,7 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
 
         m_pTopClusters[0]->Display(fp, *m_pParameters, *m_pData, m_nClustersReported, nMinMeasure);
 
-        if(m_pTopClusters[0]->m_nLogLikelihood >= SimRatios.GetAlpha05())
+        if(m_pTopClusters[0]->m_nLogLikelihood < SimRatios.GetAlpha05())
            ++guwSignificantAt005;
         
         // if we want dBase report, set the report pointer in cluster
@@ -386,7 +386,7 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
           
           m_pTopClusters[i]->Display(fp, *m_pParameters, *m_pData, m_nClustersReported, nMinMeasure);
 
-          if(m_pTopClusters[i]->m_nLogLikelihood >= dSignifRatio05)
+          if(m_pTopClusters[i]->m_nLogLikelihood < dSignifRatio05)
              ++guwSignificantAt005;
           
           // if doing dBase output, set the report pointer - not the most effective way to do this, but the least intrusive - AJV

@@ -13,6 +13,8 @@
 #include "stsRunHistoryFile.h"
 #include "DBFFile.h"
 
+const int       OUTPUT_FILE_FIELD_LENGTH        = 256;
+
 const char* RUN_NUMBER_FIELD            = "RUN_NUM";
 const char* RUN_TIME_FIELD              = "RUN_TIME";
 const char* OUTPUT_FILE_FIELD           = "OUT_FILE";
@@ -27,20 +29,22 @@ const char* PRECISION_TIMES_FIELD       = "TIME_PREC";
 const char* MAX_GEO_EXTENT_FIELD        = "GEO_EXTENT";
 const char* MAX_TIME_EXTENT_FIELD       = "TEMPOR_EXT";
 const char* TIME_TREND_ADJUSTMENT_FIELD = "TREND_ADJ";
+const char* COVARIATES_FIELD            = "COVAR";
 const char* GRID_FILE_FIELD             = "GRID_FILE";
 const char* START_DATE_FIELD            = "START_DATE";
 const char* END_DATE_FIELD              = "END_DATE";
 const char* ALIVE_ONLY_FIELD            = "ALIVE_ONLY";
 const char* INTERVAL_FIELD              = "INTERVAL";
 const char* MONTE_CARLO_FIELD           = "MONTECARLO";
-const char* CUTOFF_001_FIELD            = "001_CUTOFF";
-const char* CUTOFF_005_FIELD            = "005_CUTOFF";
+const char* CUTOFF_001_FIELD            = "CUTOFF_001";
+const char* CUTOFF_005_FIELD            = "CUTOFF_005";
 const char* NUM_SIGNIF_005_FIELD        = "SIGNIF_005";
 const char* P_VALUE_FIELD               = "P_VALUE";
+const char* ADDITIONAL_OUTPUT_FILES_FIELD        = "ADDIT_OUT";
 
 // constructor
-stsRunHistoryFile::stsRunHistoryFile(const ZdString& sFileName, BasePrint& PrintDirection)
-                 : gsFilename(sFileName) , gpPrintDirection(&PrintDirection) {
+stsRunHistoryFile::stsRunHistoryFile(const ZdString& sFileName, BasePrint& PrintDirection, bool bPrintPVal)
+                 : gsFilename(sFileName) , gpPrintDirection(&PrintDirection) , gbPrintPVal(bPrintPVal) {
    try {
       Init();
       SetRunNumber();
@@ -48,7 +52,6 @@ stsRunHistoryFile::stsRunHistoryFile(const ZdString& sFileName, BasePrint& Print
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsRunHistoryFile");
       PrintDirection.SatScanPrintWarning("\nUnable to log analysis history information:\n");
-//      PrintDirection.SatScanPrintWarning(x.GetCallpath());
       PrintDirection.SatScanPrintWarning(x.GetErrorMessage());
       PrintDirection.SatScanPrintWarning("\n");
    }
@@ -81,7 +84,7 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
       ::CreateNewField(gvFields, INTERVAL_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
       ::CreateNewField(gvFields, ALIVE_ONLY_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
       ::CreateNewField(gvFields, TIME_TREND_ADJUSTMENT_FIELD, ZD_ALPHA_FLD, 20, 3, uwOffset);
-      // covariates adjusted for
+      ::CreateNewField(gvFields, COVARIATES_FIELD, ZD_NUMBER_FLD, 3, 0, uwOffset);
       ::CreateNewField(gvFields, MONTE_CARLO_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
 
       ::CreateNewField(gvFields, NUM_GEO_AREAS_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
@@ -94,11 +97,10 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
 
       ::CreateNewField(gvFields, P_VALUE_FIELD, ZD_NUMBER_FLD, 12, 5, uwOffset);
       ::CreateNewField(gvFields, NUM_SIGNIF_005_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
-      ::CreateNewField(gvFields, OUTPUT_FILE_FIELD, ZD_ALPHA_FLD, 254, 0, uwOffset);
-      // additional text file names
-
-//      ::CreateNewField(gvFields, CUTOFF_001_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
-//      ::CreateNewField(gvFields, CUTOFF_005_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
+      ::CreateNewField(gvFields, CUTOFF_001_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
+      ::CreateNewField(gvFields, CUTOFF_005_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
+      ::CreateNewField(gvFields, OUTPUT_FILE_FIELD, ZD_ALPHA_FLD, OUTPUT_FILE_FIELD_LENGTH, 0, uwOffset);
+      ::CreateNewField(gvFields, ADDITIONAL_OUTPUT_FILES_FIELD, ZD_ALPHA_FLD, OUTPUT_FILE_FIELD_LENGTH, 0, uwOffset);
 
       DBFFile File;
       File.PackFields(gvFields);
@@ -260,7 +262,7 @@ void stsRunHistoryFile::Init() {
 // although the name implies an oxymoron, this function will record a new run into the history file
 // pre: none
 // post: records the run history to the file
-void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005, float pVal) {
+void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005, double dVal) {
    ZdTransaction	*pTransaction = 0;
    ZdString             sTempValue, sInterval;
    std::auto_ptr<DBFFile>    pFile(new DBFFile(gsFilename));
@@ -298,6 +300,8 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       sTempValue = pAnalysis.GetSatScanData()->m_pParameters->m_szOutputFilename;
       StripCRLF(sTempValue);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, OUTPUT_FILE_FIELD));
+      SetAdditionalOutputFileNameString(sTempValue, *(pAnalysis.GetSatScanData()->m_pParameters));
+      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ADDITIONAL_OUTPUT_FILES_FIELD));
 
       // probability model field
       GetProbabilityModelString(sTempValue, pAnalysis.GetSatScanData()->m_pParameters->m_nModel);
@@ -330,6 +334,9 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       GetTimeAdjustmentString(sTempValue, pAnalysis.GetSatScanData()->m_pParameters->m_nTimeAdjustType);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, TIME_TREND_ADJUSTMENT_FIELD));
 
+      // covariates number
+      SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->gpCats->catGetNumEls(), GetFieldNumber(gvFields, COVARIATES_FIELD));
+
       SetBoolField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_bSpecialGridFile, GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field
       SetStringField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_szStartDate, GetFieldNumber(gvFields, START_DATE_FIELD));  // start date field
       SetStringField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_szEndDate, GetFieldNumber(gvFields, END_DATE_FIELD)); // end date field
@@ -341,10 +348,21 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetStringField(*pRecord, sInterval, GetFieldNumber(gvFields, INTERVAL_FIELD));
 
       // p-value field
-      SetDoubleField(*pRecord, pVal, GetFieldNumber(gvFields, P_VALUE_FIELD));
+      if(gbPrintPVal)
+         SetDoubleField(*pRecord, dVal, GetFieldNumber(gvFields, P_VALUE_FIELD));
+      else
+         pRecord->PutBlank(GetFieldNumber(gvFields, P_VALUE_FIELD));
       SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->m_pParameters->m_nReplicas, GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
-//      SetDoubleField(*pRecord, pAnalysis.GetSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
-//      SetDoubleField(*pRecord, pAnalysis.GetSimRatio05(), GetFieldNumber(gvFields, CUTOFF_005_FIELD)); // 0.05 cutoff field
+
+      if(gbPrintPVal) {    // only print 0.01 and 0.05 cutoffs if pVals are printed, else this would result in access underrun - AJV
+         SetDoubleField(*pRecord, pAnalysis.GetSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
+         SetDoubleField(*pRecord, pAnalysis.GetSimRatio05(), GetFieldNumber(gvFields, CUTOFF_005_FIELD)); // 0.05 cutoff field
+      }
+      else {
+         pRecord->PutBlank(GetFieldNumber(gvFields, CUTOFF_001_FIELD));
+         pRecord->PutBlank(GetFieldNumber(gvFields, CUTOFF_005_FIELD));
+      }
+
       SetDoubleField(*pRecord, (double)uwSignificantAt005, GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));  // number of clusters significant at tthe .05 llr cutoff field
 
       pTransaction = (pFile->BeginTransaction());
@@ -353,22 +371,75 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       pFile->Close();
    }
    catch(ZdException &x) {
-      try {
-         if(pTransaction)
-            pFile->EndTransaction(pTransaction);   // if there is a pTransaction then there must be a pFile, so this is valid
-         pTransaction = 0;
-         pFile->Close();
-      }
-      catch(...) {   // Although I really hate to do this here, it is necessary because I don't want
-                       // to throw because that would cause the thread to terminate and the calculation
-                       // not to be finished printing. Instead we'll just print a message to the user that
-                       // the log file was not able to be written to - AJV 9/24/2002
-         x.AddCallpath("LogNewHistory()", "stsRunHistoryFile");
-         gpPrintDirection->SatScanPrintWarning("\nUnable to log analysis information:\n");
-//         gpPrintDirection->SatScanPrintWarning(x.GetCallpath());
-         gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
-         gpPrintDirection->SatScanPrintWarning("\n");
-      }
+      gpPrintDirection->SatScanPrintWarning("\nUnable to log analysis information:\n");
+      gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
+      gpPrintDirection->SatScanPrintWarning("\n");
+      if(pTransaction)
+         pFile->EndTransaction(pTransaction);   // if there is a pTransaction then there must be a pFile, so this is valid
+      pTransaction = 0;
+      pFile->Close();
+   }
+}
+
+// small helper function for replacing the extension of a filename and appending it to the tempstring
+// pre : sSourceFileName is the name of the file to replace the extension on
+// post : will replace the result output filename's extension with the replacement extension, if an extension
+//        doesn't exist on the original filename, then it will just tack on the extension THEN will append the output filename
+//        to the tempstring as long as it still fits within the fieldsize space
+void stsRunHistoryFile::ReplaceExtensionAndAppend(ZdString& sOutputFileNames, const ZdFileName& sSourceFileName, const ZdString& sReplacementExtension) {
+   try {
+      ZdString  sWorkString(sSourceFileName.GetFileName());
+      if(strlen(sSourceFileName.GetExtension()) > 0)
+         sWorkString.Replace(sSourceFileName.GetExtension(), sReplacementExtension);
+      else
+         sWorkString << sReplacementExtension;
+
+      // if the temp string plus the work string lengths are less than the field width then append the work string
+      // to temp string, else just print ',...'
+      if ((sOutputFileNames.GetLength() + sWorkString.GetLength()) < (OUTPUT_FILE_FIELD_LENGTH - 4))
+         sOutputFileNames << (sOutputFileNames.GetLength() > 0 ? ", " : "") << sWorkString;
+      else
+         sOutputFileNames << (sOutputFileNames.GetLength() > 0 ? ", " : "") << "...";
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("ReplaceExtensionAndAppend()", "stsRunHistoryFile");
+      throw;
+   }
+}
+
+// Creates the string to be outputed as the additional output filename string in the file
+// pre : none
+// post : sTempValue will contain the names of the additional output files
+void stsRunHistoryFile::SetAdditionalOutputFileNameString(ZdString& sOutputFileNames, const CParameters& params) {
+   ZdFileName   sResultFile(ZdFileName(params.m_szOutputFilename).GetFileName());
+
+   try {
+      sOutputFileNames.Clear();
+
+      if(params.m_bSaveSimLogLikelihoods)
+         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".llr.txt");
+      if (params.GetDBaseOutputLogLikeli())
+         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".llr.dbf");
+
+      if(params.m_bOutputRelRisks)
+         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".rr.txt");
+      if(params.GetDBaseOutputRelRisks())
+         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".rr.dbf");
+
+      if(params.m_bOutputCensusAreas)
+         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".col.txt");
+      if(params.GetOutputAreaSpecificDBF())
+         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".col.dbf");
+
+      if(params.m_bMostLikelyClusters)
+         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".gis.txt");
+      if(params.GetOutputClusterLevelDBF()) 
+         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".gis.dbf");
+
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("SetAdditionalOutputFileNameString()", "stsRunHistoryFile");
+      throw;
    }
 }
 

@@ -16,6 +16,7 @@ extern const char* PRECISION_TIMES_FIELD;
 extern const char* MAX_GEO_EXTENT_FIELD;
 extern const char* MAX_TIME_EXTENT_FIELD;
 extern const char* TIME_TREND_ADJUSTMENT_FIELD;
+extern const char* COVARIATES_FIELD;
 extern const char* GRID_FILE_FIELD;
 extern const char* START_DATE_FIELD;
 extern const char* END_DATE_FIELD;
@@ -26,6 +27,7 @@ extern const char* CUTOFF_001_FIELD;
 extern const char* CUTOFF_005_FIELD;
 extern const char* NUM_SIGNIF_005_FIELD;
 extern const char* P_VALUE_FIELD;
+extern const char* ADDITIONAL_OUTPUT_FILES_FIELD;
 
 class stsRunHistoryFile {
    private:
@@ -33,6 +35,7 @@ class stsRunHistoryFile {
       long                              glRunNumber;
       ZdPointerVector<ZdField>	        gvFields;
       BasePrint*                        gpPrintDirection;
+      bool                              gbPrintPVal;
 
       void      GetAnalysisTypeString(ZdString& sTempValue, int iType);
       void      GetCasePrecisionString(ZdString& sTempValue, int iPrecision);
@@ -41,17 +44,19 @@ class stsRunHistoryFile {
       void      GetRatesString(ZdString& sTempValue, int iRate);
       void      GetTimeAdjustmentString(ZdString& sTempValue, int iType);
       void	Init();
+      void      ReplaceExtensionAndAppend(ZdString& sOutputFileNames, const ZdFileName& sSourceFileName, const ZdString& sReplacementExtension);
+      void      SetAdditionalOutputFileNameString(ZdString& sOutputFileNames, const CParameters& params);
       void      SetRunNumber();
       void      StripCRLF(ZdString& sStore);
    protected:
       void      CreateRunHistoryFile();
    public:
-      stsRunHistoryFile(const ZdString& sFileName, BasePrint& PrintDirection);
+      stsRunHistoryFile(const ZdString& sFileName, BasePrint& PrintDirection, bool bPrintPVal = true);
       ~stsRunHistoryFile();
 
       const long        GetRunNumber() const {return glRunNumber;}
       const ZdString&   GetRunHistoryFileName() const {return gsFilename;}
-      void              LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005, float pVal = 0.0);
+      void              LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005, double dpVal);
 
 };
 
