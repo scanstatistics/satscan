@@ -6,6 +6,43 @@
 #pragma resource "*.dfm"
 TfrmAnalysis *frmAnalysis;
 
+/** Constructor */
+__fastcall TDlgSaTScanDataImporter::TDlgSaTScanDataImporter(TComponent* Owner, ZdDatabase * pDatabase, BFTFImportDescriptor * pImportDescriptor)
+                                   :TBdlgImporter(Owner, pDatabase, pImportDescriptor) {
+  Setup();
+}
+
+/** Constructor */
+__fastcall TDlgSaTScanDataImporter::TDlgSaTScanDataImporter(TComponent* Owner, ZdDatabase * pDatabase, BCSVFileImportSpecs * pImportDescriptor)
+                                   :TBdlgImporter(Owner, pDatabase, pImportDescriptor) {
+  Setup();
+}
+
+/** Destructor */
+__fastcall TDlgSaTScanDataImporter::~TDlgSaTScanDataImporter() {}
+
+/** Initially sets the File Type for the import file. */
+void TDlgSaTScanDataImporter::SetInitialImportFileType() {
+  try {
+    TBdlgImporter::SetInitialImportFileType();
+    //Trump base classes settings, we currently always want dBase as default.
+    rdoFileType->ItemIndex = 2;
+  }
+  catch ( ZdException & x ) {
+      x.AddCallpath( "SetInitialImportFileType()", "TDlgSaTScanDataImporter" );
+      throw;
+  }
+}
+
+/** Internal setup function */
+void TDlgSaTScanDataImporter::Setup() {
+  //Change third filetype option to dbase.
+  rdoFileType->Items->Strings[2] = "dBase";
+  //Change import mapping grid headers.
+  tsfieldGrid->Col[1]->Heading = "SaTScan Variable";
+  tsfieldGrid->Col[2]->Heading = "Input File Variable";
+}
+
 //ClassDesc Begin TfrmAnalysis
 // This class contains all the main interface controls and relationships.
 // Since it the main session interface is a tab dialog, decided to keep
@@ -105,8 +142,9 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
          SetupCaseFileFieldDescriptors(vFieldDescriptors);
          CreateTXDFile(sFileName, vFieldDescriptors);
-         auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
+         auto_ptr<TDlgSaTScanDataImporter> pImporter(new TDlgSaTScanDataImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
+         pImporter->SetInputFileTypeName("Case");
          if (pImporter->ShowModal() == mrOk) {
            AttemptFilterDateFields(sFileName.GetFullPath(), "%y/%m/%d", 2);
            gParameters.SetCaseFileName(sFileName.GetFullPath());
@@ -157,8 +195,9 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
          SetupControlFileFieldDescriptors(vFieldDescriptors);
          CreateTXDFile(sFileName, vFieldDescriptors);
-         auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
+         auto_ptr<TDlgSaTScanDataImporter> pImporter(new TDlgSaTScanDataImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
+         pImporter->SetInputFileTypeName("Control");
          if (pImporter->ShowModal() == mrOk) {
            AttemptFilterDateFields(sFileName.GetFullPath(), "%y/%m/%d", 2);
            gParameters.SetControlFileName(sFileName.GetFullPath());
@@ -209,8 +248,9 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
          SetupGeoFileFieldDescriptors(vFieldDescriptors);
          CreateTXDFile(sFileName, vFieldDescriptors);
-         auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
+         auto_ptr<TDlgSaTScanDataImporter> pImporter(new TDlgSaTScanDataImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
+         pImporter->SetInputFileTypeName("Coordinates");
          if (pImporter->ShowModal() == mrOk) {
            gParameters.SetCoordinatesFileName(sFileName.GetFullPath());
            edtCoordinateFileName->Text = sFileName.GetFullPath();
@@ -260,8 +300,9 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
          SetupGridFileFieldDescriptors(vFieldDescriptors);
          CreateTXDFile(sFileName, vFieldDescriptors);
-         auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
+         auto_ptr<TDlgSaTScanDataImporter> pImporter(new TDlgSaTScanDataImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
+         pImporter->SetInputFileTypeName("Special Grid");
          if (pImporter->ShowModal() == mrOk) {
            gParameters.SetSpecialGridFileName(sFileName.GetFullPath(), false, true);
            edtGridFileName->Text = sFileName.GetFullPath();
@@ -311,8 +352,9 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
           ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
           SetupPopFileFieldDescriptors(vFieldDescriptors);
           CreateTXDFile(sFileName, vFieldDescriptors);
-          auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
+          auto_ptr<TDlgSaTScanDataImporter> pImporter(new TDlgSaTScanDataImporter(0, 0, &ImportDescriptor));
           pImporter->ShowOptionalPanels(false, false, false);
+          pImporter->SetInputFileTypeName("Population");
           if (pImporter->ShowModal() == mrOk) {
             AttemptFilterDateFields(sFileName.GetFullPath(), "%y/%m/%d", 1);
             gParameters.SetPopulationFileName(sFileName.GetFullPath());
@@ -1441,17 +1483,17 @@ void TfrmAnalysis::SetupCaseFileFieldDescriptors(std::vector<std::string>& vFiel
    vFieldDescriptors.reserve(13);
    vFieldDescriptors.push_back("Tract ID");
    vFieldDescriptors.push_back("Number of Cases");
-   vFieldDescriptors.push_back("Date/Time");
-   vFieldDescriptors.push_back("Covariant1");
-   vFieldDescriptors.push_back("Covariant2");
-   vFieldDescriptors.push_back("Covariant3");
-   vFieldDescriptors.push_back("Covariant4");
-   vFieldDescriptors.push_back("Covariant5");
-   vFieldDescriptors.push_back("Covariant6");
-   vFieldDescriptors.push_back("Covariant7");
-   vFieldDescriptors.push_back("Covariant8");
-   vFieldDescriptors.push_back("Covariant9");
-   vFieldDescriptors.push_back("Covariant10");
+   vFieldDescriptors.push_back("Date/Time (optional)");
+   vFieldDescriptors.push_back("Covariate1 (optional)");
+   vFieldDescriptors.push_back("Covariate2 (optional)");
+   vFieldDescriptors.push_back("Covariate3 (optional)");
+   vFieldDescriptors.push_back("Covariate4 (optional)");
+   vFieldDescriptors.push_back("Covariate5 (optional)");
+   vFieldDescriptors.push_back("Covariate6 (optional)");
+   vFieldDescriptors.push_back("Covariate7 (optional)");
+   vFieldDescriptors.push_back("Covariate8 (optional)");
+   vFieldDescriptors.push_back("Covariate9 (optional)");
+   vFieldDescriptors.push_back("Covariate10 (optional)");
 }
 
 // fill the control File field descriptor vector with the appropriate field names for a control file
@@ -1460,18 +1502,18 @@ void TfrmAnalysis::SetupControlFileFieldDescriptors(std::vector<std::string>& vF
    vFieldDescriptors.reserve(3);
    vFieldDescriptors.push_back("Tract ID");
    vFieldDescriptors.push_back("Number of Controls");
-   vFieldDescriptors.push_back("Date/Time");
+   vFieldDescriptors.push_back("Date/Time (optional)");
    /** covariates not currently usable for control file, but is planned for future release. */
-   //vFieldDescriptors.push_back("Covariant1");
-   //vFieldDescriptors.push_back("Covariant2");
-   //vFieldDescriptors.push_back("Covariant3");
-   //vFieldDescriptors.push_back("Covariant4");
-   //vFieldDescriptors.push_back("Covariant5");
-   //vFieldDescriptors.push_back("Covariant6");
-   //vFieldDescriptors.push_back("Covariant7");
-   //vFieldDescriptors.push_back("Covariant8");
-   //vFieldDescriptors.push_back("Covariant9");
-   //vFieldDescriptors.push_back("Covariant10");
+   //vFieldDescriptors.push_back("Covariate1 (optional)");
+   //vFieldDescriptors.push_back("Covariate2 (optional)");
+   //vFieldDescriptors.push_back("Covariate3 (optional)");
+   //vFieldDescriptors.push_back("Covariate4 (optional)");
+   //vFieldDescriptors.push_back("Covariate5 (optional)");
+   //vFieldDescriptors.push_back("Covariate6 (optional)");
+   //vFieldDescriptors.push_back("Covariate7 (optional)");
+   //vFieldDescriptors.push_back("Covariate8 (optional)");
+   //vFieldDescriptors.push_back("Covariate9 (optional)");
+   //vFieldDescriptors.push_back("Covariate10 (optional)");
 }
 
 // fill the Geo File field descriptor vector with the appropriate field names for a geo file
@@ -1483,14 +1525,14 @@ void TfrmAnalysis::SetupGeoFileFieldDescriptors(std::vector<std::string>& vField
    vFieldDescriptors.push_back("Longitude");
    vFieldDescriptors.push_back("Dimension1");
    vFieldDescriptors.push_back("Dimension2");
-   vFieldDescriptors.push_back("Dimension3");
-   vFieldDescriptors.push_back("Dimension4");
-   vFieldDescriptors.push_back("Dimension5");
-   vFieldDescriptors.push_back("Dimension6");
-   vFieldDescriptors.push_back("Dimension7");
-   vFieldDescriptors.push_back("Dimension8");
-   vFieldDescriptors.push_back("Dimension9");
-   vFieldDescriptors.push_back("Dimension10");
+   vFieldDescriptors.push_back("Dimension3 (optional)");
+   vFieldDescriptors.push_back("Dimension4 (optional)");
+   vFieldDescriptors.push_back("Dimension5 (optional)");
+   vFieldDescriptors.push_back("Dimension6 (optional)");
+   vFieldDescriptors.push_back("Dimension7 (optional)");
+   vFieldDescriptors.push_back("Dimension8 (optional)");
+   vFieldDescriptors.push_back("Dimension9 (optional)");
+   vFieldDescriptors.push_back("Dimension10 (optional)");
 }
 
 // fill the Geo File field descriptor vector with the appropriate field names for a geo file
@@ -1501,8 +1543,8 @@ void TfrmAnalysis::SetupGridFileFieldDescriptors(std::vector<std::string>& vFiel
    vFieldDescriptors.push_back("Longitude");
    vFieldDescriptors.push_back("Dimension1");
    vFieldDescriptors.push_back("Dimension2");
-   vFieldDescriptors.push_back("Dimension3");
-   vFieldDescriptors.push_back("Dimension4");
+   vFieldDescriptors.push_back("Dimension3 (optional)");
+   vFieldDescriptors.push_back("Dimension4 (optional)");
 }
 
 // sets up the appropriate options for the FTFImportDescriptor
@@ -1527,9 +1569,9 @@ void TfrmAnalysis::SetupPopFileFieldDescriptors(std::vector<std::string>& vField
    vFieldDescriptors.push_back("Tract ID");
    vFieldDescriptors.push_back("Date/Time");
    vFieldDescriptors.push_back("Population");
-   vFieldDescriptors.push_back("Covariant1");
-   vFieldDescriptors.push_back("Covariant2");
-   vFieldDescriptors.push_back("Covariant3");
+   vFieldDescriptors.push_back("Covariate1 (optional)");
+   vFieldDescriptors.push_back("Covariate2 (optional)");
+   vFieldDescriptors.push_back("Covariate3 (optional)");
 }
 
 //---------------------------------------------------------------------------

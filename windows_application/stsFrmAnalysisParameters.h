@@ -16,6 +16,24 @@
 #include <Menus.hpp>
 
 //---------------------------------------------------------------------------
+
+class TDlgSaTScanDataImporter : public TBdlgImporter {
+  private:
+    void                Setup();
+      
+  protected:
+    std::string         gsInputFileTypeName;
+
+    virtual void        SetInitialImportFileType();
+
+  public:
+    virtual __fastcall TDlgSaTScanDataImporter(TComponent* Owner, ZdDatabase * pDatabase, BFTFImportDescriptor * pImportDescriptor);
+    virtual __fastcall TDlgSaTScanDataImporter(TComponent* Owner, ZdDatabase * pDatabase = 0, BCSVFileImportSpecs * pCVSImportDescriptor = 0);
+    virtual __fastcall ~TDlgSaTScanDataImporter();
+
+    void                SetInputFileTypeName(const char * sInputFileTypeName) {gsInputFileTypeName = sInputFileTypeName;}
+};
+
 class TfrmAnalysis : public TForm {
   __published:  // IDE-managed Components
         TButton *btnCaseBrowse;
