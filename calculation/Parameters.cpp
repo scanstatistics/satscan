@@ -1177,6 +1177,7 @@ void CParameters::SetPrintDirection(BasePrint *pPrintDirection)
 
 void CParameters::DisplayParameters(FILE* fp) {
    int i;
+   ZdString     sFileName;
 
    try {
      fprintf(fp, "\n________________________________________________________________\n\n");
@@ -1322,6 +1323,16 @@ void CParameters::DisplayParameters(FILE* fp) {
      fprintf(fp, "------\n");
      fprintf(fp, "  Run History File  : %s\n", gsRunHistoryFilename.GetCString());
      fprintf(fp, "  Results File : %s\n", m_szOutputFilename);
+     if (gbOutputClusterLevelDBF) {
+        ZdFileName sOutputFileName(m_szOutputFilename);
+        sFileName << ZdString::reset << sOutputFileName.GetLocation() << "ClusterLevel.dbf";
+        fprintf(fp, "  Cluster Level dBase Output File : %s\n", sFileName.GetCString());
+     }
+     if (gbOutputAreaSpecificDBF) {
+        ZdFileName sOutputFileName2(m_szOutputFilename);
+        sFileName << ZdString::reset << sOutputFileName2.GetLocation() << "AreaSpecific.dbf";
+        fprintf(fp, "  Area Specific dBase Output File : %s\n", sFileName.GetCString());
+     }
      if (m_bOutputCensusAreas)  // Output Census areas in Reported Clusters
         fprintf(fp, "  GIS File     : %s\n", m_szGISFilename);
      if (m_bMostLikelyClusters)  // Output Most Likely Cluster for each Centroid
