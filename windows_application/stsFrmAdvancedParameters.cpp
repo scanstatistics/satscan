@@ -1524,8 +1524,8 @@ void TfrmAdvancedParameters::ValidateAdjustmentSettings() {
     //validate temporal adjustments
     if (rdgTemporalTrendAdj->Enabled && gAnalysisSettings.GetModelControlType() == POISSON && bAnalysisIsPurelyTemporal &&
         gAnalysisSettings.edtPopFileName->Text.IsEmpty() && GetAdjustmentTimeTrendControlType() != NOTADJUSTED) {
-         GenerateAFException("Temporal adjustments can not performed for the Poisson model when executed\n"
-                             "with a purely temporal analysis, when no population file has been specfied.",
+         GenerateAFException("Temporal adjustments can not be performed for a purely temporal analysis\n"
+                             "using the Poisson model, when no population file has been specfied.",
                              "ValidateAdjustmentSettings()", *rdgTemporalTrendAdj, ANALYSIS_TABS);
     }
     //validate spatial/temporal/space-time adjustments
