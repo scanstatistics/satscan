@@ -1,10 +1,10 @@
 object frmAdvancedParameters: TfrmAdvancedParameters
-  Left = 261
-  Top = 134
+  Left = 185
+  Top = 131
   BorderStyle = bsDialog
   Caption = 'Advanced Features'
-  ClientHeight = 348
-  ClientWidth = 496
+  ClientHeight = 304
+  ClientWidth = 542
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,10 +18,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
   PixelsPerInch = 96
   TextHeight = 13
   object pnlButtons: TPanel
-    Left = 412
+    Left = 458
     Top = 0
     Width = 84
-    Height = 348
+    Height = 304
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 1
@@ -49,23 +49,163 @@ object frmAdvancedParameters: TfrmAdvancedParameters
   object PageControl: TPageControl
     Left = 2
     Top = 2
-    Width = 410
-    Height = 344
-    ActivePage = TabSheet3
+    Width = 455
+    Height = 291
+    ActivePage = TabSheet2
     TabOrder = 0
     object TabSheet2: TTabSheet
       Caption = 'Spatial Window'
       ImageIndex = 3
+      object rdgSpatialOptions: TGroupBox
+        Left = 8
+        Top = 8
+        Width = 428
+        Height = 162
+        Caption = 'Spatial'
+        TabOrder = 0
+        object lblMaxSpatialClusterSize: TLabel
+          Left = 18
+          Top = 18
+          Width = 168
+          Height = 13
+          Caption = 'The Maximum Spatial Cluster Size:  '
+        end
+        object lblPercentOfPopulation: TLabel
+          Left = 96
+          Top = 38
+          Width = 263
+          Height = 13
+          Caption = 'percent of the population at risk (<= 50%, default = 50%)'
+        end
+        object lblMaxRadius: TLabel
+          Left = 166
+          Top = 112
+          Width = 73
+          Height = 13
+          Caption = 'kilometer radius'
+        end
+        object lblPercentageOfPopFile: TLabel
+          Left = 96
+          Top = 62
+          Width = 316
+          Height = 13
+          Caption = 
+            'percent of the population defined in the max circle size file (<' +
+            '= 50%)'
+        end
+        object edtMaxSpatialClusterSize: TEdit
+          Left = 64
+          Top = 35
+          Width = 25
+          Height = 21
+          AutoSelect = False
+          MaxLength = 5
+          TabOrder = 1
+          Text = '50'
+          OnChange = edtMaxSpatialClusterSizeChange
+          OnExit = edtMaxSpatialClusterSizeExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object chkInclPureTempClust: TCheckBox
+          Left = 18
+          Top = 137
+          Width = 305
+          Height = 17
+          Caption = 'Include Purely Temporal Cluster (Spatial Size = 100%)'
+          Enabled = False
+          TabOrder = 8
+        end
+        object rdoSpatialPercentage: TRadioButton
+          Left = 34
+          Top = 36
+          Width = 28
+          Height = 17
+          Caption = 'is '
+          Checked = True
+          TabOrder = 0
+          TabStop = True
+          OnClick = rdoMaxSpatialTypeClick
+        end
+        object rdoSpatialDistance: TRadioButton
+          Left = 34
+          Top = 112
+          Width = 97
+          Height = 17
+          Caption = 'is a circle with a'
+          TabOrder = 6
+          OnClick = rdoMaxSpatialTypeClick
+        end
+        object rdoSpatialPopulationFile: TRadioButton
+          Left = 34
+          Top = 62
+          Width = 28
+          Height = 17
+          Caption = 'is'
+          TabOrder = 2
+          OnClick = rdoMaxSpatialTypeClick
+        end
+        object edtMaxSpatialRadius: TEdit
+          Left = 133
+          Top = 110
+          Width = 25
+          Height = 21
+          TabOrder = 7
+          Text = '1'
+          OnChange = edtMaxSpatialRadiusChange
+          OnExit = edtMaxSpatialRadiusExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object edtMaxSpatialPercentFile: TEdit
+          Left = 64
+          Top = 60
+          Width = 25
+          Height = 21
+          TabOrder = 3
+          Text = '50'
+          OnChange = edtMaxSpatialPercentFileChange
+          OnExit = edtMaxSpatialPercentFileExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object edtMaxCirclePopulationFilename: TEdit
+          Left = 52
+          Top = 85
+          Width = 278
+          Height = 21
+          Anchors = []
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 4
+          OnChange = edtMaxCirclePopulationFilenameChange
+        end
+        object btnBrowseMaxCirclePopFile: TButton
+          Left = 335
+          Top = 85
+          Width = 25
+          Height = 21
+          Hint = 'browse for special population file'
+          Anchors = []
+          Caption = '...'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 5
+          OnClick = btnBrowseMaxCirclePopFileClick
+        end
+      end
     end
     object tsOther: TTabSheet
       Caption = 'Temporal Window'
       ImageIndex = 1
       object grpScanningWindow: TGroupBox
-        Left = 6
-        Top = 58
-        Width = 390
+        Left = 8
+        Top = 138
+        Width = 380
         Height = 111
-        Anchors = [akLeft, akTop, akRight]
         Caption = 'Scanning Window'
         TabOrder = 0
         object chkRestrictTemporalRange: TCheckBox
@@ -78,7 +218,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = chkRestrictTemporalRangeClick
         end
         object stStartRangeTo: TStaticText
-          Left = 261
+          Left = 245
           Top = 49
           Width = 19
           Height = 17
@@ -86,11 +226,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           TabOrder = 5
         end
         object edtStartRangeStartYear: TEdit
-          Left = 154
+          Left = 142
           Top = 46
-          Width = 37
+          Width = 31
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           MaxLength = 4
           TabOrder = 2
           Text = '1900'
@@ -98,11 +237,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStartRangeStartMonth: TEdit
-          Left = 197
+          Left = 182
           Top = 46
-          Width = 23
+          Width = 20
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 3
@@ -111,11 +249,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStartRangeStartDay: TEdit
-          Left = 226
+          Left = 211
           Top = 46
-          Width = 23
+          Width = 20
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 4
@@ -124,11 +261,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStartRangeEndYear: TEdit
-          Left = 284
+          Left = 268
           Top = 46
-          Width = 37
+          Width = 31
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           MaxLength = 4
           TabOrder = 6
           Text = '1900'
@@ -136,11 +272,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStartRangeEndMonth: TEdit
-          Left = 327
+          Left = 308
           Top = 46
-          Width = 23
+          Width = 20
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 7
@@ -149,11 +284,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStartRangeEndDay: TEdit
-          Left = 356
+          Left = 337
           Top = 46
-          Width = 23
+          Width = 20
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 8
@@ -162,7 +296,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object stStartWindowRange: TStaticText
-          Left = 46
+          Left = 30
           Top = 49
           Width = 91
           Height = 17
@@ -171,7 +305,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           TabOrder = 1
         end
         object stEndWindowRange: TStaticText
-          Left = 46
+          Left = 30
           Top = 81
           Width = 89
           Height = 17
@@ -179,11 +313,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           TabOrder = 9
         end
         object edtEndRangeStartYear: TEdit
-          Left = 154
+          Left = 142
           Top = 78
-          Width = 37
+          Width = 31
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           MaxLength = 4
           TabOrder = 10
           Text = '1900'
@@ -191,11 +324,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtEndRangeStartMonth: TEdit
-          Left = 197
+          Left = 182
           Top = 78
-          Width = 23
+          Width = 20
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 11
@@ -204,11 +336,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtEndRangeStartDay: TEdit
-          Left = 226
+          Left = 211
           Top = 78
-          Width = 23
+          Width = 20
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 12
@@ -217,7 +348,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object stEndRangeTo: TStaticText
-          Left = 261
+          Left = 245
           Top = 81
           Width = 19
           Height = 17
@@ -225,11 +356,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           TabOrder = 13
         end
         object edtEndRangeEndYear: TEdit
-          Left = 284
+          Left = 268
           Top = 78
-          Width = 37
+          Width = 31
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           MaxLength = 4
           TabOrder = 14
           Text = '1900'
@@ -237,11 +367,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtEndRangeEndMonth: TEdit
-          Left = 327
+          Left = 308
           Top = 78
-          Width = 23
+          Width = 20
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 15
@@ -250,11 +379,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtEndRangeEndDay: TEdit
-          Left = 356
+          Left = 337
           Top = 78
-          Width = 23
+          Width = 20
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 16
@@ -263,14 +391,94 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
       end
+      object rdgTemporalOptions: TGroupBox
+        Left = 8
+        Top = 8
+        Width = 380
+        Height = 112
+        Caption = 'Temporal'
+        TabOrder = 1
+        object lblMaxTemporalClusterSize: TLabel
+          Left = 18
+          Top = 18
+          Width = 180
+          Height = 13
+          Caption = 'The Maximum Temporal Cluster Size:  '
+        end
+        object lblPercentageOfStudyPeriod: TLabel
+          Left = 108
+          Top = 37
+          Width = 240
+          Height = 13
+          Caption = 'percent of the study period (<= 90%, default = 50%)'
+        end
+        object lblMaxTemporalTimeUnits: TLabel
+          Left = 108
+          Top = 62
+          Width = 25
+          Height = 13
+          Caption = 'years'
+        end
+        object edtMaxTemporalClusterSize: TEdit
+          Left = 62
+          Top = 35
+          Width = 38
+          Height = 21
+          MaxLength = 5
+          TabOrder = 1
+          Text = '50'
+          OnExit = edtMaxTemporalClusterSizeExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object chkIncludePureSpacClust: TCheckBox
+          Left = 18
+          Top = 87
+          Width = 297
+          Height = 17
+          Caption = 'Include Purely Spatial Clusters (Temporal Size = 100%)'
+          Enabled = False
+          TabOrder = 3
+        end
+        object rdoPercentageTemporal: TRadioButton
+          Left = 30
+          Top = 36
+          Width = 31
+          Height = 17
+          Caption = 'is'
+          Checked = True
+          TabOrder = 0
+          TabStop = True
+          OnClick = rdoMaxTemporalClusterSizelick
+        end
+        object rdoTimeTemporal: TRadioButton
+          Left = 30
+          Top = 62
+          Width = 28
+          Height = 17
+          Caption = 'is'
+          TabOrder = 2
+          OnClick = rdoMaxTemporalClusterSizelick
+        end
+        object edtMaxTemporalClusterSizeUnits: TEdit
+          Left = 62
+          Top = 60
+          Width = 38
+          Height = 21
+          MaxLength = 5
+          TabOrder = 4
+          Text = '1'
+          OnExit = edtMaxTemporalClusterSizeUnitsExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+      end
     end
     object tsAdjustmentsTabSheet: TTabSheet
-      Caption = 'Adjustments'
+      Caption = 'Risk Adjustments'
       object rdgTemporalTrendAdj: TRadioGroup
-        Left = 6
-        Top = 3
+        Left = 8
+        Top = 8
         Width = 390
-        Height = 121
+        Height = 115
         Caption = 'Temporal Adjustments'
         Enabled = False
         ItemIndex = 0
@@ -303,8 +511,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         TabOrder = 2
       end
       object grpAdjustments: TGroupBox
-        Left = 6
-        Top = 131
+        Left = 8
+        Top = 147
         Width = 390
         Height = 95
         Caption = 'Temporal, Spatial and/or Space-Time Adjustments'
@@ -362,21 +570,100 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       Caption = 'Inference'
       ImageIndex = 4
       object grpAnalysis: TGroupBox
-        Left = 6
-        Top = 3
-        Width = 390
+        Left = 8
+        Top = 8
+        Width = 275
         Height = 50
-        Anchors = [akLeft, akTop, akRight]
         Caption = 'Analysis'
         TabOrder = 0
         object chkTerminateEarly: TCheckBox
           Left = 12
           Top = 22
-          Width = 251
+          Width = 245
           Height = 17
-          Anchors = [akLeft, akTop, akRight]
           Caption = 'Terminate replications early for large p-values'
           TabOrder = 0
+        end
+      end
+      object gbxProspectiveSurveillance: TGroupBox
+        Left = 8
+        Top = 76
+        Width = 273
+        Height = 137
+        Caption = 'Prospective Surveillance'
+        TabOrder = 1
+        object lblProspectiveStartYear: TLabel
+          Left = 36
+          Top = 78
+          Width = 22
+          Height = 13
+          Caption = 'Year'
+        end
+        object lblProspectiveStartMonth: TLabel
+          Left = 92
+          Top = 78
+          Width = 30
+          Height = 13
+          Caption = 'Month'
+        end
+        object lblProspectiveStartDay: TLabel
+          Left = 139
+          Top = 78
+          Width = 19
+          Height = 13
+          Caption = 'Day'
+        end
+        object lblProspectiveStartDate: TLabel
+          Left = 31
+          Top = 58
+          Width = 81
+          Height = 13
+          Caption = ' performed since:'
+        end
+        object edtProspectiveStartDateYear: TEdit
+          Left = 33
+          Top = 97
+          Width = 41
+          Height = 21
+          Enabled = False
+          MaxLength = 4
+          TabOrder = 1
+          Text = '1900'
+          OnExit = edtProspectiveStartDateExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object edtProspectiveStartDateMonth: TEdit
+          Left = 93
+          Top = 97
+          Width = 25
+          Height = 21
+          Enabled = False
+          MaxLength = 2
+          TabOrder = 2
+          Text = '12'
+          OnExit = edtProspectiveStartDateExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object edtProspectiveStartDateDay: TEdit
+          Left = 139
+          Top = 97
+          Width = 25
+          Height = 21
+          Enabled = False
+          MaxLength = 2
+          TabOrder = 3
+          Text = '31'
+          OnExit = edtProspectiveStartDateExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object chkAdjustForEarlierAnalyses: TCheckBox
+          Left = 14
+          Top = 28
+          Width = 171
+          Height = 17
+          Caption = 'Adjust for earlier analyses'
+          TabOrder = 0
+          OnClick = chkAdjustForEarlierAnalysesClick
         end
       end
     end
@@ -384,61 +671,52 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       Caption = 'Output'
       ImageIndex = 2
       object lblReportSmallerClusters: TLabel
-        Left = 230
-        Top = 195
-        Width = 139
-        Height = 32
+        Left = 238
+        Top = 226
+        Width = 151
+        Height = 27
         AutoSize = False
         Caption = 'percent of population at risk.'
         WordWrap = True
       end
-      object gbxCriteriaSecClusters: TGroupBox
-        Left = 5
-        Top = 6
-        Width = 340
-        Height = 50
-        Caption = 'Criteria for Reporting Secondary Clusters'
-        TabOrder = 0
-        object cmbCriteriaSecClusters: TComboBox
-          Left = 14
-          Top = 18
-          Width = 301
-          Height = 21
-          Style = csDropDownList
-          ItemHeight = 13
-          TabOrder = 0
-          Items.Strings = (
-            'No Geographical Overlap'
-            'No Cluster Centers in Other Clusters'
-            'No Cluster Centers in More Likely Clusters'
-            'No Cluster Centers in Less Likely Clusters'
-            'No Pairs of Centers Both in Each Others Clusters'
-            'No Restrictions = Most Likely Cluster for Each Grid Point')
-        end
-      end
       object chkRestrictReportedClusters: TCheckBox
-        Left = 8
-        Top = 194
+        Left = 20
+        Top = 226
         Width = 175
         Height = 17
         Caption = 'Report only clusters smaller than'
-        TabOrder = 1
+        TabOrder = 0
         OnClick = chkRestrictReportedClustersClick
       end
       object edtReportClustersSmallerThan: TEdit
-        Left = 184
-        Top = 193
-        Width = 40
+        Left = 200
+        Top = 224
+        Width = 30
         Height = 21
-        TabOrder = 2
+        TabOrder = 1
         Text = '50'
         OnExit = edtReportClustersSmallerThanExit
         OnKeyPress = edtReportClustersSmallerThanKeyPress
+      end
+      object rdgCriteriaSecClusters: TRadioGroup
+        Left = 16
+        Top = 8
+        Width = 377
+        Height = 193
+        Caption = 'Criteria for Reporting Secondary Clusters'
+        Items.Strings = (
+          'No Geographical Overlap'
+          'No Cluster Centers in Other Clusters'
+          'No Cluster Centers in More Likely Clusters'
+          'No Cluster Centers in Less Likely Clusters'
+          'No Pairs of Centers Both in Each Others Clusters'
+          'No Restrictions = Most Likely Cluster for Each Grid Point')
+        TabOrder = 2
       end
     end
   end
   object OpenDialog: TOpenDialog
     Left = 472
-    Top = 320
+    Top = 256
   end
 end
