@@ -1,85 +1,95 @@
-// Adam J Vaughn
-// November 2002
-
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-
+//***************************************************************************
 #include "stsOutputFileData.h"
 
-const char *    RUN_NUM_FIELD		        = "RUN_NUM";
-const char *    CLUST_NUM_FIELD 		= "CLUST_NUM";
-const char *    LOC_ID_FIELD   		        = "LOC_ID";
-const char *    P_VALUE_FLD  		        = "P_VALUE";
-const char *    START_DATE_FLD	        	= "START_DATE";
-const char *    END_DATE_FLD		        = "END_DATE";
-const char *    OBSERVED_FIELD		        = "OBSERVED";
-const char *    EXPECTED_FIELD		        = "EXPECTED";
-const char *    REL_RISK_FIELD		        = "REL_RISK";
-const char *    LOG_LIKL_FIELD		        = "LOG_LIKL";
-const char *    NUM_AREAS_FIELD		        = "NUM_AREAS";
-const char *    COORD_LAT_FIELD		        = "LATITUDE";
-const char *    COORD_LONG_FIELD	        = "LONGITUDE";
-const char *    COORD_X_FIELD		        = "X";
-const char *    COORD_Y_FIELD                   = "Y";
-const char *    COORD_Z_FIELD                   = "Z";
-const char *    RADIUS_FIELD		        = "RADIUS";
-const char *    AREA_OBS_FIELD                  = "AREA_OBS";
-const char *    AREA_EXP_FIELD                  = "AREA_EXP";
-const char *    AREA_RSK_FIELD                  = "AREA_RSK";
-const char *    E_ANGLE_FIELD                   = "E_ANGLE";
-const char *    E_SHAPE_FIELD                   = "E_SHAPE";
-const char *    CLU_OBS_FIELD                   = "CLU_OBS";
-const char *    CLU_EXP_FIELD                   = "CLU_EXP";
-const char *    TST_STAT_FIELD                  = "TST_STAT";
-const char *    TIME_TREND_FIELD                = "TIME_TREND";
-
-// base class for all output file record structures
-BaseOutputRecord::BaseOutputRecord() {
+/** class constructor */
+OutputRecord::OutputRecord(const ZdPointerVector<ZdField>& vFields) {
+  try {
+    Setup(vFields);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("constructor()","OutputRecord");
+    throw;
+  }
 }
 
-BaseOutputRecord::~BaseOutputRecord() {
-}
+/** class destructor */
+OutputRecord::~OutputRecord() {}
 
-// sets the filed value type to double and value to dValue
+// returns whether or not the field at iFieldNumber should be blank
 // pre : none
-// post : fv has type double and value dValue   
-void BaseOutputRecord::SetFieldValueAsDouble(ZdFieldValue& fv, const double dValue) {
-   try {
-      fv.SetType(ZD_NUMBER_FLD);
-      fv.AsDouble() = dValue;
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("SetFieldValueAsDouble()", "BaseOutputRecord");
-      throw;
-   }
+// post : returns true is field should be blank
+bool OutputRecord::GetFieldIsBlank(unsigned int iFieldNumber) const {
+  try {
+    if (iFieldNumber >= gvBlankFields.size())
+      ZdGenerateException("Invalid index, out of range!", "GetFieldIsBlank()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetFieldIsBlank()","OutputRecord");
+    throw;
+  }
+  return gvBlankFields[iFieldNumber];
 }
 
-// sets the filed value type to long and value to lValue
-// pre : none
-// post : fv has type long and value lValue 
-void BaseOutputRecord::SetFieldValueAsLong(ZdFieldValue& fv, const long lValue) {
-   try {
-      fv.SetType(ZD_LONG_FLD);
-      fv.AsLong() = lValue;
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("SetFieldValueAsLong()", "BaseOutputRecord");
-      throw;
-   }
+/** Returns ZdFieldValue reference for field index. Throws ZdException if
+    iFieldIndex is greater than number of ZdFieldValues. */
+ZdFieldValue& OutputRecord::GetFieldValue(unsigned int iFieldIndex) {
+  try {
+    if (iFieldIndex >= gvFieldValues.size())
+      ZdGenerateException("Invalid index, out of range", "GetFieldValue()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetFieldValue()","OutputRecord");
+    throw;
+  }
+  return gvFieldValues[iFieldIndex];
 }
 
-// sets the filed value type to ZdString and value to sValue
-// pre : none
-// post : fv has type ZdString and value sValue    
-void BaseOutputRecord::SetFieldValueAsString(ZdFieldValue& fv, const ZdString& sValue) {
-   try {
-      fv.SetType(ZD_ALPHA_FLD);
-      fv.AsZdString() = sValue;
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("SetFieldValueAsString()", "BaseOutputRecord");
-      throw;
-   }
+/** Returns ZdFieldValue reference for field index. Throws ZdException if
+    iFieldIndex is greater than number of ZdFieldValues. */
+const ZdFieldValue& OutputRecord::GetFieldValue(unsigned int iFieldIndex) const {
+  try {
+    if (iFieldIndex >= gvFieldValues.size())
+      ZdGenerateException("Invalid index, out of range", "GetFieldValue()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetFieldValue()","OutputRecord");
+    throw;
+  }
+  return gvFieldValues[iFieldIndex];
+}
+
+/** Creates vector of field values that mirror defined fields of passed
+    vector. Initializes list of booleans that reflect whether a field
+    contains data or not. */
+void OutputRecord::Setup(const ZdPointerVector<ZdField>& vFields) {
+  size_t        t;
+
+  try {
+    for (t=0; t < vFields.size(); ++t) {
+       gvFieldValues.push_back(ZdFieldValue(vFields[t]->GetType()));
+       gvBlankFields.push_back(false);
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Setup()","OutputRecord");
+    throw;
+  }
+}
+
+/** Sets the field at fieldnumber to either be blank or non-blank. */
+void OutputRecord::SetFieldIsBlank(unsigned int iFieldNumber, bool bBlank) {
+  try {
+    if (iFieldNumber >= gvBlankFields.size())
+      ZdGenerateException("Invalid index, out of range!", "SetFieldIsBlank()");
+    gvBlankFields[iFieldNumber] = bBlank;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetFieldIsBlank()","OutputRecord");
+    throw;
+  }
 }
 
 //===============================================================================
@@ -89,252 +99,101 @@ void BaseOutputRecord::SetFieldValueAsString(ZdFieldValue& fv, const ZdString& s
 // the printing of that information, they are for storage only.
 //===============================================================================
 
-BaseOutputStorageClass::BaseOutputStorageClass(BasePrint *pPrintDirection) {
-   if (!pPrintDirection)
-      ZdGenerateWarning("ERROR - Null BasePrint pointer passed into constructor!", "BaseStorageClass");
-   gpPrintDirection = pPrintDirection;
+BaseOutputStorageClass::BaseOutputStorageClass() {}
+
+BaseOutputStorageClass::~BaseOutputStorageClass() {}
+
+const char * BaseOutputStorageClass::CLUST_NUM_FIELD 	  = "CLUST_NUM";
+const char * BaseOutputStorageClass::LOC_ID_FIELD   	  = "LOC_ID";
+const char * BaseOutputStorageClass::P_VALUE_FLD  	  = "P_VALUE";
+const char * BaseOutputStorageClass::OBSERVED_FIELD	  = "OBSERVED";
+const char * BaseOutputStorageClass::EXPECTED_FIELD	  = "EXPECTED";
+const char * BaseOutputStorageClass::REL_RISK_FIELD	  = "REL_RISK";
+const char * BaseOutputStorageClass::LOG_LIKL_FIELD	  = "LOG_LIKL";
+const char * BaseOutputStorageClass::TST_STAT_FIELD       = "TST_STAT";
+
+void BaseOutputStorageClass::AddRecord(const OutputRecord* pRecord) {
+   gvRecordBuffers.push_back(pRecord);
 }
 
-BaseOutputStorageClass::~BaseOutputStorageClass() {
-   try {
-      gvRecords.DeleteAllElements();
-      gvFields.DeleteAllElements();
-   }
-   catch (...) { }
-}
-
-// adds a record to the global vector of record pointers
+// allocates a new field and adds it to the vector
 // pre : none
-// post : if pRecord null then exception, else adds pRecord to the global vector
-void BaseOutputStorageClass::AddRecord(BaseOutputRecord* pRecord) {
-   try {
-      if(!pRecord)
-         ZdGenerateException("Null pointer passed into function!", "BaseOutputStorageClass::AddRecord()");
-         
-      gvRecords.push_back(pRecord);   
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("AddRecord()", "BaseOutputStorageClass");
-      throw;
-   }
+// post : a field is added to the pointer vector with appropraite specs
+void BaseOutputStorageClass::CreateField(ZdPointerVector<ZdField>& vFields, const std::string& sFieldName,
+                                         char cType, short wLength, short wPrecision,
+                                         unsigned short& uwOffset, bool bCreateIndex) {
+  ZdField  *pField = 0;
+
+  try {
+    pField = new ZdField;
+    pField->SetName(sFieldName.c_str());
+    pField->SetType(cType);
+    pField->SetLength(wLength);
+    pField->SetPrecision(wPrecision);
+    pField->SetOffset(uwOffset);
+    uwOffset += wLength;
+    if (bCreateIndex)
+      pField->SetIndexCount(1);
+    vFields.push_back(pField);
+  }
+  catch (ZdException &x) {
+    delete pField; pField = 0;
+    x.AddCallpath("CreateField()","BaseOutputStorageClass");
+    throw;
+  }			
 }
 
-// returns a pointer to the uwFieldNumber'th field in the global vector
-// pre : none 0 <= uwFieldNumber  < gvFields.size()
-// post : if uwFieldNumber is valid index then returns a pointer to that field, else
-//        throws an exception
-ZdField* BaseOutputStorageClass::GetField(unsigned short uwFieldNumber) {
-   try {
-     // check index in range
-      if (uwFieldNumber >= (unsigned short)gvFields.GetNumElements())
-         ZdGenerateException("Invalid index, out of range!", "Error!");
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetField()", "BaseOutputStorageClass");
-      throw;
-   }
-   return gvFields[uwFieldNumber];
+/** Returns a pointer to the uwFieldNumber'th field in the global vector. Throws
+    exception when iFieldNumber it out of range. */
+const ZdField * BaseOutputStorageClass::GetField(unsigned int iFieldNumber) const {
+  try {
+    if (iFieldNumber >= gvFields.GetNumElements())
+      ZdGenerateException("Invalid index, out of range!", "GetField()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetField()","BaseOutputStorageClass");
+    throw;
+  }
+  return gvFields[iFieldNumber];
 }
 
 // function to get the field number of a field given its name
 // pre: none
 // post: if field with given name exists in the vector then will return the position, else will
 //       throw a not found exception
-const unsigned short BaseOutputStorageClass::GetFieldNumber(const ZdString& sFieldName) {
-   bool                 bFound(false);
-   unsigned short       uwPosition;
+unsigned int BaseOutputStorageClass::GetFieldNumber(const ZdString& sFieldName) const {
+  bool                 bFound(false);
+  unsigned int         i, iPosition;
 
-   try {
-      for( size_t i = 0; i < gvFields.size() && !bFound; ++i) {
-         bFound = (!strcmp(gvFields[i]->GetName(), sFieldName));
-         uwPosition = i;
-      }
-
-      if (!bFound)
-         ZdException::GenerateNotification("Field name %s not found in the field vector.", "Error!", sFieldName.GetCString());
+  try {
+    for (i=0; i < gvFields.size() && !bFound; ++i) {
+       bFound = (!strcmp(gvFields[i]->GetName(), sFieldName));
+       iPosition = i;
    }
-   catch (ZdException &x) {
-      x.AddCallpath("GetFieldNumber()", "BaseOutputStorageClass");
-      throw;
-   }
-   return uwPosition;
+   if (!bFound)
+     ZdException::GenerateNotification("Field name %s not found in the field vector.",
+                                       "GetFieldNumber()", sFieldName.GetCString());
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetFieldNumber()","BaseOutputStorageClass");
+    throw;
+  }
+  return iPosition;
 }
 
 // returns a pointer to the record at iPosition in the global vector
 // pre : none
 // post : if iPosition not in valid index range then exception, else returns
 //        a pointer to the iPosition element in the vector
-BaseOutputRecord* BaseOutputStorageClass::GetRecord(int iPosition) {
+const OutputRecord* BaseOutputStorageClass::GetRecord(int iPosition) const {
    try {
-      if (iPosition < 0 || iPosition >= (int)gvRecords.size())
+      if (iPosition < 0 || iPosition >= (int)gvRecordBuffers.size())
          ZdGenerateException ("Invalid index, out of range", "Error!");   
    }
    catch (ZdException &x) {
       x.AddCallpath("GetRecord()", "BaseOutputStorageClass");
       throw;
-   } 
-   return gvRecords[iPosition];
-}
-
-// ============================================================================
-// this is a testing class to test the output file data heirarchy and also test the
-// file printing heirarchy
-// ============================================================================
-TestOutputRecord::TestOutputRecord() {
-   Init();
-}
-
-TestOutputRecord::~TestOutputRecord() {
-}      
-
-// returns whether or not the field at iFieldNumber should be blank
-// pre : none
-// post : returns true is field should be blank
-bool TestOutputRecord::GetFieldIsBlank(int iFieldNumber) {
-   try {
-      if ( iFieldNumber < 0 || (size_t)iFieldNumber >= gvbBlankFields.size())
-         ZdGenerateException("Invalid index, out of range!", "Error!");
    }
-   catch (ZdException &x) {
-      x.AddCallpath("GetFieldIsBlank()", "TestOutputRecord");
-      throw;
-   }
-   return gvbBlankFields[iFieldNumber];
-}
-
-ZdFieldValue TestOutputRecord::GetValue(int iFieldNumber) {
-   ZdFieldValue fv;
-   
-   try {
-      if (iFieldNumber < 0 || iFieldNumber >= GetNumFields())
-         ZdGenerateException ("Invalid index, out of range", "Error!");
-      	
-      switch (iFieldNumber) {
-      	 case 0:  SetFieldValueAsString(fv, gsStringTestValue); break;
-      	 case 1:  SetFieldValueAsDouble(fv, double(glLongTestValue)); break;
-      	 case 2:  SetFieldValueAsDouble(fv, gdDoubleTestValue); break;
-      	 case 3:  SetFieldValueAsDouble(fv, gfFloatTestValue); break;
-      	 case 4:  SetFieldValueAsDouble(fv, double(giIntTestValue)); break;
-      	 case 5:  SetFieldValueAsString(fv, gbBoolTestValue ? "true" : "false" ); break;
-      	 default :
-      	    ZdGenerateException("Invalid index, out of range!", "Error!");
-      }
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetValue()", "TestOutputRecord");
-      throw;
-   }
-   return fv;
-}
-
-void TestOutputRecord::Init() {
-   gsStringTestValue = "";
-   glLongTestValue = 0;
-   gdDoubleTestValue = 0.0;
-   gfFloatTestValue = 0.0;
-   giIntTestValue = 0;
-   gbBoolTestValue = false;
-
-   for ( int i = 0; i < GetNumFields(); ++i )
-      gvbBlankFields.push_back(false);
-}
-
-// sets the field at fieldnumber to either be blank or non-blank
-// pre : none
-// post : sets the iFieldNumber element of the global vector to bBlank
-void TestOutputRecord::SetFieldIsBlank(int iFieldNumber, bool bBlank) {
-   try {
-      if (iFieldNumber < 0 || (size_t)iFieldNumber >= gvbBlankFields.size())
-         ZdGenerateException("Invalid index, out of range!", "Error!");
-
-      gvbBlankFields[iFieldNumber] = bBlank;
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("SetFieldIsBlank()", "TestOutputRecord");
-      throw;
-   }
-}
-
-// ============================================================================
-// this is a testing class to test the output file data heirarchy and also test the
-// file printing heirarchy
-// ============================================================================
-
-TestOutputClass::TestOutputClass(BasePrint *pPrintDirection, const ZdString& sOutputFileName):BaseOutputStorageClass(pPrintDirection) {
-   try {
-      gsFileName << sOutputFileName << ".test";
-      SetupFields();
-   }
-   catch (ZdException &x) {
-      if(pPrintDirection) {
-         pPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
-         pPrintDirection->SatScanPrintWarning("Warning - Error encountered in test output data class.\n");
-      }
-   }
-}
-	
-TestOutputClass::~TestOutputClass(){
-}
-
-// adds a 'blank' record to the global vector of records
-// pre : none
-// post : adds a record consisting only of blanks to the record vector
-void TestOutputClass::AddBlankRecord() {
-   TestOutputRecord* pRecord = 0;
-   
-   try {
-      pRecord = new TestOutputRecord();
-      for(int i = 0; i < GetNumFields(); ++i)
-         pRecord->SetFieldIsBlank(i, true);
-      BaseOutputStorageClass::AddRecord(pRecord);   
-   }
-   catch (ZdException &x) {
-      gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
-      gpPrintDirection->SatScanPrintWarning("Warning - ERROR encountered adding blank record in Test output data class.\n");
-   }
-}
-
-// sets up the fields of a test output record
-// pre : none
-// post : creates one of each field type that we are interested in testing
-void TestOutputClass::SetupFields() {
-   unsigned short uwOffset = 0;
-
-   try {
-      ::CreateField(gvFields, "STRING", ZD_ALPHA_FLD, 96, 0, uwOffset);
-      ::CreateField(gvFields, "LONG", ZD_NUMBER_FLD, 12, 0, uwOffset);
-      ::CreateField(gvFields, "DOUBLE", ZD_NUMBER_FLD, 12, 6, uwOffset);
-      ::CreateField(gvFields, "FLOAT", ZD_NUMBER_FLD, 12, 6, uwOffset);
-      ::CreateField(gvFields, "INT", ZD_NUMBER_FLD, 12, 0, uwOffset);
-      ::CreateField(gvFields, "BOOL", ZD_ALPHA_FLD, 16, 0, uwOffset);	
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("SetupFields()", "TestOutputClass");
-      throw;	
-   }		
-}
-
-// sets the values in the fields
-// pre : none
-// post : sets each field of the given type
-void TestOutputClass::SetTestValues(const ZdString& sStringTestValue, const long lLongTestValue, const double dDoubleTestValue,
-                                    const float	fFloatTestValue, const int iIntTestValue, const bool bBoolTestValue) {
-   TestOutputRecord* pRecord = 0;
-   
-   try {
-      pRecord = new TestOutputRecord();
-      pRecord->SetStringTestField(sStringTestValue);
-      pRecord->SetLongTestField(lLongTestValue);        
-      pRecord->SetDoubleTestField(dDoubleTestValue);  
-      pRecord->SetFloatTestField(fFloatTestValue);     
-      pRecord->SetIntTestField(iIntTestValue); 
-      pRecord->SetBoolTestField(bBoolTestValue);        
-      BaseOutputStorageClass::AddRecord(pRecord);
-   }
-   catch (ZdException &x) {
-      delete pRecord;	
-      gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
-      gpPrintDirection->SatScanPrintWarning("Warning - ERROR encountered adding test record in Test output data class.\n");
-   }   		
+   return gvRecordBuffers[iPosition];
 }
 
