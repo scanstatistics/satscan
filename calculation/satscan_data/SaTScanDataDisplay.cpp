@@ -94,6 +94,9 @@ void CSaTScanData::DisplaySummary2(FILE* fp) {
   fprintf(fp, "________________________________________________________________\n");
 }
 
+// formats the information necessary in the relative risk output file and prints to the specified format
+// pre: none
+// post: prints the relative risk data to the output file
 void CSaTScanData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, const bool bDBaseOutput) {
    std::string                          sBuffer;
    ZdString                             sRisk, sLocation;
@@ -114,14 +117,10 @@ void CSaTScanData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, con
                                     GetMeasureAdjustment()*m_pMeasure[0][i],
                                     sRisk);
       }
-      if (bASCIIOutput) {
-         ASCIIFileWriter Awriter(pData.get());
-         Awriter.Print();
-      }
-      if (bDBaseOutput) {
-         DBaseFileWriter DWriter(pData.get());
-         DWriter.Print();
-      }
+      if (bASCIIOutput)
+         ASCIIFileWriter(pData.get()).Print();
+      if (bDBaseOutput)
+         DBaseFileWriter(pData.get()).Print();
    }
    catch (ZdException &x) {
       x.AddCallpath("DisplayRelativeRisksForEachTract()", "CSaTScanData");
