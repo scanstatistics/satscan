@@ -21,6 +21,15 @@ __fastcall TDlgSaTScanDataImporter::TDlgSaTScanDataImporter(TComponent* Owner, Z
 /** Destructor */
 __fastcall TDlgSaTScanDataImporter::~TDlgSaTScanDataImporter() {}
 
+void __fastcall TDlgSaTScanDataImporter::tsfieldGridResize(TObject *Sender) {
+  //Adjust width of 'input file variable' column to fit.
+  if (!tsfieldGrid->VertScrollBarVisible)
+    tsfieldGrid->Col[2]->Width = tsfieldGrid->Width - ((tsfieldGrid->RowBarOn ? tsfieldGrid->RowBarWidth + 5/*buffer*/ : 5/*buffer*/) + tsfieldGrid->Col[1]->Width);
+  else
+    tsfieldGrid->Col[2]->Width = tsfieldGrid->Width - ((tsfieldGrid->RowBarOn ? tsfieldGrid->RowBarWidth + 5/*buffer*/ : 5/*buffer*/) + tsfieldGrid->Col[1]->Width + 15);
+}
+
+
 /** Initially sets the File Type for the import file. */
 void TDlgSaTScanDataImporter::SetInitialImportFileType() {
   try {
@@ -41,6 +50,9 @@ void TDlgSaTScanDataImporter::Setup() {
   //Change import mapping grid headers.
   tsfieldGrid->Col[1]->Heading = "SaTScan Variable";
   tsfieldGrid->Col[2]->Heading = "Input File Variable";
+  tsfieldGrid->RowBarOn = false;
+  tsImportFileGrid->RowBarOn = false;
+  tsfieldGrid->OnResize = tsfieldGridResize;
 }
 
 //ClassDesc Begin TfrmAnalysis
