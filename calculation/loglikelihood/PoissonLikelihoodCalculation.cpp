@@ -96,7 +96,7 @@ double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(count_t*   pCases, mea
 }
 
 /** needs documentation */
-double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tStream, CSVTTCluster* Cluster, CTimeTrend& GlobalTimeTrend) {
+double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tStream, CSVTTCluster* Cluster, const CTimeTrend& GlobalTimeTrend) {
   double nLogLikelihood   = 0.0;
   double nGlobalAlphaIn   = 0.0;
   double nGlobalAlphaOut = 0.0;
@@ -143,7 +143,7 @@ double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tStream, CSVTTC
                               StreamData.gtTotalCasesInsideCluster, StreamData.gtTotalCasesOutsideCluster);
 
 //  fprintf(m_pDebugModelFile, "\nGlobal Time Trend: Alpha = %f, Beta = %f\n\n",
-//          GlobalTimeTrend.m_nAlpha, GlobalTimeTrend.m_nBeta);
+//          GlobalTimeTrend.GetAlpha(), GlobalTimeTrend.GetBeta());
   #endif
 
   nLogLikelihood = (CalcSVTTLogLikelihood(StreamData.gpCasesInsideCluster,

@@ -25,7 +25,7 @@ class AbstractLikelihoodCalculator {
     virtual double      CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure) = 0;
     virtual double      CalcLogLikelihoodRatioEx(count_t tCases, measure_t tMeasure, measure_t tMeasure2, count_t tTotalCases, measure_t tTotalMeasure);
     virtual double      CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster);
-    virtual double      CalcSVTTLogLikelihood(size_t tStream, CSVTTCluster* Cluster, CTimeTrend& GlobalTimeTrend);
+    virtual double      CalcSVTTLogLikelihood(size_t tStream, CSVTTCluster* Cluster, const CTimeTrend& GlobalTimeTrend);
     virtual double      GetLogLikelihoodForTotal() const = 0;
 };
 //*****************************************************************************
