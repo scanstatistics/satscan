@@ -15,7 +15,7 @@ const unsigned int AsciiPrintFormat::giRightMargin                  = 64;
 /** width of version header section */
 const unsigned int AsciiPrintFormat::giVersionHeaderWidth           = 29;
 /** text appended to label for multiple streams */
-const char * AsciiPrintFormat::gsPerStreamText                      = "per data stream";
+const char * AsciiPrintFormat::gsPerStreamText                      = "per data set";
 
 /** constructor */
 AsciiPrintFormat::AsciiPrintFormat(bool bOneStream) : gbOneStream(bOneStream) {
