@@ -173,28 +173,31 @@ object frmAbout: TfrmAbout
       Font.Name = 'MS Sans Serif'
       Font.Style = []
       Lines.Strings = (
-        'Authors: Martin Kulldorff, Harvard Medical School,'
-        
-          'and Information Management Services Inc, Silver Spring, Maryland' +
-          '.'
+        'Authors: Martin Kulldorff, Harvard Medical School, Boston and'
+        'Information Management Services Inc, Silver Spring, Maryland.'
         ''
         
           'This software may be freely used as long as proper citations are' +
           ' given to '
-        'both the software and the underlying statistical methods.'
+        
+          'both the statistical methodology papers and the software itself.' +
+          ' For '
+        'suggested citations, see the accompanying SaTScan User Guide.'
         ''
         
-          'Suggested software citation: Kulldorff M and Information Managem' +
-          'ent '
+          'Users of SaTScan should in any reference to the software note th' +
+          'at: '
         
-          'Services Inc., SaTScan v5.0: Software for the spatial and space-' +
-          'time scan'
-        'statistics. http://www.satscan.org/, 2004. '
-        ''
+          '"SaTScan(TM) is a trademark of Martin Kulldorff. The SaTScan(TM)' +
+          ' software '
         
-          'For suggested methodological citations, see the accompanying SaT' +
-          'Scan '
-        'User Guide.')
+          'was developed under the joint auspices of Martin Kulldorff, the ' +
+          'National '
+        
+          'Cancer Institute and Farzad Mostashari at the New York City Depa' +
+          'rtment of '
+        'Health and Mental Hygiene."'
+        '')
       ParentFont = False
       ReadOnly = True
       TabOrder = 1
