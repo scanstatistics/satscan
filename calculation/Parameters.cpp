@@ -1301,9 +1301,9 @@ void CParameters::SaveEllipseSection(ZdIniFile& file) {
       pSection->GetLine(pSection->FindKey(ELLIPSE_SHAPES_LINE))->SetValue(sShapes.GetCString());
       for (int i = 0; i < m_nNumEllipses; ++i) {
           if(i == 0)
-             sAngles << mp_dEShapes[i];
+             sAngles << mp_nENumbers[i];
           else
-             sAngles << "," << mp_dEShapes[i];
+             sAngles << "," << mp_nENumbers[i];
       }
       pSection->GetLine(pSection->FindKey(ELLIPSE_ANGLES_LINE))->SetValue(sAngles.GetCString());
    }
