@@ -155,11 +155,12 @@ const char * AbstractDataWriter::TST_STAT_FIELD           = "TST_STAT";
 
 /** constructor */
 AbstractDataWriter::AbstractDataWriter(const CParameters& Parameters)
-                   :gParameters(Parameters), gpASCIIFileWriter(0), gpDBaseFileWriter(0) {
+                   :gParameters(Parameters), gpASCIIFileWriter(0), gpDBaseFileWriter(0), gpRecordBuffer(0) {
 }
 
 /** destructor */
 AbstractDataWriter::~AbstractDataWriter() {
+  delete gpRecordBuffer;
   delete gpASCIIFileWriter;
   delete gpDBaseFileWriter;
 }
@@ -226,6 +227,7 @@ LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(boost::mutex& Mutex, const CP
       gpDBaseFileWriter = new DBaseDataFileWriter(Parameters, gvFields, ".llr");
   }
   catch (ZdException &x) {
+    delete gpRecordBuffer;
     delete gpASCIIFileWriter;
     delete gpDBaseFileWriter;
     x.AddCallpath("constructor()","LoglikelihoodRatioWriter");
