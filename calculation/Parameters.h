@@ -282,6 +282,7 @@ class CParameters {
     void                                ConvertRelativePath(std::string & sInputFilename);
     void                                Copy(const CParameters &rhs);
     const char                        * GetParameterLineLabel(ParameterType eParameterType, ZdString & sParameterLineLabel, bool bIniSectionName=true) const;
+    const char                        * GetRelativeToParameterName(const ZdFileName& fParameterName, const std::string& sFilename, ZdString& sValue) const;
     void                                MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint & PrintDirection);
     void                                ReadAdvancedFeatures(ZdIniFile& file, BasePrint & PrintDirection);
     void                                ReadAnalysisSection(ZdIniFile& file, BasePrint & PrintDirection);

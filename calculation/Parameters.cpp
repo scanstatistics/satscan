@@ -564,7 +564,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
         fprintf(fp, "Spatial adjustment by stratified randomization\n"); break;
       default :
         ZdException::Generate("Unknown spatial adjustment type '%d'.\n", "DisplayParameters()", geSpatialAdjustmentType);
-    }  
+    }
 
     fprintf(fp, "\nOutput\n");
     fprintf(fp, "------\n");
@@ -775,6 +775,40 @@ const char * CParameters::GetDatePrecisionAsString(DatePrecisionType eDatePrecis
   return sDatePrecisionType;
 }
 
+Julian CParameters::GetEndRangeDateAsJulian(const std::string & sEndRangeDate) const {
+  int           iPrecision;
+  UInt          uiYear, uiMonth, uiDay, uiDefaultMonth=12;
+  Julian        EndDate;
+
+  try {
+    if (sEndRangeDate.empty())
+      InvalidParameterException::Generate("Error: The end range end date is not empty.\n","GetEndRangeDateAsJulian()");
+
+    iPrecision = CharToMDY(&uiMonth, &uiDay, &uiYear, sEndRangeDate.c_str());
+    switch (iPrecision) {
+      case 0  : InvalidParameterException::Generate("Error: The end range end date, '%s', does not appear to be a valid date.\n",
+                                                    "GetEndRangeDateAsJulian()", sEndRangeDate.c_str());
+      case 1  : uiMonth = uiDefaultMonth;
+                uiDay = DaysThisMonth(uiYear, uiDefaultMonth);
+                break;
+      case 2  : uiDay = DaysThisMonth(uiYear, uiMonth);
+                break;
+      case 3  : break;
+      default : ZdException::Generate("Precision of '%d' is not defined.\n", "GetEndRangeDateAsJulian()", iPrecision);
+    }
+
+    //If values could not be converted to julian, JulianStartDate will be zero.
+    if ((EndDate = MDYToJulian(uiMonth, uiDay, uiYear)) == 0)
+     InvalidParameterException::Generate("Error: The end range end date value of '%s' does not appear to be a valid date.\n",
+                                         "GetEndRangeDateAsJulian()", sEndRangeDate.c_str());
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("GetEndRangeDateAsJulian()","CParameters");
+    throw;
+  }
+  return EndDate;
+}
+
 /** Returns whether analysis is a prospective analysis. */
 bool CParameters::GetIsProspectiveAnalysis() const {
   return (geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == PROSPECTIVEPURELYTEMPORAL);
@@ -980,7 +1014,7 @@ Julian CParameters::GetProspectiveStartDateAsJulian() const {
       case 3  : break;
       default : ZdException::Generate("Precision of '%d' is not defined.\n", "GetProspectiveStartDateAsJulian()", iPrecision);
     }
-      
+
     //If values could not be converted to julian, JulianStartDate will be zero.
     if ((ProspectiveStartDate = MDYToJulian(uiMonth, uiDay, uiYear)) == 0)
      InvalidParameterException::Generate("Error: Prospective start date value of '%s' does not appear to be a valid date.\n",
@@ -993,38 +1027,18 @@ Julian CParameters::GetProspectiveStartDateAsJulian() const {
   return ProspectiveStartDate;
 }
 
-Julian CParameters::GetEndRangeDateAsJulian(const std::string & sEndRangeDate) const {
-  int           iPrecision;
-  UInt          uiYear, uiMonth, uiDay, uiDefaultMonth=12;
-  Julian        EndDate;
+/** If passed filename has same path as passed parameter filename, returns
+    'name.extension' else returns filename. */
+const char * CParameters::GetRelativeToParameterName(const ZdFileName& fParameterName,
+                                                     const std::string& sFilename,
+                                                     ZdString& sValue) const {
+  ZdFileName fInputFilename(sFilename.c_str());
 
-  try {
-    if (sEndRangeDate.empty())
-      InvalidParameterException::Generate("Error: The end range end date is not empty.\n","GetEndRangeDateAsJulian()");
-
-    iPrecision = CharToMDY(&uiMonth, &uiDay, &uiYear, sEndRangeDate.c_str());
-    switch (iPrecision) {
-      case 0  : InvalidParameterException::Generate("Error: The end range end date, '%s', does not appear to be a valid date.\n",
-                                                    "GetEndRangeDateAsJulian()", sEndRangeDate.c_str());
-      case 1  : uiMonth = uiDefaultMonth;
-                uiDay = DaysThisMonth(uiYear, uiDefaultMonth);
-                break;
-      case 2  : uiDay = DaysThisMonth(uiYear, uiMonth);
-                break;
-      case 3  : break;
-      default : ZdException::Generate("Precision of '%d' is not defined.\n", "GetEndRangeDateAsJulian()", iPrecision);
-    }
-
-    //If values could not be converted to julian, JulianStartDate will be zero.
-    if ((EndDate = MDYToJulian(uiMonth, uiDay, uiYear)) == 0)
-     InvalidParameterException::Generate("Error: The end range end date value of '%s' does not appear to be a valid date.\n",
-                                         "GetEndRangeDateAsJulian()", sEndRangeDate.c_str());
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("GetEndRangeDateAsJulian()","CParameters");
-    throw;
-  }
-  return EndDate;
+  if (!strcmpi(fInputFilename.GetLocation(), fParameterName.GetLocation()))
+    sValue = fInputFilename.GetCompleteFileName();
+  else
+    sValue = sFilename.c_str();
+  return sValue;  
 }
 
 Julian CParameters::GetStartRangeDateAsJulian(const std::string & sStartRangeDate) const {
@@ -3644,6 +3658,11 @@ bool CParameters::ValidateSimulationDataParameters(BasePrint & PrintDirection) {
                                                                         GetAnalysisTypeAsString());
                                      break;
                                   }
+                                  if (GetNumDataStreams() > 1){
+                                    bValid = false;
+                                    PrintDirection.SatScanPrintWarning("Error: Reading simulation data from file is not implemented with analyses\n"
+                                                                       "       that read data from multiple data streams.\n");
+                                  }
                                   if (gsSimulationDataSourceFileName.empty()) {
                                     bValid = false;
                                     PrintDirection.SatScanPrintWarning("Error: No simulation data import file specified.\n");
@@ -3658,7 +3677,7 @@ bool CParameters::ValidateSimulationDataParameters(BasePrint & PrintDirection) {
                                     bValid = false;
                                     PrintDirection.SatScanPrintWarning("Error: File '%s' specified as both\n",
                                                                        gsSimulationDataSourceFileName.c_str());
-                                    PrintDirection.SatScanPrintWarning("       simulation data import file and output file for simulated data.\n");                                  }
+                                    PrintDirection.SatScanPrintWarning("       import file and output file for simulated data.\n");                                  }
                                   break;
         default : ZdGenerateException("Unknown simulation type '%d'.","ValidateSimulationDataParameters()", geSimulationType);
       };
@@ -3688,14 +3707,9 @@ bool CParameters::ValidateSimulationDataParameters(BasePrint & PrintDirection) {
                                 PrintDirection.SatScanPrintWarning("       for the Poisson model.\n");
                                 break;
       }
-      //Printing simulation data to file only permitted for Poisson model right now...
-      //The actual code was modified by none programmer and it's correctness has not been validated,
-      //but writing routine(and rountine for reading) appears be ok for all probability model types. -- check this later
-      if (gbOutputSimulationData) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Printing simulation data to file is currently implemented only\n");
-        PrintDirection.SatScanPrintWarning("       for the Poisson model.\n");
-      }
+      //The code for printing simulation data was modified by none programmer and it's
+      //correctness has not been validated, but writing routine(and rountine for reading)
+      //appears be ok for all probability model types. -- check this later
     }
   }
   catch (ZdException &x) {
