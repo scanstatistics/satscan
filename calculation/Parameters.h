@@ -321,16 +321,17 @@ class CParameters {
     void                                SaveTimeParametersSection(ZdIniFile& file);
     void                                SetDefaults();
     void                                SetSourceFileName(const char * sParametersSourceFileName);
-    bool                                ValidateDateParameters(BasePrint & PrintDirection);
+    bool                                ValidateDateParameters(BasePrint& PrintDirection) const;
     bool                                ValidateEllipseParameters(BasePrint & PrintDirection);
     bool                                ValidateFileParameters(BasePrint & PrintDirection);
-    bool                                ValidatePowerCalculationParameters(BasePrint & PrintDirection);
-    bool                                ValidateProspectiveDateString();
-    bool                                ValidateRangeParameters(BasePrint & PrintDirection);
+    bool                                ValidatePowerCalculationParameters(BasePrint & PrintDirection) const;
+    bool                                ValidateProspectiveDate(BasePrint& PrintDirection) const;
+    bool                                ValidateRangeParameters(BasePrint & PrintDirection) const;
     bool                                ValidateSimulationDataParameters(BasePrint & PrintDirection);
     bool                                ValidateSequentialScanParameters(BasePrint & PrintDirection);
     bool                                ValidateSpatialParameters(BasePrint & PrintDirection);
-    bool                                ValidateStudyPeriodDateString(std::string & sDateString, ParameterType eDateType);
+    bool                                ValidateEndDate(const std::string& sDateString, const std::string& sDateDescription, BasePrint& PrintDirection) const;
+    bool                                ValidateStartDate(const std::string& sDateString, const std::string& sDateDescription, BasePrint& PrintDirection) const;
     bool                                ValidateTemporalParameters(BasePrint & PrintDirection);
 
   public:
@@ -359,7 +360,6 @@ class CParameters {
     const std::vector<int>            & GetEllipseRotations() const {return gvEllipseRotations;}
     const std::vector<double>         & GetEllipseShapes() const {return gvEllipseShapes;}
     const std::string                 & GetEndRangeEndDate() const {return gsEndRangeEndDate;}
-    Julian                              GetEndRangeDateAsJulian(const std::string & sEndRangeDate) const;
     const std::string                 & GetEndRangeStartDate() const {return gsEndRangeStartDate;}
     bool                                GetErrorOnRead() {return gbReadStatusError;}
     IncludeClustersType                 GetIncludeClustersType() const {return geIncludeClustersType;}
@@ -411,7 +411,6 @@ class CParameters {
     ProbabiltyModelType                 GetProbabiltyModelType() const {return geProbabiltyModelType;}
     const char                        * GetProbabiltyModelTypeAsString(ProbabiltyModelType eProbabiltyModelType) const;
     const std::string                 & GetProspectiveStartDate() const {return gsProspectiveStartDate;}
-    Julian                              GetProspectiveStartDateAsJulian() const;
     bool                                GetRestrictingMaximumReportedGeoClusterSize() const {return gbRestrictReportedClusters;}
     RiskType                            GetRiskType() const {return geRiskFunctionType;}
     const ZdString                    & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
@@ -423,12 +422,9 @@ class CParameters {
     SpatialAdjustmentType               GetSpatialAdjustmentType() const {return geSpatialAdjustmentType;}
     const std::string                 & GetSpecialGridFileName() const {return gsSpecialGridFileName;}
     const std::string                 & GetStartRangeEndDate() const {return gsStartRangeEndDate;}
-    Julian                              GetStartRangeDateAsJulian(const std::string & sStartRangeDate) const;
     const std::string                 & GetStartRangeStartDate() const {return gsStartRangeStartDate;}
     const std::string                 & GetStudyPeriodEndDate() const {return gsStudyPeriodEndDate;}
-    Julian                              GetStudyPeriodEndDateAsJulian() const;
     const std::string                 & GetStudyPeriodStartDate() const {return gsStudyPeriodStartDate;}
-    Julian                              GetStudyPeriodStartDateAsJulian() const;
     bool                                GetTerminateSimulationsEarly() const {return gbEarlyTerminationSimulations;}
     long                                GetTimeIntervalLength() const {return glTimeIntervalLength;}
     DatePrecisionType                   GetTimeIntervalUnitsType() const {return geTimeIntervalUnitsType;}
