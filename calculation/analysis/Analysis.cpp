@@ -204,14 +204,13 @@ void CAnalysis::AllocateTopClusterList() {
 //  Create the Grid Output File (Most Likely Cluster for each Centroid)
 //******************************************************************************
 void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
-   stsClusterData* pData = 0;
-//   TestOutputClass * pTest = 0;
+   std::auto_ptr<stsClusterData>        pData;
 
    try {
       if (m_pParameters->m_bMostLikelyClusters || m_pParameters->GetOutputClusterLevelDBF()) {
-         pData = new stsClusterData(m_pParameters->m_szOutputFilename, lReportHistoryRunNumber, GetCoordinateType(),
+         pData.reset( new stsClusterData(m_pParameters->m_szOutputFilename, lReportHistoryRunNumber, GetCoordinateType(),
                                     m_pParameters->m_nModel, m_pParameters->m_nDimension, m_pParameters->m_nReplicas > 99,
-                                    m_pParameters->m_nNumEllipses > 0);
+                                    m_pParameters->m_nNumEllipses > 0) );
 
          for (int i = 0; i < m_nClustersRetained; ++i) {
             // print out user notification every 20 recorded clusters to let user know program is still working - AJV 10/3/2002
@@ -221,37 +220,32 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
          }
 
          if (m_pParameters->m_bMostLikelyClusters) {
-            ASCIIFileWriter writer(pData);
+            ASCIIFileWriter writer(pData.get());
             writer.Print();
          }
          if (m_pParameters->GetOutputClusterLevelDBF()) {
-            DBaseFileWriter writer(pData);
+            DBaseFileWriter writer(pData.get());
             writer.Print();
          }
-         
-         delete pData;
-         pData = 0;
       }
 /* testing mechanism for output files - this is a generic test class which houses several different types of fields
    test by creating an instance of the class and setting various test values to the fields and try to print out in
    each of the outputfilewriters - AJV 11/2002
-      pTest = new TestOutputClass(m_pParameters->m_szOutputFilename);
+      std::auto_ptr<TestOutputClass> pTest( new TestOutputClass(m_pParameters->m_szOutputFilename) );
       pTest->SetTestValues("", 0, 0.000, 0.000, 0, true);
       pTest->SetTestValues("test string", 69, 4.1698321, 3.14159257136, -42, false);
       pTest->SetTestValues("very long string which might be truncated well hopefully", 12, 6.000, 6.5, 0, true);
       pTest->SetTestValues("W%#$#^#$^%#FDSF", 3049858, 0.0001, 487.623, -48763, false);
       pTest->SetTestValues("kusdyh", 654, 10, -7, 3, true);
 
-      ASCIIFileWriter writer(pTest);
+      ASCIIFileWriter writer(pTest.get());
       writer.Print();
 
-      DBaseFileWriter Dwriter(pTest);
+      DBaseFileWriter Dwriter(pTest.get());
       Dwriter.Print();
 */
    }
    catch (ZdException & x) {
-      delete pData; pData = 0;
-//      delete pTest; pTest = 0;
       x.AddCallpath("CreateGridOutputFile()", "CAnalysis");
       throw;
    }
@@ -612,7 +606,7 @@ void CAnalysis::PerformSimulations() {
    double               r;
    int                  iSimulationNumber;
    const char         * sReplicationFormatString = 0;
-   LogLikelihoodData  * pLLRData = 0;
+   std::auto_ptr<LogLikelihoodData>     pLLRData;
 
    try {
       gpPrintDirection->SatScanPrintf("Doing the Monte Carlo replications\n");
@@ -623,9 +617,8 @@ void CAnalysis::PerformSimulations() {
       else
         sReplicationFormatString = "Log Likelihood Ratio for #%ld of %ld Replications: %7.2f\n";
 
-      if (m_pParameters->m_bSaveSimLogLikelihoods || m_pParameters->GetDBaseOutputLogLikeli()) {
-         pLLRData = new LogLikelihoodData(m_pParameters->m_szOutputFilename);
-      }
+      if (m_pParameters->m_bSaveSimLogLikelihoods || m_pParameters->GetDBaseOutputLogLikeli())
+         pLLRData.reset( new LogLikelihoodData(m_pParameters->m_szOutputFilename) );
 
       clock_t nStartTime = clock();
       SimRatios.Initialize();
@@ -661,18 +654,15 @@ void CAnalysis::PerformSimulations() {
       }
 
       if (m_pParameters->m_bSaveSimLogLikelihoods) {
-         ASCIIFileWriter Awriter(pLLRData);
+         ASCIIFileWriter Awriter(pLLRData.get());
          Awriter.Print();
       }
       if (m_pParameters->GetDBaseOutputLogLikeli()) {
-         DBaseFileWriter Dwriter(pLLRData);
+         DBaseFileWriter Dwriter(pLLRData.get());
          Dwriter.Print();
       }
-
-       delete pLLRData; pLLRData = 0;
    }
    catch (ZdException & x) {
-      delete pLLRData;
       x.AddCallpath("PerformSimulations()", "CAnalysis");
       throw;
    }
