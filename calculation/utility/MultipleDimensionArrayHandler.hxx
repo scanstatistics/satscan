@@ -39,7 +39,25 @@ TwoDimensionArrayHandler<T>::~TwoDimensionArrayHandler() {
 
 template<class T>
 TwoDimensionArrayHandler<T> & TwoDimensionArrayHandler<T>::operator=(const TwoDimensionArrayHandler<T> & rhs) {
-  ZdGenerateException("Assigment operator not implemented.", "operator=()");
+  size_t   i, j;
+
+  try {
+    if (g1stDimension != rhs.g1stDimension)
+      ZdGenerateException("First dimension of arrays are: %i  and %i. Assigment can not be performed.",
+                          "operator=()", g1stDimension, rhs.g1stDimension);
+    if (g2ndDimension != rhs.g2ndDimension)
+      ZdGenerateException("Second dimension of arrays are: %i  and %i. Assigment can not be performed.",
+                          "operator=()", g2ndDimension, rhs.g2ndDimension);
+
+    for (i=0; i < g1stDimension; ++i)
+       for (j=0; j < g2ndDimension; ++j)
+          gppData[i][j] = rhs.gppData[i][j];
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("operator=()","TwoDimensionArrayHandler");
+    throw;
+  }
+  return *this;
 }
 
 template<class T>
@@ -160,7 +178,30 @@ ThreeDimensionArrayHandler<T>::~ThreeDimensionArrayHandler() {
 
 template<class T>
 ThreeDimensionArrayHandler<T> & ThreeDimensionArrayHandler<T>::operator=(const ThreeDimensionArrayHandler<T> & rhs) {
-  ZdGenerateException("Assigment operator not implemented.", "operator=()");
+  size_t   i, j, k;
+
+  try {
+    if (g1stDimension != rhs.g1stDimension)
+      ZdGenerateException("First dimension of arrays are: %i  and %i. Assigment can not be performed.",
+                          "operator=()", g1stDimension, rhs.g1stDimension);
+    if (g2ndDimension != rhs.g2ndDimension)
+      ZdGenerateException("Second dimension of arrays are: %i  and %i. Assigment can not be performed.",
+                          "operator=()", g2ndDimension, rhs.g2ndDimension);
+
+    if (g3rdDimension != rhs.g3rdDimension)
+      ZdGenerateException("Third dimension of arrays are: %i  and %i. Assigment can not be performed.",
+                          "operator=()", g3rdDimension, rhs.g3rdDimension);
+
+    for (i=0; i < g1stDimension; ++i)
+       for (j=0; j < g2ndDimension; ++j)
+          for (k=0; k < g3rdDimension; ++k)
+             gpppData[i][j][k] = rhs.gpppData[i][j][k];
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("operator=()","ThreeDimensionArrayHandler");
+    throw;
+  }
+  return *this;
 }
 
 template<class T>
