@@ -14,7 +14,7 @@
 class TractDistance {
    private:
      tract_t m_tTractNumber;     /* tract number     */
-     float   m_fDistance;        /* distance squared */
+     float   m_fDistance;        /* distance */
 
    public:
      TractDistance(tract_t t=0, float f=0) {SetTractNumber(t);
@@ -43,7 +43,7 @@ tract_t CountNeighborsByMeasure(std::vector<TractDistance>& vTractDistances,
 
 /** Count neighbors through accumulated distance. */
 tract_t CountNeighborsByDistance(std::vector<TractDistance>& vTractDistances,
-                                 measure_t MaxCircleSize);
+                                 measure_t MaxDistance);
 /** For the circle [e = 0] and each ellipsoid [e = 1, 2, ... n], calculate
     the Sorted[] matrix, such that Sorted[e][a][b] is the b-th
     closest neighbor to a, and Sorted[a][0] == a.

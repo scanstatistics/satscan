@@ -20,21 +20,17 @@ tract_t CountNeighborsByMeasure(std::vector<TractDistance>& vTractDistances,
    return tCount;
 }
 
-/** Counts neighbors through accumulated distance. */
+/** Counts neighbors through distance up til MaxCircleSize. */
 tract_t CountNeighborsByDistance(std::vector<TractDistance>& vTractDistances,
-                                 measure_t MaxCircleSize)
+                                 measure_t MaxDistance)
 {
-   float     fCummulatedDistance=0;
    size_t    i;
    tract_t   tCount=0;
+   bool      bDone=false;
 
-   for (i=0; (i < vTractDistances.size()) &&
-             (fCummulatedDistance + vTractDistances[i].GetDistance() <= MaxCircleSize/*nMaxMeasure*/); i++)
-     {
-     fCummulatedDistance += vTractDistances[i].GetDistance();
-     if (fCummulatedDistance <= MaxCircleSize)
+   for (i=0; (i < vTractDistances.size()) && (vTractDistances[i].GetDistance() <= MaxDistance); i++)
        tCount++;
-     }
+
    return tCount;
 }
 
@@ -108,7 +104,7 @@ void MakeNeighbors(TInfo *pTInfo,
         {
           vTractDistances[k].SetTractNumber(k);
           pTInfo->tiGetCoords2(k, pCoords2);
-          vTractDistances[k].SetDistance(pTInfo->tiGetDistanceSq(pCoords, pCoords2));
+          vTractDistances[k].SetDistance(sqrt(pTInfo->tiGetDistanceSq(pCoords, pCoords2)));
         }
         std::sort(vTractDistances.begin(), vTractDistances.end(), CompareTractDistance());
         if (iSpatialMaxType == PERCENTAGEOFMEASURETYPE)
@@ -178,7 +174,7 @@ void MakeNeighbors(TInfo *pTInfo,
                       vTractDistances[k].SetTractNumber(k);
                       pCoords2[0] = pNewXCoord[k];
                       pCoords2[1] = pNewYCoord[k];
-                      vTractDistances[k].SetDistance(pTInfo->tiGetDistanceSq(pCoords, pCoords2));
+                      vTractDistances[k].SetDistance(sqrt(pTInfo->tiGetDistanceSq(pCoords, pCoords2)));
                       }
                    std::sort(vTractDistances.begin(), vTractDistances.end(), CompareTractDistance());
                    if (iSpatialMaxType == PERCENTAGEOFMEASURETYPE)
