@@ -242,8 +242,7 @@ SimulationDataContainer_t& PoissonDataStreamHandler::GetSimulationDataContainer(
         for (size_t t=0; t < Container.size(); ++t) {
           Container[t]->AllocateCasesArray();
           Container[t]->AllocateNCCasesArray();
-          if (gParameters.GetIncludePurelyTemporalClusters())
-            Container[t]->AllocatePTCasesArray();
+          Container[t]->AllocatePTCasesArray();
         }
         break;
     default :
