@@ -92,6 +92,8 @@ bool    tiFindDuplicateCoords(FILE* pDisplay);
 void    tiReportZeroPops(FILE *pDisplay) const;
 void	tiSetDimensions(int nDim);
 double   tiGetDistanceSq(double* pCoords, double* pCoords2) const;
+int     tiGetDimensions() const {return nDimensions;}
+double  tiGetTractCoordinate(tract_t t, int iDimension) const;
 
 bool    tiCheckCasesHavePop() const;
 bool    tiCheckZeroPops(FILE *pDisplay) const;

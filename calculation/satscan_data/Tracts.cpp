@@ -1140,3 +1140,15 @@ Check to see that no years have a total population of zero.
   return bValid;
 }
 
+/* Returns coordinate for tract at specified dimension. */
+double TInfo::tiGetTractCoordinate(tract_t t, int iDimension) const {
+  try {
+    if ((0 > t && t >= NumTracts) || (0 > iDimension && iDimension >= nDimensions))
+      ZdGenerateException("Index out of range","tiGetTractCoordinate()");
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiGetTractCoordinate()", "TInfo");
+    throw;
+  }
+  return TractInfo[t].pCoords[iDimension];
+}
