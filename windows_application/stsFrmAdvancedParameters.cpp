@@ -230,6 +230,11 @@ void TfrmAdvancedParameters::EnableAdjustmentsGroup(bool bEnable) {
   btnBrowseAdjustmentsFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
 }
 //---------------------------------------------------------------------------
+/** enables adjustment options controls */
+void TfrmAdvancedParameters::EnableOutputOptions(bool bEnable) {
+   rdgCriteriaSecClusters->Enabled = bEnable;
+}
+//---------------------------------------------------------------------------
 /** enabled prospective start date controls */
 void TfrmAdvancedParameters::EnableProspectiveStartDate(bool bEnable) {
   //trump enabling based upon earlier analyses adjustment and precision of time controls
@@ -284,7 +289,7 @@ void TfrmAdvancedParameters::EnableSpatialOptionsGroup(bool bEnable, bool bEnabl
 }
 
 //---------------------------------------------------------------------------
-/** enables spatial output options controls */
+/** enables spatial output options controls - (on output tab now)*/
 void TfrmAdvancedParameters::EnableSpatialOutputOptions(bool bEnable) {
   chkRestrictReportedClusters->Enabled = bEnable;
   edtReportClustersSmallerThan->Enabled = bEnable && chkRestrictReportedClusters->Checked;
@@ -584,14 +589,11 @@ void TfrmAdvancedParameters::SetDefaultsForAnalysisTabs() {
    edtMaxTemporalClusterSizeUnits->Text = "1";
    chkIncludePureSpacClust->Checked = false;
 
+   ParseDate("1900/01/01", *edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay, true);
+   ParseDate("1900/01/01", *edtStartRangeEndYear, *edtStartRangeEndMonth, *edtStartRangeEndDay, false);
+   ParseDate("1900/12/31", *edtEndRangeStartYear, *edtEndRangeStartMonth, *edtEndRangeStartDay, true);
+   ParseDate("1900/12/31", *edtEndRangeEndYear, *edtEndRangeEndMonth, *edtEndRangeEndDay, false);
    chkRestrictTemporalRange->Checked = false;
-   ParseDate("01/01/1900", *edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay, true);
-   if (ref.GetStartRangeEndDate().length() > 0)
-      ParseDate(ref.GetStartRangeEndDate(), *edtStartRangeEndYear, *edtStartRangeEndMonth, *edtStartRangeEndDay, true);
-   if (ref.GetEndRangeStartDate().length() > 0)
-      ParseDate(ref.GetEndRangeStartDate(), *edtEndRangeStartYear, *edtEndRangeStartMonth, *edtEndRangeStartDay, false);
-   if (ref.GetEndRangeEndDate().length() > 0)
-      ParseDate(ref.GetEndRangeEndDate(), *edtEndRangeEndYear, *edtEndRangeEndMonth, *edtEndRangeEndDay, false);
 
    // Risk tab
    chkAdjustForKnownRelativeRisks->Checked = false;

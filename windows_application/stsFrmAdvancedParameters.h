@@ -150,6 +150,7 @@ __published:	// IDE-managed Components
 
     void                        EnableAdjustmentsGroup(bool bEnable);
     void                        EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage);
+    void                        EnableOutputOptions(bool bEnable);
     void                        EnableProspectiveStartDate(bool bEnable);
     void                        EnableProspectiveSurveillanceGroup(bool bEnable);
     void                        EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal, bool bEnablePercentage);

@@ -1,6 +1,6 @@
 object frmAdvancedParameters: TfrmAdvancedParameters
-  Left = 185
-  Top = 131
+  Left = 186
+  Top = 130
   ActiveControl = PageControl
   BorderStyle = bsDialog
   Caption = 'Advanced Features'
@@ -61,7 +61,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Top = 6
     Width = 419
     Height = 283
-    ActivePage = tsOther
+    ActivePage = TabSheet1
     TabOrder = 0
     object TabSheet2: TTabSheet
       Caption = 'Spatial Window'
