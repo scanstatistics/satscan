@@ -201,7 +201,11 @@ class TfrmAnalysis : public TForm {
     bool                DetermineIfDbfExtension(const AnsiString& sFileName);
     void                EnablePSTDate(bool bEnable);
     void                EnableSpatial(bool bEnable, bool bEnableCheckbox, bool bEnableSpatialPercentage);
+    void                EnableStartAndEndYear(bool bEnable);
+    void                EnableStartAndEndMonth(bool bEnable);
+    void                EnableStartAndEndDay(bool bEnable);
     void                EnableTemporal(bool bEnable, bool bEnableCheckbox, bool bEnablePercentage);
+    void                EnableTemporalTimeTrendAdjust(bool bEnableRadioGroup, bool bEnableNonParametric, bool bEnableLogYearEditBox);
     void                EnableTimeInterval(bool bEnable);
     ZdDate            & GetStudyPeriodEndDate(ZdDate & Date);
     ZdDate            & GetStudyPeriodStartDate(ZdDate & Date);

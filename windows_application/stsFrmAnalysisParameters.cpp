@@ -100,6 +100,7 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
     OpenDialog1->FileName =  "";
     OpenDialog1->DefaultExt = "*.cas";
     OpenDialog1->Filter = "CAS Files (*.cas)|*.cas|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
+    OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Case File";
     if (OpenDialog1->Execute()) {
       sFileName = OpenDialog1->FileName.c_str();
@@ -151,6 +152,7 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.ctl";
     OpenDialog1->Filter = "CTL Files (*.ctl)|*.ctl|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
+    OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Control File";
     if (OpenDialog1->Execute()) {
       sFileName = OpenDialog1->FileName.c_str();
@@ -202,6 +204,7 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.geo";
     OpenDialog1->Filter = "GEO Files (*.geo)|*.geo|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
+    OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Coordinates File";
     if (OpenDialog1->Execute()) {
       sFileName = OpenDialog1->FileName.c_str();
@@ -252,6 +255,7 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.grd";
     OpenDialog1->Filter = "GRD Files (*.grd)|*.grd|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
+    OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Special Grid File";
     if (OpenDialog1->Execute()) {
       sFileName = OpenDialog1->FileName.c_str();
@@ -302,6 +306,7 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.pop";
     OpenDialog1->Filter = "POP Files (*.pop)|*.pop|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
+    OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Population File";
     if (OpenDialog1->Execute()) {
        sFileName = OpenDialog1->FileName.c_str();
@@ -346,6 +351,7 @@ void __fastcall TfrmAnalysis::btnResultFileBrowseClick(TObject *Sender) {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.txt";
     OpenDialog1->Filter = "GRD Files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Results File";
     if (OpenDialog1->Execute()) {
       strcpy(gpParams->m_szOutputFilename, OpenDialog1->FileName.c_str());
@@ -362,66 +368,46 @@ void __fastcall TfrmAnalysis::btnResultFileBrowseClick(TObject *Sender) {
 //MUST CHECK TO SEE IF THE DAY EDIT BOX IS ENABLED FIRST !!!!
 //------------------------------------------------------------------------------
 bool TfrmAnalysis::Check_Days(int iYear, int iMonth, int iDay, char *sDateName) {
-  bool bDayOk = true;
   char szMessage[100];
   AnsiString sFinalMessage;
   int iMin = 1, iMax;
 
-  try {
-    iMax = DaysThisMonth(iYear, iMonth);
-    if ((iDay < iMin) || (iDay > iMax)) {
-      sFinalMessage += sDateName;
-      sprintf(szMessage, ":  Please specify a day between %i and %i.", iMin, iMax);
-      sFinalMessage += szMessage;
-      Application->MessageBox(sFinalMessage.c_str(), "Parameter Error" , MB_OK);
-      bDayOk = false;
-    }
+  iMax = DaysThisMonth(iYear, iMonth);
+  if ((iDay < iMin) || (iDay > iMax)) {
+    sFinalMessage += sDateName;
+    sprintf(szMessage, ":  Please specify a day between %i and %i.", iMin, iMax);
+    sFinalMessage += szMessage;
+    Application->MessageBox(sFinalMessage.c_str(), "Parameter Error" , MB_OK);
+    return false;
   }
-  catch (ZdException & x) {
-    x.AddCallpath("Check_Days()", "TfrmAnalysis");
-    throw;
-  }
-  return bDayOk;
+  else
+    return true;
 }
 //------------------------------------------------------------------------------
 //Ensures that interval length is not less than one.
 //------------------------------------------------------------------------------
 bool TfrmAnalysis::Check_IntervalLength(int iStartYear, int iStartMonth, int iStartDay,
-            int iEndYear, int iEndMonth, int iEndDay, int iIntervalUnits, int iIntervalLength) {
-  bool   bIntervalLenOk = true;
-
-  try {
+                                        int iEndYear, int iEndMonth, int iEndDay,
+                                        int iIntervalUnits, int iIntervalLength) {
     if (atoi(edtUnitLength->Text.c_str()) < 1) {
       Application->MessageBox("Interval length can not be zero.\nPlease specify an interval length.", "Notification" , MB_OK);
-      bIntervalLenOk = false;
+       return false;
     }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("Check_IntervalLength()", "TfrmAnalysis");
-    throw;
-  }
-   return bIntervalLenOk;
+    else
+       return true;
 }
 //------------------------------------------------------------------------------
 // Generic Month checker -- simulates old interface
 //------------------------------------------------------------------------------
 bool TfrmAnalysis::Check_Month(int iMonth, char *sDateName) {
-  bool          bMonthOk = true;
-  std::string   sFinalMessage;
-
-  try {
-    if ((iMonth < 1) || (iMonth > 12)) {
-      sFinalMessage += sDateName;
-      sFinalMessage += ":  Please specify an month between 1 and 12.";
-      Application->MessageBox(sFinalMessage.c_str(), "Parameter Error" , MB_OK);
-      bMonthOk = false;
-    }
+  if ((iMonth < 1) || (iMonth > 12)) {
+    std::string sFinalMessage(sDateName);
+    sFinalMessage += ":  Please specify an month between 1 and 12.";
+    Application->MessageBox(sFinalMessage.c_str(), "Parameter Error" , MB_OK);
+    return false;
   }
-  catch (ZdException & x) {
-    x.AddCallpath("Check_Month()", "TfrmAnalysis");
-    throw;
-  }
-  return bMonthOk;
+  else
+     return true;
 }
 //------------------------------------------------------------------------------
 // Simple time trend percentage check.  
@@ -440,23 +426,16 @@ bool TfrmAnalysis::Check_TimeTrendPercentage(double dValue) {
 //------------------------------------------------------------------------------
 bool TfrmAnalysis::Check_Year(int iYear, char *sDateName) {
   char          szMessage[100];
-  bool          bYearOk = true;
-  std::string   sFinalMessage;
 
-  try {
-    if ( ! (iYear >= MIN_YEAR) && (iYear <= MAX_YEAR)) {
-      sFinalMessage += sDateName;
-      sprintf(szMessage, ":  Please specify a year between %i and %i.", MIN_YEAR, MAX_YEAR);
-      sFinalMessage += szMessage;
-      Application->MessageBox(sFinalMessage.c_str(), "Parameter Error" , MB_OK);
-      bYearOk = false;
-    }
+  if ( ! (iYear >= MIN_YEAR) && (iYear <= MAX_YEAR)) {
+    std::string sFinalMessage(sDateName);
+    sprintf(szMessage, ":  Please specify a year between %i and %i.", MIN_YEAR, MAX_YEAR);
+    sFinalMessage += szMessage;
+    Application->MessageBox(sFinalMessage.c_str(), "Parameter Error" , MB_OK);
+    return false;
   }
-  catch (ZdException & x) {
-    x.AddCallpath("Check_Year", "TfrmAnalysis");
-    throw;
-  }
-  return bYearOk;
+  else
+     return true;
 }
 //------------------------------------------------------------------------------
 // Verifies all the parameters on the Analysis Tab
@@ -470,21 +449,21 @@ bool TfrmAnalysis::CheckAnalysisParams() {
     if (edtStartYear->Enabled) {
       bParamsOk = Check_Year(atoi(edtStartYear->Text.c_str()),"Study Period Start Year");
       if (bParamsOk)
-      bParamsOk = Check_Year(atoi(edtEndYear->Text.c_str()),"Study Period End Year");
+         bParamsOk = Check_Year(atoi(edtEndYear->Text.c_str()),"Study Period End Year");
     }
     //if Months enabled, then check values...
     //if start month enabled, assume end month enabled.
     if (bParamsOk && edtStartMonth->Enabled) {
       bParamsOk = Check_Month(atoi(edtStartMonth->Text.c_str()), "Study Period Start Month");
       if (bParamsOk)
-      bParamsOk = Check_Month(atoi(edtEndMonth->Text.c_str()), "Study Period End Month");
+         bParamsOk = Check_Month(atoi(edtEndMonth->Text.c_str()), "Study Period End Month");
     }
     //if Days enabled, then check values...
     //if start days enabled, assume end days enabled.
     if (bParamsOk && edtStartDay->Enabled) {
       bParamsOk = Check_Days(atoi(edtStartYear->Text.c_str()), atoi(edtStartMonth->Text.c_str()), atoi(edtStartDay->Text.c_str()),"Study Period Start Date");
       if (bParamsOk)
-      bParamsOk = Check_Days(atoi(edtEndYear->Text.c_str()), atoi(edtEndMonth->Text.c_str()), atoi(edtEndDay->Text.c_str()),"Study Period End Date");
+         bParamsOk = Check_Days(atoi(edtEndYear->Text.c_str()), atoi(edtEndMonth->Text.c_str()), atoi(edtEndDay->Text.c_str()),"Study Period End Date");
     }
 
 
@@ -568,8 +547,6 @@ bool TfrmAnalysis::CheckDateRange(int iStartYear, int iStartMonth, int iStartDay
 // Verifies all parameters on the Output tab
 //------------------------------------------------------------------------------
 bool TfrmAnalysis::CheckOutputParams() {
-  bool bReturn = true;
-
   try {
     if (edtResultFile->Text.Length() == 0)
       ZdException::GenerateNotification("Results File not specified.\nNote that file need not currently exist but path must be valid.",
@@ -589,7 +566,7 @@ bool TfrmAnalysis::CheckOutputParams() {
     x.AddCallpath("CheckOutputParams", "TfrmAnalysis");
     throw;
   }
-  return bReturn;
+  return true;
 }
 //------------------------------------------------------------------------------
 // Specific prospective space-time date check
@@ -638,21 +615,7 @@ bool TfrmAnalysis::CheckReplicas(int iReplicas) {
 // Checks the validity of the scanning tab controls
 //------------------------------------------------------------------------------
 bool TfrmAnalysis::CheckScanningWindowParams() {
-  bool bParamsOk = true;
-
-  try {
-    //validate maximum spatial cluster size
-    bParamsOk = ValidateSpatialClusterSize();
-
-    //validate maximum temporal cluster size
-    if (bParamsOk)
-      bParamsOk = ValidateTemoralClusterSize();
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("CheckScanningWindowParams()", "TfrmAnalysis");
-    throw;
-  }
-  return bParamsOk;
+  return ValidateTemoralClusterSize() && ValidateSpatialClusterSize();
 }
 //------------------------------------------------------------------------------
 // Checks all the time parameters
@@ -736,10 +699,11 @@ void __fastcall TfrmAnalysis::chkClustersInColumnFormatAsciiClick(TObject *Sende
 void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const std::vector<std::string>& vFieldNames) {
    ZdPointerVector<ZdField>	vFields;
    ZdField		        *pField = 0;
-   TXDFile                      File;
-   unsigned short               uwOffset = 0, uwLength;
+   unsigned short               uwOffset(0), uwLength;
 
    try {
+      TXDFile File;
+
       // creates the field vector from the provided field names
       for(size_t i = 0; i < vFieldNames.size(); ++i) {
       	 pField = File.GetNewField();
@@ -780,15 +744,9 @@ bool TfrmAnalysis::DetermineIfDbfExtension(const AnsiString& sFileName) {
 }
 
 void __fastcall TfrmAnalysis::edtEndDayExit(TObject *Sender) {
-  try {
-    if ((atoi(edtEndDay->Text.c_str()) < 1) || (atoi(edtEndDay->Text.c_str()) > 31)) {
-      PageControl1->ActivePage = tbAnalysis;
-      edtEndDay->SetFocus();
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("edtEndDayExit()", "TfrmAnalysis");
-    DisplayBasisException(this, x);
+  if ((atoi(edtEndDay->Text.c_str()) < 1) || (atoi(edtEndDay->Text.c_str()) > 31)) {
+    PageControl1->ActivePage = tbAnalysis;
+    edtEndDay->SetFocus();
   }
 }
 //---------------------------------------------------------------------------
@@ -880,16 +838,10 @@ void __fastcall TfrmAnalysis::edtMaxTemporalClusterSizeExit(TObject *Sender) {
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::edtProspDayExit(TObject *Sender) {
-  try {
-    if ((atoi(edtProspDay->Text.c_str()) < 1) || (atoi(edtProspDay->Text.c_str()) > 31)) {
-      Application->MessageBox("Please specify a valid day.", "Parameter Error" , MB_OK);
-      PageControl1->ActivePage = tbTimeParameter;
-      edtProspDay->SetFocus();
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("edtProspDayExit()", "TfrmAnalysis");
-    DisplayBasisException(this, x);
+  if ((atoi(edtProspDay->Text.c_str()) < 1) || (atoi(edtProspDay->Text.c_str()) > 31)) {
+    Application->MessageBox("Please specify a valid day.", "Parameter Error" , MB_OK);
+    PageControl1->ActivePage = tbTimeParameter;
+    edtProspDay->SetFocus();
   }
 }
 //---------------------------------------------------------------------------
@@ -920,16 +872,10 @@ void __fastcall TfrmAnalysis::edtProspMonthExit(TObject *Sender) {
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::edtStartDayExit(TObject *Sender) {
-  try {
-    if ((atoi(edtStartDay->Text.c_str()) < 1) || (atoi(edtStartDay->Text.c_str()) > 31)) {
-      Application->MessageBox("Please specify a valid day.", "Parameter Error" , MB_OK);
-      PageControl1->ActivePage = tbAnalysis;
-      edtStartDay->SetFocus();
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("edtStartDayExit()", "TfrmAnalysis");
-    DisplayBasisException(this, x);
+  if ((atoi(edtStartDay->Text.c_str()) < 1) || (atoi(edtStartDay->Text.c_str()) > 31)) {
+    Application->MessageBox("Please specify a valid day.", "Parameter Error" , MB_OK);
+    PageControl1->ActivePage = tbAnalysis;
+    edtStartDay->SetFocus();
   }
 }
 //---------------------------------------------------------------------------
@@ -962,8 +908,7 @@ void __fastcall TfrmAnalysis::edtStartYearExit(TObject *Sender) {
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::edtUnitLengthExit(TObject *Sender) {
-  bool bParamsOk;
-  bParamsOk = Check_IntervalLength(atoi(edtStartYear->Text.c_str()), atoi(edtStartMonth->Text.c_str()),
+  bool bParamsOk = Check_IntervalLength(atoi(edtStartYear->Text.c_str()), atoi(edtStartMonth->Text.c_str()),
                                    atoi(edtStartDay->Text.c_str()),  atoi(edtEndYear->Text.c_str()),
                                    atoi(edtEndMonth->Text.c_str()), atoi(edtEndDay->Text.c_str()),
                                    gpParams->m_nIntervalUnits, atoi(edtUnitLength->Text.c_str()));
@@ -995,6 +940,38 @@ void TfrmAnalysis::EnableSpatial(bool bEnable, bool bEnableCheckbox, bool bEnabl
    chkInclPurTempClust->Checked = (bEnableCheckbox && gpParams->m_bIncludePurelyTemporal);
    edtMaxClusterSize->Enabled = bEnable;
    edtMaxClusterSize->Color = bEnable ? clWindow : clInactiveBorder;
+}
+
+// enables or disables the start and end day time interval controls
+void TfrmAnalysis::EnableStartAndEndDay(bool bEnable) {
+   edtStartDay->Enabled = bEnable;
+   edtEndDay->Enabled = bEnable;
+   edtStartDay->Color = bEnable ? clWindow : clInactiveBorder;
+   edtEndDay->Color = bEnable ? clWindow : clInactiveBorder;
+}
+
+// enables or disables the start and end month time interval controls
+void TfrmAnalysis::EnableStartAndEndMonth(bool bEnable) {
+   edtStartMonth->Enabled = bEnable;
+   edtEndMonth->Enabled = bEnable;
+   edtStartMonth->Color = bEnable ? clWindow : clInactiveBorder;
+   edtEndMonth->Color = bEnable ? clWindow : clInactiveBorder;
+}
+
+// enables or disables the start and end year time interval controls
+void TfrmAnalysis::EnableStartAndEndYear(bool bEnable) {
+   edtStartYear->Enabled = bEnable;
+   edtEndYear->Enabled = bEnable;
+   edtStartYear->Color = bEnable ? clWindow : clInactiveBorder;
+   edtEndYear->Color = bEnable ? clWindow : clInactiveBorder;
+}
+
+// enables or disables the temporal time trend adjustment
+void TfrmAnalysis::EnableTemporalTimeTrendAdjust(bool bEnableRadioGroup, bool bEnableNonParametric, bool bEnableLogYearEditBox) {
+  rgTemporalTrendAdj->Enabled = bEnableRadioGroup;
+  rgTemporalTrendAdj->Controls[1]->Enabled = bEnableNonParametric;
+  edtLogPerYear->Enabled = bEnableLogYearEditBox;
+  rgTemporalTrendAdj->ItemIndex = gpParams->m_nTimeAdjustType;
 }
 
 // enables or disables the temporal control
@@ -1039,7 +1016,7 @@ void __fastcall TfrmAnalysis::FormClose(TObject *Sender, TCloseAction &Action) {
 char * TfrmAnalysis::GetFileName() {
   return gsParamFileName.c_str();
 }
- 
+
 //---------------------------------------------------------------------------
 // returns the class global gpParams
 //---------------------------------------------------------------------------
@@ -1086,11 +1063,6 @@ ZdDate & TfrmAnalysis::GetStudyPeriodStartDate(ZdDate & Date) {
 void TfrmAnalysis::Init() {
    gpParams=0;
    cboCriteriaSecClusters->ItemIndex = 0;
-//   SetupGeoFileFieldDescriptors();
-//   SetupCaseFileFieldDescriptors();
-//   SetupControlFileFieldDescriptors();
-//   SetupGridFileFieldDescriptors();
-//   SetupPopFileFieldDescriptors();
 }
 
 //------------------------------------------------------------------------------
@@ -1114,85 +1086,58 @@ void __fastcall TfrmAnalysis::NaturalNumberKeyPress(TObject *Sender, char &Key) 
 void TfrmAnalysis::OnAnalysisTypeClick() {
    try {
       gpParams->m_nAnalysisType = rgTypeAnalysis->ItemIndex + 1;
-
+      bool bPoisson = (gpParams->m_nModel == POISSON);
     switch (rgTypeAnalysis->ItemIndex) {
        case 0:                     // purely spatial
-          // enable None case precision
-          rgPrecisionTimes->Controls[0]->Enabled = true;
           // disable time trend adjustment
-          rgTemporalTrendAdj->Enabled = false;
-          edtLogPerYear->Enabled = false;
+          EnableTemporalTimeTrendAdjust(false, false, false);
+
           // disable clusters to include
           rgClustersToInclude->Enabled = false;
-          // enable spatial but not checkbox
-          EnableSpatial(true, false, true);
-          // disable time intervals
-          EnableTimeInterval(false);
-          // disable temporal
-          EnableTemporal(false, false, false);
-          // disable start date PST
-          EnablePSTDate(false);
+          
+          EnableSpatial(true, false, true);       // enable spatial but not checkbox
+          EnableTimeInterval(false);              // disable time intervals
+          EnableTemporal(false, false, false);    // disable temporal
+          EnablePSTDate(false);                   // disable start date PST
           break;
        case 1:                     // purely temporal
-          // disable None option in case precision time
-          rgPrecisionTimes->Controls[0]->Enabled = false;
           // Enables Time Trend Adjust without Non-Param
-          rgTemporalTrendAdj->Enabled = gpParams->m_nModel == POISSON ? true : false;
-          edtLogPerYear->Enabled = (gpParams->m_nModel == POISSON && rgTemporalTrendAdj->ItemIndex == 2) ? true : false;
-          rgTemporalTrendAdj->Controls[1]->Enabled = false;
+          EnableTemporalTimeTrendAdjust(bPoisson, false, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2));
           rgTemporalTrendAdj->ItemIndex = ((rgTemporalTrendAdj->ItemIndex != 1) ? gpParams->m_nTimeAdjustType : 0 );
+
           // Enables Clusters to include
           rgClustersToInclude->Enabled = true;
           rgClustersToInclude->ItemIndex = (gpParams->m_bAliveClustersOnly ? 1 : 0);
-          // Disables Spatial
-          EnableSpatial(false, false, false);
-          // Enables time intervals
-          EnableTimeInterval(true);
-          // Enables temporal without checkbox
-          EnableTemporal(true, false, true);
-          // Disables Start date PST
-          EnablePSTDate(false);
+          
+          EnableSpatial(false, false, false);  // Disables Spatial
+          EnableTimeInterval(true);            // Enables time intervals
+          EnableTemporal(true, false, true);   // Enables temporal without checkbox
+          EnablePSTDate(false);                // Disables Start date PST
           break;
        case 2:                     // retrospective space-time
-          // disable None option in case precision time
-          rgPrecisionTimes->Controls[0]->Enabled = false;
           //Enables Time Trend Adjust
-          rgTemporalTrendAdj->Enabled = gpParams->m_nModel == POISSON ? true : false;
-          rgTemporalTrendAdj->Controls[1]->Enabled = gpParams->m_nModel == POISSON ? true : false;
-          edtLogPerYear->Enabled = (gpParams->m_nModel == POISSON && rgTemporalTrendAdj->ItemIndex == 2) ? true : false;
-          rgTemporalTrendAdj->ItemIndex = gpParams->m_nTimeAdjustType;
+          EnableTemporalTimeTrendAdjust(bPoisson, bPoisson, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2));
           //Enables clusters to include
           rgClustersToInclude->Enabled = true;
           rgClustersToInclude->ItemIndex = (gpParams->m_bAliveClustersOnly ? 1 : 0);
-          //Enables spatial
-          EnableSpatial(true, !(gpParams->m_nModel == 2), true);
-          //Enables time intervals
-          EnableTimeInterval(true);
-          //Enables temporal
-          EnableTemporal(true,!(gpParams->m_nModel == 2), true);
-          //Disables Start date PST
-          EnablePSTDate(false);
+          
+          EnableSpatial(true, !(gpParams->m_nModel == 2), true);     //Enables spatial
+          EnableTimeInterval(true);                                  //Enables time intervals
+          EnableTemporal(true,!(gpParams->m_nModel == 2), true);     //Enables temporal
+          EnablePSTDate(false);                                      //Disables Start date PST
           break;
        case 3:                     // prospective space-time
-          rgPrecisionTimes->Controls[0]->Enabled = false;
           //Enables Time Trend Adjust
-          rgTemporalTrendAdj->Enabled = gpParams->m_nModel == POISSON ? true : false;
-          rgTemporalTrendAdj->Controls[1]->Enabled = gpParams->m_nModel == POISSON ? true : false;
-          edtLogPerYear->Enabled = (gpParams->m_nModel == POISSON && rgTemporalTrendAdj->ItemIndex == 2) ? true : false;
-          rgTemporalTrendAdj->ItemIndex = gpParams->m_nTimeAdjustType;
+          EnableTemporalTimeTrendAdjust(bPoisson, bPoisson, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2));
           //disables clusters to include
           rgClustersToInclude->Enabled = false;
-          //Enables Spatial % box disable
-          EnableSpatial(true, !(gpParams->m_nModel == 2), false);
-          //Enables time intervals
-          EnableTimeInterval(true);
-          //Enables temporal with checkbox but disable % option radio button
-          EnableTemporal(true, !(gpParams->m_nModel == 2), false);
-          //Enables Start Date PST
-          EnablePSTDate(true);
+
+          EnableSpatial(true, !(gpParams->m_nModel == 2), false);      //Enables Spatial % box disable
+          EnableTimeInterval(true);                                    //Enables time intervals
+          EnableTemporal(true, !(gpParams->m_nModel == 2), false);     //Enables temporal with checkbox but disable % option radio button
+          EnablePSTDate(true);                                         //Enables Start Date PST
           break;
     }
-    OnPrecisionTimesClick();
 
     // if none not enabled and set, then set to case precision Year instead - AJV 10/4/2002
     if(rgPrecisionTimes->ItemIndex == 0 && !(rgPrecisionTimes->Controls[0]->Enabled))
@@ -1204,6 +1149,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
    }
 }
 
+
 //---------------------------------------------------------------------------
 //  When the time precision control is changed, various interace options are
 //  toggled and changed.
@@ -1211,46 +1157,47 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
    try {
       gpParams->m_nPrecision = rgPrecisionTimes->ItemIndex;
     switch (rgPrecisionTimes->ItemIndex) {
-      case NONE : edtStartYear->Enabled  = true;  edtStartYear->Color = clWindow;
-                  edtStartMonth->Enabled = true;  edtStartMonth->Color = clWindow;
-                  edtStartDay->Enabled   = true;  edtStartDay->Color = clWindow;
-                  edtEndYear->Enabled    = true;  edtEndYear->Color = clWindow;
-                  edtEndMonth->Enabled   = true;  edtEndMonth->Color = clWindow;
-                  edtEndDay->Enabled     = true;  edtEndDay->Color = clWindow;
-                  // Time Interval disabled
+      case NONE : EnableStartAndEndYear(true);
+                  EnableStartAndEndMonth(true);
+                  EnableStartAndEndDay(true);
                   GroupBox6->Enabled = false;
                   break;
       case YEAR   : //Study Period same precision
-                  edtStartYear->Enabled  = true;   edtStartYear->Color = clWindow;
-                  edtStartMonth->Enabled = false;  edtStartMonth->Color = clInactiveBorder;
-                  edtStartDay->Enabled   = false;  edtStartDay->Color = clInactiveBorder;
-                  edtEndYear->Enabled    = true;   edtEndYear->Color = clWindow;
-                  edtEndMonth->Enabled   = false;  edtEndMonth->Color = clInactiveBorder;
-                  edtEndDay->Enabled     = false;  edtEndDay->Color = clInactiveBorder;
+                  EnableStartAndEndYear(true);
+                  EnableStartAndEndMonth(false);
+                  EnableStartAndEndDay(false);
                   edtStartMonth->Text="1";
                   edtStartDay->Text = "1";
                   edtEndMonth->Text = "12";
                   edtEndDay->Text = "31";
+                  GroupBox6->Enabled = true;
                   break;
       case MONTH  :  //Study Period same precision
-                  edtStartYear->Enabled  = true;   edtStartYear->Color = clWindow;
-                  edtStartMonth->Enabled = true;   edtStartMonth->Color = clWindow;
-                  edtStartDay->Enabled   = false;  edtStartDay->Color = clInactiveBorder;
-                  edtEndYear->Enabled    = true;   edtEndYear->Color = clWindow;
-                  edtEndMonth->Enabled   = true;   edtEndMonth->Color = clWindow;
-                  edtEndDay->Enabled     = false;  edtEndDay->Color = clInactiveBorder;
+                  EnableStartAndEndYear(true);
+                  EnableStartAndEndMonth(true);
+                  EnableStartAndEndDay(false);
                   edtEndDay->Text = DaysThisMonth(atoi(edtEndYear->Text.c_str()), atoi(edtEndMonth->Text.c_str()));
                   edtStartDay->Text = "1";
+                  GroupBox6->Enabled = true;
                   break;
       case DAY    : //Study Period same precision
-                  edtStartYear->Enabled  = true;  edtStartYear->Color = clWindow;
-                  edtStartMonth->Enabled = true;  edtStartMonth->Color = clWindow;
-                  edtStartDay->Enabled   = true;  edtStartDay->Color = clWindow;
-                  edtEndYear->Enabled    = true;  edtEndYear->Color = clWindow;
-                  edtEndMonth->Enabled   = true;  edtEndMonth->Color = clWindow;
-                  edtEndDay->Enabled     = true;  edtEndDay->Color = clWindow;
+                  EnableStartAndEndYear(true);
+                  EnableStartAndEndMonth(true);
+                  EnableStartAndEndDay(true);
+                  GroupBox6->Enabled = true;
                   break;
     }
+
+    // enable or disable the appropraite Analysis Types and Space-Time Model
+    rgTypeAnalysis->Controls[0]->Enabled = true;
+    rgTypeAnalysis->Controls[1]->Enabled = !(rgPrecisionTimes->ItemIndex == NONE);
+    rgTypeAnalysis->Controls[2]->Enabled = !(rgPrecisionTimes->ItemIndex == NONE);
+    rgTypeAnalysis->Controls[3]->Enabled = !(rgPrecisionTimes->ItemIndex == NONE);
+    if(rgPrecisionTimes->ItemIndex == NONE && (rgTypeAnalysis->ItemIndex == 1 || rgTypeAnalysis->ItemIndex == 2 || rgTypeAnalysis->ItemIndex == 3) )
+       rgTypeAnalysis->ItemIndex = 0;    // if none was selected, set the anbalysis type to purely spatial
+    rgProbability->Controls[2]->Enabled = !(rgPrecisionTimes->ItemIndex == NONE);
+    if(rgPrecisionTimes->ItemIndex == NONE && rgProbability->ItemIndex == 2)
+       rgProbability->ItemIndex = 0;    // if none was selected and space time was selected reset model to Poisson
 
     //Time intervals same or greater precision enabled if enabled
     if (GroupBox6->Enabled) {
@@ -1271,7 +1218,7 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
                    break;
          default : if (!rbUnitYear->Checked && !rbUnitMonths->Checked && !rbUnitDay->Checked)
                      rbUnitYear->Checked = true;
-      };
+      }
     }
 
     // prospective year group box
@@ -1285,11 +1232,12 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
        edtProspDay->Color = edtProspDay->Enabled ? clWindow : clInactiveBorder;
     }
 
-    // this is the OnPrecisionChange() function
-    if (gpParams->m_nAnalysisType == PURELYSPATIAL && gpParams->m_nPrecision != 0) {  // use to be m_nAnalysisType == 0
-      if (gpParams->m_nIntervalUnits > gpParams->m_nPrecision )
-        gpParams->m_nIntervalUnits = gpParams->m_nPrecision;
-    }
+     // this is the OnPrecisionChange() function
+     if (gpParams->m_nAnalysisType == PURELYSPATIAL && gpParams->m_nPrecision != 0)  // used to be m_nAnalysisType == 0
+       if (gpParams->m_nIntervalUnits > gpParams->m_nPrecision )
+         gpParams->m_nIntervalUnits = gpParams->m_nPrecision;
+
+     OnProbabilityModelClick();
    }
    catch(ZdException &x) {
       x.AddCallpath("OnPrecisionTimesClick()", "TfrmAnalysis");
@@ -1307,8 +1255,6 @@ void TfrmAnalysis::OnProbabilityModelClick() {
      switch (rgProbability->ItemIndex) {
         case 0:  // drop through, same as 1
         case 1:
-           for(int i = 0; i <= 3; ++i)
-              rgTypeAnalysis->Controls[i]->Enabled = true;
            chkRelativeRiskEstimatesAreaAscii->Enabled = true;
            rdoPercentageTemproal->Caption = "Percent of Study Period (<= 90%)";
            break;
@@ -1338,11 +1284,8 @@ void TfrmAnalysis::OnTemporalTrendClick() {
    try {
       gpParams->m_nTimeAdjustType = rgTemporalTrendAdj->ItemIndex;
       switch (rgTemporalTrendAdj->ItemIndex) {
-       case 0:                             // none
-         edtLogPerYear->Enabled = false;
-         edtLogPerYear->Color = clInactiveBorder;
-         break;
-       case 1:                             // non-parametric
+       case 0:                           // none
+       case 1:                           // non-parametric
          edtLogPerYear->Enabled = false;
          edtLogPerYear->Color = clInactiveBorder;
          break;
@@ -1364,12 +1307,11 @@ void TfrmAnalysis::OnTemporalTrendClick() {
 //---------------------------------------------------------------------------
 void TfrmAnalysis::ParseDate(char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *pDay) {
   AnsiString theDate, thePart;
-  int        iLoc;
 
   try {
     if (szDate != 0) {
       theDate = szDate;
-      iLoc = theDate.Pos("/");
+      int iLoc(theDate.Pos("/"));
       if (iLoc == 0)
         ZdException::GenerateNotification("Invalid date found in parameter file.", "ParseDate()");
       else {
@@ -1406,8 +1348,6 @@ void __fastcall TfrmAnalysis::PositiveFloatKeyPress(TObject *Sender, char &Key) 
 // session obj information.
 //---------------------------------------------------------------------------
 bool TfrmAnalysis::ReadSession(char *sFileName) {
-  bool bSessionOk = true;
-
   try {
     gpParams->SetParameters(sFileName);
     SetupInterface();
@@ -1416,7 +1356,7 @@ bool TfrmAnalysis::ReadSession(char *sFileName) {
     x.AddCallpath("ReadSession()", "TfrmAnalysis");
     throw;
   }
-  return bSessionOk;
+  return true;
 }
 
 //---------------------------------------------------------------------------
@@ -1678,7 +1618,7 @@ void TfrmAnalysis::SetupInterface() {
     chkClustersInColumnFormatDBase->Checked = gpParams->GetOutputClusterLevelDBF();
     chkCensusAreasReportedClustersDBase->Checked = gpParams->GetOutputAreaSpecificDBF();
     //now enable or disable controls appropriately
-    OnProbabilityModelClick();
+    OnPrecisionTimesClick();
   }
   catch (ZdException & x) {
     x.AddCallpath("SetupInterface()", "TfrmAnalysis");
