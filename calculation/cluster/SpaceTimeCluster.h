@@ -6,10 +6,21 @@
 #include "TimeIntervalAll.h"
 #include "TimeIntervalAlive.h"
 
-class CSpaceTimeCluster : public CCluster
-{
+class CSpaceTimeCluster : public CCluster {
+  private:
+    void                        Init() {TI=0;m_pCumCases=0;m_pCumMeasure=0;}
+    void                        Setup(IncludeClustersType eTIType, int nIntervals, int nIntervalCut);
+    
+  protected:
+    count_t                   * m_pCumCases;
+    measure_t                 * m_pCumMeasure;
+    int                         m_nTotalIntervals;
+    int                         m_nIntervalCut;
+    IncludeClustersType         m_nTIType;
+    CTimeIntervals            * TI;
+
   public:
-                CSpaceTimeCluster(int nTIType, int nIntervals, int nMaxIntervals, BasePrint *pPrintDirection);
+                CSpaceTimeCluster(IncludeClustersType eTIType, int nIntervals, int nIntervalCut, BasePrint *pPrintDirection);
     virtual     ~CSpaceTimeCluster();
 
     CSpaceTimeCluster         & operator =(const CSpaceTimeCluster& cluster);
@@ -25,14 +36,6 @@ class CSpaceTimeCluster : public CCluster
     virtual void                InitTimeIntervalIndeces(int nLow, int nHigh);
     virtual bool                SetNextProspTimeInterval();
     inline virtual bool         SetNextTimeInterval();
-
-  protected:
-    count_t                   * m_pCumCases;
-    measure_t                 * m_pCumMeasure;
-    int                         m_nTotalIntervals;
-    int                         m_nIntervalCut;
-    int                         m_nTIType;
-    CTimeIntervals            * TI;
 };
 //*****************************************************************************
 #endif

@@ -2,37 +2,16 @@
 #pragma hdrstop
 #include "SpaceTimeCluster.h"
 
-CSpaceTimeCluster::CSpaceTimeCluster(int nTIType, int nIntervals, int nIntervalCut, BasePrint *pPrintDirection)
-                  :CCluster(pPrintDirection)
-{
-   try
-      {
-      TI = 0;
-      m_pCumCases = 0;
-      m_pCumMeasure = 0;
-
-      switch (nTIType)
-      {
-        case (ALLCLUSTERS)   : TI = new CTIAll(nIntervals, nIntervalCut);   break;
-        case (ALIVECLUSTERS) : TI = new CTIAlive(nIntervals, nIntervalCut); break;
-        default              : break;
-      }
-
-      // need to keep both of these?
-      m_nTotalIntervals = nIntervals;
-      m_nIntervalCut    = nIntervalCut;
-      m_nTIType = nTIType;
-
-      m_pCumCases   = (count_t*) Smalloc((m_nTotalIntervals)*sizeof(count_t), gpPrintDirection);
-      m_pCumMeasure = (measure_t*) Smalloc((m_nTotalIntervals)*sizeof(measure_t), gpPrintDirection);
-
-      Initialize(0);
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("CSpaceTimeCluster()", "CSpaceTimeCluster");
-      throw;
-      }
+CSpaceTimeCluster::CSpaceTimeCluster(IncludeClustersType eTIType, int nIntervals, int nIntervalCut, BasePrint *pPrintDirection)
+                  :CCluster(pPrintDirection) {
+  try {
+    Init();
+    Setup(eTIType, nIntervals, nIntervalCut);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("constructor()","CSpaceTimeCluster");
+    throw;
+  }
 }
 
 CSpaceTimeCluster::~CSpaceTimeCluster()
@@ -185,6 +164,33 @@ bool CSpaceTimeCluster::SetNextTimeInterval()
                                  m_nLastInterval));
    return bRetVal;
 }
+
+/** internal setup function */
+void CSpaceTimeCluster::Setup(IncludeClustersType eTIType, int nIntervals, int nIntervalCut) {
+  try {
+    // need to keep both of these?
+    m_nTotalIntervals = nIntervals;
+    m_nIntervalCut    = nIntervalCut;
+    m_nTIType = eTIType;
+
+    switch (eTIType) {
+      case ALLCLUSTERS   : TI = new CTIAll(nIntervals, nIntervalCut);   break;
+      case ALIVECLUSTERS : TI = new CTIAlive(nIntervals, nIntervalCut); break;
+      default : ZdGenerateException("Unknown clusters type: '%d'.","Setup()", eTIType);
+    }
+    m_pCumCases   = (count_t*) Smalloc((m_nTotalIntervals)*sizeof(count_t), gpPrintDirection);
+    m_pCumMeasure = (measure_t*) Smalloc((m_nTotalIntervals)*sizeof(measure_t), gpPrintDirection);
+    Initialize(0);
+  }
+  catch (ZdException &x) {
+    delete TI;
+    free(m_pCumCases);
+    free(m_pCumMeasure);
+    x.AddCallpath("Setup()","CSpaceTimeCluster");
+    throw;
+  }
+}
+
 //------------------------------------------------------------------------------
 /*void CSpaceTimeCluster::Display(FILE* pFile)
 {

@@ -2,28 +2,16 @@
 #pragma hdrstop
 #include "PurelyTemporalCluster.h"
 
-CPurelyTemporalCluster::CPurelyTemporalCluster(int nTIType, int nIntervals, int nIntervalCut, BasePrint *pPrintDirection)
-                  :CCluster(pPrintDirection)
-{
-   try
-      {
-      m_TI = 0;
-      m_nTIType = nTIType;
-      switch (nTIType)
-         {
-         case (ALLCLUSTERS)   : m_TI = new CTIAll(nIntervals, nIntervalCut);   break;
-         case (ALIVECLUSTERS) : m_TI = new CTIAlive(nIntervals, nIntervalCut); break;
-         default              : break;
-         }
-      m_nTotalIntervals = nIntervals;
-      m_nIntervalCut    = nIntervalCut;
-      Initialize(0);
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("CPurelyTemporalCluster()", "CPurelyTemporalCluster");
-      throw;
-      }
+CPurelyTemporalCluster::CPurelyTemporalCluster(IncludeClustersType eTIType, int nIntervals, int nIntervalCut, BasePrint *pPrintDirection)
+                  :CCluster(pPrintDirection) {
+  try {
+    Init();
+    Setup(eTIType, nIntervals, nIntervalCut);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("constructor()","CPurelyTemporalCluster");
+    throw;
+  }
 }
 
 CPurelyTemporalCluster::~CPurelyTemporalCluster()
@@ -139,4 +127,23 @@ void CPurelyTemporalCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& D
       }
 }
 
+/** internal setup function */
+void CPurelyTemporalCluster::Setup(IncludeClustersType eTIType, int nIntervals, int nIntervalCut) {
+  try {
+    m_nTIType = eTIType;
+    m_nTotalIntervals = nIntervals;
+    m_nIntervalCut    = nIntervalCut;
+    switch (eTIType) {
+      case ALLCLUSTERS   : m_TI = new CTIAll(nIntervals, nIntervalCut);   break;
+      case ALIVECLUSTERS : m_TI = new CTIAlive(nIntervals, nIntervalCut); break;
+      default : ZdGenerateException("Unknown clusters type: '%d'.","Setup()", eTIType);
+    }
+    Initialize(0);
+  }
+  catch (ZdException &x) {
+    delete m_TI;
+    x.AddCallpath("Setup()","CPurelyTemporalCluster");
+    throw;
+  }
+}
 

@@ -9,17 +9,20 @@
 #include "Parameters.h"
 
 
-class CPurelyTemporalCluster : public CCluster
-{
+class CPurelyTemporalCluster : public CCluster {
+  private:
+    void                                Init() {m_TI=0;}
+    void                                Setup(IncludeClustersType eTIType, int nIntervals, int nIntervalCut);
+    
   protected:
-    int m_nTotalIntervals;
-    int m_nIntervalCut;
-    int m_nTIType;
+    int                                 m_nTotalIntervals;
+    int                                 m_nIntervalCut;
+    IncludeClustersType                 m_nTIType;
 
-    CTimeIntervals* m_TI;
+    CTimeIntervals                    * m_TI;
 
   public:
-    CPurelyTemporalCluster(int nTIType, int nIntervals, int nMaxIntervals, BasePrint *pPrintDirection);
+    CPurelyTemporalCluster(IncludeClustersType eTIType, int nIntervals, int nIntervalCut, BasePrint *pPrintDirection);
     virtual ~CPurelyTemporalCluster();
 
     CPurelyTemporalCluster& CPurelyTemporalCluster::operator =(const CPurelyTemporalCluster& cluster);
