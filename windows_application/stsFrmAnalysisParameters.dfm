@@ -25,7 +25,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbAnalysis
+    ActivePage = tbInputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -46,9 +46,9 @@ object frmAnalysis: TfrmAnalysis
       object Label21: TLabel
         Left = 24
         Top = 152
-        Width = 110
+        Width = 148
         Height = 13
-        Caption = 'Special Population File:'
+        Caption = 'Maximum Circle Population File:'
       end
       object GroupBox1: TGroupBox
         Left = 16
@@ -272,7 +272,7 @@ object frmAnalysis: TfrmAnalysis
           OnClick = rgCoordinatesClick
         end
       end
-      object edtSpecialPopulationFilename: TEdit
+      object edtMaxCirclePopulationFilename: TEdit
         Left = 24
         Top = 168
         Width = 273
@@ -280,7 +280,7 @@ object frmAnalysis: TfrmAnalysis
         ParentShowHint = False
         ShowHint = True
         TabOrder = 4
-        OnChange = edtSpecialPopulationFilenameChange
+        OnChange = edtMaxCirclePopulationFilenameChange
       end
       object Button1: TButton
         Left = 304
@@ -298,7 +298,7 @@ object frmAnalysis: TfrmAnalysis
         ParentShowHint = False
         ShowHint = True
         TabOrder = 5
-        OnClick = BrowseSpecialPopulationFileClick
+        OnClick = BrowseMaxCirclePopulationFileClick
       end
     end
     object tbAnalysis: TTabSheet

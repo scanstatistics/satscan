@@ -901,7 +901,7 @@ bool CSaTScanData::ReadPopulationFile() {
 
 /** Read the special population that will be used to construct circles
     about grid points(centroids).                                      */
-bool CSaTScanData::ReadSpecialPopulationFile() {
+bool CSaTScanData::ReadMaxCirclePopulationFile() {
   int                           iRecNum=0;
   bool                          bValid=true, bEmpty=true;
   tract_t                       TractIdentifierIndex;
@@ -910,13 +910,13 @@ bool CSaTScanData::ReadSpecialPopulationFile() {
   StringParser                  Parser;
 
   try {
-    gpPrint->SatScanPrintf("Reading the special population file\n");
-    if ((fp = fopen(m_pParameters->GetSpecialPopulationFileName().c_str(), "r")) == NULL) {
-      gpPrint->SatScanPrintWarning("Error: Could not open special population file:\n'%s'.\n",
-                                   m_pParameters->GetSpecialPopulationFileName().c_str());
+    gpPrint->SatScanPrintf("Reading the maximum circle population file\n");
+    if ((fp = fopen(m_pParameters->GetMaxCirclePopulationFileName().c_str(), "r")) == NULL) {
+      gpPrint->SatScanPrintWarning("Error: Could not open maximum circle population file:\n'%s'.\n",
+                                   m_pParameters->GetMaxCirclePopulationFileName().c_str());
       return false;
     }
-    gpPrint->SetImpliedInputFileType(BasePrint::SPECIALPOPFILE);
+    gpPrint->SetImpliedInputFileType(BasePrint::MAXCIRCLEPOPFILE);
 
     //initialize circle-measure array
     gvCircleMeasure.resize(m_nTracts, 0);
@@ -974,7 +974,7 @@ bool CSaTScanData::ReadSpecialPopulationFile() {
   catch (ZdException &x) {
     //close file pointer
     if (fp) fclose(fp);
-    x.AddCallpath("ReadSpecialPopulationFile()", "CSaTScanData");
+    x.AddCallpath("ReadMaxCirclePopulationFile()", "CSaTScanData");
     throw;
   }
   return bValid;

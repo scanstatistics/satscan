@@ -16,8 +16,8 @@ const char*      GRID_FILE_LINE                 	= "GridFile";
 const char*      USE_GRID_FILE_LINE             	= "UseGridFile";
 const char*      PRECISION_TIMES_LINE           	= "PrecisionCaseTimes";
 const char*      COORD_TYPE_LINE                	= "CoordinatesType";
-const char*      SPECIAL_POP_FILE_LINE                  = "SpecialPopulationFile";
-const char*      USE_SPECIAL_POP_FILE_LINE              = "UseSpecialPopulationFile";
+const char*      MAX_CIRCLE_POP_FILE_LINE               = "MaxCirclePopulationFile";
+const char*      USE_MAX_CIRCLE_POP_FILE_LINE           = "UseMaxCirclePopulationFile";
 
 const char*      ANALYSIS_SECTION               	= "[Analysis]";
 const char*      ANALYSIS_TYPE_LINE             	= "AnalysisType";
@@ -248,10 +248,9 @@ void CParameters::Copy(const CParameters &rhs) {
     gsCoordinatesFileName               = rhs.gsCoordinatesFileName;
     gsCoordinatesFileName               = rhs.gsCoordinatesFileName;
     gsSpecialGridFileName               = rhs.gsSpecialGridFileName;
-    gsSpecialGridFileName               = rhs.gsSpecialGridFileName;
     gbUseSpecialGridFile                = rhs.gbUseSpecialGridFile;
-    gsSpecialPopulationFileName         = rhs.gsSpecialPopulationFileName;
-    gbUseSpecialPopulationFile          = rhs.gbUseSpecialPopulationFile;
+    gsMaxCirclePopulationFileName       = rhs.gsMaxCirclePopulationFileName;
+    gbUseMaxCirclePopulationFile        = rhs.gbUseMaxCirclePopulationFile;
     gePrecisionOfTimesType              = rhs.gePrecisionOfTimesType;
     giDimensionsOfData                  = rhs.giDimensionsOfData;
     geCoordinatesType                   = rhs.geCoordinatesType;
@@ -363,8 +362,8 @@ void CParameters::DisplayParameters(FILE* fp) const {
       default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayParameters()", geProbabiltyModelType);
     }
 
-    if (gbUseSpecialPopulationFile)
-      fprintf(fp, "  Special Population File : %s\n", gsSpecialPopulationFileName.c_str());
+    if (gbUseMaxCirclePopulationFile)
+      fprintf(fp, "  Maximum Circle Population File : %s\n", gsMaxCirclePopulationFileName.c_str());
     fprintf(fp, "  Coordinates File        : %s\n", gsCoordinatesFileName.c_str());
     if (gbUseSpecialGridFile)
       fprintf(fp, "  Special Grid File       : %s\n", gsSpecialGridFileName.c_str());
@@ -715,8 +714,8 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
 	case INTERVAL_STARTRANGE       : sParameterLineLabel = STARTRANGE_LINE; break;			
 	case INTERVAL_ENDRANGE         : sParameterLineLabel = ENDRANGE_LINE; break;			
         case TIMETRENDCONVRG           : sParameterLineLabel = TIME_TREND_CONVERGENCE_LINE; break;
-        case SPECIALPOPFILE            : sParameterLineLabel = SPECIAL_POP_FILE_LINE; break;
-        case USESPECIALPOPFILE         : sParameterLineLabel = USE_SPECIAL_POP_FILE_LINE; break;
+        case MAXCIRCLEPOPFILE          : sParameterLineLabel = MAX_CIRCLE_POP_FILE_LINE; break;
+        case USEMAXCIRCLEPOPFILE       : sParameterLineLabel = USE_MAX_CIRCLE_POP_FILE_LINE; break;
         default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLineLabel()", eParameterType);
       };
     }
@@ -985,8 +984,8 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case INTERVAL_ENDRANGE         : sDefaultValue.printf("%s,%s", gsEndRangeStartDate.c_str(), gsEndRangeEndDate.c_str());
                                        break;
       case TIMETRENDCONVRG	     : sDefaultValue = gbTimeTrendConverge; break;
-      case SPECIALPOPFILE            : sDefaultValue = "<blank>"; break;
-      case USESPECIALPOPFILE         : sDefaultValue = (gbUseSpecialPopulationFile ? YES : NO); break;
+      case MAXCIRCLEPOPFILE          : sDefaultValue = "<blank>"; break;
+      case USEMAXCIRCLEPOPFILE       : sDefaultValue = (gbUseMaxCirclePopulationFile ? YES : NO); break;
       default : ZdException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -1410,8 +1409,8 @@ void CParameters::ReadInputFilesSection(ZdIniFile& file, BasePrint & PrintDirect
     ReadIniParameter(*pSection, GRID_FILE_LINE, GRIDFILE, PrintDirection);
     ReadIniParameter(*pSection, PRECISION_TIMES_LINE, PRECISION, PrintDirection);
     ReadIniParameter(*pSection, COORD_TYPE_LINE, COORDTYPE, PrintDirection);
-    ReadIniParameter(*pSection, USE_SPECIAL_POP_FILE_LINE, USESPECIALPOPFILE, PrintDirection);
-    ReadIniParameter(*pSection, SPECIAL_POP_FILE_LINE, SPECIALPOPFILE, PrintDirection);
+    ReadIniParameter(*pSection, USE_MAX_CIRCLE_POP_FILE_LINE, USEMAXCIRCLEPOPFILE, PrintDirection);
+    ReadIniParameter(*pSection, MAX_CIRCLE_POP_FILE_LINE, MAXCIRCLEPOPFILE, PrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadInputFilesSection()", "CParameters");
@@ -1548,8 +1547,8 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case INTERVAL_STARTRANGE       : ReadStartIntervalRange(sParameter); break;
       case INTERVAL_ENDRANGE         : ReadEndIntervalRange(sParameter); break;
       case TIMETRENDCONVRG           : SetTimeTrendConvergence(ReadDouble(sParameter, eParameterType)); break;
-      case USESPECIALPOPFILE         : SetUseSpecialPopulationFile(ReadBoolean(sParameter, eParameterType)); break;
-      case SPECIALPOPFILE            : SetSpecialPopulationFileName(sParameter.GetCString(), true); break;
+      case USEMAXCIRCLEPOPFILE       : SetUseMaxCirclePopulationFile(ReadBoolean(sParameter, eParameterType)); break;
+      case MAXCIRCLEPOPFILE          : SetMaxCirclePopulationFileName(sParameter.GetCString(), true); break;
       default : ZdException::Generate("Unknown parameter enumeration %d.","ReadParameter()", eParameterType);
     };
   }
@@ -1615,7 +1614,7 @@ void CParameters::ReadScanningLineParameterFile(const char * sParameterFileName,
            if (!((ParameterType)iLinesRead == CASEFILE || (ParameterType)iLinesRead == POPFILE ||
                  (ParameterType)iLinesRead == COORDFILE || (ParameterType)iLinesRead == OUTPUTFILE ||
                  (ParameterType)iLinesRead == GRIDFILE || (ParameterType)iLinesRead == CONTROLFILE ||
-                 (ParameterType)iLinesRead == SPECIALPOPFILE)) {
+                 (ParameterType)iLinesRead == MAXCIRCLEPOPFILE)) {
               if ((iPos = sLineBuffer.Find("//")) > -1)
                 sLineBuffer.Truncate(iPos);
            }
@@ -1845,8 +1844,8 @@ void CParameters::SaveInputFileSection(ZdIniFile& file) {
     pSection->AddLine(CONTROL_FILE_LINE, gsControlFileName.c_str());
     pSection->AddLine(POP_FILE_LINE, gsPopulationFileName.c_str());
     pSection->AddComment(" use special population file? (y/n)");
-    pSection->AddLine(USE_SPECIAL_POP_FILE_LINE, gbUseSpecialPopulationFile ? YES : NO);
-    pSection->AddLine(SPECIAL_POP_FILE_LINE, gsSpecialPopulationFileName.c_str());
+    pSection->AddLine(USE_MAX_CIRCLE_POP_FILE_LINE, gbUseMaxCirclePopulationFile ? YES : NO);
+    pSection->AddLine(MAX_CIRCLE_POP_FILE_LINE, gsMaxCirclePopulationFileName.c_str());
     pSection->AddLine(COORD_FILE_LINE, gsCoordinatesFileName.c_str());
     pSection->AddLine(GRID_FILE_LINE, gsSpecialGridFileName.c_str());
     pSection->AddComment(" use special grid file? (y/n)");
@@ -2114,11 +2113,11 @@ void CParameters::SetDefaults() {
   gsPopulationFileName                  = "";
   gsCoordinatesFileName                 = "";
   gsOutputFileName                      = "";
-  gsSpecialPopulationFileName           = "";
+  gsMaxCirclePopulationFileName         = "";
   gePrecisionOfTimesType                = YEAR;
   giDimensionsOfData                    = 0;
   gbUseSpecialGridFile                  = false;
-  gbUseSpecialPopulationFile            = false;
+  gbUseMaxCirclePopulationFile          = false;
   gsSpecialGridFileName                 = "";
   gfMaxGeographicClusterSize            = 50.0; //GG980716
   geMaxGeographicClusterSizeType        = PERCENTAGEOFMEASURETYPE;
@@ -2540,30 +2539,30 @@ void CParameters::SetSpecialGridFileName(const char * sSpecialGridFileName, bool
   }
 }
 
-/** Sets special population data file name.
+/** Sets maximum circle population data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
-void CParameters::SetSpecialPopulationFileName(const char * sSpecialPopulationFileName, bool bCorrectForRelativePath, bool bSetUsingFlag) {
+void CParameters::SetMaxCirclePopulationFileName(const char * sMaxCirclePopulationFileName, bool bCorrectForRelativePath, bool bSetUsingFlag) {
   try {
-    if (! sSpecialPopulationFileName)
-      ZdGenerateException("Null pointer.", "SetSpecialPopulationFileName()");
+    if (! sMaxCirclePopulationFileName)
+      ZdGenerateException("Null pointer.", "SetMaxCirclePopulationFileName()");
 
-    gsSpecialPopulationFileName = sSpecialPopulationFileName;
+    gsMaxCirclePopulationFileName = sMaxCirclePopulationFileName;
     if (bCorrectForRelativePath)
-      ConvertRelativePath(gsSpecialPopulationFileName);
+      ConvertRelativePath(gsMaxCirclePopulationFileName);
 
-    if (gsSpecialPopulationFileName.empty())
-      gbUseSpecialPopulationFile = false; //If empty, then definately not using special grid.
+    if (gsMaxCirclePopulationFileName.empty())
+      gbUseMaxCirclePopulationFile = false; //If empty, then definately not using special grid.
     else if (bSetUsingFlag)
-      gbUseSpecialPopulationFile = true;
-      //Permits setting special population filename in GUI interface
-      //where obviously the use of special population file is the desire.
-      //else gbUseSpecialPopulationFile is as set from parameters read. This permits
+      gbUseMaxCirclePopulationFile = true;
+      //Permits setting maximum circle population filename in GUI interface
+      //where obviously the use of maximum circle population file is the desire.
+      //else gbUseMaxCirclePopulationFile is as set from parameters read. This permits
       //the situation where user has modified the paramters file manually so that
-      //there is a named special population file but they turned off option to use it.
+      //there is a named maximum circle population file but they turned off option to use it.
   }
   catch (ZdException &x) {
-    x.AddCallpath("SetSpecialPopulationFileName()", "CParameters");
+    x.AddCallpath("SetMaxCirclePopulationFileName()", "CParameters");
     throw;
   }
 }
@@ -2859,6 +2858,18 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
       PrintDirection.SatScanPrintWarning("Error: Special Grid file '%s' does not exist.\n", gsSpecialGridFileName.c_str());
       PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
     }
+    //validate special population file
+    if (!(geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
+      if (gbUseMaxCirclePopulationFile && gsMaxCirclePopulationFileName.empty()) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Settings indicate to use a Maximum Circle Population file, but file name not specified.\n");
+      }
+      else if (gbUseMaxCirclePopulationFile && access(gsMaxCirclePopulationFileName.c_str(), 00)) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Maximum Circle Population file '%s' does not exist.\n", gsMaxCirclePopulationFileName.c_str());
+        PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+      }
+    }  
     //validate output file
     if (gsOutputFileName.empty()) {
       bValid = false;

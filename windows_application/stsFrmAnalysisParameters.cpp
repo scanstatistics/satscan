@@ -1172,7 +1172,7 @@ void TfrmAnalysis::SaveTextParameters() {
     gParameters.SetPopulationFileName(edtPopFileName->Text.c_str());
     gParameters.SetCoordinatesFileName(edtCoordinateFileName->Text.c_str());
     gParameters.SetSpecialGridFileName(edtGridFileName->Text.c_str(), false, true);
-    gParameters.SetSpecialPopulationFileName(edtSpecialPopulationFilename->Text.c_str(), false, true);
+    gParameters.SetMaxCirclePopulationFileName(edtMaxCirclePopulationFilename->Text.c_str(), false, true);
     //Analysis Tab
     sString.printf("%i/%i/%i", atoi(edtStartYear->Text.c_str()), atoi(edtStartMonth->Text.c_str()), atoi(edtStartDay->Text.c_str()));
     gParameters.SetStudyPeriodStartDate(sString.GetCString());
@@ -1259,9 +1259,9 @@ void TfrmAnalysis::SetSpecialGridFile(const char * sSpecialGridFileName) {
 }
 
 /** Sets special population filename in interface and parameters class. */
-void TfrmAnalysis::SetSpecialPopulationFile(const char * sSpecialPopulationFileName) {
-  gParameters.SetSpecialPopulationFileName(sSpecialPopulationFileName, false, true);
-  edtSpecialPopulationFilename->Text = sSpecialPopulationFileName;
+void TfrmAnalysis::SetMaximumCirclePopulationFile(const char * sMaximumCirclePopulationFileName) {
+  gParameters.SetMaxCirclePopulationFileName(sMaximumCirclePopulationFileName, false, true);
+  edtMaxCirclePopulationFilename->Text = sMaximumCirclePopulationFileName;
 }
 
 /** Internal setup */
@@ -1308,7 +1308,7 @@ void TfrmAnalysis::SetupInterface() {
     edtControlFileName->Text = gParameters.GetControlFileName().c_str();
     rgPrecisionTimes->ItemIndex = gParameters.GetPrecisionOfTimesType();
     edtPopFileName->Text = gParameters.GetPopulationFileName().c_str();
-    edtSpecialPopulationFilename->Text = gParameters.GetSpecialPopulationFileName().c_str();
+    edtMaxCirclePopulationFilename->Text = gParameters.GetMaxCirclePopulationFileName().c_str();
     edtCoordinateFileName->Text = gParameters.GetCoordinatesFileName().c_str();
     edtGridFileName->Text = gParameters.GetSpecialGridFileName().c_str();
     rgCoordinates->ItemIndex = gParameters.GetCoordinatesType();
@@ -1756,15 +1756,15 @@ void __fastcall TfrmAnalysis::FormActivate(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TfrmAnalysis::BrowseSpecialPopulationFileClick(TObject *Sender) {
+void __fastcall TfrmAnalysis::BrowseMaxCirclePopulationFileClick(TObject *Sender) {
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.pop";
-    OpenDialog1->Filter = "Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog1->Filter = "Maximum Circle Population files (*.max)|*.max|Text files (*.txt)|*.txt|All files (*.*)|*.*";
     OpenDialog1->FilterIndex = 0;
-    OpenDialog1->Title = "Select Special Population File";
+    OpenDialog1->Title = "Select Maximum Circle Population File";
     if (OpenDialog1->Execute())
-      SetSpecialPopulationFile(OpenDialog1->FileName.c_str());
+      SetMaximumCirclePopulationFile(OpenDialog1->FileName.c_str());
   }
   catch (ZdException & x) {
     x.AddCallpath("btnPopBrowseClick()", "TfrmAnalysis");
@@ -1772,9 +1772,8 @@ void __fastcall TfrmAnalysis::BrowseSpecialPopulationFileClick(TObject *Sender) 
   }
 }
 //---------------------------------------------------------------------------
-
-void __fastcall TfrmAnalysis::edtSpecialPopulationFilenameChange(TObject *Sender) {
-  edtSpecialPopulationFilename->Hint = edtSpecialPopulationFilename->Text;
+void __fastcall TfrmAnalysis::edtMaxCirclePopulationFilenameChange(TObject *Sender) {
+  edtMaxCirclePopulationFilename->Hint = edtMaxCirclePopulationFilename->Text;
 }
 //---------------------------------------------------------------------------
 

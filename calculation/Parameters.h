@@ -18,8 +18,8 @@ extern const char*      CONTROL_FILE_LINE;
 extern const char*      USE_GRID_FILE_LINE;
 extern const char*      PRECISION_TIMES_LINE;
 extern const char*      COORD_TYPE_LINE;
-extern const char*      SPECIAL_POP_FILE_LINE;
-extern const char*      USE_SPECIAL_POP_FILE_LINE;
+extern const char*      MAX_CIRCLE_POP_FILE_LINE;
+extern const char*      USE_MAX_CIRCLE_POP_FILE_LINE;
 
 /** analysis ini section */
 extern const char*      ANALYSIS_SECTION;
@@ -126,7 +126,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     CRITERIA_SECOND_CLUSTERS, MAX_TEMPORAL_TYPE, MAX_SPATIAL_TYPE,
                                     RUN_HISTORY_FILENAME, OUTPUT_MLC_DBASE, OUTPUT_AREAS_DBASE, OUTPUT_RR_DBASE,
                                     OUTPUT_SIM_LLR_DBASE, DUCZMAL_COMPACTNESS, INTERVAL_STARTRANGE, 
-                                    INTERVAL_ENDRANGE, TIMETRENDCONVRG, SPECIALPOPFILE, USESPECIALPOPFILE};
+                                    INTERVAL_ENDRANGE, TIMETRENDCONVRG, MAXCIRCLEPOPFILE, USEMAXCIRCLEPOPFILE};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL, PURELYSPATIALMONOTONE};
@@ -209,8 +209,8 @@ class CParameters {
     std::string                         gsCoordinatesFileName;                  /** coordinates data source filename */
     std::string                         gsSpecialGridFileName;                  /** special grid data source filename */
     bool                                gbUseSpecialGridFile;                   /** indicator of special grid file usage */
-    std::string                         gsSpecialPopulationFileName;            /** special population file for constructing circles only */
-    bool                                gbUseSpecialPopulationFile;             /** indicator of special population file usage */
+    std::string                         gsMaxCirclePopulationFileName;           /** special population file for constructing circles only */
+    bool                                gbUseMaxCirclePopulationFile;           /** indicator of special population file usage */
     std::string                         gsOutputFileName;                       /** results output filename */
     ZdString                            gsRunHistoryFilename;                   /** run history filename */
     bool                                gbLogRunHistory;                        /** indicates whether to log history */
@@ -351,7 +351,7 @@ class CParameters {
     const ZdString                    & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
     double                              GetSequentialCutOffPValue() {return gbSequentialCutOffPValue;}
     const std::string                 & GetSpecialGridFileName() const {return gsSpecialGridFileName;}
-    const std::string                 & GetSpecialPopulationFileName() const {return gsSpecialPopulationFileName;}
+    const std::string                 & GetMaxCirclePopulationFileName() const {return gsMaxCirclePopulationFileName;}
     const std::string                 & GetSourceFileName() const {return gsParametersSourceFileName;}
     const std::string                 & GetStartRangeEndDate() const {return gsStartRangeEndDate;}
     Julian                              GetStartRangeDateAsJulian(const std::string & sStartRangeDate) /*const*/;
@@ -382,6 +382,7 @@ class CParameters {
     void                                SetIncludePurelySpatialClusters(bool b) {gbIncludePurelySpatialClusters = b;}
     void                                SetIncludePurelyTemporalClusters(bool b) {gbIncludePurelyTemporalClusters = b;}
     void                                SetIsLoggingHistory(bool b) {gbLogRunHistory = b;}
+    void                                SetMaxCirclePopulationFileName(const char * sMaxCirclePopulationFileName, bool bCorrectForRelativePath=false, bool bSetUsingFlag=false);
     void                                SetMaximumGeographicClusterSize(float fMaxGeographicClusterSize);
     void                                SetMaximumSpacialClusterSizeType(SpatialSizeType eSpatialSizeType);
     void                                SetMaximumTemporalClusterSize(float fMaxTemporalClusterSize);
@@ -409,11 +410,10 @@ class CParameters {
     void                                SetRiskType(RiskType eRiskType);
     void                                SetRunHistoryFilename(const ZdString& sFilename) {gsRunHistoryFilename = sFilename;}
     void                                SetSequentialScanning(bool b) {gbSequentialRuns = b;}
-    void                                SetSequentialCutOffPValue(double dPValue); 
+    void                                SetSequentialCutOffPValue(double dPValue);
     void                                SetSpecialGridFileName(const char * sSpecialGridFileName, bool bCorrectForRelativePath=false, bool bSetUsingFlag=false);
-    void                                SetSpecialPopulationFileName(const char * sSpecialPopulationFileName, bool bCorrectForRelativePath=false, bool bSetUsingFlag=false);
+    bool                                UseMaxCirclePopulationFile() const {return gbUseMaxCirclePopulationFile;}
     bool                                UseSpecialGrid() const {return gbUseSpecialGridFile;}
-    bool                                UseSpecialPopulationFile() const {return gbUseSpecialPopulationFile;}
     void                                SetStartRangeEndDate(const char * sStartRangeEndDate);
     void                                SetStartRangeStartDate(const char * sStartRangeStartDate);
     void                                SetStudyPeriodEndDate(const char * sStudyPeriodEndDate);
@@ -424,7 +424,7 @@ class CParameters {
     void                                SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                                SetTimeTrendConvergence(double dTimeTrendConvergence);
     void                                SetUseSpecialGrid(bool b) {gbUseSpecialGridFile = b;}
-    void                                SetUseSpecialPopulationFile(bool b) {gbUseSpecialPopulationFile = b;}
+    void                                SetUseMaxCirclePopulationFile(bool b) {gbUseMaxCirclePopulationFile = b;}
     void                                SetValidatePriorToCalculation(bool b) {gbValidatePriorToCalc = b;}
     bool                                ValidateParameters(BasePrint & PrintDirection);
     void                                Write(const char * sParameterFileName);
