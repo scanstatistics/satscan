@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     if (Parameters.GetErrorOnRead()) {
       sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
-      SSGenerateException(sMessage.GetCString(),"main(int,char*)");
+      GenerateResolvableException(sMessage.GetCString(),"main(int,char*)");
     }
     // read options
     for (i=2; i < argc; ++i) {
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
     if (! Parameters.ValidateParameters(ConsolePrint)) {
       sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
-      SSGenerateException(sMessage.GetCString(),"main(int,char*)");
+      GenerateResolvableException(sMessage.GetCString(),"main(int,char*)");
     }
     //create analysis runner object
     AnalysisRunner  Runner(Parameters, RunTime, ConsolePrint);
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
                                Parameters.GetOutputFileName().c_str());
     BasisExit();
   }
-  catch (SSException & x) {
+  catch (ResolvableException & x) {
     ConsolePrint.SatScanPrintf(x.GetErrorMessage());
     ConsolePrint.SatScanPrintf("\n\nJob cancelled.");
     BasisExit();

@@ -406,12 +406,12 @@ int TractHandler::tiInsertTnode(const char *tid, std::vector<double>& vCoordinat
     //check for tract identifier is duplicates map
     itrmap = gmDuplicateTracts.find(std::string(tid));
     if (itrmap != gmDuplicateTracts.end())
-      SSGenerateException("Error: Location ID '%s' is specified multiple times in coordinates file.", "tiInsertTnode()", tid);
+      GenerateResolvableException("Error: Location ID '%s' is specified multiple times in the coordinates file.", "tiInsertTnode()", tid);
     else {//search for tract identifier in vector
       gpSearchTractDescriptor->SetTractIdentifier(tid);
       itrPosition = lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), gpSearchTractDescriptor, CompareTractDescriptorIdentifier());
       if (itrPosition != gvTractDescriptors.end() && !strcmp((*itrPosition)->GetTractIdentifier(),tid))
-        SSGenerateException("Error: Location ID '%s' is specified multiple times in coordinates file.", "tiInsertTnode()", tid);
+        GenerateResolvableException("Error: Location ID '%s' is specified multiple times in the coordinates file.", "tiInsertTnode()", tid);
     }
 
     //check that coordinates are not duplicate

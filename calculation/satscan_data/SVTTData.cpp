@@ -147,8 +147,8 @@ void CSVTTData::SetAdditionalCaseArrays(RealDataStream & thisStream) {
 void CSVTTData::SetNumTimeIntervals() {
   CSaTScanData::SetNumTimeIntervals();
   if (m_nTimeIntervals <= 1)
-    SSGenerateException("Error: A spatial variation of temporal trends analysis requires\n"
-                        "       more than one time interval.\n", "SetNumTimeIntervals()");
+    GenerateResolvableException("Error: A spatial variation of temporal trends analysis requires\n"
+                                "       more than one time interval.\n", "SetNumTimeIntervals()");
 }
 
 /** allocates probability model */

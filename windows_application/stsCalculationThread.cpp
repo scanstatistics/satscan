@@ -66,7 +66,7 @@ void __fastcall CalcThread::Execute() {
 
     time(&RunTime);         // Pass to analysis to include in report
     if (!const_cast<CParameters*>(gpParameters)->ValidateParameters(*gpPrintWindow))
-       SSGenerateException("\nInvalid parameter(s) encountered. Job cancelled.", "Execute()");
+       GenerateResolvableException("\nInvalid parameter(s) encountered. Job cancelled.", "Execute()");
 
     //create analysis runner object
     AnalysisRunner  Runner(*gpParameters, RunTime, *gpPrintWindow);
@@ -89,7 +89,7 @@ void __fastcall CalcThread::Execute() {
       // with it(i.e. we won't we accessing gpFormStatus anymore).
       Synchronize((TThreadMethod)&ProcessAcknowledgesCancellation);
   }
-  catch (SSException &x) {
+  catch (ResolvableException &x) {
     //handle exceptions that occured from user or data errors
     x.AddCallpath("Execute()", "CalcThread");
     gpPrintWindow->SatScanPrintWarning(x.GetErrorMessage());
@@ -115,7 +115,7 @@ void __fastcall CalcThread::Execute() {
   catch (ZdException &x) {
     //handle exceptions that occured from unexcepted program error
     x.AddCallpath("Execute()", "CalcThread");
-    gpPrintWindow->SatScanPrintWarning("\nProgram Error:\n");
+    gpPrintWindow->SatScanPrintWarning("\nProgram Error Detected:\n");
     gpPrintWindow->SatScanPrintWarning(x.GetErrorMessage());
     gsProgramErrorCallPath = x.GetCallpath();
     Synchronize((TThreadMethod)&SetProgramErrorCallPath);
