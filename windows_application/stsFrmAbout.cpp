@@ -30,7 +30,7 @@ void __fastcall TfrmAbout::lblWebSiteClick(TObject *Sender) {
 /** internal setup function */
 void TfrmAbout::Setup() {
   try {
-    lblVersion->Caption = AnsiString("SaTScan v") + VERSION_NUMBER;
+    lblVersion->Caption = AnsiString("SaTScan v") + VERSION_NUMBER + " " + VERSION_PHASE;
     lblVersion->Width = 440;
     lblTitle->Width = 440;
     lblReleaseDate->Caption = AnsiString("Release Date: ") + VERSION_DATE;

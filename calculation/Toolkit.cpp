@@ -103,6 +103,8 @@ bool SaTScanToolkit::GetLogRunHistory() const {
 const char * SaTScanToolkit::GetAcknowledgment(ZdString & Acknowledgment) const {
   try {
     Acknowledgment << ZdString::reset << "You are running SaTScan v" << VERSION_NUMBER;
+    if (strlen(VERSION_PHASE))
+      Acknowledgment << " " << VERSION_PHASE;
     Acknowledgment << ".\n\nSaTScan is free, available for download from ";
     Acknowledgment << GetWebSite() << ".\nIt may be used free of charge as long as proper ";
     Acknowledgment << "citations are given\nto both the SaTScan software and the underlying ";
