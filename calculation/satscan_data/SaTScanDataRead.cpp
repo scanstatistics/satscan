@@ -346,9 +346,8 @@ bool CSaTScanData::ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, c
       }
     }
     else if (m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
-      // For the Bernoulli model, ignore covariates in the case and control files
-      // -- this feature needs further design consideration, may never be implemented
-      //    because algorithm may cause execution time to be too long. 
+      //For the Bernoulli model, ignore covariates in the case and control files
+      //All population categories are aggregated in one category.
       iCategoryIndex = 0;
     }
     else if (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION) {
@@ -809,18 +808,21 @@ bool CSaTScanData::ReadCounts(FILE * fp, const char* szDescription) {
                     pCategoryCounts->GetArray()[i][TractIndex][iCategoryIndex] += Count;
                  break;
                case BERNOULLI :
-                 if (iCategoryIndex >= static_cast<int>(pCategoryCounts->Get3rdDimension()))
-                   pCategoryCounts->ExpandThirdDimension(0);
-                 pCategoryCounts->GetArray()[0][TractIndex][iCategoryIndex] += Count;
-                 for (i=1; Date >= m_pIntervalStartTimes[i]; ++i)
-                    pCategoryCounts->GetArray()[i][TractIndex][iCategoryIndex] += Count;
-                 if (m_pParameters->GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION) {
-                   if (iCategoryIndex >= static_cast<int>(pCountsByTimeByCategory->Get2ndDimension()))
-                     pCountsByTimeByCategory->ExpandSecondDimension(0);
-                   pCountsByTimeByCategory->GetArray()[0][iCategoryIndex] += Count;
-                   for (i=1; Date >= m_pIntervalStartTimes[i]; ++i)
-                      pCountsByTimeByCategory->GetArray()[i][iCategoryIndex] += Count;
-                 }
+                 //if probability model is Bernoulli, ignore covariates -- this feature was in-place
+                 //but further enhancements we realized, requiring it to be held off
+
+                 //if (iCategoryIndex >= static_cast<int>(pCategoryCounts->Get3rdDimension()))
+                 //  pCategoryCounts->ExpandThirdDimension(0);
+                 //pCategoryCounts->GetArray()[0][TractIndex][iCategoryIndex] += Count;
+                 //for (i=1; Date >= m_pIntervalStartTimes[i]; ++i)
+                 //   pCategoryCounts->GetArray()[i][TractIndex][iCategoryIndex] += Count;
+                 //if (m_pParameters->GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION) {
+                 //  if (iCategoryIndex >= static_cast<int>(pCountsByTimeByCategory->Get2ndDimension()))
+                 //    pCountsByTimeByCategory->ExpandSecondDimension(0);
+                 //  pCountsByTimeByCategory->GetArray()[0][iCategoryIndex] += Count;
+                 //  for (i=1; Date >= m_pIntervalStartTimes[i]; ++i)
+                 //    pCountsByTimeByCategory->GetArray()[i][iCategoryIndex] += Count;
+                 //}
                  break;
              }
            }
