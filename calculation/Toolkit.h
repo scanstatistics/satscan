@@ -44,6 +44,7 @@ class SaTScanToolkit : public BToolkit {
    const ParameterHistory_t   & GetParameterHistory() const {return gvParameterHistory;}
    const char                 * GetRunHistoryFileName() /*const*/;
    const char                 * GetSubstantiveSupportEmail() const;
+   const char                 * GetSystemIniFileName() const {return gsSystemIniFileName;}  
    const char                 * GetTechnicalSupportEmail() const;
    const char                 * GetWebSite() const;
 };
