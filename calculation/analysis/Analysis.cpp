@@ -572,6 +572,8 @@ bool CAnalysis::FinalizeReport(time_t RunTime)
 
 bool CAnalysis::FindTopClusters()
 {
+   bool         bReturn=true;
+   
    try {
       DisplayFindClusterHeading();
 
@@ -591,7 +593,7 @@ bool CAnalysis::FindTopClusters()
 
       //PrintTopClusters(m_pData->m_nGridTracts);
       if (gpPrintDirection->GetIsCanceled())
-         SSGenerateException(" ", " ");
+         bReturn = false;
       else
          RankTopClusters();          // DTG  -- MODIFY THIS FUNCTION !!!!!!!!
       //PrintTopClusters(m_nClustersRetained);
@@ -600,7 +602,7 @@ bool CAnalysis::FindTopClusters()
       x.AddCallpath("FindTopClusters()", "CAnalysis");
       throw;
    }
-  return true;
+  return bReturn;
 }
 
 // function to access the coordinate type
