@@ -179,7 +179,7 @@ void CParameters::ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporal
   try {
     dTimeBetween = TimeBetween(GetStudyPeriodStartDateAsJulian(), GetStudyPeriodEndDateAsJulian(), geTimeIntervalUnitsType);
     if (dTimeBetween <= 0)
-      SSException::Generate("Invalid study period with start date '%s' and end date '%s'.",
+      SSException::Generate("Invalid study period with start date '%s' and end date '%s'.\n",
                             "ConvertMaxTemporalClusterSizeToType()", gsStudyPeriodStartDate.c_str(), gsStudyPeriodEndDate.c_str());
 
     // store intial type and size for parameter output display
@@ -203,7 +203,7 @@ void CParameters::ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporal
                                  //gfMaxTemporalClusterSize should be an integer from 1-90
                                  gfMaxTemporalClusterSize = dTimeBetween * gfMaxTemporalClusterSize/100;
                                  break;
-       default                 : SSException::Generate("Unknown TemporalSizeType type %d", "ConvertMaxTemporalClusterSizeToType()", eTemporalSizeType);
+       default                 : SSException::Generate("Unknown TemporalSizeType type %d.\n", "ConvertMaxTemporalClusterSizeToType()", eTemporalSizeType);
     };
     geMaxTemporalClusterSizeType = eTemporalSizeType;
   }
@@ -320,7 +320,7 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
       case PURELYTEMPORAL       : fprintf(fp, "Purely Temporal analysis\n"); break;
       case SPACETIME            : fprintf(fp, "Retrospective Space-Time analysis\n"); break;
       case PROSPECTIVESPACETIME : fprintf(fp, "Prospective Space-Time analysis\n"); break;
-      default : ZdException::Generate("Unknown analysis type '%d'.", "DisplayAnalysisType()", geAnalysisType);
+      default : ZdException::Generate("Unknown analysis type '%d'.\n", "DisplayAnalysisType()", geAnalysisType);
     }
 
     fprintf(fp, "scanning for ");
@@ -334,14 +334,14 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
       case HIGH       : fprintf(fp, "high rates"); break;
       case LOW        : fprintf(fp, "low rates"); break;
       case HIGHANDLOW : fprintf(fp, "high or low rates"); break;
-      default : ZdException::Generate("Unknown area scan rate type '%d'.", "DisplayAnalysisType()", geAreaScanRate);
+      default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "DisplayAnalysisType()", geAreaScanRate);
     }
 
     switch (geProbabiltyModelType) {
       case POISSON              :  fprintf(fp, " using the Poisson model.\n"); break;
       case BERNOULLI            :  fprintf(fp, " using the Bernoulli model.\n"); break;
       case SPACETIMEPERMUTATION : fprintf(fp, " using the Space-Time Permutation model.\n"); break;
-      default : ZdException::Generate("Unknown probabilty model type '%d'.", "DisplayAnalysisType()", geProbabiltyModelType);
+      default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayAnalysisType()", geProbabiltyModelType);
     }
 
     if (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME) {
@@ -382,7 +382,7 @@ void CParameters::DisplayParameters(FILE* fp) const {
       case SPACETIMEPERMUTATION : if (geMaxGeographicClusterSizeType == PERCENTAGEOFMEASURETYPE)
                                     fprintf(fp, "  Population File  : %s\n", gsPopulationFileName.c_str());
                                   break;
-      default : ZdException::Generate("Unknown probabilty model type '%d'.", "DisplayParameters()", geProbabiltyModelType);
+      default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayParameters()", geProbabiltyModelType);
     }
 
     fprintf(fp, "  Coordinates File : %s\n", gsCoordinatesFileName.c_str());
@@ -395,7 +395,7 @@ void CParameters::DisplayParameters(FILE* fp) const {
     switch (geCoordinatesType) {
       case CARTESIAN : fprintf(fp, "Cartesian\n"); break;
       case LATLON    : fprintf(fp, "Latitude/Longitude\n"); break;
-      default : ZdException::Generate("Unknown coordinated type '%d'.", "DisplayParameters()", geCoordinatesType);
+      default : ZdException::Generate("Unknown coordinated type '%d'.\n", "DisplayParameters()", geCoordinatesType);
     }
 
     fprintf(fp, "\nAnalysis\n");
@@ -409,7 +409,7 @@ void CParameters::DisplayParameters(FILE* fp) const {
       case HIGH       : fprintf(fp, "High Rates\n"); break;
       case LOW        : fprintf(fp, "Low Rates\n"); break;
       case HIGHANDLOW : fprintf(fp, "High or Low Rates\n"); break;
-      default : ZdException::Generate("Unknown area scan rate type '%d'.", "DisplayParameters()", geAreaScanRate);
+      default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "DisplayParameters()", geAreaScanRate);
     }
 
     fprintf(fp, "\n  Start Date : %s\n", gsStudyPeriodStartDate.c_str());
@@ -438,7 +438,7 @@ void CParameters::DisplayParameters(FILE* fp) const {
       switch (geMaxGeographicClusterSizeType) {
         case PERCENTAGEOFMEASURETYPE : fprintf(fp, " %%\n"); break;
         case DISTANCETYPE            : fprintf(fp, (geCoordinatesType == CARTESIAN ? " Cartesian Units\n" : " km\n")); break;
-        default : ZdException::Generate("Unknown maximum spatial cluster size type '%d'.", "DisplayParameters()", geMaxGeographicClusterSizeType);
+        default : ZdException::Generate("Unknown maximum spatial cluster size type '%d'.\n", "DisplayParameters()", geMaxGeographicClusterSizeType);
       }
     }
 
@@ -452,7 +452,7 @@ void CParameters::DisplayParameters(FILE* fp) const {
       switch (geInitialMaxTemporalClusterSizeType) {
         case PERCENTAGETYPE : fprintf(fp, " %%\n"); break;
         case TIMETYPE       : fprintf(fp, " %s\n", GetDatePrecisionAsString(geTimeIntervalUnitsType)); break;
-        default : ZdException::Generate("Unknown maximum temporal cluster size type '%d'.", "DisplayParameters()", geInitialMaxTemporalClusterSizeType);
+        default : ZdException::Generate("Unknown maximum temporal cluster size type '%d'.\n", "DisplayParameters()", geInitialMaxTemporalClusterSizeType);
       }
     }
 
@@ -479,7 +479,7 @@ void CParameters::DisplayParameters(FILE* fp) const {
          case NOTADJUSTED   : fprintf(fp, "None\n"); break;
          case NONPARAMETRIC : fprintf(fp, "Nonparametric\n"); break;
          case LINEAR        : fprintf(fp, "Linear with %0.2f%% per year\n", gbTimeTrendAdjustPercentage); break;
-         default : ZdException::Generate("Unknown time trend adjustment type '%d'.", "DisplayParameters()", geTimeTrendAdjustType);
+         default : ZdException::Generate("Unknown time trend adjustment type '%d'.\n", "DisplayParameters()", geTimeTrendAdjustType);
       }
     }
 
@@ -553,7 +553,7 @@ void CParameters::DisplayParameters(FILE* fp) const {
        case NOCENTROIDSINLESSLIKE : fprintf(fp, "No Cluster Centroids in Less Likely Clusters\n"); break;
        case NOPAIRSINEACHOTHERS   : fprintf(fp, "No Pairs of Centroids Both in Each Others Clusters\n"); break;
        case NORESTRICTIONS        : fprintf(fp, "No Restrictions = Most Likely Cluster for Each Centroid\n"); break;
-       default : ZdException::Generate("Unknown secondary clusters type '%d'.", "DisplayParameters()", geCriteriaSecondClustersType);
+       default : ZdException::Generate("Unknown secondary clusters type '%d'.\n", "DisplayParameters()", geCriteriaSecondClustersType);
     }
     fprintf(fp, "\n________________________________________________________________\n");
   }
@@ -575,7 +575,7 @@ void CParameters::DisplayTimeAdjustments(FILE* fp) const {
                              fprintf(fp, "Adjusted for time with an increase ");
                            fprintf(fp, "of %0.2f%% per year.\n", fabs(gbTimeTrendAdjustPercentage));
                            break;
-      default : ZdException::Generate("Unknown time trend adjustment type '%d'.", "DisplayTimeAdjustments()", geTimeTrendAdjustType);
+      default : ZdException::Generate("Unknown time trend adjustment type '%d'\n.", "DisplayTimeAdjustments()", geTimeTrendAdjustType);
     }
   }
   catch (ZdException &x) {
@@ -595,7 +595,7 @@ const char * CParameters::GetAnalysisTypeAsString() const {
       case SPACETIME             : sAnalysisType = RETROSPECTIVE_SPACETIME_ANALYSIS; break;
       case PROSPECTIVESPACETIME  : sAnalysisType = PROSPECTIVE_SPACETIME_ANALYSIS; break;
       case PURELYSPATIALMONOTONE : sAnalysisType = PURELY_SPATIAL_MONOTONE_ANALYSIS; break;
-      default : ZdException::Generate("Unknown analysis type '%d'.", "GetAnalysisTypeAsString()", geAnalysisType);
+      default : ZdException::Generate("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", geAnalysisType);
     }
   }
   catch (ZdException & x) {
@@ -615,7 +615,7 @@ const char * CParameters::GetDatePrecisionAsString(DatePrecisionType eDatePrecis
       case YEAR  : sDatePrecisionType = YEAR_PRECISION_TYPE; break;
       case MONTH : sDatePrecisionType = MONTH_PRECISION_TYPE; break;
       case DAY   : sDatePrecisionType = DAY_PRECISION_TYPE; break;
-      default : ZdException::Generate("Unknown date precision type '%d'.", "GetDatePrecisionAsString()", eDatePrecisionType);
+      default : ZdException::Generate("Unknown date precision type '%d'.\n", "GetDatePrecisionAsString()", eDatePrecisionType);
     }
   }
   catch (ZdException & x) {
@@ -701,7 +701,7 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
         case OUTPUT_RR_DBASE           : sParameterLineLabel = OUTPUT_REL_RISKS_DBASE_LINE; break;
         case OUTPUT_SIM_LLR_DBASE      : sParameterLineLabel = OUTPUT_SIM_LLR_DBASE_LINE; break;
         case DUCZMAL_COMPACTNESS       : sParameterLineLabel = ELLIPSE_DUCZMAL_COMPACT_LINE; break;
-        default : ZdException::Generate("Unknown parameter enumeration %d.", "GetParameterLineLabel()", eParameterType);
+        default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLineLabel()", eParameterType);
       };
     }
     else
@@ -723,7 +723,7 @@ const char * CParameters::GetProbabiltyModelTypeAsString() const {
       case POISSON              : sProbabilityModel = POISSON_MODEL; break;
       case BERNOULLI            : sProbabilityModel = BERNOULLI_MODEL; break;
       case SPACETIMEPERMUTATION : sProbabilityModel = SPACETIME_PERMUTATION_MODEL; break;
-      default : ZdException::Generate("Unknown probabilty model type '%d'.", "GetProbabiltyModelTypeAsString()", geProbabiltyModelType);
+      default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "GetProbabiltyModelTypeAsString()", geProbabiltyModelType);
     }
   }
   catch (ZdException & x) {
@@ -743,7 +743,7 @@ Julian CParameters::GetProspectiveStartDateAsJulian() /*const*/ {
   try {
     iPrecision = CharToMDY(&uiMonth, &uiDay, &uiYear, gsProspectiveStartDate.c_str());
     switch (iPrecision) {
-      case 0  : InvalidParameterException::Generate("Error: Prospective start date value of '%s' does not appear to be a valid date.",
+      case 0  : InvalidParameterException::Generate("Error: Prospective start date value of '%s' does not appear to be a valid date.\n",
                                                     "GetProspectiveStartDateAsJulian()", gsProspectiveStartDate.c_str());
       case 1  : uiMonth = uiDefaultMonth;
                 uiDay = uiDefaultDay;
@@ -751,12 +751,12 @@ Julian CParameters::GetProspectiveStartDateAsJulian() /*const*/ {
       case 2  : uiDay = uiDefaultDay;
                 break;
       case 3  : break;
-      default : ZdException::Generate("Precision of '%d' is not defined.", "GetProspectiveStartDateAsJulian()", iPrecision);
+      default : ZdException::Generate("Precision of '%d' is not defined.\n", "GetProspectiveStartDateAsJulian()", iPrecision);
     }
       
     //If values could not be converted to julian, JulianStartDate will be zero.
     if ((ProspectiveStartDate = MDYToJulian(uiMonth, uiDay, uiYear)) == 0)
-     InvalidParameterException::Generate("Error: Prospective start date value of '%s' does not appear to be a valid date.",
+     InvalidParameterException::Generate("Error: Prospective start date value of '%s' does not appear to be a valid date.\n",
                                          "GetProspectiveStartDateAsJulian()", gsProspectiveStartDate.c_str());
   }
   catch (ZdException & x) {
@@ -776,7 +776,7 @@ Julian CParameters::GetStudyPeriodEndDateAsJulian() /*const*/ {
   try {
     iPrecision = CharToMDY(&uiMonth, &uiDay, &uiYear, gsStudyPeriodEndDate.c_str());
     switch (iPrecision) {
-      case 0  : InvalidParameterException::Generate("Error: Study period end date value of '%s' does not appear to be a valid date.",
+      case 0  : InvalidParameterException::Generate("Error: Study period end date value of '%s' does not appear to be a valid date.\n",
                                                     "GetStudyPeriodEndDateAsJulian()", gsStudyPeriodEndDate.c_str());
       case 1  : uiMonth = uiDefaultMonth;
                 uiDay = DaysThisMonth(uiYear, uiDefaultMonth);
@@ -784,12 +784,12 @@ Julian CParameters::GetStudyPeriodEndDateAsJulian() /*const*/ {
       case 2  : uiDay = DaysThisMonth(uiYear, uiMonth);
                 break;
       case 3  : break;
-      default : ZdException::Generate("Precision of '%d' is not defined.", "GetStudyPeriodEndDateAsJulian()", iPrecision);
+      default : ZdException::Generate("Precision of '%d' is not defined.\n", "GetStudyPeriodEndDateAsJulian()", iPrecision);
     }
 
     //If values could not be converted to julian, JulianStartDate will be zero.
     if ((EndDate = MDYToJulian(uiMonth, uiDay, uiYear)) == 0)
-     InvalidParameterException::Generate("Error: Study period end date value of '%s' does not appear to be a valid date.",
+     InvalidParameterException::Generate("Error: Study period end date value of '%s' does not appear to be a valid date.\n",
                                          "GetStudyPeriodEndDateAsJulian()", gsStudyPeriodEndDate.c_str());
   }
   catch (ZdException & x) {
@@ -809,7 +809,7 @@ Julian CParameters::GetStudyPeriodStartDateAsJulian() /*const*/ {
   try {
     iPrecision = CharToMDY(&uiMonth, &uiDay, &uiYear, gsStudyPeriodStartDate.c_str());
     switch (iPrecision) {
-      case 0  : InvalidParameterException::Generate("Error: Study period start date value of '%s' does not appear to be a valid date.",
+      case 0  : InvalidParameterException::Generate("Error: Study period start date value of '%s' does not appear to be a valid date.\n",
                                                     "GetStudyPeriodStartDateAsJulian()", gsStudyPeriodStartDate.c_str());
       case 1  : uiMonth = uiDefaultMonth;
                 uiDay = uiDefaultDay;
@@ -817,12 +817,12 @@ Julian CParameters::GetStudyPeriodStartDateAsJulian() /*const*/ {
       case 2  : uiDay = uiDefaultDay;
                 break;
       case 3  : break;
-      default : ZdException::Generate("Precision of '%d' is not defined.", "GetStudyPeriodStartDateAsJulian()", iPrecision);
+      default : ZdException::Generate("Precision of '%d' is not defined.\n", "GetStudyPeriodStartDateAsJulian()", iPrecision);
     }
 
     //If values could not be converted to julian, JulianStartDate will be zero.
     if ((StartDate = MDYToJulian(uiMonth, uiDay, uiYear)) == 0)
-     InvalidParameterException::Generate("Error: Study period start date value of '%s' does not appear to be a valid date.",
+     InvalidParameterException::Generate("Error: Study period start date value of '%s' does not appear to be a valid date.\n",
                                          "GetStudyPeriodStartDateAsJulian()", gsStudyPeriodStartDate.c_str());
   }
   catch (ZdException & x) {
@@ -911,7 +911,7 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
 void CParameters::Read(const char* szFilename, BasePrint & PrintDirection) {
   try {
     if (access(szFilename, 04) == -1)
-      ZdGenerateException("Error: Unable to open parameter file '%s'.", "Read()", szFilename);
+      ZdGenerateException("Error: Unable to open parameter file '%s'.\n", "Read()", szFilename);
 
     ZdIniFile file(szFilename, true, false);
     if (file.GetNumSections())
@@ -920,7 +920,7 @@ void CParameters::Read(const char* szFilename, BasePrint & PrintDirection) {
       ReadScanningLineParameterFile(szFilename, PrintDirection);
   }
   catch (ZdFileOpenFailedException & x ){
-    x.SetErrorMessage("Error: Unable to open parameter file.");
+    x.SetErrorMessage("Error: Unable to open parameter file.\n");
     x.AddCallpath("Read()", "CParameters");
     throw;
   }
@@ -1026,7 +1026,7 @@ void CParameters::ReadDate(const ZdString & sValue, ParameterType eParameterType
                              break;
      case STARTDATE        : SetStudyPeriodStartDate(sValue); break;
      case ENDDATE          : SetStudyPeriodEndDate(sValue); break;
-     default : ZdException::Generate("Parameter enumeration '%d' is not listed for date read.","ReadDate()", eParameterType);
+     default : ZdException::Generate("Parameter enumeration '%d' is not listed for date read.\n","ReadDate()", eParameterType);
    };
   }
   catch (ZdException &x) {
@@ -1969,7 +1969,7 @@ void CParameters::SetDimensionsOfData(int iDimensions) {
 void CParameters::SetEllipsoidShape(double dShape, int iEllipsoidIndex) {
   try {
     if (iEllipsoidIndex < -1 || iEllipsoidIndex > giNumberEllipses - 1)
-      ZdException::Generate("Index '%d' out of range(0 - %d).", "SetEllipsoidShape()", iEllipsoidIndex, giNumberEllipses - 1);
+      ZdException::Generate("Index '%d' out of range(0 - %d).\n", "SetEllipsoidShape()", iEllipsoidIndex, giNumberEllipses - 1);
 
     if (iEllipsoidIndex >= 0)
       gvEllipseShapes[iEllipsoidIndex] = dShape;
@@ -2056,7 +2056,7 @@ void CParameters::SetNumberEllipsoidRotations(int iNumberRotations, int iEllipso
 
   try {
     if (iEllipsoidIndex < -1 || iEllipsoidIndex > giNumberEllipses - 1)
-      ZdException::Generate("Index '%d' out of range(0 - %d).", "SetNumberEllipsoidRotations()", -1, giNumberEllipses - 1);
+      ZdException::Generate("Index '%d' out of range(0 - %d).\n", "SetNumberEllipsoidRotations()", -1, giNumberEllipses - 1);
 
     if (iEllipsoidIndex >= 0)
       gvEllipseRotations[iEllipsoidIndex] = iNumberRotations;
@@ -2185,7 +2185,7 @@ void CParameters::SetProspectiveStartDate(const char * sProspectiveStartDate) {
       ZdException::Generate("Null pointer.","SetProspectiveStartDate()");
 
     if (strspn(sProspectiveStartDate,"0123456789/") < strlen(sProspectiveStartDate))
-      InvalidParameterException::Generate("Error: For parameter %s, setting '%s' does not appear to be a date.",
+      InvalidParameterException::Generate("Error: For parameter %s, setting '%s' does not appear to be a date.\n",
                                           "SetProspectiveStartDate()",
                                           GetParameterLineLabel(START_PROSP_SURV, sLabel, geReadType == INI),
                                           sProspectiveStartDate);
@@ -2271,7 +2271,7 @@ void CParameters::SetStudyPeriodEndDate(const char * sStudyPeriodEndDate) {
       ZdException::Generate("Null pointer.","SetStudyPeriodStartDate()");
 
     if (strspn(sStudyPeriodEndDate,"0123456789/") < strlen(sStudyPeriodEndDate))
-      InvalidParameterException::Generate("Error: For parameter %s, setting '%s' does not appear to be a date.",
+      InvalidParameterException::Generate("Error: For parameter %s, setting '%s' does not appear to be a date.\n",
                                           "SetStudyPeriodEndDate()",
                                           GetParameterLineLabel(ENDDATE, sLabel, geReadType == INI),
                                           sStudyPeriodEndDate);
@@ -2292,7 +2292,7 @@ void CParameters::SetStudyPeriodStartDate(const char * sStudyPeriodStartDate) {
       ZdException::Generate("Null pointer.","SetStudyPeriodStartDate()");
 
     if (strspn(sStudyPeriodStartDate,"0123456789/") < strlen(sStudyPeriodStartDate))
-      InvalidParameterException::Generate("Error: For parameter %s, setting '%s' does not appear to be a date.",
+      InvalidParameterException::Generate("Error: For parameter %s, setting '%s' does not appear to be a date.\n",
                                           "SetStudyPeriodStartDate()",
                                           GetParameterLineLabel(STARTDATE, sLabel, geReadType == INI),
                                           sStudyPeriodStartDate);
@@ -2397,8 +2397,8 @@ bool CParameters::ValidateDateParameters(BasePrint & PrintDirection) {
         ProspectiveStartDate = GetProspectiveStartDateAsJulian();
         if (ProspectiveStartDate < StudyPeriodStartDate || ProspectiveStartDate > StudyPeriodEndDate) {
           bValid = false;
-          PrintDirection.SatScanPrintWarning("Error: Prospective start date '%s' does not occur within", gsProspectiveStartDate.c_str());
-          PrintDirection.SatScanPrintWarning(" specified study period '%s' to '%s'.\n", gsStudyPeriodStartDate.c_str(),gsStudyPeriodEndDate.c_str());
+          PrintDirection.SatScanPrintWarning("Error: Prospective start date '%s' does not occur within ", gsProspectiveStartDate.c_str());
+          PrintDirection.SatScanPrintWarning("specified study period '%s' to '%s'.\n", gsStudyPeriodStartDate.c_str(),gsStudyPeriodEndDate.c_str());
         }
       }  
     }
@@ -2424,7 +2424,7 @@ bool CParameters::ValidateDateString(const std::string & sDateString, ParameterT
           case STARTDATE          :
           case START_PROSP_SURV   : nMonth = 1; break;
           case ENDDATE            : nMonth = 12; break;
-          default : ZdException::Generate("Parameter type '%d' is not a date.", "ValidateDateString()", eDateType);
+          default : ZdException::Generate("Parameter type '%d' is not a date.\n", "ValidateDateString()", eDateType);
         }
       }
       if (/*gePrecisionOfTimesType == YEAR || gePrecisionOfTimesType == MONTH ||*/ nScanCount == 1 || nScanCount == 2) {
@@ -2432,7 +2432,7 @@ bool CParameters::ValidateDateString(const std::string & sDateString, ParameterT
           case STARTDATE          :
           case START_PROSP_SURV   : nDay = 1; break;
           case ENDDATE            : nDay = DaysThisMonth(nYear, nMonth); break;
-          default : ZdException::Generate("Parameter type '%d' is not a date.", "ValidateDateString()", eDateType);
+          default : ZdException::Generate("Parameter type '%d' is not a date.\n", "ValidateDateString()", eDateType);
         }
       }
       if (IsDateValid(nMonth, nDay, nYear))
