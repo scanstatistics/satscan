@@ -484,6 +484,7 @@ void __fastcall TfrmAnalysis::edtEndDayExit(TObject *Sender) {
 void TfrmAnalysis::DefaultHiddenParameters() {
   gParameters.SetSequentialScanning(false);
   gParameters.SetNumberEllipses(0);
+  gParameters.SetDuczmalCorrectionEllipses(false);
   gParameters.SetRiskType(STANDARDRISK);
   gParameters.SetPowerCalculation(false);
   gParameters.SetValidatePriorToCalculation(true);
