@@ -607,57 +607,59 @@ void CAnalysis::PerformSimulations() {
    std::auto_ptr<LogLikelihoodData>     pLLRData;
 
    try {
-      gpPrintDirection->SatScanPrintf("Doing the Monte Carlo replications\n");
+      if (m_pParameters->m_nReplicas > 0) {
+        gpPrintDirection->SatScanPrintf("Doing the Monte Carlo replications\n");
 
-      // assign replication format string here to prevent another check in loop
-      if (m_pParameters->m_nModel == SPACETIMEPERMUTATION)
-        sReplicationFormatString = "Test statistic for #%ld of %ld Replications: %7.2f\n";
-      else
-        sReplicationFormatString = "Log Likelihood Ratio for #%ld of %ld Replications: %7.2f\n";
-
-      if (m_pParameters->m_bSaveSimLogLikelihoods || m_pParameters->GetDBaseOutputLogLikeli())
-         pLLRData.reset( new LogLikelihoodData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str()) );
-
-      clock_t nStartTime = clock();
-      SimRatios.Initialize();
-
-      for (iSimulationNumber=1; (iSimulationNumber <= m_pParameters->m_nReplicas) && !gpPrintDirection->GetIsCanceled(); iSimulationNumber++) {
-        m_pData->MakeData(iSimulationNumber);
-        if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
-           r = MonteCarloProspective();
+        // assign replication format string here to prevent another check in loop
+        if (m_pParameters->m_nModel == SPACETIMEPERMUTATION)
+          sReplicationFormatString = "Test statistic for #%ld of %ld Replications: %7.2f\n";
         else
-           r = MonteCarlo();
+          sReplicationFormatString = "Log Likelihood Ratio for #%ld of %ld Replications: %7.2f\n";
 
-        UpdateTopClustersRank(r);
-        SimRatios.AddRatio(r);
-    
-        UpdatePowerCounts(r);
+        if (m_pParameters->m_bSaveSimLogLikelihoods || m_pParameters->GetDBaseOutputLogLikeli())
+           pLLRData.reset( new LogLikelihoodData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str()) );
 
-    //    if (!(i % 200)) KR-980326 Limit printing to increase speed of program
-        gpPrintDirection->SatScanPrintf(sReplicationFormatString, iSimulationNumber, m_pParameters->m_nReplicas, r);
+        clock_t nStartTime = clock();
+        SimRatios.Initialize();
 
-        if (m_pParameters->m_bSaveSimLogLikelihoods)
-           pLLRData->AddLikelihood(r);
+        for (iSimulationNumber=1; (iSimulationNumber <= m_pParameters->m_nReplicas) && !gpPrintDirection->GetIsCanceled(); iSimulationNumber++) {
+          m_pData->MakeData(iSimulationNumber);
+          if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
+             r = MonteCarloProspective();
+          else
+             r = MonteCarlo();
 
-        #ifdef DEBUGANALYSIS
-        fprintf(m_pDebugFile, "---- Replication #%ld ----------------------\n\n",i+1);
-        m_pData->DisplaySimCases(m_pDebugFile);
-        // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
-        fprintf(m_pDebugFile, "%s = %7.21f\n\n",
-                (Parameters.m_nModel == SPACETIMEPERMUTATION ? "Test statistic" : "Log Likelihood Ratio"), r);
-        #endif
+          UpdateTopClustersRank(r);
+          SimRatios.AddRatio(r);
 
-        if (iSimulationNumber==1)
-          ReportTimeEstimate(nStartTime, m_pParameters->m_nReplicas, iSimulationNumber, gpPrintDirection);
-      }
+          UpdatePowerCounts(r);
 
-      if (m_pParameters->m_bSaveSimLogLikelihoods) {
-         ASCIIFileWriter Awriter(pLLRData.get());
-         Awriter.Print();
-      }
-      if (m_pParameters->GetDBaseOutputLogLikeli()) {
-         DBaseFileWriter Dwriter(pLLRData.get());
-         Dwriter.Print();
+      //    if (!(i % 200)) KR-980326 Limit printing to increase speed of program
+          gpPrintDirection->SatScanPrintf(sReplicationFormatString, iSimulationNumber, m_pParameters->m_nReplicas, r);
+
+          if (m_pParameters->m_bSaveSimLogLikelihoods)
+             pLLRData->AddLikelihood(r);
+
+          #ifdef DEBUGANALYSIS
+          fprintf(m_pDebugFile, "---- Replication #%ld ----------------------\n\n",i+1);
+          m_pData->DisplaySimCases(m_pDebugFile);
+          // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
+          fprintf(m_pDebugFile, "%s = %7.21f\n\n",
+                  (Parameters.m_nModel == SPACETIMEPERMUTATION ? "Test statistic" : "Log Likelihood Ratio"), r);
+          #endif
+
+          if (iSimulationNumber==1)
+            ReportTimeEstimate(nStartTime, m_pParameters->m_nReplicas, iSimulationNumber, gpPrintDirection);
+        }
+
+        if (m_pParameters->m_bSaveSimLogLikelihoods) {
+           ASCIIFileWriter Awriter(pLLRData.get());
+           Awriter.Print();
+        }
+        if (m_pParameters->GetDBaseOutputLogLikeli()) {
+           DBaseFileWriter Dwriter(pLLRData.get());
+           Dwriter.Print();
+        }
       }
    }
    catch (ZdException & x) {
