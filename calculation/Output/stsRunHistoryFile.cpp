@@ -376,7 +376,7 @@ void stsRunHistoryFile::SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&
 
       field.first.first = "Output_File";
       field.first.second = ZD_ALPHA_FLD;
-      field.second = 255;
+      field.second = 254;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Prob_Model";
@@ -436,7 +436,7 @@ void stsRunHistoryFile::SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&
 
       field.first.first = "Grid_File";
       field.first.second = ZD_BOOLEAN_FLD;
-      field.second = 2;
+      field.second = 1;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Start_Date";
@@ -451,7 +451,7 @@ void stsRunHistoryFile::SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&
 
       field.first.first = "Alive_Only";
       field.first.second = ZD_BOOLEAN_FLD;
-      field.second = 2;
+      field.second = 1;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Interv_Units";
