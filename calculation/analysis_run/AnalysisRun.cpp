@@ -120,7 +120,7 @@ void AnalysisRunner::CreateClusterInformationFile() {
   try {
     if (gParameters.GetOutputClusterLevelFiles()) {
       //create file record data buffers
-      stsClusterData ClusterDataBuffers(gParameters, giNumSimsExecuted < 99);
+      stsClusterData ClusterDataBuffers(*gpDataHub, giNumSimsExecuted < 99);
       //print progress to print direction                                                        
       if (gTopClustersContainer.GetNumClustersRetained())
         gPrintDirection.SatScanPrintf("Recording results for %i cluster%s...\n",
@@ -128,7 +128,7 @@ void AnalysisRunner::CreateClusterInformationFile() {
                                      (gTopClustersContainer.GetNumClustersRetained() == 1 ? "" : "s"));
       //collect most likely cluster data in record buffers
       for (int i=0; i < gTopClustersContainer.GetNumClustersRetained(); ++i)
-         ClusterDataBuffers.RecordClusterData(gTopClustersContainer.GetCluster(i), *gpDataHub, i+1, giNumSimsExecuted);
+         ClusterDataBuffers.RecordClusterData(gTopClustersContainer.GetCluster(i), i+1, giNumSimsExecuted);
       //print record buffers to ASCII file
       if (gParameters.GetOutputClusterLevelAscii())
         ASCIIFileWriter(ClusterDataBuffers, gPrintDirection, gParameters, giAnalysisCount > 1);
