@@ -32,7 +32,7 @@ AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, 
                :gParameters(Parameters),
                 gStartTime(StartTime),
                 gPrintDirection(PrintDirection),
-                gSimulatedRatios(Parameters.GetNumReplicationsRequested(), &PrintDirection) {
+                gSimulatedRatios(!Parameters.GetReportCriticalValues(), Parameters.GetNumReplicationsRequested()) {
   try {
     Init();
     Setup();
@@ -238,7 +238,7 @@ void AnalysisRunner::DisplayTopCluster() {
         //print cluster definition to file stream
         TopCluster.Display(fp, *gpDataHub, giClustersReported, nMinMeasure, giNumSimsExecuted);
         //check track of whether this cluster was significant in top five percentage
-        if (TopCluster.m_nRatio > gSimulatedRatios.GetAlpha05())
+        if (gParameters.GetReportCriticalValues() && TopCluster.m_nRatio > gSimulatedRatios.GetAlpha05())
           ++guwSignificantAt005;
         //print cluster definition to 'location information' record buffer
         if (gParameters.GetOutputAreaSpecificFiles())
@@ -264,7 +264,6 @@ void AnalysisRunner::DisplayTopCluster() {
     If user requested 'location information' output file(s), they are created
     simultaneously with reported clusters. */
 void AnalysisRunner::DisplayTopClusters() {
-  double                               dSignifRatio05;
   std::auto_ptr<stsAreaSpecificData>   pData;
   clock_t                              lStartTime;
   measure_t                            nMinMeasure = -1;
@@ -274,7 +273,6 @@ void AnalysisRunner::DisplayTopClusters() {
     //if creating 'location information' files, create record data buffers
     if (gParameters.GetOutputAreaSpecificFiles())
       pData.reset(new stsAreaSpecificData(gParameters, giNumSimsExecuted < 99));
-    dSignifRatio05 = gSimulatedRatios.GetAlpha05();
     //if  no replications requested, attempt to display up to top 10 clusters
     tract_t tNumClustersToDisplay(giNumSimsExecuted == 0 ? std::min(10, gTopClustersContainer.GetNumClustersRetained()) : gTopClustersContainer.GetNumClustersRetained());
     lStartTime = clock(); //get clock for calculating output time
@@ -297,7 +295,7 @@ void AnalysisRunner::DisplayTopClusters() {
          //print cluster definition to file stream
          TopCluster.Display(fp, *gpDataHub, giClustersReported, nMinMeasure, giNumSimsExecuted);
          //check track of whether this cluster was significant in top five percentage
-         if (TopCluster.m_nRatio > dSignifRatio05)
+         if (gParameters.GetReportCriticalValues() && TopCluster.m_nRatio > gSimulatedRatios.GetAlpha05())
            ++guwSignificantAt005;
          //print cluster definition to 'location information' record buffer
          if (gParameters.GetOutputAreaSpecificFiles())
@@ -615,11 +613,12 @@ void AnalysisRunner::PerformSerializedSimulations() {
   double                               dSimulatedRatio;
   unsigned int                         iSimulationNumber;
   char                               * sReplicationFormatString;
-  std::auto_ptr<LogLikelihoodData>     pLLRData;
   AbtractDataStreamGateway           * pDataGateway=0;
   CAnalysis                          * pAnalysis=0;
   SimulationDataContainer_t            SimulationDataContainer;
   RandomizerContainer_t                RandomizationContainer;
+  LoglikelihoodRatioWriter           * pRatioWriter=0;
+  boost::mutex                         write_mutex;
 
   try {
     if (gParameters.GetNumReplicationsRequested() == 0)
@@ -630,8 +629,10 @@ void AnalysisRunner::PerformSerializedSimulations() {
     else
       sReplicationFormatString = "SaTScan log likelihood ratio for #%u of %u replications: %7.2lf\n";
     //create record buffers for simulated loglikelihood ratios, if user requested these output files
-    if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
-      pLLRData.reset(new LogLikelihoodData(gParameters));
+    if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1) {
+      pRatioWriter = new LoglikelihoodRatioWriter(write_mutex, gParameters);
+      //pLLRData.reset(new LogLikelihoodData(gParameters));
+    }
     //set/reset loglikelihood ratio significance indicator
     gSimulatedRatios.Initialize();
     //get container for simulation data - this data will be modified in the randomize process
@@ -666,7 +667,8 @@ void AnalysisRunner::PerformSerializedSimulations() {
         //update power calculations
         UpdatePowerCounts(dSimulatedRatio);
         //update simulated loglikelihood record buffer
-        if(pLLRData.get()) pLLRData->AddLikelihoodRatio(dSimulatedRatio);
+//        if(pLLRData.get()) pLLRData->AddLikelihoodRatio(dSimulatedRatio);
+        if (pRatioWriter) pRatioWriter->Write(dSimulatedRatio);
         //if first simulation, report approximate time to complete simulations and print queue threshold
         if (giNumSimsExecuted==1) {
           //***** time to complete approximate will need modified with incorporation of thread code ******
@@ -686,17 +688,19 @@ void AnalysisRunner::PerformSerializedSimulations() {
     }//end scope of SimulationPrintDirection
     delete pDataGateway; pDataGateway=0;
     delete pAnalysis; pAnalysis=0;
-    if (!gPrintDirection.GetIsCanceled()) {
-      //write to additional data to files
-      if (gParameters.GetOutputSimLoglikeliRatiosAscii() && pLLRData.get())
-        ASCIIFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
-      if (gParameters.GetOutputSimLoglikeliRatiosDBase() && pLLRData.get())
-        DBaseFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
-    }    
+    delete pRatioWriter; pRatioWriter=0;
+//    if (!gPrintDirection.GetIsCanceled()) {
+//      //write to additional data to files
+//      if (gParameters.GetOutputSimLoglikeliRatiosAscii() && pLLRData.get())
+//        ASCIIFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
+//      if (gParameters.GetOutputSimLoglikeliRatiosDBase() && pLLRData.get())
+//        DBaseFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
+//    }
   }
   catch (ZdException &x) {
     delete pDataGateway;
     delete pAnalysis;
+    delete pRatioWriter;
     x.AddCallpath("PerformSerializedSimulations()","CAnalysis");
     throw;
   }
@@ -846,7 +850,7 @@ void AnalysisRunner::UpdateReport() {
       DisplayTopClusters();
     //open result output file stream  
     OpenReportFile(fp, true);
-    if (giNumSimsExecuted >= 19 && giClustersReported > 0) {
+    if (gParameters.GetReportCriticalValues() && giNumSimsExecuted >= 19 && giClustersReported > 0) {
       // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
       fprintf(fp, "The %s value required for an observed\n",
              (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"));
