@@ -1573,14 +1573,6 @@ void TfrmAnalysis::SetupInterface() {
     edtMaxTemporalClusterSize->Text = gParameters.m_nMaxTemporalClusterSize;
     rdoPercentageTemproal->Checked = gParameters.m_nMaxClusterSizeType == PERCENTAGETYPE;
     rdoTimeTemproal->Checked = gParameters.m_nMaxClusterSizeType == TIMETYPE;
-    switch (gParameters.m_nPrecision) {      // set the caption here when read in the precision
-       case 3:
-          rdoTimeTemproal->Caption = "Days"; break;
-       case 2:
-          rdoTimeTemproal->Caption = "Months"; break;
-       default:
-          rdoTimeTemproal->Caption = "Years"; break;
-    }
     chkIncludePurSpacClust->Checked = gParameters.m_bIncludePurelySpatial;
     rdoSpatialPercentage->Checked = gParameters.m_nMaxSpatialClusterSizeType != DISTANCETYPE; // default checked
     rdoSpatialDistance->Checked = gParameters.m_nMaxSpatialClusterSizeType == DISTANCETYPE;
