@@ -464,11 +464,19 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, int iNu
   }
 }
 
-void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft)
-{
-  fprintf(fp, "%sPopulation............: %-10.0f\n",
-  szSpacesOnLeft,
-  Data.GetProbabilityModel().GetPopulation(m_iEllipseOffset, m_Center, m_nTracts, m_nFirstInterval, m_nLastInterval));
+void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft) {
+  double        dPopulation;
+  const char  * sFormat;
+
+  dPopulation = Data.GetProbabilityModel().GetPopulation(m_iEllipseOffset, m_Center, m_nTracts, m_nFirstInterval, m_nLastInterval);
+  if (dPopulation < .5)
+    sFormat = "%sPopulation............: %-g\n"; // display all decimals for populations less than .5
+  else if (dPopulation < 1)
+    sFormat = "%sPopulation............: %-10.1f\n"; // display one decimal for populations less than 1
+  else
+    sFormat = "%sPopulation............: %-10.0f\n"; // else display no decimals
+
+  fprintf(fp, sFormat, szSpacesOnLeft, dPopulation);
 }
 
 void CCluster::DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft) {
