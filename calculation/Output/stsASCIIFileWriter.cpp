@@ -30,8 +30,9 @@ void ASCIIFileWriter::CreateBlankString(ZdString& sFormatString, int iFieldNumbe
    try {
       const ZdField* pField = gOutputFileData.GetField(iFieldNumber);
 
-      for(int i = 0; i < pField->GetLength(); ++i)
-         sFormatString << " ";
+      sFormatString << "n/a";
+      while (sFormatString.GetLength() < static_cast<unsigned long>(pField->GetLength()))
+           sFormatString << " ";
    }
    catch (ZdException &x) {
       x.AddCallpath("CreateBlankString()", "ASCIIFileWriter");
