@@ -6,6 +6,7 @@
 #include "zd540.h"
 #include "xbase/xbase.h"
 //---------------------------------------------------------------------------
+#pragma option push -w-8070 //we don't want Borland giving errors for the functions that throw an exception instead of returning a value --bws 14nov2002
 
 class DBFFile;
 
@@ -428,7 +429,7 @@ private:
 //   static DBFFileType gDefaultInstance;
 };
 
-
+#pragma option pop
 
 #endif
 
