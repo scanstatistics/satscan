@@ -106,6 +106,7 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
          SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
          // create destination file in user's temp directory
          GetTempPath(sizeof(sBuffer), sBuffer);
+         GetLongPathName(sBuffer, sBuffer, sizeof(sBuffer));
          sFileName.SetLocation(sBuffer);
          sFileName.SetExtension(TXD_EXT);
          // Prefix filename so that we know this sessions created imported files are unique.
@@ -154,6 +155,7 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
          SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
          // create destination file in user's temp directory
          GetTempPath(sizeof(sBuffer), sBuffer);
+         GetLongPathName(sBuffer, sBuffer, sizeof(sBuffer));
          sFileName.SetLocation(sBuffer);
          sFileName.SetExtension(TXD_EXT);
          // Prefix filename so that we know this sessions created imported files are unique.
@@ -202,6 +204,7 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
          SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
          // create destination file in user's temp directory
          GetTempPath(sizeof(sBuffer), sBuffer);
+         GetLongPathName(sBuffer, sBuffer, sizeof(sBuffer));
          sFileName.SetLocation(sBuffer);
          sFileName.SetExtension(TXD_EXT);
          // Prefix filename so that we know this sessions created imported files are unique.
@@ -249,6 +252,7 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
          SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
          // create destination file in user's temp directory
          GetTempPath(sizeof(sBuffer), sBuffer);
+         GetLongPathName(sBuffer, sBuffer, sizeof(sBuffer));
          sFileName.SetLocation(sBuffer);
          sFileName.SetExtension(TXD_EXT);
          // Prefix filename so that we know this sessions created imported files are unique.
@@ -296,6 +300,7 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
           SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
           // create destination file in user's temp directory
           GetTempPath(sizeof(sBuffer), sBuffer);
+          GetLongPathName(sBuffer, sBuffer, sizeof(sBuffer));
           sFileName.SetLocation(sBuffer);
           sFileName.SetExtension(TXD_EXT);
           ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
