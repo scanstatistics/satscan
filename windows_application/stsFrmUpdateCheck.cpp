@@ -59,10 +59,8 @@ void TfrmUpdateCheck::ConnectToServerForUpdateCheck() {
     // get perlscript results -- list of files descriptions at specified url
     sHTTP_Body.SetString(pHTTPConnect->Body.c_str());
     if (sHTTP_Body.GetNumTokens() < (unsigned int)giUpdateTokens || !stricmp(sHTTP_Body.GetToken(0).GetCString(), "no"))
-      ZdException::GenerateNotification("No updates currently available. Please try again later.",
-                                        "ConnectToServerForUpdateCheck()");
-
-    if (sHTTP_Body.GetToken(giUpdateVersionIdIndex) == VERSION_ID) {
+      gbHasUpdates = false;
+    else if (sHTTP_Body.GetToken(giUpdateVersionIdIndex) == VERSION_ID) {
       gbHasUpdates = true;
       //get update information
       gsUpdateVersion = sHTTP_Body.GetToken(giUpdateVersionIndex);

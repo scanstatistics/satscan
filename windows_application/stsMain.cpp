@@ -403,7 +403,7 @@ void __fastcall TfrmMainForm::UpdateActionExecute(TObject *Sender) {
       }
     }
     else
-      TBMessageBox::Response(this, "No Updates", "There are no updates at this time. Please try again later.", MB_OK);
+      TBMessageBox::Response(this, "No Updates", "You are running the most current version of SaTScan.", MB_OK);
 
     delete frmDownloadProgress; frmDownloadProgress=0;
     delete frmUpdateCheck; frmUpdateCheck=0;
