@@ -140,8 +140,8 @@ void CCluster::Display(FILE*     fp,
       fprintf(fp, "%s%s: %f\n", szSpacesOnLeft,
               (Parameters.m_nModel == SPACETIMEPERMUTATION ? "Test statistic........" : "Log likelihood ratio.."),
               m_nRatio);
-      fprintf(fp, "%sMonte Carlo rank......: %ld/%ld\n",
-                   szSpacesOnLeft, m_nRank, Parameters.m_nReplicas+1);
+      if (Parameters.m_nReplicas)
+        fprintf(fp, "%sMonte Carlo rank......: %ld/%ld\n", szSpacesOnLeft, m_nRank, Parameters.m_nReplicas+1);
 
       if (Parameters.m_nReplicas > 99)
         {
