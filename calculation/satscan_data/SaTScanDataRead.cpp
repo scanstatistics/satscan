@@ -64,16 +64,12 @@ bool CSaTScanData::ReadCounts(const char* szCountFilename, const char* szDescrip
 };
 
 bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* szData, tract_t& tid, count_t& nCount, Julian& nDate) {
-   char         szTid[MAX_LINESIZE];
-   unsigned int nYear, nMonth = 1, nDay = 1;
-   int          nScanResult;
-   int          nDataElements = 3;
-   int          nCats = gpCats->catGetNumEls();
-   int    i;
-   int    cat;
-   bool   bCatsMissing = false;
-   long   count;
-   char** cvec;// = (char**)Smalloc(nCats * sizeof(char *), gpPrintDirection);
+   unsigned int 	nYear, nMonth = 1, nDay = 1;
+   float        	fTempCount; 
+   int    		i, cat, nScanResult, nDataElements=3, nCats=gpCats->catGetNumEls();
+   bool   		bCatsMissing=false;
+   long   		count;
+   char	             ** cvec, szTid[MAX_LINESIZE];
 
    try {
       cvec = (char**)Smalloc(nCats * sizeof(char *), gpPrintDirection);
@@ -82,15 +78,18 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
 
       //Parse tract id, count, & date from record
       switch (m_pParameters->m_nPrecision) {
-        case 0: nScanResult=sscanf(szData, "%s %ld", szTid, &nCount);
+        case 0: nScanResult=sscanf(szData, "%s %f", szTid, &fTempCount);
                 JulianToMDY(&nMonth, &nDay, &nYear, m_nStartDate);
                 nDataElements--;
                 break;
-        case 1: nScanResult=sscanf(szData, "%s %ld %d", szTid, &nCount, &nYear); break;
-        case 2: nScanResult=sscanf(szData, "%s %ld %d/%d", szTid, &nCount, &nYear, &nMonth); break;
-        case 3: nScanResult=sscanf(szData, "%s %ld %d/%d/%d", szTid, &nCount, &nYear, &nMonth, &nDay); break;
+        case 1: nScanResult=sscanf(szData, "%s %f %d", szTid, &fTempCount, &nYear); break;
+        case 2: nScanResult=sscanf(szData, "%s %f %d/%d", szTid, &fTempCount, &nYear, &nMonth); break;
+        case 3: nScanResult=sscanf(szData, "%s %f %d/%d/%d", szTid, &fTempCount, &nYear, &nMonth, &nDay); break;
       }
-    
+      // Value read from sscanf for nCount might be a float, in which case, preventing sscanf
+      // from reading remaining variables correctly. 
+      nCount = static_cast<count_t>(fTempCount);
+
       //Check: tract, count, & date exist
       if (nScanResult < m_pParameters->m_nPrecision+2) {
         free(cvec);
@@ -857,13 +856,12 @@ bool CSaTScanData::ReadGridCoords() {
 
 
 bool CSaTScanData::ReadGridLatLong() {
-   bool    bValid = true, bEmpty = true;
-   char    szData[MAX_LINESIZE], szTid[MAX_LINESIZE];
-   int     nScanCount;                        // Num of items on input line
-   tract_t nRec = 0;                              // File record number
-   float   Latitude, Longitude;
-   double*	 pCoords = 0;                           // Ptr to Grid tract coords
-   FILE*   fp;                                // Ptr to grid file
+   bool    	bValid=true, bEmpty=true;
+   char    	szData[MAX_LINESIZE], szTid[MAX_LINESIZE];
+   int     	nScanCount;                                 // Num of items on input line
+   tract_t 	nRec = 0;                                   // File record number
+   double   	Latitude, Longitude, * pCoords=0;
+   FILE       * fp;                                         // Ptr to grid file
 
    try {
       gpPrintDirection->SatScanPrintf("Reading the grid file (lat/lon).\n");
@@ -884,9 +882,8 @@ bool CSaTScanData::ReadGridLatLong() {
           bEmpty=false;
 
         nScanCount = sscanf(szData, "%lf %lf",&Latitude, &Longitude);
-    
         itoa(nRec, szTid, 10);
-    
+
         if (nScanCount < 2) {
           gpPrintDirection->SatScanPrintWarning("  Error: Invalid record in grid file (lat/lon), line %d.\n",nRec);
           gpPrintDirection->SatScanPrintWarning("         Please see 'grid file format' in the help file.\n");
