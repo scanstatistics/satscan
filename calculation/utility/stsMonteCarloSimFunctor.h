@@ -4,7 +4,6 @@
 #define stsMonteCarloSimFunctorH
 
 //#include "DataSetHandler.h"
-#include "stsLogLikelihood.h"
 //#include "DataSetGateway.h"
 #include "AnalysisRun.h"
 #include "boost/shared_ptr.hpp"
