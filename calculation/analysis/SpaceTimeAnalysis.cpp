@@ -49,6 +49,7 @@ CCluster* CSpaceTimeAnalysis::GetTopCluster(tract_t nCenter)
                                        gpPrintDirection);
          C->SetCenter(nCenter);
          C->SetRate(m_pParameters->m_nAreas);
+         C->SetEllipseOffset(k);
 
          for (tract_t i=1; i<=m_pData->m_NeighborCounts[k][nCenter]; i++)     // k use to be "0"
          {
