@@ -24,7 +24,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Height = 348
     Align = alRight
     BevelOuter = bvNone
-    TabOrder = 0
+    TabOrder = 1
     object btnOk: TButton
       Left = 6
       Top = 22
@@ -41,8 +41,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Top = 2
     Width = 410
     Height = 344
-    ActivePage = tsAdjustmentsTabSheet
-    TabOrder = 1
+    ActivePage = tsOther
+    TabOrder = 0
     object tsAdjustmentsTabSheet: TTabSheet
       Caption = 'Adjustments'
       object rdgTemporalTrendAdj: TRadioGroup
@@ -105,7 +105,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Anchors = []
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 0
+          TabOrder = 1
           OnChange = edtAdjustmentsByRelativeRisksFileChange
         end
         object btnBrowseAdjustmentsFile: TButton
@@ -124,7 +124,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ParentFont = False
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 1
+          TabOrder = 2
           OnClick = btnBrowseAdjustmentsFileClick
         end
         object chkAdjustForKnownRelativeRisks: TCheckBox
@@ -133,7 +133,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Width = 233
           Height = 17
           Caption = 'Adjust for known relative risks'
-          TabOrder = 2
+          TabOrder = 0
           OnClick = chkAdjustForKnownRelativeRisksClick
         end
       end
@@ -228,7 +228,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Width = 19
           Height = 17
           Caption = 'to: '
-          TabOrder = 1
+          TabOrder = 5
         end
         object edtStartRangeStartYear: TEdit
           Left = 154
@@ -275,7 +275,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           MaxLength = 4
-          TabOrder = 5
+          TabOrder = 6
           Text = '1900'
           OnExit = edtStartRangeEndDateExit
           OnKeyPress = NaturalNumberKeyPress
@@ -288,7 +288,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
-          TabOrder = 6
+          TabOrder = 7
           Text = '1'
           OnExit = edtStartRangeEndDateExit
           OnKeyPress = NaturalNumberKeyPress
@@ -301,7 +301,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
-          TabOrder = 7
+          TabOrder = 8
           Text = '1'
           OnExit = edtStartRangeEndDateExit
           OnKeyPress = NaturalNumberKeyPress
@@ -313,7 +313,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Height = 17
           AutoSize = False
           Caption = 'Start time in range:'
-          TabOrder = 8
+          TabOrder = 1
         end
         object stEndWindowRange: TStaticText
           Left = 46

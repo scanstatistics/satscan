@@ -103,8 +103,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TButton *btnResultFileBrowse;
         TLabel *lblProspectiveStartDate;
         TCheckBox *chkAdjustForEarlierAnalyses;
-        TLabel *lblAdjustForEarlierAnalyses;
-        TGroupBox *GroupBox3;
+        TGroupBox *grpStudyPeriod;
         TLabel *Label8;
         TLabel *Label9;
         TLabel *Label10;
@@ -116,7 +115,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TEdit *edtStudyPeriodEndDateMonth;
         TEdit *edtStudyPeriodStartDateDay;
         TEdit *edtStudyPeriodEndDateDay;
-        TGroupBox *GroupBox4;
+        TGroupBox *grpTypeProbability;
         TRadioButton *rdoPoissonModel;
         TRadioButton *rdoBernoulliModel;
         TRadioButton *rdoSpaceTimePermutationModel;
@@ -128,7 +127,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TRadioButton *rdoRetrospectiveSpaceTime;
         TRadioButton *rdoProspectivePurelyTemporal;
         TRadioButton *rdoProspectiveSpaceTime;
-        TGroupBox *GroupBox5;
+        TGroupBox *grpScanAreas;
         TRadioButton *rdoHighRates;
         TRadioButton *rdoLowRates;
         TRadioButton *rdoHighLowRates;

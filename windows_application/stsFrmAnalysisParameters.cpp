@@ -550,7 +550,6 @@ void TfrmAnalysis::EnableProspectiveStartDate(bool bEnable) {
 void TfrmAnalysis::EnableProspectiveSurveillanceGroup(bool bEnable) {
    grpProspectiveSurveillance->Enabled = bEnable;
    chkAdjustForEarlierAnalyses->Enabled = bEnable;
-   lblAdjustForEarlierAnalyses->Enabled = bEnable;
    EnableProspectiveStartDate(bEnable);
 }
 

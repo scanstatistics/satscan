@@ -84,7 +84,7 @@ object frmAnalysis: TfrmAnalysis
           Items.Strings = (
             'Yes'
             'No')
-          TabOrder = 0
+          TabOrder = 4
           OnClick = rgPrecisionTimesClick
         end
         object edtCaseFileName: TEdit
@@ -94,7 +94,7 @@ object frmAnalysis: TfrmAnalysis
           Height = 21
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 1
+          TabOrder = 0
           OnChange = edtCaseFileNameChange
         end
         object edtControlFileName: TEdit
@@ -122,7 +122,7 @@ object frmAnalysis: TfrmAnalysis
           ParentFont = False
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 3
+          TabOrder = 1
           OnClick = btnCaseBrowseClick
         end
         object btnControlBrowse: TButton
@@ -140,7 +140,7 @@ object frmAnalysis: TfrmAnalysis
           ParentFont = False
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 4
+          TabOrder = 3
           OnClick = btnControlBrowseClick
         end
       end
@@ -209,7 +209,7 @@ object frmAnalysis: TfrmAnalysis
           Height = 21
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 1
+          TabOrder = 2
           OnChange = edtGridFileNameChange
         end
         object btnCoordBrowse: TButton
@@ -227,7 +227,7 @@ object frmAnalysis: TfrmAnalysis
           ParentFont = False
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 2
+          TabOrder = 1
           OnClick = btnCoordBrowseClick
         end
         object btnGridBrowse: TButton
@@ -279,12 +279,12 @@ object frmAnalysis: TfrmAnalysis
         Width = 65
         Height = 21
         MaxLength = 9
-        TabOrder = 0
+        TabOrder = 3
         Text = '999'
         OnExit = edtMontCarloRepsExit
         OnKeyPress = NaturalNumberKeyPress
       end
-      object GroupBox4: TGroupBox
+      object grpTypeProbability: TGroupBox
         Left = 168
         Top = 8
         Width = 162
@@ -327,7 +327,7 @@ object frmAnalysis: TfrmAnalysis
         Width = 154
         Height = 183
         Caption = 'Type of Analysis'
-        TabOrder = 2
+        TabOrder = 0
         object stRetrospectiveAnalyses: TStaticText
           Left = 15
           Top = 21
@@ -342,7 +342,7 @@ object frmAnalysis: TfrmAnalysis
           Width = 108
           Height = 17
           Caption = 'Prospective Analyses:'
-          TabOrder = 1
+          TabOrder = 4
         end
         object rdoRetrospectivePurelySpatial: TRadioButton
           Left = 23
@@ -351,7 +351,7 @@ object frmAnalysis: TfrmAnalysis
           Height = 17
           Caption = 'Purely Spatial'
           Checked = True
-          TabOrder = 2
+          TabOrder = 1
           TabStop = True
           OnClick = rdoAnalysisTypeClick
         end
@@ -361,7 +361,7 @@ object frmAnalysis: TfrmAnalysis
           Width = 113
           Height = 17
           Caption = 'Purely Temporal'
-          TabOrder = 3
+          TabOrder = 2
           OnClick = rdoAnalysisTypeClick
         end
         object rdoRetrospectiveSpaceTime: TRadioButton
@@ -370,7 +370,7 @@ object frmAnalysis: TfrmAnalysis
           Width = 113
           Height = 17
           Caption = 'Space-Time'
-          TabOrder = 4
+          TabOrder = 3
           OnClick = rdoAnalysisTypeClick
         end
         object rdoProspectivePurelyTemporal: TRadioButton
@@ -392,13 +392,13 @@ object frmAnalysis: TfrmAnalysis
           OnClick = rdoAnalysisTypeClick
         end
       end
-      object GroupBox5: TGroupBox
+      object grpScanAreas: TGroupBox
         Left = 336
         Top = 8
         Width = 137
         Height = 183
         Caption = 'Scan for Areas with:'
-        TabOrder = 3
+        TabOrder = 2
         object rdoHighRates: TRadioButton
           Left = 13
           Top = 37
@@ -437,7 +437,6 @@ object frmAnalysis: TfrmAnalysis
         Height = 137
         Caption = 'Time Intervals'
         TabOrder = 0
-        TabStop = True
         object lblTimeIntervalUnits: TLabel
           Left = 14
           Top = 24
@@ -504,74 +503,66 @@ object frmAnalysis: TfrmAnalysis
         Height = 137
         Caption = 'Prospective Surveillance'
         TabOrder = 1
-        TabStop = True
         object lblProspectiveStartYear: TLabel
-          Left = 41
+          Left = 36
           Top = 78
           Width = 22
           Height = 13
           Caption = 'Year'
         end
         object lblProspectiveStartMonth: TLabel
-          Left = 97
+          Left = 92
           Top = 78
           Width = 30
           Height = 13
           Caption = 'Month'
         end
         object lblProspectiveStartDay: TLabel
-          Left = 144
+          Left = 139
           Top = 78
           Width = 19
           Height = 13
           Caption = 'Day'
         end
         object lblProspectiveStartDate: TLabel
-          Left = 36
+          Left = 31
           Top = 58
           Width = 81
           Height = 13
           Caption = ' performed since:'
         end
-        object lblAdjustForEarlierAnalyses: TLabel
-          Left = 36
-          Top = 30
-          Width = 119
-          Height = 13
-          Caption = 'Adjust for earlier analyses'
-        end
         object edtProspectiveStartDateYear: TEdit
-          Left = 38
+          Left = 33
           Top = 97
           Width = 41
           Height = 21
           Enabled = False
           MaxLength = 4
-          TabOrder = 0
+          TabOrder = 1
           Text = '1900'
           OnExit = edtProspectiveStartDateExit
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtProspectiveStartDateMonth: TEdit
-          Left = 98
-          Top = 97
-          Width = 25
-          Height = 21
-          Enabled = False
-          MaxLength = 2
-          TabOrder = 1
-          Text = '12'
-          OnExit = edtProspectiveStartDateExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-        object edtProspectiveStartDateDay: TEdit
-          Left = 144
+          Left = 93
           Top = 97
           Width = 25
           Height = 21
           Enabled = False
           MaxLength = 2
           TabOrder = 2
+          Text = '12'
+          OnExit = edtProspectiveStartDateExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object edtProspectiveStartDateDay: TEdit
+          Left = 139
+          Top = 97
+          Width = 25
+          Height = 21
+          Enabled = False
+          MaxLength = 2
+          TabOrder = 3
           Text = '31'
           OnExit = edtProspectiveStartDateExit
           OnKeyPress = NaturalNumberKeyPress
@@ -579,13 +570,14 @@ object frmAnalysis: TfrmAnalysis
         object chkAdjustForEarlierAnalyses: TCheckBox
           Left = 14
           Top = 28
-          Width = 15
+          Width = 171
           Height = 17
-          TabOrder = 3
+          Caption = 'Adjust for earlier analyses'
+          TabOrder = 0
           OnClick = chkAdjustForEarlierAnalysesClick
         end
       end
-      object GroupBox3: TGroupBox
+      object grpStudyPeriod: TGroupBox
         Left = 8
         Top = 148
         Width = 466
@@ -651,7 +643,7 @@ object frmAnalysis: TfrmAnalysis
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           MaxLength = 4
-          TabOrder = 1
+          TabOrder = 3
           Text = '1900'
           OnExit = edtStudyPeriodEndDateExit
           OnKeyPress = NaturalNumberKeyPress
@@ -664,7 +656,7 @@ object frmAnalysis: TfrmAnalysis
           Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
-          TabOrder = 2
+          TabOrder = 1
           Text = '1'
           OnExit = edtStudyPeriodStartDateExit
           OnKeyPress = NaturalNumberKeyPress
@@ -677,7 +669,7 @@ object frmAnalysis: TfrmAnalysis
           Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
-          TabOrder = 3
+          TabOrder = 4
           Text = '12'
           OnExit = edtStudyPeriodEndDateExit
           OnKeyPress = NaturalNumberKeyPress
@@ -690,7 +682,7 @@ object frmAnalysis: TfrmAnalysis
           Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
-          TabOrder = 4
+          TabOrder = 2
           Text = '1'
           OnExit = edtStudyPeriodStartDateExit
           OnKeyPress = NaturalNumberKeyPress
@@ -747,7 +739,7 @@ object frmAnalysis: TfrmAnalysis
           Height = 17
           Caption = 'Include Purely Temporal Cluster (Spatial Size = 100%)'
           Enabled = False
-          TabOrder = 1
+          TabOrder = 3
         end
         object rdoSpatialPercentage: TRadioButton
           Left = 226
@@ -756,7 +748,7 @@ object frmAnalysis: TfrmAnalysis
           Height = 17
           Caption = 'Percent of Population at Risk (<= 50%)'
           Checked = True
-          TabOrder = 2
+          TabOrder = 1
           TabStop = True
           OnClick = rdoMaximumSpatialTypeClick
         end
@@ -766,7 +758,7 @@ object frmAnalysis: TfrmAnalysis
           Width = 217
           Height = 17
           Caption = 'Kilometer Radius'
-          TabOrder = 3
+          TabOrder = 2
           OnClick = rdoMaximumSpatialTypeClick
         end
       end
@@ -802,7 +794,7 @@ object frmAnalysis: TfrmAnalysis
           Height = 17
           Caption = 'Include Purely Spatial Clusters (Temporal Size = 100%)'
           Enabled = False
-          TabOrder = 1
+          TabOrder = 3
         end
         object rdoPercentageTemproal: TRadioButton
           Left = 226
@@ -811,7 +803,7 @@ object frmAnalysis: TfrmAnalysis
           Height = 17
           Caption = 'Percent of Study Period (<= 90%)'
           Checked = True
-          TabOrder = 2
+          TabOrder = 1
           TabStop = True
         end
         object rdoTimeTemproal: TRadioButton
@@ -820,7 +812,7 @@ object frmAnalysis: TfrmAnalysis
           Width = 217
           Height = 17
           Caption = 'Years'
-          TabOrder = 3
+          TabOrder = 2
         end
       end
     end
@@ -833,8 +825,7 @@ object frmAnalysis: TfrmAnalysis
         Width = 465
         Height = 153
         Caption = 'Additional Optional Output Files:'
-        TabOrder = 0
-        TabStop = True
+        TabOrder = 1
         object lblClustersInColumnFormat: TLabel
           Left = 16
           Top = 48
@@ -904,6 +895,7 @@ object frmAnalysis: TfrmAnalysis
           Width = 15
           Height = 17
           BiDiMode = bdLeftToRight
+          Caption = ' '
           ParentBiDiMode = False
           ParentShowHint = False
           ShowHint = True
@@ -964,8 +956,7 @@ object frmAnalysis: TfrmAnalysis
         Width = 465
         Height = 50
         Caption = 'Criteria for Reporting Secondary Clusters'
-        TabOrder = 1
-        TabStop = True
+        TabOrder = 2
         object cboCriteriaSecClusters: TComboBox
           Left = 14
           Top = 18
@@ -990,8 +981,7 @@ object frmAnalysis: TfrmAnalysis
         Height = 58
         Align = alTop
         BevelOuter = bvNone
-        TabOrder = 2
-        TabStop = True
+        TabOrder = 0
         object Label29: TLabel
           Left = 8
           Top = 8
