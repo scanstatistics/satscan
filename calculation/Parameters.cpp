@@ -306,7 +306,7 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
     switch (geProbabiltyModelType) {
       case POISSON              : fprintf(fp, " using the Poisson model.\n"); break;
       case BERNOULLI            : fprintf(fp, " using the Bernoulli model.\n"); break;
-      case SPACETIMEPERMUTATION : fprintf(fp, " using the Tpace-Time Permutation model.\n"); break;
+      case SPACETIMEPERMUTATION : fprintf(fp, " using the Space-Time Permutation model.\n"); break;
       case NORMAL               : fprintf(fp, " using the Normal model.\n"); break;
       case SURVIVAL             : fprintf(fp, " using the Survival model.\n"); break;
       case RANK                 : fprintf(fp, " using the Rank model.\n"); break;
