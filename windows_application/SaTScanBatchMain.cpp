@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
          {
          pPrintScreen->SatScanPrintf("\nSaTScan completed successfully.\n");
          pPrintScreen->SatScanPrintf("The results have been written to: \n");
-         pPrintScreen->SatScanPrintf("  %s\n\n",pParams->m_szOutputFilename);
+         pPrintScreen->SatScanPrintf("  %s\n\n",pParams->GetOutputFileName().c_str());
          //requested removal by Jessica Hartman on Aug. 9,2002
          //pPrintScreen->SatScanPrintf("\nPress <Enter> to exit the SaTScan program.");
          //getc(stdin);
