@@ -103,13 +103,12 @@ BaseOutputStorageClass::BaseOutputStorageClass() {}
 
 BaseOutputStorageClass::~BaseOutputStorageClass() {}
 
-const char * BaseOutputStorageClass::CLUST_NUM_FIELD 	  = "CLUST_NUM";
+const char * BaseOutputStorageClass::CLUST_NUM_FIELD 	  = "CLUSTER";
 const char * BaseOutputStorageClass::LOC_ID_FIELD   	  = "LOC_ID";
 const char * BaseOutputStorageClass::P_VALUE_FLD  	  = "P_VALUE";
 const char * BaseOutputStorageClass::OBSERVED_FIELD	  = "OBSERVED";
 const char * BaseOutputStorageClass::EXPECTED_FIELD	  = "EXPECTED";
-const char * BaseOutputStorageClass::REL_RISK_FIELD	  = "REL_RISK";
-const char * BaseOutputStorageClass::LOG_LIKL_FIELD	  = "LOG_LIKL";
+const char * BaseOutputStorageClass::LOG_LIKL_RATIO_FIELD = "LLR";
 const char * BaseOutputStorageClass::TST_STAT_FIELD       = "TST_STAT";
 
 void BaseOutputStorageClass::AddRecord(const OutputRecord* pRecord) {

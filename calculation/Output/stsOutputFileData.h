@@ -32,8 +32,7 @@ class BaseOutputStorageClass {
       static const char                  * P_VALUE_FLD;
       static const char                  * OBSERVED_FIELD;
       static const char                  * EXPECTED_FIELD;
-      static const char                  * REL_RISK_FIELD;
-      static const char                  * LOG_LIKL_FIELD;
+      static const char                  * LOG_LIKL_RATIO_FIELD;
       static const char                  * TST_STAT_FIELD;
       ZdPointerVector<const OutputRecord>  gvRecordBuffers;
       ZdPointerVector<ZdField>	           gvFields;
