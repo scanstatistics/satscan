@@ -41,12 +41,6 @@ CMinMeasureList::~CMinMeasureList()
   delete [] m_pMinMeasures;
 }
 
-void CMinMeasureList::AddMeasure(count_t n, measure_t u)
-{
-  if (m_pMinMeasures[n] > u)
-    m_pMinMeasures[n] = u;
-}
-
 //double CMinMeasureList::GetMaxLogLikelihood(count_t N, measure_t U, double& nMaxLogLikelihood)
 double CMinMeasureList::GetMaxLogLikelihood(const CSaTScanData& Data)
 {
@@ -110,12 +104,6 @@ CMaxMeasureList::CMaxMeasureList(count_t N, measure_t U, BasePrint *pPrintDirect
 CMaxMeasureList::~CMaxMeasureList()
 {
   delete [] m_pMaxMeasures;
-}
-
-void CMaxMeasureList::AddMeasure(count_t n, measure_t u)
-{
-  if (m_pMaxMeasures[n] < u)
-    m_pMaxMeasures[n] = u;
 }
 
 //double CMaxMeasureList::GetMaxLogLikelihood(count_t N, measure_t U, double& nMaxLogLikelihood)
@@ -186,18 +174,6 @@ CMinMaxMeasureList::~CMinMaxMeasureList()
 {
   delete [] m_pMinMeasures;
   delete [] m_pMaxMeasures;
-}
-
-void CMinMaxMeasureList::AddMeasure(count_t n, measure_t u)
-{
-  if (m_pMinMeasures[n] > u)
-    m_pMinMeasures[n] = u;
-  if (m_pMaxMeasures[n] < u)
-    m_pMaxMeasures[n] = u;
-
-// gpPrintDirection->SatScanPrintf("n = %i, u = %f, m_pMaxMeasures[0] = %f\n",
-//          n, u, m_pMaxMeasures[0]);
-//  HoldForEnter();
 }
 
 //double CMinMaxMeasureList::GetMaxLogLikelihood(count_t N, measure_t U, double& nMaxLogLikelihood)

@@ -27,7 +27,7 @@ class CMinMeasureList : public CMeasureList
     CMinMeasureList(count_t N, measure_t U, BasePrint *pPrintDirection);
     virtual ~CMinMeasureList();
 
-    virtual void   AddMeasure(count_t n, measure_t u);
+    inline virtual void   AddMeasure(count_t n, measure_t u);
 //    virtual double GetMaxLogLikelihood(count_t N, measure_t U, double& nMaxLogLikelihood);
     virtual double GetMaxLogLikelihood(const CSaTScanData& Data);
     virtual void   Display(FILE* pFile);
@@ -36,6 +36,12 @@ class CMinMeasureList : public CMeasureList
     measure_t* m_pMinMeasures;
 
 };
+
+inline void CMinMeasureList::AddMeasure(count_t n, measure_t u)
+{
+  if (m_pMinMeasures[n] > u)
+    m_pMinMeasures[n] = u;
+}
 
 class CMaxMeasureList : public CMeasureList
 {
@@ -43,7 +49,7 @@ class CMaxMeasureList : public CMeasureList
     CMaxMeasureList(count_t N, measure_t U, BasePrint *pPrintDirection);
     virtual ~CMaxMeasureList();
 
-    virtual void   AddMeasure(count_t n, measure_t u);
+    inline virtual void   AddMeasure(count_t n, measure_t u);
 //    virtual double GetMaxLogLikelihood(count_t N, measure_t U, double& nMaxLogLikelihood);
     virtual double GetMaxLogLikelihood(const CSaTScanData& Data);
     virtual void   Display(FILE* pFile);
@@ -53,13 +59,19 @@ class CMaxMeasureList : public CMeasureList
 
 };
 
+inline void CMaxMeasureList::AddMeasure(count_t n, measure_t u)
+{
+  if (m_pMaxMeasures[n] < u)
+    m_pMaxMeasures[n] = u;
+}
+
 class CMinMaxMeasureList : public CMeasureList
 {
   public:
     CMinMaxMeasureList(count_t N, measure_t U, BasePrint *pPrintDirection);
     virtual ~CMinMaxMeasureList();
 
-    virtual void   AddMeasure(count_t n, measure_t u);
+    inline virtual void   AddMeasure(count_t n, measure_t u);
 //    virtual double GetMaxLogLikelihood(count_t N, measure_t U, double& nMaxLogLikelihood);
     virtual double GetMaxLogLikelihood(const CSaTScanData& Data);
     virtual void   Display(FILE* pFile);
@@ -69,5 +81,13 @@ class CMinMaxMeasureList : public CMeasureList
     measure_t* m_pMaxMeasures;
 
 };
+
+inline void CMinMaxMeasureList::AddMeasure(count_t n, measure_t u)
+{
+  if (m_pMinMeasures[n] > u)
+    m_pMinMeasures[n] = u;
+  if (m_pMaxMeasures[n] < u)
+    m_pMaxMeasures[n] = u;
+}
 //*****************************************************************************
 #endif
