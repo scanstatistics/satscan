@@ -394,6 +394,12 @@ double CSaTScanData::GetEllipseShape(int iEllipseIndex) const {
   return gvEllipseShapes[iEllipseIndex - 1];
 }
 
+/** Returns whether data of location at index has been removed as a result of
+    being part of most likely cluster in a sequential scan.*/
+bool CSaTScanData::GetIsNullifiedLocation(tract_t tLocationIndex) const {
+   return std::find(gvNullifiedLocations.begin(), gvNullifiedLocations.end(), tLocationIndex) != gvNullifiedLocations.end();
+}
+
 /** For Bernoulli model, returns ratio of total cases / total population for
     iStream'th data stream. For all other models, returns 1.*/
 double CSaTScanData::GetMeasureAdjustment(unsigned int iStream) const {
@@ -677,48 +683,71 @@ bool CSaTScanData::ReadSurvivalData() {
 }
 
 /** For tract at tTractIndex - zeros case, control, and population data from data
-    stream structures. This function is utilized by the optional sequential scan
+    set structures. This function is utilized by the optional sequential scan
     feature and is designed only for purely spatial analyses at this time.*/
 void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
   count_t       tTotalCases, tTotalControls;
-  measure_t     tTotalMeasure;
+  measure_t     tTotalMeasure, tTotalCategoryCases;
 
   try {
+    // Previous iterations of sequential scan could have had this location as part of the most likely cluster.
+    if (GetIsNullifiedLocation(tTractIndex))
+      return;
+
     for (size_t t=0; t < gpDataSets->GetNumDataSets(); ++t) {
-       RealDataStream & thisStream = gpDataSets->GetStream(t);
+       RealDataStream& thisSet = gpDataSets->GetStream(t);
+       PopulationData& thisPopulation = thisSet.GetPopulationData();
 
        //$$ This process will likely need further updates for the Survival, Normal
-       //$$ and possibly the Rank model.
+       //$$ and possibly the Rank model. Might be more fitting to have a virtual
+       //$$ method in DataStreamHandler classes.
        switch (gParameters.GetProbabilityModelType()) {
-         case ORDINAL :
-           tTotalCases = thisStream.GetTotalCases();
-           for (size_t t=0; t < thisStream.GetCasesByCategory().size(); ++t) {
-              tTotalCases -= thisStream.GetCategoryCaseArray(t)[0][tTractIndex];
-              thisStream.GetCategoryCaseArray(t)[0][tTractIndex] = 0;
-           }
-           thisStream.SetTotalCases(tTotalCases);
-           break;
          case BERNOULLI :
-           tTotalControls = thisStream.GetTotalControls();
-           tTotalControls -= thisStream.GetControlArray()[0][tTractIndex];
-           thisStream.GetControlArray()[0][tTractIndex] = 0;
-           thisStream.SetTotalControls(tTotalControls);
-         default :
-           tTotalCases = thisStream.GetTotalCases();
-           tTotalCases -= thisStream.GetCaseArray()[0][tTractIndex];
-           thisStream.GetCaseArray()[0][tTractIndex] = 0;
-           thisStream.SetTotalCases(tTotalCases);
-           tTotalMeasure = thisStream.GetTotalMeasure();
-           tTotalMeasure -= thisStream.GetMeasureArray()[0][tTractIndex];
-           thisStream.GetMeasureArray()[0][tTractIndex] = 0;
-           thisStream.SetTotalMeasure(tTotalMeasure);
+           // Remove controls for location from data set
+           tTotalControls = thisSet.GetTotalControls();
+           tTotalControls -= thisSet.GetControlArray()[0][tTractIndex];
+           thisSet.GetControlArray()[0][tTractIndex] = 0;
+           thisSet.SetTotalControls(tTotalControls);
+         POISSON :
+           // Remove observed and expected cases for location from data set
+           tTotalCases = thisSet.GetTotalCases();
+           tTotalCases -= thisSet.GetCaseArray()[0][tTractIndex];
+           thisSet.GetCaseArray()[0][tTractIndex] = 0;
+           thisSet.SetTotalCases(tTotalCases);
+           tTotalMeasure = thisSet.GetTotalMeasure();
+           tTotalMeasure -= thisSet.GetMeasureArray()[0][tTractIndex];
+           thisSet.GetMeasureArray()[0][tTractIndex] = 0;
+           thisSet.SetTotalMeasure(tTotalMeasure);
+           break;
+         case SPACETIMEPERMUTATION :
+           // Since space-time permutation model only permitted with space-time analyses, this
+           // function is not useable at this time.
+           ZdGenerateException("RemoveTractSignificance() not implemented for space-time permutation model.",
+                               "RemoveTractSignificance()");
+         case ORDINAL :
+           // Remove observed cases for location from data set ordinal categories
+           tTotalCases = thisSet.GetTotalCases();
+           for (size_t t=0; t < thisSet.GetCasesByCategory().size(); ++t) {
+              tTotalCases -= thisSet.GetCategoryCaseArray(t)[0][tTractIndex];
+              //$$ NOTE: Depending on what information is to be printed for results, it might be
+              //$$       necessary to store the initial number of category cases separately.  
+              thisPopulation.RemoveOrdinalCategoryCases(t, thisSet.GetCategoryCaseArray(t)[0][tTractIndex]);
+              thisSet.GetCategoryCaseArray(t)[0][tTractIndex] = 0;
+           }
+           thisSet.SetTotalCases(tTotalCases);
+           break;
+          default :
+           ZdGenerateException("Unknown probability model type '%d'.", "RemoveTractSignificance()", gParameters.GetProbabilityModelType());
        };
     }
 
+    // Remove location population data as specified in maximum circle population file
     if (gvCircleMeasure.size()) {
        m_nTotalMaxCirclePopulation -= gvCircleMeasure[tTractIndex];
        gvCircleMeasure[tTractIndex] = 0;
     }
+    // Add location to collection of nullified locations - note that we're just removing locations' data, not the location.
+    gvNullifiedLocations.push_back(tTractIndex);
   }
   catch (ZdException & x) {
     x.AddCallpath("RemoveTractSignificance()", "CSaTScanData");

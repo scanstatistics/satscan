@@ -58,6 +58,7 @@ class CSaTScanData {
     int                                         m_nFlexibleWindowStartRangeEndIndex;
     int                                         m_nFlexibleWindowEndRangeStartIndex;
     int                                         m_nFlexibleWindowEndRangeEndIndex;
+    std::vector<tract_t>                        gvNullifiedLocations;
 
     bool                                        AdjustMeasure(RealDataStream& thisStream, measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate);
     measure_t                                   CalcMeasureForTimeInterval(PopulationData & Population, measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate);
@@ -113,6 +114,7 @@ class CSaTScanData {
     int                                         GetFlexibleWindowStartRangeEndIndex() const {return m_nFlexibleWindowStartRangeEndIndex;}
     int                                         GetFlexibleWindowStartRangeStartIndex() const {return m_nFlexibleWindowStartRangeStartIndex;}
     inline const GInfo                        * GetGInfo() const { return &gCentroidsHandler;}
+    bool                                        GetIsNullifiedLocation(tract_t tLocationIndex) const;
     double                                      GetMaxCircleSize() const {return m_nMaxCircleSize;}
     const std::vector<measure_t>              & GetPopulationArray() const {return gvCircleMeasure;}
     double                                      GetMaxReportedCircleSize() const {return m_nMaxReportedCircleSize;}
