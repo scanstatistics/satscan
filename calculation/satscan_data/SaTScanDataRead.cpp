@@ -139,6 +139,11 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringPa
       return false;
     }
     //read and validate date
+    if (m_pParameters->GetPrecisionOfTimesType() > NONE && !Parser.GetWord(2)) {
+      gpPrint->PrintInputWarning("Error: Record %d in %s file does not contain a date, which is required for a precision of '%s'.\n",
+                                 nRec, szDescription, m_pParameters->GetDatePrecisionAsString(m_pParameters->GetPrecisionOfTimesType()));
+      return false;
+    }
     switch (m_pParameters->GetPrecisionOfTimesType()) {
       case NONE  : JulianToMDY(&uiMonth, &uiDay, &uiYear, m_nStartDate); iScanPrecision = 3; break;
       case YEAR  : iScanPrecision = sscanf(Parser.GetWord(2), "%d", &uiYear); break;
@@ -198,8 +203,8 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringPa
         }
       }
       else if (iNumCovariatesScanned != gPopulationCategories.GetNumPopulationCategoryCovariates()) {
-        gpPrint->PrintInputWarning("Error: Record %d of case file contains %d covariates but the population file\n",
-                                            nRec, iNumCovariatesScanned);
+        gpPrint->PrintInputWarning("Error: Record %d of case file contains %d covariate%s but the population file\n",
+                                            nRec, iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"));
         gpPrint->PrintInputWarning("       defined the number of covariates as %d.\n",
                                             gPopulationCategories.GetNumPopulationCategoryCovariates());
         return false;
@@ -383,8 +388,9 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
            //there must be at least two dimensions
            if (iScanCount < 3) {
              gpPrint->PrintInputWarning("Error: First record of coordinates file contains %s.\n",
-                                                 iScanCount == 1 ? "only x-coordinate" : "no coordinates");
-             return false;
+                                                 iScanCount == 2 ? "only x-coordinate" : "no coordinates");
+             bValid = false;
+             break; //stop reading records, the first record defines remaining records format 
            }
            //ok, first record indicates that there are iScanCount - 1 dimensions (first scan is tract identifier)
            //data still could be invalid, but this will be determined like the remaining records
@@ -713,19 +719,27 @@ bool CSaTScanData::ReadLatitudeLongitudeCoordinates(StringParser & Parser, std::
   double        dLatitude, dLongitude;
 
   //read latitude, validating that string can be converted to double
-  if ((pCoordinate = Parser.GetWord(iWordOffSet)) != 0)
+  if ((pCoordinate = Parser.GetWord(iWordOffSet)) != 0) {
     if (! sscanf(pCoordinate, "%lf", &dLatitude)) {
-      gpPrint->PrintInputWarning("Error: Value '%s' of record %d in %s file could not be read as latitude.\n",
-                                          pCoordinate, lRecNum, sSourceFile);
+      gpPrint->PrintInputWarning("Error: Value '%s' of record %d in %s file could not be read as latitude.\n", pCoordinate, lRecNum, sSourceFile);
       return false;
     }
+  }
+  else {
+    gpPrint->PrintInputWarning("Error: Record %d in %s file missing latitude and longitude coordinates.\n", lRecNum, sSourceFile);
+    return false;
+  }
   //read longitude, validating that string can be converted to double
-  if ((pCoordinate = Parser.GetWord(++iWordOffSet)) != 0)
+  if ((pCoordinate = Parser.GetWord(++iWordOffSet)) != 0) {
     if (! sscanf(pCoordinate, "%lf", &dLongitude)) {
-      gpPrint->PrintInputWarning("Error: Value '%s' of record %d in %s file could not be read as longitude.\n",
-                                          pCoordinate, lRecNum, sSourceFile);
+      gpPrint->PrintInputWarning("Error: Value '%s' of record %d in %s file could not be read as longitude.\n", pCoordinate, lRecNum, sSourceFile);
       return false;
     }
+  }
+  else {
+    gpPrint->PrintInputWarning("Error: Record %d in %s file missing longitude coordinate.\n", lRecNum, sSourceFile);
+    return false;
+  }
   //validate that there is not extra data for record
   if ((pCoordinate = Parser.GetWord(++iWordOffSet)) != 0) {
     gpPrint->PrintInputWarning("Error: Record %d in %s file contains extra data: '%s'.\n", lRecNum, sSourceFile, pCoordinate);
@@ -733,15 +747,13 @@ bool CSaTScanData::ReadLatitudeLongitudeCoordinates(StringParser & Parser, std::
   }
   //validate range of latitude value
   if ((fabs(dLatitude) > 90.0)) {
-    gpPrint->PrintInputWarning("Error: Latitude %lf, for record %d in %s file, is out of range.\n",
-                                        dLatitude, lRecNum, sSourceFile);
+    gpPrint->PrintInputWarning("Error: Latitude %lf, for record %d in %s file, is out of range.\n",  dLatitude, lRecNum, sSourceFile);
     gpPrint->PrintInputWarning("       Latitude must be between -90 and 90.\n");
     return false;
   }
   //validate range of longitude value
   if ((fabs(dLongitude) > 180.0)) {
-    gpPrint->PrintInputWarning("Error: Longitude %lf, for record %d in %s file, is out of range.\n",
-                                        dLongitude, lRecNum, sSourceFile);
+    gpPrint->PrintInputWarning("Error: Longitude %lf, for record %d in %s file, is out of range.\n", dLongitude, lRecNum, sSourceFile);
     gpPrint->PrintInputWarning("       Longitude must be between -180 and 180.\n");
     return false;
   }
