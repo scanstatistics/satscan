@@ -25,7 +25,6 @@ class TfrmMainForm : public TForm{
         TMenuItem *Session1;
         TMenuItem *Execute1;
         TMenuItem *Contents1;
-        TMenuItem *UsingHelp1;
         TMenuItem *N1;
         TMenuItem *AboutSatScan1;
         TMenuItem *Exit2;
@@ -61,7 +60,6 @@ class TfrmMainForm : public TForm{
         TAction *ExitAction;
         TAction *ExecuteAction;
         TAction *HelpAction;
-        TAction *UsingHelpAction;
         TAction *AboutSatscanAction;
         TMenuItem *ImportInputFile1;
         TBevel *Bevel5;
@@ -73,6 +71,10 @@ class TfrmMainForm : public TForm{
         TAction *UpdateAction;
         TMenuItem *N4;
         TMenuItem *SaveSessionAs1;
+        TAction *AdvancedParametersAction;
+        TMenuItem *AdvancedParameters1;
+        TMenuItem *N5;
+        TSpeedButton *btnAdvancedFeatures;
         void __fastcall PrintSessionActionExecute(TObject *Sender);
         void __fastcall NewSessionActionExecute(TObject *Sender);
         void __fastcall OpenParameterFileActionExecute(TObject *Sender);
@@ -83,13 +85,13 @@ class TfrmMainForm : public TForm{
         void __fastcall ExitActionExecute(TObject *Sender);
         void __fastcall ExecuteActionExecute(TObject *Sender);
         void __fastcall HelpActionExecute(TObject *Sender);
-        void __fastcall UsingHelpActionExecute(TObject *Sender);
         void __fastcall AboutSatscanActionExecute(TObject *Sender);
         void __fastcall ImportActionExecute(TObject *Sender);
         void __fastcall ReopenActionExecute(TObject *Sender);
         void __fastcall OnFormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall OnFormActivate(TObject *Sender);
         void __fastcall UpdateActionExecute(TObject *Sender);
+        void __fastcall AdvancedParametersActionExecute(TObject *Sender);
   private:	// User declarations
     bool                        gbShowStartWindow;
     stsOutputFileRegister       gRegistry;

@@ -30,6 +30,19 @@ void __fastcall TfrmMainForm::AboutSatscanActionExecute(TObject *Sender) {
   TfrmAbout(this).ShowModal();
 }
 
+/** event triggiered when associated advanced features action clicked */
+void __fastcall TfrmMainForm::AdvancedParametersActionExecute(TObject *Sender) {
+  try {
+    TfrmAnalysis * frmAnalysisForm = dynamic_cast<TfrmAnalysis *>(frmMainForm->ActiveMDIChild);
+    if (frmAnalysisForm)
+      frmAnalysisForm->ShowAdvancedFeaturesDialog();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("AdvancedParametersActionExecute()","TfrmMainForm");
+    DisplayBasisException(this, x);
+  }
+}
+
 /** close child window action event - triggers active child window's close event */
 void __fastcall TfrmMainForm::CloseSessionActionExecute(TObject *Sender) {
   if (ActiveMDIChild)
@@ -401,10 +414,5 @@ void __fastcall TfrmMainForm::UpdateActionExecute(TObject *Sender) {
     x.AddCallpath("UpdateActionExecute","TfrmMainForm");
     DisplayBasisException(this, x);
   }
-}
-
-/** launches WinHelp guide */
-void __fastcall TfrmMainForm::UsingHelpActionExecute(TObject *Sender) {
-  WinHelp(0, "winhelp.hlp", HELP_HELPONHELP, 0L);
 }
 
