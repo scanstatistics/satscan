@@ -207,7 +207,7 @@ void stsClusterData::Init() {
 // in the global vector of cluster records
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropriate data into the cluster record
-void stsClusterData::RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber) {
+void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber) {
    ZdString                     sRadius, sLatitude, sLongitude;
    float                        fPVal;
    ZdString                     sTempValue, sStartDate, sEndDate, sShape, sAngle;
@@ -224,52 +224,50 @@ void stsClusterData::RecordClusterData(const CCluster& pCluster, const CSaTScanD
 
       // ellipse shape and angle      
       if(gbPrintEllipses) {
-         SetEllipseString(sAngle, sShape, pCluster, pData);      
+         SetEllipseString(sAngle, sShape, theCluster, theData);      
          pRecord->SetEllipseAngles(sAngle);
          pRecord->SetEllipseShapes(sShape);
       }
       
       // cluster start and end date
-      SetStartAndEndDates(sStartDate, sEndDate, pCluster, pData);
+      SetStartAndEndDates(sStartDate, sEndDate, theCluster, theData);
       pRecord->SetEndDate(sEndDate);
       pRecord->SetStartDate(sStartDate);
 
-      pRecord->SetObserved(pCluster.m_nCases);
-      pRecord->SetExpected(pCluster.m_nMeasure);
+      pRecord->SetObserved(theCluster.m_nCases);
+      pRecord->SetExpected(theData.GetMeasureAdjustment()* theCluster.m_nMeasure);
       
       // central area id
-      SetAreaID(sTempValue, pCluster, pData);
+      SetAreaID(sTempValue, theCluster, theData);
       pRecord->SetLocationID(sTempValue);
-            
+
       // log likliehood or tst_stat if space-time permutation
       if(geProbabiltyModelType == SPACETIMEPERMUTATION) {
-         if(pCluster.m_iEllipseOffset !=0 && gbDuczmalCorrect)
-            pRecord->SetTestStat(pCluster.GetDuczmalCorrectedLogLikelihoodRatio());
+         if(theCluster.m_iEllipseOffset !=0 && gbDuczmalCorrect)
+            pRecord->SetTestStat(theCluster.GetDuczmalCorrectedLogLikelihoodRatio());
          else
-            pRecord->SetTestStat(pCluster.m_nRatio);
+            pRecord->SetTestStat(theCluster.m_nRatio);
       }
       else {
-         pRecord->SetLogLikelihood(pCluster.m_nRatio);
-         if(gbDuczmalCorrect) {
-            if(pCluster.m_iEllipseOffset !=0)
-               pRecord->SetTestStat(pCluster.GetDuczmalCorrectedLogLikelihoodRatio());
-            else
-               pRecord->SetFieldIsBlank(GetFieldNumber(TST_STAT_FIELD), true);
-         }            
+         pRecord->SetLogLikelihood(theCluster.m_nRatio);
+         if (gbDuczmalCorrect)
+           //print duczmal adjusted LLR even if shape is circle, like in results file.
+           //calling GetDuczmalCorrectedLogLikelihoodRatio() for a circle returns LLR.
+           pRecord->SetTestStat(theCluster.GetDuczmalCorrectedLogLikelihoodRatio());
       }
 
-      pRecord->SetNumAreas(pCluster.m_nTracts);
+      pRecord->SetNumAreas(theCluster.m_nTracts);
            
       // p value
       if (gbPrintPVal) {
-         fPVal = (float) pCluster.GetPVal(pData.m_pParameters->GetNumReplicationsRequested());
+         fPVal = (float) theCluster.GetPVal(theData.m_pParameters->GetNumReplicationsRequested());
          pRecord->SetPValue(fPVal);
       }
                  
-      pRecord->SetRelativeRisk(pCluster.GetRelativeRisk(pData.GetMeasureAdjustment()));
+      pRecord->SetRelativeRisk(theCluster.GetRelativeRisk(theData.GetMeasureAdjustment()));
 
       // coordinates
-      SetCoordinates(sLatitude, sLongitude, sRadius, vAdditCoords, pCluster, pData);
+      SetCoordinates(sLatitude, sLongitude, sRadius, vAdditCoords, theCluster, theData);
       pRecord->SetFirstCoordinate(sLatitude);
       pRecord->SetAdditionalCoordinates(vAdditCoords);
       pRecord->SetSecondCoordinate(sLongitude);
