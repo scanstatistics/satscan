@@ -15,7 +15,7 @@ BernoulliDataStreamHandler::~BernoulliDataStreamHandler() {}
 /** allocates cases structures for stream*/
 void BernoulliDataStreamHandler::AllocateControlStructures(unsigned int iStream) {
   try {
-    gvDataStreams[iStream]->AllocateControlsArray();
+    gvDataSets[iStream]->AllocateControlsArray();
   }
   catch(ZdException &x) {
     x.AddCallpath("AllocateControlStructures()","BernoulliDataStreamHandler");
@@ -31,9 +31,9 @@ AbtractDataStreamGateway * BernoulliDataStreamHandler::GetNewDataGateway() const
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
-    for (t=0; t < gvDataStreams.size(); ++t) {
+    for (t=0; t < gvDataSets.size(); ++t) {
       //get reference to stream
-      const RealDataStream& thisStream = *gvDataStreams[t];
+      const RealDataStream& thisStream = *gvDataSets[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisStream.GetTotalCases());
       Interface.SetTotalMeasureCount(thisStream.GetTotalMeasure());
@@ -62,7 +62,7 @@ AbtractDataStreamGateway * BernoulliDataStreamHandler::GetNewDataGateway() const
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataStreamGateway->AddDataStreamInterface(Interface);
+      pDataStreamGateway->AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
@@ -81,9 +81,9 @@ AbtractDataStreamGateway * BernoulliDataStreamHandler::GetNewSimulationDataGatew
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
-    for (t=0; t < gvDataStreams.size(); ++t) {
+    for (t=0; t < gvDataSets.size(); ++t) {
       //get reference to stream
-      const RealDataStream& thisRealStream = *gvDataStreams[t];
+      const RealDataStream& thisRealStream = *gvDataSets[t];
       const SimulationDataStream& thisSimulationStream = *Container[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisRealStream.GetTotalCases());
@@ -113,7 +113,7 @@ AbtractDataStreamGateway * BernoulliDataStreamHandler::GetNewSimulationDataGatew
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataStreamGateway->AddDataStreamInterface(Interface);
+      pDataStreamGateway->AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
@@ -122,23 +122,6 @@ AbtractDataStreamGateway * BernoulliDataStreamHandler::GetNewSimulationDataGatew
     throw;
   }  
   return pDataStreamGateway;
-}
-
-/** Returns a collection of cloned randomizers maintained by data stream handler.
-    All previous elements of list are deleted. */
-RandomizerContainer_t& BernoulliDataStreamHandler::GetRandomizerContainer(RandomizerContainer_t& Container) const {
-  std::vector<BernoulliNullHypothesisRandomizer>::const_iterator itr;
-
-  try {
-    Container.DeleteAllElements();
-    for (itr=gvDataStreamRandomizers.begin(); itr != gvDataStreamRandomizers.end(); ++itr)
-       Container.push_back(itr->Clone());
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("GetRandomizerContainer()","BernoulliDataStreamHandler");
-    throw;
-  }
-  return Container;
 }
 
 /** Fills passed container with simulation data objects, with appropriate members
@@ -190,7 +173,7 @@ bool BernoulliDataStreamHandler::ReadControlFile(size_t tStream) {
                                    gParameters.GetControlFileName(tStream + 1).c_str());
       return false;
     }
-    gPrint.SetImpliedInputFileType(BasePrint::CONTROLFILE, (GetNumStreams() == 1 ? 0 : tStream + 1));
+    gPrint.SetImpliedInputFileType(BasePrint::CONTROLFILE, (GetNumDataSets() == 1 ? 0 : tStream + 1));
     AllocateControlStructures(tStream);
     bValid = ReadCounts(tStream, fp, "control");
     fclose(fp); fp=0;
@@ -207,15 +190,15 @@ bool BernoulliDataStreamHandler::ReadControlFile(size_t tStream) {
 bool BernoulliDataStreamHandler::ReadData() {
   try {
     SetRandomizers();
-    for (size_t t=0; t < GetNumStreams(); ++t) {
-       GetStream(t).SetAggregateCategories(true);
-       if (GetNumStreams() == 1)
+    for (size_t t=0; t < GetNumDataSets(); ++t) {
+       GetStream(t).SetAggregateCovariateCategories(true);
+       if (GetNumDataSets() == 1)
          gPrint.SatScanPrintf("Reading the case file\n");
        else
          gPrint.SatScanPrintf("Reading the case file for data set %u\n", t + 1);
        if (!ReadCaseFile(t))
          return false;
-       if (GetNumStreams() == 1)
+       if (GetNumDataSets() == 1)
          gPrint.SatScanPrintf("Reading the control file\n");
        else
          gPrint.SatScanPrintf("Reading the control file for data set %u\n", t + 1);
@@ -233,7 +216,22 @@ bool BernoulliDataStreamHandler::ReadData() {
 /** allocates randomizers for each data stream */
 void BernoulliDataStreamHandler::SetRandomizers() {
   try {
-    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), BernoulliNullHypothesisRandomizer());
+    gvDataStreamRandomizers.DeleteAllElements();
+    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), 0);
+    switch (gParameters.GetSimulationType()) {
+      case STANDARD :
+          gvDataStreamRandomizers[0] = new BernoulliNullHypothesisRandomizer();
+          break;
+      case FILESOURCE :
+          gvDataStreamRandomizers[0] = new FileSourceRandomizer(gParameters);
+          break;
+      case HA_RANDOMIZATION :
+      default :
+          ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
+    };
+    //create more if needed
+    for (size_t t=1; t < gParameters.GetNumDataStreams(); ++t)
+       gvDataStreamRandomizers[t] = gvDataStreamRandomizers[0]->Clone();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetRandomizers()","BernoulliDataStreamHandler");

@@ -15,8 +15,8 @@ RankDataStreamHandler::~RankDataStreamHandler() {}
 /** allocates cases structures for stream*/
 void RankDataStreamHandler::AllocateCaseStructures(unsigned int iStream) {
   try {
-    gvDataStreams[iStream]->AllocateCasesArray();
-    gvDataStreams[iStream]->AllocateMeasureArray();
+    gvDataSets[iStream]->AllocateCasesArray();
+    gvDataSets[iStream]->AllocateMeasureArray();
   }
   catch(ZdException &x) {
     x.AddCallpath("AllocateCaseStructures()","RankDataStreamHandler");
@@ -32,9 +32,9 @@ AbtractDataStreamGateway * RankDataStreamHandler::GetNewDataGateway() const {
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
-    for (t=0; t < gvDataStreams.size(); ++t) {
+    for (t=0; t < gvDataSets.size(); ++t) {
       //get reference to stream
-      const RealDataStream& thisStream = *gvDataStreams[t];
+      const RealDataStream& thisStream = *gvDataSets[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisStream.GetTotalCases());
       Interface.SetTotalMeasureCount(thisStream.GetTotalMeasure());
@@ -63,7 +63,7 @@ AbtractDataStreamGateway * RankDataStreamHandler::GetNewDataGateway() const {
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataStreamGateway->AddDataStreamInterface(Interface);
+      pDataStreamGateway->AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
@@ -82,9 +82,9 @@ AbtractDataStreamGateway * RankDataStreamHandler::GetNewSimulationDataGateway(co
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
-    for (t=0; t < gvDataStreams.size(); ++t) {
+    for (t=0; t < gvDataSets.size(); ++t) {
       //get reference to stream
-      const RealDataStream& thisRealStream = *gvDataStreams[t];
+      const RealDataStream& thisRealStream = *gvDataSets[t];
       const SimulationDataStream& thisSimulationStream = *Container[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisRealStream.GetTotalCases());
@@ -114,7 +114,7 @@ AbtractDataStreamGateway * RankDataStreamHandler::GetNewSimulationDataGateway(co
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataStreamGateway->AddDataStreamInterface(Interface);
+      pDataStreamGateway->AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
@@ -123,23 +123,6 @@ AbtractDataStreamGateway * RankDataStreamHandler::GetNewSimulationDataGateway(co
     throw;
   }  
   return pDataStreamGateway;
-}
-
-/** Returns a collection of cloned randomizers maintained by data stream handler.
-    All previous elements of list are deleted. */
-RandomizerContainer_t& RankDataStreamHandler::GetRandomizerContainer(RandomizerContainer_t& Container) const {
-  ZdPointerVector<RankRandomizer>::const_iterator itr;
-
-  try {
-    Container.DeleteAllElements();
-    for (itr=gvDataStreamRandomizers.begin(); itr != gvDataStreamRandomizers.end(); ++itr)
-       Container.push_back((*itr)->Clone());
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("GetRandomizerContainer()","RankDataStreamHandler");
-    throw;
-  }
-  return Container;
 }
 
 /** Fills passed container with simulation data objects, with appropriate members
@@ -248,9 +231,8 @@ bool RankDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* sz
   measure_t     tContinuosVariable, ** ppMeasure, ** ppSqMeasure, tTotalMeasure=0;
 
   try {
-    RealDataStream& thisStream = *gvDataStreams[tStream];
+    RealDataStream& thisStream = *gvDataSets[tStream];
     StringParser Parser(gPrint);
-    RankRandomizer & Randomizer = *gvDataStreamRandomizers[tStream];
 
     ppCounts = thisStream.GetCaseArray();
     //Read data, parse and if no errors, increment count for tract at date.
@@ -267,8 +249,9 @@ bool RankDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* sz
                ppCounts[i][TractIndex] += Count;
              //record count as a case or control  
 //             thisStream.GetPopulationData().AddCaseCount(0, Count);
-             for (i=0; i < Count; ++i)
-                Randomizer.AddCase(gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuosVariable);
+             if (gParameters.GetSimulationType() != FILESOURCE)
+               for (i=0; i < Count; ++i)
+                  ((RankRandomizer*)gvDataStreamRandomizers[tStream])->AddCase(gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuosVariable);
 
              tTotalCases += Count;
              tTotalMeasure += tContinuosVariable;
@@ -286,8 +269,10 @@ bool RankDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* sz
       gPrint.SatScanPrintWarning("Error: The %s does not contain data.\n", gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
-    else {
-     Randomizer.AssignMeasure(thisStream.GetMeasureArray(), thisStream.GetNumTimeIntervals(), thisStream.GetNumTracts());
+    else if (gParameters.GetSimulationType() != FILESOURCE) {
+     ((RankRandomizer*)gvDataStreamRandomizers[tStream])->AssignMeasure(thisStream.GetMeasureArray(),
+                                                                        thisStream.GetNumTimeIntervals(),
+                                                                        thisStream.GetNumTracts());
      thisStream.SetTotalCases(tTotalCases);
      thisStream.SetTotalMeasure(tTotalMeasure);
     }
@@ -304,8 +289,8 @@ bool RankDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* sz
 bool RankDataStreamHandler::ReadData() {
   try {
     SetRandomizers();
-    for (size_t t=0; t < GetNumStreams(); ++t) {
-       if (GetNumStreams() == 1)
+    for (size_t t=0; t < GetNumDataSets(); ++t) {
+       if (GetNumDataSets() == 1)
          gPrint.SatScanPrintf("Reading the case file\n");
        else
          gPrint.SatScanPrintf("Reading the case file for data set %u\n", t + 1);
@@ -334,8 +319,22 @@ void RankDataStreamHandler::SetPurelyTemporalSimulationData(SimulationDataContai
 
 void RankDataStreamHandler::SetRandomizers() {
   try {
-    for (size_t t=0; t < gParameters.GetNumDataStreams(); ++t)
-      gvDataStreamRandomizers.push_back(new RankRandomizer());
+    gvDataStreamRandomizers.DeleteAllElements();
+    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), 0);
+    switch (gParameters.GetSimulationType()) {
+      case STANDARD :
+          gvDataStreamRandomizers[0] = new RankRandomizer();
+          break;
+      case FILESOURCE :
+          gvDataStreamRandomizers[0] = new FileSourceRandomizer(gParameters);
+          break;
+      case HA_RANDOMIZATION :
+      default :
+          ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
+    };
+    //create more if needed
+    for (size_t t=1; t < gParameters.GetNumDataStreams(); ++t)
+       gvDataStreamRandomizers[t] = gvDataStreamRandomizers[0]->Clone();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetRandomizers()","RankDataStreamHandler");

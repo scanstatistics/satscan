@@ -15,8 +15,8 @@ SurvivalDataStreamHandler::~SurvivalDataStreamHandler() {}
 /** allocates cases structures for stream*/
 void SurvivalDataStreamHandler::AllocateCaseStructures(unsigned int iStream) {
   try {
-    gvDataStreams[iStream]->AllocateCasesArray();
-    gvDataStreams[iStream]->AllocateMeasureArray();
+    gvDataSets[iStream]->AllocateCasesArray();
+    gvDataSets[iStream]->AllocateMeasureArray();
   }
   catch(ZdException &x) {
     x.AddCallpath("AllocateCaseStructures()","SurvivalDataStreamHandler");
@@ -32,9 +32,9 @@ AbtractDataStreamGateway * SurvivalDataStreamHandler::GetNewDataGateway() const 
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
-    for (t=0; t < gvDataStreams.size(); ++t) {
+    for (t=0; t < gvDataSets.size(); ++t) {
       //get reference to stream
-      const RealDataStream& thisStream = *gvDataStreams[t];
+      const RealDataStream& thisStream = *gvDataSets[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisStream.GetTotalCases());
       Interface.SetTotalMeasureCount(thisStream.GetTotalMeasure());
@@ -63,7 +63,7 @@ AbtractDataStreamGateway * SurvivalDataStreamHandler::GetNewDataGateway() const 
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataStreamGateway->AddDataStreamInterface(Interface);
+      pDataStreamGateway->AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
@@ -82,9 +82,9 @@ AbtractDataStreamGateway * SurvivalDataStreamHandler::GetNewSimulationDataGatewa
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
-    for (t=0; t < gvDataStreams.size(); ++t) {
+    for (t=0; t < gvDataSets.size(); ++t) {
       //get reference to stream
-      const RealDataStream& thisRealStream = *gvDataStreams[t];
+      const RealDataStream& thisRealStream = *gvDataSets[t];
       const SimulationDataStream& thisSimulationStream = *Container[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisRealStream.GetTotalCases());
@@ -114,7 +114,7 @@ AbtractDataStreamGateway * SurvivalDataStreamHandler::GetNewSimulationDataGatewa
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataStreamGateway->AddDataStreamInterface(Interface);
+      pDataStreamGateway->AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
@@ -123,23 +123,6 @@ AbtractDataStreamGateway * SurvivalDataStreamHandler::GetNewSimulationDataGatewa
     throw;
   }  
   return pDataStreamGateway;
-}
-
-/** Returns a collection of cloned randomizers maintained by data stream handler.
-    All previous elements of list are deleted. */
-RandomizerContainer_t& SurvivalDataStreamHandler::GetRandomizerContainer(RandomizerContainer_t& Container) const {
-  std::vector<SurvivalRandomizer>::const_iterator itr;
-
-  try {
-    Container.DeleteAllElements();
-    for (itr=gvDataStreamRandomizers.begin(); itr != gvDataStreamRandomizers.end(); ++itr)
-       Container.push_back(itr->Clone());
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("GetRandomizerContainer()","SurvivalDataStreamHandler");
-    throw;
-  }
-  return Container;
 }
 
 /** Fills passed container with simulation data objects, with appropriate members
@@ -268,9 +251,8 @@ bool SurvivalDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char
   measure_t     tContinuosVariable, ** ppMeasure, ** ppSqMeasure, tTotalMeasure=0;
 
   try {
-    RealDataStream& thisStream = *gvDataStreams[tStream];
+    RealDataStream& thisStream = *gvDataSets[tStream];
     StringParser Parser(gPrint);
-    SurvivalRandomizer & Randomizer = gvDataStreamRandomizers[tStream];
 
     ppCounts = thisStream.GetCaseArray();
     //Read data, parse and if no errors, increment count for tract at date.
@@ -287,8 +269,10 @@ bool SurvivalDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char
              //  ppCounts[i][TractIndex] += Count * tCensored;
              //record count as a case or control
 //           //  thisStream.GetPopulationData().AddCaseCount(0, Count);
-             for (i=0; i < Count; ++i)
-                Randomizer.AddCase(gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuosVariable, tCensored);
+             if (gParameters.GetSimulationType() != FILESOURCE)
+               for (i=0; i < Count; ++i)
+                  ((SurvivalRandomizer*)gvDataStreamRandomizers[tStream])->AddCase(gDataHub.GetTimeIntervalOfDate(Date),
+                                                                                   TractIndex, tContinuosVariable, tCensored);
 
              tTotalCases += Count * tCensored;
              tTotalMeasure += tContinuosVariable;
@@ -306,9 +290,11 @@ bool SurvivalDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char
       gPrint.SatScanPrintWarning("Error: %s does not contain data.\n", gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
-    else {
-     Randomizer.Assign(thisStream.GetCaseArray(), thisStream.GetMeasureArray(),
-                       thisStream.GetNumTimeIntervals(), thisStream.GetNumTracts());
+    else if (gParameters.GetSimulationType() != FILESOURCE) {
+     ((SurvivalRandomizer*)gvDataStreamRandomizers[tStream])->Assign(thisStream.GetCaseArray(),
+                                                                     thisStream.GetMeasureArray(),
+                                                                     thisStream.GetNumTimeIntervals(),
+                                                                     thisStream.GetNumTracts());
      thisStream.SetTotalCases(tTotalCases);
      thisStream.SetTotalMeasure(tTotalMeasure);
     }
@@ -325,8 +311,8 @@ bool SurvivalDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char
 bool SurvivalDataStreamHandler::ReadData() {
   try {
     SetRandomizers();
-    for (size_t t=0; t < GetNumStreams(); ++t) {
-       if (GetNumStreams() == 1)
+    for (size_t t=0; t < GetNumDataSets(); ++t) {
+       if (GetNumDataSets() == 1)
          gPrint.SatScanPrintf("Reading the case file\n");
        else
          gPrint.SatScanPrintf("Reading the cae file for data set %u\n", t + 1);
@@ -357,7 +343,23 @@ void SurvivalDataStreamHandler::SetPurelyTemporalSimulationData(SimulationDataCo
 
 void SurvivalDataStreamHandler::SetRandomizers() {
   try {
-    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), SurvivalRandomizer());
+    gvDataStreamRandomizers.DeleteAllElements();
+    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), 0);
+    switch (gParameters.GetSimulationType()) {
+      case STANDARD :
+          gvDataStreamRandomizers[0] = new SurvivalRandomizer();
+          break;
+      case FILESOURCE :
+          gvDataStreamRandomizers[0] = new FileSourceRandomizer(gParameters);
+          break;
+      case HA_RANDOMIZATION :
+      default :
+          ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
+    };
+    //create more if needed
+    for (size_t t=1; t < gParameters.GetNumDataStreams(); ++t)
+       gvDataStreamRandomizers[t] = gvDataStreamRandomizers[0]->Clone();
+
   }
   catch (ZdException &x) {
     x.AddCallpath("SetRandomizers()","SurvivalDataStreamHandler");
