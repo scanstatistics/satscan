@@ -309,12 +309,12 @@ void __fastcall TfrmMainForm::ReopenActionExecute(TObject *Sender) {
 /** - if parameter filename already known, re-writes parameters to file if permissions permit
     - else calls TfrmAnalysis::SaveAs() method */
 void TfrmMainForm::Save() {
-  TfrmAnalysis *frmBaseForm;
+  TfrmAnalysis *frmAnalysis;
 
   try {
-    frmBaseForm = dynamic_cast<TfrmAnalysis *>(frmMainForm->ActiveMDIChild);
-    if (frmBaseForm)
-      frmBaseForm->WriteSession();
+    frmAnalysis = dynamic_cast<TfrmAnalysis *>(frmMainForm->ActiveMDIChild);
+    if (frmAnalysis)
+      frmAnalysis->WriteSession();
   }
   catch (ZdException &x) {
     x.AddCallpath("Save()","TfrmMainForm");
@@ -324,12 +324,12 @@ void TfrmMainForm::Save() {
 
 /** calls TfrmAnalysis::SaveAs() method */
 void TfrmMainForm::SaveAs() {
-  TfrmAnalysis *frmBaseForm;
+  TfrmAnalysis *frmAnalysis;
 
   try {
-    frmBaseForm = dynamic_cast<TfrmAnalysis *>(frmMainForm->ActiveMDIChild);
-    if (frmBaseForm)
-      frmBaseForm->SaveAs();
+    frmAnalysis = dynamic_cast<TfrmAnalysis *>(frmMainForm->ActiveMDIChild);
+    if (frmAnalysis)
+      frmAnalysis->SaveAs();
   }
   catch (ZdException & x) {
     x.AddCallpath("SaveAs()", "TfrmMainForm");
