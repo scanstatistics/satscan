@@ -86,7 +86,7 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
               m_pParameters->GetStudyPeriodStartDate().c_str(),
               m_pParameters->GetStudyPeriodEndDate().c_str());
   fprintf(fp, "Number of census areas: %ld\n", (long) m_nTracts);
-  if (m_pParameters->GetProbabiltyModelType() != SPACETIMEPERMUTATION)
+  if (m_pParameters->GetProbabiltyModelType() == POISSON || m_pParameters->GetProbabiltyModelType() == BERNOULLI)
     fprintf(fp, "Total population .....: %.0f\n", gpDataStreams->GetStream(0/*for now*/).GetTotalPopulation());
   fprintf(fp, "Total cases ..........: %ld\n",  gpDataStreams->GetStream(0/*for now*/).GetTotalCasesAtStart());
   if (m_pParameters->GetProbabiltyModelType() == POISSON)
