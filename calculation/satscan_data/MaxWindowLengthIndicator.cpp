@@ -33,7 +33,7 @@ ProspectiveMaxWindowLengthIndicator::ProspectiveMaxWindowLengthIndicator(CSaTSca
        lTimeBetween = static_cast<int>(floor(TimeBetween(Data.GetStudyPeriodStartDate(),
                                              Data.GetTimeIntervalStartTimes()[iWindowEnd] - 1,
                                              Data.GetParameters().GetTimeIntervalUnitsType())));
-       lTimeBetween *= static_cast<int>(Data.GetParameters().GetMaximumTemporalClusterSize() / 100.0);
+       lTimeBetween = static_cast<int>(lTimeBetween * (Data.GetParameters().GetMaximumTemporalClusterSize()/100.0));
        iIntervalCut = static_cast<int>(floor(lTimeBetween / Data.GetParameters().GetTimeIntervalLength()));
        gvMaxWindowLengths.push_back(iIntervalCut);
     }
