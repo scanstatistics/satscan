@@ -1,6 +1,6 @@
 object frmAnalysis: TfrmAnalysis
-  Left = 265
-  Top = 197
+  Left = 224
+  Top = 205
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SaTScan'
@@ -25,7 +25,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbAnalysis
+    ActivePage = tbInputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -305,8 +305,8 @@ object frmAnalysis: TfrmAnalysis
       Caption = 'Analysis'
       ImageIndex = 1
       object Label16: TLabel
-        Left = 48
-        Top = 271
+        Left = 40
+        Top = 248
         Width = 271
         Height = 13
         Caption = 'Monte Carlo Replications (9, 999, or value ending in 999):'
@@ -357,7 +357,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object GroupBox3: TGroupBox
         Left = 8
-        Top = 150
+        Top = 145
         Width = 465
         Height = 95
         Caption = 'Study Period'
@@ -480,8 +480,8 @@ object frmAnalysis: TfrmAnalysis
         end
       end
       object edtMontCarloReps: TEdit
-        Left = 328
-        Top = 263
+        Left = 318
+        Top = 245
         Width = 65
         Height = 21
         MaxLength = 9
@@ -489,6 +489,14 @@ object frmAnalysis: TfrmAnalysis
         Text = '999'
         OnExit = edtMontCarloRepsExit
         OnKeyPress = NaturalNumberKeyPress
+      end
+      object chkTerminateEarly: TCheckBox
+        Left = 40
+        Top = 270
+        Width = 241
+        Height = 17
+        Caption = 'Terminate replications early for large p-values'
+        TabOrder = 5
       end
     end
     object tbTimeParameter: TTabSheet

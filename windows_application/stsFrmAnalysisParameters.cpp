@@ -1219,6 +1219,7 @@ void TfrmAnalysis::SaveTextParameters() {
     sString.printf("%i/%i/%i", atoi(edtEndYear->Text.c_str()), atoi(edtEndMonth->Text.c_str()), atoi(edtEndDay->Text.c_str()));
     gParameters.SetStudyPeriodEndDate(sString.GetCString());
     gParameters.SetNumberMonteCarloReplications(atoi(edtMontCarloReps->Text.c_str()));
+    gParameters.SetTerminateSimulationsEarly(chkTerminateEarly->Checked);
     //Scanning Window Tab
     gParameters.SetMaximumGeographicClusterSize(atof(edtMaxClusterSize->Text.c_str()));
     gParameters.SetMaximumTemporalClusterSize(atof(edtMaxTemporalClusterSize->Text.c_str()));
@@ -1404,6 +1405,7 @@ void TfrmAnalysis::SetupInterface() {
     ParseDate(gParameters.GetStudyPeriodStartDate().c_str(), edtStartYear, edtStartMonth, edtStartDay);
     ParseDate(gParameters.GetStudyPeriodEndDate().c_str(), edtEndYear, edtEndMonth, edtEndDay);
     edtMontCarloReps->Text = gParameters.GetNumReplicationsRequested();
+    chkTerminateEarly->Checked = gParameters.GetTerminateSimulationsEarly();
     //Scanning Window Tab
     edtMaxClusterSize->Text = gParameters.GetMaximumGeographicClusterSize();
     chkInclPurTempClust->Checked = gParameters.GetIncludePurelyTemporalClusters();
@@ -1874,7 +1876,6 @@ void __fastcall TfrmAnalysis::FormActivate(TObject *Sender)
    EnableActions(true);
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TfrmAnalysis::BrowseMaxCirclePopulationFileClick(TObject *Sender) {
   try {
     OpenDialog1->FileName = "";
@@ -1909,10 +1910,10 @@ void __fastcall TfrmAnalysis::edtReportClustersSmallerThanExit(TObject *Sender){
   }
 }
 //---------------------------------------------------------------------------
-
 void __fastcall TfrmAnalysis::chkRestrictReportedClustersClick(TObject *Sender){
   edtReportClustersSmallerThan->Enabled = edtMaxClusterSize->Enabled && chkRestrictReportedClusters->Checked;
   edtReportClustersSmallerThan->Color = edtMaxClusterSize->Enabled && chkRestrictReportedClusters->Checked ? clWindow : clInactiveBorder;
 }
 //---------------------------------------------------------------------------
+
 

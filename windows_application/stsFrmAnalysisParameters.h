@@ -126,6 +126,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TCheckBox *chkRestrictReportedClusters;
         TLabel *lblReportSmallerClusters;
         TEdit *edtReportClustersSmallerThan;
+        TCheckBox *chkTerminateEarly;
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall rgPrecisionTimesClick(TObject *Sender);
         void __fastcall btnCaseBrowseClick(TObject *Sender);
