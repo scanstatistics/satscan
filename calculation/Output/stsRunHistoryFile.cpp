@@ -69,7 +69,7 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
    unsigned short   uwOffset(0);     // offset is altered by the CreateNewField function
 
    try {
-      ::CreateNewField(gvFields, RUN_NUMBER_FIELD, ZD_LONG_FLD, 8, 0, uwOffset, true);
+      ::CreateNewField(gvFields, RUN_NUMBER_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset, true);
       ::CreateNewField(gvFields, RUN_TIME_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
 
       ::CreateNewField(gvFields, ANALYSIS_TYPE_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
@@ -82,18 +82,18 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
       ::CreateNewField(gvFields, ALIVE_ONLY_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
       ::CreateNewField(gvFields, TIME_TREND_ADJUSTMENT_FIELD, ZD_ALPHA_FLD, 20, 3, uwOffset);
       // covariates adjusted for
-      ::CreateNewField(gvFields, MONTE_CARLO_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
+      ::CreateNewField(gvFields, MONTE_CARLO_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
 
-      ::CreateNewField(gvFields, NUM_GEO_AREAS_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
+      ::CreateNewField(gvFields, NUM_GEO_AREAS_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
       ::CreateNewField(gvFields, COORD_TYPE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
       ::CreateNewField(gvFields, START_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
       ::CreateNewField(gvFields, END_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
       ::CreateNewField(gvFields, PRECISION_TIMES_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      ::CreateNewField(gvFields, NUM_CASES_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
+      ::CreateNewField(gvFields, NUM_CASES_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
       ::CreateNewField(gvFields, TOTAL_POP_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
 
       ::CreateNewField(gvFields, P_VALUE_FIELD, ZD_NUMBER_FLD, 12, 5, uwOffset);
-      ::CreateNewField(gvFields, NUM_SIGNIF_005_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
+      ::CreateNewField(gvFields, NUM_SIGNIF_005_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
       ::CreateNewField(gvFields, OUTPUT_FILE_FIELD, ZD_ALPHA_FLD, 254, 0, uwOffset);
       // additional text file names
 
@@ -274,7 +274,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
 
       std::auto_ptr<ZdFileRecord> pRecord(pFile->GetNewRecord());
 
-      for(unsigned long i = 1; i < pFile->GetNumRecords() && !bFound; ++i) {
+      for(unsigned long i = 1; i <= pFile->GetNumRecords() && !bFound; ++i) {
          pFile->GotoRecord(i, pRecord.get());
          bFound = (pRecord->GetLong(0) == glRunNumber);
       }
@@ -287,7 +287,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       // fields are added to the vector in that function
 
       //  run number field
-      SetLongField(*pRecord, glRunNumber, GetFieldNumber(gvFields, RUN_NUMBER_FIELD));
+      SetDoubleField(*pRecord, (double)glRunNumber, GetFieldNumber(gvFields, RUN_NUMBER_FIELD));
 
       // run time and date field
       sTempValue = pAnalysis.GetStartTime();
@@ -315,9 +315,9 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       GetAnalysisTypeString(sTempValue, pAnalysis.GetSatScanData()->m_pParameters->m_nAnalysisType);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ANALYSIS_TYPE_FIELD));
 
-      SetLongField(*pRecord, pAnalysis.GetSatScanData()->m_nTotalCases, GetFieldNumber(gvFields, NUM_CASES_FIELD));   // total number of cases field
+      SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->m_nTotalCases, GetFieldNumber(gvFields, NUM_CASES_FIELD));   // total number of cases field
       SetDoubleField(*pRecord, pAnalysis.GetSatScanData()->m_nTotalPop, GetFieldNumber(gvFields, TOTAL_POP_FIELD));  // total population field
-      SetLongField(*pRecord, pAnalysis.GetSatScanData()->m_nTracts, GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));     // number of geographic areas field
+      SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->m_nTracts, GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));     // number of geographic areas field
 
       // precision of case times field
       GetCasePrecisionString(sTempValue, pAnalysis.GetSatScanData()->m_pParameters->m_nPrecision);
@@ -342,13 +342,13 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
 
       // p-value field
       SetDoubleField(*pRecord, pVal, GetFieldNumber(gvFields, P_VALUE_FIELD));
-      SetLongField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_nReplicas, GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
+      SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->m_pParameters->m_nReplicas, GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
 //      SetDoubleField(*pRecord, pAnalysis.GetSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
 //      SetDoubleField(*pRecord, pAnalysis.GetSimRatio05(), GetFieldNumber(gvFields, CUTOFF_005_FIELD)); // 0.05 cutoff field
-      SetLongField(*pRecord, (long)uwSignificantAt005, GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));  // number of clusters significant at tthe .05 llr cutoff field
+      SetDoubleField(*pRecord, (double)uwSignificantAt005, GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));  // number of clusters significant at tthe .05 llr cutoff field
 
       pTransaction = (pFile->BeginTransaction());
-      pFile->UpdateRecord(*pTransaction, *pRecord);
+      pFile->SaveRecord(*pTransaction, pFile->GetCurrentRecordNumber(),*pRecord);
       pFile->EndTransaction(pTransaction); pTransaction = 0;
       pFile->Close();
    }
