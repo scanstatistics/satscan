@@ -45,7 +45,12 @@ CPurelySpatialCluster::CPurelySpatialCluster(const CPurelySpatialCluster& rhs)
 }
 
 /** destructor */
-CPurelySpatialCluster::~CPurelySpatialCluster() {}
+CPurelySpatialCluster::~CPurelySpatialCluster() {
+  try {
+    delete gpClusterData;
+  }
+  catch (...){}  
+}
 
 /** overloaded assignment operator */
 CPurelySpatialCluster& CPurelySpatialCluster::operator=(const CPurelySpatialCluster& rhs) {
