@@ -116,6 +116,7 @@ SRC         := Main.cpp \
 	       ../calculation/utility/ScanfFile.cpp \
 	       ../calculation/utility/SSException.cpp \
 	       ../calculation/utility/UtilityFunctions.cpp \
+	       ../calculation/utility/MultipleDimensionArrayHandler.cpp \
 	       ../calculation/Parameters.cpp \
 	       ../calculation/SaTScanBasis.cpp \
 	       ../calculation/Toolkit.cpp

@@ -65,7 +65,8 @@
       ..\calculation\cluster\SVTTCluster.obj ..\calculation\satscan_data\SVTTData.obj 
       ..\calculation\analysis\SVTTAnalysis.obj 
       ..\calculation\cluster\PurelySpatialProspectiveCluster.obj 
-      stsFrmStartWindow.obj"/>
+      stsFrmStartWindow.obj 
+      ..\calculation\utility\MultipleDimensionArrayHandler.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 

@@ -61,7 +61,8 @@
       ..\calculation\analysis\SVTTAnalysis.obj 
       ..\calculation\cluster\SVTTCluster.obj 
       ..\calculation\cluster\TimeIntervalRange.obj 
-      ..\calculation\cluster\PurelySpatialProspectiveCluster.obj"/>
+      ..\calculation\cluster\PurelySpatialProspectiveCluster.obj 
+      ..\calculation\utility\MultipleDimensionArrayHandler.obj"/>
     <RESFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -192,7 +193,7 @@ Item5=_DEBUG
 DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd540;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
 
 [Parameters]
-RunParams=&quot;C:\Documents and Settings\Hostovic.OMNI\Desktop\NYCfever.scanwindow.prm&quot;
+RunParams=&quot;C:\Prj\SaTScan Project\SaTScan Data Sets\Bernoulli Covariates\bird.svtt.prm&quot;
 HostApplication=C:\SatScan v3.0\calc\Satscan.exe
 RemoteHost=
 RemotePath=
