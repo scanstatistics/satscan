@@ -21,6 +21,7 @@ class DataSetInterface {
     count_t                     gTotalCases;            /** number of cases in dataset */
     count_t                     gTotalControls;         /** number of controls in dataset */
     measure_t                   gTotalMeasure;          /** number of expected cases in dataset */
+    unsigned int                giNumOrdinalCategories; /** number of ordinal categories in dataset */
 
     void                        Init();
 
@@ -43,7 +44,6 @@ class DataSetInterface {
     measure_t                 * gpPTSqMeasureArray;      /** */
     measure_t                 * gpPSSqMeasureArray;     /** spatial */
     const CTimeTrend          * gpTimeTrend;            /** pointer to dataset time trend structure */
-    std::vector<count_t>        gvTotalCasesPerCategory; /** */
 
     inline count_t                    ** GetCaseArray() const {return gppCaseArray;}
     inline count_t                    ** GetNCCaseArray() const {return gppNCCaseArray;}
@@ -53,6 +53,7 @@ class DataSetInterface {
     inline count_t                    ** GetPTCategoryCaseArray() const {return gppPTCategoryCaseArray;}
     inline measure_t                  ** GetMeasureArray() const {return gppMeasureArray;}
     inline measure_t                  ** GetNCMeasureArray() const {return gppNCMeasureArray;}
+    unsigned int                         GetNumOrdinalCategories() const {return giNumOrdinalCategories;}
     unsigned int                         GetNumTimIntervals() const {return giNumTimeIntervals;}
     inline measure_t                   * GetPSMeasureArray() const {return gpPSMeasureArray;}
     inline measure_t                   * GetPTMeasureArray() const {return gpPTMeasureArray;}
@@ -65,6 +66,7 @@ class DataSetInterface {
     inline measure_t                     GetTotalMeasureCount() const {return gTotalMeasure;}
     void                                 ResetCaseArray(count_t t);
     void                                 SetCaseArray(count_t ** ppCases) {gppCaseArray = ppCases;gpPSCaseArray = ppCases[0];}
+    void                                 SetNumOrdinalCategories(unsigned int u) {giNumOrdinalCategories = u;}
     void                                 SetNCCaseArray(count_t ** ppCases) {gppNCCaseArray = ppCases;}
     void                                 SetCategoryCaseArrays(const CasesByCategory_t& vCategoryCases);
     void                                 SetPTCaseArray(count_t * pPTCase) {gpPTCaseArray = pPTCase;}
