@@ -61,7 +61,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Top = 6
     Width = 419
     Height = 283
-    ActivePage = tsOther
+    ActivePage = TabSheet3
     TabOrder = 0
     object TabSheet2: TTabSheet
       Caption = 'Spatial Window'
@@ -602,25 +602,43 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Caption = 'Prospective Surveillance'
         TabOrder = 1
         object lblProspectiveStartYear: TLabel
-          Left = 36
-          Top = 78
-          Width = 22
-          Height = 13
+          Left = 40
+          Top = 86
+          Width = 19
+          Height = 11
           Caption = 'Year'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -9
+          Font.Name = 'Small Fonts'
+          Font.Style = []
+          ParentFont = False
         end
         object lblProspectiveStartMonth: TLabel
           Left = 92
-          Top = 78
-          Width = 30
-          Height = 13
+          Top = 86
+          Width = 28
+          Height = 11
           Caption = 'Month'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -9
+          Font.Name = 'Small Fonts'
+          Font.Style = []
+          ParentFont = False
         end
         object lblProspectiveStartDay: TLabel
-          Left = 139
-          Top = 78
-          Width = 19
-          Height = 13
+          Left = 143
+          Top = 86
+          Width = 16
+          Height = 11
           Caption = 'Day'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -9
+          Font.Name = 'Small Fonts'
+          Font.Style = []
+          ParentFont = False
         end
         object lblProspectiveStartDate: TLabel
           Left = 31

@@ -55,6 +55,16 @@ void __fastcall TfrmAdvancedParameters::btnBrowseMaxCirclePopFileClick(TObject *
   }
 }
 //---------------------------------------------------------------------------
+// Resets advanced settings to default values
+void __fastcall TfrmAdvancedParameters::btnSetDefaultsClick(
+      TObject *Sender)
+{
+   if (gbAnalysisShow)
+      SetDefaultsForAnalysisTabs();
+   else
+      SetDefaultsForOutputTab();
+}
+//---------------------------------------------------------------------------
 /** event triggered when 'adjustment for ealier analyses' checkbox if clicked */
 void __fastcall TfrmAdvancedParameters::chkAdjustForEarlierAnalysesClick(TObject *Sender) {
   EnableProspectiveStartDate(chkAdjustForEarlierAnalyses->Checked);
@@ -767,9 +777,6 @@ void TfrmAdvancedParameters::Setup() {
 
       // Inference tab
       chkTerminateEarly->Checked = ref.GetTerminateSimulationsEarly();
-      chkAdjustForEarlierAnalyses->Checked = ref.GetAdjustForEarlierAnalyses();
-      if (ref.GetProspectiveStartDate().length() > 0)
-         ParseDate(ref.GetProspectiveStartDate().c_str(), *edtProspectiveStartDateYear, *edtProspectiveStartDateMonth, *edtProspectiveStartDateDay, false);
 
       // Output tab
       chkRestrictReportedClusters->Checked = ref.GetRestrictingMaximumReportedGeoClusterSize();
@@ -1155,16 +1162,6 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
   va_end(varArgs);
 
   throw theException;
-}
-//---------------------------------------------------------------------------
-// Resets advanced settings to default values
-void __fastcall TfrmAdvancedParameters::btnSetDefaultsClick(
-      TObject *Sender)
-{
-   if (gbAnalysisShow)
-      SetDefaultsForAnalysisTabs();
-   else
-      SetDefaultsForOutputTab();
 }
 //---------------------------------------------------------------------------
 
