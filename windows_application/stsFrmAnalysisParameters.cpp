@@ -1385,7 +1385,7 @@ bool TfrmAnalysis::ValidateParams() {
     x.AddCallpath("ValidateParams()","TfrmAnalysis");
     bReturn = false;
     DisplayBasisException(this, x);
-    gpfrmAdvancedParameters->ShowDialog(&x.GetFocusControl(), &x.GetTabCategory());
+    gpfrmAdvancedParameters->ShowDialog(&x.GetFocusControl(), x.GetTabCategory());
     // PAG - update Advanced buttons if parameters were changed to fix errors
     EnableAdvancedButtons();
   }
