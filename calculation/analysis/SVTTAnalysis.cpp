@@ -116,6 +116,7 @@ double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataStreamInterface & Inte
     }
     //get copy of best cluster over all iterations
     dMaximumLogLikelihoodRatio = gpTopShapeClusters->GetTopCluster().m_nRatio;
+    dMaximumLogLikelihoodRatio -= gpLikelihoodCalculator->GetLogLikelihoodForTotal();
   }
   catch (ZdException &x) {
     x.AddCallpath("MonteCarlo()","CSpatialVarTempTrendAnalysis");
