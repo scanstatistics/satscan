@@ -68,7 +68,7 @@ CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator=(co
 }
 
 /** add neighbor tract data from DataStreamInterface */
-void CPurelySpatialProspectiveCluster::AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream) {
+void CPurelySpatialProspectiveCluster::AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface) {
   int           i, j;
   count_t    ** ppCases = Interface.GetCaseArray();
   measure_t  ** ppMeasure = Interface.GetMeasureArray(),

@@ -29,7 +29,7 @@ class CPurelySpatialProspectiveCluster : public CCluster {
 
      CPurelySpatialProspectiveCluster        & operator=(const CPurelySpatialProspectiveCluster& cluster);
 
-    virtual void                               AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream);
+    virtual void                               AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface);
     inline virtual void                        AssignAsType(const CCluster& rhs) {*this = (CPurelySpatialProspectiveCluster&)rhs;}
     virtual CPurelySpatialProspectiveCluster * Clone() const;
     inline virtual void                        ComputeBestMeasures(CMeasureList & MeasureList);
