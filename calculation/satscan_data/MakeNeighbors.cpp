@@ -277,22 +277,22 @@ CentroidNeighborCalculatorByPopulation::CentroidNeighborCalculatorByPopulation(C
   if (gDataHub.GetParameters().GetMaxGeographicClusterSizeType() == PERCENTOFPOPULATIONFILETYPE)
     gpLocationsPopulation = const_cast<measure_t*>((&gDataHub.GetPopulationArray()[0]));
   else if (gDataHub.GetParameters().GetProbabilityModelType() == ORDINAL) {
-    //For the Ordinal and Survival models, populations for each location is calculated by adding up the
+    //For the Ordinal and Exponential models, populations for each location is calculated by adding up the
     //total individuals represented in the catgory case arrays.
     gvCalculatedPopulations.resize(gDataHub.GetNumTracts(), 0);
-    for (unsigned int k=0; k < gDataHub.GetDataStreamHandler().GetStream(0).GetCasesByCategory().size(); ++k) {
-       ppCases = gDataHub.GetDataStreamHandler().GetStream(0).GetCasesByCategory()[k]->GetArray();
+    for (unsigned int k=0; k < gDataHub.GetDataSetHandler().GetDataSet(0).GetCasesByCategory().size(); ++k) {
+       ppCases = gDataHub.GetDataSetHandler().GetDataSet(0).GetCasesByCategory()[k]->GetArray();
        for (j=0; j < gDataHub.GetNumTracts(); ++j)
           gvCalculatedPopulations[j] += ppCases[0][j];
     }
 
     gpLocationsPopulation = &gvCalculatedPopulations[0];
   }
-  else if (gDataHub.GetParameters().GetProbabilityModelType() == SURVIVAL) {
-    ZdGenerateException("Don't know how to get data for Survival yet.","constructor()");
+  else if (gDataHub.GetParameters().GetProbabilityModelType() == EXPONENTIAL) {
+    ZdGenerateException("Don't know how to get data for Exponential yet.","constructor()");
   }
   else
-    gpLocationsPopulation = gDataHub.GetDataStreamHandler().GetStream(0).GetMeasureArray()[0];
+    gpLocationsPopulation = gDataHub.GetDataSetHandler().GetDataSet(0).GetMeasureArray()[0];
 }
 
 /** destructor */

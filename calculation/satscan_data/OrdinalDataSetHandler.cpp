@@ -1,37 +1,37 @@
-//***************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//***************************************************************************
+//******************************************************************************
 #include "SaTScanData.h"
 #include "OrdinalDataSetHandler.h"
 
 /** constructor */
-OrdinalDataSetHandler::OrdinalDataSetHandler(CSaTScanData& Data, BasePrint& Print)
-                         :DataStreamHandler(Data, Print) {}
+OrdinalDataSetHandler::OrdinalDataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
+                         :DataSetHandler(DataHub, Print) {}
 
 /** destructor */
 OrdinalDataSetHandler::~OrdinalDataSetHandler() {}
 
-/** allocates cases structures for stream */
-void OrdinalDataSetHandler::AllocateCaseStructures(unsigned int) {
+/** allocates cases structures for dataset */
+void OrdinalDataSetHandler::AllocateCaseStructures(size_t) {
   //no action
 }
 
 /** returns new data gateway for real data */
-AbtractDataStreamGateway * OrdinalDataSetHandler::GetNewDataGateway() const {
-  AbtractDataStreamGateway    * pDataStreamGateway=0;
-  DataStreamInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
+AbtractDataSetGateway * OrdinalDataSetHandler::GetNewDataGateway() const {
+  AbtractDataSetGateway    * pDataSetGateway=0;
+  DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 
   try {
-    pDataStreamGateway = GetNewDataGatewayObject();
+    pDataSetGateway = GetNewDataGatewayObject();
     for (t=0; t < gvDataSets.size(); ++t) {
-      //get reference to stream
-      const RealDataStream& RealSet = *gvDataSets[t];
+      //get reference to dataset
+      const RealDataSet& DataSet = *gvDataSets[t];
       //set total cases
-      Interface.SetTotalCasesCount(RealSet.GetTotalCases());
+      Interface.SetTotalCasesCount(DataSet.GetTotalCases());
       //set total case per category
-      const PopulationData& Population = RealSet.GetPopulationData();
+      const PopulationData& Population = DataSet.GetPopulationData();
       Interface.gvTotalCasesPerCategory.clear();
       for (size_t i=0; i < Population.GetNumOrdinalCategories(); ++i)
          Interface.gvTotalCasesPerCategory.push_back(Population.GetNumOrdinalCategoryCases(i));
@@ -39,107 +39,107 @@ AbtractDataStreamGateway * OrdinalDataSetHandler::GetNewDataGateway() const {
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          Interface.SetCategoryCaseArrays(RealSet.GetCasesByCategory());
+          Interface.SetCategoryCaseArrays(DataSet.GetCasesByCategory());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
        case PURELYTEMPORAL             :
-          Interface.SetPTCategoryCaseArray(RealSet.GetPTCategoryCasesArray());
+          Interface.SetPTCategoryCaseArray(DataSet.GetPTCategoryCasesArray());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCategoryCaseArrays(RealSet.GetCasesByCategory());
+          Interface.SetCategoryCaseArrays(DataSet.GetCasesByCategory());
           if (gParameters.GetIncludePurelyTemporalClusters())
-            Interface.SetPTCategoryCaseArray(RealSet.GetPTCategoryCasesArray());
+            Interface.SetPTCategoryCaseArray(DataSet.GetPTCategoryCasesArray());
           break;
        case SPATIALVARTEMPTREND        :
           ZdGenerateException("GetNewDataGateway() not implemented for purely spatial monotone analysis.","GetNewDataGateway()");
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataStreamGateway->AddDataSetInterface(Interface);
+      pDataSetGateway->AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
-    delete pDataStreamGateway;
+    delete pDataSetGateway;
     x.AddCallpath("GetNewDataGateway()","OrdinalDataSetHandler");
     throw;
   }
-  return pDataStreamGateway;
+  return pDataSetGateway;
 }
 
 /** returns new data gateway for simulation data */
-AbtractDataStreamGateway * OrdinalDataSetHandler::GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const {
-  AbtractDataStreamGateway    * pDataStreamGateway=0;
-  DataStreamInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
+AbtractDataSetGateway * OrdinalDataSetHandler::GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const {
+  AbtractDataSetGateway    * pDataSetGateway=0;
+  DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 
   try {
-    pDataStreamGateway = GetNewDataGatewayObject();
+    pDataSetGateway = GetNewDataGatewayObject();
     for (t=0; t < gvDataSets.size(); ++t) {
-      //get reference to stream
-      const RealDataStream& RealSet = *gvDataSets[t];
-      const SimulationDataStream& SimSet = *Container[t];
+      //get reference to datasets
+      const RealDataSet& R_DataSet = *gvDataSets[t];
+      const SimDataSet& S_DataSet = *Container[t];
       //set total cases
-      Interface.SetTotalCasesCount(RealSet.GetTotalCases());
+      Interface.SetTotalCasesCount(R_DataSet.GetTotalCases());
       //set total case per category
-      const PopulationData& Population = RealSet.GetPopulationData();
+      const PopulationData& Population = R_DataSet.GetPopulationData();
       Interface.gvTotalCasesPerCategory.clear();
       for (size_t i=0; i < Population.GetNumOrdinalCategories(); ++i)
          Interface.gvTotalCasesPerCategory.push_back(Population.GetNumOrdinalCategoryCases(i));
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          Interface.SetCategoryCaseArrays(SimSet.GetCasesByCategory());
+          Interface.SetCategoryCaseArrays(S_DataSet.GetCasesByCategory());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          Interface.SetPTCategoryCaseArray(SimSet.GetPTCategoryCasesArray());
+          Interface.SetPTCategoryCaseArray(S_DataSet.GetPTCategoryCasesArray());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCategoryCaseArrays(SimSet.GetCasesByCategory());
+          Interface.SetCategoryCaseArrays(S_DataSet.GetCasesByCategory());
           if (gParameters.GetIncludePurelyTemporalClusters())
-            Interface.SetPTCategoryCaseArray(SimSet.GetPTCategoryCasesArray());
+            Interface.SetPTCategoryCaseArray(S_DataSet.GetPTCategoryCasesArray());
          break;
         case SPATIALVARTEMPTREND        :
           ZdGenerateException("GetNewDataGateway() not implemented for purely spatial monotone analysis.","GetNewDataGateway()");
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataStreamGateway->AddDataSetInterface(Interface);
+      pDataSetGateway->AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
-    delete pDataStreamGateway;
+    delete pDataSetGateway;
     x.AddCallpath("GetNewSimulationDataGateway()","OrdinalDataSetHandler");
     throw;
   }
-  return pDataStreamGateway;
+  return pDataSetGateway;
 }
 
 /** Fills passed container with simulation data objects, with appropriate members
     of data object allocated. */
 SimulationDataContainer_t& OrdinalDataSetHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
   Container.clear();
-  for (unsigned int t=0; t < gParameters.GetNumDataStreams(); ++t)
-    Container.push_back(new SimulationDataStream(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
+  for (unsigned int t=0; t < gParameters.GetNumDataSets(); ++t)
+    Container.push_back(new SimDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
 
   switch (gParameters.GetAnalysisType()) {
     case PURELYSPATIAL :
         for (size_t t=0; t < Container.size(); ++t)
-          Container[t]->AllocateCategoryCasesArray(gDataHub.GetDataStreamHandler().GetStream(t).GetPopulationData().GetNumOrdinalCategories());
+          Container[t]->AllocateCategoryCasesArray(gDataHub.GetDataSetHandler().GetDataSet(t).GetPopulationData().GetNumOrdinalCategories());
         break;
     case PURELYTEMPORAL :
     case PROSPECTIVEPURELYTEMPORAL :
         for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateCategoryCasesArray(gDataHub.GetDataStreamHandler().GetStream(t).GetPopulationData().GetNumOrdinalCategories());
+          Container[t]->AllocateCategoryCasesArray(gDataHub.GetDataSetHandler().GetDataSet(t).GetPopulationData().GetNumOrdinalCategories());
           Container[t]->AllocatePTCategoryCasesArray();
         }
         break;
     case SPACETIME :
     case PROSPECTIVESPACETIME :
         for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateCategoryCasesArray(gDataHub.GetDataStreamHandler().GetStream(t).GetPopulationData().GetNumOrdinalCategories());
+          Container[t]->AllocateCategoryCasesArray(gDataHub.GetDataSetHandler().GetDataSet(t).GetPopulationData().GetNumOrdinalCategories());
           if (gParameters.GetIncludePurelyTemporalClusters())
              Container[t]->AllocatePTCategoryCasesArray();
         }
@@ -221,7 +221,7 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
   size_t        tOrdinalCategoryIndex;
 
   try {
-    RealDataStream& RealSet = *gvDataSets[tSetIndex];
+    RealDataSet& DataSet = *gvDataSets[tSetIndex];
     StringParser Parser(gPrint);
 
     //Read data, parse and if no errors, increment count for tract at date.
@@ -232,7 +232,7 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
              //record cases to randomizer object
              iDateIndex = gDataHub.GetTimeIntervalOfDate(Date);
              //record count and get index of ordinal category
-             ppCategoryCounts = RealSet.AddOrdinalCategoryCaseCount(tContinuosVariable, Count);
+             ppCategoryCounts = DataSet.AddOrdinalCategoryCaseCount(tContinuosVariable, Count);
              ppCategoryCounts[0][TractIndex] += Count;
              if (ppCategoryCounts[0][TractIndex] < 0)
                GenerateResolvableException("Error: The total number of cases, in data set %u, is greater than the maximum allowed of %ld.\n", "ReadCounts()",
@@ -256,8 +256,8 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
       bValid = false;
     }
     else {
-      RealSet.SetTotalCases(tTotalCases);
-      RealSet.SetTotalPopulation(tTotalCases);
+      DataSet.SetTotalCases(tTotalCases);
+      DataSet.SetTotalPopulation(tTotalCases);
     }
   }
   catch (ZdException & x) {
@@ -302,22 +302,22 @@ void OrdinalDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContai
 /** Instanciates OrdinalDataRandomizer for each data set. */
 void OrdinalDataSetHandler::SetRandomizers() {
   try {
-    gvDataStreamRandomizers.DeleteAllElements();
-    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), 0);
+    gvDataSetRandomizers.DeleteAllElements();
+    gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
-          gvDataStreamRandomizers[0] = new OrdinalDenominatorDataRandomizer();
+          gvDataSetRandomizers[0] = new OrdinalDenominatorDataRandomizer();
           break;
       case FILESOURCE :
-          gvDataStreamRandomizers[0] = new FileSourceRandomizer(gParameters);
+          gvDataSetRandomizers[0] = new FileSourceRandomizer(gParameters);
           break;
       case HA_RANDOMIZATION :
       default :
           ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
-    for (size_t t=1; t < gParameters.GetNumDataStreams(); ++t)
-       gvDataStreamRandomizers[t] = gvDataStreamRandomizers[0]->Clone();
+    for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
+       gvDataSetRandomizers[t] = gvDataSetRandomizers[0]->Clone();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetRandomizers()","OrdinalDataSetHandler");
