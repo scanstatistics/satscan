@@ -52,54 +52,52 @@ CSaTScanData::~CSaTScanData() {
   int i, j;
   long lTotalNumEllipses = m_pParameters->m_lTotalNumEllipses;
 
-  if (m_pCases) {
-     for (i = 0; i < m_nTimeIntervals; ++i)
+  // it looks complicated but it cuts out about 7 loops from the original which were unnecessary - AJV 8-28-2002
+  for (i = 0; i < m_nTimeIntervals; ++i) {
+    if (m_pCases)
        free(m_pCases[i]);
-     free(m_pCases);
-  }
-  if (m_pControls != NULL) {
-    for (i = 0; i < m_nTimeIntervals; ++i)
-      free(m_pControls[i]);
-    free(m_pControls);
+    if (m_pControls)
+       free(m_pControls[i]);
+    if (m_pMeasure)
+       free(m_pMeasure[i]);
   }
 
-  if (m_pMeasure) {
-     for (i = 0; i < m_nTimeIntervals+1; ++i)   // Why allocated +1?
-       free(m_pMeasure[i]);
+  if (m_pCases)
+     free(m_pCases);
+  if (m_pControls)
+     free(m_pControls);
+  if (m_pMeasure)
      free(m_pMeasure);
-  }
-  if (m_pPTCases != 0)
+  if (m_pPTCases)
     free(m_pPTCases);
-  if (m_pPTMeasure != 0)
+  if (m_pPTMeasure)
     free(m_pPTMeasure);
 
-   if (m_pSortedInt) {
-      for (i = 0; i <= lTotalNumEllipses; ++i) {
-         for (j = 0; j < m_nGridTracts; ++j)
-            free(m_pSortedInt[i][j]);
+  for (i = 0; i <= lTotalNumEllipses; ++i) {
+     for (j = 0; j < m_nGridTracts; ++j) {
+        if(m_pSortedInt)
+           free(m_pSortedInt[i][j]);
+        if (m_pSortedUShort)
+           free(m_pSortedUShort[i][j]);
+     }
+     if (m_NeighborCounts)
+         free(m_NeighborCounts[i]);
+     if(m_pSortedInt)
          free(m_pSortedInt[i]);
-      }
-      free(m_pSortedInt);
-   }
-  if (m_pSortedUShort) {
-      for (i = 0; i <= lTotalNumEllipses; ++i) {
-         for (j = 0; j < m_nGridTracts; ++j)
-            free(m_pSortedUShort[i][j]);
+     if (m_pSortedUShort)
          free(m_pSortedUShort[i]);
-      }
-      free(m_pSortedUShort);
   }
+
+  if(m_pSortedInt)
+     free(m_pSortedInt);
+  if (m_pSortedUShort)
+     free(m_pSortedUShort);
+  if (m_NeighborCounts)
+     free(m_NeighborCounts);
 
   //delete the ellipsoid angle and shape array
   delete [] mdE_Angles;
   delete [] mdE_Shapes;
-
-  //free(m_NeighborCounts);
-  if (m_NeighborCounts) {
-     for(i=0; i <= lTotalNumEllipses; ++i)
-        free(m_NeighborCounts[i]);
-      free(m_NeighborCounts);
-  }
 
   free(m_pIntervalStartTimes);
 
@@ -516,3 +514,6 @@ void CSaTScanData::SetStartAndEndDates() {
       throw;
    }
 }
+
+
+
