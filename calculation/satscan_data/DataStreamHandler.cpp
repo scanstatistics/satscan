@@ -300,7 +300,7 @@ bool DataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDesc
 /** reports whether any data stream has cases with a zero population. */
 void DataStreamHandler::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePrint * pPrintDirection) {
   for (size_t t=0; t < gvDataStreams.size(); ++t)
-    gvDataStreams[t]->GetPopulationData().ReportZeroPops(Data, pDisplay, pPrintDirection);
+    gvDataStreams[t]->GetPopulationData().ReportZeroPops(Data, pDisplay, *pPrintDirection);
 }
 
 void DataStreamHandler::SetPurelyTemporalMeasureData(RealDataStream & thisRealStream) {
