@@ -104,6 +104,7 @@ class CParameters
       bool              gbOutputClusterLevelDBF, gbOutputAreaSpecificDBF,
                         gbRelativeRiskDBF, gbLogLikelihoodDBF;
       ZdString          gsRunHistoryFilename;
+      std::vector<int>  gvDefaultedValues;
 
       void      copy(const CParameters &rhs);
 
@@ -119,13 +120,17 @@ class CParameters
       void      ReadSequentialScanSectionFromIni(ZdIniFile& file);
       void      ReadEllipseSectionFromIni(ZdIniFile& file);
       void      ReadOutputFileSectionFromIni(ZdIniFile& file);
+      void      ReportDefaultValueWarnings();
       void      SaveInputFileSection(ZdIniFile& file);
       void      SaveModelInfoSection(ZdIniFile& file);
       void      SaveEllipseSection(ZdIniFile& file);
       void      SaveSequentialScanSection(ZdIniFile& file);
       void      SaveOutputFileSection(ZdIniFile& file);
+      void      SetDoubleValue(double &dValue, const ZdString& sValueFromFile, int iLineNumberFromFile, double dDefaultValue);
       void      SetEAnglesFromIniFile(const ZdString& sAngles);
       void      SetEShapesFromIniFile(const ZdString& sShapes);
+      void      SetFloatValue(float &fValue, const ZdString& sValueFromFile, int iLineNumberFromFile, float fDefaultValue);
+      void      SetIntValue(int &iValue, const ZdString& sValueFromFile, int iLineNumberFromFile, int iDefaultValue);
       void      TrimLeft(char *sString);
       bool      ValidHistoryFileName(const ZdString& sRunHistoryFilename);
       bool      ValueIsYes(const ZdString& sTestValue);
