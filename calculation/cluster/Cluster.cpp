@@ -4,14 +4,21 @@
 #include "Cluster.h"
 #include "stsAreaSpecificData.h"
 
-CCluster::CCluster(BasePrint *pPrintDirection)
-{
+/** constructor */
+CCluster::CCluster(BasePrint *pPrintDirection) {
   Initialize();
   gpPrintDirection = pPrintDirection;
 }
 
-CCluster::~CCluster()
-{
+/** destructor */
+CCluster::~CCluster() {}
+
+/** returns newly cloned CCluster */
+CCluster * CCluster::Clone() const {
+  //Note: Replace this code with copy constructor...
+  CCluster * pClone = new CCluster(gpPrintDirection);
+  *pClone = *this;
+  return pClone;
 }
 
 void CCluster::Initialize(tract_t nCenter)
@@ -141,14 +148,14 @@ void CCluster::Display(FILE*     fp,
       //Print Loglikelihood/Test Statistic
       if (Parameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION) {
         if (m_iEllipseOffset != 0 /*i.e. is ellipse*/ && Parameters.GetDuczmalCorrectEllipses())
-          fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, GetDuczmalCompactnessCorrection());
+          fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, GetDuczmalCorrectedLogLikelihoodRatio());
         else
           fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, m_nRatio);
       }
       else {
         fprintf(fp, "%sLog likelihood ratio..: %f\n", szSpacesOnLeft, m_nRatio);
-        if (m_iEllipseOffset != 0 /*i.e. is ellipse*/ && Parameters.GetDuczmalCorrectEllipses())
-          fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, GetDuczmalCompactnessCorrection());
+        if (Parameters.GetDuczmalCorrectEllipses())
+          fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, GetDuczmalCorrectedLogLikelihoodRatio());
       }
 
       if (Parameters.GetNumReplicationsRequested())
@@ -274,91 +281,84 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
   }
 }
 
-void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
-                                  int nLeftMargin, int nRightMargin,
-                                  char cDeliminator, char* szSpacesOnLeft)
-{
-   double *pCoords = 0, *pCoords2 = 0;
-   float nRadius;
-   int i;
+void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, int nLeftMargin,
+                                  int nRightMargin, char cDeliminator, char* szSpacesOnLeft) {
+  double      * pCoords = 0, * pCoords2 = 0;
+  float         nRadius;
+  int           i, j, count=0;
 
-   try
-      {
-      (Data.GetGInfo())->giGetCoords(m_Center, &pCoords);
-      //tiGetCoords(Data.GetNeighbor(0, m_Center, m_nTracts), &pCoords2);       DTG
-      (Data.GetTInfo())->tiGetCoords(Data.GetNeighbor(m_iEllipseOffset, m_Center, m_nTracts), &pCoords2);
+  try {
+    Data.GetGInfo()->giGetCoords(m_Center, &pCoords);
+    Data.GetTInfo()->tiGetCoords(Data.GetNeighbor(m_iEllipseOffset, m_Center, m_nTracts), &pCoords2);
+    nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
     
-      nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
-    
-      //fprintf(fp, "  Coordinates / radius..........: (%g,%g) / %5.2f\n",
-                   //x1, y1, nRadius);
-    
-      if(Data.m_pParameters->GetDimensionsOfData() < 5)
-      {
-         if ( m_iEllipseOffset == 0 )
-            {
-            fprintf(fp, "%sCoordinates / radius..: (", szSpacesOnLeft);
-      	    for (i=0; i<(Data.m_pParameters->GetDimensionsOfData())-1; i++)
-      	       fprintf(fp, "%g,",pCoords[i]);
-      	    fprintf(fp, "%g) / %-5.2f\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1],nRadius);
-            }
-         else
-            {
-            fprintf(fp, "%sCoordinates...........: (", szSpacesOnLeft);
-            for (i=0; i<(Data.m_pParameters->GetDimensionsOfData())-1; i++)
-      	       fprintf(fp, "%g,",pCoords[i]);
-            fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1]);
-            fprintf(fp, "%sEllipse Semiminor axis: %-6.3f\n", szSpacesOnLeft, nRadius);
-            //Print the ellipse dimensions....
-            fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
-            fprintf(fp, "%sAngle (degrees).......: %-6.3f\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
-            fprintf(fp, "%sShape.................: %-6.3f\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
-            }
-      }
-      else /* More than four dimensions: need to wrap output */
-      {
-        fprintf(fp, "%sCoordinates...........: (", szSpacesOnLeft);
-        int count = 0;
-        for (i=0; i<(Data.m_pParameters->GetDimensionsOfData())-1; i++)
-        {
-          if (count < 4) // This is a magic number: if 5 dimensions they
-          							 // all print on one line; if more, 4 per line
-          {
-    	 fprintf(fp, "%g,",pCoords[i]);
-    	 count++;
-          }
-          else /*Start a new line */
-          {
-    //      	fprintf(fp,"\n                                   ");
-            fprintf(fp,"\n");
-            for (int j=0; j<nLeftMargin+1; j++)
-              fprintf(fp, " ");
-            fprintf(fp, "%g,",pCoords[i]);
-            count = 1;
-          }
+    if (Data.m_pParameters->GetDimensionsOfData() < 5) {
+      //print coordinates differently for the circles and ellipses
+      if (m_iEllipseOffset == 0)  {
+        fprintf(fp, "%sCoordinates / radius..: (", szSpacesOnLeft);
+      	for (i=0; i<(Data.m_pParameters->GetDimensionsOfData())-1; i++)
+      	   fprintf(fp, "%g,",pCoords[i]);
+      	fprintf(fp, "%g) / %-5.2f\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1],nRadius);
+        if (Data.m_pParameters->GetNumRequestedEllipses()) {
+          //print circle as ellipse with shape of '1' when analysis has ellipses
+          fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
+          fprintf(fp, "%sAngle (degrees).......: n/a\n", szSpacesOnLeft);
+          fprintf(fp, "%sShape.................: 1.0\n", szSpacesOnLeft);
         }
+      }
+      else {//print ellipse settings
+        fprintf(fp, "%sCoordinates...........: (", szSpacesOnLeft);
+        for (i=0; i<(Data.m_pParameters->GetDimensionsOfData())-1; i++)
+      	   fprintf(fp, "%g,",pCoords[i]);
         fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1]);
-        if (m_iEllipseOffset == 0)
-           fprintf(fp, "%sRadius................: %-5.2f\n", szSpacesOnLeft, nRadius);
-        else
-           {
-           fprintf(fp, "%sEllipse Semiminor axis: %-6.3f\n", szSpacesOnLeft, nRadius);
-           fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
-           fprintf(fp, "%sAngle (degrees).......: %-6.3f\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
-           fprintf(fp, "%sShape.................: %-6.3f\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
-           }
+        fprintf(fp, "%sEllipse Semiminor axis: %-6.3f\n", szSpacesOnLeft, nRadius);
+        fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
+        fprintf(fp, "%sAngle (degrees).......: %-6.3f\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
+        fprintf(fp, "%sShape.................: %-6.3f\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
       }
+    }
+    else {/* More than four dimensions: need to wrap output */
+      fprintf(fp, "%sCoordinates...........: (", szSpacesOnLeft);
+      for (i=0; i<(Data.m_pParameters->GetDimensionsOfData())-1; i++) {
+         if (count < 4) { // This is a magic number: if 5 dimensions they all print on one line; if more, 4 per line
+           fprintf(fp, "%g,",pCoords[i]);
+    	   count++;
+         }
+         else { /*Start a new line */
+           fprintf(fp,"\n");
+           for (j=0; j < nLeftMargin+1; j++)
+              fprintf(fp, " ");
+           fprintf(fp, "%g,",pCoords[i]);
+           count = 1;
+         }
+      }
+      fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1]);
+      if (m_iEllipseOffset == 0) {
+        fprintf(fp, "%sRadius................: %-5.2f\n", szSpacesOnLeft, nRadius);
+        if (Data.m_pParameters->GetNumRequestedEllipses()) {
+          //print circle as ellipse with shape of '1' when analysis has ellipses
+          fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
+          fprintf(fp, "%sAngle (degrees).......: n/a\n", szSpacesOnLeft);
+          fprintf(fp, "%sShape.................: 1.0\n", szSpacesOnLeft);
+        }
+      }
+      else {
+        fprintf(fp, "%sEllipse Semiminor axis: %-6.3f\n", szSpacesOnLeft, nRadius);
+        fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
+        fprintf(fp, "%sAngle (degrees).......: %-6.3f\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
+        fprintf(fp, "%sShape.................: %-6.3f\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
+      }
+    }
 
-      free(pCoords);
-      free(pCoords2);
-      }
-   catch (ZdException & x)
-      {
-      free(pCoords);
-      free(pCoords2);
-      x.AddCallpath("DisplayCoordinates()", "CCluster");
-      throw;
-      }
+    free(pCoords);
+    free(pCoords2);
+  }
+  catch (ZdException & x) {
+    free(pCoords);
+    free(pCoords2);
+    x.AddCallpath("DisplayCoordinates()", "CCluster");
+    throw;
+  }
 }
 
 //**********************************************************************
@@ -504,8 +504,8 @@ void CCluster::DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisTyp
 }
 
 /** Duczmal compactness correction. For circles this should be no different than
-    the loglikelihood as m_DuczmalCorrection should be 1. */
-double CCluster::GetDuczmalCompactnessCorrection() const {
+    the loglikelihood ratio as m_DuczmalCorrection should be 1. */
+double CCluster::GetDuczmalCorrectedLogLikelihoodRatio() const {
   return m_DuczmalCorrection * m_nRatio;
 }
 

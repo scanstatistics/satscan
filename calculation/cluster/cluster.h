@@ -16,7 +16,9 @@ class CCluster {
     CCluster(BasePrint *pPrintDirection);
     virtual ~CCluster();
 
-    float       gfPValue;               // p value of the cluster
+    virtual CCluster * Clone() const;
+
+    float      gfPValue;               // p value of the cluster
 
     tract_t    m_Center;             // Center of cluster (index to grid)
 
@@ -92,7 +94,7 @@ class CCluster {
 
     virtual count_t     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {return 0;}
     const int           GetClusterType() const  {return m_nClusterType;}
-    double              GetDuczmalCompactnessCorrection() const;
+    double              GetDuczmalCorrectedLogLikelihoodRatio() const;
     double              GetLogLikelihood() {return m_nLogLikelihood;}
     virtual measure_t   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {return 0;}
     tract_t             GetNumCircles()    {return m_nSteps;}
