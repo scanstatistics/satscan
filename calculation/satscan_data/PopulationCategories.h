@@ -12,15 +12,16 @@
 
 class PopulationCategories {
   private:
+    bool                                gbAggregateCategories;
     int                                 giNumberCovariates;            /** number covariates expected in each record
                                                                            - as defined by first non-blank record of population file */
     std::vector<std::string>            gvCovariateNames;              /** names of covariates */
     std::vector<std::vector<int> >      gvPopulationCategories;        /** vector of population categories
                                                                            - integers are indexes of covariate names */
     std::vector<count_t>                gvCategoryCasesCount;          /** number of cases for category */                                                                        
-    std::vector<count_t>                gvCategoryControlsCount;       /** number of controls for category */                                                                        
+    std::vector<count_t>                gvCategoryControlsCount;       /** number of controls for category */
 
-    void                                Init() {giNumberCovariates=0;}
+    void                                Init() {giNumberCovariates=0;gbAggregateCategories=false;}
 
   public:
     PopulationCategories();
@@ -36,6 +37,7 @@ class PopulationCategories {
     int                                 GetNumPopulationCategories() const {return (int)gvPopulationCategories.size();}
     int                                 GetNumPopulationCategoryCovariates() const {return giNumberCovariates;}
     int                                 MakePopulationCategory(const char* szDescription, StringParser & Parser, int iScanOffset, BasePrint & PrintDirection);
+    void                                SetAggregateCategories(bool b);
 };
 //*****************************************************************************
 #endif

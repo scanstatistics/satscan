@@ -117,7 +117,10 @@ int PopulationCategories::MakePopulationCategory(const char* szDescription, Stri
   std::vector<std::vector<int> >::iterator      itr_int;
 
 //  iScanOffset = 3; //tract identifier, population date, population, covariate 1, ...
-  
+
+  if (gbAggregateCategories)
+    iCategoryIndex = 0;
+
   //create a temporary vector of covariate name indexes
   while ((pCovariate = Parser.GetWord(iNumCovariatesScanned + iScanOffset)) != 0) {
        iNumCovariatesScanned++;
@@ -163,3 +166,16 @@ int PopulationCategories::MakePopulationCategory(const char* szDescription, Stri
 
   return iCategoryIndex;
 }
+
+void PopulationCategories::SetAggregateCategories(bool b) {
+   gbAggregateCategories = b;
+
+   if (gbAggregateCategories) {
+     gvPopulationCategories.clear();
+     giNumberCovariates = 0;
+     gvPopulationCategories.push_back(std::vector<int>());
+     gvCategoryCasesCount.resize(1, 0);
+     gvCategoryControlsCount.resize(1, 0);
+   }
+}
+
