@@ -73,9 +73,11 @@ bool CAnalysis::Execute(time_t RunTime)
    try
       {
       SetMaxNumClusters();
+      //Allocate array which will store most likely clusters.
       AllocateTopClusterList();
+      //Allocate two-dimensional array to be used in replications.
       m_pData->AllocSimCases();
-    
+      //Calculate expected number of cases.
       if (!m_pData->CalculateMeasure())
         return false;
     
@@ -86,7 +88,9 @@ bool CAnalysis::Execute(time_t RunTime)
     //KR V.2.1
         //return false;
       }
-    
+      //For circle and each ellipse, find closest neighboring tracts points for
+      //each grid point limiting distance by max circle size and cumulated measure.
+      //
       if (gpPrintDirection->GetIsCanceled() || !m_pData->FindNeighbors())
         return false;
     
@@ -116,6 +120,8 @@ bool CAnalysis::Execute(time_t RunTime)
     
         if (! gpPrintDirection->GetIsCanceled())
            {
+           //For each grid point, find the cluster with the greatest loglikihood.
+           //Removes any clusters that violate criteria for reporting secondary clusters.
            if (! FindTopClusters())
              return false;
            }
@@ -126,7 +132,7 @@ bool CAnalysis::Execute(time_t RunTime)
 //#ifdef DEBUGANALYSIS
 //        DisplayTopClustersLogLikelihoods(m_pDebugFile);
 //#endif
-
+        //Do Monte Carlo replications.
         if (m_nClustersRetained > 0)
           PerformSimulations();
         else
