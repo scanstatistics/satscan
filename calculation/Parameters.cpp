@@ -1310,7 +1310,8 @@ bool CParameters::ValidateParameters() {
         if (m_bOutputRelRisks)
           bValid = DisplayParamError(OUTPUTRR);
       }
-    
+      fclose(pFile);
+
       if (strlen(m_szCoordFilename)==0 || (pFile = fopen(m_szCoordFilename, "r")) == NULL)
         bValid = DisplayParamError(COORDFILE);
       else
