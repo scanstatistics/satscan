@@ -307,11 +307,12 @@ void MultiStreamTimeIntervalRange::CompareClusters(CCluster & Running, CCluster 
      iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
      iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+        Unifier.Reset();
         for (size_t t=0; t < pData->gvStreamData.size(); ++t) {
           TemporalData & Datum = *pData->gvStreamData[t];
           Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
           Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
-          Unifier.AdjoinRatio(gLikelihoodCalculator, t, Datum.gtCases, Datum.gtMeasure,
+          Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure,
                               Datum.gtTotalCases, Datum.gtTotalMeasure);
         }
         Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
