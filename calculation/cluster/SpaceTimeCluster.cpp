@@ -50,12 +50,7 @@ void CSpaceTimeCluster::Initialize(tract_t nCenter = 0)
       CCluster::Initialize(nCenter);
     
       m_nClusterType = SPACETIME;
-    
-      //for (int i=0; i<m_nTotalIntervals; i++)
-      //  {
-      //  m_pCumCases[i]   = 0;
-      //  m_pCumMeasure[i] = 0;
-      //  }
+   
       memset(m_pCumCases, 0, sizeof(count_t) * m_nTotalIntervals);
       memset(m_pCumMeasure, 0, sizeof(measure_t) * m_nTotalIntervals);
       }
@@ -100,11 +95,8 @@ CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& cluste
   m_nTotalIntervals = cluster.m_nTotalIntervals;
   m_nIntervalCut    = cluster.m_nIntervalCut;
 
-  for (int i = 0; i<m_nTotalIntervals; i++)
-  {
-    m_pCumCases[i]   = cluster.m_pCumCases[i];
-    m_pCumMeasure[i] = cluster.m_pCumMeasure[i];
-  }
+  memcpy(m_pCumCases, cluster.m_pCumCases, m_nTotalIntervals*sizeof(count_t));
+  memcpy(m_pCumMeasure, cluster.m_pCumMeasure, m_nTotalIntervals*sizeof(measure_t));
 
   m_nSteps           = cluster.m_nSteps;
 
