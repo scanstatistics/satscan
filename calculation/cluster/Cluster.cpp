@@ -111,7 +111,8 @@ void CCluster::Display(FILE*     fp,
       	DisplayLatLongCoords(fp, Data, nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
     
       DisplayTimeFrame(fp, szSpacesOnLeft, Parameters.m_nAnalysisType);
-      DisplayPopulation(fp, Data, szSpacesOnLeft);
+      if (Parameters.m_nModel != SPACETIMEPERMUTATION)
+        DisplayPopulation(fp, Data, szSpacesOnLeft);
     
       fprintf(fp, "%sNumber of cases.......: %ld", szSpacesOnLeft, m_nCases);
       fprintf(fp, "          (%.2f expected)\n", Data.GetMeasureAdjustment()*m_nMeasure);
@@ -149,8 +150,7 @@ void CCluster::DisplayRelativeRisk(FILE* fp,
    try
       {	
       //  fprintf(fp, "          (Relative risk: %.2f)\n", GetRelativeRisk());
-      fprintf(fp, "%sOverall relative risk.: %.3f\n",
-               szSpacesOnLeft, GetRelativeRisk(nMeasureAdjustment));
+      fprintf(fp, "%sOverall relative risk.: %.3f\n", szSpacesOnLeft, GetRelativeRisk(nMeasureAdjustment));
       }
    catch (SSException & x)
       {
@@ -624,7 +624,12 @@ void CCluster::SetRatioAndDates(const CSaTScanData& Data)
 
 double CCluster::GetRelativeRisk(double nMeasureAdjustment)
 {
-  return ((double)(m_nCases))/(m_nMeasure*nMeasureAdjustment);
+  double        dRelativeRisk=0;
+
+  if (m_nMeasure*nMeasureAdjustment)
+    dRelativeRisk = ((double)(m_nCases))/(m_nMeasure*nMeasureAdjustment);
+
+  return dRelativeRisk;
 }
 
 void CCluster::DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft)
