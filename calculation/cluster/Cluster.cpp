@@ -448,6 +448,28 @@ void CCluster::DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisTyp
       }
 }
 
+/** Returns the number of case for tract as defined by cluster. */
+count_t CCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const
+{
+  count_t       tCaseCount=0;
+
+  if (m_nFirstInterval != m_nLastInterval)
+     tCaseCount = Data.m_pCases[m_nFirstInterval][tTract];
+
+  return tCaseCount;
+}
+
+/** Returns the measure for tract as defined by cluster. */
+measure_t CCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const
+{
+  measure_t     tMeasure=0;
+
+  if (m_nFirstInterval != m_nLastInterval)
+     tMeasure = Data.m_pMeasure[m_nFirstInterval][tTract];
+
+  return tMeasure;
+}
+
 double CCluster::GetRelativeRisk(double nMeasureAdjustment)
 {
   double        dRelativeRisk=0;
@@ -455,6 +477,21 @@ double CCluster::GetRelativeRisk(double nMeasureAdjustment)
   if (m_nMeasure*nMeasureAdjustment)
     dRelativeRisk = ((double)(m_nCases))/(m_nMeasure*nMeasureAdjustment);
 
+  return dRelativeRisk;
+}
+
+/** Returns the relative risk for tract as defined by cluster. */
+double CCluster::GetRelativeRiskForTract(tract_t tTract, const CSaTScanData & Data) const
+{
+  double        dRelativeRisk=0;
+  count_t       tCaseCount;
+  measure_t     tMeasure;
+
+  tCaseCount = GetCaseCountForTract(tTract, Data);
+  tMeasure = GetMeasureForTract(tTract, Data);
+
+  if (tMeasure*Data.GetMeasureAdjustment())
+    dRelativeRisk = ((double)(tCaseCount))/(tMeasure*Data.GetMeasureAdjustment());
   return dRelativeRisk;
 }
 

@@ -86,13 +86,15 @@ class CCluster {
     virtual void        DisplaySteps(FILE* fp, char* szSpacesOnLeft) {};
     virtual void        DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType);
 
+    count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
     int                 GetClusterType()   {return m_nClusterType;}
     double              GetLogLikelihood() {return m_nLogLikelihood;}
+    measure_t           GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;    
     tract_t             GetNumCircles()    {return m_nSteps;}
     virtual tract_t     GetNumTractsInnerCircle() { return m_nTracts; }
     double              GetPVal(int nReps) {return (double)m_nRank/(double)(nReps+1);}
     double              GetRelativeRisk(double nMeasureAdjustment);
-    
+    double              GetRelativeRiskForTract(tract_t tTract, const CSaTScanData & Data) const;
 
     bool                RateIsOfInterest(count_t nTotalCases, measure_t nTotalMeasure);
 
