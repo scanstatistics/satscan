@@ -7,7 +7,7 @@
 #COMPILE = ${CC} -c 
 CC = gcc
 CXX=g++
-DEPEND = ${CC} -MM -E -I../ -I./
+DEPEND = ${CC} -Wno-deprecated -MM -E -I../ -I./
 #LFLAGS = -lstdc++ -Lzlib -lz
 LFLAGS = -lstdc++
 
