@@ -29,6 +29,7 @@ class CModel {
 
     virtual double              CalcLogLikelihood(count_t n, measure_t u) = 0;
     virtual double              CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure, double bCompactnessCorrection) = 0;
+    virtual double              CalcLogLikelihoodRatioEx(count_t tCases, measure_t tMeasure, measure_t tMeasure2, count_t tTotalCases, measure_t tTotalMeasure, double bCompactnessCorrection);
     virtual double              CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster);
     virtual bool                CalculateMeasure(DataStream & thisStream) = 0;
     virtual double              CalcSVTTLogLikelihoodRatio(size_t tStream, CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend);
