@@ -281,8 +281,8 @@ void stsRunHistoryFile::GetProbabilityModelString(ZdString& sTempValue, Probabil
             sTempValue = "Space Time Permutation"; break;
          case NORMAL :
             sTempValue = "Normal"; break;
-         case SURVIVAL :
-            sTempValue = "Survival"; break;
+         case EXPONENTIAL :
+            sTempValue = "Exponential"; break;
          case RANK :
             sTempValue = "Rank"; break;
          case ORDINAL :
@@ -444,7 +444,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
 
       // covariates number
       SetDoubleField(*pRecord,
-                     (double)AnalysisRun.GetDataHub().GetDataStreamHandler().GetStream(0/*for now*/).GetPopulationData().GetNumCovariateCategories(),
+                     (double)AnalysisRun.GetDataHub().GetDataSetHandler().GetDataSet(0/*for now*/).GetPopulationData().GetNumCovariateCategories(),
                      GetFieldNumber(gvFields, COVARIATES_FIELD));
 
       SetBoolField(*pRecord, params.UseSpecialGrid(), GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field
