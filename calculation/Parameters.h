@@ -65,7 +65,6 @@ extern const char*      SIMULATION_DATA_OUTFILE_LINE;
 extern const char*      ADJUSTMENTS_BY_RR_FILE_LINE;
 extern const char*      USE_ADJUSTMENTS_BY_RR_FILE_LINE;
 extern const char*      MAX_CIRCLE_POP_FILE_LINE;
-extern const char*      USE_MAX_CIRCLE_POP_FILE_LINE;
 
 /** sequential scan ini section */
 extern const char*      SEQUENTIAL_SCAN_SECTION;
@@ -136,8 +135,8 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     CRITERIA_SECOND_CLUSTERS, MAX_TEMPORAL_TYPE, MAX_SPATIAL_TYPE,
                                     RUN_HISTORY_FILENAME, OUTPUT_MLC_DBASE, OUTPUT_AREAS_DBASE, OUTPUT_RR_DBASE,
                                     OUTPUT_SIM_LLR_DBASE, DUCZMAL_COMPACTNESS, INTERVAL_STARTRANGE, 
-                                    INTERVAL_ENDRANGE, TIMETRENDCONVRG, MAXCIRCLEPOPFILE, USEMAXCIRCLEPOPFILE,
-                                    EARLY_SIM_TERMINATION, REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE, SIMULATION_TYPE,
+                                    INTERVAL_ENDRANGE, TIMETRENDCONVRG, MAXCIRCLEPOPFILE, EARLY_SIM_TERMINATION,
+                                    REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE, SIMULATION_TYPE,
                                     SIMULATION_SOURCEFILE, ADJ_BY_RR_FILE, OUTPUT_SIMULATION_DATA,
                                     SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE};
 /** analysis and cluster types */
@@ -159,7 +158,7 @@ enum CriteriaSecondaryClustersType {NOGEOOVERLAP=0, NOCENTROIDSINOTHER, NOCENTRO
 /** interperation types for maximum temporal size */
 enum TemporalSizeType              {PERCENTAGETYPE=0, TIMETYPE};
 /** interperation types for maximum spatial size */
-enum SpatialSizeType               {PERCENTAGEOFMEASURETYPE=0, DISTANCETYPE};
+enum SpatialSizeType               {PERCENTOFPOPULATIONTYPE=0, DISTANCETYPE, PERCENTOFPOPULATIONFILETYPE};
 /** file structure types of file supplied parameter settings */
 enum ReadType                      {INI=0, SCAN};
 /** defines how simulated data will be created - only pertinent for Poisson */
@@ -232,7 +231,6 @@ class CParameters {
     std::string                         gsSpecialGridFileName;                  /** special grid data source filename */
     bool                                gbUseSpecialGridFile;                   /** indicator of special grid file usage */
     std::string                         gsMaxCirclePopulationFileName;           /** special population file for constructing circles only */
-    bool                                gbUseMaxCirclePopulationFile;           /** indicator of special population file usage */
     std::string                         gsOutputFileName;                       /** results output filename */
     ZdString                            gsRunHistoryFilename;                   /** run history filename */
     bool                                gbLogRunHistory;                        /** indicates whether to log history */
@@ -350,6 +348,8 @@ class CParameters {
     const std::string                 & GetMaxCirclePopulationFileName() const {return gsMaxCirclePopulationFileName;}
     float                               GetMaximumGeographicClusterSize() const {return gfMaxGeographicClusterSize;}
     SpatialSizeType                     GetMaxGeographicClusterSizeType() const {return geMaxGeographicClusterSizeType;}
+    bool                                GetMaxGeoClusterSizeTypeIsPopulationBased() const {return geMaxGeographicClusterSizeType == PERCENTOFPOPULATIONTYPE ||
+                                                                                                  geMaxGeographicClusterSizeType == PERCENTOFPOPULATIONFILETYPE;}
     float                               GetMaximumTemporalClusterSize() const {return gfMaxTemporalClusterSize;}
     TemporalSizeType                    GetMaximumTemporalClusterSizeType() const {return geMaxTemporalClusterSizeType;}
     float                               GetMaximumReportedGeoClusterSize() const {return gfMaxReportedGeographicClusterSize;}
@@ -468,11 +468,10 @@ class CParameters {
     void                                SetTimeTrendConvergence(double dTimeTrendConvergence);
     void                                SetUseAdjustmentForRelativeRisksFile(bool b) {gbUseAdjustmentsForRRFile = b;}
     void                                SetUseSpecialGrid(bool b) {gbUseSpecialGridFile = b;}
-    void                                SetUseMaxCirclePopulationFile(bool b) {gbUseMaxCirclePopulationFile = b;}
     void                                SetValidatePriorToCalculation(bool b) {gbValidatePriorToCalc = b;}
     bool                                ValidateParameters(BasePrint & PrintDirection);
     bool                                UseAdjustmentForRelativeRisksFile() const {return gbUseAdjustmentsForRRFile;}
-    bool                                UseMaxCirclePopulationFile() const {return gbUseMaxCirclePopulationFile;}
+    bool                                UseMaxCirclePopulationFile() const;
     bool                                UseSpecialGrid() const {return gbUseSpecialGridFile;}
     void                                Write(const char * sParameterFileName);
 };

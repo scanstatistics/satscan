@@ -119,7 +119,7 @@ void MakeNeighbors(const TractHandler* pTInfo, const GInfo* pGInfo, tract_t*** S
           vTractDistances[k].SetDistanceSquared(pTInfo->tiGetDistanceSq(pCoords, pCoords2));
         }
         std::stable_sort(vTractDistances.begin(), vTractDistances.end(), CompareTractDistance(*pTInfo));
-        if (iSpatialMaxType == PERCENTAGEOFMEASURETYPE)
+        if (iSpatialMaxType == PERCENTOFPOPULATIONTYPE || iSpatialMaxType == PERCENTOFPOPULATIONFILETYPE)
           NeighborCounts[0][t] += CountNeighborsByMeasure(vTractDistances, Measure, MaxCircleSize, nMaxMeasure);
         else if (iSpatialMaxType == DISTANCETYPE)
           NeighborCounts[0][t] += CountNeighborsByDistance(vTractDistances, MaxCircleSize);
@@ -189,7 +189,7 @@ void MakeNeighbors(const TractHandler* pTInfo, const GInfo* pGInfo, tract_t*** S
                       vTractDistances[k].SetDistanceSquared(pTInfo->tiGetDistanceSq(pCoords, pCoords2));
                       }
                    std::stable_sort(vTractDistances.begin(), vTractDistances.end(), CompareTractDistance(*pTInfo));
-                   if (iSpatialMaxType == PERCENTAGEOFMEASURETYPE)
+                   if (iSpatialMaxType == PERCENTOFPOPULATIONTYPE || iSpatialMaxType == PERCENTOFPOPULATIONFILETYPE)
                      NeighborCounts[lCurrentEllipse][t] += CountNeighborsByMeasure(vTractDistances, Measure, MaxCircleSize, nMaxMeasure);
                    else if (iSpatialMaxType == DISTANCETYPE)
                      NeighborCounts[lCurrentEllipse][t] += CountNeighborsByDistance(vTractDistances, MaxCircleSize);

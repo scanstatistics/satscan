@@ -84,7 +84,6 @@ const char*      SIMULATION_DATA_OUTFILE_LINE           = "SimulatedDataOutputFi
 const char*      ADJUSTMENTS_BY_RR_FILE_LINE            = "AdjustmentsByKnownRelativeRisksFilename";
 const char*      USE_ADJUSTMENTS_BY_RR_FILE_LINE        = "UseAdjustmentsByRRFile";
 const char*      MAX_CIRCLE_POP_FILE_LINE               = "MaxCirclePopulationFile";
-const char*      USE_MAX_CIRCLE_POP_FILE_LINE           = "UseMaxCirclePopulationFile";
 
 const int        MAXIMUM_SEQUENTIAL_ANALYSES    	= 32000;
 const int        MAXIMUM_ELLIPSOIDS             	= 10;
@@ -101,12 +100,12 @@ const char*      POISSON_MODEL                 		= "Poisson";
 const char*      BERNOULLI_MODEL                	= "Bernoulli";
 const char*      SPACETIME_PERMUTATION_MODEL    	= "Space-Time Permutation";
 
-const char*      NONE_PRECISION_TYPE            	= "None";
-const char*      YEAR_PRECISION_TYPE            	= "Years";
-const char*      MONTH_PRECISION_TYPE           	= "Months";
-const char*      DAY_PRECISION_TYPE             	= "Days";
+const char*      NONE_PRECISION_TYPE            	= "none";
+const char*      YEAR_PRECISION_TYPE            	= "years";
+const char*      MONTH_PRECISION_TYPE           	= "months";
+const char*      DAY_PRECISION_TYPE             	= "days";
 
-int CParameters::giNumParameters 			= 66;
+int CParameters::giNumParameters 			= 65;
 
 char mgsVariableLabels[66][100] = {
    "Analysis Type", "Scan Areas", "Case File", "Population File",
@@ -131,8 +130,7 @@ char mgsVariableLabels[66][100] = {
    "Output Simulated Loglikelihood Ratios DBase Format",
    "Ellipsoid Duczmal Compactness Correction", "Interval Start Range",
    "Interval End Range", "Time Trend Convergence", "Special Population File",
-   "Special Population File Use", "Early Termination of Simulations",
-   "Maximum Reported Geographical Cluster Size",
+   "Early Termination of Simulations", "Maximum Reported Geographical Cluster Size",
    "Restrict Reported Max Geographical Cluster Size", "Simulation Method Type",
    "Simulated Data Import File", "Adjustments By Known Relative Risks File", "Printing Simulated Data",
    "Simulated Data Output File", "Adjust for Earlier Analyses", "Use Adjustments By Known Relative Risks File"
@@ -231,7 +229,6 @@ void CParameters::Copy(const CParameters &rhs) {
     gsSpecialGridFileName               = rhs.gsSpecialGridFileName;
     gbUseSpecialGridFile                = rhs.gbUseSpecialGridFile;
     gsMaxCirclePopulationFileName       = rhs.gsMaxCirclePopulationFileName;
-    gbUseMaxCirclePopulationFile        = rhs.gbUseMaxCirclePopulationFile;
     gePrecisionOfTimesType              = rhs.gePrecisionOfTimesType;
     giDimensionsOfData                  = rhs.giDimensionsOfData;
     geCoordinatesType                   = rhs.geCoordinatesType;
@@ -350,7 +347,7 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
       default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayParameters()", geProbabiltyModelType);
     }
 
-    if (gbUseMaxCirclePopulationFile)
+    if (geMaxGeographicClusterSizeType == PERCENTOFPOPULATIONFILETYPE)
       fprintf(fp, "  Maximum Circle Population File : %s\n", gsMaxCirclePopulationFileName.c_str());
     fprintf(fp, "  Coordinates File               : %s\n", gsCoordinatesFileName.c_str());
     if (gbUseSpecialGridFile)
@@ -413,8 +410,9 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
         geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == SPATIALVARTEMPTREND) {
       fprintf(fp, "  Maximum Spatial Cluster Size          : %.2f", gfMaxGeographicClusterSize);
       switch (geMaxGeographicClusterSizeType) {
-        case PERCENTAGEOFMEASURETYPE : fprintf(fp, " %%\n"); break;
-        case DISTANCETYPE            : fprintf(fp, (geCoordinatesType == CARTESIAN ? " Cartesian Units\n" : " km\n")); break;
+        case PERCENTOFPOPULATIONFILETYPE :
+        case PERCENTOFPOPULATIONTYPE     : fprintf(fp, " %%\n"); break;
+        case DISTANCETYPE            : fprintf(fp, (geCoordinatesType == CARTESIAN ? " cartesian units\n" : " km\n")); break;
         default : ZdException::Generate("Unknown maximum spatial cluster size type '%d'.\n", "DisplayParameters()", geMaxGeographicClusterSizeType);
       }
     }
@@ -704,7 +702,6 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
 	case INTERVAL_ENDRANGE         : sParameterLineLabel = ENDRANGE_LINE; break;			
         case TIMETRENDCONVRG           : sParameterLineLabel = TIME_TREND_CONVERGENCE_LINE; break;
         case MAXCIRCLEPOPFILE          : sParameterLineLabel = MAX_CIRCLE_POP_FILE_LINE; break;
-        case USEMAXCIRCLEPOPFILE       : sParameterLineLabel = USE_MAX_CIRCLE_POP_FILE_LINE; break;
         case EARLY_SIM_TERMINATION     : sParameterLineLabel = EARLY_SIM_TERMINATION_LINE; break;
         case REPORTED_GEOSIZE          : sParameterLineLabel = REPORTED_GEOSIZE_LINE; break;
         case USE_REPORTED_GEOSIZE      : sParameterLineLabel = USE_REPORTED_GEOSIZE_LINE; break;
@@ -984,7 +981,6 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
                                       break;
       case TIMETRENDCONVRG	    : sDefaultValue = gdTimeTrendConverge; break;
       case MAXCIRCLEPOPFILE         : sDefaultValue = "<blank>"; break;
-      case USEMAXCIRCLEPOPFILE      : sDefaultValue = (gbUseMaxCirclePopulationFile ? YES : NO); break;
       case EARLY_SIM_TERMINATION    : sDefaultValue = (gbEarlyTerminationSimulations ? YES : NO); break;
       case REPORTED_GEOSIZE         : sDefaultValue = gfMaxReportedGeographicClusterSize; break;
       case USE_REPORTED_GEOSIZE     : sDefaultValue = (gbRestrictReportedClusters ? YES : NO); break;
@@ -1057,7 +1053,6 @@ void CParameters::ReadAdvancedFeatures(ZdIniFile& file, BasePrint & PrintDirecti
     ReadIniParameter(*pSection, ADJUSTMENTS_BY_RR_FILE_LINE, ADJ_BY_RR_FILE, PrintDirection);
     ReadIniParameter(*pSection, OUTPUT_SIMULATION_DATA_LINE, OUTPUT_SIMULATION_DATA, PrintDirection);
     ReadIniParameter(*pSection, SIMULATION_DATA_OUTFILE_LINE, SIMULATION_DATA_OUTFILE, PrintDirection);
-    ReadIniParameter(*pSection, USE_MAX_CIRCLE_POP_FILE_LINE, USEMAXCIRCLEPOPFILE, PrintDirection);
     ReadIniParameter(*pSection, MAX_CIRCLE_POP_FILE_LINE, MAXCIRCLEPOPFILE, PrintDirection);
   }
   catch (ZdException &x) {
@@ -1563,7 +1558,6 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case INTERVAL_STARTRANGE       : ReadStartIntervalRange(sParameter); break;
       case INTERVAL_ENDRANGE         : ReadEndIntervalRange(sParameter); break;
       case TIMETRENDCONVRG           : SetTimeTrendConvergence(ReadDouble(sParameter, eParameterType)); break;
-      case USEMAXCIRCLEPOPFILE       : SetUseMaxCirclePopulationFile(ReadBoolean(sParameter, eParameterType)); break;
       case MAXCIRCLEPOPFILE          : SetMaxCirclePopulationFileName(sParameter.GetCString(), true); break;
       case EARLY_SIM_TERMINATION     : SetTerminateSimulationsEarly(ReadBoolean(sParameter, eParameterType)); break;
       case REPORTED_GEOSIZE          : SetMaximumReportedGeographicalClusterSize(ReadFloat(sParameter, eParameterType)); break;
@@ -1807,8 +1801,6 @@ void CParameters::SaveAdvancedFeaturesSection(ZdIniFile& file) {
     pSection->AddLine(OUTPUT_SIMULATION_DATA_LINE, gbOutputSimulationData ? YES : NO);
     pSection->AddComment(" Simulated data output file name");
     pSection->AddLine(SIMULATION_DATA_OUTFILE_LINE, gsSimulationDataOutputFilename.c_str());
-    pSection->AddComment(" use special population file? (y/n)");
-    pSection->AddLine(USE_MAX_CIRCLE_POP_FILE_LINE, gbUseMaxCirclePopulationFile ? YES : NO);
     pSection->AddLine(MAX_CIRCLE_POP_FILE_LINE, gsMaxCirclePopulationFileName.c_str());
   }
   catch (ZdException &x) {
@@ -1953,7 +1945,7 @@ void CParameters::SaveScanningWindowSection(ZdIniFile& file) {
     pSection = file.GetSection(SCANNING_WINDOW_SECTION);
     pSection->AddComment(" max geographic size (<=50%)");
     pSection->AddLine(MAX_GEO_SIZE_LINE, AsString(sValue, gfMaxGeographicClusterSize));
-    pSection->AddComment(" how max spatial size should be interpretted (0=Percentage, 1=Distance)");
+    pSection->AddComment(" how max spatial size should be interpretted (0=Percentage, 1=Distance, 2=Percentage of max circle population file)");
     pSection->AddLine(MAX_GEO_INTERPRET_LINE, AsString(sValue, geMaxGeographicClusterSizeType));
     pSection->AddComment(" include purely temporal clusters (y/n)");
     pSection->AddLine(INCLUDE_PURE_TEMP_LINE, gbIncludePurelyTemporalClusters ? YES : NO);
@@ -2165,10 +2157,9 @@ void CParameters::SetDefaults() {
   gePrecisionOfTimesType                = YEAR;
   giDimensionsOfData                    = 0;
   gbUseSpecialGridFile                  = false;
-  gbUseMaxCirclePopulationFile          = false;
   gsSpecialGridFileName                 = "";
   gfMaxGeographicClusterSize            = 50.0; //GG980716
-  geMaxGeographicClusterSizeType        = PERCENTAGEOFMEASURETYPE;
+  geMaxGeographicClusterSizeType        = PERCENTOFPOPULATIONTYPE;
   gsStudyPeriodStartDate                = "1900/01/01";
   gsStudyPeriodEndDate                  = "1900/12/31";
   geIncludeClustersType                 = ALLCLUSTERS;
@@ -2337,11 +2328,11 @@ void CParameters::SetMaximumSpacialClusterSizeType(SpatialSizeType eSpatialSizeT
   ZdString      sLabel;
 
   try {
-    if (PERCENTAGEOFMEASURETYPE > eSpatialSizeType || DISTANCETYPE < eSpatialSizeType)
+    if (PERCENTOFPOPULATIONTYPE > eSpatialSizeType || PERCENTOFPOPULATIONFILETYPE < eSpatialSizeType)
       InvalidParameterException::Generate("Error: For parameter '%s', setting '%d' is out of range(%d - %d).\n",
                                           "SetMaximumSpacialClusterSizeType()",
                                           GetParameterLineLabel(MAX_SPATIAL_TYPE, sLabel, geReadType == INI),
-                                          eSpatialSizeType, PERCENTAGEOFMEASURETYPE, DISTANCETYPE);
+                                          eSpatialSizeType, PERCENTOFPOPULATIONTYPE, PERCENTOFPOPULATIONFILETYPE);
     geMaxGeographicClusterSizeType = eSpatialSizeType;
   }
   catch (ZdException &x) {
@@ -2687,16 +2678,6 @@ void CParameters::SetMaxCirclePopulationFileName(const char * sMaxCirclePopulati
     gsMaxCirclePopulationFileName = sMaxCirclePopulationFileName;
     if (bCorrectForRelativePath)
       ConvertRelativePath(gsMaxCirclePopulationFileName);
-
-    if (gsMaxCirclePopulationFileName.empty())
-      gbUseMaxCirclePopulationFile = false; //If empty, then definately not using special grid.
-    else if (bSetUsingFlag)
-      gbUseMaxCirclePopulationFile = true;
-      //Permits setting maximum circle population filename in GUI interface
-      //where obviously the use of maximum circle population file is the desire.
-      //else gbUseMaxCirclePopulationFile is as set from parameters read. This permits
-      //the situation where user has modified the paramters file manually so that
-      //there is a named maximum circle population file but they turned off option to use it.
   }
   catch (ZdException &x) {
     x.AddCallpath("SetMaxCirclePopulationFileName()", "CParameters");
@@ -2801,6 +2782,18 @@ void CParameters::SetTimeTrendConvergence(double dTimeTrendConvergence) {
   //Validity of setting is checked in ValidateParameters() since this setting
   //might not be pertinent in calculation.
    gdTimeTrendConverge = dTimeTrendConvergence;
+}
+
+bool CParameters::UseMaxCirclePopulationFile() const {
+  bool  bRequiredForProspective, bAskForByUser;
+
+  bAskForByUser = GetMaxGeographicClusterSizeType() == PERCENTOFPOPULATIONFILETYPE;
+  bAskForByUser &= GetAnalysisType() != PURELYTEMPORAL && GetAnalysisType() != PROSPECTIVEPURELYTEMPORAL;
+  bRequiredForProspective = GetAnalysisType() == PROSPECTIVESPACETIME;
+  bRequiredForProspective &= GetMaxGeographicClusterSizeType() == PERCENTOFPOPULATIONFILETYPE;
+  bRequiredForProspective &= GetAdjustForEarlierAnalyses();
+
+  return bAskForByUser || bRequiredForProspective;
 }
 
 /** Validates date parameters based upon current settings. Error messages
@@ -2993,39 +2986,32 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
     }
     else
       gbUseAdjustmentsForRRFile = false;
-    //validate maximum circle population file
-    if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL)
-      gbUseMaxCirclePopulationFile = false;
-    if (gbUseMaxCirclePopulationFile && gsMaxCirclePopulationFileName.empty()) {
-      bValid = false;
-      PrintDirection.SatScanPrintWarning("Error: Settings indicate to use a Maximum Circle Population file, but file name not specified.\n");
-    }
-    else if (gbUseMaxCirclePopulationFile && access(gsMaxCirclePopulationFileName.c_str(), 00)) {
-      bValid = false;
-      PrintDirection.SatScanPrintWarning("Error: Maximum Circle Population file '%s' does not exist.\n", gsMaxCirclePopulationFileName.c_str());
-      PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
-    }
+
     //validate maximum circle population file for a prospective space-time analysis w/ maximum geographical cluster size
     //defined as a percentage of the population and adjusting for earlier analyses.
-    if (gbUseMaxCirclePopulationFile || (geAnalysisType == PROSPECTIVESPACETIME && gbAdjustForEarlierAnalyses && geMaxGeographicClusterSizeType == PERCENTAGEOFMEASURETYPE)) {
-        if (gsMaxCirclePopulationFileName.empty()) {
-          bValid = false;
-          PrintDirection.SatScanPrintWarning("Error: For a prospective space-time analysis adjusting for ealier analyses, with the maximum spatial\n");
-          PrintDirection.SatScanPrintWarning("       cluster size defined as a percentage of the population at risk, a maximum circle\n");
-          PrintDirection.SatScanPrintWarning("       population file must be specified.\n");
-          PrintDirection.SatScanPrintWarning("       Alternatively you may choose to specify the maximum as a fixed radius, in which no\n");
-          PrintDirection.SatScanPrintWarning("       maximum circle population file is required.\n");
-        }
-        else if (access(gsMaxCirclePopulationFileName.c_str(), 00)) {
-          bValid = false;
-          PrintDirection.SatScanPrintWarning("Error: Maximum Circle Population file '%s' does not exist.\n", gsMaxCirclePopulationFileName.c_str());
-          PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
-        }
-        else
-          gbUseMaxCirclePopulationFile = true;
+    if (geAnalysisType == PROSPECTIVESPACETIME && gbAdjustForEarlierAnalyses && geMaxGeographicClusterSizeType != PERCENTOFPOPULATIONFILETYPE) {
+      bValid = false;
+      PrintDirection.SatScanPrintWarning("Error: For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n");
+      PrintDirection.SatScanPrintWarning("       cluster size must be defined as a percentage of the population as defined in a maximum\n");
+      PrintDirection.SatScanPrintWarning("       circle population file.\n");
+      PrintDirection.SatScanPrintWarning("       Alternatively you may choose to specify the maximum as a fixed radius, in which no\n");
+      PrintDirection.SatScanPrintWarning("       maximum circle population file is required.\n");
     }
-    else
-      gbUseMaxCirclePopulationFile = false;
+    if (geMaxGeographicClusterSizeType == PERCENTOFPOPULATIONFILETYPE) {
+      if (gsMaxCirclePopulationFileName.empty()) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n");
+        PrintDirection.SatScanPrintWarning("       cluster size must be defined as a percentage of the population as defined in a maximum\n");
+        PrintDirection.SatScanPrintWarning("       circle population file.\n");
+        PrintDirection.SatScanPrintWarning("       Alternatively you may choose to specify the maximum as a fixed radius, in which no\n");
+        PrintDirection.SatScanPrintWarning("       maximum circle population file is required.\n");
+      }
+      else if (access(gsMaxCirclePopulationFileName.c_str(), 00)) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Maximum circle population file '%s' does not exist.\n", gsMaxCirclePopulationFileName.c_str());
+        PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+      }
+    }
     //validate output file
     if (gsOutputFileName.empty()) {
       bValid = false;
@@ -3379,7 +3365,7 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Maximum spatial cluster size of '%2g%%' is invalid. Value must be greater than zero.\n", gfMaxGeographicClusterSize);
       }
-      if (geMaxGeographicClusterSizeType == PERCENTAGEOFMEASURETYPE && gfMaxGeographicClusterSize > 50.0) {
+      if (GetMaxGeoClusterSizeTypeIsPopulationBased()  && gfMaxGeographicClusterSize > 50.0) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting of '%2g%%' for maximum spatial cluster size.\n", gfMaxGeographicClusterSize);
         PrintDirection.SatScanPrintWarning("       When defined as a percentage of the population at risk, the maximum spatial cluster size is 50%%.\n");
@@ -3402,7 +3388,7 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
       //finding neighbors which purely temporal analyses don't utilize. The finding neighbors
       //routine should really be skipped for this analysis type.
       gfMaxGeographicClusterSize = 50.0; //KR980707 0 GG980716;
-      geMaxGeographicClusterSizeType = PERCENTAGEOFMEASURETYPE;
+      geMaxGeographicClusterSizeType = PERCENTOFPOPULATIONTYPE;
       gbRestrictReportedClusters = false;
     }
 

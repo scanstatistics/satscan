@@ -575,7 +575,7 @@ bool CAnalysis::FinalizeReport(time_t RunTime) {
 
       if (m_pParameters->GetProbabiltyModelType() == POISSON ||
           (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION &&
-           m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE))
+           m_pParameters->GetMaxGeoClusterSizeTypeIsPopulationBased()))
         (m_pData->GetTInfo())->tiReportZeroPops(fp);
 
       m_pData->GetTInfo()->tiReportDuplicateTracts(fp);
@@ -973,6 +973,8 @@ void CAnalysis::RemoveTopClusterData() {
         //could be negative.
         //--m_pData->m_nTracts;
       }
+
+      //should there be adjustments to the maximum circle population file vector ?
 
       InitializeTopClusterList();
       m_nClustersRetained = 0;

@@ -222,7 +222,7 @@ void stsRunHistoryFile::GetMaxGeoExtentString(ZdString& sTempValue, const CParam
       else {
          sTempValue.printf("%.2f", params.GetMaximumGeographicClusterSize());
          sTempValue << " ";
-         if(params.GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE)
+         if(params.GetMaxGeoClusterSizeTypeIsPopulationBased())
             sTempValue << "%";
          else {
             if(params.GetCoordinatesType() == CARTESIAN)
