@@ -45,7 +45,7 @@ void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbtractDataStreamGatewa
       eIncludeClustersType = ALLCLUSTERS;
     else
       eIncludeClustersType = gParameters.GetIncludeClustersType();
-    gpTimeIntervals = GetNewTimeIntervalsObject(eIncludeClustersType);
+    gpTimeIntervals = GetNewTemporalDataEvaluatorObject(eIncludeClustersType);
 
     //create simulation objects based upon which process used to perform simulations
     if (gbMeasureListReplications) {
@@ -84,7 +84,7 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGatew
       eIncludeClustersType = ALIVECLUSTERS;
     else
       eIncludeClustersType = gParameters.GetIncludeClustersType();
-    gpTimeIntervals = GetNewTimeIntervalsObject(eIncludeClustersType);
+    gpTimeIntervals = GetNewTemporalDataEvaluatorObject(eIncludeClustersType);
     //create cluster object used as comparator when iterating over centroids and time intervals
     gpClusterComparator = new CSpaceTimeCluster(gpClusterDataFactory, DataGateway);
     //initialize list of top circle/ellipse clusters

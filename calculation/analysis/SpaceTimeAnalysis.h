@@ -3,6 +3,7 @@
 #define __SPACETIMEANALYSIS_H
 //***********************************************************************************
 #include "Analysis.h"
+#include "ClusterData.h"
 #include "SpaceTimeCluster.h"
 #include "MeasureList.h"
 #include "ProbabilityModel.h"

@@ -1,8 +1,9 @@
-//*****************************************************************************
+//******************************************************************************
 #ifndef __PURELYTEMPORALANALYSIS_H
 #define __PURELYTEMPORALANALYSIS_H
-//*****************************************************************************
+//******************************************************************************
 #include "Analysis.h"
+#include "ClusterData.h"
 #include "MeasureList.h"
 #include "TimeIntervalRange.h"
 #include "PurelyTemporalData.h"
@@ -33,5 +34,6 @@ class CPurelyTemporalAnalysis : public CAnalysis {
     virtual double                FindTopRatio(const AbtractDataStreamGateway& DataGateway);
     virtual double                MonteCarlo(const DataStreamInterface& Interface);
 };
-//*****************************************************************************
+//******************************************************************************
 #endif
+

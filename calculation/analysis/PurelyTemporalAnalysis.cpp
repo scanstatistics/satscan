@@ -1,7 +1,7 @@
-//***************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//***************************************************************************
+//******************************************************************************
 #include "PurelyTemporalAnalysis.h"
 
 /** Constructor */
@@ -36,7 +36,7 @@ void CPurelyTemporalAnalysis::AllocateSimulationObjects(const AbtractDataStreamG
       eIncludeClustersType = ALLCLUSTERS;
     else
       eIncludeClustersType = gParameters.GetIncludeClustersType();
-    gpTimeIntervals = GetNewTimeIntervalsObject(eIncludeClustersType);
+    gpTimeIntervals = GetNewTemporalDataEvaluatorObject(eIncludeClustersType);
 
     //create simulation objects based upon which process used to perform simulations
     if (gbMeasureListReplications) {
@@ -88,7 +88,7 @@ void CPurelyTemporalAnalysis::FindTopClusters(const AbtractDataStreamGateway& Da
     CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
     CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
     //get new time intervals objects
-    pTimeIntervals = GetNewTimeIntervalsObject(eIncludeClustersType);
+    pTimeIntervals = GetNewTemporalDataEvaluatorObject(eIncludeClustersType);
     //iterate through time intervals, finding top cluster
     pTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
     //if any interesting clusters found, add to top cluster array
