@@ -847,11 +847,11 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    bReturn &= (edtStartRangeStartMonth->Text.ToInt() == 1);
    bReturn &= (edtStartRangeStartDay->Text.ToInt() == 1);
    bReturn &= (edtStartRangeEndYear->Text.ToInt() == 1900 || edtStartRangeEndYear->Text.ToInt() == 2000);
-   bReturn &= (edtStartRangeEndMonth->Text.ToInt() == 12);
-   bReturn &= (edtStartRangeEndDay->Text.ToInt() == 31);
+   bReturn &= (edtStartRangeEndMonth->Text.ToInt() == 1 || edtStartRangeEndMonth->Text.ToInt() == 12);
+   bReturn &= (edtStartRangeEndDay->Text.ToInt() == 1 || edtStartRangeEndDay->Text.ToInt() == 31);
    bReturn &= (edtEndRangeStartYear->Text.ToInt() == 1900 || edtEndRangeStartYear->Text.ToInt() == 2000);
-   bReturn &= (edtEndRangeStartMonth->Text.ToInt() == 1);
-   bReturn &= (edtEndRangeStartDay->Text.ToInt() == 1);
+   bReturn &= (edtEndRangeStartMonth->Text.ToInt() == 1 || edtEndRangeStartMonth->Text.ToInt() == 12);
+   bReturn &= (edtEndRangeStartDay->Text.ToInt() == 1 || edtEndRangeStartDay->Text.ToInt() == 31);
    bReturn &= (edtEndRangeEndYear->Text.ToInt() == 1900 || edtEndRangeEndYear->Text.ToInt() == 2000);
    bReturn &= (edtEndRangeEndMonth->Text.ToInt() == 12);
    bReturn &= (edtEndRangeEndDay->Text.ToInt() == 31);
