@@ -27,9 +27,6 @@ __fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const long lRunNumber, const i
    }
 }
 
-__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF() : DBaseOutput(-1, -1) {
-}
-
 // destructor
 stsAreaSpecificDBF::~stsAreaSpecificDBF() {
    try {

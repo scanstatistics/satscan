@@ -11,7 +11,6 @@ class stsAreaSpecificDBF : public DBaseOutput {
       virtual void              SetupFields(ZdPointerVector<ZdField>& vFields);
    public:
       __fastcall stsAreaSpecificDBF(const long lRunNumber, const int iCoordType, const ZdFileName& sOutputFileName, const bool bPrintPVal);
-      __fastcall stsAreaSpecificDBF();
       virtual ~stsAreaSpecificDBF();
 
       virtual void              RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, tract_t tTract);
