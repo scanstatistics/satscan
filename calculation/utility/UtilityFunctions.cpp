@@ -95,7 +95,7 @@ void DisplayVersion(FILE* fp=stdout, int nPos=0)
 {
   if (nPos==1)
     fprintf(fp,"                        ");
-  fprintf(fp, "SaTScan V.");
+  fprintf(fp, "SaTScan v");
   fprintf(fp, VERSION_NUMBER);
   fprintf(fp, "\n");
 }
