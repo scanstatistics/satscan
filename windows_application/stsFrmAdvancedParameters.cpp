@@ -825,7 +825,7 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    // Inference tab
    bReturn &= (chkAdjustForEarlierAnalyses->Checked == false);
    bReturn &= (chkTerminateEarly->Checked == false);
-   bReturn &= (edtProspectiveStartDateYear->Text.ToInt() == 2000);
+   bReturn &= (edtProspectiveStartDateYear->Text.ToInt() == 1900 || edtProspectiveStartDateYear->Text.ToInt() == 2000);
    bReturn &= (edtProspectiveStartDateMonth->Text.ToInt() == 12);
    bReturn &= (edtProspectiveStartDateDay->Text.ToInt() == 31);
 
@@ -843,16 +843,16 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    bReturn &= (edtMaxTemporalClusterSizeUnits->Text.ToInt() == 1);
    bReturn &= (chkIncludePureSpacClust->Checked == false);
 
-   bReturn &= (edtStartRangeStartYear->Text.ToInt() == 2000);
+   bReturn &= (edtStartRangeStartYear->Text.ToInt() == 1900 || edtStartRangeStartYear->Text.ToInt() == 2000);
    bReturn &= (edtStartRangeStartMonth->Text.ToInt() == 1);
    bReturn &= (edtStartRangeStartDay->Text.ToInt() == 1);
-   bReturn &= (edtStartRangeEndYear->Text.ToInt() == 2000);
+   bReturn &= (edtStartRangeEndYear->Text.ToInt() == 1900 || edtStartRangeEndYear->Text.ToInt() == 2000);
    bReturn &= (edtStartRangeEndMonth->Text.ToInt() == 12);
    bReturn &= (edtStartRangeEndDay->Text.ToInt() == 31);
-   bReturn &= (edtEndRangeStartYear->Text.ToInt() == 2000);
+   bReturn &= (edtEndRangeStartYear->Text.ToInt() == 1900 || edtEndRangeStartYear->Text.ToInt() == 2000);
    bReturn &= (edtEndRangeStartMonth->Text.ToInt() == 1);
    bReturn &= (edtEndRangeStartDay->Text.ToInt() == 1);
-   bReturn &= (edtEndRangeEndYear->Text.ToInt() == 2000);
+   bReturn &= (edtEndRangeEndYear->Text.ToInt() == 1900 || edtEndRangeEndYear->Text.ToInt() == 2000);
    bReturn &= (edtEndRangeEndMonth->Text.ToInt() == 12);
    bReturn &= (edtEndRangeEndDay->Text.ToInt() == 31);
    bReturn &= (chkRestrictTemporalRange->Checked == false);
@@ -1090,11 +1090,14 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
   ZdString      sString;
 
   try {
-    ref.SetUseAdjustmentForRelativeRisksFile(chkAdjustForKnownRelativeRisks->Checked);
+    ref.SetUseAdjustmentForRelativeRisksFile(chkAdjustForKnownRelativeRisks->Enabled && chkAdjustForKnownRelativeRisks->Checked);
     ref.SetAdjustmentsByRelativeRisksFilename(edtAdjustmentsByRelativeRisksFile->Text.c_str(), false);
     ref.SetTimeTrendAdjustmentType(rdgTemporalTrendAdj->Enabled ? GetAdjustmentTimeTrendControlType() : NOTADJUSTED);
     ref.SetTimeTrendAdjustmentPercentage(atof(edtLogLinear->Text.c_str()));
-    ref.SetSpatialAdjustmentType((SpatialAdjustmentType)rdgSpatialAdjustments->ItemIndex);
+    if (rdgSpatialAdjustments->Enabled)
+      ref.SetSpatialAdjustmentType((SpatialAdjustmentType)rdgSpatialAdjustments->ItemIndex);
+    else
+      ref.SetSpatialAdjustmentType(NO_SPATIAL_ADJUSTMENT);
     ref.SetTerminateSimulationsEarly(chkTerminateEarly->Checked);
     ref.SetRestrictReportedClusters(chkRestrictReportedClusters->Enabled && chkRestrictReportedClusters->Checked);
     ref.SetMaximumReportedGeographicalClusterSize(atof(edtReportClustersSmallerThan->Text.c_str()));
@@ -1771,6 +1774,18 @@ void TfrmAdvancedParameters::ValidateTemporalClusterSize() {
                              gAnalysisSettings.gParameters.GetProbabiltyModelTypeAsString(gAnalysisSettings.GetModelControlType()),
                              (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90));
         GenerateAFException(sErrorMessage.GetCString(), "ValidateTemporalClusterSize()", *edtMaxTemporalClusterSize, ANALYSIS_TABS);
+      }
+      //validate that the time aggregation length agrees with the study period and maximum temporal cluster size
+      dStudyPeriodLengthInUnits = gAnalysisSettings.CalculateTimeAggregationUnitsInStudyPeriod();
+      dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * edtMaxTemporalClusterSize->Text.ToDouble()/100.0);
+      if (dMaxTemporalLengthInUnits < 1) {
+        GetDatePrecisionAsString(gAnalysisSettings.GetTimeAggregationControlType(), sPrecisionString, false, false);
+        sErrorMessage.printf("A maximum temporal cluster size as %g percent of a %d %s study period\n"
+                             "results in a maximum temporal cluster size that is less than one time\n"
+                             "aggregation %s.\n", edtMaxTemporalClusterSize->Text.ToDouble(),
+                             static_cast<int>(dStudyPeriodLengthInUnits),
+                             sPrecisionString.GetCString(), sPrecisionString.GetCString());
+        GenerateAFException(sErrorMessage.GetCString(), "ValidateTemoralClusterSize()", *edtMaxTemporalClusterSize, ANALYSIS_TABS);
       }
     }
     else if (GetMaxTemporalClusterSizeControlType() == TIMETYPE) {
