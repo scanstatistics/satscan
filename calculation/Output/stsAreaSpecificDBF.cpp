@@ -131,10 +131,10 @@ void stsAreaSpecificDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
       CreateNewField(vFields, CLUST_NUM, ZD_NUMBER_FLD, 5, 0, uwOffset);
       CreateNewField(vFields, LOC_ID, ZD_ALPHA_FLD, 30, 0, uwOffset);
       CreateNewField(vFields, P_VALUE, ZD_NUMBER_FLD, 12, 5, uwOffset);
-      CreateNewField(vFields, AREA_OBS, ZD_NUMBER_FLD, 12, 2, uwOffset);
+      CreateNewField(vFields, AREA_OBS, ZD_NUMBER_FLD, 12, 0, uwOffset);
       CreateNewField(vFields, AREA_EXP, ZD_NUMBER_FLD, 12, 2, uwOffset);
       CreateNewField(vFields, AREA_RSK, ZD_NUMBER_FLD, 12, 3, uwOffset);
-      CreateNewField(vFields, OBSERVED, ZD_NUMBER_FLD, 12, 2, uwOffset);
+      CreateNewField(vFields, OBSERVED, ZD_NUMBER_FLD, 12, 0, uwOffset);
       CreateNewField(vFields, EXPECTED, ZD_NUMBER_FLD, 12, 2, uwOffset);
       CreateNewField(vFields, REL_RISK, ZD_NUMBER_FLD, 12, 3, uwOffset);
    }
