@@ -77,17 +77,28 @@ public:
 
 class ScanfFile : public ZdFile
 {
+//typedefs; inner classes
+public:
+   class InitialNondataLineCountInvalidForData_Exception;
+
 private:
    ZdIO gFile;//data file object
+   bool          gbIsOpen;
    long          glCurrentRecordNumber;// The index of the record where the file is currently positioned
    unsigned long gulNumRecords;// Number of records in file
-//   bool gbFirstLineContainsFieldnames;
+   long          glInitialNondataLineCount;//how many of the first lines need to be treated as non-data?
+   long          glFieldNamesLineNumber;//which line of the data file should be interpreted as the names of the fields ?
+   long          glInitialDataByteOffset;
+   short         gwEOL;
 
 //   void              Copy(const ZdFile & rhs);
 //   void              Init();
 
    unsigned int   BackScan ( char cFindMe, char cQuote );
-   unsigned long  CalculateNumberOfRecords ( char cQuote ) const;
+   std::pair<long, long> ByteOffsetOfNthLineOrLastLine(const char * sFileName, long lN) const;
+   unsigned long  CalculateNumberOfRecords();
+   void           CalculateInitialDataByteOffset(const char * sFileName);
+   void           CalculateEOLFromData(const char * sFileName);
    unsigned int   FwdScan ( char cFindMe, char cQuote );
    void           MovePointerBackward ( unsigned long ulAmount );
    void           MovePointerForward ( unsigned long ulAmount );
@@ -95,6 +106,10 @@ private:
 
 protected:
    // Internal functions
+   virtual long GetInitialDataByteOffset() const;
+   virtual void SetInitialDataByteOffset(long lOffset) { glInitialDataByteOffset = lOffset; }
+   void         RetrieveFieldNamesLine(ZdIOInterface & theFile, ZdString & sValue) const;
+
    virtual void      BuildEmptyIndexes ( ZdFileName *sAlternateFileName = 0 ) { ZdException::Generate("not implemented: BuildEmptyIndexes", "ScanfFile"); }
    virtual void      CheckRecNum(unsigned long ulRecNum) const;
 //   void              CopyBlobFile(const ZdFileName & dest, const ZdFileName & source) const;
@@ -108,7 +123,7 @@ protected:
 //   ZdIndex *         GetNewIndex(const char cType, short wLength, unsigned long lNumRecords) const;
 //   ZdIndex *         GetNewIndex ( short wField, ZdProgressInterface &theProgress = ZdNullProgress::GetDefaultInstance() );
    virtual unsigned long GetRecordNumberByKey ( const ZdFileRecord &Record ) { ZdException::Generate("not implemented: GetRecordNumberByKey", "ScanfFile"); }
-   ZdIniFile *    MakeAlphaZDS ( const char *sFileName, bool bHasFieldNames ) const;
+   ZdIniFile *    GenerateZDSAllFieldsAlpha ( const char *sFileName ) const;
 //   void              LoadIndexes();
    virtual void      OpenBlobFile(const char * sFileName, ZdIOFlag Flags) { ZdException::Generate("not implemented: OpenBlobFile", "ScanfFile"); }
 //   void              OpenSetup(const char *sFileName, ZdIOFlag Flags, const char *sAlternateZDSFile = 0, ZdIniFile *pZDSFile = 0);
@@ -250,7 +265,7 @@ public:
    inline const ZdSet      &InspectSystemSet() const;
 //default implementation is fine:   virtual void             Lock ( ZdIOFlag iType );
 
-   void                    OpenAsAlpha ( const char *sFileName, ZdIOFlag Flags = ZDIO_OPEN_READ, bool bHasFieldNames = true );
+   void                    OpenAllFieldsAlpha ( const char *sFileName, ZdIOFlag Flags );
 
 //   virtual void             PackData ( ZdProgressInterface &Progress = ZdNullProgress::GetDefaultInstance() );
 
@@ -315,12 +330,19 @@ public:
    // Pure virtual functions that must be defined by the file classes
    virtual void            Flush();
    virtual unsigned long   GetCurrentRecordNumber() const;
-   virtual ScanfRecord *     GetNewRecord() const  { return new ScanfRecord(const_cast<ScanfFile &>(*this), gvFields); }
+   virtual bool            GetIsOpen() const;
+   virtual ScanfRecord *   GetNewRecord() const  { return new ScanfRecord(const_cast<ScanfFile &>(*this), gvFields); }
    virtual unsigned long   GetNumRecords() const;
    virtual void            GotoRecord(unsigned long lRecNum, ZdFileRecord * PRecordBuffer = 0);
    virtual void            Open(const char *sFileName, ZdIOFlag Flags = ZDIO_OPEN_READ, const char * sPassword = 0, const char * sAlternateZDSFile = 0, ZdIniFile *pZDSFile = 0);
    virtual void            PackFields ( ZdVector<ZdField*> &vFields ) const;
    virtual bool            TryLock ( ZdIOFlag iType );
+
+   //special data file attributes
+   virtual long            GetFieldNamesLineNumber() const;
+   virtual void            SetFieldNamesLineNumber(long lLineNumber);
+   virtual long            GetInitialNondataLineCount() const;
+   virtual void            SetInitialNondataLineCount(long lCount);
 
    // Pure virtual functions associated with ZdFileType
    virtual const ZdFileType &GetFileType() const;
@@ -359,6 +381,32 @@ public:
 
 private:
 //   static ScanfFileType gDefaultInstance;
+};
+
+//exceptions thrown by CSVFile functions:
+
+class ScanfFile::InitialNondataLineCountInvalidForData_Exception : public ZdException
+{
+protected:
+   long glSpecifiedCount;
+   long glProvidedByDataCount;
+
+//   void              Copy(const ZdException & rhs);
+
+public:
+
+   // constructors
+//   InitialNondataLineCountInvalidForData_Exception(long lSpecifiedCount, long lProvidedByDataCount, const char *sMessage = 0, const char *sSourceModule = 0, ZdException::Level iLevel = ZdException::Normal, ...);
+   InitialNondataLineCountInvalidForData_Exception(long lSpecifiedCount, long lProvidedByDataCount, va_list varArgs, const char *sMessage, const char *sSourceModule, ZdException::Level iLevel);
+//   ZdException(const ZdException &rhs);//default should be fine
+   virtual ~InitialNondataLineCountInvalidForData_Exception() {}
+
+//   ZdException & operator= (const ZdException &rhs);//default should be fine
+
+   long GetSpecifiedCount() const { return glSpecifiedCount; }
+   long GetProvidedByDataCount() const { return glProvidedByDataCount; }
+
+   static void Generate (long lSpecifiedCount, long lProvidedByDataCount, const char *sMessage, const char *sSourceModule,  ... );
 };
 
 #pragma option pop

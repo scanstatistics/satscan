@@ -58,15 +58,18 @@ void ScanfRecord::Clear()
 //Blank values are not supported in ScanfRecord.
 bool ScanfRecord::GetIsBlank(unsigned short uwFieldIndex) const
 {
-//   try
-//   {
-//   }
-//   catch (ZdException & theException)
-//   {
-//      theException.AddCallpath("GetIsBlank()", "ScanfRecord");
-//      throw;
-//   }
-   return false;
+   bool         bIsBlank;
+
+   try
+   {
+     bIsBlank = gvValues.at(uwFieldIndex).AsZdString().GetIsEmpty();
+   }
+   catch (ZdException & theException)
+   {
+      theException.AddCallpath("GetIsBlank()", "ScanfRecord");
+      throw;
+   }
+   return bIsBlank;
 }
 
 //Get the value of the field at 'uwFieldIndex' as an Alpha.  'ulLength' is the number
@@ -640,9 +643,12 @@ ScanfFile::ScanfFile(const char * sFilename, ZdIOFlag Flags)
 {
    try
    {
-//      gbFirstLineContainsFieldnames  = false;
       glCurrentRecordNumber = 0;
       gulNumRecords = 0;
+      glInitialNondataLineCount = 0;
+      glFieldNamesLineNumber = -1;
+      glInitialDataByteOffset = -1;
+      gbIsOpen = false;
 
       if (sFilename)
          Open(sFilename, Flags);
@@ -726,53 +732,185 @@ unsigned int ScanfFile::BackScan ( char cFindMe, char cQuote ) {
    return uiPosition;
 }
 
-// Internal functions which caluclates the number of records in the file and
-// returns that value.
-unsigned long ScanfFile::CalculateNumberOfRecords ( char cQuote ) const {
-   char          sBuffer[8192];
-   unsigned long ulRetVal = 0;      // Count of newlines
-   unsigned int  uiPosition = 0;    // Current position
-   int          iTrailingNewLines = 0;  // NUmber of trailing newlines we've encountered
-   int          iBlockLength;   // Length of current block
-   int          iCurrent;       // Index in current block
-   bool         bQuote = false;         // Currently quoted?
+// How many newline markers did we read to find our offset?  If (N - 1), what is
+// what is the offset of the first byte of the Nth (one-based) line in the file ?
+// If less than (N - 1), what is the offset of the last line (the first byte past
+// the last newline marker read) ?
+//<br>'result.first' is the number of newline markers encountered in search for the
+// begining of the Nth line.
+//<br>(result.first)==(lN - 1) implies result.second is byte offset of Nth (one-based) line.
+//<br>(result.first) < (lN - 1) implies result.second is byte offset of last line.
+std::pair<long, long> ScanfFile::ByteOffsetOfNthLineOrLastLine(const char * sFileName, long lN) const {
+   long lOffsetCandidate;
+   long lOriginalFilePos;
+   long lFilePos;
+   long lHowManyBytesRead;
+   long lHowManyEOLBytesRead;
+   long lHowManyNewlineMarkersRead;
+   bool bNewlineMarkerEncountered;
+   bool bEOFNotEncountered;
+   ZdString sRecordBuffer;
 
-   //--- NOTE : I could've used FwdScan() for this function, but it turned out
-   //---        to be too slow.
+   ZdIO theFile(sFileName, ZDIO_OPEN_READ);
 
    try {
-      // Read in the next block
-      iBlockLength = gFile.ReadFrom ( uiPosition, sBuffer, 8192, false );
-      uiPosition += iBlockLength;
+      theFile.Seek(0, SEEK_SET);
+      bEOFNotEncountered = true;
+      lHowManyNewlineMarkersRead = 0;
 
-      while ( iBlockLength ) {
-         for ( iCurrent = 0; iCurrent < iBlockLength; iCurrent++ ) {
-            if ( !bQuote && ( sBuffer[iCurrent] == '\n' ) ) {
-               iTrailingNewLines++;
-               ulRetVal++;
+      lHowManyBytesRead = theFile.ReadLine(sRecordBuffer);
+      bNewlineMarkerEncountered = (unsigned)lHowManyBytesRead > sRecordBuffer.GetLength();
+      if (bNewlineMarkerEncountered) {
+         lOffsetCandidate = theFile.Tell();
+         ++lHowManyNewlineMarkersRead;
+      }
+      else
+         bEOFNotEncountered = false;
+
+      while ( (bEOFNotEncountered) && (lHowManyNewlineMarkersRead < (lN - 1)) ) {
+         lOffsetCandidate = theFile.Tell();
+         lHowManyBytesRead = theFile.ReadLine(sRecordBuffer);
+         bNewlineMarkerEncountered = (unsigned)lHowManyBytesRead > sRecordBuffer.GetLength();
+         if (bNewlineMarkerEncountered) {
+            lOffsetCandidate = theFile.Tell();
+            ++lHowManyNewlineMarkersRead;
+         }
+         else
+            bEOFNotEncountered = false;
+      }
+   }
+   catch (ZdException & e) {
+      e.AddCallpath ( "ByteOffsetOfNthLineOrLastLine()", "ScanfFile" );
+      throw;
+   }
+   return std::pair<long, long>(lHowManyNewlineMarkersRead, lOffsetCandidate);
+}
+
+// Determine the marker to use at end-of-line.
+// This implementation simply checks the first EOL marker.
+void ScanfFile::CalculateEOLFromData(const char * sFileName) {
+   ZdString sTemp;
+   long lHowManyBytesRead;
+   long lHowManyEOLBytesRead;
+   char c;
+
+   try {
+      ZdIO tempFile(sFileName, ZDIO_OPEN_READ);
+      lHowManyBytesRead = tempFile.ReadLine(sTemp);
+      lHowManyEOLBytesRead = lHowManyBytesRead - sTemp.GetLength();
+      switch (lHowManyEOLBytesRead) {
+         case 0 :
+            #if defined(INTEL_BASED)
+            gwEOL = TXDFile::USECRLF;
+            #else
+            gwEOL = TXDFile::USELF;
+            #endif
+            break;
+         case 1 :
+            //read the character:
+            tempFile.ReadFrom(tempFile.Tell() - 1, &c, sizeof(c));
+            if (c == '\r') {
+               gwEOL = TXDFile::USECR;
+            }
+            else {
+               gwEOL = TXDFile::USELF;
+            }
+            break;
+         case 2 :
+            gwEOL = TXDFile::USECRLF;
+            break;
+         default:
+            ZdException::Generate("unhandled EOL marker containing %d bytes", "ScanfFile", lHowManyEOLBytesRead);
+      }
+   }
+   catch (ZdException & e) {
+      e.AddCallpath ( "CalculateEOLFromData()", "ScanfFile" );
+      throw;
+   }
+}
+
+// Determine the offset of the first byte in the file that contains data.
+void ScanfFile::CalculateInitialDataByteOffset(const char * sFileName) {
+   try
+   {
+      if (GetInitialNondataLineCount() == 0)
+      {
+         SetInitialDataByteOffset(0);
+      }
+      else
+      {
+         std::pair<long, long> byteOffsetInfo(ByteOffsetOfNthLineOrLastLine(sFileName, GetInitialNondataLineCount() + 1));
+
+         if (byteOffsetInfo.first == GetInitialNondataLineCount())
+         {
+            //if we found the beginning of the line, we're golden
+            SetInitialDataByteOffset(byteOffsetInfo.second);
+         }
+         else
+         {
+            ZdIO tempFile(sFileName, ZDIO_OPEN_READ);
+            if ( (byteOffsetInfo.first == (GetInitialNondataLineCount() - 1)) && (byteOffsetInfo.second < tempFile.GetFileSize()) )
+            {
+               //if the file has enough non-data lines, but the last one doesn't end
+               //with a newline marker, we set to the end of the file and make sure,
+               //when appending a new record, to prepend a newline marker.
+               tempFile.Seek(0, SEEK_END);
+               SetInitialDataByteOffset(tempFile.Tell());
             }
             else
-               if ( sBuffer[iCurrent] != '\r' )
-                  iTrailingNewLines = 0;
+            {
+               ScanfFile::InitialNondataLineCountInvalidForData_Exception::Generate(
+                  GetInitialNondataLineCount(),
+                  byteOffsetInfo.first + 1,
+                  "%d lines should be skipped, but data file contains only %d lines",
+                  "ScanfFile",
+                  GetInitialNondataLineCount(),
+                  byteOffsetInfo.first + 1
+               );
+            }
+         }
+      }
+   }
+   catch (ZdException & e) {
+      e.AddCallpath ( "CalculateInitialDataByteOffset()", "ScanfFile" );
+      throw;
+   }
+}
 
-            bQuote = ( bQuote ^ ( sBuffer[iCurrent] == cQuote ) );
-         } // end of scanning loop
+// Internal function which caluclates the number of records in the file and
+// returns that value.
+unsigned long ScanfFile::CalculateNumberOfRecords() {
+   ZdString sBuffer;
+   unsigned long ulResult;// Count of newlines
+   bool         bNewlineMarkerEncountered;
+   long         lOriginalFilePosition;
+   unsigned long ulHowManyBytesRead;
 
-         // Read in the next block
-         iBlockLength = gFile.ReadFrom ( uiPosition, sBuffer, 8192, false );
-         uiPosition += iBlockLength;
-      } // end of processing loop
+   try {
+      lOriginalFilePosition = gFile.Tell();
 
-      // Fix-up the return value
-      ulRetVal -= iTrailingNewLines;
-//      ulRetVal += ( gbFirstLineContainsFieldNames ) ? 0 : 1;
-      ulRetVal += 1;//right now, the first line doesn't contain field names
+      gFile.Seek(GetInitialDataByteOffset(), SEEK_SET);
+
+      ulResult = 0;
+      ulHowManyBytesRead = gFile.ReadLine(sBuffer);
+      bNewlineMarkerEncountered = ulHowManyBytesRead > sBuffer.GetLength();
+      while (bNewlineMarkerEncountered && (ulHowManyBytesRead > 0)) {
+         ++ulResult;
+         ulHowManyBytesRead = gFile.ReadLine(sBuffer);
+         bNewlineMarkerEncountered = ulHowManyBytesRead > sBuffer.GetLength();
+      }
+      if (ulHowManyBytesRead > 0) {
+         //we read the last line of the file and it didn't end with a newline marker
+         ++ulResult;
+      }
+
+      gFile.Seek(lOriginalFilePosition, SEEK_SET);
    }
    catch ( ZdException &theException ) {
       theException.AddCallpath ( "CalculateNumberOfRecords()", "ScanfFile" );
       throw;
    }
-   return ulRetVal;
+   return ulResult;
 }
 
 // Generate an exception if 'ulRecNum' is out of range.
@@ -789,6 +927,7 @@ void ScanfFile::Close()
    {
       ZdFile::Close();
       gFile.Close();
+      gbIsOpen = false;
    }
    catch (ZdException & e)
    {
@@ -907,9 +1046,13 @@ void ScanfFile::Create(const char * sFilename, ZdVector<ZdField*> &vFields, unsi
 unsigned long ScanfFile::DataAppend  ( const ZdFileRecord &Record )
 {
    long lRecordPosition;
+   long lHowManyBytesRead;
+   ZdString sTemp;
+
    try
    {
-      gFile.Seek ( 0, SEEK_END );
+      gFile.Seek(0, SEEK_END);
+
       lRecordPosition = gFile.Tell();
       Record.WriteRecord ( gFile );
       gFile.Seek(lRecordPosition, SEEK_SET);
@@ -1108,6 +1251,75 @@ unsigned int ScanfFile::FwdScan ( char cFindMe, char cQuote ) {
    return uiPosition;
 }
 
+// Creates a ZDS which indicates all ALPHA fields
+// If GetFieldNamesLineNumber() > 0, it will contain as many fields as are named
+// on that line; otherwise, it will contain as many fields as are found on the first
+// data line.
+ZdIniFile *ScanfFile::GenerateZDSAllFieldsAlpha ( const char *sFileName ) const {
+   ZdIniFile                   *pIniFile(0);
+   ZdString                     sName, sScanBuffer, sFormatString;
+   ZdPointerVector<ZdField>     vFields;
+   ZdIO                         tempFile;
+   int                          iMatchedCharCount(0), iScannedParmCount(0), iCurrentFieldIndex(0);
+   const char                 * pReadHead;
+   ZdResizableChunk             argumentBuffer(ScanfRecord::MAX_RECORD_BUFFER_LENGTH);
+
+   try {
+      sFormatString << "%" << ScanfRecord::MAX_RECORD_BUFFER_LENGTH - 1 << "s" << "%n";
+      tempFile.Open( sFileName, ZDIO_OPEN_READ );// Temporary io object used to access the file
+
+      if (GetFieldNamesLineNumber() > 0)
+      {
+         RetrieveFieldNamesLine(tempFile, sScanBuffer);
+         pReadHead = sScanBuffer.GetCString();
+         iScannedParmCount = std::sscanf(pReadHead, sFormatString.GetCString(), argumentBuffer.AsCharPtr(), &iMatchedCharCount);
+         //load and read remaining field values:
+         while ((iScannedParmCount != EOF))
+         {
+            sName = argumentBuffer.AsCharPtr();
+            vFields.push_back(new ZdField(sName, iCurrentFieldIndex, ZD_ALPHA_FLD, ZD_MAXFIELD_LEN));
+            pReadHead += iMatchedCharCount;
+            iScannedParmCount = std::sscanf(pReadHead, sFormatString.GetCString(), argumentBuffer.AsCharPtr(), &iMatchedCharCount);
+         }
+      }
+      else
+      {
+         CalculateInitialDataByteOffset(sFileName);
+         tempFile.Seek(GetInitialDataByteOffset(), SEEK_SET);
+         //setup for reading field values:
+         tempFile.ReadLine(sScanBuffer);
+         pReadHead = sScanBuffer.GetCString();
+         //read first field value:
+         iScannedParmCount = std::sscanf(pReadHead, sFormatString.GetCString(), argumentBuffer.AsCharPtr(), &iMatchedCharCount);
+         //load and read remaining field values:
+         while ((iScannedParmCount != EOF))
+         {
+            sName.printf("Field %d", iCurrentFieldIndex + 1);
+            vFields.push_back(new ZdField(sName, iCurrentFieldIndex, ZD_ALPHA_FLD, ZD_MAXFIELD_LEN));
+            ++iCurrentFieldIndex;
+            pReadHead += iMatchedCharCount;
+            iScannedParmCount = std::sscanf(pReadHead, sFormatString.GetCString(), argumentBuffer.AsCharPtr(), &iMatchedCharCount);
+         }
+      }
+      if (vFields.empty()) {
+         //must contain at least 1 field:
+         sName = "Field";
+         sName.Append(1);
+         vFields.push_back(new ZdField(sName, 0, ZD_ALPHA_FLD, ZD_MAXFIELD_LEN));
+      }
+
+      pIniFile = new ZdIniFile;
+      PackFields ( vFields );
+      WriteStructure ( pIniFile, &vFields );
+   }
+   catch ( ZdException &theException ) {
+      delete pIniFile;
+      theException.AddCallpath ( "GenerateZDSAllFieldsAlpha()", "ScanfFile" );
+      throw;
+   }
+   return pIniFile;
+}
+
 // What is the index of the record where the file is currently positioned ?
 // If GetNumRecords() == 0, result is 0, otherwise, 0 < result <= GetNumRecords().
 unsigned long ScanfFile::GetCurrentRecordNumber() const
@@ -1115,10 +1327,45 @@ unsigned long ScanfFile::GetCurrentRecordNumber() const
    return glCurrentRecordNumber;
 }
 
+// Which line in the data file should be interpreted as the names of the fields ?
+// -1 means none of the lines should.
+//<br>ensure
+//<be>  not_a_data_line : result <= GetInitialNondataLineCount()
+long ScanfFile::GetFieldNamesLineNumber() const {
+   return glFieldNamesLineNumber;
+}
+
 // Returns the (static) file type object for Scanf files.
 const ZdFileType & ScanfFile::GetFileType() const
 {
    return ScanfFileType::GetDefaultInstance();
+}
+
+// At what offset from the beginning of the data file does the data start ?
+long ScanfFile::GetInitialDataByteOffset() const {
+   try {
+      if (glInitialDataByteOffset < 0)
+         CalculateInitialDataByteOffset(gFileName.GetFullPath());
+   }
+   catch (ZdException & e) {
+      e.AddCallpath("GetInitialDataByteOffset()", "ScanfFile");
+      throw;
+   }
+   return glInitialDataByteOffset;
+}
+
+//How many of the initial lines in the data file should not be treated as data ?
+//<br>ensure
+//<br>  result_non_negative: result >= 0
+long ScanfFile::GetInitialNondataLineCount() const
+{
+   return glInitialNondataLineCount;
+}
+
+// Is this file open ?
+bool ScanfFile::GetIsOpen() const
+{
+   return gbIsOpen;
 }
 
 //Return a pointer to a newly allocated object.
@@ -1242,50 +1489,6 @@ bool ScanfFile::IsValidZdFieldType(char cCandidate)
    return bResult;
 }
 
-// Creates a ZDS which indicates all ALPHA fields
-ZdIniFile *ScanfFile::MakeAlphaZDS ( const char *sFileName, bool bHasFieldNames ) const {
-   ZdIniFile                   *pIniFile(0);
-   ZdString                     sName, sScanBuffer, sFormatString;
-   ZdPointerVector<ZdField>     vFields;
-   ZdIO                         tempFile;
-   int                          iMatchedCharCount(0), iScannedParmCount(0), iCurrentFieldIndex(0);
-   const char                 * pReadHead;
-   ZdResizableChunk             argumentBuffer(ScanfRecord::MAX_RECORD_BUFFER_LENGTH);
-
-   try {
-     tempFile.Open( sFileName, ZDIO_OPEN_READ );          // Temporary io object used to access the file
-     sFormatString << "%" << ScanfRecord::MAX_RECORD_BUFFER_LENGTH - 1 << "s" << "%n";
-     //setup for reading field values:
-     tempFile.ReadLine(sScanBuffer);
-     pReadHead = sScanBuffer.GetCString();
-     //read first field value:
-     iScannedParmCount = std::sscanf(pReadHead, sFormatString.GetCString(), argumentBuffer.AsCharPtr(), &iMatchedCharCount);
-     //load and read remaining field values:
-     while ((iScannedParmCount != EOF)) {
-         if (bHasFieldNames)
-           vFields.push_back(new ZdField(argumentBuffer.AsCharPtr(), iCurrentFieldIndex, ZD_ALPHA_FLD, ZD_MAXFIELD_LEN));
-         else {
-           sName.printf("Field %d", iCurrentFieldIndex + 1);
-           vFields.push_back(new ZdField(sName, iCurrentFieldIndex, ZD_ALPHA_FLD, ZD_MAXFIELD_LEN));
-         }
-
-         ++iCurrentFieldIndex;
-         pReadHead += iMatchedCharCount;
-         iScannedParmCount = std::sscanf(pReadHead, sFormatString.GetCString(), argumentBuffer.AsCharPtr(), &iMatchedCharCount);
-      }
-
-     pIniFile = new ZdIniFile;
-     PackFields ( vFields );
-     WriteStructure ( pIniFile, &vFields );
-   }
-   catch ( ZdException &theException ) {
-      delete pIniFile;
-      theException.AddCallpath ( "MakeAlphaZDS()", "ScanfFile" );
-      throw;
-   }
-   return pIniFile;
-}
-
 // Internal function to back up the file pointer by ulAmount records.
 void ScanfFile::MovePointerBackward ( unsigned long ulAmount ) {
    unsigned long   ulPosition;       // Current file pointer
@@ -1345,11 +1548,14 @@ void ScanfFile::Open(const char *sFilename, ZdIOFlag Flags, const char * sPasswo
 
       ZdFile::OpenSetup(sFilename, Flags, sAlternateZDSFile, pZDSFile);
       gFile.Open (sFilename, Flags);
-      gulNumRecords = CalculateNumberOfRecords ('\0');
-//      glCurrentRecordNumber = ( gbFirstLineContainsFieldnames ) ? 0 : 1;  // We are on the first byte of the file
-      glCurrentRecordNumber = 1;  // We are on the first byte of the file
+      CalculateEOLFromData(sFilename);
+      CalculateInitialDataByteOffset(sFilename);
+      gulNumRecords = CalculateNumberOfRecords();
+      glCurrentRecordNumber = 0;
 
       OpenFinish();
+
+      gbIsOpen = true;
    }
    catch (ZdException & e)
    {
@@ -1359,16 +1565,16 @@ void ScanfFile::Open(const char *sFilename, ZdIOFlag Flags, const char * sPasswo
 }
 
 // Opens a file using all ALPHA fields.
-void ScanfFile::OpenAsAlpha (const char *sFileName, ZdIOFlag Flags , bool bHasFieldNames ) {
+void ScanfFile::OpenAllFieldsAlpha (const char *sFileName, ZdIOFlag Flags) {
    std::auto_ptr<ZdIniFile>  pGuessIni;  // Pointer to the guessed ini file
    try
    {
-      pGuessIni.reset ( MakeAlphaZDS ( sFileName, bHasFieldNames ) );
+      pGuessIni.reset( GenerateZDSAllFieldsAlpha(sFileName) );
       Open (sFileName , Flags , 0 , 0 , pGuessIni.get() );
    }
    catch (ZdException &theException) {
-      theException.AddCallpath ( "GuessOpen()","ScanfFile" );
-      throw theException;
+      theException.AddCallpath ( "OpenAllFieldsAlpha()","ScanfFile" );
+      throw;
    }
 }
 
@@ -1428,15 +1634,118 @@ void ScanfFile::PerformExternalUpdates()
 }
 
 // Internal function to move the pointer to the specified record.
-void ScanfFile::PositionFilePointerToRecord ( unsigned long ulRecord ) {
-   try {
+void ScanfFile::PositionFilePointerToRecord(unsigned long ulRecord)
+{
+   try
+   {
+      if (GetCurrentRecordNumber() < 1)
+      {
+         gFile.Seek(GetInitialDataByteOffset());
+         glCurrentRecordNumber = 1;
+      }
       if ( ulRecord > GetCurrentRecordNumber() )
          MovePointerForward ( ulRecord - GetCurrentRecordNumber() );
       else if ( ulRecord < GetCurrentRecordNumber() )
          MovePointerBackward ( GetCurrentRecordNumber() - ulRecord );
    }
+   catch (ZdException & e)
+   {
+      e.AddCallpath("PositionFilePointerToRecord()", "ScanfFile");
+      throw;
+   }
+}
+
+// Retrieve the data from the 'GetFieldNamesLineNumber()'th line and store it in
+// sValue.
+//<br>require
+//<br>  line_number_is_valid: GetFieldNamesLineNumber() > 0
+//<br>  file_is_open: theFile.GetIsOpen()
+void ScanfFile::RetrieveFieldNamesLine(ZdIOInterface & theFile, ZdString & sValue) const {
+   long lOriginalFilePos;
+   long lHowManyCumulativeLinesRead;
+   long lHowManyBytesRead;
+   long lHowManyEOLBytesRead;
+
+   try {
+      if (! (GetFieldNamesLineNumber() > 0))
+         ZdException::Generate("the FieldNamesLineNumber (value=%d) is not valid", "ScanfFile");
+      if (! theFile.GetIsOpen() )
+         ZdException::Generate("input file must be open", "ScanfFile" );
+
+      lOriginalFilePos = theFile.Tell();
+
+      theFile.Seek(0, SEEK_SET);
+      lHowManyCumulativeLinesRead = 0;
+      lHowManyBytesRead = theFile.ReadLine(sValue);
+      lHowManyEOLBytesRead = lHowManyBytesRead - sValue.GetLength();
+      while ( (lHowManyEOLBytesRead > 0) && (++lHowManyCumulativeLinesRead < GetFieldNamesLineNumber()) ) {
+         //lHowManyCumulativeLinesRead is incremented only when iHowManyEOLBytesRead > 0
+         lHowManyBytesRead = theFile.ReadLine(sValue);
+         lHowManyEOLBytesRead = lHowManyBytesRead - sValue.GetLength();
+      }
+      if (lHowManyCumulativeLinesRead < GetInitialNondataLineCount())
+         ZdException::Generate(
+            "cannot get line %d because file contains only %d lines (has CalculateInitialDataByteOffset() been called, yet?)",
+            "ScanfFile",
+            GetFieldNamesLineNumber(),
+            lHowManyCumulativeLinesRead
+         );
+
+      theFile.Seek(lOriginalFilePos, SEEK_SET);
+   }
    catch ( ZdException &theException ) {
-      theException.AddCallpath ( "PositionFilePointerToRecord()", "ScanfFile" );
+      theException.AddCallpath ( "RetrieveFieldNamesLine()", "ScanfFile" );
+      throw;
+   }
+}
+
+// Specify which (1-based) line of the data file should be interpreted as containing
+// the names of the fields. A 'lLineNumber' of 0 (zero) or less indicates that no
+// line should be interpreted as field names.
+//<br>require
+//<br>  not_a_data_line: lLineNumber <= GetInitialNondataLineCount()
+//<br>  not_open: !GetIsOpen()
+//<br>ensure
+//<br>  value_set: GetFieldNamesLineNumber() == lLineNumber
+void ScanfFile::SetFieldNamesLineNumber(long lLineNumber)
+{
+   try
+   {
+      if (! (lLineNumber <= GetInitialNondataLineCount()))
+         ZdException::Generate("line number (value=%d) cannot be a data line (first data line: %d)", "ScanfFile", lLineNumber, GetInitialNondataLineCount() + 1);
+      if (GetIsOpen())
+         ZdException::Generate("Cannot modify non-data line count of an open file", "ScanfFile" );
+
+      glFieldNamesLineNumber = lLineNumber;
+   }
+   catch (ZdException & e)
+   {
+      e.AddCallpath("SetFieldNamesLineNumber()", "ScanfFile");
+      throw;
+   }
+}
+
+// Specify how many of the initial lines in the data file should not be treated as
+// data.
+//<br>require
+//<br>  non_negative_count: lCount >= 0
+//<br>  not_open: !GetIsOpen()
+//<br>ensure
+//<br>  value_set: GetInitialNondataLineCount() == lCount
+void ScanfFile::SetInitialNondataLineCount(long lCount)
+{
+   try
+   {
+      if (! (lCount >= 0))
+         ZdException::Generate("\'count\' (value=%d) must be non-negative.", "ScanfFile", lCount);
+      if (GetIsOpen())
+         ZdException::Generate("Cannot modify non-data line count of an open file", "ScanfFile" );
+
+      glInitialNondataLineCount = lCount;
+   }
+   catch (ZdException & e)
+   {
+      e.AddCallpath("SetInitialNondataLineCount()", "ScanfFile");
       throw;
    }
 }
@@ -1577,4 +1886,39 @@ ScanfFile *ScanfFileType::InstantiateFromStream ( ZdInputStreamInterface &theStr
 
 //Here it is!
 ScanfFileType  ZdScanfFileType;
+
+
+//ClassDesc Begin ScanfFile::InitialNondataLineCountInvalidForData_Exception
+//This exception indicates that there are not as many lines in a data file as should
+//be skipped.  The SpecifiedCount is the number of lines that need to be skipped;
+//the ProvidedByDataCount is the number of lines available.
+//ClassDesc End ScanfFile::InitialNondataLineCountInvalidForData_Exception
+
+//var_arg constructor
+ScanfFile::InitialNondataLineCountInvalidForData_Exception::
+   InitialNondataLineCountInvalidForData_Exception(
+      long lSpecifiedCount, long lProvidedByDataCount, va_list varArgs,
+      const char *sMessage, const char *sSourceModule, ZdException::Level iLevel
+   )
+   : ZdException(varArgs, sMessage, sSourceModule, iLevel)
+   , glSpecifiedCount(lSpecifiedCount)
+   , glProvidedByDataCount(lProvidedByDataCount) {
+}
+
+//static generation function:
+void ScanfFile::InitialNondataLineCountInvalidForData_Exception::Generate(
+   long lSpecifiedCount, long lProvidedByDataCount, const char *sMessage,
+   const char *sSourceModule,  ...
+) {
+   va_list varArgs;
+   va_start(varArgs, sSourceModule);
+
+   ScanfFile::InitialNondataLineCountInvalidForData_Exception theException(
+      lSpecifiedCount, lProvidedByDataCount, varArgs, sMessage, sSourceModule, Normal
+   );
+   va_end(varArgs);
+
+   throw theException;
+}
+
 
