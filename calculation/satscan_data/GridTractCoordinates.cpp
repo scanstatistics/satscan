@@ -44,7 +44,8 @@ void GInfo::Free()
    0 = duplicate tract ID
    1 = success
  **********************************************************************/
-int GInfo::giInsertGnode(char *gid, double* pCoords)
+
+int GInfo::giInsertGnode(const char *gid, std::vector<double>& vCoordinates)
 {
    tract_t t = NumGridTracts - 1;
    int i;
@@ -76,7 +77,7 @@ int GInfo::giInsertGnode(char *gid, double* pCoords)
       GridTractInfo[t].pCoords = (double*)Smalloc(nDimensions * sizeof(double), gpPrintDirection);
       for (i=0; i<nDimensions; i++)
       {
-         GridTractInfo[t].pCoords[i] = pCoords[i];
+         GridTractInfo[t].pCoords[i] = vCoordinates[i];
       }
       //  GridTractInfo[t].y    = (float)y;
       //  GridTractInfo[t].z    = (float)z;
@@ -111,7 +112,7 @@ tract_t GInfo::giGetNumTracts(void)
  or -1 if not found.
  Uses binary search.
  **********************************************************************/
-tract_t GInfo::giGetTractNum(char *gid)
+tract_t GInfo::giGetTractNum(const char *gid)
 {
    tract_t a = 0;                               /* start of array to search */
    tract_t b = NumGridTracts - 1;                 /* end of array to search */

@@ -32,9 +32,9 @@ public:
    ~GInfo();
 
 /* Tract Routines */
-int     giInsertGnode(char *gid, double* pCoords);
+int     giInsertGnode(const char *gid, std::vector<double>& vCoordinates);
 tract_t giGetNumTracts(void);
-tract_t giGetTractNum(char *gid);
+tract_t giGetTractNum(const char *gid);
 char*   giGetGid(tract_t t) const;
 void    giGetCoords(tract_t t, double** pCoords) const ;
 void    giGetCoords2(tract_t t, double* pCoord) const ;
