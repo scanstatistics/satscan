@@ -129,8 +129,8 @@ int main(int argc, char *argv[]) {
   catch (ZdMemoryException &x) {
     delete pAnalysis;
     delete pData;
-    gpPrintWindow->SatScanPrintWarning("\nSaTScan is unable to perform analysis due to insuffient memory.\n");
-    gpPrintWindow->SatScanPrintWarning("Please see 'Memory Requirements' in user guide for suggested solutions.\n");
+    ConsolePrint.SatScanPrintWarning("\nSaTScan is unable to perform analysis due to insuffient memory.\n");
+    ConsolePrint.SatScanPrintWarning("Please see 'Memory Requirements' in user guide for suggested solutions.\n");
     BasisExit();
     exit(1);
   }
