@@ -1075,13 +1075,13 @@ int TractHandler::tiInsertTnode(const char *tid, std::vector<double>& vCoordinat
 
     //check that coordinates are not duplicate
     for (itrCoordinates=gvTractDescriptors.begin(); itrCoordinates != gvTractDescriptors.end() && !bDuplicate; itrCoordinates++)
-       if ((*itrCoordinates)->CompareCoordinates(reinterpret_cast<double*>(vCoordinates.begin()), nDimensions)) {
+       if ((*itrCoordinates)->CompareCoordinates(&vCoordinates[0], nDimensions)) {
          gmDuplicateTracts[tid] = (*itrCoordinates);
          bDuplicate = true;
        }
 
     if (! bDuplicate) {
-      pTractDescriptor = new TractDescriptor(tid, reinterpret_cast<double*>(vCoordinates.begin()), nDimensions);
+      pTractDescriptor = new TractDescriptor(tid, &vCoordinates[0], nDimensions);
       gvTractDescriptors.insert(itrPosition, pTractDescriptor);
     }
   }
