@@ -384,7 +384,7 @@ void __fastcall TfrmMainForm::UpdateActionExecute(TObject *Sender) {
     frmUpdateCheck = new TfrmUpdateCheck(this);
     frmUpdateCheck->ConnectToServerForUpdateCheck();
     if (frmUpdateCheck->HasUpdates()) {
-      sMessage.printf("SaTScan v%s is available.\nDo you want to install now?", frmUpdateCheck->GetUpdateVersion().GetCString());
+      sMessage.printf("SaTScan v%s is available. Do you want to install now?", frmUpdateCheck->GetUpdateVersion().GetCString());
       if (TBMessageBox::Response(this, "SaTScan Update Available", sMessage.GetCString(), MB_YESNO) == IDYES) {
         if (GetAnalysesRunning()) {
             TBMessageBox::Response(this, "Error", "SaTScan can not update will analyses are executing.\n"
