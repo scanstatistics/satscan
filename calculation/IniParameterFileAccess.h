@@ -31,23 +31,23 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                ReadSystemSettings(const ZdIniFile& SourceFile);
     void                                ReadTemporalWindowSettings(const ZdIniFile& SourceFile);
 
-    void                                WriteAnalysisSettings(ZdIniFile& SaveFile);
-    void                                WriteBatchModeFeaturesSettings(ZdIniFile& SaveFile);
-    void                                WriteClustersReportedSettings(ZdIniFile& SaveFile);
-    void                                WriteEllipticScanSettings(ZdIniFile& SaveFile);
-    void                                WriteInferenceSettings(ZdIniFile& SaveFile);
-    void                                WriteIniParameter(ZdIniFile& SaveFile, ParameterType eParameterType, const char* sValue, const char* sComment=0);
-    void                                WriteIniParameterAsKey(ZdIniFile& SaveFile, const char* sSectionName, const char* sKey, const char* sValue, const char* sComment=0);
-    void                                WriteIsotonicScanSettings(ZdIniFile& SaveFile);
-    void                                WriteInputSettings(ZdIniFile& SaveFile);
-    void                                WriteMultipleDataSetsSettings(ZdIniFile& SaveFile);
-    void                                WriteOutputSettings(ZdIniFile& SaveFile);
-    void                                WritePowerSimulationsSettings(ZdIniFile& SaveFile);
-    void                                WriteSequentialScanSettings(ZdIniFile& SaveFile);
-    void                                WriteSpaceAndTimeAdjustmentSettings(ZdIniFile& SaveFile);
-    void                                WriteSpatialWindowSettings(ZdIniFile& SaveFile);
-    void                                WriteSystemSettings(ZdIniFile& SaveFile);
-    void                                WriteTemporalWindowSettings(ZdIniFile& SaveFile);
+    void                                WriteAnalysisSettings(ZdIniFile& WriteFile);
+    void                                WriteBatchModeFeaturesSettings(ZdIniFile& WriteFile);
+    void                                WriteClustersReportedSettings(ZdIniFile& WriteFile);
+    void                                WriteEllipticScanSettings(ZdIniFile& WriteFile);
+    void                                WriteInferenceSettings(ZdIniFile& WriteFile);
+    void                                WriteIniParameter(ZdIniFile& WriteFile, ParameterType eParameterType, const char* sValue, const char* sComment=0);
+    void                                WriteIniParameterAsKey(ZdIniFile& WriteFile, const char* sSectionName, const char* sKey, const char* sValue, const char* sComment=0);
+    void                                WriteIsotonicScanSettings(ZdIniFile& WriteFile);
+    void                                WriteInputSettings(ZdIniFile& WriteFile);
+    void                                WriteMultipleDataSetsSettings(ZdIniFile& WriteFile);
+    void                                WriteOutputSettings(ZdIniFile& WriteFile);
+    void                                WritePowerSimulationsSettings(ZdIniFile& WriteFile);
+    void                                WriteSequentialScanSettings(ZdIniFile& WriteFile);
+    void                                WriteSpaceAndTimeAdjustmentSettings(ZdIniFile& WriteFile);
+    void                                WriteSpatialWindowSettings(ZdIniFile& WriteFile);
+    void                                WriteSystemSettings(ZdIniFile& WriteFile);
+    void                                WriteTemporalWindowSettings(ZdIniFile& WriteFile);
 
   public:
      IniParameterFileAccess(CParameters& Parameters, BasePrint& PrintDirection);
