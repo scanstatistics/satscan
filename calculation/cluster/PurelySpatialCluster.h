@@ -5,46 +5,39 @@
 #include "Cluster.h"
 #include "UtilityFunctions.h"
 #include "MeasureList.h"
+#include "ClusterDataFactory.h"
 
 /** cluster class for purely spatial analysis and purely spatial cluster
     of space-time analysis */
 class CPurelySpatialCluster : public CCluster {
-  typedef std::vector<ClusterStreamData>           StreamDataContainer_t;
-  typedef std::vector<ClusterStreamData>::iterator StreamDataContainerIterator_t;
-  typedef void (CPurelySpatialCluster::* ADDNEIGHBOR)(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream=0);
-
   private:
-    StreamDataContainer_t               gStreamData;
-    StreamDataContainerIterator_t       gitr;
-    ADDNEIGHBOR                         fAddNeighborData;
+    AbstractSpatialClusterData        * gpClusterData;
 
-    void                                AddNeighborDataEx(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream=0);
     void                                Setup(const CSaTScanData & Data);
     void                                Setup(const CPurelySpatialCluster& rhs);
 
   public:
-    CPurelySpatialCluster(const CSaTScanData & Data, BasePrint *pPrintDirection);
+    CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, int iRate, BasePrint *pPrintDirection);
+    CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory, const DataStreamInterface & Interface, int iRate, BasePrint *pPrintDirection);
     CPurelySpatialCluster(const CPurelySpatialCluster& rhs);
-    ~CPurelySpatialCluster();
+    virtual ~CPurelySpatialCluster();
 
-    CPurelySpatialCluster             & operator=(const CPurelySpatialCluster& rhs);
-
-
-    void                                AddNeighbor(tract_t tNeighbor, const DataStreamGateway & DataGateway);
-    void                                AddNeighborData(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream=0);
     inline virtual void                 AssignAsType(const CCluster& rhs) {*this = (CPurelySpatialCluster&)rhs;}
     virtual CPurelySpatialCluster     * Clone() const;
-    virtual void                        CompareTopCluster(CPurelySpatialCluster & TopShapeCluster, const CSaTScanData * pData);
-    virtual void                        ComputeBestMeasures(CMeasureList & MeasureList);
+    CPurelySpatialCluster             & operator=(const CPurelySpatialCluster& rhs);
+
+    void                                AddNeighborDataAndCompare(const AbtractDataStreamGateway & DataGateway,
+                                                                  const CSaTScanData * pData,
+                                                                  CPurelySpatialCluster & TopCluster,                                                                  
+                                                                  CModel & Model);
     virtual void                        DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType);
-    virtual count_t                     GetCaseCount(unsigned int iStream) const {return gStreamData[iStream].gCases;}
+    virtual count_t                     GetCaseCount(unsigned int iStream) const {return gpClusterData->GetCaseCount(iStream);}
     virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual inline AbstractClusterData * GetClusterData() {return gpClusterData;}
     virtual int                         GetClusterType() const {return PURELYSPATIAL;}
-    virtual measure_t                   GetMeasure(unsigned int iStream) const {return gStreamData[iStream].gMeasure;}
+    virtual measure_t                   GetMeasure(unsigned int iStream) const {return gpClusterData->GetMeasure(iStream);}
     virtual measure_t                   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual void                        Initialize(tract_t nCenter=0);
-    virtual void                        SetCaseCount(unsigned int iStream, count_t tCount) {gStreamData[iStream].gCases = tCount;}
-    virtual void                        SetMeasure(unsigned int iStream, measure_t tMeasure) {gStreamData[iStream].gMeasure = tMeasure;}
     virtual void                        SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals);
 };
 //*****************************************************************************

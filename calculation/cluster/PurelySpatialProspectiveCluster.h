@@ -3,6 +3,7 @@
 #define __PURELYSPATIALPROSPECTIVECLUSTER_H
 //*****************************************************************************
 #include "Cluster.h"
+#include "ClusterDataFactory.h"
 #include "UtilityFunctions.h"
 
 class CMeasureList; /** class declaration defined in other unit */
@@ -10,34 +11,33 @@ class CMeasureList; /** class declaration defined in other unit */
 /** cluster class for purely spatial cluster used in replications of prospective
     space-time analysis */
 class CPurelySpatialProspectiveCluster : public CCluster {
-  typedef void (CPurelySpatialProspectiveCluster::* ADDNEIGHBOR)(tract_t tNeighbor, const DataStreamInterface & Interface);
-
   private:
-    count_t                   	             * m_pCumCases;
-    measure_t                                * m_pCumMeasure;
-    measure_t                                * m_pCumMeasureSquared;
-    int                                        m_nTotalIntervals;
-    int                                        m_nProspectiveStartInterval;
-    int                                        m_nNumIntervals; 
-    ADDNEIGHBOR                                fAddNeighborData;
+    AbstractTemporalClusterData              * gpClusterData;
 
-    void                        	       Init() {m_pCumCases=0;m_pCumMeasure=0;m_pCumMeasureSquared=0;}
-    void			               Setup(const CSaTScanData & Data);
-    void                                       Setup(const CPurelySpatialProspectiveCluster& rhs);
+    void                        	       Init() {gpClusterData=0;}
+    void			               Setup(const AbstractClusterDataFactory * pClusterFactory, const DataStreamInterface & Interface, const CSaTScanData & Data);
+    void			               Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, const CSaTScanData & Data);
 
   public:
-    CPurelySpatialProspectiveCluster(const CSaTScanData & Data, BasePrint *pPrintDirection);
+    CPurelySpatialProspectiveCluster(const AbstractClusterDataFactory * pClusterFactory, const DataStreamInterface & Interface,
+                                     const CSaTScanData & Data, BasePrint *pPrintDirection);
+    CPurelySpatialProspectiveCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway,
+                                     const CSaTScanData & Data, BasePrint *pPrintDirection);
     CPurelySpatialProspectiveCluster(const CPurelySpatialProspectiveCluster& rhs);
-    ~CPurelySpatialProspectiveCluster();
+    virtual ~CPurelySpatialProspectiveCluster();
 
      CPurelySpatialProspectiveCluster        & operator=(const CPurelySpatialProspectiveCluster& cluster);
 
-    void                                       AddNeighborData(tract_t tNeighbor, const DataStreamInterface & Interface);
-    void                                       AddNeighborDataEx(tract_t tNeighbor, const DataStreamInterface & Interface);
+    void                                       AddNeighborAndCompare(const AbtractDataStreamGateway & DataGateway,
+                                                             const CSaTScanData * pData,
+                                                             CPurelySpatialProspectiveCluster & TopCluster,
+                                                             CModel & Model);
+//    void                                       AddNeighbor(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway);
+//    void                                       AddNeighborData(tract_t tNeighbor, const DataStreamInterface & Interface);
     inline virtual void                        AssignAsType(const CCluster& rhs) {*this = (CPurelySpatialProspectiveCluster&)rhs;}
     virtual CPurelySpatialProspectiveCluster * Clone() const;
-    inline virtual void                        ComputeBestMeasures(CMeasureList & MeasureList);
     virtual count_t                            GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual AbstractClusterData * GetClusterData() {return gpClusterData;}
     virtual int                                GetClusterType() const {return PURELYSPATIAL;}
     virtual measure_t                          GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual void                               Initialize(tract_t nCenter);
