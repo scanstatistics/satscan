@@ -123,6 +123,7 @@ __published:	// IDE-managed Components
    void __fastcall rdoMaxTemporalClusterSizelick(TObject *Sender);
    void __fastcall rdoMaxSpatialTypeClick(TObject *Sender);
    void __fastcall btnSetDefaultsClick(TObject *Sender);
+   void __fastcall OnControlExit(TObject *Sender);
 
  private:
 
@@ -134,6 +135,7 @@ __published:	// IDE-managed Components
    bool                     gbEnableRangeDays;   /** stores enable dictated by main interface */
    bool                     gbEnableAdjustmentsByRR; /** stores enable dictated by main interface */
 
+   void                     DoControlExit();
    TimeTrendAdjustmentType  GetAdjustmentTimeTrendControlType() const;
    void                     Init();
    void                     ParseDate(const std::string& sDate, TEdit& Year, TEdit& Month, TEdit& Day, bool bStartRange);

@@ -56,13 +56,13 @@ void __fastcall TfrmAdvancedParameters::btnBrowseMaxCirclePopFileClick(TObject *
 }
 //---------------------------------------------------------------------------
 // Resets advanced settings to default values
-void __fastcall TfrmAdvancedParameters::btnSetDefaultsClick(
-      TObject *Sender)
+void __fastcall TfrmAdvancedParameters::btnSetDefaultsClick(TObject *Sender)
 {
    if (gbAnalysisShow)
       SetDefaultsForAnalysisTabs();
    else
       SetDefaultsForOutputTab();
+   btnSetDefaults->Enabled = false;  // defaults are set so can't choose button again
 }
 //---------------------------------------------------------------------------
 /** event triggered when 'adjustment for ealier analyses' checkbox if clicked */
@@ -91,20 +91,33 @@ void __fastcall TfrmAdvancedParameters::chkRestrictTemporalRangeClick(TObject *S
   RefreshTemporalRangesEnables();
 }
 
+/** event triggered when user exits a control*/
+void TfrmAdvancedParameters::DoControlExit() {
+   // update enable/disable of Set Defaults button
+   if ((gbAnalysisShow && GetDefaultsSetForAnalysisOptions()) ||
+       (!gbAnalysisShow && GetDefaultsSetForOutputOptions()) )
+      btnSetDefaults->Enabled = false;
+   else
+      btnSetDefaults->Enabled = true;
+}
+
 /** event triggered when loginear percentage control exited */
 void __fastcall TfrmAdvancedParameters::edtLogLinearExit(TObject *Sender) {
   if (edtLogLinear->Text.IsEmpty() || atof(edtLogLinear->Text.c_str()) <= -100)
     edtLogLinear->Text = 0;
+  DoControlExit();
 }
 
 /** event triggered when end window end ranges year, month or day control is exited */
 void __fastcall TfrmAdvancedParameters::edtEndRangeEndDateExit(TObject *Sender) {
   TfrmAnalysis::ValidateDate(*edtEndRangeEndYear, *edtEndRangeEndMonth, *edtEndRangeEndDay);
+  DoControlExit();
 }
 
 /** event triggered when end window start ranges year, month or day control is exited */
 void __fastcall TfrmAdvancedParameters::edtEndRangeStartDateExit(TObject *Sender) {
   TfrmAnalysis::ValidateDate(*edtEndRangeStartYear, *edtEndRangeStartMonth, *edtEndRangeStartDay);
+  DoControlExit();
 }
 
 /** event triggered when text of adjustment by relative risks edit control changes */
@@ -122,6 +135,7 @@ void __fastcall TfrmAdvancedParameters::edtMaxSpatialClusterSizeExit(TObject *Se
   if (edtMaxSpatialClusterSize->Text.IsEmpty() || atof(edtMaxSpatialClusterSize->Text.c_str()) == 0)
     edtMaxSpatialClusterSize->Text = 50;
   SetReportingSmallerClustersText();
+  DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** event triggered when maximum spatial cluster size, as percentage of population at risk, edit control changes */
@@ -141,6 +155,7 @@ void __fastcall TfrmAdvancedParameters::edtMaxSpatialPercentFileExit(TObject *Se
   if (edtMaxSpatialPercentFile->Text.IsEmpty() || atof(edtMaxSpatialPercentFile->Text.c_str()) == 0)
     edtMaxSpatialPercentFile->Text = 50;
   SetReportingSmallerClustersText();
+  DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** event triggered when maximum spatial cluster size, as a radius, edit control is exited. */
@@ -154,12 +169,14 @@ void __fastcall TfrmAdvancedParameters::edtMaxSpatialRadiusExit(TObject *Sender)
   if (edtMaxSpatialRadius->Text.IsEmpty() || atof(edtMaxSpatialRadius->Text.c_str()) == 0)
     edtMaxSpatialRadius->Text = 1;
   SetReportingSmallerClustersText();
+  DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** event triggered when maximum temporal cluster size edit control is exited. */
 void __fastcall TfrmAdvancedParameters::edtMaxTemporalClusterSizeExit(TObject *Sender) {
   if (edtMaxTemporalClusterSize->Text.IsEmpty() || atof(edtMaxTemporalClusterSize->Text.c_str()) == 0)
     edtMaxTemporalClusterSize->Text = 50;
+  DoControlExit();
 }
 
 //---------------------------------------------------------------------------
@@ -167,6 +184,7 @@ void __fastcall TfrmAdvancedParameters::edtMaxTemporalClusterSizeExit(TObject *S
 void __fastcall TfrmAdvancedParameters::edtMaxTemporalClusterSizeUnitsExit(TObject *Sender) {
   if (edtMaxTemporalClusterSizeUnits->Text.IsEmpty() || atof(edtMaxTemporalClusterSizeUnits->Text.c_str()) == 0)
     edtMaxTemporalClusterSizeUnits->Text = 1;
+  DoControlExit();
 }
 
 
@@ -174,6 +192,7 @@ void __fastcall TfrmAdvancedParameters::edtMaxTemporalClusterSizeUnitsExit(TObje
 void __fastcall TfrmAdvancedParameters::edtReportClustersSmallerThanExit(TObject *Sender) {
   if (!edtReportClustersSmallerThan->Text.Length() || atof(edtReportClustersSmallerThan->Text.c_str()) == 0)
     edtReportClustersSmallerThan->Text = GetMaxSpatialClusterSizeFromControl();
+  DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** event triggered when key pressed for control that can contain positive real numbers */
@@ -185,16 +204,19 @@ void __fastcall TfrmAdvancedParameters::edtReportClustersSmallerThanKeyPress(TOb
 /** event triggered when year control, of prospective start date, is exited. */
 void __fastcall TfrmAdvancedParameters::edtProspectiveStartDateExit(TObject *Sender) {
   TfrmAnalysis::ValidateDate(*edtProspectiveStartDateYear, *edtProspectiveStartDateMonth, *edtProspectiveStartDateDay);
+  DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** event triggered when start window end ranges year, month or day control is exited */
 void __fastcall TfrmAdvancedParameters::edtStartRangeEndDateExit(TObject *Sender) {
   TfrmAnalysis::ValidateDate(*edtStartRangeEndYear, *edtStartRangeEndMonth, *edtStartRangeEndDay);
+  DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** event triggered when start window start ranges year, month or day control is exited */
 void __fastcall TfrmAdvancedParameters::edtStartRangeStartDateExit(TObject *Sender) {
   TfrmAnalysis::ValidateDate(*edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay);
+  DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** enables or disables the temporal time trend adjustment control group */
@@ -389,51 +411,83 @@ TimeTrendAdjustmentType TfrmAdvancedParameters::GetAdjustmentTimeTrendControlTyp
 }
 //---------------------------------------------------------------------------
 //** Checks to determine if only default values are set in the dialog
-//** Returns true if only default values are set
+//** Returns true if only default values are set on enabled controls
 //** Returns false if user specified a value other than a default
 bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    bool bReturn = true;
 
    // Inference tab
-   bReturn &= (chkAdjustForEarlierAnalyses->Checked == false);
-   bReturn &= (chkTerminateEarly->Checked == false);
-   bReturn &= (edtProspectiveStartDateYear->Text.ToInt() == 1900);
-   bReturn &= (edtProspectiveStartDateMonth->Text.ToInt() == 12);
-   bReturn &= (edtProspectiveStartDateDay->Text.ToInt() == 31);
+   if (chkAdjustForEarlierAnalyses->Enabled)
+      bReturn &= (chkAdjustForEarlierAnalyses->Checked == false);
+   if (chkTerminateEarly->Enabled)
+      bReturn &= (chkTerminateEarly->Checked == false);
+   if (edtProspectiveStartDateYear->Enabled)
+      bReturn &= (edtProspectiveStartDateYear->Text.ToInt() == 1900);
+   if (edtProspectiveStartDateMonth->Enabled)
+      bReturn &= (edtProspectiveStartDateMonth->Text.ToInt() == 12);
+   if (edtProspectiveStartDateDay->Enabled)
+      bReturn &= (edtProspectiveStartDateDay->Text.ToInt() == 31);
 
    // Spatial Window tab
-   bReturn &= (GetMaxSpatialClusterSizeControlType()==PERCENTOFPOPULATIONTYPE);
-   bReturn &= (edtMaxSpatialClusterSize->Text.ToInt() == 50);
-   bReturn &= (edtMaxSpatialPercentFile->Text.ToInt() == 50);
-   bReturn &= (edtMaxSpatialRadius->Text.ToInt() == 1);
-   bReturn &= (edtMaxCirclePopulationFilename->Text == "");
-   bReturn &= (chkInclPureTempClust->Checked == false);
+   if (rdoSpatialPercentage->Enabled || rdoSpatialPopulationFile->Enabled || rdoSpatialDistance->Enabled)
+      bReturn &= (GetMaxSpatialClusterSizeControlType()==PERCENTOFPOPULATIONTYPE);
+   if (edtMaxSpatialClusterSize->Enabled)
+      bReturn &= (edtMaxSpatialClusterSize->Text.ToInt() == 50);
+   if (edtMaxSpatialPercentFile->Enabled)
+      bReturn &= (edtMaxSpatialPercentFile->Text.ToInt() == 50);
+   if (edtMaxSpatialRadius->Enabled)
+      bReturn &= (edtMaxSpatialRadius->Text.ToInt() == 1);
+   if (edtMaxCirclePopulationFilename->Enabled)
+      bReturn &= (edtMaxCirclePopulationFilename->Text == "");
+   if (chkInclPureTempClust->Enabled)
+      bReturn &= (chkInclPureTempClust->Checked == false);
 
    // Temporal tab
-   bReturn &= (GetMaxTemporalClusterSizeControlType()==PERCENTAGETYPE);
-   bReturn &= (edtMaxTemporalClusterSize->Text.ToDouble() == 50);
-   bReturn &= (edtMaxTemporalClusterSizeUnits->Text.ToInt() == 1);
-   bReturn &= (chkIncludePureSpacClust->Checked == false);
+   if (rdoPercentageTemporal->Enabled || rdoTimeTemporal->Enabled)
+      bReturn &= (GetMaxTemporalClusterSizeControlType()==PERCENTAGETYPE);
+   if (edtMaxTemporalClusterSize->Enabled)
+      bReturn &= (edtMaxTemporalClusterSize->Text.ToDouble() == 50);
+   if (edtMaxTemporalClusterSizeUnits->Enabled)
+      bReturn &= (edtMaxTemporalClusterSizeUnits->Text.ToInt() == 1);
+   if (chkIncludePureSpacClust->Enabled)
+      bReturn &= (chkIncludePureSpacClust->Checked == false);
 
-   bReturn &= (edtStartRangeStartYear->Text.ToInt() == 1900);
-   bReturn &= (edtStartRangeStartMonth->Text.ToInt() == 1);
-   bReturn &= (edtStartRangeStartDay->Text.ToInt() == 1);
-   bReturn &= (edtStartRangeEndYear->Text.ToInt() == 1900);
-   bReturn &= (edtStartRangeEndMonth->Text.ToInt() == 1);
-   bReturn &= (edtStartRangeEndDay->Text.ToInt() == 1);
-   bReturn &= (edtEndRangeStartYear->Text.ToInt() == 1900);
-   bReturn &= (edtEndRangeStartMonth->Text.ToInt() == 12);
-   bReturn &= (edtEndRangeStartDay->Text.ToInt() == 31);
-   bReturn &= (edtEndRangeEndYear->Text.ToInt() == 1900);
-   bReturn &= (edtEndRangeEndMonth->Text.ToInt() == 12);
-   bReturn &= (edtEndRangeEndDay->Text.ToInt() == 31);
-   bReturn &= (chkRestrictTemporalRange->Checked == false);
+   if (edtStartRangeStartYear->Enabled)
+      bReturn &= (edtStartRangeStartYear->Text.ToInt() == 1900);
+   if (edtStartRangeStartMonth->Enabled)
+      bReturn &= (edtStartRangeStartMonth->Text.ToInt() == 1);
+   if (edtStartRangeStartDay->Enabled)
+      bReturn &= (edtStartRangeStartDay->Text.ToInt() == 1);
+   if (edtStartRangeEndYear->Enabled)
+      bReturn &= (edtStartRangeEndYear->Text.ToInt() == 1900);
+   if (edtStartRangeEndMonth->Enabled)
+      bReturn &= (edtStartRangeEndMonth->Text.ToInt() == 1);
+   if (edtStartRangeEndDay->Enabled)
+      bReturn &= (edtStartRangeEndDay->Text.ToInt() == 1);
+   if (edtEndRangeStartYear->Enabled)
+      bReturn &= (edtEndRangeStartYear->Text.ToInt() == 1900);
+   if (edtEndRangeStartMonth->Enabled)
+      bReturn &= (edtEndRangeStartMonth->Text.ToInt() == 12);
+   if (edtEndRangeStartDay->Enabled)
+      bReturn &= (edtEndRangeStartDay->Text.ToInt() == 31);
+   if (edtEndRangeEndYear->Enabled)
+      bReturn &= (edtEndRangeEndYear->Text.ToInt() == 1900);
+   if (edtEndRangeEndMonth->Enabled)
+      bReturn &= (edtEndRangeEndMonth->Text.ToInt() == 12);
+   if (edtEndRangeEndDay->Enabled)
+      bReturn &= (edtEndRangeEndDay->Text.ToInt() == 31);
+   if (chkRestrictTemporalRange->Enabled)
+      bReturn &= (chkRestrictTemporalRange->Checked == false);
 
    // Risk tab
-   bReturn &= (chkAdjustForKnownRelativeRisks->Checked == false);
-   bReturn &= (edtAdjustmentsByRelativeRisksFile->Text == "");
-   bReturn &= (rdgTemporalTrendAdj->ItemIndex == 0);
-   bReturn &= (edtLogLinear->Text.ToInt() == 0);
+   if (chkAdjustForKnownRelativeRisks->Enabled)
+      bReturn &= (chkAdjustForKnownRelativeRisks->Checked == false);
+   if (edtAdjustmentsByRelativeRisksFile->Enabled)
+      bReturn &= (edtAdjustmentsByRelativeRisksFile->Text == "");
+   if (rdgTemporalTrendAdj->Enabled)
+      bReturn &= (rdgTemporalTrendAdj->ItemIndex == 0);
+   if (edtLogLinear->Enabled)
+      bReturn &= (edtLogLinear->Text.ToInt() == 0);
 
    return bReturn;
 }
@@ -446,9 +500,12 @@ bool TfrmAdvancedParameters::GetDefaultsSetForOutputOptions() {
    bool bReturn = true;
 
    // Output tab
-   bReturn &= (chkRestrictReportedClusters->Checked == false);
-   bReturn &= (rdgCriteriaSecClusters->ItemIndex == NOGEOOVERLAP);
-   bReturn &= (edtReportClustersSmallerThan->Text.ToDouble() == 50.0);
+   if (chkRestrictReportedClusters->Enabled)
+      bReturn &= (chkRestrictReportedClusters->Checked == false);
+   if (rdgCriteriaSecClusters->Enabled)
+      bReturn &= (rdgCriteriaSecClusters->ItemIndex == NOGEOOVERLAP);
+   if (edtReportClustersSmallerThan->Enabled)
+      bReturn &= (edtReportClustersSmallerThan->Text.ToDouble() == 50.0);
 
    return bReturn;
 }
@@ -891,7 +948,6 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, bool bAnaly
 
   if (!bFound) {
     gpFocusControl=0;
-    //PageControl->ActivePage = PageControl->Pages[0];
     // PAG - find first visible page
     PageControl->ActivePage = PageControl->FindNextPage(0, true, true);
   }
@@ -900,6 +956,9 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, bool bAnaly
   if (!edtMaxSpatialClusterSize->Text.Length())
     edtMaxSpatialClusterSize->Text = 50;
 
+  // PAG - update the Set Defaults button enabling/disabling
+  DoControlExit();
+  
   ShowModal();
 }
 
@@ -1230,6 +1289,13 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
   va_end(varArgs);
 
   throw theException;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfrmAdvancedParameters::OnControlExit(
+      TObject *Sender)
+{
+   DoControlExit();
 }
 //---------------------------------------------------------------------------
 

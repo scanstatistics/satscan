@@ -52,6 +52,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       Width = 72
       Height = 24
       Caption = 'Set Defaults'
+      Enabled = False
       TabOrder = 2
       OnClick = btnSetDefaultsClick
     end
@@ -125,6 +126,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Include Purely Temporal Cluster (Spatial Size = 100%)'
           Enabled = False
           TabOrder = 8
+          OnExit = OnControlExit
         end
         object rdoSpatialPercentage: TRadioButton
           Left = 34
@@ -136,6 +138,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           TabOrder = 0
           TabStop = True
           OnClick = rdoMaxSpatialTypeClick
+          OnExit = OnControlExit
         end
         object rdoSpatialDistance: TRadioButton
           Left = 34
@@ -145,6 +148,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'is a circle with a'
           TabOrder = 6
           OnClick = rdoMaxSpatialTypeClick
+          OnExit = OnControlExit
         end
         object rdoSpatialPopulationFile: TRadioButton
           Left = 34
@@ -154,6 +158,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'is'
           TabOrder = 2
           OnClick = rdoMaxSpatialTypeClick
+          OnExit = OnControlExit
         end
         object edtMaxSpatialRadius: TEdit
           Left = 133
@@ -186,6 +191,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ShowHint = True
           TabOrder = 4
           OnChange = edtMaxCirclePopulationFilenameChange
+          OnExit = OnControlExit
         end
         object btnBrowseMaxCirclePopFile: TButton
           Left = 341
@@ -225,6 +231,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Include only windows with:'
           TabOrder = 0
           OnClick = chkRestrictTemporalRangeClick
+          OnExit = OnControlExit
         end
         object stStartRangeTo: TStaticText
           Left = 245
@@ -447,6 +454,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Include Purely Spatial Clusters (Temporal Size = 100%)'
           Enabled = False
           TabOrder = 3
+          OnExit = OnControlExit
         end
         object rdoPercentageTemporal: TRadioButton
           Left = 30
@@ -458,6 +466,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           TabOrder = 0
           TabStop = True
           OnClick = rdoMaxTemporalClusterSizelick
+          OnExit = OnControlExit
         end
         object rdoTimeTemporal: TRadioButton
           Left = 30
@@ -467,6 +476,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'is'
           TabOrder = 2
           OnClick = rdoMaxTemporalClusterSizelick
+          OnExit = OnControlExit
         end
         object edtMaxTemporalClusterSizeUnits: TEdit
           Left = 62
@@ -497,6 +507,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           'Log linear with')
         TabOrder = 0
         OnClick = rdgTemporalTrendAdjClick
+        OnExit = OnControlExit
       end
       object edtLogLinear: TEdit
         Left = 108
@@ -544,6 +555,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ShowHint = True
           TabOrder = 1
           OnChange = edtAdjustmentsByRelativeRisksFileChange
+          OnExit = OnControlExit
         end
         object btnBrowseAdjustmentsFile: TButton
           Left = 355
@@ -572,6 +584,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Adjust for known relative risks'
           TabOrder = 0
           OnClick = chkAdjustForKnownRelativeRisksClick
+          OnExit = OnControlExit
         end
       end
     end
@@ -592,6 +605,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Height = 17
           Caption = 'Terminate replications early for large p-values'
           TabOrder = 0
+          OnExit = OnControlExit
         end
       end
       object gbxProspectiveSurveillance: TGroupBox
@@ -691,6 +705,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Adjust for earlier analyses'
           TabOrder = 0
           OnClick = chkAdjustForEarlierAnalysesClick
+          OnExit = OnControlExit
         end
       end
     end
@@ -714,6 +729,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Caption = 'Report only clusters smaller than'
         TabOrder = 0
         OnClick = chkRestrictReportedClustersClick
+        OnExit = OnControlExit
       end
       object edtReportClustersSmallerThan: TEdit
         Left = 200
@@ -739,6 +755,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           'No Pairs of Centers Both in Each Others Clusters'
           'No Restrictions = Most Likely Cluster for Each Grid Point')
         TabOrder = 2
+        OnExit = OnControlExit
       end
     end
   end
