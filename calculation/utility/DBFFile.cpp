@@ -21,7 +21,7 @@ DBFRecord::DBFRecord( DBFFile & associatedFile, xbDbf & associatedDbf, const ZdV
       ResizeBuffers(associatedDbf.GetRecordLen());
 
          {
-         RecordManipulationExpediter rme(*this, GetAssociatedDbf());
+         ManipulationExpediter me(*this, GetAssociatedDbf());
          GetAssociatedDbf().BlankRecord();
          }
 
@@ -45,7 +45,7 @@ void DBFRecord::AppendToDbf(xbDbf & theDbf) const
    xbShort rc;
    try
       {
-      RecordAccessExpediter rae(*this, theDbf);
+      AccessExpediter ae(*this, theDbf);
       rc = theDbf.AppendRecord();
       if (rc != XB_NO_ERROR)
          ZdException::Generate("Could not append record to the file, \"%c\".", "DBFRecord", theDbf.GetDbfName());
@@ -103,7 +103,7 @@ void DBFRecord::Clear()
 {
    try
       {
-      RecordManipulationExpediter rme(*this, GetAssociatedDbf());
+      ManipulationExpediter me(*this, GetAssociatedDbf());
 
       GetAssociatedDbf().BlankRecord();
       }
@@ -119,9 +119,9 @@ xbDbf & DBFRecord::GetAssociatedDbf() const
 {
    try
       {
-      if (!gpAssociatedDbf)
+      if (gpAssociatedDbf->GetDbfStatus() == XB_CLOSED)
          {
-         ZdException::Generate("The file with which this record is associated, \"%c\", is no longer available.", "DBFRecord", gAssociatedFileName.GetFullPath());
+         ZdException::Generate("The file with which this record is associated, \"%c\", is not open.", "DBFRecord", gAssociatedFileName.GetFullPath());
          }
       }
    catch (ZdException & e)
@@ -191,7 +191,7 @@ bool DBFRecord::GetIsBlank(unsigned short uwFieldIndex) const
       {
 
          {
-         RecordAccessExpediter rae(*this, GetAssociatedDbf());
+         AccessExpediter ae(*this, GetAssociatedDbf());
 
          GetAssociatedDbf().GetRawField(GetAssociatedDbf().GetFieldName(uwFieldIndex), buffer.AsCharPtr());
          }
@@ -245,7 +245,7 @@ char * DBFRecord::GetAlpha(unsigned short uwFieldNumber, char *pFieldValue, unsi
          ZdException::Generate("Buffer %d too small in GetAlpha(); need buffer length of %d", "TXDRec", ulLength, wFieldLength + 1 );
 
          {
-         RecordAccessExpediter rae(*this, GetAssociatedDbf());
+         AccessExpediter ae(*this, GetAssociatedDbf());
 
          GetAssociatedDbf().GetRawField(GetAssociatedDbf().GetFieldName(uwFieldNumber), buffer.AsCharPtr());
          }
@@ -290,7 +290,7 @@ void DBFRecord::GetBLOB(unsigned short uwFieldNumber, ZdBlob & theValue) const
    try
       {
          {
-         RecordAccessExpediter rae(*this, GetAssociatedDbf());
+         AccessExpediter ae(*this, GetAssociatedDbf());
 
          databuffer.Resize(GetAssociatedDbf().GetMemoFieldLen(uwFieldNumber));
          GetAssociatedDbf().GetMemoField(uwFieldNumber, databuffer.GetSize(), databuffer.AsCharPtr(), F_SETLKW);
@@ -312,7 +312,7 @@ bool DBFRecord::GetBoolean(unsigned short uwFieldNumber) const
 
    try
       {
-      RecordAccessExpediter rae(*this, GetAssociatedDbf());
+      AccessExpediter ae(*this, GetAssociatedDbf());
       bResult = GetAssociatedDbf().GetLogicalField(uwFieldNumber);
       }
    catch (ZdException & theException)
@@ -333,7 +333,7 @@ ZdDate & DBFRecord::GetDate(unsigned short uwFieldNumber, ZdDate &theDate ) cons
    try
       {
          {
-         RecordAccessExpediter rae(*this, GetAssociatedDbf());
+         AccessExpediter ae(*this, GetAssociatedDbf());
 
          buffer.Resize(GetAssociatedDbf().GetFieldLen(uwFieldNumber)+1);//extra byte because GetRawField sets the extra byte to NULL
          GetAssociatedDbf().GetRawField(uwFieldNumber, buffer.AsCharPtr());
@@ -356,7 +356,7 @@ long DBFRecord::GetLong(unsigned short uwFieldNumber) const
 
    try
       {
-      RecordAccessExpediter rae(*this, GetAssociatedDbf());
+      AccessExpediter ae(*this, GetAssociatedDbf());
       lResult = GetAssociatedDbf().GetLongField(uwFieldNumber);
       }
    catch (ZdException & theException)
@@ -374,7 +374,7 @@ double DBFRecord::GetNumber(unsigned short uwFieldNumber) const
 
    try
       {
-      RecordAccessExpediter rae(*this, GetAssociatedDbf());
+      AccessExpediter ae(*this, GetAssociatedDbf());
 
       if (GetAssociatedDbf().GetFieldType(uwFieldNumber) == XB_NUMERIC_FLD)
          dResult = GetAssociatedDbf().GetDoubleField(uwFieldNumber);
@@ -488,7 +488,7 @@ void DBFRecord::PutAlpha(unsigned short uwFieldNumber, const char *pFieldValue)
          ZdException::Generate( "String Value, \"%s\", of length, %d, must not be longer than %d.", "DBFRecord", pFieldValue, strlen(pFieldValue), wFieldLength );
 
          {
-         RecordManipulationExpediter rme(*this, GetAssociatedDbf());
+         ManipulationExpediter me(*this, GetAssociatedDbf());
          GetAssociatedDbf().PutField(uwFieldNumber, pFieldValue);
          }
       }
@@ -521,7 +521,7 @@ void DBFRecord::PutBlank(unsigned short uwFieldNumber)
       short wFieldLength(GetFieldLength(uwFieldNumber));
       ZdString sTemp((unsigned long)wFieldLength);
          {
-         RecordManipulationExpediter rme(*this, GetAssociatedDbf());
+         ManipulationExpediter me(*this, GetAssociatedDbf());
 
          switch (GetAssociatedDbf().GetFieldType(uwFieldNumber))
             {
@@ -558,7 +558,7 @@ void DBFRecord::PutBLOB(unsigned short uwFieldNumber, const ZdBlob & theValue)
 {
    try
       {
-      RecordManipulationExpediter rme(*this, GetAssociatedDbf());
+      ManipulationExpediter me(*this, GetAssociatedDbf());
       GetAssociatedDbf().UpdateMemoData(uwFieldNumber, theValue.GetLength(), (const char *)(theValue.GetBlob()), F_SETLKW);
       }
    catch (ZdException & theException)
@@ -575,7 +575,7 @@ void DBFRecord::PutBoolean(unsigned short uwFieldNumber, bool bValue)
    char sFalse[2] = "F";//we could use any of these: F, f, N, n
    try
       {
-      RecordManipulationExpediter rme(*this, GetAssociatedDbf());
+      ManipulationExpediter me(*this, GetAssociatedDbf());
       GetAssociatedDbf().PutField(uwFieldNumber, (bValue ? sTrue : sFalse));
       }
    catch (ZdException & theException)
@@ -596,7 +596,7 @@ void DBFRecord::PutDate( unsigned short uwFieldNumber, const ZdDate &theDate )
       theDate.RetrieveRawDate(sRawDate);
 
          {
-         RecordManipulationExpediter rme(*this, GetAssociatedDbf());
+         ManipulationExpediter me(*this, GetAssociatedDbf());
 
          GetAssociatedDbf().PutField(uwFieldNumber, sRawDate.GetCString());
          }
@@ -613,7 +613,7 @@ void DBFRecord::PutLong(unsigned short uwFieldNumber, long lFieldValue)
 {
    try
       {
-      RecordManipulationExpediter rme(*this, GetAssociatedDbf());
+      ManipulationExpediter me(*this, GetAssociatedDbf());
       GetAssociatedDbf().PutLongField(uwFieldNumber, lFieldValue);
       }
    catch (ZdException & theException)
@@ -628,7 +628,7 @@ void DBFRecord::PutNumber(unsigned short uwFieldNumber, double dFieldValue)
 {
    try
       {
-      RecordManipulationExpediter rme(*this, GetAssociatedDbf());
+      ManipulationExpediter me(*this, GetAssociatedDbf());
 
       if (GetAssociatedDbf().GetFieldType(uwFieldNumber) == XB_NUMERIC_FLD)
          GetAssociatedDbf().PutDoubleField(uwFieldNumber, dFieldValue);
@@ -736,7 +736,7 @@ void DBFRecord::SetAsCurrentDbfRecord(xbDbf & theDbf)
 {
    try
       {
-      RecordManipulationExpediter rme(*this, theDbf);
+      ManipulationExpediter me(*this, theDbf);
 
       theDbf.GetRecord( theDbf.GetCurRecNo() );//make sure that the data for the current record is in the RecBuf
       //when 'rm' goes out of scope, it will copy the RecBuf into gBuffer.
@@ -1421,11 +1421,35 @@ void DBFFile::ReadStructure( ZdIniFile *pAlternateZDSFile )
                         gpDbf->GetFieldLen(u),
                         gpDbf->GetFieldDecimal(u)
                        );
+         SetupDefaultFilterForField(*(gvFields.at(u)));
          }
       }
    catch (ZdException & theException)
       {
       theException.AddCallpath("ReadStructure()", "DBFFile");
+      throw;
+      }
+}
+
+// Locks the file as specified.
+//xbDbf has locking, but I haven't figured it out, yet.
+void DBFFile::SetupDefaultFilterForField(ZdField & theField)
+{
+   try
+      {
+      switch (theField.GetType())
+         {
+         case ZD_NUMBER_FLD :
+            {
+            ZdNumberFilter tempFilter;
+            tempFilter.SetDecimalNum(theField.GetPrecision());
+            theField.SetFilter(tempFilter);
+            }
+         }
+      }
+   catch ( ZdException &theException )
+      {
+      theException.AddCallpath("SetupDefaultFilterForField()", "DBFFile");
       throw;
       }
 }

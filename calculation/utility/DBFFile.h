@@ -22,11 +22,11 @@ private:
 
    // The following classes are used in all functions that get data from or put data
    // into the record.
-   class RecordAccessExpediter;
-   class RecordManipulationExpediter;
-   friend class RecordAccessExpediter;
-   friend class RecordManipulationExpediter;
-   class RecordAccessExpediter
+   class AccessExpediter;
+   class ManipulationExpediter;
+   friend class AccessExpediter;
+   friend class ManipulationExpediter;
+   class AccessExpediter
       {
       // Implements initial buffering and updating of the RecBuf and final restoring
       // of the initially buffered data to it.
@@ -34,10 +34,10 @@ private:
          const DBFRecord & gR;
                xbDbf     & gF;
       public:
-         RecordAccessExpediter(const DBFRecord & r, xbDbf & f) : gR(r), gF(f) { gR.BufferDbfRecordData(gF); gR.UpdateDbfRecordData(gF); }
-         ~RecordAccessExpediter() { gR.RestoreDbfRecordData(gF); }
+         AccessExpediter(const DBFRecord & r, xbDbf & f) : gR(r), gF(f) { gR.BufferDbfRecordData(gF); gR.UpdateDbfRecordData(gF); }
+         ~AccessExpediter() { gR.RestoreDbfRecordData(gF); }
       };
-   class RecordManipulationExpediter
+   class ManipulationExpediter
       {
       // Implements initial buffering of the RecBuf and final copying and restoring
       // of the initially buffered data to it.
@@ -45,8 +45,8 @@ private:
          DBFRecord & gR;
          xbDbf     & gF;
       public:
-         RecordManipulationExpediter(DBFRecord & r, xbDbf & f) : gR(r), gF(f) { gR.BufferDbfRecordData(gF); gR.UpdateDbfRecordData(gF); }
-         ~RecordManipulationExpediter() { gR.CopyDbfRecordData(gF); gR.RestoreDbfRecordData(gF); }
+         ManipulationExpediter(DBFRecord & r, xbDbf & f) : gR(r), gF(f) { gR.BufferDbfRecordData(gF); gR.UpdateDbfRecordData(gF); }
+         ~ManipulationExpediter() { gR.CopyDbfRecordData(gF); gR.RestoreDbfRecordData(gF); }
       };
 
    void AssertSufficientBufferSize(unsigned long ulReqdSize) const;
@@ -201,6 +201,7 @@ protected:
 //   void          WriteBase ( ZdOutputStreamInterface &theStream ) const;
 //   void          WriteBlobFile ( ZdOutputStreamInterface &theStream ) const;
 //   void          WriteIndexes ( ZdOutputStreamInterface &theStream ) const;
+   virtual void SetupDefaultFilterForField(ZdField & theField);
 
 protected://static interface
 
