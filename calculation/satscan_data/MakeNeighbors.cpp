@@ -64,7 +64,7 @@ void MakeNeighbors(TInfo *pTInfo,
                    BasePrint *pPrintDirection)
 {
    tract_t t;                                         /* reference tract */
-   tract_t i,j;                                       /* destination tract */
+   tract_t j, k;                                      /* destination tract */
    double *pCoords = 0;  /* coordinates */
    double *pCoords2 = 0;  /* coordinates */
    measure_t cummeasure;
@@ -104,11 +104,11 @@ void MakeNeighbors(TInfo *pTInfo,
       for (t = 0; t < NumGridTracts; t++)  // for each tract, ...
       {
         pGInfo->giGetCoords2(t, pCoords);
-        for (i = 0; i < NumTracts; i++)  // find distances
+        for (k=0; k < NumTracts; k++)  // find distances
         {
-          vTractDistances[i].SetTractNumber(i);
-          pTInfo->tiGetCoords2(i, pCoords2);
-          vTractDistances[i].SetDistance(pTInfo->tiGetDistanceSq(pCoords, pCoords2));
+          vTractDistances[k].SetTractNumber(k);
+          pTInfo->tiGetCoords2(k, pCoords2);
+          vTractDistances[k].SetDistance(pTInfo->tiGetDistanceSq(pCoords, pCoords2));
         }
         std::sort(vTractDistances.begin(), vTractDistances.end(), CompareTractDistance());
         if (iSpatialMaxType == PERCENTAGEOFMEASURETYPE)
@@ -120,21 +120,17 @@ void MakeNeighbors(TInfo *pTInfo,
 
         if (SortedInt)
            {
-           //SortedInt[0][t] = (tract_t*)Smalloc((i+1) * sizeof(tract_t), pPrintDirection);  /*NeighborCounts[t] could be used instead of i */
-           SortedInt[0][t] = (tract_t*)Smalloc(i * sizeof(tract_t), pPrintDirection);
+           SortedInt[0][t] = (tract_t*)Smalloc(NeighborCounts[0][t] * sizeof(tract_t), pPrintDirection);
            /* copy tract numbers */
-           for (j = i-1; j >= 0; j--)   /*NeighborCounts[t]-1 could be used instead of i-1 */
+           for (j = NeighborCounts[0][t]-1; j >= 0; j--)   
              SortedInt[0][t][j] = vTractDistances[j].GetTractNumber();
-           //SortedInt[0][t][i] = -1;           //DTG - temp line and also modified Smalloc to be ( i + 1)
            }
         else
            {
-           //SortedUShort[0][t] = (unsigned short*)Smalloc((i+1) * sizeof(unsigned short), pPrintDirection);
-           SortedUShort[0][t] = (unsigned short*)Smalloc(i * sizeof(unsigned short), pPrintDirection);
+           SortedUShort[0][t] = (unsigned short*)Smalloc(NeighborCounts[0][t] * sizeof(unsigned short), pPrintDirection);
            /* copy tract numbers */
-           for (j = i-1; j >= 0; j--)   /*NeighborCounts[t]-1 could be used instead of i-1 */
+           for (j = NeighborCounts[0][t]-1; j >= 0; j--)
              SortedUShort[0][t][j] = vTractDistances[j].GetTractNumber();
-           //SortedUShort[0][t][i] = 0;           //DTG - USE TO BE -1 temp line and also modified Smalloc to be ( i + 1)
            }
 
 
@@ -163,12 +159,12 @@ void MakeNeighbors(TInfo *pTInfo,
                 lCurrentEllipse++;
 
                 EllipseAngle=PI*ea/piEAngles[es];
-                for(i=0; i<NumTracts;i++)
+                for(k=0; k<NumTracts;k++)
                    {
-                   pTInfo->tiGetCoords2(i, pCoords2);
+                   pTInfo->tiGetCoords2(k, pCoords2);
                    //Xold=pCoords2[0];
                    //Yold=pCoords2[1];
-                   Transform(pCoords2[0],pCoords2[1],EllipseAngle,pdEShapes[es],&pNewXCoord[i],&pNewYCoord[i]);      // pointers????????
+                   Transform(pCoords2[0],pCoords2[1],EllipseAngle,pdEShapes[es],&pNewXCoord[k],&pNewYCoord[k]);      // pointers????????
                    }
                 for (t = 0; t < NumGridTracts; t++)  // for each grid tract, ...
                    {
@@ -177,38 +173,34 @@ void MakeNeighbors(TInfo *pTInfo,
                   // Yold=pCoords[1];
                    Transform(pCoords[0],pCoords[1],EllipseAngle,pdEShapes[es],&pCoords[0],&pCoords[1]);
 
-                   for (i = 0; i < NumTracts; i++)  // find distances
+                   for (k=0; k < NumTracts; k++)  // find distances
                       {
-                      vTractDistances[i].SetTractNumber(i);
-                      pCoords2[0] = pNewXCoord[i];
-                      pCoords2[1] = pNewYCoord[i];
-                      vTractDistances[i].SetDistance(pTInfo->tiGetDistanceSq(pCoords, pCoords2));
+                      vTractDistances[k].SetTractNumber(k);
+                      pCoords2[0] = pNewXCoord[k];
+                      pCoords2[1] = pNewYCoord[k];
+                      vTractDistances[k].SetDistance(pTInfo->tiGetDistanceSq(pCoords, pCoords2));
                       }
                    std::sort(vTractDistances.begin(), vTractDistances.end(), CompareTractDistance());
                    if (iSpatialMaxType == PERCENTAGEOFMEASURETYPE)
-                     NeighborCounts[0][t] += CountNeighborsByMeasure(vTractDistances, Measure, MaxCircleSize, nMaxMeasure);
+                     NeighborCounts[lCurrentEllipse][t] += CountNeighborsByMeasure(vTractDistances, Measure, MaxCircleSize, nMaxMeasure);
                    else if (iSpatialMaxType == DISTANCETYPE)
-                     NeighborCounts[0][t] += CountNeighborsByDistance(vTractDistances, MaxCircleSize);
+                     NeighborCounts[lCurrentEllipse][t] += CountNeighborsByDistance(vTractDistances, MaxCircleSize);
                    else
                      SSGenerateException("Unknown spatial maximum type.", "MakeNeighbors()" );
 
                    if (SortedInt)
                       {
-                      //SortedInt[lCurrentEllipse][t] = (tract_t*)Smalloc((i + 1) * sizeof(tract_t), pPrintDirection); /*NeighborCounts[t] could be used instead of i */
-                      SortedInt[lCurrentEllipse][t] = (tract_t*)Smalloc(i * sizeof(tract_t), pPrintDirection);
+                      SortedInt[lCurrentEllipse][t] = (tract_t*)Smalloc(NeighborCounts[lCurrentEllipse][t] * sizeof(tract_t), pPrintDirection);
                       /* copy tract numbers */
-                      for (j = i-1/*NeighborCounts[t]-1*/; j >= 0; j--)
+                      for (j = NeighborCounts[lCurrentEllipse][t]-1; j >= 0; j--)
                          SortedInt[lCurrentEllipse][t][j] = vTractDistances[j].GetTractNumber();
-                      //SortedInt[lCurrentEllipse][t][i] = 0;    //DTG - temp for printing sorted list - also updated Smalloc to be (i + 1)
                       }
                    else
                       {
-                      //SortedUShort[lCurrentEllipse][t] = (unsigned short*)Smalloc((i + 1) * sizeof(unsigned short), pPrintDirection); /*NeighborCounts[t] could be used instead of i */
-                      SortedUShort[lCurrentEllipse][t] = (unsigned short*)Smalloc(i * sizeof(unsigned short), pPrintDirection);
+                      SortedUShort[lCurrentEllipse][t] = (unsigned short*)Smalloc(NeighborCounts[lCurrentEllipse][t] * sizeof(unsigned short), pPrintDirection);
                       /* copy tract numbers */
-                      for (j = i-1/*NeighborCounts[t]-1*/; j >= 0; j--)
+                      for (j = NeighborCounts[lCurrentEllipse][t]-1; j >= 0; j--)
                          SortedUShort[lCurrentEllipse][t][j] = vTractDistances[j].GetTractNumber();
-                      //SortedUShort[lCurrentEllipse][t][i] = 0;                // DTG - USE TO BE  -1   temp for printing sorted list - also updated Smalloc to be (i + 1)
                       }
                    //free(pCoords);    //    needed????
                    if ((t==9) && (es == 0) && (ea == 0))
