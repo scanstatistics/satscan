@@ -2,7 +2,7 @@
 // Adam J Vaughn
 // 9/4/2002
 
-// This class keeps a TXD file log for each run of the SaTScan program which includes information
+// This class keeps a ZD file log for each run of the SaTScan program which includes information
 // specified by the client. For each instance of the class, a new, unnique run number will be 
 // recorded in the file and the pertinent data will be updated once the analysis is complete.
 
@@ -10,44 +10,44 @@
 #pragma hdrstop
 
 #include "Analysis.h"
-#include "stsOutputDBF.h"
 #include "stsRunHistoryFile.h"
+#include "DBFFile.h"
 
-const char* RUN_NUMBER_FIELD            = "Run_Number";
-const char* RUN_TIME_FIELD              = "Run_Time";
-const char* OUTPUT_FILE_FIELD           = "Output_File";
-const char* PROB_MODEL_FIELD            = "Prob_Model";
-const char* RATES_FIELD                 = "Rates";
-const char* COORD_TYPE_FIELD            = "Coord_Type";
-const char* ANALYSIS_TYPE_FIELD         = "Analysis_Type";
-const char* NUM_CASES_FIELD             = "Number_Cases";
-const char* TOTAL_POP_FIELD             = "Total_Pop";
-const char* NUM_GEO_AREAS_FIELD         = "Num_Geo_Areas";
-const char* PRECISION_TIMES_FIELD       = "Precis_Times";
-const char* MAX_GEO_EXTENT_FIELD        = "Max_Geo_Extent";
-const char* MAX_TIME_EXTENT_FIELD       = "Max_Temp_Extent";
-const char* TIME_TREND_ADJUSTMENT_FIELD = "Time_Trend_Adjust";
-const char* GRID_FILE_FIELD             = "Grid_File";
-const char* START_DATE_FIELD            = "Start_Date";
-const char* END_DATE_FIELD              = "End_Date";
-const char* ALIVE_ONLY_FIELD            = "Alive_Only";
-const char* INTERVAL_UNITS_FIELD        = "Interv_Units";
-const char* INTERVAL_LENGTH_FIELD       = "Interv_Len";
-const char* MONTE_CARLO_FIELD           = "Monte_Carlo";
-const char* CUTOFF_001_FIELD            = "001_CutOff";
-const char* CUTOFF_005_FIELD            = "005_CutOff";
-const char* NUM_SIGNIF_005_FIELD        = "Num_Signif_005";
+const char* RUN_NUMBER_FIELD            = "RUN_NUM";
+const char* RUN_TIME_FIELD              = "RUN_TIME";
+const char* OUTPUT_FILE_FIELD           = "OUT_FILE";
+const char* PROB_MODEL_FIELD            = "PROB_MODEL";
+const char* RATES_FIELD                 = "RATES";
+const char* COORD_TYPE_FIELD            = "COORD_TYPE";
+const char* ANALYSIS_TYPE_FIELD         = "ANALYSIS";
+const char* NUM_CASES_FIELD             = "NUM_CASES";
+const char* TOTAL_POP_FIELD             = "TOTAL_POP";
+const char* NUM_GEO_AREAS_FIELD         = "NUM_AREAS";
+const char* PRECISION_TIMES_FIELD       = "TIME_PREC";
+const char* MAX_GEO_EXTENT_FIELD        = "GEO_EXTENT";
+const char* MAX_TIME_EXTENT_FIELD       = "TEMPOR_EXT";
+const char* TIME_TREND_ADJUSTMENT_FIELD = "TREND_ADJ";
+const char* GRID_FILE_FIELD             = "GRID_FILE";
+const char* START_DATE_FIELD            = "START_DATE";
+const char* END_DATE_FIELD              = "END_DATE";
+const char* ALIVE_ONLY_FIELD            = "ALIVE_ONLY";
+const char* INTERVAL_FIELD              = "INTERVAL";
+const char* MONTE_CARLO_FIELD           = "MONTECARLO";
+const char* CUTOFF_001_FIELD            = "001_CUTOFF";
+const char* CUTOFF_005_FIELD            = "005_CUTOFF";
+const char* NUM_SIGNIF_005_FIELD        = "SIGNIF_005";
+const char* P_VALUE_FIELD               = "P_VALUE";
 
 // constructor
 stsRunHistoryFile::stsRunHistoryFile(const ZdString& sFileName, BasePrint& PrintDirection)
-                 : gsFilename(sFileName) , gpPrintDirection(&PrintDirection){
+                 : gsFilename(sFileName) , gpPrintDirection(&PrintDirection) {
    try {
       Init();
       SetRunNumber();
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsRunHistoryFile");
-      PrintDirection.SatScanPrintWarning("\nUnable to log analysis information:\n");
+      PrintDirection.SatScanPrintWarning("\nUnable to log analysis history information:\n");
 //      PrintDirection.SatScanPrintWarning(x.GetCallpath());
       PrintDirection.SatScanPrintWarning(x.GetErrorMessage());
       PrintDirection.SatScanPrintWarning("\n");
@@ -78,8 +78,7 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
       ::CreateNewField(gvFields, GRID_FILE_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
       ::CreateNewField(gvFields, MAX_GEO_EXTENT_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
       ::CreateNewField(gvFields, MAX_TIME_EXTENT_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
-      ::CreateNewField(gvFields, INTERVAL_LENGTH_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
-      ::CreateNewField(gvFields, INTERVAL_UNITS_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      ::CreateNewField(gvFields, INTERVAL_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
       ::CreateNewField(gvFields, ALIVE_ONLY_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
       ::CreateNewField(gvFields, TIME_TREND_ADJUSTMENT_FIELD, ZD_ALPHA_FLD, 20, 3, uwOffset);
       // covariates adjusted for
@@ -93,15 +92,15 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
       ::CreateNewField(gvFields, NUM_CASES_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
       ::CreateNewField(gvFields, TOTAL_POP_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
 
-      // pval most likely cluster
+      ::CreateNewField(gvFields, P_VALUE_FIELD, ZD_NUMBER_FLD, 12, 5, uwOffset);
       ::CreateNewField(gvFields, NUM_SIGNIF_005_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
       ::CreateNewField(gvFields, OUTPUT_FILE_FIELD, ZD_ALPHA_FLD, 254, 0, uwOffset);
       // additional text file names
 
-      ::CreateNewField(gvFields, CUTOFF_001_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
-      ::CreateNewField(gvFields, CUTOFF_005_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
+//      ::CreateNewField(gvFields, CUTOFF_001_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
+//      ::CreateNewField(gvFields, CUTOFF_005_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
 
-      TXDFile File;
+      DBFFile File;
       File.PackFields(gvFields);
       File.Create(gsFilename, gvFields, 1);
       File.Close();
@@ -256,30 +255,36 @@ void stsRunHistoryFile::GetTimeAdjustmentString(ZdString& sTempValue, int iType)
 // global initializations
 void stsRunHistoryFile::Init() {
    glRunNumber = 0;
-   gvFields.DeleteAllElements();
 }
 
 // although the name implies an oxymoron, this function will record a new run into the history file
-// tries to open the run history file if one exists, if not creates the file
 // pre: none
-// post: opens/creates the run history file and records the run history
+// post: records the run history to the file
 void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005) {
    ZdTransaction	*pTransaction = 0;
-   ZdString             sTempValue;
-   std::auto_ptr<TXDFile>    pFile;
+   ZdString             sTempValue, sInterval;
+   std::auto_ptr<DBFFile>    pFile(new DBFFile(gsFilename));
+   bool                 bFound(false);
 
    try {
-      pFile.reset(new TXDFile(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE));
-
-      // note: I'm going to document the heck out of this section for two reasons :
+      // NOTE: I'm going to document the heck out of this section for two reasons :
       // 1) in case they change the run specs on us at any time
       // 2) to present my assumptions about the output data in case any happen to be incorrect
       // , so bear with me - AJV 9/3/2002
 
       std::auto_ptr<ZdFileRecord> pRecord(pFile->GetNewRecord());
-      pRecord->PutField(0, glRunNumber);
-      if(!pFile->GotoRecordByKeys(pRecord.get(), pRecord.get()))
+
+      for(unsigned long i = 1; i < pFile->GetNumRecords() && !bFound; ++i) {
+         pFile->GotoRecord(i, pRecord.get());
+         bFound = (pRecord->GetLong(0) == glRunNumber);
+      }
+      if(!bFound)
          ZdException::GenerateNotification("Error! Run number not found in the run history file.", "LogNewhistory()");
+
+      // NOTE : ordering in which the data is added does not matter here in this function due to the use of the
+      // GetFieldNumber function which finds the appropraite field number for the SetField functions and inserts
+      // the data in that field - ordering is determined solely in the CreateRunHistoryFile function by the order the
+      // fields are added to the vector in that function
 
       //  run number field
       SetLongField(*pRecord, glRunNumber, GetFieldNumber(gvFields, RUN_NUMBER_FIELD));
@@ -330,14 +335,17 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetStringField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_szEndDate, GetFieldNumber(gvFields, END_DATE_FIELD)); // end date field
       SetBoolField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_bAliveClustersOnly, GetFieldNumber(gvFields, ALIVE_ONLY_FIELD)); // alive clusters only field
 
-      // interval units field
+      // interval field
       GetIntervalUnitsString(sTempValue, pAnalysis.GetSatScanData()->m_pParameters->m_nIntervalUnits);
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, INTERVAL_UNITS_FIELD));
+      sInterval << pAnalysis.GetSatScanData()->m_pParameters->m_nIntervalLength << " " << sTempValue;
+      SetStringField(*pRecord, sInterval, GetFieldNumber(gvFields, INTERVAL_FIELD));
 
-      SetLongField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_nIntervalLength, GetFieldNumber(gvFields, INTERVAL_LENGTH_FIELD)); // intervals length field
+      // p-value field
+      float pVal = pAnalysis.GetTopCluster(0)->GetPVal(pAnalysis.GetSatScanData()->m_pParameters->m_nReplicas);
+      SetDoubleField(*pRecord, pVal, GetFieldNumber(gvFields, P_VALUE_FIELD));
       SetLongField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_nReplicas, GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
-      SetDoubleField(*pRecord, pAnalysis.GetSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
-      SetDoubleField(*pRecord, pAnalysis.GetSimRatio05(), GetFieldNumber(gvFields, CUTOFF_005_FIELD)); // 0.05 cutoff field
+//      SetDoubleField(*pRecord, pAnalysis.GetSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
+//      SetDoubleField(*pRecord, pAnalysis.GetSimRatio05(), GetFieldNumber(gvFields, CUTOFF_005_FIELD)); // 0.05 cutoff field
       SetLongField(*pRecord, (long)uwSignificantAt005, GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));  // number of clusters significant at tthe .05 llr cutoff field
 
       pTransaction = (pFile->BeginTransaction());
@@ -367,18 +375,19 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
 
 // sets the global variable glRunNumber and secures a unique run number in the file
 // by adding a record with that run number to fix the multithreading issue
+// if the file doesn't exist then it creates a new one and sets the run number to 1
 // pre: none
 // post: sets the run number and adds a record to the file with that number
 void stsRunHistoryFile::SetRunNumber() {
    ZdTransaction	        *pTransaction = 0;
-   std::auto_ptr<TXDFile>       pFile;
+   std::auto_ptr<DBFFile>       pFile;
 
    try {
       // if we don't have one then create it
       if(!ZdIO::Exists(gsFilename.GetCString()))
          CreateRunHistoryFile();
 
-      pFile.reset(new TXDFile(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE));
+      pFile.reset(new DBFFile(gsFilename));
       if(gvFields.empty())
          SetFieldVector(gvFields, *pFile);
 
@@ -386,13 +395,13 @@ void stsRunHistoryFile::SetRunNumber() {
       unsigned short  uwRunNumberField = GetFieldNumber(gvFields, RUN_NUMBER_FIELD);
 
       // get a record buffer, input data and append the record
-      std::auto_ptr<TXDRec> pLastRecord(pFile->GetNewRecord());
+      std::auto_ptr<ZdFileRecord> pLastRecord(pFile->GetNewRecord());
       if(pFile->GotoLastRecord(pLastRecord.get()))      // if there's records in the file
          glRunNumber = pLastRecord->GetLong(uwRunNumberField) + 1;
       else
          glRunNumber = 1;
 
-      std::auto_ptr<TXDRec> pRecord(pFile->GetNewRecord());
+      std::auto_ptr<ZdFileRecord> pRecord(pFile->GetNewRecord());
       pRecord->Clear();
       pRecord->PutField(uwRunNumberField, glRunNumber);       // run number field
       pRecord->PutField(GetFieldNumber(gvFields, OUTPUT_FILE_FIELD), "Run started, but not completed.");   // output filename field, but for now a text field
@@ -413,7 +422,7 @@ void stsRunHistoryFile::SetRunNumber() {
    }
 }
 
-// strips the carriage return and line feed off of the string because TXD doesn't like them embedded in fields
+// strips the carriage return and line feed off of the string because some ZdFile's don't like them embedded in fields
 // pre: none
 // post: returns the string by reference without the CR or LF
 void stsRunHistoryFile::StripCRLF(ZdString& sStore) {
