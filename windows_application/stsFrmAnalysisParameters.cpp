@@ -1255,6 +1255,7 @@ void TfrmAnalysis::SetupInterface() {
     cboCriteriaSecClusters->ItemIndex = gParameters.GetCriteriaSecondClustersType();
     chkClustersInColumnFormatDBase->Checked = gParameters.GetOutputClusterLevelDBase();
     chkCensusAreasReportedClustersDBase->Checked = gParameters.GetOutputAreaSpecificDBase();
+    EnableSettingsForAnalysisModelCombination();
   }
   catch (ZdException & x) {
     x.AddCallpath("SetupInterface()", "TfrmAnalysis");
