@@ -3,7 +3,7 @@ object frmOptions: TfrmOptions
   Top = 204
   BorderStyle = bsDialog
   Caption = 'Options'
-  ClientHeight = 303
+  ClientHeight = 351
   ClientWidth = 367
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,7 +19,7 @@ object frmOptions: TfrmOptions
     Left = 0
     Top = 0
     Width = 367
-    Height = 303
+    Height = 351
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
@@ -32,17 +32,29 @@ object frmOptions: TfrmOptions
     end
     object lblArchiveApplication: TLabel
       Left = 24
-      Top = 85
+      Top = 91
       Width = 91
       Height = 13
       Caption = 'Archive Application'
     end
     object lblArchiveApplicationOptions: TLabel
       Left = 255
-      Top = 85
+      Top = 91
       Width = 36
       Height = 13
       Caption = 'Options'
+    end
+    object Bevel1: TBevel
+      Left = 2
+      Top = 315
+      Width = 364
+      Height = 2
+    end
+    object Bevel2: TBevel
+      Left = 3
+      Top = 62
+      Width = 364
+      Height = 2
     end
     object edtComparisonApplication: TEdit
       Left = 8
@@ -71,7 +83,7 @@ object frmOptions: TfrmOptions
     end
     object chkArchiveResults: TCheckBox
       Left = 8
-      Top = 66
+      Top = 72
       Width = 161
       Height = 17
       Caption = 'Save Results Archive File'
@@ -79,14 +91,14 @@ object frmOptions: TfrmOptions
     end
     object edtArchiveApplication: TEdit
       Left = 24
-      Top = 105
+      Top = 111
       Width = 226
       Height = 21
       TabOrder = 3
     end
     object btnBrowseArchiveApplication: TButton
       Left = 333
-      Top = 105
+      Top = 111
       Width = 27
       Height = 21
       Hint = 'Select Archive Program'
@@ -104,14 +116,14 @@ object frmOptions: TfrmOptions
     end
     object edtArchiveApplicationOptions: TEdit
       Left = 256
-      Top = 105
+      Top = 111
       Width = 70
       Height = 21
       TabOrder = 5
     end
     object chkDeleteFileAfterArchiving: TCheckBox
       Left = 24
-      Top = 131
+      Top = 137
       Width = 177
       Height = 17
       Caption = 'Delete Files After Archiving'
@@ -119,7 +131,7 @@ object frmOptions: TfrmOptions
     end
     object chkCreateReadMeFile: TCheckBox
       Left = 24
-      Top = 160
+      Top = 166
       Width = 161
       Height = 17
       Caption = 'Add '#39'ReadMe'#39' File to Archive'
@@ -127,10 +139,18 @@ object frmOptions: TfrmOptions
     end
     object memReadMeText: TMemo
       Left = 24
-      Top = 184
+      Top = 190
       Width = 335
       Height = 113
       TabOrder = 8
+    end
+    object chkSuppressDosWindow: TCheckBox
+      Left = 8
+      Top = 327
+      Width = 273
+      Height = 17
+      Caption = 'Suppress DOS Window'
+      TabOrder = 9
     end
   end
   object OpenDialog: TOpenDialog

@@ -28,6 +28,9 @@ __published:	// IDE-managed Components
         TCheckBox *chkDeleteFileAfterArchiving;
         TCheckBox *chkCreateReadMeFile;
         TMemo *memReadMeText;
+        TBevel *Bevel1;
+        TBevel *Bevel2;
+        TCheckBox *chkSuppressDosWindow;
         void __fastcall btnBrowseComparisonAppClick(TObject *Sender);
         void __fastcall btnBrowseArchiveApplicationClick(TObject *Sender);
 private:	// User declarations

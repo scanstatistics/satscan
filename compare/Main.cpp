@@ -49,6 +49,7 @@ const char * TfrmMain::ARCHIVE_APP_DATA         = "ArchiveApp";
 const char * TfrmMain::USE_ARCHIVE_APP_DATA     = "ArchivingResults";
 const char * TfrmMain::ARCHIVE_APP_OPTIONS_DATA = "ArchiveOptions";
 const char * TfrmMain::ARCHIVE_DELETE_FILES_DATA= "DeleteArchivedFiles";
+const char * TfrmMain::SUPPRESS_DOS_WINDOW_DATA = "SuppressDosWindow";
 
 /** constructor */
 __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner), gpFrmOptions(0) {
@@ -76,6 +77,8 @@ __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner), gpFrmOptions(0)
     gpFrmOptions->edtArchiveApplicationOptions->Text = pRegistry->ReadString(ARCHIVE_APP_OPTIONS_DATA);
     if (pRegistry->GetDataSize(ARCHIVE_DELETE_FILES_DATA) != -1)
       gpFrmOptions->chkDeleteFileAfterArchiving->Checked = pRegistry->ReadBool(ARCHIVE_DELETE_FILES_DATA);
+    if (pRegistry->GetDataSize(SUPPRESS_DOS_WINDOW_DATA) != -1)
+      gpFrmOptions->chkSuppressDosWindow->Checked = pRegistry->ReadBool(SUPPRESS_DOS_WINDOW_DATA);
     pRegistry->CloseKey();
   }
   delete pRegistry;
@@ -113,6 +116,7 @@ __fastcall TfrmMain::~TfrmMain() {
       pRegistry->WriteString(ARCHIVE_APP_DATA, gpFrmOptions->edtArchiveApplication->Text);
       pRegistry->WriteString(ARCHIVE_APP_OPTIONS_DATA, gpFrmOptions->edtArchiveApplicationOptions->Text);
       pRegistry->WriteBool(ARCHIVE_DELETE_FILES_DATA, gpFrmOptions->chkDeleteFileAfterArchiving->Checked);
+      pRegistry->WriteBool(SUPPRESS_DOS_WINDOW_DATA, gpFrmOptions->chkSuppressDosWindow->Checked);
       pRegistry->CloseKey();
     }
     delete pRegistry;
@@ -414,7 +418,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
         sCommand.printf("\"%s\" \"%s\" -v",
                         edtBatchExecutableComparatorName->Text.c_str(),
                         gvParameterResultsInfo.back().GetFilenameString());
-        if (Execute(sCommand.c_str())) {
+        if (Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked)) {
           Application->ProcessMessages();
           _sleep(2);
           //get filename that will be the result file created for comparison
@@ -425,7 +429,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
                           gvParameterResultsInfo.back().GetFilenameString(),
                           sCompareFilename.c_str());
           //execute SaTScan version that is in question
-          if (Execute(sCommand.c_str())) {
+          if (Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked)) {
             CompareClusterInformationFiles();
             CompareLocationInformationFiles();
             CompareRelativeRisksInformationFiles();

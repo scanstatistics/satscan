@@ -169,6 +169,7 @@ __published:	// IDE-managed Components
     static const char                 * USE_ARCHIVE_APP_DATA;
     static const char                 * ARCHIVE_APP_OPTIONS_DATA;
     static const char                 * ARCHIVE_DELETE_FILES_DATA;
+    static const char                 * SUPPRESS_DOS_WINDOW_DATA;
 
     TfrmOptions                       * gpFrmOptions;
 
