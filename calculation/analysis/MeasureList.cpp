@@ -47,6 +47,11 @@ double CMeasureList::GetMaximumLogLikelihoodRatio() {
   return dMaximumLogLikelihoodRatio; 
 }
 
+/** re-intializes measure list structures for another simulation */
+void CMeasureList::Reset() {
+  SetMeasures();
+  gvMaximumLogLikelihoodRatios.clear();
+}
 
 /** Sets for next interation.
     If iteration is a boundry, calculates loglikelihood and resets measure array(s). */
@@ -83,10 +88,6 @@ void CMeasureList::Setup() {
    else
      //No correction - accumulate best measure through all circle/ellipses.
      gvCalculationBoundries.push_back(gSaTScanData.GetParameters().GetNumTotalEllipses());
-
-  gMeasure      = Standard;
-  gMeasure_     = Standard_;
-  g_Measure_     = _Standard_;
 }
 
 /** Constructor */

@@ -3,7 +3,6 @@
 #define __MEASURELIST_H
 //*****************************************************************************
 #include "SaTScanData.h"
-#include "MeasureDeterminant.h"
 #include <malloc.h>
 
 class CMeasureList {
@@ -25,13 +24,10 @@ class CMeasureList {
             CMeasureList(const CSaTScanData & SaTScanData, BasePrint & PrintDirection);
     virtual ~CMeasureList();
 
-    MEAURE_DETERMINANT          gMeasure;
-    MEAURE_DETERMINANT_         gMeasure_;
-    _MEAURE_DETERMINANT_        g_Measure_;
-
     virtual void                AddMeasure(count_t n, measure_t u) = 0;
     virtual void                Display(FILE* pFile) const = 0;
     double                      GetMaximumLogLikelihoodRatio();
+    void                        Reset();
     void                        SetForNextIteration(int iIteration);
 };
 
