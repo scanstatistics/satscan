@@ -79,7 +79,7 @@ void __fastcall TfrmMainForm::OpenAFile(){
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.prm";
-    OpenDialog1->Filter = "Parameter Files (*.prm)|*.prm";   //put more types in here...
+    OpenDialog1->Filter = "Parameter Files (*.prm)|*.prm |All Files (*.*)|*.*";   //put more types in here...
     OpenDialog1->Title = "Select Parameter File";
     if (OpenDialog1->Execute())
       new TfrmAnalysis(this, OpenDialog1->FileName.c_str());
@@ -228,5 +228,6 @@ void __fastcall TfrmMainForm::UsingHelpActionExecute(TObject *Sender) {
   WinHelp(0, "winhelp.hlp", HELP_HELPONHELP, 0L);
 }
 //---------------------------------------------------------------------------
+
 
 
