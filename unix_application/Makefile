@@ -39,8 +39,8 @@ ZDDIR       := /opt/net/utils/imsdev
 #ZDANNEX     := /opt/net/utils/imsdev/gcc3.2.2
 #ZDDIR       := /opt/net/utils/imsdev/gcc3.2.2
 ZDVER       := 540
-XBASEDIR    := /home/hostovic/prj/satscan/xbase/xbase_2.0.0/xbase
-XBASEDIR2   := /home/hostovic/prj/satscan/xbase/xbase_2.0.0
+XBASEDIR    := $(SATSCAN)/xbase/xbase_2.0.0/xbase
+XBASEDIR2   := $(SATSCAN)/xbase/xbase_2.0.0
 
 
 
@@ -58,7 +58,7 @@ LFLAGS      := -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -lxbaseg -lm
 
 SRC         := Main.cpp \
                ../calculation/analysis/Analysis.cpp \
-               ../calculation/analysis/MeasureList.cpp \
+	       ../calculation/analysis/MeasureList.cpp \
                ../calculation/analysis/PurelySpatialAnalysis.cpp \
                ../calculation/analysis/PurelySpatialMonotoneAnalysis.cpp \
                ../calculation/analysis/PurelyTemporalAnalysis.cpp \
@@ -109,6 +109,7 @@ SRC         := Main.cpp \
 	       ../calculation/satscan_data/SVTTData.cpp \
 	       ../calculation/satscan_data/Tracts.cpp \
 	       ../calculation/satscan_data/MaxWindowLengthIndicator.cpp \
+	       ../calculation/satscan_data/AdjustmentHandler.cpp \
 	       ../calculation/utility/DBFFile.cpp \
 	       ../calculation/utility/JulianDates.cpp \
 	       ../calculation/utility/RandomDistribution.cpp \
