@@ -10,7 +10,6 @@ static FILE* pMResult;
 
 int AssignMeasure(
             const TractHandler  *pTInfo,
-            Cats         *pCats,
             count_t      *Cases[],
             Julian**     Times,
             tract_t      NumTracts,
@@ -29,10 +28,9 @@ int AssignMeasure(
 	    measure_t*   pTotalMeasure,
             BasePrint *pPrintDirection)
 {
-   int         i, interval;
+   int         i, interval, iNumCategories;
    double*     pAlpha = 0;
    double*     pRisk = 0;
-   int         nCats;
    int         nPops;
    tract_t     nTracts, tract;
    measure_t** m = 0;
@@ -59,15 +57,15 @@ int AssignMeasure(
     
       nTracts = pTInfo->tiGetNumTracts();
       nPops   = pTInfo->tiGetNumPopDates();
-      nCats   = pCats->catNumCats();
+      iNumCategories   = pTInfo->tiGetNumCategories();
 
 #ifdef DEBUGMEASURE
       DisplayInitialData(StartDate, EndDate, IntervalDates, nTimeIntervals, pAlpha, nPops);
 #endif
 
-      CalcRisk(pTInfo, &pRisk, pAlpha, nCats, nTracts, nPops, pTotalPop, pTotalCases, pPrintDirection);
-      Calcm(pTInfo, &m, pRisk, nCats, nTracts, nPops, pPrintDirection);
-      CalcMeasure(pTInfo, pMeasure, m, IntervalDates, StartDate, EndDate, nCats, nTracts, nPops, nTimeIntervals, pTotalMeasure, pPrintDirection);
+      CalcRisk(pTInfo, &pRisk, pAlpha, iNumCategories, nTracts, nPops, pTotalPop, pTotalCases, pPrintDirection);
+      Calcm(pTInfo, &m, pRisk, iNumCategories, nTracts, nPops, pPrintDirection);
+      CalcMeasure(pTInfo, pMeasure, m, IntervalDates, StartDate, EndDate, iNumCategories, nTracts, nPops, nTimeIntervals, pTotalMeasure, pPrintDirection);
       if (nTimeIntervals>1)
         if (nTimeAdjust==1)
           AdjustForDiscreteTimeTrend(pMeasure, Cases, nTracts, nTimeIntervals, pTotalCases, pTotalMeasure);

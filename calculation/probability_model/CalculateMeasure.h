@@ -9,7 +9,6 @@
 
 int AssignMeasure(
             const TractHandler  *pTInfo,
-            Cats         *pCats,
             count_t      *Cases[],
             Julian**     Times,
             tract_t      NumTracts,
