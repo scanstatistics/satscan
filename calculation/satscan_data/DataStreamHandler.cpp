@@ -186,6 +186,16 @@ bool DataStreamHandler::ParseCovariates(PopulationData & thePopulation, int& iCa
            vCategoryCovariates.push_back(pCovariate);
            iNumCovariatesScanned++;
       }
+      if (!gParameters.UsePopulationFile() && iNumCovariatesScanned) {
+        //If the population data was not gotten from a population file, then there can not
+        //be covariates in other files, namely the case file.
+        gPrint.PrintInputWarning("Error: Record %ld of %s contains %d covariate%s but covariates are not permitted\n"
+                                 "       in the %s when a population file is not specified.\n" ,
+                                   Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str(),
+                                   iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"),
+                                   gPrint.GetImpliedFileTypeString().c_str());
+        return false;
+      }
       if (iNumCovariatesScanned != thePopulation.GetNumPopulationCategoryCovariates()) {
         gPrint.PrintInputWarning("Error: Record %ld of %s contains %d covariate%s but the population file\n",
                                    Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str(),
