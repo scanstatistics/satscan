@@ -26,9 +26,13 @@ __published:	// IDE-managed Components
         TLabel *Label7;
         TLabel *Label3;
         TLabel *Label8;
+        TLabel *lblTrademark;
+        TLabel *lblLicense;
+        TLabel *Label14;
         void __fastcall Button1Click(TObject *Sender);
         void __fastcall lblWebSiteClick(TObject *Sender);
         void __fastcall lblEmailClick(TObject *Sender);
+        void __fastcall lblLicenseClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
         __fastcall TfrmAbout(TComponent* Owner);

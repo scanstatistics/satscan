@@ -22,7 +22,7 @@ void __fastcall TfrmAbout::lblWebSiteClick(TObject *Sender) {
   try {
     int iResult = ( int )ShellExecute(Handle, "open", SATSCAN_WEBSITE, 0, 0, SW_SHOWDEFAULT);
     if (iResult <= 32)
-      ZdException::GenerateNotification("Unable to open Squish Web site.\nIf problem persists, please contact technical support.( code %d )", "OnSquishClick()", iResult);
+      ZdException::GenerateNotification("Unable to open SaTScan Web site.\nIf problem persists, please contact technical support.( code %d )", "OnSquishClick()", iResult);
   }
   catch (ZdException &x) {
      x.AddCallpath("lblWebSiteClick()", "TfrmAbout");
@@ -97,6 +97,19 @@ void __fastcall TfrmAbout::lblEmailClick(TObject *Sender) {
       x.AddCallpath("OnEmailClick()", "TBdlgTechSupport");
       throw;
    }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfrmAbout::lblLicenseClick(TObject *Sender) {
+   try {
+    int iResult = ( int )ShellExecute(Handle, "open", SATSCAN_LICENSE, 0, 0, SW_SHOWDEFAULT);
+    if (iResult <= 32)
+      ZdException::GenerateNotification("Unable to open SaTScan Web site.\nIf problem persists, please contact technical support.( code %d )", "OnSquishClick()", iResult);
+  }
+  catch (ZdException &x) {
+     x.AddCallpath("lblLicenseClick()", "TfrmAbout");
+     throw;
+  }
 }
 //---------------------------------------------------------------------------
 

@@ -53,7 +53,7 @@ object frmAbout: TfrmAbout
   object Label1: TLabel
     Left = 24
     Top = 12
-    Width = 114
+    Width = 105
     Height = 29
     Caption = 'SaTScan '
     Font.Charset = DEFAULT_CHARSET
@@ -187,11 +187,9 @@ object frmAbout: TfrmAbout
   object Label4: TLabel
     Left = 24
     Top = 234
-    Width = 380
-    Height = 32
-    Caption = 
-      'This software may be used, at no charge, in accordance with the ' +
-      'license agreement as long as a proper citation is given.'
+    Width = 377
+    Height = 16
+    Caption = 'This software may be used, at no charge, in accordance with the'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -207,7 +205,7 @@ object frmAbout: TfrmAbout
     Height = 32
     Caption = 
       'SaTScan v.3.0:  Software for the spatial and space-time scan sta' +
-      'tistics. Bethesda, MD,  National Cancer Institute, 2002.'
+      'tistics. Bethesda, MD;  National Cancer Institute, 2002.'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -231,7 +229,7 @@ object frmAbout: TfrmAbout
     WordWrap = True
   end
   object lblVersion: TLabel
-    Left = 144
+    Left = 152
     Top = 12
     Width = 55
     Height = 29
@@ -275,6 +273,41 @@ object frmAbout: TfrmAbout
     Width = 63
     Height = 16
     Caption = 'Written By:'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+  end
+  object lblTrademark: TLabel
+    Left = 128
+    Top = 10
+    Width = 16
+    Height = 13
+    Caption = 'TM'
+  end
+  object lblLicense: TLabel
+    Left = 24
+    Top = 250
+    Width = 111
+    Height = 16
+    Cursor = crHandPoint
+    Caption = 'license agreement'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlue
+    Font.Height = -13
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsUnderline]
+    ParentFont = False
+    OnClick = lblLicenseClick
+  end
+  object Label14: TLabel
+    Left = 140
+    Top = 250
+    Width = 213
+    Height = 16
+    Caption = 'as long as a proper citation is given.'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
