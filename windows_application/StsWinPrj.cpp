@@ -60,6 +60,7 @@ USEUNIT("..\calculation\probability_model\SpaceTimePermutationModel.cpp");
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib");
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
 USEUNIT("..\calculation\SaTScanBasis.cpp");
+USEUNIT("..\calculation\Output\stsRunHistoryFile.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
