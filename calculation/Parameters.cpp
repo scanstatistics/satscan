@@ -680,10 +680,10 @@ void CParameters::copy(const CParameters &rhs) {
     m_nDimension                = rhs.m_nDimension;
     m_nCoordType                = rhs.m_nCoordType;
     strcpy(m_szOutputFilename,rhs.m_szOutputFilename);
-    strcpy(m_szGISFilename,rhs.m_szGISFilename);
-    strcpy(m_szLLRFilename,rhs.m_szLLRFilename);
-    strcpy(m_szMLClusterFilename,rhs.m_szMLClusterFilename);
-    strcpy(m_szRelRiskFilename, rhs.m_szRelRiskFilename);
+//    strcpy(m_szGISFilename,rhs.m_szGISFilename);
+//    strcpy(m_szLLRFilename,rhs.m_szLLRFilename);
+//    strcpy(m_szMLClusterFilename,rhs.m_szMLClusterFilename);
+//    strcpy(m_szRelRiskFilename, rhs.m_szRelRiskFilename);
     m_bSaveSimLogLikelihoods    = rhs.m_bSaveSimLogLikelihoods;
     m_bOutputRelRisks           = rhs.m_bOutputRelRisks;
     m_bSequential               = rhs.m_bSequential;
@@ -764,7 +764,7 @@ bool CParameters::DisplayParamError(int nLine) {
 
 void CParameters::DisplayParameters(FILE* fp) {
    ZdFileName   fileName(m_szOutputFilename);
-   ZdString     sName;
+   ZdString     sASCIIName, sDBaseName;
 
    try {
      fprintf(fp, "\n________________________________________________________________\n\n");
@@ -926,74 +926,93 @@ void CParameters::DisplayParameters(FILE* fp) {
      fprintf(fp, "  Results File      : %s\n", m_szOutputFilename);
 
      // gis files
-     if (gbOutputAreaSpecificDBF) {
-        sName = fileName.GetFullPath();
+     if (gbOutputAreaSpecificDBF || m_bOutputCensusAreas) {
+        sASCIIName = fileName.GetFullPath();
         if(strlen(fileName.GetExtension()) != 0)
-           sName.Replace(fileName.GetExtension(), ".gis.dbf");
+           sASCIIName.Replace(fileName.GetExtension(), ".gis");
         else
-           sName <<  ".gis.dbf";
+           sASCIIName <<  ".gis";
+        sDBaseName = sASCIIName;
+        sASCIIName << ".txt";
+        sDBaseName << ".dbf";
+     }
+     if (gbOutputAreaSpecificDBF) {
         if (m_bOutputCensusAreas) {
-           fprintf(fp, "  GIS File(s)       : %s\n", m_szGISFilename);
-           fprintf(fp, "                    : %s\n", sName.GetCString());
+           fprintf(fp, "  GIS File(s)       : %s\n", sASCIIName.GetCString());
+           fprintf(fp, "                    : %s\n", sDBaseName.GetCString());
         }
         else
-           fprintf(fp, "  GIS File          : %s\n", sName.GetCString());
+           fprintf(fp, "  GIS File          : %s\n", sDBaseName.GetCString());
      }
      if (m_bOutputCensusAreas && !gbOutputAreaSpecificDBF)  // Output Census areas in Reported Clusters
-        fprintf(fp, "  GIS File          : %s\n", m_szGISFilename);
+        fprintf(fp, "  GIS File          : %s\n", sASCIIName.GetCString());
 
      // mlc files
-     if (gbOutputClusterLevelDBF) {
-        sName = fileName.GetFullPath();
+     if (gbOutputClusterLevelDBF || m_bMostLikelyClusters) {
+        sASCIIName = fileName.GetFullPath();
         if(strlen(fileName.GetExtension()) != 0)
-           sName.Replace(fileName.GetExtension(), ".col.dbf");
+           sASCIIName.Replace(fileName.GetExtension(), ".col");
         else
-           sName << ".col.dbf";
+           sASCIIName << ".col";
+        sDBaseName = sASCIIName;
+        sASCIIName << ".txt";
+        sDBaseName << ".dbf";
+     }
+     if (gbOutputClusterLevelDBF) {
         if (m_bMostLikelyClusters)  {  // Output Most Likely Cluster for each Centroid
-           fprintf(fp, "  MLC File(s)       : %s\n", m_szMLClusterFilename);
-           fprintf(fp, "                    : %s\n", sName.GetCString());
+           fprintf(fp, "  MLC File(s)       : %s\n", sASCIIName.GetCString());
+           fprintf(fp, "                    : %s\n", sDBaseName.GetCString());
         }
         else
-           fprintf(fp, "  MLC File          : %s\n", sName.GetCString());
+           fprintf(fp, "  MLC File          : %s\n", sDBaseName.GetCString());
      }
      if (m_bMostLikelyClusters && !gbOutputClusterLevelDBF)   // Output Most Likely Cluster for each Centroid
-        fprintf(fp, "  MLC File          : %s\n", m_szMLClusterFilename);
+        fprintf(fp, "  MLC File          : %s\n", sASCIIName.GetCString());
 
-        // RRE files
-     if (gbRelativeRiskDBF) {
-        sName = fileName.GetFullPath();
+     // RRE files
+     if (gbRelativeRiskDBF || m_bOutputRelRisks) {
+        sASCIIName = fileName.GetFullPath();
         if(strlen(fileName.GetExtension()) != 0)
-           sName.Replace(fileName.GetExtension(), ".rr.dbf");
+           sASCIIName.Replace(fileName.GetExtension(), ".rr");
         else
-           sName << ".rr.dbf";
+           sASCIIName << ".rr.dbf";
+        sDBaseName = sASCIIName;
+        sASCIIName << ".txt";
+        sDBaseName << ".dbf";
+     }
+     if (gbRelativeRiskDBF) {
         if (m_bOutputRelRisks){
-           fprintf(fp, "  RRE File(s)       : %s\n", m_szRelRiskFilename);
-           fprintf(fp, "                    : %s\n", sName.GetCString());
+           fprintf(fp, "  RRE File(s)       : %s\n", sASCIIName.GetCString());
+           fprintf(fp, "                    : %s\n", sDBaseName.GetCString());
         }
         else
-           fprintf(fp, "  RRE File          : %s\n", sName.GetCString());
+           fprintf(fp, "  RRE File          : %s\n", sDBaseName.GetCString());
      }
      if (m_bOutputRelRisks && !gbRelativeRiskDBF ) {
-        fprintf(fp, "  RRE File          : %s\n", m_szRelRiskFilename);
+        fprintf(fp, "  RRE File          : %s\n", sASCIIName.GetCString());
      }
 
      // LLR Files
      if (gbLogLikelihoodDBF) {
-        sName = fileName.GetFullPath();
+        sASCIIName = fileName.GetFullPath();
         if(strlen(fileName.GetExtension()) != 0)
-           sName.Replace(fileName.GetExtension(), ".llr.dbf");
+           sASCIIName.Replace(fileName.GetExtension(), ".llr");
         else
-           sName << ".llr.dbf";
+           sASCIIName << ".llr";
+        sDBaseName = sASCIIName;
+        sASCIIName << ".txt";
+        sDBaseName << ".dbf";
+     }
+     if (gbLogLikelihoodDBF) {
         if(m_bSaveSimLogLikelihoods) {
-           fprintf(fp,  "  LLR File(s)       : %s\n", m_szLLRFilename);
-           fprintf(fp,  "                    : %s\n", sName.GetCString());
+           fprintf(fp,  "  LLR File(s)       : %s\n", sASCIIName.GetCString());
+           fprintf(fp,  "                    : %s\n", sDBaseName.GetCString());
         }
         else
-           fprintf(fp,  "  LLR File          : %s\n", sName.GetCString());
+           fprintf(fp,  "  LLR File          : %s\n", sDBaseName.GetCString());
      }
-     if (m_bSaveSimLogLikelihoods && !gbLogLikelihoodDBF) {
-       fprintf(fp,  "  LLR File          : %s\n", m_szLLRFilename);
-     }
+     if (m_bSaveSimLogLikelihoods && !gbLogLikelihoodDBF)
+       fprintf(fp,  "  LLR File          : %s\n", sASCIIName.GetCString());
 
      fprintf(fp, "\n  Criteria for Reporting Secondary Clusters : ");
      switch (m_iCriteriaSecondClusters) {
@@ -1050,16 +1069,6 @@ void CParameters::Free() {
       delete [] mp_dEShapes;
    if (mp_nENumbers)
       delete [] mp_nENumbers;
-}
-
-// accessor function for the private variable gbOutputClusterLevelDBF
-const bool CParameters::GetOutputClusterLevelDBF() const {
-   return gbOutputClusterLevelDBF;
-}
-
-// accessor function for the private variable gbOutputAreaSpecificDBF
-const bool CParameters::GetOutputAreaSpecificDBF() const {
-   return gbOutputAreaSpecificDBF;
 }
 
 int CParameters::LoadEShapes(const char* szParam) {
@@ -1148,15 +1157,11 @@ int CParameters::LoadEAngles(const char* szParam) {
 // pre: file is an open ini parameter file
 // post: will set the global variables from the ini file
 void CParameters::ReadEllipseSectionFromIni(ZdIniFile& file) {
-   ZdString  sShapes, sAngles;
-
    try {
       ZdIniSection* pSection = file.GetSection(ELLIPSES_SECTION);
       m_nNumEllipses = atoi(pSection->GetLine(pSection->FindKey(NUMBER_ELLIPSES_LINE))->GetValue());
-      sShapes = pSection->GetLine(pSection->FindKey(ELLIPSE_SHAPES_LINE))->GetValue();
-      SetEShapesFromIniFile(sShapes);
-      sAngles = pSection->GetLine(pSection->FindKey(ELLIPSE_ANGLES_LINE))->GetValue();
-      SetEAnglesFromIniFile(sAngles);
+      SetEShapesFromIniFile(pSection->GetLine(pSection->FindKey(ELLIPSE_SHAPES_LINE))->GetValue());
+      SetEAnglesFromIniFile(pSection->GetLine(pSection->FindKey(ELLIPSE_ANGLES_LINE))->GetValue());
    }
    catch (ZdException &x) {
       x.AddCallpath("ReadEllipseSectionFromIni()", "CParameters");
@@ -1592,101 +1597,6 @@ void CParameters::SetEShapesFromIniFile(const ZdString& sShapes) {
    }
 }
 
-bool CParameters::SetGISFilename() {
-   int          nReportNameLen = strlen(m_szOutputFilename);
-   int          nIndex = nReportNameLen-1;
-   bool         bDone = false, bExtFound = false, bReturnValue = true;
-
-   try {
-      while (!bDone && !bExtFound && nIndex>=0) {
-        if (m_szOutputFilename[nIndex]=='/' || m_szOutputFilename[nIndex]=='\\')
-          bDone=true;
-        else if (m_szOutputFilename[nIndex]=='.')
-          bExtFound=true;
-        else
-          --nIndex;
-      }
-
-      if (!bExtFound)
-        nIndex = nReportNameLen;
-
-      strncpy(m_szGISFilename, m_szOutputFilename, nIndex);
-      strcpy(m_szGISFilename+nIndex, ".gis.txt");
-
-      if (strcmp(m_szGISFilename, m_szOutputFilename)==0)
-         bReturnValue = false;
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("SetGISFileName()", "CParameters");
-      throw;
-   }
-   return bReturnValue;
-}
-
-bool CParameters::SetLLRFilename() {
-   int          nReportNameLen = strlen(m_szOutputFilename);
-   int          nIndex = nReportNameLen-1;
-   bool         bDone = false, bExtFound = false, bReturnValue = true;
-
-   try {
-      while (!bDone && !bExtFound && nIndex>=0) {
-         if (m_szOutputFilename[nIndex] == '/' || m_szOutputFilename[nIndex] == '\\')
-           bDone = true;
-         else if (m_szOutputFilename[nIndex] == '.')
-           bExtFound = true;
-         else
-           --nIndex;
-       }
-
-      if (!bExtFound)
-        nIndex = nReportNameLen;
-
-      strncpy(m_szLLRFilename, m_szOutputFilename, nIndex);
-      strcpy(m_szLLRFilename + nIndex, ".llr.txt");
-
-
-      if (strcmp(m_szLLRFilename, m_szOutputFilename) == 0)
-         bReturnValue = false;
-   }
-   catch (ZdException & x)  {
-      x.AddCallpath("SetLLRFileName()", "CParameters");
-      throw;
-   }
-   return bReturnValue;
-}
-
-//most likely cluster for each centroid - file name
-bool CParameters::SetMLCFilename() {
-   int          nReportNameLen = strlen(m_szOutputFilename);
-   int          nIndex         = nReportNameLen-1;
-   bool         bDone = false, bExtFound = false, bReturnValue = true;
-
-   try {
-      while (!bDone && !bExtFound && nIndex>=0) {
-        if (m_szOutputFilename[nIndex]=='/' || m_szOutputFilename[nIndex]=='\\')
-          bDone=true;
-        else if (m_szOutputFilename[nIndex]=='.')
-          bExtFound=true;
-        else
-          --nIndex;
-      }
-
-      if (!bExtFound)
-        nIndex = nReportNameLen;
-
-      strncpy(m_szMLClusterFilename, m_szOutputFilename, nIndex);
-      strcpy(m_szMLClusterFilename+nIndex, ".col.txt");
-
-      if (strcmp(m_szMLClusterFilename, m_szOutputFilename)==0)
-         bReturnValue = false;
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("SetMLCFilename()", "CParameters");
-      throw;
-   }
-   return bReturnValue;
-}
-
 // old method of setting the parameters from the old parameter file
 bool CParameters::SetParameter(int nParam, const char* szParam) {
    bool bValid = false;
@@ -1854,9 +1764,6 @@ bool CParameters::SetParameters(const char* szFilename, bool bValidate) {
       //else if ( (bEOF && (i-2) < MAX_TEMPORAL_TYPE) || (!bEOF && (i-1) < MAX_TEMPORAL_TYPE ) )
       //   m_nMaxClusterSizeType = PERCENTAGETYPE;
 
-      if (!SetGISFilename() || !SetLLRFilename() || !SetMLCFilename() || !SetRelRiskFilename())
-        bValid = false;
-
       if (bValid && bValidate)
         bValid = ValidateParameters();
    }
@@ -1873,37 +1780,6 @@ void CParameters::SetPrintDirection(BasePrint *pPrintDirection) {
    gpPrintDirection = pPrintDirection;
 }
 
-//set rel risk estimate file name
-bool CParameters::SetRelRiskFilename() {
-   int          nReportNameLen = strlen(m_szOutputFilename);
-   int          nIndex = nReportNameLen-1;
-   bool         bDone = false, bExtFound = false, bReturnValue = true;
-
-   try {
-      while (!bDone && !bExtFound && nIndex>=0) {
-        if (m_szOutputFilename[nIndex]=='/' || m_szOutputFilename[nIndex]=='\\')
-          bDone=true;
-        else if (m_szOutputFilename[nIndex]=='.')
-          bExtFound=true;
-        else
-          --nIndex;
-      }
-
-      if (!bExtFound)
-        nIndex = nReportNameLen;
-
-      strncpy(m_szRelRiskFilename, m_szOutputFilename, nIndex);
-      strcpy(m_szRelRiskFilename+nIndex, ".rr.txt");
-
-      if (strcmp(m_szRelRiskFilename, m_szOutputFilename)==0)
-         bReturnValue = false;
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("SetRelRiskFilename()", "CParameters");
-      throw;
-   }
-   return bReturnValue;
-}
 // trims the left whitespace from the char string
 void CParameters::TrimLeft(char *sString) {
    char  * psString;

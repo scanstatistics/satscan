@@ -189,10 +189,6 @@ class CParameters
 
     // Results
     char   m_szOutputFilename [MAX_STR_LEN];   /** results file name */
-    char   m_szGISFilename [MAX_STR_LEN];      /** output Census areas in reported clusters */
-    char   m_szLLRFilename [MAX_STR_LEN];      /** simulated log likelihood ratios */
-    char   m_szMLClusterFilename[MAX_STR_LEN]; /** most likely cluster for each centroid */
-    char   m_szRelRiskFilename[MAX_STR_LEN];   /** relative risk estimates for each census area */
 
     bool   m_bSaveSimLogLikelihoods, m_bOutputRelRisks;
 
@@ -212,10 +208,8 @@ class CParameters
     int      m_iCriteriaSecondClusters;       /** Criteria for Reporting Secondary Clusters */
 
 
-
     //Overloaded operators
     CParameters &operator= (const CParameters &rhs);
-    
 
     bool                CheckProspDateRange(int iStartYear, int iStartMonth, int iStartDay,
                                             int iEndYear, int iEndMonth, int iEndDay,
@@ -229,9 +223,9 @@ class CParameters
     void                Free();
     const bool          GetDBaseOutputRelRisks() const { return gbRelativeRiskDBF; }
     const bool          GetDBaseOutputLogLikeli() const { return gbLogLikelihoodDBF; }
-    const bool          GetOutputClusterLevelDBF() const;
-    const bool          GetOutputAreaSpecificDBF() const;
-    const ZdString&     GetRunHistoryFilename() const  {return gsRunHistoryFilename;}
+    const bool          GetOutputClusterLevelDBF() const { return gbOutputClusterLevelDBF; }
+    const bool          GetOutputAreaSpecificDBF() const  { return gbOutputAreaSpecificDBF; }
+    const ZdString&     GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
 
     int                 LoadEAngles(const char* szParam);
     int                 LoadEShapes(const char* szParam);
@@ -247,13 +241,9 @@ class CParameters
     void                SetDisplayParameters(bool bValue);
     bool                SetParameters(const char* szFilename, bool bValidate=true);
     bool                SetParameter(int nParam, const char* szParam);
-    bool                SetGISFilename();
-    bool                SetLLRFilename();
-    bool                SetMLCFilename();
     void                SetOutputClusterLevelDBF(bool bOutput)  { gbOutputClusterLevelDBF = bOutput; }
     void                SetOutputAreaSpecificDBF(bool bOutput)  { gbOutputAreaSpecificDBF = bOutput; }
     void                SetPrintDirection(BasePrint *pPrintDirection);
-    bool                SetRelRiskFilename();
     void                SetRunHistoryFilename(const ZdString& sFilename) {gsRunHistoryFilename = sFilename;}
 
     bool                ValidateParameters();
