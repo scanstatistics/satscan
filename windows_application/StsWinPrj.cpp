@@ -76,6 +76,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
            ZdGetFileTypeArray()->AddElement( &(DBFFileType::GetDefaultInstance()) );
            Application->Initialize();
            Application->Title = "SaTScan";
+           BasisGetToolkit().SetErrorReportDestination(TECH_EMAIL);
            Application->HelpFile = "";
            Application->CreateForm(__classid(TfrmMainForm), &frmMainForm);
            Application->Run();
