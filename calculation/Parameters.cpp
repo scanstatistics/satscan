@@ -3,6 +3,7 @@
 #pragma hdrstop
 //***************************************************************************
 #include "Parameters.h"
+#include "DataStreamHandler.h"
 
 #define INCLUDE_RUN_HISTORY
 
@@ -334,7 +335,7 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
 }
 
 /** Prints parameters, in a particular format, to passed ascii file. */
-void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsCompleted) const {
+void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsCompleted, const DataStreamHandler& StreamHandler) const {
   int           i;
   size_t        t;
   ZdFileName    AdditionalOutputFile(gsOutputFileName.c_str());
@@ -481,12 +482,29 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
 
       fprintf(fp, "\n  Adjustment for Time Trend : ");
       switch (geTimeTrendAdjustType) {
-         case NOTADJUSTED               : fprintf(fp, "None\n"); break;
-         case NONPARAMETRIC             : fprintf(fp, "Nonparametric\n"); break;
-         case LOGLINEAR_PERC            : fprintf(fp, "Log linear with %g%% per year\n", gdTimeTrendAdjustPercentage); break;
-         case CALCULATED_LOGLINEAR_PERC : fprintf(fp, "Log linear with calculated trend of %g%% per year\n", gdTimeTrendAdjustPercentage); break;
-         case STRATIFIED_RANDOMIZATION  : fprintf(fp, "Nonparametric, with time stratified randomization\n"); break;
-         default : ZdException::Generate("Unknown time trend adjustment type '%d'.\n", "DisplayParameters()", geTimeTrendAdjustType);
+         case NOTADJUSTED :
+           fprintf(fp, "None\n"); break;
+         case NONPARAMETRIC :
+           fprintf(fp, "Nonparametric\n"); break;
+         case LOGLINEAR_PERC :
+           fprintf(fp, "Log linear with %g%% per year\n", gdTimeTrendAdjustPercentage); break;
+         case CALCULATED_LOGLINEAR_PERC :
+           //each data stream has own calculated time trend
+           if (StreamHandler.GetNumStreams() == 1)
+             fprintf(fp, "Log linear with calculated trend of %g%% per year\n",
+                     StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage());
+           else {
+             fprintf(fp, "Log linear with calculated trend of %g%% per year in stream 1\n",
+                     StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage());
+             for (size_t t=1; t < StreamHandler.GetNumStreams(); ++t)
+               fprintf(fp, "                              Log linear with calculated trend of %g%% per year in stream %u\n",
+                       StreamHandler.GetStream(t).GetCalculatedTimeTrendPercentage(), t + 1);
+           }
+           break;
+         case STRATIFIED_RANDOMIZATION :
+           fprintf(fp, "Nonparametric, with time stratified randomization\n"); break;
+         default :
+           ZdException::Generate("Unknown time trend adjustment type '%d'.\n", "DisplayParameters()", geTimeTrendAdjustType);
       }
     }
 
@@ -565,20 +583,50 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
 }
 
 /** Prints time trend adjustment parameters, in a particular format, to passed ascii file. */
-void CParameters::DisplayTimeAdjustments(FILE* fp) const {
+void CParameters::DisplayTimeAdjustments(FILE* fp, const DataStreamHandler& StreamHandler) const {
   try {
     switch (geTimeTrendAdjustType) {
-      case NOTADJUSTED               : break;
-      case NONPARAMETRIC             : fprintf(fp, "Adjusted for time nonparametrically.\n"); break;
-      case LOGLINEAR_PERC            :
-      case CALCULATED_LOGLINEAR_PERC : if (gdTimeTrendAdjustPercentage < 0)
-                                         fprintf(fp, "Adjusted for time with a decrease ");
-                                       else
-                                         fprintf(fp, "Adjusted for time with an increase ");
-                                       fprintf(fp, "of %0.2f%% per year.\n", fabs(gdTimeTrendAdjustPercentage));
-                                       break;
-      case STRATIFIED_RANDOMIZATION  : fprintf(fp, "Adjusted for time by stratified randomization.\n"); break;
-      default : ZdException::Generate("Unknown time trend adjustment type '%d'\n.", "DisplayTimeAdjustments()", geTimeTrendAdjustType);
+      case NOTADJUSTED :
+        break;
+      case NONPARAMETRIC :
+        fprintf(fp, "Adjusted for time nonparametrically.\n"); break;
+      case LOGLINEAR_PERC :
+        if (gdTimeTrendAdjustPercentage < 0)
+          fprintf(fp, "Adjusted for time with a decrease ");
+        else
+          fprintf(fp, "Adjusted for time with an increase ");
+        fprintf(fp, "of %0.2f%% per year.\n", fabs(gdTimeTrendAdjustPercentage));
+        break;
+      case CALCULATED_LOGLINEAR_PERC :
+        //each data stream has own calculated time trend
+        if (StreamHandler.GetNumStreams() == 1) {
+          if (StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage() < 0)
+            fprintf(fp, "Adjusted for time with a decrease ");
+          else
+            fprintf(fp, "Adjusted for time with an increase ");
+          fprintf(fp, "of %0.2f%% per year.\n", fabs(StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage()));
+        }
+        else {
+          if (StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage() < 0)
+            fprintf(fp, "Adjusted for time with a decrease ");
+          else
+            fprintf(fp, "Adjusted for time with an increase ");
+          fprintf(fp, "of %0.2f%% per year in stream 1.\n", fabs(StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage()));
+          for (size_t t=1; t < StreamHandler.GetNumStreams(); ++t) {
+            if (StreamHandler.GetStream(t).GetCalculatedTimeTrendPercentage() < 0)
+              fprintf(fp, "Adjusted for time with a decrease ");
+            else
+              fprintf(fp, "Adjusted for time with an increase ");
+            fprintf(fp, "of %0.2f%% per year in stream %u.\n",
+                    fabs(StreamHandler.GetStream(t).GetCalculatedTimeTrendPercentage()), t + 1);
+          }
+        }
+      break;  
+      case STRATIFIED_RANDOMIZATION  :
+        fprintf(fp, "Adjusted for time by stratified randomization.\n");
+        break;
+      default :
+        ZdException::Generate("Unknown time trend adjustment type '%d'\n.", "DisplayTimeAdjustments()", geTimeTrendAdjustType);
     }
   }
   catch (ZdException &x) {

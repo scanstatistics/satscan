@@ -167,6 +167,8 @@ enum ReadType                      {INI=0, SCAN};
 /** defines how simulated data will be created - only pertinent for Poisson */
 enum SimulationType                {STANDARD=0, HA_RANDOMIZATION, FILESOURCE};
 
+class DataStreamHandler; /** forward class declaration */
+
 class CParameters {
   private:
     AnalysisType                        geAnalysisType;                         /** analysis type */
@@ -321,8 +323,8 @@ class CParameters {
 
     CParameters                       & operator=(const CParameters &rhs);
     void                                DisplayAnalysisType(FILE* fp) const;
-    void                                DisplayParameters(FILE* fp, unsigned int iNumSimulationsCompleted) const;
-    void                                DisplayTimeAdjustments(FILE* fp) const;
+    void                                DisplayParameters(FILE* fp, unsigned int iNumSimulationsCompleted, const DataStreamHandler& StreamHandler) const;
+    void                                DisplayTimeAdjustments(FILE* fp, const DataStreamHandler& StreamHandler) const;
     bool                                GetAdjustForEarlierAnalyses() const {return gbAdjustForEarlierAnalyses;}
     const std::string                 & GetAdjustmentsByRelativeRisksFilename() const {return gsAdjustmentsByRelativeRisksFileName;}  
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
