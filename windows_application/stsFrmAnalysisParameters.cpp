@@ -1131,8 +1131,8 @@ void TfrmAnalysis::SaveParameterSettings() {
     Caption = gParameters.GetSourceFileName().c_str();
 
     //set version parameter
-    sString.printf("%s.%s.%s", VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE);
-    gParameters.SetVersion(sString);
+    CParameters::CreationVersion vVersion = {atoi(VERSION_MAJOR), atoi(VERSION_MINOR),atoi(VERSION_RELEASE)};
+    gParameters.SetVersion(vVersion);
     //Input File Tab
     gParameters.SetCaseFileName(edtCaseFileName->Text.c_str());
     gParameters.SetControlFileName(edtControlFileName->Text.c_str());
