@@ -167,14 +167,14 @@ void stsAreaSpecificData::Init() {
 // records the calculated data from the cluster into the dBase file
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
-void stsAreaSpecificData::RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, tract_t tTract) {
+void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, tract_t tTract) {
    ZdString             sTempValue;
    std::string          sBuffer;
    AreaSpecificRecord*	pRecord = 0;
    std::vector<std::string>             vIdentifiers;
 
    try {
-      pData.gpTInfo->tiGetTractIdentifiers(tTract, vIdentifiers);
+      theData.gpTInfo->tiGetTractIdentifiers(tTract, vIdentifiers);
 
       // if more than one identifier for the tract then create a blank record for each
       if (vIdentifiers.size() > 1) {
@@ -188,14 +188,14 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& pCluster, const CSaT
             pRecord->SetFieldIsBlank(GetFieldNumber(AREA_EXP_FIELD), true);
             pRecord->SetFieldIsBlank(GetFieldNumber(AREA_RSK_FIELD), true);
 
-            pRecord->SetClusterExpected(pCluster.m_nMeasure);
+            pRecord->SetClusterExpected(theData.GetMeasureAdjustment() * theCluster.m_nMeasure);
             pRecord->SetClusterNumber(iClusterNumber);
-            pRecord->SetClusterObserved(pCluster.m_nCases);
-            pRecord->SetClusterRelativeRisk(pCluster.GetRelativeRisk(pData.GetMeasureAdjustment()));
+            pRecord->SetClusterObserved(theCluster.m_nCases);
+            pRecord->SetClusterRelativeRisk(theCluster.GetRelativeRisk(theData.GetMeasureAdjustment()));
 
             // p value
             if(gbPrintPVal) {
-               float fPVal = (float) pCluster.GetPVal(pData.m_pParameters->GetNumReplicationsRequested());
+               float fPVal = (float) theCluster.GetPVal(theData.m_pParameters->GetNumReplicationsRequested());
                pRecord->SetPValue(fPVal);
             }
 
@@ -208,17 +208,17 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& pCluster, const CSaT
       else {      // else not duplicate coordinates so we just store the data
          pRecord = new AreaSpecificRecord(gbPrintPVal, gbIncludeRunHistory);
 
-         pRecord->SetAreaExpected(pCluster.GetMeasureForTract(tTract, pData));
-         pRecord->SetAreaObserved(pCluster.GetCaseCountForTract(tTract, pData));
-         pRecord->SetAreaRelativeRisk(pCluster.GetRelativeRiskForTract(tTract, pData));
-         pRecord->SetClusterExpected(pCluster.m_nMeasure);
+         pRecord->SetAreaExpected(theCluster.GetMeasureForTract(tTract, theData));
+         pRecord->SetAreaObserved(theCluster.GetCaseCountForTract(tTract, theData));
+         pRecord->SetAreaRelativeRisk(theCluster.GetRelativeRiskForTract(tTract, theData));
+         pRecord->SetClusterExpected(theData.GetMeasureAdjustment() * theCluster.m_nMeasure);
          pRecord->SetClusterNumber(iClusterNumber);
-         pRecord->SetClusterObserved(pCluster.m_nCases);
-         pRecord->SetClusterRelativeRisk(pCluster.GetRelativeRisk(pData.GetMeasureAdjustment()));
+         pRecord->SetClusterObserved(theCluster.m_nCases);
+         pRecord->SetClusterRelativeRisk(theCluster.GetRelativeRisk(theData.GetMeasureAdjustment()));
 
          // p value
          if(gbPrintPVal) {
-            float fPVal = (float) pCluster.GetPVal(pData.m_pParameters->GetNumReplicationsRequested());
+            float fPVal = (float) theCluster.GetPVal(theData.m_pParameters->GetNumReplicationsRequested());
             pRecord->SetPValue(fPVal);
          }
 
@@ -226,7 +226,7 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& pCluster, const CSaT
             pRecord->SetRunNumber(glRunNumber);
       
          // area id
-         sTempValue = (pData.GetTInfo())->tiGetTid(tTract, sBuffer);
+         sTempValue = (theData.GetTInfo())->tiGetTid(tTract, sBuffer);
          pRecord->SetLocationID(sTempValue);
 
          BaseOutputStorageClass::AddRecord(pRecord);
