@@ -213,11 +213,19 @@ void TfrmMain::RunUpdate(const char * sArchiveFile) {
     _sleep(2);
     SetArchive(sArchiveFile);
     OpenArchive();
+    //rename user guide to name "SaTScan_Users_Guide.pdf", as linked to in short cut
+    //this is a work around until WinZip code is corrected
+    _sleep(1);
+    AnsiString sPDFArchive, sPDFExisting;
+    sPDFArchive.printf("%sSaTScanUsersGuide.pdf", ExtractFilePath(_argv[1]).c_str());
+    sPDFExisting.printf("%sSaTScan_Users_Guide.pdf", ExtractFilePath(_argv[1]).c_str());
+    remove(sPDFExisting.c_str()); // delete existing
+    rename(sPDFArchive.c_str(), sPDFExisting.c_str());
     lblProgress->Caption = "Update completed ...";
     Application->ProcessMessages();
-    _sleep(1);
     Screen->Cursor = crHourGlass;
     remove(_argv[1]); // delete the archive file
+    _sleep(1);
   }
   catch (const std::exception& e) {
     Screen->Cursor = t;
