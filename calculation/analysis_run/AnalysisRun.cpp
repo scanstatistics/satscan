@@ -658,7 +658,7 @@ void AnalysisRunner::PerformSerializedSimulations() {
           for (size_t t=0; t < SimulationDataContainer.size(); ++t)
              SimulationDataContainer[t]->WriteSimulationData(gParameters, iSimulationNumber);
         //perform simulation to get loglikelihood ratio
-        dSimulatedRatio = (pAnalysis->IsMonteCarlo() ? pAnalysis->MonteCarlo(pDataGateway->GetDataStreamInterface(0)) : pAnalysis->FindTopRatio(*pDataGateway));
+        dSimulatedRatio = pAnalysis->ExecuteSimulation(*pDataGateway);
         //update most likely clusters given latest simulated loglikelihood ratio
         gTopClustersContainer.UpdateTopClustersRank(dSimulatedRatio);
         //update significance indicator
