@@ -2,6 +2,7 @@
 #include "SaTScanData.h"
 #include "PoissonModel.h"
 #include "BernoulliModel.h"
+#include "SpaceTimePermutationModel.h"
 
 CSaTScanData::CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection)
 {
@@ -21,8 +22,9 @@ CSaTScanData::CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection)
 
       switch (m_pParameters->m_nModel)
       {
-        case POISSON   : m_pModel = new CPoissonModel(pParameters, this, pPrintDirection);   break;
-        case BERNOULLI : m_pModel = new CBernoulliModel(pParameters, this, pPrintDirection); break;
+        case POISSON              : m_pModel = new CPoissonModel(pParameters, this, pPrintDirection);   break;
+        case BERNOULLI            : m_pModel = new CBernoulliModel(pParameters, this, pPrintDirection); break;
+        case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(pParameters, this, pPrintDirection); break;
       }
 
       //For now, compute the angle and store the angle and shape
@@ -671,8 +673,8 @@ void CSaTScanData::MakeData()
 //Measure Adjustment used when calculating relative risk/expected counts
 //to disply in report file.
 double CSaTScanData::GetMeasureAdjustment() const
-{
-  if (m_pParameters->m_nModel == POISSON)
+{                                           
+  if (m_pParameters->m_nModel == POISSON || m_pParameters->m_nModel == SPACETIMEPERMUTATION)
     return 1.0;
   else if (m_pParameters->m_nModel == BERNOULLI)
     return (double)m_nTotalCases/(double)m_nTotalPop;
