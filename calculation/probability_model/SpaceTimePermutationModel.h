@@ -67,6 +67,7 @@ class CSpaceTimePermutationModel : public CModel
     MeasureType                                 m_eMeasureType;
     std::vector<CCaseLocationTimes>             m_vCaseLocationTimes;
     std::vector<CSimulationTimeRandomizer>      m_vTimeIntervalRandomizer;
+    RandomNumberGenerator                       m_RandomNumberGenerator;
 
     void                        Init() {m_eMeasureType=NotSet;}
     void                        InitializeRandomizationStructures();

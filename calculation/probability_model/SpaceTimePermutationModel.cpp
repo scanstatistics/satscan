@@ -168,7 +168,7 @@ void CSpaceTimePermutationModel::MakeData()
       for (t=0; t < RandomizerSize; t++)
          {
          // assign random number
-         m_vTimeIntervalRandomizer[t].SetRandomNumber(rngRandFloat());
+         m_vTimeIntervalRandomizer[t].SetRandomNumber(m_RandomNumberGenerator.GetRandomFloat());
          // assign tract index to original order
          m_vTimeIntervalRandomizer[t].SetTimeIntervalIndex(m_vCaseLocationTimes[t].GetTimeIntervalIndex());
          }
