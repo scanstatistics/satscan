@@ -215,6 +215,8 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                     fprintf(fp, " ");
                 }
 
+                
+
                 if (nCluster > -1)
                   fprintf(fp, "%i         ", nCluster);
                 if (bFormat)
@@ -230,13 +232,20 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                   DisplayPVal(fp, nReplicas, szSpacesOnLeft);
                 }
 
+                tract_t tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, i);
+                fprintf(fp, "\t %12.0f", GetCaseCountForTract(tTract, Data));
+                fprintf(fp, "\t %12.3f", GetMeasureForTract(tTract, Data));
+                fprintf(fp, "\t %12.3f", GetRelativeRiskForTract(tTract, Data));
+
                 if (i < nLastTract)
                   fprintf(fp, "%c ", cDeliminator);
               }     // end if fp
            }
-          // record DBF output data - AJV
-       if(gpAreaDBFReport && Data.m_pParameters->GetOutputAreaSpecificDBF())
-          gpAreaDBFReport->RecordClusterData(*this, Data, nCluster, i);
+
+       // record DBF output data - AJV
+       if(Data.m_pParameters->GetOutputAreaSpecificDBF())
+          if(gpAreaDBFReport)
+             gpAreaDBFReport->RecordClusterData(*this, Data, nCluster, i);
       }
       if(fp != NULL)
          fprintf(fp, "\n");
