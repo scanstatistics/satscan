@@ -845,7 +845,12 @@ bool CSaTScanData::ReadPopulationFile() {
             bValid = false;
             continue;
           }
-          sscanf(Parser.GetWord(2), "%f", &fPopulation);
+          if (sscanf(Parser.GetWord(2), "%f", &fPopulation) != 1) {
+            gpPrint->PrintInputWarning("Error: Population value '%s' in record %ld, of population file, is not a number.\n",
+                                       Parser.GetWord(2), iRecNum);
+            bValid = false;
+            continue;
+          }
           //validate that population is not negative or exceeding type precision
           if (fPopulation < 0) {//validate that count is not negative or exceeds type precision
             if (strstr(Parser.GetWord(2), "-"))
@@ -907,7 +912,7 @@ bool CSaTScanData::ReadSpecialPopulationFile() {
   try {
     gpPrint->SatScanPrintf("Reading the special population file\n");
     if ((fp = fopen(m_pParameters->GetSpecialPopulationFileName().c_str(), "r")) == NULL) {
-      gpPrint->SatScanPrintWarning("Error: Could not open population file:\n'%s'.\n",
+      gpPrint->SatScanPrintWarning("Error: Could not open special population file:\n'%s'.\n",
                                    m_pParameters->GetSpecialPopulationFileName().c_str());
       return false;
     }
@@ -936,7 +941,12 @@ bool CSaTScanData::ReadSpecialPopulationFile() {
           bValid = false;
           continue;
         }
-        sscanf(Parser.GetWord(1), "%f", &fPopulation);
+        if (sscanf(Parser.GetWord(1), "%f", &fPopulation) != 1) {
+          gpPrint->PrintInputWarning("Error: Population value '%s' in record %ld, of special population file, is not a number.\n",
+                                     Parser.GetWord(1), iRecNum);
+          bValid = false;
+          continue;
+        }
         //validate that population is not negative or exceeding type precision
         if (fPopulation < 0) {//validate that count is not negative or exceeds type precision
           if (strstr(Parser.GetWord(1), "-"))
