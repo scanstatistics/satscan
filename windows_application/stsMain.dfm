@@ -367,14 +367,14 @@ object frmMainForm: TfrmMainForm
       Category = 'Analysis'
       Caption = 'Save Session As'
       Hint = 'Save Session As'
-      ShortCut = 16449
+      ShortCut = 16470
       OnExecute = SaveSessionAsActionExecute
     end
     object CloseSessionAction: TAction
       Category = 'Analysis'
       Caption = 'Close Session'
       Hint = 'Close Session'
-      ShortCut = 16460
+      ShortCut = 16451
       OnExecute = CloseSessionActionExecute
     end
     object PrintSessionAction: TAction
@@ -389,7 +389,7 @@ object frmMainForm: TfrmMainForm
       Category = 'All'
       Caption = 'Print Setup'
       Hint = 'Print Setup'
-      ShortCut = 16466
+      ShortCut = 16464
       OnExecute = PrintSetupActionExecute
     end
     object ExitAction: TAction
@@ -410,7 +410,7 @@ object frmMainForm: TfrmMainForm
       Category = 'All'
       Hint = 'Help'
       ImageIndex = 1
-      ShortCut = 16456
+      ShortCut = 112
       OnExecute = HelpActionExecute
     end
     object AboutSatscanAction: TAction
@@ -439,7 +439,7 @@ object frmMainForm: TfrmMainForm
     object AdvancedParametersAction: TAction
       Category = 'Analysis'
       Hint = 'Advanced Features'
-      ShortCut = 16454
+      ShortCut = 16449
       OnExecute = AdvancedParametersActionExecute
     end
   end
