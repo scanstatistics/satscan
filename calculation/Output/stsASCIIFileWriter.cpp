@@ -31,8 +31,9 @@ ASCIIFileWriter::~ASCIIFileWriter() {
 // pre : none
 // post : formats the string sValue based upon the settings of fieldValue
 void ASCIIFileWriter::CreateFormatString(ZdString& sValue, const int iFieldNumber, const ZdFieldValue& fv) {
-   ZdString     sFormat, sType;
-   ZdField*     pField = 0;
+   ZdString             sFormat, sTemp;
+   unsigned long        ulStringLength = 0;
+   ZdField*             pField = 0;
 
    try {
       sFormat << "%";
@@ -41,10 +42,17 @@ void ASCIIFileWriter::CreateFormatString(ZdString& sValue, const int iFieldNumbe
 
       switch(fv.GetType()) {
          case ZD_ALPHA_FLD :
-            sValue << fv.AsZdString();
+            ulStringLength = fv.AsZdString().GetLength();
+            sTemp = fv.AsZdString();
+            if (ulStringLength < pField->GetLength())
+               for(int i = sTemp.GetLength(); i < pField->GetLength() + 1; ++i)
+                  sTemp << " ";
+            else if(ulStringLength > pField->GetLength())
+               sTemp.Truncate(pField->GetLength());
+            sValue << sTemp;
             break;
          case ZD_NUMBER_FLD :
-            sFormat << "-" << pField->GetLength() << "." << pField->GetPrecision();
+            sFormat << "-0" << pField->GetLength() << "." << pField->GetPrecision();
             sFormat << "f";
             sValue.printf(sFormat.GetCString(), fv.AsDouble());
             break;
@@ -85,12 +93,12 @@ void ASCIIFileWriter::Print() {
    try {
       if ((pFile = fopen(gsFileName, "w")) == NULL)
          ZdGenerateException("Unable to open/create file %s", "Error!", gsFileName);
-      for(int i = 0; i < gpOutputFileData->GetNumRecords(); ++i) {
+      for(unsigned long i = 0; i < gpOutputFileData->GetNumRecords(); ++i) {
          pRecord = gpOutputFileData->GetRecord(i);
-         for(int j = 0; j < gpOutputFileData->GetNumFields(); ++j) {
+         for(unsigned short j = 0; j < pRecord->GetNumFields(); ++j) {
             sFormatString << ZdString::reset;
             CreateFormatString(sFormatString, j, pRecord->GetValue(j));
-            fprintf(pFile, "%s  \t", sFormatString.GetCString());
+            fprintf(pFile, "%s ", sFormatString.GetCString());
          }
          fprintf(pFile, "\n");
       }
