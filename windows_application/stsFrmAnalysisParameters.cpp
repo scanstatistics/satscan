@@ -1,3 +1,20 @@
+/** \file stsFrmAnalysisParameters.cpp
+ * \brief  class TfrmAnalysis
+ *
+ * \author
+ *
+ * <b>Code Review History</b> (list: Type, Reviewer(s), Date)
+ * \li 
+ *
+ * $Revision:
+ *
+ * $Date:
+ */
+//ClassDesc Begin TfrmAnalysis
+// This class contains all the main interface controls and relationships.
+// Since the main session interface is a tab dialog, decided to keep
+// everything in one class and one cpp.
+//ClassDesc End TfrmAnalysis
 //---------------------------------------------------------------------------
 #include "stsSaTScan.h"
 #pragma hdrstop
@@ -5,12 +22,6 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-
-//ClassDesc Begin TfrmAnalysis
-// This class contains all the main interface controls and relationships.
-// Since it the main session interface is a tab dialog, decided to keep
-// everything in one class and one cpp.
-//ClassDesc End TfrmAnalysis
 
 /** constructor */
 //---------------------------------------------------------------------------
@@ -569,18 +580,18 @@ void TfrmAnalysis::EnableDatesByTimeIntervalUnits() {
     EnableStudyPeriodDates(true, true, true);
     gpfrmAdvancedParameters->SetRangeDateEnables(true, true, true);
   }
-  else if (rbUnitYear->Checked) {
+  else if (rdoUnitYear->Checked) {
     EnableStudyPeriodDates(true, false, false);
     edtProspectiveStartDateMonth->Text = edtStudyPeriodEndDateMonth->Text;
     edtProspectiveStartDateDay->Text = edtStudyPeriodEndDateDay->Text;
     gpfrmAdvancedParameters->SetRangeDateEnables(true, false, false);
   }
-  else if (rbUnitMonths->Checked) {
+  else if (rdoUnitMonths->Checked) {
     EnableStudyPeriodDates(true, true, false);
     edtProspectiveStartDateDay->Text = DaysThisMonth(atoi(edtProspectiveStartDateYear->Text.c_str()), atoi(edtProspectiveStartDateMonth->Text.c_str()));
     gpfrmAdvancedParameters->SetRangeDateEnables(true, true, false);
   }
-  else if (rbUnitDay->Checked) {
+  else if (rdoUnitDay->Checked) {
     EnableStudyPeriodDates(true, true, true);
     gpfrmAdvancedParameters->SetRangeDateEnables(true, true, true);
   }
@@ -622,15 +633,15 @@ void TfrmAnalysis::EnableProspectiveStartDate(bool bEnable) {
   lblProspectiveStartMonth->Enabled = bEnable;
   lblProspectiveStartDay->Enabled = bEnable;
   edtProspectiveStartDateYear->Color =  edtProspectiveStartDateYear->Enabled ? clWindow : clInactiveBorder;
-  edtProspectiveStartDateMonth->Enabled = bEnable && (rbUnitDay->Checked || rbUnitMonths->Checked);
+  edtProspectiveStartDateMonth->Enabled = bEnable && (rdoUnitDay->Checked || rdoUnitMonths->Checked);
   edtProspectiveStartDateMonth->Color = edtProspectiveStartDateMonth->Enabled ? clWindow : clInactiveBorder;
-  edtProspectiveStartDateDay->Enabled = bEnable &&  rbUnitDay->Checked;
+  edtProspectiveStartDateDay->Enabled = bEnable &&  rdoUnitDay->Checked;
   edtProspectiveStartDateDay->Color =  edtProspectiveStartDateDay->Enabled ? clWindow : clInactiveBorder;
 }
 
 /** enables or disables the prospective start date group control */
 void TfrmAnalysis::EnableProspectiveSurveillanceGroup(bool bEnable) {
-   grpProspectiveSurveillance->Enabled = bEnable;
+   gbxProspectiveSurveillance->Enabled = bEnable;
    chkAdjustForEarlierAnalyses->Enabled = bEnable;
    EnableProspectiveStartDate(bEnable);
 }
@@ -758,14 +769,14 @@ void TfrmAnalysis::EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludeP
 void TfrmAnalysis::EnableTimeIntervalUnitsGroup(bool bEnable) {
    //trump enable if precision of times control indicates that there is no dates
    bEnable = bEnable && GetPrecisionOfTimesControlType() != NONE;
-   rdgTimeIntervalUnits->Enabled = bEnable;
+   rgpTimeIntervalUnits->Enabled = bEnable;
    lblTimeIntervalUnits->Enabled = bEnable;
    edtTimeIntervalLength->Enabled = bEnable;
    edtTimeIntervalLength->Color = bEnable ? clWindow : clInactiveBorder;
    lblTimeIntervalLength->Enabled = bEnable;
-   rbUnitYear->Enabled =  bEnable;
-   rbUnitMonths->Enabled = bEnable;
-   rbUnitDay->Enabled = bEnable;
+   rdoUnitYear->Enabled =  bEnable;
+   rdoUnitMonths->Enabled = bEnable;
+   rdoUnitDay->Enabled = bEnable;
    EnableDatesByTimeIntervalUnits();
 }
 
@@ -906,10 +917,10 @@ ProbabiltyModelType TfrmAnalysis::GetModelControlType() const {
 DatePrecisionType TfrmAnalysis::GetPrecisionOfTimesControlType() const {
   DatePrecisionType eReturn;
 
-  switch (rgPrecisionTimes->ItemIndex) {
+  switch (rgpPrecisionTimes->ItemIndex) {
     case 0  : eReturn = DAY; break;
     case 1  : eReturn = NONE; break;
-    default : ZdGenerateException("Unknown index type '%d'.", "GetPrecisionOfTimesControlType()", rgPrecisionTimes->ItemIndex);
+    default : ZdGenerateException("Unknown index type '%d'.", "GetPrecisionOfTimesControlType()", rgpPrecisionTimes->ItemIndex);
   };
   return eReturn;
 }
@@ -958,9 +969,9 @@ ZdDate & TfrmAnalysis::GetStudyPeriodStartDate(ZdDate & Date) {
 DatePrecisionType TfrmAnalysis::GetTimeIntervalControlType() const {
   DatePrecisionType eReturn;
 
-  if (rbUnitYear->Checked)
+  if (rdoUnitYear->Checked)
     eReturn = YEAR;
-  else if (rbUnitMonths->Checked)
+  else if (rdoUnitMonths->Checked)
     eReturn = MONTH;
   else
     eReturn = DAY;
@@ -969,8 +980,8 @@ DatePrecisionType TfrmAnalysis::GetTimeIntervalControlType() const {
 
 /** class initialization */
 void TfrmAnalysis::Init() {
-  cboCriteriaSecClusters->ItemIndex = 0;
-  rgPrecisionTimes->ItemIndex = -1; //ensures that click event will trigger
+  cmbCriteriaSecClusters->ItemIndex = 0;
+  rgpPrecisionTimes->ItemIndex = -1; //ensures that click event will trigger
   gpfrmAdvancedParameters = 0;
 }
 
@@ -1101,19 +1112,19 @@ void __fastcall TfrmAnalysis::PositiveFloatKeyPress(TObject *Sender, char &Key) 
 }
 
 /** event triggered when time interval unit type selected as 'day' */
-void __fastcall TfrmAnalysis::rbUnitDayClick(TObject *Sender) {
+void __fastcall TfrmAnalysis::rdoUnitDayClick(TObject *Sender) {
   lblMaxTemporalTimeUnits->Caption = "days";
   EnableDatesByTimeIntervalUnits();
 }
 
 /** event triggered when time interval unit type selected as 'month' */
-void __fastcall TfrmAnalysis::rbUnitMonthsClick(TObject *Sender) {
+void __fastcall TfrmAnalysis::rdoUnitMonthsClick(TObject *Sender) {
   lblMaxTemporalTimeUnits->Caption = "months";
   EnableDatesByTimeIntervalUnits();
 }
 
 /** event triggered when time interval unit type selected as 'year' */
-void __fastcall TfrmAnalysis::rbUnitYearClick(TObject *Sender) {
+void __fastcall TfrmAnalysis::rdoUnitYearClick(TObject *Sender) {
     lblMaxTemporalTimeUnits->Caption = "years";
     EnableDatesByTimeIntervalUnits();
 }
@@ -1156,7 +1167,7 @@ void __fastcall TfrmAnalysis::rdoTemproalMaxClusterClick(TObject *Sender) {
 }
 
 /** event triggered when coordinates type control clicked */
-void __fastcall TfrmAnalysis::rgCoordinatesClick(TObject *Sender) {
+void __fastcall TfrmAnalysis::rgpCoordinatesClick(TObject *Sender) {
   try {
     SetSpatialDistanceCaption();
     SetReportingSmallerClustersText();
@@ -1168,7 +1179,7 @@ void __fastcall TfrmAnalysis::rgCoordinatesClick(TObject *Sender) {
 }
 
 /** event triggered when 'precision of times' type control clicked */
-void __fastcall TfrmAnalysis::rgPrecisionTimesClick(TObject *Sender) {
+void __fastcall TfrmAnalysis::rgpPrecisionTimesClick(TObject *Sender) {
   try {
     OnPrecisionTimesClick();
   }
@@ -1205,7 +1216,7 @@ void TfrmAnalysis::SaveParameterSettings() {
     gParameters.SetPopulationFileName(edtPopFileName->Text.c_str());
     gParameters.SetCoordinatesFileName(edtCoordinateFileName->Text.c_str());
     gParameters.SetSpecialGridFileName(edtGridFileName->Text.c_str(), false, true);
-    gParameters.SetCoordinatesType((CoordinatesType)rgCoordinates->ItemIndex);
+    gParameters.SetCoordinatesType((CoordinatesType)rgpCoordinates->ItemIndex);
     //Analysis Tab
     gParameters.SetAnalysisType(GetAnalysisControlType());
     gParameters.SetProbabilityModelType(GetModelControlType());
@@ -1242,7 +1253,7 @@ void TfrmAnalysis::SaveParameterSettings() {
     gParameters.SetOutputRelativeRisksDBase(chkRelativeRiskEstimatesAreaDBase->Enabled && chkRelativeRiskEstimatesAreaDBase->Checked);
     gParameters.SetOutputSimLogLikeliRatiosAscii(chkSimulatedLogLikelihoodRatiosAscii->Checked);
     gParameters.SetOutputSimLogLikeliRatiosDBase(chkSimulatedLogLikelihoodRatiosDBase->Checked);
-    gParameters.SetCriteriaForReportingSecondaryClusters((CriteriaSecondaryClustersType)cboCriteriaSecClusters->ItemIndex);
+    gParameters.SetCriteriaForReportingSecondaryClusters((CriteriaSecondaryClustersType)cmbCriteriaSecClusters->ItemIndex);
     gpfrmAdvancedParameters->SaveParameterSettings();
   }
   catch (ZdException &x) {
@@ -1298,7 +1309,7 @@ void TfrmAnalysis::SetCoordinateFile(const char * sCoordinateFileName) {
 
 /** sets coordinate type */
 void TfrmAnalysis::SetCoordinateType(CoordinatesType eCoordinatesType) {
-  rgCoordinates->ItemIndex = eCoordinatesType;
+  rgpCoordinates->ItemIndex = eCoordinatesType;
 }
 
 /** Sets special population filename in interface */
@@ -1386,11 +1397,11 @@ void TfrmAnalysis::SetPopulationFile(const char * sPopulationFileName) {
 /** sets precision of times type control for DatePrecisionType */
 void TfrmAnalysis::SetPrecisionOfTimesControl(DatePrecisionType eDatePrecisionType) {
   switch (eDatePrecisionType) {
-    case NONE  : rgPrecisionTimes->ItemIndex = 1; break;
+    case NONE  : rgpPrecisionTimes->ItemIndex = 1; break;
     case YEAR  :
     case MONTH :
     case DAY   :
-    default    : rgPrecisionTimes->ItemIndex = 0;
+    default    : rgpPrecisionTimes->ItemIndex = 0;
   }
 }
 
@@ -1407,7 +1418,7 @@ void TfrmAnalysis::SetReportingSmallerClustersText() {
       sTemp.printf("percent of population at risk\n        (<= %s%%)", edtMaxSpatialPercentFile->Text.c_str());
       break;
     case DISTANCETYPE                :
-      if (rgCoordinates->ItemIndex == CARTESIAN)
+      if (rgpCoordinates->ItemIndex == CARTESIAN)
         sTemp.printf("cartesian units in radius\n        (<= %s)", edtMaxSpatialRadius->Text.c_str());
       else
         sTemp.printf("kilometers in radius\n        (<= %s)", edtMaxSpatialRadius->Text.c_str());
@@ -1419,13 +1430,13 @@ void TfrmAnalysis::SetReportingSmallerClustersText() {
 /** Sets caption of spatial distance radio button based upon coordinates group setting. */
 void TfrmAnalysis::SetSpatialDistanceCaption() {
   try {
-    switch (rgCoordinates->ItemIndex) {
+    switch (rgpCoordinates->ItemIndex) {
       case 0  : lblMaxRadius->Caption = "cartesian units radius";
                 break;
       case 1  : lblMaxRadius->Caption = "kilometer radius";
                 break;
       default : ZdException::Generate("Unknown coordinates radio button index: '%i'.",
-                                      "rgCoordinatesClick()", rgCoordinates->ItemIndex);
+                                      "rgpCoordinatesClick()", rgpCoordinates->ItemIndex);
     }
   }
   catch (ZdException & x) {
@@ -1474,7 +1485,7 @@ void TfrmAnalysis::SetupInterface() {
     edtPopFileName->Text = gParameters.GetPopulationFileName().c_str();
     edtCoordinateFileName->Text = gParameters.GetCoordinatesFileName().c_str();
     edtGridFileName->Text = gParameters.GetSpecialGridFileName().c_str();
-    rgCoordinates->ItemIndex = gParameters.GetCoordinatesType();
+    rgpCoordinates->ItemIndex = gParameters.GetCoordinatesType();
     //Analysis Tab
     SetAnalysisControl(gParameters.GetAnalysisType());
     SetModelControl(gParameters.GetProbabiltyModelType());
@@ -1498,9 +1509,9 @@ void TfrmAnalysis::SetupInterface() {
     //Time Parameter Tab
     if (gParameters.GetTimeIntervalUnitsType() == NONE) gParameters.SetTimeIntervalUnitsType(YEAR);
     if (gParameters.GetTimeIntervalLength() <= 0) gParameters.SetTimeIntervalLength(1);
-    rbUnitYear->Checked = (gParameters.GetTimeIntervalUnitsType() == YEAR);
-    rbUnitMonths->Checked = (gParameters.GetTimeIntervalUnitsType() == MONTH);
-    rbUnitDay->Checked = (gParameters.GetTimeIntervalUnitsType() == DAY);
+    rdoUnitYear->Checked = (gParameters.GetTimeIntervalUnitsType() == YEAR);
+    rdoUnitMonths->Checked = (gParameters.GetTimeIntervalUnitsType() == MONTH);
+    rdoUnitDay->Checked = (gParameters.GetTimeIntervalUnitsType() == DAY);
     edtTimeIntervalLength->Text = gParameters.GetTimeIntervalLength();
     if (gParameters.GetProspectiveStartDate().length() > 0)
       ParseDate(gParameters.GetProspectiveStartDate().c_str(), edtProspectiveStartDateYear, edtProspectiveStartDateMonth, edtProspectiveStartDateDay);
@@ -1513,7 +1524,7 @@ void TfrmAnalysis::SetupInterface() {
     chkSimulatedLogLikelihoodRatiosDBase->Checked = gParameters.GetOutputSimLoglikeliRatiosDBase();
     chkCensusAreasReportedClustersAscii->Checked    = gParameters.GetOutputAreaSpecificAscii();  // Output Census areas in Reported Clusters
     chkClustersInColumnFormatAscii->Checked = gParameters.GetOutputClusterLevelAscii();  // Output Most Likely Cluster for each Centroid
-    cboCriteriaSecClusters->ItemIndex = gParameters.GetCriteriaSecondClustersType();
+    cmbCriteriaSecClusters->ItemIndex = gParameters.GetCriteriaSecondClustersType();
     chkClustersInColumnFormatDBase->Checked = gParameters.GetOutputClusterLevelDBase();
     chkCensusAreasReportedClustersDBase->Checked = gParameters.GetOutputAreaSpecificDBase();
     EnableSettingsForAnalysisModelCombination();

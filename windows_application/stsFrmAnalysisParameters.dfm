@@ -1,10 +1,10 @@
 object frmAnalysis: TfrmAnalysis
-  Left = 414
-  Top = 188
+  Left = 190
+  Top = 56
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SaTScan'
-  ClientHeight = 325
+  ClientHeight = 446
   ClientWidth = 493
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -22,23 +22,23 @@ object frmAnalysis: TfrmAnalysis
   TextHeight = 13
   object PageControl1: TPageControl
     Left = 2
-    Top = 2
+    Top = 6
     Width = 489
-    Height = 321
-    ActivePage = tbInputFiles
+    Height = 435
+    ActivePage = tbOutputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
       object Label4: TLabel
         Left = 20
-        Top = 129
+        Top = 233
         Width = 72
         Height = 13
         Caption = 'Population File:'
       end
       object Label5: TLabel
         Left = 128
-        Top = 129
+        Top = 233
         Width = 75
         Height = 13
         Caption = '(Poisson Model)'
@@ -74,7 +74,7 @@ object frmAnalysis: TfrmAnalysis
           Height = 13
           Caption = '(Bernoulli Model)'
         end
-        object rgPrecisionTimes: TRadioGroup
+        object rgpPrecisionTimes: TRadioGroup
           Left = 333
           Top = 23
           Width = 121
@@ -85,7 +85,7 @@ object frmAnalysis: TfrmAnalysis
             'Yes'
             'No')
           TabOrder = 4
-          OnClick = rgPrecisionTimesClick
+          OnClick = rgpPrecisionTimesClick
         end
         object edtCaseFileName: TEdit
           Left = 12
@@ -146,7 +146,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object edtPopFileName: TEdit
         Left = 20
-        Top = 145
+        Top = 249
         Width = 284
         Height = 21
         ParentShowHint = False
@@ -156,7 +156,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object btnPopBrowse: TButton
         Left = 308
-        Top = 145
+        Top = 249
         Width = 25
         Height = 21
         Hint = 'browse for population file'
@@ -174,26 +174,26 @@ object frmAnalysis: TfrmAnalysis
       end
       object GroupBox2: TGroupBox
         Left = 8
-        Top = 176
+        Top = 280
         Width = 465
         Height = 109
         TabOrder = 3
         object Label6: TLabel
-          Left = 12
+          Left = 8
           Top = 12
           Width = 78
           Height = 13
           Caption = 'Coordinates File:'
         end
         object Label7: TLabel
-          Left = 12
+          Left = 8
           Top = 60
           Width = 125
           Height = 13
           Caption = 'Special Grid File: (optional)'
         end
         object edtCoordinateFileName: TEdit
-          Left = 12
+          Left = 8
           Top = 28
           Width = 284
           Height = 21
@@ -203,7 +203,7 @@ object frmAnalysis: TfrmAnalysis
           OnChange = edtCoordinateFileNameChange
         end
         object edtGridFileName: TEdit
-          Left = 12
+          Left = 8
           Top = 76
           Width = 284
           Height = 21
@@ -213,7 +213,7 @@ object frmAnalysis: TfrmAnalysis
           OnChange = edtGridFileNameChange
         end
         object btnCoordBrowse: TButton
-          Left = 300
+          Left = 296
           Top = 28
           Width = 25
           Height = 21
@@ -231,7 +231,7 @@ object frmAnalysis: TfrmAnalysis
           OnClick = btnCoordBrowseClick
         end
         object btnGridBrowse: TButton
-          Left = 300
+          Left = 296
           Top = 76
           Width = 25
           Height = 21
@@ -248,8 +248,8 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 3
           OnClick = btnGridBrowseClick
         end
-        object rgCoordinates: TRadioGroup
-          Left = 333
+        object rgpCoordinates: TRadioGroup
+          Left = 329
           Top = 23
           Width = 121
           Height = 75
@@ -259,331 +259,16 @@ object frmAnalysis: TfrmAnalysis
             'Cartesian'
             'Latitude/Longitude')
           TabOrder = 4
-          OnClick = rgCoordinatesClick
+          OnClick = rgpCoordinatesClick
         end
       end
-    end
-    object tbAnalysis: TTabSheet
-      Caption = 'Analysis'
-      ImageIndex = 1
-      object Label16: TLabel
-        Left = 40
-        Top = 268
-        Width = 266
-        Height = 13
-        Caption = 'Monte Carlo replications (9, 999, or value ending in 999):'
-      end
-      object edtMontCarloReps: TEdit
-        Left = 318
-        Top = 265
-        Width = 65
-        Height = 21
-        MaxLength = 9
-        TabOrder = 3
-        Text = '999'
-        OnExit = edtMontCarloRepsExit
-        OnKeyPress = NaturalNumberKeyPress
-      end
-      object grpTypeProbability: TGroupBox
-        Left = 168
-        Top = 8
-        Width = 162
-        Height = 183
-        Caption = 'Probability Model'
-        TabOrder = 1
-        object rdoPoissonModel: TRadioButton
-          Left = 12
-          Top = 37
-          Width = 82
-          Height = 17
-          Caption = 'Poisson'
-          Checked = True
-          TabOrder = 0
-          TabStop = True
-          OnClick = rdoProbabilityModelClick
-        end
-        object rdoBernoulliModel: TRadioButton
-          Left = 12
-          Top = 90
-          Width = 87
-          Height = 17
-          Caption = 'Bernoulli'
-          TabOrder = 1
-          OnClick = rdoProbabilityModelClick
-        end
-        object rdoSpaceTimePermutationModel: TRadioButton
-          Left = 12
-          Top = 142
-          Width = 140
-          Height = 17
-          Caption = 'Space-Time Permutation'
-          TabOrder = 2
-          OnClick = rdoProbabilityModelClick
-        end
-      end
-      object rgpTypeAnalysis: TGroupBox
+      object gbxStudyPeriod: TGroupBox
         Left = 8
-        Top = 8
-        Width = 154
-        Height = 183
-        Caption = 'Type of Analysis'
-        TabOrder = 0
-        object stRetrospectiveAnalyses: TStaticText
-          Left = 15
-          Top = 21
-          Width = 118
-          Height = 17
-          Caption = 'Retrospective Analyses:'
-          TabOrder = 0
-        end
-        object stProspectiveAnalyses: TStaticText
-          Left = 15
-          Top = 111
-          Width = 108
-          Height = 17
-          Caption = 'Prospective Analyses:'
-          TabOrder = 4
-        end
-        object rdoRetrospectivePurelySpatial: TRadioButton
-          Left = 23
-          Top = 40
-          Width = 113
-          Height = 17
-          Caption = 'Purely Spatial'
-          Checked = True
-          TabOrder = 1
-          TabStop = True
-          OnClick = rdoAnalysisTypeClick
-        end
-        object rdoRetrospectivePurelyTemporal: TRadioButton
-          Left = 23
-          Top = 61
-          Width = 113
-          Height = 17
-          Caption = 'Purely Temporal'
-          TabOrder = 2
-          OnClick = rdoAnalysisTypeClick
-        end
-        object rdoRetrospectiveSpaceTime: TRadioButton
-          Left = 23
-          Top = 83
-          Width = 113
-          Height = 17
-          Caption = 'Space-Time'
-          TabOrder = 3
-          OnClick = rdoAnalysisTypeClick
-        end
-        object rdoProspectivePurelyTemporal: TRadioButton
-          Left = 23
-          Top = 130
-          Width = 113
-          Height = 17
-          Caption = 'Purely Temporal'
-          TabOrder = 5
-          OnClick = rdoAnalysisTypeClick
-        end
-        object rdoProspectiveSpaceTime: TRadioButton
-          Left = 23
-          Top = 151
-          Width = 113
-          Height = 17
-          Caption = 'Space-Time'
-          TabOrder = 6
-          OnClick = rdoAnalysisTypeClick
-        end
-      end
-      object grpScanAreas: TGroupBox
-        Left = 336
-        Top = 8
-        Width = 137
-        Height = 183
-        Caption = 'Scan for Areas with:'
-        TabOrder = 2
-        object rdoHighRates: TRadioButton
-          Left = 13
-          Top = 37
-          Width = 113
-          Height = 17
-          Caption = 'High Rates'
-          Checked = True
-          TabOrder = 0
-          TabStop = True
-        end
-        object rdoLowRates: TRadioButton
-          Left = 13
-          Top = 90
-          Width = 113
-          Height = 17
-          Caption = 'Low Rates'
-          TabOrder = 1
-        end
-        object rdoHighLowRates: TRadioButton
-          Left = 13
-          Top = 142
-          Width = 113
-          Height = 17
-          Caption = 'High or Low Rates'
-          TabOrder = 2
-        end
-      end
-    end
-    object tbTimeParameter: TTabSheet
-      Caption = 'Time Parameters'
-      ImageIndex = 3
-      object rdgTimeIntervalUnits: TGroupBox
-        Left = 8
-        Top = 8
-        Width = 209
-        Height = 137
-        Caption = 'Time Intervals'
-        TabOrder = 0
-        object lblTimeIntervalUnits: TLabel
-          Left = 14
-          Top = 24
-          Width = 33
-          Height = 13
-          Caption = 'Units:  '
-        end
-        object lblTimeIntervalLength: TLabel
-          Left = 10
-          Top = 104
-          Width = 129
-          Height = 13
-          Caption = 'Length (in specified units):  '
-        end
-        object rbUnitYear: TRadioButton
-          Left = 54
-          Top = 24
-          Width = 57
-          Height = 17
-          Caption = 'Year'
-          Checked = True
-          Enabled = False
-          TabOrder = 0
-          TabStop = True
-          OnClick = rbUnitYearClick
-        end
-        object rbUnitMonths: TRadioButton
-          Left = 54
-          Top = 48
-          Width = 57
-          Height = 17
-          Caption = 'Month'
-          Enabled = False
-          TabOrder = 1
-          OnClick = rbUnitMonthsClick
-        end
-        object rbUnitDay: TRadioButton
-          Left = 54
-          Top = 72
-          Width = 57
-          Height = 17
-          Caption = 'Day'
-          Enabled = False
-          TabOrder = 2
-          OnClick = rbUnitDayClick
-        end
-        object edtTimeIntervalLength: TEdit
-          Left = 146
-          Top = 96
-          Width = 25
-          Height = 21
-          Enabled = False
-          MaxLength = 3
-          TabOrder = 3
-          Text = '1'
-          OnExit = edtTimeIntervalLengthExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-      end
-      object grpProspectiveSurveillance: TGroupBox
-        Left = 224
-        Top = 8
-        Width = 249
-        Height = 137
-        Caption = 'Prospective Surveillance'
-        TabOrder = 1
-        object lblProspectiveStartYear: TLabel
-          Left = 36
-          Top = 78
-          Width = 22
-          Height = 13
-          Caption = 'Year'
-        end
-        object lblProspectiveStartMonth: TLabel
-          Left = 92
-          Top = 78
-          Width = 30
-          Height = 13
-          Caption = 'Month'
-        end
-        object lblProspectiveStartDay: TLabel
-          Left = 139
-          Top = 78
-          Width = 19
-          Height = 13
-          Caption = 'Day'
-        end
-        object lblProspectiveStartDate: TLabel
-          Left = 31
-          Top = 58
-          Width = 81
-          Height = 13
-          Caption = ' performed since:'
-        end
-        object edtProspectiveStartDateYear: TEdit
-          Left = 33
-          Top = 97
-          Width = 41
-          Height = 21
-          Enabled = False
-          MaxLength = 4
-          TabOrder = 1
-          Text = '1900'
-          OnExit = edtProspectiveStartDateExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-        object edtProspectiveStartDateMonth: TEdit
-          Left = 93
-          Top = 97
-          Width = 25
-          Height = 21
-          Enabled = False
-          MaxLength = 2
-          TabOrder = 2
-          Text = '12'
-          OnExit = edtProspectiveStartDateExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-        object edtProspectiveStartDateDay: TEdit
-          Left = 139
-          Top = 97
-          Width = 25
-          Height = 21
-          Enabled = False
-          MaxLength = 2
-          TabOrder = 3
-          Text = '31'
-          OnExit = edtProspectiveStartDateExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-        object chkAdjustForEarlierAnalyses: TCheckBox
-          Left = 14
-          Top = 28
-          Width = 171
-          Height = 17
-          Caption = 'Adjust for earlier analyses'
-          TabOrder = 0
-          OnClick = chkAdjustForEarlierAnalysesClick
-        end
-      end
-      object grpStudyPeriod: TGroupBox
-        Left = 8
-        Top = 148
+        Top = 128
         Width = 466
         Height = 97
         Caption = 'Study Period'
-        TabOrder = 2
+        TabOrder = 4
         object Label8: TLabel
           Left = 56
           Top = 39
@@ -699,6 +384,321 @@ object frmAnalysis: TfrmAnalysis
           Text = '31'
           OnExit = edtStudyPeriodEndDateExit
           OnKeyPress = NaturalNumberKeyPress
+        end
+      end
+    end
+    object tbAnalysis: TTabSheet
+      Caption = 'Analysis'
+      ImageIndex = 1
+      object Label16: TLabel
+        Left = 12
+        Top = 384
+        Width = 266
+        Height = 13
+        Caption = 'Monte Carlo replications (9, 999, or value ending in 999):'
+      end
+      object edtMontCarloReps: TEdit
+        Left = 290
+        Top = 381
+        Width = 65
+        Height = 21
+        MaxLength = 9
+        TabOrder = 3
+        Text = '999'
+        OnExit = edtMontCarloRepsExit
+        OnKeyPress = NaturalNumberKeyPress
+      end
+      object rgpTypeProbability: TGroupBox
+        Left = 204
+        Top = 8
+        Width = 185
+        Height = 183
+        Caption = 'Probability Model'
+        TabOrder = 1
+        object rdoPoissonModel: TRadioButton
+          Left = 12
+          Top = 37
+          Width = 82
+          Height = 17
+          Caption = 'Poisson'
+          Checked = True
+          TabOrder = 0
+          TabStop = True
+          OnClick = rdoProbabilityModelClick
+        end
+        object rdoBernoulliModel: TRadioButton
+          Left = 12
+          Top = 90
+          Width = 87
+          Height = 17
+          Caption = 'Bernoulli'
+          TabOrder = 1
+          OnClick = rdoProbabilityModelClick
+        end
+        object rdoSpaceTimePermutationModel: TRadioButton
+          Left = 12
+          Top = 142
+          Width = 140
+          Height = 17
+          Caption = 'Space-Time Permutation'
+          TabOrder = 2
+          OnClick = rdoProbabilityModelClick
+        end
+      end
+      object rgpTypeAnalysis: TGroupBox
+        Left = 8
+        Top = 8
+        Width = 154
+        Height = 183
+        Caption = 'Type of Analysis'
+        TabOrder = 0
+        object stRetrospectiveAnalyses: TStaticText
+          Left = 15
+          Top = 21
+          Width = 118
+          Height = 17
+          Caption = 'Retrospective Analyses:'
+          TabOrder = 0
+        end
+        object stProspectiveAnalyses: TStaticText
+          Left = 15
+          Top = 111
+          Width = 108
+          Height = 17
+          Caption = 'Prospective Analyses:'
+          TabOrder = 4
+        end
+        object rdoRetrospectivePurelySpatial: TRadioButton
+          Left = 23
+          Top = 40
+          Width = 113
+          Height = 17
+          Caption = 'Purely Spatial'
+          Checked = True
+          TabOrder = 1
+          TabStop = True
+          OnClick = rdoAnalysisTypeClick
+        end
+        object rdoRetrospectivePurelyTemporal: TRadioButton
+          Left = 23
+          Top = 61
+          Width = 113
+          Height = 17
+          Caption = 'Purely Temporal'
+          TabOrder = 2
+          OnClick = rdoAnalysisTypeClick
+        end
+        object rdoRetrospectiveSpaceTime: TRadioButton
+          Left = 23
+          Top = 83
+          Width = 113
+          Height = 17
+          Caption = 'Space-Time'
+          TabOrder = 3
+          OnClick = rdoAnalysisTypeClick
+        end
+        object rdoProspectivePurelyTemporal: TRadioButton
+          Left = 23
+          Top = 130
+          Width = 113
+          Height = 17
+          Caption = 'Purely Temporal'
+          TabOrder = 5
+          OnClick = rdoAnalysisTypeClick
+        end
+        object rdoProspectiveSpaceTime: TRadioButton
+          Left = 23
+          Top = 151
+          Width = 113
+          Height = 17
+          Caption = 'Space-Time'
+          TabOrder = 6
+          OnClick = rdoAnalysisTypeClick
+        end
+      end
+      object rgpScanAreas: TGroupBox
+        Left = 8
+        Top = 208
+        Width = 153
+        Height = 133
+        Caption = 'Scan for Areas with:'
+        TabOrder = 2
+        object rdoHighRates: TRadioButton
+          Left = 13
+          Top = 25
+          Width = 113
+          Height = 17
+          Caption = 'High Rates'
+          Checked = True
+          TabOrder = 0
+          TabStop = True
+        end
+        object rdoLowRates: TRadioButton
+          Left = 13
+          Top = 58
+          Width = 113
+          Height = 17
+          Caption = 'Low Rates'
+          TabOrder = 1
+        end
+        object rdoHighLowRates: TRadioButton
+          Left = 13
+          Top = 90
+          Width = 113
+          Height = 17
+          Caption = 'High or Low Rates'
+          TabOrder = 2
+        end
+      end
+      object rgpTimeIntervalUnits: TGroupBox
+        Left = 204
+        Top = 208
+        Width = 185
+        Height = 133
+        Caption = 'Time Intervals'
+        TabOrder = 4
+        object lblTimeIntervalUnits: TLabel
+          Left = 14
+          Top = 24
+          Width = 33
+          Height = 13
+          Caption = 'Units:  '
+        end
+        object lblTimeIntervalLength: TLabel
+          Left = 10
+          Top = 104
+          Width = 129
+          Height = 13
+          Caption = 'Length (in specified units):  '
+        end
+        object rdoUnitYear: TRadioButton
+          Left = 54
+          Top = 24
+          Width = 57
+          Height = 17
+          Caption = 'Year'
+          Checked = True
+          Enabled = False
+          TabOrder = 0
+          TabStop = True
+          OnClick = rdoUnitYearClick
+        end
+        object rdoUnitMonths: TRadioButton
+          Left = 54
+          Top = 48
+          Width = 57
+          Height = 17
+          Caption = 'Month'
+          Enabled = False
+          TabOrder = 1
+          OnClick = rdoUnitMonthsClick
+        end
+        object rdoUnitDay: TRadioButton
+          Left = 54
+          Top = 72
+          Width = 57
+          Height = 17
+          Caption = 'Day'
+          Enabled = False
+          TabOrder = 2
+          OnClick = rdoUnitDayClick
+        end
+        object edtTimeIntervalLength: TEdit
+          Left = 146
+          Top = 96
+          Width = 25
+          Height = 21
+          Enabled = False
+          MaxLength = 3
+          TabOrder = 3
+          Text = '1'
+          OnExit = edtTimeIntervalLengthExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+      end
+    end
+    object tbTimeParameter: TTabSheet
+      Caption = 'Time Parameters'
+      ImageIndex = 3
+      object gbxProspectiveSurveillance: TGroupBox
+        Left = 224
+        Top = 8
+        Width = 249
+        Height = 137
+        Caption = 'Prospective Surveillance'
+        TabOrder = 0
+        object lblProspectiveStartYear: TLabel
+          Left = 36
+          Top = 78
+          Width = 22
+          Height = 13
+          Caption = 'Year'
+        end
+        object lblProspectiveStartMonth: TLabel
+          Left = 92
+          Top = 78
+          Width = 30
+          Height = 13
+          Caption = 'Month'
+        end
+        object lblProspectiveStartDay: TLabel
+          Left = 139
+          Top = 78
+          Width = 19
+          Height = 13
+          Caption = 'Day'
+        end
+        object lblProspectiveStartDate: TLabel
+          Left = 31
+          Top = 58
+          Width = 81
+          Height = 13
+          Caption = ' performed since:'
+        end
+        object edtProspectiveStartDateYear: TEdit
+          Left = 33
+          Top = 97
+          Width = 41
+          Height = 21
+          Enabled = False
+          MaxLength = 4
+          TabOrder = 1
+          Text = '1900'
+          OnExit = edtProspectiveStartDateExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object edtProspectiveStartDateMonth: TEdit
+          Left = 93
+          Top = 97
+          Width = 25
+          Height = 21
+          Enabled = False
+          MaxLength = 2
+          TabOrder = 2
+          Text = '12'
+          OnExit = edtProspectiveStartDateExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object edtProspectiveStartDateDay: TEdit
+          Left = 139
+          Top = 97
+          Width = 25
+          Height = 21
+          Enabled = False
+          MaxLength = 2
+          TabOrder = 3
+          Text = '31'
+          OnExit = edtProspectiveStartDateExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object chkAdjustForEarlierAnalyses: TCheckBox
+          Left = 14
+          Top = 28
+          Width = 171
+          Height = 17
+          Caption = 'Adjust for earlier analyses'
+          TabOrder = 0
+          OnClick = chkAdjustForEarlierAnalysesClick
         end
       end
     end
@@ -930,7 +930,7 @@ object frmAnalysis: TfrmAnalysis
     object tbOutputFiles: TTabSheet
       Caption = 'Output'
       ImageIndex = 4
-      object grpAdditionalOutputFiles: TGroupBox
+      object gbxAdditionalOutputFiles: TGroupBox
         Left = 8
         Top = 60
         Width = 465
@@ -1061,14 +1061,14 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 7
         end
       end
-      object grpCriteriaSecClusters: TGroupBox
+      object gbxCriteriaSecClusters: TGroupBox
         Left = 8
         Top = 222
         Width = 465
         Height = 50
         Caption = 'Criteria for Reporting Secondary Clusters'
         TabOrder = 2
-        object cboCriteriaSecClusters: TComboBox
+        object cmbCriteriaSecClusters: TComboBox
           Left = 14
           Top = 18
           Width = 301
