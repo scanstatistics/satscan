@@ -1255,7 +1255,8 @@ void CParameters::DisplayParameters(FILE* fp)
    
      fprintf(fp, "  Case File        : %s\n", m_szCaseFilename);
    
-     if (m_nModel == POISSON)
+     if (m_nModel == POISSON ||
+         (m_nModel == SPACETIMEPERMUTATION && m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE))
        fprintf(fp, "  Population File  : %s\n", m_szPopFilename);
      else if (m_nModel == BERNOULLI)
        fprintf(fp, "  Control File     : %s\n", m_szControlFilename);
