@@ -1393,21 +1393,7 @@ void __fastcall TfrmAnalysis::rgProbabilityClick(TObject *Sender) {
     btnControlBrowse->Enabled = ( rgProbability->ItemIndex == SPACETIMEPERMUTATION || rgProbability->ItemIndex == POISSON ? false : true );
     // indicate that for Space-Time Permutation model, max temporal clusters size is 50.
     if (rgProbability->ItemIndex == SPACETIMEPERMUTATION)
-      {
       rdoPercentageTemproal->Caption = "Percentage (<= 50%)";
-      if (atof(edtMaxTemporalClusterSize->Text.c_str()) > 50)
-        {
-        edtMaxTemporalClusterSize->Text = "50";
-        gpParams->m_nMaxTemporalClusterSize = 50;
-        if (edtMaxTemporalClusterSize->Enabled)
-          {
-          string sMessage;
-          sMessage = "For analyses using a Space-Time Permutation model, the maximum temporal cluster size is \%50.\n";
-          sMessage += "Please verify this setting on the  Scanning Window tab.";
-          MessageBox(NULL, sMessage.c_str(), "Notification" , MB_OK);
-          }
-        }
-      }
     else
       rdoPercentageTemproal->Caption = "Percentage (<= 90%)";
     if ( rgProbability->ItemIndex == SPACETIMEPERMUTATION && !( rgTypeAnalysis->ItemIndex + 1  == SPACETIME || rgTypeAnalysis->ItemIndex + 1 == PROSPECTIVESPACETIME ) )
