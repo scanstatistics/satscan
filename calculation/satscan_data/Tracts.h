@@ -27,26 +27,26 @@ class CategoryDescriptor {
 
   private:
     int				giCategoryIndex;       /* category index                */
-    long                      * gpPopulationList;      /* population at date index      */
+    float                     * gpPopulationList;      /* population at date index      */
     count_t       		gtCaseCount;           /* total case count for category */
     CategoryDescriptor        * gpNextDescriptor;      /* next CategoryDescriptor class in link-list */
 
-    //Restricted to CategoryDescriptor - only this class can call these methods.
+    //Restricted to CategoryDescriptor - only this class should call these methods.
     void			Init() {giCategoryIndex=-1; gtCaseCount=0; gpPopulationList=0; gpNextDescriptor=0;}
     void                        Setup(int iPopulationListSize, int iCategoryIndex);
 
     void			AddCaseCount(count_t tCaseCount);
-    void                        AddPopulationAtDateIndex(long lPopluation, int iDateIndex, const TractHandler & theTractHandler);
+    void                        AddPopulationAtDateIndex(float fPopluation, int iDateIndex, const TractHandler & theTractHandler);
     void                        Combine(const CategoryDescriptor * pCategoryDescriptor, const TractHandler & theTractHandler);
     count_t			GetCaseCount() const {return gtCaseCount;}
     int 			GetCategoryIndex() const {return giCategoryIndex;}
     CategoryDescriptor        * GetNextDescriptor() {return gpNextDescriptor;}
     const CategoryDescriptor  * GetNextDescriptor() const {return gpNextDescriptor;}
-    long			GetPopulationAtDateIndex(int iDateIndex, const TractHandler & theTractHandler) const;
+    float			GetPopulationAtDateIndex(int iDateIndex, const TractHandler & theTractHandler) const;
     void			SetCaseCount(count_t tCaseCount);
     void			SetCategoryIndex(int iCategoryIndex) {giCategoryIndex = iCategoryIndex;}
     CategoryDescriptor        * SetNextDescriptor(int iPopulationListSize, int iCategoryIndex);
-    void                        SetPopulationAtDateIndex(long lPopluation, int iDateIndex, const TractHandler & theTractHandler);
+    void                        SetPopulationAtDateIndex(float fPopluation, int iDateIndex, const TractHandler & theTractHandler);
     void                        SetPopulationListSize(int iPopulationListSize);
 
     CategoryDescriptor(int iPopulationListSize, int iCategoryIndex = -1);
@@ -71,7 +71,7 @@ class TractDescriptor {
     double                            * gpCoordinates;             /* coordinates                   */
     CategoryDescriptor                * gpCategoryDescriptorsList; /* categories of tract link-list */
 
-    //Restricted to TractDescriptor - only this class can call these methods.
+    //Restricted to TractDescriptor - only this class should call these methods.
     void                                Init() {gsTractIdentifiers=0; gpCoordinates=0; gpCategoryDescriptorsList=0;}
     void                                Setup(const char * sTractIdentifier, const double* pCoordinates, int iDimensions);
 
@@ -131,9 +131,9 @@ class TractHandler {
     TractHandler(Cats & Categories, BasePrint & PrintDirection);
     ~TractHandler();
 
-    void                                tiAddCategoryToTract(tract_t tTractIndex, int iCategoryIndex, Julian PopulationDate, long lPopulation);
+    void                                tiAddCategoryToTract(tract_t tTractIndex, int iCategoryIndex, Julian PopulationDate, float fPopulation);
     int                                 tiAddCount(tract_t t, int iCategoryIndex, count_t Count);
-    void                                tiAssignPopulation(CategoryDescriptor & thisCategoryDescriptor, Julian PopulationDate, long lPopulation);
+    void                                tiAssignPopulation(CategoryDescriptor & thisCategoryDescriptor, Julian PopulationDate, float fPopulation);
     void                                tiCalculateAlpha(double** pAlpha, Julian StartDate, Julian EndDate) const;
     void                                tiCheckCasesHavePopulations() const;
     bool                                tiCheckZeroPopulations(FILE *pDisplay) const;
@@ -155,7 +155,7 @@ class TractHandler {
     tract_t                             tiGetNumTracts() const {return (int)gvTractDescriptors.size();}
     Julian                              tiGetPopDate(int iPopulationDateIndex) const;
     int                                 tiGetPopDateIndex(Julian Date);
-    unsigned long                       tiGetPopulation(tract_t t, int iCategoryIndex, int iPopulationDateIndex) const;
+    float                               tiGetPopulation(tract_t t, int iCategoryIndex, int iPopulationDateIndex) const;
     int                                 tiGetPopUpLowIndex(Julian* pDates, int nDateIndex, int nMaxDateIndex,
                                                            int* nUpIndex, int* nLowIndex) const;
     double                              tiGetRiskAdjustedPopulation(measure_t & dMeanPopulation, tract_t t,

@@ -40,21 +40,21 @@ void CategoryDescriptor::AddCaseCount(count_t tCaseCount) {
 }
 
 /** Adds population to existing population for date index. */
-void CategoryDescriptor::AddPopulationAtDateIndex(long lPopluation, int iDateIndex, const TractHandler & theTractHandler) {
+void CategoryDescriptor::AddPopulationAtDateIndex(float fPopluation, int iDateIndex, const TractHandler & theTractHandler) {
   try {
     if (0 > iDateIndex || iDateIndex > theTractHandler.tiGetNumPopDates() - 1)
       ZdGenerateException("Index %d out of range(0 - %d).","AddPopulationAtDateIndex()",
                           iDateIndex, theTractHandler.tiGetNumPopDates() -1);
 
-    if (gpPopulationList[iDateIndex] + lPopluation < 0) {
+    if (gpPopulationList[iDateIndex] + fPopluation < 0) {
       char      sDateString[20];
 
-      ZdGenerateException("  Error: Attempt to add population of \"%d\" to current population of \"%d\" at date \"%s\" causes data overflow.",
-                          "AddPopulationAtDateIndex()", lPopluation, gpPopulationList[iDateIndex],
+      ZdGenerateException("  Error: Attempt to add population of \"%.2f\" to current population of \"%.2f\" at date \"%s\" causes data overflow.",
+                          "AddPopulationAtDateIndex()", fPopluation, gpPopulationList[iDateIndex],
                           JulianToChar(sDateString, theTractHandler.tiGetPopDate(iDateIndex)));
     }
 
-    gpPopulationList[iDateIndex] += lPopluation;
+    gpPopulationList[iDateIndex] += fPopluation;
   }
   catch (ZdException &x) {
     x.AddCallpath("AddPopulationAtDateIndex()","CategoryDescriptor");
@@ -83,7 +83,7 @@ void CategoryDescriptor::Combine(const CategoryDescriptor * pCategoryDescriptor,
 }
 
 /** Returns population at date index. */
-long CategoryDescriptor::GetPopulationAtDateIndex(int iDateIndex, const TractHandler & theTractHandler) const {
+float CategoryDescriptor::GetPopulationAtDateIndex(int iDateIndex, const TractHandler & theTractHandler) const {
   try {
     if (0 > iDateIndex || iDateIndex > theTractHandler.tiGetNumPopDates() - 1)
       ZdGenerateException("Index %d out of range(0 - %d).","", ZdException::Normal, iDateIndex, theTractHandler.tiGetNumPopDates() - 1);
@@ -123,11 +123,11 @@ CategoryDescriptor * CategoryDescriptor::SetNextDescriptor(int iPopulationListSi
 }
 
 /** Sets population at date index. */
-void CategoryDescriptor::SetPopulationAtDateIndex(long lPopluation, int iDateIndex, const TractHandler & theTractHandler) {
+void CategoryDescriptor::SetPopulationAtDateIndex(float fPopluation, int iDateIndex, const TractHandler & theTractHandler) {
   try {
     if (0 > iDateIndex || iDateIndex > theTractHandler.tiGetNumPopDates() - 1)
       ZdGenerateException("Index %d out of range(0 - %d).","", ZdException::Normal, iDateIndex, theTractHandler.tiGetNumPopDates() - 1);
-    gpPopulationList[iDateIndex] = lPopluation;
+    gpPopulationList[iDateIndex] = fPopluation;
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPopulationAtDateIndex()","CategoryDescriptor");
@@ -139,7 +139,7 @@ void CategoryDescriptor::SetPopulationAtDateIndex(long lPopluation, int iDateInd
 void CategoryDescriptor::SetPopulationListSize(int iPopulationListSize) {
   try {
     if (gpPopulationList) {delete [] gpPopulationList; gpPopulationList=0;}
-    gpPopulationList = new long[iPopulationListSize];
+    gpPopulationList = new float[iPopulationListSize];
     memset(gpPopulationList, 0, iPopulationListSize * sizeof(long));
   }
   catch (ZdException &x) {
@@ -452,7 +452,7 @@ void TractHandler::Init() {
 }
 
 /** Adds a category to the tract info structure. */
-void TractHandler::tiAddCategoryToTract(tract_t tTractIndex, int iCategoryIndex, Julian PopulationDate, long lPopulation) {
+void TractHandler::tiAddCategoryToTract(tract_t tTractIndex, int iCategoryIndex, Julian PopulationDate, float fPopulation) {
   try {
     if (0 > tTractIndex || tTractIndex > (tract_t)gvTractDescriptors.size() - 1 )
       ZdGenerateException("Index %d out of range(0 - %d).","tiAddCategoryToTract()",
@@ -460,7 +460,7 @@ void TractHandler::tiAddCategoryToTract(tract_t tTractIndex, int iCategoryIndex,
 
     CategoryDescriptor & thisDescriptor =
            gvTractDescriptors[tTractIndex]->GetCategoryDescriptor(iCategoryIndex, (int)gvPopulationDates.size());
-    tiAssignPopulation(thisDescriptor, PopulationDate, lPopulation);
+    tiAssignPopulation(thisDescriptor, PopulationDate, fPopulation);
   }
   catch (SSException & x) {
     x.AddCallpath("tiAddCategoryToTract()", "TractHandler");
@@ -496,21 +496,21 @@ int TractHandler::tiAddCount(tract_t t, int iCategoryIndex, count_t Count) {
           if not found, but previous code did not.
           Is this correct behavior?
           Should an exception be thrown or will that break previous program design? */
-void TractHandler::tiAssignPopulation(CategoryDescriptor & thisCategoryDescriptor, Julian PopulationDate, long lPopulation) {
+void TractHandler::tiAssignPopulation(CategoryDescriptor & thisCategoryDescriptor, Julian PopulationDate, float fPopulation) {
   int iPopulationDateIndex, iNumPopulationDates;
 
   try {
     iPopulationDateIndex = tiGetPopDateIndex(PopulationDate);
     if (iPopulationDateIndex != -1) {
       iNumPopulationDates = (int)gvPopulationDates.size();
-      thisCategoryDescriptor.AddPopulationAtDateIndex(lPopulation, iPopulationDateIndex, *this);
+      thisCategoryDescriptor.AddPopulationAtDateIndex(fPopulation, iPopulationDateIndex, *this);
 
 
       if (iPopulationDateIndex == 1 && bStartAsPopDt)
-        thisCategoryDescriptor.AddPopulationAtDateIndex(lPopulation, 0L, *this);
-    
+        thisCategoryDescriptor.AddPopulationAtDateIndex(fPopulation, 0L, *this);
+
       if (iPopulationDateIndex == iNumPopulationDates - 2 && bEndAsPopDt)
-        thisCategoryDescriptor.AddPopulationAtDateIndex(lPopulation, iNumPopulationDates - 1, *this);
+        thisCategoryDescriptor.AddPopulationAtDateIndex(fPopulation, iNumPopulationDates - 1, *this);
     }
   }
   catch (SSException & x) {
@@ -581,9 +581,10 @@ void TractHandler::tiCalculateAlpha(double** pAlpha, Julian StartDate, Julian En
 /** Prints warning if there are tract categories with cases but no population.
     Throws exception if total population for tract is zero. */
 void TractHandler::tiCheckCasesHavePopulations() const {
-  int                           i, j, nPEndIndex, iTractPopulation, nPopTotal, nPStartIndex = 0;
+  int                           i, j, nPEndIndex, nPStartIndex = 0;
   const CategoryDescriptor *    pCategoryDescriptor;
   std::string                   sBuffer, sBuffer2;
+  double                        dTractPopulation, dCategoryTotal;
 
   try {
     if (bStartAsPopDt)
@@ -594,14 +595,14 @@ void TractHandler::tiCheckCasesHavePopulations() const {
       nPEndIndex = (int)gvPopulationDates.size() - 1;
 
     for (i=0; i < (int)gvTractDescriptors.size(); i++) {
-       iTractPopulation = 0;
+       dTractPopulation = 0;
        pCategoryDescriptor = gvTractDescriptors[i]->GetCategoryDescriptorList();
        while (pCategoryDescriptor) {
-          nPopTotal = 0;
+          dCategoryTotal = 0;
           for (j=nPStartIndex; j <= nPEndIndex; j++)
-             nPopTotal += pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
-          iTractPopulation += nPopTotal;
-          if (nPopTotal == 0 && pCategoryDescriptor->GetCaseCount() > 0) {
+             dCategoryTotal += pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
+          dTractPopulation += dCategoryTotal;
+          if (dCategoryTotal == 0 && pCategoryDescriptor->GetCaseCount() > 0) {
             gpPrintDirection->SatScanPrintWarning("  Warning: %s %s has %d cases but zero population.\n",
                             gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer),
                             gpCategories->catGetCategoriesString(pCategoryDescriptor->GetCategoryIndex(), sBuffer2),
@@ -610,7 +611,7 @@ void TractHandler::tiCheckCasesHavePopulations() const {
           pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();
        }
 
-       if (iTractPopulation == 0)
+       if (dTractPopulation == 0)
          ZdGenerateException("Total population is zero for tract %s",
                              gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer));
     }
@@ -625,7 +626,7 @@ void TractHandler::tiCheckCasesHavePopulations() const {
 bool TractHandler::tiCheckZeroPopulations(FILE *pDisplay) const {
   UInt                          month, day, year;
   bool                          bValid = true;
-  long                        * PopTotalsArray = 0;
+  float                       * PopTotalsArray = 0;
   int                           i, j, nPEndIndex, nPStartIndex = 0;
   const CategoryDescriptor    * pCategoryDescriptor;  
 
@@ -637,19 +638,19 @@ bool TractHandler::tiCheckZeroPopulations(FILE *pDisplay) const {
     else
       nPEndIndex = (int)gvPopulationDates.size()-1;
 
-    PopTotalsArray = (long*)Smalloc((int)gvPopulationDates.size() *sizeof(long), gpPrintDirection);
-    memset(PopTotalsArray, 0, (int)gvPopulationDates.size() * sizeof(long));
+    PopTotalsArray = (float*)Smalloc((int)gvPopulationDates.size() *sizeof(float), gpPrintDirection);
+    memset(PopTotalsArray, 0, (int)gvPopulationDates.size() * sizeof(float));
 
     for (i=0; i < (int)gvTractDescriptors.size(); i++) {
        pCategoryDescriptor = gvTractDescriptors[i]->GetCategoryDescriptorList();
        while (pCategoryDescriptor) {
           for (j=nPStartIndex; j <= nPEndIndex; j++)
-             PopTotalsArray[j]+= pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
+             PopTotalsArray[j] += pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
           pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();
        }
     }
 
-    for (j=nPStartIndex; j<=nPEndIndex; j++) {
+    for (j=nPStartIndex; j <= nPEndIndex; j++) {
        if (PopTotalsArray[j]==0) {
           bValid = false;
           JulianToMDY(&month, &day, &year, gvPopulationDates[j]);
@@ -886,8 +887,8 @@ int TractHandler::tiGetPopDateIndex(Julian Date) {
 
 /** Returns the population for a given year and category in a given tract
     Returns 0 if no population for category.                              */
-unsigned long TractHandler::tiGetPopulation(tract_t t, int iCategoryIndex, int iPopulationDateIndex) const {
-  unsigned long                 ulValue=0;
+float TractHandler::tiGetPopulation(tract_t t, int iCategoryIndex, int iPopulationDateIndex) const {
+  float                         fValue=0;
   const CategoryDescriptor    * pCategoryDescriptor;
 
   try {
@@ -896,13 +897,13 @@ unsigned long TractHandler::tiGetPopulation(tract_t t, int iCategoryIndex, int i
 
     pCategoryDescriptor = gvTractDescriptors[t]->GetCategoryDescriptor(iCategoryIndex);
     if (pCategoryDescriptor)
-      ulValue = pCategoryDescriptor->GetPopulationAtDateIndex(iPopulationDateIndex, *this);
+      fValue = pCategoryDescriptor->GetPopulationAtDateIndex(iPopulationDateIndex, *this);
   }
   catch (SSException & x) {
     x.AddCallpath("tiGetPopulation()", "TractHandler");
     throw;
   }
-  return ulValue;
+  return fValue;
 }
 
 /** Returns the indeces to population dates that bound a given interval date. */
@@ -1154,7 +1155,7 @@ void TractHandler::tiReportZeroPops(FILE *pDisplay) const {
   int                           i, j, nPEndIndex, nPStartIndex = 0;
   UInt                          month, day, year;
   bool                          bZeroFound = false;
-  long                        * PopTotalsArray = 0;
+  float                       * PopTotalsArray = 0;
   std::string                   sBuffer;
   char                          sDateBuffer[20];
   const CategoryDescriptor    * pCategoryDescriptor;
@@ -1167,18 +1168,18 @@ void TractHandler::tiReportZeroPops(FILE *pDisplay) const {
     else
       nPEndIndex = tiGetNumPopDates() - 1;
 
-    PopTotalsArray = (long*)Smalloc(tiGetNumPopDates() *sizeof(long), gpPrintDirection);
+    PopTotalsArray = (float*)Smalloc(tiGetNumPopDates() *sizeof(float), gpPrintDirection);
 
     for (i=0; i < (int)gvTractDescriptors.size(); i++) {
-       memset(PopTotalsArray, 0, tiGetNumPopDates() * sizeof(long));
+       memset(PopTotalsArray, 0, tiGetNumPopDates() * sizeof(float));
        pCategoryDescriptor = gvTractDescriptors[i]->GetCategoryDescriptorList();
        while (pCategoryDescriptor) {
           for (j=nPStartIndex; j <= nPEndIndex; j++)
-             PopTotalsArray[j]+= pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
+             PopTotalsArray[j] += pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
           pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();   
        }
 
-       for (j=nPStartIndex; j<=nPEndIndex; j++) {
+       for (j=nPStartIndex; j <= nPEndIndex; j++) {
           if (PopTotalsArray[j]==0) {
             if (!bZeroFound) {
               bZeroFound = true;
