@@ -695,7 +695,10 @@ const char * CParameters::GetProbabiltyModelTypeAsString() const {
   return sProbabilityModel;
 }
 
-/** Returns prospective start date as a julian date.
+/** Returns prospective start date as a julian date. If date is missing
+    month/days or days, attempts to best mtach date to study period end date.
+    (ex. study period end date: 2001/12/31
+         prospective start date as read from parameters: 2001/11 --> 2001/11/30)
     Throws exception if date can not be converted to a valid julian date. */
 Julian CParameters::GetProspectiveStartDateAsJulian() /*const*/ {
   int           iPrecision;
@@ -709,14 +712,10 @@ Julian CParameters::GetProspectiveStartDateAsJulian() /*const*/ {
       case 0  : InvalidParameterException::Generate("Error: Prospective start date value of '%s' does not appear to be a valid date.\n",
                                                     "GetProspectiveStartDateAsJulian()", gsProspectiveStartDate.c_str());
       case 1  : uiMonth = uiEDMonth;
-                //Study period end date year or prospective start date year might be miss matching
-                //in regards to leap year.
-                if (IsLeapYear(uiEDYear) && !IsLeapYear(uiYear) && uiMonth == 2/*Feb.*/ && uiEDDay == 29)
-                  uiDay = 28;
+      case 2  : if (uiEDDay > DaysThisMonth(uiYear, uiMonth))
+                  uiDay = DaysThisMonth(uiYear, uiMonth);
                 else
                   uiDay = uiEDDay;
-                break;
-      case 2  : uiDay = DaysThisMonth(uiYear, uiMonth);
                 break;
       case 3  : break;
       default : ZdException::Generate("Precision of '%d' is not defined.\n", "GetProspectiveStartDateAsJulian()", iPrecision);
@@ -2350,21 +2349,21 @@ bool CParameters::ValidateDateParameters(BasePrint & PrintDirection) {
 
   try {
     //validate study period start date based upon 'precision of times' parameter setting
-    if (!ValidateDateString(gsStudyPeriodStartDate, STARTDATE)) {
+    if (!ValidateStudyPeriodDateString(gsStudyPeriodStartDate, STARTDATE)) {
       bValid = false;
       bStartDateValid = false;
       PrintDirection.SatScanPrintWarning("Error: Study period start date value of '%s' does not appear to be a valid date.\n",
                                          gsStudyPeriodStartDate.c_str());
     }
     //validate study period end date based upon precision of times parameter setting
-    if (!ValidateDateString(gsStudyPeriodEndDate, ENDDATE)) {
+    if (!ValidateStudyPeriodDateString(gsStudyPeriodEndDate, ENDDATE)) {
       bValid = false;
       bEndDateValid = false;
       PrintDirection.SatScanPrintWarning("Error: Study period end date value of '%s' does not appear to be a valid date.\n",
                                          gsStudyPeriodEndDate.c_str());
     }
     //validate prospective start date based upon precision of times parameter setting
-    if (geAnalysisType == PROSPECTIVESPACETIME && !ValidateDateString(gsProspectiveStartDate, START_PROSP_SURV)) {
+    if (geAnalysisType == PROSPECTIVESPACETIME && !ValidateProspectiveDateString()) {
       bValid = false;
       bProspectiveDateValid = false;
       PrintDirection.SatScanPrintWarning("Error: Prospective start date value of '%s' does not appear to be a valid date.\n",
@@ -2398,43 +2397,7 @@ bool CParameters::ValidateDateParameters(BasePrint & PrintDirection) {
   return bValid;
 }
 
-/** Returns whether passed date is a valid date given parameter type and precision of times.
-    If parameter type is not one of the defined dates, an exeption is thrown. */
-bool CParameters::ValidateDateString(const std::string & sDateString, ParameterType eDateType) {
-  UInt nYear, nMonth, nDay;
-  int  nScanCount;
-  bool bReturnValue=false;
-
-  try {
-    if ((nScanCount = CharToMDY(&nMonth, &nDay, &nYear, sDateString.c_str())) > 0) {
-      if (/*gePrecisionOfTimesType == YEAR ||*/ nScanCount == 1) {
-        switch(eDateType) {
-          case STARTDATE          :
-          case START_PROSP_SURV   : nMonth = 1; break;
-          case ENDDATE            : nMonth = 12; break;
-          default : ZdException::Generate("Parameter type '%d' is not a date.\n", "ValidateDateString()", eDateType);
-        }
-      }
-      if (/*gePrecisionOfTimesType == YEAR || gePrecisionOfTimesType == MONTH ||*/ nScanCount == 1 || nScanCount == 2) {
-        switch(eDateType) {
-          case STARTDATE          :
-          case START_PROSP_SURV   : nDay = 1; break;
-          case ENDDATE            : nDay = DaysThisMonth(nYear, nMonth); break;
-          default : ZdException::Generate("Parameter type '%d' is not a date.\n", "ValidateDateString()", eDateType);
-        }
-      }
-      if (IsDateValid(nMonth, nDay, nYear))
-        bReturnValue = true;
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("ValidateDateString()", "CParameters");
-    throw;
-  }
-  return bReturnValue;
-}
-
-/** Validates ellipse parameters if number of ellipses greater than zero. 
+/** Validates ellipse parameters if number of ellipses greater than zero.
     Errors printed to print direction and return whether parameters are valid. */
 bool CParameters::ValidateEllipseParameters(BasePrint & PrintDirection) {
   bool          bValid=true;
@@ -2681,6 +2644,30 @@ bool CParameters::ValidatePowerCalculationParameters(BasePrint & PrintDirection)
   return bValid;
 }
 
+/** Validates prospective start date.
+    Also ensures that date string is complete with yyyy/mm/dd format primarly for
+    reporting purposes. Function GetProspectiveStartDateAsJulian() is actually
+    where validation and completion of missing month or days from existing date string occurs. */
+bool CParameters::ValidateProspectiveDateString() {
+  UInt          uiYear, uiMonth, uiDay;
+  bool          bReturnValue=true;
+  ZdString      sDate;
+
+  try {
+    JulianToMDY(&uiMonth, &uiDay, &uiYear, GetProspectiveStartDateAsJulian());
+    sDate.printf("%i/%i/%i", uiYear, uiMonth, uiDay);
+    gsProspectiveStartDate = sDate.GetCString();
+  }
+  catch (InvalidParameterException &e) {
+    bReturnValue = false;
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("GetProspectiveStartDateAsJulian()","CParameters");
+    throw;
+  }
+  return bReturnValue;
+}
+
 /** Validates parameters used in optional sequenatial scan feature.
     Prints errors to print direction and returns whether values are vaild.*/
 bool CParameters::ValidateSequentialScanParameters(BasePrint & PrintDirection) {
@@ -2752,6 +2739,44 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
     throw;
   }
   return bValid;
+}
+
+/** Returns whether passed date is a valid date given parameter type and precision of times.
+    If parameter type is not one of the defined dates, an exeption is thrown. */
+bool CParameters::ValidateStudyPeriodDateString(std::string & sDateString, ParameterType eDateType) {
+  UInt          nYear, nMonth, nDay;
+  int           nScanCount;
+  bool          bReturnValue=false;
+  ZdString      sDate;
+
+  try {
+    if ((nScanCount = CharToMDY(&nMonth, &nDay, &nYear, sDateString.c_str())) > 0) {
+      if (/*gePrecisionOfTimesType == YEAR ||*/ nScanCount == 1) {
+        switch(eDateType) {
+          case STARTDATE          : nMonth = 1; break;
+          case ENDDATE            : nMonth = 12; break;
+          default : ZdException::Generate("Unkwown date parameter type '%d'.\n", "ValidateStudyPeriodDateString()", eDateType);
+        }
+      }
+      if (/*gePrecisionOfTimesType == YEAR || gePrecisionOfTimesType == MONTH ||*/ nScanCount == 1 || nScanCount == 2) {
+        switch(eDateType) {
+          case STARTDATE          : nDay = 1; break;
+          case ENDDATE            : nDay = DaysThisMonth(nYear, nMonth); break;
+          default : ZdException::Generate("Unkwown date parameter type '%d'.\n", "ValidateStudyPeriodDateString()", eDateType);
+        }
+      }
+      if (IsDateValid(nMonth, nDay, nYear)) {
+        bReturnValue = true;
+        sDate.printf("%i/%i/%i", nYear, nMonth, nDay);
+        sDateString = sDate.GetCString();
+      }
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ValidateStudyPeriodDateString()", "CParameters");
+    throw;
+  }
+  return bReturnValue;
 }
 
 /** Validates optional parameters particular to temporal analyses

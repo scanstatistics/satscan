@@ -255,12 +255,13 @@ class CParameters {
     void                                SetDefaults();
     void                                SetSourceFileName(const char * sParametersSourceFileName);
     bool                                ValidateDateParameters(BasePrint & PrintDirection);
-    bool                                ValidateDateString(const std::string & sDateString, ParameterType eDateType);
     bool                                ValidateEllipseParameters(BasePrint & PrintDirection);
     bool                                ValidateFileParameters(BasePrint & PrintDirection);
     bool                                ValidatePowerCalculationParameters(BasePrint & PrintDirection);
+    bool                                ValidateProspectiveDateString();
     bool                                ValidateSequentialScanParameters(BasePrint & PrintDirection);
     bool                                ValidateSpatialParameters(BasePrint & PrintDirection);
+    bool                                ValidateStudyPeriodDateString(std::string & sDateString, ParameterType eDateType);
     bool                                ValidateTemporalParameters(BasePrint & PrintDirection);
 
   public:
