@@ -175,76 +175,42 @@ void CPoissonModel::AdjustMeasure(RealDataStream& thisStream, measure_t** ppNonC
   }
 }
 
-/** Calculates and sets non-cumulative measure array. */
-void CPoissonModel::AssignMeasure(RealDataStream & thisStream, measure_t ** ppNonCumulativeMeasure) {
-  int           i, interval;
-  tract_t       tract;
-  Julian      * pIntervalDates=0;
-
+/** Calculates and sets non-cumulative measure array. Validates that no expected
+    case counts are negative, throws ZdException. */
+void CPoissonModel::AssignMeasure(RealDataStream & thisStream, TwoDimMeasureArray_t& NonCumulativeMeasureHandler) {
   try {
-    /* Create & Use array of interval dates where last interval date = EndDate */
-    pIntervalDates = (unsigned long*)Smalloc((gData.m_nTimeIntervals+1)*sizeof(Julian), &gPrintDirection);
-    memcpy(pIntervalDates, gData.GetTimeIntervalStartTimes(), (gData.m_nTimeIntervals+1)*sizeof(Julian));
+    thisStream.SetTotalMeasure(CalcMeasure(thisStream,
+                                           NonCumulativeMeasureHandler,
+                                           gData.GetTimeIntervalStartTimes(),
+                                           gData.m_nStartDate, gData.m_nEndDate));
 
-#ifdef DEBUGMEASURE
-    if ((pMResult = fopen("MEASURE.TXT", "w")) == NULL)
-      SSGenerateException("Error: Cannot open output file.\n","AssignMeasure()");
-
-    DisplayInitialData(gData.m_nStartDate, gData.m_nEndDate, pIntervalDates, gData.m_nTimeIntervals, pAlpha, nPops);
-#endif
-    thisStream.SetTotalMeasure(CalcMeasure(thisStream.GetPopulationData(), ppNonCumulativeMeasure,
-                                           thisStream.GetPopulationMeasureArray(),
-                                           pIntervalDates, gData.m_nStartDate, gData.m_nEndDate,
-                                           gData.m_nTracts, gData.m_nTimeIntervals, &gPrintDirection));
-
-    //Check to see that Measure matrix has positive entries.
-#if 1
-    for (tract=0; tract < gData.m_nTracts; ++tract)
-       for (interval=0; interval < gData.m_nTimeIntervals; ++interval)
+    //Validate that all elements of measure array are not negative.  
+    measure_t** ppNonCumulativeMeasure = NonCumulativeMeasureHandler.GetArray();
+    for (tract_t tract=0; tract < gData.m_nTracts; ++tract)
+       for (int interval=0; interval < gData.m_nTimeIntervals; ++interval)
           if (ppNonCumulativeMeasure[interval][tract] < 0) {
              std::string sBuffer;
     	     ZdGenerateException("Negative measure: %g\ntract %d, tractid %s, interval %d.", "AssignMeasure()",
                                  ppNonCumulativeMeasure[interval][tract], tract, gData.GetTInfo()->tiGetTid(tract, sBuffer), interval);
           }
-#endif
 
-#ifdef DEBUGMEASURE
-    fprintf(pMResult, "Totals: \n\n");
-    fprintf(pMResult, "   Cases      = %li\n   Measure    = %f\n   Population = %f\n", *pTotalCases, *pTotalMeasure, *pTotalPop);
-    fclose(pMResult);
-#endif
-
-    free(pIntervalDates);
   }
-  catch (ZdException & x) {
-    free(pIntervalDates);
-    x.AddCallpath("AssignMeasure()", "CPoissonModel");
+  catch (ZdException &x) {
+    x.AddCallpath("AssignMeasure()","CPoissonModel");
     throw;
   }
 }
 
 /** Calculates the expected number of cases for data stream. */
 void CPoissonModel::CalculateMeasure(RealDataStream& thisStream) {
-  double              * pAlpha=0, * pRisk=0;
-  PopulationData      & Population = thisStream.GetPopulationData();
-
   try {
-    //calculate alpha - an array that indicates each population interval's percentage of study period.
-    Population.CalculateAlpha(&pAlpha, gData.m_nStartDate, gData.m_nEndDate);
-    //calculate risk for each population category
-    CalcRisk(thisStream, &pRisk, pAlpha, gData.GetTInfo()->tiGetNumTracts(), &gPrintDirection);
-    //allocate 2D array of population dates by number of tracts
-    thisStream.AllocatePopulationMeasureArray();
     //calculate expected number of cases in terms of population dates
-    Calcm(Population, thisStream.GetPopulationMeasureArray(), pRisk,
-          Population.GetNumPopulationCategories(), gData.GetTInfo()->tiGetNumTracts(),
-          Population.GetNumPopulationDates(), &gPrintDirection);
-
+    Calcm(thisStream, gData.m_nStartDate, gData.m_nEndDate);
     //assign measure, perform adjustments as requested, and set measure array as cumulative
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
       thisStream.AllocateNCMeasureArray();
       //calculate non-cumulative measure array
-      AssignMeasure(thisStream, thisStream.GetNCMeasureArray());
+      AssignMeasure(thisStream, thisStream.GetNCMeasureArrayHandler());
       //validate that observed and expected agree
       gData.ValidateObservedToExpectedCases(thisStream.GetCaseArray(),
                                             thisStream.GetNCMeasureArray());
@@ -258,7 +224,7 @@ void CPoissonModel::CalculateMeasure(RealDataStream& thisStream) {
     else {
       thisStream.AllocateMeasureArray();
       //calculate non-cumulative measure array
-      AssignMeasure(thisStream, thisStream.GetMeasureArray());
+      AssignMeasure(thisStream, thisStream.GetMeasureArrayHandler());
       //validate that observed and expected agree
       gData.ValidateObservedToExpectedCases(thisStream.GetCaseArray(),
                                             thisStream.GetMeasureArray());
@@ -275,24 +241,21 @@ void CPoissonModel::CalculateMeasure(RealDataStream& thisStream) {
       ZdGenerateException("Error: The total measure '%8.6lf' is not equal to the total number of cases '%ld'.\n",
                           "CalculateMeasure()", thisStream.GetTotalMeasure(), thisStream.GetTotalCases());
 
-    free(pAlpha); pAlpha=0;
-    free(pRisk); pRisk=0;
     thisStream.FreePopulationMeasureArray();
   }
   catch (ZdException &x) {
-    free(pAlpha); pAlpha=0;
-    free(pRisk); pRisk=0;
     thisStream.FreePopulationMeasureArray();
     x.AddCallpath("CalculateMeasure()","CPoissonModel");
     throw;
   }
 }
 
+/** */
 double CPoissonModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, tract_t nCenter,
                                     tract_t nTracts, int nStartInterval, int nStopInterval) const {
   tract_t T, t;
   int     c, n;
-  double* pAlpha = 0;
+  std::vector<double>   vAlpha;
   const PopulationData & Population = gData.GetDataStreamHandler().GetStream(iStream).GetPopulationData();
   int     ncats;
   int     nPops;
@@ -301,20 +264,18 @@ double CPoissonModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, 
   try {
     ncats = Population.GetNumPopulationCategories();
     nPops = Population.GetNumPopulationDates();
-    Population.CalculateAlpha(&pAlpha, gData.m_nStartDate, gData.m_nEndDate);
+    Population.CalculateAlpha(vAlpha, gData.m_nStartDate, gData.m_nEndDate);
 
       for (T = 1; T <= nTracts; T++)
       {
          t = gData.GetNeighbor(m_iEllipseOffset, nCenter, T);
          for (c = 0; c < ncats; c++)
-            Population.GetAlphaAdjustedPopulation(nPopulation, t, c, 0, nPops, pAlpha);
+            Population.GetAlphaAdjustedPopulation(nPopulation, t, c, 0, nPops, vAlpha);
       }
 
-      free(pAlpha); pAlpha = 0;
       }
    catch (ZdException & x)
       {
-      free(pAlpha);
       x.AddCallpath("GetPopulation()", "CPoissonModel");
       throw;
       }

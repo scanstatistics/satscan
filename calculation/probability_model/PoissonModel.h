@@ -17,7 +17,7 @@ class CPoissonModel : public CModel {
     void                        AdjustForLLPercentage(RealDataStream & thisStream, measure_t ** pNonCumulativeMeasure, double nPercentage);
     void                        AdjustForLogLinear(RealDataStream & thisStream, measure_t ** pNonCumulativeMeasure);
     void                        AdjustMeasure(RealDataStream & thisStream, measure_t ** ppNonCumulativeMeasure);
-    void                        AssignMeasure(RealDataStream & thisStream, measure_t ** ppNonCumulativeMeasure);
+    void                        AssignMeasure(RealDataStream & thisStream, TwoDimMeasureArray_t& NonCumulativeMeasureHandler);
     void                        StratifiedSpatialAdjustment(RealDataStream& thisStream, measure_t ** ppNonCumulativeMeasure);
 
   public:
