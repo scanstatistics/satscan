@@ -62,7 +62,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Top = 6
     Width = 423
     Height = 283
-    ActivePage = tsInput
+    ActivePage = TabSheet2
     TabOrder = 0
     object tsInput: TTabSheet
       Caption = 'Multiple Data Streams'

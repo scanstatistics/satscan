@@ -1153,7 +1153,8 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
 
   if (!bFound) {
     gpFocusControl=0;
-    PageControl->ActivePage = PageControl->FindNextPage(0, true, true);// PAG - find first visible page
+    //PageControl->ActivePage = PageControl->FindNextPage(NULL, true, true);// PAG - find first visible page
+    PageControl->ActivePage = PageControl->Pages[0]; // first page
   }
   // PAG - not the best coding here but am trying to show/hide only
   // certain pages/tabs of page control
