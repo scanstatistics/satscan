@@ -40,20 +40,24 @@ measure_t CTIAll::GetMeasureForTract(const CCluster & Cluster, tract_t tTract, m
    return tMeasure;
 }
 
-void CTIAll::ComputeBestMeasures(const count_t* pCases,
-                                 const measure_t* pMeasure,
-                                 const measure_t* pMeasureSquared,
-                                 CMeasureList & MeasureList) {
-  ZdGenerateException("ComputeBestMeasures() not implemented.","CTIAll");
+void CTIAll::CompareClusters(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData) {
+  ZdGenerateException("CompareClusters() not implemented.","CTIAll");
 }
 
-void CTIAll::CompareDataStreamClusters(CCluster & Running, CCluster & TopShapeCluster,
-                                       ZdPointerVector<AbstractTemporalClusterStreamData> & StreamData) {
+void CTIAll::CompareClustersEx(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData) {
+  ZdGenerateException("CompareClustersEx() not implemented.","CTIAll");
+}
+
+void CTIAll::CompareDataStreamClusters(CCluster & Running, CCluster & TopShapeCluster, ZdPointerVector<AbstractTemporalClusterStreamData> & StreamData) {
   ZdGenerateException("CompareDataStreamClusters() not implemented.","CTIAll");
 }
 
-void CTIAll::CompareClusters(CCluster & Running, CCluster & TopShapeCluster, const count_t* pCases,
-                             const measure_t* pMeasure, const measure_t* pMeasureSquared) {
-  ZdGenerateException("CompareClusters() not implemented.","CTIAll");
+void CTIAll::CompareDataStreamClustersEx(CCluster & Running, CCluster & TopShapeCluster, ZdPointerVector<AbstractTemporalClusterStreamData> & StreamData) {
+  ZdGenerateException("CompareDataStreamClustersEx() not implemented.","CTIAll");
 }
+
+void CTIAll::ComputeBestMeasures(AbstractTemporalClusterStreamData * pStreamData, CMeasureList & MeasureList) {
+  ZdGenerateException("ComputeBestMeasures() not implemented.","CTIAll");
+}
+
 

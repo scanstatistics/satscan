@@ -29,13 +29,11 @@ class TimeIntervalRange : public CTimeIntervals {
 
     TimeIntervalRange         & operator=(const TimeIntervalRange& rhs);
     virtual TimeIntervalRange * Clone() const;
-    virtual void                CompareClusters(CCluster & Running, CCluster & TopShapeCluster, const count_t* pCases,
-                                                const measure_t* pMeasure, const measure_t* pMeasureSquared);
+    virtual void                CompareClusters(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData);
+    virtual void                CompareClustersEx(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData);
     virtual void                CompareDataStreamClusters(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData);
-    virtual void                ComputeBestMeasures(const count_t* pCases,
-                                                    const measure_t* pMeasure,
-                                                    const measure_t* pMeasureSquared,
-                                                    CMeasureList & MeasureList);
+    virtual void                CompareDataStreamClustersEx(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData);
+    virtual void                ComputeBestMeasures(AbstractTemporalClusterStreamData * pStreamData, CMeasureList & MeasureList);
     virtual count_t             GetCaseCountForTract(const CCluster & Cluster, tract_t tTract, count_t** pCases) const;
     virtual measure_t           GetMeasureForTract(const CCluster & Cluster, tract_t tTract, measure_t** pMeasure) const;
     virtual IncludeClustersType GetType() const {return CLUSTERSINRANGE;}
