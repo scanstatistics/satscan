@@ -254,7 +254,6 @@ void TfrmAnalysis::CheckScanningWindowParams() {
   try {
     ValidateTemoralClusterSize();
     ValidateSpatialClusterSize();
-    gpfrmAdvancedParameters->ValidateScanningWindowSettings();
   }
   catch (ZdException &x) {
     x.AddCallpath("CheckScanningWindowParams()","TfrmAnalysis");
@@ -1367,7 +1366,6 @@ void TfrmAnalysis::ValidateInputFiles() {
       edtGridFileName->SetFocus();
       ZdException::GenerateNotification("Special Grid file could not be opened.","ValidateInputFiles()");
     }
-    gpfrmAdvancedParameters->ValidateInputFilesSettings();
   }
   catch (ZdException & x) {
     x.AddCallpath("ValidateInputFiles()", "TfrmAnalysis");
@@ -1386,8 +1384,10 @@ bool TfrmAnalysis::ValidateParams() {
     CheckAnalysisParams();
     CheckScanningWindowParams();
     CheckTimeParams();
-    gpfrmAdvancedParameters->ValidateAdjustmentSettings();
     CheckOutputParams();
+    gpfrmAdvancedParameters->ValidateAdjustmentSettings();
+    gpfrmAdvancedParameters->ValidateInputFilesSettings();
+    gpfrmAdvancedParameters->ValidateScanningWindowSettings();
   }
   catch (AdvancedFeaturesException &x) {
     x.AddCallpath("ValidateParams()","TfrmAnalysis");
