@@ -12,6 +12,90 @@
 #include "stsLogLikelihood.h"
 #include "stsAreaSpecificData.h"
 
+/** constructor */
+TopClustersContainer::TopClustersContainer(const CSaTScanData & Data)
+                     :gData(Data){}
+
+/** constructor */
+TopClustersContainer::~TopClustersContainer(){}
+
+/** Returns reference to top cluster for shape offset. This function is tightly
+    coupled to the presumption that CAnalysis::GetTopCluster() iterates over
+    circles and ellispes in such a way that an offset of zero is a circle, and
+    anything greater offset corresponds to an particular rotation of an ellipse shape.
+    NOTE: Caller should never assume that reference will remain after return from
+          get CAnalysis::GetTopCluster(), as the vector is reset for each iteration
+          of GetTopClusters(). Instead, a copy should be made, using operator= method
+          and appropriate casting, to store cluster information. */
+CCluster & TopClustersContainer::GetTopCluster(int iShapeOffset) {
+  CCluster    * pTopCluster=0;
+  int           iEllipse, iBoundry=0;
+
+  if (iShapeOffset && gData.m_pParameters->GetNumRequestedEllipses() && gData.m_pParameters->GetDuczmalCorrectEllipses())
+    for (iEllipse=0; iEllipse < gData.m_pParameters->GetNumRequestedEllipses() && !pTopCluster; ++iEllipse) {
+       //Get the number of angles this ellipse shape rotates through.
+       iBoundry += gData.m_pParameters->GetEllipseRotations()[iEllipse];
+       if (iShapeOffset <= iBoundry)
+         pTopCluster = gvTopShapeClusters[iEllipse + 1];
+    }
+  else
+    pTopCluster = gvTopShapeClusters[0];
+
+  return *pTopCluster;
+}
+
+/** Returns the top cluster for all shapes, taking into account the option of
+    Duczmal Compactness correction for ellispes.
+    NOTE: Caller should never assume that reference will remain after return from
+          get CAnalysis::GetTopCluster(), as the vector is reset for each iteration
+          of GetTopClusters(). Instead a copy should be made, using operator= method
+          and appropriate casting, to store cluster information. 
+    NOTE: This function should only be called after all iterations in
+          CAnalysis::GetTopCluster() are completed. */
+CCluster & TopClustersContainer::GetTopCluster() {
+  CCluster    * pTopCluster;
+  double        dMaximumForTotal = gData.m_pModel->GetLogLikelihoodForTotal();
+
+  //first set ratios
+  for (size_t t=0; t < gvTopShapeClusters.size(); t++)
+    gvTopShapeClusters[t]->SetRatioAndDates(gData);
+  //set the maximum cluster to the circle shape initially
+  pTopCluster = gvTopShapeClusters[0];
+  //if the there are ellipses, compare current top cluster against them
+  //note: we don't have to be concerned with whether we are comparing circles and ellipses,
+  //     the adjusted loglikelihood ratio for a circle is just the loglikelihood ratio
+  for (size_t t=1; t < gvTopShapeClusters.size(); t++)
+     if (gvTopShapeClusters[t]->ClusterDefined() && /* could be that no cluster was defined as max for iteration*/
+         gvTopShapeClusters[t]->GetDuczmalCorrectedLogLikelihoodRatio() > pTopCluster->GetDuczmalCorrectedLogLikelihoodRatio())
+       pTopCluster = gvTopShapeClusters[t];
+
+  return *pTopCluster;
+}
+
+/** Initialzies the vector of top clusters to cloned copies of cluster,
+    taking into account whether spatial shape will be a factor in analysis. */
+void TopClustersContainer::SetTopClusters(const CCluster& InitialCluster) {
+  int   i, iNumTopClusters;
+
+  try {
+    gvTopShapeClusters.DeleteAllElements();
+    //if there are ellipses and duczmal correction is true, then we need
+    //a top cluster for the circle and each ellipse shape
+    if (gData.m_pParameters->GetNumRequestedEllipses() && gData.m_pParameters->GetDuczmalCorrectEllipses())
+      iNumTopClusters = gData.m_pParameters->GetNumRequestedEllipses() + 1;
+    else
+    //else there is only one top cluster - regardless of whether there are ellipses
+      iNumTopClusters = 1;
+
+    for (i=0; i < iNumTopClusters; i++)
+       gvTopShapeClusters.push_back(InitialCluster.Clone());
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetTopClusters()","TopClustersContainer");
+    throw;
+  }
+}
+
 CAnalysis::CAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
           :SimRatios(pParameters->GetNumReplicationsRequested(), pPrintDirection) {
    try {
@@ -183,8 +267,18 @@ void CAnalysis::AllocateTopClusterList() {
 /**********************************************************************
  Comparison function for sorting clusters by descending m_ratio
  **********************************************************************/
-/*static*/ int CAnalysis::CompareClusters(const void *a, const void *b) {
+/*static*/ int CAnalysis::CompareClustersByRatio(const void *a, const void *b) {
   double rdif = (*(CCluster**)b)->m_nRatio - (*(CCluster**)a)->m_nRatio;
+  if (rdif < 0.0)   return -1;
+  if (rdif > 0.0)   return 1;
+  return 0;
+} /* CompareClusters() */
+
+/**********************************************************************
+ Comparison function for sorting clusters by descending duczmal corrected ratio.
+ **********************************************************************/
+/*static*/ int CAnalysis::CompareClustersByDuzcmalCorrectedRatio(const void *a, const void *b) {
+  double rdif = (*(CCluster**)b)->GetDuczmalCorrectedLogLikelihoodRatio() - (*(CCluster**)a)->GetDuczmalCorrectedLogLikelihoodRatio() ;
   if (rdif < 0.0)   return -1;
   if (rdif > 0.0)   return 1;
   return 0;
@@ -714,7 +808,10 @@ void CAnalysis::RankTopClusters() {
       /* Sort by descending m_ratio, without regard to overlap */
       //  SortTopClusters();
       //  if (m_nClustersToKeepEachPass != 1)
-        qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClusters);
+      if (!m_pParameters->GetDuczmalCorrectEllipses())
+        qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByRatio);
+      else  
+        qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByDuzcmalCorrectedRatio);
 
       // Remove "Undefined" clusters that have been sorted to bottome of list because ratio=-DBL_MAX
       tract_t nClustersAssigned = m_nClustersRetained;
@@ -900,7 +997,10 @@ bool CAnalysis::RepeatAnalysis()
 
 void CAnalysis::SortTopClusters()
 {
-  qsort(m_pTopClusters, m_nClustersRetained, sizeof(CCluster*), CompareClusters);
+  if (!m_pParameters->GetDuczmalCorrectEllipses())
+    qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByDuzcmalCorrectedRatio);
+  else
+    qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByDuzcmalCorrectedRatio);
 }
 
 void CAnalysis::UpdatePowerCounts(double r)
@@ -966,12 +1066,26 @@ bool CAnalysis::UpdateReport(const long lReportHistoryRunNumber) {
   return true;
 }
 
-void CAnalysis::UpdateTopClustersRank(double r)
-{
-  for (int i=m_nClustersRetained-1; i>=0; i--) {
-     if (m_pTopClusters[i]->m_nRatio > r)
-       break;
-     m_pTopClusters[i]->m_nRank++;
-  }
+/** Updates rank of top clusters by comparing simulated loglikelihood ratio(LLR)
+    with each remaining clusters LLR. If the analysis contains ellipses and is
+    duczmal correcting their LLRs, then the duczmal corrected LLR is is used
+    to rank the clusters instead of LLR. */
+void CAnalysis::UpdateTopClustersRank(double r) {
+  int   i;
+
+  //if analysis contains ellipses and they are being duczmal corrected,
+  //then we want to compare parameter 'r' with the duczmal corrected ratio
+  if (m_pParameters->GetNumRequestedEllipses() && m_pParameters->GetDuczmalCorrectEllipses())
+    for (i=m_nClustersRetained-1; i >= 0; i--) {
+       if (m_pTopClusters[i]->GetDuczmalCorrectedLogLikelihoodRatio() > r)
+         break;
+       m_pTopClusters[i]->m_nRank++;
+    }
+  else
+    for (i=m_nClustersRetained-1; i >= 0; i--) {
+       if (m_pTopClusters[i]->m_nRatio > r)
+         break;
+       m_pTopClusters[i]->m_nRank++;
+    }
 }
 

@@ -6,6 +6,29 @@
 #include "TimeEstimate.h"
 #include "SignificantRatios05.h"
 
+/** Container class to store top clusters for a spatial analysis during
+    method - GetTopCluster(). This class stores the top cluster for a
+    shape, circle and ellipses, inorder to postpone determination of top
+    cluster by adjusted loglikelihood ratio until all possibilities
+    have been calculated and ranked by loglikelihood. For most analyses, the
+    shape will not be be a factor, but for the Duczmal Compactness correction,
+    the top cluster for circles and each ellipse shape will have be retained
+    until all other calculations have been completed for each iteration of
+    function. */
+class TopClustersContainer {
+  private:
+    const CSaTScanData        & gData;
+    ZdPointerVector<CCluster>   gvTopShapeClusters;
+
+  public:
+    TopClustersContainer(const CSaTScanData & Data);
+    ~TopClustersContainer();
+
+    CCluster                  & GetTopCluster(int iShapeOffset);
+    CCluster                  & GetTopCluster();
+    void                        SetTopClusters(const CCluster& InitialCluster);
+};
+
 class CAnalysis
 {
   protected:
@@ -13,7 +36,6 @@ class CAnalysis
     CSaTScanData*               m_pData;
     BasePrint   *               gpPrintDirection;
     CSignificantRatios05        SimRatios;
-
     CCluster**                  m_pTopClusters;
     tract_t                     m_nMaxClusters, m_nClustersToKeepEachPass, m_nClustersRetained, m_nClustersReported;
     double                      m_nMinRatioToReport;
@@ -23,31 +45,27 @@ class CAnalysis
     unsigned short              guwSignificantAt005;
 
     virtual void                AllocateTopClusterList();
-    static int                  CompareClusters(const void *a, const void *b);
+    static int                  CompareClustersByRatio(const void *a, const void *b);
+    static int                  CompareClustersByDuzcmalCorrectedRatio(const void *a, const void *b);
     void                        CreateGridOutputFile(const long lReportHistoryRunNumber);
     bool                        CreateReport(time_t RunTime);
     bool                        FinalizeReport(time_t RunTime);
     virtual bool                FindTopClusters();
-    tract_t                     GetMaxNumClusters() {return m_nMaxClusters;};      // why have a protected function to get a protected variable? AJV
+    tract_t                     GetMaxNumClusters() {return m_nMaxClusters;}
     void                        InitializeTopClusterList();
-
     virtual double              MonteCarlo() = 0;
     virtual double              MonteCarloProspective() = 0;
     void                        OpenReportFile(FILE*& fp, const char* szType);
     virtual void                PerformSimulations();
     void                        PrintTopClusters(int nHowMany);
-    virtual void                RankTopClusters();  
+    virtual void                RankTopClusters();
     void                        RemoveTopClusterData();
     bool                        RepeatAnalysis();
-    virtual void                SetMaxNumClusters() {m_nMaxClusters=m_pData->m_nGridTracts;};
+    virtual void                SetMaxNumClusters() {m_nMaxClusters=m_pData->m_nGridTracts;}
     void                        SortTopClusters();
     void                        UpdatePowerCounts(double r);
     bool                        UpdateReport(const long lReportHistoryRunNumber);
     void                        UpdateTopClustersRank(double r);
-
-//    CModel*       m_pModel;
-//    virtual void MakeData();
-    //void ObtainEllipsoidSettings();
 
   public:
     CAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
@@ -58,9 +76,7 @@ class CAnalysis
     void                        DisplayTopClustersLogLikelihoods(FILE* fp);
     virtual void                DisplayTopClusters(double nMinRatio, int nReps, const long lReportHistoryRunNumber, FILE* fp=stdout);
     virtual void                DisplayTopCluster(double nMinRatio, int nReps, const long lReportHistoryRunNumber, FILE* fp=stdout);
-
     bool                        Execute(time_t RunTime);
-
     const CSaTScanData*         GetSatScanData() const { return m_pData; }
     const double                GetSimRatio01() const { return SimRatios.GetAlpha01(); }
     const double                GetSimRatio05() const { return SimRatios.GetAlpha05(); }
