@@ -161,7 +161,7 @@ void CCluster::Display(FILE*     fp,
       if (iNumSimulations)
         fprintf(fp, "%sMonte Carlo rank......: %ld/%ld\n", szSpacesOnLeft, m_nRank, iNumSimulations+1);
 
-      if (iNumSimulations > 99)
+      if (iNumSimulations > 98)
         {
         fprintf(fp, "%sP-value...............: ", szSpacesOnLeft);
         DisplayPVal(fp, iNumSimulations, szSpacesOnLeft);
@@ -256,7 +256,7 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
               fprintf(fp, "   %-12.2f", m_nMeasure);    // cluster level expected
               fprintf(fp, "   %-12.3f", GetRelativeRisk(Data.GetMeasureAdjustment()));  // cluster level rel risk
             }
-            if (bIncludePVal) {    // this is only displayed if Reps > 99
+            if (bIncludePVal) {    // this is only displayed if Reps > 98
               fprintf(fp, "     ");
               DisplayPVal(fp, iNumSimulations, szSpacesOnLeft);
             }
@@ -415,7 +415,7 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, int iNu
   float         fUnitsInOccurrence, fYears, fMonths, fDays, fIntervals, fAdjustedP_Value;
 
   try {
-    if (Data.GetParameters().GetIsProspectiveAnalysis() && Data.GetParameters().GetNumReplicationsRequested() > 99) {
+    if (Data.GetParameters().GetIsProspectiveAnalysis() && Data.GetParameters().GetNumReplicationsRequested() > 98) {
       fprintf(fp, "%sNull Occurrence.......: ", szSpacesOnLeft);
       fIntervals = Data.m_nTimeIntervals - Data.m_nProspectiveIntervalStart + 1;
       fAdjustedP_Value = 1 - pow(1 - GetPVal(iNumSimulations), 1/fIntervals);
@@ -482,6 +482,8 @@ void CCluster::DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft)
     fprintf(fp, "%.4f", pVal);
   else if (nReplicas > 99)
     fprintf(fp, "%.3f", pVal);
+  else if (nReplicas > 0)
+    fprintf(fp, "%.2f", pVal);
 }
 
 void CCluster::DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment, int nLeftMargin,

@@ -177,7 +177,7 @@ bool CAnalysis::Execute(time_t RunTime) {
 #ifdef INCLUDE_RUN_HISTORY
      // only create one history object and record to it only once ( first iteration if sequential analysis ) -- AJV
      stsRunHistoryFile historyFile(m_pParameters->GetRunHistoryFilename(), *gpPrintDirection,
-                                   m_pParameters->GetNumReplicationsRequested() > 99, m_pParameters->GetIsSequentialScanning());
+                                   m_pParameters->GetNumReplicationsRequested() > 98, m_pParameters->GetIsSequentialScanning());
      lRunNumber = historyFile.GetRunNumber();
 #endif
 
@@ -308,7 +308,7 @@ void CAnalysis::CreateGridOutputFile(const long lReportHistoryRunNumber) {
       if (m_pParameters->GetOutputClusterLevelFiles()) {
          std::auto_ptr<stsClusterData> pData( new stsClusterData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(),
                                                                  lReportHistoryRunNumber, m_pParameters->GetCoordinatesType(), m_pParameters->GetProbabiltyModelType(),
-                                                                 m_pParameters->GetDimensionsOfData(), giSimulationNumber > 99,
+                                                                 m_pParameters->GetDimensionsOfData(), giSimulationNumber > 98,
                                                                  m_pParameters->GetNumRequestedEllipses() > 0, m_pParameters->GetDuczmalCorrectEllipses()));
          if (m_nClustersRetained)
            gpPrintDirection->SatScanPrintf("Recording results for %i cluster%s...", m_nClustersRetained, (m_nClustersRetained == 1 ? "" : "s"));
@@ -409,7 +409,7 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, const long lReportHistoryRun
   try {
     if (m_nClustersRetained > 0) {
       if (m_pParameters->GetOutputAreaSpecificFiles())
-        pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->GetNumReplicationsRequested() > 99));
+        pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->GetNumReplicationsRequested() > 98));
       if (m_pTopClusters[0]->m_nRatio > nMinRatio && (giSimulationNumber == 0 || m_pTopClusters[0]->m_nRank  <= giSimulationNumber)) {
         ++m_nClustersReported;
         switch(m_nAnalysisCount) {
@@ -424,7 +424,7 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, const long lReportHistoryRun
         if (pData.get()) {
           m_pTopClusters[0]->SetAreaReport(pData.get());
           m_pTopClusters[0]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, giSimulationNumber,
-                                                  lReportHistoryRunNumber, true, giSimulationNumber > 99, 0, 0, ' ', NULL, false);
+                                                  lReportHistoryRunNumber, true, giSimulationNumber > 98, 0, 0, ' ', NULL, false);
         }
       }
       fprintf(fp, "\n");
@@ -457,7 +457,7 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, const long lReportHistoryRu
   try {
     m_nClustersReported = 0;
     if (m_pParameters->GetOutputAreaSpecificFiles())
-      pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, giSimulationNumber > 99));
+      pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, giSimulationNumber > 98));
     dSignifRatio05 = SimRatios.GetAlpha05();
     //If  no replications, attempt to display up to top 10 clusters.
     tract_t tNumClustersToDisplay(giSimulationNumber == 0 ? std::min(10, m_nClustersRetained) : m_nClustersRetained);
@@ -479,7 +479,7 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, const long lReportHistoryRu
          if (pData.get()) {
            m_pTopClusters[i]->SetAreaReport(pData.get());
            m_pTopClusters[i]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, giSimulationNumber,
-                                                    lReportHistoryRunNumber, true, giSimulationNumber > 99, 0, 0, ' ', NULL, false);
+                                                    lReportHistoryRunNumber, true, giSimulationNumber > 98, 0, 0, ' ', NULL, false);
          }
        }   // end if top cluster > minratio
     }   // end for loop
@@ -567,7 +567,7 @@ bool CAnalysis::FinalizeReport(time_t RunTime) {
         fprintf(fp, "zero, no hypothesis testing was done and no p-values were\n");
         fprintf(fp, "printed.\n");
       }
-      else if (m_pParameters->GetNumReplicationsRequested() <= 99) {
+      else if (m_pParameters->GetNumReplicationsRequested() <= 98) {
         fprintf(fp, "\nNote: The number of Monte Carlo replications was set too low,\n");
         fprintf(fp, "and a meaningful hypothesis test cannot be done.  Consequently,\n");
         fprintf(fp, "no p-values were printed.\n");
