@@ -1,11 +1,11 @@
 object frmAnalysis: TfrmAnalysis
-  Left = 183
+  Left = 182
   Top = 78
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SaTScan Analysis Settings'
   ClientHeight = 399
-  ClientWidth = 513
+  ClientWidth = 514
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -45,7 +45,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 507
     Height = 389
-    ActivePage = tbInputFiles
+    ActivePage = tbAnalysis
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input'
@@ -63,35 +63,7 @@ object frmAnalysis: TfrmAnalysis
         Height = 13
         Caption = '(Poisson Model)'
       end
-      object btnPopImport: TSpeedButton
-        Left = 334
-        Top = 189
-        Width = 23
-        Height = 21
-        Hint = 'Import population file ...'
-        Glyph.Data = {
-          DE010000424DDE01000000000000760000002800000024000000120000000100
-          04000000000068010000C40E0000C40E00001000000000000000000000000000
-          80000080000000808000800000008000800080800000C0C0C000808080000000
-          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
-          0000066666666666668888860000666666846668777780666666886668777788
-          0000666666644668FF7780666666688668FF77880000666844444468F7F78066
-          6888888868F7F7880000666486644668FF7780666886688668FF778800006664
-          86846668F7F780666886886668F7F7880000666486666668FF77806668866666
-          68FF778800006666666666688888806666666666688888880000000000006668
-          FF7F70888888886668FF7F780000877777706666888886877777786666888886
-          00008F0F0F7066666666668F7F7F786666666666000080F0F070666666666687
-          F7F778666666666600008F0F0F7066666666668F7F7F786666666666000080F0
-          F070666666666687F7F778666666666600008F0F000066666666668F7F888866
-          66666666000080F07F86666666666687F77F86666666666600008F0F78666666
-          6666668F7F786666666666660000888886666666666666888886666666666666
-          0000}
-        NumGlyphs = 2
-        ParentShowHint = False
-        ShowHint = True
-        OnClick = btnPopImportClick
-      end
-      object GroupBox1: TGroupBox
+      object grpCountData: TGroupBox
         Left = 8
         Top = 6
         Width = 485
@@ -122,80 +94,24 @@ object frmAnalysis: TfrmAnalysis
           Height = 13
           Caption = '(Bernoulli Model)'
         end
-        object btnCaseImport: TSpeedButton
-          Left = 326
-          Top = 26
-          Width = 23
-          Height = 21
-          Hint = 'Import case file ...'
-          Glyph.Data = {
-            DE010000424DDE01000000000000760000002800000024000000120000000100
-            04000000000068010000C40E0000C40E00001000000000000000000000000000
-            80000080000000808000800000008000800080800000C0C0C000808080000000
-            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
-            0000066666666666668888860000666666846668777780666666886668777788
-            0000666666644668FF7780666666688668FF77880000666844444468F7F78066
-            6888888868F7F7880000666486644668FF7780666886688668FF778800006664
-            86846668F7F780666886886668F7F7880000666486666668FF77806668866666
-            68FF778800006666666666688888806666666666688888880000000000006668
-            FF7F70888888886668FF7F780000877777706666888886877777786666888886
-            00008F0F0F7066666666668F7F7F786666666666000080F0F070666666666687
-            F7F778666666666600008F0F0F7066666666668F7F7F786666666666000080F0
-            F070666666666687F7F778666666666600008F0F000066666666668F7F888866
-            66666666000080F07F86666666666687F77F86666666666600008F0F78666666
-            6666668F7F786666666666660000888886666666666666888886666666666666
-            0000}
-          NumGlyphs = 2
-          ParentShowHint = False
-          ShowHint = True
-          OnClick = btnCaseImportClick
-        end
-        object btnControlImport: TSpeedButton
-          Left = 326
-          Top = 68
-          Width = 23
-          Height = 21
-          Hint = 'Import control file ...'
-          Glyph.Data = {
-            DE010000424DDE01000000000000760000002800000024000000120000000100
-            04000000000068010000C40E0000C40E00001000000000000000000000000000
-            80000080000000808000800000008000800080800000C0C0C000808080000000
-            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
-            0000066666666666668888860000666666846668777780666666886668777788
-            0000666666644668FF7780666666688668FF77880000666844444468F7F78066
-            6888888868F7F7880000666486644668FF7780666886688668FF778800006664
-            86846668F7F780666886886668F7F7880000666486666668FF77806668866666
-            68FF778800006666666666688888806666666666688888880000000000006668
-            FF7F70888888886668FF7F780000877777706666888886877777786666888886
-            00008F0F0F7066666666668F7F7F786666666666000080F0F070666666666687
-            F7F778666666666600008F0F0F7066666666668F7F7F786666666666000080F0
-            F070666666666687F7F778666666666600008F0F000066666666668F7F888866
-            66666666000080F07F86666666666687F77F86666666666600008F0F78666666
-            6666668F7F786666666666660000888886666666666666888886666666666666
-            0000}
-          NumGlyphs = 2
-          ParentShowHint = False
-          ShowHint = True
-          OnClick = btnControlImportClick
-        end
         object rgpPrecisionTimes: TRadioGroup
           Left = 373
           Top = 20
           Width = 100
-          Height = 69
+          Height = 70
           Caption = 'Time Included'
           ItemIndex = 0
           Items.Strings = (
             'Yes'
             'No')
-          TabOrder = 4
+          TabOrder = 6
           OnClick = rgpPrecisionTimesClick
         end
         object edtCaseFileName: TEdit
           Left = 8
           Top = 26
           Width = 284
-          Height = 21
+          Height = 22
           ParentShowHint = False
           ShowHint = True
           TabOrder = 0
@@ -205,17 +121,17 @@ object frmAnalysis: TfrmAnalysis
           Left = 8
           Top = 68
           Width = 284
-          Height = 21
+          Height = 22
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 2
+          TabOrder = 3
           OnChange = edtControlFileNameChange
         end
         object btnCaseBrowse: TButton
           Left = 298
           Top = 26
           Width = 23
-          Height = 21
+          Height = 22
           Hint = 'Browse for case file ...'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
@@ -233,7 +149,7 @@ object frmAnalysis: TfrmAnalysis
           Left = 298
           Top = 68
           Width = 23
-          Height = 21
+          Height = 22
           Hint = 'Browse for control file ...'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
@@ -244,16 +160,16 @@ object frmAnalysis: TfrmAnalysis
           ParentFont = False
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 3
+          TabOrder = 4
           OnClick = btnControlBrowseClick
         end
-        object GroupBox3: TGroupBox
+        object grpStudyPeriod: TGroupBox
           Left = 8
           Top = 96
           Width = 465
           Height = 53
           Caption = 'Study Period'
-          TabOrder = 5
+          TabOrder = 7
           object Label8: TLabel
             Left = 38
             Top = 27
@@ -417,6 +333,64 @@ object frmAnalysis: TfrmAnalysis
             OnKeyPress = NaturalNumberKeyPress
           end
         end
+        object btnCaseImport: TBitBtn
+          Left = 326
+          Top = 26
+          Width = 23
+          Height = 22
+          Hint = 'Import case file ...'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 2
+          OnClick = btnCaseImportClick
+          Glyph.Data = {
+            DE010000424DDE01000000000000760000002800000024000000120000000100
+            04000000000068010000C40E0000C40E00001000000000000000000000000000
+            80000080000000808000800000008000800080800000C0C0C000808080000000
+            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
+            0000066666666666668888860000666666846668777780666666886668777788
+            0000666666644668FF7780666666688668FF77880000666844444468F7F78066
+            6888888868F7F7880000666486644668FF7780666886688668FF778800006664
+            86846668F7F780666886886668F7F7880000666486666668FF77806668866666
+            68FF778800006666666666688888806666666666688888880000000000006668
+            FF7F70888888886668FF7F780000877777706666888886877777786666888886
+            00008F0F0F7066666666668F7F7F786666666666000080F0F070666666666687
+            F7F778666666666600008F0F0F7066666666668F7F7F786666666666000080F0
+            F070666666666687F7F778666666666600008F0F000066666666668F7F888866
+            66666666000080F07F86666666666687F77F86666666666600008F0F78666666
+            6666668F7F786666666666660000888886666666666666888886666666666666
+            0000}
+          NumGlyphs = 2
+        end
+        object btnControlImport: TBitBtn
+          Left = 326
+          Top = 68
+          Width = 23
+          Height = 22
+          Hint = 'Import control file ...'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 5
+          OnClick = btnControlImportClick
+          Glyph.Data = {
+            DE010000424DDE01000000000000760000002800000024000000120000000100
+            04000000000068010000C40E0000C40E00001000000000000000000000000000
+            80000080000000808000800000008000800080800000C0C0C000808080000000
+            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
+            0000066666666666668888860000666666846668777780666666886668777788
+            0000666666644668FF7780666666688668FF77880000666844444468F7F78066
+            6888888868F7F7880000666486644668FF7780666886688668FF778800006664
+            86846668F7F780666886886668F7F7880000666486666668FF77806668866666
+            68FF778800006666666666688888806666666666688888880000000000006668
+            FF7F70888888886668FF7F780000877777706666888886877777786666888886
+            00008F0F0F7066666666668F7F7F786666666666000080F0F070666666666687
+            F7F778666666666600008F0F0F7066666666668F7F7F786666666666000080F0
+            F070666666666687F7F778666666666600008F0F000066666666668F7F888866
+            66666666000080F07F86666666666687F77F86666666666600008F0F78666666
+            6666668F7F786666666666660000888886666666666666888886666666666666
+            0000}
+          NumGlyphs = 2
+        end
       end
       object btnAdvanced3_Yes: TBitBtn
         Left = 395
@@ -425,10 +399,9 @@ object frmAnalysis: TfrmAnalysis
         Height = 24
         Hint = 'Advanced Input Features'
         Caption = 'Advanced...'
-        Default = True
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 5
+        TabOrder = 6
         Visible = False
         OnClick = btnAdvancedParametersClick
         Glyph.Data = {
@@ -454,7 +427,7 @@ object frmAnalysis: TfrmAnalysis
         Left = 16
         Top = 189
         Width = 284
-        Height = 21
+        Height = 22
         ParentShowHint = False
         ShowHint = True
         TabOrder = 1
@@ -464,7 +437,7 @@ object frmAnalysis: TfrmAnalysis
         Left = 306
         Top = 189
         Width = 23
-        Height = 21
+        Height = 22
         Hint = 'Browse for population file ...'
         Caption = '...'
         Font.Charset = DEFAULT_CHARSET
@@ -478,12 +451,12 @@ object frmAnalysis: TfrmAnalysis
         TabOrder = 2
         OnClick = btnPopBrowseClick
       end
-      object GroupBox2: TGroupBox
+      object grpGeographical: TGroupBox
         Left = 8
         Top = 216
         Width = 485
         Height = 101
-        TabOrder = 3
+        TabOrder = 4
         object Label6: TLabel
           Left = 8
           Top = 10
@@ -498,67 +471,11 @@ object frmAnalysis: TfrmAnalysis
           Height = 13
           Caption = 'Special Grid File: (optional)'
         end
-        object btnCoordImport: TSpeedButton
-          Left = 326
-          Top = 24
-          Width = 23
-          Height = 21
-          Hint = 'Import coordinates file ...'
-          Glyph.Data = {
-            DE010000424DDE01000000000000760000002800000024000000120000000100
-            04000000000068010000C40E0000C40E00001000000000000000000000000000
-            80000080000000808000800000008000800080800000C0C0C000808080000000
-            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
-            0000066666666666668888860000666666846668777780666666886668777788
-            0000666666644668FF7780666666688668FF77880000666844444468F7F78066
-            6888888868F7F7880000666486644668FF7780666886688668FF778800006664
-            86846668F7F780666886886668F7F7880000666486666668FF77806668866666
-            68FF778800006666666666688888806666666666688888880000000000006668
-            FF7F70888888886668FF7F780000877777706666888886877777786666888886
-            00008F0F0F7066666666668F7F7F786666666666000080F0F070666666666687
-            F7F778666666666600008F0F0F7066666666668F7F7F786666666666000080F0
-            F070666666666687F7F778666666666600008F0F000066666666668F7F888866
-            66666666000080F07F86666666666687F77F86666666666600008F0F78666666
-            6666668F7F786666666666660000888886666666666666888886666666666666
-            0000}
-          NumGlyphs = 2
-          ParentShowHint = False
-          ShowHint = True
-          OnClick = btnCoordImportClick
-        end
-        object btnGridImport: TSpeedButton
-          Left = 326
-          Top = 68
-          Width = 23
-          Height = 21
-          Hint = 'Import special grid file ...'
-          Glyph.Data = {
-            DE010000424DDE01000000000000760000002800000024000000120000000100
-            04000000000068010000C40E0000C40E00001000000000000000000000000000
-            80000080000000808000800000008000800080800000C0C0C000808080000000
-            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
-            0000066666666666668888860000666666846668777780666666886668777788
-            0000666666644668FF7780666666688668FF77880000666844444468F7F78066
-            6888888868F7F7880000666486644668FF7780666886688668FF778800006664
-            86846668F7F780666886886668F7F7880000666486666668FF77806668866666
-            68FF778800006666666666688888806666666666688888880000000000006668
-            FF7F70888888886668FF7F780000877777706666888886877777786666888886
-            00008F0F0F7066666666668F7F7F786666666666000080F0F070666666666687
-            F7F778666666666600008F0F0F7066666666668F7F7F786666666666000080F0
-            F070666666666687F7F778666666666600008F0F000066666666668F7F888866
-            66666666000080F07F86666666666687F77F86666666666600008F0F78666666
-            6666668F7F786666666666660000888886666666666666888886666666666666
-            0000}
-          NumGlyphs = 2
-          ParentShowHint = False
-          ShowHint = True
-          OnClick = btnGridImportClick
-        end
         object edtCoordinateFileName: TEdit
           Left = 8
           Top = 24
           Width = 284
-          Height = 21
+          Height = 22
           ParentShowHint = False
           ShowHint = True
           TabOrder = 0
@@ -568,17 +485,17 @@ object frmAnalysis: TfrmAnalysis
           Left = 8
           Top = 68
           Width = 284
-          Height = 21
+          Height = 22
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 2
+          TabOrder = 3
           OnChange = edtGridFileNameChange
         end
         object btnCoordBrowse: TButton
           Left = 298
           Top = 24
           Width = 23
-          Height = 21
+          Height = 22
           Hint = 'Browse for coordinates file ...'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
@@ -596,7 +513,7 @@ object frmAnalysis: TfrmAnalysis
           Left = 298
           Top = 68
           Width = 23
-          Height = 21
+          Height = 22
           Hint = 'Browse for special grid file ...'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
@@ -607,21 +524,79 @@ object frmAnalysis: TfrmAnalysis
           ParentFont = False
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 3
+          TabOrder = 4
           OnClick = btnGridBrowseClick
         end
         object rgpCoordinates: TRadioGroup
           Left = 354
           Top = 16
           Width = 122
-          Height = 74
+          Height = 75
           Caption = 'Coordinates'
           ItemIndex = 0
           Items.Strings = (
             'Cartesian'
             'Latitude/Longitude')
-          TabOrder = 4
+          TabOrder = 6
           OnClick = rgpCoordinatesClick
+        end
+        object btnCoordImport: TBitBtn
+          Left = 326
+          Top = 24
+          Width = 23
+          Height = 22
+          Hint = 'Import coordinates file ...'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 2
+          OnClick = btnCoordImportClick
+          Glyph.Data = {
+            DE010000424DDE01000000000000760000002800000024000000120000000100
+            04000000000068010000C40E0000C40E00001000000000000000000000000000
+            80000080000000808000800000008000800080800000C0C0C000808080000000
+            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
+            0000066666666666668888860000666666846668777780666666886668777788
+            0000666666644668FF7780666666688668FF77880000666844444468F7F78066
+            6888888868F7F7880000666486644668FF7780666886688668FF778800006664
+            86846668F7F780666886886668F7F7880000666486666668FF77806668866666
+            68FF778800006666666666688888806666666666688888880000000000006668
+            FF7F70888888886668FF7F780000877777706666888886877777786666888886
+            00008F0F0F7066666666668F7F7F786666666666000080F0F070666666666687
+            F7F778666666666600008F0F0F7066666666668F7F7F786666666666000080F0
+            F070666666666687F7F778666666666600008F0F000066666666668F7F888866
+            66666666000080F07F86666666666687F77F86666666666600008F0F78666666
+            6666668F7F786666666666660000888886666666666666888886666666666666
+            0000}
+          NumGlyphs = 2
+        end
+        object btnGridImport: TBitBtn
+          Left = 326
+          Top = 68
+          Width = 23
+          Height = 22
+          Hint = 'Import special grid file ...'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 5
+          OnClick = btnGridImportClick
+          Glyph.Data = {
+            DE010000424DDE01000000000000760000002800000024000000120000000100
+            04000000000068010000C40E0000C40E00001000000000000000000000000000
+            80000080000000808000800000008000800080800000C0C0C000808080000000
+            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
+            0000066666666666668888860000666666846668777780666666886668777788
+            0000666666644668FF7780666666688668FF77880000666844444468F7F78066
+            6888888868F7F7880000666486644668FF7780666886688668FF778800006664
+            86846668F7F780666886886668F7F7880000666486666668FF77806668866666
+            68FF778800006666666666688888806666666666688888880000000000006668
+            FF7F70888888886668FF7F780000877777706666888886877777786666888886
+            00008F0F0F7066666666668F7F7F786666666666000080F0F070666666666687
+            F7F778666666666600008F0F0F7066666666668F7F7F786666666666000080F0
+            F070666666666687F7F778666666666600008F0F000066666666668F7F888866
+            66666666000080F07F86666666666687F77F86666666666600008F0F78666666
+            6666668F7F786666666666660000888886666666666666888886666666666666
+            0000}
+          NumGlyphs = 2
         end
       end
       object btnAdvanced3_No: TBitBtn
@@ -631,11 +606,39 @@ object frmAnalysis: TfrmAnalysis
         Height = 24
         Hint = 'Advanced Input Features'
         Caption = 'Advanced...'
-        Default = True
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 4
+        TabOrder = 5
         OnClick = btnAdvancedParametersClick
+        NumGlyphs = 2
+      end
+      object btnPopImport: TBitBtn
+        Left = 334
+        Top = 189
+        Width = 23
+        Height = 22
+        Hint = 'Import population file ...'
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 3
+        OnClick = btnPopImportClick
+        Glyph.Data = {
+          DE010000424DDE01000000000000760000002800000024000000120000000100
+          04000000000068010000C40E0000C40E00001000000000000000000000000000
+          80000080000000808000800000008000800080800000C0C0C000808080000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
+          0000066666666666668888860000666666846668777780666666886668777788
+          0000666666644668FF7780666666688668FF77880000666844444468F7F78066
+          6888888868F7F7880000666486644668FF7780666886688668FF778800006664
+          86846668F7F780666886886668F7F7880000666486666668FF77806668866666
+          68FF778800006666666666688888806666666666688888880000000000006668
+          FF7F70888888886668FF7F780000877777706666888886877777786666888886
+          00008F0F0F7066666666668F7F7F786666666666000080F0F070666666666687
+          F7F778666666666600008F0F0F7066666666668F7F7F786666666666000080F0
+          F070666666666687F7F778666666666600008F0F000066666666668F7F888866
+          66666666000080F07F86666666666687F77F86666666666600008F0F78666666
+          6666668F7F786666666666660000888886666666666666888886666666666666
+          0000}
         NumGlyphs = 2
       end
     end
@@ -883,7 +886,6 @@ object frmAnalysis: TfrmAnalysis
         Height = 24
         Hint = 'Advanced Analysis Features'
         Caption = 'Advanced...'
-        Default = True
         ParentShowHint = False
         ShowHint = True
         TabOrder = 5
@@ -915,7 +917,6 @@ object frmAnalysis: TfrmAnalysis
         Height = 24
         Hint = 'Advanced Analysis Features'
         Caption = 'Advanced...'
-        Default = True
         ParentShowHint = False
         ShowHint = True
         TabOrder = 6
@@ -1076,7 +1077,7 @@ object frmAnalysis: TfrmAnalysis
           Left = 8
           Top = 26
           Width = 391
-          Height = 21
+          Height = 22
           AutoSelect = False
           ParentShowHint = False
           ShowHint = True
@@ -1087,7 +1088,7 @@ object frmAnalysis: TfrmAnalysis
           Left = 406
           Top = 26
           Width = 23
-          Height = 21
+          Height = 22
           Hint = 'Browse for results file ...'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
@@ -1109,7 +1110,6 @@ object frmAnalysis: TfrmAnalysis
         Height = 24
         Hint = 'Advanced Output Features'
         Caption = 'Advanced...'
-        Default = True
         ParentShowHint = False
         ShowHint = True
         TabOrder = 3
@@ -1141,7 +1141,6 @@ object frmAnalysis: TfrmAnalysis
         Height = 24
         Hint = 'Advanced Output Features'
         Caption = 'Advanced...'
-        Default = True
         ParentShowHint = False
         ShowHint = True
         TabOrder = 2

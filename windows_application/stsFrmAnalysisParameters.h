@@ -39,7 +39,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TEdit *edtGridFileName;
    TEdit *edtMontCarloReps;
    TEdit *edtPopFileName;
-   TGroupBox *GroupBox2;
+   TGroupBox *grpGeographical;
    TGroupBox *gbxAdditionalOutputFiles;
    TLabel *ASCII;
    TLabel *lblCensusAreasReportedClusters;
@@ -88,7 +88,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TEdit *edtTimeIntervalLength;
    TLabel *Label11;
    TLabel *Label13;
-   TGroupBox *GroupBox1;
+   TGroupBox *grpCountData;
    TLabel *Label1;
    TLabel *Label2;
    TLabel *Label3;
@@ -103,7 +103,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TBitBtn *btnAdvanced2_No;
    TBitBtn *btnAdvanced3_No;
    TBitBtn *btnAdvanced3_Yes;
-   TGroupBox *GroupBox3;
+   TGroupBox *grpStudyPeriod;
    TLabel *Label8;
    TLabel *Label10;
    TEdit *edtStudyPeriodStartDateYear;
@@ -118,11 +118,11 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TEdit *edtStudyPeriodEndDateMonth;
    TLabel *Label18;
    TEdit *edtStudyPeriodEndDateDay;
-   TSpeedButton *btnCaseImport;
-   TSpeedButton *btnControlImport;
-   TSpeedButton *btnPopImport;
-   TSpeedButton *btnCoordImport;
-   TSpeedButton *btnGridImport;
+   TBitBtn *btnCaseImport;
+   TBitBtn *btnControlImport;
+   TBitBtn *btnPopImport;
+   TBitBtn *btnCoordImport;
+   TBitBtn *btnGridImport;
    
    void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
    void __fastcall rgpPrecisionTimesClick(TObject *Sender);
@@ -163,7 +163,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     PrintNull                   gNullPrint;
     CParameters                 gParameters;
     TfrmAdvancedParameters    * gpfrmAdvancedParameters;
-
 
     void                        Check_IntervalLength();
     void                        CheckAnalysisParams();
