@@ -202,11 +202,7 @@ double CSpaceTimeAnalysis::MonteCarloProspective()
                 {
                 //Need to re-compute duration by using current date (whatever date loop "n" is at)
                 //and the Begin Study Date.  Must use time percent specified by user...
-                iThisStartInterval = m_pData->ComputeNewCutoffInterval(m_pData->m_nStartDate,jCurrentDate);
-
-                //Now compute a new Current Date by subtracting the interval duration
-                jCurrentDate = DecrementDate(jCurrentDate, m_pParameters->m_nIntervalUnits, m_pParameters->m_nIntervalLength);
-
+                iThisStartInterval = std::max(0, n - m_pData->ComputeNewCutoffInterval(m_pData->m_nStartDate,jCurrentDate));
                 C.InitTimeIntervalIndeces(iThisStartInterval, n);
                 while (C.SetNextProspTimeInterval())
                    pMeasureList->AddMeasure(C.m_nCases, C.m_nMeasure);
