@@ -8,7 +8,7 @@
 #
 #
 SATSCAN     := /home/hostovic/prj/satscan
-BASIS       := /home/hostovic/prj/basisdev/
+BASIS       := /home/hostovic/prj/satscan/basisdev/
 INSTALLDIR  := ~/FV
 
 ##########
@@ -34,7 +34,7 @@ ZDANNEX     := /sprj/imsdev/zd
 ZDDIR       := /opt/net/utils/imsdev
 #ZDANNEX     := /opt/net/utils/imsdev/gcc3.2.2
 #ZDDIR       := /opt/net/utils/imsdev/gcc3.2.2
-ZDVER       := 540
+ZDVER       := 543
 XBASEDIR    := $(SATSCAN)/xbase/xbase_2.0.0/xbase
 XBASEDIR2   := $(SATSCAN)/xbase/xbase_2.0.0
 
