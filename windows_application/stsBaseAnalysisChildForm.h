@@ -6,6 +6,7 @@
 extern const char*  CATEGORY_ALL;
 extern const char*  CATEGORY_ANALYSIS;
 extern const char*  CATEGORY_ANALYSIS_RUN;
+extern const char*  CATEGORY_ANALYSIS_RUN_PRINT;
 
 class stsBaseAnalysisChildForm : public TForm {
    public :
