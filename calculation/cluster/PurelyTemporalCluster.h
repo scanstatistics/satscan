@@ -46,12 +46,6 @@ class CPurelyTemporalCluster : public CCluster {
 
     CPurelyTemporalCluster& CPurelyTemporalCluster::operator =(const CPurelyTemporalCluster& rhs);
 
-
-    virtual count_t                     GetCaseCount(unsigned int iStream) const;
-    virtual measure_t                   GetMeasure(unsigned int iStream) const;
-    virtual void                        SetCaseCount(unsigned int iStream, count_t tCount) {gStreamData[iStream]->gCases = tCount;}
-    virtual void                        SetMeasure(unsigned int iStream, measure_t tMeasure) {gStreamData[iStream]->gMeasure = tMeasure;}
-
     inline virtual void                 AssignAsType(const CCluster& rhs) {*this = (CPurelyTemporalCluster&)rhs;}
     virtual CPurelyTemporalCluster    * Clone() const;
     inline virtual void                 CompareTopCluster(CPurelyTemporalCluster & TopShapeCluster, const CSaTScanData & Data);
@@ -67,9 +61,13 @@ class CPurelyTemporalCluster : public CCluster {
     virtual void                        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, int nLeftMargin,
                                                              int nRightMargin, char cDeliminator, char* szSpacesOnLeft) {}
     virtual void                        DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft) {};
+    virtual count_t                     GetCaseCount(unsigned int iStream) const;
     virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual measure_t                   GetMeasure(unsigned int iStream) const;
     virtual measure_t                   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
-    virtual void                        Initialize(tract_t nCenter);
+    virtual void                        Initialize(tract_t nCenter=0);
+    virtual void                        SetCaseCount(unsigned int iStream, count_t tCount) {gStreamData[iStream]->gCases = tCount;}
+    virtual void                        SetMeasure(unsigned int iStream, measure_t tMeasure) {gStreamData[iStream]->gMeasure = tMeasure;}
 };
 //*****************************************************************************
 #endif

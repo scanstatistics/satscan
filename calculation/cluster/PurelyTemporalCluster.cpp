@@ -99,14 +99,17 @@ void CPurelyTemporalCluster::CompareTopCluster(CPurelyTemporalCluster & TopShape
   m_bClusterDefined = true;
 
   if (Data.GetNumDataStreams() > 1)
-     m_TI->CompareDataStreamClusters(*this, TopShapeCluster, gStreamData);
-  else
-     m_TI->CompareClusters(*this, TopShapeCluster, gStreamData[0]->gpCases, gStreamData[0]->gpMeasure, gStreamData[0]->gpSqMeasure);
+    m_TI->CompareDataStreamClusters(*this, TopShapeCluster, gStreamData);
+  else {
+    AbstractTemporalClusterStreamData * pStreamData = gStreamData[0];
+    m_TI->CompareClusters(*this, TopShapeCluster, pStreamData->gpCases, pStreamData->gpMeasure, pStreamData->gpSqMeasure);
+  }
 }
 
 /** modifies measure list given this cluster definition */
 void CPurelyTemporalCluster::ComputeBestMeasures(const CSaTScanData& Data, CMeasureList & MeasureList) {
-  m_TI->ComputeBestMeasures(gStreamData[0]->gpCases, gStreamData[0]->gpMeasure, gStreamData[0]->gpSqMeasure, MeasureList);
+  AbstractTemporalClusterStreamData * pStreamData = gStreamData[0];
+  m_TI->ComputeBestMeasures(pStreamData->gpCases, pStreamData->gpMeasure, pStreamData->gpSqMeasure, MeasureList);
 }
 
 void CPurelyTemporalCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, int nCluster,
@@ -188,7 +191,7 @@ void CPurelyTemporalCluster::Setup(const DataStreamGateway & DataGateway, Includ
        gStreamData[t]->gTotalMeasure = Data.GetTotalDataStreamMeasure(t);
        gStreamData[t]->gTotalCases = Data.GetTotalDataStreamCases(t);
     }
-    Initialize(0);
+    Initialize();
   }
   catch (ZdException &x) {
     delete m_TI;
@@ -214,7 +217,7 @@ void CPurelyTemporalCluster::Setup(const DataStreamInterface & Interface, Includ
     gStreamData[0] = new TemporalClusterStreamData(Interface.GetPTCaseArray(), Interface.GetPTMeasureArray(), 0);
     gStreamData[0]->gTotalMeasure = Data.GetTotalDataStreamMeasure(0);
     gStreamData[0]->gTotalCases = Data.GetTotalDataStreamCases(0);
-    Initialize(0);
+    Initialize();
   }
   catch (ZdException &x) {
     delete m_TI;
