@@ -71,7 +71,8 @@ USEUNIT("..\calculation\Output\stsOutputDBF.cpp");
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         try {
            BasisInit();
-           chdir( Application->ExeName.c_str() );
+           ZdFileName sAppName(Application->ExeName.c_str());
+           chdir( sAppName.GetLocation() );
            ZdGetFileTypeArray()->AddElement( &(DBFFileType::GetDefaultInstance()) );
            Application->Initialize();
            Application->Title = "SaTScan";
