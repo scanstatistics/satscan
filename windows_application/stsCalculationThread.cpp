@@ -77,10 +77,10 @@ void __fastcall CalcThread::Execute() {
     gpPrintWindow->SatScanPrintf(GetToolkit().GetAcknowledgment(Acknowledgment));
 
     time(&RunTime);         // Pass to analysis to include in report
-    if (!gpParams->ValidateParameters())
+    if (!gpParams->ValidateParameters(*gpPrintWindow))
        SSGenerateException("\nInvalid parameter(s) encountered. Job cancelled.", "Execute()");
 
-    switch (gpParams->m_nAnalysisType) {
+    switch (gpParams->GetAnalysisType()) {
        case PURELYSPATIAL        : gpData = new CPurelySpatialData(gpParams, gpPrintWindow);  break;
        case PURELYTEMPORAL       : gpData = new CPurelyTemporalData(gpParams, gpPrintWindow); break;
        case SPACETIME            : gpData = new CSpaceTimeData(gpParams, gpPrintWindow);      break;
@@ -90,28 +90,28 @@ void __fastcall CalcThread::Execute() {
 
     if (! IsCancelled()) {
       gpData->ReadDataFromFiles();
-      switch (gpParams->m_nAnalysisType) {
-         case PURELYSPATIAL        : if (gpParams->m_nRiskFunctionType == STANDARDRISK)
+      switch (gpParams->GetAnalysisType()) {
+         case PURELYSPATIAL        : if (gpParams->GetRiskType() == STANDARDRISK)
                                        gpAnalysis = new CPurelySpatialAnalysis(gpParams, gpData, gpPrintWindow);
-                                     else if (gpParams->m_nRiskFunctionType == MONOTONERISK)
+                                     else if (gpParams->GetRiskType() == MONOTONERISK)
                                        gpAnalysis = new CPSMonotoneAnalysis(gpParams, gpData, gpPrintWindow);
                                      break;
          case PURELYTEMPORAL       : gpAnalysis = new CPurelyTemporalAnalysis(gpParams, gpData, gpPrintWindow);
                                      break;
-         case SPACETIME            : if (gpParams->m_bIncludePurelySpatial && gpParams->m_bIncludePurelyTemporal)
+         case SPACETIME            : if (gpParams->GetIncludePurelySpatialClusters() && gpParams->GetIncludePurelyTemporalClusters())
                                        gpAnalysis = new C_ST_PS_PT_Analysis(gpParams, gpData, gpPrintWindow);
-                                     else if (gpParams->m_bIncludePurelySpatial)
+                                     else if (gpParams->GetIncludePurelySpatialClusters())
                                        gpAnalysis = new C_ST_PS_Analysis(gpParams, gpData, gpPrintWindow);
-                                     else if (gpParams->m_bIncludePurelyTemporal)
+                                     else if (gpParams->GetIncludePurelyTemporalClusters())
                                        gpAnalysis = new C_ST_PT_Analysis(gpParams, gpData, gpPrintWindow);
                                      else
                                        gpAnalysis = new CSpaceTimeAnalysis(gpParams, gpData, gpPrintWindow);
                                      break;
-         case PROSPECTIVESPACETIME : if (gpParams->m_bIncludePurelySpatial && gpParams->m_bIncludePurelyTemporal)
+         case PROSPECTIVESPACETIME : if (gpParams->GetIncludePurelySpatialClusters() && gpParams->GetIncludePurelyTemporalClusters())
                                        gpAnalysis = new C_ST_PS_PT_Analysis(gpParams, gpData, gpPrintWindow);
-                                     else if (gpParams->m_bIncludePurelySpatial)
+                                     else if (gpParams->GetIncludePurelySpatialClusters())
                                        gpAnalysis = new C_ST_PS_Analysis(gpParams, gpData, gpPrintWindow);
-                                     else if (gpParams->m_bIncludePurelyTemporal)
+                                     else if (gpParams->GetIncludePurelyTemporalClusters())
                                        gpAnalysis = new C_ST_PT_Analysis(gpParams, gpData, gpPrintWindow);
                                      else
                                        gpAnalysis = new CSpaceTimeAnalysis(gpParams, gpData, gpPrintWindow);
@@ -264,7 +264,6 @@ void CalcThread::Setup(const CParameters& session, char *pTitle) {
     gpParams->SetRunHistoryFilename(GetToolkit().GetRunHistoryFileName());
     gpParams->SetIsLoggingHistory(GetToolkit().GetLogRunHistory());
     gpPrintWindow = new PrintWindow(*this);
-    gpParams->SetPrintDirection(gpPrintWindow);
     gpParams->ConvertMaxTemporalClusterSizeToType(PERCENTAGETYPE);
     gsThreadTitle = pTitle;
     Priority = tpNormal;  //tpHighest
