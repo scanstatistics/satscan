@@ -171,14 +171,15 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     CParameters                 gParameters;
     TfrmAdvancedParameters    * gpfrmAdvancedParameters;  
 
-    bool                        Check_IntervalLength();
-    bool                        CheckAnalysisParams();
-    bool                        CheckOutputParams();
-    bool                        CheckProspDateRange();
-    bool                        CheckReplicas();
-    bool                        CheckScanningWindowParams();
-    bool                        CheckStudyPeriodDatesRange();
-    bool                        CheckTimeParams();
+    void                        Check_IntervalLength();
+    void                        CheckAnalysisParams();
+    void                        CheckDate(const char * sDateTitle, TEdit& Year, TEdit& Month, TEdit& Day,  TTabSheet& Container);
+    void                        CheckOutputParams();
+    void                        CheckProspDateRange();
+    void                        CheckReplicas();
+    void                        CheckScanningWindowParams();
+    void                        CheckStudyPeriodDatesRange();
+    void                        CheckTimeParams();
     void                        DefaultHiddenParameters();
     void                        EnableAdditionalOutFilesOptionsGroup(bool bRelativeRisks);
     void                        EnableDatesByTimeIntervalUnits();
@@ -197,6 +198,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     ZdDate                    & GetStudyPeriodStartDate(ZdDate & Date);
     DatePrecisionType           GetTimeIntervalControlType() const;
     void                        Init();
+    bool                        IsValidReplicationRequest(int iReplications);
     void                        OnAnalysisTypeClick();
     void                        OnPrecisionTimesClick();
     void                        OnProbabilityModelClick();
@@ -209,9 +211,9 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        SetSpatialDistanceCaption();
     void                        Setup(const char * sParameterFileName);
     void                        SetupInterface();
-    bool                        ValidateInputFiles();
-    bool                        ValidateSpatialClusterSize();
-    bool                        ValidateTemoralClusterSize();
+    void                        ValidateInputFiles();
+    void                        ValidateSpatialClusterSize();
+    void                        ValidateTemoralClusterSize();
     bool                        VerifyUnitAndLength();
 
 protected:

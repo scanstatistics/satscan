@@ -141,37 +141,48 @@ void __fastcall TfrmAnalysis::btnResultFileBrowseClick(TObject *Sender) {
   }
 }
 
-/** Displays message box if time interval length is less than zero.
-    Returns whether time interval length is valid. */
-bool TfrmAnalysis::Check_IntervalLength() {
-    if (atoi(edtTimeIntervalLength->Text.c_str()) < 1) {
-      Application->MessageBox("Interval length can not be zero. "
-                              "Please specify an interval length.", "Notification" , MB_OK);
-       return false;
-    }
-    else
-       return true;
+/** Validates time interval length is not less than zero. */
+void TfrmAnalysis::Check_IntervalLength() {
+  if (edtTimeIntervalLength->Text.IsEmpty() || atoi(edtTimeIntervalLength->Text.c_str()) < 1) {
+    PageControl1->ActivePage = tbTimeParameter;
+    edtTimeIntervalLength->SetFocus();
+    ZdException::GenerateNotification("Please specify an interval length greater than zero.","Check_IntervalLength()");
+  }
 }
 
 /** Checks all the parameters on the 'Analysis' tab. Returns whether tab is valid. */
-bool TfrmAnalysis::CheckAnalysisParams() {
-  bool bParamsOk = true;
-
+void TfrmAnalysis::CheckAnalysisParams() {
   try {
-    if (bParamsOk)
-      bParamsOk = CheckStudyPeriodDatesRange();
-    if (bParamsOk)
-      bParamsOk = CheckReplicas();
+    CheckReplicas();
   }
   catch (ZdException & x) {
     x.AddCallpath("CheckAnalysisParams()", "TfrmAnalysis");
     throw;
   }
-  return bParamsOk;
+}
+
+/** checks that date, comprised of passed TEdit controls is not missing text
+    -- focuses control and throw exception */
+void TfrmAnalysis::CheckDate(const char * sDateTitle, TEdit& Year, TEdit& Month, TEdit& Day,  TTabSheet& Container) {
+  if (Year.Text.IsEmpty()) {
+    PageControl1->ActivePage = &Container;
+    Year.SetFocus();
+    ZdException::GenerateNotification("Please specify a year for the %s.","CheckProspDateRange()", sDateTitle);
+  }
+  if (Month.Text.IsEmpty()) {
+    PageControl1->ActivePage = &Container;
+    Month.SetFocus();
+    ZdException::GenerateNotification("Please specify a month for the %s.","CheckProspDateRange()", sDateTitle);
+  }
+  if (Day.Text.IsEmpty()) {
+    PageControl1->ActivePage = &Container;
+    Day.SetFocus();
+    ZdException::GenerateNotification("Please specify a day for the %s.","CheckProspDateRange()", sDateTitle);
+  }
 }
 
 /** Verifies all parameters on the 'Output Files' tab. Returns whether tab is valid.*/
-bool TfrmAnalysis::CheckOutputParams() {
+void TfrmAnalysis::CheckOutputParams() {
   ZdFileName    OutPutFileName;
 
   try {
@@ -193,17 +204,18 @@ bool TfrmAnalysis::CheckOutputParams() {
     edtResultFile->SetFocus();
     throw;
   }
-  return true;
 }
 
 /** Specific prospective space-time date check
     Must be between the start and end dates of the analysis */
-bool TfrmAnalysis::CheckProspDateRange() {
-  bool          bRangeOk = true;
+void TfrmAnalysis::CheckProspDateRange() {
   Julian        Start, End, Prosp;
   int           iProspYear, iProspMonth, iProspDay;
 
   try {
+    CheckDate("prospective start date", *edtProspectiveStartDateYear, *edtProspectiveStartDateMonth,
+              *edtProspectiveStartDateDay,  *tbTimeParameter);
+
     Start = MDYToJulian(atoi(edtStudyPeriodStartDateMonth->Text.c_str()),
                         atoi(edtStudyPeriodStartDateDay->Text.c_str()),
                         atoi(edtStudyPeriodStartDateYear->Text.c_str()));
@@ -216,55 +228,44 @@ bool TfrmAnalysis::CheckProspDateRange() {
     Prosp = MDYToJulian(iProspMonth, iProspDay, iProspYear);
 
     if ((Prosp < Start) || (Prosp > End)) {
-      Application->MessageBox("The prospective start date must be between the study period start and end dates.",
-                              "Notification" , MB_OK);
       PageControl1->ActivePage = tbTimeParameter;
       edtProspectiveStartDateYear->SetFocus();
-      bRangeOk = false;
+      ZdException::GenerateNotification("The prospective start date must be between the study period start and end dates.",
+                                        "CheckProspDateRange()");
     }
   }
   catch (ZdException & x) {
     x.AddCallpath("CheckProspDateRange()", "TfrmAnalysis");
     throw;
   }
-  return bRangeOk;
 }
 
 /** Checks Monte Carlo replications */
-bool TfrmAnalysis::CheckReplicas() {
-  int   iNumSimulations = atoi(edtMontCarloReps->Text.c_str());
-
-  if (! ((iNumSimulations == 0) || (iNumSimulations == 9) ||
-        (iNumSimulations == 19) || (fmod(iNumSimulations+1, 1000) == 0.0)) ) {
-      Application->MessageBox("Invalid number of Monte Carlo replications.\n"
-                              "Choices are: 9, 999, or value ending in 999.", "Notification" , MB_OK);
-      return false;
-    }
-    else
-       return true;
+void TfrmAnalysis::CheckReplicas() {
+  if (edtMontCarloReps->Text.IsEmpty() || !IsValidReplicationRequest(atoi(edtMontCarloReps->Text.c_str()))) {
+    PageControl1->ActivePage = tbAnalysis;
+    edtMontCarloReps->SetFocus();
+    ZdException::GenerateNotification("Invalid number of Monte Carlo replications.\nChoices are: 9, 999, or value ending in 999.", "CheckReplicas()");
+  }
 }
 
 /** Checks the validity of the 'Scanning Window' tab */
-bool TfrmAnalysis::CheckScanningWindowParams() {
-  bool  bValid=true;
-
+void TfrmAnalysis::CheckScanningWindowParams() {
   try {
-    bValid = ValidateTemoralClusterSize();
-    if (bValid)
-      bValid = ValidateSpatialClusterSize();
-    if (bValid)
-      gpfrmAdvancedParameters->ValidateScanningWindowSettings();
-  }    
+    ValidateTemoralClusterSize();
+    ValidateSpatialClusterSize();
+    gpfrmAdvancedParameters->ValidateScanningWindowSettings();
+  }
   catch (ZdException &x) {
     x.AddCallpath("CheckScanningWindowParams()","TfrmAnalysis");
     throw;
   }
-  return bValid;
 }
+
 
 /** Checks the relationship between a start date, end date, and interval length.
     Display message box regarding errors when appropriate. Return whether relationship is valid. */
-bool TfrmAnalysis::CheckStudyPeriodDatesRange() {
+void TfrmAnalysis::CheckStudyPeriodDatesRange() {
   bool          bRangeOk = true;
   ZdString      sErrorMessage;
   ZdDate        StartDate, EndDate;
@@ -273,6 +274,11 @@ bool TfrmAnalysis::CheckStudyPeriodDatesRange() {
   int           iIntervalLength(atoi(edtTimeIntervalLength->Text.c_str()));
 
   try {
+    CheckDate("study period start date", *edtStudyPeriodStartDateYear, *edtStudyPeriodStartDateMonth,
+              *edtStudyPeriodStartDateDay,  *tbTimeParameter);
+    CheckDate("study period end date", *edtStudyPeriodEndDateYear, *edtStudyPeriodEndDateMonth,
+              *edtStudyPeriodEndDateDay,  *tbTimeParameter);
+
     GetStudyPeriodStartDate(StartDate);
     GetStudyPeriodEndDate(EndDate);
 
@@ -283,9 +289,9 @@ bool TfrmAnalysis::CheckStudyPeriodDatesRange() {
       DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), EndDate.GetRawDate());
       sErrorMessage << " does not occur before study period end date of " << FilterBuffer;
       sErrorMessage << ".\nPlease review settings.";
-      Application->MessageBox(sErrorMessage.GetCString(), "Notification" , MB_OK);
-      PageControl1->ActivePage = tbAnalysis;
-      bRangeOk = false;
+      PageControl1->ActivePage = tbTimeParameter;
+      edtStudyPeriodStartDateYear->SetFocus();
+      ZdException::GenerateNotification(sErrorMessage.GetCString(),"CheckStudyPeriodDatesRange()");
     }
 
     if (GetAnalysisControlType() != PURELYSPATIAL)  {/* purely spatial does not use interval length */
@@ -293,27 +299,25 @@ bool TfrmAnalysis::CheckStudyPeriodDatesRange() {
       //(.i.e. can't have study period that is 20 days and intervals of 3 months)
       //to make start and end day inclusive - add 1 to end date
       EndDate.AddDays(1);
-      if (bRangeOk) {
-        switch (GetTimeIntervalControlType()) {
-          case      YEAR      : StartDate.AddYears(static_cast<unsigned short>(iIntervalLength));
-                                strcpy(FilterBuffer,"year(s)");
-                                break;
-          case      MONTH     : StartDate.AddMonths(static_cast<unsigned short>(iIntervalLength));
-                                strcpy(FilterBuffer,"month(s)");
-                                break;
-          case      DAY       : StartDate.AddDays(static_cast<unsigned short>(iIntervalLength));
-                                strcpy(FilterBuffer,"day(s)");
-                                break;
-          default             : ZdGenerateException("Unknown interval unit \"%d\"","CheckDateRange()",GetTimeIntervalControlType());
-        };
+      switch (GetTimeIntervalControlType()) {
+        case      YEAR      : StartDate.AddYears(static_cast<unsigned short>(iIntervalLength));
+                              strcpy(FilterBuffer,"year(s)");
+                              break;
+        case      MONTH     : StartDate.AddMonths(static_cast<unsigned short>(iIntervalLength));
+                              strcpy(FilterBuffer,"month(s)");
+                              break;
+        case      DAY       : StartDate.AddDays(static_cast<unsigned short>(iIntervalLength));
+                              strcpy(FilterBuffer,"day(s)");
+                              break;
+        default             : ZdGenerateException("Unknown interval unit \"%d\"","CheckDateRange()",GetTimeIntervalControlType());
+      };
 
-        if (StartDate > EndDate) {
-          sErrorMessage << "Interval length of " << iIntervalLength << " " << FilterBuffer;
-          sErrorMessage << " is greater than study period length.\nPlease review settings.";
-          Application->MessageBox(sErrorMessage.GetCString(), "Notification" , MB_OK);
-          PageControl1->ActivePage = tbTimeParameter;
-          bRangeOk = false;
-        }
+      if (StartDate > EndDate) {
+        sErrorMessage << "Interval length of " << iIntervalLength << " " << FilterBuffer;
+        sErrorMessage << " is greater than study period length.\nPlease review settings.";
+        PageControl1->ActivePage = tbTimeParameter;
+        edtTimeIntervalLength->SetFocus();
+        ZdException::GenerateNotification(sErrorMessage.GetCString(),"CheckStudyPeriodDatesRange()");
       }
     }
   }
@@ -321,29 +325,23 @@ bool TfrmAnalysis::CheckStudyPeriodDatesRange() {
     x.AddCallpath("CheckStudyPeriodDatesRange()", "TfrmAnalysis");
     throw;
   }
-  return bRangeOk;
 }
 
 /** Checks 'Time Parameters' tab */
-bool TfrmAnalysis::CheckTimeParams() {
-  bool bParamsOk = true;
+void TfrmAnalysis::CheckTimeParams() {
   double dValue;
 
   try {
-    if (GetAnalysisControlType() != PURELYSPATIAL) { //not purely spacial    use to be 0
-      if (edtTimeIntervalLength->Enabled)
-         bParamsOk = Check_IntervalLength();
-      //just need to check if the Prospective year is enabled.
-      // if year is enabled, then all others are too...
-      if (bParamsOk && edtProspectiveStartDateYear->Enabled)
-         bParamsOk = CheckProspDateRange();
-    }
+    if (edtTimeIntervalLength->Enabled)
+      Check_IntervalLength();
+    CheckStudyPeriodDatesRange();
+    if (chkAdjustForEarlierAnalyses->Enabled && chkAdjustForEarlierAnalyses->Checked)
+      CheckProspDateRange();
   }
   catch (ZdException & x) {
     x.AddCallpath("CheckTimeParams()", "TfrmAnalysis");
     throw;
   }
-  return bParamsOk;
 }
 
 /** event triggered when 'adjustment for ealier analyses' checkbox if clicked */
@@ -405,45 +403,21 @@ void __fastcall TfrmAnalysis::edtGridFileNameChange(TObject *Sender) {
 
 /** event triggered when maximum spatial cluster size edit control is exited. */
 void __fastcall TfrmAnalysis::edtMaxSpatialClusterSizeExit(TObject *Sender) {
-  try {
-    if (!edtMaxSpatialClusterSize->Text.Length() || atof(edtMaxSpatialClusterSize->Text.c_str()) == 0)
-      ZdException::GenerateNotification("Please specify a maximum spatial cluster size.","edtMaxSpatialClusterSizeExit()");
-    SetReportingSmallerClustersText();
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("edtMaxSpatialClusterSizeExit()", "TfrmAnalysis");
-    PageControl1->ActivePage = tbScanningWindow;
-    edtMaxSpatialClusterSize->SetFocus();
-    DisplayBasisException(this, x);           
-  }
+  if (edtMaxSpatialClusterSize->Text.IsEmpty() || atof(edtMaxSpatialClusterSize->Text.c_str()) == 0)
+    edtMaxSpatialClusterSize->Text = 50;
+  SetReportingSmallerClustersText();
 }
 
 /** event triggered when maximum temporal cluster size edit control is exited. */
 void __fastcall TfrmAnalysis::edtMaxTemporalClusterSizeExit(TObject *Sender) {
-  try {
-    if (!edtMaxTemporalClusterSize->Text.Length() || atof(edtMaxTemporalClusterSize->Text.c_str()) == 0)
-      ZdException::GenerateNotification("Please specify a maximum temporal cluster size.","edtMaxTemporalClusterSizeExit()");
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("edtMaxTemporalClusterSizeExit()", "TfrmAnalysis");
-    PageControl1->ActivePage = tbScanningWindow;
-    edtMaxTemporalClusterSize->SetFocus();
-    DisplayBasisException(this, x);
-  }
+  if (edtMaxTemporalClusterSize->Text.IsEmpty() || atof(edtMaxTemporalClusterSize->Text.c_str()) == 0)
+    edtMaxTemporalClusterSize->Text = 50;
 }
 
 /** event triggered when Monte Carlo replications control is exited. */
 void __fastcall TfrmAnalysis::edtMontCarloRepsExit(TObject *Sender) {
-  try {
-     if (! CheckReplicas()) {
-       PageControl1->ActivePage = tbAnalysis;
-       edtMontCarloReps->SetFocus();
-     }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("edtMontCarloRepsExit()", "TfrmAnalysis");
-    DisplayBasisException(this, x);
-  }
+  if (edtMontCarloReps->Text.IsEmpty() || !IsValidReplicationRequest(atoi(edtMontCarloReps->Text.c_str())))
+    edtMontCarloReps->Text = 999;
 }
 
 /** event triggered when population file edit control text changes */
@@ -472,11 +446,8 @@ void __fastcall TfrmAnalysis::edtStudyPeriodStartDateExit(TObject *Sender) {
 
 /** event triggered when month control, of prospective start date, is exited. */
 void __fastcall TfrmAnalysis::edtTimeIntervalLengthExit(TObject *Sender) {
-  bool bParamsOk = Check_IntervalLength();
-  if (! bParamsOk) {
-    PageControl1->ActivePage = tbTimeParameter;
-    edtTimeIntervalLength->SetFocus();
-  }
+  if (edtTimeIntervalLength->Text.IsEmpty() || atoi(edtTimeIntervalLength->Text.c_str()) < 1)
+    edtTimeIntervalLength->Text = 1;
 }
 
 /** enables/disables the appropraite buttons and controls based on their category type */
@@ -810,6 +781,11 @@ void TfrmAnalysis::Init() {
   cboCriteriaSecClusters->ItemIndex = 0;
   rgPrecisionTimes->ItemIndex = -1; //ensures that click event will trigger
   gpfrmAdvancedParameters = 0;
+}
+
+/** returns whether replications are correct */
+bool TfrmAnalysis::IsValidReplicationRequest(int iReplications) {
+  return  (iReplications == 0 || iReplications == 9 || iReplications == 19 || fmod(iReplications+1, 1000) == 0.0);
 }
 
 /** Modally shows import dialog. */
@@ -1233,11 +1209,20 @@ void TfrmAnalysis::SetupInterface() {
     SetAreaScanRateControl(gParameters.GetAreaScanRateType());
     ParseDate(gParameters.GetStudyPeriodStartDate().c_str(), edtStudyPeriodStartDateYear, edtStudyPeriodStartDateMonth, edtStudyPeriodStartDateDay);
     ParseDate(gParameters.GetStudyPeriodEndDate().c_str(), edtStudyPeriodEndDateYear, edtStudyPeriodEndDateMonth, edtStudyPeriodEndDateDay);
-    edtMontCarloReps->Text = gParameters.GetNumReplicationsRequested();
+    if (IsValidReplicationRequest(gParameters.GetNumReplicationsRequested()))
+      edtMontCarloReps->Text = gParameters.GetNumReplicationsRequested();
+    else
+      edtMontCarloReps->Text = 999;
     //Scanning Window Tab
-    edtMaxSpatialClusterSize->Text = gParameters.GetMaximumGeographicClusterSize();
+    if (gParameters.GetMaximumGeographicClusterSize() > 0)
+      edtMaxSpatialClusterSize->Text = gParameters.GetMaximumGeographicClusterSize();
+    else
+      edtMaxSpatialClusterSize->Text = 50;
     chkInclPurTempClust->Checked = gParameters.GetIncludePurelyTemporalClusters();
-    edtMaxTemporalClusterSize->Text = gParameters.GetMaximumTemporalClusterSize();
+    if (gParameters.GetMaximumTemporalClusterSize() > 0)
+      edtMaxTemporalClusterSize->Text = gParameters.GetMaximumTemporalClusterSize();
+    else
+      edtMaxTemporalClusterSize->Text = 50;
     rdoPercentageTemproal->Checked = gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE;
     rdoTimeTemproal->Checked = gParameters.GetMaximumTemporalClusterSizeType() == TIMETYPE;
     chkIncludePurSpacClust->Checked = gParameters.GetIncludePurelySpatialClusters();
@@ -1247,10 +1232,10 @@ void TfrmAnalysis::SetupInterface() {
     SetReportingSmallerClustersText();
     //Time Parameter Tab
     if (gParameters.GetTimeIntervalUnitsType() == NONE) gParameters.SetTimeIntervalUnitsType(YEAR);
-    if (gParameters.GetTimeIntervalLength() == 0) gParameters.SetTimeIntervalLength(1);
-    rbUnitYear->Checked = (gParameters.GetTimeIntervalUnitsType() == YEAR);  // use to be 0
-    rbUnitMonths->Checked = (gParameters.GetTimeIntervalUnitsType() == MONTH);  // use to be 1
-    rbUnitDay->Checked = (gParameters.GetTimeIntervalUnitsType() == DAY);  // use to be 2
+    if (gParameters.GetTimeIntervalLength() <= 0) gParameters.SetTimeIntervalLength(1);
+    rbUnitYear->Checked = (gParameters.GetTimeIntervalUnitsType() == YEAR);
+    rbUnitMonths->Checked = (gParameters.GetTimeIntervalUnitsType() == MONTH);
+    rbUnitDay->Checked = (gParameters.GetTimeIntervalUnitsType() == DAY);  
     edtTimeIntervalLength->Text = gParameters.GetTimeIntervalLength();
     chkAdjustForEarlierAnalyses->Checked = gParameters.GetAdjustForEarlierAnalyses();
     if (gParameters.GetProspectiveStartDate().length() > 0)
@@ -1326,70 +1311,61 @@ void TfrmAnalysis::ValidateDate(TEdit& YearControl, TEdit& MonthControl, TEdit& 
 }
 
 /** Validates 'Input Files' tab */
-bool TfrmAnalysis::ValidateInputFiles() {
-  bool bOk = true;
-
+void TfrmAnalysis::ValidateInputFiles() {
   try {
-    if (edtCaseFileName->Enabled) {// case file edit box enabled
-      if (edtCaseFileName->Text.IsEmpty()) {
-        Application->MessageBox("Please specify a case file.", "Parameter Error" , MB_OK);
-        bOk = false;
-      }
-      else
-        bOk = ValidateFileExists(edtCaseFileName->Text, "Case");
-
-      if (!bOk) {
-        PageControl1->ActivePage = tbInputFiles;
-        edtCaseFileName->SetFocus();
-      }
+    //validate the case file
+    if (edtCaseFileName->Text.IsEmpty()) {
+      PageControl1->ActivePage = tbInputFiles;
+      edtCaseFileName->SetFocus();
+      ZdException::GenerateNotification("Please specify a case file.","ValidateInputFiles()");
     }
-    //Control file for Bernoulli model only
-    if (bOk & GetModelControlType() == BERNOULLI) {// Control file edit box enabled
+    if (!File_Exists(edtCaseFileName->Text.c_str())) {
+      PageControl1->ActivePage = tbInputFiles;
+      edtCaseFileName->SetFocus();
+      ZdException::GenerateNotification("Case file could not be opened.","ValidateInputFiles()");
+    }
+    //validate the control file - Bernoulli model only
+    if (GetModelControlType() == BERNOULLI) {
       if (edtControlFileName->Text.IsEmpty()) {
-        Application->MessageBox("For the Bernoulli model, please specify a control file.", "Parameter Error" , MB_OK);
-        bOk = false;
-      }
-      else
-        bOk = ValidateFileExists(edtControlFileName->Text, "Control");
-
-      if (!bOk) {
         PageControl1->ActivePage = tbInputFiles;
         edtControlFileName->SetFocus();
+        ZdException::GenerateNotification("For the Bernoulli model, please specify a control file.","ValidateInputFiles()");
+      }
+      if (!File_Exists(edtControlFileName->Text.c_str())) {
+        PageControl1->ActivePage = tbInputFiles;
+        edtControlFileName->SetFocus();
+        ZdException::GenerateNotification("Control file could not be opened.","ValidateInputFiles()");
       }
     }
-    //Pop file for Poisson model only
-    if (bOk & GetModelControlType() == POISSON) {// Population file edit box enabled
+    //validate the population file -  Poisson model only
+    if (GetModelControlType() == POISSON) {
       if (edtPopFileName->Text.IsEmpty()) {
-        Application->MessageBox("For the Poisson model, please specify a population file.", "Parameter Error" , MB_OK);
-        bOk = false;
-      }
-      else
-        bOk = ValidateFileExists(edtPopFileName->Text, "Population");
-
-      if (!bOk) {
         PageControl1->ActivePage = tbInputFiles;
         edtPopFileName->SetFocus();
+        ZdException::GenerateNotification("For the Poisson model, please specify a population file.","ValidateInputFiles()");
+      }
+      if (!File_Exists(edtPopFileName->Text.c_str())) {
+        PageControl1->ActivePage = tbInputFiles;
+        edtPopFileName->SetFocus();
+        ZdException::GenerateNotification("Population file could not be opened.","ValidateInputFiles()");
       }
     }
-    if (bOk & edtCoordinateFileName->Enabled) {// Coordinates file edit box enabled
-      if (edtCoordinateFileName->Text.IsEmpty()) {
-        Application->MessageBox("Please specify a coordinates file.", "Parameter Error" , MB_OK);
-        bOk = false;
-      }
-      else
-        bOk = ValidateFileExists(edtCoordinateFileName->Text, "Coordinate");
-
-      if (!bOk) {
-        PageControl1->ActivePage = tbInputFiles;
-        edtCoordinateFileName->SetFocus();
-      }
+    //validate coordinates file
+    if (edtCoordinateFileName->Text.IsEmpty()) {
+      PageControl1->ActivePage = tbInputFiles;
+      edtCoordinateFileName->SetFocus();
+      ZdException::GenerateNotification("Please specify a coordinates file.","ValidateInputFiles()");
     }
-    if (bOk & edtGridFileName->Enabled & !edtGridFileName->Text.IsEmpty()) {// Special grid file edit box enabled
-      bOk = ValidateFileExists(edtGridFileName->Text, "Special Grid");
-      if (!bOk) {
-        PageControl1->ActivePage = tbInputFiles;
-        edtGridFileName->SetFocus();
-      }
+    if (!File_Exists(edtCoordinateFileName->Text.c_str())) {
+      PageControl1->ActivePage = tbInputFiles;
+      edtCoordinateFileName->SetFocus();
+      ZdException::GenerateNotification("Coordinates file could not be opened.","ValidateInputFiles()");
+    }
+    //validate special grid file -- optional
+    if (!edtGridFileName->Text.IsEmpty() &&  !File_Exists(edtGridFileName->Text.c_str())) {
+      PageControl1->ActivePage = tbInputFiles;
+      edtGridFileName->SetFocus();
+      ZdException::GenerateNotification("Special Grid file could not be opened.","ValidateInputFiles()");
     }
     gpfrmAdvancedParameters->ValidateInputFilesSettings();
   }
@@ -1397,72 +1373,56 @@ bool TfrmAnalysis::ValidateInputFiles() {
     x.AddCallpath("ValidateInputFiles()", "TfrmAnalysis");
     throw;
   }
-  return bOk;
 }
 
 /** This function is used right before a job is submitted.  Verifies that
     all the input files exist and can be read.  Also checks each tab to see
     if all settings are in place.                                          */
 bool TfrmAnalysis::ValidateParams() {
-  bool bDataOk;
+  bool bReturn=true;
 
   try {
-    SaveParameterSettings();
-    // check all input tab params
-    bDataOk = ValidateInputFiles();
-    // check all Analsis and other tab params
-    if (bDataOk)
-      bDataOk = CheckAnalysisParams();
-    if (bDataOk)
-      bDataOk = CheckScanningWindowParams();
-    if (bDataOk)
-      bDataOk = CheckTimeParams();
+    ValidateInputFiles();
+    CheckAnalysisParams();
+    CheckScanningWindowParams();
+    CheckTimeParams();
     gpfrmAdvancedParameters->ValidateAdjustmentSettings();
-    if (bDataOk)
-      bDataOk = CheckOutputParams();
+    CheckOutputParams();
   }
   catch (AdvancedFeaturesException &x) {
     x.AddCallpath("ValidateParams()","TfrmAnalysis");
-    bDataOk = false;
+    bReturn = false;
     DisplayBasisException(this, x);
     gpfrmAdvancedParameters->ShowDialog(&x.GetFocusControl());
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateParams()","TfrmAnalysis");
-    bDataOk = false;
+    bReturn = false;
     DisplayBasisException(this, x);
   }
-  return bDataOk;
+  return bReturn;
 }
 
-bool TfrmAnalysis::ValidateSpatialClusterSize() {
-  double dValue;
-  bool   bOkParams=true;
-
+void TfrmAnalysis::ValidateSpatialClusterSize() {
   try {
     if (edtMaxSpatialClusterSize->Enabled) {
       if (!edtMaxSpatialClusterSize->Text.Length() || atof(edtMaxSpatialClusterSize->Text.c_str()) == 0)
-        ZdException::GenerateNotification("Please specify a maximum spatial cluster size.","ValidateSpatialClusterSize()");
+        ZdException::GenerateNotification("Please specify a maximum spatial cluster size greater than zero.","ValidateSpatialClusterSize()");
 
-      dValue = atof(edtMaxSpatialClusterSize->Text.c_str());
-      if (!(dValue > 0.0 && dValue <= 50.0) && rdoSpatialPercentage->Checked)
-        ZdException::GenerateNotification("Please specify valid maximum spatial cluster size between %d - %d.",
-                                          "ValidateSpatialClusterSize()", 0, 50);
-      gParameters.SetMaximumGeographicClusterSize(atof(edtMaxSpatialClusterSize->Text.c_str()));
+      if (atof(edtMaxSpatialClusterSize->Text.c_str()) > 50.0 && rdoSpatialPercentage->Checked)
+        ZdException::GenerateNotification("Please specify a maximum spatial cluster size no greater than %d.",
+                                          "ValidateSpatialClusterSize()", 50);
     }
   }
   catch (ZdException & x) {
     x.AddCallpath("ValidateSpatialClusterSize()","TfrmAnalysis");
     PageControl1->ActivePage = tbScanningWindow;
     edtMaxSpatialClusterSize->SetFocus();
-    bOkParams = false;
-    DisplayBasisException(this, x);
+    throw;
   }
-  return bOkParams;
 }
 
-bool TfrmAnalysis::ValidateTemoralClusterSize() {
-  bool          bParamsOk = true;
+void TfrmAnalysis::ValidateTemoralClusterSize() {
   float         dValue;
   ZdString      sErrorMessage;
   ZdDate        StartDate, EndDate, EndDatePlusOne,StartPlusIntervalDate;
@@ -1482,9 +1442,8 @@ bool TfrmAnalysis::ValidateTemoralClusterSize() {
         dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
         if (!(dValue > 0.0 && dValue <= (GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90))) {
           sErrorMessage << "For the " << gParameters.GetProbabiltyModelTypeAsString(GetModelControlType());
-          sErrorMessage << " model, the maximum temporal cluster size as a percent of study period is ";
-          sErrorMessage << (GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90);
-          sErrorMessage << " percent.\nPlease review settings.";
+          sErrorMessage << " model, the maximum temporal cluster size, as a percent of study period, is ";
+          sErrorMessage << (GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90) << " percent.";
           ZdException::GenerateNotification(sErrorMessage.GetCString(), "ValidateTemoralClusterSize()");
         }
       }
@@ -1504,7 +1463,7 @@ bool TfrmAnalysis::ValidateTemoralClusterSize() {
 
         StartPlusIntervalDate = StartDate;
         //add time interval length as units to modified start date
-        switch (gParameters.GetTimeIntervalUnitsType()) {
+        switch (GetTimeIntervalControlType()) {
             case      (YEAR)      : StartPlusIntervalDate.AddYears(static_cast<unsigned short>(atoi(edtMaxTemporalClusterSize->Text.c_str())));
                                     strcpy(Buffer,"year(s)");
                                     break;
@@ -1517,7 +1476,7 @@ bool TfrmAnalysis::ValidateTemoralClusterSize() {
                                     StartPlusIntervalDate.AddDays(static_cast<unsigned short>(atoi(edtMaxTemporalClusterSize->Text.c_str())));
                                     strcpy(Buffer,"day(s)");
                                     break;
-            default               : ZdGenerateException("Unknown interval unit \"%d\"", "ValidateTemoralClusterSize()", gParameters.GetTimeIntervalUnitsType());
+            default               : ZdGenerateException("Unknown interval unit \"%d\"", "ValidateTemoralClusterSize()", GetTimeIntervalControlType());
         };
         ulIntervalLengthInDays = StartPlusIntervalDate.GetJulianDayFromCalendarStart() - StartDate.GetJulianDayFromCalendarStart();
         if (ulIntervalLengthInDays > ulMaxClusterDays) {
@@ -1526,8 +1485,8 @@ bool TfrmAnalysis::ValidateTemoralClusterSize() {
           DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), EndDate.GetRawDate());
           sErrorMessage << FilterBuffer << ",\na maximum temporal cluster size of " << edtMaxTemporalClusterSize->Text.c_str();
           sErrorMessage << " " << Buffer << " is greater than " << (GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90);
-          sErrorMessage << " percent of study period.\nPlease review settings.";
-          ZdGenerateException(sErrorMessage.GetCString(), "ValidateTemoralClusterSize()");
+          sErrorMessage << " percent of study period.";
+          ZdException::GenerateNotification(sErrorMessage.GetCString(), "ValidateTemoralClusterSize()");
         }
       }
       else
@@ -1535,13 +1494,11 @@ bool TfrmAnalysis::ValidateTemoralClusterSize() {
     }
   }
   catch (ZdException & x) {
-    x.AddCallpath("ValidateTemoralClusterSize()", "TfrmAnalysis");
-    bParamsOk = false;
+    x.AddCallpath("ValidateTemoralClusterSize()","TfrmAnalysis");
     PageControl1->ActivePage = tbScanningWindow;
     edtMaxTemporalClusterSize->SetFocus();
-    Application->MessageBox(x.GetErrorMessage(), "Notification", MB_OK );
+    throw;
   }
-  return bParamsOk;
 }
 
 /** Writes the session information to disk */
