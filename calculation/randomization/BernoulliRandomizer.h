@@ -1,21 +1,11 @@
-//---------------------------------------------------------------------------
-#ifndef BernoulliRandomizerH
-#define BernoulliRandomizerH
-//---------------------------------------------------------------------------
+//******************************************************************************
+#ifndef __BernoulliRandomizer_H
+#define __BernoulliRandomizer_H
+//******************************************************************************
 #include "DenominatorDataRandomizer.h"
 
-/** abstract Bernoulli randomizer */
-class BernoulliRandomizer : public AbstractDenominatorDataRandomizer {
-  public:
-    BernoulliRandomizer();
-    virtual ~BernoulliRandomizer();
-};
-
 /** Bernoulli randomizer for null hypothesis. */
-class BernoulliNullHypothesisRandomizer : public BernoulliRandomizer {
-  protected:
-    void                        MakeDataB(count_t tTotalCounts, measure_t tTotalMeasure, std::vector<count_t>& RandCounts);
-
+class BernoulliNullHypothesisRandomizer : public AbstractOrdinalDenominatorDataRandomizer {
   public:
     BernoulliNullHypothesisRandomizer();
     virtual ~BernoulliNullHypothesisRandomizer();
@@ -26,5 +16,6 @@ class BernoulliNullHypothesisRandomizer : public BernoulliRandomizer {
                                               SimulationDataStream& thisSimulationStream,
                                               unsigned int iSimulation);
 };
-//---------------------------------------------------------------------------
+//******************************************************************************
 #endif
+
