@@ -77,30 +77,30 @@ CSpaceTimeCluster * CSpaceTimeCluster::Clone() const {
   return new CSpaceTimeCluster(*this);
 }
 
-/** returns the number of cases for tract as defined by cluster */
-count_t CSpaceTimeCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
-  count_t      tCaseCount,
-            ** ppCases = Data.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray();
-
-  if (m_nLastInterval == Data.GetNumTimeIntervals())
-    tCaseCount = ppCases[m_nFirstInterval][tTract];
-  else
-    tCaseCount  = ppCases[m_nFirstInterval][tTract] - ppCases[m_nLastInterval][tTract];
-
-  return tCaseCount;
-}
-
 /** Returns the measure for tract as defined by cluster. */
-measure_t CSpaceTimeCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
+measure_t CSpaceTimeCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
   measure_t      tMeasure,
               ** ppMeasure = Data.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray();
 
   if (m_nLastInterval == Data.GetNumTimeIntervals())
-    tMeasure = ppMeasure[m_nFirstInterval][tTract];
+    tMeasure = ppMeasure[m_nFirstInterval][tTractIndex];
   else
-    tMeasure  = ppMeasure[m_nFirstInterval][tTract] - ppMeasure[m_nLastInterval][tTract];
+    tMeasure  = ppMeasure[m_nFirstInterval][tTractIndex] - ppMeasure[m_nLastInterval][tTractIndex];
 
   return Data.GetMeasureAdjustment(tSetIndex) * tMeasure;
+}
+
+/** returns the number of cases for tract as defined by cluster */
+count_t CSpaceTimeCluster::GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
+  count_t      tCaseCount,
+            ** ppCases = Data.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray();
+
+  if (m_nLastInterval == Data.GetNumTimeIntervals())
+    tCaseCount = ppCases[m_nFirstInterval][tTractIndex];
+  else
+    tCaseCount  = ppCases[m_nFirstInterval][tTractIndex] - ppCases[m_nLastInterval][tTractIndex];
+
+  return tCaseCount;
 }
 
 /** re-initializes cluster data */
