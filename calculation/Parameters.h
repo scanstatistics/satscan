@@ -344,7 +344,7 @@ class CParameters {
 
     CParameters                       & operator=(const CParameters &rhs);
     void                                DisplayAdjustments(FILE* fp, const DataStreamHandler& StreamHandler) const;
-    void                                DisplayAnalysisType(FILE* fp) const;
+    void                                DisplayAnalysisSummary(FILE* fp) const;
     void                                DisplayCalculatedTimeTrend(FILE* fp, const DataStreamHandler& StreamHandler) const;
     void                                DisplayParameters(FILE* fp, unsigned int iNumSimulationsCompleted, const DataStreamHandler& StreamHandler) const;
     bool                                GetAdjustForEarlierAnalyses() const {return gbAdjustForEarlierAnalyses;}

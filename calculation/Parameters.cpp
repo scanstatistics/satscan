@@ -333,7 +333,7 @@ void CParameters::DisplayAdjustments(FILE* fp, const DataStreamHandler& StreamHa
 }
 
 /** Prints analysis type related information, in a particular format, to passed ascii file. */
-void CParameters::DisplayAnalysisType(FILE* fp) const {
+void CParameters::DisplayAnalysisSummary(FILE* fp) const {
   try {
     switch (geAnalysisType) {
       case PURELYSPATIAL             : fprintf(fp, "Purely Spatial analysis\n"); break;
@@ -342,7 +342,7 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
       case PROSPECTIVESPACETIME      : fprintf(fp, "Prospective Space-Time analysis\n"); break;
       case SPATIALVARTEMPTREND       : fprintf(fp, "Spatial Variation of Temporal Trends analysis\n"); break;
       case PROSPECTIVEPURELYTEMPORAL : fprintf(fp, "Prospective Purely Temporal analysis\n"); break;
-      default : ZdException::Generate("Unknown analysis type '%d'.\n", "DisplayAnalysisType()", geAnalysisType);
+      default : ZdException::Generate("Unknown analysis type '%d'.\n", "DisplayAnalysisSummary()", geAnalysisType);
     }
 
     fprintf(fp, "scanning for ");
@@ -350,23 +350,23 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
     if (geRiskFunctionType == MONOTONERISK)
       fprintf(fp, "monotone ");
 
-    fprintf(fp, "clusters with \n");
+    fprintf(fp, "clusters with ");
 
     switch (geAreaScanRate) {
-      case HIGH       : fprintf(fp, "high rates"); break;
-      case LOW        : fprintf(fp, "low rates"); break;
-      case HIGHANDLOW : fprintf(fp, "high or low rates"); break;
-      default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "DisplayAnalysisType()", geAreaScanRate);
+      case HIGH       : fprintf(fp, "high rates\n"); break;
+      case LOW        : fprintf(fp, "low rates\n"); break;
+      case HIGHANDLOW : fprintf(fp, "high or low rates\n"); break;
+      default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "DisplayAnalysisSummary()", geAreaScanRate);
     }
 
     switch (geProbabiltyModelType) {
-      case POISSON              : fprintf(fp, " using the Poisson model.\n"); break;
-      case BERNOULLI            : fprintf(fp, " using the Bernoulli model.\n"); break;
-      case SPACETIMEPERMUTATION : fprintf(fp, " using the Space-Time Permutation model.\n"); break;
-      case NORMAL               : fprintf(fp, " using the Normal model.\n"); break;
-      case SURVIVAL             : fprintf(fp, " using the Survival model.\n"); break;
-      case RANK                 : fprintf(fp, " using the Rank model.\n"); break;
-      default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayAnalysisType()", geProbabiltyModelType);
+      case POISSON              : fprintf(fp, "using the Poisson model.\n"); break;
+      case BERNOULLI            : fprintf(fp, "using the Bernoulli model.\n"); break;
+      case SPACETIMEPERMUTATION : fprintf(fp, "using the Space-Time Permutation model.\n"); break;
+      case NORMAL               : fprintf(fp, "using the Normal model.\n"); break;
+      case SURVIVAL             : fprintf(fp, "using the Survival model.\n"); break;
+      case RANK                 : fprintf(fp, "using the Rank model.\n"); break;
+      default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayAnalysisSummary()", geProbabiltyModelType);
     }
 
     if (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME) {
@@ -378,11 +378,18 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
         fprintf(fp, "Analysis includes purely temporal clusters.\n");
     }
 
+    if (GetNumDataStreams() > 1) {
+      switch (geMultipleStreamPurposeType) {
+        case MULTIVARIATE : fprintf(fp, "Multivariate scan using %u data sets.\n", GetNumDataStreams()); break;
+        case ADJUSTMENT   : fprintf(fp, "Adjusted using %u data sets.\n", GetNumDataStreams()); break;
+        default : ZdException::Generate("Unknown purpose for multiple data sets type '%d'.\n", "DisplayAnalysisSummary()", geMultipleStreamPurposeType);
+      }
+    }
     if (gbSequentialRuns)
       fprintf(fp, "Sequential analysis performed.\n");
   }
   catch (ZdException & x) {
-    x.AddCallpath("DisplayAnalysisType()", "CParameters");
+    x.AddCallpath("DisplayAnalysisSummary()", "CParameters");
     throw;
   }
 }
