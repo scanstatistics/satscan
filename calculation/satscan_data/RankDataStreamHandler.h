@@ -17,7 +17,7 @@ class RankDataStreamHandler : public DataStreamHandler {
     virtual void                        SetRandomizers();
 
   public:
-    RankDataStreamHandler(CSaTScanData & Data, BasePrint * pPrint);
+    RankDataStreamHandler(CSaTScanData& Data, BasePrint& Print);
     virtual ~RankDataStreamHandler();
 
     virtual AbtractDataStreamGateway  * GetNewDataGateway() const;

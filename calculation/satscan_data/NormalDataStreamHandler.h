@@ -15,7 +15,7 @@ class NormalDataStreamHandler : public DataStreamHandler {
     virtual void                        SetRandomizers();
 
   public:
-    NormalDataStreamHandler(CSaTScanData & Data, BasePrint * pPrint);
+    NormalDataStreamHandler(CSaTScanData& Data, BasePrint& pPrint);
     virtual ~NormalDataStreamHandler();
 
     virtual AbtractDataStreamGateway  * GetNewDataGateway() const;

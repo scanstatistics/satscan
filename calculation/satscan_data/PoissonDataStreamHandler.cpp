@@ -7,8 +7,8 @@
 #include "DateStringParser.h"
 
 /** class constructor */
-PoissonDataStreamHandler::PoissonDataStreamHandler(CSaTScanData & Data, BasePrint * pPrint)
-                         :DataStreamHandler(Data, pPrint) {}
+PoissonDataStreamHandler::PoissonDataStreamHandler(CSaTScanData& Data, BasePrint& Print)
+                         :DataStreamHandler(Data, Print) {}
 
 /** class destructor */
 PoissonDataStreamHandler::~PoissonDataStreamHandler() {}
@@ -31,17 +31,17 @@ bool PoissonDataStreamHandler::ConvertPopulationDateToJulian(const char * sDateS
       case DateStringParser::VALID_DATE       :
         bValidDate = true; break;
       case DateStringParser::AMBIGUOUS_YEAR   :
-        gpPrint->PrintInputWarning("Error: Due to the study period being greater than 100 years, unable\n"
+        gPrint.PrintInputWarning("Error: Due to the study period being greater than 100 years, unable\n"
                                    "       to determine century for two digit year in %s, record %ld.\n"
                                    "       Please use four digit years.\n",
-                                   gpPrint->GetImpliedFileTypeString().c_str(), iRecordNumber);
+                                   gPrint.GetImpliedFileTypeString().c_str(), iRecordNumber);
                                    bValidDate = false;
                                    break;
       case DateStringParser::INVALID_DATE     :
       case DateStringParser::LESSER_PRECISION :
       default                                 :
-        gpPrint->PrintInputWarning("Error: Invalid date '%s' in %s, record %ld.\n",
-                                   sDateString, gpPrint->GetImpliedFileTypeString().c_str(), iRecordNumber);
+        gPrint.PrintInputWarning("Error: Invalid date '%s' in %s, record %ld.\n",
+                                   sDateString, gPrint.GetImpliedFileTypeString().c_str(), iRecordNumber);
         bValidDate = false;                           
     };
   }
@@ -242,15 +242,15 @@ bool PoissonDataStreamHandler::ReadData() {
     SetRandomizers();
     for (size_t t=0; t < GetNumStreams(); ++t) {
        if (GetNumStreams() == 1)
-         gpPrint->SatScanPrintf("Reading the population file\n");
+         gPrint.SatScanPrintf("Reading the population file\n");
        else
-         gpPrint->SatScanPrintf("Reading the population file for input stream %u\n", t + 1);
+         gPrint.SatScanPrintf("Reading the population file for input stream %u\n", t + 1);
        if (!ReadPopulationFile(t))
          return false;
        if (GetNumStreams() == 1)
-         gpPrint->SatScanPrintf("Reading the case file\n");
+         gPrint.SatScanPrintf("Reading the case file\n");
        else
-         gpPrint->SatScanPrintf("Reading the case file for input stream %u\n", t + 1);
+         gPrint.SatScanPrintf("Reading the case file for input stream %u\n", t + 1);
        if (!ReadCaseFile(t))
          return false;
        GetStream(t).CheckPopulationDataCases(gDataHub);
@@ -289,11 +289,11 @@ bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
 
   try {
     RealDataStream& thisStream = *gvDataStreams[tStream];
-    gpPrint->SetImpliedInputFileType(BasePrint::POPFILE, (GetNumStreams() == 1 ? 0 : tStream + 1));
-    StringParser Parser(*gpPrint);
+    gPrint.SetImpliedInputFileType(BasePrint::POPFILE, (GetNumStreams() == 1 ? 0 : tStream + 1));
+    StringParser Parser(gPrint);
 
     if ((fp = fopen(gParameters.GetPopulationFileName(tStream + 1).c_str(), "r")) == NULL) {
-      gpPrint->SatScanPrintWarning("Error: Could not open the population file:\n'%s'.\n",
+      gPrint.SatScanPrintWarning("Error: Could not open the population file:\n'%s'.\n",
                                    gParameters.GetPopulationFileName(tStream + 1).c_str());
       return false;
     }
@@ -306,8 +306,8 @@ bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
         bEmpty=false;
         //scan values and validate - population file records must contain tract id, date and population.
         if (!Parser.GetWord(1)) {
-            gpPrint->PrintInputWarning("Error: Record %ld, of the %s, is missing the date.\n",
-                                       Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
+            gPrint.PrintInputWarning("Error: Record %ld, of the %s, is missing the date.\n",
+                                       Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
             bValid = false;
             continue;
         }
@@ -340,40 +340,40 @@ bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
             continue;
           ConvertPopulationDateToJulian(Parser.GetWord(1), Parser.GetReadCount(), prPopulationDate);
           if (!Parser.GetWord(2)) {
-            gpPrint->PrintInputWarning("Error: Record %d, of the %s, is missing the population number.\n",
-                                       Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
+            gPrint.PrintInputWarning("Error: Record %d, of the %s, is missing the population number.\n",
+                                       Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
             bValid = false;
             continue;
           }
           if (sscanf(Parser.GetWord(2), "%f", &fPopulation) != 1) {
-            gpPrint->PrintInputWarning("Error: Population value '%s' in record %ld, of %s, is not a number.\n",
-                                       Parser.GetWord(2), Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
+            gPrint.PrintInputWarning("Error: Population value '%s' in record %ld, of %s, is not a number.\n",
+                                       Parser.GetWord(2), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
             bValid = false;
             continue;
           }
           //validate that population is not negative or exceeding type precision
           if (fPopulation < 0) {//validate that count is not negative or exceeds type precision
             if (strstr(Parser.GetWord(2), "-"))
-              gpPrint->PrintInputWarning("Error: Negative population in record %ld of %s.\n",
-                                         Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
+              gPrint.PrintInputWarning("Error: Negative population in record %ld of %s.\n",
+                                         Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
             else
-              gpPrint->PrintInputWarning("Error: The population '%s', in record %ld of the %s, exceeds the maximum allowed value of %i.\n",
-                                         Parser.GetWord(2), Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str(),
+              gPrint.PrintInputWarning("Error: The population '%s', in record %ld of the %s, exceeds the maximum allowed value of %i.\n",
+                                         Parser.GetWord(2), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str(),
                                          std::numeric_limits<float>::max());
             bValid = false;
             continue;
           }
           //Scan for covariates to create population categories or find index.
           //First category created sets precedence as to how many covariates remaining records must have.
-          if ((iCategoryIndex = thisStream.GetPopulationData().MakePopulationCategory(Parser, 3, *gpPrint)) == -1) {
+          if ((iCategoryIndex = thisStream.GetPopulationData().MakePopulationCategory(Parser, 3, gPrint)) == -1) {
             bValid = false;
             continue;
           }
           //Validate that tract identifer is one of those defined in the coordinates file.
           if ((TractIdentifierIndex = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
-            gpPrint->PrintInputWarning("Error: Unknown location ID in %s, record %ld.\n",
-                                       gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
-            gpPrint->PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
+            gPrint.PrintInputWarning("Error: Unknown location ID in %s, record %ld.\n",
+                                       gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
+            gPrint.PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
             bValid = false;
             continue;
           }
@@ -386,13 +386,13 @@ bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->PrintWarningLine("Please see the 'population file' section in the user guide for help.\n");
+      gPrint.PrintWarningLine("Please see the 'population file' section in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->SatScanPrintWarning("Error: %s contains no data.\n", gpPrint->GetImpliedFileTypeString().c_str());
+      gPrint.SatScanPrintWarning("Error: %s contains no data.\n", gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
-    if (!thisStream.GetPopulationData().CheckZeroPopulations(stderr, *gpPrint))
+    if (!thisStream.GetPopulationData().CheckZeroPopulations(stderr, gPrint))
       return false;
   }
   catch (ZdException &x) {

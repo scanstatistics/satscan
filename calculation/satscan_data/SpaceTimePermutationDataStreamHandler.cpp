@@ -1,13 +1,13 @@
 //---------------------------------------------------------------------------
 #include "SaTScan.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 #include "SpaceTimePermutationDataStreamHandler.h"
 #include "SaTScanData.h"
-//---------------------------------------------------------------------------
 
 /** constructor */
-SpaceTimePermutationDataStreamHandler::SpaceTimePermutationDataStreamHandler(CSaTScanData & Data, BasePrint * pPrint)
-                                      :DataStreamHandler(Data, pPrint) {}
+SpaceTimePermutationDataStreamHandler::SpaceTimePermutationDataStreamHandler(CSaTScanData& Data, BasePrint& Print)
+                                      :DataStreamHandler(Data, Print) {}
 
 /** destructor */
 SpaceTimePermutationDataStreamHandler::~SpaceTimePermutationDataStreamHandler() {}
@@ -161,7 +161,7 @@ bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tStream, FILE * fp
   bool                                  bValid=true, bEmpty=true;
   Julian                                Date;
   tract_t                               TractIndex;
-  StringParser                          Parser(*gpPrint);
+  StringParser                          Parser(gPrint);
   std::string                           sBuffer;
   count_t                               Count, ** pCounts;
 
@@ -202,10 +202,10 @@ bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tStream, FILE * fp
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->SatScanPrintWarning("Please see the '%s file' section in the user guide for help.\n", szDescription);
+      gPrint.SatScanPrintWarning("Please see the '%s file' section in the user guide for help.\n", szDescription);
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->SatScanPrintWarning("Error: The %s file does not contain data.\n", szDescription);
+      gPrint.SatScanPrintWarning("Error: The %s file does not contain data.\n", szDescription);
       bValid = false;
     }
 
@@ -224,9 +224,9 @@ bool SpaceTimePermutationDataStreamHandler::ReadData() {
     SetRandomizers();
     for (size_t t=0; t < GetNumStreams(); ++t) {
        if (GetNumStreams() == 1)
-         gpPrint->SatScanPrintf("Reading the case file\n");
+         gPrint.SatScanPrintf("Reading the case file\n");
        else
-         gpPrint->SatScanPrintf("Reading the case file for input stream %u\n", t + 1);
+         gPrint.SatScanPrintf("Reading the case file for input stream %u\n", t + 1);
        if (!ReadCaseFile(t))
          return false;
     }

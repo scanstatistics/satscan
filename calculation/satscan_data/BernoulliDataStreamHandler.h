@@ -14,7 +14,7 @@ class BernoulliDataStreamHandler : public DataStreamHandler {
     virtual void                        SetRandomizers();
 
   public:
-    BernoulliDataStreamHandler(CSaTScanData & Data, BasePrint * pPrint);
+    BernoulliDataStreamHandler(CSaTScanData& Data, BasePrint& Print);
     virtual ~BernoulliDataStreamHandler();
 
     virtual AbtractDataStreamGateway  * GetNewDataGateway() const;

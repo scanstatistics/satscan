@@ -6,8 +6,8 @@
 #include "NormalDataStreamHandler.h"
 
 /** constructor */
-NormalDataStreamHandler::NormalDataStreamHandler(CSaTScanData & Data, BasePrint * pPrint)
-                        :DataStreamHandler(Data, pPrint) {}
+NormalDataStreamHandler::NormalDataStreamHandler(CSaTScanData& Data, BasePrint& Print)
+                        :DataStreamHandler(Data, Print) {}
 
 /** destructor */
 NormalDataStreamHandler::~NormalDataStreamHandler() {}
@@ -196,33 +196,33 @@ bool NormalDataStreamHandler::ParseCaseFileLine(StringParser & Parser, tract_t& 
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
     if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
-      gpPrint->PrintInputWarning("Error: Unknown location ID in %s, record %ld.\n",
-                                 Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
-      gpPrint->PrintInputWarning("       Location ID '%s' was not specified in the coordinates file.\n", Parser.GetWord(0));
+      gPrint.PrintInputWarning("Error: Unknown location ID in %s, record %ld.\n",
+                                 Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+      gPrint.PrintInputWarning("       Location ID '%s' was not specified in the coordinates file.\n", Parser.GetWord(0));
       return false;
     }
     //read and validate count
     if (Parser.GetWord(1) != 0) {
       if (!sscanf(Parser.GetWord(1), "%ld", &nCount)) {
-       gpPrint->PrintInputWarning("Error: The value '%s' of record %ld in the %s could not be read as case count.\n",
-                                  Parser.GetWord(1), Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
-       gpPrint->PrintInputWarning("       Case count must be an integer.\n");
+       gPrint.PrintInputWarning("Error: The value '%s' of record %ld in the %s could not be read as case count.\n",
+                                  Parser.GetWord(1), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+       gPrint.PrintInputWarning("       Case count must be an integer.\n");
        return false;
       }
     }
     else {
-      gpPrint->PrintInputWarning("Error: Record %ld in the %s does not contain case count.\n",
-                                 Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
+      gPrint.PrintInputWarning("Error: Record %ld in the %s does not contain case count.\n",
+                                 Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
     if (nCount < 0) {//validate that count is not negative or exceeds type precision
       if (strstr(Parser.GetWord(1), "-"))
-        gpPrint->PrintInputWarning("Error: Record %ld, of the %s, contains a negative case count.\n",
-                                   Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
+        gPrint.PrintInputWarning("Error: Record %ld, of the %s, contains a negative case count.\n",
+                                   Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       else
-        gpPrint->PrintInputWarning("Error: The case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
+        gPrint.PrintInputWarning("Error: The case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
                                    Parser.GetWord(1), std::numeric_limits<count_t>::max(),
-                                   Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
+                                   Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
     if (!ConvertCountDateToJulian(Parser, nDate))
@@ -230,21 +230,21 @@ bool NormalDataStreamHandler::ParseCaseFileLine(StringParser & Parser, tract_t& 
 
     // read continuos variable 
     if (!Parser.GetWord(3)) {
-      gpPrint->PrintInputWarning("Error: Record %d, of the %s, is missing the continuous variable.\n",
-                                 Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
+      gPrint.PrintInputWarning("Error: Record %d, of the %s, is missing the continuous variable.\n",
+                                 Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
     if (sscanf(Parser.GetWord(3), "%lf", &tContinuosVariable) != 1) {
-       gpPrint->PrintInputWarning("Error: The continuos variable value '%s' in record %ld, of %s, is not a number.\n",
-                                  Parser.GetWord(3), Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
+       gPrint.PrintInputWarning("Error: The continuos variable value '%s' in record %ld, of %s, is not a number.\n",
+                                  Parser.GetWord(3), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
 //    //validate that population is not negative or exceeding type precision
 //    if (tContinuosVariable < 0) {//validate that count is not negative or exceeds type precision
 //      if (strstr(Parser.GetWord(3), "-"))
-//        gpPrint->PrintInputWarning("Error: Negative continuos variable in record %ld of cases file.\n", Parser.GetReadCount());
+//        gPrint.PrintInputWarning("Error: Negative continuos variable in record %ld of cases file.\n", Parser.GetReadCount());
 //      else
-//        gpPrint->PrintInputWarning("Error: Continuos variable '%s' exceeds maximum value of %i in record %ld of population file.\n",
+//        gPrint.PrintInputWarning("Error: Continuos variable '%s' exceeds maximum value of %i in record %ld of population file.\n",
 //                                   Parser.GetWord(3), std::numeric_limits<measure_t>::max(), Parser.GetReadCount());
 //      return false;
 //     }
@@ -270,7 +270,7 @@ bool NormalDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* 
 
   try {
     RealDataStream& thisStream = *gvDataStreams[tStream];
-    StringParser Parser(*gpPrint);
+    StringParser Parser(gPrint);
     NormalRandomizer & Randomizer = gvDataStreamRandomizers[tStream];
 
     ppCounts = thisStream.GetCaseArray();
@@ -301,10 +301,10 @@ bool NormalDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* 
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->SatScanPrintWarning("Please see the 'case file' section in the user guide for help.\n");
+      gPrint.SatScanPrintWarning("Please see the 'case file' section in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->SatScanPrintWarning("Error: The %s does not contain data.\n", gpPrint->GetImpliedFileTypeString().c_str());
+      gPrint.SatScanPrintWarning("Error: The %s does not contain data.\n", gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
     else {
@@ -329,9 +329,9 @@ bool NormalDataStreamHandler::ReadData() {
     SetRandomizers();
     for (size_t t=0; t < GetNumStreams(); ++t) {
        if (GetNumStreams() == 1)
-         gpPrint->SatScanPrintf("Reading the case file\n");
+         gPrint.SatScanPrintf("Reading the case file\n");
        else
-         gpPrint->SatScanPrintf("Reading the case file for input stream %u\n", t + 1);
+         gPrint.SatScanPrintf("Reading the case file for input stream %u\n", t + 1);
        if (!ReadCaseFile(t))
          return false;
     }

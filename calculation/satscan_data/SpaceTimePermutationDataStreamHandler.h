@@ -14,7 +14,7 @@ class SpaceTimePermutationDataStreamHandler : public DataStreamHandler {
     virtual void                        SetRandomizers();
 
   public:
-    SpaceTimePermutationDataStreamHandler(CSaTScanData & Data, BasePrint * pPrint);
+    SpaceTimePermutationDataStreamHandler(CSaTScanData& Data, BasePrint& Print);
     virtual ~SpaceTimePermutationDataStreamHandler();
 
     virtual AbtractDataStreamGateway  * GetNewDataGateway() const;

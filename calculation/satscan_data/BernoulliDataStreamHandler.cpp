@@ -6,8 +6,8 @@
 #include "BernoulliDataStreamHandler.h"
 
 /** constructor */
-BernoulliDataStreamHandler::BernoulliDataStreamHandler(CSaTScanData & Data, BasePrint * pPrint)
-                           :DataStreamHandler(Data, pPrint) {}
+BernoulliDataStreamHandler::BernoulliDataStreamHandler(CSaTScanData& Data, BasePrint& Print)
+                           :DataStreamHandler(Data, Print) {}
 
 /** destructor */
 BernoulliDataStreamHandler::~BernoulliDataStreamHandler() {}
@@ -186,11 +186,11 @@ bool BernoulliDataStreamHandler::ReadControlFile(size_t tStream) {
 
   try {
     if ((fp = fopen(gParameters.GetControlFileName(tStream + 1).c_str(), "r")) == NULL) {
-      gpPrint->SatScanPrintWarning("Error: Could not open the control file:\n'%s'.\n",
+      gPrint.SatScanPrintWarning("Error: Could not open the control file:\n'%s'.\n",
                                    gParameters.GetControlFileName(tStream + 1).c_str());
       return false;
     }
-    gpPrint->SetImpliedInputFileType(BasePrint::CONTROLFILE, (GetNumStreams() == 1 ? 0 : tStream + 1));
+    gPrint.SetImpliedInputFileType(BasePrint::CONTROLFILE, (GetNumStreams() == 1 ? 0 : tStream + 1));
     AllocateControlStructures(tStream);
     bValid = ReadCounts(tStream, fp, "control");
     fclose(fp); fp=0;
@@ -210,15 +210,15 @@ bool BernoulliDataStreamHandler::ReadData() {
     for (size_t t=0; t < GetNumStreams(); ++t) {
        GetStream(t).SetAggregateCategories(true);
        if (GetNumStreams() == 1)
-         gpPrint->SatScanPrintf("Reading the case file\n");
+         gPrint.SatScanPrintf("Reading the case file\n");
        else
-         gpPrint->SatScanPrintf("Reading the case file for input stream %u\n", t + 1);
+         gPrint.SatScanPrintf("Reading the case file for input stream %u\n", t + 1);
        if (!ReadCaseFile(t))
          return false;
        if (GetNumStreams() == 1)
-         gpPrint->SatScanPrintf("Reading the control file\n");
+         gPrint.SatScanPrintf("Reading the control file\n");
        else
-         gpPrint->SatScanPrintf("Reading the control file for input stream %u\n", t + 1);
+         gPrint.SatScanPrintf("Reading the control file for input stream %u\n", t + 1);
        if (!ReadControlFile(t))
          return false;
     }

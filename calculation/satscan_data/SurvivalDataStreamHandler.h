@@ -18,7 +18,7 @@ class SurvivalDataStreamHandler : public DataStreamHandler {
     virtual void                        SetRandomizers();
 
   public:
-    SurvivalDataStreamHandler(CSaTScanData & Data, BasePrint * pPrint);
+    SurvivalDataStreamHandler(CSaTScanData& Data, BasePrint& Print);
     virtual ~SurvivalDataStreamHandler();
 
     virtual AbtractDataStreamGateway  * GetNewDataGateway() const;

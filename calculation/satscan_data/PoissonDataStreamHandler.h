@@ -31,7 +31,7 @@ class PoissonDataStreamHandler : public DataStreamHandler {
     virtual void                        SetRandomizers();
 
   public:
-    PoissonDataStreamHandler(CSaTScanData& Data, BasePrint* pPrint);
+    PoissonDataStreamHandler(CSaTScanData& Data, BasePrint& Print);
     virtual ~PoissonDataStreamHandler();
 
     virtual AbtractDataStreamGateway  * GetNewDataGateway() const;
