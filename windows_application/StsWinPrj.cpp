@@ -79,6 +79,9 @@ USEUNIT("..\xbase\xbase_2.0.0\xbase\xbexcept.cpp");
 USEUNIT("..\xbase\xbase_2.0.0\xbase\xbfilter.cpp");
 USEUNIT("..\xbase\xbase_2.0.0\xbase\xbstring.cpp");
 USEUNIT("..\xbase\xbase_2.0.0\xbase\dbf.cpp");
+USEUNIT("..\calculation\Output\stsOutputDBF.cpp");
+USEUNIT("..\calculation\Output\stsAreaSpecificDBF.cpp");
+USEUNIT("..\calculation\Output\stsClusterLevelDBF.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
