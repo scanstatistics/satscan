@@ -44,26 +44,13 @@ CCluster* CPurelyTemporalAnalysis::GetTopCluster(tract_t nCenter) {
       eIncludeClustersType = m_pParameters->GetIncludeClustersType();
 
     gpPrintDirection->SatScanPrintf("Get Top P.T. Cluster.\n");
-    pTopCluster = new CPurelyTemporalCluster(eIncludeClustersType, m_pData->m_nTimeIntervals,
-                                             m_pData->m_nIntervalCut, gpPrintDirection);
-    CPurelyTemporalCluster thisCluster(eIncludeClustersType, m_pData->m_nTimeIntervals,
-                                       m_pData->m_nIntervalCut, gpPrintDirection);
+    pTopCluster = new CPurelyTemporalCluster(eIncludeClustersType, *m_pData, *gpPrintDirection);
+    CPurelyTemporalCluster thisCluster(eIncludeClustersType, *m_pData, *gpPrintDirection);
     
     pTopCluster->CCluster::SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
     thisCluster.SetCenter(nCenter);
     thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
-    thisCluster.InitTimeIntervalIndeces();
-    
-    while (thisCluster.SetNextTimeInterval(((CPurelyTemporalData*)(m_pData))->m_pPTCases,
-                                           ((CPurelyTemporalData*)(m_pData))->m_pPTMeasure)) {
-         if (thisCluster.RateIsOfInterest(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure)) {
-           thisCluster.m_nLogLikelihood = m_pData->m_pModel->CalcLogLikelihood(thisCluster.m_nCases,
-                                                                               thisCluster.m_nMeasure);
-           if (thisCluster.m_nLogLikelihood > pTopCluster->m_nLogLikelihood)
-             *pTopCluster = thisCluster;
-         }
-    
-    }
+    thisCluster.CompareTopCluster(*pTopCluster, *m_pData);
     pTopCluster->SetRatioAndDates(*m_pData);
   }
   catch (ZdException & x) {
@@ -80,8 +67,7 @@ double CPurelyTemporalAnalysis::MonteCarlo() {
   double                dMaxLogLikelihoodRatio;
 
   try {
-    CPurelyTemporalCluster C(m_pParameters->GetIncludeClustersType(), m_pData->m_nTimeIntervals,
-                             m_pData->m_nIntervalCut, gpPrintDirection);
+    CPurelyTemporalCluster C(m_pParameters->GetIncludeClustersType(), *m_pData, *gpPrintDirection);
     C.SetRate(m_pParameters->GetAreaScanRateType());
     switch (m_pParameters->GetAreaScanRateType()) {
       case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
@@ -95,9 +81,7 @@ double CPurelyTemporalAnalysis::MonteCarlo() {
     }
 
     C.Initialize(0);
-    C.InitTimeIntervalIndeces();
-    while (C.SetNextTimeInterval(m_pData->m_pPTSimCases, m_pData->m_pPTMeasure))
-        pMeasureList->AddMeasure(C.m_nCases, C.m_nMeasure);
+    C.ComputeBestMeasures(m_pData->m_pPTSimCases, m_pData->m_pPTMeasure, *pMeasureList);
 
     dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
     delete pMeasureList;
@@ -116,8 +100,7 @@ double CPurelyTemporalAnalysis::MonteCarloProspective() {
   double                        dMaxLogLikelihoodRatio;
 
   try {
-    CPurelyTemporalCluster C(m_pParameters->GetIncludeClustersType(), m_pData->m_nTimeIntervals,
-                             m_pData->m_nIntervalCut, gpPrintDirection);
+    CPurelyTemporalCluster C(m_pParameters->GetIncludeClustersType(), *m_pData, *gpPrintDirection);
     C.SetRate(m_pParameters->GetAreaScanRateType());
     switch (m_pParameters->GetAreaScanRateType()) {
       case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
@@ -131,9 +114,7 @@ double CPurelyTemporalAnalysis::MonteCarloProspective() {
     }
     
     C.Initialize(0);
-    C.InitTimeIntervalIndeces();
-    while (C.SetNextTimeInterval(m_pData->m_pPTSimCases, m_pData->m_pPTMeasure))
-         pMeasureList->AddMeasure(C.m_nCases, C.m_nMeasure);
+    C.ComputeBestMeasures(m_pData->m_pPTSimCases, m_pData->m_pPTMeasure, *pMeasureList);
 
     dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
     delete pMeasureList;
