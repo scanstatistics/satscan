@@ -416,7 +416,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
         }
 
         //Execute comparator SatScan using the current Parameter file, but set commandline options for version check
-        sCommand.printf("\"%s\" \"%s\" -v",
+        sCommand.printf("\"%s\" \"%s\"",
                         edtBatchExecutableComparatorName->Text.c_str(),
                         gvParameterResultsInfo.back().GetFilenameString());
         if (Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked)) {
@@ -425,7 +425,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
           //get filename that will be the result file created for comparison
           GetCompareFilename(gvParameterResultsInfo.back().GetFilename(), sCompareFilename);
           //Execute SatScan using the current Parameter file, but set commandline options for version check
-          sCommand.printf("\"%s\" \"%s\" -v -o \"%s\"",
+          sCommand.printf("\"%s\" \"%s\" -o \"%s\"",
                           edtBatchExecutableName->Text.c_str(),
                           gvParameterResultsInfo.back().GetFilenameString(),
                           sCompareFilename.c_str());
