@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
-#ifndef MutlipleStreamClusterDataH
-#define MutlipleStreamClusterDataH
+#ifndef MultipleStreamClusterDataH
+#define MultipleStreamClusterDataH
 //---------------------------------------------------------------------------
 #include "ClusterData.h"
 

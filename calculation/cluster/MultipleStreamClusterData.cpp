@@ -2,7 +2,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 //---------------------------------------------------------------------------
-#include "MutlipleStreamClusterData.h"
+#include "MultipleStreamClusterData.h"
 #include "ClusterDataFactory.h"
 
 /** constructor */
