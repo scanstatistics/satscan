@@ -47,6 +47,11 @@ void RandomNumberGenerator::SetSeed(long lSeed) {
   glSeed = ((0 < lSeed && lSeed < glM) ? lSeed : glDefaultSeed);
 }
 
+/** Sets initial value for the random number generator seed.  Note: 0 < lSeed < glM */
+void RandomNumberGenerator::SetInitialSeed(long lSeed) {
+  glSeed = glInitialSeed = ((0 < lSeed && lSeed < glM) ? lSeed : glDefaultSeed);
+}
+
 /** Tests for a correct implementation.
     Return value: 1 = Correct
                   0 = incorrect         */
