@@ -1156,6 +1156,7 @@ void TfrmAnalysis::SaveTextParameters() {
     gParameters.SetPopulationFileName(edtPopFileName->Text.c_str());
     gParameters.SetCoordinatesFileName(edtCoordinateFileName->Text.c_str());
     gParameters.SetSpecialGridFileName(edtGridFileName->Text.c_str(), false, true);
+    gParameters.SetSpecialPopulationFileName(edtSpecialPopulationFilename->Text.c_str(), false, true);
     //Analysis Tab
     sString.printf("%i/%i/%i", atoi(edtStartYear->Text.c_str()), atoi(edtStartMonth->Text.c_str()), atoi(edtStartDay->Text.c_str()));
     gParameters.SetStudyPeriodStartDate(sString.GetCString());
@@ -1241,6 +1242,12 @@ void TfrmAnalysis::SetSpecialGridFile(const char * sSpecialGridFileName) {
   edtGridFileName->Text = sSpecialGridFileName;
 }
 
+/** Sets special population filename in interface and parameters class. */
+void TfrmAnalysis::SetSpecialPopulationFile(const char * sSpecialPopulationFileName) {
+  gParameters.SetSpecialPopulationFileName(sSpecialPopulationFileName, false, true);
+  edtSpecialPopulationFilename->Text = sSpecialPopulationFileName;
+}
+
 /** Internal setup */
 void TfrmAnalysis::Setup(const char * sParameterFileName) {
   try {
@@ -1285,6 +1292,7 @@ void TfrmAnalysis::SetupInterface() {
     edtControlFileName->Text = gParameters.GetControlFileName().c_str();
     rgPrecisionTimes->ItemIndex = gParameters.GetPrecisionOfTimesType();
     edtPopFileName->Text = gParameters.GetPopulationFileName().c_str();
+    edtSpecialPopulationFilename->Text = gParameters.GetSpecialPopulationFileName().c_str();
     edtCoordinateFileName->Text = gParameters.GetCoordinatesFileName().c_str();
     edtGridFileName->Text = gParameters.GetSpecialGridFileName().c_str();
     rgCoordinates->ItemIndex = gParameters.GetCoordinatesType();
@@ -1729,6 +1737,28 @@ void __fastcall TfrmAnalysis::rgTypeAnalysisClick(TObject *Sender) {
 void __fastcall TfrmAnalysis::FormActivate(TObject *Sender)
 {
    EnableActions(true);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfrmAnalysis::BrowseSpecialPopulationFileClick(TObject *Sender) {
+  try {
+    OpenDialog1->FileName = "";
+    OpenDialog1->DefaultExt = "*.pop";
+    OpenDialog1->Filter = "Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog1->FilterIndex = 0;
+    OpenDialog1->Title = "Select Special Population File";
+    if (OpenDialog1->Execute())
+      SetSpecialPopulationFile(OpenDialog1->FileName.c_str());
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("btnPopBrowseClick()", "TfrmAnalysis");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfrmAnalysis::edtSpecialPopulationFilenameChange(TObject *Sender) {
+  edtSpecialPopulationFilename->Hint = edtSpecialPopulationFilename->Text;
 }
 //---------------------------------------------------------------------------
 

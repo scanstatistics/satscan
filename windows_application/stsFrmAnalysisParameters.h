@@ -125,6 +125,9 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TTabSheet *tbOutputFiles;
         TTabSheet *tbScanningWindow;
         TTabSheet *tbTimeParameter;
+        TLabel *Label21;
+        TEdit *edtSpecialPopulationFilename;
+        TButton *Button1;
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall rgPrecisionTimesClick(TObject *Sender);
         void __fastcall btnCaseBrowseClick(TObject *Sender);
@@ -176,6 +179,9 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         void __fastcall rdoSpatialDistanceClick(TObject *Sender);
         void __fastcall mitClearSpecialGridEditClick(TObject *Sender);
         void __fastcall FormActivate(TObject *Sender);
+        void __fastcall BrowseSpecialPopulationFileClick(TObject *Sender);
+        void __fastcall edtSpecialPopulationFilenameChange(
+          TObject *Sender);
 
   private:	// User declarations
     PrintNull           gNullPrint;
@@ -240,6 +246,7 @@ public:		// User declarations
     void                SetCoordinateFile(const char * sCoordinateFileName);
     void                SetPopulationFile(const char * sPopulationFileName);
     void                SetSpecialGridFile(const char * sSpecialGridFileName);
+    void                SetSpecialPopulationFile(const char * sSpecialPopulationFileName);
     bool                ValidateParams();
     void                WriteSession();
 };

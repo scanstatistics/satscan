@@ -31,36 +31,43 @@ object frmAnalysis: TfrmAnalysis
       Caption = 'Input Files'
       object Label4: TLabel
         Left = 24
-        Top = 136
+        Top = 110
         Width = 72
         Height = 13
         Caption = 'Population File:'
       end
       object Label5: TLabel
         Left = 128
-        Top = 136
+        Top = 110
         Width = 75
         Height = 13
         Caption = '(Poisson Model)'
       end
+      object Label21: TLabel
+        Left = 24
+        Top = 152
+        Width = 110
+        Height = 13
+        Caption = 'Special Population File:'
+      end
       object GroupBox1: TGroupBox
         Left = 16
-        Top = 8
+        Top = -1
         Width = 457
-        Height = 113
+        Height = 106
         Color = clBtnFace
         ParentColor = False
         TabOrder = 0
         object Label1: TLabel
           Left = 8
-          Top = 16
+          Top = 10
           Width = 46
           Height = 13
           Caption = 'Case File:'
         end
         object Label2: TLabel
           Left = 8
-          Top = 64
+          Top = 58
           Width = 55
           Height = 13
           Caption = 'Control File:'
@@ -69,14 +76,14 @@ object frmAnalysis: TfrmAnalysis
         end
         object Label3: TLabel
           Left = 112
-          Top = 64
+          Top = 58
           Width = 78
           Height = 13
           Caption = '(Bernoulli Model)'
         end
         object rgPrecisionTimes: TRadioGroup
           Left = 328
-          Top = 16
+          Top = 10
           Width = 121
           Height = 89
           Caption = 'Precision of Times'
@@ -91,7 +98,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtCaseFileName: TEdit
           Left = 8
-          Top = 32
+          Top = 26
           Width = 273
           Height = 21
           ParentShowHint = False
@@ -101,7 +108,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtControlFileName: TEdit
           Left = 8
-          Top = 80
+          Top = 74
           Width = 273
           Height = 21
           ParentShowHint = False
@@ -111,7 +118,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object btnCaseBrowse: TButton
           Left = 288
-          Top = 32
+          Top = 26
           Width = 25
           Height = 21
           Hint = 'browse for case file'
@@ -129,7 +136,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object btnControlBrowse: TButton
           Left = 288
-          Top = 80
+          Top = 74
           Width = 25
           Height = 21
           Hint = 'browse for control file'
@@ -148,7 +155,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object edtPopFileName: TEdit
         Left = 24
-        Top = 152
+        Top = 126
         Width = 273
         Height = 21
         ParentShowHint = False
@@ -158,7 +165,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object btnPopBrowse: TButton
         Left = 304
-        Top = 152
+        Top = 126
         Width = 25
         Height = 21
         Hint = 'browse for population file'
@@ -253,7 +260,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object rgCoordinates: TRadioGroup
           Left = 328
-          Top = 16
+          Top = 11
           Width = 121
           Height = 73
           Caption = 'Coordinates'
@@ -264,6 +271,34 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 4
           OnClick = rgCoordinatesClick
         end
+      end
+      object edtSpecialPopulationFilename: TEdit
+        Left = 24
+        Top = 168
+        Width = 273
+        Height = 21
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 4
+        OnChange = edtSpecialPopulationFilenameChange
+      end
+      object Button1: TButton
+        Left = 304
+        Top = 168
+        Width = 25
+        Height = 21
+        Hint = 'browse for special population file'
+        Caption = '...'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 5
+        OnClick = BrowseSpecialPopulationFileClick
       end
     end
     object tbAnalysis: TTabSheet
