@@ -31,6 +31,7 @@ class RandomNumberGenerator {
     RandomNumberGenerator(long lSeed=glDefaultSeed) {SetSeed(lSeed);}
     ~RandomNumberGenerator() {}
 
+    const long  GetDefaultSeed() const {return glDefaultSeed;}
     double      GetRandomDouble();
     float       GetRandomFloat();
     long        GetSeed() const {return glSeed;}
