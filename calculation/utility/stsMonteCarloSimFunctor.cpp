@@ -13,7 +13,13 @@ stsMonteCarloSimFunctor::result_type stsMonteCarloSimFunctor::operator() (stsMon
   {
     result_type temp_result;
     //randomize data
-    gDataHub.RandomizeIsolatedData(*gpRandomizationContainer, *gpSimulationDataContainer, params);
+    gDataHub.RandomizeData(*gpRandomizationContainer, *gpSimulationDataContainer, params);
+    //print simulation data to file, if requested
+    if (gDataHub.GetParameters().GetOutputSimulationData()) {
+      boost::mutex::scoped_lock     lock(gMutex);
+      for (size_t t=0; t < gpSimulationDataContainer->size(); ++t)
+         (*gpSimulationDataContainer)[t]->WriteSimulationData(gDataHub.GetParameters(), params);
+    }
     //perform simulation to get loglikelihood ratio
     temp_result = (gpAnalysis->IsMonteCarlo() ? gpAnalysis->MonteCarlo(gpDataGateway->GetDataStreamInterface(0)) : gpAnalysis->FindTopRatio(*gpDataGateway));
     return temp_result;

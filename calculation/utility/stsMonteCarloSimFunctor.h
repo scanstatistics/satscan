@@ -8,6 +8,7 @@
 //#include "DataStreamGateway.h"
 #include "AnalysisRun.h"
 #include "boost/shared_ptr.hpp"
+#include "boost/thread/mutex.hpp"
 //---------------------------------------------------------------------------
 struct stsMonteCarloSimFunctorParams
 {
@@ -21,6 +22,7 @@ public:
   typedef double result_type;
 
 private:
+  boost::mutex                       & gMutex;
   CSaTScanData const &                 gDataHub;
   boost::shared_ptr<AbtractDataStreamGateway> gpDataGateway;
   boost::shared_ptr<CAnalysis>         gpAnalysis;
@@ -28,11 +30,15 @@ private:
   boost::shared_ptr<RandomizerContainer_t>     gpRandomizationContainer;
 
 public:
-  stsMonteCarloSimFunctor(CSaTScanData const & theDataHub, boost::shared_ptr<CAnalysis> pAnalysis, boost::shared_ptr<SimulationDataContainer_t> pSimulationDataContainer, boost::shared_ptr<RandomizerContainer_t> pRandomizationContainer)
-   : gDataHub(theDataHub)
-   , gpAnalysis(pAnalysis)
-   , gpSimulationDataContainer(pSimulationDataContainer)
-   , gpRandomizationContainer(pRandomizationContainer)
+  stsMonteCarloSimFunctor(boost::mutex& Mutex, CSaTScanData const & theDataHub,
+                          boost::shared_ptr<CAnalysis> pAnalysis,
+                          boost::shared_ptr<SimulationDataContainer_t> pSimulationDataContainer,
+                          boost::shared_ptr<RandomizerContainer_t> pRandomizationContainer)
+   : gMutex(Mutex),
+     gDataHub(theDataHub),
+     gpAnalysis(pAnalysis),
+     gpSimulationDataContainer(pSimulationDataContainer),
+     gpRandomizationContainer(pRandomizationContainer)
   {
     //get container for simulation data - this data will be modified in the randomize process
     gDataHub.GetDataStreamHandler().GetSimulationDataContainer(*gpSimulationDataContainer);
