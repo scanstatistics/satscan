@@ -152,6 +152,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         void __fastcall rdoMaximumSpatialTypeClick(TObject *Sender);
         void __fastcall FormActivate(TObject *Sender);
         void __fastcall chkAdjustForEarlierAnalysesClick(TObject *Sender);
+        void __fastcall edtMaxSpatialClusterSizeChange(TObject *Sender);
 
   private:	
     PrintNull                   gNullPrint;
@@ -207,7 +208,7 @@ public:		// User declarations
     CParameters               * GetSession();
     void                        LaunchImporter();
     void                        SaveAs();
-    void                        SetAdjustmentsForRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName);
+    void                        SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsByRelativeRisksFileName);
     void                        SetCaseFile(const char * sCaseFileName);
     void                        SetControlFile(const char * sControlFileName);
     void                        SetCoordinateFile(const char * sCoordinateFileName);

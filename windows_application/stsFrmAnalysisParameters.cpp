@@ -850,7 +850,7 @@ void TfrmAnalysis::OnProbabilityModelClick() {
       default : ZdGenerateException("Unknown probabilty model index '%d'.",
                                     "OnProbablityModelClick()", rgProbability->ItemIndex);
     }
-    gpfrmAdvancedParameters->EnableRelativeRisksGroup(rgProbability->ItemIndex == POISSON);
+    gpfrmAdvancedParameters->EnableAdjustmentsGroup(rgProbability->ItemIndex == POISSON);
     // simulate analysis type control click to synchronize controls
     OnAnalysisTypeClick();
   }
@@ -1046,9 +1046,9 @@ void TfrmAnalysis::SaveParameterSettings() {
   }
 }
 
-/** Sets adjustment for relative risks filename in interface */
-void TfrmAnalysis::SetAdjustmentsForRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName) {
-  gpfrmAdvancedParameters->SetAdjustmentsForRelativeRisksFile(sAdjustmentsForRelativeRisksFileName);
+/** Sets adjustment by relative risks filename in interface */
+void TfrmAnalysis::SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsByRelativeRisksFileName) {
+  gpfrmAdvancedParameters->SetAdjustmentsByRelativeRisksFile(sAdjustmentsByRelativeRisksFileName);
 }
 
 /** sets analysis type control for AnalysisType */
@@ -1112,11 +1112,11 @@ void TfrmAnalysis::SetReportingSmallerClustersText() {
   ZdString      sTemp;
 
   if (rdoSpatialPercentage->Checked)
-    sTemp.printf("percent of population at risk\n     (less than %s%%)", edtMaxSpatialClusterSize->Text.c_str());
+    sTemp.printf("percent of population at risk\n        (<= %s%%)", edtMaxSpatialClusterSize->Text.c_str());
   else if (rgCoordinates->ItemIndex == CARTESIAN)
-    sTemp.printf("cartesian units in radius\n     (less than %s)", edtMaxSpatialClusterSize->Text.c_str());
+    sTemp.printf("cartesian units in radius\n        (<= %s)", edtMaxSpatialClusterSize->Text.c_str());
   else
-    sTemp.printf("kilometers in radius\n     (less than %s)", edtMaxSpatialClusterSize->Text.c_str());
+    sTemp.printf("kilometers in radius\n        (<= %s)", edtMaxSpatialClusterSize->Text.c_str());
 
   gpfrmAdvancedParameters->SetReportingClustersText(sTemp);
 }
@@ -1510,5 +1510,11 @@ void TfrmAnalysis::WriteSession(const char * sParameterFilename) {
     x.AddCallpath("WriteSession()", "TfrmAnalysis");
     throw;
   }
+}
+
+//---------------------------------------------------------------------------
+void __fastcall TfrmAnalysis::edtMaxSpatialClusterSizeChange(TObject *Sender) {
+  if (edtMaxSpatialClusterSize->Text.Length())
+    SetReportingSmallerClustersText();
 }
 

@@ -25,7 +25,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbInputFiles
+    ActivePage = tbScanningWindow
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -638,6 +638,7 @@ object frmAnalysis: TfrmAnalysis
           MaxLength = 5
           TabOrder = 0
           Text = '50'
+          OnChange = edtMaxSpatialClusterSizeChange
           OnExit = edtMaxSpatialClusterSizeExit
           OnKeyPress = PositiveFloatKeyPress
         end
