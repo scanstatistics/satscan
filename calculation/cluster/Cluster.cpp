@@ -408,21 +408,20 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
 
 /** Prints null occurrence rate for cluster given time interval units. */
 void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft) {
-  float         fDaysInOccurrence, fYears, fMonths, fDays;
-  Julian        ProspectiveStartDate;
+  float         fDaysInOccurrence, fYears, fMonths, fDays, fIntervals, fAdjustedP_Value;
 
   try {
 
     if (Data.m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME && Data.m_pParameters->GetNumReplicationsRequested() > 99) {
-      ProspectiveStartDate = CharToJulian(Data.m_pParameters->GetProspectiveStartDate().c_str());
       fprintf(fp, "%sNull Occurrence.......: ", szSpacesOnLeft);
+      fIntervals = Data.m_nTimeIntervals - Data.m_nProspectiveIntervalStart + 1;
+      fAdjustedP_Value = 1 - pow(1 - GetPVal(Data.m_pParameters->GetNumReplicationsRequested()), 1/fIntervals);
+      fDaysInOccurrence = (fIntervals * Data.m_pParameters->GetTimeIntervalLength())/fAdjustedP_Value;
       switch (Data.m_pParameters->GetTimeIntervalUnitsType()) {
-        case YEAR   : fDaysInOccurrence = (TimeBetween(ProspectiveStartDate, Data.m_nEndDate, DAY) + AVERAGE_DAYS_IN_YEAR) / GetPVal(Data.m_pParameters->GetNumReplicationsRequested());
-                      fYears = fDaysInOccurrence/AVERAGE_DAYS_IN_YEAR;
+        case YEAR   : fYears = fDaysInOccurrence/AVERAGE_DAYS_IN_YEAR;
                       fprintf(fp, "Once in %.1f year%s\n", fYears, (fYears > 1 ? "s" : ""));
                       break;
-        case MONTH  : fDaysInOccurrence = (TimeBetween(ProspectiveStartDate, Data.m_nEndDate, DAY) + AVERAGE_DAYS_IN_MONTH) / GetPVal(Data.m_pParameters->GetNumReplicationsRequested());
-                      fYears = floor(fDaysInOccurrence/AVERAGE_DAYS_IN_YEAR);
+        case MONTH  : fYears = floor(fDaysInOccurrence/AVERAGE_DAYS_IN_YEAR);
                       fDays = fDaysInOccurrence - fYears * AVERAGE_DAYS_IN_YEAR;
                       fMonths = fDays/AVERAGE_DAYS_IN_MONTH;
                       /*Round now for values that cause months to goto 12 or down to 0.*/
@@ -440,8 +439,7 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, char* s
                       else /*Having both zero month and year should never happen.*/
                         fprintf(fp, "Once in %.0f year%s and %0.f month%s\n", fYears, (fYears == 1 ? "" : "s"), fMonths, (fMonths < 1.5 ? "" : "s"));
                       break;
-        case DAY    : fDaysInOccurrence = (TimeBetween(ProspectiveStartDate, Data.m_nEndDate, DAY) + 1) / GetPVal(Data.m_pParameters->GetNumReplicationsRequested());
-                      fYears = floor(fDaysInOccurrence/AVERAGE_DAYS_IN_YEAR);
+        case DAY    : fYears = floor(fDaysInOccurrence/AVERAGE_DAYS_IN_YEAR);
                       fDays = fDaysInOccurrence - fYears * AVERAGE_DAYS_IN_YEAR;
                       /*Round now for values that cause days to go 365 or down to 0.*/
                       if (fDays >= 364.5) {
