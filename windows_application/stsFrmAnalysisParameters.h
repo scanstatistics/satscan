@@ -42,11 +42,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TEdit *edtCaseFileName;
         TEdit *edtControlFileName;
         TEdit *edtCoordinateFileName;
-        TEdit *edtStudyPeriodEndDateDay;
-        TEdit *edtStudyPeriodEndDateMonth;
-        TEdit *edtStudyPeriodEndDateYear;
         TEdit *edtGridFileName;
-        TEdit *edtLogLinear;
         TEdit *edtMaxSpatialClusterSize;
         TEdit *edtMaxTemporalClusterSize;
         TEdit *edtMontCarloReps;
@@ -54,13 +50,9 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TEdit *edtProspectiveStartDateDay;
         TEdit *edtProspectiveStartDateMonth;
         TEdit *edtProspectiveStartDateYear;
-        TEdit *edtStudyPeriodStartDateDay;
-        TEdit *edtStudyPeriodStartDateMonth;
-        TEdit *edtStudyPeriodStartDateYear;
         TEdit *edtTimeIntervalLength;
         TGroupBox *GroupBox1;
         TGroupBox *GroupBox2;
-        TGroupBox *GroupBox3;
         TGroupBox *rdgSpatialOptions;
         TGroupBox *rdgTemporalOptions;
         TGroupBox *rdgTimeIntervalUnits;
@@ -80,11 +72,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TLabel *Label5;
         TLabel *Label6;
         TLabel *Label7;
-        TLabel *Label8;
-        TLabel *Label9;
-        TLabel *Label10;
-        TLabel *Label12;
-        TLabel *Label14;
         TLabel *Label16;
         TLabel *lblMaxSpatialClusterSize;
         TLabel *lblMaxTemporalClusterSize;
@@ -106,7 +93,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TRadioGroup *rgPrecisionTimes;
         TRadioGroup *rgProbability;
         TRadioGroup *rgScanAreas;
-        TRadioGroup *rdgTemporalTrendAdj;
         TRadioGroup *rgTypeAnalysis;
         TSaveDialog *SaveDialog;
         TTabSheet *tbAnalysis;
@@ -121,7 +107,18 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TLabel *lblProspectiveStartDate;
         TCheckBox *chkAdjustForEarlierAnalyses;
         TLabel *lblAdjustForEarlierAnalyses;
-        TStaticText *lblLogLinear;
+        TGroupBox *GroupBox3;
+        TLabel *Label8;
+        TLabel *Label9;
+        TLabel *Label10;
+        TLabel *Label12;
+        TLabel *Label14;
+        TEdit *edtStudyPeriodStartDateYear;
+        TEdit *edtStudyPeriodEndDateYear;
+        TEdit *edtStudyPeriodStartDateMonth;
+        TEdit *edtStudyPeriodEndDateMonth;
+        TEdit *edtStudyPeriodStartDateDay;
+        TEdit *edtStudyPeriodEndDateDay;
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall rgPrecisionTimesClick(TObject *Sender);
         void __fastcall btnCaseBrowseClick(TObject *Sender);
@@ -130,7 +127,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         void __fastcall btnCoordBrowseClick(TObject *Sender);
         void __fastcall btnGridBrowseClick(TObject *Sender);
         void __fastcall btnResultFileBrowseClick(TObject *Sender);
-        void __fastcall rdgTemporalTrendAdjClick(TObject *Sender);
         void __fastcall rgTypeAnalysisClick(TObject *Sender);
         void __fastcall rgProbabilityClick(TObject *Sender);
         void __fastcall rgCoordinatesClick(TObject *Sender);
@@ -143,17 +139,10 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         void __fastcall NaturalNumberKeyPress(TObject *Sender, char &Key);
         void __fastcall PositiveFloatKeyPress(TObject *Sender, char &Key);
         void __fastcall FloatKeyPress(TObject *Sender, char &Key);
-        void __fastcall edtStudyPeriodStartDateMonthExit(TObject *Sender);
-        void __fastcall edtStudyPeriodStartDateYearExit(TObject *Sender);
-        void __fastcall edtStudyPeriodEndDateMonthExit(TObject *Sender);
-        void __fastcall edtStudyPeriodEndDateYearExit(TObject *Sender);
-        void __fastcall edtStudyPeriodStartDateDayExit(TObject *Sender);
-        void __fastcall edtStudyPeriodEndDateDayExit(TObject *Sender);
-        void __fastcall edtProspectiveStartDateYearExit(TObject *Sender);
-        void __fastcall edtProspectiveStartDateMonthExit(TObject *Sender);
-        void __fastcall edtProspectiveStartDateDayExit(TObject *Sender);
+        void __fastcall edtStudyPeriodStartDateExit(TObject *Sender);
+        void __fastcall edtStudyPeriodEndDateExit(TObject *Sender);
+        void __fastcall edtProspectiveStartDateExit(TObject *Sender);
         void __fastcall edtTimeIntervalLengthExit(TObject *Sender);
-        void __fastcall edtLogLinearExit(TObject *Sender);
         void __fastcall edtCaseFileNameChange(TObject *Sender);
         void __fastcall edtControlFileNameChange(TObject *Sender);
         void __fastcall edtPopFileNameChange(TObject *Sender);
@@ -169,11 +158,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     CParameters                 gParameters;
     TfrmAdvancedParameters    * gpfrmAdvancedParameters;  
 
-    bool                        Check_Days(int iYear, int iMonth, int iDay, const char *sDateName);
     bool                        Check_IntervalLength();
-    bool                        Check_Month(int iMonth, const char *sDateName);
-    bool                        Check_TimeTrendPercentage(double dValue);
-    bool                        Check_Year(int iYear, const char *sDateName);
     bool                        CheckAnalysisParams();
     bool                        CheckOutputParams();
     bool                        CheckProspDateRange();
@@ -183,8 +168,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     bool                        CheckTimeParams();
     void                        DefaultHiddenParameters();
     void                        EnableAdditionalOutFilesOptionsGroup(bool bRelativeRisks);
-    void                        EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified,
-                                                                         bool bLogLinearCalculated, bool bLogYearPercentage);
     void                        EnableDatesByTimeIntervalUnits();
     void                        EnableProspectiveStartDate(bool bEnable);
     void                        EnableProspectiveSurveillanceGroup(bool bEnable);
@@ -192,7 +175,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        EnableStudyPeriodDates(bool bYear, bool bMonth, bool bDay);
     void                        EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges);
     void                        EnableTimeIntervalUnitsGroup(bool bEnable);
-    TimeTrendAdjustmentType     GetAdjustmentTimeTrendControlType() const;
     AnalysisType                GetAnalysisControlType() const;
     DatePrecisionType           GetPrecisionOfTimesControlType() const;
     ZdDate                    & GetStudyPeriodEndDate(ZdDate & Date);
@@ -207,7 +189,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        SetAnalysisControl(AnalysisType eAnalysisType);
     void                        SetReportingSmallerClustersText();
     void                        SetSpatialDistanceCaption();
-    void                        SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                        Setup(const char * sParameterFileName);
     void                        SetupInterface();
     bool                        ValidateInputFiles();
@@ -226,6 +207,7 @@ public:		// User declarations
     CParameters               * GetSession();
     void                        LaunchImporter();
     void                        SaveAs();
+    void                        SetAdjustmentsForRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName);
     void                        SetCaseFile(const char * sCaseFileName);
     void                        SetControlFile(const char * sControlFileName);
     void                        SetCoordinateFile(const char * sCoordinateFileName);
@@ -235,6 +217,7 @@ public:		// User declarations
     void                        SetPrecisionOfTimesControl(DatePrecisionType eDatePrecisionType);
     void                        SetSpecialGridFile(const char * sSpecialGridFileName);
     void                        ShowAdvancedFeaturesDialog();
+    static void                 ValidateDate(TEdit& YearControl, TEdit& MonthControl, TEdit& DayControl);
     bool                        ValidateParams();
     void                        WriteSession(const char * sParameterFilename=0);
 };

@@ -317,137 +317,13 @@ object frmAnalysis: TfrmAnalysis
           'High or Low Rates')
         TabOrder = 2
       end
-      object GroupBox3: TGroupBox
-        Left = 8
-        Top = 159
-        Width = 465
-        Height = 97
-        Caption = 'Study Period'
-        TabOrder = 3
-        object Label8: TLabel
-          Left = 56
-          Top = 39
-          Width = 51
-          Height = 13
-          Anchors = [akLeft, akTop, akRight]
-          Caption = 'Start Date:'
-        end
-        object Label9: TLabel
-          Left = 56
-          Top = 71
-          Width = 48
-          Height = 13
-          Anchors = [akLeft, akTop, akRight]
-          Caption = 'End Date:'
-        end
-        object Label10: TLabel
-          Left = 120
-          Top = 13
-          Width = 22
-          Height = 13
-          Anchors = [akLeft, akTop, akRight]
-          Caption = 'Year'
-        end
-        object Label12: TLabel
-          Left = 171
-          Top = 13
-          Width = 30
-          Height = 13
-          Anchors = [akLeft, akTop, akRight]
-          Caption = 'Month'
-        end
-        object Label14: TLabel
-          Left = 208
-          Top = 13
-          Width = 19
-          Height = 13
-          Anchors = [akLeft, akTop, akRight]
-          Caption = 'Day'
-        end
-        object edtStudyPeriodStartDateYear: TEdit
-          Left = 120
-          Top = 31
-          Width = 41
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          MaxLength = 4
-          TabOrder = 0
-          Text = '1900'
-          OnExit = edtStudyPeriodStartDateYearExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-        object edtStudyPeriodEndDateYear: TEdit
-          Left = 120
-          Top = 63
-          Width = 41
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          MaxLength = 4
-          TabOrder = 1
-          Text = '1900'
-          OnExit = edtStudyPeriodEndDateYearExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-        object edtStudyPeriodStartDateMonth: TEdit
-          Left = 171
-          Top = 31
-          Width = 25
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          Enabled = False
-          MaxLength = 2
-          TabOrder = 2
-          Text = '1'
-          OnExit = edtStudyPeriodStartDateMonthExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-        object edtStudyPeriodEndDateMonth: TEdit
-          Left = 171
-          Top = 63
-          Width = 25
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          Enabled = False
-          MaxLength = 2
-          TabOrder = 3
-          Text = '12'
-          OnExit = edtStudyPeriodEndDateMonthExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-        object edtStudyPeriodStartDateDay: TEdit
-          Left = 208
-          Top = 31
-          Width = 25
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          Enabled = False
-          MaxLength = 2
-          TabOrder = 4
-          Text = '1'
-          OnExit = edtStudyPeriodStartDateDayExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-        object edtStudyPeriodEndDateDay: TEdit
-          Left = 208
-          Top = 63
-          Width = 25
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          Enabled = False
-          MaxLength = 2
-          TabOrder = 5
-          Text = '31'
-          OnExit = edtStudyPeriodEndDateDayExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-      end
       object edtMontCarloReps: TEdit
         Left = 318
         Top = 265
         Width = 65
         Height = 21
         MaxLength = 9
-        TabOrder = 4
+        TabOrder = 3
         Text = '999'
         OnExit = edtMontCarloRepsExit
         OnKeyPress = NaturalNumberKeyPress
@@ -457,9 +333,9 @@ object frmAnalysis: TfrmAnalysis
       Caption = 'Time Parameters'
       ImageIndex = 3
       object rdgTimeIntervalUnits: TGroupBox
-        Left = 16
+        Left = 9
         Top = 8
-        Width = 193
+        Width = 208
         Height = 137
         Caption = 'Time Intervals'
         TabOrder = 0
@@ -523,39 +399,10 @@ object frmAnalysis: TfrmAnalysis
           OnKeyPress = NaturalNumberKeyPress
         end
       end
-      object rdgTemporalTrendAdj: TRadioGroup
-        Left = 16
-        Top = 160
-        Width = 449
-        Height = 118
-        Caption = 'Adjustment for Temporal Trend'
-        Enabled = False
-        ItemIndex = 0
-        Items.Strings = (
-          'None'
-          'Stratified randomization by time interval'
-          'Log linear with automatically calculated trend'
-          'Log linear with')
-        TabOrder = 2
-        TabStop = True
-        OnClick = rdgTemporalTrendAdjClick
-      end
-      object edtLogLinear: TEdit
-        Left = 120
-        Top = 250
-        Width = 41
-        Height = 21
-        Enabled = False
-        MaxLength = 5
-        TabOrder = 3
-        Text = '0'
-        OnExit = edtLogLinearExit
-        OnKeyPress = FloatKeyPress
-      end
       object grpProspectiveSurveillance: TGroupBox
-        Left = 232
+        Left = 224
         Top = 8
-        Width = 233
+        Width = 248
         Height = 137
         Caption = 'Prospective Surveillance'
         TabOrder = 1
@@ -604,7 +451,7 @@ object frmAnalysis: TfrmAnalysis
           MaxLength = 4
           TabOrder = 0
           Text = '1900'
-          OnExit = edtProspectiveStartDateYearExit
+          OnExit = edtProspectiveStartDateExit
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtProspectiveStartDateMonth: TEdit
@@ -616,7 +463,7 @@ object frmAnalysis: TfrmAnalysis
           MaxLength = 2
           TabOrder = 1
           Text = '12'
-          OnExit = edtProspectiveStartDateMonthExit
+          OnExit = edtProspectiveStartDateExit
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtProspectiveStartDateDay: TEdit
@@ -628,7 +475,7 @@ object frmAnalysis: TfrmAnalysis
           MaxLength = 2
           TabOrder = 2
           Text = '31'
-          OnExit = edtProspectiveStartDateDayExit
+          OnExit = edtProspectiveStartDateExit
           OnKeyPress = NaturalNumberKeyPress
         end
         object chkAdjustForEarlierAnalyses: TCheckBox
@@ -640,13 +487,129 @@ object frmAnalysis: TfrmAnalysis
           OnClick = chkAdjustForEarlierAnalysesClick
         end
       end
-      object lblLogLinear: TStaticText
-        Left = 166
-        Top = 254
-        Width = 56
-        Height = 17
-        Caption = '%  per year'
-        TabOrder = 4
+      object GroupBox3: TGroupBox
+        Left = 8
+        Top = 148
+        Width = 465
+        Height = 97
+        Caption = 'Study Period'
+        TabOrder = 2
+        object Label8: TLabel
+          Left = 56
+          Top = 39
+          Width = 51
+          Height = 13
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'Start Date:'
+        end
+        object Label9: TLabel
+          Left = 56
+          Top = 71
+          Width = 48
+          Height = 13
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'End Date:'
+        end
+        object Label10: TLabel
+          Left = 120
+          Top = 13
+          Width = 22
+          Height = 13
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'Year'
+        end
+        object Label12: TLabel
+          Left = 171
+          Top = 13
+          Width = 30
+          Height = 13
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'Month'
+        end
+        object Label14: TLabel
+          Left = 208
+          Top = 13
+          Width = 19
+          Height = 13
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'Day'
+        end
+        object edtStudyPeriodStartDateYear: TEdit
+          Left = 120
+          Top = 31
+          Width = 41
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          MaxLength = 4
+          TabOrder = 0
+          Text = '1900'
+          OnExit = edtStudyPeriodStartDateExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object edtStudyPeriodEndDateYear: TEdit
+          Left = 120
+          Top = 63
+          Width = 41
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          MaxLength = 4
+          TabOrder = 1
+          Text = '1900'
+          OnExit = edtStudyPeriodEndDateExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object edtStudyPeriodStartDateMonth: TEdit
+          Left = 171
+          Top = 31
+          Width = 25
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          Enabled = False
+          MaxLength = 2
+          TabOrder = 2
+          Text = '1'
+          OnExit = edtStudyPeriodStartDateExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object edtStudyPeriodEndDateMonth: TEdit
+          Left = 171
+          Top = 63
+          Width = 25
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          Enabled = False
+          MaxLength = 2
+          TabOrder = 3
+          Text = '12'
+          OnExit = edtStudyPeriodEndDateExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object edtStudyPeriodStartDateDay: TEdit
+          Left = 208
+          Top = 31
+          Width = 25
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          Enabled = False
+          MaxLength = 2
+          TabOrder = 4
+          Text = '1'
+          OnExit = edtStudyPeriodStartDateExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object edtStudyPeriodEndDateDay: TEdit
+          Left = 208
+          Top = 63
+          Width = 25
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          Enabled = False
+          MaxLength = 2
+          TabOrder = 5
+          Text = '31'
+          OnExit = edtStudyPeriodEndDateExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
       end
     end
     object tbScanningWindow: TTabSheet
