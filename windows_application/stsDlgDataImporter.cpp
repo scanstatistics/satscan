@@ -620,7 +620,7 @@ void TBDlgDataImporter::OnAddFieldDefinitionClick() {
     sFieldSection.sprintf("[Field%d]", ( int )gvIniSections.size() + 1);
     addSection.SetName(sFieldSection.c_str());
     addSection.AddLine("FieldName", edtFieldName->Text.c_str());
-    addSection.AddLine("Type", sBuffer);
+    addSection.AddLine("Type", sBuffer);                       
     addSection.AddLine("Length", edtFieldLength->Text.c_str());
     //Add one to Byte off set, memo starts at zero.
     iStart = StrToInt(edtStartColumn->Text);
@@ -633,7 +633,7 @@ void TBDlgDataImporter::OnAddFieldDefinitionClick() {
                     StrToInt(edtFieldLength->Text.c_str()),
                     edtFieldName->Text.c_str());
     lstFixedColFieldDefs->Items->Add(sListBox.GetCString());
-    edtFieldName->Text = GetFixedColumnFieldName(gvIniSections.size(), sFieldName).GetCString();
+    edtFieldName->Text = GetFixedColumnFieldName(gvIniSections.size() + 1, sFieldName).GetCString();
     lstFixedColFieldDefs->ItemIndex = -1;
     ContinueButtonEnable();
     edtFieldName->SetFocus();
@@ -788,7 +788,7 @@ void TBDlgDataImporter::OnViewFileFormatPanel() {
   try {
     ReadDataFileIntoRawDisplayField();
     ShowFileTypeFormatPanel(rdoFileType->ItemIndex);
-    edtFieldName->Text = GetFixedColumnFieldName(0, sFieldName).GetCString();
+    edtFieldName->Text = GetFixedColumnFieldName(1, sFieldName).GetCString();
     ContinueButtonEnable();
     OnFieldDefinitionChange();
   }
@@ -1019,10 +1019,9 @@ void TBDlgDataImporter::OpenSourceFile() {
           gpImportFile = new ScanfFile();
           gpImportFile->Open(edtDataFile->Text.c_str(), ZDIO_OPEN_READ|ZDIO_SREAD, 0, 0, &gDataFileDefinition);
         }
-        else {
+        else
           gpImportFile = new CSVFile(edtDataFile->Text.c_str(), ZDIO_OPEN_READ, 0, 0, &gDataFileDefinition, GetColumnDelimiter(), GetGroupMarker());
-          chkFirstRowIsName->Enabled = true;
-        }
+        chkFirstRowIsName->Enabled = true;
       }
       else if (rdoFileType->ItemIndex == 1) {//Special ZdFile open for variable txd
         gpImportFile = new TXVFile();
