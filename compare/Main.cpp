@@ -127,6 +127,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
    }
 
    lstDisplay->Items->Clear();
+   gvParameterList.clear();
    while (ParameterListFile.eof()==false) {
         ParameterListFile >> ws;
         std::getline(ParameterListFile, sBuffer);
