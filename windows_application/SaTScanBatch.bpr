@@ -126,7 +126,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE;_DEBUG"/>
+    <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE;_DEBUG;PARALLEL_SIMULATIONS"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="SaTScanBatch.bpf"/>
     <INCLUDEPATH value="..\..\boost\release_1_29_0\libs\thread\src;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\boost\release_1_29_0"/>
@@ -139,7 +139,7 @@
     <PFLAGS value="-$Y+ -$W -$O- -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn -v"/>
+    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn -v -GF:LARGEADDRESSAWARE"/>
   </OPTIONS>
   <LINKER>
     <ALLOBJ value="c0x32.obj $(OBJFILES)"/>
@@ -200,7 +200,7 @@ Item0=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SaTScan Project\basis
 
 [HistoryLists\hlConditionals]
 Count=1
-Item0=INTEL_BASED;__BATCH_COMPILE;_DEBUG
+Item0=INTEL_BASED;__BATCH_COMPILE;_DEBUG;PARALLEL_SIMULATIONS
 
 [Debugging]
 DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SaTScan Project\basisdev\include;C:\Prj\SaTScan Project\basisdev\source\nonvcl;C:\Prj\SaTScan Project\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd543;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
