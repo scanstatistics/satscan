@@ -929,7 +929,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
               rgClustersToInclude->ItemIndex = gParameters.GetIncludeClustersType();
               EnableSpatial(false, false, false);  // Disables Spatial
               EnableTimeInterval(true);            // Enables time intervals
-              EnableTemporal(true, false, true);   // Enables temporal without checkbox
+              EnableTemporal(true, false, false);   // Enables temporal without checkbox
               EnablePSTDate(true);                 // Disables Start date PST
     }
 
