@@ -118,7 +118,7 @@ object frmAnalysisRun: TfrmAnalysisRun
       TabStop = False
       Align = alClient
       ReadOnly = True
-      ScrollBars = ssVertical
+      ScrollBars = ssBoth
       TabOrder = 1
       WantReturns = False
       WordWrap = False
@@ -132,7 +132,7 @@ object frmAnalysisRun: TfrmAnalysisRun
     TabStop = False
     Align = alClient
     ReadOnly = True
-    ScrollBars = ssVertical
+    ScrollBars = ssBoth
     TabOrder = 1
     WantReturns = False
     WordWrap = False
