@@ -2,6 +2,7 @@
 #ifndef __stsRunHistoryFile_H
 #define __stsRunHistoryFile_H
 //---------------------------------------------------------------------------
+#include "Parameters.h"
 extern const char* RUN_NUMBER_FIELD;
 extern const char* RUN_TIME_FIELD;
 extern const char* OUTPUT_FILE_FIELD;
@@ -29,6 +30,8 @@ extern const char* NUM_SIGNIF_005_FIELD;
 extern const char* P_VALUE_FIELD;
 extern const char* ADDITIONAL_OUTPUT_FILES_FIELD;
 
+class AnalysisRunner;
+
 class stsRunHistoryFile {
    private:
       ZdString                          gsFilename;
@@ -55,12 +58,12 @@ class stsRunHistoryFile {
    protected:
       void      CreateRunHistoryFile();
    public:
-      stsRunHistoryFile(const ZdString& sFileName, BasePrint& PrintDirection, const bool bPrintPVal = true, const bool bSequential = false);
+      stsRunHistoryFile(const CParameters& Parameters, BasePrint& PrintDirection);
       ~stsRunHistoryFile();
 
       const long        GetRunNumber() const {return glRunNumber;}
       const ZdString&   GetRunHistoryFileName() const {return gsFilename;}
-      void              LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005, double dpVal);
+      void              LogNewHistory(const AnalysisRunner& AnalysisRun);
 
 };
 

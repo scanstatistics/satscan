@@ -1,15 +1,17 @@
+//*****************************************************************************
+#include "SaTScan.h"
+#pragma hdrstop
+//*****************************************************************************
+
 // class stsRunHistoryFile
 // Adam J Vaughn
 // 9/4/2002
 
 // This class keeps a ZD file log for each run of the SaTScan program which includes information
-// specified by the client. For each instance of the class, a new, unnique run number will be 
+// specified by the client. For each instance of the class, a new, unnique run number will be
 // recorded in the file and the pertinent data will be updated once the analysis is complete.
 
-#include "SaTScan.h"
-#pragma hdrstop
-
-#include "Analysis.h"
+#include "AnalysisRun.h"
 #include "stsRunHistoryFile.h"
 #include "DBFFile.h"
 #ifdef INTEL_BASED
@@ -46,15 +48,18 @@ const char* P_VALUE_FIELD               = "P_VALUE";
 const char* ADDITIONAL_OUTPUT_FILES_FIELD        = "ADDIT_OUT";
 
 // constructor
-stsRunHistoryFile::stsRunHistoryFile(const ZdString& sFileName, BasePrint& PrintDirection, const bool bPrintPVal, const bool bSequential)
-                 : gpPrintDirection(&PrintDirection) , gbPrintPVal(bPrintPVal) , gbSequential(bSequential) {
+stsRunHistoryFile::stsRunHistoryFile(const CParameters& Parameters, BasePrint& PrintDirection)
+                  :gpPrintDirection(&PrintDirection),
+                   gbPrintPVal(Parameters.GetNumReplicationsRequested() > 98),
+                   gbSequential(Parameters.GetIsSequentialScanning()) {
    try {
       Init();
-      SetFileName(sFileName);
+      SetFileName(Parameters.GetRunHistoryFilename());
       SetRunNumber();
    }
    catch (ZdException &x) {
-      PrintDirection.SatScanPrintWarning("Warning: Run history file \"%s\" is not accessible.\n", sFileName.GetCString());
+      PrintDirection.SatScanPrintWarning("Warning: Run history file \"%s\" is not accessible.\n",
+                                         Parameters.GetRunHistoryFilename().GetCString());
       PrintDirection.SatScanPrintWarning("         No history information will not be recorded.\n\n");
       //PrintDirection.SatScanPrintWarning("The following error occured in attempting to log run history to file:\n");
       //PrintDirection.SatScanPrintWarning(x.GetErrorMessage());
@@ -353,11 +358,12 @@ void stsRunHistoryFile::Init() {
 // although the name implies an oxymoron, this function will record a new run into the history file
 // pre: none
 // post: records the run history to the file
-void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005, double dVal) {
-   ZdTransaction	*pTransaction = 0;
-   ZdString             sTempValue, sInterval;
-   std::auto_ptr<DBFFile>    pFile;
-   bool                 bFound(false);
+void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
+   ZdTransaction	      * pTransaction=0;
+   ZdString                     sTempValue, sInterval;
+   std::auto_ptr<DBFFile>       pFile;
+   bool                         bFound(false);
+   double                       dTopClusterRatio=0;
    
    try {
 #ifdef INTEL_BASED
@@ -365,7 +371,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       pSection->Acquire();
 #endif      
 
-      const CParameters & params(pAnalysis.GetSatScanData()->GetParameters());
+      const CParameters & params(AnalysisRun.GetDataHub().GetParameters());
 
       // NOTE: I'm going to document the heck out of this section for two reasons :
       // 1) in case they change the run specs on us at any time
@@ -391,7 +397,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetDoubleField(*pRecord, (double)glRunNumber, GetFieldNumber(gvFields, RUN_NUMBER_FIELD));
 
       // run time and date field
-      sTempValue = pAnalysis.GetStartTime();
+      sTempValue = ctime(AnalysisRun.GetStartTime());
       StripCRLF(sTempValue);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, RUN_TIME_FIELD));
 
@@ -418,9 +424,9 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       GetAnalysisTypeString(sTempValue, params.GetAnalysisType());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ANALYSIS_TYPE_FIELD));
 
-      SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->GetTotalCases(), GetFieldNumber(gvFields, NUM_CASES_FIELD));   // total number of cases field
-      SetDoubleField(*pRecord, pAnalysis.GetSatScanData()->GetTotalPopulationCount(), GetFieldNumber(gvFields, TOTAL_POP_FIELD));  // total population field
-      SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->GetNumTracts(), GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));     // number of geographic areas field
+      SetDoubleField(*pRecord, (double)AnalysisRun.GetDataHub().GetTotalCases(), GetFieldNumber(gvFields, NUM_CASES_FIELD));   // total number of cases field
+      SetDoubleField(*pRecord, AnalysisRun.GetDataHub().GetTotalPopulationCount(), GetFieldNumber(gvFields, TOTAL_POP_FIELD));  // total population field
+      SetDoubleField(*pRecord, (double)AnalysisRun.GetDataHub().GetNumTracts(), GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));     // number of geographic areas field
 
       // precision of case times field
       sTempValue = (params.GetPrecisionOfTimesType() == NONE ? "No" : "Yes");
@@ -440,7 +446,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
 
       // covariates number
       SetDoubleField(*pRecord,
-                     (double)pAnalysis.GetSatScanData()->GetDataStreamHandler().GetStream(0/*for now*/).GetPopulationData().GetNumPopulationCategoryCovariates(),
+                     (double)AnalysisRun.GetDataHub().GetDataStreamHandler().GetStream(0/*for now*/).GetPopulationData().GetNumPopulationCategoryCovariates(),
                      GetFieldNumber(gvFields, COVARIATES_FIELD));
 
       SetBoolField(*pRecord, params.UseSpecialGrid(), GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field
@@ -455,16 +461,19 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, INTERVAL_FIELD));
 
       // p-value field
-      if(gbPrintPVal)
-         SetDoubleField(*pRecord, dVal, GetFieldNumber(gvFields, P_VALUE_FIELD));
+      if(gbPrintPVal) {
+         if (AnalysisRun.GetClusterContainer().GetNumClustersRetained())
+          dTopClusterRatio = AnalysisRun.GetClusterContainer().GetTopRankedCluster().GetPValue(AnalysisRun.GetNumSimulationsExecuted());
+         SetDoubleField(*pRecord, dTopClusterRatio, GetFieldNumber(gvFields, P_VALUE_FIELD));
+      }
       else
          pRecord->PutBlank(GetFieldNumber(gvFields, P_VALUE_FIELD));
-      SetDoubleField(*pRecord, (double)pAnalysis.GetNumSimulationsExecuted(), GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
+      SetDoubleField(*pRecord, (double)AnalysisRun.GetNumSimulationsExecuted(), GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
 
       if(!gbSequential && gbPrintPVal) {    // only print 0.01 and 0.05 cutoffs if pVals are printed, else this would result in access underrun - AJV
-         SetDoubleField(*pRecord, pAnalysis.GetSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
-         SetDoubleField(*pRecord, pAnalysis.GetSimRatio05(), GetFieldNumber(gvFields, CUTOFF_005_FIELD)); // 0.05 cutoff field
-         SetDoubleField(*pRecord, (double)uwSignificantAt005, GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));  // number of clusters significant at tthe .05 llr cutoff field
+         SetDoubleField(*pRecord, AnalysisRun.GetSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
+         SetDoubleField(*pRecord, AnalysisRun.GetSimRatio05(), GetFieldNumber(gvFields, CUTOFF_005_FIELD)); // 0.05 cutoff field
+         SetDoubleField(*pRecord, (double)AnalysisRun.GetNumSignificantAt005(), GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));  // number of clusters significant at tthe .05 llr cutoff field
       }
       else {
          pRecord->PutBlank(GetFieldNumber(gvFields, CUTOFF_001_FIELD));
