@@ -52,7 +52,7 @@ class PopulationData {
     std::vector<count_t>                gvCategoryCasesCount;          /** number of cases for category */                                                                        
     std::vector<count_t>                gvCategoryControlsCount;       /** number of controls for category */
     
-    std::deque<PopulationCategory*>     gTractCategories;          /** one for each tract */
+    std::vector<PopulationCategory*>    gTractCategories;          /** one for each tract */
 
     std::vector<Julian>                 gvPopulationDates;
 

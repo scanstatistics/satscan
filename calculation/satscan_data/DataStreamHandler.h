@@ -13,7 +13,7 @@ class DataStreamHandler {
     const CParameters                 & gParameters;            /** reference to parameters */
     BasePrint                         * gpPrint;                /** pointer to print direction */
     CSaTScanData                      & gData;                  /** reference to data hub */
-    std::deque<DataStream>              gvDataStreams;          /** collection of data streams */
+    std::vector<DataStream>             gvDataStreams;          /** collection of data streams */
 
     void                                AllocateCaseStructures(unsigned int iStream);
     void                                AllocateControlStructures(unsigned int iStream);
@@ -42,7 +42,6 @@ class DataStreamHandler {
     size_t                              GetNumStreams() const {return gvDataStreams.size();}
     const DataStream                  & GetStream(unsigned int iStream) const {return gvDataStreams[iStream];}
     DataStream                        & GetStream(unsigned int iStream) {return gvDataStreams[iStream];}
-    const std::deque<DataStream>      & GetStreams() const {return gvDataStreams;}
     bool                                ReadCaseFile(size_t tStream);
     bool                                ReadControlFile(size_t tStream);
     bool                                ReadPopulationFile(size_t tStream);
