@@ -35,15 +35,19 @@ enum SpatialSizeType {PERCENTAGEOFMEASURETYPE=0, DISTANCETYPE}; // How Max Tempo
 class CParameters
 {
   private:
-      BasePrint *gpPrintDirection;         /** where to direct 'console' output */
-      bool       gbOutputClusterLevelDBF, gbOutputAreaSpecificDBF;
-      ZdString   gsRunHistoryFilename;
+      BasePrint        *gpPrintDirection;         /** where to direct 'console' output */
+      bool              gbOutputClusterLevelDBF, gbOutputAreaSpecificDBF;
+      ZdString          gsRunHistoryFilename;
 
       void copy(const CParameters &rhs);
       void FindDelimiter(char *sString, char cDelimiter);
       void TrimLeft(char *sString);
       bool ValidHistoryFileName(const ZdString& sRunHistoryFilename);
-      
+
+  protected:
+      float             m_nInitialMaxTemporalClusterSize;
+      TemporalSizeType  m_nInitialMaxClusterSizeType;  
+
   public:
     CParameters(bool bDisplayErrors);
     CParameters(const CParameters &other);

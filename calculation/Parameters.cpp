@@ -104,21 +104,25 @@ void CParameters::ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporal
   try {
     double dTimeBetween = TimeBetween(CharToJulian(m_szStartDate),CharToJulian(m_szEndDate), m_nIntervalUnits);
 
+    // store intial type and size for parameter output display
+    m_nInitialMaxTemporalClusterSize = m_nMaxTemporalClusterSize;
+    m_nInitialMaxClusterSizeType = (TemporalSizeType)m_nMaxClusterSizeType;
+
     switch (eTemporalSizeType) {
-       PERCENTAGETYPE     : if (m_nMaxClusterSizeType == PERCENTAGETYPE)
-                              break;
-                            // convert from TIMETYPE to PERCENTAGETYPE
-                            //m_nMaxTemporalClusterSize should be in time units of m_nIntervalUnits
-                            m_nMaxTemporalClusterSize = floor(m_nMaxTemporalClusterSize/dTimeBetween*100);
-                            break;
-       TIMETYPE           : if (m_nMaxClusterSizeType == TIMETYPE)
-                              break;
-                            // convert from PERCENTAGETYPE to TIMETYPE
-                            //m_nMaxTemporalClusterSize should be an integer from 1-90
-                            m_nMaxTemporalClusterSize = dTimeBetween * m_nMaxTemporalClusterSize/100;
-                            break;
-       default            : SSException::Generate("Unknown TemporalSizeType type %d", "ConvertMaxTemporalClusterSizeToType()", SSException::Normal, eTemporalSizeType);
-    }
+       case PERCENTAGETYPE     : if (m_nMaxClusterSizeType == PERCENTAGETYPE)
+                                   break;
+                                 // convert from TIMETYPE to PERCENTAGETYPE
+                                 //m_nMaxTemporalClusterSize should be in time units of m_nIntervalUnits
+                                 m_nMaxTemporalClusterSize = m_nMaxTemporalClusterSize/dTimeBetween*100;
+                                 break;
+       case TIMETYPE           : if (m_nMaxClusterSizeType == TIMETYPE)
+                                   break;
+                                 // convert from PERCENTAGETYPE to TIMETYPE
+                                 //m_nMaxTemporalClusterSize should be an integer from 1-90
+                                 m_nMaxTemporalClusterSize = dTimeBetween * m_nMaxTemporalClusterSize/100;
+                                 break;
+       default                 : SSException::Generate("Unknown TemporalSizeType type %d", "ConvertMaxTemporalClusterSizeToType()", SSException::Normal, eTemporalSizeType);
+    };
     m_nMaxClusterSizeType = eTemporalSizeType;
   }
   catch (ZdException & x) {
@@ -349,8 +353,12 @@ void CParameters::DisplayParameters(FILE* fp) {
      if (m_nAnalysisType == PURELYSPATIAL || m_nAnalysisType == SPACETIME || m_nAnalysisType == PROSPECTIVESPACETIME) {
        fprintf(fp, "  Maximum Spatial Cluster Size : %.2f", m_nMaxGeographicClusterSize);
        switch (m_nMaxSpatialClusterSizeType) {
-          case    PERCENTAGEOFMEASURETYPE    : fprintf(fp, " as Percentage\n"); break;
-          case    DISTANCETYPE               : fprintf(fp, " as Distance Unit\n"); break;
+          case    PERCENTAGEOFMEASURETYPE    : fprintf(fp, " %%\n"); break;
+          case    DISTANCETYPE               : if (m_nCoordType == CARTESIAN)
+                                                 fprintf(fp, " Cartesian Units\n");
+                                               else
+                                                 fprintf(fp, " km\n");
+                                               break;
           default                            : fprintf(fp, "\n"); break;
        }
      }
@@ -363,13 +371,22 @@ void CParameters::DisplayParameters(FILE* fp) {
      }
    
      if (m_nAnalysisType == PURELYTEMPORAL || m_nAnalysisType == SPACETIME || (m_nAnalysisType == PROSPECTIVESPACETIME)) {
-       fprintf(fp, "  Maximum Temporal Cluster Size : %.2f", m_nMaxTemporalClusterSize);
-       switch (m_nMaxClusterSizeType) {
-         case    PERCENTAGETYPE : fprintf(fp, " as Percentage\n"); break;
-         case    TIMETYPE       : fprintf(fp, " as Time Interval Unit\n"); break;
+       fprintf(fp, "  Maximum Temporal Cluster Size : %.2f", m_nInitialMaxTemporalClusterSize);
+       switch (m_nInitialMaxClusterSizeType) {
+         case    PERCENTAGETYPE : fprintf(fp, " %%\n"); break;
+         case    TIMETYPE       : if (m_nIntervalUnits == YEAR)
+                                    fprintf(fp, " Years\n");
+                                  else if (m_nIntervalUnits == MONTH)
+                                    fprintf(fp, " Months\n");
+                                  else if (m_nIntervalUnits == DAY)
+                                    fprintf(fp, " Days\n");
+                                  else
+                                    fprintf(fp, " None\n");
+                                  break;
          default                : fprintf(fp, "\n"); break;
        }
      }
+
      if ((m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME)) {
        fprintf(fp, "  Also Include Purely Spatial Clusters : ");
        switch (m_bIncludePurelySpatial) {
