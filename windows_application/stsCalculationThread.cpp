@@ -1,23 +1,11 @@
-//---------------------------------------------------------------------------
+//***************************************************************************
 #include "stsSaTScan.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
-#pragma package(smart_init)
-//---------------------------------------------------------------------------
-//   Important: Methods and properties of objects in VCL can only be
-//   used in a method called using Synchronize, for example:
-//
-//      Synchronize(UpdateCaption);
-//
-//   where UpdateCaption could look like:
-//
-//      void __fastcall EditThread::UpdateCaption()
-//      {
-//        Form1->Caption = "Updated in a thread";
-//      }
+//***************************************************************************
+#include "AnalysisRun.h"
 
 /** Constructor */
-__fastcall CalcThread::CalcThread(TfrmAnalysisRun & Progress, const CParameters & Parameters)
+__fastcall CalcThread::CalcThread(TfrmAnalysisRun& Progress, const CParameters& Parameters)
                       :TThread(true), gFormStatus(Progress) {
   try {
     Init();
@@ -77,53 +65,19 @@ void __fastcall CalcThread::Execute() {
     gpPrintWindow->SatScanPrintf(GetToolkit().GetAcknowledgment(Acknowledgment));
 
     time(&RunTime);         // Pass to analysis to include in report
-    if (!gpParameters->ValidateParameters(*gpPrintWindow))
+    if (!const_cast<CParameters*>(gpParameters)->ValidateParameters(*gpPrintWindow))
        SSGenerateException("\nInvalid parameter(s) encountered. Job cancelled.", "Execute()");
 
-    switch (gpParameters->GetAnalysisType()) {
-       case PURELYSPATIAL             : gpData = new CPurelySpatialData(gpParameters, gpPrintWindow);  break;
-       case PURELYTEMPORAL            :
-       case PROSPECTIVEPURELYTEMPORAL : gpData = new CPurelyTemporalData(gpParameters, gpPrintWindow); break;
-       case SPACETIME                 :
-       case PROSPECTIVESPACETIME      : gpData = new CSpaceTimeData(gpParameters, gpPrintWindow);break;
-       case SPATIALVARTEMPTREND       : gpData = new CSVTTData(gpParameters, gpPrintWindow); break;
-       default : ZdGenerateException("Invalid Analysis Type '%d'.", "Execute()", gpParameters->GetAnalysisType());
-    };
-
-    if (! IsCancelled()) {
-      gpData->ReadDataFromFiles();
-      switch (gpParameters->GetAnalysisType()) {
-         case PURELYSPATIAL             : if (gpParameters->GetRiskType() == STANDARDRISK)
-                                            gpAnalysis = new CPurelySpatialAnalysis(gpParameters, gpData, gpPrintWindow);
-                                          else if (gpParameters->GetRiskType() == MONOTONERISK)
-                                            gpAnalysis = new CPSMonotoneAnalysis(gpParameters, gpData, gpPrintWindow);
-                                          break;
-         case PURELYTEMPORAL            :
-         case PROSPECTIVEPURELYTEMPORAL : gpAnalysis = new CPurelyTemporalAnalysis(gpParameters, gpData, gpPrintWindow);
-                                          break;
-         case SPACETIME                 :
-         case PROSPECTIVESPACETIME      : if (gpParameters->GetIncludePurelySpatialClusters() && gpParameters->GetIncludePurelyTemporalClusters())
-                                            gpAnalysis = new C_ST_PS_PT_Analysis(gpParameters, gpData, gpPrintWindow);
-                                          else if (gpParameters->GetIncludePurelySpatialClusters())
-                                            gpAnalysis = new C_ST_PS_Analysis(gpParameters, gpData, gpPrintWindow);
-                                          else if (gpParameters->GetIncludePurelyTemporalClusters())
-                                            gpAnalysis = new C_ST_PT_Analysis(gpParameters, gpData, gpPrintWindow);
-                                          else
-                                            gpAnalysis = new CSpaceTimeAnalysis(gpParameters, gpData, gpPrintWindow);
-                                          break;
-       case SPATIALVARTEMPTREND         : gpAnalysis = new CSpatialVarTempTrendAnalysis(gpParameters, gpData, gpPrintWindow); break;
-      };
-
-      if (! gpAnalysis->Execute(RunTime)) {
-        if (! IsCancelled())
-          gpPrintWindow->SatScanPrintf("An Error has occured within the Calculation Module.");
-      }
-      else {
-        gpPrintWindow->SatScanPrintf("\nSaTScan completed successfully.\n");
-        gpPrintWindow->SatScanPrintf("The results have been written to: \n");
-        gpPrintWindow->SatScanPrintf("  %s\n\n",gpParameters->GetOutputFileName().c_str());
-        Synchronize((TThreadMethod)&LoadResultsFromFile);
-      }
+    //create analysis runner object
+    AnalysisRunner  Runner(*gpParameters, RunTime, *gpPrintWindow);
+    //execute analysis
+    Runner.Execute();
+    //report completion
+    if (!IsCancelled()) {
+      gpPrintWindow->SatScanPrintf("\nSaTScan completed successfully.\n");
+      gpPrintWindow->SatScanPrintf("The results have been written to: \n");
+      gpPrintWindow->SatScanPrintf("  %s\n\n",gpParameters->GetOutputFileName().c_str());
+      Synchronize((TThreadMethod)&LoadResultsFromFile);
     }
 
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
@@ -176,20 +130,13 @@ void __fastcall CalcThread::Execute() {
 
 /** Cleanup. */
 void CalcThread::Free() {
-   delete gpData;
-   delete gpAnalysis;
    delete gpPrintWindow;
-
-   //deletion of gpData must happen before this
-   //or more importantly, gpParameters deletion must happen AFTER gpData
    delete gpParameters;
 }
 
 /** Internal initialization function. */
 void CalcThread::Init(){
   gpParameters   = 0;
-  gpData     = 0;
-  gpAnalysis = 0;
   gpPrintWindow = 0;
   gbJobCanceled = false;
   gsPrintString = 0;
@@ -285,9 +232,9 @@ void __fastcall CalcThread::SetProgressWarnings(void) {
 void CalcThread::Setup(const CParameters& Parameters) {
   try {
     gpParameters = new CParameters(Parameters);
+    gpPrintWindow = new PrintWindow(*this);
     gpParameters->SetRunHistoryFilename(GetToolkit().GetRunHistoryFileName());
     gpParameters->SetIsLoggingHistory(GetToolkit().GetLogRunHistory());
-    gpPrintWindow = new PrintWindow(*this);
     Priority = tpNormal;  
     FreeOnTerminate = false;
   }

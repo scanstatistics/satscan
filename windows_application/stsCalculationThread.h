@@ -3,31 +3,17 @@
 #define stsCalculationThreadH
 //---------------------------------------------------------------------------
 #include <Classes.hpp>
-#include <time.h>                                 
+#include <time.h>
 #include <process.h>
-#include "SVTTData.h"
-#include "SpaceTimeData.h"
-#include "SVTTAnalysis.h"
-#include "PurelySpatialData.h"
-#include "PurelyTemporalData.h"
-#include "SpaceTimeAnalysis.h"
-#include "PurelySpatialAnalysis.h"
-#include "PurelySpatialMonotoneAnalysis.h"
-#include "PurelyTemporalAnalysis.h"
-#include "SpaceTimeIncludePurelySpatialAnalysis.h"
-#include "SpaceTimeIncludePurelyTemporalAnalysis.h"
-#include "SpaceTimeIncludePureAnalysis.h"
-//---------------------------------------------------------------------------
+
 class CalcThread : public TThread {
   private:
     CParameters       * gpParameters;
-    CSaTScanData      * gpData;
-    CAnalysis         * gpAnalysis;
     PrintWindow       * gpPrintWindow;
     TfrmAnalysisRun   & gFormStatus;
     char              * gsPrintString;
     bool                gbJobCanceled;
-    std::string         gsProgramErrorCallPath;      
+    std::string         gsProgramErrorCallPath;
 
     void                Free();
     void                Init();
@@ -41,7 +27,7 @@ class CalcThread : public TThread {
     void __fastcall     PrintWarningLineToProgress(void);
     void __fastcall     ResetProgressCloseButton(void);
     void __fastcall     SetJobCancelled(void);
-    void __fastcall     SetProgramErrorCallPath(void); 
+    void __fastcall     SetProgramErrorCallPath(void);
     void __fastcall     SetProgressWarnings(void);
     void                Setup(const CParameters& Parameters);
 
@@ -49,7 +35,7 @@ class CalcThread : public TThread {
     void __fastcall     Execute();
 
   public:
-    __fastcall CalcThread(TfrmAnalysisRun & Progress, const CParameters & Parameters);
+    __fastcall CalcThread(TfrmAnalysisRun& Progress, const CParameters& Parameters);
     __fastcall ~CalcThread();
 
     void                AddLineToProgress(char * sText);
