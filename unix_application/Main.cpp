@@ -121,14 +121,14 @@ int main(int argc, char *argv[]) {
     ConsolePrint.SatScanPrintf(x.GetErrorMessage());
     ConsolePrint.SatScanPrintf("\n\nJob cancelled.");
     BasisExit();
-    exit(1);
+    return 1;
   }
   catch (UsageException & x) {
     delete pAnalysis;
     delete pData;
     ConsolePrint.SatScanPrintf(x.GetErrorMessage());
     BasisExit();
-    exit(1);
+    return 1;
   }
   catch (ZdMemoryException &x) {
     delete pAnalysis;
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
     ConsolePrint.SatScanPrintWarning("\nSaTScan is unable to perform analysis due to insuffient memory.\n");
     ConsolePrint.SatScanPrintWarning("Please see 'Memory Requirements' in user guide for suggested solutions.\n");
     BasisExit();
-    exit(1);
+    return 1;
   }
   catch (ZdException & x) {
     delete pAnalysis;
@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
     ConsolePrint.SatScanPrintf(x.GetErrorMessage());
     ConsolePrint.SatScanPrintf(x.GetCallpath());
     BasisExit();
-    exit(1);
+    return 1;
   }
   return 0;
 } /* main() */
