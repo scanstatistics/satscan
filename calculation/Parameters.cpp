@@ -1561,13 +1561,11 @@ void CParameters::SetEAnglesFromIniFile(const ZdString& sAngles) {
    ZdString     sTempAngles;
 
    try {
-      for (int i = 0; i < m_nNumEllipses; ++i) {
-          ZdStringTokenizer angleTokenizer(sAngles, ",");
-          while(angleTokenizer.HasMoreTokens()) {
-             sTempAngles << angleTokenizer.GetNextToken() << " ";
-          }
-          LoadEAngles(sTempAngles.GetCString());
+      ZdStringTokenizer angleTokenizer(sAngles, ",");
+      while(angleTokenizer.HasMoreTokens()) {
+         sTempAngles << angleTokenizer.GetNextToken() << " ";
       }
+      LoadEAngles(sTempAngles.GetCString());
    }
    catch (ZdException &x) {
       x.AddCallpath("SetEAnglesFromIniFile()", "CParameters");
@@ -1582,13 +1580,11 @@ void CParameters::SetEShapesFromIniFile(const ZdString& sShapes) {
    ZdString     sTempShapes;
 
    try {
-      for (int i = 0; i < m_nNumEllipses; ++i) {
-         ZdStringTokenizer shapeTokenizer(sShapes, ",");
-         while(shapeTokenizer.HasMoreTokens()) {
-            sTempShapes << shapeTokenizer.GetNextToken() << " ";
-         }
-         LoadEShapes(sTempShapes.GetCString());
+      ZdStringTokenizer shapeTokenizer(sShapes, ",");
+      while(shapeTokenizer.HasMoreTokens()) {
+         sTempShapes << shapeTokenizer.GetNextToken() << " ";
       }
+      LoadEShapes(sTempShapes.GetCString());
    }
    catch (ZdException &x) {
       x.AddCallpath("SetEShapesFromIniFile()", "CParameters");
