@@ -18,7 +18,7 @@ PermutedExponentialAttributes * PermutedExponentialAttributes::Clone() const {
 
 
 /** constructor */
-ExponentialRandomizer::ExponentialRandomizer() : AbstractPermutedDataRandomizer() {}
+ExponentialRandomizer::ExponentialRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer(lInitialSeed) {}
 
 /** destructor */
 ExponentialRandomizer::~ExponentialRandomizer() {}

@@ -6,14 +6,15 @@
 #include "SaTScanData.h"
 
 /** constructor */
-PoissonRandomizer::PoissonRandomizer(const CParameters & Parameters)
-                  :AbstractDenominatorDataRandomizer(), gParameters(Parameters) {}
+PoissonRandomizer::PoissonRandomizer(const CParameters& Parameters, long lInitialSeed)
+                  :AbstractDenominatorDataRandomizer(lInitialSeed), gParameters(Parameters) {}
 
 /** destructor */
 PoissonRandomizer::~PoissonRandomizer() {}
 
 /** constructor */
-PoissonNullHypothesisRandomizer::PoissonNullHypothesisRandomizer(const CParameters & Parameters) : PoissonRandomizer(Parameters) {}
+PoissonNullHypothesisRandomizer::PoissonNullHypothesisRandomizer(const CParameters& Parameters, long lInitialSeed)
+                                :PoissonRandomizer(Parameters, lInitialSeed) {}
 
 /** destructor */
 PoissonNullHypothesisRandomizer::~PoissonNullHypothesisRandomizer() {}
@@ -56,8 +57,8 @@ void PoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet& thisRealS
 
 
 /** constructor */
-PoissonTimeStratifiedRandomizer::PoissonTimeStratifiedRandomizer(const CParameters & Parameters)
-                                :PoissonRandomizer(Parameters) {}
+PoissonTimeStratifiedRandomizer::PoissonTimeStratifiedRandomizer(const CParameters& Parameters, long lInitialSeed)
+                                :PoissonRandomizer(Parameters, lInitialSeed) {}
 
 /** destructor */
 PoissonTimeStratifiedRandomizer::~PoissonTimeStratifiedRandomizer() {}
@@ -107,8 +108,8 @@ void PoissonTimeStratifiedRandomizer::RandomizeData(const RealDataSet& thisRealS
 }
 
 /** constructor */
-PoissonSpatialStratifiedRandomizer::PoissonSpatialStratifiedRandomizer(const CParameters & Parameters)
-                                :PoissonRandomizer(Parameters) {}
+PoissonSpatialStratifiedRandomizer::PoissonSpatialStratifiedRandomizer(const CParameters& Parameters, long lInitialSeed)
+                                :PoissonRandomizer(Parameters, lInitialSeed) {}
 
 /** destructor */
 PoissonSpatialStratifiedRandomizer::~PoissonSpatialStratifiedRandomizer() {}
@@ -158,8 +159,8 @@ void PoissonSpatialStratifiedRandomizer::RandomizeData(const RealDataSet& thisRe
 }
 
 /** constructor */
-AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(CSaTScanData & Data)
-                              :PoissonRandomizer(Data.GetParameters()), gData(Data) {
+AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(CSaTScanData& Data, long lInitialSeed)
+                              :PoissonRandomizer(Data.GetParameters(), lInitialSeed), gData(Data) {
   try {
     Init();
     Setup();

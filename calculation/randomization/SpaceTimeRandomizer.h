@@ -34,7 +34,7 @@ class SpaceTimeRandomizer : public AbstractPermutedDataRandomizer {
     virtual void                     SortPermutedAttribute();
 
   public:
-    	    SpaceTimeRandomizer();
+    	    SpaceTimeRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~SpaceTimeRandomizer();
 
     virtual SpaceTimeRandomizer    * Clone() const;

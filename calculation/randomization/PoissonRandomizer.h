@@ -12,14 +12,14 @@ class PoissonRandomizer : public AbstractDenominatorDataRandomizer {
     const CParameters & gParameters;
 
   public:
-    PoissonRandomizer(const CParameters & Parameters);
+    PoissonRandomizer(const CParameters & Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~PoissonRandomizer();
 };
 
 /** Randomizes Poisson dataset under null hypothesis */
 class PoissonNullHypothesisRandomizer : public PoissonRandomizer {
   public:
-    PoissonNullHypothesisRandomizer(const CParameters & Parameters);
+    PoissonNullHypothesisRandomizer(const CParameters & Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~PoissonNullHypothesisRandomizer();
     virtual PoissonNullHypothesisRandomizer * Clone() const;
 
@@ -29,7 +29,7 @@ class PoissonNullHypothesisRandomizer : public PoissonRandomizer {
 /** Randomizes Poisson dataset in time stratified manner. */
 class PoissonTimeStratifiedRandomizer : public PoissonRandomizer {
   public:
-    PoissonTimeStratifiedRandomizer(const CParameters & Parameters);
+    PoissonTimeStratifiedRandomizer(const CParameters & Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~PoissonTimeStratifiedRandomizer();
     virtual PoissonTimeStratifiedRandomizer * Clone() const;
 
@@ -39,7 +39,7 @@ class PoissonTimeStratifiedRandomizer : public PoissonRandomizer {
 /** Randomizes Poisson dataset in spatial stratified manner. */
 class PoissonSpatialStratifiedRandomizer : public PoissonRandomizer {
   public:
-    PoissonSpatialStratifiedRandomizer(const CParameters & Parameters);
+    PoissonSpatialStratifiedRandomizer(const CParameters & Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~PoissonSpatialStratifiedRandomizer();
     virtual PoissonSpatialStratifiedRandomizer * Clone() const;
 
@@ -63,7 +63,7 @@ class AlternateHypothesisRandomizer : public PoissonRandomizer {
     CSaTScanData                              & gData;
 
   public:
-    AlternateHypothesisRandomizer(CSaTScanData & Data);
+    AlternateHypothesisRandomizer(CSaTScanData & Data, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     AlternateHypothesisRandomizer(const AlternateHypothesisRandomizer & rhs);
     virtual ~AlternateHypothesisRandomizer();
     virtual AlternateHypothesisRandomizer     * Clone() const;

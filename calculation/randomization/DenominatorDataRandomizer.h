@@ -10,7 +10,7 @@ class AbstractDenominatorDataRandomizer : public AbstractRandomizer {
     BinomialGenerator   gBinomialGenerator;
 
   public:
-            AbstractDenominatorDataRandomizer();
+            AbstractDenominatorDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~AbstractDenominatorDataRandomizer();
 };
 
@@ -24,7 +24,7 @@ class AbstractOrdinalDenominatorDataRandomizer : public AbstractDenominatorDataR
                                              int tNumTracts, int tNumTimeIntervals);
 
   public:
-            AbstractOrdinalDenominatorDataRandomizer();
+            AbstractOrdinalDenominatorDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~AbstractOrdinalDenominatorDataRandomizer();
 };
 //******************************************************************************

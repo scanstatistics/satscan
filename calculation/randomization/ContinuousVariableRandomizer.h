@@ -43,7 +43,7 @@ class ContinuousVariableRandomizer : public AbstractPermutedDataRandomizer {
     virtual void                                SortPermutedAttribute();
     
   public:
-    ContinuousVariableRandomizer();
+    ContinuousVariableRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~ContinuousVariableRandomizer();
 };
 
@@ -55,7 +55,7 @@ class NormalRandomizer : public ContinuousVariableRandomizer {
     virtual void               AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet);
 
   public:
-    NormalRandomizer();
+    NormalRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~NormalRandomizer();
 
     virtual NormalRandomizer * Clone() const;
@@ -71,7 +71,7 @@ class RankRandomizer : public ContinuousVariableRandomizer {
     virtual void             AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet);
 
   public:
-    RankRandomizer();
+    RankRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~RankRandomizer();
 
     virtual RankRandomizer * Clone() const;

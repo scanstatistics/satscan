@@ -6,7 +6,8 @@
 #include "SaTScanData.h"
 
 /** constructor */
-BernoulliNullHypothesisRandomizer::BernoulliNullHypothesisRandomizer() : AbstractOrdinalDenominatorDataRandomizer() {}
+BernoulliNullHypothesisRandomizer::BernoulliNullHypothesisRandomizer(long lInitialSeed)
+                                  :AbstractOrdinalDenominatorDataRandomizer(lInitialSeed) {}
 
 /** destructor */
 BernoulliNullHypothesisRandomizer::~BernoulliNullHypothesisRandomizer() {}

@@ -7,7 +7,7 @@
 /** Bernoulli randomizer for null hypothesis. */
 class BernoulliNullHypothesisRandomizer : public AbstractOrdinalDenominatorDataRandomizer {
   public:
-    BernoulliNullHypothesisRandomizer();
+    BernoulliNullHypothesisRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~BernoulliNullHypothesisRandomizer();
     virtual BernoulliNullHypothesisRandomizer * Clone() const;
 

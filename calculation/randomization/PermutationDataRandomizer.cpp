@@ -5,7 +5,8 @@
 #include "PermutationDataRandomizer.h"
 
 /** constructor */
-AbstractPermutedDataRandomizer::AbstractPermutedDataRandomizer() : AbstractRandomizer() {}
+AbstractPermutedDataRandomizer::AbstractPermutedDataRandomizer(long lInitialSeed)
+                               :AbstractRandomizer(lInitialSeed) {}
 
 /** destructor */
 AbstractPermutedDataRandomizer::~AbstractPermutedDataRandomizer() {}

@@ -17,7 +17,7 @@ PermutedTime * PermutedTime::Clone() const {
 }
 
 /** constructor */
-SpaceTimeRandomizer::SpaceTimeRandomizer() : AbstractPermutedDataRandomizer() {}
+SpaceTimeRandomizer::SpaceTimeRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer(lInitialSeed) {}
 
 /** destructor */
 SpaceTimeRandomizer::~SpaceTimeRandomizer() {}

@@ -5,8 +5,8 @@
 #include "DenominatorDataRandomizer.h"
 
 /** constructor */
-AbstractDenominatorDataRandomizer::AbstractDenominatorDataRandomizer()
-                  :AbstractRandomizer() {}
+AbstractDenominatorDataRandomizer::AbstractDenominatorDataRandomizer(long lInitialSeed)
+                  :AbstractRandomizer(lInitialSeed) {}
 
 /** destructor */
 AbstractDenominatorDataRandomizer::~AbstractDenominatorDataRandomizer() {}
@@ -14,8 +14,8 @@ AbstractDenominatorDataRandomizer::~AbstractDenominatorDataRandomizer() {}
 //******************************************************************************
 
 /** constructor */
-AbstractOrdinalDenominatorDataRandomizer::AbstractOrdinalDenominatorDataRandomizer()
-                  :AbstractDenominatorDataRandomizer() {}
+AbstractOrdinalDenominatorDataRandomizer::AbstractOrdinalDenominatorDataRandomizer(long lInitialSeed)
+                  :AbstractDenominatorDataRandomizer(lInitialSeed) {}
 
 /** destructor */
 AbstractOrdinalDenominatorDataRandomizer::~AbstractOrdinalDenominatorDataRandomizer() {}

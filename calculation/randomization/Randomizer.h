@@ -15,7 +15,7 @@ class AbstractRandomizer {
     void                         SetSeed(unsigned int iSimulationIndex, unsigned int iDataSetIndex);
 
   public:
-    AbstractRandomizer();
+    AbstractRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~AbstractRandomizer();
 
     virtual AbstractRandomizer * Clone() const = 0;
@@ -32,7 +32,7 @@ class FileSourceRandomizer : public AbstractRandomizer {
     const CParameters            & gParameters;
 
   public:
-    	    FileSourceRandomizer(const CParameters& Parameters);
+    	    FileSourceRandomizer(const CParameters& Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     	    FileSourceRandomizer(const FileSourceRandomizer& rhs);
     virtual ~FileSourceRandomizer();
 

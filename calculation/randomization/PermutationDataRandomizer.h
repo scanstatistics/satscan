@@ -13,7 +13,7 @@ class AbstractPermutedDataRandomizer : public AbstractRandomizer {
     virtual void        SortPermutedAttribute() = 0;
 
   public:
-    AbstractPermutedDataRandomizer();
+    AbstractPermutedDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~AbstractPermutedDataRandomizer();
 
     virtual void	RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);

@@ -220,10 +220,10 @@ void BernoulliDataSetHandler::SetRandomizers() {
     gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
-          gvDataSetRandomizers[0] = new BernoulliNullHypothesisRandomizer();
+          gvDataSetRandomizers[0] = new BernoulliNullHypothesisRandomizer(gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
-          gvDataSetRandomizers[0] = new FileSourceRandomizer(gParameters);
+          gvDataSetRandomizers[0] = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());
           break;
       case HA_RANDOMIZATION :
       default :

@@ -10,7 +10,7 @@ class OrdinalDenominatorDataRandomizer : public AbstractOrdinalDenominatorDataRa
     void                SetMeasure(const RealDataSet& thisRealSet, TwoDimensionArrayHandler<measure_t>& Measure);
 
   public:
-    OrdinalDenominatorDataRandomizer();
+    OrdinalDenominatorDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~OrdinalDenominatorDataRandomizer();
     virtual OrdinalDenominatorDataRandomizer * Clone() const;
 

@@ -31,7 +31,7 @@ class ExponentialRandomizer : public AbstractPermutedDataRandomizer {
     virtual void                                SortPermutedAttribute();
 
   public:
-    ExponentialRandomizer();
+    ExponentialRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~ExponentialRandomizer();
 
     virtual ExponentialRandomizer     * Clone() const;

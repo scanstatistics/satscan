@@ -224,10 +224,10 @@ void SpaceTimePermutationDataSetHandler::SetRandomizers() {
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
       case HA_RANDOMIZATION :
-          gvDataSetRandomizers[0] = new SpaceTimeRandomizer();
+          gvDataSetRandomizers[0] = new SpaceTimeRandomizer(gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
-          gvDataSetRandomizers[0] = new FileSourceRandomizer(gParameters);
+          gvDataSetRandomizers[0] = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());
           break;
       default :
           ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());

@@ -5,7 +5,8 @@
 #include "OrdinalDataRandomizer.h"
 
 /** constructor */
-OrdinalDenominatorDataRandomizer::OrdinalDenominatorDataRandomizer() : AbstractOrdinalDenominatorDataRandomizer() {}
+OrdinalDenominatorDataRandomizer::OrdinalDenominatorDataRandomizer(long lInitialSeed)
+                                 :AbstractOrdinalDenominatorDataRandomizer(lInitialSeed) {}
 
 /** destructor */
 OrdinalDenominatorDataRandomizer::~OrdinalDenominatorDataRandomizer() {}
