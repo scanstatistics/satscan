@@ -140,8 +140,9 @@ const char * StringParser::GetWord(short wWordIndex) {
   while (!isspace(*cp2)) cp2++;
   wdlen = cp2 - cp;
   if (wdlen > giSizeOfWordBuffer) {
+    giSizeOfWordBuffer = wdlen + 1;
     delete[] gpWord; gpWord=0;
-    gpWord =  new char[wdlen];
+    gpWord =  new char[giSizeOfWordBuffer];
     gpWord[0] = 0;
   }
   memcpy(gpWord, cp, wdlen);
