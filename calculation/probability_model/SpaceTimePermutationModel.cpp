@@ -36,6 +36,11 @@ bool CSpaceTimePermutationModel::CalculateMeasure() {
   measure_t          ** ppMeasure, T_C;
 
   try {
+    //calculate total number of cases
+    gData.m_nTotalCases=0;
+    for (j=0; j < gData.m_nTracts; j++)
+       gData.m_nTotalCases += ppCases[0][j];
+
     gData.gpMeasureHandler = new TwoDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals+1, gData.m_nTracts, 0);
     ppMeasure = gData.GetMeasureArray();
     gData.m_nTotalMeasure  = 0;
@@ -100,11 +105,6 @@ void CSpaceTimePermutationModel::InitializeRandomizationStructures() {
                     *** pppCategoryCases(gData.gpCategoryCasesHandler->GetArray());
 
   try {
-    //first calculate total number of cases
-    gData.m_nTotalCases=0;
-    for (j=0; j < gData.m_nTracts; j++)
-       gData.m_nTotalCases += ppCases[0][j];
-
     gvCategoryCaseLocationTimes.resize(iNumCategories);
     vCummulatedCases.resize(gData.m_nTracts);
     for (c=0; c < iNumCategories; ++c) {
@@ -190,7 +190,8 @@ bool CSpaceTimePermutationModel::ReadData() {
       return false;
     if (gParameters.UseSpecialGrid() && !gData.ReadGridFile())
       return false;
-    InitializeRandomizationStructures();
+    if (gData.GetParameters().GetNumReplicationsRequested() > 0)
+      InitializeRandomizationStructures();
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadData()", "CSpaceTimePermutationModel");
