@@ -489,7 +489,7 @@ void CPoissonModel::MakeData(int iSimulationNumber) {
                               else
                                 MakeDataUnderNullHypothesis();
                               break;
-      case POWER_ESTIMATION : if (iSimulationNumber == 1)
+      case HA_RANDOMIZATION : if (iSimulationNumber == 1)
                                 AllocateAlternateHypothesisStructures();
                               MakeData_AlternateHypothesis(); break;
       case FILESOURCE       : ReadSimulationDataFromFile(); break;
