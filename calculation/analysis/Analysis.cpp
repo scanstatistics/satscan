@@ -317,7 +317,7 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
       if (m_nClustersRetained == 0)
         return;
 
-      if (m_pTopClusters[0]->m_nRatio > nMinRatio && m_pTopClusters[0]->m_nRank  <= nReps) {
+      if (m_pTopClusters[0]->m_nRatio > nMinRatio && (nReps == 0 || m_pTopClusters[0]->m_nRank  <= nReps)) {
         ++m_nClustersReported;
 
         switch(m_nAnalysisCount) {
@@ -351,8 +351,9 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
 }
 
 void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp, FILE* fpGIS) {
-   double       dSignifRatio05 = 0.0;
+   double                       dSignifRatio05 = 0.0;
    auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;     // area specific dbf report gets set and sent into each cluster for reporting - AJV 10/3/2002
+   tract_t                      tNumClustersToDisplay;
 
    try {
       m_nClustersReported = 0;
@@ -364,12 +365,15 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
 
       dSignifRatio05 = SimRatios.GetAlpha05();
 
-      for (tract_t i=0; i<m_nClustersRetained; ++i) {
+      //if  no replications, attempt to display up to top 10 clusters
+      tNumClustersToDisplay = (nReps == 0 ? min(10, m_nClustersRetained) : m_nClustersRetained);
+
+      for (tract_t i=0; i < tNumClustersToDisplay; ++i) {
         // print out user notification for every 15th cluster recorded so user knows program is still working - AJV 10/3/2002
         if((i%15)== 0)
-             gpPrintDirection->SatScanPrintf("%i out of %i clusters recorded so far...", i, m_nClustersRetained);
+             gpPrintDirection->SatScanPrintf("%i out of %i clusters recorded so far...", i, tNumClustersToDisplay);
 
-        if (m_pTopClusters[i]->m_nRatio > nMinRatio && m_pTopClusters[i]->m_nRank  <= nReps) {
+        if (m_pTopClusters[i]->m_nRatio > nMinRatio && (nReps == 0 || m_pTopClusters[i]->m_nRank  <= nReps)) {
           ++m_nClustersReported;
 
           switch(m_nClustersReported) {
