@@ -2,6 +2,7 @@
 #include <vcl.h>
 #pragma hdrstop
 #include "Main.h"
+#include <dos.h>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -40,19 +41,30 @@ void ParameterResultsInfo::SetTimeDifference(unsigned short uHours, unsigned sho
 }
 
 const char * TfrmMain::SCU_REGISTRY_KEY         = "\\Software\\SaTScanCompareUtility";
+const char * TfrmMain::LASTAPPCOMPARATOR_DATA   = "LastComparatorOpenExe";
 const char * TfrmMain::LASTAPP_DATA             = "LastOpenExe";
-const char * TfrmMain::LASTPARAMLIST_DATA       = "LastParamList";
+const char * TfrmMain::PARAMETER_DATA           = "ParameterFile";
 const char * TfrmMain::COMPARE_APP_DATA         = "CompareProgram";
 const char * TfrmMain::COMPARE_FILE_EXTENSION   = ".out.compare.txt";
 
 /** constructor */
 __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner) {
-  TRegistry * pRegistry = new TRegistry;
-  int iSize;
+  TRegistry   * pRegistry = new TRegistry;
+  int           iSize, iIndex=0;
+  AnsiString    sParameterDataName, sParameterData;
 
   if (pRegistry->OpenKey(SCU_REGISTRY_KEY, true)) {
+    edtBatchExecutableComparatorName->Text = pRegistry->ReadString(LASTAPPCOMPARATOR_DATA);
     edtBatchExecutableName->Text = pRegistry->ReadString(LASTAPP_DATA);
-    edtParameterListFile->Text = pRegistry->ReadString(LASTPARAMLIST_DATA);
+    ltvScheduledBatchs->Items->Clear();
+    sParameterDataName.printf("%s%d", PARAMETER_DATA, iIndex);
+    sParameterData = pRegistry->ReadString(sParameterDataName);
+    while (sParameterData.Length()) {
+        ltvScheduledBatchs->Items->Add()->Caption = sParameterData;
+        iIndex++;
+        sParameterDataName.printf("%s%d", PARAMETER_DATA, iIndex);
+        sParameterData = pRegistry->ReadString(sParameterDataName);
+    }
     iSize = pRegistry->GetDataSize(COMPARE_APP_DATA);
     if (iSize > -1) {
       gsComparisonProgram.resize(iSize);
@@ -65,16 +77,26 @@ __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner) {
   gvColumnSortOrder.resize(lstDisplay->Columns->Count, -1);
   EnableSaveResultsAction();
   EnableCompareActions();
+  EnableStartAction();
+  EnableSaveParametersListAction();
+  EnableRemoveParameterAction();  
 }
 
 /** destructor */
 __fastcall TfrmMain::~TfrmMain() {
   try {
-    TRegistry * pRegistry = new TRegistry;
+    TRegistry   * pRegistry = new TRegistry;
+    int           i;
+    AnsiString    sParameterDataName, sParameterData;
+
 
     if (pRegistry->OpenKey(SCU_REGISTRY_KEY, true)) {
+      pRegistry->WriteString(LASTAPPCOMPARATOR_DATA, edtBatchExecutableComparatorName->Text);
       pRegistry->WriteString(LASTAPP_DATA, edtBatchExecutableName->Text);
-      pRegistry->WriteString(LASTPARAMLIST_DATA, edtParameterListFile->Text);
+      for (i=0; i < ltvScheduledBatchs->Items->Count; ++i) {
+        sParameterDataName.printf("%s%d", PARAMETER_DATA, i);
+        pRegistry->WriteString(sParameterDataName, ltvScheduledBatchs->Items->Item[i]->Caption);
+      }
       ZdEncrypt(const_cast<char*>(gsComparisonProgram.c_str()), gsComparisonProgram.size(), "24601");
       pRegistry->WriteBinaryData(COMPARE_APP_DATA, (void*)(gsComparisonProgram.c_str()), gsComparisonProgram.size());
       pRegistry->CloseKey();
@@ -243,49 +265,52 @@ void __fastcall TfrmMain::ActionSaveComparisonStatsExecute(TObject *Sender) {
 void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
    std::string  sBuffer, sCompareFilename;
    AnsiString   sCommand;
-   ifstream     ParameterListFile;
-
-   //open the file that contains names and parameter files
-   ParameterListFile.open((edtParameterListFile->Text).c_str(), ios::in);
-   if (!ParameterListFile) {
-      Application->MessageBoxA("The Parameter List file cannot be opened.", "ERROR", MB_OK);
-      return;
-   }
+   int          iItemIndex=0;
 
    lstDisplay->Items->Clear();
    gvParameterResultsInfo.clear();
    gvColumnSortOrder.clear();
    gvColumnSortOrder.resize(lstDisplay->Columns->Count, -1);
-   while (ParameterListFile.eof()==false) {
-        ParameterListFile >> ws;
-        std::getline(ParameterListFile, sBuffer);
+   while (iItemIndex < ltvScheduledBatchs->Items->Count) {
+        sBuffer = ltvScheduledBatchs->Items->Item[iItemIndex]->Caption.c_str();
         gvParameterResultsInfo.push_back(ParameterResultsInfo(sBuffer.c_str()));
         if (! FileExists(gvParameterResultsInfo.back().GetFilenameString())) {
           AddList("Parameter File Missing");
           continue;
         }
 
-        //get filename that will be the result file created for comparison
-        GetCompareFilename(gvParameterResultsInfo.back().GetFilename(), sCompareFilename);
-        //Execute SatScan using the current Parameter file, but set commandline options for version check
-        sCommand.printf("\"%s\" \"%s\" -v -o \"%s\"", edtBatchExecutableName->Text.c_str(),
-                        gvParameterResultsInfo.back().GetFilenameString(), sCompareFilename.c_str());
-        //execute analysis
+        //Execute comparator SatScan using the current Parameter file, but set commandline options for version check
+        sCommand.printf("\"%s\" \"%s\" -v",
+                        edtBatchExecutableComparatorName->Text.c_str(),
+                        gvParameterResultsInfo.back().GetFilenameString());
         if (Execute(sCommand.c_str())) {
-          CompareClusterInformationFiles();
-          CompareLocationInformationFiles();
-          CompareRelativeRisksInformationFiles();
-          CompareSimulatedRatiosFiles();
-          CompareTimes();
-          AddList();
+          Application->ProcessMessages();
+          _sleep(2);
+          //get filename that will be the result file created for comparison
+          GetCompareFilename(gvParameterResultsInfo.back().GetFilename(), sCompareFilename);
+          //Execute SatScan using the current Parameter file, but set commandline options for version check
+          sCommand.printf("\"%s\" \"%s\" -v -o \"%s\"",
+                          edtBatchExecutableName->Text.c_str(),
+                          gvParameterResultsInfo.back().GetFilenameString(),
+                          sCompareFilename.c_str());
+          //execute SaTScan version that is in question
+          if (Execute(sCommand.c_str())) {
+            CompareClusterInformationFiles();
+            CompareLocationInformationFiles();
+            CompareRelativeRisksInformationFiles();
+            CompareSimulatedRatiosFiles();
+            CompareTimes();
+            AddList();
+          }
+          else
+            AddList("Program Failed/Cancelled");
         }
         else
-          AddList("Program Failed/Cancelled");
-
+          AddList("Comparator Program Failed/Cancelled");
         Application->ProcessMessages();
-        ParameterListFile >> ws;
+        _sleep(2);
+        iItemIndex++;
    }
-   ParameterListFile.close();
    EnableSaveResultsAction();
 }
 
@@ -341,6 +366,17 @@ void TfrmMain::AddSubItemForType(TListItem * pListItem, CompareType eType) {
 }
 
 /** Sets open dialog filters and displays for selecting executable. */
+void __fastcall TfrmMain::btnBrowseBatchExecutableComparatorClick(TObject *Sender) {
+  OpenDialog->FileName =  "";
+  OpenDialog->DefaultExt = "*.exe";
+  OpenDialog->Filter = "Executable files (*.exe)|*.exe|All files (*.*)|*.*";
+  OpenDialog->FilterIndex = 0;
+  OpenDialog->Title = "Select SaTScan Batch Executable (comparator)";
+  if (OpenDialog->Execute())
+    edtBatchExecutableComparatorName->Text = OpenDialog->FileName;
+}
+
+/** Sets open dialog filters and displays for selecting executable. */
 void __fastcall TfrmMain::btnBrowseBatchExecutableClick(TObject *Sender) {
   OpenDialog->FileName =  "";
   OpenDialog->DefaultExt = "*.exe";
@@ -351,18 +387,7 @@ void __fastcall TfrmMain::btnBrowseBatchExecutableClick(TObject *Sender) {
     edtBatchExecutableName->Text = OpenDialog->FileName;
 }
 
-/** Sets open dialog filters and displays for selecting parameter list file */
-void __fastcall TfrmMain::btnBrowseParametersListFileClick(TObject *Sender) {
-  OpenDialog->FileName =  "";
-  OpenDialog->DefaultExt = "*.prml";
-  OpenDialog->Filter = "Parameters List files (*.prml)|*.prml|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-  OpenDialog->FilterIndex = 0;
-  OpenDialog->Title = "Select Parameters List File";
-  if (OpenDialog->Execute())
-    edtParameterListFile->Text = OpenDialog->FileName;
-}
-
-/** compare Cluster Information files */
+/** Sets open dialog filters and displays for selecting parameter list file *//** compare Cluster Information files */
 void TfrmMain::CompareClusterInformationFiles() {
   CompareType     eType;
   std::string     sMaster, sCompare;
@@ -559,7 +584,9 @@ void TfrmMain::EnableSaveResultsAction() {
 
 /** enables start action */
 void TfrmMain::EnableStartAction() {
-  ActionStart->Enabled = edtBatchExecutableName->Text.Length() && edtParameterListFile->Text.Length();
+  ActionStart->Enabled = edtBatchExecutableName->Text.Length() &&
+                         edtBatchExecutableComparatorName->Text.Length() &&
+                         ltvScheduledBatchs->Items->Count;
 }
 
 /** creates process to execute command */
@@ -597,15 +624,6 @@ bool TfrmMain::Execute(const AnsiString & sCommandLine) {
 
    return (lProcessTerminationStatus == 0 ? true : false);
 }
-
-void __fastcall TfrmMain::FormShow(TObject *Sender) {
-  lstDisplay->SetFocus();
-  if (_argc > 2)
-    edtParameterListFile->Text = _argv[2];
-  if (_argc > 1 && !stricmp(_argv[1],"-auto_start") && !edtBatchExecutableName->Text.IsEmpty() && !edtParameterListFile->Text.IsEmpty())
-    ActionStartExecute(this);  
-}
-
 /** Gets filename of file that will be the alternate results to compare to original */
 std::string & TfrmMain::GetCompareFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename) {
   //defined alternate results filename -- this will be the new file we will compare against
@@ -749,4 +767,98 @@ bool TfrmMain::PromptForCompareProgram() {
   }
   return bReturn;
 }
+
+
+
+
+
+
+
+
+void __fastcall TfrmMain::ActionAddParameterFileExecute(TObject *Sender) {
+  OpenDialog->FileName =  "";
+  OpenDialog->DefaultExt = "*.prm";
+  OpenDialog->Filter = "Parameters files (*.prm)|*.prm|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+  OpenDialog->FilterIndex = 0;
+  OpenDialog->Title = "Add Parameter File";
+  if (OpenDialog->Execute())
+    ltvScheduledBatchs->Items->Add()->Caption = OpenDialog->FileName;
+  EnableStartAction();
+  EnableSaveParametersListAction();
+  EnableRemoveParameterAction();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfrmMain::ActionRemoveParameterFileExecute(TObject *Sender){
+  TListItem   * pListItem;
+
+  for (int i=0; i < ltvScheduledBatchs->Items->Count; i++) {
+     pListItem = ltvScheduledBatchs->Items->Item[i];
+     if (pListItem->Selected)
+      ltvScheduledBatchs->Items->Delete(pListItem->Index);
+  }
+  EnableStartAction();
+  EnableSaveParametersListAction();
+  EnableRemoveParameterAction();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfrmMain::ActionSaveParametersListExecute(TObject *Sender){
+  int           i;
+  TListItem   * pListItem;
+
+  SaveDialog->FileName =  "";
+  SaveDialog->DefaultExt = "*.prml";
+  SaveDialog->Filter = "Parameters List files (*.prml)|*.prml|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+  SaveDialog->FilterIndex = 0;
+  SaveDialog->Title = "Save Parameters List to File";
+  if (SaveDialog->Execute()) {
+    std::ofstream out(SaveDialog->FileName.c_str(), std::ios_base::in|std::ios_base::out|std::ios_base::trunc);
+    for (i=0; i < ltvScheduledBatchs->Items->Count; i++)
+       out << ltvScheduledBatchs->Items->Item[i]->Caption.c_str() << std::endl;
+  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfrmMain::ActionLoadParameterListExecute(TObject *Sender){
+  std::string   sParameterFilename;
+
+  OpenDialog->FileName =  "";
+  OpenDialog->DefaultExt = "*.prml";
+  OpenDialog->Filter = "Parameters List files (*.prml)|*.prml|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+  OpenDialog->FilterIndex = 0;
+  OpenDialog->Title = "Load Parameters List from File";
+  if (OpenDialog->Execute()) {
+    ltvScheduledBatchs->Items->Clear();
+    std::ifstream in(OpenDialog->FileName.c_str());
+    while (!in.eof()) {
+         std::getline(in, sParameterFilename);
+         ltvScheduledBatchs->Items->Add()->Caption = sParameterFilename.c_str();
+    }
+  }
+  EnableStartAction();
+  EnableSaveParametersListAction();
+  EnableRemoveParameterAction();
+}
+//---------------------------------------------------------------------------
+
+void TfrmMain::EnableSaveParametersListAction() {
+  ActionSaveParametersList->Enabled = ltvScheduledBatchs->Items->Count;
+}
+
+void TfrmMain::EnableRemoveParameterAction() {
+  ActionRemoveParameterFile->Enabled = ltvScheduledBatchs->SelCount;
+}
+
+
+void __fastcall TfrmMain::ltvScheduledBatchsKeyDown(TObject *Sender, WORD &Key, TShiftState Shift) {
+ if (Key == VK_DELETE)
+   ActionRemoveParameterFileExecute(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfrmMain::ltvScheduledBatchsSelectItem(TObject *Sender, TListItem *Item, bool Selected) {
+  EnableRemoveParameterAction();
+}
+//---------------------------------------------------------------------------
 

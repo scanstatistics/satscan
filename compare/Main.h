@@ -72,12 +72,6 @@ __published:	// IDE-managed Components
         TPanel *pnlTop;
         TActionList *ActionList1;
         TAction *ActionStart;
-        TLabel *lblSaTScanBatchExecutable;
-        TEdit *edtBatchExecutableName;
-        TLabel *lblParameterFileList;
-        TEdit *edtParameterListFile;
-        TButton *btnBrowseParametersListFile;
-        TButton *btnBrowseBatchExecutable;
         TPanel *pnlClient;
         TListView *lstDisplay;
         TAction *ActionSaveComparisonStats;
@@ -85,7 +79,6 @@ __published:	// IDE-managed Components
         TBevel *Bevel1;
         TToolButton *ToolButton2;
         TToolButton *ToolButton4;
-        TBevel *Bevel2;
         TSpeedButton *sbtnSaveComparisonResults;
         TSpeedButton *sbtnStartComparing;
         TSaveDialog *SaveDialog;
@@ -100,20 +93,47 @@ __published:	// IDE-managed Components
         TSpeedButton *sbtnCompareLocation;
         TSpeedButton *sbtnCompareRelativeRisks;
         TSpeedButton *sbtnCompareLLR;
+        TAction *ActionAddParameterFile;
+        TAction *ActionRemoveParameterFile;
+        TAction *ActionSaveParametersList;
+        TAction *ActionLoadParameterList;
+        TPanel *pnlTopTop;
+        TLabel *lblSaTScanBatchExecutableComparator;
+        TEdit *edtBatchExecutableComparatorName;
+        TLabel *lblSaTScanBatchExecutable;
+        TEdit *edtBatchExecutableName;
+        TButton *btnBrowseBatchExecutable;
+        TButton *btnBrowseBatchComparatorExecutable;
+        TPanel *Panel1;
+        TLabel *lblParameterFileList;
+        TListView *ltvScheduledBatchs;
+        TPanel *pnlTopButtons;
+        TBitBtn *btnSaveBatchDefinitions;
+        TButton *btnAdd;
+        TButton *btnRemove;
+        TBitBtn *btnLoadDefinitions;
+        TSplitter *Splitter1;
         void __fastcall btnBrowseBatchExecutableClick(TObject *Sender);
-        void __fastcall btnBrowseParametersListFileClick(TObject *Sender);
+        void __fastcall btnBrowseBatchExecutableComparatorClick(TObject *Sender);
         void __fastcall ActionStartExecute(TObject *Sender);
         void __fastcall edtChangeInput(TObject *Sender);
         void __fastcall ActionSaveComparisonStatsExecute(TObject *Sender);
         void __fastcall ActionCompareResultFilesExecute(TObject *Sender);
         void __fastcall lstDisplaySelectItem(TObject *Sender,TListItem *Item, bool Selected);
-        void __fastcall FormShow(TObject *Sender);
         void __fastcall ActionCompareSimulatedLLRsExecute(TObject *Sender);
         void __fastcall ActionCompareClusterInformationExecute(TObject *Sender);
         void __fastcall ActionCompareLocationInformationExecute(TObject *Sender);
         void __fastcall ActionCompareRelativeRisksExecute(TObject *Sender);
         void __fastcall lstDisplayColumnClick(TObject *Sender,TListColumn *Column);
         void __fastcall lstDisplayCompare(TObject *Sender,TListItem *Item1, TListItem *Item2, int Data, int &Compare);
+        void __fastcall ActionAddParameterFileExecute(TObject *Sender);
+        void __fastcall ActionRemoveParameterFileExecute(TObject *Sender);
+        void __fastcall ActionSaveParametersListExecute(TObject *Sender);
+        void __fastcall ActionLoadParameterListExecute(TObject *Sender);
+        void __fastcall ltvScheduledBatchsKeyDown(TObject *Sender,
+          WORD &Key, TShiftState Shift);
+        void __fastcall ltvScheduledBatchsSelectItem(TObject *Sender,
+          TListItem *Item, bool Selected);
    
   private:
     std::vector<ParameterResultsInfo>   gvParameterResultsInfo;
@@ -122,8 +142,9 @@ __published:	// IDE-managed Components
     std::vector<int>                    gvColumnSortOrder;
 
     static const char                 * SCU_REGISTRY_KEY;
+    static const char                 * LASTAPPCOMPARATOR_DATA;
     static const char                 * LASTAPP_DATA;
-    static const char                 * LASTPARAMLIST_DATA;
+    static const char                 * PARAMETER_DATA;
     static const char                 * COMPARE_APP_DATA;
     static const char                 * COMPARE_FILE_EXTENSION;
 
@@ -137,6 +158,8 @@ __published:	// IDE-managed Components
     bool                                CompareTextFiles(const std::string & sMaster, const std::string & sCompare);
     void                                CompareTimes();
     void                                EnableCompareActions();
+    void                                EnableRemoveParameterAction();
+    void                                EnableSaveParametersListAction();
     void                                EnableSaveResultsAction();
     void                                EnableStartAction();
     bool                                Execute(const AnsiString & sCommandLine);

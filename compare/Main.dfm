@@ -1,9 +1,9 @@
 object frmMain: TfrmMain
-  Left = 263
-  Top = 173
-  Width = 796
-  Height = 396
-  Caption = 'SaTScan Version Comparsion Utility v1.0'
+  Left = 35
+  Top = 116
+  Width = 946
+  Height = 491
+  Caption = 'SaTScan Version Comparsion Utility v1.1'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -12,116 +12,218 @@ object frmMain: TfrmMain
   Font.Style = []
   OldCreateOrder = False
   Position = poDesktopCenter
-  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TBevel
     Left = 0
     Top = 29
-    Width = 788
+    Width = 938
     Height = 2
     Align = alTop
   end
-  object Bevel2: TBevel
+  object Splitter1: TSplitter
     Left = 0
-    Top = 131
-    Width = 788
-    Height = 2
+    Top = 237
+    Width = 938
+    Height = 3
+    Cursor = crVSplit
     Align = alTop
+    Beveled = True
+    ResizeStyle = rsLine
   end
   object pnlTop: TPanel
     Left = 0
     Top = 31
-    Width = 788
-    Height = 100
+    Width = 938
+    Height = 206
     Align = alTop
     BevelOuter = bvNone
+    Constraints.MinHeight = 200
+    Constraints.MinWidth = 400
     TabOrder = 1
-    object lblSaTScanBatchExecutable: TLabel
-      Left = 12
-      Top = 6
-      Width = 131
-      Height = 13
-      Caption = 'SaTScan Batch Application'
-    end
-    object lblParameterFileList: TLabel
-      Left = 12
-      Top = 52
-      Width = 121
-      Height = 13
-      Anchors = [akLeft]
-      Caption = 'Master Parameter List File'
-    end
-    object edtBatchExecutableName: TEdit
-      Left = 12
-      Top = 23
-      Width = 727
-      Height = 21
-      Anchors = [akLeft, akRight]
+    object pnlTopTop: TPanel
+      Left = 0
+      Top = 0
+      Width = 938
+      Height = 89
+      Align = alTop
+      BevelOuter = bvNone
       TabOrder = 0
-      OnChange = edtChangeInput
+      object lblSaTScanBatchExecutableComparator: TLabel
+        Left = 12
+        Top = 7
+        Width = 193
+        Height = 13
+        Caption = 'SaTScan Batch Application (comparator)'
+      end
+      object lblSaTScanBatchExecutable: TLabel
+        Left = 12
+        Top = 47
+        Width = 191
+        Height = 13
+        Caption = 'SaTScan Batch Application (in question)'
+      end
+      object edtBatchExecutableComparatorName: TEdit
+        Left = 12
+        Top = 22
+        Width = 877
+        Height = 21
+        Anchors = [akLeft, akRight]
+        TabOrder = 0
+        OnChange = edtChangeInput
+      end
+      object edtBatchExecutableName: TEdit
+        Left = 12
+        Top = 61
+        Width = 877
+        Height = 21
+        Anchors = [akLeft, akRight]
+        TabOrder = 1
+        OnChange = edtChangeInput
+      end
+      object btnBrowseBatchExecutable: TButton
+        Left = 895
+        Top = 60
+        Width = 31
+        Height = 21
+        Hint = 'Browse for SaTScan batch executable'
+        Anchors = [akTop, akRight]
+        Caption = '...'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -19
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 2
+        OnClick = btnBrowseBatchExecutableClick
+      end
+      object btnBrowseBatchComparatorExecutable: TButton
+        Left = 895
+        Top = 21
+        Width = 31
+        Height = 21
+        Hint = 'Browse for SaTScan batch executable - comparator'
+        Anchors = [akTop, akRight]
+        Caption = '...'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -19
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 3
+        OnClick = btnBrowseBatchExecutableComparatorClick
+      end
     end
-    object edtParameterListFile: TEdit
-      Left = 12
-      Top = 68
-      Width = 727
-      Height = 21
-      Anchors = [akLeft, akRight, akBottom]
-      TabOrder = 2
-      OnChange = edtChangeInput
-    end
-    object btnBrowseParametersListFile: TButton
-      Left = 746
-      Top = 68
-      Width = 31
-      Height = 21
-      Hint = 'Browse for Parameters List file'
-      Anchors = [akRight, akBottom]
-      Caption = '...'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -19
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-      ParentShowHint = False
-      ShowHint = True
-      TabOrder = 3
-      OnClick = btnBrowseParametersListFileClick
-    end
-    object btnBrowseBatchExecutable: TButton
-      Left = 745
-      Top = 22
-      Width = 31
-      Height = 21
-      Hint = 'Browse for SaTScan batch executable'
-      Anchors = [akTop, akRight]
-      Caption = '...'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -19
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-      ParentShowHint = False
-      ShowHint = True
+    object Panel1: TPanel
+      Left = 0
+      Top = 89
+      Width = 858
+      Height = 117
+      Align = alClient
+      BevelOuter = bvNone
+      Caption = 'Panel1'
       TabOrder = 1
-      OnClick = btnBrowseBatchExecutableClick
+      object lblParameterFileList: TLabel
+        Left = 12
+        Top = 74
+        Width = 86
+        Height = 13
+        Anchors = [akLeft]
+        Caption = 'Parameter List File'
+      end
+      object ltvScheduledBatchs: TListView
+        Left = 12
+        Top = 8
+        Width = 846
+        Height = 98
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        Columns = <
+          item
+            Caption = 'Parameter Filename'
+            Width = 690
+          end>
+        HideSelection = False
+        MultiSelect = True
+        RowSelect = True
+        TabOrder = 0
+        ViewStyle = vsReport
+        OnKeyDown = ltvScheduledBatchsKeyDown
+        OnSelectItem = ltvScheduledBatchsSelectItem
+      end
+    end
+    object pnlTopButtons: TPanel
+      Left = 858
+      Top = 89
+      Width = 80
+      Height = 117
+      Align = alRight
+      BevelOuter = bvNone
+      TabOrder = 2
+      object btnSaveBatchDefinitions: TBitBtn
+        Left = 10
+        Top = 11
+        Width = 57
+        Height = 18
+        Action = ActionSaveParametersList
+        Caption = 'Save'
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 0
+      end
+      object btnAdd: TButton
+        Left = 10
+        Top = 35
+        Width = 57
+        Height = 18
+        Action = ActionAddParameterFile
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 1
+      end
+      object btnRemove: TButton
+        Left = 10
+        Top = 59
+        Width = 57
+        Height = 18
+        Action = ActionRemoveParameterFile
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 2
+      end
+      object btnLoadDefinitions: TBitBtn
+        Left = 10
+        Top = 83
+        Width = 57
+        Height = 18
+        Action = ActionLoadParameterList
+        Caption = 'Load'
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 3
+      end
     end
   end
   object pnlClient: TPanel
     Left = 0
-    Top = 133
-    Width = 788
-    Height = 236
+    Top = 240
+    Width = 938
+    Height = 224
     Align = alClient
     BevelOuter = bvNone
+    Constraints.MinHeight = 200
+    Constraints.MinWidth = 400
     TabOrder = 2
     object lstDisplay: TListView
       Left = 12
       Top = 11
-      Width = 645
-      Height = 212
+      Width = 795
+      Height = 200
       Anchors = [akLeft, akTop, akRight, akBottom]
       Columns = <
         item
@@ -163,10 +265,10 @@ object frmMain: TfrmMain
       OnSelectItem = lstDisplaySelectItem
     end
     object pnlClientRight: TPanel
-      Left = 666
+      Left = 816
       Top = 0
       Width = 122
-      Height = 236
+      Height = 224
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 1
@@ -243,7 +345,7 @@ object frmMain: TfrmMain
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 788
+    Width = 938
     Height = 29
     ButtonHeight = 23
     ButtonWidth = 25
@@ -326,11 +428,11 @@ object frmMain: TfrmMain
     Filter = 'Text Files (*.txt)|*.txt|All Files (*.*)|*.*'
     Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
     Left = 16
-    Top = 200
+    Top = 336
   end
   object ImageList: TImageList
     Left = 16
-    Top = 264
+    Top = 400
     Bitmap = {
       494C010104000900040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001001000000000000018
@@ -545,7 +647,7 @@ object frmMain: TfrmMain
   end
   object ActionList1: TActionList
     Left = 16
-    Top = 232
+    Top = 368
     object ActionStart: TAction
       Hint = 'Start Comparing'
       ShortCut = 16453
@@ -559,7 +661,6 @@ object frmMain: TfrmMain
     object ActionCompareResultFiles: TAction
       Caption = 'Result Files'
       Hint = 'Compare Results'
-      ShortCut = 16451
       OnExecute = ActionCompareResultFilesExecute
     end
     object ActionCompareSimulatedLLRs: TAction
@@ -581,6 +682,26 @@ object frmMain: TfrmMain
       Caption = 'Relative Risks'
       Hint = 'Compare Relative Risks Files'
       OnExecute = ActionCompareRelativeRisksExecute
+    end
+    object ActionAddParameterFile: TAction
+      Caption = 'Add'
+      Hint = 'Add Parameter File'
+      OnExecute = ActionAddParameterFileExecute
+    end
+    object ActionRemoveParameterFile: TAction
+      Caption = 'Remove'
+      Hint = 'Remove Selected Parameter File'
+      OnExecute = ActionRemoveParameterFileExecute
+    end
+    object ActionSaveParametersList: TAction
+      Caption = 'Save'
+      Hint = 'Save Parameters List'
+      OnExecute = ActionSaveParametersListExecute
+    end
+    object ActionLoadParameterList: TAction
+      Caption = 'Load'
+      Hint = 'Load Parameters List'
+      OnExecute = ActionLoadParameterListExecute
     end
   end
   object SaveDialog: TSaveDialog
