@@ -133,6 +133,9 @@ bool IsLeapYear(UInt year)
   return( (year&3) == 0 && year%100 != 0 || year%400 == 0 );
 }
 
+/** This is the number of nUnits (days/months/years) covered by the time from
+    nDate1 to nDate2. For example, if nDate1=12/31/2000 and nDate2=1/1/2002,
+    then the function will produce 3 years, 14 months or 367 days, respectively. */
 long TimeBetween(Julian nDate1, Julian nDate2, int nUnits)
 {
   long   nDifference;
