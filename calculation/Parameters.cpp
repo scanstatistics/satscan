@@ -2240,10 +2240,8 @@ void CParameters::SetCriteriaForReportingSecondaryClusters(CriteriaSecondaryClus
 void CParameters::SetDefaults() {
   geAnalysisType                        = PURELYSPATIAL;
   geAreaScanRate                        = HIGH;
-  for (size_t t=0; t < gvCaseFilenames.size(); ++t)
-     gvCaseFilenames[t] = "";
-  for (size_t t=0; t < gvPopulationFilenames.size(); ++t)
-     gvPopulationFilenames[t] = "";
+  gvCaseFilenames.resize(1);
+  gvPopulationFilenames.resize(1);
   gsCoordinatesFileName                 = "";
   gsOutputFileName                      = "";
   gsMaxCirclePopulationFileName         = "";
@@ -2276,8 +2274,7 @@ void CParameters::SetDefaults() {
   geTimeTrendAdjustType                 = NOTADJUSTED;
   gdTimeTrendAdjustPercentage           = 0;
   gbIncludePurelyTemporalClusters       = false;
-  for (size_t t=0; t < gvControlFilenames.size(); ++t)
-     gvControlFilenames[t] = "";
+  gvControlFilenames.resize(1);
   geCoordinatesType                     = LATLON;
   gbOutputSimLogLikeliRatiosAscii       = false;
   gbSequentialRuns                      = false;
