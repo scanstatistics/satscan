@@ -302,23 +302,11 @@ void __fastcall TfrmMainForm::ReopenActionExecute(TObject *Sender) {
     - else calls TfrmAnalysis::SaveAs() method */
 void TfrmMainForm::Save() {
   TfrmAnalysis *frmBaseForm;
-  AnsiString    sFileName;
 
   try {
     frmBaseForm = dynamic_cast<TfrmAnalysis *>(frmMainForm->ActiveMDIChild);
-    if (frmBaseForm) {
-      sFileName =  frmBaseForm->GetFileName();
-      if (sFileName.IsEmpty())
-        frmBaseForm->SaveAs();
-      else {
-        // make sure that if the file exists it is NOT read only
-        // also make sure that the directory can be written to...
-        if (access(frmBaseForm->GetFileName(), 02) == 0)
-          frmBaseForm->WriteSession();
-        else
-          Application->MessageBox("Can not save session.  The file is either read only or you do not have write privledges to the directory." ,"Error", MB_OK);
-      }
-    }
+    if (frmBaseForm)
+      frmBaseForm->WriteSession();
   }
   catch (ZdException &x) {
     x.AddCallpath("Save()","TfrmMainForm");
