@@ -1,8 +1,8 @@
 object frmMain: TfrmMain
-  Left = 190
-  Top = 138
+  Left = 192
+  Top = 83
   Width = 604
-  Height = 491
+  Height = 554
   Caption = 'SaTScan Version Comparsion Utility v1.2'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -439,6 +439,31 @@ object frmMain: TfrmMain
       ShowHint = True
     end
   end
+  object pnlBottom: TPanel
+    Left = 0
+    Top = 464
+    Width = 596
+    Height = 63
+    Align = alBottom
+    BevelOuter = bvNone
+    TabOrder = 3
+    object lblRunErrors: TLabel
+      Left = 13
+      Top = 0
+      Width = 53
+      Height = 13
+      Caption = 'Run Errors:'
+    end
+    object memRunErrors: TMemo
+      Left = 12
+      Top = 13
+      Width = 571
+      Height = 44
+      ReadOnly = True
+      ScrollBars = ssVertical
+      TabOrder = 0
+    end
+  end
   object OpenDialog: TOpenDialog
     DefaultExt = '.txt'
     Filter = 'Text Files (*.txt)|*.txt|All Files (*.*)|*.*'
@@ -450,7 +475,7 @@ object frmMain: TfrmMain
     Left = 16
     Top = 400
     Bitmap = {
-      494C010105000900040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010105000900040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001001000000000000018
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -658,7 +683,8 @@ object frmMain: TfrmMain
       FFFFFFFFFFFFFFFFF81FF81FF81FF81FE00FE00FE00FE00FE00FE00FE00FE00F
       C007C007C007C007C007C007C007C007C007C007C007C007C007C007C007C007
       C007C007C007C007E00FE00FE00FE00FF00FF00FF00FF00FF83FF83FF83FF83F
-      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object ActionList1: TActionList
     Left = 16

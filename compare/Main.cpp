@@ -356,6 +356,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
    AnsiString   sCommand;
    int          iItemIndex=0;
 
+   memRunErrors->Clear();
    lstDisplay->Items->Clear();
    gvParameterResultsInfo.clear();
    gvColumnSortOrder.clear();
@@ -705,7 +706,9 @@ bool TfrmMain::Execute(const AnsiString & sCommandLine, bool bWindowed) {
                      &si,                                          //Pointer to STARTUPINFO structure.
                      &pi))                                       //Pointer to PROCESS_INFORMATION structure.
      {
-      Application->MessageBox(sCommandLine.c_str(), "Process create failed!", MB_OK);
+      memRunErrors->Lines->Add("Process create failed!");
+      memRunErrors->Lines->Add(sCommandLine.c_str());
+      memRunErrors->Lines->Add("");
      }
 
    //Wait until child process exits.
