@@ -105,25 +105,26 @@ void CPoissonModel::AdjustForLogLinear(RealDataStream& thisStream, measure_t ** 
   TimeTrend.CalculateAndSet(thisStream.GetPTCasesArray(), thisStream.GetPTMeasureArray(),
                             gData.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
 
-   //Cancel analysis execution if calculation of time trend fails for various reasons.
-   switch (TimeTrend.GetStatus()) {
-     case CTimeTrend::TREND_UNDEF :
-       SSGenerateException("Note: Temporal adjustment could not be performed. The calculated time trend is undefined.\n"
-                           "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
-     case CTimeTrend::TREND_INF :
-       SSGenerateException("Note: Temporal adjustment could not be performed. The calculated time trend is infinite.\n"
-                           "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
-     case CTimeTrend::TREND_NOTCONVERGED :
-       SSGenerateException("Note: Temporal adjustment could not be performed. The time trend does not converge.\n"
-                           "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
-     case CTimeTrend::TREND_CONVERGED : break;
-     default :
-       ZdGenerateException("Unknown time trend status type '%d'.", "AdjustForLogLinear()", TimeTrend.GetStatus());
-   };
+  //Cancel analysis execution if calculation of time trend fails for various reasons.
+  switch (TimeTrend.GetStatus()) {
+    case CTimeTrend::TREND_UNDEF :
+      SSGenerateException("Note: Temporal adjustment could not be performed. The calculated time trend is undefined.\n"
+                          "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
+    case CTimeTrend::TREND_INF :
+      SSGenerateException("Note: Temporal adjustment could not be performed. The calculated time trend is infinite.\n"
+                          "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
+    case CTimeTrend::TREND_NOTCONVERGED :
+      SSGenerateException("Note: Temporal adjustment could not be performed. The time trend does not converge.\n"
+                          "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
+    case CTimeTrend::TREND_CONVERGED : break;
+    default :
+      ZdGenerateException("Unknown time trend status type '%d'.", "AdjustForLogLinear()", TimeTrend.GetStatus());
+  };
 
-  AdjustForLLPercentage(thisStream, pNonCumulativeMeasure, TimeTrend.GetBeta());
+  TimeTrend.SetAnnualTimeTrend(gParameters.GetTimeIntervalUnitsType(), gData.GetNumTimeIntervals());
+  AdjustForLLPercentage(thisStream, pNonCumulativeMeasure, TimeTrend.GetAnnualTimeTrend());
   //store calculated time trend adjustment for reporting later
-  thisStream.SetCalculatedTimeTrendPercentage(TimeTrend.GetBeta());
+  thisStream.SetCalculatedTimeTrendPercentage(TimeTrend.GetAnnualTimeTrend());
 }
 
 void CPoissonModel::AdjustMeasure(RealDataStream & thisStream, measure_t ** ppNonCumulativeMeasure) {
@@ -275,12 +276,12 @@ void CPoissonModel::CalculateMeasure(RealDataStream & thisStream) {
   }
 }
 
-double CPoissonModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
-                                    int nStartInterval, int nStopInterval) {
+double CPoissonModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, tract_t nCenter,
+                                    tract_t nTracts, int nStartInterval, int nStopInterval) const {
   tract_t T, t;
   int     c, n;
   double* pAlpha = 0;
-  PopulationData & Population = gData.GetDataStreamHandler().GetStream(0/*for now*/).GetPopulationData();
+  const PopulationData & Population = gData.GetDataStreamHandler().GetStream(iStream).GetPopulationData();
   int     ncats;
   int     nPops;
   double  nPopulation = 0.0;
@@ -307,3 +308,4 @@ double CPoissonModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract
       }
    return nPopulation;
 }
+

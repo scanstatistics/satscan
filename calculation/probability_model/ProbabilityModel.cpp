@@ -29,3 +29,10 @@ CModel::~CModel() {
 #endif
 }
 
+/** not implemented - throws exception */
+double CModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, tract_t nCenter,
+                             tract_t nTracts, int nStartInterval, int nStopInterval) const {
+  ZdGenerateException("GetPopulation() not implementated.","CModel");
+  return 0;
+}
+

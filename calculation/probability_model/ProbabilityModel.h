@@ -28,8 +28,9 @@ class CModel {
     virtual ~CModel();
 
     virtual void                CalculateMeasure(RealDataStream & thisStream) = 0;
-    virtual double              GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
-                                              int nStartInterval, int nStopInterval) = 0;
+    virtual double              GetPopulation(unsigned int iStream, int m_iEllipseOffset,
+                                              tract_t nCenter, tract_t nTracts,
+                                              int nStartInterval, int nStopInterval) const;
 };
 
 //*****************************************************************************

@@ -11,8 +11,8 @@ class CSurvivalModel : public CModel {
     virtual ~CSurvivalModel();
 
     virtual void                CalculateMeasure(RealDataStream & thisStream) {/* no action here */}
-    virtual double              GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
-                                              int nStartInterval, int nStopInterval);
+    virtual double              GetPopulation(unsigned int iStream, int m_iEllipseOffset, tract_t nCenter,
+                                              tract_t nTracts, int nStartInterval, int nStopInterval) const;
 };
 //---------------------------------------------------------------------------
 #endif

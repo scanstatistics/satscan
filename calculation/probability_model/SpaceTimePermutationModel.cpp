@@ -70,12 +70,3 @@ void CSpaceTimePermutationModel::CalculateMeasure(RealDataStream & thisStream) {
   }
 }
 
-/** Throws exception. Defined in parent class as pure virtual. */
-double CSpaceTimePermutationModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
-                                                 int nStartInterval, int nStopInterval)
-{
-  SSGenerateException("Function GetPopulation() not implemented in CSpaceTimePermutationModel",
-                      "GetPopulation() of CSpaceTimePermutationModel");
-  return 0;
-}
-

@@ -13,7 +13,8 @@ CRankModel::CRankModel(const CParameters & Parameters, CSaTScanData & Data, Base
 CRankModel::~CRankModel() {}
 
 /** not implemented - throws exception */
-double CRankModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts, int nStartInterval, int nStopInterval) {
+double CRankModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, tract_t nCenter,
+                                 tract_t nTracts, int nStartInterval, int nStopInterval) const {
   //ZdGenerateException("GetPopulation() not implementated.","CRankModel");
   return 0;
 }

@@ -11,7 +11,8 @@ CNormalModel::CNormalModel(const CParameters & Parameters, CSaTScanData & Data, 
 /** destructor */
 CNormalModel::~CNormalModel() {}
 
-double CNormalModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts, int nStartInterval, int nStopInterval) {
+double CNormalModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, tract_t nCenter,
+                                   tract_t nTracts, int nStartInterval, int nStopInterval) const {
   ZdGenerateException("GetPopulation() not implementated.","CNormalModel");
   return 0;
 }

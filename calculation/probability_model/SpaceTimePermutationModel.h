@@ -17,8 +17,6 @@ class CSpaceTimePermutationModel : public CModel {
     virtual ~CSpaceTimePermutationModel();
 
     virtual void   	        CalculateMeasure(RealDataStream & thisStream);
-    virtual double              GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
-                                              int nStartInterval, int nStopInterval);
 };
 
 //*****************************************************************************

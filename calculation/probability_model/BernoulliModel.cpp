@@ -56,10 +56,11 @@ void CBernoulliModel::CalculateMeasure(RealDataStream & thisStream) {
 }
 
 /** returns population for a given ellipse offset, grid point and time interval period */
-double CBernoulliModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts, int nStartInterval, int nStopInterval) {
+double CBernoulliModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, tract_t nCenter,
+                                      tract_t nTracts, int nStartInterval, int nStopInterval) const {
   double                nPop=0.0;
   count_t               nNeighbor;
-  measure_t          ** ppMeasure(gData.GetDataStreamHandler().GetStream(0/*for now*/).GetMeasureArray());
+  measure_t          ** ppMeasure(gData.GetDataStreamHandler().GetStream(iStream).GetMeasureArray());
 
   for (int i=1; i <= nTracts; ++i) {
      nNeighbor = gData.GetNeighbor(m_iEllipseOffset, nCenter, i);
