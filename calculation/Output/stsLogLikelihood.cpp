@@ -1,0 +1,119 @@
+// Adam J Vaughn
+// November 2002
+
+#include "SaTScan.h"
+#pragma hdrstop
+
+#include "stsLogLikelihood.h"
+
+const char *	LOG_LIKELIHOOD_FILE_EXT		= ".llr";
+
+// ============================================================================
+// storage class for a log likelihood record
+// ============================================================================
+
+LogLikelihoodRecord::LogLikelihoodRecord() : BaseOutputRecord() {
+   gdLogLikelihood = 0.0;
+}
+
+LogLikelihoodRecord::LogLikelihoodRecord(const double dLikelihood) : BaseOutputRecord() {
+   gdLogLikelihood = dLikelihood;
+}
+
+LogLikelihoodRecord::~LogLikelihoodRecord() {
+}
+
+ZdFieldValue LogLikelihoodRecord::GetValue(int iFieldNumber) {
+   ZdFieldValue fv;
+   
+   try {
+      if (iFieldNumber != 0)
+         ZdGenerateException("Index out of range!", "Error!");
+      
+      BaseOutputRecord::SetFieldValueAsDouble(fv, gdLogLikelihood);
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("GetValue()", "LogLikelihoodRecord");
+      throw;
+   }
+   return fv;   
+}
+
+// ============================================================================
+// Output data model for loglikelihood output file types.
+// ============================================================================
+
+// constructor
+__fastcall LogLikelihoodData::LogLikelihoodData(const ZdString& sOutputFileName) 
+                          : BaseOutputStorageClass() {
+   try {
+      Init();
+      Setup(sOutputFileName);
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("Constructor", "LogLikelihoodData");
+      throw;
+   }                          
+}
+
+// destructor
+LogLikelihoodData::~LogLikelihoodData() {
+   try {
+   }
+   catch (...) { }
+}
+
+// add a new log likelihood record to the data
+// pre: none
+// post : adds a new record to the global vector
+void LogLikelihoodData::AddLikelihood(const double dLikelihood) {
+   LogLikelihoodRecord*	pRecord = 0;
+   
+   try {
+      pRecord = new LogLikelihoodRecord(dLikelihood);
+      BaseOutputStorageClass::AddRecord(pRecord);	
+   }
+   catch(ZdException &x) {
+      delete pRecord;	
+      x.AddCallpath("AddLikelihood()", "LogLikelihoodData");
+      throw;
+   }			
+}
+
+void LogLikelihoodData::Init() {
+}
+
+// internal setup function
+void LogLikelihoodData::Setup(const ZdString& sOutputFileName) {
+   try {
+      ZdString sTempName(sOutputFileName);
+      ZdString sExt(ZdFileName(sOutputFileName).GetExtension());
+      if(sExt.GetLength()) 
+         sTempName.Replace(sExt, LOG_LIKELIHOOD_FILE_EXT);
+      else
+         sTempName << LOG_LIKELIHOOD_FILE_EXT;
+      gsFileName = sTempName;
+      	
+      SetupFields();
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("Setup()", "LogLikelihoodData");
+      throw;
+   }
+}
+
+// sets up the appropraite fields for a log likelihood output data model
+// pre : none
+// post : vFields will contain the appropraite ZdFields for this output data model
+void LogLikelihoodData::SetupFields() {
+   unsigned short uwOffset = 0;     // this is altered by the create new field function, so this must be here as is-AJV 9/30/2002
+   
+   try {
+      ::CreateNewField(gvFields, LOG_LIKL_FIELD, ZD_NUMBER_FLD, 7, 2, uwOffset);
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("SetupFields()", "LogLikelihoodData");
+      throw;
+   }
+}
+ 

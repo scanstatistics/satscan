@@ -1,0 +1,43 @@
+#ifndef RELATIVERISK_H
+#define RELATIVERISK_H
+
+#include "stsOutputFileData.h"
+
+extern const char *	REL_RISK_EXT;
+
+class RelativeRiskRecord : public BaseOutputRecord {
+   private:
+      ZdString 	gsLocationID;
+      long 	glObserved;
+      double 	gdExpected;
+      double 	gdRelRisk;
+      
+      void 	Init(); 
+   public :
+      RelativeRiskRecord();
+      virtual ~RelativeRiskRecord();
+    
+      virtual int GetNumFields() { return 4; }
+      virtual ZdFieldValue GetValue(int iFieldNumber); 
+       
+      void	SetExpected(const double dExpected) { gdExpected = dExpected; }
+      void	SetLocationID(const ZdString& sLocationID) { gsLocationID = sLocationID; }
+      void	SetObserved(const long lObserved) { glObserved = lObserved; }
+      void	SetRelativeRisk(const double dRelRisk) { gdRelRisk = dRelRisk; }  
+};  
+
+
+class RelativeRiskData : public BaseOutputStorageClass {
+   private:
+      void	Init();
+      void	Setup(const ZdString& sOutputFileName);
+   protected:
+      virtual void              SetupFields();
+   public:
+      __fastcall RelativeRiskData(const ZdString& sOutputFileName);
+      virtual ~RelativeRiskData();
+
+      void      SetRelativeRiskData(const ZdString& sLocationID, const long lObserved, const double dExpected, const double dRelRisk);   
+};
+
+#endif

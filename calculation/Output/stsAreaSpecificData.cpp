@@ -1,0 +1,203 @@
+// Class stsAreaSpecificData
+// Adam J Vaughn
+// November 2002
+ 
+#include "SaTScan.h"
+#pragma hdrstop
+
+#include "stsAreaSpecificData.h"
+#include "Cluster.h"
+
+const char *	AREA_SPECIFIC_FILE_EXT		= ".gis";
+
+// record storage class for area specific data
+// constrcutor
+AreaSpecificRecord::AreaSpecificRecord() : BaseOutputRecord() {
+   Init();
+}
+
+// destructor
+AreaSpecificRecord::~AreaSpecificRecord() {
+}
+
+// returns the field value of the requested field
+// pre : iFieldNumber is in valid range, else an exception is thrown
+// post : returns a ZdFieldValue with the appropriate type and value of the field requested
+ZdFieldValue AreaSpecificRecord::GetValue(int iFieldNumber) {
+   ZdFieldValue fv;
+   
+   try {   
+      if (iFieldNumber < 0 || iFieldNumber >= GetNumFields())
+         ZdGenerateException ("Index out of range!", "Error!");
+      
+      switch (iFieldNumber) {
+         case 0 :
+            BaseOutputRecord::SetFieldValueAsLong(fv, glRunNumber);  break;
+         case 1 :
+            BaseOutputRecord::SetFieldValueAsString(fv, gsLocationID);   break;
+         case 2 :
+            BaseOutputRecord::SetFieldValueAsLong(fv, giClusterNumber);  break;
+         case 3 :
+            BaseOutputRecord::SetFieldValueAsLong(fv, glClusterObserved);   break;
+         case 4 :
+            BaseOutputRecord::SetFieldValueAsDouble(fv, gdClusterExpected);   break;         
+         case 5 :
+            BaseOutputRecord::SetFieldValueAsDouble(fv, gdRelRisk);  break;
+         case 6 :
+            BaseOutputRecord::SetFieldValueAsDouble(fv, gdPValue);  break;
+         case 7 :
+            BaseOutputRecord::SetFieldValueAsLong(fv, glAreaObserved);  break;
+         case 8 :
+            BaseOutputRecord::SetFieldValueAsDouble(fv, gdAreaExpected);  break;
+         case 9 :
+            BaseOutputRecord::SetFieldValueAsDouble(fv, gdAreaRelRisk);   break;
+         default :
+            ZdGenerateException ("Invalid index, out of range", "Error!");
+      }
+      
+      return fv;
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("GetValue()", "AreaSpecificRecord");
+      throw;
+   }   
+}
+
+// internal global initialization
+void AreaSpecificRecord::Init() {
+   glRunNumber = 0;
+   gsLocationID = "";
+   giClusterNumber = 0;
+   glClusterObserved = 0;
+   gdClusterExpected = 0.0;
+   gdRelRisk = 0.0;
+   gdPValue = 0.0;
+   glAreaObserved = 0;
+   gdAreaExpected = 0.0;
+   gdAreaRelRisk = 0.0;
+}
+
+// ============================================================================
+// This class is responsible for the storage of the area specific data for output.
+// This class defines the fields which make up the the data contained therein.
+// The class is derived from the base class BaseOutputStorageClass. 
+// ============================================================================
+
+// constructor
+__fastcall stsAreaSpecificData::stsAreaSpecificData(const ZdString& sOutputFileName, const long lRunNumber, const bool bPrintPVal)
+                             : BaseOutputStorageClass () {
+   try {
+      Init();
+      Setup(sOutputFileName, lRunNumber, bPrintPVal);
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("Constructor", "stsAreaSpecificData");
+      throw;
+   }
+}
+
+// destructor
+stsAreaSpecificData::~stsAreaSpecificData() {
+   try {
+   }
+   catch (...) {/* munch munch, yummy*/}
+}
+
+// global inits
+void stsAreaSpecificData::Init() {
+}
+
+// records the calculated data from the cluster into the dBase file
+// pre: pCluster has been initialized with calculated data
+// post: function will record the appropraite data into the dBase record
+void stsAreaSpecificData::RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, tract_t tTract) {
+   ZdString             sTempValue;
+   std::string          sBuffer;
+   float                fPVal;
+   AreaSpecificRecord*	pRecord = 0;
+
+   try {
+      pRecord = new AreaSpecificRecord();
+      pRecord->SetAreaExpected(pCluster.GetMeasureForTract(tTract, pData));
+      pRecord->SetAreaObserved(pCluster.GetCaseCountForTract(tTract, pData));
+      pRecord->SetAreaRelativeRisk(pCluster.GetRelativeRiskForTract(tTract, pData));
+      pRecord->SetClusterExpected(pCluster.m_nMeasure);
+      pRecord->SetClusterNumber(iClusterNumber);
+      pRecord->SetClusterObserved(pCluster.m_nCases);
+      pRecord->SetClusterRelativeRisk(pCluster.GetRelativeRisk(pData.GetMeasureAdjustment()));
+      
+      // area id
+      sTempValue = (pData.GetTInfo())->tiGetTid(tTract, sBuffer); 
+      pRecord->SetLocationID(sTempValue);
+      
+      // p value
+      if(gbPrintPVal) {
+         fPVal = (float) pCluster.GetPVal(pData.m_pParameters->m_nReplicas);
+         pRecord->SetPValue(fPVal);
+      }
+      
+#ifdef INCLUDE_RUN_HISTORY
+      pRecord->SetRunNumber(glRunNumber);
+#endif
+                                                
+      BaseOutputStorageClass::AddRecord(pRecord);
+   }  
+   catch (ZdException &x) {
+      delete pRecord; 	 
+      x.AddCallpath("RecordClusterData()", "stsAreaSpecificData");
+      throw;
+   }  
+}     
+      
+// internal setup
+void stsAreaSpecificData::Setup(const ZdString& sOutputFileName, const long lRunNumber, const bool bPrintPVal) {
+   try {
+      ZdString sTempName(sOutputFileName);
+      ZdString sExt(ZdFileName(sOutputFileName).GetExtension());
+      if(sExt.GetLength()) 
+         sTempName.Replace(sExt, AREA_SPECIFIC_FILE_EXT);
+      else
+         sTempName << AREA_SPECIFIC_FILE_EXT;
+      gsFileName = sTempName;
+      
+      glRunNumber = lRunNumber;
+      gbPrintPVal = bPrintPVal;	
+      SetupFields();
+   }
+   catch(ZdException &x) {
+      x.AddCallpath("Setup()", "stsAreaSpecificData");
+      throw;
+   }
+}
+
+// sets up the vector of field structs so that the ZdField Vector can be created
+// pre: 
+// post : returns through reference a vector of ZdFields to be used
+//        to create the ZdVector of ZdField* required to create the DBF file
+void stsAreaSpecificData::SetupFields() {
+   unsigned short uwOffset = 0;     // this is altered by the create new field function, so this must be here as is-AJV 9/30/2002
+   
+   try {
+      // please take note that this function here determines the ordering of the fields in the file
+      // everything else is written generically enough that ordering does not matter due to the
+      // GetFieldNumber function - AJV 10/2/2002
+#ifdef INCLUDE_RUN_HISTORY
+      ::CreateNewField(gvFields, RUN_NUM_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
+#endif
+      ::CreateNewField(gvFields, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
+      ::CreateNewField(gvFields, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
+      ::CreateNewField(gvFields, CLU_OBS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
+      ::CreateNewField(gvFields, CLU_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
+      ::CreateNewField(gvFields, REL_RISK_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+
+      if(gbPrintPVal)
+         ::CreateNewField(gvFields, P_VALUE_FIELD, ZD_NUMBER_FLD, 12, 5, uwOffset);
+      ::CreateNewField(gvFields, AREA_OBS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
+      ::CreateNewField(gvFields, AREA_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
+      ::CreateNewField(gvFields, AREA_RSK_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);      
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("SetupFields()", "stsAreaSpecificData");
+      throw;	
+   }	
+}
