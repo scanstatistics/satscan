@@ -87,19 +87,21 @@ void stsAreaSpecificDBF::CreateDBFFile() {
 void stsAreaSpecificDBF::GetFields() {
    TXDFile*		pFile = 0;
    ZdField*		pField = 0;
-   ZdVector<std::pair<std::pair<ZdString, char>, short> > vFieldDescrips;
+   ZdVector<std::pair<ZdString, char> > vFieldDescrips;
+   ZdVector<std::pair<short, short> > vFieldSizes;
 
    try {
       CleanupFieldVector();           // empty out the global field vector
-      SetupFields(vFieldDescrips);
+      SetupFields(vFieldDescrips, vFieldSizes);
 
       pFile = new TXDFile();
 
       for(unsigned int i = 0; i < vFieldDescrips.GetNumElements(); ++i) {
          pField = pFile->GetNewField();
-         pField->SetName(vFieldDescrips[i].first.first.GetCString());
-         pField->SetType(vFieldDescrips[i].first.second);
-         pField->SetLength(vFieldDescrips[i].second);
+         pField->SetName(vFieldDescrips[i].first.GetCString());
+         pField->SetType(vFieldDescrips[i].second);
+         pField->SetLength(vFieldSizes[i].first);
+         pField->SetPrecision(vFieldSizes[i].second);
          gvFields.AddElement(pField->Clone());
          delete pField;
       }
@@ -229,44 +231,59 @@ void stsAreaSpecificDBF::Setup(const ZdString& sFileName) {
 // field names for the cluster level output dbf file
 // pre: empty vector of triplets passed in
 // post: passes back through reference a vector of strings will the field names for the dbf file
-void stsAreaSpecificDBF::SetupFields(ZdVector<std::pair<std::pair<ZdString, char>, short> >& vFieldDescrips){
-   std::pair<pair<ZdString, char>, long>        field;
+void stsAreaSpecificDBF::SetupFields(ZdVector<std::pair<ZdString, char> >& vFieldDescrips, ZdVector<std::pair<short, short> >& vFieldSizes){
+   std::pair<ZdString, char>        field;
+   std::pair<short, short>          fieldsize;
 
    try {
-      field.first.first = "RUN_NUM";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "RUN_NUM";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 8;
+      fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "CLUST_NUM";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "CLUST_NUM";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 8;
+      fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "AREA_ID";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "AREA_ID";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 8;
+      fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "P_VALUE";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "P_VALUE";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 12;
+      fieldsize.second = 6;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "OBSERVED";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "OBSERVED";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 12;
+      fieldsize.second = 2;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "EXPECTED";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "EXPECTED";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 12;
+      fieldsize.second = 2;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "REL_RISK";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "REL_RISK";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 12;
+      fieldsize.second = 6;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupFields()", "stsAreaSpecificDBF");

@@ -88,19 +88,21 @@ void stsClusterLevelDBF::CreateDBFFile() {
 void stsClusterLevelDBF::GetFields() {
    TXDFile*		pFile = 0;
    ZdField*		pField = 0;
-   ZdVector<pair<pair<ZdString, char>, short> > vFieldDescrips;
+   ZdVector<std::pair<ZdString, char> > vFieldDescrips;
+   ZdVector<std::pair<short, short> > vFieldSizes;
 
    try {
       CleanupFieldVector();
-      SetupFields(vFieldDescrips);
+      SetupFields(vFieldDescrips, vFieldSizes);
 
       pFile = new TXDFile();
       
       for(unsigned int i = 0; i < vFieldDescrips.GetNumElements(); ++i) {
          pField = pFile->GetNewField();
-         pField->SetName(vFieldDescrips[i].first.first);
-         pField->SetType(vFieldDescrips[i].first.second);
-         pField->SetLength(vFieldDescrips[i].second);
+         pField->SetName(vFieldDescrips[i].first.GetCString());
+         pField->SetType(vFieldDescrips[i].second);
+         pField->SetLength(vFieldSizes[i].first);
+         pField->SetPrecision(vFieldSizes[i].second);
          gvFields.AddElement(pField->Clone());
          delete pField;
       }
@@ -275,86 +277,117 @@ void stsClusterLevelDBF::Setup(const ZdString& sFileName) {
 }
 
 // field names for the cluster level output dbf file
-// pre: empty vector of triplets
-// post: passes back through reference a vector of strings will the field names for the dbf file
-void stsClusterLevelDBF::SetupFields(ZdVector<pair<pair<ZdString, char>, short> >& vFieldDescrips) {
-   pair<pair<ZdString, char>, short>    field;
+// pre: two empty pair vectors
+// post: passes back through reference a vectors of field names, field type, field length, field precision for the dbf file
+void stsClusterLevelDBF::SetupFields(ZdVector<std::pair<ZdString, char> >& vFieldDescrips, ZdVector<std::pair<short, short> >& vFieldSizes) {
+   std::pair<ZdString, char>        field;
+   std::pair<short, short>          fieldsize;
 
    try {
-      field.first.first = "RUN_NUM";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "RUN_NUM";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 8;
+      fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "START_DATE";
-      field.first.second = ZD_ALPHA_FLD;
-      field.second = 32;
+      field.first = "START_DATE";
+      field.second = ZD_ALPHA_FLD;
+      fieldsize.first = 32;
+      fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "END_DATE";
-      field.first.second = ZD_ALPHA_FLD;
-      field.second = 32;
+      field.first = "END_DATE";
+      field.second = ZD_ALPHA_FLD;
+      fieldsize.first = 32;
+      fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "CLUST_NUM";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "CLUST_NUM";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 8;
+      fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "OBSERVED";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "OBSERVED";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 12;
+      fieldsize.second = 2;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "EXPECTED";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "EXPECTED";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 12;
+      fieldsize.second = 2;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "REL_RISK";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "REL_RISK";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 12;
+      fieldsize.second = 4;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "LOG_LIKL";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "LOG_LIKL";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 12;
+      fieldsize.second = 4;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "P_VALUE";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "P_VALUE";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 12;
+      fieldsize.second = 6;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "NUM_AREAS";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "NUM_AREAS";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 12;
+      fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "AREA_ID";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "AREA_ID";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 12;
+      fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "COORD_NOR";
-      field.first.second = ZD_ALPHA_FLD;
-      field.second = 32;
+      field.first = "COORD_NOR";
+      field.second = ZD_ALPHA_FLD;
+      fieldsize.first = 16;
+      fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "COORD_WES";
-      field.first.second = ZD_ALPHA_FLD;
-      field.second = 32;
+      field.first = "COORD_WES";
+      field.second = ZD_ALPHA_FLD;
+      fieldsize.first = 16;
+      fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "COORD_ADD";
-      field.first.second = ZD_ALPHA_FLD;
-      field.second = 32;
+      field.first = "COORD_ADD";
+      field.second = ZD_ALPHA_FLD;
+      fieldsize.first = 32;
+      fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
 
-      field.first.first = "RADIUS";
-      field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.first = "RADIUS";
+      field.second = ZD_NUMBER_FLD;
+      fieldsize.first = 12;
+      fieldsize.second = 4;
       vFieldDescrips.AddElement(field);
+      vFieldSizes.AddElement(fieldsize);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupClusterLevelOutputFieldNames()", "DBaseOutput");

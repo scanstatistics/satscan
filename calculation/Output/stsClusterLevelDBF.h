@@ -13,7 +13,7 @@ class stsClusterLevelDBF {
       void              CleanupFieldVector();
       void 	        CreateDBFFile();
       void              GetFields();
-      void 	        SetupFields(ZdVector<pair<pair<ZdString, char>, short> >& vFieldDescrips);
+      void 	        SetupFields(ZdVector<std::pair<ZdString, char> >& vFieldDescrips, ZdVector<std::pair<short, short> >& vFieldSizes);
    public:
       __fastcall stsClusterLevelDBF(const ZdString& sFileName);
       virtual ~stsClusterLevelDBF();
