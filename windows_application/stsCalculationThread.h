@@ -20,11 +20,10 @@
 //---------------------------------------------------------------------------
 class CalcThread : public TThread {
   private:
-    CParameters       * gpParams;
+    CParameters       * gpParameters;
     CSaTScanData      * gpData;
     CAnalysis         * gpAnalysis;
     PrintWindow       * gpPrintWindow;
-    AnsiString          gsThreadTitle;
     TfrmAnalysisRun   & gFormStatus;
     char              * gsPrintString;
     bool                gbJobCanceled;  
@@ -42,14 +41,13 @@ class CalcThread : public TThread {
     void __fastcall     ResetProgressCloseButton(void);
     void __fastcall     SetJobCancelled(void);
     void __fastcall     SetProgressWarnings(void);
-    void                Setup(const CParameters& session, char *pTitle);
-    void __fastcall     SetupProgress(void);
+    void                Setup(const CParameters& Parameters);
 
   protected:
     void __fastcall     Execute();
 
   public:
-    __fastcall CalcThread(bool CreateSuspended, const CParameters& session, char *pTitle, TfrmAnalysisRun & Progress);
+    __fastcall CalcThread(TfrmAnalysisRun & Progress, const CParameters & Parameters);
     __fastcall ~CalcThread();
 
     void                AddLineToProgress(char * sText);
