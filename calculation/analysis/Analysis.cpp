@@ -77,16 +77,7 @@ bool CAnalysis::Execute(time_t RunTime)
 {
    bool bContinue;
 
-   try
-      {
-      // AJV 9/5/2002
-      auto_ptr<stsClusterLevelDBF> pDBFClusterReport;
-      if(m_pParameters->GetOutputClusterLevelDBF())
-         pDBFClusterReport.reset(new stsClusterLevelDBF(CLUSTER_LEVEL_DBF_FILE));
-      auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;
-      if(m_pParameters->GetOutputAreaSpecificDBF())
-         pDBFAreaReport.reset(new stsAreaSpecificDBF(AREA_SPECIFIC_DBF_FILE));
-
+   try {
       SetMaxNumClusters();
       //Allocate array which will store most likely clusters.
       AllocateTopClusterList();
@@ -149,11 +140,7 @@ bool CAnalysis::Execute(time_t RunTime)
 //        DisplayTopClustersLogLikelihoods(m_pDebugFile);
 //#endif
         
-        // record DBF output data - AJV
-        if(m_pParameters->GetOutputClusterLevelDBF())
-           pDBFClusterReport->RecordClusterData(m_pTopClusters[0], m_pData, m_nAnalysisCount);
-        if(m_pParameters->GetOutputAreaSpecificDBF())
-           pDBFAreaReport->RecordClusterData(m_pTopClusters[0], m_pData, m_nAnalysisCount);
+        
 
         //Do Monte Carlo replications.
         if (m_nClustersRetained > 0)
@@ -167,6 +154,8 @@ bool CAnalysis::Execute(time_t RunTime)
     
         if (gpPrintDirection->GetIsCanceled() || !UpdateReport())
           return false;
+
+
 
         bContinue = RepeatAnalysis();
         if (bContinue)
@@ -438,41 +427,46 @@ void CAnalysis::UpdatePowerCounts(double r)
              m_pData->m_pSimCases, m_pData->m_nTimeIntervals);
 }
 */
-void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps,
-                                   FILE* fp, FILE* fpGIS)
+void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, FILE* fp, FILE* fpGIS)
 {
-   try
-      {	
+   try {
       m_nClustersReported = 0;
       measure_t nMinMeasure = -1;
+      // AJV 9/5/2002
+      auto_ptr<stsClusterLevelDBF> pDBFClusterReport;
+      if(m_pParameters->GetOutputClusterLevelDBF())
+         pDBFClusterReport.reset(new stsClusterLevelDBF(CLUSTER_LEVEL_DBF_FILE));
+      auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;
+      if(m_pParameters->GetOutputAreaSpecificDBF())
+         pDBFAreaReport.reset(new stsAreaSpecificDBF(AREA_SPECIFIC_DBF_FILE));
     
-      for (tract_t i=0; i<m_nClustersRetained; i++)
-      {
-        if (m_pTopClusters[i]->m_nRatio > nMinRatio &&
-            m_pTopClusters[i]->m_nRank  <= nReps)
-        {
+      for (tract_t i=0; i<m_nClustersRetained; ++i) {
+        if (m_pTopClusters[i]->m_nRatio > nMinRatio && m_pTopClusters[i]->m_nRank  <= nReps) {
           ++m_nClustersReported;
     
-          switch(m_nClustersReported)
-          {
+          switch(m_nClustersReported) {
             case 1 : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
             case 2 : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
             default: fprintf(fp, "\n"); break;
-          }
+          }   // end switch
     
           m_pTopClusters[i]->Display(fp, *m_pParameters, *m_pData,
                                      m_nClustersReported, nMinMeasure);
-    
+
+          // record DBF output data - AJV
+          if(m_pParameters->GetOutputClusterLevelDBF())
+             pDBFClusterReport->RecordClusterData(m_pTopClusters[i], m_pData, m_nClustersReported);
+          if(m_pParameters->GetOutputAreaSpecificDBF())
+             pDBFAreaReport->RecordClusterData(m_pTopClusters[i], m_pData, m_nClustersReported);
+
           if (m_pParameters->m_bOutputCensusAreas && (fpGIS != NULL))
-              m_pTopClusters[i]->DisplayCensusTracts(fpGIS, *m_pData,
-                                                   m_nClustersReported, nMinMeasure,
-                                                   m_pParameters->m_nReplicas,
+              m_pTopClusters[i]->DisplayCensusTracts(fpGIS, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
                                                    true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);
-        }
-      }
+        }   // end if top cluster > minratio
+      }   // end for loop
     
       fprintf(fp, "\n");
-      }
+   }
    catch (SSException & x)
       {
       x.AddCallpath("DisplayTopClusters(double, int, File*, File *)", "CAnalysis");
@@ -483,8 +477,14 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps,
 void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps,
                                   FILE* fp, FILE* fpGIS)
 {
-   try
-      {
+   try {
+      // AJV 9/5/2002
+      auto_ptr<stsClusterLevelDBF> pDBFClusterReport;
+      if(m_pParameters->GetOutputClusterLevelDBF())
+         pDBFClusterReport.reset(new stsClusterLevelDBF(CLUSTER_LEVEL_DBF_FILE));
+      auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;
+      if(m_pParameters->GetOutputAreaSpecificDBF())
+         pDBFAreaReport.reset(new stsAreaSpecificDBF(AREA_SPECIFIC_DBF_FILE));
       measure_t nMinMeasure = 0;
     
       if (m_nClustersRetained == 0)
@@ -502,6 +502,13 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps,
         }
         m_pTopClusters[0]->Display(fp, *m_pParameters, *m_pData,
                                    m_nClustersReported, nMinMeasure);
+
+        // record DBF output data - AJV
+        if(m_pParameters->GetOutputClusterLevelDBF())
+           pDBFClusterReport->RecordClusterData(m_pTopClusters[0], m_pData, m_nClustersReported);
+        if(m_pParameters->GetOutputAreaSpecificDBF())
+           pDBFAreaReport->RecordClusterData(m_pTopClusters[0], m_pData, m_nClustersReported);
+
         if (fpGIS != NULL)
           m_pTopClusters[0]->DisplayCensusTracts(fpGIS, *m_pData,
                                                  m_nClustersReported, nMinMeasure,
