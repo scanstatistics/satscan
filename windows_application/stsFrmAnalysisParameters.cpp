@@ -38,7 +38,7 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
   try {
     OpenDialog1->FileName =  "";
     OpenDialog1->DefaultExt = "*.cas";
-    OpenDialog1->Filter = "Case files (*.cas)|*.cas|All files (*.*)|*.*";
+    OpenDialog1->Filter = "Case files (*.cas)|*.cas|Text files (*.txt)|*.txt|All files (*.*)|*.*";
     OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Case File";
     if (OpenDialog1->Execute())
@@ -56,7 +56,7 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.ctl";
-    OpenDialog1->Filter = "Control files (*.ctl)|*.ctl|All files (*.*)|*.*";
+    OpenDialog1->Filter = "Control files (*.ctl)|*.ctl|Text files (*.txt)|*.txt|All files (*.*)|*.*";
     OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Control File";
     if (OpenDialog1->Execute())
@@ -74,7 +74,7 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.geo";
-    OpenDialog1->Filter = "Coordinates files (*.geo)|*.geo|All files (*.*)|*.*";
+    OpenDialog1->Filter = "Coordinates files (*.geo)|*.geo|Text files (*.txt)|*.txt|All files (*.*)|*.*";
     OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Coordinates File";
     if (OpenDialog1->Execute())
@@ -92,7 +92,7 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.grd";
-    OpenDialog1->Filter = "Special Grid files (*.grd)|*.grd|All files (*.*)|*.*";
+    OpenDialog1->Filter = "Special Grid files (*.grd)|*.grd|Text files (*.txt)|*.txt|All files (*.*)|*.*";
     OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Special Grid File";
     if (OpenDialog1->Execute())
@@ -110,7 +110,7 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.pop";
-    OpenDialog1->Filter = "Population files (*.pop)|*.pop|All files (*.*)|*.*";
+    OpenDialog1->Filter = "Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
     OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Population File";
     if (OpenDialog1->Execute())
