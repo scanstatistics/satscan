@@ -329,7 +329,7 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
 /** Prints parameters, in a particular format, to passed ascii file. */
 void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
   int           i;
-  ZdFileName    AsciiOutput(gsOutputFileName.c_str()), DBaseOutput(gsOutputFileName.c_str());
+  ZdFileName    AdditionalOutputFile(gsOutputFileName.c_str());
 
   try {
     fprintf(fp, "\n________________________________________________________________\n\n");
@@ -474,62 +474,47 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
 
     fprintf(fp, "\nOutput\n");
     fprintf(fp, "------\n");
-    fprintf(fp, "  Results File      : %s\n", gsOutputFileName.c_str());
+    fprintf(fp,   "  Results File          : %s\n", gsOutputFileName.c_str());
 
-    // area specific files
-    AsciiOutput.SetExtension(".gis.txt");
-    DBaseOutput.SetExtension(".gis.dbf");
-    if (gbOutputAreaSpecificAscii || gbOutputAreaSpecificDBase) {
-       if (gbOutputAreaSpecificAscii) {
-         fprintf(fp, "  GIS File(s)       : %s\n", AsciiOutput.GetFullPath());
-         if (gbOutputAreaSpecificDBase)
-           fprintf(fp, "                    : %s\n", DBaseOutput.GetFullPath());
-       }
-       else
-         fprintf(fp, "  GIS File(s)       : %s\n", DBaseOutput.GetFullPath());
-    }
 
     // cluster information files
-    AsciiOutput.SetExtension(".col.txt");
-    DBaseOutput.SetExtension(".col.dbf");
-    if (gbOutputClusterLevelAscii || gbOutputClusterLevelDBase) {
-      if (gbOutputClusterLevelAscii) {
-         fprintf(fp, "  COL File(s)       : %s\n", AsciiOutput.GetFullPath());
-         if (gbOutputClusterLevelDBase)
-           fprintf(fp, "                    : %s\n", DBaseOutput.GetFullPath());
-       }
-       else
-         fprintf(fp, "  COL File(s)       : %s\n", DBaseOutput.GetFullPath());
+    if (gbOutputClusterLevelAscii) {
+      AdditionalOutputFile.SetExtension(".col.txt");
+      fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
     }
-
+    if (gbOutputClusterLevelAscii) {
+      AdditionalOutputFile.SetExtension(".col.dbf");
+      fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
+    }
+    // area specific files
+    if (gbOutputAreaSpecificAscii) {
+      AdditionalOutputFile.SetExtension(".gis.txt");
+      fprintf(fp, "  Location File         : %s\n", AdditionalOutputFile.GetFullPath());
+    }
+    if (gbOutputAreaSpecificDBase) {
+      AdditionalOutputFile.SetExtension(".gis.dbf");
+      fprintf(fp, "  Location File         : %s\n", AdditionalOutputFile.GetFullPath());
+    }
     // relative risk files
-    AsciiOutput.SetExtension(".rr.txt");
-    DBaseOutput.SetExtension(".rr.dbf");
-    if (gbOutputRelativeRisksAscii || gbOutputRelativeRisksDBase) {
-      if (gbOutputRelativeRisksAscii) {
-         fprintf(fp, "  RR  File(s)       : %s\n", AsciiOutput.GetFullPath());
-         if (gbOutputRelativeRisksDBase)
-           fprintf(fp, "                    : %s\n", DBaseOutput.GetFullPath());
-       }
-       else
-         fprintf(fp, "  RR  File(s)       : %s\n", DBaseOutput.GetFullPath());
+    if (gbOutputRelativeRisksAscii) {
+      AdditionalOutputFile.SetExtension(".rr.txt");
+      fprintf(fp, "  Relative Risks File   : %s\n", AdditionalOutputFile.GetFullPath());
     }
-
+    if (gbOutputRelativeRisksDBase) {
+      AdditionalOutputFile.SetExtension(".rr.dbf");
+      fprintf(fp, "  Relative Risks File   : %s\n", AdditionalOutputFile.GetFullPath());
+    }
     // loglikelihood ratio files
-    AsciiOutput.SetExtension(".llr.txt");
-    DBaseOutput.SetExtension(".llr.dbf");
-    if (giReplications > 0 && (gbOutputSimLogLikeliRatiosAscii || gbOutputSimLogLikeliRatiosDBase)) {
-      if (gbOutputSimLogLikeliRatiosAscii) {
-         fprintf(fp, "  LLR File(s)       : %s\n", AsciiOutput.GetFullPath());
-         if (gbOutputSimLogLikeliRatiosDBase)
-           fprintf(fp, "                    : %s\n", DBaseOutput.GetFullPath());
-       }
-       else
-         fprintf(fp, "  LLR File(s)       : %s\n", DBaseOutput.GetFullPath());
+    if (gbOutputSimLogLikeliRatiosAscii) {
+      AdditionalOutputFile.SetExtension(".llr.txt");
+      fprintf(fp, "  Simulated LLRs File   : %s\n", AdditionalOutputFile.GetFullPath());
     }
-
+    if (gbOutputSimLogLikeliRatiosDBase) {
+      AdditionalOutputFile.SetExtension(".llr.dbf");
+      fprintf(fp, "  Simulated LLRs File   : %s\n", AdditionalOutputFile.GetFullPath());
+    }
     if (gbOutputSimulationData)
-      fprintf(fp, "  Simulations File  : %s\n", gsSimulationDataOutputFilename.c_str());
+      fprintf(fp, "  Simulations Data File : %s\n", gsSimulationDataOutputFilename.c_str());
 
     if (!(geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
       fprintf(fp, "\n  Criteria for Reporting Secondary Clusters : ");
