@@ -169,3 +169,10 @@ const char * StringParser::ReadString(FILE * pSourceFile) {
   return fgets(gsReadBuffer, MAX_LINESIZE, pSourceFile);
 }
 
+/** Resets internal structures for new series of read iterations. */
+void StringParser::Reset() {
+  gwCurrentWordIndex = -1;
+  glReadCount = 0;
+  gpWord[0] = 0;
+}
+

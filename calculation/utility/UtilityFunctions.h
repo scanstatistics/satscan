@@ -45,6 +45,7 @@ class StringParser {
     const char                * GetString() const {return gsReadBuffer;}
     const char                * GetWord(short wWordIndex);
     const char                * ReadString(FILE * pSourceFile);
+    void                        Reset();
 };
 //*****************************************************************************
 #endif 
