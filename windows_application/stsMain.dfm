@@ -35,18 +35,12 @@ object frmMainForm: TfrmMainForm
   end
   object barStatusBar: TStatusBar
     Left = 0
-    Top = 487
+    Top = 496
     Width = 776
-    Height = 24
+    Height = 15
     Panels = <
       item
         Width = 575
-      end
-      item
-        Width = 75
-      end
-      item
-        Width = 50
       end>
     SimplePanel = False
   end
