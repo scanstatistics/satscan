@@ -1709,6 +1709,9 @@ void DBFFile::ReadStructure( ZdIniFile *pAlternateZDSFile )
 // I've only implemented this for NUMBER fields, because they are the only problematic
 // ones, so far.  Also, we might discover that the filter needs a few more properties
 // set than just the ones we're setting right now. --bws 16Sep2002
+// For instance, the precision cannot be greater than 9 (had to dig through the
+// zd source for that insight).  Also, by default, the rounding place should
+// match the precision. --bws 23Jan2004
 void DBFFile::SetupDefaultFilterForField(ZdField & theField)
 {
    try
@@ -1718,7 +1721,9 @@ void DBFFile::SetupDefaultFilterForField(ZdField & theField)
          case ZD_NUMBER_FLD :
             {
             ZdNumberFilter tempFilter;
-            tempFilter.SetDecimalNum(theField.GetPrecision());
+            short wDecimalPrecision(std::min((short)9, theField.GetPrecision()));
+            tempFilter.SetDecimalNum(wDecimalPrecision);
+            tempFilter.SetRounding(wDecimalPrecision > 0 ? -wDecimalPrecision : -wDecimalPrecision + 1);
             theField.SetFilter(tempFilter);
             }
          }
