@@ -315,7 +315,7 @@ void CParameters::DisplayAdjustments(FILE* fp, const DataStreamHandler& StreamHa
       case NO_SPATIAL_ADJUSTMENT :
         break;
       case SPATIALLY_STRATIFIED_RANDOMIZATION :
-        sBuffer = "Adjusted for spatial orientation by stratified randomization.";
+        sBuffer = "Adjusted for purely spatial clusters by stratified randomization.";
         PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer); break;
       default :
         ZdException::Generate("Unknown time trend adjustment type '%d'\n.", "DisplayTimeAdjustments()", geTimeTrendAdjustType);
