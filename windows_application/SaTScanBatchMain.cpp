@@ -17,6 +17,7 @@
 #include "PurelyTemporalData.h"
 #include "SpaceTimeData.h"
 #include "PrintScreen.h"
+#include "DBFFile.h"
 
 //#define PROFILE_RUN 0
 
@@ -32,6 +33,9 @@ int main(int argc, char *argv[])
 
    try
       {
+      BasisInit();
+      // register zero dimesion libraries' dbf
+      ZdGetFileTypeArray()->AddElement( &(DBFFileType::GetDefaultInstance()) );
       time(&RunTime); // Pass to analysis to include in report
 
       DisplayVersion(stdout, 0);
@@ -117,6 +121,7 @@ int main(int argc, char *argv[])
          delete pParams;      pParams=0;
          delete pPrintScreen; pPrintScreen=0;
          }
+         BasisExit();
       }
    catch (SSException & x)
       {
@@ -132,6 +137,7 @@ int main(int argc, char *argv[])
       //pPrintScreen->SatScanPrintf("\nPress <Enter> to exit the SaTScan program.");
       //getc(stdin);
       delete pPrintScreen;
+      BasisExit();
       exit(1);
       }
   return 1;
