@@ -274,7 +274,7 @@ bool DBFRecord::GetIsBlank(unsigned short uwFieldIndex) const
                break;
             case XB_LOGICAL_FLD :
                //question mark?
-               bResult = (buffer[0] == '?');
+               bResult = (buffer.at(0) == '?');
                break;
             case XB_MEMO_FLD :
                //empty memo?
