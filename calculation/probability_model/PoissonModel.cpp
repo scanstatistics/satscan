@@ -266,7 +266,7 @@ double CPoissonModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, 
   double  nPopulation = 0.0;
 
   try {
-    ncats = Population.GetNumPopulationCategories();
+    ncats = Population.GetNumCovariateCategories();
     nPops = Population.GetNumPopulationDates();
     Population.CalculateAlpha(vAlpha, gData.GetStudyPeriodStartDate(), gData.GetStudyPeriodEndDate());
 

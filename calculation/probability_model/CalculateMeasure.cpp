@@ -22,15 +22,15 @@ std::vector<double>& CalcRisk(RealDataStream& thisStream, std::vector<double>& v
   PopulationData      & Population = thisStream.GetPopulationData();
 
   try {
-    vRisk.resize(Population.GetNumPopulationCategories(), 0);
+    vRisk.resize(Population.GetNumCovariateCategories(), 0);
     //calculate alpha - an array that indicates each population interval's percentage of study period.
     Population.CalculateAlpha(vAlpha, StudyStartDate, StudyEndDate);
 #ifdef DEBUGMEASURE
       fprintf(pMResult, "Category #    Pop Count           Case Count   Risk\n");
 #endif
-    for (c=0; c < Population.GetNumPopulationCategories(); ++c) {
+    for (c=0; c < Population.GetNumCovariateCategories(); ++c) {
        nPop = 0;
-       nCaseCount = Population.GetNumCategoryCases(c);
+       nCaseCount = Population.GetNumCovariateCategoryCases(c);
        for (t=0; t < (int)thisStream.GetNumTracts(); ++t)
           Population.GetAlphaAdjustedPopulation(nPop, t, c, 0, Population.GetNumPopulationDates(), vAlpha);
        if (nPop)
