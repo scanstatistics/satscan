@@ -1,10 +1,9 @@
 //---------------------------------------------------------------------------
-
-#include "xbase/xbase.h"
+#include "SaTScan.h"
 #pragma hdrstop
-
-#include "DBFFile.h"
 //---------------------------------------------------------------------------
+#include "xbase/xbase.h"
+#include "DBFFile.h"
 
 //ClassDesc Begin DBFRecord
 // The DBFRecord implements ZdFileRecord for dBase (ver III+, IV) table files.  It

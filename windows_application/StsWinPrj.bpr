@@ -109,7 +109,7 @@
       stsFrmDownloadProgress.dfm stsFrmUpdateCheck.dfm stsFrmStartWindow.dfm 
       stsFrmAdvancedParameters.dfm"/>
     <LIBFILES value="..\xbase\xbase_2.0.0\xbase\xbase.lib 
-      &quot;C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib&quot; &quot;C:\Program Files\Borland\CBuilder5\Lib\zd540.lib&quot;"/>
+      &quot;C:\Program Files\Borland\CBuilder5\Lib\zd542.lib&quot; &quot;C:\Program Files\Borland\CBuilder5\Lib\zdannex542.lib&quot;"/>
     <LIBRARIES value="NMFast50.lib TSGC5201.lib vcldb50.lib vclbde50.lib vclx50.lib Qrpt50.lib 
       Vcl50.lib"/>
     <SPARELIBS value="Vcl50.lib Qrpt50.lib vclx50.lib vclbde50.lib vcldb50.lib TSGC5201.lib 

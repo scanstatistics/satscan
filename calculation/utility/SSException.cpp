@@ -1,5 +1,7 @@
+//---------------------------------------------------------------------------
 #include "SaTScan.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 #include "SSException.h" 
 
 /**  Construct. This is an alternate constructor for when the varArgs list for sMessage
