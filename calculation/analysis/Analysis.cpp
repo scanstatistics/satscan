@@ -107,7 +107,7 @@ bool CAnalysis::Execute(time_t RunTime)
 
       do
       {
-        m_nAnalysisCount++;
+        ++m_nAnalysisCount;
 
 #ifdef DEBUGANALYSIS
         fprintf(m_pDebugFile, "Analysis Loop #%i\n", m_nAnalysisCount);
@@ -202,7 +202,7 @@ bool CAnalysis::FindTopClusters()
       for (int i = 0; (i<m_pData->m_nGridTracts) && !gpPrintDirection->GetIsCanceled(); i++)
       {
         m_pTopClusters[i] = GetTopCluster(i);
-        m_nClustersRetained++;
+        ++m_nClustersRetained;
         if (i==9)
           ReportTimeEstimate(nStartTime, m_pData->m_nGridTracts, i+1, gpPrintDirection);
       }
@@ -249,7 +249,6 @@ const ZdString& CAnalysis::GetStartTime() const {
 
 void CAnalysis::PrintTopClusters(int nHowMany)
 {
-   int i;
    FILE* pFile;
 
    try
@@ -258,7 +257,7 @@ void CAnalysis::PrintTopClusters(int nHowMany)
         SSGenerateException("  Error: Unable to open top clusters file.\n", "PrintTopClusters()");
       else
         {
-         for (int i = 0; i < nHowMany; i++)
+         for (int i = 0; i < nHowMany; ++i)
            {
            fprintf(pFile, "GridTract:  %i\n", i);
            fprintf(pFile, "  Ellipe Offset:  %i\n", m_pTopClusters[i]->m_iEllipseOffset);
@@ -429,7 +428,7 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps,
         if (m_pTopClusters[i]->m_nRatio > nMinRatio &&
             m_pTopClusters[i]->m_nRank  <= nReps)
         {
-          m_nClustersReported++;
+          ++m_nClustersReported;
     
           switch(m_nClustersReported)
           {
@@ -471,7 +470,7 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps,
       if (m_pTopClusters[0]->m_nRatio > nMinRatio &&
           m_pTopClusters[0]->m_nRank  <= nReps)
       {
-        m_nClustersReported++;
+        ++m_nClustersReported;
         switch(m_nAnalysisCount)
         {
           case 1 : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
@@ -936,7 +935,7 @@ void CAnalysis::RankTopClusters()
                   default:  SSGenerateException("Invalid value found for Criteria for Reporting Secondary Clusters.","RankTopClusters");
                   }
                }
-            j++;
+            ++j;
           } // while bInclude
 
           if (bInclude)
@@ -952,7 +951,7 @@ void CAnalysis::RankTopClusters()
             }
             // Don't need pCoords1 anymore
             free(pCoords1);
-            t++;
+            ++t;
           } // if bInclude
           else
           {
@@ -1101,8 +1100,6 @@ void CAnalysis::CreateGridOutputFile()
 
 void CAnalysis::AllocateTopClusterList()
 {
-   int i;
-
    try
       {	
       m_pTopClusters = new CCluster* [m_nMaxClusters + 1];
