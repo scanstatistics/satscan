@@ -41,7 +41,7 @@ extern const char*      SCANNING_WINDOW_SECTION;
 extern const char*      MAX_GEO_SIZE_LINE;
 extern const char*      INCLUDE_PURELY_SPATIAL_LINE;
 extern const char*      MAX_TEMP_SIZE_LINE;
-extern const char*      ALIVE_CLUSTERS_LINE;
+extern const char*      INLCUDE_CLUSTERS_LINE;
 extern const char*      INCLUDE_PURE_TEMP_LINE;
 extern const char*      MAX_TEMP_INTERPRET_LINE;
 extern const char*      MAX_GEO_INTERPRET_LINE;

@@ -40,7 +40,7 @@ const char*      INCLUDE_PURE_TEMP_LINE         	= "IncludePurelyTemporal";
 const char*      MAX_TEMP_SIZE_LINE             	= "MaxTemporalSize";
 const char*      MAX_TEMP_INTERPRET_LINE       		= "MaxTemporalSizeInterpretation";
 const char*      INCLUDE_PURELY_SPATIAL_LINE    	= "IncludePurelySpatial";
-const char*      ALIVE_CLUSTERS_LINE            	= "AliveClustersOnly";
+const char*      INLCUDE_CLUSTERS_LINE            	= "IncludeClusters";
 
 const char*      OUTPUT_FILES_SECTION           	= "[Output Files]";
 const char*      RESULTS_FILE_LINE              	= "ResultsFile";
@@ -106,7 +106,7 @@ char mgsVariableLabels[51][100] = {
    "Maximum Geographic size",
    "Study Period Start Date",
    "Study Period End Date",
-   "Alive Clusters Only",
+   "Include Clusters Type",
    "Exact Times",
    "Interval Units",
    "Interval Length",
@@ -668,7 +668,7 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
         case GEOSIZE                   : sParameterLineLabel = MAX_GEO_SIZE_LINE; break;
         case STARTDATE                 : sParameterLineLabel = START_DATE_LINE; break;
         case ENDDATE                   : sParameterLineLabel = END_DATE_LINE; break;
-        case CLUSTERS                  : sParameterLineLabel = ALIVE_CLUSTERS_LINE; break;
+        case CLUSTERS                  : sParameterLineLabel = INLCUDE_CLUSTERS_LINE; break;
         case EXACTTIMES                : sParameterLineLabel = "no label"; break;
         case INTERVALUNITS             : sParameterLineLabel = INTERVAL_UNITS_LINE; break;
         case TIMEINTLEN                : sParameterLineLabel = INTERVAL_LENGTH_LINE; break;
@@ -1500,7 +1500,7 @@ void CParameters::ReadScanningWindowSection(ZdIniFile& file, BasePrint & PrintDi
     ReadIniParameter(*pSection, INCLUDE_PURELY_SPATIAL_LINE, PURESPATIAL, PrintDirection);
     ReadIniParameter(*pSection, MAX_TEMP_SIZE_LINE, TIMESIZE, PrintDirection);
     ReadIniParameter(*pSection, MAX_GEO_SIZE_LINE, GEOSIZE, PrintDirection);
-    ReadIniParameter(*pSection, ALIVE_CLUSTERS_LINE, CLUSTERS, PrintDirection);
+    ReadIniParameter(*pSection, INLCUDE_CLUSTERS_LINE, CLUSTERS, PrintDirection);
     ReadIniParameter(*pSection, INCLUDE_PURE_TEMP_LINE, PURETEMPORAL, PrintDirection);
     ReadIniParameter(*pSection, MAX_TEMP_INTERPRET_LINE, MAX_TEMPORAL_TYPE, PrintDirection);
     ReadIniParameter(*pSection, MAX_GEO_INTERPRET_LINE, MAX_SPATIAL_TYPE, PrintDirection);
@@ -1722,7 +1722,7 @@ void CParameters::SaveScanningWindowSection(ZdIniFile& file) {
     pSection->AddComment(" include purely spatial clusters (y/n)");
     pSection->AddLine(INCLUDE_PURELY_SPATIAL_LINE, gbIncludePurelySpatialClusters ? YES : NO);
     pSection->AddComment(" clusters to include (0=All, 1=Alive)");
-    pSection->AddLine(ALIVE_CLUSTERS_LINE, AsString(sValue, geIncludeClustersType));
+    pSection->AddLine(INLCUDE_CLUSTERS_LINE, AsString(sValue, geIncludeClustersType));
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveScanningWindowSection()","CParameters");
