@@ -1140,10 +1140,7 @@ void TfrmAnalysis::SaveTextParameters() {
     gParameters.SetNumberMonteCarloReplications(atoi(edtMontCarloReps->Text.c_str()));
     //Scanning Window Tab
     gParameters.SetMaximumGeographicClusterSize(atof(edtMaxClusterSize->Text.c_str()));
-    if (rdoPercentageTemproal->Checked)
-      gParameters.SetMaximumTemporalClusterSize(atof(edtMaxTemporalClusterSize->Text.c_str()));
-    else
-      gParameters.SetMaximumTemporalClusterSize(atoi(edtMaxTemporalClusterSize->Text.c_str()));
+    gParameters.SetMaximumTemporalClusterSize(atof(edtMaxTemporalClusterSize->Text.c_str()));
     gParameters.SetMaximumTemporalClusterSizeType(rdoPercentageTemproal->Checked ? PERCENTAGETYPE : TIMETYPE);
     //Time Parameter Tab
     gParameters.SetTimeIntervalLength(atoi(edtUnitLength->Text.c_str()));
