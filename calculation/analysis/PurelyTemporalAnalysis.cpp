@@ -1,10 +1,12 @@
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//***************************************************************************
 #include "PurelyTemporalAnalysis.h"
 
 /** Constructor */
-CPurelyTemporalAnalysis::CPurelyTemporalAnalysis(CParameters*  pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-                        :CAnalysis(pParameters, pData, pPrintDirection) {
+CPurelyTemporalAnalysis::CPurelyTemporalAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
+                        :CAnalysis(Parameters, DataHub, PrintDirection) {
   Init();
 }
 
@@ -29,10 +31,10 @@ void CPurelyTemporalAnalysis::AllocateSimulationObjects(const AbtractDataStreamG
   try {
     //create new time intervals object - delete existing object used during real data process
     delete gpTimeIntervals; gpTimeIntervals=0;
-    if (m_pParameters->GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)
+    if (gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)
       eIncludeClustersType = ALLCLUSTERS;
     else
-      eIncludeClustersType = m_pParameters->GetIncludeClustersType();
+      eIncludeClustersType = gParameters.GetIncludeClustersType();
     gpTimeIntervals = GetNewTimeIntervalsObject(eIncludeClustersType);
 
     //create simulation objects based upon which process used to perform simulations
@@ -43,8 +45,8 @@ void CPurelyTemporalAnalysis::AllocateSimulationObjects(const AbtractDataStreamG
       gpMeasureList = GetNewMeasureListObject();
     }
     else { //simulations performed using same process as real data set
-      gpTopCluster = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
-      gpClusterComparator = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
+      gpTopCluster = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
+      gpClusterComparator = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
     }
   }
   catch (ZdException &x) {
@@ -73,29 +75,26 @@ const CCluster & CPurelyTemporalAnalysis::CalculateTopCluster(tract_t tCenter, c
 
 /** Calculate most likely, purely temporal, cluster and adds clone
     of top cluster to top cluster array. */
-bool CPurelyTemporalAnalysis::FindTopClusters(const AbtractDataStreamGateway & DataGateway) {
+void CPurelyTemporalAnalysis::FindTopClusters(const AbtractDataStreamGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
   IncludeClustersType           eIncludeClustersType;
   CTimeIntervals              * pTimeIntervals=0;  
 
   try {
     //determine the type of clusters to compare
-    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+    if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
       eIncludeClustersType = ALIVECLUSTERS;
     else
-      eIncludeClustersType = m_pParameters->GetIncludeClustersType();
+      eIncludeClustersType = gParameters.GetIncludeClustersType();
     //create cluster objects
-    CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
-    CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
+    CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
+    CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
     //get new time intervals objects
     pTimeIntervals = GetNewTimeIntervalsObject(eIncludeClustersType);
     //iterate through time intervals, finding top cluster
     pTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
     //if any interesting clusters found, add to top cluster array
-    if (TopCluster.ClusterDefined()) {
-      ++m_nClustersRetained;
-      m_pTopClusters[0] = TopCluster.Clone();
-      m_pTopClusters[0]->SetStartAndEndDates(m_pData->GetTimeIntervalStartTimes(), m_pData->m_nTimeIntervals);
-    }
+    if (TopCluster.ClusterDefined())
+      TopClustersContainer.Add(TopCluster);
     delete pTimeIntervals; pTimeIntervals=0;
   }
   catch (ZdException &x) {
@@ -103,7 +102,6 @@ bool CPurelyTemporalAnalysis::FindTopClusters(const AbtractDataStreamGateway & D
     x.AddCallpath("FindTopClusters()","CPurelyTemporalAnalysis");
     throw;
   }
-  return true;
 }
 
 /** calculates greatest loglikelihood ratio for a temporal cluster */

@@ -1,11 +1,13 @@
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//***************************************************************************
 #include "SVTTAnalysis.h"
 #include "SVTTCluster.h"
 
 /** constructor */
-CSpatialVarTempTrendAnalysis::CSpatialVarTempTrendAnalysis(CParameters*  pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-                             :CAnalysis(pParameters, pData, pPrintDirection) {
+CSpatialVarTempTrendAnalysis::CSpatialVarTempTrendAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
+                             :CAnalysis(Parameters, DataHub, PrintDirection) {
   try {
     Init();
     Setup();
@@ -37,7 +39,7 @@ void CSpatialVarTempTrendAnalysis::AllocateSimulationObjects(const AbtractDataSt
           process of finding most likely clusters. */
 void CSpatialVarTempTrendAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway) {
   try {
-    CSVTTCluster thisCluster(DataGateway, m_pData->GetNumTimeIntervals());
+    CSVTTCluster thisCluster(DataGateway, gDataHub.GetNumTimeIntervals());
     thisCluster.InitializeSVTT(0, DataGateway);
     gpTopShapeClusters->SetTopClusters(thisCluster);
   }
@@ -55,16 +57,16 @@ const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCent
   try {
     gpTopShapeClusters->Reset(tCenter);
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {
-       CSVTTCluster thisCluster(DataGateway, m_pData->GetNumTimeIntervals());
+    for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
+       CSVTTCluster thisCluster(DataGateway, gDataHub.GetNumTimeIntervals());
        thisCluster.SetCenter(tCenter);
-       thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
+       thisCluster.SetRate(gParameters.GetAreaScanRateType());
        thisCluster.SetEllipseOffset(k);
-       thisCluster.SetDuczmalCorrection((k == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[k - 1]));
+       thisCluster.SetDuczmalCorrection((k == 0 || !gParameters.GetDuczmalCorrectEllipses() ? 1 : gDataHub.GetShapesArray()[k - 1]));
        CSVTTCluster & TopShapeCluster = (CSVTTCluster&)(gpTopShapeClusters->GetTopCluster(k));
-       iNumNeighbors = m_pData->GetNeighborCountArray()[k][tCenter];
+       iNumNeighbors = gDataHub.GetNeighborCountArray()[k][tCenter];
        for (i=1; i <= iNumNeighbors; ++i) {
-          thisCluster.AddNeighbor(m_pData->GetNeighbor(k, tCenter, i), DataGateway);
+          thisCluster.AddNeighbor(gDataHub.GetNeighbor(k, tCenter, i), DataGateway);
           //TODO: -- Calculate loglikelihood ratio for all data streams.
           thisCluster.m_nRatio = gpLikelihoodCalculator->CalcSVTTLogLikelihood(0, &thisCluster, *(DataGateway.GetDataStreamInterface(0).GetTimeTrend()));
           if (thisCluster.m_nRatio > TopShapeCluster.m_nRatio)
@@ -75,7 +77,7 @@ const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCent
     // the ratio needs to be calculated for each circle/cylinder, instead of here !!!!
     CSVTTCluster & Cluster = (CSVTTCluster&)(gpTopShapeClusters->GetTopCluster());
     Cluster.m_nRatio -= gpLikelihoodCalculator->GetLogLikelihoodForTotal();
-    Cluster.SetTimeTrend(m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
+    Cluster.SetTimeTrend(gParameters.GetTimeIntervalUnitsType(), gParameters.GetTimeIntervalLength());
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateTopCluster()","CSpatialVarTempTrendAnalysis");
@@ -92,20 +94,20 @@ double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataStreamInterface & Inte
   double        dMaximumLogLikelihoodRatio;
 
   try {
-    gpTopShapeClusters->SetTopClusters(CSVTTCluster(Interface, m_pData->GetNumTimeIntervals()));
+    gpTopShapeClusters->SetTopClusters(CSVTTCluster(Interface, gDataHub.GetNumTimeIntervals()));
   
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
-       CSVTTCluster thisCluster(Interface, m_pData->GetNumTimeIntervals());
-       thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
+    for (k=0; k <= gParameters.GetNumTotalEllipses(); k++) {
+       CSVTTCluster thisCluster(Interface, gDataHub.GetNumTimeIntervals());
+       thisCluster.SetRate(gParameters.GetAreaScanRateType());
        thisCluster.SetEllipseOffset(k);
-       thisCluster.SetDuczmalCorrection((k == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[k - 1]));
+       thisCluster.SetDuczmalCorrection((k == 0 || !gParameters.GetDuczmalCorrectEllipses() ? 1 : gDataHub.GetShapesArray()[k - 1]));
        CSVTTCluster & TopShapeCluster = (CSVTTCluster&)(gpTopShapeClusters->GetTopCluster(k));
-       for (i=0; i < m_pData->m_nGridTracts; ++i) {
+       for (i=0; i < gDataHub.m_nGridTracts; ++i) {
           thisCluster.InitializeSVTT(i, Interface);
-          iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];	
+          iNumNeighbors = gDataHub.GetNeighborCountArray()[k][i];	
           for (j=1; j <= iNumNeighbors; j++) {
-             thisCluster.AddNeighbor(m_pData->GetNeighbor(k, i, j), Interface, 0);
+             thisCluster.AddNeighbor(gDataHub.GetNeighbor(k, i, j), Interface, 0);
              thisCluster.m_nRatio = gpLikelihoodCalculator->CalcSVTTLogLikelihood(0, &thisCluster, *(Interface.GetTimeTrend()));
              if (thisCluster.m_nRatio > TopShapeCluster.m_nRatio)
                TopShapeCluster = thisCluster;
@@ -113,7 +115,7 @@ double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataStreamInterface & Inte
        }
     }
     //get copy of best cluster over all iterations
-    dMaximumLogLikelihoodRatio = gpTopShapeClusters->GetTopCluster().m_nRatio - gpLikelihoodCalculator->GetLogLikelihoodForTotal();
+    dMaximumLogLikelihoodRatio = gpTopShapeClusters->GetTopCluster().m_nRatio;
   }
   catch (ZdException &x) {
     x.AddCallpath("MonteCarlo()","CSpatialVarTempTrendAnalysis");
@@ -125,7 +127,7 @@ double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataStreamInterface & Inte
 /** internal setup function */
 void CSpatialVarTempTrendAnalysis::Setup() {
   try {
-    gpTopShapeClusters = new TopClustersContainer(*m_pData);
+    gpTopShapeClusters = new TopClustersContainer(gDataHub);
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()","CSpatialVarTempTrendAnalysis");

@@ -17,11 +17,12 @@ class CSpatialVarTempTrendAnalysis : public CAnalysis {
     virtual void                AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway);
     virtual void                AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway);
     virtual const CCluster    & CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway);
-    virtual double              MonteCarlo(const DataStreamInterface & Interface);
 
   public:
-    CSpatialVarTempTrendAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
+    CSpatialVarTempTrendAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CSpatialVarTempTrendAnalysis();
+
+    virtual double              MonteCarlo(const DataStreamInterface & Interface);
 };
 
 #endif

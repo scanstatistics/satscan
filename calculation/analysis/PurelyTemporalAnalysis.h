@@ -17,20 +17,20 @@ class CPurelyTemporalAnalysis : public CAnalysis {
     CTimeIntervals              * gpTimeIntervals;    
 
     void                          Init();
-    void                          SetMaxNumClusters() {m_nMaxClusters = 1;}
     void                          Setup();
 
   protected:
     virtual void                  AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway);
     virtual void                  AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway);
     virtual const CCluster     &  CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway);
-    virtual bool                  FindTopClusters(const AbtractDataStreamGateway & DataGateway);
-    virtual double                FindTopRatio(const AbtractDataStreamGateway & DataGateway);
-    virtual double                MonteCarlo(const DataStreamInterface & Interface);
 
   public:
-    CPurelyTemporalAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
+    CPurelyTemporalAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CPurelyTemporalAnalysis();
+
+    virtual void                  FindTopClusters(const AbtractDataStreamGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer);
+    virtual double                FindTopRatio(const AbtractDataStreamGateway & DataGateway);
+    virtual double                MonteCarlo(const DataStreamInterface & Interface);
 };
 //*****************************************************************************
 #endif
