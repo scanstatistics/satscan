@@ -48,6 +48,9 @@ class CAnalysis
     virtual void DisplayTopCluster(double nMinRatio, int nReps,
                                    FILE* fp=stdout, FILE* fpGIS=NULL);
 
+    const CSaTScanData* GetSatScanData() const;
+    const double& GetSimRatio01() const;
+    const double& GetSimRatio05() const;
     virtual CCluster* GetTopCluster(tract_t nCenter) = 0;
 
   protected:

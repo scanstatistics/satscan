@@ -227,6 +227,21 @@ bool CAnalysis::FindTopClusters()
   return true;
 }
 
+// function to access the CParameters
+const CSaTScanData* CAnalysis::GetSatScanData() const {
+   return m_pData;
+}
+
+// function to access the sim ratio for 0.01 cutoff so that I can report it in the 'run history' file
+const double& CAnalysis::GetSimRatio01() const {
+   return SimRatios.GetAlpha01();
+}
+
+// function to access the sim ratio for 0.01 cutoff so that I can report it in the 'run history' file
+const double& CAnalysis::GetSimRatio05() const {
+   return SimRatios.GetAlpha05();
+}
+
 void CAnalysis::PrintTopClusters(int nHowMany)
 {
    int i;
