@@ -67,7 +67,8 @@
       ..\calculation\cluster\SVTTCluster.obj ..\calculation\satscan_data\SVTTData.obj 
       ..\calculation\analysis\SVTTAnalysis.obj 
       ..\calculation\cluster\PurelySpatialProspectiveCluster.obj 
-      ..\calculation\utility\MultipleDimensionArrayHandler.obj"/>
+      ..\calculation\utility\MultipleDimensionArrayHandler.obj 
+      ..\calculation\satscan_data\MaxWindowLengthIndicator.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
@@ -87,7 +88,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED;_DEBUG;WIN32;"/>
+    <USERDEFINES value="INTEL_BASED;WIN32;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="StsWinPrj.cpp"/>
     <INCLUDEPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;\\Nfse\home\hostovic\prj\basisdev\include;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\topgrid;.."/>
@@ -203,24 +204,26 @@ Item4=$(BCB)\source\vcl;\\Nfsd\home\hostovic\prj\basisdev;\\Nfsd\imsdev\zd\zd540
 Item5=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=17
-Item0=INTEL_BASED;_DEBUG;WIN32;
-Item1=INTEL_BASED;_DEBUG;WIN32;__cplusplus;Z_PREFIX
-Item2=INTEL_BASED;_DEBUG;WIN32;__cplusplus;
-Item3=INTEL_BASED;_DEBUG;WIN32
-Item4=INTEL_BASED;_DEBUG
-Item5=INTEL_BASED
-Item6=INTEL_BASED;_DEBUG;
-Item7=INTEL_BASED;_DEBUG;DEBUGMEASURE
-Item8=INTEL_BASED;DEBUGPROSPECTIVETIME
-Item9=INTEL_BASED;DEBUGANALYSIS
-Item10=OUTPUT_TO_WINDOW;INTEL_BASED
-Item11=OUTPUT_TO_WINDOW;INTEL_BASED;DON_UPDATE
-Item12=DON_UPDATE
-Item13=OUTPUT_TO_WINDOW
-Item14=_DEBUG;OUTPUT_TO_WINDOW
-Item15=_DEBUG;OUTPUT_TO_WINDOW;INTEL_BASED
-Item16=_DEBUG
+Count=19
+Item0=INTEL_BASED;WIN32;_DEBUG
+Item1=INTEL_BASED;WIN32
+Item2=INTEL_BASED;_DEBUG;WIN32;
+Item3=INTEL_BASED;_DEBUG;WIN32;__cplusplus;Z_PREFIX
+Item4=INTEL_BASED;_DEBUG;WIN32;__cplusplus;
+Item5=INTEL_BASED;_DEBUG;WIN32
+Item6=INTEL_BASED;_DEBUG
+Item7=INTEL_BASED
+Item8=INTEL_BASED;_DEBUG;
+Item9=INTEL_BASED;_DEBUG;DEBUGMEASURE
+Item10=INTEL_BASED;DEBUGPROSPECTIVETIME
+Item11=INTEL_BASED;DEBUGANALYSIS
+Item12=OUTPUT_TO_WINDOW;INTEL_BASED
+Item13=OUTPUT_TO_WINDOW;INTEL_BASED;DON_UPDATE
+Item14=DON_UPDATE
+Item15=OUTPUT_TO_WINDOW
+Item16=_DEBUG;OUTPUT_TO_WINDOW
+Item17=_DEBUG;OUTPUT_TO_WINDOW;INTEL_BASED
+Item18=_DEBUG
 
 [Debugging]
 DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\imsdev\zd\zd540;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
