@@ -436,7 +436,9 @@ void CParameters::DisplayParameters(FILE* fp) {
 
      fprintf(fp, "\nOutput\n");
      fprintf(fp, "------\n");
+#ifdef INCLUDE_RUN_HISTORY
      fprintf(fp, "  Run History File  : %s\n", gsRunHistoryFilename.GetCString());
+#endif
      fprintf(fp, "  Results File      : %s\n", m_szOutputFilename);
 
      // gis files
