@@ -99,7 +99,7 @@ class TfrmMainForm : public TForm{
     __fastcall TfrmMainForm(TComponent* Owner);
     virtual __fastcall ~TfrmMainForm();
 
-    void                        RefreshReopenList();
+    void                        RefreshOpenList();
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfrmMainForm *frmMainForm;

@@ -11,7 +11,7 @@ TfrmMainForm *frmMainForm;
 //---------------------------------------------------------------------------
 __fastcall TfrmMainForm::TfrmMainForm(TComponent* Owner): TForm(Owner){
   EnableActions(true);
-  RefreshReopenList();
+  RefreshOpenList();
 }
 
 __fastcall TfrmMainForm::~TfrmMainForm() {}
@@ -229,7 +229,7 @@ void __fastcall TfrmMainForm::PrintSetupActionExecute(TObject *Sender) {
   PrinterSetupDialog1->Execute();
 }
 //---------------------------------------------------------------------------
-void TfrmMainForm::RefreshReopenList() {
+void TfrmMainForm::RefreshOpenList() {
   SaTScanToolkit::ParameterHistory_t::const_iterator     itr;
   TMenuItem                                            * pItem=0;
   size_t                                                 t=1;
