@@ -1,4 +1,4 @@
-// $Revision: 1.13 $
+// $Revision: 1.14 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -46,7 +46,7 @@ class SaTScanVariable {
 
     const ZdString       & GetHelpText() const {return gsHelpText;}
     short                  GetInputFileVariableIndex() const {return gwInputFileVariableIndex;}
-    bool                   GetIsMappedToInputFileVariable() {return gwInputFileVariableIndex > 0;}
+    bool                   GetIsMappedToInputFileVariable() const {return gwInputFileVariableIndex > 0;}
     bool                   GetIsRequiredField() const {return gbRequiredVariable;}
     short                  GetTargetFieldIndex() const {return gwTargetFieldIndex;}
     void                   GetVariableDisplayName(Variant & Value) const;
@@ -69,14 +69,8 @@ class TBDlgDataImporter : public TForm {
      TBitBtn *btnExecuteImport;
      TCheckBox *chkFirstRowIsName;
      TPageControl *pgcImportPages;
-     TTabSheet *tabStart;
      TTabSheet *tabDataMapping;
      TTabSheet *tabFileFormat;
-     TPanel *pnlImportWizard;
-     TGroupBox *grpImportSourceFile;
-     TEdit *edtDataFile;
-     TBitBtn *btnBrowseForSourceFile;
-     TRadioGroup *rdgInputFileType;
      TPanel *pnlImportData;
      TPanel *pnlMappingPanelTop;
      TPanel *pnlTopPanelClient;
@@ -121,7 +115,6 @@ class TBDlgDataImporter : public TForm {
      void __fastcall OnAddFldDefClick(TObject *Sender);
      void __fastcall OnAutoAlignClick(TObject *Sender);
      void __fastcall OnBackClick(TObject *Sender);
-     void __fastcall OnBrowseForImportFile(TObject *Sender);
      void __fastcall OnClearImportsClick(TObject *Sender);
      void __fastcall OnCSVComboChange(TObject *Sender);
      void __fastcall OnDeleteFldDefClick(TObject *Sender);
@@ -138,7 +131,6 @@ class TBDlgDataImporter : public TForm {
      void __fastcall OnFormShow(TObject *Sender);
      void __fastcall OnFirstRowIsNameClick(TObject *Sender);
      void __fastcall OnNextClick(TObject *Sender);
-     void __fastcall OnSourceImportFileChange(TObject *Sender);
      void __fastcall OnStartColumnChange(TObject *Sender);
      void __fastcall tsfieldGridResize(TObject *Sender);
      void __fastcall OnCoordinatesClick(TObject *Sender);
@@ -147,7 +139,7 @@ class TBDlgDataImporter : public TForm {
 
   private:	// User declarations
      void                            Init();
-     virtual void                    Setup();
+     virtual void                    Setup(const char * sSourceFilename);
 
   protected:
      BFileSourceDescriptor           gSourceDescriptor;
@@ -160,10 +152,11 @@ class TBDlgDataImporter : public TForm {
      ZdVector<ZdIniSection>          gvIniSections;
      ZdVector<SaTScanVariable>       gvSaTScanVariables;
      ZdIniFile                       gDestinationFileDefinition;
-     TfrmAnalysis                  & gAnalysisForm;
      ZdString                        gsUnassigned;
      SourceDataFileType              gSourceDataFileType;
      bool                            gbErrorSamplingSourceFile;
+     CoordinatesType                 geStartingCoordinatesType;
+     InputFileType                   geFileType; 
 
      void                            AddFixedColDefinitionEnable();
      void                            AdjustSourceFileAttributes(ZdFile & File);
@@ -178,22 +171,20 @@ class TBDlgDataImporter : public TForm {
      void                            DeleteFixedColDefinitionEnable();
      void                            DisableButtonsForImport(bool bEnable);
      const char                      GetColumnDelimiter() const;
-     CoordinatesType                 GetCoorinatesControlType() const;
      ZdString                      & GetFixedColumnFieldName(unsigned int uwFieldIndex, ZdString & sFieldName);
      const char                      GetGroupMarker() const;
+     const char                    * GetInputFileTypeString() const;     
      const char                    * GetInputFileVariableName(int iFieldIndex) const;
-     int                             GetNumInputFileVariables() const;   
+     int                             GetNumInputFileVariables() const;
      void                            HideRows();
      TModalResult                    ImportFile();
      void                            InitializeInputFileVariableMappings();
      void                            LoadMappingPanel();
-     void                            LoadResultFileNameIntoAnalysis();
      void                            MakePanelVisible(TTabSheet* tabShowTab);
      void                            OnAddFieldDefinitionClick();
      void                            OnAutoAlignClick();
      void                            OnDeleteFieldDefinitionClick();
      void                            OnExecuteImport();
-     void                            OnExitStartPanel();
      void                            OnFieldDefinitionChange();
      void                            OnFirstRowIsHeadersClick();
      void                            OpenSourceAsCSVFile();
@@ -215,7 +206,7 @@ class TBDlgDataImporter : public TForm {
      void                            SetupGridFileVariableDescriptors();
      void                            SetupMaxCirclePopFileVariableDescriptors();
      void                            SetupPopFileVariableDescriptors();
-     void                            SetupRelativeRisksFileVariableDescriptors();    
+     void                            SetupRelativeRisksFileVariableDescriptors();
      void                            ShowFileTypeFormatPanel(int iFileType);
      void                            ShowFirstPanel();
      void                            ShowNextPanel();
@@ -226,8 +217,13 @@ class TBDlgDataImporter : public TForm {
      void                            ValidateImportSource();
 
 public:		// User declarations
+     virtual __fastcall TBDlgDataImporter(TComponent* Owner, const char * sSourceFilename, InputFileType eFileType, CoordinatesType eCoordinatesType);
      virtual __fastcall TBDlgDataImporter(TComponent* Owner, TfrmAnalysis & AnalysisForm);
      virtual __fastcall ~TBDlgDataImporter();
+
+     CoordinatesType                 GetCoorinatesControlType() const;
+     const char *                    GetDestinationFilename() const;
+     bool                            GetDateFieldImported() const;
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TBDlgDataImporter *BDlgDataImporter;

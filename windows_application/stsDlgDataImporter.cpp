@@ -106,18 +106,22 @@ void SaTScanVariable::Init() {
   gwInputFileVariableIndex=0;
 }
 
-
 /** Constructor. */
-__fastcall TBDlgDataImporter::TBDlgDataImporter(TComponent* Owner, TfrmAnalysis & AnalysisForm)
-                             :TForm(Owner), gAnalysisForm(AnalysisForm) {
+__fastcall TBDlgDataImporter::TBDlgDataImporter(TComponent* Owner, const char * sSourceFilename,
+                                                InputFileType eFileType, CoordinatesType eCoordinatesType)
+                             :TForm(Owner), geFileType(eFileType), geStartingCoordinatesType(eCoordinatesType) {
   try {
     Init();
-    Setup();
+    Setup(sSourceFilename);
   }
   catch (ZdException &x) {
     x.AddCallpath("constructor()","TBDlgDataImporter");
     throw;
   }
+}
+
+__fastcall TBDlgDataImporter::TBDlgDataImporter(TComponent* Owner, TfrmAnalysis & AnalysisForm) : TForm(Owner) {
+  ZdGenerateException("this constructor is deprecated.", "TBDlgDataImporter()");
 }
 
 /** Destructor. */
@@ -185,8 +189,10 @@ void TBDlgDataImporter::AutoAlign() {
 void TBDlgDataImporter::BringPanelToFront(TTabSheet* tabShowTab) {
   try {
     pgcImportPages->ActivePage = tabShowTab;
-    btnPreviousPanel->Visible = (pgcImportPages->ActivePage != tabStart);
-    btnNextPanel->Visible = (pgcImportPages->ActivePage == tabStart || pgcImportPages->ActivePage == tabFileFormat);
+    btnPreviousPanel->Visible = tabShowTab == tabDataMapping &&
+                                strcmpi(ZdFileName(gSourceDescriptor.GetImportFileName()).GetExtension(),
+                                                    ZdDBFFileType.GetFileTypeExtension());
+    btnNextPanel->Visible = (pgcImportPages->ActivePage == tabFileFormat);
     btnExecuteImport->Visible = (pgcImportPages->ActivePage == tabDataMapping);
     chkFirstRowIsName->Visible = (pgcImportPages->ActivePage == tabDataMapping);
     ContinueButtonEnable();
@@ -212,7 +218,7 @@ void TBDlgDataImporter::CheckForRequiredVariables() {
          vMissingFieldIndex.push_back(t);
 
     if (vMissingFieldIndex.size()) {
-      sMessage << "For the " << rdgInputFileType->Items->Strings[rdgInputFileType->ItemIndex].c_str();
+      sMessage << "For the " << GetInputFileTypeString();
       sMessage << ", the following SaTScan Variable(s) are required\nand an Input File Variable must";
       sMessage << " be selected for each before import can proceed.\n\nSaTScan Variable(s): ";
       for (t=0; t < vMissingFieldIndex.size(); t++) {
@@ -225,10 +231,10 @@ void TBDlgDataImporter::CheckForRequiredVariables() {
 
     //hack - we need to ensure that either both or neither dates are assigned for adjustment file
     //     -- redo this better after 4.0 release
-    if (rdgInputFileType->ItemIndex == AdjustmentsByRR) {
+    if (geFileType == AdjustmentsByRR) {
       if ((gvSaTScanVariables[2].GetIsMappedToInputFileVariable() && !gvSaTScanVariables[3].GetIsMappedToInputFileVariable()) ||
           (!gvSaTScanVariables[2].GetIsMappedToInputFileVariable() && gvSaTScanVariables[3].GetIsMappedToInputFileVariable())) {
-        sMessage << "For the " << rdgInputFileType->Items->Strings[rdgInputFileType->ItemIndex].c_str();
+        sMessage << "For the " << GetInputFileTypeString();
         sMessage << ", the dates are required to be selected or omitted as a pair.\n";
         BImporterException::GenerateException(sMessage, "CheckForRequiredVariables()", ZdException::Notify);
       }
@@ -284,9 +290,7 @@ void TBDlgDataImporter::ContinueButtonEnable() {
   btnNextPanel->Enabled = false;
   btnExecuteImport->Enabled = false;
   
-  if (*gitrCurrentTabSheet == tabStart)
-    btnNextPanel->Enabled = FileExists(edtDataFile->Text.c_str()) && rdgInputFileType->ItemIndex > -1;
-  else if (*gitrCurrentTabSheet == tabFileFormat)
+  if (*gitrCurrentTabSheet == tabFileFormat)
     btnNextPanel->Enabled = (!gbErrorSamplingSourceFile &&
                               (rdoFileType->ItemIndex == 2 ||
                                (rdoFileType->ItemIndex == 0 && cmbColDelimiter->GetTextLen()) ||
@@ -313,11 +317,11 @@ void TBDlgDataImporter::CreateDestinationInformation() {
 
   try {
     //Reset location of target file to users temp directory.
-    sFileName.SetFullPath(edtDataFile->Text.c_str());
+    sFileName.SetFullPath(gSourceDescriptor.GetImportFileName());
     GetTempPath(sizeof(sBuffer), sBuffer);
     sFileName.SetLocation(sBuffer);
     //File extension to file type.
-    switch (rdgInputFileType->ItemIndex) {
+    switch (geFileType) {
       case Case                : sFileName.SetExtension(".cas");
                                  break;
       case Control             : sFileName.SetExtension(".ctl");
@@ -332,7 +336,7 @@ void TBDlgDataImporter::CreateDestinationInformation() {
                                  break;
       case AdjustmentsByRR     : sFileName.SetExtension(".adj");
                                  break;
-      default : ZdGenerateException("Unknown file type : \"%d\"", "ConvertImportedDataFile()", rdgInputFileType->ItemIndex);
+      default : ZdGenerateException("Unknown file type : \"%d\"", "ConvertImportedDataFile()", geFileType);
     };
     gDestDescriptor.SetDestinationFile(sFileName.GetFullPath());
 
@@ -351,9 +355,9 @@ void TBDlgDataImporter::CreateDestinationInformation() {
        //Skip fields 'X' and 'Y', they are equivalant to 'Latitude' and 'Longitude'
        //in terms of creating a ZdIniFile since they will never exist together
        //and map to the same field index.
-       if (rdgInputFileType->ItemIndex == Coordinates && (t == 3 || t == 4))
+       if (geFileType == Coordinates && (t == 3 || t == 4))
          continue;
-       if (rdgInputFileType->ItemIndex == SpecialGrid && (t == 2 || t == 3))
+       if (geFileType == SpecialGrid && (t == 2 || t == 3))
          continue;
 
        sFieldSection.printf("[Field%d]", gvSaTScanVariables[t].GetTargetFieldIndex() + 1);
@@ -420,6 +424,26 @@ CoordinatesType TBDlgDataImporter::GetCoorinatesControlType() const {
   return eReturn;
 }
 
+bool TBDlgDataImporter::GetDateFieldImported() const {
+  bool bReturn = false;
+
+  switch (geFileType) {
+    case Case                :
+    case Control             : bReturn = gvSaTScanVariables[2].GetIsMappedToInputFileVariable(); break;
+    case Population          : bReturn = true; break;
+    case Coordinates         :
+    case SpecialGrid         :
+    case MaxCirclePopulation : bReturn = false; break;
+    case AdjustmentsByRR     : bReturn = gvSaTScanVariables[2].GetIsMappedToInputFileVariable(); break;
+    default : ZdGenerateException("Unknown file type index: \"%d\"", "LoadResultFileNameIntoAnalysis()", geFileType);
+  };
+  return bReturn;
+}
+
+const char * TBDlgDataImporter::GetDestinationFilename() const {
+  return gDestDescriptor.GetDestinationFileName();
+}
+
 /** Returns name to call uwFieldIndex'th column of fixed column file type. */
 ZdString & TBDlgDataImporter::GetFixedColumnFieldName(unsigned int uwFieldIndex, ZdString & sFieldName) {
   try {
@@ -455,6 +479,22 @@ const char  TBDlgDataImporter::GetGroupMarker() const {
     throw;
   }
   return cGroupMarker;
+}
+
+const char * TBDlgDataImporter::GetInputFileTypeString() const {
+  const char * sFilename;
+
+  switch (geFileType) {
+    case Case                : sFilename = "Case File"; break;
+    case Control             : sFilename = "Control File"; break;
+    case Population          : sFilename = "Population File"; break;
+    case Coordinates         : sFilename = "Coordinates File"; break;
+    case SpecialGrid         : sFilename = "Special Grid File"; break;
+    case MaxCirclePopulation : sFilename = "Max Circle Size File"; break;
+    case AdjustmentsByRR     : sFilename = "Adjustments File"; break;
+    default : ZdGenerateException("Unknown file type index: \"%d\"", "GetInputFileTypeString()", geFileType);
+  };
+  return sFilename;
 }
 
 /** Returns input file variable name at given index. */
@@ -495,7 +535,7 @@ int TBDlgDataImporter::GetNumInputFileVariables() const {
 /** Hides rows based on coordinates variables selected to be shown. */
 void TBDlgDataImporter::HideRows() {
   try {
-    switch (rdgInputFileType->ItemIndex) {
+    switch (geFileType) {
       case Coordinates : for (int i=1; i <= tsfieldGrid->Rows; i++) {
                             if (i == 2 || i == 3) //Latitude and Longitude
                               tsfieldGrid->RowVisible[i] = GetCoorinatesControlType() == LATLON;
@@ -533,14 +573,14 @@ TModalResult TBDlgDataImporter::ImportFile() {
     gSourceDescriptor.SetNumberOfRowsToIgnore(0);
 
   BFileImportSourceInterface    FileImportSourceInterface(gpSourceFile, gSourceDescriptor.GetNumberOfRowsToIgnore());
-  SaTScanFileImporter           FileImporter(gDestinationFileDefinition, (InputFileType)rdgInputFileType->ItemIndex,
+  SaTScanFileImporter           FileImporter(gDestinationFileDefinition, geFileType,
                                              gSourceDataFileType, FileImportSourceInterface, gDestDescriptor);
 
   try {
     FileImporter.OpenDestination();
     SetMappings(FileImporter);
     FileImporter.Import();
-    LoadResultFileNameIntoAnalysis();
+//    LoadResultFileNameIntoAnalysis();
     Modal = mrOk;
   }
   catch (BImportRejectedException &x) {
@@ -585,7 +625,7 @@ void TBDlgDataImporter::LoadMappingPanel() {
     AutoAlign();
     if (rdoCoordinates->ItemIndex == -1)
       //If coordinates index not set, set to current settings of analysis. 
-      SetCoorinatesControlType((CoordinatesType)gAnalysisForm.rgpCoordinates->ItemIndex);
+      SetCoorinatesControlType(geStartingCoordinatesType);
     else
       HideRows();
     ContinueButtonEnable();
@@ -596,45 +636,10 @@ void TBDlgDataImporter::LoadMappingPanel() {
   }
 }
                                         
-/** Sets TfrmAnalysis data members to reflect import. */
-void TBDlgDataImporter::LoadResultFileNameIntoAnalysis() {
-  try {
-    switch (rdgInputFileType->ItemIndex) {
-      case Case                : gAnalysisForm.SetCaseFile(gDestDescriptor.GetDestinationFileName());
-                                 gAnalysisForm.SetPrecisionOfTimesControl((gvSaTScanVariables[2].GetIsMappedToInputFileVariable() ? DAY : NONE));
-                                 break;
-      case Control             : gAnalysisForm.SetControlFile(gDestDescriptor.GetDestinationFileName());
-                                 gAnalysisForm.SetPrecisionOfTimesControl((gvSaTScanVariables[2].GetIsMappedToInputFileVariable() ? DAY : NONE));
-                                 break;
-      case Population          : gAnalysisForm.SetPopulationFile(gDestDescriptor.GetDestinationFileName());
-                                 break;
-      case Coordinates         : gAnalysisForm.SetCoordinateFile(gDestDescriptor.GetDestinationFileName());
-                                 //set analysis interface coordinates control to match importers
-                                 gAnalysisForm.SetCoordinateType(GetCoorinatesControlType());
-                                 break;
-      case SpecialGrid         : gAnalysisForm.SetSpecialGridFile(gDestDescriptor.GetDestinationFileName());
-                                 //set analysis interface coordinates control to match importers
-                                 gAnalysisForm.SetCoordinateType(GetCoorinatesControlType());
-                                 break;
-      case MaxCirclePopulation : gAnalysisForm.SetMaximumCirclePopulationFile(gDestDescriptor.GetDestinationFileName());
-                                 break;
-      case AdjustmentsByRR     : gAnalysisForm.SetAdjustmentsByRelativeRisksFile(gDestDescriptor.GetDestinationFileName());
-                                 break;
-      default : ZdGenerateException("Unknown file type index: \"%d\"", "LoadResultFileNameIntoAnalysis()", rdgInputFileType->ItemIndex);
-    };
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("LoadResultFileNameIntoAnalysis()", "TBDlgDataImporter");
-    throw;
-  }
-}
-
 /** Setup for panel to show. */
 void TBDlgDataImporter::MakePanelVisible(TTabSheet* tabShowTab) {
   try {
-     if (tabShowTab == tabStart)
-       ContinueButtonEnable();
-     else if (tabShowTab == tabFileFormat)
+    if (tabShowTab == tabFileFormat)
        OnViewFileFormatPanel();
      else if (tabShowTab == tabDataMapping)
        OnViewMappingPanel();
@@ -728,75 +733,12 @@ void TBDlgDataImporter::OnExecuteImport() {
   try {
     CheckForRequiredVariables();
     DisableButtonsForImport(true);
-    Modal = ImportFile();
+    ModalResult = ImportFile();
     DisableButtonsForImport(false);
-    //Prompt to import another file?
-    switch (Modal) {
-      case mrOk    : if (TBMessageBox::Response(this, "Continue?", "Would you like to import another file into this session?", MB_YESNO) == IDYES) {
-                       gDestDescriptor.SetDestinationFile("");
-                       edtDataFile->Text = "";
-                       edtIgnoreFirstRows->Text = "0";
-                       cmbColDelimiter->ItemIndex = 0;
-                       cmbGroupMarker->ItemIndex = 0;
-                       rdoFileType->ItemIndex = 0;
-                       rdgInputFileType->ItemIndex = 0;
-                       gSourceDescriptor.SetNumberOfRowsToIgnore(0);
-                       ClearFixedColumnDefinitions();
-                       ShowFirstPanel();
-                     }
-                     else
-                       ModalResult = Modal;
-                     break;
-      case mrAbort : break;
-      default      : ModalResult = Modal;
-    };
   }
   catch (ZdException &x) {
     x.AddCallpath("OnExecuteImport()", "TDlgSaTScanDataImporter");
     DisableButtonsForImport(false);
-    throw;
-  }
-}
-
-/** Sets file descriptors based on file type. */
-void TBDlgDataImporter::OnExitStartPanel() {
-  try {
-    SetPanelsToShow();
-    gitrCurrentTabSheet = gvTabSheets.begin();
-    switch (rdgInputFileType->ItemIndex) {
-      case Case                : SetupCaseFileVariableDescriptors();
-                                 rdoCoordinates->Enabled = false;
-                                 pnlBottomPanelTopAligned->Visible = false;
-                                 break;
-      case Control             : SetupControlFileVariableDescriptors();
-                                 rdoCoordinates->Enabled = false;
-                                 pnlBottomPanelTopAligned->Visible = false;
-                                 break;
-      case Population          : SetupPopFileVariableDescriptors();
-                                 rdoCoordinates->Enabled = false;
-                                 pnlBottomPanelTopAligned->Visible = false;
-                                 break;
-      case Coordinates         : SetupGeoFileVariableDescriptors();
-                                 rdoCoordinates->Enabled = true;
-                                 pnlBottomPanelTopAligned->Visible = true;
-                                 break;
-      case SpecialGrid         : SetupGridFileVariableDescriptors();
-                                 rdoCoordinates->Enabled = true;
-                                 pnlBottomPanelTopAligned->Visible = true;
-                                 break;
-      case MaxCirclePopulation : SetupMaxCirclePopFileVariableDescriptors();
-                                 rdoCoordinates->Enabled = false;
-                                 pnlBottomPanelTopAligned->Visible = false;
-                                 break;
-      case AdjustmentsByRR     : SetupRelativeRisksFileVariableDescriptors();
-                                 rdoCoordinates->Enabled = false;
-                                 pnlBottomPanelTopAligned->Visible = false;
-                                 break;
-      default : ZdGenerateException("Unknown file type index: \"%d\"","OnExitStartPanel()", rdgInputFileType->ItemIndex);
-    };
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("OnExitStartPanel()","TBDlgDataImporter");
     throw;
   }
 }
@@ -871,7 +813,7 @@ void TBDlgDataImporter::OpenSourceAsCSVFile() {
   try {
     gpSourceFile = new CSVFile(GetColumnDelimiter(), GetGroupMarker());
     ((CSVFile*)gpSourceFile)->SetInitialNondataLineCount(gSourceDescriptor.GetNumberOfRowsToIgnore());
-    ((CSVFile*)gpSourceFile)->OpenAllFieldsAlpha(edtDataFile->Text.c_str(), ZDIO_OPEN_READ);
+    ((CSVFile*)gpSourceFile)->OpenAllFieldsAlpha(gSourceDescriptor.GetImportFileName(), ZDIO_OPEN_READ);
   }
   catch (CSVFile::InitialNondataLineCountInvalidForData_Exception &x) {
     ZdString sMessage;
@@ -893,7 +835,7 @@ void TBDlgDataImporter::OpenSourceAsCSVFile() {
 /** Opens source file as dBase file. */
 void TBDlgDataImporter::OpenSourceAsDBaseFile() {
   try {
-    gpSourceFile = ZdOpenFile(edtDataFile->Text.c_str(), ZDIO_OPEN_READ|ZDIO_SREAD);
+    gpSourceFile = ZdOpenFile(gSourceDescriptor.GetImportFileName(), ZDIO_OPEN_READ|ZDIO_SREAD);
   }
   catch (ZdException &x) {
     x.AddCallpath("OpenSourceAsDBaseFile()","TBDlgDataImporter");
@@ -906,7 +848,7 @@ void TBDlgDataImporter::OpenSourceAsScanfFile() {
   try {
     gpSourceFile = new ScanfFile();
     ((ScanfFile*)gpSourceFile)->SetInitialNondataLineCount(gSourceDescriptor.GetNumberOfRowsToIgnore());
-    ((ScanfFile*)gpSourceFile)->OpenAllFieldsAlpha(edtDataFile->Text.c_str(), ZDIO_OPEN_READ);
+    ((ScanfFile*)gpSourceFile)->OpenAllFieldsAlpha(gSourceDescriptor.GetImportFileName(), ZDIO_OPEN_READ);
   }
   catch (ScanfFile::InitialNondataLineCountInvalidForData_Exception &x) {
     ZdString sMessage;
@@ -937,7 +879,7 @@ void TBDlgDataImporter::OpenSourceAsTXVFile() {
   try {
     //Define TXV file structure.
     tempSection.SetName("[FileInfo]");
-    fFileName.SetFullPath(edtDataFile->Text.c_str());
+    fFileName.SetFullPath(gSourceDescriptor.GetImportFileName());
     tempSection.AddLine("FileName", fFileName.GetCompleteFileName());
     tempSection.AddLine("Title", fFileName.GetFileName());
     tempSection.AddLine("NumberOfFields", IntToStr((int)gvIniSections.size()).c_str());
@@ -956,7 +898,7 @@ void TBDlgDataImporter::OpenSourceAsTXVFile() {
     }
     gpSourceFile = new TXVFile();
     ((TXVFile*)gpSourceFile)->SetInitialNondataLineCount(gSourceDescriptor.GetNumberOfRowsToIgnore());
-    gpSourceFile->Open(edtDataFile->Text.c_str(), ZDIO_OPEN_READ|ZDIO_SREAD, 0, 0, &DataFileDefinition);
+    gpSourceFile->Open(gSourceDescriptor.GetImportFileName(), ZDIO_OPEN_READ|ZDIO_SREAD, 0, 0, &DataFileDefinition);
   }
   catch (TXVFile::InitialNondataLineCountInvalidForData_Exception &x) {
     ZdString sMessage;
@@ -1034,7 +976,7 @@ void TBDlgDataImporter::ReadDataFileIntoRawDisplayField() {
   try {
     memRawData->Clear();
     memRawData->HideSelection = false;
-    fImportDataFile.Open(edtDataFile->Text.c_str(), ZDIO_OPEN_READ|ZDIO_SREAD);
+    fImportDataFile.Open(gSourceDescriptor.GetImportFileName(), ZDIO_OPEN_READ|ZDIO_SREAD);
 
     for (i=0; i < 200 && !fImportDataFile.GetIsEOF(); ++i) {
        fImportDataFile.ReadLine(sFileLineBuffer);
@@ -1074,49 +1016,6 @@ void TBDlgDataImporter::ShowFileTypeFormatPanel(int iFileType) {
              pnlFixedColumnDefs->Visible = false;
              memRawData->Visible = false;
   };
-}
-
-/** Shows OpenDialog for user to select import source file. Sets open dialog's
-    filters based upon SaTScan data file type. */
-void TBDlgDataImporter::SelectImportFile() {
-  try {
-    switch (rdgInputFileType->ItemIndex) {
-      case Case                 : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Case files (*.cas)|*.cas|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                                  OpenDialog->Title = "Select Source Case File";
-                                  break;
-      case Control              : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Text files (*.txt)|*.txt|Control files (*.ctl)|*.ctl|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                                  OpenDialog->Title = "Select Source Control File";
-                                  break;
-      case Population           : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                                  OpenDialog->Title = "Select Source Population File";
-                                  break;
-      case Coordinates          : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Coordinates files (*.geo)|*.geo|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                                  OpenDialog->Title = "Select Source Coordinates File";
-                                  break;
-      case SpecialGrid          : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Special Grid files (*.grd)|*.grd|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                                  OpenDialog->Title = "Select Source Special Grid File";
-                                  break;
-      case MaxCirclePopulation  : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Max Circle Size files (*.max)|*.max|Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                                  OpenDialog->Title = "Select Source Max Circle Size File";
-                                  break;
-      case AdjustmentsByRR      : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Adjustments files (*.adj)|*.adj|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                                  OpenDialog->Title = "Select Source Adjustments File";
-                                  break;
-      default : ZdGenerateException("Unknown file type index: \"%d\"","SetImportFields()", rdgInputFileType->ItemIndex);
-    };
-
-    OpenDialog->FileName =  "";
-    OpenDialog->DefaultExt = "*.dbf";
-    OpenDialog->FilterIndex = 0;
-    if (OpenDialog->Execute()) {
-      edtDataFile->Text = OpenDialog->FileName;
-      gSourceDescriptor.SetImportFile(edtDataFile->Text.c_str());
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SelectImportFile()", "TDlgSaTScanDataImporter");
-    throw;
-  }
 }
 
 /** sets interface coordinates type */
@@ -1178,16 +1077,14 @@ void TBDlgDataImporter::SetMappings(BZdFileImporter & FileImporter) {
 void TBDlgDataImporter::SetPanelsToShow() {
   try {
     //Skip file format panel for dBase since we already know structure.
-    if (! strcmpi(ZdFileName(edtDataFile->Text.c_str()).GetExtension(), ZdDBFFileType.GetFileTypeExtension())) {
+    if (!strcmpi(ZdFileName(gSourceDescriptor.GetImportFileName()).GetExtension(), ZdDBFFileType.GetFileTypeExtension())) {
       gvTabSheets.clear();
-      gvTabSheets.push_back(tabStart);
       gvTabSheets.push_back(tabDataMapping);
       gSourceDataFileType = dBase;
       rdoFileType->ItemIndex = -1;
     }
     else {
       gvTabSheets.clear();
-      gvTabSheets.push_back(tabStart);
       gvTabSheets.push_back(tabFileFormat);
       gvTabSheets.push_back(tabDataMapping);
       gSourceDataFileType = Delimited;
@@ -1201,18 +1098,50 @@ void TBDlgDataImporter::SetPanelsToShow() {
 }
 
 /** Internal setup function. */
-void TBDlgDataImporter::Setup() {
+void TBDlgDataImporter::Setup(const char * sSourceFilename) {
   unsigned long ulCurrentStyle;
 
   try {
+    gSourceDescriptor.SetImportFile(sSourceFilename);
     gDestDescriptor.SetDestinationType(BFileDestDescriptor::SingleFile);
     gDestDescriptor.SetModifyType(BFileDestDescriptor::OverWriteExistingData);
     gDestDescriptor.SetGenerateReport(false);
     gDestDescriptor.SetErrorOptionsType(BFileDestDescriptor::RejectBatch);
-    rdgInputFileType->ItemIndex = 0;
     ulCurrentStyle = GetWindowLong(lstFixedColFieldDefs->Handle, GWL_STYLE);
     SetWindowLong(lstFixedColFieldDefs->Handle, GWL_STYLE, ulCurrentStyle|WS_HSCROLL);
-    //lblFldLen->Caption.sprintf("Length (max %d)", ZD_MAXFIELD_LEN);
+    SetPanelsToShow();
+    gitrCurrentTabSheet = gvTabSheets.begin();
+    switch (geFileType) {
+      case Case                : SetupCaseFileVariableDescriptors();
+                                 rdoCoordinates->Enabled = false;
+                                 pnlBottomPanelTopAligned->Visible = false;
+                                 break;
+      case Control             : SetupControlFileVariableDescriptors();
+                                 rdoCoordinates->Enabled = false;
+                                 pnlBottomPanelTopAligned->Visible = false;
+                                 break;
+      case Population          : SetupPopFileVariableDescriptors();
+                                 rdoCoordinates->Enabled = false;
+                                 pnlBottomPanelTopAligned->Visible = false;
+                                 break;
+      case Coordinates         : SetupGeoFileVariableDescriptors();
+                                 rdoCoordinates->Enabled = true;
+                                 pnlBottomPanelTopAligned->Visible = true;
+                                 break;
+      case SpecialGrid         : SetupGridFileVariableDescriptors();
+                                 rdoCoordinates->Enabled = true;
+                                 pnlBottomPanelTopAligned->Visible = true;
+                                 break;
+      case MaxCirclePopulation : SetupMaxCirclePopFileVariableDescriptors();
+                                 rdoCoordinates->Enabled = false;
+                                 pnlBottomPanelTopAligned->Visible = false;
+                                 break;
+      case AdjustmentsByRR     : SetupRelativeRisksFileVariableDescriptors();
+                                 rdoCoordinates->Enabled = false;
+                                 pnlBottomPanelTopAligned->Visible = false;
+                                 break;
+      default : ZdGenerateException("Unknown file type index: \"%d\"","SetUp()", geFileType);
+    };
   }
   catch (ZdException &x) {
     x.AddCallpath("SetUp()","TBDlgDataImporter");
@@ -1382,10 +1311,6 @@ void TBDlgDataImporter::ShowFirstPanel() {
 /** Causes next panel of importer to be shown. */
 void TBDlgDataImporter::ShowNextPanel() {
   try {
-    //Note attributes of current panel when needed.
-    if (*gitrCurrentTabSheet == tabStart)
-      OnExitStartPanel();
-
     if (*gitrCurrentTabSheet != gvTabSheets.back()) {
       ++gitrCurrentTabSheet;
       try {
@@ -1543,16 +1468,6 @@ void __fastcall TBDlgDataImporter::OnBackClick(TObject *Sender) {
   }
 }
 
-void __fastcall TBDlgDataImporter::OnBrowseForImportFile(TObject *Sender) {
-  try {
-    SelectImportFile();
-    ContinueButtonEnable();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("OnBrowseForImportFile()","TBDlgDataImporter");
-    DisplayBasisException(this,x);
-  }
-}
 void __fastcall TBDlgDataImporter::OnClearImportsClick(TObject *Sender) {
   try {
     ClearSaTScanVariableFieldIndexes();
@@ -1756,18 +1671,6 @@ void __fastcall TBDlgDataImporter::OnNextClick(TObject *Sender) {
   }
   catch (ZdException &x) {
     x.AddCallpath("OnNextClick()","TBDlgDataImporter");
-    DisplayBasisException(this, x);
-  }
-}
-
-/** Actions taken when source data file editboxt is changed. */
-void __fastcall TBDlgDataImporter::OnSourceImportFileChange(TObject *Sender) {
-  try {
-    edtDataFile->Hint = edtDataFile->Text;
-    ContinueButtonEnable();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("OnSourceImportFileChange()","TBDlgDataImporter");
     DisplayBasisException(this, x);
   }
 }
