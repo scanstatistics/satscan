@@ -4080,7 +4080,6 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
 
 /** Validates the time aggregation units. */
 bool CParameters::ValidateTimeAggregationUnits(BasePrint& PrintDirection) const {
-  bool          bValid=true;
   ZdString      sPrecisionString;
   double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
 
