@@ -1,6 +1,6 @@
 object frmAnalysisRun: TfrmAnalysisRun
-  Left = 117
-  Top = 106
+  Left = 341
+  Top = 145
   BorderStyle = bsDialog
   Caption = 'SatScan Analysis Run'
   ClientHeight = 373
@@ -29,6 +29,19 @@ object frmAnalysisRun: TfrmAnalysisRun
     Cursor = crVSplit
     Align = alBottom
     Beveled = True
+  end
+  object rteAnalysisBox: TRichEdit
+    Left = 0
+    Top = 0
+    Width = 516
+    Height = 243
+    TabStop = False
+    Align = alClient
+    ReadOnly = True
+    ScrollBars = ssBoth
+    TabOrder = 1
+    WantReturns = False
+    WordWrap = False
   end
   object Panel1: TPanel
     Left = 0
@@ -60,23 +73,6 @@ object frmAnalysisRun: TfrmAnalysisRun
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 0
-      object btnPrint: TButton
-        Left = 321
-        Top = 8
-        Width = 90
-        Height = 25
-        Anchors = [akRight, akBottom]
-        Caption = 'Print...'
-        Enabled = False
-        Font.Charset = ANSI_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 0
-        OnClick = OnPrintClick
-      end
       object btnCancel: TButton
         Left = 417
         Top = 8
@@ -90,11 +86,11 @@ object frmAnalysisRun: TfrmAnalysisRun
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         ParentFont = False
-        TabOrder = 1
+        TabOrder = 0
         OnClick = OnCancelClick
       end
       object btnEMail: TButton
-        Left = 225
+        Left = 321
         Top = 8
         Width = 90
         Height = 25
@@ -107,7 +103,7 @@ object frmAnalysisRun: TfrmAnalysisRun
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         ParentFont = False
-        TabOrder = 2
+        TabOrder = 1
         OnClick = OnEMailClick
       end
     end
@@ -125,21 +121,8 @@ object frmAnalysisRun: TfrmAnalysisRun
       WordWrap = False
     end
   end
-  object rteAnalysisBox: TRichEdit
-    Left = 0
-    Top = 0
-    Width = 516
-    Height = 243
-    TabStop = False
-    Align = alClient
-    ReadOnly = True
-    ScrollBars = ssBoth
-    TabOrder = 1
-    WantReturns = False
-    WordWrap = False
-  end
   object PrintDialog: TPrintDialog
     Left = 8
-    Top = 12
+    Top = 340
   end
 end

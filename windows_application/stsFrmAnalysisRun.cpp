@@ -56,6 +56,8 @@ void TfrmAnalysisRun::EnableActions(bool bEnable) {
       if (pAction) {
          if (pAction->Category == CATEGORY_ALL || pAction->Category == CATEGORY_ANALYSIS_RUN)
              pAction->Enabled = bEnable;
+         else if (pAction->Category == CATEGORY_ANALYSIS_RUN_PRINT)
+             pAction->Enabled = bEnable && gbCanPrint;
          else if (pAction->Category == CATEGORY_ANALYSIS)
              pAction->Enabled = !bEnable;
       }
@@ -97,6 +99,7 @@ void __fastcall TfrmAnalysisRun::FormClose(TObject *Sender, TCloseAction &Action
 void TfrmAnalysisRun::Init() {
   gbCanClose=false;
   gbCancel=false;
+  gbCanPrint=false;
   gpAnalysisThread=0;
 }
 
@@ -111,26 +114,8 @@ void TfrmAnalysisRun::LaunchThread() {
 
 /** Loads analysis results from file into memo control */
 void TfrmAnalysisRun::LoadFromFile(const char * sFileName) {
-//   int  iHandle;
-//   long lFileLength;
-
-//   //see if the file is too big... set some limit and adhere to it.
-//   iHandle = open(sFileName, O_RDONLY);
-//   lFileLength = filelength(iHandle);
-//   /* close the file */
-//   close(iHandle);
-//   if (lFileLength > 500000)
-//      {
-//      rteAnalysisBox->Clear();
-//      rteAnalysisBox->Lines->Add("The output results file is too big for SaTScan to view.");
-//      rteAnalysisBox->Lines->Add("Please use an independent text viewer to review the results file.");
-//      rteAnalysisBox->Lines->Add(" ");
-//      rteAnalysisBox->Lines->Add(sFileName);
-//     }
-//   else
-      rteAnalysisBox->Lines->LoadFromFile(sFileName);
-      Caption = sFileName;
-
+   rteAnalysisBox->Lines->LoadFromFile(sFileName);
+   Caption = sFileName;
    gRegistry.Release(gsOutputFileName);
 }
 
@@ -195,20 +180,18 @@ void __fastcall TfrmAnalysisRun::OnEMailClick(TObject *Sender) {
 
    delete [] sMsgTitle; 
    MapiFreeBuffer(pRecipient);
-   //bool bLaunched;
-
-   //bLaunched = ((int) ShellExecute(0, "open", "mailto:joinpoint@mail.nih.gov", "test1", "test2", SW_SHOW) > 31);
-   //if (!bLaunched)
-   //   {
-   //   Application->MessageBox("Cannot open Internet browser to view Joinpoint Web site.","Error",MB_OK);
-   //   }
 }
 
-/** print button click event */
-void __fastcall TfrmAnalysisRun::OnPrintClick(TObject *Sender){
+/** form activate event */
+void __fastcall TfrmAnalysisRun::FormActivate(TObject *Sender) {
+  EnableActions(true);
+}
+
+/** Sends analysis results to printer. */
+void TfrmAnalysisRun::Print() {
    TRichEdit *  rtePrintText;
 
-   if (PrintDialog->Execute()) {
+   if (gbCanPrint && PrintDialog->Execute()) {
      rtePrintText = new TRichEdit(this);
      rtePrintText->Hide();
      rtePrintText->Parent = this;
@@ -226,9 +209,10 @@ void __fastcall TfrmAnalysisRun::OnPrintClick(TObject *Sender){
    }
 }
 
-/** form activate event */
-void __fastcall TfrmAnalysisRun::FormActivate(TObject *Sender) {
-  EnableActions(true);
+/** set whether print can be enabled - if form is active, freshes Enable properties */
+void TfrmAnalysisRun::SetCanPrint(bool b) {
+  if (((gbCanPrint = b) == true) && Active)
+    EnableActions(true);
 }
 
 /** internal setup function */

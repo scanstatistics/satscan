@@ -51,9 +51,9 @@ void __fastcall CalcThread::EnableProgressEmailButton(void) {
   gFormStatus.btnEMail->Enabled = true;
 }
 
-/** Synchronizes enabling of run analysis form's print button in the main application thread. */
-void __fastcall CalcThread::EnableProgressPrintButton(void) {
-  gFormStatus.btnPrint->Enabled = true;
+/** Synchronizes enabling of run analysis form's print action in the main application thread. */
+void __fastcall CalcThread::EnableProgressPrintAction(void) {
+  gFormStatus.SetCanPrint(true);
 }
 
 /** Main Thread execution function. */
@@ -81,7 +81,7 @@ void __fastcall CalcThread::Execute() {
     }
 
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
-    Synchronize((TThreadMethod)&EnableProgressPrintButton);
+    Synchronize((TThreadMethod)&EnableProgressPrintAction);
     Synchronize((TThreadMethod)&SetProgressWarnings);
     if (IsCancelled())
       // Process is done interacting with run analysis window. So if analysis
@@ -95,7 +95,7 @@ void __fastcall CalcThread::Execute() {
     gpPrintWindow->SatScanPrintWarning(x.GetErrorMessage());
     gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
-    Synchronize((TThreadMethod)&EnableProgressPrintButton);
+    Synchronize((TThreadMethod)&EnableProgressPrintAction);
     Synchronize((TThreadMethod)&EnableProgressEmailButton);
     CancellJob();
   }
@@ -108,7 +108,7 @@ void __fastcall CalcThread::Execute() {
     Synchronize((TThreadMethod)&SetProgramErrorCallPath);
     gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
-    Synchronize((TThreadMethod)&EnableProgressPrintButton);
+    Synchronize((TThreadMethod)&EnableProgressPrintAction);
     Synchronize((TThreadMethod)&EnableProgressEmailButton);
     CancellJob();
   }
@@ -121,7 +121,7 @@ void __fastcall CalcThread::Execute() {
     Synchronize((TThreadMethod)&SetProgramErrorCallPath);
     gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
-    Synchronize((TThreadMethod)&EnableProgressPrintButton);
+    Synchronize((TThreadMethod)&EnableProgressPrintAction);
     Synchronize((TThreadMethod)&EnableProgressEmailButton);
     CancellJob();
   }

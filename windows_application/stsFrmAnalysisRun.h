@@ -21,7 +21,6 @@ class TfrmAnalysisRun : public stsBaseAnalysisChildForm  {
         TPanel *Panel1;
         TLabel *lbWarning;
         TPanel *Panel2;
-        TButton *btnPrint;
         TButton *btnCancel;
         TButton *btnEMail;
         TRichEdit *rteAnalysisBox;
@@ -29,12 +28,12 @@ class TfrmAnalysisRun : public stsBaseAnalysisChildForm  {
         TPrintDialog *PrintDialog;
         void __fastcall OnCancelClick(TObject *Sender);
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
-        void __fastcall OnPrintClick(TObject *Sender);
         void __fastcall OnEMailClick(TObject *Sender);
         void __fastcall FormActivate(TObject *Sender);
   private:	// User declarations
     bool                        gbCancel;
     bool                        gbCanClose;
+    bool                        gbCanPrint;
     stsOutputFileRegister     & gRegistry;
     std::string                 gsOutputFileName;
     std::string                 gsProgramErrorCallPath;
@@ -52,6 +51,7 @@ class TfrmAnalysisRun : public stsBaseAnalysisChildForm  {
     bool                        IsJobCanceled() const {return gbCancel;}
     void                        LoadFromFile(const char * sFileName);
     void                        SetCanClose(bool b) {gbCanClose=b;}
+    void                        SetCanPrint(bool b);
 
   public:		// User declarations
             __fastcall TfrmAnalysisRun(TComponent* Owner, const CParameters & Parameters, const std::string& sOutputFileName,
@@ -61,5 +61,6 @@ class TfrmAnalysisRun : public stsBaseAnalysisChildForm  {
     virtual void                CloseForm(bool bForce=false);
     bool                        GetCanClose() const {return gbCanClose;}
     void                        LaunchThread();
+    void                        Print();
 };
 #endif

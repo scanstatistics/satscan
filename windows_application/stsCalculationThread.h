@@ -18,7 +18,7 @@ class CalcThread : public TThread {
     void                Free();
     void                Init();
     void __fastcall     EnableProgressEmailButton(void);
-    void __fastcall     EnableProgressPrintButton(void);
+    void __fastcall     EnableProgressPrintAction(void);
     void __fastcall     ProcessAcknowledgesCancellation(void);
     void __fastcall     ProcessSignalsCompletion(void);
     void __fastcall     GetIsCanceledFromProgress(void);
