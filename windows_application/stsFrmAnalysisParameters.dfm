@@ -4,8 +4,8 @@ object frmAnalysis: TfrmAnalysis
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SaTScan Analysis Settings'
-  ClientHeight = 403
-  ClientWidth = 497
+  ClientHeight = 399
+  ClientWidth = 496
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -42,23 +42,23 @@ object frmAnalysis: TfrmAnalysis
   end
   object PageControl1: TPageControl
     Left = 2
-    Top = 12
+    Top = 8
     Width = 493
     Height = 389
-    ActivePage = tbAnalysis
+    ActivePage = tbOutputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input'
       object Label4: TLabel
         Left = 15
-        Top = 161
+        Top = 165
         Width = 72
         Height = 13
         Caption = 'Population File:'
       end
       object Label5: TLabel
         Left = 128
-        Top = 161
+        Top = 165
         Width = 75
         Height = 13
         Caption = '(Poisson Model)'
@@ -67,59 +67,59 @@ object frmAnalysis: TfrmAnalysis
         Left = 8
         Top = 4
         Width = 466
-        Height = 147
+        Height = 151
         Color = clBtnFace
         ParentColor = False
         TabOrder = 4
         object Label10: TLabel
           Left = 136
-          Top = 7
-          Width = 22
-          Height = 13
+          Top = 13
+          Width = 19
+          Height = 11
           Caption = 'Year'
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
-          Font.Height = -10
-          Font.Name = 'MS Sans Serif'
+          Font.Height = -9
+          Font.Name = 'Small Fonts'
           Font.Style = []
           ParentFont = False
         end
         object Label12: TLabel
-          Left = 166
-          Top = 7
-          Width = 30
-          Height = 13
+          Left = 170
+          Top = 13
+          Width = 28
+          Height = 11
           Caption = 'Month'
-          Font.Charset = DEFAULT_CHARSET
+          Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
-          Font.Height = -10
-          Font.Name = 'MS Sans Serif'
+          Font.Height = -9
+          Font.Name = 'Small Fonts'
           Font.Style = []
           ParentFont = False
         end
         object Label14: TLabel
-          Left = 200
-          Top = 7
-          Width = 19
-          Height = 13
+          Left = 204
+          Top = 13
+          Width = 16
+          Height = 11
           Caption = 'Day'
-          Font.Charset = DEFAULT_CHARSET
+          Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
-          Font.Height = -10
-          Font.Name = 'MS Sans Serif'
+          Font.Height = -9
+          Font.Name = 'Small Fonts'
           Font.Style = []
           ParentFont = False
         end
         object Label1: TLabel
           Left = 12
-          Top = 48
+          Top = 52
           Width = 46
           Height = 13
           Caption = 'Case File:'
         end
         object Label2: TLabel
           Left = 12
-          Top = 96
+          Top = 100
           Width = 55
           Height = 13
           Caption = 'Control File:'
@@ -128,69 +128,69 @@ object frmAnalysis: TfrmAnalysis
         end
         object Label3: TLabel
           Left = 120
-          Top = 96
+          Top = 100
           Width = 78
           Height = 13
           Caption = '(Bernoulli Model)'
         end
         object Label8: TLabel
           Left = 12
-          Top = 23
+          Top = 27
           Width = 114
           Height = 13
           Caption = 'Study Period Start Date:'
         end
         object Label9: TLabel
           Left = 245
-          Top = 23
+          Top = 27
           Width = 111
           Height = 13
           Caption = 'Study Period End Date:'
         end
         object Label15: TLabel
           Left = 364
-          Top = 7
-          Width = 22
-          Height = 13
+          Top = 13
+          Width = 19
+          Height = 11
           Caption = 'Year'
-          Font.Charset = DEFAULT_CHARSET
+          Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
-          Font.Height = -10
-          Font.Name = 'MS Sans Serif'
+          Font.Height = -9
+          Font.Name = 'Small Fonts'
           Font.Style = []
           ParentFont = False
         end
         object Label17: TLabel
-          Left = 395
-          Top = 7
-          Width = 30
-          Height = 13
+          Left = 399
+          Top = 13
+          Width = 28
+          Height = 11
           Caption = 'Month'
-          Font.Charset = DEFAULT_CHARSET
+          Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
-          Font.Height = -10
-          Font.Name = 'MS Sans Serif'
+          Font.Height = -9
+          Font.Name = 'Small Fonts'
           Font.Style = []
           ParentFont = False
         end
         object Label18: TLabel
-          Left = 428
-          Top = 7
-          Width = 19
-          Height = 13
+          Left = 432
+          Top = 13
+          Width = 16
+          Height = 11
           Caption = 'Day'
-          Font.Charset = DEFAULT_CHARSET
+          Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
-          Font.Height = -10
-          Font.Name = 'MS Sans Serif'
+          Font.Height = -9
+          Font.Name = 'Small Fonts'
           Font.Style = []
           ParentFont = False
         end
         object rgpPrecisionTimes: TRadioGroup
           Left = 361
-          Top = 59
+          Top = 63
           Width = 92
-          Height = 75
+          Height = 74
           Caption = 'Time Included'
           ItemIndex = 0
           Items.Strings = (
@@ -201,7 +201,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtCaseFileName: TEdit
           Left = 8
-          Top = 64
+          Top = 68
           Width = 284
           Height = 21
           ParentShowHint = False
@@ -211,7 +211,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtControlFileName: TEdit
           Left = 8
-          Top = 112
+          Top = 116
           Width = 284
           Height = 21
           ParentShowHint = False
@@ -221,7 +221,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object btnCaseBrowse: TButton
           Left = 300
-          Top = 64
+          Top = 68
           Width = 25
           Height = 21
           Hint = 'browse for case file'
@@ -239,7 +239,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object btnControlBrowse: TButton
           Left = 300
-          Top = 112
+          Top = 116
           Width = 25
           Height = 21
           Hint = 'browse for control file'
@@ -257,7 +257,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtStudyPeriodEndDateYear: TEdit
           Left = 361
-          Top = 20
+          Top = 24
           Width = 33
           Height = 21
           MaxLength = 4
@@ -268,7 +268,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtStudyPeriodStartDateYear: TEdit
           Left = 132
-          Top = 20
+          Top = 24
           Width = 33
           Height = 21
           MaxLength = 4
@@ -278,8 +278,8 @@ object frmAnalysis: TfrmAnalysis
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStudyPeriodStartDateMonth: TEdit
-          Left = 170
-          Top = 20
+          Left = 172
+          Top = 24
           Width = 23
           Height = 21
           Enabled = False
@@ -290,8 +290,8 @@ object frmAnalysis: TfrmAnalysis
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStudyPeriodEndDateMonth: TEdit
-          Left = 399
-          Top = 20
+          Left = 401
+          Top = 24
           Width = 23
           Height = 21
           Enabled = False
@@ -302,8 +302,8 @@ object frmAnalysis: TfrmAnalysis
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStudyPeriodEndDateDay: TEdit
-          Left = 427
-          Top = 20
+          Left = 431
+          Top = 24
           Width = 23
           Height = 21
           Enabled = False
@@ -314,8 +314,8 @@ object frmAnalysis: TfrmAnalysis
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStudyPeriodStartDateDay: TEdit
-          Left = 198
-          Top = 20
+          Left = 202
+          Top = 24
           Width = 23
           Height = 21
           Enabled = False
@@ -328,7 +328,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object edtPopFileName: TEdit
         Left = 15
-        Top = 177
+        Top = 181
         Width = 284
         Height = 21
         ParentShowHint = False
@@ -338,7 +338,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object btnPopBrowse: TButton
         Left = 308
-        Top = 177
+        Top = 181
         Width = 25
         Height = 21
         Hint = 'browse for population file'
@@ -356,7 +356,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object GroupBox2: TGroupBox
         Left = 8
-        Top = 204
+        Top = 208
         Width = 466
         Height = 111
         TabOrder = 2
@@ -432,9 +432,9 @@ object frmAnalysis: TfrmAnalysis
         end
         object rgpCoordinates: TRadioGroup
           Left = 333
-          Top = 23
+          Top = 24
           Width = 124
-          Height = 75
+          Height = 74
           Caption = 'Coordinates'
           ItemIndex = 0
           Items.Strings = (
@@ -445,9 +445,9 @@ object frmAnalysis: TfrmAnalysis
         end
       end
       object btnImportFile: TButton
-        Left = 400
+        Left = 396
         Top = 328
-        Width = 72
+        Width = 76
         Height = 24
         Hint = 'Import File Wizard'
         Caption = 'Import Wizard'
@@ -695,9 +695,9 @@ object frmAnalysis: TfrmAnalysis
         end
       end
       object btnAdvanced1: TButton
-        Left = 400
+        Left = 396
         Top = 328
-        Width = 72
+        Width = 76
         Height = 24
         Hint = 'Advanced Analysis Features'
         Caption = 'Advanced...'
@@ -887,9 +887,9 @@ object frmAnalysis: TfrmAnalysis
         end
       end
       object btnAdvanced2: TButton
-        Left = 400
+        Left = 396
         Top = 328
-        Width = 72
+        Width = 76
         Height = 24
         Hint = 'Advanced Output Features'
         Caption = 'Advanced...'

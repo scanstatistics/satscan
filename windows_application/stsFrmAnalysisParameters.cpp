@@ -1163,8 +1163,9 @@ void TfrmAnalysis::Setup(const char * sParameterFileName) {
 //---------------------------------------------------------------------------
 /** Sets all interface controls using the CParameters session object */
 void TfrmAnalysis::SetupInterface() {
+  gpfrmAdvancedParameters = new TfrmAdvancedParameters(*this);
+
   try {
-    gpfrmAdvancedParameters = new TfrmAdvancedParameters(*this);
     //Input File Tab
     Caption = gParameters.GetSourceFileName().c_str();
     //PAG - make caption 'new' if no file name
@@ -1193,20 +1194,7 @@ void TfrmAnalysis::SetupInterface() {
     rdoUnitMonths->Checked = (gParameters.GetTimeIntervalUnitsType() == MONTH);
     rdoUnitDay->Checked = (gParameters.GetTimeIntervalUnitsType() == DAY);
     edtTimeIntervalLength->Text = gParameters.GetTimeIntervalLength();
-    //Scanning Window Tab   ***PAG now in Advanced Parameters
-    gpfrmAdvancedParameters->SetMaxSpatialClusterSizeTypeControl(gParameters.GetMaxGeographicClusterSizeType());
-    gpfrmAdvancedParameters->SetMaxSpatialClusterSizeControl(gParameters.GetMaximumGeographicClusterSize());
-    gpfrmAdvancedParameters->edtMaxCirclePopulationFilename->Text = gParameters.GetMaxCirclePopulationFileName().c_str();
-    gpfrmAdvancedParameters->chkInclPureTempClust->Checked = gParameters.GetIncludePurelyTemporalClusters();
-    gpfrmAdvancedParameters->SetSpatialDistanceCaption();
-    gpfrmAdvancedParameters->SetReportingSmallerClustersText();
-    gpfrmAdvancedParameters->SetMaxTemporalClusterSizeTypeControl(gParameters.GetMaximumTemporalClusterSizeType());
-    gpfrmAdvancedParameters->SetMaxTemporalClusterSizeControl(gParameters.GetMaximumTemporalClusterSize());
-    gpfrmAdvancedParameters->chkIncludePureSpacClust->Checked = gParameters.GetIncludePurelySpatialClusters();
     //Time Parameter Tab    ***PAG now in Advanced Parameters
-    if (gParameters.GetProspectiveStartDate().length() > 0)
-      ParseDate(gParameters.GetProspectiveStartDate().c_str(), gpfrmAdvancedParameters->edtProspectiveStartDateYear, gpfrmAdvancedParameters->edtProspectiveStartDateMonth, gpfrmAdvancedParameters->edtProspectiveStartDateDay);
-    gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked = gParameters.GetAdjustForEarlierAnalyses();
     //Output File Tab
     edtResultFile->Text = gParameters.GetOutputFileName().c_str();
     chkRelativeRiskEstimatesAreaAscii->Checked = gParameters.GetOutputRelativeRisksAscii();
@@ -1221,7 +1209,8 @@ void TfrmAnalysis::SetupInterface() {
   }
   catch (ZdException & x) {
     x.AddCallpath("SetupInterface()", "TfrmAnalysis");
-    delete gpfrmAdvancedParameters; gpfrmAdvancedParameters=0;
+    delete gpfrmAdvancedParameters;
+    gpfrmAdvancedParameters=0;
     throw;
   }
 }
