@@ -10,8 +10,7 @@ class OrdinalModel : public CModel {
     virtual ~OrdinalModel();
 
     virtual void                CalculateMeasure(RealDataSet& DataSet);
-    virtual double              GetPopulation(size_t tSetIndex, int m_iEllipseOffset, tract_t nCenter,
-                                              tract_t nTracts, int nStartInterval, int nStopInterval) const;
+    virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster) const;
 };
 //******************************************************************************
 #endif
