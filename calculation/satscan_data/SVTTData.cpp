@@ -31,7 +31,7 @@ void CSVTTData::CalculateMeasure(RealDataStream & thisStream) {
   //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
   //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
   //      has not been decided yet.
-  thisStream.GetTimeTrend().CalculateAndSet(thisStream.GetPTCasesArray(), thisStream.GetPTMeasureArray(),
+  thisStream.GetTimeTrend().CalculateAndSet(thisStream.GetCasesPerTimeIntervalArray(), thisStream.GetMeasurePerTimeIntervalArray(),
                                             m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
 }
 
@@ -141,13 +141,13 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
   try {
     CSaTScanData::RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
     for (size_t t=0; t < SimDataContainer.size(); ++t) {
-       SimDataContainer[t]->SetCaseArrays();
+       SimDataContainer[t]->SetNonCumulativeCaseArrays();
        //calculate time trend for entire randomized data set
        //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
        //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
        //      has not been decided yet.
-       SimDataContainer[t]->GetTimeTrend().CalculateAndSet(gpDataStreams->GetStream(t).GetPTCasesArray(),
-                                                           gpDataStreams->GetStream(t).GetPTMeasureArray(),
+       SimDataContainer[t]->GetTimeTrend().CalculateAndSet(gpDataStreams->GetStream(t).GetCasesPerTimeIntervalArray(),
+                                                           gpDataStreams->GetStream(t).GetMeasurePerTimeIntervalArray(),
                                                            m_nTimeIntervals,
                                                            gParameters.GetTimeTrendConvergence());
        //QUESTION: Should the purely temporal case array passed to CalculateAndSet() be from
@@ -161,11 +161,11 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
 }
 
 /** Redefines base class method to call data stream method
-    DataStream::SetCaseArrays() which allocates and set temporal case array and
-    non cumulative case array. */
+    DataStream::SetNonCumulativeCaseArrays() which allocates and sets cases
+    per time interval array and non cumulative case array. */
 void CSVTTData::SetAdditionalCaseArrays(RealDataStream& thisStream) {
   try {
-    thisStream.SetCaseArrays();
+    thisStream.SetNonCumulativeCaseArrays();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetAdditionalCaseArrays()","CSVTTData");
