@@ -350,10 +350,10 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, FILE* fp, FILE* f
       // AJV 9/5/2002
       auto_ptr<stsClusterLevelDBF> pDBFClusterReport;
       if(m_pParameters->GetOutputClusterLevelDBF())
-         pDBFClusterReport.reset(new stsClusterLevelDBF(sReportHistoryFilename, GetCoordinateType()));
+         pDBFClusterReport.reset(new stsClusterLevelDBF(sReportHistoryFilename, GetCoordinateType(), m_pParameters->m_szOutputFilename));
       auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;
       if(m_pParameters->GetOutputAreaSpecificDBF())
-         pDBFAreaReport.reset(new stsAreaSpecificDBF(sReportHistoryFilename, GetCoordinateType() ));
+         pDBFAreaReport.reset(new stsAreaSpecificDBF(sReportHistoryFilename, GetCoordinateType(), m_pParameters->m_szOutputFilename ));
       measure_t nMinMeasure = 0;
 
       if (m_nClustersRetained == 0)
@@ -402,10 +402,10 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, FILE* fp, FILE* 
       // AJV 9/5/2002
       auto_ptr<stsClusterLevelDBF> pDBFClusterReport;
       if(m_pParameters->GetOutputClusterLevelDBF())
-         pDBFClusterReport.reset(new stsClusterLevelDBF(sReportHistoryFilename, GetCoordinateType()));
+         pDBFClusterReport.reset(new stsClusterLevelDBF(sReportHistoryFilename, GetCoordinateType(), m_pParameters->m_szOutputFilename));
       auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;
       if(m_pParameters->GetOutputAreaSpecificDBF())
-         pDBFAreaReport.reset(new stsAreaSpecificDBF(sReportHistoryFilename, GetCoordinateType()));
+         pDBFAreaReport.reset(new stsAreaSpecificDBF(sReportHistoryFilename, GetCoordinateType(), m_pParameters->m_szOutputFilename));
 
       dSignifRatio05 = SimRatios.GetAlpha05();
 
@@ -1113,9 +1113,9 @@ bool CAnalysis::UpdateReport(const ZdString& sReportHistoryFilename)
          OpenGISFile(fpGIS, "a");
 
       if (m_pParameters->m_bSequential)
-        DisplayTopCluster(m_nMinRatioToReport, m_pParameters->m_nReplicas, fp, fpGIS);
+        DisplayTopCluster(m_nMinRatioToReport, m_pParameters->m_nReplicas, fp, fpGIS, sReportHistoryFilename);
       else
-        DisplayTopClusters(m_nMinRatioToReport, m_pParameters->m_nReplicas, fp, fpGIS);
+        DisplayTopClusters(m_nMinRatioToReport, m_pParameters->m_nReplicas, fp, fpGIS, sReportHistoryFilename);
 
       if (m_pParameters->m_nReplicas>=19 && m_nClustersReported > 0) {
         // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.

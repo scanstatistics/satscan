@@ -15,10 +15,11 @@
 
 
 // constructor
-__fastcall stsClusterLevelDBF::stsClusterLevelDBF(const ZdString& sReportHistoryFileName, const int& iCoordType) : DBaseOutput(sReportHistoryFileName, iCoordType) {
+__fastcall stsClusterLevelDBF::stsClusterLevelDBF(const ZdString& sReportHistoryFileName, const int& iCoordType, const ZdFileName& sOutputFileName)
+                             : DBaseOutput(sReportHistoryFileName, iCoordType) {
    try {
       Init();
-      Setup();
+      Setup(sOutputFileName.GetLocation());
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsClusterLevelDBF");
@@ -194,9 +195,9 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 }
 
 // internal setup
-void stsClusterLevelDBF::Setup() {
+void stsClusterLevelDBF::Setup(const ZdString& sOutputFileName) {
    try {
-      gsFileName = CLUSTER_LEVEL_DBF_FILE;
+      gsFileName << ZdString::reset << sOutputFileName << CLUSTER_LEVEL_DBF_FILE;
       GetFields();
       CreateDBFFile();
    }

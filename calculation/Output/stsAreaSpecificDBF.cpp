@@ -14,10 +14,11 @@
 #include <DBFFile.h>
 
 // constructor
-__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const ZdString& sReportHistoryFileName, const int& iCoordType) : DBaseOutput(sReportHistoryFileName, iCoordType) {
+__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const ZdString& sReportHistoryFileName, const int& iCoordType, const ZdFileName& sOutputFileName)
+                             : DBaseOutput(sReportHistoryFileName, iCoordType) {
    try {
       Init();
-      Setup();
+      Setup(sOutputFileName.GetLocation());
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsAreaSpecificDBF");
@@ -126,9 +127,9 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 }
 
 // internal setup
-void stsAreaSpecificDBF::Setup() {
+void stsAreaSpecificDBF::Setup(const ZdString& sOutputFileName) {
    try {
-      gsFileName = AREA_SPECIFIC_DBF_FILE;
+      gsFileName << ZdString::reset << sOutputFileName << AREA_SPECIFIC_DBF_FILE;
       GetFields();
       CreateDBFFile();
    }
