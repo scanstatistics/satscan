@@ -435,7 +435,7 @@ bool CSaTScanData::ReadPops() {
         gpPrintDirection->SatScanPrintWarning("         a fixed geographical distance rather than as a percent of the total population.\n");
         for (size_t t=0; t < vInvalidTractIndex.size(); t++)
            if (t==0)
-             gpPrintDirection->SatScanPrintWarning("         Following tract are invalid: %s", gpTInfo->tiGetTid(vInvalidTractIndex[t]));
+             gpPrintDirection->SatScanPrintWarning("         Following tract are invalid: %s\n", gpTInfo->tiGetTid(vInvalidTractIndex[t]));
            else
              gpPrintDirection->SatScanPrintWarning("                                      %s\n", gpTInfo->tiGetTid(vInvalidTractIndex[t]));
         gpPrintDirection->SatScanPrintWarning("\n\n");
