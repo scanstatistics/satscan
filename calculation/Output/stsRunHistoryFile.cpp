@@ -89,13 +89,16 @@ void stsRunHistoryFile::Init() {
 // renaming the function OpenReportHistoryFile - AJV 9/4/2002
 // pre: none
 // post: records the run history
-void stsRunHistoryFile::LogNewHistory(const unsigned short& uwSignificantAt005) {
+void stsRunHistoryFile::LogNewHistory(const unsigned short& uwSignificantAt005, BasePrint& PrintDirection) {
    try {
       OpenRunHistoryFile(uwSignificantAt005);
    }
    catch (ZdException &x) {
       x.AddCallpath("LogNewHistory()", "stsRunHistoryFile");
-      throw;
+      PrintDirection.SatScanPrintWarning("\nUnable to log analysis information:\n");
+      PrintDirection.SatScanPrintWarning(x.GetCallpath());
+      PrintDirection.SatScanPrintWarning(x.GetErrorMessage());
+      PrintDirection.SatScanPrintWarning("\n");
    }
 }
 

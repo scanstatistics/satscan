@@ -152,7 +152,7 @@ bool CAnalysis::Execute(time_t RunTime)
            return false;
 
         // log new history for each analysis run - AJV 9/10/2002   
-        historyFile.LogNewHistory(guwSignificantAt005);
+        historyFile.LogNewHistory(guwSignificantAt005, *gpPrintDirection);
         // reset the number of significants back to zero for each analysis - AJV 9/10/2002
         guwSignificantAt005 = 0;
 

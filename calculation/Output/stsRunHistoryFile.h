@@ -20,7 +20,7 @@ class stsRunHistoryFile {
       ~stsRunHistoryFile();
 
       const ZdString&   GetRunHistoryFileName() const;
-      void              LogNewHistory(const unsigned short& uwSignificantAt005);
+      void              LogNewHistory(const unsigned short& uwSignificantAt005, BasePrint& PrintDirection);
 };
 
 //---------------------------------------------------------------------------
