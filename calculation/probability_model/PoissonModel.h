@@ -18,7 +18,7 @@ class CPoissonModel : public CModel {
     float                     * gpRelativeRisks;
     measure_t                 * gpMeasure;  
     measure_t                ** gpAlternativeMeasure;
-    long int                    glFilePosition;
+    ifstream                    gSimulationDataInputFile;
 
     void                        AllocateAlternateHypothesisStructures();
     int                         AssignMeasure(measure_t ** ppMeasure);
@@ -27,7 +27,7 @@ class CPoissonModel : public CModel {
                                                       count_t pTotalCases, double nAlpha,
                                                       double nBeta, int nStatus);
     void                        DeallocateAlternateHypothesisStructures();
-    void                        Init() {gpRelativeRisks=0; gpAlternativeMeasure=0;gpMeasure=0;glFilePosition=0;}
+    void                        Init() {gpRelativeRisks=0; gpAlternativeMeasure=0;gpMeasure=0;}
     void                        MakeData_AlternateHypothesis();
     void                        MakeDataTimeStratified();
     void                        MakeDataUnderNullHypothesis();
