@@ -10,6 +10,7 @@
 #include "SSException.h"
 #include "stsFrmAnalysisRun.h"
 #include "stsPrintWindow.h"
+#include "stsOutputFileRegistry.h"
 #include "stsFrmOutPutViewer.h"
 #include "stsUtilityFunctions.h"
 #include "stsFrmAnalysisParameters.h"
