@@ -44,8 +44,6 @@ int main(int argc, char *argv[]) {
     //Set run history attributes here
     Parameters.SetRunHistoryFilename(GetToolkit().GetRunHistoryFileName());
     Parameters.SetIsLoggingHistory(GetToolkit().GetLogRunHistory());
-    //Convert maximum temporal cluster size to percentage of population.
-    Parameters.ConvertMaxTemporalClusterSizeToType(PERCENTAGETYPE);
     if (! Parameters.ValidateParameters(ConsolePrint)) {
       sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
