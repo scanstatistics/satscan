@@ -1480,8 +1480,8 @@ void TfrmAnalysis::SetupGeoFileFieldDescriptors(std::vector<std::string>& vField
    vFieldDescriptors.clear();
    vFieldDescriptors.reserve(13);
    vFieldDescriptors.push_back("Tract ID");
-   vFieldDescriptors.push_back("Longitude");
    vFieldDescriptors.push_back("Latitude");
+   vFieldDescriptors.push_back("Longitude");
    vFieldDescriptors.push_back("Dimension1");
    vFieldDescriptors.push_back("Dimension2");
    vFieldDescriptors.push_back("Dimension3");
@@ -1498,8 +1498,8 @@ void TfrmAnalysis::SetupGeoFileFieldDescriptors(std::vector<std::string>& vField
 void TfrmAnalysis::SetupGridFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors) {
    vFieldDescriptors.clear();
    vFieldDescriptors.reserve(6);
-   vFieldDescriptors.push_back("Longitude");
    vFieldDescriptors.push_back("Latitude");
+   vFieldDescriptors.push_back("Longitude");
    vFieldDescriptors.push_back("Dimension1");
    vFieldDescriptors.push_back("Dimension2");
    vFieldDescriptors.push_back("Dimension3");
