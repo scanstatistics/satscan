@@ -36,9 +36,7 @@ class CAnalysis
     virtual double              MonteCarlo() = 0;
     virtual double              MonteCarloProspective() = 0;
     virtual void                OpenGISFile(FILE*& fpGIS, const char* szType);
-//    void                        OpenLLRFile(FILE*& fpLLR, const char* szType);    //  V.2.0.4.1
     void                        OpenReportFile(FILE*& fp, const char* szType);
-    void                        OpenRREFile(FILE*& fpRRE, const char* szType);
     virtual void                PerformSimulations();
     void                        PrintTopClusters(int nHowMany);
     virtual void                RankTopClusters();  

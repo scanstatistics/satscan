@@ -1,6 +1,9 @@
 #include "SaTScan.h"
 #pragma hdrstop
 #include "SaTScanData.h"
+#include "stsRelativeRisk.h"
+#include "stsASCIIFileWriter.h"
+#include "stsDBaseFileWriter.h"
 
 void CSaTScanData::DisplayCases(FILE* pFile) {
   fprintf(pFile, "Case counts (m_pCases)\n\n");
@@ -91,19 +94,37 @@ void CSaTScanData::DisplaySummary2(FILE* fp) {
   fprintf(fp, "________________________________________________________________\n");
 }
 
-void CSaTScanData::DisplayRelativeRisksForEachTract(FILE* pFile) {
-  std::string sBuffer;
+void CSaTScanData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, const bool bDBaseOutput) {
+   RelativeRiskData     *pData = 0;
+   std::string          sBuffer;
+   ZdString             sRisk;
 
-  for (int i = 0; i < m_nTracts; ++i) {
-    fprintf(pFile, "%-29s", gpTInfo->tiGetTid(i, sBuffer));
-    fprintf(pFile, "%8i", m_pCases[0][i]);
-    fprintf(pFile, "%12.2f   ", GetMeasureAdjustment()*m_pMeasure[0][i]);
-    if (GetMeasureAdjustment() && m_pMeasure[0][i])
-      fprintf(pFile, "%9.3f", ((double)(m_pCases[0][i]))/(GetMeasureAdjustment()*m_pMeasure[0][i]));
-    else
-      fprintf(pFile, "      n/a");
-    fprintf(pFile, "\n");
-  }
-  fprintf(pFile, "\n");
+   try {
+      pData = new RelativeRiskData(m_pParameters->m_szOutputFilename);
+      for(int i = 0; i < m_nTracts; ++i) {
+         if (GetMeasureAdjustment() && m_pMeasure[0][i])
+            sRisk.printf("%12.3f", ((double)(m_pCases[0][i]))/(GetMeasureAdjustment()*m_pMeasure[0][i]));
+         else
+            sRisk = "n/a";
+         pData->SetRelativeRiskData(gpTInfo->tiGetTid(i, sBuffer), m_pCases[0][i],
+                                    GetMeasureAdjustment()*m_pMeasure[0][i],
+                                    sRisk);
+      }
+      if (bASCIIOutput) {
+         ASCIIFileWriter Awriter(pData);
+         Awriter.Print();
+      }
+      if (bDBaseOutput) {
+         DBaseFileWriter DWriter(pData);
+         DWriter.Print();
+      }
+
+      delete pData; pData = 0;
+   }
+   catch (ZdException &x) {
+      delete pData; pData = 0;
+      x.AddCallpath("DisplayRelativeRisksForEachTract()", "CSaTScanData");
+      throw;
+   }
 }
 

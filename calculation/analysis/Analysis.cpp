@@ -441,7 +441,6 @@ void CAnalysis::DisplayTopClustersLogLikelihoods(FILE* fp) {
 
 bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumber) {
    FILE* fp;
-   FILE* fpRRE = 0;
    time_t CompletionTime;
    double nTotalTime;
    double nSeconds;
@@ -454,8 +453,6 @@ bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumb
    try {
       gpPrintDirection->SatScanPrintf("\nFinishing up reports...");
       OpenReportFile(fp, "a");
-      if (m_pParameters->m_bOutputRelRisks)
-         OpenRREFile(fpRRE, "a");
       
       CreateGridOutputFile(lReportHistoryRunNumber);
 
@@ -492,7 +489,7 @@ bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumb
       m_pData->GetTInfo()->tiReportDuplicateTracts(fp);
 
       if (m_pParameters->m_bOutputRelRisks)
-        m_pData->DisplayRelativeRisksForEachTract(fpRRE);
+        m_pData->DisplayRelativeRisksForEachTract(true, false);
 
       //if (m_pParameters->m_bOutputCensusAreas)
       //   {
@@ -531,13 +528,9 @@ bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumb
         fprintf(fp,"Total Running Time : %.0f %s",nSeconds, szSeconds);
 
       fclose(fp);
-      if (fpRRE)
-         fclose(fpRRE);
    }
    catch (ZdException & x) {
       fclose(fp);
-      if (fpRRE)
-         fclose(fpRRE);
       x.AddCallpath("FinalizeReport(time_t)", "CAnalysis");
       throw;
    }
@@ -616,23 +609,6 @@ void CAnalysis::OpenReportFile(FILE*& fp, const char* szType)
    }
 }
 
-void CAnalysis::OpenRREFile(FILE*& fpRRE, const char* szType)
-{
-   try {
-      if ((fpRRE = fopen(m_pParameters->m_szRelRiskFilename, szType)) == NULL) {
-         if (!strcmp(szType, "w"))
-            SSGenerateException("  Error: Unable to create RRE file.","OpenRREFile");
-         else if (!strcmp(szType, "a"))
-            SSGenerateException("  Error: Unable to open RRE file.", "OpenRREFile");
-         //FatalError(0, gpPrintDirection);
-      }
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("OpenRREFile(File *, const char *)", "CAnalysis");
-      throw;
-   }
-}
-
 // performs Monte Carlo Simulations and prints out the results for each one
 void CAnalysis::PerformSimulations() {
    double               r;
@@ -700,8 +676,7 @@ void CAnalysis::PerformSimulations() {
    }
 }
 
-void CAnalysis::PrintTopClusters(int nHowMany)
-{
+void CAnalysis::PrintTopClusters(int nHowMany) {
    FILE* pFile;
 
    try {
@@ -755,9 +730,7 @@ void CAnalysis::PrintTopClusters(int nHowMany)
    NumKept        - number to rank (<= NumClusters)
 //
  **********************************************************************/
-void CAnalysis::RankTopClusters()
-{
-
+void CAnalysis::RankTopClusters() {
    tract_t t, j;
    float newradius;                      /* Radius of new cluster tested */
    float clusterdistance;                /* Distance between the centers */

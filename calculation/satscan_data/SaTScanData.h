@@ -73,7 +73,7 @@ class CSaTScanData
     virtual void DisplayControls(FILE* pFile);
     virtual void DisplayMeasure(FILE* pFile);
     virtual void DisplayNeighbors(FILE* pFile);
-    virtual void DisplayRelativeRisksForEachTract(FILE* pFile);
+    virtual void DisplayRelativeRisksForEachTract(const bool bASCIIOutput, const bool bDBaseOutput);
     virtual void DisplaySimCases(FILE* pFile);
 
 
