@@ -4,6 +4,7 @@
 //*************************************************************************
 #include "SpaceTimeIncludePurelySpatialAnalysis.h"
 #include "SpaceTimeIncludePurelyTemporalAnalysis.h"
+#include "PurelySpatialProspectiveCluster.h"
 
 class C_ST_PS_PT_Analysis : public C_ST_PS_Analysis
 {

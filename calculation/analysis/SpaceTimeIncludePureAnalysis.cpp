@@ -17,7 +17,13 @@ bool C_ST_PS_PT_Analysis::FindTopClusters() {
       
     tract_t nLastClusterIndex = m_nClustersRetained;
     m_pTopClusters[nLastClusterIndex] = GetTopPTCluster();
-    SortTopClusters();
+    //remove purely temporal cluster if cluster is not defined
+    if (m_pTopClusters[nLastClusterIndex]->ClusterDefined())
+      SortTopClusters();
+    else {
+      delete m_pTopClusters[nLastClusterIndex]; m_pTopClusters[nLastClusterIndex]=0;
+      m_nClustersRetained--;
+    }
   }
   catch (ZdException & x) {
     x.AddCallpath("FindTopClusters()", "C_ST_PS_PT_Analysis");
@@ -138,10 +144,10 @@ double C_ST_PS_PT_Analysis::MonteCarloProspective() {
   try {
     //for prospective Space-Time, GetAliveClustersOnly() should be false..
     //m_bAliveClustersOnly is the first parameter into the CSpaceTimeCluster class
-    CPurelySpatialCluster C_PS(gpPrintDirection);
+    CPurelySpatialProspectiveCluster C_PS(gpPrintDirection, m_pData->m_nTimeIntervals);
     CSpaceTimeCluster     C_ST(ALLCLUSTERS, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
     CPurelyTemporalCluster C_PT(ALLCLUSTERS, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
-    
+
     C_PS.SetRate(m_pParameters->GetAreaScanRateType());
     C_ST.SetRate(m_pParameters->GetAreaScanRateType());
     switch (m_pParameters->GetAreaScanRateType()) {
@@ -159,9 +165,16 @@ double C_ST_PS_PT_Analysis::MonteCarloProspective() {
     //will be calculated with circle's measure values.
     C_PT.Initialize(0);
     C_PT.SetRate(m_pParameters->GetAreaScanRateType());
-    C_PT.InitTimeIntervalIndeces();
-    while (C_PT.SetNextTimeInterval(m_pData->m_pPTSimCases,  m_pData->m_pPTMeasure))
+    jCurrentDate = m_pData->m_nEndDate;
+    // Loop from study end date back to Prospective start date -- loop by interval
+    for (n=m_pData->m_nTimeIntervals; n >= m_pData->m_nProspectiveIntervalStart; --n) {
+     //Need to re-compute duration due to by using current date (whatever date loop "n" is at)
+      //and the Begin Study Date
+      iThisStartInterval = std::max(0, n - m_pData->ComputeNewCutoffInterval(m_pData->m_nStartDate,jCurrentDate));
+      C_PT.InitTimeIntervalIndeces(iThisStartInterval, n);
+      while (C_PT.SetNextProspTimeInterval(m_pData->m_pPTSimCases,  m_pData->m_pPTMeasure))
          pMeasureList->AddMeasure(C_PT.m_nCases, C_PT.m_nMeasure);
+    }
 
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
     for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {
@@ -170,7 +183,6 @@ double C_ST_PS_PT_Analysis::MonteCarloProspective() {
           C_ST.Initialize(i);
           for (tract_t j=1; j<=m_pData->m_NeighborCounts[k][i]; ++j) {
              C_PS.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);
-             pMeasureList->AddMeasure(C_PS.m_nCases, C_PS.m_nMeasure);
              C_ST.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);
              //Need to keep track of the current date as you loop through intervals
              jCurrentDate = m_pData->m_nEndDate;
@@ -178,6 +190,8 @@ double C_ST_PS_PT_Analysis::MonteCarloProspective() {
              for (n=m_pData->m_nTimeIntervals; n >= m_pData->m_nProspectiveIntervalStart; --n) {
                 //Need to re-compute duration due to by using current date (whatever date loop "n" is at)
                 //and the Begin Study Date
+                C_PS.SetForProspectiveEndDate(n);
+                pMeasureList->AddMeasure(C_PS.m_nCases, C_PS.m_nMeasure);
                 iThisStartInterval = std::max(0, n - m_pData->ComputeNewCutoffInterval(m_pData->m_nStartDate,jCurrentDate));
                 C_ST.InitTimeIntervalIndeces(iThisStartInterval, n);
                 while (C_ST.SetNextProspTimeInterval())
