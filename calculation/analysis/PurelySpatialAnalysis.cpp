@@ -78,12 +78,12 @@ double CPurelySpatialAnalysis::MonteCarlo(const DataStreamInterface & Interface)
                                            m_pParameters->GetAreaScanRateType());
     }
 
-    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) { //circle is 0 offset... (always there)
+    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) { //circle is 0 offset... (always there)
        for (i=0; i < m_pData->m_nGridTracts; i++) {
           C.Initialize(i);
           iNumNeighbors = ppNeighbors[k][i];
-          for (j=1; j <= iNumNeighbors; j++) {
-             C.AddNeighbor(m_pData->GetNeighbor(k, i, j), Interface);
+          for (j=1; j <= iNumNeighbors; ++j) {
+             C.AddNeighborData(m_pData->GetNeighbor(k, i, j), Interface);
              C.ComputeBestMeasures(*pMeasureList);
           }
        }
