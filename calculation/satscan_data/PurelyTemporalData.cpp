@@ -10,7 +10,7 @@
 #include "SurvivalModel.h"
 #include "RankModel.h"
 
-/** constructor */
+/** class constructor */
 CPurelyTemporalData::CPurelyTemporalData(const CParameters* pParameters, BasePrint *pPrintDirection)
                     :CSaTScanData(pParameters, pPrintDirection) {
   try {
@@ -22,16 +22,20 @@ CPurelyTemporalData::CPurelyTemporalData(const CParameters* pParameters, BasePri
   }
 }
 
-/** destructor */
+/** class destructor */
 CPurelyTemporalData::~CPurelyTemporalData() {}
 
+/** Not implemented throws ZdException. */
 void CPurelyTemporalData::AdjustNeighborCounts() {
   ZdGenerateException("AdjustNeighborCounts() not implemented for CPurelyTemporalData.","AdjustNeighborCounts()");
 }
 
-void CPurelyTemporalData::CalculateMeasure(RealDataStream & thisStream) {
+/** Calls base class CSaTScanData::CalculateMeasure(). Sets data stream object's
+    temporal data structures. */
+void CPurelyTemporalData::CalculateMeasure(RealDataStream& thisStream) {
   try {
     CSaTScanData::CalculateMeasure(thisStream);
+    //Set temporal structures
     gpDataStreams->SetPurelyTemporalMeasureData(thisStream);
   }
   catch (ZdException &x) {
@@ -40,45 +44,50 @@ void CPurelyTemporalData::CalculateMeasure(RealDataStream & thisStream) {
   }
 }
 
+/** Debug utility function - prints case counts for all data streams. Caller is
+    responsible for ensuring that passed file pointer points to valid, open file
+    handle. */
 void CPurelyTemporalData::DisplayCases(FILE* pFile) {
-  try {
-    fprintf(pFile, "PT Case counts (PTCases)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
-    for (int i = 0; i < m_nTimeIntervals; i++)
-       fprintf(pFile, "PTCases [%i] = %i\n", i, gpDataStreams->GetStream(0/*for now*/).GetPTCasesArray()[i]);
-    fprintf(pFile, "\n\n");
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("DisplayCases()","CPurelyTemporalData");
-    throw;
+  unsigned int   i, j;
+
+  fprintf(pFile, "PT Case counts (PTCases)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
+  for (j=0; j <  gpDataStreams->GetNumStreams(); ++j) {
+     fprintf(pFile, "Data Stream %u:\n", j);
+     for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
+        fprintf(pFile, "PTCases [%u] = %i\n", i, gpDataStreams->GetStream(j).GetPTCasesArray()[i]);
+     fprintf(pFile, "\n\n");
   }
 }
 
+/** Debug utility function - prints expected case counts for all data streams.
+    Caller is responsible for ensuring that passed file pointer points to valid,
+    open file handle. */
 void CPurelyTemporalData::DisplayMeasure(FILE* pFile) {
-  try {
-    fprintf(pFile, "PT Measures (PTMeasure)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
-    for (int i = 0; i < m_nTimeIntervals; i++)
-       fprintf(pFile, "PTMeasure [%i] = %f\n", i, gpDataStreams->GetStream(0/*for now*/).GetPTMeasureArray()[i]);
-    fprintf(pFile, "\n\n");
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("DisplayMeasure()","CPurelyTemporalData");
-    throw;
+  unsigned int   i, j;
+
+  fprintf(pFile, "PT Measures (PTMeasure)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
+  for (j=0; j <  gpDataStreams->GetNumStreams(); ++j) {
+     fprintf(pFile, "Data Stream %u:\n", j);
+     for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
+        fprintf(pFile, "PTMeasure [%u] = %lf\n", i, gpDataStreams->GetStream(j).GetPTMeasureArray()[i]);
+     fprintf(pFile, "\n\n");
   }
 }
 
+/** Debug utility function - not implemented - needs updating. */
 void CPurelyTemporalData::DisplaySimCases(FILE* pFile) {
-//  try {
-//    fprintf(pFile, "PT Simulated Case counts (PTSimCases)\n\n");
-//    for (int i = 0; i < m_nTimeIntervals; i++)
-//       fprintf(pFile, "PTSimCases [%i] = %i\n", i, gpDataStreams->GetStream(0/*for now*/).GetPTSimCasesArray()[i]);
-//    fprintf(pFile, "\n");
-//  }
-//  catch (ZdException &x) {
-//    x.AddCallpath("DisplaySimCases()","CPurelyTemporalData");
-//    throw;
+//  unsigned int   i, j;
+//
+//  fprintf(pFile, "PT Simulated Case counts (PTSimCases)\n\n");
+// for (j=0; j <  gpDataStreams->GetNumStreams(); ++j) {
+//     fprintf(pFile, "Data Stream %u:\n", j);
+//     for (i=0; i < m_nTimeIntervals; ++i)
+//        fprintf(pFile, "PTSimCases [%u] = %i\n", i, gpDataStreams->GetStream(j).GetPTSimCasesArray()[i]);
+//     fprintf(pFile, "\n\n");
 //  }
 }
 
+/** Not implemented - throws ZdException. */
 tract_t CPurelyTemporalData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const {
   ZdGenerateException("GetNeighbor() not implemented for CPurelyTemporalData.","GetNeighbor()");
   return 0;
@@ -98,6 +107,8 @@ void CPurelyTemporalData::RandomizeData(RandomizerContainer_t& RandomizerContain
   }
 }
 
+/** Calls base class CSaTScanData::ReadDataFromFiles(). Sets data stream objects'
+    temporal data structures. */
 void CPurelyTemporalData::ReadDataFromFiles() {
   try {
     CSaTScanData::ReadDataFromFiles();
@@ -109,7 +120,8 @@ void CPurelyTemporalData::ReadDataFromFiles() {
   }
 }
 
-/** allocates probability model */
+/** Allocates probability model object. Throws ZdException if probability model
+    type is space-time permutation. */
 void CPurelyTemporalData::SetProbabilityModel() {
   try {
     switch (m_pParameters->GetProbabiltyModelType()) {

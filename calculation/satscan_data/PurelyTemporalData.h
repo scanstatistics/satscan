@@ -4,6 +4,13 @@
 //*********************************************************************************
 #include "SaTScanData.h"
 
+/** Data hub class that derives from base class to define alternate functionality
+    for purely temporal analyses.
+    The code to generate data structures for 'number of cases', 'number of
+    expected cases', 'simulated cases', etc. is designed to modify a multiple
+    dimension array (time intervals by tracts) in a cumulative manner(in respect
+    to time). The primary purpose of this class is to direct data streams to set
+    corresponding temporal structures from data of multiple dimension array. */
 class CPurelyTemporalData : public CSaTScanData {
   private:
     virtual void        SetProbabilityModel();
@@ -24,6 +31,5 @@ class CPurelyTemporalData : public CSaTScanData {
                                       unsigned int iSimulationNumber) const;
     virtual void        ReadDataFromFiles();
 };
-
 //*********************************************************************************
 #endif
