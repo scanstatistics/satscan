@@ -43,10 +43,7 @@ USEUNIT("..\calculation\analysis\PurelyTemporalAnalysis.cpp");
 USEUNIT("..\calculation\Parameters.cpp");
 USEUNIT("..\calculation\probability_model\SpaceTimePermutationModel.cpp");
 USEUNIT("..\calculation\SaTScanBasis.cpp");
-USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib");
-USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
 USEUNIT("..\CALCULATION\UTILITY\DBFFile.cpp");
-USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
 USEUNIT("..\calculation\Output\stsRunHistoryFile.cpp");
 USEUNIT("..\calculation\Output\stsASCIIFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsClusterData.cpp");
@@ -57,6 +54,10 @@ USEUNIT("..\calculation\Output\stsOutputFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsRelativeRisk.cpp");
 USEUNIT("..\calculation\Output\stsAreaSpecificData.cpp");
 USEUNIT("..\calculation\Toolkit.cpp");
+USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
+USELIB("..\..\zero dimension\zdannex540.lib");
+USELIB("..\..\zero dimension\zd540.lib");
+USERES("SaTScanBatch.res");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
