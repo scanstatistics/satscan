@@ -63,8 +63,6 @@ class TfrmMainForm : public TForm{
         TAction *AboutSatscanAction;
         TMenuItem *ImportInputFile1;
         TBevel *Bevel5;
-        TSpeedButton *btnImportInputFile;
-        TAction *ImportAction;
         TBevel *Bevel6;
         TMenuItem *mitReopen;
         TAction *ReopenAction;
@@ -85,7 +83,6 @@ class TfrmMainForm : public TForm{
         void __fastcall ExecuteActionExecute(TObject *Sender);
         void __fastcall HelpActionExecute(TObject *Sender);
         void __fastcall AboutSatscanActionExecute(TObject *Sender);
-        void __fastcall ImportActionExecute(TObject *Sender);
         void __fastcall ReopenActionExecute(TObject *Sender);
         void __fastcall OnFormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall OnFormActivate(TObject *Sender);

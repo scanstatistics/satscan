@@ -1,6 +1,6 @@
 object frmMainForm: TfrmMainForm
-  Left = 9
-  Top = 10
+  Left = 172
+  Top = 131
   Width = 784
   Height = 557
   Caption = 'SaTScan'
@@ -194,41 +194,12 @@ object frmMainForm: TfrmMainForm
       Width = 2
       Height = 23
     end
-    object btnImportInputFile: TSpeedButton
-      Left = 324
-      Top = 3
-      Width = 25
-      Height = 25
-      Action = ImportAction
-      Flat = True
-      Glyph.Data = {
-        DE010000424DDE01000000000000760000002800000024000000120000000100
-        04000000000068010000C40E0000C40E00001000000000000000000000000000
-        80000080000000808000800000008000800080800000C0C0C000808080000000
-        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
-        0000066666666666668888860000666666846668777780666666886668777788
-        0000666666644668FF7780666666688668FF77880000666844444468F7F78066
-        6888888868F7F7880000666486644668FF7780666886688668FF778800006664
-        86846668F7F780666886886668F7F7880000666486666668FF77806668866666
-        68FF778800006666666666688888806666666666688888880000000000006668
-        FF7F70888888886668FF7F780000877777706666888886877777786666888886
-        00008F0F0F7066666666668F7F7F786666666666000080F0F070666666666687
-        F7F778666666666600008F0F0F7066666666668F7F7F786666666666000080F0
-        F070666666666687F7F778666666666600008F0F000066666666668F7F888866
-        66666666000080F07F86666666666687F77F86666666666600008F0F78666666
-        6666668F7F786666666666660000888886666666666666888886666666666666
-        0000}
-      NumGlyphs = 2
-      ParentShowHint = False
-      ShowHint = True
-      Visible = False
-    end
     object sbUpdate: TSpeedButton
       Left = 160
       Top = 3
       Width = 25
       Height = 25
-      Hint = 'Check for Updates'
+      Action = UpdateAction
       Flat = True
       Glyph.Data = {
         76010000424D7601000000000000760000002800000020000000100000000100
@@ -246,7 +217,6 @@ object frmMainForm: TfrmMainForm
       NumGlyphs = 2
       ParentShowHint = False
       ShowHint = True
-      OnClick = UpdateActionExecute
     end
   end
   object MainMenu1: TMainMenu
@@ -302,8 +272,9 @@ object frmMainForm: TfrmMainForm
         Caption = '-'
       end
       object ImportInputFile1: TMenuItem
-        Action = ImportAction
         Caption = '&Import Files'
+        Hint = 'Import Files'
+        ShortCut = 16457
         Visible = False
       end
     end
@@ -318,6 +289,7 @@ object frmMainForm: TfrmMainForm
       end
       object SaveSessionAs1: TMenuItem
         Action = UpdateAction
+        Caption = 'SaTScan &Update'
       end
       object N1: TMenuItem
         Caption = '-'
@@ -421,12 +393,6 @@ object frmMainForm: TfrmMainForm
       Hint = 'About SaTScan'
       OnExecute = AboutSatscanActionExecute
     end
-    object ImportAction: TAction
-      Category = 'Analysis'
-      Hint = 'Import Files'
-      ShortCut = 16457
-      OnExecute = ImportActionExecute
-    end
     object ReopenAction: TAction
       Category = 'All'
       Caption = 'ReopenAction'
@@ -435,7 +401,6 @@ object frmMainForm: TfrmMainForm
     end
     object UpdateAction: TAction
       Category = 'All'
-      Caption = 'SaTScan Update'
       OnExecute = UpdateActionExecute
     end
     object AdvancedParametersAction: TAction

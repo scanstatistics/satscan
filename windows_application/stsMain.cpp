@@ -164,22 +164,6 @@ void __fastcall TfrmMainForm::HelpActionExecute(TObject *Sender) {
   }
 }
 
-/** import action event -- launches data file importer dialog */
-void __fastcall TfrmMainForm::ImportActionExecute(TObject *Sender) {
-/*  //PAG - commented out instead of deleting;  Martin wants Import to be removed
-    //from speed button bar and menu; did not delete in case he wants it back in the future
-  try {
-    TfrmAnalysis * frmAnalysisForm = dynamic_cast<TfrmAnalysis *>(frmMainForm->ActiveMDIChild);
-    if (frmAnalysisForm)
-      frmAnalysisForm->LaunchImporter();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ImportActionExecute()","TfrmMainForm");
-    DisplayBasisException(this, x);
-  }
-*/
-}
-
 /** new session action event -- creates new parameters/session child window */
 void __fastcall TfrmMainForm::NewSessionActionExecute(TObject *Sender) {
   try {
