@@ -35,7 +35,6 @@ class TopClustersContainer {
 
 class CAnalysis {
   private:
-    double                      GetMonteCarloLoglikelihoodRatio(const AbtractDataStreamGateway & DataGateway);
     void                        Init();
     virtual void                SetMaxNumClusters() {m_nMaxClusters = m_pData->m_nGridTracts;}
     void                        Setup();
@@ -75,7 +74,6 @@ class CAnalysis {
     CTimeIntervals            * GetNewTimeIntervalsObject(IncludeClustersType eType) const;
     void                        InitializeTopClusterList();
     virtual double              MonteCarlo(const DataStreamInterface & Interface) = 0;
-    virtual double              MonteCarloProspective(const DataStreamInterface & Interface) = 0;
     void                        OpenReportFile(FILE*& fp, const char* szType);
     virtual void                PerformSimulations();
     void                        PrintTopClusters(int nHowMany);

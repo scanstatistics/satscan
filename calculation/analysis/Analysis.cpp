@@ -650,24 +650,6 @@ double CAnalysis::FindTopRatio(const AbtractDataStreamGateway & DataGateway) {
   return dMaxLogLikelihoodRatio;
 }
 
-/** Returns loglikelihood for Monte Carlo replication. */
-double CAnalysis::GetMonteCarloLoglikelihoodRatio(const AbtractDataStreamGateway & DataGateway) {
-  try {
-    if (gbMeasureListReplications) {
-      if (m_pParameters->GetIsProspectiveAnalysis())
-        return MonteCarloProspective(DataGateway.GetDataStreamInterface(0));
-      else
-        return MonteCarlo(DataGateway.GetDataStreamInterface(0));
-    }
-    else
-      return FindTopRatio(DataGateway);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("GetMonteCarloLoglikelihoodRatio()","CAnalysis");
-    throw;
-  }
-}
-
 CMeasureList * CAnalysis::GetNewMeasureListObject() const {
   switch (m_pParameters->GetAreaScanRateType()) {
     case HIGH       : return new CMinMeasureList(*m_pData, *gpPrintDirection);
@@ -770,7 +752,7 @@ void CAnalysis::PerformSimulations() {
         for (iSimulationNumber=1; (iSimulationNumber <= m_pParameters->GetNumReplicationsRequested()) && !gpPrintDirection->GetIsCanceled(); iSimulationNumber++) {
           giSimulationNumber = iSimulationNumber;
           m_pData->RandomizeData(giSimulationNumber);
-          r = GetMonteCarloLoglikelihoodRatio(*pDataGateway);
+          r = (gbMeasureListReplications ? MonteCarlo(pDataGateway->GetDataStreamInterface(0)) : FindTopRatio(*pDataGateway));
           UpdateTopClustersRank(r);
           SimRatios.AddRatio(r);
           UpdatePowerCounts(r);
