@@ -183,8 +183,7 @@ bool CSpaceTimePermutationModel::ReadData() {
   try {
     if (!gData.ReadCoordinatesFile())
       return false;
-    if ((gParameters.GetAnalysisType() == PROSPECTIVESPACETIME || gParameters.UseMaxCirclePopulationFile())
-        && !gData.ReadMaxCirclePopulationFile())
+    if (DoesReadMaxCirclePopulationFile() && !gData.ReadMaxCirclePopulationFile())
        return false;
     if (! gData.ReadCaseFile())
       return false;

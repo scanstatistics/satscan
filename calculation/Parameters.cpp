@@ -3005,36 +3005,16 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
       PrintDirection.SatScanPrintWarning("Error: Maximum Circle Population file '%s' does not exist.\n", gsMaxCirclePopulationFileName.c_str());
       PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
     }
-    //validate maximum circle population file for a space-time permutatiom model w/ maximum geographical cluster size
-    //defined as a percentage of the population.
-    if (geProbabiltyModelType == SPACETIMEPERMUTATION) {
-      if (geMaxGeographicClusterSizeType == PERCENTAGEOFMEASURETYPE) {
-        if (gsMaxCirclePopulationFileName.empty()) {
-          bValid = false;
-          PrintDirection.SatScanPrintWarning("Error: For a Space-Time Permutation model with the maximum spatial cluster size defined as a\n");
-          PrintDirection.SatScanPrintWarning("       percentage of the population at risk, a Maximum Circle Population file must be specified.\n");
-          PrintDirection.SatScanPrintWarning("       Alternatively you may choose to specify the maximum as a fixed radius, in which no\n");
-          PrintDirection.SatScanPrintWarning("       Maximum Circle Population file is required.\n");
-        }
-        else if (access(gsMaxCirclePopulationFileName.c_str(), 00)) {
-          bValid = false;
-          PrintDirection.SatScanPrintWarning("Error: Maximum Circle Population file '%s' does not exist.\n", gsMaxCirclePopulationFileName.c_str());
-          PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
-        }
-        else
-          gbUseMaxCirclePopulationFile = true;
-      }
-    }
     //validate maximum circle population file for a prospective space-time analysis w/ maximum geographical cluster size
     //defined as a percentage of the population and adjusting for earlier analyses.
-    if (geAnalysisType == PROSPECTIVESPACETIME && gbAdjustForEarlierAnalyses && geMaxGeographicClusterSizeType == PERCENTAGEOFMEASURETYPE) {
+    if (gbUseMaxCirclePopulationFile || (geAnalysisType == PROSPECTIVESPACETIME && gbAdjustForEarlierAnalyses && geMaxGeographicClusterSizeType == PERCENTAGEOFMEASURETYPE)) {
         if (gsMaxCirclePopulationFileName.empty()) {
           bValid = false;
-          PrintDirection.SatScanPrintWarning("Error: For a Prospective Space-Time analysis adjusting for ealier analyses, with the maximum spatial\n");
-          PrintDirection.SatScanPrintWarning("       cluster size defined as a percentage of the population at risk, a Maximum Circle\n");
-          PrintDirection.SatScanPrintWarning("       Population file must be specified.\n");
+          PrintDirection.SatScanPrintWarning("Error: For a prospective space-time analysis adjusting for ealier analyses, with the maximum spatial\n");
+          PrintDirection.SatScanPrintWarning("       cluster size defined as a percentage of the population at risk, a maximum circle\n");
+          PrintDirection.SatScanPrintWarning("       population file must be specified.\n");
           PrintDirection.SatScanPrintWarning("       Alternatively you may choose to specify the maximum as a fixed radius, in which no\n");
-          PrintDirection.SatScanPrintWarning("       Maximum Circle Population file is required.\n");
+          PrintDirection.SatScanPrintWarning("       maximum circle population file is required.\n");
         }
         else if (access(gsMaxCirclePopulationFileName.c_str(), 00)) {
           bValid = false;
@@ -3044,6 +3024,8 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
         else
           gbUseMaxCirclePopulationFile = true;
     }
+    else
+      gbUseMaxCirclePopulationFile = false;
     //validate output file
     if (gsOutputFileName.empty()) {
       bValid = false;

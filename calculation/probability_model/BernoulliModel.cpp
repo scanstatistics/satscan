@@ -26,8 +26,7 @@ bool CBernoulliModel::ReadData() {
 //    ThreeDimensionArrayHandler<count_t>::SynchronizeThirdDimension(*(gData.gpCategoryCasesHandler), *(gData.gpCategoryControlsHandler), 0);
 //    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
 //      TwoDimensionArrayHandler<count_t>::SynchronizeSecondDimension(*(gData.gpCasesByTimeByCategoryHandler), *(gData.gpControlsByTimeByCategoryHandler), 0);
-    if (!(gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL))
-      if (gParameters.UseMaxCirclePopulationFile() && !gData.ReadMaxCirclePopulationFile())
+    if (DoesReadMaxCirclePopulationFile() && !gData.ReadMaxCirclePopulationFile())
         return false;
     if (gParameters.UseSpecialGrid() && !gData.ReadGridFile())
       return false;
