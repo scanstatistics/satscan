@@ -732,7 +732,7 @@ unsigned long ScanfFile::CalculateNumberOfRecords ( char cQuote ) const {
    char          sBuffer[8192];
    unsigned long ulRetVal = 0;      // Count of newlines
    unsigned int  uiPosition = 0;    // Current position
-   int          iTrailingNewLines = 0;  // NUmber of trailing newlines we've encountered
+   int          iTrailingNewlineCount = 0;  // Number of trailing newlines we've encountered
    int          iBlockLength;   // Length of current block
    int          iCurrent;       // Index in current block
    bool         bQuote = false;         // Currently quoted?
@@ -748,12 +748,12 @@ unsigned long ScanfFile::CalculateNumberOfRecords ( char cQuote ) const {
       while ( iBlockLength ) {
          for ( iCurrent = 0; iCurrent < iBlockLength; iCurrent++ ) {
             if ( !bQuote && ( sBuffer[iCurrent] == '\n' ) ) {
-               iTrailingNewLines++;
+               iTrailingNewlineCount++;
                ulRetVal++;
             }
             else
                if ( sBuffer[iCurrent] != '\r' )
-                  iTrailingNewLines = 0;
+                  iTrailingNewlineCount = 0;
 
             bQuote = ( bQuote ^ ( sBuffer[iCurrent] == cQuote ) );
          } // end of scanning loop
@@ -764,9 +764,9 @@ unsigned long ScanfFile::CalculateNumberOfRecords ( char cQuote ) const {
       } // end of processing loop
 
       // Fix-up the return value
-      ulRetVal -= iTrailingNewLines;
+      ulRetVal -= iTrailingNewlineCount;
 //      ulRetVal += ( gbFirstLineContainsFieldNames ) ? 0 : 1;
-      ulRetVal += 1;//right now, the first line doesn't contain field names
+//      ulRetVal += 1;//right now, the first line doesn't contain field names
    }
    catch ( ZdException &theException ) {
       theException.AddCallpath ( "CalculateNumberOfRecords()", "ScanfFile" );
@@ -787,8 +787,8 @@ void ScanfFile::Close()
 {
    try
    {
-      gFile.Close();
       ZdFile::Close();
+      gFile.Close();
    }
    catch (ZdException & e)
    {
@@ -906,13 +906,16 @@ void ScanfFile::Create(const char * sFilename, ZdVector<ZdField*> &vFields, unsi
 //<br>  type_conformant_record: dynamic_cast<const ScanfRecord *>(&Record) != 0
 unsigned long ScanfFile::DataAppend  ( const ZdFileRecord &Record )
 {
+   long lRecordPosition;
    try
    {
       gFile.Seek ( 0, SEEK_END );
+      lRecordPosition = gFile.Tell();
       Record.WriteRecord ( gFile );
+      gFile.Seek(lRecordPosition, SEEK_SET);
 
       gulNumRecords++;
-      glCurrentRecordNumber = gulNumRecords + 1;
+      glCurrentRecordNumber = gulNumRecords;
    }
    catch (ZdException & e)
    {
@@ -1355,7 +1358,7 @@ void ScanfFile::Open(const char *sFilename, ZdIOFlag Flags, const char * sPasswo
       gFile.Open (sFilename, Flags);
       gulNumRecords = CalculateNumberOfRecords ('\0');
 //      glCurrentRecordNumber = ( gbFirstLineContainsFieldnames ) ? 0 : 1;  // We are on the first byte of the file
-      glCurrentRecordNumber = 1;  // We are on the first byte of the file
+      glCurrentRecordNumber = 0;  // We are on the first byte of the file
 
       OpenFinish();
    }

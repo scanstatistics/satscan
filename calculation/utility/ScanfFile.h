@@ -180,7 +180,7 @@ public:
 
 //   void                     DeactivateListeners( bool bNotify = true );
    virtual void             Decrypt(const char * sPassword) { ZdException::Generate("not implemented: Decrypt", "ScanfFile"); }
-   virtual void             DelayExternalUpdates() {}
+   virtual void             DelayExternalUpdates() { }//do nothing
    virtual void             Delete(const char * sFileName, const char * sPassword = 0, bool bDeleteZds = true, bool bDeleteData = true) const { ZdException::Generate("not yet implemented: Delete", "ScanfFile"); }
 //   void                     DeleteRecord ( ZdTransaction &theTransaction, unsigned long ulWhich );
 
