@@ -27,9 +27,9 @@
  This file contains header information for all SaTScan program files
  **********************************************************************/
 /** Current version information. */
-#define VERSION_ID "2"
-#define VERSION_NUMBER "4.0.1"
-#define VERSION_DATE "October 23, 2003"
+#define VERSION_ID "3"
+#define VERSION_NUMBER "4.0.2"
+#define VERSION_DATE "November 10, 2003"
 /** New defines for ellipsoid calculations. */
 #define MAXELLIPSESHAPES 10
 /** PI declaration - this is now defined in math.h but changing may cause
