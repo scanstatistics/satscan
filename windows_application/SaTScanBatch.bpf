@@ -43,8 +43,6 @@ USEUNIT("..\calculation\analysis\PurelyTemporalAnalysis.cpp");
 USEUNIT("..\calculation\Parameters.cpp");
 USEUNIT("..\calculation\probability_model\SpaceTimePermutationModel.cpp");
 USEUNIT("..\calculation\SaTScanBasis.cpp");
-USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib");
-USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
 USEUNIT("..\CALCULATION\UTILITY\DBFFile.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
 USEUNIT("..\calculation\Output\stsRunHistoryFile.cpp");
@@ -66,6 +64,8 @@ USEUNIT("..\calculation\cluster\PurelySpatialProspectiveCluster.cpp");
 USEUNIT("..\calculation\utility\MultipleDimensionArrayHandler.cpp");
 USEUNIT("..\calculation\satscan_data\MaxWindowLengthIndicator.cpp");
 USERES("SaTScanBatch.res");
+USELIB("..\..\zero dimension\zdannex540.lib");
+USELIB("..\..\zero dimension\zd540.lib");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -86,8 +86,8 @@ USEUNIT("..\calculation\Output\stsOutputFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsDBaseFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsASCIIFileWriter.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
-USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib");
-USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
+USELIB("..\..\zero dimension\zdannex540.lib");
+USELIB("..\..\zero dimension\zd540.lib");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;
