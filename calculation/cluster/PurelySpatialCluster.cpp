@@ -51,7 +51,7 @@ count_t CPurelySpatialCluster::GetCaseCountForTract(tract_t tTract, const CSaTSc
 /** Returns the measure for tract as defined by cluster. */
 measure_t CPurelySpatialCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const
 {
-  return Data.m_pMeasure[0][tTract];
+  return Data.GetMeasureAdjustment() * Data.m_pMeasure[0][tTract];
 }
 
 void CPurelySpatialCluster::Initialize(tract_t nCenter=0)

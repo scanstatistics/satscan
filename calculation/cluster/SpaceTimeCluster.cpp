@@ -136,7 +136,7 @@ void CSpaceTimeCluster::GetMeasure()
 /** Returns the measure for tract as defined by cluster. */
 measure_t CSpaceTimeCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const
 {
-  return TI->GetMeasureForTract(tTract, Data.m_pMeasure);
+  return Data.GetMeasureAdjustment() * TI->GetMeasureForTract(tTract, Data.m_pMeasure);
 }
 
 void CSpaceTimeCluster::Initialize(tract_t nCenter = 0)

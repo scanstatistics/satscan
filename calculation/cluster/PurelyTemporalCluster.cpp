@@ -92,7 +92,7 @@ count_t CPurelyTemporalCluster::GetCaseCountForTract(tract_t tTract, const CSaTS
 /** Returns the measure for tract as defined by cluster. */
 measure_t CPurelyTemporalCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const
 {
-  return m_TI->GetMeasureForTract(tTract, Data.m_pMeasure);
+  return Data.GetMeasureAdjustment() * m_TI->GetMeasureForTract(tTract, Data.m_pMeasure);
 }
 
 void CPurelyTemporalCluster::InitTimeIntervalIndeces()
