@@ -1,11 +1,12 @@
 object frmAnalysis: TfrmAnalysis
-  Left = 190
-  Top = 56
+  Left = 135
+  Top = 50
+  ActiveControl = edtResultFile
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'SaTScan'
+  Caption = 'SaTScan Analysis Settings'
   ClientHeight = 446
-  ClientWidth = 493
+  ClientWidth = 583
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,16 +22,16 @@ object frmAnalysis: TfrmAnalysis
   PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
-    Left = 2
-    Top = 6
+    Left = 0
+    Top = 12
     Width = 489
-    Height = 435
+    Height = 428
     ActivePage = tbOutputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
       object Label4: TLabel
-        Left = 20
+        Left = 15
         Top = 233
         Width = 72
         Height = 13
@@ -46,7 +47,7 @@ object frmAnalysis: TfrmAnalysis
       object GroupBox1: TGroupBox
         Left = 8
         Top = 8
-        Width = 465
+        Width = 445
         Height = 109
         Color = clBtnFace
         ParentColor = False
@@ -77,7 +78,7 @@ object frmAnalysis: TfrmAnalysis
         object rgpPrecisionTimes: TRadioGroup
           Left = 333
           Top = 23
-          Width = 121
+          Width = 92
           Height = 75
           Caption = 'Time Included'
           ItemIndex = 0
@@ -145,7 +146,7 @@ object frmAnalysis: TfrmAnalysis
         end
       end
       object edtPopFileName: TEdit
-        Left = 20
+        Left = 15
         Top = 249
         Width = 284
         Height = 21
@@ -155,7 +156,7 @@ object frmAnalysis: TfrmAnalysis
         OnChange = edtPopFileNameChange
       end
       object btnPopBrowse: TButton
-        Left = 308
+        Left = 304
         Top = 249
         Width = 25
         Height = 21
@@ -251,7 +252,7 @@ object frmAnalysis: TfrmAnalysis
         object rgpCoordinates: TRadioGroup
           Left = 329
           Top = 23
-          Width = 121
+          Width = 124
           Height = 75
           Caption = 'Coordinates'
           ItemIndex = 0
@@ -265,56 +266,50 @@ object frmAnalysis: TfrmAnalysis
       object gbxStudyPeriod: TGroupBox
         Left = 8
         Top = 128
-        Width = 466
+        Width = 445
         Height = 97
         Caption = 'Study Period'
         TabOrder = 4
         object Label8: TLabel
-          Left = 56
+          Left = 20
           Top = 39
           Width = 51
           Height = 13
-          Anchors = [akLeft, akTop, akRight]
           Caption = 'Start Date:'
         end
         object Label9: TLabel
-          Left = 56
+          Left = 20
           Top = 71
           Width = 48
           Height = 13
-          Anchors = [akLeft, akTop, akRight]
           Caption = 'End Date:'
         end
         object Label10: TLabel
-          Left = 120
+          Left = 84
           Top = 13
           Width = 22
           Height = 13
-          Anchors = [akLeft, akTop, akRight]
           Caption = 'Year'
         end
         object Label12: TLabel
-          Left = 171
+          Left = 135
           Top = 13
           Width = 30
           Height = 13
-          Anchors = [akLeft, akTop, akRight]
           Caption = 'Month'
         end
         object Label14: TLabel
-          Left = 208
+          Left = 172
           Top = 13
           Width = 19
           Height = 13
-          Anchors = [akLeft, akTop, akRight]
           Caption = 'Day'
         end
         object edtStudyPeriodStartDateYear: TEdit
-          Left = 120
+          Left = 84
           Top = 31
-          Width = 42
+          Width = 45
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           MaxLength = 4
           TabOrder = 0
           Text = '1900'
@@ -322,11 +317,10 @@ object frmAnalysis: TfrmAnalysis
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStudyPeriodEndDateYear: TEdit
-          Left = 120
+          Left = 84
           Top = 63
-          Width = 42
+          Width = 45
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           MaxLength = 4
           TabOrder = 3
           Text = '1900'
@@ -334,11 +328,10 @@ object frmAnalysis: TfrmAnalysis
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStudyPeriodStartDateMonth: TEdit
-          Left = 171
+          Left = 135
           Top = 31
-          Width = 26
+          Width = 29
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 1
@@ -347,11 +340,10 @@ object frmAnalysis: TfrmAnalysis
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStudyPeriodEndDateMonth: TEdit
-          Left = 171
+          Left = 135
           Top = 63
-          Width = 26
+          Width = 29
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 4
@@ -360,11 +352,10 @@ object frmAnalysis: TfrmAnalysis
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStudyPeriodStartDateDay: TEdit
-          Left = 208
+          Left = 172
           Top = 31
-          Width = 26
+          Width = 29
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 2
@@ -373,11 +364,10 @@ object frmAnalysis: TfrmAnalysis
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStudyPeriodEndDateDay: TEdit
-          Left = 208
+          Left = 172
           Top = 63
-          Width = 26
+          Width = 29
           Height = 21
-          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 5
@@ -392,14 +382,14 @@ object frmAnalysis: TfrmAnalysis
       ImageIndex = 1
       object Label16: TLabel
         Left = 12
-        Top = 384
+        Top = 364
         Width = 266
         Height = 13
         Caption = 'Monte Carlo replications (9, 999, or value ending in 999):'
       end
       object edtMontCarloReps: TEdit
         Left = 290
-        Top = 381
+        Top = 361
         Width = 65
         Height = 21
         MaxLength = 9
@@ -621,7 +611,7 @@ object frmAnalysis: TfrmAnalysis
       Caption = 'Time Parameters'
       ImageIndex = 3
       object gbxProspectiveSurveillance: TGroupBox
-        Left = 224
+        Left = 12
         Top = 8
         Width = 249
         Height = 137
@@ -708,7 +698,7 @@ object frmAnalysis: TfrmAnalysis
       object rdgSpatialOptions: TGroupBox
         Left = 8
         Top = 8
-        Width = 465
+        Width = 445
         Height = 162
         Caption = 'Spatial'
         TabOrder = 0
@@ -816,9 +806,9 @@ object frmAnalysis: TfrmAnalysis
           OnKeyPress = PositiveFloatKeyPress
         end
         object edtMaxCirclePopulationFilename: TEdit
-          Left = 66
+          Left = 57
           Top = 85
-          Width = 335
+          Width = 284
           Height = 21
           Anchors = []
           ParentShowHint = False
@@ -827,7 +817,7 @@ object frmAnalysis: TfrmAnalysis
           OnChange = edtMaxCirclePopulationFilenameChange
         end
         object btnBrowseMaxCirclePopFile: TButton
-          Left = 406
+          Left = 369
           Top = 85
           Width = 25
           Height = 21
@@ -849,7 +839,7 @@ object frmAnalysis: TfrmAnalysis
       object rdgTemporalOptions: TGroupBox
         Left = 8
         Top = 173
-        Width = 465
+        Width = 445
         Height = 112
         Caption = 'Temporal'
         TabOrder = 1
@@ -933,7 +923,7 @@ object frmAnalysis: TfrmAnalysis
       object gbxAdditionalOutputFiles: TGroupBox
         Left = 8
         Top = 60
-        Width = 465
+        Width = 437
         Height = 153
         Caption = 'Additional Optional Output Files:'
         TabOrder = 1
@@ -966,7 +956,7 @@ object frmAnalysis: TfrmAnalysis
           Caption = 'Simulated Log Likelihood Ratios/Test Statistics'
         end
         object ASCII: TLabel
-          Left = 338
+          Left = 314
           Top = 23
           Width = 27
           Height = 13
@@ -979,7 +969,7 @@ object frmAnalysis: TfrmAnalysis
           ParentFont = False
         end
         object lbldBaseOutput: TLabel
-          Left = 407
+          Left = 383
           Top = 23
           Width = 30
           Height = 13
@@ -992,7 +982,7 @@ object frmAnalysis: TfrmAnalysis
           ParentFont = False
         end
         object chkCensusAreasReportedClustersAscii: TCheckBox
-          Left = 344
+          Left = 320
           Top = 72
           Width = 16
           Height = 17
@@ -1001,7 +991,7 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 2
         end
         object chkClustersInColumnFormatAscii: TCheckBox
-          Left = 344
+          Left = 320
           Top = 48
           Width = 16
           Height = 17
@@ -1013,7 +1003,7 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 0
         end
         object chkRelativeRiskEstimatesAreaAscii: TCheckBox
-          Left = 344
+          Left = 320
           Top = 96
           Width = 16
           Height = 17
@@ -1022,14 +1012,14 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 4
         end
         object chkSimulatedLogLikelihoodRatiosAscii: TCheckBox
-          Left = 344
+          Left = 320
           Top = 120
           Width = 16
           Height = 17
           TabOrder = 6
         end
         object chkClustersInColumnFormatDBase: TCheckBox
-          Left = 414
+          Left = 390
           Top = 48
           Width = 16
           Height = 17
@@ -1038,7 +1028,7 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 1
         end
         object chkCensusAreasReportedClustersDBase: TCheckBox
-          Left = 414
+          Left = 390
           Top = 72
           Width = 16
           Height = 17
@@ -1047,42 +1037,18 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 3
         end
         object chkRelativeRiskEstimatesAreaDBase: TCheckBox
-          Left = 414
+          Left = 390
           Top = 96
           Width = 16
           Height = 17
           TabOrder = 5
         end
         object chkSimulatedLogLikelihoodRatiosDBase: TCheckBox
-          Left = 414
+          Left = 390
           Top = 120
           Width = 16
           Height = 17
           TabOrder = 7
-        end
-      end
-      object gbxCriteriaSecClusters: TGroupBox
-        Left = 8
-        Top = 222
-        Width = 465
-        Height = 50
-        Caption = 'Criteria for Reporting Secondary Clusters'
-        TabOrder = 2
-        object cmbCriteriaSecClusters: TComboBox
-          Left = 14
-          Top = 18
-          Width = 301
-          Height = 21
-          Style = csDropDownList
-          ItemHeight = 13
-          TabOrder = 0
-          Items.Strings = (
-            'No Geographical Overlap'
-            'No Cluster Centers in Other Clusters'
-            'No Cluster Centers in More Likely Clusters'
-            'No Cluster Centers in Less Likely Clusters'
-            'No Pairs of Centers Both in Each Others Clusters'
-            'No Restrictions = Most Likely Cluster for Each Grid Point')
         end
       end
       object pnlTop: TPanel
@@ -1103,7 +1069,7 @@ object frmAnalysis: TfrmAnalysis
         object edtResultFile: TEdit
           Left = 8
           Top = 24
-          Width = 427
+          Width = 301
           Height = 21
           AutoSelect = False
           ParentShowHint = False
@@ -1112,7 +1078,7 @@ object frmAnalysis: TfrmAnalysis
           OnChange = edtResultFileChange
         end
         object btnResultFileBrowse: TButton
-          Left = 441
+          Left = 317
           Top = 24
           Width = 30
           Height = 21
@@ -1132,14 +1098,23 @@ object frmAnalysis: TfrmAnalysis
       end
     end
   end
+  object btnAdvanced: TButton
+    Left = 500
+    Top = 32
+    Width = 72
+    Height = 24
+    Caption = 'Advanced...'
+    TabOrder = 1
+    OnClick = btnAdvancedParametersClick
+  end
   object OpenDialog1: TOpenDialog
-    Left = 408
+    Left = 364
   end
   object SaveDialog: TSaveDialog
     DefaultExt = '*.prm'
     Filter = 'Parameter Files (*.prm)|*.prm'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Title = 'Save Parameter File As'
-    Left = 440
+    Left = 392
   end
 end

@@ -38,7 +38,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TCheckBox *chkRelativeRiskEstimatesAreaDBase;
         TCheckBox *chkSimulatedLogLikelihoodRatiosAscii;
         TCheckBox *chkSimulatedLogLikelihoodRatiosDBase;
-   TComboBox *cmbCriteriaSecClusters;
         TEdit *edtCaseFileName;
         TEdit *edtControlFileName;
         TEdit *edtCoordinateFileName;
@@ -56,7 +55,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TGroupBox *rdgTemporalOptions;
    TGroupBox *gbxProspectiveSurveillance;
    TGroupBox *gbxAdditionalOutputFiles;
-   TGroupBox *gbxCriteriaSecClusters;
         TLabel *ASCII;
         TLabel *lblCensusAreasReportedClusters;
         TLabel *lblClustersInColumnFormat;
@@ -142,6 +140,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TEdit *edtStudyPeriodEndDateMonth;
    TEdit *edtStudyPeriodStartDateDay;
    TEdit *edtStudyPeriodEndDateDay;
+   TButton *btnAdvanced;
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall rgpPrecisionTimesClick(TObject *Sender);
         void __fastcall btnCaseBrowseClick(TObject *Sender);
@@ -186,6 +185,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         void __fastcall rdoTemproalMaxClusterClick(TObject *Sender);
         void __fastcall edtMaxTemporalClusterSizeUnitsExit(
           TObject *Sender);
+   void __fastcall btnAdvancedParametersClick(TObject *Sender);
 
   private:	
     PrintNull                   gNullPrint;
