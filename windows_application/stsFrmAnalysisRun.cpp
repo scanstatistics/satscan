@@ -159,13 +159,13 @@ void __fastcall TfrmAnalysisRun::OnEMailClick(TObject *Sender) {
       sprintf ( sMsgTitle, "%s -- %s -- Automated Error Message", Application->Title.c_str(), VERSION_NUMBER );
       sMsgTitle[lMsgTitleLength] = 0;
 
-      sMessageText = "--Job Progress Info--\n";
+      sMessageText = "--Job Progress Information--\n";
       sMessageText += rteAnalysisBox->Lines->GetText();
-      sMessageText += "\n\n\n--Warnings/Errors Info--\n";
+      sMessageText += "\n\n\n--Warnings/Errors Information--\n";
       sMessageText += rteWarningsBox->Lines->GetText();
       sMessageText += "\n\n";
       if (!gsProgramErrorCallPath.empty()) {
-        sMessageText += "--Call Path Info--\n\n";
+        sMessageText += "--Call Path Information--\n\n";
         sMessageText += gsProgramErrorCallPath.c_str();
         sMessageText += "\n\n";
       }
