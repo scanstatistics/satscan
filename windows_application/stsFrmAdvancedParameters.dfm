@@ -58,7 +58,6 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           'Nonparametric, with time stratified randomization'
           'Log linear with')
         TabOrder = 0
-        TabStop = True
         OnClick = rdgTemporalTrendAdjClick
       end
       object edtLogLinear: TEdit
