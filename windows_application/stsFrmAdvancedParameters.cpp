@@ -103,9 +103,7 @@ void __fastcall TfrmAdvancedParameters::edtAdjustmentsByRelativeRisksFileChange(
 
 /** event triggered when 'Report only clusters smaller than ...' edit control is exited */
 void __fastcall TfrmAdvancedParameters::edtReportClustersSmallerThanExit(TObject *Sender) {
-  if (!edtReportClustersSmallerThan->Text.Length()
-       || atof(edtReportClustersSmallerThan->Text.c_str()) == 0
-       || atof(edtReportClustersSmallerThan->Text.c_str()) > atof(gAnalysisSettings.edtMaxSpatialClusterSize->Text.c_str()))
+  if (!edtReportClustersSmallerThan->Text.Length() || atof(edtReportClustersSmallerThan->Text.c_str()) == 0)
     edtReportClustersSmallerThan->Text = gAnalysisSettings.edtMaxSpatialClusterSize->Text;
 }
 
@@ -381,10 +379,10 @@ void TfrmAdvancedParameters::Setup() {
       edtLogLinear->Text = ref.GetTimeTrendAdjustmentPercentage();
     edtMaxCirclePopulationFilename->Text = ref.GetMaxCirclePopulationFileName().c_str();
     chkTerminateEarly->Checked = ref.GetTerminateSimulationsEarly();
-    if (ref.GetMaximumReportedGeoClusterSize() > atof(gAnalysisSettings.edtMaxSpatialClusterSize->Text.c_str()))
-      edtReportClustersSmallerThan->Text = gAnalysisSettings.edtMaxSpatialClusterSize->Text;
-    else
+    if (ref.GetMaximumReportedGeoClusterSize() > 0)
       edtReportClustersSmallerThan->Text = ref.GetMaximumReportedGeoClusterSize();
+    else
+      edtReportClustersSmallerThan->Text = 50;
     chkRestrictReportedClusters->Checked = ref.GetRestrictingMaximumReportedGeoClusterSize();
     chkRestrictTemporalRange->Checked = ref.GetIncludeClustersType() == CLUSTERSINRANGE;
     if (ref.GetStartRangeStartDate().length() > 0)
@@ -456,7 +454,7 @@ void TfrmAdvancedParameters::ValidateInputFilesSettings() {
                            "in which no Maximum Circle Population file is required.",
                            "ValidateInputFilesSettings()", *edtMaxCirclePopulationFilename);
 
-    if (gAnalysisSettings.gParameters.GetAnalysisType() == PROSPECTIVESPACETIME &&
+    if (gAnalysisSettings.GetAnalysisControlType() == PROSPECTIVESPACETIME &&
         gAnalysisSettings.chkAdjustForEarlierAnalyses->Checked && gAnalysisSettings.rdoSpatialPercentage->Checked &&
         gAnalysisSettings.rdoSpatialPercentage->Enabled && !edtMaxCirclePopulationFilename->Text.Length())
       GenerateAFException("For a Prospective Space-Time analysis adjusting for ealier analyses,\n"
