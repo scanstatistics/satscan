@@ -14,22 +14,25 @@ USELIB("ziplib\zziplibrary\zlib.lib");
 USEFORM("dlgULA.cpp", ssDlgULA);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+static const char VER_ID_OPTION_STRING[] = "-ver_id";
 static const char ULA_RTF_FILENAME[] = "SaTScanLicenseAgreement.rtf";
              try {
                Application->Initialize();
                if (_argc < 3)
-                 throw std::runtime_error("Invalid argument count.\nUsage: 'archive filename' 'launch application' [-omit_ula]");
+                 throw std::runtime_error("Invalid argument count.\nUsage: 'archive filename' 'launch application' [-ver_id[=val]]");
                //check and show End User License Agreement if not "unrequested":
                char * * ppcOmitULA_Parameter(_argv);
-               while ( (ppcOmitULA_Parameter < (_argv + _argc)) && (strnicmp(*ppcOmitULA_Parameter, "-omit_ula", 9)) )
+               while ( (ppcOmitULA_Parameter < (_argv + _argc)) && (strnicmp(*ppcOmitULA_Parameter, VER_ID_OPTION_STRING, sizeof(VER_ID_OPTION_STRING)-1)) )
                  ++ppcOmitULA_Parameter;
-               if (ppcOmitULA_Parameter == (_argv+_argc)) {//option "omit_ula" not found
+               if (ppcOmitULA_Parameter == (_argv+_argc)) {//option "-ver_id" not found
                  if(access(ULA_RTF_FILENAME, 0)!=0)//ULA file doesn't exist
-                   throw update_cancelled("User License Agreement not available.");
+                   throw std::runtime_error("User License Agreement file not available.");
                  std::auto_ptr<TssDlgULA> pula(new TssDlgULA(Application));
                  pula->rdtULA->Lines->LoadFromFile(ULA_RTF_FILENAME);
                  if (pula->ShowModal() != mrYes)
                    throw update_cancelled("User License Agreement not accepted.");
+               }
+               else {//option "-ver_id" found: no logic right now.  Later we might check for "=something".
                }
                //run the update:
                TfrmMain(Application).RunUpdate(_argv[1]);

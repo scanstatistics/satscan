@@ -98,7 +98,7 @@ USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;
         AnsiString      sUpdateParameter;
-        AnsiString      sOmitULA_Parameter("-omit_ula");
+        AnsiString      sOmitULA_Parameter(AnsiString("-ver_id=") + VERSION_ID);
         int i;
 
         try {
