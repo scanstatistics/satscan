@@ -198,7 +198,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, StringParser & Par
     if (!ConvertCountDateToJulian(Parser, szDescription, nDate))
       return false;
     iCategoryOffSet = m_pParameters->GetPrecisionOfTimesType() == NONE ? 2 : 3;
-    if (! ParseCovariates(iCategoryIndex, iCategoryOffSet, szDescription, Parser.GetReadCount(), Parser))
+    if (! ParseCovariates(iCategoryIndex, iCategoryOffSet, szDescription, Parser))
         return false;
   }
   catch (ZdException &x) {
@@ -209,7 +209,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, StringParser & Par
 }
 
 /** Parses count file data line to determine category index given covariates contained in line.*/
-bool CSaTScanData::ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, const char*  szDescription, int nRec, StringParser & Parser) {
+bool CSaTScanData::ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, const char*  szDescription, StringParser & Parser) {
   int                          iNumCovariatesScanned=0;
   std::vector<std::string>     vCategoryCovariates;
   const char                 * pCovariate;
@@ -223,20 +223,20 @@ bool CSaTScanData::ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, c
       }
       if (iNumCovariatesScanned != gPopulationCategories.GetNumPopulationCategoryCovariates()) {
         gpPrint->PrintInputWarning("Error: Record %ld of case file contains %d covariate%s but the population file\n",
-                                   nRec, iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"));
+                                   Parser.GetReadCount(), iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"));
         gpPrint->PrintInputWarning("       defined the number of covariates as %d.\n", gPopulationCategories.GetNumPopulationCategoryCovariates());
         return false;
       }
       //category should already exist
       if ((iCategoryIndex = gPopulationCategories.GetPopulationCategoryIndex(vCategoryCovariates)) == -1) {
-        gpPrint->PrintInputWarning("Error: Record %ld of case file refers to a population category that\n", nRec);
+        gpPrint->PrintInputWarning("Error: Record %ld of case file refers to a population category that\n", Parser.GetReadCount());
         gpPrint->PrintInputWarning("       does not match an existing category as read from population file.");
         return false;
       }
     }
     else if (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION || m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
         //First category created sets precedence as to how many covariates remaining records must have.
-        if ((iCategoryIndex = gPopulationCategories.MakePopulationCategory(szDescription, Parser, nRec, iCovariatesOffset, *gpPrint)) == -1)
+        if ((iCategoryIndex = gPopulationCategories.MakePopulationCategory(szDescription, Parser, iCovariatesOffset, *gpPrint)) == -1)
           return false;
     }
     else
@@ -911,7 +911,7 @@ bool CSaTScanData::ReadPopulationFile() {
           }
           //Scan for covariates to create population categories or find index.
           //First category created sets precedence as to how many covariates remaining records must have.
-          if ((iCategoryIndex = gPopulationCategories.MakePopulationCategory("population", Parser, iRecNum, 3, *gpPrint)) == -1) {
+          if ((iCategoryIndex = gPopulationCategories.MakePopulationCategory("population", Parser, 3, *gpPrint)) == -1) {
             bValid = false;
             continue;
           }

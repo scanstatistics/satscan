@@ -186,7 +186,8 @@ class CSaTScanData {
     inline measure_t                            GetTotalMeasure() const {return m_nTotalMeasure;}
     double                                      GetTotalPopulationCount() const;
     virtual void                                MakeData(int iSimulationNumber);
-    bool                                        ParseCountLine(const char*  szDescription, StringParser & Parser, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex);    bool                                        ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, const char*  szDescription, int nRec, StringParser & Parser);
+    bool                                        ParseCountLine(const char*  szDescription, StringParser & Parser, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex);
+    bool                                        ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, const char*  szDescription, StringParser& Parser);
     bool                                        ReadCaseFile();
     bool                                        ReadControlFile();
     bool                                        ReadCoordinatesFile();
