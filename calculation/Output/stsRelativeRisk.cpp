@@ -56,7 +56,7 @@ void RelativeRiskData::RecordRelativeRiskData(const CSaTScanData& DataHub) {
           pRecord->GetFieldValue(GetFieldNumber(LOC_ID_FIELD)).AsZdString() = GetLocationId(sBuffer, t, DataHub);
           pRecord->GetFieldValue(GetFieldNumber(DATASTREAM_FIELD)).AsDouble() = i + 1;
           pRecord->GetFieldValue(GetFieldNumber(OBSERVED_FIELD)).AsDouble() = pCases[t];
-          dExpected = DataHub.GetMeasureAdjustment() * pMeasure[t];
+          dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
           pRecord->GetFieldValue(GetFieldNumber(EXPECTED_FIELD)).AsDouble() = dExpected;
           if (dExpected)
             pRecord->GetFieldValue(GetFieldNumber(REL_RISK_FIELD)).AsZdString().printf("%12.3f",
@@ -97,7 +97,7 @@ void RelativeRiskData::RecordRelativeRiskData(const CSVTTData& DataHub) {
           pRecord->GetFieldValue(GetFieldNumber(LOC_ID_FIELD)).AsZdString() = GetLocationId(sBuffer, t, DataHub);
           pRecord->GetFieldValue(GetFieldNumber(DATASTREAM_FIELD)).AsDouble() = i + 1;
           pRecord->GetFieldValue(GetFieldNumber(OBSERVED_FIELD)).AsDouble() = pCases[t];
-          dExpected = DataHub.GetMeasureAdjustment() * pMeasure[t];
+          dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
           pRecord->GetFieldValue(GetFieldNumber(EXPECTED_FIELD)).AsDouble() = dExpected;
           if (dExpected)
             pRecord->GetFieldValue(GetFieldNumber(REL_RISK_FIELD)).AsZdString().printf("%12.3f",

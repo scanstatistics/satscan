@@ -61,8 +61,8 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CS
            pRecord->SetFieldIsBlank(GetFieldNumber(AREA_RSK_FIELD), true);
          }
          pRecord->GetFieldValue(GetFieldNumber(CLU_OBS_FIELD)).AsDouble() = theCluster.GetCaseCount(0);
-         pRecord->GetFieldValue(GetFieldNumber(CLU_EXP_FIELD)).AsDouble() = theData.GetMeasureAdjustment() * theCluster.GetMeasure(0);
-         pRecord->GetFieldValue(GetFieldNumber(REL_RISK_FIELD)).AsDouble() = theCluster.GetRelativeRisk(theData.GetMeasureAdjustment());
+         pRecord->GetFieldValue(GetFieldNumber(CLU_EXP_FIELD)).AsDouble() = theData.GetMeasureAdjustment(0) * theCluster.GetMeasure(0);
+         pRecord->GetFieldValue(GetFieldNumber(REL_RISK_FIELD)).AsDouble() = theCluster.GetRelativeRisk(theData.GetMeasureAdjustment(0));
        }
        BaseOutputStorageClass::AddRecord(pRecord);
     }
