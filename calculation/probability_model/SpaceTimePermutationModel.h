@@ -15,16 +15,16 @@ class CSimulationTimeRandomizer
 {
   private:
    int			m_nTimeIntervalIndex;
-   double		m_dRandomNumber;
+   float		m_fRandomNumber;
    
   public:
-   CSimulationTimeRandomizer(int nTimeIntervalIndex=0, double dRandomNumber=0) {SetTimeIntervalIndex(nTimeIntervalIndex);
-                                                                                SetRandomNumber(dRandomNumber);}
+   CSimulationTimeRandomizer(int nTimeIntervalIndex=0, float fRandomNumber=0) {SetTimeIntervalIndex(nTimeIntervalIndex);
+                                                                                SetRandomNumber(fRandomNumber);}
    virtual ~CSimulationTimeRandomizer() {}
 
-   double		GetRandomNumber() const {return m_dRandomNumber;}
+   float		GetRandomNumber() const {return m_fRandomNumber;}
    int			GetTimeIntervalIndex() const {return m_nTimeIntervalIndex;}
-   void			SetRandomNumber(double d) {m_dRandomNumber=d;}
+   void			SetRandomNumber(float f) {m_fRandomNumber=f;}
    void			SetTimeIntervalIndex(int n) {m_nTimeIntervalIndex=n;}
 };
 
