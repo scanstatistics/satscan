@@ -138,7 +138,7 @@ void CMinMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
      }
   }
 
-  for (i=max(iHalfListSize, 2); i <= iListSize; i++) {
+  for (i=std::max(iHalfListSize, 2); i <= iListSize; i++) {
      if (gpMinMeasures[i] != 0 && i * dTotalMeasure > gpMinMeasures[i] * iListSize) {
        dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
@@ -165,7 +165,7 @@ void CMinMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
      }
   }
 
-  for (i=max(iHalfListSize, 2); i <= iListSize; i++) {
+  for (i=std::max(iHalfListSize, 2); i <= iListSize; i++) {
      if (gpMinMeasures[i] != 0 && i > gpMinMeasures[i]) {
        dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
