@@ -1,4 +1,5 @@
-// main.cpp
+#include "SaTScan.h"
+#pragma hdrstop
 //---------------------------------------------------------------------------
 
 #include <time.h>
