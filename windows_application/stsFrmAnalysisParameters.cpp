@@ -75,6 +75,30 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
   }
 }
 //---------------------------------------------------------------------------
+/** Button click event for case file import
+    Shows open file dialog to select file to import as a case file; then
+    launches the import wizard to guide the user through the import process.
+    Finally, the appropriate case file interface controls are set.*/
+void __fastcall TfrmAnalysis::btnCaseImportClick(TObject *Sender) {
+  InputFileType eType = Case;
+  const char * sFile;
+  
+  try {
+    OpenDialog1->FileName =  "";
+    OpenDialog1->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Case files (*.cas)|*.cas|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog1->Title = "Select Source Case File";
+    if (OpenDialog1->Execute()) {
+       sFile = LaunchImporter(OpenDialog1->FileName.c_str(), eType);
+       //if (strlen(sFile))
+       //   SetCaseFile(sFile);
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("btnCaseImportClick()", "TfrmAnalysis");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
 /** button click event for control file browse
     - shows open dialog and sets appropriate control file interface controls */
 void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
@@ -792,15 +816,27 @@ bool TfrmAnalysis::IsValidReplicationRequest(int iReplications) {
 
 //---------------------------------------------------------------------------
 /** Modally shows import dialog. */
-void TfrmAnalysis::LaunchImporter() {
+const char * TfrmAnalysis::LaunchImporter(const char * sFileName, InputFileType eFileType) {
+  const char *sNewFile = "";
+
   try {
-    std::auto_ptr<TBDlgDataImporter> pDialog(new TBDlgDataImporter(0, *this));
-    pDialog->ShowModal();
+    std::auto_ptr<TBDlgDataImporter> pDialog(new TBDlgDataImporter(this, sFileName, eFileType, (CoordinatesType)rgpCoordinates->ItemIndex));
+    if (pDialog->ShowModal() == mrOk) {
+       // set parameters
+       switch (eFileType) {
+          case Case :  SetCaseFile(pDialog->GetDestinationFilename());
+                       SetPrecisionOfTimesControl(pDialog->GetDateFieldImported()? DAY : NONE);
+                       break;
+       };
+       // return file name to calling function to set in appropriate control
+       //sNewFile = ;
+    }
   }
   catch (ZdException & x) {
     x.AddCallpath("LaunchImporter()", "TfrmAnalysis");
     throw;
   }
+  return sNewFile;
 }
 
 //---------------------------------------------------------------------------
@@ -1419,14 +1455,6 @@ void TfrmAnalysis::WriteSession(const char * sParameterFilename) {
     x.AddCallpath("WriteSession()", "TfrmAnalysis");
     throw;
   }
-}
-//---------------------------------------------------------------------------
-
-
-
-void __fastcall TfrmAnalysis::btnImportFileClick(TObject *Sender)
-{
-   LaunchImporter();
 }
 //---------------------------------------------------------------------------
 

@@ -86,7 +86,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TRadioButton *rdoUnitMonths;
    TRadioButton *rdoUnitDay;
    TEdit *edtTimeIntervalLength;
-   TButton *btnImportFile;
    TLabel *Label11;
    TLabel *Label13;
    TGroupBox *GroupBox1;
@@ -119,10 +118,16 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TEdit *edtStudyPeriodEndDateMonth;
    TLabel *Label18;
    TEdit *edtStudyPeriodEndDateDay;
+   TSpeedButton *btnCaseImport;
+   TSpeedButton *btnControlImport;
+   TSpeedButton *btnPopImport;
+   TSpeedButton *btnCoordImport;
+   TSpeedButton *btnGridImport;
    
    void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
    void __fastcall rgpPrecisionTimesClick(TObject *Sender);
    void __fastcall btnCaseBrowseClick(TObject *Sender);
+   void __fastcall btnCaseImportClick(TObject *Sender);
    void __fastcall btnControlBrowseClick(TObject *Sender);
    void __fastcall btnPopBrowseClick(TObject *Sender);
    void __fastcall btnCoordBrowseClick(TObject *Sender);
@@ -149,7 +154,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    void __fastcall edtResultFileChange(TObject *Sender);
    void __fastcall FormActivate(TObject *Sender);
    void __fastcall btnAdvancedParametersClick(TObject *Sender);
-   void __fastcall btnImportFileClick(TObject *Sender);
 
   private:
     PrintNull                   gNullPrint;
@@ -204,7 +208,7 @@ public:		// User declarations
 
     const char                * GetFileName();
     CParameters               * GetSession();
-    void                        LaunchImporter();
+    const char                * LaunchImporter(const char * sFileName, InputFileType eFileType) ;
     void                        SaveAs();
     void                        SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsByRelativeRisksFileName);
     void                        SetCaseFile(const char * sCaseFileName);
