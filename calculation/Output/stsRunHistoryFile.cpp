@@ -83,7 +83,7 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
       ::CreateNewField(gvFields, MAX_GEO_EXTENT_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
       ::CreateNewField(gvFields, MAX_TIME_EXTENT_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
       ::CreateNewField(gvFields, INTERVAL_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
-      ::CreateNewField(gvFields, ALIVE_ONLY_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
+      ::CreateNewField(gvFields, ALIVE_ONLY_FIELD, ZD_ALPHA_FLD, 8, 0, uwOffset);
       ::CreateNewField(gvFields, TIME_TREND_ADJUSTMENT_FIELD, ZD_ALPHA_FLD, 20, 0, uwOffset);
       ::CreateNewField(gvFields, COVARIATES_FIELD, ZD_NUMBER_FLD, 3, 0, uwOffset);
       ::CreateNewField(gvFields, MONTE_CARLO_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
@@ -110,6 +110,23 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
    }
    catch (ZdException &x) {
       gpPrintDirection->SatScanPrintWarning("Unable to create run history file - %s\n", gsFilename.GetCString());
+      throw;
+   }
+}
+
+// formats the alive clusters only string to be written to file
+// pre:  iAnalysis type is an element of (PURELYSPATIAL, PURELYTEMPORAL, ...) enum defined in CParamaters
+// post: will return a "n/a" string if PurelySpatial or Prospective SpaceTime analysis, else will return
+//       "true" or "false" string
+void stsRunHistoryFile::GetAliveClustersOnlyString(ZdString& sTempValue, int iAnalysisType, bool bAliveOnly) {
+   try {
+      if (iAnalysisType == PURELYSPATIAL || iAnalysisType == PROSPECTIVESPACETIME)
+         sTempValue = "n/a";
+      else
+         sTempValue = (bAliveOnly ? "true" : "false");
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("GetAliveClustersOnlyString()", "stsRunHistoryFile");
       throw;
    }
 }
@@ -168,19 +185,25 @@ void stsRunHistoryFile::GetCasePrecisionString(ZdString& sTempValue, int iPrecis
 // them as ints to a legible string to be printed in the file
 // pre : 0 <= iUnits <= 3, sTempValue has been allocated
 // post: will assign the appropraite value to the string so that it can be printed
-void stsRunHistoryFile::GetIntervalUnitsString(ZdString& sTempValue, int iUnits) {
+void stsRunHistoryFile::GetIntervalUnitsString(ZdString& sTempValue, int iUnits, long lLength, int iAnalysisType) {
    try {
-      switch (iUnits) {
-         case 0:
-            sTempValue = "None"; break;
-         case 1:
-            sTempValue = "Year"; break;
-         case 2:
-            sTempValue = "Month"; break;
-         case 3:
-            sTempValue = "Day"; break;
-         default:
-            ZdException::GenerateNotification("Invalid interval units in run history file.", "GetIntervalUnitsString()");
+      if (iAnalysisType == PURELYSPATIAL)
+         sTempValue = "n/a";
+      else {
+         sTempValue << ZdString::reset << lLength << " ";
+
+         switch (iUnits) {
+            case 0:
+               sTempValue << "None"; break;
+            case 1:
+               sTempValue << "Year"; break;
+            case 2:
+               sTempValue << "Month"; break;
+            case 3:
+               sTempValue << "Day"; break;
+            default:
+               ZdException::GenerateNotification("Invalid interval units in run history file.", "GetIntervalUnitsString()");
+         }
       }
    }
    catch (ZdException &x) {
@@ -194,14 +217,19 @@ void stsRunHistoryFile::GetIntervalUnitsString(ZdString& sTempValue, int iUnits)
 // post: sets sTempValue to the number and units of max geo extent
 void stsRunHistoryFile::GetMaxGeoExtentString(ZdString& sTempValue, const CParameters& params) {
    try {
-      sTempValue << ZdString::reset << params.m_nMaxGeographicClusterSize << " ";
-      if(params.m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)
-         sTempValue << "%";
+      if(params.m_nAnalysisType == PURELYTEMPORAL)
+         sTempValue = "n/a";
       else {
-         if(params.m_nCoordType == CARTESIAN)
-            sTempValue << "Cartesian Units";
-         else
-            sTempValue << "Kilometers";
+         sTempValue.printf("%.2f", params.m_nMaxGeographicClusterSize);
+         sTempValue << " ";
+         if(params.m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)
+            sTempValue << "%";
+         else {
+            if(params.m_nCoordType == CARTESIAN)
+               sTempValue << "Cartesian Units";
+            else
+               sTempValue << "Kilometers";
+         }
       }
    }
    catch (ZdException &x) {
@@ -215,16 +243,21 @@ void stsRunHistoryFile::GetMaxGeoExtentString(ZdString& sTempValue, const CParam
 // post: sets sTempValue to the number and units of max temporal extent
 void stsRunHistoryFile::GetMaxTemporalExtentString(ZdString& sTempValue, const CParameters& params) {
    try {
-      sTempValue << ZdString::reset << params.GetInitialMaxTemporalClusterSize() << " ";
-      if(params.GetInitialMaxTemporalClusterSizeType() == PERCENTAGETYPE)
-         sTempValue << "%";
+      if (params.m_nAnalysisType == PURELYSPATIAL)
+         sTempValue = "n/a";
       else {
-         if(params.m_nIntervalUnits == 3)
-            sTempValue << "Days";
-         else if(params.m_nIntervalUnits == 2)
-            sTempValue << "Months";
-         else
-            sTempValue << "Years";
+         sTempValue.printf("%.2f",  params.GetInitialMaxTemporalClusterSize());
+         sTempValue << " ";
+         if(params.GetInitialMaxTemporalClusterSizeType() == PERCENTAGETYPE)
+            sTempValue << "%";
+         else {
+            if(params.m_nIntervalUnits == 3)
+               sTempValue << "Days";
+            else if(params.m_nIntervalUnits == 2)
+               sTempValue << "Months";
+            else
+               sTempValue << "Years";
+         }
       }
    }
    catch (ZdException &x) {
@@ -280,17 +313,21 @@ void stsRunHistoryFile::GetRatesString(ZdString& sTempValue, int iRate) {
 // converts the iType to a legible string for printing
 //  pre : iType is conatined in (NOTADJUSTED, NONPARAMETRIC, LINEAR)
 // post : string will be assigned a formatted value based upon iType
-void stsRunHistoryFile::GetTimeAdjustmentString(ZdString& sTempValue, int iType) {
+void stsRunHistoryFile::GetTimeAdjustmentString(ZdString& sTempValue, int iType, int iAnalysisType) {
    try {
-      switch(iType) {
-         case NOTADJUSTED :
-            sTempValue = "None"; break;
-         case NONPARAMETRIC :
-            sTempValue = "Non-parametric"; break;
-         case LINEAR :
-            sTempValue = "Linear"; break;
-         default :
-            ZdException::GenerateNotification("Invalid time trend adjuestment type in run history file.", "stsRunHistoryFile");   
+      if (iAnalysisType == PURELYSPATIAL)
+         sTempValue = "n/a";
+      else {
+         switch(iType) {
+            case NOTADJUSTED :
+               sTempValue = "None"; break;
+            case NONPARAMETRIC :
+               sTempValue = "Non-parametric"; break;
+            case LINEAR :
+               sTempValue = "Linear"; break;
+            default :
+               ZdException::GenerateNotification("Invalid time trend adjuestment type in run history file.", "stsRunHistoryFile");
+         }
       }
    }
    catch (ZdException &x) {
@@ -385,11 +422,9 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       // max temporal extent field
       GetMaxTemporalExtentString(sTempValue, params);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, MAX_TIME_EXTENT_FIELD));
- //     SetDoubleField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_nInitialMaxClusterSizeType, GetFieldNumber(gvFields, MAX_GEO_EXTENT_FIELD));   //
- //     SetDoubleField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_nInitialMaxTemporalClusterSize, GetFieldNumber(gvFields, MAX_TIME_EXTENT_FIELD));
 
       // time trend adjustment field
-      GetTimeAdjustmentString(sTempValue, params.m_nTimeAdjustType);
+      GetTimeAdjustmentString(sTempValue, params.m_nTimeAdjustType, params.m_nAnalysisType);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, TIME_TREND_ADJUSTMENT_FIELD));
 
       // covariates number
@@ -398,12 +433,13 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetBoolField(*pRecord, params.UseSpecialGrid(), GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field
       SetStringField(*pRecord, params.m_szStartDate, GetFieldNumber(gvFields, START_DATE_FIELD));  // start date field
       SetStringField(*pRecord, params.m_szEndDate, GetFieldNumber(gvFields, END_DATE_FIELD)); // end date field
-      SetBoolField(*pRecord, params.m_bAliveClustersOnly, GetFieldNumber(gvFields, ALIVE_ONLY_FIELD)); // alive clusters only field
+
+      GetAliveClustersOnlyString(sTempValue, params.m_nAnalysisType, params.m_bAliveClustersOnly);
+      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ALIVE_ONLY_FIELD)); // alive clusters only field
 
       // interval field
-      GetIntervalUnitsString(sTempValue, params.m_nIntervalUnits);
-      sInterval << params.m_nIntervalLength << " " << sTempValue;
-      SetStringField(*pRecord, sInterval, GetFieldNumber(gvFields, INTERVAL_FIELD));
+      GetIntervalUnitsString(sTempValue, params.m_nIntervalUnits, params.m_nIntervalLength, params.m_nAnalysisType);
+      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, INTERVAL_FIELD));
 
       // p-value field
       if(gbPrintPVal)
