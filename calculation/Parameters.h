@@ -67,6 +67,7 @@ extern const char*      ADJUSTMENTS_BY_RR_FILE_LINE;
 extern const char*      USE_ADJUSTMENTS_BY_RR_FILE_LINE;
 extern const char*      MAX_CIRCLE_POP_FILE_LINE;
 extern const char*      SPATIAL_ADJ_TYPE_LINE;
+extern const char*      MULTI_STREAM_PURPOSE_TYPE_LINE;
 
 /** sequential scan ini section */
 extern const char*      SEQUENTIAL_SCAN_SECTION;
@@ -144,7 +145,8 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     INTERVAL_ENDRANGE, TIMETRENDCONVRG, MAXCIRCLEPOPFILE, EARLY_SIM_TERMINATION,
                                     REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE, SIMULATION_TYPE,
                                     SIMULATION_SOURCEFILE, ADJ_BY_RR_FILE, OUTPUT_SIMULATION_DATA,
-                                    SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE};
+                                    SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE,
+                                    MULTI_STREAM_PURPOSE_TYPE};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -176,11 +178,14 @@ enum SpatialSizeType               {PERCENTOFPOPULATIONTYPE=0, DISTANCETYPE, PER
 enum ReadType                      {INI=0, SCAN};
 /** defines how simulated data will be created - only pertinent for Poisson */
 enum SimulationType                {STANDARD=0, HA_RANDOMIZATION, FILESOURCE};
+/** purpose of multiple data streams */
+enum MultipleStreamPurposeType     {MULTIVARIATE=0, ADJUSTMENT};
 
 class DataStreamHandler; /** forward class declaration */
 
 class CParameters {
   private:
+    MultipleStreamPurposeType           geMultipleStreamPurposeType;            /** purpose for multiple data streams */  
     AnalysisType                        geAnalysisType;                         /** analysis type */
     ProbabiltyModelType                 geProbabiltyModelType;                  /** probabilty model type */
     AreaRateType                        geAreaScanRate;                         /** areas incidence rate type of interest */
@@ -375,6 +380,7 @@ class CParameters {
     float                               GetMaximumTemporalClusterSize() const {return gfMaxTemporalClusterSize;}
     TemporalSizeType                    GetMaximumTemporalClusterSizeType() const {return geMaxTemporalClusterSizeType;}
     float                               GetMaximumReportedGeoClusterSize() const {return gfMaxReportedGeographicClusterSize;}
+    MultipleStreamPurposeType           GetMultipleDataStreamPurposeType() const {return geMultipleStreamPurposeType;}         
     unsigned int                        GetNumDataStreams() const {return gvCaseFilenames.size();}
     unsigned int                        GetNumReplicationsRequested() const {return giReplications;}
     int                                 GetNumRequestedEllipses() const {return giNumberEllipses;}
@@ -454,6 +460,7 @@ class CParameters {
     void                                SetMaximumSpacialClusterSizeType(SpatialSizeType eSpatialSizeType);
     void                                SetMaximumTemporalClusterSize(float fMaxTemporalClusterSize);
     void                                SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSizeType);
+    void                                SetMultipleDataStreamPurposeType(MultipleStreamPurposeType eType);         
     void                                SetNumDataStreams(unsigned int iNumStreams);
     void                                SetNumberEllipses(int iNumEllipses);
     void                                SetNumberEllipsoidRotations(int iNumberRotations, int iEllipsoidIndex=-1);

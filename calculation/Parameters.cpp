@@ -88,6 +88,7 @@ const char*      ADJUSTMENTS_BY_RR_FILE_LINE            = "AdjustmentsByKnownRel
 const char*      USE_ADJUSTMENTS_BY_RR_FILE_LINE        = "UseAdjustmentsByRRFile";
 const char*      MAX_CIRCLE_POP_FILE_LINE               = "MaxCirclePopulationFile";
 const char*      SPATIAL_ADJ_TYPE_LINE                  = "SpatialAdjustmentType";
+const char*      MULTI_STREAM_PURPOSE_TYPE_LINE         = "MultipleDataStreamPurposeType";
 
 const int        MAXIMUM_SEQUENTIAL_ANALYSES    	= 32000;
 const int        MAXIMUM_ELLIPSOIDS             	= 10;
@@ -114,9 +115,9 @@ const char*      DAY_PRECISION_TYPE             	= "days";
 /** width of ASCII results file line */
 const unsigned int PRINT_WIDTH                          = 65;
 
-int CParameters::giNumParameters 			= 66;
+int CParameters::giNumParameters 			= 67;
 
-char mgsVariableLabels[67][100] = {
+char mgsVariableLabels[68][100] = {
    "Analysis Type", "Scan Areas", "Case File", "Population File",
    "Coordinates File", "Results File", "Precision of Case Times",
    "Not applicable", "Special Grid File Use", "Grid File",
@@ -143,7 +144,7 @@ char mgsVariableLabels[67][100] = {
    "Restrict Reported Max Geographical Cluster Size", "Simulation Method Type",
    "Simulated Data Import File", "Adjustments By Known Relative Risks File", "Printing Simulated Data",
    "Simulated Data Output File", "Adjust for Earlier Analyses", "Use Adjustments By Known Relative Risks File",
-   "Spatial Adjustments Type"
+   "Spatial Adjustments Type", "Multiple Data Stream Purpose"
 };
 
 /** Constructor */
@@ -276,6 +277,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gbAdjustForEarlierAnalyses          = rhs.gbAdjustForEarlierAnalyses;
     gbUseAdjustmentsForRRFile           = rhs.gbUseAdjustmentsForRRFile;
     geSpatialAdjustmentType             = rhs.geSpatialAdjustmentType;
+    geMultipleStreamPurposeType         = rhs.geMultipleStreamPurposeType;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -438,7 +440,16 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
       case LATLON    : fprintf(fp, "Latitude/Longitude\n"); break;
       default : ZdException::Generate("Unknown coordinated type '%d'.\n", "DisplayParameters()", geCoordinatesType);
     }
-
+    if (GetNumDataStreams() > 1) {
+      fprintf(fp, "  Purpose of Multiple Data Streams : ");
+      switch (geMultipleStreamPurposeType) {
+        case MULTIVARIATE : fprintf(fp, "Multivariate Analysis\n"); break;
+        case ADJUSTMENT    : fprintf(fp, "Adjustment\n"); break;
+        default : ZdException::Generate("Unknown purpose for multiple streams type '%d'.\n",
+                                        "DisplayParameters()", geMultipleStreamPurposeType);
+      }
+    }
+    
     fprintf(fp, "\nAnalysis\n");
     fprintf(fp, "--------\n");
 
@@ -920,6 +931,7 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
         case ADJ_FOR_EALIER_ANALYSES   : sParameterLineLabel = ADJUST_EALIER_ANALYSES_LINE; break;
         case USE_ADJ_BY_RR_FILE        : sParameterLineLabel = USE_ADJUSTMENTS_BY_RR_FILE_LINE; break;
         case SPATIAL_ADJ_TYPE          : sParameterLineLabel = SPATIAL_ADJ_TYPE_LINE; break;
+        case MULTI_STREAM_PURPOSE_TYPE : sParameterLineLabel = MULTI_STREAM_PURPOSE_TYPE_LINE; break;
         default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLineLabel()", eParameterType);
       };
     }
@@ -1217,6 +1229,7 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case ADJ_FOR_EALIER_ANALYSES  : sDefaultValue = (gbAdjustForEarlierAnalyses ? YES : NO); break;
       case USE_ADJ_BY_RR_FILE       : sDefaultValue = (gbUseAdjustmentsForRRFile ? YES : NO); break;
       case SPATIAL_ADJ_TYPE         : sDefaultValue = geSpatialAdjustmentType; break;
+      case MULTI_STREAM_PURPOSE_TYPE: sDefaultValue = geMultipleStreamPurposeType; break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -1275,6 +1288,7 @@ void CParameters::ReadAdvancedFeatures(ZdIniFile& file, BasePrint & PrintDirecti
     ReadIniParameter(*pSection, SIMULATION_DATA_OUTFILE_LINE, SIMULATION_DATA_OUTFILE, PrintDirection);
     ReadIniParameter(*pSection, MAX_CIRCLE_POP_FILE_LINE, MAXCIRCLEPOPFILE, PrintDirection);
     ReadIniParameter(*pSection, SPATIAL_ADJ_TYPE_LINE, SPATIAL_ADJ_TYPE, PrintDirection);
+    ReadIniParameter(*pSection, MULTI_STREAM_PURPOSE_TYPE_LINE, MULTI_STREAM_PURPOSE_TYPE, PrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadAdvancedFeatures()", "CParameters");
@@ -1821,6 +1835,7 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case ADJ_FOR_EALIER_ANALYSES   : SetAdjustForEarlierAnalyses(ReadBoolean(sParameter, eParameterType)); break;
       case USE_ADJ_BY_RR_FILE        : SetUseAdjustmentForRelativeRisksFile(ReadBoolean(sParameter, eParameterType)); break;
       case SPATIAL_ADJ_TYPE          : SetSpatialAdjustmentType((SpatialAdjustmentType)ReadInt(sParameter, eParameterType)); break;
+      case MULTI_STREAM_PURPOSE_TYPE : SetMultipleDataStreamPurposeType((MultipleStreamPurposeType)ReadInt(sParameter, eParameterType));
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","ReadParameter()", eParameterType);
     };
   }
@@ -2083,6 +2098,8 @@ void CParameters::SaveAdvancedFeaturesSection(ZdIniFile& file) {
     pSection->AddLine(MAX_CIRCLE_POP_FILE_LINE, gsMaxCirclePopulationFileName.c_str());
     pSection->AddComment(" Spatial Adjustments Type (no spatial adjustment=0, spatially stratified randomization=1)");
     pSection->AddLine(SPATIAL_ADJ_TYPE_LINE, AsString(sValue, geSpatialAdjustmentType));
+    pSection->AddComment(" Multiple Data Streams Purpose Type (multivariate=0, adjustment=1)");
+    pSection->AddLine(MULTI_STREAM_PURPOSE_TYPE_LINE, AsString(sValue, geMultipleStreamPurposeType));
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveAdvancedFeaturesSection()","CParameters");
@@ -2530,6 +2547,7 @@ void CParameters::SetDefaults() {
   gbAdjustForEarlierAnalyses            = false;
   gbUseAdjustmentsForRRFile             = false;
   geSpatialAdjustmentType               = NO_SPATIAL_ADJUSTMENT;
+  geMultipleStreamPurposeType           = MULTIVARIATE;        
 }
 
 /** Sets dimensions of input data. */
@@ -3037,6 +3055,24 @@ void CParameters::SetMaxCirclePopulationFileName(const char * sMaxCirclePopulati
   }
   catch (ZdException &x) {
     x.AddCallpath("SetMaxCirclePopulationFileName()", "CParameters");
+    throw;
+  }
+}
+
+/** Set multiple data stream purpose type. Throws exception if out of range. */
+void CParameters::SetMultipleDataStreamPurposeType(MultipleStreamPurposeType eType) {
+  ZdString      sLabel;
+
+  try {
+    if (eType < MULTIVARIATE || eType > ADJUSTMENT)
+      InvalidParameterException::Generate("Error: For parameter %s, setting '%d' is out of range(%d - %d).\n",
+                                          "SetMultipleDataStreamPurposeType()",
+                                          GetParameterLineLabel(MULTI_STREAM_PURPOSE_TYPE, sLabel, geReadType == INI),
+                                          eType, MULTIVARIATE, ADJUSTMENT);
+    geMultipleStreamPurposeType = eType;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetMultipleDataStreamPurposeType()","CParameters");
     throw;
   }
 }
