@@ -13,10 +13,9 @@ SpaceTimePermutationDataStreamHandler::SpaceTimePermutationDataStreamHandler(CSa
 SpaceTimePermutationDataStreamHandler::~SpaceTimePermutationDataStreamHandler() {}
 
 /** allocates cases structures for stream */
-void SpaceTimePermutationDataStreamHandler::AllocateCaseStructures(unsigned int iStream) {
+void SpaceTimePermutationDataStreamHandler::AllocateCaseStructures(unsigned int tSetIndex) {
   try {
-    gvDataStreams[iStream]->AllocateCasesArray();
-    gvDataStreams[iStream]->AllocateCategoryCasesArray();
+    gvDataSets[tSetIndex]->AllocateCasesArray();
   }
   catch(ZdException &x) {
     x.AddCallpath("AllocateCaseStructures()","SpaceTimePermutationDataStreamHandler");
@@ -32,9 +31,9 @@ AbtractDataStreamGateway * SpaceTimePermutationDataStreamHandler::GetNewDataGate
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
-    for (t=0; t < gvDataStreams.size(); ++t) {
+    for (t=0; t < gvDataSets.size(); ++t) {
       //get reference to stream
-      const RealDataStream& thisStream = *gvDataStreams[t];
+      const RealDataStream& thisStream = *gvDataSets[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisStream.GetTotalCases());
       Interface.SetTotalMeasureCount(thisStream.GetTotalMeasure());
@@ -55,7 +54,7 @@ AbtractDataStreamGateway * SpaceTimePermutationDataStreamHandler::GetNewDataGate
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataStreamGateway->AddDataStreamInterface(Interface);
+      pDataStreamGateway->AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
@@ -74,9 +73,9 @@ AbtractDataStreamGateway * SpaceTimePermutationDataStreamHandler::GetNewSimulati
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
-    for (t=0; t < gvDataStreams.size(); ++t) {
+    for (t=0; t < gvDataSets.size(); ++t) {
       //get reference to stream
-      const RealDataStream& thisRealStream = *gvDataStreams[t];
+      const RealDataStream& thisRealStream = *gvDataSets[t];
       const SimulationDataStream& thisSimulationStream = *Container[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisRealStream.GetTotalCases());
@@ -98,7 +97,7 @@ AbtractDataStreamGateway * SpaceTimePermutationDataStreamHandler::GetNewSimulati
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewSimulationDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataStreamGateway->AddDataStreamInterface(Interface);
+      pDataStreamGateway->AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
@@ -107,23 +106,6 @@ AbtractDataStreamGateway * SpaceTimePermutationDataStreamHandler::GetNewSimulati
     throw;
   }
   return pDataStreamGateway;
-}
-
-/** Returns a collection of cloned randomizers maintained by data stream handler.
-    All previous elements of list are deleted. */
-RandomizerContainer_t& SpaceTimePermutationDataStreamHandler::GetRandomizerContainer(RandomizerContainer_t& Container) const {
-  std::vector<SpaceTimeRandomizer>::const_iterator itr;
-
-  try {
-    Container.DeleteAllElements();
-    for (itr=gvDataStreamRandomizers.begin(); itr != gvDataStreamRandomizers.end(); ++itr)
-       Container.push_back(itr->Clone());
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("GetRandomizerContainer()","SpaceTimePermutationDataStreamHandler");
-    throw;
-  }
-  return Container;
 }
 
 /** Fills passed container with simulation data objects, with appropriate members
@@ -156,21 +138,18 @@ SimulationDataContainer_t& SpaceTimePermutationDataStreamHandler::GetSimulationD
     If invalid data is found in the file, an error message is printed,
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
-bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDescription) {
+bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char* szDescription) {
   int                                   i, j, iCategoryIndex;
   bool                                  bValid=true, bEmpty=true;
   Julian                                Date;
   tract_t                               TractIndex;
   StringParser                          Parser(gPrint);
   std::string                           sBuffer;
-  count_t                               Count, ** pCounts;
+  count_t                               Count, ** ppCounts, ** ppCategoryCounts;
 
   try {
-    RealDataStream& thisStream = *gvDataStreams[tStream];
-    SpaceTimeRandomizer & Randomizer = gvDataStreamRandomizers[tStream];
-
-    pCounts = thisStream.GetCaseArray();
-    ThreeDimCountArray_t & CategoryHandler = thisStream.GetCategoryCaseArrayHandler();
+    RealDataStream& thisStream = *gvDataSets[tSetIndex];
+    ppCounts = thisStream.GetCaseArray();
 
     //Read data, parse and if no errors, increment count for tract at date.
     while (Parser.ReadString(fp)) {
@@ -179,20 +158,19 @@ bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tStream, FILE * fp
            if (ParseCountLine(thisStream.GetPopulationData(), Parser, TractIndex, Count, Date, iCategoryIndex)) {
               if (Count > 0) {//ignore records that specify a count of zero
                 //cumulatively add count to time by location structure
-                pCounts[0][TractIndex] += Count;
-                if (pCounts[0][TractIndex] < 0)
-                  GenerateResolvableException("Error: The total number of cases, in data stream %u, is greater than the maximum allowed of %ld.\n", "ReadCounts()",
-                                              tStream, std::numeric_limits<count_t>::max());
+                ppCounts[0][TractIndex] += Count;
+                if (ppCounts[0][TractIndex] < 0)
+                  GenerateResolvableException("Error: The total number of cases, in data set %u, is greater than the maximum allowed of %ld.\n", "ReadCounts()",
+                                              tSetIndex, std::numeric_limits<count_t>::max());
                 for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
-                  pCounts[i][TractIndex] += Count;
+                  ppCounts[i][TractIndex] += Count;
                 //record count as a case
-                thisStream.GetPopulationData().AddCaseCount(iCategoryIndex, Count);
+                thisStream.GetPopulationData().AddCovariateCategoryCaseCount(iCategoryIndex, Count);
                 //record count in structure(s) based upon population category
-                if (iCategoryIndex >= static_cast<int>(CategoryHandler.Get3rdDimension()))
-                  CategoryHandler.ExpandThirdDimension(0);
-                CategoryHandler.GetArray()[0][TractIndex][iCategoryIndex] += Count;
+                ppCategoryCounts = thisStream.GetCategoryCaseArray(iCategoryIndex, true);
+                ppCategoryCounts[0][TractIndex] += Count;
                 for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
-                   CategoryHandler.GetArray()[i][TractIndex][iCategoryIndex] += Count;
+                   ppCategoryCounts[i][TractIndex] += Count;
               }
            }
            else
@@ -209,7 +187,8 @@ bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tStream, FILE * fp
       bValid = false;
     }
 
-    Randomizer.CreateRandomizationData(thisStream);
+    if (gParameters.GetSimulationType() != FILESOURCE)
+      ((SpaceTimeRandomizer*)gvDataStreamRandomizers[tSetIndex])->CreateRandomizationData(thisStream);
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadCounts()","SpaceTimePermutationDataStreamHandler");
@@ -222,8 +201,8 @@ bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tStream, FILE * fp
 bool SpaceTimePermutationDataStreamHandler::ReadData() {
   try {
     SetRandomizers();
-    for (size_t t=0; t < GetNumStreams(); ++t) {
-       if (GetNumStreams() == 1)
+    for (size_t t=0; t < GetNumDataSets(); ++t) {
+       if (GetNumDataSets() == 1)
          gPrint.SatScanPrintf("Reading the case file\n");
        else
          gPrint.SatScanPrintf("Reading the case file for data set %u\n", t + 1);
@@ -240,7 +219,22 @@ bool SpaceTimePermutationDataStreamHandler::ReadData() {
 
 void SpaceTimePermutationDataStreamHandler::SetRandomizers() {
   try {
-    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), SpaceTimeRandomizer());
+    gvDataStreamRandomizers.DeleteAllElements();
+    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), 0);
+    switch (gParameters.GetSimulationType()) {
+      case STANDARD :
+      case HA_RANDOMIZATION :
+          gvDataStreamRandomizers[0] = new SpaceTimeRandomizer();
+          break;
+      case FILESOURCE :
+          gvDataStreamRandomizers[0] = new FileSourceRandomizer(gParameters);
+          break;
+      default :
+          ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
+    };
+    //create more if needed
+    for (size_t t=1; t < gParameters.GetNumDataStreams(); ++t)
+       gvDataStreamRandomizers[t] = gvDataStreamRandomizers[0]->Clone();
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()","SpaceTimePermutationDataStreamHandler");

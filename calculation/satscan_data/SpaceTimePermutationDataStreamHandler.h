@@ -7,10 +7,8 @@
 
 class SpaceTimePermutationDataStreamHandler : public DataStreamHandler {
   protected:
-    std::vector<SpaceTimeRandomizer>    gvDataStreamRandomizers;
-
-    virtual void                        AllocateCaseStructures(unsigned int iStream);
-    virtual bool                        ReadCounts(size_t tStream, FILE * fp, const char* szDescription);
+    virtual void                        AllocateCaseStructures(unsigned int tSetIndex);
+    virtual bool                        ReadCounts(size_t tSetIndex, FILE * fp, const char* szDescription);
     virtual void                        SetRandomizers();
 
   public:
@@ -19,7 +17,6 @@ class SpaceTimePermutationDataStreamHandler : public DataStreamHandler {
 
     virtual AbtractDataStreamGateway  * GetNewDataGateway() const;
     virtual AbtractDataStreamGateway  * GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const;
-    virtual RandomizerContainer_t     & GetRandomizerContainer(RandomizerContainer_t& Container) const;
     virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const;
     virtual bool                        ReadData();
 };
