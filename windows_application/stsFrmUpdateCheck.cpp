@@ -43,7 +43,7 @@ void TfrmUpdateCheck::ConnectToServerForUpdateCheck() {
 
   try {
     Show();
-    sUpdateURL.printf(gsURLgsURLFormat, VERSION_ID, 2/* make this VERSION_NUMBER before release */);
+    sUpdateURL.printf(gsURLFormat, VERSION_ID, 2/* make this VERSION_NUMBER before release */);
     try {
       // let the Get() do the connecting since reading results from perlscript
       // is the only purpose for connecting to remote host ... currently.
@@ -67,9 +67,9 @@ void TfrmUpdateCheck::ConnectToServerForUpdateCheck() {
     gUpdateApplication.first = sHTTP_Body.GetToken(giUpdateAppNameIndex);
     gUpdateApplication.second = sHTTP_Body.GetToken(giUpdateAppUrlIndex);
     gUpdateArchive.first = sHTTP_Body.GetToken(giUpdateDataNameIndex);
-    if (sHTTP_Body.GetToken(giUpdateDataUrlIndex).EndsWith('\n'))
-      sHTTP_Body.GetToken(giUpdateDataUrlIndex).Truncate(sHTTP_Body.GetToken(giUpdateDataUrlIndex).GetLength() -1);
     gUpdateArchive.second = sHTTP_Body.GetToken(giUpdateDataUrlIndex);
+    if (gUpdateArchive.second.EndsWith('\n'))
+      gUpdateArchive.second.Truncate(gUpdateArchive.second.GetLength() - 1);
     Close();
   }
   catch (ZdException &x) {
