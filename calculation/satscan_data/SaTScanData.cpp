@@ -55,7 +55,7 @@ CSaTScanData::~CSaTScanData() {
 void CSaTScanData::AdjustNeighborCounts() {
   try {
     //Deallocate neighbor information in sorted structures.
-    if (m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE) {
+    if (m_pParameters->GetMaxGeoClusterSizeTypeIsPopulationBased()) {
       //Free/clear previous interation's neighbor information.
       if (gpSortedUShortHandler)
         gpSortedUShortHandler->FreeThirdDimension();
@@ -67,7 +67,8 @@ void CSaTScanData::AdjustNeighborCounts() {
       MakeNeighbors(gpTInfo, gpGInfo, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
                     (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0),
                     static_cast<tract_t>(m_nTotalTractsAtStart), m_nGridTracts,
-                    gpMeasureHandler->GetArray()[0], m_nMaxCircleSize, m_nMaxCircleSize,
+                    (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpMeasureHandler->GetArray()[0]),
+                    m_nMaxCircleSize, m_nMaxCircleSize,
                     gpNeighborCountHandler->GetArray(), m_pParameters->GetDimensionsOfData(),
                     m_pParameters->GetNumRequestedEllipses(), m_pParameters->GetEllipseShapes(),
                     m_pParameters->GetEllipseRotations(), m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
@@ -160,7 +161,7 @@ void CSaTScanData::DeAllocSimCases() {
     Calls MakeNeighbor() function to calculate neighbors for each centroid. */
 bool CSaTScanData::FindNeighbors(bool bSimulations) {
   int           i, j;
-  double        dMaxCircleSize, dTotalPopulation=0;
+  double        dMaxCircleSize;
 
   try {
     //if this iteration of call not simulations
@@ -170,11 +171,7 @@ bool CSaTScanData::FindNeighbors(bool bSimulations) {
       //adjust special population file now that we know the total case count
       if (m_pParameters->UseMaxCirclePopulationFile()) {
         for (i=0; i < (int)gvCircleMeasure.size(); i++)
-           dTotalPopulation += gvCircleMeasure[i];
-        if (dTotalPopulation ==0)
-          SSGenerateException("Error: Total population for special population file can not be zero.","FindNeighbors()");
-        for (i=0; i < (int)gvCircleMeasure.size(); i++)
-          gvCircleMeasure[i] *= m_nTotalCases/dTotalPopulation;
+          gvCircleMeasure[i] *= m_nTotalCases / m_nTotalMaxCirclePopulation;
       }
       //for real data, settings my indicate to report only smaller clusters
       dMaxCircleSize = (m_pParameters->GetRestrictingMaximumReportedGeoClusterSize() ? m_nMaxReportedCircleSize : m_nMaxCircleSize);
@@ -193,7 +190,7 @@ bool CSaTScanData::FindNeighbors(bool bSimulations) {
     if (m_pParameters->GetIsSequentialScanning())
         MakeNeighbors(gpTInfo, gpGInfo, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
                       (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0), m_nTracts, m_nGridTracts,
-                      (m_pParameters->UseMaxCirclePopulationFile() ? &gvCircleMeasure[0] : gpMeasureHandler->GetArray()[0]),
+                      (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpMeasureHandler->GetArray()[0]),
                       dMaxCircleSize, m_nTotalMeasure, gpNeighborCountHandler->GetArray(),
                       m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                       m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
@@ -201,7 +198,7 @@ bool CSaTScanData::FindNeighbors(bool bSimulations) {
     else
         MakeNeighbors(gpTInfo, gpGInfo, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
                       (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0), m_nTracts, m_nGridTracts,
-                      (m_pParameters->UseMaxCirclePopulationFile() ? &gvCircleMeasure[0] : gpMeasureHandler->GetArray()[0]),
+                      (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpMeasureHandler->GetArray()[0]),
                       dMaxCircleSize, dMaxCircleSize, gpNeighborCountHandler->GetArray(),
                       m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                       m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
@@ -295,6 +292,7 @@ void CSaTScanData::Init() {
   m_pMeasure_TotalByTimeInt = 0;
   m_nMaxReportedCircleSize = 0;
   gpMaxWindowLengthIndicator = 0;
+  m_nTotalMaxCirclePopulation = 0;
 }
 void CSaTScanData::MakeData(int iSimulationNumber) {
    try {
@@ -328,14 +326,20 @@ void CSaTScanData::ReadDataFromFiles() {
 }
 
 void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
-  m_nTotalCases -= gpCasesHandler->GetArray()[0][tTractIndex];
-  gpCasesHandler->GetArray()[0][tTractIndex] = 0;
-  m_nTotalMeasure -= gpMeasureHandler->GetArray()[0][tTractIndex];
-  gpMeasureHandler->GetArray()[0][tTractIndex] = 0;
-  if (gpControlsHandler) {
-     m_nTotalControls -= gpControlsHandler->GetArray()[0][tTractIndex];
-     gpControlsHandler->GetArray()[0][tTractIndex] = 0;
-  } 
+  try {
+    m_nTotalCases -= gpCasesHandler->GetArray()[0][tTractIndex];
+    gpCasesHandler->GetArray()[0][tTractIndex] = 0;
+    m_nTotalMeasure -= gpMeasureHandler->GetArray()[0][tTractIndex];
+    gpMeasureHandler->GetArray()[0][tTractIndex] = 0;
+    if (gpControlsHandler) {
+       m_nTotalControls -= gpControlsHandler->GetArray()[0][tTractIndex];
+       gpControlsHandler->GetArray()[0][tTractIndex] = 0;
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("RemoveTractSignificance()", "CSaTScanData");
+    throw;
+  }
 }
 
 /** Conditionally allocates and sets additional case arrays. */
@@ -541,7 +545,12 @@ void CSaTScanData::SetIntervalStartTimes() {
 void CSaTScanData::SetMaxCircleSize() {
   try {
     switch (m_pParameters->GetMaxGeographicClusterSizeType()) {
-      case PERCENTAGEOFMEASURETYPE :
+      case PERCENTOFPOPULATIONFILETYPE :
+           m_nMaxCircleSize = (m_pParameters->GetMaximumGeographicClusterSize() / 100.0) * m_nTotalMaxCirclePopulation;
+           if (m_pParameters->GetRestrictingMaximumReportedGeoClusterSize())
+             m_nMaxReportedCircleSize = (m_pParameters->GetMaximumReportedGeoClusterSize() / 100.0) * m_nTotalMaxCirclePopulation;
+           break;
+      case PERCENTOFPOPULATIONTYPE :
            m_nMaxCircleSize = (m_pParameters->GetMaximumGeographicClusterSize() / 100.0) * m_nTotalMeasure;
            if (m_pParameters->GetRestrictingMaximumReportedGeoClusterSize())
              m_nMaxReportedCircleSize = (m_pParameters->GetMaximumReportedGeoClusterSize() / 100.0) * m_nTotalMeasure;

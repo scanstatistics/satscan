@@ -66,7 +66,8 @@ class CSaTScanData {
     TwoDimensionArrayHandler<measure_t>       * gpMeasureHandler,
                                               * gpMeasureNonCumulativeHandler,
                                               * gpMeasureByTimeByCategoryHandler;
-    measure_t                                   m_nTotalMeasure,
+    measure_t                                   m_nTotalMaxCirclePopulation,    /** total population as defined in max circle population file */
+                                                m_nTotalMeasure,
                                                 m_nTotalMeasureAtStart,
                                                 m_nTotalTractsAtStart,
                                               * m_pMeasure_TotalByTimeInt,      /* Measure for all tracts by interval */
