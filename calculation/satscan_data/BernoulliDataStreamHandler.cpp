@@ -174,13 +174,12 @@ bool BernoulliDataStreamHandler::ReadControlFile(size_t tStream) {
   FILE        * fp=0;
 
   try {
-    gpPrint->SatScanPrintf("Reading the control file\n");
     if ((fp = fopen(gParameters.GetControlFileName(tStream + 1).c_str(), "r")) == NULL) {
       gpPrint->SatScanPrintWarning("Error: Could not open control file:\n'%s'.\n",
                                    gParameters.GetControlFileName(tStream + 1).c_str());
       return false;
     }
-    gpPrint->SetImpliedInputFileType(BasePrint::CONTROLFILE);
+    gpPrint->SetImpliedInputFileType(BasePrint::CONTROLFILE, (GetNumStreams() == 1 ? 0 : tStream + 1));
     AllocateControlStructures(tStream);
     bValid = ReadCounts(tStream, fp, "control");
     fclose(fp); fp=0;
@@ -199,8 +198,16 @@ bool BernoulliDataStreamHandler::ReadData() {
     SetRandomizers();
     for (size_t t=0; t < GetNumStreams(); ++t) {
        GetStream(t).SetAggregateCategories(true);
+       if (GetNumStreams() == 1)
+         gpPrint->SatScanPrintf("Reading the case file\n");
+       else
+         gpPrint->SatScanPrintf("Reading input stream %u case file\n", t + 1);
        if (!ReadCaseFile(t))
          return false;
+       if (GetNumStreams() == 1)
+         gpPrint->SatScanPrintf("Reading the control file\n");
+       else
+         gpPrint->SatScanPrintf("Reading input stream %u control file\n", t + 1);
        if (!ReadControlFile(t))
          return false;
     }
