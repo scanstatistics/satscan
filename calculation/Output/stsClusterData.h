@@ -50,15 +50,16 @@ class ClusterRecord : public BaseOutputRecord {
       double 			gdRelRisk;
       double 			gdLogLikelihood;
       double 			gdPValue;
-      ZdString 			gsStartDate; 
+      ZdString 			gsStartDate;
       ZdString 			gsEndDate;
-      
-      void		Init();
+
+      bool                      gbPrintEllipses, gbPrintPVal;
+      void		        Init();
    public:
-      ClusterRecord();
+      ClusterRecord(const bool bPrintEllipses = true, const bool bPrintPVal = true);
       virtual ~ClusterRecord();
       
-      virtual int GetNumFields() { return 16 + gvsAdditCoords.GetNumElements(); }
+      virtual int GetNumFields();
       virtual ZdFieldValue GetValue(int iFieldNumber);
     
       void	SetAdditionalCoordinates(const ZdVector<ZdString>& vsAdditCoords) { gvsAdditCoords = vsAdditCoords; }

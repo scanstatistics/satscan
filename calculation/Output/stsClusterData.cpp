@@ -12,13 +12,22 @@ const char *	CLUSTER_FILE_EXT	= ".col";
 
 // this class is a record class to store each cluster info data record
 // cluster level record class
-ClusterRecord::ClusterRecord() : BaseOutputRecord() {
+ClusterRecord::ClusterRecord(const bool bPrintEllipses, const bool bPrintPVal) : BaseOutputRecord() {
    Init();
+   gbPrintEllipses = bPrintEllipses;
+   gbPrintPVal = bPrintPVal;
 }
 
 ClusterRecord::~ClusterRecord() {
 }
 
+int ClusterRecord::GetNumFields() {
+   return (13 + (gbPrintEllipses ? 2 : 0) + (gbPrintPVal ? 1 : 0) + gvsAdditCoords.GetNumElements());
+}
+
+// function to return the field value from the specified field number
+// pre: none
+// post: sets and returns the fieldvalue
 ZdFieldValue ClusterRecord::GetValue(int iFieldNumber) {
    ZdFieldValue fv;
    
@@ -38,28 +47,34 @@ ZdFieldValue ClusterRecord::GetValue(int iFieldNumber) {
                BaseOutputRecord::SetFieldValueAsString(fv, gsFirstCoord); break;
             case 4:
                BaseOutputRecord::SetFieldValueAsString(fv, gsSecondCoord); break;
-            default :
-               ZdGenerateException ("Invalid index, out of range", "Error!");
          }
       }
-      else {
+      else {     // and this is where it starts to get messy - AJV
          if (gvsAdditCoords.size() > 0) {
             // fields 5 to 5+size()
-            if (iFieldNumber >= 5 && iFieldNumber < (gvsAdditCoords.size() + 5) )
+            if (iFieldNumber >= 5 && iFieldNumber < (int)(gvsAdditCoords.size() + 5) )
                BaseOutputRecord::SetFieldValueAsString(fv, gvsAdditCoords[iFieldNumber-5]);
          }
 
          // subtract out the vector elements from the index and continue on like the vector
          // wasn't even there - AJV
          int iFieldAfterVector = iFieldNumber - gvsAdditCoords.size();
-      
+
+         if (iFieldAfterVector == 5)
+            BaseOutputRecord::SetFieldValueAsString(fv, gsRadius);
+
+         // if we should print ellipses then do so, else increase the field number to skip past them 
+
+         if (gbPrintEllipses) {
+            if (iFieldAfterVector == 6)
+               BaseOutputRecord::SetFieldValueAsString(fv, gsEllipseAngles);
+            if (iFieldAfterVector == 7)
+               BaseOutputRecord::SetFieldValueAsString(fv, gsEllipseShapes);
+         }
+         else
+            iFieldAfterVector += 2;
+
          switch (iFieldAfterVector) {
-            case 5:
-               BaseOutputRecord::SetFieldValueAsString(fv, gsRadius); break;
-            case 6:
-               BaseOutputRecord::SetFieldValueAsString(fv, gsEllipseAngles); break;
-            case 7:
-               BaseOutputRecord::SetFieldValueAsString(fv, gsEllipseShapes); break;
             case 8:
                BaseOutputRecord::SetFieldValueAsDouble(fv, double(glNumAreas)); break;
             case 9:
@@ -70,14 +85,21 @@ ZdFieldValue ClusterRecord::GetValue(int iFieldNumber) {
                BaseOutputRecord::SetFieldValueAsDouble(fv, gdRelRisk); break;
             case 12:
                BaseOutputRecord::SetFieldValueAsDouble(fv, gdLogLikelihood); break;
-            case 13:
-               BaseOutputRecord::SetFieldValueAsDouble(fv, gdPValue); break;
+         }
+
+         // if we need to print the pval then do so, else increase the field number to skip past it
+         if(iFieldAfterVector == 13) {
+            if (gbPrintPVal)
+               BaseOutputRecord::SetFieldValueAsDouble(fv, gdPValue);
+            else
+               ++iFieldAfterVector;
+         }            
+
+         switch (iFieldAfterVector) {
             case 14:
                BaseOutputRecord::SetFieldValueAsString(fv, gsStartDate); break;
             case 15:
                BaseOutputRecord::SetFieldValueAsString(fv, gsEndDate); break;
-            default:
-               ZdGenerateException("Invalid index, out of range", "Error!");
          }
       }
    }
@@ -152,7 +174,7 @@ void stsClusterData::RecordClusterData(const CCluster& pCluster, const CSaTScanD
    ClusterRecord* 		pRecord = 0;
 
    try {                  
-      pRecord = new ClusterRecord();
+      pRecord = new ClusterRecord(gbPrintEllipses, gbPrintPVal);
 
 #ifdef INCLUDE_RUN_HISTORY
       pRecord->SetRunNumber(double(glRunNumber));
@@ -302,22 +324,22 @@ void stsClusterData::SetEllipseString(ZdString& sAngle, ZdString& sShape, const 
    char  sAngleBuffer[256], sShapeBuffer[256];
 
    try {
-      if (pCluster.m_nClusterType == PURELYTEMPORAL){
-         sAngle = "n/a";
-         sShape = "n/a";
-      }
-      else {
-         if(pCluster.m_iEllipseOffset == 0 && pData.m_nNumEllipsoids > 0) {
-            sShape = "1.0";
-            sAngle = "0.0";
+         if (pCluster.m_nClusterType == PURELYTEMPORAL){
+            sAngle = "n/a";
+            sShape = "n/a";
          }
          else {
-            sprintf(sAngleBuffer, "%8.3f", pCluster.ConvertAngleToDegrees(pData.mdE_Angles[pCluster.m_iEllipseOffset-1]));
-            sprintf(sShapeBuffer, "%8.3f", pData.mdE_Shapes[pCluster.m_iEllipseOffset-1]);
-            sShape = sShapeBuffer;
-            sAngle = sAngleBuffer;
+            if(pCluster.m_iEllipseOffset == 0 && pData.m_nNumEllipsoids > 0) {
+               sShape = "1.000";
+               sAngle = "0.000";
+            }
+            else {
+               sprintf(sAngleBuffer, "%-8.3f", pCluster.ConvertAngleToDegrees(pData.mdE_Angles[pCluster.m_iEllipseOffset-1]));
+               sprintf(sShapeBuffer, "%-8.3f", pData.mdE_Shapes[pCluster.m_iEllipseOffset-1]);
+               sShape = sShapeBuffer;
+               sAngle = sAngleBuffer;
+            }
          }
-      }
    }
    catch (ZdException &x) {
       x.AddCallpath("SetEllipseString()", "stsClusterData");
@@ -405,7 +427,8 @@ void stsClusterData::SetupFields() {
 
       CreateField(gvFields, RADIUS_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
 
-      if(gbPrintEllipses) {    // whether or not to print ellipse descriptors
+      // ellipse fields
+      if (gbPrintEllipses) {
          CreateField(gvFields, E_ANGLE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
          CreateField(gvFields, E_SHAPE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
       }
