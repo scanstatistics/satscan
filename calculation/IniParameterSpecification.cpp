@@ -56,176 +56,179 @@ IniParameterSpecification::IniParameterSpecification(const ZdIniFile& SourceFile
 /** destructor */
 IniParameterSpecification::~IniParameterSpecification() {}
 
-/** Version 3.0.5 and priot parameter section/keys. */
+/** Version 3.0.5 and priot parameter section/keys.
+    NOTE: The (const char *) cast is needed for gcc 2.96 or less, but otherwise is irrelevant. */
 void IniParameterSpecification::BuildPrimaryParameterList() {
   // Order in vector is essential - should identical to ParameterType enumeration.
-  gvParameterInfo.push_back(std::make_pair(Analysis, "AnalysisType"));
-  gvParameterInfo.push_back(std::make_pair(Analysis, "ScanAreas"));
-  gvParameterInfo.push_back(std::make_pair(InputFiles, "CaseFile"));
-  gvParameterInfo.push_back(std::make_pair(InputFiles, "PopulationFile"));
-  gvParameterInfo.push_back(std::make_pair(InputFiles, "CoordinatesFile"));
-  gvParameterInfo.push_back(std::make_pair(OutputFiles, "ResultsFile"));
-  gvParameterInfo.push_back(std::make_pair(InputFiles, "PrecisionCaseTimes"));
+  gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"AnalysisType"));
+  gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"ScanAreas"));
+  gvParameterInfo.push_back(std::make_pair(InputFiles, (const char*)"CaseFile"));
+  gvParameterInfo.push_back(std::make_pair(InputFiles, (const char*)"PopulationFile"));
+  gvParameterInfo.push_back(std::make_pair(InputFiles, (const char*)"CoordinatesFile"));
+  gvParameterInfo.push_back(std::make_pair(OutputFiles, (const char*)"ResultsFile"));
+  gvParameterInfo.push_back(std::make_pair(InputFiles, (const char*)"PrecisionCaseTimes"));
   gvParameterInfo.push_back(std::make_pair(NotUsed, NotUsed));
-  gvParameterInfo.push_back(std::make_pair(InputFiles, "UseGridFile"));
-  gvParameterInfo.push_back(std::make_pair(InputFiles, "GridFile"));   
-  gvParameterInfo.push_back(std::make_pair(ScanningWindow, "MaxGeographicSize"));
-  gvParameterInfo.push_back(std::make_pair(Analysis, "StartDate"));
-  gvParameterInfo.push_back(std::make_pair(Analysis, "EndDate"));
-  gvParameterInfo.push_back(std::make_pair(ScanningWindow, "IncludeClusters"));
+  gvParameterInfo.push_back(std::make_pair(InputFiles, (const char*)"UseGridFile"));
+  gvParameterInfo.push_back(std::make_pair(InputFiles, (const char*)"GridFile"));   
+  gvParameterInfo.push_back(std::make_pair(ScanningWindow, (const char*)"MaxGeographicSize"));
+  gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"StartDate"));
+  gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"EndDate"));
+  gvParameterInfo.push_back(std::make_pair(ScanningWindow, (const char*)"IncludeClusters"));
   gvParameterInfo.push_back(std::make_pair(NotUsed, NotUsed));
-  gvParameterInfo.push_back(std::make_pair(TimeParameters, "IntervalUnits"));
-  gvParameterInfo.push_back(std::make_pair(TimeParameters, "IntervalLength"));
-  gvParameterInfo.push_back(std::make_pair(ScanningWindow, "IncludePurelySpatial"));
-  gvParameterInfo.push_back(std::make_pair(ScanningWindow, "MaxTemporalSize"));
-  gvParameterInfo.push_back(std::make_pair(Analysis, "MonteCarloReps"));
-  gvParameterInfo.push_back(std::make_pair(Analysis, "ModelType"));
-  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "IsotonicScan"));
-  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "PValues2PrespecifiedLLRs"));
-  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "LLR1"));
-  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "LLR2"));
-  gvParameterInfo.push_back(std::make_pair(TimeParameters, "TimeTrendAdjustmentType"));
-  gvParameterInfo.push_back(std::make_pair(TimeParameters, "TimeTrendPercentage"));
-  gvParameterInfo.push_back(std::make_pair(ScanningWindow, "IncludePurelyTemporal"));
-  gvParameterInfo.push_back(std::make_pair(InputFiles, "ControlFile"));
-  gvParameterInfo.push_back(std::make_pair(InputFiles, "CoordinatesType"));
-  gvParameterInfo.push_back(std::make_pair(OutputFiles, "SaveSimLLRsASCII"));
-  gvParameterInfo.push_back(std::make_pair(SequentialScan, "SequentialScan"));
-  gvParameterInfo.push_back(std::make_pair(SequentialScan, "SequentialScanMaxIterations"));
-  gvParameterInfo.push_back(std::make_pair(SequentialScan, "SequentialScanMaxPValue"));
-  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "ValidateParameters"));
-  gvParameterInfo.push_back(std::make_pair(OutputFiles, "IncludeRelativeRisksCensusAreasASCII"));
-  gvParameterInfo.push_back(std::make_pair(EllipticScan, "NumberOfEllipses"));
-  gvParameterInfo.push_back(std::make_pair(EllipticScan, "EllipseShapes"));
-  gvParameterInfo.push_back(std::make_pair(EllipticScan, "EllipseAngles"));
-  gvParameterInfo.push_back(std::make_pair(TimeParameters, "ProspectiveStartDate"));
-  gvParameterInfo.push_back(std::make_pair(OutputFiles, "CensusAreasReportedClustersASCII"));
-  gvParameterInfo.push_back(std::make_pair(OutputFiles, "MostLikelyClusterEachCentroidASCII"));
-  gvParameterInfo.push_back(std::make_pair(OutputFiles, "CriteriaForReportingSecondaryClusters"));
-  gvParameterInfo.push_back(std::make_pair(ScanningWindow, "MaxTemporalSizeInterpretation"));
-  gvParameterInfo.push_back(std::make_pair(ScanningWindow, "MaxSpatialSizeInterpretation"));
+  gvParameterInfo.push_back(std::make_pair(TimeParameters, (const char*)"IntervalUnits"));
+  gvParameterInfo.push_back(std::make_pair(TimeParameters, (const char*)"IntervalLength"));
+  gvParameterInfo.push_back(std::make_pair(ScanningWindow, (const char*)"IncludePurelySpatial"));
+  gvParameterInfo.push_back(std::make_pair(ScanningWindow, (const char*)"MaxTemporalSize"));
+  gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"MonteCarloReps"));
+  gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"ModelType"));
+  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"IsotonicScan"));
+  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"PValues2PrespecifiedLLRs"));
+  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"LLR1"));
+  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"LLR2"));
+  gvParameterInfo.push_back(std::make_pair(TimeParameters, (const char*)"TimeTrendAdjustmentType"));
+  gvParameterInfo.push_back(std::make_pair(TimeParameters, (const char*)"TimeTrendPercentage"));
+  gvParameterInfo.push_back(std::make_pair(ScanningWindow, (const char*)"IncludePurelyTemporal"));
+  gvParameterInfo.push_back(std::make_pair(InputFiles, (const char*)"ControlFile"));
+  gvParameterInfo.push_back(std::make_pair(InputFiles, (const char*)"CoordinatesType"));
+  gvParameterInfo.push_back(std::make_pair(OutputFiles, (const char*)"SaveSimLLRsASCII"));
+  gvParameterInfo.push_back(std::make_pair(SequentialScan, (const char*)"SequentialScan"));
+  gvParameterInfo.push_back(std::make_pair(SequentialScan, (const char*)"SequentialScanMaxIterations"));
+  gvParameterInfo.push_back(std::make_pair(SequentialScan, (const char*)"SequentialScanMaxPValue"));
+  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"ValidateParameters"));
+  gvParameterInfo.push_back(std::make_pair(OutputFiles, (const char*)"IncludeRelativeRisksCensusAreasASCII"));
+  gvParameterInfo.push_back(std::make_pair(EllipticScan, (const char*)"NumberOfEllipses"));
+  gvParameterInfo.push_back(std::make_pair(EllipticScan, (const char*)"EllipseShapes"));
+  gvParameterInfo.push_back(std::make_pair(EllipticScan, (const char*)"EllipseAngles"));
+  gvParameterInfo.push_back(std::make_pair(TimeParameters, (const char*)"ProspectiveStartDate"));
+  gvParameterInfo.push_back(std::make_pair(OutputFiles, (const char*)"CensusAreasReportedClustersASCII"));
+  gvParameterInfo.push_back(std::make_pair(OutputFiles, (const char*)"MostLikelyClusterEachCentroidASCII"));
+  gvParameterInfo.push_back(std::make_pair(OutputFiles, (const char*)"CriteriaForReportingSecondaryClusters"));
+  gvParameterInfo.push_back(std::make_pair(ScanningWindow, (const char*)"MaxTemporalSizeInterpretation"));
+  gvParameterInfo.push_back(std::make_pair(ScanningWindow, (const char*)"MaxSpatialSizeInterpretation"));
   gvParameterInfo.push_back(std::make_pair(NotUsed, NotUsed));
-  gvParameterInfo.push_back(std::make_pair(OutputFiles, "MostLikelyClusterEachCentroidDBase"));
-  gvParameterInfo.push_back(std::make_pair(OutputFiles, "CensusAreasReportedClustersDBase"));
-  gvParameterInfo.push_back(std::make_pair(OutputFiles, "IncludeRelativeRisksCensusAreasDBase"));
-  gvParameterInfo.push_back(std::make_pair(OutputFiles, "SaveSimLLRsDBase"));
-  gvParameterInfo.push_back(std::make_pair(EllipticScan, "DuczmalCompactnessCorrection"));
+  gvParameterInfo.push_back(std::make_pair(OutputFiles, (const char*)"MostLikelyClusterEachCentroidDBase"));
+  gvParameterInfo.push_back(std::make_pair(OutputFiles, (const char*)"CensusAreasReportedClustersDBase"));
+  gvParameterInfo.push_back(std::make_pair(OutputFiles, (const char*)"IncludeRelativeRisksCensusAreasDBase"));
+  gvParameterInfo.push_back(std::make_pair(OutputFiles, (const char*)"SaveSimLLRsDBase"));
+  gvParameterInfo.push_back(std::make_pair(EllipticScan, (const char*)"DuczmalCompactnessCorrection"));
 }
 
-/** Version 4.0.x parameter section/keys. */
+/** Version 4.0.x parameter section/keys. 
+    NOTE: The (const char *) cast is needed for gcc 2.96 or less, but otherwise is irrelevant. */
 void IniParameterSpecification::Build_4_0_x_ParameterList() {
   BuildPrimaryParameterList();
   //Versions 4.0.x made no name changes, only defined more parameters
-  gvParameterInfo.push_back(std::make_pair(ScanningWindow, "IntervalStartRange"));
-  gvParameterInfo.push_back(std::make_pair(ScanningWindow, "IntervalEndRange"));
-  gvParameterInfo.push_back(std::make_pair(TimeParameters, "TimeTrendConvergence"));
-  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "MaxCirclePopulationFile"));
-  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "EarlySimulationTermination"));
-  gvParameterInfo.push_back(std::make_pair(OutputFiles, "MaxReportedGeoClusterSize"));
-  gvParameterInfo.push_back(std::make_pair(OutputFiles, "UseReportOnlySmallerClusters"));
-  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "SimulatedDataMethodType"));
-  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "SimulatedDataInputFilename"));
-  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "AdjustmentsByKnownRelativeRisksFilename"));
-  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "PrintSimulatedDataToFile"));
-  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "SimulatedDataOutputFilename"));
-  gvParameterInfo.push_back(std::make_pair(TimeParameters, "AdjustForEarlierAnalyses"));
-  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "UseAdjustmentsByRRFile"));
+  gvParameterInfo.push_back(std::make_pair(ScanningWindow, (const char*)"IntervalStartRange"));
+  gvParameterInfo.push_back(std::make_pair(ScanningWindow, (const char*)"IntervalEndRange"));
+  gvParameterInfo.push_back(std::make_pair(TimeParameters, (const char*)"TimeTrendConvergence"));
+  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"MaxCirclePopulationFile"));
+  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"EarlySimulationTermination"));
+  gvParameterInfo.push_back(std::make_pair(OutputFiles, (const char*)"MaxReportedGeoClusterSize"));
+  gvParameterInfo.push_back(std::make_pair(OutputFiles, (const char*)"UseReportOnlySmallerClusters"));
+  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"SimulatedDataMethodType"));
+  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"SimulatedDataInputFilename"));
+  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"AdjustmentsByKnownRelativeRisksFilename"));
+  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"PrintSimulatedDataToFile"));
+  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"SimulatedDataOutputFilename"));
+  gvParameterInfo.push_back(std::make_pair(TimeParameters, (const char*)"AdjustForEarlierAnalyses"));
+  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"UseAdjustmentsByRRFile"));
 }
 
-/** Version 5.0 parameter section/keys. */
+/** Version 5.0 parameter section/keys. 
+    NOTE: The (const char *) cast is needed for gcc 2.96 or less, but otherwise is irrelevant. */
 void IniParameterSpecification::Build_5_0_x_ParameterList() {
   Build_4_0_x_ParameterList();
   //Version 5.0.0 updated these three ini key names and defined several more parameters
   gvParameterInfo[static_cast<int>(TIME_AGGREGATION_UNITS) - 1].second = "TimeAggregationUnits";
   gvParameterInfo[static_cast<int>(TIME_AGGREGATION) - 1].second = "TimeAggregationLength";
   gvParameterInfo[static_cast<int>(NON_COMPACTNESS_PENALTY) - 1].second = "NonCompactnessPenalty";
-  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "SpatialAdjustmentType"));
-  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "MultipleDataSetsPurposeType"));
-  gvMultipleParameterInfo[CASEFILE] = std::make_pair(Input, "CaseFile");
-  gvMultipleParameterInfo[CONTROLFILE] = std::make_pair(Input, "ControlFile");
-  gvMultipleParameterInfo[POPFILE] = std::make_pair(Input, "PopulationFile");
-  gvParameterInfo.push_back(std::make_pair(System, "Version"));
+  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"SpatialAdjustmentType"));
+  gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"MultipleDataSetsPurposeType"));
+  gvMultipleParameterInfo[CASEFILE] = std::make_pair(Input, (const char*)"CaseFile");
+  gvMultipleParameterInfo[CONTROLFILE] = std::make_pair(Input, (const char*)"ControlFile");
+  gvMultipleParameterInfo[POPFILE] = std::make_pair(Input, (const char*)"PopulationFile");
+  gvParameterInfo.push_back(std::make_pair(System, (const char*)"Version"));
 }
 
 /** Version 5.1.x made a major revision to the structure of the ini file. This was partly due
    to a specifications miscommunication with Martin when parameter file was converted to
    ini format. Since the desire is to allows mimic the graphical interface within the
-   paramter file, we need to move sections around accordingly. */
+   paramter file, we need to move sections around accordingly.
+   NOTE: The (const char *) cast is needed for gcc 2.96 or less, but otherwise is irrelevant. */
 void IniParameterSpecification::Build_5_1_x_ParameterList() {
-
   // Order in vector is essential - should identical to ParameterType enumeration.
-  gvParameterInfo.push_back(std::make_pair(Analysis, "AnalysisType"));
-  gvParameterInfo.push_back(std::make_pair(Analysis, "ScanAreas"));
-  gvParameterInfo.push_back(std::make_pair(Input, "CaseFile"));
-  gvParameterInfo.push_back(std::make_pair(Input, "PopulationFile"));
-  gvParameterInfo.push_back(std::make_pair(Input, "CoordinatesFile"));
-  gvParameterInfo.push_back(std::make_pair(Output, "ResultsFile"));
-  gvParameterInfo.push_back(std::make_pair(Input, "PrecisionCaseTimes"));
+  gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"AnalysisType"));
+  gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"ScanAreas"));
+  gvParameterInfo.push_back(std::make_pair(Input, (const char*)"CaseFile"));
+  gvParameterInfo.push_back(std::make_pair(Input, (const char*)"PopulationFile"));
+  gvParameterInfo.push_back(std::make_pair(Input, (const char*)"CoordinatesFile"));
+  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"ResultsFile"));
+  gvParameterInfo.push_back(std::make_pair(Input, (const char*)"PrecisionCaseTimes"));
   gvParameterInfo.push_back(std::make_pair(NotUsed, NotUsed));
-  gvParameterInfo.push_back(std::make_pair(Input, "UseGridFile"));
-  gvParameterInfo.push_back(std::make_pair(Input, "GridFile"));
-  gvParameterInfo.push_back(std::make_pair(SpatialWindow, "MaxGeographicSize"));
-  gvParameterInfo.push_back(std::make_pair(Input, "StartDate"));
-  gvParameterInfo.push_back(std::make_pair(Input, "EndDate"));
-  gvParameterInfo.push_back(std::make_pair(TemporalWindow, "IncludeClusters"));
+  gvParameterInfo.push_back(std::make_pair(Input, (const char*)"UseGridFile"));
+  gvParameterInfo.push_back(std::make_pair(Input, (const char*)"GridFile"));
+  gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"MaxGeographicSize"));
+  gvParameterInfo.push_back(std::make_pair(Input, (const char*)"StartDate"));
+  gvParameterInfo.push_back(std::make_pair(Input, (const char*)"EndDate"));
+  gvParameterInfo.push_back(std::make_pair(TemporalWindow, (const char*)"IncludeClusters"));
   gvParameterInfo.push_back(std::make_pair(NotUsed, NotUsed));
-  gvParameterInfo.push_back(std::make_pair(Analysis, "TimeAggregationUnits"));
-  gvParameterInfo.push_back(std::make_pair(Analysis, "TimeAggregationLength"));
-  gvParameterInfo.push_back(std::make_pair(TemporalWindow, "IncludePurelySpatial"));
-  gvParameterInfo.push_back(std::make_pair(TemporalWindow, "MaxTemporalSize"));
-  gvParameterInfo.push_back(std::make_pair(Analysis, "MonteCarloReps"));
-  gvParameterInfo.push_back(std::make_pair(Analysis, "ModelType"));
-  gvParameterInfo.push_back(std::make_pair(IsotonicScan, "IsotonicScan"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, "PValues2PrespecifiedLLRs"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, "LLR1"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, "LLR2"));
-  gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, "TimeTrendAdjustmentType"));
-  gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, "TimeTrendPercentage"));
-  gvParameterInfo.push_back(std::make_pair(SpatialWindow, "IncludePurelyTemporal"));
-  gvParameterInfo.push_back(std::make_pair(Input, "ControlFile"));
-  gvParameterInfo.push_back(std::make_pair(Input, "CoordinatesType"));
-  gvParameterInfo.push_back(std::make_pair(Output, "SaveSimLLRsASCII"));
-  gvParameterInfo.push_back(std::make_pair(SequentialScan, "SequentialScan"));
-  gvParameterInfo.push_back(std::make_pair(SequentialScan, "SequentialScanMaxIterations"));
-  gvParameterInfo.push_back(std::make_pair(SequentialScan, "SequentialScanMaxPValue"));
-  gvParameterInfo.push_back(std::make_pair(BatchModeFeatures, "ValidateParameters"));
-  gvParameterInfo.push_back(std::make_pair(Output, "IncludeRelativeRisksCensusAreasASCII"));
-  gvParameterInfo.push_back(std::make_pair(EllipticScan, "NumberOfEllipses"));
-  gvParameterInfo.push_back(std::make_pair(EllipticScan, "EllipseShapes"));
-  gvParameterInfo.push_back(std::make_pair(EllipticScan, "EllipseAngles"));
-  gvParameterInfo.push_back(std::make_pair(Inference, "ProspectiveStartDate"));
-  gvParameterInfo.push_back(std::make_pair(Output, "CensusAreasReportedClustersASCII"));
-  gvParameterInfo.push_back(std::make_pair(Output, "MostLikelyClusterEachCentroidASCII"));
-  gvParameterInfo.push_back(std::make_pair(ClustersReported, "CriteriaForReportingSecondaryClusters"));
-  gvParameterInfo.push_back(std::make_pair(TemporalWindow, "MaxTemporalSizeInterpretation"));
-  gvParameterInfo.push_back(std::make_pair(SpatialWindow, "MaxSpatialSizeInterpretation"));
+  gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"TimeAggregationUnits"));
+  gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"TimeAggregationLength"));
+  gvParameterInfo.push_back(std::make_pair(TemporalWindow, (const char*)"IncludePurelySpatial"));
+  gvParameterInfo.push_back(std::make_pair(TemporalWindow, (const char*)"MaxTemporalSize"));
+  gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"MonteCarloReps"));
+  gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"ModelType"));
+  gvParameterInfo.push_back(std::make_pair(IsotonicScan, (const char*)"IsotonicScan"));
+  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"PValues2PrespecifiedLLRs"));
+  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"LLR1"));
+  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"LLR2"));
+  gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"TimeTrendAdjustmentType"));
+  gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"TimeTrendPercentage"));
+  gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"IncludePurelyTemporal"));
+  gvParameterInfo.push_back(std::make_pair(Input, (const char*)"ControlFile"));
+  gvParameterInfo.push_back(std::make_pair(Input, (const char*)"CoordinatesType"));
+  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"SaveSimLLRsASCII"));
+  gvParameterInfo.push_back(std::make_pair(SequentialScan, (const char*)"SequentialScan"));
+  gvParameterInfo.push_back(std::make_pair(SequentialScan, (const char*)"SequentialScanMaxIterations"));
+  gvParameterInfo.push_back(std::make_pair(SequentialScan, (const char*)"SequentialScanMaxPValue"));
+  gvParameterInfo.push_back(std::make_pair(BatchModeFeatures, (const char*)"ValidateParameters"));
+  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"IncludeRelativeRisksCensusAreasASCII"));
+  gvParameterInfo.push_back(std::make_pair(EllipticScan, (const char*)"NumberOfEllipses"));
+  gvParameterInfo.push_back(std::make_pair(EllipticScan, (const char*)"EllipseShapes"));
+  gvParameterInfo.push_back(std::make_pair(EllipticScan, (const char*)"EllipseAngles"));
+  gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"ProspectiveStartDate"));
+  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"CensusAreasReportedClustersASCII"));
+  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"MostLikelyClusterEachCentroidASCII"));
+  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"CriteriaForReportingSecondaryClusters"));
+  gvParameterInfo.push_back(std::make_pair(TemporalWindow, (const char*)"MaxTemporalSizeInterpretation"));
+  gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"MaxSpatialSizeInterpretation"));
   gvParameterInfo.push_back(std::make_pair(NotUsed, NotUsed));
-  gvParameterInfo.push_back(std::make_pair(Output, "MostLikelyClusterEachCentroidDBase"));
-  gvParameterInfo.push_back(std::make_pair(Output, "CensusAreasReportedClustersDBase"));
-  gvParameterInfo.push_back(std::make_pair(Output, "IncludeRelativeRisksCensusAreasDBase"));
-  gvParameterInfo.push_back(std::make_pair(Output, "SaveSimLLRsDBase"));
-  gvParameterInfo.push_back(std::make_pair(EllipticScan, "NonCompactnessPenalty"));
-  gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, "IntervalStartRange"));
-  gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, "IntervalEndRange"));
-  gvParameterInfo.push_back(std::make_pair(BatchModeFeatures, "TimeTrendConvergence"));
-  gvParameterInfo.push_back(std::make_pair(SpatialWindow, "MaxCirclePopulationFile"));
-  gvParameterInfo.push_back(std::make_pair(Inference, "EarlySimulationTermination"));
-  gvParameterInfo.push_back(std::make_pair(ClustersReported, "MaxReportedGeoClusterSize"));
-  gvParameterInfo.push_back(std::make_pair(ClustersReported, "UseReportOnlySmallerClusters"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, "SimulatedDataMethodType"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, "SimulatedDataInputFilename"));
-  gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, "AdjustmentsByKnownRelativeRisksFilename"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, "PrintSimulatedDataToFile"));
-  gvParameterInfo.push_back(std::make_pair(PowerSimulations, "SimulatedDataOutputFilename"));
-  gvParameterInfo.push_back(std::make_pair(Inference, "AdjustForEarlierAnalyses"));
-  gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, "UseAdjustmentsByRRFile"));
-  gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, "SpatialAdjustmentType"));
-  gvParameterInfo.push_back(std::make_pair(MultipleDataSets, "MultipleDataSetsPurposeType"));
-  gvParameterInfo.push_back(std::make_pair(System, "Version"));
+  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"MostLikelyClusterEachCentroidDBase"));
+  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"CensusAreasReportedClustersDBase"));
+  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"IncludeRelativeRisksCensusAreasDBase"));
+  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"SaveSimLLRsDBase"));
+  gvParameterInfo.push_back(std::make_pair(EllipticScan, (const char*)"NonCompactnessPenalty"));
+  gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"IntervalStartRange"));
+  gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"IntervalEndRange"));
+  gvParameterInfo.push_back(std::make_pair(BatchModeFeatures, (const char*)"TimeTrendConvergence"));
+  gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"MaxCirclePopulationFile"));
+  gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"EarlySimulationTermination"));
+  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"MaxReportedGeoClusterSize"));
+  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"UseReportOnlySmallerClusters"));
+  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"SimulatedDataMethodType"));
+  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"SimulatedDataInputFilename"));
+  gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"AdjustmentsByKnownRelativeRisksFilename"));
+  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"PrintSimulatedDataToFile"));
+  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"SimulatedDataOutputFilename"));
+  gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"AdjustForEarlierAnalyses"));
+  gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"UseAdjustmentsByRRFile"));
+  gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"SpatialAdjustmentType"));
+  gvParameterInfo.push_back(std::make_pair(MultipleDataSets, (const char*)"MultipleDataSetsPurposeType"));
+  gvParameterInfo.push_back(std::make_pair(System, (const char*)"Version"));
 
-  gvMultipleParameterInfo[CASEFILE] = std::make_pair(MultipleDataSets, "CaseFile");
-  gvMultipleParameterInfo[CONTROLFILE] = std::make_pair(MultipleDataSets, "ControlFile");
-  gvMultipleParameterInfo[POPFILE] = std::make_pair(MultipleDataSets, "PopulationFile");
+  gvMultipleParameterInfo[CASEFILE] = std::make_pair(MultipleDataSets, (const char*)"CaseFile");
+  gvMultipleParameterInfo[CONTROLFILE] = std::make_pair(MultipleDataSets, (const char*)"ControlFile");
+  gvMultipleParameterInfo[POPFILE] = std::make_pair(MultipleDataSets, (const char*)"PopulationFile");
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
@@ -258,4 +261,5 @@ bool IniParameterSpecification::GetMultipleParameterIniInfo(ParameterType eParam
 
   return bReturn;
 }
+
 
