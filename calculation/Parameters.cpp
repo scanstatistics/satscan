@@ -1721,7 +1721,7 @@ bool CParameters::ValidateDateParameters(BasePrint& PrintDirection) const {
       bEndDateValid = false;
     }
     //validate prospective start date based upon precision of times parameter setting
-    if (GetIsProspectiveAnalysis() && !ValidateProspectiveDate(PrintDirection)) {
+    if (GetIsProspectiveAnalysis() && gbAdjustForEarlierAnalyses && !ValidateProspectiveDate(PrintDirection)) {
       bValid = false;
       bProspectiveDateValid = false;
     }
@@ -1734,7 +1734,7 @@ bool CParameters::ValidateDateParameters(BasePrint& PrintDirection) const {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: The study period start date occurs after the end date.\n");
       }
-      if (bValid && GetIsProspectiveAnalysis() && bProspectiveDateValid) {
+      if (bValid && GetIsProspectiveAnalysis() && gbAdjustForEarlierAnalyses && bProspectiveDateValid) {
         //validate prospective start date
         ProspectiveStartDate = CharToJulian(gsProspectiveStartDate.c_str());
         if (ProspectiveStartDate < StudyPeriodStartDate || ProspectiveStartDate > StudyPeriodEndDate) {
