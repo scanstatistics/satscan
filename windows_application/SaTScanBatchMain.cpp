@@ -21,6 +21,7 @@
 #include "DBFFile.h"
 
 int main(int argc, char *argv[]) {
+  int                   i;
   time_t                RunTime;
   CSaTScanData        * pData=0;
   CAnalysis           * pAnalysis=0;
@@ -34,13 +35,25 @@ int main(int argc, char *argv[]) {
     ZdGetFileTypeArray()->AddElement(&(DBFFileType::GetDefaultInstance()));
     ConsolePrint.SatScanPrintf(GetToolkit().GetAcknowledgment(sMessage));
     if (argc < 2)
-      ZdGenerateException("No parameter file specified.\nusage: %s \"parameter file name\"\n", "main(int,char*)", argv[0]);
+      GenerateUsageException();
     time(&RunTime); //get start time
     Parameters.Read(argv[1], ConsolePrint);
     if (Parameters.GetErrorOnRead()) {
       sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
       SSGenerateException(sMessage.GetCString(),"main(int,char*)");
+    }
+    // read options
+    for (i=2; i < argc; ++i) {
+       if (!stricmp(argv[i], "-v"))
+         Parameters.SetSuppressInstanceParticularOutput(true);
+       else if (!stricmp(argv[i], "-o")) {
+         if (argc < i + 2)
+           GenerateUsageException();
+         Parameters.SetOutputFileName(argv[++i]);
+       }
+       else
+         GenerateUsageException();
     }
     //Set run history attributes here
     Parameters.SetRunHistoryFilename(GetToolkit().GetRunHistoryFileName());
@@ -98,6 +111,13 @@ int main(int argc, char *argv[]) {
     delete pData;
     ConsolePrint.SatScanPrintf(x.GetErrorMessage());
     ConsolePrint.SatScanPrintf("\n\nJob cancelled.");
+    BasisExit();
+    exit(1);
+  }
+  catch (UsageException & x) {
+    delete pAnalysis;
+    delete pData;
+    ConsolePrint.SatScanPrintf(x.GetErrorMessage());
     BasisExit();
     exit(1);
   }
