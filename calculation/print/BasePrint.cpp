@@ -22,7 +22,7 @@ BasePrint::~BasePrint() {
 // returns the string representation of what the enumeration actually stands for
 // pre : none
 // post : returns a string by reference of the file type name if eType is valid
-void BasePrint::GetInputFileType(eInputFileType eType, std::string& sName) {
+std::string & BasePrint::GetInputFileType(eInputFileType eType, std::string& sName) {
   switch (eType) {
     case CASEFILE         : sName = "case"; break;
     case CONTROLFILE      : sName = "control"; break;
@@ -32,6 +32,7 @@ void BasePrint::GetInputFileType(eInputFileType eType, std::string& sName) {
     case MAXCIRCLEPOPFILE : sName = "maximum circle population"; break;
     default : ZdException::GenerateNotification("Invalid input file type warning message!", "GetInputFileType()");
   }
+  return sName;
 }
 
 void BasePrint::SatScanPrintf(const char * sMessage, ... )
