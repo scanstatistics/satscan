@@ -1,3 +1,4 @@
+#include "SaTScan.h"
 #pragma hdrstop
 #include "SpaceTimeIncludePurelyTemporalAnalysis.h"
 
