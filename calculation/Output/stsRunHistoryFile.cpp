@@ -376,7 +376,7 @@ void stsRunHistoryFile::SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&
 
       field.first.first = "Output_File";
       field.first.second = ZD_ALPHA_FLD;
-      field.second = 256;
+      field.second = 255;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Prob_Model";
