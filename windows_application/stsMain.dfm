@@ -3,7 +3,7 @@ object frmMainForm: TfrmMainForm
   Top = 152
   Width = 783
   Height = 529
-  Caption = 'SatScan'
+  Caption = 'SaTScan'
   Color = clGray
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
