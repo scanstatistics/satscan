@@ -543,9 +543,9 @@ void AnalysisRunner::PerformSerializedSimulations() {
       return;
     //set print message format string
     if (gParameters.GetLogLikelihoodRatioIsTestStatistic())
-      sReplicationFormatString = "SaTScan test statistic for #%u of %u replications: %7.2f\n";
+      sReplicationFormatString = "SaTScan test statistic for #%u of %u replications: %7.2lf\n";
     else
-      sReplicationFormatString = "SaTScan log likelihood ratio for #%u of %u replications: %7.2f\n";
+      sReplicationFormatString = "SaTScan log likelihood ratio for #%u of %u replications: %7.2lf\n";
     //create record buffers for simulated loglikelihood ratios, if user requested these output files
     if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
       pLLRData.reset(new LogLikelihoodData(gParameters));
