@@ -43,9 +43,12 @@ class AreaSpecificRecord : public BaseOutputRecord {
       AreaSpecificRecord(const bool bPrintPVal = true, const bool bIncludeRunHistory = true);
       virtual ~AreaSpecificRecord();
 
+      virtual bool GetFieldIsBlank(int iFieldNumber);
       virtual int GetNumFields();
       virtual ZdFieldValue GetValue(int iFieldNumber);
-        
+
+      void      SetFieldIsBlank(int iFieldNumber, bool bBlank = true);
+
       void	SetAreaExpected(const double dAreaExpected) { gdAreaExpected = dAreaExpected; }
       void	SetAreaObserved(const long lAreaObserved) { glAreaObserved = lAreaObserved; }  
       void	SetAreaRelativeRisk(const double dAreaRelRisk) { gdAreaRelRisk = dAreaRelRisk; }

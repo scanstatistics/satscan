@@ -16,7 +16,8 @@ class RelativeRiskRecord : public BaseOutputRecord {
    public :
       RelativeRiskRecord();
       virtual ~RelativeRiskRecord();
-    
+
+      virtual bool GetFieldIsBlank(int iFieldNumber) { return false; }
       virtual int GetNumFields() { return 4; }
       virtual ZdFieldValue GetValue(int iFieldNumber); 
        

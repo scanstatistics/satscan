@@ -26,6 +26,24 @@ ASCIIFileWriter::ASCIIFileWriter(BaseOutputStorageClass* pOutputFileData)
 ASCIIFileWriter::~ASCIIFileWriter() {
 }
 
+// creates a blank string of the length of the specified field
+// pre: 0 <= iFieldNumber < vFields.size()
+// post: sFormatString conatins field length number of spaces
+void ASCIIFileWriter::CreateBlankString(ZdString& sFormatString, int iFieldNumber) {
+   ZdField*             pField = 0;
+
+   try {
+      pField = gpOutputFileData->GetField(iFieldNumber);
+
+      for(int i = 0; i < pField->GetLength(); ++i)
+         sFormatString << " ";
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("CreateBlankString()", "ASCIIFileWriter");
+      throw;
+   }
+}
+
 // creates the formatted string from the precision and type of the field value and stores the formatted
 //  output value in sValue
 // pre : none
@@ -96,8 +114,14 @@ void ASCIIFileWriter::Print() {
       for(unsigned long i = 0; i < gpOutputFileData->GetNumRecords(); ++i) {
          pRecord = gpOutputFileData->GetRecord(i);
          for(unsigned short j = 0; j < pRecord->GetNumFields(); ++j) {
-            sFormatString << ZdString::reset;
-            CreateFormatString(sFormatString, j, pRecord->GetValue(j));
+            if (!pRecord->GetFieldIsBlank(j)) {
+               sFormatString << ZdString::reset;
+               CreateFormatString(sFormatString, j, pRecord->GetValue(j));
+            }
+            else {
+               sFormatString << ZdString::reset;
+               CreateBlankString(sFormatString, j);
+            }
             fprintf(pFile, "%s ", sFormatString.GetCString());
          }
          fprintf(pFile, "\n");

@@ -9,6 +9,7 @@ class OutputFileData;
 
 class ASCIIFileWriter : public OutputFileWriter {
    protected :
+      void              CreateBlankString(ZdString& sFormatString, int iFieldNumber);
       void              CreateFormatString(ZdString& sValue, const int iFieldNumber, const ZdFieldValue& fv);
       virtual void      CreateOutputFile();
       void              Init();

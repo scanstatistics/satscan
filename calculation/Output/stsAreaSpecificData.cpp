@@ -22,6 +22,21 @@ AreaSpecificRecord::AreaSpecificRecord(const bool bPrintPVal, const bool bInclud
 AreaSpecificRecord::~AreaSpecificRecord() {
 }
 
+// returns whether or not the field at iFieldNumber should be blank
+// pre : none
+// post : returns true is field should be blank
+bool AreaSpecificRecord::GetFieldIsBlank(int iFieldNumber) {
+   try {
+      if ( iFieldNumber < 0 || (size_t)iFieldNumber >= gvbBlankFields.size())
+         ZdGenerateException("Invalid index, out of range!", "Error!");
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("GetFieldIsBlank()", "AreaSpecificRecord");
+      throw;
+   }
+   return gvbBlankFields[iFieldNumber];
+}
+
 int AreaSpecificRecord::GetNumFields() {
   return ( 8 + (gbPrintPVal ? 1 : 0) + (gbIncludeRunHistory ? 1 : 0));
 }
@@ -96,6 +111,25 @@ void AreaSpecificRecord::Init() {
    glAreaObserved = 0;
    gdAreaExpected = 0.0;
    gdAreaRelRisk = 0.0;
+
+   for ( int i = 0; i < GetNumFields(); ++i ) 
+      gvbBlankFields.push_back(false);
+}
+
+// sets the field at fieldnumber to either be blank or non-blank
+// pre : none
+// post : sets the iFieldNumber element of the global vector to bBlank
+void AreaSpecificRecord::SetFieldIsBlank(int iFieldNumber, bool bBlank) {
+   try {
+      if (iFieldNumber < 0 || (size_t)iFieldNumber >= gvbBlankFields.size())
+         ZdGenerateException("Invalid index, out of range!", "Error!");
+
+      gvbBlankFields[iFieldNumber] = bBlank;
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("SetFieldIsBlank()", "AreaSpecificRecord");
+      throw;
+   }
 }
 
 // ============================================================================
@@ -134,34 +168,51 @@ void stsAreaSpecificData::Init() {
 void stsAreaSpecificData::RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, tract_t tTract) {
    ZdString             sTempValue;
    std::string          sBuffer;
-   float                fPVal;
    AreaSpecificRecord*	pRecord = 0;
+   std::vector<std::string>             vIdentifiers;
 
    try {
-      pRecord = new AreaSpecificRecord(gbPrintPVal, gbIncludeRunHistory);
-      pRecord->SetAreaExpected(pCluster.GetMeasureForTract(tTract, pData));
-      pRecord->SetAreaObserved(pCluster.GetCaseCountForTract(tTract, pData));
-      pRecord->SetAreaRelativeRisk(pCluster.GetRelativeRiskForTract(tTract, pData));
-      pRecord->SetClusterExpected(pCluster.m_nMeasure);
-      pRecord->SetClusterNumber(iClusterNumber);
-      pRecord->SetClusterObserved(pCluster.m_nCases);
-      pRecord->SetClusterRelativeRisk(pCluster.GetRelativeRisk(pData.GetMeasureAdjustment()));
-      
-      // area id
-      sTempValue = (pData.GetTInfo())->tiGetTid(tTract, sBuffer); 
-      pRecord->SetLocationID(sTempValue);
-      
-      // p value
-      if(gbPrintPVal) {
-         fPVal = (float) pCluster.GetPVal(pData.m_pParameters->m_nReplicas);
-         pRecord->SetPValue(fPVal);
-      }
-      
-      if (gbIncludeRunHistory)
-         pRecord->SetRunNumber(glRunNumber);
+      pData.gpTInfo->tiGetTractIdentifiers(tTract, vIdentifiers);
 
-      BaseOutputStorageClass::AddRecord(pRecord);
-   }  
+      // if more than one identifier for the tract then create a blank record for each
+      if (vIdentifiers.size() > 1) {
+         for (size_t j = 0; j < vIdentifiers.size(); ++j) {
+            pRecord = new AreaSpecificRecord(gbPrintPVal, gbIncludeRunHistory);
+
+            pRecord->SetLocationID(vIdentifiers[j].c_str());
+            for(int i = 1; i < GetNumFields(); ++i) 
+               pRecord->SetFieldIsBlank(i, true);
+
+            BaseOutputStorageClass::AddRecord(pRecord);
+         }   // end for each identifier
+      }
+      else {      // else not duplicate coordinates so we just store the data
+         pRecord = new AreaSpecificRecord(gbPrintPVal, gbIncludeRunHistory);
+
+         pRecord->SetAreaExpected(pCluster.GetMeasureForTract(tTract, pData));
+         pRecord->SetAreaObserved(pCluster.GetCaseCountForTract(tTract, pData));
+         pRecord->SetAreaRelativeRisk(pCluster.GetRelativeRiskForTract(tTract, pData));
+         pRecord->SetClusterExpected(pCluster.m_nMeasure);
+         pRecord->SetClusterNumber(iClusterNumber);
+         pRecord->SetClusterObserved(pCluster.m_nCases);
+         pRecord->SetClusterRelativeRisk(pCluster.GetRelativeRisk(pData.GetMeasureAdjustment()));
+
+         // p value
+         if(gbPrintPVal) {
+            float fPVal = (float) pCluster.GetPVal(pData.m_pParameters->m_nReplicas);
+            pRecord->SetPValue(fPVal);
+         }
+      
+         if (gbIncludeRunHistory)
+            pRecord->SetRunNumber(glRunNumber);
+      
+         // area id
+         sTempValue = (pData.GetTInfo())->tiGetTid(tTract, sBuffer);
+         pRecord->SetLocationID(sTempValue);
+
+         BaseOutputStorageClass::AddRecord(pRecord);
+      }
+   }
    catch (ZdException &x) {
       delete pRecord; 	 
       x.AddCallpath("RecordClusterData()", "stsAreaSpecificData");

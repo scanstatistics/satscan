@@ -37,7 +37,7 @@ BaseOutputRecord::BaseOutputRecord() {
 }
 
 BaseOutputRecord::~BaseOutputRecord() {
-}	
+}
 
 // sets the filed value type to double and value to dValue
 // pre : none
@@ -148,7 +148,7 @@ BaseOutputRecord* BaseOutputStorageClass::GetRecord(int iPosition) {
       x.AddCallpath("GetRecord()", "BaseOutputStorageClass");
       throw;
    } 
-   return gvRecords.at(iPosition);
+   return gvRecords[iPosition];
 }
 
 // ============================================================================
@@ -161,6 +161,21 @@ TestOutputRecord::TestOutputRecord() {
 
 TestOutputRecord::~TestOutputRecord() {
 }      
+
+// returns whether or not the field at iFieldNumber should be blank
+// pre : none
+// post : returns true is field should be blank
+bool TestOutputRecord::GetFieldIsBlank(int iFieldNumber) {
+   try {
+      if ( iFieldNumber < 0 || (size_t)iFieldNumber >= gvbBlankFields.size())
+         ZdGenerateException("Invalid index, out of range!", "Error!");
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("GetFieldIsBlank()", "TestOutputRecord");
+      throw;
+   }
+   return gvbBlankFields[iFieldNumber];
+}
 
 ZdFieldValue TestOutputRecord::GetValue(int iFieldNumber) {
    ZdFieldValue fv;
@@ -178,23 +193,42 @@ ZdFieldValue TestOutputRecord::GetValue(int iFieldNumber) {
       	 case 5:  SetFieldValueAsString(fv, gbBoolTestValue ? "true" : "false" ); break;
       	 default :
       	    ZdGenerateException("Invalid index, out of range!", "Error!");
-      }		
+      }
    }
    catch (ZdException &x) {
       x.AddCallpath("GetValue()", "TestOutputRecord");
-      throw;	
+      throw;
    }
-   return fv;		
+   return fv;
 }
 
 void TestOutputRecord::Init() {
    gsStringTestValue = "";
-   glLongTestValue = 0;  
+   glLongTestValue = 0;
    gdDoubleTestValue = 0.0;
-   gfFloatTestValue = 0.0; 
-   giIntTestValue = 0;   
-   gbBoolTestValue = false;  	
-}		
+   gfFloatTestValue = 0.0;
+   giIntTestValue = 0;
+   gbBoolTestValue = false;
+
+   for ( int i = 0; i < GetNumFields(); ++i )
+      gvbBlankFields.push_back(false);
+}
+
+// sets the field at fieldnumber to either be blank or non-blank
+// pre : none
+// post : sets the iFieldNumber element of the global vector to bBlank
+void TestOutputRecord::SetFieldIsBlank(int iFieldNumber, bool bBlank) {
+   try {
+      if (iFieldNumber < 0 || (size_t)iFieldNumber >= gvbBlankFields.size())
+         ZdGenerateException("Invalid index, out of range!", "Error!");
+
+      gvbBlankFields[iFieldNumber] = bBlank;
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("SetFieldIsBlank()", "TestOutputRecord");
+      throw;
+   }
+}
 
 // ============================================================================
 // this is a testing class to test the output file data heirarchy and also test the
@@ -209,6 +243,27 @@ TestOutputClass::TestOutputClass(BasePrint *pPrintDirection, const ZdString& sOu
 TestOutputClass::~TestOutputClass(){
 }
 
+// adds a 'blank' record to the global vector of records
+// pre : none
+// post : adds a record consisting only of blanks to the record vector
+void TestOutputClass::AddBlankRecord() {
+   TestOutputRecord* pRecord = 0;
+   
+   try {
+      pRecord = new TestOutputRecord();
+      for(int i = 0; i < GetNumFields(); ++i)
+         pRecord->SetFieldIsBlank(i, true);
+      BaseOutputStorageClass::AddRecord(pRecord);   
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("AddBlankRecord()", "TestOutputClass");
+      throw;
+   }
+}
+
+// sets up the fields of a test output record
+// pre : none
+// post : creates one of each field type that we are interested in testing
 void TestOutputClass::SetupFields() {
    unsigned short uwOffset = 0;
 
@@ -226,6 +281,9 @@ void TestOutputClass::SetupFields() {
    }		
 }
 
+// sets the values in the fields
+// pre : none
+// post : sets each field of the given type
 void TestOutputClass::SetTestValues(const ZdString& sStringTestValue, const long lLongTestValue, const double dDoubleTestValue,
                                     const float	fFloatTestValue, const int iIntTestValue, const bool bBoolTestValue) {
    TestOutputRecord* pRecord = 0;
@@ -238,7 +296,7 @@ void TestOutputClass::SetTestValues(const ZdString& sStringTestValue, const long
       pRecord->SetFloatTestField(fFloatTestValue);     
       pRecord->SetIntTestField(iIntTestValue); 
       pRecord->SetBoolTestField(bBoolTestValue);        
-      BaseOutputStorageClass::AddRecord(pRecord);	
+      BaseOutputStorageClass::AddRecord(pRecord);
    }
    catch (ZdException &x) {
       delete pRecord;	

@@ -93,7 +93,7 @@ void LogLikelihoodData::Setup(const ZdString& sOutputFileName) {
       else
          sTempName << LOG_LIKELIHOOD_FILE_EXT;
       gsFileName = sTempName;
-      	
+
       SetupFields();
    }
    catch (ZdException &x) {

@@ -30,13 +30,16 @@ extern const char * TST_STAT_FIELD;
 
 // base record class for the individual output types records
 class BaseOutputRecord {
+   protected :
+      std::vector<bool>                 gvbBlankFields;
    public :
       BaseOutputRecord();
       virtual ~BaseOutputRecord();
-   
+
+      virtual bool GetFieldIsBlank(int iFieldNumber) = 0;
       virtual int GetNumFields() = 0;
       virtual ZdFieldValue GetValue(int iFieldNumber) = 0;
-   
+
       void SetFieldValueAsLong(ZdFieldValue& fv, const long lValue);
       void SetFieldValueAsDouble(ZdFieldValue& fv, const double dValue);
       void SetFieldValueAsString(ZdFieldValue& fv, const ZdString& sValue);
@@ -59,7 +62,7 @@ class BaseOutputStorageClass {
       void			        AddRecord(BaseOutputRecord* pRecord);
 
       BasePrint*                        GetBasePrinter()        { return gpPrintDirection; }
-      ZdField*                          GetField(unsigned short uwFieldNumber); 
+      ZdField*                          GetField(unsigned short uwFieldNumber);
       const ZdVector<ZdField*>&	        GetFields() { return gvFields; }
       const ZdString&			GetFileName() { return gsFileName; }
       const unsigned short		GetNumFields() { return gvFields.size(); }
@@ -81,16 +84,19 @@ class TestOutputRecord : public BaseOutputRecord {
    public :
       TestOutputRecord();
       ~TestOutputRecord();
-      
+
+      virtual bool GetFieldIsBlank(int iFieldNumber);
       virtual int GetNumFields() { return 6; }
       virtual ZdFieldValue GetValue(int iFieldNumber);
-      
-      void 	SetStringTestField(const ZdString& sStringTestValue) { gsStringTestValue = sStringTestValue;}
-      void 	SetLongTestField(const long lLongTestValue)        { glLongTestValue   = lLongTestValue;  }
+
+      void      SetFieldIsBlank(int iFieldNumber, bool bBlank = true);
+
+      void 	SetBoolTestField(const bool bBoolTestValue)        { gbBoolTestValue   = bBoolTestValue;  }
       void 	SetDoubleTestField(const double dDoubleTestValue)    { gdDoubleTestValue = dDoubleTestValue;}
       void 	SetFloatTestField(const float fFloatTestValue)      { gfFloatTestValue  = fFloatTestValue; }
       void 	SetIntTestField(const int iIntTestValue)         { giIntTestValue = iIntTestValue;   }
-      void 	SetBoolTestField(const bool bBoolTestValue)        { gbBoolTestValue   = bBoolTestValue;  }
+      void 	SetLongTestField(const long lLongTestValue)        { glLongTestValue   = lLongTestValue;  }
+      void 	SetStringTestField(const ZdString& sStringTestValue) { gsStringTestValue = sStringTestValue;}
 };	
 
 class TestOutputClass : public BaseOutputStorageClass {
@@ -99,19 +105,17 @@ class TestOutputClass : public BaseOutputStorageClass {
    public :
       TestOutputClass(BasePrint *pPrintDirection, const ZdString& sOutputFileName);
       ~TestOutputClass();
-      
+
+      void      AddBlankRecord();
       void      SetTestValues(const ZdString& sStringTestValue, const long lLongTestValue, const double	dDoubleTestValue,
                               const float fFloatTestValue, const int iIntTestValue, const bool bBoolTestValue);
-};	
-
-static      void      CreateField(ZdPointerVector<ZdField>& vFields, const std::string& sFieldName, const char cType, const short wLength,
-                                     const short wPrecision, unsigned short& uwOffset, bool bCreateIndex = false);
+};
 
 // allocates a new field and adds it to the vector
 // pre : none
 // post : a field is added to the pointer vector with appropraite specs
 static void CreateField(ZdPointerVector<ZdField>& vFields, const std::string& sFieldName, const char cType, const short wLength,
-                                           const short wPrecision, unsigned short& uwOffset, bool bCreateIndex) {
+                                           const short wPrecision, unsigned short& uwOffset, bool bCreateIndex = false) {
    ZdField  *pField = 0;
    TXDFile  File;
 

@@ -12,7 +12,8 @@ class LogLikelihoodRecord : public BaseOutputRecord {
       LogLikelihoodRecord();
       LogLikelihoodRecord(const double dLikelihood);
       virtual ~LogLikelihoodRecord();
-   
+
+      virtual bool GetFieldIsBlank(int iFieldNumber) { return false; }
       virtual int GetNumFields() { return 1; }
       virtual ZdFieldValue GetValue(int iFieldNumber);
       

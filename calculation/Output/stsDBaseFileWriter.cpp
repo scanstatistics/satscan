@@ -66,7 +66,10 @@ void DBaseFileWriter::Print() {
          pRecord = gpOutputFileData->GetRecord(i);
          pDBaseRecord.reset(pFile->GetNewRecord());
          for (unsigned short j = 0; j < pRecord->GetNumFields(); ++j) {
-            pDBaseRecord->PutFieldValue(j, pRecord->GetValue(j));
+            if (!pRecord->GetFieldIsBlank(j))
+               pDBaseRecord->PutFieldValue(j, pRecord->GetValue(j));
+            else
+               pDBaseRecord->PutBlank(j);
          }
          pFile->AppendRecord(*pTransaction, *pDBaseRecord);
       }

@@ -58,7 +58,8 @@ class ClusterRecord : public BaseOutputRecord {
    public:
       ClusterRecord(const bool bPrintEllipses = true, const bool bPrintPVal = true, const bool bIncludeRunHistory = true);
       virtual ~ClusterRecord();
-      
+
+      virtual bool GetFieldIsBlank(int iFieldNumber) { return false; }
       virtual int GetNumFields();
       virtual ZdFieldValue GetValue(int iFieldNumber);
     
