@@ -131,7 +131,7 @@ void RelativeRiskData::RecordRelativeRiskData(const CSVTTData& DataHub) {
           }
           TractTimeTrend.CalculateAndSet(&vTemporalTractCases[0], &vTemporalTractObserved[0],
                                          DataHub.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
-          TractTimeTrend.SetAnnualTimeTrend(gParameters.GetTimeIntervalUnitsType(), gParameters.GetTimeIntervalLength());
+          TractTimeTrend.SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
           sBuffer.printf("%6.3f", (TractTimeTrend.IsNegative() ? -1 : 1) * TractTimeTrend.GetAnnualTimeTrend());
           pRecord->GetFieldValue(GetFieldNumber(TIME_TREND_FIELD)).AsZdString() = sBuffer;
           BaseOutputStorageClass::AddRecord(pRecord);

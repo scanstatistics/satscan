@@ -302,8 +302,8 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
       PrintFormat.PrintSectionLabel(fp, "Null Occurrence", false, true);
       fIntervals = Data.m_nTimeIntervals - Data.m_nProspectiveIntervalStart + 1;
       fAdjustedP_Value = 1 - pow(1 - GetPValue(iNumSimulations), 1/fIntervals);
-      fUnitsInOccurrence = (float)Data.GetParameters().GetTimeIntervalLength()/fAdjustedP_Value;
-      switch (Data.GetParameters().GetTimeIntervalUnitsType()) {
+      fUnitsInOccurrence = (float)Data.GetParameters().GetTimeAggregationLength()/fAdjustedP_Value;
+      switch (Data.GetParameters().GetTimeAggregationUnitsType()) {
         case YEAR   : sBuffer.printf("Once in %.1f year%s\n", fUnitsInOccurrence, (fUnitsInOccurrence > 1 ? "s" : ""));
                       break;
         case MONTH  : fYears = floor(fUnitsInOccurrence/12);
@@ -337,7 +337,7 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
                         sBuffer.printf("Once in %.0f year%s and %.0f day%s", fYears, (fYears == 1 ? "" : "s"), fDays, (fDays < 1.5 ? "" : "s"));
                       break;
         default     : ZdGenerateException("Invalid time interval index \"%d\" for prospective analysis.",
-                                          "DisplayNullOccurrence()", Data.GetParameters().GetTimeIntervalUnitsType());
+                                          "DisplayNullOccurrence()", Data.GetParameters().GetTimeAggregationUnitsType());
       }
       //print data to file stream
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);

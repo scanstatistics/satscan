@@ -68,7 +68,7 @@ void CPoissonModel::AdjustForLLPercentage(RealDataStream & thisStream, measure_t
 {
   int    i,t;
   double c;
-  double k = IntervalInYears(gParameters.GetTimeIntervalUnitsType(), gParameters.GetTimeIntervalLength());
+  double k = IntervalInYears(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
   double p = 1 + (nPercentage/100);
   double nAdjustedMeasure = 0;
 
@@ -124,7 +124,7 @@ void CPoissonModel::AdjustForLogLinear(RealDataStream& thisStream, measure_t ** 
       ZdGenerateException("Unknown time trend status type '%d'.", "AdjustForLogLinear()", TimeTrend.GetStatus());
   };
 
-  TimeTrend.SetAnnualTimeTrend(gParameters.GetTimeIntervalUnitsType(), gParameters.GetTimeIntervalLength());
+  TimeTrend.SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
   AdjustForLLPercentage(thisStream, pNonCumulativeMeasure, TimeTrend.GetAnnualTimeTrend());
   //store calculated time trend adjustment for reporting later
   thisStream.SetCalculatedTimeTrendPercentage(TimeTrend.GetAnnualTimeTrend());

@@ -77,7 +77,7 @@ const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCent
     // the ratio needs to be calculated for each circle/cylinder, instead of here !!!!
     CSVTTCluster & Cluster = (CSVTTCluster&)(gpTopShapeClusters->GetTopCluster());
     Cluster.m_nRatio -= gpLikelihoodCalculator->GetLogLikelihoodForTotal();
-    Cluster.SetTimeTrend(gParameters.GetTimeIntervalUnitsType(), gParameters.GetTimeIntervalLength());
+    Cluster.SetTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateTopCluster()","CSpatialVarTempTrendAnalysis");

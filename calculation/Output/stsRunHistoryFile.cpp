@@ -252,9 +252,9 @@ void stsRunHistoryFile::GetMaxTemporalExtentString(ZdString& sTempValue, const C
          if(params.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE)
             sTempValue << "%";
          else {
-            if(params.GetTimeIntervalUnitsType() == DAY)
+            if(params.GetTimeAggregationUnitsType() == DAY)
                sTempValue << "Days";
-            else if(params.GetTimeIntervalUnitsType() == MONTH)
+            else if(params.GetTimeAggregationUnitsType() == MONTH)
                sTempValue << "Months";
             else
                sTempValue << "Years";
@@ -453,7 +453,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ALIVE_ONLY_FIELD)); // alive clusters only field
 
       // interval field
-      GetIntervalUnitsString(sTempValue, params.GetTimeIntervalUnitsType(), params.GetTimeIntervalLength(), params.GetAnalysisType());
+      GetIntervalUnitsString(sTempValue, params.GetTimeAggregationUnitsType(), params.GetTimeAggregationUnitsType(), params.GetAnalysisType());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, INTERVAL_FIELD));
 
       // p-value field
