@@ -71,6 +71,15 @@ void __fastcall CalcThread::EnableProgressPrintButton(void) {
 /** Main Thread execution function. */
 void __fastcall CalcThread::Execute() {
   try {
+    ZdString Acknowledgment;
+
+    Acknowledgment << ZdString::reset << "You are running SaTScan " << VERSION_NUMBER;
+    Acknowledgment << ".\n\nSaTScan is free, available for download from\n";
+    Acknowledgment << SATSCAN_WEBSITE << ".\nIt may be used free of charge as long as proper ";
+    Acknowledgment << "citations\nare given to both the SaTScan software and the underlying\n";
+    Acknowledgment << "statistical methodology.\n\n";
+    gpPrintWindow->SatScanPrintf(Acknowledgment.GetCString());
+
     time_t      RunTime;
 
     time(&RunTime);         // Pass to analysis to include in report

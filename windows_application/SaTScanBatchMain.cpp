@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
    CAnalysis*    pAnalysis    = 0;
    CParameters*  pParams      = 0;
    PrintScreen  *pPrintScreen = 0;
+   ZdString      Acknowledgment;
 
    try
       {
@@ -38,13 +39,18 @@ int main(int argc, char *argv[])
       ZdGetFileTypeArray()->AddElement( &(DBFFileType::GetDefaultInstance()) );
       time(&RunTime); // Pass to analysis to include in report
 
-      DisplayVersion(stdout, 0);
-      fprintf(stdout, "\n");
 
       pParams = new CParameters(true);
       pPrintScreen = new PrintScreen();
       pParams->SetPrintDirection(pPrintScreen);
-      
+
+      Acknowledgment << ZdString::reset << "You are running SaTScan " << VERSION_NUMBER;
+      Acknowledgment << ".\n\nSaTScan is free, available for download from\n";
+      Acknowledgment << SATSCAN_WEBSITE << ".\nIt may be used free of charge as long as proper ";
+      Acknowledgment << "citations\nare given to both the SaTScan software and the underlying\n";
+      Acknowledgment << "statistical methodology.\n\n";
+      pPrintScreen->SatScanPrintf(Acknowledgment.GetCString());
+
       if (argc != 2)
          SSGenerateException("  Error: Invalid Number of Arguments on Command Line.\n","main.cpp");
 
