@@ -130,7 +130,7 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
   }
 
   if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-    double nAnnualTT = gpDataStreams->GetStream(0/*for now*/).GetTimeTrend().SetAnnualTimeTrend(gParameters.GetTimeIntervalUnitsType(), gParameters.GetTimeIntervalLength());
+    double nAnnualTT = gpDataStreams->GetStream(0/*for now*/).GetTimeTrend().SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
     if (gpDataStreams->GetStream(0/*for now*/).GetTimeTrend().IsNegative())
       sBuffer = "Annual decrease";
     else
