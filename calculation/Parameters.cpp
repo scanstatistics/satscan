@@ -435,7 +435,10 @@ void CParameters::DisplayParameters(FILE* fp) {
      // gis files
      if (gbOutputAreaSpecificDBF) {
         sName = fileName.GetFullPath();
-        sName.Replace(fileName.GetExtension(), ".gis.dbf");
+        if(strlen(fileName.GetExtension()) != 0)
+           sName.Replace(fileName.GetExtension(), ".gis.dbf");
+        else
+           sName <<  ".gis.dbf";
         if (m_bOutputCensusAreas) {
            fprintf(fp, "  GIS File(s)       : %s\n", m_szGISFilename);
            fprintf(fp, "                    : %s\n", sName.GetCString());
@@ -449,7 +452,10 @@ void CParameters::DisplayParameters(FILE* fp) {
      // mlc files
      if (gbOutputClusterLevelDBF) {
         sName = fileName.GetFullPath();
-        sName.Replace(fileName.GetExtension(), ".col.dbf");
+        if(strlen(fileName.GetExtension()) != 0)
+           sName.Replace(fileName.GetExtension(), ".col.dbf");
+        else
+           sName << ".col.dbf";
         if (m_bMostLikelyClusters)  {  // Output Most Likely Cluster for each Centroid
            fprintf(fp, "  MLC File(s)       : %s\n", m_szMLClusterFilename);
            fprintf(fp, "                    : %s\n", sName.GetCString());
