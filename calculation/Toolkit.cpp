@@ -28,7 +28,7 @@ const char * SaTScanToolkit::gsDefaultSaTScanWebSite = "http://www.satscan.org/"
 /** Default Substantive Support Email. */
 const char * SaTScanToolkit::gsDefaultSubstantiveSupportEmail = "kulldorff@satscan.org";
 /** Default Technical Support Email. */
-const char * SaTScanToolkit::gsDefaultTechnicalSupportEmail = "satscan@imsweb.com";
+const char * SaTScanToolkit::gsDefaultTechnicalSupportEmail = "techsupport@satscan.org";
 
 /** constructor */
 SaTScanToolkit::SaTScanToolkit(const char * sApplicationFullPath):BToolkit() {
