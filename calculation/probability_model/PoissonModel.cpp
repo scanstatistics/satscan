@@ -5,23 +5,25 @@
 using std::ios;
 using std::ifstream;
 
-CPoissonModel::CPoissonModel(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-              :CModel(pParameters, pData, pPrintDirection){}
+/** constructor */
+CPoissonModel::CPoissonModel(CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection)
+              :CModel(Parameters, Data, PrintDirection){}
 
+/** destructor */
 CPoissonModel::~CPoissonModel(){}
 
 bool CPoissonModel::ReadData() {
   try {
-    if (!m_pData->ReadCoordinatesFile())
+    if (! gData.ReadCoordinatesFile())
       return false;
-    if (!m_pData->ReadPopulationFile())
+    if (! gData.ReadPopulationFile())
       return false;
-    if (!(m_pData->GetTInfo())->tiCheckZeroPopulations(stderr))
+    if (! gData.GetTInfo()->tiCheckZeroPopulations(stderr))
       return false;
-    if (! m_pData->ReadCaseFile())
+    if (! gData.ReadCaseFile())
       return false;
-    m_pData->GetTInfo()->tiCheckCasesHavePopulations();
-    if (m_pParameters->UseSpecialGrid() && !m_pData->ReadGridFile())
+    gData.GetTInfo()->tiCheckCasesHavePopulations();
+    if (gParameters.UseSpecialGrid() && !gData.ReadGridFile())
       return false;
   }
   catch (ZdException & x) {
@@ -37,32 +39,32 @@ bool CPoissonModel::CalculateMeasure()
 
    try
       {
-      bResult = AssignMeasure(m_pData->GetTInfo(),
-                       m_pData->m_pCases,
-                       m_pData->m_pTimes,
-                       m_pData->m_nTracts,
-                       m_pData->m_nStartDate,
-                       m_pData->m_nEndDate,
-                       m_pData->m_pIntervalStartTimes,
+      bResult = AssignMeasure(gData.GetTInfo(),
+                       gData.m_pCases,
+                       gData.m_pTimes,
+                       gData.m_nTracts,
+                       gData.m_nStartDate,
+                       gData.m_nEndDate,
+                       gData.m_pIntervalStartTimes,
        		       false/*m_pParameters->m_bExactTimes*/,
-                       m_pParameters->GetTimeTrendAdjustmentType(),
-                       m_pParameters->GetTimeTrendAdjustmentPercentage(),
-                       m_pData->m_nTimeIntervals,
-                       m_pParameters->GetTimeIntervalUnitsType(),
-                       m_pParameters->GetTimeIntervalLength(),
-         	       &m_pData->m_pMeasure,
-                       &m_pData->m_nTotalCases,
-                       &m_pData->m_nTotalPop,
-                       &m_pData->m_nTotalMeasure,
-                       gpPrintDirection);
+                       gParameters.GetTimeTrendAdjustmentType(),
+                       gParameters.GetTimeTrendAdjustmentPercentage(),
+                       gData.m_nTimeIntervals,
+                       gParameters.GetTimeIntervalUnitsType(),
+                       gParameters.GetTimeIntervalLength(),
+         	       &gData.m_pMeasure,
+                       &gData.m_nTotalCases,
+                       &gData.m_nTotalPop,
+                       &gData.m_nTotalMeasure,
+                       &gPrintDirection);
 
-      //  m_pData->m_nTotalTractsAtStart   = m_pData->m_nTracts;
-      //  m_pData->m_nTotalCasesAtStart    = m_pData->m_nTotalCases;
-      //  m_pData->m_nTotalControlsAtStart = m_pData->m_nTotalControls;
-      //  m_pData->m_nTotalMeasureAtStart  = m_pData->m_nTotalMeasure;
-      //  m_pData->SetMaxCircleSize();
+      //  gData.m_nTotalTractsAtStart   = gData.m_nTracts;
+      //  gData.m_nTotalCasesAtStart    = gData.m_nTotalCases;
+      //  gData.m_nTotalControlsAtStart = gData.m_nTotalControls;
+      //  gData.m_nTotalMeasureAtStart  = gData.m_nTotalMeasure;
+      //  gData.SetMaxCircleSize();
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("CalculateMeasure()", "CPoissonModel");
       throw;
@@ -72,8 +74,8 @@ bool CPoissonModel::CalculateMeasure()
 
 double CPoissonModel::GetLogLikelihoodForTotal() const
 {
-  count_t   N = m_pData->m_nTotalCases;
-  measure_t U = m_pData->m_nTotalMeasure;
+  count_t   N = gData.m_nTotalCases;
+  measure_t U = gData.m_nTotalMeasure;
 
   return N*log(N/U);
 }
@@ -81,8 +83,8 @@ double CPoissonModel::GetLogLikelihoodForTotal() const
 double CPoissonModel::CalcLogLikelihood(count_t n, measure_t u)
 {
    double    nLogLikelihood;
-   count_t   N = m_pData->m_nTotalCases;
-   measure_t U = m_pData->m_nTotalMeasure;
+   count_t   N = gData.m_nTotalCases;
+   measure_t U = gData.m_nTotalMeasure;
 
    if (n != N && n != 0)
      nLogLikelihood = n*log(n/u) + (N-n)*log((N-n)/(U-u));
@@ -132,29 +134,29 @@ void CPoissonModel::MakeData(int iSimulationNumber)
 #if H0
 
   // Generate case counts under the null hypothesis (standard)
-  for (tract = 0; tract < m_pData->m_nTotalTractsAtStart; tract++)
+  for (tract = 0; tract < gData.m_nTotalTractsAtStart; tract++)
   {
-    if (m_pData->m_nTotalMeasure-cummeasure > 0)
-        c = gBinomialGenerator.GetBinomialDistributedVariable(m_pData->m_nTotalCases - cumcases,
-                                                              m_pData->m_pMeasure[0][tract] / (m_pData->m_nTotalMeasure-cummeasure),
+    if (gData.m_nTotalMeasure-cummeasure > 0)
+        c = gBinomialGenerator.GetBinomialDistributedVariable(gData.m_nTotalCases - cumcases,
+                                                              gData.m_pMeasure[0][tract] / (gData.m_nTotalMeasure-cummeasure),
                                                               m_RandomNumberGenerator);
     else
       c = 0;
 
-    m_pData->m_pSimCases[0][tract] = c;
+    gData.m_pSimCases[0][tract] = c;
     cumcases += c;
-    cummeasure += m_pData->m_pMeasure[0][tract];
+    cummeasure += gData.m_pMeasure[0][tract];
 
-    for(interval=0;interval<m_pData->m_nTimeIntervals-1;interval++)
+    for(interval=0;interval<gData.m_nTimeIntervals-1;interval++)
     {
-      if(m_pData->m_pMeasure[interval][tract]>0)
-        d = gBinomialGenerator.GetBinomialDistributedVariable(m_pData->m_pSimCases[interval][tract],
-                                                              1 - m_pData->m_pMeasure[interval+1][tract] / m_pData->m_pMeasure[interval][tract],
+      if(gData.m_pMeasure[interval][tract]>0)
+        d = gBinomialGenerator.GetBinomialDistributedVariable(gData.m_pSimCases[interval][tract],
+                                                              1 - gData.m_pMeasure[interval+1][tract] / gData.m_pMeasure[interval][tract],
                                                               m_RandomNumberGenerator);
       else
         d = 0;
 
-      m_pData->m_pSimCases[interval+1][tract] = m_pData->m_pSimCases[interval][tract] - d;
+      gData.m_pSimCases[interval+1][tract] = gData.m_pSimCases[interval][tract] - d;
     } // for interval
 
   } // for tract
@@ -174,12 +176,12 @@ void CPoissonModel::MakeData(int iSimulationNumber)
     }
   inSimFile.seekg(fileposition);  // puts the file position pointer to the correct simulation
 
-  for (tract = 0; tract < m_pData->m_nTotalTractsAtStart; tract++) {
+  for (tract = 0; tract < gData.m_nTotalTractsAtStart; tract++) {
     inSimFile >> c;
 //    printf("%d ",c);
-    m_pData->m_pSimCases[0][tract] = c;
+    gData.m_pSimCases[0][tract] = c;
     cumcases += c;
-    cummeasure += m_pData->m_pMeasure[0][tract];
+    cummeasure += gData.m_pMeasure[0][tract];
     } // for tract
 
   fileposition = inSimFile.tellg();  // saves the current file location for the next call
@@ -193,8 +195,8 @@ void CPoissonModel::MakeData(int iSimulationNumber)
   float     RR1,RR2;
 
   RR1=2.20; RR2=1.0;
-  TotalMeasure=m_pData->m_nTotalMeasure;
-  for (tract = 0; tract < m_pData->m_nTotalTractsAtStart; tract++) {
+  TotalMeasure=gData.m_nTotalMeasure;
+  for (tract = 0; tract < gData.m_nTotalTractsAtStart; tract++) {
     if (
     //tract==109 || tract==135|| tract==149 ||tract==143
       //  ||tract==105||tract==222||tract==152||tract==116
@@ -218,45 +220,45 @@ void CPoissonModel::MakeData(int iSimulationNumber)
       //|| tract==162|| tract==190 || tract==223 || tract==185
       //|| tract==200 || tract==171|| tract==175|| tract==211) {
 
-        Measure[tract]=m_pData->m_pMeasure[0][tract]*RR1;
-        TotalMeasure=TotalMeasure+m_pData->m_pMeasure[0][tract]*(RR1-1);
+        Measure[tract]=gData.m_pMeasure[0][tract]*RR1;
+        TotalMeasure=TotalMeasure+gData.m_pMeasure[0][tract]*(RR1-1);
         }
     else if (tract==160 || tract==221 || tract==162 || tract==223
          || tract==168 || tract==161 || tract==195 || tract==184
         || tract==188 || tract==190 || tract==174 || tract==201
            || tract==214 || tract==219 || tract==169 || tract==191) {
 
-        Measure[tract]=m_pData->m_pMeasure[0][tract]*RR2;
-        TotalMeasure=TotalMeasure+m_pData->m_pMeasure[0][tract]*(RR2-1);
+        Measure[tract]=gData.m_pMeasure[0][tract]*RR2;
+        TotalMeasure=TotalMeasure+gData.m_pMeasure[0][tract]*(RR2-1);
         }
     else
-        Measure[tract]=m_pData->m_pMeasure[0][tract];
+        Measure[tract]=gData.m_pMeasure[0][tract];
 //    printf("tract=%d, pop=%f\n",tract,Measure[tract]);
     }
   //printf("changes before here\n");
 
-  for (tract = 0; tract < m_pData->m_nTotalTractsAtStart; tract++)
+  for (tract = 0; tract < gData.m_nTotalTractsAtStart; tract++)
   {
     if (TotalMeasure-cummeasure > 0)
-      c = Binomial(m_pData->m_nTotalCases - cumcases,
+      c = Binomial(gData.m_nTotalCases - cumcases,
           Measure[tract] / (TotalMeasure-cummeasure));
     else
       c = 0;
 //    printf("t=%d, m=%f, c=%d, cm=%f, cc=%d\n",tract,Measure[tract],c,cummeasure,cumcases);
 
-    m_pData->m_pSimCases[0][tract] = c;
+    gData.m_pSimCases[0][tract] = c;
     cumcases += c;
     cummeasure += Measure[tract];
 
-    for(interval=0;interval<m_pData->m_nTimeIntervals-1;interval++)
+    for(interval=0;interval<gData.m_nTimeIntervals-1;interval++)
     {
-      if(m_pData->m_pMeasure[interval][tract]>0)
-        d = Binomial(m_pData->m_pSimCases[interval][tract],
-            1 - m_pData->m_pMeasure[interval+1][tract] / m_pData->m_pMeasure[interval][tract]);
+      if(gData.m_pMeasure[interval][tract]>0)
+        d = Binomial(gData.m_pSimCases[interval][tract],
+            1 - gData.m_pMeasure[interval+1][tract] / gData.m_pMeasure[interval][tract]);
       else
         d = 0;
 
-      m_pData->m_pSimCases[interval+1][tract] = m_pData->m_pSimCases[interval][tract] - d;
+      gData.m_pSimCases[interval+1][tract] = gData.m_pSimCases[interval][tract] - d;
     } // for interval
 
   } // for tract
@@ -267,18 +269,15 @@ void CPoissonModel::MakeData(int iSimulationNumber)
      // Prints the simulated data to a file
 #if PRINTSIMS
      FILE* fpSIM;
-     if ((fpSIM = fopen("simdata.txt", "a")) == NULL) {
-        //printf(" Error: Could not open file to write simulated data\n");
-        //FatalError(0, gpPrintDirection);
+     if ((fpSIM = fopen("simdata.txt", "a")) == NULL)
         SSGenerateException(" Error: Could not open file to write simulated data\n","MakeData");
-        }
-     for (tract = 0; tract < m_pData->m_nTotalTractsAtStart; tract++)
-        fprintf(fpSIM,"%d ",m_pData->m_pSimCases[0][tract]);
+     for (tract = 0; tract < gData.m_nTotalTractsAtStart; tract++)
+        fprintf(fpSIM,"%d ",gData.m_pSimCases[0][tract]);
      fprintf(fpSIM,"\n");
      fclose(fpSIM);
 #endif // PRINTSIMS
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("MakeData()", "CPoissonModel");
       throw;
@@ -319,24 +318,24 @@ double CPoissonModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract
    tract_t T, t;
    int     c, n;
    double* pAlpha = 0;
-   int     ncats = m_pData->GetPopulationCategories().GetNumPopulationCategories();
-   int     nPops = (m_pData->GetTInfo())->tiGetNumPopDates();
+   int     ncats = gData.GetPopulationCategories().GetNumPopulationCategories();
+   int     nPops = (gData.GetTInfo())->tiGetNumPopDates();
    double  nPopulation = 0.0;
 
    try
       {
-      (m_pData->GetTInfo())->tiCalculateAlpha(&pAlpha, m_pData->m_nStartDate, m_pData->m_nEndDate);
+      (gData.GetTInfo())->tiCalculateAlpha(&pAlpha, gData.m_nStartDate, gData.m_nEndDate);
    
       for (T = 1; T <= nTracts; T++)
       {
-         t = m_pData->GetNeighbor(m_iEllipseOffset, nCenter, T);
+         t = gData.GetNeighbor(m_iEllipseOffset, nCenter, T);
          for (c = 0; c < ncats; c++)
-            m_pData->GetTInfo()->tiGetAlphaAdjustedPopulation(nPopulation, t, c, 0, nPops, pAlpha);
+            gData.GetTInfo()->tiGetAlphaAdjustedPopulation(nPopulation, t, c, 0, nPops, pAlpha);
       }
    
       free(pAlpha); pAlpha = 0;
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       free(pAlpha);
       x.AddCallpath("GetPopulation()", "CPoissonModel");

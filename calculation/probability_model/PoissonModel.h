@@ -10,14 +10,13 @@
 #include <iostream>
 #include <fstream>
 
-class CPoissonModel : public CModel
-{
+class CPoissonModel : public CModel {
   private:
     RandomNumberGenerator       m_RandomNumberGenerator;
     BinomialGenerator           gBinomialGenerator;
 
   public:
-    CPoissonModel(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
+    CPoissonModel(CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection);
     virtual ~CPoissonModel();
 
     virtual double              CalcLogLikelihood(count_t n, measure_t u);

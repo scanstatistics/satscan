@@ -3,8 +3,8 @@
 #include "SpaceTimePermutationModel.h"
 
 /** constructor */
-CSpaceTimePermutationModel::CSpaceTimePermutationModel(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-                           :CModel(pParameters, pData, pPrintDirection) {
+CSpaceTimePermutationModel::CSpaceTimePermutationModel(CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection)
+                           :CModel(Parameters, Data, PrintDirection) {
    Init();
 }
 
@@ -15,8 +15,8 @@ CSpaceTimePermutationModel::~CSpaceTimePermutationModel() {}
 double CSpaceTimePermutationModel::CalcLogLikelihood(count_t n, measure_t u)
 {
    double    nLogLikelihood;
-   count_t   N = m_pData->m_nTotalCases;
-   measure_t U = m_pData->m_nTotalMeasure;
+   count_t   N = gData.m_nTotalCases;
+   measure_t U = gData.m_nTotalMeasure;
 
    if (n != N && n != 0)
      nLogLikelihood = n*log(n/u) + (N-n)*log((N-n)/(U-u));
@@ -36,8 +36,8 @@ double CSpaceTimePermutationModel::CalcLogLikelihood(count_t n, measure_t u)
     approximation of the likelihood, and that can be shown mathematically. */
 double CSpaceTimePermutationModel::GetLogLikelihoodForTotal() const
 {
-  count_t   N = m_pData->m_nTotalCases;
-  measure_t U = m_pData->m_nTotalMeasure;
+  count_t   N = gData.m_nTotalCases;
+  measure_t U = gData.m_nTotalMeasure;
 
   return N*log(N/U);
 }
@@ -62,30 +62,30 @@ bool CSpaceTimePermutationModel::CalculateMeasure()
 
    try
       {
-      if (m_pData->m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE)
+      if (gData.m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE)
         {
-         bResult = AssignMeasure(m_pData->GetTInfo(), m_pData->m_pCases,
-                                 m_pData->m_pTimes, m_pData->m_nTracts, m_pData->m_nStartDate,
-                                 m_pData->m_nEndDate, m_pData->m_pIntervalStartTimes,
-                                 false/*m_pParameters->m_bExactTimes*/, m_pParameters->GetTimeTrendAdjustmentType(),
-                                 m_pParameters->GetTimeTrendAdjustmentPercentage(), m_pData->m_nTimeIntervals,
-                                 m_pParameters->GetTimeIntervalUnitsType(),  m_pParameters->GetTimeIntervalLength(),
-                                 &m_pData->m_pMeasure, &m_pData->m_nTotalCases,
-                                 &m_pData->m_nTotalPop, &m_pData->m_nTotalMeasure, gpPrintDirection);
-         m_eMeasureType = PopulationBased;
+         bResult = AssignMeasure(gData.GetTInfo(), gData.m_pCases,
+                                 gData.m_pTimes, gData.m_nTracts, gData.m_nStartDate,
+                                 gData.m_nEndDate, gData.m_pIntervalStartTimes,
+                                 false/*gParameters.m_bExactTimes*/, gParameters.GetTimeTrendAdjustmentType(),
+                                 gParameters.GetTimeTrendAdjustmentPercentage(), gData.m_nTimeIntervals,
+                                 gParameters.GetTimeIntervalUnitsType(),  gParameters.GetTimeIntervalLength(),
+                                 &gData.m_pMeasure, &gData.m_nTotalCases,
+                                 &gData.m_nTotalPop, &gData.m_nTotalMeasure, &gPrintDirection);
+         geMeasureType = PopulationBased;
         }
       else
         {
         // allocate measure two-dimensional array
-        m_pData->m_pMeasure = (double**)Smalloc((m_pData->m_nTimeIntervals+1) * sizeof(measure_t *), gpPrintDirection);
-        for (i=0; i < m_pData->m_nTimeIntervals+1; i++)
-          m_pData->m_pMeasure[i] = (double*)Smalloc(m_pData->m_nTracts * sizeof(measure_t), gpPrintDirection);
+        gData.m_pMeasure = (double**)Smalloc((gData.m_nTimeIntervals+1) * sizeof(measure_t *), &gPrintDirection);
+        for (i=0; i < gData.m_nTimeIntervals+1; i++)
+          gData.m_pMeasure[i] = (double*)Smalloc(gData.m_nTracts * sizeof(measure_t), &gPrintDirection);
 
         bResult = ReCalculateMeasure();
-        m_eMeasureType = CaseBased;                        
+        geMeasureType = CaseBased;                        
         }
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("CalculateMeasure()", "CPoissonModel");
       throw;
@@ -102,35 +102,35 @@ void CSpaceTimePermutationModel::InitializeRandomizationStructures() {
   try
      {
      //first calculate total number of cases
-     m_pData->m_nTotalCases=0;
-     for (j=0; j < m_pData->m_nTracts; j++)
-        m_pData->m_nTotalCases += m_pData->m_pCases[0][j];
+     gData.m_nTotalCases=0;
+     for (j=0; j < gData.m_nTracts; j++)
+        gData.m_nTotalCases += gData.m_pCases[0][j];
 
      //reserve vector space 
-     m_vCaseLocationTimes.reserve(m_pData->m_nTotalCases);
-     vCasesAlreadyRecorded.reserve(m_pData->m_nTracts);
-     for (i=0; i < m_pData->m_nTracts; i++)
+     gvCaseLocationTimes.reserve(gData.m_nTotalCases);
+     vCasesAlreadyRecorded.reserve(gData.m_nTracts);
+     for (i=0; i < gData.m_nTracts; i++)
         vCasesAlreadyRecorded[i] = 0;
 
-     for (i=m_pData->m_nTimeIntervals - 1; i >= 0;i--)
-        for (j=0; j < m_pData->m_nTracts; j++)
+     for (i=gData.m_nTimeIntervals - 1; i >= 0;i--)
+        for (j=0; j < gData.m_nTracts; j++)
            {
-           iNumCases = m_pData->m_pCases[i][j] - vCasesAlreadyRecorded[j];
+           iNumCases = gData.m_pCases[i][j] - vCasesAlreadyRecorded[j];
            for (k=0; k < iNumCases; k++)
-              m_vCaseLocationTimes.push_back(CCaseLocationTimes(i,j));
+              gvCaseLocationTimes.push_back(CCaseLocationTimes(i,j));
            vCasesAlreadyRecorded[j] += iNumCases;
            }
 
       // allocate time randomizer
-      m_vTimeIntervalRandomizer.reserve(m_pData->m_nTotalCases);
-      for (i=0; i < m_pData->m_nTotalCases; i++ )
-         m_vTimeIntervalRandomizer.push_back(CSimulationTimeRandomizer());
+      gvTimeIntervalRandomizer.reserve(gData.m_nTotalCases);
+      for (i=0; i < gData.m_nTotalCases; i++ )
+         gvTimeIntervalRandomizer.push_back(CSimulationTimeRandomizer());
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("InitializeRandomizationStructures()", "CSpaceTimePermutationModel");
-      m_vCaseLocationTimes.clear();
-      m_vTimeIntervalRandomizer.clear();
+      gvCaseLocationTimes.clear();
+      gvTimeIntervalRandomizer.clear();
       throw;
       }
 }
@@ -153,29 +153,29 @@ void CSpaceTimePermutationModel::MakeData(int iSimulationNumber)
    try
       {
       //reset seed to simulation number
-      m_RandomNumberGenerator.SetSeed(iSimulationNumber + m_RandomNumberGenerator.GetDefaultSeed());
+      gRandomNumberGenerator.SetSeed(iSimulationNumber + gRandomNumberGenerator.GetDefaultSeed());
 
       // reset simulation cases to zero
-      for (i=0; i < m_pData->m_nTimeIntervals; i++)
-         for (k=0; k < m_pData->m_nTotalTractsAtStart; k++)
-            m_pData->m_pSimCases[i][k] = 0;
+      for (i=0; i < gData.m_nTimeIntervals; i++)
+         for (k=0; k < gData.m_nTotalTractsAtStart; k++)
+            gData.m_pSimCases[i][k] = 0;
 
-      RandomizerSize = m_vTimeIntervalRandomizer.size();
+      RandomizerSize = gvTimeIntervalRandomizer.size();
       for (t=0; t < RandomizerSize; t++)
          {
          // assign random number
-         m_vTimeIntervalRandomizer[t].SetRandomNumber(m_RandomNumberGenerator.GetRandomFloat());
+         gvTimeIntervalRandomizer[t].SetRandomNumber(gRandomNumberGenerator.GetRandomFloat());
          // assign tract index to original order
-         m_vTimeIntervalRandomizer[t].SetTimeIntervalIndex(m_vCaseLocationTimes[t].GetTimeIntervalIndex());
+         gvTimeIntervalRandomizer[t].SetTimeIntervalIndex(gvCaseLocationTimes[t].GetTimeIntervalIndex());
          }
       // sort based on random number   
-      std::sort(m_vTimeIntervalRandomizer.begin(), m_vTimeIntervalRandomizer.end(), CompareSimulationTimeRandomizer());
+      std::sort(gvTimeIntervalRandomizer.begin(), gvTimeIntervalRandomizer.end(), CompareSimulationTimeRandomizer());
       // re-assign simulation data
       for (t=0; t < RandomizerSize; t++)
-         for (k=m_vTimeIntervalRandomizer[t].GetTimeIntervalIndex(); k >= 0; k--)
-             m_pData->m_pSimCases[k][m_vCaseLocationTimes[t].GetTractIndex()]++;
+         for (k=gvTimeIntervalRandomizer[t].GetTimeIntervalIndex(); k >= 0; k--)
+             gData.m_pSimCases[k][gvCaseLocationTimes[t].GetTractIndex()]++;
       }
-  catch (SSException & x)
+  catch (ZdException & x)
       {
       x.AddCallpath("MakeData()", "CSpaceTimePermutationModel");
       throw;
@@ -186,13 +186,13 @@ void CSpaceTimePermutationModel::MakeData(int iSimulationNumber)
     Initializes randomization structures. */
 bool CSpaceTimePermutationModel::ReadData() {
   try {
-    if (!m_pData->ReadCoordinatesFile())
+    if (!gData.ReadCoordinatesFile())
       return false;
-    if (m_pData->m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE && !m_pData->ReadPopulationFile())
+    if (gData.m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE && !gData.ReadPopulationFile())
       return false;
-    if (! m_pData->ReadCaseFile())
+    if (! gData.ReadCaseFile())
       return false;
-    if (m_pParameters->UseSpecialGrid() && !m_pData->ReadGridFile())
+    if (gParameters.UseSpecialGrid() && !gData.ReadGridFile())
       return false;
     InitializeRandomizationStructures();
   }
@@ -213,51 +213,51 @@ bool CSpaceTimePermutationModel::ReCalculateMeasure()
   try
      {
      // Only recalculate measure if current measure setting isn't case based. 
-     if (m_eMeasureType != CaseBased)
+     if (geMeasureType != CaseBased)
        {
-       if (! m_pData->m_pMeasure)
+       if (! gData.m_pMeasure)
          SSGenerateException("m_pMeasure array not allocated.", "ReCalculateMeasure()");
-       m_pData->m_nTotalMeasure  = 0;
-       m_pData->m_nTotalPop = 0;
+       gData.m_nTotalMeasure  = 0;
+       gData.m_nTotalPop = 0;
 
        // set m_pMeasure[i] = S*T/C (expected number of cases in a time/tract)
        // S = number of cases in spacial area irrespective of time
        // T = number of cases in temporal domain irrespective of location
        // C = total number of cases
-       for (i=0; i < m_pData->m_nTimeIntervals; i++)
+       for (i=0; i < gData.m_nTimeIntervals; i++)
           {
-          m_pData->m_pMeasure[i][0] = 0;
+          gData.m_pMeasure[i][0] = 0;
           // Since all tracts in interval i will have the same T/C, just add up
           // cases for all tracts in tract 0 then divide by C. After we'll distribute
           // T/C to rest of tracts in interval i and at the same, multiply by S.
-          for(j=0; j< m_pData->m_nTracts; j++)
-             m_pData->m_pMeasure[i][0] += m_pData->m_pCases[i][j];
+          for(j=0; j< gData.m_nTracts; j++)
+             gData.m_pMeasure[i][0] += gData.m_pCases[i][j];
           //divide by total number of cases
-          m_pData->m_pMeasure[i][0] /= m_pData->m_nTotalCases;
+          gData.m_pMeasure[i][0] /= gData.m_nTotalCases;
           // Copy to rest of measure slots for interval i and rest of tracts will
           // multiplying each by S at the same time.
-          for (j=1; j< m_pData->m_nTracts; j++)
-             m_pData->m_pMeasure[i][j] = m_pData->m_pMeasure[i][0] * m_pData->m_pCases[0][j];
+          for (j=1; j< gData.m_nTracts; j++)
+             gData.m_pMeasure[i][j] = gData.m_pMeasure[i][0] * gData.m_pCases[0][j];
           // don't forget to multiply tract 0 by S
-          m_pData->m_pMeasure[i][0] = m_pData->m_pMeasure[i][0] * m_pData->m_pCases[0][0];
+          gData.m_pMeasure[i][0] = gData.m_pMeasure[i][0] * gData.m_pCases[0][0];
           }
 
        // calculate total measure
-       for (j=0; j< m_pData->m_nTracts; j++)
-             m_pData->m_nTotalMeasure += m_pData->m_pMeasure[0][j];
+       for (j=0; j< gData.m_nTracts; j++)
+             gData.m_nTotalMeasure += gData.m_pMeasure[0][j];
 
        /* Ensure that TotalCases=TotalMeasure */
-       if (fabs(m_pData->m_nTotalCases - m_pData->m_nTotalMeasure)>0.0001)
+       if (fabs(gData.m_nTotalCases - gData.m_nTotalMeasure)>0.0001)
          {
          string sMessage;
          sMessage = "\nError: The total measure is not equal to the total number of cases.";
-         sMessage += "\nTotalCases="; sMessage += m_pData->m_nTotalCases;
-         sMessage += ", TotalMeasure="; sMessage += m_pData->m_nTotalMeasure; sMessage += "\n";
+         sMessage += "\nTotalCases="; sMessage += gData.m_nTotalCases;
+         sMessage += ", TotalMeasure="; sMessage += gData.m_nTotalMeasure; sMessage += "\n";
          SSGenerateException(sMessage.c_str(), "ReCalculateMeasure()");
          }
        }
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("ReCalculateMeasure()", "CSpaceTimePermutationModel");
       throw;

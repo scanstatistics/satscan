@@ -13,7 +13,7 @@ class CBernoulliModel : public CModel
     RandomNumberGenerator       m_RandomNumberGenerator;
 
   public:
-    CBernoulliModel(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
+    CBernoulliModel(CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection);
     virtual ~CBernoulliModel();
 
     virtual double              CalcLogLikelihood(count_t n, measure_t u);

@@ -5,21 +5,21 @@
 #define DEBUG 1
 
 /** Constructor */
-CBernoulliModel::CBernoulliModel(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-                :CModel(pParameters, pData, pPrintDirection) {}
+CBernoulliModel::CBernoulliModel(CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection)
+                :CModel(Parameters, Data, PrintDirection) {}
 
 /** Destructor */                
 CBernoulliModel::~CBernoulliModel() {}
 
 bool CBernoulliModel::ReadData() {
   try {
-    if (!m_pData->ReadCoordinatesFile())
+    if (!gData.ReadCoordinatesFile())
       return false;
-    if (! m_pData->ReadCaseFile())
+    if (! gData.ReadCaseFile())
       return false;
-    if (! m_pData->ReadControlFile())
+    if (! gData.ReadControlFile())
       return false;
-    if (m_pParameters->UseSpecialGrid() && !m_pData->ReadGridFile())
+    if (gParameters.UseSpecialGrid() && !gData.ReadGridFile())
       return false;
   }
   catch (ZdException &x) {
@@ -33,42 +33,42 @@ bool CBernoulliModel::CalculateMeasure() {
   int i, j;
 
   try {
-    gpPrintDirection->SatScanPrintf("Calculating expected number of cases\n");
+    gPrintDirection.SatScanPrintf("Calculating expected number of cases\n");
 
     // Why allocated +1?  KR-980417
-    m_pData->m_pMeasure = (double**)Smalloc((m_pData->m_nTimeIntervals+1) * sizeof(measure_t *), gpPrintDirection);
-    for (i=0; i<m_pData->m_nTimeIntervals+1; i++)
-       m_pData->m_pMeasure[i] = 0;
-    for (i=0; i<m_pData->m_nTimeIntervals+1; i++) {
-       m_pData->m_pMeasure[i] = (double*)Smalloc(m_pData->m_nTracts * sizeof(measure_t), gpPrintDirection);
-       if (! m_pData->m_pMeasure[i])
+    gData.m_pMeasure = (double**)Smalloc((gData.m_nTimeIntervals+1) * sizeof(measure_t *), &gPrintDirection);
+    for (i=0; i<gData.m_nTimeIntervals+1; i++)
+       gData.m_pMeasure[i] = 0;
+    for (i=0; i<gData.m_nTimeIntervals+1; i++) {
+       gData.m_pMeasure[i] = (double*)Smalloc(gData.m_nTracts * sizeof(measure_t), &gPrintDirection);
+       if (! gData.m_pMeasure[i])
          SSGenerateException("Could not allocate memory for m_pMeasure[].","CalculateMeasure()");
     }
 
-    m_pData->m_nTotalCases    = 0;
-    m_pData->m_nTotalControls = 0;
-    m_pData->m_nTotalMeasure  = 0;
+    gData.m_nTotalCases    = 0;
+    gData.m_nTotalControls = 0;
+    gData.m_nTotalMeasure  = 0;
 
-    for (j=0; j<m_pData->m_nTracts; j++) {
-       m_pData->m_nTotalCases    += m_pData->m_pCases[0][j];
-       m_pData->m_nTotalControls += m_pData->m_pControls[0][j];
-       for (i=0; i<m_pData->m_nTimeIntervals/*+1*/; i++) {
-          m_pData->m_pMeasure[i][j]  = m_pData->m_pCases[i][j] + m_pData->m_pControls[i][j];
+    for (j=0; j<gData.m_nTracts; j++) {
+       gData.m_nTotalCases    += gData.m_pCases[0][j];
+       gData.m_nTotalControls += gData.m_pControls[0][j];
+       for (i=0; i<gData.m_nTimeIntervals/*+1*/; i++) {
+          gData.m_pMeasure[i][j]  = gData.m_pCases[i][j] + gData.m_pControls[i][j];
        }
-       m_pData->m_nTotalMeasure += m_pData->m_pMeasure[0][j];
-       m_pData->m_pMeasure[i][j] = 0;
+       gData.m_nTotalMeasure += gData.m_pMeasure[0][j];
+       gData.m_pMeasure[i][j] = 0;
 
        // Check to see if total case or control values have wrapped
-        if (m_pData->m_nTotalCases < 0)
+        if (gData.m_nTotalCases < 0)
           SSGenerateException("Error: Total cases greater than maximum allowed.\n", "CBernoulliModel");
-        if (m_pData->m_nTotalControls < 0)
+        if (gData.m_nTotalControls < 0)
           SSGenerateException("Error: Total controls greater than maximum allowed.\n", "CBernoulliModel");
     }
 
-    if (m_pData->m_nTotalControls == 0)
+    if (gData.m_nTotalControls == 0)
       SSGenerateException("Error: No controls found in input data.\n", "CBernoulliModel");
 
-    m_pData->m_nTotalPop = m_pData->m_nTotalMeasure;
+    gData.m_nTotalPop = gData.m_nTotalMeasure;
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateMeasure()","CBernoulliModel");
@@ -78,16 +78,16 @@ bool CBernoulliModel::CalculateMeasure() {
 }
 
 double CBernoulliModel::GetLogLikelihoodForTotal() const {
-  count_t   N = m_pData->m_nTotalCases;
-  measure_t U = m_pData->m_nTotalMeasure;
+  count_t   N = gData.m_nTotalCases;
+  measure_t U = gData.m_nTotalMeasure;
   
   return N*log(N/U) + (U-N)*log((U-N)/U);
 }
 
 double CBernoulliModel::CalcLogLikelihood(count_t n, measure_t u) {
   double    nLogLikelihood;
-  count_t   N = m_pData->m_nTotalCases;
-  measure_t U = m_pData->m_nTotalMeasure;
+  count_t   N = gData.m_nTotalCases;
+  measure_t U = gData.m_nTotalMeasure;
 
   double    nLL_A = 0.0;
   double    nLL_B = 0.0;
@@ -139,42 +139,42 @@ void CBernoulliModel::MakeData(int iSimulationNumber)
       {
       //reset seed to simulation number
       m_RandomNumberGenerator.SetSeed(iSimulationNumber + m_RandomNumberGenerator.GetDefaultSeed());
-      if (m_pData->m_nTotalCases < m_pData->m_nTotalControls)
+      if (gData.m_nTotalCases < gData.m_nTotalControls)
          {
-  	 RandCounts = MakeDataB(m_pData->m_nTotalCases, RandCounts);
-         nCumCounts = m_pData->m_nTotalCases;
+  	 RandCounts = MakeDataB(gData.m_nTotalCases, RandCounts);
+         nCumCounts = gData.m_nTotalCases;
          }
       else
          {
-  	 RandCounts = MakeDataB(m_pData->m_nTotalControls, RandCounts);
-         nCumCounts = m_pData->m_nTotalControls;
+  	 RandCounts = MakeDataB(gData.m_nTotalControls, RandCounts);
+         nCumCounts = gData.m_nTotalControls;
          }
       // The following works if Cases < Controls but what about the other way
 
-      //nCumCounts = m_pData->m_nTotalCases;
-      nCumMeasure = (count_t)(m_pData->m_nTotalMeasure-1);
+      //nCumCounts = gData.m_nTotalCases;
+      nCumMeasure = (count_t)(gData.m_nTotalMeasure-1);
     
-      for (tract = (tract_t)(m_pData->m_nTotalTractsAtStart-1); tract >= 0; tract--)
+      for (tract = (tract_t)(gData.m_nTotalTractsAtStart-1); tract >= 0; tract--)
       {
-      	for (interval = m_pData->m_nTimeIntervals-1; interval >= 0; interval--)
+      	for (interval = gData.m_nTimeIntervals-1; interval >= 0; interval--)
            {
-      	   m_pData->m_pSimCases[interval][tract] = 0;
-           if (interval == m_pData->m_nTimeIntervals-1)
-       	      nCumMeasure -= (count_t)(m_pData->m_pMeasure[interval][tract]);
+      	   gData.m_pSimCases[interval][tract] = 0;
+           if (interval == gData.m_nTimeIntervals-1)
+       	      nCumMeasure -= (count_t)(gData.m_pMeasure[interval][tract]);
            else
-              nCumMeasure -= (count_t)(m_pData->m_pMeasure[interval][tract] - m_pData->m_pMeasure[interval+1][tract]);
+              nCumMeasure -= (count_t)(gData.m_pMeasure[interval][tract] - gData.m_pMeasure[interval+1][tract]);
 
            while (nCumCounts > 0 && RandCounts[nCumCounts-1] > nCumMeasure)
            {
-              m_pData->m_pSimCases[interval][tract]++;
+              gData.m_pSimCases[interval][tract]++;
               nCumCounts--;
            }
-          if (interval != m_pData->m_nTimeIntervals-1)
-    	   	m_pData->m_pSimCases[interval][tract] += m_pData->m_pSimCases[interval+1][tract];
+          if (interval != gData.m_nTimeIntervals-1)
+    	   	gData.m_pSimCases[interval][tract] += gData.m_pSimCases[interval+1][tract];
     
           #ifdef DEBUGMODEL
           fprintf(m_pDebugModelFile,"SimCases[%d][%d] = %d\n", interval, tract,
-          	m_pData->m_pSimCases[interval][tract]);
+          	gData.m_pSimCases[interval][tract]);
           #endif
     		}
 //    #if (DEBUG)
@@ -182,13 +182,13 @@ void CBernoulliModel::MakeData(int iSimulationNumber)
 //    #endif
       }
       // Now reverse everything if Controls < Cases
-      if (m_pData->m_nTotalCases >= m_pData->m_nTotalControls)
+      if (gData.m_nTotalCases >= gData.m_nTotalControls)
       {
-      	for (tract = 0; tract < m_pData->m_nTotalTractsAtStart; tract++)
-          for (interval = 0; interval < m_pData->m_nTimeIntervals; interval++)
+      	for (tract = 0; tract < gData.m_nTotalTractsAtStart; tract++)
+          for (interval = 0; interval < gData.m_nTimeIntervals; interval++)
           {
-          m_pData->m_pSimCases[interval][tract] = (long)(m_pData->m_pMeasure[interval][tract]) -
-          m_pData->m_pSimCases[interval][tract];
+          gData.m_pSimCases[interval][tract] = (long)(gData.m_pMeasure[interval][tract]) -
+          gData.m_pSimCases[interval][tract];
           }
       }
       free(RandCounts);
@@ -211,14 +211,14 @@ count_t * CBernoulliModel::MakeDataB(count_t nTotalCounts, count_t* RandCounts)
 
    try
       {
-      RandCounts = (count_t*)Smalloc(nTotalCounts * sizeof(count_t), gpPrintDirection);
+      RandCounts = (count_t*)Smalloc(nTotalCounts * sizeof(count_t), &gPrintDirection);
       if (!RandCounts)
          SSGenerateException("Could not allocate memory for RandCounts.", "MakeDataB()");
-      for (i=0; i < m_pData->m_nTotalMeasure; i++)
+      for (i=0; i < gData.m_nTotalMeasure; i++)
       {
        	x = m_RandomNumberGenerator.GetRandomDouble();
         ratio = (double) (nTotalCounts-nCumCounts)/
-          (m_pData->m_nTotalMeasure-i);
+          (gData.m_nTotalMeasure-i);
     		if (x <= ratio)
         {
     			RandCounts[nCumCounts] = i;
@@ -244,8 +244,8 @@ double CBernoulliModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tra
   count_t nNeighbor;
 
   for (int i=1; i<=nTracts; i++) {
-     nNeighbor = m_pData->GetNeighbor(m_iEllipseOffset, nCenter, i);
-     nPop += m_pData->m_pMeasure[nStartInterval][nNeighbor] - m_pData->m_pMeasure[nStopInterval][nNeighbor];
+     nNeighbor = gData.GetNeighbor(m_iEllipseOffset, nCenter, i);
+     nPop += gData.m_pMeasure[nStartInterval][nNeighbor] - gData.m_pMeasure[nStopInterval][nNeighbor];
   }
 
   return nPop;

@@ -11,21 +11,20 @@
 
 /** Couples a time interval index with a random number.
     Used in permutating case dates for simulations. */
-class CSimulationTimeRandomizer
-{
+class CSimulationTimeRandomizer {
   private:
-   int			m_nTimeIntervalIndex;
-   float		m_fRandomNumber;
+   int			giTimeIntervalIndex;
+   float		gfRandomNumber;
    
   public:
-   CSimulationTimeRandomizer(int nTimeIntervalIndex=0, float fRandomNumber=0) {SetTimeIntervalIndex(nTimeIntervalIndex);
+   CSimulationTimeRandomizer(int iTimeIntervalIndex=0, float fRandomNumber=0) {SetTimeIntervalIndex(iTimeIntervalIndex);
                                                                                 SetRandomNumber(fRandomNumber);}
    virtual ~CSimulationTimeRandomizer() {}
 
-   float		GetRandomNumber() const {return m_fRandomNumber;}
-   int			GetTimeIntervalIndex() const {return m_nTimeIntervalIndex;}
-   void			SetRandomNumber(float f) {m_fRandomNumber=f;}
-   void			SetTimeIntervalIndex(int n) {m_nTimeIntervalIndex=n;}
+   float		GetRandomNumber() const {return gfRandomNumber;}
+   int			GetTimeIntervalIndex() const {return giTimeIntervalIndex;}
+   void			SetRandomNumber(float f) {gfRandomNumber=f;}
+   void			SetTimeIntervalIndex(int n) {giTimeIntervalIndex=n;}
 };
 
 /** Function object used to compare CSimulationTimeRandomizer objects. */
@@ -39,41 +38,39 @@ class CompareSimulationTimeRandomizer {
 
 /** Couples tract index with time interval index. 
     Used in permutating case dates for simulations. */
-class CCaseLocationTimes
-{
+class CCaseLocationTimes {
   private:
-   int		m_nTimeIntervalIndex;
-   int		m_nTractIndex;
+   int		giTimeIntervalIndex;
+   int		giTractIndex;
 
   public:
                 CCaseLocationTimes(){}
-                CCaseLocationTimes(int nTimeIntervalIndex, int nTractIndex){SetTimeIntervalIndex(nTimeIntervalIndex);
-                                                                            SetTractIndex(nTractIndex);}
+                CCaseLocationTimes(int iTimeIntervalIndex, int iTractIndex){SetTimeIntervalIndex(iTimeIntervalIndex);
+                                                                            SetTractIndex(iTractIndex);}
    virtual      ~CCaseLocationTimes(){}
 
-   int          GetTimeIntervalIndex() const {return m_nTimeIntervalIndex;}
-   int          GetTractIndex() const {return m_nTractIndex;}
-   void         SetTimeIntervalIndex(int nIndex) {m_nTimeIntervalIndex = nIndex;}
-   void         SetTractIndex(int nIndex) {m_nTractIndex = nIndex;}
+   int          GetTimeIntervalIndex() const {return giTimeIntervalIndex;}
+   int          GetTractIndex() const {return giTractIndex;}
+   void         SetTimeIntervalIndex(int iIndex) {giTimeIntervalIndex = iIndex;}
+   void         SetTractIndex(int iIndex) {giTractIndex = iIndex;}
 };
 
 /** Space-time permutation model. Requires only case and geographical information.
     Calculates loglikelihood identically to Poisson model. */
-class CSpaceTimePermutationModel : public CModel
-{
+class CSpaceTimePermutationModel : public CModel {
   public:
     enum        MeasureType {NotSet, PopulationBased, CaseBased};
   private:
-    MeasureType                                 m_eMeasureType;
-    std::vector<CCaseLocationTimes>             m_vCaseLocationTimes;
-    std::vector<CSimulationTimeRandomizer>      m_vTimeIntervalRandomizer;
-    RandomNumberGenerator                       m_RandomNumberGenerator;
+    MeasureType                                 geMeasureType;
+    std::vector<CCaseLocationTimes>             gvCaseLocationTimes;
+    std::vector<CSimulationTimeRandomizer>      gvTimeIntervalRandomizer;
+    RandomNumberGenerator                       gRandomNumberGenerator;
 
-    void                        Init() {m_eMeasureType=NotSet;}
+    void                        Init() {geMeasureType=NotSet;}
     void                        InitializeRandomizationStructures();
 
   public:
-    CSpaceTimePermutationModel(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
+    CSpaceTimePermutationModel(CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection);
     virtual ~CSpaceTimePermutationModel();
 
     virtual double 	        CalcLogLikelihood(count_t n, measure_t u);

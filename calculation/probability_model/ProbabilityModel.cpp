@@ -2,32 +2,27 @@
 #pragma hdrstop
 #include "ProbabilityModel.h"
 
-CModel::CModel(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-{
-   try
-      {
-      m_pParameters = pParameters;
-      m_pData       = pData;
-      gpPrintDirection = pPrintDirection;
-
+/** constructor */
+CModel::CModel(CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection)
+       : gParameters(Parameters), gData(Data), gPrintDirection(PrintDirection) {
 #ifdef DEBUGMODEL
-      if ((m_pDebugModelFile = fopen("DebugModel.TXT", "w")) == NULL)
-         {
-         fprintf(stderr, "  Error: Unable to create makedata debug file.\n");
-         //FatalError(0, gpPrintDirection);
-         SSGenerateException("  Error: Unable to create makedata debug file.\n","CModel constructor");
-         }
+  try {
+    ZdFileName DebugFile(_argv[i]);
+    DebugFile.SetFileName("Debug_Info_ProbabiltyModel");
+    DebugFile.SetExtension(".txt");
+
+    if ((m_pDebugModelFile = fopen(DebugFile.GetFullPath(), "w")) == NULL)
+      ZdGenerateException("Unable to create probability model debug file.\n","constructor()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("CModel", "CModel");
+    throw;
+  }
 #endif
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("CModel", "CModel");
-      throw;
-      }
 }
 
-CModel::~CModel()
-{
+/** destructor */
+CModel::~CModel() {
 #ifdef DEBUGMODEL
   fclose(m_pDebugModelFile);
 #endif

@@ -10,26 +10,29 @@
 class CPSMonotoneCluster;
 class CSaTScanData;
 
-class CModel
-{
+class CModel {
+  protected:
+    BasePrint                 & gPrintDirection;
+    CParameters               & gParameters;
+    CSaTScanData              & gData;
+#ifdef DEBUGMODEL
+    FILE                      * m_pDebugModelFile;
+#endif
+
   public:
-    CModel(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
+    CModel(CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection);
     virtual ~CModel();
 
-    CParameters*  m_pParameters;
-    CSaTScanData* m_pData;
-    BasePrint *gpPrintDirection;
-    FILE*         m_pDebugModelFile;
 
-    virtual bool   ReadData() = 0;
-    virtual bool   CalculateMeasure() = 0;
-    virtual double GetLogLikelihoodForTotal() const = 0;
-    virtual double CalcLogLikelihood(count_t n, measure_t u) = 0;
-    virtual double CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) = 0;
-    virtual void   MakeData(int iSimulationNumber) = 0;
-    virtual double GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
-                                 int nStartInterval, int nStopInterval) = 0;
-    virtual bool   ReCalculateMeasure() {/* No action taken by default. */return true;}
+    virtual double              CalcLogLikelihood(count_t n, measure_t u) = 0;
+    virtual double              CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) = 0;
+    virtual bool                CalculateMeasure() = 0;
+    virtual double              GetLogLikelihoodForTotal() const = 0;
+    virtual double              GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
+                                              int nStartInterval, int nStopInterval) = 0;
+    virtual void                MakeData(int iSimulationNumber) = 0;
+    virtual bool                ReadData() = 0;
+    virtual bool                ReCalculateMeasure() {/* No action taken by default. */return true;}
 };
 
 //*****************************************************************************
