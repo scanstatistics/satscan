@@ -1063,18 +1063,6 @@ bool CAnalysis::UpdateReport(const long lReportHistoryRunNumber) {
         fprintf(fp, "      simulations early for large p-values. This means that the\n");
         fprintf(fp, "      reported p-values are slightly conservative.\n");
       }
-
-      if (!m_pParameters->UseSpecialGrid() && m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME) {
-        fprintf(fp, "\nIMPORTANT:\nFor the prospective analysis to be correct, it is important\n");
-        fprintf(fp, "that the scanning spatial window is the same for each analysis that is\n");
-        fprintf(fp, "performed once a day, week, year, etc. This means that the grid points\n");
-        fprintf(fp, "defining the circle centroids must remain the same. If the location IDs in\n");
-        fprintf(fp, "the coordinates file remain the same in each time-periodic analysis, then\n");
-        fprintf(fp, "there is no problem. On the other hand, if new IDs are added to the\n");
-        fprintf(fp, "coordinates file over time, then you must use a special grid file and\n");
-        fprintf(fp, "retain this file through all the analyses.\n");
-      }
-
       fclose(fp);
    }
    catch (ZdException & x) {
