@@ -11,17 +11,11 @@
 TimeIntervalRange::TimeIntervalRange(const CSaTScanData& Data,
                                      AbstractLikelihoodCalculator & Calculator,
                                      IncludeClustersType  eIncludeClustersType)
-                  :CTimeIntervals(Data.m_nTimeIntervals, Data.m_nIntervalCut, Data.GetParameters().GetAreaScanRateType()),
+                  :CTimeIntervals(Data.GetNumTimeIntervals(), Data.GetTimeIntervalCut(), Data.GetParameters().GetAreaScanRateType()),
                    gData(Data), gLikelihoodCalculator(Calculator) {
   Init();                 
   Setup(Data, eIncludeClustersType);
 }	
-
-/** copy constructor */
-TimeIntervalRange::TimeIntervalRange(const TimeIntervalRange & rhs)
-                  :CTimeIntervals(rhs), gData(rhs.gData), gLikelihoodCalculator(rhs.gLikelihoodCalculator) {
-  *this = rhs;
-}
 
 /** destructor */
 TimeIntervalRange::~TimeIntervalRange() {
@@ -29,20 +23,6 @@ TimeIntervalRange::~TimeIntervalRange() {
     delete gpMaxWindowLengthIndicator;
   }
   catch (...){}
-}
-
-/** overloaded assignment operator */
-TimeIntervalRange & TimeIntervalRange::operator=(const TimeIntervalRange& rhs) {
-  giStartRange_End = rhs.giStartRange_End;
-  giEndRange_Start = rhs.giEndRange_Start;
-  giEndRange_End = rhs.giEndRange_End;
-  giMaxWindowLength = rhs.giMaxWindowLength;
-  return *this;
-}
-
-/** returns newly cloned TimeIntervalRange object */
-TimeIntervalRange * TimeIntervalRange::Clone() const {
- return new TimeIntervalRange(*this);
 }
 
 /** Iterates through defined temporal window for accumulated data of 'Running'
@@ -61,7 +41,6 @@ void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluste
   TemporalData * pData = (TemporalData*)Running.GetClusterData();  //dynamic cast?
   count_t      * pCases = pData->gpCases;
   measure_t    * pMeasure = pData->gpMeasure;
-
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
@@ -94,7 +73,6 @@ void TimeIntervalRange::CompareMeasures(TemporalData& StreamData, CMeasureList& 
   count_t             * pCases = StreamData.gpCases;
   measure_t           * pMeasure = StreamData.gpMeasure;
 
-
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
@@ -111,9 +89,9 @@ void TimeIntervalRange::Setup(const CSaTScanData& Data, IncludeClustersType  eIn
   try {
     if (Data.GetParameters().GetIsProspectiveAnalysis() && eIncludeClustersType == ALLCLUSTERS) {
       giStartRange_Start = 0;
-      giStartRange_End = Data.m_nTimeIntervals;
-      giEndRange_Start = Data.m_nProspectiveIntervalStart;
-      giEndRange_End = Data.m_nTimeIntervals;
+      giStartRange_End = Data.GetNumTimeIntervals();
+      giEndRange_Start = Data.GetProspectiveStartIndex();
+      giEndRange_End = Data.GetNumTimeIntervals();
       //the maximum window length varies when the analysis is prospective and
       //the maximum is defined as percentage of study period
       if (Data.GetParameters().GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE)
@@ -124,17 +102,17 @@ void TimeIntervalRange::Setup(const CSaTScanData& Data, IncludeClustersType  eIn
     else {
       switch (eIncludeClustersType) {
         case ALLCLUSTERS     : giStartRange_Start = 0;
-                               giStartRange_End = Data.m_nTimeIntervals;
+                               giStartRange_End = Data.GetNumTimeIntervals();
                                giEndRange_Start = 1;
-                               giEndRange_End = Data.m_nTimeIntervals; break;
+                               giEndRange_End = Data.GetNumTimeIntervals(); break;
         case ALIVECLUSTERS   : giStartRange_Start = 0;
-                               giStartRange_End = Data.m_nTimeIntervals;
-                               giEndRange_Start = Data.m_nTimeIntervals;
-                               giEndRange_End = Data.m_nTimeIntervals; break;
-        case CLUSTERSINRANGE : giStartRange_Start = Data.m_nStartRangeStartDateIndex;
-                               giStartRange_End = Data.m_nStartRangeEndDateIndex;
-                               giEndRange_Start = Data.m_nEndRangeStartDateIndex;
-                               giEndRange_End = Data.m_nEndRangeEndDateIndex; break;
+                               giStartRange_End = Data.GetNumTimeIntervals();
+                               giEndRange_Start = Data.GetNumTimeIntervals();
+                               giEndRange_End = Data.GetNumTimeIntervals(); break;
+        case CLUSTERSINRANGE : giStartRange_Start = Data.GetFlexibleWindowStartRangeStartIndex();
+                               giStartRange_End = Data.GetFlexibleWindowStartRangeEndIndex();
+                               giEndRange_Start = Data.GetFlexibleWindowEndRangeStartIndex();
+                               giEndRange_End = Data.GetFlexibleWindowEndRangeEndIndex(); break;
         default :
           ZdGenerateException("Unknown cluster inclusion type: '%d'.", "Setup()", Data.GetParameters().GetIncludeClustersType());
       };
@@ -154,24 +132,6 @@ NormalTimeIntervalRange::NormalTimeIntervalRange(const CSaTScanData& Data,
                                                  AbstractLikelihoodCalculator & Calculator,
                                                  IncludeClustersType eIncludeClustersType)
                   : TimeIntervalRange(Data, Calculator, eIncludeClustersType) {}
-
-/** copy constructor */
-NormalTimeIntervalRange::NormalTimeIntervalRange(const NormalTimeIntervalRange & rhs)
-                        :TimeIntervalRange(rhs) {}
-
-/** overloaded assignment operator */
-NormalTimeIntervalRange & NormalTimeIntervalRange::operator=(const NormalTimeIntervalRange& rhs) {
-  giStartRange_End = rhs.giStartRange_End;
-  giEndRange_Start = rhs.giEndRange_Start;
-  giEndRange_End = rhs.giEndRange_End;
-  giMaxWindowLength = rhs.giMaxWindowLength;
-  return *this;
-}
-
-/** returns newly cloned TimeIntervalRange object */
-NormalTimeIntervalRange * NormalTimeIntervalRange::Clone() const {
- return new NormalTimeIntervalRange(*this);
-}
 
 /** Iterates through defined temporal window for accumulated data of 'Running'
     cluster. Calculates loglikelihood ratio of clusters that have rates of which
@@ -224,24 +184,6 @@ MultiStreamTimeIntervalRange::MultiStreamTimeIntervalRange(const CSaTScanData& D
                                                            AbstractLikelihoodCalculator & Calculator,
                                                            IncludeClustersType eIncludeClustersType)
                              :TimeIntervalRange(Data, Calculator, eIncludeClustersType) {}
-
-/** copy constructor */
-MultiStreamTimeIntervalRange::MultiStreamTimeIntervalRange(const MultiStreamTimeIntervalRange & rhs)
-                             :TimeIntervalRange(rhs) {}
-
-/** overloaded assignment operator */
-MultiStreamTimeIntervalRange & MultiStreamTimeIntervalRange::operator=(const MultiStreamTimeIntervalRange& rhs) {
-  giStartRange_End = rhs.giStartRange_End;
-  giEndRange_Start = rhs.giEndRange_Start;
-  giEndRange_End = rhs.giEndRange_End;
-  giMaxWindowLength = rhs.giMaxWindowLength;
-  return *this;
-}
-
-/** returns newly cloned TimeIntervalRange object */
-MultiStreamTimeIntervalRange * MultiStreamTimeIntervalRange::Clone() const {
- return new MultiStreamTimeIntervalRange(*this);
-}
 
 /** Iterates through defined temporal window for accumulated data of 'Running'
     cluster. Calculates loglikelihood ratio of clusters that have rates of which

@@ -32,11 +32,7 @@ class TimeIntervalRange : public CTimeIntervals {
 
   public:
     TimeIntervalRange(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
-    TimeIntervalRange(const TimeIntervalRange& rhs);
     virtual ~TimeIntervalRange();
-
-    TimeIntervalRange         & operator=(const TimeIntervalRange& rhs);
-    virtual TimeIntervalRange * Clone() const;
 
     virtual void                CompareMeasures(TemporalData& StreamData, CMeasureList& MeasureList);
     virtual void                CompareClusters(CCluster& Running, CCluster& TopCluster);
@@ -51,11 +47,7 @@ class TimeIntervalRange : public CTimeIntervals {
 class NormalTimeIntervalRange : public TimeIntervalRange {
   public:
     NormalTimeIntervalRange(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
-    NormalTimeIntervalRange(const NormalTimeIntervalRange& rhs);
     virtual ~NormalTimeIntervalRange() {}
-
-    NormalTimeIntervalRange         & operator=(const NormalTimeIntervalRange& rhs);
-    virtual NormalTimeIntervalRange * Clone() const;
 
     virtual void                      CompareClusters(CCluster& Running, CCluster& TopCluster);
     virtual void                      CompareMeasures(TemporalData& StreamData, CMeasureList& MeasureList);
@@ -69,11 +61,7 @@ class NormalTimeIntervalRange : public TimeIntervalRange {
 class MultiStreamTimeIntervalRange : public TimeIntervalRange {
   public:
     MultiStreamTimeIntervalRange(const CSaTScanData& Data, AbstractLikelihoodCalculator & Calculator, IncludeClustersType eIncludeClustersType);
-    MultiStreamTimeIntervalRange(const MultiStreamTimeIntervalRange& rhs);
     virtual ~MultiStreamTimeIntervalRange() {}
-
-    MultiStreamTimeIntervalRange         & operator=(const MultiStreamTimeIntervalRange& rhs);
-    virtual MultiStreamTimeIntervalRange * Clone() const;
 
     virtual void                           CompareClusters(CCluster& Running, CCluster& TopCluster);
     virtual void                           CompareMeasures(TemporalData& StreamData, CMeasureList& MeasureList);
