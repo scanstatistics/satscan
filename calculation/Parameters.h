@@ -68,7 +68,7 @@ extern const char*      ADJUSTMENTS_BY_RR_FILE_LINE;
 extern const char*      USE_ADJUSTMENTS_BY_RR_FILE_LINE;
 extern const char*      MAX_CIRCLE_POP_FILE_LINE;
 extern const char*      SPATIAL_ADJ_TYPE_LINE;
-extern const char*      MULTI_STREAM_PURPOSE_TYPE_LINE;
+extern const char*      MULTI_DATASETS_PURPOSE_TYPE_LINE;
 
 /** sequential scan ini section */
 extern const char*      SEQUENTIAL_SCAN_SECTION;
@@ -143,7 +143,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE, SIMULATION_TYPE,
                                     SIMULATION_SOURCEFILE, ADJ_BY_RR_FILE, OUTPUT_SIMULATION_DATA,
                                     SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE,
-                                    MULTI_STREAM_PURPOSE_TYPE, CREATION_VERSION};
+                                    MULTI_DATASET_PURPOSE_TYPE, CREATION_VERSION};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -175,14 +175,14 @@ enum SpatialSizeType               {PERCENTOFPOPULATIONTYPE=0, DISTANCETYPE, PER
 enum ReadType                      {INI=0, SCAN};
 /** defines how simulated data will be created - only pertinent for Poisson */
 enum SimulationType                {STANDARD=0, HA_RANDOMIZATION, FILESOURCE};
-/** purpose of multiple data streams */
+/** purpose of multiple data sets */
 enum MultipleStreamPurposeType     {MULTIVARIATE=0, ADJUSTMENT};
 
 class DataStreamHandler; /** forward class declaration */
 
 class CParameters {
   private:
-    MultipleStreamPurposeType           geMultipleStreamPurposeType;            /** purpose for multiple data streams */  
+    MultipleStreamPurposeType           geMultipleStreamPurposeType;            /** purpose for multiple data sets */  
     AnalysisType                        geAnalysisType;                         /** analysis type */
     ProbabiltyModelType                 geProbabiltyModelType;                  /** probabilty model type */
     AreaRateType                        geAreaScanRate;                         /** areas incidence rate type of interest */

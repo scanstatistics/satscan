@@ -88,7 +88,7 @@ const char*      ADJUSTMENTS_BY_RR_FILE_LINE            = "AdjustmentsByKnownRel
 const char*      USE_ADJUSTMENTS_BY_RR_FILE_LINE        = "UseAdjustmentsByRRFile";
 const char*      MAX_CIRCLE_POP_FILE_LINE               = "MaxCirclePopulationFile";
 const char*      SPATIAL_ADJ_TYPE_LINE                  = "SpatialAdjustmentType";
-const char*      MULTI_STREAM_PURPOSE_TYPE_LINE         = "MultipleDataStreamPurposeType";
+const char*      MULTI_DATASETS_PURPOSE_TYPE_LINE       = "MultipleDataSetsPurposeType";
 
 /** system ini section */
 const char*      SYSTEM_SECTION                         = "[System]";
@@ -400,18 +400,27 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
 
     fprintf(fp, "Input Files\n");
     fprintf(fp, "-----------\n");
-    fprintf(fp, "  Case File                  : %s\n", gvCaseFilenames[0].c_str());
-    for (t=1; t < gvCaseFilenames.size(); ++t)
-       fprintf(fp, "  Case File (stream %i)       : %s\n", t + 1, gvCaseFilenames[t].c_str());
+    if (gvCaseFilenames.size() == 1)
+      fprintf(fp, "  Case File                    : %s\n", gvCaseFilenames[0].c_str());
+    else {
+      for (t=0; t < gvCaseFilenames.size(); ++t)
+         fprintf(fp, "  Case File       (data set %i) : %s\n", t + 1, gvCaseFilenames[t].c_str());
+    }
 
     switch (geProbabiltyModelType) {
-      case POISSON              : fprintf(fp, "  Population File            : %s\n", gvPopulationFilenames[0].c_str());
-                                  for (t=1; t < gvPopulationFilenames.size(); ++t)
-                                     fprintf(fp, "  Population File (stream %i) : %s\n", t + 1, gvPopulationFilenames[t].c_str());
+      case POISSON              : if (gvPopulationFilenames.size() == 1)
+                                    fprintf(fp, "  Population File              : %s\n", gvPopulationFilenames[0].c_str());
+                                  else {
+                                    for (t=0; t < gvPopulationFilenames.size(); ++t)
+                                       fprintf(fp, "  Population File (data set %i) : %s\n", t + 1, gvPopulationFilenames[t].c_str());
+                                  }
                                   break;
-      case BERNOULLI            : fprintf(fp, "  Control File               : %s\n", gvControlFilenames[0].c_str());
-                                  for (t=1; t < gvControlFilenames.size(); ++t)
-                                     fprintf(fp, "  Control File (stream %i)    : %s\n", t + 1, gvControlFilenames[t].c_str());
+      case BERNOULLI            : if (gvControlFilenames.size() == 1)
+                                    fprintf(fp, "  Control File                 : %s\n", gvControlFilenames[0].c_str());
+                                  else {
+                                    for (t=0; t < gvControlFilenames.size(); ++t)
+                                       fprintf(fp, "  Control File    (data set %i) : %s\n", t + 1, gvControlFilenames[t].c_str());
+                                  }
                                   break;
       case SPACETIMEPERMUTATION :
       case NORMAL               :
@@ -420,15 +429,15 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
       default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayParameters()", geProbabiltyModelType);
     }
 
-    fprintf(fp, "  Coordinates File           : %s\n", gsCoordinatesFileName.c_str());
+    fprintf(fp, "  Coordinates File             : %s\n", gsCoordinatesFileName.c_str());
     if (gbUseSpecialGridFile)
-      fprintf(fp, "  Grid File                  : %s\n", gsSpecialGridFileName.c_str());
+      fprintf(fp, "  Grid File                    : %s\n", gsSpecialGridFileName.c_str());
     if (geMaxGeographicClusterSizeType == PERCENTOFPOPULATIONFILETYPE)
-      fprintf(fp, "  Max Circle Size File       : %s\n", gsMaxCirclePopulationFileName.c_str());
+      fprintf(fp, "  Max Circle Size File         : %s\n", gsMaxCirclePopulationFileName.c_str());
     if (geSimulationType == FILESOURCE)
-      fprintf(fp, "  Simulated Data Import File : %s\n", gsSimulationDataSourceFileName.c_str());
+      fprintf(fp, "  Simulated Data Import File   : %s\n", gsSimulationDataSourceFileName.c_str());
     if(geSimulationType == HA_RANDOMIZATION || gbUseAdjustmentsForRRFile)
-      fprintf(fp, "  Adjustments File           : %s\n", gsAdjustmentsByRelativeRisksFileName.c_str());
+      fprintf(fp, "  Adjustments File             : %s\n", gsAdjustmentsByRelativeRisksFileName.c_str());
 
     DatePrecisionType ePrecision;
     fprintf(fp, "\n  Time Precision     : ");
@@ -453,11 +462,11 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
       default : ZdException::Generate("Unknown coordinated type '%d'.\n", "DisplayParameters()", geCoordinatesType);
     }
     if (GetNumDataStreams() > 1) {
-      fprintf(fp, "  Purpose of Multiple Data Streams : ");
+      fprintf(fp, "  Purpose of Multiple Data Sets : ");
       switch (geMultipleStreamPurposeType) {
         case MULTIVARIATE : fprintf(fp, "Multivariate Analysis\n"); break;
         case ADJUSTMENT    : fprintf(fp, "Adjustment\n"); break;
-        default : ZdException::Generate("Unknown purpose for multiple streams type '%d'.\n",
+        default : ZdException::Generate("Unknown purpose for multiple data sets type '%d'.\n",
                                         "DisplayParameters()", geMultipleStreamPurposeType);
       }
     }
@@ -711,7 +720,7 @@ void CParameters::DisplayCalculatedTimeTrend(FILE* fp, const DataStreamHandler& 
                              fabs(StreamHandler.GetStream(TrendIncrease[t]).GetCalculatedTimeTrendPercentage()));
           sPrintString << sWorkString;
        }
-       sWorkString.printf(" for data stream%s %u", (TrendIncrease.size() == 1 ? "" : "s"), TrendIncrease.front() + 1);
+       sWorkString.printf(" for data set%s %u", (TrendIncrease.size() == 1 ? "" : "s"), TrendIncrease.front() + 1);
        sPrintString << sWorkString;
        for (t=1; t < TrendIncrease.size(); ++t) {
           sWorkString.printf((t < TrendIncrease.size() - 1 ? ", %u" : " and %u"), TrendIncrease[t] + 1);
@@ -732,7 +741,7 @@ void CParameters::DisplayCalculatedTimeTrend(FILE* fp, const DataStreamHandler& 
                             fabs(StreamHandler.GetStream(TrendDecrease[t]).GetCalculatedTimeTrendPercentage()));
          sPrintString << sWorkString;
       }
-      sWorkString.printf(" for data stream%s %u", (TrendDecrease.size() == 1 ? "" : "s"), TrendDecrease.front() + 1);
+      sWorkString.printf(" for data set%s %u", (TrendDecrease.size() == 1 ? "" : "s"), TrendDecrease.front() + 1);
       sPrintString << sWorkString;
       for (t=1; t < TrendDecrease.size(); ++t) {
          sWorkString.printf((t < TrendDecrease.size() - 1 ? ", %u" : " and %u"), TrendDecrease[t] + 1);
@@ -904,7 +913,7 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
         case ADJ_FOR_EALIER_ANALYSES   : sParameterLineLabel = ADJUST_EALIER_ANALYSES_LINE; break;
         case USE_ADJ_BY_RR_FILE        : sParameterLineLabel = USE_ADJUSTMENTS_BY_RR_FILE_LINE; break;
         case SPATIAL_ADJ_TYPE          : sParameterLineLabel = SPATIAL_ADJ_TYPE_LINE; break;
-        case MULTI_STREAM_PURPOSE_TYPE : sParameterLineLabel = MULTI_STREAM_PURPOSE_TYPE_LINE; break;
+        case MULTI_DATASET_PURPOSE_TYPE: sParameterLineLabel = MULTI_DATASETS_PURPOSE_TYPE_LINE; break;
         case CREATION_VERSION          : sParameterLineLabel = CREATION_VERSION_LINE; break;
         default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLineLabel()", eParameterType);
       };
@@ -1064,7 +1073,7 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case ADJ_FOR_EALIER_ANALYSES  : sDefaultValue = (gbAdjustForEarlierAnalyses ? YES : NO); break;
       case USE_ADJ_BY_RR_FILE       : sDefaultValue = (gbUseAdjustmentsForRRFile ? YES : NO); break;
       case SPATIAL_ADJ_TYPE         : sDefaultValue = geSpatialAdjustmentType; break;
-      case MULTI_STREAM_PURPOSE_TYPE: sDefaultValue = geMultipleStreamPurposeType; break;
+      case MULTI_DATASET_PURPOSE_TYPE : sDefaultValue = geMultipleStreamPurposeType; break;
       case CREATION_VERSION         : sDefaultValue.printf("%u.%u.%u", gCreationVersion.iMajor, gCreationVersion.iMinor, gCreationVersion.iRelease); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
@@ -1124,7 +1133,7 @@ void CParameters::ReadAdvancedFeatures(ZdIniFile& file, BasePrint & PrintDirecti
     ReadIniParameter(*pSection, SIMULATION_DATA_OUTFILE_LINE, SIMULATION_DATA_OUTFILE, PrintDirection);
     ReadIniParameter(*pSection, MAX_CIRCLE_POP_FILE_LINE, MAXCIRCLEPOPFILE, PrintDirection);
     ReadIniParameter(*pSection, SPATIAL_ADJ_TYPE_LINE, SPATIAL_ADJ_TYPE, PrintDirection);
-    ReadIniParameter(*pSection, MULTI_STREAM_PURPOSE_TYPE_LINE, MULTI_STREAM_PURPOSE_TYPE, PrintDirection);
+    ReadIniParameter(*pSection, MULTI_DATASETS_PURPOSE_TYPE_LINE, MULTI_DATASET_PURPOSE_TYPE, PrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadAdvancedFeatures()", "CParameters");
@@ -1676,7 +1685,7 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case ADJ_FOR_EALIER_ANALYSES   : SetAdjustForEarlierAnalyses(ReadBoolean(sParameter, eParameterType)); break;
       case USE_ADJ_BY_RR_FILE        : SetUseAdjustmentForRelativeRisksFile(ReadBoolean(sParameter, eParameterType)); break;
       case SPATIAL_ADJ_TYPE          : SetSpatialAdjustmentType((SpatialAdjustmentType)ReadInt(sParameter, eParameterType)); break;
-      case MULTI_STREAM_PURPOSE_TYPE : SetMultipleDataStreamPurposeType((MultipleStreamPurposeType)ReadInt(sParameter, eParameterType)); break;
+      case MULTI_DATASET_PURPOSE_TYPE: SetMultipleDataStreamPurposeType((MultipleStreamPurposeType)ReadInt(sParameter, eParameterType)); break;
       case CREATION_VERSION          : SetVersion(sParameter); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","ReadParameter()", eParameterType);
     };
@@ -1953,8 +1962,8 @@ void CParameters::SaveAdvancedFeaturesSection(ZdIniFile& file) {
     pSection->AddLine(MAX_CIRCLE_POP_FILE_LINE, gsMaxCirclePopulationFileName.c_str());
     pSection->AddComment(" Spatial Adjustments Type (no spatial adjustment=0, spatially stratified randomization=1)");
     pSection->AddLine(SPATIAL_ADJ_TYPE_LINE, AsString(sValue, geSpatialAdjustmentType));
-    pSection->AddComment(" Multiple Data Streams Purpose Type (multivariate=0, adjustment=1)");
-    pSection->AddLine(MULTI_STREAM_PURPOSE_TYPE_LINE, AsString(sValue, geMultipleStreamPurposeType));
+    pSection->AddComment(" Multiple Data Sets Purpose Type (multivariate=0, adjustment=1)");
+    pSection->AddLine(MULTI_DATASETS_PURPOSE_TYPE_LINE, AsString(sValue, geMultipleStreamPurposeType));
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveAdvancedFeaturesSection()","CParameters");
@@ -2572,13 +2581,13 @@ void CParameters::SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSi
   }
 }
 
-/** Adjusts the number of data streams. */
+/** Adjusts the number of data sets. */
 void CParameters::SetNumDataStreams(unsigned int iNumStreams) {
   size_t        t;
 
   try {
     if (iNumStreams == 0)
-      ZdException::Generate("Number of data streams can not be zero.\n", "SetNumDataStreams()");
+      ZdException::Generate("Number of data sets can not be zero.\n", "SetNumDataStreams()");
 
     //adjust the number of filenames for case, control, and population
     gvCaseFilenames.resize(iNumStreams);
@@ -2943,7 +2952,7 @@ void CParameters::SetMultipleDataStreamPurposeType(MultipleStreamPurposeType eTy
     if (eType < MULTIVARIATE || eType > ADJUSTMENT)
       InvalidParameterException::Generate("Error: For parameter %s, setting '%d' is out of range(%d - %d).\n",
                                           "SetMultipleDataStreamPurposeType()",
-                                          GetParameterLineLabel(MULTI_STREAM_PURPOSE_TYPE, sLabel, geReadType == INI),
+                                          GetParameterLineLabel(MULTI_DATASET_PURPOSE_TYPE, sLabel, geReadType == INI),
                                           eType, MULTIVARIATE, ADJUSTMENT);
     geMultipleStreamPurposeType = eType;
   }
@@ -3449,11 +3458,11 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
       }
       if (geAnalysisType == PURELYSPATIAL && geRiskFunctionType == MONOTONERISK && GetNumDataStreams() > 1) {
         bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Multiple data streams are not permitted with isotonic purely spatial analyses.\n");
+        PrintDirection.SatScanPrintWarning("Error: Multiple data sets are not permitted with isotonic purely spatial analyses.\n");
       }
       if (geProbabiltyModelType == NORMAL && GetNumDataStreams() > 1) {
         bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Multiple data streams are not permitted with the normal probablility model\n");
+        PrintDirection.SatScanPrintWarning("Error: Multiple data sets are not permitted with the normal probablility model\n");
         PrintDirection.SatScanPrintWarning("       in this version of SaTScan.\n");
       }
 
@@ -3735,7 +3744,7 @@ bool CParameters::ValidateSimulationDataParameters(BasePrint & PrintDirection) {
                                   if (GetNumDataStreams() > 1){
                                     bValid = false;
                                     PrintDirection.SatScanPrintWarning("Error: The feature to read simulated data from a file is not implemented for analyses\n"
-                                                                       "       that read data from multiple data streams.\n");
+                                                                       "       that read data from multiple data sets.\n");
                                   }
                                   if (gsSimulationDataSourceFileName.empty()) {
                                     bValid = false;

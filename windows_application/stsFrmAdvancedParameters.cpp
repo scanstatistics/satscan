@@ -574,13 +574,13 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
   }
 }
 //---------------------------------------------------------------------------
-/** Enables/disables TListBox that list defined data streams */
+/** Enables/disables TListBox that list defined data sets */
 void TfrmAdvancedParameters::EnableDataStreamList(bool bEnable) {
   lstInputStreams->Enabled = bEnable;
   lstInputStreams->Color = lstInputStreams->Enabled ? clWindow : clInactiveBorder;
 }
 
-/** Enables/disables controls that indicate purpose of additional data streams. */
+/** Enables/disables controls that indicate purpose of additional data sets. */
 void TfrmAdvancedParameters::EnableDataStreamPurposeControls(bool bEnable) {
   lblMultipleStreamPurpose->Enabled = bEnable;
   rdoMultivariate->Enabled = bEnable;
@@ -1411,7 +1411,7 @@ void TfrmAdvancedParameters::Setup() {
 
       // Input tab
       EnableInputFileEdits(false);
-      for (unsigned int i = 1; i < ref.GetNumDataStreams(); i++) { // multiple data streams
+      for (unsigned int i = 1; i < ref.GetNumDataStreams(); i++) { // multiple data sets
          lstInputStreams->Items->Add("Data Set " + IntToStr(i+1));
          gvCaseFiles.push_back(AnsiString(ref.GetCaseFileName(i+1).c_str()));
          gvControlFiles.push_back(AnsiString(ref.GetControlFileName(i+1).c_str()));

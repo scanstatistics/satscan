@@ -327,9 +327,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object lblMultipleStreamPurpose: TStaticText
           Left = 8
           Top = 152
-          Width = 164
+          Width = 147
           Height = 17
-          Caption = 'Purpose of Multiple Data Streams:'
+          Caption = 'Purpose of Multiple Data Sets:'
           TabOrder = 12
         end
         object rdoMultivariate: TRadioButton
