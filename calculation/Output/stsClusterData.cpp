@@ -237,8 +237,8 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
       pRecord->SetEndDate(sEndDate);
       pRecord->SetStartDate(sStartDate);
 
-      pRecord->SetObserved(theCluster.m_nCases);
-      pRecord->SetExpected(theData.GetMeasureAdjustment()* theCluster.m_nMeasure);
+      pRecord->SetObserved(theCluster.GetCaseCount(0));
+      pRecord->SetExpected(theData.GetMeasureAdjustment()* theCluster.GetMeasure(0));
       
       // central area id
       SetAreaID(sTempValue, theCluster, theData);

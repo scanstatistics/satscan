@@ -192,9 +192,9 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CS
             pRecord->SetFieldIsBlank(GetFieldNumber(AREA_EXP_FIELD), true);
             pRecord->SetFieldIsBlank(GetFieldNumber(AREA_RSK_FIELD), true);
 
-            pRecord->SetClusterExpected(theData.GetMeasureAdjustment() * theCluster.m_nMeasure);
+            pRecord->SetClusterExpected(theData.GetMeasureAdjustment() * theCluster.GetMeasure(0));
             pRecord->SetClusterNumber(iClusterNumber);
-            pRecord->SetClusterObserved(theCluster.m_nCases);
+            pRecord->SetClusterObserved(theCluster.GetCaseCount(0));
             pRecord->SetClusterRelativeRisk(theCluster.GetRelativeRisk(theData.GetMeasureAdjustment()));
 
             // p value
@@ -215,9 +215,9 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CS
          pRecord->SetAreaExpected(theCluster.GetMeasureForTract(tTract, theData));
          pRecord->SetAreaObserved(theCluster.GetCaseCountForTract(tTract, theData));
          pRecord->SetAreaRelativeRisk(theCluster.GetRelativeRiskForTract(tTract, theData));
-         pRecord->SetClusterExpected(theData.GetMeasureAdjustment() * theCluster.m_nMeasure);
+         pRecord->SetClusterExpected(theData.GetMeasureAdjustment() * theCluster.GetMeasure(0));
          pRecord->SetClusterNumber(iClusterNumber);
-         pRecord->SetClusterObserved(theCluster.m_nCases);
+         pRecord->SetClusterObserved(theCluster.GetCaseCount(0));
          pRecord->SetClusterRelativeRisk(theCluster.GetRelativeRisk(theData.GetMeasureAdjustment()));
 
          // p value
