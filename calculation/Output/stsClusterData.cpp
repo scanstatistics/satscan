@@ -185,9 +185,9 @@ void stsClusterData::WriteCoordinates(OutputRecord& Record, const CCluster& this
                           }
                           break;
          case LATLON    : ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
-                          sBuffer.printf("%12.2lf", fLatitude);
+                          sBuffer.printf("%f", fLatitude);
                           Record.GetFieldValue(iFirstCoordIndex).AsZdString() = sBuffer;
-                          sBuffer.printf("%12.2lf", fLongitude);
+                          sBuffer.printf("%f", fLongitude);
                           Record.GetFieldValue(iSecondCoordIndex).AsZdString() = sBuffer;
                           break;
          default : ZdGenerateException("Unknown coordinate type '%d'.","SetCoordinates()", gParameters.GetCoordinatesType());
