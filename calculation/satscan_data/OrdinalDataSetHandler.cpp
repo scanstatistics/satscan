@@ -30,12 +30,7 @@ AbtractDataSetGateway * OrdinalDataSetHandler::GetNewDataGateway() const {
       const RealDataSet& DataSet = *gvDataSets[t];
       //set total cases
       Interface.SetTotalCasesCount(DataSet.GetTotalCases());
-      //set total case per category
-      const PopulationData& Population = DataSet.GetPopulationData();
-      Interface.gvTotalCasesPerCategory.clear();
-      for (size_t i=0; i < Population.GetNumOrdinalCategories(); ++i)
-         Interface.gvTotalCasesPerCategory.push_back(Population.GetNumOrdinalCategoryCases(i));
-         
+      Interface.SetNumOrdinalCategories(DataSet.GetPopulationData().GetNumOrdinalCategories());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
@@ -81,11 +76,7 @@ AbtractDataSetGateway * OrdinalDataSetHandler::GetNewSimulationDataGateway(const
       const SimDataSet& S_DataSet = *Container[t];
       //set total cases
       Interface.SetTotalCasesCount(R_DataSet.GetTotalCases());
-      //set total case per category
-      const PopulationData& Population = R_DataSet.GetPopulationData();
-      Interface.gvTotalCasesPerCategory.clear();
-      for (size_t i=0; i < Population.GetNumOrdinalCategories(); ++i)
-         Interface.gvTotalCasesPerCategory.push_back(Population.GetNumOrdinalCategoryCases(i));
+      Interface.SetNumOrdinalCategories(R_DataSet.GetPopulationData().GetNumOrdinalCategories());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
@@ -177,7 +168,7 @@ bool OrdinalDataSetHandler::ParseCaseFileLine(StringParser& Parser, tract_t& tid
                                  Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
-    if (nCount <= 0) {//validate that count is not negative or exceeds type precision
+    if (nCount < 0) {//validate that count is not negative or exceeds type precision
       if (strstr(Parser.GetWord(1), "-"))
         gPrint.PrintInputWarning("Error: Case count in record %ld, of the %s, is not greater than zero.\n",
                                    Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
@@ -232,18 +223,19 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
          if (Parser.HasWords()) {
            bEmpty = false;
            if (ParseCaseFileLine(Parser, TractIndex, Count, Date, tContinuosVariable)) {
-             //record cases to randomizer object
-             iDateIndex = gDataHub.GetTimeIntervalOfDate(Date);
-             //record count and get index of ordinal category
-             ppCategoryCounts = DataSet.AddOrdinalCategoryCaseCount(tContinuosVariable, Count);
-             ppCategoryCounts[0][TractIndex] += Count;
-             if (ppCategoryCounts[0][TractIndex] < 0)
-               GenerateResolvableException("Error: The total number of cases, in data set %u, is greater than the maximum allowed of %ld.\n", "ReadCounts()",
-                                           tSetIndex, std::numeric_limits<count_t>::max());
-             for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
-                ppCategoryCounts[i][TractIndex] += Count;
-
-             tTotalCases += Count;
+             if (Count) { //ignore records with zero cases
+               //record cases to randomizer object
+               iDateIndex = gDataHub.GetTimeIntervalOfDate(Date);
+               //record count and get index of ordinal category
+               ppCategoryCounts = DataSet.AddOrdinalCategoryCaseCount(tContinuosVariable, Count);
+               ppCategoryCounts[0][TractIndex] += Count;
+               if (ppCategoryCounts[0][TractIndex] < 0)
+                 GenerateResolvableException("Error: The total number of cases, in data set %u, is greater than the maximum allowed of %ld.\n", "ReadCounts()",
+                                             tSetIndex, std::numeric_limits<count_t>::max());
+               for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
+                  ppCategoryCounts[i][TractIndex] += Count;
+               tTotalCases += Count;
+             }
            }
            else
              bValid = false;
