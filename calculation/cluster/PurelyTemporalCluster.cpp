@@ -64,9 +64,21 @@ CPurelyTemporalCluster& CPurelyTemporalCluster::operator =(const CPurelyTemporal
   m_bRatioSet      = cluster.m_bRatioSet;
   m_nClusterType   = cluster.m_nClusterType;
 
-//  *m_TI            = *(cluster.m_TI);
+  *m_TI            = *(cluster.m_TI);
 
   return *this;
+}
+
+/** Returns the number of case for tract as defined by cluster. */
+count_t CPurelyTemporalCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const
+{
+  return m_TI->GetCaseCountForTract(tTract, Data.m_pCases);
+}
+
+/** Returns the measure for tract as defined by cluster. */
+measure_t CPurelyTemporalCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const
+{
+  return m_TI->GetMeasureForTract(tTract, Data.m_pMeasure);
 }
 
 void CPurelyTemporalCluster::InitTimeIntervalIndeces()

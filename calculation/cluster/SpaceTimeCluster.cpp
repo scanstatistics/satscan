@@ -77,6 +77,8 @@ CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& cluste
 
   m_iEllipseOffset = cluster.m_iEllipseOffset;
 
+  *TI = *(cluster.TI);
+
   return *this;
 }
 
@@ -117,12 +119,24 @@ void CSpaceTimeCluster::DeAllocCumulativeCounts()
   }
 }
 
+/** Returns the number of case for tract as defined by cluster. */
+count_t CSpaceTimeCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const
+{
+  return TI->GetCaseCountForTract(tTract, Data.m_pCases);
+}
+
 void CSpaceTimeCluster::GetMeasure()
 {
      TI->GetNextTimeIntervalProsp(m_pCumCases,
                                  m_pCumMeasure,
                                  m_nCases,
                                  m_nMeasure);
+}
+
+/** Returns the measure for tract as defined by cluster. */
+measure_t CSpaceTimeCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const
+{
+  return TI->GetMeasureForTract(tTract, Data.m_pMeasure);
 }
 
 void CSpaceTimeCluster::Initialize(tract_t nCenter = 0)

@@ -16,6 +16,8 @@ class CSpaceTimeCluster : public CCluster
 
     virtual void                AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n);
     void                        DeAllocCumulativeCounts();
+    virtual count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual measure_t           GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
     void                        GetMeasure();
     virtual void                Initialize(tract_t nCenter);
     virtual void                InitTimeIntervalIndeces();
