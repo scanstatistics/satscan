@@ -677,8 +677,7 @@ void CAnalysis::PerformSimulations() {
         gpPrintDirection->SatScanPrintf("Doing the Monte Carlo replications\n");
 
         // assign replication format string here to prevent another check in loop
-        if (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION ||
-            (m_pParameters->GetNumRequestedEllipses() && m_pParameters->GetDuczmalCorrectEllipses()))
+        if (m_pParameters->GetLogLikelihoodRatioIsTestStatistic())
           sReplicationFormatString = "SaTScan test statistic for #%ld of %ld replications: %7.2f\n";
         else
           sReplicationFormatString = "SaTScan log likelihood ratio for #%ld of %ld replications: %7.2f\n";
