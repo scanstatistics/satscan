@@ -213,7 +213,8 @@ void stsClusterData::Init() {
 void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, int iNumSimulations) {
    ZdString                     sRadius, sLatitude, sLongitude;
    float                        fPVal;
-   ZdString                     sTempValue, sStartDate, sEndDate, sShape, sAngle;
+   ZdString                     sStartDate, sEndDate, sShape, sAngle;
+   std::string                  sTempValue;
    std::vector<std::string>     vAdditCoords;
    ClusterRecord* 		pRecord = 0;
 
@@ -240,7 +241,7 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
       pRecord->SetObserved(theCluster.GetCaseCount(0));
       pRecord->SetExpected(theData.GetMeasureAdjustment()* theCluster.GetMeasure(0));
       
-      // central area id
+      // get most central location id
       SetAreaID(sTempValue, theCluster, theData);
       pRecord->SetLocationID(sTempValue);
 
@@ -283,17 +284,17 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
 // formats the string for the Area ID
 // pre: none
 // post: sTempvalue will contain the legible area id
-void stsClusterData::SetAreaID(ZdString& sTempValue, const CCluster& pCluster, const CSaTScanData& pData) {
-   try {
-      if (pCluster.GetClusterType() == PURELYTEMPORAL)
-          sTempValue = "All";
-      else
-         sTempValue = pData.GetGInfo()->giGetGid(pCluster.m_Center);
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("SetAreaID", "DBaseOutput");
-      throw;
-   }
+void stsClusterData::SetAreaID(std::string& sId, const CCluster& pCluster, const CSaTScanData& pData) {
+  try {
+    if (pCluster.GetClusterType() == PURELYTEMPORAL)
+      sId = "All";
+    else
+      pData.GetTInfo()->tiGetTid(pData.GetNeighbor(pCluster.m_iEllipseOffset, pCluster.m_Center, 1), sId);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetAreaID","stsClusterData");
+    throw;
+  }
 }
 
 // pre : none

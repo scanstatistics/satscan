@@ -17,7 +17,7 @@ class stsClusterData : public BaseOutputStorageClass {
       long	glRunNumber;
       
       void	Init();
-      void      SetAreaID(ZdString& sTempValue, const CCluster& pCluster, const CSaTScanData& pData);
+      void      SetAreaID(std::string& sId, const CCluster& pCluster, const CSaTScanData& pData);
       void      SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, ZdString& sRadius,
                                std::vector<std::string>& vAdditCoords,
                                const CCluster& pCluster, const CSaTScanData& pData);
