@@ -7,7 +7,7 @@ CModel::CModel(CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintD
        : gParameters(Parameters), gData(Data), gPrintDirection(PrintDirection) {
 #ifdef DEBUGMODEL
   try {
-    ZdFileName DebugFile(_argv[i]);
+    ZdFileName DebugFile(GetToolkit().GetApplicationFullPath());
     DebugFile.SetFileName("Debug_Info_ProbabiltyModel");
     DebugFile.SetExtension(".txt");
 
