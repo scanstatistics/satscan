@@ -396,7 +396,7 @@ void CCluster::DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataHub, const 
   unsigned int              i;
   ZdString                  sBuffer, sWork;
 
-  PrintFormat.PrintSectionLabel(fp, "Overall relative risk", false, true);
+  PrintFormat.PrintSectionLabel(fp, "Observed / expected", false, true);
   sBuffer.printf("%.3f", GetRelativeRisk(DataHub.GetMeasureAdjustment(0), 0));
   for (i=1; i < Streams.GetNumStreams(); ++i) {
     sWork.printf(", %.3f", GetRelativeRisk(DataHub.GetMeasureAdjustment(i), i));
