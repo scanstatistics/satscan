@@ -356,15 +356,20 @@ void __fastcall TfrmMain::ActionSaveComparisonStatsExecute(TObject *Sender) {
 /** starts process of comparing output files */
 void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
    std::string  sBuffer, sCompareFilename;
-   AnsiString   sCommand;
+   AnsiString   sCommand, sCurTitle, sText;
    int          iItemIndex=0;
 
    memMessages->Clear();
    lstDisplay->Items->Clear();
    gvParameterResultsInfo.clear();
    gvColumnSortOrder.clear();
+   sCurTitle = Application->Title;
    gvColumnSortOrder.resize(lstDisplay->Columns->Count, -1);
    while (iItemIndex < ltvScheduledBatchs->Items->Count) {
+        sText.printf("%s [(%d of %d) %s]", sCurTitle.c_str(),
+                     iItemIndex + 1, ltvScheduledBatchs->Items->Count,
+                     ExtractFileName(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption).c_str());
+        Application->Title = sText;
         sBuffer = ltvScheduledBatchs->Items->Item[iItemIndex]->Caption.c_str();
         gvParameterResultsInfo.push_back(ParameterResultsInfo(sBuffer.c_str()));
         if (! FileExists(gvParameterResultsInfo.back().GetFilenameString())) {
@@ -404,6 +409,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
         _sleep(2);
         iItemIndex++;
    }
+   Application->Title = sCurTitle;
    //archive results
    if (gpFrmOptions->chkArchiveResults->Checked)
      ArchiveResults();
