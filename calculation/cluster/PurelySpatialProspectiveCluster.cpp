@@ -74,7 +74,7 @@ void CPurelySpatialProspectiveCluster::AddNeighborAndCompare(tract_t tEllipseOff
     gpClusterData->AddNeighborData(pData->GetNeighbor(tEllipseOffset, tCentroid, t), DataGateway);
     //calculate loglikehood ratio and compare against current top cluster
     m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
-    if (m_nRatio && m_nRatio > TopCluster.m_nRatio)
+    if (m_nRatio > TopCluster.m_nRatio)
       TopCluster.AssignAsType(*this);
   }    
 }

@@ -17,7 +17,7 @@ CCluster::~CCluster() {}
 void CCluster::Initialize(tract_t nCenter) {
   m_Center         = nCenter;
   m_nTracts        = 0;
-  m_nRatio         = 0;
+  m_nRatio         = -std::numeric_limits<double>::max();
   m_nRank          = 1;
   m_NonCompactnessPenalty = 1;
   m_nFirstInterval = 0;
@@ -378,14 +378,14 @@ void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, const Ascii
 void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   if (DataHub.GetParameters().GetProbabiltyModelType() == SPACETIMEPERMUTATION) {
      PrintFormat.PrintSectionLabel(fp, "Test statistic", false, true);
-     fprintf(fp, "%f\n", m_nRatio);
+     fprintf(fp, "%lf\n", m_nRatio);
   }
   else {
     PrintFormat.PrintSectionLabel(fp, "Log likelihood ratio", false, true);
-    fprintf(fp, "%f\n", m_nRatio/m_NonCompactnessPenalty);
+    fprintf(fp, "%lf\n", m_nRatio/m_NonCompactnessPenalty);
     if (DataHub.GetParameters().GetNonCompactnessPenalty()) {
       PrintFormat.PrintSectionLabel(fp, "Test statistic", false, true);
-      fprintf(fp, "%f\n", m_nRatio);
+      fprintf(fp, "%lf\n", m_nRatio);
     }
   }
 }

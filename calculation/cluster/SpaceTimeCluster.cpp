@@ -107,7 +107,7 @@ measure_t CSpaceTimeCluster::GetMeasureForTract(tract_t tTract, const CSaTScanDa
 void CSpaceTimeCluster::Initialize(tract_t nCenter) {
   m_Center = nCenter;
   m_nTracts = 0;
-  m_nRatio = 0;
+  m_nRatio = -std::numeric_limits<double>::max();
   gpClusterData->InitializeData();
 }
 
