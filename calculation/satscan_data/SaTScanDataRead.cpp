@@ -1,48 +1,12 @@
 #include "SaTScan.h"
 #pragma hdrstop
 #include "SaTScanData.h"
+#include "AdjustmentHandler.h"
 
 #define MAXWORDBUFFER 256
 const int POPULATION_DATE_PRECISION_MONTH_DEFAULT_DAY   = 15;
 const int POPULATION_DATE_PRECISION_YEAR_DEFAULT_DAY    = 1;
 const int POPULATION_DATE_PRECISION_YEAR_DEFAULT_MONTH  = 7;
-
-/** Adjusts measure in interval  by relative risk
-    -- returns false if adjustment could not occur because relative risk
-       is zero but there are cases in adjustment interval. */
-bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate) {
-  int                                   i, j, iMaxTract, iStartInterval, iEndInterval;
-  Julian                                EndDayMin, StartDayMax, PeriodDays;
-  measure_t                             Adjustment_t, fP, tMaxMeasure_tValue;
-  ZdString                              s;
-  std::numeric_limits<measure_t>        measure_limit;
-
-  tMaxMeasure_tValue = measure_limit.max();
-  //first determine time interval index for period that is being modfied
-  SetScanningWindowStartRangeIndex(StartDate, iStartInterval);
-  SetScanningWindowEndRangeIndex(EndDate, iEndInterval);
-  //scan for zero cases if relative risk = 0
-  if (dRelativeRisk == 0 && CasesExist(Tract, iStartInterval, iEndInterval))
-    return false;
-    
-  //adjust measure, if valid
-  StartDayMax = max(StartDate, m_pIntervalStartTimes[iStartInterval]);
-  EndDayMin = min(EndDate, m_pIntervalStartTimes[iEndInterval] - 1);
-  PeriodDays = (m_pIntervalStartTimes[iEndInterval] - 1) - m_pIntervalStartTimes[iStartInterval] + 1;
-  fP = (measure_t)(EndDayMin - StartDayMax + 1)/(measure_t)PeriodDays;
-  Adjustment_t = 1 + fP * (dRelativeRisk - 1);
-  j = (Tract == -1 ? 0 : Tract);
-  iMaxTract = (Tract == -1 ? m_nTracts : Tract + 1);
-  for (; j < iMaxTract; ++j)
-     for (i=iStartInterval; i < iEndInterval; ++i) {
-        if (Adjustment_t && tMaxMeasure_tValue/Adjustment_t <= pNonCumulativeMeasure[i][j])
-          SSGenerateException("Error: Data overflow occurs when adjusting expected number of cases.\n"
-                              "       Is your adjustment file correct?", "AdjustMeasure()");
-        pNonCumulativeMeasure[i][j] *= Adjustment_t;
-     }
-
-  return true;
-}
 
 /** Allocates count structures */
 void CSaTScanData::AllocateCaseStructures() {
@@ -75,21 +39,6 @@ void CSaTScanData::AllocateControlStructures() {
     delete gpControlsByTimeByCategoryHandler; gpControlsByTimeByCategoryHandler=0;
     throw;
   }
-}
-
-/** scans case array for cases in defined interval - returns true if cases exist */
-bool CSaTScanData::CasesExist(tract_t Tract, int iStartInterval, int iEndInterval) {
-  int           i, j, iMaxTract;
-  bool          bHasCases=false;
-  count_t    ** ppCases(gpCasesHandler->GetArray());
-
-  j = (Tract == -1 ? 0 : Tract);
-  iMaxTract = (Tract == -1 ? m_nTracts : Tract + 1);
-  for (; j < iMaxTract && !bHasCases; ++j)
-    for (i=iStartInterval; i < iEndInterval && !bHasCases; ++i)
-       bHasCases = ppCases[i][j];
-
-  return bHasCases;
 }
 
 /** Converts passed string specifiying a adjustment file date to a julian date.
@@ -375,14 +324,17 @@ bool CSaTScanData::ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, c
     -- unlike other input files of system, records read from relative risks
        file are applied directly to the measure structure, just post calculation
        of measure and prior to temporal adjustments and making cumulative. */
-bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativeMeasure) {                                         
-  bool                          bValid=true, bEmpty=true;
-  tract_t                       t, TractIndex;
-  measure_t                     c, AdjustedTotalMeasure_t;        
-  double                        dRelativeRisk;
-  Julian                        StartDate, EndDate;
-  FILE                        * fp=0;
-  int                           i, iNumWords;
+bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativeMeasure) {
+  bool                                  bValid=true, bEmpty=true;
+  tract_t                               t, TractIndex, iMaxTract;
+  measure_t                             c, AdjustedTotalMeasure_t;
+  double                                dRelativeRisk;
+  Julian                                StartDate, EndDate;
+  FILE                                * fp=0;
+  int                                   i, iNumWords;
+  RelativeRiskAdjustmentHandler         Adjustments;
+  AdjustmentsIterator_t                 itr;
+  TractContainerIteratorConst_t         itr_deque;
 
   try {
     if (!m_pParameters->UseAdjustmentForRelativeRisksFile())
@@ -446,15 +398,27 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativ
           EndDate = m_nEndDate;
         }
         else {
-          ConvertAdjustmentDateToJulian(Parser, StartDate, true);
-          ConvertAdjustmentDateToJulian(Parser, EndDate, false);
+          if (!ConvertAdjustmentDateToJulian(Parser, StartDate, true)) {
+            bValid = false;
+            continue;
+          }
+          if (!ConvertAdjustmentDateToJulian(Parser, EndDate, false)) {
+            bValid = false;
+            continue;
+          }   
+        }
+        //check that the adjustment dates are relatively correct
+        if (EndDate < StartDate) {
+          gpPrint->PrintInputWarning("Error: For record %d of adjustment file, the adjustment period is\n", Parser.GetReadCount());
+          gpPrint->PrintInputWarning("       incorrect because the end date occurs before the start date.\n");
+          bValid = false;
+          continue;
         }
         //perform adjustment
-        if (!AdjustMeasure(pNonCumulativeMeasure, TractIndex, dRelativeRisk, StartDate, EndDate)) {
-          gpPrint->PrintInputWarning("Error: Record %d, of adjustment file, indicates a zero relative risk\n", Parser.GetReadCount());
-          gpPrint->PrintInputWarning("       but cases exist for location in specified interval.\n");
-          bValid = false;
-        }
+        iMaxTract = (TractIndex == -1 ? m_nTracts : TractIndex + 1);
+        TractIndex = (TractIndex == -1 ? 0 : TractIndex);
+        for (; TractIndex < iMaxTract; ++TractIndex)
+           Adjustments.AddAdjustmentData(TractIndex, dRelativeRisk, StartDate, EndDate);
     }
     //close file pointer
     fclose(fp); fp=0;
@@ -466,6 +430,14 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativ
     else if (bEmpty) {
       gpPrint->PrintWarningLine("Error: Adjustments file contains no data.\n");
       bValid = false;
+    }
+
+    //apply adjustments to relative risks
+    for (itr=Adjustments.GetAdjustments().begin(); itr != Adjustments.GetAdjustments().end(); ++itr) {
+       const TractContainer_t & tract_deque = itr->second;
+       for (itr_deque=tract_deque.begin(); itr_deque != tract_deque.end(); ++itr_deque) 
+          AdjustMeasure(pNonCumulativeMeasure, itr->first, itr_deque->GetRelativeRisk(),
+                        itr_deque->GetStartDate(), itr_deque->GetEndDate());
     }
 
     // calculate total adjusted measure
@@ -1105,11 +1077,12 @@ bool CSaTScanData::ReadPopulationFile() {
             bValid = false;
             continue;
         }
-        //if date is unique, add it to the list
+        //if date is unique, add it to the list in sorted order
         itrdates = lower_bound(vPopulationDates.begin(), vPopulationDates.end(), PopulationDate);
         if (! (itrdates != vPopulationDates.end() && (*itrdates) == PopulationDate))
           vPopulationDates.insert(itrdates, PopulationDate);
     }
+
     //2nd pass, read data in structures.
     if (bValid && !bEmpty) {
       //Set tract handlers population date structures since we already now all the dates from above.
