@@ -96,10 +96,11 @@ double CSpaceTimePermutationModel::GetLogLikelihoodForTotal() const
 /** Allocates randomization structures used by MakeData() routine. Must be called
 prior to called MakeData(). */
 void CSpaceTimePermutationModel::InitializeRandomizationStructures() {
-  int	                i, j, k, c, iNumCases;
+  int	                i, j, k, c, iNumCases, iNumCategories(gData.GetTInfo()->tiGetNumCategories());
   std::vector<int>      vCummulatedCases;
-  count_t            ** ppCases(gData.GetCasesArray());
-  count_t           *** pppCategoryCases(gData.gpCategoryCasesHandler->GetArray());
+  count_t               iMaxCasesPerCategory,
+                     ** ppCases(gData.GetCasesArray()),
+                    *** pppCategoryCases(gData.gpCategoryCasesHandler->GetArray());
 
   try {
     //first calculate total number of cases
@@ -107,30 +108,30 @@ void CSpaceTimePermutationModel::InitializeRandomizationStructures() {
     for (j=0; j < gData.m_nTracts; j++)
        gData.m_nTotalCases += ppCases[0][j];
 
-    gvCaseLocationTimesByPopulationCategory.resize(gData.GetTInfo()->tiGetNumCategories());
+    gvCategoryCaseLocationTimes.resize(iNumCategories);
     vCummulatedCases.resize(gData.m_nTracts);
-    for (c=0; c < gData.GetTInfo()->tiGetNumCategories(); c++) {
-       std::vector<CCaseLocationTimes>& thisCategory = gvCaseLocationTimesByPopulationCategory[c];
+    for (c=0; c < iNumCategories; ++c) {
+       std::vector<CCaseLocationTimes>& thisCategory = gvCategoryCaseLocationTimes[c];
        memset(&vCummulatedCases[0], 0, gData.m_nTracts*sizeof(int));
-       for (i=gData.m_nTimeIntervals - 1; i >= 0;i--) {
-          for (j=0; j < gData.m_nTracts; j++) {
+       for (i=gData.m_nTimeIntervals - 1; i >= 0; --i) {
+          for (j=0; j < gData.m_nTracts; ++j) {
              iNumCases = pppCategoryCases[i][j][c] - vCummulatedCases[j];
-             for (k=0; k < iNumCases; k++)
+             for (k=0; k < iNumCases; ++k)
                 thisCategory.push_back(CCaseLocationTimes(i,j));
              vCummulatedCases[j] += iNumCases;
           }
        }
     }
 
-    // allocate time randomizer
-    gvTimeIntervalRandomizers.resize(gData.GetTInfo()->tiGetNumCategories());
-    for (c=0; c < gData.GetTInfo()->tiGetNumCategories(); c++)
-       gvTimeIntervalRandomizers[c].resize(gData.GetNumCategoryCases(c), CSimulationTimeRandomizer());
+    // allocate time randomizer to the maximum number of cases in all categories 
+    for (c=0, iMaxCasesPerCategory=0; c < iNumCategories; ++c)
+       iMaxCasesPerCategory = std::max(iMaxCasesPerCategory, gData.GetNumCategoryCases(c));
+    gvTimeIntervalRandomizer.resize(iMaxCasesPerCategory, CSimulationTimeRandomizer());
   }
   catch (ZdException & x) {
     x.AddCallpath("InitializeRandomizationStructures()", "CSpaceTimePermutationModel");
-    gvCaseLocationTimesByPopulationCategory.clear();
-    gvTimeIntervalRandomizers.clear();
+    gvCategoryCaseLocationTimes.clear();
+    gvTimeIntervalRandomizer.clear();
     throw;
   }
 }
@@ -147,7 +148,7 @@ double CSpaceTimePermutationModel::GetPopulation(int m_iEllipseOffset, tract_t n
 /** Creates simulation data. Permutates the cases occurance dates through random sorting. */
 void CSpaceTimePermutationModel::MakeData(int iSimulationNumber) {
   int                   i, k, c;
-  size_t                t, RandomizerSize;
+  size_t                t, tNumCategoryCases;
   count_t            ** ppSimCases(gData.GetSimCasesArray());
 
   try {
@@ -160,20 +161,19 @@ void CSpaceTimePermutationModel::MakeData(int iSimulationNumber) {
           ppSimCases[i][k] = 0;
 
     for (c=0; c < gData.GetTInfo()->tiGetNumCategories(); c++) {
-       std::vector<CSimulationTimeRandomizer>& thisRandomizer = gvTimeIntervalRandomizers[c];
-       std::vector<CCaseLocationTimes>& thisCategory = gvCaseLocationTimesByPopulationCategory[c];
-       RandomizerSize = thisRandomizer.size();
-       for (t=0; t < RandomizerSize; t++) {
+       const std::vector<CCaseLocationTimes>& thisCategory = gvCategoryCaseLocationTimes[c];
+       tNumCategoryCases = thisCategory.size();
+       for (t=0; t < tNumCategoryCases; ++t) {
          // assign random number
-         thisRandomizer[t].SetRandomNumber(gRandomNumberGenerator.GetRandomFloat());
+         gvTimeIntervalRandomizer[t].SetRandomNumber(gRandomNumberGenerator.GetRandomFloat());
          // assign tract index to original order
-         thisRandomizer[t].SetTimeIntervalIndex(thisCategory[t].GetTimeIntervalIndex());
+         gvTimeIntervalRandomizer[t].SetTimeIntervalIndex(thisCategory[t].GetTimeIntervalIndex());
        }
        // sort based on random number
-       std::sort(thisRandomizer.begin(), thisRandomizer.end(), CompareSimulationTimeRandomizer());
+       std::sort(gvTimeIntervalRandomizer.begin(), gvTimeIntervalRandomizer.begin() + tNumCategoryCases, CompareSimulationTimeRandomizer());
        // re-assign simulation data
-       for (t=0; t < RandomizerSize; t++)
-         for (k=thisRandomizer[t].GetTimeIntervalIndex(); k >= 0; k--)
+       for (t=0; t < tNumCategoryCases; t++)
+         for (k=gvTimeIntervalRandomizer[t].GetTimeIntervalIndex(); k >= 0; k--)
              ppSimCases[k][thisCategory[t].GetTractIndex()]++;
     }
   }

@@ -59,9 +59,9 @@ class CCaseLocationTimes {
     Calculates loglikelihood identically to Poisson model. */
 class CSpaceTimePermutationModel : public CModel {
   private:
-    std::vector<std::vector<CCaseLocationTimes> >               gvCaseLocationTimesByPopulationCategory;
-    std::vector<std::vector<CSimulationTimeRandomizer> >        gvTimeIntervalRandomizers;
-    RandomNumberGenerator                                       gRandomNumberGenerator;
+    std::vector<std::vector<CCaseLocationTimes> >       gvCategoryCaseLocationTimes;
+    std::vector<CSimulationTimeRandomizer>              gvTimeIntervalRandomizer;
+    RandomNumberGenerator                               gRandomNumberGenerator;
 
     void                        InitializeRandomizationStructures();
 
