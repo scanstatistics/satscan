@@ -646,10 +646,10 @@ void CParameters::DisplayCalculatedTimeTrend(FILE* fp, const DataStreamHandler& 
       sWorkString.printf((TrendDecrease.size() > 1 ? " respectively." : "."));
       sPrintString << sWorkString;
     }
-    AsciiPrintFormat PrintFormat;
-    PrintFormat.SetMarginsAsOverviewSection();
-    PrintFormat.PrintAlignedMarginsDataString(fp, sPrintString);
   }
+  AsciiPrintFormat PrintFormat;
+  PrintFormat.SetMarginsAsOverviewSection();
+  PrintFormat.PrintAlignedMarginsDataString(fp, sPrintString);
 }
 
 
