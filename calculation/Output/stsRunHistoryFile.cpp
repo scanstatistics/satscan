@@ -374,7 +374,7 @@ void stsRunHistoryFile::SetRunNumber() {
          CreateRunHistoryFile();
 
       pFile.reset(new TXDFile(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE));
-      if(!gvFields.empty())
+      if(gvFields.empty())
          SetFieldVector(gvFields, *pFile);
       // get a record buffer, input data and append the record
       pLastRecord.reset(pFile->GetNewRecord());
