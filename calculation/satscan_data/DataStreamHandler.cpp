@@ -26,7 +26,7 @@ DataStreamHandler::~DataStreamHandler() {}
 /** allocates cases structures for stream */
 void DataStreamHandler::AllocateCaseStructures(unsigned int iStream) {
   try {
-    gvDataStreams[iStream]->AllocateCasesArray();
+    gvDataSets[iStream]->AllocateCasesArray();
   }
   catch(ZdException &x) {
     x.AddCallpath("AllocateCaseStructures()","DataStreamHandler");
@@ -111,10 +111,28 @@ bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, Julian &
     If number of data streams is more than one, a MultipleDataStreamGateway
     object is returned. Else a  DataStreamGateway object is returned. */
 AbtractDataStreamGateway * DataStreamHandler::GetNewDataGatewayObject() const {
-  if (gvDataStreams.size() > 1)
+  if (gvDataSets.size() > 1)
     return new MultipleDataStreamGateway();
   else
     return new DataStreamGateway();
+}
+
+/** Returns a collection of cloned randomizers maintained by data stream handler.
+    All previous elements of list are deleted. */
+RandomizerContainer_t& DataStreamHandler::GetRandomizerContainer(RandomizerContainer_t& Container) const {
+//  RandomizerContainer_t::const_iterator itr;
+
+  try {
+    Container = gvDataStreamRandomizers;
+//    Container.DeleteAllElements();
+//    for (itr=gvDataStreamRandomizers.begin(); itr != gvDataStreamRandomizers.end(); ++itr)
+//       Container.push_back((*itr)->Clone());
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetRandomizerContainer()","DataStreamHandler");
+    throw;
+  }
+  return Container;
 }
 
 /** Attempts to parses passed string into tract identifier, count,
@@ -181,7 +199,7 @@ bool DataStreamHandler::ParseCovariates(PopulationData & thePopulation, int& iCa
 
   try {
 
-    if (gParameters.GetProbabiltyModelType() == POISSON) {
+    if (gParameters.GetProbabilityModelType() == POISSON) {
       while ((pCovariate = Parser.GetWord(iNumCovariatesScanned + iCovariatesOffset)) != 0) {
            vCategoryCovariates.push_back(pCovariate);
            iNumCovariatesScanned++;
@@ -196,33 +214,33 @@ bool DataStreamHandler::ParseCovariates(PopulationData & thePopulation, int& iCa
                                    gPrint.GetImpliedFileTypeString().c_str());
         return false;
       }
-      if (iNumCovariatesScanned != thePopulation.GetNumPopulationCategoryCovariates()) {
+      if (iNumCovariatesScanned != thePopulation.GetNumCovariatesPerCategory()) {
         gPrint.PrintInputWarning("Error: Record %ld of %s contains %d covariate%s but the population file\n",
                                    Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str(),
                                    iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"));
-        gPrint.PrintInputWarning("       defined the number of covariates as %d.\n", thePopulation.GetNumPopulationCategoryCovariates());
+        gPrint.PrintInputWarning("       defined the number of covariates as %d.\n", thePopulation.GetNumCovariatesPerCategory());
         return false;
       }
       //category should already exist
-      if ((iCategoryIndex = thePopulation.GetPopulationCategoryIndex(vCategoryCovariates)) == -1) {
+      if ((iCategoryIndex = thePopulation.GetCovariateCategoryIndex(vCategoryCovariates)) == -1) {
         gPrint.PrintInputWarning("Error: Record %ld of %s refers to a population category that\n",
                                    Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
         gPrint.PrintInputWarning("       does not match an existing category as read from the population file.");
         return false;
       }
     }
-    else if (gParameters.GetProbabiltyModelType() == BERNOULLI) {
+    else if (gParameters.GetProbabilityModelType() == BERNOULLI) {
       //For the Bernoulli model, ignore covariates in the case and control files
       //All population categories are aggregated in one category.
       iCategoryIndex = 0;
     }
-    else if (gParameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION) {
+    else if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
         //First category created sets precedence as to how many covariates remaining records must have.
-        if ((iCategoryIndex = thePopulation.MakePopulationCategory(Parser, iCovariatesOffset, gPrint)) == -1)
+        if ((iCategoryIndex = thePopulation.CreateCovariateCategory(Parser, iCovariatesOffset, gPrint)) == -1)
           return false;
     }
     else
-      ZdGenerateException("Unknown probability model type '%d'.","ParseCovariates()", gParameters.GetProbabiltyModelType());
+      ZdGenerateException("Unknown probability model type '%d'.","ParseCovariates()", gParameters.GetProbabilityModelType());
   }
   catch (ZdException &x) {
     x.AddCallpath("ParseCovariates()","DataStreamHandler");
@@ -234,8 +252,8 @@ bool DataStreamHandler::ParseCovariates(PopulationData & thePopulation, int& iCa
 /** Randomizes data of passed collection of simulation streams in concert with
     real data through passed collection of passed randomizers. */
 void DataStreamHandler::RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const {
-  for (size_t t=0; t < gvDataStreams.size(); ++t)
-     Container[t]->RandomizeData(*gvDataStreams[t], *SimDataContainer[t], iSimulationNumber);
+  for (size_t t=0; t < gvDataSets.size(); ++t)
+     Container[t]->RandomizeData(*gvDataSets[t], *SimDataContainer[t], iSimulationNumber);
 }
 
 /** Read the case data file.
@@ -252,7 +270,7 @@ bool DataStreamHandler::ReadCaseFile(size_t tStream) {
                                    gParameters.GetCaseFileName(tStream + 1).c_str());
       return false;
     }                                                                  
-    gPrint.SetImpliedInputFileType(BasePrint::CASEFILE, (GetNumStreams() == 1 ? 0 : tStream + 1));
+    gPrint.SetImpliedInputFileType(BasePrint::CASEFILE, (GetNumDataSets() == 1 ? 0 : tStream + 1));
     AllocateCaseStructures(tStream);
     bValid = ReadCounts(tStream, fp, "case");
     fclose(fp); fp=0;
@@ -279,7 +297,7 @@ bool DataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDesc
   count_t                               Count, ** pCounts;
 
   try {
-    RealDataStream& thisStream = *gvDataStreams[tStream];
+    RealDataStream& thisStream = *gvDataSets[tStream];
 
     bCaseFile = !strcmp(szDescription, "case");
     pCounts = (bCaseFile ? thisStream.gpCasesHandler->GetArray() : thisStream.gpControlsHandler->GetArray());
@@ -298,9 +316,9 @@ bool DataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDesc
                pCounts[i][TractIndex] += Count;
              //record count as a case or control  
              if (bCaseFile)
-               thisStream.gPopulation.AddCaseCount(iCategoryIndex, Count);
+               thisStream.gPopulation.AddCovariateCategoryCaseCount(iCategoryIndex, Count);
              else
-               thisStream.gPopulation.AddControlCount(iCategoryIndex, Count);
+               thisStream.gPopulation.AddCovariateCategoryControlCount(iCategoryIndex, Count);
            }
            else
              bValid = false;
@@ -325,8 +343,8 @@ bool DataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDesc
 
 /** reports whether any data stream has cases with a zero population. */
 void DataStreamHandler::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePrint * pPrintDirection) {
-  for (size_t t=0; t < gvDataStreams.size(); ++t)
-    gvDataStreams[t]->GetPopulationData().ReportZeroPops(Data, pDisplay, *pPrintDirection);
+  for (size_t t=0; t < gvDataSets.size(); ++t)
+    gvDataSets[t]->GetPopulationData().ReportZeroPops(Data, pDisplay, *pPrintDirection);
 }
 
 void DataStreamHandler::SetPurelyTemporalMeasureData(RealDataStream & thisRealStream) {
@@ -355,7 +373,7 @@ void DataStreamHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_
 void DataStreamHandler::Setup() {
   try {
     for (unsigned int i=0; i < gParameters.GetNumDataStreams(); ++i)
-      gvDataStreams.push_back(new RealDataStream(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), i + 1));
+      gvDataSets.push_back(new RealDataStream(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), i + 1));
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()","DataStreamHandler");

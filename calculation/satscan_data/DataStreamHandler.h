@@ -17,11 +17,12 @@ class DataStreamHandler {
     void                                Setup();
   
   protected:
-    const CParameters                 & gParameters;            /** reference to parameters */
-    BasePrint                         & gPrint;                /** pointer to print direction */
-    CSaTScanData                      & gDataHub;               /** reference to data hub */
-    RealDataContainer_t                 gvDataStreams;          /** collection of data streams */
-    static const short                  COUNT_DATE_OFFSET;      /** field index of date in case/control files */
+    const CParameters                 & gParameters;       /** reference to parameters */
+    BasePrint                         & gPrint;            /** pointer to print direction */
+    CSaTScanData                      & gDataHub;          /** reference to data hub */
+    RealDataContainer_t                 gvDataSets;        /** collection of data sets */
+    static const short                  COUNT_DATE_OFFSET; /** field index of date in case/control files */
+    RandomizerContainer_t               gvDataStreamRandomizers;
 
     virtual void                        AllocateCaseStructures(unsigned int iStream);
     bool                                ConvertCountDateToJulian(StringParser & Parser, Julian & JulianDate);
@@ -43,14 +44,14 @@ class DataStreamHandler {
     //pure virtual public functions
     virtual AbtractDataStreamGateway  * GetNewDataGateway() const = 0;
     virtual AbtractDataStreamGateway  * GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const = 0;
-    virtual RandomizerContainer_t     & GetRandomizerContainer(RandomizerContainer_t& Container) const = 0;
+    virtual RandomizerContainer_t     & GetRandomizerContainer(RandomizerContainer_t& Container) const;
     virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const = 0;
     virtual void                        RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
     virtual bool                        ReadData() = 0;
 
-    size_t                              GetNumStreams() const {return gvDataStreams.size();}
-    const RealDataStream              & GetStream(unsigned int iStream) const {return *gvDataStreams[iStream];}
-    RealDataStream                    & GetStream(unsigned int iStream) {return *gvDataStreams[iStream];}
+    size_t                              GetNumDataSets() const {return gvDataSets.size();}
+    const RealDataStream              & GetStream(unsigned int iStream) const {return *gvDataSets[iStream];}
+    RealDataStream                    & GetStream(unsigned int iStream) {return *gvDataSets[iStream];}
     void                                ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePrint * pPrintDirection);
     virtual void                        SetPurelyTemporalMeasureData(RealDataStream & thisRealStream);
     virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);
