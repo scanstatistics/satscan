@@ -201,6 +201,7 @@ void __fastcall TfrmAdvancedParameters::btnNewClick(TObject *Sender) {
    try {
      // add new name to list box
      EnableDataStreamList(true);
+     EnableDataStreamPurposeControls(true);
      lstInputStreams->Items->Add("Input Stream " + IntToStr(giStreamNum++));
      lstInputStreams->ItemIndex = (lstInputStreams->Items->Count-1);
 
@@ -220,6 +221,7 @@ void __fastcall TfrmAdvancedParameters::btnNewClick(TObject *Sender) {
    catch (ZdException &x) {
      x.AddCallpath("btnNewClick()","TfrmAdvancedParameters");
      EnableDataStreamList(lstInputStreams->Items->Count);
+     EnableDataStreamPurposeControls(lstInputStreams->Items->Count);
      DisplayBasisException(this, x);
    }
 }
@@ -249,6 +251,7 @@ void __fastcall TfrmAdvancedParameters::btnRemoveStreamClick(TObject *Sender){
       // remove list box name
       lstInputStreams->Items->Delete(iStreamNum);
       EnableDataStreamList(lstInputStreams->Items->Count);
+      EnableDataStreamPurposeControls(lstInputStreams->Items->Count);
       // select/highlight previous name in box
       if (lstInputStreams->Items->Count) {
          iStreamNum = (iStreamNum > 0) ? iStreamNum-1 : 0;
@@ -464,6 +467,13 @@ void __fastcall TfrmAdvancedParameters::edtStartRangeStartDateExit(TObject *Send
 void TfrmAdvancedParameters::EnableDataStreamList(bool bEnable) {
   lstInputStreams->Enabled = bEnable;
   lstInputStreams->Color = lstInputStreams->Enabled ? clWindow : clInactiveBorder;
+}
+
+/** Enables/disables controls that indicate purpose of additional data streams. */
+void TfrmAdvancedParameters::EnableDataStreamPurposeControls(bool bEnable) {
+  lblMultipleStreamPurpose->Enabled = bEnable;
+  rdoMultivariate->Enabled = bEnable;
+  rdoAdjustmentByStreams->Enabled = bEnable;
 }
 
 void TfrmAdvancedParameters::EnableAdjustmentForSpatialOptionsGroup(bool bEnable) {
@@ -761,6 +771,7 @@ bool TfrmAdvancedParameters::GetDefaultsSetForInputOptions() {
    bool bReturn = true;
 
    bReturn &= (lstInputStreams->Items->Count == 0);
+   bReturn &= (rdoMultivariate->Checked);
 
    return bReturn;
 }
@@ -1022,6 +1033,7 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
           ref.SetPopulationFileName((gvPopFiles.at(i)).c_str(), false, i+2);
        }
     }
+    ref.SetMultipleDataStreamPurposeType(rdoAdjustmentByStreams->Checked ? ADJUSTMENT: MULTIVARIATE);
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveParameterSettings()","TfrmAdvancedParameters");
@@ -1088,6 +1100,7 @@ void TfrmAdvancedParameters::SetDefaultsForInputTab() {
    edtPopFileName->Text = "";
    lstInputStreams->Items->Clear();
    EnableDataStreamList(lstInputStreams->Items->Count);
+   EnableDataStreamPurposeControls(lstInputStreams->Items->Count);
 
    // clear the non-visual components
    gvCaseFiles.clear();
@@ -1097,6 +1110,7 @@ void TfrmAdvancedParameters::SetDefaultsForInputTab() {
    EnableNewButton();
    EnableRemoveButton();
    EnableInputFileEdits(false);
+   rdoMultivariate->Checked = true;
 }
 //---------------------------------------------------------------------------
 /** Sets adjustments filename in interface */
@@ -1290,7 +1304,10 @@ void TfrmAdvancedParameters::Setup() {
          giStreamNum++;
       }
       EnableDataStreamList(lstInputStreams->Items->Count);
+      EnableDataStreamPurposeControls(lstInputStreams->Items->Count);
       lstInputStreams->ItemIndex = -1;
+      rdoMultivariate->Checked = ref.GetMultipleDataStreamPurposeType() == MULTIVARIATE;
+      rdoAdjustmentByStreams->Checked = ref.GetMultipleDataStreamPurposeType() == ADJUSTMENT;
     }
     catch (ZdException &x) {
       x.AddCallpath("Setup()","TfrmAdvancedParameters");
@@ -1787,4 +1804,5 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
 
   throw theException;
 }
+
 

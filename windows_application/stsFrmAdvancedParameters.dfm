@@ -63,7 +63,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Top = 0
     Width = 450
     Height = 311
-    ActivePage = tsAdjustments
+    ActivePage = tsDataStreams
     Align = alClient
     TabOrder = 0
     object tsDataStreams: TTabSheet
@@ -73,7 +73,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 8
         Top = 8
         Width = 425
-        Height = 189
+        Height = 233
         Caption = 'Additional Input Data Streams'
         TabOrder = 0
         object Label3: TLabel
@@ -203,9 +203,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object lstInputStreams: TListBox
           Left = 8
-          Top = 28
+          Top = 32
           Width = 93
-          Height = 111
+          Height = 78
           Hint = 'All Additional Input Streams'
           ItemHeight = 13
           ParentShowHint = False
@@ -215,11 +215,11 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object btnNewStream: TButton
           Left = 8
-          Top = 148
+          Top = 116
           Width = 45
-          Height = 25
+          Height = 22
           Hint = 'Add an Additional Input Stream'
-          Caption = 'New'
+          Caption = 'Add'
           ParentShowHint = False
           ShowHint = True
           TabOrder = 1
@@ -227,9 +227,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object btnRemoveStream: TButton
           Left = 56
-          Top = 148
+          Top = 116
           Width = 45
-          Height = 25
+          Height = 22
           Hint = 'Remove an Additional Input Stream'
           Caption = 'Delete'
           ParentShowHint = False
@@ -324,6 +324,34 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           TabOrder = 4
           OnClick = btnCaseBrowseClick
         end
+        object lblMultipleStreamPurpose: TStaticText
+          Left = 8
+          Top = 152
+          Width = 164
+          Height = 17
+          Caption = 'Purpose of Multiple Data Streams:'
+          TabOrder = 12
+        end
+        object rdoMultivariate: TRadioButton
+          Left = 24
+          Top = 176
+          Width = 297
+          Height = 17
+          Caption = 'Multivariate Analysis (clusters in one or more data streams)'
+          Checked = True
+          TabOrder = 13
+          TabStop = True
+          OnClick = OnControlExit
+        end
+        object rdoAdjustmentByStreams: TRadioButton
+          Left = 24
+          Top = 200
+          Width = 297
+          Height = 17
+          Caption = 'Adjustment (clusters in all data streams simultaneously)'
+          TabOrder = 14
+          OnClick = OnControlExit
+        end
       end
     end
     object tbSpatial: TTabSheet
@@ -371,7 +399,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 62
           Top = 36
           Width = 34
-          Height = 18
+          Height = 21
           AutoSelect = False
           MaxLength = 5
           TabOrder = 1
@@ -423,7 +451,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 133
           Top = 123
           Width = 58
-          Height = 18
+          Height = 21
           TabOrder = 8
           Text = '1'
           OnChange = edtMaxSpatialRadiusChange
@@ -434,7 +462,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 62
           Top = 62
           Width = 34
-          Height = 18
+          Height = 21
           MaxLength = 5
           TabOrder = 3
           Text = '50'
@@ -803,7 +831,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 109
         Top = 68
         Width = 34
-        Height = 18
+        Height = 21
         Enabled = False
         MaxLength = 5
         TabOrder = 1

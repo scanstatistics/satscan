@@ -118,6 +118,9 @@ __published:	// IDE-managed Components
    TBitBtn *btnImportMaxCirclePopFile;
    TBitBtn *btnImportAdjustmentsFile;
    TRadioGroup *rdgSpatialAdjustments;
+   TStaticText *lblMultipleStreamPurpose;
+   TRadioButton *rdoMultivariate;
+   TRadioButton *rdoAdjustmentByStreams;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
@@ -184,6 +187,7 @@ __published:	// IDE-managed Components
                                            /** does not go down with removals */
    void                     DoControlExit();
    void                     EnableDataStreamList(bool bEnable);
+   void                     EnableDataStreamPurposeControls(bool bEnable);
    void                     EnableNewButton();
    void                     EnableRemoveButton();
    void                     EnableInputFileEdits(bool bEnable);
