@@ -8,6 +8,10 @@
 CCluster::CCluster(BasePrint *pPrintDirection) {
   Initialize();
   gpPrintDirection = pPrintDirection;
+
+  gMeasure      = Standard;
+  gMeasure_     = Standard_;
+  g_Measure_     = _Standard_;
 }
 
 /** destructor */
@@ -21,64 +25,42 @@ CCluster * CCluster::Clone() const {
   return pClone;
 }
 
-void CCluster::Initialize(tract_t nCenter)
-{
+/** initializes cluster data  */
+void CCluster::Initialize(tract_t nCenter) {
   m_Center         = nCenter;
-
-  m_nCases         = 0;
-  m_nMeasure       = 0;
   m_nTracts        = 0;
-  m_nRatio         = -DBL_MAX;//0;
+  m_nRatio         = 0;//-DBL_MAX;//0;
   m_nLogLikelihood = 0;
   m_nRank          = 1;
   m_DuczmalCorrection = 1;
-
   m_nFirstInterval = 0;
   m_nLastInterval  = 0;
   m_nStartDate     = 0;
   m_nEndDate       = 0;
-
   m_nSteps       = 0;
-
-  m_bClusterInit   = true;
-  m_bClusterSet    = false;
   m_bClusterDefined= false;
-  m_bLogLSet       = false;
-  m_bRatioSet      = false;
   m_nClusterType   = 0;
   m_iEllipseOffset = 0;         // use to be -1, but bombed when R = 1
-
   gfPValue = 0.0;
   gpAreaData = 0;
 }
 
-
-CCluster& CCluster::operator =(const CCluster& cluster)
-{
-  m_Center         = cluster.m_Center;
-
-  m_nCases         = cluster.m_nCases ;
-  m_nMeasure       = cluster.m_nMeasure;
-  m_nTracts        = cluster.m_nTracts;
-  m_nRatio         = cluster.m_nRatio;
-  m_nLogLikelihood = cluster.m_nLogLikelihood;
-  m_nRank          = cluster.m_nRank;
-  m_DuczmalCorrection = cluster.m_DuczmalCorrection;
-
-  m_nFirstInterval = cluster.m_nFirstInterval;
-  m_nLastInterval  = cluster.m_nLastInterval;
-  m_nStartDate     = cluster.m_nStartDate;
-  m_nEndDate       = cluster.m_nEndDate;
-
-  m_nSteps       = cluster.m_nSteps;
-
-  m_bClusterInit   = cluster.m_bClusterInit;
-  m_bClusterSet    = cluster.m_bClusterSet;
-  m_bClusterDefined= cluster.m_bClusterDefined;
-  m_bLogLSet       = cluster.m_bLogLSet;
-  m_bRatioSet      = cluster.m_bRatioSet;
-  m_nClusterType   = cluster.m_nClusterType;
-  m_iEllipseOffset = cluster.m_iEllipseOffset;
+/** overloaded assignment operator */
+CCluster& CCluster::operator=(const CCluster& rhs) {
+  m_Center              = rhs.m_Center;
+  m_nTracts             = rhs.m_nTracts;
+  m_nRatio              = rhs.m_nRatio;
+  m_nLogLikelihood      = rhs.m_nLogLikelihood;
+  m_nRank               = rhs.m_nRank;
+  m_DuczmalCorrection   = rhs.m_DuczmalCorrection;
+  m_nFirstInterval      = rhs.m_nFirstInterval;
+  m_nLastInterval       = rhs.m_nLastInterval;
+  m_nStartDate          = rhs.m_nStartDate;
+  m_nEndDate            = rhs.m_nEndDate;
+  m_nSteps              = rhs.m_nSteps;
+  m_bClusterDefined     = rhs.m_bClusterDefined;
+  m_nClusterType        = rhs.m_nClusterType;
+  m_iEllipseOffset      = rhs.m_iEllipseOffset;
 
   return *this;
 }
@@ -135,8 +117,8 @@ void CCluster::Display(FILE*     fp,
       if (Parameters.GetProbabiltyModelType() != SPACETIMEPERMUTATION)
         DisplayPopulation(fp, Data, szSpacesOnLeft);
 
-      fprintf(fp, "%sNumber of cases.......: %ld", szSpacesOnLeft, m_nCases);
-      fprintf(fp, "          (%.2f expected)\n", Data.GetMeasureAdjustment()*m_nMeasure);
+      fprintf(fp, "%sNumber of cases.......: %ld", szSpacesOnLeft, GetCaseCount(0));
+      fprintf(fp, "          (%.2f expected)\n", Data.GetMeasureAdjustment() * GetMeasure(0));
     
       if (Parameters.GetProbabiltyModelType() == POISSON)
         fprintf(fp, "%sAnnual cases / %.0f.: %.1f\n",
@@ -207,7 +189,7 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
   int                                  pos  = nLeftMargin, nCount=0;
   tract_t                              tTract;
   std::vector<std::string>             vTractIdentifiers;
-  measure_t                         ** ppMeasure(Data.GetMeasureArray());   
+  measure_t                         ** ppMeasure(Data.GetDataStreamHandler().GetStream(0/*for now*/).GetMeasureArray());   
 
   try {
     for (int i = nFirstTract; i <= nLastTract; i++) {
@@ -252,8 +234,8 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
 
             // relative risk
             if (bIncludeRelRisk) {
-              fprintf(fp, "  %i", m_nCases);      // cluster level Observed
-              fprintf(fp, "   %-12.2f", m_nMeasure);    // cluster level expected
+              fprintf(fp, "  %i", GetCaseCount(0));      // cluster level Observed
+              fprintf(fp, "   %-12.2f", GetMeasure(0));    // cluster level expected
               fprintf(fp, "   %-12.3f", GetRelativeRisk(Data.GetMeasureAdjustment()));  // cluster level rel risk
             }
             if (bIncludePVal) {    // this is only displayed if Reps > 98
@@ -513,8 +495,8 @@ const double CCluster::GetRelativeRisk(double nMeasureAdjustment) const
 {
   double        dRelativeRisk=0;
 
-  if (m_nMeasure*nMeasureAdjustment)
-    dRelativeRisk = ((double)(m_nCases))/(m_nMeasure*nMeasureAdjustment);
+  if (GetMeasure(0) * nMeasureAdjustment)
+    dRelativeRisk = ((double)GetCaseCount(0))/(GetMeasure(0) * nMeasureAdjustment);
 
   return dRelativeRisk;
 }
@@ -534,10 +516,13 @@ double CCluster::GetRelativeRiskForTract(tract_t tTract, const CSaTScanData & Da
   return dRelativeRisk;
 }
 
-bool CCluster::RateIsOfInterest(count_t nTotalCases, measure_t nTotalMeasure)
-{
-  return(m_pfRateOfInterest(m_nCases,m_nMeasure,
-                            nTotalCases, nTotalMeasure));
+bool CCluster::RateIsOfInterest(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure) {
+  return m_pfRateOfInterest(tCases, tMeasure, tTotalCases, tTotalMeasure);
+}
+
+bool CCluster::RateIsOfInterest(count_t nTotalCases, measure_t nTotalMeasure) {
+  ZdGenerateException("RateIsOfInterest(count_t, measure_t) is deprecated.","CCluster");
+  return false;
 }
 
 void CCluster::SetCenter(tract_t nCenter)
@@ -566,20 +551,15 @@ void CCluster::SetRate(int nRate)
   }
 }
 
-double CCluster::SetRatio(double nLogLikelihoodForTotal)
-{
-  m_bRatioSet = true;
+double CCluster::SetRatio(double nLogLikelihoodForTotal) {
   m_nRatio    = GetLogLikelihood() - nLogLikelihoodForTotal;
-
   return m_nRatio;
-
 }
 
 void CCluster::SetRatioAndDates(const CSaTScanData& Data)
 {
   if (ClusterDefined())
     {
-    m_bClusterSet = true;
     SetRatio(Data.GetProbabilityModel().GetLogLikelihoodForTotal());
     SetStartAndEndDates(Data.GetTimeIntervalStartTimes(), Data.m_nTimeIntervals);
     }
