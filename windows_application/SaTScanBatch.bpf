@@ -112,6 +112,10 @@ USEUNIT("..\calculation\utility\contractor.cpp");
 USEUNIT("..\calculation\utility\stsMCSimContinuationPolicy.cpp");
 USEUNIT("..\calculation\utility\stsMCSimReporter.cpp");
 USEUNIT("..\calculation\utility\DateStringParser.cpp");
+USEUNIT("..\calculation\ScanLineParameterFileAccess.cpp");
+USEUNIT("..\calculation\IniParameterSpecification.cpp");
+USEUNIT("..\calculation\ParameterFileAccess.cpp");
+USEUNIT("..\calculation\IniParameterFileAccess.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

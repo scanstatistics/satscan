@@ -107,7 +107,11 @@
       ..\calculation\utility\contractor.obj 
       ..\calculation\utility\stsMCSimContinuationPolicy.obj 
       ..\calculation\utility\stsMCSimReporter.obj 
-      ..\calculation\utility\DateStringParser.obj"/>
+      ..\calculation\utility\DateStringParser.obj 
+      ..\calculation\ScanLineParameterFileAccess.obj 
+      ..\calculation\IniParameterSpecification.obj 
+      ..\calculation\ParameterFileAccess.obj 
+      ..\calculation\IniParameterFileAccess.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
