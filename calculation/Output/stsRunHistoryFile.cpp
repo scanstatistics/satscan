@@ -3,8 +3,8 @@
 // 9/4/2002
 
 // This class keeps a TXD file log for each run of the SaTScan program which includes information
-// specified by the client. For each run the class will record a new run number in the file and
-// record the pertinent data along with that run.
+// specified by the client. For each instance of the class, a new, unnique run number will be 
+// recorded in the file and the pertinent data will be updated once the analysis is complete.
 
 #include "SaTScan.h"
 #pragma hdrstop
@@ -107,16 +107,17 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis* pAnalysis, const unsigned
 
       pTransaction = (pFile->BeginTransaction());
 
-      // note: I'm going to document the heck out of this section in case they can't the run
-      // specs on us at any time and that way I can interpret my assumptions in case any just so
-      // happen to be incorrect, so bear with me - AJV 9/3/2002
+      // note: I'm going to document the heck out of this section for two reasons :
+      // 1) in case they change the run specs on us at any time
+      // 2) to present my assumptions about the output data in case any happen to be incorrect
+      // , so bear with me - AJV 9/3/2002
 
       pRecord.reset(pFile->GetNewRecord());
       pRecord->PutField(0, glRunNumber);
       if(!pFile->GotoRecordByKeys(&(*pRecord), &(*pRecord)))
          ZdException::GenerateNotification("Error! Run number not found in the run history file.", "LogNewhistory()");
 
-      //  run number field -- increment the run number so that we have a new unique run number - AJV 9/4/2002
+      //  run number field 
       SetDoubleField(*pRecord, double(glRunNumber), uwFieldNumber);
 
       // run time and date field
@@ -369,9 +370,8 @@ void stsRunHistoryFile::SetRunNumber() {
       pFile.reset(new TXDFile(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE));
 
       // get a record buffer, input data and append the record
-      pLastRecord.reset(pFile->GetNewRecord());
-      // if there's records in the file
-      if(pFile->GotoLastRecord(&(*pLastRecord)))
+      pLastRecord.reset(pFile->GetNewRecord());     
+      if(pFile->GotoLastRecord(&(*pLastRecord)))      // if there's records in the file
          pLastRecord->GetField(0, glRunNumber);
       ++glRunNumber;
 
