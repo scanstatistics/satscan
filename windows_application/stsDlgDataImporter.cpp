@@ -588,7 +588,7 @@ void TBDlgDataImporter::LoadMappingPanel() {
     AutoAlign();
     if (rdoCoordinates->ItemIndex == -1)
       //If coordinates index not set, set to current settings of analysis. 
-      SetCoorinatesControlType((CoordinatesType)gAnalysisForm.rgCoordinates->ItemIndex);
+      SetCoorinatesControlType((CoordinatesType)gAnalysisForm.rgpCoordinates->ItemIndex);
     else
       HideRows();
     ContinueButtonEnable();
