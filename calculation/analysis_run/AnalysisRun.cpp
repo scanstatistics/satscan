@@ -214,7 +214,6 @@ void AnalysisRunner::DisplayTopClusterLogLikelihood() {
     If user requested 'location information' output file(s), they are created
     simultaneously with reported clusters. */
 void AnalysisRunner::DisplayTopCluster() {
-  measure_t                             nMinMeasure = 0;
   std::auto_ptr<stsAreaSpecificData>    pData;
   FILE                                * fp=0;
 
@@ -236,7 +235,7 @@ void AnalysisRunner::DisplayTopCluster() {
           default : fprintf(fp,"                  _____________________________\n\n");
         }
         //print cluster definition to file stream
-        TopCluster.Display(fp, *gpDataHub, giClustersReported, nMinMeasure, giNumSimsExecuted);
+        TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
         //check track of whether this cluster was significant in top five percentage
         if (TopCluster.m_nRatio > gSimulatedRatios.GetAlpha05())
           ++guwSignificantAt005;
@@ -267,7 +266,6 @@ void AnalysisRunner::DisplayTopClusters() {
   double                               dSignifRatio05;
   std::auto_ptr<stsAreaSpecificData>   pData;
   clock_t                              lStartTime;
-  measure_t                            nMinMeasure = -1;
   FILE                                * fp=0;
 
   try {
@@ -295,7 +293,7 @@ void AnalysisRunner::DisplayTopClusters() {
            default : fprintf(fp, "\n"); break;
          }
          //print cluster definition to file stream
-         TopCluster.Display(fp, *gpDataHub, giClustersReported, nMinMeasure, giNumSimsExecuted);
+         TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
          //check track of whether this cluster was significant in top five percentage
          if (TopCluster.m_nRatio > dSignifRatio05)
            ++guwSignificantAt005;

@@ -27,8 +27,7 @@ class CPurelyTemporalCluster : public CCluster {
     virtual CPurelyTemporalCluster    * Clone() const;
     CPurelyTemporalCluster            & CPurelyTemporalCluster::operator=(const CPurelyTemporalCluster& rhs);
 
-    virtual void                        DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
-                                                            measure_t nMinMeasure, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                        DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     virtual void                        DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {}
     virtual void                        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {}
     virtual void                        DisplayPopulation(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {};

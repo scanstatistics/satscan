@@ -186,18 +186,17 @@ void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, AbstractLike
 }
 
 /** Prints locations of cluster, detailed by step, to file pointer in ACSII format. */
-void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
-                                             measure_t nMinMeasure, const AsciiPrintFormat& PrintFormat) const {
+void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
   int           i, j;
   ZdString      sBuffer;
 
   try {
     PrintFormat.PrintSectionLabel(fp, "Location IDs included", false, false);
     for (i=0; i < m_nSteps; ++i) {
-       fprintf(fp, "\n");
+       fprintf(fp, "\n");                                                                        
        sBuffer.printf("  Step %i",i + 1);
        PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
-       DisplayCensusTractsInStep(fp, Data, m_pFirstNeighborList[i], m_pLastNeighborList[i], nMinMeasure, PrintFormat);
+       DisplayCensusTractsInStep(fp, Data, m_pFirstNeighborList[i], m_pLastNeighborList[i], PrintFormat);
     }
   }
   catch (ZdException &x) {

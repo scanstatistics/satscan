@@ -44,7 +44,7 @@ class CPSMonotoneCluster : public CCluster {
     void                        CheckCircle(tract_t n);
     virtual bool                ClusterDefined() const {return (m_nSteps > 0);}
     virtual void                DefineTopCluster(const CSaTScanData& Data, AbstractLikelihoodCalculator & Calculator, count_t** pCases);
-    virtual void                DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, measure_t nMinMeasure, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     virtual void                DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     virtual void                DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     virtual void                DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
