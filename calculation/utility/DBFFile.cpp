@@ -6,6 +6,35 @@
 #include "DBFFile.h"
 //---------------------------------------------------------------------------
 
+//ClassDesc Begin DBFRecord
+// The DBFRecord implements ZdFileRecord for dBase (ver III+, IV) table files.  It
+// does so by using the functionality of the xbDbf object with which it is associated.
+// Each access/manipulation function (i.e. GetAlpha, PutAlpha) follows a pattern:
+//<br>1. Copy the xbDbf::RecBuf data into gTempBuffer.
+//<br>2. Copy the gBuffer data into the xbDbf::RecBuf.
+//<br>3. Call the xbDbf function to get the desired behavior (access or manipulation).
+//<br>4. If the behavior changed the data in the record, copy the xbDbf::RecBuf data
+// back into gBuffer.
+//<br>5. Copy the gTempBuffer data back into the xbDbf::RecBuf.
+//<br>6. Do final processing.
+//<br> Steps 1, 2, 4, and 5 are identical for all access/manipulation functions, so
+// three helper functions are provided.  BeginAccess() executes steps 1, 2.  EndAccess()
+// executes step 5 only.  EndManipulation() executes steps 4, 5.
+// As a further help, a class called, "DBFRecord::AccessExpediter", executes BeginAccess()
+// in its constructor, and executes either EndAccess() or EndManipulation() in its
+// destructor.  By taking advantage of scoping rules, this class can be used to
+// ensure that a call to BeginAccess() is eventually followed by exactly one call
+// to either of the End... functions.  So you will see, in several of the access
+// or manipulation functions, code of this form:
+//<br>{
+//<br>AccessExpediter ae(*this, true);
+//<br>GetAssociatedDbf().some_function();
+//<br>}
+//<br>The construction of 'ae' executes a call to BeginAccess().  When 'ae' leaves
+// scope at the end of the block, its destructor executes a call to either EndAccess()
+// or (in this case, since 'true' was passed to the constructor) EndManipulation().
+
+
 //construct
 //use an empty field array
 DBFRecord::DBFRecord( DBFFile & associatedFile, xbDbf & associatedDbf, const ZdVector<ZdField*> & vFields) : ZdFileRecord( vFields, 0)
@@ -55,6 +84,13 @@ void DBFRecord::AppendToDbf(xbDbf & theDbf) const
       e.AddCallpath("AppendToDbf", "DBFRecord");
       throw;
       }
+}
+
+// Throw an exception if 'code' != XB_NO_ERROR
+void DBFRecord::AssertNotXBaseError(xbShort code) const
+{
+   if (code != XB_NO_ERROR)
+      ZdException::Generate("XBase error: \"%s\".", "DBFRecord", GetAssociatedDbf().xbase->GetErrorMessage(code));
 }
 
 // Throw an exception if gBuffer.GetSize() < 'lReqdSize'.
@@ -499,6 +535,50 @@ unsigned short DBFRecord::GetUnsignedShort(unsigned short wFieldNumber) const
    return 0;
 }
 
+// Set the record buffer to hold the same data as the current record in the associated
+// Dbf.
+void DBFRecord::LoadFromCurrentDbfRecord(xbDbf & theDbf)
+{
+   try
+      {
+      AccessExpediter ae(*this, true);
+
+      theDbf.GetRecord( theDbf.GetCurRecNo() );//make sure that the data for the current record is in the RecBuf
+      //when 'rm' goes out of scope, it will copy the RecBuf into gBuffer.
+      }
+   catch (ZdException & theException)
+      {
+      theException.AddCallpath("LoadFromCurrentDbfRecord()", "DBFRecord");
+      throw;
+      }
+}
+
+// Set the record buffer to hold the same data as the current record in the associated
+// Dbf.
+//<br>require
+//<br>  valid_position: (0 < ulPosition) && (ulPosition <= theDbf.NoOfRecords())
+void DBFRecord::OverwriteDbfRecordAt(xbDbf & theDbf, unsigned long ulPosition) const
+{
+   xbShort rc;
+   try
+      {
+      if ((ulPosition == 0) || (ulPosition > theDbf.NoOfRecords()))
+         ZdException::Generate("ulPosition (value=%d) is out of range [%d, %d].", "DBFRecord", ulPosition, 1, theDbf.NoOfRecords());
+
+         {
+         AccessExpediter ae(*this);
+         //gBuffer's data is now in GetAssociatedDbf().RecBuf
+         rc = GetAssociatedDbf().PutRecord( ulPosition );
+         AssertNotXBaseError(rc);
+         }
+      }
+   catch (ZdException & theException)
+      {
+      theException.AddCallpath("OverwriteDbfRecordAt()", "DBFRecord");
+      throw;
+      }
+}
+
 //Put an Alpha value into the field at 'uwFieldIndex'.
 //<br>require
 //<br>  field_value_short_enough:  std::strlen(pFieldValue) <= GetFieldLength(uwFieldNumber)
@@ -753,23 +833,17 @@ void DBFRecord::ResizeBuffers(unsigned long ulReqdSize)
       }
 }
 
-// Set the record buffer to hold the same data as the current record in the associated
-// Dbf.
-void DBFRecord::SetAsCurrentDbfRecord(xbDbf & theDbf)
-{
-   try
-      {
-      AccessExpediter ae(*this, true);
-
-      theDbf.GetRecord( theDbf.GetCurRecNo() );//make sure that the data for the current record is in the RecBuf
-      //when 'rm' goes out of scope, it will copy the RecBuf into gBuffer.
-      }
-   catch (ZdException & theException)
-      {
-      theException.AddCallpath("SetAsCurrentDbfRecord()", "DBFRecord");
-      throw;
-      }
-}
+//ClassDesc Begin DBFFile
+// DBFFile exposes dBase files (ver III+, IV) through the ZdFile interface.  It is
+// implemented in terms of the open-source library, xbase.
+// It directs functions through a class member of type, xbDbf, the xbase file class.
+// Each object of type, xbDbf, takes a xbXBase* as an argument.  Apparently, an xbXBase
+// acts as a registry of all the currently opened xbDbf's.  However, since I can't
+// see the advantage of registering all xbDbf's with a single xbXBase, I simply
+// create an xbXBase object for each DBFFile, and the xbDbf is registered with it.
+// If it becomes an issue, we can consider making the xbXBase object a static class
+// member or something like that.
+//ClassDesc End DBFFile
 
 ////////////////////////////////////////////////////////////////////////////////
 // DBFFile functions:
@@ -812,10 +886,32 @@ void DBFFile::AssertLegalFieldname(const ZdString & sCandidate)
       ZdException::Generate("The string, \"%c\", is not legal for use as the name of a field in a DBF file.", "DBFFile");
 }
 
-//Generate an exception if 'ulRecNum' is out of range.
+// Throw an exception if GetIsOpen() returns 'false'.
+void DBFFile::Assert_GetIsOpen() const
+{
+   try
+      {
+      if (! GetIsOpen())
+         ZdException::Generate("The DBFFile isn't open.", "DBFFile");
+      }
+   catch (ZdException & e)
+      {
+      e.AddCallpath("Assert_GetIsOpen()", "DBFFile");
+      throw;
+      }
+}
+
+// Throw an exception if 'code' != XB_NO_ERROR
+void DBFFile::AssertNotXBaseError(xbShort code) const
+{
+   if (code != XB_NO_ERROR)
+      ZdException::Generate("XBase error: \"%s\".", "DBFFile", gXBase.GetErrorMessage(code));
+}
+
+// Generate an exception if 'ulRecNum' is out of range.
 void DBFFile::CheckRecNum(unsigned long ulRecNum) const
 {
-   if (ulRecNum > GetNumRecords())
+   if (! ( (0 < ulRecNum) && (ulRecNum <= GetNumRecords()) ))
       ZdException::Generate("The record index (value=%d) is out of range, [%d, %d].", "DBFFile", ulRecNum, 1, GetNumRecords());
 }
 
@@ -832,7 +928,7 @@ void DBFFile::Close()
          rc = gpDbf->CloseDatabase(true);
          if (rc != XB_NO_ERROR)
             {
-            ZdException::Generate("Could not close file, \"%c\".  xbase error: \"%s\".", "DBFFile", GetFileName(), gXBase.GetErrorMessage(rc));
+            ZdException::Generate("Could not close file, \"%c\".  xbase error: \"%s\".", "DBFFile", GetFileName(), GetDbfErrorString(rc));
             }
          }
       }
@@ -910,9 +1006,10 @@ void DBFFile::Create(const char * sFilename, ZdVector<ZdField*> &vFields, unsign
       itrCurrentSchema->NoOfDecs = 0;
 
       rc = gpDbf->CreateDatabase(ZdFileName(sFilename).GetFullPath(), aXBaseFieldDefs, 0);
-
       if (rc != XB_NO_ERROR)
          ZdException::Generate("could not create database, \"%c\".  xbase error:  \"%s\".", "DBFFile", ZdFileName(sFilename).GetFullPath(), gXBase.GetErrorMessage(rc));
+
+      delete[] aXBaseFieldDefs;
       }
    catch (ZdException & e)
       {
@@ -927,7 +1024,6 @@ void DBFFile::Create(const char * sFilename, ZdVector<ZdField*> &vFields, unsign
       throw;
       }
 }
-
 
 // Save 'Record' as the last record in the file.
 //<br>require
@@ -951,6 +1047,49 @@ unsigned long DBFFile::DataAppend  ( const ZdFileRecord &Record )
       throw;
       }
    return ulResult;
+}
+
+// Save the values in the record at 'ulPosition' into *pCurrentValue, if it is non-NULL.
+// Overwrite the values in that record with the values in 'Record'.
+//<br>require
+//<br>  valid_position: (0 < ulPosition) && (ulPosition <= GetNumRecords())
+//<br>  type_conformant_record: dynamic_cast<const DBFRecord *>(&Record) != 0
+//<br>  type_conformant_current_value_record: (pCurrentValue != 0) implies (dynamic_cast<DBFRecord *>(pCurrentValue) != 0)
+unsigned long DBFFile::DataModify( unsigned long ulPosition, const ZdFileRecord &Record, ZdFileRecord *pCurrentValue )
+{
+   xbShort rc;
+   const DBFRecord * pRecord(dynamic_cast<const DBFRecord *>(&Record));
+         DBFRecord * pCurValRec(dynamic_cast<DBFRecord *>(pCurrentValue));
+   long  lCurRecNo(gpDbf->GetCurRecNo());
+
+   try
+      {
+      if (! ( (0 < ulPosition) && (ulPosition <= GetNumRecords()) ))
+         ZdException::Generate("ulPosition (value=%d)Record is not of type DBFRecord.", "DBFFile");
+      if (! pRecord)
+         ZdException::Generate("Record is not of type DBFRecord.", "DBFFile");
+      if ((pCurrentValue) && (! pCurValRec))
+         ZdException::Generate("pCurrentValue does not reference a record of type DBFRecord.", "DBFFile");
+
+      rc = gpDbf->GetRecord(ulPosition);
+      AssertNotXBaseError(rc);
+      if (pCurValRec)
+         {
+         pCurValRec->LoadFromCurrentDbfRecord(*gpDbf);
+         }
+
+      pRecord->OverwriteDbfRecordAt(*gpDbf, gpDbf->GetCurRecNo());
+
+      //restore Dbf to previous record:
+      rc = gpDbf->GetRecord(lCurRecNo);
+      AssertNotXBaseError(rc);
+      }
+   catch (ZdException & e)
+      {
+      e.AddCallpath("DataModify()", "DBFFile");
+      throw;
+      }
+   return ulPosition;
 }
 
 // What are the minimum and maximum possible number of decimals for a field of type
@@ -1064,10 +1203,40 @@ std::pair<long, long> DBFFile::FieldLengthRangeForXBaseFieldType(char cFieldType
    return theResult;
 }
 
+// What is the index of the record where the file is currently positioned ?
+// If GetNumRecords() == 0, result is 0, otherwise, 0 < result <= GetNumRecords().
+unsigned long DBFFile::GetCurrentRecordNumber() const
+{
+   return gpDbf->GetCurRecNo();
+}
+
+// Get the error-indicator-string from the xbase code.
+const char * DBFFile::GetDbfErrorString(xbShort code) const
+{
+   return gXBase.GetErrorMessage(code);
+}
+
 // Returns the (static) file type object for .DBF files.
 const ZdFileType & DBFFile::GetFileType() const
 {
    return DBFFileType::GetDefaultInstance();
+}
+
+// Is this file open ?  True if Open() has been succesfully invoked, but Close()
+// has not.
+bool DBFFile::GetIsOpen() const
+{
+   bool bResult;
+   try
+      {
+      bResult = gpDbf->GetDbfStatus() != XB_CLOSED;
+      }
+   catch (ZdException & e)
+      {
+      e.AddCallpath("GetIsOpen()", "DBFFile");
+      throw;
+      }
+   return bResult;
 }
 
 //Return a pointer to a newly allocated object.
@@ -1202,9 +1371,9 @@ void DBFFile::GotoRecord(unsigned long lRecNum, ZdFileRecord * PRecordBuffer)
          }
 
       gpDbf->GetRecord(lRecNum);
-      dynamic_cast<DBFRecord *>(GetSystemRecord())->SetAsCurrentDbfRecord(*gpDbf);
+      dynamic_cast<DBFRecord *>(GetSystemRecord())->LoadFromCurrentDbfRecord(*gpDbf);
       if (pTempDBFRecord)
-         pTempDBFRecord->SetAsCurrentDbfRecord(*gpDbf);
+         pTempDBFRecord->LoadFromCurrentDbfRecord(*gpDbf);
       }
    catch (ZdException & e)
       {

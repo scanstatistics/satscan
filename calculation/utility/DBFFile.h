@@ -37,6 +37,7 @@ private:
       };
 
    void AssertSufficientBufferSize(unsigned long ulReqdSize) const;
+   void AssertNotXBaseError(xbShort code) const;
    void ResizeBuffers(unsigned long ulReqdSize);
 
 protected:
@@ -63,8 +64,9 @@ protected:
    void EndManipulation();
 
    //these functions are called by DBFFile.
-   void SetAsCurrentDbfRecord(xbDbf & theDbf);
+   void LoadFromCurrentDbfRecord(xbDbf & theDbf);
    void AppendToDbf(xbDbf & theDbf) const;
+   void OverwriteDbfRecordAt(xbDbf & theDbf, unsigned long ulPosition) const;
 
 public:
    DBFRecord( DBFFile & associatedFile, xbDbf & associatedDbf, const ZdVector<ZdField*> & vFields );
@@ -135,6 +137,7 @@ private:
    xbXBase gXBase;//must have one of these objects
    xbDbf * gpDbf;//the DBF file
 
+   void AssertNotXBaseError(xbShort code) const;
 //   const ZdIniSection     *FindFieldByName ( const ZdIniFile &theFile, const char *sFieldName, unsigned short *pwFieldNumber = 0 ) const;
 //   void              ReadFieldArray ( const ZdIniFile &theFile, ZdVector<ZdField*> &vFields, const ZdPointerVector<ZdFlagType> *pFlagArray = 0 ) const;
 //   void              ReadFlagsFromStream ( ZdInputStreamInterface &theStream );
@@ -174,7 +177,7 @@ protected:
    virtual unsigned long DataAppend  ( const ZdFileRecord &Record );
    virtual void          DataDelete  ( unsigned long lPosition, ZdFileRecord *pCurrentValue = 0 ) { ZdException::Generate("not implemented: DataDelete", "DBFFile"); }
 //   virtual unsigned long DataInsert  ( unsigned long lPosition, const ZdFileRecord &Record ); // Defaults to DataAppend()
-   virtual unsigned long DataModify  ( unsigned long lPosition, const ZdFileRecord &Record, ZdFileRecord *pCurrentValue = 0 ) { ZdException::Generate("not implemented: DataModify", "DBFFile"); return 0; }
+   virtual unsigned long DataModify  ( unsigned long lPosition, const ZdFileRecord &Record, ZdFileRecord *pCurrentValue = 0 );
    virtual void          DataReplace ( const ZdFileRecord &removeRecord, const ZdFileRecord &addRecord, ZdFileRecord *pCurrentValue, unsigned long &lRemovePosition, unsigned long &lAddPosition  ) { ZdException::Generate("not implemented: DataReplace", "DBFFile"); }
 
    // Keyed record modification functions. By default, these functions simply use
@@ -203,6 +206,7 @@ protected:
 //   void          WriteBlobFile ( ZdOutputStreamInterface &theStream ) const;
 //   void          WriteIndexes ( ZdOutputStreamInterface &theStream ) const;
    virtual void SetupDefaultFilterForField(ZdField & theField);
+   virtual void Assert_GetIsOpen() const;
 
 protected://static interface
 
@@ -331,24 +335,24 @@ public:
 //   void                     ReplaceRecord ( ZdTransaction &theTransaction, const ZdFileRecord &removeRecord, const ZdFileRecord &addRecord );
 //to be implemented:   virtual void             RestoreCheckPoint ( const ZdFileCheckPoint *pPoint );
 
-   inline unsigned long     SaveRecord(ZdTransaction * pTransaction, ZdFileRecord * PRecordBuffer = 0);
-   void                     SaveRecord ( ZdTransaction &theTransaction, unsigned long ulPosition, const ZdFileRecord &theRecord );
-   void                     Search(const char * sName, const void * pKeyValueLo, const void * pKeyValueHi, ZdSet & theSet, unsigned short wNumFieldsToSearch = 1, bool bAltOrder = false );
-   void                     Search(unsigned short wField, const void * pKeyValueLo, const void * pKeyValueHi, ZdSet & theSet, unsigned short wNumFieldsToSearch = 1, bool bAltOrder = false);
-   void                     Search(unsigned short wField, const ZdArray & theValues, ZdSet & theSet, unsigned short wNumFieldsToSearch = 1, bool bAltOrder = false);
-   void                     SetCategory(const char * sCategory, unsigned short wCategory);
-   inline void              SetDatabase ( ZdDatabase &theDatabase );
-   inline void              SetFilterSet ( const ZdSet &theSet );
-   void                     SetFlags(unsigned short wFlags);
+//   inline unsigned long     SaveRecord(ZdTransaction * pTransaction, ZdFileRecord * PRecordBuffer = 0);
+//   void                     SaveRecord ( ZdTransaction &theTransaction, unsigned long ulPosition, const ZdFileRecord &theRecord );
+//   void                     Search(const char * sName, const void * pKeyValueLo, const void * pKeyValueHi, ZdSet & theSet, unsigned short wNumFieldsToSearch = 1, bool bAltOrder = false );
+//   void                     Search(unsigned short wField, const void * pKeyValueLo, const void * pKeyValueHi, ZdSet & theSet, unsigned short wNumFieldsToSearch = 1, bool bAltOrder = false);
+//   void                     Search(unsigned short wField, const ZdArray & theValues, ZdSet & theSet, unsigned short wNumFieldsToSearch = 1, bool bAltOrder = false);
+//   void                     SetCategory(const char * sCategory, unsigned short wCategory);
+//   inline void              SetDatabase ( ZdDatabase &theDatabase );
+//   inline void              SetFilterSet ( const ZdSet &theSet );
+//   void                     SetFlags(unsigned short wFlags);
 
-   void                     SetIndexingState ( bool bShouldIndex );
-   void                     SetInformation(const char * sInfo);
-   void                     SetInputLayout(const char * sInputLayout, unsigned short wInputLayout);
-   void                     SetMaintenanceState ( bool bShouldMaintain );
-   inline void              SetNotifyListeners(bool b, bool bNotify = true );
-   void                     SetPassword(const char * sOldPassword, const char * sNewPassword);
-   inline void              SetSystemSet(const ZdSet & theSet);
-   void                     SetTitle(const char * sTitle);
+//   void                     SetIndexingState ( bool bShouldIndex );
+//   void                     SetInformation(const char * sInfo);
+//   void                     SetInputLayout(const char * sInputLayout, unsigned short wInputLayout);
+//   void                     SetMaintenanceState ( bool bShouldMaintain );
+//   inline void              SetNotifyListeners(bool b, bool bNotify = true );
+//   void                     SetPassword(const char * sOldPassword, const char * sNewPassword);
+//   inline void              SetSystemSet(const ZdSet & theSet);
+//   void                     SetTitle(const char * sTitle);
 
 //to be implemented:   virtual void             Sort ( const ZdVector<unsigned short> &vFields, ZdProgressInterface &Progress = ZdNullProgress::GetDefaultInstance(), const char *sTempDir = mgsDot, unsigned int uiIntNodes = 8192, unsigned int uiCacheSize = 1048576, bool bRebuildIndexes = false );
 
@@ -370,6 +374,7 @@ public:
 
    // Pure virtual functions that must be defined by the file classes
    virtual void            Flush();
+   virtual unsigned long   GetCurrentRecordNumber() const;
    virtual DBFRecord *     GetNewRecord() const  { return new DBFRecord(const_cast<DBFFile &>(*this), *gpDbf, gvFields); }
    virtual unsigned long   GetNumRecords() const;
    virtual void            GotoRecord(unsigned long lRecNum, ZdFileRecord * PRecordBuffer = 0);
@@ -377,11 +382,14 @@ public:
    virtual void            PackFields ( ZdVector<ZdField*> &vFields ) const;
    virtual bool            TryLock ( ZdIOFlag iType );
 
+   virtual bool            GetIsOpen() const;
    // Pure virtual functions associated with ZdFileType
    virtual const ZdFileType &GetFileType() const;
 
    // Each derived class of ZdFile also needs a static member function which returns a "ZdFile *" of the class type.
    // I have used : static ZdFile *Instantiate(), but any function with the same signature will work.
+
+   const char * GetDbfErrorString(xbShort code) const;
 
 public://static interface
    static void AssertLegalFieldname(const ZdString & sCandidate);
