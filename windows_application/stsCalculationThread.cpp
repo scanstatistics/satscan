@@ -263,6 +263,8 @@ void CalcThread::Setup(const CParameters& session, char *pTitle, TfrmAnalysisRun
       SSGenerateException("Null pointer", "Setup()");
 
     gpParams = new CParameters(session);
+    gpParams->SetRunHistoryFilename(GetToolkit().GetRunHistoryFileName());
+    gpParams->SetIsLoggingHistory(GetToolkit().GetLogRunHistory());
     gpPrintWindow = new PrintWindow(*this);
     gpParams->SetPrintDirection(gpPrintWindow);
     gpParams->ConvertMaxTemporalClusterSizeToType(PERCENTAGETYPE);
