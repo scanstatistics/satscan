@@ -549,14 +549,16 @@ TModalResult TBDlgDataImporter::ImportFile() {
     Modal = mrOk;
   }
   catch (BImportRejectedException &x) {
-    sMessage << "The import wizard encountered an error writing";
+    sMessage << "The import wizard encountered an error importing";
     if (FileImporter.GetImportErrors().size()) {
       sMessage << " field " << FileImporter.GetImportErrors()[0].iColumnNumber;
       sMessage << " in line " << FileImporter.GetImportErrors()[0].ulImportFileLine;
       sMessage << " of import source file.";
     }
-    else
-      sMessage << " data.";
+    else  {
+      sMessage << " data.\n\n";
+      sMessage << x.GetErrorMessage();
+    }
     TBMessageBox(0, "Import cancelled!", sMessage.GetCString(), XBMB_OK|XBMB_EXCLAMATION).ShowModal();
   }
   catch (ZdException &x) {

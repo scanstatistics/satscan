@@ -149,6 +149,19 @@ void SaTScanFileImporter::ImportToRemoteFile( ZdVector< ZdVector<const ZdField*>
                 ZdVector<const ZdField*>& vec = vMappings.GetElement( iColumn - 1 );
                 gPutError.SetCurrent( gpSourceInterface->GetCurrentRecordNum(), iColumn );
                 for ( j=0; j < ( int )vec.size(); j++ ) {
+
+                  //blank or fields with spaces between values
+                  //are not permitted with SaTScan formatted files
+                  sValue.Deblank();
+                  if (sValue.GetIsEmpty())
+                    BImportRejectedException::Generate( "Record %i contains a 'Source File Variable' that is blank.\n"
+                                                        "SaTScan does not permit blank variables in data.", "ImportToRemoteFile()",
+                                                        ZdException::Notify, gpSourceInterface->GetCurrentRecordNum() );
+                  else if (sValue.Find(' ') > -1)
+                    BImportRejectedException::Generate( "Record %i contains a 'Source File Variable' that contains whitespace.\n"
+                                                        "SaTScan does not permit variable data to contain whitespace.", "ImportToRemoteFile()",
+                                                        ZdException::Notify, gpSourceInterface->GetCurrentRecordNum() );
+
                    const ZdField * p = vec.GetElement( j );
                    if ( PutTokenToRecord( *pRecordBuffer, sValue, p->GetFieldNumber() ) )
                       bErrorOccurred = true;
