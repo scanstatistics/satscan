@@ -325,6 +325,7 @@ class CParameters {
     bool                                ValidateDateParameters(BasePrint& PrintDirection) const;
     bool                                ValidateEllipseParameters(BasePrint & PrintDirection);
     bool                                ValidateFileParameters(BasePrint & PrintDirection);
+    bool                                ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) const;
     bool                                ValidatePowerCalculationParameters(BasePrint & PrintDirection) const;
     bool                                ValidateProspectiveDate(BasePrint& PrintDirection) const;
     bool                                ValidateRangeParameters(BasePrint & PrintDirection) const;

@@ -536,13 +536,13 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
          case ALIVECLUSTERS   : fprintf(fp, "  Clusters to Include                   : ");
                                 fprintf(fp, "Only those including the study end date\n"); break;
          case ALLCLUSTERS     : /*fprintf(fp, "All\n");
-                                  -- geIncludeClustersType parameter no longer visible in GUI, 
+                                  -- geIncludeClustersType parameter no longer visible in GUI,
                                      defaulted to ALLCLUSTERS, so don't print setting */ break;
-         case CLUSTERSINRANGE : fprintf(fp, "  Windows scanned with                  : start time in range %s to %s\n",
+         case CLUSTERSINRANGE : fprintf(fp, "  Flexible Temporal Window Definition   : start time in %s through %s\n",
                                         gsStartRangeStartDate.c_str(), gsStartRangeEndDate.c_str());
-                                fprintf(fp, "                                          end time in range %s to %s\n",
+                                fprintf(fp, "                                          end time in %s through %s\n",
                                         gsEndRangeStartDate.c_str(), gsEndRangeEndDate.c_str()); break;
-         default : ZdException::Generate("Inclusion cluster type '%d'.\n", "DisplayParameters()", geIncludeClustersType);
+         default : ZdException::Generate("Unknown inclusion cluster type '%d'.\n", "DisplayParameters()", geIncludeClustersType);
       };
     }
 
@@ -3344,6 +3344,72 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
   return bValid;
 }
 
+/** Validates the maximum temporal cluster size parameters. */
+bool CParameters::ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) const {
+  ZdString      sPrecisionString;
+  double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
+
+  try {
+    //Maximum temporal cluster size is parameters not used for these analyses.
+    if (geAnalysisType == PURELYSPATIAL || geAnalysisType == SPATIALVARTEMPTREND)
+      return true;
+
+    if (geMaxTemporalClusterSizeType == PERCENTAGETYPE) {
+      //validate for maximum specified as percentage of study period
+      if (gfMaxTemporalClusterSize <= 0) {
+        PrintDirection.SatScanPrintWarning("Error: The maximum temporal cluster size of '%2g' is invalid.\n"
+                                           "       Specifying the maximum as a percentage of the study period\n"
+                                           "       requires the value to be a decimal number that is greater than zero.\n",
+                                           gfMaxTemporalClusterSize);
+        return false;
+      }
+      //check maximum temporal cluster size(as percentage of population) is less than maximum for given probabilty model
+      if (geMaxTemporalClusterSizeType > (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90)) {
+        PrintDirection.SatScanPrintWarning("Error: For the %s model, the maximum temporal cluster size as a percent\n"
+                                           "       of the study period is %d percent.",
+                                           GetProbabiltyModelTypeAsString(geProbabiltyModelType),
+                                           (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90));
+        return false;
+      }
+    }
+    else if (geMaxTemporalClusterSizeType == TIMETYPE) {
+      //validate for maximum specified as time aggregation unit 
+      if (gfMaxTemporalClusterSize < 1) {
+        PrintDirection.SatScanPrintWarning("Error: The maximum temporal cluster size of '%2g' is invalid.\n"
+                                           "       Specifying the maximum in time aggregation units requires\n"
+                                           "       the value to be a whole number that is greater than zero.\n",
+                                           gfMaxTemporalClusterSize);
+        return false;
+      }
+      GetDatePrecisionAsString(geTimeAggregationUnitsType, sPrecisionString, false, false);
+      dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(CharToJulian(gsStudyPeriodStartDate.c_str()),
+                                                                      CharToJulian(gsStudyPeriodEndDate.c_str()),
+                                                                      geTimeAggregationUnitsType, 1));
+      dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90)/100.0);
+      if (gfMaxTemporalClusterSize > dMaxTemporalLengthInUnits) {
+        PrintDirection.SatScanPrintWarning("Error: A maximum temporal cluster size of %d %s%s exceeds\n"
+                                           "       %d percent of a %d %s study period.\n"
+                                           "       Note that current settings limit the maximum to %d %s%s.",
+                                           static_cast<int>(gfMaxTemporalClusterSize), sPrecisionString.GetCString(),
+                                           (gfMaxTemporalClusterSize == 1 ? "" : "s"),
+                                           (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90),
+                                           static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString(),
+                                           static_cast<int>(dMaxTemporalLengthInUnits), sPrecisionString.GetCString(),
+                                           (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
+        return false;
+      }
+    }
+    else
+      ZdException::GenerateNotification("Unknown temporal percentage type: %d.",
+                                        "ValidateMaximumTemporalClusterSize()", geMaxTemporalClusterSizeType);
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ValidateMaximumTemporalClusterSize()","CParameters");
+    throw;
+  }
+  return true;
+}
+
 /** Validates that given current state of settings, parameters and their relationships
     with other parameters are correct. Errors are sent to print direction and*/
 bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
@@ -3877,126 +3943,96 @@ bool CParameters::ValidateStudyPeriodStartDate(BasePrint& PrintDirection) const 
     Prints errors to print direction and returns whether values are vaild.*/
 bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
   bool          bValid=true;
-  long          lStudyPeriodLength;
-  ZdString      sBuffer;
 
   try {
-    //validate temporal options
-    if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME ||
-        GetIsProspectiveAnalysis() || geAnalysisType == SPATIALVARTEMPTREND) {
-      //maximum temporal cluster size
-      if (geAnalysisType != SPATIALVARTEMPTREND) {
-        if (0.0 >= gfMaxTemporalClusterSize) {
-          bValid = false;
-          PrintDirection.SatScanPrintWarning("Error: The maximum temporal cluster size of '%2g' is invalid. It must be greater than zero.\n", gfMaxTemporalClusterSize);
-        }
-        if (geMaxTemporalClusterSizeType == PERCENTAGETYPE && gfMaxTemporalClusterSize > (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90)) {
-          bValid = false;
-          PrintDirection.SatScanPrintWarning("Error: For the %s model, the maximum temporal cluster size of '%2g%%' exceeds the maximum allowed value of %d%%.\n",
-                                             GetProbabiltyModelTypeAsString(geProbabiltyModelType), gfMaxTemporalClusterSize,
-                                             geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90);
-        }
-      }
-      else {
-        gfMaxTemporalClusterSize           = 50.0;
-        geMaxTemporalClusterSizeType       = PERCENTAGETYPE;
-        geIncludeClustersType              = ALLCLUSTERS;
-      }
-      //prospective analyses include only alive clusters
-      if (GetIsProspectiveAnalysis() && geIncludeClustersType != ALIVECLUSTERS)
-        geIncludeClustersType = ALIVECLUSTERS;
-
-      if (!ValidateTimeAggregationUnits(PrintDirection))
-        bValid = false;
-
-      //time trend adjustment
-      switch (geProbabiltyModelType) {
-        case BERNOULLI            : //Bernoulli can only have time trend adjustments for SVTT analysis.
-                                    if (geAnalysisType == SPATIALVARTEMPTREND) {
-                                      if (geTimeTrendAdjustType == CALCULATED_LOGLINEAR_PERC) {
-                                        if (gdTimeTrendConverge < 0.0) {
-                                          bValid = false;
-                                          PrintDirection.SatScanPrintWarning("Error: The time trend convergence value of '%2g' is less than zero.\n", gdTimeTrendConverge);
-                                        }
-                                      }
-                                      else if (geTimeTrendAdjustType == LOGLINEAR_PERC) {
-                                         if (-100.0 >= gdTimeTrendAdjustPercentage) {
-                                           bValid = false;
-                                           PrintDirection.SatScanPrintWarning("Error: The time adjustment percentage of '%2g' must be greater than -100.\n",
-                                                                              gdTimeTrendAdjustPercentage);
-                                         }                                     
-                                      }
-                                      else if (geTimeTrendAdjustType == STRATIFIED_RANDOMIZATION)
-                                          break;
-                                      else {
-                                        geTimeTrendAdjustType = NOTADJUSTED;
-                                        gdTimeTrendAdjustPercentage = 0.0;
-                                      }
-                                    }
-                                    else if (geTimeTrendAdjustType != NOTADJUSTED) {
-                                      PrintDirection.SatScanPrintWarning("Warning: For the Bernoulli model, adjusting fpr temporal trends is not permitted.\n");
-                                      geTimeTrendAdjustType = NOTADJUSTED;
-                                      gdTimeTrendAdjustPercentage = 0.0;
-                                    }
-                                    break;
-        case NORMAL               :
-        case SURVIVAL             :
-        case RANK                 :                                  
-        case SPACETIMEPERMUTATION : if (geTimeTrendAdjustType != NOTADJUSTED) {
-                                      PrintDirection.SatScanPrintWarning("Warning: For the space-time permutation model, adjusting for temporal trends\n"
-                                                                         "         is not permitted nor needed, as this model automatically adjusts for\n"
-                                                                         "         any temporal variation.\n");
-                                      geTimeTrendAdjustType = NOTADJUSTED;
-                                      gdTimeTrendAdjustPercentage = 0.0;
-                                    }
-                                    break;
-         case POISSON             : if (geTimeTrendAdjustType == NONPARAMETRIC && (geAnalysisType == PURELYTEMPORAL ||geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
-                                      bValid = false;
-                                      PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting for time trend adjustment.\n");
-                                      PrintDirection.SatScanPrintWarning("       You may not use non-parametric time in a purely temporal analysis.\n");
-                                    }
-                                    if (geTimeTrendAdjustType == STRATIFIED_RANDOMIZATION && (geAnalysisType == PURELYTEMPORAL ||geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
-                                      bValid = false;
-                                      PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting for time trend adjustment.\n");
-                                      PrintDirection.SatScanPrintWarning("       You may not use stratified randomization by time intervals with a purely temporal analysis.\n");
-                                    }
-                                    if (geTimeTrendAdjustType == LOGLINEAR_PERC && -100.0 >= gdTimeTrendAdjustPercentage) {
-                                      bValid = false;
-                                      PrintDirection.SatScanPrintWarning("Error: The time adjustment percentage is '%2g', but must greater than -100.\n",
-                                                                         gdTimeTrendAdjustPercentage);
-                                    }
-                                    if (geTimeTrendAdjustType == NOTADJUSTED) {
-                                      gdTimeTrendAdjustPercentage = 0;
-                                      if (geAnalysisType != SPATIALVARTEMPTREND)
-                                        gdTimeTrendConverge = 0.0;
-                                    }
-                                    if (geTimeTrendAdjustType == CALCULATED_LOGLINEAR_PERC && geAnalysisType == PURELYSPATIAL) {
-                                      bValid = false;
-                                      PrintDirection.SatScanPrintWarning("Error: Time trend adjustment .\n", gdTimeTrendConverge);
-                                    }
-                                    if (geTimeTrendAdjustType == CALCULATED_LOGLINEAR_PERC || geAnalysisType == SPATIALVARTEMPTREND) {
-                                      if (gdTimeTrendConverge < 0.0) {
-                                        bValid = false;
-                                        PrintDirection.SatScanPrintWarning("Error: Time trend convergence value of '%2g' is less than zero.\n", gdTimeTrendConverge);
-                                      }
-                                    }
-                                    break;
-         default : ZdException::Generate("Unknown model type '%d'.","ValidateTemporalParameters()", geProbabiltyModelType);
-      }
-    }
-    else {
-      //Purely spatial clusters should default maximum temporal clusters size to 50 of study period.
-      //Actually for purely spatial analyses, these settings has no bearing on results since maximum
-      //temporal cluster size is used primarly for computing the interval cuts, which purely spatial
-      //analyses have a fixed 1 time interval and interval cut.
-      gfMaxTemporalClusterSize           = 50.0; // KR980707 0 GG980716;
+    //validate temporal options only for analyses that are temporal
+    if (geAnalysisType == PURELYSPATIAL) {
+      //default these options - Not sure why orignal programmers did this. When
+      //there is more time, we want to examine code so that we don't need to.
+      //Instead, code related to these variables just shouldn't be executed.
+      gfMaxTemporalClusterSize           = 50.0; 
       geMaxTemporalClusterSizeType       = PERCENTAGETYPE;
       geIncludeClustersType              = ALLCLUSTERS;
       geTimeAggregationUnitsType         = NONE;
       glTimeAggregationLength            = 0;
       geTimeTrendAdjustType              = NOTADJUSTED;
       gdTimeTrendAdjustPercentage        = 0;
+      return true;
     }
+    //validate maximum temporal cluster size
+    if (!ValidateMaximumTemporalClusterSize(PrintDirection))
+      bValid = false;
+    //Prospective analyses include only alive clusters - reset this parameter
+    //instead of reporting error since this parameter has under gone changes
+    //that would make any error message confusing to user. Prospective analyses
+    //should have reported this error when they were introduced to SaTScan, but
+    //I think it's too late to start enforcing this.
+    if (GetIsProspectiveAnalysis() && geIncludeClustersType != ALIVECLUSTERS)
+      geIncludeClustersType = ALIVECLUSTERS;
+    //validate time aggregation units  
+    if (!ValidateTimeAggregationUnits(PrintDirection))
+      bValid = false;
+    //validate time trend adjustment
+    switch (geProbabiltyModelType) {
+      case BERNOULLI            :
+        //The SVTT analysis has hooks for temporal adjustments, but that code needs
+        //much closer examination before it can be used, even experimentally.
+        if (geTimeTrendAdjustType != NOTADJUSTED) {
+          PrintDirection.SatScanPrintWarning("Warning: For the Bernoulli model, adjusting for temporal trends is not permitted.\n");
+                                             geTimeTrendAdjustType = NOTADJUSTED;
+                                             gdTimeTrendAdjustPercentage = 0.0;
+        }
+        break;
+      case NORMAL               :
+      case SURVIVAL             :
+      case RANK                 :
+        if (geTimeTrendAdjustType != NOTADJUSTED) {
+          PrintDirection.SatScanPrintWarning("Warning: For the %s model, adjusting for temporal trends is not permitted.\n",
+                                             GetProbabiltyModelTypeAsString(geProbabiltyModelType));
+                                             geTimeTrendAdjustType = NOTADJUSTED;
+                                             gdTimeTrendAdjustPercentage = 0.0;
+        }
+        break;
+      case SPACETIMEPERMUTATION :
+        if (geTimeTrendAdjustType != NOTADJUSTED) {
+          PrintDirection.SatScanPrintWarning("Warning: For the space-time permutation model, adjusting for temporal trends\n"
+                                             "         is not permitted nor needed, as this model automatically adjusts for\n"
+                                             "         any temporal variation.\n");
+                                             geTimeTrendAdjustType = NOTADJUSTED;
+                                             gdTimeTrendAdjustPercentage = 0.0;
+        }
+        break;
+      case POISSON             :
+        if (geTimeTrendAdjustType == NONPARAMETRIC && (geAnalysisType == PURELYTEMPORAL ||geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting for time trend adjustment.\n");
+          PrintDirection.SatScanPrintWarning("       You may not use non-parametric time in a purely temporal analysis.\n");
+        }
+        if (geTimeTrendAdjustType == STRATIFIED_RANDOMIZATION && (geAnalysisType == PURELYTEMPORAL ||geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting for time trend adjustment.\n");
+          PrintDirection.SatScanPrintWarning("       You may not use stratified randomization by time intervals with a purely temporal analysis.\n");
+        }
+        if (geTimeTrendAdjustType == LOGLINEAR_PERC && -100.0 >= gdTimeTrendAdjustPercentage) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: The time adjustment percentage is '%2g', but must greater than -100.\n",
+                                             gdTimeTrendAdjustPercentage);
+        }
+        if (geTimeTrendAdjustType == NOTADJUSTED) {
+          gdTimeTrendAdjustPercentage = 0;
+          if (geAnalysisType != SPATIALVARTEMPTREND)
+            gdTimeTrendConverge = 0.0;
+        }
+        if (geTimeTrendAdjustType == CALCULATED_LOGLINEAR_PERC || geAnalysisType == SPATIALVARTEMPTREND) {
+          if (gdTimeTrendConverge < 0.0) {
+            bValid = false;
+            PrintDirection.SatScanPrintWarning("Error: Time trend convergence value of '%2g' is less than zero.\n", gdTimeTrendConverge);
+          }
+        }
+        break;
+      default : ZdException::Generate("Unknown model type '%d'.","ValidateTemporalParameters()", geProbabiltyModelType);
+    }
+    //validate including purely temporal clusters
     if (gbIncludePurelyTemporalClusters) {
       if (!GetPermitsPurelyTemporalCluster(geProbabiltyModelType)) {
           bValid = false;
@@ -4047,15 +4083,18 @@ bool CParameters::ValidateTimeAggregationUnits(BasePrint& PrintDirection) const 
                                        static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString());
     return false;
   }
-//  if (ceil(dStudyPeriodLengthInUnits/static_cast<double>(glTimeAggregationLength)) <= 1) {
-//    PrintDirection.SatScanPrintWarning("Error: A time aggregation of %d %s%s with a %d %s study period results in only\n"
-//                                       "       one time period to analyze. Temporal and space-time analyses can not be performed\n"
-//                                       "       on less than two time periods.\n",
-//                                       glTimeAggregationLength, sPrecisionString.GetCString(), (glTimeAggregationLength == 1 ? "" : "s"),
-//                                       static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString());
-//    return false;
-//  }
+  if (ceil(dStudyPeriodLengthInUnits/static_cast<double>(glTimeAggregationLength)) <= 1) {
+    PrintDirection.SatScanPrintWarning("Error: A time aggregation of %d %s%s with a %d %s study period results in only\n"
+                                       "       one time period to analyze. Temporal and space-time analyses can not be performed\n"
+                                       "       on less than two time periods.\n",
+                                       glTimeAggregationLength, sPrecisionString.GetCString(), (glTimeAggregationLength == 1 ? "" : "s"),
+                                       static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString());
+    return false;
+  }
 
+  if (geAnalysisType == SPATIALVARTEMPTREND) //svtt does not have a maximum temporal cluster size
+    return true;
+      
   if (geMaxTemporalClusterSizeType == PERCENTAGETYPE)
     dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * (double)gfMaxTemporalClusterSize/100.0);
   else if (geMaxTemporalClusterSizeType == TIMETYPE)
