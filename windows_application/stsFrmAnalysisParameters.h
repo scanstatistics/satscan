@@ -182,7 +182,9 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        CheckTimeParams();
     void                        DefaultHiddenParameters();
     void                        EnableAdditionalOutFilesOptionsGroup(bool bRelativeRisks);
+    void                        EnableAnalysisControlForModelType();
     void                        EnableDatesByTimeIntervalUnits();
+    void                        EnableModelControlForAnalysisType();
     void                        EnableProspectiveStartDate(bool bEnable);
     void                        EnableProspectiveSurveillanceGroup(bool bEnable);
     void                        EnableSettingsForAnalysisModelCombination();

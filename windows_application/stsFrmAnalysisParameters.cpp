@@ -469,7 +469,34 @@ void TfrmAnalysis::EnableAdditionalOutFilesOptionsGroup(bool bRelativeRisks) {
   lblRelativeRiskEstimatesArea->Enabled = bRelativeRisks;
 }
 
-
+/** enables analysis control based upon the setting in probability model control */
+void TfrmAnalysis::EnableAnalysisControlForModelType() {
+  try {
+    switch (GetModelControlType()) {
+      case POISSON   		:
+      case BERNOULLI            : rdoRetrospectivePurelySpatial->Enabled = true;
+                                  rdoRetrospectivePurelyTemporal->Enabled = true;
+                                  rdoRetrospectiveSpaceTime->Enabled = true;
+                                  rdoProspectivePurelyTemporal->Enabled = true;
+                                  rdoProspectiveSpaceTime->Enabled = true;
+                                  break;
+      case SPACETIMEPERMUTATION : rdoRetrospectivePurelySpatial->Enabled = false;
+                                  rdoRetrospectivePurelyTemporal->Enabled = false;
+                                  rdoRetrospectiveSpaceTime->Enabled = true;
+                                  rdoProspectivePurelyTemporal->Enabled = false;
+                                  rdoProspectiveSpaceTime->Enabled = true;
+                                  if (!rdoRetrospectiveSpaceTime->Checked && !rdoProspectiveSpaceTime->Checked)
+                                    rdoRetrospectiveSpaceTime->Checked = true;
+                                  break;
+      default : ZdGenerateException("Unknown probabilty model '%d'.", "EnableAnalysisControlForModelType()", GetModelControlType());
+    }
+    EnableSettingsForAnalysisModelCombination();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("EnableAnalysisControlForModelType()","TfrmAnalysis");
+    throw;
+  }
+}
 
 /** enabled study period and prospective date precision based on time interval unit */
 void TfrmAnalysis::EnableDatesByTimeIntervalUnits() {
@@ -498,6 +525,28 @@ void TfrmAnalysis::EnableDatesByTimeIntervalUnits() {
     ZdGenerateException("Time interval units no set.","EnableDatesByTimeIntervalUnits()");
 
   EnableProspectiveSurveillanceGroup(eAnalysisType == PROSPECTIVEPURELYTEMPORAL || eAnalysisType == PROSPECTIVESPACETIME);
+}
+
+/** enables probability model control based upon the setting in analysis control */
+void TfrmAnalysis::EnableModelControlForAnalysisType() {
+  try {
+    switch (GetAnalysisControlType()) {
+      case PURELYSPATIAL             :
+      case PURELYTEMPORAL            :
+      case PROSPECTIVEPURELYTEMPORAL : rdoSpaceTimePermutationModel->Enabled = false;
+                                       if (rdoSpaceTimePermutationModel->Checked)
+                                          rdoPoissonModel->Checked = true;
+                                       break;
+      case SPACETIME                 :
+      case PROSPECTIVESPACETIME      : rdoSpaceTimePermutationModel->Enabled = true; break;
+      default : ZdGenerateException("Unknown analysis type '%d'.", "EnableModelControlForAnalysisType()", GetAnalysisControlType());
+    }
+    EnableSettingsForAnalysisModelCombination();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("EnableModelControlForAnalysisType()","TfrmAnalysis");
+    throw;
+  }
 }
 
 /** enabled prospective start date controls */
@@ -813,17 +862,7 @@ void __fastcall TfrmAnalysis::NaturalNumberKeyPress(TObject *Sender, char &Key) 
 /** method called in response to 'type of analysis' radio group click event */
 void TfrmAnalysis::OnAnalysisTypeClick() {
   try {
-    switch (GetAnalysisControlType()) {
-      case PURELYSPATIAL             :
-      case PURELYTEMPORAL            :
-      case PROSPECTIVEPURELYTEMPORAL : rdoSpaceTimePermutationModel->Enabled = false;
-                                       if (rdoSpaceTimePermutationModel->Checked)
-                                          rdoPoissonModel->Checked = true;
-                                       break;
-      case SPACETIME                 :
-      case PROSPECTIVESPACETIME      : rdoSpaceTimePermutationModel->Enabled = true; break;
-      default : ZdGenerateException("Unknown analysis type '%d'.", "OnAnalysisTypeClick()", GetAnalysisControlType());
-    }
+    EnableModelControlForAnalysisType();
     EnableSettingsForAnalysisModelCombination();
   }
   catch (ZdException &x) {
@@ -856,8 +895,9 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
 /** method called in response to 'probability model' radio group click event */
 void TfrmAnalysis::OnProbabilityModelClick() {
   try {
+    EnableAnalysisControlForModelType();
     switch (GetModelControlType()) {
-      case POISSON   		: 
+      case POISSON   		:
       case BERNOULLI            : rdoPercentageTemproal->Caption = "Percent of Study Period (<= 90%)";
                                   lblSimulatedLogLikelihoodRatios->Caption = "Simulated Log Likelihood Ratios";
                                   break;
@@ -1077,6 +1117,7 @@ void TfrmAnalysis::SetAnalysisControl(AnalysisType eAnalysisType) {
     case PURELYSPATIAL                  :
     default                             : rdoRetrospectivePurelySpatial->Checked = true;
   }
+  EnableModelControlForAnalysisType();
 }
 
 /** sets area scan rate type control */
@@ -1122,6 +1163,7 @@ void TfrmAnalysis::SetModelControl(ProbabiltyModelType eProbabiltyModelType) {
     case POISSON              : 
     default                   : rdoPoissonModel->Checked = true;
   }
+  EnableAnalysisControlForModelType();
 }
 
 /** Sets population filename in interface */
