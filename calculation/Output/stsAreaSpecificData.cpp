@@ -105,8 +105,8 @@ void AreaSpecificRecord::Init() {
 // ============================================================================
 
 // constructor
-__fastcall stsAreaSpecificData::stsAreaSpecificData(const ZdString& sOutputFileName, const long lRunNumber, const bool bPrintPVal)
-                             : BaseOutputStorageClass () {
+__fastcall stsAreaSpecificData::stsAreaSpecificData(BasePrint *pPrintDirection, const ZdString& sOutputFileName, const long lRunNumber, const bool bPrintPVal)
+                             : BaseOutputStorageClass (pPrintDirection) {
    try {
       Init();
       Setup(sOutputFileName, lRunNumber, bPrintPVal);

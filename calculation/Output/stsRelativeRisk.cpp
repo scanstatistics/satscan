@@ -57,8 +57,8 @@ void RelativeRiskRecord::Init() {
 // ============================================================================
 
 // constructor
-__fastcall RelativeRiskData::RelativeRiskData(const ZdString& sOutputFileName) 
-                           : BaseOutputStorageClass() {
+__fastcall RelativeRiskData::RelativeRiskData(BasePrint *pPrintDirection, const ZdString& sOutputFileName) 
+                           : BaseOutputStorageClass(pPrintDirection) {
    try {
       Init();
       Setup(sOutputFileName);

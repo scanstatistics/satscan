@@ -140,9 +140,9 @@ void ClusterRecord::Init() {
 //===============================================================================
 
 // constructor
-__fastcall stsClusterData::stsClusterData(const ZdString& sOutputFileName, const long lRunNumber, const int iCoordType, const int iModelType,
+__fastcall stsClusterData::stsClusterData(BasePrint *pPrintDirection, const ZdString& sOutputFileName, const long lRunNumber, const int iCoordType, const int iModelType,
                                           const int iDimension, const bool bPrintPVal, const bool bPrintEllipses)
-                          : BaseOutputStorageClass() {
+                          : BaseOutputStorageClass(pPrintDirection) {
    try {
       Init();
       Setup(sOutputFileName, iModelType, iDimension, iCoordType, lRunNumber, bPrintEllipses,bPrintPVal);

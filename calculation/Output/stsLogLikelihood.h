@@ -26,7 +26,7 @@ class LogLikelihoodData : public BaseOutputStorageClass {
    protected:
       virtual void              SetupFields();
    public:
-      __fastcall LogLikelihoodData(const ZdString& sOutputFileName);
+      __fastcall LogLikelihoodData(BasePrint *pPrintDirection, const ZdString& sOutputFileName);
       virtual ~LogLikelihoodData();
    
       void	AddLikelihood(const double dLikelihood);	

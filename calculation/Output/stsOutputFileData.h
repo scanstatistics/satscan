@@ -49,10 +49,11 @@ class BaseOutputStorageClass {
       ZdPointerVector<BaseOutputRecord>	gvRecords;
       ZdPointerVector<ZdField>		gvFields;
       ZdString				gsFileName;
-      
+      BasePrint         *               gpPrintDirection;
+
       virtual void	SetupFields() = 0;
    public :
-      BaseOutputStorageClass();
+      BaseOutputStorageClass(BasePrint *pPrintDirection);
       virtual ~BaseOutputStorageClass();
       
       void			AddRecord(BaseOutputRecord* pRecord);
@@ -95,7 +96,7 @@ class TestOutputClass : public BaseOutputStorageClass {
    protected:
       virtual void	SetupFields();   
    public :
-      TestOutputClass(const ZdString& sOutputFileName);
+      TestOutputClass(BasePrint *pPrintDirection, const ZdString& sOutputFileName);
       ~TestOutputClass();
       
       void      SetTestValues(const ZdString& sStringTestValue, const long lLongTestValue, const double	dDoubleTestValue,

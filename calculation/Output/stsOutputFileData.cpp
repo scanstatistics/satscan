@@ -88,7 +88,10 @@ void BaseOutputRecord::SetFieldValueAsString(ZdFieldValue& fv, const ZdString& s
 // the printing of that information, they are for storage only.
 //===============================================================================
 
-BaseOutputStorageClass::BaseOutputStorageClass() {
+BaseOutputStorageClass::BaseOutputStorageClass(BasePrint *pPrintDirection) {
+   if (pPrintDirection)
+      ZdGenerateException("Null BasePrint pointer passed into constructor!", "BaseStorageClass");
+   gpPrintDirection = pPrintDirection;
 }
 
 BaseOutputStorageClass::~BaseOutputStorageClass() {
@@ -105,7 +108,7 @@ BaseOutputStorageClass::~BaseOutputStorageClass() {
 void BaseOutputStorageClass::AddRecord(BaseOutputRecord* pRecord) {
    try {
       if(!pRecord)
-         ZdGenerateException("Null pointer passed into function!", "AddRecord()");
+         ZdGenerateException("Null pointer passed into function!", "BaseOutputStorageClass::AddRecord()");
          
       gvRecords.push_back(pRecord);   
    }
@@ -198,7 +201,7 @@ void TestOutputRecord::Init() {
 // file printing heirarchy
 // ============================================================================
 
-TestOutputClass::TestOutputClass(const ZdString& sOutputFileName):BaseOutputStorageClass() {
+TestOutputClass::TestOutputClass(BasePrint *pPrintDirection, const ZdString& sOutputFileName):BaseOutputStorageClass(pPrintDirection) {
    gsFileName << sOutputFileName << ".test";
    SetupFields();
 }
