@@ -16,6 +16,24 @@
 #include <Menus.hpp>
 
 //---------------------------------------------------------------------------
+
+class TDlgSaTScanDataImporter : public TBdlgImporter {
+  private:
+    void                Setup();
+      
+  protected:
+    std::string         gsInputFileTypeName;
+
+    virtual void        SetInitialImportFileType();
+
+  public:
+    virtual __fastcall TDlgSaTScanDataImporter(TComponent* Owner, ZdDatabase * pDatabase, BFTFImportDescriptor * pImportDescriptor);
+    virtual __fastcall TDlgSaTScanDataImporter(TComponent* Owner, ZdDatabase * pDatabase = 0, BCSVFileImportSpecs * pCVSImportDescriptor = 0);
+    virtual __fastcall ~TDlgSaTScanDataImporter();
+
+    void                SetInputFileTypeName(const char * sInputFileTypeName) {gsInputFileTypeName = sInputFileTypeName;}
+};
+
 class TfrmAnalysis : public TForm {
   __published:  // IDE-managed Components
         TButton *btnCaseBrowse;
@@ -183,7 +201,6 @@ class TfrmAnalysis : public TForm {
                                 gvControlFileFieldDescriptors;
 
     void                AttemptFilterDateFields(const char * sFileName, const char * sFormat, unsigned short uwField);
-
     bool                Check_Days(int iYear, int iMonth, int iDay, char *sDateName);
     bool                Check_IntervalLength(int iStartYear, int iStartMonth, int iStartDay,
                                              int iEndYear, int iEndMonth, int iEndDay,
@@ -202,6 +219,7 @@ class TfrmAnalysis : public TForm {
     bool                CheckReplicas(int iReplicas);
     bool                CheckScanningWindowParams();
     bool                CheckTimeParams();
+    void                CleanupImportedDataFile(const char * sFileName, const char * sExtension);
     void                CreateTXDFile(const ZdFileName& sFileName, const std::vector<std::string>& vFieldNames);
     bool                DetermineIfDbfExtension(const AnsiString& sFileName);
     void                EnablePSTDate(bool bEnable);
