@@ -85,6 +85,7 @@ class CSVTTCluster : public CCluster  {
     virtual count_t             GetCaseCount(unsigned int iStream) const {return gvStreamData[iStream].gtTotalCasesInsideCluster;}
     virtual count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const;
     virtual AbstractClusterData * GetClusterData();
+    virtual const AbstractClusterData * GetClusterData() const;
     virtual ClusterType         GetClusterType() const {return SPATIALVARTEMPTRENDCLUSTER;}
     virtual ZdString          & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     virtual measure_t           GetMeasure(unsigned int iStream) const {return gvStreamData[iStream].gtTotalMeasureInsideCluster;}

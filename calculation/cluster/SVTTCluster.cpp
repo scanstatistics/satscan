@@ -183,7 +183,7 @@ CSVTTCluster& CSVTTCluster::operator=(const CSVTTCluster& rhs) {
 void CSVTTCluster::AddNeighbor(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway) {
   ++m_nTracts;
   for (size_t tStream=0; tStream < DataGateway.GetNumInterfaces(); ++tStream)
-    AddNeighbor(tNeighbor, DataGateway.GetDataStreamInterface(tStream), tStream);
+    AddNeighbor(tNeighbor, DataGateway.GetDataSetInterface(tStream), tStream);
 }
 
 /** add neighbor tract data from DataStreamInterface */
@@ -247,6 +247,11 @@ AbstractClusterData * CSVTTCluster::GetClusterData() {
  return 0;
 }
 
+const AbstractClusterData * CSVTTCluster::GetClusterData() const {
+ ZdGenerateException("GetClusterData() not implemented.","CSVTTCluster");
+ return 0;
+}
+
 /** returns end date of defined cluster as formated string */
 ZdString& CSVTTCluster::GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1);
@@ -271,7 +276,7 @@ void CSVTTCluster::Init() {
 void CSVTTCluster::InitializeSVTT(tract_t nCenter, const AbtractDataStreamGateway & DataGateway) {
   CCluster::Initialize(nCenter);
   for (size_t t=0; t < gvStreamData.size(); ++t)
-     gvStreamData[t].InitializeSVTTData(DataGateway.GetDataStreamInterface(t));
+     gvStreamData[t].InitializeSVTTData(DataGateway.GetDataSetInterface(t));
 }
 
 /** re-initializes cluster data */
