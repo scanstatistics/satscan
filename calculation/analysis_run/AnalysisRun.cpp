@@ -510,11 +510,11 @@ void AnalysisRunner::OpenReportFile(FILE*& fp, bool bOpenAppend) {
   try {
     if ((fp = fopen(gParameters.GetOutputFileName().c_str(), (bOpenAppend ? "a" : "w"))) == NULL) {
       if (!bOpenAppend)
-        ZdException::Generate("Error: Results file '%s' could not be created.\n",
-                              "OpenReportFile()", gParameters.GetOutputFileName().c_str());
+        ResolvableException::Generate("Error: Results file '%s' could not be created.\n",
+                                      "OpenReportFile()", gParameters.GetOutputFileName().c_str());
       else if (bOpenAppend)
-        ZdException::Generate("Error: Results file '%s' could not be opened.\n",
-                              "OpenReportFile()", gParameters.GetOutputFileName().c_str());
+        ResolvableException::Generate("Error: Results file '%s' could not be opened.\n",
+                                      "OpenReportFile()", gParameters.GetOutputFileName().c_str());
     }
   }
   catch (ZdException &x) {
