@@ -3,7 +3,6 @@
 #pragma hdrstop
 //*****************************************************************************
 #include "Analysis.h"
-#include "stsClusterData.h"
 #include "PoissonLikelihoodCalculation.h"
 #include "BernoulliLikelihoodCalculation.h"
 #include "WilcoxonLikelihoodCalculation.h"
