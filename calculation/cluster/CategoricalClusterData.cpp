@@ -7,19 +7,17 @@
 
 /** class constructor */
 CategoricalSpatialData::CategoricalSpatialData(const DataSetInterface& Interface)
-                       :AbstractSpatialClusterData(0),
-                        gvTotalCasesPerCategory(Interface.gvTotalCasesPerCategory) {
+                       :AbstractSpatialClusterData(0) {
 
-  gvCasesPerCategory.resize(gvTotalCasesPerCategory.size(), 0);
+  gvCasesPerCategory.resize(Interface.GetNumOrdinalCategories(), 0);
   InitializeData();
 }
 
 /** class constructor */
 CategoricalSpatialData::CategoricalSpatialData(const AbtractDataSetGateway& DataGateway)
-                       :AbstractSpatialClusterData(0),
-                        gvTotalCasesPerCategory(DataGateway.GetDataSetInterface(0).gvTotalCasesPerCategory) {
+                       :AbstractSpatialClusterData(0) {
                         
-  gvCasesPerCategory.resize(gvTotalCasesPerCategory.size(), 0);
+  gvCasesPerCategory.resize(DataGateway.GetDataSetInterface().GetNumOrdinalCategories(), 0);
   InitializeData();
 }
 
@@ -60,7 +58,7 @@ void CategoricalSpatialData::AddNeighborData(tract_t tNeighborIndex, const Abtra
     Returns zero if rate not of interest else returns loglikelihood ratio as
     calculated by probability model. */
 double CategoricalSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-  return Calculator.CalcLogLikelihoodRatioOrdinal(gvCasesPerCategory, gvTotalCasesPerCategory);
+  return Calculator.CalcLogLikelihoodRatioOrdinal(gvCasesPerCategory);
 }
 
 /** No implemented - throws ZdException. */
@@ -82,32 +80,21 @@ measure_t CategoricalSpatialData::GetMeasure(unsigned int) const {
 
 //***************** class CategoricalTemporalData ******************************
 
-/** class protected constructor - accessible by derived classes only. */
-CategoricalTemporalData::CategoricalTemporalData(const std::vector<count_t>& vTotalCasesPerCategory)
-                        :AbstractTemporalClusterData(),
-                         gvTotalCasesPerCategory(vTotalCasesPerCategory),
-                         gppCategoryCases(0) {
-                        
-  InitializeData();
-}
-
 /** class constructor */
 CategoricalTemporalData::CategoricalTemporalData(const DataSetInterface& Interface)
                         :AbstractTemporalClusterData(),
-                         gvTotalCasesPerCategory(Interface.gvTotalCasesPerCategory),
                          gppCategoryCases(Interface.GetPTCategoryCaseArray()) {
 
-  gvCasesPerCategory.resize(gvTotalCasesPerCategory.size(), 0);
+  gvCasesPerCategory.resize(Interface.GetNumOrdinalCategories(), 0);
   InitializeData();
 }
 
 /** class constructor */
 CategoricalTemporalData::CategoricalTemporalData(const AbtractDataSetGateway& DataGateway)
                         :AbstractTemporalClusterData(),
-                         gvTotalCasesPerCategory(DataGateway.GetDataSetInterface(0).gvTotalCasesPerCategory),
-                         gppCategoryCases(DataGateway.GetDataSetInterface(0).GetPTCategoryCaseArray()) {
+                         gppCategoryCases(DataGateway.GetDataSetInterface().GetPTCategoryCaseArray()) {
 
-  gvCasesPerCategory.resize(gvTotalCasesPerCategory.size(), 0);
+  gvCasesPerCategory.resize(DataGateway.GetDataSetInterface().GetNumOrdinalCategories(), 0);
   InitializeData();
 }
 
@@ -168,7 +155,7 @@ measure_t CategoricalTemporalData::GetMeasure(unsigned int) const {
 
 /** class constructor */
 CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const CSaTScanData& Data, const DataSetInterface& Interface)
-                                  :CategoricalTemporalData(Interface.gvTotalCasesPerCategory) {
+                                  :CategoricalTemporalData(Interface) {
   try {
     Init();
     Setup(Data, Interface);
@@ -181,10 +168,10 @@ CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const CSaTS
 
 /** class constructor */
 CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway)
-                                  :CategoricalTemporalData(DataGateway.GetDataSetInterface(0).gvTotalCasesPerCategory) {
+                                  :CategoricalTemporalData(DataGateway) {
   try {
     Init();
-    Setup(Data, DataGateway.GetDataSetInterface(0));
+    Setup(Data, DataGateway.GetDataSetInterface());
   }
   catch (ZdException &x) {
     x.AddCallpath("constructor(const CSaTScanData&, const AbtractDataSetGateway&)","CategoricalProspectiveSpatialData");
@@ -194,7 +181,7 @@ CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const CSaTS
 
 /** class copy constructor */
 CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const CategoricalProspectiveSpatialData& rhs)
-                                  :CategoricalTemporalData(rhs.gvTotalCasesPerCategory) {
+                                  :CategoricalTemporalData(rhs) {
   try {
     Init();
     gpCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(rhs.gpCategoryCasesHandler->Get1stDimension(), rhs.gpCategoryCasesHandler->Get2ndDimension(), 0);
@@ -270,12 +257,12 @@ double CategoricalProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLi
 
   for (size_t t=0; t < gvCasesPerCategory.size(); ++t)
     gvCasesPerCategory[t] = gppCategoryCases[t][0];
-  dMaxLoglikelihoodRatio = Calculator.CalcLogLikelihoodRatioOrdinal(gvCasesPerCategory, gvTotalCasesPerCategory);
+  dMaxLoglikelihoodRatio = Calculator.CalcLogLikelihoodRatioOrdinal(gvCasesPerCategory);
 
   for (iWindowEnd=1; iWindowEnd < iMaxWindow; ++iWindowEnd) {
     for (size_t t=0; t < gvCasesPerCategory.size(); ++t)
        gvCasesPerCategory[t] = gppCategoryCases[t][0] - gppCategoryCases[t][iWindowEnd];
-     dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Calculator.CalcLogLikelihoodRatioOrdinal(gvCasesPerCategory, gvTotalCasesPerCategory));
+     dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Calculator.CalcLogLikelihoodRatioOrdinal(gvCasesPerCategory));
   }
   return dMaxLoglikelihoodRatio;
 }
@@ -285,9 +272,9 @@ void CategoricalProspectiveSpatialData::Setup(const CSaTScanData& Data, const Da
   try {
     giNumTimeIntervals = Data.m_nTimeIntervals;
     giProspectiveStart = Data.GetProspectiveStartIndex();
-    gpCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(gvTotalCasesPerCategory.size(), 1 + giNumTimeIntervals - giProspectiveStart, 0);
+    gpCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(Interface.GetNumOrdinalCategories(), 1 + giNumTimeIntervals - giProspectiveStart, 0);
     gppCategoryCases = gpCategoryCasesHandler->GetArray();
-    gvCasesPerCategory.resize(gvTotalCasesPerCategory.size(), 0);
+    gvCasesPerCategory.resize(Interface.GetNumOrdinalCategories(), 0);
   }
   catch (ZdException &x) {
     delete gpCategoryCasesHandler;
@@ -300,7 +287,7 @@ void CategoricalProspectiveSpatialData::Setup(const CSaTScanData& Data, const Da
 
 /** class constructor */
 CategoricalSpaceTimeData::CategoricalSpaceTimeData(const DataSetInterface& Interface)
-                         :CategoricalTemporalData(Interface.gvTotalCasesPerCategory) {
+                         :CategoricalTemporalData(Interface) {
   try {
     Init();
     Setup(Interface);
@@ -313,10 +300,10 @@ CategoricalSpaceTimeData::CategoricalSpaceTimeData(const DataSetInterface& Inter
 
 /** class constructor */
 CategoricalSpaceTimeData::CategoricalSpaceTimeData(const AbtractDataSetGateway& DataGateway)
-                         :CategoricalTemporalData(DataGateway.GetDataSetInterface(0).gvTotalCasesPerCategory) {
+                         :CategoricalTemporalData(DataGateway) {
   try {
     Init();
-    Setup(DataGateway.GetDataSetInterface(0));
+    Setup(DataGateway.GetDataSetInterface());
   }
   catch (ZdException &x) {
     x.AddCallpath("constructor(const AbtractDataSetGateway&)","CategoricalSpaceTimeData");
@@ -326,7 +313,7 @@ CategoricalSpaceTimeData::CategoricalSpaceTimeData(const AbtractDataSetGateway& 
 
 /** class copy constructor */
 CategoricalSpaceTimeData::CategoricalSpaceTimeData(const CategoricalSpaceTimeData& rhs)
-                         :CategoricalTemporalData(rhs.gvTotalCasesPerCategory) {
+                         :CategoricalTemporalData(rhs) {
   try {
     Init();
     gpCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(rhs.gpCategoryCasesHandler->Get1stDimension(), rhs.gpCategoryCasesHandler->Get2ndDimension(), 0);
@@ -386,9 +373,8 @@ void CategoricalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const Abt
 /** internal setup function */
 void CategoricalSpaceTimeData::Setup(const DataSetInterface& Interface) {
   try {
-    gpCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(gvTotalCasesPerCategory.size(), Interface.GetNumTimIntervals() + 1, 0);
+    gpCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(Interface.GetNumOrdinalCategories(), Interface.GetNumTimIntervals() + 1, 0);
     gppCategoryCases = gpCategoryCasesHandler->GetArray();
-    gvCasesPerCategory.resize(gvTotalCasesPerCategory.size(), 0);
   }
   catch (ZdException &x) {
     delete gpCategoryCasesHandler;

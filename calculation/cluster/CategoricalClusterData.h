@@ -14,7 +14,6 @@ class CategoricalSpatialData : public AbstractSpatialClusterData {
 
     //public data member -- public for speed considerations
     std::vector<count_t>        gvCasesPerCategory;      /* accumulated cases, organized by category */
-    const std::vector<count_t>  gvTotalCasesPerCategory; /* total cases in each category */
 
     virtual void                Assign(const AbstractSpatialClusterData& rhs);
     CategoricalSpatialData    & operator=(const CategoricalSpatialData& rhs);
@@ -33,9 +32,6 @@ class CategoricalSpatialData : public AbstractSpatialClusterData {
     is intended to permit instantiation through a derived class, where perhaps
     pointers will be allocated and data supplied by some other process. */
 class CategoricalTemporalData : public AbstractTemporalClusterData {
-  protected:
-    CategoricalTemporalData(const std::vector<count_t>& vTotalCasesPerCategory);
-
   public:
     CategoricalTemporalData(const DataSetInterface& Interface);
     CategoricalTemporalData(const AbtractDataSetGateway& DataGateway);
@@ -48,7 +44,6 @@ class CategoricalTemporalData : public AbstractTemporalClusterData {
     //public data member -- public for speed considerations
     count_t                  ** gppCategoryCases;        /* pointers to temporal arrays of category case data */
     std::vector<count_t>        gvCasesPerCategory;      /* accumulated cases, organized by category */
-    const std::vector<count_t>  gvTotalCasesPerCategory; /* total cases in each category */
 
     virtual void                AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual unsigned int        GetAllocationSize() const;
@@ -70,7 +65,6 @@ class CategoricalProspectiveSpatialData : public CategoricalTemporalData {
   protected:
     unsigned int                        giNumTimeIntervals;       /** number of time intervals in study period */
     unsigned int                        giProspectiveStart;       /** index of prospective start date in DataInterface case array */
-//    RATE_FUNCPTRTYPE                    gfRateOfInterest;         /** function pointer to 'rate of interest' function */
 
     TwoDimensionArrayHandler<count_t> * gpCategoryCasesHandler;
 
