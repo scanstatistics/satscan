@@ -190,9 +190,11 @@ void __fastcall TfrmMainForm::NewSessionActionExecute(TObject *Sender) {
 
 /** form activate event -- if first time showing, shows start window dialog */
 void __fastcall TfrmMainForm::OnFormActivate(TObject *Sender) {
+  TfrmStartWindow * frmStartWindow=0;
+
   try {
     if (gbShowStartWindow) {
-      TfrmStartWindow * frmStartWindow = new TfrmStartWindow(this);
+      frmStartWindow = new TfrmStartWindow(this);
       frmStartWindow->ShowModal();
       switch (frmStartWindow->GetOpenType()) {
         case TfrmStartWindow::NEW    : new TfrmAnalysis(this, ActionList); break;
@@ -211,6 +213,8 @@ void __fastcall TfrmMainForm::OnFormActivate(TObject *Sender) {
     }
   }
   catch (ZdException &x) {
+    gbShowStartWindow = false;
+    delete frmStartWindow; frmStartWindow=0;
     x.AddCallpath("OnFormActivate","TfrmMainForm");
     DisplayBasisException(this, x);
   }
