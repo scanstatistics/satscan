@@ -1,7 +1,6 @@
 #include "SaTScan.h"
 #pragma hdrstop
 #include "Parameters.h"
-#include <io.h>
 
 #define INCLUDE_RUN_HISTORY
 
@@ -955,16 +954,16 @@ bool CParameters::ReadBoolean(const ZdString & sValue, ParameterType eParameterT
       InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n", "ReadBoolean()",
                                           GetParameterLineLabel(eParameterType, sLabel, geReadType == INI));
     }
-    else if (!(!strcmpi(sValue.GetCString(),"y")   || !strcmpi(sValue.GetCString(),"n") ||
-               !strcmp(sValue.GetCString(),"1")    || !strcmpi(sValue.GetCString(),"0")   ||
-               !strcmpi(sValue.GetCString(),"yes")  || !strcmp(sValue.GetCString(),"no"))) {
+    else if (!(!stricmp(sValue.GetCString(),"y")   || !stricmp(sValue.GetCString(),"n") ||
+               !strcmp(sValue.GetCString(),"1")    || !strcmp(sValue.GetCString(),"0")   ||
+               !stricmp(sValue.GetCString(),"yes")  || !stricmp(sValue.GetCString(),"no"))) {
       gbReadStatusError = true;
       InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is invalid. Valid values are 'y' or 'n'.\n",
                                           "ReadBoolean()",
                                           GetParameterLineLabel(eParameterType, sLabel, geReadType == INI), sValue.GetCString());
     }
     else
-      bReadResult = (!strcmpi(sValue.GetCString(),"y") || !strcmpi(sValue.GetCString(),"yes") || !strcmp(sValue.GetCString(),"1"));
+      bReadResult = (!stricmp(sValue.GetCString(),"y") || !stricmp(sValue.GetCString(),"yes") || !strcmp(sValue.GetCString(),"1"));
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadBoolean()","CParameters");

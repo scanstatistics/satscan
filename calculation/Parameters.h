@@ -2,7 +2,7 @@
 #ifndef __PARAMETERS_H
 #define __PARAMETERS_H
 //*****************************************************************************
-#include "SatScan.h"
+#include "SaTScan.h"
 #include "JulianDates.h"
 
 extern const char*      YES;
