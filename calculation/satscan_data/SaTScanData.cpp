@@ -174,7 +174,12 @@ int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate) {
          iIntervalCut = 1;
       else if (m_nTimeIntervals > 1) {
          iIntervalCut = 0;
-         lTimeBetween = (TimeBetween(jStartDate, jEndDate, m_pParameters->m_nIntervalUnits))*m_pParameters->m_nMaxTemporalClusterSize/100.0;
+//         if (m_pParameters->m_nMaxClusterSizeType == PERCENTAGETYPE)
+           lTimeBetween = (TimeBetween(jStartDate, jEndDate, m_pParameters->m_nIntervalUnits))*m_pParameters->m_nMaxTemporalClusterSize/100.0;
+//         else
+//           lTimeBetween = (TimeBetween(jStartDate, jEndDate, m_pParameters->m_nIntervalUnits))*
+//                          (m_pParameters->m_nMaxTemporalClusterSize/TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->m_nIntervalUnits));
+//
          iIntervalCut = lTimeBetween / m_pParameters->m_nIntervalLength;
       }
    }
@@ -385,8 +390,12 @@ void CSaTScanData::SetIntervalCut() {
       if (m_nTimeIntervals == 1)
          m_nIntervalCut = 1;
       else if (m_nTimeIntervals > 1) {
+//         if (m_pParameters->m_nMaxClusterSizeType == PERCENTAGETYPE) {
            lTimeBetween = TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->m_nIntervalUnits)*m_pParameters->m_nMaxTemporalClusterSize/100.0;
            m_nIntervalCut = lTimeBetween / m_pParameters->m_nIntervalLength;
+//         }
+//        else
+//           m_nIntervalCut = m_pParameters->m_nMaxTemporalClusterSize / m_pParameters->m_nIntervalLength;
       }
 
       if (m_nIntervalCut==0) {
