@@ -198,10 +198,11 @@ void __fastcall TfrmMain::ActionSaveComparisonStatsExecute(TObject *Sender) {
        pListItem = lstDisplay->Items->Item[i];
        Output << "Parameter List Item " << i + 1 << ")" << endl
               << "                    Parameter Filename   : " << pListItem->Caption.c_str() << endl
-              << "                    Cluster Information  : " << pListItem->SubItems->Strings[0].c_str() << endl
-              << "                    Location Information : " << pListItem->SubItems->Strings[1].c_str() << endl
-              << "                    Relative Risks       : " << pListItem->SubItems->Strings[2].c_str() << endl
-              << "                    Simulated Ratios     : " << pListItem->SubItems->Strings[3].c_str() << endl << endl;
+              << "                    Speed                : " << pListItem->SubItems->Strings[0].c_str() << endl
+              << "                    Cluster Information  : " << pListItem->SubItems->Strings[1].c_str() << endl
+              << "                    Location Information : " << pListItem->SubItems->Strings[2].c_str() << endl
+              << "                    Relative Risks       : " << pListItem->SubItems->Strings[3].c_str() << endl
+              << "                    Simulated Ratios     : " << pListItem->SubItems->Strings[4].c_str() << endl << endl;
     }
   }
 }
@@ -257,6 +258,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
 
 /** add item to display indicating results of analysis comparison */
 void TfrmMain::AddList() {
+  AnsiString    sDisplay;
 
   TListItem * pListItem = lstDisplay->Items->Add();
   pListItem->Data = (void*)(gvParameterResultsInfo.size() - 1);
@@ -269,6 +271,7 @@ void TfrmMain::AddList() {
     pListItem->ImageIndex = 0;
 
   pListItem->SubItems->Add(gvParameterResultsInfo.back().GetFilename().GetCompleteFileName());
+  pListItem->SubItems->Add(GetDisplayTime(sDisplay));
   AddSubItemForType(pListItem, gvParameterResultsInfo.back().GetClusterInformationType());
   AddSubItemForType(pListItem, gvParameterResultsInfo.back().GetLocationInformationType());
   AddSubItemForType(pListItem, gvParameterResultsInfo.back().GetRelativeRisksType());
@@ -284,6 +287,7 @@ void TfrmMain::AddList(const char * sMessage) {
   pListItem->Data = (void*)(gvParameterResultsInfo.size() - 1);
   pListItem->ImageIndex = 3;
   pListItem->SubItems->Add(sCaption);
+  pListItem->SubItems->Add("-");
   pListItem->SubItems->Add("-");
   pListItem->SubItems->Add("-");
   pListItem->SubItems->Add("-");
@@ -554,6 +558,87 @@ std::string & TfrmMain::GetResultFileName(const ZdFileName & ParameterFilename, 
     sResultFilename.insert(0, ParameterFilename.GetLocation());
 
   return sResultFilename;
+}
+
+bool TfrmMain::GetRunTime(const char * sResultFile, unsigned short& uHours, unsigned short& uMinutes, unsigned short& uSeconds) {
+   ifstream             file(sResultFile);
+   std::string          sLine;
+   bool                 bFoundTimeLine=false;
+   ZdStringTokenizer    DateTokenizer("", " ");
+
+   if (! file)
+     return false;
+
+   while (file && !bFoundTimeLine) {
+     std::getline(file, sLine);
+     if (sLine.find("Total Running Time : ") != sLine.npos)
+       bFoundTimeLine = true;
+   }
+
+   if (!bFoundTimeLine)
+     return false;
+
+   DateTokenizer.SetString(sLine.substr(strlen("Total Running Time : ")).c_str());
+
+   if (DateTokenizer.GetNumTokens() == 2) {
+     uHours = 0;
+     uMinutes = 0;
+     uSeconds = atoi(DateTokenizer.GetToken(0).GetCString());
+   }
+   else if (DateTokenizer.GetNumTokens() == 4) {
+     uHours = 0;
+     uMinutes = atoi(DateTokenizer.GetToken(0).GetCString());
+     uSeconds = atoi(DateTokenizer.GetToken(2).GetCString());
+   }
+   else if (DateTokenizer.GetNumTokens() == 6) {
+     uHours = atoi(DateTokenizer.GetToken(0).GetCString());
+     uMinutes = atoi(DateTokenizer.GetToken(2).GetCString());
+     uSeconds = atoi(DateTokenizer.GetToken(4).GetCString());
+   }
+   else
+     return false;
+
+   return true;
+}
+
+AnsiString & TfrmMain::GetDisplayTime(AnsiString & sDisplay) {
+  bool                  bMasterDate, bCompareDate;
+  unsigned short        uHoursM, uMinutesM, uSecondsM, uHoursC, uMinutesC, uSecondsC;
+  std::string           sMaster, sCompare;
+  unsigned int          uiMasterTime, uiCompareTime;
+
+  GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sMaster);
+  bMasterDate = GetRunTime(sMaster.c_str(), uHoursM, uMinutesM, uSecondsM);
+  GetCompareFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
+  bCompareDate = GetRunTime(sCompare.c_str(), uHoursC, uMinutesC, uSecondsC);
+
+  if (!bMasterDate)
+    sDisplay.printf("%i hr %i min % i sec", uHoursC, uMinutesC, uSecondsC);
+  else if (!bCompareDate)
+    sDisplay = "Unknown";
+  else {
+    uiMasterTime = (uHoursM * 10000) + (uMinutesM * 100 ) + uSecondsM;
+    uiCompareTime = (uHoursC * 10000) + (uMinutesC * 100) + uSecondsC;
+
+    if (uiMasterTime == uiCompareTime)
+      sDisplay.printf("same %i hr %i min % i sec", uHoursC, uMinutesC, uSecondsC);
+    else if (uiMasterTime > uiCompareTime) {
+      uiMasterTime = uiMasterTime - uiCompareTime;
+      uHoursM = uiMasterTime/10000;
+      uMinutesM = (uiMasterTime - (uHoursM * 10000))/100;
+      uSecondsM = uiMasterTime - (uHoursM * 10000) - (uMinutesM * 100);
+      sDisplay.printf("faster by %i hr %i min % i sec", uHoursM, uMinutesM, uSecondsM);
+    }
+    else {
+      uiCompareTime = uiCompareTime - uiMasterTime;
+      uHoursC = uiCompareTime/10000;
+      uMinutesC = (uiCompareTime - (uHoursM * 10000))/100;
+      uSecondsC = uiCompareTime - (uHoursM * 10000) - (uMinutesM * 100);
+      sDisplay.printf("slower by %i hr %i min % i sec", uHoursM, uMinutesM, uSecondsM);
+    }
+  }
+
+  return sDisplay;
 }
 
 void __fastcall TfrmMain::lstDisplayColumnClick(TObject *Sender,TListColumn *Column) {

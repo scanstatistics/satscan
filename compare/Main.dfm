@@ -1,6 +1,6 @@
 object frmMain: TfrmMain
-  Left = 290
-  Top = 210
+  Left = 263
+  Top = 173
   Width = 796
   Height = 396
   Caption = 'SaTScan Version Comparsion Utility v1.0'
@@ -130,6 +130,10 @@ object frmMain: TfrmMain
         item
           Caption = 'Parameter Filename'
           Width = 181
+        end
+        item
+          Caption = 'Speed'
+          Width = 150
         end
         item
           Caption = 'Cluster Information'

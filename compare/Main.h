@@ -138,6 +138,8 @@ __published:	// IDE-managed Components
     bool                                Execute(const AnsiString & sCommandLine);
     std::string                       & GetCompareFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename);
     std::string                       & GetResultFileName(const ZdFileName & ParameterFilename, std::string & sResultFilename);
+    bool                                GetRunTime(const char * sResultFile, unsigned short& uHours, unsigned short& uMinutes, unsigned short& uSeconds);  
+    AnsiString                        & GetDisplayTime(AnsiString & sDisplay);
     bool                                PromptForCompareProgram();
 
   public:
