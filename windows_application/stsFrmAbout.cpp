@@ -9,9 +9,10 @@ TfrmAbout *frmAbout;
 __fastcall TfrmAbout::TfrmAbout(TComponent* Owner)
         : TForm(Owner)
 {
-   lblEmail->Caption = TECH_EMAIL;
+   lblEmail->Caption = SUBSTANTIVE_SUPPORT_EMAIL;
    lblVersion->Caption = VERSION_NUMBER;
-   lblVersionDate->Caption = VERSION_DATE;   
+   lblVersionDate->Caption = VERSION_DATE;
+   lblWebSite->Caption = SATSCAN_WEBSITE;   
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAbout::Button1Click(TObject *Sender)

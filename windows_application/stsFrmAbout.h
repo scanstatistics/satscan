@@ -17,7 +17,7 @@ __published:	// IDE-managed Components
         TLabel *Label9;
         TLabel *Label10;
         TLabel *Label11;
-        TLabel *Label13;
+        TLabel *lblWebSite;
         TLabel *Label2;
         TLabel *Label4;
         TLabel *Label5;

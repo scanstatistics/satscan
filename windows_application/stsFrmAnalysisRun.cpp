@@ -94,7 +94,7 @@ void __fastcall TfrmAnalysisRun::OnEMailClick(TObject *Sender) {
    AnsiString       sMessageText;
    unsigned long    ulError;
 
-   ulError = MapiResolveName ( 0, 0, const_cast<char *>(TECH_EMAIL), 0, 0, pRecipient );
+   ulError = MapiResolveName ( 0, 0, const_cast<char *>(TECHNICAL_SUPPORT_EMAIL), 0, 0, pRecipient );
    if ( ulError == SUCCESS_SUCCESS ){
       lMsgTitleLength = snprintf ( sMsgTitle, 0, "%s -- %s -- Automated Error Message", Application->Title.c_str(), VERSION_NUMBER );
       sMsgTitle = new char[lMsgTitleLength + 1];
