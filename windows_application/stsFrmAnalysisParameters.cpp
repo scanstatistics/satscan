@@ -1821,6 +1821,8 @@ void TfrmAnalysis::SetupInterface() {
     chkCensusAreas->Checked    = gpParams->m_bOutputCensusAreas;  // Output Census areas in Reported Clusters
     chkLikelyClusters->Checked = gpParams->m_bMostLikelyClusters;  // Output Most Likely Cluster for each Centroid
     cboCriteriaSecClusters->ItemIndex = gpParams->m_iCriteriaSecondClusters;
+    chkDbaseFile1->Checked = gpParams->GetOutputClusterLevelDBF();
+    chkDbaseFile2->Checked = gpParams->GetOutputAreaSpecificDBF();
     //now enable or disable controls appropriately
     DataExchange();
   }
