@@ -110,6 +110,7 @@ class CompareTractDescriptorIdentifier {
                    }
 };
 
+class CSaTScanData;
 class TractHandler {
   private:
     const PopulationCategories                 * gpPopulationCategories;
@@ -133,7 +134,7 @@ class TractHandler {
     int                                 tiAddCount(tract_t t, int iCategoryIndex, count_t Count);
     void                                tiAssignPopulation(CategoryDescriptor & thisCategoryDescriptor, Julian PopulationDate, float fPopulation);
     void                                tiCalculateAlpha(double** pAlpha, Julian StartDate, Julian EndDate) const;
-    void                                tiCheckCasesHavePopulations() const;
+    void                                tiCheckCasesHavePopulations(CSaTScanData & Data) const;
     bool                                tiCheckZeroPopulations(FILE *pDisplay) const;
     tract_t                             tiCombineDuplicatesByCoordinates();
     void                                tiConcaticateDuplicateTractIdentifiers();
@@ -143,6 +144,7 @@ class TractHandler {
     double                              tiGetAlphaAdjustedPopulation(double & dPopulation, tract_t t, int iCategoryIndex,
                                                                      int iStartPopulationDateIndex, int iEndPopulationDateIndex,
                                                                      double Alpha[]) const;
+    count_t                             tiGetCategoryCaseCount(int iCategoryIndex) const;
     void                                tiGetCoords(tract_t t, double** pCoords) const;
     void                                tiGetCoords2(tract_t t, double* pCoords) const;
     count_t                             tiGetCount(tract_t t, int iCategoryIndex) const;

@@ -1,6 +1,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 #include "Tracts.h"
+#include "SaTScanData.h"
 
 /** Constructor */
 CategoryDescriptor::CategoryDescriptor(int iPopulationDatesCount, int iCategoryIndex) : gpNextDescriptor(0), gpPopulationList(0) {
@@ -573,12 +574,13 @@ void TractHandler::tiCalculateAlpha(double** pAlpha, Julian StartDate, Julian En
 
 /** Prints warning if there are tract categories with cases but no population.
     Throws exception if total population for tract is zero. */
-void TractHandler::tiCheckCasesHavePopulations() const {
+void TractHandler::tiCheckCasesHavePopulations(CSaTScanData & Data) const {
   int                           i, j, nPEndIndex, nPStartIndex = 0;
   const CategoryDescriptor *    pCategoryDescriptor;
   std::string                   sBuffer, sBuffer2;
   double                        dTractPopulation, dCategoryTotal;
   count_t                       iTractCaseCount;
+  count_t                     * pCases(Data.GetCasesArray()[0]);
 
   try {
     if (bStartAsPopDt)
@@ -588,33 +590,36 @@ void TractHandler::tiCheckCasesHavePopulations() const {
     else
       nPEndIndex = (int)gvPopulationDates.size() - 1;
 
+    //NOTE: Because of the design error with reading the case file, the tract handler
+    //      class no longer records number of cases for each tract/category. So this
+    //      check has been removed until that code is updated. 
     for (i=0; i < (int)gvTractDescriptors.size(); i++) {
        dTractPopulation = 0;
-       iTractCaseCount = 0;
+       //iTractCaseCount = 0;
        pCategoryDescriptor = gvTractDescriptors[i]->GetCategoryDescriptorList();
        while (pCategoryDescriptor) {
           dCategoryTotal = 0;
-          iTractCaseCount += pCategoryDescriptor->GetCaseCount();
+          //iTractCaseCount += pCategoryDescriptor->GetCaseCount();
           for (j=nPStartIndex; j <= nPEndIndex; j++)
              dCategoryTotal += pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
           dTractPopulation += dCategoryTotal;
-          if (dCategoryTotal == 0 && pCategoryDescriptor->GetCaseCount() > 0) {
-            if (gpPopulationCategories->GetNumPopulationCategories() > 1)
-              //If there is only one population category, then this warning is redundant as the error
-              //message below will be displayed with same information. So we only want to
-              //show this warning if there is more than one covariate for this location.
-              gpPrintDirection->SatScanPrintWarning("Warning: Tract %s  covariate %s has %d cases but zero population.\n",
-                                gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer),
-                                gpPopulationCategories->GetPopulationCategoryAsString(pCategoryDescriptor->GetCategoryIndex(), sBuffer2),
-                                pCategoryDescriptor->GetCaseCount());
-          }
+          //if (dCategoryTotal == 0 && pCategoryDescriptor->GetCaseCount() > 0) {
+          //  if (gpPopulationCategories->GetNumPopulationCategories() > 1)
+          //    //If there is only one population category, then this warning is redundant as the error
+          //    //message below will be displayed with same information. So we only want to
+          //    //show this warning if there is more than one covariate for this location.
+          //    gpPrintDirection->SatScanPrintWarning("Warning: Tract %s  covariate %s has %d cases but zero population.\n",
+          //                     gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer),
+          //                      gpPopulationCategories->GetPopulationCategoryAsString(pCategoryDescriptor->GetCategoryIndex(), sBuffer2),
+          //                      pCategoryDescriptor->GetCaseCount());
+          //}
           pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();
        }
 
-       if (dTractPopulation == 0 && iTractCaseCount > 0)
+       if (dTractPopulation == 0 && pCases[i] > 0)
          SSGenerateException("Error: Total population is zero for tract %s but has %d cases.",
                              "tiCheckCasesHavePopulations()",
-                             gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer), iTractCaseCount);
+                             gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer), pCases[i]);
     }
   }
   catch (ZdException & x) {
@@ -789,6 +794,11 @@ double TractHandler::tiGetAlphaAdjustedPopulation(double & dPopulation, tract_t 
   return dPopulation;
 }
 
+/** returns number of cases for populations category */
+count_t TractHandler::tiGetCategoryCaseCount(int iCategoryIndex) const {
+  return gpPopulationCategories->GetNumCategoryCases(iCategoryIndex);
+}
+
 /** Returns the tract coords for the given tract_t index.
     Allocate memory for array - caller is responsible for freeing. */
 void TractHandler::tiGetCoords(tract_t t, double** pCoords) const {
@@ -823,6 +833,8 @@ count_t TractHandler::tiGetCount(tract_t t, int iCategoryIndex) const {
   const CategoryDescriptor    * pCategoryDescriptor;
 
   try {
+    ZdException::Generate("TractHandler::tiGetCount() no longer valid, use TractHandler::tiGetCategoryCaseCount().", "tiGetCount()");
+
     if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
        ZdException::Generate("Index %d out of range(0 - %d)", "tiGetCount()", t, gvTractDescriptors.size() - 1);
 
