@@ -417,7 +417,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->GetNumTracts(), GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));     // number of geographic areas field
 
       // precision of case times field
-      GetCasePrecisionString(sTempValue, params.GetPrecisionOfTimesType());
+      sTempValue = (params.GetPrecisionOfTimesType() == NONE ? "No" : "Yes");
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, PRECISION_TIMES_FIELD));
 
       //  max geographic extent field
