@@ -19,7 +19,7 @@ INSTALLDIR  := ~/FV
 ##########
 # you shouldn't have to change any of this.
 
-SHELL       := /usr/bin/csh
+SHELL       := /usr/bin/sh
 CC          := g++
 APPLICATION :=SaTScan
 DEBUG       := -gstabs+ 
