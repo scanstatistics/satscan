@@ -407,10 +407,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
     fprintf(fp, "\n  Start Date : %s\n", gsStudyPeriodStartDate.c_str());
     fprintf(fp, "  End Date   : %s\n\n", gsStudyPeriodEndDate.c_str());
 
-    if (iNumSimulationsCompleted < giReplications)
-      fprintf(fp, "  Number of Replications : %u (requested %u)\n", iNumSimulationsCompleted, giReplications);
-    else
-      fprintf(fp, "  Number of Replications : %u\n", giReplications);
+    fprintf(fp, "  Number of Replications : %u\n", giReplications);
 
     if (giNumberEllipses > 0) {
       fprintf(fp, "\nEllipses\n");
