@@ -207,7 +207,8 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
    auto_ptr<stsClusterLevelDBF> pDBFClusterReport;
 
    try {
-      OpenGridOutputFile(fpMCL, "w");
+      if (m_pParameters->m_bMostLikelyClusters)
+         OpenGridOutputFile(fpMCL, "w");
       if(m_pParameters->GetOutputClusterLevelDBF())
          pDBFClusterReport.reset(new stsClusterLevelDBF(lReportHistoryRunNumber, GetCoordinateType(), m_pParameters->m_szOutputFilename));
 
