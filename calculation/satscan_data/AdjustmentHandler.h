@@ -41,6 +41,7 @@ class RelativeRiskAdjustmentHandler {
     ~RelativeRiskAdjustmentHandler();
     
     void				AddAdjustmentData(tract_t tTractIndex, measure_t dRelativeRisk, Julian StartDate, Julian EndDate);
+    void                                Empty() {gTractAdjustments.clear();}
     const AdjustmentsContainer_t      & GetAdjustments() const {return gTractAdjustments;}
     TractContainerIterator_t            GetMaxPeriodIndex(TractContainer_t & Container, Julian Date);
     unsigned int			GetNumAdjustments() const {return gTractAdjustments.size();}
