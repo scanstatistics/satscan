@@ -36,11 +36,11 @@ object frmAnalysis: TfrmAnalysis
         Caption = 'Population File:'
       end
       object Label5: TLabel
-        Left = 136
+        Left = 128
         Top = 136
-        Width = 144
+        Width = 75
         Height = 13
-        Caption = '(For All Except Bernouli Model)'
+        Caption = '(Poisson Model)'
       end
       object GroupBox1: TGroupBox
         Left = 16
@@ -69,9 +69,9 @@ object frmAnalysis: TfrmAnalysis
         object Label3: TLabel
           Left = 112
           Top = 64
-          Width = 118
+          Width = 78
           Height = 13
-          Caption = '(For Bernouli Model Only)'
+          Caption = '(Bernoulli Model)'
         end
         object rgPrecisionTimes: TRadioGroup
           Left = 320
@@ -473,139 +473,6 @@ object frmAnalysis: TfrmAnalysis
         OnKeyPress = NaturalNumberKeyPress
       end
     end
-    object tbScanningWindow: TTabSheet
-      Caption = 'Scanning Window'
-      ImageIndex = 2
-      object GroupBox4: TGroupBox
-        Left = 16
-        Top = 8
-        Width = 457
-        Height = 87
-        Caption = 'Spatial'
-        TabOrder = 0
-        object Label17: TLabel
-          Left = 24
-          Top = 22
-          Width = 146
-          Height = 13
-          Caption = 'Maximum Spatial Cluster Size:  '
-        end
-        object edtMaxClusterSize: TEdit
-          Left = 184
-          Top = 16
-          Width = 38
-          Height = 21
-          AutoSelect = False
-          MaxLength = 5
-          TabOrder = 0
-          Text = '50'
-          OnExit = edtMaxClusterSizeExit
-          OnKeyPress = PositiveFloatKeyPress
-        end
-        object chkInclPurTempClust: TCheckBox
-          Left = 24
-          Top = 57
-          Width = 305
-          Height = 17
-          Caption = 'Include Purely Temporal Cluster (Spatial Size = 100%)'
-          Enabled = False
-          TabOrder = 1
-          OnClick = chkInclPurTempClustClick
-        end
-        object rdoSpatialPercentage: TRadioButton
-          Left = 232
-          Top = 14
-          Width = 129
-          Height = 17
-          Caption = 'Percentage (<= 50%)'
-          Checked = True
-          TabOrder = 2
-          TabStop = True
-          OnClick = rdoSpatialPercentageClick
-        end
-        object rdoSpatialDistance: TRadioButton
-          Left = 232
-          Top = 34
-          Width = 186
-          Height = 17
-          Caption = 'Distance (in kilometers)'
-          TabOrder = 3
-          OnClick = rdoSpatialDistanceClick
-        end
-      end
-      object GroupBox5: TGroupBox
-        Left = 16
-        Top = 103
-        Width = 457
-        Height = 89
-        Caption = 'Temporal'
-        TabOrder = 1
-        object Label18: TLabel
-          Left = 24
-          Top = 22
-          Width = 158
-          Height = 13
-          Caption = 'Maximum Temporal Cluster Size:  '
-        end
-        object edtMaxTemporalClusterSize: TEdit
-          Left = 184
-          Top = 16
-          Width = 38
-          Height = 21
-          Color = clInactiveBorder
-          Enabled = False
-          MaxLength = 5
-          TabOrder = 0
-          Text = '50'
-          OnExit = edtMaxTemporalClusterSizeExit
-          OnKeyPress = PositiveFloatKeyPress
-        end
-        object chkIncludePurSpacClust: TCheckBox
-          Left = 24
-          Top = 59
-          Width = 297
-          Height = 17
-          Caption = 'Include Purely Spatial Clusters (Temporal Size = 100%)'
-          Enabled = False
-          TabOrder = 1
-          OnClick = chkIncludePurSpacClustClick
-        end
-        object rdoPercentageTemproal: TRadioButton
-          Left = 232
-          Top = 14
-          Width = 129
-          Height = 17
-          Caption = 'Percentage (<= 90%)'
-          Checked = True
-          TabOrder = 2
-          TabStop = True
-        end
-        object rdoTimeTemproal: TRadioButton
-          Left = 232
-          Top = 34
-          Width = 217
-          Height = 17
-          Caption = 'Time in days - months - years'
-          TabOrder = 3
-        end
-      end
-      object rgClustersToInclude: TRadioGroup
-        Left = 16
-        Top = 199
-        Width = 457
-        Height = 81
-        Caption = 'Clusters to Include'
-        Enabled = False
-        ItemIndex = 0
-        Items.Strings = (
-          'All clusters'
-          
-            'Only clusters that include the study period end date (alive clus' +
-            'ters)')
-        TabOrder = 2
-        OnClick = rgClustersToIncludeClick
-      end
-    end
     object tbTimeParameter: TTabSheet
       Caption = 'Time Parameters'
       ImageIndex = 3
@@ -806,6 +673,139 @@ object frmAnalysis: TfrmAnalysis
         end
       end
     end
+    object tbScanningWindow: TTabSheet
+      Caption = 'Scanning Window'
+      ImageIndex = 2
+      object GroupBox4: TGroupBox
+        Left = 16
+        Top = 8
+        Width = 457
+        Height = 87
+        Caption = 'Spatial'
+        TabOrder = 0
+        object Label17: TLabel
+          Left = 24
+          Top = 22
+          Width = 146
+          Height = 13
+          Caption = 'Maximum Spatial Cluster Size:  '
+        end
+        object edtMaxClusterSize: TEdit
+          Left = 184
+          Top = 16
+          Width = 38
+          Height = 21
+          AutoSelect = False
+          MaxLength = 5
+          TabOrder = 0
+          Text = '50'
+          OnExit = edtMaxClusterSizeExit
+          OnKeyPress = PositiveFloatKeyPress
+        end
+        object chkInclPurTempClust: TCheckBox
+          Left = 24
+          Top = 57
+          Width = 305
+          Height = 17
+          Caption = 'Include Purely Temporal Cluster (Spatial Size = 100%)'
+          Enabled = False
+          TabOrder = 1
+          OnClick = chkInclPurTempClustClick
+        end
+        object rdoSpatialPercentage: TRadioButton
+          Left = 232
+          Top = 14
+          Width = 217
+          Height = 17
+          Caption = 'Percent of Population at Risk (<= 50%)'
+          Checked = True
+          TabOrder = 2
+          TabStop = True
+          OnClick = rdoSpatialPercentageClick
+        end
+        object rdoSpatialDistance: TRadioButton
+          Left = 232
+          Top = 34
+          Width = 217
+          Height = 17
+          Caption = 'Kilometer Radius'
+          TabOrder = 3
+          OnClick = rdoSpatialDistanceClick
+        end
+      end
+      object GroupBox5: TGroupBox
+        Left = 16
+        Top = 103
+        Width = 457
+        Height = 89
+        Caption = 'Temporal'
+        TabOrder = 1
+        object Label18: TLabel
+          Left = 24
+          Top = 22
+          Width = 158
+          Height = 13
+          Caption = 'Maximum Temporal Cluster Size:  '
+        end
+        object edtMaxTemporalClusterSize: TEdit
+          Left = 184
+          Top = 16
+          Width = 38
+          Height = 21
+          Color = clInactiveBorder
+          Enabled = False
+          MaxLength = 5
+          TabOrder = 0
+          Text = '50'
+          OnExit = edtMaxTemporalClusterSizeExit
+          OnKeyPress = PositiveFloatKeyPress
+        end
+        object chkIncludePurSpacClust: TCheckBox
+          Left = 24
+          Top = 59
+          Width = 297
+          Height = 17
+          Caption = 'Include Purely Spatial Clusters (Temporal Size = 100%)'
+          Enabled = False
+          TabOrder = 1
+          OnClick = chkIncludePurSpacClustClick
+        end
+        object rdoPercentageTemproal: TRadioButton
+          Left = 232
+          Top = 14
+          Width = 217
+          Height = 17
+          Caption = 'Percent of Study Period (<= 90%)'
+          Checked = True
+          TabOrder = 2
+          TabStop = True
+        end
+        object rdoTimeTemproal: TRadioButton
+          Left = 232
+          Top = 34
+          Width = 217
+          Height = 17
+          Caption = 'days or months or years'
+          TabOrder = 3
+        end
+      end
+      object rgClustersToInclude: TRadioGroup
+        Left = 16
+        Top = 199
+        Width = 457
+        Height = 81
+        Caption = 'Clusters to Include'
+        Enabled = False
+        ItemIndex = 0
+        Items.Strings = (
+          'All clusters'
+          
+            'Only clusters that include the study period end date (alive clus' +
+            'ters)')
+        TabOrder = 2
+        OnClick = rgClustersToIncludeClick
+      end
+    end
     object tbOutputFiles: TTabSheet
       Caption = 'Output Files'
       ImageIndex = 4
@@ -952,7 +952,6 @@ object frmAnalysis: TfrmAnalysis
     end
   end
   object OpenDialog1: TOpenDialog
-    Options = [ofAllowMultiSelect, ofEnableSizing]
     Left = 408
   end
   object SaveDialog: TSaveDialog

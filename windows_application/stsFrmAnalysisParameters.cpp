@@ -1112,11 +1112,11 @@ void TfrmAnalysis::EnableScanningWindow() {
   rdoPercentageTemproal->Enabled = bTemporal;
   rdoTimeTemproal->Enabled = bTemporal;
   if (rbUnitYear->Checked)
-    rdoTimeTemproal->Caption = "Time in years";
+    rdoTimeTemproal->Caption = "Years";
   else if (rbUnitMonths->Checked)
-    rdoTimeTemproal->Caption = "Time in months";
+    rdoTimeTemproal->Caption = "Months";
   else
-    rdoTimeTemproal->Caption = "Time in days";
+    rdoTimeTemproal->Caption = "Days";
   chkIncludePurSpacClust->Enabled = (((gpParams->m_nAnalysisType == PURELYSPATIAL) ||
                                       (gpParams->m_nAnalysisType == SPACETIME)) &&
                                       bTemporal && gpParams->m_nModel != SPACETIMEPERMUTATION);
@@ -1465,9 +1465,9 @@ void __fastcall TfrmAnalysis::rgProbabilityClick(TObject *Sender) {
     btnControlBrowse->Enabled = ( rgProbability->ItemIndex == SPACETIMEPERMUTATION || rgProbability->ItemIndex == POISSON ? false : true );
     // indicate that for Space-Time Permutation model, max temporal clusters size is 50.
     if (rgProbability->ItemIndex == SPACETIMEPERMUTATION)
-      rdoPercentageTemproal->Caption = "Percentage (<= 50%)";
+      rdoPercentageTemproal->Caption = "Percent of Study Period (<= 50%)";
     else
-      rdoPercentageTemproal->Caption = "Percentage (<= 90%)";
+      rdoPercentageTemproal->Caption = "Percent of Study Period (<= 90%)";
     if ( rgProbability->ItemIndex == SPACETIMEPERMUTATION && !( rgTypeAnalysis->ItemIndex + 1  == SPACETIME || rgTypeAnalysis->ItemIndex + 1 == PROSPECTIVESPACETIME ) )
       //Space-Time Permutation model only valid for space-time analysis types.
       //If analysis isn't space-time, then set to PROSPECTIVESPACETIME by default.
@@ -1618,9 +1618,9 @@ void TfrmAnalysis::SetSpatialDistanceCaption() {
   try {
     switch (rgCoordinates->ItemIndex)
        {
-       case 0  : rdoSpatialDistance->Caption = "Distance (Cartesian units)";
+       case 0  : rdoSpatialDistance->Caption = "Cartesian Units Radius";
                  break;
-       case 1  : rdoSpatialDistance->Caption = "Distance (in kilometers)";
+       case 1  : rdoSpatialDistance->Caption = "Kilometer Radius";
                  break;
        default : ZdException::Generate("Unknown coordinates radio button index: \"%i\".",
                                        "rgCoordinatesClick()", rgCoordinates->ItemIndex);
@@ -2103,4 +2103,5 @@ void __fastcall TfrmAnalysis::rdoSpatialDistanceClick(TObject *Sender){
   }
 }
 //---------------------------------------------------------------------------
+
 
