@@ -222,6 +222,18 @@ void TBDlgDataImporter::CheckForRequiredVariables() {
       }
       BImporterException::GenerateException(sMessage, "CheckForRequiredVariables()", ZdException::Notify);
     }
+
+    //hack - we need to ensure that either both or neither dates are assigned for adjustment file
+    //     -- redo this better after 4.0 release
+    if (rdgInputFileType->ItemIndex == AdjustmentsByRR) {
+      if ((gvSaTScanVariables[2].GetIsMappedToInputFileVariable() && !gvSaTScanVariables[3].GetIsMappedToInputFileVariable()) ||
+          (!gvSaTScanVariables[2].GetIsMappedToInputFileVariable() && gvSaTScanVariables[3].GetIsMappedToInputFileVariable())) {
+        sMessage << "For the " << rdgInputFileType->Items->Strings[rdgInputFileType->ItemIndex].c_str();
+        sMessage << ", the dates are required to be selected or omitted as a pair.\n";
+        sMessage << "Please review the specified options.";
+        BImporterException::GenerateException(sMessage, "CheckForRequiredVariables()", ZdException::Notify);
+      }
+    }
   }
   catch (ZdException &x) {
     x.AddCallpath("CheckForRequiredVariables()","TBDlgDataImporter");
@@ -312,11 +324,11 @@ void TBDlgDataImporter::CreateDestinationInformation() {
                                  break;
       case Population          : sFileName.SetExtension(".pop");
                                  break;
-      case MaxCirclePopulation : sFileName.SetExtension(".max");
-                                 break;
       case Coordinates         : sFileName.SetExtension(".geo");
                                  break;
       case SpecialGrid         : sFileName.SetExtension(".grd");
+                                 break;
+      case MaxCirclePopulation : sFileName.SetExtension(".max");
                                  break;
       case AdjustmentsByRR     : sFileName.SetExtension(".adj");
                                  break;
