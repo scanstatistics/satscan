@@ -1797,7 +1797,7 @@ void TfrmAdvancedParameters::ValidateTemporalClusterSize() {
               ulMaxClusterDays = (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? ulMaxClusterDays * 0.5 : ulMaxClusterDays * 0.9);
               StartPlusIntervalDate = StartDate;
               //add time interval length as units to modified start date
-              switch (gAnalysisSettings.GetTimeIntervalControlType()) {
+              switch (gAnalysisSettings.GetTimeAggregationControlType()) {
               case (YEAR):
                  StartPlusIntervalDate.AddYears(static_cast<unsigned short>(atoi((edtMaxTemporalClusterSizeUnits)->Text.c_str())));
                  strcpy(Buffer,"year(s)");
@@ -1814,7 +1814,7 @@ void TfrmAdvancedParameters::ValidateTemporalClusterSize() {
                  strcpy(Buffer,"day(s)");
                  break;
               default  :
-                 sErrorMessage << "Unknown interval unit " << gAnalysisSettings.GetTimeIntervalControlType() << ".";
+                 sErrorMessage << "Unknown interval unit " << gAnalysisSettings.GetTimeAggregationControlType() << ".";
                  GenerateAFException(sErrorMessage, "ValidateTemporalClusterSize()", *edtMaxTemporalClusterSizeUnits, ANALYSIS_TABS);
                  sErrorMessage = 0;
               };
