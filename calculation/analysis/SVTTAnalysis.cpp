@@ -123,13 +123,6 @@ double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataStreamInterface & Inte
   return dMaximumLogLikelihoodRatio;
 }
 
-/** calculates loglikelihood ratio for simulated data pointed to by DataStreamInterface
-    in a prospective manner -- NOT IMPLEMENTED -- */
-double CSpatialVarTempTrendAnalysis::MonteCarloProspective(const DataStreamInterface & Interface) {
-  ZdGenerateException("MonteCarloProspective() not implemented.","CSpatialVarTempTrendAnalysis");
-  return 0;
-}
-
 /** internal setup function */
 void CSpatialVarTempTrendAnalysis::Setup() {
   try {
