@@ -1386,6 +1386,8 @@ bool TfrmAnalysis::ValidateParams() {
     bReturn = false;
     DisplayBasisException(this, x);
     gpfrmAdvancedParameters->ShowDialog(&x.GetFocusControl());
+    // PAG - update Advanced buttons if parameters were changed to fix errors
+    EnableAdvancedButtons();
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateParams()","TfrmAnalysis");
