@@ -268,36 +268,42 @@ object frmMainForm: TfrmMainForm
     Left = 8
     Top = 192
     object NewSessionAction: TAction
+      Category = 'All'
       Hint = 'New Session'
       ImageIndex = 4
       ShortCut = 16462
       OnExecute = NewSessionActionExecute
     end
     object OpenParameterFileAction: TAction
+      Category = 'All'
       Hint = 'Open Parameter File'
       ImageIndex = 0
       ShortCut = 16463
       OnExecute = OpenParameterFileActionExecute
     end
     object SaveSessionAction: TAction
+      Category = 'Analysis'
       Hint = 'Save Session'
       ImageIndex = 3
       ShortCut = 16467
       OnExecute = SaveSessionActionExecute
     end
     object SaveSessionAsAction: TAction
+      Category = 'Analysis'
       Caption = 'Save Session As'
       Hint = 'Save As'
       ShortCut = 16449
       OnExecute = SaveSessionAsActionExecute
     end
     object CloseSessionAction: TAction
+      Category = 'Analysis'
       Caption = 'Close Session'
       Hint = 'Close Session'
       ShortCut = 16457
       OnExecute = CloseSessionActionExecute
     end
     object PrintSessionAction: TAction
+      Category = 'AnalysisRun'
       Caption = 'Print Session Information'
       Enabled = False
       Hint = 'Print Session Information'
@@ -305,36 +311,41 @@ object frmMainForm: TfrmMainForm
       OnExecute = PrintSessionActionExecute
     end
     object PrintSetupAction: TAction
+      Category = 'AnalysisRun'
       Caption = 'Print Setup'
       Hint = 'Print Setup'
       ShortCut = 16466
       OnExecute = PrintSetupActionExecute
     end
     object ExitAction: TAction
+      Category = 'All'
       Caption = 'Exit'
       Hint = 'Exit'
       ShortCut = 16472
       OnExecute = ExitActionExecute
     end
     object ExecuteAction: TAction
+      Category = 'Analysis'
       Hint = 'Execute'
       ImageIndex = 2
       ShortCut = 16453
       OnExecute = ExecuteActionExecute
     end
     object HelpAction: TAction
+      Category = 'All'
       Hint = 'Help'
       ImageIndex = 1
       ShortCut = 16456
       OnExecute = HelpActionExecute
     end
     object UsingHelpAction: TAction
+      Category = 'All'
       Caption = 'Using Help'
       Hint = 'Using Help'
-      ShortCut = 16469
       OnExecute = UsingHelpActionExecute
     end
     object AboutSatscanAction: TAction
+      Category = 'All'
       Caption = 'About SaTScan'
       Hint = 'About SaTScan'
       OnExecute = AboutSatscanActionExecute
