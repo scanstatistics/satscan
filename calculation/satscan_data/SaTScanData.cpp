@@ -143,8 +143,8 @@ int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate) {
    long lTimeBetween;
 
    if (m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
-     lTimeBetween = floor((TimeBetween(jStartDate, jEndDate, m_pParameters->GetTimeIntervalUnitsType()))*m_pParameters->GetMaximumTemporalClusterSize()/100.0);
-     iIntervalCut = floor(lTimeBetween / m_pParameters->GetTimeIntervalLength());
+     lTimeBetween = static_cast<long>(floor((TimeBetween(jStartDate, jEndDate, m_pParameters->GetTimeIntervalUnitsType()))*m_pParameters->GetMaximumTemporalClusterSize()/100.0));
+     iIntervalCut = static_cast<int>(floor(lTimeBetween / m_pParameters->GetTimeIntervalLength()));
    }
    else
      iIntervalCut = m_nIntervalCut;
@@ -482,8 +482,8 @@ void CSaTScanData::SetIntervalCut() {
     else if (m_nTimeIntervals > 1) {
       if (m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
         lStudyPeriodLength = TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->GetTimeIntervalUnitsType());
-        lMaxTemporalLength = floor(lStudyPeriodLength * m_pParameters->GetMaximumTemporalClusterSize()/100.0);
-        m_nIntervalCut = floor(lMaxTemporalLength / m_pParameters->GetTimeIntervalLength());
+        lMaxTemporalLength = static_cast<long>(floor(lStudyPeriodLength * m_pParameters->GetMaximumTemporalClusterSize()/100.0));
+        m_nIntervalCut = static_cast<int>(floor(lMaxTemporalLength / m_pParameters->GetTimeIntervalLength()));
       }
       else
         m_nIntervalCut = static_cast<int>(m_pParameters->GetMaximumTemporalClusterSize() / m_pParameters->GetTimeIntervalLength());

@@ -30,11 +30,11 @@ ProspectiveMaxWindowLengthIndicator::ProspectiveMaxWindowLengthIndicator(CSaTSca
   if (Data.GetParameters().GetIsProspectiveAnalysis() && Data.GetParameters().GetNumReplicationsRequested() > 0) {
     iMaxEndWindow = Data.m_nTimeIntervals;
     for (iWindowEnd=Data.m_nProspectiveIntervalStart; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-       lTimeBetween = floor(TimeBetween(Data.GetStudyPeriodStartDate(),
-                                        Data.GetTimeIntervalStartTimes()[iWindowEnd] - 1,
-                                        Data.GetParameters().GetTimeIntervalUnitsType()));
-       lTimeBetween *= Data.GetParameters().GetMaximumTemporalClusterSize() / 100.0;
-       iIntervalCut = floor(lTimeBetween / Data.GetParameters().GetTimeIntervalLength());
+       lTimeBetween = static_cast<int>(floor(TimeBetween(Data.GetStudyPeriodStartDate(),
+                                             Data.GetTimeIntervalStartTimes()[iWindowEnd] - 1,
+                                             Data.GetParameters().GetTimeIntervalUnitsType())));
+       lTimeBetween *= static_cast<int>(Data.GetParameters().GetMaximumTemporalClusterSize() / 100.0);
+       iIntervalCut = static_cast<int>(floor(lTimeBetween / Data.GetParameters().GetTimeIntervalLength()));
        gvMaxWindowLengths.push_back(iIntervalCut);
     }
   }
