@@ -110,9 +110,9 @@ void __fastcall TfrmAnalysis::btnBrowseMaxCirclePopFileClick(TObject *Sender) {
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.pop";
-    OpenDialog1->Filter = "Maximum Circle Population files (*.max)|*.max|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog1->Filter = "Max Circle Size files (*.max)|*.max|Text files (*.txt)|*.txt|All files (*.*)|*.*";
     OpenDialog1->FilterIndex = 0;
-    OpenDialog1->Title = "Select Maximum Circle Population File";
+    OpenDialog1->Title = "Select Max Circle Size File";
     if (OpenDialog1->Execute())
       edtMaxCirclePopulationFilename->Text = OpenDialog1->FileName;
   }
@@ -1708,7 +1708,7 @@ void TfrmAnalysis::ValidateSpatialClusterSize() {
           if (edtMaxCirclePopulationFilename->Text.IsEmpty() || !File_Exists(edtMaxCirclePopulationFilename->Text.c_str())) {
             PageControl1->ActivePage = tbScanningWindow;
             edtMaxCirclePopulationFilename->SetFocus();
-            ZdException::GenerateNotification("Maximum circle population file could not be opened.","ValidateSpatialClusterSize()");
+            ZdException::GenerateNotification("Max circle size file could not be opened.","ValidateSpatialClusterSize()");
           }
           break;
         default : ZdException::GenerateNotification("Unknown maximum spatial clutser size type: %d.",
