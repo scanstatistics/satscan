@@ -8,7 +8,7 @@
 #pragma resource "*.dfm"
 
 /** constructor */
-__fastcall TfrmStartWindow::TfrmStartWindow(TComponent* Owner) : TForm(Owner), geOpenType(TfrmStartWindow::NEW) {
+__fastcall TfrmStartWindow::TfrmStartWindow(TComponent* Owner) : TForm(Owner), geOpenType(TfrmStartWindow::CANCEL) {
   try {
     Setup();
   }
