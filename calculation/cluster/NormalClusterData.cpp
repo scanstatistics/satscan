@@ -365,7 +365,7 @@ void NormalSpaceTimeData::AddNeighborData(tract_t tNeighbor, const AbtractDataSt
   for (unsigned int i=0; i < giAllocationSize; ++i) {
      gpCases[i] += ppCases[i][tNeighbor];
      gpMeasure[i] += ppMeasure[i][tNeighbor];
-     gpSqMeasure[i] += ppMeasure[i][tNeighbor];
+     gpSqMeasure[i] += ppSqMeasure[i][tNeighbor];
   }
 }
 
