@@ -230,7 +230,6 @@ void TBDlgDataImporter::CheckForRequiredVariables() {
           (!gvSaTScanVariables[2].GetIsMappedToInputFileVariable() && gvSaTScanVariables[3].GetIsMappedToInputFileVariable())) {
         sMessage << "For the " << rdgInputFileType->Items->Strings[rdgInputFileType->ItemIndex].c_str();
         sMessage << ", the dates are required to be selected or omitted as a pair.\n";
-        sMessage << "Please review the specified options.";
         BImporterException::GenerateException(sMessage, "CheckForRequiredVariables()", ZdException::Notify);
       }
     }

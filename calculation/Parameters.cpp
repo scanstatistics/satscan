@@ -2989,7 +2989,7 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
 
     //validate maximum circle population file for a prospective space-time analysis w/ maximum geographical cluster size
     //defined as a percentage of the population and adjusting for earlier analyses.
-    if (geAnalysisType == PROSPECTIVESPACETIME && gbAdjustForEarlierAnalyses && geMaxGeographicClusterSizeType != PERCENTOFPOPULATIONFILETYPE) {
+    if (geAnalysisType == PROSPECTIVESPACETIME && gbAdjustForEarlierAnalyses && geMaxGeographicClusterSizeType == PERCENTOFPOPULATIONTYPE) {
       bValid = false;
       PrintDirection.SatScanPrintWarning("Error: For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n");
       PrintDirection.SatScanPrintWarning("       cluster size must be defined as a percentage of the population as defined in a maximum\n");

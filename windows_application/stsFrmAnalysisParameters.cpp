@@ -1692,15 +1692,6 @@ void TfrmAnalysis::ValidateSpatialClusterSize() {
             ZdException::GenerateNotification("Please specify a maximum spatial cluster size no greater than %d.",
                                               "ValidateSpatialClusterSize()", 50);
           }
-//          if (GetAnalysisControlType() == PROSPECTIVESPACETIME && chkAdjustForEarlierAnalyses->Checked &&
-//              edtMaxCirclePopulationFilename->Text.IsEmpty())
-//            ZdException::GenerateNotification("For a prospective space-time analysis adjusting for ealier analyses,\n"
-//                                              "the maximum spatial cluster size must defined as a percentage of the\n"
-//                                              "population at risk, with the population defined in a maximum circle\n"
-//                                              "population file.\n\n"
-//                                              "Alternatively you may choose to specify the maximum as a fixed radius,\n"
-//                                              "in which no maximum circle population file is required.", "ValidateSpatialClusterSize()");
-//
           if (edtMaxCirclePopulationFilename->Text.IsEmpty() || !File_Exists(edtMaxCirclePopulationFilename->Text.c_str())) {
             PageControl1->ActivePage = tbScanningWindow;
             edtMaxCirclePopulationFilename->SetFocus();
