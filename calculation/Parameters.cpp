@@ -510,6 +510,19 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
       if (gbAdjustForEarlierAnalyses)
         fprintf(fp, "  Prospective Start Date : %s\n", gsProspectiveStartDate.c_str());
     }
+    if (geSpatialAdjustmentType == SPATIALLY_STRATIFIED_RANDOMIZATION) {
+      //Prevent this option from printing if no adjustment performed. This
+      //is to prevent this option from being visible from analysis run in GUI version.
+      fprintf(fp, "\n  Spatial Adjustment : ");
+      switch (geSpatialAdjustmentType) {
+         case NO_SPATIAL_ADJUSTMENT :
+           fprintf(fp, "None\n"); break;
+         case SPATIALLY_STRATIFIED_RANDOMIZATION :
+           fprintf(fp, "Spatial adjustment by stratified randomization\n"); break;
+         default :
+           ZdException::Generate("Unknown spatial adjustment type '%d'.\n", "DisplayParameters()", geSpatialAdjustmentType);
+      }
+    }  
 
     fprintf(fp, "\nOutput\n");
     fprintf(fp, "------\n");
