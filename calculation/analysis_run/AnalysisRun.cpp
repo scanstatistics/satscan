@@ -167,7 +167,7 @@ void AnalysisRunner::CreateReport() {
     sStartTime = ctime(&gStartTime);
     fprintf(fp,"\nProgram run on: %s\n", sStartTime.GetCString());
     gParameters.DisplayAnalysisType(fp);
-    gParameters.DisplayTimeAdjustments(fp, gpDataHub->GetDataStreamHandler());
+    gParameters.DisplayAdjustments(fp, gpDataHub->GetDataStreamHandler());
     gpDataHub->DisplaySummary(fp);
     fclose(fp);
   }
@@ -705,8 +705,11 @@ void AnalysisRunner::PerformSimulations() {
       if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
         gpDataHub->FindNeighbors(true);
       gPrintDirection.SatScanPrintf("Doing the Monte Carlo replications\n");
-      //PerformSerializedSimulations();
+#ifdef PARALLEL_SIMULATIONS
       PerformParallelSimulations();
+#else
+      PerformSerializedSimulations();
+#endif
     }
   }
   catch (ZdException &x) {
