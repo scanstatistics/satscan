@@ -1,0 +1,188 @@
+/*  $Id: html.h,v 1.1 2002-09-04 19:54:09 simpson Exp $
+
+    Xbase project source code
+ 
+    This file contains a header file for the HTML object which is used
+    for HTML generation.
+
+    Copyright (C) 1997  StarTech, Gary A. Kunkel   
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    Contact:
+
+      Mail:
+
+        Technology Associates, Inc.
+        XBase Project
+        1455 Deming Way #11
+        Sparks, NV 89434
+        USA
+
+      Email:
+
+        xbase@techass.com
+
+      See our website at:
+
+        xdb.sourceforge.net
+
+
+    V 1.0    10/10/97   - Initial release of software
+    V 1.5    1/2/98     - Added memo field support
+    V 1.6a   4/1/98     - Added expression support
+    V 1.6b   4/8/98     - Numeric index keys
+    V 1.7.4c 10/26/98   - Added GenFormFields, SetCookie, GetCookie
+    V 1.8    11/29/98   - Version 1.8 upgrade
+*/
+
+#ifndef __XB_HTML_H__
+#define __XB_HTML_H__
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#ifdef __WIN32__
+#include <xbase/xbconfigw32.h>
+#else
+#include <xbase/xbconfig.h>
+#endif
+
+#include <stdlib.h>
+#include <string.h>
+
+#include <xbase/xtypes.h>
+
+/*! \file html.h
+*/
+
+//! xbFieldList struct
+/*!
+*/
+
+struct xbFieldList{
+   char * Label;                     /* field label on form */
+   char * FieldName;                 /* form field name     */
+   xbShort FieldLen;                   /* form display length */
+   xbShort FieldNo;                    /* database field no   */
+   xbShort Option;                     /* field option        */
+};
+
+typedef char **xbArrayPtr;
+
+//! xbHtml class
+/*!
+*/
+class XBDLLEXPORT xbHtml {
+public:
+   xbHtml  ( void );
+   //! Short description.
+   /*!
+   */
+   void   BoldOff( void ) { cout << "</b>\n"; };
+   //! Short description.
+   /*!
+   */
+   void   BoldOn( void ) { cout << "<b>"; };
+   //! Short description.
+   /*!
+   */
+   void   Bullet( void ) { cout << "<li>"; };
+   void   DumpArray( void );
+   //! Short description.
+   /*!
+   */
+   void   EmphasizeOff( void ) { cout << "</em>\n"; };
+   //! Short description.
+   /*!
+   */
+   void   EmphasizeOn( void ) { cout << "<em>"; };
+   //! Short description.
+   /*!
+   */
+   void   EndHtmlPage( void ) { cout << "</BODY>\n</HTML>\n"; }
+   xbShort  GenFormFields(xbDbf *d, xbShort Option,const char * Title,xbFieldList *fl);
+   xbShort  GetArrayNo( const char * FieldName );
+   const  char * GetCookie( const char *CookieName );
+   char * GetData( xbShort );
+   char * GetDataForField( const char *FieldName );
+   char * GetEnv( char * s ){ return getenv( s ); }
+   xbShort  GetMethod( void );
+   //! Short description.
+   /*!
+   */
+   void   HeaderOff( xbShort i ){ cout << "</h" << i << ">\n"; };
+   //! Short description.
+   /*!
+   */
+   void   HeaderOn( xbShort i ){ cout << "<h" << i << ">\n"; };
+   //! Short description.
+   /*!
+   */
+   void   ItalicOff( void ) { cout << "</i>\n"; };
+   //! Short description.
+   /*!
+   */
+   void   ItalicOn( void ) { cout << "<i>"; };
+   //! Short description.
+   /*!
+   */
+   void   NewLine( void ) { cout << "<br>"; }
+   xbShort  PostMethod( void );
+   void   PrintEncodedChar( char );
+   void   PrintEncodedString( const char *s );
+   //! Short description.
+   /*!
+   */
+   void   PrintHtml( char * s ) { cout << s; };
+   //! Short description.
+   /*!
+   */
+   void   PrintHtml( xbLong l ) { cout << l; };
+   //! Short description.
+   /*!
+   */
+   void   PrintHtml( xbShort i ) { cout << i; };
+   //! Short description.
+   /*!
+   */
+   void   PrintHtml( int i ) { cout << i; };
+   void   StartHtmlPage( const char *Title );
+   //! Short description.
+   /*!
+   */
+   void   StartTextPage( void ) { cout << "Content-type: text/plain\n\n"; }
+   void   TextOut( const char *String );
+   xbLong   Tally( const char *FileName );
+   xbShort  SetCookie(const char *Name, const char *Value, const char *ExpDate,
+           const char *ExpTime,const char *TimeZone, const char *Path,
+           const char *Domain, xbShort Secure );
+   void   SpaceToPlus( char * );
+   void   PlusToSpace( char * );
+   void   SendRedirect( char * ) const;
+
+protected:
+   xbArrayPtr FieldNameArray;
+   xbArrayPtr DataValueArray;
+   xbShort    NoOfDataFields;
+   char     * HtmlWorkBuf;
+   xbShort    HtmlBufLen;
+   void     LoadArray( void );
+   void     DeleteEscChars( char *String );
+   void     InitVals( void );
+};
+
+#endif      // __XB_HTML_H__
