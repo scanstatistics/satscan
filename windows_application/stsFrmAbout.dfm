@@ -3,7 +3,7 @@ object frmAbout: TfrmAbout
   Top = 232
   BorderStyle = bsDialog
   Caption = 'About SatScan'
-  ClientHeight = 371
+  ClientHeight = 392
   ClientWidth = 474
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -29,8 +29,8 @@ object frmAbout: TfrmAbout
     ParentFont = False
   end
   object lblVersionDate: TLabel
-    Left = 352
-    Top = 24
+    Left = 64
+    Top = 48
     Width = 77
     Height = 16
     Caption = 'May 31, 2002'
@@ -43,7 +43,7 @@ object frmAbout: TfrmAbout
   end
   object Label12: TLabel
     Left = 24
-    Top = 136
+    Top = 152
     Width = 43
     Height = 17
     AutoSize = False
@@ -58,7 +58,7 @@ object frmAbout: TfrmAbout
   end
   object lblEmail: TLabel
     Left = 88
-    Top = 136
+    Top = 152
     Width = 169
     Height = 17
     AutoSize = False
@@ -73,7 +73,7 @@ object frmAbout: TfrmAbout
   end
   object Label9: TLabel
     Left = 24
-    Top = 56
+    Top = 72
     Width = 323
     Height = 16
     Caption = 'Software for the spacial and space-time scan statistics.'
@@ -86,7 +86,7 @@ object frmAbout: TfrmAbout
   end
   object Label10: TLabel
     Left = 24
-    Top = 88
+    Top = 104
     Width = 298
     Height = 16
     Caption = 'National Cancer Institute, NIH, Bethesda, Maryland'
@@ -99,7 +99,7 @@ object frmAbout: TfrmAbout
   end
   object Label11: TLabel
     Left = 24
-    Top = 112
+    Top = 128
     Width = 73
     Height = 17
     AutoSize = False
@@ -114,7 +114,7 @@ object frmAbout: TfrmAbout
   end
   object Label13: TLabel
     Left = 96
-    Top = 112
+    Top = 128
     Width = 313
     Height = 17
     AutoSize = False
@@ -129,7 +129,7 @@ object frmAbout: TfrmAbout
   end
   object Label2: TLabel
     Left = 24
-    Top = 160
+    Top = 176
     Width = 439
     Height = 64
     Caption = 
@@ -147,7 +147,7 @@ object frmAbout: TfrmAbout
   end
   object Label4: TLabel
     Left = 24
-    Top = 240
+    Top = 256
     Width = 421
     Height = 32
     Caption = 
@@ -163,7 +163,7 @@ object frmAbout: TfrmAbout
   end
   object Label5: TLabel
     Left = 24
-    Top = 296
+    Top = 312
     Width = 425
     Height = 32
     Caption = 
@@ -179,7 +179,7 @@ object frmAbout: TfrmAbout
   end
   object Label6: TLabel
     Left = 24
-    Top = 280
+    Top = 296
     Width = 415
     Height = 16
     Caption = 
@@ -206,8 +206,8 @@ object frmAbout: TfrmAbout
     ParentFont = False
   end
   object Label7: TLabel
-    Left = 312
-    Top = 24
+    Left = 24
+    Top = 48
     Width = 38
     Height = 16
     Caption = 'Date:  '
@@ -220,7 +220,7 @@ object frmAbout: TfrmAbout
   end
   object Button1: TButton
     Left = 368
-    Top = 336
+    Top = 352
     Width = 90
     Height = 25
     Caption = 'Ok'
