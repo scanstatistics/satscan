@@ -28,7 +28,7 @@
  **********************************************************************/
 /** Current version information. */
 #define VERSION_ID "2"
-#define VERSION_NUMBER "4.0 Beta 2"
+#define VERSION_NUMBER "4.0_Beta_2"
 #define VERSION_DATE "Not Released"
 /** New defines for ellipsoid calculations. */
 #define MAXELLIPSESHAPES 10
