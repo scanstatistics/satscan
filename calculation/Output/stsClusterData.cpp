@@ -131,9 +131,6 @@ __fastcall stsClusterData::stsClusterData(const ZdString& sOutputFileName, const
 
 // destructor
 stsClusterData::~stsClusterData() {
-   try {
-   }
-   catch (...) {/* munch munch, yummy*/}
 }
 
 // global inits
@@ -390,9 +387,6 @@ void stsClusterData::SetupFields() {
 
    try {
       // please take note that this function here determines the ordering of the fields in the file
-      // everything else is written generically enough that ordering does not matter due to the
-      // GetFieldNumber function - AJV 10/2/2002
-
       CreateField(gvFields, RUN_NUM_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
       CreateField(gvFields, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
       CreateField(gvFields, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
