@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
        if (!stricmp(argv[i], "-v")) {
          Parameters.SetOutputClusterLevelAscii(true);
          Parameters.SetOutputAreaSpecificAscii(true);
-         if (Parameters.GetProbabiltyModelType() != SPACETIMEPERMUTATION)
+         if (Parameters.GetProbabilityModelType() != SPACETIMEPERMUTATION)
            Parameters.SetOutputRelativeRisksAscii(true);
          Parameters.SetOutputSimLogLikeliRatiosAscii(true);
          if (Parameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL || Parameters.GetAnalysisType() == PROSPECTIVESPACETIME)

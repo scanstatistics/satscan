@@ -29,7 +29,6 @@ int main(int argc, char *argv[]) {
     if (argc < 2)
       GenerateUsageException(argv[0]);
     time(&RunTime); //get start time
-
     if (!ParameterAccessCoordinator(Parameters).Read(argv[1], ConsolePrint)) {
       sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
@@ -40,7 +39,7 @@ int main(int argc, char *argv[]) {
        if (!stricmp(argv[i], "-v")) {
          Parameters.SetOutputClusterLevelAscii(true);
          Parameters.SetOutputAreaSpecificAscii(true);
-         if (Parameters.GetProbabiltyModelType() != SPACETIMEPERMUTATION)
+         if (Parameters.GetProbabilityModelType() != SPACETIMEPERMUTATION)
            Parameters.SetOutputRelativeRisksAscii(true);
          Parameters.SetOutputSimLogLikeliRatiosAscii(true);
          if (Parameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL || Parameters.GetAnalysisType() == PROSPECTIVESPACETIME)
@@ -92,7 +91,7 @@ int main(int argc, char *argv[]) {
   catch (ZdException & x) {
     ConsolePrint.SatScanPrintf("Job cancelled due to an unexpected program error.\n");
     ConsolePrint.SatScanPrintf("Please contact technical support with the following information.\n");
-    ConsolePrint.SatScanPrintf("Program Error:\n");
+    ConsolePrint.SatScanPrintf("Program Error Detected:\n");
     ConsolePrint.SatScanPrintf(x.GetErrorMessage());
     ConsolePrint.SatScanPrintf(x.GetCallpath());
     BasisExit();
