@@ -422,16 +422,16 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->PrintInputWarning("Please see 'coordinate file format' in the user guide for help.\n");
+      gpPrint->PrintWarningLine("Please see 'coordinate file format' in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->PrintInputWarning("Error: Coordinates file contains no data.\n");
+      gpPrint->PrintWarningLine("Error: Coordinates file contains no data.\n");
       bValid = false;
     }
     //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
     else if (gpTInfo->tiGetNumTracts() == 1 && m_pParameters->GetAnalysisType() != PURELYTEMPORAL) {
-      gpPrint->PrintInputWarning("Error: For a %s analysis, the coordinates file must contain more than one location.\n",
-                                          m_pParameters->GetAnalysisTypeAsString());
+      gpPrint->SatScanPrintWarning("Error: For a %s analysis, the coordinates file must contain more than one location.\n",
+                                   m_pParameters->GetAnalysisTypeAsString());
       bValid = false;
     }
     //record number of locations read
@@ -489,10 +489,10 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->PrintInputWarning("Please see 'coordinates file format' in the user guide for help.\n");
+      gpPrint->PrintWarningLine("Please see 'coordinates file format' in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->PrintInputWarning("Error: Coordinates file contains no data.\n");
+      gpPrint->PrintWarningLine("Error: Coordinates file contains no data.\n");
       bValid = false;
     }
     //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
@@ -540,7 +540,7 @@ bool CSaTScanData::ReadCounts(FILE * fp, const char* szDescription, count_t**  p
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->PrintInputWarning("Please see '%s file format' in the user guide for help.\n", szDescription);
+      gpPrint->SatScanPrintWarning("Please see '%s file format' in the user guide for help.\n", szDescription);
     //print indication if file contained no data
     else if (bEmpty) {
       gpPrint->SatScanPrintWarning("Error: %s file does not contain data.\n", szDescription);
@@ -629,10 +629,10 @@ bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->PrintInputWarning("Please see 'grid file format' in the user guide for help.\n");
+      gpPrint->PrintWarningLine("Please see 'grid file format' in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->PrintInputWarning("Error: Grid file does not contain data.\n");
+      gpPrint->PrintWarningLine("Error: Grid file does not contain data.\n");
       bValid = false;
     }
     //record number of centroids read
@@ -681,10 +681,10 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude(FILE * fp) {
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->PrintInputWarning("Please see 'grid file format' in the user guide for help.\n");
+      gpPrint->PrintWarningLine("Please see 'grid file format' in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->PrintInputWarning("Error: Grid file is contains no data.\n");
+      gpPrint->PrintWarningLine("Error: Grid file is contains no data.\n");
       bValid = false;
     }
     //record number of centroids
@@ -865,10 +865,10 @@ bool CSaTScanData::ReadPopulationFile() {
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->PrintInputWarning("Please see 'population file format' in the user guide for help.\n");
+      gpPrint->PrintWarningLine("Please see 'population file format' in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->PrintInputWarning("Error: Population file contains no data.\n");
+      gpPrint->PrintWarningLine("Error: Population file contains no data.\n");
       bValid = false;
     }
   }
