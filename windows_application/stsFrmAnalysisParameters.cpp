@@ -876,7 +876,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
 
           // Enables Clusters to include
           rgClustersToInclude->Enabled = true;
-          rgClustersToInclude->ItemIndex = (gParameters.GetAliveClustersOnly() ? 1 : 0);
+          rgClustersToInclude->ItemIndex = gParameters.GetIncludeClustersType();
 
           EnableSpatial(false, false, false);  // Disables Spatial
           EnableTimeInterval(true);            // Enables time intervals
@@ -888,7 +888,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           EnableTemporalTimeTrendAdjust(bPoisson, bPoisson, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2));
           //Enables clusters to include
           rgClustersToInclude->Enabled = true;
-          rgClustersToInclude->ItemIndex = (gParameters.GetAliveClustersOnly() ? 1 : 0);
+          rgClustersToInclude->ItemIndex = gParameters.GetIncludeClustersType();
 
           EnableSpatial(true, !(gParameters.GetProbabiltyModelType() == 2), true);     //Enables spatial
           EnableTimeInterval(true);                                  //Enables time intervals
@@ -1281,7 +1281,7 @@ void TfrmAnalysis::SetupInterface() {
     SetSpatialDistanceCaption();
 
     //***************** check this code ******************************
-    rgClustersToInclude->ItemIndex = (gParameters.GetAliveClustersOnly() ? 1:0);  // IS THIS RETURNING THE RIGHT INDEX OR SHOULD I SWITCH IT AROUND ???
+    rgClustersToInclude->ItemIndex = gParameters.GetIncludeClustersType();  // IS THIS RETURNING THE RIGHT INDEX OR SHOULD I SWITCH IT AROUND ???
     if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME) { //DISABLE the Include Purely Spacial Clusters option.
       chkIncludePurSpacClust->Checked = false;
       chkIncludePurSpacClust->Enabled = false;
@@ -1619,7 +1619,7 @@ void __fastcall TfrmAnalysis::rbUnitYearClick(TObject *Sender) {
 //  Control to include "Alive" clusters
 //------------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::rgClustersToIncludeClick(TObject *Sender) {
-    gParameters.SetAliveClustersOnly(rgClustersToInclude->ItemIndex == 0 ? 0:1);
+    gParameters.SetIncludeClustersType((IncludeClustersType)rgClustersToInclude->ItemIndex);
 }
 //------------------------------------------------------------------------------
 // If the types of coordinates are changed, then various interface options
