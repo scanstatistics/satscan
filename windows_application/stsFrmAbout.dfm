@@ -1,9 +1,9 @@
 object frmAbout: TfrmAbout
-  Left = 412
-  Top = 232
+  Left = 321
+  Top = 205
   BorderStyle = bsDialog
-  Caption = 'About SatScan'
-  ClientHeight = 401
+  Caption = '``'
+  ClientHeight = 382
   ClientWidth = 474
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -131,12 +131,12 @@ object frmAbout: TfrmAbout
     Left = 24
     Top = 176
     Width = 431
-    Height = 64
+    Height = 48
     Caption = 
-      'Written by Martin Kulldorff, Associate Professor of Biostatistic' +
-      's, University of Connecticut and Scott Hostovich, Don Green, Kat' +
-      'hrine Rand, Greg Gherman, Grey Williams and David DeFrancesco, I' +
-      'nformation Management Services, Inc., Silver Spring, Maryland.'
+      'Written by: Martin Kulldorff, Associate Professor of Biostatisti' +
+      'cs, University                       of Connecticut and Informat' +
+      'ion Management Services, Inc.,                              Silv' +
+      'er Spring, Maryland.'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -147,7 +147,7 @@ object frmAbout: TfrmAbout
   end
   object Label4: TLabel
     Left = 24
-    Top = 256
+    Top = 232
     Width = 421
     Height = 32
     Caption = 
@@ -163,7 +163,7 @@ object frmAbout: TfrmAbout
   end
   object Label5: TLabel
     Left = 24
-    Top = 329
+    Top = 305
     Width = 425
     Height = 32
     Caption = 
@@ -179,12 +179,10 @@ object frmAbout: TfrmAbout
   end
   object Label6: TLabel
     Left = 24
-    Top = 296
-    Width = 425
-    Height = 32
-    Caption = 
-      'Kulldorff M, Hostovich S, Green D, Rand K, Gherman G, Williams G' +
-      ', DeFrancesco D.'
+    Top = 269
+    Width = 319
+    Height = 16
+    Caption = 'Kulldorff M and Information Management Services, Inc.'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -221,7 +219,7 @@ object frmAbout: TfrmAbout
   end
   object Button1: TButton
     Left = 368
-    Top = 371
+    Top = 347
     Width = 90
     Height = 25
     Caption = 'Ok'
