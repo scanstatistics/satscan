@@ -73,8 +73,10 @@ double GetDuczmalCorrection(double dEllipseShape) {
 
 
 /** constructor */
-StringParser::StringParser() {
+StringParser::StringParser(BasePrint::eInputFileType eFileType) {
   gwCurrentWordIndex = -1;
+  glReadCount = 0;
+  geFileType = eFileType; 
   giSizeOfWordBuffer = MAX_LINEITEMSIZE;
   gpWord = new char[MAX_LINEITEMSIZE];
   gpWord[0] = 0;
@@ -86,6 +88,14 @@ StringParser::~StringParser(){
     delete[] gpWord;
   }
   catch (...){}  
+}
+
+void StringParser::ThrowAsciiException() {
+  std::string s;
+
+  SSGenerateException("Error: The %s file contains data that is not ASCII formatted.\n"
+                      "Please see 'ASCII Input File Format' in the user guide for help.\n",
+                      "CheckIsASCII()", BasePrint::GetInputFileType(geFileType, s).c_str());
 }
 
 /** Returns whether string has words. */
@@ -115,7 +125,7 @@ const char * StringParser::GetWord(short wWordIndex) {
     return gpWord;
 
   /* ignore spaces at start of line */
-  while(isspace(*cp)) cp++;
+  while(isspace(*cp)) ++cp;
 
   /* find start of word */
   inwd = !isspace(*cp);
@@ -126,9 +136,7 @@ const char * StringParser::GetWord(short wWordIndex) {
            if (--w == 0)
              break;
        }
-       if (!isascii(*cp))
-         SSGenerateException("Error: File contains non-ascii data.","GetWord()");
-       cp++; /* next character */
+       ++cp; /* next character */
   }
 
   /* handle underflow */
@@ -137,7 +145,7 @@ const char * StringParser::GetWord(short wWordIndex) {
 
   /* find end of word */
   cp2 = cp + 1;
-  while (!isspace(*cp2)) cp2++;
+  while (!isspace(*cp2)) ++cp2;
   wdlen = cp2 - cp;
   if (wdlen > giSizeOfWordBuffer) {
     giSizeOfWordBuffer = wdlen + 1;
@@ -147,13 +155,21 @@ const char * StringParser::GetWord(short wWordIndex) {
   }
   memcpy(gpWord, cp, wdlen);
   gpWord[wdlen] = '\0';
-  gwCurrentWordIndex = wWordIndex; 
+  cp = gpWord;
+  //check that word is ascii characters
+  while (*cp != '\0') {
+       if (!isascii(*cp))
+         ThrowAsciiException();
+       ++cp;
+  }
+  gwCurrentWordIndex = wWordIndex;
   return gpWord;
 }
 
 /** Reads a string from file and resets class variables. */
 const char * StringParser::ReadString(FILE * pSourceFile) {
   ClearWordIndex();
+  ++glReadCount;
   return fgets(gsReadBuffer, MAX_LINESIZE, pSourceFile);
 }
 

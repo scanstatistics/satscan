@@ -26,23 +26,26 @@ double                  GetDuczmalCorrection(double dEllipseShape);
           3 - there may be other concerns/problems as this hasn't been completely thought through */
 class StringParser {
   private:
-    char                gsReadBuffer[MAX_LINESIZE];
-    //word data
-    char              * gpWord;
-    int                 giSizeOfWordBuffer;
-    short               gwCurrentWordIndex;
+    char                        gsReadBuffer[MAX_LINESIZE];
+    char                      * gpWord;
+    int                         giSizeOfWordBuffer;
+    short                       gwCurrentWordIndex;
+    long                        glReadCount;
+    BasePrint::eInputFileType   geFileType;
 
-    void                ClearWordIndex() {gwCurrentWordIndex=-1;}
+    void                        ClearWordIndex() {gwCurrentWordIndex=-1;}
+    void                        ThrowAsciiException();
 
   public:
-    StringParser();
+    StringParser(BasePrint::eInputFileType eFileType);
     ~StringParser();
 
-    bool                HasWords();
-    int                 GetNumberWords();
-    const char        * GetWord(short wWordIndex);
-    const char        * GetString() const {return gsReadBuffer;}
-    const char        * ReadString(FILE * pSourceFile);
+    bool                        HasWords();
+    int                         GetNumberWords();
+    long                        GetReadCount() const {return glReadCount;}
+    const char                * GetString() const {return gsReadBuffer;}
+    const char                * GetWord(short wWordIndex);
+    const char                * ReadString(FILE * pSourceFile);
 };
 //*****************************************************************************
 #endif 
