@@ -16,7 +16,7 @@ std::vector<double>& CalcRisk(RealDataStream& thisStream, std::vector<double>& v
 void Calcm(RealDataStream& thisStream, Julian StudyStartDate, Julian StudyEndDate);
 
 measure_t CalcMeasure(RealDataStream& thisStream, TwoDimMeasureArray_t& NonCumulativeMeasureHandler,
-                      const Julian* pIntervalDates, Julian StartDate, Julian EndDate);
+                      const std::vector<Julian>& vIntervalStartDates, Julian StartDate, Julian EndDate);
 
 // The following functions are either unfinished design thoughts or deprecated.
 

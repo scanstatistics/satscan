@@ -651,16 +651,16 @@ int PopulationData::GetPopulationDateIndex(Julian Date, bool bTrueDate) const {
 } 
 
 /** Sets the indeces to population dates that mark the lower and upper boundaries
-    for time interval defined by [nDateIndex .. nMaxDateIndex] on pDates array.
-    Caller is responsible for ensuring that pDates points to valid memory and
-    contains a number of elements in accordance with [nDateIndex .. nMaxDateIndex + 1]. */
-void PopulationData::GetPopUpLowIndex(const Julian* pDates, int nDateIndex, int nMaxDateIndex, int& nUpIndex, int& nLowIndex) const {
+    for time interval defined by [nDateIndex .. nMaxDateIndex] on vIntervalStartDates
+    vector. Caller is responsible for ensuring that vIntervalStartDates contains
+    a number of elements in accordance with [nDateIndex .. nMaxDateIndex + 1]. */
+void PopulationData::GetPopUpLowIndex(const std::vector<Julian>& vIntervalStartDates, int nDateIndex, int nMaxDateIndex, int& nUpIndex, int& nLowIndex) const {
   int   i, index;
   bool  bUpFound = false;
 
   try {
     for (i=0; i < (int)gvPopulationDates.size(); ++i) {
-       if (gvPopulationDates[i] <= pDates[nDateIndex])
+       if (gvPopulationDates[i] <= vIntervalStartDates[nDateIndex])
          nLowIndex = i;
 
        if (nDateIndex == nMaxDateIndex)
@@ -668,7 +668,7 @@ void PopulationData::GetPopUpLowIndex(const Julian* pDates, int nDateIndex, int 
        else
          index = nDateIndex+1;
 
-       if (!bUpFound && (gvPopulationDates[i] >= pDates[index])) {
+       if (!bUpFound && (gvPopulationDates[i] >= vIntervalStartDates[index])) {
          bUpFound = true;
          nUpIndex = i;
        }

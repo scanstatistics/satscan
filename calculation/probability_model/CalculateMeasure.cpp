@@ -107,10 +107,10 @@ void Calcm(RealDataStream& thisStream, Julian StudyStartDate, Julian StudyEndDat
     Resulting array is such that:
     ppNonCumulativeMeasure[i][t] = expected number of cases for time interval
     at index i and tract at index t. Caller is responsible for ensuring that
-    'pIntervalDates' points to valid memory and contains a number of elements
-    equaling the number of time intervals plus one.*/
+    'vIntervalStartDates' contains a number of elements equaling the number of
+    time intervals plus one.*/
 measure_t CalcMeasure(RealDataStream& thisStream, TwoDimMeasureArray_t& NonCumulativeMeasureHandler,
-                      const Julian* pIntervalDates, Julian StartDate, Julian EndDate) {
+                      const std::vector<Julian>& vIntervalStartDates, Julian StartDate, Julian EndDate) {
 
   PopulationData      & thisPopulationData = thisStream.GetPopulationData();
   int                   i, n, lower, upper, nLowerPlus1, nTimeIntervals = thisStream.GetNumTimeIntervals();
@@ -130,7 +130,7 @@ measure_t CalcMeasure(RealDataStream& thisStream, TwoDimMeasureArray_t& NonCumul
     ppM = M_ArrayHandler.GetArray();
     
     for (i=0; i < nTimeIntervals+1; ++i) {
-       thisPopulationData.GetPopUpLowIndex(pIntervalDates, i, nTimeIntervals, upper, lower);
+       thisPopulationData.GetPopUpLowIndex(vIntervalStartDates, i, nTimeIntervals, upper, lower);
        jLowDate = thisPopulationData.GetPopulationDate(lower);
        nLowerPlus1 = lower + 1;
        jLowDatePlus1 = thisPopulationData.GetPopulationDate(lower+1);
@@ -138,7 +138,7 @@ measure_t CalcMeasure(RealDataStream& thisStream, TwoDimMeasureArray_t& NonCumul
           if (jLowDatePlus1 == static_cast<Julian>(-1))
             ppM[i][t] = pPopulationMeasure[lower][t];
           else {
-            temp1     = pIntervalDates[i] - jLowDate;
+            temp1     = vIntervalStartDates[i] - jLowDate;
             temp2     = jLowDatePlus1 - jLowDate;
             tempRatio = (double)(temp1/temp2);
             ppM[i][t]   = tempRatio * pPopulationMeasure[nLowerPlus1][t] + (1 - tempRatio) * pPopulationMeasure[lower][t];
@@ -147,12 +147,12 @@ measure_t CalcMeasure(RealDataStream& thisStream, TwoDimMeasureArray_t& NonCumul
     }
 
     for (i=0; i < nTimeIntervals; ++i) {
-       thisPopulationData.GetPopUpLowIndex(pIntervalDates, i, nTimeIntervals, upper, lower);
+       thisPopulationData.GetPopUpLowIndex(vIntervalStartDates, i, nTimeIntervals, upper, lower);
        for (t=0; t < nTracts; ++t) {
           ppNonCumulativeMeasure[i][t] = 0.0;
           tempSum  = 0.0;
-    	  temp1    = .5*(pPopulationMeasure[lower][t] + ppM[i][t])*(pIntervalDates[i]-thisPopulationData.GetPopulationDate(lower));
-          temp2    = .5*(pPopulationMeasure[upper][t] + ppM[i+1][t])*(thisPopulationData.GetPopulationDate(upper)-pIntervalDates[i+1]);
+    	  temp1    = .5*(pPopulationMeasure[lower][t] + ppM[i][t])*(vIntervalStartDates[i]-thisPopulationData.GetPopulationDate(lower));
+          temp2    = .5*(pPopulationMeasure[upper][t] + ppM[i+1][t])*(thisPopulationData.GetPopulationDate(upper)-vIntervalStartDates[i+1]);
           for (n=lower; n < upper; ++n) {
     	     tempSum = tempSum + (((pPopulationMeasure[n][t] + pPopulationMeasure[n+1][t]) / 2) * (thisPopulationData.GetPopulationDate(n+1)-thisPopulationData.GetPopulationDate(n)));
           }
