@@ -3,7 +3,9 @@ object frmMainForm: TfrmMainForm
   Top = 131
   Width = 784
   Height = 557
-  Caption = 'SaTScan'
+  Caption = 
+    'SaTScan - Software for the Spatial and Space-Time Scan Statistic' +
+    's'
   Color = clGray
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -283,7 +285,7 @@ object frmMainForm: TfrmMainForm
       end
       object SaveSessionAs1: TMenuItem
         Action = UpdateAction
-        Caption = 'SaTScan &Update'
+        Caption = 'Check for New &Version'
       end
       object N1: TMenuItem
         Caption = '-'
