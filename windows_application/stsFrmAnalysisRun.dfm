@@ -121,6 +121,7 @@ object frmAnalysisRun: TfrmAnalysisRun
       ScrollBars = ssVertical
       TabOrder = 1
       WantReturns = False
+      WordWrap = False
     end
   end
   object rteAnalysisBox: TRichEdit
