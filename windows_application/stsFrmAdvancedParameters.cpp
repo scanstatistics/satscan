@@ -203,6 +203,7 @@ void __fastcall TfrmAdvancedParameters::btnPopImportClick(TObject *Sender) {
 void __fastcall TfrmAdvancedParameters::btnNewClick(TObject *Sender) {
    try {
      // add new name to list box
+     EnableDataStreamList(true);
      lstInputStreams->Items->Add("Input Stream " + IntToStr(giStreamNum++));
      lstInputStreams->ItemIndex = (lstInputStreams->Items->Count-1);
 
@@ -224,6 +225,7 @@ void __fastcall TfrmAdvancedParameters::btnNewClick(TObject *Sender) {
    }
    catch (ZdException &x) {
      x.AddCallpath("btnNewClick()","TfrmAdvancedParameters");
+     EnableDataStreamList(lstInputStreams->Items->Count);
      DisplayBasisException(this, x);
    }
 }
@@ -252,6 +254,7 @@ void __fastcall TfrmAdvancedParameters::btnRemoveStreamClick(TObject *Sender){
       }
       // remove list box name
       lstInputStreams->Items->Delete(iStreamNum);
+      EnableDataStreamList(lstInputStreams->Items->Count);
       // select/highlight previous name in box
       if (lstInputStreams->Items->Count) {
          iStreamNum = (iStreamNum > 0) ? iStreamNum-1 : 0;
@@ -451,7 +454,13 @@ void __fastcall TfrmAdvancedParameters::edtStartRangeStartDateExit(TObject *Send
    TfrmAnalysis::ValidateDate(*edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay);
    DoControlExit();
 }
-//---------------------------------------------------------------------------
+
+/** Enables/disables TListBox that list defined data streams */
+void TfrmAdvancedParameters::EnableDataStreamList(bool bEnable) {
+  lstInputStreams->Enabled = bEnable;
+  lstInputStreams->Color = lstInputStreams->Enabled ? clWindow : clInactiveBorder;
+}
+
 /** enables or disables the temporal time trend adjustment control group */
 void TfrmAdvancedParameters::EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage, bool bCalculatedLog) {
   TimeTrendAdjustmentType eTimeTrendAdjustmentType(GetAdjustmentTimeTrendControlType());
@@ -494,12 +503,15 @@ void TfrmAdvancedParameters::EnableAdjustmentsGroup(bool bEnable) {
 /** enables input tab case/control/pop files edit boxes */
 void TfrmAdvancedParameters::EnableInputFileEdits(bool bEnable) {
    edtCaseFileName->Enabled = bEnable;
+   edtCaseFileName->Color = edtCaseFileName->Enabled ? clWindow : clInactiveBorder;
    btnCaseBrowse->Enabled = bEnable;
    btnCaseImport->Enabled = bEnable;
    edtControlFileName->Enabled = bEnable;
+   edtControlFileName->Color = edtControlFileName->Enabled ? clWindow : clInactiveBorder;
    btnControlBrowse->Enabled = bEnable;
    btnControlImport->Enabled = bEnable;
    edtPopFileName->Enabled = bEnable;
+   edtPopFileName->Color = edtPopFileName->Enabled ? clWindow : clInactiveBorder;
    btnPopBrowse->Enabled = bEnable;
    btnPopImport->Enabled = bEnable;
 }
@@ -1065,6 +1077,7 @@ void TfrmAdvancedParameters::SetDefaultsForInputTab() {
    edtControlFileName->Text = "";
    edtPopFileName->Text = "";
    lstInputStreams->Items->Clear();
+   EnableDataStreamList(lstInputStreams->Items->Count);
 
    // clear the non-visual components
    gvCaseFiles.RemoveAllElements();
@@ -1265,6 +1278,7 @@ void TfrmAdvancedParameters::Setup() {
          gvPopFiles.AddElement(AnsiString(ref.GetPopulationFileName(i+1).c_str()));
          giStreamNum++;
       }
+      EnableDataStreamList(lstInputStreams->Items->Count);
       lstInputStreams->ItemIndex = -1;
     }
     catch (ZdException &x) {

@@ -181,6 +181,7 @@ __published:	// IDE-managed Components
    int                      giStreamNum;   /** number of additional input streams added*/
                                            /** does not go down with removals */
    void                     DoControlExit();
+   void                     EnableDataStreamList(bool bEnable);
    void                     EnableNewButton();
    void                     EnableRemoveButton();
    void                     EnableInputFileEdits(bool bEnable);
