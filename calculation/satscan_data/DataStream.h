@@ -71,6 +71,7 @@ class DataStream {
     TwoDimMeasureArray_t      & GetMeasureArrayHandler();
     TwoDimMeasureArray_t      & GetSqMeasureArrayHandler();
     measure_t                ** GetNCMeasureArray() const;
+    TwoDimMeasureArray_t      & GetNCMeasureArrayHandler();
     inline unsigned int         GetNumTimeIntervals() const {return giNumTimeIntervals;}
     inline unsigned int         GetNumTracts() const {return giNumTracts;}
     count_t                   * GetPTCasesArray() const;
@@ -118,7 +119,7 @@ class RealDataStream : public DataStream {
 
     void                        AllocateCategoryCasesArray();
     void                        AllocateControlsArray();
-    void                        AllocatePopulationMeasureArray();
+    measure_t                ** AllocatePopulationMeasureArray();
     void                        CheckPopulationDataCases(CSaTScanData& Data);
     void                        FreePopulationMeasureArray();
     double                      GetCalculatedTimeTrendPercentage() const {return gdCalculatedTimeTrendPercentage;}

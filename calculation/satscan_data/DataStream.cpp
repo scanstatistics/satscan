@@ -231,6 +231,22 @@ TwoDimMeasureArray_t & DataStream::GetMeasureArrayHandler() {
 }
 
 /** Returns reference to object to manages the two dimensional array representing
+    expected case data stratified by time interval index / location index.
+    Throws exception of not allocated.
+    Note that data in this array is not cumulated with respect to time intervals. */
+TwoDimMeasureArray_t & DataStream::GetNCMeasureArrayHandler() {
+  try {
+    if (!gpNCMeasureHandler)
+      ZdGenerateException("Measure array not allocated.","GetNCMeasureArrayHandler()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetNCMeasureArrayHandler()","DataStream");
+    throw;
+  }
+  return *gpNCMeasureHandler;
+}
+
+/** Returns reference to object to manages the two dimensional array representing
     expected case data, squared and stratified by
     time interval index / location index. Throws exception of not allocated.
     Note that data in this array is cumulated with respect to time intervals
@@ -497,7 +513,7 @@ void RealDataStream::AllocateControlsArray() {
 /** Creates a two dimensional array for storing expected case information (measure),
     stratified by population date index / location index. Initializes data to zero.
     If array already exists, only initialization occurs. */
-void RealDataStream::AllocatePopulationMeasureArray() {
+measure_t** RealDataStream::AllocatePopulationMeasureArray() {
   try {
     if (!gpPopulationMeasureHandler)
       gpPopulationMeasureHandler = new TwoDimensionArrayHandler<measure_t>(gPopulation.GetNumPopulationDates(), giNumTracts);
@@ -507,6 +523,7 @@ void RealDataStream::AllocatePopulationMeasureArray() {
     x.AddCallpath("AllocatePopulationMeasureArray()","RealDataStream");
     throw;
   }
+  return gpPopulationMeasureHandler->GetArray();
 }
 
 /** Validates that the population data read from file is correct in that a location
