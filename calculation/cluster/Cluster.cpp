@@ -125,7 +125,10 @@ void CCluster::Display(FILE*     fp,
     
       DisplayRelativeRisk(fp, Data.GetMeasureAdjustment(), nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
     
-      fprintf(fp, "%sLog likelihood ratio..: %f\n", szSpacesOnLeft, m_nRatio);
+      // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
+      fprintf(fp, "%s%s: %f\n", szSpacesOnLeft,
+              (Parameters.m_nModel == SPACETIMEPERMUTATION ? "Test statistic........" : "Log likelihood ratio.."),
+              m_nRatio);
       fprintf(fp, "%sMonte Carlo rank......: %ld/%ld\n",
                    szSpacesOnLeft, m_nRank, Parameters.m_nReplicas+1);
     
@@ -298,11 +301,11 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
             for (i=0; i<(Data.m_pParameters->m_nDimension)-1; i++)
       	       fprintf(fp, "%g,",pCoords[i]);
             fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->m_nDimension)-1]);
-            fprintf(fp, "%sEllipse Semiminor axis..:  %-6.3f\n", szSpacesOnLeft, nRadius);
+            fprintf(fp, "%sEllipse Semiminor axis: %-6.3f\n", szSpacesOnLeft, nRadius);
             //Print the ellipse dimensions....
-            fprintf(fp, "%sEllipse Parameters..:\n", szSpacesOnLeft);
-            fprintf(fp, "%s              Angle (degrees)...:  %-6.3f\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
-            fprintf(fp, "%s              Shape.............:  %-6.3f\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
+            fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
+            fprintf(fp, "%sAngle (degrees).......: %-6.3f\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
+            fprintf(fp, "%sShape.................: %-6.3f\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
             //fprintf(fp, "%s              Width...: \n", szSpacesOnLeft);
             //fprintf(fp, "%s              Length..: \n", szSpacesOnLeft);
             }
@@ -334,10 +337,10 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
            fprintf(fp, "%sRadius................: %-5.2f\n", szSpacesOnLeft, nRadius);
         else
            {
-           fprintf(fp, "%sEllipse Semiminor axis..:  %-6.3f\n", szSpacesOnLeft, nRadius);
-           fprintf(fp, "%sEllipse Parameters..:", szSpacesOnLeft);
-           fprintf(fp, "%s              Angle (degrees)...:  %-6.3f\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
-           fprintf(fp, "%s              Shape.............:  %-6.3f\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
+           fprintf(fp, "%sEllipse Semiminor axis: %-6.3f\n", szSpacesOnLeft, nRadius);
+           fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
+           fprintf(fp, "%sAngle (degrees).......: %-6.3f\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
+           fprintf(fp, "%sShape.................: %-6.3f\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
            //fprintf(fp, "%s              Width...: \n", szSpacesOnLeft);
            //fprintf(fp, "%s              Length..: \n", szSpacesOnLeft);
            }
