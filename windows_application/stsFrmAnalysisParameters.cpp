@@ -794,7 +794,6 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<std
 void TfrmAnalysis::DataExchange() {
   try {
     EnableScanningWindow();
-    EnablePopulationFileInput();
     EnableTimeTrendAdj();
     EnableTimeIntervals();
     EnableProspStartDate();
@@ -1016,13 +1015,6 @@ void TfrmAnalysis::EnableAnalysisType(bool bValue) {
    ChildControl->Enabled = bValue;
    ChildControl = rgTypeAnalysis->Controls[3];  //Prospective Space-Time
    ChildControl->Enabled = bValue;
-}
-/** Enables controls which permit user to specify population file. */
-void TfrmAnalysis::EnablePopulationFileInput()
-{
-  edtPopFileName->Enabled = ((rgProbability->ItemIndex == SPACETIMEPERMUTATION && rdoSpatialDistance->Checked)/*percentage*/ ||
-                             rgProbability->ItemIndex == BERNOULLI ? false : true);;
-  btnPopBrowse->Enabled = edtPopFileName->Enabled;
 }
 
 //---------------------------------------------------------------------------
@@ -1460,9 +1452,6 @@ void __fastcall TfrmAnalysis::rgProbabilityClick(TObject *Sender) {
     //enable buttons based on selected model
     rgTypeAnalysis->Controls[0]->Enabled = ( rgProbability->ItemIndex == SPACETIMEPERMUTATION ? false : true );
     rgTypeAnalysis->Controls[1]->Enabled = ( rgProbability->ItemIndex == SPACETIMEPERMUTATION ? false : true );
-    EnablePopulationFileInput();
-    edtControlFileName->Enabled = ( rgProbability->ItemIndex == SPACETIMEPERMUTATION || rgProbability->ItemIndex == POISSON ? false : true );;
-    btnControlBrowse->Enabled = ( rgProbability->ItemIndex == SPACETIMEPERMUTATION || rgProbability->ItemIndex == POISSON ? false : true );
     // indicate that for Space-Time Permutation model, max temporal clusters size is 50.
     if (rgProbability->ItemIndex == SPACETIMEPERMUTATION)
       rdoPercentageTemproal->Caption = "Percent of Study Period (<= 50%)";
@@ -1798,7 +1787,6 @@ void TfrmAnalysis::SetupInterface() {
     chkIncludePurSpacClust->Checked = gpParams->m_bIncludePurelySpatial;
     rdoSpatialPercentage->Checked = gpParams->m_nMaxSpatialClusterSizeType != DISTANCETYPE; // default checked
     rdoSpatialDistance->Checked = gpParams->m_nMaxSpatialClusterSizeType == DISTANCETYPE;
-    EnablePopulationFileInput();
     SetSpatialDistanceCaption();
 
     //***************** check this code ******************************
@@ -2083,7 +2071,6 @@ void __fastcall TfrmAnalysis::cboCriteriaSecClustersChange(TObject *Sender){
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::rdoSpatialPercentageClick(TObject *Sender) {
   try {
-    EnablePopulationFileInput();
     gpParams->m_nMaxSpatialClusterSizeType = PERCENTAGEOFMEASURETYPE;
   }
   catch (ZdException & x) {
@@ -2094,7 +2081,6 @@ void __fastcall TfrmAnalysis::rdoSpatialPercentageClick(TObject *Sender) {
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::rdoSpatialDistanceClick(TObject *Sender){
   try {
-    EnablePopulationFileInput();
     gpParams->m_nMaxSpatialClusterSizeType = DISTANCETYPE;
   }
   catch (ZdException & x) {

@@ -823,7 +823,6 @@ object frmAnalysis: TfrmAnalysis
         Height = 21
         AutoSelect = False
         ParentShowHint = False
-        ReadOnly = True
         ShowHint = True
         TabOrder = 0
         OnChange = edtResultFileChange

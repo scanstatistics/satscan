@@ -201,7 +201,6 @@ class TfrmAnalysis : public TForm {
     bool                DetermineIfDbfExtension(AnsiString sFileName);
     void                EnableAdditionalAsciiFileOptions();
     void                EnableAnalysisType(bool bValue);
-    void                EnablePopulationFileInput();
     void                EnablePrecision();
     void                EnableProspStartDate();
     void                EnableScanningWindow();
