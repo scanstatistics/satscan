@@ -17,6 +17,8 @@ class PopulationCategories {
     std::vector<std::string>            gvCovariateNames;              /** names of covariates */
     std::vector<std::vector<int> >      gvPopulationCategories;        /** vector of population categories
                                                                            - integers are indexes of covariate names */
+    std::vector<count_t>                gvCategoryCasesCount;          /** number of cases for category */                                                                        
+    std::vector<count_t>                gvCategoryControlsCount;       /** number of controls for category */                                                                        
 
     void                                Init() {giNumberCovariates=0;}
 
@@ -24,12 +26,16 @@ class PopulationCategories {
     PopulationCategories();
     ~PopulationCategories();
 
+    void                                AddCaseCount(int iCategoryIndex, count_t Count);
+    void                                AddControlCount(int iCategoryIndex, count_t Count);
     void                                Display(BasePrint & PrintDirection) const;
+    count_t                             GetNumCategoryCases(int iCategoryIndex) const;
+    count_t                             GetNumCategoryControls(int iCategoryIndex) const;
     int                                 GetPopulationCategoryIndex(const std::vector<std::string>& vCategoryCovariates) const;
     const char                        * GetPopulationCategoryAsString(int iCategoryIndex, std::string & sBuffer) const;
     int                                 GetNumPopulationCategories() const {return (int)gvPopulationCategories.size();}
     int                                 GetNumPopulationCategoryCovariates() const {return giNumberCovariates;}
-    int                                 MakePopulationCategory(StringParser & Parser, int iLineNumber, BasePrint & PrintDirection);
+    int                                 MakePopulationCategory(const char* szDescription, StringParser & Parser, int iLineNumber, int iScanOffset, BasePrint & PrintDirection);
 };
 //*****************************************************************************
 #endif

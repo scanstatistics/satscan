@@ -11,6 +11,18 @@ PopulationCategories::PopulationCategories() {
 /** destructor */
 PopulationCategories::~PopulationCategories() {}
 
+void PopulationCategories::AddCaseCount(int iCategoryIndex, count_t Count) {
+  if (iCategoryIndex < 0 || iCategoryIndex > (int)gvCategoryCasesCount.size() - 1)
+    ZdGenerateException("Index '%d' out of range.","AddCaseCount()", iCategoryIndex);
+  gvCategoryCasesCount[iCategoryIndex] += Count;
+}
+
+void PopulationCategories::AddControlCount(int iCategoryIndex, count_t Count) {
+  if (iCategoryIndex < 0 || iCategoryIndex > (int)gvCategoryControlsCount.size() - 1)
+    ZdGenerateException("Index '%d' out of range.","AddControlCount()", iCategoryIndex);
+  gvCategoryControlsCount[iCategoryIndex] += Count;
+}
+
 /** Prints formatted text depicting state of population categories. */
 void PopulationCategories::Display(BasePrint & PrintDirection) const {
   size_t        t, j;
@@ -28,6 +40,32 @@ void PopulationCategories::Display(BasePrint & PrintDirection) const {
   }
   catch (ZdException &x) {
     x.AddCallpath("Display()", "PopulationCategories");
+    throw;
+  }
+}
+
+count_t PopulationCategories::GetNumCategoryCases(int iCategoryIndex) const {
+  try {
+    if (iCategoryIndex < 0 || iCategoryIndex > static_cast<int>(gvCategoryCasesCount.size()) - 1)
+      ZdGenerateException("Index '%d' out of ranges.","GetNumCategoryCases()");
+
+    return gvCategoryCasesCount[iCategoryIndex];
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetNumCategoryCases()", "PopulationCategories");
+    throw;
+  }
+}
+
+count_t PopulationCategories::GetNumCategoryControls(int iCategoryIndex) const {
+  try {
+    if (iCategoryIndex < 0 || iCategoryIndex > static_cast<int>(gvCategoryControlsCount.size()) - 1)
+      ZdGenerateException("Index '%d' out of ranges.","GetNumCategoryControls()");
+
+    return gvCategoryControlsCount[iCategoryIndex];
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetNumCategoryControls()", "PopulationCategories");
     throw;
   }
 }
@@ -71,14 +109,14 @@ const char * PopulationCategories::GetPopulationCategoryAsString(int iCategoryIn
 }
 
 /** Creates new population category and returns category index. */
-int PopulationCategories::MakePopulationCategory(StringParser & Parser, int iLineNumber, BasePrint & PrintDirection) {
-  int                                           iScanOffset, iCategoryIndex, iNumCovariatesScanned=0;
+int PopulationCategories::MakePopulationCategory(const char* szDescription, StringParser & Parser, int iLineNumber, int iScanOffset, BasePrint & PrintDirection) {
+  int                                           iCategoryIndex, iNumCovariatesScanned=0;
   std::vector<int>                              vPopulationCategory;
   const char                                  * pCovariate;
   std::vector<std::string>::iterator            itr;
   std::vector<std::vector<int> >::iterator      itr_int;
 
-  iScanOffset = 3; //tract identifier, population date, population, covariate 1, ...
+//  iScanOffset = 3; //tract identifier, population date, population, covariate 1, ...
   
   //create a temporary vector of covariate name indexes
   while ((pCovariate = Parser.GetWord(iNumCovariatesScanned + iScanOffset)) != 0) {
@@ -100,12 +138,14 @@ int PopulationCategories::MakePopulationCategory(StringParser & Parser, int iLin
     giNumberCovariates = iNumCovariatesScanned;
     gvPopulationCategories.push_back(vPopulationCategory);
     iCategoryIndex = 0;
+    gvCategoryCasesCount.resize(1, 0);
+    gvCategoryControlsCount.resize(1, 0);
   }
   else if (iNumCovariatesScanned != giNumberCovariates){
-    PrintDirection.PrintInputWarning("Error: Record %d of population file contains %d covariates\n",
-                                     iLineNumber, iNumCovariatesScanned);
-    PrintDirection.PrintInputWarning("       but the correct number of covariates is %d, ", giNumberCovariates);
-    PrintDirection.PrintInputWarning("as defined by first record.\n");
+    PrintDirection.PrintInputWarning("Error: Record %d of %s file contains %d covariate%s but expecting %d covariate%s.",
+                                     iLineNumber, szDescription,
+                                     iNumCovariatesScanned,(iNumCovariatesScanned == 1 ? "" : "s"),
+                                     giNumberCovariates, (giNumberCovariates == 1 ? "" : "s"));
     iCategoryIndex = -1;
   }
   else {
@@ -114,6 +154,8 @@ int PopulationCategories::MakePopulationCategory(StringParser & Parser, int iLin
     if (itr_int == gvPopulationCategories.end()) {
       gvPopulationCategories.push_back(vPopulationCategory);
       iCategoryIndex = gvPopulationCategories.size() - 1;
+      gvCategoryCasesCount.resize(gvCategoryCasesCount.size() + 1, 0);
+      gvCategoryControlsCount.resize(gvCategoryCasesCount.size() + 1, 0);
     }
     else
       iCategoryIndex = std::distance(gvPopulationCategories.begin(), itr_int);
