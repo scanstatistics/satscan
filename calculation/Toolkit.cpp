@@ -102,9 +102,7 @@ bool SaTScanToolkit::GetLogRunHistory() const {
     brief declaration of usage agreement. */
 const char * SaTScanToolkit::GetAcknowledgment(ZdString & Acknowledgment) const {
   try {
-    Acknowledgment << ZdString::reset << "You are running SaTScan v" << VERSION_NUMBER;
-    if (strlen(VERSION_PHASE))
-      Acknowledgment << " " << VERSION_PHASE;
+    Acknowledgment << ZdString::reset << "You are running SaTScan v" << GetVersion();
     Acknowledgment << ".\n\nSaTScan is free, available for download from ";
     Acknowledgment << GetWebSite() << ".\nIt may be used free of charge as long as proper ";
     Acknowledgment << "citations are given\nto both the SaTScan software and the underlying ";
@@ -367,6 +365,10 @@ void SaTScanToolkit::Setup(const char * sApplicationFullPath) {
     InsureSessionStructure();
     SetErrorReportDestination(GetTechnicalSupportEmail());
     ReadParametersHistory();
+    gsVersion.printf("%s.%s%s%s%s%s", VERSION_MAJOR, VERSION_MINOR,
+                     (!strcmp(VERSION_RELEASE, "0") ? "" : "."),
+                     (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE),
+                     (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE);
   }
   catch (ZdException& x) {
     x.AddCallpath("Setup()", "SaTScanToolkit");

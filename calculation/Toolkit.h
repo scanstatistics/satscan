@@ -28,6 +28,7 @@ class SaTScanToolkit : public BToolkit {
     ParameterHistory_t          gvParameterHistory;
     bool                        gbRunUpdateOnTerminate;
     ZdString                    gsUpdateArchiveFilename;
+    ZdString                    gsVersion;
 
     bool                        InsureLastDirectoryPath();
     bool                        InsureRunHistoryFileName();
@@ -54,6 +55,7 @@ class SaTScanToolkit : public BToolkit {
    const char                 * GetSystemIniFileName() const {return gsSystemIniFileName;}
    const char                 * GetTechnicalSupportEmail() const;
    const ZdString             & GetUpdateArchiveFilename() const {return gsUpdateArchiveFilename;}
+   const char                 * GetVersion() const {return gsVersion.GetCString();}
    const char                 * GetWebSite() const;
    void                         SetRunUpdateOnTerminate(bool b) {gbRunUpdateOnTerminate = b;}
    void                         SetUpdateArchiveFilename(const char * sArchiveFile) {gsUpdateArchiveFilename = sArchiveFile;} 
