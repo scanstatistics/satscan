@@ -430,27 +430,42 @@ void CParameters::DisplayParameters(FILE* fp) {
      fprintf(fp, "\nOutput\n");
      fprintf(fp, "------\n");
      fprintf(fp, "  Run History File  : %s\n", gsRunHistoryFilename.GetCString());
-     fprintf(fp, "  Results File : %s\n", m_szOutputFilename);
-     if (gbOutputClusterLevelDBF) {
-        sName = fileName.GetFullPath();
-        sName.Replace(fileName.GetExtension(), ".col.dbf");
-        fprintf(fp, "  Cluster Level dBase Output File : %s\n", sName.GetCString());
-     }
+     fprintf(fp, "  Results File      : %s\n", m_szOutputFilename);
+
+     // gis files
      if (gbOutputAreaSpecificDBF) {
         sName = fileName.GetFullPath();
         sName.Replace(fileName.GetExtension(), ".gis.dbf");
-        fprintf(fp, "  Area Specific dBase Output File : %s\n", sName.GetCString());
+        if (m_bOutputCensusAreas) {
+           fprintf(fp, "  GIS File(s)       : %s\n", m_szGISFilename);
+           fprintf(fp, "                    : %s\n", sName.GetCString());
+        }
+        else
+           fprintf(fp, "  GIS File          : %s\n", sName.GetCString());
      }
-     if (m_bOutputCensusAreas)  // Output Census areas in Reported Clusters
-        fprintf(fp, "  GIS File     : %s\n", m_szGISFilename);
-     if (m_bMostLikelyClusters)  // Output Most Likely Cluster for each Centroid
-        fprintf(fp, "  MLC File     : %s\n", m_szMLClusterFilename);
-     if (m_bOutputRelRisks)
-        fprintf(fp, "  RRE File     : %s\n", m_szRelRiskFilename);
-     if (m_bSaveSimLogLikelihoods)
-       fprintf(fp, "  LLR File     : %s\n", m_szLLRFilename);
+     if (m_bOutputCensusAreas && !gbOutputAreaSpecificDBF)  // Output Census areas in Reported Clusters
+        fprintf(fp, "  GIS File          : %s\n", m_szGISFilename);
 
-     fprintf(fp, "  Criteria for Reporting Secondary Clusters : ");
+     // mlc files
+     if (gbOutputClusterLevelDBF) {
+        sName = fileName.GetFullPath();
+        sName.Replace(fileName.GetExtension(), ".col.dbf");
+        if (m_bMostLikelyClusters)  {  // Output Most Likely Cluster for each Centroid
+           fprintf(fp, "  MLC File(s)       : %s\n", m_szMLClusterFilename);
+           fprintf(fp, "                    : %s\n", sName.GetCString());
+        }
+        else
+           fprintf(fp, "  MLC File          : %s\n", sName.GetCString());
+     }
+     if (m_bMostLikelyClusters && !gbOutputClusterLevelDBF)   // Output Most Likely Cluster for each Centroid
+        fprintf(fp, "  MLC File          : %s\n", m_szMLClusterFilename);
+
+     if (m_bOutputRelRisks)
+        fprintf(fp, "  RRE File          : %s\n", m_szRelRiskFilename);
+     if (m_bSaveSimLogLikelihoods)
+       fprintf(fp, "  LLR File           : %s\n", m_szLLRFilename);
+
+     fprintf(fp, "\n  Criteria for Reporting Secondary Clusters : ");
      switch (m_iCriteriaSecondClusters) {
         case NOGEOOVERLAP          : fprintf(fp, "No Geographical Overlap\n"); break;
         case NOCENTROIDSINOTHER    : fprintf(fp, "No Cluster Centroids in Other Clusters\n"); break;
