@@ -199,11 +199,11 @@ object frmAbout: TfrmAbout
   object Label5: TLabel
     Left = 24
     Top = 308
-    Width = 409
-    Height = 32
+    Width = 433
+    Height = 48
     Caption = 
-      'SatScan v.3.0:  Software for the spatial and space-time scan sta' +
-      'tistics. Bethesda, MD:  National Cancer Institute, 2002.'
+      'SatScan v.3.0.1:  Software for the spatial and space-time scan s' +
+      'tatistics. Bethesda, MD:  National Cancer Institute, 2002.'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -229,9 +229,9 @@ object frmAbout: TfrmAbout
   object lblVersion: TLabel
     Left = 144
     Top = 12
-    Width = 55
+    Width = 76
     Height = 29
-    Caption = 'v 3.0'
+    Caption = 'v 3.0.1'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -24
