@@ -89,10 +89,9 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   catch (ZdException & x) {
-    ConsolePrint.SatScanPrintf("Job cancelled due to an unexpected program error.\n");
-    ConsolePrint.SatScanPrintf("Please contact technical support with the following information.\n");
-    ConsolePrint.SatScanPrintf("Program Error Detected:\n");
-    ConsolePrint.SatScanPrintf(x.GetErrorMessage());
+    ConsolePrint.SatScanPrintf("\n\nJob cancelled due to an unexpected program error.\n\n");
+    ConsolePrint.SatScanPrintf("Please contact technical support with the following information:\n");
+    ConsolePrint.SatScanPrintf("%s\n", x.GetErrorMessage());
     ConsolePrint.SatScanPrintf(x.GetCallpath());
     BasisExit();
     return 1;
