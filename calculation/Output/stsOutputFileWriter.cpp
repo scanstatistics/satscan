@@ -9,13 +9,18 @@
 
 #include "stsOutputFileWriter.h"
 
-OutputFileWriter::OutputFileWriter(BaseOutputStorageClass* pOutputFileData) : gpOutputFileData(pOutputFileData) {
+OutputFileWriter::OutputFileWriter(BaseOutputStorageClass* pOutputFileData) {
+   try {
+      if (!pOutputFileData)
+         ZdGenerateException("NULL output file data pointer!", "Error!");
+      gpOutputFileData = pOutputFileData;
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("Constructor", "OutputFileWriter");
+      throw;
+   }
 }
 
 OutputFileWriter::~OutputFileWriter() {
-   try {
-      delete gpOutputFileData; gpOutputFileData = 0;
-   }
-   catch (...) { }
 }
 
