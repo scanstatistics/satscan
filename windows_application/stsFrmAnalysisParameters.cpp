@@ -1194,7 +1194,11 @@ void TfrmAnalysis::SetupInterface() {
     rdoUnitMonths->Checked = (gParameters.GetTimeIntervalUnitsType() == MONTH);
     rdoUnitDay->Checked = (gParameters.GetTimeIntervalUnitsType() == DAY);
     edtTimeIntervalLength->Text = gParameters.GetTimeIntervalLength();
+    //Scanning Window Tab   ***PAG now in Advanced Parameters
     //Time Parameter Tab    ***PAG now in Advanced Parameters
+    if (gParameters.GetProspectiveStartDate().length() > 0)
+      ParseDate(gParameters.GetProspectiveStartDate().c_str(), gpfrmAdvancedParameters->edtProspectiveStartDateYear, gpfrmAdvancedParameters->edtProspectiveStartDateMonth, gpfrmAdvancedParameters->edtProspectiveStartDateDay);
+    gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked = gParameters.GetAdjustForEarlierAnalyses();
     //Output File Tab
     edtResultFile->Text = gParameters.GetOutputFileName().c_str();
     chkRelativeRiskEstimatesAreaAscii->Checked = gParameters.GetOutputRelativeRisksAscii();
