@@ -427,19 +427,24 @@ bool CSaTScanData::ReadPops() {
       if (InvalidForProspective)
         {
         bValid = false;
-        gpPrintDirection->SatScanPrintWarning("\n  ERROR: For the prospective analysis to be correct, it is critical that the\n");
-        gpPrintDirection->SatScanPrintWarning("         scanning spatial window is the same for each of the analysis performed once\n");
-        gpPrintDirection->SatScanPrintWarning("         a day, week, year, etc. If the population size changes over time, as it\n");
-        gpPrintDirection->SatScanPrintWarning("         does in your data, then you must define the maximum circle size in terms of\n");
-        gpPrintDirection->SatScanPrintWarning("         a fixed geographical distance rather than as a percent of the total population.\n");
-        for (size_t t=0; t < vInvalidTractIndex.size(); t++)
+        gpPrintDirection->SatScanPrintWarning("\n  ERROR: For the prospective space-time analysis to be correct,\n");
+        gpPrintDirection->SatScanPrintWarning("           it is critical that the scanning spatial window is the\n");
+        gpPrintDirection->SatScanPrintWarning("           same for each of the analysis performed over time. If \n");
+        gpPrintDirection->SatScanPrintWarning("           there are multiple years in the population file, so that\n");
+        gpPrintDirection->SatScanPrintWarning("           the population size changes over time, as it does in your\n");
+        gpPrintDirection->SatScanPrintWarning("           data, then you must define the maximum circle size in\n");
+        gpPrintDirection->SatScanPrintWarning("           terms of a specific geographical radius rather than as a\n");
+        gpPrintDirection->SatScanPrintWarning("           percent of the total population at risk.");
+
+// removed as per Martin's request - AJV 10/03/2002
+/*        for (size_t t=0; t < vInvalidTractIndex.size(); t++)
            if (t==0)
              gpPrintDirection->SatScanPrintWarning("         Following tract are invalid: %s\n", gpTInfo->tiGetTid(vInvalidTractIndex[t]));
            else
              gpPrintDirection->SatScanPrintWarning("                                      %s\n", gpTInfo->tiGetTid(vInvalidTractIndex[t]));
-        gpPrintDirection->SatScanPrintWarning("\n\n");
-        }
-
+*/
+      gpPrintDirection->SatScanPrintWarning("\n\n");
+      }
       if (bValid && ncats > 0)
        free(cvec);
 
