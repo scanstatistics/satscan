@@ -74,11 +74,11 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
    double               *pCoords = 0, *pCoords2 = 0;
    ZdFieldValue         fv;
    ZdString             sAdditCoords;
+   ZdTransaction*       pTransaction = 0;
 
    try {
       DBFFile File(gsFileName.GetCString());
-      auto_ptr<ZdTransaction> pTransaction;
-      pTransaction.reset(File.BeginTransaction());
+      pTransaction= (File.BeginTransaction());
 
       auto_ptr<ZdFileRecord> pRecord;
       pRecord.reset(File.GetNewRecord());
@@ -178,7 +178,7 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       File.AppendRecord(*pTransaction, *pRecord);
-      File.EndTransaction(&(*pTransaction));
+      File.EndTransaction(pTransaction); pTransaction = 0;
       File.Close();
 
       free(pCoords);
@@ -187,6 +187,7 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
    catch (ZdException &x) {
       free(pCoords);
       free(pCoords2);
+      pTransaction = 0;
       x.AddCallpath("RecordClusterData()", "stsClusterLevelDBF");
       throw;
    }

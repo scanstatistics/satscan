@@ -70,11 +70,10 @@ void stsAreaSpecificDBF::Init() {
 void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber) {
    unsigned long        uwFieldNumber = 0;
    ZdFieldValue         fv;
-
+   ZdTransaction*       pTransaction = 0;
    try {
       DBFFile File(gsFileName.GetCString());
-      auto_ptr<ZdTransaction> pTransaction;
-      pTransaction.reset(File.BeginTransaction());
+      pTransaction = File.BeginTransaction();
       auto_ptr<ZdFileRecord> pRecord;
       pRecord.reset(File.GetNewRecord());
 
@@ -116,10 +115,11 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 
       File.AppendRecord(*pTransaction, *pRecord);
 
-      File.EndTransaction(&(*pTransaction)); 
+      File.EndTransaction(pTransaction);  pTransaction = 0;
       File.Close();
    }
    catch (ZdException &x) {
+      pTransaction = 0;
       x.AddCallpath("RecordClusterData()", "stsAreaSpecificDBF");
       throw;
    }
