@@ -8,17 +8,15 @@
 #include "TimeEstimate.h"
 #include "GridTractCoordinates.h"
 
-/** Eventually this code will be moved to SaTScanData.cpp */
-
-/** tract-distance class for accumulating neighbors */
-class TractDistance {
+/** Distance from a centroid to a neighboring location. */
+class LocationDistance {
    private:
      tract_t            m_tTractNumber;     /* tract number      */
      float              m_fDistanceSquared; /* distance squared  */
 
    public:
-     TractDistance(tract_t t=0, float f=0) {SetTractNumber(t); SetDistanceSquared(f);}
-     ~TractDistance() {}
+     LocationDistance(tract_t t=0, float f=0) {SetTractNumber(t); SetDistanceSquared(f);}
+     ~LocationDistance() {}
 
      const double       GetDistance() const {return sqrt(m_fDistanceSquared);}
      const float      & GetDistanceSquared() const {return m_fDistanceSquared;}
@@ -27,49 +25,80 @@ class TractDistance {
      void               SetTractNumber(tract_t t) {m_tTractNumber=t;}
 };
 
-/** Function object used to compare TractDistance objects by m_fDistanceSquared. */
-class CompareTractDistance {
+/** Function object used to compare LocationDistance objects by m_fDistanceSquared. */
+class CompareLocationDistance {
   private:
     int                 	gi;                     /* loop index */
     double              	gdCoordinateLHS,        /* coordinate variables */
                         	gdCoordinateRHS;
-    std::string                 gsLHS, gsRHS;                            
+    std::string                 gsLHS, gsRHS;
     bool                	gbContinue;             /* stops coordinate comparisons */
     const TractHandler 	      & gTractInformation;      /* tract information */
 
   public:
-    CompareTractDistance(const TractHandler & TractInformation) : gTractInformation(TractInformation) {}
+    CompareLocationDistance(const TractHandler & TractInformation) : gTractInformation(TractInformation) {}
 
-    bool                operator() (const TractDistance& lhs, const TractDistance& rhs);
+    bool                operator() (const LocationDistance& lhs, const LocationDistance& rhs);
 };
 
-/** Counts neighbors through expected number of cases using measure array. */
-tract_t CountNeighborsByMeasure(std::vector<TractDistance>& vTractDistances,
-	                        const measure_t Measure[], measure_t MaxCircleSize,
-                                measure_t nMaxMeasure);
+class CSaTScanData; /** forward class declaration */
 
-/** Count neighbors through accumulated distance. */
-tract_t CountNeighborsByDistance(std::vector<TractDistance>& vTractDistances,
-                                 measure_t MaxDistance);
-/** For the circle [e = 0] and each ellipsoid [e = 1, 2, ... n], calculate
-    the Sorted[] matrix, such that Sorted[e][a][b] is the b-th
-    closest neighbor to a, and Sorted[a][0] == a.
-    e = circle or ellipse1, ellipse2, etc.
-    a = grid point
-    b = neighbor tacts ( sorted closest to farthest.. up to maxcirclesize) */
-void MakeNeighbors(const TractHandler* pTInfo, const GInfo* pGInfo, tract_t***  SortedInt, unsigned short*** SortedUShort,
-                   tract_t NumTracts, tract_t NumGridTracts, const measure_t* Measure, measure_t MaxCircleSize,
-                   measure_t nMaxMeasureToKeep, tract_t**   NeighborCounts, int nDimensions, int iNumEllipses,
-                   const std::vector<double>& vEllipseShapes, const std::vector<int>& vNumEllipseRotations,
-                   int iSpatialMaxType, BasePrint* pPrintDirection);
+/** Calculates neighboring locations about centroids with versatility as to whether
+    calculations are stored in stored array of CSaTScanData object or allocated to
+    passed array. */
+class CentroidNeighborCalculator {
+  private:
+    void                CalculateNeighborsByCircles();
+    void                CalculateNeighborsByCircles(tract_t tCentroid, tract_t** SortedInt, unsigned short** SortedUShort, int& iNumNeighbors);
+    void                CalculateNeighborsByEllipses();
+    void                CalculateNeighborsByEllipses(tract_t tEllipseOffset, tract_t tCentroid, tract_t** SortedInt, unsigned short** SortedUShort, int& iNumNeighbors);
 
-/** MK 5.2001 - This function transforms the x and y coordinates so that circles
-    in the transformed space represent ellipsoids in the original space.
-    The input is the old X and Y coordinates, the angle of the longest
-   axis of the ellipsoid (0<=EllipseAngle<pi), and the EllipseShape (>1),
-   which is defined as the length divided by the width.
-   The output is the new X and Y coordinates. */
-void Transform(double Xold, double Yold, float EllipseAngle, float EllipseShape, double* pXnew, double* pYnew);
+  protected:
+    CSaTScanData                              & gDataHub;
+    const GInfo                               & gCentroidInfo;
+    const TractHandler                        & gLocationInfo;
+    BasePrint                                 & gPrintDirection;
+    measure_t                                   gtMaximumSize;
+    std::vector<LocationDistance>               gvCentroidToLocationDistances;
+    std::vector<std::pair<double, double> >     gvLocationEllipticCoordinates;
 
+    virtual tract_t     CalculateNumberOfNeighboringLocations() const = 0;
+    void                Transform(double Xold, double Yold, float EllipseAngle, float EllipseShape, double* pXnew, double* pYnew);
+
+  public:
+    CentroidNeighborCalculator(CSaTScanData& DataHub, BasePrint& PrintDirection, bool bForRealData);
+    virtual ~CentroidNeighborCalculator();
+
+    void                CalculateCentroidNeighbors(tract_t tEllipseOffset, tract_t tCentroid, tract_t** ppSortedInt, unsigned short** ppSortedUShort, int& iNumNeighbors);
+    void                CalculateEllipticCoordinates(tract_t tEllipseOffset);
+    void                CalculateNeighbors();
+};
+
+/** Calculates neighboring locations about centroids using relative distance
+    of locations as limiting factor. */
+class CentroidNeighborCalculatorByDistance : public CentroidNeighborCalculator {
+  protected:
+    virtual tract_t     CalculateNumberOfNeighboringLocations() const;
+
+  public:
+    CentroidNeighborCalculatorByDistance(CSaTScanData& DataHub, BasePrint& PrintDirection, bool bForRealData);
+    virtual ~CentroidNeighborCalculatorByDistance();
+};
+
+/** Calculates neighboring locations about centroids using population of locations
+    as limiting factor. */
+class CentroidNeighborCalculatorByPopulation : public CentroidNeighborCalculator {
+  protected:
+    measure_t                 * gpLocationsPopulation;
+    std::vector<measure_t>      gvCalculatedPopulations;
+    measure_t                   gtMaxMeasure;
+
+    virtual tract_t             CalculateNumberOfNeighboringLocations() const;
+
+  public:
+    CentroidNeighborCalculatorByPopulation(CSaTScanData& DataHub, BasePrint& PrintDirection, bool bForRealData);
+    virtual ~CentroidNeighborCalculatorByPopulation();
+};
 //*****************************************************************************
 #endif
+
