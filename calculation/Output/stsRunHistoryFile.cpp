@@ -82,8 +82,10 @@ void stsRunHistoryFile::Init() {
 void stsRunHistoryFile::OpenRunHistoryFile() {
    CSVFile		*pFile = 0;
    ZdTransaction*	pTransaction = 0;
+   CSVRecord            *pRecord = 0, *pLastRecord = 0;
+   unsigned long        ulLastRecordNumber;
+   long                 lStore = 1;
 
-   
    try {
       // if we don't have one then create it
       if(!ZdIO::Exists(gsFilename.GetCString()))
@@ -94,7 +96,21 @@ void stsRunHistoryFile::OpenRunHistoryFile() {
 
       // get a record buffer, input data and append the record
       for(int i = 0; i < pFile->GetNumFields(); ++i) {
-         
+         ulLastRecordNumber = pFile->GotoLastRecord(pLastRecord);
+         // if there's records in the file
+         if(ulLastRecordNumber)
+            pLastRecord->GetField(0, lStore);
+         delete pLastRecord;
+
+         // note: I'm going to document the heck out of this section in case they can't the run
+         // specs on us at any time and that way I can interpret my assumptions in case any just so
+         // happen to be incorrect, so bear with me - AJV 9/3/2002
+         pRecord = pFile->GetNewRecord();
+         // first field = run number
+         pRecord->PutField(0, ++lStore);
+
+         pFile->AppendRecord(*pTransaction, *pRecord);
+         delete pRecord;
       }
 
       pFile->EndTransaction(pTransaction);
@@ -110,6 +126,8 @@ void stsRunHistoryFile::OpenRunHistoryFile() {
       }   
       delete pFile; pFile = 0;
       delete pTransaction; pTransaction = 0;
+      delete pRecord; pRecord = 0;
+      delete pLastRecord; pLastRecord = 0;
       x.AddCallpath("OpenRunHistoryFile()", "stsRunHistoryFile");
       throw;
    }
