@@ -9,14 +9,16 @@ CPurelySpatialCluster::CPurelySpatialCluster(BasePrint *pPrintDirection)
   Initialize(0);
 }
 
+CPurelySpatialCluster::CPurelySpatialCluster(const CPurelySpatialCluster& rhs)
+                      :CCluster(rhs.gpPrintDirection) {
+  *this = rhs;                    
+}
+
 CPurelySpatialCluster::~CPurelySpatialCluster() {}
 
 /** returns newly cloned CPurelySpatialCluster */
 CPurelySpatialCluster * CPurelySpatialCluster::Clone() const {
-  //Note: Replace this code with copy constructor...
-  CPurelySpatialCluster * pClone = new CPurelySpatialCluster(gpPrintDirection);
-  *pClone = *this;
-  return pClone;
+  return new CPurelySpatialCluster(*this);;                                 
 }
 
 void CPurelySpatialCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n)

@@ -9,10 +9,11 @@ class CPurelySpatialCluster : public CCluster
 {
   public:
     CPurelySpatialCluster(BasePrint *pPrintDirection);
-    CPurelySpatialCluster(int nRate, tract_t nCircles);
+    CPurelySpatialCluster(const CPurelySpatialCluster& rhs);
     ~CPurelySpatialCluster();
 
     virtual void                        AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n);
+    inline virtual void                 AssignAsType(const CCluster& rhs) {*this = (CPurelySpatialCluster&)rhs;}
     virtual CPurelySpatialCluster     * Clone() const;
     virtual void                        DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType);
     virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
