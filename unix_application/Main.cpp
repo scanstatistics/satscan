@@ -46,8 +46,16 @@ int main(int argc, char *argv[]) {
     }
     // read options
     for (i=2; i < argc; ++i) {
-       if (!stricmp(argv[i], "-v"))
-         Parameters.SetSuppressInstanceParticularOutput(true);
+       if (!stricmp(argv[i], "-v")) {
+         Parameters.SetOutputClusterLevelAscii(true);
+         Parameters.SetOutputAreaSpecificAscii(true);
+         if (Parameters.GetProbabiltyModelType() != SPACETIMEPERMUTATION)
+           Parameters.SetOutputRelativeRisksAscii(true);
+         Parameters.SetOutputSimLogLikeliRatiosAscii(true);
+         if (Parameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL || Parameters.GetAnalysisType() == PROSPECTIVESPACETIME)
+           //so that we can compare prospective analyses with v3.1 and prior, which didn't have below option 
+           Parameters.SetAdjustForEarlierAnalyses(true);
+       }
        else if (!stricmp(argv[i], "-o")) {
          if (argc < i + 2)
            GenerateUsageException();
@@ -119,6 +127,14 @@ int main(int argc, char *argv[]) {
     delete pAnalysis;
     delete pData;
     ConsolePrint.SatScanPrintf(x.GetErrorMessage());
+    BasisExit();
+    exit(1);
+  }
+  catch (ZdMemoryException &x) {
+    delete pAnalysis;
+    delete pData;
+    ConsolePrint.SatScanPrintWarning("\nSaTScan is unable to perform analysis due to insuffient memory.\n");
+    ConsolePrint.SatScanPrintWarning("Please see 'Memory Requirements' in user guide for suggested solutions.\n");
     BasisExit();
     exit(1);
   }
