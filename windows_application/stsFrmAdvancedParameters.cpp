@@ -1754,86 +1754,45 @@ void TfrmAdvancedParameters::ValidateSpatialClusterSize() {
 
 //---------------------------------------------------------------------------
 void TfrmAdvancedParameters::ValidateTemporalClusterSize() {
-  float         dValue;
-  ZdString      sErrorMessage;
-  ZdDate        StartDate, EndDate, EndDatePlusOne,StartPlusIntervalDate;
-  ZdDateFilter  DateFilter("%4y/%02m/%02d");
-  char          FilterBuffer[11], Buffer[10];
-  unsigned long ulMaxClusterDays, ulIntervalLengthInDays;
+  ZdString      sErrorMessage, sPrecisionString;
+  double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
 
   try {
-     //check whether we are specifiying temporal information
-     if (rdgTemporalOptions->Enabled) {
-        switch (GetMaxTemporalClusterSizeControlType()) {
-           case PERCENTAGETYPE :
-              if (!edtMaxTemporalClusterSize->Text.Length() || atof(edtMaxTemporalClusterSize->Text.c_str()) == 0) {
-                GenerateAFException("Please specify a maximum temporal cluster size.","ValidateTemporalClusterSize()", *edtMaxTemporalClusterSize, ANALYSIS_TABS);
-              }
-              //check maximum temporal cluster size(as percentage pf population) is less
-              //than maximum for given probabilty model
-              dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
-              if (!(dValue > 0.0 && dValue <= (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90))) {
-                 sErrorMessage << "For the " << gAnalysisSettings.gParameters.GetProbabiltyModelTypeAsString(gAnalysisSettings.GetModelControlType());
-                 sErrorMessage << " model, the maximum temporal cluster size, as a percent of study period, is ";
-                 sErrorMessage << (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90) << " percent.";
-                 GenerateAFException(sErrorMessage.GetCString(), "ValidateTemporalClusterSize()", *edtMaxTemporalClusterSize, ANALYSIS_TABS);
-              }
-              break;
-           case TIMETYPE :
-              if (!edtMaxTemporalClusterSizeUnits->Text.Length() || atof(edtMaxTemporalClusterSizeUnits->Text.c_str()) == 0) {
-                GenerateAFException("Please specify a maximum temporal cluster size.",
-                                    "ValidateTemoralClusterSize()", *edtMaxTemporalClusterSizeUnits, ANALYSIS_TABS);
-              }
-              //check that maximum temporal cluster size(in time units) is less than
-              //maximum for probabilty model. Determine the number of days the maximum
-              //temporal cluster can be. Compare that against start date plus interval
-              //length units.
-              gAnalysisSettings.GetStudyPeriodStartDate(StartDate);
-              gAnalysisSettings.GetStudyPeriodEndDate(EndDate);
-              //to make start and end day inclusive - add 1 to EndDate date
-              EndDatePlusOne = EndDate;
-              EndDatePlusOne.AddDays(1);
-              ulMaxClusterDays = EndDatePlusOne.GetJulianDayFromCalendarStart() - StartDate.GetJulianDayFromCalendarStart();
-              ulMaxClusterDays = (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? ulMaxClusterDays * 0.5 : ulMaxClusterDays * 0.9);
-              StartPlusIntervalDate = StartDate;
-              //add time interval length as units to modified start date
-              switch (gAnalysisSettings.GetTimeAggregationControlType()) {
-              case (YEAR):
-                 StartPlusIntervalDate.AddYears(static_cast<unsigned short>(atoi((edtMaxTemporalClusterSizeUnits)->Text.c_str())));
-                 strcpy(Buffer,"year(s)");
-                 break;
-              case (MONTH) :
-                 StartPlusIntervalDate.AddMonths(static_cast<unsigned short>(atoi((edtMaxTemporalClusterSizeUnits)->Text.c_str())));
-                 //to make start and end day inclusive - add one day to interval
-                 StartPlusIntervalDate.AddDays(1);
-                 strcpy(Buffer,"month(s)");
-                 break;
-              case (DAY) :
-                 //to make start and end day inclusive - add interval length minus 1
-                 StartPlusIntervalDate.AddDays(static_cast<unsigned short>(atoi((edtMaxTemporalClusterSizeUnits)->Text.c_str())));
-                 strcpy(Buffer,"day(s)");
-                 break;
-              default  :
-                 sErrorMessage << "Unknown interval unit " << gAnalysisSettings.GetTimeAggregationControlType() << ".";
-                 GenerateAFException(sErrorMessage, "ValidateTemporalClusterSize()", *edtMaxTemporalClusterSizeUnits, ANALYSIS_TABS);
-                 sErrorMessage = 0;
-              };
-              ulIntervalLengthInDays = StartPlusIntervalDate.GetJulianDayFromCalendarStart() - StartDate.GetJulianDayFromCalendarStart();
-              if (ulIntervalLengthInDays > ulMaxClusterDays) {
-                DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), StartDate.GetRawDate());
-                sErrorMessage << "For the study period starting on " << FilterBuffer << " and ending on ";
-                DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), EndDate.GetRawDate());
-                sErrorMessage << FilterBuffer << ",\na maximum temporal cluster size of " << edtMaxTemporalClusterSizeUnits->Text.c_str();
-                sErrorMessage << " " << Buffer << " is greater than " << (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90);
-                sErrorMessage << " percent of study period.";
-                GenerateAFException(sErrorMessage.GetCString(), "ValidateTemporalClusterSize()", *edtMaxTemporalClusterSizeUnits, ANALYSIS_TABS);
-              }
-              break;
-           default :
-             ZdException::GenerateNotification("Unknown temporal percentage type: %d.",
-                                            "ValidateTemporalClusterSize()", GetMaxTemporalClusterSizeControlType());
+    //check whether we are specifiying temporal information
+    if (!rdgTemporalOptions->Enabled)
+      return;
+
+    if (GetMaxTemporalClusterSizeControlType() == PERCENTAGETYPE) {
+      if (!edtMaxTemporalClusterSize->Text.Length() || edtMaxTemporalClusterSize->Text.ToDouble() == 0)
+        GenerateAFException("Please specify a maximum temporal cluster size.","ValidateTemporalClusterSize()", *edtMaxTemporalClusterSize, ANALYSIS_TABS);
+      //check maximum temporal cluster size(as percentage of population) is less than maximum for given probabilty model
+      if (edtMaxTemporalClusterSize->Text.ToDouble() > (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90)) {
+        sErrorMessage.printf("For the %s model, the maximum temporal cluster size as a percent of the study period is %d percent.",
+                             gAnalysisSettings.gParameters.GetProbabiltyModelTypeAsString(gAnalysisSettings.GetModelControlType()),
+                             (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90));
+        GenerateAFException(sErrorMessage.GetCString(), "ValidateTemporalClusterSize()", *edtMaxTemporalClusterSize, ANALYSIS_TABS);
       }
     }
+    else if (GetMaxTemporalClusterSizeControlType() == TIMETYPE) {
+      if (!edtMaxTemporalClusterSizeUnits->Text.Length() || edtMaxTemporalClusterSizeUnits->Text.ToDouble() == 0)
+        GenerateAFException("Please specify a maximum temporal cluster size.", "ValidateTemoralClusterSize()", *edtMaxTemporalClusterSizeUnits, ANALYSIS_TABS);
+      GetDatePrecisionAsString(gAnalysisSettings.GetTimeAggregationControlType(), sPrecisionString, false, false);
+      dStudyPeriodLengthInUnits = gAnalysisSettings.CalculateTimeAggregationUnitsInStudyPeriod();
+      dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90)/100.0);
+      if (edtMaxTemporalClusterSizeUnits->Text.ToDouble() > dMaxTemporalLengthInUnits) {
+        sErrorMessage.printf("A maximum temporal cluster size of %d %s%s exceeds %d percent of a %d %s study period.\n"
+                             "Note that current settings limit the maximum to %d %s%s.",
+                             edtMaxTemporalClusterSizeUnits->Text.ToInt(), sPrecisionString.GetCString(),
+                             (edtMaxTemporalClusterSizeUnits->Text.ToInt() == 1 ? "" : "s"),
+                             (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90),
+                             static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString(),
+                             static_cast<int>(dMaxTemporalLengthInUnits), sPrecisionString.GetCString(),
+                             (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
+        GenerateAFException(sErrorMessage.GetCString(), "ValidateTemoralClusterSize()", *edtMaxTemporalClusterSizeUnits, ANALYSIS_TABS);
+      }
+    }
+    else
+      ZdException::GenerateNotification("Unknown temporal percentage type: %d.","ValidateTemporalClusterSize()", GetMaxTemporalClusterSizeControlType());
   }
   catch (ZdException & x) {
     x.AddCallpath("ValidateTemporalClusterSize()","TfrmAdvancedParameters");
