@@ -271,7 +271,8 @@ bool CParameters::DisplayParamError(int nLine) {
 }
 
 void CParameters::DisplayParameters(FILE* fp) {
-   ZdString     sFileName;
+   ZdFileName   fileName(m_szOutputFilename);
+   ZdString     sName;
 
    try {
      fprintf(fp, "\n________________________________________________________________\n\n");
@@ -291,7 +292,7 @@ void CParameters::DisplayParameters(FILE* fp) {
      fprintf(fp, "  Coordinates File : %s\n", m_szCoordFilename);
      if (m_bSpecialGridFile)
        fprintf(fp, "  Special Grid File: %s\n", m_szGridFilename);
-   
+
      fprintf(fp, "\n  Precision of Times : ");
      switch (m_nPrecision) {
        case NONE  : fprintf(fp, "None\n"); break;
@@ -369,7 +370,7 @@ void CParameters::DisplayParameters(FILE* fp) {
          case false : fprintf(fp, "No\n");  break;
        }
      }
-   
+
      if (m_nAnalysisType == PURELYTEMPORAL || m_nAnalysisType == SPACETIME || (m_nAnalysisType == PROSPECTIVESPACETIME)) {
        fprintf(fp, "  Maximum Temporal Cluster Size : %.2f", m_nInitialMaxTemporalClusterSize);
        switch (m_nInitialMaxClusterSizeType) {
@@ -425,18 +426,20 @@ void CParameters::DisplayParameters(FILE* fp) {
      }
      if (m_nAnalysisType == PROSPECTIVESPACETIME)
         fprintf(fp, "  Prospective Start Date : %s\n", m_szProspStartDate);
-   
+
      fprintf(fp, "\nOutput\n");
      fprintf(fp, "------\n");
      fprintf(fp, "  Run History File  : %s\n", gsRunHistoryFilename.GetCString());
      fprintf(fp, "  Results File : %s\n", m_szOutputFilename);
      if (gbOutputClusterLevelDBF) {
-        sFileName << ZdString::reset << ZdFileName(m_szOutputFilename).GetLocation() << "ClusterLevel.dbf";
-        fprintf(fp, "  Cluster Level dBase Output File : %s\n", sFileName.GetCString());
+        sName = fileName.GetFullPath();
+        sName.Replace(fileName.GetExtension(), ".col.dbf");
+        fprintf(fp, "  Cluster Level dBase Output File : %s\n", sName.GetCString());
      }
      if (gbOutputAreaSpecificDBF) {
-        sFileName << ZdString::reset << ZdFileName(m_szOutputFilename).GetLocation() << "AreaSpecific.dbf";
-        fprintf(fp, "  Area Specific dBase Output File : %s\n", sFileName.GetCString());
+        sName = fileName.GetFullPath();
+        sName.Replace(fileName.GetExtension(), ".gis.dbf");
+        fprintf(fp, "  Area Specific dBase Output File : %s\n", sName.GetCString());
      }
      if (m_bOutputCensusAreas)  // Output Census areas in Reported Clusters
         fprintf(fp, "  GIS File     : %s\n", m_szGISFilename);
