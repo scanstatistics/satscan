@@ -695,7 +695,7 @@ bool AnalysisRunner::RepeatAnalysis() {
 
    try {
       if (gParameters.GetIsSequentialScanning()) {
-        bCorrectAnalysisType = gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == PURELYSPATIALMONOTONE; 
+        bCorrectAnalysisType = gParameters.GetAnalysisType() == PURELYSPATIAL; 
         bTopCluster = gTopClustersContainer.GetNumClustersRetained() &&
                       gTopClustersContainer.GetTopRankedCluster().GetPValue(giNumSimsExecuted) < gParameters.GetSequentialCutOffPValue();
         bHasTractsAfterTopCluster = bTopCluster && gpDataHub->GetNumTracts() - gTopClustersContainer.GetTopRankedCluster().GetNumTractsInnerCircle() > 0;
