@@ -18,9 +18,12 @@
 //---------------------------------------------------------------------------
 
 class TDlgSaTScanDataImporter : public TBdlgImporter {
+  __published:
+    void __fastcall     tsfieldGridResize(TObject *Sender);
+
   private:
     void                Setup();
-      
+
   protected:
     std::string         gsInputFileTypeName;
 
