@@ -145,7 +145,7 @@ tract_t GInfo::giGetTractNum(char *gid)
 /**********************************************************************
  Returns the tract name (gid) for the given tract_t index.
  **********************************************************************/
-char* GInfo::giGetGid(tract_t t)
+char* GInfo::giGetGid(tract_t t) const
 {
   if (0 <= t && t < NumGridTracts)
      return(GridTractInfo[t].gid);

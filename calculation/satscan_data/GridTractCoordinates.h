@@ -35,7 +35,7 @@ public:
 int     giInsertGnode(char *gid, double* pCoords);
 tract_t giGetNumTracts(void);
 tract_t giGetTractNum(char *gid);
-char*   giGetGid(tract_t t);
+char*   giGetGid(tract_t t) const;
 void    giGetCoords(tract_t t, double** pCoords) const ;
 void    giGetCoords2(tract_t t, double* pCoord) const ;
 int     giGetNumDimensions();
