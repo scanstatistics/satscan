@@ -394,7 +394,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
 //        to the tempstring as long as it still fits within the fieldsize space
 void stsRunHistoryFile::ReplaceExtensionAndAppend(ZdString& sOutputFileNames, const ZdFileName& sSourceFileName, const ZdString& sReplacementExtension) {
    try {
-      ZdString  sWorkString(sSourceFileName.GetFileName());
+      ZdString  sWorkString(sSourceFileName.GetCompleteFileName());
       if(strlen(sSourceFileName.GetExtension()) > 0)
          sWorkString.Replace(sSourceFileName.GetExtension(), sReplacementExtension);
       else
@@ -417,7 +417,7 @@ void stsRunHistoryFile::ReplaceExtensionAndAppend(ZdString& sOutputFileNames, co
 // pre : none
 // post : sTempValue will contain the names of the additional output files
 void stsRunHistoryFile::SetAdditionalOutputFileNameString(ZdString& sOutputFileNames, const CParameters& params) {
-   ZdFileName   sResultFile(ZdFileName(params.GetOutputFileName().c_str()).GetFileName());
+   ZdFileName   sResultFile(ZdFileName(params.GetOutputFileName().c_str()).GetCompleteFileName());
 
    try {
       sOutputFileNames.Clear();
