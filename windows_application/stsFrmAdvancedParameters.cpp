@@ -447,22 +447,25 @@ void TfrmAdvancedParameters::ValidateAdjustmentSettings() {
 void TfrmAdvancedParameters::ValidateInputFilesSettings() {
   try {
     if (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION &&
-        gAnalysisSettings.rdoSpatialPercentage->Checked && !edtMaxCirclePopulationFilename->Text.Length())
-       GenerateAFException("For a Space-Time Permutation model with the maximum spatial cluster size defined as a\n"
-                           "percentage of the population at risk, a Maximum Circle Population file must be specified.\n\n"
-                           "Alternatively you may choose to specify the maximum as a fixed radius,\n"
-                           "in which no Maximum Circle Population file is required.",
-                           "ValidateInputFilesSettings()", *edtMaxCirclePopulationFilename);
+        gAnalysisSettings.rdoSpatialPercentage->Checked && edtMaxCirclePopulationFilename->Text.IsEmpty())
+        GenerateAFException("For a Space-Time Permutation model with the maximum spatial cluster size defined as a\n"
+                            "percentage of the population at risk, a Maximum Circle Population file must be specified.\n\n"
+                            "Alternatively you may choose to specify the maximum as a fixed radius,\n"
+                            "in which no Maximum Circle Population file is required.",
+                            "ValidateInputFilesSettings()", *edtMaxCirclePopulationFilename);
 
     if (gAnalysisSettings.GetAnalysisControlType() == PROSPECTIVESPACETIME &&
         gAnalysisSettings.chkAdjustForEarlierAnalyses->Checked && gAnalysisSettings.rdoSpatialPercentage->Checked &&
-        gAnalysisSettings.rdoSpatialPercentage->Enabled && !edtMaxCirclePopulationFilename->Text.Length())
-      GenerateAFException("For a Prospective Space-Time analysis adjusting for ealier analyses,\n"
-                          "with the maximum spatial cluster size defined as a percentage of the\n"
-                          "population at risk, a Maximum Circle Population file must be specified.\n\n"
-                          "Alternatively you may choose to specify the maximum as a fixed radius,\n"
-                          "in which no Maximum Circle Population file is required.",
-                          "ValidateInputFilesSettings()", *edtMaxCirclePopulationFilename);
+        gAnalysisSettings.rdoSpatialPercentage->Enabled && edtMaxCirclePopulationFilename->Text.IsEmpty())
+        GenerateAFException("For a Prospective Space-Time analysis adjusting for ealier analyses,\n"
+                            "with the maximum spatial cluster size defined as a percentage of the\n"
+                            "population at risk, a Maximum Circle Population file must be specified.\n\n"
+                            "Alternatively you may choose to specify the maximum as a fixed radius,\n"
+                            "in which no Maximum Circle Population file is required.",
+                            "ValidateInputFilesSettings()", *edtMaxCirclePopulationFilename);
+
+    if (!edtMaxCirclePopulationFilename->Text.IsEmpty() && !File_Exists(edtMaxCirclePopulationFilename->Text.c_str()))
+      GenerateAFException("Maximum circle population file could not be opened.","ValidateInputFilesSettings()",*edtMaxCirclePopulationFilename);
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateInputFilesSettings()","TfrmAdvancedParameters");
