@@ -16,7 +16,7 @@ class PopulationCategory {
     PopulationCategory        * gpNextDescriptor;      /* next CategoryDescriptor class in link-list */
 
     //Restricted to CategoryDescriptor - only this class should call these methods.
-    void			Init() {giCategoryIndex=-1;gpPopulationList=0; gpNextDescriptor=0;}
+    void			Init() {giCategoryIndex=0;gpPopulationList=0; gpNextDescriptor=0;}
     void                        Setup(int iPopulationListSize, int iCategoryIndex);
 
     void                        AddPopulationAtDateIndex(float fPopluation, unsigned int iDateIndex, const PopulationData & thePopulation);
