@@ -974,8 +974,6 @@ void CAnalysis::RemoveTopClusterData() {
         //--m_pData->m_nTracts;
       }
 
-      //should there be adjustments to the maximum circle population file vector ?
-
       InitializeTopClusterList();
       m_nClustersRetained = 0;
 
@@ -988,16 +986,20 @@ void CAnalysis::RemoveTopClusterData() {
    }
 }
 
-bool CAnalysis::RepeatAnalysis()
-{
-   bool bReturn = false;
+bool CAnalysis::RepeatAnalysis() {
+   bool bTopCluster, bHasMoreSequentialScans,
+        bNotEarlyTerminated, bHasTractsAfterTopCluster, bReturn=false;
 
    try {
-      if (m_pParameters->GetIsSequentialScanning())
-         bReturn = ( m_pTopClusters[0] &&
-                    (m_nAnalysisCount < m_pParameters->GetNumSequentialScansRequested()) &&
-                    (m_pTopClusters[0]->GetPVal(giSimulationNumber) < m_pParameters->GetSequentialCutOffPValue()) &&
-                    (m_pData->GetNumTracts() > 1) && (giSimulationNumber < m_pParameters->GetNumReplicationsRequested()));
+      if (m_pParameters->GetIsSequentialScanning()) {
+        bTopCluster = m_pTopClusters[0] &&
+                      m_pTopClusters[0]->GetPVal(giSimulationNumber) < m_pParameters->GetSequentialCutOffPValue();
+        bHasTractsAfterTopCluster = bTopCluster && m_pData->GetNumTracts() - m_pTopClusters[0]->m_nTracts > 0;
+        bHasMoreSequentialScans = m_nAnalysisCount < m_pParameters->GetNumSequentialScansRequested();
+        bNotEarlyTerminated = giSimulationNumber == m_pParameters->GetNumReplicationsRequested();
+
+        bReturn = bTopCluster && bHasMoreSequentialScans && bNotEarlyTerminated && bHasTractsAfterTopCluster;
+      }
    }
    catch (ZdException & x) {
       x.AddCallpath("RepeatAnalysis()", "CAnalysis");
