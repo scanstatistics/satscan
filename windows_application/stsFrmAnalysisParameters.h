@@ -188,13 +188,13 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     CParameters         gParameters;
     AnsiString          gsParamFileName;
 
-    bool                Check_Days(int iYear, int iMonth, int iDay, char *sDateName);
+    bool                Check_Days(int iYear, int iMonth, int iDay, const char *sDateName);
     bool                Check_IntervalLength(int iStartYear, int iStartMonth, int iStartDay,
                                              int iEndYear, int iEndMonth, int iEndDay,
                                              int iIntervalUnits, int iIntervalLength);
-    bool                Check_Month(int iMonth, char *sDateName);
+    bool                Check_Month(int iMonth, const char *sDateName);
     bool                Check_TimeTrendPercentage(double dValue);
-    bool                Check_Year(int iYear, char *sDateName);
+    bool                Check_Year(int iYear, const char *sDateName);
     bool                CheckAnalysisParams();
     bool                CheckDateRange(int iStartYear, int iStartMonth, int iStartDay,
                                        int iEndYear, int iEndMonth, int iEndDay,

@@ -25,7 +25,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbInputFiles
+    ActivePage = tbAnalysis
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -306,7 +306,7 @@ object frmAnalysis: TfrmAnalysis
       ImageIndex = 1
       object Label16: TLabel
         Left = 48
-        Top = 264
+        Top = 271
         Width = 271
         Height = 13
         Caption = 'Monte Carlo Replications (9, 999, or value ending in 999):'
@@ -314,23 +314,24 @@ object frmAnalysis: TfrmAnalysis
       object rgTypeAnalysis: TRadioGroup
         Left = 8
         Top = 8
-        Width = 161
-        Height = 121
+        Width = 173
+        Height = 135
         Caption = 'Type of Analysis'
         ItemIndex = 0
         Items.Strings = (
           'Purely Spatial'
           'Purely Temporal'
           'Retrospective Space-Time '
-          'Prospective Space-Time')
+          'Prospective Space-Time'
+          'Prospective Purely Temporal')
         TabOrder = 0
         OnClick = rgTypeAnalysisClick
       end
       object rgProbability: TRadioGroup
-        Left = 176
+        Left = 188
         Top = 8
         Width = 153
-        Height = 121
+        Height = 135
         Caption = 'Probability Model'
         ItemIndex = 0
         Items.Strings = (
@@ -341,10 +342,10 @@ object frmAnalysis: TfrmAnalysis
         OnClick = rgProbabilityClick
       end
       object rgScanAreas: TRadioGroup
-        Left = 336
+        Left = 348
         Top = 8
-        Width = 137
-        Height = 121
+        Width = 125
+        Height = 135
         Caption = 'Scan for Areas with:'
         ItemIndex = 0
         Items.Strings = (
@@ -356,9 +357,9 @@ object frmAnalysis: TfrmAnalysis
       end
       object GroupBox3: TGroupBox
         Left = 8
-        Top = 136
+        Top = 150
         Width = 465
-        Height = 105
+        Height = 106
         Caption = 'Study Period'
         TabOrder = 3
         object Label8: TLabel
@@ -366,6 +367,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 48
           Width = 51
           Height = 13
+          Anchors = [akLeft, akTop, akRight]
           Caption = 'Start Date:'
         end
         object Label9: TLabel
@@ -373,6 +375,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 80
           Width = 48
           Height = 13
+          Anchors = [akLeft, akTop, akRight]
           Caption = 'End Date:'
         end
         object Label10: TLabel
@@ -380,6 +383,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 8
           Width = 22
           Height = 13
+          Anchors = [akLeft, akTop, akRight]
           Caption = 'Year'
         end
         object Label11: TLabel
@@ -387,6 +391,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 24
           Width = 34
           Height = 13
+          Anchors = [akLeft, akTop, akRight]
           Caption = '(YYYY)'
         end
         object Label12: TLabel
@@ -394,6 +399,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 8
           Width = 30
           Height = 13
+          Anchors = [akLeft, akTop, akRight]
           Caption = 'Month'
         end
         object Label13: TLabel
@@ -401,6 +407,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 24
           Width = 24
           Height = 13
+          Anchors = [akLeft, akTop, akRight]
           Caption = '(MM)'
         end
         object Label14: TLabel
@@ -408,6 +415,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 8
           Width = 19
           Height = 13
+          Anchors = [akLeft, akTop, akRight]
           Caption = 'Day'
         end
         object Label15: TLabel
@@ -415,6 +423,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 24
           Width = 22
           Height = 13
+          Anchors = [akLeft, akTop, akRight]
           Caption = '(DD)'
         end
         object edtStartYear: TEdit
@@ -422,6 +431,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 40
           Width = 41
           Height = 21
+          Anchors = [akLeft, akTop, akRight]
           MaxLength = 4
           TabOrder = 0
           Text = '1900'
@@ -433,6 +443,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 72
           Width = 41
           Height = 21
+          Anchors = [akLeft, akTop, akRight]
           MaxLength = 4
           TabOrder = 1
           Text = '1900'
@@ -444,6 +455,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 40
           Width = 25
           Height = 21
+          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 2
@@ -456,6 +468,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 72
           Width = 25
           Height = 21
+          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 3
@@ -468,6 +481,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 40
           Width = 25
           Height = 21
+          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 4
@@ -480,6 +494,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 72
           Width = 25
           Height = 21
+          Anchors = [akLeft, akTop, akRight]
           Enabled = False
           MaxLength = 2
           TabOrder = 5
@@ -490,7 +505,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object edtMontCarloReps: TEdit
         Left = 328
-        Top = 256
+        Top = 263
         Width = 65
         Height = 21
         MaxLength = 9

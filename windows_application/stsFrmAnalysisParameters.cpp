@@ -145,7 +145,7 @@ void __fastcall TfrmAnalysis::btnResultFileBrowseClick(TObject *Sender) {
 // Generic Days checker -- simulates old interface
 //MUST CHECK TO SEE IF THE DAY EDIT BOX IS ENABLED FIRST !!!!
 //------------------------------------------------------------------------------
-bool TfrmAnalysis::Check_Days(int iYear, int iMonth, int iDay, char *sDateName) {
+bool TfrmAnalysis::Check_Days(int iYear, int iMonth, int iDay, const char *sDateName) {
   char szMessage[100];
   AnsiString sFinalMessage;
   int iMin = 1, iMax;
@@ -177,7 +177,7 @@ bool TfrmAnalysis::Check_IntervalLength(int iStartYear, int iStartMonth, int iSt
 //------------------------------------------------------------------------------
 // Generic Month checker -- simulates old interface
 //------------------------------------------------------------------------------
-bool TfrmAnalysis::Check_Month(int iMonth, char *sDateName) {
+bool TfrmAnalysis::Check_Month(int iMonth, const char *sDateName) {
   if ((iMonth < 1) || (iMonth > 12)) {
     std::string sFinalMessage(sDateName);
     sFinalMessage += ":  Please specify an month between 1 and 12.";
@@ -202,7 +202,7 @@ bool TfrmAnalysis::Check_TimeTrendPercentage(double dValue) {
 // Generic Year checker -- simulates old interface
 //MUST CHECK TO SEE IF THE DAY EDIT BOX IS ENABLED FIRST !!!!
 //------------------------------------------------------------------------------
-bool TfrmAnalysis::Check_Year(int iYear, char *sDateName) {
+bool TfrmAnalysis::Check_Year(int iYear, const char *sDateName) {
   char          szMessage[100];
 
   if ( ! (iYear >= MIN_YEAR) && (iYear <= MAX_YEAR)) {
@@ -354,20 +354,23 @@ bool TfrmAnalysis::CheckOutputParams() {
 bool TfrmAnalysis::CheckProspDateRange(int iStartYear, int iStartMonth, int iStartDay,
                                   int iEndYear, int iEndMonth, int iEndDay,
                                   int iProspYear, int iProspMonth, int iProspDay) {
-  bool bRangeOk = true;
-  Julian Start, End, Prosp;
+  bool          bRangeOk = true;
+  Julian        Start, End, Prosp;
+  ZdString      sAnalysisName;
 
   try {
     Start = MDYToJulian(iStartMonth, iStartDay, iStartYear);
     End   = MDYToJulian(iEndMonth, iEndDay, iEndYear);
     Prosp = MDYToJulian(iProspMonth, iProspDay, iProspYear);
-    if (! Check_Days(iProspYear, iProspMonth, iProspDay, "Start date of Prospective Space-Time")) {
+    sAnalysisName.printf("Start date of %s analysis", gParameters.GetAnalysisTypeAsString());
+    if (! Check_Days(iProspYear, iProspMonth, iProspDay, sAnalysisName.GetCString())) {
       PageControl1->ActivePage = tbTimeParameter;
       edtProspDay->SetFocus();
       bRangeOk = false;
     }
     else if ((Prosp < Start) || (Prosp > End)) {
-      Application->MessageBox("The Start date of Prospective Space-Time must be between the Study Period start and end dates.", "Parameter Error" , MB_OK);
+      sAnalysisName.printf("The start date of %s analysis must be between the study period start and end dates.", gParameters.GetAnalysisTypeAsString());
+      Application->MessageBox(sAnalysisName.GetCString(), "Parameter Error" , MB_OK);
       PageControl1->ActivePage = tbTimeParameter;
       edtProspYear->SetFocus();
       bRangeOk = false;
@@ -864,59 +867,70 @@ void __fastcall TfrmAnalysis::NaturalNumberKeyPress(TObject *Sender, char &Key) 
 // time control which sync's the precision between time controls
 //------------------------------------------------------------------------------
 void TfrmAnalysis::OnAnalysisTypeClick() {
-   try {
-      gParameters.SetAnalysisType((AnalysisType)(rgTypeAnalysis->ItemIndex + 1));
-      bool bPoisson = (gParameters.GetProbabiltyModelType() == POISSON);
+  bool bPoisson;
+
+  try {
+    bPoisson = (gParameters.GetProbabiltyModelType() == POISSON);
     switch (rgTypeAnalysis->ItemIndex) {
-       case 0:                     // purely spatial
-          // disable time trend adjustment
-          EnableTemporalTimeTrendAdjust(false, false, false);
-
-          // disable clusters to include
-          rgClustersToInclude->Enabled = false;
-          
-          EnableSpatial(true, false, true);       // enable spatial but not checkbox
-          EnableTimeInterval(false);              // disable time intervals
-          EnableTemporal(false, false, false);    // disable temporal
-          EnablePSTDate(false);                   // disable start date PST
-          break;
-       case 1:                     // purely temporal
-          // Enables Time Trend Adjust without Non-Param
-          EnableTemporalTimeTrendAdjust(bPoisson, false, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2));
-          rgTemporalTrendAdj->ItemIndex = ((rgTemporalTrendAdj->ItemIndex != 1) ? gParameters.GetTimeTrendAdjustmentType() : 0 );
-
-          // Enables Clusters to include
-          rgClustersToInclude->Enabled = true;
-          rgClustersToInclude->ItemIndex = gParameters.GetIncludeClustersType();
-
-          EnableSpatial(false, false, false);  // Disables Spatial
-          EnableTimeInterval(true);            // Enables time intervals
-          EnableTemporal(true, false, true);   // Enables temporal without checkbox
-          EnablePSTDate(false);                // Disables Start date PST
-          break;
-       case 2:                     // retrospective space-time
-          //Enables Time Trend Adjust
-          EnableTemporalTimeTrendAdjust(bPoisson, bPoisson, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2));
-          //Enables clusters to include
-          rgClustersToInclude->Enabled = true;
-          rgClustersToInclude->ItemIndex = gParameters.GetIncludeClustersType();
-
-          EnableSpatial(true, !(gParameters.GetProbabiltyModelType() == 2), true);     //Enables spatial
-          EnableTimeInterval(true);                                  //Enables time intervals
-          EnableTemporal(true,!(gParameters.GetProbabiltyModelType() == 2), true);     //Enables temporal
-          EnablePSTDate(false);                                      //Disables Start date PST
-          break;
-       case 3:                     // prospective space-time
-          //Enables Time Trend Adjust
-          EnableTemporalTimeTrendAdjust(bPoisson, bPoisson, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2));
-          //disables clusters to include
-          rgClustersToInclude->Enabled = false;
-
-          EnableSpatial(true, !(gParameters.GetProbabiltyModelType() == 2), false);      //Enables Spatial % box disable
-          EnableTimeInterval(true);                                    //Enables time intervals
-          EnableTemporal(true, !(gParameters.GetProbabiltyModelType() == 2), false);     //Enables temporal with checkbox but disable % option radio button
-          EnablePSTDate(true);                                         //Enables Start Date PST
-          break;
+      case 0: // purely spatial analysis
+              // disable time trend adjustment
+              gParameters.SetAnalysisType(PURELYSPATIAL);
+              EnableTemporalTimeTrendAdjust(false, false, false);
+              // disable clusters to include
+              rgClustersToInclude->Enabled = false;
+              EnableSpatial(true, false, true);       // enable spatial but not checkbox
+              EnableTimeInterval(false);              // disable time intervals
+              EnableTemporal(false, false, false);    // disable temporal
+              EnablePSTDate(false);                   // disable start date PST
+              break;
+      case 1: // purely temporal analysis
+              // Enables Time Trend Adjust without Non-Param
+              gParameters.SetAnalysisType(PURELYTEMPORAL);
+              EnableTemporalTimeTrendAdjust(bPoisson, false, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2));
+              rgTemporalTrendAdj->ItemIndex = ((rgTemporalTrendAdj->ItemIndex != 1) ? gParameters.GetTimeTrendAdjustmentType() : 0 );
+              // Enables Clusters to include
+              rgClustersToInclude->Enabled = true;
+              rgClustersToInclude->ItemIndex = gParameters.GetIncludeClustersType();
+              EnableSpatial(false, false, false);  // Disables Spatial
+              EnableTimeInterval(true);            // Enables time intervals
+              EnableTemporal(true, false, true);   // Enables temporal without checkbox
+              EnablePSTDate(false);                // Disables Start date PST
+              break;
+      case 2: // retrospective space-time
+              //Enables Time Trend Adjust
+              gParameters.SetAnalysisType(SPACETIME);
+              EnableTemporalTimeTrendAdjust(bPoisson, bPoisson, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2));
+              //Enables clusters to include
+              rgClustersToInclude->Enabled = true;
+              rgClustersToInclude->ItemIndex = gParameters.GetIncludeClustersType();
+              EnableSpatial(true, !(gParameters.GetProbabiltyModelType() == 2), true);     //Enables spatial
+              EnableTimeInterval(true);                                  //Enables time intervals
+              EnableTemporal(true,!(gParameters.GetProbabiltyModelType() == 2), true);     //Enables temporal
+              EnablePSTDate(false);                                      //Disables Start date PST
+              break;
+      case 3: // prospective space-time analysis
+              //Enables Time Trend Adjust
+              gParameters.SetAnalysisType(PROSPECTIVESPACETIME);
+              EnableTemporalTimeTrendAdjust(bPoisson, bPoisson, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2));
+              //disables clusters to include
+              rgClustersToInclude->Enabled = false;
+              EnableSpatial(true, !(gParameters.GetProbabiltyModelType() == 2), false);      //Enables Spatial % box disable
+              EnableTimeInterval(true);                                    //Enables time intervals
+              EnableTemporal(true, !(gParameters.GetProbabiltyModelType() == 2), false);     //Enables temporal with checkbox but disable % option radio button
+              EnablePSTDate(true);                                         //Enables Start Date PST
+              break;
+      case 4: // prospective purely temporal analysis
+              // Enables Time Trend Adjust without Non-Param
+              gParameters.SetAnalysisType(PROSPECTIVEPURELYTEMPORAL);
+              EnableTemporalTimeTrendAdjust(bPoisson, false, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2));
+              rgTemporalTrendAdj->ItemIndex = ((rgTemporalTrendAdj->ItemIndex != 1) ? gParameters.GetTimeTrendAdjustmentType() : 0 );
+              // Enables Clusters to include
+              rgClustersToInclude->Enabled = true;
+              rgClustersToInclude->ItemIndex = gParameters.GetIncludeClustersType();
+              EnableSpatial(false, false, false);  // Disables Spatial
+              EnableTimeInterval(true);            // Enables time intervals
+              EnableTemporal(true, false, true);   // Enables temporal without checkbox
+              EnablePSTDate(true);                 // Disables Start date PST
     }
 
     // if none not enabled and set, then set to case precision Year instead - AJV 10/4/2002
@@ -1029,6 +1043,7 @@ void TfrmAnalysis::OnProbabilityModelClick() {
         case 1:
            rgTypeAnalysis->Controls[0]->Enabled = true;
            rgTypeAnalysis->Controls[1]->Enabled =(rgPrecisionTimes->ItemIndex != 0);
+           rgTypeAnalysis->Controls[4]->Enabled = (rgPrecisionTimes->ItemIndex != 0);
            chkRelativeRiskEstimatesAreaAscii->Enabled = true;
            chkRelativeRiskEstimatesAreaDBase->Enabled = true;
            rdoPercentageTemproal->Caption = "Percent of Study Period (<= 90%)";
@@ -1038,7 +1053,8 @@ void TfrmAnalysis::OnProbabilityModelClick() {
            rgTypeAnalysis->Controls[1]->Enabled = false;
            rgTypeAnalysis->Controls[2]->Enabled = true;
            rgTypeAnalysis->Controls[3]->Enabled = true;
-           if(rgTypeAnalysis->ItemIndex == 0 || rgTypeAnalysis->ItemIndex == 1)
+           rgTypeAnalysis->Controls[4]->Enabled = false;
+           if(rgTypeAnalysis->ItemIndex == 0 || rgTypeAnalysis->ItemIndex == 1 || rgTypeAnalysis->ItemIndex == 4)
               rgTypeAnalysis->ItemIndex = 2;
            chkRelativeRiskEstimatesAreaAscii->Enabled = false;
            chkRelativeRiskEstimatesAreaDBase->Enabled = false;
