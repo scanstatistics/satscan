@@ -100,28 +100,25 @@ bool CParameters::CheckProspDateRange(int iStartYear, int iStartMonth, int iStar
 
 //** Converts m_nMaxClusterSizeType to passed type. */
 void CParameters::ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporalSizeType) {
-  double dValue, dTimeBetween;
-
   try {
+    double dTimeBetween = TimeBetween(CharToJulian(m_szStartDate),CharToJulian(m_szEndDate), m_nIntervalUnits);
+
     switch (eTemporalSizeType) {
        PERCENTAGETYPE     : if (m_nMaxClusterSizeType == PERCENTAGETYPE)
                               break;
                             // convert from TIMETYPE to PERCENTAGETYPE
-                            dTimeBetween = TimeBetween(CharToJulian(m_szStartDate),CharToJulian(m_szEndDate), m_nIntervalUnits);
                             //m_nMaxTemporalClusterSize should be in time units of m_nIntervalUnits
                             m_nMaxTemporalClusterSize = floor(m_nMaxTemporalClusterSize/dTimeBetween*100);
-                            m_nMaxClusterSizeType = PERCENTAGETYPE;
                             break;
        TIMETYPE           : if (m_nMaxClusterSizeType == TIMETYPE)
                               break;
                             // convert from PERCENTAGETYPE to TIMETYPE
-                            dTimeBetween = TimeBetween(CharToJulian(m_szStartDate),CharToJulian(m_szEndDate), m_nIntervalUnits);
                             //m_nMaxTemporalClusterSize should be an integer from 1-90
                             m_nMaxTemporalClusterSize = dTimeBetween * m_nMaxTemporalClusterSize/100;
-                            m_nMaxClusterSizeType = TIMETYPE;
                             break;
        default            : SSException::Generate("Unknown TemporalSizeType type %d", "ConvertMaxTemporalClusterSizeToType()", SSException::Normal, eTemporalSizeType);
     }
+    m_nMaxClusterSizeType = eTemporalSizeType;
   }
   catch (ZdException & x) {
     x.AddCallpath("ConvertMaxTemporalClusterSizeToType()", "CParameters");
@@ -269,7 +266,6 @@ bool CParameters::DisplayParamError(int nLine) {
 }
 
 void CParameters::DisplayParameters(FILE* fp) {
-   int i;
    ZdString     sFileName;
 
    try {
@@ -340,10 +336,10 @@ void CParameters::DisplayParameters(FILE* fp) {
         fprintf(fp, "----------\n");
         fprintf(fp, "Number of Ellipse Shapes Requested:  %i\n", m_nNumEllipses);
         fprintf(fp, "Shape for Each Ellipse:  ");
-        for (i = 0; i < m_nNumEllipses; i++)
+        for (int i = 0; i < m_nNumEllipses; ++i)
            fprintf(fp, "%7.3f ", mp_dEShapes[i]);
         fprintf(fp, "\nNumber of Angles for Each Ellipse Shape:  ");
-        for (i = 0; i < m_nNumEllipses; i++)
+        for (int i = 0; i < m_nNumEllipses; ++i)
            fprintf(fp, "%i ", mp_nENumbers[i]);
      }
      fprintf(fp, "\n\nScanning Window\n");
@@ -417,13 +413,11 @@ void CParameters::DisplayParameters(FILE* fp) {
      fprintf(fp, "  Run History File  : %s\n", gsRunHistoryFilename.GetCString());
      fprintf(fp, "  Results File : %s\n", m_szOutputFilename);
      if (gbOutputClusterLevelDBF) {
-        ZdFileName sOutputFileName(m_szOutputFilename);
-        sFileName << ZdString::reset << sOutputFileName.GetLocation() << "ClusterLevel.dbf";
+        sFileName << ZdString::reset << ZdFileName(m_szOutputFilename).GetLocation() << "ClusterLevel.dbf";
         fprintf(fp, "  Cluster Level dBase Output File : %s\n", sFileName.GetCString());
      }
      if (gbOutputAreaSpecificDBF) {
-        ZdFileName sOutputFileName2(m_szOutputFilename);
-        sFileName << ZdString::reset << sOutputFileName2.GetLocation() << "AreaSpecific.dbf";
+        sFileName << ZdString::reset << ZdFileName(m_szOutputFilename).GetLocation() << "AreaSpecific.dbf";
         fprintf(fp, "  Area Specific dBase Output File : %s\n", sFileName.GetCString());
      }
      if (m_bOutputCensusAreas)  // Output Census areas in Reported Clusters
@@ -509,7 +503,7 @@ const bool& CParameters::GetOutputAreaSpecificDBF() const {
 }
 
 int CParameters::LoadEShapes(const char* szParam) {
-   int          nCount=1, nScanCount, iLineLength;
+   int         /* nCount=1,*/ nScanCount, iLineLength;
    bool         bOk=true;
    char *       sTempLine=0;
 
@@ -526,7 +520,7 @@ int CParameters::LoadEShapes(const char* szParam) {
          if (mp_dEShapes)
             delete[] mp_dEShapes;
          mp_dEShapes = new double[ m_nNumEllipses ];
-         for (int i = 0; (i < m_nNumEllipses) && bOk; i++) {
+         for (int i = 0; (i < m_nNumEllipses) && bOk; ++i) {
             TrimLeft(sTempLine);
             nScanCount=sscanf(sTempLine, "%lf", &mp_dEShapes[i]);
             if (nScanCount == 1)
@@ -545,11 +539,11 @@ int CParameters::LoadEShapes(const char* szParam) {
       x.AddCallpath("LoadEShapes()", "CParameters");
       throw;
    }
-   return nCount;
+   return 1; /*nCount*/       // nCount never gets changed, why not just return 1?
 }
 
 int CParameters::LoadEAngles(const char* szParam) {
-   int i, nCount=1, nScanCount, iLineLength;
+   int /*i, nCount=1,*/ nScanCount, iLineLength;
    bool bOk = true;
    char *sTempLine=0;
 
@@ -566,7 +560,7 @@ int CParameters::LoadEAngles(const char* szParam) {
          if (mp_nENumbers)
             delete[] mp_nENumbers;
          mp_nENumbers = new int[ m_nNumEllipses ];
-         for (i = 0; (i < m_nNumEllipses) && bOk; i++) {
+         for (int i = 0; (i < m_nNumEllipses) && bOk; ++i) {
             TrimLeft(sTempLine);
             nScanCount=sscanf(sTempLine, "%i", &mp_nENumbers[i]);
             if (nScanCount == 1)
@@ -574,7 +568,7 @@ int CParameters::LoadEAngles(const char* szParam) {
             else
                bOk = false;
          }
-         for (i = 0; i < m_nNumEllipses; i++)
+         for (int i = 0; i < m_nNumEllipses; ++i)
            m_lTotalNumEllipses +=  mp_nENumbers[i];
       }
       if ( ! bOk )
@@ -587,23 +581,17 @@ int CParameters::LoadEAngles(const char* szParam) {
       x.AddCallpath("LoadEAngles()", "CParameters");
       throw;
    }
-   return nCount;
+   return 1;/*nCount;*/   // nCount never gets changed, why not just return 1?
 }
 
 bool CParameters::SaveParameters(char* szFilename) {
    FILE* pFile;
-   int   i;
 
    try {
-      //gpPrintDirection->SatScanPrintf("Saving Parameters.\n");
-
       if ((pFile = fopen(szFilename, "w")) == NULL)
         SSGenerateException("  Error: Unable to open parameter file.", "SaveParameters");
         
-      if (strlen(m_szGridFilename) > 0)
-        m_bSpecialGridFile = true;
-      else
-        m_bSpecialGridFile = false;
+      m_bSpecialGridFile = (strlen(m_szGridFilename) > 0) ? true : false;
     
      // m_nExtraParam1 = 0;
      // m_nExtraParam2 = 0;
@@ -647,10 +635,10 @@ bool CParameters::SaveParameters(char* szFilename) {
       fprintf(pFile, "%i                     // Validate Parameters? (0=No, 1=Yes)\n", m_bValidatePriorToCalc);
       fprintf(pFile, "%i                     // Output File:  RRs for Census Areas (0=No, 1=Yes)\n",m_bOutputRelRisks);
       fprintf(pFile, "%i                     // Number of Ellipses\n", m_nNumEllipses);
-      for (i = 0; i < m_nNumEllipses; i++)
+      for (int i = 0; i < m_nNumEllipses; ++i)
          fprintf(pFile, "%f ", mp_dEShapes[i]);
       fprintf(pFile, "                   // Ellipse Shapes\n");
-      for (i = 0; i < m_nNumEllipses; i++)
+      for (int i = 0; i < m_nNumEllipses; ++i)
          fprintf(pFile, "%i ", mp_nENumbers[i]);
       fprintf(pFile, "                 // Ellipse Angles\n");
       fprintf(pFile, "%s            // Prospective surveillance start date (YYYY/MM/DD). \n", m_szProspStartDate);
@@ -665,7 +653,8 @@ bool CParameters::SaveParameters(char* szFilename) {
 
       fclose(pFile);
    }
-   catch (ZdException & x) {
+   catch (ZdException & x) {   
+      fclose(pFile);
       x.AddCallpath("SavesParameter(char *)", "CParameters");
       throw;
    }
@@ -769,11 +758,9 @@ void CParameters::SetDisplayParameters(bool bValue) {
 }
 
 bool CParameters::SetGISFilename() {
-   int  nReportNameLen = strlen(m_szOutputFilename);
-   int  nIndex         = nReportNameLen-1;
-   bool bDone          = false;
-   bool bExtFound      = false;
-   bool bReturnValue   = false;
+   int          nReportNameLen = strlen(m_szOutputFilename);
+   int          nIndex = nReportNameLen-1;
+   bool         bDone = false, bExtFound = false, bReturnValue = true;
 
    try {
       while (!bDone && !bExtFound && nIndex>=0) {
@@ -792,9 +779,11 @@ bool CParameters::SetGISFilename() {
       strcpy(m_szGISFilename+nIndex, ".gis.txt");
 
       if (strcmp(m_szGISFilename, m_szOutputFilename)==0)
-         SSGenerateException("  Error: Attempting to write report to GIS file.\n", "SetGISFileName()");
-      else
-        bReturnValue = true;
+         bReturnValue = false;
+// don't want to generate an exception here because that would stop the thread !!! - AJV
+//         SSGenerateException("  Error: Attempting to write report to GIS file.\n", "SetGISFileName()");
+//      else
+//        bReturnValue = true;
    }
    catch (ZdException & x) {
       x.AddCallpath("SetGISFileName()", "CParameters");
@@ -804,11 +793,9 @@ bool CParameters::SetGISFilename() {
 }
 
 bool CParameters::SetLLRFilename() {
-   int  nReportNameLen = strlen(m_szOutputFilename);
-   int  nIndex         = nReportNameLen-1;
-   bool bDone          = false;
-   bool bExtFound      = false;
-   bool bReturnValue;
+   int          nReportNameLen = strlen(m_szOutputFilename);
+   int          nIndex = nReportNameLen-1;
+   bool         bDone = false, bExtFound = false, bReturnValue = true;
 
    try {
       while (!bDone && !bExtFound && nIndex>=0) {
@@ -828,9 +815,10 @@ bool CParameters::SetLLRFilename() {
 
 
       if (strcmp(m_szLLRFilename, m_szOutputFilename) == 0)
-         SSGenerateException("  Error: Attempting to write report to LLR file.\n", "SetLLRFilename()");
-      else
-         bReturnValue = true;
+         bReturnValue = false;
+      //         SSGenerateException("  Error: Attempting to write report to LLR file.\n", "SetLLRFilename()");
+//      else
+//         bReturnValue = true;
    }
    catch (ZdException & x)  {
       x.AddCallpath("SetLLRFileName()", "CParameters");
@@ -841,11 +829,9 @@ bool CParameters::SetLLRFilename() {
 
 //most likely cluster for each centroid - file name
 bool CParameters::SetMLCFilename() {
-   int  nReportNameLen = strlen(m_szOutputFilename);
-   int  nIndex         = nReportNameLen-1;
-   bool bDone          = false;
-   bool bExtFound      = false;
-   bool bReturnValue   = false;
+   int          nReportNameLen = strlen(m_szOutputFilename);
+   int          nIndex         = nReportNameLen-1;
+   bool         bDone = false, bExtFound = false, bReturnValue = true;
 
    try {
       while (!bDone && !bExtFound && nIndex>=0) {
@@ -864,9 +850,10 @@ bool CParameters::SetMLCFilename() {
       strcpy(m_szMLClusterFilename+nIndex, ".col.txt");
 
       if (strcmp(m_szMLClusterFilename, m_szOutputFilename)==0)
-        SSGenerateException("  Error: Attempting to write report to COL (clusters in column format) file.\n", "SetMLCFilename()");
-      else
-        bReturnValue = true;
+         bReturnValue = false;
+      //        SSGenerateException("  Error: Attempting to write report to COL (clusters in column format) file.\n", "SetMLCFilename()");
+//      else
+//        bReturnValue = true;
    }
    catch (ZdException & x) {
       x.AddCallpath("SetMLCFilename()", "CParameters");
@@ -1003,13 +990,10 @@ bool CParameters::SetParameter(int nParam, const char* szParam) {
 bool CParameters::SetParameters(const char* szFilename, bool bValidate) {
    FILE* pFile;
    char  szTemp [MAX_STR_LEN];
-   bool  bValid = true;
-   bool bEOF = false;
+   bool  bValid = true, bEOF = false;
    int  i    = 1;
 
    try {
-      //gpPrintDirection->SatScanPrintf("Reading Parameters.\n");
-
       if ((pFile = fopen(szFilename, "r")) == NULL)
         SSGenerateException("  Error: Unable to open parameter file.", "SetParameters()");
 
@@ -1038,22 +1022,14 @@ bool CParameters::SetParameters(const char* szFilename, bool bValidate) {
       //else if ( (bEOF && (i-2) < MAX_TEMPORAL_TYPE) || (!bEOF && (i-1) < MAX_TEMPORAL_TYPE ) )
       //   m_nMaxClusterSizeType = PERCENTAGETYPE;
 
-      if (!SetGISFilename())   //Census areas in reported clusters
-        bValid = false;
-
-      if (!SetLLRFilename())  //most likely cluster for each centroid
-        bValid = false;
-
-      if (!SetMLCFilename()) //most likely cluster for each centroid - file name
-        bValid = false;
-
-      if (!SetRelRiskFilename()) //rel risk estimate for each centroid - file name
+      if (!SetGISFilename() || !SetLLRFilename() || !SetMLCFilename() || !SetRelRiskFilename())
         bValid = false;
 
       if (bValid && bValidate)
         bValid = ValidateParameters();
    }
-   catch (ZdException & x) {
+   catch (ZdException & x) {         
+      fclose(pFile);
       x.AddCallpath("SetParameters()", "CParameters");
       throw;
    }
@@ -1064,13 +1040,11 @@ void CParameters::SetPrintDirection(BasePrint *pPrintDirection) {
    gpPrintDirection = pPrintDirection;
 }
 
-bool CParameters::SetRelRiskFilename()  //set rel risk estimate file name
-{
-   int  nReportNameLen = strlen(m_szOutputFilename);
-   int  nIndex         = nReportNameLen-1;
-   bool bDone          = false;
-   bool bExtFound      = false;
-   bool bReturnValue;
+//set rel risk estimate file name
+bool CParameters::SetRelRiskFilename() {
+   int          nReportNameLen = strlen(m_szOutputFilename);
+   int          nIndex = nReportNameLen-1;
+   bool         bDone = false, bExtFound = false, bReturnValue = true;
 
    try {
       while (!bDone && !bExtFound && nIndex>=0) {
@@ -1089,10 +1063,8 @@ bool CParameters::SetRelRiskFilename()  //set rel risk estimate file name
       strcpy(m_szRelRiskFilename+nIndex, ".rr.txt");
 
       if (strcmp(m_szRelRiskFilename, m_szOutputFilename)==0)
-         SSGenerateException("  Error: Attempting to write report to RRE file.\n", "SetRelRiskFilename()");
-      // Add LLR error check
-      else
-        bReturnValue = true;
+         bReturnValue = false;
+//       SSGenerateException("  Error: Attempting to write report to RRE file.\n", "SetRelRiskFilename()");
    }
    catch (ZdException & x) {
       x.AddCallpath("SetRelRiskFilename()", "CParameters");
@@ -1101,8 +1073,7 @@ bool CParameters::SetRelRiskFilename()  //set rel risk estimate file name
    return bReturnValue;
 }
 
-void CParameters::TrimLeft(char *sString)
-{
+void CParameters::TrimLeft(char *sString) {
    char  * psString;
 
    try {
@@ -1119,8 +1090,7 @@ void CParameters::TrimLeft(char *sString)
 }
 
 bool CParameters::ValidateParameters() {
-   bool         bValid = true;
-   bool         bValidDate = true;
+   bool         bValid = true, bValidDate = true;
    FILE*        pFile;
    char         sBuffer[256];
 
@@ -1138,8 +1108,11 @@ bool CParameters::ValidateParameters() {
         if (!(STANDARDRISK == m_nRiskFunctionType || m_nRiskFunctionType == MONOTONERISK))
           bValid = DisplayParamError(RISKFUNCTION);
 
-        if (!(m_bSequential==0 || m_bSequential==1))
-          bValid = DisplayParamError(SEQUENTIAL);
+// OK this is just a ridiculous statement here and a few other places in this function, we're testing a bool to see
+// if it is a value other than true or false and since a bool can have NO other value, this is a worthless statement,
+// all of the handling of this is taken care of when the value is set in SetParameter - AJV 9/20/2002
+//        if (!(m_bSequential==0 || m_bSequential==1))
+//          bValid = DisplayParamError(SEQUENTIAL);
 
         if (m_bSequential) {
           //if (!((1 <= m_nAnalysisTimes) && (m_nAnalysisTimes <= INT_MAX)))
@@ -1153,8 +1126,8 @@ bool CParameters::ValidateParameters() {
           m_nCutOffPVal    = 0.0;
         }
 
-        if (!(m_bPowerCalc == 0 || m_bPowerCalc == 1))
-          bValid = DisplayParamError(POWERCALC);
+//        if (!(m_bPowerCalc == 0 || m_bPowerCalc == 1))
+//         bValid = DisplayParamError(POWERCALC);
 
         if (m_bPowerCalc) {
           if (!(0.0 <= m_nPower_X && m_nPower_X<= DBL_MAX))
@@ -1172,13 +1145,12 @@ bool CParameters::ValidateParameters() {
         else if ((m_nCoordType == LATLON) && (m_nNumEllipses > 0))
           bValid = DisplayParamError(ELLIPSES);                                  // Could do a better job of displaying messages here...  just shows line number and thats all...
 
-        // If number of ellipsoids > 0, then criteria for reporting secondary
-        // clusters must be "No Restrictions"
+        // If number of ellipsoids > 0, then criteria for reporting secondary clusters must be "No Restrictions"
         if ((m_nNumEllipses > 0) && (m_iCriteriaSecondClusters != 5))
            SSGenerateException("  Error: Number of Ellipsiods is greater than zero and Criteria for Secondary Clusters is NOT set to No Restrictions.", "ValidateParameters()");
 
-        if (!(m_bSaveSimLogLikelihoods==0 || m_bSaveSimLogLikelihoods==1))
-          bValid = DisplayParamError(SAVESIMLL);
+//        if (!(m_bSaveSimLogLikelihoods==0 || m_bSaveSimLogLikelihoods==1))
+//          bValid = DisplayParamError(SAVESIMLL);
 
         if (!ValidateReplications(m_nReplicas))
           bValid = DisplayParamError(REPLICAS);
@@ -1250,8 +1222,8 @@ bool CParameters::ValidateParameters() {
         }
 
         // Space-Time Options
-        if ((m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME)) {
-          if (!(m_bIncludePurelySpatial==0 || m_bIncludePurelySpatial==1))
+/*        if ((m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME)) {
+          if (!(m_bIncludePurelySpatial==0 || m_bIncludePurelySpatial==1))    // if !(bool == true or false) == logical impossibility, this is always false! - AJV
             bValid = DisplayParamError(PURESPATIAL);
           if (!(m_bIncludePurelyTemporal==0 || m_bIncludePurelyTemporal==1))
             bValid = DisplayParamError(PURETEMPORAL);
@@ -1260,7 +1232,7 @@ bool CParameters::ValidateParameters() {
           m_bIncludePurelySpatial  = false;
           m_bIncludePurelyTemporal = false;
         }
-
+*/
       }
 
       if (strlen(m_szCaseFilename)==0 || (pFile = fopen(m_szCaseFilename, "r")) == NULL)
@@ -1288,11 +1260,11 @@ bool CParameters::ValidateParameters() {
             bValid = DisplayParamError(POPFILE);
         if (!(m_nAnalysisType == SPACETIME || m_nAnalysisType == PROSPECTIVESPACETIME))
           bValid = DisplayParamError(ANALYSISTYPE);
-        if (m_bIncludePurelySpatial==1)
+        if (m_bIncludePurelySpatial)
           bValid = DisplayParamError(PURESPATIAL);
-        if (m_bIncludePurelyTemporal==1)
+        if (m_bIncludePurelyTemporal)
           bValid = DisplayParamError(PURETEMPORAL);
-        if (m_bOutputRelRisks==1)
+        if (m_bOutputRelRisks)
           bValid = DisplayParamError(OUTPUTRR);
       }
     
@@ -1301,8 +1273,8 @@ bool CParameters::ValidateParameters() {
       else
         fclose(pFile);
 
-      if (!(m_bSpecialGridFile==0 || m_bSpecialGridFile== 1))
-        bValid = DisplayParamError(SPECIALGRID);
+//      if (!(m_bSpecialGridFile==0 || m_bSpecialGridFile== 1))
+//        bValid = DisplayParamError(SPECIALGRID);
     
       if (m_bSpecialGridFile) {
         if (strlen(m_szGridFilename)==0 || (pFile = fopen(m_szGridFilename, "r")) == NULL)
@@ -1322,13 +1294,12 @@ bool CParameters::ValidateParameters() {
       else
         fclose(pFile);
 
-      if (!(m_bOutputRelRisks==0 || m_bOutputRelRisks==1))
-          bValid = DisplayParamError(OUTPUTRR);
-
-      if (!(m_bOutputCensusAreas==0 || m_bOutputCensusAreas==1))
-          bValid = DisplayParamError(OUTPUT_CENSUS_AREAS);
-      if (!(m_bMostLikelyClusters==0 || m_bMostLikelyClusters==1))
-          bValid = DisplayParamError(OUTPUT_MOST_LIKE_CLUSTERS);
+//      if (!(m_bOutputRelRisks==0 || m_bOutputRelRisks==1))
+//          bValid = DisplayParamError(OUTPUTRR);
+//      if (!(m_bOutputCensusAreas==0 || m_bOutputCensusAreas==1))
+//          bValid = DisplayParamError(OUTPUT_CENSUS_AREAS);
+//      if (!(m_bMostLikelyClusters==0 || m_bMostLikelyClusters==1))
+//          bValid = DisplayParamError(OUTPUT_MOST_LIKE_CLUSTERS);
       if (!(m_iCriteriaSecondClusters>=0 && m_iCriteriaSecondClusters<=5))
           bValid = DisplayParamError(CRITERIA_SECOND_CLUSTERS);
 
@@ -1346,6 +1317,7 @@ bool CParameters::ValidateParameters() {
          gsRunHistoryFilename << ZdString::reset << ZdFileName(_argv[0]).GetLocation() << ANALYSIS_HISTORY_FILE;
    }
    catch (ZdException & x) {
+      fclose(pFile);
       x.AddCallpath("ValidateParameters()", "CParameters");
       throw;
    }
@@ -1378,9 +1350,7 @@ bool CParameters::ValidateDateString(char* szDate, int nDateType) {
         }
       }
 
-      if (!IsDateValid(nMonth, nDay, nYear))
-        bReturnValue = false;
-      else
+      if (IsDateValid(nMonth, nDay, nYear))
         bReturnValue = true;
    }
    catch (ZdException & x) {
@@ -1421,12 +1391,10 @@ bool CParameters::ValidateProspectiveStartDate(char* szProspDate, char *szStartD
            nProspDay = 1;
       }
 
-      if (!(IsDateValid(nStartMonth, nStartDay, nStartYear) && IsDateValid(nEndMonth, nEndDay, nEndYear) && IsDateValid(nProspMonth, nProspDay, nProspYear)))
-        bReturnValue = false;
       //Prospective surveillance start date must be between study dates.
          // can be equal to one of them...
          //compute Julian date and check ranges...
-      else
+      if ((IsDateValid(nStartMonth, nStartDay, nStartYear) && IsDateValid(nEndMonth, nEndDay, nEndYear) && IsDateValid(nProspMonth, nProspDay, nProspYear)))
          bReturnValue = CheckProspDateRange(nStartYear, nStartMonth, nStartDay, nEndYear, nEndMonth, nEndDay,
                                             nProspYear, nProspMonth, nProspDay);
    }
@@ -1459,6 +1427,7 @@ bool CParameters::ValidHistoryFileName(const ZdString& sRunHistoryFilename) {
          fclose(pFile);
    }
    catch (ZdException &x) {
+      fclose(pFile);
       x.AddCallpath("ValidHistoryFileName()", "CParameters");
       throw;
    }
