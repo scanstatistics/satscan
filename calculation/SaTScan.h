@@ -4,12 +4,18 @@
 //*****************************************************************************
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+#include <string>
+#include <vector>
 #include <ctype.h>
 #include <limits.h>
 #include <math.h>
 #include <time.h>
 #include <float.h>
+#ifdef INTEL_BASED
+  #include <io.h>
+#else
+  #include <unistd.h>
+#endif
 #include "Salloc.h"
 #include "BasePrint.h"
 #include "SSException.h"
@@ -20,8 +26,7 @@
  file: SaTScan.h
  This file contains header information for all SaTScan program files
  **********************************************************************/
-
-/** Current version information. */ 
+/** Current version information. */
 #define VERSION_NUMBER "3.1.0 RC 5"
 #define VERSION_DATE "Not Released"
 /** New defines for ellipsoid calculations. */
