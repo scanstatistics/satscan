@@ -113,7 +113,7 @@ measure_t CalcMeasure(RealDataStream& thisStream, TwoDimMeasureArray_t& NonCumul
 
   PopulationData      & thisPopulationData = thisStream.GetPopulationData();
   int                   i, n, lower, upper, nLowerPlus1, nTimeIntervals = thisStream.GetNumTimeIntervals();
-  tract_t               t, nTracts = thisStream.GetNumTracts();                    ]
+  tract_t               t, nTracts = thisStream.GetNumTracts();                   
   measure_t          ** ppM, ** pPopulationMeasure, ** ppNonCumulativeMeasure, tTotalMeasure=0;
   double                tempRatio, tempSum, temp1, temp2;
   Julian                jLowDate, jLowDatePlus1;
