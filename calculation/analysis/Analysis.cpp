@@ -233,12 +233,15 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
 /* testing mechanism for output files - this is a generic test class which houses several different types of fields
    test by creating an instance of the class and setting various test values to the fields and try to print out in
    each of the outputfilewriters - AJV 11/2002
-      std::auto_ptr<TestOutputClass> pTest( new TestOutputClass(m_pParameters->m_szOutputFilename) );
+      std::auto_ptr<TestOutputClass> pTest( new TestOutputClass(gpPrintDirection, m_pParameters->m_szOutputFilename) );
+      pTest->AddBlankRecord();
       pTest->SetTestValues("", 0, 0.000, 0.000, 0, true);
+      pTest->AddBlankRecord();
       pTest->SetTestValues("test string", 69, 4.1698321, 3.14159257136, -42, false);
       pTest->SetTestValues("very long string which might be truncated well hopefully", 12, 6.000, 6.5, 0, true);
       pTest->SetTestValues("W%#$#^#$^%#FDSF", 3049858, 0.0001, 487.623, -48763, false);
       pTest->SetTestValues("kusdyh", 654, 10, -7, 3, true);
+      pTest->AddBlankRecord();
 
       ASCIIFileWriter writer(pTest.get());
       writer.Print();
