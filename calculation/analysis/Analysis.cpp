@@ -255,7 +255,7 @@ void CAnalysis::AllocateTopClusterList() {
       m_pTopClusters = new CCluster* [m_nMaxClusters + 1];
       if (m_pTopClusters == 0)
          SSGenerateException("Could not allocate memory for m_pTopClusters.", "CAnalysis");
-      memset(m_pTopClusters, 0, m_nMaxClusters+1);
+      memset(m_pTopClusters, 0, (m_nMaxClusters+1) * sizeof(CCluster*));
    }
    catch (ZdException & x) {
       x.AddCallpath("AllocateTopClusterList()", "CAnalysis");
