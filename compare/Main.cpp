@@ -209,16 +209,29 @@ void __fastcall TfrmMain::ActionCompareSimulatedLLRsExecute(TObject *Sender) {
 }
 
 void TfrmMain::ArchiveResults() {
-  AnsiString    sArchiveFilename, sCommand;
+  AnsiString    sArchiveFilename, sStatsFilename, sCommand;
   std::string   sMaster, sCompare, sTemp1, sTemp2;
+  TDateTime     Date;
 
   //create archive name
+  Date = TDateTime::CurrentDateTime();
   DateSeparator = '_';
   TimeSeparator = '.';
-  sArchiveFilename.printf("%s%s.zip", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(TDateTime::CurrentDateTime()).c_str());
+  sArchiveFilename.printf("%s%s.zip", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(Date).c_str());
   if (!access(sArchiveFilename.c_str(), 00) && remove(sArchiveFilename.c_str()))
     return;
 
+  //create analysis stats file
+  sStatsFilename.printf("%s%s.stats.txt", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(Date).c_str());
+  CreateStatsFile(sStatsFilename.c_str());
+  sCommand.sprintf("\"%s\" %s \"%s\" \"%s\"",
+                   gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                   gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                   sArchiveFilename.c_str(),
+                   sStatsFilename.c_str());
+  Execute(sCommand, false);
+  remove(sStatsFilename.c_str());
+  //add files of each comparison process
   for (int i=0; i < lstDisplay->Items->Count; ++i) {
     const ParameterResultsInfo & Ref = gvParameterResultsInfo[(size_t)lstDisplay->Items->Item[i]->Data];
 
@@ -308,46 +321,13 @@ void __fastcall TfrmMain::ActionCompareResultFilesExecute(TObject *Sender) {
 
 /** saves results of comparison to file */
 void __fastcall TfrmMain::ActionSaveComparisonStatsExecute(TObject *Sender) {
- int            i, iNumMisMatch=0,iNumCorrect=0, iNumMissingFiles=0, iNumProgramStop=0;
- TListItem    * pListItem;
- TDateTime      Date;
-
-  if (SaveDialog->Execute()) {
-    ofstream Output(SaveDialog->FileName.c_str());
-
-    //print header information
-    Date = TDateTime::CurrentDateTime();
-    Output << endl << "Date: " << Date.DateTimeString().c_str() << endl;
-
-    for (i=0; i < lstDisplay->Items->Count; i++)
-       switch (lstDisplay->Items->Item[i]->ImageIndex) {
-         case 0 : iNumCorrect++; break;
-         case 1 : iNumMissingFiles++; break;
-         case 2 : iNumMisMatch++; break;
-         case 3 : iNumProgramStop++; break;
-         //default : error
-       };
-
-
-
-    Output << "Total Analyses         : " << lstDisplay->Items->Count << endl
-           << "Compared Equal         : " << iNumCorrect << endl
-           << "Compared Not Equal     : " << iNumMisMatch << endl
-           << "Missing Files          : " << iNumMissingFiles << endl
-           << "Program Failure/Cancel : " << iNumProgramStop << endl << endl;
-
-    //print results of comparisons
-    for (i=0; i < lstDisplay->Items->Count; i++) {
-       pListItem = lstDisplay->Items->Item[i];
-       Output << "Parameter List Item " << i + 1 << ")" << endl
-              << "                    Parameter Filename   : " << pListItem->SubItems->Strings[0].c_str() << endl
-              << "                    Speed                : " << pListItem->SubItems->Strings[1].c_str() << endl
-              << "                    Cluster Information  : " << pListItem->SubItems->Strings[2].c_str() << endl
-              << "                    Location Information : " << pListItem->SubItems->Strings[3].c_str() << endl
-              << "                    Relative Risks       : " << pListItem->SubItems->Strings[4].c_str() << endl
-              << "                    Simulated Ratios     : " << pListItem->SubItems->Strings[5].c_str() << endl << endl;
-    }
-  }
+  SaveDialog->FileName =  "";
+  SaveDialog->DefaultExt = "*.txt";
+  SaveDialog->Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+  SaveDialog->FilterIndex = 0;
+  SaveDialog->Title = "Save Analysis Results to File";
+  if (SaveDialog->Execute())
+    CreateStatsFile(SaveDialog->FileName.c_str());
 }
 
 /** starts process of comparing output files */
@@ -645,6 +625,50 @@ void TfrmMain::CompareTimes() {
       uMinutesC = fComareTimeInMinutes - uHoursC * 60;
       uSecondsC = (float)(fComareTimeInMinutes - uHoursC * 60 - uMinutesC) * 60;
       gvParameterResultsInfo.back().SetTimeDifference(uHoursC, uMinutesC, uSecondsC, SLOWER);
+    }
+  }
+}
+
+/** creates and saves comparison results to file */
+void TfrmMain::CreateStatsFile(const char * sFilename) {
+ int            i, iNumMisMatch=0,iNumCorrect=0, iNumMissingFiles=0, iNumProgramStop=0;
+ TListItem    * pListItem;
+ TDateTime      Date;
+
+  if (sFilename) {
+    ofstream Output(sFilename, ios_base::out|ios_base::trunc);
+
+    //print header information
+    Date = TDateTime::CurrentDateTime();
+    Output << endl << "Date: " << Date.DateTimeString().c_str() << endl;
+
+    for (i=0; i < lstDisplay->Items->Count; i++)
+       switch (lstDisplay->Items->Item[i]->ImageIndex) {
+         case 0 : iNumCorrect++; break;
+         case 1 : iNumMissingFiles++; break;
+         case 2 : iNumMisMatch++; break;
+         case 3 : iNumProgramStop++; break;
+         //default : error
+       };
+
+
+
+    Output << "Total Analyses         : " << lstDisplay->Items->Count << endl
+           << "Compared Equal         : " << iNumCorrect << endl
+           << "Compared Not Equal     : " << iNumMisMatch << endl
+           << "Missing Files          : " << iNumMissingFiles << endl
+           << "Program Failure/Cancel : " << iNumProgramStop << endl << endl;
+
+    //print results of comparisons
+    for (i=0; i < lstDisplay->Items->Count; i++) {
+       pListItem = lstDisplay->Items->Item[i];
+       Output << "Parameter List Item " << i + 1 << ")" << endl
+              << "                    Parameter Filename   : " << pListItem->SubItems->Strings[0].c_str() << endl
+              << "                    Speed                : " << pListItem->SubItems->Strings[1].c_str() << endl
+              << "                    Cluster Information  : " << pListItem->SubItems->Strings[2].c_str() << endl
+              << "                    Location Information : " << pListItem->SubItems->Strings[3].c_str() << endl
+              << "                    Relative Risks       : " << pListItem->SubItems->Strings[4].c_str() << endl
+              << "                    Simulated Ratios     : " << pListItem->SubItems->Strings[5].c_str() << endl << endl;
     }
   }
 }

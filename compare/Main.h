@@ -171,6 +171,7 @@ __published:	// IDE-managed Components
     void                                CompareSimulatedRatiosFiles();
     bool                                CompareTextFiles(const std::string & sMaster, const std::string & sCompare);
     void                                CompareTimes();
+    void                                CreateStatsFile(const char * sFilename);
     void                                EnableCompareActions();
     void                                EnableRemoveParameterAction();
     void                                EnableSaveParametersListAction();
