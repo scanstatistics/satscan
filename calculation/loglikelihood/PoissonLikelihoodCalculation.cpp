@@ -62,11 +62,11 @@ double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(count_t*   pCases, mea
 
   /* Check for extremes where all the cases in the first or last interval
      or 0 cases in given tract.  For now there are multiple returns. */
-  if (nStatus == TREND_UNDEF) // No cases in tract
+  if (nStatus == CTimeTrend::TREND_UNDEF) // No cases in tract
   {
     nLL = 0;
   }
-  else if (nStatus == TREND_INF) // All cases in first/last t.i.
+  else if (nStatus == CTimeTrend::TREND_INF) // All cases in first/last t.i.
   {
     nLL = (pTotalCases*log(pTotalCases) - pTotalCases )/**-
           ((CSVTTData&)gData).m_pSumLogs[pTotalCases])**/;
@@ -96,13 +96,17 @@ double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(count_t*   pCases, mea
 }
 
 /** needs documentation */
-double PoissonLikelihoodCalculator::CalcSVTTLogLikelihoodRatio(size_t tStream, CSVTTCluster* Cluster, CTimeTrend& GlobalTimeTrend) {
+double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tStream, CSVTTCluster* Cluster, CTimeTrend& GlobalTimeTrend) {
   double nLogLikelihood   = 0.0;
   double nGlobalAlphaIn   = 0.0;
   double nGlobalAlphaOut = 0.0;
 
-  SVTTClusterStreamData & StreamData = Cluster->GetStream(tStream);
+  SVTTClusterStreamData& StreamData = Cluster->GetStream(tStream);
 
+  //calculate time trend inside of clusters tStream'th data stream
+  //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
+  //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
+  //      has not been decided yet.
   StreamData.gTimeTrendInside.CalculateAndSet(StreamData.gpCasesInsideCluster,         // Inside Cluster
                                               StreamData.gpMeasureInsideCluster,
                                               gData.m_nTimeIntervals,
@@ -111,8 +115,12 @@ double PoissonLikelihoodCalculator::CalcSVTTLogLikelihoodRatio(size_t tStream, C
   nGlobalAlphaIn = StreamData.gTimeTrendInside.Alpha(StreamData.gtTotalCasesInsideCluster,
                                                      StreamData.gpMeasureInsideCluster,
                                                      gData.m_nTimeIntervals,
-                                                     GlobalTimeTrend.m_nBeta);
+                                                     GlobalTimeTrend.GetBeta());
 
+  //calculate time trend outside of clusters tStream'th data stream
+  //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
+  //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
+  //      has not been decided yet.
   StreamData.gTimeTrendOutside.CalculateAndSet(StreamData.gpCasesOutsideCluster,         // Outside Cluster
                                                StreamData.gpMeasureOutsideCluster,
                                                gData.m_nTimeIntervals,
@@ -121,18 +129,18 @@ double PoissonLikelihoodCalculator::CalcSVTTLogLikelihoodRatio(size_t tStream, C
   nGlobalAlphaOut = StreamData.gTimeTrendOutside.Alpha(StreamData.gtTotalCasesOutsideCluster,
                                                        StreamData.gpMeasureOutsideCluster,
                                                        gData.m_nTimeIntervals,
-                                                       GlobalTimeTrend.m_nBeta);
+                                                       GlobalTimeTrend.GetBeta());
   #if DEBUGMODEL
   fprintf(m_pDebugModelFile, "Inside                Outside\n");
   fprintf(m_pDebugModelFile, "Cases    Msr          Cases    Msr\n");
   fprintf(m_pDebugModelFile, "==========================================\n");
   for (int i=0; i<m_pData->m_nTimeIntervals; i++)
     fprintf (m_pDebugModelFile, "%i       %.2f        %i       %.2f\n",
-                                Cluster->m_pCumCases[i], Cluster->m_pCumMeasure[i],
-                                Cluster->m_pRemCases[i], Cluster->m_pRemMeasure[i]);
+                                StreamData.gpCasesInsideCluster[i], StreamData.gpMeasureInsideCluster[i],
+                                StreamData.gpCasesOutsideCluster[i], StreamData.gpMeasureOutsideCluster[i]);
   fprintf(m_pDebugModelFile, "------------------------------------------\n");
   fprintf (m_pDebugModelFile, "%i                   %i\n\n",
-                              Cluster->GetCaseCount(0), Cluster->m_nRemCases);
+                              StreamData.gtTotalCasesInsideCluster, StreamData.gtTotalCasesOutsideCluster);
 
 //  fprintf(m_pDebugModelFile, "\nGlobal Time Trend: Alpha = %f, Beta = %f\n\n",
 //          GlobalTimeTrend.m_nAlpha, GlobalTimeTrend.m_nBeta);
@@ -141,30 +149,30 @@ double PoissonLikelihoodCalculator::CalcSVTTLogLikelihoodRatio(size_t tStream, C
   nLogLikelihood = (CalcSVTTLogLikelihood(StreamData.gpCasesInsideCluster,
                                           StreamData.gpMeasureInsideCluster,
                                           StreamData.gtTotalCasesInsideCluster,
-                                          StreamData.gTimeTrendInside.m_nAlpha,
-                                          StreamData.gTimeTrendInside.m_nBeta,
-                                          StreamData.gTimeTrendInside.m_nStatus)
+                                          StreamData.gTimeTrendInside.GetAlpha(),
+                                          StreamData.gTimeTrendInside.GetBeta(),
+                                          StreamData.gTimeTrendInside.GetStatus())
                     +
                     CalcSVTTLogLikelihood(StreamData.gpCasesOutsideCluster,
                                           StreamData.gpMeasureOutsideCluster,
                                           StreamData.gtTotalCasesOutsideCluster,
-                                          StreamData.gTimeTrendOutside.m_nAlpha,
-                                          StreamData.gTimeTrendOutside.m_nBeta,
-                                          StreamData.gTimeTrendOutside.m_nStatus))
+                                          StreamData.gTimeTrendOutside.GetAlpha(),
+                                          StreamData.gTimeTrendOutside.GetBeta(),
+                                          StreamData.gTimeTrendOutside.GetStatus()))
                     -
                    (CalcSVTTLogLikelihood(StreamData.gpCasesInsideCluster,
                                           StreamData.gpMeasureInsideCluster,
                                           StreamData.gtTotalCasesInsideCluster,
                                           nGlobalAlphaIn,
-                                          GlobalTimeTrend.m_nBeta,
-                                          StreamData.gTimeTrendInside.m_nStatus)
+                                          GlobalTimeTrend.GetBeta(),
+                                          StreamData.gTimeTrendInside.GetStatus())
                     +
                     CalcSVTTLogLikelihood(StreamData.gpCasesOutsideCluster,
                                           StreamData.gpMeasureOutsideCluster,
                                           StreamData.gtTotalCasesOutsideCluster,
                                           nGlobalAlphaOut,
-                                          GlobalTimeTrend.m_nBeta,
-                                          StreamData.gTimeTrendOutside.m_nStatus));
+                                          GlobalTimeTrend.GetBeta(),
+                                          StreamData.gTimeTrendOutside.GetStatus()));
 
 
   #if DEBUGMODEL

@@ -30,8 +30,8 @@ double AbstractLikelihoodCalculator::CalcMonotoneLogLikelihood(const CPSMonotone
 }
 
 /** Throws exception. Not implemented in base class */
-double AbstractLikelihoodCalculator::CalcSVTTLogLikelihoodRatio(size_t tStream, CSVTTCluster* Cluster, CTimeTrend& GlobalTimeTrend) {
-  ZdGenerateException("CalcSVTTLogLikelihoodRatio() not implementated.","AbstractLikelihoodCalculator");
+double AbstractLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tStream, CSVTTCluster* Cluster, CTimeTrend& GlobalTimeTrend) {
+  ZdGenerateException("CalcSVTTLogLikelihood() not implementated.","AbstractLikelihoodCalculator");
   return 0;
 }
 
