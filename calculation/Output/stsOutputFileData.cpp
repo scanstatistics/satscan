@@ -9,9 +9,9 @@
 const char *    RUN_NUM_FIELD		        = "RUN_NUM";
 const char *    CLUST_NUM_FIELD 		= "CLUST_NUM";
 const char *    LOC_ID_FIELD   		        = "LOC_ID";
-const char *    P_VALUE_FIELD  		        = "P_VALUE";
-const char *    START_DATE_FIELD		= "START_DATE";
-const char *    END_DATE_FIELD		        = "END_DATE";
+const char *    P_VALUE_FLD  		        = "P_VALUE";
+const char *    START_DATE_FLD	        	= "START_DATE";
+const char *    END_DATE_FLD		        = "END_DATE";
 const char *    OBSERVED_FIELD		        = "OBSERVED";
 const char *    EXPECTED_FIELD		        = "EXPECTED";
 const char *    REL_RISK_FIELD		        = "REL_RISK";

@@ -441,9 +441,9 @@ void stsClusterData::SetupFields() {
       CreateField(gvFields, (giModelType != SPACETIMEPERMUTATION ? LOG_LIKL_FIELD : TST_STAT_FIELD), ZD_NUMBER_FLD, 16, 6, uwOffset);
 
       if(gbPrintPVal)
-         CreateField(gvFields, P_VALUE_FIELD, ZD_NUMBER_FLD, 12, 5, uwOffset);
-      CreateField(gvFields, START_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      CreateField(gvFields, END_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+         CreateField(gvFields, P_VALUE_FLD, ZD_NUMBER_FLD, 12, 5, uwOffset);
+      CreateField(gvFields, START_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      CreateField(gvFields, END_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupFields()", "stsClusterData");
