@@ -74,13 +74,13 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
       SetDoubleField(*pRecord, pCluster.GetCaseCountForTract(tTract, pData), GetFieldNumber(gvFields, AREA_OBS));
 
       // observed
-      SetDoubleField(*pRecord, pCluster.m_nCases, GetFieldNumber(gvFields, OBSERVED));
+      SetDoubleField(*pRecord, pCluster.m_nCases, GetFieldNumber(gvFields, CLU_OBS));
 
       // area expected
       SetDoubleField(*pRecord, pCluster.GetMeasureForTract(tTract, pData), GetFieldNumber(gvFields, AREA_EXP));
 
       // expected
-      SetDoubleField(*pRecord, pCluster.m_nMeasure, GetFieldNumber(gvFields, EXPECTED));
+      SetDoubleField(*pRecord, pCluster.m_nMeasure, GetFieldNumber(gvFields, CLU_EXP));
 
       // area relative risk
       SetDoubleField(*pRecord, pCluster.GetRelativeRiskForTract(tTract, pData), GetFieldNumber(gvFields, AREA_RSK));
@@ -128,18 +128,21 @@ void stsAreaSpecificDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
    unsigned short uwOffset = 0;     // this is altered by the create new field function, so this must be here as is-AJV 9/30/2002
    
    try {
+      // please take note that this function here determines the ordering of the fields in the file
+      // everything else is written generically enough that ordering does not matter due to the
+      // GetFieldNumber function - AJV 10/2/2002
       CreateNewField(vFields, RUN_NUM, ZD_NUMBER_FLD, 8, 0, uwOffset);
-      CreateNewField(vFields, CLUST_NUM, ZD_NUMBER_FLD, 5, 0, uwOffset);
       CreateNewField(vFields, LOC_ID, ZD_ALPHA_FLD, 30, 0, uwOffset);
+      CreateNewField(vFields, CLUST_NUM, ZD_NUMBER_FLD, 5, 0, uwOffset);
+      CreateNewField(vFields, CLU_OBS, ZD_NUMBER_FLD, 12, 0, uwOffset);
+      CreateNewField(vFields, CLU_EXP, ZD_NUMBER_FLD, 12, 2, uwOffset);
       CreateNewField(vFields, REL_RISK, ZD_NUMBER_FLD, 12, 3, uwOffset);
 
       if(gbPrintPVal)
          CreateNewField(vFields, P_VALUE, ZD_NUMBER_FLD, 12, 5, uwOffset);
       CreateNewField(vFields, AREA_OBS, ZD_NUMBER_FLD, 12, 0, uwOffset);
       CreateNewField(vFields, AREA_EXP, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      CreateNewField(vFields, AREA_RSK, ZD_NUMBER_FLD, 12, 3, uwOffset);
-      CreateNewField(vFields, OBSERVED, ZD_NUMBER_FLD, 12, 0, uwOffset);
-      CreateNewField(vFields, EXPECTED, ZD_NUMBER_FLD, 12, 2, uwOffset);
+      CreateNewField(vFields, AREA_RSK, ZD_NUMBER_FLD, 12, 3, uwOffset);      
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupFields()", "stsAreaSpecificDBF");

@@ -38,6 +38,8 @@ const char *    AREA_EXP                = "AREA_EXP";
 const char *    AREA_RSK                = "AREA_RSK";
 const char *    E_ANGLE                 = "E_ANGLE";
 const char *    E_SHAPE                 = "E_SHAPE";
+const char *    CLU_OBS                 = "CLU_OBS";
+const char *    CLU_EXP                 = "CLU_EXP";
 
 // constructor
 __fastcall DBaseOutput::DBaseOutput(const long lRunNumber, const bool bPrintPVal, const int iCoordType) {

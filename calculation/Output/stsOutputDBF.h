@@ -29,6 +29,8 @@ extern const char * AREA_EXP;
 extern const char * AREA_RSK;
 extern const char * E_ANGLE;
 extern const char * E_SHAPE;
+extern const char * CLU_OBS;
+extern const char * CLU_EXP;
 
 class CCluster;
 class CSaTScanData;
