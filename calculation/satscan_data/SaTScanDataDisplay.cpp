@@ -100,7 +100,8 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
   PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
   fprintf(fp, "%ld\n", (long) m_nTracts);
 
-  if (gParameters.GetProbabiltyModelType() == POISSON || gParameters.GetProbabiltyModelType() == BERNOULLI) {
+  if ((gParameters.GetProbabiltyModelType() == POISSON && gParameters.UsePopulationFile())
+       || gParameters.GetProbabiltyModelType() == BERNOULLI) {
     PrintFormat.PrintSectionLabel(fp, "Total population", true, false);
     sBuffer.printf("%.0f", gpDataStreams->GetStream(0).GetTotalPopulation());
     for (i=1; i < gpDataStreams->GetNumStreams(); ++i) {
@@ -118,7 +119,7 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
   }
   PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
 
-  if (gParameters.GetProbabiltyModelType() == POISSON) {
+  if (gParameters.GetProbabiltyModelType() == POISSON && gParameters.UsePopulationFile()) {
     sBuffer.printf("Annual cases / %.0f",  GetAnnualRatePop());
     PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), true, false);
     sBuffer.printf("%.1f", GetAnnualRateAtStart(0));
