@@ -1,12 +1,13 @@
-// MakeNeighbors.h
-// ?Eventually move to data.cpp?
-
+//*****************************************************************************
 #ifndef __MAKENEIGHBORS_H
 #define __MAKENEIGHBORS_H
+//*****************************************************************************
+#include "SaTScan.h"
+#include "Tracts.h"
+#include "TimeEstimate.h"
+#include "GridTractCoordinates.h"
 
-#include "spatscan.h"
-#include "tinfo.cpp"
-#include "ginfo.cpp"
+// ?Eventually move to data.cpp?
 
 struct tdist {        /* tract-distance structure for calculating Sorted[] */
    tract_t t;     /* tract number     */
@@ -35,4 +36,6 @@ void MakeNeighbors(TInfo *pTInfo,
                    BasePrint *pPrintDirection);
 
 void PrintNeighbors(long lTotalEllipses, tract_t GridTracts, tract_t ***Sorted, BasePrint *pPrintDirection);
+
+//*****************************************************************************
 #endif

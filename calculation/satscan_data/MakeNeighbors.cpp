@@ -1,9 +1,5 @@
-// MakeNeighbors.cpp
-
+#pragma hdrstop
 #include "MakeNeighbors.h"
-#include "TimeEstimate.h"
-#include "tinfo.h"
-#include "ginfo.h"
 
 short min2(short v1, short v2)
 {
