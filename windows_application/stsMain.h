@@ -10,15 +10,16 @@
 #include <ExtCtrls.hpp>
 #include <Menus.hpp>
 #include <fcntl.h>
+#include <ActnList.hpp>
+#include <ImgList.hpp>
 //---------------------------------------------------------------------------
-class TfrmMainForm : public TForm
-{
-__published:	// IDE-managed Components
+class TfrmMainForm : public TForm{
+  __published:	// IDE-managed Components
         TStatusBar *barStatusBar;
         TMainMenu *MainMenu1;
         TMenuItem *File1;
         TMenuItem *Help1;
-        TMenuItem *Open1;
+        TMenuItem *mitOpen;
         TMenuItem *Save1;
         TMenuItem *Exit1;
         TMenuItem *Session1;
@@ -38,45 +39,54 @@ __published:	// IDE-managed Components
         TBevel *Bevel2;
         TBevel *Bevel3;
         TBevel *Bevel4;
-        TMenuItem *New1;
+        TMenuItem *mitOpenSession;
         TMenuItem *Close1;
         TMenuItem *N2;
         TMenuItem *SaveAs1;
-        TMenuItem *Print1;
-        TMenuItem *PrintSetup1;
+        TMenuItem *mitPrint;
+        TMenuItem *mitPrintSetup;
         TMenuItem *N3;
         TOpenDialog *OpenDialog1;
         TSaveDialog *SaveDialog1;
         TPrintDialog *PrintDialog1;
         TPrinterSetupDialog *PrinterSetupDialog1;
-        TMenuItem *ParameterFile1;
+        TMenuItem *mitOpenParameterFile;
         TMenuItem *OutputTextFile1;
-        void __fastcall sbEditSessionClick(TObject *Sender);
-        void __fastcall New1Click(TObject *Sender);
-        void __fastcall Close1Click(TObject *Sender);
-        void __fastcall sbOpenClick(TObject *Sender);
-        void __fastcall AboutSatScan1Click(TObject *Sender);
-        void __fastcall sbHelpClick(TObject *Sender);
-        void __fastcall Contents1Click(TObject *Sender);
-        void __fastcall UsingHelp1Click(TObject *Sender);
-        void __fastcall sbExecuteClick(TObject *Sender);
-        void __fastcall Execute1Click(TObject *Sender);
-        void __fastcall Save1Click(TObject *Sender);
-        void __fastcall SaveAs1Click(TObject *Sender);
-        void __fastcall sbSaveClick(TObject *Sender);
-        void __fastcall PrintSetup1Click(TObject *Sender);
-        void __fastcall Print1Click(TObject *Sender);
-        void __fastcall ParameterFile1Click(TObject *Sender);
+        TActionList *ActionList;
+        TAction *NewSessionAction;
+        TImageList *ImageList;
+        TAction *OpenParameterFileAction;
+        TAction *SaveSessionAction;
+        TAction *SaveSessionAsAction;
+        TAction *CloseSessionAction;
+        TAction *PrintSessionAction;
+        TAction *PrintSetupAction;
+        TAction *ExitAction;
+        TAction *ExecuteAction;
+        TAction *HelpAction;
+        TAction *UsingHelpAction;
+        TAction *AboutSatscanAction;
+        void __fastcall PrintSessionActionExecute(TObject *Sender);
         void __fastcall OutputTextFile1Click(TObject *Sender);
-private:	// User declarations
-        void __fastcall OpenAFile();
-        void            ExecuteSession();
-        void            Save();
-        void            SaveAs();
-        
-public:		// User declarations
-        __fastcall TfrmMainForm(TComponent* Owner);
-      //  void       CreateViewer(char *sFileName);
+        void __fastcall NewSessionActionExecute(TObject *Sender);
+        void __fastcall OpenParameterFileActionExecute(TObject *Sender);
+        void __fastcall SaveSessionActionExecute(TObject *Sender);
+        void __fastcall SaveSessionAsActionExecute(TObject *Sender);
+        void __fastcall CloseSessionActionExecute(TObject *Sender);
+        void __fastcall PrintSetupActionExecute(TObject *Sender);
+        void __fastcall ExitActionExecute(TObject *Sender);
+        void __fastcall ExecuteActionExecute(TObject *Sender);
+        void __fastcall HelpActionExecute(TObject *Sender);
+        void __fastcall UsingHelpActionExecute(TObject *Sender);
+        void __fastcall AboutSatscanActionExecute(TObject *Sender);
+  private:	// User declarations
+    void        __fastcall OpenAFile();
+    void        ExecuteSession();
+    void        Save();
+    void        SaveAs();
+
+  public:		// User declarations
+    __fastcall TfrmMainForm(TComponent* Owner);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfrmMainForm *frmMainForm;
