@@ -298,6 +298,7 @@ MultiStreamTimeIntervalRange * MultiStreamTimeIntervalRange::Clone() const {
 void MultiStreamTimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluster) {
   int                          iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
   MultipleStreamTemporalData * pData = (MultipleStreamTemporalData*)Running.GetClusterData(); //dynamic cast ?
+  AbstractLoglikelihoodRatioUnifier & Unifier = gLikelihoodCalculator.GetUnifier();
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
@@ -306,16 +307,15 @@ void MultiStreamTimeIntervalRange::CompareClusters(CCluster & Running, CCluster 
      iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
      iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
-        Running.m_nRatio = 0;
         for (size_t t=0; t < pData->gvStreamData.size(); ++t) {
           TemporalData & Datum = *pData->gvStreamData[t];
           Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
           Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
-          gLikelihoodCalculator.GetUnifier().AdjoinRatio(gLikelihoodCalculator, t, Datum.gtCases, Datum.gtMeasure,
-                                                         Datum.gtTotalCases, Datum.gtTotalMeasure);
+          Unifier.AdjoinRatio(gLikelihoodCalculator, t, Datum.gtCases, Datum.gtMeasure,
+                              Datum.gtTotalCases, Datum.gtTotalMeasure);
         }
-        Running.m_nRatio = gLikelihoodCalculator.GetUnifier().GetLoglikelihoodRatio();
-        if (Running.m_nRatio && Running.m_nRatio > TopCluster.m_nRatio) {
+        Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
+        if (Running.m_nRatio > TopCluster.m_nRatio) {
           TopCluster.AssignAsType(Running);
           TopCluster.m_nFirstInterval = iWindowStart;
           TopCluster.m_nLastInterval = iWindowEnd;
