@@ -17,7 +17,7 @@
        or registory value if this is becomes a problem. */
 const char * TfrmUpdateCheck::gsUpdaterFilename   = "update_app.exe";
 /** perl script for determining updates */
-const char * TfrmUpdateCheck::gsURLFormat         = "http://satscan.us/cgi-bin/satscan/update/satscan_version_update.pl?todo=return_update_version_info&form_current_version_id=value%s&form_current_version_number=value%d";
+const char * TfrmUpdateCheck::gsURLFormat         = "http://satscan.us/cgi-bin/satscan/update/satscan_version_update.pl?todo=return_update_version_info&form_current_version_id=value%s&form_current_version_number=value%s";
 const int TfrmUpdateCheck::giUpdateTokens         = 9;
 const int TfrmUpdateCheck::giUpdateIndicatorIndex = 0;
 const int TfrmUpdateCheck::giUpdateVersionIdIndex = 3;
@@ -28,7 +28,7 @@ const int TfrmUpdateCheck::giUpdateDataNameIndex  = 7;
 const int TfrmUpdateCheck::giUpdateDataUrlIndex   = 8;
 
 /** constructor */
-__fastcall TfrmUpdateCheck::TfrmUpdateCheck(TComponent* Owner) : TForm(Owner) {
+__fastcall TfrmUpdateCheck::TfrmUpdateCheck(TComponent* Owner) : TForm(Owner), gbHasUpdates(false) {
 }
 
 /** destructor */
@@ -43,7 +43,7 @@ void TfrmUpdateCheck::ConnectToServerForUpdateCheck() {
 
   try {
     Show();
-    sUpdateURL.printf(gsURLFormat, VERSION_ID, 2/* make this VERSION_NUMBER before release */);
+    sUpdateURL.printf(gsURLFormat, VERSION_ID, VERSION_NUMBER);
     try {
       // let the Get() do the connecting since reading results from perlscript
       // is the only purpose for connecting to remote host ... currently.
@@ -59,17 +59,20 @@ void TfrmUpdateCheck::ConnectToServerForUpdateCheck() {
     // get perlscript results -- list of files descriptions at specified url
     sHTTP_Body.SetString(pHTTPConnect->Body.c_str());
     if (sHTTP_Body.GetNumTokens() < (unsigned int)giUpdateTokens || !stricmp(sHTTP_Body.GetToken(0).GetCString(), "no"))
-      ZdException::GenerateNotification("No updates currently available.\nPlease try again later.",
+      ZdException::GenerateNotification("No updates currently available. Please try again later.",
                                         "ConnectToServerForUpdateCheck()");
 
-    //get update information
-    gsUpdateVersion = sHTTP_Body.GetToken(giUpdateVersionIndex);
-    gUpdateApplication.first = sHTTP_Body.GetToken(giUpdateAppNameIndex);
-    gUpdateApplication.second = sHTTP_Body.GetToken(giUpdateAppUrlIndex);
-    gUpdateArchive.first = sHTTP_Body.GetToken(giUpdateDataNameIndex);
-    gUpdateArchive.second = sHTTP_Body.GetToken(giUpdateDataUrlIndex);
-    if (gUpdateArchive.second.EndsWith('\n'))
-      gUpdateArchive.second.Truncate(gUpdateArchive.second.GetLength() - 1);
+    if (sHTTP_Body.GetToken(giUpdateVersionIdIndex) == VERSION_ID) {
+      gbHasUpdates = true;
+      //get update information
+      gsUpdateVersion = sHTTP_Body.GetToken(giUpdateVersionIndex);
+      gUpdateApplication.first = sHTTP_Body.GetToken(giUpdateAppNameIndex);
+      gUpdateApplication.second = sHTTP_Body.GetToken(giUpdateAppUrlIndex);
+      gUpdateArchive.first = sHTTP_Body.GetToken(giUpdateDataNameIndex);
+      gUpdateArchive.second = sHTTP_Body.GetToken(giUpdateDataUrlIndex);
+      if (gUpdateArchive.second.EndsWith('\n'))
+        gUpdateArchive.second.Truncate(gUpdateArchive.second.GetLength() - 1);
+    }
     Close();
   }
   catch (ZdException &x) {
@@ -96,7 +99,7 @@ bool TfrmUpdateCheck::DisplayDownloadOption(const ZdString& sFilename) {
 }
 
 bool TfrmUpdateCheck::HasUpdates() const {
-  return gUpdateArchive.first.GetLength() && gUpdateApplication.first.GetLength();
+  return gbHasUpdates;
 }
 
 void __fastcall TfrmUpdateCheck::OnCommandFailure(CmdType Cmd) {

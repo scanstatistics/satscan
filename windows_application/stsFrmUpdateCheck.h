@@ -34,6 +34,7 @@ class TfrmUpdateCheck : public TForm {
     std::pair<ZdString,ZdString>                gUpdateApplication;
     std::pair<ZdString,ZdString>                gUpdateArchive;
     ZdString                                    gsUpdateVersion;
+    bool                                        gbHasUpdates;
 
     bool                                        DisplayDownloadOption(const ZdString& sFilename);
 
