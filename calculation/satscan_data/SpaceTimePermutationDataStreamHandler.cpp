@@ -154,7 +154,7 @@ bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tStream, FILE * fp
   bool                                  bValid=true, bEmpty=true;
   Julian                                Date;
   tract_t                               TractIndex;
-  StringParser                          Parser(gpPrint->GetImpliedInputFileType());
+  StringParser                          Parser(*gpPrint);
   std::string                           sBuffer;
   count_t                               Count, ** pCounts;
 
@@ -169,7 +169,7 @@ bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tStream, FILE * fp
     while (Parser.ReadString(fp)) {
          if (Parser.HasWords()) {
            bEmpty = false;
-           if (ParseCountLine(thisStream.GetPopulationData(), szDescription, Parser, TractIndex, Count, Date, iCategoryIndex)) {
+           if (ParseCountLine(thisStream.GetPopulationData(), Parser, TractIndex, Count, Date, iCategoryIndex)) {
              //cumulatively add count to time by location structure
              pCounts[0][TractIndex] += Count;
              if (pCounts[0][TractIndex] < 0)
@@ -214,6 +214,10 @@ bool SpaceTimePermutationDataStreamHandler::ReadData() {
   try {
     SetRandomizers();
     for (size_t t=0; t < GetNumStreams(); ++t) {
+       if (GetNumStreams() == 1)
+         gpPrint->SatScanPrintf("Reading the case file\n");
+       else
+         gpPrint->SatScanPrintf("Reading input stream %u case file\n", t + 1);
        if (!ReadCaseFile(t))
          return false;
     }

@@ -97,7 +97,7 @@ class PopulationData {
     double                              GetRiskAdjustedPopulation(measure_t & dMeanPopulation, tract_t t,
                                                                   int iPopulationDateIndex, double Risk[]) const;
     int                                 LowerPopIndex(Julian Date) const;                                                                  
-    int                                 MakePopulationCategory(const char* szDescription, StringParser & Parser, int iScanOffset, BasePrint & PrintDirection);
+    int                                 MakePopulationCategory(StringParser & Parser, int iScanOffset, BasePrint & PrintDirection);
     void                                ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePrint * pPrintDirection) const;
     void                                SetAggregateCategories(bool b);
     void                                SetNumTracts(unsigned int iTracts) {gTractCategories.resize(iTracts, 0);}

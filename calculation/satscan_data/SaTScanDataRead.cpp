@@ -20,8 +20,9 @@ bool CSaTScanData::ConvertAdjustmentDateToJulian(StringParser & Parser, Julian &
     iDateIndex = (bStartDate ? 2: 3);
     //read and validate date
     if (!Parser.GetWord(iDateIndex)) {
-      gpPrint->PrintInputWarning("Error: Record %ld in adjustments file does not contain a %s date.\n",
-                                 Parser.GetReadCount(), (bStartDate ? "start": "end"));
+      gpPrint->PrintInputWarning("Error: Record %ld in %s does not contain a %s date.\n",
+                                 Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str(),
+                                 (bStartDate ? "start": "end"));
       return false;
     }
     //determine precision 
@@ -37,17 +38,20 @@ bool CSaTScanData::ConvertAdjustmentDateToJulian(StringParser & Parser, Julian &
       default    : bValidDate = false;
     };
     if (! bValidDate)
-      gpPrint->PrintInputWarning("Error: Invalid %s date '%s' in adjustment file, record %ld.\n",
-                                 (bStartDate ? "start": "end"), Parser.GetWord(iDateIndex), Parser.GetReadCount());
+      gpPrint->PrintInputWarning("Error: Invalid %s date '%s' in %s, record %ld.\n",
+                                 (bStartDate ? "start": "end"), Parser.GetWord(iDateIndex),
+                                 gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
     else {
       //Ensure four digit years
       iYear = Ensure4DigitYear(iYear, m_pParameters->GetStudyPeriodStartDate().c_str(), m_pParameters->GetStudyPeriodEndDate().c_str());
       switch (iYear) {
         case -1 : gpPrint->PrintInputWarning("Error: Due to study period greater than 100 years, unable\n"
-                                             "       to convert two digit year '%d' in adjustment file, record %ld.\n"
-                                             "       Please use four digit years.\n", iYear, Parser.GetReadCount());
+                                             "       to convert two digit year '%d' in %s, record %ld.\n"
+                                             "       Please use four digit years.\n", iYear,
+                                             gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
                   return false;
-        case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in adjustment file, record %ld.\n", iYear, Parser.GetReadCount());
+        case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in %s, record %ld.\n", iYear,
+                                             gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
                   return false;
       }
       //default as needed given either start or end date and precision of date
@@ -58,9 +62,11 @@ bool CSaTScanData::ConvertAdjustmentDateToJulian(StringParser & Parser, Julian &
       //validate that date is between study period start and end dates
       JulianDate = MDYToJulian(iMonth, iDay, iYear);
       if (!(m_nStartDate <= JulianDate && JulianDate <= m_nEndDate)) {
-        gpPrint->PrintInputWarning("Error: Date '%s' in record %ld of adjustment file is not\n", Parser.GetWord(iDateIndex), Parser.GetReadCount());
+        gpPrint->PrintInputWarning("Error: Date '%s' in record %ld of %s is not\n", Parser.GetWord(iDateIndex),
+                                   Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
         gpPrint->PrintInputWarning("       within study period beginning %s and ending %s.\n",
-                                   m_pParameters->GetStudyPeriodStartDate().c_str(), m_pParameters->GetStudyPeriodEndDate().c_str());
+                                   m_pParameters->GetStudyPeriodStartDate().c_str(),
+                                   m_pParameters->GetStudyPeriodEndDate().c_str());
         return false;
       }
     }  
@@ -89,7 +95,7 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativ
       return true;
 
     gpPrint->SetImpliedInputFileType(BasePrint::ADJ_BY_RR_FILE);
-    StringParser Parser(gpPrint->GetImpliedInputFileType());
+    StringParser Parser(*gpPrint);
 
     gpPrint->SatScanPrintf("Reading the adjustments file\n");
     if ((fp = fopen(m_pParameters->GetAdjustmentsByRelativeRisksFilename().c_str(), "r")) == NULL) {
@@ -107,37 +113,42 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativ
         if (!stricmp(Parser.GetWord(0),"all"))
           TractIndex = -1;
         else if ((TractIndex = gpTInfo->tiGetTractIndex(Parser.GetWord(0))) == -1) {
-          gpPrint->PrintInputWarning("Error: Unknown location identifier in Adjustments file, record %ld.\n", Parser.GetReadCount());
+          gpPrint->PrintInputWarning("Error: Unknown location identifier in %s, record %ld.\n",
+                                     gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
           gpPrint->PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
           bValid = false;
           continue;
         }
         //read population
         if (!Parser.GetWord(1)) {
-          gpPrint->PrintInputWarning("Error: Record %d of Adjustments file missing relative risk.\n", Parser.GetReadCount());
+          gpPrint->PrintInputWarning("Error: Record %d of %s missing relative risk.\n",
+                                     Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
           bValid = false;
           continue;
         }
         if (sscanf(Parser.GetWord(1), "%lf", &dRelativeRisk) != 1) {
-          gpPrint->PrintInputWarning("Error: Relative risk value '%s' in record %ld, of Adjustments file, is not a number.\n",
-                                     Parser.GetWord(1), Parser.GetReadCount());
+          gpPrint->PrintInputWarning("Error: Relative risk value '%s' in record %ld, of %s, is not a number.\n",
+                                     Parser.GetWord(1), Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
           bValid = false;
           continue;
         }
         //validate that relative risk is not negative or exceeding type precision
         if (dRelativeRisk < 0) {//validate that count is not negative or exceeds type precision
           if (strstr(Parser.GetWord(1), "-"))
-             gpPrint->PrintInputWarning("Error: Negative relative risk in record %ld of adjustments file.\n", Parser.GetReadCount());
+             gpPrint->PrintInputWarning("Error: Negative relative risk in record %ld of %s.\n",
+                                        Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
           else
-             gpPrint->PrintInputWarning("Error: Relative risk '%s' exceeds maximum value of %i in record %lf of adjustments file.\n",
-                                        Parser.GetWord(1), std::numeric_limits<double>::max(), Parser.GetReadCount());
+             gpPrint->PrintInputWarning("Error: Relative risk '%s' exceeds maximum value of %i in record %lf of %s.\n",
+                                        Parser.GetWord(1), std::numeric_limits<double>::max(),
+                                        Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
            bValid = false;
            continue;
         }
         //read start and end dates
         iNumWords = Parser.GetNumberWords();
         if (iNumWords == 3) {
-          gpPrint->PrintInputWarning("Error: Record %i, of adjustment file, missing end date.\n", Parser.GetReadCount());
+          gpPrint->PrintInputWarning("Error: Record %i, of %s, missing end date.\n",
+                                     Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
           bValid = false;
           continue;
         }
@@ -157,7 +168,8 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativ
         }
         //check that the adjustment dates are relatively correct
         if (EndDate < StartDate) {
-          gpPrint->PrintInputWarning("Error: For record %d of adjustment file, the adjustment period is\n", Parser.GetReadCount());
+          gpPrint->PrintInputWarning("Error: For record %d of %s, the adjustment period is\n",
+                                     Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
           gpPrint->PrintInputWarning("       incorrect because the end date occurs before the start date.\n");
           bValid = false;
           continue;
@@ -176,7 +188,7 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativ
       gpPrint->PrintWarningLine("Please see 'Adjustments file format' in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->PrintWarningLine("Error: Adjustments file contains no data.\n");
+      gpPrint->SatScanPrintWarning("Error: %s contains no data.\n", gpPrint->GetImpliedFileTypeString().c_str());
       bValid = false;
     }
 
@@ -214,8 +226,8 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativ
     function will use this information to confirm that coordinates scanned is
     not less than defined dimensions. The reason we don't check scanned dimensions
     here is that a generic error message could not be implemented. */
-bool CSaTScanData::ReadCartesianCoordinates(StringParser & Parser, std::vector<double>& vCoordinates, int & iScanCount,
-                                            int iWordOffSet, const char * sSourceFile) {
+bool CSaTScanData::ReadCartesianCoordinates(StringParser & Parser, std::vector<double>& vCoordinates,
+                                            int & iScanCount, int iWordOffSet) {
   const char  * pCoordinate;
   int           i;
 
@@ -225,8 +237,8 @@ bool CSaTScanData::ReadCartesianCoordinates(StringParser & Parser, std::vector<d
          iScanCount++; //track num successful scans, caller of function wants this information
        else {
          //unable to read word as double, print error to print direction and return false
-         gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file could not be read as ",
-                                             pCoordinate, Parser.GetReadCount(), sSourceFile);
+         gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s could not be read as ",
+                                    pCoordinate, Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
          //we can be specific about which dimension we are attending to read to                                    
          if (i < 2)
            gpPrint->PrintInputWarning("%s-coordinate.\n", (i == 0 ? "x" : "y"));
@@ -280,7 +292,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
   const char                  * pCoordinate, * pDimension;
   ZdString                      TractIdentifier;
   std::vector<double>           vCoordinates;
-  StringParser                  Parser(gpPrint->GetImpliedInputFileType());
+  StringParser                  Parser(*gpPrint);
 
   try {
     while (Parser.ReadString(fp)) {
@@ -307,7 +319,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
            vCoordinates.resize(m_pParameters->GetDimensionsOfData(), 0);
          }
          //read and validate dimensions skip to next record if error reading coordinates as double
-         if (! ReadCartesianCoordinates(Parser, vCoordinates, iScanCount, 1, "coordinates")) {
+         if (! ReadCartesianCoordinates(Parser, vCoordinates, iScanCount, 1)) {
            bValid = false;
            continue;
          }
@@ -369,7 +381,7 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
   bool                          bValid=true, bEmpty=true;
   ZdString                      TractIdentifier;
   std::vector<double>           vCoordinates;
-  StringParser                  Parser(gpPrint->GetImpliedInputFileType());
+  StringParser                  Parser(*gpPrint);
 
   try {
     vCoordinates.resize(3/*for conversion*/, 0);
@@ -461,7 +473,7 @@ bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
   int                           i, iScanCount;
   const char                  * pCoordinate;
   std::vector<double>           vCoordinates;
-  StringParser                  Parser(gpPrint->GetImpliedInputFileType());
+  StringParser                  Parser(*gpPrint);
   ZdString                      sId;
 
   try {
@@ -473,7 +485,7 @@ bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
         //there are records with data, but not necessarily valid
         bEmpty = false;
          //read and vaidate dimensions skip to next record if error reading coordinates as double
-         if (! ReadCartesianCoordinates(Parser, vCoordinates, iScanCount, 0, "grid")) {
+         if (! ReadCartesianCoordinates(Parser, vCoordinates, iScanCount, 0)) {
            bValid = false;
            continue;
          }
@@ -522,7 +534,7 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude(FILE * fp) {
   bool    	                bValid=true, bEmpty=true;
   const char                  * pCoordinate;
   std::vector<double>           vCoordinates;
-  StringParser                  Parser(gpPrint->GetImpliedInputFileType());
+  StringParser                  Parser(*gpPrint);
   ZdString                      sId;
 
   try {
@@ -635,7 +647,7 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
 
   try {
     gpPrint->SetImpliedInputFileType(BasePrint::MAXCIRCLEPOPFILE);
-    StringParser Parser(gpPrint->GetImpliedInputFileType());
+    StringParser Parser(*gpPrint);
 
     gpPrint->SatScanPrintf("Reading the max circle size file\n");
     if ((fp = fopen(m_pParameters->GetMaxCirclePopulationFileName().c_str(), "r")) == NULL) {
@@ -656,30 +668,34 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
         bEmpty=false;
         //read tract identifier
         if ((TractIdentifierIndex = gpTInfo->tiGetTractIndex(Parser.GetWord(0))) == -1) {
-          gpPrint->PrintInputWarning("Error: Unknown location identifier in max circle size file, record %ld.\n", iRecNum);
+          gpPrint->PrintInputWarning("Error: Unknown location identifier in %s, record %ld.\n",
+                                     gpPrint->GetImpliedFileTypeString().c_str(), iRecNum);
           gpPrint->PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
           bValid = false;
           continue;
         }
         //read population
         if (!Parser.GetWord(1)) {
-          gpPrint->PrintInputWarning("Error: Record %d of max circle size file missing population.\n", iRecNum);
+          gpPrint->PrintInputWarning("Error: Record %d of %s missing population.\n",
+                                     iRecNum, gpPrint->GetImpliedFileTypeString().c_str());
           bValid = false;
           continue;
         }
         if (sscanf(Parser.GetWord(1), "%f", &fPopulation) != 1) {
-          gpPrint->PrintInputWarning("Error: Population value '%s' in record %ld, of max circle size file, is not a number.\n",
-                                     Parser.GetWord(1), iRecNum);
+          gpPrint->PrintInputWarning("Error: Population value '%s' in record %ld, of %s, is not a number.\n",
+                                     Parser.GetWord(1), iRecNum, gpPrint->GetImpliedFileTypeString().c_str());
           bValid = false;
           continue;
         }
         //validate that population is not negative or exceeding type precision
         if (fPopulation < 0) {//validate that count is not negative or exceeds type precision
           if (strstr(Parser.GetWord(1), "-"))
-             gpPrint->PrintInputWarning("Error: Negative population in record %ld of max circle size file.\n", iRecNum);
+             gpPrint->PrintInputWarning("Error: Negative population in record %ld of %s.\n",
+                                        iRecNum, gpPrint->GetImpliedFileTypeString().c_str());
           else
-             gpPrint->PrintInputWarning("Error: Population '%s' exceeds maximum value of %i in record %ld of max circle size file.\n",
-                                        Parser.GetWord(1), std::numeric_limits<float>::max(), iRecNum);
+             gpPrint->PrintInputWarning("Error: Population '%s' exceeds maximum value of %i in record %ld of %s.\n",
+                                        Parser.GetWord(1), std::numeric_limits<float>::max(),
+                                        iRecNum, gpPrint->GetImpliedFileTypeString().c_str());
            bValid = false;
            continue;
         }
@@ -691,7 +707,8 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
     // total population can not be zero
     if (m_nTotalMaxCirclePopulation == 0) {
       bValid = false;
-      gpPrint->PrintWarningLine("Error: Total population for max circle size file can not be zero.\n");
+      gpPrint->SatScanPrintWarning("Error: Total population for %s is zero.\n",
+                                   gpPrint->GetImpliedFileTypeString().c_str());
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -699,7 +716,7 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
       gpPrint->PrintWarningLine("Please see 'Special Max Circle Size File' in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->PrintWarningLine("Error: Max circle size file contains no data.\n");
+      gpPrint->SatScanPrintWarning("Error: %s contains no data.\n", gpPrint->GetImpliedFileTypeString().c_str());
       bValid = false;
     }
   }

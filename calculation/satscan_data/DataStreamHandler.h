@@ -20,12 +20,12 @@ class DataStreamHandler {
     std::vector<DataStream>             gvDataStreams;          /** collection of data streams */
 
     virtual void                        AllocateCaseStructures(unsigned int iStream);
-    bool                                ConvertCountDateToJulian(StringParser & Parser, const char * szDescription, Julian & JulianDate);
+    bool                                ConvertCountDateToJulian(StringParser & Parser, Julian & JulianDate);
     AbtractDataStreamGateway          * GetNewDataGatewayObject() const;
-    bool                                ParseCountLine(PopulationData & thePopulation, const char*  szDescription, StringParser & Parser,
+    bool                                ParseCountLine(PopulationData & thePopulation, StringParser & Parser,
                                                        tract_t& tid, count_t& nCount,
                                                        Julian& nDate, int& iCategoryIndex);
-    bool                                ParseCovariates(PopulationData & thePopulation, int& iCategoryIndex, int iCovariatesOffset, const char*  szDescription, StringParser & Parser);
+    bool                                ParseCovariates(PopulationData & thePopulation, int& iCategoryIndex, int iCovariatesOffset, StringParser & Parser);
     virtual bool                        ReadCaseFile(size_t tStream);
     virtual bool                        ReadCounts(size_t tStream, FILE * fp, const char* szDescription);
     void                                SetCaseArrays(count_t**  pCases, count_t** pCases_NC, count_t*  pCasesByTimeInt);

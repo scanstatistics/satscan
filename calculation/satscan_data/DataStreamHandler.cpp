@@ -74,7 +74,7 @@ void DataStreamHandler::AllocateSimulationCases() {
     YY/MM, YY ) which is the complete set of valid formats that SaTScan currently
     supports. Since we accumulate errors/warnings when reading input files,
     indication of a bad date is returned and any messages sent to print direction. */
-bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, const char * szDescription, Julian & JulianDate) {
+bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, Julian & JulianDate) {
   bool          bValidDate=true;
   int           iYear, iMonth=1, iDay=1, iPrecision=1;
   const char  * ptr;
@@ -85,7 +85,8 @@ bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, const ch
   else {
     //read and validate date
     if (!Parser.GetWord(2)) {
-      gpPrint->PrintInputWarning("Error: Record %ld in %s file does not contain a date.\n", Parser.GetReadCount(), szDescription);
+      gpPrint->PrintInputWarning("Error: Record %ld in %s does not contain a date.\n",
+                                 Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
       return false;
     }
     //determine precision - must be as accurate as time interval units
@@ -95,8 +96,8 @@ bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, const ch
          ptr = strchr(++ptr, '/');
     }
     if (iPrecision < gParameters.GetTimeIntervalUnitsType()) {
-      gpPrint->PrintInputWarning("Error: Date '%s' of record %ld in %s file must be precise to %s, as specified by time interval units.\n",
-                                 Parser.GetWord(2), Parser.GetReadCount(), szDescription,
+      gpPrint->PrintInputWarning("Error: Date '%s' of record %ld in %s must be precise to %s, as specified by time interval units.\n",
+                                 Parser.GetWord(2), Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str(),
                                  gParameters.GetDatePrecisionAsString(gParameters.GetTimeIntervalUnitsType()));
       return false;
     }
@@ -108,22 +109,26 @@ bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, const ch
       default    : bValidDate = false;
     };
     if (! bValidDate)
-      gpPrint->PrintInputWarning("Error: Invalid date '%s' in %s file, record %ld.\n", Parser.GetWord(2), szDescription, Parser.GetReadCount());
+      gpPrint->PrintInputWarning("Error: Invalid date '%s' in %s, record %ld.\n",
+                                 Parser.GetWord(2), gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
     else {
       //Ensure four digit years
       iYear = Ensure4DigitYear(iYear, gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
       switch (iYear) {
         case -1 : gpPrint->PrintInputWarning("Error: Due to study period greater than 100 years, unable\n"
-                                             "       to convert two digit year '%d' in %s file, record %ld.\n"
-                                             "       Please use four digit years.\n", iYear, szDescription, Parser.GetReadCount());
+                                             "       to convert two digit year '%d' in %s, record %ld.\n"
+                                             "       Please use four digit years.\n", iYear,
+                                             gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
                   return false;
-        case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in %s file, record %ld.\n", iYear, szDescription, Parser.GetReadCount());
+        case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in %s, record %ld.\n", iYear,
+                                             gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
                   return false;
       }
       //validate that date is between study period start and end dates
       JulianDate = MDYToJulian(iMonth, iDay, iYear);
       if (!(gData.GetStudyPeriodStartDate() <= JulianDate && JulianDate <= gData.GetStudyPeriodEndDate())) {
-        gpPrint->PrintInputWarning("Error: Date '%s' in record %ld of %s file is not\n", Parser.GetWord(2), Parser.GetReadCount(), szDescription);
+        gpPrint->PrintInputWarning("Error: Date '%s' in record %ld of %s is not\n", Parser.GetWord(2),
+                                   Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
         gpPrint->PrintInputWarning("       within study period beginning %s and ending %s.\n",
                                    gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
         return false;
@@ -158,8 +163,8 @@ AbtractDataStreamGateway * DataStreamHandler::GetNewDataGatewayObject() const {
 /** Attempts to parses passed string into tract identifier, count,
     and based upon settings, date and covariate information.
     Returns whether parse completed without errors. */
-bool DataStreamHandler::ParseCountLine(PopulationData & thePopulation, const char*  szDescription,
-                                       StringParser & Parser, tract_t& tid, count_t& nCount,
+bool DataStreamHandler::ParseCountLine(PopulationData & thePopulation, StringParser & Parser,
+                                       tract_t& tid, count_t& nCount,
                                        Julian& nDate, int& iCategoryIndex) {
                                        
   int                          iCategoryOffSet, iScanPrecision;
@@ -168,34 +173,40 @@ bool DataStreamHandler::ParseCountLine(PopulationData & thePopulation, const cha
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
     if ((tid = gData.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
-      gpPrint->PrintInputWarning("Error: Unknown location id in %s file, record %ld.\n", szDescription, Parser.GetReadCount());
+      gpPrint->PrintInputWarning("Error: Unknown location id in %s, record %ld.\n",
+                                 gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
       gpPrint->PrintInputWarning("       Location '%s' was not specified in the coordinates file.\n", Parser.GetWord(0));
       return false;
     }
     //read and validate count
     if (Parser.GetWord(1) != 0) {
       if (!sscanf(Parser.GetWord(1), "%ld", &nCount)) {
-       gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file could not be read as count.\n", Parser.GetWord(1), Parser.GetReadCount(), szDescription);
+       gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s could not be read as count.\n",
+                                  Parser.GetWord(1), Parser.GetReadCount(),
+                                  gpPrint->GetImpliedFileTypeString().c_str());
        gpPrint->PrintInputWarning("       Count must be an integer.\n");
        return false;
       }
     }
     else {
-      gpPrint->PrintInputWarning("Error: Record %ld in %s file does not contain %s count.\n", Parser.GetReadCount(), szDescription, szDescription);
+      gpPrint->PrintInputWarning("Error: Record %ld in %s does not contain count.\n",
+                                 Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
       return false;
     }
     if (nCount < 0) {//validate that count is not negative or exceeds type precision
       if (strstr(Parser.GetWord(1), "-"))
-        gpPrint->PrintInputWarning("Error: Negative count in record %ld of %s file.\n", Parser.GetReadCount(), szDescription);
+        gpPrint->PrintInputWarning("Error: Negative count in record %ld of %s.\n",
+                                   Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
       else
-        gpPrint->PrintInputWarning("Error: Count '%s' exceeds maximum value of %ld in record %ld of %s file.\n",
-                                   Parser.GetWord(1), std::numeric_limits<count_t>::max(), Parser.GetReadCount(), szDescription);
+        gpPrint->PrintInputWarning("Error: Count '%s' exceeds maximum value of %ld in record %ld of %s.\n",
+                                   Parser.GetWord(1), std::numeric_limits<count_t>::max(), Parser.GetReadCount(),
+                                   gpPrint->GetImpliedFileTypeString().c_str());
       return false;
     }
-    if (!ConvertCountDateToJulian(Parser, szDescription, nDate))
+    if (!ConvertCountDateToJulian(Parser, nDate))
       return false;
     iCategoryOffSet = gParameters.GetPrecisionOfTimesType() == NONE ? 2 : 3;
-    if (! ParseCovariates(thePopulation, iCategoryIndex, iCategoryOffSet, szDescription, Parser))
+    if (! ParseCovariates(thePopulation, iCategoryIndex, iCategoryOffSet, Parser))
         return false;
   }
   catch (ZdException &x) {
@@ -206,7 +217,7 @@ bool DataStreamHandler::ParseCountLine(PopulationData & thePopulation, const cha
 }
 
 /** Parses count file data line to determine category index given covariates contained in line.*/
-bool DataStreamHandler::ParseCovariates(PopulationData & thePopulation, int& iCategoryIndex, int iCovariatesOffset, const char*  szDescription, StringParser & Parser) {
+bool DataStreamHandler::ParseCovariates(PopulationData & thePopulation, int& iCategoryIndex, int iCovariatesOffset, StringParser & Parser) {
   int                          iNumCovariatesScanned=0;
   std::vector<std::string>     vCategoryCovariates;
   const char                 * pCovariate;
@@ -219,14 +230,16 @@ bool DataStreamHandler::ParseCovariates(PopulationData & thePopulation, int& iCa
            iNumCovariatesScanned++;
       }
       if (iNumCovariatesScanned != thePopulation.GetNumPopulationCategoryCovariates()) {
-        gpPrint->PrintInputWarning("Error: Record %ld of case file contains %d covariate%s but the population file\n",
-                                   Parser.GetReadCount(), iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"));
+        gpPrint->PrintInputWarning("Error: Record %ld of %s contains %d covariate%s but the population file\n",
+                                   Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str(),
+                                   iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"));
         gpPrint->PrintInputWarning("       defined the number of covariates as %d.\n", thePopulation.GetNumPopulationCategoryCovariates());
         return false;
       }
       //category should already exist
       if ((iCategoryIndex = thePopulation.GetPopulationCategoryIndex(vCategoryCovariates)) == -1) {
-        gpPrint->PrintInputWarning("Error: Record %ld of case file refers to a population category that\n", Parser.GetReadCount());
+        gpPrint->PrintInputWarning("Error: Record %ld of %s refers to a population category that\n",
+                                   Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
         gpPrint->PrintInputWarning("       does not match an existing category as read from population file.");
         return false;
       }
@@ -238,7 +251,7 @@ bool DataStreamHandler::ParseCovariates(PopulationData & thePopulation, int& iCa
     }
     else if (gParameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION) {
         //First category created sets precedence as to how many covariates remaining records must have.
-        if ((iCategoryIndex = thePopulation.MakePopulationCategory(szDescription, Parser, iCovariatesOffset, *gpPrint)) == -1)
+        if ((iCategoryIndex = thePopulation.MakePopulationCategory(Parser, iCovariatesOffset, *gpPrint)) == -1)
           return false;
     }
     else
@@ -260,13 +273,12 @@ bool DataStreamHandler::ReadCaseFile(size_t tStream) {
   FILE        * fp=0;
 
   try {
-    gpPrint->SatScanPrintf("Reading the case file\n");
     if ((fp = fopen(gParameters.GetCaseFileName(tStream + 1).c_str(), "r")) == NULL) {
       gpPrint->SatScanPrintWarning("Error: Could not open case file:\n'%s'.\n",
                                    gParameters.GetCaseFileName(tStream + 1).c_str());
       return false;
     }                                                                  
-    gpPrint->SetImpliedInputFileType(BasePrint::CASEFILE);
+    gpPrint->SetImpliedInputFileType(BasePrint::CASEFILE, (GetNumStreams() == 1 ? 0 : tStream + 1));
     AllocateCaseStructures(tStream);
     bValid = ReadCounts(tStream, fp, "case");
     fclose(fp); fp=0;
@@ -288,7 +300,7 @@ bool DataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDesc
   bool                                  bCaseFile, bValid=true, bEmpty=true;
   Julian                                Date;
   tract_t                               TractIndex;
-  StringParser                          Parser(gpPrint->GetImpliedInputFileType());
+  StringParser                          Parser(*gpPrint);
   std::string                           sBuffer;
   count_t                               Count, ** pCounts;
 
@@ -302,7 +314,7 @@ bool DataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDesc
     while (Parser.ReadString(fp)) {
          if (Parser.HasWords()) {
            bEmpty = false;
-           if (ParseCountLine(thisStream.gPopulation, szDescription, Parser, TractIndex, Count, Date, iCategoryIndex)) {
+           if (ParseCountLine(thisStream.gPopulation, Parser, TractIndex, Count, Date, iCategoryIndex)) {
              //cumulatively add count to time by location structure
              pCounts[0][TractIndex] += Count;
              if (pCounts[0][TractIndex] < 0)
@@ -326,7 +338,7 @@ bool DataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDesc
       gpPrint->SatScanPrintWarning("Please see '%s file format' in the user guide for help.\n", szDescription);
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->SatScanPrintWarning("Error: %s file does not contain data.\n", szDescription);
+      gpPrint->SatScanPrintWarning("Error: %s file does not contain data.\n", gpPrint->GetImpliedFileTypeString().c_str());
       bValid = false;
     }
   }
@@ -369,7 +381,7 @@ void DataStreamHandler::SetPurelyTemporalSimulationData() {
 void DataStreamHandler::Setup() {
   try {
     for (unsigned int i=0; i < gParameters.GetNumDataStreams(); ++i)
-      gvDataStreams.push_back(DataStream(gData.GetNumTimeIntervals(), gData.GetNumTracts()));
+      gvDataStreams.push_back(DataStream(gData.GetNumTimeIntervals(), gData.GetNumTracts(), i + 1));
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()","DataStreamHandler");

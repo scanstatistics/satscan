@@ -685,7 +685,7 @@ double PopulationData::GetRiskAdjustedPopulation(measure_t & dMeanPopulation, tr
 }
 
 /** Creates new population category and returns category index. */
-int PopulationData::MakePopulationCategory(const char* szDescription, StringParser & Parser, int iScanOffset, BasePrint & PrintDirection) {
+int PopulationData::MakePopulationCategory(StringParser & Parser, int iScanOffset, BasePrint & PrintDirection) {
   int                                           iCategoryIndex, iNumCovariatesScanned=0;
   std::vector<int>                              vPopulationCategory;
   const char                                  * pCovariate;
@@ -721,8 +721,8 @@ int PopulationData::MakePopulationCategory(const char* szDescription, StringPars
     gvCategoryControlsCount.resize(1, 0);
   }
   else if (iNumCovariatesScanned != giNumberCovariates){
-    PrintDirection.PrintInputWarning("Error: Record %d of %s file contains %d covariate%s but expecting %d covariate%s.",
-                                     Parser.GetReadCount(), szDescription,
+    PrintDirection.PrintInputWarning("Error: Record %d of %s contains %d covariate%s but expecting %d covariate%s.",
+                                     Parser.GetReadCount(), PrintDirection.GetImpliedFileTypeString().c_str(),
                                      iNumCovariatesScanned,(iNumCovariatesScanned == 1 ? "" : "s"),
                                      giNumberCovariates, (giNumberCovariates == 1 ? "" : "s"));
     iCategoryIndex = -1;
