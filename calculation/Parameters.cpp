@@ -561,7 +561,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
 
       fprintf(fp, "  Time Aggregation Length : %i\n\n", glTimeAggregationLength);
 
-      fprintf(fp, "  Adjustment for Time Trend : ");
+      fprintf(fp, "  Temporal Adjustment : ");
       switch (geTimeTrendAdjustType) {
          case NOTADJUSTED :
            fprintf(fp, "None\n"); break;
@@ -2873,7 +2873,8 @@ void CParameters::SetSourceFileName(const char * sParametersSourceFileName) {
   try {
     if (! sParametersSourceFileName)
       ZdGenerateException("Null pointer.", "SetSourceFileName()");
-    gsParametersSourceFileName = sParametersSourceFileName;
+    //Use ZdFileName class to ensure that a relative path is expanded to absolute path.  
+    gsParametersSourceFileName = ZdFileName(sParametersSourceFileName).GetFullPath();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetSourceFileName()", "CParameters");
@@ -3080,16 +3081,15 @@ bool CParameters::ValidateDateParameters(BasePrint& PrintDirection) const {
       StudyPeriodEndDate = CharToJulian(gsStudyPeriodEndDate.c_str());
       if (StudyPeriodStartDate > StudyPeriodEndDate) {
         bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: The study period start date '%s' must occur on or before the study period end date '%s'.\n",
-                                           gsStudyPeriodStartDate.c_str(), gsStudyPeriodEndDate.c_str());
+        PrintDirection.SatScanPrintWarning("Error: The study period start date occurs after the end date.\n");
       }
       if (bValid && GetIsProspectiveAnalysis() && bProspectiveDateValid) {
         //validate prospective start date
         ProspectiveStartDate = CharToJulian(gsProspectiveStartDate.c_str());
         if (ProspectiveStartDate < StudyPeriodStartDate || ProspectiveStartDate > StudyPeriodEndDate) {
           bValid = false;
-          PrintDirection.SatScanPrintWarning("Error: The prospective analyses start date '%s' does not occur within ", gsProspectiveStartDate.c_str());
-          PrintDirection.SatScanPrintWarning("the specified study period '%s' to '%s'.\n", gsStudyPeriodStartDate.c_str(),gsStudyPeriodEndDate.c_str());
+          PrintDirection.SatScanPrintWarning("Error: The start date of prospective surveillance does not occur within\n"
+                                             "       the study period.\n");
         }
       }
     }
@@ -3127,7 +3127,7 @@ bool CParameters::ValidateStudyPeriodEndDate(BasePrint& PrintDirection) const {
     }
     //validate date
     if (!IsDateValid(nMonth, nDay, nYear)) {
-      PrintDirection.SatScanPrintWarning("Error: The study period end date, '%s', is not valid.\n", gsStudyPeriodEndDate.c_str());
+      PrintDirection.SatScanPrintWarning("Error: The study period end date, '%s', is not a valid date.\n", gsStudyPeriodEndDate.c_str());
       return false;
     }
     //validate against precision of times
@@ -3357,18 +3357,33 @@ bool CParameters::ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) 
     if (geMaxTemporalClusterSizeType == PERCENTAGETYPE) {
       //validate for maximum specified as percentage of study period
       if (gfMaxTemporalClusterSize <= 0) {
-        PrintDirection.SatScanPrintWarning("Error: The maximum temporal cluster size of '%2g' is invalid.\n"
+        PrintDirection.SatScanPrintWarning("Error: The maximum temporal cluster size of '%g' is invalid.\n"
                                            "       Specifying the maximum as a percentage of the study period\n"
                                            "       requires the value to be a decimal number that is greater than zero.\n",
                                            gfMaxTemporalClusterSize);
         return false;
       }
       //check maximum temporal cluster size(as percentage of population) is less than maximum for given probabilty model
-      if (geMaxTemporalClusterSizeType > (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90)) {
+      if (gfMaxTemporalClusterSize > (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90)) {
         PrintDirection.SatScanPrintWarning("Error: For the %s model, the maximum temporal cluster size as a percent\n"
-                                           "       of the study period is %d percent.",
+                                           "       of the study period is %d percent.\n",
                                            GetProbabiltyModelTypeAsString(geProbabiltyModelType),
                                            (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90));
+        return false;
+      }
+      //validate that the time aggregation length agrees with the study period and maximum temporal cluster size
+      dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(CharToJulian(gsStudyPeriodStartDate.c_str()),
+                                                                      CharToJulian(gsStudyPeriodEndDate.c_str()),
+                                                                      geTimeAggregationUnitsType, 1));
+      dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * gfMaxTemporalClusterSize/100.0);
+      if (dMaxTemporalLengthInUnits < 1) {
+        GetDatePrecisionAsString(geTimeAggregationUnitsType, sPrecisionString, false, false);
+        PrintDirection.SatScanPrintWarning("Error: A maximum temporal cluster size as %g percent of a %d %s study period\n"
+                                           "       results in a maximum temporal cluster size that is less than one time\n"
+                                           "       aggregation %s.\n",
+                                           gfMaxTemporalClusterSize,
+                                           static_cast<int>(dStudyPeriodLengthInUnits),
+                                           sPrecisionString.GetCString(), sPrecisionString.GetCString());
         return false;
       }
     }
@@ -3389,7 +3404,7 @@ bool CParameters::ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) 
       if (gfMaxTemporalClusterSize > dMaxTemporalLengthInUnits) {
         PrintDirection.SatScanPrintWarning("Error: A maximum temporal cluster size of %d %s%s exceeds\n"
                                            "       %d percent of a %d %s study period.\n"
-                                           "       Note that current settings limit the maximum to %d %s%s.",
+                                           "       Note that current settings limit the maximum to %d %s%s.\n",
                                            static_cast<int>(gfMaxTemporalClusterSize), sPrecisionString.GetCString(),
                                            (gfMaxTemporalClusterSize == 1 ? "" : "s"),
                                            (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90),
@@ -3436,13 +3451,15 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
       //validate dates
       if (! ValidateDateParameters(PrintDirection))
         bValid = false;
+      else {
+        //Validate temporal options only if date parameters are valid. Some
+        //temporal parameters can not be correctly validated if dates are not valid.
+        if (! ValidateTemporalParameters(PrintDirection))
+           bValid = false;
+      }
 
       //validate spatial options
       if (! ValidateSpatialParameters(PrintDirection))
-        bValid = false;
-
-      //validate temporal options
-      if (! ValidateTemporalParameters(PrintDirection))
         bValid = false;
 
       //validate number of replications requested
@@ -3903,7 +3920,7 @@ bool CParameters::ValidateStudyPeriodStartDate(BasePrint& PrintDirection) const 
     }
     //validate date
     if (!IsDateValid(nMonth, nDay, nYear)) {
-      PrintDirection.SatScanPrintWarning("Error: The study period start date, '%s', is not valid.\n", gsStudyPeriodStartDate.c_str());
+      PrintDirection.SatScanPrintWarning("Error: The study period start date, '%s', is not valid date.\n", gsStudyPeriodStartDate.c_str());
       return false;
     }
     //validate against precision of times
@@ -4010,8 +4027,8 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
         }
         if (geTimeTrendAdjustType == STRATIFIED_RANDOMIZATION && (geAnalysisType == PURELYTEMPORAL ||geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
           bValid = false;
-          PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting for time trend adjustment.\n");
-          PrintDirection.SatScanPrintWarning("       You may not use stratified randomization by time intervals with a purely temporal analysis.\n");
+          PrintDirection.SatScanPrintWarning("Error: Temporal adjustment by stratified randomization is not valid\n");
+          PrintDirection.SatScanPrintWarning("       for purely temporal analyses.\n");
         }
         if (geTimeTrendAdjustType == LOGLINEAR_PERC && -100.0 >= gdTimeTrendAdjustPercentage) {
           bValid = false;
