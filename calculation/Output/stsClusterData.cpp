@@ -316,7 +316,7 @@ void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, Z
      if (pCluster.m_nClusterType == PURELYTEMPORAL) {
        sLatitude = "n/a";
        sLongitude = "n/a";
-       for (i=2; i < pData.m_pParameters->GetDimensionsOfData(); ++i)
+       for (i=2; i < pData.GetParameters().GetDimensionsOfData(); ++i)
           vAdditCoords.push_back("n/a");
        sRadius = "n/a";
      }
@@ -324,7 +324,7 @@ void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, Z
        pData.GetGInfo()->giGetCoords(pCluster.m_Center, &pCoords);
        pData.GetTInfo()->tiGetCoords(pData.GetNeighbor(pCluster.m_iEllipseOffset, pCluster.m_Center, pCluster.m_nTracts), &pCoords2);
        switch (giCoordType) {
-         case CARTESIAN : for (i=0; i < pData.m_pParameters->GetDimensionsOfData(); ++i) {
+         case CARTESIAN : for (i=0; i < pData.GetParameters().GetDimensionsOfData(); ++i) {
                              if (i == 0)
                                sLatitude.printf("%12.2f", pCoords[i]);
                              else if (i == 1)
@@ -367,13 +367,13 @@ void stsClusterData::SetEllipseString(ZdString& sAngle, ZdString& sShape, const 
          sShape = "n/a";
       }
       else {
-         if(pCluster.m_iEllipseOffset == 0 && pData.m_nNumEllipsoids > 0) {
+         if(pCluster.m_iEllipseOffset == 0 && pData.GetParameters().GetNumRequestedEllipses() > 0) {
             sShape = "1.000";
             sAngle = "0.000";
          }
          else {
-            sprintf(sAngleBuffer, "%-8.3f", pCluster.ConvertAngleToDegrees(pData.mdE_Angles[pCluster.m_iEllipseOffset-1]));
-            sprintf(sShapeBuffer, "%-8.3f", pData.mdE_Shapes[pCluster.m_iEllipseOffset-1]);
+            sprintf(sAngleBuffer, "%-8.3f", pCluster.ConvertAngleToDegrees(pData.GetAnglesArray()[pCluster.m_iEllipseOffset-1]));
+            sprintf(sShapeBuffer, "%-8.3f", pData.GetShapesArray()[pCluster.m_iEllipseOffset-1]);
             sShape = sShapeBuffer;
             sAngle = sAngleBuffer;
          }
@@ -394,15 +394,15 @@ void stsClusterData::SetStartAndEndDates(ZdString& sStartDate, ZdString& sEndDat
    char       sStart[64], sEnd[64];
 
    try {
-      if (pData.m_pParameters->GetAnalysisType() != PURELYSPATIAL) {
+      if (pData.GetParameters().GetAnalysisType() != PURELYSPATIAL) {
          JulianToChar(sStart, pCluster.m_nStartDate);
          JulianToChar(sEnd, pCluster.m_nEndDate);
          sStartDate = sStart;
          sEndDate = sEnd;
       }
       else {
-         sStartDate = pData.m_pParameters->GetStudyPeriodStartDate().c_str();
-         sEndDate = pData.m_pParameters->GetStudyPeriodEndDate().c_str();
+         sStartDate = pData.GetParameters().GetStudyPeriodStartDate().c_str();
+         sEndDate = pData.GetParameters().GetStudyPeriodEndDate().c_str();
       }
    }
    catch (ZdException &x) {

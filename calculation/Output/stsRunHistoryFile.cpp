@@ -359,7 +359,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       pSection->Acquire();
 #endif      
 
-      const CParameters & params(*(pAnalysis.GetSatScanData()->m_pParameters));
+      const CParameters & params(pAnalysis.GetSatScanData()->GetParameters());
 
       // NOTE: I'm going to document the heck out of this section for two reasons :
       // 1) in case they change the run specs on us at any time
@@ -412,9 +412,9 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       GetAnalysisTypeString(sTempValue, params.GetAnalysisType());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ANALYSIS_TYPE_FIELD));
 
-      SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->m_nTotalCases, GetFieldNumber(gvFields, NUM_CASES_FIELD));   // total number of cases field
-      SetDoubleField(*pRecord, pAnalysis.GetSatScanData()->m_nTotalPop, GetFieldNumber(gvFields, TOTAL_POP_FIELD));  // total population field
-      SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->m_nTracts, GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));     // number of geographic areas field
+      SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->GetNumCases(), GetFieldNumber(gvFields, NUM_CASES_FIELD));   // total number of cases field
+      SetDoubleField(*pRecord, pAnalysis.GetSatScanData()->GetTotalPopulationCount(), GetFieldNumber(gvFields, TOTAL_POP_FIELD));  // total population field
+      SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->GetNumTracts(), GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));     // number of geographic areas field
 
       // precision of case times field
       GetCasePrecisionString(sTempValue, params.GetPrecisionOfTimesType());

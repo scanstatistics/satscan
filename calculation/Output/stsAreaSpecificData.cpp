@@ -178,7 +178,7 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CS
    std::vector<std::string>             vIdentifiers;
 
    try {
-      theData.gpTInfo->tiGetTractIdentifiers(tTract, vIdentifiers);
+      theData.GetTInfo()->tiGetTractIdentifiers(tTract, vIdentifiers);
 
       // if more than one identifier for the tract then create a blank record for each
       if (vIdentifiers.size() > 1) {
