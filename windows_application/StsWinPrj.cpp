@@ -181,8 +181,9 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
           hReturn = ShellExecute(NULL, "open", sUpdateApplication.c_str(), sUpdateDataParameter.c_str(), NULL, SW_SHOWNORMAL);
           if ((int)hReturn <= 32) { // check that updater launched
             sError.printf("Update application was unable to launch (Error Code %d).\n\n"
-                          "Please send an email to the address referenced in the about box\n"
-                          "indicating this situation and the error code. SaTScan will now restart.", (int)hReturn);
+                          "Please send an email to the address referenced in the about box indicating this situation\n"
+                          "and the error code. Note that the latest release can be obtained at http://www.satscan.org/\n"
+                          "should this problem persist. SaTScan will now restart.", (int)hReturn);
             Application->MessageBox(sError.c_str(), "Update Failed!", MB_OK);
             // relaunch SaTScan
             ShellExecute(NULL, "open", Application->ExeName.c_str(), NULL, NULL, SW_SHOWNORMAL);
