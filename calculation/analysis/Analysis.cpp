@@ -1060,7 +1060,7 @@ bool CAnalysis::UpdateReport(const long lReportHistoryRunNumber) {
                 ((double)m_nPower_Y_Count)/giSimulationNumber);
       }
 
-      if (giSimulationNumber < m_pParameters->GetNumReplicationsRequested()) {
+      if (m_nClustersReported > 0 && giSimulationNumber < m_pParameters->GetNumReplicationsRequested()) {
         fprintf(fp, "\nNOTE: The optional sequential procedure was used to terminate the\n");
         fprintf(fp, "      simulations early for large p-values. This means that the\n");
         fprintf(fp, "      reported p-values are slightly conservative.\n");
