@@ -113,14 +113,23 @@ __published:	// IDE-managed Components
    TListBox *lstInputStreams;
    TButton *btnNewStream;
    TButton *btnRemoveStream;
-   TSpeedButton *SpeedButton1;
+   TSpeedButton *btnPopImport;
+   TSpeedButton *btnImportMaxCirclePopFile;
+   TSpeedButton *btnImportAdjustmentsFile;
+   TSpeedButton *btnControlImport;
+   TSpeedButton *btnCaseImport;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
+   void __fastcall btnImportAdjustmentsFileClick(TObject *Sender);
    void __fastcall btnBrowseMaxCirclePopFileClick(TObject *Sender);
+   void __fastcall btnImportMaxCirclePopFileClick(TObject *Sender);
    void __fastcall btnCaseBrowseClick(TObject *Sender) ;
+   void __fastcall btnCaseImportClick(TObject *Sender) ;
    void __fastcall btnControlBrowseClick(TObject *Sender) ;
+   void __fastcall btnControlImportClick(TObject *Sender) ;
    void __fastcall btnPopBrowseClick(TObject *Sender) ;
+   void __fastcall btnPopImportClick(TObject *Sender) ;
    void __fastcall btnShowAllClick(TObject *Sender);
    void __fastcall chkAdjustForEarlierAnalysesClick(TObject *Sender);
    void __fastcall chkAdjustForKnownRelativeRisksClick(TObject *Sender);
@@ -178,6 +187,7 @@ __published:	// IDE-managed Components
    void                     EnableInputFileEdits(bool bEnable);
    TimeTrendAdjustmentType  GetAdjustmentTimeTrendControlType() const;
    void                     Init();
+   void                     LaunchImporter(const char * sFileName, InputFileType eFileType) ;
    void                     ParseDate(const std::string& sDate, TEdit& Year, TEdit& Month, TEdit& Day, bool bStartRange);
    void                     RefreshTemporalRangesEnables();
    void                     SetDefaultsForAnalysisTabs();

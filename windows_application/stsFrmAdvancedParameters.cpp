@@ -40,6 +40,24 @@ void __fastcall TfrmAdvancedParameters::btnBrowseAdjustmentsFileClick(TObject *S
   }
 }
 //---------------------------------------------------------------------------
+/** event triggered when selects import button for adjustment for relative risks file */
+void __fastcall TfrmAdvancedParameters::btnImportAdjustmentsFileClick(TObject *Sender) {
+  InputFileType eType = AdjustmentsByRR;
+
+  try {
+    OpenDialog->FileName = "";
+    OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Adjustments files (*.adj)|*.adj|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog->FilterIndex = 0;
+    OpenDialog->Title = "Select Source Adjustments File";
+    if (OpenDialog->Execute())
+       LaunchImporter(OpenDialog->FileName.c_str(), eType);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("btnImportAdjustmentsFileClick()","TfrmAdvancedParameters");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
 /** event triggered when selects browse button for maximum circle population file */
 void __fastcall TfrmAdvancedParameters::btnBrowseMaxCirclePopFileClick(TObject *Sender) {
   try {
@@ -53,6 +71,23 @@ void __fastcall TfrmAdvancedParameters::btnBrowseMaxCirclePopFileClick(TObject *
   }
   catch (ZdException & x) {
     x.AddCallpath("btnBrowseMaxCirclePopFileClick()","TfrmAdvancedParameters");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
+/** event triggered when selects import button for maximum circle population file */
+void __fastcall TfrmAdvancedParameters::btnImportMaxCirclePopFileClick(TObject *Sender) {
+  InputFileType eType = MaxCirclePopulation;
+
+  try {
+    OpenDialog->FileName = "";
+    OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Max Circle Size files (*.max)|*.max|Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog->Title = "Select Source Max Circle Size File";
+    if (OpenDialog->Execute())
+       LaunchImporter(OpenDialog->FileName.c_str(), eType);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("btnImportMaxCirclePopFileClick()","TfrmAdvancedParameters");
     DisplayBasisException(this, x);
   }
 }
@@ -76,6 +111,23 @@ void __fastcall TfrmAdvancedParameters::btnCaseBrowseClick(TObject *Sender) {
   }
 }
 //---------------------------------------------------------------------------
+/** button click event for case file import    */
+void __fastcall TfrmAdvancedParameters::btnCaseImportClick(TObject *Sender) {
+  InputFileType eType = Case;
+
+  try {
+    OpenDialog->FileName =  "";
+    OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Case files (*.cas)|*.cas|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog->Title = "Select Source Case File";
+    if (OpenDialog->Execute())
+       LaunchImporter(OpenDialog->FileName.c_str(), eType);
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("btnCaseImportClick()", "TfrmAdvancedParameters");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
 /** button click event for control file browse
     - shows open dialog and sets appropriate control file interface controls */
 void __fastcall TfrmAdvancedParameters::btnControlBrowseClick(TObject *Sender) {
@@ -95,6 +147,23 @@ void __fastcall TfrmAdvancedParameters::btnControlBrowseClick(TObject *Sender) {
   }
 }
 //---------------------------------------------------------------------------
+/** button click event for case file import    */
+void __fastcall TfrmAdvancedParameters::btnControlImportClick(TObject *Sender) {
+  InputFileType eType = Control;
+
+  try {
+    OpenDialog->FileName =  "";
+    OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Text files (*.txt)|*.txt|Control files (*.ctl)|*.ctl|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog->Title = "Select Source Control File";
+    if (OpenDialog->Execute())
+       LaunchImporter(OpenDialog->FileName.c_str(), eType);
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("btnControlImportClick()", "TfrmAdvancedParameters");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
 /** button click event for population file browse
     - shows open dialog and sets appropriate population file interface controls */
 void __fastcall TfrmAdvancedParameters::btnPopBrowseClick(TObject *Sender) {
@@ -110,6 +179,23 @@ void __fastcall TfrmAdvancedParameters::btnPopBrowseClick(TObject *Sender) {
   }
   catch (ZdException & x) {
     x.AddCallpath("btnPopBrowseClick()", "TfrmAdvancedParameters");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
+/** button click event for case file import    */
+void __fastcall TfrmAdvancedParameters::btnPopImportClick(TObject *Sender) {
+  InputFileType eType = Population;
+
+  try {
+    OpenDialog->FileName =  "";
+    OpenDialog->Title = "Select Source Population File";
+    OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    if (OpenDialog->Execute())
+       LaunchImporter(OpenDialog->FileName.c_str(), eType);
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("btnPopImportClick()", "TfrmAdvancedParameters");
     DisplayBasisException(this, x);
   }
 }
@@ -413,10 +499,13 @@ void TfrmAdvancedParameters::EnableAdjustmentsGroup(bool bEnable) {
 void TfrmAdvancedParameters::EnableInputFileEdits(bool bEnable) {
    edtCaseFileName->Enabled = bEnable;
    btnCaseBrowse->Enabled = bEnable;
+   btnCaseImport->Enabled = bEnable;
    edtControlFileName->Enabled = bEnable;
    btnControlBrowse->Enabled = bEnable;
+   btnControlImport->Enabled = bEnable;
    edtPopFileName->Enabled = bEnable;
    btnPopBrowse->Enabled = bEnable;
+   btnPopImport->Enabled = bEnable;
 }
 //---------------------------------------------------------------------------
 //** enables or disables the New button on the Input tab
@@ -728,6 +817,35 @@ void TfrmAdvancedParameters::Init() {
   giCategory = 0;
   giStreamNum = 2;
 }
+//---------------------------------------------------------------------------
+/** Modally shows import dialog. */
+void TfrmAdvancedParameters::LaunchImporter(const char * sFileName, InputFileType eFileType) {
+  ZdString sNewFile = "";
+
+  try {
+    std::auto_ptr<TBDlgDataImporter> pDialog(new TBDlgDataImporter(this, sFileName, eFileType, (CoordinatesType)(gAnalysisSettings.rgpCoordinates->ItemIndex)));
+    if (pDialog->ShowModal() == mrOk) {
+       switch (eFileType) {  // set parameters
+          case Case                : edtCaseFileName->Text = pDialog->GetDestinationFilename(sNewFile);
+                                     break;
+          case Control             : edtControlFileName->Text = pDialog->GetDestinationFilename(sNewFile);
+                                     break;
+          case Population          : edtPopFileName->Text = pDialog->GetDestinationFilename(sNewFile);
+                                     break;
+          case MaxCirclePopulation : edtMaxCirclePopulationFilename->Text = pDialog->GetDestinationFilename(sNewFile);
+                                     break;
+          case AdjustmentsByRR     : SetAdjustmentsByRelativeRisksFile(pDialog->GetDestinationFilename(sNewFile));
+                                     break;
+          default                  : ZdGenerateException("Unknown file type index: \"%d\"","LaunchImporter()", eFileType);
+       };
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("LaunchImporter()", "TfrmAdvancedParameters");
+    throw;
+  }
+}
+
 //---------------------------------------------------------------------------
 // when user clicks on an input streams name, display the details in the edit
 // boxes above the list box
