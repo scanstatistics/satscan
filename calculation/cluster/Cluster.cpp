@@ -88,9 +88,9 @@ void CCluster::DisplayAnnualCaseInformation(FILE* fp, const CSaTScanData& DataHu
   if (DataHub.GetParameters().GetProbabiltyModelType() == POISSON) {
     sBuffer.printf("Annual cases / %.0f", DataHub.GetAnnualRatePop());
     PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
-    sBuffer.printf("%.1f", DataHub.GetAnnualRateAtStart(0) * GetRelativeRisk(DataHub.GetMeasureAdjustment(), 0));
+    sBuffer.printf("%.1f", DataHub.GetAnnualRateAtStart(0) * GetRelativeRisk(DataHub.GetMeasureAdjustment(0), 0));
     for (i=1; i < Streams.GetNumStreams(); ++i) {
-       sWork.printf(", %.1f", DataHub.GetAnnualRateAtStart(i) * GetRelativeRisk(DataHub.GetMeasureAdjustment(), i));
+       sWork.printf(", %.1f", DataHub.GetAnnualRateAtStart(i) * GetRelativeRisk(DataHub.GetMeasureAdjustment(i), i));
        sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
@@ -114,9 +114,9 @@ void CCluster::DisplayCaseInformation(FILE* fp, const CSaTScanData& DataHub, con
     //print expected cases label
     PrintFormat.PrintSectionLabel(fp, "Expected cases", false, true);
     //print expected cases
-    sBuffer.printf("%.2f", DataHub.GetMeasureAdjustment() * GetMeasure(0));
+    sBuffer.printf("%.2f", DataHub.GetMeasureAdjustment(0) * GetMeasure(0));
     for (i=1; i < Streams.GetNumStreams(); ++i) {
-       sWork.printf(", %.2f", DataHub.GetMeasureAdjustment() * GetMeasure(i));
+       sWork.printf(", %.2f", DataHub.GetMeasureAdjustment(i) * GetMeasure(i));
        sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
@@ -397,9 +397,9 @@ void CCluster::DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataHub, const 
   ZdString                  sBuffer, sWork;
 
   PrintFormat.PrintSectionLabel(fp, "Overall relative risk", false, true);
-  sBuffer.printf("%.3f", GetRelativeRisk(DataHub.GetMeasureAdjustment(), 0));
+  sBuffer.printf("%.3f", GetRelativeRisk(DataHub.GetMeasureAdjustment(0), 0));
   for (i=1; i < Streams.GetNumStreams(); ++i) {
-    sWork.printf(", %.3f", GetRelativeRisk(DataHub.GetMeasureAdjustment(), i));
+    sWork.printf(", %.3f", GetRelativeRisk(DataHub.GetMeasureAdjustment(i), i));
     sBuffer << sWork;
   }
   PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
@@ -435,13 +435,13 @@ const double CCluster::GetRelativeRisk(double nMeasureAdjustment, unsigned int i
 }
 
 /** Returns the relative risk for tract as defined by cluster. */
-double CCluster::GetRelativeRiskForTract(tract_t tTract, const CSaTScanData& DataHub) const {
+double CCluster::GetRelativeRiskForTract(tract_t tTract, const CSaTScanData& DataHub, unsigned int iStream) const {
   double        dRelativeRisk=0;
   count_t       tCaseCount;
   measure_t     tMeasure;
 
-  tCaseCount = GetCaseCountForTract(tTract, DataHub);
-  tMeasure = GetMeasureForTract(tTract, DataHub);
+  tCaseCount = GetCaseCountForTract(tTract, DataHub, iStream);
+  tMeasure = GetMeasureForTract(tTract, DataHub, iStream);
 
   if (tMeasure)
     dRelativeRisk = ((double)(tCaseCount))/tMeasure;
