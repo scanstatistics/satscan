@@ -7,7 +7,7 @@
 // The class is derived from the base class DBaseOutput which takes care of setting up
 // and writing out the dBase file. 
 
-#include "stsSaTScan.h"
+#include "SaTScan.h"
 #pragma hdrstop
 
 #include "stsClusterLevelDBF.h"

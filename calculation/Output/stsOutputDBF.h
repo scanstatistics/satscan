@@ -1,6 +1,8 @@
 #ifndef XDBASEOUTPUT_H
 #define XDBASEOUTPUT_H
 
+#include <cluster.h>
+
 class DBaseOutput {
    private:
       void	Init();

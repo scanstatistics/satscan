@@ -6,7 +6,7 @@
 // by the calculations in the SatScan program. This is a base class to be derived off
 // of for each necessary dBase output file.
 
-#include "stsSaTScan.h"
+#include "SaTScan.h"
 #pragma hdrstop
 
 #include <DBFFile.h>
@@ -87,8 +87,12 @@ void DBaseOutput::Setup(const ZdString& sFileName) {
          TXDFile File("c:\\AnalysisHistory.txd", ZDIO_OPEN_READ);
 
          // if there's records in the file
-         if(File.GotoLastRecord(pLastRecord))
-            pLastRecord->GetField(1, glRunNumber);
+         unsigned long ulNumRecords = File.GetNumRecords();
+         if(ulNumRecords) {
+            pLastRecord = File.GetNewRecord();
+            File.GotoRecord(ulNumRecords, pLastRecord);
+            glRunNumber = pLastRecord->GetLong((long)0);        // BUGBUG access violation AJV 9/8/2002
+         }
          delete pLastRecord; pLastRecord = 0;
          File.Close();
       }
