@@ -163,6 +163,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        CheckStudyPeriodDatesRange();
     void                        DefaultHiddenParameters();
     void                        EnableAdditionalOutFilesOptionsGroup(bool bRelativeRisks);
+    void                        EnableAdvancedButtons();
     void                        EnableAnalysisControlForModelType();
     void                        EnableDatesByTimeIntervalUnits();
     void                        EnableModelControlForAnalysisType();

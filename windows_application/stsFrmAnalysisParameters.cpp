@@ -418,7 +418,24 @@ void TfrmAnalysis::EnableAdditionalOutFilesOptionsGroup(bool bRelativeRisks) {
   chkRelativeRiskEstimatesAreaDBase->Enabled = bRelativeRisks;
   lblRelativeRiskEstimatesArea->Enabled = bRelativeRisks;
 }
-
+//---------------------------------------------------------------------------
+/** enables correct advanced settings button on Analysis and Output tabs */
+void TfrmAnalysis::EnableAdvancedButtons() {
+   // Analysis tab Advanced button
+   btnAdvanced1_No->Visible = false;
+   btnAdvanced1_Yes->Visible = false;
+   if (gpfrmAdvancedParameters->GetDefaultsSetForAnalysisOptions())
+      btnAdvanced1_No->Visible = true;
+   else
+      btnAdvanced1_Yes->Visible = true;
+   // Output tab Advanced button
+   btnAdvanced2_No->Visible = false;
+   btnAdvanced2_Yes->Visible = false;
+   if (gpfrmAdvancedParameters->GetDefaultsSetForOutputOptions())
+      btnAdvanced2_No->Visible = true;
+   else
+      btnAdvanced2_Yes->Visible = true;
+}
 //---------------------------------------------------------------------------
 /** enables analysis control based upon the setting in probability model control */
 void TfrmAnalysis::EnableAnalysisControlForModelType() {
@@ -1199,10 +1216,8 @@ void TfrmAnalysis::SetupInterface() {
     rdoUnitMonths->Checked = (gParameters.GetTimeIntervalUnitsType() == MONTH);
     rdoUnitDay->Checked = (gParameters.GetTimeIntervalUnitsType() == DAY);
     edtTimeIntervalLength->Text = gParameters.GetTimeIntervalLength();
-    //Scanning Window Tab   ***PAG now in Advanced Parameters
-    //Time Parameter Tab    ***PAG now in Advanced Parameters
     if (gParameters.GetProspectiveStartDate().length() > 0)
-      ParseDate(gParameters.GetProspectiveStartDate().c_str(), gpfrmAdvancedParameters->edtProspectiveStartDateYear, gpfrmAdvancedParameters->edtProspectiveStartDateMonth, gpfrmAdvancedParameters->edtProspectiveStartDateDay);
+       ParseDate(gParameters.GetProspectiveStartDate().c_str(), gpfrmAdvancedParameters->edtProspectiveStartDateYear, gpfrmAdvancedParameters->edtProspectiveStartDateMonth, gpfrmAdvancedParameters->edtProspectiveStartDateDay);
     gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked = gParameters.GetAdjustForEarlierAnalyses();
     //Output File Tab
     edtResultFile->Text = gParameters.GetOutputFileName().c_str();
@@ -1215,6 +1230,8 @@ void TfrmAnalysis::SetupInterface() {
     chkClustersInColumnFormatDBase->Checked = gParameters.GetOutputClusterLevelDBase();
     chkCensusAreasReportedClustersDBase->Checked = gParameters.GetOutputAreaSpecificDBase();
     EnableSettingsForAnalysisModelCombination();
+    // update the Advanced... buttons
+    EnableAdvancedButtons();
   }
   catch (ZdException & x) {
     x.AddCallpath("SetupInterface()", "TfrmAnalysis");
@@ -1234,18 +1251,7 @@ void TfrmAnalysis::ShowAdvancedFeaturesDialog() {
         bAnalysis = false;
      gpfrmAdvancedParameters->ShowDialog(0, bAnalysis);
      // PAG - update Advanced buttons if parameters were set
-     btnAdvanced1_No->Visible = false;
-     btnAdvanced1_Yes->Visible = false;
-     if (gpfrmAdvancedParameters->GetDefaultsSetForAnalysisOptions())
-        btnAdvanced1_No->Visible = true;
-     else
-        btnAdvanced1_Yes->Visible = true;
-     btnAdvanced2_No->Visible = false;
-     btnAdvanced2_Yes->Visible = false;
-     if (gpfrmAdvancedParameters->GetDefaultsSetForOutputOptions())
-        btnAdvanced2_No->Visible = true;
-     else
-        btnAdvanced2_Yes->Visible = true;
+     EnableAdvancedButtons();
    }
    catch (ZdException & x) {
      x.AddCallpath("ShowAdvancedFeatureDialog()", "TfrmAnalysis");
