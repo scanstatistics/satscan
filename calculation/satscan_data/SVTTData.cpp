@@ -6,9 +6,7 @@
 #include "PoissonModel.h"
 #include "BernoulliModel.h"
 #include "SpaceTimePermutationModel.h"
-#include "stsRelativeRisk.h"
-#include "stsASCIIFileWriter.h"
-#include "stsDBaseFileWriter.h"
+#include "LocationRiskEstimateWriter.h"
 
 /** class constructor */
 CSVTTData::CSVTTData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -109,12 +107,7 @@ void CSVTTData::DisplayMeasures(FILE* pFile) {
 // formats the information necessary in the relative risk output file and prints to the specified format
 void CSVTTData::DisplayRelativeRisksForEachTract() const {
   try {
-    RelativeRiskData  RelRiskData(gParameters);
-    RelRiskData.RecordRelativeRiskData(*this);
-    if (gParameters.GetOutputRelativeRisksAscii())
-      ASCIIFileWriter(RelRiskData, gPrint, gParameters);
-    if (gParameters.GetOutputRelativeRisksDBase())
-      DBaseFileWriter(RelRiskData, gPrint, gParameters);
+    LocationRiskEstimateWriter(gParameters).Write(*this);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayRelativeRisksForEachTract()","CSVTTData");

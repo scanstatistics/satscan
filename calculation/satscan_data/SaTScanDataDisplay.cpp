@@ -3,9 +3,7 @@
 #pragma hdrstop
 //---------------------------------------------------------------------------
 #include "SaTScanData.h"
-#include "stsRelativeRisk.h"
-#include "stsASCIIFileWriter.h"
-#include "stsDBaseFileWriter.h"
+#include "LocationRiskEstimateWriter.h"
 
 void CSaTScanData::DisplayCases(FILE* pFile) {
   int                   i, j;
@@ -193,12 +191,7 @@ void CSaTScanData::DisplaySummary2(FILE* fp) {
 // post: prints the relative risk data to the output file
 void CSaTScanData::DisplayRelativeRisksForEachTract() const {
   try {
-    RelativeRiskData RelRiskData(gParameters);
-    RelRiskData.RecordRelativeRiskData(*this);
-    if (gParameters.GetOutputRelativeRisksAscii())
-      ASCIIFileWriter(RelRiskData, gPrint, gParameters);
-    if (gParameters.GetOutputRelativeRisksDBase())
-      DBaseFileWriter(RelRiskData, gPrint, gParameters);
+    LocationRiskEstimateWriter(gParameters).Write(*this);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayRelativeRisksForEachTract()", "CSaTScanData");
