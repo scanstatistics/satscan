@@ -43,14 +43,6 @@ bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, Julian &
   DateStringParser::ParserStatus        eStatus;
   DatePrecisionType                     ePrecision;
 
-  //If parameter file was created with version 4 of SaTScan, use time interval
-  //units as specifier for date precision. This was the behavior in v4 but it
-  //was decided to revert to time precision units.
-  if (gParameters.GetCreationVersionMajor() == 4)
-    ePrecision = gParameters.GetTimeAggregationUnitsType();
-  else
-    ePrecision =  gParameters.GetPrecisionOfTimesType();
-
   //If parameters indicate that case data does not contain dates, don't try to
   //read a date, or validate that there isn't one (could be covariate), and set
   //Julian reference to study period start date.  
@@ -58,48 +50,59 @@ bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, Julian &
     JulianDate = gDataHub.GetStudyPeriodStartDate();
     return true;
   }
-  else {
-    //Parameter settings indicate that there should be a date in each case record.
-    if (!Parser.GetWord(COUNT_DATE_OFFSET)) {
-      gPrint.PrintInputWarning("Error: Record %ld in %s does not contain a date.\n",
-                                Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+
+  //If parameter file was created with version 4 of SaTScan, use time interval
+  //units as specifier for date precision. This was the behavior in v4 but it
+  //was decided to revert to time precision units. Note that for a purely spatial
+  //analysis, we have no way of knowing what the time precision should be; settings
+  //to YEAR is safe since it is permittable to have more precise dates.
+  if (gParameters.GetPrecisionOfTimesType() == NONE)
+    ePrecision = NONE;
+  else if (gParameters.GetCreationVersionMajor() == 4)
+      ePrecision = (gParameters.GetAnalysisType() == PURELYSPATIAL ? YEAR : gParameters.GetTimeAggregationUnitsType());
+  else
+    ePrecision =  gParameters.GetPrecisionOfTimesType();
+
+  //Parameter settings indicate that there should be a date in each case record.
+  if (!Parser.GetWord(COUNT_DATE_OFFSET)) {
+    gPrint.PrintInputWarning("Error: Record %ld in %s does not contain a date.\n",
+                              Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+    return false;
+  }
+  //Attempt to convert string into Julian equivalence.
+  eStatus = DateParser.ParseCountDateString(Parser.GetWord(COUNT_DATE_OFFSET), ePrecision,
+                                            gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodStartDate(), JulianDate);
+  switch (eStatus) {
+    case DateStringParser::VALID_DATE       : break;
+    case DateStringParser::AMBIGUOUS_YEAR   :
+      gPrint.PrintInputWarning("Error: Due to the study period being greater than 100 years, unable\n"
+                               "       to determine century for two digit year in %s, record %ld.\n"
+                               "       Please use four digit years.\n",
+                               gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
       return false;
-    }
-    //Attempt to convert string into Julian equivalence.
-    eStatus = DateParser.ParseCountDateString(Parser.GetWord(COUNT_DATE_OFFSET), ePrecision,
-                                              gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodStartDate(), JulianDate);
-    switch (eStatus) {
-      case DateStringParser::VALID_DATE       : break;
-      case DateStringParser::AMBIGUOUS_YEAR   :
-        gPrint.PrintInputWarning("Error: Due to the study period being greater than 100 years, unable\n"
-                                 "       to determine century for two digit year in %s, record %ld.\n"
-                                 "       Please use four digit years.\n",
-                                 gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
-        return false;
-      case DateStringParser::LESSER_PRECISION : {
-         ZdString sBuffer;
-         //Dates in the case/control files must be at least as precise as ePrecision units.
-         gPrint.PrintInputWarning("Error: The date '%s' of record %ld in the %s must be precise to %s,\n"
-                                  "       as specified by %s units.\n",
-                                  Parser.GetWord(COUNT_DATE_OFFSET), Parser.GetReadCount(),
-                                  gPrint.GetImpliedFileTypeString().c_str(),
-                                  GetDatePrecisionAsString(ePrecision, sBuffer, false, false),
-                                  (gParameters.GetCreationVersionMajor() == 4 ? "time interval" : "time precision"));
-        return false; }
-      case DateStringParser::INVALID_DATE     :
-      default                                 :
-        gPrint.PrintInputWarning("Error: Invalid date '%s' in the %s, record %ld.\n", Parser.GetWord(COUNT_DATE_OFFSET),
-                                 gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
-        return false;
-    };
-    //validate that date is between study period start and end dates
-    if (!(gDataHub.GetStudyPeriodStartDate() <= JulianDate && JulianDate <= gDataHub.GetStudyPeriodEndDate())) {
-      gPrint.PrintInputWarning("Error: The date '%s' in record %ld of the %s is not\n", Parser.GetWord(2),
-                               Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
-      gPrint.PrintInputWarning("       within the study period beginning %s and ending %s.\n",
-                               gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
+    case DateStringParser::LESSER_PRECISION : {
+       ZdString sBuffer;
+       //Dates in the case/control files must be at least as precise as ePrecision units.
+       gPrint.PrintInputWarning("Error: The date '%s' of record %ld in the %s must be precise to %s,\n"
+                                "       as specified by %s units.\n",
+                                Parser.GetWord(COUNT_DATE_OFFSET), Parser.GetReadCount(),
+                                gPrint.GetImpliedFileTypeString().c_str(),
+                                GetDatePrecisionAsString(ePrecision, sBuffer, false, false),
+                                (gParameters.GetCreationVersionMajor() == 4 ? "time interval" : "time precision"));
+      return false; }
+    case DateStringParser::INVALID_DATE     :
+    default                                 :
+      gPrint.PrintInputWarning("Error: Invalid date '%s' in the %s, record %ld.\n", Parser.GetWord(COUNT_DATE_OFFSET),
+                               gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
       return false;
-    }
+  };
+  //validate that date is between study period start and end dates
+  if (!(gDataHub.GetStudyPeriodStartDate() <= JulianDate && JulianDate <= gDataHub.GetStudyPeriodEndDate())) {
+    gPrint.PrintInputWarning("Error: The date '%s' in record %ld of the %s is not\n", Parser.GetWord(2),
+                             Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+    gPrint.PrintInputWarning("       within the study period beginning %s and ending %s.\n",
+                             gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
+    return false;
   }
   return true;
 }
