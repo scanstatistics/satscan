@@ -36,8 +36,8 @@ class CSaTScanData {
     CModel                                    * m_pModel;
     DataStreamHandler                         * gpDataStreams;
 
-    GInfo                                     * gpGInfo;
-    TractHandler                              * gpTInfo;
+    GInfo                                       gCentroidsHandler;
+    TractHandler                                gTractHandler;
     TwoDimensionArrayHandler<tract_t>         * gpNeighborCountHandler;
     ThreeDimensionArrayHandler<tract_t>       * gpSortedIntHandler;
     ThreeDimensionArrayHandler<unsigned short>* gpSortedUShortHandler;
@@ -116,7 +116,7 @@ class CSaTScanData {
     const double                              * GetAnglesArray() const {return mdE_Angles;}
     DataStreamHandler                         & GetDataStreamHandler() {return *gpDataStreams;}
     const DataStreamHandler                   & GetDataStreamHandler() const {return *gpDataStreams;}
-    inline const GInfo                        * GetGInfo() const { return gpGInfo;}
+    inline const GInfo                        * GetGInfo() const { return &gCentroidsHandler;}
     double                                      GetMaxCircleSize() {return m_nMaxCircleSize;}
     double                                      GetMeasureAdjustment(unsigned int iStream) const;
 
@@ -134,7 +134,7 @@ class CSaTScanData {
     Julian                                      GetStudyPeriodStartDate() const {return m_nStartDate;}
     int                                         GetTimeIntervalOfDate(Julian Date) const;
     const Julian                              * GetTimeIntervalStartTimes() const {return m_pIntervalStartTimes;}
-    inline const TractHandler                 * GetTInfo() const { return gpTInfo;}
+    inline const TractHandler                 * GetTInfo() const {return &gTractHandler;}
     double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}
     virtual void                                RandomizeData(RandomizerContainer_t& RandomizerContainer,
                                                               SimulationDataContainer_t& SimDataContainer,

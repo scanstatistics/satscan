@@ -32,8 +32,6 @@ CSaTScanData::~CSaTScanData() {
     delete [] mdE_Angles;
     delete [] mdE_Shapes;
     free(m_pIntervalStartTimes);
-    delete gpTInfo;
-    delete gpGInfo;
   }
   catch (...){}  
 }
@@ -117,7 +115,7 @@ bool CSaTScanData::AdjustMeasure(RealDataStream& thisStream, measure_t ** pNonCu
                            "       are cases in that interval.\n"
                            "       If the expected is zero, the number of cases must also be zero.\n",
                            "AdjustMeasure()",
-                           (Tract == -1 ? "All" : gpTInfo->tiGetTid(Tract, sId)),
+                           (Tract == -1 ? "All" : gTractHandler.tiGetTid(Tract, sId)),
                            JulianToString(sStart, StartDate).GetCString(),
                            JulianToString(sEnd, EndDate).GetCString());
        return false;
@@ -142,7 +140,7 @@ void CSaTScanData::AdjustNeighborCounts() {
       gpNeighborCountHandler->Set(0);
  
       //Recompute neighbors.
-      MakeNeighbors(gpTInfo, gpGInfo, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
+      MakeNeighbors(&gTractHandler, &gCentroidsHandler, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
                     (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0),
                     static_cast<tract_t>(m_nTotalTractsAtStart), m_nGridTracts,
                     (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpDataStreams->GetStream(0/*for now*/).GetMeasureArray()[0]),
@@ -322,7 +320,7 @@ void CSaTScanData::FindNeighbors(bool bSimulations) {
     //NOTE: The measure from first data stream is used when calculating neighbors,
     //      at least for the time being.
     if (m_pParameters->GetIsSequentialScanning())
-        MakeNeighbors(gpTInfo, gpGInfo, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
+        MakeNeighbors(&gTractHandler, &gCentroidsHandler, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
                       (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0), m_nTracts, m_nGridTracts,
                       (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpDataStreams->GetStream(0).GetMeasureArray()[0]),
                       dMaxCircleSize, gpDataStreams->GetStream(0).GetTotalMeasure(),
@@ -330,7 +328,7 @@ void CSaTScanData::FindNeighbors(bool bSimulations) {
                       m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
                       m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
     else
-        MakeNeighbors(gpTInfo, gpGInfo, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
+        MakeNeighbors(&gTractHandler, &gCentroidsHandler, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
                       (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0), m_nTracts, m_nGridTracts,
                       (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpDataStreams->GetStream(0).GetMeasureArray()[0]),
                       dMaxCircleSize, dMaxCircleSize, gpNeighborCountHandler->GetArray(),
@@ -393,8 +391,6 @@ int CSaTScanData::GetTimeIntervalOfDate(Julian Date) const {
 }
 
 void CSaTScanData::Init() {
-  gpTInfo = 0;
-  gpGInfo = 0;
   m_pModel = 0;
   gpDataStreams = 0;
   gpNeighborCountHandler=0;
@@ -474,7 +470,7 @@ void CSaTScanData::ReadDataFromFiles() {
     };
     if (!bReadSuccess)
       SSGenerateException("\nProblem encountered reading in data.", "ReadDataFromFiles");
-    gpTInfo->tiConcaticateDuplicateTractIdentifiers();
+    gTractHandler.tiConcaticateDuplicateTractIdentifiers();
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadDataFromFiles()", "CSaTScanData");
@@ -889,8 +885,6 @@ void CSaTScanData::Setup(const CParameters* pParameters, BasePrint *pPrintDirect
     gpPrint = pPrintDirection;
     m_pParameters = pParameters;
 
-    gpTInfo = new TractHandler(*pPrintDirection); 
-    gpGInfo = new GInfo();
     //SetProbabilityModel();
     //For now, compute the angle and store the angle and shape
     //for each ellipsoid.  Maybe transfer info to a different location in the
@@ -908,8 +902,6 @@ void CSaTScanData::Setup(const CParameters* pParameters, BasePrint *pPrintDirect
     }
   }
   catch (ZdException &x) {
-    delete gpTInfo;
-    delete gpGInfo;
     delete mdE_Angles;
     delete mdE_Shapes;
     x.AddCallpath("Setup()","CSaTScanData");
@@ -936,7 +928,7 @@ void CSaTScanData::ValidateObservedToExpectedCases(count_t ** ppCumulativeCases,
                                 "       the expected number of cases is zero but there were cases observed.\n"
                                 "       Please review the correctness of population and case files.",
                                 "ValidateObservedToExpectedCases()",
-                                gpTInfo->tiGetTid(t, sId),
+                                gTractHandler.tiGetTid(t, sId),
                                 JulianToString(sStart, m_pIntervalStartTimes[i]).GetCString(),
                                 JulianToString(sEnd, m_pIntervalStartTimes[i + 1] - 1).GetCString());
   }

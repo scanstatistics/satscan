@@ -90,7 +90,7 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
         //read tract identifier
         if (!stricmp(Parser.GetWord(0),"all"))
           TractIndex = -1;
-        else if ((TractIndex = gpTInfo->tiGetTractIndex(Parser.GetWord(0))) == -1) {
+        else if ((TractIndex = gTractHandler.tiGetTractIndex(Parser.GetWord(0))) == -1) {
           gpPrint->PrintInputWarning("Error: Unknown location identifier in %s, record %ld.\n",
                                      gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
           gpPrint->PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
@@ -286,8 +286,8 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
            //ok, first record indicates that there are iScanCount - 1 dimensions (first scan is tract identifier)
            //data still could be invalid, but this will be determined like the remaining records
            const_cast<CParameters*>(m_pParameters)->SetDimensionsOfData(iScanCount - 1);
-           gpTInfo->tiSetDimensions(m_pParameters->GetDimensionsOfData());
-           gpGInfo->giSetDimensions(m_pParameters->GetDimensionsOfData());
+           gTractHandler.tiSetDimensions(m_pParameters->GetDimensionsOfData());
+           gCentroidsHandler.giSetDimensions(m_pParameters->GetDimensionsOfData());
            vCoordinates.resize(m_pParameters->GetDimensionsOfData(), 0);
          }
          //read and validate dimensions skip to next record if error reading coordinates as double
@@ -305,7 +305,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
            continue;
          }
          //add the tract identifier and coordinates to trac handler
-         if (! gpTInfo->tiInsertTnode(Parser.GetWord(0), vCoordinates)) {
+         if (! gTractHandler.tiInsertTnode(Parser.GetWord(0), vCoordinates)) {
            gpPrint->PrintInputWarning("Error: For record %ld in coordinates file, location '%s' already exists.\n", Parser.GetReadCount(), Parser.GetWord(0));
            bValid = false;
            continue;
@@ -314,7 +314,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
          if (! m_pParameters->UseSpecialGrid())
            //no need to check return, we would have already gotten error from tract handler
            //for duplicate tract identifier
-           gpGInfo->giInsertGnode(Parser.GetWord(0), vCoordinates);
+          gCentroidsHandler.giInsertGnode(Parser.GetWord(0), vCoordinates);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -326,15 +326,15 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
       bValid = false;
     }
     //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
-    else if (gpTInfo->tiGetNumTracts() == 1 && !m_pParameters->GetIsPurelyTemporalAnalysis()) {
+    else if (gTractHandler.tiGetNumTracts() == 1 && !m_pParameters->GetIsPurelyTemporalAnalysis()) {
       gpPrint->SatScanPrintWarning("Error: For a %s analysis, the coordinates file must contain more than one location.\n",
                                    m_pParameters->GetAnalysisTypeAsString());
       bValid = false;
     }
     //record number of locations read
-    m_nTracts = gpTInfo->tiGetNumTracts();
+    m_nTracts = gTractHandler.tiGetNumTracts();
     //record number of centroids read
-    m_nGridTracts = gpGInfo->giGetNumTracts();
+    m_nGridTracts = gCentroidsHandler.giGetNumTracts();
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadCoordinatesFileAsCartesian()", "CSaTScanData");
@@ -358,8 +358,8 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
   try {
     vCoordinates.resize(3/*for conversion*/, 0);
     const_cast<CParameters*>(m_pParameters)->SetDimensionsOfData(3/*for conversion*/);
-    gpTInfo->tiSetDimensions(m_pParameters->GetDimensionsOfData());
-    gpGInfo->giSetDimensions(m_pParameters->GetDimensionsOfData());
+    gTractHandler.tiSetDimensions(m_pParameters->GetDimensionsOfData());
+    gCentroidsHandler.giSetDimensions(m_pParameters->GetDimensionsOfData());
     while (Parser.ReadString(fp)) {
         //skip records with no data 
         if (! Parser.HasWords())
@@ -370,7 +370,7 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
            continue;
         }
         //add the tract identifier and coordinates to trac handler
-        if (! gpTInfo->tiInsertTnode(Parser.GetWord(0), vCoordinates)) {
+        if (! gTractHandler.tiInsertTnode(Parser.GetWord(0), vCoordinates)) {
           gpPrint->PrintInputWarning("Error: For record %ld in coordinates file, location '%s' already exists.\n", Parser.GetReadCount(), Parser.GetWord(0));
           bValid = false;
           continue;
@@ -379,7 +379,7 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
         if (! m_pParameters->UseSpecialGrid())
           //no need to check return, we would have already gotten error from tract handler
           //for duplicate tract identifier
-          gpGInfo->giInsertGnode(Parser.GetWord(0), vCoordinates);
+          gCentroidsHandler.giInsertGnode(Parser.GetWord(0), vCoordinates);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -391,15 +391,15 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
       bValid = false;
     }
     //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
-    else if (gpTInfo->tiGetNumTracts() == 1 && !m_pParameters->GetIsPurelyTemporalAnalysis()) {
+    else if (gTractHandler.tiGetNumTracts() == 1 && !m_pParameters->GetIsPurelyTemporalAnalysis()) {
       gpPrint->PrintInputWarning("Error: For a %s analysis, the coordinates file must contain more than one record.\n",
                                           m_pParameters->GetAnalysisTypeAsString());
       bValid = false;
     }
     //record number of locations read
-    m_nTracts = gpTInfo->tiGetNumTracts();
+    m_nTracts = gTractHandler.tiGetNumTracts();
     //record number of centroids read
-    m_nGridTracts = gpGInfo->giGetNumTracts();
+    m_nGridTracts = gCentroidsHandler.giGetNumTracts();
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadCoordinatesFileAsLatitudeLongitude()", "CSaTScanData");
@@ -472,7 +472,7 @@ bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
         }
         //add created tract identifer(record number) and read coordinates to structure that mantains list of centroids
         sId = Parser.GetReadCount();
-        gpGInfo->giInsertGnode(sId.GetCString(), vCoordinates);
+        gCentroidsHandler.giInsertGnode(sId.GetCString(), vCoordinates);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -484,7 +484,7 @@ bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
       bValid = false;
     }
     //record number of centroids read
-    m_nGridTracts = gpGInfo->giGetNumTracts();
+    m_nGridTracts = gCentroidsHandler.giGetNumTracts();
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadGridFileAsCartiesian()","CSaTScanData");
@@ -518,7 +518,7 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude(FILE * fp) {
         }
         //add created tract identifer(record number) and read coordinates to structure that mantains list of centroids
         sId = Parser.GetReadCount();
-        gpGInfo->giInsertGnode(sId.GetCString(), vCoordinates);
+        gCentroidsHandler.giInsertGnode(sId.GetCString(), vCoordinates);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -530,7 +530,7 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude(FILE * fp) {
       bValid = false;
     }
     //record number of centroids
-    m_nGridTracts = gpGInfo->giGetNumTracts();
+    m_nGridTracts = gCentroidsHandler.giGetNumTracts();
   }
   catch (ZdFileOpenFailedException &x) {
     gpPrint->SatScanPrintWarning("Error: Special Grid file '%s' could not be opened.\n",
@@ -629,7 +629,7 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
           continue;
         bEmpty=false;
         //read tract identifier
-        if ((TractIdentifierIndex = gpTInfo->tiGetTractIndex(Parser.GetWord(0))) == -1) {
+        if ((TractIdentifierIndex = gTractHandler.tiGetTractIndex(Parser.GetWord(0))) == -1) {
           gpPrint->PrintInputWarning("Error: Unknown location identifier in %s, record %ld.\n",
                                      gpPrint->GetImpliedFileTypeString().c_str(), iRecNum);
           gpPrint->PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
