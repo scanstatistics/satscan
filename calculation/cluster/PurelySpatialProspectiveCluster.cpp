@@ -68,11 +68,10 @@ CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator=(co
 }
 
 /** add neighbor tract data from DataStreamInterface */
-void CPurelySpatialProspectiveCluster::AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface) {
+void CPurelySpatialProspectiveCluster::AddNeighborData(tract_t tNeighbor, const DataStreamInterface & Interface) {
   int           i, j;
   count_t    ** ppCases = Interface.GetCaseArray();
-  measure_t  ** ppMeasure = Interface.GetMeasureArray(),
-             ** ppMeasureSquared;
+  measure_t  ** ppMeasure = Interface.GetMeasureArray();
 
   ++m_nTracts;
 
@@ -83,11 +82,25 @@ void CPurelySpatialProspectiveCluster::AddNeighbor(tract_t tNeighbor, const Data
       m_pCumCases[j]   += ppCases[i][tNeighbor];
       m_pCumMeasure[j] += ppMeasure[i][tNeighbor];
   }
-  if (Interface.IsSqMeasureArray()) {
-    ppMeasureSquared = Interface.GetSqMeasureArray();
-    m_pCumMeasureSquared[0] += ppMeasureSquared[0][tNeighbor];
-    for (j=1, i=m_nProspectiveStartInterval; i < m_nTotalIntervals; ++j, ++i)
-        m_pCumMeasureSquared[j] += ppMeasureSquared[i][tNeighbor];
+}
+
+/** add neighbor tract data from DataStreamInterface */
+void CPurelySpatialProspectiveCluster::AddNeighborDataEx(tract_t tNeighbor, const DataStreamInterface & Interface) {
+  int           i, j;
+  count_t    ** ppCases = Interface.GetCaseArray();
+  measure_t  ** ppMeasure = Interface.GetMeasureArray(),
+             ** ppMeasureSquared = Interface.GetSqMeasureArray();
+
+  ++m_nTracts;
+
+  //set cases for entire period added by this neighbor
+  m_pCumCases[0]   += ppCases[0][tNeighbor];                            
+  m_pCumMeasure[0] += ppMeasure[0][tNeighbor];
+  m_pCumMeasureSquared[0] += ppMeasureSquared[0][tNeighbor];
+  for (j=1, i=m_nProspectiveStartInterval; i < m_nTotalIntervals; ++j, ++i) {
+     m_pCumCases[j]   += ppCases[i][tNeighbor];
+     m_pCumMeasure[j] += ppMeasure[i][tNeighbor];
+     m_pCumMeasureSquared[j] += ppMeasureSquared[i][tNeighbor];
   }
 }
 
@@ -134,6 +147,9 @@ void CPurelySpatialProspectiveCluster::SetStartAndEndDates(const Julian* pInterv
 /** internal setup function */
 void CPurelySpatialProspectiveCluster::Setup(const CSaTScanData & Data) {
   try {
+    //set AddNeihbor function pointer - for Normal model we will set to AddNeighborDataEx
+    fAddNeighborData = &CPurelySpatialProspectiveCluster::AddNeighborData;
+
     m_nNumIntervals = 1 + Data.m_nTimeIntervals - Data.m_nProspectiveIntervalStart;
     m_nTotalIntervals = Data.m_nTimeIntervals;
     m_nProspectiveStartInterval = Data.m_nProspectiveIntervalStart;

@@ -10,6 +10,8 @@ class CMeasureList; /** class declaration defined in other unit */
 /** cluster class for purely spatial cluster used in replications of prospective
     space-time analysis */
 class CPurelySpatialProspectiveCluster : public CCluster {
+  typedef void (CPurelySpatialProspectiveCluster::* ADDNEIGHBOR)(tract_t tNeighbor, const DataStreamInterface & Interface);
+
   private:
     count_t                   	             * m_pCumCases;
     measure_t                                * m_pCumMeasure;
@@ -17,6 +19,7 @@ class CPurelySpatialProspectiveCluster : public CCluster {
     int                                        m_nTotalIntervals;
     int                                        m_nProspectiveStartInterval;
     int                                        m_nNumIntervals; 
+    ADDNEIGHBOR                                fAddNeighborData;
 
     void                        	       Init() {m_pCumCases=0;m_pCumMeasure=0;m_pCumMeasureSquared=0;}
     void			               Setup(const CSaTScanData & Data);
@@ -29,7 +32,8 @@ class CPurelySpatialProspectiveCluster : public CCluster {
 
      CPurelySpatialProspectiveCluster        & operator=(const CPurelySpatialProspectiveCluster& cluster);
 
-    virtual void                               AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface);
+    void                                       AddNeighborData(tract_t tNeighbor, const DataStreamInterface & Interface);
+    void                                       AddNeighborDataEx(tract_t tNeighbor, const DataStreamInterface & Interface);
     inline virtual void                        AssignAsType(const CCluster& rhs) {*this = (CPurelySpatialProspectiveCluster&)rhs;}
     virtual CPurelySpatialProspectiveCluster * Clone() const;
     inline virtual void                        ComputeBestMeasures(CMeasureList & MeasureList);
