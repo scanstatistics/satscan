@@ -140,7 +140,7 @@ void __fastcall CalcThread::Execute()
          {
          //Synchronize((TThreadMethod)PushTheButton)
          gpFormStatus->btnCancel->Caption = "Close";
-         gpFormStatus->btnPrint->Enabled = true;
+         //gpFormStatus->btnPrint->Enabled = true;
          }
       if (gpFormStatus->reWarningsBox->Lines->Count == 0)
          {
@@ -150,7 +150,7 @@ void __fastcall CalcThread::Execute()
       else
          gpFormStatus->SetPrintWarnings(true);
 
-      gpFormStatus->btnPrint->Enabled = true;    
+      //gpFormStatus->btnPrint->Enabled = true;
       }
    catch (ZdException & x)
       {
@@ -161,7 +161,7 @@ void __fastcall CalcThread::Execute()
       gpPrintWindow->SatScanPrintf("\nProgram terminated.");
       gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
       gpFormStatus->btnCancel->Caption = "Close";
-      gpFormStatus->btnPrint->Enabled = true;
+      //gpFormStatus->btnPrint->Enabled = true;
       gpFormStatus->btnEMail->Enabled = true;
       }
 }
