@@ -415,7 +415,7 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, char* s
       fprintf(fp, "%sNull Occurrence.......: ", szSpacesOnLeft);
       fIntervals = Data.m_nTimeIntervals - Data.m_nProspectiveIntervalStart + 1;
       fAdjustedP_Value = 1 - pow(1 - GetPVal(Data.m_pParameters->GetNumReplicationsRequested()), 1/fIntervals);
-      fUnitsInOccurrence = (fIntervals * Data.m_pParameters->GetTimeIntervalLength())/fAdjustedP_Value;
+      fUnitsInOccurrence = (float)Data.m_pParameters->GetTimeIntervalLength()/fAdjustedP_Value;
       switch (Data.m_pParameters->GetTimeIntervalUnitsType()) {
         case YEAR   : fprintf(fp, "Once in %.1f year%s\n", fUnitsInOccurrence, (fUnitsInOccurrence > 1 ? "s" : ""));
                       break;
