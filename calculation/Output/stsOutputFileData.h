@@ -95,7 +95,7 @@ class TestOutputClass : public BaseOutputStorageClass {
    protected:
       virtual void	SetupFields();   
    public :
-      TestOutputClass();
+      TestOutputClass(const ZdString& sOutputFileName);
       ~TestOutputClass();
       
       void      SetTestValues(const ZdString& sStringTestValue, const long lLongTestValue, const double	dDoubleTestValue,

@@ -122,7 +122,7 @@ void BaseOutputStorageClass::AddRecord(BaseOutputRecord* pRecord) {
 ZdField* BaseOutputStorageClass::GetField(unsigned short uwFieldNumber) {
    try {
      // check index in range
-      if (uwFieldNumber >= gvFields.GetNumElements())
+      if (uwFieldNumber >= (unsigned short)gvFields.GetNumElements())
          ZdGenerateException("Invalid index, out of range!", "Error!");
    }
    catch (ZdException &x) {
@@ -138,7 +138,7 @@ ZdField* BaseOutputStorageClass::GetField(unsigned short uwFieldNumber) {
 //        a pointer to the iPosition element in the vector
 BaseOutputRecord* BaseOutputStorageClass::GetRecord(int iPosition) {
    try {
-      if (iPosition < 0 || iPosition >= gvRecords.size())
+      if (iPosition < 0 || iPosition >= (int)gvRecords.size())
          ZdGenerateException ("Invalid index, out of range", "Error!");   
    }
    catch (ZdException &x) {
@@ -167,12 +167,12 @@ ZdFieldValue TestOutputRecord::GetValue(int iFieldNumber) {
          ZdGenerateException ("Invalid index, out of range", "Error!");
       	
       switch (iFieldNumber) {
-      	 case 1:  SetFieldValueAsString(fv, gsStringTestValue); break;
-      	 case 2:  SetFieldValueAsLong(fv, glLongTestValue); break;
-      	 case 3:  SetFieldValueAsDouble(fv, gdDoubleTestValue); break;
-      	 case 4:  SetFieldValueAsDouble(fv, gfFloatTestValue); break;
-      	 case 5:  SetFieldValueAsLong(fv, giIntTestValue); break;
-      	 case 6:  SetFieldValueAsString(fv, gbBoolTestValue ? "true" : "false" ); break;
+      	 case 0:  SetFieldValueAsString(fv, gsStringTestValue); break;
+      	 case 1:  SetFieldValueAsDouble(fv, double(glLongTestValue)); break;
+      	 case 2:  SetFieldValueAsDouble(fv, gdDoubleTestValue); break;
+      	 case 3:  SetFieldValueAsDouble(fv, gfFloatTestValue); break;
+      	 case 4:  SetFieldValueAsDouble(fv, double(giIntTestValue)); break;
+      	 case 5:  SetFieldValueAsString(fv, gbBoolTestValue ? "true" : "false" ); break;
       	 default :
       	    ZdGenerateException("Invalid index, out of range!", "Error!");
       }		
@@ -198,7 +198,8 @@ void TestOutputRecord::Init() {
 // file printing heirarchy
 // ============================================================================
 
-TestOutputClass::TestOutputClass():BaseOutputStorageClass() {
+TestOutputClass::TestOutputClass(const ZdString& sOutputFileName):BaseOutputStorageClass() {
+   gsFileName << sOutputFileName << ".test";
    SetupFields();
 }
 	
@@ -209,11 +210,11 @@ void TestOutputClass::SetupFields() {
    unsigned short uwOffset = 0;
 
    try {
-      ::CreateField(gvFields, "STRING", ZD_ALPHA_FLD, 255, 0, uwOffset);
-      ::CreateField(gvFields, "LONG", ZD_LONG_FLD, 12, 0, uwOffset);
+      ::CreateField(gvFields, "STRING", ZD_ALPHA_FLD, 96, 0, uwOffset);
+      ::CreateField(gvFields, "LONG", ZD_NUMBER_FLD, 12, 0, uwOffset);
       ::CreateField(gvFields, "DOUBLE", ZD_NUMBER_FLD, 12, 6, uwOffset);
       ::CreateField(gvFields, "FLOAT", ZD_NUMBER_FLD, 12, 6, uwOffset);
-      ::CreateField(gvFields, "INT", ZD_LONG_FLD, 12, 0, uwOffset);
+      ::CreateField(gvFields, "INT", ZD_NUMBER_FLD, 12, 0, uwOffset);
       ::CreateField(gvFields, "BOOL", ZD_ALPHA_FLD, 16, 0, uwOffset);	
    }
    catch (ZdException &x) {
