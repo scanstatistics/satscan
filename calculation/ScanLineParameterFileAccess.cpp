@@ -111,7 +111,7 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
     gParameters.SetSourceFileName(sFileName);
     gParameters.SetAsDefaulted();
 
-    while (iLinesRead <= gParameters.GetNumReadParameters() && !bEOF) {
+    while (iLinesRead < gParameters.GetNumReadParameters() && !bEOF) {
          bEOF = !ParametersFile.ReadLine(sLineBuffer);
          if (! bEOF) {
            ++iLinesRead;
@@ -135,7 +135,7 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
       //was modified from:
       //enum {PURELYSPATIAL=1, SPACETIME, PURELYTEMPORAL, PURELYSPATIALMONOTONE};
       //to
-      //enum {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE};
+      //enum {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME, PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE};
       //probably to accommodate the user interface? So we need to correct this
       //change in v2.1.3 and prior parameter files. Note that PURELYSPATIALMONOTONE
       //also become 5 instead of 4. It appears that this analysis type was never
@@ -179,7 +179,7 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
     x.AddCallpath("Read()", "ScanLineParameterFileAccess");
     throw;
   }
-  return gbReadStatusError;
+  return !gbReadStatusError;
 }
 
 /** Write parameters to file - not implemented, throws ZdException. */
