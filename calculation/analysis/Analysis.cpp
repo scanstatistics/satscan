@@ -617,7 +617,7 @@ bool CAnalysis::UpdateReport()
       else
         DisplayTopClusters(m_nMinRatioToReport, m_pParameters->m_nReplicas, fp, fpGIS);
 
-      if (m_pParameters->m_nReplicas>=19)
+      if (m_pParameters->m_nReplicas>=19 && m_nClustersReported > 0)
       {
         fprintf(fp, "The log likelihood ratio value required for an observed\n");
         fprintf(fp, "cluster to be significant at level\n");
