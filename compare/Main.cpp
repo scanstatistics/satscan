@@ -229,12 +229,12 @@ void __fastcall TfrmMain::ActionSaveComparisonStatsExecute(TObject *Sender) {
     for (i=0; i < lstDisplay->Items->Count; i++) {
        pListItem = lstDisplay->Items->Item[i];
        Output << "Parameter List Item " << i + 1 << ")" << endl
-              << "                    Parameter Filename   : " << pListItem->Caption.c_str() << endl
-              << "                    Speed                : " << pListItem->SubItems->Strings[0].c_str() << endl
-              << "                    Cluster Information  : " << pListItem->SubItems->Strings[1].c_str() << endl
-              << "                    Location Information : " << pListItem->SubItems->Strings[2].c_str() << endl
-              << "                    Relative Risks       : " << pListItem->SubItems->Strings[3].c_str() << endl
-              << "                    Simulated Ratios     : " << pListItem->SubItems->Strings[4].c_str() << endl << endl;
+              << "                    Parameter Filename   : " << pListItem->SubItems->Strings[0].c_str() << endl
+              << "                    Speed                : " << pListItem->SubItems->Strings[1].c_str() << endl
+              << "                    Cluster Information  : " << pListItem->SubItems->Strings[2].c_str() << endl
+              << "                    Location Information : " << pListItem->SubItems->Strings[3].c_str() << endl
+              << "                    Relative Risks       : " << pListItem->SubItems->Strings[4].c_str() << endl
+              << "                    Simulated Ratios     : " << pListItem->SubItems->Strings[5].c_str() << endl << endl;
     }
   }
 }
