@@ -31,10 +31,8 @@ DBaseFileWriter::~DBaseFileWriter() {
 // pre : none
 // post : creates the dBase file structure with the correct fields
 void DBaseFileWriter::CreateOutputFile() {
-   ZdVector<ZdField*> vFields;
-      
    try {
-      vFields = gpOutputFileData->GetFields();
+      ZdVector<ZdField*> vFields(gpOutputFileData->GetFields());
       DBFFile file;
       if (ZdIO::Exists(gsFileName))
          ZdIO::Delete(gsFileName);
