@@ -133,6 +133,7 @@ USEUNIT("..\calculation\utility\stsMonteCarloSimFunctor.cpp");
 USEUNIT("..\calculation\utility\contractor.cpp");
 USEUNIT("..\calculation\utility\stsMCSimContinuationPolicy.cpp");
 USEUNIT("..\calculation\utility\stsMCSimReporter.cpp");
+USEUNIT("..\calculation\utility\DateStringParser.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;
