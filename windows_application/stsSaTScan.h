@@ -17,8 +17,9 @@
 #include "stsCalculationThread.h"
 #include "stsMain.h"
 
-#define TECH_EMAIL "SaTScan@nih.gov"
+#define SUBSTANTIVE_SUPPORT_EMAIL "satscan@nih.gov"
+#define TECHNICAL_SUPPORT_EMAIL "satscan@imsweb.com"
 #define VERSION_NUMBER "v 3.0"
 #define VERSION_DATE "October 17, 2002"
-
+#define SATSCAN_WEBSITE "http:/\/srab.cancer.gov/satscan/"
 #endif
