@@ -43,7 +43,13 @@ USEUNIT("..\calculation\analysis\PurelySpatialMonotoneAnalysis.cpp");
 USEUNIT("..\calculation\analysis\PurelyTemporalAnalysis.cpp");
 USEUNIT("..\calculation\Parameters.cpp");
 USEUNIT("..\calculation\probability_model\SpaceTimePermutationModel.cpp");
+USEUNIT("..\calculation\SaTScanBasis.cpp");
+USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib");
+USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
 T//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 his file is used by the project manager only and should be treated like the project file
 
 main
