@@ -61,8 +61,6 @@
 #define MAX_LINEITEMSIZE 512
 /** Growth increment for GInfo in GridTractCoordinates.cpp */
 #define TI_GROW 100
-/** Number of clusters to rank */
-#define NUM_RANKED 500  //KR-980615 100
 /** case count type */
 typedef long            count_t;
 /** measure type */
