@@ -200,8 +200,9 @@ int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate)
          {
          iIntervalCut = 0;
          lTimeBetween = (TimeBetween(jStartDate, jEndDate, m_pParameters->m_nIntervalUnits))*m_pParameters->m_nMaxTemporalClusterSize/100.0;
-         while ((iIntervalCut+1)*m_pParameters->m_nIntervalLength <= lTimeBetween)
-            iIntervalCut++;
+         iIntervalCut = lTimeBetween / m_pParameters->m_nIntervalLength;
+         //while ((iIntervalCut+1)*m_pParameters->m_nIntervalLength <= lTimeBetween)
+         //   iIntervalCut++;
          }
 
      // if (iIntervalCut==0)
@@ -225,6 +226,7 @@ void CSaTScanData::SetIntervalCut()
   /* Calculates the number of time intervals to include in potential clusters */
   /* without exceeding the maximum cluster size with respect to time.         */
   /* gpPrintDirection->SatScanPrintf("Calculate number of time intervals...\n"); /*KR-6/22/97*/
+   long lTimeBetween;
 
    try
       {
@@ -232,10 +234,12 @@ void CSaTScanData::SetIntervalCut()
          m_nIntervalCut = 1;
       else if (m_nTimeIntervals > 1)
          {
-         m_nIntervalCut = 0;
-         while ((m_nIntervalCut+1)*m_pParameters->m_nIntervalLength <=
-               (TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->m_nIntervalUnits))*m_pParameters->m_nMaxTemporalClusterSize/100.0)
-            m_nIntervalCut++;
+           lTimeBetween = TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->m_nIntervalUnits)*m_pParameters->m_nMaxTemporalClusterSize/100.0;
+           m_nIntervalCut = lTimeBetween / m_pParameters->m_nIntervalLength;
+         //m_nIntervalCut = 0;
+         //while ((m_nIntervalCut+1)*m_pParameters->m_nIntervalLength <=
+         //      (TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->m_nIntervalUnits))*m_pParameters->m_nMaxTemporalClusterSize/100.0)
+         //   m_nIntervalCut++;
          }
 
       if (m_nIntervalCut==0)
