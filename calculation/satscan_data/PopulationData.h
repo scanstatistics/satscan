@@ -79,13 +79,14 @@ class PopulationData {
                                                           int* pnPopDates);
     double                              GetAlphaAdjustedPopulation(double & dPopulation, tract_t t,
                                                                    int iCategoryIndex, int iStartPopulationDateIndex,
-                                                                   int iEndPopulationDateIndex, double Alpha[]);
+                                                                   int iEndPopulationDateIndex, double Alpha[]) const;
     count_t                             GetNumCategoryCases(int iCategoryIndex) const;
     count_t                             GetNumCategoryControls(int iCategoryIndex) const;
     int                                 GetNumPopulationCategories() const {return (int)gvPopulationCategories.size();}
     int                                 GetNumPopulationCategoryCovariates() const {return giNumberCovariates;}
     unsigned int                        GetNumPopulationDates() const {return gvPopulationDates.size();}
     PopulationCategory                * GetCategoryDescriptor(tract_t tTractIndex, unsigned int iCategoryIndex);
+    const PopulationCategory          * GetCategoryDescriptor(tract_t tTractIndex, unsigned int iCategoryIndex) const;
     float                               GetPopulation(tract_t t, int iCategoryIndex, int iPopulationDateIndex);
     PopulationCategory                & GetPopulationCategory(tract_t tTractIndex, unsigned int iCategoryIndex, int iPopulationListSize);
     const char                        * GetPopulationCategoryAsString(int iCategoryIndex, std::string & sBuffer) const;

@@ -421,7 +421,7 @@ void PopulationData::FindPopDatesToUse(std::vector<Julian>& PopulationDates, Jul
 /** Returns the population for category of tract between date intervals. */
 double PopulationData::GetAlphaAdjustedPopulation(double & dPopulation, tract_t t,
                                                         int iCategoryIndex, int iStartPopulationDateIndex,
-                                                        int iEndPopulationDateIndex, double Alpha[]) {
+                                                        int iEndPopulationDateIndex, double Alpha[]) const {
   int                           j;
   const PopulationCategory    * pCategoryDescriptor;
 
@@ -483,6 +483,21 @@ count_t PopulationData::GetNumCategoryControls(int iCategoryIndex) const {
 
 /** Returns pointer to category class with iCategoryIndex. Returns null pointer if not found. */
 PopulationCategory * PopulationData::GetCategoryDescriptor(tract_t tTractIndex, unsigned int iCategoryIndex) {
+  PopulationCategory  * pCategoryDescriptor;
+  bool                  bDone=false;
+
+  pCategoryDescriptor = gTractCategories[tTractIndex];
+  while (pCategoryDescriptor && !bDone) {
+       if (pCategoryDescriptor->GetCategoryIndex() == iCategoryIndex)
+         bDone = true;
+       else
+         pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();
+  }
+  return pCategoryDescriptor;
+}
+
+/** Returns pointer to category class with iCategoryIndex. Returns null pointer if not found. */
+const PopulationCategory * PopulationData::GetCategoryDescriptor(tract_t tTractIndex, unsigned int iCategoryIndex) const {
   PopulationCategory  * pCategoryDescriptor;
   bool                  bDone=false;
 
@@ -776,7 +791,7 @@ void PopulationData::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePri
           if (PopTotalsArray[j]==0) {
             if (!bZeroFound) {
               bZeroFound = true;
-              fprintf(pDisplay,"\n________________________________________________________________\n\n");
+              AsciiPrintFormat::PrintSectionSeparatorString(pDisplay, 1, 2);
               fprintf(pDisplay,"Warning: According to the input data, the following tracts have a \n");
               fprintf(pDisplay,"         population totaling zero for the specified date(s).\n\n");
               pPrintDirection->SatScanPrintWarning("Warning: According to the input data, the following tracts have a \n");
