@@ -5,6 +5,7 @@
 #include "SaTScan.h"
 #include "JulianDates.h"
 #include "AsciiPrintFormat.h"
+#include "UtilityFunctions.h"
 
 extern const char*      YES;
 extern const char*      NO;
@@ -31,8 +32,8 @@ extern const char*      MODEL_TYPE_LINE;
 
 /** time parameters ini section */
 extern const char*      TIME_PARAMS_SECTION;
-extern const char*      INTERVAL_UNITS_LINE;
-extern const char*      INTERVAL_LENGTH_LINE;
+extern const char*      TIME_AGGREGATION_UNITS_LINE;
+extern const char*      TIME_AGGREGATION_LENGTH_LINE;
 extern const char*      TIME_TREND_ADJ_LINE;
 extern const char*      TIME_TREND_PERCENT_LINE;
 extern const char*      PROSPECT_START_LINE;
@@ -126,18 +127,12 @@ extern const char*      NORMAL_MODEL;
 extern const char*      SURVIVAL_MODEL;
 extern const char*      RANK_MODEL;
 
-/** date repcision type names */
-extern const char*      NONE_PRECISION_TYPE;
-extern const char*      YEAR_PRECISION_TYPE;
-extern const char*      MONTH_PRECISION_TYPE;
-extern const char*      DAY_PRECISION_TYPE;
-
 /** parameter types
     - parameters that are read from file with the exception of: DIMENSION, EXACTTIMES, and RUN_HISTORY_FILENAME */
 enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE, COORDFILE, OUTPUTFILE,
                                     PRECISION, DIMENSION, SPECIALGRID, GRIDFILE, GEOSIZE, STARTDATE, ENDDATE,
-                                    CLUSTERS, EXACTTIMES, INTERVALUNITS, TIMEINTLEN, PURESPATIAL, TIMESIZE,
-                                    REPLICAS, MODEL, RISKFUNCTION, POWERCALC, POWERX, POWERY, TIMETREND,
+                                    CLUSTERS, EXACTTIMES, TIME_AGGREGATION_UNITS, TIME_AGGREGATION, PURESPATIAL,
+                                    TIMESIZE, REPLICAS, MODEL, RISKFUNCTION, POWERCALC, POWERX, POWERY, TIMETREND,
                                     TIMETRENDPERC, PURETEMPORAL, CONTROLFILE, COORDTYPE, OUTPUT_SIM_LLR_ASCII,
                                     SEQUENTIAL, SEQNUM, SEQPVAL, VALIDATE, OUTPUT_RR_ASCII, ELLIPSES, ESHAPES,
                                     ENUMBERS, START_PROSP_SURV, OUTPUT_AREAS_ASCII, OUTPUT_MLC_ASCII,
@@ -214,8 +209,8 @@ class CParameters {
     float                               gfMaxTemporalClusterSize;               /** maximum value for temporal cluster */
     TemporalSizeType                    geMaxTemporalClusterSizeType;           /** maximum temporal cluster value type */
         /* Time interval variables */
-    long                                glTimeIntervalLength;                   /** length of time intervals */
-    DatePrecisionType                   geTimeIntervalUnitsType;                /** time interval units type */
+    long                                glTimeAggregationLength;                /** length of time aggregation */
+    DatePrecisionType                   geTimeAggregationUnitsType;             /** time aggregation units type */
         /* Temporal trend adjusment variables */
     double                              gdTimeTrendAdjustPercentage;            /** percentage for log linear adjustment */
     TimeTrendAdjustmentType             geTimeTrendAdjustType;                  /** Adjust for time trend: no, discrete, % */
@@ -333,12 +328,13 @@ class CParameters {
     bool                                ValidatePowerCalculationParameters(BasePrint & PrintDirection) const;
     bool                                ValidateProspectiveDate(BasePrint& PrintDirection) const;
     bool                                ValidateRangeParameters(BasePrint & PrintDirection) const;
-    bool                                ValidateSimulationDataParameters(BasePrint & PrintDirection);
     bool                                ValidateSequentialScanParameters(BasePrint & PrintDirection);
+    bool                                ValidateSimulationDataParameters(BasePrint & PrintDirection);
     bool                                ValidateSpatialParameters(BasePrint & PrintDirection);
-    bool                                ValidateEndDate(const std::string& sDateString, const std::string& sDateDescription, BasePrint& PrintDirection) const;
-    bool                                ValidateStartDate(const std::string& sDateString, const std::string& sDateDescription, BasePrint& PrintDirection) const;
+    bool                                ValidateStudyPeriodEndDate(BasePrint& PrintDirection) const;
+    bool                                ValidateStudyPeriodStartDate(BasePrint& PrintDirection) const;
     bool                                ValidateTemporalParameters(BasePrint & PrintDirection);
+    bool                                ValidateTimeAggregationUnits(BasePrint & PrintDirection) const;
 
   public:
     CParameters();
@@ -360,7 +356,6 @@ class CParameters {
     const std::string                 & GetCoordinatesFileName() const {return gsCoordinatesFileName;}
     CoordinatesType                     GetCoordinatesType() const {return geCoordinatesType;}
     CriteriaSecondaryClustersType       GetCriteriaSecondClustersType() const {return geCriteriaSecondClustersType;}
-    const char                        * GetDatePrecisionAsString(DatePrecisionType eDatePrecisionType) const;
     unsigned int                        GetCreationVersionMajor() const {return gCreationVersion.iMajor;}
     int                                 GetDimensionsOfData() const {return giDimensionsOfData;}
     const std::vector<int>            & GetEllipseRotations() const {return gvEllipseRotations;}
@@ -433,8 +428,8 @@ class CParameters {
     const std::string                 & GetStudyPeriodEndDate() const {return gsStudyPeriodEndDate;}
     const std::string                 & GetStudyPeriodStartDate() const {return gsStudyPeriodStartDate;}
     bool                                GetTerminateSimulationsEarly() const {return gbEarlyTerminationSimulations;}
-    long                                GetTimeIntervalLength() const {return glTimeIntervalLength;}
-    DatePrecisionType                   GetTimeIntervalUnitsType() const {return geTimeIntervalUnitsType;}
+    long                                GetTimeAggregationLength() const {return glTimeAggregationLength;}
+    DatePrecisionType                   GetTimeAggregationUnitsType() const {return geTimeAggregationUnitsType;}
     double                              GetTimeTrendAdjustmentPercentage() const {return gdTimeTrendAdjustPercentage;}
     TimeTrendAdjustmentType             GetTimeTrendAdjustmentType() const {return geTimeTrendAdjustType;}
     double                              GetTimeTrendConvergence() const {return gdTimeTrendConverge;}
@@ -501,8 +496,8 @@ class CParameters {
     void                                SetStudyPeriodEndDate(const char * sStudyPeriodEndDate);
     void                                SetStudyPeriodStartDate(const char * sStudyPeriodStartDate);
     void                                SetTerminateSimulationsEarly(bool b) {gbEarlyTerminationSimulations = b;}
-    void                                SetTimeIntervalLength(long lTimeIntervalLength);
-    void                                SetTimeIntervalUnitsType(DatePrecisionType eTimeIntervalUnits);
+    void                                SetTimeAggregationLength(long lTimeAggregationLength);
+    void                                SetTimeAggregationUnitsType(DatePrecisionType eTimeAggregationUnits);
     void                                SetTimeTrendAdjustmentPercentage(double dPercentage);
     void                                SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                                SetTimeTrendConvergence(double dTimeTrendConvergence);

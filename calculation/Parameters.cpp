@@ -29,8 +29,8 @@ const char*      END_DATE_LINE                  	= "EndDate";
 const char*      MONTE_CARLO_REPS_LINE          	= "MonteCarloReps";
 
 const char*      TIME_PARAMS_SECTION            	= "[Time Parameters]";
-const char*      INTERVAL_UNITS_LINE            	= "IntervalUnits";
-const char*      INTERVAL_LENGTH_LINE           	= "IntervalLength";
+const char*      TIME_AGGREGATION_UNITS_LINE          	= "TimeAggregationUnits";
+const char*      TIME_AGGREGATION_LENGTH_LINE        	= "TimeAggregationLength";
 const char*      PROSPECT_START_LINE            	= "ProspectiveStartDate";
 const char*      TIME_TREND_ADJ_LINE            	= "TimeTrendAdjustmentType";
 const char*      TIME_TREND_PERCENT_LINE        	= "TimeTrendPercentage";
@@ -110,11 +110,6 @@ const char*      SPACETIME_PERMUTATION_MODEL    	= "Space-Time Permutation";
 const char*      NORMAL_MODEL                           = "Normal";
 const char*      SURVIVAL_MODEL                         = "Survival";
 const char*      RANK_MODEL                             = "Rank";
-
-const char*      NONE_PRECISION_TYPE            	= "none";
-const char*      YEAR_PRECISION_TYPE            	= "years";
-const char*      MONTH_PRECISION_TYPE           	= "months";
-const char*      DAY_PRECISION_TYPE             	= "days";
 
 int CParameters::giNumParameters 			= 68;
 
@@ -226,8 +221,8 @@ void CParameters::Copy(const CParameters &rhs) {
     gfMaxGeographicClusterSize          = rhs.gfMaxGeographicClusterSize;
     gfMaxTemporalClusterSize            = rhs.gfMaxTemporalClusterSize;
     geIncludeClustersType               = rhs.geIncludeClustersType;
-    geTimeIntervalUnitsType             = rhs.geTimeIntervalUnitsType;
-    glTimeIntervalLength                = rhs.glTimeIntervalLength;
+    geTimeAggregationUnitsType          = rhs.geTimeAggregationUnitsType;
+    glTimeAggregationLength             = rhs.glTimeAggregationLength;
     geTimeTrendAdjustType               = rhs.geTimeTrendAdjustType;
     gdTimeTrendAdjustPercentage         = rhs.gdTimeTrendAdjustPercentage;
     gbIncludePurelySpatialClusters      = rhs.gbIncludePurelySpatialClusters;
@@ -396,6 +391,7 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
 void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsCompleted, const DataStreamHandler& StreamHandler) const {
   int           i;
   size_t        t;
+  ZdString      sBuffer;
   ZdFileName    AdditionalOutputFile(gsOutputFileName.c_str());
 
   try {
@@ -434,7 +430,18 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
     if(geSimulationType == HA_RANDOMIZATION || gbUseAdjustmentsForRRFile)
       fprintf(fp, "  Adjustments File           : %s\n", gsAdjustmentsByRelativeRisksFileName.c_str());
 
-    fprintf(fp, "\n  Precision of Times : %s\n", gePrecisionOfTimesType == NONE ? "No" : "Yes");
+    fprintf(fp, "\n  Time Precision     : ");
+    if (gePrecisionOfTimesType == NONE)
+      fprintf(fp, "None\n");
+    else {
+      DatePrecisionType eType = (gCreationVersion.iMajor == 4 ? geTimeAggregationUnitsType : gePrecisionOfTimesType);
+      switch (eType) {
+        case YEAR  : fprintf(fp, "Year\n"); break;
+        case MONTH : fprintf(fp, "Month\n"); break;
+        case DAY   : fprintf(fp, "Day\n"); break;
+        default : ZdException::Generate("Unknown date precision type '%d'.\n", "DisplayParameters()", eType);
+      }
+    }  
 
     fprintf(fp, "  Coordinates        : ");
     switch (geCoordinatesType) {
@@ -509,9 +516,12 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
         geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME) {
       fprintf(fp, "  Maximum Temporal Cluster Size         : %.2f", gfMaxTemporalClusterSize);
       switch (geMaxTemporalClusterSizeType) {
-        case PERCENTAGETYPE : fprintf(fp, " %%\n"); break;
-        case TIMETYPE       : fprintf(fp, " %s\n", GetDatePrecisionAsString(geTimeIntervalUnitsType)); break;
-        default : ZdException::Generate("Unknown maximum temporal cluster size type '%d'.\n", "DisplayParameters()", geMaxTemporalClusterSizeType);
+        case PERCENTAGETYPE :
+          fprintf(fp, " %%\n"); break;
+        case TIMETYPE       :
+          fprintf(fp, " %s\n", GetDatePrecisionAsString(geTimeAggregationUnitsType, sBuffer, gfMaxTemporalClusterSize != 1, true)); break;
+        default :
+          ZdException::Generate("Unknown maximum temporal cluster size type '%d'.\n", "DisplayParameters()", geMaxTemporalClusterSizeType);
       }
     }
 
@@ -541,8 +551,15 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
       fprintf(fp, "\nTime Parameters\n");
       fprintf(fp, "---------------\n");
 
-      fprintf(fp, "  Time Interval Units  : %s\n", GetDatePrecisionAsString(geTimeIntervalUnitsType));
-      fprintf(fp, "  Time Interval Length : %i\n\n", glTimeIntervalLength);
+      fprintf(fp, "  Time Aggregation Units  : ");
+      switch (geTimeAggregationUnitsType) {
+        case YEAR  : fprintf(fp, "Year\n"); break;
+        case MONTH : fprintf(fp, "Month\n"); break;
+        case DAY   : fprintf(fp, "Day\n"); break;
+        default : ZdException::Generate("Unknown date precision type '%d'.\n", "DisplayParameters()", geTimeAggregationUnitsType);
+      }
+
+      fprintf(fp, "  Time Aggregation Length : %i\n\n", glTimeAggregationLength);
 
       fprintf(fp, "  Adjustment for Time Trend : ");
       switch (geTimeTrendAdjustType) {
@@ -768,26 +785,6 @@ const std::string & CParameters::GetControlFileName(unsigned int iStream) const 
   return gvControlFilenames[iStream - 1];
 }
 
-/** Returns date precision as string. */
-const char * CParameters::GetDatePrecisionAsString(DatePrecisionType eDatePrecisionType) const {
-  const char * sDatePrecisionType;
-
-  try {
-    switch (eDatePrecisionType) {
-      case NONE  : sDatePrecisionType = NONE_PRECISION_TYPE; break;
-      case YEAR  : sDatePrecisionType = YEAR_PRECISION_TYPE; break;
-      case MONTH : sDatePrecisionType = MONTH_PRECISION_TYPE; break;
-      case DAY   : sDatePrecisionType = DAY_PRECISION_TYPE; break;
-      default : ZdException::Generate("Unknown date precision type '%d'.\n", "GetDatePrecisionAsString()", eDatePrecisionType);
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("GetDatePrecisionAsString()","CParameters");
-    throw;
-  }
-  return sDatePrecisionType;
-}
-
 /** Returns whether analysis is a prospective analysis. */
 bool CParameters::GetIsProspectiveAnalysis() const {
   return (geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == PROSPECTIVEPURELYTEMPORAL);
@@ -848,8 +845,8 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
         case ENDDATE                   : sParameterLineLabel = END_DATE_LINE; break;
         case CLUSTERS                  : sParameterLineLabel = INLCUDE_CLUSTERS_LINE; break;
         case EXACTTIMES                : sParameterLineLabel = "no label"; break;
-        case INTERVALUNITS             : sParameterLineLabel = INTERVAL_UNITS_LINE; break;
-        case TIMEINTLEN                : sParameterLineLabel = INTERVAL_LENGTH_LINE; break;
+        case TIME_AGGREGATION_UNITS    : sParameterLineLabel = TIME_AGGREGATION_UNITS_LINE; break;
+        case TIME_AGGREGATION          : sParameterLineLabel = TIME_AGGREGATION_LENGTH_LINE; break;
         case PURESPATIAL               : sParameterLineLabel = INCLUDE_PURELY_SPATIAL_LINE; break;
         case TIMESIZE                  : sParameterLineLabel = MAX_TEMP_SIZE_LINE; break;
         case REPLICAS                  : sParameterLineLabel = MONTE_CARLO_REPS_LINE; break;
@@ -1006,8 +1003,8 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case ENDDATE                  : sDefaultValue = gsStudyPeriodEndDate.c_str(); break;
       case CLUSTERS                 : sDefaultValue = geIncludeClustersType; break;
       case EXACTTIMES               : /* no longer used */ break;
-      case INTERVALUNITS            : sDefaultValue = geTimeIntervalUnitsType; break;
-      case TIMEINTLEN               : sDefaultValue = glTimeIntervalLength; break;
+      case TIME_AGGREGATION_UNITS   : sDefaultValue = geTimeAggregationUnitsType; break;
+      case TIME_AGGREGATION         : sDefaultValue = glTimeAggregationLength; break;
       case PURESPATIAL              : sDefaultValue = (gbIncludePurelySpatialClusters ? YES : NO); break;
       case TIMESIZE                 : sDefaultValue = gfMaxTemporalClusterSize; break;
       case REPLICAS                 : sDefaultValue << giReplications; break;
@@ -1618,8 +1615,8 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case CLUSTERS                  : SetIncludeClustersType((IncludeClustersType)ReadInt(sParameter, eParameterType)); break;
       case EXACTTIMES                : //No longer used. No documentation as to previous usage.
                                        break;
-      case INTERVALUNITS             : SetTimeIntervalUnitsType((DatePrecisionType)ReadInt(sParameter, eParameterType)); break;
-      case TIMEINTLEN                : SetTimeIntervalLength((long)ReadInt(sParameter, eParameterType)); break;
+      case TIME_AGGREGATION_UNITS    : SetTimeAggregationUnitsType((DatePrecisionType)ReadInt(sParameter, eParameterType)); break;
+      case TIME_AGGREGATION          : SetTimeAggregationLength((long)ReadInt(sParameter, eParameterType)); break;
       case PURESPATIAL               : SetIncludePurelySpatialClusters(ReadBoolean(sParameter, eParameterType)); break;
       case TIMESIZE                  : SetMaximumTemporalClusterSize(ReadFloat(sParameter, eParameterType)); break;
       case REPLICAS                  : SetNumberMonteCarloReplications(ReadUnsignedInt(sParameter, eParameterType)); break;
@@ -1874,8 +1871,8 @@ void CParameters::ReadTimeParametersSection(ZdIniFile& file, BasePrint & PrintDi
     //Get time parameters section, add if non-existant.
     pSection = file.GetSection(TIME_PARAMS_SECTION);
 
-    ReadIniParameter(*pSection, INTERVAL_UNITS_LINE, INTERVALUNITS, PrintDirection);
-    ReadIniParameter(*pSection, INTERVAL_LENGTH_LINE, TIMEINTLEN, PrintDirection);
+    ReadIniParameter(*pSection, TIME_AGGREGATION_UNITS_LINE, TIME_AGGREGATION_UNITS, PrintDirection, "IntervalUnits");
+    ReadIniParameter(*pSection, TIME_AGGREGATION_LENGTH_LINE, TIME_AGGREGATION, PrintDirection, "IntervalLength");
     ReadIniParameter(*pSection, TIME_TREND_ADJ_LINE, TIMETREND, PrintDirection);
     ReadIniParameter(*pSection, TIME_TREND_PERCENT_LINE, TIMETRENDPERC, PrintDirection);
     ReadIniParameter(*pSection, PROSPECT_START_LINE, START_PROSP_SURV, PrintDirection);
@@ -2184,10 +2181,10 @@ void CParameters::SaveTimeParametersSection(ZdIniFile& file) {
 
   try {
     pSection = file.GetSection(TIME_PARAMS_SECTION);
-    pSection->AddComment(" interval units (0=None, 1=Year, 2=Month, 3=Day)");
-    pSection->AddLine(INTERVAL_UNITS_LINE, AsString(sValue, geTimeIntervalUnitsType));
-    pSection->AddComment(" inteval length (positive integer)");
-    pSection->AddLine(INTERVAL_LENGTH_LINE, AsString(sValue, (int)glTimeIntervalLength));
+    pSection->AddComment(" time aggregation units (0=None, 1=Year, 2=Month, 3=Day)");
+    pSection->AddLine(TIME_AGGREGATION_UNITS_LINE, AsString(sValue, geTimeAggregationUnitsType));
+    pSection->AddComment(" time aggregation length (positive integer)");
+    pSection->AddLine(TIME_AGGREGATION_LENGTH_LINE, AsString(sValue, (int)glTimeAggregationLength));
     pSection->AddComment(" prospective surveillance start date (YYYY/MM/DD)");
     pSection->AddLine(PROSPECT_START_LINE, gsProspectiveStartDate.c_str());
     pSection->AddComment(" Time trend adjustment type (0=None, 1=Nonparametric, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization)");
@@ -2358,8 +2355,8 @@ void CParameters::SetDefaults() {
   gsStudyPeriodStartDate                = "2000/01/01";
   gsStudyPeriodEndDate                  = "2000/12/31";
   geIncludeClustersType                 = ALLCLUSTERS;
-  geTimeIntervalUnitsType               = NONE;
-  glTimeIntervalLength                  = 0;
+  geTimeAggregationUnitsType            = NONE;
+  glTimeAggregationLength               = 0;
   gbIncludePurelySpatialClusters        = false;
   gfMaxTemporalClusterSize              = 50.0;//KR980707 0 GG980716;
   geMaxTemporalClusterSizeType          = PERCENTAGETYPE;
@@ -2975,27 +2972,27 @@ void CParameters::SetStudyPeriodStartDate(const char * sStudyPeriodStartDate) {
   }
 }
 
-/** Sets time interval length. Throws exception if out of range. */
-void CParameters::SetTimeIntervalLength(long lTimeIntervalLength) {
+/** Sets time aggregation length. Throws exception if out of range. */
+void CParameters::SetTimeAggregationLength(long lTimeAggregationLength) {
   //Validity of setting is checked in ValidateParameters() since this setting
   //might not be pertinent in calculation.
-  glTimeIntervalLength = lTimeIntervalLength;
+  glTimeAggregationLength = lTimeAggregationLength;
 }
 
 /** Sets precision of time interval units type. Throws exception if out of range. */
-void CParameters::SetTimeIntervalUnitsType(DatePrecisionType eTimeIntervalUnits) {
+void CParameters::SetTimeAggregationUnitsType(DatePrecisionType eTimeAggregationUnits) {
   ZdString      sLabel;
 
   try {
-    if (eTimeIntervalUnits < NONE || eTimeIntervalUnits > DAY)
+    if (eTimeAggregationUnits < NONE || eTimeAggregationUnits > DAY)
       InvalidParameterException::Generate("Error: For parameter %s, setting '%d' is out of range(%d - %d).\n",
-                                          "SetTimeIntervalUnitsType()",
-                                          GetParameterLineLabel(INTERVALUNITS, sLabel, geReadType == INI),
-                                          eTimeIntervalUnits, NONE, DAY);
-    geTimeIntervalUnitsType = eTimeIntervalUnits;
+                                          "SetTimeAggregationUnitsType()",
+                                          GetParameterLineLabel(TIME_AGGREGATION_UNITS, sLabel, geReadType == INI),
+                                          eTimeAggregationUnits, NONE, DAY);
+    geTimeAggregationUnitsType = eTimeAggregationUnits;
   }
   catch (ZdException &x) {
-    x.AddCallpath("SetTimeIntervalUnitsType()","CParameters");
+    x.AddCallpath("SetTimeAggregationUnitsType()","CParameters");
     throw;
   }
 }
@@ -3062,12 +3059,12 @@ bool CParameters::ValidateDateParameters(BasePrint& PrintDirection) const {
 
   try {
     //validate study period start date based upon 'precision of times' parameter setting
-    if (!ValidateStartDate(gsStudyPeriodStartDate, "study period start date", PrintDirection)) {
+    if (!ValidateStudyPeriodStartDate(PrintDirection)) {
       bValid = false;
       bStartDateValid = false;
     }
     //validate study period end date based upon precision of times parameter setting
-    if (!ValidateEndDate(gsStudyPeriodEndDate, "study period end date", PrintDirection)) {
+    if (!ValidateStudyPeriodEndDate(PrintDirection)) {
       bValid = false;
       bEndDateValid = false;
     }
@@ -3112,42 +3109,46 @@ bool CParameters::ValidateDateParameters(BasePrint& PrintDirection) const {
       ;precision month - day = last day of month
    Returns boolean indication of whether date is valid, printing relevant
    messages to BasePrint object.                                              */
-bool CParameters::ValidateEndDate(const std::string& sDateString, const std::string& sDateDescription, BasePrint& PrintDirection) const {
+bool CParameters::ValidateStudyPeriodEndDate(BasePrint& PrintDirection) const {
   UInt                  nYear, nMonth, nDay;
-  int                   nScanCount;
-  DatePrecisionType     ePrecision = (gCreationVersion.iMajor == 4 ? geTimeIntervalUnitsType : gePrecisionOfTimesType);
+  DatePrecisionType     ePrecision = (gCreationVersion.iMajor == 4 ? geTimeAggregationUnitsType : gePrecisionOfTimesType);
 
   try {
+    if (gCreationVersion.iMajor == 4 && gePrecisionOfTimesType != NONE)
+      ePrecision = geTimeAggregationUnitsType;
+    else
+      ePrecision = gePrecisionOfTimesType;
+
     //parse date in parts
-    nScanCount = CharToMDY(&nMonth, &nDay, &nYear, sDateString.c_str());
-    if (nScanCount != 3) {
-      PrintDirection.SatScanPrintWarning("Error: The %s, '%s', is not valid.\n"
-                                         "       Please specify as YYYY/MM/DD.\n",
-                                         sDateDescription.c_str(), sDateString.c_str());
+    if (CharToMDY(&nMonth, &nDay, &nYear, gsStudyPeriodEndDate.c_str()) != 3) {
+      PrintDirection.SatScanPrintWarning("Error: The study period end date, '%s', is not valid.\n"
+                                         "       Please specify as YYYY/MM/DD.\n", gsStudyPeriodEndDate.c_str());
       return false;
     }
     //validate date
-    if (!IsDateValid(nMonth, nDay, nYear))
-        return false;
+    if (!IsDateValid(nMonth, nDay, nYear)) {
+      PrintDirection.SatScanPrintWarning("Error: The study period end date, '%s', is not valid.\n", gsStudyPeriodEndDate.c_str());
+      return false;
+    }
     //validate against precision of times
     switch (ePrecision) {
       case YEAR  :
         if (nMonth != 12 || nDay != 31) {
-          PrintDirection.SatScanPrintWarning("Error: The %s, '%s', is not valid.\n"
+          PrintDirection.SatScanPrintWarning("Error: The study period end date, '%s', is not valid.\n"
                                              "       With the setting for %s as years, the date\n"
                                              "       must be the last day of respective year.\n",
-                                             sDateDescription.c_str(), sDateString.c_str(),
-                                             (gCreationVersion.iMajor == 4 ? "time interval units" : "time precision"));
+                                             gsStudyPeriodEndDate.c_str(),
+                                             (gCreationVersion.iMajor == 4 ? "time aggregation" : "time precision"));
           return false;
         }
         break;
       case MONTH :
         if (nDay != DaysThisMonth(nYear, nMonth)) {
-          PrintDirection.SatScanPrintWarning("Error: The %s, '%s', is not valid.\n"
+          PrintDirection.SatScanPrintWarning("Error: The study period end date, '%s', is not valid.\n"
                                              "       With the setting for %s as months, the date\n"
                                              "       must be the last day of respective month.\n",
-                                             sDateDescription.c_str(), sDateString.c_str(),
-                                             (gCreationVersion.iMajor == 4 ? "time interval units" : "time precision"));
+                                             gsStudyPeriodEndDate.c_str(),
+                                             (gCreationVersion.iMajor == 4 ? "time aggregation" : "time precision"));
           return false;
         }
       case DAY   :
@@ -3478,8 +3479,18 @@ bool CParameters::ValidateProspectiveDate(BasePrint& PrintDirection) const {
       bReturnValue = false;
     }
     //validate study period end date based upon precision of times parameter setting
-    if (!ValidateEndDate(gsProspectiveStartDate, "prospective surveillance start date", PrintDirection))
+    //parse date in parts
+    if (CharToMDY(&uiMonth, &uiDay, &uiYear, gsProspectiveStartDate.c_str()) != 3) {
+      PrintDirection.SatScanPrintWarning("Error: The specified prospective surveillance start date, '%s', is not valid.\n"
+                                         "       Please specify as YYYY/MM/DD.\n", gsProspectiveStartDate.c_str());
+      return false;
+    }
+    //validate date
+    if (!IsDateValid(uiMonth, uiDay, uiYear)) {
+      PrintDirection.SatScanPrintWarning("Error: The specified prospective surveillance start date, %s, is not a valid date.\n",
+                                         gsProspectiveStartDate.c_str());
       bReturnValue = false;
+    }
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateProspectiveDate()","CParameters");
@@ -3492,6 +3503,7 @@ bool CParameters::ValidateProspectiveDate(BasePrint& PrintDirection) const {
     Prints errors to print direction and returns whether values are vaild. */
 bool CParameters::ValidateRangeParameters(BasePrint& PrintDirection) const {
   bool          bValid=true;
+  UInt          uiYear, uiMonth, uiDay;
   Julian        StudyPeriodStartDate, StudyPeriodEndDate,
                 StartRangeStartDate, StartRangeEndDate,
                 EndRangeStartDate, EndRangeEndDate;
@@ -3499,17 +3511,49 @@ bool CParameters::ValidateRangeParameters(BasePrint& PrintDirection) const {
   try {
     if (geIncludeClustersType == CLUSTERSINRANGE && (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME)) {
       //validate start range start date
-      if (!ValidateStartDate(gsStartRangeStartDate, "start date of start range in flexible temporal window definition", PrintDirection))
+      if (CharToMDY(&uiMonth, &uiDay, &uiYear, gsStartRangeStartDate.c_str()) != 3) {
+        PrintDirection.SatScanPrintWarning("Error: The start date of start range in flexible temporal window definition,\n"
+                                           "       '%s', is not valid. Please specify as YYYY/MM/DD.\n", gsStartRangeStartDate.c_str());
         bValid = false;
+      }
+      if (!IsDateValid(uiMonth, uiDay, uiYear)) {
+        PrintDirection.SatScanPrintWarning("Error: The start date of start range in flexible temporal window definition,\n"
+                                           "       %s, is not a valid date.\n", gsStartRangeStartDate.c_str());
+        bValid = false;
+      }
       //validate start range end date
-      if (!ValidateEndDate(gsStartRangeEndDate, "end date of start range in flexible temporal window definition", PrintDirection))
+      if (CharToMDY(&uiMonth, &uiDay, &uiYear, gsStartRangeEndDate.c_str()) != 3) {
+        PrintDirection.SatScanPrintWarning("Error: The end date of start range in flexible temporal window definition,\n"
+                                           "       '%s', is not valid. Please specify as YYYY/MM/DD.\n", gsStartRangeEndDate.c_str());
         bValid = false;
+      }
+      if (!IsDateValid(uiMonth, uiDay, uiYear)) {
+        PrintDirection.SatScanPrintWarning("Error: The end date of start range in flexible temporal window definition,\n"
+                                           "       %s, is not a valid date.\n", gsStartRangeEndDate.c_str());
+        bValid = false;
+      }
       //validate end range start date
-      if (!ValidateStartDate(gsEndRangeStartDate, "start date of end range in flexible temporal window definition", PrintDirection))
+      if (CharToMDY(&uiMonth, &uiDay, &uiYear, gsEndRangeStartDate.c_str()) != 3) {
+        PrintDirection.SatScanPrintWarning("Error: The start date of end range in flexible temporal window definition,\n"
+                                           "       '%s', is not valid. Please specify as YYYY/MM/DD.\n", gsEndRangeStartDate.c_str());
         bValid = false;
+      }
+      if (!IsDateValid(uiMonth, uiDay, uiYear)) {
+        PrintDirection.SatScanPrintWarning("Error: The start date of end range in flexible temporal window definition,\n"
+                                           "       %s, is not a valid date.\n", gsEndRangeStartDate.c_str());
+        bValid = false;
+      }
       //validate end range end date
-      if (!ValidateEndDate(gsEndRangeEndDate, "end date of end range in flexible temporal window definition", PrintDirection))
+      if (CharToMDY(&uiMonth, &uiDay, &uiYear, gsEndRangeStartDate.c_str()) != 3) {
+        PrintDirection.SatScanPrintWarning("Error: The end date of end range in flexible temporal window definition,\n"
+                                           "       '%s', is not valid. Please specify as YYYY/MM/DD.\n", gsEndRangeEndDate.c_str());
         bValid = false;
+      }
+      if (!IsDateValid(uiMonth, uiDay, uiYear)) {
+        PrintDirection.SatScanPrintWarning("Error: The end date of end range in flexible temporal window definition,\n"
+                                           "       %s, is not a valid date.\n", gsEndRangeEndDate.c_str());
+        bValid = false;
+      }
       //now valid that range dates are within study period start and end dates
       if (bValid) {
         StudyPeriodStartDate = CharToJulian(gsStudyPeriodStartDate.c_str());
@@ -3775,42 +3819,46 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
       ;precision month - day = last day of month
    Returns boolean indication of whether date is valid, printing relevant
    messages to BasePrint object.                                              */
-bool CParameters::ValidateStartDate(const std::string& sDateString, const std::string& sDateDescription, BasePrint& PrintDirection) const {
+bool CParameters::ValidateStudyPeriodStartDate(BasePrint& PrintDirection) const {
   UInt                  nYear, nMonth, nDay;
-  int                   nScanCount;
-  DatePrecisionType     ePrecision = (gCreationVersion.iMajor == 4 ? geTimeIntervalUnitsType : gePrecisionOfTimesType);
+  DatePrecisionType     ePrecision = (gCreationVersion.iMajor == 4 ? geTimeAggregationUnitsType : gePrecisionOfTimesType);
 
   try {
+    if (gCreationVersion.iMajor == 4 && gePrecisionOfTimesType != NONE)
+      ePrecision = geTimeAggregationUnitsType;
+    else
+      ePrecision = gePrecisionOfTimesType;
+
     //parse date in parts
-    nScanCount = CharToMDY(&nMonth, &nDay, &nYear, sDateString.c_str());
-    if (nScanCount != 3) {
-      PrintDirection.SatScanPrintWarning("Error: The %s, '%s', is not valid.\n"
-                                         "       Please specify as YYYY/MM/DD.\n",
-                                         sDateDescription.c_str(), sDateString.c_str());
+    if (CharToMDY(&nMonth, &nDay, &nYear, gsStudyPeriodStartDate.c_str()) != 3) {
+      PrintDirection.SatScanPrintWarning("Error: The study period start date, '%s', is not valid.\n"
+                                         "       Please specify as YYYY/MM/DD.\n", gsStudyPeriodStartDate.c_str());
       return false;
     }
     //validate date
-    if (!IsDateValid(nMonth, nDay, nYear))
-        return false;
+    if (!IsDateValid(nMonth, nDay, nYear)) {
+      PrintDirection.SatScanPrintWarning("Error: The study period start date, '%s', is not valid.\n", gsStudyPeriodStartDate.c_str());
+      return false;
+    }
     //validate against precision of times
     switch (ePrecision) {
       case YEAR  :
         if (nMonth != 1 || nDay != 1) {
-          PrintDirection.SatScanPrintWarning("Error: The %s, '%s', is not valid.\n"
+          PrintDirection.SatScanPrintWarning("Error: The study period start date, '%s', is not valid.\n"
                                              "       With the setting for %s as years, the date\n"
                                              "       must be the first day of respective year.\n",
-                                             sDateDescription.c_str(), sDateString.c_str(),
-                                             (gCreationVersion.iMajor == 4 ? "time interval units" : "time precision"));
+                                             gsStudyPeriodStartDate.c_str(),
+                                             (gCreationVersion.iMajor == 4 ? "time aggregation" : "time precision"));
           return false;
         }
         break;
       case MONTH :
         if (nDay != 1) {
-          PrintDirection.SatScanPrintWarning("Error: The %s, '%s', is not valid.\n"
+          PrintDirection.SatScanPrintWarning("Error: The study period start date, '%s', is not valid.\n"
                                              "       With the setting for %s as months, the date\n"
                                              "       must be the first day of respective month.\n",
-                                             sDateDescription.c_str(), sDateString.c_str(),
-                                             (gCreationVersion.iMajor == 4 ? "time interval units" : "time precision"));
+                                             gsStudyPeriodStartDate.c_str(),
+                                             (gCreationVersion.iMajor == 4 ? "time aggregation" : "time precision"));
           return false;
         }
       case DAY   :
@@ -3830,6 +3878,7 @@ bool CParameters::ValidateStartDate(const std::string& sDateString, const std::s
 bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
   bool          bValid=true;
   long          lStudyPeriodLength;
+  ZdString      sBuffer;
 
   try {
     //validate temporal options
@@ -3856,33 +3905,10 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
       //prospective analyses include only alive clusters
       if (GetIsProspectiveAnalysis() && geIncludeClustersType != ALIVECLUSTERS)
         geIncludeClustersType = ALIVECLUSTERS;
-      //time interval units
-      if (geTimeIntervalUnitsType == NONE) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Time interval units can not be 'none' for a temporal analysis.\n");
-      }
-      if (glTimeIntervalLength <= 0) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: the time interval length of '%d' is invalid. It must be greater than zero.\n");
-      }
-      //validate that the time interval length is less than or equal to length of study period  ### this one needs work, too vague ####
-      lStudyPeriodLength = TimeBetween(CharToJulian(gsStudyPeriodStartDate.c_str()),
-                                       CharToJulian(gsStudyPeriodEndDate.c_str()), geTimeIntervalUnitsType);
 
-      if ((int)ceil(lStudyPeriodLength/(float)glTimeIntervalLength) <= 1) {
+      if (!ValidateTimeAggregationUnits(PrintDirection))
         bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: For the specified study period and time interval length, the resulting number\n"
-                                           "       of time intervals is 1. Time based analyses can not be performed with less\n"
-                                           "       than 2 time intervals.");
-      }
-      if (glTimeIntervalLength > lStudyPeriodLength) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: For a study period starting '%s' and ending '%s',\n",
-                                           gsStudyPeriodStartDate.c_str(), gsStudyPeriodEndDate.c_str());
-        PrintDirection.SatScanPrintWarning("       the time interval length of %d %s is greater than the study period length of %d %s.\n",
-                                           glTimeIntervalLength, GetDatePrecisionAsString(geTimeIntervalUnitsType),
-                                           lStudyPeriodLength, GetDatePrecisionAsString(geTimeIntervalUnitsType));
-      }
+
       //time trend adjustment
       switch (geProbabiltyModelType) {
         case BERNOULLI            : //Bernoulli can only have time trend adjustments for SVTT analysis.
@@ -3966,8 +3992,8 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
       gfMaxTemporalClusterSize           = 50.0; // KR980707 0 GG980716;
       geMaxTemporalClusterSizeType       = PERCENTAGETYPE;
       geIncludeClustersType              = ALLCLUSTERS;
-      geTimeIntervalUnitsType            = NONE;
-      glTimeIntervalLength               = 0;
+      geTimeAggregationUnitsType         = NONE;
+      glTimeAggregationLength            = 0;
       geTimeTrendAdjustType              = NOTADJUSTED;
       gdTimeTrendAdjustPercentage        = 0;
     }
@@ -3990,6 +4016,74 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
   return bValid;
 }
 
+/** Validates the time aggregation units. */
+bool CParameters::ValidateTimeAggregationUnits(BasePrint& PrintDirection) const {
+  bool          bValid=true;
+  ZdString      sPrecisionString;
+  double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
+
+  if (geAnalysisType == PURELYSPATIAL) //validate settings for temporal analyses
+    return true;
+  //get date precision string for error reporting
+  GetDatePrecisionAsString(geTimeAggregationUnitsType, sPrecisionString, false, false);
+  if (geTimeAggregationUnitsType == NONE) { //validate time aggregation units
+    PrintDirection.SatScanPrintWarning("Error: Time aggregation units can not be 'none' for a temporal analysis.\n");
+    return false;
+  }
+  if (glTimeAggregationLength <= 0) {
+    PrintDirection.SatScanPrintWarning("Error: The time aggregation length of '%d' is invalid. Length must be greater than zero.\n"
+                                       "       Note that current settings permit a maximum time aggregation of %g %s%s.\n",
+                                       glTimeAggregationLength, dMaxTemporalLengthInUnits, sPrecisionString.GetCString(),
+                                       (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
+    return false;
+  }
+  //validate that the time aggregation length agrees with the study period and maximum temporal cluster size
+  dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(CharToJulian(gsStudyPeriodStartDate.c_str()),
+                                                                  CharToJulian(gsStudyPeriodEndDate.c_str()),
+                                                                  geTimeAggregationUnitsType, 1));
+  if (dStudyPeriodLengthInUnits < static_cast<double>(glTimeAggregationLength))  {
+    PrintDirection.SatScanPrintWarning("Error: A time aggregation of %d %s%s is greater than the %d %s study period.\n",
+                                       glTimeAggregationLength, sPrecisionString.GetCString(), (glTimeAggregationLength == 1 ? "" : "s"),
+                                       static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString());
+    return false;
+  }
+//  if (ceil(dStudyPeriodLengthInUnits/static_cast<double>(glTimeAggregationLength)) <= 1) {
+//    PrintDirection.SatScanPrintWarning("Error: A time aggregation of %d %s%s with a %d %s study period results in only\n"
+//                                       "       one time period to analyze. Temporal and space-time analyses can not be performed\n"
+//                                       "       on less than two time periods.\n",
+//                                       glTimeAggregationLength, sPrecisionString.GetCString(), (glTimeAggregationLength == 1 ? "" : "s"),
+//                                       static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString());
+//    return false;
+//  }
+
+  if (geMaxTemporalClusterSizeType == PERCENTAGETYPE)
+    dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * (double)gfMaxTemporalClusterSize/100.0);
+  else if (geMaxTemporalClusterSizeType == TIMETYPE)
+    dMaxTemporalLengthInUnits = (double)gfMaxTemporalClusterSize;
+
+  //validate the time aggregation agrees with maximum temporal cluster size
+  if (static_cast<int>(floor(dMaxTemporalLengthInUnits /static_cast<double>(glTimeAggregationLength))) == 0) {
+    if (geMaxTemporalClusterSizeType == TIMETYPE)
+      PrintDirection.SatScanPrintWarning("Error: The time aggregation of %d %s%s is greater than the maximum temporal\n"
+                                         "       cluster size of %g %s%s.\n", glTimeAggregationLength,
+                                         sPrecisionString.GetCString(), (glTimeAggregationLength == 1 ? "" : "s"),
+                                         gfMaxTemporalClusterSize, sPrecisionString.GetCString(),
+                                         (gfMaxTemporalClusterSize == 1 ? "" : "s"));
+    else if (geMaxTemporalClusterSizeType == PERCENTAGETYPE)
+      PrintDirection.SatScanPrintWarning("Error: With the maximum temporal cluster size as %g percent of a %d %s study period,\n"
+                                         "       the time aggregation as %d %s%s is greater than the resulting maximum\n"
+                                         "       temporal cluster size of %g %s%s.\n",
+                                         gfMaxTemporalClusterSize, static_cast<int>(dStudyPeriodLengthInUnits),
+                                         sPrecisionString.GetCString(), glTimeAggregationLength,
+                                         sPrecisionString.GetCString(), (glTimeAggregationLength == 1 ? "" : "s"),
+                                         dMaxTemporalLengthInUnits, sPrecisionString.GetCString(),
+                                         (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
+    return false;
+  }
+    
+  return true;
+}
+
 // saves the parameters to an .ini file and replaces the existing ini if necessary
 // pre: sFileName is the name of the .prm parameter file
 // post: saves the parameters to an .ini file
@@ -3997,7 +4091,7 @@ void CParameters::Write(const char * sParameterFileName) {
    try {
       ZdIniFile file(sParameterFileName);
       file.Clear();
-      
+
       SetSourceFileName(sParameterFileName);
       SaveInputFileSection(file);
       SaveAnalysisSection(file);
