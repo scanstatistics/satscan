@@ -727,14 +727,11 @@ void CSaTScanData::SetStartAndEndDates() {
 void CSaTScanData::SetScanningWindowEndRangeIndex(Julian EndRangeDate, int & iEndRangeDateIndex) {
   int   i;
 
-  //find index for end range end date, the interval where date fits
+  //find index for end range end date, the interval where date fits, rounding to higher index
   iEndRangeDateIndex = -1;
-  //special case for study period end date
-  if (EndRangeDate == m_nEndDate)
-    iEndRangeDateIndex = m_nTimeIntervals;
   for (i=m_nTimeIntervals; i > 0  && iEndRangeDateIndex == -1; --i)
-     if (EndRangeDate < m_pIntervalStartTimes[i] && EndRangeDate >= m_pIntervalStartTimes[i - 1])
-        iEndRangeDateIndex = i - 1;
+     if (EndRangeDate <= m_pIntervalStartTimes[i] - 1 && EndRangeDate > m_pIntervalStartTimes[i - 1] - 1)
+        iEndRangeDateIndex = i;
 }
 
 /** Sets time interval start range index into interval start times array. */
@@ -744,13 +741,13 @@ void CSaTScanData::SetScanningWindowStartRangeIndex(Julian StartRangeDate, int &
   iStartRangeDateIndex = -1;
   for (i=0; i < m_nTimeIntervals && iStartRangeDateIndex == -1; ++i)
      if (StartRangeDate >= m_pIntervalStartTimes[i] && StartRangeDate < m_pIntervalStartTimes[i + 1])
-       iStartRangeDateIndex = (StartRangeDate == m_pIntervalStartTimes[i] ? i : i + 1);
+       iStartRangeDateIndex = i;
 }
 
 /** Sets indexes of time interval ranges into interval start time array. */
 void CSaTScanData::SetTimeIntervalRangeIndexes() {
-  ZdString      sTimeIntervalType;
-  char          sDate[50], sDate2[50];
+  ZdString      sTimeIntervalType, sMessage;
+  char          sDateSSR[50], sDateESR[50], sDateSER[50], sDateEER[50], sDateWST[50], sDateMaxWET[50]; 
   int           iMaxEndWindow, iWindowStart;
 
   if (m_pParameters->GetIncludeClustersType() == CLUSTERSINRANGE) {
@@ -767,22 +764,27 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
     if (iWindowStart >= iMaxEndWindow) {
       sTimeIntervalType = m_pParameters->GetDatePrecisionAsString(m_pParameters->GetTimeIntervalUnitsType());
       sTimeIntervalType.ToLowercase();
+      JulianToChar(sDateSSR, m_pIntervalStartTimes[m_nStartRangeStartDateIndex]);
+      JulianToChar(sDateESR, m_pIntervalStartTimes[m_nStartRangeEndDateIndex]);
+      JulianToChar(sDateSER, m_pIntervalStartTimes[m_nEndRangeStartDateIndex] - 1);
+      JulianToChar(sDateEER, m_pIntervalStartTimes[m_nEndRangeEndDateIndex] - 1);
+      JulianToChar(sDateWST, m_pIntervalStartTimes[iWindowStart]);
+      JulianToChar(sDateMaxWET, m_pIntervalStartTimes[iMaxEndWindow] - 1);
       SSGenerateException("Error: No clusters will be evaluated.\n"
-        "       Although settings indicate a scanning window range of %s-%s to %s-%s,\n"
-        "       the incorporation of the maximum temporal cluster size of %i %s causes the maximum window end time\n"
-        "       to become %s (%s plus %i %s) and the window start time to become %s\n"
-        "       (%s minus %i %s) which results in an invalid scanning window.\n", "Setup()",
-        m_pParameters->GetStartRangeStartDate().c_str(),
-        m_pParameters->GetStartRangeEndDate().c_str(),
-        m_pParameters->GetEndRangeStartDate().c_str(),
-        m_pParameters->GetEndRangeEndDate().c_str(),
-        m_nIntervalCut, sTimeIntervalType.GetCString(),
-        JulianToChar(sDate, m_pIntervalStartTimes[iMaxEndWindow]),
-        m_pParameters->GetStartRangeEndDate().c_str(),
-        m_nIntervalCut, sTimeIntervalType.GetCString(),
-        JulianToChar(sDate2, m_pIntervalStartTimes[iWindowStart]),
-        m_pParameters->GetEndRangeStartDate().c_str(),
-        m_nIntervalCut, sTimeIntervalType.GetCString());
+                          "       Although settings indicate a scanning window range of %s-%s to %s-%s,\n"
+                          "       the scanning window range becomes %s-%s to %s-%s when fitted to\n"
+                          "       respective calculated intervals.\n\n"
+                          "       With the incorporation of a maximum temporal cluster size of %i %s,\n"
+                          "       the temporal window scanned has a start time of %s (%s minus %i %s)\n"
+                          "       and a maximum window end time of %s (%s plus %i %s), which results\n"
+                          "       in no windows scanned."
+                          , "Setup()",
+        m_pParameters->GetStartRangeStartDate().c_str(), m_pParameters->GetStartRangeEndDate().c_str(),
+        m_pParameters->GetEndRangeStartDate().c_str(), m_pParameters->GetEndRangeEndDate().c_str(),
+        sDateSSR, sDateESR, sDateSER, sDateEER, m_nIntervalCut * m_pParameters->GetTimeIntervalLength(),
+        sTimeIntervalType.GetCString(), sDateWST, sDateSER,
+        m_nIntervalCut * m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString(),
+        sDateMaxWET, sDateESR, m_nIntervalCut * m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
     }
     //The parameter validation checked already whether the end range dates conflicted,
     //but the maxium temporal cluster size may actually cause the range dates to be
@@ -790,20 +792,33 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
     if (m_nEndRangeStartDateIndex > iMaxEndWindow) {
       sTimeIntervalType = m_pParameters->GetDatePrecisionAsString(m_pParameters->GetTimeIntervalUnitsType());
       sTimeIntervalType.ToLowercase();
+      JulianToChar(sDateSSR, m_pIntervalStartTimes[m_nStartRangeStartDateIndex]);
+      JulianToChar(sDateESR, m_pIntervalStartTimes[m_nStartRangeEndDateIndex]);
+      JulianToChar(sDateSER, m_pIntervalStartTimes[m_nEndRangeStartDateIndex] - 1);
+      JulianToChar(sDateEER, m_pIntervalStartTimes[m_nEndRangeEndDateIndex] - 1);
+      JulianToChar(sDateMaxWET, m_pIntervalStartTimes[iMaxEndWindow] - 1);
       SSGenerateException("Error: No clusters will be evaluated.\n"
-        "       Although settings indicate a scanning window range of %s-%s to %s-%s,\n"
-        "       the incorporation of the maximum temporal cluster size of %i %s causes the maximum window end time\n"
-        "       to become %s (%s plus %i %s), which does not intersect with requested scanning\n"
-        "       window end range.\n","Setup()",
-        m_pParameters->GetStartRangeStartDate().c_str(),
-        m_pParameters->GetStartRangeEndDate().c_str(),
-        m_pParameters->GetEndRangeStartDate().c_str(),
-        m_pParameters->GetEndRangeEndDate().c_str(),
-        m_nIntervalCut, sTimeIntervalType.GetCString(),
-        JulianToChar(sDate, m_pIntervalStartTimes[iMaxEndWindow]),
-        m_pParameters->GetStartRangeEndDate().c_str(),
-        m_nIntervalCut, sTimeIntervalType.GetCString());
-    }
+                          "       Although settings indicate a scanning window range of %s-%s to %s-%s,\n"
+                          "       the scanning window range becomes %s-%s to %s-%s when fitted to\n"
+                          "       respective calculated intervals.\n\n"
+                          "       With the incorporation of a maximum temporal cluster size of %i %s\n"
+                          "       the maximum window end time becomes %s (%s plus %i %s),\n"
+                          "       which does not intersect with scanning window end range.\n","Setup()",
+        m_pParameters->GetStartRangeStartDate().c_str(), m_pParameters->GetStartRangeEndDate().c_str(),
+        m_pParameters->GetEndRangeStartDate().c_str(), m_pParameters->GetEndRangeEndDate().c_str(),
+        sDateSSR, sDateESR, sDateSER, sDateEER,
+        m_nIntervalCut * m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString(),
+        sDateMaxWET, sDateESR, m_nIntervalCut * m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
+    } 
+    //reset parameter settings
+    JulianToChar(sDateSSR, m_pIntervalStartTimes[m_nStartRangeStartDateIndex]);
+    m_pParameters->SetStartRangeStartDate(sDateSSR);
+    JulianToChar(sDateESR, m_pIntervalStartTimes[m_nStartRangeEndDateIndex]);
+    m_pParameters->SetStartRangeEndDate(sDateESR);
+    JulianToChar(sDateSER, m_pIntervalStartTimes[m_nEndRangeStartDateIndex] - 1);
+    m_pParameters->SetEndRangeStartDate(sDateSER);
+    JulianToChar(sDateEER, m_pIntervalStartTimes[m_nEndRangeEndDateIndex] - 1);
+    m_pParameters->SetEndRangeEndDate(sDateEER);
   }
 }
 
