@@ -15,25 +15,21 @@ int CalcRisk(const TractHandler *pTInfo, double** pRisk, double* pAlpha, int nCa
   int      c, i, n;
   tract_t  t;
   double   nPop;
-  count_t  nCaseCount;
+  count_t  nCaseCount;     
 
   try {
-    *pRisk = (double*)Smalloc(nCats * sizeof(double), pPrintDirection);      
+    *pRisk = (double*)Smalloc(nCats * sizeof(double), pPrintDirection);
 #ifdef DEBUGMEASURE
       fprintf(pMResult, "Category #    Pop Count           Case Count   Risk\n");
 #endif
     *pTotalCases = 0;
     *pTotalPop   = 0;
     for (c=0; c<nCats; c++) {
-       nPop       = 0;
-       nCaseCount = 0;
-       for (t=0; t<nTracts; t++) {
-          nCaseCount = nCaseCount + pTInfo->tiGetCount(t, c);
-          if (nCaseCount < 0)
-            SSGenerateException("Error: Total cases is greater than maximum allowed.\n", "CalcRisk()");
+       nPop = 0;
+       nCaseCount = pTInfo->tiGetCategoryCaseCount(c);
+       for (t=0; t<nTracts; t++)
           pTInfo->tiGetAlphaAdjustedPopulation(nPop, t, c, 0, nPops, pAlpha);
-       }
-       (*pRisk)[c] = (double)nCaseCount / nPop;
+       (*pRisk)[c] = (double)nCaseCount/ nPop;
 #ifdef DEBUGMEASURE
        fprintf(fp, "%i             %f        %li            %12.25f\n",c, nPop, nCaseCount, (*pRisk)[c]);
 #endif
