@@ -197,7 +197,7 @@ class CParameters {
     double                              gdTimeTrendAdjustPercentage;            /** percentage for log linear adjustment */
     TimeTrendAdjustmentType             geTimeTrendAdjustType;                  /** Adjust for time trend: no, discrete, % */
         /* Input precision variables */
-    DatePrecisionType                   gePrecisionOfTimesType;                 /** precision of case/control data: none, years, mon, days. */
+    DatePrecisionType                   gePrecisionOfTimesType;                 /** precision of case/control data: none = no, years=months=days = yes */
     int                                 giDimensionsOfData;                     /** dimensions in geographic data */
     CoordinatesType                     geCoordinatesType;                      /** coordinates type for coordinates/special grid */
         /* Ellipse variables */

@@ -360,7 +360,7 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
       else if(geSimulationType == HA_RANDOMIZATION)
         fprintf(fp, "  Relative Risks File            : %s\n", gsRelativeRisksSourceFileName.c_str());
     }
-    fprintf(fp, "\n  Precision of Times : %s\n", GetDatePrecisionAsString(gePrecisionOfTimesType));
+    fprintf(fp, "\n  Precision of Times : %s\n", gePrecisionOfTimesType == NONE ? "No" : "Yes");
 
     fprintf(fp, "  Coordinates        : ");
     switch (geCoordinatesType) {
@@ -1886,7 +1886,7 @@ void CParameters::SaveInputFileSection(ZdIniFile& file) {
     pSection->AddLine(GRID_FILE_LINE, gsSpecialGridFileName.c_str());
     pSection->AddComment(" use special grid file? (y/n)");
     pSection->AddLine(USE_GRID_FILE_LINE, gbUseSpecialGridFile ? YES : NO);
-    pSection->AddComment(" precision of case times (0=None, 1=Year, 2=Month, 3=day)");
+    pSection->AddComment(" precision of case times (0=No, 1-3=Yes)");
     pSection->AddLine(PRECISION_TIMES_LINE, AsString(sValue, gePrecisionOfTimesType));
     pSection->AddComment(" coordinate type (0=Cartesian, 1=Lat/Long)");
     pSection->AddLine(COORD_TYPE_LINE, AsString(sValue, geCoordinatesType));
@@ -3488,12 +3488,6 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
       if (geTimeIntervalUnitsType == NONE) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Time interval units can not be 'none' for a temporal analysis.\n");
-      }
-      else if (geTimeIntervalUnitsType > gePrecisionOfTimesType) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Time interval units in %s is more precise than precision of Case file dates in %s.\n",
-                                           GetDatePrecisionAsString(geTimeIntervalUnitsType),
-                                           GetDatePrecisionAsString(gePrecisionOfTimesType));
       }
       if (glTimeIntervalLength <= 0) {
         bValid = false;
