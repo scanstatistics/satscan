@@ -1438,11 +1438,10 @@ void TfrmAnalysis::Setup(const char * sParameterFileName) {
 // fill the Case File field descriptor vector with the appropriate field names for a case file
 void TfrmAnalysis::SetupCaseFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors) {
    vFieldDescriptors.clear();
-   vFieldDescriptors.reserve(14);
+   vFieldDescriptors.reserve(13);
    vFieldDescriptors.push_back("Tract ID");
    vFieldDescriptors.push_back("Number of Cases");
    vFieldDescriptors.push_back("Date/Time");
-   vFieldDescriptors.push_back("Number of Controls");
    vFieldDescriptors.push_back("Covariant1");
    vFieldDescriptors.push_back("Covariant2");
    vFieldDescriptors.push_back("Covariant3");
@@ -1458,21 +1457,21 @@ void TfrmAnalysis::SetupCaseFileFieldDescriptors(std::vector<std::string>& vFiel
 // fill the control File field descriptor vector with the appropriate field names for a control file
 void TfrmAnalysis::SetupControlFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors) {
    vFieldDescriptors.clear();
-   vFieldDescriptors.reserve(14);
+   vFieldDescriptors.reserve(3);
    vFieldDescriptors.push_back("Tract ID");
-   vFieldDescriptors.push_back("Number of Cases");
-   vFieldDescriptors.push_back("Date/Time");
    vFieldDescriptors.push_back("Number of Controls");
-   vFieldDescriptors.push_back("Covariant1");
-   vFieldDescriptors.push_back("Covariant2");
-   vFieldDescriptors.push_back("Covariant3");
-   vFieldDescriptors.push_back("Covariant4");
-   vFieldDescriptors.push_back("Covariant5");
-   vFieldDescriptors.push_back("Covariant6");
-   vFieldDescriptors.push_back("Covariant7");
-   vFieldDescriptors.push_back("Covariant8");
-   vFieldDescriptors.push_back("Covariant9");
-   vFieldDescriptors.push_back("Covariant10");
+   vFieldDescriptors.push_back("Date/Time");
+   /** covariates not currently usable for control file, but is planned for future release. */
+   //vFieldDescriptors.push_back("Covariant1");
+   //vFieldDescriptors.push_back("Covariant2");
+   //vFieldDescriptors.push_back("Covariant3");
+   //vFieldDescriptors.push_back("Covariant4");
+   //vFieldDescriptors.push_back("Covariant5");
+   //vFieldDescriptors.push_back("Covariant6");
+   //vFieldDescriptors.push_back("Covariant7");
+   //vFieldDescriptors.push_back("Covariant8");
+   //vFieldDescriptors.push_back("Covariant9");
+   //vFieldDescriptors.push_back("Covariant10");
 }
 
 // fill the Geo File field descriptor vector with the appropriate field names for a geo file
