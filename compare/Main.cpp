@@ -382,6 +382,10 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
    std::string  sBuffer, sCompareFilename;
    AnsiString   sCommand, sCurTitle, sText;
    int          iItemIndex=0;
+   TDateTime    StartDate;
+
+   //get start time of execution
+   StartDate = TDateTime::CurrentDateTime();
 
    memMessages->Clear();
    lstDisplay->Items->Clear();
@@ -438,6 +442,11 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
    if (gpFrmOptions->chkArchiveResults->Checked)
      ArchiveResults();
    EnableSaveResultsAction();
+   //print execution time to message window
+   DateSeparator = '/';
+   TimeSeparator = ':';
+   sCommand.printf("Start time: %s    Stop time: %s", DateTimeToStr(StartDate).c_str(), DateTimeToStr(TDateTime::CurrentDateTime()).c_str());
+   memMessages->Lines->Add(sCommand);
    memMessages->SelStart = 0;
 }
 
