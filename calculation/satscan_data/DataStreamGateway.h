@@ -10,9 +10,9 @@ class AbtractDataStreamGateway {
     virtual ~AbtractDataStreamGateway() {}
 
     virtual void                               AddDataStreamInterface(DataStreamInterface & Interface) = 0;
-    inline virtual const DataStreamInterface & GetDataStreamInterface(size_t tStream=0) const = 0;
-    inline virtual DataStreamInterface       & GetDataStreamInterface(size_t tStream) = 0;
-    inline virtual size_t                      GetNumInterfaces() const = 0;
+    virtual const DataStreamInterface        & GetDataStreamInterface(size_t tStream=0) const = 0;
+    virtual DataStreamInterface              & GetDataStreamInterface(size_t tStream) = 0;
+    virtual size_t                             GetNumInterfaces() const = 0;
 };
 
 /** Collection of data stream interfaces. */
