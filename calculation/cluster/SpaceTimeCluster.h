@@ -24,7 +24,9 @@ class CSpaceTimeCluster : public CCluster {
     virtual CSpaceTimeCluster           * Clone() const;
     CSpaceTimeCluster                   & operator =(const CSpaceTimeCluster& cluster);
 
-    void                                  AddNeighborDataAndCompare(const AbtractDataStreamGateway & DataGateway,
+    void                                  AddNeighborDataAndCompare(tract_t tEllipseOffset,
+                                                                    tract_t tCentroid,
+                                                                    const AbtractDataStreamGateway & DataGateway,
                                                                     const CSaTScanData * pData,
                                                                     CSpaceTimeCluster & TopCluster,
                                                                     CTimeIntervals * pTimeIntervals);

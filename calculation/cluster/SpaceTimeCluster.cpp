@@ -50,24 +50,24 @@ CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& rhs) {
   m_DuczmalCorrection           = rhs.m_DuczmalCorrection;
   m_nFirstInterval              = rhs.m_nFirstInterval;
   m_nLastInterval               = rhs.m_nLastInterval;
-  m_nStartDate                  = rhs.m_nStartDate;
-  m_nEndDate                    = rhs.m_nEndDate;
   m_iEllipseOffset              = rhs.m_iEllipseOffset;
   gpClusterData->Assign(*(rhs.gpClusterData));
   return *this;
 }
 
 /** add neighbor tract data from DataGateway */
-void CSpaceTimeCluster::AddNeighborDataAndCompare(const AbtractDataStreamGateway & DataGateway,
+void CSpaceTimeCluster::AddNeighborDataAndCompare(tract_t tEllipseOffset,
+                                                  tract_t tCentroid,
+                                                  const AbtractDataStreamGateway & DataGateway,
                                                   const CSaTScanData * pData,
                                                   CSpaceTimeCluster & TopCluster,
                                                   CTimeIntervals * pTimeIntervals) {
                                                   
-  tract_t       t, tNumNeighbors = pData->GetImpliedNeighborCount();
+  tract_t       t, tNumNeighbors = pData->GetNeighborCountArray()[tEllipseOffset][tCentroid];
 
   for (t=1; t <= tNumNeighbors; ++t) {
     ++m_nTracts;
-    gpClusterData->AddNeighborData(pData->GetNeighborTractIndex(t), DataGateway);
+    gpClusterData->AddNeighborData(pData->GetNeighbor(tEllipseOffset, tCentroid, t), DataGateway);
     pTimeIntervals->CompareClusters(*this, TopCluster);
   }
 }
