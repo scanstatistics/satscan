@@ -74,7 +74,7 @@ CCluster& CCluster::operator =(const CCluster& cluster)
   return *this;
 }
 
-double CCluster::ConvertAngleToDegrees(double dAngle)
+const double CCluster::ConvertAngleToDegrees(double dAngle) const
 {
    double dDegrees;
    
@@ -462,7 +462,7 @@ void CCluster::DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisTyp
       }
 }
 
-double CCluster::GetRelativeRisk(double nMeasureAdjustment)
+const double CCluster::GetRelativeRisk(double nMeasureAdjustment) const
 {
   double        dRelativeRisk=0;
 

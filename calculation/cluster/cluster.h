@@ -52,7 +52,7 @@ class CCluster {
 
     virtual void        AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {};
     virtual bool        ClusterDefined() {return (m_bClusterDefined==true);}
-    double              ConvertAngleToDegrees(double dAngle);
+    const double        ConvertAngleToDegrees(double dAngle) const;
     virtual void        Display(FILE*     fp,
                                 const     CParameters& Parameters,
                                 const CSaTScanData& Data,
@@ -89,13 +89,13 @@ class CCluster {
     virtual void        DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType);
 
     virtual count_t     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {return 0;}
-    int                 GetClusterType()   {return m_nClusterType;}
+    const int           GetClusterType() const  {return m_nClusterType;}
     double              GetLogLikelihood() {return m_nLogLikelihood;}
     virtual measure_t   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {return 0;}
     tract_t             GetNumCircles()    {return m_nSteps;}
     virtual tract_t     GetNumTractsInnerCircle() { return m_nTracts; }
-    double              GetPVal(int nReps) {return (double)m_nRank/(double)(nReps+1);}
-    double              GetRelativeRisk(double nMeasureAdjustment);
+    const double        GetPVal(int nReps) const {return (double)m_nRank/(double)(nReps+1);}
+    const double        GetRelativeRisk(double nMeasureAdjustment) const;
     virtual double      GetRelativeRiskForTract(tract_t tTract, const CSaTScanData & Data) const;
 
     bool                RateIsOfInterest(count_t nTotalCases, measure_t nTotalMeasure);
