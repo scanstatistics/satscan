@@ -225,15 +225,15 @@ void CSVTTCluster::DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const {
   fprintf(fp, "%.3f", gvStreamData[0].gTimeTrendInside.GetAnnualTimeTrend());
 }
 
-void CSVTTCluster::DisplayTimeTrend(FILE* fp, const ClusterPrintFormat& PrintFormat) const {
-  fprintf(fp, "%sTime trend............: %f  (%.3f%% ",
-              PrintFormat.GetSpacesOnLeft(), gvStreamData[0].gTimeTrendInside.GetBeta(),
-              gvStreamData[0].gTimeTrendInside.GetAnnualTimeTrend());
+void CSVTTCluster::DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintFormat) const {
+  ZdString      sBuffer;
 
-  if (gvStreamData[0].gTimeTrendInside.IsNegative())
-    fprintf(fp, "annual decrease)\n");
-  else
-    fprintf(fp, "annual increase)\n");
+  PrintFormat.PrintSectionLabel(fp, "Time trend", false, true);
+  sBuffer.printf("%f  (%.3f%% %s",
+               gvStreamData[0].gTimeTrendInside.GetBeta(),
+               gvStreamData[0].gTimeTrendInside.GetAnnualTimeTrend(),
+               (gvStreamData[0].gTimeTrendInside.IsNegative() ? "annual decrease)\n" : "annual increase)"));
+  PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
 }
 
 /** returns the number of cases for tract as defined by cluster
