@@ -726,33 +726,29 @@ bool CPoissonModel::ReadData() {
           Use of this feature should be discouraged except from someone who has
           detailed knowledge of how code works.                                                                 */
 void CPoissonModel::ReadSimulationDataFromFile() {
-  ifstream              SimulationDataFile;
   tract_t               t;
   int                   i;
   count_t               c;
   count_t            ** ppSimCases(gData.GetSimCasesArray());
 
-  SimulationDataFile.open(gParameters.GetSimulationDataSourceFilename().c_str());
-  if (!SimulationDataFile)
+  if (!gSimulationDataInputFile.is_open())
+    gSimulationDataInputFile.open(gParameters.GetSimulationDataSourceFilename().c_str());
+  if (!gSimulationDataInputFile)
     SSGenerateException("Error: Could not open file '%s' to read simulated data.\n",
                         "ReadSimulationDataFromFile()", gParameters.GetSimulationDataSourceFilename().c_str());
-
-  SimulationDataFile.seekg(glFilePosition);  // puts the file position pointer to the correct simulation
 
   if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME || gParameters.GetAnalysisType() == SPACETIME ||
       gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL) {
      for (t=0; t < gData.m_nTotalTractsAtStart; ++t) {
         for (i=0; i < gData.m_nTimeIntervals; ++i)
-           SimulationDataFile >> ppSimCases[i][t];
+           gSimulationDataInputFile >> ppSimCases[i][t];
      }
   }
   else if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
      for (t=0; t < gData.m_nTotalTractsAtStart; ++t)
-        SimulationDataFile >> ppSimCases[0][t];
+        gSimulationDataInputFile >> ppSimCases[0][t];
   }
   else
     SSGenerateException("Error: Reading simulation data from file not implemented for %s analysis.\n",
                         "ReadSimulationDataFromFile()", gParameters.GetAnalysisTypeAsString());
-
-  glFilePosition = SimulationDataFile.tellg();  // saves the current file location for the next call
 }
