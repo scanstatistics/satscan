@@ -167,8 +167,10 @@ void CSpaceTimeCluster::CompareTopCluster(CSpaceTimeCluster & TopShapeCluster, c
   m_bClusterDefined = true;
   if (Data.GetNumDataStreams() > 1)
     TI->CompareDataStreamClusters(*this, TopShapeCluster, gStreamData);
-  else
-    TI->CompareClusters(*this, TopShapeCluster, gStreamData[0]->gpCases, gStreamData[0]->gpMeasure, gStreamData[0]->gpSqMeasure);
+  else {
+    AbstractTemporalClusterStreamData * pStreamData = gStreamData[0];
+    TI->CompareClusters(*this, TopShapeCluster, pStreamData->gpCases, pStreamData->gpMeasure, pStreamData->gpSqMeasure);
+  }
 }
 
 /** modifies measure list given this cluster definition */
