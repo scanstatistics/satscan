@@ -97,7 +97,7 @@ class PopulationData {
     int                                 GetPopulationCategoryIndex(const std::vector<std::string>& vCategoryCovariates) const;
     Julian                              GetPopulationDate(int iDateIndex) const;
     int                                 GetPopulationDateIndex(Julian Date, bool bTrueDate) const;
-    void                                GetPopUpLowIndex(Julian* pDates, int nDateIndex,
+    void                                GetPopUpLowIndex(const Julian* pDates, int nDateIndex,
                                                          int nMaxDateIndex, int& nUpIndex, int& nLowIndex) const;
     measure_t                           GetRiskAdjustedPopulation(measure_t& dMeanPopulation, tract_t t,
                                                                   int iPopulationDateIndex, const std::vector<double>& vRisk) const;

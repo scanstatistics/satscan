@@ -653,7 +653,7 @@ int PopulationData::GetPopulationDateIndex(Julian Date, bool bTrueDate) const {
     for time interval defined by [nDateIndex .. nMaxDateIndex] on pDates array.
     Caller is responsible for ensuring that pDates points to valid memory and
     contains a number of elements in accordance with [nDateIndex .. nMaxDateIndex + 1]. */
-void PopulationData::GetPopUpLowIndex(Julian* pDates, int nDateIndex, int nMaxDateIndex, int& nUpIndex, int& nLowIndex) const {
+void PopulationData::GetPopUpLowIndex(const Julian* pDates, int nDateIndex, int nMaxDateIndex, int& nUpIndex, int& nLowIndex) const {
   int   i, index;
   bool  bUpFound = false;
 
