@@ -116,12 +116,15 @@ void CPoissonModel::AdjustForLogLinear(RealDataStream& thisStream, measure_t ** 
     case CTimeTrend::TREND_NOTCONVERGED :
       SSGenerateException("Note: Temporal adjustment could not be performed. The time trend does not converge.\n"
                           "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
+    case CTimeTrend::TREND_NEGATIVE :
+      SSGenerateException("Note: Temporal adjustment could not be performed. The calculated time trend is negative.\n"
+                          "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
     case CTimeTrend::TREND_CONVERGED : break;
     default :
       ZdGenerateException("Unknown time trend status type '%d'.", "AdjustForLogLinear()", TimeTrend.GetStatus());
   };
 
-  TimeTrend.SetAnnualTimeTrend(gParameters.GetTimeIntervalUnitsType(), gData.GetNumTimeIntervals());
+  TimeTrend.SetAnnualTimeTrend(gParameters.GetTimeIntervalUnitsType(), gParameters.GetTimeIntervalLength());
   AdjustForLLPercentage(thisStream, pNonCumulativeMeasure, TimeTrend.GetAnnualTimeTrend());
   //store calculated time trend adjustment for reporting later
   thisStream.SetCalculatedTimeTrendPercentage(TimeTrend.GetAnnualTimeTrend());
@@ -324,15 +327,17 @@ void CPoissonModel::StratifiedSpatialAdjustment(RealDataStream& thisStream, meas
   count_t    ** ppCases = thisStream.GetCaseArray();
   tract_t       t;
   int           i;
+  double        dTractAdjustment;
 
 
   for (t=0; t < gData.GetNumTracts(); ++t) {
      //calculates total measure for current tract across all time intervals
      for (tTotalTractMeasure=0, i=0; i < gData.GetNumTimeIntervals(); ++i)
         tTotalTractMeasure += ppNonCumulativeMeasure[i][t];
+     dTractAdjustment = ppCases[0][t]/tTotalTractMeasure;
      //now multiply each time interval/tract location by (total cases)/(total measure)
      for (i=0; tTotalTractMeasure && i < gData.GetNumTimeIntervals(); ++i)
-        ppNonCumulativeMeasure[i][t] *= ppCases[0][t]/tTotalTractMeasure;
+        ppNonCumulativeMeasure[i][t] *= dTractAdjustment;
   }
 }
 
