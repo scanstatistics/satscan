@@ -21,23 +21,6 @@ __fastcall TfrmAdvancedParameters::TfrmAdvancedParameters(TfrmAnalysis & Analysi
   }
 }
 
-/** event triggered when selects browse button for maximum circle population file */
-void __fastcall TfrmAdvancedParameters::btnBrowseMaxCirclePopFileClick(TObject *Sender){
-  try {
-    OpenDialog->FileName = "";
-    OpenDialog->DefaultExt = "*.pop";
-    OpenDialog->Filter = "Maximum Circle Population files (*.max)|*.max|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-    OpenDialog->FilterIndex = 0;
-    OpenDialog->Title = "Select Maximum Circle Population File";
-    if (OpenDialog->Execute())
-      edtMaxCirclePopulationFilename->Text = OpenDialog->FileName;
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("btnBrowseMaxCirclePopFileClick()","TfrmAdvancedParameters");
-    DisplayBasisException(this, x);
-  }
-}
-
 /** event triggered when selects browse button for adjustment for relative risks file */
 void __fastcall TfrmAdvancedParameters::btnBrowseAdjustmentsFileClick(TObject *Sender) {
   try {
@@ -79,11 +62,6 @@ void __fastcall TfrmAdvancedParameters::chkRestrictTemporalRangeClick(TObject *S
 void __fastcall TfrmAdvancedParameters::edtLogLinearExit(TObject *Sender) {
   if (edtLogLinear->Text.IsEmpty() || atof(edtLogLinear->Text.c_str()) <= -100)
     edtLogLinear->Text = 0;
-}
-
-/** event triggered when text of maximum circle edit control changes */
-void __fastcall TfrmAdvancedParameters::edtMaxCirclePopulationFilenameChange(TObject *Sender) {
-  edtMaxCirclePopulationFilename->Hint = edtMaxCirclePopulationFilename->Text;
 }
 
 /** event triggered when end window end ranges year, month or day control is exited */
@@ -154,14 +132,6 @@ void TfrmAdvancedParameters::EnableAdjustmentsGroup(bool bEnable) {
   edtAdjustmentsByRelativeRisksFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
   edtAdjustmentsByRelativeRisksFile->Color = edtAdjustmentsByRelativeRisksFile->Enabled ? clWindow : clInactiveBorder;
   btnBrowseAdjustmentsFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
-}
-
-/** enables input file options controls */
-void TfrmAdvancedParameters::EnableInputFilesGroup(bool bEnable) {
-  lblMaxCirclePopulationFile->Enabled = bEnable;
-  edtMaxCirclePopulationFilename->Enabled = bEnable;
-  edtMaxCirclePopulationFilename->Color = edtMaxCirclePopulationFilename->Enabled ? clWindow : clInactiveBorder;
-  btnBrowseMaxCirclePopFile->Enabled = bEnable;
 }
 
 /** enables spatial output options controls */
@@ -307,7 +277,6 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
     ref.SetAdjustmentsByRelativeRisksFilename(edtAdjustmentsByRelativeRisksFile->Text.c_str(), false);
     ref.SetTimeTrendAdjustmentType(rdgTemporalTrendAdj->Enabled ? GetAdjustmentTimeTrendControlType() : NOTADJUSTED);
     ref.SetTimeTrendAdjustmentPercentage(atof(edtLogLinear->Text.c_str()));
-    ref.SetMaxCirclePopulationFileName(edtMaxCirclePopulationFilename->Text.c_str(), false, true);
     ref.SetTerminateSimulationsEarly(chkTerminateEarly->Checked);
     ref.SetRestrictReportedClusters(chkRestrictReportedClusters->Enabled && chkRestrictReportedClusters->Checked);
     ref.SetMaximumReportedGeographicalClusterSize(atof(edtReportClustersSmallerThan->Text.c_str()));
@@ -342,11 +311,6 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
 /** Sets adjustments filename in interface */
 void TfrmAdvancedParameters::SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsByRelativeRisksFileName) {
   edtAdjustmentsByRelativeRisksFile->Text = sAdjustmentsByRelativeRisksFileName;
-}
-
-/** Sets special population filename in interface */
-void TfrmAdvancedParameters::SetMaximumCirclePopulationFile(const char * sMaximumCirclePopulationFileName) {
-  edtMaxCirclePopulationFilename->Text = sMaximumCirclePopulationFileName;
 }
 
 /** */
@@ -385,7 +349,6 @@ void TfrmAdvancedParameters::Setup() {
       edtLogLinear->Text = 0;
     else
       edtLogLinear->Text = ref.GetTimeTrendAdjustmentPercentage();
-    edtMaxCirclePopulationFilename->Text = ref.GetMaxCirclePopulationFileName().c_str();
     chkTerminateEarly->Checked = ref.GetTerminateSimulationsEarly();
     if (ref.GetMaximumReportedGeoClusterSize() > 0)
       edtReportClustersSmallerThan->Text = ref.GetMaximumReportedGeoClusterSize();
@@ -447,30 +410,6 @@ void TfrmAdvancedParameters::ValidateAdjustmentSettings() {
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateAdjustmentSettings()","TfrmAdvancedParameters");
-    throw;
-  }
-}
-
-/** validates input file settings - throws exception */
-void TfrmAdvancedParameters::ValidateInputFilesSettings() {
-  try {
-    if (edtMaxCirclePopulationFilename->Enabled) {
-      if (gAnalysisSettings.GetAnalysisControlType() == PROSPECTIVESPACETIME &&
-          gAnalysisSettings.chkAdjustForEarlierAnalyses->Checked && gAnalysisSettings.rdoSpatialPercentage->Checked &&
-          gAnalysisSettings.rdoSpatialPercentage->Enabled && edtMaxCirclePopulationFilename->Text.IsEmpty())
-          GenerateAFException("For a prospective space-time analysis adjusting for ealier analyses,\n"
-                              "with the maximum spatial cluster size defined as a percentage of the\n"
-                              "population at risk, a maximum circle population file must be specified.\n\n"
-                              "Alternatively you may choose to specify the maximum as a fixed radius,\n"
-                              "in which no maximum circle population file is required.",
-                              "ValidateInputFilesSettings()", *edtMaxCirclePopulationFilename);
-
-      if (!edtMaxCirclePopulationFilename->Text.IsEmpty() && !File_Exists(edtMaxCirclePopulationFilename->Text.c_str()))
-        GenerateAFException("Maximum circle population file could not be opened.","ValidateInputFilesSettings()",*edtMaxCirclePopulationFilename);
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateInputFilesSettings()","TfrmAdvancedParameters");
     throw;
   }
 }

@@ -140,60 +140,14 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     object tsOther: TTabSheet
       Caption = 'Other'
       ImageIndex = 1
-      object grpInputFiles: TGroupBox
-        Left = 6
-        Top = 3
-        Width = 390
-        Height = 72
-        Anchors = [akLeft, akTop, akRight]
-        Caption = 'Input Files'
-        TabOrder = 0
-        object lblMaxCirclePopulationFile: TLabel
-          Left = 12
-          Top = 22
-          Width = 162
-          Height = 13
-          Caption = 'Special Max Circle Population File:'
-        end
-        object edtMaxCirclePopulationFilename: TEdit
-          Left = 12
-          Top = 40
-          Width = 335
-          Height = 21
-          Anchors = [akLeft, akRight]
-          ParentShowHint = False
-          ShowHint = True
-          TabOrder = 0
-          OnChange = edtMaxCirclePopulationFilenameChange
-        end
-        object btnBrowseMaxCirclePopFile: TButton
-          Left = 353
-          Top = 40
-          Width = 25
-          Height = 21
-          Hint = 'browse for special population file'
-          Anchors = [akRight, akBottom]
-          Caption = '...'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -13
-          Font.Name = 'MS Sans Serif'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ParentShowHint = False
-          ShowHint = True
-          TabOrder = 1
-          OnClick = btnBrowseMaxCirclePopFileClick
-        end
-      end
       object grpAnalysis: TGroupBox
         Left = 6
-        Top = 81
+        Top = 3
         Width = 390
         Height = 50
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Analysis'
-        TabOrder = 1
+        TabOrder = 0
         object chkTerminateEarly: TCheckBox
           Left = 12
           Top = 22
@@ -206,12 +160,12 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object grpScanningWindow: TGroupBox
         Left = 6
-        Top = 137
+        Top = 58
         Width = 390
         Height = 111
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Scanning Window'
-        TabOrder = 2
+        TabOrder = 1
         object chkRestrictTemporalRange: TCheckBox
           Left = 12
           Top = 22
@@ -409,11 +363,11 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object grpOutput: TGroupBox
         Left = 6
-        Top = 253
+        Top = 175
         Width = 391
         Height = 58
         Caption = 'Output'
-        TabOrder = 3
+        TabOrder = 2
         object lblReportSmallerClusters: TLabel
           Left = 234
           Top = 23

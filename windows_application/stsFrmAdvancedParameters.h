@@ -19,10 +19,6 @@ __published:	// IDE-managed Components
         TPageControl *PageControl;
         TTabSheet *tsAdjustmentsTabSheet;
         TTabSheet *tsOther;
-        TGroupBox *grpInputFiles;
-        TLabel *lblMaxCirclePopulationFile;
-        TEdit *edtMaxCirclePopulationFilename;
-        TButton *btnBrowseMaxCirclePopFile;
         TGroupBox *grpAnalysis;
         TCheckBox *chkTerminateEarly;
         TGroupBox *grpScanningWindow;
@@ -57,8 +53,6 @@ __published:	// IDE-managed Components
         TCheckBox *chkAdjustForKnownRelativeRisks;
         void __fastcall FormKeyPress(TObject *Sender, char &Key);
         void __fastcall chkRestrictTemporalRangeClick(TObject *Sender);
-        void __fastcall btnBrowseMaxCirclePopFileClick(TObject *Sender);
-        void __fastcall edtMaxCirclePopulationFilenameChange(TObject *Sender);
         void __fastcall chkRestrictReportedClustersClick(TObject *Sender);
         void __fastcall edtReportClustersSmallerThanExit(TObject *Sender);
         void __fastcall edtReportClustersSmallerThanKeyPress(TObject *Sender, char &Key);
@@ -96,18 +90,15 @@ __published:	// IDE-managed Components
 
     void                        EnableAdjustmentsGroup(bool bEnable);
     void                        EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage);
-    void                        EnableInputFilesGroup(bool bEnable);
     void                        EnableSpatialOutputOptions(bool bEnable);
     void                        EnableTemporalOptions(bool bEnable, bool bEnableRanges);
     void                        SaveParameterSettings();
     void                        SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName);
-    void                        SetMaximumCirclePopulationFile(const char * sMaximumCirclePopulationFileName);
     void                        SetRangeDateEnables(bool bYear, bool bMonth, bool bDay);
     void                        SetReportingClustersText(const ZdString& sText);
     void                        SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                        ShowDialog(TWinControl * pFocusControl=0);
     void                        ValidateAdjustmentSettings();
-    void                        ValidateInputFilesSettings();
     void                        ValidateScanningWindowSettings();
 };
 
