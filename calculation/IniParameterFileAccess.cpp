@@ -427,7 +427,7 @@ void IniParameterFileAccess::WriteBatchModeFeaturesSettings(ZdIniFile& WriteFile
 
   try {
     WriteIniParameter(WriteFile, VALIDATE, AsString(s, gParameters.GetValidatingParameters()),
-                      " validate parameters prior to analysis execution (y/n)");
+                      " validate parameters prior to analysis execution? (y/n)");
     //WriteIniParameter(WriteFile, TIMETRENDCONVRG, AsString(s, gParameters.GetTimeTrendConvergence()),
     //                  " time trend convergence for SVTT analysis (> 0)");  //---  until SVTT is available, don't write
   }
@@ -448,7 +448,7 @@ void IniParameterFileAccess::WriteClustersReportedSettings(ZdIniFile& WriteFile)
     WriteIniParameter(WriteFile, REPORTED_GEOSIZE, AsString(s, gParameters.GetMaximumReportedGeoClusterSize()),
                       " max reported geographic size (< max geographical cluster size%)");
     WriteIniParameter(WriteFile, USE_REPORTED_GEOSIZE, AsString(s, gParameters.GetRestrictingMaximumReportedGeoClusterSize()),
-                      " restrict reported clusters to maximum geographical cluster size (y/n)");
+                      " restrict reported clusters to maximum geographical cluster size? (y/n)");
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteClustersReportedSettings()","IniParameterFileAccess");
@@ -472,9 +472,9 @@ void IniParameterFileAccess::WriteEllipticScanSettings(ZdIniFile& WriteFile) {
     for (int i=0; i < gParameters.GetNumRequestedEllipses(); ++i)
        s << (i == 0 ? "" : ",") << gParameters.GetEllipseRotations()[i];
     WriteIniParameter(WriteFile, ENUMBERS, s.GetCString(),
-                      " elliptic angles - one value for each ellipse (comma separated decimal values)");
+                      " elliptic angles - one value for each ellipse (comma separated integer values)");
     WriteIniParameter(WriteFile, NON_COMPACTNESS_PENALTY, AsString(s, gParameters.GetNonCompactnessPenalty()),
-                      " elliptic non-compactness penalty (y/n)");
+                      " elliptic non-compactness penalty? (y/n)");
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteEllipticScanSettings()","IniParameterFileAccess");
@@ -490,9 +490,9 @@ void IniParameterFileAccess::WriteInferenceSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, START_PROSP_SURV, gParameters.GetProspectiveStartDate().c_str(),
                       " prospective surveillance start date (YYYY/MM/DD)");
     WriteIniParameter(WriteFile, EARLY_SIM_TERMINATION, AsString(s, gParameters.GetTerminateSimulationsEarly()),
-                      " terminate simulations early for large p-values (y/n)");
+                      " terminate simulations early for large p-values? (y/n)");
     WriteIniParameter(WriteFile, ADJ_FOR_EALIER_ANALYSES, AsString(s, gParameters.GetAdjustForEarlierAnalyses()),
-                      " adjust for earlier analyses -- prospective analyses only (y/n)");
+                      " adjust for earlier analyses(prospective analyses only)? (y/n)");
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
@@ -615,21 +615,21 @@ void IniParameterFileAccess::WriteOutputSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, OUTPUTFILE, gParameters.GetOutputFileName().c_str(),
                       " analysis results output filename");
     WriteIniParameter(WriteFile, OUTPUT_SIM_LLR_ASCII, AsString(s, gParameters.GetOutputSimLoglikeliRatiosAscii()),
-                      " output simulated log likelihoods ratios in ASCII format (y/n)");
+                      " output simulated log likelihoods ratios in ASCII format? (y/n)");
     WriteIniParameter(WriteFile, OUTPUT_SIM_LLR_DBASE, AsString(s, gParameters.GetOutputSimLoglikeliRatiosDBase()),
-                      " output simulated log likelihoods ratios in dBase format (y/n)");
+                      " output simulated log likelihoods ratios in dBase format? (y/n)");
     WriteIniParameter(WriteFile, OUTPUT_RR_ASCII, AsString(s, gParameters.GetOutputRelativeRisksAscii()),
-                      " output relative risks in ASCII format (y/n)");
+                      " output relative risks in ASCII format? (y/n)");
     WriteIniParameter(WriteFile, OUTPUT_RR_DBASE, AsString(s, gParameters.GetOutputRelativeRisksDBase()),
-                      " output relative risks in dBase format (y/n)");
+                      " output relative risks in dBase format? (y/n)");
     WriteIniParameter(WriteFile, OUTPUT_AREAS_ASCII, AsString(s, gParameters.GetOutputAreaSpecificAscii()),
-                      " output location information in ASCII format (y/n)");
+                      " output location information in ASCII format? (y/n)");
     WriteIniParameter(WriteFile, OUTPUT_AREAS_DBASE, AsString(s, gParameters.GetOutputAreaSpecificDBase()),
-                      " output location information in dBase format (y/n)");
+                      " output location information in dBase format? (y/n)");
     WriteIniParameter(WriteFile, OUTPUT_MLC_ASCII, AsString(s, gParameters.GetOutputClusterLevelAscii()),
-                      " output cluster information in ASCII format (y/n)");
+                      " output cluster information in ASCII format? (y/n)");
     WriteIniParameter(WriteFile, OUTPUT_MLC_DBASE, AsString(s, gParameters.GetOutputClusterLevelDBase()),
-                      " output cluster information in dBase format (y/n)");
+                      " output cluster information in dBase format? (y/n)");
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteOutputSettings()","IniParameterFileAccess");
@@ -643,7 +643,7 @@ void IniParameterFileAccess::WritePowerSimulationsSettings(ZdIniFile& WriteFile)
 
   try {
     WriteIniParameter(WriteFile, POWERCALC, AsString(s, gParameters.GetIsPowerCalculated()),
-                      " p-values for 2 pre-specified log likelihood ratios (y/n)");
+                      " p-values for 2 pre-specified log likelihood ratios? (y/n)");
     WriteIniParameter(WriteFile, POWERX, AsString(s, gParameters.GetPowerCalculationX()),
                       " power calculation log likelihood ratio (no. 1)");
     WriteIniParameter(WriteFile, POWERY, AsString(s, gParameters.GetPowerCalculationY()),
@@ -653,7 +653,7 @@ void IniParameterFileAccess::WritePowerSimulationsSettings(ZdIniFile& WriteFile)
     WriteIniParameter(WriteFile, SIMULATION_SOURCEFILE, gParameters.GetSimulationDataSourceFilename().c_str(),
                       " simulation data input file name (with File Import=2)");
     WriteIniParameter(WriteFile, OUTPUT_SIMULATION_DATA, AsString(s, gParameters.GetOutputSimulationData()),
-                      " print simulation data to file (y/n)");
+                      " print simulation data to file? (y/n)");
     WriteIniParameter(WriteFile, SIMULATION_DATA_OUTFILE, gParameters.GetSimulationDataOutputFilename().c_str(),
                       " simulation data output filename");
   }
@@ -712,7 +712,7 @@ void IniParameterFileAccess::WriteSpatialWindowSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, GEOSIZE, AsString(s, gParameters.GetMaximumGeographicClusterSize()),
                       " maximum geographic cluster size (<=50%)");
     WriteIniParameter(WriteFile, PURETEMPORAL, AsString(s, gParameters.GetIncludePurelyTemporalClusters()),
-                      " include purely temporal clusters (y/n)");
+                      " include purely temporal clusters? (y/n)");
     WriteIniParameter(WriteFile, MAX_SPATIAL_TYPE, AsString(s, gParameters.GetMaxGeographicClusterSizeType()),
                       " how max spatial size should be interpretted (0=Percentage, 1=Distance, 2=Percentage of max circle population file)");
     WriteIniParameter(WriteFile, MAXCIRCLEPOPFILE, gParameters.GetMaxCirclePopulationFileName().c_str(),
@@ -746,7 +746,7 @@ void IniParameterFileAccess::WriteTemporalWindowSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, TIMESIZE, AsString(s, gParameters.GetMaximumTemporalClusterSize()),
                      " maximum temporal cluster size (<=90%)");
     WriteIniParameter(WriteFile, PURESPATIAL, AsString(s, gParameters.GetIncludePurelySpatialClusters()),
-                      " include purely spatial clusters (y/n)");
+                      " include purely spatial clusters? (y/n)");
     WriteIniParameter(WriteFile, MAX_TEMPORAL_TYPE, AsString(s, gParameters.GetMaximumTemporalClusterSizeType()),
                       " how max temporal size should be interpretted (0=Percentage, 1=Time)");
     WriteIniParameter(WriteFile, CLUSTERS, AsString(s, gParameters.GetIncludeClustersType()),
