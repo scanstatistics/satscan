@@ -17,8 +17,8 @@
  a message on stderr, and exits.
  **********************************************************************/
 
-void *Scalloc(size_t, size_t, BasePrint*);
-void *Smalloc(size_t, BasePrint*);
-void *Srealloc(void *, size_t, BasePrint*);
+void *Scalloc(size_t, size_t, BasePrint* p=0);
+void *Smalloc(size_t, BasePrint* p=0);
+void *Srealloc(void *, size_t, BasePrint* p=0);
 //*****************************************************************************
 #endif
