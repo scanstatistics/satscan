@@ -107,16 +107,16 @@ void AsciiPrintFormat::PrintSectionLabel(FILE* fp, const char * sText, bool bStr
   iStringLength += fprintf(fp, ": ");
 }
 
-/** Prints character '_' giRightMargin'th times. Prefixes/postfixes separator
+/** Prints character cSeparator giRightMargin'th times. Prefixes/postfixes separator
     string newline character as specified by parameters, respectively. */
-void AsciiPrintFormat::PrintSectionSeparatorString(FILE* fp, unsigned int iPreNewlines, unsigned int iPostNewlines) {
+void AsciiPrintFormat::PrintSectionSeparatorString(FILE* fp, unsigned int iPreNewlines, unsigned int iPostNewlines, char cSeparator) {
   unsigned int iPrint = 0;
 
   while (iPreNewlines-- > 0)
      putc('\n', fp);
 
   while (iPrint++ < giRightMargin)
-     putc('_', fp);
+     putc(cSeparator, fp);
 
   while (iPostNewlines-- > 0)
      putc('\n', fp);
