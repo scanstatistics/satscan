@@ -10,6 +10,7 @@
 #include "PoissonDataStreamHandler.h"
 #include "BernoulliDataStreamHandler.h"
 #include "SpaceTimePermutationDataStreamHandler.h"
+#include "OrdinalDataSetHandler.h"
 
 /** class constructor */
 CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -29,7 +30,7 @@ CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirect
 /** class destructor */
 CSaTScanData::~CSaTScanData() {
   try {
-    delete gpDataStreams; gpDataStreams=0;
+    delete gpDataSets; gpDataSets=0;
     delete m_pModel;
     delete gpNeighborCountHandler; gpNeighborCountHandler=0;
     delete gpSortedIntHandler; gpSortedIntHandler=0;
@@ -139,40 +140,12 @@ bool CSaTScanData::AdjustMeasure(RealDataStream& thisStream, measure_t ** pNonCu
     performed between iterations of a sequential scan. */
 void CSaTScanData::AdjustNeighborCounts() {
   try {
-    //Deallocate neighbor information in sorted structures.
-    if (gParameters.GetMaxGeoClusterSizeTypeIsPopulationBased()) {
-      //Free/clear previous interation's neighbor information.
-      if (gpSortedUShortHandler)
-        gpSortedUShortHandler->FreeThirdDimension();
-      else
-        gpSortedIntHandler->FreeThirdDimension();
-      gpNeighborCountHandler->Set(0);
- 
-      //Recompute neighbors.
-      MakeNeighbors(&gTractHandler, &gCentroidsHandler, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
-                    (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0),
-                    static_cast<tract_t>(m_nTotalTractsAtStart), m_nGridTracts,
-                    (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpDataStreams->GetStream(0/*for now*/).GetMeasureArray()[0]),
-                    m_nMaxCircleSize, m_nMaxCircleSize,
-                    gpNeighborCountHandler->GetArray(), gParameters.GetDimensionsOfData(),
-                    gParameters.GetNumRequestedEllipses(), gParameters.GetEllipseShapes(),
-                    gParameters.GetEllipseRotations(), gParameters.GetMaxGeographicClusterSizeType(), &gPrint);
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("AdjustNeighborCounts()", "CSaTScanData");
-    throw;
-  }
-}
-
-/** allocates two-dimensional array that will track the number of neighbors
-    for each shape/grid point combination. */
-void CSaTScanData::AllocateNeighborArray() {
-  try {
-    gpNeighborCountHandler = new TwoDimensionArrayHandler<tract_t>(gParameters.GetNumTotalEllipses() + 1, m_nGridTracts, 0);
+    //Re-calculate neighboring locations about each centroid.
+    if (gParameters.GetMaxGeoClusterSizeTypeIsPopulationBased())
+        CentroidNeighborCalculatorByPopulation(*this, gPrint, true).CalculateNeighbors();
   }
   catch (ZdException &x) {
-    x.AddCallpath("AllocateNeighborArray()","CSaTScanData");
+    x.AddCallpath("AdjustNeighborCounts()", "CSaTScanData");
     throw;
   }
 }
@@ -181,18 +154,33 @@ void CSaTScanData::AllocateNeighborArray() {
     of each ellipse by grid point combination. Data type of array is conditionally
     either unsigned short or tract_t; based upon number of tracts in coordinates
     file. Note that third dimension is allocated with zero length. Later, when
-    neighbors are calculated, the third dimension will be re-allocated based upon
-    the number of calculated neighbors for each (circle/ellipse) and grid point pair. */
+    neighbors are calculated, the third dimension will be allocated based upon
+    the number of calculated neighbors for each (circle/ellipse) and grid point pair.
+    Repeated calls to this method cause the third dimension arrays to be re-initialized
+    to zero. */
 void CSaTScanData::AllocateSortedArray() {
   try {
-    if (m_nTracts < std::numeric_limits<unsigned short>::max())
-      gpSortedUShortHandler = new ThreeDimensionArrayHandler<unsigned short>(gParameters.GetNumTotalEllipses()+1, m_nGridTracts, 0);
-    else
-      gpSortedIntHandler = new ThreeDimensionArrayHandler<tract_t>(gParameters.GetNumTotalEllipses()+1, m_nGridTracts, 0);
+    if (m_nTracts < std::numeric_limits<unsigned short>::max()) {
+      if (!gpSortedUShortHandler)
+        gpSortedUShortHandler = new ThreeDimensionArrayHandler<unsigned short>(gParameters.GetNumTotalEllipses()+1, m_nGridTracts, 0);
+      else
+        gpSortedUShortHandler->FreeThirdDimension();
+    }
+    else {
+      if (!gpSortedIntHandler)
+        gpSortedIntHandler = new ThreeDimensionArrayHandler<tract_t>(gParameters.GetNumTotalEllipses()+1, m_nGridTracts, 0);
+      else
+        gpSortedIntHandler->FreeThirdDimension();
+    }
+    //allocates two-dimensional array that will track the number of neighbors for each shape/grid point combination.
+    if (!gpNeighborCountHandler)
+      gpNeighborCountHandler = new TwoDimensionArrayHandler<tract_t>(gParameters.GetNumTotalEllipses() + 1, m_nGridTracts);
+    gpNeighborCountHandler->Set(0);
   }
   catch (ZdException &x) {
     delete gpSortedUShortHandler; gpSortedUShortHandler=0;
     delete gpSortedIntHandler; gpSortedIntHandler=0;
+    delete gpNeighborCountHandler; gpNeighborCountHandler=0;
     x.AddCallpath("AllocateSortedArray()","CSaTScanData");
     throw;
   }
@@ -242,11 +230,11 @@ void CSaTScanData::CalculateExpectedCases() {
 
   gPrint.SatScanPrintf("Calculating the expected number of cases\n");
   //calculates expected cases for each data stream
-  for (t=0; t < gpDataStreams->GetNumStreams(); ++t) {
-     CalculateMeasure(gpDataStreams->GetStream(t));
-     gtTotalMeasure += gpDataStreams->GetStream(t).GetTotalMeasure();
-     gtTotalCases += gpDataStreams->GetStream(t).GetTotalCases();
-     gtTotalPopulation += gpDataStreams->GetStream(t).GetTotalPopulation();
+  for (t=0; t < gpDataSets->GetNumDataSets(); ++t) {
+     CalculateMeasure(gpDataSets->GetStream(t));
+     gtTotalMeasure += gpDataSets->GetStream(t).GetTotalMeasure();
+     gtTotalCases += gpDataSets->GetStream(t).GetTotalCases();
+     gtTotalPopulation += gpDataSets->GetStream(t).GetTotalPopulation();
   }
   SetMaxCircleSize();
   FreeRelativeRisksAdjustments();
@@ -362,58 +350,22 @@ measure_t CSaTScanData::DateMeasure(PopulationData & Population, measure_t ** pp
 /** Allocates/deallocates memory to store neighbor information.
     Calls MakeNeighbor() function to calculate neighbors for each centroid. */
 void CSaTScanData::FindNeighbors(bool bSimulations) {
-  int           i, j;
-  double        dMaxCircleSize;
-
   try {
-    //if this iteration of call not simulations
-    if (! bSimulations) {
-      AllocateSortedArray();
-      AllocateNeighborArray();
-      //for real data, settings my indicate to report only smaller clusters
-      dMaxCircleSize = (gParameters.GetRestrictingMaximumReportedGeoClusterSize() ? m_nMaxReportedCircleSize : m_nMaxCircleSize);
-    }
-    else {
-      //when this functions is called for simualtions, we need to deallocate memory that
-      //will be allocated once again in MakeNeighbors()
-      if (gpSortedIntHandler)
-        gpSortedIntHandler->FreeThirdDimension();
-      else
-        gpSortedUShortHandler->FreeThirdDimension();
-      gpNeighborCountHandler->Set(0);
-      dMaxCircleSize = m_nMaxCircleSize;
-    }  
-
-    //NOTE: The measure from first data stream is used when calculating neighbors,
-    //      at least for the time being.
-    if (gParameters.GetIsSequentialScanning())
-        MakeNeighbors(&gTractHandler, &gCentroidsHandler, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
-                      (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0), m_nTracts, m_nGridTracts,
-                      (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpDataStreams->GetStream(0).GetMeasureArray()[0]),
-                      dMaxCircleSize, gpDataStreams->GetStream(0).GetTotalMeasure(),
-                      gpNeighborCountHandler->GetArray(), gParameters.GetDimensionsOfData(), gParameters.GetNumRequestedEllipses(),
-                      gParameters.GetEllipseShapes(), gParameters.GetEllipseRotations(),
-                      gParameters.GetMaxGeographicClusterSizeType(), &gPrint);
+    if (gParameters.GetMaxGeographicClusterSizeType() == DISTANCETYPE)
+      CentroidNeighborCalculatorByDistance(*this, gPrint, !bSimulations).CalculateNeighbors();
     else
-        MakeNeighbors(&gTractHandler, &gCentroidsHandler, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
-                      (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0), m_nTracts, m_nGridTracts,
-                      (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpDataStreams->GetStream(0).GetMeasureArray()[0]),
-                      dMaxCircleSize, dMaxCircleSize, gpNeighborCountHandler->GetArray(),
-                      gParameters.GetDimensionsOfData(), gParameters.GetNumRequestedEllipses(),
-                      gParameters.GetEllipseShapes(), gParameters.GetEllipseRotations(),
-                      gParameters.GetMaxGeographicClusterSizeType(), &gPrint);
-
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("FindNeighbors()", "CSaTScanData");
-      throw;
-   }
+      CentroidNeighborCalculatorByPopulation(*this, gPrint, !bSimulations).CalculateNeighbors();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("FindNeighbors()","CSaTScanData");
+    throw;
+  }
 }
 
 double CSaTScanData::GetAnnualRateAtStart(unsigned int iStream) const {
   double nYears      = (double)(m_nEndDate+1 - m_nStartDate) / 365.2425;
-  double dTotalCasesAtStart = gpDataStreams->GetStream(iStream).GetTotalCasesAtStart();
-  double dTotalPopulation = gpDataStreams->GetStream(iStream).GetTotalPopulation();
+  double dTotalCasesAtStart = gpDataSets->GetStream(iStream).GetTotalCasesAtStart();
+  double dTotalPopulation = gpDataSets->GetStream(iStream).GetTotalPopulation();
   double nAnnualRate = (m_nAnnualRatePop*dTotalCasesAtStart) / (dTotalPopulation*nYears);
 
   return nAnnualRate;
@@ -445,11 +397,16 @@ double CSaTScanData::GetEllipseShape(int iEllipseIndex) const {
 /** For Bernoulli model, returns ratio of total cases / total population for
     iStream'th data stream. For all other models, returns 1.*/
 double CSaTScanData::GetMeasureAdjustment(unsigned int iStream) const {
-  if (gParameters.GetProbabiltyModelType() == BERNOULLI) {
-    double dTotalCases = gpDataStreams->GetStream(iStream).GetTotalCases();
-    double dTotalPopulation = gpDataStreams->GetStream(iStream).GetTotalPopulation();
+  if (gParameters.GetProbabilityModelType() == BERNOULLI) {
+    double dTotalCases = gpDataSets->GetStream(iStream).GetTotalCases();
+    double dTotalPopulation = gpDataSets->GetStream(iStream).GetTotalPopulation();
     return dTotalCases / dTotalPopulation;
   }
+//  else if (gParameters.GetProbabilityModelType() == ORDINAL) {
+//    double dTotalCases = gpDataSets->GetStream(iStream).GetTotalCases();
+//    double dTotalPopulation = gpDataSets->GetStream(iStream).GetTotalPopulation();
+//    return dTotalCases / dTotalPopulation;
+//  }
   else
     return 1.0;
 }
@@ -486,7 +443,7 @@ int CSaTScanData::GetTimeIntervalOfEndDate(Julian EndDate) const {
 /** internal class initializaton */
 void CSaTScanData::Init() {
   m_pModel = 0;
-  gpDataStreams = 0;
+  gpDataSets = 0;
   gpNeighborCountHandler=0;
   gpSortedIntHandler=0;
   gpSortedUShortHandler=0;
@@ -510,7 +467,7 @@ void CSaTScanData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
                                  SimulationDataContainer_t& SimDataContainer,
                                  unsigned int iSimulationNumber) const {
   try {
-    gpDataStreams->RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
+    gpDataSets->RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CSaTScanData");
@@ -526,8 +483,8 @@ bool CSaTScanData::ReadBernoulliData() {
     if (!ReadCoordinatesFile())
       return false;
 
-    gpDataStreams = new BernoulliDataStreamHandler(*this, gPrint);
-    if (!gpDataStreams->ReadData())
+    gpDataSets = new BernoulliDataStreamHandler(*this, gPrint);
+    if (!gpDataSets->ReadData())
       return false;
     if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
@@ -535,7 +492,7 @@ bool CSaTScanData::ReadBernoulliData() {
       return false;
   }
   catch (ZdException &x) {
-    delete gpDataStreams; gpDataStreams=0;
+    delete gpDataSets; gpDataSets=0;
     x.AddCallpath("ReadBernoulliData()","CSaTScanData");
     throw;
   }
@@ -555,15 +512,16 @@ void CSaTScanData::ReadDataFromFiles() {
   try {
     // First calculate time interval indexes, these values will be utilized by data read process.
     CalculateTimeIntervalIndexes();
-    switch (gParameters.GetProbabiltyModelType()) {
+    switch (gParameters.GetProbabilityModelType()) {
       case POISSON              : bReadSuccess = ReadPoissonData(); break;
       case BERNOULLI            : bReadSuccess = ReadBernoulliData(); break;
       case SPACETIMEPERMUTATION : bReadSuccess = ReadSpaceTimePermutationData(); break;
-      case NORMAL               : bReadSuccess = ReadNormalData(); break;
+      case ORDINAL              : bReadSuccess = ReadOrdinalData(); break;
       case SURVIVAL             : bReadSuccess = ReadSurvivalData(); break;
+      case NORMAL               : bReadSuccess = ReadNormalData(); break;
       case RANK                 : bReadSuccess = ReadRankData(); break;
       default :
-        ZdGenerateException("Unknown probability model type '%d'.","ReadDataFromFiles()", gParameters.GetProbabiltyModelType());
+        ZdGenerateException("Unknown probability model type '%d'.","ReadDataFromFiles()", gParameters.GetProbabilityModelType());
     };
     if (!bReadSuccess)
       GenerateResolvableException("\nProblem encountered when reading the data from the input files.", "ReadDataFromFiles");
@@ -583,8 +541,8 @@ bool CSaTScanData::ReadNormalData() {
   try {
     if (!ReadCoordinatesFile())
       return false;
-    gpDataStreams = new NormalDataStreamHandler(*this, gPrint);
-    if (!gpDataStreams->ReadData())
+    gpDataSets = new NormalDataStreamHandler(*this, gPrint);
+    if (!gpDataSets->ReadData())
       return false;
     if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
@@ -592,12 +550,36 @@ bool CSaTScanData::ReadNormalData() {
       return false;
   }
   catch (ZdException &x) {
-    delete gpDataStreams; gpDataStreams=0;
+    delete gpDataSets; gpDataSets=0;
     x.AddCallpath("ReadNormalData()","CSaTScanData");
     throw;
   }
   return true;
 }
+
+/** reads data from input files for a Ordinal probability model */
+bool CSaTScanData::ReadOrdinalData() {
+  size_t        t;
+
+  try {
+    if (!ReadCoordinatesFile())
+      return false;
+    gpDataSets = new OrdinalDataSetHandler(*this, gPrint);
+    if (!gpDataSets->ReadData())
+      return false;
+    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+        return false;
+    if (gParameters.UseSpecialGrid() && !ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    delete gpDataSets; gpDataSets=0;
+    x.AddCallpath("ReadOrdinalData()","CSaTScanData");
+    throw;
+  }
+  return true;
+}
+
 
 /** reads data from input files for a Poisson probability model */
 bool CSaTScanData::ReadPoissonData() {
@@ -607,8 +589,8 @@ bool CSaTScanData::ReadPoissonData() {
     if (!ReadCoordinatesFile())
       return false;
 
-    gpDataStreams = new PoissonDataStreamHandler(*this, gPrint);
-    if (!gpDataStreams->ReadData())
+    gpDataSets = new PoissonDataStreamHandler(*this, gPrint);
+    if (!gpDataSets->ReadData())
       return false;
     if (gParameters.UseAdjustmentForRelativeRisksFile() && !ReadAdjustmentsByRelativeRisksFile())
       return false;
@@ -618,7 +600,7 @@ bool CSaTScanData::ReadPoissonData() {
       return false;
   }
   catch (ZdException &x) {
-    delete gpDataStreams; gpDataStreams=0;
+    delete gpDataSets; gpDataSets=0;
     x.AddCallpath("ReadPoissonData()","CSaTScanData");
     throw;
   }
@@ -632,8 +614,8 @@ bool CSaTScanData::ReadRankData() {
   try {
     if (!ReadCoordinatesFile())
       return false;
-    gpDataStreams = new RankDataStreamHandler(*this, gPrint);
-    if (!gpDataStreams->ReadData())
+    gpDataSets = new RankDataStreamHandler(*this, gPrint);
+    if (!gpDataSets->ReadData())
       return false;
     if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
@@ -641,7 +623,7 @@ bool CSaTScanData::ReadRankData() {
       return false;
   }
   catch (ZdException &x) {
-    delete gpDataStreams; gpDataStreams=0;
+    delete gpDataSets; gpDataSets=0;
     x.AddCallpath("ReadRankData()","CSaTScanData");
     throw;
   }
@@ -657,14 +639,14 @@ bool CSaTScanData::ReadSpaceTimePermutationData() {
       return false;
     if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
        return false;
-    gpDataStreams = new SpaceTimePermutationDataStreamHandler(*this, gPrint);
-    if (!gpDataStreams->ReadData())
+    gpDataSets = new SpaceTimePermutationDataStreamHandler(*this, gPrint);
+    if (!gpDataSets->ReadData())
       return false;
     if (gParameters.UseSpecialGrid() && !ReadGridFile())
       return false;
   }
   catch (ZdException &x) {
-    delete gpDataStreams; gpDataStreams=0;
+    delete gpDataSets; gpDataSets=0;
     x.AddCallpath("ReadSpaceTimePermutationData()","CSaTScanData");
     throw;
   }
@@ -678,8 +660,8 @@ bool CSaTScanData::ReadSurvivalData() {
   try {
     if (!ReadCoordinatesFile())
       return false;
-    gpDataStreams = new SurvivalDataStreamHandler(*this, gPrint);
-    if (!gpDataStreams->ReadData())
+    gpDataSets = new SurvivalDataStreamHandler(*this, gPrint);
+    if (!gpDataSets->ReadData())
       return false;
     if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
@@ -687,8 +669,8 @@ bool CSaTScanData::ReadSurvivalData() {
       return false;
   }
   catch (ZdException &x) {
-    delete gpDataStreams; gpDataStreams=0;
-    x.AddCallpath("ReadRankData()","CSaTScanData");
+    delete gpDataSets; gpDataSets=0;
+    x.AddCallpath("ReadSurvivalData()","CSaTScanData");
     throw;
   }
   return true;
@@ -702,26 +684,40 @@ void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
   measure_t     tTotalMeasure;
 
   try {
-    for (size_t t=0; t < gpDataStreams->GetNumStreams(); ++t) {
-       RealDataStream & thisStream = gpDataStreams->GetStream(t);
-       tTotalCases = thisStream.GetTotalCases();
-       tTotalCases -= thisStream.GetCaseArray()[0][tTractIndex];
-       thisStream.GetCaseArray()[0][tTractIndex] = 0;
-       thisStream.SetTotalCases(tTotalCases);
-       tTotalMeasure = thisStream.GetTotalMeasure();
-       tTotalMeasure -= thisStream.GetMeasureArray()[0][tTractIndex];
-       thisStream.GetMeasureArray()[0][tTractIndex] = 0;
-       thisStream.SetTotalMeasure(tTotalMeasure);
-       if (gParameters.GetProbabiltyModelType() == BERNOULLI) {
-         tTotalControls = thisStream.GetTotalControls();
-         tTotalControls -= thisStream.GetControlArray()[0][tTractIndex];
-         thisStream.GetControlArray()[0][tTractIndex] = 0;
-         thisStream.SetTotalControls(tTotalControls);
-       }
-       if (t == 0 && gvCircleMeasure.size()) {
-         m_nTotalMaxCirclePopulation -= gvCircleMeasure[tTractIndex];
-         gvCircleMeasure[tTractIndex] = 0;
-       }
+    for (size_t t=0; t < gpDataSets->GetNumDataSets(); ++t) {
+       RealDataStream & thisStream = gpDataSets->GetStream(t);
+
+       //$$ This process will likely need further updates for the Survival, Normal
+       //$$ and possibly the Rank model.
+       switch (gParameters.GetProbabilityModelType()) {
+         case ORDINAL :
+           tTotalCases = thisStream.GetTotalCases();
+           for (size_t t=0; t < thisStream.GetCasesByCategory().size(); ++t) {
+              tTotalCases -= thisStream.GetCategoryCaseArray(t)[0][tTractIndex];
+              thisStream.GetCategoryCaseArray(t)[0][tTractIndex] = 0;
+           }
+           thisStream.SetTotalCases(tTotalCases);
+           break;
+         case BERNOULLI :
+           tTotalControls = thisStream.GetTotalControls();
+           tTotalControls -= thisStream.GetControlArray()[0][tTractIndex];
+           thisStream.GetControlArray()[0][tTractIndex] = 0;
+           thisStream.SetTotalControls(tTotalControls);
+         default :
+           tTotalCases = thisStream.GetTotalCases();
+           tTotalCases -= thisStream.GetCaseArray()[0][tTractIndex];
+           thisStream.GetCaseArray()[0][tTractIndex] = 0;
+           thisStream.SetTotalCases(tTotalCases);
+           tTotalMeasure = thisStream.GetTotalMeasure();
+           tTotalMeasure -= thisStream.GetMeasureArray()[0][tTractIndex];
+           thisStream.GetMeasureArray()[0][tTractIndex] = 0;
+           thisStream.SetTotalMeasure(tTotalMeasure);
+       };
+    }
+
+    if (gvCircleMeasure.size()) {
+       m_nTotalMaxCirclePopulation -= gvCircleMeasure[tTractIndex];
+       gvCircleMeasure[tTractIndex] = 0;
     }
   }
   catch (ZdException & x) {
@@ -809,9 +805,7 @@ void CSaTScanData::SetIntervalStartTimes() {
 
 /** Causes maximum circle size to be set based on parameters settings. */
 void CSaTScanData::SetMaxCircleSize() {
-  //NOTE: The measure from the first data stream is used when calculating
-  //      the maximum circle size, at least for the time being. 
-  measure_t tTotalMeasure = gpDataStreams->GetStream(0).GetTotalMeasure();
+  measure_t tTotalPopulation;
 
   try {
     switch (gParameters.GetMaxGeographicClusterSizeType()) {
@@ -821,9 +815,16 @@ void CSaTScanData::SetMaxCircleSize() {
              m_nMaxReportedCircleSize = (gParameters.GetMaximumReportedGeoClusterSize() / 100.0) * m_nTotalMaxCirclePopulation;
            break;
       case PERCENTOFPOPULATIONTYPE :
-           m_nMaxCircleSize = (gParameters.GetMaximumGeographicClusterSize() / 100.0) * tTotalMeasure;
+           //NOTE: The measure from the first data stream is used when calculating
+           //      the maximum circle size; at least for the time being.
+           if (gParameters.GetProbabilityModelType() == ORDINAL)
+             tTotalPopulation = gpDataSets->GetStream(0).GetTotalCases();
+           else
+             tTotalPopulation = gpDataSets->GetStream(0).GetTotalMeasure();
+
+           m_nMaxCircleSize = (gParameters.GetMaximumGeographicClusterSize() / 100.0) * tTotalPopulation;
            if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
-             m_nMaxReportedCircleSize = (gParameters.GetMaximumReportedGeoClusterSize() / 100.0) * tTotalMeasure;
+             m_nMaxReportedCircleSize = (gParameters.GetMaximumReportedGeoClusterSize() / 100.0) * tTotalPopulation;
            break;
       case DISTANCETYPE :
            m_nMaxCircleSize = gParameters.GetMaximumGeographicClusterSize();
@@ -869,8 +870,12 @@ void CSaTScanData::SetPurelyTemporalCases() {
   size_t        t;
 
   try {
-    for (t=0; t < gpDataStreams->GetNumStreams(); ++t)
-      gpDataStreams->GetStream(t).SetPTCasesArray();
+    if (gParameters.GetProbabilityModelType() == ORDINAL)
+      for (t=0; t < gpDataSets->GetNumDataSets(); ++t)
+        gpDataSets->GetStream(t).SetPTCategoryCasesArray();
+    else
+      for (t=0; t < gpDataSets->GetNumDataSets(); ++t)
+        gpDataSets->GetStream(t).SetPTCasesArray();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalCases()","CSaTScanData");

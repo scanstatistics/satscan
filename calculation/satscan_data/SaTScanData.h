@@ -28,7 +28,7 @@ class CSaTScanData {
     BasePrint                                 & gPrint;
     const CParameters                         & gParameters;
     CModel                                    * m_pModel;
-    DataStreamHandler                         * gpDataStreams;
+    DataStreamHandler                         * gpDataSets;
 
     GInfo                                       gCentroidsHandler;
     TractHandler                                gTractHandler;
@@ -60,8 +60,6 @@ class CSaTScanData {
     int                                         m_nFlexibleWindowEndRangeEndIndex;
 
     bool                                        AdjustMeasure(RealDataStream& thisStream, measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate);
-    void                                        AllocateNeighborArray();
-    void                                        AllocateSortedArray();
     measure_t                                   CalcMeasureForTimeInterval(PopulationData & Population, measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate);
     int                                         CalculateProspectiveIntervalStart() const;
     void                                        CalculateTimeIntervalIndexes();
@@ -89,6 +87,9 @@ class CSaTScanData {
     CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection);
     virtual ~CSaTScanData();
 
+
+    void                                        AllocateSortedArray();
+    
     tract_t                                     m_nGridTracts;
     int                                         m_nTimeIntervals;
 
@@ -103,8 +104,8 @@ class CSaTScanData {
     void                                        DisplaySummary2(FILE* fp);
     virtual void                                FindNeighbors(bool bSimulations);
     void                                        FreeRelativeRisksAdjustments() {gRelativeRiskAdjustments.Empty();}
-    DataStreamHandler                         & GetDataStreamHandler() {return *gpDataStreams;}
-    const DataStreamHandler                   & GetDataStreamHandler() const {return *gpDataStreams;}
+    DataStreamHandler                         & GetDataStreamHandler() {return *gpDataSets;}
+    const DataStreamHandler                   & GetDataStreamHandler() const {return *gpDataSets;}
     double                                      GetEllipseAngle(int iEllipseIndex) const;
     double                                      GetEllipseShape(int iEllipseIndex) const;
     int                                         GetFlexibleWindowEndRangeEndIndex() const {return m_nFlexibleWindowEndRangeEndIndex;}
@@ -112,12 +113,14 @@ class CSaTScanData {
     int                                         GetFlexibleWindowStartRangeEndIndex() const {return m_nFlexibleWindowStartRangeEndIndex;}
     int                                         GetFlexibleWindowStartRangeStartIndex() const {return m_nFlexibleWindowStartRangeStartIndex;}
     inline const GInfo                        * GetGInfo() const { return &gCentroidsHandler;}
-    double                                      GetMaxCircleSize() {return m_nMaxCircleSize;}
+    double                                      GetMaxCircleSize() const {return m_nMaxCircleSize;}
+    const std::vector<measure_t>              & GetPopulationArray() const {return gvCircleMeasure;}
+    double                                      GetMaxReportedCircleSize() const {return m_nMaxReportedCircleSize;}
     double                                      GetMeasureAdjustment(unsigned int iStream) const;
     inline virtual tract_t                      GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
     inline tract_t                           ** GetNeighborCountArray() {return gpNeighborCountHandler->GetArray();}
     inline tract_t                           ** GetNeighborCountArray() const {return gpNeighborCountHandler->GetArray();}
-    inline size_t                               GetNumDataStreams() const {return gpDataStreams->GetNumStreams();}
+    inline size_t                               GetNumDataStreams() const {return gpDataSets->GetNumDataSets();}
     inline int                                  GetNumTimeIntervals() const {return m_nTimeIntervals;}
     inline tract_t                              GetNumTracts() const {return m_nTracts;}
     const CParameters                         & GetParameters() const {return gParameters;}
@@ -141,6 +144,7 @@ class CSaTScanData {
     bool                                        ReadGridFile();
     bool                                        ReadMaxCirclePopulationFile();
     bool                                        ReadNormalData();
+    bool                                        ReadOrdinalData();
     bool                                        ReadPoissonData();
     bool                                        ReadRankData();
     bool                                        ReadSpaceTimePermutationData();
@@ -149,10 +153,10 @@ class CSaTScanData {
     void                                        SetMaxCircleSize();
     virtual void                                ValidateObservedToExpectedCases(count_t ** ppCumulativeCases, measure_t ** ppNonCumulativeMeasure) const;
 
-    inline measure_t                            GetTotalDataStreamMeasure(unsigned int iStream) const {return gpDataStreams->GetStream(iStream).GetTotalMeasure();}
+    inline measure_t                            GetTotalDataStreamMeasure(unsigned int iStream) const {return gpDataSets->GetStream(iStream).GetTotalMeasure();}
     inline measure_t                            GetTotalMeasure() const {return gtTotalMeasure;}
     inline count_t                              GetTotalCases() const {return gtTotalCases;}
-    inline count_t                              GetTotalDataStreamCases(unsigned int iStream) const {return gpDataStreams->GetStream(iStream).GetTotalCases();}
+    inline count_t                              GetTotalDataStreamCases(unsigned int iStream) const {return gpDataSets->GetStream(iStream).GetTotalCases();}
     double                                      GetAnnualRateAtStart(unsigned int iStream) const;
     double                                      GetAnnualRatePop() const {return m_nAnnualRatePop;}
 
