@@ -23,7 +23,7 @@ void CSpaceTimePermutationModel::CalculateMeasure(RealDataStream & thisStream) {
 
   try {
     //calculate total number of cases
-    for (j=0; j < gData.m_nTracts; j++) {
+    for (j=0; j < gData.GetNumTracts(); j++) {
        tTotalCases += ppCases[0][j];
        // Check to see if total case or control values have wrapped
        if (tTotalCases < 0)
@@ -42,18 +42,18 @@ void CSpaceTimePermutationModel::CalculateMeasure(RealDataStream & thisStream) {
          for (i=0; i < gData.m_nTimeIntervals; ++i) {
             T_C = pppCategoryCases[i][0][c];
             //Calculate T/C
-            for (j=1; j < gData.m_nTracts; ++j)
+            for (j=1; j < gData.GetNumTracts(); ++j)
                T_C += pppCategoryCases[i][j][c];
             T_C /= Population.GetNumCategoryCases(c);
             //Multiply T/C by S and add to measure
-            for (j=0; j < gData.m_nTracts; ++j)
+            for (j=0; j < gData.GetNumTracts(); ++j)
                ppMeasure[i][j] += T_C * pppCategoryCases[0][j][c];
          }
        }
     }
 
     // calculate total measure
-    for (j=0; j< gData.m_nTracts; ++j)
+    for (j=0; j< gData.GetNumTracts(); ++j)
        tTotalMeasure += ppMeasure[0][j];
 
     // Ensure that TotalCases=TotalMeasure

@@ -34,13 +34,13 @@ void CPoissonModel::AdjustForNonParameteric(RealDataStream & thisStream, measure
     while (j < k*gData.m_nTimeIntervals/AdjustIntervals && j < gData.m_nTimeIntervals)
     {
       if (j == gData.m_nTimeIntervals-1)
-        for (tract=0; tract < gData.m_nTracts; tract++)
+        for (tract=0; tract < gData.GetNumTracts(); tract++)
         {
           sumcases   = sumcases + ppCases[j][tract];
           summeasure = summeasure + (pNonCumulativeMeasure)[j][tract];
         } /* for tract */
       else
-        for (tract=0; tract < gData.m_nTracts; tract++)
+        for (tract=0; tract < gData.GetNumTracts(); tract++)
         {
           sumcases   = sumcases + (ppCases[j][tract]-ppCases[j+1][tract]);
           summeasure = summeasure + (pNonCumulativeMeasure)[j][tract];
@@ -51,7 +51,7 @@ void CPoissonModel::AdjustForNonParameteric(RealDataStream & thisStream, measure
 
     while (jj < k*gData.m_nTimeIntervals/AdjustIntervals && jj < gData.m_nTimeIntervals)
     {
-      for (tract = 0; tract<gData.m_nTracts; tract++)
+      for (tract = 0; tract<gData.GetNumTracts(); tract++)
         (pNonCumulativeMeasure)[jj][tract] =
           (pNonCumulativeMeasure)[jj][tract]*(sumcases/summeasure)/((thisStream.GetTotalCases())/(thisStream.GetTotalMeasure()));
 
@@ -78,7 +78,7 @@ void CPoissonModel::AdjustForLLPercentage(RealDataStream & thisStream, measure_t
 
   /* Adjust the measure assigned to each interval/tract by yearly percentage */
   for (i=0; i < gData.m_nTimeIntervals; ++i)
-    for (t=0; t < gData.m_nTracts; ++t) {
+    for (t=0; t < gData.GetNumTracts(); ++t) {
       ppNonCumulativeMeasure[i][t] = ppNonCumulativeMeasure[i][t]*(pow(p,i*k)) /* * c */ ;
       if (nAdjustedMeasure > std::numeric_limits<measure_t>::max() - ppNonCumulativeMeasure[i][t])
         GenerateResolvableException("Error: Data overflow occurs when performing the time trend adjustment in data stream %u.\n"
@@ -92,7 +92,7 @@ void CPoissonModel::AdjustForLLPercentage(RealDataStream & thisStream, measure_t
   /* measure (gData.m_nTotalMeasure).                                             */
   c = (double)(thisStream.GetTotalMeasure())/nAdjustedMeasure;
   for (i=0; i<gData.m_nTimeIntervals; ++i)
-    for (t=0; t<gData.m_nTracts; ++t)
+    for (t=0; t<gData.GetNumTracts(); ++t)
      ppNonCumulativeMeasure[i][t] *= c;
 }
 
@@ -163,7 +163,7 @@ void CPoissonModel::AdjustMeasure(RealDataStream& thisStream, measure_t** ppNonC
     }
     // Bug check, to ensure that adjusted  total measure equals previously determined total measure
     for (AdjustedTotalMeasure_t=0, i=0; i < gData.m_nTimeIntervals; ++i)
-       for (t=0; t < gData.m_nTracts; ++t)
+       for (t=0; t < gData.GetNumTracts(); ++t)
           AdjustedTotalMeasure_t += ppNonCumulativeMeasure[i][t];
     if (fabs(AdjustedTotalMeasure_t - thisStream.GetTotalMeasure()) > 0.0001)
       ZdGenerateException("Error: The adjusted total measure '%8.6lf' is not equal to the total measure '%8.6lf'.\n",
@@ -182,11 +182,11 @@ void CPoissonModel::AssignMeasure(RealDataStream & thisStream, TwoDimMeasureArra
     thisStream.SetTotalMeasure(CalcMeasure(thisStream,
                                            NonCumulativeMeasureHandler,
                                            gData.GetTimeIntervalStartTimes(),
-                                           gData.m_nStartDate, gData.m_nEndDate));
+                                           gData.GetStudyPeriodStartDate(), gData.GetStudyPeriodEndDate()));
 
     //Validate that all elements of measure array are not negative.  
     measure_t** ppNonCumulativeMeasure = NonCumulativeMeasureHandler.GetArray();
-    for (tract_t tract=0; tract < gData.m_nTracts; ++tract)
+    for (tract_t tract=0; tract < gData.GetNumTracts(); ++tract)
        for (int interval=0; interval < gData.m_nTimeIntervals; ++interval)
           if (ppNonCumulativeMeasure[interval][tract] < 0) {
              std::string sBuffer;
@@ -205,7 +205,7 @@ void CPoissonModel::AssignMeasure(RealDataStream & thisStream, TwoDimMeasureArra
 void CPoissonModel::CalculateMeasure(RealDataStream& thisStream) {
   try {
     //calculate expected number of cases in terms of population dates
-    Calcm(thisStream, gData.m_nStartDate, gData.m_nEndDate);
+    Calcm(thisStream, gData.GetStudyPeriodStartDate(), gData.GetStudyPeriodEndDate());
     //assign measure, perform adjustments as requested, and set measure array as cumulative
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
       thisStream.AllocateNCMeasureArray();
@@ -264,7 +264,7 @@ double CPoissonModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, 
   try {
     ncats = Population.GetNumPopulationCategories();
     nPops = Population.GetNumPopulationDates();
-    Population.CalculateAlpha(vAlpha, gData.m_nStartDate, gData.m_nEndDate);
+    Population.CalculateAlpha(vAlpha, gData.GetStudyPeriodStartDate(), gData.GetStudyPeriodEndDate());
 
       for (T = 1; T <= nTracts; T++)
       {

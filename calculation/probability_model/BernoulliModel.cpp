@@ -23,7 +23,7 @@ void CBernoulliModel::CalculateMeasure(RealDataStream & thisStream) {
     thisStream.AllocateMeasureArray();
     ppMeasure = thisStream.GetMeasureArray();
 
-    for (j=0; j < gData.m_nTracts; ++j) {
+    for (j=0; j < gData.GetNumTracts(); ++j) {
        tTotalCases    += ppCases[0][j];
        tTotalControls += ppControls[0][j];
        for (i=0; i < gData.m_nTimeIntervals/*+1*/; ++i) {
