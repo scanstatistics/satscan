@@ -168,13 +168,13 @@ double C_ST_PS_Analysis::MonteCarlo() {
 
 /** Returns loglikelihood for Monte Carlo Prospective replication. */
 double C_ST_PS_Analysis::MonteCarloProspective() {
-  CMeasureList                * pMeasureList = 0;
-  CPurelySpatialCluster         C_PS(gpPrintDirection);
-  double                        dMaxLogLikelihoodRatio;
-  long                          lTime;
-  Julian                        jCurrentDate;
-  int                           iThisStartInterval, n, m, k;
-  tract_t                       i, j;
+  CMeasureList                        * pMeasureList = 0;
+  CPurelySpatialProspectiveCluster      C_PS(gpPrintDirection, m_pData->m_nTimeIntervals);
+  double                                dMaxLogLikelihoodRatio;
+  long                                  lTime;
+  Julian                                jCurrentDate;
+  int                                   iThisStartInterval, n, m, k;
+  tract_t                               i, j;
 
   try {
     //for prospective Space-Time, m_bAliveClustersOnly should be false..
@@ -200,7 +200,6 @@ double C_ST_PS_Analysis::MonteCarloProspective() {
           C_ST.Initialize(i);
            for (tract_t j=1; j<=m_pData->m_NeighborCounts[k][i]; j++) {
               C_PS.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);
-              pMeasureList->AddMeasure(C_PS.m_nCases, C_PS.m_nMeasure);
               C_ST.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);    // k use to be "0"
               //Need to keep track of the current date as you loop through intervals
               jCurrentDate = m_pData->m_nEndDate;
@@ -209,6 +208,8 @@ double C_ST_PS_Analysis::MonteCarloProspective() {
                 //Need to re-compute duration due to by using current date (whatever date loop "n" is at)
                 //and the Begin Study Date
                 iThisStartInterval = std::max(0, n - m_pData->ComputeNewCutoffInterval(m_pData->m_nStartDate,jCurrentDate));
+                C_PS.SetForProspectiveEndDate(n);
+                pMeasureList->AddMeasure(C_PS.m_nCases, C_PS.m_nMeasure);
                 C_ST.InitTimeIntervalIndeces(iThisStartInterval, n);
                 while (C_ST.SetNextProspTimeInterval())
                      pMeasureList->AddMeasure(C_ST.m_nCases, C_ST.m_nMeasure);

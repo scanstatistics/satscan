@@ -7,6 +7,7 @@
 #include "SpaceTimeCluster.h"
 #include "PurelySpatialCluster.h"
 #include "ProbabilityModel.h"
+#include "PurelySpatialProspectiveCluster.h"
 
 class C_ST_PS_Analysis : public CSpaceTimeAnalysis {
   private:
