@@ -47,7 +47,7 @@ CCluster* CPurelyTemporalAnalysis::GetTopCluster(tract_t nCenter) {
     pTopCluster = new CPurelyTemporalCluster(eIncludeClustersType, *m_pData, *gpPrintDirection);
     CPurelyTemporalCluster thisCluster(eIncludeClustersType, *m_pData, *gpPrintDirection);
     
-    pTopCluster->CCluster::SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
+    pTopCluster->CCluster::SetLogLikelihood(m_pData->GetProbabilityModel().GetLogLikelihoodForTotal());
     thisCluster.SetCenter(nCenter);
     thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
     thisCluster.CompareTopCluster(*pTopCluster, *m_pData);
@@ -81,7 +81,7 @@ double CPurelyTemporalAnalysis::MonteCarlo() {
     }
 
     C.Initialize(0);
-    C.ComputeBestMeasures(m_pData->m_pPTSimCases, m_pData->m_pPTMeasure, *pMeasureList);
+    C.ComputeBestMeasures(m_pData->GetSimCasesPTArray(), m_pData->GetMeasurePTArray(), *pMeasureList);
 
     dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
     delete pMeasureList;
@@ -114,7 +114,7 @@ double CPurelyTemporalAnalysis::MonteCarloProspective() {
     }
     
     C.Initialize(0);
-    C.ComputeBestMeasures(m_pData->m_pPTSimCases, m_pData->m_pPTMeasure, *pMeasureList);
+    C.ComputeBestMeasures(m_pData->GetSimCasesPTArray(), m_pData->GetMeasurePTArray(), *pMeasureList);
 
     dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
     delete pMeasureList;

@@ -13,11 +13,11 @@ CPSMonotoneAnalysis::~CPSMonotoneAnalysis()
 {
 }
 
-CCluster* CPSMonotoneAnalysis::GetTopCluster(tract_t nCenter)
-{
-   CPSMonotoneCluster* MaxCluster = 0;
-   CPSMonotoneCluster* C_High = 0;
-   CPSMonotoneCluster* C_Low = 0;
+CCluster* CPSMonotoneAnalysis::GetTopCluster(tract_t nCenter) {
+  CPSMonotoneCluster          * MaxCluster = 0;
+  CPSMonotoneCluster          * C_High = 0;
+  CPSMonotoneCluster          * C_Low = 0;
+  count_t                    ** ppCases(m_pData->GetCasesArray());
 
    try
      {
@@ -25,15 +25,15 @@ CCluster* CPSMonotoneAnalysis::GetTopCluster(tract_t nCenter)
      {
        C_High = new CPSMonotoneCluster(gpPrintDirection);
        C_High->SetCenter(nCenter);
-       C_High->AllocateForMaxCircles(m_pData->m_NeighborCounts[0][nCenter]+1);
+       C_High->AllocateForMaxCircles(m_pData->GetNeighborCountArray()[0][nCenter]+1);
        C_High->SetRate(HIGH);
-       C_High->DefineTopCluster(*m_pData, m_pData->m_pCases);
+       C_High->DefineTopCluster(*m_pData, ppCases);
    
        C_Low = new CPSMonotoneCluster(gpPrintDirection);
        C_Low->SetCenter(nCenter);
-       C_Low->AllocateForMaxCircles(m_pData->m_NeighborCounts[0][nCenter]+1);
+       C_Low->AllocateForMaxCircles(m_pData->GetNeighborCountArray()[0][nCenter]+1);
        C_Low->SetRate(LOW);
-       C_Low->DefineTopCluster(*m_pData, m_pData->m_pCases);
+       C_Low->DefineTopCluster(*m_pData, ppCases);
    
        //    if (C_High->m_nLogLikelihood >= C_Low->m_nLogLikelihood)
        if (C_High->m_nRatio >= C_Low->m_nRatio)
@@ -52,13 +52,12 @@ CCluster* CPSMonotoneAnalysis::GetTopCluster(tract_t nCenter)
      {
        MaxCluster = new CPSMonotoneCluster(gpPrintDirection);
        MaxCluster->SetCenter(nCenter);
-       MaxCluster->AllocateForMaxCircles(m_pData->m_NeighborCounts[0][nCenter]+1);
+       MaxCluster->AllocateForMaxCircles(m_pData->GetNeighborCountArray()[0][nCenter]+1);
        MaxCluster->SetRate(m_pParameters->GetAreaScanRateType());
-       MaxCluster->DefineTopCluster(*m_pData, m_pData->m_pCases);
+       MaxCluster->DefineTopCluster(*m_pData, ppCases);
      }
    
-     MaxCluster->SetStartAndEndDates(m_pData->m_pIntervalStartTimes,
-                                     m_pData->m_nTimeIntervals);
+     MaxCluster->SetStartAndEndDates(m_pData->GetTimeIntervalStartTimes(), m_pData->m_nTimeIntervals);
      }
    catch (ZdException & x)
       {
@@ -73,17 +72,17 @@ CCluster* CPSMonotoneAnalysis::GetTopCluster(tract_t nCenter)
   return MaxCluster;
 }
 
-double CPSMonotoneAnalysis::MonteCarlo()
-{
-   CPSMonotoneCluster MaxCluster(gpPrintDirection);
-   CPSMonotoneCluster C(gpPrintDirection);
-   CPSMonotoneCluster C_High(gpPrintDirection);
-   CPSMonotoneCluster C_Low(gpPrintDirection);
+double CPSMonotoneAnalysis::MonteCarlo() {
+   CPSMonotoneCluster           MaxCluster(gpPrintDirection);
+   CPSMonotoneCluster           C(gpPrintDirection);
+   CPSMonotoneCluster           C_High(gpPrintDirection);
+   CPSMonotoneCluster           C_Low(gpPrintDirection);
+   count_t                   ** ppSimCases(m_pData->GetSimCasesArray());
 
    try
       {
       MaxCluster.Initialize(0);
-      MaxCluster.m_nLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
+      MaxCluster.m_nLogLikelihood = m_pData->GetProbabilityModel().GetLogLikelihoodForTotal();
     
       C.AllocateForMaxCircles(m_pData->m_nGridTracts+1);
       C_High.AllocateForMaxCircles(m_pData->m_nGridTracts+1);
@@ -95,12 +94,12 @@ double CPSMonotoneAnalysis::MonteCarlo()
           {
           C_High.Initialize(i);
           C_High.SetRate(HIGH);
-          C_High.DefineTopCluster(*m_pData,  m_pData->m_pSimCases);
+          C_High.DefineTopCluster(*m_pData,  ppSimCases);
     
           C_Low.Initialize(i);
           C_Low.SetRate(LOW);
-          C_Low.DefineTopCluster(*m_pData,  m_pData->m_pSimCases);
-    
+          C_Low.DefineTopCluster(*m_pData,  ppSimCases);
+
           //if (C_High.m_nLogLikelihood >= C_Low.m_nLogLikelihood &&
           //   C_High.m_nLogLikelihood > MaxCluster.m_nLogLikelihood)
           if (C_High.m_nRatio >= C_Low.m_nRatio &&
@@ -115,7 +114,7 @@ double CPSMonotoneAnalysis::MonteCarlo()
           {
           C.Initialize(i);
           C.SetRate(m_pParameters->GetAreaScanRateType());
-          C.DefineTopCluster(*m_pData, m_pData->m_pSimCases);
+          C.DefineTopCluster(*m_pData, ppSimCases);
     
           //if (C.m_nLogLikelihood > MaxCluster.m_nLogLikelihood)
           if (C.m_nRatio > MaxCluster.m_nRatio)
@@ -131,17 +130,17 @@ double CPSMonotoneAnalysis::MonteCarlo()
    return (MaxCluster.GetRatio());
 }
 
-double CPSMonotoneAnalysis::MonteCarloProspective()
-{
-   CPSMonotoneCluster MaxCluster(gpPrintDirection);
-   CPSMonotoneCluster C(gpPrintDirection);
-   CPSMonotoneCluster C_High(gpPrintDirection);
-   CPSMonotoneCluster C_Low(gpPrintDirection);
+double CPSMonotoneAnalysis::MonteCarloProspective() {
+   CPSMonotoneCluster           MaxCluster(gpPrintDirection);
+   CPSMonotoneCluster           C(gpPrintDirection);
+   CPSMonotoneCluster           C_High(gpPrintDirection);
+   CPSMonotoneCluster           C_Low(gpPrintDirection);
+   count_t                   ** ppSimCases(m_pData->GetSimCasesArray());
 
    try
       {
       MaxCluster.Initialize(0);
-      MaxCluster.m_nLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
+      MaxCluster.m_nLogLikelihood = m_pData->GetProbabilityModel().GetLogLikelihoodForTotal();
     
       C.AllocateForMaxCircles(m_pData->m_nGridTracts+1);
       C_High.AllocateForMaxCircles(m_pData->m_nGridTracts+1);
@@ -153,11 +152,11 @@ double CPSMonotoneAnalysis::MonteCarloProspective()
           {
           C_High.Initialize(i);
           C_High.SetRate(HIGH);
-          C_High.DefineTopCluster(*m_pData,  m_pData->m_pSimCases);
+          C_High.DefineTopCluster(*m_pData,  ppSimCases);
     
           C_Low.Initialize(i);
           C_Low.SetRate(LOW);
-          C_Low.DefineTopCluster(*m_pData,  m_pData->m_pSimCases);
+          C_Low.DefineTopCluster(*m_pData,  ppSimCases);
     
           //if (C_High.m_nLogLikelihood >= C_Low.m_nLogLikelihood &&
           //   C_High.m_nLogLikelihood > MaxCluster.m_nLogLikelihood)
@@ -173,7 +172,7 @@ double CPSMonotoneAnalysis::MonteCarloProspective()
           {
           C.Initialize(i);
           C.SetRate(m_pParameters->GetAreaScanRateType());
-          C.DefineTopCluster(*m_pData, m_pData->m_pSimCases);
+          C.DefineTopCluster(*m_pData, ppSimCases);
     
           //if (C.m_nLogLikelihood > MaxCluster.m_nLogLikelihood)
           if (C.m_nRatio > MaxCluster.m_nRatio)

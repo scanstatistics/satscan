@@ -26,10 +26,11 @@ CSpaceTimeAnalysis::~CSpaceTimeAnalysis() {
 /** Returns cluster centered at grid point nCenter, with the greatest loglikelihood.
     Caller is responsible for deleting returned cluster. */
 CCluster* CSpaceTimeAnalysis::GetTopCluster(tract_t nCenter) {
-  CSpaceTimeCluster   * pTopCluster = 0;
-  IncludeClustersType   eIncludeClustersType;
-  int                   k;
-  tract_t               i;
+  CSpaceTimeCluster           * pTopCluster = 0;
+  IncludeClustersType           eIncludeClustersType;
+  int                           k;
+  tract_t                       i, iNumNeighbors;
+  count_t                    ** ppCases(m_pData->GetCasesArray());
 
   try {
     // if Prospective Space-Time then Alive Clusters Only.
@@ -39,7 +40,7 @@ CCluster* CSpaceTimeAnalysis::GetTopCluster(tract_t nCenter) {
       eIncludeClustersType = m_pParameters->GetIncludeClustersType();
 
     pTopCluster = new CSpaceTimeCluster(eIncludeClustersType, *m_pData, *gpPrintDirection);
-    pTopCluster->CCluster::SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
+    pTopCluster->CCluster::SetLogLikelihood(m_pData->GetProbabilityModel().GetLogLikelihoodForTotal());
     gpTopShapeClusters->SetTopClusters(*pTopCluster);
 
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
@@ -48,10 +49,11 @@ CCluster* CSpaceTimeAnalysis::GetTopCluster(tract_t nCenter) {
        thisCluster.SetCenter(nCenter);
        thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
        thisCluster.SetEllipseOffset(k);
-       thisCluster.SetDuczmalCorrection((k == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->mdE_Shapes[k - 1]));
+       thisCluster.SetDuczmalCorrection((k == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[k - 1]));
        CSpaceTimeCluster & TopShapeCluster = (CSpaceTimeCluster&)(gpTopShapeClusters->GetTopCluster(k));
-       for (i=1; i <= m_pData->m_NeighborCounts[k][nCenter]; ++i) {
-          thisCluster.AddNeighbor(k, *m_pData, m_pData->m_pCases, i);
+       iNumNeighbors = m_pData->GetNeighborCountArray()[k][nCenter];
+       for (i=1; i <= iNumNeighbors; ++i) {
+          thisCluster.AddNeighbor(k, *m_pData, ppCases, i);
           thisCluster.CompareTopCluster(TopShapeCluster, *m_pData);
        }
     }
@@ -71,7 +73,8 @@ double CSpaceTimeAnalysis::MonteCarlo() {
   CMeasureList  * pMeasureList=0;
   double          dMaxLogLikelihoodRatio;
   int             k;
-  tract_t         i, j;
+  tract_t         i, j, iNumNeighbors;
+  count_t      ** ppSimCases(m_pData->GetSimCasesArray());
 
   try {
     CSpaceTimeCluster C(m_pParameters->GetIncludeClustersType(), *m_pData, *gpPrintDirection);
@@ -91,8 +94,9 @@ double CSpaceTimeAnalysis::MonteCarlo() {
     for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
        for (i=0; i < m_pData->m_nGridTracts; i++) {
           C.Initialize(i);
-          for (j=1; j<=m_pData->m_NeighborCounts[k][i]; j++) {
-             C.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);
+          iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];
+          for (j=1; j <= iNumNeighbors; j++) {
+             C.AddNeighbor(k, *m_pData, ppSimCases, j);
              C.ComputeBestMeasures(*pMeasureList);
           }
        }
@@ -110,11 +114,11 @@ double CSpaceTimeAnalysis::MonteCarlo() {
 }
 
 double CSpaceTimeAnalysis::MonteCarloProspective() {
-  CMeasureList        * pMeasureList=0;
-  double                dMaxLogLikelihoodRatio;
-  long                  lTime;
-  Julian                jCurrentDate;
-  int                   iThisStartInterval, n, m, k;
+  CMeasureList  * pMeasureList=0;
+  double          dMaxLogLikelihoodRatio;
+  int             k;
+  count_t      ** ppSimCases(m_pData->GetSimCasesArray());
+  tract_t         iNumNeighbors;  
 
   try {
     //for prospective Space-Time, m_bAliveClustersOnly should be false..
@@ -135,8 +139,9 @@ double CSpaceTimeAnalysis::MonteCarloProspective() {
     for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {  //circle is 0 offset... (always there)
        for (tract_t i = 0; i<m_pData->m_nGridTracts; i++) {
           C.Initialize(i);
-          for (tract_t j=1; j<=m_pData->m_NeighborCounts[k][i]; j++) {
-             C.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);
+          iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];
+          for (tract_t j=1; j <= iNumNeighbors; j++) {
+             C.AddNeighbor(k, *m_pData, ppSimCases, j);
              C.ComputeBestMeasures(*pMeasureList);
           }
        }

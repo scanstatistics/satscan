@@ -28,10 +28,13 @@ CPurelySpatialAnalysis::~CPurelySpatialAnalysis(){
 CCluster* CPurelySpatialAnalysis::GetTopCluster(tract_t nCenter) {
   int                           i, j;
   CPurelySpatialCluster       * pTopCluster=0;
+  count_t                    ** ppCases(m_pData->GetCasesArray());
+  tract_t                       iNumNeighbors;
+  CModel                      & ProbModel(m_pData->GetProbabilityModel());
 
   try {
     pTopCluster = new CPurelySpatialCluster(gpPrintDirection);
-    pTopCluster->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
+    pTopCluster->SetLogLikelihood(ProbModel.GetLogLikelihoodForTotal());
     gpTopShapeClusters->SetTopClusters(*pTopCluster);
 
     for (j=0; j <= m_pParameters->GetNumTotalEllipses(); j++) {   //circle is 0 offset... (always there)
@@ -39,12 +42,13 @@ CCluster* CPurelySpatialAnalysis::GetTopCluster(tract_t nCenter) {
        thisCluster.SetCenter(nCenter);
        thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
        thisCluster.SetEllipseOffset(j);                       // store the ellipse link in the cluster obj
-       thisCluster.SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->mdE_Shapes[j - 1]));
+       thisCluster.SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[j - 1]));
        CPurelySpatialCluster & TopShapeCluster = (CPurelySpatialCluster&)(gpTopShapeClusters->GetTopCluster(j));       
-       for (i=1; i <= m_pData->m_NeighborCounts[j][nCenter]; i++) {
-          thisCluster.AddNeighbor(j, *m_pData, m_pData->m_pCases, i);
-          if (thisCluster.RateIsOfInterest(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure)) {
-            thisCluster.m_nLogLikelihood = m_pData->m_pModel->CalcLogLikelihood(thisCluster.m_nCases, thisCluster.m_nMeasure);
+       iNumNeighbors = m_pData->GetNeighborCountArray()[j][nCenter];
+       for (i=1; i <= iNumNeighbors; i++) {
+          thisCluster.AddNeighbor(j, *m_pData, ppCases, i);
+          if (thisCluster.RateIsOfInterest(m_pData->GetNumCases(), m_pData->GetTotalMeasure())) {
+            thisCluster.m_nLogLikelihood = ProbModel.CalcLogLikelihood(thisCluster.m_nCases, thisCluster.m_nMeasure);
             if (thisCluster.m_nLogLikelihood > TopShapeCluster.m_nLogLikelihood)
               TopShapeCluster = thisCluster;
           }
@@ -66,8 +70,9 @@ double CPurelySpatialAnalysis::MonteCarlo() {
   CMeasureList                  * pMeasureList=0;
   CPurelySpatialCluster           C(gpPrintDirection);
   double                          dMaxLogLikelihoodRatio;
-  tract_t                         i, j;
+  tract_t                         i, j, iNumNeighbors;
   int                             k;
+  count_t                      ** ppSimCases(m_pData->GetSimCasesArray());
 
   try {
     C.SetRate(m_pParameters->GetAreaScanRateType());
@@ -85,8 +90,9 @@ double CPurelySpatialAnalysis::MonteCarlo() {
     for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) { //circle is 0 offset... (always there)
        for (i=0; i < m_pData->m_nGridTracts; i++) {
           C.Initialize(i);
-          for (j=1; j <= m_pData->m_NeighborCounts[k][i]; j++) {
-             C.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);
+          iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];
+          for (j=1; j <= iNumNeighbors; j++) {
+             C.AddNeighbor(k, *m_pData, ppSimCases, j);
              pMeasureList->AddMeasure(C.m_nCases, C.m_nMeasure);
           }
        }
