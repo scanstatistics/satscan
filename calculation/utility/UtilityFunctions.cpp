@@ -148,11 +148,7 @@ const char * StringParser::GetWord(short wWordIndex) {
   return gpWord;
 }
 
-/** Reads a string into gsFileLine and returns the number of bytes read.
-   If we are at EOF, this function will return 0.
-   NOTE: This code was taken from ZdInputStreamInterface::ReadLine( ZdString &theString ).
-         The only alteration is that the char buffer was made a class variable
-         to prevent repreated allocation. */
+/** Reads a string from file and resets class variables. */
 const char * StringParser::ReadString(FILE * pSourceFile) {
   ClearWordIndex();
   return fgets(gsReadBuffer, MAX_LINESIZE, pSourceFile);
