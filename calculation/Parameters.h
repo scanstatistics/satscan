@@ -123,7 +123,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE};
 /** probabilty model types */
 enum ProbabiltyModelType           {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION};
-enum                               {ALLCLUSTERS=0, ALIVECLUSTERS};
+enum IncludeClustersType           {ALLCLUSTERS=0, ALIVECLUSTERS};
 enum RiskType                      {STANDARDRISK=0, MONOTONERISK};
 /** area incidence rate types */
 enum AreaRateType                  {HIGH=1, LOW, HIGHANDLOW};
@@ -146,7 +146,7 @@ class CParameters {
     ProbabiltyModelType                 geProbabiltyModelType;                  /** probabilty model type */
     AreaRateType                        geAreaScanRate;                         /** areas incidence rate type of interest */
     RiskType                            geRiskFunctionType;                     /**  */
-    bool                                gbAliveClustersOnly;                    /** Use alive clusters only? */
+    IncludeClustersType                 geIncludeClustersType;
     int                                 giReplications;                         /** number of MonteCarlo replicas */
     CriteriaSecondaryClustersType       geCriteriaSecondClustersType;           /** Criteria for Reporting Secondary Clusters */
         /* Power Calcution variables */
@@ -275,7 +275,6 @@ class CParameters {
     void                                DisplayAnalysisType(FILE* fp) const;
     void                                DisplayParameters(FILE* fp) const;
     void                                DisplayTimeAdjustments(FILE* fp) const;
-    bool                                GetAliveClustersOnly() const {return gbAliveClustersOnly;}
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
     const char                        * GetAnalysisTypeAsString() const;
     AreaRateType                        GetAreaScanRateType() const {return geAreaScanRate;}
@@ -290,6 +289,7 @@ class CParameters {
     const std::vector<int>            & GetEllipseRotations() const {return gvEllipseRotations;}
     const std::vector<double>         & GetEllipseShapes() const {return gvEllipseShapes;}
     bool                                GetErrorOnRead() {return gbReadStatusError;}
+    IncludeClustersType                 GetIncludeClustersType() const {return geIncludeClustersType;}
     bool                                GetIncludePurelySpatialClusters() const {return gbIncludePurelySpatialClusters;}
     bool                                GetIncludePurelyTemporalClusters() const {return gbIncludePurelyTemporalClusters;}
     const float                         GetInitialMaxTemporalClusterSize() const {return gfInitialMaxTemporalClusterSize;}
@@ -341,7 +341,6 @@ class CParameters {
     double                              GetTimeTrendAdjustmentPercentage() const {return gbTimeTrendAdjustPercentage;}
     TimeTrendAdjustmentType             GetTimeTrendAdjustmentType() const {return geTimeTrendAdjustType;}
     void                                Read(const char* szFilename, BasePrint & PrintDirection);
-    void                                SetAliveClustersOnly(bool b) {gbAliveClustersOnly = b;}
     void                                SetAnalysisType(AnalysisType eAnalysisType);
     void                                SetAreaRateType(AreaRateType eAreaRateType);
     void                                SetDimensionsOfData(int iDimensions);
@@ -352,6 +351,7 @@ class CParameters {
     void                                SetCriteriaForReportingSecondaryClusters(CriteriaSecondaryClustersType eCriteriaSecondaryClustersType);
     void                                SetDuczmalCorrectionEllipses(bool b) {gbDuczmalCorrectEllipses = b;}
     void                                SetEllipsoidShape(double dShape, int iEllipsoidIndex=-1);
+    void                                SetIncludeClustersType(IncludeClustersType eIncludeClustersType);
     void                                SetIncludePurelySpatialClusters(bool b) {gbIncludePurelySpatialClusters = b;}
     void                                SetIncludePurelyTemporalClusters(bool b) {gbIncludePurelyTemporalClusters = b;}
     void                                SetIsLoggingHistory(bool b) {gbLogRunHistory = b;}

@@ -264,7 +264,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gsStudyPeriodEndDate                = rhs.gsStudyPeriodEndDate;
     gfMaxGeographicClusterSize          = rhs.gfMaxGeographicClusterSize;
     gfMaxTemporalClusterSize            = rhs.gfMaxTemporalClusterSize;
-    gbAliveClustersOnly                 = rhs.gbAliveClustersOnly;
+    geIncludeClustersType               = rhs.geIncludeClustersType;
     geTimeIntervalUnitsType             = rhs.geTimeIntervalUnitsType;
     glTimeIntervalLength                = rhs.glTimeIntervalLength;
     geTimeTrendAdjustType               = rhs.geTimeTrendAdjustType;
@@ -464,7 +464,7 @@ void CParameters::DisplayParameters(FILE* fp) const {
     //The "Clusters to Include" do not apply to PROSPECTIVESPACETIME
     if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME)  {
       fprintf(fp, "  Clusters to Include : ");
-      fprintf(fp, (gbAliveClustersOnly ? "Only those including the study end date\n" : "All\n"));
+      fprintf(fp, (geIncludeClustersType == ALIVECLUSTERS ? "Only those including the study end date\n" : "All\n"));
     }
 
     if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME || (geAnalysisType == PROSPECTIVESPACETIME)) {
@@ -858,7 +858,7 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case GEOSIZE                   : sDefaultValue = gfMaxGeographicClusterSize; break;
       case STARTDATE                 : sDefaultValue = gsStudyPeriodStartDate.c_str(); break;
       case ENDDATE                   : sDefaultValue = gsStudyPeriodEndDate.c_str(); break;
-      case CLUSTERS                  : sDefaultValue = (gbAliveClustersOnly ? YES : NO); break;
+      case CLUSTERS                  : sDefaultValue = geIncludeClustersType; break;
       case EXACTTIMES                : /* no longer used */ break;
       case INTERVALUNITS             : sDefaultValue = geTimeIntervalUnitsType; break;
       case TIMEINTLEN                : sDefaultValue = glTimeIntervalLength; break;
@@ -1319,7 +1319,7 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case GEOSIZE                   : SetMaximumGeographicClusterSize(ReadFloat(sParameter, eParameterType)); break;
       case STARTDATE                 : ReadDate(sParameter, eParameterType); break;
       case ENDDATE                   : ReadDate(sParameter, eParameterType); break;
-      case CLUSTERS                  : SetAliveClustersOnly(ReadBoolean(sParameter, eParameterType)); break;
+      case CLUSTERS                  : SetIncludeClustersType((IncludeClustersType)ReadInt(sParameter, eParameterType)); break;
       case EXACTTIMES                : //No longer used. No documentation as to previous usage.
                                        break;
       case INTERVALUNITS             : SetTimeIntervalUnitsType((DatePrecisionType)ReadInt(sParameter, eParameterType)); break;
@@ -1721,8 +1721,8 @@ void CParameters::SaveScanningWindowSection(ZdIniFile& file) {
     pSection->AddLine(MAX_TEMP_INTERPRET_LINE, AsString(sValue, geMaxTemporalClusterSizeType));
     pSection->AddComment(" include purely spatial clusters (y/n)");
     pSection->AddLine(INCLUDE_PURELY_SPATIAL_LINE, gbIncludePurelySpatialClusters ? YES : NO);
-    pSection->AddComment(" alive clusters only? (y/n)");
-    pSection->AddLine(ALIVE_CLUSTERS_LINE, gbAliveClustersOnly ? YES : NO);
+    pSection->AddComment(" clusters to include (0=All, 1=Alive)");
+    pSection->AddLine(ALIVE_CLUSTERS_LINE, AsString(sValue, geIncludeClustersType));
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveScanningWindowSection()","CParameters");
@@ -1917,7 +1917,7 @@ void CParameters::SetDefaults() {
   geMaxGeographicClusterSizeType        = PERCENTAGEOFMEASURETYPE;
   gsStudyPeriodStartDate                = "1900/01/01";
   gsStudyPeriodEndDate                  = "1900/12/31";
-  gbAliveClustersOnly                   = false;
+  geIncludeClustersType                 = ALLCLUSTERS;
   geTimeIntervalUnitsType               = NONE;
   glTimeIntervalLength                  = 0;
   gbIncludePurelySpatialClusters        = false;
@@ -1985,6 +1985,24 @@ void CParameters::SetEllipsoidShape(double dShape, int iEllipsoidIndex) {
   }
   catch (ZdException & x) {
     x.AddCallpath("SetEllipsoidShape()","CParameters");
+    throw;
+  }
+}
+
+/** Sets clusters to include type. Throws exception if out of range. */
+void CParameters::SetIncludeClustersType(IncludeClustersType eIncludeClustersType) {
+  ZdString      sLabel;
+
+  try {
+    if (ALLCLUSTERS > eIncludeClustersType || ALIVECLUSTERS < eIncludeClustersType)
+      InvalidParameterException::Generate("Error: For parameter '%s', setting '%d' is out of range(%d - %d).\n",
+                                          "SetIncludeClustersType()",
+                                          GetParameterLineLabel(CLUSTERS, sLabel, geReadType == INI),
+                                          eIncludeClustersType, ALLCLUSTERS, ALIVECLUSTERS);
+    geIncludeClustersType = eIncludeClustersType;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetIncludeClustersType()","CParameters");
     throw;
   }
 }
@@ -2844,7 +2862,7 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
       //analyses have a fixed 1 time interval and interval cut.
       gfMaxTemporalClusterSize           = 50.0; // KR980707 0 GG980716;
       geMaxTemporalClusterSizeType       = PERCENTAGETYPE;
-      gbAliveClustersOnly                = false;
+      geIncludeClustersType              = ALLCLUSTERS;
       geTimeIntervalUnitsType            = NONE;
       glTimeIntervalLength               = 0;
       geTimeTrendAdjustType              = NOTADJUSTED;
