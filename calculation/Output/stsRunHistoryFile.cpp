@@ -511,9 +511,9 @@ void stsRunHistoryFile::SetAdditionalOutputFileNameString(ZdString& sOutputFileN
    try {
       sOutputFileNames.Clear();
 
-      if(params.m_bSaveSimLogLikelihoods)
+      if(params.m_bSaveSimLogLikelihoods && params.m_nReplicas)
          ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".llr.txt");
-      if (params.GetDBaseOutputLogLikeli())
+      if (params.GetDBaseOutputLogLikeli() && params.m_nReplicas)
          ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".llr.dbf");
 
       if(params.m_bOutputRelRisks)
