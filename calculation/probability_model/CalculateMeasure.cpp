@@ -47,10 +47,7 @@ int AssignMeasure(
 
 #ifdef DEBUGMEASURE
       if ((pMResult = fopen("MEASURE.TXT", "w")) == NULL)
-         {
-	 fprintf(stderr, "  Error: Cannot open output file.\n");
-         SSGenerateException("  Error: Cannot open output file.\n","AssignMeasure()");
-         }
+         SSGenerateException("Error: Cannot open output file.\n","AssignMeasure()");
 #endif
 
       pTInfo->tiCalculateAlpha(&pAlpha, StartDate, EndDate);
@@ -91,9 +88,7 @@ int AssignMeasure(
              char        sMessage[200];
              std::string sBuffer;
     	     tid = pTInfo->tiGetTid(tract, sBuffer);
-    	     //printf("  Error: Negative Measure (%8.4f) in function AssignMeasure(),\n\ttract %d, tractid %s, interval %d.\n",(*pMeasure)[interval][tract], tract, tid, interval);
-    	     //FatalError("", pPrintDirection);
-             sprintf(sMessage,"  Error: Negative Measure (%8.4f) in function AssignMeasure(),\n\ttract %d, tractid %s, interval %d.\n",(*pMeasure)[interval][tract], tract, tid, interval);
+             sprintf(sMessage,"Error: Negative Measure (%8.4f) in function AssignMeasure(),\n\ttract %d, tractid %s, interval %d.\n",(*pMeasure)[interval][tract], tract, tid, interval);
     	     SSGenerateException(sMessage, "AssignMeasure");
              } /* endif Measure */
 
@@ -122,24 +117,15 @@ int AssignMeasure(
 #endif
 
     /* Bug check, to ensure that TotalCases=TotalMeasure */
-     if(fabs(*pTotalCases-*pTotalMeasure)>0.0001) {
-         //pPrintDirection->SatScanPrintf("\n  Error: In function AssignMeasure(),");
-         //pPrintDirection->SatScanPrintf("\n  the total measure is not equal to the total number of cases.");
-         //pPrintDirection->SatScanPrintf("\n  TotalCases=%ld,  TotalMeasure=%8.6lf\n",*pTotalCases, *pTotalMeasure);
-         //FatalError("Program canceled.\n", pPrintDirection);
-         char sMessage[200], sTmp[100];
-         strcpy(sMessage, "\n  Error: In function AssignMeasure(),");
-         strcat(sMessage, "\n  the total measure is not equal to the total number of cases.");
-         sprintf(sTmp,"\n  TotalCases=%ld,  TotalMeasure=%8.6lf\n",*pTotalCases, *pTotalMeasure);
-         strcat(sMessage, sTmp);
-         SSGenerateException(sMessage, "AssignMeasure");
-         }
+     if (fabs(*pTotalCases-*pTotalMeasure)>0.0001)
+       ZdGenerateException("Total measure '%8.61f' is not equal to the total number of cases '%ld'.",
+                           "AssignMeasure()", *pTotalMeasure, *pTotalCases);
 
       pPrintDirection->SatScanPrintf("\n");
 
       free(IntervalDates);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       free(pAlpha);
       free(pRisk);
@@ -151,7 +137,7 @@ int AssignMeasure(
   return(1);
 }
 
-/** calculates the risk for each category - Scott Hostovich @ July 16,2002 */
+/** calculates the risk for each category */
 int CalcRisk(const TractHandler *pTInfo, double** pRisk, double* pAlpha,
              int nCats, tract_t nTracts, int nPops, double* pTotalPop, count_t* pTotalCases, BasePrint *pPrintDirection)
 {
@@ -181,11 +167,7 @@ int CalcRisk(const TractHandler *pTInfo, double** pRisk, double* pAlpha,
           nCaseCount = nCaseCount + pTInfo->tiGetCount(t, c);
 
           if (nCaseCount < 0)
-          {
-            fprintf(stderr, "  Error: Total cases is greater than maximum allowed.\n");
-            //FatalError(0, pPrintDirection);
-            SSGenerateException("  Error: Total cases is greater than maximum allowed.\n", "CalcRisk");
-          }
+            SSGenerateException("Error: Total cases is greater than maximum allowed.\n", "CalcRisk()");
           pTInfo->tiGetAlphaAdjustedPopulation(nPop, t, c, 0, nPops, pAlpha);
         }
         (*pRisk)[c] = (double)nCaseCount / nPop;
@@ -200,7 +182,7 @@ int CalcRisk(const TractHandler *pTInfo, double** pRisk, double* pAlpha,
   fprintf(pMResult, "Total Cases = %li    Total Population = %f\n\n", *pTotalCases, *pTotalPop); 
 #endif
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("CalcRisk()", "CalculateMeasure.cpp");
       throw;
@@ -244,7 +226,7 @@ int Calcm(const TractHandler *pTInfo, measure_t*** m, double* pRisk, int nCats, 
       fprintf(pMResult, "\n");
 #endif
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("Calcm()", "CalculateMeasure.cpp");
       throw;
@@ -347,7 +329,7 @@ int CalcMeasure(const TractHandler *pTInfo, measure_t*** pMeasure, measure_t** m
         free(M[i]);
       free(M);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       if (M)
          {
@@ -421,7 +403,7 @@ int AdjustForDiscreteTimeTrend(measure_t*** pMeasure,
       k++;
       } /* for i<AdjustIntervals */
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("AdjustForDiscreteTimeTrend()", "CalculateMeasure.cpp");
       throw;
@@ -461,11 +443,7 @@ void AdjustForPercentageTimeTrend(double       nTimeAdjPercent,
           nAdjustedMeasure += (*pMeasure)[i][t];
     
           if (nAdjustedMeasure > DBL_MAX)
-          {
-           //pPrintDirection->SatScanPrintf("  Error: Data overflow due to time trend adjustment.\n");
-           // FatalError("", pPrintDirection);
            SSGenerateException("  Error: Data overflow due to time trend adjustment.\n", "AdjustForPercentageTimeTrend");
-          }
         }
     
 
@@ -490,7 +468,7 @@ void AdjustForPercentageTimeTrend(double       nTimeAdjPercent,
       fprintf(pMResult, "\nAdjusted Measure Total = %0.2f.\n", nAdjustedMeasure);
       #endif  
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("AdjustForPercentageTimeTrend()", "CalculateMeasure.cpp");
       throw;
@@ -591,7 +569,7 @@ bool ValidateMeasures(const TractHandler *pTInfo,
          SSGenerateException(sMessage, "ValidateMeasures()");
       }
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("ValidateMeasures()", "CalculateMeasure.cpp");
       throw;
@@ -659,20 +637,16 @@ bool ValidateAllCountsArePossitive(tract_t   nTracts,
          for (i=0; i<nTimeIntervals; i++ )
             if (Counts[i][t]<0)
             {
-            pPrintDirection->SatScanPrintf("  Error: Negative value found.\n");
+            pPrintDirection->SatScanPrintf("Error: Negative value found.\n");
             return(false);
             }
          nSumCount += Counts[0][t];
          }
     
       if (nSumCount != nTotalCount)
-         {
-         //FatalError("  Error: Totals do not match.\n", pPrintDirection);
-         SSGenerateException("  Error: Totals do not match.\n", "ValidateAllCountsArePossitive");
-         //return(false);
-         }
+        SSGenerateException("Error: Totals do not match.\n", "ValidateAllCountsArePossitive");
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("ValidateAllCountsArePossitive()", "CalculateMeasure.cpp");
       throw;
@@ -695,20 +669,16 @@ bool ValidateAllPTCountsArePossitive(tract_t  nTracts,
          {
          if (Counts[i]<0)
             {
-            pPrintDirection->SatScanPrintf("  Error: Negative value found.\n");
+            pPrintDirection->SatScanPrintf("Error: Negative value found.\n");
             return(false);
             }
          nSumCount += Counts[i];
          }
     
       if (nSumCount != nTotalCount)
-         {
-         //FatalError("  Error: Totals do not match.\n", pPrintDirection);
-         //return(false);
-         SSGenerateException("  Error: Totals do not match.\n", "ValidateAllPTCountsArePossitive");
-         }
+        SSGenerateException("Error: Totals do not match.\n", "ValidateAllPTCountsArePossitive");
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("ValidateAllPTCountsArePossitive()", "CalculateMeasure.cpp");
       throw;
