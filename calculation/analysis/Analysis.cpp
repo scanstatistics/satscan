@@ -11,6 +11,7 @@
 #include "stsDBaseFileWriter.h"
 #include "stsLogLikelihood.h"
 #include "stsAreaSpecificData.h"
+#include "PrintQueue.h"
 
 /** constructor */
 TopClustersContainer::TopClustersContainer(const CSaTScanData & Data)
@@ -748,40 +749,42 @@ void CAnalysis::PerformSimulations() {
         SimRatios.Initialize();
         pDataGateway = m_pData->GetDataStreamHandler().GetNewSimulationDataGateway();
         AllocateSimulationObjects(*pDataGateway);
+        {//block for the scope of SimulationPrintDirection
+          PrintQueue SimulationPrintDirection(*gpPrintDirection);
 
-        for (iSimulationNumber=1; (iSimulationNumber <= m_pParameters->GetNumReplicationsRequested()) && !gpPrintDirection->GetIsCanceled(); iSimulationNumber++) {
-          giSimulationNumber = iSimulationNumber;
+          for (iSimulationNumber=1; (iSimulationNumber <= m_pParameters->GetNumReplicationsRequested()) && !gpPrintDirection->GetIsCanceled(); iSimulationNumber++) {
+
+            giSimulationNumber = iSimulationNumber;
+
           m_pData->RandomizeData(giSimulationNumber);
           r = (gbMeasureListReplications ? MonteCarlo(pDataGateway->GetDataStreamInterface(0)) : FindTopRatio(*pDataGateway));
-          UpdateTopClustersRank(r);
-          SimRatios.AddRatio(r);
-          UpdatePowerCounts(r);
+            UpdateTopClustersRank(r);
+            SimRatios.AddRatio(r);
+            UpdatePowerCounts(r);
  #ifdef DEBUGANALYSIS
-          fprintf(m_pDebugFile, "---- Replication #%ld ----------------------\n\n",i+1);
-          m_pData->DisplaySimCases(m_pDebugFile);
-          // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
-          fprintf(m_pDebugFile, "%s = %7.21f\n\n",
-                  (Parameters.GetLogLikelihoodRatioIsTestStatistic() ? "Test statistic" : "Log Likelihood Ratio"), r);
+            fprintf(m_pDebugFile, "---- Replication #%ld ----------------------\n\n",i+1);
+            m_pData->DisplaySimCases(m_pDebugFile);
+            // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
+            fprintf(m_pDebugFile, "%s = %7.21f\n\n",
+                    (Parameters.GetLogLikelihoodRatioIsTestStatistic() ? "Test statistic" : "Log Likelihood Ratio"), r);
  #endif
-          if (giSimulationNumber==1) {
-            ReportTimeEstimate(nStartTime, m_pParameters->GetNumReplicationsRequested(), giSimulationNumber, gpPrintDirection);
-            //Simulations taking less than one second to complete hinder user seeing most likely clusters
-            //loglikelihood ratio, so pause program.
-            if ((clock() - nStartTime)/CLK_TCK < 1)
-#ifdef INTEL_BASED
-              Sleep(5000);
-#else
-              sleep(5);
-#endif
-          }
-          gpPrintDirection->SatScanPrintf(sReplicationFormatString, giSimulationNumber, m_pParameters->GetNumReplicationsRequested(), r);
+            if (giSimulationNumber==1) {
+              ReportTimeEstimate(nStartTime, m_pParameters->GetNumReplicationsRequested(), giSimulationNumber, &SimulationPrintDirection);
 
-          if (m_pParameters->GetTerminateSimulationsEarly() && CheckForEarlyTermination(giSimulationNumber))
-            break;
-          // best to just check if the data pointer is set instead of checking the criteria for setting again so will
-          // only have to check that criteria in one place instead of two -- AJV 12/30/2002
-          if(pLLRData.get())
-             pLLRData->AddLikelihood(r);
+                 ZdTimestamp tsReleaseTime;
+                 tsReleaseTime.Now();
+                 tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
+                 SimulationPrintDirection.SetThresholdPolicy(TimedReleaseThresholdPolicy(tsReleaseTime));
+            }
+            SimulationPrintDirection.SatScanPrintf(sReplicationFormatString, giSimulationNumber, m_pParameters->GetNumReplicationsRequested(), r);
+
+            if (m_pParameters->GetTerminateSimulationsEarly() && CheckForEarlyTermination(giSimulationNumber))
+              break;
+            // best to just check if the data pointer is set instead of checking the criteria for setting again so will
+            // only have to check that criteria in one place instead of two -- AJV 12/30/2002
+            if(pLLRData.get())
+               pLLRData->AddLikelihood(r);
+          }
         }
         delete pDataGateway; pDataGateway=0;
         // only write to output formats on the first analysis/iteration -- AJV

@@ -21,6 +21,7 @@
       ..\calculation\utility\SSException.obj ..\calculation\utility\DBFFile.obj 
       ..\calculation\utility\MultipleDimensionArrayHandler.obj 
       ..\calculation\print\BasePrint.obj ..\calculation\print\PrintScreen.obj 
+      ..\calculation\print\PrintQueue.obj
       ..\calculation\probability_model\SurvivalModel.obj 
       ..\calculation\probability_model\RankModel.obj 
       ..\calculation\probability_model\NormalModel.obj 

@@ -96,6 +96,7 @@ SRC         := Main.cpp \
 	       ../calculation/output/stsRunHistoryFile.cpp \
 	       ../calculation/print/BasePrint.cpp \
 	       ../calculation/print/PrintScreen.cpp \
+	       ../calculation/print/PrintQueue.cpp \
 	       ../calculation/probability_model/ProbabilityModel.cpp \
 	       ../calculation/probability_model/BernoulliModel.cpp \
 	       ../calculation/probability_model/CalculateMeasure.cpp \

@@ -35,6 +35,7 @@ USEUNIT("..\calculation\utility\DBFFile.cpp");
 USEUNIT("..\calculation\utility\MultipleDimensionArrayHandler.cpp");
 USEUNIT("..\calculation\print\BasePrint.cpp");
 USEUNIT("..\calculation\print\PrintScreen.cpp");
+USEUNIT("..\calculation\print\PrintQueue.cpp");
 USEUNIT("..\calculation\probability_model\SurvivalModel.cpp");
 USEUNIT("..\calculation\probability_model\RankModel.cpp");
 USEUNIT("..\calculation\probability_model\NormalModel.cpp");

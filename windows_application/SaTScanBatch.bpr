@@ -14,6 +14,7 @@
       ..\calculation\utility\SSException.obj ..\calculation\utility\DBFFile.obj 
       ..\calculation\utility\MultipleDimensionArrayHandler.obj 
       ..\calculation\print\BasePrint.obj ..\calculation\print\PrintScreen.obj 
+      ..\calculation\print\PrintQueue.obj
       ..\calculation\probability_model\BernoulliModel.obj 
       ..\calculation\probability_model\CalculateMeasure.obj 
       ..\calculation\probability_model\ProbabilityModel.obj 
