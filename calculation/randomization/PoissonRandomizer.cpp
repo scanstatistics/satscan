@@ -155,6 +155,66 @@ void PoissonTimeStratifiedRandomizer::RandomizeData(const RealDataStream& thisRe
 }
 
 /** constructor */
+PoissonSpatialStratifiedRandomizer::PoissonSpatialStratifiedRandomizer(const CParameters & Parameters)
+                                :PoissonRandomizer(Parameters) {}
+
+/** destructor */
+PoissonSpatialStratifiedRandomizer::~PoissonSpatialStratifiedRandomizer() {}
+
+/** returns newly cloned PoissonTimeStratifiedRandomizer */
+PoissonSpatialStratifiedRandomizer * PoissonSpatialStratifiedRandomizer::Clone() const {
+  return new PoissonSpatialStratifiedRandomizer(*this);
+}
+
+/** Randomizes data of data stream, stratified by space */
+void PoissonSpatialStratifiedRandomizer::RandomizeData(const RealDataStream& thisRealStream,
+                                                       SimulationDataStream& thisSimulationStream,
+                                                       unsigned int iSimulation) {
+
+  int                   interval;
+  unsigned int          tract;
+  count_t               tCases, tCumCases=0,
+                     ** ppCases = thisRealStream.GetCaseArray(),
+                     ** ppSimCases = thisSimulationStream.GetCaseArray();
+  measure_t             tCumMeasure=0, ** ppMeasure = thisRealStream.GetMeasureArray();
+
+  //reset seed for simulation number
+  gRandomNumberGenerator.SetSeed(iSimulation + gRandomNumberGenerator.GetDefaultSeed());
+  //create randomized data for each tract's last time interval
+  interval = thisRealStream.GetNumTimeIntervals() - 1;
+  for (tract=0; tract < thisRealStream.GetNumTracts(); ++tract) {
+     tCumCases = 0;
+     tCumMeasure = 0;
+     if (ppCases[0][tract] - tCumCases)
+       tCases = gBinomialGenerator.GetBinomialDistributedVariable(ppCases[0][tract] - tCumCases,
+                     ppMeasure[interval][tract]/(ppMeasure[0][tract] - tCumMeasure),
+                     gRandomNumberGenerator);
+     else
+       tCases = 0;
+     tCumCases += tCases;
+     tCumMeasure += ppMeasure[interval][tract];
+     ppSimCases[interval][tract] = tCases;
+  }
+  //create randomized data for each tract's remaining time intervals
+  for (tract=0; tract < thisRealStream.GetNumTracts(); ++tract) {
+     tCumCases = 0;
+     tCumMeasure = 0;
+     interval = thisRealStream.GetNumTimeIntervals() - 2;
+     for (; interval >= 0; --interval) {
+        if (ppCases[0][tract] - tCumCases)
+          tCases = gBinomialGenerator.GetBinomialDistributedVariable(ppCases[0][tract] - tCumCases,
+                     (ppMeasure[interval][tract] - ppMeasure[interval+1][tract])/(ppMeasure[0][tract] - tCumMeasure),
+                     gRandomNumberGenerator);
+        else
+          tCases = 0;
+        tCumCases += tCases;
+        tCumMeasure += ppMeasure[interval][tract] - ppMeasure[interval+1][tract];
+        ppSimCases[interval][tract] = tCases + ppSimCases[interval+1][tract];
+     }
+  }
+}
+
+/** constructor */
 AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(CSaTScanData & Data)
                               :PoissonRandomizer(Data.GetParameters()), gData(Data) {
   try {

@@ -45,6 +45,18 @@ class PoissonTimeStratifiedRandomizer : public PoissonRandomizer {
                                                             unsigned int iSimulation);
 };
 
+/** Randomizes Poisson data stream in spatial stratified manner. */
+class PoissonSpatialStratifiedRandomizer : public PoissonRandomizer {
+  public:
+    PoissonSpatialStratifiedRandomizer(const CParameters & Parameters);
+    virtual ~PoissonSpatialStratifiedRandomizer();
+
+    virtual PoissonSpatialStratifiedRandomizer * Clone() const;
+    virtual void	                         RandomizeData(const RealDataStream& thisRealStream,
+                                                               SimulationDataStream& thisSimulationStream,
+                                                               unsigned int iSimulation);
+};
+
 class CSaTScanData; /** forward class declaration */
 
 /** Randomizes Poisson data stream under alternate hypothesis.
@@ -77,7 +89,7 @@ class AlternateHypothesisRandomizer : public PoissonRandomizer {
           data streams. */
 class FileSourceRandomizer : public PoissonRandomizer {
   protected:
-    ifstream                                    gSimulationDataInputFile;
+    std::ifstream                               gSimulationDataInputFile;
     CSaTScanData                              & gData;  
 
   public:

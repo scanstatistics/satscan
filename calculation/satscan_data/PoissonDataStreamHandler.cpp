@@ -420,6 +420,8 @@ void PoissonDataStreamHandler::SetRandomizers() {
       case STANDARD :
           if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
             gvDataStreamRandomizers[0] = new PoissonTimeStratifiedRandomizer(gParameters);
+          else if (gParameters.GetSpatialAdjustmentType() == SPATIALLY_STRATIFIED_RANDOMIZATION)
+            gvDataStreamRandomizers[0] = new PoissonSpatialStratifiedRandomizer(gParameters);
           else
             gvDataStreamRandomizers[0] = new PoissonNullHypothesisRandomizer(gParameters);
           break;
