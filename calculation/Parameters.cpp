@@ -767,7 +767,9 @@ bool CParameters::ValidateParameters()
         if ((m_nAnalysisType == PURELYSPATIAL) || (m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME))
         {
           if (m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE && !(0.0 < m_nMaxGeographicClusterSize && m_nMaxGeographicClusterSize <= 50.0))
-          bValid = DisplayParamError(GEOSIZE);
+            bValid = DisplayParamError(GEOSIZE);
+          if (0.0 > m_nMaxGeographicClusterSize)
+            bValid = DisplayParamError(GEOSIZE);
         }
         else
           m_nMaxGeographicClusterSize = 50.0; //KR980707 0 GG980716;
@@ -775,7 +777,9 @@ bool CParameters::ValidateParameters()
         // Temporal Options
         if ((m_nAnalysisType == PURELYTEMPORAL) || (m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME))
         {
-          if (m_nMaxClusterSizeType == PERCENTAGETYPE && !(0.0 < m_nMaxTemporalClusterSize && m_nMaxTemporalClusterSize <= 90.0))
+          if (m_nMaxClusterSizeType == PERCENTAGETYPE &&
+              !(0.0 < m_nMaxTemporalClusterSize &&
+                m_nMaxTemporalClusterSize <= (m_nModel == SPACETIMEPERMUTATION ? 50 : 90)))
             bValid = DisplayParamError(TIMESIZE);
           if ((!PROSPECTIVESPACETIME) && (!(m_bAliveClustersOnly==0 || m_bAliveClustersOnly==1)))
             bValid = DisplayParamError(CLUSTERS);
@@ -1325,13 +1329,15 @@ void CParameters::DisplayParameters(FILE* fp)
      fprintf(fp, "---------------\n");
    
      if (m_nAnalysisType == PURELYSPATIAL || m_nAnalysisType == SPACETIME || m_nAnalysisType == PROSPECTIVESPACETIME)
+       {
        fprintf(fp, "  Maximum Spatial Cluster Size : %.2f", m_nMaxGeographicClusterSize);
-     switch (m_nMaxSpatialClusterSizeType)
-        {
+       switch (m_nMaxSpatialClusterSizeType)
+          {
           case    PERCENTAGEOFMEASURETYPE    : fprintf(fp, " as Percentage\n"); break;
           case    DISTANCETYPE               : fprintf(fp, " as Distance Unit\n"); break;
           default                            : fprintf(fp, "\n"); break;
-        }
+          }
+       }    
      if ((m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME))
      {
        fprintf(fp, "  Also Include Purely Temporal Clusters : ");
@@ -1343,13 +1349,15 @@ void CParameters::DisplayParameters(FILE* fp)
      }
    
      if (m_nAnalysisType == PURELYTEMPORAL || m_nAnalysisType == SPACETIME || (m_nAnalysisType == PROSPECTIVESPACETIME))
+       {
        fprintf(fp, "  Maximum Temporal Cluster Size : %.2f", m_nMaxTemporalClusterSize);
-     switch (m_nMaxClusterSizeType)
-        {
-          case    PERCENTAGETYPE : fprintf(fp, " as Percentage\n"); break;
-          case    TIMETYPE       : fprintf(fp, " as Time Interval Unit\n"); break;
-          default                : fprintf(fp, "\n"); break;
-        }
+       switch (m_nMaxClusterSizeType)
+         {
+         case    PERCENTAGETYPE : fprintf(fp, " as Percentage\n"); break;
+         case    TIMETYPE       : fprintf(fp, " as Time Interval Unit\n"); break;
+         default                : fprintf(fp, "\n"); break;
+         }
+       }
      if ((m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME))
      {
        fprintf(fp, "  Also Include Purely Spatial Clusters : ");
