@@ -29,13 +29,15 @@ class DataStream {
     unsigned int                giNumTimeIntervals;                     /** number of time intervals */
     unsigned int                giNumTracts;                            /** number of tracts*/
 
-    count_t                   * gpPTCasesArray;                         /** number of cases, stratified by time intervals */
+    count_t                   * gpPTCasesArray;                         /** number of cases, cumulatively stratified by time intervals */
+    count_t                   * gpCasesPerIntervalArray;                /** number of cases in each time interval */
     TwoDimCountArray_t        * gpCasesHandler;                         /** number of cases stratified with respect to time intervals by tract index
                                                                             - cases are distributed in time intervals cumulatively */
     TwoDimCountArray_t        * gpNCCasesHandler;                       /** number of cases stratified with respect to time intervals by tract index
                                                                             - cases are NOT distributed in time intervals cumulatively */
-    measure_t                 * gpPTMeasureArray;                       /** number of expected cases, stratified by time intervals */
-    measure_t                 * gpPTSqMeasureArray;                     /** number of expected cases squared, stratified by time intervals and
+    measure_t                 * gpPTMeasureArray;                       /** number of expected cases, cumulatively stratified by time intervals */
+    measure_t                 * gpMeasurePerIntervalArray;               /** number of expected cases in each time interval */
+    measure_t                 * gpPTSqMeasureArray;                     /** number of expected cases squared, cumulatively stratified by time intervals and
                                                                             as gotten from gpSqMeasureHandler */
     TwoDimMeasureArray_t      * gpMeasureHandler;                       /** number of expected cases stratified with respect to time intervals by tract index
                                                                             - expected cases are distributed in time intervals cumulatively */
@@ -47,8 +49,6 @@ class DataStream {
     CTimeTrend                  gTimeTrend;                             /** time trend data */
 
     unsigned int                giStreamIndex;
-
-    void                        SetCaseArrays(count_t** pCases, count_t** pCases_NC, count_t* pCasesByTimeInt);
 
     DataStream(const DataStream& thisStream);
     DataStream                & operator=(const DataStream& rhs);
@@ -66,10 +66,11 @@ class DataStream {
     void                        AllocateNCMeasureArray();
     void                        AllocateNCCasesArray();
     count_t                  ** GetCaseArray() const;
-    count_t                  ** GetNCCaseArray() const;
+    count_t                   * GetCasesPerTimeIntervalArray() const;
     measure_t                ** GetMeasureArray() const;
     TwoDimMeasureArray_t      & GetMeasureArrayHandler();
-    TwoDimMeasureArray_t      & GetSqMeasureArrayHandler();
+    measure_t                 * GetMeasurePerTimeIntervalArray() const;
+    count_t                  ** GetNCCaseArray() const;
     measure_t                ** GetNCMeasureArray() const;
     TwoDimMeasureArray_t      & GetNCMeasureArrayHandler();
     inline unsigned int         GetNumTimeIntervals() const {return giNumTimeIntervals;}
@@ -80,8 +81,9 @@ class DataStream {
     CTimeTrend                & GetTimeTrend() {return gTimeTrend;}
     const CTimeTrend          & GetTimeTrend() const {return gTimeTrend;}
     measure_t                ** GetSqMeasureArray() const;
+    TwoDimMeasureArray_t      & GetSqMeasureArrayHandler();
     unsigned int                GetStreamIndex() const {return giStreamIndex;}
-    void                        SetCaseArrays();
+    void                        SetNonCumulativeCaseArrays();
     void                        SetPTCasesArray();
     void                        SetPTMeasureArray();
     void                        SetPTSqMeasureArray();
@@ -96,7 +98,7 @@ class RealDataStream : public DataStream {
     void                        Setup();
 
     RealDataStream(const RealDataStream& thisStream);
-
+    
   protected:
     PopulationData              gPopulation;                            /** population data */
     measure_t                   gtTotalMeasure;                         /** number of expected cases in data stream */
@@ -138,10 +140,10 @@ class RealDataStream : public DataStream {
     double                      GetTotalPopulation() const {return gdTotalPop;}
     void                        SetAggregateCategories(bool b) {gPopulation.SetAggregateCategories(b);}
     void                        SetCalculatedTimeTrendPercentage(double dTimeTrend) {gdCalculatedTimeTrendPercentage=dTimeTrend;}
-    void                        SetCasesByTimeInterval();
+    void                        SetCasesPerTimeIntervalArray();
     void                        SetCumulativeMeasureArrayFromNonCumulative();
-    void                        SetMeasureByTimeIntervalsArray(measure_t ** ppNonCumulativeMeasure);
     void                        SetMeasureArrayAsCumulative();
+    void                        SetMeasurePerTimeIntervalsArray(measure_t ** ppNonCumulativeMeasure);
     void                        SetNonCumulativeMeasureArrayFromCumulative();
     void                        SetTotalCases(count_t tTotalCases) {gtTotalCases = tTotalCases;}
     void                        SetTotalCasesAtStart(count_t tTotalCases) {gtTotalCasesAtStart = tTotalCases;}

@@ -26,6 +26,8 @@ DataStream::~DataStream() {
     delete gpNCMeasureHandler;
     delete gpSqMeasureHandler;
     delete[] gpPTMeasureArray;
+    delete gpCasesPerIntervalArray;
+    delete gpMeasurePerIntervalArray;
   }
   catch(...){}
 }
@@ -172,7 +174,7 @@ void DataStream::AllocateNCCasesArray() {
 count_t * DataStream::GetPTCasesArray() const {
   try {
     if (!gpPTCasesArray)
-      ZdGenerateException("Cases by time interval array not allocated.","GetPTCasesArray()");
+      ZdGenerateException("Purely temporal cases array not allocated.","GetPTCasesArray()");
   }
   catch (ZdException &x) {
     x.AddCallpath("GetPTCasesArray()","DataStream");
@@ -195,6 +197,20 @@ count_t ** DataStream::GetCaseArray() const {
     throw;
   }
   return gpCasesHandler->GetArray();
+}
+
+/** Returns pointer to one dimensional array representing case data for each
+    time interval index. Throws exception of not allocated. */
+count_t * DataStream::GetCasesPerTimeIntervalArray() const {
+  try {
+    if (!gpCasesPerIntervalArray)
+      ZdGenerateException("Cases per time interval array not allocated.","GetCasesPerTimeIntervalArray()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetCasesPerTimeIntervalArray()","DataStream");
+    throw;
+  }
+  return gpCasesPerIntervalArray;
 }
 
 /** Returns pointer to two dimensional array representing expected case data stratified
@@ -228,6 +244,20 @@ TwoDimMeasureArray_t & DataStream::GetMeasureArrayHandler() {
     throw;
   }
   return *gpMeasureHandler;
+}
+
+/** Returns pointer to one dimensional array representing measure data for each
+    time interval index. Throws exception of not allocated. */
+measure_t * DataStream::GetMeasurePerTimeIntervalArray() const {
+  try {
+    if (!gpMeasurePerIntervalArray)
+      ZdGenerateException("Measure per time interval array not allocated.","GetMeasureByTimeIntervalArray()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetMeasurePerTimeIntervalArray()","DataStream");
+    throw;
+  }
+  return gpMeasurePerIntervalArray;
 }
 
 /** Returns reference to object to manages the two dimensional array representing
@@ -337,39 +367,36 @@ void DataStream::Init() {
   gpSqMeasureHandler=0;
   gpPTMeasureArray=0;
   gpPTSqMeasureArray=0;
+  gpCasesPerIntervalArray=0;
+  gpMeasurePerIntervalArray=0;
 }
 
-/** Ensures that two dimensional non-cumulative case array and purely temporal
-    case arrays are allocated and passes to function SetCaseArrays(). */
-void DataStream::SetCaseArrays() {
+/** Ensures that two dimensional non-cumulative case array and case per time
+    interval arrays are allocated and loads data from cumulative case array. */
+void DataStream::SetNonCumulativeCaseArrays() {
+  int           i, j;
+  count_t    ** ppCases = gpCasesHandler->GetArray(), ** ppCases_NC;
+  
   try {
     if (!gpNCCasesHandler)
       gpNCCasesHandler = new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals, giNumTracts);
-    if (!gpPTCasesArray)
-      gpPTCasesArray = new count_t[giNumTimeIntervals+1];
-    SetCaseArrays(gpCasesHandler->GetArray(), gpNCCasesHandler->GetArray(), gpPTCasesArray);
+    ppCases_NC = gpNCCasesHandler->GetArray();
+    if (!gpCasesPerIntervalArray)
+      gpCasesPerIntervalArray = new count_t[giNumTimeIntervals+1];
+    memset(gpCasesPerIntervalArray, 0, sizeof(count_t) * (giNumTimeIntervals+1));
+
+    for (i=0; i < (int)giNumTracts; ++i)  {
+      ppCases_NC[giNumTimeIntervals-1][i] = ppCases[giNumTimeIntervals-1][i];
+      gpCasesPerIntervalArray[giNumTimeIntervals-1] += ppCases_NC[giNumTimeIntervals-1][i];
+      for (j=giNumTimeIntervals-2; j >= 0; --j) {
+        ppCases_NC[j][i] = ppCases[j][i] - ppCases[j+1][i];
+        gpCasesPerIntervalArray[j] += ppCases_NC[j][i];
+      }
+    }
   }
   catch (ZdException &x) {
-    x.AddCallpath("SetCaseArrays()","DataStreamHandler");
+    x.AddCallpath("SetNonCumulativeCaseArrays()","DataStream");
     throw;
-  }
-}
-
-/** Given two dimensional cumulative case array 'ppCases' - sets elements of
-    non-cumulative two dimensional case array and purely temporal case array.
-    Caller of function is responsible for ensuring that dimensions of arrays
-    are inline with those expected in function. */
-void DataStream::SetCaseArrays(count_t** ppCases, count_t** pCases_NC, count_t* pCasesByTimeInt) {
-  int   i, j;
-
-  memset(pCasesByTimeInt, 0, sizeof(count_t) * (giNumTimeIntervals+1));
-  for (i=0; i < (int)giNumTracts; ++i)  {
-    pCases_NC[giNumTimeIntervals-1][i] = ppCases[giNumTimeIntervals-1][i];
-    pCasesByTimeInt[giNumTimeIntervals-1] += pCases_NC[giNumTimeIntervals-1][i];
-    for (j=giNumTimeIntervals-2; j >= 0; --j) {
-      pCases_NC[j][i] = ppCases[j][i] - ppCases[j+1][i];
-      pCasesByTimeInt[j] += pCases_NC[j][i];
-    }
   }
 }
 
@@ -630,23 +657,23 @@ void RealDataStream::Init() {
 
 /** Allocates and sets array that stores the total number of cases for each time
     interval as gotten from cumulative two dimensional case array. */
-void RealDataStream::SetCasesByTimeInterval() {
+void RealDataStream::SetCasesPerTimeIntervalArray() {
   int             i, j;
-  count_t       * pPTCases, ** ppCases(gpCasesHandler->GetArray());
+  count_t      ** ppCases(gpCasesHandler->GetArray());
 
   try {
-    if (!gpPTCasesArray)
-      gpPTCasesArray = new count_t[giNumTimeIntervals+1];
-    memset(gpPTCasesArray, 0, (giNumTimeIntervals+1) * sizeof(count_t));
+    if (!gpCasesPerIntervalArray)
+      gpCasesPerIntervalArray = new count_t[giNumTimeIntervals+1];
+    memset(gpCasesPerIntervalArray, 0, (giNumTimeIntervals+1) * sizeof(count_t));
 
     for (i=0; i < (int)giNumTracts; ++i) {
-       gpPTCasesArray[giNumTimeIntervals-1] += ppCases[giNumTimeIntervals-1][i];
+       gpCasesPerIntervalArray[giNumTimeIntervals-1] += ppCases[giNumTimeIntervals-1][i];
        for (j=giNumTimeIntervals-2; j >= 0; --j)
-          gpPTCasesArray[j] += ppCases[j][i] - ppCases[j+1][i];
+          gpCasesPerIntervalArray[j] += ppCases[j][i] - ppCases[j+1][i];
     }
   }
   catch (ZdException &x) {
-    x.AddCallpath("SetCasesByTimeInterval()","RealDataStream");
+    x.AddCallpath("SetCasesPerTimeIntervalArray()","RealDataStream");
     throw;
   }
 }
@@ -686,20 +713,20 @@ void RealDataStream::SetCumulativeMeasureArrayFromNonCumulative() {
     from passed non-cumulative measure array. Array is allocated is not already
     allocated. Note that caller of function is responsible for ensuring the passed
     array is correct in terms of dimensions and non-cumulative attribute. */
-void RealDataStream::SetMeasureByTimeIntervalsArray(measure_t ** ppNonCumulativeMeasure) {
+void RealDataStream::SetMeasurePerTimeIntervalsArray(measure_t ** ppNonCumulativeMeasure) {
   unsigned int   i, j;
 
   try {
-    if (!gpPTMeasureArray)
-      AllocatePTMeasureArray();
-
-    memset(gpPTMeasureArray, 0, (giNumTimeIntervals+1) * sizeof(measure_t));
+    if (!gpMeasurePerIntervalArray)
+      gpMeasurePerIntervalArray = new measure_t[giNumTimeIntervals+1];
+      
+    memset(gpMeasurePerIntervalArray, 0, (giNumTimeIntervals+1) * sizeof(measure_t));
     for (i=0; i < giNumTimeIntervals; ++i)
        for (j=0; j < giNumTracts; ++j)
-          gpPTMeasureArray[i] += ppNonCumulativeMeasure[i][j];
+          gpMeasurePerIntervalArray[i] += ppNonCumulativeMeasure[i][j];
   }
   catch (ZdException &x) {
-    x.AddCallpath("SetMeasureByTimeIntervalsArray()","RealDataStream");
+    x.AddCallpath("SetMeasurePerTimeIntervalsArray()","RealDataStream");
     throw;
   }
 }
