@@ -42,7 +42,7 @@ void CBernoulliModel::CalculateMeasure(RealDataStream & thisStream) {
     }
 
     if (tTotalControls == 0)
-      GenerateResolvableException("Error: No controls found in input stream %u.\n", "CBernoulliModel", thisStream.GetStreamIndex());
+      GenerateResolvableException("Error: No controls found in data set %u.\n", "CBernoulliModel", thisStream.GetStreamIndex());
 
     thisStream.SetTotalCases(tTotalCases);
     thisStream.SetTotalControls(tTotalControls);

@@ -329,7 +329,7 @@ bool SurvivalDataStreamHandler::ReadData() {
        if (GetNumStreams() == 1)
          gPrint.SatScanPrintf("Reading the case file\n");
        else
-         gPrint.SatScanPrintf("Reading the cae file for input stream %u\n", t + 1);
+         gPrint.SatScanPrintf("Reading the cae file for data set %u\n", t + 1);
        if (!ReadCaseFile(t))
          return false;
     }

@@ -212,13 +212,13 @@ bool BernoulliDataStreamHandler::ReadData() {
        if (GetNumStreams() == 1)
          gPrint.SatScanPrintf("Reading the case file\n");
        else
-         gPrint.SatScanPrintf("Reading the case file for input stream %u\n", t + 1);
+         gPrint.SatScanPrintf("Reading the case file for data set %u\n", t + 1);
        if (!ReadCaseFile(t))
          return false;
        if (GetNumStreams() == 1)
          gPrint.SatScanPrintf("Reading the control file\n");
        else
-         gPrint.SatScanPrintf("Reading the control file for input stream %u\n", t + 1);
+         gPrint.SatScanPrintf("Reading the control file for data set %u\n", t + 1);
        if (!ReadControlFile(t))
          return false;
     }

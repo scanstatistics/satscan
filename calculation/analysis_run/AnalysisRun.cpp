@@ -331,7 +331,7 @@ void AnalysisRunner::Execute() {
     //validate that data set contains cases
     for (unsigned int i=0; i < gpDataHub->GetDataStreamHandler().GetNumStreams(); ++i)
        if (gpDataHub->GetDataStreamHandler().GetStream(i).GetTotalCases() == 0)
-         GenerateResolvableException("Error: No cases found in input stream %u.\n","Execute()", i);
+         GenerateResolvableException("Error: No cases found in data set %u.\n","Execute()", i);
     //detect user cancellation
     if (gPrintDirection.GetIsCanceled())
       return;
