@@ -483,15 +483,15 @@ void CSaTScanData::SetProspectiveIntervalStart() {
 
   try {
     lProspStartDate = m_pParameters->GetProspectiveStartDateAsJulian();
-    lTime = TimeBetween(m_nStartDate, lProspStartDate, m_pParameters->GetTimeIntervalUnitsType());
-    m_nProspectiveIntervalStart = (int)ceil((float)lTime / (float)m_pParameters->GetTimeIntervalLength());
+    lTime = TimeBetween(lProspStartDate, m_nEndDate, m_pParameters->GetTimeIntervalUnitsType());
+    m_nProspectiveIntervalStart = m_nTimeIntervals - (int)ceil((float)lTime/(float)m_pParameters->GetTimeIntervalLength()) + 1;
 
     if (m_nProspectiveIntervalStart < 0)
       SSGenerateException("Error: The prospective start date '%s' is prior to the study period start date '%s'.\n",
                           "SetProspectiveIntervalStart()", m_pParameters->GetProspectiveStartDate().c_str(),
                           m_pParameters->GetStudyPeriodStartDate().c_str());
     if (m_nProspectiveIntervalStart > m_nTimeIntervals)
-      SSGenerateException("Error: The prospective start date '%s' is prior to the study period end date '%s'.\n",
+      SSGenerateException("Error: The prospective start date '%s' occurs after the study period end date '%s'.\n",
                           "SetProspectiveIntervalStart", m_pParameters->GetProspectiveStartDate().c_str(),
                           m_pParameters->GetStudyPeriodEndDate().c_str());
   }
