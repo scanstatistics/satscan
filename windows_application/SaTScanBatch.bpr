@@ -117,10 +117,10 @@
       ..\calculation\randomization\ExponentialRandomizer.obj 
       ..\calculation\Output\AbstractDataFileWriter.obj 
       ..\calculation\Output\ClusterInformationWriter.obj 
-      ..\calculation\Output\LocationInformationWriter.obj 
       ..\calculation\Output\LocationRiskEstimateWriter.obj 
       ..\calculation\Output\LoglikelihoodRatioWriter.obj 
-      ..\calculation\Output\stsASCIIFileWriter.obj"/>
+      ..\calculation\Output\stsASCIIFileWriter.obj 
+      ..\calculation\Output\ClusterLocationsWriter.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>

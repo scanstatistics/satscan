@@ -122,10 +122,10 @@ USEUNIT("..\calculation\satscan_data\ExponentialDataSetHandler.cpp");
 USEUNIT("..\calculation\randomization\ExponentialRandomizer.cpp");
 USEUNIT("..\calculation\Output\AbstractDataFileWriter.cpp");
 USEUNIT("..\calculation\Output\ClusterInformationWriter.cpp");
-USEUNIT("..\calculation\Output\LocationInformationWriter.cpp");
 USEUNIT("..\calculation\Output\LocationRiskEstimateWriter.cpp");
 USEUNIT("..\calculation\Output\LoglikelihoodRatioWriter.cpp");
 USEUNIT("..\calculation\Output\stsASCIIFileWriter.cpp");
+USEUNIT("..\calculation\Output\ClusterLocationsWriter.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
