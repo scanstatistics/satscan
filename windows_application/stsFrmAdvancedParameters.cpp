@@ -202,7 +202,7 @@ void __fastcall TfrmAdvancedParameters::btnNewClick(TObject *Sender) {
      // add new name to list box
      EnableDataStreamList(true);
      EnableDataStreamPurposeControls(true);
-     lstInputStreams->Items->Add("Input Stream " + IntToStr(giStreamNum++));
+     lstInputStreams->Items->Add("Data Set " + IntToStr(giStreamNum++));
      lstInputStreams->ItemIndex = (lstInputStreams->Items->Count-1);
 
      // enable and clear the edit boxes
@@ -245,8 +245,8 @@ void __fastcall TfrmAdvancedParameters::btnRemoveStreamClick(TObject *Sender){
       // update remaining list box names
       for (int i=iStreamNum+1; i < lstInputStreams->Items->Count ;i++) {
          AnsiString s = (lstInputStreams->Items->Strings[i]);
-         int num = s.SubString(13, 2).ToInt();
-         lstInputStreams->Items->Strings[i] = ("Input Stream " + IntToStr(--num));
+         int num = s.SubString(10, 2).ToInt();
+         lstInputStreams->Items->Strings[i] = ("Data Set " + IntToStr(--num));
       }
       // remove list box name
       lstInputStreams->Items->Delete(iStreamNum);
@@ -1295,7 +1295,7 @@ void TfrmAdvancedParameters::Setup() {
       // Input tab
       EnableInputFileEdits(false);
       for (unsigned int i = 1; i < ref.GetNumDataStreams(); i++) { // multiple data streams
-         lstInputStreams->Items->Add("Input Stream " + IntToStr(i+1));
+         lstInputStreams->Items->Add("Data Set " + IntToStr(i+1));
          gvCaseFiles.push_back(AnsiString(ref.GetCaseFileName(i+1).c_str()));
          gvControlFiles.push_back(AnsiString(ref.GetControlFileName(i+1).c_str()));
          gvPopFiles.push_back(AnsiString(ref.GetPopulationFileName(i+1).c_str()));
@@ -1467,29 +1467,29 @@ void TfrmAdvancedParameters::ValidateInputFiles() {
        lstInputStreams->OnClick(this);
        //validate the case file
        if (gvCaseFiles.at(i).IsEmpty()) {
-          GenerateAFException("Please specify a case file for this additional input stream.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
+          GenerateAFException("Please specify a case file for this additional data set.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
        }
        if (!File_Exists(gvCaseFiles.at(i).c_str())) {
-         GenerateAFException("Case file could not be opened for this additional input stream.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
+         GenerateAFException("Case file could not be opened for this additional data set.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
        }
 
        //validate the control file - Bernoulli model only
        if (gAnalysisSettings.GetModelControlType() == BERNOULLI) {
           if (gvControlFiles.at(i).IsEmpty()) {
-             GenerateAFException("For the Bernoulli model, please specify a control file for this additional input stream.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
+             GenerateAFException("For the Bernoulli model, please specify a control file for this additional data set.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
           }
           if (!File_Exists(gvControlFiles.at(i).c_str())) {
-             GenerateAFException("Control file could not be opened for this additional input stream.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
+             GenerateAFException("Control file could not be opened for this additional data set.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
           }
        }
 
        //validate the population file -  Poisson model only
        if (gAnalysisSettings.GetModelControlType() == POISSON) {
           if (gvPopFiles.at(i).IsEmpty()) {
-             GenerateAFException("For the Poisson model, please specify a population file for this additional input stream.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
+             GenerateAFException("For the Poisson model, please specify a population file for this additional data set.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
           }
           if (!File_Exists(gvPopFiles.at(i).c_str())) {
-             GenerateAFException("Population file could not be opened for this additional input stream.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
+             GenerateAFException("Population file could not be opened for this additional data set.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
           }
        }
     }  //for loop

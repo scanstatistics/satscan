@@ -63,7 +63,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Top = 0
     Width = 450
     Height = 311
-    ActivePage = tsTemporal
+    ActivePage = tsDataStreams
     Align = alClient
     TabOrder = 0
     object tsDataStreams: TTabSheet
@@ -74,7 +74,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Top = 8
         Width = 425
         Height = 233
-        Caption = 'Additional Input Data Streams'
+        Caption = 'Additional Input Data Sets'
         TabOrder = 0
         object Label3: TLabel
           Left = 110
@@ -206,7 +206,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 32
           Width = 93
           Height = 78
-          Hint = 'All Additional Input Streams'
+          Hint = 'All Additional Input Sets'
           ItemHeight = 13
           ParentShowHint = False
           ShowHint = True
@@ -218,7 +218,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 116
           Width = 45
           Height = 22
-          Hint = 'Add an Additional Input Stream'
+          Hint = 'Add an Additional Input Set'
           Caption = 'Add'
           ParentShowHint = False
           ShowHint = True
@@ -230,7 +230,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 116
           Width = 45
           Height = 22
-          Hint = 'Remove an Additional Input Stream'
+          Hint = 'Remove an Additional Input Set'
           Caption = 'Delete'
           ParentShowHint = False
           ShowHint = True
@@ -337,7 +337,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 176
           Width = 297
           Height = 17
-          Caption = 'Multivariate Analysis (clusters in one or more data streams)'
+          Caption = 'Multivariate Analysis (clusters in one or more data sets)'
           Checked = True
           TabOrder = 13
           TabStop = True
@@ -348,7 +348,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 200
           Width = 297
           Height = 17
-          Caption = 'Adjustment (clusters in all data streams simultaneously)'
+          Caption = 'Adjustment (clusters in all data sets simultaneously)'
           TabOrder = 14
           OnClick = OnControlExit
         end
