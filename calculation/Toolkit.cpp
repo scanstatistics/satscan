@@ -53,7 +53,7 @@ const char * SaTScanToolkit::GetAcknowledgment(ZdString & Acknowledgment) const 
     Acknowledgment << ZdString::reset << "You are running SaTScan v" << VERSION_NUMBER;
     Acknowledgment << ".\n\nSaTScan is free, available for download from ";
     Acknowledgment << GetWebSite() << ".\nIt may be used free of charge as long as proper ";
-    Acknowledgment << "citations\nare given to both the SaTScan software and the underlying\n";
+    Acknowledgment << "citations are given\nto both the SaTScan software and the underlying ";
     Acknowledgment << "statistical methodology.\n\n";
   }
   catch (ZdException& x) {
