@@ -12,50 +12,6 @@ PoissonRandomizer::PoissonRandomizer(const CParameters & Parameters)
 /** destructor */
 PoissonRandomizer::~PoissonRandomizer() {}
 
-/** Prints the simulated data to a file. Format printed to file matches
-    format expected for read as simulation data source. Truncates file
-    when first opened for each analysis(i.e. first simulation).
-
-    NOTE: The process of writing and reading simulation data to/from file
-          is not well tested. It is known that it is not checking the validity
-          of the files themselves or in relation to the running analysis.
-          Also, not previsions have been made for this code to work for multiple
-          data streams at this time.                                             */
-void PoissonRandomizer::DumpDateToFile(const RealDataStream& thisRealStream,
-                                       SimulationDataStream& thisSimulationStream,
-                                       int iSimulation) {
-  std::ofstream         SimulationOutputFile;
-  unsigned int          tract, interval;
-  count_t            ** ppSimCases(thisSimulationStream.GetCaseArray());
-
-  //open output file
-  SimulationOutputFile.open(gParameters.GetSimulationDataOutputFilename().c_str(), (iSimulation == 1 ? ios::trunc : ios::ate));
-  if (!SimulationOutputFile)
-    SSGenerateException("Error: Could not open file simulation output file '%s'.\n", "PrintSimulationDateToFile()",
-                        gParameters.GetSimulationDataOutputFilename().c_str());
-
-  //print to file for time based analyses
-  if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME || gParameters.GetAnalysisType() == SPACETIME ||
-      gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL) {
-    for (tract=0; tract < thisRealStream.GetNumTracts(); tract++) {
-       for (interval=0; interval < thisRealStream.GetNumTimeIntervals();interval++)
-           SimulationOutputFile << ppSimCases[interval][tract] << " ";
-       SimulationOutputFile << "\n";
-    }
-    SimulationOutputFile << "\n";
-  }
-  //print to file for spatial only analysis
-  else if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
-    for (tract = 0; tract < thisRealStream.GetNumTracts(); tract++)
-       SimulationOutputFile << ppSimCases[0][tract] << " ";
-    SimulationOutputFile << "\n";
-  }
-  else
-    SSGenerateException("Error: Printing simulation data to file not implemented for %s analysis.\n",
-                        "ReadSimulationDataFromFile()", gParameters.GetAnalysisTypeAsString());
-}
-
-
 /** constructor */
 PoissonNullHypothesisRandomizer::PoissonNullHypothesisRandomizer(const CParameters & Parameters) : PoissonRandomizer(Parameters) {}
 
@@ -346,56 +302,4 @@ void AlternateHypothesisRandomizer::Setup() {
   }
 }
 
-/** constructor */
-FileSourceRandomizer::FileSourceRandomizer(CSaTScanData & Data)
-                     :PoissonRandomizer(Data.GetParameters()), gData(Data) {}
 
-/** copy constructor */
-FileSourceRandomizer::FileSourceRandomizer(const FileSourceRandomizer & rhs)
-                     :PoissonRandomizer(rhs), gData(rhs.gData) {}
-
-/** destructor */
-FileSourceRandomizer::~FileSourceRandomizer() {}
-
-/** returns pointer to newly cloned FileSourceRandomizer */
-FileSourceRandomizer * FileSourceRandomizer::Clone() const {
-  return new FileSourceRandomizer(*this);
-}
-
-/** Reads number of simulated cases from a text file rather than generating them randomly.
-    NOTE: Data read from the file is not validated. This means that there is potential
-          for the program to behave badly if:
-          1) the data read from file does not match dimensions of ppSimCases
-          2) the case counts read from file is inappropriate given real data -- probably access violations
-          3) file does not actually contains numerical data
-          Use of this feature should be discouraged except from someone who has
-          detailed knowledge of how code works.                                                           */
-void FileSourceRandomizer::RandomizeData(const RealDataStream& thisRealStream,
-                                         SimulationDataStream& thisSimulationStream,
-                                         unsigned int iSimulation) {
-  unsigned int          i, t, tNumTracts = thisRealStream.GetNumTracts(),
-                        tNumTimeIntervals = thisRealStream.GetNumTimeIntervals();
-  count_t               c;
-  count_t            ** ppSimCases = thisSimulationStream.GetCaseArray();
-
-  if (!gSimulationDataInputFile.is_open())
-    gSimulationDataInputFile.open(gData.GetParameters().GetSimulationDataSourceFilename().c_str());
-  if (!gSimulationDataInputFile)
-    SSGenerateException("Error: Could not open file '%s' to read simulated data.\n",
-                        "ReadSimulationDataFromFile()", gData.GetParameters().GetSimulationDataSourceFilename().c_str());
-
-  if (gData.GetParameters().GetAnalysisType() == PROSPECTIVESPACETIME || gData.GetParameters().GetAnalysisType() == SPACETIME ||
-      gData.GetParameters().GetAnalysisType() == PURELYTEMPORAL || gData.GetParameters().GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL) {
-     for (t=0; t < tNumTracts; ++t) {
-        for (i=0; i < tNumTimeIntervals; ++i)
-           gSimulationDataInputFile >> ppSimCases[i][t];
-     }
-  }
-  else if (gData.GetParameters().GetAnalysisType() == PURELYSPATIAL) {
-     for (t=0; t < tNumTracts; ++t)
-        gSimulationDataInputFile >> ppSimCases[0][t];
-  }
-  else
-    SSGenerateException("Error: Reading simulation data from file not implemented for %s analysis.\n",
-                        "RandomizeData()", gData.GetParameters().GetAnalysisTypeAsString());
-}

@@ -11,10 +11,6 @@ class PoissonRandomizer : public AbstractDenominatorDataRandomizer {
   protected:
     const CParameters & gParameters;
 
-    void                DumpDateToFile(const RealDataStream& thisRealStream,
-                                       SimulationDataStream& thisSimulationStream,
-                                       int iSimulation);
-
   public:
     PoissonRandomizer(const CParameters & Parameters);
     virtual ~PoissonRandomizer();
@@ -82,25 +78,6 @@ class AlternateHypothesisRandomizer : public PoissonRandomizer {
     virtual void	                        RandomizeData(const RealDataStream& thisRealStream,
                                                               SimulationDataStream& thisSimulationStream,
                                                               unsigned int iSimulation);
-};
-
-/** Reads simulation data from file.
-    NOTE: This unit has note been thoughly tested, especially with multiple
-          data streams. */
-class FileSourceRandomizer : public PoissonRandomizer {
-  protected:
-    std::ifstream                               gSimulationDataInputFile;
-    CSaTScanData                              & gData;  
-
-  public:
-    	    FileSourceRandomizer(CSaTScanData & Data);
-    	    FileSourceRandomizer(const FileSourceRandomizer & rhs);
-    virtual ~FileSourceRandomizer();
-
-    virtual FileSourceRandomizer     * Clone() const;
-    virtual void	               RandomizeData(const RealDataStream& thisRealStream,
-                                                     SimulationDataStream& thisSimulationStream,
-                                                     unsigned int iSimulation);
 };
 //---------------------------------------------------------------------------
 #endif
