@@ -11,30 +11,21 @@ CBernoulliModel::CBernoulliModel(CParameters* pParameters, CSaTScanData* pData, 
 /** Destructor */                
 CBernoulliModel::~CBernoulliModel() {}
 
-bool CBernoulliModel::ReadData()
-{
-   try
-      {
-      if (!m_pData->ReadGeo())
-         return false;
-
-      if (!m_pData->ReadCounts(m_pParameters->GetCaseFileName().c_str(), "case", &m_pData->m_pCases))
-        return false;
-    
-      if (!m_pData->ReadCounts(m_pParameters->GetControlFileName().c_str(), "control", &m_pData->m_pControls))
-        return false;
-    
-      if (m_pParameters->UseSpecialGrid())
-        {
-        if (!m_pData->ReadGrid())
-          return false;
-        }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("ReadData()", "CBernoulliModel");
-      throw;
-      }
+bool CBernoulliModel::ReadData() {
+  try {
+    if (!m_pData->ReadCoordinatesFile())
+      return false;
+    if (! m_pData->ReadCaseFile())
+      return false;
+    if (! m_pData->ReadControlFile())
+      return false;
+    if (m_pParameters->UseSpecialGrid() && !m_pData->ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadData()", "CBernoulliModel");
+    throw;
+  }
   return true;
 }
 
