@@ -618,7 +618,8 @@ void RealDataStream::SetCasesByTimeInterval() {
   count_t       * pPTCases, ** ppCases(gpCasesHandler->GetArray());
 
   try {
-    gpPTCasesArray = new count_t[giNumTimeIntervals+1];
+    if (!gpPTCasesArray)
+      gpPTCasesArray = new count_t[giNumTimeIntervals+1];
     memset(gpPTCasesArray, 0, (giNumTimeIntervals+1) * sizeof(count_t));
 
     for (i=0; i < (int)giNumTracts; ++i) {
