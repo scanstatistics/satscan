@@ -584,7 +584,8 @@ void TfrmAnalysis::EnableAnalysisControlForModelType() {
   try {
     switch (GetModelControlType()) {
       case POISSON   		:
-      case BERNOULLI            : rdoRetrospectivePurelySpatial->Enabled = true;
+      case BERNOULLI            :
+      case ORDINAL              : rdoRetrospectivePurelySpatial->Enabled = true;
                                   rdoRetrospectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
                                   rdoRetrospectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
                                   rdoProspectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
@@ -598,7 +599,7 @@ void TfrmAnalysis::EnableAnalysisControlForModelType() {
                                   if (!rdoRetrospectiveSpaceTime->Checked && !rdoProspectiveSpaceTime->Checked)
                                     rdoRetrospectiveSpaceTime->Checked = true;
                                   break;
-      default : ZdGenerateException("Unknown probabilty model '%d'.", "EnableAnalysisControlForModelType()", GetModelControlType());
+      default : ZdGenerateException("Unknown probability model '%d'.", "EnableAnalysisControlForModelType()", GetModelControlType());
     }
     EnableSettingsForAnalysisModelCombination();
   }
@@ -785,8 +786,8 @@ const char * TfrmAnalysis::GetFileName() {
 }
 //---------------------------------------------------------------------------
 /** returns probability type for model control group */
-ProbabiltyModelType TfrmAnalysis::GetModelControlType() const {
-  ProbabiltyModelType   eReturn;
+ProbabilityModelType TfrmAnalysis::GetModelControlType() const {
+  ProbabilityModelType   eReturn;
 
   if (rdoPoissonModel->Checked)
     eReturn = POISSON;
@@ -794,6 +795,8 @@ ProbabiltyModelType TfrmAnalysis::GetModelControlType() const {
     eReturn = BERNOULLI;
   else if (rdoSpaceTimePermutationModel->Checked)
     eReturn = SPACETIMEPERMUTATION;
+  else if (rdoOrdinalModel->Checked)
+    eReturn = ORDINAL;
   else
     ZdGenerateException("Probability model type not selected.","GetModelControlType()");
 
@@ -964,13 +967,14 @@ void TfrmAnalysis::OnProbabilityModelClick() {
     EnableAnalysisControlForModelType();
     switch (GetModelControlType()) {
       case POISSON   		:
-      case BERNOULLI            : lblSimulatedLogLikelihoodRatios->Caption = "Simulated Log Likelihood Ratios";
+      case BERNOULLI            :
+      case ORDINAL              : lblSimulatedLogLikelihoodRatios->Caption = "Simulated Log Likelihood Ratios";
                                   gpfrmAdvancedParameters->lblPercentageOfStudyPeriod->Caption = "percent of the study period (<= 90%, default = 50%)";
                                   break;
       case SPACETIMEPERMUTATION : lblSimulatedLogLikelihoodRatios->Caption = "Simulated Test Statistics";
                                   gpfrmAdvancedParameters->lblPercentageOfStudyPeriod->Caption = "percent of the study period (<= 50%, default = 50%)";
                                   break;
-      default : ZdGenerateException("Unknown probabilty model '%d'.", "OnProbablityModelClick()", GetModelControlType());
+      default : ZdGenerateException("Unknown probability model '%d'.", "OnProbablityModelClick()", GetModelControlType());
     }
     EnableSettingsForAnalysisModelCombination();
   }
@@ -1266,11 +1270,12 @@ void TfrmAnalysis::SetMaximumCirclePopulationFile(const char * sMaximumCirclePop
 }
 
 //---------------------------------------------------------------------------
-/** sets probaiity model type control for ProbabiltyModelType */
-void TfrmAnalysis::SetModelControl(ProbabiltyModelType eProbabiltyModelType) {
-  switch (eProbabiltyModelType) {
+/** sets probaiity model type control for ProbabilityModelType */
+void TfrmAnalysis::SetModelControl(ProbabilityModelType eProbabilityModelType) {
+  switch (eProbabilityModelType) {
     case BERNOULLI            : rdoBernoulliModel->Checked = true; break;
     case SPACETIMEPERMUTATION : rdoSpaceTimePermutationModel->Checked = true; break;
+    case ORDINAL              : rdoOrdinalModel->Checked = true; break;
     case POISSON              :
     default                   : rdoPoissonModel->Checked = true;
   }
@@ -1360,7 +1365,7 @@ void TfrmAnalysis::SetupInterface() {
     rgpCoordinates->ItemIndex = gParameters.GetCoordinatesType();
     //Analysis Tab
     SetAnalysisControl(gParameters.GetAnalysisType());
-    SetModelControl(gParameters.GetProbabiltyModelType());
+    SetModelControl(gParameters.GetProbabilityModelType());
     SetAreaScanRateControl(gParameters.GetAreaScanRateType());
     ParseDate(gParameters.GetStudyPeriodStartDate().c_str(), edtStudyPeriodStartDateYear, edtStudyPeriodStartDateMonth, edtStudyPeriodStartDateDay);
     ParseDate(gParameters.GetStudyPeriodEndDate().c_str(), edtStudyPeriodEndDateYear, edtStudyPeriodEndDateMonth, edtStudyPeriodEndDateDay);

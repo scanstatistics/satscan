@@ -678,6 +678,15 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 2
           OnClick = rdoProbabilityModelClick
         end
+        object rdoOrdinalModel: TRadioButton
+          Left = 13
+          Top = 175
+          Width = 82
+          Height = 17
+          Caption = 'Ordinal'
+          TabOrder = 3
+          OnClick = rdoProbabilityModelClick
+        end
       end
       object rgpTypeAnalysis: TGroupBox
         Left = 8

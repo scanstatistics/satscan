@@ -122,6 +122,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TBitBtn *btnCoordImport;
    TBitBtn *btnGridImport;
    TStaticText *stUnitText;
+        TRadioButton *rdoOrdinalModel;
    
    void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
    void __fastcall rgpPrecisionTimesClick(TObject *Sender);
@@ -182,7 +183,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        EnableTimeAggregationGroup(bool bEnable);
     AnalysisType                GetAnalysisControlType() const;
     AreaRateType                GetAreaScanRateControlType() const;
-    ProbabiltyModelType         GetModelControlType() const;
+    ProbabilityModelType        GetModelControlType() const;
     DatePrecisionType           GetPrecisionOfTimesControlType() const;
     ZdDate                    & GetStudyPeriodEndDate(ZdDate& Date) const;
     ZdDate                    & GetStudyPeriodStartDate(ZdDate& Date) const;
@@ -196,7 +197,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        SaveParameterSettings();
     void                        SetAnalysisControl(AnalysisType eAnalysisType);
     void                        SetAreaScanRateControl(AreaRateType eAreaRateType);
-    void                        SetModelControl(ProbabiltyModelType eProbabiltyModelType);
+    void                        SetModelControl(ProbabilityModelType eProbabilityModelType);
     void                        Setup(const char * sParameterFileName);
     void                        SetupInterface();
     void                        ValidateInputFiles();
