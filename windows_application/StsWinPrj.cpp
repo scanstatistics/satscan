@@ -80,7 +80,7 @@ USEUNIT("..\calculation\cluster\TimeTrend.cpp");
 USEUNIT("..\calculation\cluster\NormalClusterData.cpp");
 USEUNIT("..\calculation\cluster\ClusterData.cpp");
 USEUNIT("..\calculation\cluster\ClusterDataFactory.cpp");
-USEUNIT("..\calculation\cluster\MutlipleStreamClusterData.cpp");
+USEUNIT("..\calculation\cluster\MultipleStreamClusterData.cpp");
 USEUNIT("..\calculation\cluster\AbstractClusterData.cpp");
 USEUNIT("..\calculation\analysis\MeasureList.cpp");
 USEUNIT("..\calculation\analysis\Analysis.cpp");

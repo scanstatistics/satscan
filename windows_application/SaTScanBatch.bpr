@@ -54,7 +54,7 @@
       ..\calculation\cluster\PurelySpatialProspectiveCluster.obj 
       ..\calculation\cluster\TimeTrend.obj 
       ..\calculation\cluster\ClusterData.obj ..\calculation\cluster\AbstractClusterData.obj 
-      ..\calculation\cluster\MutlipleStreamClusterData.obj 
+      ..\calculation\cluster\MultipleStreamClusterData.obj 
       ..\calculation\cluster\ClusterDataFactory.obj 
       ..\calculation\cluster\NormalClusterData.obj 
       ..\calculation\cluster\PurelyTemporalCluster.obj 
@@ -187,7 +187,7 @@ Item1=INTEL_BASED;__BATCH_COMPILE;_DEBUG
 DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd540;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
 
 [Parameters]
-RunParams=&quot;C:\Prj\SaTScan Project\SaTScan Data Sets\installed\nm.prm&quot;
+RunParams=&quot;C:\Program Files\SaTScan\Sample Data\nm.prm&quot; -o &quot;C:\Program Files\SaTScan\Sample Data\nm.out.compare.txt&quot;
 HostApplication=C:\SatScan v3.0\calc\Satscan.exe
 RemoteHost=
 RemotePath=
