@@ -25,26 +25,41 @@ typedef unsigned long Julian;
 extern "C" {
 #endif
 
-Julian CharToJulian(const char* szDateString);
-Julian MDYToJulian(UInt m, UInt d, UInt y);
+double          CalculateNumberOfTimeIntervals(Julian StartDate, Julian EndDate, DatePrecisionType eUnits, int iIntervalLength);
+int             CharToMDY(UInt* month, UInt* day, UInt* year, const char* szDateString);
+Julian          CharToJulian(const char* szDateString);
+UInt            DaysThisMonth(UInt nYear, UInt nMonth);
+double          IntervalInYears(DatePrecisionType eUnits, long nLength);
+bool            IsDateValid(UInt month, UInt day, UInt year);
+bool            IsLeapYear(UInt year);
+char          * JulianToChar(char* szDateString, Julian JNum);
+void            JulianToMDY(UInt* month, UInt* day, UInt* year, Julian JNum);
+ZdString      & JulianToString(ZdString& sDate, Julian JNum);
+void            MDYToChar(char* szDateString, UInt month, UInt day, UInt year);
+Julian          MDYToJulian(UInt m, UInt d, UInt y);
+void            PrintJulianDates(const std::vector<Julian>& vJulianDates, const char * sFilename);
+void            ShowJulianRange();
 
-int    CharToMDY(UInt* month, UInt* day, UInt* year, const char* szDateString);
-void   JulianToMDY(UInt* month, UInt* day, UInt* year, Julian JNum);
+/** Class that manages the subtraction of lengths of time from a starting end date.
+    This class was created to:
+    - aid in the calculation of the number of time aggregation units in study period
+    - aid in the calculation of time interval start times                     */
+class DecrementableEndDate {
+  private:
+    Julian              gStartingDate;
+    unsigned int        giStartingDateDay;
+    Julian              gCurrentDate;
+    unsigned int        giCurrentDateTargetMonth;
+    DatePrecisionType   geDecrementUnits;
+    bool                gbHuggingMonthEnd;
 
-void   MDYToChar(char* szDateString, UInt month, UInt day, UInt year);
-char*  JulianToChar(char* szDateString, Julian JNum);
-ZdString& JulianToString(ZdString& sDate, Julian JNum);
+    void                Setup();
 
-bool   IsDateValid(UInt month, UInt day, UInt year);
-bool   IsLeapYear(UInt year);
-UInt   DaysThisMonth(UInt nYear, UInt nMonth);
+  public:
+    DecrementableEndDate(Julian StartingDate, DatePrecisionType eDecrementUnits);
 
-long   TimeBetween(Julian nDate1, Julian nDate2, int nUnits);
-Julian DecrementDate(Julian nDate, int nUnits, long nValue);
-
-void   ShowJulianRange();
-
-double IntervalInYears(int nUnits, long nLength);
+    Julian              Decrement(unsigned long ulLength);
+};
 #ifdef __cplusplus
 }
 #endif
