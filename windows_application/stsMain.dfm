@@ -1,6 +1,6 @@
 object frmMainForm: TfrmMainForm
-  Left = 158
-  Top = 152
+  Left = 213
+  Top = 98
   Width = 783
   Height = 529
   Caption = 'SaTScan'
@@ -14,8 +14,8 @@ object frmMainForm: TfrmMainForm
   Menu = MainMenu1
   OldCreateOrder = False
   Position = poScreenCenter
-  OnActivate = FormActivate
-  OnClose = FormClose
+  OnActivate = OnFormActivate
+  OnClose = OnFormClose
   PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TBevel
@@ -241,8 +241,6 @@ object frmMainForm: TfrmMainForm
         object OutputTextFile1: TMenuItem
           Caption = 'Output Text File'
           Enabled = False
-          Visible = False
-          OnClick = OutputTextFile1Click
         end
       end
       object mitReopen: TMenuItem
@@ -298,7 +296,7 @@ object frmMainForm: TfrmMainForm
         Caption = '-'
       end
       object SaveSessionAs1: TMenuItem
-        Action = ActionUpdateCheck
+        Action = UpdateAction
       end
       object N1: TMenuItem
         Caption = '-'
@@ -414,16 +412,16 @@ object frmMainForm: TfrmMainForm
       ShortCut = 16457
       OnExecute = ImportActionExecute
     end
-    object ActionReopen: TAction
+    object ReopenAction: TAction
       Category = 'All'
-      Caption = 'ActionReopen'
+      Caption = 'ReopenAction'
       Hint = 'Reopen parameter file'
-      OnExecute = ActionReopenExecute
+      OnExecute = ReopenActionExecute
     end
-    object ActionUpdateCheck: TAction
+    object UpdateAction: TAction
       Category = 'All'
       Caption = 'SaTScan Update'
-      OnExecute = ActionUpdateCheckExecute
+      OnExecute = UpdateActionExecute
     end
   end
   object ImageList: TImageList

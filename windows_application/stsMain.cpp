@@ -4,14 +4,13 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-
 #include "stsOutputFileRegistry.h"
 #include "stsFrmStartWindow.h"
 #include "stsFrmUpdateCheck.h"
 #include "stsFrmDownloadProgress.h"
-
 TfrmMainForm *frmMainForm;
-//---------------------------------------------------------------------------
+
+/** contructor */
 __fastcall TfrmMainForm::TfrmMainForm(TComponent* Owner): TForm(Owner){
   try {
     Init();
@@ -23,43 +22,35 @@ __fastcall TfrmMainForm::TfrmMainForm(TComponent* Owner): TForm(Owner){
   }
 }
 
+/** destructor */
 __fastcall TfrmMainForm::~TfrmMainForm() {}
 
-//---------------------------------------------------------------------------
+/** about action event -- shows aboutbox */
 void __fastcall TfrmMainForm::AboutSatscanActionExecute(TObject *Sender) {
   TfrmAbout(this).ShowModal();
 }
-//---------------------------------------------------------------------------
+
+/** close child window action event - triggers active child window's close event */
 void __fastcall TfrmMainForm::CloseSessionActionExecute(TObject *Sender) {
   if (ActiveMDIChild)
     ActiveMDIChild->Close();
 }
-//---------------------------------------------------------------------------
 
-// enables/disables the appropraite buttons and controls based on their category type
+/** enables/disables the appropraite buttons and controls for main window */
 void TfrmMainForm::EnableActions(bool bEnable) {
-   for(int i = 0; i < ActionList->ActionCount; ++i) {
-      TAction* pAction = dynamic_cast<TAction*>(ActionList->Actions[i]);
-      if (pAction) {
-         if(pAction->Category == "All")
-             pAction->Enabled = bEnable;
-         else if(pAction->Category == "AnalysisRun" || pAction->Category == "Analysis")
-             pAction->Enabled = !bEnable;
-      }
-   }
+  for (int i=0; i < ActionList->ActionCount; ++i) {
+     TAction* pAction = dynamic_cast<TAction*>(ActionList->Actions[i]);
+     if (pAction) {
+       if (pAction->Category == "All")
+         pAction->Enabled = bEnable;
+       else if(pAction->Category == "AnalysisRun" || pAction->Category == "Analysis")
+         pAction->Enabled = !bEnable;
+     }
+  }
 }
 
+/** execution action event --  shows analysis progress/results window and starts analysis */
 void __fastcall TfrmMainForm::ExecuteActionExecute(TObject *Sender) {
-  try {
-    ExecuteSession();
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("ExecuteActionExecute", "TfrmMainForm");
-    DisplayBasisException(this, x);
-  }
-}
-//---------------------------------------------------------------------------
-void TfrmMainForm::ExecuteSession() {
   TfrmAnalysis                * frmAnalysis;
   CParameters                 * pSession;
   AnsiString                    sCaption;
@@ -88,15 +79,18 @@ void TfrmMainForm::ExecuteSession() {
   catch (ZdException & x) {
     gRegistry.Register(sOutputFileName);
     delete pAnalysisRun;
-    x.AddCallpath("ExecuteSession()", "TfrmMainForm");
-    throw;
+    x.AddCallpath("ExecuteActionExecute()","TfrmMainForm");
+    DisplayBasisException(this, x);
   }
 }
-//---------------------------------------------------------------------------
+
+/** close form action event -- triggers main form close event */
 void __fastcall TfrmMainForm::ExitActionExecute(TObject *Sender) {
   Close();
 }
-//---------------------------------------------------------------------------
+
+/** closes all child windows -- this method is primarily used when closing the
+    application and the user has indicated to close regardless of executing analyses. */
 void TfrmMainForm::ForceClose() {
   stsBaseAnalysisChildForm   * pBaseForm;
   int                          i;
@@ -112,13 +106,28 @@ void TfrmMainForm::ForceClose() {
   }
   catch (...){}
 }
-//---------------------------------------------------------------------------
+
+/** returns whether there are actively running analyses */
+bool TfrmMainForm::GetAnalysesRunning() {
+  int                           i;
+  TfrmAnalysisRun             * pAnalysisRun;
+  bool                          bReturn(false);
+
+  //loop through to find if there are running analyses
+  for (i=0; i < MDIChildCount && !bReturn; ++i) {
+     pAnalysisRun = dynamic_cast<TfrmAnalysisRun*>(MDIChildren[i]);
+     bReturn = (pAnalysisRun && !pAnalysisRun->GetCanClose());
+  }
+  return bReturn;
+}
+
+/** help action event -- launches html version of user guide */
 void __fastcall TfrmMainForm::HelpActionExecute(TObject *Sender) {
   HINSTANCE     hReturn;
   ZdString      sMessage;
 
   //Attempt to open chm user guide.
-  hReturn = ShellExecute(NULL, "open", "SaTScan_Help.chm", NULL, NULL, SW_SHOWNORMAL);
+  hReturn = ShellExecute(Handle, "open", "SaTScan_Help.chm", NULL, NULL, SW_SHOWNORMAL);
   if (hReturn <= (void*)32) {
     if (hReturn == (void*)SE_ERR_NOASSOC) {
       sMessage  << "SaTScan Help was unable to open. Please note that SaTScan Help "
@@ -134,118 +143,118 @@ void __fastcall TfrmMainForm::HelpActionExecute(TObject *Sender) {
     Application->MessageBox(sMessage.GetCString(), "SaTScan Help", MB_OK);
   }
 }
-//---------------------------------------------------------------------------
+
+/** import action event -- launches data file importer dialog */
 void __fastcall TfrmMainForm::ImportActionExecute(TObject *Sender) {
   try {
     TfrmAnalysis * frmAnalysisForm = dynamic_cast<TfrmAnalysis *>(frmMainForm->ActiveMDIChild);
     if (frmAnalysisForm)
       frmAnalysisForm->LaunchImporter();
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ImportActionExecute()", "TfrmMainForm");
+  catch (ZdException &x) {
+    x.AddCallpath("ImportActionExecute()","TfrmMainForm");
     DisplayBasisException(this, x);
   }
 }
-//---------------------------------------------------------------------------
+
+/** new session action event -- creates new parameters/session child window */
 void __fastcall TfrmMainForm::NewSessionActionExecute(TObject *Sender) {
   try {
     new TfrmAnalysis(this, ActionList);
   }
-  catch (ZdException & x) {
-    x.AddCallpath("NewSessionActionExecute", "TfrmMainForm");
+  catch (ZdException &x) {
+    x.AddCallpath("NewSessionActionExecute","TfrmMainForm");
     DisplayBasisException(this, x);
   }
 }
-//---------------------------------------------------------------------------
+
+/** form activate event -- if first time showing, shows start window dialog */
+void __fastcall TfrmMainForm::OnFormActivate(TObject *Sender) {
+  try {
+    if (gbShowStartWindow) {
+      frmStartWindow = new TfrmStartWindow(this);
+      if (frmStartWindow->ShowModal() == mrOk) {
+         switch (frmStartWindow->GetSelectedItemIndex()) {
+           case 0  : new TfrmAnalysis(this, ActionList); break;
+           case 1  : OpenAFile(); break;
+           case 2  : if (!File_Exists(const_cast<char*>(GetToolkit().GetParameterHistory()[0].c_str())))
+                       ZdException::GenerateNotification("Cannot open file '%s'.", "FormActivate()",
+                                                         GetToolkit().GetParameterHistory()[0].c_str());
+                     new TfrmAnalysis(this, ActionList, const_cast<char*>(GetToolkit().GetParameterHistory()[0].c_str()));
+                     break;
+           default : ZdException::GenerateNotification("Unknown operation index % d.",
+                                                       "OnFormActivate()", frmStartWindow->GetSelectedItemIndex());
+         }
+      }
+      delete frmStartWindow; frmStartWindow=0;
+      gbShowStartWindow = false;
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("OnFormActivate","TfrmMainForm");
+    DisplayBasisException(this, x);
+  }
+}
+
+/** form close event -- checks whether there are actively running analyses and
+    prompts user as to whether to continue closing accordingly. The ForceClose()
+    method is used to ensure that all child windows will close. */
+void __fastcall TfrmMainForm::OnFormClose(TObject *Sender, TCloseAction &Action) {
+  try {
+    if (GetAnalysesRunning() &&
+        TBMessageBox::Response(this, "Warning", "There are analyses currently executing. "
+                                                "Are you sure you want to exit SaTScan?", XBMB_YES|XBMB_CANCEL) == mrCancel)
+      Action = caNone;
+    else
+      ForceClose();
+  }
+  catch (...){}
+}
+
+/** launches browse dialog to select existing parameter file - creates new
+    session child window */
 void TfrmMainForm::OpenAFile(){
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.prm";
-    OpenDialog1->Filter = "Parameter Files (*.prm)|*.prm|All Files (*.*)|*.*";   //put more types in here...
+    OpenDialog1->Filter = "Parameter Files (*.prm)|*.prm|Text Files (*.txt)|*.txt|All Files (*.*)|*.*";   
     OpenDialog1->Title = "Select Parameter File";
     if (OpenDialog1->Execute())
       new TfrmAnalysis(this, ActionList, OpenDialog1->FileName.c_str());
   }
-  catch (ZdException & x) {
-    x.AddCallpath("OpenAFile()", "TfrmMainForm");
+  catch (ZdException &x) {
+    x.AddCallpath("OpenAFile()","TfrmMainForm");
     throw;
   }
 }
-//------------------------------------------------------------------------------
+
+/** open parameter file action event -- calls OpenAFile() */
 void __fastcall TfrmMainForm::OpenParameterFileActionExecute(TObject *Sender) {
   try {
     OpenAFile();
   }
-  catch (ZdException & x) {
-    x.AddCallpath("OpenParameterFileActionExecute", "TfrmMainForm");
+  catch (ZdException &x) {
+    x.AddCallpath("OpenParameterFileActionExecute","TfrmMainForm");
     DisplayBasisException(this, x);
   }
 }
-//---------------------------------------------------------------------------
-void __fastcall TfrmMainForm::OutputTextFile1Click(TObject *Sender) {
-  int  iHandle;
-  long lFileLength;
 
-  try {
-    OpenDialog1->FileName = "";
-    OpenDialog1->DefaultExt = "*.txt";
-    OpenDialog1->Filter = "Output Files (*.txt)|*.txt";   //put more types in here...
-    OpenDialog1->Title = "Select Output File";
-    if (OpenDialog1->Execute()) {
-      //see if the file is too big... set some limit and adhere to it.
-      iHandle = open(OpenDialog1->FileName.c_str(), O_RDONLY);
-      lFileLength = filelength(iHandle);
-      /* close the file */
-      close(iHandle);
-      if (lFileLength > 500000)
-        Application->MessageBox("The output results file is too big for SaTScan to view.  Please use an independent text viewer to review the results file." ,"Warning", MB_OK);
-      else
-        new TfrmOutputViewer(this, OpenDialog1->FileName.c_str());
-      }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("OutputTextFile1Click", "TfrmMainForm");
-    throw;
-  }
-}
-//---------------------------------------------------------------------------
+/** print action event -- not defined currently, printing selected in analysis window */
 void __fastcall TfrmMainForm::PrintSessionActionExecute(TObject *Sender) {
-/*   TfrmAnalysis    *frmBaseForm;
-   TfrmAnalysisRun *frmAnalysisRun;
-   CParameters     *pSession;
-   AnsiString       sCaption;
-
-   try
-      {
-      // YES.. YES.. YES...  I KNOW I SHOULD HAVE A NICE BASE FORM
-      // AND NOT HAVE TO DO THIS DOUBLE DYNAMIC_CAST...   THIS WAS A LAST
-      // MINUTE ADDITION...   AND I MEAN LAST MINUTE !!!!
-      //
-      frmBaseForm = dynamic_cast<TfrmAnalysis *>(frmMainForm->ActiveMDIChild);
-      if (frmBaseForm)
-         {
-         pSession = (CParameters *)frmBaseForm->GetSession();
-         //if (pSession)
-         //   pSession->Print();
-         }
-      else
-         {
-         frmAnalysisRun = dynamic_cast<TfrmAnalysisRun *>(frmMainForm->ActiveMDIChild);
-         //if (frmAnalysisRun)
-         //    frmAnalysisRun->PrintTarget();
-         }
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("PrintSessionActionExecute", "TfrmMainForm");
-      DisplayBasisException(this, x);
-      }  */
+  //try {
+  //}
+  //catch (ZdException &x) {
+  //  x.AddCallpath("PrintSessionActionExecute","TfrmMainForm");
+  //  DisplayBasisException(this, x);
+  //}
 }
-//---------------------------------------------------------------------------
+
+/** print setup action event -- launches print setup dialog */
 void __fastcall TfrmMainForm::PrintSetupActionExecute(TObject *Sender) {
   PrinterSetupDialog1->Execute();
 }
-//---------------------------------------------------------------------------
+
+/** refreshes 'reopen' menu item to reflect possibly updated history list */
 void TfrmMainForm::RefreshOpenList() {
   SaTScanToolkit::ParameterHistory_t::const_iterator     itr;
   TMenuItem                                            * pItem=0;
@@ -256,7 +265,7 @@ void TfrmMainForm::RefreshOpenList() {
   mitReopen->Enabled = !Parameters.empty();
   for (t=0; t < Parameters.size(); t++) {
      pItem = new TMenuItem(mitReopen);
-     pItem->OnClick = ActionReopen->OnExecute;
+     pItem->OnClick = ReopenAction->OnExecute;
      if (Parameters[t].size() < 100)
        pItem->Caption.printf("&%i  %s", t, Parameters[t].c_str());
      else {
@@ -267,7 +276,30 @@ void TfrmMainForm::RefreshOpenList() {
      mitReopen->Add(pItem);
   }
 }
-//---------------------------------------------------------------------------
+
+/** re-open action event -- attempts to open selected menu item in new
+    session/parameters settings child window */
+void __fastcall TfrmMainForm::ReopenActionExecute(TObject *Sender) {
+  TMenuItem     * pItem;
+  std::string     sFileName;
+
+  try {
+    pItem = dynamic_cast<TMenuItem *>(Sender);
+    if (pItem) {
+      sFileName = GetToolkit().GetParameterHistory()[pItem->Tag];
+      if (!File_Exists(const_cast<char*>(sFileName.c_str())))
+        ZdException::GenerateNotification("Cannot open file '%s'.","ReopenActionExecute()", sFileName.c_str());
+      new TfrmAnalysis(this, ActionList, const_cast<char*>(sFileName.c_str()));
+    }  
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReopenActionExecute","TfrmMainForm");
+    DisplayBasisException(this, x);
+  }
+}
+
+/** - if parameter filename already known, re-writes parameters to file if permissions permit
+    - else calls TfrmAnalysis::SaveAs() method */
 void TfrmMainForm::Save() {
   TfrmAnalysis *frmBaseForm;
   AnsiString    sFileName;
@@ -288,12 +320,13 @@ void TfrmMainForm::Save() {
       }
     }
   }
-  catch (ZdException & x) {
-    x.AddCallpath("Save()", "TfrmMainForm");
+  catch (ZdException &x) {
+    x.AddCallpath("Save()","TfrmMainForm");
     throw;
   }
 }
-//---------------------------------------------------------------------------
+
+/** calls TfrmAnalysis::SaveAs() method */
 void TfrmMainForm::SaveAs() {
   TfrmAnalysis *frmBaseForm;
 
@@ -307,7 +340,8 @@ void TfrmMainForm::SaveAs() {
     throw;
    }
 }
-//---------------------------------------------------------------------------
+
+/** save action event -- calls Save() method */
 void __fastcall TfrmMainForm::SaveSessionActionExecute(TObject *Sender) {
   try {
     Save();
@@ -317,7 +351,8 @@ void __fastcall TfrmMainForm::SaveSessionActionExecute(TObject *Sender) {
     DisplayBasisException(this, x);
   }
 }
-//---------------------------------------------------------------------------
+
+/** save as action event -- calls SaveAs() method */
 void __fastcall TfrmMainForm::SaveSessionAsActionExecute(TObject *Sender){
   try {
     SaveAs();
@@ -327,88 +362,24 @@ void __fastcall TfrmMainForm::SaveSessionAsActionExecute(TObject *Sender){
     DisplayBasisException(this, x);
   }
 }
-//---------------------------------------------------------------------------
-void __fastcall TfrmMainForm::UsingHelpActionExecute(TObject *Sender) {
-  WinHelp(0, "winhelp.hlp", HELP_HELPONHELP, 0L);
-}
-//---------------------------------------------------------------------------
-void __fastcall TfrmMainForm::ActionReopenExecute(TObject *Sender) {
-  TMenuItem     * pItem;
-  std::string     sFileName;
 
-  try {
-    pItem = dynamic_cast<TMenuItem *>(Sender);
-    if (pItem) {
-      sFileName = GetToolkit().GetParameterHistory()[pItem->Tag];
-      if (!File_Exists(const_cast<char*>(sFileName.c_str())))
-        ZdException::GenerateNotification("Cannot open file '%s'.","mitReopenClick()", sFileName.c_str());
-      new TfrmAnalysis(this, ActionList, const_cast<char*>(sFileName.c_str()));
-    }  
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("mitReopenClick", "TfrmMainForm");
-    DisplayBasisException(this, x);
-  }
-}
-//---------------------------------------------------------------------------
-void __fastcall TfrmMainForm::FormClose(TObject *Sender, TCloseAction &Action) {
-  try {
-    if (GetAnalysesRunning() &&
-        TBMessageBox::Response(this, "Warning", "There are analyses currently executing. "
-                                                "Are you sure you want to exit SaTScan?", XBMB_YES|XBMB_CANCEL) == mrCancel)
-      Action = caNone;
-    else
-      ForceClose();
-  }
-  catch (...){}
-}
-//---------------------------------------------------------------------------
-bool TfrmMainForm::GetAnalysesRunning() {
-  int                           i;
-  TfrmAnalysisRun             * pAnalysisRun;
-  bool                          bReturn(false);
-
-  //loop through to find if there are running analyses
-  for (i=0; i < MDIChildCount && !bReturn; ++i) {
-     pAnalysisRun = dynamic_cast<TfrmAnalysisRun*>(MDIChildren[i]);
-     bReturn = (pAnalysisRun && !pAnalysisRun->GetCanClose());
-  }
-  return bReturn;
-}
-//---------------------------------------------------------------------------
+/** internal setup function */
 void TfrmMainForm::Setup() {
-  EnableActions(true);
-  RefreshOpenList();
+  try {
+    EnableActions(true);
+    RefreshOpenList();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Setup","TfrmMainForm");
+    throw;
+  }
 }
 
-void __fastcall TfrmMainForm::FormActivate(TObject *Sender) {
-  try {
-    if (gbShowStartWindow) {
-      frmStartWindow = new TfrmStartWindow(this);
-      if (frmStartWindow->ShowModal() == mrOk) {
-         switch (frmStartWindow->GetSelectedItemIndex()) {
-           case 0  : new TfrmAnalysis(this, ActionList); break;
-           case 1  : OpenAFile(); break;
-           case 2  : if (!File_Exists(const_cast<char*>(GetToolkit().GetParameterHistory()[0].c_str())))
-                       ZdException::GenerateNotification("Cannot open file '%s'.", "FormActivate()",
-                                                         GetToolkit().GetParameterHistory()[0].c_str());
-                     new TfrmAnalysis(this, ActionList, const_cast<char*>(GetToolkit().GetParameterHistory()[0].c_str()));
-                     break;
-           default : ZdException::GenerateNotification("Unknown operation index % d.",
-                                                       "FormActivate()", frmStartWindow->GetSelectedItemIndex());
-         }
-      }
-      delete frmStartWindow; frmStartWindow=0;
-      gbShowStartWindow = false;
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("FormActivate", "TfrmMainForm");
-    DisplayBasisException(this, x);
-  }
-}
-//---------------------------------------------------------------------------
-void __fastcall TfrmMainForm::ActionUpdateCheckExecute(TObject *Sender) {
+/** version update action event -- Contacts webserver to determine if current
+    application version is older than latest update. Prompts user as to whether
+    to install update and attempts to download, close application, and launch
+    application updater. */
+void __fastcall TfrmMainForm::UpdateActionExecute(TObject *Sender) {
   TfrmUpdateCheck             * frmUpdateCheck=0;
   TfrmDownloadProgress        * frmDownloadProgress=0;
   ZdString                      sMessage;
@@ -444,9 +415,13 @@ void __fastcall TfrmMainForm::ActionUpdateCheckExecute(TObject *Sender) {
   catch (ZdException &x) {
     delete frmDownloadProgress;
     delete frmUpdateCheck;
-    x.AddCallpath("ActionUpdateCheckExecute", "TfrmMainForm");
+    x.AddCallpath("UpdateActionExecute","TfrmMainForm");
     DisplayBasisException(this, x);
   }
 }
-//---------------------------------------------------------------------------
+
+/** launches WinHelp guide */
+void __fastcall TfrmMainForm::UsingHelpActionExecute(TObject *Sender) {
+  WinHelp(0, "winhelp.hlp", HELP_HELPONHELP, 0L);
+}
 
