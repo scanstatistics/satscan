@@ -137,7 +137,7 @@ char mgsVariableLabels[51][100] = {
    "Criteria for Reporting Secondary Clusters",
    "Maximum Temporal Cluster Size Type",
    "Maximum Geographic Cluster Size Type",
-   "Analysis Run History File",
+   "Analysis History File",
    "Output Cluster Information DBase Format",
    "Output Location Information DBase Format",
    "Output Relative Risks DBase Format",
@@ -445,7 +445,7 @@ void CParameters::DisplayParameters(FILE* fp) const {
     fprintf(fp, "\nOutput\n");
     fprintf(fp, "------\n");
 #ifdef INCLUDE_RUN_HISTORY
-    fprintf(fp, "  Run History File  : %s\n", gsRunHistoryFilename.GetCString());
+    fprintf(fp, "  Analysis History  : %s\n", gsRunHistoryFilename.GetCString());
 #endif
     fprintf(fp, "  Results File      : %s\n", gsOutputFileName.c_str());
 
