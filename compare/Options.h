@@ -26,6 +26,8 @@ __published:	// IDE-managed Components
         TLabel *lblArchiveApplicationOptions;
         TOpenDialog *OpenDialog;
         TCheckBox *chkDeleteFileAfterArchiving;
+        TCheckBox *chkCreateReadMeFile;
+        TMemo *memReadMeText;
         void __fastcall btnBrowseComparisonAppClick(TObject *Sender);
         void __fastcall btnBrowseArchiveApplicationClick(TObject *Sender);
 private:	// User declarations

@@ -520,6 +520,19 @@ void TfrmMain::ArchiveResults() {
                    sStatsFilename.c_str());
   Execute(sCommand, false);
   remove(sStatsFilename.c_str());
+  //add 'ReadMe' file to archive
+  if (gpFrmOptions->chkCreateReadMeFile->Checked) {
+    sStatsFilename.printf("%sReadMe.txt", ExtractFilePath(Application->ExeName).c_str());
+    CreateReadMeFile(sStatsFilename.c_str());
+    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\"",
+                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                     sArchiveFilename.c_str(),
+                     sStatsFilename.c_str());
+
+    Execute(sCommand, false);
+    remove(sStatsFilename.c_str());
+  }
   //add files of each comparison process
   for (int i=0; i < lstDisplay->Items->Count; ++i) {
     const ParameterResultsInfo & Ref = gvParameterResultsInfo[(size_t)lstDisplay->Items->Item[i]->Data];
@@ -793,6 +806,14 @@ void TfrmMain::CompareTimes() {
       gvParameterResultsInfo.back().SetTimeDifference(uHoursC, uMinutesC, uSecondsC, SLOWER);
     }
   }
+}
+
+/** creates 'ReadMe' file */
+void TfrmMain::CreateReadMeFile(const char * sFilename) {
+  ofstream Output(sFilename);
+
+  for (int i=0; i < gpFrmOptions->memReadMeText->Lines->Count; ++i)
+     Output << gpFrmOptions->memReadMeText->Lines->Strings[i].c_str() << endl;
 }
 
 /** creates and saves comparison results to file */

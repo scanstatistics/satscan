@@ -3,7 +3,7 @@ object frmOptions: TfrmOptions
   Top = 204
   BorderStyle = bsDialog
   Caption = 'Options'
-  ClientHeight = 154
+  ClientHeight = 303
   ClientWidth = 367
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,7 +19,7 @@ object frmOptions: TfrmOptions
     Left = 0
     Top = 0
     Width = 367
-    Height = 154
+    Height = 303
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
@@ -116,6 +116,21 @@ object frmOptions: TfrmOptions
       Height = 17
       Caption = 'Delete Files After Archiving'
       TabOrder = 6
+    end
+    object chkCreateReadMeFile: TCheckBox
+      Left = 24
+      Top = 160
+      Width = 161
+      Height = 17
+      Caption = 'Add '#39'ReadMe'#39' File to Archive'
+      TabOrder = 7
+    end
+    object memReadMeText: TMemo
+      Left = 24
+      Top = 184
+      Width = 335
+      Height = 113
+      TabOrder = 8
     end
   end
   object OpenDialog: TOpenDialog
