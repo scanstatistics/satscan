@@ -187,6 +187,7 @@ void __fastcall CalcThread::PrintWarningLineToProgress(void) {
     for cancelling by posting message to run analysis window. */
 void __fastcall CalcThread::ProcessAcknowledgesCancellation(void) {
   try {
+    gFormStatus.Caption = "Job cancelled";
     gFormStatus.AddLine("Job cancelled by user.");
   }
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }

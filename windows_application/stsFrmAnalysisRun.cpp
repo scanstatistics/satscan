@@ -42,6 +42,7 @@ void TfrmAnalysisRun::CancelJob() {
     rteAnalysisBox->Lines->Add("Job cancelled. Please review 'Warnings/Errors' window below.");
   else
     rteAnalysisBox->Lines->Add("Job cancelled.");
+  Caption = "Job cancelled";  
   btnCancel->Caption = "Close";
   gbCancel = true;
   gRegistry.Release(gsOutputFileName);
