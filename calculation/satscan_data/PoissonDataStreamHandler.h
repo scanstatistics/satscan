@@ -23,8 +23,6 @@ class ComparePopulationDates {
        stream structures for real data and simulation data */
 class PoissonDataStreamHandler : public DataStreamHandler {
   protected:
-    ZdPointerVector<AbstractRandomizer> gvDataStreamRandomizers;
-
     bool                                ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber,
                                                                       std::pair<Julian, DatePrecisionType>& PopulationDate);
     bool                                CreatePopulationData(size_t tStream);
@@ -37,7 +35,6 @@ class PoissonDataStreamHandler : public DataStreamHandler {
 
     virtual AbtractDataStreamGateway  * GetNewDataGateway() const;
     virtual AbtractDataStreamGateway  * GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const;
-    virtual RandomizerContainer_t     & GetRandomizerContainer(RandomizerContainer_t& Container) const;
     virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const;
     virtual bool                        ReadData();
 };

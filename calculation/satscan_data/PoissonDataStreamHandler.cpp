@@ -63,17 +63,17 @@ bool PoissonDataStreamHandler::CreatePopulationData(size_t tStream) {
   int                                                   iCategoryIndex;
 
   try {
-    RealDataStream& thisStream = *gvDataStreams[tStream];
+    RealDataStream& thisStream = *gvDataSets[tStream];
     // Make the data stream aggregate categories - this will way the reading of case data can proceed without problems.
     // Normally the population data dictates all possible population catgories and the case file data must follow suit.
-    thisStream.SetAggregateCategories(true);
+    thisStream.SetAggregateCovariateCategories(true);
     iCategoryIndex = 0; /* with aggregation, only one population category with index of zero */
     // Use the same arbitrarily selected population date for each location - we'll use the study period start date.
     vprPopulationDates.push_back(std::pair<Julian, DatePrecisionType>(gDataHub.GetStudyPeriodStartDate(), YEAR));
     thisStream.GetPopulationData().SetPopulationDates(vprPopulationDates, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate());
     // for each location, assign the same population count and date
     for (t=0; t < tNumTracts; ++t)
-      thisStream.GetPopulationData().AddCategoryToTract(t, iCategoryIndex, vprPopulationDates.back(), fPopulation);
+      thisStream.GetPopulationData().AddCovariateCategoryPopulation(t, iCategoryIndex, vprPopulationDates.back(), fPopulation);
   }
   catch (ZdException &x) {
     x.AddCallpath("CreatePopulationData()","PoissonDataStreamHandler");
@@ -93,9 +93,9 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewDataGateway() const {
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
-    for (t=0; t < gvDataStreams.size(); ++t) {
+    for (t=0; t < gvDataSets.size(); ++t) {
       //get reference to stream
-      const RealDataStream& thisStream = *gvDataStreams[t];
+      const RealDataStream& thisStream = *gvDataSets[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisStream.GetTotalCases());
       Interface.SetTotalMeasureCount(thisStream.GetTotalMeasure());
@@ -131,7 +131,7 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewDataGateway() const {
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataStreamGateway->AddDataStreamInterface(Interface);
+      pDataStreamGateway->AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
@@ -153,9 +153,9 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewSimulationDataGateway
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
-    for (t=0; t < gvDataStreams.size(); ++t) {
+    for (t=0; t < gvDataSets.size(); ++t) {
       //get reference to stream
-      const RealDataStream& thisRealStream = *gvDataStreams[t];
+      const RealDataStream& thisRealStream = *gvDataSets[t];
       const SimulationDataStream& thisSimulationStream = *Container[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisRealStream.GetTotalCases());
@@ -192,7 +192,7 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewSimulationDataGateway
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataStreamGateway->AddDataStreamInterface(Interface);
+      pDataStreamGateway->AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
@@ -201,24 +201,6 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewSimulationDataGateway
     throw;
   }  
   return pDataStreamGateway;
-}
-
-/** Returns a collection of cloned randomizers maintained internally. Number of
-    randomizers cloned equals the number of data streams. All previous elements
-    of container are deleted. */
-RandomizerContainer_t& PoissonDataStreamHandler::GetRandomizerContainer(RandomizerContainer_t& Container) const {
-  ZdPointerVector<AbstractRandomizer>::const_iterator itr;
-
-  try {
-    Container.DeleteAllElements();
-    for (itr=gvDataStreamRandomizers.begin(); itr != gvDataStreamRandomizers.end(); ++itr)
-       Container.push_back((*itr)->Clone());
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("GetRandomizerContainer()","PoissonDataStreamHandler");
-    throw;
-  }
-  return Container;
 }
 
 /** Return a collection of new created simulation data stream objects for the
@@ -270,19 +252,19 @@ SimulationDataContainer_t& PoissonDataStreamHandler::GetSimulationDataContainer(
 bool PoissonDataStreamHandler::ReadData() {
   try {
     SetRandomizers();
-    for (size_t t=0; t < GetNumStreams(); ++t) {
+    for (size_t t=0; t < GetNumDataSets(); ++t) {
        if (gParameters.UsePopulationFile()) { //read population data file
-         if (GetNumStreams() == 1) gPrint.SatScanPrintf("Reading the population file\n");
+         if (GetNumDataSets() == 1) gPrint.SatScanPrintf("Reading the population file\n");
          else gPrint.SatScanPrintf("Reading the population file for data set %u\n", t + 1);
          if (!ReadPopulationFile(t)) return false;
        }
        else { //create population data without input data
-         if (GetNumStreams() == 1) gPrint.SatScanPrintf("Creating the population\n");
+         if (GetNumDataSets() == 1) gPrint.SatScanPrintf("Creating the population\n");
          else gPrint.SatScanPrintf("Creating the population for data set %u\n", t + 1);
          if (!CreatePopulationData(t)) return false;
        }
        //read case data file
-       if (GetNumStreams() == 1) gPrint.SatScanPrintf("Reading the case file\n");
+       if (GetNumDataSets() == 1) gPrint.SatScanPrintf("Reading the case file\n");
        else gPrint.SatScanPrintf("Reading the case file for data set %u\n", t + 1);
        if (!ReadCaseFile(t)) return false;
        //validate population data against case data (if population was read from file)  
@@ -321,8 +303,8 @@ bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
   ComparePopulationDates                                        JulianCompare;  
 
   try {
-    RealDataStream& thisStream = *gvDataStreams[tStream];
-    gPrint.SetImpliedInputFileType(BasePrint::POPFILE, (GetNumStreams() == 1 ? 0 : tStream + 1));
+    RealDataStream& thisStream = *gvDataSets[tStream];
+    gPrint.SetImpliedInputFileType(BasePrint::POPFILE, (GetNumDataSets() == 1 ? 0 : tStream + 1));
     StringParser Parser(gPrint);
 
     if ((fp = fopen(gParameters.GetPopulationFileName(tStream + 1).c_str(), "r")) == NULL) {
@@ -399,7 +381,7 @@ bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
           }
           //Scan for covariates to create population categories or find index.
           //First category created sets precedence as to how many covariates remaining records must have.
-          if ((iCategoryIndex = thisStream.GetPopulationData().MakePopulationCategory(Parser, 3, gPrint)) == -1) {
+          if ((iCategoryIndex = thisStream.GetPopulationData().CreateCovariateCategory(Parser, 3, gPrint)) == -1) {
             bValid = false;
             continue;
           }
@@ -412,7 +394,7 @@ bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
             continue;
           }
           //Add population count for this tract/category/year
-          thisStream.GetPopulationData().AddCategoryToTract(TractIdentifierIndex, iCategoryIndex, prPopulationDate, fPopulation);
+          thisStream.GetPopulationData().AddCovariateCategoryPopulation(TractIdentifierIndex, iCategoryIndex, prPopulationDate, fPopulation);
       }
     }
     //close file pointer
