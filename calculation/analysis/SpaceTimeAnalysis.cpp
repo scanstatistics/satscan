@@ -32,7 +32,7 @@ CSpaceTimeAnalysis::~CSpaceTimeAnalysis() {
 /** Allocates objects used during simulations, instead of repeated allocations
     for each simulation. Which objects that are allocated depends on whether
     the simluations process uses same process as real data or uses measure list. */
-void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway) {
+void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbtractDataStreamGateway& DataGateway) {
   IncludeClustersType           eIncludeClustersType;
 
   try {
@@ -41,6 +41,7 @@ void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbtractDataStreamGatewa
     //create new time intervals object - delete existing object used during real data process
     delete gpTimeIntervals; gpTimeIntervals=0;
     if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
+      //for prospective analyses, allocate time object with ALLCLUSTERS for simulations
       eIncludeClustersType = ALLCLUSTERS;
     else
       eIncludeClustersType = gParameters.GetIncludeClustersType();
@@ -72,13 +73,14 @@ void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbtractDataStreamGatewa
 
 /** Allocates objects used during calculation of most likely clusters, instead
     of repeated allocations for each grid point.                             */
-void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway) {
+void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGateway& DataGateway) {
   IncludeClustersType           eIncludeClustersType;
 
   try {
     //create new time intervals object - delete existing object used during real data process
     delete gpTimeIntervals; gpTimeIntervals=0;
     if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
+      //for prospective analyses, allocate time object with ALLCLUSTERS for simulations
       eIncludeClustersType = ALIVECLUSTERS;
     else
       eIncludeClustersType = gParameters.GetIncludeClustersType();
@@ -96,9 +98,11 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGatew
   }
 }
 
-/** Returns cluster centered at grid point nCenter, with the greatest loglikelihood.
-    Caller is responsible for deleting returned cluster. */
-const CCluster & CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway) {
+/** Returns cluster centered at grid point nCenter, with the greatest log
+    likelihood ratio . Caller should not assume that returned reference is
+    persistent, but should either call Clone() method or overloaded assignment
+    operator. */
+const CCluster & CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway& DataGateway) {
   tract_t       k;
 
   gpTopShapeClusters->Reset(tCenter);
@@ -123,8 +127,8 @@ void CSpaceTimeAnalysis::Init() {
   gpTimeIntervals=0;
 }
 
-/** Returns loglikelihood for Monte Carlo replication. */
-double CSpaceTimeAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
+/** Returns log likelihood ratio for Monte Carlo replication. */
+double CSpaceTimeAnalysis::MonteCarlo(const DataStreamInterface& Interface) {
   tract_t                       k, i, * pNeighborCounts, ** ppSorted_Tract_T;
   unsigned short             ** ppSorted_UShort_T;
 
