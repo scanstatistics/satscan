@@ -39,7 +39,7 @@ stsClusterLevelDBF::~stsClusterLevelDBF() {
 // post: vector will be defined using the names and field types provided by the descendant classes
 void stsClusterLevelDBF::GetFields() {
    DBFFile		File;
-   ZdField		Field;
+   ZdField		*pField = 0;
    std::vector<field_t>         vFields;
 
    try {
@@ -47,12 +47,12 @@ void stsClusterLevelDBF::GetFields() {
       SetupFields(vFields);
 
       for(unsigned int i = 0; i < vFields.size(); ++i) {
-         Field = *(File.GetNewField());
-         Field.SetName(vFields[i].sFieldName.c_str());
-         Field.SetType(vFields[i].cFieldType);
-         Field.SetLength(vFields[i].wLength);
-         Field.SetPrecision(vFields[i].wPrecision);
-         gvFields.AddElement(Field.Clone());  ;
+         pField = (File.GetNewField());
+         pField->SetName(vFields[i].sFieldName.c_str());
+         pField->SetType(vFields[i].cFieldType);
+         pField->SetLength(vFields[i].wLength);
+         pField->SetPrecision(vFields[i].wPrecision);
+         gvFields.AddElement(pField);  ;
       }
    }
    catch (ZdException &x) {
