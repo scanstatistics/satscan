@@ -97,7 +97,7 @@
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value="..\xbase\xbase_2.0.0\xbase\xbase.lib 
-      &quot;C:\Program Files\Borland\CBuilder5\Lib\zd542.lib&quot; &quot;C:\Program Files\Borland\CBuilder5\Lib\zdannex542.lib&quot;"/>
+      &quot;C:\Program Files\Borland\CBuilder5\Lib\zd540.lib&quot; &quot;C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib&quot;"/>
     <LIBRARIES value="Vcl50.lib"/>
     <SPARELIBS value="Vcl50.lib"/>
     <PACKAGES value="Vcl50.bpi Vclx50.bpi Vcldb50.bpi Vclbde50.bpi vcldbx50.bpi bcbie50.bpi 

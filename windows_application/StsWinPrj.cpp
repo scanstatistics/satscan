@@ -117,8 +117,8 @@ USEUNIT("..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\loglikelihood\ExponentialLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\loglikelihood\NormalLikelihoodCalculation.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
-USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd542.lib");
-USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex542.lib");
+USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
+USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;
