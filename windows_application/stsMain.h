@@ -12,6 +12,9 @@
 #include <fcntl.h>
 #include <ActnList.hpp>
 #include <ImgList.hpp>
+
+class stsOutputFileRegister;
+
 //---------------------------------------------------------------------------
 class TfrmMainForm : public TForm{
   __published:	// IDE-managed Components
@@ -82,9 +85,10 @@ class TfrmMainForm : public TForm{
     void        ExecuteSession();
     void        Save();
     void        SaveAs();
-
+    stsOutputFileRegister*      gpRegistry;
   public:		// User declarations
     __fastcall TfrmMainForm(TComponent* Owner);
+    virtual __fastcall ~TfrmMainForm();
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfrmMainForm *frmMainForm;

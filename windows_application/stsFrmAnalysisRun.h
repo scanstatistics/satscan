@@ -13,6 +13,8 @@
 #include <fcntl.h>
 //---------------------------------------------------------------------------
 //class CalcThread;
+class stsOutputFileRegister;
+
 class TfrmAnalysisRun : public TForm {
   friend class CalcThread;
   
@@ -38,6 +40,8 @@ class TfrmAnalysisRun : public TForm {
     bool                gbMaximumWarningsReached;
     AnsiString          FFileName;
     static const int    gbMaximumWarningsPrinted = 300; 
+    stsOutputFileRegister*      gpRegistry;
+    std::string         gsOutputFileName;
 
     void                Init();
 
@@ -52,7 +56,7 @@ class TfrmAnalysisRun : public TForm {
     void                SetPrintWarnings(bool b) {gbPrintWarnings = b;}
 
   public:		// User declarations
-            __fastcall TfrmAnalysisRun(TComponent* Owner);
+            __fastcall TfrmAnalysisRun(TComponent* Owner, const std::string& sOutputFileName, stsOutputFileRegister* pRegistry = 0);
     virtual __fastcall ~TfrmAnalysisRun(){}
 };
 //---------------------------------------------------------------------------

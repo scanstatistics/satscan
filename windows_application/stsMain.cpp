@@ -4,10 +4,22 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+
+#include "stsOutputFileRegistry.h"
+
 TfrmMainForm *frmMainForm;
 //---------------------------------------------------------------------------
-__fastcall TfrmMainForm::TfrmMainForm(TComponent* Owner)
-        : TForm(Owner){}
+__fastcall TfrmMainForm::TfrmMainForm(TComponent* Owner): TForm(Owner){
+   gpRegistry = new stsOutputFileRegister();
+}
+
+__fastcall TfrmMainForm::~TfrmMainForm() {
+   try {
+      delete gpRegistry; gpRegistry = 0;
+   }
+   catch (...) {}
+}
+
 //---------------------------------------------------------------------------
 void __fastcall TfrmMainForm::AboutSatscanActionExecute(TObject *Sender) {
   TfrmAbout(this).ShowModal();
@@ -34,6 +46,7 @@ void TfrmMainForm::ExecuteSession() {
   AnsiString                    sCaption;
   TfrmAnalysisRun             * pAnalysisRun=0;
   CalcThread                  * pThread;
+  std::string                   sFileName;
 
   try {
     //make sure window is a session window
@@ -41,8 +54,6 @@ void TfrmMainForm::ExecuteSession() {
     if (frmBaseForm && frmBaseForm->ValidateParams()) {
       pSession = (CParameters *)frmBaseForm->GetSession();
       if (pSession) {
-        //see if you can open up the output file...  see if another Thread is using it !!1
-        //access(pSession->m_szOutputFilename)
         if (frmBaseForm->GetFileName()) {
           sCaption = "Running ";
           sCaption += frmBaseForm->GetFileName();
@@ -50,10 +61,18 @@ void TfrmMainForm::ExecuteSession() {
         else
           sCaption = "Running Unknown Session Name";
 
-        pAnalysisRun = new TfrmAnalysisRun(this);
-        CalcThread * pThread = new CalcThread(true, *pSession, sCaption.c_str(), pAnalysisRun);
-        pThread->Resume(); // starts the thread
-      }
+        sFileName = pSession->GetOutputFileName();
+        // if we don't already have a thread with the result file running then launch one
+        if(!gpRegistry->IsAlreadyRegistered(sFileName)) {
+           gpRegistry->Register(sFileName);
+           pAnalysisRun = new TfrmAnalysisRun(this, sFileName, gpRegistry);
+           CalcThread * pThread = new CalcThread(true, *pSession, sCaption.c_str(), pAnalysisRun);
+           pThread->Resume(); // starts the thread
+        }
+        else   // there's already a thread writing to this output file
+           ZdException::GenerateNotification("The filename you specified for results file is \ncurrently being written to by another analysis.\n"
+                                             "Please choose another results filename." , "Error!");
+      }  // end if session
     }
   }
   catch (ZdException & x) {

@@ -4,11 +4,18 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+
+#include "stsOutputFileRegistry.h"
+
 TfrmAnalysisRun *frmAnalysisRun;
 
 //---------------------------------------------------------------------------
-__fastcall TfrmAnalysisRun::TfrmAnalysisRun(TComponent* Owner) : TForm(Owner) {
+__fastcall TfrmAnalysisRun::TfrmAnalysisRun(TComponent* Owner, const std::string& sOutputFileName,stsOutputFileRegister* pRegistry) : TForm(Owner) {
   Init();
+  if(!pRegistry)
+     ZdGenerateException("NULL registry object pointer passed to AnalysisRun object.", "Error!");
+  gpRegistry = pRegistry;
+  gsOutputFileName = sOutputFileName;
 }
 //---------------------------------------------------------------------------
 void TfrmAnalysisRun::AddLine(char *sLine) {
@@ -37,6 +44,7 @@ void TfrmAnalysisRun::CancelJob() {
     rteAnalysisBox->Lines->Add("Job cancelled.");
   btnCancel->Caption = "Close";
   gbCancel = true;
+  gpRegistry->Release(gsOutputFileName);
   SetCanClose(true);
 }
 //---------------------------------------------------------------------------
@@ -45,6 +53,7 @@ void __fastcall TfrmAnalysisRun::FormClose(TObject *Sender, TCloseAction &Action
     Action = caFree;
   else
     Action = caNone;
+  gpRegistry->Release(gsOutputFileName);
 }
 //---------------------------------------------------------------------------
 void TfrmAnalysisRun::Init() {
@@ -74,6 +83,7 @@ void TfrmAnalysisRun::LoadFromFile(char *sFileName) {
    else
       rteAnalysisBox->Lines->LoadFromFile(sFileName);
 
+   gpRegistry->Release(gsOutputFileName);
    FFileName = sFileName;
 }
 //---------------------------------------------------------------------------
@@ -84,6 +94,7 @@ void __fastcall TfrmAnalysisRun::OnCancelClick(TObject *Sender) {
     rteAnalysisBox->Lines->Add("Cancelling job, please wait...");
     gbCancel = true;
   }
+  gpRegistry->Release(gsOutputFileName);
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysisRun::OnEMailClick(TObject *Sender) {

@@ -72,6 +72,7 @@ USEUNIT("..\calculation\Output\stsAreaSpecificData.cpp");
 USEUNIT("..\calculation\Output\stsOutputFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsDBaseFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsASCIIFileWriter.cpp");
+USEUNIT("stsOutputFileRegistry.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         try {
