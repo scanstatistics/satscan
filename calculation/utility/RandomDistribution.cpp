@@ -91,12 +91,12 @@ long BinomialGenerator::GetBinomialDistributedVariable(long n, float pp, RandomN
       if (n != nold) {
          en=n;
          oldg=gammln(en+1.0);
-         nold=n;
+         //nold=n;
       } if (p != pold) {
          pc=1.0-p;
          plog=log(p);
          pclog=log(pc);
-         pold=p;
+         //pold=p;
       }
       sq=sqrt(2.0*am*pc);
       do {
