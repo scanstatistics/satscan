@@ -57,7 +57,7 @@ bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, Julian &
       return false;
     }
     //Attempt to convert string into Julian equivalence.
-    eStatus = DateParser.ParseCountDateString(Parser.GetWord(COUNT_DATE_OFFSET), gParameters.GetTimeIntervalUnitsType(),
+    eStatus = DateParser.ParseCountDateString(Parser.GetWord(COUNT_DATE_OFFSET), gParameters.GetPrecisionOfTimesType(),
                                               gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodStartDate(), JulianDate);
     switch (eStatus) {
       case DateStringParser::VALID_DATE       : break;
@@ -69,9 +69,9 @@ bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, Julian &
         return false;
       case DateStringParser::LESSER_PRECISION :
          //Dates in the case/control files must be at least as precise as specified time interval units.
-         gPrint.PrintInputWarning("Error: Date '%s' of record %ld in %s must be precise to %s, as specified by time interval units.\n",
+         gPrint.PrintInputWarning("Error: Date '%s' of record %ld in the %s must be precise to %s, as specified by time precision units.\n",
                                     Parser.GetWord(COUNT_DATE_OFFSET), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str(),
-                                    gParameters.GetDatePrecisionAsString(gParameters.GetTimeIntervalUnitsType()));
+                                    gParameters.GetDatePrecisionAsString(gParameters.GetPrecisionOfTimesType()));
         return false;
       case DateStringParser::INVALID_DATE     :
       default                                 :
