@@ -440,8 +440,9 @@ bool TBDlgDataImporter::GetDateFieldImported() const {
   return bReturn;
 }
 
-const char * TBDlgDataImporter::GetDestinationFilename() const {
-  return gDestDescriptor.GetDestinationFileName();
+const char * TBDlgDataImporter::GetDestinationFilename(ZdString& sFilename) const {
+  sFilename = gDestDescriptor.GetDestinationFileName();
+  return sFilename.GetCString();
 }
 
 /** Returns name to call uwFieldIndex'th column of fixed column file type. */

@@ -1,4 +1,4 @@
-// $Revision: 1.14 $
+// $Revision: 1.15 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -222,7 +222,7 @@ public:		// User declarations
      virtual __fastcall ~TBDlgDataImporter();
 
      CoordinatesType                 GetCoorinatesControlType() const;
-     const char *                    GetDestinationFilename() const;
+     const char *                    GetDestinationFilename(ZdString& sFilename) const;
      bool                            GetDateFieldImported() const;
 };
 //---------------------------------------------------------------------------
