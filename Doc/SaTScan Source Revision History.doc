@@ -1,6 +1,6 @@
-{\rtf1\ansi\ansicpg1252\uc1\deff0\stshfdbch0\stshfloch0\stshfhich0\stshfbi0\deflang1033\deflangfe1033{\fonttbl{\f0\froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}{\f37\froman\fcharset238\fprq2 Times New Roman CE;}
-{\f38\froman\fcharset204\fprq2 Times New Roman Cyr;}{\f40\froman\fcharset161\fprq2 Times New Roman Greek;}{\f41\froman\fcharset162\fprq2 Times New Roman Tur;}{\f42\froman\fcharset177\fprq2 Times New Roman (Hebrew);}
-{\f43\froman\fcharset178\fprq2 Times New Roman (Arabic);}{\f44\froman\fcharset186\fprq2 Times New Roman Baltic;}{\f45\froman\fcharset163\fprq2 Times New Roman (Vietnamese);}}{\colortbl;\red0\green0\blue0;\red0\green0\blue255;\red0\green255\blue255;
+{\rtf1\ansi\ansicpg1252\uc1\deff0\stshfdbch0\stshfloch0\stshfhich0\stshfbi0\deflang1033\deflangfe1033{\fonttbl{\f0\froman\fcharset0\fprq2{\*\panose 02020603050405020304}Times New Roman;}{\f36\froman\fcharset238\fprq2 Times New Roman CE;}
+{\f37\froman\fcharset204\fprq2 Times New Roman Cyr;}{\f39\froman\fcharset161\fprq2 Times New Roman Greek;}{\f40\froman\fcharset162\fprq2 Times New Roman Tur;}{\f41\froman\fcharset177\fprq2 Times New Roman (Hebrew);}
+{\f42\froman\fcharset178\fprq2 Times New Roman (Arabic);}{\f43\froman\fcharset186\fprq2 Times New Roman Baltic;}{\f44\froman\fcharset163\fprq2 Times New Roman (Vietnamese);}}{\colortbl;\red0\green0\blue0;\red0\green0\blue255;\red0\green255\blue255;
 \red0\green255\blue0;\red255\green0\blue255;\red255\green0\blue0;\red255\green255\blue0;\red255\green255\blue255;\red0\green0\blue128;\red0\green128\blue128;\red0\green128\blue0;\red128\green0\blue128;\red128\green0\blue0;\red128\green128\blue0;
 \red128\green128\blue128;\red192\green192\blue192;}{\stylesheet{\ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 \snext0 Normal;}{\*\cs10 \additive \ssemihidden 
 Default Paragraph Font;}{\*\ts11\tsrowd\trftsWidthB3\trpaddl108\trpaddr108\trpaddfl3\trpaddft3\trpaddfb3\trpaddfr3\trcbpat1\trcfpat1\tscellwidthfts0\tsvertalt\tsbrdrt\tsbrdrl\tsbrdrb\tsbrdrr\tsbrdrdgl\tsbrdrdgr\tsbrdrh\tsbrdrv 
@@ -155,7 +155,15 @@ Default Paragraph Font;}{\*\ts11\tsrowd\trftsWidthB3\trpaddl108\trpaddr108\trpad
 \fi-360\li3600\jclisttab\tx3600\lin3600 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698715\'02\'05.;}{\levelnumbers\'01;}\fi-180\li4320\jclisttab\tx4320\lin4320 }
 {\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698703\'02\'06.;}{\levelnumbers\'01;}\fi-360\li5040\jclisttab\tx5040\lin5040 }{\listlevel\levelnfc4\levelnfcn4\leveljc0
 \leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698713\'02\'07.;}{\levelnumbers\'01;}\fi-360\li5760\jclisttab\tx5760\lin5760 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1
-\levelspace360\levelindent0{\leveltext\leveltemplateid67698715\'02\'08.;}{\levelnumbers\'01;}\fi-180\li6480\jclisttab\tx6480\lin6480 }{\listname ;}\listid2009552006}{\list\listtemplateid623819620\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0
+\levelspace360\levelindent0{\leveltext\leveltemplateid67698715\'02\'08.;}{\levelnumbers\'01;}\fi-180\li6480\jclisttab\tx6480\lin6480 }{\listname ;}\listid2009552006}{\list\listtemplateid-1789643000\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0
+\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698703\'02\'00.;}{\levelnumbers\'01;}\fi-360\li720\jclisttab\tx720\lin720 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1
+\levelspace360\levelindent0{\leveltext\leveltemplateid67698713\'02\'01.;}{\levelnumbers\'01;}\fi-360\li1440\jclisttab\tx1440\lin1440 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
+\leveltemplateid67698715\'02\'02.;}{\levelnumbers\'01;}\fi-180\li2160\jclisttab\tx2160\lin2160 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698703
+\'02\'03.;}{\levelnumbers\'01;}\fi-360\li2880\jclisttab\tx2880\lin2880 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698713\'02\'04.;}{\levelnumbers\'01;}
+\fi-360\li3600\jclisttab\tx3600\lin3600 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698715\'02\'05.;}{\levelnumbers\'01;}\fi-180\li4320\jclisttab\tx4320\lin4320 }
+{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698703\'02\'06.;}{\levelnumbers\'01;}\fi-360\li5040\jclisttab\tx5040\lin5040 }{\listlevel\levelnfc4\levelnfcn4\leveljc0
+\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698713\'02\'07.;}{\levelnumbers\'01;}\fi-360\li5760\jclisttab\tx5760\lin5760 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1
+\levelspace360\levelindent0{\leveltext\leveltemplateid67698715\'02\'08.;}{\levelnumbers\'01;}\fi-180\li6480\jclisttab\tx6480\lin6480 }{\listname ;}\listid2041315829}{\list\listtemplateid623819620\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0
 \leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698703\'02\'00.;}{\levelnumbers\'01;}\fi-360\li720\jclisttab\tx720\lin720 }{\listlevel\levelnfc4\levelnfcn4\leveljc0\leveljcn0\levelfollow0\levelstartat1
 \levelspace360\levelindent0{\leveltext\leveltemplateid67698713\'02\'01.;}{\levelnumbers\'01;}\fi-360\li1440\jclisttab\tx1440\lin1440 }{\listlevel\levelnfc2\levelnfcn2\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext
 \leveltemplateid67698715\'02\'02.;}{\levelnumbers\'01;}\fi-180\li2160\jclisttab\tx2160\lin2160 }{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\leveltext\leveltemplateid67698703
@@ -175,19 +183,19 @@ Default Paragraph Font;}{\*\ts11\tsrowd\trftsWidthB3\trpaddl108\trpaddr108\trpad
 \listoverridecount0\ls6}{\listoverride\listid1658463056\listoverridecount0\ls7}{\listoverride\listid772869483\listoverridecount0\ls8}{\listoverride\listid1857184620\listoverridecount0\ls9}{\listoverride\listid1730038326\listoverridecount0\ls10}
 {\listoverride\listid2063287934\listoverridecount0\ls11}{\listoverride\listid630478788\listoverridecount0\ls12}{\listoverride\listid567493785\listoverridecount0\ls13}{\listoverride\listid1116563150\listoverridecount0\ls14}{\listoverride\listid713427785
 \listoverridecount0\ls15}{\listoverride\listid1745906821\listoverridecount0\ls16}{\listoverride\listid327442484\listoverridecount0\ls17}{\listoverride\listid1245381541\listoverridecount0\ls18}{\listoverride\listid468324841\listoverridecount0\ls19}
-{\listoverride\listid408574839\listoverridecount0\ls20}{\listoverride\listid2009552006\listoverridecount0\ls21}}{\*\pgptbl {\pgp\ipgp0\itap0\li0\ri0\sb0\sa0}}{\*\rsidtbl \rsid11872\rsid24443\rsid85140\rsid150250\rsid210938\rsid211524\rsid289025\rsid393311
-\rsid398886\rsid551676\rsid857973\rsid884389\rsid925542\rsid1004624\rsid1114544\rsid1261596\rsid1508648\rsid1598935\rsid1602387\rsid1706289\rsid1774517\rsid2048693\rsid2112153\rsid2126740\rsid2127297\rsid2182696\rsid2185157\rsid2382115\rsid2625972
-\rsid2698214\rsid2757734\rsid2827166\rsid2836416\rsid2837833\rsid2902117\rsid3021415\rsid3027743\rsid3110957\rsid3156827\rsid3167505\rsid3240357\rsid3417901\rsid3425193\rsid3432102\rsid3488227\rsid3550912\rsid3636789\rsid3674697\rsid3824783\rsid3896366
-\rsid3898442\rsid4139736\rsid4198387\rsid4220874\rsid4272087\rsid4404934\rsid4416225\rsid4488418\rsid4523273\rsid4547662\rsid4602440\rsid4603679\rsid4681028\rsid4733739\rsid4744945\rsid4785242\rsid4918766\rsid4997051\rsid5011189\rsid5048355\rsid5054155
-\rsid5062607\rsid5134448\rsid5339839\rsid5452420\rsid5509088\rsid5536570\rsid5591535\rsid5639921\rsid5723075\rsid5733915\rsid5912392\rsid5925641\rsid6097327\rsid6120780\rsid6175516\rsid6180104\rsid6239572\rsid6244747\rsid6383808\rsid6386889\rsid6492812
-\rsid6508787\rsid6624742\rsid6828297\rsid6955441\rsid7105331\rsid7210311\rsid7214372\rsid7215705\rsid7219702\rsid7415040\rsid7484793\rsid7501823\rsid7602623\rsid7670895\rsid7679464\rsid7689619\rsid7734169\rsid7807370\rsid7881004\rsid7956022\rsid7996892
-\rsid7997324\rsid8133626\rsid8151724\rsid8282045\rsid8286430\rsid8457988\rsid8668193\rsid8799830\rsid8866532\rsid8916903\rsid9068188\rsid9117138\rsid9392771\rsid9467803\rsid9503347\rsid9703873\rsid9721789\rsid9992070\rsid10119030\rsid10120033\rsid10183073
-\rsid10184366\rsid10255454\rsid10366417\rsid10378830\rsid10424511\rsid10438006\rsid10490870\rsid10713615\rsid10824219\rsid10890742\rsid10904366\rsid11023223\rsid11146298\rsid11237706\rsid11472452\rsid11552545\rsid11689867\rsid11759649\rsid11818467
-\rsid11824194\rsid11892830\rsid11945098\rsid11946631\rsid11955364\rsid12066503\rsid12079783\rsid12152732\rsid12285803\rsid12464202\rsid12594283\rsid12657059\rsid12677708\rsid12918527\rsid12920234\rsid12999536\rsid13070003\rsid13450067\rsid13576629
-\rsid13699279\rsid13709459\rsid13962696\rsid13967863\rsid13980201\rsid13987006\rsid14030092\rsid14108029\rsid14112074\rsid14302876\rsid14551615\rsid14629260\rsid14635531\rsid14767316\rsid14973664\rsid15081228\rsid15212647\rsid15236781\rsid15353285
-\rsid15409333\rsid15422373\rsid15479713\rsid15559716\rsid15612925\rsid15682707\rsid15756859\rsid15802140\rsid15861789\rsid15954602\rsid15955358\rsid15995387\rsid15999594\rsid16000751\rsid16010451\rsid16084591\rsid16318934\rsid16529560\rsid16540674
-\rsid16542629\rsid16587048\rsid16587668\rsid16737183}{\*\generator Microsoft Word 10.0.6612;}{\info{\title SaTScan Source Revision History}{\author Scott Hostovich}{\operator Scott Hostovich}{\creatim\yr2003\mo9\dy2\hr13\min18}
-{\revtim\yr2004\mo12\dy29\hr13\min46}{\version206}{\edmins836}{\nofpages7}{\nofwords2502}{\nofchars14267}{\*\company IMS, Inc.}{\nofcharsws16736}{\vern16389}}
+{\listoverride\listid408574839\listoverridecount0\ls20}{\listoverride\listid2009552006\listoverridecount0\ls21}{\listoverride\listid2041315829\listoverridecount0\ls22}}{\*\pgptbl {\pgp\ipgp0\itap0\li0\ri0\sb0\sa0}}{\*\rsidtbl \rsid11872\rsid24443
+\rsid85140\rsid150250\rsid210938\rsid211524\rsid289025\rsid393311\rsid398886\rsid551676\rsid857973\rsid884389\rsid925542\rsid1004624\rsid1114544\rsid1261596\rsid1508648\rsid1598935\rsid1602387\rsid1706289\rsid1774517\rsid2048693\rsid2112153\rsid2126740
+\rsid2127297\rsid2182696\rsid2185157\rsid2382115\rsid2625972\rsid2698214\rsid2757734\rsid2827166\rsid2836416\rsid2837833\rsid2902117\rsid3021415\rsid3027743\rsid3110957\rsid3156827\rsid3167505\rsid3240357\rsid3417901\rsid3425193\rsid3432102\rsid3488227
+\rsid3550912\rsid3636789\rsid3674697\rsid3824783\rsid3896366\rsid3898442\rsid4139736\rsid4198387\rsid4220874\rsid4272087\rsid4404934\rsid4416225\rsid4488418\rsid4523273\rsid4547662\rsid4602440\rsid4603679\rsid4681028\rsid4733739\rsid4744945\rsid4785242
+\rsid4918766\rsid4997051\rsid5011189\rsid5048355\rsid5054155\rsid5062607\rsid5134448\rsid5339839\rsid5452420\rsid5509088\rsid5536570\rsid5591535\rsid5639921\rsid5723075\rsid5733915\rsid5912392\rsid5925641\rsid6097327\rsid6120780\rsid6175516\rsid6180104
+\rsid6239572\rsid6244747\rsid6383808\rsid6386889\rsid6492812\rsid6508787\rsid6624742\rsid6828297\rsid6955441\rsid7105331\rsid7210311\rsid7214372\rsid7215705\rsid7219702\rsid7415040\rsid7484793\rsid7501823\rsid7602623\rsid7670895\rsid7679464\rsid7689619
+\rsid7734169\rsid7807370\rsid7881004\rsid7956022\rsid7996892\rsid7997324\rsid8133626\rsid8151724\rsid8282045\rsid8286430\rsid8457988\rsid8668193\rsid8799830\rsid8866532\rsid8916903\rsid9068188\rsid9117138\rsid9392771\rsid9467803\rsid9503347\rsid9703873
+\rsid9721789\rsid9992070\rsid10119030\rsid10120033\rsid10183073\rsid10184366\rsid10255454\rsid10366417\rsid10378830\rsid10424511\rsid10434520\rsid10438006\rsid10486948\rsid10490870\rsid10713615\rsid10824219\rsid10890742\rsid10904366\rsid11023223
+\rsid11146298\rsid11237706\rsid11472452\rsid11552545\rsid11689867\rsid11759649\rsid11818467\rsid11824194\rsid11892830\rsid11945098\rsid11946631\rsid11955364\rsid12066503\rsid12079783\rsid12152732\rsid12285803\rsid12464202\rsid12594283\rsid12657059
+\rsid12677708\rsid12918527\rsid12920234\rsid12999536\rsid13070003\rsid13450067\rsid13576629\rsid13699279\rsid13709459\rsid13962696\rsid13967863\rsid13980201\rsid13987006\rsid14030092\rsid14108029\rsid14112074\rsid14302876\rsid14436399\rsid14551615
+\rsid14629260\rsid14635531\rsid14767316\rsid14973664\rsid15081228\rsid15212647\rsid15236781\rsid15353285\rsid15409333\rsid15422373\rsid15479713\rsid15559716\rsid15612925\rsid15682707\rsid15756859\rsid15802140\rsid15861789\rsid15954602\rsid15955358
+\rsid15995387\rsid15999594\rsid16000751\rsid16010451\rsid16084591\rsid16318934\rsid16529560\rsid16540674\rsid16542629\rsid16587048\rsid16587668\rsid16737183}{\*\generator Microsoft Word 10.0.6612;}{\info{\title SaTScan Source Revision History}
+{\author Scott Hostovich}{\operator Scott Hostovich}{\creatim\yr2003\mo9\dy2\hr13\min18}{\revtim\yr2005\mo3\dy18\hr14\min58}{\version209}{\edmins843}{\nofpages8}{\nofwords2608}{\nofchars14866}{\*\company IMS, Inc.}{\nofcharsws17440}{\vern16389}}
 \widowctrl\ftnbj\aenddoc\noxlattoyen\expshrtn\noultrlspc\dntblnsbdb\nospaceforul\hyphcaps0\formshade\horzdoc\dgmargin\dghspace180\dgvspace180\dghorigin1800\dgvorigin1440\dghshow1\dgvshow1
 \jexpand\viewkind1\viewscale100\pgbrdrhead\pgbrdrfoot\splytwnine\ftnlytwnine\htmautsp\nolnhtadjtbl\useltbaln\alntblind\lytcalctblwd\lyttblrtgr\lnbrkrule\nobrkwrptbl\viewnobound1\snaptogridincell\allowfieldendsel\wrppunct\asianbrkrule\rsidroot4404934 \fet0
 \sectd \linex0\endnhere\sectlinegrid360\sectdefaultcl\sftnbj {\*\pnseclvl1\pnucrm\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl2\pnucltr\pnstart1\pnindent720\pnhang {\pntxta .}}{\*\pnseclvl3\pndec\pnstart1\pnindent720\pnhang {\pntxta .}}
@@ -195,26 +203,37 @@ Default Paragraph Font;}{\*\ts11\tsrowd\trftsWidthB3\trpaddl108\trpaddr108\trpad
 {\pntxtb (}{\pntxta )}}{\*\pnseclvl8\pnlcltr\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}{\*\pnseclvl9\pnlcrm\pnstart1\pnindent720\pnhang {\pntxtb (}{\pntxta )}}\pard\plain \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 
 \fs24\lang1033\langfe1033\cgrid\langnp1033\langfenp1033 {\b\insrsid4404934 SaTScan Source Revision History}{\insrsid4404934 
 \par 
-\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid14108029 {\b\insrsid14108029 Version 5.1\tab \tab - released December 29, 2004}{\insrsid14108029 
+\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid10486948 {\b\insrsid10486948 Version 5.1.1\tab \tab - released March 18, 2005}{\insrsid10486948 
+\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 {\insrsid10486948 
+\par {\listtext\pard\plain\insrsid10486948 \hich\af0\dbch\af0\loch\f0 1.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls22\adjustright\rin0\lin720\itap0\pararsid10486948 {\insrsid10486948 Corrected bug in parameter file rea
+d whether paths of filenames in additional data sets were not be determined when path was missing. Corner case issue.
+\par {\listtext\pard\plain\insrsid10434520 \hich\af0\dbch\af0\loch\f0 2.\tab}}{\insrsid10434520 
+When input data contains multiple data sets, printing warning for locations that have zero populations was cumbersome. These warning are suppressed for multiple data sets.
+\par {\listtext\pard\plain\insrsid14436399 \hich\af0\dbch\af0\loch\f0 3.\tab}}{\insrsid14436399 Start date of prospective surveillance no longer validated when not adjusting for earlier analyses. This was an issue for the batch version.
+\par {\listtext\pard\plain\insrsid14436399 \hich\af0\dbch\af0\loch\f0 4.\tab}Hidden feature which permits user to specify seed used by randomization. This parameter is not advertised and only users\rquote 
+ in the know will be aware to add this parameter to their parameter files.
+\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 {\insrsid10486948 
+\par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid14108029 {\b\insrsid14108029 Version 5.1\tab \tab - released December }{\b\insrsid10486948 30}{\b\insrsid14108029 , 2004}{\insrsid14108029 
 \par 
 \par {\listtext\pard\plain\insrsid14108029 \hich\af0\dbch\af0\loch\f0 1.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls19\adjustright\rin0\lin720\itap0\pararsid14108029 {\insrsid14108029 
 Improved execution time for prospective analyses and those using the flexible window definition through collapsing time intervals which are not evaluated.}{\insrsid4272087  }{\insrsid14108029\charrsid12285803 
 \par {\listtext\pard\plain\insrsid6828297 \hich\af0\dbch\af0\loch\f0 2.\tab}}{\insrsid6828297 The import wizard has an additional panel which provides the user the ability to specify an alternative location for storing imported file}{\insrsid14108029 .
 \par {\listtext\pard\plain\insrsid6828297 \hich\af0\dbch\af0\loch\f0 3.\tab}}{\insrsid6828297 The ability to print analysis results has been moved from the window itself and made a toolbar button and menu item}{\insrsid14108029 .
-\par {\listtext\pard\plain\insrsid857973 \hich\af0\dbch\af0\loch\f0 4.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls19\adjustright\rin0\lin720\itap0 {\insrsid857973 Several fields of the cluster information and 
-relative risk file}{\insrsid5134448 s}{\insrsid857973  }{\insrsid5134448 have been changed from character to numeric. These fields used to contain \lquote n/a\rquote  when field was not applicable to analysis type but users had issue with converting text
- fields to numeric ones and original implementation was not appropriate, in hindsight.}{\insrsid14108029 
+\par {\listtext\pard\plain\insrsid857973 \hich\af0\dbch\af0\loch\f0 4.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls19\adjustright\rin0\lin720\itap0 {\insrsid857973 
+Several fields of the cluster information and relative risk file}{\insrsid5134448 s}{\insrsid857973  }{\insrsid5134448 have been changed from character to numeric. These fields used to contain \lquote n/a\rquote 
+ when field was not applicable to analysis type but users had issue with converting text fields to numeric ones and original implementation was not appropriate, in hindsight.}{\insrsid14108029 
 \par {\listtext\pard\plain\insrsid3636789 \hich\af0\dbch\af0\loch\f0 5.\tab}}{\insrsid3636789 Time trend convergence variable split into to variables: 
 \par }\pard \ql \li720\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin720\itap0\pararsid3636789 {\insrsid3636789 - one for calculated time trend adjustment; now a constant value
 \par - one for SVTT; though the connection through the parameter file has been 
 \par    removed till development is completed for this analysis type.
-\par {\listtext\pard\plain\insrsid3425193 \hich\af0\dbch\af0\loch\f0 6.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls19\adjustright\rin0\lin720\itap0\pararsid14302876 {\insrsid3425193 
-Implemented ability to optionally specify a population file for purely temporal analyses using the Poisson model.}{\insrsid15479713  This essentially involved an alternative method to reading the population, instead population data is created.}{
-\insrsid14302876 
+\par {\listtext\pard\plain\insrsid3425193 \hich\af0\dbch\af0\loch\f0 6.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls19\adjustright\rin0\lin720\itap0\pararsid14302876 {\insrsid3425193 Implemented a
+bility to optionally specify a population file for purely temporal analyses using the Poisson model.}{\insrsid15479713  This essentially involved an alternative method to reading the population, instead population data is created.}{\insrsid14302876 
+
 \par {\listtext\pard\plain\insrsid16540674 \hich\af0\dbch\af0\loch\f0 7.\tab}}{\insrsid16540674 The ability to launch the Adobe Acrobat version of the user guide through file}{\insrsid551676  menu}{\insrsid5509088  of graphical interface}{\insrsid16540674 .}{
 \insrsid13699279 
-\par {\listtext\pard\plain\insrsid9721789 \hich\af0\dbch\af0\loch\f0 8.\tab}}{\insrsid9721789 Major restructure to the process of reading and writing of parameter file. An abstraction was created outside of CParameters class which maintains existing backwards 
-support }{\insrsid16318934 for reading parameters from file, }{\insrsid9721789 as well as facilitate changing the parameter section/labels in future updates.
+\par {\listtext\pard\plain\insrsid9721789 \hich\af0\dbch\af0\loch\f0 8.\tab}}{\insrsid9721789 
+Major restructure to the process of reading and writing of parameter file. An abstraction was created outside of CParameters class which maintains existing backwards support }{\insrsid16318934 for reading parameters from file, }{\insrsid9721789 
+as well as facilitate changing the parameter section/labels in future updates.
 \par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 {\insrsid14108029 
 \par }{\b\insrsid12285803 Version 5.0\tab \tab - released }{\b\insrsid14108029 September 21,}{\b\insrsid12285803  2004}{\insrsid12285803 
 \par 
@@ -268,8 +287,8 @@ Implemented framework for three new probability models: Survival, Rank, and Norm
 \par {\listtext\pard\plain\insrsid15802140 \hich\af0\dbch\af0\loch\f0 29.\tab}}{\insrsid15802140 Implemented new print direction class that more correctly pause messages produced during analysis execution in order for user to observe citation and}{
 \insrsid4523273  to observe}{\insrsid15802140  log likelihood ratio of most likely cluster.
 \par {\listtext\pard\plain\insrsid2625972 \hich\af0\dbch\af0\loch\f0 30.\tab}}{\insrsid2625972 Collapsed class hierarchy for buffering records }{\insrsid7807370 of additional output files }{\insrsid2625972 into one class. 
-\par {\listtext\pard\plain\insrsid85140 \hich\af0\dbch\af0\loch\f0 31.\tab}}{\insrsid85140 
-Revised simulation process that uses measure list classes. When scanning for high rates, a new trick was incorporated that reduced the number of log likelihood calculations. 
+\par {\listtext\pard\plain\insrsid85140 \hich\af0\dbch\af0\loch\f0 31.\tab}}{\insrsid85140 Revised simulation process that uses measure list classes. When scanning for high rates, a new trick was incorporated that reduced the number of 
+log likelihood calculations. 
 \par {\listtext\pard\plain\insrsid15236781 \hich\af0\dbch\af0\loch\f0 32.\tab}}{\insrsid15236781 Calculation engine code re-factoring:
 \par {\listtext\pard\plain\insrsid15236781 \hich\af0\dbch\af0\loch\f0 -\tab}}\pard \ql \fi-360\li1440\ri0\widctlpar\jclisttab\tx1440\aspalpha\aspnum\faauto\ls19\ilvl1\adjustright\rin0\lin1440\itap0\pararsid15236781 {\insrsid15236781 
 Abstraction created for data of CCluster family of classes}{\insrsid211524 ; primarily motivated by }{\insrsid2757734 multiple data streams and Normal probability model.}{\insrsid15236781 
@@ -337,17 +356,18 @@ A}{\insrsid2048693\charrsid15995387 pplication }{\insrsid2048693 S}{\insrsid2048
 \insrsid7415040\charrsid7415040  }{\insrsid7415040 opened. Reopen menu item provides access to list.}{\insrsid14551615 
 \par {\listtext\pard\plain\insrsid16542629 \hich\af0\dbch\af0\loch\f0 24.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls12\adjustright\rin0\lin720\itap0 {\insrsid16542629 
 The "suggested citation" on the about box can be easily selected and copied, requested by T. Richards.}{\insrsid5925641 
-\par }\pard \ql \fi-360\li720\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin720\itap0\pararsid4488418 {\insrsid16542629 25.\tab }{\insrsid4488418 'Clusters to Include' feature is being removed from the GUI, adjust par
-ameters read from existing parameter file to cause analysis to remain equivalent. Purely temporal analysis with alive clusters - change analysis type to prospective purely temporal analysis with adjusting for earlier analyses set to false. Retrospective s
-pace-time analysis with alive clusters - change analysis type to prospective space-time analysis with adjusting for earlier analyses set to false.}{\insrsid16542629 
+\par }\pard \ql \fi-360\li720\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin720\itap0\pararsid4488418 {\insrsid16542629 25.\tab }{\insrsid4488418 
+'Clusters to Include' feature is being removed from the GUI, adjust parameters read from existing parameter file to cause analysis to remain equivalent. Purely temporal analysis with alive clusters - change analysis type to prospe
+ctive purely temporal analysis with adjusting for earlier analyses set to false. Retrospective space-time analysis with alive clusters - change analysis type to prospective space-time analysis with adjusting for earlier analyses set to false.}{
+\insrsid16542629 
 \par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0\pararsid16542629 {\insrsid16542629 
 \par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 {\b\insrsid10904366 Version 3.1.2}{\b\insrsid7214372 \tab \tab - released 7/16/2003}{\insrsid10904366\charrsid13070003 
 \par }{\insrsid10904366 
 \par {\listtext\pard\plain\insrsid5733915 \hich\af0\dbch\af0\loch\f0 1.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls13\adjustright\rin0\lin720\itap0\pararsid11955364 {\insrsid5733915 Bug: }{\insrsid11955364 
 Prospective analyses that include purely spatial clusters are evaluating entire time interval, instead of taking into account prospective start date.
-\par {\listtext\pard\plain\insrsid5733915 \hich\af0\dbch\af0\loch\f0 2.\tab}}{\insrsid5733915 Bug: }{\insrsid4918766 
-When including the purely temporal cluster in a space-time analysis, it is possible that the PT cluster is not of interest, internally meaning that the cluster is
- not defined. Currently the PT cluster is added to top clusters list irregardless of where it is defined, leading to bad memory accessing when outputting to the 'Cluster Information' file.
+\par {\listtext\pard\plain\insrsid5733915 \hich\af0\dbch\af0\loch\f0 2.\tab}}{\insrsid5733915 Bug: }{\insrsid4918766 When including the purely temporal cluster in a space-time analys
+is, it is possible that the PT cluster is not of interest, internally meaning that the cluster is not defined. Currently the PT cluster is added to top clusters list irregardless of where it is defined, leading to bad memory accessing when outputting to t
+he 'Cluster Information' file.
 \par {\listtext\pard\plain\insrsid10120033 \hich\af0\dbch\af0\loch\f0 3.\tab}}{\insrsid10120033 Remove the analysis history file name in the results output file.
 \par {\listtext\pard\plain\insrsid10120033 \hich\af0\dbch\af0\loch\f0 4.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls13\adjustright\rin0\lin720\itap0\pararsid4997051 {\insrsid10120033 
 Remove the analysis number columns in the location information and cluster information files.}{\insrsid4997051 
@@ -371,24 +391,23 @@ Population file dates readable in months or days in addition to the current year
 \par {\listtext\pard\plain\insrsid12152732 \hich\af0\dbch\af0\loch\f0 9.\tab}}{\insrsid12152732 Bug: Ability to write filenames directly into parameter settings window }{\insrsid3417901 \endash  as in v2.1.3. 
 \par {\listtext\pard\plain\insrsid13962696 \hich\af0\dbch\af0\loch\f0 10.\tab}}{\insrsid13962696 Bug: Ability to run sample data set immediately after installation from any installed location, without needing to relocate data set files}{\insrsid3417901  
 \endash  as in v2.1.3}{\insrsid13962696 . 
-\par {\listtext\pard\plain\insrsid4139736 \hich\af0\dbch\af0\loch\f0 11.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls11\adjustright\rin0\lin720\itap0\pararsid13576629 {\insrsid4139736 
-Add dBase output option for relative risks and simulated loglikelihood ratio files.}{\insrsid16542629 
+\par {\listtext\pard\plain\insrsid4139736 \hich\af0\dbch\af0\loch\f0 11.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls11\adjustright\rin0\lin720\itap0\pararsid13576629 {\insrsid4139736 Add dBase output opt
+ion for relative risks and simulated loglikelihood ratio files.}{\insrsid16542629 
 \par {\listtext\pard\plain\insrsid7215705 \hich\af0\dbch\af0\loch\f0 12.\tab}}{\insrsid7215705 Bug: The prospective start time should default months and days in the same manner the study period end date.
-\par {\listtext\pard\plain\insrsid2827166 \hich\af0\dbch\af0\loch\f0 13.\tab}}{\insrsid2827166 When the maximum spatial cluster size
- is defined as a percentage of the population at risk, with a retrospective analysis/space-time permutation, the error message indicates that a population file must be specified. It now also advices the user that they can choice to specify the maximum as 
-a fixed distance, in which no population file is needed.
+\par {\listtext\pard\plain\insrsid2827166 \hich\af0\dbch\af0\loch\f0 13.\tab}}{\insrsid2827166 When the maximum spatial cluster size is defined as a percentage of the pop
+ulation at risk, with a retrospective analysis/space-time permutation, the error message indicates that a population file must be specified. It now also advices the user that they can choice to specify the maximum as a fixed distance, in which no populati
+on file is needed.
 \par {\listtext\pard\plain\insrsid10424511 \hich\af0\dbch\af0\loch\f0 14.\tab}}{\insrsid10424511 In the main output file, please change "Census Areas Included" to "Location IDs Included".
-\par {\listtext\pard\plain\insrsid2836416 \hich\af0\dbch\af0\loch\f0 15.\tab}}{\insrsid2836416 Bug: When using the import wizard, it is only possible to specify three covariates in the population 
-file. The number should be the same as for the case file which is 10.
+\par {\listtext\pard\plain\insrsid2836416 \hich\af0\dbch\af0\loch\f0 15.\tab}}{\insrsid2836416 Bug: When using the import wizard, it is only possible to specify three covariates in the population file. The number should be the same as
+ for the case file which is 10.
 \par {\listtext\pard\plain\insrsid5591535 \hich\af0\dbch\af0\loch\f0 16.\tab}}{\insrsid5591535 
 In GUI, dbase formatted output file for simulated loglikelihood ratios should name field as a test statistic for probability model as space-time permutation or analysis contains ellipses that are duczmal corrected.
-\par {\listtext\pard\plain\insrsid11892830 \hich\af0\dbch\af0\loch\f0 17.\tab}}{\insrsid11892830 
-For the windowed version, any hidden parameters should be defaulted regardless of settings read from parameter file. And choosing to save settings will cause these defaulted parameters to be saved as defaulted also, not as original value. The analysis }{
+\par {\listtext\pard\plain\insrsid11892830 \hich\af0\dbch\af0\loch\f0 17.\tab}}{\insrsid11892830 F
+or the windowed version, any hidden parameters should be defaulted regardless of settings read from parameter file. And choosing to save settings will cause these defaulted parameters to be saved as defaulted also, not as original value. The analysis }{
 \insrsid2902117 run window should never print}{\insrsid11892830  errors about any hidden parameters, which could cause confusion for user. Martin wants hidden parameters to be available }{\insrsid2902117 solely}{\insrsid11892830 
  through non-graphical version}{\insrsid11237706  }{\insrsid11892830 (}{\i\insrsid11892830 .}{\i\insrsid11237706 i }{\i\insrsid11892830 .e}{\i\insrsid11237706  }{\i\insrsid11892830 advanced users}{\insrsid11892830 ).
-\par {\listtext\pard\plain\insrsid6492812 \hich\af0\dbch\af0\loch\f0 18.\tab}}{\insrsid6492812 
-The function GetWord(), used extensively data read functions, contains as static variable that is a problem for concurrently running analyses. The GetWord() rountine has been encapsulated in a class called StringParser with little modifications to GetWord
-() functionality.
+\par {\listtext\pard\plain\insrsid6492812 \hich\af0\dbch\af0\loch\f0 18.\tab}}{\insrsid6492812 The function GetWord(), used extensively data
+ read functions, contains as static variable that is a problem for concurrently running analyses. The GetWord() rountine has been encapsulated in a class called StringParser with little modifications to GetWord() functionality.
 \par {\listtext\pard\plain\insrsid1602387 \hich\af0\dbch\af0\loch\f0 19.\tab}}{\insrsid1602387 W}{\insrsid11146298 eb site and email address hot linked in about box.
 \par {\listtext\pard\plain\insrsid2127297 \hich\af0\dbch\af0\loch\f0 20.\tab}}{\insrsid2127297 The menu items/buttons }{\insrsid12464202 activated}{\insrsid2127297  (enabled) }{\insrsid12464202 for appropriate }{\insrsid2127297 window}{\insrsid12464202 s}{
 \insrsid2127297 .
@@ -405,10 +424,10 @@ The function GetWord(), used extensively data read functions, contains as static
 \par {\listtext\pard\plain\insrsid2112153 \hich\af0\dbch\af0\loch\f0 1.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls8\adjustright\rin0\lin720\itap0\pararsid2112153 {\insrsid2112153 Bug:}{\insrsid7105331  }{
 \insrsid2112153 An error was given when the total population for a location is zero. Error should have been given only when total population is zero and there are cases for     that location.
 \par {\listtext\pard\plain\insrsid10713615 \hich\af0\dbch\af0\loch\f0 2.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls8\adjustright\rin0\lin720\itap0\pararsid10713615 {\insrsid10713615 
-Bug: Missing error message when reading populatio
-n data for prospective space-time analysis with maximum spatial cluster size defined as a percentage of the population. Error should been given for population data defined over multiple dates. Only producible in batch version.
-\par {\listtext\pard\plain\insrsid6175516 \hich\af0\dbch\af0\loch\f0 3.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls8\adjustright\rin0\lin720\itap0\pararsid6175516 {\insrsid6175516 Bug: Parameters settings w
-indow was causing specified special grid file to be ignored by analysis unless parameters saved.}{\insrsid6175516\charrsid10904366 
+Bug: Missing error message when reading population data for pros
+pective space-time analysis with maximum spatial cluster size defined as a percentage of the population. Error should been given for population data defined over multiple dates. Only producible in batch version.
+\par {\listtext\pard\plain\insrsid6175516 \hich\af0\dbch\af0\loch\f0 3.\tab}}\pard \ql \fi-360\li720\ri0\widctlpar\jclisttab\tx720\aspalpha\aspnum\faauto\ls8\adjustright\rin0\lin720\itap0\pararsid6175516 {\insrsid6175516 
+Bug: Parameters settings window was causing specified special grid file to be ignored by analysis unless parameters saved.}{\insrsid6175516\charrsid10904366 
 \par }\pard \ql \li0\ri0\widctlpar\aspalpha\aspnum\faauto\adjustright\rin0\lin0\itap0 {\insrsid10904366 
 \par }{\b\insrsid10904366 Version 3.0.3}{\b\insrsid7734169  \tab \tab - released }{\b\insrsid7734169\charrsid7734169 1/2/2003}{\b\insrsid10904366\charrsid7734169 
 \par }{\insrsid10890742\charrsid10904366 
