@@ -45,9 +45,14 @@ int main(int argc, char *argv[])
 
       //pParameters = new CParameters(argv[1]);
 
-      //the SetParameters() function calls ValidateParameters !!
-      if (!(pParams->SetParameters(argv[1])))
-         SSGenerateException("Invalid parameter file.","main.cpp");
+      //read and set parameters file - don't validate parameters yet
+      if (! pParams->SetParameters(argv[1], false))
+         SSGenerateException("Invalid parameter file.","SatScanBatchMain.cpp");
+      //convert maximum temoral clusters size to percentage
+      pParams->ConvertMaxTemporalClusterSizeToType(PERCENTAGETYPE);
+      // now validate parameters
+      if (! pParams->ValidateParameters())
+         SSGenerateException("Invalid parameter file.","SatScanBatchMain.cpp");
 
       switch (pParams->m_nAnalysisType)
          {
