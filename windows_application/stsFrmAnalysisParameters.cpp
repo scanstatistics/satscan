@@ -55,6 +55,25 @@ void TDlgSaTScanDataImporter::Setup() {
   tsfieldGrid->OnResize = tsfieldGridResize;
 }
 
+void TDlgSaTScanDataImporter::SetUpDataGrid() {
+  unsigned short        w;
+  ZdField             * pField;
+
+  try {
+    TBdlgImporter::SetUpDataGrid();
+    //Set date filter for dbase date fields
+    for (w=0; w < gpImportFile->GetNumFields(); w++) {
+       pField = gpImportFile->GetFieldInfo(w);
+       if (pField->GetType() == ZD_DATE_FLD)
+         pField->SetFormat(ZdField::Filtered, "", new ZdDateFilter("%y/%m/%d"));
+    }
+  }
+  catch ( ZdException & x ) {
+      x.AddCallpath( "SetUpDataGrid()", "TDlgSaTScanDataImporter" );
+      throw;
+  }
+}
+
 //ClassDesc Begin TfrmAnalysis
 // This class contains all the main interface controls and relationships.
 // Since it the main session interface is a tab dialog, decided to keep

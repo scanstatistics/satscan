@@ -28,6 +28,7 @@ class TDlgSaTScanDataImporter : public TBdlgImporter {
     std::string         gsInputFileTypeName;
 
     virtual void        SetInitialImportFileType();
+    virtual void        SetUpDataGrid();
 
   public:
     virtual __fastcall TDlgSaTScanDataImporter(TComponent* Owner, ZdDatabase * pDatabase, BFTFImportDescriptor * pImportDescriptor);
