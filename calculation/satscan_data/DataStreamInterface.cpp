@@ -30,15 +30,22 @@ void DataStreamInterface::Init() {
   gpPSMeasureArray=0;
   gpPSSqMeasureArray=0;
   gpPTSqMeasureArray=0;
+  gpppCategoryCaseArray=0;
+  gppPTCategoryCaseArray=0;
 }
 
 /** initializes case array */
 void DataStreamInterface::ResetCaseArray(count_t t) {
   unsigned int  i, j;
 
-  for (i=0; i < giNumTimeIntervals; ++i)
+  for (i=0; i < giNumTimeIntervals; ++i)                           
      for (j=0; j < giNumTracts; ++j)
         gppCaseArray[i][j] = 0;
 }
 
+/** Sets internal data structure to hold pointers to passed category case arrays. */
+void DataStreamInterface::SetCategoryCaseArrays(const CasesByCategory_t& vCategoryCases) {
+  for (size_t t=0; t < vCategoryCases.size(); ++t)
+     gvCategoryCaseArrays.push_back(vCategoryCases[t]->GetArray());
+}
 
