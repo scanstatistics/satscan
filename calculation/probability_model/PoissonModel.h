@@ -15,14 +15,21 @@ class CPoissonModel : public CModel {
   private:
     RandomNumberGenerator       m_RandomNumberGenerator;
     BinomialGenerator           gBinomialGenerator;
+    float                     * gpRelativeRisks;
+    measure_t                 * gpMeasure;  
+    measure_t                ** gpAlternativeMeasure;
+    long int                    glFilePosition;
 
+    void                        AllocateAlternateHypothesisStructures();
     virtual double              CalcSVTTLogLikelihood(count_t* pCases, measure_t* pMeasure,
                                                       count_t pTotalCases, double nAlpha,
                                                       double nBeta, int nStatus);
+    void                        DeallocateAlternateHypothesisStructures();
+    void                        Init() {gpRelativeRisks=0; gpAlternativeMeasure=0;gpMeasure=0;glFilePosition=0;}
     void                        MakeData_AlternateHypothesis();
     void                        MakeDataTimeStratified();
     void                        MakeDataUnderNullHypothesis();
-    void                        PrintSimulationDateToFile();
+    void                        PrintSimulationDateToFile(int iSimulationNumber);
     void                        ReadSimulationDataFromFile();
 
   public:
