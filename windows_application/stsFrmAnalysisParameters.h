@@ -131,6 +131,17 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TRadioButton *rdoHighRates;
         TRadioButton *rdoLowRates;
         TRadioButton *rdoHighLowRates;
+        TLabel *lblPercentOfPopulation;
+        TRadioButton *rdoSpatialPopulationFile;
+        TLabel *lblMaxRadius;
+        TEdit *edtMaxSpatialRadius;
+        TEdit *edtMaxSpatialPercentFile;
+        TLabel *lblPercentageOfPopFile;
+        TEdit *edtMaxCirclePopulationFilename;
+        TButton *btnBrowseMaxCirclePopFile;
+        TLabel *lblPercentageOfStudyPeriod;
+        TEdit *edtMaxTemporalClusterSizeUnits;
+        TLabel *lblMaxTemporalTimeUnits;
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall rgPrecisionTimesClick(TObject *Sender);
         void __fastcall btnCaseBrowseClick(TObject *Sender);
@@ -165,6 +176,16 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         void __fastcall FormActivate(TObject *Sender);
         void __fastcall chkAdjustForEarlierAnalysesClick(TObject *Sender);
         void __fastcall edtMaxSpatialClusterSizeChange(TObject *Sender);
+        void __fastcall btnBrowseMaxCirclePopFileClick(TObject *Sender);
+        void __fastcall edtMaxCirclePopulationFilenameChange(
+          TObject *Sender);
+        void __fastcall edtMaxSpatialPercentFileExit(TObject *Sender);
+        void __fastcall edtMaxSpatialPercentFileChange(TObject *Sender);
+        void __fastcall edtMaxSpatialRadiusChange(TObject *Sender);
+        void __fastcall edtMaxSpatialRadiusExit(TObject *Sender);
+        void __fastcall rdoTemproalMaxClusterClick(TObject *Sender);
+        void __fastcall edtMaxTemporalClusterSizeUnitsExit(
+          TObject *Sender);
 
   private:	
     PrintNull                   gNullPrint;
@@ -188,12 +209,16 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        EnableProspectiveStartDate(bool bEnable);
     void                        EnableProspectiveSurveillanceGroup(bool bEnable);
     void                        EnableSettingsForAnalysisModelCombination();
-    void                        EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal);
+    void                        EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal, bool bEnablePercentage);
     void                        EnableStudyPeriodDates(bool bYear, bool bMonth, bool bDay);
     void                        EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges);
     void                        EnableTimeIntervalUnitsGroup(bool bEnable);
     AnalysisType                GetAnalysisControlType() const;
     AreaRateType                GetAreaScanRateControlType() const;
+    SpatialSizeType             GetMaxSpatialClusterSizeControlType() const;
+    float                       GetMaxSpatialClusterSizeFromControl() const;
+    TemporalSizeType            GetMaxTemporalClusterSizeControlType() const;
+    float                       GetMaxTemporalClusterSizeFromControl() const;
     ProbabiltyModelType         GetModelControlType() const;
     DatePrecisionType           GetPrecisionOfTimesControlType() const;
     ZdDate                    & GetStudyPeriodEndDate(ZdDate & Date);
@@ -208,6 +233,10 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        SaveParameterSettings();
     void                        SetAnalysisControl(AnalysisType eAnalysisType);
     void                        SetAreaScanRateControl(AreaRateType eAreaRateType);
+    void                        SetMaxSpatialClusterSizeControl(float fMaxSize);
+    void                        SetMaxSpatialClusterSizeTypeControl(SpatialSizeType eSpatialSizeType);
+    void                        SetMaxTemporalClusterSizeControl(float fMaxSize);
+    void                        SetMaxTemporalClusterSizeTypeControl(TemporalSizeType eTemporalSizeType);
     void                        SetModelControl(ProbabiltyModelType eProbabiltyModelType);
     void                        SetReportingSmallerClustersText();
     void                        SetSpatialDistanceCaption();

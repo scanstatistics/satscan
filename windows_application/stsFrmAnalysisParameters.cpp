@@ -105,6 +105,23 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
   }
 }
 
+/** event triggered when selects browse button for maximum circle population file */
+void __fastcall TfrmAnalysis::btnBrowseMaxCirclePopFileClick(TObject *Sender) {
+  try {
+    OpenDialog1->FileName = "";
+    OpenDialog1->DefaultExt = "*.pop";
+    OpenDialog1->Filter = "Maximum Circle Population files (*.max)|*.max|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog1->FilterIndex = 0;
+    OpenDialog1->Title = "Select Maximum Circle Population File";
+    if (OpenDialog1->Execute())
+      edtMaxCirclePopulationFilename->Text = OpenDialog1->FileName;
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("btnBrowseMaxCirclePopFileClick()","TfrmAnalysis");
+    DisplayBasisException(this, x);
+  }
+}
+
 /** button click event for population file browse
     - shows open dialog and sets appropriate population file interface controls */
 void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
@@ -400,6 +417,17 @@ void __fastcall TfrmAnalysis::edtGridFileNameChange(TObject *Sender) {
   edtGridFileName->Hint = edtGridFileName->Text;
 }
 
+/** event triggered when text of maximum circle edit control changes */
+void __fastcall TfrmAnalysis::edtMaxCirclePopulationFilenameChange(TObject *Sender) {
+  edtMaxCirclePopulationFilename->Hint = edtMaxCirclePopulationFilename->Text;
+}
+
+/** event triggered when maximum spatial cluster size, as percentage of population at risk, edit control changes */
+void __fastcall TfrmAnalysis::edtMaxSpatialClusterSizeChange(TObject *Sender) {
+  if (edtMaxSpatialClusterSize->Text.Length())
+    SetReportingSmallerClustersText();
+}
+
 /** event triggered when maximum spatial cluster size edit control is exited. */
 void __fastcall TfrmAnalysis::edtMaxSpatialClusterSizeExit(TObject *Sender) {
   if (edtMaxSpatialClusterSize->Text.IsEmpty() || atof(edtMaxSpatialClusterSize->Text.c_str()) == 0)
@@ -407,10 +435,42 @@ void __fastcall TfrmAnalysis::edtMaxSpatialClusterSizeExit(TObject *Sender) {
   SetReportingSmallerClustersText();
 }
 
+/** event triggered when maximum spatial cluster size, as percentage of population file, edit control is changes */
+void __fastcall TfrmAnalysis::edtMaxSpatialPercentFileChange(TObject *Sender) {
+  if (edtMaxSpatialPercentFile->Text.Length())
+    SetReportingSmallerClustersText();
+}
+
+/** event triggered when maximum spatial cluster size, as percentage of population file, edit control is exited. */
+void __fastcall TfrmAnalysis::edtMaxSpatialPercentFileExit(TObject *Sender) {
+  if (edtMaxSpatialPercentFile->Text.IsEmpty() || atof(edtMaxSpatialPercentFile->Text.c_str()) == 0)
+    edtMaxSpatialPercentFile->Text = 50;
+  SetReportingSmallerClustersText();
+}
+
+/** event triggered when maximum spatial cluster size, as a radius, edit control is exited. */
+void __fastcall TfrmAnalysis::edtMaxSpatialRadiusChange(TObject *Sender) {
+  if (edtMaxSpatialRadius->Text.Length())
+    SetReportingSmallerClustersText();
+}
+
+/** event triggered when maximum spatial cluster size, as a radius, edit control is exited. */
+void __fastcall TfrmAnalysis::edtMaxSpatialRadiusExit(TObject *Sender){
+  if (edtMaxSpatialRadius->Text.IsEmpty() || atof(edtMaxSpatialRadius->Text.c_str()) == 0)
+    edtMaxSpatialRadius->Text = 1;
+  SetReportingSmallerClustersText();
+}
+
 /** event triggered when maximum temporal cluster size edit control is exited. */
 void __fastcall TfrmAnalysis::edtMaxTemporalClusterSizeExit(TObject *Sender) {
   if (edtMaxTemporalClusterSize->Text.IsEmpty() || atof(edtMaxTemporalClusterSize->Text.c_str()) == 0)
     edtMaxTemporalClusterSize->Text = 50;
+}
+
+/** event triggered when maximum temporal cluster size edit control is exited. */
+void __fastcall TfrmAnalysis::edtMaxTemporalClusterSizeUnitsExit(TObject *Sender) {
+  if (edtMaxTemporalClusterSizeUnits->Text.IsEmpty() || atof(edtMaxTemporalClusterSizeUnits->Text.c_str()) == 0)
+    edtMaxTemporalClusterSizeUnits->Text = 1;
 }
 
 /** event triggered when Monte Carlo replications control is exited. */
@@ -581,36 +641,31 @@ void TfrmAnalysis::EnableSettingsForAnalysisModelCombination() {
     switch (GetAnalysisControlType()) {
       case PURELYSPATIAL             :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(false, false, false);
-        gpfrmAdvancedParameters->EnableInputFilesGroup(true);
-        EnableSpatialOptionsGroup(true, false);
+        EnableSpatialOptionsGroup(true, false, true);
         EnableTimeIntervalUnitsGroup(false);
         EnableTemporalOptionsGroup(false, false, false);
         break;
       case PURELYTEMPORAL            :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson);
-        gpfrmAdvancedParameters->EnableInputFilesGroup(false);
-        EnableSpatialOptionsGroup(false, false);
+        EnableSpatialOptionsGroup(false, false, false);
         EnableTimeIntervalUnitsGroup(true);
         EnableTemporalOptionsGroup(true, false, true);
         break;
       case SPACETIME                 :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson);
-        gpfrmAdvancedParameters->EnableInputFilesGroup(true);
-        EnableSpatialOptionsGroup(true, !bSpaceTimePermutation);
+        EnableSpatialOptionsGroup(true, !bSpaceTimePermutation, true);
         EnableTimeIntervalUnitsGroup(true);
         EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
         break;
       case PROSPECTIVESPACETIME      :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson);
-        gpfrmAdvancedParameters->EnableInputFilesGroup(true);
-        EnableSpatialOptionsGroup(true, !bSpaceTimePermutation);
+        EnableSpatialOptionsGroup(true, !bSpaceTimePermutation, false);
         EnableTimeIntervalUnitsGroup(true);
         EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
         break;
       case PROSPECTIVEPURELYTEMPORAL :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson);
-        gpfrmAdvancedParameters->EnableInputFilesGroup(false);
-        EnableSpatialOptionsGroup(false, false);
+        EnableSpatialOptionsGroup(false, false, false);
         EnableTimeIntervalUnitsGroup(true);
         EnableTemporalOptionsGroup(true, false, false);
         break;
@@ -626,14 +681,32 @@ void TfrmAnalysis::EnableSettingsForAnalysisModelCombination() {
 }
 
 /** enables or disables the spatial options group control */
-void TfrmAnalysis::EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal) {
+void TfrmAnalysis::EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal, bool bEnablePercentage) {
    rdgSpatialOptions->Enabled = bEnable;
-   rdoSpatialPercentage->Enabled = bEnable;
-   rdoSpatialDistance->Enabled = bEnable;
-   chkInclPurTempClust->Enabled = bEnable && bEnableIncludePurelyTemporal;
    lblMaxSpatialClusterSize->Enabled = bEnable;
-   edtMaxSpatialClusterSize->Enabled = bEnable;
-   edtMaxSpatialClusterSize->Color = bEnable ? clWindow : clInactiveBorder;
+
+   rdoSpatialPercentage->Enabled = bEnable && bEnablePercentage;
+   edtMaxSpatialClusterSize->Enabled = bEnable && bEnablePercentage && rdoSpatialPercentage->Checked;
+   edtMaxSpatialClusterSize->Color = bEnable && bEnablePercentage && rdoSpatialPercentage->Checked ? clWindow : clInactiveBorder;
+   lblPercentOfPopulation->Enabled = bEnable && bEnablePercentage;
+
+   rdoSpatialPopulationFile->Enabled = bEnable;
+   edtMaxSpatialPercentFile->Enabled = bEnable && rdoSpatialPopulationFile->Checked;
+   edtMaxSpatialPercentFile->Color = bEnable && rdoSpatialPopulationFile->Checked ? clWindow : clInactiveBorder;
+   lblPercentageOfPopFile->Enabled = bEnable;
+   edtMaxCirclePopulationFilename->Enabled = bEnable && rdoSpatialPopulationFile->Checked;
+   edtMaxCirclePopulationFilename->Color = bEnable && rdoSpatialPopulationFile->Checked ? clWindow : clInactiveBorder;
+   btnBrowseMaxCirclePopFile->Enabled = bEnable && rdoSpatialPopulationFile->Checked;
+
+   rdoSpatialDistance->Enabled = bEnable;
+   edtMaxSpatialRadius->Enabled = bEnable && rdoSpatialDistance->Checked;
+   edtMaxSpatialRadius->Color = bEnable && rdoSpatialDistance->Checked ? clWindow : clInactiveBorder;
+   lblMaxRadius->Enabled = bEnable;
+
+   if (!rdoSpatialPercentage->Enabled && rdoSpatialDistance->Enabled && rdoSpatialPercentage->Checked)
+     rdoSpatialDistance->Checked = true;
+
+   chkInclPurTempClust->Enabled = bEnable && bEnableIncludePurelyTemporal;
    gpfrmAdvancedParameters->EnableSpatialOutputOptions(bEnable);
 }
 
@@ -662,12 +735,19 @@ void TfrmAnalysis::EnableStudyPeriodDates(bool bYear, bool bMonth, bool bDay) {
 /** enables or disables the temporal options group control */
 void TfrmAnalysis::EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges) {
   rdgTemporalOptions->Enabled = bEnable;
-  rdoPercentageTemproal->Enabled = bEnable;
-  rdoTimeTemproal->Enabled = bEnable;
-  chkIncludePurSpacClust->Enabled = bEnable && bEnableIncludePurelySpatial;
-  edtMaxTemporalClusterSize->Enabled = bEnable;
-  edtMaxTemporalClusterSize->Color = bEnable ? clWindow : clInactiveBorder;
   lblMaxTemporalClusterSize->Enabled = bEnable;
+
+  rdoPercentageTemproal->Enabled = bEnable;
+  edtMaxTemporalClusterSize->Enabled = bEnable && rdoPercentageTemproal->Checked;
+  edtMaxTemporalClusterSize->Color = bEnable && rdoPercentageTemproal->Checked ? clWindow : clInactiveBorder;
+  lblPercentageOfStudyPeriod->Enabled = bEnable;
+
+  rdoTimeTemproal->Enabled = bEnable;  
+  edtMaxTemporalClusterSizeUnits->Enabled = bEnable && rdoTimeTemproal->Checked;
+  edtMaxTemporalClusterSizeUnits->Color = bEnable && rdoTimeTemproal->Checked ? clWindow : clInactiveBorder;
+  lblMaxTemporalTimeUnits->Enabled = bEnable;
+
+  chkIncludePurSpacClust->Enabled = bEnable && bEnableIncludePurelySpatial;
   gpfrmAdvancedParameters->EnableTemporalOptions(bEnable, bEnableRanges);
 }
 
@@ -746,6 +826,61 @@ AreaRateType TfrmAnalysis::GetAreaScanRateControlType() const {
 /** Returns parameter filename fullpath. */
 const char * TfrmAnalysis::GetFileName() {
   return gParameters.GetSourceFileName().c_str();
+}
+
+/** returns maximum spatial cluster size type for control */
+SpatialSizeType TfrmAnalysis::GetMaxSpatialClusterSizeControlType() const {
+  SpatialSizeType   eReturn;
+
+  if (rdoSpatialPercentage->Checked)
+    eReturn = PERCENTOFPOPULATIONTYPE;
+  else if (rdoSpatialPopulationFile->Checked)
+    eReturn = PERCENTOFPOPULATIONFILETYPE;
+  else if (rdoSpatialDistance->Checked)
+    eReturn = DISTANCETYPE;
+  else
+    ZdGenerateException("Maximum spatial cluster size type not selected.","GetMaxSpatialClusterSizeControlType()");
+
+  return eReturn;
+}
+
+/** returns maximum spatial cluster size from appropriate control */
+float TfrmAnalysis::GetMaxSpatialClusterSizeFromControl() const {
+  float   fReturn;
+
+  switch (GetMaxSpatialClusterSizeControlType()) {
+    case DISTANCETYPE                : fReturn = atof(edtMaxSpatialRadius->Text.c_str()); break;
+    case PERCENTOFPOPULATIONFILETYPE : fReturn = atof(edtMaxSpatialPercentFile->Text.c_str()); break;
+    case PERCENTOFPOPULATIONTYPE     :
+    default                          : fReturn = atof(edtMaxSpatialClusterSize->Text.c_str());
+  }
+  return fReturn;
+}
+
+/** returns maximum temporal cluster size type for control */
+TemporalSizeType TfrmAnalysis::GetMaxTemporalClusterSizeControlType() const {
+  TemporalSizeType eReturn;
+
+  if (rdoPercentageTemproal->Checked)
+    eReturn = PERCENTAGETYPE;
+  else if (rdoTimeTemproal->Checked)
+    eReturn = TIMETYPE;
+  else
+    ZdGenerateException("Maximum temporal cluster size type not selected.","GetMaxSpatialClusterSizeControlType()");
+
+  return eReturn;
+}
+
+/** returns maximum temporal cluster size from appropriate control */
+float TfrmAnalysis::GetMaxTemporalClusterSizeFromControl() const {
+  float fReturn;
+
+  switch (GetMaxTemporalClusterSizeControlType()) {
+    case TIMETYPE        : fReturn = atof(edtMaxTemporalClusterSizeUnits->Text.c_str()); break;
+    case PERCENTAGETYPE  :
+    default              : fReturn = atof(edtMaxTemporalClusterSize->Text.c_str());
+  }
+  return fReturn;
 }
 
 /** returns probability type for model control group */
@@ -898,11 +1033,9 @@ void TfrmAnalysis::OnProbabilityModelClick() {
     EnableAnalysisControlForModelType();
     switch (GetModelControlType()) {
       case POISSON   		:
-      case BERNOULLI            : rdoPercentageTemproal->Caption = "Percent of Study Period (<= 90%)";
-                                  lblSimulatedLogLikelihoodRatios->Caption = "Simulated Log Likelihood Ratios";
+      case BERNOULLI            : lblSimulatedLogLikelihoodRatios->Caption = "Simulated Log Likelihood Ratios";
                                   break;
-      case SPACETIMEPERMUTATION : rdoPercentageTemproal->Caption = "Percent of Study Period (<= 50%)";
-                                  lblSimulatedLogLikelihoodRatios->Caption = "Simulated Test Statistics";
+      case SPACETIMEPERMUTATION : lblSimulatedLogLikelihoodRatios->Caption = "Simulated Test Statistics";
                                   break;
       default : ZdGenerateException("Unknown probabilty model '%d'.", "OnProbablityModelClick()", GetModelControlType());
     }
@@ -963,24 +1096,57 @@ void __fastcall TfrmAnalysis::PositiveFloatKeyPress(TObject *Sender, char &Key) 
 
 /** event triggered when time interval unit type selected as 'day' */
 void __fastcall TfrmAnalysis::rbUnitDayClick(TObject *Sender) {
-  rdoTimeTemproal->Caption = "Days";
+  lblMaxTemporalTimeUnits->Caption = "days";
   EnableDatesByTimeIntervalUnits();
 }
 
 /** event triggered when time interval unit type selected as 'month' */
 void __fastcall TfrmAnalysis::rbUnitMonthsClick(TObject *Sender) {
-  rdoTimeTemproal->Caption = "Months";
+  lblMaxTemporalTimeUnits->Caption = "months";
   EnableDatesByTimeIntervalUnits();
 }
 
 /** event triggered when time interval unit type selected as 'year' */
 void __fastcall TfrmAnalysis::rbUnitYearClick(TObject *Sender) {
-    rdoTimeTemproal->Caption = "Years";
+    lblMaxTemporalTimeUnits->Caption = "years";
     EnableDatesByTimeIntervalUnits();
 }
+/** event triggered when 'analysis' type control clicked */
+void __fastcall TfrmAnalysis::rdoAnalysisTypeClick(TObject *Sender) {
+  try {
+     OnAnalysisTypeClick();
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("rgTypeAnalysisClick()", "TfrmAnalysis");
+    DisplayBasisException(this, x);
+  }
+}
+
 /** event triggered when maximum spatial type selected */
 void __fastcall TfrmAnalysis::rdoMaximumSpatialTypeClick(TObject *Sender) {
-   SetReportingSmallerClustersText();
+  //cause enabling to be refreshed based upon clicked radio button
+  EnableSpatialOptionsGroup(rdgSpatialOptions->Enabled,
+                            chkInclPurTempClust->Enabled,
+                            rdoSpatialPercentage->Enabled);
+  SetReportingSmallerClustersText();
+}
+
+/** event triggered when 'probability model' type control clicked */
+void __fastcall TfrmAnalysis::rdoProbabilityModelClick(TObject *Sender) {
+  try {
+     OnProbabilityModelClick();
+  }
+  catch ( ZdException & x ) {
+    x.AddCallpath("rgProbabilityClick()", "TfrmAnalysis" );
+    DisplayBasisException( this, x );
+  }
+}
+
+/** event triggered when maximum temporal cluster size type edit control clicked */
+void __fastcall TfrmAnalysis::rdoTemproalMaxClusterClick(TObject *Sender) {
+  //cause enabling to be refreshed based upon clicked radio button
+  EnableTemporalOptionsGroup(rdgTemporalOptions->Enabled, chkIncludePurSpacClust->Enabled,
+                             gpfrmAdvancedParameters->chkRestrictTemporalRange->Enabled);
 }
 
 /** event triggered when coordinates type control clicked */
@@ -1002,28 +1168,6 @@ void __fastcall TfrmAnalysis::rgPrecisionTimesClick(TObject *Sender) {
   }
   catch (ZdException & x) {
     x.AddCallpath("rgPrecisionTimesClick()", "TfrmAnalysis");
-    DisplayBasisException(this, x);
-  }
-}
-
-/** event triggered when 'probability model' type control clicked */
-void __fastcall TfrmAnalysis::rdoProbabilityModelClick(TObject *Sender) {
-  try {
-     OnProbabilityModelClick();
-  }
-  catch ( ZdException & x ) {
-    x.AddCallpath("rgProbabilityClick()", "TfrmAnalysis" );
-    DisplayBasisException( this, x );
-  }
-}
-
-/** event triggered when 'analysis' type control clicked */
-void __fastcall TfrmAnalysis::rdoAnalysisTypeClick(TObject *Sender) {
-  try {
-     OnAnalysisTypeClick();
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("rgTypeAnalysisClick()", "TfrmAnalysis");
     DisplayBasisException(this, x);
   }
 }
@@ -1068,10 +1212,11 @@ void TfrmAnalysis::SaveParameterSettings() {
     gParameters.SetStudyPeriodEndDate(sString.GetCString());
     gParameters.SetNumberMonteCarloReplications(atoi(edtMontCarloReps->Text.c_str()));
     //Scanning Window Tab
-    gParameters.SetMaximumGeographicClusterSize(atof(edtMaxSpatialClusterSize->Text.c_str()));
-    gParameters.SetMaximumSpacialClusterSizeType(rdoSpatialPercentage->Checked ? PERCENTAGEOFMEASURETYPE : DISTANCETYPE);
-    gParameters.SetMaximumTemporalClusterSize(atof(edtMaxTemporalClusterSize->Text.c_str()));
-    gParameters.SetMaximumTemporalClusterSizeType(rdoPercentageTemproal->Checked ? PERCENTAGETYPE : TIMETYPE);
+    gParameters.SetMaximumGeographicClusterSize(GetMaxSpatialClusterSizeFromControl());
+    gParameters.SetMaximumSpacialClusterSizeType(GetMaxSpatialClusterSizeControlType());
+    gParameters.SetMaxCirclePopulationFileName(edtMaxCirclePopulationFilename->Text.c_str(), false, true);
+    gParameters.SetMaximumTemporalClusterSize(GetMaxTemporalClusterSizeFromControl());
+    gParameters.SetMaximumTemporalClusterSizeType(GetMaxTemporalClusterSizeControlType());
     gParameters.SetIncludePurelyTemporalClusters(chkInclPurTempClust->Enabled && chkInclPurTempClust->Checked);
     gParameters.SetIncludePurelySpatialClusters(chkIncludePurSpacClust->Enabled && chkIncludePurSpacClust->Checked);
     //Time Parameter Tab
@@ -1113,7 +1258,7 @@ void TfrmAnalysis::SetAnalysisControl(AnalysisType eAnalysisType) {
     case PROSPECTIVEPURELYTEMPORAL      : rdoProspectivePurelyTemporal->Checked = true; break;
     case PROSPECTIVESPACETIME           : rdoProspectiveSpaceTime->Checked = true; break;
     case SPATIALVARTEMPTREND            :
-    case PURELYSPATIALMONOTONE          : 
+    case PURELYSPATIALMONOTONE          :
     case PURELYSPATIAL                  :
     default                             : rdoRetrospectivePurelySpatial->Checked = true;
   }
@@ -1152,7 +1297,68 @@ void TfrmAnalysis::SetCoordinateType(CoordinatesType eCoordinatesType) {
 
 /** Sets special population filename in interface */
 void TfrmAnalysis::SetMaximumCirclePopulationFile(const char * sMaximumCirclePopulationFileName) {
-  gpfrmAdvancedParameters->SetMaximumCirclePopulationFile(sMaximumCirclePopulationFileName);
+  edtMaxCirclePopulationFilename->Text = sMaximumCirclePopulationFileName;
+}
+
+/** Set appropriate control for maximum spatial cluster size type. */
+void TfrmAnalysis::SetMaxSpatialClusterSizeControl(float fMaxSize) {
+  switch (GetMaxSpatialClusterSizeControlType()) {
+    case DISTANCETYPE                : if (fMaxSize <= 0)
+                                         edtMaxSpatialRadius->Text = 1;
+                                       else
+                                         edtMaxSpatialRadius->Text = fMaxSize;
+                                       break;
+    case PERCENTOFPOPULATIONFILETYPE : if (fMaxSize <= 0 || fMaxSize > 50)
+                                         edtMaxSpatialPercentFile->Text = 50;
+                                       else
+                                         edtMaxSpatialPercentFile->Text = fMaxSize;
+                                       break;
+    case PERCENTOFPOPULATIONTYPE     :
+    default                          : if (fMaxSize <= 0 || fMaxSize > 50)
+                                         edtMaxSpatialClusterSize->Text = 50;
+                                       else
+                                         edtMaxSpatialClusterSize->Text = fMaxSize;
+  }
+  SetReportingSmallerClustersText();
+}
+
+/** Sets maximum spatial cluster size control for passed type */
+void TfrmAnalysis::SetMaxSpatialClusterSizeTypeControl(SpatialSizeType eSpatialSizeType) {
+  switch (eSpatialSizeType) {
+    case DISTANCETYPE                : rdoSpatialDistance->Checked = true; break;
+    case PERCENTOFPOPULATIONFILETYPE : rdoSpatialPopulationFile->Checked = true; break;
+    case PERCENTOFPOPULATIONTYPE     :
+    default                          : rdoSpatialPercentage->Checked = true;
+  }
+//  EnableAnalysisControlForModelType();
+}
+
+/** Set appropriate control for maximum spatial cluster size type. */
+void TfrmAnalysis::SetMaxTemporalClusterSizeControl(float fMaxSize) {
+  switch (GetMaxTemporalClusterSizeControlType()) {
+    case TIMETYPE       : if (fMaxSize <= 0)
+                            edtMaxTemporalClusterSizeUnits->Text = 1;
+                          else
+                            edtMaxTemporalClusterSizeUnits->Text = fMaxSize;
+                          break;
+    case PERCENTAGETYPE :
+    default             : if (fMaxSize <= 0 || fMaxSize > 50)
+                            edtMaxTemporalClusterSize->Text = 50;
+                          else
+                            edtMaxTemporalClusterSize->Text = fMaxSize;
+
+  }
+  SetReportingSmallerClustersText();
+}
+
+/** Sets maximum temporal cluster size control for passed type */
+void TfrmAnalysis::SetMaxTemporalClusterSizeTypeControl(TemporalSizeType eTemporalSizeType) {
+  switch (eTemporalSizeType) {
+    case TIMETYPE       : rdoTimeTemproal->Checked = true; break;
+    case PERCENTAGETYPE :
+    default             : rdoPercentageTemproal->Checked = true;
+  }
+//  EnableAnalysisControlForModelType();
 }
 
 /** sets probaiity model type control for ProbabiltyModelType */
@@ -1160,7 +1366,7 @@ void TfrmAnalysis::SetModelControl(ProbabiltyModelType eProbabiltyModelType) {
   switch (eProbabiltyModelType) {
     case BERNOULLI            : rdoBernoulliModel->Checked = true; break;
     case SPACETIMEPERMUTATION : rdoSpaceTimePermutationModel->Checked = true; break;
-    case POISSON              : 
+    case POISSON              :
     default                   : rdoPoissonModel->Checked = true;
   }
   EnableAnalysisControlForModelType();
@@ -1187,12 +1393,19 @@ void TfrmAnalysis::SetPrecisionOfTimesControl(DatePrecisionType eDatePrecisionTy
 void TfrmAnalysis::SetReportingSmallerClustersText() {
   ZdString      sTemp;
 
-  if (rdoSpatialPercentage->Checked)
-    sTemp.printf("percent of population at risk\n        (<= %s%%)", edtMaxSpatialClusterSize->Text.c_str());
-  else if (rgCoordinates->ItemIndex == CARTESIAN)
-    sTemp.printf("cartesian units in radius\n        (<= %s)", edtMaxSpatialClusterSize->Text.c_str());
-  else
-    sTemp.printf("kilometers in radius\n        (<= %s)", edtMaxSpatialClusterSize->Text.c_str());
+  switch (GetMaxSpatialClusterSizeControlType()) {
+    case PERCENTOFPOPULATIONTYPE     :
+      sTemp.printf("percent of population at risk\n        (<= %s%%)", edtMaxSpatialClusterSize->Text.c_str());
+      break;
+    case PERCENTOFPOPULATIONFILETYPE :
+      sTemp.printf("percent of population at risk\n        (<= %s%%)", edtMaxSpatialPercentFile->Text.c_str());
+      break;
+    case DISTANCETYPE                :
+      if (rgCoordinates->ItemIndex == CARTESIAN)
+        sTemp.printf("cartesian units in radius\n        (<= %s)", edtMaxSpatialRadius->Text.c_str());
+      else
+        sTemp.printf("kilometers in radius\n        (<= %s)", edtMaxSpatialRadius->Text.c_str());
+  }
 
   gpfrmAdvancedParameters->SetReportingClustersText(sTemp);
 }
@@ -1201,9 +1414,9 @@ void TfrmAnalysis::SetReportingSmallerClustersText() {
 void TfrmAnalysis::SetSpatialDistanceCaption() {
   try {
     switch (rgCoordinates->ItemIndex) {
-      case 0  : rdoSpatialDistance->Caption = "Cartesian Units Radius";
+      case 0  : lblMaxRadius->Caption = "cartesian units radius";
                 break;
-      case 1  : rdoSpatialDistance->Caption = "Kilometer Radius";
+      case 1  : lblMaxRadius->Caption = "kilometer radius";
                 break;
       default : ZdException::Generate("Unknown coordinates radio button index: '%i'.",
                                       "rgCoordinatesClick()", rgCoordinates->ItemIndex);
@@ -1260,28 +1473,21 @@ void TfrmAnalysis::SetupInterface() {
     else
       edtMontCarloReps->Text = 999;
     //Scanning Window Tab
-    if (gParameters.GetMaximumGeographicClusterSize() > 0)
-      edtMaxSpatialClusterSize->Text = gParameters.GetMaximumGeographicClusterSize();
-    else
-      edtMaxSpatialClusterSize->Text = 50;
+    SetMaxSpatialClusterSizeTypeControl(gParameters.GetMaxGeographicClusterSizeType());
+    SetMaxSpatialClusterSizeControl(gParameters.GetMaximumGeographicClusterSize());
+    edtMaxCirclePopulationFilename->Text = gParameters.GetMaxCirclePopulationFileName().c_str();
     chkInclPurTempClust->Checked = gParameters.GetIncludePurelyTemporalClusters();
-    if (gParameters.GetMaximumTemporalClusterSize() > 0)
-      edtMaxTemporalClusterSize->Text = gParameters.GetMaximumTemporalClusterSize();
-    else
-      edtMaxTemporalClusterSize->Text = 50;
-    rdoPercentageTemproal->Checked = gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE;
-    rdoTimeTemproal->Checked = gParameters.GetMaximumTemporalClusterSizeType() == TIMETYPE;
-    chkIncludePurSpacClust->Checked = gParameters.GetIncludePurelySpatialClusters();
-    rdoSpatialPercentage->Checked = gParameters.GetMaxGeographicClusterSizeType() != DISTANCETYPE; // default checked
-    rdoSpatialDistance->Checked = gParameters.GetMaxGeographicClusterSizeType() == DISTANCETYPE;
     SetSpatialDistanceCaption();
     SetReportingSmallerClustersText();
+    SetMaxTemporalClusterSizeTypeControl(gParameters.GetMaximumTemporalClusterSizeType());
+    SetMaxTemporalClusterSizeControl(gParameters.GetMaximumTemporalClusterSize());
+    chkIncludePurSpacClust->Checked = gParameters.GetIncludePurelySpatialClusters();
     //Time Parameter Tab
     if (gParameters.GetTimeIntervalUnitsType() == NONE) gParameters.SetTimeIntervalUnitsType(YEAR);
     if (gParameters.GetTimeIntervalLength() <= 0) gParameters.SetTimeIntervalLength(1);
     rbUnitYear->Checked = (gParameters.GetTimeIntervalUnitsType() == YEAR);
     rbUnitMonths->Checked = (gParameters.GetTimeIntervalUnitsType() == MONTH);
-    rbUnitDay->Checked = (gParameters.GetTimeIntervalUnitsType() == DAY);  
+    rbUnitDay->Checked = (gParameters.GetTimeIntervalUnitsType() == DAY);
     edtTimeIntervalLength->Text = gParameters.GetTimeIntervalLength();
     chkAdjustForEarlierAnalyses->Checked = gParameters.GetAdjustForEarlierAnalyses();
     if (gParameters.GetProspectiveStartDate().length() > 0)
@@ -1434,7 +1640,6 @@ bool TfrmAnalysis::ValidateParams() {
     CheckTimeParams();
     CheckOutputParams();
     gpfrmAdvancedParameters->ValidateAdjustmentSettings();
-    gpfrmAdvancedParameters->ValidateInputFilesSettings();
     gpfrmAdvancedParameters->ValidateScanningWindowSettings();
   }
   catch (AdvancedFeaturesException &x) {
@@ -1453,19 +1658,62 @@ bool TfrmAnalysis::ValidateParams() {
 
 void TfrmAnalysis::ValidateSpatialClusterSize() {
   try {
-    if (edtMaxSpatialClusterSize->Enabled) {
-      if (!edtMaxSpatialClusterSize->Text.Length() || atof(edtMaxSpatialClusterSize->Text.c_str()) == 0)
-        ZdException::GenerateNotification("Please specify a maximum spatial cluster size greater than zero.","ValidateSpatialClusterSize()");
-
-      if (atof(edtMaxSpatialClusterSize->Text.c_str()) > 50.0 && rdoSpatialPercentage->Checked)
-        ZdException::GenerateNotification("Please specify a maximum spatial cluster size no greater than %d.",
-                                          "ValidateSpatialClusterSize()", 50);
+    if (rdgSpatialOptions->Enabled) {
+      switch (GetMaxSpatialClusterSizeControlType()) {
+        case PERCENTOFPOPULATIONTYPE :
+          if (!edtMaxSpatialClusterSize->Text.Length() || atof(edtMaxSpatialClusterSize->Text.c_str()) == 0) {
+            PageControl1->ActivePage = tbScanningWindow;
+            edtMaxSpatialClusterSize->SetFocus();
+            ZdException::GenerateNotification("Please specify a maximum spatial cluster size greater than zero.","ValidateSpatialClusterSize()");
+          }
+          if (atof(edtMaxSpatialClusterSize->Text.c_str()) > 50.0) {
+            PageControl1->ActivePage = tbScanningWindow;
+            edtMaxSpatialClusterSize->SetFocus();
+            ZdException::GenerateNotification("Please specify a maximum spatial cluster size no greater than %d.",
+                                              "ValidateSpatialClusterSize()", 50);
+          }
+          break;
+        case DISTANCETYPE :
+          if (!edtMaxSpatialRadius->Text.Length() || atof(edtMaxSpatialRadius->Text.c_str()) == 0) {
+            PageControl1->ActivePage = tbScanningWindow;
+            edtMaxSpatialRadius->SetFocus();
+            ZdException::GenerateNotification("Please specify a maximum spatial cluster size greater than zero.","ValidateSpatialClusterSize()");
+          }
+          break;
+        case PERCENTOFPOPULATIONFILETYPE :
+          if (!edtMaxSpatialPercentFile->Text.Length() || atof(edtMaxSpatialPercentFile->Text.c_str()) == 0) {
+            PageControl1->ActivePage = tbScanningWindow;
+            edtMaxSpatialPercentFile->SetFocus();
+            ZdException::GenerateNotification("Please specify a maximum spatial cluster size greater than zero.","ValidateSpatialClusterSize()");
+          }
+          if (atof(edtMaxSpatialPercentFile->Text.c_str()) > 50.0) {
+            PageControl1->ActivePage = tbScanningWindow;
+            edtMaxSpatialPercentFile->SetFocus();
+            ZdException::GenerateNotification("Please specify a maximum spatial cluster size no greater than %d.",
+                                              "ValidateSpatialClusterSize()", 50);
+          }
+//          if (GetAnalysisControlType() == PROSPECTIVESPACETIME && chkAdjustForEarlierAnalyses->Checked &&
+//              edtMaxCirclePopulationFilename->Text.IsEmpty())
+//            ZdException::GenerateNotification("For a prospective space-time analysis adjusting for ealier analyses,\n"
+//                                              "the maximum spatial cluster size must defined as a percentage of the\n"
+//                                              "population at risk, with the population defined in a maximum circle\n"
+//                                              "population file.\n\n"
+//                                              "Alternatively you may choose to specify the maximum as a fixed radius,\n"
+//                                              "in which no maximum circle population file is required.", "ValidateSpatialClusterSize()");
+//
+          if (edtMaxCirclePopulationFilename->Text.IsEmpty() || !File_Exists(edtMaxCirclePopulationFilename->Text.c_str())) {
+            PageControl1->ActivePage = tbScanningWindow;
+            edtMaxCirclePopulationFilename->SetFocus();
+            ZdException::GenerateNotification("Maximum circle population file could not be opened.","ValidateSpatialClusterSize()");
+          }
+          break;
+        default : ZdException::GenerateNotification("Unknown maximum spatial clutser size type: %d.",
+                                                    "ValidateSpatialClusterSize()", GetMaxSpatialClusterSizeControlType());
+      }                                              
     }
   }
   catch (ZdException & x) {
     x.AddCallpath("ValidateSpatialClusterSize()","TfrmAnalysis");
-    PageControl1->ActivePage = tbScanningWindow;
-    edtMaxSpatialClusterSize->SetFocus();
     throw;
   }
 }
@@ -1571,11 +1819,4 @@ void TfrmAnalysis::WriteSession(const char * sParameterFilename) {
     throw;
   }
 }
-
-//---------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtMaxSpatialClusterSizeChange(TObject *Sender) {
-  if (edtMaxSpatialClusterSize->Text.Length())
-    SetReportingSmallerClustersText();
-}
-
 

@@ -1,6 +1,6 @@
 object frmAnalysis: TfrmAnalysis
-  Left = 224
-  Top = 206
+  Left = 414
+  Top = 188
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SaTScan'
@@ -709,24 +709,47 @@ object frmAnalysis: TfrmAnalysis
         Left = 8
         Top = 8
         Width = 465
-        Height = 87
+        Height = 162
         Caption = 'Spatial'
         TabOrder = 0
         object lblMaxSpatialClusterSize: TLabel
           Left = 18
-          Top = 22
-          Width = 146
+          Top = 18
+          Width = 168
           Height = 13
-          Caption = 'Maximum Spatial Cluster Size:  '
+          Caption = 'The Maximum Spatial Cluster Size:  '
+        end
+        object lblPercentOfPopulation: TLabel
+          Left = 112
+          Top = 38
+          Width = 263
+          Height = 13
+          Caption = 'percent of the population at risk (<= 50%, default = 50%)'
+        end
+        object lblMaxRadius: TLabel
+          Left = 182
+          Top = 112
+          Width = 73
+          Height = 13
+          Caption = 'kilometer radius'
+        end
+        object lblPercentageOfPopFile: TLabel
+          Left = 112
+          Top = 62
+          Width = 316
+          Height = 13
+          Caption = 
+            'percent of the population defined in the max circle size file (<' +
+            '= 50%)'
         end
         object edtMaxSpatialClusterSize: TEdit
-          Left = 178
-          Top = 16
+          Left = 66
+          Top = 35
           Width = 38
           Height = 21
           AutoSelect = False
           MaxLength = 5
-          TabOrder = 0
+          TabOrder = 1
           Text = '50'
           OnChange = edtMaxSpatialClusterSizeChange
           OnExit = edtMaxSpatialClusterSizeExit
@@ -734,85 +757,173 @@ object frmAnalysis: TfrmAnalysis
         end
         object chkInclPurTempClust: TCheckBox
           Left = 18
-          Top = 57
+          Top = 140
           Width = 305
           Height = 17
           Caption = 'Include Purely Temporal Cluster (Spatial Size = 100%)'
           Enabled = False
-          TabOrder = 3
+          TabOrder = 8
         end
         object rdoSpatialPercentage: TRadioButton
-          Left = 226
-          Top = 14
-          Width = 217
+          Left = 34
+          Top = 36
+          Width = 28
           Height = 17
-          Caption = 'Percent of Population at Risk (<= 50%)'
+          Caption = 'is '
           Checked = True
-          TabOrder = 1
+          TabOrder = 0
           TabStop = True
           OnClick = rdoMaximumSpatialTypeClick
         end
         object rdoSpatialDistance: TRadioButton
-          Left = 226
-          Top = 34
-          Width = 217
+          Left = 34
+          Top = 112
+          Width = 97
           Height = 17
-          Caption = 'Kilometer Radius'
+          Caption = 'is a circle with a'
+          TabOrder = 6
+          OnClick = rdoMaximumSpatialTypeClick
+        end
+        object rdoSpatialPopulationFile: TRadioButton
+          Left = 34
+          Top = 62
+          Width = 28
+          Height = 17
+          Caption = 'is'
           TabOrder = 2
           OnClick = rdoMaximumSpatialTypeClick
+        end
+        object edtMaxSpatialRadius: TEdit
+          Left = 135
+          Top = 110
+          Width = 38
+          Height = 21
+          TabOrder = 7
+          Text = '1'
+          OnChange = edtMaxSpatialRadiusChange
+          OnExit = edtMaxSpatialRadiusExit
+          OnKeyPress = PositiveFloatKeyPress
+        end
+        object edtMaxSpatialPercentFile: TEdit
+          Left = 66
+          Top = 60
+          Width = 38
+          Height = 21
+          TabOrder = 3
+          Text = '50'
+          OnChange = edtMaxSpatialPercentFileChange
+          OnExit = edtMaxSpatialPercentFileExit
+          OnKeyPress = PositiveFloatKeyPress
+        end
+        object edtMaxCirclePopulationFilename: TEdit
+          Left = 66
+          Top = 85
+          Width = 335
+          Height = 21
+          Anchors = []
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 4
+          OnChange = edtMaxCirclePopulationFilenameChange
+        end
+        object btnBrowseMaxCirclePopFile: TButton
+          Left = 406
+          Top = 85
+          Width = 25
+          Height = 21
+          Hint = 'browse for special population file'
+          Anchors = []
+          Caption = '...'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 5
+          OnClick = btnBrowseMaxCirclePopFileClick
         end
       end
       object rdgTemporalOptions: TGroupBox
         Left = 8
-        Top = 105
+        Top = 175
         Width = 465
-        Height = 89
+        Height = 110
         Caption = 'Temporal'
         TabOrder = 1
         object lblMaxTemporalClusterSize: TLabel
           Left = 18
-          Top = 22
-          Width = 158
+          Top = 18
+          Width = 180
           Height = 13
-          Caption = 'Maximum Temporal Cluster Size:  '
+          Caption = 'The Maximum Temporal Cluster Size:  '
+        end
+        object lblPercentageOfStudyPeriod: TLabel
+          Left = 112
+          Top = 37
+          Width = 167
+          Height = 13
+          Caption = 'percent of the study period (<=90%)'
+        end
+        object lblMaxTemporalTimeUnits: TLabel
+          Left = 112
+          Top = 62
+          Width = 25
+          Height = 13
+          Caption = 'years'
         end
         object edtMaxTemporalClusterSize: TEdit
-          Left = 178
-          Top = 16
+          Left = 66
+          Top = 35
           Width = 38
           Height = 21
           MaxLength = 5
-          TabOrder = 0
+          TabOrder = 1
           Text = '50'
           OnExit = edtMaxTemporalClusterSizeExit
           OnKeyPress = PositiveFloatKeyPress
         end
         object chkIncludePurSpacClust: TCheckBox
           Left = 18
-          Top = 59
+          Top = 87
           Width = 297
           Height = 17
           Caption = 'Include Purely Spatial Clusters (Temporal Size = 100%)'
           Enabled = False
-          TabOrder = 3
+          TabOrder = 4
         end
         object rdoPercentageTemproal: TRadioButton
-          Left = 226
-          Top = 14
-          Width = 217
+          Left = 34
+          Top = 36
+          Width = 31
           Height = 17
-          Caption = 'Percent of Study Period (<= 90%)'
+          Caption = 'is'
           Checked = True
-          TabOrder = 1
+          TabOrder = 0
           TabStop = True
+          OnClick = rdoTemproalMaxClusterClick
         end
         object rdoTimeTemproal: TRadioButton
-          Left = 226
-          Top = 34
-          Width = 217
+          Left = 34
+          Top = 62
+          Width = 28
           Height = 17
-          Caption = 'Years'
+          Caption = 'is'
           TabOrder = 2
+          OnClick = rdoTemproalMaxClusterClick
+        end
+        object edtMaxTemporalClusterSizeUnits: TEdit
+          Left = 66
+          Top = 60
+          Width = 38
+          Height = 21
+          MaxLength = 5
+          TabOrder = 3
+          Text = '1'
+          OnExit = edtMaxTemporalClusterSizeUnitsExit
+          OnKeyPress = PositiveFloatKeyPress
         end
       end
     end
