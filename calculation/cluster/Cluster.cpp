@@ -106,8 +106,7 @@ void CCluster::Display(FILE*     fp,
       while (n > 0)
         {
         strcat(szSpacesOnLeft, " ");
-        if (n > 0)
-           ++nLeftMargin;
+        ++nLeftMargin;
         n = (int)floor(((double)n)/10);
         }
 
