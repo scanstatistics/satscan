@@ -152,36 +152,24 @@ CParameters &CParameters::operator= (const CParameters &rhs) {
 // checks to make sure all of the required keys exist in the ellipse section of the ini
 // pre: file is opened ini parameters file
 // post: throws an exception if one of the keys required is missing
-void CParameters::CheckEllipseIniSection(ZdIniFile& file, bool bCreateIfMissing) {
+void CParameters::CheckEllipseIniSection(ZdIniFile& file) {
    try {
       ZdIniSection *pSection = file.GetSection(ELLIPSES_SECTION);
       if ( pSection->FindKey(NUMBER_ELLIPSES_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" number of ellipses (0-10)");
             pSection->AddLine(NUMBER_ELLIPSES_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Number of ellipses line is missing!", "Error!");
       }
       if ( pSection->FindKey(ELLIPSE_SHAPES_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" ellipse shapes");
             pSection->AddLine(ELLIPSE_SHAPES_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Ellipse shapes line is missing!", "Error!");
       }
       if ( pSection->FindKey(ELLIPSE_ANGLES_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" ellipse angles");
             pSection->AddLine(ELLIPSE_ANGLES_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Ellipse angles line is missing!", "Error!");
       }
       if ( pSection->FindKey(ELLIPSE_DUCZMAL_COMPACT_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" Duczmal Compactness Correction (y/n)");
             pSection->AddLine(ELLIPSE_DUCZMAL_COMPACT_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Ellipse angles line is missing!", "Error!");
       }
    }
    catch (ZdException &x) {
@@ -193,38 +181,22 @@ void CParameters::CheckEllipseIniSection(ZdIniFile& file, bool bCreateIfMissing)
 // checks to make sure all of the required ini sections are in the file
 // pre: file is opened ini parameter file
 // post: throws an exception if a required section is missing
-void CParameters::CheckIniSectionsExist(ZdIniFile& file, bool bCreateIfMissing) {
+void CParameters::CheckIniSectionsExist(ZdIniFile& file) {
    try {
-      if (file.GetSectionIndex(INPUT_FILES_SECTION) == -1) {
-   //      if (bCreateIfMissing)
+      if (file.GetSectionIndex(INPUT_FILES_SECTION) == -1)
             file.AddSection(INPUT_FILES_SECTION);
-   //      else
-   //         ZdException::GenerateNotification("Error reading parameter file. Input files section is missing!", "Error!");
-      }
-      if (file.GetSectionIndex(MODEL_INFO_SECTION) == -1) {
-   //      if (bCreateIfMissing)
+
+      if (file.GetSectionIndex(MODEL_INFO_SECTION) == -1)
             file.AddSection(MODEL_INFO_SECTION);
-   //      else
-   //         ZdException::GenerateNotification("Error reading parameter file. Model info section is missing!", "Error!");
-      }
-      if (file.GetSectionIndex(SEQUENTIAL_SCAN_SECTION) == -1) {
-   //      if (bCreateIfMissing)
+
+      if (file.GetSectionIndex(SEQUENTIAL_SCAN_SECTION) == -1)
             file.AddSection(SEQUENTIAL_SCAN_SECTION);
-   //      else
-   //         ZdException::GenerateNotification("Error reading parameter file. Sequential scan section is missing!", "Error!");
-      }
-      if (file.GetSectionIndex(ELLIPSES_SECTION) == -1) {
-  //       if (bCreateIfMissing)
+
+      if (file.GetSectionIndex(ELLIPSES_SECTION) == -1)
             file.AddSection(ELLIPSES_SECTION);
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Ellipses section is missing!", "Error!");
-      }
-      if (file.GetSectionIndex(OUTPUT_FILES_SECTION) == -1) {
-  //       if (bCreateIfMissing)
+
+      if (file.GetSectionIndex(OUTPUT_FILES_SECTION) == -1)
             file.AddSection(OUTPUT_FILES_SECTION);
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Output files section is missing!", "Error!");
-      }
    }
    catch (ZdException &x) {
       x.AddCallpath("CheckIniSectionsExist()", "CParameters");
@@ -235,46 +207,27 @@ void CParameters::CheckIniSectionsExist(ZdIniFile& file, bool bCreateIfMissing) 
 // checks to make sure all of the required keys exist in the input file section of the ini
 // pre: file is opened ini parameters file
 // post: throws an exception if one of the keys required is missing
-void CParameters::CheckInputFileSection(ZdIniFile& file, bool bCreateIfMissing) {
+void CParameters::CheckInputFileSection(ZdIniFile& file) {
    try {
       ZdIniSection* pSection = file.GetSection(INPUT_FILES_SECTION);
-      if ( pSection->FindKey(CASE_FILE_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
+      if ( pSection->FindKey(CASE_FILE_LINE) == -1 )
             pSection->AddLine(CASE_FILE_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Case file line is missing!", "Error!");
-      }
-      if ( pSection->FindKey(POP_FILE_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
+
+      if ( pSection->FindKey(POP_FILE_LINE) == -1 )
             pSection->AddLine(POP_FILE_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Population file line is missing!", "Error!");
-      }
-      if ( pSection->FindKey(COORD_FILE_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
+
+      if ( pSection->FindKey(COORD_FILE_LINE) == -1 )
             pSection->AddLine(COORD_FILE_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Coordinates file line is missing!", "Error!");
-      }
-      if ( pSection->FindKey(GRID_FILE_LINE) == -1 ) {
- //        if (bCreateIfMissing)
+
+      if ( pSection->FindKey(GRID_FILE_LINE) == -1 )
             pSection->AddLine(GRID_FILE_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Grid file line is missing!", "Error!");
-      }
-      if ( pSection->FindKey(USE_GRID_FILE_LINE) == -1 ) {
- //        if (bCreateIfMissing)
+
+      if ( pSection->FindKey(USE_GRID_FILE_LINE) == -1 )
             pSection->AddComment(" use special grid file? (y/n)");
             pSection->AddLine(USE_GRID_FILE_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Grid file line is missing!", "Error!");
-      }
-      if ( pSection->FindKey(CONTROL_FILE_LINE) == -1 ) {
- //        if (bCreateIfMissing)
+
+      if ( pSection->FindKey(CONTROL_FILE_LINE) == -1 )
             pSection->AddLine(CONTROL_FILE_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Control file line is missing!", "Error!");
-      }
    }
    catch (ZdException &x) {
       x.AddCallpath("CheckInputFileSection()", "CParameters");
@@ -285,188 +238,110 @@ void CParameters::CheckInputFileSection(ZdIniFile& file, bool bCreateIfMissing) 
 // checks to make sure all of the required keys exist in the model info section of the ini
 // pre: file is opened ini parameters file
 // post: throws an exception if one of the keys required is missing
-void CParameters::CheckModelInfoIniSection(ZdIniFile& file, bool bCreateIfMissing) {
+void CParameters::CheckModelInfoIniSection(ZdIniFile& file) {
    try {
       ZdIniSection* pSection = file.GetSection(MODEL_INFO_SECTION);
       if ( pSection->FindKey(ANALYSIS_TYPE_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" analysis type (1=S, 2=T, 3=RST, 4=PST)");
             pSection->AddLine(ANALYSIS_TYPE_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Analysis type line is missing!", "Error!");
       }
       if ( pSection->FindKey(SCAN_AREAS_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" scan areas (1=High, 2=Low, 3=HighLow)");
             pSection->AddLine(SCAN_AREAS_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Scan Areas line is missing!", "Error!");
       }
       if ( pSection->FindKey(PRECISION_TIMES_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" precision of case times (0=None, 1=Year, 2=Month, 3=day)");
             pSection->AddLine(PRECISION_TIMES_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Precision of case times line is missing!", "Error!");
       }
       if ( pSection->FindKey(MAX_GEO_SIZE_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" max geographic size (<=50%)");
             pSection->AddLine(MAX_GEO_SIZE_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Max geographic size line is missing!", "Error!");
       }
       if ( pSection->FindKey(START_DATE_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" start date (YYYY/MM/DD)");
             pSection->AddLine(START_DATE_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Start date line is missing!", "Error!");
       }
       if ( pSection->FindKey(END_DATE_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" end date (YYYY/MM/DD)");
             pSection->AddLine(END_DATE_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. End date line is missing!", "Error!");
       }
       if ( pSection->FindKey(ALIVE_CLUSTERS_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" alive clusters only? (y/n)");
             pSection->AddLine(ALIVE_CLUSTERS_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Alive clusters only line is missing!", "Error!");
       }
       if ( pSection->FindKey(INTERVAL_UNITS_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" interval units (0=None, 1=Year, 2=Month, 3=Day)");
             pSection->AddLine(INTERVAL_UNITS_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Interval units line is missing!", "Error!");
       }
       if ( pSection->FindKey(INTERVAL_LENGTH_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" inteval length (positive integer)");
             pSection->AddLine(INTERVAL_LENGTH_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Interval length line is missing!", "Error!");
       }
       if ( pSection->FindKey(INCLUDE_PURELY_SPATIAL_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" include purely spatial clusters (y/n)");
             pSection->AddLine(INCLUDE_PURELY_SPATIAL_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Include purely spatial clusters line is missing!", "Error!");
       }
       if ( pSection->FindKey(MAX_TEMP_SIZE_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" max temporal size (<=90%)");
             pSection->AddLine(MAX_TEMP_SIZE_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Max temporal cluseter size line is missing!", "Error!");
       }
       if ( pSection->FindKey(MONTE_CARLO_REPS_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" Monte Carlo reps (0, 9, 999, n999)");
             pSection->AddLine(MONTE_CARLO_REPS_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Monte Carlo reps line is missing!", "Error!");
       }
       if ( pSection->FindKey(MODEL_TYPE_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" model type (0=Poisson, 1=Bernoulli, 2=Space-Time)");
             pSection->AddLine(MODEL_TYPE_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Model type line is missing!", "Error!");
       }
       if ( pSection->FindKey(ISOTONIC_SCAN_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" Isotonic Scan (y/n)");
             pSection->AddLine(ISOTONIC_SCAN_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Isotonic scan line is missing!", "Error!");
       }
       if ( pSection->FindKey(PVALUE_PROSPECT_LLR_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" p-Values for 2 Prespecified LLR's (y/n)");
             pSection->AddLine(PVALUE_PROSPECT_LLR_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. p-Value for 2 prospective LLRs line is missing!", "Error!");
       }
       if ( pSection->FindKey(LLR_1_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddLine(LLR_1_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. LLR1 line is missing!", "Error!");
       }
       if ( pSection->FindKey(LLR_2_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddLine(LLR_2_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. LLR2 line is missing!", "Error!");
       }
       if ( pSection->FindKey(TIME_TREND_ADJ_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" Time trend adjustment type (0=None, 1=Nonparametric, 2=LogLinear)");
             pSection->AddLine(TIME_TREND_ADJ_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Time trend adjustment type line is missing!", "Error!");
       }
       if ( pSection->FindKey(TIME_TREND_PERCENT_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" time trend adjustment percentage (>-100)");
             pSection->AddLine(TIME_TREND_PERCENT_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Time trend adjustment percentage line is missing!", "Error!");
       }
       if ( pSection->FindKey(INCLUDE_PURE_TEMP_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" include purely temporal clusters (y/n)");
             pSection->AddLine(INCLUDE_PURE_TEMP_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Include purely temporal clusters line is missing!", "Error!");
       }
       if ( pSection->FindKey(COORD_TYPE_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" coordinate type (0=Cartesian, 1=Lat/Long)");
             pSection->AddLine(COORD_TYPE_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Coordinate type line is missing!", "Error!");
       }
       if ( pSection->FindKey(VALID_PARAMS_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" validate parameters (y/n)");
             pSection->AddLine(VALID_PARAMS_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Validate parameters line is missing!", "Error!");
       }
       if ( pSection->FindKey(PROSPECT_START_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" prospective surveillance start date (YYYY/MM/DD)");
             pSection->AddLine(PROSPECT_START_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Prospective start date line is missing!", "Error!");
       }
       if ( pSection->FindKey(CRIT_REPORT_SEC_CLUSTERS_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" criteria for reporting secondary clusters(0=NoGeoOverlap, ..., 5=NoRestrictions)");
             pSection->AddLine(CRIT_REPORT_SEC_CLUSTERS_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Report secondary clusters line is missing!", "Error!");
       }
       if ( pSection->FindKey(MAX_TEMP_INTERPRET_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" how max temporal size should be interpretted (0=Percentage, 1=Time)");
             pSection->AddLine(MAX_TEMP_INTERPRET_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Max temporal interpretation line is missing!", "Error!");
       }
       if ( pSection->FindKey(MAX_SPATIAL_SIZE_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" how max spatial size should be interpretted (0=Percentage, 1=Distance)");
             pSection->AddLine(MAX_SPATIAL_SIZE_LINE, "");
- //        else
- //           ZdException::GenerateNotification("Error reading parameter file. Max spatial interpretation line is missing!", "Error!");
       }
    }
    catch (ZdException &x) {
@@ -478,76 +353,46 @@ void CParameters::CheckModelInfoIniSection(ZdIniFile& file, bool bCreateIfMissin
 // checks to make sure all of the required keys exist in the output file section of the ini
 // pre: file is opened ini parameters file
 // post: throws an exception if one of the keys required is missing
-void CParameters::CheckOutputFileIniSection(ZdIniFile& file, bool bCreateIfMissing) {
+void CParameters::CheckOutputFileIniSection(ZdIniFile& file) {
    try {
       ZdIniSection* pSection = file.GetSection(OUTPUT_FILES_SECTION);
        if ( pSection->FindKey(RESULTS_FILE_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddLine(RESULTS_FILE_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Results file line is missing!", "Error!");
       }
       if ( pSection->FindKey(ANALYSIS_HISTORY_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddLine(ANALYSIS_HISTORY_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Analysis history file line is missing!", "Error!");
       }
       if ( pSection->FindKey(MOST_LIKELY_CLUSTER_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" output most likely clusters in ASCII format (y/n)");
             pSection->AddLine(MOST_LIKELY_CLUSTER_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Report most likely clusters line is missing!", "Error!");
       }
       if ( pSection->FindKey(DBASE_CLUSTER_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" output most likely clusters in dBase format (y/n)");
             pSection->AddLine(DBASE_CLUSTER_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. dBase cluster level report line is missing!", "Error!");
       }
       if ( pSection->FindKey(CENSUS_REPORT_CLUSTERS_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" report census areas in ASCII format (y/n)");
             pSection->AddLine(CENSUS_REPORT_CLUSTERS_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Report census clusters line is missing!", "Error!");
       }
       if ( pSection->FindKey(DBASE_AREA_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" report census areas in dBase format (y/n)");
             pSection->AddLine(DBASE_AREA_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. dBase area specific report line is missing!", "Error!");
       }
       if ( pSection->FindKey(SAVE_SIM_LLRS) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" report Simulated Log Likelihoods Ratios in ASCII format (y/n)");
             pSection->AddLine(SAVE_SIM_LLRS, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Save simulated LLRs line is missing!", "Error!");
       }
       if ( pSection->FindKey(DBASE_LOG_LIKELI) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" report Simulated Log Likelihoods Ratios in dBase format (y/n)");
             pSection->AddLine(DBASE_LOG_LIKELI, "");
-//         else
- //           ZdException::GenerateNotification("Error reading parameter file. Include dBase log likelihood line is missing!", "Error!");
       }
       if ( pSection->FindKey(INCLUDE_REL_RISKS_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" report relative risks in ASCII format (y/n)");
             pSection->AddLine(INCLUDE_REL_RISKS_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Include relative risks line is missing!", "Error!");
       }
       if ( pSection->FindKey(DBASE_RELATIVE_RISKS) == -1 ) {
-   //      if (bCreateIfMissing)
             pSection->AddComment(" report relative risks in dBase format (y/n)");
             pSection->AddLine(DBASE_RELATIVE_RISKS, "");
-   //      else
-   //         ZdException::GenerateNotification("Error reading parameter file. Include dBase relative risks line is missing!", "Error!");
       }
    }
    catch (ZdException &x) {
@@ -574,33 +419,21 @@ bool CParameters::CheckProspDateRange(int iStartYear, int iStartMonth, int iStar
 // checks to make sure all of the required keys exist in the sequential scan section of the ini
 // pre: file is opened ini parameters file
 // post: throws an exception if one of the keys required is missing
-void CParameters::CheckSequentialScanIniSection(ZdIniFile& file, bool bCreateIfMissing) {
+void CParameters::CheckSequentialScanIniSection(ZdIniFile& file) {
    try {
       ZdIniSection *pSection = file.GetSection(SEQUENTIAL_SCAN_SECTION);
       if ( pSection->FindKey(SEQUENTIAL_SCAN_LINE) == -1 ) {
- //        if (bCreateIfMissing)
             pSection->AddComment(" sequential scan (y/n)");
             pSection->AddLine(SEQUENTIAL_SCAN_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Sequential scan line is missing!", "Error!");
       }
       if ( pSection->FindKey(SEQUENTIAL_MAX_ITERS_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" max iterations for sequential scan (0-32000)");
             pSection->AddLine(SEQUENTIAL_MAX_ITERS_LINE, "");
-  //       else
-  //          ZdException::GenerateNotification("Error reading parameter file. Sequential scan max iterations line is missing!", "Error!");
       }
       if ( pSection->FindKey(SEQUENTIAL_MAX_PVALUE_LINE) == -1 ) {
-  //       if (bCreateIfMissing)
             pSection->AddComment(" max p-Value for sequential scan (0.000-1.000)");
             pSection->AddLine(SEQUENTIAL_MAX_PVALUE_LINE, "");
-   //      else
-   //         ZdException::GenerateNotification("Error reading parameter file. Sequential scan max p-Value line is missing!", "Error!");
       }
-
-  //    if (bCreateIfMissing)
-  //       file.Write();
    }
    catch (ZdException &x) {
       x.AddCallpath("CheckSequentialScanIniSection()", "CParameters");
@@ -1072,32 +905,24 @@ void CParameters::DisplayParameters(FILE* fp) const {
 }
 
 void CParameters::DisplayTimeAdjustments(FILE* fp) const {
-   try {
-      if (m_nTimeAdjustType == NOTADJUSTED)
-        return;
-    
-      fprintf(fp, "Adjusted for time ");
+   if (m_nTimeAdjustType == NOTADJUSTED)
+     return;
 
-      if (m_nTimeAdjustType == NONPARAMETRIC)
-        fprintf(fp, "nonparametrically.\n");
-      else if (m_nTimeAdjustType == LINEAR) {
-        if (m_nTimeAdjPercent < 0)
-          fprintf(fp, "with a decrease ");
-        else
-          fprintf(fp, "with an increase ");
-        fprintf(fp, "of %0.2f%% per year.\n", fabs(m_nTimeAdjPercent));
-      }
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("DisplayTimeAdjustments(FILE *)", "CParameters");
-      throw;
+   fprintf(fp, "Adjusted for time ");
+
+   if (m_nTimeAdjustType == NONPARAMETRIC)
+     fprintf(fp, "nonparametrically.\n");
+   else if (m_nTimeAdjustType == LINEAR) {
+     if (m_nTimeAdjPercent < 0)
+       fprintf(fp, "with a decrease ");
+     else
+       fprintf(fp, "with an increase ");
+     fprintf(fp, "of %0.2f%% per year.\n", fabs(m_nTimeAdjPercent));
    }
 }
 
 void CParameters::FindDelimiter(char *sString, char cDelimiter) {
-   char  * psString;
-
-   psString = sString;
+   char  *psString = sString;
    while (*psString != cDelimiter && *psString)
       ++psString;
    if (psString != sString)
@@ -1241,7 +1066,7 @@ void CParameters::ReadFromIniFile(ZdString sFileName) {
       // verify all the keys exist in the file so we can safely call the findkey() here without worrying
       // about it returning a -1  -- AJV 10/24/2002
       ZdIniFile file(sFileName.GetCString());
-      VerifyIniFileSetup(file, true);
+      VerifyIniFileSetup(file);
       SetSourceFileName(sFileName.GetCString());
       ReadInputFilesSectionFromIni(file);
       ReadModelInfoSectionFromIni(file);
@@ -1704,19 +1529,13 @@ void CParameters::SetDefaults() {
 // the line number (corresponds to line description) to defaulted value vector and set the Value to the default
 // pre : none
 // post : sets the Value to either default or the value read in from the file
-void CParameters::SetDoubleValue(double &dValue, const ZdString& sValueFromFile, int iLineNumberFromFile, double dDefaultValue) {
-   try {
-      if(sValueFromFile.GetIsEmpty()) {
-         gvDefaultedValues.push_back(iLineNumberFromFile);
-         dValue = dDefaultValue;
-      }
-      else
-         dValue = atof(sValueFromFile.GetCString());
+void CParameters::SetDoubleValue(double &dValue, const std::string& sValueFromFile, int iLineNumberFromFile, double dDefaultValue) {
+   if(sValueFromFile.empty()) {
+      gvDefaultedValues.push_back(iLineNumberFromFile);
+      dValue = dDefaultValue;
    }
-   catch (ZdException &x) {
-      x.AddCallpath("SetDoubleValue()", "CParameters");
-      throw;
-   }
+   else
+      dValue = atof(sValueFromFile.c_str());
 }
 
 // sets up the array of ellipse angles from the comma delimited string stored in the ini file
@@ -1761,38 +1580,26 @@ void CParameters::SetEShapesFromIniFile(const ZdString& sShapes) {
 // the line number (corresponds to line description) to defaulted value vector and set the Value to the default
 // pre : none
 // post : sets the Value to either default or the value read in from the file
-void CParameters::SetFloatValue(float &fValue, const ZdString& sValueFromFile, int iLineNumberFromFile, float fDefaultValue) {
-   try {
-      if(sValueFromFile.GetIsEmpty()) {
-         gvDefaultedValues.push_back(iLineNumberFromFile);
-         fValue = fDefaultValue;
-      }
-      else
-         fValue = atof(sValueFromFile.GetCString());
+void CParameters::SetFloatValue(float &fValue, const std::string& sValueFromFile, int iLineNumberFromFile, float fDefaultValue) {
+   if(sValueFromFile.empty()) {
+      gvDefaultedValues.push_back(iLineNumberFromFile);
+      fValue = fDefaultValue;
    }
-   catch (ZdException &x) {
-      x.AddCallpath("SetFloatValue()", "CParameters");
-      throw;
-   }
+   else
+      fValue = atof(sValueFromFile.c_str());
 }
 
 // helper function which will check the string to see if it is empty and if it is will add
 // the line number (corresponds to line description) to defaulted value vector and set the Value to the default
 // pre : none
 // post : sets the Value to either default or the value read in from the file
-void CParameters::SetIntValue(int &iValue, const ZdString& sValueFromFile, int iLineNumberFromFile, int iDefaultValue) {
-   try {
-      if(sValueFromFile.GetIsEmpty()) {
-         gvDefaultedValues.push_back(iLineNumberFromFile);
-         iValue = iDefaultValue;
-      }
-      else
-         iValue = atoi(sValueFromFile.GetCString());
+void CParameters::SetIntValue(int &iValue, const std::string& sValueFromFile, int iLineNumberFromFile, int iDefaultValue) {
+   if(sValueFromFile.empty()) {
+      gvDefaultedValues.push_back(iLineNumberFromFile);
+      iValue = iDefaultValue;
    }
-   catch (ZdException &x) {
-      x.AddCallpath("SetIntValue()", "CParameters");
-      throw;
-   }
+   else
+      iValue = atoi(sValueFromFile.c_str());
 }
 
 /** Sets output data file name. 
@@ -2398,19 +2205,14 @@ bool CParameters::ValueIsYes(const ZdString& sTestValue) {
 // checks the format of the ini file to be read to ensure that the correct lines exist
 // pre: sFileName is the name of the ini file
 // post: will throw an exception if one of the required ini lines is missing
-void CParameters::VerifyIniFileSetup(ZdIniFile& file, bool bCreateIfMissing) {
+void CParameters::VerifyIniFileSetup(ZdIniFile& file) {
    try {
- //     ZdIniFile file(sFileName.GetCString());
-
-      CheckIniSectionsExist(file, bCreateIfMissing);
-      CheckInputFileSection(file, bCreateIfMissing);
-      CheckModelInfoIniSection(file, bCreateIfMissing);
-      CheckSequentialScanIniSection(file, bCreateIfMissing);
-      CheckEllipseIniSection(file, bCreateIfMissing);
-      CheckOutputFileIniSection(file, bCreateIfMissing);
-
-  //    if(bCreateIfMissing)
-  //       file.Write();
+      CheckIniSectionsExist(file);
+      CheckInputFileSection(file);
+      CheckModelInfoIniSection(file);
+      CheckSequentialScanIniSection(file);
+      CheckEllipseIniSection(file);
+      CheckOutputFileIniSection(file);
    }
    catch (ZdException &x) {
       x.AddCallpath("VerifyIniFileSetup()", "CParameters");
@@ -2424,7 +2226,7 @@ void CParameters::VerifyIniFileSetup(ZdIniFile& file, bool bCreateIfMissing) {
 void CParameters::Write(const char * sParameterFileName) {
    try {
       ZdIniFile file(sParameterFileName);
-      VerifyIniFileSetup(file, true);
+      VerifyIniFileSetup(file);
 
       SetSourceFileName(sParameterFileName);
       SaveInputFileSection(file);

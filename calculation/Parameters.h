@@ -120,12 +120,12 @@ class CParameters
 
       void      copy(const CParameters &rhs);
 
-      void      CheckEllipseIniSection(ZdIniFile& file, bool bCreateIfMissing = false);
-      void      CheckIniSectionsExist(ZdIniFile& file, bool bCreateIfMissing = false);
-      void      CheckInputFileSection(ZdIniFile& file, bool bCreateIfMissing = false);
-      void      CheckModelInfoIniSection(ZdIniFile& file, bool bCreateIfMissing = false);
-      void      CheckOutputFileIniSection(ZdIniFile& file, bool bCreateIfMissing = false);
-      void      CheckSequentialScanIniSection(ZdIniFile& file, bool bCreateIfMissing = false);
+      void      CheckEllipseIniSection(ZdIniFile& file);
+      void      CheckIniSectionsExist(ZdIniFile& file);
+      void      CheckInputFileSection(ZdIniFile& file);
+      void      CheckModelInfoIniSection(ZdIniFile& file);
+      void      CheckOutputFileIniSection(ZdIniFile& file);
+      void      CheckSequentialScanIniSection(ZdIniFile& file);
       void      ConvertRelativePath(std::string & sInputFilename);
       void      FindDelimiter(char *sString, char cDelimiter);
       void      Free();
@@ -145,18 +145,18 @@ class CParameters
       void      SaveSequentialScanSection(ZdIniFile& file);
       void      SaveOutputFileSection(ZdIniFile& file);
       void      SetDefaults();
-      void      SetDoubleValue(double &dValue, const ZdString& sValueFromFile, int iLineNumberFromFile, double dDefaultValue);
+      void      SetDoubleValue(double &dValue, const std::string& sValueFromFile, int iLineNumberFromFile, double dDefaultValue);
       void      SetEAnglesFromIniFile(const ZdString& sAngles);
       void      SetEShapesFromIniFile(const ZdString& sShapes);
-      void      SetFloatValue(float &fValue, const ZdString& sValueFromFile, int iLineNumberFromFile, float fDefaultValue);
-      void      SetIntValue(int &iValue, const ZdString& sValueFromFile, int iLineNumberFromFile, int iDefaultValue);
+      void      SetFloatValue(float &fValue, const std::string& sValueFromFile, int iLineNumberFromFile, float fDefaultValue);
+      void      SetIntValue(int &iValue, const std::string& sValueFromFile, int iLineNumberFromFile, int iDefaultValue);
       void      SetParameter(int nParam, ZdString & szParam);
       void      SetSourceFileName(const char * sParametersSourceFileName);
       void      TrimLeft(char *sString);
       bool      ValidateDateString(char* szDate, int nDateType);
       bool      ValidHistoryFileName(ZdString& sRunHistoryFilename);
       bool      ValueIsYes(const ZdString& sTestValue);
-      void      VerifyIniFileSetup(ZdIniFile& file, bool bCreateIfMissing = false);
+      void      VerifyIniFileSetup(ZdIniFile& file);
 
   public:
     CParameters();
