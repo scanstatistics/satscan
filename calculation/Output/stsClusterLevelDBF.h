@@ -9,7 +9,7 @@ class stsClusterLevelDBF : public DBaseOutput {
       void	Setup(const ZdString& sOutputFileName);
    protected:
       virtual void              GetFields();
-      virtual void 	        SetupFields(ZdVector<std::pair<ZdString, char> >& vFieldDescrips, ZdVector<std::pair<short, short> >& vFieldSizes);
+      virtual void              SetupFields(std::vector<field_t>& vFields);
    public:
       __fastcall stsClusterLevelDBF(const ZdString& sReportHistoryFileName, const int& iCoordType, const ZdFileName& sOutputFileName);
       virtual ~stsClusterLevelDBF();
