@@ -13,7 +13,9 @@ CMeasureList::CMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodC
 /** Destructor */
 CMeasureList::~CMeasureList() {}
 
-//store as maximum loglikelihood for current iteration(shape)
+/** Adds log likelihood to internal array, adjusting the passed log likelihood
+    where iteration represents an elliptical shaped cylinder in conjunction with
+    requested correction for compactness. */
 void CMeasureList::AddMaximumLogLikelihood(double dMaxLogLikelihood, int iIteration) {
   double dMaxLogLikelihoodRatio, dNonCompactnessPenalty;
 
@@ -26,7 +28,7 @@ void CMeasureList::AddMaximumLogLikelihood(double dMaxLogLikelihood, int iIterat
     gvMaximumLogLikelihoodRatios.push_back(dMaxLogLikelihoodRatio);
 }
 
-/** Returns maximum loglikelihood ratio for all iterations(shapes)   */
+/** Returns maximum loglikelihood ratio for all iterations(shapes) */
 double CMeasureList::GetMaximumLogLikelihoodRatio() {
   double dMaximumLogLikelihoodRatio;
 
@@ -268,6 +270,8 @@ void CMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
   AddMaximumLogLikelihood(dMaximumLogLikelihood, iIteration);
 }
 
+/** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood()
+    to add result to internal list. */
 void CMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
   int           i, iListSize = gSaTScanData.GetTotalCases();
   double        dLogLikelihood, dTotalMeasure(gSaTScanData.GetTotalMeasure()),
