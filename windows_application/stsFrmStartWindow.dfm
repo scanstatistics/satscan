@@ -4,7 +4,7 @@ object frmStartWindow: TfrmStartWindow
   BorderStyle = bsDialog
   Caption = 'Welcome to SaTScan v4.0'
   ClientHeight = 157
-  ClientWidth = 316
+  ClientWidth = 289
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,7 +16,7 @@ object frmStartWindow: TfrmStartWindow
   PixelsPerInch = 96
   TextHeight = 13
   object pnlAlignRight: TPanel
-    Left = 219
+    Left = 192
     Top = 0
     Width = 97
     Height = 157
@@ -45,7 +45,7 @@ object frmStartWindow: TfrmStartWindow
   object pnlClient: TPanel
     Left = 0
     Top = 0
-    Width = 219
+    Width = 192
     Height = 157
     Align = alClient
     BevelOuter = bvNone
@@ -53,7 +53,7 @@ object frmStartWindow: TfrmStartWindow
     object rdgOpenChoices: TRadioGroup
       Left = 12
       Top = 8
-      Width = 206
+      Width = 179
       Height = 134
       Anchors = [akLeft, akTop, akRight, akBottom]
       ItemIndex = 0
