@@ -16,7 +16,7 @@ class stsRunHistoryFile {
    protected:
       void      CreateRunHistoryFile();
       void      OpenRunHistoryFile();
-      void 	SetupFields(ZdVector<ZdString>& vFields, ZdVector<char>& vFieldTypes);
+      void 	SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&  vFieldDescrip);
    public:
       stsRunHistoryFile(const CAnalysis* pAnalysis);
       ~stsRunHistoryFile();
