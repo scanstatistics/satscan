@@ -44,7 +44,8 @@ class DateStringParser {
                                                              const Julian& PeriodStart, const Julian& PeriodEnd,
                                                              Julian& theDate);
     DateStringParser::ParserStatus      ParsePopulationDateString(const char * sDateString, const Julian& PeriodStart,
-                                                                  const Julian& PeriodEnd, Julian& theDate);
+                                                                  const Julian& PeriodEnd, Julian& theDate,
+                                                                  DatePrecisionType& eReadPrecision);
 };
 //***************************************************************************
 #endif

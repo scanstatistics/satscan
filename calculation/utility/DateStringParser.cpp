@@ -186,17 +186,17 @@ DateStringParser::ParserStatus DateStringParser::ParseCountDateString(const char
 DateStringParser::ParserStatus DateStringParser::ParsePopulationDateString(const char * sDateString,
                                                                           const Julian& PeriodStart,
                                                                           const Julian& PeriodEnd,
-                                                                          Julian& theDate) {
+                                                                          Julian& theDate,
+                                                                          DatePrecisionType& eReadPrecision) {
   ParserStatus          eParserStatus;
-  DatePrecisionType     ePrecision;
   unsigned int          iOne, iTwo, iThree;
   DateFormat            eDateFormat;
 
-  eParserStatus = GetInParts(sDateString, PeriodStart, PeriodEnd, iOne, iTwo, iThree, ePrecision, eDateFormat);
+  eParserStatus = GetInParts(sDateString, PeriodStart, PeriodEnd, iOne, iTwo, iThree, eReadPrecision, eDateFormat);
   if (eParserStatus != VALID_DATE)
     return eParserStatus;
   if (eDateFormat == MDY) {
-    switch (ePrecision) {
+    switch (eReadPrecision) {
       case YEAR  : return GetAsJulian(POP_PRECISION_YEAR_DEFAULT_MONTH, POP_PRECISION_YEAR_DEFAULT_DAY, iOne, theDate);
       case MONTH : return GetAsJulian(iOne, POP_PRECISION_MONTH_DEFAULT_DAY, iTwo, theDate);
       case DAY   : return GetAsJulian(iOne, iTwo, iThree, theDate);
@@ -204,7 +204,7 @@ DateStringParser::ParserStatus DateStringParser::ParsePopulationDateString(const
     };
   }
   else {
-    switch (ePrecision) {
+    switch (eReadPrecision) {
       case YEAR  : return GetAsJulian(POP_PRECISION_YEAR_DEFAULT_MONTH, POP_PRECISION_YEAR_DEFAULT_DAY, iOne, theDate);
       case MONTH : return GetAsJulian(iTwo, POP_PRECISION_MONTH_DEFAULT_DAY, iOne, theDate);
       case DAY   : return GetAsJulian(iTwo, iThree, iOne, theDate);
