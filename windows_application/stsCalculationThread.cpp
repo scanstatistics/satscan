@@ -65,7 +65,7 @@ void __fastcall CalcThread::EnableProgressEmailButton(void) {
 
 /** Synchronizes enabling of run analysis form's print button in the main application thread. */
 void __fastcall CalcThread::EnableProgressPrintButton(void) {
-  gpFormStatus->btnPrint->Enabled = false;// true; -- disable printing until printing bug fix completed.
+  gpFormStatus->btnPrint->Enabled = true;
 }
 
 /** Main Thread execution function. */
@@ -250,7 +250,7 @@ void __fastcall CalcThread::SetJobCancelled(void) {
 /** Sets warnings in run analysis window. */
 void __fastcall CalcThread::SetProgressWarnings(void) {
   try {
-    if (gpFormStatus->reWarningsBox->Lines->Count == 0) {
+    if (gpFormStatus->rteWarningsBox->Lines->Count == 0) {
       gpFormStatus->SetPrintWarnings(false);
       gpFormStatus->AddWarningLine("No warnings or errors encountered.");
     }
@@ -287,7 +287,7 @@ void CalcThread::Setup(const CParameters& session, char *pTitle, TfrmAnalysisRun
 void __fastcall CalcThread::SetupProgress(void) {
   try {
     gpFormStatus->Caption = gsThreadTitle;
-    gpFormStatus->reAnalysisBox->SetFocus();
+    gpFormStatus->rteAnalysisBox->SetFocus();
   }
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
 }
