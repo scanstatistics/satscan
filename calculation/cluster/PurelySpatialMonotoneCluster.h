@@ -21,6 +21,7 @@ class CPSMonotoneCluster : public CCluster {
     tract_t                     m_nSteps;             // Number of concentric steps in cluster    
 
     void                        ConcatLastCircles();
+    void                        RemoveRemainder();
     void                        SetCasesAndMeasures();
     double                      SetLogLikelihood();
     double                      SetRatio(double nLogLikelihoodForTotal);
@@ -51,19 +52,18 @@ class CPSMonotoneCluster : public CCluster {
     virtual void                DisplaySteps(FILE* fp, const AsciiPrintFormat& PrintFormat) const;
     virtual void                DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {}
     virtual void                Initialize(tract_t nCenter=0);
-    void                        RemoveRemainder();
-    virtual count_t             GetCaseCount(size_t tSetIndex) const {return m_nCases;}
-    virtual count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual AbstractClusterData * GetClusterData();
     virtual const AbstractClusterData * GetClusterData() const;
     virtual ClusterType         GetClusterType() const {return PURELYSPATIALMONOTONECLUSTER;}
     virtual ZdString          & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
+    virtual measure_t           GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
+    virtual measure_t           GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     tract_t                     GetLastCircleIndex() const {return m_nSteps-1;};
-    virtual measure_t           GetMeasure(size_t tSetIndex) const {return m_nMeasure;}
-    virtual measure_t           GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex=0) const;
     tract_t                     GetNumCircles() const {return m_nSteps;}
     virtual tract_t             GetNumTractsInnerCircle() const {return m_pLastNeighborList[0];}
-    double                      GetRelativeRisk(tract_t nStep, double nMeasureAdjustment) const;
+    virtual count_t             GetObservedCount(size_t tSetIndex=0) const {return m_nCases;}
+    virtual count_t             GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
+    double                      GetRelativeRisk(tract_t nStep, const CSaTScanData& DataHub) const;
     double                      GetRatio() const;
     double                      GetLogLikelihood() const;
     virtual ZdString          & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;

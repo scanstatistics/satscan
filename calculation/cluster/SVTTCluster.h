@@ -80,18 +80,19 @@ class CSVTTCluster : public CCluster  {
     void                        AddNeighbor(tract_t tNeighbor, const DataSetInterface & Interface, size_t tSetIndex);    
     virtual CSVTTCluster      * Clone() const;
     virtual void                DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const;
+    virtual void                DisplayPopulationOrdinal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat, const RealDataSet& DataSet) const {}
     virtual void                DisplayTimeFrame(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {};
     virtual void                DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintFormat) const;
-    virtual count_t             GetCaseCount(size_t tSetIndex) const {return gvSetData[tSetIndex].gtTotalCasesInsideCluster;}
-    virtual count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual AbstractClusterData * GetClusterData();
     virtual const AbstractClusterData * GetClusterData() const;
     virtual ClusterType         GetClusterType() const {return SPATIALVARTEMPTRENDCLUSTER;}
-    virtual ZdString          & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
-    virtual measure_t           GetMeasure(size_t tSetIndex) const {return gvSetData[tSetIndex].gtTotalMeasureInsideCluster;}
-    virtual measure_t           GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex=0) const;
-    virtual ZdString          & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     SVTTClusterSetData        & GetDataSet(size_t tSetIndex) {return gvSetData[tSetIndex];}
+    virtual ZdString          & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
+    virtual measure_t           GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
+    virtual measure_t           GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
+    virtual count_t             GetObservedCount(size_t tSetIndex=0) const {return gvSetData[tSetIndex].gtTotalCasesInsideCluster;}
+    virtual count_t             GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
+    virtual ZdString          & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     virtual void                InitializeSVTT(tract_t nCenter, const AbtractDataSetGateway & DataGateway);
     virtual void                InitializeSVTT(tract_t nCenter, const DataSetInterface & Interface);
     void                        SetTimeTrend(DatePrecisionType eDatePrecision, double nIntervalLen);

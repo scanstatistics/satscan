@@ -288,9 +288,9 @@ void CPSMonotoneCluster::DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataH
     if (m_nSteps == 1)
       return;
     PrintFormat.PrintSectionLabel(fp, "Relative risk by step", false, true);
-    sBuffer.printf("%.3f", GetRelativeRisk(0, DataHub.GetMeasureAdjustment(0)));
+    sBuffer.printf("%.3f", GetRelativeRisk(0, DataHub));
     for (i=1; i < m_nSteps; ++i) {
-       sWork.printf(", %.3f", GetRelativeRisk(i, DataHub.GetMeasureAdjustment(0)));
+       sWork.printf(", %.3f", GetRelativeRisk(i, DataHub));
        sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
@@ -305,11 +305,6 @@ void CPSMonotoneCluster::DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataH
 void CPSMonotoneCluster::DisplaySteps(FILE* fp, const AsciiPrintFormat& PrintFormat) const {
   PrintFormat.PrintSectionLabel(fp, "Steps in risk function", false, true);
   fprintf(fp, "%i\n", m_nSteps);
-}
-
-/** returns the number of cases for tract as defined by cluster */
-count_t CPSMonotoneCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data,size_t tSetIndex) const {
-  return Data.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray()[0][tTract];
 }
 
 /** Returns pointer cluster data object - not implemented, throws exception. */
@@ -329,14 +324,24 @@ ZdString& CPSMonotoneCluster::GetEndDate(ZdString& sDateString, const CSaTScanDa
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1);
 }
 
+/** Returns number of expected cases in accumulated data. */
+measure_t CPSMonotoneCluster::GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex) const {
+  return DataHub.GetMeasureAdjustment(tSetIndex) * m_nMeasure;
+}
+
+/** Returns the measure for tract as defined by cluster. */
+measure_t CPSMonotoneCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
+  return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray()[0][tTractIndex];
+}
+
 /** Returns log likelihood of cluster. */
 double CPSMonotoneCluster::GetLogLikelihood() const {
   return m_nLogLikelihood;
 }
 
-/** Returns the measure for tract as defined by cluster. */
-measure_t CPSMonotoneCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
-  return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray()[0][tTract];
+/** returns the number of cases for tract as defined by cluster */
+count_t CPSMonotoneCluster::GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data,size_t tSetIndex) const {
+  return Data.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray()[0][tTractIndex];
 }
 
 /** If ratio flag is set, returns log likelihood ratio else returns -1.*/
@@ -345,8 +350,8 @@ double CPSMonotoneCluster::GetRatio() const {
 }
 
 /** no documentation */
-double CPSMonotoneCluster::GetRelativeRisk(tract_t nStep, double nMeasureAdjustment) const {
-  return ((double)(m_pCasesList[nStep]))/(m_pMeasureList[nStep] * nMeasureAdjustment);
+double CPSMonotoneCluster::GetRelativeRisk(tract_t nStep, const CSaTScanData& DataHub) const {
+  return ((double)(m_pCasesList[nStep]))/(m_pMeasureList[nStep] * DataHub.GetMeasureAdjustment(0));
 }
 
 /** returns start date of defined cluster as formated string */

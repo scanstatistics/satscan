@@ -236,12 +236,6 @@ void CSVTTCluster::DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintForma
   PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
 }
 
-/** returns the number of cases for tract as defined by cluster */
-count_t CSVTTCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
-  return Data.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray()[0][tTract];
-}
-
-
 AbstractClusterData * CSVTTCluster::GetClusterData() {
  ZdGenerateException("GetClusterData() not implemented.","CSVTTCluster");
  return 0;
@@ -257,9 +251,19 @@ ZdString& CSVTTCluster::GetEndDate(ZdString& sDateString, const CSaTScanData& Da
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1);
 }
 
+/** Returns number of expcected cases in accumulated data. */
+measure_t CSVTTCluster::GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex) const {
+  return DataHub.GetMeasureAdjustment(tSetIndex) * gvSetData[tSetIndex].gtTotalMeasureInsideCluster;
+}
+
 /** Returns the measure for tract as defined by cluster. */
-measure_t CSVTTCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
-  return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray()[0][tTract];
+measure_t CSVTTCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
+  return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray()[0][tTractIndex];
+}
+
+/** returns the number of cases for tract as defined by cluster */
+count_t CSVTTCluster::GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
+  return Data.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray()[0][tTractIndex];
 }
 
 /** returns start date of defined cluster as formated string */
