@@ -23,8 +23,8 @@ bool CompareTractDistance::operator() (const TractDistance& lhs, const TractDist
     if (gbContinue) // Done comparing coordinates, are they duplicates?
       ZdGenerateException("Identical coordinates found during sort comparison for tracts \"%s\" and \"%s\".",
                           "CompareTractDistance()",
-                          gTractInformation.tiGetTid(lhs.GetTractNumber()),
-                          gTractInformation.tiGetTid(rhs.GetTractNumber()));
+                          gTractInformation.tiGetTid(lhs.GetTractNumber(), gsLHS),
+                          gTractInformation.tiGetTid(rhs.GetTractNumber(), gsRHS));
     return (gdCoordinateLHS < gdCoordinateRHS);
   }
   //distances not equal, compare as normal
@@ -71,7 +71,7 @@ tract_t CountNeighborsByDistance(std::vector<TractDistance>& vTractDistances,
  a = grid point
  b = neighbor tacts ( sorted closest to farthest.. up to maxcirclesize)
  **********************************************************************/
-void MakeNeighbors(TInfo *pTInfo,
+void MakeNeighbors(TractHandler *pTInfo,
                    GInfo *pGInfo,
                    tract_t   ***SortedInt,
                    unsigned short ***SortedUShort,
@@ -102,7 +102,7 @@ void MakeNeighbors(TInfo *pTInfo,
    long   lTotalIterations = 0, lCurrentEllipse = 0;
    int es,ea;
    std::vector<TractDistance> vTractDistances;
-   vTractDistances.reserve(NumTracts);
+   vTractDistances.resize(NumTracts, TractDistance());
 
    try
       {
@@ -113,10 +113,6 @@ void MakeNeighbors(TInfo *pTInfo,
         nMaxMeasure = nMaxMeasureToKeep;
       else
         nMaxMeasure = MaxCircleSize;
-
-      // Initialize Tract Distamce vector
-      for (tract_t t=0; t < NumTracts; t++)
-         vTractDistances.push_back(TractDistance());
 
       nStartTime = clock();
 
@@ -130,7 +126,7 @@ void MakeNeighbors(TInfo *pTInfo,
         for (k=0; k < NumTracts; k++)  // find distances
         {
           vTractDistances[k].SetTractNumber(k);
-          pTInfo->tiGetCoords2(k, pCoords2);               
+          pTInfo->tiGetCoords2(k, pCoords2);
           vTractDistances[k].SetDistanceSquared(pTInfo->tiGetDistanceSq(pCoords, pCoords2));
         }
         std::stable_sort(vTractDistances.begin(), vTractDistances.end(), CompareTractDistance(*pTInfo));
@@ -292,29 +288,21 @@ void Transform(double Xold, double Yold, float EllipseAngle, float EllipseShape,
    double Xp,Yp;   // projection of (Xold,Yold) onto the line perpendicular to the ellipsoids longest axis
    float Weight;
 
-   try
-      {
-      Weight=1/EllipseShape;
+   Weight=1/EllipseShape;
 
-      if(EllipseAngle==0)
-         {
-         Xnew=Xold*Weight;
-         Ynew=Yold;
-         }
-      else
-         {
-         beta=-cos(EllipseAngle)/sin(EllipseAngle);
-         Xp=(Xold+beta*Yold)/(1+beta*beta);
-         Yp=beta*Xp;
-         Xnew=Xold*Weight+Xp*(1-Weight);
-         Ynew=Yold*Weight+Yp*(1-Weight);
-         }
-      *pXnew=Xnew;
-      *pYnew=Ynew;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("Transform()", "MakeNeighbors.cpp");
-      throw;
-      }
+   if (EllipseAngle==0)
+     {
+     Xnew=Xold*Weight;
+     Ynew=Yold;
+     }
+   else
+    {
+    beta=-cos(EllipseAngle)/sin(EllipseAngle);
+    Xp=(Xold+beta*Yold)/(1+beta*beta);
+    Yp=beta*Xp;
+    Xnew=Xold*Weight+Xp*(1-Weight);
+    Ynew=Yold*Weight+Yp*(1-Weight);
+    }
+   *pXnew=Xnew;
+   *pYnew=Ynew;
 } /* void Transform */

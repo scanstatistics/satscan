@@ -30,14 +30,15 @@ class TractDistance {
 /** Function object used to compare TractDistance objects by m_fDistanceSquared. */
 class CompareTractDistance {
   private:
-    int                 gi;                     /* loop index */
-    double              gdCoordinateLHS,        /* coordinate variables */
-                        gdCoordinateRHS;
-    bool                gbContinue;             /* stops coordinate comparisons */
-    const TInfo       & gTractInformation;      /* tract information */
+    int                 	gi;                     /* loop index */
+    double              	gdCoordinateLHS,        /* coordinate variables */
+                        	gdCoordinateRHS;
+    std::string                 gsLHS, gsRHS;                            
+    bool                	gbContinue;             /* stops coordinate comparisons */
+    const TractHandler 	      & gTractInformation;      /* tract information */
 
   public:
-    CompareTractDistance(const TInfo & TractInformation) : gTractInformation(TractInformation) {}
+    CompareTractDistance(const TractHandler & TractInformation) : gTractInformation(TractInformation) {}
 
     bool                operator() (const TractDistance& lhs, const TractDistance& rhs);
 };
@@ -56,7 +57,7 @@ tract_t CountNeighborsByDistance(std::vector<TractDistance>& vTractDistances,
     e = circle or ellipse1, ellipse2, etc.
     a = grid point
     b = neighbor tacts ( sorted closest to farthest.. up to maxcirclesize) */
-void MakeNeighbors(TInfo *pTInfo,
+void MakeNeighbors(TractHandler *pTInfo,
                    GInfo *pGInfo,
                    tract_t***  SortedInt,
                    unsigned short ***SortedUShort,
