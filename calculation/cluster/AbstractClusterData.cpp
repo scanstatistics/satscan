@@ -8,7 +8,7 @@
 //  ZdGenerateException("AddNeighborData(tract_t, const DataStreamInterface&, size_t) not implemented.","AbstractClusterData");
 //}
 
-double AbstractClusterData::CalculateLoglikelihoodRatio(CModel & Model) {
+double AbstractClusterData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
   ZdGenerateException("CalculateLoglikelihoodRatio() not implemented.","AbstractClusterData");
   return 0;
 }

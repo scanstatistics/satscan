@@ -63,7 +63,7 @@ CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator=(co
 void CPurelySpatialProspectiveCluster::AddNeighborAndCompare(const AbtractDataStreamGateway & DataGateway,
                                                              const CSaTScanData * pData,
                                                              CPurelySpatialProspectiveCluster & TopCluster,
-                                                             CModel & Model) {
+                                                             AbstractLikelihoodCalculator & Calculator) {
   tract_t       t, tNumNeighbors = pData->GetImpliedNeighborCount();
 
   for (t=1; t <= tNumNeighbors; ++t) {
@@ -71,7 +71,7 @@ void CPurelySpatialProspectiveCluster::AddNeighborAndCompare(const AbtractDataSt
     ++m_nTracts;
     gpClusterData->AddNeighborData(pData->GetNeighborTractIndex(t), DataGateway);
     //calculate loglikehood ratio and compare against current top cluster
-    m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Model);
+    m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
     if (m_nRatio && m_nRatio > TopCluster.m_nRatio)
       TopCluster.AssignAsType(*this);
   }    

@@ -255,7 +255,7 @@ double CPSMonotoneCluster::GetLogLikelihood()
   return m_nLogLikelihood;
 }
 
-void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, count_t** pCases) {
+void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, AbstractLikelihoodCalculator & Calculator, count_t** pCases) {
   tract_t            ** ppNeighborCount(Data.GetNeighborCountArray());
   CModel              & ProbModel(Data.GetProbabilityModel());  
 
@@ -282,9 +282,9 @@ void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, count_t** pC
         CheckCircle(GetLastCircleIndex());
       }
     
-      m_nLogLikelihood = ProbModel.CalcMonotoneLogLikelihood(*this);
+      m_nLogLikelihood = Calculator.CalcMonotoneLogLikelihood(*this);
     
-      SetRatio(ProbModel.GetLogLikelihoodForTotal());
+      SetRatio(Calculator.GetLogLikelihoodForTotal());
     
       if (Data.GetTotalCases() != m_nCases)
         RemoveRemainder();

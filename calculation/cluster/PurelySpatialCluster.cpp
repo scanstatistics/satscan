@@ -66,7 +66,9 @@ CPurelySpatialCluster& CPurelySpatialCluster::operator=(const CPurelySpatialClus
 /** add neighbor tract data from DataGateway */
 void CPurelySpatialCluster::AddNeighborDataAndCompare(const AbtractDataStreamGateway & DataGateway,
                                                       const CSaTScanData * pData,
-                                                      CPurelySpatialCluster & TopCluster, CModel & Model) {
+                                                      CPurelySpatialCluster & TopCluster,
+                                                      AbstractLikelihoodCalculator & Calculator) {
+                                                      
   tract_t       t, tNumNeighbors = pData->GetImpliedNeighborCount();
 
   for (t=1; t <= tNumNeighbors; ++t) {
@@ -74,7 +76,7 @@ void CPurelySpatialCluster::AddNeighborDataAndCompare(const AbtractDataStreamGat
     ++m_nTracts;
     gpClusterData->AddNeighborData(pData->GetNeighborTractIndex(t), DataGateway);
     //calculate loglikehood ratio and compare against current top cluster
-    m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Model);
+    m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
     if (m_nRatio > TopCluster.m_nRatio)
       TopCluster = *this;
   }    

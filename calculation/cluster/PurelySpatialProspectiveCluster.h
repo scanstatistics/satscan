@@ -28,7 +28,7 @@ class CPurelySpatialProspectiveCluster : public CCluster {
     void                                       AddNeighborAndCompare(const AbtractDataStreamGateway & DataGateway,
                                                              const CSaTScanData * pData,
                                                              CPurelySpatialProspectiveCluster & TopCluster,
-                                                             CModel & Model);
+                                                             AbstractLikelihoodCalculator & Calculator);
     inline virtual void                        AssignAsType(const CCluster& rhs) {*this = (CPurelySpatialProspectiveCluster&)rhs;}
     virtual CPurelySpatialProspectiveCluster * Clone() const;
     virtual count_t                            GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;

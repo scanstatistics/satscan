@@ -29,7 +29,7 @@ class CPurelySpatialCluster : public CCluster {
     void                                AddNeighborDataAndCompare(const AbtractDataStreamGateway & DataGateway,
                                                                   const CSaTScanData * pData,
                                                                   CPurelySpatialCluster & TopCluster,                                                                  
-                                                                  CModel & Model);
+                                                                  AbstractLikelihoodCalculator & Calculator);
     virtual void                        DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType);
     virtual count_t                     GetCaseCount(unsigned int iStream) const {return gpClusterData->GetCaseCount(iStream);}
     virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;

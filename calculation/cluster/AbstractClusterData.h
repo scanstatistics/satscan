@@ -5,6 +5,7 @@
 #include "IncidentRate.h"
 #include "ProbabilityModel.h"
 #include "DataStreamGateway.h"
+#include "LikelihoodCalculation.h"
 
 class CMeasureList; /** forward class declaration */
 class CSaTScanData; /** forward class declaration */
@@ -18,7 +19,7 @@ class AbstractClusterData {
     virtual AbstractClusterData * Clone() const = 0;
 
     virtual void        AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0) = 0;
-    virtual double      CalculateLoglikelihoodRatio(CModel & Model);
+    virtual double      CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator);
     virtual count_t     GetCaseCount(unsigned int iStream=0) const = 0;
     virtual measure_t   GetMeasure(unsigned int iStream=0) const = 0;
     virtual void        InitializeData() = 0;

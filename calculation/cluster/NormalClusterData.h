@@ -18,7 +18,7 @@ class NormalSpatialData : public SpatialData {
 
     virtual void                AddMeasureList(const DataStreamInterface & Interface, CMeasureList * pMeasureList, const CSaTScanData * pData);
     virtual void                AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
-    virtual double              CalculateLoglikelihoodRatio(CModel & Model);
+    virtual double              CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator);
     virtual void                InitializeData() {gtCases=0;gtMeasure=0;gtSqMeasure=0;}
 };
 
@@ -71,7 +71,7 @@ class NormalProspectiveSpatialData : public NormalTemporalData {
     NormalProspectiveSpatialData         & operator=(const NormalProspectiveSpatialData& rhs);
 
     virtual void                           AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
-    virtual double                         CalculateLoglikelihoodRatio(CModel & Model);
+    virtual double                         CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator);
     virtual void                           InitializeData();
 };
 

@@ -15,8 +15,8 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
 //    CPSMonotoneCluster(int nRate, tract_t nCircles);
     ~CPSMonotoneCluster();
 
-    friend class CPoissonModel;
-    friend class CBernoulliModel;
+    friend class PoissonLikelihoodCalculator;
+    friend class BernoulliLikelihoodCalculator;
     
   protected:
     tract_t    m_nMaxCircles;        // Maximum number of circles possible
@@ -41,7 +41,7 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
     inline virtual void AssignAsType(const CCluster& rhs) {*this = (CPSMonotoneCluster&)rhs;}
     void                CheckCircle(tract_t n);
     virtual bool        ClusterDefined() {return (m_nSteps > 0);};
-    virtual void        DefineTopCluster(const CSaTScanData& Data, count_t** pCases);
+    virtual void        DefineTopCluster(const CSaTScanData& Data, AbstractLikelihoodCalculator & Calculator, count_t** pCases);
     virtual void        DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
                                             int nCluster, measure_t nMinMeasure,
                                             int iNumSimulations, long lReportHistoryRunNumber,
