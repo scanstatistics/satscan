@@ -3,7 +3,7 @@
 #pragma hdrstop
 //***************************************************************************
 #include "Parameters.h"
-#include "DataStreamHandler.h"
+#include "DataSetHandler.h"
 #include "ParameterFileAccess.h"
 
 #define INCLUDE_RUN_HISTORY
@@ -144,7 +144,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gbAdjustForEarlierAnalyses          = rhs.gbAdjustForEarlierAnalyses;
     gbUseAdjustmentsForRRFile           = rhs.gbUseAdjustmentsForRRFile;
     geSpatialAdjustmentType             = rhs.geSpatialAdjustmentType;
-    geMultipleStreamPurposeType         = rhs.geMultipleStreamPurposeType;
+    geMultipleSetPurposeType         = rhs.geMultipleSetPurposeType;
     gCreationVersion                    = rhs.gCreationVersion;
     gbUsePopulationFile                 = rhs.gbUsePopulationFile;
   }
@@ -155,7 +155,7 @@ void CParameters::Copy(const CParameters &rhs) {
 }
 
 /** Prints time trend adjustment parameters, in a particular format, to passed ascii file. */
-void CParameters::DisplayAdjustments(FILE* fp, const DataStreamHandler& StreamHandler) const {
+void CParameters::DisplayAdjustments(FILE* fp, const DataSetHandler& SetHandler) const {
   ZdString              sBuffer;
   AsciiPrintFormat      PrintFormat;
 
@@ -174,7 +174,7 @@ void CParameters::DisplayAdjustments(FILE* fp, const DataStreamHandler& StreamHa
           sBuffer.Insert("Adjusted for time with an increase ", 0);
         break;
       case CALCULATED_LOGLINEAR_PERC :
-        DisplayCalculatedTimeTrend(fp, StreamHandler); break;
+        DisplayCalculatedTimeTrend(fp, SetHandler); break;
       case STRATIFIED_RANDOMIZATION  :
         sBuffer = "Adjusted for time by stratified randomization."; break;
       default :
@@ -236,7 +236,7 @@ void CParameters::DisplayAnalysisSummary(FILE* fp) const {
       case BERNOULLI            : fprintf(fp, "using the Bernoulli model.\n"); break;
       case SPACETIMEPERMUTATION : fprintf(fp, "using the Space-Time Permutation model.\n"); break;
       case ORDINAL              : fprintf(fp, "using the Ordinal model.\n"); break;
-      case SURVIVAL             : fprintf(fp, "using the Survival model.\n"); break;
+      case EXPONENTIAL          : fprintf(fp, "using the Exponential model.\n"); break;
       case NORMAL               : fprintf(fp, "using the Normal model.\n"); break;
       case RANK                 : fprintf(fp, "using the Rank model.\n"); break;
       default : ZdException::Generate("Unknown probability model type '%d'.\n", "DisplayAnalysisSummary()", geProbabilityModelType);
@@ -251,11 +251,11 @@ void CParameters::DisplayAnalysisSummary(FILE* fp) const {
         fprintf(fp, "Analysis includes purely temporal clusters.\n");
     }
 
-    if (GetNumDataStreams() > 1) {
-      switch (geMultipleStreamPurposeType) {
-        case MULTIVARIATE : fprintf(fp, "Multivariate scan using %u data sets.\n", GetNumDataStreams()); break;
-        case ADJUSTMENT   : fprintf(fp, "Adjusted using %u data sets.\n", GetNumDataStreams()); break;
-        default : ZdException::Generate("Unknown purpose for multiple data sets type '%d'.\n", "DisplayAnalysisSummary()", geMultipleStreamPurposeType);
+    if (GetNumDataSets() > 1) {
+      switch (geMultipleSetPurposeType) {
+        case MULTIVARIATE : fprintf(fp, "Multivariate scan using %u data sets.\n", GetNumDataSets()); break;
+        case ADJUSTMENT   : fprintf(fp, "Adjusted using %u data sets.\n", GetNumDataSets()); break;
+        default : ZdException::Generate("Unknown purpose for multiple data sets type '%d'.\n", "DisplayAnalysisSummary()", geMultipleSetPurposeType);
       }
     }
     if (gbSequentialRuns)
@@ -268,7 +268,7 @@ void CParameters::DisplayAnalysisSummary(FILE* fp) const {
 }
 
 /** Prints parameters, in a particular format, to passed ascii file. */
-void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsCompleted, const DataStreamHandler& StreamHandler) const {
+void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsCompleted, const DataSetHandler& SetHandler) const {
   int           i;
   size_t        t;
   ZdString      sBuffer;
@@ -305,7 +305,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
                                   break;
       case SPACETIMEPERMUTATION :
       case ORDINAL              :
-      case SURVIVAL             :
+      case EXPONENTIAL          :
       case NORMAL               :
       case RANK                 : break;
       default : ZdException::Generate("Unknown probability model type '%d'.\n", "DisplayParameters()", geProbabilityModelType);
@@ -343,13 +343,13 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
       case LATLON    : fprintf(fp, "Latitude/Longitude\n"); break;
       default : ZdException::Generate("Unknown coordinated type '%d'.\n", "DisplayParameters()", geCoordinatesType);
     }
-    if (GetNumDataStreams() > 1) {
+    if (GetNumDataSets() > 1) {
       fprintf(fp, "  Purpose of Multiple Data Sets : ");
-      switch (geMultipleStreamPurposeType) {
+      switch (geMultipleSetPurposeType) {
         case MULTIVARIATE : fprintf(fp, "Multivariate Analysis\n"); break;
         case ADJUSTMENT    : fprintf(fp, "Adjustment\n"); break;
         default : ZdException::Generate("Unknown purpose for multiple data sets type '%d'.\n",
-                                        "DisplayParameters()", geMultipleStreamPurposeType);
+                                        "DisplayParameters()", geMultipleSetPurposeType);
       }
     }
     
@@ -564,7 +564,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
 }
 
 /** Prints calculated time trend adjustment parameters, in a particular format, to passed ascii file. */
-void CParameters::DisplayCalculatedTimeTrend(FILE* fp, const DataStreamHandler& StreamHandler) const {
+void CParameters::DisplayCalculatedTimeTrend(FILE* fp, const DataSetHandler& SetHandler) const {
   unsigned int                  t, iStart, iScan;
   ZdString                      sPrintString, sWorkString;
   std::deque<unsigned int>      TrendIncrease, TrendDecrease;
@@ -572,20 +572,20 @@ void CParameters::DisplayCalculatedTimeTrend(FILE* fp, const DataStreamHandler& 
   if (geTimeTrendAdjustType != CALCULATED_LOGLINEAR_PERC)
     return;
 
-  //NOTE: Each data stream has own calculated time trend.
+  //NOTE: Each dataset has own calculated time trend.
 
-  if (StreamHandler.GetNumDataSets() == 1) {
-    if (StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage() < 0)
+  if (SetHandler.GetNumDataSets() == 1) {
+    if (SetHandler.GetDataSet(0).GetCalculatedTimeTrendPercentage() < 0)
       sPrintString.printf("Adjusted for time trend with an annual decrease ");
     else
       sPrintString.printf("Adjusted for time trend with an annual increase ");
-    sWorkString.printf("of %0.2f%%.", fabs(StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage()));
+    sWorkString.printf("of %0.2f%%.", fabs(SetHandler.GetDataSet(0).GetCalculatedTimeTrendPercentage()));
     sPrintString << sWorkString;
   }
-  else {//multiple streams print
+  else {//multiple datasets print
     //count number of increasing and decreasing trends
-    for (t=0; t < StreamHandler.GetNumDataSets(); ++t) {
-       if (StreamHandler.GetStream(t).GetCalculatedTimeTrendPercentage() < 0)
+    for (t=0; t < SetHandler.GetNumDataSets(); ++t) {
+       if (SetHandler.GetDataSet(t).GetCalculatedTimeTrendPercentage() < 0)
          TrendDecrease.push_back(t);
        else
          TrendIncrease.push_back(t);
@@ -595,11 +595,11 @@ void CParameters::DisplayCalculatedTimeTrend(FILE* fp, const DataStreamHandler& 
     //print increasing trends first
     if (TrendIncrease.size()) {
        sWorkString.printf("increase of %0.2f%%",
-                          fabs(StreamHandler.GetStream(TrendIncrease.front()).GetCalculatedTimeTrendPercentage()));
+                          fabs(SetHandler.GetDataSet(TrendIncrease.front()).GetCalculatedTimeTrendPercentage()));
        sPrintString << sWorkString;
        for (t=1; t < TrendIncrease.size(); ++t) {
           sWorkString.printf((t < TrendIncrease.size() - 1) ? ", %0.2f%%" : " and %0.2f%%",
-                             fabs(StreamHandler.GetStream(TrendIncrease[t]).GetCalculatedTimeTrendPercentage()));
+                             fabs(SetHandler.GetDataSet(TrendIncrease[t]).GetCalculatedTimeTrendPercentage()));
           sPrintString << sWorkString;
        }
        sWorkString.printf(" for data set%s %u", (TrendIncrease.size() == 1 ? "" : "s"), TrendIncrease.front() + 1);
@@ -616,11 +616,11 @@ void CParameters::DisplayCalculatedTimeTrend(FILE* fp, const DataStreamHandler& 
     //print decreasing trends
     if (TrendDecrease.size()) {
       sWorkString.printf("decrease of %0.2f%%",
-                         fabs(StreamHandler.GetStream(TrendDecrease.front()).GetCalculatedTimeTrendPercentage()));
+                         fabs(SetHandler.GetDataSet(TrendDecrease.front()).GetCalculatedTimeTrendPercentage()));
       sPrintString << sWorkString;
       for (t=1; t < TrendDecrease.size(); ++t) {
          sWorkString.printf((t < TrendDecrease.size() - 1) ? ", %0.2f%%" : " and %0.2f%%",
-                            fabs(StreamHandler.GetStream(TrendDecrease[t]).GetCalculatedTimeTrendPercentage()));
+                            fabs(SetHandler.GetDataSet(TrendDecrease[t]).GetCalculatedTimeTrendPercentage()));
          sPrintString << sWorkString;
       }
       sWorkString.printf(" for data set%s %u", (TrendDecrease.size() == 1 ? "" : "s"), TrendDecrease.front() + 1);
@@ -660,28 +660,28 @@ const char * CParameters::GetAnalysisTypeAsString() const {
   return sAnalysisType;
 }
 
-const std::string & CParameters::GetCaseFileName(unsigned int iStream) const {
+const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
   try {
-    if (!iStream || iStream > gvCaseFilenames.size())
+    if (!iSetIndex || iSetIndex > gvCaseFilenames.size())
       ZdGenerateException("Index out of range.","GetCaseFileName()");
   }
   catch (ZdException & x) {
     x.AddCallpath("GetCaseFileName()","CParameters");
     throw;
   }
-  return gvCaseFilenames[iStream - 1];
+  return gvCaseFilenames[iSetIndex - 1];
 }
 
-const std::string & CParameters::GetControlFileName(unsigned int iStream) const {
+const std::string & CParameters::GetControlFileName(size_t iSetIndex) const {
   try {
-    if (!iStream || iStream > gvControlFilenames.size())
+    if (!iSetIndex || iSetIndex > gvControlFilenames.size())
       ZdGenerateException("Index out of range.","GetControlFileName()");
   }
   catch (ZdException & x) {
     x.AddCallpath("GetControlFileName()","CParameters");
     throw;
   }
-  return gvControlFilenames[iStream - 1];
+  return gvControlFilenames[iSetIndex - 1];
 }
 
 /** Returns whether analysis is a prospective analysis. */
@@ -732,7 +732,7 @@ bool CParameters::GetPermitsPurelySpatialCluster(AnalysisType eAnalysisType) con
 /** returns whether probability model type permits inclusion of purely spatial cluster */
 bool CParameters::GetPermitsPurelySpatialCluster(ProbabilityModelType eModelType) const {
   return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL
-         || eModelType == SURVIVAL || eModelType == RANK || eModelType == ORDINAL;
+         || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL;
 }
 
 /** returns whether analysis type permits inclusion of purely temporal cluster */
@@ -743,19 +743,19 @@ bool CParameters::GetPermitsPurelyTemporalCluster(AnalysisType eAnalysisType) co
 /** returns whether probability model type permits inclusion of purely temporal cluster */
 bool CParameters::GetPermitsPurelyTemporalCluster(ProbabilityModelType eModelType) const {
   return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL
-         || eModelType == SURVIVAL || eModelType == RANK || eModelType == ORDINAL;
+         || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL;
 }
 
-const std::string & CParameters::GetPopulationFileName(unsigned int iStream) const {
+const std::string & CParameters::GetPopulationFileName(size_t iSetIndex) const {
   try {
-    if (!iStream || iStream > gvPopulationFilenames.size())
+    if (!iSetIndex || iSetIndex > gvPopulationFilenames.size())
       ZdGenerateException("Index out of range.","GetPopulationFileName()");
   }
   catch (ZdException & x) {
     x.AddCallpath("GetPopulationFileName()","CParameters");
     throw;
   }
-  return gvPopulationFilenames[iStream - 1];
+  return gvPopulationFilenames[iSetIndex - 1];
 }
 
 /** Returns probability model type as a character array. */
@@ -768,7 +768,7 @@ const char * CParameters::GetProbabilityModelTypeAsString(ProbabilityModelType e
       case BERNOULLI            : sProbabilityModel = "Bernoulli"; break;
       case SPACETIMEPERMUTATION : sProbabilityModel = "Space-Time Permutation"; break;
       case ORDINAL              : sProbabilityModel = "Ordinal"; break;
-      case SURVIVAL             : sProbabilityModel = "Survival"; break;
+      case EXPONENTIAL          : sProbabilityModel = "Exponential"; break;
       case NORMAL               : sProbabilityModel = "Normal"; break;
       case RANK                 : sProbabilityModel = "Rank"; break;
       default : ZdException::Generate("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", geProbabilityModelType);
@@ -860,20 +860,20 @@ void CParameters::SetAreaRateType(AreaRateType eAreaRateType) {
 /** Sets case data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
-void CParameters::SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath, unsigned int iStream) {
+void CParameters::SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath, size_t iSetIndex) {
   try {
     if (! sCaseFileName)
       ZdGenerateException("Null pointer.", "SetCaseFileName()");
 
-    if (!iStream)
+    if (!iSetIndex)
       ZdGenerateException("Index out of range.", "SetCaseFileName()");
 
-    if (iStream > gvCaseFilenames.size())
-      gvCaseFilenames.resize(iStream);
+    if (iSetIndex > gvCaseFilenames.size())
+      gvCaseFilenames.resize(iSetIndex);
 
-    gvCaseFilenames[iStream - 1] = sCaseFileName;
+    gvCaseFilenames[iSetIndex - 1] = sCaseFileName;
     if (bCorrectForRelativePath)
-      ConvertRelativePath(gvCaseFilenames[iStream - 1]);
+      ConvertRelativePath(gvCaseFilenames[iSetIndex - 1]);
   }
   catch (ZdException &x) {
     x.AddCallpath("SetCaseFileName()", "CParameters");
@@ -884,20 +884,20 @@ void CParameters::SetCaseFileName(const char * sCaseFileName, bool bCorrectForRe
 /** Sets control data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
-void CParameters::SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath, unsigned int iStream) {
+void CParameters::SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath, size_t iSetIndex) {
   try {
     if (! sControlFileName)
       ZdGenerateException("Null pointer.", "SetControlFileName()");
 
-    if (!iStream)
+    if (!iSetIndex)
       ZdGenerateException("Index out of range.", "SetControlFileName()");
 
-    if (iStream > gvControlFilenames.size())
-      gvControlFilenames.resize(iStream);
+    if (iSetIndex > gvControlFilenames.size())
+      gvControlFilenames.resize(iSetIndex);
 
-    gvControlFilenames[iStream - 1] = sControlFileName;
+    gvControlFilenames[iSetIndex - 1] = sControlFileName;
     if (bCorrectForRelativePath)
-      ConvertRelativePath(gvControlFilenames[iStream - 1]);
+      ConvertRelativePath(gvControlFilenames[iSetIndex - 1]);
   }
   catch (ZdException &x) {
     x.AddCallpath("SetControlFileName()", "CParameters");
@@ -1025,7 +1025,7 @@ void CParameters::SetAsDefaulted() {
   gbAdjustForEarlierAnalyses            = false;
   gbUseAdjustmentsForRRFile             = false;
   geSpatialAdjustmentType               = NO_SPATIAL_ADJUSTMENT;
-  geMultipleStreamPurposeType           = MULTIVARIATE;
+  geMultipleSetPurposeType           = MULTIVARIATE;
   //default to 4.0.3, the last version prior to 'version' parameter
   gCreationVersion.iMajor               = 4;
   gCreationVersion.iMinor               = 0;
@@ -1163,20 +1163,20 @@ void CParameters::SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSi
 }
 
 /** Adjusts the number of data sets. */
-void CParameters::SetNumDataStreams(unsigned int iNumStreams) {
+void CParameters::SetNumDataSets(size_t iNumDataSets) {
   size_t        t;
 
   try {
-    if (iNumStreams == 0)
-      ZdException::Generate("Number of data sets can not be zero.\n", "SetNumDataStreams()");
+    if (iNumDataSets == 0)
+      ZdException::Generate("Number of data sets can not be zero.\n", "SetNumDataSets()");
 
     //adjust the number of filenames for case, control, and population
-    gvCaseFilenames.resize(iNumStreams);
-    gvControlFilenames.resize(iNumStreams);
-    gvPopulationFilenames.resize(iNumStreams);
+    gvCaseFilenames.resize(iNumDataSets);
+    gvControlFilenames.resize(iNumDataSets);
+    gvPopulationFilenames.resize(iNumDataSets);
   }
   catch (ZdException & x) {
-    x.AddCallpath("SetNumDataStreams()","CParameters");
+    x.AddCallpath("SetNumDataSets()","CParameters");
     throw;
   }
 }
@@ -1255,20 +1255,20 @@ void CParameters::SetOutputFileName(const char * sOutPutFileName, bool bCorrectF
 /** Sets population data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
-void CParameters::SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath, unsigned int iStream) {
+void CParameters::SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath, size_t tSetIndex) {
   try {
     if (! sPopulationFileName)
       ZdGenerateException("Null pointer.", "SetPopulationFileName()");
 
-    if (!iStream)
+    if (!tSetIndex)
       ZdGenerateException("Index out of range.", "SetPopulationFileName()");
 
-    if (iStream > gvPopulationFilenames.size())
-      gvPopulationFilenames.resize(iStream);
+    if (tSetIndex > gvPopulationFilenames.size())
+      gvPopulationFilenames.resize(tSetIndex);
 
-    gvPopulationFilenames[iStream - 1] = sPopulationFileName;
+    gvPopulationFilenames[tSetIndex - 1] = sPopulationFileName;
     if (bCorrectForRelativePath)
-      ConvertRelativePath(gvPopulationFilenames[iStream - 1]);
+      ConvertRelativePath(gvPopulationFilenames[tSetIndex - 1]);
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPopulationFileName()", "CParameters");
@@ -1507,17 +1507,17 @@ void CParameters::SetMaxCirclePopulationFileName(const char * sMaxCirclePopulati
   }
 }
 
-/** Set multiple data stream purpose type. Throws exception if out of range. */
-void CParameters::SetMultipleDataStreamPurposeType(MultipleStreamPurposeType eType) {
+/** Set multiple dataset purpose type. Throws exception if out of range. */
+void CParameters::SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType) {
   ZdString      sLabel;
 
   try {
     if (eType < MULTIVARIATE || eType > ADJUSTMENT)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetMultipleDataStreamPurposeType()", eType, MULTIVARIATE, ADJUSTMENT);
-    geMultipleStreamPurposeType = eType;
+      ZdException::Generate("'%d' is out of range(%d - %d).", "SetMultipleDataSetPurposeType()", eType, MULTIVARIATE, ADJUSTMENT);
+    geMultipleSetPurposeType = eType;
   }
   catch (ZdException &x) {
-    x.AddCallpath("SetMultipleDataStreamPurposeType()","CParameters");
+    x.AddCallpath("SetMultipleDataSetPurposeType()","CParameters");
     throw;
   }
 }
@@ -1794,7 +1794,7 @@ bool CParameters::ValidateFileParameters(BasePrint& PrintDirection) {
   size_t        t;
 
   try {
-    //validate number of data stream files match
+    //validate number of datasets files match
 
     //validate case file
     if (!gvCaseFilenames.size()) {
@@ -1812,17 +1812,17 @@ bool CParameters::ValidateFileParameters(BasePrint& PrintDirection) {
     if (geProbabilityModelType == POISSON ) {
       //special processing for purely temporal analyses - population file is optional
       if (GetIsPurelyTemporalAnalysis()) {
-         //either all data streams omit the population file or specify a filename
-         unsigned int iNumStreamsWithoutPopFile=0;
+         //either all datasets omit the population file or specify a filename
+         unsigned int iNumDataSetsWithoutPopFile=0;
          for (t=0; t < gvPopulationFilenames.size(); ++t)
             if (gvPopulationFilenames[0].empty())
-              ++iNumStreamsWithoutPopFile;
-         if (iNumStreamsWithoutPopFile && iNumStreamsWithoutPopFile != gvPopulationFilenames.size()) {
+              ++iNumDataSetsWithoutPopFile;
+         if (iNumDataSetsWithoutPopFile && iNumDataSetsWithoutPopFile != gvPopulationFilenames.size()) {
             bValid = false;
             PrintDirection.SatScanPrintWarning("Error: For the Poisson model with purely temporal analyses, the population file\n");
-            PrintDirection.SatScanPrintWarning("       is optional but all data streams must either specify a population file or omit it.\n");
+            PrintDirection.SatScanPrintWarning("       is optional but all data sets must either specify a population file or omit it.\n");
          }
-         else if (!iNumStreamsWithoutPopFile) {
+         else if (!iNumDataSetsWithoutPopFile) {
            gbUsePopulationFile = true;
            for (t=0; t < gvPopulationFilenames.size(); ++t) {
               if (access(gvPopulationFilenames[t].c_str(), 00)) {
@@ -2034,7 +2034,7 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
         PrintDirection.SatScanPrintWarning("Error: Please note that spatial variation in temporal trends analysis is not implemented\n");
         PrintDirection.SatScanPrintWarning("       in this version of SaTScan.\n");
       }
-      if (geAnalysisType == PURELYSPATIAL && geRiskFunctionType == MONOTONERISK && GetNumDataStreams() > 1) {
+      if (geAnalysisType == PURELYSPATIAL && geRiskFunctionType == MONOTONERISK && GetNumDataSets() > 1) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Multiple data sets are not permitted with isotonic purely spatial analyses.\n");
       }
@@ -2042,7 +2042,7 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Ordinal probablility model does not permit isotonic purely spatial analyses.\n");
       }
-      if (geProbabilityModelType == NORMAL && GetNumDataStreams() > 1) {
+      if (geProbabilityModelType == NORMAL && GetNumDataSets() > 1) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Multiple data sets are not permitted with the normal probablility model\n");
         PrintDirection.SatScanPrintWarning("       in this version of SaTScan.\n");
@@ -2330,7 +2330,7 @@ bool CParameters::ValidateSimulationDataParameters(BasePrint & PrintDirection) {
         }
         break;
       case FILESOURCE       :
-        if (GetNumDataStreams() > 1){
+        if (GetNumDataSets() > 1){
           bValid = false;
           PrintDirection.SatScanPrintWarning("Error: The feature to read simulated data from a file is not implemented for analyses\n"
                                              "       that read data from multiple data sets.\n");
@@ -2580,7 +2580,7 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
         }
         break;
       case ORDINAL              :
-      case SURVIVAL             :
+      case EXPONENTIAL          :
       case NORMAL               :
       case RANK                 :
         if (geTimeTrendAdjustType != NOTADJUSTED) {

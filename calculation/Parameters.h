@@ -41,7 +41,7 @@ enum ClusterType                   {PURELYSPATIALCLUSTER=1, PURELYTEMPORALCLUSTE
                                     PROSPECTIVEPURELYTEMPORALCLUSTER, PURELYSPATIALMONOTONECLUSTER,
                                     PURELYSPATIALPROSPECTIVECLUSTER};
 /** probability model types */
-enum ProbabilityModelType          {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION, ORDINAL, SURVIVAL, NORMAL, RANK};
+enum ProbabilityModelType          {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION, ORDINAL, EXPONENTIAL, NORMAL, RANK};
 enum IncludeClustersType           {ALLCLUSTERS=0, ALIVECLUSTERS, CLUSTERSINRANGE};
 enum RiskType                      {STANDARDRISK=0, MONOTONERISK};
 /** area incidence rate types */
@@ -62,16 +62,16 @@ enum SpatialSizeType               {PERCENTOFPOPULATIONTYPE=0, DISTANCETYPE, PER
 /** defines how simulated data will be created - only pertinent for Poisson */
 enum SimulationType                {STANDARD=0, HA_RANDOMIZATION, FILESOURCE};
 /** purpose of multiple data sets */
-enum MultipleStreamPurposeType     {MULTIVARIATE=0, ADJUSTMENT};
+enum MultipleDataSetPurposeType    {MULTIVARIATE=0, ADJUSTMENT};
 
-class DataStreamHandler; /** forward class declaration */
+class DataSetHandler; /** forward class declaration */
 
 class CParameters {
   public:
     struct CreationVersion {unsigned int iMajor; unsigned int iMinor; unsigned int iRelease;};
 
   private:
-    MultipleStreamPurposeType           geMultipleStreamPurposeType;            /** purpose for multiple data sets */  
+    MultipleDataSetPurposeType          geMultipleSetPurposeType;            /** purpose for multiple data sets */  
     AnalysisType                        geAnalysisType;                         /** analysis type */
     ProbabilityModelType                geProbabilityModelType;                  /** probability model type */
     AreaRateType                        geAreaScanRate;                         /** areas incidence rate type of interest */
@@ -191,17 +191,17 @@ class CParameters {
     ~CParameters();
 
     CParameters                       & operator=(const CParameters &rhs);
-    void                                DisplayAdjustments(FILE* fp, const DataStreamHandler& StreamHandler) const;
+    void                                DisplayAdjustments(FILE* fp, const DataSetHandler& SetHandler) const;
     void                                DisplayAnalysisSummary(FILE* fp) const;
-    void                                DisplayCalculatedTimeTrend(FILE* fp, const DataStreamHandler& StreamHandler) const;
-    void                                DisplayParameters(FILE* fp, unsigned int iNumSimulationsCompleted, const DataStreamHandler& StreamHandler) const;
+    void                                DisplayCalculatedTimeTrend(FILE* fp, const DataSetHandler& SetHandler) const;
+    void                                DisplayParameters(FILE* fp, unsigned int iNumSimulationsCompleted, const DataSetHandler& SetHandler) const;
     bool                                GetAdjustForEarlierAnalyses() const {return gbAdjustForEarlierAnalyses;}
     const std::string                 & GetAdjustmentsByRelativeRisksFilename() const {return gsAdjustmentsByRelativeRisksFileName;}  
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
     const char                        * GetAnalysisTypeAsString() const;
     AreaRateType                        GetAreaScanRateType() const {return geAreaScanRate;}
-    const std::string                 & GetCaseFileName(unsigned int tStream=1) const;
-    const std::string                 & GetControlFileName(unsigned int iStream=1) const;
+    const std::string                 & GetCaseFileName(size_t iSetIndex=1) const;
+    const std::string                 & GetControlFileName(size_t iSetIndex=1) const;
     const std::string                 & GetCoordinatesFileName() const {return gsCoordinatesFileName;}
     CoordinatesType                     GetCoordinatesType() const {return geCoordinatesType;}
     const CreationVersion            &  GetCreationVersion() const {return gCreationVersion;}
@@ -230,9 +230,9 @@ class CParameters {
     float                               GetMaximumTemporalClusterSize() const {return gfMaxTemporalClusterSize;}
     TemporalSizeType                    GetMaximumTemporalClusterSizeType() const {return geMaxTemporalClusterSizeType;}
     float                               GetMaximumReportedGeoClusterSize() const {return gfMaxReportedGeographicClusterSize;}
-    MultipleStreamPurposeType           GetMultipleDataStreamPurposeType() const {return geMultipleStreamPurposeType;}
+    MultipleDataSetPurposeType          GetMultipleDataSetPurposeType() const {return geMultipleSetPurposeType;}
     bool                                GetNonCompactnessPenalty() const {return gbNonCompactnessPenalty;}
-    unsigned int                        GetNumDataStreams() const {return gvCaseFilenames.size();}
+    unsigned int                        GetNumDataSets() const {return gvCaseFilenames.size();}
     int                                 GetNumReadParameters() const {return giNumParameters;}
     unsigned int                        GetNumReplicationsRequested() const {return giReplications;}
     int                                 GetNumRequestedEllipses() const {return giNumberEllipses;}
@@ -256,7 +256,7 @@ class CParameters {
     bool                                GetPermitsPurelySpatialCluster(AnalysisType eAnalysisType) const;
     bool                                GetPermitsPurelyTemporalCluster(ProbabilityModelType eModelType) const;
     bool                                GetPermitsPurelyTemporalCluster(AnalysisType eAnalysisType) const;
-    const std::string                 & GetPopulationFileName(unsigned int iStream=1) const;
+    const std::string                 & GetPopulationFileName(size_t iSetIndex=1) const;
     double                              GetPowerCalculationX() const {return gdPower_X;}
     double                              GetPowerCalculationY() const {return gdPower_Y;}
     DatePrecisionType                   GetPrecisionOfTimesType() const {return gePrecisionOfTimesType;}
@@ -292,8 +292,8 @@ class CParameters {
     void                                SetDimensionsOfData(int iDimensions);
     void                                SetEndRangeEndDate(const char * sEndRangeEndDate);
     void                                SetEndRangeStartDate(const char * sEndRangeStartDate);
-    void                                SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath=false, unsigned int iStream=1);
-    void                                SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath=false, unsigned int iStream=1);
+    void                                SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);
+    void                                SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);
     void                                SetCoordinatesFileName(const char * sCoordinatesFileName, bool bCorrectForRelativePath=false);
     void                                SetCoordinatesType(CoordinatesType eCoordinatesType);
     void                                SetCriteriaForReportingSecondaryClusters(CriteriaSecondaryClustersType eCriteriaSecondaryClustersType);
@@ -308,9 +308,9 @@ class CParameters {
     void                                SetMaximumSpacialClusterSizeType(SpatialSizeType eSpatialSizeType);
     void                                SetMaximumTemporalClusterSize(float fMaxTemporalClusterSize);
     void                                SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSizeType);
-    void                                SetMultipleDataStreamPurposeType(MultipleStreamPurposeType eType);
+    void                                SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType);
     void                                SetNonCompactnessPenalty(bool b) {gbNonCompactnessPenalty = b;}
-    void                                SetNumDataStreams(unsigned int iNumStreams);
+    void                                SetNumDataSets(size_t iNumDataSets);
     void                                SetNumberEllipses(int iNumEllipses);
     void                                SetNumberEllipsoidRotations(int iNumberRotations, int iEllipsoidIndex=-1);
     void                                SetNumberMonteCarloReplications(int iReplications);
@@ -325,7 +325,7 @@ class CParameters {
     void                                SetOutputSimLogLikeliRatiosAscii(bool b) {gbOutputSimLogLikeliRatiosAscii = b;}
     void                                SetOutputSimLogLikeliRatiosDBase(bool b) {gbOutputSimLogLikeliRatiosDBase = b;}
     void                                SetOutputSimulationData(bool b) {gbOutputSimulationData = b;}
-    void                                SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath=false, unsigned int iStream=1);
+    void                                SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);
     void                                SetPowerCalculation(bool b) {gbPowerCalculation = b;}
     void                                SetPowerCalculationX(double dPowerX);
     void                                SetPowerCalculationY(double dPowerY);
