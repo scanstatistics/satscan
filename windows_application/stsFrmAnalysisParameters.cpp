@@ -801,7 +801,7 @@ void TfrmAnalysis::EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePu
    lblMaxSpatialClusterSize->Enabled = bEnable;
    edtMaxSpatialClusterSize->Enabled = bEnable;
    edtMaxSpatialClusterSize->Color = bEnable ? clWindow : clInactiveBorder;
-   gpfrmAdvancedParameters->EnableSpatialOptions(bEnable);
+   gpfrmAdvancedParameters->EnableSpatialOutputOptions(bEnable);
 }
 
 /** enables or disables the study period group controls */
