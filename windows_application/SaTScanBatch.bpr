@@ -171,8 +171,8 @@ LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=SaTScan
-ProductVersion=5.0 Alpha 1
-Comments=Not Released
+ProductVersion=5.0
+Comments=Released September 21, 2004
 
 [Excluded Packages]
 $(BCB)\Bin\dcl31w50.bpl=Delphi 1.0 Compatibility Components
