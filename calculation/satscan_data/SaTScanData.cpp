@@ -84,9 +84,9 @@ bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tra
      //validate that data overflow will not occur
      if (MeasureDuring && (dRelativeRisk > (tMaxMeasure_tValue - MeasurePre - MeasurePost) / MeasureDuring))
        SSGenerateException("Error: Data overflow occurs when adjusting expected number of cases.\n"
-                           "       The specified relative risk %lf in the adjustment file\n"
+                           "       The specified relative risk %lf in the adjustment file\n",
                            "       is too large.\n", "AssignMeasure()", dRelativeRisk);
-     //assign adjusted measure                      
+     //assign adjusted measure
      pNonCumulativeMeasure[interval][Tract] = MeasurePre + dRelativeRisk * MeasureDuring + MeasurePost;
      //if measure has been adjusted to zero, check that cases adjusted interval are also zero
      if (pNonCumulativeMeasure[interval][Tract] == 0 && GetCaseCount(interval, Tract)) {
@@ -96,6 +96,7 @@ bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tra
                            "       of cases in the period %s to %s to be zero, but there\n"
                            "       are cases in that interval.\n"
                            "       If the expected is zero, the number of cases must also be zero.\n",
+                           "AdjustMeasure()",
                            (Tract == -1 ? "All" : gpTInfo->tiGetTid(Tract, sId)),
                            JulianToString(sStart, StartDate).GetCString(),
                            JulianToString(sEnd, EndDate).GetCString());
