@@ -5,6 +5,7 @@
 #include "SaTScan.h"
 #include "JulianDates.h"
 #include "Tracts.h"
+#include "deque.h"
 
 class RelativeRiskAdjustment {
   private:
