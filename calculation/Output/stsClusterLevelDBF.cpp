@@ -140,7 +140,7 @@ void stsClusterLevelDBF::SetCoordinates(std::string& sLatitude, std::string& sLo
                                         const CCluster& pCluster, const CSaTScanData& pData) {
    double       *pCoords = 0, *pCoords2 = 0;
    float        fLatitude, fLongitude, fRadius;
-   char         sLatBuffer[256], sLongBuffer[256], sAdditBuffer[256], sRadBuffer[256];
+   char         sLatBuffer[64], sLongBuffer[64], sAdditBuffer[64], sRadBuffer[64];
 
    try {
       (pData.GetGInfo())->giGetCoords(pCluster.m_Center, &pCoords);
@@ -233,7 +233,7 @@ void stsClusterLevelDBF::SetEllipseString(std::string& sAngle, std::string& sSha
 // pre : pCluster and pData are initialized with the correct data
 // post : will set sStartDate and sEndDate with the appropriate value based upon the analysis type
 void stsClusterLevelDBF::SetStartAndEndDates(std::string& sStartDate, std::string& sEndDate, const CCluster& pCluster, const CSaTScanData& pData) {
-   char       sStart[15], sEnd[15];
+   char       sStart[64], sEnd[64];
 
    try {
       if (pData.m_pParameters->m_nAnalysisType != PURELYSPATIAL) {
