@@ -66,7 +66,7 @@ void SpatialData::AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGate
 double SpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
   if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
     return Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure);
-  return 0;  
+  return -std::numeric_limits<double>::max();  
 }
 
 /** returns number of cases accumulated in cluster data */
@@ -295,24 +295,21 @@ void ProspectiveSpatialData::AddNeighborData(tract_t tNeighbor, const AbtractDat
     loglikelihood ratio as calculated by probability model. */
 double ProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
   unsigned int  iWindowEnd;
-  double        dLoglikelihood, dMaxLoglikelihood=0;
+  double        dMaxLoglikelihoodRatio=-std::numeric_limits<double>::max();
 
   gtCases = gpCases[0];
   gtMeasure =  gpMeasure[0];
-  if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure)) {
-    dLoglikelihood = Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure);
-    dMaxLoglikelihood = std::max(dMaxLoglikelihood, dLoglikelihood);
-  }
+  if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
+    dMaxLoglikelihoodRatio = Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure);
 
   for (iWindowEnd=1; iWindowEnd < giAllocationSize; ++iWindowEnd) {
     gtCases = gpCases[0] - gpCases[iWindowEnd];
     gtMeasure =  gpMeasure[0] - gpMeasure[iWindowEnd];
-    if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure)) {
-      dLoglikelihood = Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure);
-      dMaxLoglikelihood = std::max(dMaxLoglikelihood, dLoglikelihood);
-    }
+    if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
+      dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio,
+                                        Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure));
   }
-  return dMaxLoglikelihood;
+  return dMaxLoglikelihoodRatio;
 }
 
 /** internal setup function */

@@ -49,7 +49,7 @@ void NormalSpatialData::AddNeighborData(tract_t tNeighbor, const AbtractDataStre
 double NormalSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
   if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
     return Calculator.CalcLogLikelihoodRatioEx(gtCases, gtMeasure, gtSqMeasure, gtTotalCases, gtTotalMeasure);
-  return 0;  
+  return -std::numeric_limits<double>::max();  
 }
 
 
@@ -204,26 +204,23 @@ void NormalProspectiveSpatialData::AddNeighborData(tract_t tNeighbor, const Abtr
     loglikelihood ratio as calculated by probability model. */
 double NormalProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
   unsigned int  iWindowEnd;
-  double        dLoglikelihood, dMaxLoglikelihood=0;
+  double        dMaxLoglikelihoodRatio=-std::numeric_limits<double>::max();
 
   gtCases = gpCases[0];
-  gtMeasure =  gpMeasure[0];
-  gtSqMeasure  =  gpSqMeasure[0];
-  if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure)) {
-    dLoglikelihood = Calculator.CalcLogLikelihoodRatioEx(gtCases, gtMeasure, gtSqMeasure, gtTotalCases, gtTotalMeasure);
-    dMaxLoglikelihood = std::max(dMaxLoglikelihood, dLoglikelihood);
-  }  
+  gtMeasure = gpMeasure[0];
+  gtSqMeasure = gpSqMeasure[0];
+  if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
+    dMaxLoglikelihoodRatio = Calculator.CalcLogLikelihoodRatioEx(gtCases, gtMeasure, gtSqMeasure, gtTotalCases, gtTotalMeasure);
 
   for (iWindowEnd=1; iWindowEnd < giAllocationSize; ++iWindowEnd) {
     gtCases = gpCases[0] - gpCases[iWindowEnd];
-    gtMeasure =  gpMeasure[0] - gpMeasure[iWindowEnd];
-    gtSqMeasure =  gpSqMeasure[0] - gpSqMeasure[iWindowEnd];
-    if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure)) {
-      dLoglikelihood = Calculator.CalcLogLikelihoodRatioEx(gtCases, gtMeasure, gtSqMeasure, gtTotalCases, gtTotalMeasure);
-      dMaxLoglikelihood = std::max(dMaxLoglikelihood, dLoglikelihood);
-    }
+    gtMeasure = gpMeasure[0] - gpMeasure[iWindowEnd];
+    gtSqMeasure = gpSqMeasure[0] - gpSqMeasure[iWindowEnd];
+    if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
+      dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio,
+                                        Calculator.CalcLogLikelihoodRatioEx(gtCases, gtMeasure, gtSqMeasure, gtTotalCases, gtTotalMeasure));
   }
-  return dMaxLoglikelihood;
+  return dMaxLoglikelihoodRatio;
 }
 
 /** re-initialize data*/
