@@ -128,12 +128,12 @@ AbtractDataStreamGateway * RankDataStreamHandler::GetNewSimulationDataGateway(co
 /** Returns a collection of cloned randomizers maintained by data stream handler.
     All previous elements of list are deleted. */
 RandomizerContainer_t& RankDataStreamHandler::GetRandomizerContainer(RandomizerContainer_t& Container) const {
-  std::vector<RankRandomizer>::const_iterator itr;
+  ZdPointerVector<RankRandomizer>::const_iterator itr;
 
   try {
     Container.DeleteAllElements();
     for (itr=gvDataStreamRandomizers.begin(); itr != gvDataStreamRandomizers.end(); ++itr)
-       Container.push_back(itr->Clone());
+       Container.push_back((*itr)->Clone());
   }
   catch (ZdException &x) {
     x.AddCallpath("GetRandomizerContainer()","RankDataStreamHandler");
@@ -235,12 +235,6 @@ bool RankDataStreamHandler::ParseCaseFileLine(StringParser & Parser, tract_t& ti
   return true;
 }
 
-/** randomizes each data streams */
-void RankDataStreamHandler::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
-  for (size_t t=0; t < gvDataStreams.size(); ++t)
-     gvDataStreamRandomizers[t].RandomizeData(*gvDataStreams[t], *SimDataContainer[t], iSimulationNumber);
-}
-
 /** Read the case data file.
     If invalid data is found in the file, an error message is printed,
     that record is ignored, and reading continues.
@@ -256,7 +250,7 @@ bool RankDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* sz
   try {
     RealDataStream& thisStream = *gvDataStreams[tStream];
     StringParser Parser(*gpPrint);
-    RankRandomizer & Randomizer = gvDataStreamRandomizers[tStream];
+    RankRandomizer & Randomizer = *gvDataStreamRandomizers[tStream];
 
     ppCounts = thisStream.GetCaseArray();
     //Read data, parse and if no errors, increment count for tract at date.
@@ -340,7 +334,8 @@ void RankDataStreamHandler::SetPurelyTemporalSimulationData(SimulationDataContai
 
 void RankDataStreamHandler::SetRandomizers() {
   try {
-    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), RankRandomizer());
+    for (size_t t=0; t < gParameters.GetNumDataStreams(); ++t)
+      gvDataStreamRandomizers.push_back(new RankRandomizer());
   }
   catch (ZdException &x) {
     x.AddCallpath("SetRandomizers()","RankDataStreamHandler");

@@ -22,7 +22,6 @@ class NormalDataStreamHandler : public DataStreamHandler {
     virtual AbtractDataStreamGateway  * GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const;
     virtual RandomizerContainer_t     & GetRandomizerContainer(RandomizerContainer_t& Container) const;
     virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const;
-    virtual void                        RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber);
     virtual bool                        ReadData();
     virtual void                        SetPurelyTemporalMeasureData(RealDataStream & thisRealStream);
     virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);

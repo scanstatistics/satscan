@@ -7,7 +7,7 @@
 
 class RankDataStreamHandler : public DataStreamHandler {
   protected:
-    std::vector<RankRandomizer>         gvDataStreamRandomizers;
+    ZdPointerVector<RankRandomizer>     gvDataStreamRandomizers;
 
     virtual void                        AllocateCaseStructures(unsigned int iStream);
     virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid,
@@ -24,7 +24,6 @@ class RankDataStreamHandler : public DataStreamHandler {
     virtual AbtractDataStreamGateway  * GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const;
     virtual RandomizerContainer_t     & GetRandomizerContainer(RandomizerContainer_t& Container) const;
     virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const;
-    virtual void                        RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber);
     virtual bool                        ReadData();
     virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);
 };

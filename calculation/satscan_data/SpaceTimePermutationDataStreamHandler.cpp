@@ -152,12 +152,6 @@ SimulationDataContainer_t& SpaceTimePermutationDataStreamHandler::GetSimulationD
   return Container;
 }
 
-/** randomizes each data streams */
-void SpaceTimePermutationDataStreamHandler::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
-  for (size_t t=0; t < gvDataStreams.size(); ++t)
-     gvDataStreamRandomizers[t].RandomizeData(*gvDataStreams[t], *SimDataContainer[t], iSimulationNumber);
-}
-
 /** Read the count data file.
     If invalid data is found in the file, an error message is printed,
     that record is ignored, and reading continues.

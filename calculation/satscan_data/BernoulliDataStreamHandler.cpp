@@ -176,12 +176,6 @@ SimulationDataContainer_t& BernoulliDataStreamHandler::GetSimulationDataContaine
   return Container;
 }
 
-/** randomizes each data streams */
-void BernoulliDataStreamHandler::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
-  for (size_t t=0; t < gvDataStreams.size(); ++t)
-     gvDataStreamRandomizers[t].RandomizeData(*gvDataStreams[t], *SimDataContainer[t], iSimulationNumber);
-}
-
 /** Read the control data file.
     If invalid data is found in the file, an error message is printed,
     that record is ignored, and reading continues.
