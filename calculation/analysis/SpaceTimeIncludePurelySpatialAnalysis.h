@@ -11,18 +11,22 @@
 
 class C_ST_PS_Analysis : public CSpaceTimeAnalysis {
   private:
-    TopClustersContainer              * gp_PS_TopShapeClusters;
-    TopClustersContainer              * gp_ST_TopShapeClusters;
-
-    void                                Init() {gp_PS_TopShapeClusters=0;gp_ST_TopShapeClusters=0;}
+    void                                Init();
     virtual double                      MonteCarlo(const DataStreamInterface & Interface);
     virtual double                      MonteCarloProspective(const DataStreamInterface & Interface);
     void                                Setup();
 
   protected:
-    virtual void                        CalculateTopCluster(tract_t tCenter, const DataStreamGateway & DataGateway, bool bSimulation);
-    CCluster                          & GetTopCalculatedCluster();
-    virtual void                        SetTopClusters(const DataStreamGateway & DataGateway, bool bSimulation);
+    TopClustersContainer              * gpPSTopShapeClusters;
+    CPurelySpatialCluster             * gpPSClusterComparator;
+    CPurelySpatialProspectiveCluster  * gpPSPClusterComparator;
+    SpatialData                       * gpPSClusterData;
+    ProspectiveSpatialData            * gpPSPClusterData;    
+
+    virtual void                        AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway);  
+    virtual void                        AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway);  
+    virtual const CCluster            & CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway);
+    virtual const CCluster            & GetTopCalculatedCluster();
     
   public:
     C_ST_PS_Analysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);

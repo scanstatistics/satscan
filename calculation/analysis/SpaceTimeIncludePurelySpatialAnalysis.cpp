@@ -18,68 +18,121 @@ C_ST_PS_Analysis::C_ST_PS_Analysis(CParameters*  pParameters, CSaTScanData* pDat
 /** Destructor */
 C_ST_PS_Analysis::~C_ST_PS_Analysis() {
   try {
-    delete gp_PS_TopShapeClusters;
-    delete gp_ST_TopShapeClusters;
+    delete gpPSTopShapeClusters;
+    delete gpPSClusterComparator;
+    delete gpPSPClusterComparator;
+    delete gpPSClusterData;
+    delete gpPSPClusterData;
   }
   catch(...){}
 }
 
-/** Returns cluster centered at grid point nCenter, with the greatest loglikelihood.
-    Caller is responsible for deleting returned cluster. */
-void C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const DataStreamGateway & DataGateway, bool bSimulation) {
-  int                           j;
-  tract_t                       i, iNumNeighbors;
-  IncludeClustersType           eIncludeClustersType;
-
+/** Allocates objects used during simulations, instead of repeated allocations
+    for each simulation. Which objects that are allocated depends on whether
+    the simluations process uses same process as real data or uses measure list. */
+void C_ST_PS_Analysis::AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway) {
   try {
-    // if Prospective Space-Time then Alive Clusters Only.
-    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
-      eIncludeClustersType = (bSimulation ? ALLCLUSTERS : ALIVECLUSTERS);
-    else
-      eIncludeClustersType = m_pParameters->GetIncludeClustersType();
-
-    gp_PS_TopShapeClusters->Reset(tCenter);
-    gp_ST_TopShapeClusters->Reset(tCenter);
-    for (j=0 ;j <= m_pParameters->GetNumTotalEllipses(); ++j) {
-       //set purely spatial cluster
-       CPurelySpatialCluster C_PS(*m_pData, gpPrintDirection);
-       C_PS.SetCenter(tCenter);
-       C_PS.SetRate(m_pParameters->GetAreaScanRateType());
-       C_PS.SetEllipseOffset(j);
-       C_PS.SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[j - 1]));
-       //set space-time cluster
-       CSpaceTimeCluster C_ST(eIncludeClustersType, *m_pData, *gpPrintDirection);
-       C_ST.SetCenter(tCenter);
-       C_ST.SetRate(m_pParameters->GetAreaScanRateType());
-       C_ST.SetEllipseOffset(j);
-       C_ST.SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[j - 1]));
-       //get top clusters for iterations
-       CPurelySpatialCluster & Top_PS_ShapeCluster = (CPurelySpatialCluster&)(gp_PS_TopShapeClusters->GetTopCluster(j));
-       CSpaceTimeCluster & Top_ST_ShapeCluster = (CSpaceTimeCluster&)(gp_ST_TopShapeClusters->GetTopCluster(j));
-       iNumNeighbors = m_pData->GetNeighborCountArray()[j][tCenter];
-       for (i=1; i <= iNumNeighbors; ++i) {
-         //First find best purely spatial cluster for iteration
-         C_PS.AddNeighbor(m_pData->GetNeighbor(j, tCenter, i), DataGateway);
-         C_PS.CompareTopCluster(Top_PS_ShapeCluster, m_pData);
-         //now find best space-time cluster for iteration
-         C_ST.AddNeighbor(m_pData->GetNeighbor(j, tCenter, i), DataGateway);
-         C_ST.CompareTopCluster(Top_ST_ShapeCluster, *m_pData);
+    CSpaceTimeAnalysis::AllocateSimulationObjects(DataGateway);
+    //delete object used during real data
+    delete gpPSPClusterComparator; gpPSPClusterComparator=0;
+    delete gpPSClusterComparator; gpPSClusterComparator=0;
+    //create simulation objects based upon which process used to perform simulations
+    if (gbMeasureListReplications) {
+      if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+        gpPSPClusterData = new ProspectiveSpatialData(*m_pData, DataGateway);
+      else
+        gpPSClusterData = new SpatialData(DataGateway, m_pParameters->GetAreaScanRateType());
+    }
+    else {
+      if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME) {
+        //create cluster object used as comparator when iterating over centroids and time intervals
+        gpPSPClusterComparator = new CPurelySpatialProspectiveCluster(gpClusterDataFactory, DataGateway, *m_pData, gpPrintDirection);
+        //initialize list of top circle/ellipse clusters
+        gpPSTopShapeClusters->SetTopClusters(*gpPSPClusterComparator);
+      }
+      else {
+        //create cluster object used as comparator when iterating over centroids and time intervals
+        gpPSClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType(), gpPrintDirection);
+        //initialize list of top circle/ellipse clusters
+        gpPSTopShapeClusters->SetTopClusters(*gpPSClusterComparator);
       }
     }
   }
   catch (ZdException &x) {
-    x.AddCallpath("CalculateTopCluster()","C_ST_PS_Analysis");
+    delete gpPSClusterData; gpPSClusterData=0;
+    delete gpPSPClusterData; gpPSPClusterData=0;
+    delete gpPSPClusterComparator; gpPSPClusterComparator=0;
+    delete gpPSClusterComparator; gpPSClusterComparator=0;
+    x.AddCallpath("AllocateSimulationObjects()","C_ST_PS_Analysis");
     throw;
   }
 }
 
-CCluster & C_ST_PS_Analysis::GetTopCalculatedCluster() {
+/** Allocates objects used during calculation of most likely clusters, instead
+    of repeated allocations for each simulation.                                */
+void C_ST_PS_Analysis::AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway) {
+  IncludeClustersType           eIncludeClustersType;
+
   try {
-    CPurelySpatialCluster& PSCluster = (CPurelySpatialCluster&)(gp_PS_TopShapeClusters->GetTopCluster());
-    CSpaceTimeCluster& STCluster = (CSpaceTimeCluster&)(gp_ST_TopShapeClusters->GetTopCluster());
+    //create top cluster objects for space-time portion
+    CSpaceTimeAnalysis::AllocateTopClustersObjects(DataGateway);
+    //create comparator cluster for purely spatial cluster
+    gpPSClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType(), gpPrintDirection);
+    gpPSTopShapeClusters->SetTopClusters(*gpPSClusterComparator);
+  }
+  catch (ZdException &x) {
+    delete gpPSClusterComparator; gpPSClusterComparator=0;
+    x.AddCallpath("AllocateTopClustersObjects()","C_ST_PS_Analysis");
+    throw;
+  }
+}
+
+/** Returns cluster centered at grid point nCenter, with the greatest loglikelihood.
+    Caller is responsible for deleting returned cluster. */
+const CCluster& C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway) {
+  int           j;
+  CModel      & Model(m_pData->GetProbabilityModel());
+
+  //re-initialize clusters
+  gpPSTopShapeClusters->Reset(tCenter);
+  gpTopShapeClusters->Reset(tCenter);
+
+  for (j=0 ;j <= m_pParameters->GetNumTotalEllipses(); ++j) {
+     m_pData->SetImpliedCentroid(j, tCenter);
+     gpClusterComparator->Initialize(tCenter);
+     gpClusterComparator->SetRate(m_pParameters->GetAreaScanRateType());
+     gpClusterComparator->SetEllipseOffset(j);
+     gpClusterComparator->SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[j - 1]));
+     CSpaceTimeCluster & Top_ST_ShapeCluster = (CSpaceTimeCluster&)(gpTopShapeClusters->GetTopCluster(j));
+     if (gpPSClusterComparator) {
+       gpPSClusterComparator->Initialize(tCenter);
+       gpPSClusterComparator->SetRate(m_pParameters->GetAreaScanRateType());
+       gpPSClusterComparator->SetEllipseOffset(j);
+       gpPSClusterComparator->SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[j - 1]));
+       CPurelySpatialCluster & Top_PS_ShapeCluster = (CPurelySpatialCluster&)(gpPSTopShapeClusters->GetTopCluster(j));
+       gpPSClusterComparator->AddNeighborDataAndCompare(DataGateway, m_pData, Top_PS_ShapeCluster, Model);
+     }
+     else {
+       gpPSPClusterComparator->Initialize(tCenter);
+       gpPSPClusterComparator->SetRate(m_pParameters->GetAreaScanRateType());
+       gpPSPClusterComparator->SetEllipseOffset(j);
+       gpPSPClusterComparator->SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[j - 1]));
+       CPurelySpatialProspectiveCluster & Top_PSP_ShapeCluster = (CPurelySpatialProspectiveCluster&)(gpPSTopShapeClusters->GetTopCluster(j));
+       gpPSPClusterComparator->AddNeighborAndCompare(DataGateway, m_pData, Top_PSP_ShapeCluster, Model);
+     }
+     gpClusterComparator->AddNeighborDataAndCompare(DataGateway, m_pData, Top_ST_ShapeCluster, gpTimeIntervals);
+  }
+  return GetTopCalculatedCluster();
+}
+
+/** returns top cluster calculated during 'FindTopClsuters()' routine */
+const CCluster & C_ST_PS_Analysis::GetTopCalculatedCluster() {
+  try {
+    CCluster& PSCluster = (CCluster&)(gpPSTopShapeClusters->GetTopCluster());
+    CCluster& STCluster = (CCluster&)(gpTopShapeClusters->GetTopCluster());
     if (!PSCluster.ClusterDefined())
       return STCluster;
-    else if (PSCluster.GetDuczmalCorrectedLogLikelihoodRatio() > STCluster.GetDuczmalCorrectedLogLikelihoodRatio())
+    else if (PSCluster.m_nRatio > STCluster.m_nRatio)
       return PSCluster;
     else
       return STCluster;
@@ -90,137 +143,59 @@ CCluster & C_ST_PS_Analysis::GetTopCalculatedCluster() {
   }
 }
 
+/** internal initialization */
+void C_ST_PS_Analysis::Init() {
+  gpPSTopShapeClusters=0;
+  gpPSClusterComparator=0;
+  gpPSPClusterComparator=0;
+  gpPSClusterData=0;
+  gpPSPClusterData=0;
+}
+
 /** Returns loglikelihood for Monte Carlo replication. */
 double C_ST_PS_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
-  CMeasureList                * pMeasureList = 0;
-  CPurelySpatialCluster         C_PS(*m_pData, gpPrintDirection);
   double                        dMaxLogLikelihoodRatio;
-  int                           k;
-  tract_t                       i, j, iNumNeighbors;
+  tract_t                       k, i, j, iNumNeighbors;
 
-  try {
-    CSpaceTimeCluster C_ST(m_pParameters->GetIncludeClustersType(), *m_pData, *gpPrintDirection);
-    C_PS.SetRate(m_pParameters->GetAreaScanRateType());
-    C_ST.SetRate(m_pParameters->GetAreaScanRateType());
-    switch (m_pParameters->GetAreaScanRateType()) {
-      case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
-                        break;
-      case LOW        : pMeasureList = new CMaxMeasureList(*m_pData, *gpPrintDirection);
-                        break;
-      case HIGHANDLOW : pMeasureList = new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
-                        break;
-      default         : ZdGenerateException("Unknown incidence rate specifier \"%d\".", "MonteCarlo()",
-                                             m_pParameters->GetAreaScanRateType());
-    }
-
-    //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
-       for (i=0; i < m_pData->m_nGridTracts; i++) {
-          C_PS.Initialize(i);
-          C_ST.Initialize(i);
-          iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];
-          for (j=1; j <= iNumNeighbors; j++) {
-            C_PS.AddNeighborData(m_pData->GetNeighbor(k, i, j), Interface);
-            C_PS.ComputeBestMeasures(*pMeasureList);
-            C_ST.AddNeighborData(m_pData->GetNeighbor(k, i, j), Interface);
-            C_ST.ComputeBestMeasures(*pMeasureList);
-          }
-       }
-       pMeasureList->SetForNextIteration(k);
-    }
-    dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
-    delete pMeasureList;
+  gpMeasureList->Reset();
+  //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
+  for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {
+     for (i=0; i < m_pData->m_nGridTracts; ++i) {
+        m_pData->SetImpliedCentroid(k, i);
+        gpPSClusterData->AddMeasureList(Interface, gpMeasureList, m_pData);
+        gpClusterData->AddNeighborDataAndCompare(Interface, m_pData, gpTimeIntervals, gpMeasureList);
+     }
+     gpMeasureList->SetForNextIteration(k);
   }
-  catch (ZdException & x) {
-    delete pMeasureList;
-    x.AddCallpath("MonteCarlo()", "C_ST_PS_Analysis");
-    throw;
-  }
-  return dMaxLogLikelihoodRatio;
+  return gpMeasureList->GetMaximumLogLikelihoodRatio();
 }
 
 
 /** Returns loglikelihood for Monte Carlo Prospective replication. */
 double C_ST_PS_Analysis::MonteCarloProspective(const DataStreamInterface & Interface) {
-  CMeasureList                * pMeasureList = 0;
   double                        dMaxLogLikelihoodRatio;
-  long                          lTime;
-  Julian                        jCurrentDate;
-  int                           iThisStartInterval, n, m, k;
-  tract_t                       i, j, iNumNeighbors;
+  tract_t                       k, i;
 
-  try {
-    //for prospective Space-Time, m_bAliveClustersOnly should be false..
-    //m_bAliveClustersOnly is the first parameter into the CSpaceTimeCluster class
-    CPurelySpatialProspectiveCluster C_PS(*m_pData, gpPrintDirection);
-    CSpaceTimeCluster     C_ST(ALLCLUSTERS, *m_pData, *gpPrintDirection);
-    C_PS.SetRate(m_pParameters->GetAreaScanRateType());
-    C_ST.SetRate(m_pParameters->GetAreaScanRateType());
-    switch (m_pParameters->GetAreaScanRateType()) {
-      case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
-                        break;
-      case LOW        : pMeasureList = new CMaxMeasureList(*m_pData, *gpPrintDirection);
-                        break;
-      case HIGHANDLOW : pMeasureList = new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
-                        break;
-       default        : ZdGenerateException("Unknown incidence rate specifier \"%d\".", "MonteCarloProspective()",
-                                             m_pParameters->GetAreaScanRateType());
-    }
-
-    //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
-       for (i=0; i < m_pData->m_nGridTracts; i++) {
-          C_PS.Initialize(i);
-          C_ST.Initialize(i);
-          iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];
-          for (tract_t j=1; j <= iNumNeighbors; j++) {
-              C_PS.AddNeighborData(m_pData->GetNeighbor(k, i, j), Interface);
-              C_PS.ComputeBestMeasures(*pMeasureList);
-              C_ST.AddNeighborData(m_pData->GetNeighbor(k, i, j), Interface);    
-              C_ST.ComputeBestMeasures(*pMeasureList);
-          }
-       }
-       pMeasureList->SetForNextIteration(k);
-    }
-    dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
-    delete pMeasureList;
+  gpMeasureList->Reset();
+  //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
+  for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {
+     for (i=0; i < m_pData->m_nGridTracts; ++i) {
+        m_pData->SetImpliedCentroid(k, i);
+        gpPSPClusterData->AddMeasureList(Interface, gpMeasureList, m_pData);
+        gpClusterData->AddNeighborDataAndCompare(Interface, m_pData, gpTimeIntervals, gpMeasureList);
+     }
+     gpMeasureList->SetForNextIteration(k);
   }
-  catch (ZdException & x) {
-    delete pMeasureList;
-    x.AddCallpath("MonteCarloProspective()", "C_ST_PS_Analysis");
-    throw;
-  }
-  return dMaxLogLikelihoodRatio;
-}
-
-void C_ST_PS_Analysis::SetTopClusters(const DataStreamGateway & DataGateway, bool bSimulation) {
-  IncludeClustersType   eIncludeClustersType;
-
-  try {
-    // if Prospective Space-Time then Alive Clusters Only.
-    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
-      eIncludeClustersType = (bSimulation ? ALLCLUSTERS : ALIVECLUSTERS);
-    else
-      eIncludeClustersType = m_pParameters->GetIncludeClustersType();
-
-    gp_PS_TopShapeClusters->SetTopClusters(CPurelySpatialCluster(*m_pData, gpPrintDirection));
-    gp_ST_TopShapeClusters->SetTopClusters(CSpaceTimeCluster(eIncludeClustersType, *m_pData, *gpPrintDirection));
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetTopClusters()","C_ST_PS_Analysis");
-    throw;
-  }
+  return gpMeasureList->GetMaximumLogLikelihoodRatio();
 }
 
 void C_ST_PS_Analysis::Setup() {
   try {
-    gp_PS_TopShapeClusters = new TopClustersContainer(*m_pData);
-    gp_ST_TopShapeClusters = new TopClustersContainer(*m_pData);
+    gpPSTopShapeClusters = new TopClustersContainer(*m_pData);
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()", "C_ST_PS_Analysis");
-    delete gp_PS_TopShapeClusters;
-    delete gp_ST_TopShapeClusters;
+    delete gpPSTopShapeClusters;
     throw;
   }
 }

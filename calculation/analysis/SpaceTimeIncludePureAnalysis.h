@@ -7,17 +7,18 @@
 
 class C_ST_PS_PT_Analysis : public C_ST_PS_Analysis {
   private:
-    CPurelyTemporalCluster    * gpTopCluster;
-
-    virtual void                CalculatePurelyTemporalCluster(const DataStreamGateway & DataGateway, bool bSimulation);
-    void                        Init() {gpTopCluster=0;}
-    virtual double              MonteCarlo(const DataStreamInterface & Interface);
-    virtual double              MonteCarloProspective(const DataStreamInterface & Interface);
+    CPurelyTemporalCluster      * gpTopPurelyTemporalCluster;
+    CPurelyTemporalCluster      * gpPTClusterComparator;
+    TemporalData                * gpPTClusterData;
+    
+    void                        Init();
 
   protected:
-    virtual void                CalculateTopCluster(tract_t tCenter, const DataStreamGateway & DataGateway, bool bSimluation);
-    virtual bool                FindTopClusters();
-    virtual CCluster          & GetTopCalculatedCluster();
+    virtual void                AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway);  
+    virtual bool                FindTopClusters(const AbtractDataStreamGateway & DataGateway);
+    virtual double              FindTopRatio(const AbtractDataStreamGateway & DataGateway);
+    virtual double              MonteCarlo(const DataStreamInterface & Interface);
+    virtual double              MonteCarloProspective(const DataStreamInterface & Interface);
 
   public:
     C_ST_PS_PT_Analysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);

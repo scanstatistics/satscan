@@ -19,156 +19,143 @@ CSpaceTimeAnalysis::CSpaceTimeAnalysis(CParameters*  pParameters, CSaTScanData* 
 CSpaceTimeAnalysis::~CSpaceTimeAnalysis() {
   try {
     delete gpTopShapeClusters;
+    delete gpClusterComparator;
+    delete gpClusterData;
+    delete gpMeasureList;
+    delete gpTimeIntervals;
   }
   catch(...){}
 }
 
-/** Returns cluster centered at grid point nCenter, with the greatest loglikelihood.
-    Caller is responsible for deleting returned cluster. */
-void CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const DataStreamGateway & DataGateway, bool bSimulation) {
+/** Allocates objects used during simulations, instead of repeated allocations
+    for each simulation. Which objects that are allocated depends on whether
+    the simluations process uses same process as real data or uses measure list. */
+void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway) {
   IncludeClustersType           eIncludeClustersType;
-  int                           k;
-  tract_t                       i, iNumNeighbors;
 
   try {
-    // if Prospective Space-Time then Alive Clusters Only.
+    //delete object used during real data
+    delete gpClusterComparator; gpClusterComparator=0;
+    //create new time intervals object - delete existing object used during real data process
+    delete gpTimeIntervals; gpTimeIntervals=0;
     if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
-      eIncludeClustersType = (bSimulation ? ALLCLUSTERS : ALIVECLUSTERS);
+      eIncludeClustersType = ALLCLUSTERS;
     else
       eIncludeClustersType = m_pParameters->GetIncludeClustersType();
+    gpTimeIntervals = GetNewTimeIntervalsObject(eIncludeClustersType);
 
-    gpTopShapeClusters->Reset(i);
-    //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {
-       CSpaceTimeCluster thisCluster(eIncludeClustersType, *m_pData, *gpPrintDirection);
-       thisCluster.SetCenter(tCenter);
-       thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
-       thisCluster.SetEllipseOffset(k);
-       thisCluster.SetDuczmalCorrection((k == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[k - 1]));
-       CSpaceTimeCluster & TopShapeCluster = (CSpaceTimeCluster&)(gpTopShapeClusters->GetTopCluster(k));
-       iNumNeighbors = m_pData->GetNeighborCountArray()[k][tCenter];
-       for (i=1; i <= iNumNeighbors; ++i) {
-          thisCluster.AddNeighbor(m_pData->GetNeighbor(k, tCenter, i), DataGateway);
-          thisCluster.CompareTopCluster(TopShapeCluster, *m_pData);
-       }
+    //create simulation objects based upon which process used to perform simulations
+    if (gbMeasureListReplications) {
+      //create new cluster data object
+      gpClusterData = new SpaceTimeData(DataGateway);
+      //create new measure list object
+      gpMeasureList = GetNewMeasureListObject();
+    }
+    else { //simulations performed using same process as real data set
+      //create cluster object used as comparator when iterating over centroids and time intervals
+      gpClusterComparator = new CSpaceTimeCluster(gpClusterDataFactory, DataGateway, *gpPrintDirection);
+      //initialize list of top circle/ellipse clusters
+      gpTopShapeClusters->SetTopClusters(*gpClusterComparator);
     }
   }
-  catch (ZdException & x) {
-    x.AddCallpath("CalculateTopCluster()", "CSpaceTimeAnalysis");
+  catch (ZdException &x) {
+    delete gpClusterData; gpClusterData=0;
+    delete gpMeasureList; gpMeasureList=0;
+    delete gpTimeIntervals; gpTimeIntervals=0;
+    delete gpClusterComparator; gpClusterComparator=0;
+    x.AddCallpath("AllocateSimulationObjects()","CSpaceTimeAnalysis");
     throw;
   }
 }
 
-CCluster & CSpaceTimeAnalysis::GetTopCalculatedCluster() {
+/** Allocates objects used during calculation of most likely clusters, instead
+    of repeated allocations for each grid point.                             */
+void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway) {
+  IncludeClustersType           eIncludeClustersType;
+
+  try {
+    //create new time intervals object - delete existing object used during real data process
+    delete gpTimeIntervals; gpTimeIntervals=0;
+    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+      eIncludeClustersType = ALIVECLUSTERS;
+    else
+      eIncludeClustersType = m_pParameters->GetIncludeClustersType();
+    gpTimeIntervals = GetNewTimeIntervalsObject(eIncludeClustersType);
+    //create cluster object used as comparator when iterating over centroids and time intervals
+    gpClusterComparator = new CSpaceTimeCluster(gpClusterDataFactory, DataGateway, *gpPrintDirection);
+    //initialize list of top circle/ellipse clusters
+    gpTopShapeClusters->SetTopClusters(*gpClusterComparator);
+  }
+  catch (ZdException &x) {
+    delete gpClusterComparator; gpClusterComparator=0;
+    delete gpTimeIntervals; gpTimeIntervals=0;
+    x.AddCallpath("AllocateTopClustersObjects()","CSpaceTimeAnalysis");
+    throw;
+  }
+}
+
+/** Returns cluster centered at grid point nCenter, with the greatest loglikelihood.
+    Caller is responsible for deleting returned cluster. */
+const CCluster & CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway) {
+  tract_t       k;
+
+  gpTopShapeClusters->Reset(tCenter);
+  //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
+  for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {
+     m_pData->SetImpliedCentroid(k, tCenter);
+     gpClusterComparator->Initialize(tCenter);
+     gpClusterComparator->SetRate(m_pParameters->GetAreaScanRateType());
+     gpClusterComparator->SetEllipseOffset(k);
+     gpClusterComparator->SetDuczmalCorrection((k == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[k - 1]));
+     CSpaceTimeCluster & TopCluster = (CSpaceTimeCluster&)(gpTopShapeClusters->GetTopCluster(k));
+     gpClusterComparator->AddNeighborDataAndCompare(DataGateway, m_pData, TopCluster, gpTimeIntervals);
+  }
   return gpTopShapeClusters->GetTopCluster();
+}
+
+/** internal initialization */
+void CSpaceTimeAnalysis::Init() {
+  gpTopShapeClusters=0;
+  gpClusterComparator=0;
+  gpClusterData=0;
+  gpMeasureList=0;
+  gpTimeIntervals=0;
 }
 
 /** Returns loglikelihood for Monte Carlo replication. */
 double CSpaceTimeAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
-  CMeasureList  * pMeasureList=0;
-  double          dMaxLogLikelihoodRatio;
-  int             k;
-  tract_t         i, j, iNumNeighbors;
+  double                        dMaxLogLikelihoodRatio;
+  tract_t                       k, i, j, iNumNeighbors;
 
-  try {
-    CSpaceTimeCluster C(m_pParameters->GetIncludeClustersType(), *m_pData, *gpPrintDirection);
-    C.SetRate(m_pParameters->GetAreaScanRateType());
-    switch (m_pParameters->GetAreaScanRateType()) {
-     case HIGH      : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
-                      break;
-     case LOW       : pMeasureList = new CMaxMeasureList(*m_pData, *gpPrintDirection);
-                      break;
-     case HIGHANDLOW: pMeasureList = new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
-                      break;
-     default        : ZdGenerateException("Unknown incidence rate specifier \"%d\".","MonteCarlo()",
-                                          m_pParameters->GetAreaScanRateType());
-    }
-
-    //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {
-       for (i=0; i < m_pData->m_nGridTracts; ++i) {
-          C.Initialize(i);
-          iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];
-          for (j=1; j <= iNumNeighbors; ++j) {
-             C.AddNeighborData(m_pData->GetNeighbor(k, i, j), Interface);
-             C.ComputeBestMeasures(*pMeasureList);
-          }
-       }
-       pMeasureList->SetForNextIteration(k);
-    }
-    dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
-    delete pMeasureList;
+  gpMeasureList->Reset();
+  //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
+  for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
+     for (i=0; i < m_pData->m_nGridTracts; i++) {
+        m_pData->SetImpliedCentroid(k, i);
+        gpClusterData->AddNeighborDataAndCompare(Interface, m_pData, gpTimeIntervals, gpMeasureList);
+     }
+     gpMeasureList->SetForNextIteration(k);
   }
-  catch (ZdException & x) {
-    x.AddCallpath("MonteCarlo()", "CSpaceTimeAnalysis");
-    delete pMeasureList;
-    throw;
-  }
-  return dMaxLogLikelihoodRatio;
+  return gpMeasureList->GetMaximumLogLikelihoodRatio();
 }
 
+/** Returns loglikelihood for Monte Carlo replication - prospective analysis. */
 double CSpaceTimeAnalysis::MonteCarloProspective(const DataStreamInterface & Interface) {
-  CMeasureList  * pMeasureList=0;
-  double          dMaxLogLikelihoodRatio;
-  int             k;
-  tract_t         iNumNeighbors;
+  double                        dMaxLogLikelihoodRatio;
+  tract_t                       k, i, j, iNumNeighbors;
 
-  try {
-    //for prospective Space-Time, m_bAliveClustersOnly should be false..
-    //m_bAliveClustersOnly is the first parameter into the CSpaceTimeCluster class
-    CSpaceTimeCluster C(ALLCLUSTERS, *m_pData, *gpPrintDirection);
-    C.SetRate(m_pParameters->GetAreaScanRateType());
-    switch (m_pParameters->GetAreaScanRateType()) {
-     case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
-                       break;
-     case LOW        : pMeasureList = new CMaxMeasureList(*m_pData, *gpPrintDirection);
-                       break;
-     case HIGHANDLOW : pMeasureList = new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
-                       break;
-     default         : ZdGenerateException("Unknown incidence rate specifier \"%d\".","MonteCarloProspective()",
-                       m_pParameters->GetAreaScanRateType());
-    }
-
-    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {  //circle is 0 offset... (always there)
-       for (tract_t i = 0; i<m_pData->m_nGridTracts; ++i) {
-          C.Initialize(i);
-          iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];
-          for (tract_t j=1; j <= iNumNeighbors; ++j) {
-             C.AddNeighborData(m_pData->GetNeighbor(k, i, j), Interface);
-             C.ComputeBestMeasures(*pMeasureList);
-          }
-       }
-       pMeasureList->SetForNextIteration(k);
-    }
-    dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
-    delete pMeasureList;
+  gpMeasureList->Reset();
+  for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {  //circle is 0 offset... (always there)
+     for (tract_t i = 0; i<m_pData->m_nGridTracts; ++i) {
+        m_pData->SetImpliedCentroid(k, i);
+        gpClusterData->AddNeighborDataAndCompare(Interface, m_pData, gpTimeIntervals, gpMeasureList);
+     }
+     gpMeasureList->SetForNextIteration(k);
   }
-  catch (ZdException & x) {
-    x.AddCallpath("MonteCarloProspective()", "CSpaceTimeAnalysis");
-    delete pMeasureList;
-    throw;
-  }
-  return dMaxLogLikelihoodRatio;
+  return gpMeasureList->GetMaximumLogLikelihoodRatio();
 }
 
-void CSpaceTimeAnalysis::SetTopClusters(const DataStreamGateway & DataGateway, bool bSimulation) {
-  IncludeClustersType   eIncludeClustersType;
-
-  try {
-    // if Prospective Space-Time then Alive Clusters Only.
-    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
-      eIncludeClustersType = (bSimulation ? ALLCLUSTERS : ALIVECLUSTERS);
-    else
-      eIncludeClustersType = m_pParameters->GetIncludeClustersType();
-
-    gpTopShapeClusters->SetTopClusters(CSpaceTimeCluster(eIncludeClustersType, *m_pData, *gpPrintDirection));
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetTopClusters()","CSpaceTimeAnalysis");
-    throw;
-  }
-}
-
+/** internal setup function */
 void CSpaceTimeAnalysis::Setup() {
   try {
     gpTopShapeClusters = new TopClustersContainer(*m_pData);
