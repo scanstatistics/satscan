@@ -4,6 +4,7 @@
 //*****************************************************************************
 #include "SaTScan.h"
 #include "JulianDates.h"
+#include "AsciiPrintFormat.h"
 
 extern const char*      YES;
 extern const char*      NO;
@@ -353,8 +354,9 @@ class CParameters {
     bool                                GetIsLoggingHistory() const {return gbLogRunHistory;}
     bool                                GetIsPowerCalculated() const {return gbPowerCalculation;}
     bool                                GetIsProspectiveAnalysis() const;
-    bool                                GetIsSequentialScanning() const {return gbSequentialRuns;}
     bool                                GetIsPurelyTemporalAnalysis() const;
+    bool                                GetIsSequentialScanning() const {return gbSequentialRuns;}
+    bool                                GetIsSpaceTimeAnalysis() const;
     bool                                GetLogLikelihoodRatioIsTestStatistic() const;
     const std::string                 & GetMaxCirclePopulationFileName() const {return gsMaxCirclePopulationFileName;}
     float                               GetMaximumGeographicClusterSize() const {return gfMaxGeographicClusterSize;}
@@ -441,6 +443,7 @@ class CParameters {
     void                                SetMaximumSpacialClusterSizeType(SpatialSizeType eSpatialSizeType);
     void                                SetMaximumTemporalClusterSize(float fMaxTemporalClusterSize);
     void                                SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSizeType);
+    void                                SetNumDataStreams(unsigned int iNumStreams);
     void                                SetNumberEllipses(int iNumEllipses);
     void                                SetNumberEllipsoidRotations(int iNumberRotations, int iEllipsoidIndex=-1);
     void                                SetNumberMonteCarloReplications(int iReplications);

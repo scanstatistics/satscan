@@ -344,7 +344,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
   ZdFileName    AdditionalOutputFile(gsOutputFileName.c_str());
 
   try {
-    fprintf(fp, "\n________________________________________________________________\n\n");
+    AsciiPrintFormat::PrintSectionSeparatorString(fp, 1, 2);
     fprintf(fp, "PARAMETER SETTINGS\n\n");
 
     fprintf(fp, "Input Files\n");
@@ -569,7 +569,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
                   (geMaxGeographicClusterSizeType == DISTANCETYPE ?
                     (geCoordinatesType == CARTESIAN ? "cartesian units" : "km") : "percent of population at risk"));
 
-    fprintf(fp, "\n________________________________________________________________\n");
+    AsciiPrintFormat::PrintSectionSeparatorString(fp, 1, 1);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayParameters(FILE *)","CParameters");
@@ -646,30 +646,10 @@ void CParameters::DisplayCalculatedTimeTrend(FILE* fp, const DataStreamHandler& 
       sWorkString.printf((TrendDecrease.size() > 1 ? " respectively." : "."));
       sPrintString << sWorkString;
     }
-    //now insert newline characters to make string wrap PRINT_WIDTH or less characters
-    iStart=0;
-    while (iStart + PRINT_WIDTH < sPrintString.GetLength()) {
-         //scan backwards from iStart + PRINT_WIDTH, looking for blank to replace
-         iScan = iStart + PRINT_WIDTH;
-         while (iScan > iStart) {
-              if (sPrintString.GetCharAt(iScan) == ' ') {
-                sPrintString.SetCharAt(iScan, '\n');
-                iStart = iScan + 1;
-                 break;
-              }
-              iScan--;
-         }
-         //no blank found, insert newline
-         if (iScan == iStart) {
-           sPrintString.Insert('\n', iStart + PRINT_WIDTH - 1, 1);
-           iStart += PRINT_WIDTH;
-         }
-    }
+    AsciiPrintFormat PrintFormat;
+    PrintFormat.SetMarginsAsOverviewSection();
+    PrintFormat.PrintAlignedMarginsDataString(fp, sPrintString);
   }
-  //now print to file stream
-  fprintf(fp, sPrintString.GetCString());
-  if (!sPrintString.EndsWith('\n'))
-    fprintf(fp, "\n");
 }
 
 
@@ -779,6 +759,11 @@ bool CParameters::GetIsProspectiveAnalysis() const {
 /** Returns whether analysis is purely temporal. */
 bool CParameters::GetIsPurelyTemporalAnalysis() const {
   return (geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL);
+}
+
+/** Returns whether analysis is space-time. */
+bool CParameters::GetIsSpaceTimeAnalysis() const {
+  return (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME);
 }
 
 /** Returns description for LLR. */
@@ -1604,7 +1589,7 @@ int CParameters::ReadInt(const ZdString & sValue, ParameterType eParameterType) 
 void CParameters::ReadInputFilesSection(ZdIniFile& file, BasePrint & PrintDirection){
   const ZdIniSection  * pSection;
   long                  lIndex;
-  unsigned int          iStream;
+  unsigned int          iStream, iMostStreams=1;
   ZdString              sSectionName;
 
   try {
@@ -1619,6 +1604,7 @@ void CParameters::ReadInputFilesSection(ZdIniFile& file, BasePrint & PrintDirect
          SetCaseFileName(ZdString(pSection->GetLine(lIndex)->GetValue()), true, iStream);
          sSectionName.printf("%s%i", CASE_FILE_LINE, ++iStream);
     }
+    iMostStreams = std::max(iMostStreams, gvCaseFilenames.size());
     ReadIniParameter(*pSection, CONTROL_FILE_LINE, CONTROLFILE, PrintDirection);
     //read possibly other data stream control source
     iStream = 2;
@@ -1627,6 +1613,7 @@ void CParameters::ReadInputFilesSection(ZdIniFile& file, BasePrint & PrintDirect
          SetControlFileName(ZdString(pSection->GetLine(lIndex)->GetValue()), true, iStream);
          sSectionName.printf("%s%i", CONTROL_FILE_LINE, ++iStream);
     }
+    iMostStreams = std::max(iMostStreams, gvControlFilenames.size());
     ReadIniParameter(*pSection, POP_FILE_LINE, POPFILE, PrintDirection);
     //read possibly other data stream control source
     iStream = 2;
@@ -1635,6 +1622,11 @@ void CParameters::ReadInputFilesSection(ZdIniFile& file, BasePrint & PrintDirect
          SetPopulationFileName(ZdString(pSection->GetLine(lIndex)->GetValue()), true, iStream);
          sSectionName.printf("%s%i", POP_FILE_LINE, ++iStream);
     }
+    iMostStreams = std::max(iMostStreams, gvPopulationFilenames.size());
+    //Synchronize collections of data stream filesnames so that we can ask for
+    //any file of a particular stream, even if blank. This keeps the same behavior
+    //as when there was only one data stream.
+    SetNumDataStreams(iMostStreams);
     ReadIniParameter(*pSection, COORD_FILE_LINE, COORDFILE, PrintDirection);
     ReadIniParameter(*pSection, USE_GRID_FILE_LINE, SPECIALGRID, PrintDirection);
     ReadIniParameter(*pSection, GRID_FILE_LINE, GRIDFILE, PrintDirection);
@@ -2642,6 +2634,25 @@ void CParameters::SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSi
   }
 }
 
+/** Adjusts the number of data streams. */
+void CParameters::SetNumDataStreams(unsigned int iNumStreams) {
+  size_t        t;
+
+  try {
+    if (iNumStreams == 0)
+      ZdException::Generate("Number of data streams can not be zero.\n", "SetNumDataStreams()");
+
+    //adjust the number of filenames for case, control, and population
+    gvCaseFilenames.resize(iNumStreams);
+    gvControlFilenames.resize(iNumStreams);
+    gvPopulationFilenames.resize(iNumStreams);
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("SetNumDataStreams()","CParameters");
+    throw;
+  }
+}
+
 /** Sets number of ellipses requested. */
 void CParameters::SetNumberEllipses(int iNumEllipses) {
   ZdString      sLabel;
@@ -2672,7 +2683,7 @@ void CParameters::SetNumberEllipsoidRotations(int iNumberRotations, int iEllipso
       gvEllipseRotations[iEllipsoidIndex] = iNumberRotations;
     else
       gvEllipseRotations.push_back(iNumberRotations);
-      
+
     //re-calculate number of total ellispes
     glTotalNumEllipses = 0;
     for (t=0; t < gvEllipseRotations.size(); t++)
@@ -3983,6 +3994,9 @@ void InvalidParameterException::Generate(const char *sMessage, const char *sSour
    va_end(varArgs);
    throw theException;
 }
+
+
+
 
 
 
