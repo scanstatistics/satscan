@@ -42,14 +42,6 @@ double CSpaceTimePermutationModel::GetLogLikelihoodForTotal() const
   return N*log(N/U);
 }
 
-/** Throws exception. Defined in parent class as pure virtual. */
-double CSpaceTimePermutationModel::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster)
-{
-  SSGenerateException("Function CalcMonotoneLogLikelihood() not implemented in CSpaceTimePermutationModel",
-                      "CalcMonotoneLogLikelihood() of CSpaceTimePermutationModel");
-  return 0;
-}
-
 /** Calculates measure for the purpose of constructing neighbor array. If the
     maximum spatial cluster size is defined in terms of population, then m_pMeasure
     is constructed using same method as Poisson model. Otherwise m_pMeasure is
@@ -66,12 +58,11 @@ bool CSpaceTimePermutationModel::CalculateMeasure()
         {
          bResult = AssignMeasure(gData.GetTInfo(), gData.m_pCases,
                                  gData.m_pTimes, gData.m_nTracts, gData.m_nStartDate,
-                                 gData.m_nEndDate, gData.m_pIntervalStartTimes,
-                                 false/*gParameters.m_bExactTimes*/, gParameters.GetTimeTrendAdjustmentType(),
-                                 gParameters.GetTimeTrendAdjustmentPercentage(), gData.m_nTimeIntervals,
+                                 gData.m_nEndDate, gData.m_pIntervalStartTimes, gData.m_nTimeIntervals,
                                  gParameters.GetTimeIntervalUnitsType(),  gParameters.GetTimeIntervalLength(),
                                  &gData.m_pMeasure, &gData.m_nTotalCases,
                                  &gData.m_nTotalPop, &gData.m_nTotalMeasure, &gPrintDirection);
+         gData.SetMeasureAsCumulative(gData.m_pMeasure);
          geMeasureType = PopulationBased;
         }
       else
