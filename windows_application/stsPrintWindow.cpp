@@ -10,7 +10,7 @@ PrintWindow::PrintWindow(CalcThread & CalculationThread)
 PrintWindow::~PrintWindow(){}
 
 /** Returns whether analysis has been cancelled through run analysis window via calculation thread . */
-bool PrintWindow::GetIsCanceled() {
+bool PrintWindow::GetIsCanceled() const {
   return gCalculationThread.IsCancelled();
 }
 

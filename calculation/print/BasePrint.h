@@ -24,7 +24,7 @@ class BasePrint {
 
     eInputFileType                      GetImpliedInputFileType() const {return geInputFileType;}
     const std::string                 & GetImpliedFileTypeString() const {return gsInputFileString;}  
-    virtual bool                        GetIsCanceled() = 0;
+    virtual bool                        GetIsCanceled() const = 0;
     void                                PrintInputWarning(const char* sMessage, ...);
     virtual void                        PrintLine(char *) = 0;
     virtual void                        PrintWarningLine(char *) = 0;

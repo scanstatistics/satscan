@@ -10,7 +10,7 @@ class PrintScreen : public BasePrint
       PrintScreen();
       ~PrintScreen();
 
-   inline bool GetIsCanceled() {return false;}    
+   inline bool GetIsCanceled() const {return false;}    
    inline void PrintLine(char *s) {printf(s);}
    inline void PrintWarningLine(char *s) {printf(s);}
 };

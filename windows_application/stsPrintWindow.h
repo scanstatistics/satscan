@@ -11,7 +11,7 @@ class PrintNull : public BasePrint {
      PrintNull() : BasePrint() {}
      ~PrintNull() {}
 
-     bool               GetIsCanceled() {return false;}
+     bool               GetIsCanceled() const {return false;}
      void               PrintLine(char*) {}
      void               PrintWarningLine(char*) {}
 };
@@ -28,7 +28,7 @@ class PrintWindow : public BasePrint {
      PrintWindow(CalcThread & CalculationThread);
      ~PrintWindow();
 
-     bool               GetIsCanceled();
+     bool               GetIsCanceled() const;
      void               PrintLine(char *s);
      void               PrintWarningLine(char *s);
 };

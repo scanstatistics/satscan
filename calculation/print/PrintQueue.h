@@ -45,7 +45,7 @@ public:
    PrintQueue(BasePrint & Target, threshold_policy_i const & ThresholdPolicy);
    ~PrintQueue();
 
-   inline bool GetIsCanceled() { UpdateThreshold(); return gTarget.GetIsCanceled(); }
+   inline bool GetIsCanceled() const { const_cast<PrintQueue&>(*this).UpdateThreshold(); return gTarget.GetIsCanceled(); }
    void PrintLine(char *s);
    void PrintWarningLine(char *s);
 
