@@ -20,10 +20,15 @@ class TfrmUpdateCheck : public TForm {
 
   public:	// User declarations
     static const char                         * gsUpdaterFilename;
-    static const char                         * gsURL;
-    static const char                         * gsVersionMask;
-    static const int                            giFilenameIndex;
-    static const int                            giURLIndex;
+    static const char                         * gsURLFormat;
+    static const int                            giUpdateTokens;
+    static const int                            giUpdateIndicatorIndex;
+    static const int                            giUpdateVersionIdIndex;
+    static const int                            giUpdateVersionIndex;
+    static const int                            giUpdateAppNameIndex;
+    static const int                            giUpdateAppUrlIndex;
+    static const int                            giUpdateDataNameIndex;
+    static const int                            giUpdateDataUrlIndex;
 
   private:
     std::pair<ZdString,ZdString>                gUpdateApplication;
@@ -31,7 +36,6 @@ class TfrmUpdateCheck : public TForm {
     ZdString                                    gsUpdateVersion;
 
     bool                                        DisplayDownloadOption(const ZdString& sFilename);
-    ZdString                                  & GetVersion(const ZdString& sFilename, ZdString& sVersion) const;
 
    public:		// User declarations
       __fastcall TfrmUpdateCheck(TComponent* Owner);

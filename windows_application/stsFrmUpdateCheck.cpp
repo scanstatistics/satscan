@@ -11,16 +11,21 @@
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 
-/** update application filename */
-const char * TfrmUpdateCheck::gsUpdaterFilename = "updater.exe";
-/** url detailing perlscript location */
-const char * TfrmUpdateCheck::gsURL = "http://install.cancer.gov/cgi-bin/versioncheck100.pl?app=satscan";
-/** mask to determing which file returned from url is latest version release */
-const char * TfrmUpdateCheck::gsVersionMask = "satscanv*.zip";
-/** index of filename in file description string of perlscript results */
-const int TfrmUpdateCheck::giFilenameIndex = 0;
-/** index of url path in file description string of perlscript results */
-const int TfrmUpdateCheck::giURLIndex = 3;
+/** update application filename - returned from host
+    -- we need to know this before communicating with host so that we know
+       what file to delete when SaTScan restarts. We could set an ini section
+       or registory value if this is becomes a problem. */
+const char * TfrmUpdateCheck::gsUpdaterFilename   = "update_app.exe";
+/** perl script for determining updates */
+const char * TfrmUpdateCheck::gsURLFormat         = "http://satscan.us/cgi-bin/satscan/update/satscan_version_update.pl?todo=return_update_version_info&form_current_version_id=value%s&form_current_version_number=value%d";
+const int TfrmUpdateCheck::giUpdateTokens         = 9;
+const int TfrmUpdateCheck::giUpdateIndicatorIndex = 0;
+const int TfrmUpdateCheck::giUpdateVersionIdIndex = 3;
+const int TfrmUpdateCheck::giUpdateVersionIndex   = 4;
+const int TfrmUpdateCheck::giUpdateAppNameIndex   = 5;
+const int TfrmUpdateCheck::giUpdateAppUrlIndex    = 6;
+const int TfrmUpdateCheck::giUpdateDataNameIndex  = 7;
+const int TfrmUpdateCheck::giUpdateDataUrlIndex   = 8;
 
 /** constructor */
 __fastcall TfrmUpdateCheck::TfrmUpdateCheck(TComponent* Owner) : TForm(Owner) {
@@ -33,15 +38,16 @@ __fastcall TfrmUpdateCheck::~TfrmUpdateCheck() {}
 void TfrmUpdateCheck::ConnectToServerForUpdateCheck() {
   bool                  bReturn=false, bDone=false;
   unsigned long         lToken;
-  ZdString              sFilename;
-  ZdStringTokenizer     sHTTP_Body("", "\n"), sFileDescriptorParser("", ",");
+  ZdString              sFilename, sUpdateURL;
+  ZdStringTokenizer     sHTTP_Body("", ",");
 
   try {
     Show();
+    sUpdateURL.printf(gsURL, VERSION_ID, 2/* make this VERSION_NUMBER before release */);
     try {
       // let the Get() do the connecting since reading results from perlscript
       // is the only purpose for connecting to remote host ... currently.
-      pHTTPConnect->Get(gsURL);
+      pHTTPConnect->Get(sUpdateURL.GetCString());
     }
     catch (...) {
       ZdException::GenerateNotification("Failed to connect to server. Server may be down or\n"
@@ -52,29 +58,18 @@ void TfrmUpdateCheck::ConnectToServerForUpdateCheck() {
     remove(pHTTPConnect->Header.c_str());
     // get perlscript results -- list of files descriptions at specified url
     sHTTP_Body.SetString(pHTTPConnect->Body.c_str());
-    if (! sHTTP_Body.GetNumTokens())
+    if (sHTTP_Body.GetNumTokens() < (unsigned int)giUpdateTokens || !stricmp(sHTTP_Body.GetToken(0).GetCString(), "no"))
       ZdException::GenerateNotification("No updates currently available.\nPlease try again later.",
                                         "ConnectToServerForUpdateCheck()");
 
-    // parse each file description -- looking for satscanX.zip where X = version number
-    for (lToken=0; lToken < sHTTP_Body.GetNumTokens() - 1 && !bDone; ++lToken) {
-        sFileDescriptorParser.SetString(sHTTP_Body.GetToken(lToken));
-        if (sFileDescriptorParser.GetNumTokens() != 4)
-          ZdGenerateException("Update text '%s'\ncontains %d file details, want 4.", "ConnectToServerForUpdateCheck()",
-                              sFileDescriptorParser.GetString(), sFileDescriptorParser.GetNumTokens());
-        sFilename = sFileDescriptorParser.GetToken(giFilenameIndex);
-        if (TMask(gsVersionMask).Matches(sFilename.GetCString())) {
-          if (GetVersion(sFilename, gsUpdateVersion) > VERSION_NUMBER)
-            gUpdateArchive.first = sFilename;
-            gUpdateArchive.second = sFileDescriptorParser.GetToken(giURLIndex);
-        }
-        else if (sFilename == gsUpdaterFilename) {
-          // found update application
-          gUpdateApplication.first = sFilename;
-          gUpdateApplication.second = sFileDescriptorParser.GetToken(giURLIndex);
-        }
-        bDone = gUpdateArchive.first.GetLength() && gUpdateApplication.first.GetLength();
-    }
+    //get update information
+    gsUpdateVersion = sHTTP_Body.GetToken(giUpdateVersionIndex);
+    gUpdateApplication.first = sHTTP_Body.GetToken(giUpdateAppNameIndex);
+    gUpdateApplication.second = sHTTP_Body.GetToken(giUpdateAppUrlIndex);
+    gUpdateArchive.first = sHTTP_Body.GetToken(giUpdateDataNameIndex);
+    if (sHTTP_Body.GetToken(giUpdateDataUrlIndex).EndsWith('\n'))
+      sHTTP_Body.GetToken(giUpdateDataUrlIndex).Truncate(sHTTP_Body.GetToken(giUpdateDataUrlIndex).GetLength() -1);
+    gUpdateArchive.second = sHTTP_Body.GetToken(giUpdateDataUrlIndex);
     Close();
   }
   catch (ZdException &x) {
@@ -86,33 +81,18 @@ void TfrmUpdateCheck::ConnectToServerForUpdateCheck() {
 
 // displays a message box to user promting whether or not they want to update
 bool TfrmUpdateCheck::DisplayDownloadOption(const ZdString& sFilename) {
-  ZdString      sMessage, sVersion;
+  ZdString      sMessage;
   bool          bReturn=false;
 
   try {
-    if (GetVersion(sFilename, sVersion) > VERSION_NUMBER) {
-      sMessage.printf("SaTScan v%s is available. Do you want to install now?", sVersion.GetCString());
-      bReturn = (TBMessageBox::Response(this, "SaTScan Update Available", sMessage.GetCString(), MB_YESNO) == IDYES);
-    }
+    sMessage.printf("SaTScan v%s is available. Do you want to install now?", gsUpdateVersion.GetCString());
+    bReturn = (TBMessageBox::Response(this, "SaTScan Update Available", sMessage.GetCString(), MB_YESNO) == IDYES);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayDownloadOption()", "TBfrmImsUpdate");
     throw;
   }
   return bReturn;
-}
-
-/** returns version for passed update file */
-ZdString& TfrmUpdateCheck::GetVersion(const ZdString& sFilename, ZdString& sVersion) const {
-  const char  * vptr, * zipptr;
-
-  vptr = strstr(sFilename.GetCString(), "v");
-  zipptr = strstr(sFilename.GetCString(), ".zip");
-
-  sVersion.Clear();
-  while (++vptr != zipptr)
-       sVersion += *vptr;
-  return sVersion;
 }
 
 bool TfrmUpdateCheck::HasUpdates() const {
