@@ -78,17 +78,10 @@ double CCluster::ConvertAngleToDegrees(double dAngle)
 {
    double dDegrees;
    
-   try
-      {
-      dDegrees = 180.00 * (dAngle / (double)M_PI);
-      if (dDegrees > 90.00)
-         dDegrees -= 180.00;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("ConvertAngleToDegrees()", "CCluster");
-      throw;
-      }
+   dDegrees = 180.00 * (dAngle / (double)M_PI);
+   if (dDegrees > 90.00)
+     dDegrees -= 180.00;
+
    return dDegrees;
 }
 
@@ -191,7 +184,7 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                                          char* szSpacesOnLeft, bool bFormat)
 {
    int   pos  = nLeftMargin;
-   char* tid;
+   const char* tid;
    int   nCount=0;
 
    try {
@@ -521,52 +514,27 @@ void CCluster::SetRate(int nRate)
 
 double CCluster::SetRatio(double nLogLikelihoodForTotal)
 {
-   try
-      {
-      m_bRatioSet = true;
-      m_nRatio    = GetLogLikelihood() - nLogLikelihoodForTotal;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("SetRatio()", "CCluster");
-      throw;
-      }
+  m_bRatioSet = true;
+  m_nRatio    = GetLogLikelihood() - nLogLikelihoodForTotal;
+
   return m_nRatio;
 
 }
 
 void CCluster::SetRatioAndDates(const CSaTScanData& Data)
 {
-   try
-      {
-      if (ClusterDefined())
-         {
-         m_bClusterSet = true;
-         SetRatio(Data.m_pModel->GetLogLikelihoodForTotal());
-         SetStartAndEndDates(Data.m_pIntervalStartTimes,
-                        Data.m_nTimeIntervals);
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("SetRatioAndDates()", "CCluster");
-      throw;
-      }
+  if (ClusterDefined())
+    {
+    m_bClusterSet = true;
+    SetRatio(Data.m_pModel->GetLogLikelihoodForTotal());
+    SetStartAndEndDates(Data.m_pIntervalStartTimes, Data.m_nTimeIntervals);
+    }
 }
 
-void CCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes,
-                                   int nTimeIntervals)
+void CCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals)
 {
-   try
-      {
-      m_nStartDate = pIntervalStartTimes[m_nFirstInterval];
-      m_nEndDate   = pIntervalStartTimes[m_nLastInterval]-1;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("SetStartAndEndDates()", "CCluster");
-      throw;
-      }
+  m_nStartDate = pIntervalStartTimes[m_nFirstInterval];
+  m_nEndDate   = pIntervalStartTimes[m_nLastInterval]-1;
 }
 
 void CCluster::WriteCoordinates(FILE* fp, CSaTScanData* pData)

@@ -48,26 +48,18 @@ double CMinMeasureList::GetMaxLogLikelihood(const CSaTScanData& Data)
    double nLogLikelihood;
    double nMaxLogLikelihood = Data.m_pModel->GetLogLikelihoodForTotal();
 
-   try
+   for (int i = 0; i < m_nListSize; i++)
       {
-      for (int i = 0; i < m_nListSize; i++)
-         {
-         //    if (HighRate(i, m_pMinMeasures[i], N, U))
-         if (m_pMinMeasures[i] != 0 &&
-            i*Data.m_nTotalMeasure > m_pMinMeasures[i]*Data.m_nTotalCases)
-            {
-            nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMinMeasures[i]);
-            if (nLogLikelihood > nMaxLogLikelihood)
-               nMaxLogLikelihood = nLogLikelihood;
-            }
+      //    if (HighRate(i, m_pMinMeasures[i], N, U))
+      if (m_pMinMeasures[i] != 0 && i*Data.m_nTotalMeasure > m_pMinMeasures[i]*Data.m_nTotalCases)
+        {
+        nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMinMeasures[i]);
+        if (nLogLikelihood > nMaxLogLikelihood)
+          nMaxLogLikelihood = nLogLikelihood;
+        }
 
-         }
-      }   
-   catch (SSException & x)
-      {
-      x.AddCallpath("GetMaxLogLikelihood()", "CMinMeasureList");
-      throw;
       }
+
    return (nMaxLogLikelihood);
 }
 
@@ -113,24 +105,15 @@ double CMaxMeasureList::GetMaxLogLikelihood(const CSaTScanData& Data)
    double nLogLikelihood;
    double nMaxLogLikelihood = Data.m_pModel->GetLogLikelihoodForTotal();
 
-   try
+   for (int i = 0; i < m_nListSize; i++)
       {
-      for (int i = 0; i < m_nListSize; i++)
-         {
-         //    if (LowRate(i, m_pMaxMeasures[i], N, U))
-         if (m_pMaxMeasures[i] != 0 &&
-            i*Data.m_nTotalMeasure < m_pMaxMeasures[i]*Data.m_nTotalCases)
-            {
-            nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMaxMeasures[i]);
-            if (nLogLikelihood > nMaxLogLikelihood)
-               nMaxLogLikelihood = nLogLikelihood;
-            }
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("GetMaxLogLikelihood()", "CMaxMeasureList");
-      throw;
+      //    if (LowRate(i, m_pMaxMeasures[i], N, U))
+      if (m_pMaxMeasures[i] != 0 && i*Data.m_nTotalMeasure < m_pMaxMeasures[i]*Data.m_nTotalCases)
+        {
+        nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMaxMeasures[i]);
+        if (nLogLikelihood > nMaxLogLikelihood)
+          nMaxLogLikelihood = nLogLikelihood;
+        }
       }
 
   return (nMaxLogLikelihood);
@@ -173,8 +156,11 @@ CMinMaxMeasureList::CMinMaxMeasureList(count_t N, measure_t U, BasePrint *pPrint
 
 CMinMaxMeasureList::~CMinMaxMeasureList()
 {
-  delete [] m_pMinMeasures;
-  delete [] m_pMaxMeasures;
+  try {
+    delete [] m_pMinMeasures;
+    delete [] m_pMaxMeasures;
+  }
+  catch(...){}  
 }
 
 //double CMinMaxMeasureList::GetMaxLogLikelihood(count_t N, measure_t U, double& nMaxLogLikelihood)
@@ -183,33 +169,24 @@ double CMinMaxMeasureList::GetMaxLogLikelihood(const CSaTScanData& Data)
    double nLogLikelihood;
    double nMaxLogLikelihood = Data.m_pModel->GetLogLikelihoodForTotal();
 
-   try
+   for (int i = 0; i < m_nListSize; i++)
       {
-      for (int i = 0; i < m_nListSize; i++)
-         {
-         //    if (HighRate(i, m_pMinMeasures[i], N, U))
-         if (m_pMinMeasures[i] != 0 &&
-            i*Data.m_nTotalMeasure > m_pMinMeasures[i]*Data.m_nTotalCases)
-            {
-            nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMinMeasures[i]);
-            if (nLogLikelihood > nMaxLogLikelihood)
-               nMaxLogLikelihood = nLogLikelihood;
-            }
-         //    if (LowRate(i, m_pMaxMeasures[i], N, U))
-         if (m_pMaxMeasures[i] != 0 &&
-            i*Data.m_nTotalMeasure < m_pMaxMeasures[i]*Data.m_nTotalCases)
-            {
-            nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMaxMeasures[i]);
-            if (nLogLikelihood > nMaxLogLikelihood)
-               nMaxLogLikelihood = nLogLikelihood;
-            }
-         }
+      //    if (HighRate(i, m_pMinMeasures[i], N, U))
+      if (m_pMinMeasures[i] != 0 && i*Data.m_nTotalMeasure > m_pMinMeasures[i]*Data.m_nTotalCases)
+        {
+        nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMinMeasures[i]);
+        if (nLogLikelihood > nMaxLogLikelihood)
+          nMaxLogLikelihood = nLogLikelihood;
+        }
+      //    if (LowRate(i, m_pMaxMeasures[i], N, U))
+      if (m_pMaxMeasures[i] != 0 && i*Data.m_nTotalMeasure < m_pMaxMeasures[i]*Data.m_nTotalCases)
+        {
+        nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMaxMeasures[i]);
+        if (nLogLikelihood > nMaxLogLikelihood)
+          nMaxLogLikelihood = nLogLikelihood;
+        }
       }
-   catch (SSException & x)
-      {
-      x.AddCallpath("GetMaxLogLikelihood()", "CMinMaxMeasureList");
-      throw;
-      }
+
    return (nMaxLogLikelihood);
 }
 
@@ -217,23 +194,15 @@ void CMinMaxMeasureList::Display(FILE* pFile)
 {
    int i;
 
-   try
-      {
-      fprintf(pFile, "Min Measure List\n");
-      for (i=0; i<m_nListSize; i++)
-        fprintf(pFile, "m_pMinMeasures[%i] = %f\n", i, m_pMinMeasures[i]);
-      fprintf(pFile, "\n");
+   fprintf(pFile, "Min Measure List\n");
+   for (i=0; i<m_nListSize; i++)
+      fprintf(pFile, "m_pMinMeasures[%i] = %f\n", i, m_pMinMeasures[i]);
+   fprintf(pFile, "\n");
 
-      fprintf(pFile, "Max Measure List\n");
-      for (i=0; i<m_nListSize; i++)
-        fprintf(pFile, "m_pMaxMeasures[%i] = %f\n", i, m_pMaxMeasures[i]);
-      fprintf(pFile, "\n");
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("Display()", "CMinMaxMeasureList");
-      throw;
-      }
+   fprintf(pFile, "Max Measure List\n");
+   for (i=0; i<m_nListSize; i++)
+      fprintf(pFile, "m_pMaxMeasures[%i] = %f\n", i, m_pMaxMeasures[i]);
+   fprintf(pFile, "\n");
 }
 
 

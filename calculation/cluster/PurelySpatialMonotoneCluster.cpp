@@ -28,25 +28,17 @@ CPSMonotoneCluster::~CPSMonotoneCluster()
 
 void CPSMonotoneCluster::Initialize(tract_t nCenter=0)
 {
-   try
-      {
-      CCluster::Initialize(nCenter);
+  CCluster::Initialize(nCenter);
 
-      m_nClusterType = PURELYSPATIALMONOTONE;
-    
-      for (int i=0; i<m_nMaxCircles; i++)
-        {
-        m_pCasesList[i]         = 0;
-        m_pMeasureList[i]       = 0;
-        m_pFirstNeighborList[i] = 0;
-        m_pLastNeighborList[i]  = 0;
-        }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("Initialize()", "CPSMonotoneCluster");
-      throw;
-      }
+  m_nClusterType = PURELYSPATIALMONOTONE;
+
+  for (int i=0; i<m_nMaxCircles; i++)
+     {
+     m_pCasesList[i]         = 0;
+     m_pMeasureList[i]       = 0;
+     m_pFirstNeighborList[i] = 0;
+     m_pLastNeighborList[i]  = 0;
+     }
 }
 
 void CPSMonotoneCluster::AllocateForMaxCircles(tract_t nCircles)
@@ -126,121 +118,72 @@ CPSMonotoneCluster& CPSMonotoneCluster::operator =(const CPSMonotoneCluster& clu
 
 void CPSMonotoneCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n)
 {
-   try
-      {
-      tract_t nNeighbor = Data.GetNeighbor(0, m_Center, n);
-    
-      m_nSteps++;
-    
-      m_nCases   += pCases[0][nNeighbor];
-      m_nMeasure += Data.m_pMeasure[0][nNeighbor];
-    
-      m_pCasesList[m_nSteps-1]         = pCases[0][nNeighbor];
-      m_pMeasureList[m_nSteps-1]       = Data.m_pMeasure[0][nNeighbor];
-      m_pFirstNeighborList[m_nSteps-1] = n;
-      m_pLastNeighborList[m_nSteps-1]  = n;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("AddNeighbor()", "CPSMonotoneCluster");
-      throw;
-      }
+  tract_t nNeighbor = Data.GetNeighbor(0, m_Center, n);
+
+  m_nSteps++;
+
+  m_nCases   += pCases[0][nNeighbor];
+  m_nMeasure += Data.m_pMeasure[0][nNeighbor];
+
+  m_pCasesList[m_nSteps-1]         = pCases[0][nNeighbor];
+  m_pMeasureList[m_nSteps-1]       = Data.m_pMeasure[0][nNeighbor];
+  m_pFirstNeighborList[m_nSteps-1] = n;
+  m_pLastNeighborList[m_nSteps-1]  = n;
 }
 
 void CPSMonotoneCluster::CheckCircle(tract_t n)
 {
-   try
+  if (n != 0)
+    if (!m_pfRateOfInterest(m_pCasesList[n-1],m_pMeasureList[n-1], m_pCasesList[n],  m_pMeasureList[n]))
       {
-      if (n != 0)
-        if (!m_pfRateOfInterest(m_pCasesList[n-1],m_pMeasureList[n-1],
-                                m_pCasesList[n],  m_pMeasureList[n]))
-        {
-          ConcatLastCircles();
-          CheckCircle(n-1);
-        }
-     }
-   catch (SSException & x)
-      {
-      x.AddCallpath("CheckCircle()", "CPSMonotoneCluster");
-      throw;
+      ConcatLastCircles();
+      CheckCircle(n-1);
       }
 }
 
 void CPSMonotoneCluster::ConcatLastCircles()
 {
-   try
-      {
-      m_nSteps--;
-      m_pCasesList[m_nSteps-1]        += m_pCasesList[m_nSteps];
-      m_pMeasureList[m_nSteps-1]      += m_pMeasureList[m_nSteps];
-      m_pLastNeighborList[m_nSteps-1]  = m_pLastNeighborList[m_nSteps];
-    
-      m_pCasesList[m_nSteps]         = 0;
-      m_pMeasureList[m_nSteps]       = 0;
-      m_pFirstNeighborList[m_nSteps] = 0;
-      m_pLastNeighborList[m_nSteps]  = 0;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("ConcatLastCircles()", "CPSMonotoneCluster");
-      throw;
-      }
+  m_nSteps--;
+  m_pCasesList[m_nSteps-1]        += m_pCasesList[m_nSteps];
+  m_pMeasureList[m_nSteps-1]      += m_pMeasureList[m_nSteps];
+  m_pLastNeighborList[m_nSteps-1]  = m_pLastNeighborList[m_nSteps];
+
+  m_pCasesList[m_nSteps]         = 0;
+  m_pMeasureList[m_nSteps]       = 0;
+  m_pFirstNeighborList[m_nSteps] = 0;
+  m_pLastNeighborList[m_nSteps]  = 0;
 }
 
 void CPSMonotoneCluster::RemoveRemainder()
 {
-   try
-      {
-      m_nSteps--;
-      m_pCasesList[m_nSteps]         = 0;
-      m_pMeasureList[m_nSteps]       = 0;
-      m_pFirstNeighborList[m_nSteps] = 0;
-      m_pLastNeighborList[m_nSteps]  = 0;
-    
-      if (m_nSteps==0)
-        Initialize(m_Center);
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("RemoveRemainder()", "CPSMonotoneCluster");
-      throw;
-      }
+  m_nSteps--;
+  m_pCasesList[m_nSteps]         = 0;
+  m_pMeasureList[m_nSteps]       = 0;
+  m_pFirstNeighborList[m_nSteps] = 0;
+  m_pLastNeighborList[m_nSteps]  = 0;
+
+  if (m_nSteps==0)
+    Initialize(m_Center);
 }
 
 void CPSMonotoneCluster::AddRemainder(count_t nTotalCases, measure_t nTotalMeasure)
 {
-   try
-      {
-      m_nSteps++;
-    
-      m_pCasesList[m_nSteps-1]   = nTotalCases - m_nCases;
-      m_pMeasureList[m_nSteps-1] = nTotalMeasure - m_nMeasure;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("AddRemainder()", "CPSMonotoneCluster");
-      throw;
-      }
+  m_nSteps++;
+
+  m_pCasesList[m_nSteps-1]   = nTotalCases - m_nCases;
+  m_pMeasureList[m_nSteps-1] = nTotalMeasure - m_nMeasure;
 }
 
 void CPSMonotoneCluster::SetCasesAndMeasures()
 {
-   try
-      {
-      m_nCases   = 0;
-      m_nMeasure = 0;
-     
-      for (int i=0; i<m_nSteps; i++)
-        {
-        m_nCases   += m_pCasesList[i];
-        m_nMeasure += m_pMeasureList[i];
-        }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("SetCasesAndMeasures()", "CPSMonotoneCluster");
-      throw;
-      }
+  m_nCases   = 0;
+  m_nMeasure = 0;
+
+  for (int i=0; i<m_nSteps; i++)
+     {
+     m_nCases   += m_pCasesList[i];
+     m_nMeasure += m_pMeasureList[i];
+     }
 }
 
 double CPSMonotoneCluster::SetRatio(double nLikelihoodForTotal)

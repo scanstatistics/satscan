@@ -33,24 +33,17 @@ bool CSignificantRatios05::AddRatio(double r)
    int  i;
    bool bAdded = false;
 
-   try
-      {
-      if (m_nTotalReplications >= 19)
-         {
-         if (r > m_pRatiosList[m_nRatios-1])
-            {
-            bAdded = true;
-            for (i=m_nRatios-1; i>0 && r>m_pRatiosList[i-1]; i--)
-               m_pRatiosList[i] =  m_pRatiosList[i-1];
-            m_pRatiosList[i] = r;
-            }
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("CSignificantRatios05()", "CSignificantRatios05");
-      throw;
-      }
+   if (m_nTotalReplications >= 19)
+     {
+     if (r > m_pRatiosList[m_nRatios-1])
+       {
+       bAdded = true;
+       for (i=m_nRatios-1; i>0 && r>m_pRatiosList[i-1]; i--)
+          m_pRatiosList[i] =  m_pRatiosList[i-1];
+       m_pRatiosList[i] = r;
+       }
+     }
+
   return bAdded;
 }
 

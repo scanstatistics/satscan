@@ -192,16 +192,10 @@ void CAnalysis::AllocateTopClusterList() {
  Comparison function for sorting clusters by descending m_ratio
  **********************************************************************/
 /*static*/ int CAnalysis::CompareClusters(const void *a, const void *b) {
-   try {
-      double rdif = (*(CCluster**)b)->m_nRatio - (*(CCluster**)a)->m_nRatio;
-      if (rdif < 0.0)   return -1;
-      if (rdif > 0.0)   return 1;
-      return 0;
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("CompareClusters()", "CAnalysis");
-      throw;
-   }
+  double rdif = (*(CCluster**)b)->m_nRatio - (*(CCluster**)a)->m_nRatio;
+  if (rdif < 0.0)   return -1;
+  if (rdif > 0.0)   return 1;
+  return 0;
 } /* CompareClusters() */
 
 //******************************************************************************
@@ -209,7 +203,7 @@ void CAnalysis::AllocateTopClusterList() {
 //******************************************************************************
 void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
    FILE *fpMCL = 0;
-   char *szTID;
+   const char *szTID;
    float fExpectedCases, fRelativeRisk, fPVal;
    char sStartDate[15], sEndDate[15];
    auto_ptr<stsClusterLevelDBF> pDBFClusterReport;    // dbf cluster report
@@ -607,17 +601,10 @@ bool CAnalysis::FindTopClusters() {
           ReportTimeEstimate(nStartTime, m_pData->m_nGridTracts, i+1, gpPrintDirection);
       }
 
-    //  #ifdef DEBUGANALYSIS
-    //  fprintf(m_pDebugFile, "\nTop Cluster Prior to Ranking\n\n");
-    //  DisplayTopClusters(-DBL_MAX, INT_MAX, m_pDebugFile, NULL);
-    //  #endif
-
-      //PrintTopClusters(m_pData->m_nGridTracts);
       if (gpPrintDirection->GetIsCanceled())
          bReturn = false;
       else
          RankTopClusters();          // DTG  -- MODIFY THIS FUNCTION !!!!!!!!
-      //PrintTopClusters(m_nClustersRetained);
    }
    catch (ZdException & x) {
       x.AddCallpath("FindTopClusters()", "CAnalysis");
@@ -627,11 +614,11 @@ bool CAnalysis::FindTopClusters() {
 }
 
 void CAnalysis::InitializeTopClusterList() {
-   try {
-      for (int i=0; i<m_nClustersRetained; ++i) {
-         delete m_pTopClusters[i];
-         m_pTopClusters[i] = 0;
-      }
+  try {
+     for (int i=0; i<m_nClustersRetained; ++i) {
+        delete m_pTopClusters[i];
+        m_pTopClusters[i] = 0;
+     }
    }
    catch (ZdException & x) {
       x.AddCallpath("InitializeTopClusterList()", "CAnalysis");
@@ -1067,29 +1054,17 @@ bool CAnalysis::RepeatAnalysis()
 
 void CAnalysis::SortTopClusters()
 {
-   try {
-      qsort(m_pTopClusters, m_nClustersRetained, sizeof(CCluster*), CompareClusters);
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("SortTopClusters()", "CAnalysis");
-      throw;
-   }
+  qsort(m_pTopClusters, m_nClustersRetained, sizeof(CCluster*), CompareClusters);
 }
 
 void CAnalysis::UpdatePowerCounts(double r)
 {
-   try {
-      if (m_pParameters->m_bPowerCalc) {
-         if (r > m_pParameters->m_nPower_X)
-            ++m_nPower_X_Count;
-         if (r > m_pParameters->m_nPower_Y)
-            ++m_nPower_Y_Count;
-      }
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("UpdatePowerCounts(double)", "CAnalysis");
-      throw;
-   }
+  if (m_pParameters->m_bPowerCalc) {
+    if (r > m_pParameters->m_nPower_X)
+      ++m_nPower_X_Count;
+    if (r > m_pParameters->m_nPower_Y)
+      ++m_nPower_Y_Count;
+  }
 }
 
 bool CAnalysis::UpdateReport(const long& lReportHistoryRunNumber)
@@ -1155,27 +1130,10 @@ bool CAnalysis::UpdateReport(const long& lReportHistoryRunNumber)
 
 void CAnalysis::UpdateTopClustersRank(double r)
 {
-   try {
-      for (int i=m_nClustersRetained-1; i>=0; i--) {
-         if (m_pTopClusters[i]->m_nRatio > r)
-            break;
-         m_pTopClusters[i]->m_nRank++;
-      }
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("UpdateTopClustersRank(double)", "CAnalysis");
-      throw;
-   }
+  for (int i=m_nClustersRetained-1; i>=0; i--) {
+     if (m_pTopClusters[i]->m_nRatio > r)
+       break;
+     m_pTopClusters[i]->m_nRank++;
+  }
 }
-
-
-/*void CAnalysis::MakeData()
-{
-  ::MakeData(m_pData->m_pMeasure,  m_pData->m_nTotalCases,
-             m_pData->m_nTotalTractsAtStart, m_pData->m_nTotalMeasure,
-             m_pData->m_pSimCases, m_pData->m_nTimeIntervals);
-}
-*/
-
-
 

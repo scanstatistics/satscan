@@ -134,27 +134,20 @@ double CBernoulliModel::CalcLogLikelihood(count_t n, measure_t u)
    double    nLL_C = 0.0;
    double    nLL_D = 0.0;
 
-   try
-      {
-      if (n != 0)
-        nLL_A = n*log(n/u);
-    
-      if (n != u)
-        nLL_B = (u-n)*log(1-(n/u));
-    
-      if (N-n != 0)
-        nLL_C = (N-n)*log((N-n)/(U-u));
-    
-      if (N-n != U-u)
-        nLL_D = ((U-u)-(N-n))*log(1-((N-n)/(U-u)));
-    
-      nLogLikelihood = nLL_A + nLL_B + nLL_C + nLL_D;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("CalcLogLikelihood(count_t, measure_t)", "CBernoulliModel");
-      throw;
-      }
+   if (n != 0)
+     nLL_A = n*log(n/u);
+
+   if (n != u)
+     nLL_B = (u-n)*log(1-(n/u));
+
+   if (N-n != 0)
+     nLL_C = (N-n)*log((N-n)/(U-u));
+
+   if (N-n != U-u)
+     nLL_D = ((U-u)-(N-n))*log(1-((N-n)/(U-u)));
+
+   nLogLikelihood = nLL_A + nLL_B + nLL_C + nLL_D;
+
    return (nLogLikelihood);
 }
 
@@ -164,26 +157,19 @@ double CBernoulliModel::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMC
    count_t   n;
    measure_t u;
 
-   try
-      {
-      for (int i=0; i<PSMCluster.m_nSteps; i++)
-        {
-        n = PSMCluster.m_pCasesList[i];
-        u = PSMCluster.m_pMeasureList[i];
-    
-        if (n != 0  && n != u)
-          nLogLikelihood += n*log(n/u) + (u-n)*log(1-(n/u));
-        else if (n == 0)
-          nLogLikelihood += (u-n)*log(1-(n/u));
-        else if (n == u)
-          nLogLikelihood += n*log(n/u);
-        }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("CalcMonotoneLogLikelihood(const CPSMonotoneCluster *)", "CBernoulliModel");
-      throw;
-      }
+   for (int i=0; i<PSMCluster.m_nSteps; i++)
+     {
+     n = PSMCluster.m_pCasesList[i];
+     u = PSMCluster.m_pMeasureList[i];
+
+     if (n != 0  && n != u)
+       nLogLikelihood += n*log(n/u) + (u-n)*log(1-(n/u));
+     else if (n == 0)
+       nLogLikelihood += (u-n)*log(1-(n/u));
+     else if (n == u)
+       nLogLikelihood += n*log(n/u);
+     }
+
    return nLogLikelihood;
 }
 
@@ -305,20 +291,12 @@ double CBernoulliModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tra
    double  nPop = 0.0;
    count_t nNeighbor;
 
-   try
+   for (int i=1; i<=nTracts; i++)
       {
-      for (int i=1; i<=nTracts; i++)
-      {
-        nNeighbor = m_pData->GetNeighbor(m_iEllipseOffset, nCenter, i);
-        nPop += m_pData->m_pMeasure[nStartInterval][nNeighbor] -
-                m_pData->m_pMeasure[nStopInterval][nNeighbor];
+      nNeighbor = m_pData->GetNeighbor(m_iEllipseOffset, nCenter, i);
+      nPop += m_pData->m_pMeasure[nStartInterval][nNeighbor] - m_pData->m_pMeasure[nStopInterval][nNeighbor];
       }
-   }
-   catch (SSException & x)
-      {
-      x.AddCallpath("GetPopulation(int, tract_t, tract_t, int, int)", "CBernoulliModel");
-      throw;
-      }
+
    return nPop;
 }
 

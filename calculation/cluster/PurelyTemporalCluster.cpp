@@ -27,7 +27,10 @@ CPurelyTemporalCluster::CPurelyTemporalCluster(int nTIType, int nIntervals, int 
 
 CPurelyTemporalCluster::~CPurelyTemporalCluster()
 {
-   delete m_TI;
+  try {
+    delete m_TI;
+  }
+  catch(...){}  
 }
 
 void CPurelyTemporalCluster::Initialize(tract_t nCenter)
@@ -83,30 +86,14 @@ measure_t CPurelyTemporalCluster::GetMeasureForTract(tract_t tTract, const CSaTS
 
 void CPurelyTemporalCluster::InitTimeIntervalIndeces()
 {
-   try
-      {
-      m_TI->Initialize();
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("InitTimeIntervalIndeces()", "CPurelyTemporalCluster");
-      throw;
-      }
+  m_TI->Initialize();
 }
 
 bool CPurelyTemporalCluster::SetNextTimeInterval(const count_t*& pCases,
                                                  const measure_t*& pMeasure)
 {
-   bool bValue;
-
   m_bClusterDefined = true;
-  bValue = (m_TI->GetNextTimeInterval(pCases,
-                                   pMeasure,
-                                   m_nCases,
-                                   m_nMeasure,
-                                   m_nFirstInterval,
-                                   m_nLastInterval));
-   return bValue;
+  return (m_TI->GetNextTimeInterval(pCases, pMeasure, m_nCases, m_nMeasure, m_nFirstInterval, m_nLastInterval));
 }
 
 void CPurelyTemporalCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
