@@ -49,8 +49,8 @@ char mgsVariableLabels[48][100] = {
    "Output Census Areas in Reported Clusters",
    "Output Most Likely Cluster for each Centroid",
    "Criteria for Reporting Secondary Clusters",
-   "How Max Temporal Size Should Be Interperated",
-   "How Max Spatial Size Should Be Interperated",
+   "How Max Temporal Size Should Be Interpreted",
+   "How Max Spatial Size Should Be Interpreted",
    "Analysis Run History File",
    "Output for cluster informration",
    "Output for area information"
