@@ -751,8 +751,6 @@ object frmAnalysis: TfrmAnalysis
           Top = 16
           Width = 38
           Height = 21
-          Color = clInactiveBorder
-          Enabled = False
           MaxLength = 5
           TabOrder = 0
           Text = '50'

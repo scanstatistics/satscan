@@ -1064,8 +1064,6 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           // enable spatial but not checkbox
           rdoSpatialPercentage->Enabled = true;
           rdoSpatialDistance->Enabled = true;
-          edtMaxClusterSize->Enabled = true;
-          edtMaxClusterSize->Color = clWindow;
           chkInclPurTempClust->Enabled = false;
           gpParams->m_bIncludePurelyTemporal = false;
           chkInclPurTempClust->Checked = false;
