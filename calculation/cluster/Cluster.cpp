@@ -85,7 +85,7 @@ void CCluster::DisplayAnnualCaseInformation(FILE* fp, const CSaTScanData& DataHu
   ZdString                      sWork, sBuffer;
   const DataStreamHandler     & Streams = DataHub.GetDataStreamHandler();
 
-  if (DataHub.GetParameters().GetProbabiltyModelType() == POISSON) {
+  if (DataHub.GetParameters().GetProbabiltyModelType() == POISSON && DataHub.GetParameters().UsePopulationFile()) {
     sBuffer.printf("Annual cases / %.0f", DataHub.GetAnnualRatePop());
     PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
     sBuffer.printf("%.1f", DataHub.GetAnnualRateAtStart(0) * GetRelativeRisk(DataHub.GetMeasureAdjustment(0), 0));
@@ -357,7 +357,8 @@ void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, const Ascii
   const DataStreamHandler     & Streams = Data.GetDataStreamHandler();
   double                        dPopulation;
 
-  if (Data.GetParameters().GetProbabiltyModelType() == POISSON || Data.GetParameters().GetProbabiltyModelType() == BERNOULLI) {
+  if ((Data.GetParameters().GetProbabiltyModelType() == POISSON && Data.GetParameters().UsePopulationFile()) 
+      || Data.GetParameters().GetProbabiltyModelType() == BERNOULLI) {
     PrintFormat.PrintSectionLabel(fp, "Population", false, true);
 
     for (i=0; i < Streams.GetNumStreams(); ++i) {
