@@ -1,6 +1,6 @@
 object frmAnalysis: TfrmAnalysis
-  Left = 350
-  Top = 190
+  Left = 265
+  Top = 197
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SaTScan'
@@ -855,28 +855,28 @@ object frmAnalysis: TfrmAnalysis
         object lblClustersInColumnFormat: TLabel
           Left = 16
           Top = 48
-          Width = 121
+          Width = 280
           Height = 13
-          Caption = 'Clusters in Column Format'
+          Caption = 'Cluster Information'
         end
         object lblCensusAreasReportedClusters: TLabel
           Left = 16
           Top = 72
-          Width = 163
+          Width = 96
           Height = 13
-          Caption = 'Census Areas in Reported Clusters'
+          Caption = 'Location Information'
         end
         object lblRelativeRiskEstimatesArea: TLabel
           Left = 16
           Top = 96
-          Width = 217
+          Width = 155
           Height = 13
-          Caption = 'Relative Risk Estimates for Each Census Area'
+          Caption = 'Relative Risks for Each Location'
         end
         object lblSimulatedLogLikelihoodRatios: TLabel
           Left = 16
           Top = 120
-          Width = 151
+          Width = 280
           Height = 13
           Caption = 'Simulated Log Likelihood Ratios'
         end
