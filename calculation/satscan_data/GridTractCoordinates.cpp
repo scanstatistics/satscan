@@ -351,7 +351,8 @@ bool GInfo::giFindDuplicateCoords(FILE* pDisplay)
            //   fprintf(pDisplay, "%.0f, ", pCoords[nDims]);
            // }
            //fprintf(pDisplay, "%.0f).\n\n", pCoords[nDimensions-1]);
-           gpPrintDirection->SatScanPrintWarning("Note: The grid file has multiple identical coordinates.\nThis does not effect the results, but the program will run faster if duplicates are removed.");
+           gpPrintDirection->SatScanPrintWarning("Note: The grid file has multiple identical coordinates.\n");
+           gpPrintDirection->SatScanPrintWarning("      This does not effect the results, but the program will run faster if duplicates are removed.\n\n");
            }
         free(pCoords);
         i++;
