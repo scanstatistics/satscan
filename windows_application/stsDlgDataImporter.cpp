@@ -33,9 +33,8 @@ __fastcall TBDlgDataImporter::~TBDlgDataImporter() {
 /** Enables Add button for fixed column field definitions. */
 void TBDlgDataImporter::AddFixedColDefinitionEnable() {
   btnAddFldDef->Enabled = (edtFieldName->GetTextLen() > 0 &&
-                           edtFieldLength->GetTextLen() > 0
-                           && edtStartColumn->GetTextLen() > 0 &&
-                           StrToInt(edtStartColumn->Text) > 0);
+                           edtFieldLength->GetTextLen() > 0 && StrToInt(edtFieldLength->Text) > 0
+                           && edtStartColumn->GetTextLen() > 0 && StrToInt(edtStartColumn->Text) > 0);
 }
 
 /** Adjust file/ file field attributes for import
