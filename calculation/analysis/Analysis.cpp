@@ -76,7 +76,7 @@ bool CAnalysis::Execute(time_t RunTime) {
          return false;
     
       if (m_pData->m_nTotalCases < 1)
-         SSGenerateException("  Error: No cases found in input data.\n", "CAnalysis");    //KR V.2.1
+         ZdException::Generate("Error: No cases found in input data.\n","CAnalysis");    //KR V.2.1
 
       //For circle and each ellipse, find closest neighboring tracts points for
       //each grid point limiting distance by max circle size and cumulated measure.
@@ -551,18 +551,20 @@ void CAnalysis::InitializeTopClusterList() {
 // post: will return a file pointer handle if successful in opening file, else will generate
 //       exception if correct szType used
 void CAnalysis::OpenReportFile(FILE*& fp, const char* szType) {
-   try {
-      if ((fp = fopen(m_pParameters->GetOutputFileName().c_str(), szType)) == NULL) {
-        if (!strcmp(szType, "w"))
-          SSGenerateException("  Error: Unable to create report file.", "OpenReportFile");
-        else if (!strcmp(szType, "a"))
-          SSGenerateException("  Error: Unable to open report file.", "OpenReportFile");
-      }
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("OpenReportFile(File *, const char *)", "CAnalysis");
-      throw;
-   }
+  try {
+    if ((fp = fopen(m_pParameters->GetOutputFileName().c_str(), szType)) == NULL) {
+      if (!strcmp(szType, "w"))
+        ZdException::Generate("Error: Results file '%s' could not be created.\n",
+                              "OpenReportFile()", m_pParameters->GetOutputFileName().c_str());
+      else if (!strcmp(szType, "a"))
+        ZdException::Generate("Error: Results file '%s' could not be opened.\n",
+                              "OpenReportFile()", m_pParameters->GetOutputFileName().c_str());
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("OpenReportFile()", "CAnalysis");
+    throw;
+  }
 }
 
 // performs Monte Carlo Simulations and prints out the results for each one
