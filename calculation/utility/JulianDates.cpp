@@ -219,7 +219,7 @@ double IntervalInYears(int nUnits, long nLength)
 }
 
 // V.2.0.4.4
-UInt Ensure4DigitYear(UInt y, char* szLowerBoundDt, char* szUpperBoundDt)
+UInt Ensure4DigitYear(UInt y, const char* szLowerBoundDt, const char* szUpperBoundDt)
 {
   UInt month, day;
   UInt nLowerBound;
