@@ -56,12 +56,13 @@ class BaseOutputStorageClass {
       virtual ~BaseOutputStorageClass();
       
       void			AddRecord(BaseOutputRecord* pRecord);
-      
+
+      ZdField*                          GetField(unsigned short uwFieldNumber); 
       const ZdVector<ZdField*>&	        GetFields() { return gvFields; }
       const ZdString&			GetFileName() { return gsFileName; }
       const unsigned short		GetNumFields() { return gvFields.size(); }
       const unsigned long		GetNumRecords() { return gvRecords.size(); }
-      const BaseOutputRecord*		GetRecord(int iPosition);     	
+      BaseOutputRecord*		        GetRecord(int iPosition);     	
 };
 
 

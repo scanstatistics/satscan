@@ -115,11 +115,28 @@ void BaseOutputStorageClass::AddRecord(BaseOutputRecord* pRecord) {
    }
 }
 
+// returns a pointer to the uwFieldNumber'th field in the global vector
+// pre : none 0 <= uwFieldNumber  < gvFields.size()
+// post : if uwFieldNumber is valid index then returns a pointer to that field, else
+//        throws an exception
+ZdField* BaseOutputStorageClass::GetField(unsigned short uwFieldNumber) {
+   try {
+     // check index in range
+      if (uwFieldNumber >= gvFields.GetNumElements())
+         ZdGenerateException("Invalid index, out of range!", "Error!");
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("GetField()", "BaseOutputStorageClass");
+      throw;
+   }
+   return gvFields[uwFieldNumber];
+}
+
 // returns a pointer to the record at iPosition in the global vector
 // pre : none
 // post : if iPosition not in valid index range then exception, else returns
 //        a pointer to the iPosition element in the vector
-const BaseOutputRecord* BaseOutputStorageClass::GetRecord(int iPosition) { 
+BaseOutputRecord* BaseOutputStorageClass::GetRecord(int iPosition) {
    try {
       if (iPosition < 0 || iPosition >= gvRecords.size())
          ZdGenerateException ("Invalid index, out of range", "Error!");   
