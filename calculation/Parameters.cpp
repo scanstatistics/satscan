@@ -269,6 +269,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gbOutputSimulationData              = rhs.gbOutputSimulationData;
     gsSimulationDataOutputFilename      = rhs.gsSimulationDataOutputFilename;
     gbAdjustForEarlierAnalyses          = rhs.gbAdjustForEarlierAnalyses;
+    gbUseAdjustmentsForRRFile           = rhs.gbUseAdjustmentsForRRFile;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -469,7 +470,7 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
          case NONPARAMETRIC             : fprintf(fp, "Nonparametric\n"); break;
          case LOGLINEAR_PERC            : fprintf(fp, "Log linear with %g%% per year\n", gdTimeTrendAdjustPercentage); break;
          case CALCULATED_LOGLINEAR_PERC : fprintf(fp, "Log linear with calculated trend of %g%% per year\n", gdTimeTrendAdjustPercentage); break;
-         case STRATIFIED_RANDOMIZATION  : fprintf(fp, "Stratified randomization by time interval\n"); break;
+         case STRATIFIED_RANDOMIZATION  : fprintf(fp, "Nonparametric, with time stratified randomization\n"); break;
          default : ZdException::Generate("Unknown time trend adjustment type '%d'.\n", "DisplayParameters()", geTimeTrendAdjustType);
       }
     }
