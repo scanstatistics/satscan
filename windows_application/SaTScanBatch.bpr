@@ -46,29 +46,36 @@
       ..\calculation\analysis\PurelyTemporalAnalysis.obj 
       ..\calculation\Parameters.obj 
       ..\calculation\probability_model\SpaceTimePermutationModel.obj 
-      ..\calculation\SaTScanBasis.obj"/>
+      ..\calculation\SaTScanBasis.obj 
+      ..\calculation\Output\stsAreaSpecificDBF.obj 
+      ..\calculation\Output\stsClusterLevelDBF.obj 
+      ..\calculation\Output\stsOutputDBF.obj 
+      ..\calculation\Output\stsRunHistoryFile.obj 
+      ..\CALCULATION\UTILITY\DBFFile.obj"/>
     <RESFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
-    <LIBFILES value="&quot;C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib&quot; &quot;C:\Program Files\Borland\CBuilder5\Lib\zd540.lib&quot;"/>
+    <LIBFILES value="&quot;C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib&quot; 
+      &quot;C:\Program Files\Borland\CBuilder5\Lib\zd540.lib&quot; 
+      ..\xbase\xbase_2.0.0\xbase\xbase.lib"/>
     <LIBRARIES value="Vcl50.lib"/>
     <SPARELIBS value="Vcl50.lib"/>
     <PACKAGES value="Vcl50.bpi Vclx50.bpi Vcldb50.bpi Vclbde50.bpi vcldbx50.bpi bcbie50.bpi 
       bcb2kaxserver50.bpi bcbsmp50.bpi ibsmp50.bpi dclocx50.bpi vclie50.bpi 
       Inetdb50.bpi Inet50.bpi TeeQR50.bpi TeeUI50.bpi TeeDB50.bpi Tee50.bpi 
       Qrpt50.bpi NMFast50.bpi VCLIB50.bpi TSGC5201.bpi TSDGC5201.bpi"/>
-    <PATHCPP value=".;..\calculation\utility;..\calculation\print;..\calculation\probability_model;..\calculation\satscan_data;..\calculation\cluster;..\calculation\analysis;..\calculation"/>
+    <PATHCPP value=".;..\calculation\utility;..\calculation\print;..\calculation\probability_model;..\calculation\satscan_data;..\calculation\cluster;..\calculation\analysis;..\calculation;..\calculation\Output"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED;_DEBUG;__BATCH_COMPILE"/>
+    <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="SaTScanBatch.bpf"/>
-    <INCLUDEPATH value="..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep"/>
-    <LIBPATH value="..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep"/>
+    <INCLUDEPATH value="..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
+    <LIBPATH value="..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
     <WARNINGS value="-w-par"/>
   </MACROS>
   <OPTIONS>
@@ -125,43 +132,56 @@ $(BCB)\Bin\dclqrt50.bpl=QuickReport 3 Package
 $(BCB)\Bin\dcltee50.bpl=TeeChart 5.0 Components
 
 [HistoryLists\hlIncludePath]
-Count=7
-Item0=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep
-Item1=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfsd\home\hostovic\prj\basisdev\include;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep
-Item2=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl
-Item3=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;satscan_data;$(BCB)\include;$(BCB)\include\vcl;analysis;cluster;print;probability_model;utility
-Item4=satscan_data;$(BCB)\include;$(BCB)\include\vcl;analysis;cluster;print;probability_model;utility
-Item5=$(BCB)\include;$(BCB)\include\vcl;C:\Prj\SatScan\calculation;C:\Prj\SatScan\calculation\analysis;C:\Prj\SatScan\calculation\cluster;C:\Prj\SatScan\calculation\print;C:\Prj\SatScan\calculation\probability_model;C:\Prj\SatScan\calculation\utility
-Item6=$(BCB)\include;$(BCB)\include\vcl
+Count=10
+Item0=..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0
+Item1=..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0
+Item2=..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep
+Item3=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep
+Item4=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfsd\home\hostovic\prj\basisdev\include;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep
+Item5=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl
+Item6=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;satscan_data;$(BCB)\include;$(BCB)\include\vcl;analysis;cluster;print;probability_model;utility
+Item7=satscan_data;$(BCB)\include;$(BCB)\include\vcl;analysis;cluster;print;probability_model;utility
+Item8=$(BCB)\include;$(BCB)\include\vcl;C:\Prj\SatScan\calculation;C:\Prj\SatScan\calculation\analysis;C:\Prj\SatScan\calculation\cluster;C:\Prj\SatScan\calculation\print;C:\Prj\SatScan\calculation\probability_model;C:\Prj\SatScan\calculation\utility
+Item9=$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=8
-Item0=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep
-Item1=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfsd\home\hostovic\prj\basisdev\include;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep
-Item2=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib
-Item3=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;analysis;cluster;print;utility;satscan_data;probability_model
-Item4=$(BCB)\lib\obj;$(BCB)\lib;analysis;cluster;print;utility;satscan_data;probability_model
-Item5=$(BCB)\lib\obj;$(BCB)\lib;C:\Prj\SatScan\calculation;C:\Prj\SatScan\calculation\analysis;C:\Prj\SatScan\calculation\cluster;C:\Prj\SatScan\calculation\print;C:\Prj\SatScan\calculation\utility;C:\Prj\SatScan\calculation\satscan_data;C:\Prj\SatScan\calculation\probability_model
-Item6=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib
-Item7=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Count=11
+Item0=..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0
+Item1=..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0
+Item2=..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep
+Item3=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep
+Item4=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfsd\home\hostovic\prj\basisdev\include;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep
+Item5=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib
+Item6=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;analysis;cluster;print;utility;satscan_data;probability_model
+Item7=$(BCB)\lib\obj;$(BCB)\lib;analysis;cluster;print;utility;satscan_data;probability_model
+Item8=$(BCB)\lib\obj;$(BCB)\lib;C:\Prj\SatScan\calculation;C:\Prj\SatScan\calculation\analysis;C:\Prj\SatScan\calculation\cluster;C:\Prj\SatScan\calculation\print;C:\Prj\SatScan\calculation\utility;C:\Prj\SatScan\calculation\satscan_data;C:\Prj\SatScan\calculation\probability_model
+Item9=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib
+Item10=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
-Count=2
-Item0=$(BCB)\source\vcl;\\Nfsd\home\hostovic\prj\basisdev\include;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep
-Item1=$(BCB)\source\vcl
+Count=7
+Item0=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd540
+Item1=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;F:\
+Item2=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0
+Item3=c:\program files\borland\cbuilder5\source\vcl;\\Nfsd\home\hostovic\prj\basisdev\include;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;F:\
+Item4=$(BCB)\source\vcl;\\Nfsd\home\hostovic\prj\basisdev\include;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0
+Item5=$(BCB)\source\vcl;\\Nfsd\home\hostovic\prj\basisdev\include;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep
+Item6=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=4
-Item0=INTEL_BASED;_DEBUG;__BATCH_COMPILE
-Item1=INTEL_BASED;_DEBUG
-Item2=INTEL_BASED
-Item3=_DEBUG
+Count=6
+Item0=INTEL_BASED;__BATCH_COMPILE;_DEBUG
+Item1=INTEL_BASED;__BATCH_COMPILE
+Item2=INTEL_BASED;_DEBUG;__BATCH_COMPILE
+Item3=INTEL_BASED;_DEBUG
+Item4=INTEL_BASED
+Item5=_DEBUG
 
 [Debugging]
-DebugSourceDirs=$(BCB)\source\vcl;\\Nfsd\home\hostovic\prj\basisdev\include;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep
+DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd540
 
 [Parameters]
-RunParams=C:\Prj\SatScan\Examples\ellipse1\ellipse1.prm
+RunParams=C:\Prj\SatScan\Examples\ellipse2\ellipse2.prm
 HostApplication=C:\SatScan v3.0\calc\Satscan.exe
 RemoteHost=
 RemotePath=

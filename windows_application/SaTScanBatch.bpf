@@ -46,7 +46,19 @@ USEUNIT("..\calculation\probability_model\SpaceTimePermutationModel.cpp");
 USEUNIT("..\calculation\SaTScanBasis.cpp");
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib");
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
+USEUNIT("..\calculation\Output\stsAreaSpecificDBF.cpp");
+USEUNIT("..\calculation\Output\stsClusterLevelDBF.cpp");
+USEUNIT("..\calculation\Output\stsOutputDBF.cpp");
+USEUNIT("..\calculation\Output\stsRunHistoryFile.cpp");
+USEUNIT("..\CALCULATION\UTILITY\DBFFile.cpp");
+USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
 T//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
