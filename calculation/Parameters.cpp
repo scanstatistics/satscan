@@ -242,7 +242,7 @@ void CParameters::CheckModelInfoIniSection(ZdIniFile& file) {
    try {
       ZdIniSection* pSection = file.GetSection(MODEL_INFO_SECTION);
       if ( pSection->FindKey(ANALYSIS_TYPE_LINE) == -1 ) {
-            pSection->AddComment(" analysis type (1=S, 2=T, 3=RST, 4=PST)");
+            pSection->AddComment(" analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time)");
             pSection->AddLine(ANALYSIS_TYPE_LINE, "");
       }
       if ( pSection->FindKey(SCAN_AREAS_LINE) == -1 ) {
