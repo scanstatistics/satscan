@@ -79,10 +79,9 @@ double GetDuczmalCorrection(double dEllipseShape) {
 
 
 /** constructor */
-StringParser::StringParser(BasePrint::eInputFileType eFileType) {
+StringParser::StringParser(BasePrint& Print) : gPrint(Print) {
   gwCurrentWordIndex = -1;
   glReadCount = 0;
-  geFileType = eFileType; 
   giSizeOfWordBuffer = MAX_LINEITEMSIZE;
   gpWord = new char[MAX_LINEITEMSIZE];
   gpWord[0] = 0;
@@ -99,9 +98,9 @@ StringParser::~StringParser(){
 void StringParser::ThrowAsciiException() {
   std::string s;
 
-  SSGenerateException("Error: The %s file contains data that is not ASCII formatted.\n"
+  SSGenerateException("Error: The %s contains data that is not ASCII formatted.\n"
                       "       Please see 'ASCII Input File Format' in the user guide for help.\n",
-                      "CheckIsASCII()", BasePrint::GetInputFileType(geFileType, s).c_str());
+                      "CheckIsASCII()", gPrint.GetImpliedFileTypeString().c_str());
 }
 
 /** Returns whether string has words. */

@@ -31,13 +31,13 @@ class StringParser {
     int                         giSizeOfWordBuffer;
     short                       gwCurrentWordIndex;
     long                        glReadCount;
-    BasePrint::eInputFileType   geFileType;
+    BasePrint                 & gPrint;
 
     void                        ClearWordIndex() {gwCurrentWordIndex=-1;}
     void                        ThrowAsciiException();
 
   public:
-    StringParser(BasePrint::eInputFileType eFileType);
+    StringParser(BasePrint& Print);
     ~StringParser();
 
     bool                        HasWords();
