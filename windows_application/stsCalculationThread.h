@@ -26,7 +26,8 @@ class CalcThread : public TThread {
     PrintWindow       * gpPrintWindow;
     TfrmAnalysisRun   & gFormStatus;
     char              * gsPrintString;
-    bool                gbJobCanceled;  
+    bool                gbJobCanceled;
+    std::string         gsProgramErrorCallPath;      
 
     void                Free();
     void                Init();
@@ -40,6 +41,7 @@ class CalcThread : public TThread {
     void __fastcall     PrintWarningLineToProgress(void);
     void __fastcall     ResetProgressCloseButton(void);
     void __fastcall     SetJobCancelled(void);
+    void __fastcall     SetProgramErrorCallPath(void); 
     void __fastcall     SetProgressWarnings(void);
     void                Setup(const CParameters& Parameters);
 

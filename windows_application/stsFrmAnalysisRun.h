@@ -37,6 +37,7 @@ class TfrmAnalysisRun : public stsBaseAnalysisChildForm  {
     bool                        gbCanClose;
     stsOutputFileRegister     & gRegistry;
     std::string                 gsOutputFileName;
+    std::string                 gsProgramErrorCallPath;
     CalcThread                * gpAnalysisThread;  
 
     void                        Init();

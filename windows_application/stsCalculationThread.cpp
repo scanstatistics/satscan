@@ -151,6 +151,8 @@ void __fastcall CalcThread::Execute() {
     x.AddCallpath("Execute()", "CalcThread");
     gpPrintWindow->SatScanPrintWarning("\nProgram Error:\n");
     gpPrintWindow->SatScanPrintWarning(x.GetErrorMessage());
+    gsProgramErrorCallPath = x.GetCallpath();
+    Synchronize((TThreadMethod)&SetProgramErrorCallPath);
     gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
     Synchronize((TThreadMethod)&EnableProgressPrintButton);
@@ -251,6 +253,11 @@ void __fastcall CalcThread::SetJobCancelled(void) {
     gFormStatus.CancelJob();
   }
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
+}
+
+/** Sets call stack string in run analysis class for inclusion in emial message. */
+void __fastcall CalcThread::SetProgramErrorCallPath(void) {
+  gFormStatus.gsProgramErrorCallPath = gsProgramErrorCallPath;
 }
 
 /** Sets warnings in run analysis window. */

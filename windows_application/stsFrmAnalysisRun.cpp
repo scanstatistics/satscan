@@ -164,6 +164,11 @@ void __fastcall TfrmAnalysisRun::OnEMailClick(TObject *Sender) {
       sMessageText += "\n\n\n--Warnings/Errors Info--\n";
       sMessageText += rteWarningsBox->Lines->GetText();
       sMessageText += "\n\n";
+      if (!gsProgramErrorCallPath.empty()) {
+        sMessageText += "--Call Path Info--\n\n";
+        sMessageText += gsProgramErrorCallPath.c_str();
+        sMessageText += "\n\n";
+      }
       sMessageText += "\n--End Of Error Message--";
 
       theMapiMessage.ulReserved = 0;
@@ -181,10 +186,10 @@ void __fastcall TfrmAnalysisRun::OnEMailClick(TObject *Sender) {
 
       ulError = MapiSendMail(0, (unsigned int)this->Handle, theMapiMessage, MAPI_DIALOG | MAPI_LOGON_UI /*| MAPI_NEW_SESSION*/, 0);
       if (ulError != 0)    //returns zero on success
-         Application->MessageBox("E-mail was not able to be sent.", "Warning", MB_OKCANCEL);
+         Application->MessageBox("E-mail was not able to be sent.", "Warning", MB_OK);
    }
    else
-      Application->MessageBox("Message Service not available.", "Warning", MB_OKCANCEL);
+      Application->MessageBox("Message Service not available.", "Warning", MB_OK);
 
    delete [] sMsgTitle; 
    MapiFreeBuffer(pRecipient);
