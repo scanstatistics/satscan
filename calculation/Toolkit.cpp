@@ -53,23 +53,25 @@ void SaTScanToolkit::AddParameterToHistory(const char * sParameterFileName) {
   std::vector<std::string>::iterator      itr;
 
   try {
-    if (gvParameterHistory.empty())
-      gvParameterHistory.push_back(sParameterFileName);
-    else {
-       itr = std::find(gvParameterHistory.begin(), gvParameterHistory.end(), sParameterFileName);
-       if (itr == gvParameterHistory.begin())
-         return;
-       else if (itr == gvParameterHistory.end()) {
-         if (gvParameterHistory.size() == giMaximumParameterHistoryItems)
-           gvParameterHistory.pop_back();
-         gvParameterHistory.insert(gvParameterHistory.begin(), sParameterFileName);
-       }
-       else {
-         gvParameterHistory.erase(itr);
-         gvParameterHistory.insert(gvParameterHistory.begin(), sParameterFileName);
-       }
+    if (sParameterFileName && strlen(sParameterFileName)) {
+      if (gvParameterHistory.empty())
+        gvParameterHistory.push_back(sParameterFileName);
+      else {
+         itr = std::find(gvParameterHistory.begin(), gvParameterHistory.end(), sParameterFileName);
+         if (itr == gvParameterHistory.begin())
+           return;
+         else if (itr == gvParameterHistory.end()) {
+           if (gvParameterHistory.size() == giMaximumParameterHistoryItems)
+             gvParameterHistory.pop_back();
+           gvParameterHistory.insert(gvParameterHistory.begin(), sParameterFileName);
+         }
+         else {
+           gvParameterHistory.erase(itr);
+           gvParameterHistory.insert(gvParameterHistory.begin(), sParameterFileName);
+         }
+      }
+      WriteParametersHistory();
     }
-    WriteParametersHistory();
   }
   catch (ZdException& x) {
     x.AddCallpath("AddParameterToHistory()", "SaTScanToolkit");
