@@ -126,6 +126,8 @@ const char * StringParser::GetWord(short wWordIndex) {
            if (--w == 0)
              break;
        }
+       if (!isascii(*cp))
+         SSGenerateException("Error: File contains non-ascii data.","GetWord()");
        cp++; /* next character */
   }
 
