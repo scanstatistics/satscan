@@ -26,19 +26,22 @@ class CPurelySpatialCluster : public CCluster {
     virtual CPurelySpatialCluster     * Clone() const;
     CPurelySpatialCluster             & operator=(const CPurelySpatialCluster& rhs);
 
-    void                                AddNeighborDataAndCompare(const AbtractDataStreamGateway & DataGateway,
+    void                                AddNeighborDataAndCompare(tract_t tEllipseOffset,
+                                                                  tract_t tCentroid,
+                                                                  const AbtractDataStreamGateway & DataGateway,
                                                                   const CSaTScanData * pData,
                                                                   CPurelySpatialCluster & TopCluster,                                                                  
                                                                   AbstractLikelihoodCalculator & Calculator);
-    virtual void                        DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType);
+    virtual void                        DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const ClusterPrintFormat& PrintFormat) const;
     virtual count_t                     GetCaseCount(unsigned int iStream) const {return gpClusterData->GetCaseCount(iStream);}
     virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual inline AbstractClusterData * GetClusterData() {return gpClusterData;}
     virtual int                         GetClusterType() const {return PURELYSPATIAL;}
+    virtual ZdString                  & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     virtual measure_t                   GetMeasure(unsigned int iStream) const {return gpClusterData->GetMeasure(iStream);}
     virtual measure_t                   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual ZdString                  & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     virtual void                        Initialize(tract_t nCenter=0);
-    virtual void                        SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals);
 };
 //*****************************************************************************
 #endif
