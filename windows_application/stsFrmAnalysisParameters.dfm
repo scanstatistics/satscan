@@ -68,7 +68,7 @@ object frmAnalysis: TfrmAnalysis
         Top = 189
         Width = 23
         Height = 21
-        Hint = 'Import population file'
+        Hint = 'Import population file ...'
         Glyph.Data = {
           DE010000424DDE01000000000000760000002800000024000000120000000100
           04000000000068010000C40E0000C40E00001000000000000000000000000000
@@ -87,6 +87,8 @@ object frmAnalysis: TfrmAnalysis
           6666668F7F786666666666660000888886666666666666888886666666666666
           0000}
         NumGlyphs = 2
+        ParentShowHint = False
+        ShowHint = True
         OnClick = btnPopImportClick
       end
       object GroupBox1: TGroupBox
@@ -125,7 +127,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 26
           Width = 23
           Height = 21
-          Hint = 'Import case file'
+          Hint = 'Import case file ...'
           Glyph.Data = {
             DE010000424DDE01000000000000760000002800000024000000120000000100
             04000000000068010000C40E0000C40E00001000000000000000000000000000
@@ -144,6 +146,8 @@ object frmAnalysis: TfrmAnalysis
             6666668F7F786666666666660000888886666666666666888886666666666666
             0000}
           NumGlyphs = 2
+          ParentShowHint = False
+          ShowHint = True
           OnClick = btnCaseImportClick
         end
         object btnControlImport: TSpeedButton
@@ -151,7 +155,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 68
           Width = 23
           Height = 21
-          Hint = 'Import control file'
+          Hint = 'Import control file ...'
           Glyph.Data = {
             DE010000424DDE01000000000000760000002800000024000000120000000100
             04000000000068010000C40E0000C40E00001000000000000000000000000000
@@ -170,6 +174,8 @@ object frmAnalysis: TfrmAnalysis
             6666668F7F786666666666660000888886666666666666888886666666666666
             0000}
           NumGlyphs = 2
+          ParentShowHint = False
+          ShowHint = True
           OnClick = btnControlImportClick
         end
         object rgpPrecisionTimes: TRadioGroup
@@ -210,7 +216,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 26
           Width = 23
           Height = 21
-          Hint = 'browse for case file'
+          Hint = 'Browse for case file ...'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -228,7 +234,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 68
           Width = 23
           Height = 21
-          Hint = 'Browse for control file'
+          Hint = 'Browse for control file ...'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -459,7 +465,7 @@ object frmAnalysis: TfrmAnalysis
         Top = 189
         Width = 23
         Height = 21
-        Hint = 'Browse for population file'
+        Hint = 'Browse for population file ...'
         Caption = '...'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -497,7 +503,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 24
           Width = 23
           Height = 21
-          Hint = 'Import coordinates file'
+          Hint = 'Import coordinates file ...'
           Glyph.Data = {
             DE010000424DDE01000000000000760000002800000024000000120000000100
             04000000000068010000C40E0000C40E00001000000000000000000000000000
@@ -516,14 +522,16 @@ object frmAnalysis: TfrmAnalysis
             6666668F7F786666666666660000888886666666666666888886666666666666
             0000}
           NumGlyphs = 2
-          OnClick = btnGridImportClick
+          ParentShowHint = False
+          ShowHint = True
+          OnClick = btnCoordImportClick
         end
         object btnGridImport: TSpeedButton
           Left = 326
           Top = 68
           Width = 23
           Height = 21
-          Hint = 'Import special grid file'
+          Hint = 'Import special grid file ...'
           Glyph.Data = {
             DE010000424DDE01000000000000760000002800000024000000120000000100
             04000000000068010000C40E0000C40E00001000000000000000000000000000
@@ -542,7 +550,9 @@ object frmAnalysis: TfrmAnalysis
             6666668F7F786666666666660000888886666666666666888886666666666666
             0000}
           NumGlyphs = 2
-          OnClick = btnCoordImportClick
+          ParentShowHint = False
+          ShowHint = True
+          OnClick = btnGridImportClick
         end
         object edtCoordinateFileName: TEdit
           Left = 8
@@ -569,7 +579,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 24
           Width = 23
           Height = 21
-          Hint = 'Browse for coordinates file'
+          Hint = 'Browse for coordinates file ...'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -587,7 +597,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 68
           Width = 23
           Height = 21
-          Hint = 'Browse for special grid file'
+          Hint = 'Browse for special grid file ...'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -1078,7 +1088,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 24
           Width = 23
           Height = 21
-          Hint = 'browse for results file'
+          Hint = 'Browse for results file ...'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText

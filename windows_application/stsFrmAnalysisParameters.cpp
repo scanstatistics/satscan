@@ -121,7 +121,7 @@ void __fastcall TfrmAnalysis::btnControlImportClick(TObject *Sender) {
 
   try {
     OpenDialog1->FileName =  "";
-    OpenDialog1->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Text files (*.txt)|*.txt|Control files (*.ctl)|*.ctl|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog1->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Control files (*.ctl)|*.ctl|Text files (*.txt)|*.txt|All files (*.*)|*.*";
     OpenDialog1->Title = "Select Source Control File";
     if (OpenDialog1->Execute()) {
        LaunchImporter(OpenDialog1->FileName.c_str(), eType);
