@@ -50,7 +50,7 @@ class DBaseOutput {
       __fastcall DBaseOutput(const long lRunNumber, const int iCoordType = 0);
       virtual ~DBaseOutput();
 
-      virtual void      RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, int iAreaIndex = 0) = 0;
+      virtual void      RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, tract_t tTract = 0) = 0;
 
       
 };

@@ -42,7 +42,7 @@ void stsClusterLevelDBF::Init() {
 // records the calculated data from the cluster into the dBase file
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
-void stsClusterLevelDBF::RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, int iAreaIndex) {
+void stsClusterLevelDBF::RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, tract_t tTract) {
    float                        fRadius = 0.0, fLatitude = 0.0, fLongitude = 0.0, fPVal;
    ZdString                     sTempValue;
    ZdTransaction*               pTransaction = 0;

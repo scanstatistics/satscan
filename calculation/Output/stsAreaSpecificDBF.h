@@ -14,7 +14,7 @@ class stsAreaSpecificDBF : public DBaseOutput {
       __fastcall stsAreaSpecificDBF();
       virtual ~stsAreaSpecificDBF();
 
-      virtual void              RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, int iAreaIndex);
+      virtual void              RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, tract_t tTract);
 };
 
 #endif

@@ -17,7 +17,7 @@ class stsClusterLevelDBF : public DBaseOutput {
       __fastcall stsClusterLevelDBF(const long lRunNumber, const int iCoordType, const ZdFileName& sOutputFileName, const int iDimension = 2);
       virtual ~stsClusterLevelDBF();
 
-      virtual void  RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, int iAreaIndex = 0);
+      virtual void  RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, tract_t tTract = 0);
 };
 
 #endif
