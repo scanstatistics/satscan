@@ -7,7 +7,7 @@
 
 void CSaTScanData::DisplayCases(FILE* pFile) {
   int                   i, j;
-  count_t            ** ppCases(gpCasesHandler->GetArray());
+  count_t            ** ppCases(gpDataStreams->GetStream(0/*for now*/).GetCaseArray());
 
   fprintf(pFile, "Case counts (Cases Array)\n\n");
   for (i = 0; i < m_nTimeIntervals; ++i)
@@ -19,7 +19,7 @@ void CSaTScanData::DisplayCases(FILE* pFile) {
 
 void CSaTScanData::DisplayControls(FILE* pFile) {
   int                   i, j;
-  count_t            ** ppControls(gpControlsHandler->GetArray());
+  count_t            ** ppControls(gpDataStreams->GetStream(0/*for now*/).GetControlArray());
 
   fprintf(pFile, "Control counts (Controls Array)\n\n");
 
@@ -32,7 +32,7 @@ void CSaTScanData::DisplayControls(FILE* pFile) {
 
 void CSaTScanData::DisplaySimCases(FILE* pFile) {
   int                   i, j;
-  count_t            ** ppSimCases(gpSimCasesHandler->GetArray());
+  count_t            ** ppSimCases(gpDataStreams->GetStream(0/*for now*/).GetSimCaseArray());
 
   fprintf(pFile, "Simulated Case counts (Simulated Cases Array)\n\n");
 
@@ -45,7 +45,7 @@ void CSaTScanData::DisplaySimCases(FILE* pFile) {
 
 void CSaTScanData::DisplayMeasure(FILE* pFile) {
   int           i, j;
-  measure_t  ** ppMeasure(gpMeasureHandler->GetArray());
+  measure_t  ** ppMeasure(gpDataStreams->GetStream(0/*for now*/).GetMeasureArray());
 
   fprintf(pFile, "Measures (Measure Array)\n\n");
 
@@ -87,14 +87,14 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
               m_pParameters->GetStudyPeriodEndDate().c_str());
   fprintf(fp, "Number of census areas: %ld\n", (long) m_nTracts);
   if (m_pParameters->GetProbabiltyModelType() != SPACETIMEPERMUTATION)
-    fprintf(fp, "Total population .....: %.0f\n", m_nTotalPop);
-  fprintf(fp, "Total cases ..........: %ld\n",  m_nTotalCasesAtStart);
+    fprintf(fp, "Total population .....: %.0f\n", gpDataStreams->GetStream(0/*for now*/).GetTotalPopulation());
+  fprintf(fp, "Total cases ..........: %ld\n",  gpDataStreams->GetStream(0/*for now*/).GetTotalCasesAtStart());
   if (m_pParameters->GetProbabiltyModelType() == POISSON)
     fprintf(fp, "Annual cases / %.0f.: %.1f\n",
                 GetAnnualRatePop(), GetAnnualRateAtStart());
   if (m_pParameters->GetAnalysisType() == SPATIALVARTEMPTREND) {
-    double nAnnualTT = m_nTimeTrend.SetAnnualTimeTrend(m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
-    if (m_nTimeTrend.IsNegative())
+    double nAnnualTT = gpDataStreams->GetStream(0/*for now*/).GetTimeTrend().SetAnnualTimeTrend(m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
+    if (gpDataStreams->GetStream(0/*for now*/).GetTimeTrend().IsNegative())
       fprintf(fp, "Annual decrease.......: %.3lf%%\n", nAnnualTT);
     else
       fprintf(fp, "Annual increase.......: %.3lf%%\n", nAnnualTT);
@@ -108,12 +108,15 @@ void CSaTScanData::DisplaySummary2(FILE* fp) {
   fprintf(fp, "m_nGridTracts..........: %i\n", m_nGridTracts);
   fprintf(fp, "m_nTimeIntervals.......: %i\n", m_nTimeIntervals);
   fprintf(fp, "m_nIntervalCut.........: %i\n", m_nIntervalCut);
-  fprintf(fp, "m_nTotalCasesAtStart...: %ld\n", m_nTotalCasesAtStart);
-  fprintf(fp, "m_nTotalCases..........: %ld\n", m_nTotalCases);
-  fprintf(fp, "m_nTotalPop............: %.0f\n", m_nTotalPop);
-  fprintf(fp, "m_nTotalMeasureAtStart.: %.0f\n", m_nTotalMeasureAtStart);
-  fprintf(fp, "m_nTotalMeasure........: %.0f\n", m_nTotalMeasure);
-  fprintf(fp, "m_nMaxCircleSize.......: %.2f\n", m_nMaxCircleSize);
+  for (size_t t=0; t < gpDataStreams->GetNumStreams(); ++t) {
+    fprintf(fp, "Stream %i Summary...\n", t + 1);
+    fprintf(fp, "TotalCasesAtStart...: %ld\n", gpDataStreams->GetStream(t).GetTotalCasesAtStart());
+    fprintf(fp, "TotalCases..........: %ld\n", gpDataStreams->GetStream(t).GetTotalCases());
+    fprintf(fp, "TotalPop............: %.0f\n", gpDataStreams->GetStream(t).GetTotalPopulation());
+    fprintf(fp, "TotalMeasureAtStart.: %.0f\n", gpDataStreams->GetStream(t).GetTotalMeasureAtStart());
+    fprintf(fp, "TotalMeasure........: %.0f\n", gpDataStreams->GetStream(t).GetTotalMeasure());
+    fprintf(fp, "MaxCircleSize.......: %.2f\n", m_nMaxCircleSize);
+  }
   fprintf(fp, "________________________________________________________________\n");
 }
 
@@ -124,8 +127,10 @@ void CSaTScanData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, con
   std::string                          sBuffer;
   ZdString                             sRisk, sLocation;
   std::vector<std::string>             vIdentifiers;
-  count_t                           ** ppCases(gpCasesHandler->GetArray());
-  measure_t                         ** ppMeasure(gpMeasureHandler->GetArray());
+  //NOTE: Displaying of relative risk information is restricted to the first
+  //      data stream, at least for the time being. 
+  count_t                           ** ppCases(gpDataStreams->GetStream(0).GetCaseArray());
+  measure_t                         ** ppMeasure(gpDataStreams->GetStream(0).GetMeasureArray());
 
    try {
       std::auto_ptr<RelativeRiskData> pData( new RelativeRiskData(gpPrint, *m_pParameters) );
