@@ -16,6 +16,7 @@
 #include "JulianDates.h"
 #include "Parameters.h"
 #include "stsBaseAnalysisChildForm.h"
+#include "UtilityFunctions.h"
 //---------------------------------------------------------------------------
 
 class TfrmAdvancedParameters;
@@ -79,13 +80,13 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TRadioButton *rdoHighRates;
    TRadioButton *rdoLowRates;
    TRadioButton *rdoHighLowRates;
-   TGroupBox *rgpTimeIntervalUnits;
-   TLabel *lblTimeIntervalUnits;
-   TLabel *lblTimeIntervalLength;
-   TRadioButton *rdoUnitYear;
-   TRadioButton *rdoUnitMonths;
-   TRadioButton *rdoUnitDay;
-   TEdit *edtTimeIntervalLength;
+        TGroupBox *rgpTimeAggregationUnits;
+        TLabel *lblTimeAggregationUnits;
+        TLabel *lblTimeAggregationLength;
+        TRadioButton *rdoTimeAggregationYear;
+        TRadioButton *rdoTimeAggregationMonths;
+        TRadioButton *rdoTimeAggregationDay;
+        TEdit *edtTimeAggregationLength;
    TLabel *Label11;
    TLabel *Label13;
    TGroupBox *grpCountData;
@@ -138,16 +139,16 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    void __fastcall rdoAnalysisTypeClick(TObject *Sender);
    void __fastcall rdoProbabilityModelClick(TObject *Sender);
    void __fastcall rgpCoordinatesClick(TObject *Sender);
-   void __fastcall rdoUnitYearClick(TObject *Sender);
-   void __fastcall rdoUnitMonthsClick(TObject *Sender);
-   void __fastcall rdoUnitDayClick(TObject *Sender);
+   void __fastcall rdoTimeAggregationYearClick(TObject *Sender);
+   void __fastcall rdoTimeAggregationMonthsClick(TObject *Sender);
+   void __fastcall rdoTimeAggregationDayClick(TObject *Sender);
    void __fastcall edtMontCarloRepsExit(TObject *Sender);
    void __fastcall NaturalNumberKeyPress(TObject *Sender, char &Key);
    void __fastcall PositiveFloatKeyPress(TObject *Sender, char &Key);
    void __fastcall FloatKeyPress(TObject *Sender, char &Key);
    void __fastcall edtStudyPeriodStartDateExit(TObject *Sender);
    void __fastcall edtStudyPeriodEndDateExit(TObject *Sender);
-   void __fastcall edtTimeIntervalLengthExit(TObject *Sender);
+   void __fastcall edtTimeAggregationLengthExit(TObject *Sender);
    void __fastcall edtCaseFileNameChange(TObject *Sender);
    void __fastcall edtControlFileNameChange(TObject *Sender);
    void __fastcall edtPopFileNameChange(TObject *Sender);
@@ -162,13 +163,13 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     CParameters                 gParameters;
     TfrmAdvancedParameters    * gpfrmAdvancedParameters;
 
-    void                        Check_IntervalLength();
     void                        CheckAnalysisParams();
     void                        CheckDate(const char * sDateTitle, TEdit& Year, TEdit& Month, TEdit& Day,  TTabSheet& Container);
     void                        CheckOutputParams();
     void                        CheckReplicas();
     void                        CheckScanningWindowParams();
     void                        CheckStudyPeriodDatesRange();
+    void                        CheckTimeAggregationLength();
     void                        DefaultHiddenParameters();
     void                        EnableAdditionalOutFilesOptionsGroup(bool bRelativeRisks);
     void                        EnableAdvancedButtons();
@@ -177,14 +178,14 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        EnableModelControlForAnalysisType();
     void                        EnableSettingsForAnalysisModelCombination();
     void                        EnableStudyPeriodDates(bool bYear, bool bMonth, bool bDay);
-    void                        EnableTimeIntervalUnitsGroup(bool bEnable);
+    void                        EnableTimeAggregationGroup(bool bEnable);
     AnalysisType                GetAnalysisControlType() const;
     AreaRateType                GetAreaScanRateControlType() const;
     ProbabiltyModelType         GetModelControlType() const;
     DatePrecisionType           GetPrecisionOfTimesControlType() const;
     ZdDate                    & GetStudyPeriodEndDate(ZdDate& Date) const;
     ZdDate                    & GetStudyPeriodStartDate(ZdDate& Date) const;
-    DatePrecisionType           GetTimeIntervalControlType() const;
+    DatePrecisionType           GetTimeAggregationControlType() const;
     void                        Init();
     bool                        IsValidReplicationRequest(int iReplications);
     void                        OnAnalysisTypeClick();

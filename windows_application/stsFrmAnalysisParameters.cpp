@@ -266,47 +266,75 @@ void __fastcall TfrmAnalysis::btnResultFileBrowseClick(TObject *Sender) {
 }
 //---------------------------------------------------------------------------
 /** Validates time interval length is not less than zero. */
-void TfrmAnalysis::Check_IntervalLength() {
+void TfrmAnalysis::CheckTimeAggregationLength() {
   ZdDate        StartDate, EndDate;
-  double        dTime;
+  ZdString      sPrecisionString;
+  double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
 
   try {
-    //report error if control is empty or specified interval length is less than one.
-    if (edtTimeIntervalLength->Text.IsEmpty() || atoi(edtTimeIntervalLength->Text.c_str()) < 1) {
-      PageControl1->ActivePage = tbAnalysis;
-      edtTimeIntervalLength->SetFocus();
-      ZdException::GenerateNotification("Please specify an interval length greater than zero.","Check_IntervalLength()");
-    }
-    //report error when specified time length is invalid
-    switch (GetAnalysisControlType()) {
-      case PURELYSPATIAL             :
-        break; //above if statement provides validation for this analysis type
-      case PURELYTEMPORAL            :
-      case PROSPECTIVEPURELYTEMPORAL :
-      case SPACETIME                 :
-      case PROSPECTIVESPACETIME      :
-      case SPATIALVARTEMPTREND       :
-        dTime = TimeBetween(GetStudyPeriodStartDate(StartDate).GetJulianDayFromCalendarStart() + ceil(1721424.5),
-                            GetStudyPeriodEndDate(EndDate).GetJulianDayFromCalendarStart() + ceil(1721424.5),
-                            GetTimeIntervalControlType());
-        if (dTime < edtTimeIntervalLength->Text.ToDouble()) {
-          PageControl1->ActivePage = tbAnalysis;
-          edtTimeIntervalLength->SetFocus();
-          ZdException::GenerateNotification("The specified time interval length is greater than the study period.\n","Check_IntervalLength()");
-        }
-        if (ceil(dTime/edtTimeIntervalLength->Text.ToDouble()) <= 1) {
-          PageControl1->ActivePage = tbAnalysis;
-          edtTimeIntervalLength->SetFocus();
-          ZdException::GenerateNotification("For the specified study period and time interval length,\n"
-                                            "the resulting number of time intervals is 1. Time based\n"
-                                            "analyses can not be performed with less than 2 time intervals.","Check_IntervalLength()");
-        }
-        break;
-      default : ZdGenerateException("Unknown analysis type '%d'.","Check_IntervalLength()", GetAnalysisControlType());
+    //validate that the time aggregation length agrees with study period and maximum temporal cluster size
+    if (GetAnalysisControlType() != PURELYSPATIAL) {
+      GetDatePrecisionAsString(GetTimeAggregationControlType(), sPrecisionString, false, false);
+      //report error if control is empty or specified time aggregation length is less than one.
+      if (edtTimeAggregationLength->Text.IsEmpty() || atoi(edtTimeAggregationLength->Text.c_str()) < 1)
+        ZdException::GenerateNotification("Please specify a time aggregation length greater than zero.","CheckTimeAggregationLength()");
+
+      dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(GetStudyPeriodStartDate(StartDate).GetJulianDayFromCalendarStart() + ceil(1721424.5),
+                                                                      GetStudyPeriodEndDate(EndDate).GetJulianDayFromCalendarStart() + ceil(1721424.5),
+                                                                      GetTimeAggregationControlType(), 1));
+      if (dStudyPeriodLengthInUnits < edtTimeAggregationLength->Text.ToDouble())
+        ZdException::GenerateNotification("A time aggregation of %d %s%s is greater than the %d %s study period.\n",
+                                          "CheckTimeAggregationLength()", edtTimeAggregationLength->Text.ToInt(),
+                                          sPrecisionString.GetCString(),
+                                          (edtTimeAggregationLength->Text.ToInt() == 1 ? "" : "s"),
+                                          static_cast<int>(dStudyPeriodLengthInUnits),
+                                          sPrecisionString.GetCString());
+//      if (ceil(dStudyPeriodLengthInUnits/edtTimeAggregationLength->Text.ToDouble()) <= 1)
+//        ZdException::GenerateNotification("A time aggregation of %d %s%s with a %d %s study period results in only\n"
+//                                          "one time period to analyze. Temporal and space-time analyses can not be performed\n"
+//                                          "on less than two time periods.\n",
+//                                          "CheckTimeAggregationLength()",
+//                                          edtTimeAggregationLength->Text.ToInt(),
+//                                          sPrecisionString.GetCString(),
+//                                          (edtTimeAggregationLength->Text.ToInt() == 1 ? "" : "s"),
+//                                          static_cast<int>(dStudyPeriodLengthInUnits),
+//                                          sPrecisionString.GetCString());
+      if (gpfrmAdvancedParameters->GetMaxTemporalClusterSizeControlType() == PERCENTAGETYPE)
+        dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * gpfrmAdvancedParameters->GetMaxTemporalClusterSizeFromControl()/100.0);
+      else if (gpfrmAdvancedParameters->GetMaxTemporalClusterSizeControlType() == TIMETYPE)
+        dMaxTemporalLengthInUnits = gpfrmAdvancedParameters->GetMaxTemporalClusterSizeFromControl();
+
+      //validate the time aggregation agrees with maximum temporal cluster size
+      if (static_cast<int>(floor(dMaxTemporalLengthInUnits /edtTimeAggregationLength->Text.ToDouble())) == 0) {
+        if (gpfrmAdvancedParameters->GetMaxTemporalClusterSizeControlType() == TIMETYPE)
+          ZdException::GenerateNotification("The time aggregation of %d %s%s is greater than the maximum temporal "
+                                            "cluster size of %g %s%s.\nPlease review settings.",
+                                            "CheckTimeAggregationLength()", edtTimeAggregationLength->Text.ToInt(),
+                                            sPrecisionString.GetCString(),
+                                            (edtTimeAggregationLength->Text.ToInt() == 1 ? "" : "s"),
+                                            gpfrmAdvancedParameters->GetMaxTemporalClusterSizeFromControl(),
+                                            sPrecisionString.GetCString(),
+                                            (gpfrmAdvancedParameters->GetMaxTemporalClusterSizeFromControl() == 1 ? "" : "s"));
+        else if (gpfrmAdvancedParameters->GetMaxTemporalClusterSizeControlType() == PERCENTAGETYPE)
+          ZdException::GenerateNotification("With the maximum temporal cluster size as %g%% of a %d %s study period,\n"
+                                            "the time aggregation as %d %s%s is greater than the resulting maximum\n"
+                                            "temporal cluster size of %g %s%s.\nPlease review settings.",
+                                            "CheckTimeAggregationLength()",
+                                            gpfrmAdvancedParameters->GetMaxTemporalClusterSizeFromControl(),
+                                            static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString(),
+                                            edtTimeAggregationLength->Text.ToInt(),
+                                            sPrecisionString.GetCString(),
+                                            (edtTimeAggregationLength->Text.ToInt() == 1 ? "" : "s"),
+                                            dMaxTemporalLengthInUnits,
+                                            sPrecisionString.GetCString(),
+                                            (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
+      }
     }
   }
   catch (ZdException &x) {
-    x.AddCallpath("Check_IntervalLength()","TfrmAnalysis");
+    PageControl1->ActivePage = tbAnalysis;
+    edtTimeAggregationLength->SetFocus();
+    x.AddCallpath("CheckTimeAggregationLength()","TfrmAnalysis");
     throw;
   }
 }
@@ -315,11 +343,10 @@ void TfrmAnalysis::Check_IntervalLength() {
 void TfrmAnalysis::CheckAnalysisParams() {
   try {
     CheckReplicas();
-    if (edtTimeIntervalLength->Enabled)
-      Check_IntervalLength();
+    CheckTimeAggregationLength();
   }
-  catch (ZdException & x) {
-    x.AddCallpath("CheckAnalysisParams()", "TfrmAnalysis");
+  catch (ZdException &x) {
+    x.AddCallpath("CheckAnalysisParams()","TfrmAnalysis");
     throw;
   }
 }
@@ -379,15 +406,13 @@ void TfrmAnalysis::CheckReplicas() {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-/** Checks the relationship between a start date, end date, and interval length.
+/** Checks the relationship between a start date and end date.
     Display message box regarding errors when appropriate. Return whether relationship is valid. */
 void TfrmAnalysis::CheckStudyPeriodDatesRange() {
-  bool          bRangeOk = true;
   ZdString      sErrorMessage;
   ZdDate        StartDate, EndDate;
   ZdDateFilter  DateFilter("%4y/%02m/%02d");
   char          FilterBuffer[11];
-  int           iIntervalLength(atoi(edtTimeIntervalLength->Text.c_str()));
 
   try {
     CheckDate("study period start date", *edtStudyPeriodStartDateYear, *edtStudyPeriodStartDateMonth,
@@ -409,36 +434,9 @@ void TfrmAnalysis::CheckStudyPeriodDatesRange() {
       edtStudyPeriodStartDateYear->SetFocus();
       ZdException::GenerateNotification(sErrorMessage.GetCString(),"CheckStudyPeriodDatesRange()");
     }
-
-    if (GetAnalysisControlType() != PURELYSPATIAL)  {/* purely spatial does not use interval length */
-      //check that interval length is not greater study period
-      //(.i.e. can't have study period that is 20 days and intervals of 3 months)
-      //to make start and end day inclusive - add 1 to end date
-      EndDate.AddDays(1);
-      switch (GetTimeIntervalControlType()) {
-        case      YEAR      : StartDate.AddYears(static_cast<unsigned short>(iIntervalLength));
-                              strcpy(FilterBuffer,"year(s)");
-                              break;
-        case      MONTH     : StartDate.AddMonths(static_cast<unsigned short>(iIntervalLength));
-                              strcpy(FilterBuffer,"month(s)");
-                              break;
-        case      DAY       : StartDate.AddDays(static_cast<unsigned short>(iIntervalLength));
-                              strcpy(FilterBuffer,"day(s)");
-                              break;
-        default             : ZdGenerateException("Unknown interval unit \"%d\"","CheckDateRange()",GetTimeIntervalControlType());
-      };
-
-      if (StartDate > EndDate) {
-        sErrorMessage << "Interval length of " << iIntervalLength << " " << FilterBuffer;
-        sErrorMessage << " is greater than study period length.\nPlease review settings.";
-        PageControl1->ActivePage = tbAnalysis;
-        edtTimeIntervalLength->SetFocus();
-        ZdException::GenerateNotification(sErrorMessage.GetCString(),"CheckStudyPeriodDatesRange()");
-      }
-    }
   }
-  catch (ZdException & x) {
-    x.AddCallpath("CheckStudyPeriodDatesRange()", "TfrmAnalysis");
+  catch (ZdException &x) {
+    x.AddCallpath("CheckStudyPeriodDatesRange()","TfrmAnalysis");
     throw;
   }
 }
@@ -535,9 +533,9 @@ void __fastcall TfrmAnalysis::edtStudyPeriodStartDateExit(TObject *Sender) {
 
 //---------------------------------------------------------------------------
 /** event triggered when month control, of prospective start date, is exited. */
-void __fastcall TfrmAnalysis::edtTimeIntervalLengthExit(TObject *Sender) {
-  if (edtTimeIntervalLength->Text.IsEmpty() || atoi(edtTimeIntervalLength->Text.c_str()) < 1)
-    edtTimeIntervalLength->Text = 1;
+void __fastcall TfrmAnalysis::edtTimeAggregationLengthExit(TObject *Sender) {
+  if (edtTimeAggregationLength->Text.IsEmpty() || atoi(edtTimeAggregationLength->Text.c_str()) < 1)
+    edtTimeAggregationLength->Text = 1;
 }
 
 //---------------------------------------------------------------------------
@@ -654,7 +652,7 @@ void TfrmAnalysis::EnableModelControlForAnalysisType() {
 void TfrmAnalysis::EnableSettingsForAnalysisModelCombination() {
   try {
     EnableDatesByTimePrecisionUnits();
-    EnableTimeIntervalUnitsGroup(GetAnalysisControlType() != PURELYSPATIAL);
+    EnableTimeAggregationGroup(GetAnalysisControlType() != PURELYSPATIAL);
     EnableAdditionalOutFilesOptionsGroup(GetModelControlType() != SPACETIMEPERMUTATION);
     gpfrmAdvancedParameters->EnableSettingsForAnalysisModelCombination();
   }
@@ -690,28 +688,28 @@ void TfrmAnalysis::EnableStudyPeriodDates(bool bYear, bool bMonth, bool bDay) {
 }
 
 //---------------------------------------------------------------------------
-/** enables or disables the time interval group control */
-void TfrmAnalysis::EnableTimeIntervalUnitsGroup(bool bEnable) {
+/** enables or disables the time aggregation group control */
+void TfrmAnalysis::EnableTimeAggregationGroup(bool bEnable) {
    DatePrecisionType ePrecisionType = GetPrecisionOfTimesControlType();
 
-   rgpTimeIntervalUnits->Enabled = bEnable && ePrecisionType != NONE;
-   lblTimeIntervalUnits->Enabled =  bEnable && ePrecisionType != NONE;
+   rgpTimeAggregationUnits->Enabled = bEnable && ePrecisionType != NONE;
+   lblTimeAggregationUnits->Enabled =  bEnable && ePrecisionType != NONE;
 
-   edtTimeIntervalLength->Enabled = bEnable && ePrecisionType != NONE;
-   edtTimeIntervalLength->Color = edtTimeIntervalLength->Enabled ? clWindow : clInactiveBorder;
-   lblTimeIntervalLength->Enabled = edtTimeIntervalLength->Enabled;
-   stUnitText->Enabled = edtTimeIntervalLength->Enabled;
+   edtTimeAggregationLength->Enabled = bEnable && ePrecisionType != NONE;
+   edtTimeAggregationLength->Color = edtTimeAggregationLength->Enabled ? clWindow : clInactiveBorder;
+   lblTimeAggregationLength->Enabled = edtTimeAggregationLength->Enabled;
+   stUnitText->Enabled = edtTimeAggregationLength->Enabled;
    
-   rdoUnitYear->Enabled =  bEnable && ePrecisionType != NONE;
-   rdoUnitMonths->Enabled = bEnable && ePrecisionType != NONE && ePrecisionType != YEAR;
-   if (rgpTimeIntervalUnits->Enabled && rdoUnitMonths->Checked && !rdoUnitMonths->Enabled)
-     rdoUnitYear->Checked = true;
-   rdoUnitDay->Enabled = bEnable && ePrecisionType == DAY;
-   if (rgpTimeIntervalUnits->Enabled && rdoUnitDay->Checked && !rdoUnitDay->Enabled) {
-     if (rdoUnitMonths->Enabled)
-       rdoUnitMonths->Checked = true;
+   rdoTimeAggregationYear->Enabled =  bEnable && ePrecisionType != NONE;
+   rdoTimeAggregationMonths->Enabled = bEnable && ePrecisionType != NONE && ePrecisionType != YEAR;
+   if (rgpTimeAggregationUnits->Enabled && rdoTimeAggregationMonths->Checked && !rdoTimeAggregationMonths->Enabled)
+     rdoTimeAggregationYear->Checked = true;
+   rdoTimeAggregationDay->Enabled = bEnable && ePrecisionType == DAY;
+   if (rgpTimeAggregationUnits->Enabled && rdoTimeAggregationDay->Checked && !rdoTimeAggregationDay->Enabled) {
+     if (rdoTimeAggregationMonths->Enabled)
+       rdoTimeAggregationMonths->Checked = true;
      else
-       rdoUnitYear->Checked = true;
+       rdoTimeAggregationYear->Checked = true;
    }
 }
 
@@ -862,13 +860,13 @@ ZdDate & TfrmAnalysis::GetStudyPeriodStartDate(ZdDate& Date) const {
   return Date;
 }
 //---------------------------------------------------------------------------
-/** return precision type for time intervals */
-DatePrecisionType TfrmAnalysis::GetTimeIntervalControlType() const {
+/** return precision type for time aggregation type */
+DatePrecisionType TfrmAnalysis::GetTimeAggregationControlType() const {
   DatePrecisionType eReturn;
 
-  if (rdoUnitYear->Checked)
+  if (rdoTimeAggregationYear->Checked)
     eReturn = YEAR;
-  else if (rdoUnitMonths->Checked)
+  else if (rdoTimeAggregationMonths->Checked)
     eReturn = MONTH;
   else
     eReturn = DAY;
@@ -953,7 +951,7 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
     // switch analysis type to purely spatial if no dates in input data
     if (eDatePrecisionType == NONE && GetAnalysisControlType() != PURELYSPATIAL)
       SetAnalysisControl(PURELYSPATIAL);
-    EnableTimeIntervalUnitsGroup(GetAnalysisControlType() != PURELYSPATIAL);
+    EnableTimeAggregationGroup(GetAnalysisControlType() != PURELYSPATIAL);
     EnableDatesByTimePrecisionUnits();
   }
   catch(ZdException &x) {
@@ -1044,21 +1042,21 @@ void __fastcall TfrmAnalysis::PositiveFloatKeyPress(TObject *Sender, char &Key) 
 
 //---------------------------------------------------------------------------
 /** event triggered when time interval unit type selected as 'day' */
-void __fastcall TfrmAnalysis::rdoUnitDayClick(TObject *Sender) {
+void __fastcall TfrmAnalysis::rdoTimeAggregationDayClick(TObject *Sender) {
   gpfrmAdvancedParameters->lblMaxTemporalTimeUnits->Caption = "days";
   stUnitText->Caption = "Days";
 }
 
 //---------------------------------------------------------------------------
 /** event triggered when time interval unit type selected as 'month' */
-void __fastcall TfrmAnalysis::rdoUnitMonthsClick(TObject *Sender) {
+void __fastcall TfrmAnalysis::rdoTimeAggregationMonthsClick(TObject *Sender) {
   gpfrmAdvancedParameters->lblMaxTemporalTimeUnits->Caption = "months";
   stUnitText->Caption = "Months";
 }
 
 //---------------------------------------------------------------------------
 /** event triggered when time interval unit type selected as 'year' */
-void __fastcall TfrmAnalysis::rdoUnitYearClick(TObject *Sender) {
+void __fastcall TfrmAnalysis::rdoTimeAggregationYearClick(TObject *Sender) {
     gpfrmAdvancedParameters->lblMaxTemporalTimeUnits->Caption = "years";
     stUnitText->Caption = "Years";
 }
@@ -1165,15 +1163,15 @@ void TfrmAnalysis::SaveParameterSettings() {
     gParameters.SetIncludePurelyTemporalClusters(gpfrmAdvancedParameters->chkInclPureTempClust->Enabled && gpfrmAdvancedParameters->chkInclPureTempClust->Checked);
     gParameters.SetIncludePurelySpatialClusters((gpfrmAdvancedParameters->chkIncludePureSpacClust->Enabled) && (gpfrmAdvancedParameters->chkIncludePureSpacClust->Checked));
     //Time Parameter Tab
-    gParameters.SetTimeIntervalUnitsType(GetTimeIntervalControlType());
-    gParameters.SetTimeIntervalLength(atoi(edtTimeIntervalLength->Text.c_str()));
+    gParameters.SetTimeAggregationUnitsType(GetTimeAggregationControlType());
+    gParameters.SetTimeAggregationLength(atoi(edtTimeAggregationLength->Text.c_str()));
     gParameters.SetAdjustForEarlierAnalyses(gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked);
-    if (gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked)
-      sString.printf("%i/%i/%i", atoi(gpfrmAdvancedParameters->edtProspectiveStartDateYear->Text.c_str()),
-                     atoi(gpfrmAdvancedParameters->edtProspectiveStartDateMonth->Text.c_str()), atoi(gpfrmAdvancedParameters->edtProspectiveStartDateDay->Text.c_str()));
-    else
+    if (gpfrmAdvancedParameters->gbxProspectiveSurveillance->Enabled && !gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked)
       sString.printf("%i/%i/%i", atoi(edtStudyPeriodEndDateYear->Text.c_str()),
                      atoi(edtStudyPeriodEndDateMonth->Text.c_str()), atoi(edtStudyPeriodEndDateDay->Text.c_str()));
+    else
+      sString.printf("%i/%i/%i", atoi(gpfrmAdvancedParameters->edtProspectiveStartDateYear->Text.c_str()),
+                     atoi(gpfrmAdvancedParameters->edtProspectiveStartDateMonth->Text.c_str()), atoi(gpfrmAdvancedParameters->edtProspectiveStartDateDay->Text.c_str()));
     gParameters.SetProspectiveStartDate(sString.GetCString());
     //Output File Tab
     gParameters.SetOutputFileName(edtResultFile->Text.c_str());
@@ -1371,12 +1369,12 @@ void TfrmAnalysis::SetupInterface() {
       edtMontCarloReps->Text = gParameters.GetNumReplicationsRequested();
     else
       edtMontCarloReps->Text = 999;
-    if (gParameters.GetTimeIntervalUnitsType() == NONE) gParameters.SetTimeIntervalUnitsType(YEAR);
-    if (gParameters.GetTimeIntervalLength() <= 0) gParameters.SetTimeIntervalLength(1);
-    rdoUnitYear->Checked = (gParameters.GetTimeIntervalUnitsType() == YEAR);
-    rdoUnitMonths->Checked = (gParameters.GetTimeIntervalUnitsType() == MONTH);
-    rdoUnitDay->Checked = (gParameters.GetTimeIntervalUnitsType() == DAY);
-    edtTimeIntervalLength->Text = gParameters.GetTimeIntervalLength();
+    if (gParameters.GetTimeAggregationUnitsType() == NONE) gParameters.SetTimeAggregationUnitsType(YEAR);
+    if (gParameters.GetTimeAggregationLength() <= 0) gParameters.SetTimeAggregationLength(1);
+    rdoTimeAggregationYear->Checked = (gParameters.GetTimeAggregationUnitsType() == YEAR);
+    rdoTimeAggregationMonths->Checked = (gParameters.GetTimeAggregationUnitsType() == MONTH);
+    rdoTimeAggregationDay->Checked = (gParameters.GetTimeAggregationUnitsType() == DAY);
+    edtTimeAggregationLength->Text = gParameters.GetTimeAggregationLength();
     if (gParameters.GetProspectiveStartDate().length() > 0)
        ParseDate(gParameters.GetProspectiveStartDate().c_str(), gpfrmAdvancedParameters->edtProspectiveStartDateYear, gpfrmAdvancedParameters->edtProspectiveStartDateMonth, gpfrmAdvancedParameters->edtProspectiveStartDateDay);
     gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked = gParameters.GetAdjustForEarlierAnalyses();

@@ -790,28 +790,28 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 2
         end
       end
-      object rgpTimeIntervalUnits: TGroupBox
+      object rgpTimeAggregationUnits: TGroupBox
         Left = 321
         Top = 140
         Width = 170
         Height = 121
         Caption = 'Time Aggregation'
         TabOrder = 3
-        object lblTimeIntervalUnits: TLabel
+        object lblTimeAggregationUnits: TLabel
           Left = 10
           Top = 21
           Width = 33
           Height = 13
           Caption = 'Units:  '
         end
-        object lblTimeIntervalLength: TLabel
+        object lblTimeAggregationLength: TLabel
           Left = 10
           Top = 92
           Width = 42
           Height = 13
           Caption = 'Length:  '
         end
-        object rdoUnitYear: TRadioButton
+        object rdoTimeAggregationYear: TRadioButton
           Left = 62
           Top = 21
           Width = 57
@@ -821,9 +821,9 @@ object frmAnalysis: TfrmAnalysis
           Enabled = False
           TabOrder = 0
           TabStop = True
-          OnClick = rdoUnitYearClick
+          OnClick = rdoTimeAggregationYearClick
         end
-        object rdoUnitMonths: TRadioButton
+        object rdoTimeAggregationMonths: TRadioButton
           Left = 62
           Top = 42
           Width = 57
@@ -831,9 +831,9 @@ object frmAnalysis: TfrmAnalysis
           Caption = 'Month'
           Enabled = False
           TabOrder = 1
-          OnClick = rdoUnitMonthsClick
+          OnClick = rdoTimeAggregationMonthsClick
         end
-        object rdoUnitDay: TRadioButton
+        object rdoTimeAggregationDay: TRadioButton
           Left = 62
           Top = 63
           Width = 57
@@ -841,9 +841,9 @@ object frmAnalysis: TfrmAnalysis
           Caption = 'Day'
           Enabled = False
           TabOrder = 2
-          OnClick = rdoUnitDayClick
+          OnClick = rdoTimeAggregationDayClick
         end
-        object edtTimeIntervalLength: TEdit
+        object edtTimeAggregationLength: TEdit
           Left = 62
           Top = 88
           Width = 48
@@ -852,7 +852,7 @@ object frmAnalysis: TfrmAnalysis
           MaxLength = 6
           TabOrder = 3
           Text = '1'
-          OnExit = edtTimeIntervalLengthExit
+          OnExit = edtTimeAggregationLengthExit
           OnKeyPress = NaturalNumberKeyPress
         end
         object stUnitText: TStaticText
