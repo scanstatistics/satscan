@@ -1,5 +1,7 @@
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//***************************************************************************
 #include "SaTScanData.h"
 #include "AdjustmentHandler.h"
 
@@ -78,22 +80,15 @@ bool CSaTScanData::ConvertAdjustmentDateToJulian(StringParser & Parser, Julian &
     -- unlike other input files of system, records read from relative risks
        file are applied directly to the measure structure, just post calculation
        of measure and prior to temporal adjustments and making cumulative. */
-bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativeMeasure) {
+bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
   bool                                  bValid=true, bEmpty=true;
-  tract_t                               t, TractIndex, iMaxTract;
-  measure_t                             c, AdjustedTotalMeasure_t;
+  tract_t                               TractIndex, iMaxTract;
   double                                dRelativeRisk;
   Julian                                StartDate, EndDate;
   FILE                                * fp=0;
-  int                                   i, iNumWords;
-  RelativeRiskAdjustmentHandler         Adjustments;
-  AdjustmentsIterator_t                 itr;
-  TractContainerIteratorConst_t         itr_deque;
+  int                                   iNumWords;
 
   try {
-    if (!m_pParameters->UseAdjustmentForRelativeRisksFile())
-      return true;
-
     gpPrint->SetImpliedInputFileType(BasePrint::ADJ_BY_RR_FILE);
     StringParser Parser(*gpPrint);
 
@@ -104,6 +99,7 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativ
       return false;
     }
 
+    gRelativeRiskAdjustments.Empty();
     while (Parser.ReadString(fp)) {
         //skip lines that do not contain data
         if (!Parser.HasWords())
@@ -178,7 +174,7 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativ
         iMaxTract = (TractIndex == -1 ? m_nTracts : TractIndex + 1);
         TractIndex = (TractIndex == -1 ? 0 : TractIndex);
         for (; TractIndex < iMaxTract; ++TractIndex)
-           Adjustments.AddAdjustmentData(TractIndex, dRelativeRisk, StartDate, EndDate);
+           gRelativeRiskAdjustments.AddAdjustmentData(TractIndex, dRelativeRisk, StartDate, EndDate);
     }
     //close file pointer
     fclose(fp); fp=0;
@@ -191,25 +187,6 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativ
       gpPrint->SatScanPrintWarning("Error: %s contains no data.\n", gpPrint->GetImpliedFileTypeString().c_str());
       bValid = false;
     }
-
-    //apply adjustments to relative risks
-    for (itr=Adjustments.GetAdjustments().begin(); itr != Adjustments.GetAdjustments().end(); ++itr) {
-       const TractContainer_t & tract_deque = itr->second;
-       for (itr_deque=tract_deque.begin(); itr_deque != tract_deque.end(); ++itr_deque) 
-          AdjustMeasure(pNonCumulativeMeasure, itr->first, (*itr_deque).GetRelativeRisk(),
-                        (*itr_deque).GetStartDate(), (*itr_deque).GetEndDate());
-    }
-
-    // calculate total adjusted measure
-    for (AdjustedTotalMeasure_t=0, i=0; i < m_nTimeIntervals; ++i)
-       for (t=0; t < m_nTracts; ++t)
-          AdjustedTotalMeasure_t += pNonCumulativeMeasure[i][t];
-    //Mutlipy the measure for each interval/tract by constant (c) to obtain total
-    //adjusted measure (AdjustedTotalMeasure_t) equal to previous total measure (m_nTotalMeasure).
-    c = gpDataStreams->GetStream(0/*# for now #*/).GetTotalMeasure()/AdjustedTotalMeasure_t;
-    for (i=0; i < m_nTimeIntervals; ++i)
-       for (t=0; t < m_nTracts; ++t)
-          pNonCumulativeMeasure[i][t] *= c;
   }
   catch (ZdException &x) {
     if (fp) fclose(fp); //close file pointer
