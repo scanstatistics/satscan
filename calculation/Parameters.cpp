@@ -3289,6 +3289,10 @@ bool CParameters::ValidateSimulationDataParameters(BasePrint & PrintDirection) {
       };
       if (giReplications == 0)
         gbOutputSimulationData = false;
+      if (gbOutputSimulationData && gsSimulationDataOutputFilename.empty()) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: No Simulation data output file specified.\n");
+      }
     }
     else {
       geSimulationType = STANDARD;
