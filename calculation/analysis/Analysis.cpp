@@ -121,12 +121,8 @@ bool CAnalysis::Execute(time_t RunTime) {
              return false;
         }
         else return false;
-    
-        DisplayTopClusterLogLikelihood();
 
-//#ifdef DEBUGANALYSIS
-//        DisplayTopClustersLogLikelihoods(m_pDebugFile);
-//#endif
+        DisplayTopClusterLogLikelihood();
 
         //Do Monte Carlo replications.
         if (m_nClustersRetained > 0)
@@ -297,127 +293,91 @@ void CAnalysis::DisplayFindClusterHeading() {
 }
 
 void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp) {
-   std::auto_ptr<stsAreaSpecificData>   pData;
+  measure_t                             nMinMeasure = 0;
+  std::auto_ptr<stsAreaSpecificData>    pData;
 
-   try {
-      if(m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
-         pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
-
-      measure_t nMinMeasure = 0;
-
-      if (m_nClustersRetained == 0)
-        return;
-
+  try {
+    if (m_nClustersRetained > 0) {
+      if (m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
+        pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
       if (m_pTopClusters[0]->m_nRatio > nMinRatio && (nReps == 0 || m_pTopClusters[0]->m_nRank  <= nReps)) {
         ++m_nClustersReported;
-
         switch(m_nAnalysisCount) {
-          case 1 : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
-          case 2 : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
-          default: fprintf(fp,"                  _____________________________\n\n");
+          case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
+          case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
+          default : fprintf(fp,"                  _____________________________\n\n");
         }
-
         m_pTopClusters[0]->Display(fp, *m_pParameters, *m_pData, m_nClustersReported, nMinMeasure);
-
-        if(m_pTopClusters[0]->m_nLogLikelihood < SimRatios.GetAlpha05())
-           ++guwSignificantAt005;
-        
+        if (m_pTopClusters[0]->m_nRatio > SimRatios.GetAlpha05())
+          ++guwSignificantAt005;
         // if we want dBase report, set the report pointer in cluster
-        if(m_pParameters->GetOutputAreaSpecificDBF())
-           m_pTopClusters[0]->SetAreaReport(pData.get());
-        
-        // if we are doing dBase or ASCII   
-        if(m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas) {
-            m_pTopClusters[0]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
-                                                     lReportHistoryRunNumber, true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);                                      
-        }
+        if (m_pParameters->GetOutputAreaSpecificDBF())
+          m_pTopClusters[0]->SetAreaReport(pData.get());
+        // if we are doing dBase or ASCII
+        if (m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
+           m_pTopClusters[0]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
+                                                  lReportHistoryRunNumber, true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);
       }
-
       fprintf(fp, "\n");
-
-      // print area ASCII
-      if (m_pParameters->m_bOutputCensusAreas) {
-         ASCIIFileWriter AWriter(pData.get());
-         AWriter.Print();
-      }
-      // print area dBase
-      if (m_pParameters->GetOutputAreaSpecificDBF()) {
-         DBaseFileWriter DWriter(pData.get());
-         DWriter.Print();
-      }
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("DisplayTopCluster(double, int, File *)", "CAnalysis");
-      throw;
-   }
+      if (m_pParameters->m_bOutputCensusAreas)
+        ASCIIFileWriter(pData.get()).Print();// print area ASCII
+      if (m_pParameters->GetOutputAreaSpecificDBF())
+        DBaseFileWriter(pData.get()).Print();// print area dBase
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("DisplayTopCluster(double, int, File *)", "CAnalysis");
+    throw;
+  }
 }
 
 void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp) {
-   double                       dSignifRatio05;
-   tract_t                      tNumClustersToDisplay;
-   std::auto_ptr<stsAreaSpecificData>   pData;
+  double                               dSignifRatio05;
+  tract_t                              i, tNumClustersToDisplay;
+  std::auto_ptr<stsAreaSpecificData>   pData;
+  clock_t                              lStartTime;
+  measure_t                            nMinMeasure = -1;
 
-   try {
-      m_nClustersReported = 0;
-      measure_t nMinMeasure = -1;
-      
-      if(m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
-         pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
-
-      dSignifRatio05 = SimRatios.GetAlpha05();
-
-      //if  no replications, attempt to display up to top 10 clusters
-      tNumClustersToDisplay = (nReps == 0 ? min(10, m_nClustersRetained) : m_nClustersRetained);
-
-      for (tract_t i=0; i < tNumClustersToDisplay; ++i) {
-        // print out user notification for every 15th cluster recorded so user knows program is still working - AJV 10/3/2002
-        if((i%15)== 0)
-             gpPrintDirection->SatScanPrintf("%i out of %i clusters recorded so far...", i, tNumClustersToDisplay);
-
-        if (m_pTopClusters[i]->m_nRatio > nMinRatio && (nReps == 0 || m_pTopClusters[i]->m_nRank  <= nReps)) {
-          ++m_nClustersReported;
-
-          switch(m_nClustersReported) {
-            case 1 : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
-            case 2 : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
-            default: fprintf(fp, "\n"); break;
-          }   // end switch
-
-          
-          m_pTopClusters[i]->Display(fp, *m_pParameters, *m_pData, m_nClustersReported, nMinMeasure);
-
-          if(m_pTopClusters[i]->m_nLogLikelihood < dSignifRatio05)
-             ++guwSignificantAt005;
-          
-          // if doing dBase output, set the report pointer - not the most effective way to do this, but the least intrusive - AJV
-          if(m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
-             m_pTopClusters[i]->SetAreaReport(pData.get());
-
-          // if were are doing census areas and theres a file pointer OR we are doing dBase output
-          if (m_pParameters->m_bOutputCensusAreas || m_pParameters->GetOutputAreaSpecificDBF()) {
-              m_pTopClusters[i]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
-                                                   lReportHistoryRunNumber, true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);
-          }
-        }   // end if top cluster > minratio
-      }   // end for loop
-
-      fprintf(fp, "\n");
-
-      // print area ASCII
-      if (m_pParameters->m_bOutputCensusAreas) {
-         ASCIIFileWriter AWriter(pData.get());
-         AWriter.Print();
-      }
-      // print AREA dBase
-      if (m_pParameters->GetOutputAreaSpecificDBF()) {
-         DBaseFileWriter DWriter(pData.get());
-         DWriter.Print();
-      }
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("DisplayTopClusters(double, int, File*)", "CAnalysis");
-      throw;
-   }
+  try {
+    m_nClustersReported = 0;
+    if (m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
+      pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
+    dSignifRatio05 = SimRatios.GetAlpha05();
+    //If  no replications, attempt to display up to top 10 clusters.
+    tNumClustersToDisplay = (nReps == 0 ? min(10, m_nClustersRetained) : m_nClustersRetained);
+    lStartTime = clock(); //get clock for calculating output time
+    for (i=0; i < tNumClustersToDisplay; ++i) {
+       if (i==1)
+         ReportTimeEstimate(lStartTime, tNumClustersToDisplay, i, gpPrintDirection);
+       if (m_pTopClusters[i]->m_nRatio > nMinRatio && (nReps == 0 || m_pTopClusters[i]->m_nRank  <= nReps)) {
+         ++m_nClustersReported;
+         switch (m_nClustersReported) {
+           case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
+           case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
+           default : fprintf(fp, "\n"); break;
+         }
+         m_pTopClusters[i]->Display(fp, *m_pParameters, *m_pData, m_nClustersReported, nMinMeasure);
+         if (m_pTopClusters[i]->m_nRatio > dSignifRatio05)
+           ++guwSignificantAt005;
+         // if doing dBase output, set the report pointer - not the most effective way to do this, but the least intrusive - AJV
+         if (m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
+           m_pTopClusters[i]->SetAreaReport(pData.get());
+         // if were are doing census areas and theres a file pointer OR we are doing dBase output
+         if (m_pParameters->m_bOutputCensusAreas || m_pParameters->GetOutputAreaSpecificDBF())
+           m_pTopClusters[i]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
+                                                    lReportHistoryRunNumber, true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);
+       }   // end if top cluster > minratio
+    }   // end for loop
+    fprintf(fp, "\n");
+    if (m_pParameters->m_bOutputCensusAreas) // print area ASCII
+      ASCIIFileWriter(pData.get()).Print();
+    if (m_pParameters->GetOutputAreaSpecificDBF()) // print area dBase
+      DBaseFileWriter(pData.get()).Print();
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("DisplayTopClusters(double, int, File*)", "CAnalysis");
+    throw;
+  }
 }
 
 void CAnalysis::DisplayTopClusterLogLikelihood() {
@@ -628,18 +588,9 @@ void CAnalysis::PerformSimulations() {
              r = MonteCarloProspective();
           else
              r = MonteCarlo();
-
           UpdateTopClustersRank(r);
           SimRatios.AddRatio(r);
-
           UpdatePowerCounts(r);
-
-      //    if (!(i % 200)) KR-980326 Limit printing to increase speed of program
-          gpPrintDirection->SatScanPrintf(sReplicationFormatString, iSimulationNumber, m_pParameters->m_nReplicas, r);
-
-          if (m_pParameters->m_bSaveSimLogLikelihoods)
-             pLLRData->AddLikelihood(r);
-
           #ifdef DEBUGANALYSIS
           fprintf(m_pDebugFile, "---- Replication #%ld ----------------------\n\n",i+1);
           m_pData->DisplaySimCases(m_pDebugFile);
@@ -647,19 +598,21 @@ void CAnalysis::PerformSimulations() {
           fprintf(m_pDebugFile, "%s = %7.21f\n\n",
                   (Parameters.m_nModel == SPACETIMEPERMUTATION ? "Test statistic" : "Log Likelihood Ratio"), r);
           #endif
-
-          if (iSimulationNumber==1)
+          if (iSimulationNumber==1) {
             ReportTimeEstimate(nStartTime, m_pParameters->m_nReplicas, iSimulationNumber, gpPrintDirection);
+            //Simulations taking less than one second to complete hinder user seeing most likely clusters
+            //loglikelihood ratio, so pause program.
+            if ((clock() - nStartTime)/CLK_TCK < 1)
+              Sleep(5000);
+          }
+          gpPrintDirection->SatScanPrintf(sReplicationFormatString, iSimulationNumber, m_pParameters->m_nReplicas, r);
+          if (m_pParameters->m_bSaveSimLogLikelihoods)
+             pLLRData->AddLikelihood(r);
         }
-
-        if (m_pParameters->m_bSaveSimLogLikelihoods) {
-           ASCIIFileWriter Awriter(pLLRData.get());
-           Awriter.Print();
-        }
-        if (m_pParameters->GetDBaseOutputLogLikeli()) {
-           DBaseFileWriter Dwriter(pLLRData.get());
-           Dwriter.Print();
-        }
+        if (m_pParameters->m_bSaveSimLogLikelihoods)
+           ASCIIFileWriter(pLLRData.get()).Print();
+        if (m_pParameters->GetDBaseOutputLogLikeli())
+           DBaseFileWriter(pLLRData.get()).Print();
       }
    }
    catch (ZdException & x) {
