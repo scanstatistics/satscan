@@ -53,29 +53,21 @@ void stsAreaSpecificDBF::CleanupFieldVector() {
 // pre: sFileName is name of the dbf file needing to be created
 // post: creates the dbf file with the appropraite fields
 void stsAreaSpecificDBF::CreateDBFFile() {
-   TXDFile		*pFile = 0;
+   TXDFile		File;
 
    try {
       GetFields();
 
       // pack up and create
-      pFile = new TXDFile();
-      pFile->PackFields(gvFields);
+      File.PackFields(gvFields);
 
       // BUGBUG
       // for now we'll overwrite files, in the future we may wish to display an exception instead - AJV 9/4/2002
-      pFile->Delete(gsFileName);
-//      if(ZdIO::Exists(gsFileName))
-//        ZdIO::Delete(gsFileName);
-      pFile->Create(gsFileName, gvFields);
-      pFile->Close();
-
-      delete pFile;	
+      File.Delete(gsFileName);
+      File.Create(gsFileName, gvFields);
+      File.Close();
    }
    catch (ZdException &x) {
-      if(pFile)
-         pFile->Close();
-      delete pFile; pFile = 0;
       x.AddCallpath("CreateDBFFile()", "DBaseOutput");
       throw;
    }
@@ -85,8 +77,8 @@ void stsAreaSpecificDBF::CreateDBFFile() {
 // pre: pass in an empty vector
 // post: vector will be defined using the names and field types provided by the descendant classes
 void stsAreaSpecificDBF::GetFields() {
-   TXDFile*		pFile = 0;
-   ZdField*		pField = 0;
+   TXDFile		File;
+   ZdField		Field;
    ZdVector<std::pair<ZdString, char> > vFieldDescrips;    // field name, field type
    ZdVector<std::pair<short, short> > vFieldSizes;         // field length, field precision
 
@@ -94,23 +86,16 @@ void stsAreaSpecificDBF::GetFields() {
       CleanupFieldVector();           // empty out the global field vector
       SetupFields(vFieldDescrips, vFieldSizes);
 
-      pFile = new TXDFile();
-
       for(unsigned int i = 0; i < vFieldDescrips.GetNumElements(); ++i) {
-         pField = pFile->GetNewField();
-         pField->SetName(vFieldDescrips[i].first.GetCString());
-         pField->SetType(vFieldDescrips[i].second);
-         pField->SetLength(vFieldSizes[i].first);
-         pField->SetPrecision(vFieldSizes[i].second);
-         gvFields.AddElement(pField->Clone());
-         delete pField;
+         Field = *(File.GetNewField());
+         Field.SetName(vFieldDescrips[i].first.GetCString());
+         Field.SetType(vFieldDescrips[i].second);
+         Field.SetLength(vFieldSizes[i].first);
+         Field.SetPrecision(vFieldSizes[i].second);
+         gvFields.AddElement(Field.Clone());
       }
-
-      delete pFile;
    }
    catch (ZdException &x) {
-      delete pFile; pFile = 0;
-      delete pField; pField = 0;
       x.AddCallpath("GetFields()", "DBaseOutput");
       throw;
    }
@@ -173,11 +158,11 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       pFile->AppendRecord(*pTransaction, *pRecord);
-      delete pRecord;
+      delete pRecord; pRecord = 0;
 
-      pFile->EndTransaction(pTransaction);
+      pFile->EndTransaction(pTransaction); pTransaction = 0;
       pFile->Close();
-      delete pFile;
+      delete pFile;  pFile = 0;
    }
    catch (ZdException &x) {
       if(pFile) {
@@ -195,23 +180,17 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 
 // internal setup
 void stsAreaSpecificDBF::Setup(const ZdString& sFileName) {
-   TXDFile	        *pFile = 0;
    ZdFileRecord         *pLastRecord = 0;
-   unsigned long        ulLastRecordNumber;
 
    try {
       if(ZdIO::Exists("c:\\AnalysisHistory.txd") && ZdIO::Exists("c:\\AnalysisHistory.zds"))  {
-         pFile = new TXDFile("c:\\AnalysisHistory.txd", ZDIO_OPEN_READ);
+         TXDFile File("c:\\AnalysisHistory.txd", ZDIO_OPEN_READ);
 
-         // get a record buffer, input data and append the record
-         ulLastRecordNumber = pFile->GotoLastRecord(pLastRecord);
          // if there's records in the file
-         if(ulLastRecordNumber)
+         if(File.GotoLastRecord(pLastRecord))
             pLastRecord->GetField(1, glRunNumber);
-         delete pLastRecord;
-         pFile->Close();
-
-         delete pFile;
+         delete pLastRecord; pLastRecord = 0;
+         File.Close();
       }
 
       gsFileName = sFileName;
@@ -219,9 +198,6 @@ void stsAreaSpecificDBF::Setup(const ZdString& sFileName) {
       CreateDBFFile();
    }
    catch(ZdException &x) {
-      if(pFile)
-         pFile->Close();
-      delete pFile; pFile = 0;
       delete pLastRecord; pLastRecord = 0;
       x.AddCallpath("Setup()", "stsAreaSpecificDBF");
       throw;

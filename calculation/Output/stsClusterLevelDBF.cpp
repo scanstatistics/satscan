@@ -54,29 +54,23 @@ void stsClusterLevelDBF::CleanupFieldVector() {
 // pre: sFileName is name of the dbf file needing to be created
 // post: creates the dbf file with the appropraite fields
 void stsClusterLevelDBF::CreateDBFFile() {
-   TXDFile		*pFile = 0;
+   TXDFile		File;
    
    try {
       GetFields();
 
       // pack up and create
-      pFile = new TXDFile();
-      pFile->PackFields(gvFields);
+      File.PackFields(gvFields);
 
       // BUGBUG
       // for now we'll overwrite files, in the future we may wish to display an exception instead - AJV 9/4/2002
-      pFile->Delete(gsFileName);
+      File.Delete(gsFileName);
 //      if(ZdIO::Exists(gsFileName))
 //        ZdIO::Delete(gsFileName);
-      pFile->Create(gsFileName, gvFields);
-      pFile->Close();
-
-      delete pFile;	
+      File.Create(gsFileName, gvFields);
+      File.Close();
    }
    catch (ZdException &x) {
-      if(pFile)
-         pFile->Close();
-      delete pFile; pFile = 0;
       x.AddCallpath("CreateDBFFile()", "DBaseOutput");
       throw;
    }
@@ -86,32 +80,25 @@ void stsClusterLevelDBF::CreateDBFFile() {
 // pre: pass in an empty vector
 // post: vector will be defined using the names and field types provided by the descendant classes
 void stsClusterLevelDBF::GetFields() {
-   TXDFile*		pFile = 0;
-   ZdField*		pField = 0;
-   ZdVector<std::pair<ZdString, char> > vFieldDescrips;
-   ZdVector<std::pair<short, short> > vFieldSizes;
+   TXDFile		File;
+   ZdField		Field;
+   ZdVector<std::pair<ZdString, char> > vFieldDescrips;     // field name, field type
+   ZdVector<std::pair<short, short> > vFieldSizes;          // field length, field precision
 
    try {
       CleanupFieldVector();
       SetupFields(vFieldDescrips, vFieldSizes);
 
-      pFile = new TXDFile();
-      
       for(unsigned int i = 0; i < vFieldDescrips.GetNumElements(); ++i) {
-         pField = pFile->GetNewField();
-         pField->SetName(vFieldDescrips[i].first.GetCString());
-         pField->SetType(vFieldDescrips[i].second);
-         pField->SetLength(vFieldSizes[i].first);
-         pField->SetPrecision(vFieldSizes[i].second);
-         gvFields.AddElement(pField->Clone());
-         delete pField;
+         Field = * ( File.GetNewField() );
+         Field.SetName(vFieldDescrips[i].first.GetCString());
+         Field.SetType(vFieldDescrips[i].second);
+         Field.SetLength(vFieldSizes[i].first);
+         Field.SetPrecision(vFieldSizes[i].second);
+         gvFields.AddElement(Field.Clone());
       }
-
-      delete pFile;
    }
    catch (ZdException &x) {
-      delete pFile; pFile = 0;
-      delete pField; pField = 0;
       x.AddCallpath("GetFields()", "DBaseOutput");
       throw;
    }
@@ -149,12 +136,12 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 
       // cluster start date
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsZdString() = (char*)pCluster->m_nStartDate;
+      fv.AsLong() = pCluster->m_nStartDate;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // cluster end date
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsZdString() = (char*)pCluster->m_nEndDate;
+      fv.AsLong() = pCluster->m_nEndDate;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // cluster number
@@ -223,7 +210,7 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
       pFile->AppendRecord(*pTransaction, *pRecord);
       delete pRecord;
 
-      pFile->EndTransaction(pTransaction);
+      pFile->EndTransaction(pTransaction);  pTransaction = 0;
       pFile->Close();
       delete pFile;
    }
@@ -244,32 +231,23 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 
 // internal setup
 void stsClusterLevelDBF::Setup(const ZdString& sFileName) {
-   TXDFile	        *pFile = 0;
    ZdFileRecord         *pLastRecord = 0;
-   unsigned long        ulLastRecordNumber;
 
    try {
-      if(ZdIO::Exists("AnalysisHistory.txd") && ZdIO::Exists("AnalysisHistory.zds"))  {
-         pFile = new TXDFile("AnalysisHistory.txd", ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
+      if(ZdIO::Exists("c:\\AnalysisHistory.txd") && ZdIO::Exists("c:\\AnalysisHistory.zds"))  {
+         TXDFile File("c:\\AnalysisHistory.txd", ZDIO_OPEN_READ);
 
-         // get a record buffer, input data and append the record
-         ulLastRecordNumber = pFile->GotoLastRecord(pLastRecord);
          // if there's records in the file
-         if(ulLastRecordNumber)
-            pLastRecord->GetField(1, glRunNumber);
-         delete pLastRecord;
-         pFile->Close();
-
-         delete pFile;
+         if(File.GotoLastRecord(pLastRecord))
+            pLastRecord->GetField(0, glRunNumber);
+         delete pLastRecord; pLastRecord = 0;
+         File.Close();
       }
       gsFileName = sFileName;
 
       CreateDBFFile();
    }
    catch(ZdException &x) {
-      if(pFile)
-         pFile->Close();
-      delete pFile; pFile = 0;
       delete pLastRecord; pLastRecord = 0;
       x.AddCallpath("Setup()", "stsClusterLevelDBF");
       throw;
@@ -292,14 +270,14 @@ void stsClusterLevelDBF::SetupFields(ZdVector<std::pair<ZdString, char> >& vFiel
       vFieldSizes.AddElement(fieldsize);
 
       field.first = "START_DATE";
-      field.second = ZD_ALPHA_FLD;
+      field.second = ZD_NUMBER_FLD;
       fieldsize.first = 32;
       fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
       vFieldSizes.AddElement(fieldsize);
 
       field.first = "END_DATE";
-      field.second = ZD_ALPHA_FLD;
+      field.second = ZD_NUMBER_FLD;
       fieldsize.first = 32;
       fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
