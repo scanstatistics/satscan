@@ -517,30 +517,32 @@ bool TfrmAnalysis::CheckDateRange(int iStartYear, int iStartMonth, int iStartDay
       bRangeOk = false;
     }
 
-    //check that interval length is not greater study period
-    //(.i.e. can't have study period that is 20 days and intervals of 3 months)
-    //to make start and end day inclusive - add 1 to end date
-    EndDate.AddDays(1);
-    if (bRangeOk) {
-      switch (iIntervalUnits) {
-        case      (YEAR)      : StartDate.AddYears(static_cast<unsigned short>(iIntervalLength));
-                                strcpy(FilterBuffer,"year(s)");
-                                break;
-        case      (MONTH)     : StartDate.AddMonths(static_cast<unsigned short>(iIntervalLength));
-                                strcpy(FilterBuffer,"month(s)");
-                                break;
-        case      (DAY)       : StartDate.AddDays(static_cast<unsigned short>(iIntervalLength));
-                                strcpy(FilterBuffer,"day(s)");
-                                break;
-        default               : ZdGenerateException("Unknown interval unit \"%d\"","CheckDateRange()",iIntervalUnits);
-      };
+    if (rgTypeAnalysis->ItemIndex > 0) {/* purely spatial does not use interval length */
+      //check that interval length is not greater study period
+      //(.i.e. can't have study period that is 20 days and intervals of 3 months)
+      //to make start and end day inclusive - add 1 to end date
+      EndDate.AddDays(1);
+      if (bRangeOk) {
+        switch (iIntervalUnits) {
+          case      (YEAR)      : StartDate.AddYears(static_cast<unsigned short>(iIntervalLength));
+                                  strcpy(FilterBuffer,"year(s)");
+                                  break;
+          case      (MONTH)     : StartDate.AddMonths(static_cast<unsigned short>(iIntervalLength));
+                                  strcpy(FilterBuffer,"month(s)");
+                                  break;
+          case      (DAY)       : StartDate.AddDays(static_cast<unsigned short>(iIntervalLength));
+                                  strcpy(FilterBuffer,"day(s)");
+                                  break;
+          default               : ZdGenerateException("Unknown interval unit \"%d\"","CheckDateRange()",iIntervalUnits);
+        };
 
-      if (StartDate > EndDate) {
-        sErrorMessage << "Interval length of " << iIntervalLength << " " << FilterBuffer;
-        sErrorMessage << " is greater than study period length.\nPlease review settings.";
-        Application->MessageBox(sErrorMessage.GetCString(), "Notification" , MB_OK);
-        PageControl1->ActivePage = tbTimeParameter;
-        bRangeOk = false;
+        if (StartDate > EndDate) {
+          sErrorMessage << "Interval length of " << iIntervalLength << " " << FilterBuffer;
+          sErrorMessage << " is greater than study period length.\nPlease review settings.";
+          Application->MessageBox(sErrorMessage.GetCString(), "Notification" , MB_OK);
+          PageControl1->ActivePage = tbTimeParameter;
+          bRangeOk = false;
+        }
       }
     }
   }
