@@ -14,7 +14,7 @@ bool CPurelyTemporalAnalysis::FindTopClusters() {
   bool  bOk = true;
 
   try {
-    gpPrintDirection->SatScanPrintf("Find top cluster.\n");
+    gpPrintDirection->SatScanPrintf("Finding the most likely clusters\n");
     m_pTopClusters[0] = GetTopCluster(0);
     if (m_pTopClusters[0]->ClusterDefined())
       m_nClustersRetained++;
@@ -43,7 +43,6 @@ CCluster* CPurelyTemporalAnalysis::GetTopCluster(tract_t nCenter) {
     else
       eIncludeClustersType = m_pParameters->GetIncludeClustersType();
 
-    gpPrintDirection->SatScanPrintf("Get Top P.T. Cluster.\n");
     pTopCluster = new CPurelyTemporalCluster(eIncludeClustersType, *m_pData, *gpPrintDirection);
     CPurelyTemporalCluster thisCluster(eIncludeClustersType, *m_pData, *gpPrintDirection);
     
