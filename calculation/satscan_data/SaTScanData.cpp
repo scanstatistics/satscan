@@ -330,6 +330,10 @@ void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
        m_nTotalControls -= gpControlsHandler->GetArray()[0][tTractIndex];
        gpControlsHandler->GetArray()[0][tTractIndex] = 0;
     }
+    if (gvCircleMeasure.size()) {
+      m_nTotalMaxCirclePopulation -= gvCircleMeasure[tTractIndex];
+      gvCircleMeasure[tTractIndex] = 0;
+    }
   }
   catch (ZdException & x) {
     x.AddCallpath("RemoveTractSignificance()", "CSaTScanData");
