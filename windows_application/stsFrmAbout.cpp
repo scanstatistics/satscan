@@ -7,14 +7,11 @@
 TfrmAbout *frmAbout;
 //---------------------------------------------------------------------------
 __fastcall TfrmAbout::TfrmAbout(TComponent* Owner) : TForm(Owner) {
-   lblEmail->Caption = GetToolkit().GetSubstantiveSupportEmail();
-   lblVersion->Caption = AnsiString("v ") + VERSION_NUMBER;
-   lblVersionDate->Caption = VERSION_DATE;
-   lblWebSite->Caption = GetToolkit().GetWebSite();
+  Setup();
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAbout::Button1Click(TObject *Sender) {
-   Close();        
+   Close();
 }
 //---------------------------------------------------------------------------
 
@@ -112,4 +109,21 @@ void __fastcall TfrmAbout::lblLicenseClick(TObject *Sender) {
   }
 }
 //---------------------------------------------------------------------------
+/** internal setup function */
+void TfrmAbout::Setup() {
+  ZdString      sCaptionText;
 
+  try {
+    lblEmail->Caption = GetToolkit().GetSubstantiveSupportEmail();
+    lblVersion->Caption = AnsiString("v.") + VERSION_NUMBER;
+    lblVersionDate->Caption = VERSION_DATE;
+    lblWebSite->Caption = GetToolkit().GetWebSite();
+    sCaptionText << "SaTScan v." << VERSION_NUMBER << ":  Software for the spatial and space-time";
+    sCaptionText << " scan statistics.\nBethesda, MD;  National Cancer Institute, 2002.";
+    Label5->Caption = sCaptionText.GetCString();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Setup()", "TfrmAbout");
+    throw;
+  }
+}  
