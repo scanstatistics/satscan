@@ -4,7 +4,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
   ActiveControl = PageControl
   BorderStyle = bsDialog
   Caption = 'Advanced Features'
-  ClientHeight = 307
+  ClientHeight = 297
   ClientWidth = 511
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -22,7 +22,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Left = 427
     Top = 0
     Width = 84
-    Height = 307
+    Height = 297
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 1
@@ -61,7 +61,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Left = 2
     Top = 6
     Width = 423
-    Height = 299
+    Height = 283
     ActivePage = tsInput
     TabOrder = 0
     object tsInput: TTabSheet
@@ -70,12 +70,12 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object GroupBox1: TGroupBox
         Left = 8
         Top = 8
-        Width = 399
-        Height = 141
-        Caption = 'Additional Input Stream Detail'
+        Width = 401
+        Height = 181
+        Caption = 'Additional Input Streams'
         TabOrder = 0
         object Label3: TLabel
-          Left = 16
+          Left = 110
           Top = 16
           Width = 46
           Height = 13
@@ -85,46 +85,47 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ShowHint = False
         end
         object Label1: TLabel
-          Left = 16
-          Top = 54
+          Left = 110
+          Top = 58
           Width = 55
           Height = 13
           Caption = 'Control File:'
         end
         object Label2: TLabel
-          Left = 16
-          Top = 92
+          Left = 110
+          Top = 100
           Width = 72
           Height = 13
           Caption = 'Population File:'
         end
         object Label4: TLabel
-          Left = 120
-          Top = 54
+          Left = 216
+          Top = 58
           Width = 78
           Height = 13
           Caption = '(Bernoulli Model)'
         end
         object Label5: TLabel
-          Left = 120
-          Top = 92
+          Left = 216
+          Top = 100
           Width = 75
           Height = 13
           Caption = '(Poisson Model)'
         end
       end
       object edtCaseFileName: TEdit
-        Left = 24
+        Left = 118
         Top = 36
-        Width = 336
+        Width = 250
         Height = 21
         Hint = 'Additional Case File Name'
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 2
+        TabOrder = 1
+        OnExit = edtFileNameExit
       end
       object btnCaseBrowse: TButton
-        Left = 368
+        Left = 376
         Top = 36
         Width = 25
         Height = 21
@@ -138,22 +139,23 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         ParentFont = False
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 3
+        TabOrder = 2
         OnClick = btnCaseBrowseClick
       end
       object edtControlFileName: TEdit
-        Left = 24
-        Top = 74
-        Width = 336
+        Left = 118
+        Top = 78
+        Width = 250
         Height = 21
         Hint = 'Additional Control File Name'
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 4
+        TabOrder = 3
+        OnExit = edtFileNameExit
       end
       object btnControlBrowse: TButton
-        Left = 368
-        Top = 74
+        Left = 376
+        Top = 78
         Width = 25
         Height = 21
         Hint = 'browse for control file'
@@ -166,22 +168,23 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         ParentFont = False
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 5
+        TabOrder = 4
         OnClick = btnControlBrowseClick
       end
       object edtPopFileName: TEdit
-        Left = 24
-        Top = 113
-        Width = 336
+        Left = 118
+        Top = 121
+        Width = 250
         Height = 21
         Hint = 'Additional Population File Name'
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 6
+        TabOrder = 5
+        OnExit = edtFileNameExit
       end
       object btnPopBrowse: TButton
-        Left = 368
-        Top = 113
+        Left = 376
+        Top = 121
         Width = 25
         Height = 21
         Hint = 'browse for population file'
@@ -194,52 +197,44 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         ParentFont = False
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 7
+        TabOrder = 6
         OnClick = btnPopBrowseClick
       end
-      object GroupBox2: TGroupBox
-        Left = 8
-        Top = 156
-        Width = 399
-        Height = 105
-        Caption = 'All Additional Input Streams'
-        TabOrder = 1
-        object btnAddStream: TButton
-          Left = 312
-          Top = 28
-          Width = 75
-          Height = 25
-          Hint = 'Add an Additional Input Stream'
-          Caption = 'Add'
-          ParentShowHint = False
-          ShowHint = True
-          TabOrder = 1
-          OnClick = btnAddClick
-        end
-        object btnRemoveStream: TButton
-          Left = 312
-          Top = 64
-          Width = 75
-          Height = 25
-          Hint = 'Remove an Additional Input Stream'
-          Caption = 'Remove'
-          ParentShowHint = False
-          ShowHint = True
-          TabOrder = 2
-          OnClick = btnRemoveStreamClick
-        end
-        object lstInputStreams: TListBox
-          Left = 16
-          Top = 24
-          Width = 285
-          Height = 69
-          Hint = 'All Additional Input Streams'
-          ItemHeight = 13
-          ParentShowHint = False
-          ShowHint = True
-          TabOrder = 0
-          OnClick = lstInputStreamsClick
-        end
+      object lstInputStreams: TListBox
+        Left = 16
+        Top = 36
+        Width = 93
+        Height = 106
+        Hint = 'All Additional Input Streams'
+        ItemHeight = 13
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 7
+        OnClick = lstInputStreamsClick
+      end
+      object btnNewStream: TButton
+        Left = 16
+        Top = 152
+        Width = 45
+        Height = 25
+        Hint = 'Add an Additional Input Stream'
+        Caption = 'New'
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 8
+        OnClick = btnNewClick
+      end
+      object btnRemoveStream: TButton
+        Left = 64
+        Top = 152
+        Width = 45
+        Height = 25
+        Hint = 'Remove an Additional Input Stream'
+        Caption = 'Delete'
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 9
+        OnClick = btnRemoveStreamClick
       end
     end
     object TabSheet2: TTabSheet
@@ -393,8 +388,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       ImageIndex = 1
       object grpScanningWindow: TGroupBox
         Left = 8
-        Top = 134
-        Width = 380
+        Top = 132
+        Width = 389
         Height = 111
         Caption = 'Scanning Window'
         TabOrder = 0
@@ -584,7 +579,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object rdgTemporalOptions: TGroupBox
         Left = 8
         Top = 8
-        Width = 380
+        Width = 389
         Height = 112
         Caption = 'Temporal Cluster'
         TabOrder = 1
@@ -668,8 +663,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object rdgTemporalTrendAdj: TRadioGroup
         Left = 8
         Top = 8
-        Width = 390
-        Height = 141
+        Width = 397
+        Height = 129
         Hint = 'Temporal Trend Adjustments'
         Caption = 'Temporal Adjustments'
         Enabled = False
@@ -687,7 +682,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object edtLogLinear: TEdit
         Left = 108
-        Top = 88
+        Top = 80
         Width = 25
         Height = 21
         Enabled = False
@@ -699,7 +694,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object lblLogLinear: TStaticText
         Left = 136
-        Top = 90
+        Top = 82
         Width = 67
         Height = 17
         AutoSize = False
@@ -708,22 +703,22 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object grpAdjustments: TGroupBox
         Left = 8
-        Top = 159
-        Width = 390
-        Height = 102
+        Top = 148
+        Width = 397
+        Height = 89
         Caption = 'Temporal, Spatial and/or Space-Time Adjustments'
         TabOrder = 3
         object lblAdjustmentsByRelativeRisksFile: TLabel
-          Left = 12
-          Top = 49
+          Left = 13
+          Top = 43
           Width = 79
           Height = 13
           Anchors = []
           Caption = 'Adjustments File:'
         end
         object edtAdjustmentsByRelativeRisksFile: TEdit
-          Left = 12
-          Top = 68
+          Left = 15
+          Top = 57
           Width = 335
           Height = 21
           Anchors = []
@@ -734,8 +729,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnExit = OnControlExit
         end
         object btnBrowseAdjustmentsFile: TButton
-          Left = 355
-          Top = 68
+          Left = 362
+          Top = 57
           Width = 25
           Height = 21
           Hint = 'browse for adjustments file'
@@ -769,7 +764,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object grpAnalysis: TGroupBox
         Left = 8
         Top = 8
-        Width = 373
+        Width = 389
         Height = 50
         Caption = 'Analysis'
         TabOrder = 0
@@ -786,13 +781,13 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object gbxProspectiveSurveillance: TGroupBox
         Left = 8
         Top = 76
-        Width = 373
-        Height = 137
+        Width = 389
+        Height = 129
         Caption = 'Prospective Surveillance'
         TabOrder = 1
         object lblProspectiveStartYear: TLabel
           Left = 40
-          Top = 86
+          Top = 78
           Width = 19
           Height = 11
           Caption = 'Year'
@@ -805,7 +800,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object lblProspectiveStartMonth: TLabel
           Left = 92
-          Top = 86
+          Top = 78
           Width = 28
           Height = 11
           Caption = 'Month'
@@ -818,7 +813,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object lblProspectiveStartDay: TLabel
           Left = 143
-          Top = 86
+          Top = 78
           Width = 16
           Height = 11
           Caption = 'Day'
@@ -838,7 +833,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtProspectiveStartDateYear: TEdit
           Left = 33
-          Top = 97
+          Top = 89
           Width = 41
           Height = 21
           Enabled = False
@@ -850,7 +845,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtProspectiveStartDateMonth: TEdit
           Left = 93
-          Top = 97
+          Top = 89
           Width = 25
           Height = 21
           Enabled = False
@@ -862,7 +857,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtProspectiveStartDateDay: TEdit
           Left = 139
-          Top = 97
+          Top = 89
           Width = 25
           Height = 21
           Enabled = False
@@ -888,7 +883,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       ImageIndex = 2
       object lblReportSmallerClusters: TLabel
         Left = 238
-        Top = 226
+        Top = 222
         Width = 151
         Height = 27
         AutoSize = False
@@ -897,7 +892,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object chkRestrictReportedClusters: TCheckBox
         Left = 20
-        Top = 226
+        Top = 222
         Width = 175
         Height = 17
         Caption = 'Report only clusters smaller than'
@@ -906,7 +901,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object edtReportClustersSmallerThan: TEdit
         Left = 200
-        Top = 224
+        Top = 220
         Width = 30
         Height = 21
         TabOrder = 1
@@ -928,7 +923,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           'No Pairs of Centers Both in Each Others Clusters'
           'No Restrictions = Most Likely Cluster for Each Grid Point')
         TabOrder = 2
-        OnExit = OnControlExit
+        OnClick = OnControlExit
       end
     end
   end

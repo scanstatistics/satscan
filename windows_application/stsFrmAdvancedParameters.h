@@ -107,14 +107,13 @@ __published:	// IDE-managed Components
    TLabel *Label3;
    TLabel *Label1;
    TLabel *Label2;
-   TGroupBox *GroupBox2;
-   TButton *btnAddStream;
-   TButton *btnRemoveStream;
-   TListBox *lstInputStreams;
    TLabel *Label4;
    TLabel *Label5;
+   TListBox *lstInputStreams;
+   TButton *btnNewStream;
+   TButton *btnRemoveStream;
 
-   void __fastcall btnAddClick(TObject *Sender) ;
+   void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
    void __fastcall btnBrowseMaxCirclePopFileClick(TObject *Sender);
    void __fastcall btnCaseBrowseClick(TObject *Sender) ;
@@ -154,6 +153,7 @@ __published:	// IDE-managed Components
    void __fastcall OnControlExit(TObject *Sender);
    void __fastcall lstInputStreamsClick(TObject *Sender);
    void __fastcall btnRemoveStreamClick(TObject *Sender);
+   void __fastcall edtFileNameExit(TObject *Sender);
 
  private:
 
@@ -178,6 +178,8 @@ __published:	// IDE-managed Components
    void                     SetDefaultsForInputTab();
    void                     SetDefaultsForOutputTab();
    void                     Setup();
+   void                     UpdateInputFiles();
+   void                     ValidateInputFilesAtInput();
    void                     ValidateInputFiles();
    void                     ValidateProspDateRange();
    void                     ValidateReportedSpatialClusterSize();
@@ -188,9 +190,9 @@ __published:	// IDE-managed Components
 public:
    __fastcall TfrmAdvancedParameters(TfrmAnalysis & AnalysisSettings);
 
-   void                  EnableAddButton();
    void                  EnableAdjustmentsGroup(bool bEnable);
    void                  EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage, bool bCalculatedLog);
+   void                  EnableNewButton();
    void                  EnableOutputOptions(bool bEnable);
    void                  EnableProspectiveStartDate(bool bEnable);
    void                  EnableProspectiveSurveillanceGroup(bool bEnable);

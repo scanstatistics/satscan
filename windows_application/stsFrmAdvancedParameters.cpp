@@ -23,33 +23,6 @@ __fastcall TfrmAdvancedParameters::TfrmAdvancedParameters(TfrmAnalysis & Analysi
   }
 }
 //---------------------------------------------------------------------------
-void __fastcall TfrmAdvancedParameters::btnAddClick(TObject *Sender) {
-   try {
-     // first, validate the specified files
-     ValidateInputFiles();
-     
-     // set case file, then clear edit box
-     gvCaseFiles.AddElement(edtCaseFileName->Text);
-     edtCaseFileName->Text = "";
-     // set control file, then clear edit box
-     gvControlFiles.AddElement(edtControlFileName->Text);
-     edtControlFileName->Text = "";
-     // set pop file, then clear edit box
-     gvPopFiles.AddElement(edtPopFileName->Text);
-     edtPopFileName->Text = "";
-     // add stream name to list box
-     lstInputStreams->Items->Add("Input Stream " + IntToStr(++giStreamNum));
-     lstInputStreams->ItemIndex = -1;
-
-     EnableAddButton();
-     DoControlExit();
-   }
-   catch (ZdException &x) {
-     x.AddCallpath("btnAddClick()","TfrmAdvancedParameters");
-     DisplayBasisException(this, x);
-   }
-}
-//---------------------------------------------------------------------------
 /** event triggered when selects browse button for adjustment for relative risks file */
 void __fastcall TfrmAdvancedParameters::btnBrowseAdjustmentsFileClick(TObject *Sender) {
   try {
@@ -95,6 +68,7 @@ void __fastcall TfrmAdvancedParameters::btnCaseBrowseClick(TObject *Sender) {
     OpenDialog->Title = "Select Case File";
     if (OpenDialog->Execute())
       edtCaseFileName->Text = OpenDialog->FileName.c_str();
+    edtCaseFileName->SetFocus();
   }
   catch (ZdException & x) {
     x.AddCallpath("btnCaseBrowseClick()", "TfrmAdvancedParameters");
@@ -113,6 +87,7 @@ void __fastcall TfrmAdvancedParameters::btnControlBrowseClick(TObject *Sender) {
     OpenDialog->Title = "Select Control File";
     if (OpenDialog->Execute())
        edtControlFileName->Text = OpenDialog->FileName.c_str();
+    edtControlFileName->SetFocus();
   }
   catch (ZdException & x) {
     x.AddCallpath("btnControlBrowseClick()", "TfrmAdvancedParamters");
@@ -131,11 +106,38 @@ void __fastcall TfrmAdvancedParameters::btnPopBrowseClick(TObject *Sender) {
     OpenDialog->Title = "Select Population File";
     if (OpenDialog->Execute())
        edtPopFileName->Text = OpenDialog->FileName.c_str();
+    edtPopFileName->SetFocus();
   }
   catch (ZdException & x) {
     x.AddCallpath("btnPopBrowseClick()", "TfrmAdvancedParameters");
     DisplayBasisException(this, x);
   }
+}
+//---------------------------------------------------------------------------
+void __fastcall TfrmAdvancedParameters::btnNewClick(TObject *Sender) {
+   try {
+     // add new name to list box
+     lstInputStreams->Items->Add("Input Stream " + IntToStr(giStreamNum++));
+     lstInputStreams->ItemIndex = (lstInputStreams->Items->Count-1);
+
+     // clear the edit boxes
+     edtCaseFileName->Text = "";
+     edtControlFileName->Text = "";
+     edtPopFileName->Text = "";
+     edtCaseFileName->SetFocus();
+
+     // add blank file names to the vectors as placeholders
+     gvCaseFiles.AddElement("");
+     gvControlFiles.AddElement("");
+     gvPopFiles.AddElement("");
+
+     EnableNewButton();
+     DoControlExit();
+   }
+   catch (ZdException &x) {
+     x.AddCallpath("btnNewClick()","TfrmAdvancedParameters");
+     DisplayBasisException(this, x);
+   }
 }
 //---------------------------------------------------------------------------
 // when user clicks on an input streams name, and the Remove button, remove the
@@ -153,10 +155,18 @@ void __fastcall TfrmAdvancedParameters::btnRemoveStreamClick(TObject *Sender){
       gvControlFiles.RemoveElement(iStreamNum);
       edtPopFileName->Text = "";
       gvPopFiles.RemoveElement(iStreamNum);
+
+      // update remaining list box names
+      for (int i=iStreamNum+1; i < lstInputStreams->Items->Count ;i++) {
+         AnsiString s = (lstInputStreams->Items->Strings[i]);
+         int num = s.SubString(13, 2).ToInt();
+         lstInputStreams->Items->Strings[i] = ("Input Stream " + IntToStr(--num));
+      }
       // remove list box name
       lstInputStreams->Items->Delete(iStreamNum);
+      giStreamNum--;
 
-      EnableAddButton();
+      EnableNewButton();
       DoControlExit();
    }
    catch (ZdException &x) {
@@ -345,11 +355,6 @@ void __fastcall TfrmAdvancedParameters::edtStartRangeStartDateExit(TObject *Send
    DoControlExit();
 }
 //---------------------------------------------------------------------------
-//** enables or disables the Add button on the Input tab
-void TfrmAdvancedParameters::EnableAddButton() {
-  btnAddStream->Enabled = (lstInputStreams->Items->Count < MAX_STREAMS) ? true: false;
-}
-//---------------------------------------------------------------------------
 /** enables or disables the temporal time trend adjustment control group */
 void TfrmAdvancedParameters::EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage, bool bCalculatedLog) {
   TimeTrendAdjustmentType eTimeTrendAdjustmentType(GetAdjustmentTimeTrendControlType());
@@ -386,6 +391,11 @@ void TfrmAdvancedParameters::EnableAdjustmentsGroup(bool bEnable) {
   edtAdjustmentsByRelativeRisksFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
   edtAdjustmentsByRelativeRisksFile->Color = edtAdjustmentsByRelativeRisksFile->Enabled ? clWindow : clInactiveBorder;
   btnBrowseAdjustmentsFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
+}
+//---------------------------------------------------------------------------
+//** enables or disables the New button on the Input tab
+void TfrmAdvancedParameters::EnableNewButton() {
+  btnNewStream->Enabled = (lstInputStreams->Items->Count < MAX_STREAMS) ? true: false;
 }
 //---------------------------------------------------------------------------
 /** enables adjustment options controls */
@@ -491,7 +501,7 @@ void TfrmAdvancedParameters::EnableTemporalRanges(bool bEnable, bool bEnableRang
   edtEndRangeEndYear->Color = edtEndRangeEndYear->Enabled ? clWindow : clInactiveBorder;
   edtEndRangeEndMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeMonths;
   edtEndRangeEndMonth->Color = edtEndRangeEndMonth->Enabled ? clWindow : clInactiveBorder;
-  if (!edtEndRangeEndMonth->Enabled) edtEndRangeEndMonth->Text = 12; 
+  if (!edtEndRangeEndMonth->Enabled) edtEndRangeEndMonth->Text = 12;
   edtEndRangeEndDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeDays;
   edtEndRangeEndDay->Color = edtEndRangeEndDay->Enabled ? clWindow : clInactiveBorder;
   if (!edtEndRangeStartDay->Enabled) edtEndRangeStartDay->Text = DaysThisMonth(atoi(edtEndRangeEndYear->Text.c_str()), atoi(edtEndRangeStartDay->Text.c_str()));
@@ -521,18 +531,21 @@ void __fastcall TfrmAdvancedParameters::FloatKeyPress(TObject *Sender, char &Key
     Key = 0;
 }
 
+//---------------------------------------------------------------------------
 /** event triggered when user presses key -- cancels dialog if escape key pressed */
 void __fastcall TfrmAdvancedParameters::FormKeyPress(TObject *Sender, char &Key) {
   if (Key == VK_ESCAPE)
     Close();
 }
 
+//---------------------------------------------------------------------------
 /** event triggered when form shows */
 void __fastcall TfrmAdvancedParameters::FormShow(TObject *Sender) {
   if (gpFocusControl)
    gpFocusControl->SetFocus();
 }
 
+//---------------------------------------------------------------------------
 /** returns adjustment for time trend type for control index */
 TimeTrendAdjustmentType TfrmAdvancedParameters::GetAdjustmentTimeTrendControlType() const {
   TimeTrendAdjustmentType eReturn;
@@ -605,7 +618,7 @@ bool TfrmAdvancedParameters::GetDefaultsSetForInputOptions() {
    bool bReturn = true;
 
    bReturn &= (lstInputStreams->Items->Count == 0);
-   
+
    return bReturn;
 }
 //---------------------------------------------------------------------------
@@ -684,15 +697,41 @@ void TfrmAdvancedParameters::Init() {
   gpFocusControl=0;
   rdgCriteriaSecClusters->ItemIndex = 0;
   giCategory = 0;
-  giStreamNum = 0;
+  giStreamNum = 2;
 }
+//---------------------------------------------------------------------------
+// when user clicks on an input streams name, display the details in the edit
+// boxes above the list box
+void __fastcall TfrmAdvancedParameters::lstInputStreamsClick(TObject *Sender) {
+   int iStreamNum = -1;
 
+   try {
+      // determine the input stream selected
+      iStreamNum = lstInputStreams->ItemIndex;
+      // set the case file
+      edtCaseFileName->Text = gvCaseFiles.GetElement(iStreamNum);
+      edtControlFileName->Text = gvControlFiles.GetElement(iStreamNum);
+      edtPopFileName->Text = gvPopFiles.GetElement(iStreamNum);
+   }
+   catch (ZdException &x) {
+     x.AddCallpath("lstInputStreamsClick()","TfrmAdvancedParameters");
+     DisplayBasisException(this, x);
+   }
+}
+//---------------------------------------------------------------------------
 /** event triggered when key pressed for control that can contain natural numbers */
 void __fastcall TfrmAdvancedParameters::NaturalNumberKeyPress(TObject *Sender, char &Key) {
   if (!strchr("0123456789\b",Key))
     Key = 0;
 }
+//---------------------------------------------------------------------------
 
+void __fastcall TfrmAdvancedParameters::OnControlExit(
+      TObject *Sender)
+{
+   DoControlExit();
+}
+//---------------------------------------------------------------------------
 /**  parses date into passed TEdit controls - defaults settings as needed, so that interface
      won't contain an invalid date.                                                          */
 void TfrmAdvancedParameters::ParseDate(const std::string& sDate, TEdit& Year, TEdit& Month, TEdit& Day, bool bStartRange) {
@@ -722,6 +761,7 @@ void TfrmAdvancedParameters::ParseDate(const std::string& sDate, TEdit& Year, TE
   }
 }
 
+//---------------------------------------------------------------------------
 /** event triggered when 'Adjustment for time trend' type control clicked */
 void __fastcall TfrmAdvancedParameters::rdgTemporalTrendAdjClick(TObject *Sender) {
   switch (GetAdjustmentTimeTrendControlType()) {
@@ -870,10 +910,8 @@ void TfrmAdvancedParameters::SetDefaultsForInputTab() {
    gvCaseFiles.RemoveAllElements();
    gvControlFiles.RemoveAllElements();
    gvPopFiles.RemoveAllElements();
-   giStreamNum = 0;
-
-   // clear any saved CParameters class components
-
+   giStreamNum = 2;
+   EnableNewButton();
 }
 //---------------------------------------------------------------------------
 /** Sets adjustments filename in interface */
@@ -1058,12 +1096,13 @@ void TfrmAdvancedParameters::Setup() {
 
       // Input tab
       for (unsigned int i = 1; i < ref.GetNumDataStreams(); i++) { // multiple data streams
-         lstInputStreams->Items->Add("Input Stream " + IntToStr(i));
+         lstInputStreams->Items->Add("Input Stream " + IntToStr(i+1));
          gvCaseFiles.AddElement(AnsiString(ref.GetCaseFileName(i+1).c_str()));
          gvControlFiles.AddElement(AnsiString(ref.GetControlFileName(i+1).c_str()));
          gvPopFiles.AddElement(AnsiString(ref.GetPopulationFileName(i+1).c_str()));
-         lstInputStreams->ItemIndex = -1;
+         giStreamNum++;
       }
+      lstInputStreams->ItemIndex = -1;
     }
     catch (ZdException &x) {
       x.AddCallpath("Setup()","TfrmAdvancedParameters");
@@ -1090,6 +1129,7 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
            lstInputStreams->ItemIndex = 0;
            lstInputStreams->OnClick(this);
         }
+        EnableNewButton();
         break;
      case ANALYSIS_TABS:    // show Analysis pages
         Caption = "Advanced Analysis Features";
@@ -1126,12 +1166,24 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
 
   // PAG - update the Set Defaults button enabling/disabling
   DoControlExit();
-  
+
   ShowModal();
 }
+//------------------------------------------------------------------
+/**  */
+void TfrmAdvancedParameters::UpdateInputFiles() {
+   int i = lstInputStreams->ItemIndex;   // selected stream
 
+   if (i >= 0) {
+      gvCaseFiles.PutElement(edtCaseFileName->Text, i);
+      gvControlFiles.PutElement(edtControlFileName->Text, i);
+      gvPopFiles.PutElement(edtPopFileName->Text, i);
+   }
+}
+//------------------------------------------------------------------
 /** validates all the settings in this dialog */
 void TfrmAdvancedParameters::Validate() {
+   ValidateInputFiles();
    ValidateSpatialClusterSize();
    ValidateAdjustmentSettings();
    ValidateTemporalWindowSettings();
@@ -1158,7 +1210,7 @@ void TfrmAdvancedParameters::ValidateAdjustmentSettings() {
 }
 //---------------------------------------------------------------------------
 /** Validates 'Input Files' */
-void TfrmAdvancedParameters::ValidateInputFiles() {
+void TfrmAdvancedParameters::ValidateInputFilesAtInput() {
   try {
     //validate the case file
     if (edtCaseFileName->Text.IsEmpty()) {
@@ -1193,6 +1245,45 @@ void TfrmAdvancedParameters::ValidateInputFiles() {
         GenerateAFException("Population file could not be opened.","ValidateInputFiles()", *edtPopFileName);
       }
     }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ValidateInputFilesAtInput()", "TfrmAdvancedParameters");
+    throw;
+  }
+}
+//------------------------------------------------------------------
+void TfrmAdvancedParameters::ValidateInputFiles() {
+  try {
+    for (unsigned int i = 0; i < gvCaseFiles.GetNumElements(); i++){
+       //validate the case file
+       if (gvCaseFiles.GetElement(i).IsEmpty()) {
+          GenerateAFException("Please specify a case file.", "ValidateInputFiles()",*edtCaseFileName);
+       }
+       if (!File_Exists(gvCaseFiles.GetElement(i).c_str())) {
+         GenerateAFException("Case file could not be opened.", "ValidateInputFiles()",*edtCaseFileName);
+       }
+
+       //validate the control file - Bernoulli model only
+       if (gAnalysisSettings.GetModelControlType() == BERNOULLI) {
+          if (gvControlFiles.GetElement(i).IsEmpty()) {
+             GenerateAFException("For the Bernoulli model, please specify a control file.","ValidateInputFiles()", *edtControlFileName);
+          }
+          if (!File_Exists(gvControlFiles.GetElement(i).c_str())) {
+             GenerateAFException("Control file could not be opened.","ValidateInputFiles()", *edtControlFileName);
+          }
+       }
+
+       //validate the population file -  Poisson model only
+       if (gAnalysisSettings.GetModelControlType() == POISSON) {
+          if (gvPopFiles.GetElement(i).IsEmpty()) {
+             GenerateAFException("For the Poisson model, please specify a population file.","ValidateInputFiles()", *edtPopFileName);
+          }
+          if (!File_Exists(gvPopFiles.GetElement(i).c_str())) {
+             GenerateAFException("Population file could not be opened.","ValidateInputFiles()", *edtPopFileName);
+          }
+       }
+       lstInputStreams->ItemIndex = i-1;
+    }  //for loop
   }
   catch (ZdException & x) {
     x.AddCallpath("ValidateInputFiles()", "TfrmAdvancedParameters");
@@ -1502,30 +1593,10 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
 
   throw theException;
 }
-//---------------------------------------------------------------------------
 
-void __fastcall TfrmAdvancedParameters::OnControlExit(
-      TObject *Sender)
+void __fastcall TfrmAdvancedParameters::edtFileNameExit(TObject *Sender)
 {
-   DoControlExit();
+   UpdateInputFiles();
 }
 //---------------------------------------------------------------------------
-// when user clicks on an input streams name, display the details in the edit
-// boxes above the list box
-void __fastcall TfrmAdvancedParameters::lstInputStreamsClick(TObject *Sender) {
-   int iStreamNum = -1;
-
-   try {
-      // determine the input stream selected
-      iStreamNum = lstInputStreams->ItemIndex;
-      // set the case file
-      edtCaseFileName->Text = gvCaseFiles.GetElement(iStreamNum);
-      edtControlFileName->Text = gvControlFiles.GetElement(iStreamNum);
-      edtPopFileName->Text = gvPopFiles.GetElement(iStreamNum);
-   }
-   catch (ZdException &x) {
-     x.AddCallpath("lstInputStreamsClick()","TfrmAdvancedParameters");
-     DisplayBasisException(this, x);
-   }
-}
 
