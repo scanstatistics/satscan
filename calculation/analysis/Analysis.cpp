@@ -130,13 +130,13 @@ void CAnalysis::AllocateLikelihoodObject() {
   try {
     //create likelihood calculator
     if (gParameters.GetProbabiltyModelType() == BERNOULLI)
-      gpLikelihoodCalculator = new BernoulliLikelihoodCalculator(gDataHub.GetTotalCases(), gDataHub.GetTotalMeasure());
+      gpLikelihoodCalculator = new BernoulliLikelihoodCalculator(gDataHub);
     else if (gParameters.GetProbabiltyModelType() == NORMAL)
-      gpLikelihoodCalculator = new NormalLikelihoodCalculator(gDataHub.GetTotalCases(), gDataHub.GetTotalMeasure());
+      gpLikelihoodCalculator = new NormalLikelihoodCalculator(gDataHub);
     else if (gParameters.GetProbabiltyModelType() == SURVIVAL)
-      gpLikelihoodCalculator = new ExponentialLikelihoodCalculator(gDataHub.GetTotalCases(), gDataHub.GetTotalMeasure());
+      gpLikelihoodCalculator = new ExponentialLikelihoodCalculator(gDataHub);
     else if (gParameters.GetProbabiltyModelType() == RANK)
-      gpLikelihoodCalculator = new WilcoxonLikelihoodCalculator(gDataHub.GetTotalCases(), gDataHub.GetTotalMeasure());
+      gpLikelihoodCalculator = new WilcoxonLikelihoodCalculator(gDataHub);
     else
       gpLikelihoodCalculator = new PoissonLikelihoodCalculator(gDataHub);
   }
