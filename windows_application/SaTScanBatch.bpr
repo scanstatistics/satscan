@@ -95,7 +95,18 @@
       ..\calculation\loglikelihood\NormalLikelihoodCalculation.obj 
       ..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.obj 
       ..\calculation\analysis_run\AnalysisRun.obj 
-      ..\calculation\analysis_run\MostLikelyClustersContainer.obj"/>
+      ..\calculation\analysis_run\MostLikelyClustersContainer.obj 
+      ..\..\boost\release_1_29_0\libs\thread\src\xtime.obj 
+      ..\..\boost\release_1_29_0\libs\thread\src\exceptions.obj 
+      ..\..\boost\release_1_29_0\libs\thread\src\mutex.obj 
+      ..\..\boost\release_1_29_0\libs\thread\src\once.obj 
+      ..\..\boost\release_1_29_0\libs\thread\src\recursive_mutex.obj 
+      ..\..\boost\release_1_29_0\libs\thread\src\thread.obj 
+      ..\..\boost\release_1_29_0\libs\thread\src\condition.obj 
+      ..\calculation\utility\stsMonteCarloSimFunctor.obj 
+      ..\calculation\utility\contractor.obj 
+      ..\calculation\utility\stsMCSimContinuationPolicy.obj 
+      ..\calculation\utility\stsMCSimReporter.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -117,7 +128,7 @@
     <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="SaTScanBatch.bpf"/>
-    <INCLUDEPATH value="..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
+    <INCLUDEPATH value="..\..\boost\release_1_29_0\libs\thread\src;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\boost\release_1_29_0"/>
     <LIBPATH value="..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
     <WARNINGS value="-w-par -w-8027 -w-8026 -w-aus"/>
   </MACROS>

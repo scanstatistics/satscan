@@ -18,8 +18,17 @@
 #endif
 #include "Salloc.h"
 #include "BasePrint.h"
+#if defined(LINUX_BASED)
+  #define auto_ptr zd_auto_ptr
+  #define auto_ptr_ref zd_auto_ptr_ref
+  #include <memory>
+#endif
 #include "SSException.h"
 #include <Basis540Unix.h>
+#if defined(LINUX_BASED)
+  #undef auto_ptr
+  #undef auto_ptr_ref
+#endif
 #include "Toolkit.h"
 
 /**********************************************************************

@@ -38,12 +38,13 @@ ZDDIR       := /opt/net/utils/imsdev
 ZDVER       := 543
 XBASEDIR    := $(SATSCAN)/xbase/xbase_2.0.0/xbase
 XBASEDIR2   := $(SATSCAN)/xbase/xbase_2.0.0
+BOOSTDIR    := $(SATSCAN)/../boost/release_1_29_0
 
 
 
 INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(ZDDIR) -I$(ZDANNEX) -I$(CLUSTER) -I$(UTILITY) -I$(XBASEDIR) -I$(XBASEDIR2)\
                -I$(BASIS)/include -I$(BASIS)/source/nonvcl -I$(BASIS)/source/vcldep -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL)\
-	       -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(ANALYSISRUN)
+	       -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(ANALYSISRUN) -I$(BOOSTDIR)
 
 DEFINES     := -D__BASIS_NO_VCL \
                -D__BATCH_COMPILE
@@ -51,7 +52,7 @@ DEFINES     := -D__BASIS_NO_VCL \
 CFLAGS      := -c -Wno-deprecated -O3 $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(BASE_SYSTEM_FLAG)
               
 
-LFLAGS      := -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -lxbaseg -lm -lzd$(ZDVER)g -static
+LFLAGS      := -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -lxbaseg -lm -lzd$(ZDVER)g -lpthread -static
 
 SRC         := Main.cpp \
                ../calculation/analysis/Analysis.cpp \
@@ -149,9 +150,19 @@ SRC         := Main.cpp \
 	       ../calculation/utility/SSException.cpp \
 	       ../calculation/utility/UtilityFunctions.cpp \
 	       ../calculation/utility/MultipleDimensionArrayHandler.cpp \
+	       ../calculation/utility/stsMonteCarloSimFunctor.cpp \
+	       ../calculation/utility/stsMCSimReporter.cpp \
+	       ../calculation/utility/stsMCSimContinuationPolicy.cpp \
 	       ../calculation/Parameters.cpp \
 	       ../calculation/SaTScanBasis.cpp \
 	       ../calculation/Toolkit.cpp
+	       $(BOOSTDIR)/libs/thread/src/xtime.cpp \
+	       $(BOOSTDIR)/libs/thread/src/exceptions.cpp \
+	       $(BOOSTDIR)/libs/thread/src/mutex.cpp \
+	       $(BOOSTDIR)/libs/thread/src/once.cpp \
+	       $(BOOSTDIR)/libs/thread/src/recursive_mutex.cpp \
+	       $(BOOSTDIR)/libs/thread/src/thread.cpp \
+	       $(BOOSTDIR)/libs/thread/src/condition.cpp
 
 
 OBJS        := $(SRC:.cpp=.o)

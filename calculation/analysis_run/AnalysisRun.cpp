@@ -22,6 +22,9 @@
 #include "SpaceTimeIncludePureAnalysis.h"
 #include "SVTTAnalysis.h"
 #include "PrintQueue.h"
+#include "stsMonteCarloSimFunctor.h"
+#include "stsMCSimReporter.h"
+#include "contractor.h"
 
 /** constructor */
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
@@ -519,9 +522,83 @@ void AnalysisRunner::OpenReportFile(FILE*& fp, bool bOpenAppend) {
   }
 }
 
-/** */
+/** Calculates simulated loglikelihood ratios and updates:
+    - most likely clusters rank
+    - significant loglikelihood ratio indicator
+    - power calculation data, if requested by user
+    - additional output file(s)
+
+******discontinuation behavior is not yet implemented:
+//--based on user cancellation
+//--based on incremental analysis
+*****************************************************
+*/
 void AnalysisRunner::PerformParallelSimulations() {
-  ZdGenerateException("PerformParallelSimulations() not implemented.","PerformParallelSimulations()");
+  static const int iParallelProcessCount = 10;
+
+  double                               dSimulatedRatio;
+  unsigned int                         iSimulationNumber;
+  char                               * sReplicationFormatString;
+  std::auto_ptr<LogLikelihoodData>     pLLRData;
+  AbtractDataStreamGateway           * pDataGateway=0;
+  CAnalysis                          * pAnalysis=0;
+  SimulationDataContainer_t            SimulationDataContainer;
+  RandomizerContainer_t                RandomizationContainer;
+
+  try {
+    if (gParameters.GetNumReplicationsRequested() == 0)
+      return;
+    //set print message format string
+    if (gParameters.GetLogLikelihoodRatioIsTestStatistic())
+      sReplicationFormatString = "SaTScan test statistic for #%u of %u replications: %7.2lf\n";
+    else
+      sReplicationFormatString = "SaTScan log likelihood ratio for #%u of %u replications: %7.2lf\n";
+    //create record buffers for simulated loglikelihood ratios, if user requested these output files
+    if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
+      pLLRData.reset(new LogLikelihoodData(gParameters));
+    //set/reset loglikelihood ratio significance indicator
+    gSimulatedRatios.Initialize();
+
+    std::deque< std::pair<unsigned int, double> > qParamsAndResults;
+    for (unsigned int ui = 0; ui < gParameters.GetNumReplicationsRequested(); ++ui)
+    {
+       qParamsAndResults.push_back(std::make_pair(ui + 1,0));
+    }
+    stsMCSimReporter rptr(*this, gTopClustersContainer, gPrintDirection, sReplicationFormatString);
+    typedef contractor<unsigned int, double, stsMCSimReporter, null_contractor_continuation_policy<unsigned int, double> > contractor_type;
+    contractor_type theContractor(qParamsAndResults, rptr);
+    //run threads:
+    boost::thread_group tg;
+    for (int i = 0; i < iParallelProcessCount; ++i)
+    {
+      stsMonteCarloSimFunctor mcsf(GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), boost::shared_ptr<RandomizerContainer_t>(new RandomizerContainer_t()));
+      tg.create_thread(subcontractor<contractor_type,stsMonteCarloSimFunctor>(theContractor,mcsf));
+    }
+    tg.join_all();
+
+    //if not stopped early (whether cancelled or self-disciplined):
+    for (unsigned int ui = 0; ui < gParameters.GetNumReplicationsRequested(); ++ui)
+    {
+      double dSimulatedRatio = qParamsAndResults[ui].second;
+      //update significance indicator
+      gSimulatedRatios.AddRatio(dSimulatedRatio);
+      //update power calculations
+      UpdatePowerCounts(dSimulatedRatio);
+      //update simulated loglikelihood record buffer
+      if(pLLRData.get()) pLLRData->AddLikelihoodRatio(dSimulatedRatio);
+    }
+    //write to additional data to files
+    if (gParameters.GetOutputSimLoglikeliRatiosAscii() && pLLRData.get())
+      ASCIIFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
+    if (gParameters.GetOutputSimLoglikeliRatiosDBase() && pLLRData.get())
+      DBaseFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
+  }
+  catch (ZdException &x) {
+    delete pDataGateway;
+    delete pAnalysis;
+    x.AddCallpath("PerformParallelSimulations()","CAnalysis");
+    throw;
+  }
 }
 
 /** Calculates simulated loglikelihood ratios and updates:

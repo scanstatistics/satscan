@@ -122,6 +122,17 @@ USEUNIT("..\calculation\analysis_run\MostLikelyClustersContainer.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd543.lib");
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex543.lib");
+USEUNIT("..\..\boost\release_1_29_0\libs\thread\src\xtime.cpp");
+USEUNIT("..\..\boost\release_1_29_0\libs\thread\src\exceptions.cpp");
+USEUNIT("..\..\boost\release_1_29_0\libs\thread\src\mutex.cpp");
+USEUNIT("..\..\boost\release_1_29_0\libs\thread\src\once.cpp");
+USEUNIT("..\..\boost\release_1_29_0\libs\thread\src\recursive_mutex.cpp");
+USEUNIT("..\..\boost\release_1_29_0\libs\thread\src\thread.cpp");
+USEUNIT("..\..\boost\release_1_29_0\libs\thread\src\condition.cpp");
+USEUNIT("..\calculation\utility\stsMonteCarloSimFunctor.cpp");
+USEUNIT("..\calculation\utility\contractor.cpp");
+USEUNIT("..\calculation\utility\stsMCSimContinuationPolicy.cpp");
+USEUNIT("..\calculation\utility\stsMCSimReporter.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;

@@ -104,7 +104,18 @@
       ..\calculation\loglikelihood\ExponentialLikelihoodCalculation.obj 
       ..\calculation\loglikelihood\NormalLikelihoodCalculation.obj 
       ..\calculation\analysis_run\AnalysisRun.obj 
-      ..\calculation\analysis_run\MostLikelyClustersContainer.obj"/>
+      ..\calculation\analysis_run\MostLikelyClustersContainer.obj 
+      ..\..\boost\release_1_29_0\libs\thread\src\xtime.obj 
+      ..\..\boost\release_1_29_0\libs\thread\src\exceptions.obj 
+      ..\..\boost\release_1_29_0\libs\thread\src\mutex.obj 
+      ..\..\boost\release_1_29_0\libs\thread\src\once.obj 
+      ..\..\boost\release_1_29_0\libs\thread\src\recursive_mutex.obj 
+      ..\..\boost\release_1_29_0\libs\thread\src\thread.obj 
+      ..\..\boost\release_1_29_0\libs\thread\src\condition.obj 
+      ..\calculation\utility\stsMonteCarloSimFunctor.obj 
+      ..\calculation\utility\contractor.obj 
+      ..\calculation\utility\stsMCSimContinuationPolicy.obj 
+      ..\calculation\utility\stsMCSimReporter.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
@@ -128,7 +139,7 @@
     <USERDEFINES value="INTEL_BASED;WIN32"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="StsWinPrj.cpp"/>
-    <INCLUDEPATH value="..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\..\basisdev\include;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\topgrid;.."/>
+    <INCLUDEPATH value="..\..\boost\release_1_29_0\libs\thread\src;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\..\basisdev\include;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\topgrid;..;f:\zd\;..\..\boost\release_1_29_0"/>
     <LIBPATH value="..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;$(BCB)\topgrid;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;..\..\basisdev\source\vcldep;..\..\basisdev\source\nonvcl;..\..\basisdev\include;$(BCB)\lib\obj;$(BCB)\lib;.."/>
     <WARNINGS value="-w-par -w-8027 -w-8026 -w-aus"/>
   </MACROS>
