@@ -126,7 +126,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE;_DEBUG;PARALLEL_SIMULATIONS"/>
+    <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="SaTScanBatch.bpf"/>
     <INCLUDEPATH value="..\..\boost\release_1_29_0\libs\thread\src;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\boost\release_1_29_0"/>

@@ -137,7 +137,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED;WIN32;PARALLEL_SIMULATIONS"/>
+    <USERDEFINES value="INTEL_BASED;WIN32"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="StsWinPrj.cpp"/>
     <INCLUDEPATH value="..\..\boost\release_1_29_0\libs\thread\src;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\..\basisdev\include;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\topgrid;..;f:\zd\;..\..\boost\release_1_29_0"/>
