@@ -221,9 +221,6 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
 
             fprintf(fpMCL, "%-8ld", lReportHistoryRunNumber);
 
-            //print the cluster number....
-            fprintf(fpMCL, " %-5d ", i+1);
-            
             //if a special grid file is specified, then do NOT output ID of central tract
             if (strlen(m_pParameters->m_szGridFilename) == 0) {
                if (m_pTopClusters[i]->GetClusterType() == PURELYTEMPORAL)
@@ -234,7 +231,10 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
                   //fprintf(fpMCL, "%12ld", m_pTopClusters[i]->m_Center);
                }
             }
-   
+
+            //print the cluster number....
+            fprintf(fpMCL, " %-5d ", i+1);
+
             //show the coordinates.. x, y, additional coordinates (if applicable)
             //if ellipsoids are specified, then the WriteCoordinates function
             //also prints the coordinates, SEMI-MINOR AXIS, shape, and angle
