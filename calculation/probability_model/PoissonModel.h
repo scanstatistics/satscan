@@ -14,7 +14,8 @@ class CPoissonModel : public CModel
 {
   private:
     RandomNumberGenerator       m_RandomNumberGenerator;
-  
+    BinomialGenerator           gBinomialGenerator;
+
   public:
     CPoissonModel(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
     virtual ~CPoissonModel();

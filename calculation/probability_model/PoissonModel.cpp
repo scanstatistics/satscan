@@ -6,13 +6,9 @@ using std::ios;
 using std::ifstream;
 
 CPoissonModel::CPoissonModel(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-              :CModel(pParameters, pData, pPrintDirection)
-{
-}
+              :CModel(pParameters, pData, pPrintDirection){}
 
-CPoissonModel::~CPoissonModel()
-{
-}
+CPoissonModel::~CPoissonModel(){}
 
 bool CPoissonModel::ReadData()
 {
@@ -161,15 +157,14 @@ void CPoissonModel::MakeData()
 #define PRINTSIMS 0     // writes simulated data to a file, one simulation per line
 
 #if H0
+
   // Generate case counts under the null hypothesis (standard)
   for (tract = 0; tract < m_pData->m_nTotalTractsAtStart; tract++)
   {
     if (m_pData->m_nTotalMeasure-cummeasure > 0)
-       c = Binomial(m_pData->m_nTotalCases - cumcases,
-          m_pData->m_pMeasure[0][tract] / (m_pData->m_nTotalMeasure-cummeasure),
-          m_RandomNumberGenerator);
-      //c = Binomial(m_pData->m_nTotalCases - cumcases,
-      //    (float)(m_pData->m_pMeasure[0][tract] / (m_pData->m_nTotalMeasure-cummeasure)));
+        c = gBinomialGenerator.GetBinomialDistributedVariable(m_pData->m_nTotalCases - cumcases,
+                                                              m_pData->m_pMeasure[0][tract] / (m_pData->m_nTotalMeasure-cummeasure),
+                                                              m_RandomNumberGenerator);
     else
       c = 0;
 
@@ -180,11 +175,9 @@ void CPoissonModel::MakeData()
     for(interval=0;interval<m_pData->m_nTimeIntervals-1;interval++)
     {
       if(m_pData->m_pMeasure[interval][tract]>0)
-        d = Binomial(m_pData->m_pSimCases[interval][tract],
-            1 - m_pData->m_pMeasure[interval+1][tract] / m_pData->m_pMeasure[interval][tract],
-            m_RandomNumberGenerator);
-        //d = Binomial(m_pData->m_pSimCases[interval][tract],
-        //    (float)(1 - m_pData->m_pMeasure[interval+1][tract] / m_pData->m_pMeasure[interval][tract]));
+        d = gBinomialGenerator.GetBinomialDistributedVariable(m_pData->m_pSimCases[interval][tract],
+                                                              1 - m_pData->m_pMeasure[interval+1][tract] / m_pData->m_pMeasure[interval][tract],
+                                                              m_RandomNumberGenerator);
       else
         d = 0;
 
@@ -192,6 +185,7 @@ void CPoissonModel::MakeData()
     } // for interval
 
   } // for tract
+
 #endif // H0
 
 // Reads number of simulated cases from a text file named simdata.txt,
