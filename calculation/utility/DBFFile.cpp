@@ -8,7 +8,7 @@
 
 //construct
 //use an empty field array
-DBFRecord::DBFRecord( DBFFile & associatedFile, xbDbf & associatedDbf ) : ZdFileRecord(ZdVector<ZdField*>(), 0)
+DBFRecord::DBFRecord( DBFFile & associatedFile, xbDbf & associatedDbf, const ZdVector<ZdField*> & vFields) : ZdFileRecord( vFields, 0)
 //   , gpAssociatedFile( &associatedFile )
    , gpAssociatedDbf( &associatedDbf )
    , gBuffer(associatedDbf.GetRecordLen() + 1)
@@ -163,12 +163,31 @@ bool DBFRecord::GetIsBlank(unsigned short uwFieldIndex) const
          GetAssociatedDbf()->GetRawField(GetAssociatedDbf()->GetFieldName(uwFieldIndex), buffer.AsCharPtr());
          }
 
-      pBufEnd = pBufBegin + (buffer.GetSize() - 1);
-      while ( (pBufBegin < pBufEnd) && bResult )
-         {
-         bResult = *pBufBegin == ' ';
-         ++pBufBegin;
-         }
+         switch (GetAssociatedDbf()->GetFieldType(uwFieldIndex))
+            {
+            case XB_CHAR_FLD :
+            case XB_NUMERIC_FLD :
+            case XB_DATE_FLD :
+            case XB_FLOAT_FLD :
+               //all spaces?
+               bResult = true;
+               pBufBegin = buffer.AsCharPtr();
+               pBufEnd = pBufBegin + (buffer.GetSize() - 1);
+               while ( (pBufBegin < pBufEnd) && bResult )
+                  {
+                  bResult = *pBufBegin == ' ';
+                  ++pBufBegin;
+                  }
+               break;
+            case XB_LOGICAL_FLD :
+               //question mark?
+               bResult = (buffer[0] == '?');
+               break;
+            case XB_MEMO_FLD :
+               //empty memo?
+               bResult = (GetAssociatedDbf()->GetMemoFieldLen(uwFieldIndex) == 0);
+               break;
+            }
       }
    catch (ZdException & theException)
       {
@@ -1270,8 +1289,63 @@ void DBFFile::PerformExternalUpdates()
 // DBFFile's don't use "zds"s, so it is empty.
 void DBFFile::ReadStructure( ZdIniFile *pAlternateZDSFile )
 {
+   xbShort rc;
+   unsigned u;
+
    try
       {
+      //make sure the .dbf file is open:
+      if (gpDbf->GetDbfStatus() == XB_CLOSED)
+         {
+         rc = gpDbf->OpenDatabase(gFileName.GetFullPath());
+         }
+      if (rc != XB_NO_ERROR)
+         ZdException::Generate("Could not open file: \"%c\".", "DBFFile", gFileName.GetFullPath());
+
+      // Create the standard .ZDS file, if necessary
+//      if ( pAlternateZDSFile == 0 )
+//         pIniFile = GetIniFile ( GetFileName() );
+//      else
+//         pIniFile = pAlternateZDSFile;
+
+      // Setup file properties
+      gsTitle = gFileName.GetFileName();
+//      gsInformation = pSection->GetString("Information");
+//      gsInputLayout = pSection->GetString("InputLayout");
+//      gwInputLayout = (short) pSection->GetInt("InputLayoutNumber");
+//      gwNumberOfPrimaryKeyFields = (unsigned short) pSection->GetInt("PrimaryKeyFields");
+
+      //Setup the relate fields if any
+//      gwNumberOfRelateFields = (unsigned short) pSection->GetInt("Number of Relate Fields");
+//      for (i = 0; i < gwNumberOfRelateFields; i++)
+//         {
+//         sKey << ZdString::reset << "Relate Field" << i;
+//         gvRelateFields.push_back ( pSection->GetString(sKey) );
+//         }
+
+      // Get, decode, and compare the password
+      //...
+
+      // Set categories
+      //...
+
+      // Read in the flags
+      //...
+
+      // Set field info
+      gvFields.DeleteAllElements();
+      gvFields.resize(gpDbf->FieldCount());
+      for (u = 0; u < gvFields.size(); u++)
+         {
+         gvFields.at(u) =
+            new ZdField(
+                        gpDbf->GetFieldName(u),
+                        u,
+                        DBFFile::GetZdFieldTypeFromXBaseFieldType(gpDbf->GetFieldType(u)),
+                        gpDbf->GetFieldLen(u),
+                        gpDbf->GetFieldDecimal(u)
+                       );
+         }
       }
    catch (ZdException & theException)
       {

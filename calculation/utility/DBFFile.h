@@ -57,7 +57,7 @@ protected:
    void UpdateDbfRecordData() const;
 
 public:
-   DBFRecord( DBFFile & associatedFile, xbDbf & associatedDbf );
+   DBFRecord( DBFFile & associatedFile, xbDbf & associatedDbf, const ZdVector<ZdField*> & vFields );
    virtual ~DBFRecord();
 
    //--- Default copy operations are fine.
@@ -361,7 +361,7 @@ public:
 
    // Pure virtual functions that must be defined by the file classes
    virtual void            Flush();
-   virtual DBFRecord *     GetNewRecord() const  { return new DBFRecord(const_cast<DBFFile &>(*this), *gpDbf); }
+   virtual DBFRecord *     GetNewRecord() const  { return new DBFRecord(const_cast<DBFFile &>(*this), *gpDbf, gvFields); }
    virtual unsigned long   GetNumRecords() const;
    virtual void            GotoRecord(unsigned long lRecNum, ZdFileRecord * PRecordBuffer = 0);
    virtual void            Open(const char *sFileName, ZdIOFlag Flags = ZDIO_OPEN_READ, const char * sPassword = 0, const char * sAlternateZDSFile = 0, ZdIniFile *pZDSFile = 0);
@@ -406,6 +406,8 @@ public:
 private:
    static DBFFileType gDefaultInstance;
 };
+
+
 
 #endif
 
