@@ -12,6 +12,8 @@ TfrmAnalysis *frmAnalysis;
 // everything in one class and one cpp.
 //ClassDesc End TfrmAnalysis
 
+const char*     TXD_EXTENSION = ".txd";
+
 //---------------------------------------------------------------------------
 // Constructor
 // If a parameter file is passed it, it will parse it (read it) and set up the interface.
@@ -50,6 +52,7 @@ __fastcall TfrmAnalysis::~TfrmAnalysis() {
 void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
   TBdlgImporter         * pImporter = 0;
   BFTFImportDescriptor  * pBFTFPointer = 0;
+  ZdFileName            sFileName;
 
   try {
     OpenDialog1->FileName = "";
@@ -57,8 +60,13 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
     OpenDialog1->Filter = "CAS Files (*.cas)|*.cas|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
     OpenDialog1->Title = "Select Case File";
     if (OpenDialog1->Execute()) {
+      sFileName = OpenDialog1->FileName.c_str();
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
+         pBFTFPointer = new BFTFImportDescriptor();
+         SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
+         sFileName.SetExtension(TXD_EXTENSION);
+         CreateTXDFile(sFileName, gvCaseFileFieldDescriptors);
          pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
          pImporter->ShowOptionalPanels(false, false, false);
          pImporter->ShowModal();
@@ -66,8 +74,9 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
       }
 
       //Why is this here? KMC 8/30/2002
-      strcpy(gpParams->m_szCaseFilename, OpenDialog1->FileName.c_str());
-      edtCaseFileName->Text = OpenDialog1->FileName.c_str();
+      // sets the global paramater to store the filename and also sets the editbox to display the filename - AJV 9/4/2002
+      strcpy(gpParams->m_szCaseFilename, sFileName.GetFullPath());
+      edtCaseFileName->Text = sFileName.GetFullPath();
       strcpy(gpParams->m_szCaseFilename, edtCaseFileName->Text.c_str());
     }
   }
@@ -84,6 +93,7 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
 void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
   TBdlgImporter         * pImporter = 0;
   BFTFImportDescriptor  * pBFTFPointer = 0;
+  ZdFileName            sFileName;
 
   try {
     OpenDialog1->FileName = "";
@@ -91,8 +101,13 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
     OpenDialog1->Filter = "CTL Files (*.ctl)|*.ctl|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
     OpenDialog1->Title = "Select Control File";
     if (OpenDialog1->Execute()) {
+      sFileName = OpenDialog1->FileName.c_str();
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
+         pBFTFPointer = new BFTFImportDescriptor();
+         SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
+         sFileName.SetExtension(TXD_EXTENSION);
+         CreateTXDFile(sFileName, gvControlFileFieldDescriptors);
          pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
          pImporter->ShowOptionalPanels(false, false, false);
          pImporter->ShowModal();
@@ -100,8 +115,9 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
       }
 
       //Why is this here? KMC 8/30/2002
-      strcpy(gpParams->m_szControlFilename, OpenDialog1->FileName.c_str());
-      edtControlFileName->Text = OpenDialog1->FileName.c_str();
+      // sets the global paramater to store the filename and also sets the editbox to display the filename - AJV 9/4/2002
+      strcpy(gpParams->m_szControlFilename, sFileName.GetFullPath());
+      edtControlFileName->Text = sFileName.GetFullPath();
       strcpy(gpParams->m_szControlFilename, edtControlFileName->Text.c_str());
      }
   }
@@ -118,6 +134,7 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
 void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
   TBdlgImporter         * pImporter = 0;
   BFTFImportDescriptor  * pBFTFPointer = 0;
+  ZdFileName            sFileName;
 
   try {
     OpenDialog1->FileName = "";
@@ -125,9 +142,13 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
     OpenDialog1->Filter = "GEO Files (*.geo)|*.geo|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
     OpenDialog1->Title = "Select Coordinates File";
     if (OpenDialog1->Execute()) {
+      sFileName = OpenDialog1->FileName.c_str();
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-         
+         pBFTFPointer = new BFTFImportDescriptor();
+         SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
+         sFileName.SetExtension(TXD_EXTENSION);
+         CreateTXDFile(sFileName, gvGeoFileFieldDescriptors);
          pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
          pImporter->ShowOptionalPanels(false, false, false);
          pImporter->ShowModal();
@@ -135,8 +156,9 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
       }
 
       //Why is this here? KMC 8/30/2002
-      strcpy(gpParams->m_szCoordFilename, OpenDialog1->FileName.c_str());
-      edtCoordinateFileName->Text = OpenDialog1->FileName.c_str();
+      // sets the global paramater to store the filename and also sets the editbox to display the filename - AJV 9/4/2002
+      strcpy(gpParams->m_szCoordFilename, sFileName.GetFullPath());
+      edtCoordinateFileName->Text = sFileName.GetFullPath();
       strcpy(gpParams->m_szCoordFilename, edtCoordinateFileName->Text.c_str());
     }
   }
@@ -153,6 +175,7 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
 void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
   TBdlgImporter         * pImporter = 0;
   BFTFImportDescriptor  * pBFTFPointer = 0;
+  ZdFileName            sFileName;
 
   try {
     OpenDialog1->FileName = "";
@@ -160,8 +183,13 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
     OpenDialog1->Filter = "GRD Files (*.grd)|*.grd|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
     OpenDialog1->Title = "Select Special Grid File";
     if (OpenDialog1->Execute()) {
+      sFileName = OpenDialog1->FileName.c_str();
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
+         pBFTFPointer = new BFTFImportDescriptor();
+         SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
+         sFileName.SetExtension(TXD_EXTENSION);
+         CreateTXDFile(sFileName, gvGridFileFieldDescriptors);
          pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
          pImporter->ShowOptionalPanels(false, false, false);
          pImporter->ShowModal();
@@ -169,8 +197,9 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
       }
 
       //Why is this here? KMC 8/30/2002
-      strcpy(gpParams->m_szGridFilename, OpenDialog1->FileName.c_str());
-      edtGridFileName->Text = OpenDialog1->FileName.c_str();
+      // sets the global paramater to store the filename and also sets the editbox to display the filename - AJV 9/4/2002
+      strcpy(gpParams->m_szGridFilename, sFileName.GetFullPath());
+      edtGridFileName->Text = sFileName.GetFullPath();
       strcpy(gpParams->m_szGridFilename, edtGridFileName->Text.c_str());
     }
   }
@@ -187,6 +216,7 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
 void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
   TBdlgImporter         * pImporter = 0;
   BFTFImportDescriptor  * pBFTFPointer = 0;
+  ZdFileName            sFileName;
 
   try {
     OpenDialog1->FileName = "";
@@ -194,17 +224,23 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
     OpenDialog1->Filter = "POP Files (*.pop)|*.pop|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
     OpenDialog1->Title = "Select Population File";
     if (OpenDialog1->Execute()) {
-      //Detect dbf file and launch importer if detected
-      if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-         pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
-         pImporter->ShowOptionalPanels(false, false, false);
-         pImporter->ShowModal();
-         delete pImporter;
-      }
+       sFileName = OpenDialog1->FileName.c_str();
+       //Detect dbf file and launch importer if detected
+       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
+          pBFTFPointer = new BFTFImportDescriptor();
+          SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
+          sFileName.SetExtension(TXD_EXTENSION);
+          CreateTXDFile(sFileName, gvPopFileFieldDescriptors);
+          pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
+          pImporter->ShowOptionalPanels(false, false, false);
+          pImporter->ShowModal();
+          delete pImporter;
+       }
 
       //Why is this here? KMC 8/30/2002
-      strcpy(gpParams->m_szPopFilename, OpenDialog1->FileName.c_str());
-      edtPopFileName->Text = OpenDialog1->FileName.c_str();
+      // sets the global paramater to store the filename and also sets the editbox to display the filename - AJV 9/4/2002
+      strcpy(gpParams->m_szPopFilename, sFileName.GetFullPath());
+      edtPopFileName->Text = sFileName.GetFullPath();
       strcpy(gpParams->m_szPopFilename, edtPopFileName->Text.c_str());
     }
   }
@@ -624,15 +660,18 @@ void TfrmAnalysis::ConvertPurelySpacialIntervals() {
   }
 }
 
-// create the CSV file with the appropriate field names - AJV 8/29/2002
-void TfrmAnalysis::CreateCSVFile(const ZdFileName& sFileName, const ZdVector<const char*>& vFieldNames) {
+// create the TXD file with the appropriate field names - AJV 8/29/2002
+// pre: sFilename has a txd extension and vFieldNames has been filled with the appropraite field names
+// post: will create a txd file with padded spaces delimiting the fields
+void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<const char*>& vFieldNames) {
    ZdVector<ZdField*>	        vFields;
-   CSVField*		        pField = 0;
-   CSVFile*                     pFile = 0;
+   ZdField*		        pField = 0;
+   TXDFile*                     pFile = 0;
+   unsigned short               uwOffset = 0, uwLength = 64;
 
    try {
-      // create a CSV file with a space delimiter
-      pFile = new CSVFile(sFileName.GetFullPath(), ZDIO_OPEN_READ | ZDIO_OPEN_WRITE | ZDIO_OPEN_CREATE, 0, 0, 0, ' ');
+      // create a TXD file with a space delimiter
+      pFile = new TXDFile();
 
       // creates the field vector from the provided field names
       for(unsigned long i = 0; i < vFieldNames.GetNumElements(); ++i) {
@@ -640,21 +679,38 @@ void TfrmAnalysis::CreateCSVFile(const ZdFileName& sFileName, const ZdVector<con
          pField->SetName(vFieldNames[i]);
          if(!i)
             pField->SetRequired(true);
+          // field 1 the only alpha field in the input so allow to greater width here, consider
+          // other options for this in the future - AJV 9/4/2002
+         uwLength = (!i ? 64 : 32);      
+         pField->SetOffset(uwOffset);
+         pField->SetLength(uwLength);
          vFields.AddElement(pField->Clone());
          delete pField;
+         uwOffset += ( 2 + uwLength );        // forced spacing so that SatScan can backfit its scanf reads - AJV 9/4/2002
       }	
       
       pFile->PackFields(vFields);
-
       pFile->Close();
+      pFile->Create(sFileName.GetFullPath(), vFields, 1);
+      pFile->Close();
+
+      for(unsigned int i = vFields.GetNumElements() - 1; i > 0; --i) {
+         delete vFields[0]; vFields[0] = 0;
+         vFields.RemoveElement(0);
+      }
+
       delete pFile;
    }
    catch (ZdException &x) {
       if(pFile)
          pFile->Close();
       delete pFile; pFile = 0;
-      delete pField; pField = 0;	 
-      x.AddCallpath("CreateCSVFile()", "TfrmAnalysis");
+      delete pField; pField = 0;
+      for(unsigned int i = vFields.GetNumElements() - 1; i > 0; --i) {
+         delete vFields[0]; vFields[0] = 0;
+         vFields.RemoveElement(0);
+      }	 
+      x.AddCallpath("CreateTXDFile()", "TfrmAnalysis");
       throw;
    }
 }
@@ -1592,7 +1648,7 @@ void TfrmAnalysis::SetupImportDescriptor(BFTFImportDescriptor& descrip, const Zd
       sDestFile = sImportFileName;
       // these here should probably be defines later on, also there should be some type of checking to make
       // sure that we are getting a dbf extension file - AJV 8/30/2002
-      sDestFile.Replace(".dbf", ".csv");
+      sDestFile.Replace(".dbf", ".txd");
       descrip.SetDestinationFile(sDestFile);
    }
    catch (ZdException &x) {

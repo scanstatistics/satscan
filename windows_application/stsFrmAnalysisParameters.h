@@ -13,6 +13,9 @@
 
 #include "JulianDates.h"
 #include "Parameters.h"
+
+extern const char*     TXD_EXTENSION;
+
 //---------------------------------------------------------------------------
 class TfrmAnalysis : public TForm {
   __published:  // IDE-managed Components
@@ -185,7 +188,7 @@ class TfrmAnalysis : public TForm {
     bool                CheckScanningWindowParams();
     bool                CheckTimeParams();
     void                ConvertPurelySpacialIntervals();
-    void                CreateCSVFile(const ZdFileName& sFileName, const ZdVector<const char*>& vFieldNames);
+    void                CreateTXDFile(const ZdFileName& sFileName, const ZdVector<const char*>& vFieldNames);
     void                DataExchange();
     bool                DetermineIfDbfExtension(AnsiString sFileName);
     void                EnableAdditionalAsciiFileOptions();
