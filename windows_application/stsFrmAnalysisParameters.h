@@ -163,6 +163,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     CParameters                 gParameters;
     TfrmAdvancedParameters    * gpfrmAdvancedParameters;
 
+    double                      CalculateTimeAggregationUnitsInStudyPeriod() const;
     void                        CheckAnalysisParams();
     void                        CheckDate(const char * sDateTitle, TEdit& Year, TEdit& Month, TEdit& Day,  TTabSheet& Container);
     void                        CheckOutputParams();
