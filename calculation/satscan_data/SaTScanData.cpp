@@ -32,7 +32,6 @@ CSaTScanData::~CSaTScanData() {
     free(m_pIntervalStartTimes);
     delete gpTInfo;
     delete gpGInfo;
-    delete gpMaxWindowLengthIndicator; gpMaxWindowLengthIndicator=0;
   }
   catch (...){}  
 }
@@ -397,7 +396,6 @@ void CSaTScanData::Init() {
   mdE_Angles = 0;
   mdE_Shapes = 0;
   m_nMaxReportedCircleSize = 0;
-  gpMaxWindowLengthIndicator = 0;
   m_nTotalMaxCirclePopulation = 0;
   gtTotalMeasure=0;
   gtTotalCases=0;
@@ -452,7 +450,6 @@ void CSaTScanData::ReadDataFromFiles() {
     SetTimeIntervalRangeIndexes();
     if (m_pParameters->GetIsProspectiveAnalysis())
       SetProspectiveIntervalStart();
-    SetMaxTemporalWindowLengthIndicator();
     switch (m_pParameters->GetProbabiltyModelType()) {
       case POISSON              : bReadSuccess = ReadPoissonData(); break;
       case BERNOULLI            : bReadSuccess = ReadBernoulliData(); break;
@@ -627,23 +624,6 @@ void CSaTScanData::SetAdditionalCaseArrays(DataStream & thisStream) {
   }
   catch (ZdException &x) {
     x.AddCallpath("SetAdditionalCaseArrays()","CSaTScanData");
-    throw;
-  }
-}
-
-/** Creates max window length object which dictates maximum temporal window
-    length during analysis simluations. */
-void CSaTScanData::SetMaxTemporalWindowLengthIndicator() {
-  try {
-    if (m_pParameters->GetNumReplicationsRequested() > 0) { //no needed if no simulations performed
-      if (m_pParameters->GetIsProspectiveAnalysis() && m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE)
-        gpMaxWindowLengthIndicator = new ProspectiveMaxWindowLengthIndicator(*this);
-      else
-        gpMaxWindowLengthIndicator = new FixedMaxWindowLengthIndicator(*this);
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetMaxTemporalWindowLengthIndicator()","CSaTScanData");
     throw;
   }
 }

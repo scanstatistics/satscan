@@ -13,7 +13,6 @@
 #include "MakeNeighbors.h"
 #include "TimeTrend.h"
 #include "MultipleDimensionArrayHandler.h"
-#include "MaxWindowLengthIndicator.h"
 #include "DataStreamHandler.h"
 
 class CPoissonModel;
@@ -80,7 +79,6 @@ class CSaTScanData {
     virtual void                                SetAdditionalCaseArrays(DataStream & thisStream);
     virtual void                                SetIntervalCut();
     virtual void                                SetIntervalStartTimes();
-    virtual void                                SetMaxTemporalWindowLengthIndicator();
     void                                        SetMeasureByTimeIntervalArray();
     void                                        SetMeasureByTimeIntervalArray(measure_t ** pNonCumulativeMeasure);
     virtual void                                SetNumTimeIntervals();
@@ -95,8 +93,6 @@ class CSaTScanData {
   public:
     CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection);
     virtual ~CSaTScanData();
-
-    AbstractMaxWindowLengthIndicator          * gpMaxWindowLengthIndicator;   
 
     tract_t                                     m_nGridTracts;
     int                                         m_nTimeIntervals,
