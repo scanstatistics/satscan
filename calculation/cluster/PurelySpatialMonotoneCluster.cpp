@@ -51,7 +51,7 @@ void CPSMonotoneCluster::AllocateForMaxCircles(tract_t nCircles)
       m_pFirstNeighborList = (tract_t*)  Smalloc(m_nMaxCircles * sizeof(tract_t), gpPrintDirection);
       m_pLastNeighborList  = (tract_t*)  Smalloc(m_nMaxCircles * sizeof(tract_t), gpPrintDirection);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("AllocateForMaxCircles()", "CPSMonotoneCluster");
       throw;
@@ -108,7 +108,7 @@ CPSMonotoneCluster& CPSMonotoneCluster::operator =(const CPSMonotoneCluster& clu
       m_bRatioSet      = cluster.m_bRatioSet;
       m_nClusterType   = cluster.m_nClusterType;
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("Operator =()", "CPSMonotoneCluster");
       throw;
@@ -263,7 +263,7 @@ void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, count_t** pC
       SetCasesAndMeasures();
       SetTotalTracts();
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("DefineTopCluster()", "CPSMonotoneCluster");
       throw;
@@ -307,7 +307,7 @@ void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
                                   bFormat);
         }
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("DisplayCensusTracts()", "CPSMonotoneCluster");
       throw;
@@ -351,7 +351,7 @@ void CPSMonotoneCluster::DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment
    
       fprintf(fp, "\n");
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("DisplayRelativeRisk()", "CPSMonotoneCluster");
       throw;
@@ -441,7 +441,7 @@ void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
     
       free(pCoords);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("DisplayCoordinates()", "CPSMonotoneCluster");
       throw;
@@ -501,7 +501,7 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
     
       free(pCoords);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("DisplayLatLongCoords()", "CPSMonotoneCluster");
       throw;

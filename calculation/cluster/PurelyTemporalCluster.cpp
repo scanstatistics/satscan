@@ -18,7 +18,7 @@ CPurelyTemporalCluster::CPurelyTemporalCluster(int nTIType, int nIntervals, int 
       m_nIntervalCut    = nIntervalCut;
       Initialize(0);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("CPurelyTemporalCluster()", "CPurelyTemporalCluster");
       throw;
@@ -121,7 +121,7 @@ void CPurelyTemporalCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& D
         }
         */
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("DisplayCensusTracts()", "CPurelyTemporalCluster");
       throw;

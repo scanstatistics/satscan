@@ -11,7 +11,7 @@ CSignificantRatios05::CSignificantRatios05(int nReplications, BasePrint *pPrintD
       m_pRatiosList = (double*) Smalloc((m_nRatios+1) * sizeof(double), pPrintDirection);
       Initialize();
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("CSignificantRatios05()", "CSignificantRatios05");
       throw;

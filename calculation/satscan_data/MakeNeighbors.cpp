@@ -135,7 +135,7 @@ void MakeNeighbors(TractHandler *pTInfo,
         else if (iSpatialMaxType == DISTANCETYPE)
           NeighborCounts[0][t] += CountNeighborsByDistance(vTractDistances, MaxCircleSize);
         else
-          SSGenerateException("Unknown spatial maximum type.", "MakeNeighbors()" );
+          ZdGenerateException("Unknown spatial maximum type: '%d'.", "MakeNeighbors()", iSpatialMaxType);
 
         if (SortedInt)
            {
@@ -205,7 +205,7 @@ void MakeNeighbors(TractHandler *pTInfo,
                    else if (iSpatialMaxType == DISTANCETYPE)
                      NeighborCounts[lCurrentEllipse][t] += CountNeighborsByDistance(vTractDistances, MaxCircleSize);
                    else
-                     SSGenerateException("Unknown spatial maximum type.", "MakeNeighbors()" );
+                     ZdGenerateException("Unknown spatial maximum type.", "MakeNeighbors()", iSpatialMaxType);
 
                    if (SortedInt)
                       {
@@ -233,7 +233,7 @@ void MakeNeighbors(TractHandler *pTInfo,
        free(pCoords); pCoords = 0;
        free(pCoords2);pCoords2 = 0;
      }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       delete [] pNewXCoord;
       delete [] pNewYCoord;
@@ -252,7 +252,7 @@ void PrintNeighbors(long lTotalNumEllipses, tract_t GridTracts, tract_t ***Sorte
    try
       {
       if ((pFile = fopen("c:\\SatScan V.2.1.4\\Borland Calc\\neighbors.txt", "w")) == NULL)
-         SSGenerateException("  Error: Unable to open neighbors file.\n", "PrintNeighbors()");
+         ZdGenerateException("Error: Unable to open neighbors file.\n", "PrintNeighbors()");
       else
          {
          for (i = 0; i <= lTotalNumEllipses; i ++)
@@ -265,7 +265,7 @@ void PrintNeighbors(long lTotalNumEllipses, tract_t GridTracts, tract_t ***Sorte
          fclose(pFile);
          }
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("PrintNeighbors()", "MakeNeighbors.cpp");
       throw;

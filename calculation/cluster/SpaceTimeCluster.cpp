@@ -27,7 +27,7 @@ CSpaceTimeCluster::CSpaceTimeCluster(int nTIType, int nIntervals, int nIntervalC
 
       Initialize(0);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("CSpaceTimeCluster()", "CSpaceTimeCluster");
       throw;

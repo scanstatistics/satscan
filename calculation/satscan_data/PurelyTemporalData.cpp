@@ -23,7 +23,7 @@ void CPurelyTemporalData::AllocSimCases()
       CSaTScanData::AllocSimCases();  // Use until MakePurelyTemporalData implemented
       m_pPTSimCases = (count_t*)Smalloc(m_nTimeIntervals * sizeof(count_t), gpPrint);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("AllocSimCases()", "CPurelyTemporalData");
       throw;
@@ -50,7 +50,7 @@ void CPurelyTemporalData::ReadDataFromFiles()
       CSaTScanData::ReadDataFromFiles();
       SetPurelyTemporalCases();
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("ReadDataFromFiles()", "CPurelyTemporalData");
       throw;
@@ -66,7 +66,7 @@ bool CPurelyTemporalData::CalculateMeasure()
       bResult = CSaTScanData::CalculateMeasure();
       SetPurelyTemporalMeasures();
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("CalculateMeasure()", "CPurelyTemporalData");
       throw;
@@ -83,7 +83,7 @@ void CPurelyTemporalData::DisplayCases(FILE* pFile)
          fprintf(pFile, "PTCases [%i] = %i\n", i,m_pPTCases[i]);
       fprintf(pFile, "\n\n");
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("DisplayCases()", "CPurelyTemporalData");
       throw;
@@ -99,7 +99,7 @@ void CPurelyTemporalData::DisplaySimCases(FILE* pFile)
          fprintf(pFile, "PTSimCases [%i] = %i\n", i,m_pPTSimCases[i]);
       fprintf(pFile, "\n");
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("DisplaySimCases()", "CPurelyTemporalData");
       throw;
@@ -115,7 +115,7 @@ void CPurelyTemporalData::DisplayMeasure(FILE* pFile)
          fprintf(pFile, "PTMeasure [%i] = %f\n", i,m_pPTMeasure[i]);
       fprintf(pFile, "\n\n");
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("DisplayMeasure()", "CPurelyTemporalData");
       throw;
@@ -129,7 +129,7 @@ void CPurelyTemporalData::MakeData(int iSimulationNumber)
       CSaTScanData::MakeData(iSimulationNumber);
       SetPurelyTemporalSimCases();
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("MakeData()", "CPurelyTemporalData");
       throw;

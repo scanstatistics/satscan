@@ -24,7 +24,7 @@ bool C_ST_PT_Analysis::FindTopClusters() {
     m_pTopClusters[nLastClusterIndex] = GetTopPTCluster();
     SortTopClusters();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("FindTopClusters()", "C_ST_PT_Analysis");
     throw;
   }

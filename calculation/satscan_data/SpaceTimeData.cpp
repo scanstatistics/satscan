@@ -24,7 +24,7 @@ void CSpaceTimeData::SetIntervalCut()
          if (m_nTimeIntervals == m_nIntervalCut)
             m_nIntervalCut--;
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("SetIntervalCut()", "CSpaceTimeData");
       throw;
@@ -39,7 +39,7 @@ void CSpaceTimeData::ReadDataFromFiles()
       if (m_pParameters->GetIncludePurelyTemporalClusters())
          SetPurelyTemporalCases();
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("ReadDataFromFiles()", "CSpaceTimeData");
       throw;
@@ -56,7 +56,7 @@ bool CSpaceTimeData::CalculateMeasure()
      if (m_pParameters->GetIncludePurelyTemporalClusters())
         SetPurelyTemporalMeasures();
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("CalculateMeasure()", "CSpaceTimeData");
       throw;
@@ -72,7 +72,7 @@ void CSpaceTimeData::AllocSimCases()
       if (m_pParameters->GetIncludePurelyTemporalClusters())
          m_pPTSimCases = (count_t*)Smalloc(m_nTimeIntervals * sizeof(count_t), gpPrint);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("AllocSimCases()", "CSpaceTimeData");
       throw;
@@ -87,7 +87,7 @@ void CSpaceTimeData::DeAllocSimCases()
       if (m_pParameters->GetIncludePurelyTemporalClusters())
          free(m_pPTSimCases);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("DeAllocSimCases()", "CSpaceTimeData");
       throw;
@@ -102,7 +102,7 @@ void CSpaceTimeData::MakeData(int iSimulationNumber)
       if (m_pParameters->GetIncludePurelyTemporalClusters())
          SetPurelyTemporalSimCases();
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("MakeData()", "CSpaceTimeData");
       throw;

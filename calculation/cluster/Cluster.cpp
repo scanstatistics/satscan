@@ -162,7 +162,7 @@ void CCluster::Display(FILE*     fp,
         }
       DisplayNullOccurrence(fp, Data, szSpacesOnLeft);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("Display()", "CCluster");
       throw;
@@ -183,7 +183,7 @@ void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
                             nReplicas, lReportHistoryRunNumber, bIncludeRelRisk, bIncludePVal,
                             nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft, bFormat);
    }
-   catch (SSException & x) {
+   catch (ZdException & x) {
       x.AddCallpath("DisplayCensusTracts()", "CCluster");
       throw;
    }
@@ -268,7 +268,7 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
     if (fp != NULL)
       fprintf(fp, "\n");
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("DisplayCensusTractsInStep()", "CCluster");
     throw;
   }
@@ -352,7 +352,7 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
       free(pCoords);
       free(pCoords2);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       free(pCoords);
       free(pCoords2);
@@ -397,7 +397,7 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
       free(pCoords);
       free(pCoords2);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       free(pCoords);
       free(pCoords2);
@@ -478,59 +478,29 @@ void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpa
 
 void CCluster::DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft)
 {
-   try
-      {
-      float pVal = (float)GetPVal(nReplicas);
-      gfPValue = pVal;
+  float pVal = (float)GetPVal(nReplicas);
+  gfPValue = pVal;
 
-      if (nReplicas > 9999)
-         fprintf(fp, "%.5f", pVal);
-      else if (nReplicas > 999)
-         fprintf(fp, "%.4f", pVal);
-      else if (nReplicas > 99)
-         fprintf(fp, "%.3f", pVal);
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("DisplayPVal()", "CCluster");
-      throw;
-      }
+  if (nReplicas > 9999)
+    fprintf(fp, "%.5f", pVal);
+  else if (nReplicas > 999)
+    fprintf(fp, "%.4f", pVal);
+  else if (nReplicas > 99)
+    fprintf(fp, "%.3f", pVal);
 }
 
-void CCluster::DisplayRelativeRisk(FILE* fp,
-                                   double nMeasureAdjustment,
-                                   int nLeftMargin, int nRightMargin,
-                                   char cDeliminator, char* szSpacesOnLeft)
-{
-   try
-      {
-      //  fprintf(fp, "          (Relative risk: %.2f)\n", GetRelativeRisk());
-      fprintf(fp, "%sOverall relative risk.: %.3f\n", szSpacesOnLeft, GetRelativeRisk(nMeasureAdjustment));
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("DisplayRelativeRisk()", "CCluster");
-      throw;
-      }
+void CCluster::DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment, int nLeftMargin,
+                                   int nRightMargin, char cDeliminator, char* szSpacesOnLeft) {
+  //  fprintf(fp, "          (Relative risk: %.2f)\n", GetRelativeRisk());
+  fprintf(fp, "%sOverall relative risk.: %.3f\n", szSpacesOnLeft, GetRelativeRisk(nMeasureAdjustment));
 }
 
-void CCluster::DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType)
-{
+void CCluster::DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType) {
   char szStartDt[MAX_DT_STR];
   char szEndDt[MAX_DT_STR];
 
-   try
-      {
-      fprintf(fp, "%sTime frame............: %s - %s\n",
-               szSpacesOnLeft,
-               JulianToChar(szStartDt, m_nStartDate),
-               JulianToChar(szEndDt, m_nEndDate));
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("DisplayTimeFrame()", "CCluster");
-      throw;
-      }
+  fprintf(fp, "%sTime frame............: %s - %s\n", szSpacesOnLeft,
+          JulianToChar(szStartDt, m_nStartDate), JulianToChar(szEndDt, m_nEndDate));
 }
 
 /** Duczmal compactness correction. For circles this should be no different than
@@ -699,7 +669,7 @@ void CCluster::WriteCoordinates(FILE* fp, CSaTScanData* pData)
       free(pCoords);
       free(pCoords2);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       free(pCoords);
       free(pCoords2);
@@ -741,7 +711,7 @@ void CCluster::WriteLatLongCoords(FILE* fp, CSaTScanData* pData)
       free(pCoords);
       free(pCoords2);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       free(pCoords);
       free(pCoords2);

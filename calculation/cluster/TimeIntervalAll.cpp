@@ -142,7 +142,7 @@ bool CTIAll::GetNextTimeIntervalProsp(const count_t*& pCases,
       nStart   = m_nStart;
       nStop    = m_nStop;
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("GetNextTimeIntervalProsp()", "CTIAll");
       throw;

@@ -84,7 +84,7 @@ int GInfo::giInsertGnode(const char *gid, std::vector<double>& vCoordinates)
 
       NumGridTracts++;
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("giInsertGnode()", "GInfo");
       throw;
@@ -134,7 +134,7 @@ tract_t GInfo::giGetTractNum(const char *gid)
       if (!strcmp(gid, GridTractInfo[b].gid))
          return(b);
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("giGetTractNum()", "GInfo");
       throw;
@@ -186,7 +186,7 @@ void GInfo::giGetCoords(tract_t t, double** pCoord) const
             }
          }
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("giGetCoords()", "GInfo");
       throw;
@@ -209,7 +209,7 @@ void GInfo::giGetCoords2(tract_t t, double* pCoord) const
     	    pCoord[i] = GridTractInfo[t].pCoords[i];
          }
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("giGetCoords2()", "GInfo");
       throw;
@@ -234,7 +234,7 @@ void GInfo::giDisplayGridTractInfo()
         }
       gpPrintDirection->SatScanPrintf("\n");
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("giDisplayGridTractInfo()", "GInfo");
       throw;
@@ -360,7 +360,7 @@ bool GInfo::giFindDuplicateCoords(FILE* pDisplay)
         }
 
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       if (pCoords)  free(pCoords);
       if (pCoords2)  free(pCoords2);

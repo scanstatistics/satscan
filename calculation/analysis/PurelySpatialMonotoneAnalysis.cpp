@@ -60,7 +60,7 @@ CCluster* CPSMonotoneAnalysis::GetTopCluster(tract_t nCenter)
      MaxCluster->SetStartAndEndDates(m_pData->m_pIntervalStartTimes,
                                      m_pData->m_nTimeIntervals);
      }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       delete C_High; C_High = 0;
       delete C_Low;  C_Low = 0;
@@ -123,7 +123,7 @@ double CPSMonotoneAnalysis::MonteCarlo()
           }
         }
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("MonteCarlo()", "CPSMonotoneAnalysis");
       throw;
@@ -181,7 +181,7 @@ double CPSMonotoneAnalysis::MonteCarloProspective()
           }
         }
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("MonteCarloProspective()", "CPSMonotoneAnalysis");
       throw;
