@@ -3,40 +3,33 @@
 #define __POPULATIONCATEGORIES_H
 //*****************************************************************************
 #include "SatScan.h"
+#include "UtilityFunctions.h"
 
-/**********************************************************************
- file: PopulationCategories.h
- Header file for category facility (cats.c)
- **********************************************************************/
+/** This file abstracts "categories" of populations(.i.e covariate combinations).
+    Each data and case record has a variable number of fields which specify
+    arbitrary string values.  Each combination of these values defines a
+    separate category, by which the data is stratified. */
 
-struct catnode {     /* associates a combination of values with cat number */
-   int num;                /* category number       */
-   char **dvec;            /* array of values       */
-   struct catnode *next;   /* link to next category */
+class PopulationCategories {
+  private:
+    int                                 giNumberCovariates;            /** number covariates expected in each record
+                                                                           - as defined by first non-blank record of population file */
+    std::vector<std::string>            gvCovariateNames;              /** names of covariates */
+    std::vector<std::vector<int> >      gvPopulationCategories;        /** vector of population categories
+                                                                           - integers are indexes of covariate names */
+
+    void                                Init() {giNumberCovariates=0;}
+
+  public:
+    PopulationCategories();
+    ~PopulationCategories();
+
+    void                                Display(BasePrint & PrintDirection) const;
+    int                                 GetPopulationCategoryIndex(const std::vector<std::string>& vCategoryCovariates) const;
+    const char                        * GetPopulationCategoryAsString(int iCategoryIndex, std::string & sBuffer) const;
+    int                                 GetNumPopulationCategories() const {return (int)gvPopulationCategories.size();}
+    int                                 GetNumPopulationCategoryCovariates() const {return giNumberCovariates;}
+    int                                 MakePopulationCategory(StringParser & Parser, int iLineNumber, BasePrint & PrintDirection);
 };
-
-class Cats
-{
-private:
- BasePrint *gpPrintDirection;
-
- struct catnode *CatList;             /* linked list of categories */
- int CatVecLength;  /* = 0; (KR 1/14/97) */         /* length of "dvec" */
-
-   void Init();
-   void Free();
-public:
-   Cats(BasePrint *pPrintDirection);
-   ~Cats();
-int catGetCat(char *dvec[]);
-int catMakeCat(char *dvec[]);
-int catNumCats(void);
-void catSetNumEls(int n);
-int catGetNumEls(void);
-char* catGetCategoriesString(int n, std::string & sBuffer);
-void catDisplay(void);
-void catCleanup();
-};
-
 //*****************************************************************************
 #endif

@@ -1,220 +1,123 @@
 #include "SaTScan.h"
 #pragma hdrstop
 #include "PopulationCategories.h"
+#include "UtilityFunctions.h"
 
-/**********************************************************************
- file: cats.c
- This file abstracts "categories" of populations.
- Each data and case record has a variable number of fields which specify
- arbitrary string values.  Each combination of these values defines a
- separate category, by which the data is stratified.  This unit contains
- operations to manipulate these categories.
- All external function names have a "cat" prefix.
-
- NOTE:
- Currently, the mechanism for translating lists of values into category
- numbers is extremely primitive.  It could be improved by using less
- dynamic memory, by using a better data structure than a linked list,
- and by merging identical cati value strings.
- **********************************************************************/
-
-static int CompList(char *dv1[], char *dv2[], int len);
-
-
-Cats::Cats(BasePrint *pPrintDirection)
-{
-   Init();
-   gpPrintDirection = pPrintDirection;
+/** constructor */
+PopulationCategories::PopulationCategories() {
+  Init();
 }
-Cats::~Cats()
-{
-   Free();
+
+/** destructor */
+PopulationCategories::~PopulationCategories() {}
+
+/** Prints formatted text depicting state of population categories. */
+void PopulationCategories::Display(BasePrint & PrintDirection) const {
+  size_t        t, j;
+
+  try {
+    PrintDirection.SatScanPrintf("DISPLAY: Number of categories = %i\n", gvPopulationCategories.size());
+    PrintDirection.SatScanPrintf("\n#   Category Combination\n");
+    for (t=0; t < gvPopulationCategories.size(); t++) {
+       PrintDirection.SatScanPrintf("%d     ",  t);
+       for (j=0; j < gvPopulationCategories[t].size(); j++)
+          PrintDirection.SatScanPrintf("%s  ", gvCovariateNames[gvPopulationCategories[t][j]]);
+       PrintDirection.SatScanPrintf("\n");
+    }
+    PrintDirection.SatScanPrintf("\n");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Display()", "PopulationCategories");
+    throw;
+  }
 }
-void Cats::Free()
-{
-   catCleanup();
+
+/** Returns category index for passed vector of covariate strings. Returns -1 if not found. */
+int PopulationCategories::GetPopulationCategoryIndex(const std::vector<std::string>& vCategoryCovariates) const {
+  int           iIndex=-1;
+  size_t        t, j;
+  bool          bMatch;
+
+  for (t=0; t < gvPopulationCategories.size() && iIndex == -1; t++) {
+     for (j=0, bMatch=true; j < gvPopulationCategories[t].size() && bMatch; j++)
+        bMatch = gvCovariateNames[gvPopulationCategories[t][j]] == vCategoryCovariates[j];
+     if (bMatch)
+       iIndex = t;
+  }
+  return iIndex;
 }
-void Cats::Init()
-{
-   CatList = 0;
-   //CatVecLength;  /* = 0; (KR 1/14/97) */
 
-   CatVecLength = 0;
-}
-/**********************************************************************
- Translate a list of values into its category number (-1 if none)
- **********************************************************************/
-int Cats::catGetCat(char *dvec[])
-{
-   struct catnode *node = CatList;
+/** Returns population category as string of space delimited covariates. */
+const char * PopulationCategories::GetPopulationCategoryAsString(int iCategoryIndex, std::string & sBuffer) const {
+  size_t        t;
 
-   while (node && CompList(dvec, node->dvec, CatVecLength))
-         node = node->next;
+  try {
+    if (iCategoryIndex < 0 || iCategoryIndex > (int)(gvPopulationCategories.size() - 1))
+      ZdException::Generate("Index out of range '%d', range is 0 - %d.", "GetPopulationCategoryAsString()",
+                            iCategoryIndex, gvPopulationCategories.size() - 1);
 
-   return node ? (node->num) : -1;
-} /* catGetCat() */
-
-
-/**********************************************************************
- If the value list is unique, make a new category for it.
- Return the category number.
- **********************************************************************/
-int Cats::catMakeCat(char *dvec[])
-{
-   struct catnode *node;
-   int i;
-
-   try
-      {
-      if ((i = catGetCat(dvec)) != -1)
-         return i;
-   
-      node = (catnode*)Smalloc(sizeof(struct catnode), gpPrintDirection);
-      node->num = CatList ? CatList->num + 1 : 0;
-      node->dvec = (char**)Smalloc(CatVecLength * sizeof(char *), gpPrintDirection);
-      for (i = 0; i < CatVecLength; i++)
-   /*      node->dvec[i] = Sstrdup(dvec[i]); */
-         Sstrcpy(&(node->dvec[i]), dvec[i], gpPrintDirection);
-   
-      node->next = CatList;
-      CatList = node;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("catMakeCat(char *)", "Cats");
-      throw;
-      }
-   return node->num;
-} /* catMakeCat() */
-
-
-/**********************************************************************
- Returns the number of categories found so far
- **********************************************************************/
-int Cats::catNumCats(void)
-{
-   return CatList ? (CatList->num + 1) : 0;
-} /* catNumCats() */
-
-
-/**********************************************************************
- Sets the number of elements in a category vector.
- This should only be called once.  Future calls will have no effect
- **********************************************************************/
-void Cats::catSetNumEls(int n)
-{
-/*   if (CatVecLength == 0)  (KR 1/14/97) */
-   CatVecLength = n;
-} /* catSetNumEls() */
-
-/**********************************************************************
- Returns the number of elements per category vector.
- **********************************************************************/
-int Cats::catGetNumEls(void)
-{
-   return CatVecLength;
-} /* catGetNumEls() */
-
-
-/**********************************************************************
- Compare two lists of char pointers.
- Return value:
-   0   = they point to identical strings
-   > 0 = dv2 > dv1
-   < 0 = dv2 < dv1
- **********************************************************************/
-static int CompList(char *dv1[], char *dv2[], int len)
-{
-   int i;
-   
-   while (len--)
-       if ((i = strcmp(*dv1++, *dv2++)) != 0)
-         return i;
-
-   return 0;
-} /* CompList() */
-
-/**********************************************************************
- Return Category String
- **********************************************************************/
-char* Cats::catGetCategoriesString(int n, std::string & sBuffer)
-{
-   int    i;
-   struct catnode *node = CatList;
-
-   while (node && n != node->num)
-        node = node->next;
-
-   if (node)
-     {
-     sBuffer.clear();
-     for (i=0; i < CatVecLength; i++)
-        {
-        if (i > 0)
+    sBuffer.clear();
+    for (t=0; t < gvPopulationCategories[iCategoryIndex].size(); t++) {
+       if (t > 0)
           sBuffer += " ";
-        sBuffer += node->dvec[i];
-        }
-     }
-
-  return const_cast<char*>(sBuffer.c_str());
+       sBuffer += gvCovariateNames[gvPopulationCategories[iCategoryIndex][t]];
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetPopulationCategoryAsString()", "PopulationCategories");
+    throw;
+  }
+  return sBuffer.c_str();
 }
 
-/**********************************************************************
- Display categories in the list
- **********************************************************************/
-void Cats::catDisplay(void)
-{
-   //int i;
-   int j;
-   //  int nCatCombs = catNumCats();
-   int nCatVars  = catGetNumEls();
-   struct catnode *node = CatList;
+/** Creates new population category and returns category index. */
+int PopulationCategories::MakePopulationCategory(StringParser & Parser, int iLineNumber, BasePrint & PrintDirection) {
+  int                                           iScanOffset, iCategoryIndex, iNumCovariatesScanned=0;
+  std::vector<int>                              vPopulationCategory;
+  const char                                  * pCovariate;
+  std::vector<std::string>::iterator            itr;
+  std::vector<std::vector<int> >::iterator      itr_int;
 
-   try
-      {
-      gpPrintDirection->SatScanPrintf("DISPLAY:CatVecLength=%i\n",CatVecLength);
-      gpPrintDirection->SatScanPrintf("\n#   Category Combination\n");
-     
-      while (node)
-         {
-         gpPrintDirection->SatScanPrintf("%d     ",  node->num);
-          for (j=0; j<nCatVars; j++)
-           gpPrintDirection->SatScanPrintf("%s  ", node->dvec[j]);
-         gpPrintDirection->SatScanPrintf("\n");
-          node = node->next;
-         }
-     
-      gpPrintDirection->SatScanPrintf("\n");
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("catDisplay()", "Cats");
-      throw;
-      }
-} /* DisplayCats() */
-
-void Cats::catCleanup()
-{
-   struct catnode* pCurrCat;
-   struct catnode* pNextCat;
-   int    i;
+  iScanOffset = 3; //tract identifier, population date, population, covariate 1, ...
   
-   try
-      {
-      pCurrCat = CatList;
-    
-      while (pCurrCat != NULL)
-        {
-        pNextCat = pCurrCat->next;
-        for (i = 0; i < CatVecLength; i++)
-          free(pCurrCat->dvec[i]);
-        free(pCurrCat->dvec);
-        free(pCurrCat);
-        pCurrCat = pNextCat;
-        }
-      }
-   catch (...)
-      {
-      }
-}
+  //create a temporary vector of covariate name indexes
+  while ((pCovariate = Parser.GetWord(iNumCovariatesScanned + iScanOffset)) != 0) {
+       iNumCovariatesScanned++;
+       itr = std::find(gvCovariateNames.begin(), gvCovariateNames.end(), pCovariate);
+       if (itr == gvCovariateNames.end()) {
+         gvCovariateNames.push_back(pCovariate);
+         vPopulationCategory.push_back(gvCovariateNames.size() - 1);
+       }
+       else
+         vPopulationCategory.push_back(std::distance(gvCovariateNames.begin(), itr));
+  }
 
+  //first list of covariates sets precedence - remaining categories read must
+  //have the same number of covariates
+  if (gvPopulationCategories.empty()) {
+    //if this is the primary record/first record - set number of covariates
+    //we expect to find to remaining records.
+    giNumberCovariates = iNumCovariatesScanned;
+    gvPopulationCategories.push_back(vPopulationCategory);
+    iCategoryIndex = 0;
+  }
+  else if (iNumCovariatesScanned != giNumberCovariates){
+    PrintDirection.PrintInputWarning("Error: Record %d of population file contains %d covariates\n",
+                                     iLineNumber, iNumCovariatesScanned);
+    PrintDirection.PrintInputWarning("       but the correct number of covariates is %d, ", giNumberCovariates);
+    PrintDirection.PrintInputWarning("as defined by first record.\n");
+    iCategoryIndex = -1;
+  }
+  else {
+    //if list of covariates is unique then add to list of categories, else get lists index
+    itr_int = std::find(gvPopulationCategories.begin(), gvPopulationCategories.end(), vPopulationCategory);
+    if (itr_int == gvPopulationCategories.end()) {
+      gvPopulationCategories.push_back(vPopulationCategory);
+      iCategoryIndex = gvPopulationCategories.size() - 1;
+    }
+    else
+      iCategoryIndex = std::distance(gvPopulationCategories.begin(), itr_int);
+  }
+
+  return iCategoryIndex;
+}
