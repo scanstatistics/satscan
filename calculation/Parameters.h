@@ -38,6 +38,7 @@ extern const char*      TIME_TREND_ADJ_LINE;
 extern const char*      TIME_TREND_PERCENT_LINE;
 extern const char*      PROSPECT_START_LINE;
 extern const char*      TIME_TREND_CONVERGENCE_LINE;
+extern const char*      ADJUST_EALIER_ANALYSES_LINE;
 
 /** scanning window ini section */
 extern const char*      SCANNING_WINDOW_SECTION;
@@ -137,7 +138,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     INTERVAL_ENDRANGE, TIMETRENDCONVRG, MAXCIRCLEPOPFILE, USEMAXCIRCLEPOPFILE,
                                     EARLY_SIM_TERMINATION, REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE, SIMULATION_TYPE,
                                     SIMULATION_SOURCEFILE, POWER_ESTIMATIONFILE, OUTPUT_SIMULATION_DATA,
-                                    SIMULATION_DATA_OUTFILE};
+                                    SIMULATION_DATA_OUTFILE, ADJUST_ANALYSES};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL, PURELYSPATIALMONOTONE};
@@ -176,6 +177,8 @@ class CParameters {
     bool                                gbEarlyTerminationSimulations;          /** indicates whether to stop simulations if large p-values */
     SimulationType                      geSimulationType;                       /** indicates simulation procedure - Poisson only */
     bool                                gbOutputSimulationData;                 /** indicates whether to output simulation data to file */
+    bool                                gbAdjustForEarlierAnalyses;             /** indicates whether to adjust for earlier analyses,
+                                                                                    pertinent for prospective analyses */
         /* Power Calcution variables */
     bool                                gbPowerCalculation;                     /** indicator of whether to perform power calculations */
     double                              gdPower_X, gdPower_Y;                   /** power calculation variables */
@@ -315,6 +318,7 @@ class CParameters {
     void                                DisplayAnalysisType(FILE* fp) const;
     void                                DisplayParameters(FILE* fp, int iNumSimulations) const;
     void                                DisplayTimeAdjustments(FILE* fp) const;
+    bool                                GetAdjustForEarlierAnalyses() const {return gbAdjustForEarlierAnalyses;}
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
     const char                        * GetAnalysisTypeAsString() const;
     AreaRateType                        GetAreaScanRateType() const {return geAreaScanRate;}
@@ -396,6 +400,7 @@ class CParameters {
     TimeTrendAdjustmentType             GetTimeTrendAdjustmentType() const {return geTimeTrendAdjustType;}
     double                              GetTimeTrendConvergence() const {return gbTimeTrendConverge;}
     void                                Read(const char* szFilename, BasePrint & PrintDirection);
+    void                                SetAdjustForEarlierAnalyses(bool b) {gbAdjustForEarlierAnalyses = b;}
     void                                SetAnalysisType(AnalysisType eAnalysisType);
     void                                SetAreaRateType(AreaRateType eAreaRateType);
     void                                SetDimensionsOfData(int iDimensions);

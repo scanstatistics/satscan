@@ -34,6 +34,7 @@ const char*      PROSPECT_START_LINE            	= "ProspectiveStartDate";
 const char*      TIME_TREND_ADJ_LINE            	= "TimeTrendAdjustmentType";
 const char*      TIME_TREND_PERCENT_LINE        	= "TimeTrendPercentage";
 const char*      TIME_TREND_CONVERGENCE_LINE            = "TimeTrendConvergence";
+const char*      ADJUST_EALIER_ANALYSES_LINE            = "AdjustForEarlierAnalyses";
 
 const char*      SCANNING_WINDOW_SECTION        	= "[Scanning Window]";
 const char*      MAX_GEO_SIZE_LINE              	= "MaxGeographicSize";
@@ -104,9 +105,9 @@ const char*      YEAR_PRECISION_TYPE            	= "Years";
 const char*      MONTH_PRECISION_TYPE           	= "Months";
 const char*      DAY_PRECISION_TYPE             	= "Days";
 
-int CParameters::giNumParameters 			= 64;
+int CParameters::giNumParameters 			= 65;
 
-char mgsVariableLabels[64][100] = {
+char mgsVariableLabels[65][100] = {
    "Analysis Type", "Scan Areas", "Case File", "Population File",
    "Coordinates File", "Results File", "Precision of Case Times",
    "Not applicable", "Special Grid File Use", "Grid File",
@@ -133,7 +134,7 @@ char mgsVariableLabels[64][100] = {
    "Maximum Reported Geographical Cluster Size",
    "Restrict Reported Max Geographical Cluster Size", "Simulation Procedure Type",
    "Simulation Data Source File", "Power Estimation File", "Output Simulation Data",
-   "Simulation Data Output File"
+   "Simulation Data Output File", "Adjust for Earlier Analyses"
 };
 
 /** Constructor */
@@ -266,6 +267,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gsPowerEstimationSourceFileName     = rhs.gsPowerEstimationSourceFileName;
     gbOutputSimulationData              = rhs.gbOutputSimulationData;
     gsSimulationDataOutputFilename      = rhs.gsSimulationDataOutputFilename;
+    gbAdjustForEarlierAnalyses          = rhs.gbAdjustForEarlierAnalyses;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -441,7 +443,10 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
       fprintf(fp, "  Clusters to Include                   : ");
       switch (geIncludeClustersType) {
          case ALIVECLUSTERS   : fprintf(fp, "Only those including the study end date\n"); break;
-         case ALLCLUSTERS     : fprintf(fp, "All\n"); break;
+         case ALLCLUSTERS     : /*fprintf(fp, "All\n");
+                                  -- since this feature is now longer in the gui, ALLCLUSTERS
+                                     is default and only others are should be shown are exception when
+                                     specified in hand edited parameter file */ break;
          case CLUSTERSINRANGE : fprintf(fp, "Start Range %s - %s\n",
                                         gsStartRangeStartDate.c_str(), gsStartRangeEndDate.c_str());
                                 fprintf(fp, "                                          End Range   %s - %s\n",
@@ -469,8 +474,10 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
       }
     }
 
-    if (geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == PROSPECTIVEPURELYTEMPORAL)
+    if (geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == PROSPECTIVEPURELYTEMPORAL) {
+      fprintf(fp, "  Adjusted for Earlier Analyses : %s\n", (gbAdjustForEarlierAnalyses ? "Yes" : "No"));
       fprintf(fp, "  Prospective Start Date : %s\n", gsProspectiveStartDate.c_str());
+    }
 
     fprintf(fp, "\nOutput\n");
     fprintf(fp, "------\n");
@@ -985,6 +992,7 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case POWER_ESTIMATIONFILE     : sDefaultValue = "<blank>"; break;
       case OUTPUT_SIMULATION_DATA   : sDefaultValue = (gbOutputSimulationData ? YES : NO); break;
       case SIMULATION_DATA_OUTFILE  : sDefaultValue = "<blank>"; break;
+      case ADJUST_ANALYSES          : sDefaultValue = (gbAdjustForEarlierAnalyses ? YES : NO); break;
       default : ZdException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -1562,6 +1570,7 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case POWER_ESTIMATIONFILE      : SetPowerEstimationFileName(sParameter.GetCString(), true); break;
       case OUTPUT_SIMULATION_DATA    : SetOutputSimulationData(ReadBoolean(sParameter, eParameterType)); break;
       case SIMULATION_DATA_OUTFILE   : SetSimulationDataOutputFileName(sParameter.GetCString(), true); break;
+      case ADJUST_ANALYSES           : SetAdjustForEarlierAnalyses(ReadBoolean(sParameter, eParameterType)); break;
       default : ZdException::Generate("Unknown parameter enumeration %d.","ReadParameter()", eParameterType);
     };
   }
@@ -1756,6 +1765,7 @@ void CParameters::ReadTimeParametersSection(ZdIniFile& file, BasePrint & PrintDi
     ReadIniParameter(*pSection, TIME_TREND_PERCENT_LINE, TIMETRENDPERC, PrintDirection);
     ReadIniParameter(*pSection, PROSPECT_START_LINE, START_PROSP_SURV, PrintDirection);
     ReadIniParameter(*pSection, TIME_TREND_CONVERGENCE_LINE, TIMETRENDCONVRG, PrintDirection);
+    ReadIniParameter(*pSection, ADJUST_EALIER_ANALYSES_LINE, ADJUST_ANALYSES, PrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadTimeParametersSection()", "CParameters");
@@ -2005,6 +2015,8 @@ void CParameters::SaveTimeParametersSection(ZdIniFile& file) {
     pSection->AddLine(TIME_TREND_PERCENT_LINE, AsString(sValue, GetTimeTrendAdjustmentPercentage()));
     pSection->AddComment(" time trend convergence (> 0)");
     pSection->AddLine(TIME_TREND_CONVERGENCE_LINE, AsString(sValue, gbTimeTrendConverge));
+    pSection->AddComment(" adjust for earlier analyses -- prospective only (y/n)");
+    pSection->AddLine(ADJUST_EALIER_ANALYSES_LINE, gbAdjustForEarlierAnalyses ? YES : NO);
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveTimeParametersSection()","CParameters");
@@ -2206,6 +2218,7 @@ void CParameters::SetDefaults() {
   gsPowerEstimationSourceFileName       = "";
   gbOutputSimulationData                = false;
   gsSimulationDataOutputFilename        = "";
+  gbAdjustForEarlierAnalyses            = false;
 }
 
 /** Sets dimensions of input data. */
@@ -2978,7 +2991,7 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
         if (gsMaxCirclePopulationFileName.empty()) {
           bValid = false;
           PrintDirection.SatScanPrintWarning("Error: For a Space-Time Permutation model with the maximum spatial cluster size defined as a\n");
-          PrintDirection.SatScanPrintWarning("       as a percentage of the population at risk, a Maximum Circle Population file must be specified.\n");
+          PrintDirection.SatScanPrintWarning("       percentage of the population at risk, a Maximum Circle Population file must be specified.\n");
           PrintDirection.SatScanPrintWarning("       Alternatively you may choose to specify the maximum as a fixed radius, in which no\n");
           PrintDirection.SatScanPrintWarning("       Maximum Circle Population file is required.\n");
         }
@@ -3218,6 +3231,8 @@ bool CParameters::ValidateProspectiveDateString() {
   ZdString      sDate;
 
   try {
+    if (!gbAdjustForEarlierAnalyses)                 //when not adjusting for earlier analyses,
+      gsProspectiveStartDate = gsStudyPeriodEndDate; //prospective start date equal study period end
     JulianToMDY(&uiMonth, &uiDay, &uiYear, GetProspectiveStartDateAsJulian());
     sDate.printf("%i/%i/%i", uiYear, uiMonth, uiDay);
     gsProspectiveStartDate = sDate.GetCString();
@@ -3426,12 +3441,6 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
 
   try {
     //validate temporal options
-    if (GetIsProspectiveAnalysis() && geMaxTemporalClusterSizeType != TIMETYPE) {
-      PrintDirection.SatScanPrintWarning("Error: Maximum temporal cluster size can only be defined as a fixed\n");
-      PrintDirection.SatScanPrintWarning("       amount of time for a prospective analysis.");
-      return false;
-    }
-
     if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME ||
         GetIsProspectiveAnalysis() || geAnalysisType == SPATIALVARTEMPTREND) {
       //maximum temporal cluster size
