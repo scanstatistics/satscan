@@ -51,9 +51,15 @@
       ..\calculation\probability_model\SpaceTimePermutationModel.obj 
       ..\calculation\SaTScanBasis.obj 
       ..\calculation\Output\stsRunHistoryFile.obj ..\calculation\utility\DBFFile.obj 
-      ..\calculation\Output\stsAreaSpecificDBF.obj 
-      ..\calculation\Output\stsClusterLevelDBF.obj 
-      ..\calculation\Output\stsOutputDBF.obj"/>
+      ..\calculation\Output\stsRelativeRisk.obj 
+      ..\calculation\Output\stsClusterData.obj 
+      ..\calculation\Output\stsLogLikelihood.obj 
+      ..\calculation\Output\stsOutputFileData.obj 
+      ..\calculation\Output\stsAreaSpecificData.obj 
+      ..\calculation\Output\stsOutputFileWriter.obj 
+      ..\calculation\Output\stsDBaseFileWriter.obj 
+      ..\calculation\Output\stsASCIIFileWriter.obj stsOutputFileRegistry.obj 
+      ..\calculation\Toolkit.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
@@ -77,8 +83,8 @@
     <USERDEFINES value="INTEL_BASED;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="StsWinPrj.cpp"/>
-    <INCLUDEPATH value="..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;\\Nfse\home\hostovic\prj\basisdev\include;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\topgrid;.."/>
-    <LIBPATH value="..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;$(BCB)\topgrid;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\include;$(BCB)\lib\obj;$(BCB)\lib;.."/>
+    <INCLUDEPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects&quot;;..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;\\Nfse\home\hostovic\prj\basisdev\include;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\topgrid;.."/>
+    <LIBPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects&quot;;..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;$(BCB)\topgrid;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\include;$(BCB)\lib\obj;$(BCB)\lib;.."/>
     <WARNINGS value="-w-par"/>
   </MACROS>
   <OPTIONS>
