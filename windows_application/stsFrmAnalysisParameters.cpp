@@ -372,23 +372,15 @@ bool TfrmAnalysis::Check_Days(int iYear, int iMonth, int iDay, char *sDateName) 
   return bDayOk;
 }
 //------------------------------------------------------------------------------
-// Verifies the interval length.  If you add interval length to start date,
-// the resultant date must not be beyond the end date
+//Ensures that interval length is not less than one.
 //------------------------------------------------------------------------------
 bool TfrmAnalysis::Check_IntervalLength(int iStartYear, int iStartMonth, int iStartDay,
             int iEndYear, int iEndMonth, int iEndDay, int iIntervalUnits, int iIntervalLength) {
-  char szMessage[100];
-  Julian Start, End;
-  long   lMin = 1, lMax;
   bool   bIntervalLenOk = true;
 
   try {
-    Start = MDYToJulian(iStartMonth, iStartDay, iStartYear);
-    End   = MDYToJulian(iEndMonth, iEndDay, iEndYear);
-    lMax = TimeBetween(Start, End, iIntervalUnits);  //use to be iIntervalUnits+1
-    if ((iIntervalLength < lMin) || (iIntervalLength > lMax)) {
-      sprintf(szMessage, "The interval length must be between %i and %i.", lMin, lMax);
-      MessageBox(NULL, szMessage, "Parameter Error" , MB_OK);
+    if (atoi(edtUnitLength->Text.c_str()) < 1) {
+      MessageBox(NULL, "Interval length can not be zero.\nPlease specify an interval length.", "Notification" , MB_OK);
       bIntervalLenOk = false;
     }
   }
@@ -466,20 +458,25 @@ bool TfrmAnalysis::CheckAnalysisParams() {
     //if start year enabled, assume end year enabled.
     if (edtStartYear->Enabled) {
       bParamsOk = Check_Year(atoi(edtStartYear->Text.c_str()),"Study Period Start Year");
-      if (bParamsOk) Check_Year(atoi(edtEndYear->Text.c_str()),"Study Period End Year");
+      if (bParamsOk)
+      bParamsOk = Check_Year(atoi(edtEndYear->Text.c_str()),"Study Period End Year");
     }
     //if Months enabled, then check values...
     //if start month enabled, assume end month enabled.
     if (bParamsOk && edtStartMonth->Enabled) {
       bParamsOk = Check_Month(atoi(edtStartMonth->Text.c_str()), "Study Period Start Month");
-      if (bParamsOk) Check_Month(atoi(edtEndMonth->Text.c_str()), "Study Period End Month");
+      if (bParamsOk)
+      bParamsOk = Check_Month(atoi(edtEndMonth->Text.c_str()), "Study Period End Month");
     }
     //if Days enabled, then check values...
     //if start days enabled, assume end days enabled.
     if (bParamsOk && edtStartDay->Enabled) {
       bParamsOk = Check_Days(atoi(edtStartYear->Text.c_str()), atoi(edtStartMonth->Text.c_str()), atoi(edtStartDay->Text.c_str()),"Study Period Start Date");
-      if (bParamsOk) Check_Days(atoi(edtEndYear->Text.c_str()), atoi(edtEndMonth->Text.c_str()), atoi(edtEndDay->Text.c_str()),"Study Period End Date");
+      if (bParamsOk)
+      bParamsOk = Check_Days(atoi(edtEndYear->Text.c_str()), atoi(edtEndMonth->Text.c_str()), atoi(edtEndDay->Text.c_str()),"Study Period End Date");
     }
+
+
     if (bParamsOk)
       bParamsOk = CheckDateRange(atoi(edtStartYear->Text.c_str()), atoi(edtStartMonth->Text.c_str()), atoi(edtStartDay->Text.c_str()),
                                  atoi(edtEndYear->Text.c_str()), atoi(edtEndMonth->Text.c_str()), atoi(edtEndDay->Text.c_str()),
@@ -494,31 +491,58 @@ bool TfrmAnalysis::CheckAnalysisParams() {
   return bParamsOk;
 }
 //------------------------------------------------------------------------------
-// Verifies the relationship between a start and end date
+// Verifies the relationship between a start date, end date, and interval length.
 //------------------------------------------------------------------------------
 bool TfrmAnalysis::CheckDateRange(int iStartYear, int iStartMonth, int iStartDay,
                                   int iEndYear, int iEndMonth, int iEndDay,
                                   int iIntervalUnits, int iIntervalLength) {
-  bool bRangeOk = true;
-  char szMessage[100];
-  char szUnit[10];
-  Julian Start, End;
-  long   lTimeBetween;
+  bool          bRangeOk = true;
+  ZdString      sErrorMessage;
+  ZdDate        StartDate, EndDate;
+  ZdDateFilter  DateFilter("%4y/%02m/%02d");
+  char          FilterBuffer[11];
 
   try {
-    Start = MDYToJulian(iStartMonth, iStartDay, iStartYear);
-    End   = MDYToJulian(iEndMonth, iEndDay, iEndYear);
-    lTimeBetween = TimeBetween(Start, End, iIntervalUnits);  // use to be iIntervalUnits+1
-    switch (iIntervalUnits) { // use to be iIntervalUnits + 1;
-      case (YEAR)       : strcpy(szUnit, "year(s)"); break;
-      case (MONTH)      : strcpy(szUnit, "month(s)"); break;
-      case (DAY)        : strcpy(szUnit, "day(s)"); break;
-      default           : break;
-    };
-    if (iIntervalLength > lTimeBetween) {
-      sprintf(szMessage, "Due to interval length specified (Time Parameter tab), the start and end dates must be at least %d %s apart.", iIntervalLength, szUnit);
-      MessageBox(NULL, szMessage, "Parameter Error" , MB_OK);
+    GetStudyPeriodStartDate(StartDate);
+    GetStudyPeriodEndDate(EndDate);
+
+    //check that start date is before end date
+    if (StartDate >= EndDate) {
+      DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), StartDate.GetRawDate());
+      sErrorMessage << "The study period start date of " << FilterBuffer;
+      DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), EndDate.GetRawDate());
+      sErrorMessage << " does not occur before study period end date of " << FilterBuffer;
+      sErrorMessage << ".\nPlease review settings.";
+      MessageBox(NULL, sErrorMessage.GetCString(), "Notification" , MB_OK);
+      PageControl1->ActivePage = tbAnalysis;
       bRangeOk = false;
+    }
+
+    //check that interval length is not greater study period
+    //(.i.e. can't have study period that is 20 days and intervals of 3 months)
+    //to make start and end day inclusive - add 1 to end date
+    EndDate.AddDays(1);
+    if (bRangeOk) {
+      switch (iIntervalUnits) {
+        case      (YEAR)      : StartDate.AddYears(static_cast<unsigned short>(iIntervalLength));
+                                strcpy(FilterBuffer,"year(s)");
+                                break;
+        case      (MONTH)     : StartDate.AddMonths(static_cast<unsigned short>(iIntervalLength));
+                                strcpy(FilterBuffer,"month(s)");
+                                break;
+        case      (DAY)       : StartDate.AddDays(static_cast<unsigned short>(iIntervalLength));
+                                strcpy(FilterBuffer,"day(s)");
+                                break;
+        default               : ZdGenerateException("Unknown interval unit \"%d\"","CheckDateRange()",iIntervalUnits);
+      };
+
+      if (StartDate > EndDate) {
+        sErrorMessage << "Interval length of " << iIntervalLength << " " << FilterBuffer;
+        sErrorMessage << " is greater than study period length.\nPlease review settings.";
+        MessageBox(NULL, sErrorMessage.GetCString(), "Notification" , MB_OK);
+        PageControl1->ActivePage = tbTimeParameter;
+        bRangeOk = false;
+      }
     }
   }
   catch (ZdException & x) {
@@ -878,7 +902,17 @@ void __fastcall TfrmAnalysis::edtLogPerYearExit(TObject *Sender) {
 // Validates value entered for Cluster size
 //------------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::edtMaxClusterSizeExit(TObject *Sender) {
-  gpParams->m_nMaxGeographicClusterSize = atof(edtMaxClusterSize->Text.c_str());
+  try {
+    if (!edtMaxClusterSize->Text.Length() || atof(edtMaxClusterSize->Text.c_str()) == 0)
+      ZdException::GenerateNotification("Please specify a maximum spatial cluster size.","edtMaxClusterSizeExit()");
+    else
+      gpParams->m_nMaxGeographicClusterSize = atof(edtMaxClusterSize->Text.c_str());
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("edtMaxClusterSizeExit()", "TfrmAnalysis");
+    edtMaxClusterSize->SetFocus();
+    DisplayBasisException(this, x);
+  }     
 }
 //------------------------------------------------------------------------------
 // Validates Number of Monte Carlo reps value
@@ -899,7 +933,17 @@ void __fastcall TfrmAnalysis::edtMontCarloRepsExit(TObject *Sender) {
 //  Validates value entered for Maximum Temporal Cluster Size
 //------------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::edtMaxTemporalClusterSizeExit(TObject *Sender) {
-  gpParams->m_nMaxTemporalClusterSize = atof(edtMaxTemporalClusterSize->Text.c_str());
+  try {
+    if (!edtMaxTemporalClusterSize->Text.Length() || atof(edtMaxTemporalClusterSize->Text.c_str()) == 0)
+      ZdException::GenerateNotification("Please specify a maximum temporal cluster size.","edtMaxTemporalClusterSizeExit()");
+    else
+      gpParams->m_nMaxTemporalClusterSize = atof(edtMaxTemporalClusterSize->Text.c_str());
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("edtMaxTemporalClusterSizeExit()", "TfrmAnalysis");
+    edtMaxTemporalClusterSize->SetFocus();
+    DisplayBasisException(this, x);
+  }     
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::edtProspDayExit(TObject *Sender) {
@@ -990,7 +1034,8 @@ void __fastcall TfrmAnalysis::edtUnitLengthExit(TObject *Sender) {
                                    atoi(edtStartDay->Text.c_str()),  atoi(edtEndYear->Text.c_str()),
                                    atoi(edtEndMonth->Text.c_str()), atoi(edtEndDay->Text.c_str()),
                                    gpParams->m_nIntervalUnits, atoi(edtUnitLength->Text.c_str()));
-  if (!bParamsOk) {
+
+  if (! bParamsOk) {
     PageControl1->ActivePage = tbTimeParameter;
     edtUnitLength->SetFocus();
   }
@@ -1199,6 +1244,34 @@ CParameters * TfrmAnalysis::GetSession() {
     throw;
   }
   return gpParams;
+}
+
+/** Sets passed ZdDate to study period end date as defined by TEditBoxes.*/
+ZdDate & TfrmAnalysis::GetStudyPeriodEndDate(ZdDate & Date) {
+  try {
+    Date.SetYear(static_cast<unsigned short>(atoi(edtEndYear->Text.c_str())));
+    Date.SetMonth(static_cast<unsigned short>(atoi(edtEndMonth->Text.c_str())));
+    Date.SetDay(static_cast<unsigned short>(atoi(edtEndDay->Text.c_str())));
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("GetStudyPeriodEndDate()", "TfrmAnalysis");
+    throw;
+  }
+  return Date;
+}
+
+/** Sets passed ZdDate to study period start date as defined by TEditBoxes.*/
+ZdDate & TfrmAnalysis::GetStudyPeriodStartDate(ZdDate & Date) {
+  try {
+    Date.SetYear(static_cast<unsigned short>(atoi(edtStartYear->Text.c_str())));
+    Date.SetMonth(static_cast<unsigned short>(atoi(edtStartMonth->Text.c_str())));
+    Date.SetDay(static_cast<unsigned short>(atoi(edtStartDay->Text.c_str())));
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("GetStudyPeriodStartDate()", "TfrmAnalysis");
+    throw;
+  }
+  return Date;
 }
 
 // global initializations
@@ -1583,7 +1656,10 @@ void TfrmAnalysis::SaveTextParameters() {
     gpParams->m_nReplicas = atoi(edtMontCarloReps->Text.c_str());
     //Scanning Window Tab
     gpParams->m_nMaxGeographicClusterSize  = atof(edtMaxClusterSize->Text.c_str());
-    gpParams->m_nMaxTemporalClusterSize    = atof(edtMaxTemporalClusterSize->Text.c_str());
+    if (rdoPercentageTemproal->Checked)
+      gpParams->m_nMaxTemporalClusterSize    = atof(edtMaxTemporalClusterSize->Text.c_str());
+    else
+      gpParams->m_nMaxTemporalClusterSize    = atoi(edtMaxTemporalClusterSize->Text.c_str());
     gpParams->m_nMaxClusterSizeType = (rdoPercentageTemproal->Checked ? PERCENTAGETYPE : TIMETYPE);
     //Time Parameter Tab
     gpParams->m_nIntervalLength  = atoi(edtUnitLength->Text.c_str());
@@ -1938,6 +2014,7 @@ bool TfrmAnalysis::ValidateParams() {
   bool bDataOk;
 
   try {
+    SaveTextParameters();
     // check all input tab params
     bDataOk = ValidateInputFiles();
     // check all Analsis and other tab params
@@ -1958,27 +2035,26 @@ bool TfrmAnalysis::ValidateParams() {
 }
 
 bool TfrmAnalysis::ValidateSpatialClusterSize() {
-  double dValue = atof(edtMaxClusterSize->Text.c_str());
+  double dValue;
   bool   bOkParams=true;
 
   try {
-    if (! edtMaxClusterSize->Text.Length()) {
-      PageControl1->ActivePage = tbScanningWindow;
-      edtMaxClusterSize->SetFocus();
-      ZdException::GenerateNotification("Please specify maximum geographic size.", "ValidateSpatialClusterSize()");
-    }
+    if (edtMaxClusterSize->Enabled) {
+      if (!edtMaxClusterSize->Text.Length() || atof(edtMaxClusterSize->Text.c_str()) == 0)
+        ZdException::GenerateNotification("Please specify a maximum spatial cluster size.","ValidateSpatialClusterSize()");
 
-    if (!(dValue > 0.0 && dValue <= 50.0) && rdoSpatialPercentage->Checked) {
-      ZdException::GenerateNotification("Please specify valid maximum geographic size between %d - %d.",
-                                        "ValidateSpatialClusterSize()", 0, 50);
-      PageControl1->ActivePage = tbScanningWindow;
-      edtMaxClusterSize->SetFocus();
-    }
-    else
+      dValue = atof(edtMaxClusterSize->Text.c_str());
+      if (!(dValue > 0.0 && dValue <= 50.0) && rdoSpatialPercentage->Checked) 
+        ZdException::GenerateNotification("Please specify valid maximum spatial cluster size between %d - %d.",
+                                          "ValidateSpatialClusterSize()", 0, 50);
+
       gpParams->m_nMaxGeographicClusterSize = atof(edtMaxClusterSize->Text.c_str());
+    }
   }
   catch (ZdException & x) {
     x.AddCallpath("ValidateSpatialClusterSize()", "TfrmAnalysis");
+    PageControl1->ActivePage = tbScanningWindow;
+    edtMaxClusterSize->SetFocus();
     bOkParams = false;
     DisplayBasisException(this, x);
   }
@@ -1989,49 +2065,75 @@ bool TfrmAnalysis::ValidateSpatialClusterSize() {
 //---------------------------------------------------------------------------
 bool TfrmAnalysis::ValidateTemoralClusterSize() {
   bool          bParamsOk = true;
-  float         dValue, dTimeBetween, dMaxValue;
-  AnsiString    sMessage;
+  float         dValue;
+  ZdString      sErrorMessage;
+  ZdDate        StartDate, EndDate, EndDatePlusOne,StartPlusIntervalDate;
+  ZdDateFilter  DateFilter("%4y/%02m/%02d");
+  char          FilterBuffer[11], Buffer[10];
+  unsigned long ulMaxClusterDays, ulIntervalLengthInDays;
 
   try {
+    //check whether we are specifiying temporal information
     if (edtMaxTemporalClusterSize->Enabled) {
+      if (!edtMaxTemporalClusterSize->Text.Length() || atof(edtMaxTemporalClusterSize->Text.c_str()) == 0)
+        ZdException::GenerateNotification("Please specify a maximum temporal cluster size.","ValidateTemoralClusterSize()");
+
+      //check maximum temporal cluster size(as percentage pf population) is less
+      //than maximum for given probabilty model
       if (rdoPercentageTemproal->Checked) {
-        dMaxValue = (rgProbability->ItemIndex == SPACETIMEPERMUTATION ? 50 : 90);
         dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
-        if (!(dValue > 0.0 && dValue <= dMaxValue))
-          ZdException::GenerateNotification("Please specify valid maximum time size between %d - %.0f", "ValidateTemoralClusterSize()", 0, dMaxValue);
-      }
-      else if (rdoTimeTemproal->Checked) {
-        dMaxValue = 90; 
-        if (atof(edtUnitLength->Text.c_str()) <= atof(edtMaxTemporalClusterSize->Text.c_str())) {
-          dTimeBetween = TimeBetween(CharToJulian(gpParams->m_szStartDate),CharToJulian(gpParams->m_szEndDate),gpParams->m_nIntervalUnits);
-          dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
-          if (dTimeBetween <= 0 || dValue > dTimeBetween*(dMaxValue/100))
-            ZdException::GenerateNotification("Maximum temporal cluster size must be less than %d of duration of study period.",
-                                              "ValidateTemoralClusterSize()", dMaxValue);
-          if (floor(dValue/dTimeBetween*100) < 1) {
-            sMessage = "Invalid maximum temoral cluster size specified.\nWith study period spanning from year ";
-            sMessage += gpParams->m_szStartDate;
-            sMessage += " to year ";
-            sMessage += gpParams->m_szEndDate;
-            sMessage += " ,\nmaximum cluster size of ";
-            sMessage += dValue;
-            if (rbUnitYear->Checked)
-              sMessage += " year(s) ";
-            if (rbUnitMonths->Checked)
-              sMessage += " month(s) ";
-            if (rbUnitDay->Checked)
-              sMessage += " days(s) ";
-            sMessage += " is less than 1 percent of study period.";
-            ZdException::GenerateNotification(sMessage.c_str(), "ValidateTemoralClusterSize()");
-          }
+        if (!(dValue > 0.0 && dValue <= (rgProbability->ItemIndex == SPACETIMEPERMUTATION ? 50 : 90))) {
+          sErrorMessage << "For the " << rgProbability->Items->Strings[rgProbability->ItemIndex].c_str();
+          sErrorMessage << " model, the maximum temporal cluster size as a percent of study period is ";
+          sErrorMessage << (rgProbability->ItemIndex == SPACETIMEPERMUTATION ? 50 : 90);
+          sErrorMessage << " percent.\nPlease review settings.";
+          ZdException::GenerateNotification(sErrorMessage.GetCString(), "ValidateTemoralClusterSize()");
         }
-        else
-          ZdException::GenerateNotification("Maximum temporal cluster size must be greater than interval length.",
-                                            "ValidateTemoralClusterSize()");
+      }
+      //check that maximum temporal cluster size(in time units) is less than
+      //maximum for probabilty model. Determine the number of days the maximum
+      //temporal cluster can be. Compare that against start date plus interval
+      //length units.
+      else if (rdoTimeTemproal->Checked) {
+        GetStudyPeriodStartDate(StartDate);
+        GetStudyPeriodEndDate(EndDate);
+
+        //to make start and end day inclusive - add 1 to EndDate date
+        EndDatePlusOne = EndDate;
+        EndDatePlusOne.AddDays(1);
+        ulMaxClusterDays = EndDatePlusOne.GetJulianDayFromCalendarStart() - StartDate.GetJulianDayFromCalendarStart();
+        ulMaxClusterDays = (rgProbability->ItemIndex == SPACETIMEPERMUTATION ? ulMaxClusterDays * 0.5 : ulMaxClusterDays * 0.9);
+
+        StartPlusIntervalDate = StartDate;
+        //add time interval length as units to modified start date
+        switch (gpParams->m_nIntervalUnits) {
+            case      (YEAR)      : StartPlusIntervalDate.AddYears(static_cast<unsigned short>(atoi(edtMaxTemporalClusterSize->Text.c_str())));
+                                    strcpy(Buffer,"year(s)");
+                                    break;
+            case      (MONTH)     : StartPlusIntervalDate.AddMonths(static_cast<unsigned short>(atoi(edtMaxTemporalClusterSize->Text.c_str())));
+                                    //to make start and end day inclusive - add one day to interval
+                                    StartPlusIntervalDate.AddDays(1);
+                                    strcpy(Buffer,"month(s)");
+                                    break;
+            case      (DAY)       : //to make start and end day inclusive - add interval length minus 1
+                                    StartPlusIntervalDate.AddDays(static_cast<unsigned short>(atoi(edtMaxTemporalClusterSize->Text.c_str())));
+                                    strcpy(Buffer,"day(s)");
+                                    break;
+            default               : ZdGenerateException("Unknown interval unit \"%d\"", "ValidateTemoralClusterSize()", gpParams->m_nIntervalUnits);
+        };
+        ulIntervalLengthInDays = StartPlusIntervalDate.GetJulianDayFromCalendarStart() - StartDate.GetJulianDayFromCalendarStart();
+        if (ulIntervalLengthInDays > ulMaxClusterDays) {
+          DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), StartDate.GetRawDate());
+          sErrorMessage << "For the study period starting on " << FilterBuffer << " and ending on ";
+          DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), EndDate.GetRawDate());
+          sErrorMessage << FilterBuffer << ",\na maximum temporal cluster size of " << edtMaxTemporalClusterSize->Text.c_str();
+          sErrorMessage << " " << Buffer << " is greater than " << (rgProbability->ItemIndex == SPACETIMEPERMUTATION ? 50 : 90);
+          sErrorMessage << " percent of study period.\nPlease review settings.";
+          ZdGenerateException(sErrorMessage.GetCString(), "ValidateTemoralClusterSize()");
+        }
       }
       else
-        ZdException::GenerateNotification("Type specified as neither percentage nor time.",
-                                            "ValidateTemoralClusterSize()");
+        ZdException::GenerateNotification("Type specified as neither percentage nor time.", "ValidateTemoralClusterSize()");
     }
   }
   catch (ZdException & x) {
@@ -2093,5 +2195,6 @@ void __fastcall TfrmAnalysis::rdoSpatialDistanceClick(TObject *Sender){
   }
 }
 //---------------------------------------------------------------------------
+
 
 

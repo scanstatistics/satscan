@@ -539,7 +539,6 @@ object frmAnalysis: TfrmAnalysis
           MaxLength = 3
           TabOrder = 3
           Text = '1'
-          OnExit = edtUnitLengthExit
           OnKeyPress = NaturalNumberKeyPress
         end
       end
@@ -855,7 +854,7 @@ object frmAnalysis: TfrmAnalysis
         object lblClustersInColumnFormat: TLabel
           Left = 16
           Top = 48
-          Width = 280
+          Width = 87
           Height = 13
           Caption = 'Cluster Information'
         end
@@ -876,7 +875,7 @@ object frmAnalysis: TfrmAnalysis
         object lblSimulatedLogLikelihoodRatios: TLabel
           Left = 16
           Top = 120
-          Width = 280
+          Width = 151
           Height = 13
           Caption = 'Simulated Log Likelihood Ratios'
         end

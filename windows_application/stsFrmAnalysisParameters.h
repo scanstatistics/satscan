@@ -213,6 +213,8 @@ class TfrmAnalysis : public TForm {
     void                EnableScanningWindow();
     void                EnableTimeIntervals();
     void                EnableTimeTrendAdj();
+    ZdDate            & GetStudyPeriodEndDate(ZdDate & Date);
+    ZdDate            & GetStudyPeriodStartDate(ZdDate & Date);
     void                Init();
     void                ParseDate(char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *pDay);
     bool                ReadSession(char *sFileName);
