@@ -31,7 +31,7 @@ const char * stsAreaSpecificData::CLU_OBS_DIV_EXP_FIELD     = "CLU_ODE";
 // records the calculated data from the cluster into the dBase file
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
-void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, tract_t tTract, unsigned int iNumSimsCompleted) {
+void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CSaTScanData& DataHub, int iClusterNumber, tract_t tTract, unsigned int iNumSimsCompleted) {
   ZdString                     sTempValue;
   std::string                  sBuffer;
   OutputRecord               * pRecord = 0;
@@ -39,7 +39,7 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CS
   size_t                       t;
 
   try {
-    theData.GetTInfo()->tiGetTractIdentifiers(tTract, vIdentifiers);
+    DataHub.GetTInfo()->tiGetTractIdentifiers(tTract, vIdentifiers);
     for (t=0; t < vIdentifiers.size(); ++t) {
        pRecord = new OutputRecord(gvFields);
        pRecord->GetFieldValue(GetFieldNumber(LOC_ID_FIELD)).AsZdString() = vIdentifiers[t].c_str();
@@ -52,18 +52,18 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CS
          //that locations where combined. Print a record for each location but
          //leave area specific information blank.
          if (vIdentifiers.size() == 1) {
-           pRecord->GetFieldValue(GetFieldNumber(LOC_OBS_FIELD)).AsDouble() = theCluster.GetCaseCountForTract(tTract, theData);
-           pRecord->GetFieldValue(GetFieldNumber(LOC_EXP_FIELD)).AsDouble() = theCluster.GetMeasureForTract(tTract, theData);
-           pRecord->GetFieldValue(GetFieldNumber(LOC_OBS_DIV_EXP_FIELD)).AsDouble() = theCluster.GetRelativeRiskForTract(tTract, theData);
+           pRecord->GetFieldValue(GetFieldNumber(LOC_OBS_FIELD)).AsDouble() = theCluster.GetObservedCountForTract(tTract, DataHub);
+           pRecord->GetFieldValue(GetFieldNumber(LOC_EXP_FIELD)).AsDouble() = theCluster.GetExpectedCountForTract(tTract, DataHub);
+           pRecord->GetFieldValue(GetFieldNumber(LOC_OBS_DIV_EXP_FIELD)).AsDouble() = theCluster.GetObservedDivExpectedForTract(tTract, DataHub);
          }
          else {
            pRecord->SetFieldIsBlank(GetFieldNumber(LOC_OBS_FIELD), true);
            pRecord->SetFieldIsBlank(GetFieldNumber(LOC_EXP_FIELD), true);
            pRecord->SetFieldIsBlank(GetFieldNumber(LOC_OBS_DIV_EXP_FIELD), true);
          }
-         pRecord->GetFieldValue(GetFieldNumber(CLU_OBS_FIELD)).AsDouble() = theCluster.GetCaseCount(0);
-         pRecord->GetFieldValue(GetFieldNumber(CLU_EXP_FIELD)).AsDouble() = theData.GetMeasureAdjustment(0) * theCluster.GetMeasure(0);
-         pRecord->GetFieldValue(GetFieldNumber(CLU_OBS_DIV_EXP_FIELD)).AsDouble() = theCluster.GetRelativeRisk(theData.GetMeasureAdjustment(0));
+         pRecord->GetFieldValue(GetFieldNumber(CLU_OBS_FIELD)).AsDouble() = theCluster.GetObservedCount();
+         pRecord->GetFieldValue(GetFieldNumber(CLU_EXP_FIELD)).AsDouble() = theCluster.GetExpectedCount(DataHub);
+         pRecord->GetFieldValue(GetFieldNumber(CLU_OBS_DIV_EXP_FIELD)).AsDouble() = theCluster.GetObservedDivExpected(DataHub);
        }
        BaseOutputStorageClass::AddRecord(pRecord);
     }
