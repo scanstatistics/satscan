@@ -22,7 +22,31 @@ __fastcall TfrmAdvancedParameters::TfrmAdvancedParameters(TfrmAnalysis & Analysi
     throw;
   }
 }
+//---------------------------------------------------------------------------
+void __fastcall TfrmAdvancedParameters::btnAddClick(TObject *Sender) {
+   try {
+      // set case file, then clear edit box
+     gvCaseFiles.AddElement(edtCaseFileName->Text);
+     edtCaseFileName->Text = "";
+     // set control file, then clear edit box
+     gvControlFiles.AddElement(edtControlFileName->Text);
+     edtControlFileName->Text = "";
+     // set pop file, then clear edit box
+     gvPopFiles.AddElement(edtPopFileName->Text);
+     edtPopFileName->Text = "";
+     // add stream name to list box
+     lstInputStreams->Items->Add("Input Stream " + IntToStr(++giStreamNum));
+     lstInputStreams->ItemIndex = -1;
 
+     EnableAddButton();
+     DoControlExit();
+   }
+   catch (ZdException &x) {
+     x.AddCallpath("btnAddClick()","TfrmAdvancedParameters");
+     throw;
+   }
+}
+//---------------------------------------------------------------------------
 /** event triggered when selects browse button for adjustment for relative risks file */
 void __fastcall TfrmAdvancedParameters::btnBrowseAdjustmentsFileClick(TObject *Sender) {
   try {
@@ -57,11 +81,93 @@ void __fastcall TfrmAdvancedParameters::btnBrowseMaxCirclePopFileClick(TObject *
   }
 }
 //---------------------------------------------------------------------------
+/** button click event for case file browse
+    - shows open dialog and sets appropriate case file interface controls */
+void __fastcall TfrmAdvancedParameters::btnCaseBrowseClick(TObject *Sender) {
+  try {
+    OpenDialog->FileName =  "";
+    OpenDialog->DefaultExt = "*.cas";
+    OpenDialog->Filter = "Case files (*.cas)|*.cas|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog->FilterIndex = 0;
+    OpenDialog->Title = "Select Case File";
+    if (OpenDialog->Execute())
+      edtCaseFileName->Text = OpenDialog->FileName.c_str();
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("btnCaseBrowseClick()", "TfrmAdvancedParameters");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
+/** button click event for control file browse
+    - shows open dialog and sets appropriate control file interface controls */
+void __fastcall TfrmAdvancedParameters::btnControlBrowseClick(TObject *Sender) {
+  try {
+    OpenDialog->FileName = "";
+    OpenDialog->DefaultExt = "*.ctl";
+    OpenDialog->Filter = "Control files (*.ctl)|*.ctl|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog->FilterIndex = 0;
+    OpenDialog->Title = "Select Control File";
+    if (OpenDialog->Execute())
+       edtControlFileName->Text = OpenDialog->FileName.c_str();
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("btnControlBrowseClick()", "TfrmAdvancedParamters");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
+/** button click event for population file browse
+    - shows open dialog and sets appropriate population file interface controls */
+void __fastcall TfrmAdvancedParameters::btnPopBrowseClick(TObject *Sender) {
+  try {
+    OpenDialog->FileName = "";
+    OpenDialog->DefaultExt = "*.pop";
+    OpenDialog->Filter = "Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog->FilterIndex = 0;
+    OpenDialog->Title = "Select Population File";
+    if (OpenDialog->Execute())
+       edtPopFileName->Text = OpenDialog->FileName.c_str();
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("btnPopBrowseClick()", "TfrmAdvancedParameters");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
+// when user clicks on an input streams name, and the Remove button, remove the
+// details and the input stream name
+void __fastcall TfrmAdvancedParameters::btnRemoveStreamClick(TObject *Sender){
+   int iStreamNum = -1;
+
+   try {
+      // determine the input stream selected
+      iStreamNum = lstInputStreams->ItemIndex;
+      // remove files
+      edtCaseFileName->Text = "";
+      gvCaseFiles.RemoveElement(iStreamNum);
+      edtControlFileName->Text = "";
+      gvControlFiles.RemoveElement(iStreamNum);
+      edtPopFileName->Text = "";
+      gvPopFiles.RemoveElement(iStreamNum);
+      // remove list box name
+      lstInputStreams->Items->Delete(iStreamNum);
+
+      EnableAddButton();
+      DoControlExit();
+   }
+   catch (ZdException &x) {
+     x.AddCallpath("lstInputStreamsClick()","TfrmAdvancedParameters");
+     DisplayBasisException(this, x);
+   }
+}
+//---------------------------------------------------------------------------
 // Resets advanced settings to default values
 void __fastcall TfrmAdvancedParameters::btnSetDefaultsClick(TObject *Sender)
 {
    switch (giCategory) {
       case INPUT_TABS:
+         SetDefaultsForInputTab();
          break;
       case ANALYSIS_TABS:
          SetDefaultsForAnalysisTabs();
@@ -77,7 +183,8 @@ void __fastcall TfrmAdvancedParameters::btnSetDefaultsClick(TObject *Sender)
 void __fastcall TfrmAdvancedParameters::chkAdjustForEarlierAnalysesClick(TObject *Sender) {
   EnableProspectiveStartDate(chkAdjustForEarlierAnalyses->Checked);
   gAnalysisSettings.EnableSettingsForAnalysisModelCombination();
-}
+  DoControlExit();
+  }
 //---------------------------------------------------------------------------
 /** event triggered when adjust for known relative risks is clicked */
 void __fastcall TfrmAdvancedParameters::chkAdjustForKnownRelativeRisksClick(TObject *Sender) {
@@ -85,18 +192,21 @@ void __fastcall TfrmAdvancedParameters::chkAdjustForKnownRelativeRisksClick(TObj
   edtAdjustmentsByRelativeRisksFile->Enabled = gbEnableAdjustmentsByRR && chkAdjustForKnownRelativeRisks->Checked;
   edtAdjustmentsByRelativeRisksFile->Color = edtAdjustmentsByRelativeRisksFile->Enabled ? clWindow : clInactiveBorder;
   btnBrowseAdjustmentsFile->Enabled = gbEnableAdjustmentsByRR && chkAdjustForKnownRelativeRisks->Checked;
+  DoControlExit();
 }
 
 /** event triggered when user selects restrict reported clusters check box */
 void __fastcall TfrmAdvancedParameters::chkRestrictReportedClustersClick(TObject *Sender) {
   edtReportClustersSmallerThan->Enabled = rdgSpatialOptions->Enabled && chkRestrictReportedClusters->Checked;
   edtReportClustersSmallerThan->Color = rdgSpatialOptions->Enabled && chkRestrictReportedClusters->Checked ? clWindow : clInactiveBorder;
+  DoControlExit();
 }
 
 /** event triggered when user selects restrict range check box */
 void __fastcall TfrmAdvancedParameters::chkRestrictTemporalRangeClick(TObject *Sender) {
   EnableSpatialOutputOptions(rdgSpatialOptions->Enabled);
   RefreshTemporalRangesEnables();
+  DoControlExit();
 }
 
 /** event triggered when user exits a control*/
@@ -222,14 +332,19 @@ void __fastcall TfrmAdvancedParameters::edtProspectiveStartDateExit(TObject *Sen
 //---------------------------------------------------------------------------
 /** event triggered when start window end ranges year, month or day control is exited */
 void __fastcall TfrmAdvancedParameters::edtStartRangeEndDateExit(TObject *Sender) {
-  TfrmAnalysis::ValidateDate(*edtStartRangeEndYear, *edtStartRangeEndMonth, *edtStartRangeEndDay);
-  DoControlExit();
+   TfrmAnalysis::ValidateDate(*edtStartRangeEndYear, *edtStartRangeEndMonth, *edtStartRangeEndDay);
+   DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** event triggered when start window start ranges year, month or day control is exited */
 void __fastcall TfrmAdvancedParameters::edtStartRangeStartDateExit(TObject *Sender) {
-  TfrmAnalysis::ValidateDate(*edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay);
-  DoControlExit();
+   TfrmAnalysis::ValidateDate(*edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay);
+   DoControlExit();
+}
+//---------------------------------------------------------------------------
+//** enables or disables the Add button on the Input tab
+void TfrmAdvancedParameters::EnableAddButton() {
+  btnAddStream->Enabled = (lstInputStreams->Items->Count < MAX_STREAMS) ? true: false;
 }
 //---------------------------------------------------------------------------
 /** enables or disables the temporal time trend adjustment control group */
@@ -480,6 +595,8 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
 bool TfrmAdvancedParameters::GetDefaultsSetForInputOptions() {
    bool bReturn = true;
 
+   bReturn &= (lstInputStreams->Items->Count == 0);
+   
    return bReturn;
 }
 //---------------------------------------------------------------------------
@@ -558,6 +675,7 @@ void TfrmAdvancedParameters::Init() {
   gpFocusControl=0;
   rdgCriteriaSecClusters->ItemIndex = 0;
   giCategory = 0;
+  giStreamNum = 0;
 }
 
 /** event triggered when key pressed for control that can contain natural numbers */
@@ -610,8 +728,8 @@ void __fastcall TfrmAdvancedParameters::rdoMaxTemporalClusterSizelick(TObject *S
   //cause enabling to be refreshed based upon clicked radio button
   EnableTemporalOptionsGroup(rdgTemporalOptions->Enabled, chkIncludePureSpacClust->Enabled,
                              chkRestrictTemporalRange->Enabled);
+  DoControlExit();
 }
-
 //---------------------------------------------------------------------------
 /** event triggered when maximum spatial type selected */
 void __fastcall TfrmAdvancedParameters::rdoMaxSpatialTypeClick(TObject *Sender) {
@@ -620,14 +738,15 @@ void __fastcall TfrmAdvancedParameters::rdoMaxSpatialTypeClick(TObject *Sender) 
                             chkInclPureTempClust->Enabled,
                             rdoSpatialPercentage->Enabled);
   SetReportingSmallerClustersText();
+  DoControlExit();
 }
-
+//---------------------------------------------------------------------------
 /** */
 void TfrmAdvancedParameters::RefreshTemporalRangesEnables() {
   AnalysisType  eType = gAnalysisSettings.GetAnalysisControlType();
   EnableTemporalRanges(rdgTemporalOptions->Enabled, eType == PURELYTEMPORAL || eType == SPACETIME);
 }
-
+//---------------------------------------------------------------------------
 /** parameter settings to parameters class */
 void TfrmAdvancedParameters::SaveParameterSettings() {
   CParameters & ref = gAnalysisSettings.gParameters;
@@ -663,6 +782,15 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
                                atoi(edtEndRangeEndDay->Text.c_str()));
     ref.SetEndRangeEndDate(sString.GetCString());
     ref.SetCriteriaForReportingSecondaryClusters((CriteriaSecondaryClustersType)rdgCriteriaSecClusters->ItemIndex);
+
+    // save the input files on Input tab
+    if (lstInputStreams->Items->Count) {
+       for (int i = 0; i < lstInputStreams->Items->Count; i++) {
+          ref.SetCaseFileName((gvCaseFiles.GetElement(i)).c_str(), i+2);
+          ref.SetControlFileName((gvControlFiles.GetElement(i)).c_str(), i+2);
+          ref.SetPopulationFileName((gvPopFiles.GetElement(i)).c_str(), i+2);
+       }
+    }
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveParameterSettings()","TfrmAdvancedParameters");
@@ -718,6 +846,21 @@ void TfrmAdvancedParameters::SetDefaultsForOutputTab() {
    chkRestrictReportedClusters->Checked = false;
    rdgCriteriaSecClusters->ItemIndex = NOGEOOVERLAP;
    edtReportClustersSmallerThan->Text = 50;
+}
+//---------------------------------------------------------------------------
+/** Sets default values for Input related tab and respective controls */
+void TfrmAdvancedParameters::SetDefaultsForInputTab() {
+   // clear all visual components
+   edtCaseFileName->Text = "";
+   edtControlFileName->Text = "";
+   edtPopFileName->Text = "";
+   lstInputStreams->Items->Clear();
+
+   // clear the non-visual components
+   gvCaseFiles.RemoveAllElements();
+   gvControlFiles.RemoveAllElements();
+   gvPopFiles.RemoveAllElements();
+   giStreamNum = 0;
 }
 //---------------------------------------------------------------------------
 /** Sets adjustments filename in interface */
@@ -898,6 +1041,15 @@ void TfrmAdvancedParameters::Setup() {
         edtReportClustersSmallerThan->Text = ref.GetMaximumReportedGeoClusterSize();
       else
         edtReportClustersSmallerThan->Text = 50;
+
+      // Input tab
+      for (unsigned int i = 1; i < ref.GetNumDataStreams(); i++) { // multiple data streams
+         lstInputStreams->Items->Add("Input Stream " + IntToStr(i));
+         gvCaseFiles.AddElement(AnsiString(ref.GetCaseFileName(i+1).c_str()));
+         gvControlFiles.AddElement(AnsiString(ref.GetControlFileName(i+1).c_str()));
+         gvPopFiles.AddElement(AnsiString(ref.GetPopulationFileName(i+1).c_str()));
+         lstInputStreams->ItemIndex = -1;
+      }
     }
     catch (ZdException &x) {
       x.AddCallpath("Setup()","TfrmAdvancedParameters");
@@ -1295,4 +1447,22 @@ void __fastcall TfrmAdvancedParameters::OnControlExit(
    DoControlExit();
 }
 //---------------------------------------------------------------------------
+// when user clicks on an input streams name, display the details in the edit
+// boxes above the list box
+void __fastcall TfrmAdvancedParameters::lstInputStreamsClick(TObject *Sender) {
+   int iStreamNum = -1;
+
+   try {
+      // determine the input stream selected
+      iStreamNum = lstInputStreams->ItemIndex;
+      // set the case file
+      edtCaseFileName->Text = gvCaseFiles.GetElement(iStreamNum);
+      edtControlFileName->Text = gvControlFiles.GetElement(iStreamNum);
+      edtPopFileName->Text = gvPopFiles.GetElement(iStreamNum);
+   }
+   catch (ZdException &x) {
+     x.AddCallpath("lstInputStreamsClick()","TfrmAdvancedParameters");
+     DisplayBasisException(this, x);
+   }
+}
 

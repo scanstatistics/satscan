@@ -16,6 +16,7 @@
 const int INPUT_TABS     = 1;
 const int ANALYSIS_TABS  = 2;
 const int OUTPUT_TABS    = 3;
+const int MAX_STREAMS    = 3;      /*Maximum number of additional input streams*/
 
 class TfrmAdvancedParameters : public TForm {
 
@@ -107,12 +108,16 @@ __published:	// IDE-managed Components
    TLabel *Label1;
    TLabel *Label2;
    TGroupBox *GroupBox2;
-   TButton *Button1;
-   TButton *Button2;
-   TListBox *ListBox1;
+   TButton *btnAddStream;
+   TButton *btnRemoveStream;
+   TListBox *lstInputStreams;
 
+   void __fastcall btnAddClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
    void __fastcall btnBrowseMaxCirclePopFileClick(TObject *Sender);
+   void __fastcall btnCaseBrowseClick(TObject *Sender) ;
+   void __fastcall btnControlBrowseClick(TObject *Sender) ;
+   void __fastcall btnPopBrowseClick(TObject *Sender) ;
    void __fastcall btnShowAllClick(TObject *Sender);
    void __fastcall chkAdjustForEarlierAnalysesClick(TObject *Sender);
    void __fastcall chkAdjustForKnownRelativeRisksClick(TObject *Sender);
@@ -145,6 +150,8 @@ __published:	// IDE-managed Components
    void __fastcall rdoMaxSpatialTypeClick(TObject *Sender);
    void __fastcall btnSetDefaultsClick(TObject *Sender);
    void __fastcall OnControlExit(TObject *Sender);
+   void __fastcall lstInputStreamsClick(TObject *Sender);
+   void __fastcall btnRemoveStreamClick(TObject *Sender);
 
  private:
 
@@ -155,13 +162,18 @@ __published:	// IDE-managed Components
    bool                     gbEnableRangeMonths; /** stores enable dictated by main interface */
    bool                     gbEnableRangeDays;   /** stores enable dictated by main interface */
    bool                     gbEnableAdjustmentsByRR; /** stores enable dictated by main interface */
-
+   ZdVector <AnsiString>    gvCaseFiles;
+   ZdVector <AnsiString>    gvControlFiles;
+   ZdVector <AnsiString>    gvPopFiles;
+   int                      giStreamNum;   /** number of additional input streams added*/
+                                           /** does not go down with removals */
    void                     DoControlExit();
    TimeTrendAdjustmentType  GetAdjustmentTimeTrendControlType() const;
    void                     Init();
    void                     ParseDate(const std::string& sDate, TEdit& Year, TEdit& Month, TEdit& Day, bool bStartRange);
    void                     RefreshTemporalRangesEnables();
    void                     SetDefaultsForAnalysisTabs();
+   void                     SetDefaultsForInputTab();
    void                     SetDefaultsForOutputTab();
    void                     Setup();
    void                     ValidateProspDateRange();
@@ -173,6 +185,7 @@ __published:	// IDE-managed Components
 public:
    __fastcall TfrmAdvancedParameters(TfrmAnalysis & AnalysisSettings);
 
+   void                  EnableAddButton();
    void                  EnableAdjustmentsGroup(bool bEnable);
    void                  EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage);
    void                  EnableOutputOptions(bool bEnable);

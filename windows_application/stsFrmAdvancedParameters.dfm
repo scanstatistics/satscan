@@ -1,6 +1,6 @@
 object frmAdvancedParameters: TfrmAdvancedParameters
-  Left = 186
-  Top = 130
+  Left = 189
+  Top = 131
   ActiveControl = PageControl
   BorderStyle = bsDialog
   Caption = 'Advanced Features'
@@ -73,7 +73,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Width = 399
         Height = 141
         Caption = 'Additional Input Stream Detail'
-        TabOrder = 6
+        TabOrder = 0
         object Label3: TLabel
           Left = 16
           Top = 16
@@ -103,8 +103,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Height = 21
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 0
-        Text = 'SeerTest2.cas'
+        TabOrder = 2
       end
       object btnCaseBrowse: TButton
         Left = 368
@@ -121,7 +120,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         ParentFont = False
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 1
+        TabOrder = 3
+        OnClick = btnCaseBrowseClick
       end
       object edtControlFileName: TEdit
         Left = 24
@@ -130,7 +130,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Height = 21
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 2
+        TabOrder = 4
       end
       object btnControlBrowse: TButton
         Left = 368
@@ -147,7 +147,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         ParentFont = False
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 3
+        TabOrder = 5
+        OnClick = btnControlBrowseClick
       end
       object edtPopFileName: TEdit
         Left = 24
@@ -156,8 +157,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Height = 21
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 4
-        Text = 'SeerTest2.pop'
+        TabOrder = 6
       end
       object btnPopBrowse: TButton
         Left = 368
@@ -174,7 +174,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         ParentFont = False
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 5
+        TabOrder = 7
+        OnClick = btnPopBrowseClick
       end
       object GroupBox2: TGroupBox
         Left = 8
@@ -182,32 +183,33 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Width = 399
         Height = 105
         Caption = 'All Additional Input Streams'
-        TabOrder = 7
-        object Button1: TButton
+        TabOrder = 1
+        object btnAddStream: TButton
           Left = 312
           Top = 28
           Width = 75
           Height = 25
           Caption = 'Add'
-          TabOrder = 0
+          TabOrder = 1
+          OnClick = btnAddClick
         end
-        object Button2: TButton
+        object btnRemoveStream: TButton
           Left = 312
           Top = 64
           Width = 75
           Height = 25
           Caption = 'Remove'
-          TabOrder = 1
+          TabOrder = 2
+          OnClick = btnRemoveStreamClick
         end
-        object ListBox1: TListBox
+        object lstInputStreams: TListBox
           Left = 16
           Top = 24
           Width = 285
-          Height = 73
+          Height = 69
           ItemHeight = 13
-          Items.Strings = (
-            'Input Stream 1')
-          TabOrder = 2
+          TabOrder = 0
+          OnClick = lstInputStreamsClick
         end
       end
     end
@@ -273,7 +275,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Include Purely Temporal Cluster (Spatial Size = 100%)'
           Enabled = False
           TabOrder = 8
-          OnExit = OnControlExit
+          OnClick = OnControlExit
         end
         object rdoSpatialPercentage: TRadioButton
           Left = 34
@@ -285,7 +287,6 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           TabOrder = 0
           TabStop = True
           OnClick = rdoMaxSpatialTypeClick
-          OnExit = OnControlExit
         end
         object rdoSpatialDistance: TRadioButton
           Left = 34
@@ -295,7 +296,6 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'is a circle with a'
           TabOrder = 6
           OnClick = rdoMaxSpatialTypeClick
-          OnExit = OnControlExit
         end
         object rdoSpatialPopulationFile: TRadioButton
           Left = 34
@@ -305,7 +305,6 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'is'
           TabOrder = 2
           OnClick = rdoMaxSpatialTypeClick
-          OnExit = OnControlExit
         end
         object edtMaxSpatialRadius: TEdit
           Left = 133
@@ -378,7 +377,6 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Include only windows with:'
           TabOrder = 0
           OnClick = chkRestrictTemporalRangeClick
-          OnExit = OnControlExit
         end
         object stStartRangeTo: TStaticText
           Left = 245
@@ -601,7 +599,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Include Purely Spatial Clusters (Temporal Size = 100%)'
           Enabled = False
           TabOrder = 3
-          OnExit = OnControlExit
+          OnClick = OnControlExit
         end
         object rdoPercentageTemporal: TRadioButton
           Left = 30
@@ -613,7 +611,6 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           TabOrder = 0
           TabStop = True
           OnClick = rdoMaxTemporalClusterSizelick
-          OnExit = OnControlExit
         end
         object rdoTimeTemporal: TRadioButton
           Left = 30
@@ -623,7 +620,6 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'is'
           TabOrder = 2
           OnClick = rdoMaxTemporalClusterSizelick
-          OnExit = OnControlExit
         end
         object edtMaxTemporalClusterSizeUnits: TEdit
           Left = 62
@@ -644,7 +640,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 8
         Top = 8
         Width = 390
-        Height = 115
+        Height = 113
         Caption = 'Temporal Adjustments'
         Enabled = False
         ItemIndex = 0
@@ -658,8 +654,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object edtLogLinear: TEdit
         Left = 108
-        Top = 92
-        Width = 30
+        Top = 88
+        Width = 25
         Height = 21
         Enabled = False
         MaxLength = 5
@@ -669,8 +665,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         OnKeyPress = FloatKeyPress
       end
       object lblLogLinear: TStaticText
-        Left = 144
-        Top = 96
+        Left = 140
+        Top = 92
         Width = 67
         Height = 17
         AutoSize = False
@@ -679,7 +675,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object grpAdjustments: TGroupBox
         Left = 8
-        Top = 139
+        Top = 155
         Width = 390
         Height = 102
         Caption = 'Temporal, Spatial and/or Space-Time Adjustments'
@@ -731,7 +727,6 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Adjust for known relative risks'
           TabOrder = 0
           OnClick = chkAdjustForKnownRelativeRisksClick
-          OnExit = OnControlExit
         end
       end
     end
@@ -752,7 +747,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Height = 17
           Caption = 'Terminate replications early for large p-values'
           TabOrder = 0
-          OnExit = OnControlExit
+          OnClick = OnControlExit
         end
       end
       object gbxProspectiveSurveillance: TGroupBox
@@ -852,7 +847,6 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Adjust for earlier analyses'
           TabOrder = 0
           OnClick = chkAdjustForEarlierAnalysesClick
-          OnExit = OnControlExit
         end
       end
     end
@@ -876,7 +870,6 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Caption = 'Report only clusters smaller than'
         TabOrder = 0
         OnClick = chkRestrictReportedClustersClick
-        OnExit = OnControlExit
       end
       object edtReportClustersSmallerThan: TEdit
         Left = 200
