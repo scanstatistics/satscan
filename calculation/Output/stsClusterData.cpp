@@ -26,15 +26,16 @@ const char * stsClusterData::END_DATE_FLD	        = "END_DATE";
 const char * stsClusterData::RADIUS_FIELD	        = "RADIUS";
 const char * stsClusterData::E_ANGLE_FIELD              = "E_ANGLE";
 const char * stsClusterData::E_SHAPE_FIELD              = "E_SHAPE";
-const char * stsClusterData::NUM_AREAS_FIELD	        = "NUM_AREAS";
+const char * stsClusterData::NUM_LOCATIONS_FIELD        = "NUM_LOC";
 const char * stsClusterData::COORD_LAT_FIELD	        = "LATITUDE";
 const char * stsClusterData::COORD_LONG_FIELD	        = "LONGITUDE";
 const char * stsClusterData::COORD_X_FIELD	        = "X";
 const char * stsClusterData::COORD_Y_FIELD              = "Y";
 const char * stsClusterData::COORD_Z_FIELD              = "Z";
+const char * stsClusterData::OBS_DIV_EXP_FIELD	        = "ODE";
 const char * stsClusterData::STREAM_OBSERVED_FIELD      = "OBS_DS";
 const char * stsClusterData::STREAM_EXPECTED_FIELD      = "EXP_DS";
-const char * stsClusterData::STREAM_REL_RISK_FIELD      = "RSK_DS";
+const char * stsClusterData::STREAM_OBS_DIV_EXP_FIELD   = "ODE_DS";
 
 // formats the string for the Area ID
 // pre: none
@@ -94,7 +95,7 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
     pRecord->GetFieldValue(GetFieldNumber(LOC_ID_FIELD)).AsZdString() = GetAreaID(sBuffer, theCluster, theData);
     pRecord->GetFieldValue(GetFieldNumber(CLUST_NUM_FIELD)).AsDouble() = iClusterNumber;
     WriteCoordinates(*pRecord, theCluster, theData);
-    pRecord->GetFieldValue(GetFieldNumber(NUM_AREAS_FIELD)).AsDouble() =
+    pRecord->GetFieldValue(GetFieldNumber(NUM_LOCATIONS_FIELD)).AsDouble() =
         theCluster.GetClusterType() == PURELYTEMPORALCLUSTER ? theData.GetNumTracts() : theCluster.GetNumTractsInnerCircle();
     if (gParameters.GetNumRequestedEllipses()) { // ellipse shape and angle - if requested
       pRecord->GetFieldValue(GetFieldNumber(E_ANGLE_FIELD)).AsZdString() = GetEllipseAngle(sBuffer, theCluster, theData);
@@ -105,7 +106,7 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
       pRecord->GetFieldValue(GetFieldNumber(OBSERVED_FIELD)).AsDouble() = theCluster.GetCaseCount(0);
       pRecord->GetFieldValue(GetFieldNumber(EXPECTED_FIELD)).AsDouble() =
                                                            theData.GetMeasureAdjustment(0) * theCluster.GetMeasure(0);
-      pRecord->GetFieldValue(GetFieldNumber(REL_RISK_FIELD)).AsDouble() =
+      pRecord->GetFieldValue(GetFieldNumber(OBS_DIV_EXP_FIELD)).AsDouble() =
                                                            theCluster.GetRelativeRisk(theData.GetMeasureAdjustment(0));
     }
     else {
@@ -115,7 +116,7 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
         sBuffer.printf("%s%i", STREAM_EXPECTED_FIELD, i + 1);
         pRecord->GetFieldValue(GetFieldNumber(sBuffer.GetCString())).AsDouble() =
                                                            theData.GetMeasureAdjustment(i) * theCluster.GetMeasure(i);
-        sBuffer.printf("%s%i", STREAM_REL_RISK_FIELD, i + 1);
+        sBuffer.printf("%s%i", STREAM_OBS_DIV_EXP_FIELD, i + 1);
         pRecord->GetFieldValue(GetFieldNumber(sBuffer.GetCString())).AsDouble() =
                                                            theCluster.GetRelativeRisk(theData.GetMeasureAdjustment(i), i);
       }
@@ -123,7 +124,7 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
     if (gParameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION)
       pRecord->GetFieldValue(GetFieldNumber(TST_STAT_FIELD)).AsDouble() = theCluster.m_nRatio;
     else {
-      pRecord->GetFieldValue(GetFieldNumber(LOG_LIKL_FIELD)).AsDouble() = theCluster.m_nRatio/theCluster.GetDuczmal();
+      pRecord->GetFieldValue(GetFieldNumber(LOG_LIKL_RATIO_FIELD)).AsDouble() = theCluster.m_nRatio/theCluster.GetDuczmal();
       if (gParameters.GetDuczmalCorrectEllipses())
         pRecord->GetFieldValue(GetFieldNumber(TST_STAT_FIELD)).AsDouble() = theCluster.m_nRatio;
     }
@@ -234,11 +235,11 @@ void stsClusterData::SetupFields() {
       CreateField(gvFields, E_ANGLE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
       CreateField(gvFields, E_SHAPE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
     }
-    CreateField(gvFields, NUM_AREAS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
+    CreateField(gvFields, NUM_LOCATIONS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
     if (gParameters.GetNumDataStreams() == 1) {
       CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
       CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      CreateField(gvFields, REL_RISK_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateField(gvFields, OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
     }
     else {
       for (i=1; i <= gParameters.GetNumDataStreams(); ++i) {
@@ -246,16 +247,16 @@ void stsClusterData::SetupFields() {
         CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 0, uwOffset);
         sBuffer.printf("%s%i", STREAM_EXPECTED_FIELD, i);
         CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 2, uwOffset);
-        sBuffer.printf("%s%i", STREAM_REL_RISK_FIELD, i);
+        sBuffer.printf("%s%i", STREAM_OBS_DIV_EXP_FIELD, i);
         CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 3, uwOffset);
       }
     }
     if (gParameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION)
-      CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 16, 6, uwOffset);
+      CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
     else {
-      CreateField(gvFields, LOG_LIKL_FIELD, ZD_NUMBER_FLD, 16, 6, uwOffset);
+      CreateField(gvFields, LOG_LIKL_RATIO_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
       if (gParameters.GetNumRequestedEllipses() && gParameters.GetDuczmalCorrectEllipses())
-        CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 16, 6, uwOffset);
+        CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
     }
     if (!gbExcludePValueField)
       CreateField(gvFields, P_VALUE_FLD, ZD_NUMBER_FLD, 12, 5, uwOffset);

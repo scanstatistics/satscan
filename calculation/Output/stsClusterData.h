@@ -22,15 +22,16 @@ class stsClusterData : public BaseOutputStorageClass {
       static const char       * RADIUS_FIELD;
       static const char       * E_ANGLE_FIELD;
       static const char       * E_SHAPE_FIELD;
-      static const char       * NUM_AREAS_FIELD;
+      static const char       * NUM_LOCATIONS_FIELD;
       static const char       * COORD_LAT_FIELD;
       static const char       * COORD_LONG_FIELD;
       static const char       * COORD_X_FIELD;
       static const char       * COORD_Y_FIELD;
       static const char       * COORD_Z_FIELD;
+      static const char       * OBS_DIV_EXP_FIELD;
       static const char       * STREAM_OBSERVED_FIELD;
       static const char       * STREAM_EXPECTED_FIELD;
-      static const char       * STREAM_REL_RISK_FIELD;
+      static const char       * STREAM_OBS_DIV_EXP_FIELD;
       const CParameters       & gParameters;
       bool                      gbExcludePValueField;
 
