@@ -226,6 +226,7 @@ void IniParameterSpecification::Build_5_1_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(MultipleDataSets, (const char*)"MultipleDataSetsPurposeType"));
   gvParameterInfo.push_back(std::make_pair(System, (const char*)"Version"));
   gvParameterInfo.push_back(std::make_pair(BatchModeFeatures, (const char*)"RandomSeed"));
+  gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"CriticalValue"));
 
   gvMultipleParameterInfo[CASEFILE] = std::make_pair(MultipleDataSets, (const char*)"CaseFile");
   gvMultipleParameterInfo[CONTROLFILE] = std::make_pair(MultipleDataSets, (const char*)"ControlFile");

@@ -25,7 +25,7 @@ const char*      SPACETIME_PERMUTATION_MODEL    	= "Space-Time Permutation";
 const char*      NORMAL_MODEL                           = "Normal";
 const char*      SURVIVAL_MODEL                         = "Survival";
 const char*      RANK_MODEL                             = "Rank";
-int CParameters::giNumParameters 			= 69;
+int CParameters::giNumParameters 			= 70;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -161,6 +161,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gCreationVersion                    = rhs.gCreationVersion;
     gbUsePopulationFile                 = rhs.gbUsePopulationFile;
     glRandomizationSeed                 = rhs.glRandomizationSeed;
+    gbReportCriticalValues              = rhs.gbReportCriticalValues;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -387,7 +388,9 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
     fprintf(fp, "  Number of Replications : %u\n", giReplications);
 
     if (glRandomizationSeed != RandomNumberGenerator::glDefaultSeed)
-       fprintf(fp, "  Randomization Seed     : %ld", glRandomizationSeed);
+       fprintf(fp, "  Randomization Seed     : %ld\n", glRandomizationSeed);
+    if (!gbReportCriticalValues)
+       fprintf(fp, "  Report Critical Values : No\n");
 
     if (giNumberEllipses > 0) {
       fprintf(fp, "\nEllipses\n");
@@ -1046,6 +1049,7 @@ void CParameters::SetAsDefaulted() {
   gCreationVersion.iRelease             = 3;
   gbUsePopulationFile                   = false;
   glRandomizationSeed                   = RandomNumberGenerator::glDefaultSeed;
+  gbReportCriticalValues                = true;
 }
 
 /** Sets dimensions of input data. */

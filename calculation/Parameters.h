@@ -47,7 +47,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE, SIMULATION_TYPE,
                                     SIMULATION_SOURCEFILE, ADJ_BY_RR_FILE, OUTPUT_SIMULATION_DATA,
                                     SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE,
-                                    MULTI_DATASET_PURPOSE_TYPE, CREATION_VERSION, RANDOMIZATION_SEED};
+                                    MULTI_DATASET_PURPOSE_TYPE, CREATION_VERSION, RANDOMIZATION_SEED, REPORT_CRITICAL_VALUES};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -182,6 +182,7 @@ class CParameters {
     static int                          giNumParameters;                        /** number enumerated parameters */
     struct CreationVersion              gCreationVersion;
     long                                glRandomizationSeed;                    /** randomization seed */
+    bool                                gbReportCriticalValues;                 /** indicates whether to report critical llr values */
 
     void                                ConvertRelativePath(std::string & sInputFilename);
     void                                Copy(const CParameters &rhs);
@@ -280,6 +281,7 @@ class CParameters {
     const char                        * GetProbabiltyModelTypeAsString(ProbabiltyModelType eProbabiltyModelType) const;
     const std::string                 & GetProspectiveStartDate() const {return gsProspectiveStartDate;}
     long                                GetRandomizationSeed() const {return glRandomizationSeed;}
+    bool                                GetReportCriticalValues() const {return gbReportCriticalValues;}
     bool                                GetRestrictingMaximumReportedGeoClusterSize() const {return gbRestrictReportedClusters;}
     RiskType                            GetRiskType() const {return geRiskFunctionType;}
     const ZdString                    & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
@@ -350,6 +352,7 @@ class CParameters {
     void                                SetProbabilityModelType(ProbabiltyModelType eProbabiltyModelType);
     void                                SetProspectiveStartDate(const char * sProspectiveStartDate);
     void                                SetRandomizationSeed(long lSeed);
+    void                                SetReportCriticalValues(bool b) {gbReportCriticalValues = b;}
     void                                SetRestrictReportedClusters(bool b) {gbRestrictReportedClusters = b;}
     void                                SetRiskType(RiskType eRiskType);
     void                                SetRunHistoryFilename(const ZdString& sFilename) {gsRunHistoryFilename = sFilename;}
