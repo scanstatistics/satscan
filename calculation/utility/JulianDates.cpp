@@ -42,7 +42,7 @@ double CalculateNumberOfTimeIntervals(Julian StartDate, Julian EndDate, DatePrec
                    break;
       case DAY   :
       case NONE  :
-      default    : ZdGenerateException("Number of time intervals calculated has balance of %lf days for type '%d'.",
+      default    : ZdGenerateException("Number of time intervals calculated has balance of %lf days for type '%d'.\n",
                                        "CalculateNumberOfTimeIntervals()", dDiffDays, eUnits);
     };
   }
