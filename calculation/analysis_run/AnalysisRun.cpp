@@ -531,7 +531,12 @@ void AnalysisRunner::OpenReportFile(FILE*& fp, bool bOpenAppend) {
 *****************************************************
 */
 void AnalysisRunner::PerformParallelSimulations() {
-  static const int iParallelProcessCount = 10;
+  static const int iParallelProcessCount = 2; /** Target enviroment for parallel simulations
+                                                  is Windows w/ dual processors, so hard code
+                                                  to 2 threads. Later, we will want to determine
+                                                  this programmatically, possibly with limits
+                                                  specified by user (e.g. 8 processors available
+                                                  but only utilize 6). */
 
   double                               dSimulatedRatio;
   unsigned int                         iSimulationNumber;
@@ -585,12 +590,12 @@ void AnalysisRunner::PerformParallelSimulations() {
         //update simulated loglikelihood record buffer
         if(pLLRData.get()) pLLRData->AddLikelihoodRatio(dSimulatedRatio);
       }
+      //write to additional data to files
+      if (gParameters.GetOutputSimLoglikeliRatiosAscii() && pLLRData.get())
+        ASCIIFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
+      if (gParameters.GetOutputSimLoglikeliRatiosDBase() && pLLRData.get())
+        DBaseFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
     }
-    //write to additional data to files
-    if (gParameters.GetOutputSimLoglikeliRatiosAscii() && pLLRData.get())
-      ASCIIFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
-    if (gParameters.GetOutputSimLoglikeliRatiosDBase() && pLLRData.get())
-      DBaseFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
   }
   catch (ZdException &x) {
     delete pDataGateway;
@@ -676,11 +681,13 @@ void AnalysisRunner::PerformSerializedSimulations() {
     }//end scope of SimulationPrintDirection
     delete pDataGateway; pDataGateway=0;
     delete pAnalysis; pAnalysis=0;
-    //write to additional data to files
-    if (gParameters.GetOutputSimLoglikeliRatiosAscii() && pLLRData.get())
-      ASCIIFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
-    if (gParameters.GetOutputSimLoglikeliRatiosDBase() && pLLRData.get())
-      DBaseFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
+    if (!gPrintDirection.GetIsCanceled()) {
+      //write to additional data to files
+      if (gParameters.GetOutputSimLoglikeliRatiosAscii() && pLLRData.get())
+        ASCIIFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
+      if (gParameters.GetOutputSimLoglikeliRatiosDBase() && pLLRData.get())
+        DBaseFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
+    }    
   }
   catch (ZdException &x) {
     delete pDataGateway;
@@ -698,8 +705,8 @@ void AnalysisRunner::PerformSimulations() {
       if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
         gpDataHub->FindNeighbors(true);
       gPrintDirection.SatScanPrintf("Doing the Monte Carlo replications\n");
-      PerformSerializedSimulations();
-      //PerformParallelSimulations();
+      //PerformSerializedSimulations();
+      PerformParallelSimulations();
     }
   }
   catch (ZdException &x) {
