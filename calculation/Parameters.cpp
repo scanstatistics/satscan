@@ -220,11 +220,9 @@ void CParameters::Copy(const CParameters &rhs) {
     gdTimeTrendAdjustPercentage         = rhs.gdTimeTrendAdjustPercentage;
     gbIncludePurelySpatialClusters      = rhs.gbIncludePurelySpatialClusters;
     gbIncludePurelyTemporalClusters     = rhs.gbIncludePurelyTemporalClusters;
-    gsCaseFileName                      = rhs.gsCaseFileName;
-    gsControlFileName                   = rhs.gsControlFileName;
-    gsPopulationFileName                = rhs.gsPopulationFileName;
-    gsPopulationFileName                = rhs.gsPopulationFileName;
-    gsCoordinatesFileName               = rhs.gsCoordinatesFileName;
+    gvCaseFilenames                     = rhs.gvCaseFilenames;
+    gvControlFilenames                  = rhs.gvControlFilenames;
+    gvPopulationFilenames               = rhs.gvPopulationFilenames;
     gsCoordinatesFileName               = rhs.gsCoordinatesFileName;
     gsSpecialGridFileName               = rhs.gsSpecialGridFileName;
     gbUseSpecialGridFile                = rhs.gbUseSpecialGridFile;
@@ -330,6 +328,7 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
 /** Prints parameters, in a particular format, to passed ascii file. */
 void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
   int           i;
+  size_t        t;
   ZdFileName    AdditionalOutputFile(gsOutputFileName.c_str());
 
   try {
@@ -338,11 +337,19 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
 
     fprintf(fp, "Input Files\n");
     fprintf(fp, "-----------\n");
-    fprintf(fp, "  Case File                  : %s\n", gsCaseFileName.c_str());
+    fprintf(fp, "  Case File                  : %s\n", gvCaseFilenames[0].c_str());
+    for (t=1; t < gvCaseFilenames.size(); ++t)
+       fprintf(fp, "  Case File (stream %i)       : %s\n", t + 1, gvCaseFilenames[t].c_str());
 
     switch (geProbabiltyModelType) {
-      case POISSON              : fprintf(fp, "  Population File            : %s\n", gsPopulationFileName.c_str()); break;
-      case BERNOULLI            : fprintf(fp, "  Control File               : %s\n", gsControlFileName.c_str()); break;
+      case POISSON              : fprintf(fp, "  Population File            : %s\n", gvPopulationFilenames[0].c_str());
+                                  for (t=1; t < gvPopulationFilenames.size(); ++t)
+                                     fprintf(fp, "  Population File (stream %i) : %s\n", t + 1, gvPopulationFilenames[t].c_str());
+                                  break;
+      case BERNOULLI            : fprintf(fp, "  Control File               : %s\n", gvControlFilenames[0].c_str());
+                                  for (t=1; t < gvControlFilenames.size(); ++t)
+                                     fprintf(fp, "  Control File (stream %i)    : %s\n", t + 1, gvControlFilenames[t].c_str());
+                                  break;
       case SPACETIMEPERMUTATION : break;
       default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayParameters()", geProbabiltyModelType);
     }
@@ -592,6 +599,30 @@ const char * CParameters::GetAnalysisTypeAsString() const {
   return sAnalysisType;
 }
 
+const std::string & CParameters::GetCaseFileName(unsigned int iStream) const {
+  try {
+    if (!iStream || iStream > gvCaseFilenames.size())
+      ZdGenerateException("Index out of range.","GetCaseFileName()");
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("GetCaseFileName()","CParameters");
+    throw;
+  }
+  return gvCaseFilenames[iStream - 1];
+}
+
+const std::string & CParameters::GetControlFileName(unsigned int iStream) const {
+  try {
+    if (!iStream || iStream > gvControlFilenames.size())
+      ZdGenerateException("Index out of range.","GetControlFileName()");
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("GetControlFileName()","CParameters");
+    throw;
+  }
+  return gvControlFilenames[iStream - 1];
+}
+
 /** Returns date precision as string. */
 const char * CParameters::GetDatePrecisionAsString(DatePrecisionType eDatePrecisionType) const {
   const char * sDatePrecisionType;
@@ -723,6 +754,18 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
     throw;
   }
   return sParameterLineLabel.GetCString();
+}
+
+const std::string & CParameters::GetPopulationFileName(unsigned int iStream) const {
+  try {
+    if (!iStream || iStream > gvPopulationFilenames.size())
+      ZdGenerateException("Index out of range.","GetPopulationFileName()");
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("GetPopulationFileName()","CParameters");
+    throw;
+  }
+  return gvPopulationFilenames[iStream - 1];
 }
 
 /** Returns probabilty model type as a character array. */
@@ -1403,14 +1446,37 @@ int CParameters::ReadInt(const ZdString & sValue, ParameterType eParameterType) 
 void CParameters::ReadInputFilesSection(ZdIniFile& file, BasePrint & PrintDirection){
   const ZdIniSection  * pSection;
   long                  lIndex;
+  unsigned int          iStream;
+  ZdString              sSectionName;
 
   try {
     //Get input section, add if non-existant.
     pSection  = file.GetSection(INPUT_FILES_SECTION);
 
     ReadIniParameter(*pSection, CASE_FILE_LINE, CASEFILE, PrintDirection);
+    //read possibly other data stream case source
+    iStream = 2;
+    sSectionName.printf("%s%i", CASE_FILE_LINE, iStream);
+    while ((lIndex = pSection->FindKey(sSectionName)) > -1) {
+         SetCaseFileName(ZdString(pSection->GetLine(lIndex)->GetValue()), true, iStream);
+         sSectionName.printf("%s%i", CASE_FILE_LINE, ++iStream);
+    }
     ReadIniParameter(*pSection, CONTROL_FILE_LINE, CONTROLFILE, PrintDirection);
+    //read possibly other data stream control source
+    iStream = 2;
+    sSectionName.printf("%s%i", CONTROL_FILE_LINE, iStream);
+    while ((lIndex = pSection->FindKey(sSectionName)) > -1) {
+         SetControlFileName(ZdString(pSection->GetLine(lIndex)->GetValue()), true, iStream);
+         sSectionName.printf("%s%i", CONTROL_FILE_LINE, ++iStream);
+    }
     ReadIniParameter(*pSection, POP_FILE_LINE, POPFILE, PrintDirection);
+    //read possibly other data stream control source
+    iStream = 2;
+    sSectionName.printf("%s%i", POP_FILE_LINE, iStream);
+    while ((lIndex = pSection->FindKey(sSectionName)) > -1) {
+         SetPopulationFileName(ZdString(pSection->GetLine(lIndex)->GetValue()), true, iStream);
+         sSectionName.printf("%s%i", POP_FILE_LINE, ++iStream);
+    }
     ReadIniParameter(*pSection, COORD_FILE_LINE, COORDFILE, PrintDirection);
     ReadIniParameter(*pSection, USE_GRID_FILE_LINE, SPECIALGRID, PrintDirection);
     ReadIniParameter(*pSection, GRID_FILE_LINE, GRIDFILE, PrintDirection);
@@ -1866,14 +1932,33 @@ void CParameters::SaveEllipseSection(ZdIniFile& file) {
 // pre: file is an open ZdIniFile
 // post: write the appropraite global data to the file to the appropraite keys
 void CParameters::SaveInputFileSection(ZdIniFile& file) {
+  size_t                t;
   ZdIniSection        * pSection;
-  ZdString              sValue;
+  ZdString              sValue, sSectionName;
 
   try {
     pSection = file.GetSection(INPUT_FILES_SECTION);
-    pSection->AddLine(CASE_FILE_LINE, gsCaseFileName.c_str());
-    pSection->AddLine(CONTROL_FILE_LINE, gsControlFileName.c_str());
-    pSection->AddLine(POP_FILE_LINE, gsPopulationFileName.c_str());
+    if (gvCaseFilenames.size()) {
+      pSection->AddLine(CASE_FILE_LINE, gvCaseFilenames[0].c_str());
+      for (t=1; t < gvCaseFilenames.size(); ++t) {
+         sSectionName.printf("%s%d", CASE_FILE_LINE, t + 1);
+         pSection->AddLine(sSectionName.GetCString(), gvCaseFilenames[t].c_str());
+      }
+    }
+    if (gvControlFilenames.size()) {
+      pSection->AddLine(CONTROL_FILE_LINE, gvControlFilenames[0].c_str());
+      for (t=1; t < gvControlFilenames.size(); ++t) {
+         sSectionName.printf("%s%d", CONTROL_FILE_LINE, t + 1);
+         pSection->AddLine(sSectionName.GetCString(), gvControlFilenames[t].c_str());
+      }
+    }
+    if (gvPopulationFilenames.size()) {
+      pSection->AddLine(POP_FILE_LINE, gvPopulationFilenames[0].c_str());
+      for (t=1; t < gvPopulationFilenames.size(); ++t) {
+         sSectionName.printf("%s%d", POP_FILE_LINE, t + 1);
+         pSection->AddLine(sSectionName.GetCString(), gvPopulationFilenames[t].c_str());
+      }
+    }
     pSection->AddLine(COORD_FILE_LINE, gsCoordinatesFileName.c_str());
     pSection->AddLine(GRID_FILE_LINE, gsSpecialGridFileName.c_str());
     pSection->AddComment(" use special grid file? (y/n)");
@@ -2053,14 +2138,20 @@ void CParameters::SetAreaRateType(AreaRateType eAreaRateType) {
 /** Sets case data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
-void CParameters::SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath) {
+void CParameters::SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath, unsigned int iStream) {
   try {
     if (! sCaseFileName)
       ZdGenerateException("Null pointer.", "SetCaseFileName()");
 
-    gsCaseFileName = sCaseFileName;
+    if (!iStream)
+      ZdGenerateException("Index out of range.", "SetCaseFileName()");
+
+    if (iStream > gvCaseFilenames.size())
+      gvCaseFilenames.resize(iStream);
+
+    gvCaseFilenames[iStream - 1] = sCaseFileName;
     if (bCorrectForRelativePath)
-      ConvertRelativePath(gsCaseFileName);
+      ConvertRelativePath(gvCaseFilenames[iStream - 1]);
   }
   catch (ZdException &x) {
     x.AddCallpath("SetCaseFileName()", "CParameters");
@@ -2071,14 +2162,20 @@ void CParameters::SetCaseFileName(const char * sCaseFileName, bool bCorrectForRe
 /** Sets control data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
-void CParameters::SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath) {
+void CParameters::SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath, unsigned int iStream) {
   try {
     if (! sControlFileName)
       ZdGenerateException("Null pointer.", "SetControlFileName()");
 
-    gsControlFileName = sControlFileName;
+    if (!iStream)
+      ZdGenerateException("Index out of range.", "SetControlFileName()");
+
+    if (iStream > gvControlFilenames.size())
+      gvControlFilenames.resize(iStream);
+
+    gvControlFilenames[iStream - 1] = sControlFileName;
     if (bCorrectForRelativePath)
-      ConvertRelativePath(gsControlFileName);
+      ConvertRelativePath(gvControlFilenames[iStream - 1]);
   }
   catch (ZdException &x) {
     x.AddCallpath("SetControlFileName()", "CParameters");
@@ -2143,8 +2240,10 @@ void CParameters::SetCriteriaForReportingSecondaryClusters(CriteriaSecondaryClus
 void CParameters::SetDefaults() {
   geAnalysisType                        = PURELYSPATIAL;
   geAreaScanRate                        = HIGH;
-  gsCaseFileName                        = "";
-  gsPopulationFileName                  = "";
+  for (size_t t=0; t < gvCaseFilenames.size(); ++t)
+     gvCaseFilenames[t] = "";
+  for (size_t t=0; t < gvPopulationFilenames.size(); ++t)
+     gvPopulationFilenames[t] = "";
   gsCoordinatesFileName                 = "";
   gsOutputFileName                      = "";
   gsMaxCirclePopulationFileName         = "";
@@ -2177,7 +2276,8 @@ void CParameters::SetDefaults() {
   geTimeTrendAdjustType                 = NOTADJUSTED;
   gdTimeTrendAdjustPercentage           = 0;
   gbIncludePurelyTemporalClusters       = false;
-  gsControlFileName                     = "";
+  for (size_t t=0; t < gvControlFilenames.size(); ++t)
+     gvControlFilenames[t] = "";
   geCoordinatesType                     = LATLON;
   gbOutputSimLogLikeliRatiosAscii       = false;
   gbSequentialRuns                      = false;
@@ -2437,14 +2537,20 @@ void CParameters::SetOutputFileName(const char * sOutPutFileName, bool bCorrectF
 /** Sets population data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
-void CParameters::SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath) {
+void CParameters::SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath, unsigned int iStream) {
   try {
     if (! sPopulationFileName)
       ZdGenerateException("Null pointer.", "SetPopulationFileName()");
 
-    gsPopulationFileName = sPopulationFileName;
+    if (!iStream)
+      ZdGenerateException("Index out of range.", "SetPopulationFileName()");
+
+    if (iStream > gvPopulationFilenames.size())
+      gvPopulationFilenames.resize(iStream);
+
+    gvPopulationFilenames[iStream - 1] = sPopulationFileName;
     if (bCorrectForRelativePath)
-      ConvertRelativePath(gsPopulationFileName);
+      ConvertRelativePath(gvPopulationFilenames[iStream - 1]);
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPopulationFileName()", "CParameters");
@@ -2909,41 +3015,50 @@ bool CParameters::ValidateEllipseParameters(BasePrint & PrintDirection) {
 
 /** Validates input/output file parameters. */
 bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
-  bool  bValid=true;
+  bool          bValid=true;
+  size_t        t;
 
   try {
+    //validate number of data stream files match
+
     //validate case file
-    if (gsCaseFileName.empty()) {
+    if (!gvCaseFilenames.size()) {
       bValid = false;
       PrintDirection.SatScanPrintWarning("Error: No Case file specified.\n");
     }
-    else if (access(gsCaseFileName.c_str(), 00)) {
-      bValid = false;
-      PrintDirection.SatScanPrintWarning("Error: Case file '%s' does not exist.\n", gsCaseFileName.c_str());
-      PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+    for (t=0; t < gvCaseFilenames.size(); ++t) {
+       if (access(gvCaseFilenames[t].c_str(), 00)) {
+         bValid = false;
+         PrintDirection.SatScanPrintWarning("Error: Case file '%s' does not exist.\n", gvCaseFilenames[t].c_str());
+         PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+       }
     }
     //validate population file for a poisson model.
     if (geProbabiltyModelType == POISSON) {
-      if (gsPopulationFileName.empty()) {
+      if (!gvPopulationFilenames.size()) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: For the Poisson model, a Population file must be specified.\n");
       }
-      else if (access(gsPopulationFileName.c_str(), 00)) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Population file '%s' does not exist.\n", gsPopulationFileName.c_str());
-        PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+      for (t=0; t < gvPopulationFilenames.size(); ++t) {
+        if (access(gvPopulationFilenames[t].c_str(), 00)) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: Population file '%s' does not exist.\n", gvPopulationFilenames[t].c_str());
+          PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+        }
       }
     }
     //validate control file for a bernoulli model.
     if (geProbabiltyModelType == BERNOULLI) {
-      if (gsControlFileName.empty()) {
+      if (!gvControlFilenames.size()) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: For the Bernoulli model, a Control file must be specified.\n");
       }
-      else if (access(gsControlFileName.c_str(), 00)) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Control file '%s' does not exist.\n", gsControlFileName.c_str());
-        PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+      for (t=0; t < gvControlFilenames.size(); ++t) {
+        if (access(gvControlFilenames[t].c_str(), 00)) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: Control file '%s' does not exist.\n", gvControlFilenames[t].c_str());
+          PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+        }
       }
     }
     //validate coordinates file
@@ -2968,7 +3083,12 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
     }
     //validate adjustment for known relative risks file
     if (geProbabiltyModelType == POISSON) {
-      if (gbUseAdjustmentsForRRFile && gsAdjustmentsByRelativeRisksFileName.empty()) {
+      if (GetNumDataStreams() > 1) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Adjustments for known relative risks is currently permitted with only one data stream.\n");
+        PrintDirection.SatScanPrintWarning("       Parameter settings indicate that there are %i data streams.\n", GetNumDataStreams());
+      }
+      else if (gbUseAdjustmentsForRRFile && gsAdjustmentsByRelativeRisksFileName.empty()) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Settings indicate to use an Adjustment file, but file name not specified.\n");
       }
@@ -3034,6 +3154,11 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
       if (geAnalysisType == SPATIALVARTEMPTREND) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Please note that Spatial Variation and Temporal Trends analysis is not implemented\n");
+        PrintDirection.SatScanPrintWarning("       in this version of SaTScan.\n");
+      }
+      if (geAnalysisType == PURELYSPATIALMONOTONE && GetNumDataStreams() > 1) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Multiple data streams are not permitted with purely spatial monotone analyses\n");
         PrintDirection.SatScanPrintWarning("       in this version of SaTScan.\n");
       }
 

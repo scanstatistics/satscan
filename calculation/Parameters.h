@@ -224,9 +224,9 @@ class CParameters {
     double                              gbSequentialCutOffPValue;               /* P-Value used to exit sequential analysis */
         /* Input/Output filenames */
     std::string                         gsParametersSourceFileName;             /** parameters source filename */
-    std::string                         gsCaseFileName;                         /** case data source filename */
-    std::string                         gsControlFileName;                      /** control data source filename */
-    std::string                         gsPopulationFileName;                   /** population data source filename */
+    std::vector<std::string>            gvCaseFilenames;                        /** case data source filenames */
+    std::vector<std::string>            gvControlFilenames;                     /** control data source filenames */
+    std::vector<std::string>            gvPopulationFilenames;                  /** population data source filenames */
     std::string                         gsCoordinatesFileName;                  /** coordinates data source filename */
     std::string                         gsSpecialGridFileName;                  /** special grid data source filename */
     bool                                gbUseSpecialGridFile;                   /** indicator of special grid file usage */
@@ -323,8 +323,8 @@ class CParameters {
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
     const char                        * GetAnalysisTypeAsString() const;
     AreaRateType                        GetAreaScanRateType() const {return geAreaScanRate;}
-    const std::string                 & GetCaseFileName() const {return gsCaseFileName;}
-    const std::string                 & GetControlFileName() const {return gsControlFileName;}
+    const std::string                 & GetCaseFileName(unsigned int tStream=1) const;
+    const std::string                 & GetControlFileName(unsigned int iStream=1) const;
     const std::string                 & GetCoordinatesFileName() const {return gsCoordinatesFileName;}
     CoordinatesType                     GetCoordinatesType() const {return geCoordinatesType;}
     CriteriaSecondaryClustersType       GetCriteriaSecondClustersType() const {return geCriteriaSecondClustersType;}
@@ -353,6 +353,7 @@ class CParameters {
     float                               GetMaximumTemporalClusterSize() const {return gfMaxTemporalClusterSize;}
     TemporalSizeType                    GetMaximumTemporalClusterSizeType() const {return geMaxTemporalClusterSizeType;}
     float                               GetMaximumReportedGeoClusterSize() const {return gfMaxReportedGeographicClusterSize;}
+    unsigned int                        GetNumDataStreams() const {return gvCaseFilenames.size();}
     int                                 GetNumReplicationsRequested() const {return giReplications;}
     int                                 GetNumRequestedEllipses() const {return giNumberEllipses;}
     int                                 GetNumSequentialScansRequested() const {return giNumSequentialRuns;}
@@ -371,7 +372,7 @@ class CParameters {
     bool                                GetOutputSimLoglikeliRatiosDBase() const {return gbOutputSimLogLikeliRatiosDBase;}
     bool                                GetOutputSimLoglikeliRatiosFiles() const;
     bool                                GetOutputSimulationData() const {return gbOutputSimulationData;}
-    const std::string                 & GetPopulationFileName() const {return gsPopulationFileName;}
+    const std::string                 & GetPopulationFileName(unsigned int iStream=1) const;
     double                              GetPowerCalculationX() const {return gdPower_X;}
     double                              GetPowerCalculationY() const {return gdPower_Y;}
     DatePrecisionType                   GetPrecisionOfTimesType() const {return gePrecisionOfTimesType;}
@@ -408,8 +409,8 @@ class CParameters {
     void                                SetDimensionsOfData(int iDimensions);
     void                                SetEndRangeEndDate(const char * sEndRangeEndDate);
     void                                SetEndRangeStartDate(const char * sEndRangeStartDate);
-    void                                SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath=false);
-    void                                SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath=false);
+    void                                SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath=false, unsigned int iStream=1);
+    void                                SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath=false, unsigned int iStream=1);
     void                                SetCoordinatesFileName(const char * sCoordinatesFileName, bool bCorrectForRelativePath=false);
     void                                SetCoordinatesType(CoordinatesType eCoordinatesType);
     void                                SetCriteriaForReportingSecondaryClusters(CriteriaSecondaryClustersType eCriteriaSecondaryClustersType);
@@ -439,7 +440,7 @@ class CParameters {
     void                                SetOutputSimLogLikeliRatiosAscii(bool b) {gbOutputSimLogLikeliRatiosAscii = b;}
     void                                SetOutputSimLogLikeliRatiosDBase(bool b) {gbOutputSimLogLikeliRatiosDBase = b;}
     void                                SetOutputSimulationData(bool b) {gbOutputSimulationData = b;}
-    void                                SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath=false);
+    void                                SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath=false, unsigned int iStream=1);
     void                                SetPowerCalculation(bool b) {gbPowerCalculation = b;}
     void                                SetPowerCalculationX(double dPowerX);
     void                                SetPowerCalculationY(double dPowerY);
