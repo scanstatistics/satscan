@@ -72,9 +72,8 @@ class TfrmMainForm : public TForm{
         TMenuItem *N4;
         TMenuItem *SaveSessionAs1;
         TAction *AdvancedParametersAction;
-        TMenuItem *AdvancedParameters1;
         TMenuItem *N5;
-        TSpeedButton *btnAdvancedFeatures;
+   TSpeedButton *sbUpdate;
         void __fastcall PrintSessionActionExecute(TObject *Sender);
         void __fastcall NewSessionActionExecute(TObject *Sender);
         void __fastcall OpenParameterFileActionExecute(TObject *Sender);
