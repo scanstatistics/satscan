@@ -423,7 +423,7 @@ void CParameters::DisplayParameters(FILE* fp) const {
       fprintf(fp, "  Number of Ellipse Shapes Requested       : %i\n", giNumberEllipses);
       fprintf(fp, "  Shape for Each Ellipse                   : ");
       for (i=0; i < giNumberEllipses; ++i)
-         fprintf(fp, "%.3f ", gvEllipseShapes[i]);
+         fprintf(fp, "%g ", gvEllipseShapes[i]);
       fprintf(fp, "\n  Number of Angles for Each Ellipse Shape  : ");
       for (i=0; i < giNumberEllipses; ++i)
          fprintf(fp, "%i ", gvEllipseRotations[i]);
@@ -2477,10 +2477,11 @@ bool CParameters::ValidateEllipseParameters(BasePrint & PrintDirection) {
                                            giNumberEllipses, (int)gvEllipseShapes.size());
       }
       for (t=0; t < gvEllipseShapes.size(); t++)
-         if (gvEllipseShapes[t] <= 0) {
+         if (gvEllipseShapes[t] < 1) {
            bValid = false;
-           PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting, ellipse shape '%d' is invalid. Shape can not be less than zero.\n",
-                                              gvEllipseShapes[t]);
+           PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting, ellipse shape '%g' is invalid.\n", gvEllipseShapes[t]);
+           PrintDirection.SatScanPrintWarning("       Shape can not be less than one.\n");
+
          }
       if (giNumberEllipses != (int)gvEllipseRotations.size()) {
         bValid = false;
@@ -2488,10 +2489,10 @@ bool CParameters::ValidateEllipseParameters(BasePrint & PrintDirection) {
                                            giNumberEllipses, (int)gvEllipseRotations.size());
       }
       for (t=0; t < gvEllipseRotations.size(); t++)
-         if (gvEllipseRotations[t] <= 0) {
+         if (gvEllipseRotations[t] < 1) {
            bValid = false;
-           PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting, number of ellipse angles requested '%d' is invalid. The number of angles can not be less than zero.\n",
-                                              gvEllipseRotations[t]);
+           PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting, number of ellipse angles requested '%d' is invalid.\n", gvEllipseRotations[t]);
+           PrintDirection.SatScanPrintWarning("       The number of angles can not be less than one.\n");
          }
     }
     else {
