@@ -50,10 +50,9 @@ void TfrmUpdateCheck::ConnectToServerForUpdateCheck() {
       pHTTPConnect->Get(sUpdateURL.GetCString());
     }
     catch (...) {
-      ZdException::GenerateNotification("Failed to connect to server. Server may be down or\n"
-                                        "internet connection may not be established.\n"
-                                        "Please check your connection status and try again.",
-                                        "ConnectToServerForUpdateCheck()");
+      ZdException::GenerateNotification("SaTScan was unable to connect to the internet.\n"
+                                        "Please visit %s to check for version updates.",
+                                        "ConnectToServerForUpdateCheck()", GetToolkit().GetWebSite());
     }
     remove(pHTTPConnect->Header.c_str());
     // get perlscript results -- list of files descriptions at specified url

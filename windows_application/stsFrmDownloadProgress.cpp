@@ -32,15 +32,17 @@ void TfrmDownloadProgress::DownloadFiles() {
          NMWebDownload->Get(gvDownloads[giCurrentDownload].second.GetCString());
        }
        catch (EAbortError &x) {
-         for (int t=giCurrentDownload; t >= 0; --t) {
-            GetFullPath(gvDownloads[t].first, fDownloadFile);
-            ZdIOInterface::Delete(fDownloadFile.GetFullPath());
+         try {
+           for (int t=giCurrentDownload; t >= 0; --t) {
+              GetFullPath(gvDownloads[t].first, fDownloadFile);
+              ZdIOInterface::Delete(fDownloadFile.GetFullPath());
+           }
          }
+         catch (...){}
          throw ZdException("SaTScan update cancelled.","DownloadFiles()", ZdException::Notify);
        }
        catch (...) {
-         throw ZdException("SaTScan was unable to download version updates. "
-                           "Server may be down or internet connection may not be established.\n"
+         throw ZdException("SaTScan was unable to download version updates. Internet connection may have been lost.\n"
                            "Please check your connection status and try again.",
                            "DownloadFiles()", ZdException::Notify);
        }
