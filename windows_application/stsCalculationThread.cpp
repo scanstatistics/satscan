@@ -146,6 +146,7 @@ void __fastcall CalcThread::Execute() {
     gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
     Synchronize((TThreadMethod)&EnableProgressPrintButton);
+    Synchronize((TThreadMethod)&EnableProgressEmailButton);
     CancellJob();
   }
   catch (ZdException & x) {
