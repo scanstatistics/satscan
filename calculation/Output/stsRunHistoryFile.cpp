@@ -107,7 +107,7 @@ void stsRunHistoryFile::OpenRunHistoryFile(const unsigned short& uwSignificantAt
    ZdFileRecord         *pRecord = 0, *pLastRecord = 0;
    unsigned long        ulLastRecordNumber;
    unsigned short       uwFieldNumber = 0;
-   ZdString             sTempTime;
+   ZdString             sTempValue;
    ZdFieldValue         fv;
 
    try {
@@ -137,39 +137,79 @@ void stsRunHistoryFile::OpenRunHistoryFile(const unsigned short& uwSignificantAt
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // run time and date field
-      sTempTime << gpAnalysis->GetStartTime();    // hack here because txd files don't like embedded \r or \n AJV
-      sTempTime.Replace("\n", "", true);
-      sTempTime.Replace("\r", "", true);
+      sTempValue << gpAnalysis->GetStartTime();    // hack here because txd files don't like embedded \r or \n AJV
+      sTempValue.Replace("\n", "", true);
+      sTempValue.Replace("\r", "", true);
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsZdString() = sTempTime;
+      fv.AsZdString() = sTempValue;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // output file name field
-      sTempTime << ZdString::reset << gpAnalysis->GetSatScanData()->m_pParameters->m_szOutputFilename;      // hack here because txd files don't like embedded \r or \n AJV
-      sTempTime.Replace("\r", "", true);
-      sTempTime.Replace("\n", "", true);
+      sTempValue << ZdString::reset << gpAnalysis->GetSatScanData()->m_pParameters->m_szOutputFilename;      // hack here because txd files don't like embedded \r or \n AJV
+      sTempValue.Replace("\r", "", true);
+      sTempValue.Replace("\n", "", true);
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsZdString() = sTempTime.GetCString();
+      fv.AsZdString() = sTempValue;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // probability model field
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsLong() = gpAnalysis->GetSatScanData()->m_pParameters->m_nModel;
+      switch(gpAnalysis->GetSatScanData()->m_pParameters->m_nModel) {
+         case POISSON :
+            sTempValue << ZdString::reset << "Poisson";
+            break;
+         case BERNOULLI :
+            sTempValue << ZdString::reset << "Bernoulli";
+            break;
+         case SPACETIMEPERMUTATION :
+            sTempValue << ZdString::reset << "Space Time Permutation";
+            break;
+      }
+      fv.AsZdString() = sTempValue;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // rates(high, low or both) field
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsLong() =gpAnalysis->GetSatScanData()->m_pParameters->m_nAreas;
+      switch (gpAnalysis->GetSatScanData()->m_pParameters->m_nAreas) {
+         case HIGH :
+            sTempValue << ZdString::reset << "High";
+            break;
+         case LOW :
+            sTempValue << ZdString::reset << "Low";
+            break;
+         case HIGHANDLOW :
+            sTempValue << ZdString::reset << "Both";
+            break;
+      }
+      fv.AsZdString() = sTempValue;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // coordinate type field
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsLong() = gpAnalysis->GetSatScanData()->m_pParameters->m_nCoordType;
+      sTempValue << ZdString::reset << ((gpAnalysis->GetSatScanData()->m_pParameters->m_nCoordType == CARTESIAN) ? "Cartesian" : "LongLat");
+      fv.AsZdString() = sTempValue;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // analysis type field
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsLong() = gpAnalysis->GetSatScanData()->m_pParameters->m_nAnalysisType;
+      switch(gpAnalysis->GetSatScanData()->m_pParameters->m_nAnalysisType) {
+         case PURELYSPATIAL :
+            sTempValue << ZdString::reset << "Purely Spatial";
+            break;
+         case PURELYTEMPORAL :
+            sTempValue << ZdString::reset << "Purely Temporal";
+            break;
+         case SPACETIME :
+            sTempValue << ZdString::reset << "Space Time";
+            break;
+         case PROSPECTIVESPACETIME :
+            sTempValue << ZdString::reset << "Prospective Space Time";
+            break;
+         case PURELYSPATIALMONOTONE :
+            sTempValue << ZdString::reset << "Purely Spatial Monotone";
+            break;
+      }
+      fv.AsZdString() = sTempValue;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // total number of cases field
@@ -203,8 +243,19 @@ void stsRunHistoryFile::OpenRunHistoryFile(const unsigned short& uwSignificantAt
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // time trend adjustment field
-      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsLong() = gpAnalysis->GetSatScanData()->m_pParameters->m_nTimeAdjustType;
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));  
+      switch(gpAnalysis->GetSatScanData()->m_pParameters->m_nTimeAdjustType) {
+         case NOTADJUSTED :
+            sTempValue << ZdString::reset << "None";
+            break;
+         case NONPARAMETRIC :
+            sTempValue << ZdString::reset << "Non-parametric";
+            break;
+         case LINEAR :
+            sTempValue << ZdString::reset << "Linear";
+            break;
+      }
+      fv.AsZdString() = sTempValue;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // special grid file used field
@@ -308,23 +359,23 @@ void stsRunHistoryFile::SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Prob_Model";
-      field.first.second = ZD_LONG_FLD;
-      field.second = 8;
+      field.first.second = ZD_ALPHA_FLD;
+      field.second = 32;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Rates";
-      field.first.second = ZD_LONG_FLD;
-      field.second = 8;
+      field.first.second = ZD_ALPHA_FLD;
+      field.second = 16;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Coord_Type";
-      field.first.second = ZD_LONG_FLD;
-      field.second = 8;
+      field.first.second = ZD_ALPHA_FLD;
+      field.second = 16;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Analysis_Type";
-      field.first.second = ZD_LONG_FLD;
-      field.second = 8;
+      field.first.second = ZD_ALPHA_FLD;
+      field.second = 32;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Number_Cases";
@@ -357,14 +408,14 @@ void stsRunHistoryFile::SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&
       field.second = 8;
       vFieldDescrip.AddElement(field);
 
-      field.first.first = "Time_Adjust";
-      field.first.second = ZD_LONG_FLD;
-      field.second = 8;
+      field.first.first = "Time_Trend_Adjust";
+      field.first.second = ZD_ALPHA_FLD;
+      field.second = 20;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Grid_File";
       field.first.second = ZD_BOOLEAN_FLD;
-      field.second = 1;
+      field.second = 2;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Start_Date";
@@ -379,7 +430,7 @@ void stsRunHistoryFile::SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&
 
       field.first.first = "Alive_Only";
       field.first.second = ZD_BOOLEAN_FLD;
-      field.second = 1;
+      field.second = 2;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Interv_Units";
