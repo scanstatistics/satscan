@@ -46,12 +46,16 @@
       ..\calculation\analysis\PurelyTemporalAnalysis.obj 
       ..\calculation\Parameters.obj 
       ..\calculation\probability_model\SpaceTimePermutationModel.obj 
-      ..\calculation\SaTScanBasis.obj 
-      ..\calculation\Output\stsAreaSpecificDBF.obj 
-      ..\calculation\Output\stsClusterLevelDBF.obj 
-      ..\calculation\Output\stsOutputDBF.obj 
+      ..\calculation\SaTScanBasis.obj ..\CALCULATION\UTILITY\DBFFile.obj 
       ..\calculation\Output\stsRunHistoryFile.obj 
-      ..\CALCULATION\UTILITY\DBFFile.obj"/>
+      ..\calculation\Output\stsASCIIFileWriter.obj 
+      ..\calculation\Output\stsClusterData.obj 
+      ..\calculation\Output\stsDBaseFileWriter.obj 
+      ..\calculation\Output\stsLogLikelihood.obj 
+      ..\calculation\Output\stsOutputFileData.obj 
+      ..\calculation\Output\stsOutputFileWriter.obj 
+      ..\calculation\Output\stsRelativeRisk.obj 
+      ..\calculation\Output\stsAreaSpecificData.obj"/>
     <RESFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -71,20 +75,20 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE;_DEBUG"/>
+    <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="SaTScanBatch.bpf"/>
     <INCLUDEPATH value="..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
     <LIBPATH value="..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
-    <WARNINGS value="-w-par"/>
+    <WARNINGS value="-w-par -w-8027 -w-8026"/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl51.csm -Hc -Q -Vx -Ve -ff -X- -r- -a8 -5 -b- -k -y -v 
-      -vi- -tWC -tWM- -c"/>
-    <PFLAGS value="-$Y+ -$W -$O- -v -JPHNE -M"/>
+    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl51.csm -Hc -Q -Vx -Ve -ff -X- -a8 -5 -b- -k- -vi -tWC 
+      -tWM- -c"/>
+    <PFLAGS value="-$Y- -$L- -$D- -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn -v"/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn"/>
   </OPTIONS>
   <LINKER>
     <ALLOBJ value="c0x32.obj $(OBJFILES)"/>
@@ -170,8 +174,8 @@ Item6=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=6
-Item0=INTEL_BASED;__BATCH_COMPILE;_DEBUG
-Item1=INTEL_BASED;__BATCH_COMPILE
+Item0=INTEL_BASED;__BATCH_COMPILE
+Item1=INTEL_BASED;__BATCH_COMPILE;_DEBUG
 Item2=INTEL_BASED;_DEBUG;__BATCH_COMPILE
 Item3=INTEL_BASED;_DEBUG
 Item4=INTEL_BASED
@@ -181,7 +185,7 @@ Item5=_DEBUG
 DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd540
 
 [Parameters]
-RunParams=C:\Prj\SatScan\Examples\ellipse2\ellipse2.prm
+RunParams=C:\Prj\SatScan\Examples\patty\1\temp.prm
 HostApplication=C:\SatScan v3.0\calc\Satscan.exe
 RemoteHost=
 RemotePath=
