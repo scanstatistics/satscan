@@ -134,6 +134,10 @@ USEUNIT("..\calculation\utility\contractor.cpp");
 USEUNIT("..\calculation\utility\stsMCSimContinuationPolicy.cpp");
 USEUNIT("..\calculation\utility\stsMCSimReporter.cpp");
 USEUNIT("..\calculation\utility\DateStringParser.cpp");
+USEUNIT("..\calculation\ParameterFileAccess.cpp");
+USEUNIT("..\calculation\ScanLineParameterFileAccess.cpp");
+USEUNIT("..\calculation\IniParameterFileAccess.cpp");
+USEUNIT("..\calculation\IniParameterSpecification.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;
