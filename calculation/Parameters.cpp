@@ -15,6 +15,7 @@ const char*      CONTROL_FILE_LINE              = "ControlFile";
 const char*      POP_FILE_LINE                  = "PopulationFile";
 const char*      COORD_FILE_LINE                = "CoordinatesFile";
 const char*      GRID_FILE_LINE                 = "GridFile";
+const char*      USE_GRID_FILE_LINE             = "UseGridFile";
 
 const char*      MODEL_INFO_SECTION             = "[ModelInfo]";
 const char*      ANALYSIS_TYPE_LINE             = "AnalysisType";
@@ -122,19 +123,18 @@ char mgsVariableLabels[51][100] = {
    "Duczmal compactness correction for ellipses"
    };
 
-CParameters::CParameters(bool bDisplayErrors) {
-   SetDefaults();
-   m_bDisplayErrors = bDisplayErrors;
+/** Constructor */   
+CParameters::CParameters() {
+  SetDefaults();
 }
 
-//------------------------------------------------------------------------------
-//Copy constructor
-//------------------------------------------------------------------------------
+/** Copy constructor */
 CParameters::CParameters(const CParameters &other) {
    SetDefaults();
    copy(other);
 }
 
+/** Destructor */
 CParameters::~CParameters() {
    Free();
 }
@@ -259,6 +259,13 @@ void CParameters::CheckInputFileSection(ZdIniFile& file, bool bCreateIfMissing) 
       if ( pSection->FindKey(GRID_FILE_LINE) == -1 ) {
  //        if (bCreateIfMissing)
             pSection->AddLine(GRID_FILE_LINE, "");
+ //        else
+ //           ZdException::GenerateNotification("Error reading parameter file. Grid file line is missing!", "Error!");
+      }
+      if ( pSection->FindKey(USE_GRID_FILE_LINE) == -1 ) {
+ //        if (bCreateIfMissing)
+            pSection->AddComment(" use special grid file? (y/n)");
+            pSection->AddLine(USE_GRID_FILE_LINE, "");
  //        else
  //           ZdException::GenerateNotification("Error reading parameter file. Grid file line is missing!", "Error!");
       }
@@ -734,7 +741,6 @@ void CParameters::copy(const CParameters &rhs) {
     m_bExactTimes               = rhs.m_bExactTimes;
     m_nClusterType              = rhs.m_nClusterType;
     m_bValidatePriorToCalc      = rhs.m_bValidatePriorToCalc;
-    m_bDisplayErrors            = rhs.m_bDisplayErrors;
 
     strcpy(m_szProspStartDate, rhs.m_szProspStartDate);
     m_bOutputCensusAreas        = rhs.m_bOutputCensusAreas;
@@ -750,7 +756,7 @@ void CParameters::copy(const CParameters &rhs) {
     gsRunHistoryFilename        = rhs.gsRunHistoryFilename;
 }
 
-void CParameters::DisplayAnalysisType(FILE* fp) {
+void CParameters::DisplayAnalysisType(FILE* fp) const {
    switch (m_nAnalysisType) {
       case PURELYSPATIAL  : fprintf(fp, "Purely Spatial analysis\n"); break;
       case PURELYTEMPORAL : fprintf(fp, "Purely Temporal analysis\n"); break;
@@ -791,20 +797,7 @@ void CParameters::DisplayAnalysisType(FILE* fp) {
      fprintf(fp, "Sequential analysis performed.\n");
 }
  
-bool CParameters::DisplayParamError(int nLine) {
-  // do not throw an exception here...
-  // want the entire parameter file verified...
-  // do not want "the first" bad parameter thrown...
-  //
-  // app will throw an exception up return from the main verifyparameter function.
-  if (m_bDisplayErrors) {
-     gpPrintDirection->SatScanPrintWarning("  Error: Invalid value in parameter file, line %i.\n", nLine);
-     gpPrintDirection->SatScanPrintWarning("    Variable:  %s", mgsVariableLabels[nLine - 1]);
-  }
-  return false;
-}
-
-void CParameters::DisplayParameters(FILE* fp) {
+void CParameters::DisplayParameters(FILE* fp) const {
    ZdFileName   fileName(m_sOutputFileName.c_str());
    ZdString     sASCIIName, sDBaseName;
 
@@ -1078,7 +1071,7 @@ void CParameters::DisplayParameters(FILE* fp) {
    }
 }
 
-void CParameters::DisplayTimeAdjustments(FILE* fp) {
+void CParameters::DisplayTimeAdjustments(FILE* fp) const {
    try {
       if (m_nTimeAdjustType == NOTADJUSTED)
         return;
@@ -1200,6 +1193,29 @@ int CParameters::LoadEAngles(const char* szParam) {
    return 1;
 }
 
+// function to set the parameters from the file, uses both new and old style parameter files
+// pre: szFilename is name of paramter file, validate indicates whether or not parameters should be validated after read in
+// post: reads in parameters from the file and validates if requested
+void CParameters::Read(const char* szFilename) {
+  FILE        * pFile;
+
+  try {
+    if ((pFile = fopen(szFilename, "r")) == NULL)
+      ZdGenerateException("  Error: Unable to open parameter file.", "Read()");
+    fclose(pFile);
+
+    ZdIniFile file(szFilename);
+    if (file.GetNumSections())
+      ReadFromIniFile(szFilename);
+    else
+      ReadScanningLineParameterFile(szFilename);
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("Read()", "CParameters");
+    throw;
+  }
+}
+
 // sets the global ellipse variables read in from the ini file
 // pre: file is an open ini parameter file
 // post: will set the global variables from the ini file
@@ -1250,6 +1266,7 @@ void CParameters::ReadInputFilesSectionFromIni(ZdIniFile& file){
       SetPopulationFileName(pSection->GetLine(pSection->FindKey(POP_FILE_LINE))->GetValue(), true);
       SetCoordinatesFileName(pSection->GetLine(pSection->FindKey(COORD_FILE_LINE))->GetValue(), true);
       SetSpecialGridFileName(pSection->GetLine(pSection->FindKey(GRID_FILE_LINE))->GetValue(), true);
+      m_bSpecialGridFile = ValueIsYes(pSection->GetLine(pSection->FindKey(USE_GRID_FILE_LINE))->GetValue());
    }
    catch (ZdException &x) {
       x.AddCallpath("ReadInputFilesSectionFromIni", "CParameters");
@@ -1319,6 +1336,86 @@ void CParameters::ReadOutputFileSectionFromIni(ZdIniFile& file) {
    }
 }
 
+/** Read scanning line version of parameter file. */
+void CParameters::ReadScanningLineParameterFile(const char * sParameterFileName) {
+  char          szTemp [MAX_STR_LEN];
+  bool          bEOF=false;
+  int           iLinesRead=0;
+  ZdIO          ParametersFile;
+  ZdString      sLineBuffer;
+
+  try {
+    ParametersFile.Open(sParameterFileName, ZDIO_OPEN_READ);
+    SetSourceFileName(sParameterFileName);
+    SetDefaults();
+
+    while (iLinesRead <= PARAMETERS && !bEOF) {
+         bEOF = !ParametersFile.ReadLine(sLineBuffer);
+         if (! bEOF) {
+           ++iLinesRead;
+           SetParameter(iLinesRead, sLineBuffer);
+         }
+    }
+
+    if (iLinesRead <= START_PROSP_SURV) {
+      //Version 2.1.3 had 40 parameters where the 40th item in enumeration
+      //as called EXTRA4, now called START_PROSP_SURV.
+      //In the switch to version 3.x somewhere the enumerations for analysis type
+      //was modified from:
+      //enum {PURELYSPATIAL=1, SPACETIME, PURELYTEMPORAL, PURELYSPATIALMONOTONE};
+      //to
+      //enum {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE};
+      //probably to accommodate the user interface? So we need to correct this
+      //change in v2.1.3 and prior parameter files. Note that PURELYSPATIALMONOTONE
+      //also become 5 instead of 4. It appears that this analysis type was never
+      //made available so that it is not a concern.
+      if (m_nAnalysisType == SPACETIME)
+        m_nAnalysisType = PURELYTEMPORAL;
+      else if (m_nAnalysisType == PURELYTEMPORAL)
+        m_nAnalysisType = SPACETIME;
+
+      if (m_nNumEllipses > 0) {
+        //version 2.1.3
+        //... VALIDATE, OUTPUTRR, EXTRA1, EXTRA2, EXTRA3, EXTRA4 };
+        //There is no documentation as to what these extra parameter
+        //items were meant for. But they were displayed in parameters file.
+        //As seen in parameter file:
+        //0                     // Extra Parameter #1
+        //0                     // Extra Parameter #2
+        //0                     // Extra Parameter #3
+        //0                     // Extra Parameter #4
+        //pre-version 3.0
+        //... VALIDATE, OUTPUTRR, ELLIPSES, ESHAPES, ENUMBERS, START_PROSP_SURV,
+        //    OUTPUT_CENSUS_AREAS, OUTPUT_MOST_LIKE_CLUSTERS, CRITERIA_SECOND_CLUSTERS};
+        //Only Dr. Kulldorph and small others should have gotten this version
+        //as it was not offically released. If number of ellipse is not zero then someone
+        //has set to run with ellipses...
+        //The ability to restrict secondary clusters wasn't present at that time.
+        //So SaTScan wasn't restricting anything. Now that the default restriction
+        //is no overlapping, a person running SaTScan in batch mode wouldn't know
+        //what what line to modify as it doesn't exist yet in file.
+        //We'll keep up the hidden attribute for this situation.
+        m_iCriteriaSecondClusters = 5; // no restrictions like pre v3.0
+      }
+    }
+
+    //Mark defaulted values.
+   if (iLinesRead != PARAMETERS) {
+      while (iLinesRead <= PARAMETERS) {
+          gvDefaultedValues.push_back(iLinesRead);
+          ++iLinesRead;
+      }
+   }
+   //Write as ini format.
+   ParametersFile.Close();
+   Write(sParameterFileName);
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ReadScanningLineParameterFile()", "CParameters");
+    throw;
+  }
+}
+
 // sets the global sequential scan variables read in from the ini file
 // pre: file is an open ini parameter file
 // post: will set the global variables from the ini file
@@ -1340,14 +1437,12 @@ void CParameters::ReadSequentialScanSectionFromIni(ZdIniFile& file) {
 // post : writes out the variables that were defaulted
 void CParameters::ReportDefaultValueWarnings() {
    try {
-      if (m_bDisplayErrors) {
-         unique(gvDefaultedValues.begin(), gvDefaultedValues.end());
-         ZdString sWarning("Warning - default values were used for the following value(s) : \n");
-         for(size_t i = 0; i < gvDefaultedValues.size(); ++i) {
-            sWarning << (i == 0 ? "" : ", ") << mgsVariableLabels[gvDefaultedValues[i]-1];
-         }
-         gpPrintDirection->SatScanPrintWarning(sWarning.GetCString());
-      }
+     unique(gvDefaultedValues.begin(), gvDefaultedValues.end());
+     ZdString sWarning("Warning - default values were used for the following value(s) : \n");
+     for(size_t i = 0; i < gvDefaultedValues.size(); ++i) {
+        sWarning << (i == 0 ? "" : ", ") << mgsVariableLabels[gvDefaultedValues[i]-1];
+     }
+     //gpPrintDirection->SatScanPrintWarning(sWarning.GetCString());
    }
    catch (ZdException &x) {
       x.AddCallpath("ReportDefaultValueWarnings()", "CParameters");
@@ -1391,6 +1486,7 @@ void CParameters::SaveInputFileSection(ZdIniFile& file) {
       pSection->GetLine(pSection->FindKey(POP_FILE_LINE))->SetValue(m_sPopulationFileName.c_str());
       pSection->GetLine(pSection->FindKey(COORD_FILE_LINE))->SetValue(m_sCoordinatesFileName.c_str());
       pSection->GetLine(pSection->FindKey(GRID_FILE_LINE))->SetValue(m_sSpecialGridFileName.c_str());
+      pSection->SetString(USE_GRID_FILE_LINE, m_bSpecialGridFile ? YES : NO );
    }
    catch (ZdException &x) {
       x.AddCallpath("SaveInputFileSection()", "CParameters");
@@ -1467,20 +1563,6 @@ void CParameters::SaveOutputFileSection(ZdIniFile& file) {
    }
 }
 
-// old version of saving parameters to the file, deprecated and replaced by SaveToIniFile()
-// pre: szFilename is name of parameter file
-// post: prints out the parameters in unique lines in a specified order to a file
-bool CParameters::SaveParameters(char* szFilename) {
-   try {
-      SaveToIniFile(szFilename);
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("SaveParameters(char *)", "CParameters");
-      throw;
-   }
-   return true;
-}
-
 // saves the output file section to the ini file
 // pre: file is an open ZdIniFile
 // post: write the appropraite global data to the file to the appropraite keys
@@ -1500,30 +1582,7 @@ void CParameters::SaveSequentialScanSection(ZdIniFile& file) {
    }
 }
 
-// saves the parameters to an .ini file and replaces the existing ini if necessary
-// pre: sFileName is the name of the .prm parameter file
-// post: saves the parameters to an .ini file
-void CParameters::SaveToIniFile(ZdString sFileName) {
-   try {
-      VerifyIniFileSetup(sFileName, true);
-
-      ZdIniFile file(sFileName.GetCString());
-      SetSourceFileName(sFileName.GetCString());
-      SaveInputFileSection(file);
-      SaveModelInfoSection(file);
-      SaveEllipseSection(file);
-      SaveSequentialScanSection(file);
-      SaveOutputFileSection(file);
-
-      file.Write();
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("SaveToIniFile()", "CParameters");
-      throw;
-   }
-}
-
-/** Sets case data file name. 
+/** Sets case data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file
     does not exist. */
@@ -1611,10 +1670,6 @@ void CParameters::SetDefaults() {
   gbLogLikelihoodDBF          = false;
   gsRunHistoryFilename        = "";
 
-  SetDefaultsV2();
-}
-
-void CParameters::SetDefaultsV2() {
   m_nModel                 = POISSON;
   m_nRiskFunctionType      = STANDARDRISK;
   m_bPowerCalc             = false;
@@ -1634,51 +1689,12 @@ void CParameters::SetDefaultsV2() {
   m_nNumEllipses           = 0;
   mp_dEShapes              = 0;
   mp_nENumbers             = 0;
-  //m_nExtraParam4           = 0;
   strcpy(m_szProspStartDate, "");
   m_bOutputCensusAreas     = false;
   m_bMostLikelyClusters    = false;
   m_iCriteriaSecondClusters = 0;
   m_lTotalNumEllipses      = 0;
   m_bDuczmalCorrectEllipses = false;
-
-   //need to convert old parameter analysis settings to new ones..
-  if (m_nAnalysisType == 2) m_nAnalysisType = 3;
-  else if (m_nAnalysisType == 3) m_nAnalysisType = 2;
-}
-
-//**************************************************************************
-// THIS ASSUMES THAT IT IS AN OLD SESSION TYPE...
-// IF NUMBER OF ELLIPSES IS GREATER THAN ZERO, THEN SOMEONE HAS ALTERED
-// AN OLD SESSION TO RUN WITH ELLIPSES AND IT SHOULD WORK WITH THEM...
-//
-//  SO IF NUMELLIPSES > 0, THEN LEAVE SHAPES, NUMBERS, TOTAL ALONE
-//**************************************************************************
-void CParameters::SetDefaultsV3() {
-  if (m_nNumEllipses == 0) {
-     //m_nNumEllipses           = 0;
-     mp_dEShapes              = 0;
-     mp_nENumbers             = 0;
-     m_lTotalNumEllipses      = 0;
-     m_iCriteriaSecondClusters = 0;
-     m_bDuczmalCorrectEllipses = false;     
-  }
-  // someone has set up some old session to run with ellipses...
-  else {
-     // must set criteria for ellipses to no restrictions....
-     m_iCriteriaSecondClusters = 5;
-  }
-  strcpy(m_szProspStartDate, "");
-  m_bOutputCensusAreas     = false;
-  m_bMostLikelyClusters    = false;
-
-  //need to convert old parameter analysis settings to new ones..
-  if (m_nAnalysisType == 2) m_nAnalysisType = 3;
-  else if (m_nAnalysisType == 3) m_nAnalysisType = 2;
-}
-
-void CParameters::SetDisplayParameters(bool bValue) {
-   m_bDisplayErrors = bValue;
 }
 
 // helper function which will check the string to see if it is empty and if it is will add
@@ -1796,206 +1812,107 @@ void CParameters::SetOutputFileName(const char * sOutPutFileName, bool bCorrectF
 }
 
 // old method of setting the parameters from the old parameter file
-bool CParameters::SetParameter(int nParam, const char* szParam) {
-   bool bValid = false;
-   int  nScanCount, nTemp;
-   char sTemp[MAX_LINEITEMSIZE];
+void CParameters::SetParameter(int nParam, ZdString & szParam) {
+  int           nScanCount, nTemp;
 
-   try {
-      switch (nParam) {
-        case ANALYSISTYPE : nScanCount=sscanf(szParam, "%i", &m_nAnalysisType); break;
-        case SCANAREAS    : nScanCount=sscanf(szParam, "%i", &m_nAreas); break;
-        case CASEFILE     : strncpy(sTemp, szParam, strlen(szParam)-1);
-                            sTemp[strlen(szParam)-1]='\0';
-                            SetCaseFileName(sTemp, true);
-                            nScanCount=1; break;
-        case POPFILE      : strncpy(sTemp, szParam, strlen(szParam)-1);
-                            sTemp[strlen(szParam)-1]='\0';
-                            SetPopulationFileName(sTemp, true);
-                            nScanCount=1; break;
-        case COORDFILE    : strncpy(sTemp, szParam, strlen(szParam)-1);
-                            sTemp[strlen(szParam)-1]='\0';
-                            SetCoordinatesFileName(sTemp, true);
-                            nScanCount=1; break;
-        case OUTPUTFILE   : strncpy(sTemp, szParam, strlen(szParam)-1);
-                            sTemp[strlen(szParam)-1]='\0';
-                            SetOutputFileName(sTemp, true);
-                            nScanCount=1; break;
-        case PRECISION    : nScanCount=sscanf(szParam, "%i", &m_nPrecision); break;
-        case DIMENSION    : nScanCount=sscanf(szParam, "%i", &m_nDimension); break;
-        case SPECIALGRID  : nScanCount=sscanf(szParam, "%i", &nTemp);
-                            m_bSpecialGridFile = (nTemp ? true : false);
-                            break;
-        case GRIDFILE     : strncpy(sTemp, szParam, strlen(szParam)-1);
-                            sTemp[strlen(szParam)-1]='\0';
-                            SetSpecialGridFileName(sTemp, true);
-                            nScanCount=1; break;
-        case GEOSIZE      : nScanCount=sscanf(szParam, "%f", &m_nMaxGeographicClusterSize); break;
-        case STARTDATE    : nScanCount=sscanf(szParam, "%s", &m_szStartDate); break;
-        case ENDDATE      : nScanCount=sscanf(szParam, "%s", &m_szEndDate); break;
-        case CLUSTERS     : nScanCount=sscanf(szParam, "%i", &nTemp);
-                            m_bAliveClustersOnly = (nTemp ? true : false);
-                            break;
-        case EXACTTIMES   : nScanCount=sscanf(szParam, "%i", &nTemp);
-                            m_bExactTimes = (nTemp ? true : false);
-                            break;
-        case INTERVALUNITS: nScanCount=sscanf(szParam, "%i", &m_nIntervalUnits); break;
-        case TIMEINTLEN   : nScanCount=sscanf(szParam, "%i", &m_nIntervalLength); break;
-        case PURESPATIAL  : nScanCount=sscanf(szParam, "%i", &nTemp);
-                            m_bIncludePurelySpatial = (nTemp ? true : false);
-                            break;
-        case TIMESIZE     : nScanCount=sscanf(szParam, "%f", &m_nMaxTemporalClusterSize); break;
-        case REPLICAS     : nScanCount=sscanf(szParam, "%i", &m_nReplicas); break;
-        case MODEL        : nScanCount=sscanf(szParam, "%i", &m_nModel); break;
-        case RISKFUNCTION : nScanCount=sscanf(szParam, "%i", &m_nRiskFunctionType); break;
-        case POWERCALC    : nScanCount=sscanf(szParam, "%i", &nTemp);
-                            m_bPowerCalc = ( nTemp ? true : false);
-                            break;
-        case POWERX       : nScanCount=sscanf(szParam, "%lf", &m_nPower_X); break;
-        case POWERY       : nScanCount=sscanf(szParam, "%lf", &m_nPower_Y); break;
-        case TIMETREND    : nScanCount=sscanf(szParam, "%i", &m_nTimeAdjustType); break;
-        case TIMETRENDPERC: nScanCount=sscanf(szParam, "%lf", &m_nTimeAdjPercent); break;
-        case PURETEMPORAL : nScanCount=sscanf(szParam, "%i", &nTemp);
-                            m_bIncludePurelyTemporal = (nTemp ? true : false);
-                            break;
-        case CONTROLFILE  : strncpy(sTemp, szParam, strlen(szParam)-1);
-                            sTemp[strlen(szParam)-1]='\0';
-                            SetControlFileName(sTemp, true);
-                            nScanCount=1; break;
-        case COORDTYPE    : nScanCount=sscanf(szParam, "%i", &m_nCoordType); break;
-        case SAVESIMLL    : nScanCount=sscanf(szParam, "%i", &nTemp);
-                            m_bSaveSimLogLikelihoods = (nTemp ? true : false);
-                            break;
-        case SEQUENTIAL   : nScanCount=sscanf(szParam, "%i", &nTemp);
-                            m_bSequential = (nTemp ? true : false);
-                            break;
-        case SEQNUM       : nScanCount=sscanf(szParam, "%i", &m_nAnalysisTimes); break;
-        case SEQPVAL      : nScanCount=sscanf(szParam, "%lf", &m_nCutOffPVal); break;
-        case VALIDATE     : nScanCount=sscanf(szParam, "%i", &nTemp);
-                            m_bValidatePriorToCalc = (nTemp ? true : false);
-                            break;
-        case OUTPUTRR     : nScanCount=sscanf(szParam, "%i", &nTemp);
-                            m_bOutputRelRisks = (nTemp ? true : false);
-                            break;
-        case ELLIPSES     : nScanCount=sscanf(szParam, "%i", &m_nNumEllipses); break;
-        case ESHAPES      : nScanCount = LoadEShapes(szParam); break;
-        case ENUMBERS     : nScanCount = LoadEAngles(szParam); break;
-        case START_PROSP_SURV:
-              nScanCount=sscanf(szParam, "%s", &m_szProspStartDate);
-              if ((nScanCount == 0) || (strlen(m_szProspStartDate)==1))  strcpy(m_szProspStartDate, "");
-              break;
-        case OUTPUT_CENSUS_AREAS:  nScanCount=sscanf(szParam, "%i", &nTemp);
-                                   m_bOutputCensusAreas = (nTemp ? true : false);
-                                   break;
-        case OUTPUT_MOST_LIKE_CLUSTERS: nScanCount=sscanf(szParam, "%i", &nTemp);
-                                        m_bMostLikelyClusters = (nTemp ? true : false);
-                                        break;
-        case CRITERIA_SECOND_CLUSTERS: nScanCount=sscanf(szParam, "%i", &m_iCriteriaSecondClusters); break;
-        case MAX_TEMPORAL_TYPE: nScanCount=sscanf(szParam, "%i", &m_nMaxClusterSizeType); break;
-        case MAX_SPATIAL_TYPE: nScanCount=sscanf(szParam, "%i", &m_nMaxSpatialClusterSizeType); break;
-        case RUN_HISTORY_FILENAME: strncpy(sTemp, szParam, strlen(szParam)-1);
-                                   sTemp[strlen(szParam)-1]='\0';
-                                   nScanCount=1;
-                                   gsRunHistoryFilename = sTemp;
-                                   break;
-        case OUTPUTCLUSTERDBF: nScanCount=sscanf(szParam, "%i", &nTemp);
-                               gbOutputClusterLevelDBF = (nTemp ? true : false);
-                               break;
-        case OUTPUTAREADBF: nScanCount=sscanf(szParam, "%i", &nTemp);
-                            gbOutputAreaSpecificDBF = (nTemp ? true : false);
-                            break;
-        case RELATIVE_RISK_DBF: nScanCount=sscanf(szParam, "%i", &nTemp);
-                                gbRelativeRiskDBF = (nTemp ? true : false);
-                                break;
-        case LOG_LIKELI_DBF:  nScanCount=sscanf(szParam, "%i", &nTemp);
-                              gbLogLikelihoodDBF = (nTemp ? true : false);
-                              break;
-      }
+  try {
+    switch (nParam) {
+      case ANALYSISTYPE              : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nAnalysisType); break;
+      case SCANAREAS                 : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nAreas); break;
+      case CASEFILE                  : szParam.Deblank();
+                                       SetCaseFileName(szParam.GetCString(), true);
+                                       nScanCount=1; break;
+      case POPFILE                   : szParam.Deblank();
+                                       SetPopulationFileName(szParam.GetCString(), true);
+                                       nScanCount=1; break;
+      case COORDFILE                 : szParam.Deblank();
+                                       SetCoordinatesFileName(szParam.GetCString(), true);
+                                       nScanCount=1; break;
+      case OUTPUTFILE                : szParam.Deblank();
+                                       SetOutputFileName(szParam.GetCString(), true);
+                                       nScanCount=1; break;
+      case PRECISION                 : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nPrecision); break;
+      case DIMENSION                 : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nDimension); break;
+      case SPECIALGRID               : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       m_bSpecialGridFile = (nTemp ? true : false);  break;
+      case GRIDFILE                  : szParam.Deblank();
+                                       SetSpecialGridFileName(szParam.GetCString(), true);
+                                       nScanCount=1; break;
+      case GEOSIZE                   : nScanCount=sscanf(szParam.GetCString(), "%f", &m_nMaxGeographicClusterSize); break;
+      case STARTDATE                 : nScanCount=sscanf(szParam.GetCString(), "%s", &m_szStartDate); break;
+      case ENDDATE                   : nScanCount=sscanf(szParam.GetCString(), "%s", &m_szEndDate); break;
+      case CLUSTERS                  : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       m_bAliveClustersOnly = (nTemp ? true : false); break;
+      case EXACTTIMES                : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       m_bExactTimes = (nTemp ? true : false); break;
+      case INTERVALUNITS             : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nIntervalUnits); break;
+      case TIMEINTLEN                : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nIntervalLength); break;
+      case PURESPATIAL               : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       m_bIncludePurelySpatial = (nTemp ? true : false); break;
+      case TIMESIZE                  : nScanCount=sscanf(szParam.GetCString(), "%f", &m_nMaxTemporalClusterSize); break;
+      case REPLICAS                  : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nReplicas); break;
+      case MODEL                     : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nModel); break;
+      case RISKFUNCTION              : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nRiskFunctionType); break;
+      case POWERCALC                 : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       m_bPowerCalc = ( nTemp ? true : false); break;
+      case POWERX                    : nScanCount=sscanf(szParam.GetCString(), "%lf", &m_nPower_X); break;
+      case POWERY                    : nScanCount=sscanf(szParam.GetCString(), "%lf", &m_nPower_Y); break;
+      case TIMETREND                 : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nTimeAdjustType); break;
+      case TIMETRENDPERC             : nScanCount=sscanf(szParam.GetCString(), "%lf", &m_nTimeAdjPercent); break;
+      case PURETEMPORAL              : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       m_bIncludePurelyTemporal = (nTemp ? true : false); break;
+      case CONTROLFILE               : szParam.Deblank();
+                                       SetControlFileName(szParam.GetCString(), true);
+                                       nScanCount=1; break;
+      case COORDTYPE                 : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nCoordType); break;
+      case SAVESIMLL                 : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       m_bSaveSimLogLikelihoods = (nTemp ? true : false); break;
+      case SEQUENTIAL                : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       m_bSequential = (nTemp ? true : false); break;
+      case SEQNUM                    : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nAnalysisTimes); break;
+      case SEQPVAL                   : nScanCount=sscanf(szParam.GetCString(), "%lf", &m_nCutOffPVal); break;
+      case VALIDATE                  : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       m_bValidatePriorToCalc = (nTemp ? true : false); break;
+      case OUTPUTRR                  : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       m_bOutputRelRisks = (nTemp ? true : false); break;
+      case ELLIPSES                  : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nNumEllipses); break;
+      case ESHAPES                   : nScanCount = LoadEShapes(szParam.GetCString()); break;
+      case ENUMBERS                  : nScanCount = LoadEAngles(szParam.GetCString()); break;
+      case START_PROSP_SURV          : nScanCount=sscanf(szParam.GetCString(), "%s", &m_szProspStartDate);
+                                       if ((nScanCount == 0) || (strlen(m_szProspStartDate)==1))
+                                         strcpy(m_szProspStartDate, "");
+                                       break;
+      case OUTPUT_CENSUS_AREAS       : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       m_bOutputCensusAreas = (nTemp ? true : false); break;
+      case OUTPUT_MOST_LIKE_CLUSTERS : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       m_bMostLikelyClusters = (nTemp ? true : false); break;
+      case CRITERIA_SECOND_CLUSTERS  : nScanCount=sscanf(szParam.GetCString(), "%i", &m_iCriteriaSecondClusters); break;
+      case MAX_TEMPORAL_TYPE         : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nMaxClusterSizeType); break;
+      case MAX_SPATIAL_TYPE          : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nMaxSpatialClusterSizeType); break;
+      case RUN_HISTORY_FILENAME      : szParam.Deblank();
+                                       gsRunHistoryFilename = szParam.GetCString();
+                                       nScanCount=1; break;
+      case OUTPUTCLUSTERDBF          : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       gbOutputClusterLevelDBF = (nTemp ? true : false); break;
+      case OUTPUTAREADBF             : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       gbOutputAreaSpecificDBF = (nTemp ? true : false); break;
+      case RELATIVE_RISK_DBF         : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       gbRelativeRiskDBF = (nTemp ? true : false); break;
+      case LOG_LIKELI_DBF            : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
+                                       gbLogLikelihoodDBF = (nTemp ? true : false);  break;
+    }
 
-      if (nParam==POPFILE || nParam==GRIDFILE || nParam==CONTROLFILE)
-        bValid = true;
-      else {
-        // Need to be able to handle old parameter files  !!!!!!
-        bValid = (nScanCount == 1);
-        if (!bValid)
-          DisplayParamError(nParam);
-      }
+    //Mark parameter line as defaulted when scan fails.
+    if (nScanCount != 1)
+      gvDefaultedValues.push_back(nParam);
    }
    catch (ZdException & x) {
       x.AddCallpath("SetParameter()", "CParameters");
       throw;
    }
-   return bValid;
 }
 
-// function to set the parameters from the file, uses both new and old style parameter files
-// pre: szFilename is name of paramter file, validate indicates whether or not parameters should be validated after read in
-// post: reads in parameters from the file and validates if requested
-bool CParameters::SetParameters(const char* szFilename, bool bValidate) {
-   FILE* pFile;
-   char  szTemp [MAX_STR_LEN];
-   bool  bValid = true, bEOF = false;
-   int  i    = 1;
-
-   try {
-      if ((pFile = fopen(szFilename, "r")) == NULL)
-         SSGenerateException("  Error: Unable to open parameter file.", "SetParameters()");
-
-      // set defaults for newer parameters -- this section of code, in fact this whole unit,
-      // needs to be revised. Backward compatibility may be a thorn in our side.
-      m_nMaxClusterSizeType = PERCENTAGETYPE;
-      m_nMaxSpatialClusterSizeType = PERCENTAGEOFMEASURETYPE;
-      gsRunHistoryFilename << ZdString::reset;
-      gbOutputClusterLevelDBF   = false;
-      gbOutputAreaSpecificDBF   = false;
-      gbRelativeRiskDBF         = false;
-      gbLogLikelihoodDBF        = false;
-
-      ZdIniFile file(szFilename);
-      if (file.GetNumSections()) {
-         fclose(pFile);
-         ReadFromIniFile(szFilename);
-   //  for now we won't print out which variables where defaulted because they were missing in the .ini file - AJV
-   //      if (!gvDefaultedValues.empty())
-   //         ReportDefaultValueWarnings();
-      }
-      else {
-         SetSourceFileName(szFilename);
-         while (i<=PARAMETERS && !bEOF) {
-            if (fgets(szTemp, MAX_STR_LEN, pFile) == NULL)
-               bEOF   = true;
-            else if (!SetParameter(i, szTemp))
-               bValid = false;
-            ++i;
-         }
-         fclose(pFile);
-      }
-
-      if (bEOF && ((i-1)==MODEL)) {              // Accept V.1 parameter files
-        SetDefaultsV2();
-        if (m_bDisplayErrors)
-           gpPrintDirection->SatScanPrintWarning("Old parameter file from version 1 detected. Please note that\nseveral variables have been given default values in maintain compatability with newer versions.\n");
-      }
-      else if (bEOF && ((i-2) < CRITERIA_SECOND_CLUSTERS)) {      // Accept V.1.3 parameter files
-         SetDefaultsV3();
-         if (m_bDisplayErrors)
-            gpPrintDirection->SatScanPrintWarning("Old parameter file from version 1.3 detected. Please note that\nseveral variables have been given default values in maintain compatability with newer versions.\n");
-      }
-      //else if ( (bEOF && (i-2) < MAX_TEMPORAL_TYPE) || (!bEOF && (i-1) < MAX_TEMPORAL_TYPE ) )
-      //   m_nMaxClusterSizeType = PERCENTAGETYPE;
-
-      if (bValid && bValidate)
-        bValid = ValidateParameters();
-   }
-   catch (ZdException & x) {         
-      fclose(pFile);
-      x.AddCallpath("SetParameters()", "CParameters");
-      throw;
-   }
-   return bValid;
-}
-
-/** Sets coordinates data file name. 
+/** Sets coordinates data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file
     does not exist. */
@@ -2078,41 +1995,38 @@ bool CParameters::ValidateParameters() {
 
    try {
       if (m_bValidatePriorToCalc) {
-        if (!(PURELYSPATIAL <= m_nAnalysisType && m_nAnalysisType <= PROSPECTIVESPACETIME)) {   // used to be <= PURELYTEMPORAL
+        if (! gpPrintDirection)
+          ZdGenerateException("No print direction set.", "ValidateParameters()");
+
+        if (!(PURELYSPATIAL <= m_nAnalysisType && m_nAnalysisType <= PROSPECTIVESPACETIME)) {   
            bValid = false;
-           if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for analysis type. Please use a value between 1 and 3.\n");
+           gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for analysis type. Please use a value between 1 and 3.\n");
         }
 
         if (!(HIGH <= m_nAreas && m_nAreas<= HIGHANDLOW)) {
            bValid = false;
-           if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for scan areas. Please use a value between 1 and 3.\n");
+           gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for scan areas. Please use a value between 1 and 3.\n");
         }
 
         if (!(POISSON == m_nModel || m_nModel == BERNOULLI || m_nModel == SPACETIMEPERMUTATION)) {
            bValid = false;
-           if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for model type. Please use a value between 0 and 2.\n");
+           gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for model type. Please use a value between 0 and 2.\n");
         }
 
         if (!(STANDARDRISK == m_nRiskFunctionType || m_nRiskFunctionType == MONOTONERISK)) {
            bValid = false;
-           if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for risk function type. Please use a value of 0 or 1.\n");
+           gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for risk function type. Please use a value of 0 or 1.\n");
         }
 
         if (m_bSequential) {
           //if (!((1 <= m_nAnalysisTimes) && (m_nAnalysisTimes <= INT_MAX)))
           if (!(1 <= m_nAnalysisTimes)) {
              bValid = false;
-             if (m_bDisplayErrors)
-                gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for max sequential scan iterations. Please use a value between 1 and 32000.\n");
+             gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for max sequential scan iterations. Please use a value between 1 and 32000.\n");
           }
           if (!(0.0 <= m_nCutOffPVal && m_nCutOffPVal <= 1.0)) {
              bValid = false;
-             if (m_bDisplayErrors)
-                gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for sequential p-value. Please use a value between 0 and 1.\n");
+             gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for sequential p-value. Please use a value between 0 and 1.\n");
           }
         }
         else {
@@ -2123,13 +2037,11 @@ bool CParameters::ValidateParameters() {
         if (m_bPowerCalc) {
           if (!(0.0 <= m_nPower_X && m_nPower_X<= DBL_MAX)) {
              bValid = false;
-             if (m_bDisplayErrors)
-                gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for LLR#1. Please use a value between 0 and %12.4f\n", DBL_MAX);
+             gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for LLR#1. Please use a value between 0 and %12.4f\n", DBL_MAX);
           }
           if (!(0.0 <= m_nPower_Y && m_nPower_Y <= DBL_MAX)) {
              bValid = false;
-             if (m_bDisplayErrors)
-                gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for LLR#2. Please use a value between 0 and %12.4f\n", DBL_MAX);
+             gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for LLR#2. Please use a value between 0 and %12.4f\n", DBL_MAX);
           }
         }
         else {
@@ -2139,52 +2051,44 @@ bool CParameters::ValidateParameters() {
 
         if (!(CARTESIAN == m_nCoordType || m_nCoordType == LATLON)) {
            bValid = false;
-           if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for coordinate type. Please use a value of 0 or 1.\n");
+           gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for coordinate type. Please use a value of 0 or 1.\n");
         }
         else if ((m_nCoordType == LATLON) && (m_nNumEllipses > 0)) {
            bValid = false;
-           if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for ellipses. Program currently does not support ellipses with lat/long coordinates.\n");
+           gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for ellipses. Program currently does not support ellipses with lat/long coordinates.\n");
         }
 
         if (!ValidateReplications(m_nReplicas)) {
            bValid = false;
-           if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for Monte Carlo reps. Please use a value of 0, 9, 999, or n999.\n");
+           gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for Monte Carlo reps. Please use a value of 0, 9, 999, or n999.\n");
         }
 
         if (m_nAnalysisType == PURELYSPATIAL) {
           if (!(NONE <= m_nPrecision && m_nPrecision <= DAY)) {
             bValid = false;
-            if (m_bDisplayErrors)
-               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for precision of case times. Please use a value between 0 and 3.\n");
+            gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for precision of case times. Please use a value between 0 and 3.\n");
           }
         }
         else {
           if (!(YEAR <= m_nPrecision && m_nPrecision <= DAY)) { // Change to DAYS, YEARS
              bValid = false;
-             if (m_bDisplayErrors)
-                gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for precision of case times. Please use a value between 1 and 3.\n");
+             gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for precision of case times. Please use a value between 1 and 3.\n");
           }
         }
 
         if (!ValidateDateString(m_szStartDate, STARTDATE)) {
            bValid = false;
-           if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for start date. Please use a valid date of the form YYYY/MM/DD.\n");
+           gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for start date. Please use a valid date of the form YYYY/MM/DD.\n");
            bValidDate = false;
         }
         else if (!ValidateDateString(m_szEndDate, ENDDATE)) {
           bValid = false;
-          if (m_bDisplayErrors)
-             gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for end date. Please use a valid date of the form YYYY/MM/DD.\n");
+          gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for end date. Please use a valid date of the form YYYY/MM/DD.\n");
           bValidDate = false;
         }
         else if (CharToJulian(m_szStartDate) >= CharToJulian(m_szEndDate)) {
           bValid = false;
-          if (m_bDisplayErrors)
-             gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for start date. Please use a valid date of the form YYYY/MM/DD.\n");
+          gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for start date. Please use a valid date of the form YYYY/MM/DD.\n");
           bValidDate = false;
         }
 
@@ -2192,13 +2096,11 @@ bool CParameters::ValidateParameters() {
         if ((m_nAnalysisType == PURELYSPATIAL) || (m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME)) {
           if (m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE && !(0.0 < m_nMaxGeographicClusterSize && m_nMaxGeographicClusterSize <= 50.0)) {
              bValid = false;
-             if (m_bDisplayErrors)
-               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for max geographic size. Please use a value between 0 and 50.\n");
+             gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for max geographic size. Please use a value between 0 and 50.\n");
           }
           if (0.0 > m_nMaxGeographicClusterSize) {
             bValid = false;
-            if (m_bDisplayErrors)
-               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for max geographic size. Please use a value between 0 and 50.\n");
+            gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for max geographic size. Please use a value between 0 and 50.\n");
           }
         }
         else
@@ -2208,18 +2110,15 @@ bool CParameters::ValidateParameters() {
         if ((m_nAnalysisType == PURELYTEMPORAL) || (m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME)) {
           if (m_nMaxClusterSizeType == PERCENTAGETYPE && !(0.0 < m_nMaxTemporalClusterSize && m_nMaxTemporalClusterSize <= (m_nModel == SPACETIMEPERMUTATION ? 50 : 90))) {
             bValid = false;
-            if (m_bDisplayErrors)
-               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for max temporal size. Please use a value between 0 and %d.\n", (m_nModel == SPACETIMEPERMUTATION ? 50 : 90));
+            gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for max temporal size. Please use a value between 0 and %d.\n", (m_nModel == SPACETIMEPERMUTATION ? 50 : 90));
           }
           if (!(YEAR <= m_nIntervalUnits && m_nIntervalUnits <= m_nPrecision)) {
-            if (m_bDisplayErrors)
-               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for interval units. Please use a value between 1 and 3.\n");
+            gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for interval units. Please use a value between 1 and 3.\n");
             bValid = false;
           }
           if (!(1 <= m_nIntervalLength && m_nIntervalLength <= TimeBetween(CharToJulian(m_szStartDate), CharToJulian(m_szEndDate), m_nIntervalUnits) )) {  // Change to Max Interval
             bValid = false;
-            if (m_bDisplayErrors)
-               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for interval length. Please use a value between 1 and the length of the study period.\n");
+            gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for interval length. Please use a value between 1 and the length of the study period.\n");
           }
           if (m_nModel == BERNOULLI || m_nModel == SPACETIMEPERMUTATION) {
             m_nTimeAdjustType = NOTADJUSTED;
@@ -2228,19 +2127,16 @@ bool CParameters::ValidateParameters() {
           else {
             if (!(NOTADJUSTED <= m_nTimeAdjustType && m_nTimeAdjustType <= LINEAR)) {
                bValid = false;
-               if (m_bDisplayErrors)
-                  gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for time adjustment type. Please use a value 0, 1 or 2.\n");
+               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for time adjustment type. Please use a value 0, 1 or 2.\n");
             }
             if (m_nTimeAdjustType == NONPARAMETRIC && m_nAnalysisType == PURELYTEMPORAL) {
               bValid = false;
-              if (m_bDisplayErrors)
-               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for time adjustment type. You may not use non-parametric time in a Purely Temporal analysis.\n");
+              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for time adjustment type. You may not use non-parametric time in a Purely Temporal analysis.\n");
             }
             if (m_nTimeAdjustType == LINEAR)
               if (!(-100.0 < m_nTimeAdjPercent)) {
                 bValid = false;
-                if (m_bDisplayErrors)
-                   gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for time adjustment percentage. Please use a value greater than -100.\n");
+                gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for time adjustment percentage. Please use a value greater than -100.\n");
               }
           }
         }
@@ -2256,9 +2152,8 @@ bool CParameters::ValidateParameters() {
 
       if (m_sCaseFileName.empty() || (pFile = fopen(m_sCaseFileName.c_str(), "r")) == NULL) {
         bValid = false;
-        if (m_bDisplayErrors)
-          gpPrintDirection->SatScanPrintWarning("Unable to open the case file %s. Please check to make sure the path is correct.\n",
-                                                m_sCaseFileName.c_str());
+        gpPrintDirection->SatScanPrintWarning("Unable to open the case file %s. Please check to make sure the path is correct.\n",
+                                              m_sCaseFileName.c_str());
       }
       else
         fclose(pFile);
@@ -2266,9 +2161,8 @@ bool CParameters::ValidateParameters() {
       if (m_nModel == POISSON) {
         if (m_sPopulationFileName.empty() || (pFile = fopen(m_sPopulationFileName.c_str(), "r")) == NULL) {
            bValid = false;
-           if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Unable to open the population file %s. Please check to make sure the path is correct.\n",
-                                                    m_sPopulationFileName.c_str());
+           gpPrintDirection->SatScanPrintWarning("Unable to open the population file %s. Please check to make sure the path is correct.\n",
+                                                  m_sPopulationFileName.c_str());
         }
         else
           fclose(pFile);
@@ -2277,9 +2171,8 @@ bool CParameters::ValidateParameters() {
       else if (m_nModel == BERNOULLI) {
         if (m_sControlFileName.empty() || (pFile = fopen(m_sControlFileName.c_str(), "r")) == NULL) {
           bValid = false;
-          if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Unable to open the population file %s. Please check to make sure the path is correct.\n",
-                                                    m_sControlFileName.c_str());
+          gpPrintDirection->SatScanPrintWarning("Unable to open the population file %s. Please check to make sure the path is correct.\n",
+                                                 m_sControlFileName.c_str());
         }
         else
           fclose(pFile);
@@ -2289,39 +2182,33 @@ bool CParameters::ValidateParameters() {
         if (m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)
           if (m_sPopulationFileName.empty() || (pFile = fopen(m_sPopulationFileName.c_str(), "r")) == NULL) {
             bValid = false;
-            if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Unable to open the population file %s. Please check to make sure the path is correct.\n",
-                                                    m_sPopulationFileName.c_str());
+            gpPrintDirection->SatScanPrintWarning("Unable to open the population file %s. Please check to make sure the path is correct.\n",
+                                                  m_sPopulationFileName.c_str());
           }
           else
             fclose(pFile);
         if (!(m_nAnalysisType == SPACETIME || m_nAnalysisType == PROSPECTIVESPACETIME)) {
           bValid = false;
-          if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for analysis type. For Space-Time Permutation model,\n\t analysis type must be either Prospective or Retrospective Space-Time.\n");
+          gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for analysis type. For Space-Time Permutation model,\n\t analysis type must be either Prospective or Retrospective Space-Time.\n");
         }
         if (m_bIncludePurelySpatial) {
           bValid = false;
-          if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for include purely spatial. Cannot include purely spatial clusters in the Space-Time model.\n");
+          gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for include purely spatial. Cannot include purely spatial clusters in the Space-Time model.\n");
         }
         if (m_bIncludePurelyTemporal) {
           bValid = false;
-          if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for include purely temporal. Cannot include purely temporal clusters in the Space-Time model.\n");
+          gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for include purely temporal. Cannot include purely temporal clusters in the Space-Time model.\n");
         }
         if (m_bOutputRelRisks || gbRelativeRiskDBF) {
           bValid = false;
-          if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for output relative risks. Cannot output relative risks for the Space-Time model.\n");
+          gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for output relative risks. Cannot output relative risks for the Space-Time model.\n");
         }
       }
 
       if (m_sCoordinatesFileName.empty() || (pFile = fopen(m_sCoordinatesFileName.c_str(), "r")) == NULL) {
         bValid = false;
-        if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Unable to open Coordinate file: %s. Please check to make sure the path is correct.\n",
-                                                    m_sCoordinatesFileName.c_str());
+        gpPrintDirection->SatScanPrintWarning("Unable to open Coordinate file: %s. Please check to make sure the path is correct.\n",
+                                              m_sCoordinatesFileName.c_str());
       }
       else
         fclose(pFile);
@@ -2329,9 +2216,8 @@ bool CParameters::ValidateParameters() {
       if (m_bSpecialGridFile) {
         if (m_sSpecialGridFileName.empty() || (pFile = fopen(m_sSpecialGridFileName.c_str(), "r")) == NULL) {
           bValid = false;
-          if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Unable to open Grid file: %s. Please check to make sure the path is correct.\n",
-                                                    m_sSpecialGridFileName.c_str());
+          gpPrintDirection->SatScanPrintWarning("Unable to open Grid file: %s. Please check to make sure the path is correct.\n",
+                                                m_sSpecialGridFileName.c_str());
         }
         else
           fclose(pFile);
@@ -2342,9 +2228,8 @@ bool CParameters::ValidateParameters() {
       if (m_sOutputFileName.empty() || (pFile = fopen(m_sOutputFileName.c_str(), "r")) == NULL) {
         if ((pFile = fopen(m_sOutputFileName.c_str(), "w")) == NULL) {
           bValid = false;
-          if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Unable to open Results file: %s. Please check to make sure the path is correct.\n",
-                                                    m_sOutputFileName.c_str());
+          gpPrintDirection->SatScanPrintWarning("Unable to open Results file: %s. Please check to make sure the path is correct.\n",
+                                                m_sOutputFileName.c_str());
         }
         else
           fclose(pFile);
@@ -2354,13 +2239,11 @@ bool CParameters::ValidateParameters() {
 
       if (!(m_iCriteriaSecondClusters>=0 && m_iCriteriaSecondClusters<=5)) {
           bValid = false;
-          if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for criteria for reporting secondary clusters.\n\tPlease use a value between 0 and 5.\n");
+          gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for criteria for reporting secondary clusters.\n\tPlease use a value between 0 and 5.\n");
       }
       if (m_iCriteriaSecondClusters != 5 && m_nNumEllipses) {
           bValid = false;
-          if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for criteria for reporting secondary clusters.\n\tAnalyses with ellipses can have no restrictions.\n");
+          gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for criteria for reporting secondary clusters.\n\tAnalyses with ellipses can have no restrictions.\n");
       }
 
       // Verify Character Prospective start date (YYYY/MM/DD).
@@ -2368,8 +2251,7 @@ bool CParameters::ValidateParameters() {
       if (bValid && (m_nAnalysisType == PROSPECTIVESPACETIME) && bValidDate)
          if (! ValidateProspectiveStartDate(m_szProspStartDate, m_szStartDate, m_szEndDate)) {
             bValid = false;
-            if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for prospective start date. Please use a valid dat of the form YYYY/MM/DD.\n");
+            gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for prospective start date. Please use a valid dat of the form YYYY/MM/DD.\n");
          }
 
       m_bExactTimes = 0;
@@ -2533,4 +2415,26 @@ void CParameters::VerifyIniFileSetup(const ZdString& sFileName, bool bCreateIfMi
    }
 }
 
+// saves the parameters to an .ini file and replaces the existing ini if necessary
+// pre: sFileName is the name of the .prm parameter file
+// post: saves the parameters to an .ini file
+void CParameters::Write(const char * sParameterFileName) {
+   try {
+      VerifyIniFileSetup(ZdString(sParameterFileName), true);
+
+      ZdIniFile file(sParameterFileName);
+      SetSourceFileName(sParameterFileName);
+      SaveInputFileSection(file);
+      SaveModelInfoSection(file);
+      SaveEllipseSection(file);
+      SaveSequentialScanSection(file);
+      SaveOutputFileSection(file);
+
+      file.Write();
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("Write()", "CParameters");
+      throw;
+   }
+}
 

@@ -18,6 +18,7 @@ extern const char*      POP_FILE_LINE;
 extern const char*      COORD_FILE_LINE;
 extern const char*      GRID_FILE_LINE;
 extern const char*      CONTROL_FILE_LINE;
+extern const char*      USE_GRID_FILE_LINE;
 
 // model info section
 extern const char*      MODEL_INFO_SECTION;
@@ -106,7 +107,16 @@ class CParameters
                         gbRelativeRiskDBF, gbLogLikelihoodDBF;
       ZdString          gsRunHistoryFilename;
       std::vector<int>  gvDefaultedValues;
-      std::string       m_sParametersSourceFileName; /** parameters source filename */
+      std::string       m_sParametersSourceFileName;            /** parameters source filename */
+      float             m_nInitialMaxTemporalClusterSize;       /** initial setting prior to convertion  */
+      TemporalSizeType  m_nInitialMaxClusterSizeType;           /** initial setting prior to convertion  */
+      std::string       m_sCaseFileName;                        /** case data source filename            */
+      std::string       m_sControlFileName;                     /** control data source filename         */
+      std::string       m_sPopulationFileName;                  /** population data source filename      */
+      std::string       m_sCoordinatesFileName;                 /** coordinates data source filename     */
+      std::string       m_sSpecialGridFileName;                 /** special grid data source filename    */
+      std::string       m_sOutputFileName;                      /** results output filename              */
+      bool              m_bSpecialGridFile;                     /** indicator of special grid file usage */
 
       void      copy(const CParameters &rhs);
 
@@ -116,11 +126,17 @@ class CParameters
       void      CheckModelInfoIniSection(ZdIniFile& file, bool bCreateIfMissing = false);
       void      CheckOutputFileIniSection(ZdIniFile& file, bool bCreateIfMissing = false);
       void      CheckSequentialScanIniSection(ZdIniFile& file, bool bCreateIfMissing = false);
+      void      ConvertRelativePath(std::string & sInputFilename);
       void      FindDelimiter(char *sString, char cDelimiter);
+      void      Free();
+      int       LoadEAngles(const char* szParam);
+      int       LoadEShapes(const char* szParam);
+      void      ReadFromIniFile(ZdString sFileName);
       void      ReadInputFilesSectionFromIni(ZdIniFile& file);
       void      ReadModelInfoSectionFromIni(ZdIniFile& file);
       void      ReadSequentialScanSectionFromIni(ZdIniFile& file);
       void      ReadEllipseSectionFromIni(ZdIniFile& file);
+      void      ReadScanningLineParameterFile(const char * sParameterFileName);
       void      ReadOutputFileSectionFromIni(ZdIniFile& file);
       void      ReportDefaultValueWarnings();
       void      SaveInputFileSection(ZdIniFile& file);
@@ -128,30 +144,22 @@ class CParameters
       void      SaveEllipseSection(ZdIniFile& file);
       void      SaveSequentialScanSection(ZdIniFile& file);
       void      SaveOutputFileSection(ZdIniFile& file);
+      void      SetDefaults();
       void      SetDoubleValue(double &dValue, const ZdString& sValueFromFile, int iLineNumberFromFile, double dDefaultValue);
       void      SetEAnglesFromIniFile(const ZdString& sAngles);
       void      SetEShapesFromIniFile(const ZdString& sShapes);
       void      SetFloatValue(float &fValue, const ZdString& sValueFromFile, int iLineNumberFromFile, float fDefaultValue);
       void      SetIntValue(int &iValue, const ZdString& sValueFromFile, int iLineNumberFromFile, int iDefaultValue);
+      void      SetParameter(int nParam, ZdString & szParam);
       void      SetSourceFileName(const char * sParametersSourceFileName);
       void      TrimLeft(char *sString);
+      bool      ValidateDateString(char* szDate, int nDateType);
       bool      ValidHistoryFileName(ZdString& sRunHistoryFilename);
       bool      ValueIsYes(const ZdString& sTestValue);
       void      VerifyIniFileSetup(const ZdString& sFileName, bool bCreateIfMissing = false);
 
-  protected:
-    float               m_nInitialMaxTemporalClusterSize;       /** initial setting prior to convertion  */
-    TemporalSizeType    m_nInitialMaxClusterSizeType;           /** initial setting prior to convertion  */
-    std::string         m_sCaseFileName;                        /** case data source filename            */
-    std::string         m_sControlFileName;                     /** control data source filename         */
-    std::string         m_sPopulationFileName;                  /** population data source filename      */
-    std::string         m_sCoordinatesFileName;                 /** coordinates data source filename     */
-    std::string         m_sSpecialGridFileName;                 /** special grid data source filename    */
-    std::string         m_sOutputFileName;                      /** results output filename              */
-    bool                m_bSpecialGridFile;                     /** indicator of special grid file usage */
-
   public:
-    CParameters(bool bDisplayErrors);
+    CParameters();
     CParameters(const CParameters &other);
     ~CParameters();
 
@@ -205,7 +213,7 @@ class CParameters
     double    m_nCutOffPVal;        // P-Value used to exit seq analysis
 
     // Internal options
-    bool   m_bExactTimes, m_bValidatePriorToCalc, m_bDisplayErrors;
+    bool   m_bExactTimes, m_bValidatePriorToCalc;
     int    m_nClusterType;      // Is this used? KR-980606
 
     //int    m_nExtraParam4;
@@ -222,12 +230,9 @@ class CParameters
                                             int iEndYear, int iEndMonth, int iEndDay,
                                             int iProspYear, int iProspMonth, int iProspDay);
     void                ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporalSizeType);
-    void                ConvertRelativePath(std::string & sInputFilename);
-    void                DisplayAnalysisType(FILE* fp);
-    bool                DisplayParamError(int nLine);
-    void                DisplayParameters(FILE* fp);
-    void                DisplayTimeAdjustments(FILE* fp);
-    void                Free();
+    void                DisplayAnalysisType(FILE* fp) const;
+    void                DisplayParameters(FILE* fp) const;
+    void                DisplayTimeAdjustments(FILE* fp) const;
     const std::string & GetCaseFileName() const { return m_sCaseFileName; }
     const std::string & GetControlFileName() const { return m_sControlFileName; }
     const std::string & GetCoordinatesFileName() const { return m_sCoordinatesFileName; }
@@ -240,27 +245,15 @@ class CParameters
     const ZdString&     GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
     const std::string & GetSpecialGridFileName() const { return m_sSpecialGridFileName; }
     const std::string & GetSourceFileName() const { return m_sParametersSourceFileName; }
-
-    int                 LoadEAngles(const char* szParam);
-    int                 LoadEShapes(const char* szParam);
-    void                ReadFromIniFile(ZdString sFileName);
-    bool                SaveParameters(char* szFilename);
-    void                SaveToIniFile(ZdString sFileName);
-
+    void                Read(const char* szFilename);
     void                SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath=false);
     void                SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath=false);
     void                SetCoordinatesFileName(const char * sCoordinatesFileName, bool bCorrectForRelativePath=false);
     void                SetDBaseOutputRelRisks(bool bOutput) { gbRelativeRiskDBF = bOutput;}
     void                SetDBaseOutputLogLikeli(bool bOutput) { gbLogLikelihoodDBF = bOutput;}
-    void                SetDefaults();
-    void                SetDefaultsV2();
-    void                SetDefaultsV3();
-    void                SetDisplayParameters(bool bValue);
     void                SetOutputClusterLevelDBF(bool bOutput)  { gbOutputClusterLevelDBF = bOutput; }
     void                SetOutputAreaSpecificDBF(bool bOutput)  { gbOutputAreaSpecificDBF = bOutput; }
     void                SetOutputFileName(const char * sOutPutFileName, bool bCorrectForRelativePath=false);
-    bool                SetParameter(int nParam, const char* szParam);
-    bool                SetParameters(const char* szFilename, bool bValidate=true);
     void                SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath=false);
     void                SetPrintDirection(BasePrint *pPrintDirection);
     void                SetRunHistoryFilename(const ZdString& sFilename) {gsRunHistoryFilename = sFilename;}
@@ -268,9 +261,9 @@ class CParameters
     void                SetUseSpecialGrid(bool bUseSpecialGridFile) { m_bSpecialGridFile = bUseSpecialGridFile; }
     bool                UseSpecialGrid() const { return m_bSpecialGridFile; }
     bool                ValidateParameters();
-    bool                ValidateDateString(char* szDate, int nDateType);
     bool                ValidateReplications(int nReps);
     bool                ValidateProspectiveStartDate(char* szProspDate, char *szStartDate, char *szEndDate);
+    void                Write(const char * sParameterFileName);
 };
 
 //*****************************************************************************
