@@ -2,12 +2,11 @@
 #include <vcl.h>
 #pragma hdrstop
 #include "Main.h"
-#include <dos.h>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 TfrmMain *frmMain;
-
+#include <systdate.h>
 
 /** constructor */
 ParameterResultsInfo::ParameterResultsInfo(const char * sParameterFilename)
@@ -46,13 +45,17 @@ const char * TfrmMain::LASTAPP_DATA             = "LastOpenExe";
 const char * TfrmMain::PARAMETER_DATA           = "ParameterFile";
 const char * TfrmMain::COMPARE_APP_DATA         = "CompareProgram";
 const char * TfrmMain::COMPARE_FILE_EXTENSION   = ".out.compare.txt";
+const char * TfrmMain::ARCHIVE_APP_DATA         = "ArchiveApp";
+const char * TfrmMain::USE_ARCHIVE_APP_DATA     = "ArchivingResults";
+const char * TfrmMain::ARCHIVE_APP_OPTIONS_DATA = "ArchiveOptions";
 
 /** constructor */
-__fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner) {
+__fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner), gpFrmOptions(0) {
   TRegistry   * pRegistry = new TRegistry;
   int           iSize, iIndex=0;
   AnsiString    sParameterDataName, sParameterData;
 
+  gpFrmOptions = new TfrmOptions(this);
   if (pRegistry->OpenKey(SCU_REGISTRY_KEY, true)) {
     edtBatchExecutableComparatorName->Text = pRegistry->ReadString(LASTAPPCOMPARATOR_DATA);
     edtBatchExecutableName->Text = pRegistry->ReadString(LASTAPP_DATA);
@@ -65,12 +68,11 @@ __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner) {
         sParameterDataName.printf("%s%d", PARAMETER_DATA, iIndex);
         sParameterData = pRegistry->ReadString(sParameterDataName);
     }
-    iSize = pRegistry->GetDataSize(COMPARE_APP_DATA);
-    if (iSize > -1) {
-      gsComparisonProgram.resize(iSize);
-      pRegistry->ReadBinaryData(COMPARE_APP_DATA, (void*)(gsComparisonProgram.c_str()), gsComparisonProgram.size());
-    }
-    ZdDecrypt(const_cast<char*>(gsComparisonProgram.c_str()), gsComparisonProgram.size(), "24601");
+    gpFrmOptions->edtComparisonApplication->Text = pRegistry->ReadString(COMPARE_APP_DATA);
+    if (pRegistry->GetDataSize(USE_ARCHIVE_APP_DATA) != -1)
+      gpFrmOptions->chkArchiveResults->Checked = pRegistry->ReadBool(USE_ARCHIVE_APP_DATA);
+    gpFrmOptions->edtArchiveApplication->Text = pRegistry->ReadString(ARCHIVE_APP_DATA);
+    gpFrmOptions->edtArchiveApplicationOptions->Text = pRegistry->ReadString(ARCHIVE_APP_OPTIONS_DATA);
     pRegistry->CloseKey();
   }
   delete pRegistry;
@@ -79,7 +81,7 @@ __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner) {
   EnableCompareActions();
   EnableStartAction();
   EnableSaveParametersListAction();
-  EnableRemoveParameterAction();  
+  EnableRemoveParameterAction();
 }
 
 /** destructor */
@@ -93,15 +95,23 @@ __fastcall TfrmMain::~TfrmMain() {
     if (pRegistry->OpenKey(SCU_REGISTRY_KEY, true)) {
       pRegistry->WriteString(LASTAPPCOMPARATOR_DATA, edtBatchExecutableComparatorName->Text);
       pRegistry->WriteString(LASTAPP_DATA, edtBatchExecutableName->Text);
-      for (i=0; i < ltvScheduledBatchs->Items->Count; ++i) {
+      for (i=0; i < ltvScheduledBatchs->Items->Count;) {
         sParameterDataName.printf("%s%d", PARAMETER_DATA, i);
         pRegistry->WriteString(sParameterDataName, ltvScheduledBatchs->Items->Item[i]->Caption);
+        ++i;
       }
-      ZdEncrypt(const_cast<char*>(gsComparisonProgram.c_str()), gsComparisonProgram.size(), "24601");
-      pRegistry->WriteBinaryData(COMPARE_APP_DATA, (void*)(gsComparisonProgram.c_str()), gsComparisonProgram.size());
+      //remove existing entries that where not overwritten
+      sParameterDataName.printf("%s%d", PARAMETER_DATA, i);
+      while (pRegistry->DeleteValue(sParameterDataName))
+        sParameterDataName.printf("%s%d", PARAMETER_DATA, ++i);
+      pRegistry->WriteString(COMPARE_APP_DATA, gpFrmOptions->edtComparisonApplication->Text);
+      pRegistry->WriteBool(USE_ARCHIVE_APP_DATA, gpFrmOptions->chkArchiveResults->Checked);
+      pRegistry->WriteString(ARCHIVE_APP_DATA, gpFrmOptions->edtArchiveApplication->Text);
+      pRegistry->WriteString(ARCHIVE_APP_OPTIONS_DATA, gpFrmOptions->edtArchiveApplicationOptions->Text);
       pRegistry->CloseKey();
     }
     delete pRegistry;
+    delete gpFrmOptions;
   }
   catch (...){}
 }
@@ -124,7 +134,7 @@ void __fastcall TfrmMain::ActionCompareClusterInformationExecute(TObject *Sender
   sCompare.insert(sCompare.find_last_of("."),".col");
   //launch comparison program
   sParameters.sprintf("\"%s\" \"%s\"", sMaster.c_str(), sCompare.c_str());
-  HINSTANCE hInst = ShellExecute(NULL, "open", gsComparisonProgram.c_str(), sParameters.c_str(), 0, 0);
+  HINSTANCE hInst = ShellExecute(NULL, "open", gpFrmOptions->edtComparisonApplication->Text.c_str(), sParameters.c_str(), 0, 0);
   if ((int)hInst <= 32)
     Application->MessageBox("Unable to launch comparison program.", "Error", MB_OK);
 }
@@ -147,7 +157,7 @@ void __fastcall TfrmMain::ActionCompareLocationInformationExecute(TObject *Sende
   sCompare.insert(sCompare.find_last_of("."),".gis");
   //launch comparison program
   sParameters.sprintf("\"%s\" \"%s\"", sMaster.c_str(), sCompare.c_str());
-  HINSTANCE hInst = ShellExecute(NULL, "open", gsComparisonProgram.c_str(), sParameters.c_str(), 0, 0);
+  HINSTANCE hInst = ShellExecute(NULL, "open", gpFrmOptions->edtComparisonApplication->Text.c_str(), sParameters.c_str(), 0, 0);
   if ((int)hInst <= 32)
     Application->MessageBox("Unable to launch comparison program.", "Error", MB_OK);
 }
@@ -170,7 +180,7 @@ void __fastcall TfrmMain::ActionCompareRelativeRisksExecute(TObject *Sender) {
   sCompare.insert(sCompare.find_last_of("."),".rr");
   //launch comparison program
   sParameters.sprintf("\"%s\" \"%s\"", sMaster.c_str(), sCompare.c_str());
-  HINSTANCE hInst = ShellExecute(NULL, "open", gsComparisonProgram.c_str(), sParameters.c_str(), 0, 0);
+  HINSTANCE hInst = ShellExecute(NULL, "open", gpFrmOptions->edtComparisonApplication->Text.c_str(), sParameters.c_str(), 0, 0);
   if ((int)hInst <= 32)
     Application->MessageBox("Unable to launch comparison program.", "Error", MB_OK);
 }
@@ -193,9 +203,88 @@ void __fastcall TfrmMain::ActionCompareSimulatedLLRsExecute(TObject *Sender) {
   sCompare.insert(sCompare.find_last_of("."),".llr");
   //launch comparison program
   sParameters.sprintf("\"%s\" \"%s\"", sMaster.c_str(), sCompare.c_str());
-  HINSTANCE hInst = ShellExecute(NULL, "open", gsComparisonProgram.c_str(), sParameters.c_str(), 0, 0);
+  HINSTANCE hInst = ShellExecute(NULL, "open", gpFrmOptions->edtComparisonApplication->Text.c_str(), sParameters.c_str(), 0, 0);
   if ((int)hInst <= 32)
     Application->MessageBox("Unable to launch comparison program.", "Error", MB_OK);
+}
+
+void TfrmMain::ArchiveResults() {
+  AnsiString    sArchiveFilename, sCommand;
+  std::string   sMaster, sCompare, sTemp1, sTemp2;
+
+  //create archive name
+  DateSeparator = '_';
+  TimeSeparator = '.';
+  sArchiveFilename.printf("%s%s.zip", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(TDateTime::CurrentDateTime()).c_str());
+  if (!access(sArchiveFilename.c_str(), 00) && remove(sArchiveFilename.c_str()))
+    return;
+
+  for (int i=0; i < lstDisplay->Items->Count; ++i) {
+    const ParameterResultsInfo & Ref = gvParameterResultsInfo[(size_t)lstDisplay->Items->Item[i]->Data];
+
+    //add parameter file
+    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\"",
+                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                     sArchiveFilename.c_str(),
+                     ltvScheduledBatchs->Items->Item[i]->Caption.c_str());
+    Execute(sCommand, false);
+
+    //add results file
+    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
+                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                     sArchiveFilename.c_str(),
+                     GetResultFileName(Ref.GetFilename(), sMaster).c_str(),
+                     GetCompareFilename(Ref.GetFilename(), sCompare).c_str());
+    Execute(sCommand, false);
+
+    //add cluster information file
+    sTemp1 = sMaster;
+    sTemp1.insert(sTemp1.find_last_of("."),".col");
+    sTemp2 = sCompare;
+    sTemp2.insert(sTemp2.find_last_of("."),".col");
+    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
+                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                     sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
+    Execute(sCommand, false);
+
+    //add location information file
+    sTemp1 = sMaster;
+    sTemp1.insert(sTemp1.find_last_of("."),".gis");
+    sTemp2 = sCompare;
+    sTemp2.insert(sTemp2.find_last_of("."),".gis");
+    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
+                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                     sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
+    Execute(sCommand, false);
+
+    //add relatives risks
+    if (Ref.GetRelativeRisksType() == EQUAL || Ref.GetRelativeRisksType() == NOT_EQUAL) {
+      sTemp1 = sMaster;
+      sTemp1.insert(sTemp1.find_last_of("."),".rr");
+      sTemp2 = sCompare;
+      sTemp2.insert(sTemp2.find_last_of("."),".rr");
+      sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
+                       gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                       gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                       sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
+      Execute(sCommand, false);
+    }
+
+    //add simulated ratios
+    sTemp1 = sMaster;
+    sTemp1.insert(sTemp1.find_last_of("."),".llr");
+    sTemp2 = sCompare;
+    sTemp2.insert(sTemp2.find_last_of("."),".llr");
+    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
+                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                     sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
+    Execute(sCommand, false);
+  }
 }
 
 /** launches compare program for viewing differences in output files */
@@ -212,7 +301,7 @@ void __fastcall TfrmMain::ActionCompareResultFilesExecute(TObject *Sender) {
   //launch comparison program
   const ZdFileName & Ref = gvParameterResultsInfo[(size_t)lstDisplay->Selected->Data].GetFilename();
   sParameters.sprintf("\"%s\" \"%s\"", GetResultFileName(Ref, sMaster).c_str(), GetCompareFilename(Ref, sCompare).c_str());
-  HINSTANCE hInst = ShellExecute(NULL, "open", gsComparisonProgram.c_str(), sParameters.c_str(), 0, 0);
+  HINSTANCE hInst = ShellExecute(NULL, "open", gpFrmOptions->edtComparisonApplication->Text.c_str(), sParameters.c_str(), 0, 0);
   if ((int)hInst <= 32)
     Application->MessageBox("Unable to launch comparison program.", "Error", MB_OK);
 }
@@ -311,6 +400,9 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
         _sleep(2);
         iItemIndex++;
    }
+   //archive results
+   if (gpFrmOptions->chkArchiveResults->Checked)
+     ArchiveResults();
    EnableSaveResultsAction();
 }
 
@@ -372,6 +464,7 @@ void __fastcall TfrmMain::btnBrowseBatchExecutableComparatorClick(TObject *Sende
   OpenDialog->Filter = "Executable files (*.exe)|*.exe|All files (*.*)|*.*";
   OpenDialog->FilterIndex = 0;
   OpenDialog->Title = "Select SaTScan Batch Executable (comparator)";
+  OpenDialog->Options >> ofAllowMultiSelect;
   if (OpenDialog->Execute())
     edtBatchExecutableComparatorName->Text = OpenDialog->FileName;
 }
@@ -383,6 +476,7 @@ void __fastcall TfrmMain::btnBrowseBatchExecutableClick(TObject *Sender) {
   OpenDialog->Filter = "Executable files (*.exe)|*.exe|All files (*.*)|*.*";
   OpenDialog->FilterIndex = 0;
   OpenDialog->Title = "Select SaTScan Batch Executable";
+  OpenDialog->Options >> ofAllowMultiSelect;
   if (OpenDialog->Execute())
     edtBatchExecutableName->Text = OpenDialog->FileName;
 }
@@ -590,7 +684,7 @@ void TfrmMain::EnableStartAction() {
 }
 
 /** creates process to execute command */
-bool TfrmMain::Execute(const AnsiString & sCommandLine) {
+bool TfrmMain::Execute(const AnsiString & sCommandLine, bool bWindowed) {
    STARTUPINFO          si;
    PROCESS_INFORMATION  pi;
    unsigned long        lProcessTerminationStatus=-1;
@@ -605,7 +699,7 @@ bool TfrmMain::Execute(const AnsiString & sCommandLine) {
                      NULL,                                         //Process handle not inheritable.
                      NULL,                                         //Thread handle not inheritable.
                      FALSE,                                        //Set handle inheritance to FALSE.
-                     /*(chkShowDosWindow->Checked ?*/ CREATE_NEW_CONSOLE /*: CREATE_NO_WINDOW)*/, //No creation flags.
+                     (bWindowed ? CREATE_NEW_CONSOLE : CREATE_NO_WINDOW), //No creation flags.
                      NULL,                                         //Use parent's environment block.
                      NULL,                                         //Use parent's starting directory.
                      &si,                                          //Pointer to STARTUPINFO structure.
@@ -752,28 +846,12 @@ void __fastcall TfrmMain::lstDisplaySelectItem(TObject *Sender, TListItem *Item,
 
 /** displays open dialog when compare program not set */
 bool TfrmMain::PromptForCompareProgram() {
-  bool  bReturn=true;
-
-  if (gsComparisonProgram.empty()) {
-    OpenDialog->FileName =  "";
-    OpenDialog->DefaultExt = "*.exe";
-    OpenDialog->Filter = "Executable files (*.exe)|*.exe|All files (*.*)|*.*";
-    OpenDialog->FilterIndex = 0;
-    OpenDialog->Title = "Select Comparison Program";
-    if (OpenDialog->Execute())
-      gsComparisonProgram = OpenDialog->FileName.c_str();
-    else
-      bReturn = false;
+  if (!gpFrmOptions->edtComparisonApplication->Text.Length()) {
+    gpFrmOptions->ShowModal();
+    return gpFrmOptions->edtComparisonApplication->Text.Length();
   }
-  return bReturn;
+  return true;
 }
-
-
-
-
-
-
-
 
 void __fastcall TfrmMain::ActionAddParameterFileExecute(TObject *Sender) {
   OpenDialog->FileName =  "";
@@ -781,8 +859,10 @@ void __fastcall TfrmMain::ActionAddParameterFileExecute(TObject *Sender) {
   OpenDialog->Filter = "Parameters files (*.prm)|*.prm|Text files (*.txt)|*.txt|All files (*.*)|*.*";
   OpenDialog->FilterIndex = 0;
   OpenDialog->Title = "Add Parameter File";
+  OpenDialog->Options << ofAllowMultiSelect;
   if (OpenDialog->Execute())
-    ltvScheduledBatchs->Items->Add()->Caption = OpenDialog->FileName;
+    for (int i=0; i < OpenDialog->Files->Count; i++)
+      ltvScheduledBatchs->Items->Add()->Caption = OpenDialog->Files->Strings[i];
   EnableStartAction();
   EnableSaveParametersListAction();
   EnableRemoveParameterAction();
@@ -828,12 +908,18 @@ void __fastcall TfrmMain::ActionLoadParameterListExecute(TObject *Sender){
   OpenDialog->Filter = "Parameters List files (*.prml)|*.prml|Text files (*.txt)|*.txt|All files (*.*)|*.*";
   OpenDialog->FilterIndex = 0;
   OpenDialog->Title = "Load Parameters List from File";
+  OpenDialog->Options >> ofAllowMultiSelect;
   if (OpenDialog->Execute()) {
     ltvScheduledBatchs->Items->Clear();
     std::ifstream in(OpenDialog->FileName.c_str());
     while (!in.eof()) {
          std::getline(in, sParameterFilename);
-         ltvScheduledBatchs->Items->Add()->Caption = sParameterFilename.c_str();
+          TListItem * pItem = ltvScheduledBatchs->Items->Add();
+          pItem->Caption = sParameterFilename.c_str();
+          pItem->Caption = pItem->Caption.Trim();
+          if (!pItem->Caption.Length())
+            pItem->Delete();
+
     }
   }
   EnableStartAction();
@@ -859,6 +945,11 @@ void __fastcall TfrmMain::ltvScheduledBatchsKeyDown(TObject *Sender, WORD &Key, 
 
 void __fastcall TfrmMain::ltvScheduledBatchsSelectItem(TObject *Sender, TListItem *Item, bool Selected) {
   EnableRemoveParameterAction();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfrmMain::ActionOptionsExecute(TObject *Sender) {
+  gpFrmOptions->ShowModal();
 }
 //---------------------------------------------------------------------------
 

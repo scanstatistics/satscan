@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <dos.h>
+#include "Options.h"
 //---------------------------------------------------------------------------
 
 enum CompareType {UNKNOWN=0, MASTER_MISSING, COMPARE_MISSING, EQUAL, NOT_EQUAL, NOT_APPLICABLE};
@@ -113,6 +115,9 @@ __published:	// IDE-managed Components
         TButton *btnRemove;
         TBitBtn *btnLoadDefinitions;
         TSplitter *Splitter1;
+        TToolButton *btnOptions;
+        TToolButton *ToolButton3;
+        TAction *ActionOptions;
         void __fastcall btnBrowseBatchExecutableClick(TObject *Sender);
         void __fastcall btnBrowseBatchExecutableComparatorClick(TObject *Sender);
         void __fastcall ActionStartExecute(TObject *Sender);
@@ -134,10 +139,10 @@ __published:	// IDE-managed Components
           WORD &Key, TShiftState Shift);
         void __fastcall ltvScheduledBatchsSelectItem(TObject *Sender,
           TListItem *Item, bool Selected);
+        void __fastcall ActionOptionsExecute(TObject *Sender);
    
   private:
     std::vector<ParameterResultsInfo>   gvParameterResultsInfo;
-    std::string                         gsComparisonProgram;
     int                                 giSortColumnIndex;
     std::vector<int>                    gvColumnSortOrder;
 
@@ -147,10 +152,16 @@ __published:	// IDE-managed Components
     static const char                 * PARAMETER_DATA;
     static const char                 * COMPARE_APP_DATA;
     static const char                 * COMPARE_FILE_EXTENSION;
+    static const char                 * ARCHIVE_APP_DATA;
+    static const char                 * USE_ARCHIVE_APP_DATA;
+    static const char                 * ARCHIVE_APP_OPTIONS_DATA;
+
+    TfrmOptions                       * gpFrmOptions;  
 
     void                                AddList();
     void                                AddList(const char * sMessage);
     void                                AddSubItemForType(TListItem * pListItem, CompareType eType);
+    void                                ArchiveResults();
     void                                CompareClusterInformationFiles();
     void                                CompareLocationInformationFiles();
     void                                CompareRelativeRisksInformationFiles();
@@ -162,7 +173,7 @@ __published:	// IDE-managed Components
     void                                EnableSaveParametersListAction();
     void                                EnableSaveResultsAction();
     void                                EnableStartAction();
-    bool                                Execute(const AnsiString & sCommandLine);
+    bool                                Execute(const AnsiString & sCommandLine, bool bWindowed=true);
     std::string                       & GetCompareFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename);
     AnsiString                        & GetDisplayTime(AnsiString & sDisplay);
     std::string                       & GetResultFileName(const ZdFileName & ParameterFilename, std::string & sResultFilename);

@@ -1,9 +1,9 @@
 object frmMain: TfrmMain
-  Left = 35
-  Top = 116
-  Width = 946
+  Left = 190
+  Top = 138
+  Width = 604
   Height = 491
-  Caption = 'SaTScan Version Comparsion Utility v1.1'
+  Caption = 'SaTScan Version Comparsion Utility v1.2'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,14 +17,14 @@ object frmMain: TfrmMain
   object Bevel1: TBevel
     Left = 0
     Top = 29
-    Width = 938
+    Width = 596
     Height = 2
     Align = alTop
   end
   object Splitter1: TSplitter
     Left = 0
     Top = 237
-    Width = 938
+    Width = 596
     Height = 3
     Cursor = crVSplit
     Align = alTop
@@ -34,7 +34,7 @@ object frmMain: TfrmMain
   object pnlTop: TPanel
     Left = 0
     Top = 31
-    Width = 938
+    Width = 596
     Height = 206
     Align = alTop
     BevelOuter = bvNone
@@ -44,7 +44,7 @@ object frmMain: TfrmMain
     object pnlTopTop: TPanel
       Left = 0
       Top = 0
-      Width = 938
+      Width = 596
       Height = 89
       Align = alTop
       BevelOuter = bvNone
@@ -66,7 +66,7 @@ object frmMain: TfrmMain
       object edtBatchExecutableComparatorName: TEdit
         Left = 12
         Top = 22
-        Width = 877
+        Width = 535
         Height = 21
         Anchors = [akLeft, akRight]
         TabOrder = 0
@@ -75,14 +75,14 @@ object frmMain: TfrmMain
       object edtBatchExecutableName: TEdit
         Left = 12
         Top = 61
-        Width = 877
+        Width = 535
         Height = 21
         Anchors = [akLeft, akRight]
         TabOrder = 1
         OnChange = edtChangeInput
       end
       object btnBrowseBatchExecutable: TButton
-        Left = 895
+        Left = 553
         Top = 60
         Width = 31
         Height = 21
@@ -101,7 +101,7 @@ object frmMain: TfrmMain
         OnClick = btnBrowseBatchExecutableClick
       end
       object btnBrowseBatchComparatorExecutable: TButton
-        Left = 895
+        Left = 553
         Top = 21
         Width = 31
         Height = 21
@@ -123,7 +123,7 @@ object frmMain: TfrmMain
     object Panel1: TPanel
       Left = 0
       Top = 89
-      Width = 858
+      Width = 516
       Height = 117
       Align = alClient
       BevelOuter = bvNone
@@ -140,13 +140,13 @@ object frmMain: TfrmMain
       object ltvScheduledBatchs: TListView
         Left = 12
         Top = 8
-        Width = 846
+        Width = 504
         Height = 98
         Anchors = [akLeft, akTop, akRight, akBottom]
         Columns = <
           item
             Caption = 'Parameter Filename'
-            Width = 690
+            Width = 500
           end>
         HideSelection = False
         MultiSelect = True
@@ -158,7 +158,7 @@ object frmMain: TfrmMain
       end
     end
     object pnlTopButtons: TPanel
-      Left = 858
+      Left = 516
       Top = 89
       Width = 80
       Height = 117
@@ -212,7 +212,7 @@ object frmMain: TfrmMain
   object pnlClient: TPanel
     Left = 0
     Top = 240
-    Width = 938
+    Width = 596
     Height = 224
     Align = alClient
     BevelOuter = bvNone
@@ -222,7 +222,7 @@ object frmMain: TfrmMain
     object lstDisplay: TListView
       Left = 12
       Top = 11
-      Width = 795
+      Width = 453
       Height = 200
       Anchors = [akLeft, akTop, akRight, akBottom]
       Columns = <
@@ -265,7 +265,7 @@ object frmMain: TfrmMain
       OnSelectItem = lstDisplaySelectItem
     end
     object pnlClientRight: TPanel
-      Left = 816
+      Left = 474
       Top = 0
       Width = 122
       Height = 224
@@ -345,7 +345,7 @@ object frmMain: TfrmMain
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 938
+    Width = 596
     Height = 29
     ButtonHeight = 23
     ButtonWidth = 25
@@ -422,6 +422,22 @@ object frmMain: TfrmMain
       ParentShowHint = False
       ShowHint = True
     end
+    object ToolButton3: TToolButton
+      Left = 70
+      Top = 2
+      Width = 12
+      Caption = 'ToolButton3'
+      ImageIndex = 2
+      Style = tbsSeparator
+    end
+    object btnOptions: TToolButton
+      Left = 82
+      Top = 2
+      Action = ActionOptions
+      ImageIndex = 4
+      ParentShowHint = False
+      ShowHint = True
+    end
   end
   object OpenDialog: TOpenDialog
     DefaultExt = '.txt'
@@ -434,7 +450,7 @@ object frmMain: TfrmMain
     Left = 16
     Top = 400
     Bitmap = {
-      494C010104000900040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010105000900040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001001000000000000018
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -540,19 +556,19 @@ object frmMain: TfrmMain
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000008B1000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000001700FF1C0F210000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000700E71CFF1C8B10000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000000000E71CFF1C000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -634,16 +650,15 @@ object frmMain: TfrmMain
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+      00000000000000000000000000000000FFFF000000000000F97F000000000000
+      FD7F000000000000F9C0000000000000F9FF000000000000FFFF000000000000
+      F97F000000000000F9C0000000000000F9FF000000000000F9FF000000000000
+      B87F0000000000001D7F00000000000009C0000000000000C9FF000000000000
+      FFFF000000000000FFFF000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
       FFFFFFFFFFFFFFFFF81FF81FF81FF81FE00FE00FE00FE00FE00FE00FE00FE00F
       C007C007C007C007C007C007C007C007C007C007C007C007C007C007C007C007
       C007C007C007C007E00FE00FE00FE00FF00FF00FF00FF00FF83FF83FF83FF83F
-      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000000000000000
-      000000000000}
+      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
   end
   object ActionList1: TActionList
     Left = 16
@@ -702,6 +717,10 @@ object frmMain: TfrmMain
       Caption = 'Load'
       Hint = 'Load Parameters List'
       OnExecute = ActionLoadParameterListExecute
+    end
+    object ActionOptions: TAction
+      Hint = 'Options'
+      OnExecute = ActionOptionsExecute
     end
   end
   object SaveDialog: TSaveDialog
