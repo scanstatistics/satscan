@@ -117,7 +117,7 @@ class CSaTScanData {
     virtual void                MakeData(int iSimulationNumber);
     virtual void                ReadDataFromFiles();
 
-    void                        AdjustNeighborCounts(); // For sequential analysis, after top cluster removed
+    virtual void                AdjustNeighborCounts(); // For sequential analysis, after top cluster removed
     const PopulationCategories& GetPopulationCategories() const {return gPopulationCategories;}
     int                                 ComputeNewCutoffInterval(Julian jStartDate, Julian& jEndDate);
     bool                        ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, Julian & JulianDate);
@@ -134,20 +134,20 @@ class CSaTScanData {
     double                      GetAnnualRatePop() const {return m_nAnnualRatePop;};
     double                      GetMaxCircleSize() {return m_nMaxCircleSize;};
     double                      GetMeasureAdjustment() const;
-    tract_t                     GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
+    virtual tract_t             GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
     inline const                TractHandler *GetTInfo() const { return gpTInfo;} ;          // DTG
     inline const GInfo        * GetGInfo() const { return gpGInfo;} ;
     void                        IncrementCount(tract_t nTID, int nCount, Julian nDate, count_t** pCounts);
     bool                        ParseCountLine(const char*  szDescription, int nRec, StringParser & Parser, tract_t& tid, count_t& nCount, Julian& nDate);
     bool                        ParseCountLineCategories(const char*   szDescription, const int     nRec, char*   szData, const int     nCats,
                                                          const int     nDataElements, const tract_t tid, const count_t nCount, const Julian  nDate);
-    void                        PrintNeighbors();
+    virtual void                PrintNeighbors();
     bool                        ReadCaseFile();
     bool                        ReadControlFile();
     bool                        ReadCoordinatesFile();
     bool                        ReadGridFile();
+    bool                        ReadMaxCirclePopulationFile();
     bool                        ReadPopulationFile();
-    bool                        ReadSpecialPopulationFile();
     void                        SetPurelyTemporalSimCases();
     void                        SetMaxCircleSize();
 };

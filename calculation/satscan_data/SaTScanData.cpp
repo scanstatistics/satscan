@@ -227,7 +227,7 @@ bool CSaTScanData::FindNeighbors() {
       }
 
       //adjust special population file now that we know the total case count
-      if (m_pParameters->UseSpecialPopulationFile()) {
+      if (m_pParameters->UseMaxCirclePopulationFile()) {
         for (i=0; i < (int)gvCircleMeasure.size(); i++)
            dTotalPopulation += gvCircleMeasure[i];
         if (dTotalPopulation ==0)
@@ -238,14 +238,14 @@ bool CSaTScanData::FindNeighbors() {
 
       if (m_pParameters->GetIsSequentialScanning())
         MakeNeighbors(gpTInfo, gpGInfo, m_pSortedInt, m_pSortedUShort, m_nTracts, m_nGridTracts,
-                      (m_pParameters->UseSpecialPopulationFile() ? &gvCircleMeasure[0] : m_pMeasure[0]),
+                      (m_pParameters->UseMaxCirclePopulationFile() ? &gvCircleMeasure[0] : m_pMeasure[0]),
                       m_nMaxCircleSize, m_nTotalMeasure, m_NeighborCounts,
                       m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                       m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
                       m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
       else
         MakeNeighbors(gpTInfo, gpGInfo, m_pSortedInt, m_pSortedUShort, m_nTracts, m_nGridTracts,
-                      (m_pParameters->UseSpecialPopulationFile() ? &gvCircleMeasure[0] : m_pMeasure[0]),
+                      (m_pParameters->UseMaxCirclePopulationFile() ? &gvCircleMeasure[0] : m_pMeasure[0]),
                       m_nMaxCircleSize, m_nMaxCircleSize, m_NeighborCounts,
                       m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                       m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
