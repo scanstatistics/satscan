@@ -195,10 +195,10 @@ bool CSpaceTimePermutationModel::ReadData()
         if (!m_pData->ReadPops())
           return false;
 
-      if (!m_pData->ReadCounts(m_pParameters->m_szCaseFilename, "case", &m_pData->m_pCases))
+      if (!m_pData->ReadCounts(m_pParameters->GetCaseFileName().c_str(), "case", &m_pData->m_pCases))
         return false;
     
-      if (m_pParameters->m_bSpecialGridFile && !m_pData->ReadGrid())
+      if (m_pParameters->UseSpecialGrid() && !m_pData->ReadGrid())
         return false;
 
       InitializeRandomizationStructures();  

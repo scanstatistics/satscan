@@ -4,14 +4,12 @@
 
 #define DEBUG 1
 
+/** Constructor */
 CBernoulliModel::CBernoulliModel(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-                :CModel(pParameters, pData, pPrintDirection)
-{
-}
+                :CModel(pParameters, pData, pPrintDirection) {}
 
-CBernoulliModel::~CBernoulliModel()
-{
-}
+/** Destructor */                
+CBernoulliModel::~CBernoulliModel() {}
 
 bool CBernoulliModel::ReadData()
 {
@@ -20,17 +18,13 @@ bool CBernoulliModel::ReadData()
       if (!m_pData->ReadGeo())
          return false;
 
-      if (!m_pData->ReadCounts(m_pParameters->m_szCaseFilename,
-                               "case",
-                               &m_pData->m_pCases))
+      if (!m_pData->ReadCounts(m_pParameters->GetCaseFileName().c_str(), "case", &m_pData->m_pCases))
         return false;
     
-      if (!m_pData->ReadCounts(m_pParameters->m_szControlFilename,
-                               "control",
-                               &m_pData->m_pControls))
+      if (!m_pData->ReadCounts(m_pParameters->GetControlFileName().c_str(), "control", &m_pData->m_pControls))
         return false;
     
-      if (m_pParameters->m_bSpecialGridFile)
+      if (m_pParameters->UseSpecialGrid())
         {
         if (!m_pData->ReadGrid())
           return false;

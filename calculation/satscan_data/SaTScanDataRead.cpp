@@ -296,7 +296,7 @@ bool CSaTScanData::ReadPops() {
 
   try {
     gpPrintDirection->SatScanPrintf("Reading the population file\n");
-    if ((fp = fopen(m_pParameters->m_szPopFilename, "r")) == NULL) {
+    if ((fp = fopen(m_pParameters->GetPopulationFileName().c_str(), "r")) == NULL) {
       gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Could not open population file.\n", "ReadPops()");
       return false;
     }
@@ -491,7 +491,7 @@ bool CSaTScanData::ReadGeoLatLong() {
    try {
       gpPrintDirection->SatScanPrintf("Reading the geographic coordinates file (lat/lon).\n");
 
-      if ((fp = fopen(m_pParameters->m_szCoordFilename, "r")) == NULL) {
+      if ((fp = fopen(m_pParameters->GetCoordinatesFileName().c_str(), "r")) == NULL) {
         gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Could not open coordinates file (lat/long).\n");
         return false;
       }
@@ -548,7 +548,7 @@ bool CSaTScanData::ReadGeoLatLong() {
         }
     
         // Store tracts as grid if no special grid file specified.
-        if (!m_pParameters->m_bSpecialGridFile) {
+        if (!m_pParameters->UseSpecialGrid()) {
           if (!gpGInfo->giInsertGnode(szTid, pCoords)) {
             gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Duplicate tract ID in coordinates file (lat/lon), line %d.\n",nRec);
             bValid = false;
@@ -567,7 +567,7 @@ bool CSaTScanData::ReadGeoLatLong() {
       }
     
       m_nTracts = gpTInfo->tiGetNumTracts();
-      if (!m_pParameters->m_bSpecialGridFile)
+      if (!m_pParameters->UseSpecialGrid())
         m_nGridTracts = gpGInfo->giGetNumTracts();
     
       fclose(fp); 
@@ -598,7 +598,7 @@ bool CSaTScanData::ReadGeoCoords() {
    try {
       gpPrintDirection->SatScanPrintf("Reading the geographic coordinates file\n");
 
-      if ((fp = fopen(m_pParameters->m_szCoordFilename, "r")) == NULL) {
+      if ((fp = fopen(m_pParameters->GetCoordinatesFileName().c_str(), "r")) == NULL) {
         gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Could not open coordinates file.\n", "ReadGeoCoords()");
         return false;
       }
@@ -655,7 +655,7 @@ bool CSaTScanData::ReadGeoCoords() {
           gpTInfo->tiInsertTnode(szTid, pCoords);
 
           // Store tracts as grid if no special grid file specified.
-          if (!m_pParameters->m_bSpecialGridFile)
+          if (!m_pParameters->UseSpecialGrid())
             gpGInfo->giInsertGnode(szTid, pCoords);
     
 #if (DEBUG)
@@ -704,7 +704,7 @@ bool CSaTScanData::ReadGeoCoords() {
         }
 
         // Store tracts as grid if no special grid file specified.
-        if (!m_pParameters->m_bSpecialGridFile) {
+        if (!m_pParameters->UseSpecialGrid()) {
            if (!gpGInfo->giInsertGnode(szTid, pCoords)) {
              gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Duplicate tract ID in coordinates file, line %d.\n",nRec);
              bValid = false;
@@ -724,7 +724,7 @@ bool CSaTScanData::ReadGeoCoords() {
       }
 
       m_nTracts = gpTInfo->tiGetNumTracts();
-      if (!m_pParameters->m_bSpecialGridFile)
+      if (!m_pParameters->UseSpecialGrid())
         m_nGridTracts = gpGInfo->giGetNumTracts();
 
       fclose(fp);
@@ -778,7 +778,7 @@ bool CSaTScanData::ReadGridCoords() {
    try {
       gpPrintDirection->SatScanPrintf("Reading the grid file\n");
 
-      if ((fp = fopen(m_pParameters->m_szGridFilename, "r")) == NULL) {
+      if ((fp = fopen(m_pParameters->GetSpecialGridFileName().c_str(), "r")) == NULL) {
         gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Could not open special grid file.\n", "ReadGridCoords()");
         return false;
       }
@@ -866,7 +866,7 @@ bool CSaTScanData::ReadGridLatLong() {
    try {
       gpPrintDirection->SatScanPrintf("Reading the grid file (lat/lon).\n");
 
-      if ((fp = fopen(m_pParameters->m_szGridFilename, "r")) == NULL) {
+      if ((fp = fopen(m_pParameters->GetSpecialGridFileName().c_str(), "r")) == NULL) {
         gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Could not open special grid file (lat/lon).\n", "ReadGridLatLong()");
         return false;
       }

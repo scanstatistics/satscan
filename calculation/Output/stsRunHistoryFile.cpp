@@ -302,7 +302,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, RUN_TIME_FIELD));
 
       // output file name field
-      sTempValue = pAnalysis.GetSatScanData()->m_pParameters->m_szOutputFilename;
+      sTempValue = pAnalysis.GetSatScanData()->m_pParameters->GetOutputFileName().c_str();
       StripCRLF(sTempValue);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, OUTPUT_FILE_FIELD));
       SetAdditionalOutputFileNameString(sTempValue, *(pAnalysis.GetSatScanData()->m_pParameters));
@@ -342,7 +342,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       // covariates number
       SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->gpCats->catGetNumEls(), GetFieldNumber(gvFields, COVARIATES_FIELD));
 
-      SetBoolField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_bSpecialGridFile, GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field
+      SetBoolField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->UseSpecialGrid(), GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field
       SetStringField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_szStartDate, GetFieldNumber(gvFields, START_DATE_FIELD));  // start date field
       SetStringField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_szEndDate, GetFieldNumber(gvFields, END_DATE_FIELD)); // end date field
       SetBoolField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_bAliveClustersOnly, GetFieldNumber(gvFields, ALIVE_ONLY_FIELD)); // alive clusters only field
@@ -417,7 +417,7 @@ void stsRunHistoryFile::ReplaceExtensionAndAppend(ZdString& sOutputFileNames, co
 // pre : none
 // post : sTempValue will contain the names of the additional output files
 void stsRunHistoryFile::SetAdditionalOutputFileNameString(ZdString& sOutputFileNames, const CParameters& params) {
-   ZdFileName   sResultFile(ZdFileName(params.m_szOutputFilename).GetFileName());
+   ZdFileName   sResultFile(ZdFileName(params.GetOutputFileName().c_str()).GetFileName());
 
    try {
       sOutputFileNames.Clear();

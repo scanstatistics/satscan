@@ -100,7 +100,7 @@ void CSaTScanData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, con
    std::vector<std::string>             vIdentifiers;
 
    try {
-      std::auto_ptr<RelativeRiskData> pData( new RelativeRiskData(gpPrintDirection, m_pParameters->m_szOutputFilename) );
+      std::auto_ptr<RelativeRiskData> pData( new RelativeRiskData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str()) );
       for(int i = 0; i < m_nTracts; ++i) {
          if (GetMeasureAdjustment() && m_pMeasure[0][i])
             sRisk.printf("%12.3f", ((double)(m_pCases[0][i]))/(GetMeasureAdjustment()*m_pMeasure[0][i]));

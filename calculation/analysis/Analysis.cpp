@@ -203,7 +203,7 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
 
    try {
       if (m_pParameters->m_bMostLikelyClusters || m_pParameters->GetOutputClusterLevelDBF()) {
-         pData.reset( new stsClusterData(gpPrintDirection, m_pParameters->m_szOutputFilename, lReportHistoryRunNumber, GetCoordinateType(),
+         pData.reset( new stsClusterData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, GetCoordinateType(),
                                     m_pParameters->m_nModel, m_pParameters->m_nDimension, m_pParameters->m_nReplicas > 99,
                                     m_pParameters->m_nNumEllipses > 0) );
 
@@ -301,7 +301,7 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
 
    try {
       if(m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
-         pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->m_szOutputFilename, lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
+         pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
 
       measure_t nMinMeasure = 0;
 
@@ -362,7 +362,7 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
       measure_t nMinMeasure = -1;
       
       if(m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
-         pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->m_szOutputFilename, lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
+         pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
 
       dSignifRatio05 = SimRatios.GetAlpha05();
 
@@ -586,7 +586,7 @@ void CAnalysis::InitializeTopClusterList() {
 
 void CAnalysis::OpenReportFile(FILE*& fp, const char* szType) {
    try {
-      if ((fp = fopen(m_pParameters->m_szOutputFilename, szType)) == NULL) {
+      if ((fp = fopen(m_pParameters->GetOutputFileName().c_str(), szType)) == NULL) {
         if (!strcmp(szType, "w"))
           SSGenerateException("  Error: Unable to create report file.", "OpenReportFile");
         else if (!strcmp(szType, "a"))
@@ -616,7 +616,7 @@ void CAnalysis::PerformSimulations() {
         sReplicationFormatString = "Log Likelihood Ratio for #%ld of %ld Replications: %7.2f\n";
 
       if (m_pParameters->m_bSaveSimLogLikelihoods || m_pParameters->GetDBaseOutputLogLikeli())
-         pLLRData.reset( new LogLikelihoodData(gpPrintDirection, m_pParameters->m_szOutputFilename) );
+         pLLRData.reset( new LogLikelihoodData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str()) );
 
       clock_t nStartTime = clock();
       SimRatios.Initialize();
@@ -977,7 +977,7 @@ bool CAnalysis::UpdateReport(const long& lReportHistoryRunNumber) {
                 ((double)m_nPower_Y_Count)/m_pParameters->m_nReplicas);
       }
 
-      if ( !strlen(m_pParameters->m_szGridFilename) && m_pParameters->m_nAnalysisType ==PROSPECTIVESPACETIME) {
+      if (!m_pParameters->UseSpecialGrid() && m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME) {
         fprintf(fp, "\nIMPORTANT:\nFor the prospective analysis to be correct, it is important\n");
         fprintf(fp, "that the scanning spatial window is the same for each analysis that is\n");
         fprintf(fp, "performed once a day, week, year, etc. This means that the grid points\n");

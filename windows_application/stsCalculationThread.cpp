@@ -126,7 +126,7 @@ void __fastcall CalcThread::Execute() {
       else {
         gpPrintWindow->SatScanPrintf("\nSaTScan completed successfully.\n");
         gpPrintWindow->SatScanPrintf("The results have been written to: \n");
-        gpPrintWindow->SatScanPrintf("  %s\n\n",gpParams->m_szOutputFilename);
+        gpPrintWindow->SatScanPrintf("  %s\n\n",gpParams->GetOutputFileName().c_str());
         Synchronize((TThreadMethod)&LoadResultsFromFile);
       }
     }
@@ -189,7 +189,7 @@ void __fastcall CalcThread::GetIsCanceledFromProgress(void) {
 /** Loads analysis run memo field with results of analysis. */
 void __fastcall CalcThread::LoadResultsFromFile() {
   try {
-    gpFormStatus->LoadFromFile(gpParams->m_szOutputFilename);
+    gpFormStatus->LoadFromFile(const_cast<char*>(gpParams->GetOutputFileName().c_str()));
   }
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
 }
