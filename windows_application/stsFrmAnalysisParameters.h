@@ -185,6 +185,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        EnableDatesByTimeIntervalUnits();
     void                        EnableProspectiveStartDate(bool bEnable);
     void                        EnableProspectiveSurveillanceGroup(bool bEnable);
+    void                        EnableSettingsForAnalysisModelCombination();
     void                        EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal);
     void                        EnableStudyPeriodDates(bool bYear, bool bMonth, bool bDay);
     void                        EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges);

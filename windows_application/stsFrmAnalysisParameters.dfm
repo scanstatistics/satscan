@@ -25,7 +25,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 2
     Width = 489
     Height = 321
-    ActivePage = tbTimeParameter
+    ActivePage = tbInputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -506,42 +506,42 @@ object frmAnalysis: TfrmAnalysis
         TabOrder = 1
         TabStop = True
         object lblProspectiveStartYear: TLabel
-          Left = 55
+          Left = 41
           Top = 78
           Width = 22
           Height = 13
           Caption = 'Year'
         end
         object lblProspectiveStartMonth: TLabel
-          Left = 111
+          Left = 97
           Top = 78
           Width = 30
           Height = 13
           Caption = 'Month'
         end
         object lblProspectiveStartDay: TLabel
-          Left = 158
+          Left = 144
           Top = 78
           Width = 19
           Height = 13
           Caption = 'Day'
         end
         object lblProspectiveStartDate: TLabel
-          Left = 29
+          Left = 36
           Top = 58
-          Width = 183
+          Width = 81
           Height = 13
-          Caption = 'Start Date of Prospective Surveillance:'
+          Caption = ' performed since:'
         end
         object lblAdjustForEarlierAnalyses: TLabel
           Left = 36
           Top = 30
-          Width = 200
+          Width = 119
           Height = 13
-          Caption = 'Adjust for earlier analyses performed since:'
+          Caption = 'Adjust for earlier analyses'
         end
         object edtProspectiveStartDateYear: TEdit
-          Left = 52
+          Left = 38
           Top = 97
           Width = 41
           Height = 21
@@ -553,7 +553,7 @@ object frmAnalysis: TfrmAnalysis
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtProspectiveStartDateMonth: TEdit
-          Left = 112
+          Left = 98
           Top = 97
           Width = 25
           Height = 21
@@ -565,7 +565,7 @@ object frmAnalysis: TfrmAnalysis
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtProspectiveStartDateDay: TEdit
-          Left = 158
+          Left = 144
           Top = 97
           Width = 25
           Height = 21

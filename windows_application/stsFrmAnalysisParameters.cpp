@@ -554,6 +554,54 @@ void TfrmAnalysis::EnableProspectiveSurveillanceGroup(bool bEnable) {
    EnableProspectiveStartDate(bEnable);
 }
 
+void TfrmAnalysis::EnableSettingsForAnalysisModelCombination() {
+  bool  bPoisson(GetModelControlType() == POISSON),
+        bSpaceTimePermutation(GetModelControlType() == SPACETIMEPERMUTATION);
+
+  try {
+
+    switch (GetAnalysisControlType()) {
+      case PURELYSPATIAL             :
+        gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(false, false, false);
+        EnableSpatialOptionsGroup(true, false);
+        EnableTimeIntervalUnitsGroup(false);
+        EnableTemporalOptionsGroup(false, false, false);
+        break;
+      case PURELYTEMPORAL            :
+        gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson);
+        EnableSpatialOptionsGroup(false, false);
+        EnableTimeIntervalUnitsGroup(true);
+        EnableTemporalOptionsGroup(true, false, true);
+        break;
+      case SPACETIME                 :
+        gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson);
+        EnableSpatialOptionsGroup(true, !bSpaceTimePermutation);
+        EnableTimeIntervalUnitsGroup(true);
+        EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
+        break;
+      case PROSPECTIVESPACETIME      :
+        gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson);
+        EnableSpatialOptionsGroup(true, !bSpaceTimePermutation);
+        EnableTimeIntervalUnitsGroup(true);
+        EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
+        break;
+      case PROSPECTIVEPURELYTEMPORAL :
+        gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson);
+        EnableSpatialOptionsGroup(false, false);
+        EnableTimeIntervalUnitsGroup(true);
+        EnableTemporalOptionsGroup(true, false, false);
+        break;
+      default : ZdGenerateException("Unknown analysis type '%d'.", "OnAnalysisTypeClick()", GetAnalysisControlType());
+    }
+    EnableAdditionalOutFilesOptionsGroup(!bSpaceTimePermutation);
+    gpfrmAdvancedParameters->EnableAdjustmentsGroup(bPoisson);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("EnableSettingsForAnalysisModelCombination()","TfrmAnalysis");
+    throw;
+  }
+}
+
 /** enables or disables the spatial options group control */
 void TfrmAnalysis::EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal) {
    rdgSpatialOptions->Enabled = bEnable;
@@ -785,44 +833,19 @@ void __fastcall TfrmAnalysis::NaturalNumberKeyPress(TObject *Sender, char &Key) 
 
 /** method called in response to 'type of analysis' radio group click event */
 void TfrmAnalysis::OnAnalysisTypeClick() {
-  bool  bPoisson(GetModelControlType() == POISSON),
-        bBernoulli(GetModelControlType() == BERNOULLI),
-        bSpaceTimePermutation(GetModelControlType() == SPACETIMEPERMUTATION);
-
   try {
     switch (GetAnalysisControlType()) {
       case PURELYSPATIAL             :
-        gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(false, false, false);
-        EnableSpatialOptionsGroup(true, false);
-        EnableTimeIntervalUnitsGroup(false);
-        EnableTemporalOptionsGroup(false, false, false);
-        break;
       case PURELYTEMPORAL            :
-        gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson);
-        EnableSpatialOptionsGroup(false, false);
-        EnableTimeIntervalUnitsGroup(true);
-        EnableTemporalOptionsGroup(true, false, true);
-        break;
+      case PROSPECTIVEPURELYTEMPORAL : rdoSpaceTimePermutationModel->Enabled = false;
+                                       if (rdoSpaceTimePermutationModel->Checked)
+                                          rdoPoissonModel->Checked = true;
+                                       break;
       case SPACETIME                 :
-        gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson);
-        EnableSpatialOptionsGroup(true, !bSpaceTimePermutation);
-        EnableTimeIntervalUnitsGroup(true);
-        EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
-        break;
-      case PROSPECTIVESPACETIME      :
-        gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson);
-        EnableSpatialOptionsGroup(true, !bSpaceTimePermutation);
-        EnableTimeIntervalUnitsGroup(true);
-        EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
-        break;
-      case PROSPECTIVEPURELYTEMPORAL :
-        gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson);
-        EnableSpatialOptionsGroup(false, false);
-        EnableTimeIntervalUnitsGroup(true);
-        EnableTemporalOptionsGroup(true, false, false);
-        break;
+      case PROSPECTIVESPACETIME      : rdoSpaceTimePermutationModel->Enabled = true; break;
       default : ZdGenerateException("Unknown analysis type '%d'.", "OnAnalysisTypeClick()", GetAnalysisControlType());
     }
+    EnableSettingsForAnalysisModelCombination();
   }
   catch (ZdException &x) {
     x.AddCallpath("OnAnalysisTypeClick()","TfrmAnalysis");
@@ -834,18 +857,16 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
 void TfrmAnalysis::OnPrecisionTimesClick() {
   DatePrecisionType     eDatePrecisionType(GetPrecisionOfTimesControlType());
   try {
-    // disable probability models that don't match precision of time/analysis type combination
-    rdoSpaceTimePermutationModel->Enabled = eDatePrecisionType != NONE;
-    if (eDatePrecisionType == NONE) {
-      // if none was selected and space-time permutation was selected, reset model to Poisson
-      if (GetModelControlType() == SPACETIMEPERMUTATION)
-        SetModelControl(POISSON);
-      // switch analysis type to purely spatial if no dates in input data
-      if (GetAnalysisControlType() != PURELYSPATIAL)
-        SetAnalysisControl(PURELYSPATIAL);
-    }
-    // simulate probability model type control click, to ensure that all controls are synchronized
-    OnProbabilityModelClick();
+    //disable analyses that don't match precision
+    rdoRetrospectivePurelySpatial->Enabled = true;
+    rdoRetrospectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
+    rdoRetrospectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
+    rdoProspectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
+    rdoProspectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
+
+   // switch analysis type to purely spatial if no dates in input data
+   if (eDatePrecisionType == NONE && GetAnalysisControlType() != PURELYSPATIAL)
+     SetAnalysisControl(PURELYSPATIAL);
   }
   catch(ZdException &x) {
     x.AddCallpath("OnPrecisionTimesClick()","TfrmAnalysis");
@@ -855,38 +876,18 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
 
 /** method called in response to 'probability model' radio group click event */
 void TfrmAnalysis::OnProbabilityModelClick() {
-  DatePrecisionType     eDatePrecisionType(GetPrecisionOfTimesControlType());
-  AnalysisType          eAnalysisType;
-
   try {
     switch (GetModelControlType()) {
       case POISSON   		: 
-      case BERNOULLI            : rdoRetrospectivePurelySpatial->Enabled = true;
-                                  rdoRetrospectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
-                                  rdoRetrospectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
-                                  rdoProspectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
-                                  rdoProspectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
-                                  EnableAdditionalOutFilesOptionsGroup(true);
-                                  rdoPercentageTemproal->Caption = "Percent of Study Period (<= 90%)";
+      case BERNOULLI            : rdoPercentageTemproal->Caption = "Percent of Study Period (<= 90%)";
                                   lblSimulatedLogLikelihoodRatios->Caption = "Simulated Log Likelihood Ratios";
                                   break;
-      case SPACETIMEPERMUTATION : rdoRetrospectivePurelySpatial->Enabled = false;
-                                  rdoRetrospectivePurelyTemporal->Enabled = false;
-                                  rdoRetrospectiveSpaceTime->Enabled = true;
-                                  rdoProspectivePurelyTemporal->Enabled = false;
-                                  rdoProspectiveSpaceTime->Enabled = true;
-                                  eAnalysisType = GetAnalysisControlType();
-                                  if (!(eAnalysisType == SPACETIME || eAnalysisType == PROSPECTIVESPACETIME))
-                                    SetAnalysisControl(SPACETIME);
-                                  EnableAdditionalOutFilesOptionsGroup(false);
-                                  rdoPercentageTemproal->Caption = "Percent of Study Period (<= 50%)";
+      case SPACETIMEPERMUTATION : rdoPercentageTemproal->Caption = "Percent of Study Period (<= 50%)";
                                   lblSimulatedLogLikelihoodRatios->Caption = "Simulated Test Statistics";
                                   break;
       default : ZdGenerateException("Unknown probabilty model '%d'.", "OnProbablityModelClick()", GetModelControlType());
     }
-    gpfrmAdvancedParameters->EnableAdjustmentsGroup(GetModelControlType() == POISSON);
-    // simulate analysis type control click to synchronize controls
-    OnAnalysisTypeClick();
+    EnableSettingsForAnalysisModelCombination();
   }
   catch (ZdException &x) {
     x.AddCallpath("OnProbablityModelClick()","TfrmAnalysis");
@@ -1228,8 +1229,8 @@ void TfrmAnalysis::SetupInterface() {
     edtGridFileName->Text = gParameters.GetSpecialGridFileName().c_str();
     rgCoordinates->ItemIndex = gParameters.GetCoordinatesType();
     //Analysis Tab
-    SetModelControl(gParameters.GetProbabiltyModelType());
     SetAnalysisControl(gParameters.GetAnalysisType());
+    SetModelControl(gParameters.GetProbabiltyModelType());
     SetAreaScanRateControl(gParameters.GetAreaScanRateType());
     ParseDate(gParameters.GetStudyPeriodStartDate().c_str(), edtStudyPeriodStartDateYear, edtStudyPeriodStartDateMonth, edtStudyPeriodStartDateDay);
     ParseDate(gParameters.GetStudyPeriodEndDate().c_str(), edtStudyPeriodEndDateYear, edtStudyPeriodEndDateMonth, edtStudyPeriodEndDateDay);
