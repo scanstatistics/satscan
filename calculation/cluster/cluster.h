@@ -24,6 +24,8 @@ class CCluster {
     double                        m_NonCompactnessPenalty;  // non-compactness penalty, for ellipses
     int                           m_iEllipseOffset;     // Link to Circle or Ellipse (top cluster)
 
+    ZdString                    & GetPopulationAsString(ZdString& sString, double dPopulation) const;
+
   public:
     CCluster();
     virtual ~CCluster();
@@ -47,11 +49,13 @@ class CCluster {
     virtual void                  DisplayAnnualCaseInformation(FILE* fp, const CSaTScanData& DataHub,
                                                                const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const {/*stub - no action*/}
-    virtual void                  DisplayCaseInformation(FILE* fp, const CSaTScanData& DataHub,
-                                                         const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     void                          DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data, tract_t nFirstTract,
                                                             tract_t nLastTract, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub,
+                                                            const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
+                                                             const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
                                                      const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
@@ -61,27 +65,32 @@ class CCluster {
                                                                unsigned int iNumSimsCompleted) const;
     virtual void                  DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigned int iNumSimulations,
                                                         const AsciiPrintFormat& PrintFormat) const;
-    virtual void                  DisplayPopulation(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const ;
+    virtual void                  DisplayPopulation(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayPopulationOrdinal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat, const RealDataSet& DataSet) const;
     virtual void                  DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataHub,
                                                       const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplaySteps(FILE* fp, const AsciiPrintFormat& PrintFormat) const {/*stub - no action*/}
     virtual void                  DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintFormat) const {/*stub - no action*/}
-    virtual count_t               GetCaseCount(size_t tSetIndex) const = 0;
-    virtual count_t               GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex=0) const = 0;
     virtual tract_t               GetCentroidIndex() const {return m_Center;}
     double                        GetNonCompactnessPenalty() const {return m_NonCompactnessPenalty;}
     int                           GetEllipseOffset() const {return m_iEllipseOffset;}
     virtual ZdString            & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
-    virtual measure_t             GetMeasure(size_t tSetIndex) const = 0;
-    virtual measure_t             GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex=0) const = 0;
+    virtual measure_t             GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
+    virtual measure_t             GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const = 0;
+    virtual measure_t             GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
     virtual tract_t               GetNumTractsInnerCircle() const {return m_nTracts;}
-    const double                  GetPValue(unsigned int uiNumSimulationsCompleted) const;
+    virtual count_t               GetObservedCount(size_t tSetIndex=0) const;
+    virtual count_t               GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const = 0;
+    virtual count_t               GetObservedCountOrdinal(size_t tSetIndex, size_t iCategoryIndex) const;
+    double                        GetObservedDivExpected(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
+    virtual double                GetObservedDivExpectedForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex=0) const;
+    double                        GetObservedDivExpectedOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
+    double                        GetPValue(unsigned int uiNumSimulationsCompleted) const;
     unsigned int                  GetRank() const {return m_nRank;}
     double                        GetRatio() const {return m_nRatio;}
-    const double                  GetRelativeRisk(double nMeasureAdjustment, size_t tSetIndex=0) const;
-    virtual double                GetRelativeRiskForTract(tract_t tTract, const CSaTScanData& DataHub, size_t tSetIndex=0) const;
+
     virtual ZdString            & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     void                          IncrementRank() {m_nRank++;}
     virtual void                  Initialize(tract_t nCenter=0);

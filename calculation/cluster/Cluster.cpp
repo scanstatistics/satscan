@@ -63,8 +63,10 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iRepo
     else
       DisplayLatLongCoords(fp, DataHub, PrintFormat);
     DisplayTimeFrame(fp, DataHub, PrintFormat);
-    DisplayPopulation(fp, DataHub, PrintFormat);
-    DisplayCaseInformation(fp, DataHub, PrintFormat);
+    if (DataHub.GetParameters().GetProbabilityModelType() == ORDINAL)
+      DisplayClusterDataOrdinal(fp, DataHub, PrintFormat);
+    else
+      DisplayClusterDataStandard(fp, DataHub, PrintFormat);
     DisplayRatio(fp, DataHub, PrintFormat);
     DisplayMonteCarloInformation(fp, DataHub, PrintFormat, iNumSimsCompleted);
     DisplayNullOccurrence(fp, DataHub, iNumSimsCompleted, PrintFormat);
@@ -85,86 +87,12 @@ void CCluster::DisplayAnnualCaseInformation(FILE* fp, const CSaTScanData& DataHu
   if (DataHub.GetParameters().GetProbabilityModelType() == POISSON && DataHub.GetParameters().UsePopulationFile()) {
     sBuffer.printf("Annual cases / %.0f", DataHub.GetAnnualRatePop());
     PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
-    sBuffer.printf("%.1f", DataHub.GetAnnualRateAtStart(0) * GetRelativeRisk(DataHub.GetMeasureAdjustment(0), 0));
+    sBuffer.printf("%.1f", DataHub.GetAnnualRateAtStart(0) * GetObservedDivExpected(DataHub, 0));
     for (i=1; i < DataSets.GetNumDataSets(); ++i) {
-       sWork.printf(", %.1f", DataHub.GetAnnualRateAtStart(i) * GetRelativeRisk(DataHub.GetMeasureAdjustment(i), i));
+       sWork.printf(", %.1f", DataHub.GetAnnualRateAtStart(i) * GetObservedDivExpected(DataHub, i));
        sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
-  }
-}
-
-/** Prints number of observed and expected cases to file stream is in format
-    required by result output file. */
-void CCluster::DisplayCaseInformation(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  unsigned int           i, j, k;
-  ZdString               sWork, sBuffer, sNullString;
-  const DataSetHandler & DataSets = DataHub.GetDataSetHandler();
-
-  if (DataHub.GetParameters().GetProbabilityModelType() == ORDINAL) {
-    for (i=0; i < DataSets.GetNumDataSets(); ++i) {
-       const RealDataSet& DataSet = DataSets.GetDataSet(i);
-       //print data set number if more than data set 
-       if (DataSets.GetNumDataSets() > 1) {
-         sWork.printf("Data Set #%ld", i + 1);
-         PrintFormat.PrintSectionLabel(fp, sWork.GetCString(), false, true);
-         PrintFormat.PrintAlignedMarginsDataString(fp, sNullString);
-       }
-       //print category ordinal values
-       PrintFormat.PrintSectionLabel(fp, "Category", false, true);
-       sBuffer.printf("%g", DataSet.GetPopulationData().GetOrdinalCategoryValue(0));
-       for (k=1; k < DataSet.GetPopulationData().GetNumOrdinalCategories(); ++k) {
-         sWork.printf(", %g", DataSet.GetPopulationData().GetOrdinalCategoryValue(k));
-         sBuffer << sWork;
-       }
-       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
-       //print observed case data per category
-       PrintFormat.PrintSectionLabel(fp, "Number of cases", false, true);
-       sBuffer.printf("%ld", GetClusterData()->GetCategoryCaseCount(0, i));
-       for (k=1; k < DataSet.GetPopulationData().GetNumOrdinalCategories(); ++k) {
-         sWork.printf(", %ld", GetClusterData()->GetCategoryCaseCount(k, i));
-         sBuffer << sWork;
-       }
-       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
-       //print expected case data per category
-       //$$ This process should be similar to Bernoulli.
-       //$$
-       //$$ category 'z'
-       //$$ RemaingCases = 0;
-       //$$ for (k=1; k < RealSet.GetPopulationData().GetNumOrdinalCategories(); ++k)
-       //$$   if (k != z)
-       //$$     RemaingCases += GetClusterData()->GetCategoryCaseCount(k, i);
-       //$$ (RealSet.GetPopulationData().GetNumOrdinalCategoryCases(z) * RealSet.GetTotalCases()) * RemaingCases;
-       //$$
-       PrintFormat.PrintSectionLabel(fp, "Expected cases", false, true);
-       sBuffer = "?";
-       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
-       //print observed div expected case data per category
-       //$$ Waiting on Martin for details.
-       PrintFormat.PrintSectionLabel(fp, "Observed / expected", false, true);
-       sBuffer = "?";
-       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
-    }
-  }
-  else {
-    PrintFormat.PrintSectionLabel(fp, "Number of cases", false, true);
-    sBuffer.printf("%ld", GetCaseCount(0));
-    for (i=1; i < DataSets.GetNumDataSets(); ++i) {
-       sWork.printf(", %ld", GetCaseCount(i));
-       sBuffer << sWork;
-    }
-    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
-    //print expected cases label
-    PrintFormat.PrintSectionLabel(fp, "Expected cases", false, true);
-    //print expected cases
-    sBuffer.printf("%.2f", DataHub.GetMeasureAdjustment(0) * GetMeasure(0));
-    for (i=1; i < DataSets.GetNumDataSets(); ++i) {
-       sWork.printf(", %.2f", DataHub.GetMeasureAdjustment(i) * GetMeasure(i));
-       sBuffer << sWork;
-    }
-    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
-    DisplayAnnualCaseInformation(fp, DataHub, PrintFormat);
-    DisplayRelativeRisk(fp, DataHub, PrintFormat);
   }
 }
 
@@ -213,6 +141,86 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& DataHub, 
     x.AddCallpath("DisplayCensusTractsInStep()","CCluster");
     throw;
   }
+}
+
+/** Prints population, observed cases, expected cases and relative risk, for Ordinal model,
+    to file stream is in format required by result output file. */
+void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+  unsigned int           i, j, k;
+  ZdString               sWork, sBuffer, sNullString;
+  const DataSetHandler & DataSets = DataHub.GetDataSetHandler();
+
+  for (i=0; i < DataSets.GetNumDataSets(); ++i) {
+     const RealDataSet& DataSet = DataSets.GetDataSet(i);
+     //print data set number if more than data set
+     if (DataSets.GetNumDataSets() > 1) {
+       sWork.printf("Data Set #%ld", i + 1);
+       PrintFormat.PrintSectionLabelAtDataColumn(fp, sWork.GetCString());
+     }
+     //print population data per category
+     DisplayPopulationOrdinal(fp, DataHub, PrintFormat, DataSet);
+     //print category ordinal values
+     PrintFormat.PrintSectionLabel(fp, "Category", false, true);
+     sBuffer.printf("%g", DataSet.GetPopulationData().GetOrdinalCategoryValue(0));
+     for (k=1; k < DataSet.GetPopulationData().GetNumOrdinalCategories(); ++k) {
+       sWork.printf(", %g", DataSet.GetPopulationData().GetOrdinalCategoryValue(k));
+       sBuffer << sWork;
+     }
+     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     //print observed case data per category
+     PrintFormat.PrintSectionLabel(fp, "Number of cases", false, true);
+     sBuffer.printf("%ld", GetObservedCountOrdinal(i, 0));
+     for (k=1; k < DataSet.GetPopulationData().GetNumOrdinalCategories(); ++k) {
+       sWork.printf(", %ld", GetObservedCountOrdinal(i, k));
+       sBuffer << sWork;
+     }
+     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     //print expected case data per category
+     PrintFormat.PrintSectionLabel(fp, "Expected cases", false, true);
+     const PopulationData& Population = DataSet.GetPopulationData();
+     sBuffer.printf("%.2f", GetExpectedCountOrdinal(DataHub, i, 0));
+     for (size_t t=1; t < Population.GetNumOrdinalCategories(); ++t) {
+        sWork.printf(", %.2f", GetExpectedCountOrdinal(DataHub, i, t));
+        sBuffer << sWork;
+     }
+     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     //print observed div expected case data per category
+     PrintFormat.PrintSectionLabel(fp, "Observed / expected", false, true);
+     sBuffer.printf("%.3f", GetObservedDivExpectedOrdinal(DataHub, i, 0));
+     for (size_t t=1; t < Population.GetNumOrdinalCategories(); ++t) {
+        sWork.printf(", %.3f", GetObservedDivExpectedOrdinal(DataHub, i, t));
+        sBuffer << sWork;
+     }
+     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+  }
+}
+
+/** Prints population, observed cases, expected cases and relative risk
+    to file stream is in format required by result output file. */
+void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+  unsigned int           i, j, k;
+  ZdString               sWork, sBuffer, sNullString;
+  const DataSetHandler & DataSets = DataHub.GetDataSetHandler();
+
+  DisplayPopulation(fp, DataHub, PrintFormat);
+  PrintFormat.PrintSectionLabel(fp, "Number of cases", false, true);
+  sBuffer.printf("%ld", GetObservedCount(0));
+  for (i=1; i < DataSets.GetNumDataSets(); ++i) {
+     sWork.printf(", %ld", GetObservedCount(i));
+     sBuffer << sWork;
+  }
+  PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+  //print expected cases label
+  PrintFormat.PrintSectionLabel(fp, "Expected cases", false, true);
+  //print expected cases
+  sBuffer.printf("%.2f", GetExpectedCount(DataHub, 0));
+  for (i=1; i < DataSets.GetNumDataSets(); ++i) {
+     sWork.printf(", %.2f", GetExpectedCount(DataHub, i));
+     sBuffer << sWork;
+  }
+  PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+  DisplayAnnualCaseInformation(fp, DataHub, PrintFormat);
+  DisplayRelativeRisk(fp, DataHub, PrintFormat);
 }
 
 /** Writes clusters cartesian coordinates and ellipse properties (if cluster is elliptical)
@@ -390,23 +398,39 @@ void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, const Ascii
   const DataSetHandler & DataSets = Data.GetDataSetHandler();
   double                 dPopulation;
 
-  if ((Data.GetParameters().GetProbabilityModelType() == POISSON && Data.GetParameters().UsePopulationFile())
-      || Data.GetParameters().GetProbabilityModelType() == BERNOULLI) {
-    PrintFormat.PrintSectionLabel(fp, "Population", false, true);
+  switch (Data.GetParameters().GetProbabilityModelType()) {
+    case POISSON :
+      if (!Data.GetParameters().UsePopulationFile())
+        break;
+    case BERNOULLI :
+      PrintFormat.PrintSectionLabel(fp, "Population", false, true);
+      for (i=0; i < DataSets.GetNumDataSets(); ++i) {
+        dPopulation = Data.GetProbabilityModel().GetPopulation(i, *this);
+        if (dPopulation < .5)
+          sWork.printf("%s%g", (i > 0 ? ", " : ""), dPopulation); // display all decimals for populations less than .5
+        else if (dPopulation < 1)
+          sWork.printf("%s%.1f", (i > 0 ? ", " : ""), dPopulation); // display one decimal for populations less than 1
+        else
+          sWork.printf("%s%.0f", (i > 0 ? ", " : ""), dPopulation); // else display no decimals
+        sBuffer << sWork;
+      }
+      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    case ORDINAL :
+      ZdGenerateException("Call DisplayPopulationOrdinal() for ordinal model.","DisplayPopulation()");
+    default : break;
+  };
+}
 
-    for (i=0; i < DataSets.GetNumDataSets(); ++i) {
-      dPopulation = Data.GetProbabilityModel().GetPopulation(i, m_iEllipseOffset, m_Center,
-                                                             m_nTracts, m_nFirstInterval, m_nLastInterval);
-      if (dPopulation < .5)
-        sWork.printf("%s%g", (i > 0 ? ", " : ""), dPopulation); // display all decimals for populations less than .5
-      else if (dPopulation < 1)
-        sWork.printf("%s%.1f", (i > 0 ? ", " : ""), dPopulation); // display one decimal for populations less than 1
-      else
-        sWork.printf("%s%.0f", (i > 0 ? ", " : ""), dPopulation); // else display no decimals
-      sBuffer << sWork;
-    }
-    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
-  }
+/** Writes clusters population in format required by result output file for ordinal model. */
+void CCluster::DisplayPopulationOrdinal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat, const RealDataSet& DataSet) const {
+  ZdString               sBuffer;
+  double                 dPopulation=0;
+
+  //print population data per category
+  PrintFormat.PrintSectionLabel(fp, "Population", false, true);
+  dPopulation = DataHub.GetProbabilityModel().GetPopulation(DataSet.GetSetIndex() - 1, *this);
+  GetPopulationAsString(sBuffer, dPopulation);
+  PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
 }
 
 /** Writes clusters log likelihood ratio/test statistic in format required by result output file. */
@@ -432,9 +456,9 @@ void CCluster::DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataHub, const 
   ZdString               sBuffer, sWork;
 
   PrintFormat.PrintSectionLabel(fp, "Observed / expected", false, true);
-  sBuffer.printf("%.3f", GetRelativeRisk(DataHub.GetMeasureAdjustment(0), 0));
+  sBuffer.printf("%.3f", GetObservedDivExpected(DataHub, 0));
   for (i=1; i < DataSets.GetNumDataSets(); ++i) {
-    sWork.printf(", %.3f", GetRelativeRisk(DataHub.GetMeasureAdjustment(i), i));
+    sWork.printf(", %.3f", GetObservedDivExpected(DataHub, i));
     sBuffer << sWork;
   }
   PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
@@ -453,34 +477,72 @@ ZdString& CCluster::GetEndDate(ZdString& sDateString, const CSaTScanData& DataHu
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nLastInterval] - 1);
 }
 
-/** Returns p-value, rank / (number of simulations completed + 1), of cluster. */
-const double CCluster::GetPValue(unsigned int uiNumSimulationsCompleted) const {
-  return (double)m_nRank/(double)(uiNumSimulationsCompleted+1);
+/** Returns number of expected cases in accumulated data. */
+measure_t CCluster::GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex) const {
+  return DataHub.GetMeasureAdjustment(tSetIndex) * GetClusterData()->GetMeasure(tSetIndex);
+}
+
+/** Returns number of expected cases in accumulated data that is stratified by
+    ordinal categories. */
+measure_t CCluster::GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const {
+  measure_t     tExpected;
+
+  const RealDataSet& DataSet = DataHub.GetDataSetHandler().GetDataSet(tSetIndex);
+
+  return DataHub.GetProbabilityModel().GetPopulation(tSetIndex, *this) *
+             DataSet.GetPopulationData().GetNumOrdinalCategoryCases(iCategoryIndex) / DataSet.GetTotalPopulation();
+
+}
+
+/** Returns number of observed cases in accumulated data. */
+count_t CCluster::GetObservedCount(size_t tSetIndex) const {
+  return GetClusterData()->GetCaseCount(tSetIndex);
+}
+
+/** Returns number of observed cases in accumulated data that is stratified by
+    ordinal categories. */
+count_t CCluster::GetObservedCountOrdinal(size_t tSetIndex, size_t iCategoryIndex) const {
+  return GetClusterData()->GetCategoryCaseCount(iCategoryIndex, tSetIndex);
 }
 
 /** Returns relative risk of cluster.
     NOTE: Currently this only reports the relative risk of first data set. */
-const double CCluster::GetRelativeRisk(double nMeasureAdjustment, size_t tSetIndex) const {
-  double        dRelativeRisk=0;
+double CCluster::GetObservedDivExpected(const CSaTScanData& DataHub, size_t tSetIndex) const {
+  measure_t     tExpected = GetExpectedCount(DataHub, tSetIndex);
 
-  if (GetMeasure(tSetIndex) * nMeasureAdjustment)
-    dRelativeRisk = ((double)GetCaseCount(tSetIndex))/(GetMeasure(tSetIndex) * nMeasureAdjustment);
-
-  return dRelativeRisk;
+  return (tExpected ? (double)GetObservedCount(tSetIndex)/tExpected : 0);
 }
 
 /** Returns the relative risk for tract as defined by cluster. */
-double CCluster::GetRelativeRiskForTract(tract_t tTract, const CSaTScanData& DataHub, size_t tSetIndex) const {
-  double        dRelativeRisk=0;
-  count_t       tCaseCount;
-  measure_t     tMeasure;
+double CCluster::GetObservedDivExpectedForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex) const {
+  measure_t tExpected = GetExpectedCountForTract(tTractIndex, DataHub, tSetIndex);
 
-  tCaseCount = GetCaseCountForTract(tTract, DataHub, tSetIndex);
-  tMeasure = GetMeasureForTract(tTract, DataHub, tSetIndex);
+  return (tExpected ? (double)GetObservedCountForTract(tTractIndex, DataHub, tSetIndex)/tExpected : 0);
+}
 
-  if (tMeasure)
-    dRelativeRisk = ((double)(tCaseCount))/tMeasure;
-  return dRelativeRisk;
+/** Returns observed cases divided by expected cases of accummulated data that
+    is stratified by ordinal categories. */
+double CCluster::GetObservedDivExpectedOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const {
+   measure_t    tExpected = GetExpectedCountOrdinal(DataHub, tSetIndex, iCategoryIndex);
+
+   return (tExpected ? GetObservedCountOrdinal(tSetIndex, iCategoryIndex) / tExpected : 0);
+}
+
+/** Returns population as string with varied precision, based upon value. */
+ZdString & CCluster::GetPopulationAsString(ZdString& sString, double dPopulation) const {
+  if (dPopulation < .5)
+    sString.printf("%g", dPopulation); // display all decimals for populations less than .5
+  else if (dPopulation < 1)
+    sString.printf("%.1f", dPopulation); // display one decimal for populations less than 1
+  else
+    sString.printf("%.0f", dPopulation); // else display no decimals
+
+  return sString;
+}
+
+/** Returns p-value, rank / (number of simulations completed + 1), of cluster. */
+double CCluster::GetPValue(unsigned int uiNumSimulationsCompleted) const {
+  return (double)m_nRank/(double)(uiNumSimulationsCompleted+1);
 }
 
 /** returns start date of defined cluster as formated string */
