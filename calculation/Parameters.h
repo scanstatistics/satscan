@@ -5,9 +5,73 @@
 #include "SatScan.h"
 #include "JulianDates.h"
 
-#define PARAMETERS 48
+#define PARAMETERS 50
 
 extern const char*      ANALYSIS_HISTORY_FILE;
+extern const char*      YES;
+extern const char*      NO;
+
+// input files section
+extern const char*      INPUT_FILES_SECTION;
+extern const char*      CASE_FILE_LINE;
+extern const char*      POP_FILE_LINE;
+extern const char*      COORD_FILE_LINE;
+extern const char*      GRID_FILE_LINE;
+extern const char*      CONTROL_FILE_LINE;
+
+// model info section
+extern const char*      MODEL_INFO_SECTION;
+extern const char*      ANALYSIS_TYPE_LINE;
+extern const char*      SCAN_AREAS_LINE;
+extern const char*      MAX_GEO_SIZE_LINE;
+extern const char*      START_DATE_LINE;
+extern const char*      END_DATE_LINE;
+extern const char*      ALIVE_CLUSTERS_LINE;
+extern const char*      INTERVAL_UNITS_LINE;
+extern const char*      INTERVAL_LENGTH_LINE;
+extern const char*      INCLUDE_PURELY_SPATIAL_LINE;
+extern const char*      MAX_TEMP_SIZE_LINE;
+extern const char*      MONTE_CARLO_REPS_LINE;
+extern const char*      MODEL_TYPE_LINE;
+extern const char*      ISOTONIC_SCAN_LINE;
+extern const char*      PVALUE_PROSPECT_LLR_LINE;
+extern const char*      LLR_1_LINE;
+extern const char*      LLR_2_LINE;
+extern const char*      TIME_TREND_ADJ_LINE;
+extern const char*      TIME_TREND_PERCENT_LINE;
+extern const char*      INCLUDE_PURE_TEMP_LINE;
+extern const char*      COORD_TYPE_LINE;
+extern const char*      VALID_PARAMS_LINE;
+extern const char*      PROSPECT_START_LINE;
+extern const char*      CRIT_REPORT_SEC_CLUSTERS_LINE;
+extern const char*      MAX_TEMP_INTERPRET_LINE;
+extern const char*      MAX_SPATIAL_SIZE_LINE;
+extern const char*      PRECISION_TIMES_LINE;
+
+// sequential scan section
+extern const char*      SEQUENTIAL_SCAN_SECTION;
+extern const char*      SEQUENTIAL_SCAN_LINE;
+extern const char*      SEQUENTIAL_MAX_ITERS_LINE;
+extern const char*      SEQUENTIAL_MAX_PVALUE_LINE;
+
+// ellipse section
+extern const char*      ELLIPSES_SECTION;
+extern const char*      NUMBER_ELLIPSES_LINE;
+extern const char*      ELLIPSE_SHAPES_LINE;
+extern const char*      ELLIPSE_ANGLES_LINE;
+
+// output files section
+extern const char*      OUTPUT_FILES_SECTION;
+extern const char*      RESULTS_FILE_LINE;
+extern const char*      ANALYSIS_HISTORY_LINE;
+extern const char*      DBASE_CLUSTER_LINE;
+extern const char*      DBASE_AREA_LINE;
+extern const char*      INCLUDE_REL_RISKS_LINE;
+extern const char*      SAVE_SIM_LLRS;
+extern const char*      CENSUS_REPORT_CLUSTERS_LINE;
+extern const char*      MOST_LIKELY_CLUSTER_LINE;
+extern const char*      DBASE_RELATIVE_RISKS;
+extern const char*      DBASE_LOG_LIKELI;
 
 enum {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE, COORDFILE, OUTPUTFILE, PRECISION,
       DIMENSION, SPECIALGRID, GRIDFILE, GEOSIZE, STARTDATE, ENDDATE,
@@ -18,7 +82,8 @@ enum {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE, COORDFILE, OUTPUTFILE, PRECI
       SEQUENTIAL, SEQNUM, SEQPVAL,
       VALIDATE, OUTPUTRR, ELLIPSES, ESHAPES, ENUMBERS, START_PROSP_SURV,
       OUTPUT_CENSUS_AREAS, OUTPUT_MOST_LIKE_CLUSTERS, CRITERIA_SECOND_CLUSTERS,
-      MAX_TEMPORAL_TYPE,MAX_SPATIAL_TYPE, RUN_HISTORY_FILENAME, OUTPUTCLUSTERDBF, OUTPUTAREADBF};
+      MAX_TEMPORAL_TYPE,MAX_SPATIAL_TYPE, RUN_HISTORY_FILENAME, OUTPUTCLUSTERDBF, OUTPUTAREADBF,
+      RELATIVE_RISK_DBF, LOG_LIKELI_DBF};
 enum {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE}; //analysis, clusters
 enum {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION};
 enum {ALLCLUSTERS=0, ALIVECLUSTERS};   // Clusers
@@ -36,13 +101,35 @@ class CParameters
 {
   private:
       BasePrint        *gpPrintDirection;         /** where to direct 'console' output */
-      bool              gbOutputClusterLevelDBF, gbOutputAreaSpecificDBF;
+      bool              gbOutputClusterLevelDBF, gbOutputAreaSpecificDBF,
+                        gbRelativeRiskDBF, gbLogLikelihoodDBF;
       ZdString          gsRunHistoryFilename;
 
-      void copy(const CParameters &rhs);
-      void FindDelimiter(char *sString, char cDelimiter);
-      void TrimLeft(char *sString);
-      bool ValidHistoryFileName(const ZdString& sRunHistoryFilename);
+      void      copy(const CParameters &rhs);
+
+      void      CheckEllipseIniSection(ZdIniFile& file, bool bCreateIfMissing = false);
+      void      CheckIniSectionsExist(ZdIniFile& file, bool bCreateIfMissing = false);
+      void      CheckInputFileSection(ZdIniFile& file, bool bCreateIfMissing = false);
+      void      CheckModelInfoIniSection(ZdIniFile& file, bool bCreateIfMissing = false);
+      void      CheckOutputFileIniSection(ZdIniFile& file, bool bCreateIfMissing = false);
+      void      CheckSequentialScanIniSection(ZdIniFile& file, bool bCreateIfMissing = false);
+      void      FindDelimiter(char *sString, char cDelimiter);
+      void      ReadInputFilesSectionFromIni(ZdIniFile& file);
+      void      ReadModelInfoSectionFromIni(ZdIniFile& file);
+      void      ReadSequentialScanSectionFromIni(ZdIniFile& file);
+      void      ReadEllipseSectionFromIni(ZdIniFile& file);
+      void      ReadOutputFileSectionFromIni(ZdIniFile& file);
+      void      SaveInputFileSection(ZdIniFile& file);
+      void      SaveModelInfoSection(ZdIniFile& file);
+      void      SaveEllipseSection(ZdIniFile& file);
+      void      SaveSequentialScanSection(ZdIniFile& file);
+      void      SaveOutputFileSection(ZdIniFile& file);
+      void      SetEAnglesFromIniFile(const ZdString& sAngles);
+      void      SetEShapesFromIniFile(const ZdString& sShapes);
+      void      TrimLeft(char *sString);
+      bool      ValidHistoryFileName(const ZdString& sRunHistoryFilename);
+      bool      ValueIsYes(const ZdString& sTestValue);
+      void      VerifyIniFileSetup(const ZdString& sFileName, bool bCreateIfMissing = false);
 
   protected:
       float             m_nInitialMaxTemporalClusterSize;
@@ -140,14 +227,20 @@ class CParameters
     void                DisplayTimeAdjustments(FILE* fp);
 
     void                Free();
+    const bool          GetDBaseOutputRelRisks() const { return gbRelativeRiskDBF; }
+    const bool          GetDBaseOutputLogLikeli() const { return gbLogLikelihoodDBF; }
     const bool          GetOutputClusterLevelDBF() const;
     const bool          GetOutputAreaSpecificDBF() const;
     const ZdString&     GetRunHistoryFilename() const  {return gsRunHistoryFilename;}
 
     int                 LoadEAngles(const char* szParam);
     int                 LoadEShapes(const char* szParam);
+    void                ReadFromIniFile(ZdString sFileName);
     bool                SaveParameters(char* szFilename);
+    void                SaveToIniFile(ZdString sFileName);
 
+    void                SetDBaseOutputRelRisks(bool bOutput) { gbRelativeRiskDBF = bOutput;}
+    void                SetDBaseOutputLogLikeli(bool bOutput) { gbLogLikelihoodDBF = bOutput;}
     void                SetDefaults();
     void                SetDefaultsV2();
     void                SetDefaultsV3();
@@ -157,8 +250,8 @@ class CParameters
     bool                SetGISFilename();
     bool                SetLLRFilename();
     bool                SetMLCFilename();
-    void                SetOutputClusterLevelDBF(const bool& bOutput);
-    void                SetOutputAreaSpecificDBF(const bool& bOutput);
+    void                SetOutputClusterLevelDBF(bool bOutput)  { gbOutputClusterLevelDBF = bOutput; }
+    void                SetOutputAreaSpecificDBF(bool bOutput)  { gbOutputAreaSpecificDBF = bOutput; }
     void                SetPrintDirection(BasePrint *pPrintDirection);
     bool                SetRelRiskFilename();
     void                SetRunHistoryFilename(const ZdString& sFilename) {gsRunHistoryFilename = sFilename;}
@@ -167,7 +260,6 @@ class CParameters
     bool                ValidateDateString(char* szDate, int nDateType);
     bool                ValidateReplications(int nReps);
     bool                ValidateProspectiveStartDate(char* szProspDate, char *szStartDate, char *szEndDate);
-
 };
 
 //*****************************************************************************
