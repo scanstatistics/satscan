@@ -95,7 +95,7 @@ class CParameters {
     IncludeClustersType                 geIncludeClustersType;
     unsigned int                        giReplications;                         /** number of MonteCarlo replicas */
     CriteriaSecondaryClustersType       geCriteriaSecondClustersType;           /** Criteria for Reporting Secondary Clusters */
-    double                              gdTimeTrendConverge;                    /** time trend convergence value */
+    double                              gdTimeTrendConverge;                    /** time trend convergence value for SVTT */
     bool                                gbEarlyTerminationSimulations;          /** indicates whether to stop simulations if large p-values */
     SimulationType                      geSimulationType;                       /** indicates simulation procedure - Poisson only */
     bool                                gbOutputSimulationData;                 /** indicates whether to output simulation data to file */
