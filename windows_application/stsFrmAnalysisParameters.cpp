@@ -547,23 +547,24 @@ bool TfrmAnalysis::CheckDateRange(int iStartYear, int iStartMonth, int iStartDay
 // Verifies all parameters on the Output tab
 //------------------------------------------------------------------------------
 bool TfrmAnalysis::CheckOutputParams() {
+  ZdFileName    OutPutFileName;
+
   try {
     if (edtResultFile->Text.Length() == 0)
-      ZdException::GenerateNotification("Results File not specified.\nNote that file need not currently exist but path must be valid.",
+      ZdException::GenerateNotification("Please specify a results file.", "CheckOutputParams()");
+
+    OutPutFileName.SetFullPath(edtResultFile->Text.c_str());
+    if (! DirectoryExists(OutPutFileName.GetLocation()))
+      ZdException::GenerateNotification("Invalid file path specified for results file.\nPlease review settings.",
                                         "CheckOutputParams()");
 
-    try {
-      ZdIO(edtResultFile->Text.c_str(), ZDIO_OPEN_WRITE|ZDIO_OPEN_READ|ZDIO_OPEN_CREATE);
-    }
-    catch (ZdException & x) {
-      x.SetErrorMessage((const char*)"Results File: \"%s\" could not be opened or created.\nNote that file need not currently exist but path must be valid.",
-                         edtResultFile->Text.c_str());
-      x.SetLevel(ZdException::Notify);
-      throw;
-    }
+    if (! FileCanBeCreated(edtResultFile->Text.c_str()))
+      ZdException::GenerateNotification("Result file could not be opened. Access denied.\nPlease review settings.",
+                                        "CheckOutputParams()");
   }
   catch (ZdException & x) {
     x.AddCallpath("CheckOutputParams", "TfrmAnalysis");
+    edtResultFile->SetFocus();
     throw;
   }
   return true;
