@@ -339,9 +339,8 @@ bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
     //2nd pass, read data in structures.
     if (bValid && !bEmpty) {
       //Set tract handlers population date structures since we already now all the dates from above.
-      thisStream.GetPopulationData().SetupPopDates(vPopulationDates,
-                             const_cast<CParameters&>(gParameters).GetStudyPeriodStartDateAsJulian(),
-                             const_cast<CParameters&>(gParameters).GetStudyPeriodEndDateAsJulian(), gpPrint);
+      thisStream.GetPopulationData().SetupPopDates(vPopulationDates, gParameters.GetStudyPeriodStartDateAsJulian(),
+                                                   gParameters.GetStudyPeriodEndDateAsJulian(), gpPrint);
       //reset for second read
       fseek(fp, 0L, SEEK_SET);
       //We can ignore error checking for population date and population since we already did this above.
