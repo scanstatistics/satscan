@@ -754,7 +754,7 @@ void __fastcall TfrmAnalysis::edtEndMonthExit(TObject *Sender) {
   try {
     if ( ! Check_Month(atoi(edtEndMonth->Text.c_str()), "Study Period End Month")) {
       PageControl1->ActivePage = tbAnalysis;
-      edtStartMonth->SetFocus();
+      edtEndMonth->SetFocus();
     }
   }
   catch (ZdException & x) {
@@ -972,6 +972,7 @@ void TfrmAnalysis::EnableTemporalTimeTrendAdjust(bool bEnableRadioGroup, bool bE
   rgTemporalTrendAdj->Controls[1]->Enabled = bEnableNonParametric;
   edtLogPerYear->Enabled = bEnableLogYearEditBox;
   rgTemporalTrendAdj->ItemIndex = gpParams->m_nTimeAdjustType;
+  Edit1->Enabled = bEnableLogYearEditBox;
 }
 
 // enables or disables the temporal control
