@@ -42,6 +42,7 @@ class CParameters
       void copy(const CParameters &rhs);
       void FindDelimiter(char *sString, char cDelimiter);
       void TrimLeft(char *sString);
+      bool ValidHistoryFileName(const ZdString& sRunHistoryFilename);
       
   public:
     CParameters(bool bDisplayErrors);
