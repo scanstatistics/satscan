@@ -334,4 +334,12 @@ void __fastcall TfrmMainForm::ActionReopenExecute(TObject *Sender) {
   }
 }
 //---------------------------------------------------------------------------
+void __fastcall TfrmMainForm::FormClose(TObject *Sender, TCloseAction &Action) {
+  try {
+    for (int i=0; i < MDIChildCount; i++)
+       MDIChildren[i]->Close();
+  }
+  catch (...){}
+}
+//---------------------------------------------------------------------------
 

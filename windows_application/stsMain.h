@@ -87,6 +87,7 @@ class TfrmMainForm : public TForm{
         void __fastcall AboutSatscanActionExecute(TObject *Sender);
         void __fastcall ImportActionExecute(TObject *Sender);
         void __fastcall ActionReopenExecute(TObject *Sender);
+        void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
   private:	// User declarations
     void __fastcall             OpenAFile();
     void                        EnableActions(bool bEnable);
