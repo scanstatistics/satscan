@@ -274,7 +274,7 @@ count_t * CBernoulliModel::MakeDataB(count_t nTotalCounts, count_t* RandCounts)
          SSGenerateException("Could not allocate memory for RandCounts.", "MakeDataB()");
       for (i=0; i < m_pData->m_nTotalMeasure; i++)
       {
-       	x = rngRand();
+       	x = m_RandomNumberGenerator.GetRandomDouble();
         ratio = (double) (nTotalCounts-nCumCounts)/
           (m_pData->m_nTotalMeasure-i);
     		if (x <= ratio)
