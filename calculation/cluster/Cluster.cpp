@@ -8,10 +8,6 @@
 CCluster::CCluster(BasePrint *pPrintDirection) {
   Initialize();
   gpPrintDirection = pPrintDirection;
-
-  gMeasure      = Standard;
-  gMeasure_     = Standard_;
-  g_Measure_     = _Standard_;
 }
 
 /** destructor */
@@ -21,15 +17,13 @@ CCluster::~CCluster() {}
 void CCluster::Initialize(tract_t nCenter) {
   m_Center         = nCenter;
   m_nTracts        = 0;
-  m_nRatio         = 0;//-DBL_MAX;//0;
-  m_nLogLikelihood = 0;
+  m_nRatio         = 0;
   m_nRank          = 1;
   m_DuczmalCorrection = 1;
   m_nFirstInterval = 0;
   m_nLastInterval  = 0;
   m_nStartDate     = 0;
   m_nEndDate       = 0;
-  m_bClusterDefined= false;
   m_iEllipseOffset = 0;         // use to be -1, but bombed when R = 1
   gfPValue = 0.0;
   gpAreaData = 0;
@@ -40,14 +34,12 @@ CCluster& CCluster::operator=(const CCluster& rhs) {
   m_Center              = rhs.m_Center;
   m_nTracts             = rhs.m_nTracts;
   m_nRatio              = rhs.m_nRatio;
-  m_nLogLikelihood      = rhs.m_nLogLikelihood;
   m_nRank               = rhs.m_nRank;
   m_DuczmalCorrection   = rhs.m_DuczmalCorrection;
   m_nFirstInterval      = rhs.m_nFirstInterval;
   m_nLastInterval       = rhs.m_nLastInterval;
   m_nStartDate          = rhs.m_nStartDate;
   m_nEndDate            = rhs.m_nEndDate;
-  m_bClusterDefined     = rhs.m_bClusterDefined;
   m_iEllipseOffset      = rhs.m_iEllipseOffset;
 
   return *this;
@@ -102,7 +94,7 @@ void CCluster::Display(FILE*     fp,
       	DisplayLatLongCoords(fp, Data, nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
 
       DisplayTimeFrame(fp, szSpacesOnLeft, Parameters.GetAnalysisType());
-      if (Parameters.GetProbabiltyModelType() != SPACETIMEPERMUTATION)
+      if (Parameters.GetProbabiltyModelType() == POISSON || Parameters.GetProbabiltyModelType() == BERNOULLI)
         DisplayPopulation(fp, Data, szSpacesOnLeft);
 
       fprintf(fp, "%sNumber of cases.......: %ld", szSpacesOnLeft, GetCaseCount(0));
@@ -116,16 +108,12 @@ void CCluster::Display(FILE*     fp,
       DisplayRelativeRisk(fp, Data.GetMeasureAdjustment(), nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
 
       //Print Loglikelihood/Test Statistic
-      if (Parameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION) {
-        if (m_iEllipseOffset != 0 /*i.e. is ellipse*/ && Parameters.GetDuczmalCorrectEllipses())
-          fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, GetDuczmalCorrectedLogLikelihoodRatio());
-        else
-          fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, m_nRatio);
-      }
+      if (Parameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION)
+        fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, m_nRatio);
       else {
-        fprintf(fp, "%sLog likelihood ratio..: %f\n", szSpacesOnLeft, m_nRatio);
+        fprintf(fp, "%sLog likelihood ratio..: %f\n", szSpacesOnLeft, m_nRatio/m_DuczmalCorrection);
         if (Parameters.GetDuczmalCorrectEllipses())
-          fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, GetDuczmalCorrectedLogLikelihoodRatio());
+          fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, m_nRatio);
       }
 
       if (iNumSimulations)
@@ -345,16 +333,15 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
                                   char cDeliminator, char* szSpacesOnLeft)
 {
    double *pCoords = 0, *pCoords2 = 0;
-   float nRadius;
-   float Latitude, Longitude;
-   char  cNorthSouth, cEastWest;
+   float   Latitude, Longitude, nRadius;
+   char    cNorthSouth, cEastWest;
 
    try
       {
       (Data.GetGInfo())->giGetCoords(m_Center, &pCoords);
       (Data.GetTInfo())->tiGetCoords(Data.GetNeighbor(0, m_Center, m_nTracts), &pCoords2);
 
-      nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
+      nRadius = (float)(sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2)));
 
       ConvertToLatLong(&Latitude, &Longitude, pCoords);
 
@@ -473,12 +460,6 @@ void CCluster::DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisTyp
           JulianToChar(szStartDt, m_nStartDate), JulianToChar(szEndDt, m_nEndDate));
 }
 
-/** Duczmal compactness correction. For circles this should be no different than
-    the loglikelihood ratio as m_DuczmalCorrection should be 1. */
-double CCluster::GetDuczmalCorrectedLogLikelihoodRatio() const {
-  return m_DuczmalCorrection * m_nRatio;
-}
-
 const double CCluster::GetRelativeRisk(double nMeasureAdjustment) const
 {
   double        dRelativeRisk=0;
@@ -502,15 +483,6 @@ double CCluster::GetRelativeRiskForTract(tract_t tTract, const CSaTScanData & Da
   if (tMeasure)
     dRelativeRisk = ((double)(tCaseCount))/tMeasure;
   return dRelativeRisk;
-}
-
-bool CCluster::RateIsOfInterest(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure) {
-  return m_pfRateOfInterest(tCases, tMeasure, tTotalCases, tTotalMeasure);
-}
-
-bool CCluster::RateIsOfInterest(count_t nTotalCases, measure_t nTotalMeasure) {
-  ZdGenerateException("RateIsOfInterest(count_t, measure_t) is deprecated.","CCluster");
-  return false;
 }
 
 void CCluster::SetCenter(tract_t nCenter)
@@ -537,20 +509,6 @@ void CCluster::SetRate(int nRate)
     case HIGHANDLOW : m_pfRateOfInterest = HighOrLowRate; break;
     default         : ;
   }
-}
-
-double CCluster::SetRatio(double nLogLikelihoodForTotal) {
-  m_nRatio    = GetLogLikelihood() - nLogLikelihoodForTotal;
-  return m_nRatio;
-}
-
-void CCluster::SetRatioAndDates(const CSaTScanData& Data)
-{
-  if (ClusterDefined())
-    {
-    SetRatio(Data.GetProbabilityModel().GetLogLikelihoodForTotal());
-    SetStartAndEndDates(Data.GetTimeIntervalStartTimes(), Data.m_nTimeIntervals);
-    }
 }
 
 void CCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals)
@@ -654,8 +612,7 @@ void CCluster::WriteCoordinates(FILE* fp, CSaTScanData* pData)
 void CCluster::WriteLatLongCoords(FILE* fp, CSaTScanData* pData)
 {
    double *pCoords = 0, *pCoords2 = 0;
-   float nRadius;
-   float Latitude, Longitude;
+   float  Latitude, Longitude, nRadius;
    //char  cNorthSouth, cEastWest;
 
    try
@@ -670,7 +627,7 @@ void CCluster::WriteLatLongCoords(FILE* fp, CSaTScanData* pData)
      // Latitude >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
      // Longitude >= 0 ? cEastWest = 'E' : cEastWest = 'W';
 
-      fprintf(fp, " %lf %lf %5.2f", Latitude, Longitude, nRadius);
+      fprintf(fp, " %f %f %5.2f", Latitude, Longitude, nRadius);
 
       // use to be .3f
       //fprintf(fp, " %.6f %c, %.6f %c) / %5.2f\n",
