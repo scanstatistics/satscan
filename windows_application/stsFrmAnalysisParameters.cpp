@@ -1269,7 +1269,7 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
     // prospective year group box
     if(GroupBox8->Enabled) {
        edtProspYear->Enabled = rgPrecisionTimes->ItemIndex == DAY || rgPrecisionTimes->ItemIndex == MONTH || rgPrecisionTimes->ItemIndex == YEAR;
-       edtProspMonth->Enabled = rgPrecisionTimes->ItemIndex == DAY || rgPrecisionTimes->ItemIndex == MONTH || rgPrecisionTimes->ItemIndex == YEAR;
+       edtProspMonth->Enabled = rgPrecisionTimes->ItemIndex == DAY || rgPrecisionTimes->ItemIndex == MONTH;
        edtProspDay->Enabled = rgPrecisionTimes->ItemIndex == DAY;
 
        edtProspYear->Color = edtProspYear->Enabled ? clWindow : clInactiveBorder;
