@@ -69,7 +69,7 @@ class CSaTScanData {
     int                                         LowerPopIndex(Julian Date) const;
     bool                                        ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativeMeasure);
     bool                                        ReadCartesianCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
-                                                                         int & iScanCount, int iWordOffSet, const char * sSourceFile);
+                                                                         int & iScanCount, int iWordOffSet);
     bool                                        ReadCoordinatesFileAsCartesian(FILE * fp);
     bool                                        ReadCoordinatesFileAsLatitudeLongitude(FILE * fp);
     bool                                        ReadGridFileAsCartiesian(FILE * fp);
