@@ -24,7 +24,7 @@ CSignificantRatios05::~CSignificantRatios05()
 
 void CSignificantRatios05::Initialize()
 {
-   memset(m_pRatiosList, 0, (m_nRatios)*sizeof(double));
+   memset(m_pRatiosList, 0, (m_nRatios+1)*sizeof(double));
 }
 
 bool CSignificantRatios05::AddRatio(double r)
