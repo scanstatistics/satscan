@@ -25,7 +25,7 @@ bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tra
     
   //adjust measure, if valid
   StartDayMax = max(StartDate, m_pIntervalStartTimes[iStartInterval]);
-  EndDayMin = min(m_nEndDate, m_pIntervalStartTimes[iEndInterval]-1);
+  EndDayMin = min(EndDate, m_pIntervalStartTimes[iEndInterval] - 1);
   PeriodDays = (m_pIntervalStartTimes[iEndInterval] - 1) - m_pIntervalStartTimes[iStartInterval] + 1;
   fP = (measure_t)(EndDayMin - StartDayMax + 1)/(measure_t)PeriodDays;
   Adjustment_t = 1 + fP * (dRelativeRisk - 1);
