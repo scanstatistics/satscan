@@ -200,9 +200,9 @@ object frmAbout: TfrmAbout
     Left = 24
     Top = 308
     Width = 433
-    Height = 48
+    Height = 32
     Caption = 
-      'SatScan v.3.0.1:  Software for the spatial and space-time scan s' +
+      'SatScan v.3.0.2:  Software for the spatial and space-time scan s' +
       'tatistics. Bethesda, MD:  National Cancer Institute, 2002.'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
