@@ -104,7 +104,9 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
         break;
     case BERNOULLI :
     case ORDINAL :
-      PrintFormat.PrintSectionLabel(fp, "Total population", true, false);
+      PrintFormat.PrintSectionLabel(fp,
+                                    gParameters.GetProbabilityModelType() == ORDINAL ? "Total cases" : "Total population",
+                                    true, false);
       sBuffer.printf("%.0f", gpDataSets->GetDataSet(0).GetTotalPopulation());
       for (i=1; i < gpDataSets->GetNumDataSets(); ++i) {
         sWork.printf(", %.0f", gpDataSets->GetDataSet(i).GetTotalPopulation());
@@ -129,16 +131,28 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
       break;
     case ORDINAL :
       //total cases per data set, per category
-      for (i=0; i < gpDataSets->GetNumDataSets(); ++i, sBuffer="") {
-        sLabel.printf("Total cases data set #%d per category", i + 1);
-        PrintFormat.PrintSectionLabel(fp, sLabel.GetCString(), false, false);
-        const PopulationData& Population = gpDataSets->GetDataSet(i).GetPopulationData();
+      if (gpDataSets->GetNumDataSets() == 1) {
+        PrintFormat.PrintSectionLabel(fp, "Total cases per category", false, false);
+        const PopulationData& Population = gpDataSets->GetDataSet().GetPopulationData();
+        sBuffer="";
         for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
            sWork.printf("%s%ld", (j ? ", " : ""), Population.GetNumOrdinalCategoryCases(j));
            sBuffer << sWork;
         }
         PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
       }
+      else {
+        for (i=0, sBuffer=""; i < gpDataSets->GetNumDataSets(); ++i, sBuffer="") {
+          sLabel.printf("Total cases data set #%d per category", i + 1);
+          PrintFormat.PrintSectionLabel(fp, sLabel.GetCString(), false, false);
+          const PopulationData& Population = gpDataSets->GetDataSet(i).GetPopulationData();
+          for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
+             sWork.printf("%s%ld", (j ? ", " : ""), Population.GetNumOrdinalCategoryCases(j));
+             sBuffer << sWork;
+          }
+          PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+        }
+      }  
       break;
     default : break;
   }
