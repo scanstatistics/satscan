@@ -521,24 +521,24 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
       (Data.GetTInfo())->tiGetCoords(Data.GetNeighbor(0, m_Center, m_nTracts), &pCoords2);
     
       nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
-    
+
       ConvertToLatLong(&Latitude, &Longitude, pCoords);
-    
+
       Latitude >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
       Longitude >= 0 ? cEastWest = 'W' : cEastWest = 'E';
 
       // use to be .3f
       fprintf(fp, "%sCoordinates...........: (%.6f %c, %.6f %c)\n",
                    szSpacesOnLeft, fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
-      fprintf(fp, "%sRadius (km) for each step..: ", szSpacesOnLeft);
-    
+      fprintf(fp, "%sRadius for each step..: ", szSpacesOnLeft);
+
       for (int i=0; i<m_nSteps; i++)
       {
         (Data.GetTInfo())->tiGetCoords(Data.GetNeighbor(0, m_Center, m_pLastNeighborList[i]), &pCoords2);
         nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
         free(pCoords2);
         pos += 10;
-    
+
         if (pos > nRightMargin)
         {
           pos = nLeftMargin;
@@ -546,8 +546,8 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
           for (int j=0; j<nLeftMargin; j++)
             fprintf(fp, " ");
         }
-    
-        fprintf(fp,"%5.2f", nRadius);
+
+        fprintf(fp,"%5.2f km", nRadius);
     
         if (i < m_nSteps-1)
           fprintf(fp, "%c ", cDeliminator);

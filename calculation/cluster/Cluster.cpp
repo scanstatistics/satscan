@@ -520,7 +520,7 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
     //               fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
 
       // use to be .3f
-      fprintf(fp, "%sCoordinates / radius (km)..: (%.6f %c, %.6f %c) / %5.2f\n",
+      fprintf(fp, "%sCoordinates / radius..: (%.6f %c, %.6f %c) / %5.2f km\n",
                    szSpacesOnLeft, fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
 
       free(pCoords);
