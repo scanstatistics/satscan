@@ -1,5 +1,7 @@
+//*****************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//*****************************************************************************
 #include "TimeIntervalRange.h"
 #include "SaTScanData.h"
 #include "MeasureList.h"
@@ -28,6 +30,7 @@ TimeIntervalRange::~TimeIntervalRange() {
   }
   catch (...){}
 }
+
 /** overloaded assignment operator */
 TimeIntervalRange & TimeIntervalRange::operator=(const TimeIntervalRange& rhs) {
   giStartRange_End = rhs.giStartRange_End;
@@ -42,6 +45,15 @@ TimeIntervalRange * TimeIntervalRange::Clone() const {
  return new TimeIntervalRange(*this);
 }
 
+/** Iterates through defined temporal window for accumulated data of 'Running'
+    cluster. Calculates loglikelihood ratio of clusters that have rates of which
+    we are interested in and compares against current top cluster; re-assigning
+    top cluster to running cluster if calculated llr is greater than that defined
+    by current top cluster.
+    NOTE: Though parameters to this function are base class CCluster objects, only
+          CPurelyTemporalCluster and CSpaceTimeCluster objects should be passed.
+          It might be appropriate to introduce a common ancestor class for these
+          classes someday.                                                      */
 void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluster) {
   int            iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
   count_t        tCases, tTotalCases(gData.GetTotalCases());
@@ -74,11 +86,13 @@ void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluste
   }
 }
 
-void TimeIntervalRange::CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList& MeasureList) {
+/** Iterates through previously defined temporal window for accumulated data of
+    AbstractTemporalClusterData object. For each evaluated window, calls method
+    CMeasureList::AddMeasure(cases,measure). */
+void TimeIntervalRange::CompareMeasures(TemporalData& StreamData, CMeasureList& MeasureList) {
   int                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  TemporalData        * pData = (TemporalData*)pStreamData;  //dynamic cast?
-  count_t             * pCases = pData->gpCases;
-  measure_t           * pMeasure = pData->gpMeasure;
+  count_t             * pCases = StreamData.gpCases;
+  measure_t           * pMeasure = StreamData.gpMeasure;
 
 
   //iterate through windows
@@ -90,30 +104,6 @@ void TimeIntervalRange::CompareMeasures(AbstractTemporalClusterData * pStreamDat
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart)
         MeasureList.AddMeasure(pCases[iWindowStart] - pCases[iWindowEnd], pMeasure[iWindowStart] - pMeasure[iWindowEnd]);
  }
-}
-
-/** Returns the number of cases that tract attributed to accumulated case count. */
-count_t TimeIntervalRange::GetCaseCountForTract(const CCluster & Cluster, tract_t tTract, count_t** pCases) const {
-  count_t      tCaseCount;
-
-  if (Cluster.m_nLastInterval == giEndRange_End)
-    tCaseCount = pCases[Cluster.m_nFirstInterval][tTract];
-  else
-    tCaseCount  = pCases[Cluster.m_nFirstInterval][tTract] - pCases[Cluster.m_nLastInterval][tTract];
-
-  return tCaseCount;
-}
-
-/** Returns the measure that tract attributed to accumulated measure. */
-measure_t TimeIntervalRange::GetMeasureForTract(const CCluster & Cluster, tract_t tTract, measure_t** pMeasure) const {
-  measure_t      tMeasure;
-
-  if (Cluster.m_nLastInterval == giEndRange_End)
-    tMeasure = pMeasure[Cluster.m_nFirstInterval][tTract];
-  else
-    tMeasure  = pMeasure[Cluster.m_nFirstInterval][tTract] - pMeasure[Cluster.m_nLastInterval][tTract];
-
-  return tMeasure;
 }
 
 /** internal setup function */
@@ -158,66 +148,6 @@ void TimeIntervalRange::Setup(const CSaTScanData& Data, IncludeClustersType  eIn
   }
 }
 
-/** validates defined window */
-void TimeIntervalRange::ValidateWindowRanges(const CSaTScanData& Data) {
-/**  see CSaTScanData::SetTimeIntervalRangeIndexes() */
-  
-//  ZdString      sTimeIntervalType;
-//  char          sDate[50], sDate2[50];
-//  int           iMaxEndWindow, iWindowStart;
-//
-//  switch (Data.GetParameters().GetTimeIntervalUnitsType()) {
-//    case YEAR  : sTimeIntervalType = "year"; break;
-//    case MONTH : sTimeIntervalType = "month"; break;
-//    case DAY   : sTimeIntervalType = "day"; break;
-//    default: sTimeIntervalType = "none"; break;
-//  };
-//  if (giMaxWindowLength > 1) sTimeIntervalType += "s";
-//
-// //check that there will be clusters evaluated...
-//  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-//  iWindowStart = std::max(giEndRange_Start - giMaxWindowLength, giStartRange_Start);
-//
-//  if (iWindowStart >= iMaxEndWindow) {
-//    ResolvableException("Error: No clusters will be evaluated.\n"
-//        "       Although settings indicate a scanning window range of %s-%s to %s-%s,\n"
-//        "       the incorporation of the maximum temporal cluster size of %i %s causes the maximum window end time\n"
-//        "       to become %s (%s plus %i %s) and the window start time to become %s\n"
-//        "       (%s minus %i %s) which results in an invalid scanning window.\n", "Setup()",
-//        Data.GetParameters().GetStartRangeStartDate().c_str(),
-//        Data.GetParameters().GetStartRangeEndDate().c_str(),
-//       Data.GetParameters().GetEndRangeStartDate().c_str(),
-//        Data.GetParameters().GetEndRangeEndDate().c_str(),
-//        giMaxWindowLength, sTimeIntervalType.GetCString(),
-//        JulianToChar(sDate, gData.GetTimeIntervalStartTimes()[iMaxEndWindow]),
-//        Data.GetParameters().GetStartRangeEndDate().c_str(),
-//        giMaxWindowLength, sTimeIntervalType.GetCString(),
-//        JulianToChar(sDate2, gData.GetTimeIntervalStartTimes()[iWindowStart]),
-//        Data.GetParameters().GetEndRangeStartDate().c_str(),
-//       giMaxWindowLength, sTimeIntervalType.GetCString());
-//  }
-//  //The parameter validation checked already whether the end range dates conflicted,
-//  //but the maxium temporal cluster size may actually cause the range dates to be
-//  //different than the user defined.
-//  if (giEndRange_Start > iMaxEndWindow) {
-//    ResolvableException("Error: No clusters will be evaluated.\n"
-//        "       Although settings indicate a scanning window range of %s-%s to %s-%s,\n"
-//        "       the incorporation of the maximum temporal cluster size of %i %s causes the maximum window end time\n"
-//        "       to become %s (%s plus %i %s), which does not intersect with requested scanning\n"
-//        "       window end range.\n","Setup()",
-//        Data.GetParameters().GetStartRangeStartDate().c_str(),
-//        Data.GetParameters().GetStartRangeEndDate().c_str(),
-//        Data.GetParameters().GetEndRangeStartDate().c_str(),
-//        Data.GetParameters().GetEndRangeEndDate().c_str(),
-//        giMaxWindowLength, sTimeIntervalType.GetCString(),
-//        JulianToChar(sDate, gData.GetTimeIntervalStartTimes()[iMaxEndWindow]),
-//        Data.GetParameters().GetStartRangeEndDate().c_str(),
-//       giMaxWindowLength, sTimeIntervalType.GetCString());
-//  }
-}
-
-
-
 
 /** constructor */
 NormalTimeIntervalRange::NormalTimeIntervalRange(const CSaTScanData& Data,
@@ -243,6 +173,17 @@ NormalTimeIntervalRange * NormalTimeIntervalRange::Clone() const {
  return new NormalTimeIntervalRange(*this);
 }
 
+/** Iterates through defined temporal window for accumulated data of 'Running'
+    cluster. Calculates loglikelihood ratio of clusters that have rates of which
+    we are interested in and compares against current top cluster; re-assigning
+    top cluster to running cluster if calculated llr is greater than that defined
+    by current top cluster.
+    NOTE: Though parameters to this function are base class CCluster objects, only
+          CPurelyTemporalCluster and CSpaceTimeCluster objects should be passed.
+          It might be appropriate to introduce a common ancestor class for these
+          classes someday.
+    NOTE: This algorithm is identical to TimeIntervalRange::CompareClusters(...)
+          with the only deviation being the second measure. */
 void NormalTimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluster) {
   int                  iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
   count_t              tCases, tTotalCases(gData.GetTotalCases());
@@ -271,7 +212,8 @@ void NormalTimeIntervalRange::CompareClusters(CCluster & Running, CCluster & Top
   }
 }
 
-void NormalTimeIntervalRange::CompareMeasures(AbstractTemporalClusterData*, CMeasureList&) {
+/** Not implemented - throws ZdException */
+void NormalTimeIntervalRange::CompareMeasures(TemporalData&, CMeasureList&) {
   ZdGenerateException("CompareMeasures() not implemented.","NormalTimeIntervalRange");
 }
 
@@ -301,6 +243,18 @@ MultiStreamTimeIntervalRange * MultiStreamTimeIntervalRange::Clone() const {
  return new MultiStreamTimeIntervalRange(*this);
 }
 
+/** Iterates through defined temporal window for accumulated data of 'Running'
+    cluster. Calculates loglikelihood ratio of clusters that have rates of which
+    we are interested in and compares against current top cluster; re-assigning
+    top cluster to running cluster if calculated llr is greater than that defined
+    by current top cluster.
+    NOTE: Though parameters to this function are base class CCluster objects, only
+          CPurelyTemporalCluster and CSpaceTimeCluster objects should be passed.
+          It might be appropriate to introduce a common ancestor class for these
+          classes someday.
+    NOTE: This algorithm is identical to TimeIntervalRange::CompareClusters(...)
+          with the deviation being the loop over multipe data sets and process
+          of unifying the calculated log likelihood ratios. */
 void MultiStreamTimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluster) {
   int                          iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
   MultipleStreamTemporalData * pData = (MultipleStreamTemporalData*)Running.GetClusterData(); //dynamic cast ?
@@ -331,7 +285,8 @@ void MultiStreamTimeIntervalRange::CompareClusters(CCluster & Running, CCluster 
   }
 }
 
-void MultiStreamTimeIntervalRange::CompareMeasures(AbstractTemporalClusterData*, CMeasureList&) {
+/** Not implemented - throws ZdException */
+void MultiStreamTimeIntervalRange::CompareMeasures(TemporalData&, CMeasureList&) {
   ZdGenerateException("CompareMeasures() not implemented.","MultiStreamTimeIntervalRange");
 }
 
