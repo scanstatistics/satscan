@@ -741,7 +741,7 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const std::vector<
 }
 
 bool TfrmAnalysis::DetermineIfDbfExtension(const AnsiString& sFileName) {
-  return ZdString(sFileName.c_str()).EndsWith(".dbf");
+  return ZdString(sFileName.c_str()).ToLowercase().EndsWith(".dbf");
 }
 
 void __fastcall TfrmAnalysis::edtEndDayExit(TObject *Sender) {
