@@ -54,7 +54,8 @@ void RelativeRiskData::RecordRelativeRiskData(const CSaTScanData& DataHub) {
        for (t=0; t < DataHub.GetNumTracts(); ++t) {
           pRecord = new OutputRecord(gvFields);
           pRecord->GetFieldValue(GetFieldNumber(LOC_ID_FIELD)).AsZdString() = GetLocationId(sBuffer, t, DataHub);
-          pRecord->GetFieldValue(GetFieldNumber(DATASTREAM_FIELD)).AsDouble() = i + 1;
+          if (gParameters.GetNumDataStreams() > 1)
+            pRecord->GetFieldValue(GetFieldNumber(DATASTREAM_FIELD)).AsDouble() = i + 1;
           pRecord->GetFieldValue(GetFieldNumber(OBSERVED_FIELD)).AsDouble() = pCases[t];
           dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
           pRecord->GetFieldValue(GetFieldNumber(EXPECTED_FIELD)).AsDouble() = dExpected;
@@ -95,7 +96,8 @@ void RelativeRiskData::RecordRelativeRiskData(const CSVTTData& DataHub) {
        for (t=0; t < DataHub.GetNumTracts(); ++t) {
           pRecord = new OutputRecord(gvFields);
           pRecord->GetFieldValue(GetFieldNumber(LOC_ID_FIELD)).AsZdString() = GetLocationId(sBuffer, t, DataHub);
-          pRecord->GetFieldValue(GetFieldNumber(DATASTREAM_FIELD)).AsDouble() = i + 1;
+          if (gParameters.GetNumDataStreams() > 1)
+            pRecord->GetFieldValue(GetFieldNumber(DATASTREAM_FIELD)).AsDouble() = i + 1;
           pRecord->GetFieldValue(GetFieldNumber(OBSERVED_FIELD)).AsDouble() = pCases[t];
           dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
           pRecord->GetFieldValue(GetFieldNumber(EXPECTED_FIELD)).AsDouble() = dExpected;
@@ -133,7 +135,8 @@ void RelativeRiskData::SetupFields() {
 
   try {
     CreateField(gvFields, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
-    CreateField(gvFields, DATASTREAM_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
+    if (gParameters.GetNumDataStreams() > 1)
+      CreateField(gvFields, DATASTREAM_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
     CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
     CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
     CreateField(gvFields, REL_RISK_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
