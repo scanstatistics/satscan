@@ -313,7 +313,7 @@ void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, Z
   char         sAdditBuffer[64], sRadBuffer[64];
 
    try {
-     if (pCluster.m_nClusterType == PURELYTEMPORAL) {
+     if (pCluster.GetClusterType() == PURELYTEMPORAL) {
        sLatitude = "n/a";
        sLongitude = "n/a";
        if (giCoordType == CARTESIAN)
@@ -363,7 +363,7 @@ void stsClusterData::SetEllipseString(ZdString& sAngle, ZdString& sShape, const 
    char  sAngleBuffer[256], sShapeBuffer[256];
 
    try {
-      if (pCluster.m_nClusterType == PURELYTEMPORAL){
+      if (pCluster.GetClusterType() == PURELYTEMPORAL){
          sAngle = "n/a";
          sShape = "n/a";
       }
