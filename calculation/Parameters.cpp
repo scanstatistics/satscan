@@ -587,6 +587,9 @@ void CParameters::copy(const CParameters &rhs) {
     gbRelativeRiskDBF           = rhs.gbRelativeRiskDBF; 
     gbLogLikelihoodDBF          = rhs.gbLogLikelihoodDBF;
     gsRunHistoryFilename        = rhs.gsRunHistoryFilename;
+
+    m_nInitialMaxClusterSizeType = rhs.m_nInitialMaxClusterSizeType;
+    m_nInitialMaxTemporalClusterSize = rhs.m_nInitialMaxTemporalClusterSize;
 }
 
 void CParameters::DisplayAnalysisType(FILE* fp) const {
