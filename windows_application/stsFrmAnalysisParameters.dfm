@@ -45,20 +45,20 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 493
     Height = 389
-    ActivePage = tbInputFiles
+    ActivePage = tbOutputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input'
       object Label4: TLabel
         Left = 15
-        Top = 165
+        Top = 175
         Width = 72
         Height = 13
         Caption = 'Population File:'
       end
       object Label5: TLabel
         Left = 128
-        Top = 165
+        Top = 175
         Width = 75
         Height = 13
         Caption = '(Poisson Model)'
@@ -97,61 +97,22 @@ object frmAnalysis: TfrmAnalysis
       end
       object GroupBox1: TGroupBox
         Left = 8
-        Top = 4
+        Top = 6
         Width = 466
-        Height = 151
+        Height = 161
         Color = clBtnFace
         ParentColor = False
         TabOrder = 0
-        object Label10: TLabel
-          Left = 136
-          Top = 13
-          Width = 19
-          Height = 11
-          Caption = 'Year'
-          Font.Charset = ANSI_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -9
-          Font.Name = 'Small Fonts'
-          Font.Style = []
-          ParentFont = False
-        end
-        object Label12: TLabel
-          Left = 170
-          Top = 13
-          Width = 28
-          Height = 11
-          Caption = 'Month'
-          Font.Charset = ANSI_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -9
-          Font.Name = 'Small Fonts'
-          Font.Style = []
-          ParentFont = False
-        end
-        object Label14: TLabel
-          Left = 204
-          Top = 13
-          Width = 16
-          Height = 11
-          Caption = 'Day'
-          Font.Charset = ANSI_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -9
-          Font.Name = 'Small Fonts'
-          Font.Style = []
-          ParentFont = False
-        end
         object Label1: TLabel
-          Left = 12
-          Top = 52
+          Left = 8
+          Top = 12
           Width = 46
           Height = 13
           Caption = 'Case File:'
         end
         object Label2: TLabel
-          Left = 12
-          Top = 100
+          Left = 8
+          Top = 54
           Width = 55
           Height = 13
           Caption = 'Control File:'
@@ -160,100 +121,47 @@ object frmAnalysis: TfrmAnalysis
         end
         object Label3: TLabel
           Left = 120
-          Top = 100
+          Top = 54
           Width = 78
           Height = 13
           Caption = '(Bernoulli Model)'
         end
-        object Label8: TLabel
-          Left = 12
-          Top = 27
-          Width = 114
-          Height = 13
-          Caption = 'Study Period Start Date:'
-        end
-        object Label9: TLabel
-          Left = 245
-          Top = 27
-          Width = 111
-          Height = 13
-          Caption = 'Study Period End Date:'
-        end
-        object Label15: TLabel
-          Left = 364
-          Top = 13
-          Width = 19
-          Height = 11
-          Caption = 'Year'
-          Font.Charset = ANSI_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -9
-          Font.Name = 'Small Fonts'
-          Font.Style = []
-          ParentFont = False
-        end
-        object Label17: TLabel
-          Left = 399
-          Top = 13
-          Width = 28
-          Height = 11
-          Caption = 'Month'
-          Font.Charset = ANSI_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -9
-          Font.Name = 'Small Fonts'
-          Font.Style = []
-          ParentFont = False
-        end
-        object Label18: TLabel
-          Left = 432
-          Top = 13
-          Width = 16
-          Height = 11
-          Caption = 'Day'
-          Font.Charset = ANSI_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -9
-          Font.Name = 'Small Fonts'
-          Font.Style = []
-          ParentFont = False
-        end
         object rgpPrecisionTimes: TRadioGroup
-          Left = 361
-          Top = 63
+          Left = 357
+          Top = 20
           Width = 92
-          Height = 74
+          Height = 69
           Caption = 'Time Included'
           ItemIndex = 0
           Items.Strings = (
             'Yes'
             'No')
-          TabOrder = 10
+          TabOrder = 4
           OnClick = rgpPrecisionTimesClick
         end
         object edtCaseFileName: TEdit
           Left = 8
-          Top = 68
+          Top = 26
           Width = 284
           Height = 21
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 6
+          TabOrder = 0
           OnChange = edtCaseFileNameChange
         end
         object edtControlFileName: TEdit
           Left = 8
-          Top = 116
+          Top = 68
           Width = 284
           Height = 21
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 8
+          TabOrder = 2
           OnChange = edtControlFileNameChange
         end
         object btnCaseBrowse: TButton
           Left = 300
-          Top = 68
+          Top = 26
           Width = 25
           Height = 21
           Hint = 'browse for case file'
@@ -266,12 +174,12 @@ object frmAnalysis: TfrmAnalysis
           ParentFont = False
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 7
+          TabOrder = 1
           OnClick = btnCaseBrowseClick
         end
         object btnControlBrowse: TButton
           Left = 300
-          Top = 116
+          Top = 68
           Width = 25
           Height = 21
           Hint = 'browse for control file'
@@ -284,83 +192,183 @@ object frmAnalysis: TfrmAnalysis
           ParentFont = False
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 9
+          TabOrder = 3
           OnClick = btnControlBrowseClick
         end
-        object edtStudyPeriodEndDateYear: TEdit
-          Left = 361
-          Top = 24
-          Width = 33
-          Height = 21
-          MaxLength = 4
-          TabOrder = 3
-          Text = '1900'
-          OnExit = edtStudyPeriodEndDateExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-        object edtStudyPeriodStartDateYear: TEdit
-          Left = 132
-          Top = 24
-          Width = 33
-          Height = 21
-          MaxLength = 4
-          TabOrder = 0
-          Text = '1900'
-          OnExit = edtStudyPeriodStartDateExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-        object edtStudyPeriodStartDateMonth: TEdit
-          Left = 172
-          Top = 24
-          Width = 23
-          Height = 21
-          Enabled = False
-          MaxLength = 2
-          TabOrder = 1
-          Text = '1'
-          OnExit = edtStudyPeriodStartDateExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-        object edtStudyPeriodEndDateMonth: TEdit
-          Left = 401
-          Top = 24
-          Width = 23
-          Height = 21
-          Enabled = False
-          MaxLength = 2
-          TabOrder = 4
-          Text = '12'
-          OnExit = edtStudyPeriodEndDateExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-        object edtStudyPeriodEndDateDay: TEdit
-          Left = 431
-          Top = 24
-          Width = 23
-          Height = 21
-          Enabled = False
-          MaxLength = 2
+        object GroupBox3: TGroupBox
+          Left = 8
+          Top = 96
+          Width = 441
+          Height = 53
+          Caption = 'Study Period'
           TabOrder = 5
-          Text = '31'
-          OnExit = edtStudyPeriodEndDateExit
-          OnKeyPress = NaturalNumberKeyPress
-        end
-        object edtStudyPeriodStartDateDay: TEdit
-          Left = 202
-          Top = 24
-          Width = 23
-          Height = 21
-          Enabled = False
-          MaxLength = 2
-          TabOrder = 2
-          Text = '1'
-          OnExit = edtStudyPeriodStartDateExit
-          OnKeyPress = NaturalNumberKeyPress
+          object Label8: TLabel
+            Left = 34
+            Top = 27
+            Width = 51
+            Height = 13
+            Caption = 'Start Date:'
+          end
+          object Label10: TLabel
+            Left = 96
+            Top = 13
+            Width = 19
+            Height = 11
+            Caption = 'Year'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -9
+            Font.Name = 'Small Fonts'
+            Font.Style = []
+            ParentFont = False
+          end
+          object Label12: TLabel
+            Left = 134
+            Top = 13
+            Width = 28
+            Height = 11
+            Caption = 'Month'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -9
+            Font.Name = 'Small Fonts'
+            Font.Style = []
+            ParentFont = False
+          end
+          object Label14: TLabel
+            Left = 172
+            Top = 13
+            Width = 16
+            Height = 11
+            Caption = 'Day'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -9
+            Font.Name = 'Small Fonts'
+            Font.Style = []
+            ParentFont = False
+          end
+          object Label9: TLabel
+            Left = 229
+            Top = 27
+            Width = 48
+            Height = 13
+            Caption = 'End Date:'
+          end
+          object Label15: TLabel
+            Left = 288
+            Top = 13
+            Width = 19
+            Height = 11
+            Caption = 'Year'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -9
+            Font.Name = 'Small Fonts'
+            Font.Style = []
+            ParentFont = False
+          end
+          object Label17: TLabel
+            Left = 327
+            Top = 13
+            Width = 28
+            Height = 11
+            Caption = 'Month'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -9
+            Font.Name = 'Small Fonts'
+            Font.Style = []
+            ParentFont = False
+          end
+          object Label18: TLabel
+            Left = 365
+            Top = 13
+            Width = 16
+            Height = 11
+            Caption = 'Day'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -9
+            Font.Name = 'Small Fonts'
+            Font.Style = []
+            ParentFont = False
+          end
+          object edtStudyPeriodStartDateYear: TEdit
+            Left = 92
+            Top = 24
+            Width = 33
+            Height = 21
+            MaxLength = 4
+            TabOrder = 0
+            Text = '1900'
+            OnExit = edtStudyPeriodStartDateExit
+            OnKeyPress = NaturalNumberKeyPress
+          end
+          object edtStudyPeriodStartDateMonth: TEdit
+            Left = 136
+            Top = 24
+            Width = 23
+            Height = 21
+            Enabled = False
+            MaxLength = 2
+            TabOrder = 1
+            Text = '1'
+            OnExit = edtStudyPeriodStartDateExit
+            OnKeyPress = NaturalNumberKeyPress
+          end
+          object edtStudyPeriodStartDateDay: TEdit
+            Left = 170
+            Top = 24
+            Width = 23
+            Height = 21
+            Enabled = False
+            MaxLength = 2
+            TabOrder = 2
+            Text = '1'
+            OnExit = edtStudyPeriodStartDateExit
+            OnKeyPress = NaturalNumberKeyPress
+          end
+          object edtStudyPeriodEndDateYear: TEdit
+            Left = 285
+            Top = 24
+            Width = 33
+            Height = 21
+            MaxLength = 4
+            TabOrder = 3
+            Text = '1900'
+            OnExit = edtStudyPeriodEndDateExit
+            OnKeyPress = NaturalNumberKeyPress
+          end
+          object edtStudyPeriodEndDateMonth: TEdit
+            Left = 329
+            Top = 24
+            Width = 23
+            Height = 21
+            Enabled = False
+            MaxLength = 2
+            TabOrder = 4
+            Text = '12'
+            OnExit = edtStudyPeriodEndDateExit
+            OnKeyPress = NaturalNumberKeyPress
+          end
+          object edtStudyPeriodEndDateDay: TEdit
+            Left = 362
+            Top = 24
+            Width = 23
+            Height = 21
+            Enabled = False
+            MaxLength = 2
+            TabOrder = 5
+            Text = '31'
+            OnExit = edtStudyPeriodEndDateExit
+            OnKeyPress = NaturalNumberKeyPress
+          end
         end
       end
       object edtPopFileName: TEdit
         Left = 15
-        Top = 181
+        Top = 189
         Width = 284
         Height = 21
         ParentShowHint = False
@@ -370,7 +378,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object btnPopBrowse: TButton
         Left = 308
-        Top = 181
+        Top = 189
         Width = 25
         Height = 21
         Hint = 'browse for population file'
@@ -388,27 +396,27 @@ object frmAnalysis: TfrmAnalysis
       end
       object GroupBox2: TGroupBox
         Left = 8
-        Top = 208
+        Top = 216
         Width = 466
-        Height = 111
+        Height = 101
         TabOrder = 3
         object Label6: TLabel
           Left = 8
-          Top = 12
+          Top = 10
           Width = 78
           Height = 13
           Caption = 'Coordinates File:'
         end
         object Label7: TLabel
           Left = 8
-          Top = 60
+          Top = 54
           Width = 125
           Height = 13
           Caption = 'Special Grid File: (optional)'
         end
         object edtCoordinateFileName: TEdit
           Left = 8
-          Top = 28
+          Top = 24
           Width = 284
           Height = 21
           ParentShowHint = False
@@ -418,7 +426,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtGridFileName: TEdit
           Left = 8
-          Top = 76
+          Top = 68
           Width = 284
           Height = 21
           ParentShowHint = False
@@ -428,7 +436,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object btnCoordBrowse: TButton
           Left = 300
-          Top = 28
+          Top = 24
           Width = 25
           Height = 21
           Hint = 'browse for coordinates file'
@@ -446,7 +454,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object btnGridBrowse: TButton
           Left = 300
-          Top = 76
+          Top = 68
           Width = 25
           Height = 21
           Hint = 'browse for special grid file'
@@ -464,7 +472,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object rgpCoordinates: TRadioGroup
           Left = 333
-          Top = 24
+          Top = 16
           Width = 124
           Height = 74
           Caption = 'Coordinates'
@@ -931,7 +939,7 @@ object frmAnalysis: TfrmAnalysis
         TabOrder = 0
         object Label29: TLabel
           Left = 8
-          Top = 8
+          Top = 10
           Width = 57
           Height = 13
           Caption = 'Results File:'
