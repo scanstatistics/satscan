@@ -8,7 +8,7 @@ TfrmAbout *frmAbout;
 //---------------------------------------------------------------------------
 __fastcall TfrmAbout::TfrmAbout(TComponent* Owner) : TForm(Owner) {
    lblEmail->Caption = SUBSTANTIVE_SUPPORT_EMAIL;
-   lblVersion->Caption = VERSION_NUMBER;
+   lblVersion->Caption = AnsiString("v ") + VERSION_NUMBER;
    lblVersionDate->Caption = VERSION_DATE;
    lblWebSite->Caption = SATSCAN_WEBSITE;
 }
