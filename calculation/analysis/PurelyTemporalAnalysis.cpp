@@ -86,7 +86,6 @@ double CPurelyTemporalAnalysis::MonteCarlo(const DataStreamInterface & Interface
                                              m_pParameters->GetAreaScanRateType());
     }
 
-    C.Initialize(0);
     C.ComputeBestMeasures(*m_pData, *pMeasureList);
 
     dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
@@ -119,7 +118,6 @@ double CPurelyTemporalAnalysis::MonteCarloProspective(const DataStreamInterface 
                                              m_pParameters->GetAreaScanRateType());
     }
 
-    C.Initialize(0);
     C.ComputeBestMeasures(*m_pData, *pMeasureList);
 
     dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
