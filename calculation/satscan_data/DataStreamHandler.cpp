@@ -323,10 +323,12 @@ bool DataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDesc
   return bValid;
 }
 
-/** reports whether any data stream has cases with a zero population. */
+/** Reports whether any location in data set is zero for a population date.
+    Reports only if there is one data set; otherwise amount of information printed
+    is cumbersome. */
 void DataStreamHandler::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePrint * pPrintDirection) {
-  for (size_t t=0; t < gvDataStreams.size(); ++t)
-    gvDataStreams[t]->GetPopulationData().ReportZeroPops(Data, pDisplay, *pPrintDirection);
+  if (gvDataStreams.size() == 1)
+    gvDataStreams[0]->GetPopulationData().ReportZeroPops(Data, pDisplay, *pPrintDirection);
 }
 
 void DataStreamHandler::SetPurelyTemporalMeasureData(RealDataStream & thisRealStream) {
