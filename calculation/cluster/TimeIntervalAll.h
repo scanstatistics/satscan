@@ -4,30 +4,26 @@
 //*****************************************************************************
 #include "TimeIntervals.h"
 
-class CTIAll : public CTimeIntervals
-{
+class CTIAll : public CTimeIntervals {
   public:
     CTIAll(int nTotal, int nCut);
+    CTIAll(const CTIAll& rhs);
     virtual ~CTIAll() {};
 
-    inline virtual void         Initialize();
-    void                        InitializeRange(int nLow, int nHigh);
-    virtual count_t             GetCaseCountForTract(tract_t tTract, count_t** pCases) const;
-    virtual measure_t           GetMeasureForTract(tract_t tTract, measure_t** pMeasure) const;
-    virtual bool                GetNextTimeInterval(const count_t* pCases,
-                                                    const measure_t* pMeasure,
-                                                    count_t& nCases, measure_t& nMeasure,
-                                                    int& nStart, int& nStop);
-    inline virtual bool         GetNextTimeIntervalProsp(const count_t* pCases,
-                                                         const measure_t* pMeasure,
-                                                         count_t& nCases, measure_t& nMeasure);
-   /*virtual bool GetNextTimeIntervalProsp(const count_t*& pCases,
-                                     const measure_t*& pMeasure,
-                                     count_t& nCases,
-                                     measure_t& nMeasure,
-                                     int& nStart,
-                                     int& nStop);
-*/
+    virtual CTIAll            * Clone() const;
+    virtual count_t             GetCaseCountForTract(const CCluster & Cluster, tract_t tTract, count_t** pCases) const;
+    virtual measure_t           GetMeasureForTract(const CCluster & Cluster, tract_t tTract, measure_t** pMeasure) const;
+    virtual IncludeClustersType GetType() const {return ALLCLUSTERS;}
+    virtual void                ComputeBestMeasures(const count_t* pCases, const measure_t* pMeasure,
+                                                    CMeasureList & MeasureList) {/* should be pure virtual */}
+    virtual void                CompareClusters(CCluster & Running,
+                                                CCluster & TopShapeCluster,
+                                                const CSaTScanData& Data,
+                                                const count_t* pCases,
+                                                const measure_t* pMeasure) {
+                                   ZdGenerateException("CompareClusters() not implemented.","CTimeIntervals");
+                                }
+
 };
 //*****************************************************************************
 #endif

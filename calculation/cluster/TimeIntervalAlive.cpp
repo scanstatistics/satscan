@@ -1,81 +1,81 @@
 #include "SaTScan.h"
 #pragma hdrstop
 #include "TimeIntervalAlive.h"
+#include "MeasureList.h"
+#include "Cluster.h"
 
-CTIAlive::CTIAlive(int nTotal, int nCut)
-         :CTimeIntervals(nTotal, nCut)
-{
+/** constructor */
+CTIAlive::CTIAlive(int nTotal, int nCut) : CTimeIntervals(nTotal, nCut) {}
+
+/** copy constructor */
+CTIAlive::CTIAlive(const CTIAlive& rhs) : CTimeIntervals(rhs) {}
+
+/** returns newly cloned CTIAlive */
+CTIAlive * CTIAlive::Clone() const {
+  return new CTIAlive(*this);
 }
 
-void CTIAlive::Initialize()
-{
-   //  m_nStart = m_nCut-1;
-   //  m_nStop  = m_nTotal-1;
-   m_nStart = m_nTotal-m_nCut-1;
-   m_nStop  = m_nTotal;
+/** Iterates through all possible 'alive' time windows for runnning cluster,
+    comparing against current top cluster. Reassigns top cluster if running
+    cluster ever has a greater loglikelihood.*/
+void CTIAlive::CompareClusters(CCluster & Running, CCluster & TopShapeCluster, const CSaTScanData& Data,
+                                        const count_t* pCases, const measure_t* pMeasure) {
+  int   iWindowStart, iWindowEnd;
+
+  //iterate through all possible 'alive' windows
+  iWindowStart = giNumIntervals - giMaxWindowLength;
+  iWindowEnd  = giNumIntervals;
+  for (; iWindowStart < iWindowEnd; ++iWindowStart) {
+       Running.m_nCases = pCases[iWindowStart];
+       Running.m_nMeasure = pMeasure[iWindowStart];
+       if (Running.RateIsOfInterest(Data.m_nTotalCases, Data.m_nTotalMeasure)) {
+          Running.m_nLogLikelihood = Data.m_pModel->CalcLogLikelihood(Running.m_nCases, Running.m_nMeasure);
+          if (Running.m_nLogLikelihood  > TopShapeCluster.m_nLogLikelihood) {
+            TopShapeCluster.AssignAsType(Running);
+            TopShapeCluster.m_nFirstInterval = iWindowStart;
+            TopShapeCluster.m_nLastInterval = iWindowEnd;
+          }
+       }
+  }
+}
+
+/** Iterates through all possible time windows to determine the most significant
+    measure for number of cases.*/
+void CTIAlive::ComputeBestMeasures(const count_t* pCases, const measure_t* pMeasure,
+                                   CMeasureList & MeasureList) {
+  int  iWindowStart, iWindowEnd;
+
+  //iterate through all possible 'alive' windows
+  iWindowStart = giNumIntervals - giMaxWindowLength;
+  iWindowEnd  = giNumIntervals;
+  for (; iWindowStart < iWindowEnd; ++iWindowStart)
+       MeasureList.AddMeasure(pCases[iWindowStart], pMeasure[iWindowStart]);
 }
 
 /** Returns the number of cases that tract attributed to accumulated case count. */
-count_t CTIAlive::GetCaseCountForTract(tract_t tTract, count_t** pCases) const
+count_t CTIAlive::GetCaseCountForTract(const CCluster & Cluster, tract_t tTract, count_t** pCases) const
 {
    count_t      tCaseCount;
 
-   if (m_nStart == m_nStop)
+   if (Cluster.m_nFirstInterval == giNumIntervals)
      tCaseCount = 0;
    else
-     tCaseCount = pCases[m_nStart][tTract];
+     tCaseCount = pCases[Cluster.m_nFirstInterval][tTract];
 
    return tCaseCount;
-}
+}                                                                                
 
 /** Returns the measure that tract attributed to accumulated measure. */
-measure_t CTIAlive::GetMeasureForTract(tract_t tTract, measure_t** pMeasure) const
+measure_t CTIAlive::GetMeasureForTract(const CCluster & Cluster, tract_t tTract, measure_t** pMeasure) const
 {
    measure_t      tMeasure;
 
-   if (m_nStart == m_nStop)
+   if (Cluster.m_nFirstInterval == giNumIntervals)
      tMeasure = 0;
    else
-     tMeasure = pMeasure[m_nStart][tTract];
+     tMeasure = pMeasure[Cluster.m_nFirstInterval][tTract];
 
    return tMeasure;
 }
 
-bool CTIAlive::GetNextTimeInterval(const count_t* pCases,
-                                   const measure_t* pMeasure,
-                                   count_t& nCases,
-                                   measure_t& nMeasure,
-                                   int& nStart,
-                                   int& nStop)
-{
-      m_nStart++;
-      if (m_nStart == m_nStop)
-         {
-         nCases = -1;
-         nMeasure = -1;
-         nStart = -1;
-         nStop = -1;
-         return false;
-         }
 
-      //  m_bClusterSet = true;
-      nCases   = pCases[m_nStart];
-      nMeasure = pMeasure[m_nStart];
-      nStart   = m_nStart;
-      nStop    = m_nStop;
-  return true;
-}
-
-/*bool CTIAlive::GetNextTimeIntervalProsp(const count_t*& pCases,
-                                   const measure_t*& pMeasure,
-                                   count_t& nCases,
-                                   measure_t& nMeasure,
-                                   int& nStart,
-                                   int& nStop) */
-bool CTIAlive::GetNextTimeIntervalProsp(const count_t* pCases,
-                                   const measure_t* pMeasure,
-                                   count_t& nCases,
-                                   measure_t& nMeasure)
-{
-  return false;
-}

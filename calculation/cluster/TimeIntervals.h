@@ -3,33 +3,35 @@
 #define __TIMEINTERVALS_H
 //*****************************************************************************
 #include "SaTScan.h"
+#include "Parameters.h"
 
-class CTimeIntervals
-{
+class CMeasureList;
+class CCluster;
+class CSaTScanData;
+
+class CTimeIntervals {
+  protected:
+    int                         giNumIntervals;         /* number of total time intervals */
+    int                         giMaxWindowLength;      /* maximum window length          */
+
   public:
-    CTimeIntervals(int nTotal, int nCut) {m_nTotal=nTotal; m_nCut=nCut;};
+    CTimeIntervals(int nTotal, int nCut) {giNumIntervals=nTotal; giMaxWindowLength=nCut;}
+    CTimeIntervals(const CTimeIntervals& rhs) {giNumIntervals = rhs.giNumIntervals;
+                                               giMaxWindowLength = rhs.giMaxWindowLength;}
     virtual ~CTimeIntervals() {};
 
-    virtual void        Initialize() {};
-    virtual void        InitializeRange(int nLow, int nHigh) { };
-    virtual count_t     GetCaseCountForTract(tract_t tTract, count_t** pCases) const = 0;
-    virtual measure_t   GetMeasureForTract(tract_t tTract,  measure_t** pMeasure) const = 0;
-    virtual bool        GetNextTimeInterval(const count_t* pCases, const measure_t* pMeasure,
-                                            count_t& nCases, measure_t& nMeasure,
-                                            int& nStart, int& nStop)
-                                            {return false;}
-    virtual bool GetNextTimeIntervalProsp(const count_t* pCases, const measure_t* pMeasure,
-                                          count_t& nCases, measure_t& nMeasure) {return false;};
-    /*virtual bool GetNextTimeIntervalProsp(const count_t*& pCases,
-                                     const measure_t*& pMeasure,
-                                     count_t& nCases,
-                                     measure_t& nMeasure,
-                                     int& nStart,
-                                     int& nStop) {return false;};*/
-  protected:
-    int m_nStart;
-    int m_nStop;
-    int m_nTotal;
-    int m_nCut;
+    virtual CTimeIntervals    * Clone() const = 0;
+    virtual void                ComputeBestMeasures(const count_t* pCases,
+                                                    const measure_t* pMeasure,
+                                                    CMeasureList & MeasureList) = 0;
+    virtual void                CompareClusters(CCluster & Running,
+                                                CCluster & TopShapeCluster,
+                                                const CSaTScanData& Data,
+                                                const count_t* pCases,
+                                                const measure_t* pMeasure) = 0;
+    virtual void                Initialize() {/*stub - no action */}
+    virtual count_t             GetCaseCountForTract(const CCluster & Cluster, tract_t tTract, count_t** pCases) const = 0;
+    virtual measure_t           GetMeasureForTract(const CCluster & Cluster, tract_t tTract,  measure_t** pMeasure) const = 0;
+    virtual IncludeClustersType GetType() const = 0;
 };
 #endif
