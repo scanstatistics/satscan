@@ -16,7 +16,7 @@ TfrmAnalysis *frmAnalysis;
 // Constructor
 // If a parameter file is passed it, it will parse it (read it) and set up the interface.
 //---------------------------------------------------------------------------
-__fastcall TfrmAnalysis::TfrmAnalysis(TComponent* Owner, char *sParamFileName) : TForm(Owner) {
+__fastcall TfrmAnalysis::TfrmAnalysis(TComponent* Owner, TActionList* theList, char *sParamFileName) : stsBaseAnalysisChildForm (Owner, theList) {
   try {
     Init();
     Setup(sParamFileName);
@@ -29,7 +29,7 @@ __fastcall TfrmAnalysis::TfrmAnalysis(TComponent* Owner, char *sParamFileName) :
 //---------------------------------------------------------------------------
 // Destructor
 //---------------------------------------------------------------------------
-__fastcall TfrmAnalysis::~TfrmAnalysis() {}
+__fastcall TfrmAnalysis::~TfrmAnalysis() { }
 
 //---------------------------------------------------------------------------
 // case file selector
@@ -646,6 +646,19 @@ void __fastcall TfrmAnalysis::edtUnitLengthExit(TObject *Sender) {
     PageControl1->ActivePage = tbTimeParameter;
     edtUnitLength->SetFocus();
   }
+}
+
+// enables/disables the appropraite buttons and controls based on their category type
+void TfrmAnalysis::EnableActions(bool bEnable) {
+   for(int i = 0; i < gpList->ActionCount; ++i) {
+      TAction* pAction = dynamic_cast<TAction*>(gpList->Actions[i]);
+      if (pAction) {
+         if(pAction->Category == CATEGORY_ALL || pAction->Category == CATEGORY_ANALYSIS)
+             pAction->Enabled = bEnable;
+         else if(pAction->Category == CATEGORY_ANALYSIS_RUN)
+             pAction->Enabled = !bEnable;
+      }
+   }
 }
 
 // enables or disables the PST start date control
@@ -1679,7 +1692,9 @@ void __fastcall TfrmAnalysis::rgTypeAnalysisClick(TObject *Sender) {
   }
 }
 
-
-
-
+void __fastcall TfrmAnalysis::FormActivate(TObject *Sender)
+{
+   EnableActions(true);
+}
+//---------------------------------------------------------------------------
 

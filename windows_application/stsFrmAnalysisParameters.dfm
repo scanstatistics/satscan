@@ -16,6 +16,7 @@ object frmAnalysis: TfrmAnalysis
   OldCreateOrder = False
   Position = poDefaultPosOnly
   Visible = True
+  OnActivate = FormActivate
   OnClose = FormClose
   PixelsPerInch = 96
   TextHeight = 13

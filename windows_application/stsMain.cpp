@@ -9,7 +9,7 @@
 
 TfrmMainForm *frmMainForm;
 //---------------------------------------------------------------------------
-__fastcall TfrmMainForm::TfrmMainForm(TComponent* Owner): TForm(Owner){}
+__fastcall TfrmMainForm::TfrmMainForm(TComponent* Owner): TForm(Owner){ EnableActions(true); }
 
 __fastcall TfrmMainForm::~TfrmMainForm() {}
 
@@ -23,6 +23,20 @@ void __fastcall TfrmMainForm::CloseSessionActionExecute(TObject *Sender) {
     ActiveMDIChild->Close();
 }
 //---------------------------------------------------------------------------
+
+// enables/disables the appropraite buttons and controls based on their category type
+void TfrmMainForm::EnableActions(bool bEnable) {
+   for(int i = 0; i < ActionList->ActionCount; ++i) {
+      TAction* pAction = dynamic_cast<TAction*>(ActionList->Actions[i]);
+      if (pAction) {
+         if(pAction->Category == "All")
+             pAction->Enabled = bEnable;
+         else if(pAction->Category == "AnalysisRun" || pAction->Category == "Analysis")
+             pAction->Enabled = !bEnable;
+      }
+   }
+}
+
 void __fastcall TfrmMainForm::ExecuteActionExecute(TObject *Sender) {
   try {
     ExecuteSession();
@@ -58,7 +72,7 @@ void TfrmMainForm::ExecuteSession() {
         // if we don't already have a thread with the result file running then launch one
         if(!gRegistry.IsAlreadyRegistered(sFileName)) {
            gRegistry.Register(sFileName);
-           pAnalysisRun = new TfrmAnalysisRun(this, sFileName, gRegistry);
+           pAnalysisRun = new TfrmAnalysisRun(this, sFileName, gRegistry, ActionList);
            CalcThread * pThread = new CalcThread(true, *pSession, sCaption.c_str(), *pAnalysisRun);
            pThread->Resume(); // starts the thread
         }
@@ -87,15 +101,15 @@ void __fastcall TfrmMainForm::HelpActionExecute(TObject *Sender) {
   hReturn = ShellExecute(NULL, "open", "SaTScan_Help.chm", NULL, NULL, SW_SHOWNORMAL);
   if (hReturn <= (void*)32) {
     if (hReturn == (void*)SE_ERR_NOASSOC) {
-      sMessage << "SaTScan Help was unable to open. Please note that SaTScan Help ";
-      sMessage << "requires Internet Explorer 4.0 or later installed.";
-      sMessage << "\nPlease contact technical support at website: ";
-      sMessage << GetToolkit().GetWebSite() << " for more information.";
+      sMessage  << "SaTScan Help was unable to open. Please note that SaTScan Help "
+                   "requires Internet Explorer 4.0 or later installed."
+                   "\nPlease contact technical support at website: "
+                << GetToolkit().GetWebSite() << " for more information.";
     }
     else {
-      sMessage << "SaTScan Help was unable to open. Help file may be missing or corrupt.";
-      sMessage << "\nPlease contact technical support at website: ";
-      sMessage << GetToolkit().GetWebSite() << ".";
+      sMessage  << "SaTScan Help was unable to open. Help file may be missing or corrupt."
+                   "\nPlease contact technical support at website: "
+                << GetToolkit().GetWebSite() << ".";
     }
     Application->MessageBox(sMessage.GetCString(), "SaTScan Help", MB_OK);
   }
@@ -115,7 +129,7 @@ void __fastcall TfrmMainForm::ImportActionExecute(TObject *Sender) {
 //---------------------------------------------------------------------------
 void __fastcall TfrmMainForm::NewSessionActionExecute(TObject *Sender) {
   try {
-    new TfrmAnalysis(this);
+    new TfrmAnalysis(this, ActionList);
   }
   catch (ZdException & x) {
     x.AddCallpath("NewSessionActionExecute", "TfrmMainForm");
@@ -130,7 +144,7 @@ void __fastcall TfrmMainForm::OpenAFile(){
     OpenDialog1->Filter = "Parameter Files (*.prm)|*.prm|All Files (*.*)|*.*";   //put more types in here...
     OpenDialog1->Title = "Select Parameter File";
     if (OpenDialog1->Execute())
-      new TfrmAnalysis(this, OpenDialog1->FileName.c_str());
+      new TfrmAnalysis(this, ActionList, OpenDialog1->FileName.c_str());
   }
   catch (ZdException & x) {
     x.AddCallpath("OpenAFile()", "TfrmMainForm");

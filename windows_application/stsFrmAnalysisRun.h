@@ -13,9 +13,12 @@
 #include <fcntl.h>
 //---------------------------------------------------------------------------
 //class CalcThread;
+
+#include "stsBaseAnalysisChildForm.h"
+
 class stsOutputFileRegister;
 
-class TfrmAnalysisRun : public TForm {
+class TfrmAnalysisRun : public stsBaseAnalysisChildForm  {
   friend class CalcThread;
   
   __published:	// IDE-managed Components
@@ -33,6 +36,7 @@ class TfrmAnalysisRun : public TForm {
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall OnPrintClick(TObject *Sender);
         void __fastcall OnEMailClick(TObject *Sender);
+        void __fastcall FormActivate(TObject *Sender);
   private:	// User declarations
     bool                        gbCancel;
     bool                        gbCanClose;
@@ -44,6 +48,7 @@ class TfrmAnalysisRun : public TForm {
   protected:
     void                AddLine(char *sLine);
     void                AddWarningLine(char *sLine);
+    virtual void        EnableActions(bool bEnable);
     bool                IsJobCanceled() const {return gbCancel;}
     bool                GetCanClose() const {return gbCanClose;}
     void                LoadFromFile(char *sFileName);
@@ -51,8 +56,8 @@ class TfrmAnalysisRun : public TForm {
     void                SetCanClose(bool b) {gbCanClose=b;}
 
   public:		// User declarations
-            __fastcall TfrmAnalysisRun(TComponent* Owner, const std::string& sOutputFileName, stsOutputFileRegister & Registry);
-    virtual __fastcall ~TfrmAnalysisRun(){}
+            __fastcall TfrmAnalysisRun(TComponent* Owner, const std::string& sOutputFileName, stsOutputFileRegister & Registry, TActionList* theList);
+    virtual __fastcall ~TfrmAnalysisRun(){ }
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfrmAnalysisRun *frmAnalysisRun;

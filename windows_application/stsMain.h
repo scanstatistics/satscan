@@ -85,6 +85,7 @@ class TfrmMainForm : public TForm{
         void __fastcall ImportActionExecute(TObject *Sender);
   private:	// User declarations
     void __fastcall             OpenAFile();
+    void                        EnableActions(bool bEnable);
     void                        ExecuteSession();
     void                        Save();
     void                        SaveAs();

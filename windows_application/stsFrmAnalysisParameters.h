@@ -17,7 +17,9 @@
 
 //---------------------------------------------------------------------------
 
-class TfrmAnalysis : public TForm {
+#include "stsBaseAnalysisChildForm.h"
+
+class TfrmAnalysis : public stsBaseAnalysisChildForm  {
   __published:  // IDE-managed Components
         TButton *btnCaseBrowse;
         TButton *btnControlBrowse;
@@ -173,6 +175,7 @@ class TfrmAnalysis : public TForm {
         void __fastcall rdoSpatialPercentageClick(TObject *Sender);
         void __fastcall rdoSpatialDistanceClick(TObject *Sender);
         void __fastcall mitClearSpecialGridEditClick(TObject *Sender);
+        void __fastcall FormActivate(TObject *Sender);
 
   private:	// User declarations
     CParameters         gParameters;
@@ -220,9 +223,10 @@ class TfrmAnalysis : public TForm {
     bool                ValidateSpatialClusterSize();
     bool                ValidateTemoralClusterSize();
     bool                VerifyUnitAndLength();
-
+protected:
+    virtual void        EnableActions(bool bEnable);
 public:		// User declarations
-            __fastcall TfrmAnalysis(TComponent* Owner, char *sParamFileName = 0);
+            __fastcall TfrmAnalysis(TComponent* Owner, TActionList* theList, char *sParamFileName = 0);
     virtual __fastcall ~TfrmAnalysis();
 
     void                LaunchImporter();

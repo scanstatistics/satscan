@@ -17,6 +17,7 @@ object frmAnalysisRun: TfrmAnalysisRun
   OldCreateOrder = False
   Position = poMainFormCenter
   Visible = True
+  OnActivate = FormActivate
   OnClose = FormClose
   PixelsPerInch = 96
   TextHeight = 14

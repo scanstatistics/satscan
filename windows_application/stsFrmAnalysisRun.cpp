@@ -10,10 +10,10 @@
 TfrmAnalysisRun *frmAnalysisRun;
 
 //---------------------------------------------------------------------------
-__fastcall TfrmAnalysisRun::TfrmAnalysisRun(TComponent* Owner, const std::string& sOutputFileName,stsOutputFileRegister & Registry)
-                           :TForm(Owner), gRegistry(Registry) {
+__fastcall TfrmAnalysisRun::TfrmAnalysisRun(TComponent* Owner, const std::string& sOutputFileName,
+                                            stsOutputFileRegister & Registry, TActionList* theList)
+                           :stsBaseAnalysisChildForm (Owner, theList), gRegistry(Registry), gsOutputFileName(sOutputFileName) {
   Init();
-  gsOutputFileName = sOutputFileName;
 }
 //---------------------------------------------------------------------------
 void TfrmAnalysisRun::AddLine(char *sLine) {
@@ -34,6 +34,20 @@ void TfrmAnalysisRun::CancelJob() {
   gRegistry.Release(gsOutputFileName);
   SetCanClose(true);
 }
+
+// enables/disables the appropraite buttons and controls based on their category type
+void TfrmAnalysisRun::EnableActions(bool bEnable) {
+   for(int i = 0; i < gpList->ActionCount; ++i) {
+      TAction* pAction = dynamic_cast<TAction*>(gpList->Actions[i]);
+      if (pAction) {
+         if (pAction->Category == CATEGORY_ALL || pAction->Category == CATEGORY_ANALYSIS_RUN)
+             pAction->Enabled = bEnable;
+         else if (pAction->Category == CATEGORY_ANALYSIS)
+             pAction->Enabled = !bEnable;
+      }
+   }
+}
+
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysisRun::FormClose(TObject *Sender, TCloseAction &Action) {
   if (GetCanClose())
@@ -153,6 +167,12 @@ void __fastcall TfrmAnalysisRun::OnPrintClick(TObject *Sender){
 
      delete rtePrintText;
    }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfrmAnalysisRun::FormActivate(TObject *Sender)
+{
+   EnableActions(true);        
 }
 //---------------------------------------------------------------------------
 
