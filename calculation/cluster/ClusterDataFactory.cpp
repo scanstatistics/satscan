@@ -7,171 +7,168 @@
 #include "NormalClusterData.h"
 #include "MultipleStreamClusterData.h"
 
-/** constructor*/
+/** class constructor*/
 ClusterDataFactory::ClusterDataFactory() : AbstractClusterDataFactory() {}
 
-/** destructor */
+/** class destructor */
 ClusterDataFactory::~ClusterDataFactory() {}
 
-/** returns newly created SpatialData */
-AbstractSpatialClusterData * ClusterDataFactory::GetNewSpatialClusterData(const DataStreamInterface & Interface, int iRate) const {
+/** Returns newly created SpatialData object as AbstractSpatialClusterData
+    pointer. Caller is responsible for object destruction. */
+AbstractSpatialClusterData * ClusterDataFactory::GetNewSpatialClusterData(const DataStreamInterface& Interface, int iRate) const {
   return new SpatialData(Interface, iRate);
 }
 
-/** returns newly created SpatialData */
-AbstractSpatialClusterData * ClusterDataFactory::GetNewSpatialClusterData(const AbtractDataStreamGateway & DataGateway, int iRate) const {
+/** Returns newly created SpatialData object as AbstractSpatialClusterData
+    pointer. Caller is responsible for object destruction. */
+AbstractSpatialClusterData * ClusterDataFactory::GetNewSpatialClusterData(const AbtractDataStreamGateway& DataGateway, int iRate) const {
   return new SpatialData(DataGateway, iRate);
 }
 
-/** returns newly created ProspectiveSpatialData */
+/** Returns newly created SpatialData object. Caller is responsible for object
+    destruction. */
+SpatialData * ClusterDataFactory::GetNewSpatialClusterDataAsSpatialData(const DataStreamInterface & Interface, int iRate) const {
+  return new SpatialData(Interface, iRate);
+}
+
+/** Returns newly created SpatialData object. Caller is responsible for object
+    destruction. */
+SpatialData * ClusterDataFactory::GetNewSpatialClusterDataAsSpatialData(const AbtractDataStreamGateway & DataGateway, int iRate) const {
+  return new SpatialData(DataGateway, iRate);
+}
+
+/** Returns newly created ProspectiveSpatialData object as AbstractTemporalClusterData
+    pointer. Caller is responsible for object destruction. */
 AbstractTemporalClusterData * ClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData & Data, const DataStreamInterface & Interface) const {
   return new ProspectiveSpatialData(Data, Interface);
 }
 
-/** returns newly created ProspectiveSpatialData */
+/** Returns newly created ProspectiveSpatialData object as AbstractTemporalClusterData
+    pointer. Caller is responsible for object destruction. */
 AbstractTemporalClusterData * ClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData & Data, const AbtractDataStreamGateway& DataGateway) const {
   return new ProspectiveSpatialData(Data, DataGateway);
 }
 
-/** returns newly created ProspectiveSpatialData */
+/** Returns newly created ProspectiveSpatialData object as TemporalData pointer.
+    Caller is responsible for object destruction.*/
 TemporalData * ClusterDataFactory::GetNewProspectiveSpatialClusterDataAsTemporalData(const CSaTScanData & Data, const DataStreamInterface & Interface) const {
   return new ProspectiveSpatialData(Data, Interface);
 }
 
-/** returns newly created ProspectiveSpatialData */
+/** Returns newly created ProspectiveSpatialData object as TemporalData pointer.
+    Caller is responsible for object destruction.*/
 TemporalData * ClusterDataFactory::GetNewProspectiveSpatialClusterDataAsTemporalData(const CSaTScanData & Data, const AbtractDataStreamGateway& DataGateway) const {
   return new ProspectiveSpatialData(Data, DataGateway);
 }
 
-/** returns newly created TemporalData */
+/** Returns newly created TemporalData object as AbstractTemporalClusterData
+    pointer. Caller is responsible for object destruction.*/
 AbstractTemporalClusterData * ClusterDataFactory::GetNewTemporalClusterData(const DataStreamInterface & Interface) const {
   return new TemporalData(Interface);
 }
 
-/** returns newly created TemporalData */
+/** Returns newly created TemporalData object as AbstractTemporalClusterData
+    pointer. Caller is responsible for object destruction.*/
 AbstractTemporalClusterData * ClusterDataFactory::GetNewTemporalClusterData(const AbtractDataStreamGateway & DataGateway) const {
   return new TemporalData(DataGateway);
 }
 
-/** returns newly created TemporalData */
+/** Returns newly created TemporalData object. Caller is responsible for object
+    destruction.*/
 TemporalData * ClusterDataFactory::GetNewTemporalClusterDataAsTemporalData(const DataStreamInterface & Interface) const {
   return new TemporalData(Interface);
 }
 
-/** returns newly created TemporalData */
+/** Returns newly created TemporalData object. Caller is responsible for object
+    destruction.*/
 TemporalData * ClusterDataFactory::GetNewTemporalClusterDataAsTemporalData(const AbtractDataStreamGateway & DataGateway) const {
   return new TemporalData(DataGateway);
 }
 
-/** returns newly created TemporalData */
+/** Returns newly created SpaceTimeData object as AbstractTemporalClusterData
+    pointer. Caller is responsible for object destruction.*/
 AbstractTemporalClusterData * ClusterDataFactory::GetNewSpaceTimeClusterData(const DataStreamInterface & Interface) const {
   return new SpaceTimeData(Interface);
 }
 
-/** returns newly created TemporalData */
+/** Returns newly created SpaceTimeData object as AbstractTemporalClusterData
+    pointer. Caller is responsible for object destruction.*/
 AbstractTemporalClusterData * ClusterDataFactory::GetNewSpaceTimeClusterData(const AbtractDataStreamGateway& DataGateway) const {
   return new SpaceTimeData(DataGateway);
 }
 
-/** returns newly created TemporalData */
+/** Returns newly created SpaceTimeData object as TemporalData pointer. Caller
+    is responsible for object destruction.*/
 TemporalData * ClusterDataFactory::GetNewSpaceTimeClusterDataAsTemporalData(const DataStreamInterface & Interface) const {
   return new SpaceTimeData(Interface);
 }
 
-/** returns newly created TemporalData */
+/** Returns newly created SpaceTimeData object as TemporalData pointer. Caller
+    is responsible for object destruction.*/
 TemporalData * ClusterDataFactory::GetNewSpaceTimeClusterDataAsTemporalData(const AbtractDataStreamGateway& DataGateway) const {
   return new SpaceTimeData(DataGateway);
 }
  
 
+/** class constructor */
+NormalClusterDataFactory::NormalClusterDataFactory() : AbstractClusterDataFactory() {}
 
-
-/** constructor */
-NormalClusterDataFactory::NormalClusterDataFactory() : ClusterDataFactory() {}
-
-/** destructor */
+/** class destructor */
 NormalClusterDataFactory::~NormalClusterDataFactory() {}
 
-/** returns newly created SpatialData */
-AbstractSpatialClusterData * NormalClusterDataFactory::GetNewSpatialClusterData(const DataStreamInterface & Interface, int iRate) const {
+/** Not implemented. Throws ZdException. */
+AbstractSpatialClusterData * NormalClusterDataFactory::GetNewSpatialClusterData(const DataStreamInterface&, int) const {
   ZdGenerateException("GetNewSpatialClusterData(const DataStreamInterface&, int) not implemented.","NormalClusterDataFactory");
   return 0;
 }
 
-/** returns newly created SpatialData */
+/** Returns newly created NormalSpatialData object as AbstractSpatialClusterData
+    pointer. Caller is responsible for object destruction.*/
 AbstractSpatialClusterData * NormalClusterDataFactory::GetNewSpatialClusterData(const AbtractDataStreamGateway & DataGateway, int iRate) const {
   return new NormalSpatialData(DataGateway, iRate);
 }
 
-/** returns newly created NormalProspectiveSpatialData */
-AbstractTemporalClusterData * NormalClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData & Data, const DataStreamInterface & Interface) const {
-  return new NormalProspectiveSpatialData(Data, Interface);
+/** Not implemented. Throws ZdException. */
+AbstractTemporalClusterData * NormalClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData&, const DataStreamInterface&) const {
+  ZdGenerateException("GetNewProspectiveSpatialClusterData(const DataStreamInterface&, int) not implemented.","NormalClusterDataFactory");
+  return 0;
+//  return new NormalProspectiveSpatialData(Data, Interface); ???
 }
 
-/** returns newly created NormalProspectiveSpatialData */
+/** Returns newly created NormalProspectiveSpatialData object as AbstractTemporalClusterData
+    pointer. Caller is responsible for object destruction.*/
 AbstractTemporalClusterData * NormalClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData & Data, const AbtractDataStreamGateway& DataGateway) const {
   return new NormalProspectiveSpatialData(Data, DataGateway);
 }
 
-/** returns newly created NormalProspectiveSpatialData */
-TemporalData * NormalClusterDataFactory::GetNewProspectiveSpatialClusterDataAsTemporalData(const CSaTScanData & Data, const DataStreamInterface & Interface) const {
-  return new NormalProspectiveSpatialData(Data, Interface);
-}
-
-/** returns newly created NormalProspectiveSpatialData */
-TemporalData * NormalClusterDataFactory::GetNewProspectiveSpatialClusterDataAsTemporalData(const CSaTScanData & Data, const AbtractDataStreamGateway& DataGateway) const {
-  return new NormalProspectiveSpatialData(Data, DataGateway);
-}
-
-/** not implemented - throw exception */
-AbstractTemporalClusterData * NormalClusterDataFactory::GetNewTemporalClusterData(const DataStreamInterface & Interface) const {
+/** Not implemented. Throws ZdException. */
+AbstractTemporalClusterData * NormalClusterDataFactory::GetNewTemporalClusterData(const DataStreamInterface&) const {
   ZdGenerateException("GetNewTemporalClusterData(const DataStreamInterface&) not implemented.","NormalClusterDataFactory");
   return 0;
 }
 
-/** returns newly created NormalTemporalData */
+/** Returns newly created NormalTemporalData object as AbstractTemporalClusterData
+    pointer. Caller is responsible for object destruction.*/
 AbstractTemporalClusterData * NormalClusterDataFactory::GetNewTemporalClusterData(const AbtractDataStreamGateway & DataGateway) const {
   return new NormalTemporalData(DataGateway);
 }
 
-/** not implemented - throw exception */
-TemporalData * NormalClusterDataFactory::GetNewTemporalClusterDataAsTemporalData(const DataStreamInterface & Interface) const {
-  ZdGenerateException("GetNewTemporalClusterData(const DataStreamInterface&) not implemented.","NormalClusterDataFactory");
-  return 0;
-}
-
-/** returns newly created NormalTemporalData */
-TemporalData * NormalClusterDataFactory::GetNewTemporalClusterDataAsTemporalData(const AbtractDataStreamGateway & DataGateway) const {
-  return new NormalTemporalData(DataGateway);
-}
-
-/** not implemented - throw exception */
+/** Not implemented. Throws ZdException. */
 AbstractTemporalClusterData * NormalClusterDataFactory::GetNewSpaceTimeClusterData(const DataStreamInterface&) const {
   ZdGenerateException("GetNewSpaceTimeClusterData(const DataStreamInterface&) not implemented.","NormalClusterDataFactory");
   return 0;
 }
 
-/** returns newly created NormalSpaceTimeData */
+/** Returns newly created NormalSpaceTimeData object as AbstractTemporalClusterData
+    pointer. Caller is responsible for object destruction.*/
 AbstractTemporalClusterData * NormalClusterDataFactory::GetNewSpaceTimeClusterData(const AbtractDataStreamGateway&DataGateway) const {
   return new NormalSpaceTimeData(DataGateway);
 }
 
-/** not implemented - throw exception */
-TemporalData * NormalClusterDataFactory::GetNewSpaceTimeClusterDataAsTemporalData(const DataStreamInterface&) const {
-  ZdGenerateException("GetNewSpaceTimeClusterDataAsTemporalData(const DataStreamInterface&) not implemented.","NormalClusterDataFactory");
-  return 0;
-}
 
-/** returns newly created NormalSpaceTimeData */
-TemporalData * NormalClusterDataFactory::GetNewSpaceTimeClusterDataAsTemporalData(const AbtractDataStreamGateway&DataGateway) const {
-  return new NormalSpaceTimeData(DataGateway);
-}
-
-
-/** constructor */
+/** class constructor */
 MultipleStreamsClusterDataFactory::MultipleStreamsClusterDataFactory(const CParameters & Parameters) : AbstractClusterDataFactory() {
   try {
-    Init();
     Setup(Parameters);
   }
   catch (ZdException &x) {
@@ -180,67 +177,65 @@ MultipleStreamsClusterDataFactory::MultipleStreamsClusterDataFactory(const CPara
   }
 }
 
-/** destructor */
-MultipleStreamsClusterDataFactory::~MultipleStreamsClusterDataFactory() {
-  try {
-    delete gpStreamClusterFactory;
-  }
-  catch (...){}  
-}
+/** class destructor */
+MultipleStreamsClusterDataFactory::~MultipleStreamsClusterDataFactory() {}
 
-/** no implemented - throw exception */
-AbstractSpatialClusterData * MultipleStreamsClusterDataFactory::GetNewSpatialClusterData(const DataStreamInterface & Interface, int iRate) const {
+/** Not implemented. Throws ZdException. */
+AbstractSpatialClusterData * MultipleStreamsClusterDataFactory::GetNewSpatialClusterData(const DataStreamInterface&, int) const {
   ZdGenerateException("GetNewSpatialClusterData(const DataStreamInterface&, int) not implemented.","MultipleStreamsClusterDataFactory");
   return 0;
 }
 
-/** returns newly created MultipleStreamSpatialData */
+/** Returns newly created MultipleStreamSpatialData object as AbstractSpatialClusterData
+    pointer. Caller is responsible for object destruction.*/
 AbstractSpatialClusterData * MultipleStreamsClusterDataFactory::GetNewSpatialClusterData(const AbtractDataStreamGateway & DataGateway, int iRate) const {
-  return new MultipleStreamSpatialData(*gpStreamClusterFactory, DataGateway, iRate);
+  return new MultipleStreamSpatialData(gStreamClusterFactory, DataGateway, iRate);
 }
 
-/** no implemented - throw exception */
-AbstractTemporalClusterData * MultipleStreamsClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData & Data, const DataStreamInterface & Interface) const {
-  ZdGenerateException("GetNewProspectiveSpatialClusterData(const CSaTScanData&) not implemented.","MultipleStreamsClusterDataFactory");
+/** Not implemented. Throws ZdException. */
+AbstractTemporalClusterData * MultipleStreamsClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData&, const DataStreamInterface&) const {
+  ZdGenerateException("GetNewProspectiveSpatialClusterData(const CSaTScanData&, const DataStreamInterface&) not implemented.","MultipleStreamsClusterDataFactory");
   return 0;
 }
 
-/** returns newly created MultipleStreamProspectiveSpatialData */
+/** Returns newly created MultipleStreamProspectiveSpatialData object as
+    AbstractTemporalClusterData pointer. Caller is responsible for object destruction.*/
 AbstractTemporalClusterData * MultipleStreamsClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData & Data, const AbtractDataStreamGateway& DataGateway) const {
-  return new MultipleStreamProspectiveSpatialData(*gpStreamClusterFactory, Data, DataGateway);
+  return new MultipleStreamProspectiveSpatialData(gStreamClusterFactory, Data, DataGateway);
 }
 
-/** no implemented - throw exception */
-AbstractTemporalClusterData * MultipleStreamsClusterDataFactory::GetNewTemporalClusterData(const DataStreamInterface & Interface) const {
+/** Not implemented. Throws ZdException. */
+AbstractTemporalClusterData * MultipleStreamsClusterDataFactory::GetNewTemporalClusterData(const DataStreamInterface&) const {
   ZdGenerateException("GetNewTemporalClusterData(const DataStreamInterface&) not implemented.","MultipleStreamsClusterDataFactory");
   return 0;
 }
 
-/** returns newly created MultipleStreamTemporalData */
+/** Returns newly created MultipleStreamTemporalData object as AbstractTemporalClusterData
+    pointer. Caller is responsible for object destruction.*/
 AbstractTemporalClusterData * MultipleStreamsClusterDataFactory::GetNewTemporalClusterData(const AbtractDataStreamGateway & DataGateway) const {
-  return new MultipleStreamTemporalData(*gpStreamClusterFactory, DataGateway);
+  return new MultipleStreamTemporalData(gStreamClusterFactory, DataGateway);
 }
 
-/** no implemented - throw exception */
+/** Not implemented. Throws ZdException. */
 AbstractTemporalClusterData * MultipleStreamsClusterDataFactory::GetNewSpaceTimeClusterData(const DataStreamInterface&) const {
-  ZdGenerateException("GetNewSpaceTimeClusterData(unsigned int) not implemented.","MultipleStreamsClusterDataFactory");
+  ZdGenerateException("GetNewSpaceTimeClusterData(const DataStreamInterface&) not implemented.","MultipleStreamsClusterDataFactory");
   return 0;
 }
 
-/** returns newly created MultipleStreamSpaceTimeData */
+/** Returns newly created MultipleStreamSpaceTimeData object as AbstractTemporalClusterData
+    pointer. Caller is responsible for object destruction.*/
 AbstractTemporalClusterData * MultipleStreamsClusterDataFactory::GetNewSpaceTimeClusterData(const AbtractDataStreamGateway& DataGateway) const {
-  return new MultipleStreamSpaceTimeData(*gpStreamClusterFactory ,DataGateway);
+  return new MultipleStreamSpaceTimeData(gStreamClusterFactory, DataGateway);
 }
 
-void MultipleStreamsClusterDataFactory::Setup(const CParameters & Parameters) {
+/** Internal class setup function. */
+void MultipleStreamsClusterDataFactory::Setup(const CParameters& Parameters) {
   try {
     if (Parameters.GetProbabiltyModelType() == NORMAL)
-      gpStreamClusterFactory = new NormalClusterDataFactory();
-    else
-      gpStreamClusterFactory = new ClusterDataFactory();
+      ZdGenerateException("This class does not implement a multiple stream factory\n"
+                          "interface for the Normal probability model.\n","Setup()");
   }
   catch (ZdException &x) {
-    delete gpStreamClusterFactory;
     x.AddCallpath("Setup()","MultipleStreamsClusterDataFactory");
     throw;
   }
