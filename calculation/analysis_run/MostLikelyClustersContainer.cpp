@@ -163,7 +163,7 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, unsig
 
    try {
       if ((pFile = fopen(sFilename, "w")) == NULL)
-        SSGenerateException("  Error: Unable to open top clusters file.\n", "PrintTopClusters()");
+        GenerateResolvableException("  Error: Unable to open top clusters file.\n", "PrintTopClusters()");
       else {
          nHowMany = std::min(gvTopClusterList.size(), nHowMany);
          for (unsigned int i = 0; i < nHowMany; ++i) {

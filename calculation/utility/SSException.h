@@ -6,14 +6,14 @@
 
 /** SaTScan exception class
     ZdException : program error, unexpected program problem
-    SSException and derived : an issue that the user can resolve
-                              problem with user input, data, etc.  */
-class SSException : public ZdException {
+    ResolvableException and derived : an issue that the user can resolve
+                                      problem with user input, data, etc.  */
+class ResolvableException : public ZdException {
   public:
-    SSException ( va_list varArgs, const char *sMessage, const char *sSourceModule, Level iLevel );
+    ResolvableException( va_list varArgs, const char *sMessage, const char *sSourceModule, Level iLevel );
 };
 
-void SSGenerateException(const char * sMessage, const char * sSourceModule, ... );
+void GenerateResolvableException(const char * sMessage, const char * sSourceModule, ... );
 
 
 class UsageException : public ZdException {

@@ -173,7 +173,7 @@ void TimeIntervalRange::ValidateWindowRanges(const CSaTScanData& Data) {
 //  iWindowStart = std::max(giEndRange_Start - giMaxWindowLength, giStartRange_Start);
 //
 //  if (iWindowStart >= iMaxEndWindow) {
-//    SSGenerateException("Error: No clusters will be evaluated.\n"
+//    ResolvableException("Error: No clusters will be evaluated.\n"
 //        "       Although settings indicate a scanning window range of %s-%s to %s-%s,\n"
 //        "       the incorporation of the maximum temporal cluster size of %i %s causes the maximum window end time\n"
 //        "       to become %s (%s plus %i %s) and the window start time to become %s\n"
@@ -194,7 +194,7 @@ void TimeIntervalRange::ValidateWindowRanges(const CSaTScanData& Data) {
 //  //but the maxium temporal cluster size may actually cause the range dates to be
 //  //different than the user defined.
 //  if (giEndRange_Start > iMaxEndWindow) {
-//    SSGenerateException("Error: No clusters will be evaluated.\n"
+//    ResolvableException("Error: No clusters will be evaluated.\n"
 //        "       Although settings indicate a scanning window range of %s-%s to %s-%s,\n"
 //        "       the incorporation of the maximum temporal cluster size of %i %s causes the maximum window end time\n"
 //        "       to become %s (%s plus %i %s), which does not intersect with requested scanning\n"
