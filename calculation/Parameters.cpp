@@ -2489,8 +2489,8 @@ void CParameters::SetDefaults() {
   gsSpecialGridFileName                 = "";
   gfMaxGeographicClusterSize            = 50.0; //GG980716
   geMaxGeographicClusterSizeType        = PERCENTOFPOPULATIONTYPE;
-  gsStudyPeriodStartDate                = "1900/01/01";
-  gsStudyPeriodEndDate                  = "1900/12/31";
+  gsStudyPeriodStartDate                = "2000/01/01";
+  gsStudyPeriodEndDate                  = "2000/12/31";
   geIncludeClustersType                 = ALLCLUSTERS;
   geTimeIntervalUnitsType               = NONE;
   glTimeIntervalLength                  = 0;
@@ -2523,7 +2523,7 @@ void CParameters::SetDefaults() {
   giNumberEllipses                      = 0;
   gvEllipseShapes.clear();
   gvEllipseRotations.clear();
-  gsProspectiveStartDate                = "1900/12/31";
+  gsProspectiveStartDate                = "2000/12/31";
   gbOutputAreaSpecificAscii             = false;
   gbOutputClusterLevelAscii             = false;
   geCriteriaSecondClustersType          = NOGEOOVERLAP;
