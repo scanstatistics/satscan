@@ -1302,6 +1302,7 @@ void TfrmAnalysis::OnProbabilityModelClick() {
            for(int i = 0; i <= 3; ++i)
               rgTypeAnalysis->Controls[i]->Enabled = true;
            chkRelativeRiskEstimatesAreaAscii->Enabled = true;
+           rdoPercentageTemproal->Caption = "Percent of Study Period (<= 90%)";
            break;
         case 2:
            rgTypeAnalysis->Controls[0]->Enabled = false;
@@ -1311,6 +1312,7 @@ void TfrmAnalysis::OnProbabilityModelClick() {
            if(rgTypeAnalysis->ItemIndex == 0 || rgTypeAnalysis->ItemIndex == 1)
               rgTypeAnalysis->ItemIndex = 2;
            chkRelativeRiskEstimatesAreaAscii->Enabled = false;
+           rdoPercentageTemproal->Caption = "Percent of Study Period (<= 50%)";
            break;
      }
      OnAnalysisTypeClick();
