@@ -101,11 +101,13 @@ bool CParameters::CheckProspDateRange(int iStartYear, int iStartMonth, int iStar
 
 //** Converts m_nMaxClusterSizeType to passed type. */
 void CParameters::ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporalSizeType) {
+  double dTemp, dPrecision = 10000, dTimeBetween;
+
   try {
-    double dTemp, dPrecision = 10000, dTimeBetween;
-
-
     dTimeBetween = TimeBetween(CharToJulian(m_szStartDate),CharToJulian(m_szEndDate), m_nIntervalUnits);
+    if (dTimeBetween <= 0)
+      SSException::Generate("Invalid study period with start date \"%s\" and end date \"%s\".",
+                            "ConvertMaxTemporalClusterSizeToType()", m_szStartDate, m_szEndDate);
 
     // store intial type and size for parameter output display
     m_nInitialMaxTemporalClusterSize = m_nMaxTemporalClusterSize;
@@ -128,7 +130,7 @@ void CParameters::ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporal
                                  //m_nMaxTemporalClusterSize should be an integer from 1-90
                                  m_nMaxTemporalClusterSize = dTimeBetween * m_nMaxTemporalClusterSize/100;
                                  break;
-       default                 : SSException::Generate("Unknown TemporalSizeType type %d", "ConvertMaxTemporalClusterSizeToType()", SSException::Normal, eTemporalSizeType);
+       default                 : SSException::Generate("Unknown TemporalSizeType type %d", "ConvertMaxTemporalClusterSizeToType()", eTemporalSizeType);
     };
     m_nMaxClusterSizeType = eTemporalSizeType;
   }
@@ -1209,11 +1211,11 @@ bool CParameters::ValidateParameters() {
         if (m_nAnalysisType == PURELYSPATIAL) {
           if (!(NONE <= m_nPrecision && m_nPrecision <= DAY))
             bValid = DisplayParamError(PRECISION);
-        }    
+        }
         else
           if (!(YEAR <= m_nPrecision && m_nPrecision <= DAY))  // Change to DAYS, YEARS
             bValid = DisplayParamError(PRECISION);
-    
+
         if (!ValidateDateString(m_szStartDate, STARTDATE)) {
            bValid = DisplayParamError(STARTDATE);
            bValidDate = false;
@@ -1222,7 +1224,7 @@ bool CParameters::ValidateParameters() {
           bValid = DisplayParamError(ENDDATE);
           bValidDate = false;
         }
-        else if (strcmp(m_szStartDate, m_szEndDate) > 0) {
+        else if (CharToJulian(m_szStartDate) >= CharToJulian(m_szEndDate)) {
           bValid = DisplayParamError(ENDDATE);
           bValidDate = false;
         }
