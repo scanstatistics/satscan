@@ -471,19 +471,14 @@ void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpa
   Data.GetProbabilityModel().GetPopulation(m_iEllipseOffset, m_Center, m_nTracts, m_nFirstInterval, m_nLastInterval));
 }
 
-void CCluster::DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft)
-{
-  float pVal = (float)GetPVal(nReplicas);
-  gfPValue = pVal;
+void CCluster::DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft) {
+  ZdString      sFormat, sReplicas;
+  float         pVal = (float)GetPVal(nReplicas);
 
-  if (nReplicas > 9999)
-    fprintf(fp, "%.5f", pVal);
-  else if (nReplicas > 999)
-    fprintf(fp, "%.4f", pVal);
-  else if (nReplicas > 99)
-    fprintf(fp, "%.3f", pVal);
-  else if (nReplicas > 0)
-    fprintf(fp, "%.2f", pVal);
+  sReplicas = nReplicas;
+  sFormat.printf("%%.%df", sReplicas.GetLength());
+  gfPValue = pVal;
+  fprintf(fp, sFormat.GetCString(), pVal);
 }
 
 void CCluster::DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment, int nLeftMargin,
