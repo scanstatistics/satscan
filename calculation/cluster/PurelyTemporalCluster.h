@@ -4,10 +4,7 @@
 //*****************************************************************************
 #include "Tracts.h"
 #include "cluster.h"
-//#include "TimeIntervalAll.h"
-//#include "TimeIntervalAlive.h"
 #include "Parameters.h"
-//#include "TimeIntervalRange.h"
 #include "ClusterDataFactory.h"
 
 /** cluster class for purely temporal analysis and purely temporal cluster
@@ -22,7 +19,7 @@ class CPurelyTemporalCluster : public CCluster {
 
   public:
     CPurelyTemporalCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway,
-                           IncludeClustersType eIncludeClustersType, const CSaTScanData & Data, BasePrint & PrintDirection);
+                           IncludeClustersType eIncludeClustersType, const CSaTScanData & Data);
     CPurelyTemporalCluster(const CPurelyTemporalCluster& rhs);
     virtual ~CPurelyTemporalCluster();
 

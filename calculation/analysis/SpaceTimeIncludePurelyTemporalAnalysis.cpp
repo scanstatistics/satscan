@@ -37,7 +37,7 @@ void C_ST_PT_Analysis::AllocateSimulationObjects(const AbtractDataStreamGateway 
       gpPTClusterData = new TemporalData(DataGateway);
     else {
       //allocate purely temporal, comparator cluster and top cluster
-      gpTopPurelyTemporalCluster = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
+      gpTopPurelyTemporalCluster = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
       gpPurelyTemporalClusterComparator = gpTopPurelyTemporalCluster->Clone();
     }  
   }
@@ -68,9 +68,9 @@ bool C_ST_PT_Analysis::FindTopClusters(const AbtractDataStreamGateway & DataGate
     else
       eIncludeClustersType = m_pParameters->GetIncludeClustersType();
     //create top cluster
-    CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
+    CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
     //create comparator cluster
-    CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
+    CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
     gpTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
     if (TopCluster.ClusterDefined()) {
       m_pTopClusters[m_nClustersRetained] = TopCluster.Clone();

@@ -1,10 +1,13 @@
+//*****************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//*****************************************************************************
 #include "PurelySpatialMonotoneCluster.h"
 
-CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway,
-                                       int iRate, BasePrint *pPrintDirection)
-                   :CPurelySpatialCluster(pClusterFactory, DataGateway, iRate, pPrintDirection) {
+CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory,
+                                       const AbtractDataStreamGateway & DataGateway,
+                                       int iRate)
+                   :CPurelySpatialCluster(pClusterFactory, DataGateway, iRate) {
   m_nMaxCircles        = 0;
   m_pCasesList         = NULL;
   m_pMeasureList       = NULL;
@@ -13,9 +16,10 @@ CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClust
 
   Initialize(0);
 }
-CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const DataStreamInterface & Interface,
-                                       int iRate, BasePrint *pPrintDirection)
-                   :CPurelySpatialCluster(pClusterFactory, Interface, iRate, pPrintDirection) {
+CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory,
+                                       const DataStreamInterface & Interface,
+                                       int iRate)
+                   :CPurelySpatialCluster(pClusterFactory, Interface, iRate) {
   m_nMaxCircles        = 0;
   m_pCasesList         = NULL;
   m_pMeasureList       = NULL;
@@ -24,17 +28,6 @@ CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClust
 
   Initialize(0);
 }
-//CPSMonotoneCluster::CPSMonotoneCluster(const CSaTScanData & Data, BasePrint *pPrintDirection)
-//                   :CPurelySpatialCluster(Data, pPrintDirection) {
-//  m_nMaxCircles        = 0;
-//  m_pCasesList         = NULL;
-//  m_pMeasureList       = NULL;
-//  m_pFirstNeighborList = NULL;
-//  m_pLastNeighborList  = NULL;
-//
-//  Initialize(0);
-//}
-
 CPSMonotoneCluster::CPSMonotoneCluster(const CPSMonotoneCluster& rhs) : CPurelySpatialCluster(rhs){
   m_nMaxCircles        = 0;
   m_pCasesList         = NULL;
@@ -86,10 +79,10 @@ void CPSMonotoneCluster::AllocateForMaxCircles(tract_t nCircles)
    try
       {
       m_nMaxCircles        = nCircles;
-      m_pCasesList         = (count_t*)  Smalloc(m_nMaxCircles * sizeof(count_t), gpPrintDirection);
-      m_pMeasureList       = (measure_t*)Smalloc(m_nMaxCircles * sizeof(measure_t), gpPrintDirection);
-      m_pFirstNeighborList = (tract_t*)  Smalloc(m_nMaxCircles * sizeof(tract_t), gpPrintDirection);
-      m_pLastNeighborList  = (tract_t*)  Smalloc(m_nMaxCircles * sizeof(tract_t), gpPrintDirection);
+      m_pCasesList         = (count_t*)  Smalloc(m_nMaxCircles * sizeof(count_t));
+      m_pMeasureList       = (measure_t*)Smalloc(m_nMaxCircles * sizeof(measure_t));
+      m_pFirstNeighborList = (tract_t*)  Smalloc(m_nMaxCircles * sizeof(tract_t));
+      m_pLastNeighborList  = (tract_t*)  Smalloc(m_nMaxCircles * sizeof(tract_t));
       }
    catch (ZdException & x)
       {
@@ -128,10 +121,10 @@ CPSMonotoneCluster& CPSMonotoneCluster::operator =(const CPSMonotoneCluster& clu
       if (m_pLastNeighborList != NULL)
         free(m_pLastNeighborList);
     
-      m_pCasesList         = (count_t*)  Smalloc(m_nSteps * sizeof(count_t), gpPrintDirection);
-      m_pMeasureList       = (measure_t*)Smalloc(m_nSteps * sizeof(measure_t), gpPrintDirection);
-      m_pFirstNeighborList = (tract_t*)  Smalloc(m_nSteps * sizeof(tract_t), gpPrintDirection);
-      m_pLastNeighborList  = (tract_t*)  Smalloc(m_nSteps * sizeof(tract_t), gpPrintDirection);
+      m_pCasesList         = (count_t*)  Smalloc(m_nSteps * sizeof(count_t));
+      m_pMeasureList       = (measure_t*)Smalloc(m_nSteps * sizeof(measure_t));
+      m_pFirstNeighborList = (tract_t*)  Smalloc(m_nSteps * sizeof(tract_t));
+      m_pLastNeighborList  = (tract_t*)  Smalloc(m_nSteps * sizeof(tract_t));
     
       for (int i=0; i<m_nMaxCircles; i++)
       {

@@ -1,11 +1,14 @@
+//*****************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//*****************************************************************************
 #include "PurelySpatialCluster.h"
 
 /** constructor */
-CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway,
-                                             int iRate, BasePrint *pPrintDirection)
-                      :CCluster(pPrintDirection) {
+CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory,
+                                             const AbtractDataStreamGateway & DataGateway,
+                                             int iRate)
+                      :CCluster() {
   try {
     gpClusterData = pClusterFactory->GetNewSpatialClusterData(DataGateway, iRate);
   }
@@ -17,9 +20,10 @@ CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * 
 }
 
 /** constructor */
-CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory, const DataStreamInterface & Interface,
-                                             int iRate, BasePrint *pPrintDirection)
-                      :CCluster(pPrintDirection) {
+CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory,
+                                             const DataStreamInterface & Interface,
+                                             int iRate)
+                      :CCluster() {
   try {
     gpClusterData = pClusterFactory->GetNewSpatialClusterData(Interface, iRate);
   }
@@ -32,7 +36,7 @@ CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * 
 
 /** copy constructor */
 CPurelySpatialCluster::CPurelySpatialCluster(const CPurelySpatialCluster& rhs)
-                      :CCluster(rhs.gpPrintDirection) {
+                      :CCluster() {
   try {
     gpClusterData = rhs.gpClusterData->Clone();
     *this = rhs;

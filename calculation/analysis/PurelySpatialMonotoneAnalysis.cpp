@@ -35,13 +35,13 @@ const CCluster & CPSMonotoneAnalysis::CalculateTopCluster(tract_t tCenter, const
 
   try {
     if (m_pParameters->GetAreaScanRateType() == HIGHANDLOW) {
-      C_High = new CPSMonotoneCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType(), gpPrintDirection);
+      C_High = new CPSMonotoneCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType());
       C_High->SetCenter(tCenter);
       C_High->AllocateForMaxCircles(m_pData->GetNeighborCountArray()[0][tCenter]+1);
       C_High->SetRate(HIGH);
       C_High->DefineTopCluster(*m_pData, *gpLikelihoodCalculator, ppCases);
 
-      C_Low = new CPSMonotoneCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType(), gpPrintDirection);
+      C_Low = new CPSMonotoneCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType());
       C_Low->SetCenter(tCenter);
       C_Low->AllocateForMaxCircles(m_pData->GetNeighborCountArray()[0][tCenter]+1);
       C_Low->SetRate(LOW);
@@ -60,7 +60,7 @@ const CCluster & CPSMonotoneAnalysis::CalculateTopCluster(tract_t tCenter, const
     }
     else {
       delete gpMaxCluster; gpMaxCluster=0;
-      gpMaxCluster = new CPSMonotoneCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType(), gpPrintDirection);
+      gpMaxCluster = new CPSMonotoneCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType());
       gpMaxCluster->SetCenter(tCenter);
       gpMaxCluster->AllocateForMaxCircles(m_pData->GetNeighborCountArray()[0][tCenter]+1);
       gpMaxCluster->SetRate(m_pParameters->GetAreaScanRateType());
@@ -82,10 +82,10 @@ const CCluster & CPSMonotoneAnalysis::CalculateTopCluster(tract_t tCenter, const
 }
 
 double CPSMonotoneAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
-   CPSMonotoneCluster           MaxCluster(gpClusterDataFactory, Interface, m_pParameters->GetAreaScanRateType(), gpPrintDirection);
-   CPSMonotoneCluster           C(gpClusterDataFactory, Interface, m_pParameters->GetAreaScanRateType(), gpPrintDirection);
-   CPSMonotoneCluster           C_High(gpClusterDataFactory, Interface, HIGH, gpPrintDirection);
-   CPSMonotoneCluster           C_Low(gpClusterDataFactory, Interface, LOW, gpPrintDirection);
+   CPSMonotoneCluster           MaxCluster(gpClusterDataFactory, Interface, m_pParameters->GetAreaScanRateType());
+   CPSMonotoneCluster           C(gpClusterDataFactory, Interface, m_pParameters->GetAreaScanRateType());
+   CPSMonotoneCluster           C_High(gpClusterDataFactory, Interface, HIGH);
+   CPSMonotoneCluster           C_Low(gpClusterDataFactory, Interface, LOW);
    count_t                   ** ppSimCases(Interface.GetCaseArray());
 
    try

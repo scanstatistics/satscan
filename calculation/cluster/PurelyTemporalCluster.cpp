@@ -1,14 +1,15 @@
+//*****************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//*****************************************************************************
 #include "PurelyTemporalCluster.h"
 
 /** constructor */
 CPurelyTemporalCluster::CPurelyTemporalCluster(const AbstractClusterDataFactory * pClusterFactory,
                                                const AbtractDataStreamGateway & DataGateway,
                                                IncludeClustersType eIncludeClustersType,
-                                               const CSaTScanData & Data,
-                                               BasePrint & PrintDirection)
-                       :CCluster(&PrintDirection) {
+                                               const CSaTScanData & Data)
+                       :CCluster() {
   try {
     Init();
     Setup(pClusterFactory, DataGateway, eIncludeClustersType, Data);
@@ -21,7 +22,7 @@ CPurelyTemporalCluster::CPurelyTemporalCluster(const AbstractClusterDataFactory 
 
 /** copy constructor */
 CPurelyTemporalCluster::CPurelyTemporalCluster(const CPurelyTemporalCluster& rhs)
-                       : CCluster(rhs.gpPrintDirection) {
+                       : CCluster() {
   try {
     Init();
     gpClusterData = rhs.gpClusterData->Clone();

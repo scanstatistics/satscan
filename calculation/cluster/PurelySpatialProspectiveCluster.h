@@ -18,8 +18,9 @@ class CPurelySpatialProspectiveCluster : public CCluster {
     void			               Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, const CSaTScanData & Data);
 
   public:
-    CPurelySpatialProspectiveCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway,
-                                     const CSaTScanData & Data, BasePrint *pPrintDirection);
+    CPurelySpatialProspectiveCluster(const AbstractClusterDataFactory * pClusterFactory,
+                                     const AbtractDataStreamGateway & DataGateway,
+                                     const CSaTScanData & Data);
     CPurelySpatialProspectiveCluster(const CPurelySpatialProspectiveCluster& rhs);
     virtual ~CPurelySpatialProspectiveCluster();
 

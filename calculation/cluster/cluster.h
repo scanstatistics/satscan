@@ -13,11 +13,10 @@ class stsAreaSpecificData;
 
 class CCluster {
   protected:
-    BasePrint                 * gpPrintDirection;
     stsAreaSpecificData       * gpAreaData;
 
   public:
-    CCluster(BasePrint *pPrintDirection);
+    CCluster();
     virtual ~CCluster();
 
     inline virtual void         AssignAsType(const CCluster& rhs) {*this = rhs;}

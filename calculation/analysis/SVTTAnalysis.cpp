@@ -37,7 +37,7 @@ void CSpatialVarTempTrendAnalysis::AllocateSimulationObjects(const AbtractDataSt
           process of finding most likely clusters. */
 void CSpatialVarTempTrendAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway) {
   try {
-    CSVTTCluster thisCluster(DataGateway, m_pData->GetNumTimeIntervals(), gpPrintDirection);
+    CSVTTCluster thisCluster(DataGateway, m_pData->GetNumTimeIntervals());
     thisCluster.InitializeSVTT(0, DataGateway);
     gpTopShapeClusters->SetTopClusters(thisCluster);
   }
@@ -57,7 +57,7 @@ const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCent
     gpTopShapeClusters->Reset(tCenter);
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
     for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {
-       CSVTTCluster thisCluster(DataGateway, m_pData->GetNumTimeIntervals(), gpPrintDirection);
+       CSVTTCluster thisCluster(DataGateway, m_pData->GetNumTimeIntervals());
        thisCluster.SetCenter(tCenter);
        thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
        thisCluster.SetEllipseOffset(k);
@@ -97,7 +97,7 @@ double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataStreamInterface & Inte
   try {
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
     for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
-       CSVTTCluster thisCluster(Interface, m_pData->GetNumTimeIntervals(), gpPrintDirection);
+       CSVTTCluster thisCluster(Interface, m_pData->GetNumTimeIntervals());
        thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
        thisCluster.SetEllipseOffset(k);
        thisCluster.SetDuczmalCorrection((k == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[k - 1]));

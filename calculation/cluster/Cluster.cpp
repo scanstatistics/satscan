@@ -1,13 +1,13 @@
+//*****************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-
+//*****************************************************************************
 #include "cluster.h"
 #include "stsAreaSpecificData.h"
 
 /** constructor */
-CCluster::CCluster(BasePrint *pPrintDirection) {
+CCluster::CCluster() {
   Initialize();
-  gpPrintDirection = pPrintDirection;
 }
 
 /** destructor */

@@ -3,8 +3,6 @@
 #define __SPACETIMECLUSTER_H
 //*****************************************************************************
 #include "cluster.h"
-//#include "TimeIntervalAll.h"
-//#include "TimeIntervalAlive.h"
 #include "TimeIntervalRange.h"
 #include "ClusterDataFactory.h"
 
@@ -18,7 +16,7 @@ class CSpaceTimeCluster : public CCluster {
     AbstractTemporalClusterData         * gpClusterData;
 
   public:
-    CSpaceTimeCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, BasePrint & PrintDirection);
+    CSpaceTimeCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway);
     CSpaceTimeCluster(const CSpaceTimeCluster& rhs);
     virtual ~CSpaceTimeCluster();
 

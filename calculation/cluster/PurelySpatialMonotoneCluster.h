@@ -8,11 +8,9 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
 {
   public:
 
-    CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, int iRate, BasePrint *pPrintDirection);
-    CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const DataStreamInterface & Interface, int iRate, BasePrint *pPrintDirection);
-//    CPSMonotoneCluster(const CSaTScanData & Data, BasePrint *pPrintDirection);
+    CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, int iRate);
+    CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const DataStreamInterface & Interface, int iRate);
     CPSMonotoneCluster(const CPSMonotoneCluster& rhs);
-//    CPSMonotoneCluster(int nRate, tract_t nCircles);
     ~CPSMonotoneCluster();
 
     friend class PoissonLikelihoodCalculator;

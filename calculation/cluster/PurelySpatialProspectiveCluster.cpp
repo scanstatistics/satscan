@@ -1,5 +1,7 @@
+//*****************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//*****************************************************************************
 #include "PurelySpatialProspectiveCluster.h"
 #include "MeasureList.h"
 
@@ -8,8 +10,8 @@
 /** constructor */
 CPurelySpatialProspectiveCluster::CPurelySpatialProspectiveCluster(const AbstractClusterDataFactory * pClusterFactory,
                                                                    const AbtractDataStreamGateway & DataGateway,
-                                                                   const CSaTScanData & Data, BasePrint *pPrintDirection)
-                                 :CCluster(pPrintDirection) {
+                                                                   const CSaTScanData & Data)
+                                 :CCluster() {
   try {
     Init();
     Setup(pClusterFactory, DataGateway, Data);
@@ -22,7 +24,7 @@ CPurelySpatialProspectiveCluster::CPurelySpatialProspectiveCluster(const Abstrac
 
 /** copy constructor */
 CPurelySpatialProspectiveCluster::CPurelySpatialProspectiveCluster(const CPurelySpatialProspectiveCluster& rhs)
-                                 :CCluster(rhs.gpPrintDirection) {
+                                 :CCluster() {
   try {
     Init();
     gpClusterData = rhs.gpClusterData->Clone();

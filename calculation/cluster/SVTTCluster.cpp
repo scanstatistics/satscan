@@ -1,5 +1,7 @@
+//*****************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//*****************************************************************************
 #include "SVTTCluster.h"
 
 /** constructor */
@@ -113,8 +115,8 @@ void SVTTClusterStreamData::Setup() {
 }
 
 /** constructor for DataStreamGateway - used with calculating most likely clusters */
-CSVTTCluster::CSVTTCluster(const AbtractDataStreamGateway & DataGateway, int iNumTimeIntervals, BasePrint *pPrintDirection)
-             :CCluster(pPrintDirection){
+CSVTTCluster::CSVTTCluster(const AbtractDataStreamGateway & DataGateway, int iNumTimeIntervals)
+             :CCluster(){
   try {
     Init();
     Setup(DataGateway, iNumTimeIntervals);
@@ -126,8 +128,8 @@ CSVTTCluster::CSVTTCluster(const AbtractDataStreamGateway & DataGateway, int iNu
 }
 
 /** constructor for DataStreamInterface - used with calculating loglikelihood ratios */
-CSVTTCluster::CSVTTCluster(const DataStreamInterface & Interface, int iNumTimeIntervals, BasePrint *pPrintDirection)
-             :CCluster(pPrintDirection){
+CSVTTCluster::CSVTTCluster(const DataStreamInterface & Interface, int iNumTimeIntervals)
+             :CCluster(){
   try {
     Init();
     Setup(Interface, iNumTimeIntervals);
@@ -140,7 +142,7 @@ CSVTTCluster::CSVTTCluster(const DataStreamInterface & Interface, int iNumTimeIn
 
 
 /** copy constructor */
-CSVTTCluster::CSVTTCluster(const CSVTTCluster & rhs): CCluster(rhs.gpPrintDirection) {
+CSVTTCluster::CSVTTCluster(const CSVTTCluster & rhs): CCluster() {
   try {
     Init();
     Setup(rhs);

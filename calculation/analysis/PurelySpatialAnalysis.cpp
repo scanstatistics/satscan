@@ -35,7 +35,7 @@ void CPurelySpatialAnalysis::AllocateSimulationObjects(const AbtractDataStreamGa
       gpMeasureList = GetNewMeasureListObject();
     }
     else { //simulations performed using same process as real data set
-      gpClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType(), gpPrintDirection);
+      gpClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType());
       gpTopShapeClusters->SetTopClusters(*gpClusterComparator);
     }
   }
@@ -53,7 +53,7 @@ void CPurelySpatialAnalysis::AllocateSimulationObjects(const AbtractDataStreamGa
 void CPurelySpatialAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway) {
   try {
     delete gpClusterComparator; gpClusterComparator=0;
-    gpClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType(), gpPrintDirection);
+    gpClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType());
     gpTopShapeClusters->SetTopClusters(*gpClusterComparator);
   }
   catch (ZdException &x) {

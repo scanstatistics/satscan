@@ -69,8 +69,8 @@ class CSVTTCluster : public CCluster  {
     double                      m_nLogLikelihood;     // Log Likelihood
 
   public:
-    CSVTTCluster(const AbtractDataStreamGateway & DataGateway, int iNumTimeIntervals, BasePrint *pPrintDirection);
-    CSVTTCluster(const DataStreamInterface & Interface, int iNumTimeIntervals, BasePrint *pPrintDirection);
+    CSVTTCluster(const AbtractDataStreamGateway & DataGateway, int iNumTimeIntervals);
+    CSVTTCluster(const DataStreamInterface & Interface, int iNumTimeIntervals);
     CSVTTCluster(const CSVTTCluster & rhs);
     ~CSVTTCluster();
 

@@ -1,11 +1,12 @@
+//*****************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//*****************************************************************************
 #include "SpaceTimeCluster.h"
 
-
 /** constructor */
-CSpaceTimeCluster::CSpaceTimeCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, BasePrint & PrintDirection)
-                  :CCluster(&PrintDirection) {
+CSpaceTimeCluster::CSpaceTimeCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway)
+                  :CCluster() {
   try {
     Init();
     Setup(pClusterFactory, DataGateway);
@@ -19,7 +20,7 @@ CSpaceTimeCluster::CSpaceTimeCluster(const AbstractClusterDataFactory * pCluster
 
 /** copy constructor */
 CSpaceTimeCluster::CSpaceTimeCluster(const CSpaceTimeCluster& rhs)
-                  : CCluster(rhs.gpPrintDirection) {
+                  : CCluster() {
   try {
     Init();
     gpClusterData = rhs.gpClusterData->Clone();

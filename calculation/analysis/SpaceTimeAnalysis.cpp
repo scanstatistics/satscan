@@ -53,7 +53,7 @@ void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbtractDataStreamGatewa
     }
     else { //simulations performed using same process as real data set
       //create cluster object used as comparator when iterating over centroids and time intervals
-      gpClusterComparator = new CSpaceTimeCluster(gpClusterDataFactory, DataGateway, *gpPrintDirection);
+      gpClusterComparator = new CSpaceTimeCluster(gpClusterDataFactory, DataGateway);
       //initialize list of top circle/ellipse clusters
       gpTopShapeClusters->SetTopClusters(*gpClusterComparator);
     }
@@ -82,7 +82,7 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGatew
       eIncludeClustersType = m_pParameters->GetIncludeClustersType();
     gpTimeIntervals = GetNewTimeIntervalsObject(eIncludeClustersType);
     //create cluster object used as comparator when iterating over centroids and time intervals
-    gpClusterComparator = new CSpaceTimeCluster(gpClusterDataFactory, DataGateway, *gpPrintDirection);
+    gpClusterComparator = new CSpaceTimeCluster(gpClusterDataFactory, DataGateway);
     //initialize list of top circle/ellipse clusters
     gpTopShapeClusters->SetTopClusters(*gpClusterComparator);
   }

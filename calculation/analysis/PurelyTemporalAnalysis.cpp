@@ -43,8 +43,8 @@ void CPurelyTemporalAnalysis::AllocateSimulationObjects(const AbtractDataStreamG
       gpMeasureList = GetNewMeasureListObject();
     }
     else { //simulations performed using same process as real data set
-      gpTopCluster = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
-      gpClusterComparator = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
+      gpTopCluster = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
+      gpClusterComparator = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
     }
   }
   catch (ZdException &x) {
@@ -84,8 +84,8 @@ bool CPurelyTemporalAnalysis::FindTopClusters(const AbtractDataStreamGateway & D
     else
       eIncludeClustersType = m_pParameters->GetIncludeClustersType();
     //create cluster objects
-    CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
-    CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
+    CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
+    CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
     //get new time intervals objects
     pTimeIntervals = GetNewTimeIntervalsObject(eIncludeClustersType);
     //iterate through time intervals, finding top cluster

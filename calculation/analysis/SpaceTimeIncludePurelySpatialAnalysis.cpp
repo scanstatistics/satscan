@@ -46,13 +46,13 @@ void C_ST_PS_Analysis::AllocateSimulationObjects(const AbtractDataStreamGateway 
     else {
       if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME) {
         //create cluster object used as comparator when iterating over centroids and time intervals
-        gpPSPClusterComparator = new CPurelySpatialProspectiveCluster(gpClusterDataFactory, DataGateway, *m_pData, gpPrintDirection);
+        gpPSPClusterComparator = new CPurelySpatialProspectiveCluster(gpClusterDataFactory, DataGateway, *m_pData);
         //initialize list of top circle/ellipse clusters
         gpPSTopShapeClusters->SetTopClusters(*gpPSPClusterComparator);
       }
       else {
         //create cluster object used as comparator when iterating over centroids and time intervals
-        gpPSClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType(), gpPrintDirection);
+//        gpPSClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, (int)m_pParameters->GetAreaScanRateType());
         //initialize list of top circle/ellipse clusters
         gpPSTopShapeClusters->SetTopClusters(*gpPSClusterComparator);
       }
@@ -77,7 +77,7 @@ void C_ST_PS_Analysis::AllocateTopClustersObjects(const AbtractDataStreamGateway
     //create top cluster objects for space-time portion
     CSpaceTimeAnalysis::AllocateTopClustersObjects(DataGateway);
     //create comparator cluster for purely spatial cluster
-    gpPSClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType(), gpPrintDirection);
+    gpPSClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType());
     gpPSTopShapeClusters->SetTopClusters(*gpPSClusterComparator);
   }
   catch (ZdException &x) {
