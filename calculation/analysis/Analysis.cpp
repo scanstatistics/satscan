@@ -173,8 +173,9 @@ bool CAnalysis::Execute(time_t RunTime) {
       m_pData->GetDataStreamHandler().AllocateSimulationStructures(); 
       if (!m_pData->CalculateExpectedCases())        //Calculate expected number of cases.
          return false;
-      if (m_pData->GetTotalCases() < 1)
-         ZdException::Generate("Error: No cases found in input data.\n","CAnalysis");    //KR V.2.1
+      for (unsigned int i=0; i < m_pData->GetDataStreamHandler().GetNumStreams(); ++i)
+         if (m_pData->GetDataStreamHandler().GetStream(i).GetTotalCases() == 0)
+           SSGenerateException("Error: No cases found in input stream %u.\n","Execute()", i);
       AllocateLikelihoodObject();
       //For circle and each ellipse, find closest neighboring tracts points for
       //each grid point limiting distance by max circle size and cumulated measure.
