@@ -674,7 +674,7 @@ bool CAnalysis::FinalizeReport(time_t RunTime)
       if (m_nClustersRetained == 0)
       {
         fprintf(fp, "No clusters were found.\n");
-        fprintf(fp, "All areas scanned had fewer cases than expected.\n");
+        fprintf(fp, "All areas scanned had equal or fewer cases than expected.\n");
       }
       else if (m_nClustersReported == 0)
       {
