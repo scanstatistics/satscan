@@ -22,7 +22,7 @@ class SpatialData : public AbstractSpatialClusterData {
     virtual SpatialData * Clone() const;
     SpatialData         & operator=(const SpatialData& rhs);
 
-    inline void           AddMeasureList(const DataStreamInterface & Interface, CMeasureList * pMeasureList, const CSaTScanData * pData);
+    inline virtual void   AddMeasureList(const DataStreamInterface & Interface, CMeasureList * pMeasureList, const CSaTScanData * pData);
     virtual void          AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
     virtual double        CalculateLoglikelihoodRatio(CModel & Model);
     virtual count_t       GetCaseCount(unsigned int iStream=0) const;
@@ -105,7 +105,7 @@ class ProspectiveSpatialData : public TemporalData {
     virtual ProspectiveSpatialData * Clone() const;
     ProspectiveSpatialData         & operator=(const ProspectiveSpatialData& rhs);
 
-    void                             AddMeasureList(const DataStreamInterface & Interface, CMeasureList * pMeasureList, const CSaTScanData * pData);
+    virtual void                     AddMeasureList(const DataStreamInterface & Interface, CMeasureList * pMeasureList, const CSaTScanData * pData);
     virtual void                     AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
     virtual double                   CalculateLoglikelihoodRatio(CModel & Model);
     virtual unsigned int             GetAllocationSize() const {return giAllocationSize;}
@@ -132,7 +132,7 @@ class SpaceTimeData : public TemporalData {
     virtual SpaceTimeData     * Clone() const;
     SpaceTimeData             & operator=(const SpaceTimeData& rhs);
 
-    void                        AddNeighborDataAndCompare(const DataStreamInterface & Interface,
+    virtual void                AddNeighborDataAndCompare(const DataStreamInterface & Interface,
                                                           const CSaTScanData * pData,
                                                           CTimeIntervals * pTimeIntervals,
                                                           CMeasureList * pMeasureList);
