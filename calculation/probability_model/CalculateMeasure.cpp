@@ -41,7 +41,8 @@ std::vector<double>& CalcRisk(RealDataStream& thisStream, std::vector<double>& v
       tTotalCases += nCaseCount;
        // Check to see if total case or control values have wrapped
        if (tTotalCases < 0)
-         SSGenerateException("Error: Total cases greater than maximum allowed of %ld.\n", "CalcRisk()", std::numeric_limits<count_t>::max());
+         GenerateResolvableException("Error: The total number of cases in data stream %u is greater than the maximum allowed of %ld.\n",
+                                     "CalcRisk()", thisStream.GetStreamIndex(), std::numeric_limits<count_t>::max());
 
       dTotalPopulation += nPop;
     }
@@ -286,7 +287,7 @@ void AdjustForPercentageTimeTrend(double       nTimeAdjPercent,
           nAdjustedMeasure += (*pMeasure)[i][t];
     
           if (nAdjustedMeasure > DBL_MAX)
-           SSGenerateException("  Error: Data overflow due to time trend adjustment.\n", "AdjustForPercentageTimeTrend");
+            GenerateResolvableException("Error: Data overflow due to the time trend adjustment.\n", "AdjustForPercentageTimeTrend");
         }
     
 
@@ -393,7 +394,6 @@ bool ValidateMeasures(const TractHandler *pTInfo,
     		sprintf(sTemp, "  of cases in tract %s, therefore the program will not run.\n", tid);
                 strcat(sMessage, sTemp);
                 fprintf(stderr, sMessage);
-                //SSGenerateException(sMessage, "ValidateMeasures()");
 
                 //DO NOT THROW EXCEPTION HERE... PRINT THE INFO...
                 //EXCEPTION THROW BELOW !!!
@@ -409,7 +409,7 @@ bool ValidateMeasures(const TractHandler *pTInfo,
     	 sprintf(sTemp, "  cluster size needs to be increased to at least %i%%.\n\n", nMinGeoSize);
          strcat(sMessage, sTemp);
     	 fprintf(stderr, sMessage);
-         SSGenerateException(sMessage, "ValidateMeasures()");
+         GenerateResolvableException(sMessage, "ValidateMeasures()");
       }
       }
    catch (ZdException & x)
@@ -487,7 +487,7 @@ bool ValidateAllCountsArePossitive(tract_t   nTracts,
          }
     
       if (nSumCount != nTotalCount)
-        SSGenerateException("Error: Totals do not match.\n", "ValidateAllCountsArePossitive");
+        GenerateResolvableException("Error: Totals do not match.\n", "ValidateAllCountsArePossitive");
       }
    catch (ZdException & x)
       {
@@ -519,7 +519,7 @@ bool ValidateAllPTCountsArePossitive(tract_t  nTracts,
          }
     
       if (nSumCount != nTotalCount)
-        SSGenerateException("Error: Totals do not match.\n", "ValidateAllPTCountsArePossitive");
+        GenerateResolvableException("Error: Totals do not match.\n", "ValidateAllPTCountsArePossitive");
       }
    catch (ZdException & x)
       {
