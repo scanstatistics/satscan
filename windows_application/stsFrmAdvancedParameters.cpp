@@ -721,11 +721,13 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, bool bAnaly
   // PAG - not the best coding here but am trying to show/hide only
   // certain pages/tabs of page control
   if (bAnalysis) {  // show Analysis pages
+     Caption = "Advanced Analysis Features";
      for (i=0; i < PageControl->PageCount-1; i++)
         PageControl->Pages[i]->TabVisible=true;
      PageControl->Pages[PageControl->PageCount-1]->TabVisible=false;
   }
   else {           // show Output pages
+     Caption = "Advanced Output Features";
      for (i=0; i < PageControl->PageCount-1; i++)
         PageControl->Pages[i]->TabVisible=false;
      PageControl->Pages[PageControl->PageCount-1]->TabVisible=true;

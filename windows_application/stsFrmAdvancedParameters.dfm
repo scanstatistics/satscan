@@ -1,10 +1,11 @@
 object frmAdvancedParameters: TfrmAdvancedParameters
   Left = 185
   Top = 131
+  ActiveControl = PageControl
   BorderStyle = bsDialog
   Caption = 'Advanced Features'
-  ClientHeight = 304
-  ClientWidth = 542
+  ClientHeight = 296
+  ClientWidth = 508
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,16 +19,16 @@ object frmAdvancedParameters: TfrmAdvancedParameters
   PixelsPerInch = 96
   TextHeight = 13
   object pnlButtons: TPanel
-    Left = 458
+    Left = 424
     Top = 0
     Width = 84
-    Height = 304
+    Height = 296
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 1
     object btnOk: TButton
       Left = 6
-      Top = 54
+      Top = 28
       Width = 72
       Height = 24
       Caption = '&Close'
@@ -37,21 +38,22 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     end
     object btnShowAll: TButton
       Left = 6
-      Top = 22
+      Top = 62
       Width = 72
       Height = 24
       Caption = '&Show All'
       Default = True
       TabOrder = 1
+      Visible = False
       OnClick = btnShowAllClick
     end
   end
   object PageControl: TPageControl
     Left = 2
-    Top = 2
-    Width = 455
-    Height = 291
-    ActivePage = TabSheet2
+    Top = 6
+    Width = 419
+    Height = 283
+    ActivePage = TabSheet1
     TabOrder = 0
     object TabSheet2: TTabSheet
       Caption = 'Spatial Window'
@@ -59,8 +61,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object rdgSpatialOptions: TGroupBox
         Left = 8
         Top = 8
-        Width = 428
-        Height = 162
+        Width = 385
+        Height = 177
         Caption = 'Spatial'
         TabOrder = 0
         object lblMaxSpatialClusterSize: TLabel
@@ -79,7 +81,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object lblMaxRadius: TLabel
           Left = 166
-          Top = 112
+          Top = 124
           Width = 73
           Height = 13
           Caption = 'kilometer radius'
@@ -87,11 +89,12 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object lblPercentageOfPopFile: TLabel
           Left = 96
           Top = 62
-          Width = 316
-          Height = 13
+          Width = 261
+          Height = 27
           Caption = 
             'percent of the population defined in the max circle size file (<' +
             '= 50%)'
+          WordWrap = True
         end
         object edtMaxSpatialClusterSize: TEdit
           Left = 64
@@ -108,7 +111,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object chkInclPureTempClust: TCheckBox
           Left = 18
-          Top = 137
+          Top = 149
           Width = 305
           Height = 17
           Caption = 'Include Purely Temporal Cluster (Spatial Size = 100%)'
@@ -128,7 +131,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object rdoSpatialDistance: TRadioButton
           Left = 34
-          Top = 112
+          Top = 124
           Width = 97
           Height = 17
           Caption = 'is a circle with a'
@@ -146,7 +149,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtMaxSpatialRadius: TEdit
           Left = 133
-          Top = 110
+          Top = 122
           Width = 25
           Height = 21
           TabOrder = 7
@@ -167,23 +170,21 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtMaxCirclePopulationFilename: TEdit
-          Left = 52
-          Top = 85
+          Left = 53
+          Top = 94
           Width = 278
           Height = 21
-          Anchors = []
           ParentShowHint = False
           ShowHint = True
           TabOrder = 4
           OnChange = edtMaxCirclePopulationFilenameChange
         end
         object btnBrowseMaxCirclePopFile: TButton
-          Left = 335
-          Top = 85
+          Left = 341
+          Top = 94
           Width = 25
           Height = 21
           Hint = 'browse for special population file'
-          Anchors = []
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -203,7 +204,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       ImageIndex = 1
       object grpScanningWindow: TGroupBox
         Left = 8
-        Top = 138
+        Top = 134
         Width = 380
         Height = 111
         Caption = 'Scanning Window'
@@ -512,14 +513,14 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object grpAdjustments: TGroupBox
         Left = 8
-        Top = 147
+        Top = 139
         Width = 390
-        Height = 95
+        Height = 102
         Caption = 'Temporal, Spatial and/or Space-Time Adjustments'
         TabOrder = 3
         object lblAdjustmentsByRelativeRisksFile: TLabel
           Left = 12
-          Top = 45
+          Top = 49
           Width = 79
           Height = 13
           Anchors = []
@@ -527,7 +528,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtAdjustmentsByRelativeRisksFile: TEdit
           Left = 12
-          Top = 63
+          Top = 68
           Width = 335
           Height = 21
           Anchors = []
@@ -537,8 +538,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnChange = edtAdjustmentsByRelativeRisksFileChange
         end
         object btnBrowseAdjustmentsFile: TButton
-          Left = 353
-          Top = 63
+          Left = 355
+          Top = 68
           Width = 25
           Height = 21
           Hint = 'browse for adjustments file'
@@ -572,7 +573,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object grpAnalysis: TGroupBox
         Left = 8
         Top = 8
-        Width = 275
+        Width = 373
         Height = 50
         Caption = 'Analysis'
         TabOrder = 0
@@ -588,7 +589,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object gbxProspectiveSurveillance: TGroupBox
         Left = 8
         Top = 76
-        Width = 273
+        Width = 373
         Height = 137
         Caption = 'Prospective Surveillance'
         TabOrder = 1
@@ -672,7 +673,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       ImageIndex = 2
       object lblReportSmallerClusters: TLabel
         Left = 238
-        Top = 226
+        Top = 222
         Width = 151
         Height = 27
         AutoSize = False
@@ -681,7 +682,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object chkRestrictReportedClusters: TCheckBox
         Left = 20
-        Top = 226
+        Top = 222
         Width = 175
         Height = 17
         Caption = 'Report only clusters smaller than'
@@ -690,7 +691,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object edtReportClustersSmallerThan: TEdit
         Left = 200
-        Top = 224
+        Top = 220
         Width = 30
         Height = 21
         TabOrder = 1
