@@ -1,6 +1,6 @@
 object frmAnalysis: TfrmAnalysis
-  Left = 351
-  Top = 155
+  Left = 315
+  Top = 221
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SaTScan'
@@ -821,7 +821,7 @@ object frmAnalysis: TfrmAnalysis
         Left = 16
         Top = 54
         Width = 449
-        Height = 97
+        Height = 99
         Caption = 'Create Additional ASCII Output Files with (all optional):'
         TabOrder = 2
         object chkCensusAreas: TCheckBox
@@ -865,9 +865,9 @@ object frmAnalysis: TfrmAnalysis
           OnClick = chkInclSimLogLikClick
         end
       end
-      object rgCriteriaSecClusters: TGroupBox
+      object grpCriteriaSecClusters: TGroupBox
         Left = 16
-        Top = 154
+        Top = 232
         Width = 449
         Height = 50
         Caption = 'Criteria for Reporting Secondary Clusters'
@@ -888,6 +888,36 @@ object frmAnalysis: TfrmAnalysis
             'No Cluster Centers in Less Likely Clusters'
             'No Pairs of Centers Both in Each Others Clusters'
             'No Restrictions = Most Likely Cluster for Each Grid Point')
+        end
+      end
+      object grpB2: TGroupBox
+        Left = 16
+        Top = 159
+        Width = 449
+        Height = 64
+        Caption = 'Create Additional dBase (.dbf) Output Files with (all optional):'
+        TabOrder = 4
+        object chkDbaseFile1: TCheckBox
+          Left = 10
+          Top = 16
+          Width = 241
+          Height = 17
+          BiDiMode = bdLeftToRight
+          Caption = 'File 1'
+          ParentBiDiMode = False
+          TabOrder = 0
+          OnClick = chkLikelyClustersClick
+        end
+        object chkDbaseFile2: TCheckBox
+          Left = 10
+          Top = 36
+          Width = 241
+          Height = 17
+          BiDiMode = bdLeftToRight
+          Caption = 'File 2'
+          ParentBiDiMode = False
+          TabOrder = 1
+          OnClick = chkLikelyClustersClick
         end
       end
     end
