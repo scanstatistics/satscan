@@ -99,6 +99,9 @@ const char*      SPATIALVARIATION_TEMPORALTREND         = "Spatial Variation and
 const char*      POISSON_MODEL                 		= "Poisson";
 const char*      BERNOULLI_MODEL                	= "Bernoulli";
 const char*      SPACETIME_PERMUTATION_MODEL    	= "Space-Time Permutation";
+const char*      NORMAL_MODEL                           = "Normal";
+const char*      SURVIVAL_MODEL                         = "Survival";
+const char*      RANK_MODEL                             = "Rank";
 
 const char*      NONE_PRECISION_TYPE            	= "none";
 const char*      YEAR_PRECISION_TYPE            	= "years";
@@ -301,9 +304,12 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
     }
 
     switch (geProbabiltyModelType) {
-      case POISSON              :  fprintf(fp, " using the Poisson model.\n"); break;
-      case BERNOULLI            :  fprintf(fp, " using the Bernoulli model.\n"); break;
-      case SPACETIMEPERMUTATION : fprintf(fp, " using the Space-Time Permutation model.\n"); break;
+      case POISSON              : fprintf(fp, " using the Poisson model.\n"); break;
+      case BERNOULLI            : fprintf(fp, " using the Bernoulli model.\n"); break;
+      case SPACETIMEPERMUTATION : fprintf(fp, " using the Tpace-Time Permutation model.\n"); break;
+      case NORMAL               : fprintf(fp, " using the Normal model.\n"); break;
+      case SURVIVAL             : fprintf(fp, " using the Survival model.\n"); break;
+      case RANK                 : fprintf(fp, " using the Rank model.\n"); break;
       default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayAnalysisType()", geProbabiltyModelType);
     }
 
@@ -350,7 +356,10 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
                                   for (t=1; t < gvControlFilenames.size(); ++t)
                                      fprintf(fp, "  Control File (stream %i)    : %s\n", t + 1, gvControlFilenames[t].c_str());
                                   break;
-      case SPACETIMEPERMUTATION : break;
+      case SPACETIMEPERMUTATION :
+      case NORMAL               :
+      case SURVIVAL             :
+      case RANK                 : break;
       default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayParameters()", geProbabiltyModelType);
     }
 
@@ -756,6 +765,28 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
   return sParameterLineLabel.GetCString();
 }
 
+/** returns whether analysis type permits inclusion of purely spatial cluster */
+bool CParameters::GetPermitsPurelySpatialCluster(AnalysisType eAnalysisType) const {
+  return geAnalysisType == PURELYSPATIAL || geAnalysisType == SPACETIME || GetIsProspectiveAnalysis();
+}
+
+/** returns whether probability model type permits inclusion of purely spatial cluster */
+bool CParameters::GetPermitsPurelySpatialCluster(ProbabiltyModelType eModelType) const {
+  return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL
+         || eModelType == SURVIVAL || eModelType == RANK;
+}
+
+/** returns whether analysis type permits inclusion of purely temporal cluster */
+bool CParameters::GetPermitsPurelyTemporalCluster(AnalysisType eAnalysisType) const {
+  return geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME || GetIsProspectiveAnalysis();
+}
+
+/** returns whether probability model type permits inclusion of purely temporal cluster */
+bool CParameters::GetPermitsPurelyTemporalCluster(ProbabiltyModelType eModelType) const {
+  return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL
+         || eModelType == SURVIVAL || eModelType == RANK;
+}
+
 const std::string & CParameters::GetPopulationFileName(unsigned int iStream) const {
   try {
     if (!iStream || iStream > gvPopulationFilenames.size())
@@ -777,6 +808,9 @@ const char * CParameters::GetProbabiltyModelTypeAsString(ProbabiltyModelType ePr
       case POISSON              : sProbabilityModel = POISSON_MODEL; break;
       case BERNOULLI            : sProbabilityModel = BERNOULLI_MODEL; break;
       case SPACETIMEPERMUTATION : sProbabilityModel = SPACETIME_PERMUTATION_MODEL; break;
+      case NORMAL               : sProbabilityModel = NORMAL_MODEL; break;
+      case SURVIVAL             : sProbabilityModel = SURVIVAL_MODEL; break;
+      case RANK                 : sProbabilityModel = RANK_MODEL; break;
       default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "GetProbabiltyModelTypeAsString()", geProbabiltyModelType);
     }
   }
@@ -1880,7 +1914,7 @@ void CParameters::SaveAnalysisSection(ZdIniFile& file) {
     pSection = file.GetSection(ANALYSIS_SECTION);
     pSection->AddComment(" analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time, 5=Spatial Variation/Temporal Trends, 6=Prospective Purely Temporal, 7=PurelySpatialMonotone)");
     pSection->AddLine(ANALYSIS_TYPE_LINE, AsString(sValue, geAnalysisType));
-    pSection->AddComment(" model type (0=Poisson, 1=Bernoulli, 2=Space-Time Permutation)");
+    pSection->AddComment(" model type (0=Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Normal, 4=Survival, 5=Rank)");
     pSection->AddLine(MODEL_TYPE_LINE, AsString(sValue, geProbabiltyModelType));
     pSection->AddComment(" scan areas (1=High, 2=Low, 3=High or Low)");
     pSection->AddLine(SCAN_AREAS_LINE, AsString(sValue, geAreaScanRate));
@@ -2610,11 +2644,11 @@ void CParameters::SetProbabilityModelType(ProbabiltyModelType eProbabiltyModelTy
   ZdString      sLabel;
 
   try {
-    if (eProbabiltyModelType < POISSON || eProbabiltyModelType > SPACETIMEPERMUTATION)
+    if (eProbabiltyModelType < POISSON || eProbabiltyModelType > RANK)
       InvalidParameterException::Generate("Error: For parameter '%s', setting '%d' is out of range(%d - %d).\n",
                                           "SetAnalysisType()",
                                           GetParameterLineLabel(MODEL, sLabel, geReadType == INI),
-                                          eProbabiltyModelType, POISSON, SPACETIMEPERMUTATION);
+                                          eProbabiltyModelType, POISSON, RANK);
 
     geProbabiltyModelType = eProbabiltyModelType;
   }
@@ -3080,7 +3114,7 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
     }
     //validate adjustment for known relative risks file
     if (geProbabiltyModelType == POISSON) {
-      if (GetNumDataStreams() > 1) {
+      if (gbUseAdjustmentsForRRFile && GetNumDataStreams() > 1) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Adjustments for known relative risks is currently permitted with only one data stream.\n");
         PrintDirection.SatScanPrintWarning("       Parameter settings indicate that there are %i data streams.\n", GetNumDataStreams());
@@ -3540,12 +3574,12 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
     }
 
     if (gbIncludePurelySpatialClusters) {
-      if (!(geProbabiltyModelType == POISSON || geProbabiltyModelType == BERNOULLI)) {
+      if (!GetPermitsPurelySpatialCluster(geProbabiltyModelType)) {
           bValid = false;
           PrintDirection.SatScanPrintWarning("Error: A purely spatial cluster can not be included for a %s model.\n",
                                              GetProbabiltyModelTypeAsString(geProbabiltyModelType));
       }
-      else if (!(geAnalysisType == PURELYSPATIAL || geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
+      else if (!GetPermitsPurelySpatialCluster(geAnalysisType)) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: A purely spatial cluster can only be included for spatial based analyses.\n");
       }
@@ -3679,6 +3713,9 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
                                       gdTimeTrendAdjustPercentage = 0.0;
                                     }
                                     break;
+        case NORMAL               :
+        case SURVIVAL             :
+        case RANK                 :                                  
         case SPACETIMEPERMUTATION : if (geTimeTrendAdjustType != NOTADJUSTED) {
                                       PrintDirection.SatScanPrintWarning("Warning: For the Space-Time Permutation model, adjusting for temporal trends is not permitted.\n");
                                       geTimeTrendAdjustType = NOTADJUSTED;
@@ -3733,12 +3770,12 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
       gdTimeTrendAdjustPercentage        = 0;
     }
     if (gbIncludePurelyTemporalClusters) {
-      if (!(geProbabiltyModelType == POISSON || geProbabiltyModelType == BERNOULLI)) {
+      if (!GetPermitsPurelyTemporalCluster(geProbabiltyModelType)) {
           bValid = false;
           PrintDirection.SatScanPrintWarning("Error: A purely temporal cluster can not be included for a %s model.\n",
                                              GetProbabiltyModelTypeAsString(geProbabiltyModelType));
       }
-      else if (!(geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME || GetIsProspectiveAnalysis())) {
+      else if (!GetPermitsPurelyTemporalCluster(geAnalysisType)) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: A purely temporal cluster can only be included for time based analyses.\n");
       }

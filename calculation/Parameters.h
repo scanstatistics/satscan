@@ -116,6 +116,9 @@ extern const char*      SPATIALVARIATION_TEMPORALTREND;
 extern const char*      POISSON_MODEL;
 extern const char*      BERNOULLI_MODEL;
 extern const char*      SPACETIME_PERMUTATION_MODEL;
+extern const char*      NORMAL_MODEL;
+extern const char*      SURVIVAL_MODEL;
+extern const char*      RANK_MODEL;
 
 /** date repcision type names */
 extern const char*      NONE_PRECISION_TYPE;
@@ -143,7 +146,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL, PURELYSPATIALMONOTONE};
 /** probabilty model types */
-enum ProbabiltyModelType           {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION};
+enum ProbabiltyModelType           {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION, NORMAL, SURVIVAL, RANK};
 enum IncludeClustersType           {ALLCLUSTERS=0, ALIVECLUSTERS, CLUSTERSINRANGE};
 enum RiskType                      {STANDARDRISK=0, MONOTONERISK};
 /** area incidence rate types */
@@ -372,6 +375,10 @@ class CParameters {
     bool                                GetOutputSimLoglikeliRatiosDBase() const {return gbOutputSimLogLikeliRatiosDBase;}
     bool                                GetOutputSimLoglikeliRatiosFiles() const;
     bool                                GetOutputSimulationData() const {return gbOutputSimulationData;}
+    bool                                GetPermitsPurelySpatialCluster(ProbabiltyModelType eModelType) const;
+    bool                                GetPermitsPurelySpatialCluster(AnalysisType eAnalysisType) const;
+    bool                                GetPermitsPurelyTemporalCluster(ProbabiltyModelType eModelType) const;
+    bool                                GetPermitsPurelyTemporalCluster(AnalysisType eAnalysisType) const;
     const std::string                 & GetPopulationFileName(unsigned int iStream=1) const;
     double                              GetPowerCalculationX() const {return gdPower_X;}
     double                              GetPowerCalculationY() const {return gdPower_Y;}
