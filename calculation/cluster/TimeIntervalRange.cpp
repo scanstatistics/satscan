@@ -259,7 +259,7 @@ void NormalTimeIntervalRange::CompareClusters(CCluster & Running, CCluster & Top
         pData->gtMeasure = pData->gpMeasure[iWindowStart] - pData->gpMeasure[iWindowEnd];
         pData->gtSqMeasure = pData->gpSqMeasure[iWindowStart] - pData->gpSqMeasure[iWindowEnd];
         if (fRateOfInterest(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure)) {
-          Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioEx(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure, pData->gtSqMeasure);
+          Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioEx(pData->gtCases, pData->gtMeasure, pData->gtSqMeasure, tTotalCases, tTotalMeasure);
           if (Running.m_nRatio  > TopCluster.m_nRatio) {
             TopCluster.AssignAsType(Running);
             TopCluster.m_nFirstInterval = iWindowStart;
