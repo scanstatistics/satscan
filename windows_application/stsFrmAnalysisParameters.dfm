@@ -1,6 +1,6 @@
 object frmAnalysis: TfrmAnalysis
-  Left = 315
-  Top = 221
+  Left = 228
+  Top = 196
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SaTScan'
@@ -24,7 +24,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbInputFiles
+    ActivePage = tbOutputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -818,17 +818,20 @@ object frmAnalysis: TfrmAnalysis
       object edtResultFile: TEdit
         Left = 16
         Top = 24
-        Width = 401
+        Width = 408
         Height = 21
         AutoSelect = False
+        ParentShowHint = False
+        ReadOnly = True
+        ShowHint = True
         TabOrder = 0
         OnChange = edtResultFileChange
       end
       object btnResultFileBrowse: TButton
-        Left = 432
+        Left = 434
         Top = 24
         Width = 30
-        Height = 23
+        Height = 21
         Hint = 'browse for results file'
         Caption = '...'
         Font.Charset = DEFAULT_CHARSET
@@ -844,9 +847,9 @@ object frmAnalysis: TfrmAnalysis
       end
       object grpB1: TGroupBox
         Left = 16
-        Top = 54
+        Top = 62
         Width = 449
-        Height = 99
+        Height = 101
         Caption = 'Create Additional ASCII Output Files with (all optional):'
         TabOrder = 2
         object chkCensusAreas: TCheckBox
@@ -917,18 +920,18 @@ object frmAnalysis: TfrmAnalysis
       end
       object grpB2: TGroupBox
         Left = 16
-        Top = 159
+        Top = 169
         Width = 449
-        Height = 64
+        Height = 59
         Caption = 'Create Additional dBase (.dbf) Output Files with (all optional):'
         TabOrder = 4
         object chkDbaseFile1: TCheckBox
           Left = 10
           Top = 16
-          Width = 241
+          Width = 423
           Height = 17
           BiDiMode = bdLeftToRight
-          Caption = 'File 1'
+          Caption = 'Cluster Level'
           ParentBiDiMode = False
           TabOrder = 0
           OnClick = chkLikelyClustersClick
@@ -936,10 +939,10 @@ object frmAnalysis: TfrmAnalysis
         object chkDbaseFile2: TCheckBox
           Left = 10
           Top = 36
-          Width = 241
+          Width = 423
           Height = 17
           BiDiMode = bdLeftToRight
-          Caption = 'File 2'
+          Caption = 'Area Specific'
           ParentBiDiMode = False
           TabOrder = 1
           OnClick = chkLikelyClustersClick
