@@ -108,7 +108,11 @@ void stsAreaSpecificDBF::Setup(const ZdString& sOutputFileName) {
    try {
       // area specific dbf has same filename as output file with area specific extension - AJV 9/30/2002
       ZdString sTempName(sOutputFileName);
-      sTempName.Replace(ZdFileName(sOutputFileName).GetExtension(), AREA_SPECIFIC_EXT);
+      ZdString sExt(ZdFileName(sOutputFileName).GetExtension());
+      if(sExt.GetLength()) 
+         sTempName.Replace(sExt, AREA_SPECIFIC_EXT);
+      else
+         sTempName << AREA_SPECIFIC_EXT;
       gsFileName = sTempName;
 
       SetupFields(gvFields);

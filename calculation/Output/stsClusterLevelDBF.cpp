@@ -259,7 +259,11 @@ void stsClusterLevelDBF::Setup(const ZdString& sOutputFileName, const int iDimen
    try {
       // cluster level dbf has same filename as output file with cluster level extension - AJV 9/30/2002
       ZdString sTempName(sOutputFileName);
-      sTempName.Replace(ZdFileName(sOutputFileName).GetExtension(), CLUSTER_LEVEL_EXT);
+      ZdString sExt(ZdFileName(sOutputFileName).GetExtension());
+      if(sExt.GetLength()) 
+         sTempName.Replace(sExt, CLUSTER_LEVEL_EXT);
+      else
+         sTempName << CLUSTER_LEVEL_EXT;
       gsFileName = sTempName;
       gbPrintEllipses = bPrintEllipses;
       giDimension = iDimension;
