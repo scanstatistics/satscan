@@ -1194,7 +1194,6 @@ void TractHandler::tiReportZeroPops(FILE *pDisplay) const {
               fprintf(pDisplay,"\n________________________________________________________________\n\n");
               fprintf(pDisplay,"Warning: According to the input data, the following tracts have a \n");
               fprintf(pDisplay,"         population totaling zero for the specified date(s).\n\n");
-              gpPrintDirection->SatScanPrintWarning("\n________________________________________________________________\n\n");
               gpPrintDirection->SatScanPrintWarning("Warning: According to the input data, the following tracts have a \n");
               gpPrintDirection->SatScanPrintWarning("         population totaling zero for the specified date(s).\n\n");
             }
