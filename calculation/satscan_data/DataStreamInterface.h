@@ -23,10 +23,13 @@ class DataStreamInterface {
     count_t          ** gppCaseArray;           /** pointer to data stream case array */
     count_t          ** gppNCCaseArray;         /** pointer to data stream non-cumulative case array */
     count_t           * gpPTCaseArray;          /** pointer to data stream temporal case array */
+    count_t           * gpPSCaseArray;          /** pointer to data stream spatial case array */  
     measure_t        ** gppMeasureArray;        /** pointer to data stream measure array */
     measure_t        ** gppNCMeasureArray;      /** pointer to data stream non-cumulative measure array */
     measure_t         * gpPTMeasureArray;       /** pointer to data stream temporal measure array */
+    measure_t         * gpPSMeasureArray;       /** pointer to data stream spatial measure array */
     measure_t        ** gppSqMeasureArray;      /** */
+    measure_t         * gpPSSqMeasureArray;     /** spatial */
     CTimeTrend        * gpTimeTrend;            /** pointer to data stream time trend structure */
 
     void                Init();
@@ -36,13 +39,13 @@ class DataStreamInterface {
     virtual void        SetSVTTAnalysisInterface(DataStream & thisStream, const CParameters & Parameters);
 
   protected:
-    void                SetCaseArray(count_t ** ppCases) {gppCaseArray = ppCases;}
+    void                SetCaseArray(count_t ** ppCases) {gppCaseArray = ppCases;gpPSCaseArray = ppCases[0];}
     void                SetNCCaseArray(count_t ** ppCases) {gppNCCaseArray = ppCases;}
     void                SetPTCaseArray(count_t * pPTCase) {gpPTCaseArray = pPTCase;}
-    void                SetMeasureArray(measure_t ** ppMeasure) {gppMeasureArray = ppMeasure;}
+    void                SetMeasureArray(measure_t ** ppMeasure) {gppMeasureArray = ppMeasure;gpPSMeasureArray = ppMeasure[0];}
     void                SetNCMeasureArray(measure_t ** ppMeasure) {gppNCMeasureArray = ppMeasure;}
     void                SetPTMeasureArray(measure_t * pMeasure) {gpPTMeasureArray = pMeasure;}
-    void                SetSqMeasureArray(measure_t ** ppSqMeasure) {gppSqMeasureArray = ppSqMeasure;}
+    void                SetSqMeasureArray(measure_t ** ppSqMeasure) {gppSqMeasureArray = ppSqMeasure;gpPSSqMeasureArray = ppSqMeasure[0];}
     void                SetTimeTrend(CTimeTrend * pTimeTrend) {gpTimeTrend = pTimeTrend;}
     void                SetTotalCasesCount(count_t tCases) {gTotalCases = tCases;}
     void                SetTotalControlsCount(count_t tControls) {gTotalControls = tControls;}
@@ -54,12 +57,15 @@ class DataStreamInterface {
 
     inline count_t   ** GetCaseArray() const {return gppCaseArray;}
     inline count_t   ** GetNCCaseArray() const {return gppNCCaseArray;}
+    inline count_t    * GetPSCaseArray() const {return gpPSCaseArray;}
     inline count_t    * GetPTCaseArray() const {return gpPTCaseArray;}
     inline measure_t ** GetMeasureArray() const {return gppMeasureArray;}
     inline measure_t ** GetNCMeasureArray() const {return gppNCMeasureArray;}
+    inline measure_t  * GetPSMeasureArray() const {return gpPSMeasureArray;}
     inline measure_t  * GetPTMeasureArray() const {return gpPTMeasureArray;}
     inline bool         IsSqMeasureArray() const {return gppSqMeasureArray;}
     inline measure_t ** GetSqMeasureArray() const {return gppSqMeasureArray;}
+    inline measure_t  * GetPSSqMeasureArray() const {return gpPSSqMeasureArray;}
     inline CTimeTrend * GetTimeTrend() const {return gpTimeTrend;}
     inline count_t      GetTotalCasesCount() const {return gTotalCases;}
     inline count_t      GetTotalControlsCount() const {return gTotalControls;}

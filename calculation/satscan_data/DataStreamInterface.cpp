@@ -21,11 +21,14 @@ void DataStreamInterface::Init() {
   gppCaseArray=0;
   gppNCCaseArray=0;
   gpPTCaseArray=0;
+  gpPSCaseArray=0;
   gppMeasureArray=0;
   gpPTMeasureArray=0;
   gppSqMeasureArray=0;
   gppNCMeasureArray=0;
   gpTimeTrend=0;
+  gpPSMeasureArray=0;
+  gpPSSqMeasureArray=0;
 }
 
 /** initializes case array */
