@@ -94,7 +94,7 @@ void StringParser::ThrowAsciiException() {
   std::string s;
 
   SSGenerateException("Error: The %s file contains data that is not ASCII formatted.\n"
-                      "Please see 'ASCII Input File Format' in the user guide for help.\n",
+                      "       Please see 'ASCII Input File Format' in the user guide for help.\n",
                       "CheckIsASCII()", BasePrint::GetInputFileType(geFileType, s).c_str());
 }
 
