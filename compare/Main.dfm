@@ -17,21 +17,21 @@ object frmMain: TfrmMain
   TextHeight = 13
   object Bevel1: TBevel
     Left = 0
-    Top = 32
+    Top = 29
     Width = 788
     Height = 2
     Align = alTop
   end
   object Bevel2: TBevel
     Left = 0
-    Top = 134
+    Top = 131
     Width = 788
     Height = 2
     Align = alTop
   end
   object pnlTop: TPanel
     Left = 0
-    Top = 34
+    Top = 31
     Width = 788
     Height = 100
     Align = alTop
@@ -111,9 +111,9 @@ object frmMain: TfrmMain
   end
   object pnlClient: TPanel
     Left = 0
-    Top = 136
+    Top = 133
     Width = 788
-    Height = 233
+    Height = 236
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 2
@@ -132,7 +132,7 @@ object frmMain: TfrmMain
           Width = 181
         end
         item
-          Caption = 'Speed'
+          Caption = 'Speed Comparison'
           Width = 150
         end
         item
@@ -166,7 +166,7 @@ object frmMain: TfrmMain
       Left = 666
       Top = 0
       Width = 122
-      Height = 233
+      Height = 236
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 1
@@ -244,6 +244,7 @@ object frmMain: TfrmMain
     Left = 0
     Top = 0
     Width = 788
+    Height = 29
     ButtonHeight = 23
     ButtonWidth = 25
     Caption = 'ToolBar'
@@ -331,7 +332,7 @@ object frmMain: TfrmMain
     Left = 16
     Top = 264
     Bitmap = {
-      494C010104000900040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010104000900040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001001000000000000018
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -539,7 +540,8 @@ object frmMain: TfrmMain
       FFFFFFFFFFFFFFFFF81FF81FF81FF81FE00FE00FE00FE00FE00FE00FE00FE00F
       C007C007C007C007C007C007C007C007C007C007C007C007C007C007C007C007
       C007C007C007C007E00FE00FE00FE00FF00FF00FF00FF00FF83FF83FF83FF83F
-      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object ActionList1: TActionList
     Left = 16

@@ -7,6 +7,38 @@
 #pragma resource "*.dfm"
 TfrmMain *frmMain;
 
+
+/** constructor */
+ParameterResultsInfo::ParameterResultsInfo(const char * sParameterFilename)
+                     :geClusterInformation(UNKNOWN), geLocationInformation(UNKNOWN), geRelativeRisks(UNKNOWN),
+                      geSimulatedRatios(UNKNOWN), geTimeDifferenceType(INCOMPLETE), guHoursDifferent(0),
+                      guMinutesDifferent(0), guSecondsDifferent(0) {
+  gParameterFilename = sParameterFilename;
+}
+
+/** destructor */
+ParameterResultsInfo::~ParameterResultsInfo() {}
+
+/** returns whether any results didn't match master set */
+bool ParameterResultsInfo::GetHasMisMatches() const {
+  return geClusterInformation == NOT_EQUAL || geLocationInformation == NOT_EQUAL ||
+         geRelativeRisks == NOT_EQUAL || geSimulatedRatios == NOT_EQUAL;
+}
+
+/** returns whther any result files were missing */
+bool ParameterResultsInfo::GetHasMissingFiles() const {
+  return geClusterInformation < EQUAL || geLocationInformation < EQUAL ||
+         geRelativeRisks < EQUAL || geSimulatedRatios < EQUAL;
+}
+
+/** Set difference in time between master and compare analyses */
+void ParameterResultsInfo::SetTimeDifference(unsigned short uHours, unsigned short uMinutes, unsigned short uSeconds, TimeDifferenceType eTimeDifferenceType) {
+  guHoursDifferent = uHours;
+  guMinutesDifferent = uMinutes;
+  guSecondsDifferent = uSeconds;
+  geTimeDifferenceType = eTimeDifferenceType;
+}
+
 const char * TfrmMain::SCU_REGISTRY_KEY         = "\\Software\\SaTScanCompareUtility";
 const char * TfrmMain::LASTAPP_DATA             = "LastOpenExe";
 const char * TfrmMain::LASTPARAMLIST_DATA       = "LastParamList";
@@ -244,6 +276,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
           CompareLocationInformationFiles();
           CompareRelativeRisksInformationFiles();
           CompareSimulatedRatiosFiles();
+          CompareTimes();
           AddList();
         }
         else
@@ -263,9 +296,10 @@ void TfrmMain::AddList() {
   TListItem * pListItem = lstDisplay->Items->Add();
   pListItem->Data = (void*)(gvParameterResultsInfo.size() - 1);
 
-  if (gvParameterResultsInfo.back().GetHasMisMatches())
+  const ParameterResultsInfo & ref = gvParameterResultsInfo.back();
+  if (ref.GetHasMisMatches() || ref.GetTimeDifferenceType() == SLOWER)
     pListItem->ImageIndex = 2;
-  else if (gvParameterResultsInfo.back().GetHasMissingFiles())
+  else if (ref.GetHasMissingFiles() || ref.GetTimeDifferenceType() == INCOMPLETE)
     pListItem->ImageIndex = 1;
   else
     pListItem->ImageIndex = 0;
@@ -454,6 +488,43 @@ bool TfrmMain::CompareTextFiles(const std::string & sMaster, const std::string &
   return bEqual;
 }
 
+/** compares and records time differences between master and this analysis */
+void TfrmMain::CompareTimes() {
+  bool                  bMasterDate;
+  unsigned short        uHoursM, uMinutesM, uSecondsM, uHoursC, uMinutesC, uSecondsC;
+  std::string           sMaster, sCompare;
+  unsigned int          uiMasterTime, uiCompareTime;
+
+  GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sMaster);
+  bMasterDate = GetRunTime(sMaster.c_str(), uHoursM, uMinutesM, uSecondsM);
+  GetCompareFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
+  GetRunTime(sCompare.c_str(), uHoursC, uMinutesC, uSecondsC);
+
+  if (!bMasterDate)
+    gvParameterResultsInfo.back().SetTimeDifference(uHoursC, uMinutesC, uSecondsC, INCOMPLETE);
+  else {
+    uiMasterTime = (uHoursM * 10000) + (uMinutesM * 100 ) + uSecondsM;
+    uiCompareTime = (uHoursC * 10000) + (uMinutesC * 100) + uSecondsC;
+
+    if (uiMasterTime == uiCompareTime)
+      gvParameterResultsInfo.back().SetTimeDifference(uHoursC, uMinutesC, uSecondsC, SAME);
+    else if (uiMasterTime > uiCompareTime) {
+      uiMasterTime = uiMasterTime - uiCompareTime;
+      uHoursM = uiMasterTime/10000;
+      uMinutesM = (uiMasterTime - (uHoursM * 10000))/100;
+      uSecondsM = uiMasterTime - (uHoursM * 10000) - (uMinutesM * 100);
+      gvParameterResultsInfo.back().SetTimeDifference(uHoursM, uMinutesM, uSecondsM, FASTER);
+    }
+    else {
+      uiCompareTime = uiCompareTime - uiMasterTime;
+      uHoursC = uiCompareTime/10000;
+      uMinutesC = (uiCompareTime - (uHoursC * 10000))/100;
+      uSecondsC = uiCompareTime - (uHoursC * 10000) - (uMinutesC * 100);
+      gvParameterResultsInfo.back().SetTimeDifference(uHoursC, uMinutesC, uSecondsC, SLOWER);
+    }
+  }
+}
+
 void __fastcall TfrmMain::edtChangeInput(TObject *Sender) {
   EnableStartAction();
 }
@@ -537,6 +608,27 @@ std::string & TfrmMain::GetCompareFilename(const ZdFileName & ParameterFilename,
   return sResultFilename;
 }
 
+/** adds analysis speed comparison to display */
+AnsiString & TfrmMain::GetDisplayTime(AnsiString & sDisplay) {
+  const ParameterResultsInfo & Ref = gvParameterResultsInfo.back();
+  switch (Ref.GetTimeDifferenceType()) {
+    case INCOMPLETE : sDisplay.printf("%i hr %i min % i sec - ?", Ref.GetHoursDifferent(),
+                                      Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent());
+                      break;
+    case SLOWER     : sDisplay.printf("%i hr %i min % i sec - slower", Ref.GetHoursDifferent(),
+                                      Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent());
+                      break;
+    case SAME       : sDisplay.printf("%i hr %i min % i sec - same", Ref.GetHoursDifferent(),
+                                      Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent());
+                      break;
+    case FASTER     : sDisplay.printf("%i hr %i min % i sec - faster", Ref.GetHoursDifferent(),
+                                      Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent());
+                      break;
+    //default : error
+  };
+  return sDisplay;
+}
+
 /** Sets result filename as specified by parameter file. If path is missing from
     filename, path of parameter file is inserted as path of result file. */
 std::string & TfrmMain::GetResultFileName(const ZdFileName & ParameterFilename, std::string & sResultFilename) {
@@ -560,6 +652,7 @@ std::string & TfrmMain::GetResultFileName(const ZdFileName & ParameterFilename, 
   return sResultFilename;
 }
 
+/** parses out analysis time for execution string from results file */
 bool TfrmMain::GetRunTime(const char * sResultFile, unsigned short& uHours, unsigned short& uMinutes, unsigned short& uSeconds) {
    ifstream             file(sResultFile);
    std::string          sLine;
@@ -599,46 +692,6 @@ bool TfrmMain::GetRunTime(const char * sResultFile, unsigned short& uHours, unsi
      return false;
 
    return true;
-}
-
-AnsiString & TfrmMain::GetDisplayTime(AnsiString & sDisplay) {
-  bool                  bMasterDate, bCompareDate;
-  unsigned short        uHoursM, uMinutesM, uSecondsM, uHoursC, uMinutesC, uSecondsC;
-  std::string           sMaster, sCompare;
-  unsigned int          uiMasterTime, uiCompareTime;
-
-  GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sMaster);
-  bMasterDate = GetRunTime(sMaster.c_str(), uHoursM, uMinutesM, uSecondsM);
-  GetCompareFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
-  bCompareDate = GetRunTime(sCompare.c_str(), uHoursC, uMinutesC, uSecondsC);
-
-  if (!bMasterDate)
-    sDisplay.printf("%i hr %i min % i sec", uHoursC, uMinutesC, uSecondsC);
-  else if (!bCompareDate)
-    sDisplay = "Unknown";
-  else {
-    uiMasterTime = (uHoursM * 10000) + (uMinutesM * 100 ) + uSecondsM;
-    uiCompareTime = (uHoursC * 10000) + (uMinutesC * 100) + uSecondsC;
-
-    if (uiMasterTime == uiCompareTime)
-      sDisplay.printf("same %i hr %i min % i sec", uHoursC, uMinutesC, uSecondsC);
-    else if (uiMasterTime > uiCompareTime) {
-      uiMasterTime = uiMasterTime - uiCompareTime;
-      uHoursM = uiMasterTime/10000;
-      uMinutesM = (uiMasterTime - (uHoursM * 10000))/100;
-      uSecondsM = uiMasterTime - (uHoursM * 10000) - (uMinutesM * 100);
-      sDisplay.printf("faster by %i hr %i min % i sec", uHoursM, uMinutesM, uSecondsM);
-    }
-    else {
-      uiCompareTime = uiCompareTime - uiMasterTime;
-      uHoursC = uiCompareTime/10000;
-      uMinutesC = (uiCompareTime - (uHoursM * 10000))/100;
-      uSecondsC = uiCompareTime - (uHoursM * 10000) - (uMinutesM * 100);
-      sDisplay.printf("slower by %i hr %i min % i sec", uHoursM, uMinutesM, uSecondsM);
-    }
-  }
-
-  return sDisplay;
 }
 
 void __fastcall TfrmMain::lstDisplayColumnClick(TObject *Sender,TListColumn *Column) {

@@ -24,7 +24,8 @@
 #include <vector>
 //---------------------------------------------------------------------------
 
-enum CompareType {UNKOWN, MASTER_MISSING=0, COMPARE_MISSING, EQUAL, NOT_EQUAL, NOT_APPLICABLE};
+enum CompareType {UNKNOWN=0, MASTER_MISSING, COMPARE_MISSING, EQUAL, NOT_EQUAL, NOT_APPLICABLE};
+enum TimeDifferenceType {INCOMPLETE=0, SLOWER, SAME, FASTER};
 
 class ParameterResultsInfo {
   private:
@@ -33,33 +34,32 @@ class ParameterResultsInfo {
     CompareType         geRelativeRisks;
     CompareType         geSimulatedRatios;
     ZdFileName          gParameterFilename;
+    TimeDifferenceType  geTimeDifferenceType;
+    unsigned short      guHoursDifferent;
+    unsigned short      guMinutesDifferent;
+    unsigned short      guSecondsDifferent;
 
   public:
-    ParameterResultsInfo(const char * sParameterFilename): geClusterInformation(UNKOWN),
-                                                           geLocationInformation(UNKOWN),
-                                                           geRelativeRisks(UNKOWN),
-                                                           geSimulatedRatios(UNKOWN)
-                                                          {gParameterFilename = sParameterFilename;}
-    ~ParameterResultsInfo() {}
+    ParameterResultsInfo(const char * sParameterFilename);
+    ~ParameterResultsInfo();
 
     CompareType         GetClusterInformationType() const {return geClusterInformation;}
-    bool                GetHasMisMatches() const {return geClusterInformation == NOT_EQUAL ||
-                                                         geLocationInformation == NOT_EQUAL ||
-                                                         geRelativeRisks == NOT_EQUAL ||
-                                                         geSimulatedRatios == NOT_EQUAL;}
-    bool                GetHasMissingFiles() const {return geClusterInformation < EQUAL ||
-                                                         geLocationInformation < EQUAL ||
-                                                         geRelativeRisks < EQUAL ||
-                                                         geSimulatedRatios < EQUAL;}
+    bool                GetHasMisMatches() const;
+    bool                GetHasMissingFiles() const;
+    unsigned short      GetHoursDifferent() const {return guHoursDifferent;}
     CompareType         GetLocationInformationType() const {return geLocationInformation;}
     const ZdFileName  & GetFilename() const {return gParameterFilename;}
     const char        * GetFilenameString() const {return gParameterFilename.GetFullPath();}
+    unsigned short      GetMinutesDifferent() const {return guMinutesDifferent;}
     CompareType         GetRelativeRisksType() const {return geRelativeRisks;}
+    unsigned short      GetSecondsDifferent() const {return guSecondsDifferent;}
     CompareType         GetSimulatedRatiosType() const {return geSimulatedRatios;}
+    TimeDifferenceType  GetTimeDifferenceType() const {return geTimeDifferenceType;}
     void                SetClusterInformationType(CompareType eCompareType) {geClusterInformation = eCompareType;}
     void                SetLocationInformationType(CompareType eCompareType) {geLocationInformation = eCompareType;}
     void                SetRelativeRisksType(CompareType eCompareType) {geRelativeRisks = eCompareType;}
     void                SetSimulatedRatiosType(CompareType eCompareType) {geSimulatedRatios = eCompareType;}
+    void                SetTimeDifference(unsigned short uHours, unsigned short uMinutes, unsigned short uSeconds, TimeDifferenceType geTimeDifferenceType);
 };
 
 class TfrmMain : public TForm {
@@ -132,14 +132,15 @@ __published:	// IDE-managed Components
     void                                CompareRelativeRisksInformationFiles();
     void                                CompareSimulatedRatiosFiles();
     bool                                CompareTextFiles(const std::string & sMaster, const std::string & sCompare);
+    void                                CompareTimes();
     void                                EnableCompareActions();
     void                                EnableSaveResultsAction();
     void                                EnableStartAction();
     bool                                Execute(const AnsiString & sCommandLine);
     std::string                       & GetCompareFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename);
-    std::string                       & GetResultFileName(const ZdFileName & ParameterFilename, std::string & sResultFilename);
-    bool                                GetRunTime(const char * sResultFile, unsigned short& uHours, unsigned short& uMinutes, unsigned short& uSeconds);  
     AnsiString                        & GetDisplayTime(AnsiString & sDisplay);
+    std::string                       & GetResultFileName(const ZdFileName & ParameterFilename, std::string & sResultFilename);
+    bool                                GetRunTime(const char * sResultFile, unsigned short& uHours, unsigned short& uMinutes, unsigned short& uSeconds);
     bool                                PromptForCompareProgram();
 
   public:
