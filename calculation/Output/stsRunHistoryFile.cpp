@@ -52,9 +52,11 @@ stsRunHistoryFile::stsRunHistoryFile(const ZdString& sFileName, BasePrint& Print
       SetRunNumber();
    }
    catch (ZdException &x) {
-      PrintDirection.SatScanPrintWarning("The following error occured in attempting to log run history to file:\n");
-      PrintDirection.SatScanPrintWarning(x.GetErrorMessage());
-      PrintDirection.SatScanPrintWarning("\n");
+      PrintDirection.SatScanPrintWarning("Warning: Run history file \"%s\" is not accessible.\n", sFileName.GetCString());
+      PrintDirection.SatScanPrintWarning("         No history information will not be recorded.\n\n");
+      //PrintDirection.SatScanPrintWarning("The following error occured in attempting to log run history to file:\n");
+      //PrintDirection.SatScanPrintWarning(x.GetErrorMessage());
+      //PrintDirection.SatScanPrintWarning("\n");
    }
 }
 
@@ -115,12 +117,12 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
 }
 
 // formats the alive clusters only string to be written to file
-// pre:  iAnalysis type is an element of (PURELYSPATIAL, PURELYTEMPORAL, ...) enum defined in CParamaters
+// pre:  eAnalysisType type is an element of (PURELYSPATIAL, PURELYTEMPORAL, ...) enum defined in CParamaters
 // post: will return a "n/a" string if PurelySpatial or Prospective SpaceTime analysis, else will return
 //       "true" or "false" string
-void stsRunHistoryFile::GetAliveClustersOnlyString(ZdString& sTempValue, int iAnalysisType, bool bAliveOnly) {
+void stsRunHistoryFile::GetAliveClustersOnlyString(ZdString& sTempValue, AnalysisType eAnalysisType, bool bAliveOnly) {
    try {
-      if (iAnalysisType == PURELYSPATIAL || iAnalysisType == PROSPECTIVESPACETIME)
+      if (eAnalysisType == PURELYSPATIAL || eAnalysisType == PROSPECTIVESPACETIME)
          sTempValue = "n/a";
       else
          sTempValue = (bAliveOnly ? "true" : "false");
@@ -132,11 +134,11 @@ void stsRunHistoryFile::GetAliveClustersOnlyString(ZdString& sTempValue, int iAn
 }
 
 // converter function to turn the iType into a legible string for printing
-// pre :  iType is contained in (PURELYSPATIAL, PURELYTEMPORAL, SPACETIME, PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE)
+// pre :  eAnalysisType is contained in (PURELYSPATIAL, PURELYTEMPORAL, SPACETIME, PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE)
 // post : string will be assigned a formatted value based on iType
-void stsRunHistoryFile::GetAnalysisTypeString(ZdString& sTempValue, int iType) {
+void stsRunHistoryFile::GetAnalysisTypeString(ZdString& sTempValue, AnalysisType eAnalysisType) {
    try {
-      switch(iType) {
+      switch(eAnalysisType) {
          case PURELYSPATIAL :
             sTempValue = "Purely Spatial"; break;
          case PURELYTEMPORAL :
@@ -185,9 +187,9 @@ void stsRunHistoryFile::GetCasePrecisionString(ZdString& sTempValue, int iPrecis
 // them as ints to a legible string to be printed in the file
 // pre : 0 <= iUnits <= 3, sTempValue has been allocated
 // post: will assign the appropraite value to the string so that it can be printed
-void stsRunHistoryFile::GetIntervalUnitsString(ZdString& sTempValue, int iUnits, long lLength, int iAnalysisType) {
+void stsRunHistoryFile::GetIntervalUnitsString(ZdString& sTempValue, int iUnits, long lLength, AnalysisType eAnalysisType) {
    try {
-      if (iAnalysisType == PURELYSPATIAL)
+      if (eAnalysisType == PURELYSPATIAL)
          sTempValue = "n/a";
       else {
          sTempValue << ZdString::reset << lLength << " ";
@@ -217,15 +219,15 @@ void stsRunHistoryFile::GetIntervalUnitsString(ZdString& sTempValue, int iUnits,
 // post: sets sTempValue to the number and units of max geo extent
 void stsRunHistoryFile::GetMaxGeoExtentString(ZdString& sTempValue, const CParameters& params) {
    try {
-      if(params.m_nAnalysisType == PURELYTEMPORAL)
+      if(params.GetAnalysisType() == PURELYTEMPORAL)
          sTempValue = "n/a";
       else {
-         sTempValue.printf("%.2f", params.m_nMaxGeographicClusterSize);
+         sTempValue.printf("%.2f", params.GetMaximumGeographicClusterSize());
          sTempValue << " ";
-         if(params.m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)
+         if(params.GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE)
             sTempValue << "%";
          else {
-            if(params.m_nCoordType == CARTESIAN)
+            if(params.GetCoordinatesType() == CARTESIAN)
                sTempValue << "Cartesian Units";
             else
                sTempValue << "Kilometers";
@@ -243,7 +245,7 @@ void stsRunHistoryFile::GetMaxGeoExtentString(ZdString& sTempValue, const CParam
 // post: sets sTempValue to the number and units of max temporal extent
 void stsRunHistoryFile::GetMaxTemporalExtentString(ZdString& sTempValue, const CParameters& params) {
    try {
-      if (params.m_nAnalysisType == PURELYSPATIAL)
+      if (params.GetAnalysisType() == PURELYSPATIAL)
          sTempValue = "n/a";
       else {
          sTempValue.printf("%.2f",  params.GetInitialMaxTemporalClusterSize());
@@ -251,9 +253,9 @@ void stsRunHistoryFile::GetMaxTemporalExtentString(ZdString& sTempValue, const C
          if(params.GetInitialMaxTemporalClusterSizeType() == PERCENTAGETYPE)
             sTempValue << "%";
          else {
-            if(params.m_nIntervalUnits == 3)
+            if(params.GetTimeIntervalUnitsType() == DAY)
                sTempValue << "Days";
-            else if(params.m_nIntervalUnits == 2)
+            else if(params.GetTimeIntervalUnitsType() == MONTH)
                sTempValue << "Months";
             else
                sTempValue << "Years";
@@ -267,11 +269,11 @@ void stsRunHistoryFile::GetMaxTemporalExtentString(ZdString& sTempValue, const C
 }
 
 // a converter function to convert the stored int into a legible string to be printed
-// pre: iModel conatined in (POISSON, BERNOULLI, SPACETIMEPERMUTATION) and sTempValue allocated
+// pre: eProbabiltyModelType conatined in (POISSON, BERNOULLI, SPACETIMEPERMUTATION) and sTempValue allocated
 // post : string will contain the formatted value for printing
-void stsRunHistoryFile::GetProbabilityModelString(ZdString& sTempValue, int iModel) {
+void stsRunHistoryFile::GetProbabilityModelString(ZdString& sTempValue, ProbabiltyModelType eProbabiltyModelType) {
    try {
-      switch(iModel) {
+      switch(eProbabiltyModelType) {
          case POISSON :
             sTempValue = "Poisson";  break;
          case BERNOULLI :
@@ -289,11 +291,11 @@ void stsRunHistoryFile::GetProbabilityModelString(ZdString& sTempValue, int iMod
 }
 
 // converter function to make a legible string for printing
-// pre : iRate conatined in (HIGH, LOW, HIGHANDLOW) and sTempValue allocated
+// pre : eAreaRateType conatined in (HIGH, LOW, HIGHANDLOW) and sTempValue allocated
 // post : will assign the appropraite formated value to sTempValue
-void stsRunHistoryFile::GetRatesString(ZdString& sTempValue, int iRate) {
+void stsRunHistoryFile::GetRatesString(ZdString& sTempValue, AreaRateType eAreaRateType) {
    try {
-      switch (iRate) {
+      switch (eAreaRateType) {
          case HIGH :
             sTempValue = "High"; break;
          case LOW :
@@ -313,9 +315,10 @@ void stsRunHistoryFile::GetRatesString(ZdString& sTempValue, int iRate) {
 // converts the iType to a legible string for printing
 //  pre : iType is conatined in (NOTADJUSTED, NONPARAMETRIC, LINEAR)
 // post : string will be assigned a formatted value based upon iType
-void stsRunHistoryFile::GetTimeAdjustmentString(ZdString& sTempValue, int iType, int iAnalysisType, int iModel) {
+void stsRunHistoryFile::GetTimeAdjustmentString(ZdString& sTempValue, int iType, AnalysisType eAnalysisType,
+                                                ProbabiltyModelType eProbabiltyModelType) {
    try {
-      if (iModel != POISSON || iAnalysisType == PURELYSPATIAL)
+      if (eProbabiltyModelType != POISSON || eAnalysisType == PURELYSPATIAL)
          sTempValue = "n/a";
       else {
          switch(iType) {
@@ -392,19 +395,19 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ADDITIONAL_OUTPUT_FILES_FIELD));
 
       // probability model field
-      GetProbabilityModelString(sTempValue, params.m_nModel);
+      GetProbabilityModelString(sTempValue, params.GetProbabiltyModelType());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, PROB_MODEL_FIELD));
 
       // rates(high, low or both) field
-      GetRatesString(sTempValue, params.m_nAreas);
+      GetRatesString(sTempValue, params.GetAreaScanRateType());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, RATES_FIELD));
 
       // coordinate type field
-      sTempValue = ((params.m_nCoordType == CARTESIAN) ? "Cartesian" : "LatLong");
+      sTempValue = ((params.GetCoordinatesType() == CARTESIAN) ? "Cartesian" : "LatLong");
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, COORD_TYPE_FIELD));
 
       // analysis type field
-      GetAnalysisTypeString(sTempValue, params.m_nAnalysisType);
+      GetAnalysisTypeString(sTempValue, params.GetAnalysisType());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ANALYSIS_TYPE_FIELD));
 
       SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->m_nTotalCases, GetFieldNumber(gvFields, NUM_CASES_FIELD));   // total number of cases field
@@ -412,7 +415,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->m_nTracts, GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));     // number of geographic areas field
 
       // precision of case times field
-      GetCasePrecisionString(sTempValue, params.m_nPrecision);
+      GetCasePrecisionString(sTempValue, params.GetPrecisionOfTimesType());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, PRECISION_TIMES_FIELD));
 
       //  max geographic extent field
@@ -424,21 +427,21 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, MAX_TIME_EXTENT_FIELD));
 
       // time trend adjustment field
-      GetTimeAdjustmentString(sTempValue, params.m_nTimeAdjustType, params.m_nAnalysisType, params.m_nModel);
+      GetTimeAdjustmentString(sTempValue, params.GetTimeTrendAdjustmentType(), params.GetAnalysisType(), params.GetProbabiltyModelType());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, TIME_TREND_ADJUSTMENT_FIELD));
 
       // covariates number
       SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->gpCats->catGetNumEls(), GetFieldNumber(gvFields, COVARIATES_FIELD));
 
       SetBoolField(*pRecord, params.UseSpecialGrid(), GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field
-      SetStringField(*pRecord, params.m_szStartDate, GetFieldNumber(gvFields, START_DATE_FIELD));  // start date field
-      SetStringField(*pRecord, params.m_szEndDate, GetFieldNumber(gvFields, END_DATE_FIELD)); // end date field
+      SetStringField(*pRecord, params.GetStudyPeriodStartDate().c_str(), GetFieldNumber(gvFields, START_DATE_FIELD));  // start date field
+      SetStringField(*pRecord, params.GetStudyPeriodEndDate().c_str(), GetFieldNumber(gvFields, END_DATE_FIELD)); // end date field
 
-      GetAliveClustersOnlyString(sTempValue, params.m_nAnalysisType, params.m_bAliveClustersOnly);
+      GetAliveClustersOnlyString(sTempValue, params.GetAnalysisType(), params.GetAliveClustersOnly());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ALIVE_ONLY_FIELD)); // alive clusters only field
 
       // interval field
-      GetIntervalUnitsString(sTempValue, params.m_nIntervalUnits, params.m_nIntervalLength, params.m_nAnalysisType);
+      GetIntervalUnitsString(sTempValue, params.GetTimeIntervalUnitsType(), params.GetTimeIntervalLength(), params.GetAnalysisType());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, INTERVAL_FIELD));
 
       // p-value field
@@ -446,7 +449,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
          SetDoubleField(*pRecord, dVal, GetFieldNumber(gvFields, P_VALUE_FIELD));
       else
          pRecord->PutBlank(GetFieldNumber(gvFields, P_VALUE_FIELD));
-      SetDoubleField(*pRecord, (double)params.m_nReplicas, GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
+      SetDoubleField(*pRecord, (double)params.GetNumReplicationsRequested(), GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
 
       if(!gbSequential && gbPrintPVal) {    // only print 0.01 and 0.05 cutoffs if pVals are printed, else this would result in access underrun - AJV
          SetDoubleField(*pRecord, pAnalysis.GetSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
@@ -511,24 +514,24 @@ void stsRunHistoryFile::SetAdditionalOutputFileNameString(ZdString& sOutputFileN
    try {
       sOutputFileNames.Clear();
 
-      if(params.m_bSaveSimLogLikelihoods && params.m_nReplicas)
+      if(params.GetOutputSimLoglikeliRatiosAscii() && params.GetNumReplicationsRequested())
          ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".llr.txt");
-      if (params.GetDBaseOutputLogLikeli() && params.m_nReplicas)
+      if (params.GetOutputSimLoglikeliRatiosDBase() && params.GetNumReplicationsRequested())
          ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".llr.dbf");
 
-      if(params.m_bOutputRelRisks)
+      if(params.GetOutputRelativeRisksAscii())
          ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".rr.txt");
-      if(params.GetDBaseOutputRelRisks())
+      if(params.GetOutputRelativeRisksDBase())
          ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".rr.dbf");
 
-      if(params.m_bOutputCensusAreas)
+      if(params.GetOutputAreaSpecificAscii())
          ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".gis.txt");
-      if(params.GetOutputAreaSpecificDBF())
+      if(params.GetOutputAreaSpecificDBase())
          ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".gis.dbf");
 
-      if(params.m_bMostLikelyClusters)
+      if(params.GetOutputClusterLevelAscii())
          ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".col.txt");
-      if(params.GetOutputClusterLevelDBF())
+      if(params.GetOutputClusterLevelDBase())
          ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".col.dbf");
 
    }

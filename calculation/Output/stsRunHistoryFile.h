@@ -37,15 +37,15 @@ class stsRunHistoryFile {
       BasePrint*                        gpPrintDirection;
       bool                              gbPrintPVal, gbSequential;
 
-      void      GetAliveClustersOnlyString(ZdString& sTempValue, int iAnalysisType, bool bAliveOnly);
-      void      GetAnalysisTypeString(ZdString& sTempValue, int iType);
+      void      GetAliveClustersOnlyString(ZdString& sTempValue, AnalysisType eAnalysisType, bool bAliveOnly);
+      void      GetAnalysisTypeString(ZdString& sTempValue, AnalysisType eAnalysisType);
       void      GetCasePrecisionString(ZdString& sTempValue, int iPrecision);
-      void      GetIntervalUnitsString(ZdString& sTempValue, int iUnits, long lLength, int iAnalysisType);
+      void      GetIntervalUnitsString(ZdString& sTempValue, int iUnits, long lLength, AnalysisType eAnalysisType);
       void      GetMaxGeoExtentString(ZdString& sTempValue, const CParameters& params);
       void      GetMaxTemporalExtentString(ZdString& sTempValue, const CParameters& params);
-      void      GetProbabilityModelString(ZdString& sTempValue, int iModel);
-      void      GetRatesString(ZdString& sTempValue, int iRate);
-      void      GetTimeAdjustmentString(ZdString& sTempValue, int iType, int iAnalysisType, int iModel);
+      void      GetProbabilityModelString(ZdString& sTempValue, ProbabiltyModelType eProbabiltyModelType);
+      void      GetRatesString(ZdString& sTempValue, AreaRateType eAreaRateType);
+      void      GetTimeAdjustmentString(ZdString& sTempValue, int iType, AnalysisType eAnalysisType, ProbabiltyModelType eProbabiltyModelType);
       void	Init();
       void      ReplaceExtensionAndAppend(ZdString& sOutputFileNames, const ZdFileName& sSourceFileName, const ZdString& sReplacementExtension);
       void      SetAdditionalOutputFileNameString(ZdString& sOutputFileNames, const CParameters& params);
