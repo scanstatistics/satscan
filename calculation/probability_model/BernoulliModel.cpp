@@ -14,17 +14,18 @@ CBernoulliModel::~CBernoulliModel() {}
 /** calls appropriate CSaTScanData methods for reading input files */
 bool CBernoulliModel::ReadData() {
   try {
+    gData.gPopulationCategories.SetAggregateCategories(true); // temporary measure to prevent covariates from being read
     if (!gData.ReadCoordinatesFile())
       return false;
     if (! gData.ReadCaseFile())
       return false;
     if (! gData.ReadControlFile())
       return false;
-    //synchronize case and control structures that breakdown data into categories
-    //so that we access them with same last dimension -- for speed reasons
-    ThreeDimensionArrayHandler<count_t>::SynchronizeThirdDimension(*(gData.gpCategoryCasesHandler), *(gData.gpCategoryControlsHandler), 0);
-    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
-      TwoDimensionArrayHandler<count_t>::SynchronizeSecondDimension(*(gData.gpCasesByTimeByCategoryHandler), *(gData.gpControlsByTimeByCategoryHandler), 0);
+//    //synchronize case and control structures that breakdown data into categories
+//    //so that we access them with same last dimension -- for speed reasons
+//    ThreeDimensionArrayHandler<count_t>::SynchronizeThirdDimension(*(gData.gpCategoryCasesHandler), *(gData.gpCategoryControlsHandler), 0);
+//    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
+//      TwoDimensionArrayHandler<count_t>::SynchronizeSecondDimension(*(gData.gpCasesByTimeByCategoryHandler), *(gData.gpControlsByTimeByCategoryHandler), 0);
     if (!(gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL))
       if (gParameters.UseMaxCirclePopulationFile() && !gData.ReadMaxCirclePopulationFile())
         return false;
@@ -41,25 +42,25 @@ bool CBernoulliModel::ReadData() {
 /** calculates expected number of cases */
 bool CBernoulliModel::CalculateMeasure() {
   int                   i, j, k;
-  count_t            ** ppCases(gData.GetCasesArray()),
+  count_t            ** ppCases(gData.GetCasesArray())/*,
                     *** pppCategoryCases(gData.gpCategoryCasesHandler->GetArray()),
-                     ** ppCasesByTimeByCategory(0);
-  count_t            ** ppControls(gData.GetControlsArray()),
+                     ** ppCasesByTimeByCategory(0)*/;
+  count_t            ** ppControls(gData.GetControlsArray())/*,
                     *** pppCategoryControls(gData.gpCategoryControlsHandler->GetArray()),
-                     ** ppControlsByTimeByCategory(0);
-  measure_t          ** ppMeasure, *** pppCategoryMeasure, ** ppMeasureByTimeByCategory=0;
+                     ** ppControlsByTimeByCategory(0)*/;
+  measure_t          ** ppMeasure/*, *** pppCategoryMeasure, ** ppMeasureByTimeByCategory=0*/;
 
   try {
     gData.gpMeasureHandler = new TwoDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals+1, gData.m_nTracts);
     ppMeasure = gData.gpMeasureHandler->GetArray();
-    gData.gpCategoryMeasureHandler = new ThreeDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals+1, gData.m_nTracts, gData.gPopulationCategories.GetNumPopulationCategories());
-    pppCategoryMeasure = gData.gpCategoryMeasureHandler->GetArray();
-    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION) {
-      gData.gpMeasureByTimeByCategoryHandler = new TwoDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals, gData.gPopulationCategories.GetNumPopulationCategories());
-      ppMeasureByTimeByCategory = gData.gpMeasureByTimeByCategoryHandler->GetArray();
-      ppCasesByTimeByCategory = gData.gpCasesByTimeByCategoryHandler->GetArray();
-      ppControlsByTimeByCategory = gData.gpControlsByTimeByCategoryHandler->GetArray();
-    }
+//    gData.gpCategoryMeasureHandler = new ThreeDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals+1, gData.m_nTracts, gData.gPopulationCategories.GetNumPopulationCategories());
+//    pppCategoryMeasure = gData.gpCategoryMeasureHandler->GetArray();
+//    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION) {
+//      gData.gpMeasureByTimeByCategoryHandler = new TwoDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals, gData.gPopulationCategories.GetNumPopulationCategories());
+//      ppMeasureByTimeByCategory = gData.gpMeasureByTimeByCategoryHandler->GetArray();
+//      ppCasesByTimeByCategory = gData.gpCasesByTimeByCategoryHandler->GetArray();
+//      ppControlsByTimeByCategory = gData.gpControlsByTimeByCategoryHandler->GetArray();
+//    }
     gData.m_nTotalCases    = 0;
     gData.m_nTotalControls = 0;
     gData.m_nTotalMeasure  = 0;
@@ -83,31 +84,31 @@ bool CBernoulliModel::CalculateMeasure() {
     if (gData.m_nTotalControls == 0)
       SSGenerateException("Error: No controls found in input data.\n", "CBernoulliModel");
 
-    for (k=0; k < gData.GetPopulationCategories().GetNumPopulationCategories(); ++k) {
-       for (i=0; i < gData.m_nTimeIntervals; ++i) {
-          for (j=0; j < gData.m_nTracts; ++j)
-             pppCategoryMeasure[i][j][k] = pppCategoryCases[i][j][k] + pppCategoryControls[i][j][k];
-          if (ppMeasureByTimeByCategory)
-            ppMeasureByTimeByCategory[i][k] = ppCasesByTimeByCategory[i][k] + ppControlsByTimeByCategory[i][k];
-       }
-    }
+//    for (k=0; k < gData.GetPopulationCategories().GetNumPopulationCategories(); ++k) {
+//       for (i=0; i < gData.m_nTimeIntervals; ++i) {
+//          for (j=0; j < gData.m_nTracts; ++j)
+//             pppCategoryMeasure[i][j][k] = pppCategoryCases[i][j][k] + pppCategoryControls[i][j][k];
+//          if (ppMeasureByTimeByCategory)
+//            ppMeasureByTimeByCategory[i][k] = ppCasesByTimeByCategory[i][k] + ppControlsByTimeByCategory[i][k];
+//       }
+//    }
 
     gData.m_nTotalPop = gData.m_nTotalMeasure;
 
-    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
-        gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC ||
-        gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
-      //need measure by time intervals for time stratified adjustment
-      gData.SetMeasureByTimeIntervalArray();
-    if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
-      //procedure above produces cumulative measure, for spatial variation analysis
-      //we also need the non-cumulative measure/
-      gData.SetNonCumulativeMeasure();
+//    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
+//        gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC ||
+//        gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
+//      //need measure by time intervals for time stratified adjustment
+//      gData.SetMeasureByTimeIntervalArray();
+//    if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
+//      //procedure above produces cumulative measure, for spatial variation analysis
+//      //we also need the non-cumulative measure/
+//      gData.SetNonCumulativeMeasure();
   }
   catch (ZdException &x) {
     delete gData.gpMeasureHandler; gData.gpMeasureHandler=0;
-    delete gData.gpCategoryMeasureHandler; gData.gpCategoryMeasureHandler=0;
-    delete gData.gpMeasureByTimeByCategoryHandler; gData.gpMeasureByTimeByCategoryHandler=0;
+//    delete gData.gpCategoryMeasureHandler; gData.gpCategoryMeasureHandler=0;
+//    delete gData.gpMeasureByTimeByCategoryHandler; gData.gpMeasureByTimeByCategoryHandler=0;
     x.AddCallpath("CalculateMeasure()","CBernoulliModel");
     throw;
   }
@@ -171,9 +172,9 @@ double CBernoulliModel::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMC
 void CBernoulliModel::MakeData(int iSimulationNumber) {
   //reset seed to simulation number
   m_RandomNumberGenerator.SetSeed(iSimulationNumber + m_RandomNumberGenerator.GetDefaultSeed());
-  if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
-    MakeDataTimeStratified();
-  else
+//  if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
+//    MakeDataTimeStratified();
+//  else
     MakeDataUnderNullHypothesis();
 }
 
@@ -256,16 +257,16 @@ void CBernoulliModel::MakeDataUnderNullHypothesis() {
   tract_t                       t;
   int                           i, c;
   count_t                    ** ppSimCases(gData.GetSimCasesArray()), nCumCounts, nCumMeasure, tNumCases, tNumControls;
-  measure_t                  ** ppMeasure(gData.gpMeasureHandler->GetArray()),
-                            *** pppCategoryMeasure(gData.gpCategoryMeasureHandler->GetArray());
+  measure_t                  ** ppMeasure(gData.gpMeasureHandler->GetArray())/*,
+                            *** pppCategoryMeasure(gData.gpCategoryMeasureHandler->GetArray())*/;
   std::vector<count_t>          RandCounts;
 
   // reset simulation cases to zero
   gData.gpSimCasesHandler->Set(0);
 
-  for (c=0; c < gData.gPopulationCategories.GetNumPopulationCategories(); ++c) {
-     tNumCases = gData.gPopulationCategories.GetNumCategoryCases(c);
-     tNumControls = gData.gPopulationCategories.GetNumCategoryControls(c);
+//  for (c=0; c < gData.gPopulationCategories.GetNumPopulationCategories(); ++c) {
+     tNumCases = gData.m_nTotalCases; //gData.gPopulationCategories.GetNumCategoryCases(c);
+     tNumControls = gData.m_nTotalControls; //gData.gPopulationCategories.GetNumCategoryControls(c);
      //use counts from entire data set to determine whether cases or controls are used in MakeDataB()
      if (gData.m_nTotalCases < gData.m_nTotalControls)
        nCumCounts = tNumCases;
@@ -277,16 +278,17 @@ void CBernoulliModel::MakeDataUnderNullHypothesis() {
      for (t=(tract_t)(gData.m_nTotalTractsAtStart-1); t >= 0; --t) {
         for (i = gData.m_nTimeIntervals-1; i >= 0; --i) {
            if (i == gData.m_nTimeIntervals-1)
-             nCumMeasure -= (count_t)(pppCategoryMeasure[i][t][c]);
+             nCumMeasure -= (count_t)(ppMeasure[i][t]/*pppCategoryMeasure[i][t][c]*/);
            else
-             nCumMeasure -= (count_t)(pppCategoryMeasure[i][t][c] - pppCategoryMeasure[i+1][t][c]);
+             //nCumMeasure -= (count_t)(pppCategoryMeasure[i][t][c] - pppCategoryMeasure[i+1][t][c]);
+             nCumMeasure -= (count_t)(ppMeasure[i][t] - ppMeasure[i+1][t]);
            while (nCumCounts > 0 && RandCounts[nCumCounts-1] > nCumMeasure) {
                 ppSimCases[i][t]++;
                 nCumCounts--;
            }
         }
      }
-  }
+//  }
 
   //set as cumulative
   for (i=gData.m_nTimeIntervals-2; i >= 0; i--)
