@@ -28,7 +28,7 @@
  **********************************************************************/
 /** Current version information. */
 #define VERSION_NUMBER "3.1.2"
-#define VERSION_DATE "July 9, 2003"
+#define VERSION_DATE "July 16, 2003"
 /** New defines for ellipsoid calculations. */
 #define MAXELLIPSESHAPES 10
 /** PI declaration - this is now defined in math.h but changing may cause
