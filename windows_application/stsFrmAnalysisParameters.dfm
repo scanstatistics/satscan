@@ -45,7 +45,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 493
     Height = 389
-    ActivePage = tbOutputFiles
+    ActivePage = tbAnalysis
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input'
@@ -70,7 +70,7 @@ object frmAnalysis: TfrmAnalysis
         Height = 151
         Color = clBtnFace
         ParentColor = False
-        TabOrder = 4
+        TabOrder = 0
         object Label10: TLabel
           Left = 136
           Top = 13
@@ -196,7 +196,7 @@ object frmAnalysis: TfrmAnalysis
           Items.Strings = (
             'Yes'
             'No')
-          TabOrder = 4
+          TabOrder = 10
           OnClick = rgpPrecisionTimesClick
         end
         object edtCaseFileName: TEdit
@@ -206,7 +206,7 @@ object frmAnalysis: TfrmAnalysis
           Height = 21
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 0
+          TabOrder = 6
           OnChange = edtCaseFileNameChange
         end
         object edtControlFileName: TEdit
@@ -216,7 +216,7 @@ object frmAnalysis: TfrmAnalysis
           Height = 21
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 2
+          TabOrder = 8
           OnChange = edtControlFileNameChange
         end
         object btnCaseBrowse: TButton
@@ -234,7 +234,7 @@ object frmAnalysis: TfrmAnalysis
           ParentFont = False
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 1
+          TabOrder = 7
           OnClick = btnCaseBrowseClick
         end
         object btnControlBrowse: TButton
@@ -252,7 +252,7 @@ object frmAnalysis: TfrmAnalysis
           ParentFont = False
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 3
+          TabOrder = 9
           OnClick = btnControlBrowseClick
         end
         object edtStudyPeriodEndDateYear: TEdit
@@ -261,7 +261,7 @@ object frmAnalysis: TfrmAnalysis
           Width = 33
           Height = 21
           MaxLength = 4
-          TabOrder = 5
+          TabOrder = 3
           Text = '1900'
           OnExit = edtStudyPeriodEndDateExit
           OnKeyPress = NaturalNumberKeyPress
@@ -272,7 +272,7 @@ object frmAnalysis: TfrmAnalysis
           Width = 33
           Height = 21
           MaxLength = 4
-          TabOrder = 6
+          TabOrder = 0
           Text = '1900'
           OnExit = edtStudyPeriodStartDateExit
           OnKeyPress = NaturalNumberKeyPress
@@ -284,7 +284,7 @@ object frmAnalysis: TfrmAnalysis
           Height = 21
           Enabled = False
           MaxLength = 2
-          TabOrder = 7
+          TabOrder = 1
           Text = '1'
           OnExit = edtStudyPeriodStartDateExit
           OnKeyPress = NaturalNumberKeyPress
@@ -296,7 +296,7 @@ object frmAnalysis: TfrmAnalysis
           Height = 21
           Enabled = False
           MaxLength = 2
-          TabOrder = 8
+          TabOrder = 4
           Text = '12'
           OnExit = edtStudyPeriodEndDateExit
           OnKeyPress = NaturalNumberKeyPress
@@ -308,7 +308,7 @@ object frmAnalysis: TfrmAnalysis
           Height = 21
           Enabled = False
           MaxLength = 2
-          TabOrder = 9
+          TabOrder = 5
           Text = '31'
           OnExit = edtStudyPeriodEndDateExit
           OnKeyPress = NaturalNumberKeyPress
@@ -320,7 +320,7 @@ object frmAnalysis: TfrmAnalysis
           Height = 21
           Enabled = False
           MaxLength = 2
-          TabOrder = 10
+          TabOrder = 2
           Text = '1'
           OnExit = edtStudyPeriodStartDateExit
           OnKeyPress = NaturalNumberKeyPress
@@ -333,7 +333,7 @@ object frmAnalysis: TfrmAnalysis
         Height = 21
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 0
+        TabOrder = 1
         OnChange = edtPopFileNameChange
       end
       object btnPopBrowse: TButton
@@ -351,7 +351,7 @@ object frmAnalysis: TfrmAnalysis
         ParentFont = False
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 1
+        TabOrder = 2
         OnClick = btnPopBrowseClick
       end
       object GroupBox2: TGroupBox
@@ -359,7 +359,7 @@ object frmAnalysis: TfrmAnalysis
         Top = 208
         Width = 466
         Height = 111
-        TabOrder = 2
+        TabOrder = 3
         object Label6: TLabel
           Left = 8
           Top = 12
@@ -445,15 +445,15 @@ object frmAnalysis: TfrmAnalysis
         end
       end
       object btnImportFile: TButton
-        Left = 396
+        Left = 383
         Top = 328
-        Width = 76
+        Width = 90
         Height = 24
         Hint = 'Import File Wizard'
         Caption = 'Import Wizard'
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 3
+        TabOrder = 4
         OnClick = btnImportFileClick
       end
     end
@@ -475,7 +475,7 @@ object frmAnalysis: TfrmAnalysis
         BiDiMode = bdLeftToRight
         MaxLength = 9
         ParentBiDiMode = False
-        TabOrder = 3
+        TabOrder = 4
         Text = '999'
         OnExit = edtMontCarloRepsExit
         OnKeyPress = NaturalNumberKeyPress
@@ -634,7 +634,7 @@ object frmAnalysis: TfrmAnalysis
         Width = 145
         Height = 121
         Caption = 'Time Intervals'
-        TabOrder = 4
+        TabOrder = 3
         object lblTimeIntervalUnits: TLabel
           Left = 10
           Top = 21
@@ -694,17 +694,51 @@ object frmAnalysis: TfrmAnalysis
           OnKeyPress = NaturalNumberKeyPress
         end
       end
-      object btnAdvanced1: TButton
-        Left = 396
+      object btnAdvanced1_Yes: TBitBtn
+        Left = 383
         Top = 328
-        Width = 76
-        Height = 24
-        Hint = 'Advanced Analysis Features'
+        Width = 90
+        Height = 25
+        Hint = 'Advanced Features'
         Caption = 'Advanced...'
+        Default = True
         ParentShowHint = False
         ShowHint = True
         TabOrder = 5
+        Visible = False
         OnClick = btnAdvancedParametersClick
+        Glyph.Data = {
+          DE010000424DDE01000000000000760000002800000024000000120000000100
+          0400000000006801000000000000000000001000000000000000000000000000
+          80000080000000808000800000008000800080800000C0C0C000808080000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333333
+          3333333333333333333333330000333333333333333333333333F33333333333
+          00003333344333333333333333388F3333333333000033334224333333333333
+          338338F3333333330000333422224333333333333833338F3333333300003342
+          222224333333333383333338F3333333000034222A22224333333338F338F333
+          8F33333300003222A3A2224333333338F3838F338F33333300003A2A333A2224
+          33333338F83338F338F33333000033A33333A222433333338333338F338F3333
+          0000333333333A222433333333333338F338F33300003333333333A222433333
+          333333338F338F33000033333333333A222433333333333338F338F300003333
+          33333333A222433333333333338F338F00003333333333333A22433333333333
+          3338F38F000033333333333333A223333333333333338F830000333333333333
+          333A333333333333333338330000333333333333333333333333333333333333
+          0000}
+        NumGlyphs = 2
+      end
+      object btnAdvanced1_No: TBitBtn
+        Left = 383
+        Top = 328
+        Width = 90
+        Height = 25
+        Hint = 'Advanced Features'
+        Caption = 'Advanced...'
+        Default = True
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 6
+        OnClick = btnAdvancedParametersClick
+        NumGlyphs = 2
       end
     end
     object tbOutputFiles: TTabSheet
@@ -886,17 +920,51 @@ object frmAnalysis: TfrmAnalysis
           OnClick = btnResultFileBrowseClick
         end
       end
-      object btnAdvanced2: TButton
-        Left = 396
+      object btnAdvanced2_Yes: TBitBtn
+        Left = 383
         Top = 328
-        Width = 76
-        Height = 24
-        Hint = 'Advanced Output Features'
+        Width = 90
+        Height = 25
+        Hint = 'Advanced Features'
         Caption = 'Advanced...'
+        Default = True
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 3
+        Visible = False
+        OnClick = btnAdvancedParametersClick
+        Glyph.Data = {
+          DE010000424DDE01000000000000760000002800000024000000120000000100
+          0400000000006801000000000000000000001000000000000000000000000000
+          80000080000000808000800000008000800080800000C0C0C000808080000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00333333333333
+          3333333333333333333333330000333333333333333333333333F33333333333
+          00003333344333333333333333388F3333333333000033334224333333333333
+          338338F3333333330000333422224333333333333833338F3333333300003342
+          222224333333333383333338F3333333000034222A22224333333338F338F333
+          8F33333300003222A3A2224333333338F3838F338F33333300003A2A333A2224
+          33333338F83338F338F33333000033A33333A222433333338333338F338F3333
+          0000333333333A222433333333333338F338F33300003333333333A222433333
+          333333338F338F33000033333333333A222433333333333338F338F300003333
+          33333333A222433333333333338F338F00003333333333333A22433333333333
+          3338F38F000033333333333333A223333333333333338F830000333333333333
+          333A333333333333333338330000333333333333333333333333333333333333
+          0000}
+        NumGlyphs = 2
+      end
+      object btnAdvanced2_No: TBitBtn
+        Left = 383
+        Top = 328
+        Width = 90
+        Height = 25
+        Hint = 'Advanced Features'
+        Caption = 'Advanced...'
+        Default = True
         ParentShowHint = False
         ShowHint = True
         TabOrder = 2
         OnClick = btnAdvancedParametersClick
+        NumGlyphs = 2
       end
     end
   end

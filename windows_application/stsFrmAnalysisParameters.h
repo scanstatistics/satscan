@@ -12,6 +12,7 @@
 #include <io.h>
 #include <Menus.hpp>
 #include <Buttons.hpp>
+#include <graphics.hpp>
 #include "JulianDates.h"
 #include "Parameters.h"
 #include "stsBaseAnalysisChildForm.h"
@@ -85,8 +86,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TRadioButton *rdoUnitMonths;
    TRadioButton *rdoUnitDay;
    TEdit *edtTimeIntervalLength;
-   TButton *btnAdvanced1;
-   TButton *btnAdvanced2;
    TButton *btnImportFile;
    TLabel *Label11;
    TLabel *Label13;
@@ -113,6 +112,10 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TLabel *Label15;
    TLabel *Label17;
    TLabel *Label18;
+   TBitBtn *btnAdvanced1_Yes;
+   TBitBtn *btnAdvanced1_No;
+   TBitBtn *btnAdvanced2_Yes;
+   TBitBtn *btnAdvanced2_No;
    
    void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
    void __fastcall rgpPrecisionTimesClick(TObject *Sender);
@@ -149,6 +152,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     PrintNull                   gNullPrint;
     CParameters                 gParameters;
     TfrmAdvancedParameters    * gpfrmAdvancedParameters;
+    Graphics::TBitmap         * gpBmpAdvanced;
 
     void                        Check_IntervalLength();
     void                        CheckAnalysisParams();

@@ -1233,6 +1233,19 @@ void TfrmAnalysis::ShowAdvancedFeaturesDialog() {
      if (PageControl1->ActivePage->Caption == "Output")
         bAnalysis = false;
      gpfrmAdvancedParameters->ShowDialog(0, bAnalysis);
+     // PAG - update Advanced buttons if parameters were set
+     btnAdvanced1_No->Visible = false;
+     btnAdvanced1_Yes->Visible = false;
+     if (gpfrmAdvancedParameters->GetDefaultsSetForAnalysisOptions())
+        btnAdvanced1_No->Visible = true;
+     else
+        btnAdvanced1_Yes->Visible = true;
+     btnAdvanced2_No->Visible = false;
+     btnAdvanced2_Yes->Visible = false;
+     if (gpfrmAdvancedParameters->GetDefaultsSetForOutputOptions())
+        btnAdvanced2_No->Visible = true;
+     else
+        btnAdvanced2_Yes->Visible = true;
    }
    catch (ZdException & x) {
      x.AddCallpath("ShowAdvancedFeatureDialog()", "TfrmAnalysis");
