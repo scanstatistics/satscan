@@ -677,9 +677,9 @@ double CAnalysis::FindTopRatio(const AbtractDataStreamGateway & DataGateway) {
 
 CMeasureList * CAnalysis::GetNewMeasureListObject() const {
   switch (m_pParameters->GetAreaScanRateType()) {
-    case HIGH       : return new CMinMeasureList(*m_pData, *gpLikelihoodCalculator, *gpPrintDirection);
-    case LOW        : return new CMaxMeasureList(*m_pData, *gpLikelihoodCalculator, *gpPrintDirection);
-    case HIGHANDLOW : return new CMinMaxMeasureList(*m_pData, *gpLikelihoodCalculator, *gpPrintDirection);
+    case HIGH       : return new CMinMeasureList(*m_pData, *gpLikelihoodCalculator);
+    case LOW        : return new CMaxMeasureList(*m_pData, *gpLikelihoodCalculator);
+    case HIGHANDLOW : return new CMinMaxMeasureList(*m_pData, *gpLikelihoodCalculator);
     default         : ZdGenerateException("Unknown incidence rate specifier \"%d\".","MonteCarlo()",
                                           m_pParameters->GetAreaScanRateType());
   }

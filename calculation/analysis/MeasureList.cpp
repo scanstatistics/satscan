@@ -3,8 +3,8 @@
 #include "MeasureList.h"
 
 /** Constructor */
-CMeasureList::CMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator, BasePrint & PrintDirection)
-             : gSaTScanData(SaTScanData), gPrintDirection(PrintDirection), gLikelihoodCalculator(LikelihoodCalculator) {
+CMeasureList::CMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator)
+             : gSaTScanData(SaTScanData), gLikelihoodCalculator(LikelihoodCalculator) {
   Setup();
 }
 
@@ -91,8 +91,8 @@ void CMeasureList::Setup() {
 }
 
 /** Constructor */
-CMinMeasureList::CMinMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator, BasePrint & PrintDirection)
-                :CMeasureList(SaTScanData, LikelihoodCalculator, PrintDirection) {
+CMinMeasureList::CMinMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator)
+                :CMeasureList(SaTScanData, LikelihoodCalculator) {
   try {
     Init();
     Setup();
@@ -207,8 +207,8 @@ void CMinMeasureList::Setup() {
 
 
 /** Constructor */
-CMaxMeasureList::CMaxMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator, BasePrint & PrintDirection)
-                :CMeasureList(SaTScanData, LikelihoodCalculator, PrintDirection) {
+CMaxMeasureList::CMaxMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator)
+                :CMeasureList(SaTScanData, LikelihoodCalculator) {
   try {
     Init();
     Setup();
@@ -301,8 +301,8 @@ void CMaxMeasureList::Setup() {
 
 
 /** Constructor */
-CMinMaxMeasureList::CMinMaxMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator, BasePrint & PrintDirection)
-                   :CMeasureList(SaTScanData, LikelihoodCalculator, PrintDirection) {
+CMinMaxMeasureList::CMinMaxMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator)
+                   :CMeasureList(SaTScanData, LikelihoodCalculator) {
   try {
     Init();
     Setup();

@@ -11,7 +11,6 @@ class CMeasureList {
     void                        Setup();
 
   protected:
-    BasePrint                 & gPrintDirection;
     const CSaTScanData        & gSaTScanData;
     AbstractLikelihoodCalculator & gLikelihoodCalculator;
     std::vector<int>            gvCalculationBoundries;
@@ -23,9 +22,7 @@ class CMeasureList {
     virtual void                SetMeasures() = 0;
 
   public:
-            CMeasureList(const CSaTScanData & SaTScanData,
-                         AbstractLikelihoodCalculator & LikelihoodCalculator,
-                         BasePrint & PrintDirection);
+            CMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator);
     virtual ~CMeasureList();
 
     virtual void                AddMeasure(count_t n, measure_t u) = 0;
@@ -48,9 +45,7 @@ class CMinMeasureList : public CMeasureList {
     virtual void                SetMeasures();
 
   public:
-            CMinMeasureList(const CSaTScanData & SaTScanData,
-                            AbstractLikelihoodCalculator & LikelihoodCalculator,            
-                            BasePrint & PrintDirection);
+            CMinMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator);
     virtual ~CMinMeasureList();
 
     inline virtual void         AddMeasure(count_t n, measure_t u);
@@ -75,9 +70,7 @@ class CMaxMeasureList : public CMeasureList {
     virtual void                SetMeasures();
 
   public:
-            CMaxMeasureList(const CSaTScanData & SaTScanData,
-                            AbstractLikelihoodCalculator & LikelihoodCalculator,
-                            BasePrint & PrintDirection);
+            CMaxMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator);
     virtual ~CMaxMeasureList();
 
     inline virtual void         AddMeasure(count_t n, measure_t u);
@@ -103,9 +96,7 @@ class CMinMaxMeasureList : public CMeasureList {
     virtual void                SetMeasures();
 
   public:
-            CMinMaxMeasureList(const CSaTScanData & SaTScanData,
-                               AbstractLikelihoodCalculator & LikelihoodCalculator,
-                               BasePrint & PrintDirection);
+            CMinMaxMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator);
     virtual ~CMinMaxMeasureList();
 
     inline virtual void         AddMeasure(count_t n, measure_t u);
