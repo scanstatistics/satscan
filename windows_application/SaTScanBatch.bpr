@@ -9,8 +9,8 @@
       ..\calculation\utility\RandomNumberGenerator.obj 
       ..\calculation\utility\Salloc.obj 
       ..\calculation\utility\RandomDistribution.obj 
-      ..\calculation\utility\Sort.obj ..\calculation\utility\SSException.obj 
-      ..\calculation\print\BasePrint.obj ..\calculation\print\PrintScreen.obj 
+      ..\calculation\utility\SSException.obj ..\calculation\print\BasePrint.obj 
+      ..\calculation\print\PrintScreen.obj 
       ..\calculation\probability_model\BernoulliModel.obj 
       ..\calculation\probability_model\CalculateMeasure.obj 
       ..\calculation\probability_model\ProbabilityModel.obj 
@@ -75,7 +75,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE"/>
+    <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="SaTScanBatch.bpf"/>
     <INCLUDEPATH value="..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
@@ -83,12 +83,12 @@
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl51.csm -Hc -Q -Vx -Ve -ff -X- -a8 -5 -b- -k- -vi -tWC 
-      -tWM- -c"/>
-    <PFLAGS value="-$Y- -$L- -$D- -v -JPHNE -M"/>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl51.csm -Hc -Q -Vx -Ve -ff -X- -r- -a8 -5 -b- -k -y -v 
+      -vi- -tWC -tWM- -c"/>
+    <PFLAGS value="-$Y+ -$W -$O- -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zn"/>
-    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn"/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn -v"/>
   </OPTIONS>
   <LINKER>
     <ALLOBJ value="c0x32.obj $(OBJFILES)"/>
@@ -163,29 +163,30 @@ Item9=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(
 Item10=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
-Count=7
-Item0=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd540
-Item1=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;F:\
-Item2=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0
-Item3=c:\program files\borland\cbuilder5\source\vcl;\\Nfsd\home\hostovic\prj\basisdev\include;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;F:\
-Item4=$(BCB)\source\vcl;\\Nfsd\home\hostovic\prj\basisdev\include;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0
-Item5=$(BCB)\source\vcl;\\Nfsd\home\hostovic\prj\basisdev\include;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep
-Item6=$(BCB)\source\vcl
+Count=8
+Item0=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd540;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
+Item1=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd540
+Item2=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;F:\
+Item3=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0
+Item4=c:\program files\borland\cbuilder5\source\vcl;\\Nfsd\home\hostovic\prj\basisdev\include;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;F:\
+Item5=$(BCB)\source\vcl;\\Nfsd\home\hostovic\prj\basisdev\include;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0
+Item6=$(BCB)\source\vcl;\\Nfsd\home\hostovic\prj\basisdev\include;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep
+Item7=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=6
-Item0=INTEL_BASED;__BATCH_COMPILE
-Item1=INTEL_BASED;__BATCH_COMPILE;_DEBUG
+Item0=INTEL_BASED;__BATCH_COMPILE;_DEBUG
+Item1=INTEL_BASED;__BATCH_COMPILE
 Item2=INTEL_BASED;_DEBUG;__BATCH_COMPILE
 Item3=INTEL_BASED;_DEBUG
 Item4=INTEL_BASED
 Item5=_DEBUG
 
 [Debugging]
-DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd540
+DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd540;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
 
 [Parameters]
-RunParams=C:\Prj\SatScan\Examples\patty\1\temp.prm
+RunParams=&quot;C:\test\Sample Data(line)\nycfever.prm&quot;
 HostApplication=C:\SatScan v3.0\calc\Satscan.exe
 RemoteHost=
 RemotePath=

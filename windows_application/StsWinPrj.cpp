@@ -26,7 +26,6 @@ USEUNIT("..\calculation\utility\JulianDates.cpp");
 USEUNIT("..\calculation\utility\RandomNumberGenerator.cpp");
 USEUNIT("..\calculation\utility\Salloc.cpp");
 USEUNIT("..\calculation\utility\RandomDistribution.cpp");
-USEUNIT("..\calculation\utility\Sort.cpp");
 USEUNIT("..\calculation\utility\SSException.cpp");
 USEUNIT("..\calculation\utility\DBFFile.cpp");
 USEUNIT("..\calculation\print\BasePrint.cpp");
