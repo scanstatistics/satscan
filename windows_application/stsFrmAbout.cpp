@@ -35,9 +35,81 @@ void TfrmAbout::Setup() {
     lblTitle->Width = 440;
     lblReleaseDate->Caption = AnsiString("Release Date: ") + VERSION_DATE;
     lblWebSite->Caption = GetToolkit().GetWebSite();
+    lblEmailAddress->Caption = GetToolkit().GetSubstantiveSupportEmail();
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()", "TfrmAbout");
     throw;
   }
-}  
+}
+
+// links the email address into a mapi message sender
+void __fastcall TfrmAbout::lblEmailAddressClick(TObject *Sender) {
+   PMapiRecipDesc   pRecipient = 0;
+   TMapiMessage     theMapiMessage;
+   ZdString         sMessageText, sMessage;
+   unsigned long    ulError;
+
+   try {
+      Screen->Cursor = crHourGlass;
+      ulError = MapiResolveName ( 0, 0, const_cast<char*>(GetToolkit().GetSubstantiveSupportEmail()), 0, 0, pRecipient );
+      if ( ulError == SUCCESS_SUCCESS ){
+         theMapiMessage.ulReserved = 0;
+         theMapiMessage.lpszSubject = "SaTScan";
+         theMapiMessage.lpszNoteText = 0;
+         theMapiMessage.lpszMessageType = 0;
+         theMapiMessage.lpszDateReceived = 0;
+         theMapiMessage.lpszConversationID = 0;
+         theMapiMessage.flFlags = 0;
+         theMapiMessage.lpOriginator = NULL;
+         theMapiMessage.nRecipCount = 1;
+         theMapiMessage.lpRecips = pRecipient;
+         theMapiMessage.nFileCount = 0;
+         theMapiMessage.lpFiles = NULL;
+
+         Screen->Cursor = crDefault;
+         ulError = MapiSendMail(0, (unsigned int)this->Handle, theMapiMessage, MAPI_DIALOG | MAPI_LOGON_UI, 0);
+         if (ulError != 0) {   //returns zero on success
+            switch(ulError) {
+               case MAPI_E_AMBIGUOUS_RECIPIENT:
+                  sMessage << "Ambiguous recipient";
+                  Application->MessageBox(sMessage.GetCString(), "Error!", MB_OK);
+                  break;
+               case MAPI_E_UNKNOWN_RECIPIENT:
+                  sMessage << "Unknown recipient";
+                  Application->MessageBox(sMessage.GetCString(), "Error!", MB_OK);
+                  break;
+               case MAPI_E_INSUFFICIENT_MEMORY:
+                  sMessage << "Insuficient memory";
+                  Application->MessageBox(sMessage.GetCString(), "Error!", MB_OK);
+                  break;
+               case MAPI_E_LOGIN_FAILURE:
+                  sMessage << "Email login failure";
+                  Application->MessageBox(sMessage.GetCString(), "Error!", MB_OK);
+                  break;
+               case MAPI_E_USER_ABORT:     // user abort, do nothing
+                  break;
+               default:
+                  sMessage << "Email was not able to be sent.";
+                  Application->MessageBox(sMessage.GetCString(), "Error!", MB_OK);
+                  break;
+            }
+         }  // end if error
+      } // end if success
+      else {
+         Screen->Cursor = crDefault;
+         Application->MessageBox("You must open Outlook or your default email service before\n continuing with this email. Please try again.."
+                                 "\nIf this problem persists please contact technical support.", "Warning", MB_OK);
+      }
+
+      MapiFreeBuffer(pRecipient);
+   }
+   catch (ZdException &x) {
+      Screen->Cursor = crDefault;
+      MapiFreeBuffer(pRecipient);
+      x.AddCallpath("OnEmailClick()", "TBdlgTechSupport");
+      throw;
+   }
+}
+//---------------------------------------------------------------------------
+

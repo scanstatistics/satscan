@@ -3,8 +3,8 @@ object frmAbout: TfrmAbout
   Top = 165
   BorderStyle = bsDialog
   Caption = 'About SaTScan'
-  ClientHeight = 328
-  ClientWidth = 474
+  ClientHeight = 360
+  ClientWidth = 470
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -52,7 +52,7 @@ object frmAbout: TfrmAbout
   TextHeight = 13
   object lblReleaseDate: TLabel
     Left = 12
-    Top = 83
+    Top = 107
     Width = 192
     Height = 16
     Caption = 'Release Date : January 31, 2003'
@@ -96,7 +96,7 @@ object frmAbout: TfrmAbout
   end
   object lblAuthors: TLabel
     Left = 12
-    Top = 105
+    Top = 129
     Width = 450
     Height = 32
     Caption = 
@@ -113,8 +113,8 @@ object frmAbout: TfrmAbout
   end
   object lblUsuage: TLabel
     Left = 12
-    Top = 149
-    Width = 450
+    Top = 173
+    Width = 432
     Height = 32
     Caption = 
       'This software may be freely used as long as proper citations are' +
@@ -130,8 +130,8 @@ object frmAbout: TfrmAbout
   end
   object lblCitation: TLabel
     Left = 12
-    Top = 193
-    Width = 450
+    Top = 217
+    Width = 437
     Height = 48
     Caption = 
       'Suggested software citation: Kulldorff M and Information Managem' +
@@ -162,7 +162,7 @@ object frmAbout: TfrmAbout
   end
   object lblFurtherInfomation: TLabel
     Left = 12
-    Top = 253
+    Top = 277
     Width = 440
     Height = 32
     Caption = 
@@ -191,9 +191,37 @@ object frmAbout: TfrmAbout
     Font.Style = []
     ParentFont = False
   end
+  object lblEmail: TLabel
+    Left = 12
+    Top = 84
+    Width = 37
+    Height = 16
+    Caption = 'Email:'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+  end
+  object lblEmailAddress: TLabel
+    Left = 76
+    Top = 84
+    Width = 130
+    Height = 16
+    Cursor = crHandPoint
+    Caption = 'kulldorff@satscan.org'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlue
+    Font.Height = -13
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsUnderline]
+    ParentFont = False
+    OnClick = lblEmailAddressClick
+  end
   object Button1: TButton
     Left = 200
-    Top = 297
+    Top = 321
     Width = 70
     Height = 24
     Caption = 'Ok'
