@@ -2483,6 +2483,7 @@ bool CParameters::ValidateReplications(int nReps) {
 bool CParameters::ValidHistoryFileName(ZdString& sRunHistoryFilename) {
    bool bValid(false);
    ZdString sExt(ZdFileName(sRunHistoryFilename.GetCString()).GetExtension());
+   ZdString sDirectory(ZdFileName(sRunHistoryFilename.GetCString()).GetLocation());
 
    try {
       if(!sRunHistoryFilename.GetIsEmpty()) {
@@ -2492,10 +2493,10 @@ bool CParameters::ValidHistoryFileName(ZdString& sRunHistoryFilename) {
             else
                sRunHistoryFilename.Replace(sExt.GetCString(), ".dbf");
          }
-         
-         if(access(sRunHistoryFilename.GetCString(), 00) == NULL)
-            if(access(sRunHistoryFilename.GetCString(), 06) == NULL)
-               bValid = true;
+
+         // check to see if the directory exists and if it does assume we can write to it
+         if(access(sDirectory.GetCString(), 00) == NULL)
+            bValid = true;
       }
    }
    catch (ZdException &x) {
