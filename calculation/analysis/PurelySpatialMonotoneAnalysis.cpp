@@ -2,82 +2,77 @@
 #pragma hdrstop
 #include "PurelySpatialMonotoneAnalysis.h"
 
-CPSMonotoneAnalysis::CPSMonotoneAnalysis(CParameters*  pParameters,
-                                         CSaTScanData* pData,
-                                         BasePrint *pPrintDirection)
-                    :CPurelySpatialAnalysis(pParameters, pData, pPrintDirection)
-{
+CPSMonotoneAnalysis::CPSMonotoneAnalysis(CParameters*  pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
+                    :CPurelySpatialAnalysis(pParameters, pData, pPrintDirection) {
+  Init();
 }
 
-CPSMonotoneAnalysis::~CPSMonotoneAnalysis()
-{
+CPSMonotoneAnalysis::~CPSMonotoneAnalysis() {
+  try {
+    delete gpMaxCluster;
+  }
+  catch (...){}  
 }
 
-CCluster* CPSMonotoneAnalysis::GetTopCluster(tract_t nCenter) {
-  CPSMonotoneCluster          * MaxCluster = 0;
+void CPSMonotoneAnalysis::CalculateTopCluster(tract_t tCenter, const DataStreamGateway & DataGateway, bool bSimulation) {
   CPSMonotoneCluster          * C_High = 0;
   CPSMonotoneCluster          * C_Low = 0;
-  count_t                    ** ppCases(m_pData->GetCasesArray());
+  count_t                    ** ppCases(DataGateway.GetDataStreamInterface(0/*for now*/).GetCaseArray());
 
-   try
-     {
-     if (m_pParameters->GetAreaScanRateType() == HIGHANDLOW)
-     {
-       C_High = new CPSMonotoneCluster(gpPrintDirection);
-       C_High->SetCenter(nCenter);
-       C_High->AllocateForMaxCircles(m_pData->GetNeighborCountArray()[0][nCenter]+1);
-       C_High->SetRate(HIGH);
-       C_High->DefineTopCluster(*m_pData, ppCases);
-   
-       C_Low = new CPSMonotoneCluster(gpPrintDirection);
-       C_Low->SetCenter(nCenter);
-       C_Low->AllocateForMaxCircles(m_pData->GetNeighborCountArray()[0][nCenter]+1);
-       C_Low->SetRate(LOW);
-       C_Low->DefineTopCluster(*m_pData, ppCases);
-   
-       //    if (C_High->m_nLogLikelihood >= C_Low->m_nLogLikelihood)
-       if (C_High->m_nRatio >= C_Low->m_nRatio)
-       {
-         MaxCluster = C_High;
-         delete C_Low;
+  try {
+    if (m_pParameters->GetAreaScanRateType() == HIGHANDLOW) {
+      C_High = new CPSMonotoneCluster(*m_pData, gpPrintDirection);
+      C_High->SetCenter(tCenter);
+      C_High->AllocateForMaxCircles(m_pData->GetNeighborCountArray()[0][tCenter]+1);
+      C_High->SetRate(HIGH);
+      C_High->DefineTopCluster(*m_pData, ppCases);
+
+      C_Low = new CPSMonotoneCluster(*m_pData, gpPrintDirection);
+      C_Low->SetCenter(tCenter);
+      C_Low->AllocateForMaxCircles(m_pData->GetNeighborCountArray()[0][tCenter]+1);
+      C_Low->SetRate(LOW);
+      C_Low->DefineTopCluster(*m_pData, ppCases);
+      //    if (C_High->m_nLogLikelihood >= C_Low->m_nLogLikelihood)
+      if (C_High->m_nRatio >= C_Low->m_nRatio) {
+         gpMaxCluster = C_High;
+         delete C_Low; C_Low=0;
        }
-       else
-       {
-         MaxCluster = C_Low;
-         delete C_High;
+       else {
+         gpMaxCluster = C_Low;
+         delete C_High; C_High=0;
        }
-   
-     }
-     else
-     {
-       MaxCluster = new CPSMonotoneCluster(gpPrintDirection);
-       MaxCluster->SetCenter(nCenter);
-       MaxCluster->AllocateForMaxCircles(m_pData->GetNeighborCountArray()[0][nCenter]+1);
-       MaxCluster->SetRate(m_pParameters->GetAreaScanRateType());
-       MaxCluster->DefineTopCluster(*m_pData, ppCases);
-     }
-   
-     MaxCluster->SetStartAndEndDates(m_pData->GetTimeIntervalStartTimes(), m_pData->m_nTimeIntervals);
-     }
-   catch (ZdException & x)
-      {
-      delete C_High; C_High = 0;
-      delete C_Low;  C_Low = 0;
-      //MaxCluster could be C_High or C_Low or neither...
-      //so set high and low to zero after deletion...  just in case.
-      delete MaxCluster;
-      x.AddCallpath("GetTopCluster()", "CPSMonotoneAnalysis");
-      throw;
-      }
-  return MaxCluster;
+    }
+    else {
+      gpMaxCluster = new CPSMonotoneCluster(*m_pData, gpPrintDirection);
+      gpMaxCluster->SetCenter(tCenter);
+      gpMaxCluster->AllocateForMaxCircles(m_pData->GetNeighborCountArray()[0][tCenter]+1);
+      gpMaxCluster->SetRate(m_pParameters->GetAreaScanRateType());
+      gpMaxCluster->DefineTopCluster(*m_pData, ppCases);
+    }
+
+    gpMaxCluster->SetStartAndEndDates(m_pData->GetTimeIntervalStartTimes(), m_pData->m_nTimeIntervals);
+  }
+  catch (ZdException &x) {
+    delete C_High; C_High=0;
+    delete C_Low; C_Low=0;
+    //MaxCluster could be C_High or C_Low or neither...
+    //so set high and low to zero after deletion...  just in case.
+    delete gpMaxCluster; gpMaxCluster=0;
+    x.AddCallpath("CalculateTopCluster()","CPSMonotoneAnalysis");
+    throw;
+  }
 }
 
-double CPSMonotoneAnalysis::MonteCarlo() {
-   CPSMonotoneCluster           MaxCluster(gpPrintDirection);
-   CPSMonotoneCluster           C(gpPrintDirection);
-   CPSMonotoneCluster           C_High(gpPrintDirection);
-   CPSMonotoneCluster           C_Low(gpPrintDirection);
-   count_t                   ** ppSimCases(m_pData->GetSimCasesArray());
+CCluster & CPSMonotoneAnalysis::GetTopCalculatedCluster() {
+  return *gpMaxCluster;
+}
+
+double CPSMonotoneAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
+   CPSMonotoneCluster           MaxCluster(*m_pData, gpPrintDirection);
+   CPSMonotoneCluster           C(*m_pData, gpPrintDirection);
+   CPSMonotoneCluster           C_High(*m_pData, gpPrintDirection);
+   CPSMonotoneCluster           C_Low(*m_pData, gpPrintDirection);
+   count_t                   ** ppSimCases(Interface.GetCaseArray());
 
    try
       {
@@ -130,12 +125,12 @@ double CPSMonotoneAnalysis::MonteCarlo() {
    return (MaxCluster.GetRatio());
 }
 
-double CPSMonotoneAnalysis::MonteCarloProspective() {
-   CPSMonotoneCluster           MaxCluster(gpPrintDirection);
-   CPSMonotoneCluster           C(gpPrintDirection);
-   CPSMonotoneCluster           C_High(gpPrintDirection);
-   CPSMonotoneCluster           C_Low(gpPrintDirection);
-   count_t                   ** ppSimCases(m_pData->GetSimCasesArray());
+double CPSMonotoneAnalysis::MonteCarloProspective(const DataStreamInterface & Interface) {
+   CPSMonotoneCluster           MaxCluster(*m_pData, gpPrintDirection);
+   CPSMonotoneCluster           C(*m_pData, gpPrintDirection);
+   CPSMonotoneCluster           C_High(*m_pData, gpPrintDirection);
+   CPSMonotoneCluster           C_Low(*m_pData, gpPrintDirection);
+   count_t                   ** ppSimCases(Interface.GetCaseArray());
 
    try
       {
@@ -188,5 +183,8 @@ double CPSMonotoneAnalysis::MonteCarloProspective() {
    return (MaxCluster.GetRatio());
 }
 
+void CPSMonotoneAnalysis::SetTopClusters(const DataStreamGateway & DataGateway, bool bSimulation) {
+  delete gpMaxCluster; gpMaxCluster=0;
+}
 
 
