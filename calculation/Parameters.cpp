@@ -447,10 +447,9 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
          case ALLCLUSTERS     : /*fprintf(fp, "All\n");
                                   -- geIncludeClustersType parameter no longer visible in GUI, 
                                      defaulted to ALLCLUSTERS, so don't print setting */ break;
-         case CLUSTERSINRANGE : fprintf(fp, "  Clusters to Include                   : ");
-                                fprintf(fp, "Start Window Range %s - %s\n",
+         case CLUSTERSINRANGE : fprintf(fp, "  Windows scanned with                  : start time in range %s to %s\n",
                                         gsStartRangeStartDate.c_str(), gsStartRangeEndDate.c_str());
-                                fprintf(fp, "                                          End Window Range   %s - %s\n",
+                                fprintf(fp, "                                          end time in range %s to %s\n",
                                         gsEndRangeStartDate.c_str(), gsEndRangeEndDate.c_str()); break;
          default : ZdException::Generate("Inclusion cluster type '%d'.\n", "DisplayParameters()", geIncludeClustersType);
       };
