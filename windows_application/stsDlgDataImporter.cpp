@@ -1,16 +1,12 @@
-// $Revision: 1.1 $
-//Programmer: Scott Hostovich
-//Basis #define __USE_xbDlgBaseImporter
-
+//---------------------------------------------------------------------------
 #include "stsSaTScan.h"
 #pragma hdrstop
-
+//---------------------------------------------------------------------------
 
 #pragma package(smart_init)
 #pragma link "Grids_ts"
 #pragma link "TSGrid"
 #pragma resource "*.dfm"
-
 /** Constructor. */
 __fastcall TBDlgDataImporter::TBDlgDataImporter(TComponent* Owner, TfrmAnalysis & AnalysisForm)
                              :TForm(Owner), gAnalysisForm(AnalysisForm) {
@@ -30,7 +26,6 @@ __fastcall TBDlgDataImporter::~TBDlgDataImporter() {
     delete gpController;
     delete gpDataModel;
     delete gpImportFile;
-    TXDFile().Delete(gsActiveZdFileName);
   }
   catch ( ... ) {}
 }
@@ -67,14 +62,13 @@ void TBDlgDataImporter::AdjustFileSourceFileAttributes(ZdFile & File) {
 
 /** Tries to match column headers of data grid to importable fields. */
 void TBDlgDataImporter::AutoAlign() {
-  int                 i, j, iTimes;
+  size_t              i, j;
   bool                bFound;
 
   try {
-    ClearImportFieldSelections();
-    for (i=0; i < ( int )gvSaTScanVariables.size(); i++)
-       for (j=1, bFound=false; j < (int)gvImportFieldChoices.size() && !bFound; j++)
-          if (! strcmpi(gvSaTScanVariables[i].GetCString(), *(gvImportFieldChoices[j]))) {
+    for (i=0; i < gSaTScanVariablesFieldMap.size(); i++)
+       for (j=1, bFound=false; j < gvImportFieldChoices.size() && !bFound; j++)
+          if (! strcmpi(gSaTScanVariablesFieldMap[i].first.GetCString(), *(gvImportFieldChoices[j]))) {
             bFound = true;
             gvImportingFields[i] = gvImportFieldChoices[j];
           }
@@ -99,6 +93,7 @@ void TBDlgDataImporter::BringPanelToFront(int iWhich) {
     pnlImportData->Visible = (iWhich == DataMapping);
     btnNextPanel->Visible = (iWhich == Start || iWhich == FileType);
     btnExecuteImport->Visible = (iWhich == DataMapping);
+    chkFirstRowIsName->Visible = (iWhich == DataMapping);
     ContinueButtonEnable();
     if (btnNextPanel->Visible && btnNextPanel->Enabled) btnNextPanel->SetFocus();
     if (btnExecuteImport->Visible && btnExecuteImport->Enabled) btnExecuteImport->SetFocus();
@@ -112,39 +107,116 @@ void TBDlgDataImporter::BringPanelToFront(int iWhich) {
 /** Validates that required SaTScan Variables has been specified with an input
     file field to import from. Displays message if variables are missings. */
 void TBDlgDataImporter::CheckForRequiredVariables() {
-  size_t                t, tNumRequired;
-  ZdString              sMessage;
+  size_t                t;
+  ZdString              sMessage, ExclusiveError;
   std::vector<size_t>   vMissingFieldIndex;
+  bool                  bLatitudeBlank, bLongitudeBlank, bXBlank, bYBlank, bAllOptionalBlank=true;
 
   try {
     switch (cmbInputFileType->ItemIndex) {
-      case Case        : tNumRequired = 2;
+      case Case        : //Case and Control file require first two fields only.
+      case Control     : for (t=0; t < 2; t++)
+                            if (*gvImportingFields[t] == gsBlank)
+                              vMissingFieldIndex.push_back(t);
                          break;
-      case Control     : tNumRequired = 2;
+      case Population  : //Population file requires first three fields only.
+                         for (t=0; t < 3; t++)
+                            if (*gvImportingFields[t] == gsBlank)
+                              vMissingFieldIndex.push_back(t);
                          break;
-      case Population  : tNumRequired = 3;
+      case Coordinates : //Coordinates file requires first field but also requires
+                         //either cartesian variables or lat/long variables, not both.  
+                         if (*gvImportingFields[0] == gsBlank)
+                           vMissingFieldIndex.push_back(0);
+                         bLatitudeBlank = (!tsfieldGrid->RowVisible[2] || *gvImportingFields[1] == gsBlank);
+                         bLongitudeBlank = (!tsfieldGrid->RowVisible[3] || *gvImportingFields[2] == gsBlank);
+                         bXBlank = (!tsfieldGrid->RowVisible[4] || *gvImportingFields[3] == gsBlank);
+                         bYBlank  = (!tsfieldGrid->RowVisible[5] || *gvImportingFields[4] == gsBlank);
+                         for (t=5; t < gvImportingFields.size() && bAllOptionalBlank; t++)
+                            bAllOptionalBlank = (!tsfieldGrid->RowVisible[t+1] || *gvImportingFields[t] == gsBlank);
+                         if (((bLatitudeBlank && !bLongitudeBlank) || (!bLatitudeBlank && bLongitudeBlank)) && (bXBlank && bYBlank && bAllOptionalBlank)) {
+                           //User has selected one of the lat/long fields but none of cartesian fields.
+                           //Indicate that one of them is missing. 
+                           vMissingFieldIndex.push_back((bLatitudeBlank ? 1 : 2));
+                         }
+                         else if ((bLatitudeBlank && bLongitudeBlank) && ((!bXBlank && bYBlank) || (bXBlank && !bYBlank))) {
+                           //User has selected one of the required cartesian fields but none of lat/long fields.
+                           //Indicate that one of them is missing.
+                           vMissingFieldIndex.push_back((bXBlank ? 3 : 4));
+                         }
+                         else if (bLatitudeBlank && bLongitudeBlank && bXBlank && bYBlank && !bAllOptionalBlank) {
+                           //User has selected one of the required cartesian fields but none of lat/long fields.
+                           //Indicate that one of them is missing.
+                           vMissingFieldIndex.push_back(3);
+                           vMissingFieldIndex.push_back(4);
+                         }
+                         else if (bLatitudeBlank && bLongitudeBlank && bXBlank && bYBlank && bAllOptionalBlank) {
+                           //User has selected neither cartesian and lat/long fields.
+                           ExclusiveError << "Either cartesian variables and latitude/longitude variables must be ";
+                           ExclusiveError << "selected before import can proceed.\n";
+                         }
+                         else if (!((!bLatitudeBlank && !bLongitudeBlank && bXBlank && bYBlank && bAllOptionalBlank) ||
+                                  (bLatitudeBlank && bLongitudeBlank && !bXBlank && !bYBlank))) {
+                           //User has selected a combination of cartesian and lat/long fields.
+                           ExclusiveError << "Note that both cartesian variables and latitude/longitude variables can not be ";
+                           ExclusiveError << "selected together.\n";
+                         }
                          break;
-      case Coordinates : tNumRequired = 2;
-                         break;
-      case SpecialGrid : tNumRequired = 2;
+      case SpecialGrid : //Coordinates file requires either cartesian variables
+                         //or lat/long variables, not both.  
+                         bLatitudeBlank = (!tsfieldGrid->RowVisible[1] || *gvImportingFields[0] == gsBlank);
+                         bLongitudeBlank = (!tsfieldGrid->RowVisible[2] || *gvImportingFields[1] == gsBlank);
+                         bXBlank = (!tsfieldGrid->RowVisible[3] || *gvImportingFields[2] == gsBlank);
+                         bYBlank  = (!tsfieldGrid->RowVisible[4] || *gvImportingFields[3] == gsBlank);
+                         for (t=4; t < gvImportingFields.size() && bAllOptionalBlank; t++)
+                            bAllOptionalBlank = (!tsfieldGrid->RowVisible[t+1] || *gvImportingFields[t] == gsBlank);
+                         if (((bLatitudeBlank && !bLongitudeBlank) || (!bLatitudeBlank && bLongitudeBlank)) && (bXBlank && bYBlank && bAllOptionalBlank)) {
+                           //User has selected one of the lat/long fields but none of cartesian fields.
+                           //Indicate that one of them is missing. 
+                           vMissingFieldIndex.push_back((bLatitudeBlank ? 0 : 1));
+                         }
+                         else if ((bLatitudeBlank && bLongitudeBlank) && ((!bXBlank && bYBlank) || (bXBlank && !bYBlank))) {
+                           //User has selected one of the required cartesian fields but none of lat/long fields.
+                           //Indicate that one of them is missing.
+                           vMissingFieldIndex.push_back((bXBlank ? 2 : 3));
+                         }
+                         else if (bLatitudeBlank && bLongitudeBlank && bXBlank && bYBlank && !bAllOptionalBlank) {
+                           //User has selected one of the required cartesian fields but none of lat/long fields.
+                           //Indicate that one of them is missing.
+                           vMissingFieldIndex.push_back(2);
+                           vMissingFieldIndex.push_back(3);
+                         }
+                         else if (bLatitudeBlank && bLongitudeBlank && bXBlank && bYBlank && bAllOptionalBlank) {
+                           //User has selected neither cartesian and lat/long fields.
+                           ExclusiveError << "Either cartesian variables and latitude/longitude variables must be ";
+                           ExclusiveError << "selected before import can proceed.\n";
+                         }
+                         else if (!((!bLatitudeBlank && !bLongitudeBlank && bXBlank && bYBlank && bAllOptionalBlank) ||
+                                  (bLatitudeBlank && bLongitudeBlank && !bXBlank && !bYBlank))) {
+                           //User has selected a combination of cartesian and lat/long fields.
+                           ExclusiveError << "Note that both cartesian variables and latitude/longitude variables can not be ";
+                           ExclusiveError << "selected together.\n";
+                         }
                          break;
       default : ZdGenerateException("Unknown file type index: \"%d\"", "CheckForRequiredVariables()", cmbInputFileType->ItemIndex);
     };
-
-    for (t=0; t < gvImportingFields.size() && t < tNumRequired; t++)
-       if (*gvImportingFields[t] == gsBlank)
-         vMissingFieldIndex.push_back(t);
 
     if (vMissingFieldIndex.size()) {
       sMessage << "For the " << cmbInputFileType->Items->Strings[cmbInputFileType->ItemIndex].c_str();
       sMessage << ", the following SaTScan Variable(s) are required\nand an Input File Variable must";
       sMessage << " be selected for each before import can proceed.\n\nSaTScan Variable(s): ";
-      sMessage << gvSaTScanVariables[vMissingFieldIndex[0]] << "\n";
+      sMessage << gSaTScanVariablesFieldMap[vMissingFieldIndex[0]].first << "\n";
       for (t=1; t < vMissingFieldIndex.size(); t++) {
-         sMessage << "                                  " << gvSaTScanVariables[vMissingFieldIndex[t]];
+         sMessage << "                                  " << gSaTScanVariablesFieldMap[vMissingFieldIndex[t]].first;
          if (t < vMissingFieldIndex.size() - 1)
            sMessage << "\n";
       }
+    }
+
+    if (ExclusiveError.GetLength() || sMessage.GetLength()) {
+      if (sMessage.GetLength())
+        sMessage << "\n\n";
+      sMessage << ExclusiveError;
       BImporterException::GenerateException(sMessage, "CheckForRequiredVariables()", ZdException::Notify);
     }
   }
@@ -158,7 +230,7 @@ void TBDlgDataImporter::CheckForRequiredVariables() {
 void TBDlgDataImporter::ClearImportFieldSelections() {
   try {
     for (size_t i=0; i < gvImportingFields.size(); ++i)
-       gvImportingFields[i] = &gsBlank;
+       gvImportingFields[i] = gvImportFieldChoices[0];
     tsfieldGrid->Invalidate();
   }
   catch (ZdException &x) {
@@ -178,65 +250,107 @@ void TBDlgDataImporter::ContinueButtonEnable() {
                                                (rdoFileType->ItemIndex == 0 && cmbColDelimiter->GetTextLen()) ||
                                                (rdoFileType->ItemIndex == 1 &&  lstFixedColFieldDefs->Items->Count > 0));
                        break;
-    case DataMapping : for (size_t i=0; i < gvImportingFields.size() && !btnExecuteImport->Enabled; ++i)
-                          btnExecuteImport->Enabled = (*gvImportingFields[i] != gsBlank);
+    case DataMapping : for (size_t i=0; i < gvImportingFields.size() && !btnExecuteImport->Enabled; ++i) {
+                          if (tsfieldGrid->RowVisible[i+1])
+                            btnExecuteImport->Enabled = (*gvImportingFields[i] != gsBlank);
+                       }
 
                        break;
     default : ZdGenerateException("Invalid panel index \"%d\".", "ContinueButtonEnable()", *gitrCurrentPanel);
   };
 }
 
-/** Creates import destination ZdFile in user's temporary directory based on
-    passed file specifications . ZdFileName upon return will contain full path
-    of created ZdFile's data file. */
-void TBDlgDataImporter::CreateDestinationFile(ZdFileName& sFileName, ZdVector<ZdField*>& vFields) {
-  unsigned short        uwOffset(0);
-  TXDFile               File;
+void TBDlgDataImporter::CreateDestinationInformation() {
   char                  sBuffer[1024];
-  size_t                i;
 
   try {
-    //Delete any previous ZdFile that importer created but did not import to
-    //in this instance of dialog.
-    File.Delete(gsActiveZdFileName);
-
     //Create the temporary ZdFile to be the destination of the import in the users temp directory.
+    ZdFileName   sFileName(edtDataFile->Text.c_str());
     GetTempPath(sizeof(sBuffer), sBuffer);
     sFileName.SetLocation(sBuffer);
-    sFileName.SetExtension(TXD_EXT);
+    switch (cmbInputFileType->ItemIndex) {
+      case Case        : sFileName.SetExtension(".cas");
+                         break;
+      case Control     : sFileName.SetExtension(".ctl");
+                         break;
+      case Population  : sFileName.SetExtension(".pop");
+                         break;
+      case Coordinates : sFileName.SetExtension(".geo");
+                         break;
+      case SpecialGrid : sFileName.SetExtension(".grd");
+                         break;
+      default  : ZdGenerateException("Unknown file type : \"%d\"", "ConvertImportedDataFile()", cmbInputFileType->ItemIndex);
+    };
+    gDestDescriptor.SetDestinationFile(sFileName.GetFullPath());
 
-    // creates the field vector from the provided field names
-    for (i=0; i < vFields.size(); ++i) {
-       vFields[i]->SetIndexCount(0);
-       vFields[i]->SetOffset(uwOffset);
-       uwOffset += vFields[i]->GetLength();
+
+    ZdFileName    fFileName;
+    ZdString      sFieldSection;
+    gDestinationFileDefinition.Clear();
+
+    ZdIniSection  Section("[FileInfo]");
+    Section.AddLine("FileName", sFileName.GetCompleteFileName());
+    Section.AddLine("Title", sFileName.GetFileName());
+    Section.AddLine("InputLayoutNumber", "0");
+    Section.AddLine("PrimaryKeyFields", "0");
+    Section.AddLine("UserFlagCount", "0");
+
+
+//    Section.AddLine("NumberOfFields", "3");
+//    Section.AddLine("RecordLength", "3314");
+//    Section.AddLine("Use CR", "No");
+//    Section.AddLine("Use LF", "Yes");
+//    Section.AddLine("StartingCol", "1");
+
+    gDestinationFileDefinition.AddSection(Section.Clone());
+    Section.ClearSection();
+    int iOffSet=0;
+    for (size_t t=0; t < gSaTScanVariablesFieldMap.size(); t++) {
+       if (cmbInputFileType->ItemIndex == Coordinates && (t == 3 || t == 4))
+         continue;
+       if (cmbInputFileType->ItemIndex == Coordinates && rdoCoordinates->ItemIndex == 1 && t > 4)
+         continue;
+       if (cmbInputFileType->ItemIndex == SpecialGrid && (t == 2 || t == 3))
+         continue;
+       if (cmbInputFileType->ItemIndex == SpecialGrid && rdoCoordinates->ItemIndex == 1 && t > 3)
+         continue;
+
+       sFieldSection.printf("[Field%d]", gSaTScanVariablesFieldMap[t].second + 1);
+       Section.SetName(sFieldSection.GetCString());
+       Section.AddLine("FieldName", gSaTScanVariablesFieldMap[t].first.GetCString());
+       Section.AddLine("Type", "A");
+       Section.AddLine("Length", "255");
+       Section.AddLine("ByteOffset", IntToStr(iOffSet).c_str());
+       gDestinationFileDefinition.AddSection(Section.Clone());
+       Section.ClearSection();
+       iOffSet += 255;
     }
-
-    File.Delete(sFileName.GetFullPath());
-    File.SetTitle(sFileName.GetFileName());
-    File.PackFields(vFields);
-    File.Create(sFileName.GetFullPath(), vFields, 0, false);
-    gsActiveZdFileName = sFileName.GetFullPath();
-    File.Open(sFileName.GetFullPath(), ZDIO_OPEN_READ|ZDIO_OPEN_WRITE);
-    File.Empty();
-    File.Close();
   }
   catch (ZdException &x) {
-    x.AddCallpath("CreateDestinationFile()", "TBDlgDataImporter");
+    x.AddCallpath("CreateDestinationInformation()", "TBDlgDataImporter");
     throw;
   }
 }
 
+
 /** Creates ZdIniFile to be used when opening CSV and fixed column file types. */
 void TBDlgDataImporter::DefineSourceFileStructure() {
   ZdFileName    fFileName;
+  ZdString      sFieldSection;
 
   try {
     gDataFileDefinition.Clear();
     if ( rdoFileType->ItemIndex == 0  ) {//CSV File
-      CSVFile  fCSVFile( GetColumnDelimiter(), GetGroupMarker() );
-      fCSVFile.OpenAsAlpha ( edtDataFile->Text.c_str(), ZDIO_OPEN_READ, false );
-      fCSVFile.WriteStructure( &gDataFileDefinition );
+      if (cmbColDelimiter->ItemIndex == 2/*white space*/) {
+        ScanfFile  fScanfFile;
+        fScanfFile.OpenAsAlpha ( edtDataFile->Text.c_str(), ZDIO_OPEN_READ, false );
+        fScanfFile.WriteStructure( &gDataFileDefinition );
+      }
+      else {
+        CSVFile  fCSVFile( GetColumnDelimiter(), GetGroupMarker() );
+        fCSVFile.OpenAsAlpha ( edtDataFile->Text.c_str(), ZDIO_OPEN_READ, false );
+        fCSVFile.WriteStructure( &gDataFileDefinition );
+      }  
     }
     else if ( rdoFileType->ItemIndex == 1 ) {//Variable record length file
       ZdIniSection  tempSection( "[FileInfo]" );
@@ -288,6 +402,8 @@ const char TBDlgDataImporter::GetColumnDelimiter() const {
                break;
       case 2  : cColDelimiter = '\t';
                 break;
+      case 3  : cColDelimiter = ' ';
+                break;
       default : ZdString sString( cmbColDelimiter->Text.c_str() );
                 cColDelimiter = (sString.GetLength() ? sString[0] : COMMA);
     }
@@ -301,11 +417,7 @@ const char TBDlgDataImporter::GetColumnDelimiter() const {
 
 ZdString & TBDlgDataImporter::GetFixedColumnFieldName(unsigned int uwFieldIndex, ZdString & sFieldName) {
   try {
-    sFieldName.Clear();
-    if (uwFieldIndex + 1 > gvFieldDescriptors.size())
-      sFieldName.printf("Field %d", uwFieldIndex);
-    else
-      sFieldName = gvFieldDescriptors[uwFieldIndex]->GetName();
+    sFieldName.printf("Field %d", uwFieldIndex);
   }
   catch (ZdException &x) {
     x.AddCallpath("GetFixedColumnFieldName()","TBDlgDataImporter");
@@ -319,20 +431,57 @@ const char  TBDlgDataImporter::GetGroupMarker() const {
   char  cGroupMarker;
 
   try {
-    switch (cmbGroupMarker->ItemIndex) {
-      case 0   : cGroupMarker =  DOUBLEQUOTE;
-                 break;
-      case 1   : cGroupMarker = SINGLEQUOTE;
-                 break;
-      default  : ZdString sString( cmbGroupMarker->Text.c_str() );
-                 cGroupMarker = (sString.GetLength() ? sString[0] : DOUBLEQUOTE);
+    if (cmbGroupMarker->Enabled) {
+      switch (cmbGroupMarker->ItemIndex) {
+        case 0   : cGroupMarker =  DOUBLEQUOTE;
+                   break;
+        case 1   : cGroupMarker = SINGLEQUOTE;
+                   break;
+        default  : ZdString sString( cmbGroupMarker->Text.c_str() );
+                   cGroupMarker = (sString.GetLength() ? sString[0] : DOUBLEQUOTE);
+      }
     }
+    else
+     cGroupMarker = '\0'/*known*/;
   }
   catch (ZdException &x) {
     x.AddCallpath("GetGroupMarker()","TBDlgDataImporter");
     throw;
   }
   return cGroupMarker;
+}
+
+void TBDlgDataImporter::HideRows() {
+  try {
+    switch (cmbInputFileType->ItemIndex) {
+      case Case        :
+      case Control     :
+      case Population  : for (int i=1; i <= tsfieldGrid->Rows; i++)
+                            tsfieldGrid->RowVisible[i] = true;
+                         break;
+      case Coordinates : for (int i=1; i <= tsfieldGrid->Rows; i++) {
+                            if (i == 2 || i == 3)
+                              tsfieldGrid->RowVisible[i] = (rdoCoordinates->ItemIndex == 1 ? true : false);
+                            else if (i >= 4)
+                              tsfieldGrid->RowVisible[i] = (rdoCoordinates->ItemIndex == 1 ? false : true);
+                            else
+                              tsfieldGrid->RowVisible[i] = true;
+                         }
+                         break;
+      case SpecialGrid : for (int i=1; i <= tsfieldGrid->Rows; i++) {
+                            if (i == 1 || i == 2)
+                              tsfieldGrid->RowVisible[i] = (rdoCoordinates->ItemIndex == 1 ? true : false);
+                            else
+                              tsfieldGrid->RowVisible[i] = (rdoCoordinates->ItemIndex == 1 ? false : true);
+                         }
+                         break;
+      default          : break;
+    };
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("HideRows()","TBDlgDataImporter");
+    throw;
+  }
 }
 
 /** Executes import. */
@@ -344,10 +493,11 @@ TModalResult TBDlgDataImporter::ImportFile() {
     gSourceDescriptor.SetNumberOfRowsToIgnore(gSourceDescriptor.GetNumberOfRowsToIgnore() + 1);
 
   BFileImportSourceInterface    FileImportSourceInterface(gpImportFile, gSourceDescriptor.GetNumberOfRowsToIgnore());
-  SaTScanFileImporter           FileImporter((InputFileType)cmbInputFileType->ItemIndex, gSourceDataFileType,
+  SaTScanFileImporter           FileImporter(gDestinationFileDefinition, (InputFileType)cmbInputFileType->ItemIndex, gSourceDataFileType,
                                              FileImportSourceInterface, gDestDescriptor);
 
   try {
+    FileImporter.OpenDestination();
     SetMappings(FileImporter);
     FileImporter.Import();
     LoadResultFileNameIntoAnalysis();
@@ -388,7 +538,7 @@ void TBDlgDataImporter::InitializeImportingFields() {
 
   try {
     gvImportingFields.clear();
-    for (t=0; t < gvSaTScanVariables.size(); t++)
+    for (t=0; t < gSaTScanVariablesFieldMap.size(); t++)
        gvImportingFields.push_back(&gsBlank);
   }
   catch (ZdException &x) {
@@ -401,10 +551,15 @@ void TBDlgDataImporter::InitializeImportingFields() {
 void TBDlgDataImporter::LoadMappingPanel() {
   try {
     OpenSourceFile();                          //Display the data in grid
-    SetImportFields();                         //Show the fields that can be imported to
+    CreateDestinationInformation();
+    tsfieldGrid->Rows = gSaTScanVariablesFieldMap.size();
     InitializeImportingFields();               //Initialize array that will indicate what fields model that are imported
     SetImportFieldChoices();                   //Initialize array that will populate grid combo dropdown
     AutoAlign();
+    if (rdoCoordinates->ItemIndex == -1)
+      rdoCoordinates->ItemIndex = gAnalysisForm.rgCoordinates->ItemIndex;
+    else
+      HideRows();
     ContinueButtonEnable();
   }
   catch (ZdException &x) {
@@ -568,15 +723,20 @@ void TBDlgDataImporter::OnExitStartPanel() {
     SetPanelsToShow();
     gitrCurrentPanel = gvPanels.begin();
     switch (cmbInputFileType->ItemIndex) {
-      case Case        : SetupCaseFileFieldDescriptors(gvFieldDescriptors);
+      case Case        : SetupCaseFileFieldDescriptors();
+                         rdoCoordinates->Enabled = false;
                          break;
-      case Control     : SetupControlFileFieldDescriptors(gvFieldDescriptors);
+      case Control     : SetupControlFileFieldDescriptors();
+                         rdoCoordinates->Enabled = false;
                          break;
-      case Population  : SetupPopFileFieldDescriptors(gvFieldDescriptors);
+      case Population  : SetupPopFileFieldDescriptors();
+                         rdoCoordinates->Enabled = false;
                          break;
-      case Coordinates : SetupGeoFileFieldDescriptors(gvFieldDescriptors);
+      case Coordinates : SetupGeoFileFieldDescriptors();
+                         rdoCoordinates->Enabled = true;
                          break;
-      case SpecialGrid : SetupGridFileFieldDescriptors(gvFieldDescriptors);
+      case SpecialGrid : SetupGridFileFieldDescriptors();
+                         rdoCoordinates->Enabled = true;
                          break;
       default : ZdGenerateException("Unknown file type index: \"%d\"","OnExitStartPanel()", cmbInputFileType->ItemIndex);
     };
@@ -610,9 +770,9 @@ void TBDlgDataImporter::OnFieldDefinitionChange() {
 void TBDlgDataImporter::OnFirstRowIsHeadersClick() {
   try {
     SetGridHeaders(chkFirstRowIsName->Checked);
-    ClearImportFieldSelections();
-    SetImportFieldChoices();
-    AutoAlign();
+    for (int i=1; gpController && i <= gpController->GetGridColCount(); i++)
+        *(gvImportFieldChoices[i]) = gpController->GetTopGrid()->Col[i]->Heading.c_str();
+    tsfieldGrid->Invalidate();
     ContinueButtonEnable();
   }
   catch (ZdException &x) {
@@ -759,33 +919,6 @@ void TBDlgDataImporter::SetGridHeaders(bool bFirstRowIsHeader) {
   }
 }
 
-/** Creates import destination file  based on SaTScan input file and loads
-    mapping interface based on created file. */
-void TBDlgDataImporter::SetImportFields() {
-  ZdFileName                    sFileName;
-  unsigned short                uwPrimaryKeys, i;
-  ZdFile                      * pFile = 0;
-
-  try {
-    sFileName = edtDataFile->Text.c_str();
-    CreateDestinationFile(sFileName, gvFieldDescriptors);
-    gDestDescriptor.SetDestinationFile(sFileName.GetFullPath());
-    //Set SaTScan variables
-    pFile = BasisGetToolkit().OpenZdFile(gDestDescriptor.GetDestinationFileName().GetCString(), ZDIO_OPEN_READ|ZDIO_OPEN_WRITE, ZDIO_SREAD, 60, 2000);
-    gvSaTScanVariables.clear();
-    for (i=0; i < pFile->GetNumFields(); i++)
-      gvSaTScanVariables.push_back(ZdString(pFile->GetFieldInfo(i)->GetName()));
-    tsfieldGrid->Rows = pFile->GetNumFields();
-    BasisGetToolkit().CloseZdFile(pFile, ZDIO_SREAD);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetImportFields()","TBdlgImporter");
-    if (pFile)
-      BasisGetToolkit().CloseZdFile(pFile, ZDIO_SREAD);
-    throw;
-  }
-}
-
 /** Makes column headers of data grid combobox items of selection grid. */
 void TBDlgDataImporter::SetImportFieldChoices() {
   try {
@@ -801,7 +934,7 @@ void TBDlgDataImporter::SetImportFieldChoices() {
   }
 }
 
-//Tell import class what's imported from where.
+/** Tell import class what's imported from where. */
 void TBDlgDataImporter::SetMappings(BZdFileImporter & FileImporter) {
   size_t                                i;
   ZdPointerVector<ZdString>::iterator   itr;
@@ -814,17 +947,17 @@ void TBDlgDataImporter::SetMappings(BZdFileImporter & FileImporter) {
     //Find the string of gvImportingFields in gvImportFieldChoices
     //Element index in gvImportFieldChoices is column number of import file.
     for (i=0; i < gvImportingFields.size(); i++)
-         if (*gvImportingFields[i] != gsBlank) {
-           itr = std::find(gvImportFieldChoices.begin(), gvImportFieldChoices.end(), gvImportingFields[i]);
-           if (itr !=  gvImportFieldChoices.end()) {
-             pToField =  pFile->GetFieldInfo(gvSaTScanVariables[i].GetCString());
-             FileImporter.AddMapping(gvImportFieldChoices.GetPosition(itr), pToField);
-           }
-         }
+       if (tsfieldGrid->RowVisible[i+1] && *gvImportingFields[i] != gsBlank) {
+          itr = std::find(gvImportFieldChoices.begin(), gvImportFieldChoices.end(), gvImportingFields[i]);
+          if (itr !=  gvImportFieldChoices.end()) {
+            pToField =  pFile->GetFieldInfo(gSaTScanVariablesFieldMap[i].second);
+            FileImporter.AddMapping(gvImportFieldChoices.GetPosition(itr), pToField);
+          }
+       }
   }
-  catch ( ZdException & x ) {
-      x.AddCallpath( "SetMappings()", "TBDlgDataImporter" );
-      throw;
+  catch (ZdException &x) {
+    x.AddCallpath("SetMappings()","TBDlgDataImporter");
+    throw;
   }
 }
 
@@ -878,8 +1011,14 @@ void TBDlgDataImporter::OpenSourceFile() {
 
     try {
       if (rdoFileType->ItemIndex == 0) {//Special ZdFile open for CSVFile
-        gpImportFile = new CSVFile(edtDataFile->Text.c_str(), ZDIO_OPEN_READ, 0, 0, &gDataFileDefinition, GetColumnDelimiter(), GetGroupMarker());
-        chkFirstRowIsName->Enabled = true;
+        if (cmbColDelimiter->ItemIndex == 2/*white space*/) {
+          gpImportFile = new ScanfFile();
+          gpImportFile->Open(edtDataFile->Text.c_str(), ZDIO_OPEN_READ|ZDIO_SREAD, 0, 0, &gDataFileDefinition);
+        }
+        else {
+          gpImportFile = new CSVFile(edtDataFile->Text.c_str(), ZDIO_OPEN_READ, 0, 0, &gDataFileDefinition, GetColumnDelimiter(), GetGroupMarker());
+          chkFirstRowIsName->Enabled = true;
+        }
       }
       else if (rdoFileType->ItemIndex == 1) {//Special ZdFile open for variable txd
         gpImportFile = new TXVFile();
@@ -919,23 +1058,23 @@ void TBDlgDataImporter::OpenSourceFile() {
   }
 }
 
-// fill the Case File field descriptor vector with the appropriate field names for a case file
-void TBDlgDataImporter::SetupCaseFileFieldDescriptors(ZdPointerVector<ZdField>& vFields) {
+/** */
+void TBDlgDataImporter::SetupCaseFileFieldDescriptors() {
   try {
-    vFields.DeleteAllElements();
-    vFields.push_back(new ZdField("Tract ID", 1, ZD_ALPHA_FLD, 200));
-    vFields.push_back(new ZdField("Number of Cases", 2, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Date/Time (optional)", 3, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Covariate1 (optional)", 4, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Covariate2 (optional)", 5, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Covariate3 (optional)", 6, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Covariate4 (optional)", 7, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Covariate5 (optional)", 8, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Covariate6 (optional)", 9, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Covariate7 (optional)", 10, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Covariate8 (optional)", 11, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Covariate9 (optional)", 12, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Covariate10 (optional)", 13, ZD_ALPHA_FLD, 50));
+    gSaTScanVariablesFieldMap.clear();
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Tract ID",0));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Number of Cases",1));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Date/Time",2));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Covariate1 (optional)",3));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Covariate2 (optional)",4));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Covariate3 (optional)",5));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Covariate4 (optional)",6));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Covariate5 (optional)",7));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Covariate6 (optional)",8));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Covariate7 (optional)",9));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Covariate8 (optional)",10));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Covariate9 (optional)",11));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Covariate10 (optional)",12));
   }
   catch (ZdException &x) {
     x.AddCallpath("SetupCaseFileFieldDescriptors()", "TBDlgDataImporter");
@@ -944,12 +1083,12 @@ void TBDlgDataImporter::SetupCaseFileFieldDescriptors(ZdPointerVector<ZdField>& 
 }
 
 // fill the control File field descriptor vector with the appropriate field names for a control file
-void TBDlgDataImporter::SetupControlFileFieldDescriptors(ZdPointerVector<ZdField>& vFields) {
+void TBDlgDataImporter::SetupControlFileFieldDescriptors() {
   try {
-    vFields.DeleteAllElements();
-    vFields.push_back(new ZdField("Tract ID", 1, ZD_ALPHA_FLD, 200));
-    vFields.push_back(new ZdField("Number of Controls", 2, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Date/Time (optional)", 3, ZD_ALPHA_FLD, 50));
+    gSaTScanVariablesFieldMap.clear();
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Tract ID",0));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Number of Controls",1));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Date/Time (optional)",2));
   }
   catch (ZdException &x) {
     x.AddCallpath("SetupControlFileFieldDescriptors()", "TBDlgDataImporter");
@@ -958,22 +1097,22 @@ void TBDlgDataImporter::SetupControlFileFieldDescriptors(ZdPointerVector<ZdField
 }
 
 // fill the Geo File field descriptor vector with the appropriate field names for a geo file
-void TBDlgDataImporter::SetupGeoFileFieldDescriptors(ZdPointerVector<ZdField>& vFields) {
+void TBDlgDataImporter::SetupGeoFileFieldDescriptors() {
   try {
-    vFields.DeleteAllElements();
-    vFields.push_back(new ZdField("Tract ID", 1, ZD_ALPHA_FLD, 200));
-    vFields.push_back(new ZdField("Latitude", 2, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Longitude", 3, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("X", 4, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Y", 5, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Z1 (optional)", 6, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Z2 (optional)", 7, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Z3 (optional)", 8, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Z4 (optional)", 9, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Z5 (optional)", 10, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Z6 (optional)", 11, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Z7 (optional)", 12, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Z8 (optional)", 13, ZD_ALPHA_FLD, 50));
+    gSaTScanVariablesFieldMap.clear();
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Tract ID",0));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Latitude",1));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Longitude",2));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("X",1));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Y",2));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Z1 (optional)",3));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Z2 (optional)",4));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Z3 (optional)",5));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Z4 (optional)",6));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Z5 (optional)",7));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Z6 (optional)",8));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Z7 (optional)",9));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Z8 (optional)",10));
   }
   catch (ZdException &x) {
     x.AddCallpath("SetupGeoFileFieldDescriptors()", "TBDlgDataImporter");
@@ -982,15 +1121,15 @@ void TBDlgDataImporter::SetupGeoFileFieldDescriptors(ZdPointerVector<ZdField>& v
 }
 
 // fill the Geo File field descriptor vector with the appropriate field names for a geo file
-void TBDlgDataImporter::SetupGridFileFieldDescriptors(ZdPointerVector<ZdField>& vFields) {
+void TBDlgDataImporter::SetupGridFileFieldDescriptors() {
   try {
-    vFields.DeleteAllElements();
-    vFields.push_back(new ZdField("Latitude", 1, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Longitude", 2, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("X", 3, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Y", 4, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Z1 (optional)", 5, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Z2 (optional)", 6, ZD_ALPHA_FLD, 50));
+    gSaTScanVariablesFieldMap.clear();
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Latitude",0));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Longitude",1));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("X",0));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Y",1));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Z1 (optional)",2));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Z2 (optional)",3));
   }
   catch (ZdException &x) {
     x.AddCallpath("SetupGridFileFieldDescriptors()", "TBDlgDataImporter");
@@ -999,15 +1138,15 @@ void TBDlgDataImporter::SetupGridFileFieldDescriptors(ZdPointerVector<ZdField>& 
 }
 
 // fill the Geo File field descriptor vector with the appropriate field names for a geo file
-void TBDlgDataImporter::SetupPopFileFieldDescriptors(ZdPointerVector<ZdField>& vFields) {
+void TBDlgDataImporter::SetupPopFileFieldDescriptors() {
   try {
-    vFields.DeleteAllElements();
-    vFields.push_back(new ZdField("Tract ID", 1, ZD_ALPHA_FLD, 200));
-    vFields.push_back(new ZdField("Date/Time", 2, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Population", 3, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Covariate1 (optional)", 4, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Covariate2 (optional)", 5, ZD_ALPHA_FLD, 50));
-    vFields.push_back(new ZdField("Covariate3 (optional)", 6, ZD_ALPHA_FLD, 50));
+    gSaTScanVariablesFieldMap.clear();
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Tract ID",0));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Date/Time",1));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Population",2));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Covariate1 (optional)",3));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Covariate2 (optional)",4));
+    gSaTScanVariablesFieldMap.push_back(std::make_pair("Covariate3 (optional)",5));
   }
   catch (ZdException &x) {
     x.AddCallpath("SetupPopFileFieldDescriptors()", "TBDlgDataImporter");
@@ -1156,8 +1295,20 @@ void __fastcall TBDlgDataImporter::OnCmbDestinationChange(TObject *Sender) {
   }
 }
 
+void __fastcall TBDlgDataImporter::OnCoordinatesClick(TObject *Sender) {
+  try {
+    HideRows();
+    ContinueButtonEnable();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("OnCoordinatesClick()","TBDlgDataImporter");
+    DisplayBasisException(this, x);
+  }
+}
+
 void __fastcall TBDlgDataImporter::OnCSVComboChange(TObject *Sender) {
   try {
+    cmbGroupMarker->Enabled = (cmbColDelimiter->ItemIndex != 2/*white space*/);
     ContinueButtonEnable();
   }
   catch (ZdException &x) {
@@ -1189,7 +1340,7 @@ void __fastcall TBDlgDataImporter::OnExecuteClick(TObject *Sender) {
 void __fastcall TBDlgDataImporter::OnFieldGridCellLoaded(TObject *Sender, int DataCol, int DataRow, Variant &Value) {
   try {
     switch ( DataCol ) {
-      case  1  :     Value = gvSaTScanVariables[DataRow - 1].GetCString();
+      case  1  :     Value = gSaTScanVariablesFieldMap[DataRow - 1].first.GetCString();
                      break;
       case  2  :     Value = gvImportingFields[DataRow - 1]->GetCString();
     }
@@ -1383,9 +1534,4 @@ void __fastcall TBDlgDataImporter::tsfieldGridResize(TObject *Sender) {
     tsfieldGrid->Col[2]->Width = tsfieldGrid->Width - ((tsfieldGrid->RowBarOn ? tsfieldGrid->RowBarWidth + 5/*buffer*/ : 5/*buffer*/) + tsfieldGrid->Col[1]->Width + 15);
 }
 //---------------------------------------------------------------------------
-
-
-
-
-
 

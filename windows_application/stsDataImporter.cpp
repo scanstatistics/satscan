@@ -4,10 +4,10 @@
 //---------------------------------------------------------------------------
 
 /** Constructor. */
-SaTScanFileImporter::SaTScanFileImporter(InputFileType eFileType, SourceDataFileType eSourceDataFileType,
+SaTScanFileImporter::SaTScanFileImporter(ZdIniFile & FileDef, InputFileType eFileType, SourceDataFileType eSourceDataFileType,
                                          BImportSourceInterface & SourceInterface, BFileDestDescriptor & FileDestDescriptor)
                     :BZdFileImporter(&SourceInterface, &FileDestDescriptor),
-                     geFileType(eFileType), geSourceDataFileType(eSourceDataFileType) {
+                     geFileType(eFileType), geSourceDataFileType(eSourceDataFileType), gFileDefinition(FileDef) {
   try {
     Init();
     Setup();
@@ -56,36 +56,20 @@ void SaTScanFileImporter::AttemptFilterDateField(ZdString & sDateToken) {
   catch (...){}
 }
 
-/** Renames ZdFile's data file to that of SaTScan data file type and deletes
-    supporting ZdFile files. Dates are filtered to format used in data read routines. */
-void SaTScanFileImporter::ConvertImportedDataFile() {
-  ZdString      sZdDataFileName;
+/** */
+void SaTScanFileImporter::CleanupDestinationDataFile(bool bDeleteDataFile) {
   ZdFileName    SaTScanDataFileName;
 
   try {
-    sZdDataFileName = gpFileDestDescriptor->GetDestinationFileName();
-    SaTScanDataFileName.SetFullPath(sZdDataFileName);
-    switch (geFileType) {
-      case Case        : SaTScanDataFileName.SetExtension(".cas");
-                         break;
-      case Control     : SaTScanDataFileName.SetExtension(".ctl");
-                         break;
-      case Population  : SaTScanDataFileName.SetExtension(".pop");
-                         break;
-      case Coordinates : SaTScanDataFileName.SetExtension(".geo");
-                         break;
-      case SpecialGrid : SaTScanDataFileName.SetExtension(".grd");
-                         break;
-      default  : ZdGenerateException("Unknown file type : \"%d\"", "ConvertImportedDataFile()", geFileType);
-    };
-
-    AquireUniqueFileName(SaTScanDataFileName);
-    ZdIOInterface::Rename(SaTScanDataFileName.GetFullPath(), sZdDataFileName.GetCString());
-    gpFileDestDescriptor->SetDestinationFile(SaTScanDataFileName.GetFullPath());
-    TXDFile().Delete(sZdDataFileName.GetCString());
+    gpRemoteFile->Close(); gpRemoteFile=0;
+    SaTScanDataFileName = gpFileDestDescriptor->GetDestinationFileName().GetCString();
+    if (bDeleteDataFile)
+      ZdIO::Delete(SaTScanDataFileName.GetFullPath());
+    SaTScanDataFileName.SetExtension(".zlg");
+    ZdIO::Delete(SaTScanDataFileName.GetFullPath());
   }
   catch (ZdException & x) {
-    x.AddCallpath("ConvertImportedDataFile()", "SaTScanFileImporter");
+    x.AddCallpath("CleanupDestinationDataFile()", "SaTScanFileImporter");
     throw;
   }
 }
@@ -115,15 +99,11 @@ void SaTScanFileImporter::Import(ZdProgressInterface * pProgressInterface) {
 
      if (eDest == BFileDestDescriptor::SingleFile) {
        ImportToRemoteFile(vMappings, ZdSubProgress(*pProgressInterface, 0, iMidPos));
-       if (gpRemoteFile) {
-         BasisGetToolkit().CloseZdFile(gpRemoteFile, ZDIO_SWRITE);
-         gpRemoteFile=0;
-       }
-       ConvertImportedDataFile();
      }
      else if (eDest == BFileDestDescriptor::SingleDatabaseFile || eDest == BFileDestDescriptor::Database)
        ZdGenerateException("ZdDatabase import not supported.","Import()");
 
+     CleanupDestinationDataFile(false);
      Screen->Cursor = crDefault;
      if (bOwnsProgress) {
        delete pProgressInterface; pProgressInterface=0;
@@ -136,11 +116,95 @@ void SaTScanFileImporter::Import(ZdProgressInterface * pProgressInterface) {
       delete pProgressInterface;
       delete pProgress;
     }
+    CleanupDestinationDataFile(true);
     Screen->Cursor = crDefault;
     throw;
   }
 }
 
+void SaTScanFileImporter::ImportToRemoteFile( ZdVector< ZdVector<const ZdField*> >& vMappings, ZdProgressInterface & ProgressInterface ) {
+  int                                  j, iColumn, iRec;
+  ZdString                             sValue;
+  bool                                 bErrorOccurred;
+  BFileDestDescriptor::ErrorOptions    eErrorOptions;
+  ZdFileRecord                       * pRecordBuffer = 0;
+  //ZdDatabaseTransaction                DBTransaction ( 0, "ImportToRemoteFile() transaction" );
+
+  ZdTransactionOld  DBTransaction(*gpRemoteFile);
+
+  try {
+     eErrorOptions = gpFileDestDescriptor->GetErrorOptionsType();
+     pRecordBuffer = gpRemoteFile->GetSystemRecord();
+
+     ZdSubProgress subProgress( ProgressInterface, 0, 40 );
+     subProgress.SetMaximum( gpSourceInterface->GetNumRecords() );
+     subProgress.SetStepValue( 1 );
+     while ( gpSourceInterface->GoToNextRecord()  ) {
+           pRecordBuffer->Clear();
+           iColumn = 0;
+           gStats.ulRecordsRead++;
+           bErrorOccurred = false;
+           while ( ++iColumn <= gpSourceInterface->GetNumColumns() ) {
+                sValue = gpSourceInterface->GetValueAt( iColumn );
+                ZdVector<const ZdField*>& vec = vMappings.GetElement( iColumn - 1 );
+                gPutError.SetCurrent( gpSourceInterface->GetCurrentRecordNum(), iColumn );
+                for ( j=0; j < ( int )vec.size(); j++ ) {
+                   const ZdField * p = vec.GetElement( j );
+                   if ( PutTokenToRecord( *pRecordBuffer, sValue, p->GetFieldNumber() ) )
+                      bErrorOccurred = true;
+                }
+           }
+
+          if ( subProgress.GetCancelRequested() )
+            BImportCancelledException::Generate( "Import Cancelled.", "ImportToRemoteFile()", ZdException::Notify );
+
+          if ( bErrorOccurred && eErrorOptions == BFileDestDescriptor::RejectBatch )
+            BImportRejectedException::Generate( "Batch rejected.\nAn error writing records has caused\nthe batch to be rejected as specified.", "ImportToRemoteFile()", ZdException::Notify );
+
+          if ( gStats.iErrorCount >= giMaxErrors )
+            BImportRejectedException::Generate( "Exceeded max errors %d.", "ImportToRemoteFile()", ZdException::Notify, gStats.iErrorCount );
+
+          if (! bErrorOccurred || ( bErrorOccurred && eErrorOptions == BFileDestDescriptor::AllRecords ) )
+            if ( !pRecordBuffer->GetAllFieldsBlank() ) {
+              if ( gpFileDestDescriptor->GetAddNewOption() && !CheckForPrimaryKeys( *gpRemoteFile, *pRecordBuffer ) ) {
+                gPutError.sMessage << ZdString::reset << "Record is missing primary key field(s).";
+                gPutError.iColumnNumber = 0;
+                gvErrors.AddElement( gPutError );
+                gStats.iErrorCount++;
+              }
+              else
+                AddRecord( *pRecordBuffer, *gpRemoteFile, DBTransaction );
+            }
+
+          subProgress.StepIt();
+     }
+  }
+  catch ( ZdException & x ) {
+     x.AddCallpath( "ImportToRemoteFile()", "BZdFileImporter" );
+     throw;
+  }
+}
+
+/** */
+void SaTScanFileImporter::OpenDestination() {
+  ZdFileName FileName;
+
+  try {
+    //A file with same name a destination file may exist, so we want be sure
+    //that the destination file can be created.
+    FileName.SetFullPath(gpFileDestDescriptor->GetDestinationFileName().GetCString());
+    AquireUniqueFileName(FileName);
+    gpFileDestDescriptor->SetDestinationFile(FileName.GetFullPath());
+    gpRemoteFile = new ScanfFile();
+    gpRemoteFile->Open(gpFileDestDescriptor->GetDestinationFileName().GetCString(),
+                                 ZDIO_OPEN_READ|ZDIO_OPEN_WRITE|ZDIO_OPEN_CREATE, 0, 0, &gFileDefinition);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("OpenDestination()", "SaTScanFileImporter");
+    delete gpRemoteFile; gpRemoteFile=0;
+    throw;
+  }
+}
 /** Tries to save token to ZdFileRecord. Formats date field of dBase files. */
 bool SaTScanFileImporter::PutTokenToRecord(ZdFileRecord & Record, ZdString & sToken, short wField) {
   bool     bErrorFound = false;
@@ -148,7 +212,8 @@ bool SaTScanFileImporter::PutTokenToRecord(ZdFileRecord & Record, ZdString & sTo
   try {
     if (wField == gwDateFilteredField)
       AttemptFilterDateField(sToken);
-    Record.PutField(wField, sToken);
+    if (sToken.GetLength())
+      Record.PutField(wField, sToken);
   }
   catch (ZdException &x) {
     gPutError.sMessage = x.GetErrorMessage();
@@ -175,7 +240,6 @@ void SaTScanFileImporter::Setup() {
         default         : gwDateFilteredField = -1;
       };
     }
-
     gDateFilter.SetFormat("%y/%m/%d");
   }
   catch (ZdException &x) {

@@ -1,7 +1,7 @@
-// $Revision: 1.1 $
+// $Revision: 1.2 $
 //Author Scott Hostovich
-#ifndef __xbDlgDataImporter_H
-#define __xbDlgDataImporter_H
+#ifndef __stsDlgDataImporter_H
+#define __stsDlgDataImporter_H
 //------------------------------------------------------------------------------
 #include "Grids_ts.hpp"
 #include "TSGrid.hpp"
@@ -13,13 +13,13 @@
 #include <ExtCtrls.hpp>
 #include <StdCtrls.hpp>
 //------------------------------------------------------------------------------
+#include "ScanfFile.h"
 
 class TfrmAnalysis;
 class TBDlgDataImporter : public TForm {
   __published:	// IDE-managed Components
      TPanel *pnlImportData;
      TtsGrid   *tsImportFileGrid;
-     TCheckBox *chkFirstRowIsName;
      TBevel    *Bevel1;
      TtsGrid   *tsfieldGrid;
      TPanel *pnlImportWizard;
@@ -62,6 +62,8 @@ class TBDlgDataImporter : public TForm {
      TBitBtn *btnCancel;
      TBitBtn *btnExecuteImport;
      TButton *btnAutoAlign;
+     TRadioGroup *rdoCoordinates;
+     TCheckBox *chkFirstRowIsName;
      void __fastcall NumericKeyPressMask(TObject *Sender, char &Key);
      void __fastcall OnAddFldDefClick(TObject *Sender);
      void __fastcall OnAutoAlignClick(TObject *Sender);
@@ -87,6 +89,7 @@ class TBDlgDataImporter : public TForm {
      void __fastcall OnSourceImportFileChange(TObject *Sender);
      void __fastcall OnStartColumnChange(TObject *Sender);
      void __fastcall tsfieldGridResize(TObject *Sender);
+     void __fastcall OnCoordinatesClick(TObject *Sender);
 
   public:
      enum Import_Panels {Start=0, FileType, DataMapping};
@@ -96,23 +99,22 @@ class TBDlgDataImporter : public TForm {
      virtual void                    Setup();
 
   protected:
-     BFileSourceDescriptor           gSourceDescriptor;
-     BFileDestDescriptor             gDestDescriptor;
-     BZdFileViewController         * gpController;
-     BGridZdSingleFileModel        * gpDataModel;
-     ZdFile                        * gpImportFile;
-     ZdVector<int>                   gvPanels;
-     ZdVector<int>::const_iterator   gitrCurrentPanel;
-     ZdVector<ZdIniSection>          gvIniSections;
-     ZdVector<ZdString>              gvSaTScanVariables;
-     ZdPointerVector<ZdString>       gvImportFieldChoices;
-     ZdVector<ZdString*>             gvImportingFields;
-     ZdPointerVector<ZdField>        gvFieldDescriptors;
-     ZdIniFile                       gDataFileDefinition;
-     TfrmAnalysis                  & gAnalysisForm;
-     ZdString                        gsBlank;
-     ZdString                        gsActiveZdFileName;
-     SourceDataFileType              gSourceDataFileType;
+     BFileSourceDescriptor                      gSourceDescriptor;
+     BFileDestDescriptor                        gDestDescriptor;
+     BZdFileViewController                    * gpController;
+     BGridZdSingleFileModel                   * gpDataModel;
+     ZdFile                                   * gpImportFile;
+     ZdVector<int>                              gvPanels;
+     ZdVector<int>::const_iterator              gitrCurrentPanel;
+     ZdVector<ZdIniSection>                     gvIniSections;
+     ZdVector< std::pair<ZdString,short> >      gSaTScanVariablesFieldMap;
+     ZdPointerVector<ZdString>                  gvImportFieldChoices;
+     ZdVector<ZdString*>                        gvImportingFields;
+     ZdIniFile                                  gDataFileDefinition;
+     ZdIniFile                                  gDestinationFileDefinition;
+     TfrmAnalysis                             & gAnalysisForm;
+     ZdString                                   gsBlank;
+     SourceDataFileType                         gSourceDataFileType;
 
      void                            AddFixedColDefinitionEnable();
      void                            AdjustFileSourceFileAttributes(ZdFile & File);
@@ -121,13 +123,14 @@ class TBDlgDataImporter : public TForm {
      void                            CheckForRequiredVariables();
      void                            ClearImportFieldSelections();
      void                            ContinueButtonEnable();
-     void                            CreateDestinationFile(ZdFileName& sFileName, ZdVector<ZdField*>& vFields);
+     void                            CreateDestinationInformation();
      void                            DefineSourceFileStructure();
      void                            DeleteFixedColDefinitionEnable();
      void                            DisableButtonsForImport(bool bEnable);
      const char                      GetColumnDelimiter() const;
      ZdString                      & GetFixedColumnFieldName(unsigned int uwFieldIndex, ZdString & sFieldName);
      const char                      GetGroupMarker() const;
+     void                            HideRows();
      TModalResult                    ImportFile();
      void                            InitializeImportingFields();
      void                            LoadMappingPanel();
@@ -147,15 +150,14 @@ class TBDlgDataImporter : public TForm {
      void                            ReadDataFileIntoRawDisplayField();
      void                            SelectImportFile();
      void                            SetGridHeaders(bool bFirstRowIsHeader=false);
-     void                            SetImportFields();
      void                            SetImportFieldChoices();
      void                            SetMappings(BZdFileImporter & FileImporter);
      void                            SetPanelsToShow();
-     void                            SetupCaseFileFieldDescriptors(ZdPointerVector<ZdField>& vFields);
-     void                            SetupControlFileFieldDescriptors(ZdPointerVector<ZdField>& vFields);
-     void                            SetupGeoFileFieldDescriptors(ZdPointerVector<ZdField>& vFields);
-     void                            SetupGridFileFieldDescriptors(ZdPointerVector<ZdField>& vFields);
-     void                            SetupPopFileFieldDescriptors(ZdPointerVector<ZdField>& vFields);
+     void                            SetupCaseFileFieldDescriptors();
+     void                            SetupControlFileFieldDescriptors();
+     void                            SetupGeoFileFieldDescriptors();
+     void                            SetupGridFileFieldDescriptors();
+     void                            SetupPopFileFieldDescriptors();
      void                            ShowFileTypeFormatPanel(int iFileType);
      void                            ShowFirstPanel();
      void                            ShowNextPanel();
