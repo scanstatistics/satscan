@@ -105,6 +105,7 @@ __published:	// IDE-managed Components
     void                        SetReportingClustersText(const ZdString& sText);
     void                        SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                        ShowDialog(TWinControl * pFocusControl=0);
+    void                        ValidateAdjustmentSettings();
     void                        ValidateInputFilesSettings();
     void                        ValidateScanningWindowSettings();
 };

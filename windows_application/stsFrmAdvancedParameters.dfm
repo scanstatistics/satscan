@@ -41,7 +41,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Top = 2
     Width = 410
     Height = 344
-    ActivePage = tsOther
+    ActivePage = tsAdjustmentsTabSheet
     TabOrder = 0
     object tsAdjustmentsTabSheet: TTabSheet
       Caption = 'Adjustments'
