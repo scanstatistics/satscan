@@ -16,25 +16,41 @@
 #include "SpaceTimeIncludePurelyTemporalAnalysis.h"
 #include "SpaceTimeIncludePureAnalysis.h"
 //---------------------------------------------------------------------------
-class CalcThread : public TThread
-{
-private:
+class CalcThread : public TThread {
+  private:
+    CParameters       * gpParams;
+    CSaTScanData      * gpData;
+    CAnalysis         * gpAnalysis;
+    PrintWindow       * gpPrintWindow;
+    AnsiString          gsThreadTitle;
+    TfrmAnalysisRun   * gpFormStatus;
+    char              * gsPrintString;
+    bool                gbJobCanceled;  
 
-protected:
-       CParameters  *gpParams;
-       CSaTScanData* gpData;
-       CAnalysis* gpAnalysis;
-       PrintWindow *gpPrintWindow;
+    void                Free();
+    void                Init();
+    void __fastcall     EnableProgressEmailButton(void);
+    void __fastcall     EnableProgressPrintButton(void);
+    void __fastcall     GetIsCanceledFromProgress(void);
+    void __fastcall     PrintLineToProgress(void);
+    void __fastcall     PrintWarningLineToProgress(void);
+    void __fastcall     ResetProgressCloseButton(void);
+    void __fastcall     SetJobCancelled(void);
+    void __fastcall     SetProgressWarnings(void);
+    void                Setup(const CParameters& session, char *pTitle, TfrmAnalysisRun *pProgress);
+    void __fastcall     SetupProgress(void);
 
-       AnsiString  gsThreadTitle;
-       TfrmAnalysisRun *gpFormStatus;
-      // TForm1 * theMainForm;
-       void __fastcall Execute();
-       void  Init();
-       void  Free();
-public:
-        __fastcall CalcThread(bool CreateSuspended, const CParameters& session, char *pTitle, TfrmAnalysisRun *pProgress);
-        __fastcall ~CalcThread();
+  protected:
+    void __fastcall     Execute();
+
+  public:
+    __fastcall CalcThread(bool CreateSuspended, const CParameters& session, char *pTitle, TfrmAnalysisRun *pProgress);
+    __fastcall ~CalcThread();
+
+    void                AddLineToProgress(char * sText);
+    void                AddWarningToProgress(char * sText);
+    void                CancellJob();
+    bool                IsCancelled();
 };
 //---------------------------------------------------------------------------
 #endif
