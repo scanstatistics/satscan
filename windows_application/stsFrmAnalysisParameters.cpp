@@ -560,22 +560,21 @@ void TfrmAnalysis::EnableAdditionalOutFilesOptionsGroup(bool bRelativeRisks) {
 //---------------------------------------------------------------------------
 /** enables correct advanced settings button on Analysis and Output tabs */
 void TfrmAnalysis::EnableAdvancedButtons() {
-   bool bTemp ;
-
-   // Input tab Advanced button
-   bTemp = gpfrmAdvancedParameters->GetDefaultsSetForInputOptions();
-   btnAdvanced3_No->Visible = bTemp;
-   btnAdvanced3_Yes->Visible = !bTemp;
-
-   // Analysis tab Advanced button
-   bTemp = gpfrmAdvancedParameters->GetDefaultsSetForAnalysisOptions();
-   btnAdvanced1_No->Visible = bTemp;
-   btnAdvanced1_Yes->Visible = !bTemp;
-
-   // Output tab Advanced button
-   bTemp = gpfrmAdvancedParameters->GetDefaultsSetForOutputOptions();
-   btnAdvanced2_No->Visible = bTemp;
-   btnAdvanced2_Yes->Visible = !bTemp;
+  // Input tab Advanced button
+  if (!gpfrmAdvancedParameters->GetDefaultsSetForInputOptions())
+    btnAdvancedInput->Font->Style = TFontStyles() << fsBold;
+  else
+    btnAdvancedInput->Font->Style = TFontStyles();
+  // Analysis tab Advanced button
+  if (!gpfrmAdvancedParameters->GetDefaultsSetForAnalysisOptions())
+    btnAdvancedAnalysis->Font->Style = TFontStyles() << fsBold;
+  else
+    btnAdvancedAnalysis->Font->Style = TFontStyles();
+  // Output tab Advanced button
+  if (!gpfrmAdvancedParameters->GetDefaultsSetForOutputOptions())
+    btnAdvancedOutput->Font->Style = TFontStyles() << fsBold;
+  else
+    btnAdvancedOutput->Font->Style = TFontStyles();
 }
 //---------------------------------------------------------------------------
 /** enables analysis control based upon the setting in probability model control */

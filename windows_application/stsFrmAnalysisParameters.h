@@ -97,12 +97,9 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TEdit *edtControlFileName;
    TButton *btnCaseBrowse;
    TButton *btnControlBrowse;
-   TBitBtn *btnAdvanced1_Yes;
-   TBitBtn *btnAdvanced1_No;
-   TBitBtn *btnAdvanced2_Yes;
-   TBitBtn *btnAdvanced2_No;
-   TBitBtn *btnAdvanced3_No;
-   TBitBtn *btnAdvanced3_Yes;
+   TBitBtn *btnAdvancedAnalysis;
+   TBitBtn *btnAdvancedOutput;
+   TBitBtn *btnAdvancedInput;
    TGroupBox *grpStudyPeriod;
    TLabel *Label8;
    TLabel *Label10;
