@@ -497,18 +497,53 @@ void TfrmAdvancedParameters::ValidateReportedSpatialClusterSize() {
 
 /** validates scanning window range settings - throws exception */
 void TfrmAdvancedParameters::ValidateScanningWindowRanges() {
+  Julian        StudyPeriodStartDate, StudyPeriodEndDate,
+                StartRangeStartDate, StartRangeEndDate,
+                EndRangeStartDate, EndRangeEndDate;
   try {
-    /** Until Martin decides how the study period dates should behave in regards
-        to time interval units, let the parameters validation handle this. The result
-        will be that any invalid settings will be printed to 'Warnings/Errors' window
-        instead of the preferred message box.
-        
-        Why is this a problem now?
-          The precision of times control has been replaced by a 'yes/no' control which
-          more simply indicates whether input case/control files possess dates. This control
-          would normally dictate whether dates would be defaulted in GUI. Given the past and
-          continued behavior of CParameters::ValidateStudyPeriodDateString(...) I believe
-          the current solution is correct, but that's not saying much :) */
+    if (chkRestrictTemporalRange->Enabled && chkRestrictTemporalRange->Checked) {
+      StudyPeriodStartDate = MDYToJulian(atoi(gAnalysisSettings.edtStudyPeriodStartDateMonth->Text.c_str()),
+                                         atoi(gAnalysisSettings.edtStudyPeriodStartDateDay->Text.c_str()),
+                                         atoi(gAnalysisSettings.edtStudyPeriodStartDateYear->Text.c_str()));
+      StudyPeriodEndDate = MDYToJulian(atoi(gAnalysisSettings.edtStudyPeriodEndDateMonth->Text.c_str()),
+                                       atoi(gAnalysisSettings.edtStudyPeriodEndDateDay->Text.c_str()),
+                                       atoi(gAnalysisSettings.edtStudyPeriodEndDateYear->Text.c_str()));
+      StartRangeStartDate = MDYToJulian(atoi(edtStartRangeStartMonth->Text.c_str()),
+                                        atoi(edtStartRangeStartDay->Text.c_str()),
+                                        atoi(edtStartRangeStartYear->Text.c_str()));
+      StartRangeEndDate = MDYToJulian(atoi(edtStartRangeEndMonth->Text.c_str()),
+                                      atoi(edtStartRangeEndDay->Text.c_str()),
+                                      atoi(edtStartRangeEndYear->Text.c_str()));
+      EndRangeStartDate = MDYToJulian(atoi(edtEndRangeStartMonth->Text.c_str()),
+                                      atoi(edtEndRangeStartDay->Text.c_str()),
+                                      atoi(edtEndRangeStartYear->Text.c_str()));
+      EndRangeEndDate = MDYToJulian(atoi(edtEndRangeEndMonth->Text.c_str()),
+                                    atoi(edtEndRangeEndDay->Text.c_str()),
+                                    atoi(edtEndRangeEndYear->Text.c_str()));
+
+      //check that scanning ranges are within study period
+      if (StartRangeStartDate < StudyPeriodStartDate || StartRangeStartDate > StudyPeriodEndDate)
+        GenerateAFException("The scanning window start range does not occur within study period.",
+                            "ValidateScanningWindowRanges()", *edtStartRangeStartYear);
+      if (StartRangeEndDate < StudyPeriodStartDate || StartRangeEndDate > StudyPeriodEndDate)
+        GenerateAFException("The scanning window start range does not occur within study period.",
+                            "ValidateScanningWindowRanges()", *edtStartRangeEndYear);
+      if (StartRangeStartDate > StartRangeEndDate)
+        GenerateAFException("The scanning window start range dates conflict.",
+                            "ValidateScanningWindowRanges()", *edtStartRangeStartYear);
+      if (EndRangeStartDate < StudyPeriodStartDate || EndRangeStartDate > StudyPeriodEndDate)
+        GenerateAFException("The scanning window end range does not occur within study period.",
+                            "ValidateScanningWindowRanges()", *edtEndRangeStartYear);
+      if (EndRangeEndDate < StudyPeriodStartDate || EndRangeEndDate > StudyPeriodEndDate)
+        GenerateAFException("The scanning window end range does not occur within study period.",
+                            "ValidateScanningWindowRanges()", *edtEndRangeEndYear);
+      if (EndRangeStartDate > EndRangeEndDate)
+        GenerateAFException("The scanning window end range dates conflict.",
+                            "ValidateScanningWindowRanges()", *edtEndRangeStartYear);
+      if (StartRangeStartDate >= EndRangeEndDate)
+        GenerateAFException("The scanning window start range does not occur before end range.",
+                            "ValidateScanningWindowRanges()", *edtStartRangeStartYear);
+    }
   }
   catch (ZdException & x) {
     x.AddCallpath("ValidateScanningWindowRanges()","TfrmAdvancedParameters");
