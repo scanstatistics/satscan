@@ -40,6 +40,6 @@ class CTimeIntervals {
     virtual IncludeClustersType GetType() const = 0;
 
     virtual void                CompareClusters(CCluster & Running, CCluster & TopShapeCluster) = 0;
-    virtual void                CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList * pMeasureList) = 0;
+    virtual void                CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList& pMeasureList) = 0;
 };
 #endif
