@@ -207,15 +207,16 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
   int                                  pos  = nLeftMargin, nCount=0;
   tract_t                              tTract;
   std::vector<std::string>             vTractIdentifiers;
+  measure_t                         ** ppMeasure(Data.GetMeasureArray());   
 
   try {
     for (int i = nFirstTract; i <= nLastTract; i++) {
-       //if (Data.m_pMeasure[0][Data.GetNeighbor(0, m_Center, i)]>nMinMeasure)       // access over-run here
-       //if (Data.m_pMeasure[m_iEllipseOffset][Data.GetNeighbor(m_iEllipseOffset, m_Center, i)]>nMinMeasure) // access over-run here
+       //if (ppMeasure[0][Data.GetNeighbor(0, m_Center, i)]>nMinMeasure)       // access over-run here
+       //if (ppMeasure[m_iEllipseOffset][Data.GetNeighbor(m_iEllipseOffset, m_Center, i)]>nMinMeasure) // access over-run here
 
-       // the first dimension of m_pMeasure is Time Interval !!!
+       // the first dimension of ppMeasure is Time Interval !!!
        tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, i);
-       if (Data.m_pMeasure[0][tTract] > nMinMeasure) {
+       if (ppMeasure[0][tTract] > nMinMeasure) {
          Data.GetTInfo()->tiGetTractIdentifiers(tTract, vTractIdentifiers);
          if (fp != NULL) {
             for (int k=0; k < (int)vTractIdentifiers.size(); k++) {
@@ -295,14 +296,14 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, int nLeftM
     Data.GetTInfo()->tiGetCoords(Data.GetNeighbor(m_iEllipseOffset, m_Center, m_nTracts), &pCoords2);
     nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
 
-    if (Data.m_pParameters->GetDimensionsOfData() < 5) {
+    if (Data.GetParameters().GetDimensionsOfData() < 5) {
       //print coordinates differently for the circles and ellipses
       if (m_iEllipseOffset == 0)  {
         fprintf(fp, "%sCoordinates / radius..: (", szSpacesOnLeft);
-      	for (i=0; i<(Data.m_pParameters->GetDimensionsOfData())-1; i++)
+      	for (i=0; i<(Data.GetParameters().GetDimensionsOfData())-1; i++)
       	   fprintf(fp, "%g,",pCoords[i]);
-      	fprintf(fp, "%g) / %-5.2f\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1],nRadius);
-        if (Data.m_pParameters->GetNumRequestedEllipses()) {
+      	fprintf(fp, "%g) / %-5.2f\n",pCoords[(Data.GetParameters().GetDimensionsOfData())-1],nRadius);
+        if (Data.GetParameters().GetNumRequestedEllipses()) {
           //print circle as ellipse with shape of '1' when analysis has ellipses
           fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
           fprintf(fp, "%sAngle (degrees).......: n/a\n", szSpacesOnLeft);
@@ -311,18 +312,18 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, int nLeftM
       }
       else {//print ellipse settings
         fprintf(fp, "%sCoordinates...........: (", szSpacesOnLeft);
-        for (i=0; i<(Data.m_pParameters->GetDimensionsOfData())-1; i++)
+        for (i=0; i<(Data.GetParameters().GetDimensionsOfData())-1; i++)
       	   fprintf(fp, "%g,",pCoords[i]);
-        fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1]);
+        fprintf(fp, "%g)\n",pCoords[(Data.GetParameters().GetDimensionsOfData())-1]);
         fprintf(fp, "%sEllipse Semiminor axis: %-g\n", szSpacesOnLeft, nRadius);
         fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
-        fprintf(fp, "%sAngle (degrees).......: %-g\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
-        fprintf(fp, "%sShape.................: %-g\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
+        fprintf(fp, "%sAngle (degrees).......: %-g\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.GetAnglesArray()[m_iEllipseOffset-1]));
+        fprintf(fp, "%sShape.................: %-g\n", szSpacesOnLeft, Data.GetShapesArray()[m_iEllipseOffset-1]);
       }
     }
     else {/* More than four dimensions: need to wrap output */
       fprintf(fp, "%sCoordinates...........: (", szSpacesOnLeft);
-      for (i=0; i<(Data.m_pParameters->GetDimensionsOfData())-1; i++) {
+      for (i=0; i<(Data.GetParameters().GetDimensionsOfData())-1; i++) {
          if (count < 4) { // This is a magic number: if 5 dimensions they all print on one line; if more, 4 per line
            fprintf(fp, "%g,",pCoords[i]);
     	   count++;
@@ -335,10 +336,10 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, int nLeftM
            count = 1;
          }
       }
-      fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1]);
+      fprintf(fp, "%g)\n",pCoords[(Data.GetParameters().GetDimensionsOfData())-1]);
       if (m_iEllipseOffset == 0) {
         fprintf(fp, "%sRadius................: %-5.2f\n", szSpacesOnLeft, nRadius);
-        if (Data.m_pParameters->GetNumRequestedEllipses()) {
+        if (Data.GetParameters().GetNumRequestedEllipses()) {
           //print circle as ellipse with shape of '1' when analysis has ellipses
           fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
           fprintf(fp, "%sAngle (degrees).......: n/a\n", szSpacesOnLeft);
@@ -348,8 +349,8 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, int nLeftM
       else {
         fprintf(fp, "%sEllipse Semiminor axis: %-g\n", szSpacesOnLeft, nRadius);
         fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
-        fprintf(fp, "%sAngle (degrees).......: %-g\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
-        fprintf(fp, "%sShape.................: %-g\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
+        fprintf(fp, "%sAngle (degrees).......: %-g\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.GetAnglesArray()[m_iEllipseOffset-1]));
+        fprintf(fp, "%sShape.................: %-g\n", szSpacesOnLeft, Data.GetShapesArray()[m_iEllipseOffset-1]);
       }
     }
 
@@ -414,12 +415,12 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, int iNu
   float         fUnitsInOccurrence, fYears, fMonths, fDays, fIntervals, fAdjustedP_Value;
 
   try {
-    if (Data.m_pParameters->GetIsProspectiveAnalysis() && Data.m_pParameters->GetNumReplicationsRequested() > 99) {
+    if (Data.GetParameters().GetIsProspectiveAnalysis() && Data.GetParameters().GetNumReplicationsRequested() > 99) {
       fprintf(fp, "%sNull Occurrence.......: ", szSpacesOnLeft);
       fIntervals = Data.m_nTimeIntervals - Data.m_nProspectiveIntervalStart + 1;
       fAdjustedP_Value = 1 - pow(1 - GetPVal(iNumSimulations), 1/fIntervals);
-      fUnitsInOccurrence = (fIntervals * Data.m_pParameters->GetTimeIntervalLength())/fAdjustedP_Value;
-      switch (Data.m_pParameters->GetTimeIntervalUnitsType()) {
+      fUnitsInOccurrence = (fIntervals * Data.GetParameters().GetTimeIntervalLength())/fAdjustedP_Value;
+      switch (Data.GetParameters().GetTimeIntervalUnitsType()) {
         case YEAR   : fprintf(fp, "Once in %.1f year%s\n", fUnitsInOccurrence, (fUnitsInOccurrence > 1 ? "s" : ""));
                       break;
         case MONTH  : fYears = floor(fUnitsInOccurrence/12);
@@ -453,7 +454,7 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, int iNu
                         fprintf(fp, "Once in %.0f year%s and %.0f day%s\n", fYears, (fYears == 1 ? "" : "s"), fDays, (fDays < 1.5 ? "" : "s"));
                       break;
         default     : ZdGenerateException("Invalid time interval index \"%d\" for prospective analysis.",
-                                          "DisplayNullOccurrence()", Data.m_pParameters->GetTimeIntervalUnitsType());
+                                          "DisplayNullOccurrence()", Data.GetParameters().GetTimeIntervalUnitsType());
       }
     }
   }
@@ -467,7 +468,7 @@ void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpa
 {
   fprintf(fp, "%sPopulation............: %-10.0f\n",
   szSpacesOnLeft,
-  Data.m_pModel->GetPopulation(m_iEllipseOffset, m_Center, m_nTracts, m_nFirstInterval, m_nLastInterval));
+  Data.GetProbabilityModel().GetPopulation(m_iEllipseOffset, m_Center, m_nTracts, m_nFirstInterval, m_nLastInterval));
 }
 
 void CCluster::DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft)
@@ -574,8 +575,8 @@ void CCluster::SetRatioAndDates(const CSaTScanData& Data)
   if (ClusterDefined())
     {
     m_bClusterSet = true;
-    SetRatio(Data.m_pModel->GetLogLikelihoodForTotal());
-    SetStartAndEndDates(Data.m_pIntervalStartTimes, Data.m_nTimeIntervals);
+    SetRatio(Data.GetProbabilityModel().GetLogLikelihoodForTotal());
+    SetStartAndEndDates(Data.GetTimeIntervalStartTimes(), Data.m_nTimeIntervals);
     }
 }
 
@@ -603,20 +604,20 @@ void CCluster::WriteCoordinates(FILE* fp, CSaTScanData* pData)
          {
          if (GetClusterType() == PURELYTEMPORAL)
             {
-            for (i=0; i<=(pData->m_pParameters->GetDimensionsOfData())-1; i++)
+            for (i=0; i<=(pData->GetParameters().GetDimensionsOfData())-1; i++)
                fprintf(fp, " %14s","n/a");
             fprintf(fp, " %12s ","n/a");
             }
          else
             {
-            for (i=0; i<=(pData->m_pParameters->GetDimensionsOfData())-1; i++)
+            for (i=0; i<=(pData->GetParameters().GetDimensionsOfData())-1; i++)
                fprintf(fp, " %14.6g",pCoords[i]);
             fprintf(fp, " %12.2f",nRadius);
             }
 
          //these are not applicable for circles....
          //SHAPE, ANGLE
-         if (pData->m_nNumEllipsoids > 0)
+         if (pData->GetParameters().GetNumRequestedEllipses() > 0)
             {
             if (GetClusterType() == PURELYTEMPORAL)
                fprintf(fp, " %8s %8s", "n/a", "n/a");
@@ -628,7 +629,7 @@ void CCluster::WriteCoordinates(FILE* fp, CSaTScanData* pData)
          {
          if (GetClusterType() == PURELYTEMPORAL)
             {
-            for (i=0; i<=(pData->m_pParameters->GetDimensionsOfData())-1; i++)
+            for (i=0; i<=(pData->GetParameters().GetDimensionsOfData())-1; i++)
                fprintf(fp, " %14s", "n/a");
             fprintf(fp, " %12s","n/a");
 
@@ -636,7 +637,7 @@ void CCluster::WriteCoordinates(FILE* fp, CSaTScanData* pData)
             }
          else
             {
-            for (i=0; i<=(pData->m_pParameters->GetDimensionsOfData())-1; i++)
+            for (i=0; i<=(pData->GetParameters().GetDimensionsOfData())-1; i++)
                fprintf(fp, " %14.6g",pCoords[i]);
 
             //just print the nRadius value here...
@@ -645,8 +646,8 @@ void CCluster::WriteCoordinates(FILE* fp, CSaTScanData* pData)
             fprintf(fp, " %12.2f",nRadius);
 
             //PRINT SHAPE AND ANGLE
-            fprintf(fp, " %8.3f", pData->mdE_Shapes[m_iEllipseOffset-1]);
-            fprintf(fp, " %8.3f", ConvertAngleToDegrees(pData->mdE_Angles[m_iEllipseOffset-1]));
+            fprintf(fp, " %8.3f", pData->GetShapesArray()[m_iEllipseOffset-1]);
+            fprintf(fp, " %8.3f", ConvertAngleToDegrees(pData->GetAnglesArray()[m_iEllipseOffset-1]));
             }
          }
 

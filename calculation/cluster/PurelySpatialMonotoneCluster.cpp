@@ -124,17 +124,17 @@ CPSMonotoneCluster& CPSMonotoneCluster::operator =(const CPSMonotoneCluster& clu
   return *this;
 }
 
-void CPSMonotoneCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n)
-{
-  tract_t nNeighbor = Data.GetNeighbor(0, m_Center, n);
+void CPSMonotoneCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {
+  tract_t       nNeighbor = Data.GetNeighbor(0, m_Center, n);
+  measure_t   * pMeasure(Data.GetMeasureArray()[0]);
 
   m_nSteps++;
 
   m_nCases   += pCases[0][nNeighbor];
-  m_nMeasure += Data.m_pMeasure[0][nNeighbor];
+  m_nMeasure += pMeasure[nNeighbor];
 
   m_pCasesList[m_nSteps-1]         = pCases[0][nNeighbor];
-  m_pMeasureList[m_nSteps-1]       = Data.m_pMeasure[0][nNeighbor];
+  m_pMeasureList[m_nSteps-1]       = pMeasure[nNeighbor];
   m_pFirstNeighborList[m_nSteps-1] = n;
   m_pLastNeighborList[m_nSteps-1]  = n;
 }
@@ -232,17 +232,18 @@ double CPSMonotoneCluster::GetRatio()
     return -1;
 }
 */
-void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, count_t** pCases)
-{
-   try
-      {
+void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, count_t** pCases) {
+  tract_t            ** ppNeighborCount(Data.GetNeighborCountArray());
+  CModel              & ProbModel(Data.GetProbabilityModel());  
+
+   try {
       //  int i = 1;
       //  AddNeighbor(Data, pCases, i);
       //  while (i<=Data.m_NeighborCounts[m_Center] &&
       //         m_nMeasure <= Data.m_nMaxCircleSize)
       //for (int k = 0; k <= m_pParameters->GetNumTotalEllipses(); k++)   //circle is 0 offset... (always there)
       //  {
-      for (int i=1; i<=Data.m_NeighborCounts[0][m_Center]; i++)
+      for (int i=1; i<= ppNeighborCount[0][m_Center]; i++)
         {
         AddNeighbor(0, Data, pCases, i);
         CheckCircle(GetLastCircleIndex());
@@ -252,18 +253,18 @@ void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, count_t** pC
         }
       // }
     
-      if (Data.m_nTotalCases != m_nCases)
+      if (Data.GetNumCases() != m_nCases)
       {
-        AddRemainder(Data.m_nTotalCases, Data.m_nTotalMeasure);
+        AddRemainder(Data.GetNumCases(), Data.GetTotalMeasure());
         CheckCircle(GetLastCircleIndex());
       }
     
-      m_nLogLikelihood = Data.m_pModel->CalcMonotoneLogLikelihood(*this);
+      m_nLogLikelihood = ProbModel.CalcMonotoneLogLikelihood(*this);
       m_bLogLSet        = true;
     
-      SetRatio(Data.m_pModel->GetLogLikelihoodForTotal());
+      SetRatio(ProbModel.GetLogLikelihoodForTotal());
     
-      if (Data.m_nTotalCases != m_nCases)
+      if (Data.GetNumCases() != m_nCases)
         RemoveRemainder();
     
       // Recalc Total Cases, Measure, and Tracts to  account for
@@ -388,20 +389,20 @@ void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
       {
       (Data.GetGInfo())->giGetCoords(m_Center, &pCoords);
       //fprintf(fp, "  Coordinates...................: (%g,%g)\n",x1,y1);
-      if(Data.m_pParameters->GetDimensionsOfData() < 5)
+      if(Data.GetParameters().GetDimensionsOfData() < 5)
       {
       	fprintf(fp, "%sCoordinates...........: (", szSpacesOnLeft);
-      	for (i=0; i<(Data.m_pParameters->GetDimensionsOfData())-1; i++)
+      	for (i=0; i<(Data.GetParameters().GetDimensionsOfData())-1; i++)
       	{
       		fprintf(fp, "%g,",pCoords[i]);
       	}
-      	fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1]);
+      	fprintf(fp, "%g)\n",pCoords[(Data.GetParameters().GetDimensionsOfData())-1]);
       }
       else /* More than four dimensions: need to wrap output */
       {
       	fprintf(fp, "%sCoordinates...........: (", szSpacesOnLeft);
         int count = 0;
-        for (i=0; i < (Data.m_pParameters->GetDimensionsOfData())-1; i++)
+        for (i=0; i < (Data.GetParameters().GetDimensionsOfData())-1; i++)
         {
         	if (count < 4) // This is a magic number: if 5 dimensions they
           							 // all print on one line; if more, 4 per line
@@ -419,7 +420,7 @@ void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
           	count = 1;
           }
         }
-        fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1]);
+        fprintf(fp, "%g)\n",pCoords[(Data.GetParameters().GetDimensionsOfData())-1]);
       }
       fprintf(fp, "%sRadius for each step..: ", szSpacesOnLeft);
     

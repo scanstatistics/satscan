@@ -69,14 +69,15 @@ CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& cluste
 }
 
 void CSpaceTimeCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {
-  int i;
+  int           i;
+  measure_t  ** ppMeasure(Data.GetMeasureArray());
 
   m_nTracts = n;
   tract_t nNeighbor = Data.GetNeighbor(iEllipse, m_Center, n);
 
   for (i=0; i<m_nTotalIntervals; i++) {
       m_pCumCases[i]   += pCases[i][nNeighbor];
-      m_pCumMeasure[i] += Data.m_pMeasure[i][nNeighbor];
+      m_pCumMeasure[i] += ppMeasure[i][nNeighbor];
   }
 }
 
@@ -112,13 +113,13 @@ void CSpaceTimeCluster::DeAllocCumulativeCounts()
 /** Returns the number of case for tract as defined by cluster. */
 count_t CSpaceTimeCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const
 {
-  return TI->GetCaseCountForTract(*this, tTract, Data.m_pCases);
+  return TI->GetCaseCountForTract(*this, tTract, Data.GetCasesArray());
 }
 
 /** Returns the measure for tract as defined by cluster. */
 measure_t CSpaceTimeCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const
 {
-  return Data.GetMeasureAdjustment() * TI->GetMeasureForTract(*this, tTract, Data.m_pMeasure);
+  return Data.GetMeasureAdjustment() * TI->GetMeasureForTract(*this, tTract, Data.GetMeasureArray());
 }
 
 void CSpaceTimeCluster::Initialize(tract_t nCenter = 0) {

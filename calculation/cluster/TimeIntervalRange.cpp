@@ -35,7 +35,10 @@ TimeIntervalRange * TimeIntervalRange::Clone() const {
     has a greater loglikelihood.*/
 void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopShapeCluster, const CSaTScanData& Data,
                                         const count_t* pCases, const measure_t* pMeasure) {
-  int   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  int           iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  CModel      & ProbabilityModel(Data.GetProbabilityModel());
+  count_t       tTotalCases(Data.GetNumCases());
+  double	dTotalMeasure(Data.GetTotalMeasure();
 
   //iterate through 'alive' windows separately, so we don't have to conditionally
   //check whether we need to do a subtraction.
@@ -46,8 +49,8 @@ void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopShapeC
      for (; iWindowStart <= iMaxStartWindow; ++iWindowStart) {
         Running.m_nCases = pCases[iWindowStart];
         Running.m_nMeasure = pMeasure[iWindowStart];
-        if (Running.RateIsOfInterest(Data.m_nTotalCases, Data.m_nTotalMeasure)) {
-          Running.m_nLogLikelihood = Data.m_pModel->CalcLogLikelihood(Running.m_nCases, Running.m_nMeasure);
+        if (Running.RateIsOfInterest(tTotalCases, dTotalMeasure)) {
+          Running.m_nLogLikelihood = ProbabilityModel.CalcLogLikelihood(Running.m_nCases, Running.m_nMeasure);
           if (Running.m_nLogLikelihood  > TopShapeCluster.m_nLogLikelihood) {
             TopShapeCluster.AssignAsType(Running);
             TopShapeCluster.m_nFirstInterval = iWindowStart;
@@ -64,8 +67,8 @@ void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopShapeC
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         Running.m_nCases = pCases[iWindowStart] - pCases[iWindowEnd];
         Running.m_nMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
-        if (Running.RateIsOfInterest(Data.m_nTotalCases, Data.m_nTotalMeasure)) {
-          Running.m_nLogLikelihood = Data.m_pModel->CalcLogLikelihood(Running.m_nCases, Running.m_nMeasure);
+        if (Running.RateIsOfInterest(tTotalCases, dTotalMeasure)) {
+          Running.m_nLogLikelihood = ProbabilityModel.CalcLogLikelihood(Running.m_nCases, Running.m_nMeasure);
           if (Running.m_nLogLikelihood  > TopShapeCluster.m_nLogLikelihood) {
             TopShapeCluster.AssignAsType(Running);
             TopShapeCluster.m_nFirstInterval = iWindowStart;
@@ -128,14 +131,14 @@ measure_t TimeIntervalRange::GetMeasureForTract(const CCluster & Cluster, tract_
 
 /** internal setup function */
 void TimeIntervalRange::Setup(const CSaTScanData& Data) {
-  switch(Data.m_pParameters->GetAnalysisType()) {
+  switch(Data.GetParameters().GetAnalysisType()) {
     case PROSPECTIVEPURELYTEMPORAL :
     case PROSPECTIVESPACETIME      : giStartRange_Start = 0;
                                      giStartRange_End = Data.m_nTimeIntervals;
                                      giEndRange_Start = Data.m_nProspectiveIntervalStart;
                                      giEndRange_End = Data.m_nTimeIntervals; break;
     case PURELYTEMPORAL :
-    case SPACETIME      : switch (Data.m_pParameters->GetIncludeClustersType()) {
+    case SPACETIME      : switch (Data.GetParameters().GetIncludeClustersType()) {
                             case ALLCLUSTERS     : giStartRange_Start = 0;
                                                    giStartRange_End = Data.m_nTimeIntervals;
                                                    giEndRange_Start = 1;
@@ -151,11 +154,11 @@ void TimeIntervalRange::Setup(const CSaTScanData& Data) {
                                                    giEndRange_Start = Data.m_nEndRangeStartDateIndex;
                                                    giEndRange_End = Data.m_nEndRangeEndDateIndex; break;
                             default : ZdGenerateException("Unknown cluster inclusion type: '%d'.",
-                                                          "Setup()", Data.m_pParameters->GetIncludeClustersType());
+                                                          "Setup()", Data.GetParameters().GetIncludeClustersType());
                           };
                           break;
     default : ZdGenerateException("Unknown analysis type for range intervals: '%d';",
-                                  "Setup()", Data.m_pParameters->GetAnalysisType());
+                                  "Setup()", Data.GetParameters().GetAnalysisType());
   };
 }
 
@@ -165,7 +168,7 @@ void TimeIntervalRange::ValidateWindowRanges(const CSaTScanData& Data) {
   char          sDate[50], sDate2[50];
   int           iMaxEndWindow, iWindowStart;
 
-  switch (Data.m_pParameters->GetTimeIntervalUnitsType()) {
+  switch (Data.GetParameters().GetTimeIntervalUnitsType()) {
     case YEAR  : sTimeIntervalType = "year"; break;
     case MONTH : sTimeIntervalType = "month"; break;
     case DAY   : sTimeIntervalType = "day"; break;
@@ -183,16 +186,16 @@ void TimeIntervalRange::ValidateWindowRanges(const CSaTScanData& Data) {
         "       the incorporation of the maximum temporal cluster size of %i %s causes the maximum window end time\n"
         "       to become %s (%s plus %i %s) and the window start time to become %s\n"
         "       (%s minus %i %s) which results in an invalid scanning window.\n", "Setup()",
-        Data.m_pParameters->GetStartRangeStartDate().c_str(),
-        Data.m_pParameters->GetStartRangeEndDate().c_str(),
-        Data.m_pParameters->GetEndRangeStartDate().c_str(),
-        Data.m_pParameters->GetEndRangeEndDate().c_str(),
+        Data.GetParameters().GetStartRangeStartDate().c_str(),
+        Data.GetParameters().GetStartRangeEndDate().c_str(),
+        Data.GetParameters().GetEndRangeStartDate().c_str(),
+        Data.GetParameters().GetEndRangeEndDate().c_str(),
         giMaxWindowLength, sTimeIntervalType.GetCString(),
-        JulianToChar(sDate, gData.m_pIntervalStartTimes[iMaxEndWindow]),
-        Data.m_pParameters->GetStartRangeEndDate().c_str(),
+        JulianToChar(sDate, gData.GetTimeIntervalStartTimes()[iMaxEndWindow]),
+        Data.GetParameters().GetStartRangeEndDate().c_str(),
         giMaxWindowLength, sTimeIntervalType.GetCString(),
-        JulianToChar(sDate2, gData.m_pIntervalStartTimes[iWindowStart]),
-        Data.m_pParameters->GetEndRangeStartDate().c_str(),
+        JulianToChar(sDate2, gData.GetTimeIntervalStartTimes()[iWindowStart]),
+        Data.GetParameters().GetEndRangeStartDate().c_str(),
         giMaxWindowLength, sTimeIntervalType.GetCString());
   }
   //The parameter validation checked already whether the end range dates conflicted,
@@ -204,13 +207,13 @@ void TimeIntervalRange::ValidateWindowRanges(const CSaTScanData& Data) {
         "       the incorporation of the maximum temporal cluster size of %i %s causes the maximum window end time\n"
         "       to become %s (%s plus %i %s), which does not intersect with requested scanning\n"
         "       window end range.\n","Setup()",
-        Data.m_pParameters->GetStartRangeStartDate().c_str(),
-        Data.m_pParameters->GetStartRangeEndDate().c_str(),
-        Data.m_pParameters->GetEndRangeStartDate().c_str(),
-        Data.m_pParameters->GetEndRangeEndDate().c_str(),
+        Data.GetParameters().GetStartRangeStartDate().c_str(),
+        Data.GetParameters().GetStartRangeEndDate().c_str(),
+        Data.GetParameters().GetEndRangeStartDate().c_str(),
+        Data.GetParameters().GetEndRangeEndDate().c_str(),
         giMaxWindowLength, sTimeIntervalType.GetCString(),
-        JulianToChar(sDate, gData.m_pIntervalStartTimes[iMaxEndWindow]),
-        Data.m_pParameters->GetStartRangeEndDate().c_str(),
+        JulianToChar(sDate, gData.GetTimeIntervalStartTimes()[iMaxEndWindow]),
+        Data.GetParameters().GetStartRangeEndDate().c_str(),
         giMaxWindowLength, sTimeIntervalType.GetCString());
   }
 }

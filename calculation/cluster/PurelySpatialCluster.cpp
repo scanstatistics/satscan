@@ -21,13 +21,13 @@ CPurelySpatialCluster * CPurelySpatialCluster::Clone() const {
   return new CPurelySpatialCluster(*this);;                                 
 }
 
-void CPurelySpatialCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n)
-{
-  tract_t nNeighbor = Data.GetNeighbor(iEllipse, m_Center, n);
+void CPurelySpatialCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {
+  tract_t       nNeighbor = Data.GetNeighbor(iEllipse, m_Center, n);
+  measure_t   * pMeasure(Data.GetMeasureArray()[0]);
 
   m_nTracts++;
   m_nCases   += pCases[0][nNeighbor];                        // the first dimension [0] applies to the time interval...
-  m_nMeasure += Data.m_pMeasure[0][nNeighbor];               // the first dimension [0] applies to the time interval...
+  m_nMeasure += pMeasure[nNeighbor];               // the first dimension [0] applies to the time interval...
 
   m_bClusterDefined = true;
 }
@@ -47,13 +47,13 @@ void CPurelySpatialCluster::DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int
 /** Returns the number of case for tract as defined by cluster. */
 count_t CPurelySpatialCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const
 {
-  return Data.m_pCases[0][tTract];
+  return Data.GetCasesArray()[0][tTract];
 }
 
 /** Returns the measure for tract as defined by cluster. */
 measure_t CPurelySpatialCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const
 {
-  return Data.GetMeasureAdjustment() * Data.m_pMeasure[0][tTract];
+  return Data.GetMeasureAdjustment() * Data.GetMeasureArray()[0][tTract];
 }
 
 void CPurelySpatialCluster::Initialize(tract_t nCenter=0)

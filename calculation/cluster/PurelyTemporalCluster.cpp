@@ -70,7 +70,7 @@ CPurelyTemporalCluster * CPurelyTemporalCluster::Clone() const {
 
 void CPurelyTemporalCluster::CompareTopCluster(CPurelyTemporalCluster & TopShapeCluster, const CSaTScanData & Data) {
   m_bClusterDefined = true;
-  m_TI->CompareClusters(*this, TopShapeCluster, Data, Data.m_pPTCases, Data.m_pPTMeasure);
+  m_TI->CompareClusters(*this, TopShapeCluster, Data, Data.GetCasesPTArray(), Data.GetMeasurePTArray());
 }
 
 void CPurelyTemporalCluster::ComputeBestMeasures(const count_t* pCases, const measure_t* pMeasure, CMeasureList & MeasureList) {
@@ -109,12 +109,12 @@ void CPurelyTemporalCluster::Initialize(tract_t nCenter) {
 
 /** Returns the number of case for tract as defined by cluster. */
 count_t CPurelyTemporalCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {
-  return m_TI->GetCaseCountForTract(*this, tTract, Data.m_pCases);
+  return m_TI->GetCaseCountForTract(*this, tTract, Data.GetCasesArray());
 }
 
 /** Returns the measure for tract as defined by cluster. */
 measure_t CPurelyTemporalCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {
-  return m_TI->GetMeasureForTract(*this, tTract, Data.m_pMeasure);
+  return m_TI->GetMeasureForTract(*this, tTract, Data.GetMeasureArray());
 }
 
 /** internal setup function */

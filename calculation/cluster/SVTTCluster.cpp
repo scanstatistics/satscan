@@ -75,16 +75,18 @@ CSVTTCluster& CSVTTCluster::operator =(const CSVTTCluster& rhs) {
 
 void CSVTTCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {
   m_nTracts = n;
-  tract_t nNeighbor = Data.GetNeighbor(iEllipse, m_Center, n);
+
+  tract_t       nNeighbor = Data.GetNeighbor(iEllipse, m_Center, n);
+  measure_t  ** pMeasureNC(Data.GetMeasureNCArray());
 
   for (int i=0; i<m_nTotalIntervals; i++)  {
     m_pCumCases[i]   += pCases[i][nNeighbor];
-    m_pCumMeasure[i] += Data.m_pMeasure_NC[i][nNeighbor];
+    m_pCumMeasure[i] += pMeasureNC[i][nNeighbor];
     m_pRemCases[i]   -= pCases[i][nNeighbor];
-    m_pRemMeasure[i] -= Data.m_pMeasure_NC[i][nNeighbor];
+    m_pRemMeasure[i] -= pMeasureNC[i][nNeighbor];
 
     m_nCases         += pCases[i][nNeighbor];
-    m_nMeasure       += Data.m_pMeasure_NC[i][nNeighbor];
+    m_nMeasure       += pMeasureNC[i][nNeighbor];
     m_nRemCases      -= pCases[i][nNeighbor];
   }
 
@@ -119,12 +121,12 @@ void CSVTTCluster::DisplayTimeTrend(FILE* fp, char* szSpacesOnLeft) {
 /** Returns the number of case for tract as defined by cluster. */
 count_t CSVTTCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const
 {
-  return Data.m_pCases[0][tTract];
+  return Data.GetCasesArray()[0][tTract];
 }
 
 /** Returns the measure for tract as defined by cluster. */
 measure_t CSVTTCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {
-  return Data.GetMeasureAdjustment() * Data.m_pMeasure[0][tTract];
+  return Data.GetMeasureAdjustment() * Data.GetMeasureArray()[0][tTract];
 }
 
 void CSVTTCluster::InitializeSVTT(tract_t nCenter, const CSaTScanData& Data, const count_t* pCasesByTimeInt) {
@@ -136,12 +138,12 @@ void CSVTTCluster::InitializeSVTT(tract_t nCenter, const CSaTScanData& Data, con
   memset(m_pCumCases, 0, m_nTotalIntervals * sizeof(count_t));
   memset(m_pCumMeasure, 0, m_nTotalIntervals * sizeof(measure_t));
   memcpy(m_pRemCases, pCasesByTimeInt, m_nTotalIntervals * sizeof(count_t));
-  memcpy(m_pRemMeasure, Data.m_pMeasure_TotalByTimeInt, m_nTotalIntervals * sizeof(measure_t));
+  memcpy(m_pRemMeasure, Data.GetMeasureByTimeIntervalArray(), m_nTotalIntervals * sizeof(measure_t));
 
   m_nCases    = 0;
   m_nMeasure  = 0.0;
   m_nRemCases = 0;
-  m_nRemCases = Data.m_nTotalCases;
+  m_nRemCases = Data.GetNumCases();
 
   m_nTimeTrend.Initialize();
   m_nRemTimeTrend.Initialize();

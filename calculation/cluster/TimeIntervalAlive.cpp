@@ -20,7 +20,10 @@ CTIAlive * CTIAlive::Clone() const {
     cluster ever has a greater loglikelihood.*/
 void CTIAlive::CompareClusters(CCluster & Running, CCluster & TopShapeCluster, const CSaTScanData& Data,
                                         const count_t* pCases, const measure_t* pMeasure) {
-  int   iWindowStart, iWindowEnd;
+  int           iWindowStart, iWindowEnd;
+  CModel      & ProbabilityModel(Data.GetProbabilityModel());
+  count_t       tTotalCases(Data.GetNumCases());
+  double	dTotalMeasure(Data.GetTotalMeasure();
 
   //iterate through all possible 'alive' windows
   iWindowStart = giNumIntervals - giMaxWindowLength;
@@ -28,8 +31,8 @@ void CTIAlive::CompareClusters(CCluster & Running, CCluster & TopShapeCluster, c
   for (; iWindowStart < iWindowEnd; ++iWindowStart) {
        Running.m_nCases = pCases[iWindowStart];
        Running.m_nMeasure = pMeasure[iWindowStart];
-       if (Running.RateIsOfInterest(Data.m_nTotalCases, Data.m_nTotalMeasure)) {
-          Running.m_nLogLikelihood = Data.m_pModel->CalcLogLikelihood(Running.m_nCases, Running.m_nMeasure);
+       if (Running.RateIsOfInterest(tTotalCases, dTotalMeasure)) {
+          Running.m_nLogLikelihood = ProbabilityModel.CalcLogLikelihood(Running.m_nCases, Running.m_nMeasure);
           if (Running.m_nLogLikelihood  > TopShapeCluster.m_nLogLikelihood) {
             TopShapeCluster.AssignAsType(Running);
             TopShapeCluster.m_nFirstInterval = iWindowStart;

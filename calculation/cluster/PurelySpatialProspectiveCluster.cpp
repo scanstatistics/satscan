@@ -69,18 +69,19 @@ CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator=(co
 }
 
 void CPurelySpatialProspectiveCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {
-  int   i, j;
+  int           i, j;
+  measure_t  ** ppMeasure(Data.GetMeasureArray());   
 
   m_nTracts = n;
   tract_t nNeighbor = Data.GetNeighbor(iEllipse, m_Center, n);
 
   //set cases for entire period added by this neighbor
   m_pCumCases[0]   += pCases[0][nNeighbor];
-  m_pCumMeasure[0] += Data.m_pMeasure[0][nNeighbor];
+  m_pCumMeasure[0] += ppMeasure[0][nNeighbor];
 
   for (j=1, i=m_nProspectiveStartInterval; i < m_nTotalIntervals; j++, i++) {
       m_pCumCases[j]   += pCases[i][nNeighbor];
-      m_pCumMeasure[j] += Data.m_pMeasure[i][nNeighbor];
+      m_pCumMeasure[j] += ppMeasure[i][nNeighbor];
   }
 }
 
