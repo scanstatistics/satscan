@@ -12,9 +12,11 @@
 #include "SpaceTimeIncludePurelySpatialAnalysis.h"
 #include "SpaceTimeIncludePurelyTemporalAnalysis.h"
 #include "SpaceTimeIncludePureAnalysis.h"
+#include "SVTTAnalysis.h"
 #include "PurelySpatialData.h"
 #include "PurelyTemporalData.h"
 #include "SpaceTimeData.h"
+#include "SVTTData.h"
 #include "PrintScreen.h"
 #include "DBFFile.h"
 
@@ -38,7 +40,7 @@ int main(int argc, char *argv[]) {
     if (Parameters.GetErrorOnRead()) {
       sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
-      ZdGenerateException(sMessage.GetCString(),"main(int,char*)");
+      SSGenerateException(sMessage.GetCString(),"main(int,char*)");
     }
     //Set run history attributes here
     Parameters.SetRunHistoryFilename(GetToolkit().GetRunHistoryFileName());
@@ -46,7 +48,7 @@ int main(int argc, char *argv[]) {
     if (! Parameters.ValidateParameters(ConsolePrint)) {
       sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
-      ZdGenerateException(sMessage.GetCString(),"main(int,char*)");
+      SSGenerateException(sMessage.GetCString(),"main(int,char*)");
     }
 
     switch (Parameters.GetAnalysisType()) {
@@ -54,6 +56,7 @@ int main(int argc, char *argv[]) {
       case PURELYTEMPORAL       : pData = new CPurelyTemporalData(&Parameters, &ConsolePrint); break;
       case SPACETIME            : pData = new CSpaceTimeData(&Parameters, &ConsolePrint); break;
       case PROSPECTIVESPACETIME : pData = new CSpaceTimeData(&Parameters, &ConsolePrint); break;
+      case SPATIALVARTEMPTREND  : pData = new CSVTTData(&Parameters, &ConsolePrint); break;
       default                   : ZdGenerateException("Invalid Analysis Type Encountered.", "main(int,char*)");
     };
     pData->ReadDataFromFiles();
@@ -83,10 +86,11 @@ int main(int argc, char *argv[]) {
                                   else
                                     pAnalysis = new CSpaceTimeAnalysis(&Parameters, pData, &ConsolePrint);
                                   break;
+       case SPATIALVARTEMPTREND : pAnalysis = new CSpatialVarTempTrendAnalysis(&Parameters, pData, &ConsolePrint); break;
        default                  : ZdGenerateException("Invalid Analysis Type Encountered.", "main(int,char*)");
     }
     if (! pAnalysis->Execute(RunTime))
-      ZdGenerateException("\nProblem(s) occurred that caused the analysis to stop.\n", "main(int,char*)");
+      SSGenerateException("\nProblem(s) occurred that caused the analysis to stop.\n", "main(int,char*)");
     else
       ConsolePrint.SatScanPrintf("\nSaTScan completed successfully.\nThe results have been written to: \n  %s\n\n",
                                  Parameters.GetOutputFileName().c_str());
@@ -110,7 +114,6 @@ int main(int argc, char *argv[]) {
     ConsolePrint.SatScanPrintf("Please contact technical support with the following information.\n");
     ConsolePrint.SatScanPrintf("Program Error:\n");
     ConsolePrint.SatScanPrintf(x.GetErrorMessage());
-    ConsolePrint.SatScanPrintf("\n\nCallpath:\n");
     ConsolePrint.SatScanPrintf(x.GetCallpath());
     BasisExit();
     exit(1);
