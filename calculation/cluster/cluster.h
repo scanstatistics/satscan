@@ -8,28 +8,9 @@
 #include "DataStream.h"
 #include "UtilityFunctions.h"
 #include "ClusterDataFactory.h"
+#include "AsciiPrintFormat.h"
 
 class stsAreaSpecificData;
-
-/** ASCII result file print conditions for CCluster object */
-class ClusterPrintFormat {
-   private:
-     int    giLeftMargin;
-     int    giRightMargin;
-     char   gcDeliminator;
-     char   gsSpacesOnLeft[100];
-
-   public:
-     ClusterPrintFormat(int iLeftMargin=26, int iRightMargin=67, char cDeliminator=',');
-     ~ClusterPrintFormat();
-
-     char               GetDeliminator() const {return gcDeliminator;}
-     int                GetLeftMargin() const {return giLeftMargin;}
-     int                GetRightMargin() const {return giRightMargin;}
-     const char       * GetSpacesOnLeft() const {return gsSpacesOnLeft;}
-     char             * GetSpacesOnLeft() {return gsSpacesOnLeft;}
-     void               SetLeftMargin(unsigned int iClusterNumber);
-};
 
 /** Defines properties of each potential cluster evaluated by analysis. Provides
     functionality for printing cluster properties to file stream in predefined
@@ -61,29 +42,34 @@ class CCluster {
 
     virtual bool                  ClusterDefined() const {return m_nTracts;}
     const double                  ConvertAngleToDegrees(double dAngle) const;
-    virtual void                  Display(FILE* fp, const CParameters& Parameters, const CSaTScanData& Data,
-                                          unsigned int iReportedCluster, measure_t nMinMeasure,
-                                          unsigned int iNumSimsCompleted) const;
+    virtual void                  Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iReportedCluster,
+                                          measure_t nMinMeasure, unsigned int iNumSimsCompleted) const;
+    virtual void                  DisplayAnnualCaseInformation(FILE* fp, const CSaTScanData& DataHub,
+                                                               const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const {/*stub - no action*/}
+    virtual void                  DisplayCaseInformation(FILE* fp, const CSaTScanData& DataHub,
+                                                         const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, measure_t nMinMeasure,
-                                                      const ClusterPrintFormat& PrintFormat) const;
+                                                      const AsciiPrintFormat& PrintFormat) const;
     void                          DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data, tract_t nFirstTract,
                                                             tract_t nLastTract, measure_t nMinMeasure,
-                                                            const ClusterPrintFormat& PrintFormat) const;
+                                                            const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
-                                                     const ClusterPrintFormat& PrintFormat) const;
+                                                     const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
-                                                       const ClusterPrintFormat& PrintFormat) const;
+                                                       const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHub,
+                                                               const AsciiPrintFormat& PrintFormat,
+                                                               unsigned int iNumSimsCompleted) const;
     virtual void                  DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigned int iNumSimulations,
-                                                        const ClusterPrintFormat& PrintFormat) const;
-    virtual void                  DisplayPopulation(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const ;
-    virtual void                  DisplayPValue(FILE* fp, unsigned int uiNumSimualtionsCompleted,
-                                                const ClusterPrintFormat& PrintFormat) const;
-    virtual void                  DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment,
-                                                      const ClusterPrintFormat& PrintFormat) const;
-    virtual void                  DisplaySteps(FILE* fp, const ClusterPrintFormat& PrintFormat) const {/*stub - no action*/}
-    virtual void                  DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const ClusterPrintFormat& PrintFormat) const;
-    virtual void                  DisplayTimeTrend(FILE* fp, const ClusterPrintFormat& PrintFormat) const {/*stub - no action*/}
+                                                        const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayPopulation(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const ;
+    virtual void                  DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataHub,
+                                                      const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplaySteps(FILE* fp, const AsciiPrintFormat& PrintFormat) const {/*stub - no action*/}
+    virtual void                  DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintFormat) const {/*stub - no action*/}
     virtual count_t               GetCaseCount(unsigned int iStream) const {return 0;}
     virtual count_t               GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {return 0;}
     virtual tract_t               GetCentroidIndex() const {return m_Center;}
@@ -96,7 +82,7 @@ class CCluster {
     const double                  GetPValue(unsigned int uiNumSimulationsCompleted) const;
     unsigned int                  GetRank() const {return m_nRank;}
     double                        GetRatio() const {return m_nRatio;}
-    const double                  GetRelativeRisk(double nMeasureAdjustment) const;
+    const double                  GetRelativeRisk(double nMeasureAdjustment, unsigned int iStream=0) const;
     virtual double                GetRelativeRiskForTract(tract_t tTract, const CSaTScanData& DataHub) const;
     virtual ZdString            & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     void                          IncrementRank() {m_nRank++;}

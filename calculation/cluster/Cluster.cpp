@@ -6,28 +6,6 @@
 #include "stsAreaSpecificData.h"
 
 /** constructor */
-ClusterPrintFormat::ClusterPrintFormat(int iLeftMargin, int iRightMargin, char cDeliminator)
-                   :giLeftMargin(iLeftMargin), giRightMargin(iRightMargin), gcDeliminator(cDeliminator) {
-  gsSpacesOnLeft[0] = '\0';
-}
-
-/** destructor */
-ClusterPrintFormat::~ClusterPrintFormat() {}
-
-/** Adjusts left margin give cluster number */
-void ClusterPrintFormat::SetLeftMargin(unsigned int iClusterNumber) {
-  // Adjust for spacing of cluster number
-  strcpy(gsSpacesOnLeft, "  ");
-  int n = (int)floor(((double)iClusterNumber)/10);
-  while (n > 0) {
-      strcat(gsSpacesOnLeft, " ");
-      ++giLeftMargin;
-      n = (int)floor(((double)n)/10);
-  }
-}
-
-
-/** constructor */
 CCluster::CCluster() {
   Initialize();
 }
@@ -73,45 +51,26 @@ const double CCluster::ConvertAngleToDegrees(double dAngle) const {
 }
 
 /** Writes cluster properties to file stream in format required by result output file  */
-void CCluster::Display(FILE* fp, const CParameters& Parameters, const CSaTScanData& Data,
-                       unsigned int iReportedCluster, measure_t nMinMeasure, unsigned int iNumSimsCompleted) const {
-  ClusterPrintFormat PrintFormat(26, 67, ',');
-
+void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iReportedCluster,
+                       measure_t nMinMeasure, unsigned int iNumSimsCompleted) const {
   try {
+    AsciiPrintFormat PrintFormat;
+    PrintFormat.SetMarginsAsClusterSection(iReportedCluster);
     fprintf(fp, "%u.", iReportedCluster);
-    PrintFormat.SetLeftMargin(iReportedCluster);
+    DisplayCensusTracts(fp, DataHub, nMinMeasure, PrintFormat);
     DisplaySteps(fp, PrintFormat);
-    fprintf(fp, "Location IDs ");
-    DisplayCensusTracts(fp, Data, nMinMeasure, PrintFormat);
-    if (Parameters.GetCoordinatesType() == CARTESIAN)
-      DisplayCoordinates(fp, Data, PrintFormat);
+    if (DataHub.GetParameters().GetCoordinatesType() == CARTESIAN)
+      DisplayCoordinates(fp, DataHub, PrintFormat);
     else
-      DisplayLatLongCoords(fp, Data, PrintFormat);
-    DisplayTimeFrame(fp, Data, PrintFormat);
-    if (Parameters.GetProbabiltyModelType() == POISSON || Parameters.GetProbabiltyModelType() == BERNOULLI)
-      DisplayPopulation(fp, Data, PrintFormat);
-    fprintf(fp, "%sNumber of cases.......: %ld", PrintFormat.GetSpacesOnLeft(), GetCaseCount(0));
-    fprintf(fp, "          (%.2f expected)\n", Data.GetMeasureAdjustment() * GetMeasure(0));
-    if (Parameters.GetProbabiltyModelType() == POISSON)
-      fprintf(fp, "%sAnnual cases / %.0f.: %.1f\n", PrintFormat.GetSpacesOnLeft(), Data.GetAnnualRatePop(),
-              Data.GetAnnualRateAtStart()*GetRelativeRisk(Data.GetMeasureAdjustment()));
-    DisplayRelativeRisk(fp, Data.GetMeasureAdjustment(), PrintFormat);
-    //Print Loglikelihood/Test Statistic
-    if (Parameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION)
-      fprintf(fp, "%sTest statistic........: %f\n", PrintFormat.GetSpacesOnLeft(), m_nRatio);
-    else {
-      fprintf(fp, "%sLog likelihood ratio..: %f\n", PrintFormat.GetSpacesOnLeft(), m_nRatio/m_DuczmalCorrection);
-      if (Parameters.GetDuczmalCorrectEllipses())
-        fprintf(fp, "%sTest statistic........: %f\n", PrintFormat.GetSpacesOnLeft(), m_nRatio);
-    }
-    if (iNumSimsCompleted)
-      fprintf(fp, "%sMonte Carlo rank......: %u/%ld\n", PrintFormat.GetSpacesOnLeft(), m_nRank, iNumSimsCompleted+1);
-    if (iNumSimsCompleted > 98) {
-        fprintf(fp, "%sP-value...............: ", PrintFormat.GetSpacesOnLeft());
-        DisplayPValue(fp, iNumSimsCompleted, PrintFormat);
-        fprintf(fp, "\n");
-    }
-    DisplayNullOccurrence(fp, Data, iNumSimsCompleted, PrintFormat);
+      DisplayLatLongCoords(fp, DataHub, PrintFormat);
+    DisplayTimeFrame(fp, DataHub, PrintFormat);
+    DisplayPopulation(fp, DataHub, PrintFormat);
+    DisplayCaseInformation(fp, DataHub, PrintFormat);
+    DisplayAnnualCaseInformation(fp, DataHub, PrintFormat);
+    DisplayRelativeRisk(fp, DataHub, PrintFormat);
+    DisplayRatio(fp, DataHub, PrintFormat);
+    DisplayMonteCarloInformation(fp, DataHub, PrintFormat, iNumSimsCompleted);
+    DisplayNullOccurrence(fp, DataHub, iNumSimsCompleted, PrintFormat);
     DisplayTimeTrend(fp, PrintFormat);
   }
   catch (ZdException &x) {
@@ -120,12 +79,54 @@ void CCluster::Display(FILE* fp, const CParameters& Parameters, const CSaTScanDa
   }
 }
 
+/** Prints annual cases to file stream is in format required by result output file. */
+void CCluster::DisplayAnnualCaseInformation(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+  unsigned int                  i;
+  ZdString                      sWork, sBuffer;
+  const DataStreamHandler     & Streams = DataHub.GetDataStreamHandler();
+
+  if (DataHub.GetParameters().GetProbabiltyModelType() == POISSON) {
+    sBuffer.printf("Annual cases / %.0f", DataHub.GetAnnualRatePop());
+    PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
+    sBuffer.printf("%.1f", DataHub.GetAnnualRateAtStart(0) * GetRelativeRisk(DataHub.GetMeasureAdjustment(), 0));
+    for (i=1; i < Streams.GetNumStreams(); ++i) {
+       sWork.printf(", %.1f", DataHub.GetAnnualRateAtStart(i) * GetRelativeRisk(DataHub.GetMeasureAdjustment(), i));
+       sBuffer << sWork;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+  }
+}
+
+/** Prints number of observed and expected cases to file stream is in format
+    required by result output file. */
+void CCluster::DisplayCaseInformation(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+  unsigned int                  i;
+  ZdString                      sWork, sBuffer;
+  const DataStreamHandler     & Streams = DataHub.GetDataStreamHandler();
+
+    PrintFormat.PrintSectionLabel(fp, "Number of cases", false, true);
+    sBuffer.printf("%ld", GetCaseCount(0));
+    for (i=1; i < Streams.GetNumStreams(); ++i) {
+       sWork.printf(", %ld", GetCaseCount(i));
+       sBuffer << sWork;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    //print expected cases label
+    PrintFormat.PrintSectionLabel(fp, "Expected cases", false, true);
+    //print expected cases
+    sBuffer.printf("%.2f", DataHub.GetMeasureAdjustment() * GetMeasure(0));
+    for (i=1; i < Streams.GetNumStreams(); ++i) {
+       sWork.printf(", %.2f", DataHub.GetMeasureAdjustment() * GetMeasure(i));
+       sBuffer << sWork;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+}
+
 /** Writes cluster location identifiers to file stream in format required by result output file  */
 void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, measure_t nMinMeasure,
-                                   const ClusterPrintFormat& PrintFormat) const {
+                                   const AsciiPrintFormat& PrintFormat) const {
   try {
-    if (PrintFormat.GetLeftMargin() > 0)
-      fprintf(fp, "included.: ");
+    PrintFormat.PrintSectionLabel(fp, "Location IDs included", false, false);  
     DisplayCensusTractsInStep(fp, Data, 1, m_nTracts, nMinMeasure, PrintFormat);
   }
   catch (ZdException &x) {
@@ -134,39 +135,46 @@ void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, measure_t
   }
 }
 
-/** Writes clusters location information in format required by result output file. */
+/** Writes clusters location information in format required by result output file.
+    NOTE: Locations contained in cluster might be suppressed from printing if
+          their total measure is less than nMinMeasure. There isn't any
+          documentation indicating why this feature is present, but one possible
+          reason is this:
+          This calling of this function is generally in the subroutines spawned
+          by CCluster::Display(...). For non-sequential scan analyses, nMinMeasure
+          is assigned -1; which is not a possible expected value. So when
+          nMinMeasure = -1, all locations will always be printed. For the sequential
+          scan feature, nMinMeasure is assigned 0. This corrects for locations
+          contained in cluster that were actually removed in previous iterations
+          of sequential scan but are geographically in defined cluster. Note that
+          "removed from previous iterations" means that measure and cases are set
+          to zero.                                                                 */
 void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                                          tract_t nFirstTract, tract_t nLastTract,
-                                         measure_t nMinMeasure, const ClusterPrintFormat& PrintFormat) const {
-                                         
-  int                                  pos  = PrintFormat.GetLeftMargin(), nCount=0;
-  tract_t                              tTract;
-  std::vector<std::string>             vTractIdentifiers;
-  measure_t                         ** ppMeasure(Data.GetDataStreamHandler().GetStream(0/*for now*/).GetMeasureArray());
+                                         measure_t nMinMeasure, const AsciiPrintFormat& PrintFormat) const {
+
+  unsigned int                  k;
+  tract_t                       i, tTract;
+  ZdString                      sLocations;
+  std::vector<std::string>      vTractIdentifiers;
+  measure_t                  ** ppMeasure(Data.GetDataStreamHandler().GetStream(0/*for now*/).GetMeasureArray());
 
   try {
-    for (int i=nFirstTract; i <= nLastTract; i++) {
+    for (i=nFirstTract; i <= nLastTract; ++i) {
+       //get i'th neighbor tracts index
        tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, i);
+       //suppress printing of this location if total measure for tract is less than nMinMeasure
        if (ppMeasure[0][tTract] > nMinMeasure) {
+         //get all locations ids for tract at index tTract -- might be more than one if combined
          Data.GetTInfo()->tiGetTractIdentifiers(tTract, vTractIdentifiers);
-         for (int k=0; k < (int)vTractIdentifiers.size(); k++) {
-            pos += strlen(vTractIdentifiers[k].c_str()) + 2;
-            if (nCount > 1 && pos > PrintFormat.GetRightMargin()) { 
-              pos = PrintFormat.GetLeftMargin() + strlen(vTractIdentifiers[k].c_str()) + 2;
-              fprintf(fp, "\n");
-              for (int j=0; j < PrintFormat.GetLeftMargin(); ++j)
-                 fprintf(fp, " ");
-            }
-            fprintf(fp, "%s", vTractIdentifiers[k].c_str());
-            if (k < (int)vTractIdentifiers.size() - 1)
-              fprintf(fp, "%c ", PrintFormat.GetDeliminator());
-            nCount++;
+         for (k=0; k < vTractIdentifiers.size(); ++k) {
+            if (sLocations.GetLength())
+              sLocations << ", ";
+            sLocations << vTractIdentifiers[k].c_str();
          }
-         if (i < nLastTract)
-           fprintf(fp, "%c ", PrintFormat.GetDeliminator());
        }
     }
-    fprintf(fp, "\n");
+    PrintFormat.PrintAlignedMarginsDataString(fp, sLocations);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayCensusTractsInStep()","CCluster");
@@ -176,74 +184,56 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
 
 /** Writes clusters cartesian coordinates and ellipse properties (if cluster is elliptical)
     in format required by result output file. */
-void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const {
+void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
   double      * pCoords = 0, * pCoords2 = 0;
   float         nRadius;
   int           i, j, count=0;
+  ZdString      sBuffer, sWork;
 
   try {
     Data.GetGInfo()->giGetCoords(m_Center, &pCoords);
     Data.GetTInfo()->tiGetCoords(Data.GetNeighbor(m_iEllipseOffset, m_Center, m_nTracts), &pCoords2);
     nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
 
-    if (Data.GetParameters().GetDimensionsOfData() < 5) {
-      //print coordinates differently for the circles and ellipses
-      if (m_iEllipseOffset == 0)  {
-        fprintf(fp, "%sCoordinates / radius..: (", PrintFormat.GetSpacesOnLeft());
-      	for (i=0; i<(Data.GetParameters().GetDimensionsOfData())-1; i++)
-      	   fprintf(fp, "%g,",pCoords[i]);
-      	fprintf(fp, "%g) / %-5.2f\n",pCoords[(Data.GetParameters().GetDimensionsOfData())-1],nRadius);
-        if (Data.GetParameters().GetNumRequestedEllipses()) {
-          //print circle as ellipse with shape of '1' when analysis has ellipses
-          fprintf(fp, "%sEllipse Parameters....:\n", PrintFormat.GetSpacesOnLeft());
-          fprintf(fp, "%sAngle (degrees).......: n/a\n", PrintFormat.GetSpacesOnLeft());
-          fprintf(fp, "%sShape.................: 1.0\n", PrintFormat.GetSpacesOnLeft());
-        }
+    //print coordinates differently for the circles and ellipses
+    if (m_iEllipseOffset == 0)  {//print coordinates for circle
+      PrintFormat.PrintSectionLabel(fp, "Coordinates / radius", false, true);
+      for (i=0; i < Data.GetParameters().GetDimensionsOfData() - 1; ++i) {
+         sWork.printf("%s%g,", (i == 0 ? "(" : "" ), pCoords[i]);
+         sBuffer << sWork;
       }
-      else {//print ellipse settings
-        fprintf(fp, "%sCoordinates...........: (", PrintFormat.GetSpacesOnLeft());
-        for (i=0; i<(Data.GetParameters().GetDimensionsOfData())-1; i++)
-      	   fprintf(fp, "%g,",pCoords[i]);
-        fprintf(fp, "%g)\n",pCoords[(Data.GetParameters().GetDimensionsOfData())-1]);
-        fprintf(fp, "%sEllipse Semiminor axis: %-g\n", PrintFormat.GetSpacesOnLeft(), nRadius);
-        fprintf(fp, "%sEllipse Parameters....:\n", PrintFormat.GetSpacesOnLeft());
-        fprintf(fp, "%sAngle (degrees).......: %-g\n", PrintFormat.GetSpacesOnLeft(), ConvertAngleToDegrees(Data.GetAnglesArray()[m_iEllipseOffset-1]));
-        fprintf(fp, "%sShape.................: %-g\n", PrintFormat.GetSpacesOnLeft(), Data.GetShapesArray()[m_iEllipseOffset-1]);
+      sWork.printf("%g) / %-5.2f", pCoords[Data.GetParameters().GetDimensionsOfData() - 1], nRadius);
+      sBuffer << sWork;
+      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+      //print ellipse particulars - circle with shape of '1'
+      if (Data.GetParameters().GetNumRequestedEllipses()) {
+        PrintFormat.PrintSectionLabel(fp, "Ellipse Parameters", false, true);
+        fprintf(fp, "\n");
+        PrintFormat.PrintSectionLabel(fp, "Angle (degrees)", false, true);
+        fprintf(fp, "n/a\n");
+        PrintFormat.PrintSectionLabel(fp, "Shape", false, true);
+        fprintf(fp, "1.0\n");
       }
     }
-    else {/* More than four dimensions: need to wrap output */
-      fprintf(fp, "%sCoordinates...........: (", PrintFormat.GetSpacesOnLeft());
-      for (i=0; i<(Data.GetParameters().GetDimensionsOfData())-1; i++) {
-         if (count < 4) { // This is a magic number: if 5 dimensions they all print on one line; if more, 4 per line
-           fprintf(fp, "%g,",pCoords[i]);
-    	   count++;
-         }
-         else { /*Start a new line */
-           fprintf(fp,"\n");
-           for (j=0; j < PrintFormat.GetLeftMargin() + 1; j++)
-              fprintf(fp, " ");
-           fprintf(fp, "%g,",pCoords[i]);
-           count = 1;
-         }
+    else {//print ellipse settings
+      PrintFormat.PrintSectionLabel(fp, "Coordinates", false, true);
+      for (i=0; i < Data.GetParameters().GetDimensionsOfData() - 1; ++i) {
+         sWork.printf("%s%g,", (i == 0 ? "(" : "" ), pCoords[i]);
+         sBuffer << sWork;
       }
-      fprintf(fp, "%g)\n",pCoords[(Data.GetParameters().GetDimensionsOfData())-1]);
-      if (m_iEllipseOffset == 0) {
-        fprintf(fp, "%sRadius................: %-5.2f\n", PrintFormat.GetSpacesOnLeft(), nRadius);
-        if (Data.GetParameters().GetNumRequestedEllipses()) {
-          //print circle as ellipse with shape of '1' when analysis has ellipses
-          fprintf(fp, "%sEllipse Parameters....:\n", PrintFormat.GetSpacesOnLeft());
-          fprintf(fp, "%sAngle (degrees).......: n/a\n", PrintFormat.GetSpacesOnLeft());
-          fprintf(fp, "%sShape.................: 1.0\n", PrintFormat.GetSpacesOnLeft());
-        }
-      }
-      else {
-        fprintf(fp, "%sEllipse Semiminor axis: %-g\n", PrintFormat.GetSpacesOnLeft(), nRadius);
-        fprintf(fp, "%sEllipse Parameters....:\n", PrintFormat.GetSpacesOnLeft());
-        fprintf(fp, "%sAngle (degrees).......: %-g\n", PrintFormat.GetSpacesOnLeft(), ConvertAngleToDegrees(Data.GetAnglesArray()[m_iEllipseOffset-1]));
-        fprintf(fp, "%sShape.................: %-g\n", PrintFormat.GetSpacesOnLeft(), Data.GetShapesArray()[m_iEllipseOffset-1]);
-      }
+      sWork.printf("%g)", pCoords[Data.GetParameters().GetDimensionsOfData() - 1]);
+      sBuffer << sWork;
+      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+      //print ellipse particulars
+      PrintFormat.PrintSectionLabel(fp, "Ellipse Semiminor axis", false, true);
+      fprintf(fp, "%-g\n", nRadius);
+      PrintFormat.PrintSectionLabel(fp, "Ellipse Parameters", false, true);
+      fprintf(fp, "\n");
+      PrintFormat.PrintSectionLabel(fp, "Angle (degrees)", false, true);
+      fprintf(fp, "%-g\n", ConvertAngleToDegrees(Data.GetAnglesArray()[m_iEllipseOffset - 1]));
+      PrintFormat.PrintSectionLabel(fp, "Shape", false, true);
+      fprintf(fp, "%-g\n", Data.GetShapesArray()[m_iEllipseOffset - 1]);
     }
-
     free(pCoords);
     free(pCoords2);
   }
@@ -256,21 +246,21 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Clus
 }
 
 /** Writes clusters lat/long coordinates in format required by result output file. */
-void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const {
+void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
   double *pCoords = 0, *pCoords2 = 0;
   float   Latitude, Longitude, nRadius;
   char    cNorthSouth, cEastWest;
 
   try {
-    (Data.GetGInfo())->giGetCoords(m_Center, &pCoords);
-    (Data.GetTInfo())->tiGetCoords(Data.GetNeighbor(0, m_Center, m_nTracts), &pCoords2);
-    nRadius = (float)(sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2)));
+    Data.GetGInfo()->giGetCoords(m_Center, &pCoords);
+    Data.GetTInfo()->tiGetCoords(Data.GetNeighbor(0, m_Center, m_nTracts), &pCoords2);
+    nRadius = (float)(sqrt(Data.GetTInfo()->tiGetDistanceSq(pCoords, pCoords2)));
     ConvertToLatLong(&Latitude, &Longitude, pCoords);
     Latitude >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
     Longitude >= 0 ? cEastWest = 'E' : cEastWest = 'W';
-    // use to be .3f
-    fprintf(fp, "%sCoordinates / radius..: (%.6f %c, %.6f %c) / %5.2f km\n",
-            PrintFormat.GetSpacesOnLeft(), fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
+    PrintFormat.PrintSectionLabel(fp, "Coordinates / radius", false, true);
+    fprintf(fp, "(%.6f %c, %.6f %c) / %5.2f km\n",
+            fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
     free(pCoords);
     free(pCoords2);
   }
@@ -282,18 +272,39 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const Cl
   }
 }
 
+/** Writes clusters monte carlo rank and p-value in format required by result output file. */
+void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHub,
+                                            const AsciiPrintFormat& PrintFormat,
+                                            unsigned int iNumSimsCompleted) const {
+  ZdString      sFormat, sReplicas;
+  float         fPValue;  
+                                            
+  if (iNumSimsCompleted) {
+    PrintFormat.PrintSectionLabel(fp, "Monte Carlo rank", false, true);
+    fprintf(fp, "%u/%ld\n", m_nRank, iNumSimsCompleted+1);
+  }
+  if (iNumSimsCompleted > 98) {
+    PrintFormat.PrintSectionLabel(fp, "P-value", false, true);
+    fPValue = (float)GetPValue(iNumSimsCompleted);
+    sReplicas << iNumSimsCompleted;
+    sFormat.printf("%%.%df\n", sReplicas.GetLength());
+    fprintf(fp, sFormat.GetCString(), fPValue);
+  }
+}
+
 /** Writes clusters null occurance rate in format required by result output file. */
-void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigned int iNumSimulations, const ClusterPrintFormat& PrintFormat) const {
+void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigned int iNumSimulations, const AsciiPrintFormat& PrintFormat) const {
   float         fUnitsInOccurrence, fYears, fMonths, fDays, fIntervals, fAdjustedP_Value;
+  ZdString      sBuffer;
 
   try {
     if (Data.GetParameters().GetIsProspectiveAnalysis() && Data.GetParameters().GetNumReplicationsRequested() > 98) {
-      fprintf(fp, "%sNull Occurrence.......: ", PrintFormat.GetSpacesOnLeft());
+      PrintFormat.PrintSectionLabel(fp, "Null Occurrence", false, true);
       fIntervals = Data.m_nTimeIntervals - Data.m_nProspectiveIntervalStart + 1;
       fAdjustedP_Value = 1 - pow(1 - GetPValue(iNumSimulations), 1/fIntervals);
       fUnitsInOccurrence = (float)Data.GetParameters().GetTimeIntervalLength()/fAdjustedP_Value;
       switch (Data.GetParameters().GetTimeIntervalUnitsType()) {
-        case YEAR   : fprintf(fp, "Once in %.1f year%s\n", fUnitsInOccurrence, (fUnitsInOccurrence > 1 ? "s" : ""));
+        case YEAR   : sBuffer.printf("Once in %.1f year%s\n", fUnitsInOccurrence, (fUnitsInOccurrence > 1 ? "s" : ""));
                       break;
         case MONTH  : fYears = floor(fUnitsInOccurrence/12);
                       fMonths = fUnitsInOccurrence - (fYears * 12);
@@ -306,11 +317,11 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
                         fMonths = 0;
                       //Print correctly formatted statement.
                       if (fMonths == 0)
-                        fprintf(fp, "Once in %.0f year%s\n", fYears, (fYears == 1 ? "" : "s"));
+                        sBuffer.printf("Once in %.0f year%s", fYears, (fYears == 1 ? "" : "s"));
                       else if (fYears == 0)
-                        fprintf(fp, "Once in %.0f month%s\n", fMonths, (fMonths < 1.5 ? "" : "s"));
+                        sBuffer.printf("Once in %.0f month%s", fMonths, (fMonths < 1.5 ? "" : "s"));
                       else /*Having both zero month and year should never happen.*/
-                        fprintf(fp, "Once in %.0f year%s and %0.f month%s\n", fYears, (fYears == 1 ? "" : "s"), fMonths, (fMonths < 1.5 ? "" : "s"));
+                        sBuffer.printf("Once in %.0f year%s and %0.f month%s", fYears, (fYears == 1 ? "" : "s"), fMonths, (fMonths < 1.5 ? "" : "s"));
                       break;
         case DAY    : fYears = floor(fUnitsInOccurrence/AVERAGE_DAYS_IN_YEAR);
                       fDays = fUnitsInOccurrence - (fYears * AVERAGE_DAYS_IN_YEAR);
@@ -319,15 +330,17 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
                         fDays = 0;
                       //Print correctly formatted statement.
                       if (fDays == 0)
-                        fprintf(fp, "Once in %.0f year%s\n", fYears, (fYears == 1 ? "" : "s"));
+                        sBuffer.printf("Once in %.0f year%s", fYears, (fYears == 1 ? "" : "s"));
                       else if (fYears == 0)
-                        fprintf(fp, "Once in %.0f day%s\n", fDays, (fDays < 1.5 ? "" : "s"));
+                        sBuffer.printf("Once in %.0f day%s", fDays, (fDays < 1.5 ? "" : "s"));
                       else /*Having both zero day and year should never happen.*/
-                        fprintf(fp, "Once in %.0f year%s and %.0f day%s\n", fYears, (fYears == 1 ? "" : "s"), fDays, (fDays < 1.5 ? "" : "s"));
+                        sBuffer.printf("Once in %.0f year%s and %.0f day%s", fYears, (fYears == 1 ? "" : "s"), fDays, (fDays < 1.5 ? "" : "s"));
                       break;
         default     : ZdGenerateException("Invalid time interval index \"%d\" for prospective analysis.",
                                           "DisplayNullOccurrence()", Data.GetParameters().GetTimeIntervalUnitsType());
       }
+      //print data to file stream
+      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
     }
   }
   catch (ZdException & x) {
@@ -337,42 +350,67 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
 }
 
 /** Writes clusters population in format required by result output file. */
-void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const {
-  double        dPopulation;
-  const char  * sFormat;
+void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
+  unsigned int                  i;
+  ZdString                      sWork, sBuffer;
+  const DataStreamHandler     & Streams = Data.GetDataStreamHandler();
+  double                        dPopulation;
 
-  dPopulation = Data.GetProbabilityModel().GetPopulation(m_iEllipseOffset, m_Center, m_nTracts, m_nFirstInterval, m_nLastInterval);
-  if (dPopulation < .5)
-    sFormat = "%sPopulation............: %-g\n"; // display all decimals for populations less than .5
-  else if (dPopulation < 1)
-    sFormat = "%sPopulation............: %-10.1f\n"; // display one decimal for populations less than 1
-  else
-    sFormat = "%sPopulation............: %-10.0f\n"; // else display no decimals
+  if (Data.GetParameters().GetProbabiltyModelType() == POISSON || Data.GetParameters().GetProbabiltyModelType() == BERNOULLI) {
+    PrintFormat.PrintSectionLabel(fp, "Population", false, true);
 
-  fprintf(fp, sFormat, PrintFormat.GetSpacesOnLeft(), dPopulation);
+    for (i=0; i < Streams.GetNumStreams(); ++i) {
+      dPopulation = Data.GetProbabilityModel().GetPopulation(i, m_iEllipseOffset, m_Center,
+                                                             m_nTracts, m_nFirstInterval, m_nLastInterval);
+      if (dPopulation < .5)
+        sWork.printf("%s%g", (i > 0 ? ", " : ""), dPopulation); // display all decimals for populations less than .5
+      else if (dPopulation < 1)
+        sWork.printf("%s%.1f", (i > 0 ? ", " : ""), dPopulation); // display one decimal for populations less than 1
+      else
+        sWork.printf("%s%.0f", (i > 0 ? ", " : ""), dPopulation); // else display no decimals
+      sBuffer << sWork;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+  }
 }
 
-/** Prints clusters p-value in format required by result output file. */
-void CCluster::DisplayPValue(FILE* fp, unsigned int uiNumSimualtionsCompleted, const ClusterPrintFormat& PrintFormat) const {
-  ZdString      sFormat, sReplicas;
-  float         pVal = (float)GetPValue(uiNumSimualtionsCompleted);
-
-  sReplicas << uiNumSimualtionsCompleted;
-  sFormat.printf("%%.%df", sReplicas.GetLength());
-  fprintf(fp, sFormat.GetCString(), pVal);
+/** Writes clusters log likelihood ratio/test statistic in format required by result output file. */
+void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+  if (DataHub.GetParameters().GetProbabiltyModelType() == SPACETIMEPERMUTATION) {
+     PrintFormat.PrintSectionLabel(fp, "Test statistic", false, true);
+     fprintf(fp, "%f\n", m_nRatio);
+  }
+  else {
+    PrintFormat.PrintSectionLabel(fp, "Log likelihood ratio", false, true);
+    fprintf(fp, "%f\n", m_nRatio/m_DuczmalCorrection);
+    if (DataHub.GetParameters().GetDuczmalCorrectEllipses()) {
+      PrintFormat.PrintSectionLabel(fp, "Test statistic", false, true);
+      fprintf(fp, "%f\n", m_nRatio);
+    }
+  }
 }
 
 /** Writes clusters overall relative risk in format required by result output file. */
-void CCluster::DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment, const ClusterPrintFormat& PrintFormat) const {
-  fprintf(fp, "%sOverall relative risk.: %.3f\n", PrintFormat.GetSpacesOnLeft(), GetRelativeRisk(nMeasureAdjustment));
+void CCluster::DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+  const DataStreamHandler & Streams = DataHub.GetDataStreamHandler();
+  unsigned int              i;
+  ZdString                  sBuffer, sWork;
+
+  PrintFormat.PrintSectionLabel(fp, "Overall relative risk", false, true);
+  sBuffer.printf("%.3f", GetRelativeRisk(DataHub.GetMeasureAdjustment(), 0));
+  for (i=1; i < Streams.GetNumStreams(); ++i) {
+    sWork.printf(", %.3f", GetRelativeRisk(DataHub.GetMeasureAdjustment(), i));
+    sBuffer << sWork;
+  }
+  PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
 }
 
 /** Prints clusters time frame in format required by result output file. */
-void CCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const ClusterPrintFormat& PrintFormat) const {
+void CCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   ZdString  sStart, sEnd;
 
-  fprintf(fp, "%sTime frame............: %s - %s\n", PrintFormat.GetSpacesOnLeft(),
-          GetStartDate(sStart, DataHub).GetCString(), GetEndDate(sEnd, DataHub).GetCString());
+  PrintFormat.PrintSectionLabel(fp, "Time frame", false, true);
+  fprintf(fp, "%s - %s\n", GetStartDate(sStart, DataHub).GetCString(), GetEndDate(sEnd, DataHub).GetCString());
 }
 
 /** returns end date of defined cluster as formated string */
@@ -387,11 +425,11 @@ const double CCluster::GetPValue(unsigned int uiNumSimulationsCompleted) const {
 
 /** Returns relative risk of cluster.
     NOTE: Currently this only reports the relative risk of first data stream. */
-const double CCluster::GetRelativeRisk(double nMeasureAdjustment) const {
+const double CCluster::GetRelativeRisk(double nMeasureAdjustment, unsigned int iStream) const {
   double        dRelativeRisk=0;
 
-  if (GetMeasure(0) * nMeasureAdjustment)
-    dRelativeRisk = ((double)GetCaseCount(0))/(GetMeasure(0) * nMeasureAdjustment);
+  if (GetMeasure(iStream) * nMeasureAdjustment)
+    dRelativeRisk = ((double)GetCaseCount(iStream))/(GetMeasure(iStream) * nMeasureAdjustment);
 
   return dRelativeRisk;
 }
