@@ -47,16 +47,10 @@ void Cats::Init()
 int Cats::catGetCat(char *dvec[])
 {
    struct catnode *node = CatList;
-   try
-      {
-      while (node && CompList(dvec, node->dvec, CatVecLength))
+
+   while (node && CompList(dvec, node->dvec, CatVecLength))
          node = node->next;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("catGetCat(char *)", "Cats");
-      throw;
-      }
+
    return node ? (node->num) : -1;
 } /* catGetCat() */
 
@@ -133,49 +127,36 @@ static int CompList(char *dv1[], char *dv2[], int len)
 {
    int i;
    
-   try
-      {
-      while (len--)
-         if ((i = strcmp(*dv1++, *dv2++)) != 0)
-            return i;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("CompList(char *, char *, int)", "Cats");
-      throw;
-      }
+   while (len--)
+       if ((i = strcmp(*dv1++, *dv2++)) != 0)
+         return i;
+
    return 0;
 } /* CompList() */
 
 /**********************************************************************
  Return Category String
  **********************************************************************/
-char* Cats::catGetCategoriesString(int n, char* dvec)
+char* Cats::catGetCategoriesString(int n, std::string & sBuffer)
 {
    int    i;
    struct catnode *node = CatList;
 
-   try
-      {
-      while (node && n != node->num)
-         node = node->next;
+   while (node && n != node->num)
+        node = node->next;
 
-      if (node)
-         {
-         for (i = 0; i < CatVecLength; i++)
-            {
-            strcat(dvec, node->dvec[i]);
-            strcat(dvec, "  ");
-            }
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("catGetCategoriesString(int, char *)", "Cats");
-      throw;
-      }
-  return dvec;
-} /* DisplayCats() */
+   if (node)
+     {
+     sBuffer.clear();
+     for (i = 0; i < CatVecLength; i++)
+        {
+        sBuffer += node->dvec[i];
+        sBuffer += " ";
+        }
+     }
+
+  return const_cast<char*>(sBuffer.c_str());
+}
 
 /**********************************************************************
  Display categories in the list

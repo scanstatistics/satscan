@@ -33,7 +33,7 @@ int catMakeCat(char *dvec[]);
 int catNumCats(void);
 void catSetNumEls(int n);
 int catGetNumEls(void);
-char* catGetCategoriesString(int n, char* dvec);
+char* catGetCategoriesString(int n, std::string & sBuffer);
 void catDisplay(void);
 void catCleanup();
 };
