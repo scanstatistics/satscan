@@ -14,6 +14,7 @@
 #include "MakeNeighbors.h"
 #include "TimeTrend.h"
 #include "MultipleDimensionArrayHandler.h"
+#include "MaxWindowLengthIndicator.h"
 
 class CPoissonModel;
 class CBernoulliModel;
@@ -80,6 +81,8 @@ class CSaTScanData {
     void                                        AllocateControlStructures();
     void                                        AllocateNeighborArray();
     void                                        AllocateSortedArray();
+    bool                                        ConvertCountDateToJulian(StringParser & Parser, const char * szDescription, Julian & JulianDate);
+    bool                                        ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, Julian & JulianDate);
     bool                                        ReadCartesianCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
                                                                          int & iScanCount, int iWordOffSet, const char * sSourceFile);
     bool                                        ReadCoordinatesFileAsCartesian(FILE * fp);
@@ -94,6 +97,7 @@ class CSaTScanData {
     void                                        SetCumulativeMeasure();
     virtual void                                SetIntervalCut();
     virtual void                                SetIntervalStartTimes();
+    virtual void                                SetMaxTemporalWindowLengthIndicator();
     virtual void                                SetMeasureAsCumulative(measure_t ** pMeasure);
     void                                        SetMeasureByTimeIntervalArray();
     void                                        SetMeasureByTimeIntervalArray(measure_t ** pNonCumulativeMeasure);
@@ -111,6 +115,8 @@ class CSaTScanData {
     CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection);
     virtual ~CSaTScanData();
 
+    AbstractMaxWindowLengthIndicator          * gpMaxWindowLengthIndicator;   
+
     tract_t                                     m_nGridTracts;
     int                                         m_nTimeIntervals,
                                                 m_nStartRangeStartDateIndex,
@@ -127,8 +133,7 @@ class CSaTScanData {
     virtual bool                                CalculateMeasure();
     virtual void                                DeAllocSimCases();
     const PopulationCategories                & GetPopulationCategories() const {return gPopulationCategories;}
-    int                                         ComputeNewCutoffInterval(Julian jStartDate, Julian& jEndDate);
-    bool                                        ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, Julian & JulianDate);
+    int                                         ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate);
     virtual void                                DisplayCases(FILE* pFile);
     virtual void                                DisplayControls(FILE* pFile);
     virtual void                                DisplayMeasure(FILE* pFile);
@@ -175,6 +180,7 @@ class CSaTScanData {
     inline count_t                           ** GetSimCasesNCArray() {return gpSimCasesNonCumulativeHandler->GetArray();}
     inline count_t                           ** GetSimCasesNCArray() const {return gpSimCasesNonCumulativeHandler->GetArray();}
     const count_t                             * GetSimCasesPTArray() const {return m_pPTSimCases;}
+    Julian                                      GetStudyPeriodStartDate() const {return m_nStartDate;}
     const Julian                              * GetTimeIntervalStartTimes() const {return m_pIntervalStartTimes;}
     inline const TractHandler                 * GetTInfo() const { return gpTInfo;}
     inline measure_t                            GetTotalMeasure() const {return m_nTotalMeasure;}

@@ -1,6 +1,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 #include "SaTScanData.h"
+#include "TimeIntervalRange.h"
 
 CSaTScanData::CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection) {
   try {
@@ -42,6 +43,7 @@ CSaTScanData::~CSaTScanData() {
     free(m_pIntervalStartTimes);
     delete gpTInfo;
     delete gpGInfo;
+    delete gpMaxWindowLengthIndicator; gpMaxWindowLengthIndicator=0;
   }
   catch (...){}  
 }
@@ -136,15 +138,13 @@ bool CSaTScanData::CalculateMeasure() {
   return bReturn;
 }
 
-int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian& jEndDate) {
+int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate) {
    int  iIntervalCut;
    long lTimeBetween;
 
    if (m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
-     lTimeBetween = static_cast<long>((TimeBetween(jStartDate, jEndDate, m_pParameters->GetTimeIntervalUnitsType()))*m_pParameters->GetMaximumTemporalClusterSize()/100.0);
-     iIntervalCut = lTimeBetween / m_pParameters->GetTimeIntervalLength();
-     //now compute a new Current Date by subtracting the interval duration
-     jEndDate = DecrementDate(jEndDate, m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
+     lTimeBetween = floor((TimeBetween(jStartDate, jEndDate, m_pParameters->GetTimeIntervalUnitsType()))*m_pParameters->GetMaximumTemporalClusterSize()/100.0);
+     iIntervalCut = floor(lTimeBetween / m_pParameters->GetTimeIntervalLength());
    }
    else
      iIntervalCut = m_nIntervalCut;
@@ -294,6 +294,7 @@ void CSaTScanData::Init() {
   m_pSimCases_TotalByTimeInt = 0;
   m_pMeasure_TotalByTimeInt = 0;
   m_nMaxReportedCircleSize = 0;
+  gpMaxWindowLengthIndicator = 0;
 }
 void CSaTScanData::MakeData(int iSimulationNumber) {
    try {
@@ -312,13 +313,11 @@ void CSaTScanData::ReadDataFromFiles() {
     SetIntervalCut();
     SetIntervalStartTimes();
     SetTimeIntervalRangeIndexes();
-
     if (m_pParameters->GetIsProspectiveAnalysis())
       SetProspectiveIntervalStart();
-
+    SetMaxTemporalWindowLengthIndicator();
     if (! m_pModel->ReadData())
       SSGenerateException("\nProblem encountered reading in data.", "ReadDataFromFiles");
-
     gpTInfo->tiConcaticateDuplicateTractIdentifiers();
     gpGInfo->giFindDuplicateCoords(stderr);
   }
@@ -411,6 +410,23 @@ void CSaTScanData::SetCumulativeMeasure() {
   }
 }
 
+/** Creates max window length object which dictates maximum temporal window
+    length during analysis simluations. */
+void CSaTScanData::SetMaxTemporalWindowLengthIndicator() {
+  try {
+    if (m_pParameters->GetNumReplicationsRequested() > 0) { //no needed if no simulations performed
+      if (m_pParameters->GetIsProspectiveAnalysis() && m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE)
+        gpMaxWindowLengthIndicator = new ProspectiveMaxWindowLengthIndicator(*this);
+      else
+        gpMaxWindowLengthIndicator = new FixedMaxWindowLengthIndicator(*this);
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetMaxTemporalWindowLengthIndicator()","CSaTScanData");
+    throw;
+  }
+}
+
 /** Allocates and sets measure array that represents non-cumulative measure
     for all time intervals from cumulative measure array. */
 void CSaTScanData::SetMeasureByTimeIntervalArray() {
@@ -466,8 +482,8 @@ void CSaTScanData::SetIntervalCut() {
     else if (m_nTimeIntervals > 1) {
       if (m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
         lStudyPeriodLength = TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->GetTimeIntervalUnitsType());
-        lMaxTemporalLength = static_cast<long>(lStudyPeriodLength * m_pParameters->GetMaximumTemporalClusterSize()/100.0);
-        m_nIntervalCut = lMaxTemporalLength / m_pParameters->GetTimeIntervalLength();
+        lMaxTemporalLength = floor(lStudyPeriodLength * m_pParameters->GetMaximumTemporalClusterSize()/100.0);
+        m_nIntervalCut = floor(lMaxTemporalLength / m_pParameters->GetTimeIntervalLength());
       }
       else
         m_nIntervalCut = static_cast<int>(m_pParameters->GetMaximumTemporalClusterSize() / m_pParameters->GetTimeIntervalLength());
