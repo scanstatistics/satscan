@@ -6,14 +6,9 @@
 #include <ComCtrls.hpp>
 #include <Controls.hpp>
 #include <Dialogs.hpp>
-#include <StdCtrls.hpp>
-#include <Mapi.hpp>       // VCL Header
-//#include <Printers.hpp>   // VCL Header
 #include <ExtCtrls.hpp>
-#include <fcntl.h>
-//---------------------------------------------------------------------------
-//class CalcThread;
-
+#include <StdCtrls.hpp>
+#include "Parameters.h"
 #include "stsBaseAnalysisChildForm.h"
 
 class stsOutputFileRegister;
@@ -42,24 +37,28 @@ class TfrmAnalysisRun : public stsBaseAnalysisChildForm  {
     bool                        gbCanClose;
     stsOutputFileRegister     & gRegistry;
     std::string                 gsOutputFileName;
+    CalcThread                * gpAnalysisThread;  
 
-    void                Init();
+    void                        Init();
+    void                        Setup(const CParameters & Parameters);
 
   protected:
-    void                AddLine(char *sLine);
-    void                AddWarningLine(char *sLine);
-    virtual void        EnableActions(bool bEnable);
-    bool                IsJobCanceled() const {return gbCancel;}
-    bool                GetCanClose() const {return gbCanClose;}
-    void                LoadFromFile(char *sFileName);
-    void                CancelJob();
-    void                SetCanClose(bool b) {gbCanClose=b;}
+    void                        AddLine(char *sLine);
+    void                        AddWarningLine(char *sLine);
+    void                        CancelJob();
+    virtual void                EnableActions(bool bEnable);
+    void                        ForceThreadTermination();
+    bool                        IsJobCanceled() const {return gbCancel;}
+    void                        LoadFromFile(const char * sFileName);
+    void                        SetCanClose(bool b) {gbCanClose=b;}
 
   public:		// User declarations
-            __fastcall TfrmAnalysisRun(TComponent* Owner, const std::string& sOutputFileName, stsOutputFileRegister & Registry, TActionList* theList);
-    virtual __fastcall ~TfrmAnalysisRun(){ }
+            __fastcall TfrmAnalysisRun(TComponent* Owner, const CParameters & Parameters, const std::string& sOutputFileName,
+                                       stsOutputFileRegister & Registry, TActionList* theList);
+    virtual __fastcall ~TfrmAnalysisRun();
+
+    virtual void                CloseForm(bool bForce=false);
+    bool                        GetCanClose() const {return gbCanClose;}
+    void                        LaunchThread();
 };
-//---------------------------------------------------------------------------
-extern PACKAGE TfrmAnalysisRun *frmAnalysisRun;
-//---------------------------------------------------------------------------
 #endif

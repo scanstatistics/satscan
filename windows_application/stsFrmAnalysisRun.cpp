@@ -4,26 +4,39 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-
 #include "stsOutputFileRegistry.h"
 
-TfrmAnalysisRun *frmAnalysisRun;
-
-//---------------------------------------------------------------------------
-__fastcall TfrmAnalysisRun::TfrmAnalysisRun(TComponent* Owner, const std::string& sOutputFileName,
+/** constructor */
+__fastcall TfrmAnalysisRun::TfrmAnalysisRun(TComponent* Owner, const CParameters & Parameters, const std::string& sOutputFileName,
                                             stsOutputFileRegister & Registry, TActionList* theList)
                            :stsBaseAnalysisChildForm (Owner, theList), gRegistry(Registry), gsOutputFileName(sOutputFileName) {
-  Init();
+  try {
+    Init();
+    Setup(Parameters);
+  }  
+  catch (ZdException & x) {
+    x.AddCallpath("constructor()", "TfrmAnalysisRun");
+    throw;
+  }
 }
-//---------------------------------------------------------------------------
+/** destructor */
+__fastcall TfrmAnalysisRun::~TfrmAnalysisRun() {
+  try {
+    delete gpAnalysisThread; gpAnalysisThread=0;
+  }
+  catch (...){}
+}
+/** adds string to analysis output memo control */
 void TfrmAnalysisRun::AddLine(char *sLine) {
   rteAnalysisBox->Lines->Add(sLine);
 }
-//---------------------------------------------------------------------------
+
+/** adds string to warning output memo control */
 void TfrmAnalysisRun::AddWarningLine(char *sLine) {
   rteWarningsBox->Lines->Add(sLine);
 }
-//---------------------------------------------------------------------------
+
+/** indicates analysis is cancelled in interface */
 void TfrmAnalysisRun::CancelJob() {
   if (rteWarningsBox->Lines->Count)
     rteAnalysisBox->Lines->Add("Job cancelled. Please review 'Warnings/Errors' window below.");
@@ -35,7 +48,7 @@ void TfrmAnalysisRun::CancelJob() {
   SetCanClose(true);
 }
 
-// enables/disables the appropraite buttons and controls based on their category type
+/** enables/disables the appropraite buttons and controls for this window */
 void TfrmAnalysisRun::EnableActions(bool bEnable) {
    for(int i = 0; i < gpList->ActionCount; ++i) {
       TAction* pAction = dynamic_cast<TAction*>(gpList->Actions[i]);
@@ -48,21 +61,55 @@ void TfrmAnalysisRun::EnableActions(bool bEnable) {
    }
 }
 
-//---------------------------------------------------------------------------
+/** triggers TForm::Close() -- if bForce is true, the thread is forced to terminate */
+void TfrmAnalysisRun::CloseForm(bool bForce) {
+  if (bForce) ForceThreadTermination();
+  Close();
+}
+
+/** forces thread termination -- this function should only be called as a last
+   resort as it causes a memory leak. When closing the application with active
+   threads, this function is useful to kill running threads and the memory leak
+   becomes insignificant. Note: The ideal means for terminating a thread would
+   be to call it's Terminate() method, but that translates to the thread having
+   to constantly checking whether it's terminate property is true. */
+void TfrmAnalysisRun::ForceThreadTermination() {
+  try {
+    gpAnalysisThread->Suspend();
+    delete gpAnalysisThread; gpAnalysisThread=0;
+    gbCanClose = true;
+  }
+  catch (...){}
+}
+
+/** form close event */
 void __fastcall TfrmAnalysisRun::FormClose(TObject *Sender, TCloseAction &Action) {
-  if (GetCanClose())
+  if (GetCanClose()) {
     Action = caFree;
+    gRegistry.Release(gsOutputFileName);
+  }
   else
     Action = caNone;
-  gRegistry.Release(gsOutputFileName);
 }
-//---------------------------------------------------------------------------
+
+/** internal initialization method */
 void TfrmAnalysisRun::Init() {
   gbCanClose=false;
   gbCancel=false;
+  gpAnalysisThread=0;
 }
-//---------------------------------------------------------------------------
-void TfrmAnalysisRun::LoadFromFile(char *sFileName) {
+
+/** starts execution of analysis thread */
+void TfrmAnalysisRun::LaunchThread() {
+  if (! gpAnalysisThread)
+    ZdGenerateException("Null thread pointer.","LaunchThread()");
+
+  gpAnalysisThread->Resume();
+  rteAnalysisBox->SetFocus();
+}
+
+/** Loads analysis results from file into memo control */
+void TfrmAnalysisRun::LoadFromFile(const char * sFileName) {
    int  iHandle;
    long lFileLength;
 
@@ -84,7 +131,8 @@ void TfrmAnalysisRun::LoadFromFile(char *sFileName) {
 
    gRegistry.Release(gsOutputFileName);
 }
-//---------------------------------------------------------------------------
+
+/** cancel button click event */
 void __fastcall TfrmAnalysisRun::OnCancelClick(TObject *Sender) {
   if (btnCancel->Caption == "Close")
     Close();
@@ -94,7 +142,8 @@ void __fastcall TfrmAnalysisRun::OnCancelClick(TObject *Sender) {
   }
   gRegistry.Release(gsOutputFileName);
 }
-//---------------------------------------------------------------------------
+
+/** email button click event - attempts to launch default email application */
 void __fastcall TfrmAnalysisRun::OnEMailClick(TObject *Sender) {
    PMapiRecipDesc   pRecipient = 0;
    TMapiMessage     theMapiMessage;
@@ -147,7 +196,8 @@ void __fastcall TfrmAnalysisRun::OnEMailClick(TObject *Sender) {
    //   Application->MessageBox("Cannot open Internet browser to view Joinpoint Web site.","Error",MB_OK);
    //   }
 }
-//---------------------------------------------------------------------------
+
+/** print button click event */
 void __fastcall TfrmAnalysisRun::OnPrintClick(TObject *Sender){
    TRichEdit *  rtePrintText;
 
@@ -168,11 +218,20 @@ void __fastcall TfrmAnalysisRun::OnPrintClick(TObject *Sender){
      delete rtePrintText;
    }
 }
-//---------------------------------------------------------------------------
 
-void __fastcall TfrmAnalysisRun::FormActivate(TObject *Sender)
-{
-   EnableActions(true);        
+/** form activate event */
+void __fastcall TfrmAnalysisRun::FormActivate(TObject *Sender) {
+  EnableActions(true);
 }
-//---------------------------------------------------------------------------
+
+/** internal setup function */
+void TfrmAnalysisRun::Setup(const CParameters & Parameters) {
+  try {
+    gpAnalysisThread = new CalcThread(*this, Parameters);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Setup()","TfrmAnalysisRun");
+    throw;
+  }
+}
 
