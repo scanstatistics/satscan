@@ -1,37 +1,39 @@
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "ClusterData.h"
 #include "TimeIntervals.h"
 
-/** constructor */
-SpatialData::SpatialData(const DataStreamInterface & Interface, int iRate)
+/** class constructor */
+SpatialData::SpatialData(const DataStreamInterface& Interface, int iRate)
             :AbstractSpatialClusterData(iRate),
              gtTotalCases(Interface.GetTotalCasesCount()),
              gtTotalMeasure(Interface.GetTotalMeasureCount()) {
+
   InitializeData();
 }
 
-/** constructor */
-SpatialData::SpatialData(const AbtractDataStreamGateway & DataGateway, int iRate)
+/** class constructor */
+SpatialData::SpatialData(const AbtractDataStreamGateway& DataGateway, int iRate)
             :AbstractSpatialClusterData(iRate),
-             gtTotalCases(DataGateway.GetDataStreamInterface(0).GetTotalCasesCount()),
-             gtTotalMeasure(DataGateway.GetDataStreamInterface(0).GetTotalMeasureCount()) {
+             gtTotalCases(DataGateway.GetDataSetInterface(0).GetTotalCasesCount()),
+             gtTotalMeasure(DataGateway.GetDataSetInterface(0).GetTotalMeasureCount()) {
+
   InitializeData();
 }
 
-/** destructor */
+/** class destructor */
 SpatialData::~SpatialData() {}
 
-/** returns newly cloned SpatialData object */
+/** Returns newly cloned SpatialData object. Caller resonsible for deletion of object. */
 SpatialData * SpatialData::Clone() const {
   return new SpatialData(*this);
 }
 
-/** assigns cluster data of passed object to *this* object
-    NOTE: Caller of function is responsible for ensuring that passed object
-          is of same class type as *this* object. */
+/** Assigns cluster data of passed object to 'this' object. Caller of function
+    is responsible for ensuring that passed AbstractSpatialClusterData object
+    can be casted to 'SpatialData' object. */
 void SpatialData::Assign(const AbstractSpatialClusterData& rhs) {
   //cast to SpatialData type
   const SpatialData& _rhs = (const SpatialData&)rhs;
@@ -43,7 +45,7 @@ void SpatialData::Assign(const AbstractSpatialClusterData& rhs) {
   gfRateOfInterest = _rhs.gfRateOfInterest;
 }
 
-/** overloaded assignment operator */
+/** Overloaded assignment operator. */
 SpatialData & SpatialData::operator=(const SpatialData& rhs) {
   gtTotalCases = rhs.gtTotalCases;
   gtTotalMeasure = rhs.gtTotalMeasure;
@@ -53,69 +55,73 @@ SpatialData & SpatialData::operator=(const SpatialData& rhs) {
   return *this;
 }
 
-/** adds neighbor data to accumulation - takes only first DataInteface of DataGateway */
-void SpatialData::AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream) {
-  gtCases += DataGateway.GetDataStreamInterface(tStream).GetPSCaseArray()[tNeighbor];
-  gtMeasure += DataGateway.GetDataStreamInterface(tStream).GetPSMeasureArray()[tNeighbor];
+/** Adds neighbor data to accumulation - caller is responsible for ensuring that
+    'tNeighborIndex' and 'tSetIndex' are valid indexes. */
+void SpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex) {
+  gtCases += DataGateway.GetDataSetInterface(tSetIndex).GetPSCaseArray()[tNeighborIndex];
+  gtMeasure += DataGateway.GetDataSetInterface(tSetIndex).GetPSMeasureArray()[tNeighborIndex];
 }
 
-/** Calculates loglikelihood ratio given current accumulated cluster data if
-    it is determined that data fits scanning area of interest (high, low, both).
+/** Calculates loglikelihood ratio, given current accumulated cluster data, if
+    it is determined that data fits scanning area of interest (high, low or both).
     Returns zero if rate not of interest else returns loglikelihood ratio as
     calculated by probability model. */
-double SpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
+double SpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
   if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
     return Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure);
-  return 0;  
+  return 0;
 }
 
-/** returns number of cases accumulated in cluster data */
+/** Returns number of cases accumulated in cluster data. */
 count_t SpatialData::GetCaseCount(unsigned int) const {
   return gtCases;
 }
 
-/** returns number of expected cases accumulated in cluster data */
+/** Returns number of expected cases accumulated in cluster data. */
 measure_t SpatialData::GetMeasure(unsigned int) const {
   return gtMeasure;
 }
 
+//******************************************************************************
 
-/** protected constructor - accessible by derived  classes */
+/** Protected class constructor - accessible by derived classes only. */
 TemporalData::TemporalData()
-             :AbstractTemporalClusterData(), gpCases(0), gpMeasure(0),
-              gtTotalCases(0), gtTotalMeasure(0) {
+             :AbstractTemporalClusterData(), gpCases(0), gpMeasure(0), gtTotalCases(0), gtTotalMeasure(0) {
+
   InitializeData();
 }
 
-/** constructor */
-TemporalData::TemporalData(const DataStreamInterface & Interface)
+/** class constructor */
+TemporalData::TemporalData(const DataStreamInterface& Interface)
              :AbstractTemporalClusterData(),
               gpCases(Interface.GetPTCaseArray()), gpMeasure(Interface.GetPTMeasureArray()),
               gtTotalCases(Interface.GetTotalCasesCount()), gtTotalMeasure(Interface.GetTotalMeasureCount()) {
+
   InitializeData();
 }
 
-/** constructor */
-TemporalData::TemporalData(const AbtractDataStreamGateway & DataGateway)
+/** class constructor */
+TemporalData::TemporalData(const AbtractDataStreamGateway& DataGateway)
              :AbstractTemporalClusterData(),
-              gpCases(DataGateway.GetDataStreamInterface(0).GetPTCaseArray()),
-              gpMeasure(DataGateway.GetDataStreamInterface(0).GetPTMeasureArray()),
-              gtTotalCases(DataGateway.GetDataStreamInterface(0).GetTotalCasesCount()),
-              gtTotalMeasure(DataGateway.GetDataStreamInterface(0).GetTotalMeasureCount()) {
+              gpCases(DataGateway.GetDataSetInterface(0).GetPTCaseArray()),
+              gpMeasure(DataGateway.GetDataSetInterface(0).GetPTMeasureArray()),
+              gtTotalCases(DataGateway.GetDataSetInterface(0).GetTotalCasesCount()),
+              gtTotalMeasure(DataGateway.GetDataSetInterface(0).GetTotalMeasureCount()) {
+              
   InitializeData();
 }
 
-/** destructor */
+/** class destructor */
 TemporalData::~TemporalData() {}
 
-/** returns newly cloned TemporalData object */
+/** Returns newly cloned TemporalData object. Caller is responsible for deletion of object. */
 TemporalData * TemporalData::Clone() const {
   return new TemporalData(*this);
 }
 
-/** assigns cluster data of passed object to *this* object
-    NOTE: Caller of function is responsible for ensuring that passed object
-          is of same class type *this* object. */
+/** Assigns cluster data of passed object to 'this' object. Caller of function
+    is responsible for ensuring that passed AbstractTemporalClusterData object
+    can be casted to 'TemporalData' object. */
 void TemporalData::Assign(const AbstractTemporalClusterData& rhs) {
   const TemporalData& _rhs = (const TemporalData&)rhs;
   gtTotalCases = _rhs.gtTotalCases;
@@ -126,7 +132,7 @@ void TemporalData::Assign(const AbstractTemporalClusterData& rhs) {
   gpMeasure = _rhs.gpMeasure;
 }
 
-/** overloaded assignment operator */
+/** Overloaded assignment operator. */
 TemporalData & TemporalData::operator=(const TemporalData& rhs) {
   gtTotalCases = rhs.gtTotalCases;
   gtTotalMeasure = rhs.gtTotalMeasure;
@@ -137,57 +143,56 @@ TemporalData & TemporalData::operator=(const TemporalData& rhs) {
   return *this;
 }
 
-/** not implemented - throws exception */
+/** Not implemented - throws exception. */
 void TemporalData::AddNeighborData(tract_t, const AbtractDataStreamGateway&, size_t) {
-  ZdGenerateException("AddNeighborData(tract_t,const AbtractDataStreamGateway&, size_t) not implemeneted.","TemporalData");
+  ZdGenerateException("AddNeighborData(tract_t, const AbtractDataStreamGateway&, size_t) not implemeneted.","TemporalData");
 }
 
-/** not implemented - throws exception  -- returns size of allocated arrays */
+/** Not implemented - throws exception. */
 unsigned int TemporalData::GetAllocationSize() const {
   ZdGenerateException("GetAllocationSize() not implemeneted.","TemporalData");
   return 0;
 }
 
-/** returns number of cases in accumulated cluster data */
+/** Returns number of cases in accumulated cluster data. */
 count_t TemporalData::GetCaseCount(unsigned int) const {
   return gtCases;
 }
 
-/** returns number of expected cases in accumulated cluster data */
+/** Returns number of expected cases in accumulated cluster data. */
 measure_t TemporalData::GetMeasure(unsigned int) const {
   return gtMeasure;
 }
 
+//******************************************************************************
 
-
-
-/** constructor */
-ProspectiveSpatialData::ProspectiveSpatialData(const CSaTScanData & Data, const DataStreamInterface & Interface)
+/** class constructor */
+ProspectiveSpatialData::ProspectiveSpatialData(const CSaTScanData& Data, const DataStreamInterface& Interface)
                        :TemporalData() {
   try {
     Init();
     Setup(Data, Interface);
   }
   catch (ZdException &x) {
-    x.AddCallpath("constructor()","ProspectiveSpatialData");
+    x.AddCallpath("constructor(const CSaTScanData&a, const DataStreamInterface&)","ProspectiveSpatialData");
     throw;
   }
 }
 
-/** constructor */
-ProspectiveSpatialData::ProspectiveSpatialData(const CSaTScanData & Data, const AbtractDataStreamGateway & DataGateway)
+/** class constructor */
+ProspectiveSpatialData::ProspectiveSpatialData(const CSaTScanData& Data, const AbtractDataStreamGateway& DataGateway)
                        :TemporalData() {
   try {
     Init();
-    Setup(Data, DataGateway.GetDataStreamInterface(0));
+    Setup(Data, DataGateway.GetDataSetInterface(0));
   }
   catch (ZdException &x) {
-    x.AddCallpath("constructor()","ProspectiveSpatialData");
+    x.AddCallpath("constructor(const CSaTScanData&, const AbtractDataStreamGateway&)","ProspectiveSpatialData");
     throw;
   }
 }
 
-/** copy constructor */
+/** class copy constructor */
 ProspectiveSpatialData::ProspectiveSpatialData(const ProspectiveSpatialData& rhs)
                        :TemporalData(), giAllocationSize(rhs.giAllocationSize) {
   try {
@@ -199,12 +204,12 @@ ProspectiveSpatialData::ProspectiveSpatialData(const ProspectiveSpatialData& rhs
   catch (ZdException &x) {
     delete[] gpCases;
     delete[] gpMeasure;
-    x.AddCallpath("copy constructor()","ProspectiveSpatialData");
+    x.AddCallpath("constructor(const ProspectiveSpatialData&)","ProspectiveSpatialData");
     throw;
   }
 }
 
-/** destructor */
+/** class destructor */
 ProspectiveSpatialData::~ProspectiveSpatialData() {
   try {
     delete[] gpCases;
@@ -213,14 +218,14 @@ ProspectiveSpatialData::~ProspectiveSpatialData() {
   catch (...){}
 }
 
-/** returns newly cloned SpaceTimeData object */
+/** Returns newly cloned SpaceTimeData object. Caller is responsible for deletion of object. */
 ProspectiveSpatialData * ProspectiveSpatialData::Clone() const {
    return new ProspectiveSpatialData(*this);
 }
 
-/** assigns cluster data of passed object to *this* object
-    NOTE: Caller of function is responsible for ensuring that passed object
-          is of same class type *this* object. */
+/** Assigns cluster data of passed object to 'this' object. Caller of function
+    is responsible for ensuring that passed AbstractSpatialClusterData object
+    can be casted to 'ProspectiveSpatialData' object. */
 void ProspectiveSpatialData::Assign(const AbstractTemporalClusterData& rhs) {
   const ProspectiveSpatialData& _rhs = (const ProspectiveSpatialData&)rhs;
   gtCases = _rhs.gtCases;
@@ -234,7 +239,7 @@ void ProspectiveSpatialData::Assign(const AbstractTemporalClusterData& rhs) {
   memcpy(gpMeasure, _rhs.gpMeasure, giAllocationSize * sizeof(measure_t));
 }
 
-/** overloaded assignement operator */
+/** Overloaded assignement operator. */
 ProspectiveSpatialData & ProspectiveSpatialData::operator=(const ProspectiveSpatialData& rhs) {
   gtCases = rhs.gtCases;
   gtMeasure = rhs.gtMeasure;
@@ -248,27 +253,30 @@ ProspectiveSpatialData & ProspectiveSpatialData::operator=(const ProspectiveSpat
   return *this;
 }
 
-/** adds neigbor data to accumulation and updates measure list */
-void ProspectiveSpatialData::AddMeasureList(tract_t tCentroid, const DataStreamInterface & Interface,
-                                            CMeasureList * pMeasureList, tract_t tNumNeighbors,
-                                            unsigned short ** ppSorted_UShort_T, tract_t ** ppSorted_Tract_T) {
+/** Adds neigbor data to accumulation and updates measure list object. Caller is
+    responsible for ensuring that 'tCentroidIndex' and 'tNumNeighbors' are valid
+    indexes; as well as 'pMeasureList' and either 'ppSorted_UShort_T' or
+    'ppSorted_Tract_T' point to valid data structures. */
+void ProspectiveSpatialData::AddMeasureList(tract_t tCentroidIndex, const DataStreamInterface& Interface,
+                                            CMeasureList* pMeasureList, tract_t tNumNeighbors,
+                                            unsigned short** ppSorted_UShort_T, tract_t** ppSorted_Tract_T) {
   unsigned int           i, j, iWindowEnd;
   count_t             ** ppCases = Interface.GetCaseArray();
   measure_t           ** ppMeasure = Interface.GetMeasureArray();
-  tract_t                t, tNeighbor;
+  tract_t                t, tNeighborIndex;
 
   // reset accumulated case/measure data
   memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
   memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
   for (t=0; t < tNumNeighbors; ++t) {
-    tNeighbor = (ppSorted_UShort_T ? (tract_t)ppSorted_UShort_T[tCentroid][t] : ppSorted_Tract_T[tCentroid][t]);
+    tNeighborIndex = (ppSorted_UShort_T ? (tract_t)ppSorted_UShort_T[tCentroidIndex][t] : ppSorted_Tract_T[tCentroidIndex][t]);
     //update accumulated data
-    gpCases[0]   += ppCases[0][tNeighbor]; //set cases for entire period added by this neighbor
-    gpMeasure[0] += ppMeasure[0][tNeighbor];
+    gpCases[0]   += ppCases[0][tNeighborIndex]; //set cases for entire period added by this neighbor
+    gpMeasure[0] += ppMeasure[0][tNeighborIndex];
     //set cases for prospective study periods
     for (j=1, i=giProspectiveStart; i < giNumTimeIntervals; ++j, ++i) {
-       gpCases[j] += ppCases[i][tNeighbor];
-       gpMeasure[j] += ppMeasure[i][tNeighbor];
+       gpCases[j] += ppCases[i][tNeighborIndex];
+       gpMeasure[j] += ppMeasure[i][tNeighborIndex];
     }
     //update measure list
     for (iWindowEnd=1; iWindowEnd < giAllocationSize; ++iWindowEnd)
@@ -277,27 +285,28 @@ void ProspectiveSpatialData::AddMeasureList(tract_t tCentroid, const DataStreamI
   }
 }
 
-/** Adds neighbor data to accumulation - only first DataInterface is accessed. */
-void ProspectiveSpatialData::AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway& DataGateway, size_t tStream) {
+/** Adds neighbor data to accumulation  - caller is responsible for ensuring that
+    'tNeighborIndex' and 'tSetIndex' are valid indexes. */
+void ProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex) {
   unsigned int           i, j;
-  count_t             ** ppCases = DataGateway.GetDataStreamInterface(tStream).GetCaseArray();
-  measure_t           ** ppMeasure = DataGateway.GetDataStreamInterface(tStream).GetMeasureArray();
+  count_t             ** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
+  measure_t           ** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
 
   //set cases for entire period added by this neighbor
-  gpCases[0]   += ppCases[0][tNeighbor];
-  gpMeasure[0] += ppMeasure[0][tNeighbor];
+  gpCases[0]   += ppCases[0][tNeighborIndex];
+  gpMeasure[0] += ppMeasure[0][tNeighborIndex];
   //set cases for prospective study periods
   for (j=1, i=giProspectiveStart; i < giNumTimeIntervals; ++j, ++i) {
-     gpCases[j] += ppCases[i][tNeighbor];
-     gpMeasure[j] += ppMeasure[i][tNeighbor];
+     gpCases[j] += ppCases[i][tNeighborIndex];
+     gpMeasure[j] += ppMeasure[i][tNeighborIndex];
   }  
 }
 
-/** Calculates loglikelihood ratio given current accumulated cluster data if
+/** Calculates loglikelihood ratio, given current accumulated cluster data, if
     it is determined that data fits scanning area of interest (high, low, both).
     Returns zero if all windows rates not of interest else returns greatest
     loglikelihood ratio as calculated by probability model. */
-double ProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
+double ProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
   unsigned int  iWindowEnd;
   double        dMaxLoglikelihoodRatio=0;
 
@@ -317,7 +326,7 @@ double ProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCal
 }
 
 /** internal setup function */
-void ProspectiveSpatialData::Setup(const CSaTScanData & Data, const DataStreamInterface & Interface) {
+void ProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataStreamInterface& Interface) {
   try {
     giAllocationSize = 1 + Data.m_nTimeIntervals - Data.GetProspectiveStartIndex();
     giNumTimeIntervals = Data.m_nTimeIntervals;
@@ -339,39 +348,40 @@ void ProspectiveSpatialData::Setup(const CSaTScanData & Data, const DataStreamIn
   catch (ZdException &x) {
     delete[] gpCases;
     delete[] gpMeasure;
-    x.AddCallpath("Setup()","ProspectiveSpatialData");
+    x.AddCallpath("Setup(const CSaTScanData&, const DataStreamInterface&)","ProspectiveSpatialData");
     throw;
   }
 }
 
+//******************************************************************************
 
-/** constructor */
-SpaceTimeData::SpaceTimeData(const DataStreamInterface & Interface)
+/** class constructor */
+SpaceTimeData::SpaceTimeData(const DataStreamInterface& Interface)
               :TemporalData() {
   try {
     Init();
     Setup(Interface);
   }
   catch (ZdException &x) {
-    x.AddCallpath("constructor()","SpaceTimeData");
+    x.AddCallpath("constructor(const DataStreamInterface&)","SpaceTimeData");
     throw;
   }
 }
 
-/** constructor */
-SpaceTimeData::SpaceTimeData(const AbtractDataStreamGateway & DataGateway)
+/** class constructor */
+SpaceTimeData::SpaceTimeData(const AbtractDataStreamGateway& DataGateway)
               :TemporalData() {
   try {
     Init();
-    Setup(DataGateway.GetDataStreamInterface(0));
+    Setup(DataGateway.GetDataSetInterface(0));
   }
   catch (ZdException &x) {
-    x.AddCallpath("constructor()","SpaceTimeData");
+    x.AddCallpath("constructor(const AbtractDataStreamGateway&)","SpaceTimeData");
     throw;
   }
 }
 
-/** copy constructor */
+/** class copy constructor */
 SpaceTimeData::SpaceTimeData(const SpaceTimeData& rhs)
               :TemporalData(), giAllocationSize(rhs.giAllocationSize) {
   try {
@@ -383,12 +393,12 @@ SpaceTimeData::SpaceTimeData(const SpaceTimeData& rhs)
   catch (ZdException &x) {
     delete[] gpCases;
     delete[] gpMeasure;
-    x.AddCallpath("copy constructor()","SpaceTimeData");
+    x.AddCallpath("constructor(const SpaceTimeData&)","SpaceTimeData");
     throw;
   }
 }
 
-/** destructor */
+/** class destructor */
 SpaceTimeData::~SpaceTimeData() {
   try {
     delete[] gpCases;
@@ -397,14 +407,14 @@ SpaceTimeData::~SpaceTimeData() {
   catch (...){}
 }
 
-/** returns newly cloned SpaceTimeData object */
+/** Returns newly cloned SpaceTimeData object. Caller resonsible for deletion of object. */
 SpaceTimeData * SpaceTimeData::Clone() const {
    return new SpaceTimeData(*this);
 }
 
-/** assigns cluster data of passed object to *this* object
-    NOTE: Caller of function is responsible for ensuring that passed object
-          is of same class type as *this* object. */
+/** Assigns cluster data of passed object to 'this' object. Caller of function
+    is responsible for ensuring that passed AbstractSpatialClusterData object
+    can be casted to 'SpaceTimeData' object. */
 void SpaceTimeData::Assign(const AbstractTemporalClusterData& rhs) {
   const SpaceTimeData& _rhs = (const SpaceTimeData&)rhs;
   gtCases = _rhs.gtCases;
@@ -428,46 +438,49 @@ SpaceTimeData & SpaceTimeData::operator=(const SpaceTimeData& rhs) {
   return *this;
 }
 
-/** adds neighbor data to accumulation */
-void SpaceTimeData::AddNeighborDataAndCompare(tract_t tCentroid,
+/** Adds neighbor data to accumulation. Caller is responsible for ensuring that
+   'tCentroidIndex' and 'tNumNeighbors' are valid indexes; as well as either
+   'ppSorted_UShort_T' or 'ppSorted_Tract_T' point to valid data structures. */
+void SpaceTimeData::AddNeighborDataAndCompare(tract_t tCentroidIndex,
                                               const DataStreamInterface& Interface,
                                               tract_t tNumNeighbors,
-                                              unsigned short ** ppSorted_UShort_T,
-                                              tract_t ** ppSorted_Tract_T,
+                                              unsigned short** ppSorted_UShort_T,
+                                              tract_t** ppSorted_Tract_T,
                                               CTimeIntervals& TimeIntervals,
                                               CMeasureList& MeasureList) {
 
   unsigned int  i, iIntervals = giAllocationSize - 1;
   count_t    ** ppCases = Interface.GetCaseArray();
   measure_t  ** ppMeasure = Interface.GetMeasureArray();
-  tract_t       t, tNeighbor;
+  tract_t       t, tNeighborIndex;
 
   //reset accumulated case/measure data
   memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
   memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
   for (t=0; t < tNumNeighbors; t++) {
-     tNeighbor = (ppSorted_UShort_T ? (tract_t)ppSorted_UShort_T[tCentroid][t] : ppSorted_Tract_T[tCentroid][t]);
+     tNeighborIndex = (ppSorted_UShort_T ? (tract_t)ppSorted_UShort_T[tCentroidIndex][t] : ppSorted_Tract_T[tCentroidIndex][t]);
      for (i=0; i < iIntervals; i++) {
-       gpCases[i] += ppCases[i][tNeighbor];
-       gpMeasure[i] += ppMeasure[i][tNeighbor];
+       gpCases[i] += ppCases[i][tNeighborIndex];
+       gpMeasure[i] += ppMeasure[i][tNeighborIndex];
      }
      TimeIntervals.CompareMeasures(*this, MeasureList);
   }
 }
 
-/** adds neighbor data to accumulation - only first DataInterface accessed */
-void SpaceTimeData::AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway& DataGateway, size_t tStream) {
-  count_t    ** ppCases = DataGateway.GetDataStreamInterface(tStream).GetCaseArray();
-  measure_t  ** ppMeasure = DataGateway.GetDataStreamInterface(tStream).GetMeasureArray();
+/** Adds neighbor data to accumulation - caller is responsible for ensuring that
+    'tNeighborIndex' and 'tSetIndex' are valid indexes. */
+void SpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex) {
+  count_t    ** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
+  measure_t  ** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
 
   for (unsigned int i=0; i < giAllocationSize - 1; ++i) {
-     gpCases[i] += ppCases[i][tNeighbor];
-     gpMeasure[i] += ppMeasure[i][tNeighbor];
+     gpCases[i] += ppCases[i][tNeighborIndex];
+     gpMeasure[i] += ppMeasure[i][tNeighborIndex];
   }
 }
 
 /** internal setup function */
-void SpaceTimeData::Setup(const DataStreamInterface & Interface) {
+void SpaceTimeData::Setup(const DataStreamInterface& Interface) {
   try {
     giAllocationSize = Interface.GetNumTimIntervals() + 1; 
     gtTotalCases = Interface.GetTotalCasesCount();
@@ -480,7 +493,7 @@ void SpaceTimeData::Setup(const DataStreamInterface & Interface) {
   catch (ZdException &x) {
     delete[] gpCases;
     delete[] gpMeasure;
-    x.AddCallpath("Setup()","SpaceTimeData");
+    x.AddCallpath("Setup(const DataStreamInterface&)","SpaceTimeData");
     throw;
   }
 }
