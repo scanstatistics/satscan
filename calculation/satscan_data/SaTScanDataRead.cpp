@@ -351,17 +351,16 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian() {
   bool                          bValidRecord, bValid=true, bEmpty=true;
   const char                  * pCoordinate, * pDimension;
   ZdIO                          SourceFile;
-  ZdString                      sDataBuffer, TractIdentifier;
+  ZdString                      TractIdentifier;
   std::vector<double>           vCoordinates;
-  StringParser                  Parser(sDataBuffer);
+  StringParser                  Parser;
 
   try {
     gpPrint->SatScanPrintf("Reading the geographic coordinates file\n");
     SourceFile.Open(m_pParameters->GetCoordinatesFileName().c_str(), ZDIO_OPEN_READ);
     gpPrint->SetImpliedInputFileType(BasePrint::COORDFILE);
 
-    while (SourceFile.ReadLine(sDataBuffer)) {
-         Parser.StringReloaded();
+    while (Parser.ReadString(SourceFile)) {
      	 lRecNum++;
          //skip records with no data
          if (!Parser.HasWords())
@@ -452,9 +451,9 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude() {
   const char                  * pCoordinate;
   bool                          bValid=true, bEmpty=true;
   ZdIO                          SourceFile;
-  ZdString                      sDataBuffer, TractIdentifier;
+  ZdString                      TractIdentifier;
   std::vector<double>           vCoordinates;
-  StringParser                  Parser(sDataBuffer);
+  StringParser                  Parser;
 
   try {
     gpPrint->SatScanPrintf("Reading the geographic coordinates file (lat/lon).\n");
@@ -465,8 +464,7 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude() {
     m_pParameters->SetDimensionsOfData(3/*for conversion*/);
     gpTInfo->tiSetDimensions(m_pParameters->GetDimensionsOfData());
     gpGInfo->giSetDimensions(m_pParameters->GetDimensionsOfData());
-    while (SourceFile.ReadLine(sDataBuffer)) {
-         Parser.StringReloaded();
+    while (Parser.ReadString(SourceFile)) {
          ++lRecNum;
         //skip records with no data 
         if (! Parser.HasWords())
@@ -526,16 +524,14 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude() {
 bool CSaTScanData::ReadCounts(ZdIO & SourceFile, const char* szDescription, count_t**  pCounts) {
   int           i, j, iRecNum=0;
   bool          bValid=true, bEmpty=true;
-  ZdString      sDataBuffer;
   count_t       Count;
   Julian        Date;
   tract_t       TractIdentifierIndex;
-  StringParser  Parser(sDataBuffer);
+  StringParser  Parser;
 
   try {
     //Read data, parse and if no errors, increment count for tract at date.
-    while (SourceFile.ReadLine(sDataBuffer)) {
-         Parser.StringReloaded();
+    while (Parser.ReadString(SourceFile)) {
          ++iRecNum;
          if (Parser.HasWords()) {
            bEmpty = false;
@@ -591,9 +587,8 @@ bool CSaTScanData::ReadGridFileAsCartiesian() {
   long                          lRecNum=0;
   const char                  * pCoordinate;
   ZdIO                          SourceFile;
-  ZdString                      sDataBuffer;
   std::vector<double>           vCoordinates;
-  StringParser                  Parser(sDataBuffer);
+  StringParser                  Parser;
    
   try {
     gpPrint->SatScanPrintf("Reading the grid file\n");
@@ -601,8 +596,7 @@ bool CSaTScanData::ReadGridFileAsCartiesian() {
     gpPrint->SetImpliedInputFileType(BasePrint::GRIDFILE);
     vCoordinates.resize(m_pParameters->GetDimensionsOfData(), 0);
 
-    while (SourceFile.ReadLine(sDataBuffer)) {
-        Parser.StringReloaded();
+    while (Parser.ReadString(SourceFile)) {
         ++lRecNum;
         //skip blank lines
         if (!Parser.HasWords())
@@ -664,9 +658,8 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude() {
   const char                  * pCoordinate;
   char                          szTid[MAX_LINEITEMSIZE];
   ZdIO                          SourceFile;
-  ZdString                      sDataBuffer;
   std::vector<double>           vCoordinates;
-  StringParser                  Parser(sDataBuffer);
+  StringParser                  Parser;
 
   try {
     gpPrint->SatScanPrintf("Reading the grid file (lat/lon).\n");
@@ -674,8 +667,7 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude() {
     gpPrint->SetImpliedInputFileType(BasePrint::GRIDFILE);
     vCoordinates.resize(3/*for conversion*/, 0);
 
-    while (SourceFile.ReadLine(sDataBuffer)) {
-        Parser.StringReloaded();
+    while (Parser.ReadString(SourceFile)) {
         ++lRecNum;
         //skip lines with no data
         if (!Parser.HasWords())
@@ -780,10 +772,9 @@ bool CSaTScanData::ReadPopulationFile() {
   float                         fPopulation;
   Julian                        PopulationDate;
   ZdIO                          SourceFile;
-  ZdString                      sDataBuffer;
   std::vector<Julian>           vPopulationDates;
   std::vector<Julian>::iterator itrdates;
-  StringParser                  Parser(sDataBuffer);  
+  StringParser                  Parser;
 
   try {
     gpPrint->SatScanPrintf("Reading the population file...\n");
@@ -791,8 +782,7 @@ bool CSaTScanData::ReadPopulationFile() {
     gpPrint->SetImpliedInputFileType(BasePrint::POPFILE);
 
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
-    while (SourceFile.ReadLine(sDataBuffer)) {
-        Parser.StringReloaded();
+    while (Parser.ReadString(SourceFile)) {
         ++iRecNum;
         //skip lines that do not contain data
         if (!Parser.HasWords())
@@ -836,8 +826,7 @@ bool CSaTScanData::ReadPopulationFile() {
       SourceFile.Seek(0L);
       iRecNum = 0;
       //We can ignore error checking for population date and population since we already did this above.
-      while (SourceFile.ReadLine(sDataBuffer)) {
-          Parser.StringReloaded();
+      while (Parser.ReadString(SourceFile)) {
           ++iRecNum;
           if (!Parser.HasWords()) // Skip Blank Lines
             continue;
