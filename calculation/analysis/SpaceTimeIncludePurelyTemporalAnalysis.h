@@ -21,7 +21,6 @@ class C_ST_PT_Analysis : public CSpaceTimeAnalysis {
     virtual void                AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway);  
     virtual double              FindTopRatio(const AbtractDataStreamGateway & DataGateway);
     virtual double              MonteCarlo(const DataStreamInterface & Interface);
-    virtual double              MonteCarloProspective(const DataStreamInterface & Interface);
     virtual void                SetMaxNumClusters();
 
   public:

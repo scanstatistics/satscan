@@ -139,22 +139,6 @@ double CSpaceTimeAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
   return gpMeasureList->GetMaximumLogLikelihoodRatio();
 }
 
-/** Returns loglikelihood for Monte Carlo replication - prospective analysis. */
-double CSpaceTimeAnalysis::MonteCarloProspective(const DataStreamInterface & Interface) {
-  double                        dMaxLogLikelihoodRatio;
-  tract_t                       k, i, j, iNumNeighbors;
-
-  gpMeasureList->Reset();
-  for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {  //circle is 0 offset... (always there)
-     for (tract_t i = 0; i<m_pData->m_nGridTracts; ++i) {
-        m_pData->SetImpliedCentroid(k, i);
-        gpClusterData->AddNeighborDataAndCompare(Interface, m_pData, gpTimeIntervals, gpMeasureList);
-     }
-     gpMeasureList->SetForNextIteration(k);
-  }
-  return gpMeasureList->GetMaximumLogLikelihoodRatio();
-}
-
 /** internal setup function */
 void CSpaceTimeAnalysis::Setup() {
   try {

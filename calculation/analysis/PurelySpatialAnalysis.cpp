@@ -105,12 +105,6 @@ double CPurelySpatialAnalysis::MonteCarlo(const DataStreamInterface & Interface)
   return gpMeasureList->GetMaximumLogLikelihoodRatio();
 }
 
-/** Prospective monte carlo not valid for purely spatial analysis. */
-double CPurelySpatialAnalysis::MonteCarloProspective(const DataStreamInterface & Interface) {
-  ZdGenerateException("MonteCarloProspective() not implemented for CPurelySpatialAnalysis.","MonteCarloProspective()");
-  return 0;
-}
-
 void CPurelySpatialAnalysis::Setup() {
   try {
     gpTopShapeClusters = new TopClustersContainer(*m_pData);

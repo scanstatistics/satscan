@@ -14,8 +14,6 @@ class CPurelySpatialAnalysis : public CAnalysis {
     SpatialData               * gpClusterData;
     CMeasureList              * gpMeasureList;
 
-    virtual double              MonteCarlo(const DataStreamInterface & Interface);
-    virtual double              MonteCarloProspective(const DataStreamInterface & Interface);
     void                        Init();
     void                        Setup();
 
@@ -23,6 +21,7 @@ class CPurelySpatialAnalysis : public CAnalysis {
     virtual void                AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway);
     virtual const CCluster    & CalculateTopCluster(tract_t nCenter, const AbtractDataStreamGateway & DataGateway);
     virtual void                AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway);
+    virtual double              MonteCarlo(const DataStreamInterface & Interface);
 
   public:
     CPurelySpatialAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);

@@ -136,14 +136,3 @@ double CPurelyTemporalAnalysis::MonteCarlo(const DataStreamInterface & Interface
   return gpMeasureList->GetMaximumLogLikelihoodRatio();
 }
 
-/** For purely temporal analysis, prospective monte carlo is the same as monte carlo. */
-double CPurelyTemporalAnalysis::MonteCarloProspective(const DataStreamInterface & Interface) {
-  double                        dMaxLogLikelihoodRatio;
-
-  gpClusterData->InitializeData();
-  gpMeasureList->Reset();
-  gpTimeIntervals->CompareMeasures(gpClusterData, gpMeasureList);
-  return gpMeasureList->GetMaximumLogLikelihoodRatio();
-}
-
-

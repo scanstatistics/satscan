@@ -129,25 +129,6 @@ double C_ST_PT_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
   return gpMeasureList->GetMaximumLogLikelihoodRatio();
 }
 
-/** Returns loglikelihood for Monte Carlo Prospective replication. */
-double C_ST_PT_Analysis::MonteCarloProspective(const DataStreamInterface & Interface) {
-  double                        dMaxLogLikelihoodRatio;
-  tract_t                       k, i, j, iNumNeighbors;
-
-  gpMeasureList->Reset();
-  //compare purely temporal cluster in same ratio correction as circle
-  gpTimeIntervals->CompareMeasures(gpPTClusterData, gpMeasureList);
-  //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-  for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {
-     for (i=0; i < m_pData->m_nGridTracts; ++i) {
-        m_pData->SetImpliedCentroid(k, i);
-        gpClusterData->AddNeighborDataAndCompare(Interface, m_pData, gpTimeIntervals, gpMeasureList);
-     }
-     gpMeasureList->SetForNextIteration(k);
-  }
-  return gpMeasureList->GetMaximumLogLikelihoodRatio();
-}
-
 /** Sets maximum number of clusters in top cluster array */
 void C_ST_PT_Analysis::SetMaxNumClusters() {
   m_nMaxClusters = m_pData->m_nGridTracts+1;
