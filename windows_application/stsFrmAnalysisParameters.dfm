@@ -863,9 +863,9 @@ object frmAnalysis: TfrmAnalysis
         object lblPercentageOfStudyPeriod: TLabel
           Left = 112
           Top = 37
-          Width = 167
+          Width = 240
           Height = 13
-          Caption = 'percent of the study period (<=90%)'
+          Caption = 'percent of the study period (<= 90%, default = 50%)'
         end
         object lblMaxTemporalTimeUnits: TLabel
           Left = 112

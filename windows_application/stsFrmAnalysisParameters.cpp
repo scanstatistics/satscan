@@ -1035,8 +1035,10 @@ void TfrmAnalysis::OnProbabilityModelClick() {
     switch (GetModelControlType()) {
       case POISSON   		:
       case BERNOULLI            : lblSimulatedLogLikelihoodRatios->Caption = "Simulated Log Likelihood Ratios";
+                                  lblPercentageOfStudyPeriod->Caption = "percent of the study period (<= 90%, default = 50%)";
                                   break;
       case SPACETIMEPERMUTATION : lblSimulatedLogLikelihoodRatios->Caption = "Simulated Test Statistics";
+                                  lblPercentageOfStudyPeriod->Caption = "percent of the study period (<= 50%, default = 50%)";
                                   break;
       default : ZdGenerateException("Unknown probabilty model '%d'.", "OnProbablityModelClick()", GetModelControlType());
     }
