@@ -7,7 +7,7 @@
 /** Collection of data stream interfaces. */
 class DataStreamGateway {
   private:
-    std::deque<DataStreamInterface>          gvDataStreams;
+    std::vector<DataStreamInterface>         gvDataStreams;
 
   public:
             DataStreamGateway();
