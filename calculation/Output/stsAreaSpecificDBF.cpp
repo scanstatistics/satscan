@@ -44,6 +44,7 @@ void stsAreaSpecificDBF::Init() {
 void stsAreaSpecificDBF::RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, tract_t tTract) {
    ZdTransaction*       pTransaction = 0;
    ZdString             sTempValue;
+   std::string          sBuffer;
    float                fPVal;
    DBFFile              File(gsFileName.GetCString());
 
@@ -59,7 +60,7 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
       SetDoubleField(*pRecord, iClusterNumber, GetFieldNumber(gvFields, CLUST_NUM));
 
       // area id
-      sTempValue = (pData.GetTInfo())->tiGetTid(tTract);
+      sTempValue = (pData.GetTInfo())->tiGetTid(tTract, sBuffer);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, LOC_ID));
 
       // p value
