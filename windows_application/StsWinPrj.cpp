@@ -20,6 +20,7 @@ USEUNIT("stsOutputFileRegistry.cpp");
 USEUNIT("..\calculation\Parameters.cpp");
 USEUNIT("..\calculation\Toolkit.cpp");
 USEUNIT("..\calculation\SaTScanBasis.cpp");
+USEUNIT("..\calculation\utility\ScanfFile.cpp");
 USEUNIT("..\calculation\utility\UtilityFunctions.cpp");
 USEUNIT("..\calculation\utility\JulianDates.cpp");
 USEUNIT("..\calculation\utility\RandomNumberGenerator.cpp");

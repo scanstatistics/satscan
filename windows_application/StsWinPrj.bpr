@@ -9,8 +9,9 @@
       stsPrintWindow.obj stsFrmOutPutViewer.obj stsDataImporter.obj 
       stsDlgDataImporter.obj stsOutputFileRegistry.obj 
       ..\calculation\Parameters.obj ..\calculation\Toolkit.obj 
-      ..\calculation\SaTScanBasis.obj 
-      ..\calculation\utility\UtilityFunctions.obj ..\calculation\utility\JulianDates.obj 
+      ..\calculation\SaTScanBasis.obj ..\calculation\utility\ScanfFile.obj 
+      ..\calculation\utility\UtilityFunctions.obj 
+      ..\calculation\utility\JulianDates.obj 
       ..\calculation\utility\RandomNumberGenerator.obj 
       ..\calculation\utility\Salloc.obj 
       ..\calculation\utility\RandomDistribution.obj 
@@ -59,7 +60,7 @@
       ..\calculation\Output\stsAreaSpecificData.obj 
       ..\calculation\Output\stsOutputFileWriter.obj 
       ..\calculation\Output\stsDBaseFileWriter.obj 
-      ..\calculation\Output\stsASCIIFileWriter.obj"/>
+      ..\calculation\Output\stsASCIIFileWriter.obj stsBaseAnalysisChildForm.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
