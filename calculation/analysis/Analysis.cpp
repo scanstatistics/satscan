@@ -606,7 +606,7 @@ void CAnalysis::PerformSimulations() {
               Sleep(5000);
           }
           gpPrintDirection->SatScanPrintf(sReplicationFormatString, iSimulationNumber, m_pParameters->m_nReplicas, r);
-          if (m_pParameters->m_bSaveSimLogLikelihoods)
+          if (m_pParameters->m_bSaveSimLogLikelihoods || m_pParameters->GetDBaseOutputLogLikeli())
              pLLRData->AddLikelihood(r);
         }
         if (m_pParameters->m_bSaveSimLogLikelihoods)
