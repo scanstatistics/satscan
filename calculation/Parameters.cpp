@@ -3022,8 +3022,6 @@ bool CParameters::ValidateDateParameters(BasePrint& PrintDirection) const {
     if (GetIsProspectiveAnalysis() && !ValidateProspectiveDate(PrintDirection)) {
       bValid = false;
       bProspectiveDateValid = false;
-      PrintDirection.SatScanPrintWarning("Error: The prospective analyses start date of '%s' is not a valid date.\n",
-                                         gsProspectiveStartDate.c_str());
     }
 
     if (bStartDateValid && bEndDateValid) {
