@@ -345,10 +345,11 @@ void AnalysisRunner::Execute() {
       //calculate most likely clusters
       CalculateMostLikelyClusters();
       //detect user cancellation
-      if (gPrintDirection.GetIsCanceled() || gTopClustersContainer.GetNumClustersRetained() == 0)
+      if (gPrintDirection.GetIsCanceled())
         return;
       //Do Monte Carlo replications.
-      PerformSimulations();
+      if (gTopClustersContainer.GetNumClustersRetained())
+        PerformSimulations();
       //detect user cancellation
       if (gPrintDirection.GetIsCanceled())
         return;
