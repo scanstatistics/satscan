@@ -54,6 +54,9 @@ bool CSignificantRatios05::AddRatio(double r)
   return bAdded;
 }
 
+// this function should not be called for Monte Carlo reps less than 99 due to the fact
+// that that seems to cause the ratio list to not have enough elements in it for the integer
+// division by five to not return a zero and thus prevents the list from accessing a -1 element - AJV 10/03/2002
 const double CSignificantRatios05::GetAlpha01()  const
 {
    return (m_pRatiosList[(m_nRatios/5)-1]);
