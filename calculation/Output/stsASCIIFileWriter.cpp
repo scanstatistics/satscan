@@ -41,21 +41,12 @@ void ASCIIFileWriter::CreateFormatString(ZdString& sValue, const int iFieldNumbe
 
       switch(fv.GetType()) {
          case ZD_ALPHA_FLD :
-            sValue = fv.AsZdString();
+            sValue << fv.AsZdString();
             break;
          case ZD_NUMBER_FLD :
             sFormat << "-" << pField->GetLength() << "." << pField->GetPrecision();
             sFormat << "f";
             sValue.printf(sFormat.GetCString(), fv.AsDouble());
-            break;
-         case ZD_LONG_FLD :
-            sFormat << "-" << pField->GetLength() << "." << pField->GetPrecision();
-            sFormat << "l";
-            sValue.printf(sFormat.GetCString(), fv.AsLong());
-            break;
-         case ZD_BOOLEAN_FLD :
-            sFormat << "c";
-            sValue.printf(sFormat.GetCString(), fv.AsBool());
             break;
          default :
             ZdGenerateException("Unsupported field type %c", "Error!", pField->GetType());
@@ -97,8 +88,9 @@ void ASCIIFileWriter::Print() {
       for(int i = 0; i < gpOutputFileData->GetNumRecords(); ++i) {
          pRecord = gpOutputFileData->GetRecord(i);
          for(int j = 0; j < gpOutputFileData->GetNumFields(); ++j) {
+            sFormatString << ZdString::reset;
             CreateFormatString(sFormatString, j, pRecord->GetValue(j));
-            fprintf(pFile, "%s ", sFormatString.GetCString());
+            fprintf(pFile, "%s  \t", sFormatString.GetCString());
          }
          fprintf(pFile, "\n");
       }
