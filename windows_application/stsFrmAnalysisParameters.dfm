@@ -1,11 +1,11 @@
 object frmAnalysis: TfrmAnalysis
-  Left = 182
-  Top = 78
+  Left = 229
+  Top = 200
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SaTScan Analysis Settings'
-  ClientHeight = 399
-  ClientWidth = 514
+  ClientHeight = 381
+  ClientWidth = 506
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -41,11 +41,11 @@ object frmAnalysis: TfrmAnalysis
     Caption = 'Month'
   end
   object PageControl1: TPageControl
-    Left = 2
-    Top = 8
+    Left = 0
+    Top = 0
     Width = 507
-    Height = 389
-    ActivePage = tbOutputFiles
+    Height = 382
+    ActivePage = tbAnalysis
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input'
@@ -269,7 +269,7 @@ object frmAnalysis: TfrmAnalysis
             Height = 21
             MaxLength = 4
             TabOrder = 0
-            Text = '1900'
+            Text = '2000'
             OnExit = edtStudyPeriodStartDateExit
             OnKeyPress = NaturalNumberKeyPress
           end
@@ -304,7 +304,7 @@ object frmAnalysis: TfrmAnalysis
             Height = 21
             MaxLength = 4
             TabOrder = 3
-            Text = '1900'
+            Text = '2000'
             OnExit = edtStudyPeriodEndDateExit
             OnKeyPress = NaturalNumberKeyPress
           end
@@ -393,12 +393,12 @@ object frmAnalysis: TfrmAnalysis
         end
       end
       object btnAdvanced3_Yes: TBitBtn
-        Left = 395
-        Top = 328
+        Left = 403
+        Top = 324
         Width = 90
         Height = 24
         Hint = 'Advanced Input Features'
-        Caption = 'Advanced...'
+        Caption = 'Advanced >>'
         ParentShowHint = False
         ShowHint = True
         TabOrder = 6
@@ -600,12 +600,12 @@ object frmAnalysis: TfrmAnalysis
         end
       end
       object btnAdvanced3_No: TBitBtn
-        Left = 395
-        Top = 328
+        Left = 403
+        Top = 324
         Width = 90
         Height = 24
         Hint = 'Advanced Input Features'
-        Caption = 'Advanced...'
+        Caption = 'Advanced >>'
         ParentShowHint = False
         ShowHint = True
         TabOrder = 5
@@ -666,7 +666,7 @@ object frmAnalysis: TfrmAnalysis
         OnKeyPress = NaturalNumberKeyPress
       end
       object rgpTypeProbability: TGroupBox
-        Left = 160
+        Left = 151
         Top = 8
         Width = 164
         Height = 253
@@ -780,9 +780,9 @@ object frmAnalysis: TfrmAnalysis
         end
       end
       object rgpScanAreas: TGroupBox
-        Left = 340
+        Left = 321
         Top = 8
-        Width = 145
+        Width = 170
         Height = 121
         Caption = 'Scan for Areas with:'
         TabOrder = 2
@@ -814,9 +814,9 @@ object frmAnalysis: TfrmAnalysis
         end
       end
       object rgpTimeIntervalUnits: TGroupBox
-        Left = 340
+        Left = 321
         Top = 140
-        Width = 145
+        Width = 170
         Height = 121
         Caption = 'Time Intervals'
         TabOrder = 3
@@ -878,14 +878,22 @@ object frmAnalysis: TfrmAnalysis
           OnExit = edtTimeIntervalLengthExit
           OnKeyPress = NaturalNumberKeyPress
         end
+        object stUnitText: TStaticText
+          Left = 117
+          Top = 90
+          Width = 29
+          Height = 17
+          Caption = 'years'
+          TabOrder = 4
+        end
       end
       object btnAdvanced1_Yes: TBitBtn
-        Left = 395
-        Top = 328
+        Left = 403
+        Top = 324
         Width = 90
         Height = 24
         Hint = 'Advanced Analysis Features'
-        Caption = 'Advanced...'
+        Caption = 'Advanced >>'
         ParentShowHint = False
         ShowHint = True
         TabOrder = 5
@@ -911,12 +919,12 @@ object frmAnalysis: TfrmAnalysis
         NumGlyphs = 2
       end
       object btnAdvanced1_No: TBitBtn
-        Left = 395
-        Top = 328
+        Left = 403
+        Top = 324
         Width = 90
         Height = 24
         Hint = 'Advanced Analysis Features'
-        Caption = 'Advanced...'
+        Caption = 'Advanced >>'
         ParentShowHint = False
         ShowHint = True
         TabOrder = 6
@@ -1104,12 +1112,12 @@ object frmAnalysis: TfrmAnalysis
         end
       end
       object btnAdvanced2_Yes: TBitBtn
-        Left = 395
-        Top = 328
+        Left = 403
+        Top = 324
         Width = 90
         Height = 24
         Hint = 'Advanced Output Features'
-        Caption = 'Advanced...'
+        Caption = 'Advanced >>'
         ParentShowHint = False
         ShowHint = True
         TabOrder = 3
@@ -1135,12 +1143,12 @@ object frmAnalysis: TfrmAnalysis
         NumGlyphs = 2
       end
       object btnAdvanced2_No: TBitBtn
-        Left = 395
-        Top = 328
+        Left = 403
+        Top = 324
         Width = 90
         Height = 24
         Hint = 'Advanced Output Features'
-        Caption = 'Advanced...'
+        Caption = 'Advanced >>'
         ParentShowHint = False
         ShowHint = True
         TabOrder = 2
