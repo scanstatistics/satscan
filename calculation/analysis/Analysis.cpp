@@ -883,7 +883,8 @@ bool CAnalysis::RepeatAnalysis()
 
    try {
       if (m_pParameters->m_bSequential)
-         bReturn = ((m_nAnalysisCount < m_pParameters->m_nAnalysisTimes) &&
+         bReturn = ( m_pTopClusters[0] &&
+                    (m_nAnalysisCount < m_pParameters->m_nAnalysisTimes) &&
                     (m_pTopClusters[0]->GetPVal(m_pParameters->m_nReplicas) < m_pParameters->m_nCutOffPVal) &&
                     (m_pData->m_nTracts > 1));
    }
