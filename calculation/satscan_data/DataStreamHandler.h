@@ -9,6 +9,7 @@
 class CSaTScanData; /** forward class definition */
 
 typedef ZdPointerVector<SimulationDataStream> SimulationDataContainer_t;
+typedef ZdPointerVector<RealDataStream>       RealDataContainer_t;
 
 /** Manages all data streams. */
 class DataStreamHandler {
@@ -19,7 +20,7 @@ class DataStreamHandler {
     const CParameters                 & gParameters;            /** reference to parameters */
     BasePrint                         * gpPrint;                /** pointer to print direction */
     CSaTScanData                      & gDataHub;               /** reference to data hub */
-    ZdPointerVector<RealDataStream>     gvDataStreams;          /** collection of data streams */
+    RealDataContainer_t                 gvDataStreams;          /** collection of data streams */
 
     virtual void                        AllocateCaseStructures(unsigned int iStream);
     bool                                ConvertCountDateToJulian(StringParser & Parser, Julian & JulianDate);
