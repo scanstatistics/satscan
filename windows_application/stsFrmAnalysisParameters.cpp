@@ -94,6 +94,7 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
   ZdFileName            sFileName;
   ZdString              sFileNamePrefix("Case_");
   char                  sBuffer[1024];
+  std::vector<std::string>      vFieldDescriptors;
 
   try {
     OpenDialog1->FileName =  "";
@@ -115,7 +116,8 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
          sFileNamePrefix << sFileName.GetFileName();
          sFileName.SetFileName(sFileNamePrefix);
          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
-         CreateTXDFile(sFileName, gvCaseFileFieldDescriptors);
+         SetupCaseFileFieldDescriptors(vFieldDescriptors);
+         CreateTXDFile(sFileName, vFieldDescriptors);
          auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
          if (pImporter->ShowModal() == mrOk) {
@@ -143,7 +145,8 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
   ZdFileName            sFileName;
   ZdString              sFileNamePrefix("Control_");
   char                  sBuffer[1024];
-  
+  std::vector<std::string>      vFieldDescriptors;
+
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.ctl";
@@ -164,7 +167,8 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
          sFileNamePrefix << sFileName.GetFileName();
          sFileName.SetFileName(sFileNamePrefix);
          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
-         CreateTXDFile(sFileName, gvControlFileFieldDescriptors);
+         SetupControlFileFieldDescriptors(vFieldDescriptors);
+         CreateTXDFile(sFileName, vFieldDescriptors);
          auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
          if (pImporter->ShowModal() == mrOk) {
@@ -192,6 +196,7 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
   ZdFileName            sFileName;
   ZdString              sFileNamePrefix("Geographical_");
   char                  sBuffer[1024];
+  std::vector<std::string>      vFieldDescriptors;
 
   try {
     OpenDialog1->FileName = "";
@@ -213,7 +218,8 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
          sFileNamePrefix << sFileName.GetFileName();
          sFileName.SetFileName(sFileNamePrefix);
          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
-         CreateTXDFile(sFileName, gvGeoFileFieldDescriptors);
+         SetupGeoFileFieldDescriptors(vFieldDescriptors);
+         CreateTXDFile(sFileName, vFieldDescriptors);
          auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
          if (pImporter->ShowModal() == mrOk) {
@@ -240,6 +246,7 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
   ZdFileName            sFileName;
   ZdString              sFileNamePrefix("SpecialGrid_");
   char                  sBuffer[1024];
+  std::vector<std::string>      vFieldDescriptors;
 
   try {
     OpenDialog1->FileName = "";
@@ -261,7 +268,8 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
          sFileNamePrefix << sFileName.GetFileName();
          sFileName.SetFileName(sFileNamePrefix);
          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
-         CreateTXDFile(sFileName, gvGridFileFieldDescriptors);
+         SetupGridFileFieldDescriptors(vFieldDescriptors);
+         CreateTXDFile(sFileName, vFieldDescriptors);
          auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
          if (pImporter->ShowModal() ==mrOk) {
@@ -288,6 +296,7 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
   ZdFileName            sFileName;
   ZdString              sFileNamePrefix("Population_");
   char                  sBuffer[1024];
+  std::vector<std::string>      vFieldDescriptors;
 
   try {
     OpenDialog1->FileName = "";
@@ -309,7 +318,8 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
           // Prefix filename so that we know this sessions created imported files are unique.
           sFileNamePrefix << sFileName.GetFileName();
           sFileName.SetFileName(sFileNamePrefix);
-          CreateTXDFile(sFileName, gvPopFileFieldDescriptors);
+          SetupPopFileFieldDescriptors(vFieldDescriptors);
+          CreateTXDFile(sFileName, vFieldDescriptors);
           auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
           pImporter->ShowOptionalPanels(false, false, false);
           if (pImporter->ShowModal() == mrOk) {
@@ -766,16 +776,7 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const std::vector<
 }
 
 bool TfrmAnalysis::DetermineIfDbfExtension(const AnsiString& sFileName) {
-  bool bDbfStatus = false;
-
-  try {
-     bDbfStatus = !strcmp(((sFileName.SubString(sFileName.Length() - 3, 4)).LowerCase()).c_str(), ".dbf");
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("DetermineIfDbaseFile(AnsiString & sFileName)", "TfrmAnalysis");
-    throw;
-  }
-   return bDbfStatus;
+  return ZdString(sFileName.c_str()).EndsWith(".dbf");
 }
 
 void __fastcall TfrmAnalysis::edtEndDayExit(TObject *Sender) {
@@ -1085,11 +1086,11 @@ ZdDate & TfrmAnalysis::GetStudyPeriodStartDate(ZdDate & Date) {
 void TfrmAnalysis::Init() {
    gpParams=0;
    cboCriteriaSecClusters->ItemIndex = 0;
-   SetupGeoFileFieldDescriptors();
-   SetupCaseFileFieldDescriptors();
-   SetupControlFileFieldDescriptors();
-   SetupGridFileFieldDescriptors();
-   SetupPopFileFieldDescriptors();
+//   SetupGeoFileFieldDescriptors();
+//   SetupCaseFileFieldDescriptors();
+//   SetupControlFileFieldDescriptors();
+//   SetupGridFileFieldDescriptors();
+//   SetupPopFileFieldDescriptors();
 }
 
 //------------------------------------------------------------------------------
@@ -1506,70 +1507,74 @@ void TfrmAnalysis::SetSpatialDistanceCaption() {
 }
 
 // fill the Case File field descriptor vector with the appropriate field names for a case file
-void TfrmAnalysis::SetupCaseFileFieldDescriptors() {
-   gvCaseFileFieldDescriptors.clear();
-   gvCaseFileFieldDescriptors.push_back("Tract ID");
-   gvCaseFileFieldDescriptors.push_back("Number of Cases");
-   gvCaseFileFieldDescriptors.push_back("Date/Time");
-   gvCaseFileFieldDescriptors.push_back("Number of Controls");
-   gvCaseFileFieldDescriptors.push_back("Covariant1");
-   gvCaseFileFieldDescriptors.push_back("Covariant2");
-   gvCaseFileFieldDescriptors.push_back("Covariant3");
-   gvCaseFileFieldDescriptors.push_back("Covariant4");
-   gvCaseFileFieldDescriptors.push_back("Covariant5");
-   gvCaseFileFieldDescriptors.push_back("Covariant6");
-   gvCaseFileFieldDescriptors.push_back("Covariant7");
-   gvCaseFileFieldDescriptors.push_back("Covariant8");
-   gvCaseFileFieldDescriptors.push_back("Covariant9");
-   gvCaseFileFieldDescriptors.push_back("Covariant10");
+void TfrmAnalysis::SetupCaseFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors) {
+   vFieldDescriptors.clear();
+   vFieldDescriptors.reserve(14);
+   vFieldDescriptors.push_back("Tract ID");
+   vFieldDescriptors.push_back("Number of Cases");
+   vFieldDescriptors.push_back("Date/Time");
+   vFieldDescriptors.push_back("Number of Controls");
+   vFieldDescriptors.push_back("Covariant1");
+   vFieldDescriptors.push_back("Covariant2");
+   vFieldDescriptors.push_back("Covariant3");
+   vFieldDescriptors.push_back("Covariant4");
+   vFieldDescriptors.push_back("Covariant5");
+   vFieldDescriptors.push_back("Covariant6");
+   vFieldDescriptors.push_back("Covariant7");
+   vFieldDescriptors.push_back("Covariant8");
+   vFieldDescriptors.push_back("Covariant9");
+   vFieldDescriptors.push_back("Covariant10");
 }
 
 // fill the control File field descriptor vector with the appropriate field names for a control file
-void TfrmAnalysis::SetupControlFileFieldDescriptors() {
-   gvControlFileFieldDescriptors.clear();
-   gvControlFileFieldDescriptors.push_back("Tract ID");
-   gvControlFileFieldDescriptors.push_back("Number of Cases");
-   gvControlFileFieldDescriptors.push_back("Date/Time");
-   gvControlFileFieldDescriptors.push_back("Number of Controls");
-   gvControlFileFieldDescriptors.push_back("Covariant1");
-   gvControlFileFieldDescriptors.push_back("Covariant2");
-   gvControlFileFieldDescriptors.push_back("Covariant3");
-   gvControlFileFieldDescriptors.push_back("Covariant4");
-   gvControlFileFieldDescriptors.push_back("Covariant5");
-   gvControlFileFieldDescriptors.push_back("Covariant6");
-   gvControlFileFieldDescriptors.push_back("Covariant7");
-   gvControlFileFieldDescriptors.push_back("Covariant8");
-   gvControlFileFieldDescriptors.push_back("Covariant9");
-   gvControlFileFieldDescriptors.push_back("Covariant10");
+void TfrmAnalysis::SetupControlFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors) {
+   vFieldDescriptors.clear();
+   vFieldDescriptors.reserve(14);
+   vFieldDescriptors.push_back("Tract ID");
+   vFieldDescriptors.push_back("Number of Cases");
+   vFieldDescriptors.push_back("Date/Time");
+   vFieldDescriptors.push_back("Number of Controls");
+   vFieldDescriptors.push_back("Covariant1");
+   vFieldDescriptors.push_back("Covariant2");
+   vFieldDescriptors.push_back("Covariant3");
+   vFieldDescriptors.push_back("Covariant4");
+   vFieldDescriptors.push_back("Covariant5");
+   vFieldDescriptors.push_back("Covariant6");
+   vFieldDescriptors.push_back("Covariant7");
+   vFieldDescriptors.push_back("Covariant8");
+   vFieldDescriptors.push_back("Covariant9");
+   vFieldDescriptors.push_back("Covariant10");
 }
 
 // fill the Geo File field descriptor vector with the appropriate field names for a geo file
-void TfrmAnalysis::SetupGeoFileFieldDescriptors() {
-   gvGeoFileFieldDescriptors.clear();
-   gvGeoFileFieldDescriptors.push_back("Tract ID");
-   gvGeoFileFieldDescriptors.push_back("Longitude");
-   gvGeoFileFieldDescriptors.push_back("Latitude");
-   gvGeoFileFieldDescriptors.push_back("Dimension1");
-   gvGeoFileFieldDescriptors.push_back("Dimension2");
-   gvGeoFileFieldDescriptors.push_back("Dimension3");
-   gvGeoFileFieldDescriptors.push_back("Dimension4");
-   gvGeoFileFieldDescriptors.push_back("Dimension5");
-   gvGeoFileFieldDescriptors.push_back("Dimension6");
-   gvGeoFileFieldDescriptors.push_back("Dimension7");
-   gvGeoFileFieldDescriptors.push_back("Dimension8");
-   gvGeoFileFieldDescriptors.push_back("Dimension9");
-   gvGeoFileFieldDescriptors.push_back("Dimension10");
+void TfrmAnalysis::SetupGeoFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors) {
+   vFieldDescriptors.clear();
+   vFieldDescriptors.reserve(13);
+   vFieldDescriptors.push_back("Tract ID");
+   vFieldDescriptors.push_back("Longitude");
+   vFieldDescriptors.push_back("Latitude");
+   vFieldDescriptors.push_back("Dimension1");
+   vFieldDescriptors.push_back("Dimension2");
+   vFieldDescriptors.push_back("Dimension3");
+   vFieldDescriptors.push_back("Dimension4");
+   vFieldDescriptors.push_back("Dimension5");
+   vFieldDescriptors.push_back("Dimension6");
+   vFieldDescriptors.push_back("Dimension7");
+   vFieldDescriptors.push_back("Dimension8");
+   vFieldDescriptors.push_back("Dimension9");
+   vFieldDescriptors.push_back("Dimension10");
 }
 
 // fill the Geo File field descriptor vector with the appropriate field names for a geo file
-void TfrmAnalysis::SetupGridFileFieldDescriptors() {
-   gvGridFileFieldDescriptors.clear();
-   gvGridFileFieldDescriptors.push_back("Longitude");
-   gvGridFileFieldDescriptors.push_back("Latitude");
-   gvGridFileFieldDescriptors.push_back("Dimension1");
-   gvGridFileFieldDescriptors.push_back("Dimension2");
-   gvGridFileFieldDescriptors.push_back("Dimension3");
-   gvGridFileFieldDescriptors.push_back("Dimension4");
+void TfrmAnalysis::SetupGridFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors) {
+   vFieldDescriptors.clear();
+   vFieldDescriptors.reserve(6);
+   vFieldDescriptors.push_back("Longitude");
+   vFieldDescriptors.push_back("Latitude");
+   vFieldDescriptors.push_back("Dimension1");
+   vFieldDescriptors.push_back("Dimension2");
+   vFieldDescriptors.push_back("Dimension3");
+   vFieldDescriptors.push_back("Dimension4");
 }
 
 // sets up the appropriate options for the FTFImportDescriptor
@@ -1588,13 +1593,15 @@ void TfrmAnalysis::SetupImportDescriptor(BFTFImportDescriptor& descrip, const Zd
 }
 
 // fill the Geo File field descriptor vector with the appropriate field names for a geo file
-void TfrmAnalysis::SetupPopFileFieldDescriptors() {
-   gvPopFileFieldDescriptors.push_back("Tract ID");
-   gvPopFileFieldDescriptors.push_back("Date/Time");
-   gvPopFileFieldDescriptors.push_back("Population");
-   gvPopFileFieldDescriptors.push_back("Covariant1");
-   gvPopFileFieldDescriptors.push_back("Covariant2");
-   gvPopFileFieldDescriptors.push_back("Covariant3");
+void TfrmAnalysis::SetupPopFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors) {
+   vFieldDescriptors.clear();
+   vFieldDescriptors.reserve(6);
+   vFieldDescriptors.push_back("Tract ID");
+   vFieldDescriptors.push_back("Date/Time");
+   vFieldDescriptors.push_back("Population");
+   vFieldDescriptors.push_back("Covariant1");
+   vFieldDescriptors.push_back("Covariant2");
+   vFieldDescriptors.push_back("Covariant3");
 }
 
 //---------------------------------------------------------------------------

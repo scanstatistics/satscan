@@ -176,11 +176,6 @@ class TfrmAnalysis : public TForm {
   private:	// User declarations
     CParameters       * gpParams;
     AnsiString          gsParamFileName;
-    std::vector<std::string>    gvGeoFileFieldDescriptors,
-                                gvCaseFileFieldDescriptors,
-                                gvGridFileFieldDescriptors,
-                                gvPopFileFieldDescriptors,
-                                gvControlFileFieldDescriptors;
 
     void                AttemptFilterDateFields(const char * sFileName, const char * sFormat, unsigned short uwField);
 
@@ -219,12 +214,12 @@ class TfrmAnalysis : public TForm {
     bool                ReadSession(char *sFileName);
     void                SaveTextParameters();
     void                SetSpatialDistanceCaption();
-    void                SetupCaseFileFieldDescriptors();
-    void                SetupControlFileFieldDescriptors();
-    void                SetupGeoFileFieldDescriptors();
-    void                SetupGridFileFieldDescriptors();
+    void                SetupCaseFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors);
+    void                SetupControlFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors);
+    void                SetupGeoFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors);
+    void                SetupGridFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors);
     void                SetupImportDescriptor(BFTFImportDescriptor& descrip, const ZdString& sImportFileName);
-    void                SetupPopFileFieldDescriptors();
+    void                SetupPopFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors);
     void                SetupInterface();
     bool                ValidateInputFiles();
     bool                ValidateSpatialClusterSize();
