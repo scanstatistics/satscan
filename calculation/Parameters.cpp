@@ -690,6 +690,7 @@ void CParameters::SetDefaults() {
   m_bSpecialGridFile          = false;
   strcpy(m_szGridFilename, "");
   m_nMaxGeographicClusterSize = 50.0; //GG980716
+  m_nMaxSpatialClusterSizeType = PERCENTAGEOFMEASURETYPE;
   strcpy(m_szStartDate, "1900/01/01");
   strcpy(m_szEndDate, "1900/12/31");
   m_bAliveClustersOnly        = false;
@@ -698,6 +699,7 @@ void CParameters::SetDefaults() {
   m_nIntervalLength           = 0;
   m_bIncludePurelySpatial     = false;
   m_nMaxTemporalClusterSize   = 50.0;//KR980707 0 GG980716;
+  m_nMaxClusterSizeType = PERCENTAGETYPE;
   m_nReplicas                 = 999;
 
   gbOutputClusterLevelDBF     = false;
