@@ -6,8 +6,6 @@
 #include "TimeEstimate.h"
 #include "SignificantRatios05.h"
 
-//#define  DEBUGANALYSIS 0
-
 class CAnalysis
 {
   protected:

@@ -11,7 +11,6 @@
 #include "stsDBaseFileWriter.h"
 #include "stsLogLikelihood.h"
 #include "stsAreaSpecificData.h"
-//static int CompClust(const void *a, const void *b);
 
 CAnalysis::CAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
           :SimRatios(pParameters->m_nReplicas, pPrintDirection) {
@@ -19,12 +18,6 @@ CAnalysis::CAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *p
       m_pParameters = pParameters;
       m_pData       = pData;
       gpPrintDirection = pPrintDirection;
-    
-      //  switch (m_pParameters->m_nModel)
-      //  {
-      //    case POISSON   : m_pModel = new CPoissonModel(pParameters, pData);   break;
-      //    case BERNOULLI : m_pModel = new CBernoulliModel(pParameters, pData); break;
-      //  }
     
       m_nClustersRetained  = 0;
       m_nAnalysisCount     = 0;
@@ -360,7 +353,7 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
 }
 
 void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp) {
-   double                       dSignifRatio05 = 0.0;
+   double                       dSignifRatio05;
    tract_t                      tNumClustersToDisplay;
    std::auto_ptr<stsAreaSpecificData>   pData;
 
@@ -610,7 +603,7 @@ void CAnalysis::OpenReportFile(FILE*& fp, const char* szType) {
 void CAnalysis::PerformSimulations() {
    double               r;
    int                  iSimulationNumber;
-   const char         * sReplicationFormatString = 0;
+   char               * sReplicationFormatString;
    std::auto_ptr<LogLikelihoodData>     pLLRData;
 
    try {
