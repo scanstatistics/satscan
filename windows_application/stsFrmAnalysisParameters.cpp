@@ -1501,11 +1501,15 @@ void TfrmAnalysis::ValidateInputFiles() {
     //validate the population file -  Poisson model only
     if (GetModelControlType() == POISSON) {
       if (edtPopFileName->Text.IsEmpty()) {
-        PageControl1->ActivePage = tbInputFiles;
-        edtPopFileName->SetFocus();
-        ZdException::GenerateNotification("For the Poisson model, please specify a population file.","ValidateInputFiles()");
+        if (GetAnalysisControlType() != PURELYTEMPORAL && GetAnalysisControlType() != PROSPECTIVEPURELYTEMPORAL) {
+          //for purely temporal analyses, the population file is optional
+          PageControl1->ActivePage = tbInputFiles;
+          edtPopFileName->SetFocus();
+          ZdException::GenerateNotification("For the Poisson model, please specify a population file.\n"
+                                            "Note that for purely temporal analyses, the population file is optional.","ValidateInputFiles()");
+        }                                    
       }
-      if (!File_Exists(edtPopFileName->Text.c_str())) {
+      else if (!File_Exists(edtPopFileName->Text.c_str())) {
         PageControl1->ActivePage = tbInputFiles;
         edtPopFileName->SetFocus();
         ZdException::GenerateNotification("Population file could not be opened.","ValidateInputFiles()");

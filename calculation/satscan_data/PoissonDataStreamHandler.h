@@ -27,6 +27,7 @@ class PoissonDataStreamHandler : public DataStreamHandler {
 
     bool                                ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber,
                                                                       std::pair<Julian, DatePrecisionType>& PopulationDate);
+    bool                                CreatePopulationData(size_t tStream);
     bool                                ReadPopulationFile(size_t tStream);
     virtual void                        SetRandomizers();
 

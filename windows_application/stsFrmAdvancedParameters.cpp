@@ -1506,6 +1506,9 @@ void TfrmAdvancedParameters::Validate() {
 
 /** validates adjustment settings - throws exception */
 void TfrmAdvancedParameters::ValidateAdjustmentSettings() {
+  bool bAnalysisIsPurelyTemporal = gAnalysisSettings.GetAnalysisControlType() == PURELYTEMPORAL ||
+                                   gAnalysisSettings.GetAnalysisControlType() == PROSPECTIVEPURELYTEMPORAL;
+
   try {
     //validate spatial adjustments
     if (rdgSpatialAdjustments->Enabled && rdgSpatialAdjustments->ItemIndex == SPATIALLY_STRATIFIED_RANDOMIZATION) {
@@ -1513,10 +1516,17 @@ void TfrmAdvancedParameters::ValidateAdjustmentSettings() {
          GenerateAFException("Spatial adjustments can not performed in conjunction\n"
                              " with the inclusion of purely spatial clusters.",
                              "ValidateAdjustmentSettings()", *rdgSpatialAdjustments, ANALYSIS_TABS);
-      if (rdgTemporalTrendAdj->Enabled && GetAdjustmentTimeTrendControlType() == STRATIFIED_RANDOMIZATION)
+      if (rdgTemporalTrendAdj->Enabled && GetAdjustmentTimeTrendControlType() == NOTADJUSTED)
          GenerateAFException("Spatial adjustments can not performed in conjunction\n"
                              "with the nonparametric temporal adjustment.",
                              "ValidateAdjustmentSettings()", *rdgSpatialAdjustments, ANALYSIS_TABS);
+    }
+    //validate spatial adjustments
+    if (rdgTemporalTrendAdj->Enabled && gAnalysisSettings.GetModelControlType() == POISSON && bAnalysisIsPurelyTemporal &&
+        gAnalysisSettings.edtPopFileName->Text.IsEmpty() && GetAdjustmentTimeTrendControlType() != NOTADJUSTED) {
+         GenerateAFException("Temporal adjustments can not performed for the Poisson model,\n"
+                             "executed with a purely temporal analysis, when no population file\n"
+                             "has been specfied.","ValidateAdjustmentSettings()", *rdgTemporalTrendAdj, ANALYSIS_TABS);
     }
     //validate spatial/temporal/space-time adjustments
     if (chkAdjustForKnownRelativeRisks->Enabled && chkAdjustForKnownRelativeRisks->Checked) {
@@ -1562,10 +1572,14 @@ void TfrmAdvancedParameters::ValidateInputFilesAtInput() {
     //validate the population file -  Poisson model only
     if (gAnalysisSettings.GetModelControlType() == POISSON) {
       if (edtPopFileName->Text.IsEmpty()) {
-        edtPopFileName->SetFocus();
-        GenerateAFException("For the Poisson model, please specify a population file.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
+        if (gAnalysisSettings.GetAnalysisControlType() != PURELYTEMPORAL && gAnalysisSettings.GetAnalysisControlType() != PROSPECTIVEPURELYTEMPORAL) {
+          edtPopFileName->SetFocus();
+          GenerateAFException("For the Poisson model, please specify a population file.\n"
+                              "Note that for purely temporal analyses, the population file is optional."
+                              ,"ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
+        }
       }
-      if (!File_Exists(edtPopFileName->Text.c_str())) {
+      else if (!File_Exists(edtPopFileName->Text.c_str())) {
         edtPopFileName->SetFocus();
         GenerateAFException("Population file could not be opened.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
       }
@@ -1578,36 +1592,44 @@ void TfrmAdvancedParameters::ValidateInputFilesAtInput() {
 }
 //------------------------------------------------------------------
 void TfrmAdvancedParameters::ValidateInputFiles() {
+  bool bAnalysisIsPurelyTemporal = gAnalysisSettings.GetAnalysisControlType() == PURELYTEMPORAL ||
+                                   gAnalysisSettings.GetAnalysisControlType() == PROSPECTIVEPURELYTEMPORAL;
+  bool bFirstDataStreamHasPopulationFile = !gAnalysisSettings.edtPopFileName->Text.IsEmpty();
+
   try {
-    for (unsigned int i = 0; i < gvCaseFiles.size(); i++){
+    for (unsigned int i=0; i < gvCaseFiles.size(); i++){
+       //Ensure that controls have this data stream display, should we need to
+       //show window regarding an error with settings.
        lstInputStreams->ItemIndex = i;
        lstInputStreams->OnClick(this);
-       //validate the case file
-       if (gvCaseFiles.at(i).IsEmpty()) {
+       //validate the case file for this data stream
+       if (gvCaseFiles.at(i).IsEmpty())
           GenerateAFException("Please specify a case file for this additional data set.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
-       }
-       if (!File_Exists(gvCaseFiles.at(i).c_str())) {
+       if (!File_Exists(gvCaseFiles.at(i).c_str()))
          GenerateAFException("Case file could not be opened for this additional data set.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
-       }
-
-       //validate the control file - Bernoulli model only
+       //validate the control file for this data stream - Bernoulli model only
        if (gAnalysisSettings.GetModelControlType() == BERNOULLI) {
-          if (gvControlFiles.at(i).IsEmpty()) {
-             GenerateAFException("For the Bernoulli model, please specify a control file for this additional data set.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
-          }
-          if (!File_Exists(gvControlFiles.at(i).c_str())) {
-             GenerateAFException("Control file could not be opened for this additional data set.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
-          }
+         if (gvControlFiles.at(i).IsEmpty())
+           GenerateAFException("For the Bernoulli model, please specify a control file for this additional data set.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
+         if (!File_Exists(gvControlFiles.at(i).c_str()))
+           GenerateAFException("Control file could not be opened for this additional data set.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
        }
-
-       //validate the population file -  Poisson model only
+       //validate the population file for this data stream-  Poisson model only
        if (gAnalysisSettings.GetModelControlType() == POISSON) {
-          if (gvPopFiles.at(i).IsEmpty()) {
-             GenerateAFException("For the Poisson model, please specify a population file for this additional data set.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
-          }
-          if (!File_Exists(gvPopFiles.at(i).c_str())) {
+         //For purely temporal analyses, the population file is optional. But if one first
+         //data stream does or does not supply a population file; the other data streams must do the same.
+         if (bAnalysisIsPurelyTemporal) {
+           if ((gvPopFiles.at(i).IsEmpty() && bFirstDataStreamHasPopulationFile) ||
+                (!gvPopFiles.at(i).IsEmpty() && !bFirstDataStreamHasPopulationFile))
+             GenerateAFException("For the Poisson model with purely temporal analyses, the population file is optional but all data\n"
+                                 "streams must either specify a population file or omit it.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
+           else if (!gvPopFiles.at(i).IsEmpty() && !File_Exists(gvPopFiles.at(i).c_str()))
              GenerateAFException("Population file could not be opened for this additional data set.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
-          }
+         }
+         else if (gvPopFiles.at(i).IsEmpty())
+            GenerateAFException("For the Poisson model, please specify a population file for this additional data set.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
+         else if (!File_Exists(gvPopFiles.at(i).c_str()))
+             GenerateAFException("Population file could not be opened for this additional data set.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
        }
     }  //for loop
   }

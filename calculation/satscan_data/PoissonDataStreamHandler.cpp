@@ -52,6 +52,36 @@ bool PoissonDataStreamHandler::ConvertPopulationDateToJulian(const char * sDateS
   return bValidDate;
 }
 
+/** Instead reading population data from a population, assigns the same arbitrary population
+    date and population for each location specified in coordinates file. This routine is
+    intended to be used by purely temporal analyses when the population file is omitted. */
+bool PoissonDataStreamHandler::CreatePopulationData(size_t tStream) {
+  float                                                 fPopulation = 1000; /** arbitrarily selected population */
+  std::vector<std::pair<Julian, DatePrecisionType> >    vprPopulationDates;
+  const TractHandler&                                   theTracts = *(gDataHub.GetTInfo());
+  tract_t                                               t, tNumTracts = theTracts.tiGetNumTracts();
+  int                                                   iCategoryIndex;
+
+  try {
+    RealDataStream& thisStream = *gvDataStreams[tStream];
+    // Make the data stream aggregate categories - this will way the reading of case data can proceed without problems.
+    // Normally the population data dictates all possible population catgories and the case file data must follow suit.
+    thisStream.SetAggregateCategories(true);
+    iCategoryIndex = 0; /* with aggregation, only one population category with index of zero */
+    // Use the same arbitrarily selected population date for each location - we'll use the study period start date.
+    vprPopulationDates.push_back(std::pair<Julian, DatePrecisionType>(gDataHub.GetStudyPeriodStartDate(), YEAR));
+    thisStream.GetPopulationData().SetPopulationDates(vprPopulationDates, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate());
+    // for each location, assign the same population count and date
+    for (t=0; t < tNumTracts; ++t)
+      thisStream.GetPopulationData().AddCategoryToTract(t, iCategoryIndex, vprPopulationDates.back(), fPopulation);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("CreatePopulationData()","PoissonDataStreamHandler");
+    throw;
+  }
+  return true;
+}
+
 /** Returns newly allocated data gateway object that references structures
     utilized in calculating most likely clusters (real data) for the Poisson
     probablity model, analysis type and possibly inclusion purely temporal
@@ -241,19 +271,22 @@ bool PoissonDataStreamHandler::ReadData() {
   try {
     SetRandomizers();
     for (size_t t=0; t < GetNumStreams(); ++t) {
-       if (GetNumStreams() == 1)
-         gPrint.SatScanPrintf("Reading the population file\n");
-       else
-         gPrint.SatScanPrintf("Reading the population file for data set %u\n", t + 1);
-       if (!ReadPopulationFile(t))
-         return false;
-       if (GetNumStreams() == 1)
-         gPrint.SatScanPrintf("Reading the case file\n");
-       else
-         gPrint.SatScanPrintf("Reading the case file for data set %u\n", t + 1);
-       if (!ReadCaseFile(t))
-         return false;
-       GetStream(t).CheckPopulationDataCases(gDataHub);
+       if (gParameters.UsePopulationFile()) { //read population data file
+         if (GetNumStreams() == 1) gPrint.SatScanPrintf("Reading the population file\n");
+         else gPrint.SatScanPrintf("Reading the population file for data set %u\n", t + 1);
+         if (!ReadPopulationFile(t)) return false;
+       }
+       else { //create population data without input data
+         if (GetNumStreams() == 1) gPrint.SatScanPrintf("Creating the population\n");
+         else gPrint.SatScanPrintf("Creating the population for data set %u\n", t + 1);
+         if (!CreatePopulationData(t)) return false;
+       }
+       //read case data file
+       if (GetNumStreams() == 1) gPrint.SatScanPrintf("Reading the case file\n");
+       else gPrint.SatScanPrintf("Reading the case file for data set %u\n", t + 1);
+       if (!ReadCaseFile(t)) return false;
+       //validate population data against case data (if population was read from file)  
+       if (gParameters.UsePopulationFile()) GetStream(t).CheckPopulationDataCases(gDataHub);
     }
   }
   catch (ZdException & x) {
