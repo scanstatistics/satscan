@@ -102,7 +102,10 @@ bool CParameters::CheckProspDateRange(int iStartYear, int iStartMonth, int iStar
 //** Converts m_nMaxClusterSizeType to passed type. */
 void CParameters::ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporalSizeType) {
   try {
-    double dTimeBetween = TimeBetween(CharToJulian(m_szStartDate),CharToJulian(m_szEndDate), m_nIntervalUnits);
+    double dTemp, dPrecision = 10000, dTimeBetween;
+
+
+    dTimeBetween = TimeBetween(CharToJulian(m_szStartDate),CharToJulian(m_szEndDate), m_nIntervalUnits);
 
     // store intial type and size for parameter output display
     m_nInitialMaxTemporalClusterSize = m_nMaxTemporalClusterSize;
@@ -112,8 +115,12 @@ void CParameters::ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporal
        case PERCENTAGETYPE     : if (m_nMaxClusterSizeType == PERCENTAGETYPE)
                                    break;
                                  // convert from TIMETYPE to PERCENTAGETYPE
-                                 //m_nMaxTemporalClusterSize should be in time units of m_nIntervalUnits
-                                 m_nMaxTemporalClusterSize = m_nMaxTemporalClusterSize/dTimeBetween*100;
+                                 // Since some variables are hard to accurately represent
+                                 // as a double, we will cause variable to round up at some
+                                 // fixed precision.
+                                 dTemp = static_cast<double>(m_nMaxTemporalClusterSize)/dTimeBetween*100 * dPrecision;
+                                 dTemp = ceil(dTemp);
+                                 m_nMaxTemporalClusterSize = static_cast<float>(dTemp / dPrecision);
                                  break;
        case TIMETYPE           : if (m_nMaxClusterSizeType == TIMETYPE)
                                    break;
