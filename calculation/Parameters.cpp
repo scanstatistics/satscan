@@ -4075,6 +4075,13 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
         }
         break;
       case POISSON             :
+        if (geTimeTrendAdjustType != NOTADJUSTED && (geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL)
+            && GetPopulationFileName().empty()) {
+           bValid = false; 
+          PrintDirection.SatScanPrintWarning("Error: Temporal adjustments can not performed for the Poisson model when executed\n"
+                                             "       with a purely temporal analysis, when no population file has been specfied.\n");
+    }
+
         if (geTimeTrendAdjustType == NONPARAMETRIC && (geAnalysisType == PURELYTEMPORAL ||geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
           bValid = false;
           PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting for time trend adjustment.\n");
