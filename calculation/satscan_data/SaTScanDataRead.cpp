@@ -138,10 +138,11 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
         gpPrintDirection->SatScanPrintWarning("         Times must correspond to study period specified on the Analysis Tab.\n");
         return false;
       }
-    
+
       //Parse line for categories
-      if ((m_pParameters->m_nModel==POISSON)
-          || (m_pParameters->m_nModel==BERNOULLI && strcmp(szDescription,"control")==0)) {
+      if ((m_pParameters->m_nModel==POISSON) ||
+          (m_pParameters->m_nModel==SPACETIMEPERMUTATION && m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE) ||
+          (m_pParameters->m_nModel==BERNOULLI && strcmp(szDescription,"control")==0)) {
         i            = 0;
 
         while (i < nCats && !bCatsMissing) {
@@ -169,8 +170,10 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
           gpPrintDirection->SatScanPrintWarning("         Please see '%s file format' in the help file.\n", szDescription);
           return false;
         }
-    
-        if (m_pParameters->m_nModel == POISSON) {
+
+        if (m_pParameters->m_nModel == POISSON ||
+            (m_pParameters->m_nModel==SPACETIMEPERMUTATION &&
+             m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)) {
           //Check: categories correct?
           cat = gpCats->catGetCat(cvec);
           if (cat == -1) {
@@ -180,7 +183,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
             gpPrintDirection->SatScanPrintWarning("         in the population file.\n");
             return false;
           }
-    
+
           count = gpTInfo->tiGetCount(tid, cat);
           if (!gpTInfo->tiSetCount(tid, cat, count + nCount)) {
             // KR (980916) : Aren't all these errors trapped above?
@@ -303,7 +306,11 @@ bool CSaTScanData::ReadPops() {
             ++nDates;
           }
         }
-    
+        // Perform Check: When a prospective analysis is conducted and if a population file is 
+        //                used, and if the population is defined at more than one time period, the
+        //                following error message should be shown in the running window and the
+        //                application terminated.
+        //if (m_pParameters->)
       } // while - 1st Pass
     
       if (bEmpty) {
