@@ -8,16 +8,13 @@
     during simulation process. */
 class CSignificantRatios05 {
   private:
-    int         m_nTotalReplications;
-    int         m_nRatios;
-    double    * m_pRatiosList;
+    std::vector<double>         gvRatiosList;
 
   public:
-    CSignificantRatios05(int nReplications, BasePrint *pPrintDirection);
+    CSignificantRatios05(unsigned int iNumReplications);
     ~CSignificantRatios05();
 
     bool        AddRatio(double r);
-    void        CalcAlphas();
     double      GetAlpha01() const;
     double      GetAlpha05() const;
     void        Initialize();
