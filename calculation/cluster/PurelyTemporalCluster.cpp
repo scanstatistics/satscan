@@ -88,6 +88,24 @@ void CPurelyTemporalCluster::InitTimeIntervalIndeces()
   m_TI->Initialize();
 }
 
+void CPurelyTemporalCluster::InitTimeIntervalIndeces(int nLow, int nHigh)
+{
+  m_TI->InitializeRange(nLow, nHigh);
+}
+
+bool CPurelyTemporalCluster::SetNextProspTimeInterval(const count_t* pCases,
+                                                 const measure_t* pMeasure) {
+   bool bRetVal;
+
+   m_bClusterDefined = true;
+   bRetVal = (m_TI->GetNextTimeIntervalProsp(pCases,
+                                           pMeasure,
+                                           m_nCases,
+                                           m_nMeasure));
+
+   return bRetVal;
+}
+
 bool CPurelyTemporalCluster::SetNextTimeInterval(const count_t* pCases,
                                                  const measure_t* pMeasure)
 {
