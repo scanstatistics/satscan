@@ -62,7 +62,8 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
       SetDoubleField(*pRecord, iClusterNumber, GetFieldNumber(gvFields, CLUST_NUM));
 
       // area id
-      SetAreaID(sTempValue, pCluster, pData);
+//      SetAreaID(sTempValue, pCluster, pData);
+      sTempValue = (pData.GetTInfo())->tiGetTid(pData.GetNeighbor(pCluster.m_iEllipseOffset, pCluster.m_Center, iClusterNumber));
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, AREA_ID));
 
       // p value
