@@ -1287,7 +1287,8 @@ void CParameters::ReadScanningLineParameterFile(const char * sParameterFileName)
    //Write as ini format.
    ParametersFile.Close();
    try {
-     Write(sParameterFileName);
+     if (access(sParameterFileName, 06) == 0)
+       Write(sParameterFileName);
    }
    catch (ZdFileOpenFailedException & x ){/*Can write. File could be readonly, write locked, ...*/}
   }
