@@ -506,11 +506,11 @@ bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumb
       CreateGridOutputFile(lReportHistoryRunNumber);
 
       if (m_nClustersRetained == 0) {
-        fprintf(fp, "No clusters were found.\n");
+        fprintf(fp, "No clusters were found.\n\n");
         fprintf(fp, "All areas scanned had equal or fewer cases than expected.\n");
       }
       else if (m_nClustersReported == 0) {
-        fprintf(fp, "No clusters reported.\n");
+        fprintf(fp, "No clusters reported.\n\n");
         fprintf(fp, "All clusters had a ratio less than %f or\n"
                     "a rank greater than %i.\n", m_nMinRatioToReport, m_pParameters->m_nReplicas);
       }
