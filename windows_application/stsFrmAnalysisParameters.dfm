@@ -994,7 +994,7 @@ object frmAnalysis: TfrmAnalysis
         object chkCensusAreasReportedClustersAscii: TCheckBox
           Left = 344
           Top = 72
-          Width = 15
+          Width = 16
           Height = 17
           ParentShowHint = False
           ShowHint = True
@@ -1003,7 +1003,7 @@ object frmAnalysis: TfrmAnalysis
         object chkClustersInColumnFormatAscii: TCheckBox
           Left = 344
           Top = 48
-          Width = 15
+          Width = 16
           Height = 17
           BiDiMode = bdLeftToRight
           Caption = ' '
@@ -1047,14 +1047,14 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 3
         end
         object chkRelativeRiskEstimatesAreaDBase: TCheckBox
-          Left = 415
+          Left = 414
           Top = 96
           Width = 16
           Height = 17
           TabOrder = 5
         end
         object chkSimulatedLogLikelihoodRatiosDBase: TCheckBox
-          Left = 415
+          Left = 414
           Top = 120
           Width = 16
           Height = 17
