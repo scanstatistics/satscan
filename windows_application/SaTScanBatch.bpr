@@ -19,6 +19,9 @@
       ..\calculation\probability_model\ProbabilityModel.obj 
       ..\calculation\probability_model\PoissonModel.obj 
       ..\calculation\probability_model\SpaceTimePermutationModel.obj 
+      ..\calculation\probability_model\SurvivalModel.obj 
+      ..\calculation\probability_model\NormalModel.obj 
+      ..\calculation\probability_model\RankModel.obj 
       ..\calculation\satscan_data\Tracts.obj 
       ..\calculation\satscan_data\SaTScanData.obj 
       ..\calculation\satscan_data\SaTScanDataDisplay.obj 
@@ -36,20 +39,26 @@
       ..\calculation\satscan_data\DataStream.obj 
       ..\calculation\satscan_data\SVTTData.obj 
       ..\calculation\satscan_data\MaxWindowLengthIndicator.obj 
-      ..\calculation\cluster\Cluster.obj 
-      ..\calculation\cluster\SpaceTimeCluster.obj 
-      ..\calculation\cluster\TimeIntervalAlive.obj 
-      ..\calculation\cluster\TimeIntervalAll.obj 
-      ..\calculation\cluster\TimeEstimate.obj 
+      ..\calculation\satscan_data\SpaceTimePermutationDataStreamHandler.obj 
+      ..\calculation\satscan_data\PoissonDataStreamHandler.obj 
+      ..\calculation\satscan_data\BernoulliDataStreamHandler.obj 
+      ..\calculation\satscan_data\NormalDataStreamHandler.obj 
+      ..\calculation\satscan_data\RankDataStreamHandler.obj 
+      ..\calculation\satscan_data\SurvivalDataStreamHandler.obj 
+      ..\calculation\cluster\Cluster.obj ..\calculation\cluster\TimeEstimate.obj 
       ..\calculation\cluster\IncidentRate.obj 
       ..\calculation\cluster\PurelySpatialCluster.obj 
-      ..\calculation\cluster\PurelyTemporalCluster.obj 
       ..\calculation\cluster\PurelySpatialMonotoneCluster.obj 
-      ..\calculation\cluster\MeasureDeterminant.obj 
       ..\calculation\cluster\SVTTCluster.obj 
       ..\calculation\cluster\TimeIntervalRange.obj 
       ..\calculation\cluster\PurelySpatialProspectiveCluster.obj 
       ..\calculation\cluster\TimeTrend.obj 
+      ..\calculation\cluster\ClusterData.obj ..\calculation\cluster\AbstractClusterData.obj 
+      ..\calculation\cluster\MutlipleStreamClusterData.obj 
+      ..\calculation\cluster\ClusterDataFactory.obj 
+      ..\calculation\cluster\NormalClusterData.obj 
+      ..\calculation\cluster\PurelyTemporalCluster.obj 
+      ..\calculation\cluster\SpaceTimeCluster.obj 
       ..\calculation\analysis\MeasureList.obj 
       ..\calculation\analysis\Analysis.obj 
       ..\calculation\analysis\SignificantRatios05.obj 
@@ -69,7 +78,14 @@
       ..\calculation\Output\stsOutputFileData.obj 
       ..\calculation\Output\stsOutputFileWriter.obj 
       ..\calculation\Output\stsRelativeRisk.obj 
-      ..\calculation\Output\stsAreaSpecificData.obj"/>
+      ..\calculation\Output\stsAreaSpecificData.obj 
+      ..\calculation\randomization\Randomizer.obj 
+      ..\calculation\randomization\SpaceTimeRandomizer.obj 
+      ..\calculation\randomization\ContinuousVariableRandomizer.obj 
+      ..\calculation\randomization\BernoulliRandomizer.obj 
+      ..\calculation\randomization\PoissonRandomizer.obj 
+      ..\calculation\randomization\DenominaterDataRandomizer.obj 
+      ..\calculation\randomization\PermutationDataRandomizer.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -81,7 +97,7 @@
       bcb2kaxserver50.bpi bcbsmp50.bpi ibsmp50.bpi dclocx50.bpi vclie50.bpi 
       Inetdb50.bpi Inet50.bpi TeeQR50.bpi TeeUI50.bpi TeeDB50.bpi Tee50.bpi 
       Qrpt50.bpi NMFast50.bpi VCLIB50.bpi TSGC5201.bpi TSDGC5201.bpi"/>
-    <PATHCPP value=".;..\calculation;..\calculation\utility;..\calculation\print;..\calculation\probability_model;..\calculation\satscan_data;..\calculation\cluster;..\calculation\analysis;..\calculation\Output"/>
+    <PATHCPP value=".;..\calculation;..\calculation\utility;..\calculation\print;..\calculation\probability_model;..\calculation\satscan_data;..\calculation\cluster;..\calculation\analysis;..\calculation\Output;..\calculation\randomization"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -91,8 +107,8 @@
     <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="SaTScanBatch.bpf"/>
-    <INCLUDEPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
-    <LIBPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
+    <INCLUDEPATH value="..\calculation\randomization;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
+    <LIBPATH value="..\calculation\randomization;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
     <WARNINGS value="-w-par -w-8027 -w-8026 -w-aus"/>
   </MACROS>
   <OPTIONS>
@@ -149,12 +165,14 @@ $(BCB)\Bin\mfcwizard.bpl=MFC Wizard
 C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\TSGDCLC5.bpl=Top Support TopGrid Components
 
 [HistoryLists\hlIncludePath]
-Count=1
-Item0=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0
+Count=2
+Item0=..\calculation\randomization;C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0
+Item1=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0
 
 [HistoryLists\hlLibraryPath]
-Count=1
-Item0=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0
+Count=2
+Item0=..\calculation\randomization;C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0
+Item1=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
