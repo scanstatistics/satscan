@@ -34,7 +34,7 @@ bool CompareTractDistance::operator() (const TractDistance& lhs, const TractDist
 
 /** Counts neighbors through expected number of cases using measure array. */
 tract_t CountNeighborsByMeasure(std::vector<TractDistance>& vTractDistances,
-			        measure_t Measure[], measure_t MaxCircleSize, measure_t nMaxMeasure)
+			        const measure_t Measure[], measure_t MaxCircleSize, measure_t nMaxMeasure)
 {
    measure_t cummeasure=0;
    tract_t   tCount=0;
@@ -71,22 +71,11 @@ tract_t CountNeighborsByDistance(std::vector<TractDistance>& vTractDistances,
  a = grid point
  b = neighbor tacts ( sorted closest to farthest.. up to maxcirclesize)
  **********************************************************************/
-void MakeNeighbors(TractHandler *pTInfo,
-                   GInfo *pGInfo,
-                   tract_t   ***SortedInt,
-                   unsigned short ***SortedUShort,
-                   tract_t   NumTracts,
-                   tract_t   NumGridTracts,
-                   measure_t Measure[],
-                   measure_t MaxCircleSize,
-                   measure_t nMaxMeasureToKeep,
-                   tract_t** NeighborCounts,
-                   int       nDimensions,
-                   int       iNumEllipses,
-                   const std::vector<double>& vEllipseShapes,
-                   const std::vector<int>& vNumEllipseRotations,
-                   int       iSpatialMaxType,
-                   BasePrint *pPrintDirection)
+void MakeNeighbors(const TractHandler* pTInfo, const GInfo* pGInfo, tract_t*** SortedInt, unsigned short*** SortedUShort,
+                   tract_t NumTracts, tract_t NumGridTracts, const measure_t* Measure, measure_t MaxCircleSize,
+                   measure_t nMaxMeasureToKeep, tract_t** NeighborCounts, int nDimensions, int iNumEllipses,
+                   const std::vector<double>& vEllipseShapes, const std::vector<int>& vNumEllipseRotations,
+                   int iSpatialMaxType, BasePrint *pPrintDirection)
 {
    tract_t t;                                         /* reference tract */
    tract_t j, k;                                      /* destination tract */
