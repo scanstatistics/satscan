@@ -40,8 +40,9 @@ bool CSaTScanData::ReadCounts(const char* szCountFilename,
     
       // Initialize counts
       for(i=0; i<m_nTimeIntervals; i++)
-        memset((*pCounts)[i], 0, m_nTracts);
-    
+         for(j=0; j<m_nTracts; j++)
+            (*pCounts)[i][j]=0;
+
       //Read and validate records in counts file
       nRec   = 0;
       bValid = true;
