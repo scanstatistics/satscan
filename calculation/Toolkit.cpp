@@ -11,6 +11,9 @@ const char * SaTScanToolkit::gsHistoryFileNameProperty = "[RunHistory].FileName"
 const char * SaTScanToolkit::gsParameterNameProperty = "[ParameterHistory].Parameter";
 /** maximum number of parameter history items to record */
 const size_t SaTScanToolkit::giMaximumParameterHistoryItems = 10;
+/** last directory browsed */
+const char * SaTScanToolkit::gsLastDirectoryProperty = "[LastDirectory].Path";
+
 /** ini section property name for logging run history */
 //const char * SaTScanToolkit::gsLoggingProperty = "[RunHistory].LogHistory";
 /** ini section property name for website */
@@ -46,7 +49,17 @@ SaTScanToolkit::SaTScanToolkit(const char * sApplicationFullPath):BToolkit() {
 }
 
 /** destructor */
-SaTScanToolkit::~SaTScanToolkit() {}
+SaTScanToolkit::~SaTScanToolkit() {
+#ifndef __BATCH_COMPILE
+  try {
+    ZdString  theDrive, theDirectory;
+    ZdFileName::GetCurDrive(theDrive);
+    theDrive << ZdFileName::GetCurDirectory(theDirectory);
+    SetLastDirectory(theDrive.GetCString());
+  }
+  catch (...){}
+#endif  
+}
 
 /** Adds parameter filename to parameter history. */
 void SaTScanToolkit::AddParameterToHistory(const char * sParameterFileName) {
@@ -107,6 +120,11 @@ const char * SaTScanToolkit::GetApplicationFullPath() const {
   return gsApplicationFullPath.GetCString();
 }
 
+/** last opened directory */
+const char * SaTScanToolkit::GetLastDirectory() /*const*/ {
+  return GetSession().GetProperty(gsLastDirectoryProperty)->GetValue();
+}
+
 /** Returns run history filename. */
 const char * SaTScanToolkit::GetRunHistoryFileName() /*const*/ {
   return GetSession().GetProperty(gsHistoryFileNameProperty)->GetValue();
@@ -127,6 +145,53 @@ const char * SaTScanToolkit::GetTechnicalSupportEmail() const {
 const char * SaTScanToolkit::GetWebSite() const {
   //return GetSession().GetProperty(gsSaTScanWebSiteProperty)->GetValue();
   return gsDefaultSaTScanWebSite;
+}
+
+/** Insures last directory path section in ZdIniSession. */
+bool SaTScanToolkit::InsureLastDirectoryPath() {
+  ZdFileName            FileName;
+  ZdString              sDefaultPath;
+  long                  lPosition;
+  BSessionProperty    * pProperty;
+  bool                  bUpdatedSection=false;
+
+  try {
+    sDefaultPath << ZdFileName(gsApplicationFullPath.GetCString()).GetLocation() << "sample data" << ZDFILENAME_SLASH;
+    if (access(sDefaultPath.GetCString(), 00) < 0)
+      sDefaultPath = ZdFileName(gsApplicationFullPath.GetCString()).GetLocation();
+
+    //run history filename property
+    lPosition = GetSession().FindProperty(gsLastDirectoryProperty);
+    if (lPosition == -1) {
+      GetSession().AddProperty(gsLastDirectoryProperty, sDefaultPath.GetCString());
+      bUpdatedSection = true;
+    }
+    else {
+      //property exists but does it have a value?
+      pProperty = GetSession().GetProperty(lPosition);
+      if (!pProperty->GetValue() || !strlen(pProperty->GetValue())) {
+        GetSession().AddProperty(gsLastDirectoryProperty, sDefaultPath.GetCString());
+        bUpdatedSection = true;
+      }
+      else {
+        FileName.SetFullPath(pProperty->GetValue());
+        if (strlen(FileName.GetFileName()) || strlen(FileName.GetExtension())) {
+          pProperty->SetValue(sDefaultPath.GetCString());
+          bUpdatedSection = true;
+        }
+        //validate path
+        else if (access(FileName.GetLocation(), 00) < 0) {
+          pProperty->SetValue(sDefaultPath.GetCString());        
+          bUpdatedSection = true;
+        }
+      }
+    }
+  }
+  catch (ZdException& x) {
+    x.AddCallpath("InsureLastDirectoryPath()", "SaTScanToolkit");
+    throw;
+  }
+  return bUpdatedSection;
 }
 
 /** Insures run history filename section in ZdIniSession. */
@@ -220,6 +285,10 @@ void SaTScanToolkit::InsureSessionStructure() {
   try {
     if (InsureRunHistoryFileName())
       bNeedsWrite = true;
+#ifndef __BATCH_COMPILE
+    if (InsureLastDirectoryPath())
+      bNeedsWrite = true;
+#endif
     //if (InsureSessionProperty(gsLoggingProperty, "true"))
     //  bNeedsWrite = true;
     //if (InsureSessionProperty(gsSaTScanWebSiteProperty, gsDefaultSaTScanWebSite))
@@ -269,6 +338,11 @@ void SaTScanToolkit::ReadParametersHistory() {
     x.AddCallpath("ReadParametersHistory()","SaTScanToolkit");
     throw;
   }
+}
+
+void SaTScanToolkit::SetLastDirectory(const char * sLastDirectory) {
+  GetSession().AddProperty(gsLastDirectoryProperty, sLastDirectory);
+  GetSession().Write(gsSystemFileName.GetCString());
 }
 
 /** internal setup */

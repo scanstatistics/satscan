@@ -364,6 +364,10 @@ void TfrmMainForm::Setup() {
   try {
     EnableActions(true);
     RefreshOpenList();
+    //reset current working directory to that of last instance of application
+    chdir(GetToolkit().GetLastDirectory());
+    //force the current directory to be used when using save/open dialogs
+    ForceCurrentDirectory = true;
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup","TfrmMainForm");

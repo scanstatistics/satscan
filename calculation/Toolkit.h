@@ -15,6 +15,7 @@ class SaTScanToolkit : public BToolkit {
     static const char         * gsHistoryFileNameProperty;
     static const char         * gsParameterNameProperty;
     static const size_t         giMaximumParameterHistoryItems;
+    static const char         * gsLastDirectoryProperty;
 
     // default defines
     static const char         * gsDefaultRunHistoryFileName;
@@ -28,10 +29,12 @@ class SaTScanToolkit : public BToolkit {
     bool                        gbRunUpdateOnTerminate;
     ZdString                    gsUpdateArchiveFilename;
 
+    bool                        InsureLastDirectoryPath();
     bool                        InsureRunHistoryFileName();
     bool                        InsureSessionProperty(const char * sSessionProperty, const char * sDefaultValue);
     void                        InsureSessionStructure();
     void                        ReadParametersHistory();
+   void                         SetLastDirectory(const char * sLastDirectory);
     void                        Setup(const char * sApplicationFullPath);
     void                        WriteParametersHistory();
 
@@ -42,14 +45,15 @@ class SaTScanToolkit : public BToolkit {
    void                         AddParameterToHistory(const char * sParameterFileName);
    const char                 * GetAcknowledgment(ZdString & Acknowledgment) const;
    const char                 * GetApplicationFullPath() const;
+   const char                 * GetLastDirectory() /*const*/;
    bool                         GetLogRunHistory() const;
    const ParameterHistory_t   & GetParameterHistory() const {return gvParameterHistory;}
    const char                 * GetRunHistoryFileName() /*const*/;
    bool                         GetRunUpdateOnTerminate() const {return gbRunUpdateOnTerminate;}
    const char                 * GetSubstantiveSupportEmail() const;
-   const char                 * GetSystemIniFileName() const {return gsSystemIniFileName;}  
+   const char                 * GetSystemIniFileName() const {return gsSystemIniFileName;}
    const char                 * GetTechnicalSupportEmail() const;
-   const ZdString             & GetUpdateArchiveFilename() const {return gsUpdateArchiveFilename;} 
+   const ZdString             & GetUpdateArchiveFilename() const {return gsUpdateArchiveFilename;}
    const char                 * GetWebSite() const;
    void                         SetRunUpdateOnTerminate(bool b) {gbRunUpdateOnTerminate = b;}
    void                         SetUpdateArchiveFilename(const char * sArchiveFile) {gsUpdateArchiveFilename = sArchiveFile;} 
