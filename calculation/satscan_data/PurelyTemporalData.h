@@ -4,23 +4,22 @@
 //*********************************************************************************
 #include "SaTScanData.h"
 
-class CPurelyTemporalData : public CSaTScanData
-{
+class CPurelyTemporalData : public CSaTScanData {
+  private:
+    virtual void        SetProbabilityModel();
+
   public:
     CPurelyTemporalData(CParameters* pParameters, BasePrint *pPrintDirection);
     virtual ~CPurelyTemporalData();
 
-    virtual void DisplayCases(FILE* pFile);
-    virtual void DisplaySimCases(FILE* pFile);
-    virtual void DisplayMeasure(FILE* pFile);
-
-//  protected:
-    virtual void ReadDataFromFiles();
-    virtual bool CalculateMeasure();
-    virtual void AllocSimCases();
-    virtual void DeAllocSimCases();
-    virtual void MakeData(int iSimulationNumber);
-
+    virtual void        AllocSimCases();
+    virtual bool        CalculateMeasure();
+    virtual void        DeAllocSimCases();
+    virtual void        DisplayCases(FILE* pFile);
+    virtual void        DisplayMeasure(FILE* pFile);
+    virtual void        DisplaySimCases(FILE* pFile);
+    virtual void        MakeData(int iSimulationNumber);
+    virtual void        ReadDataFromFiles();
 };
 
 //*********************************************************************************
