@@ -82,10 +82,9 @@ void CSaTScanData::DisplayNeighbors(FILE* pFile) {
 }
 
 void CSaTScanData::DisplaySummary(FILE* fp) {
-  ZdString              sBuffer, sWork;
+  ZdString              sBuffer, sWork, sLabel;
   AsciiPrintFormat      PrintFormat(gpDataSets->GetNumDataSets() == 1);
   unsigned int          i;
-
 
   PrintFormat.SetMarginsAsSummarySection();
 
@@ -100,25 +99,52 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
   PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
   fprintf(fp, "%ld\n", (long) m_nTracts);
 
-  //$$ This section might be displayed for Ordinal model also. Need to ask Martin is this is true.
-  if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile())
-       || gParameters.GetProbabilityModelType() == BERNOULLI) {
-    PrintFormat.PrintSectionLabel(fp, "Total population", true, false);
-    sBuffer.printf("%.0f", gpDataSets->GetDataSet(0).GetTotalPopulation());
-    for (i=1; i < gpDataSets->GetNumDataSets(); ++i) {
-      sWork.printf(", %.0f", gpDataSets->GetDataSet(i).GetTotalPopulation());
-      sBuffer << sWork;
-    }
-    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+  // print total population per data set
+  switch (gParameters.GetProbabilityModelType()) {
+    case POISSON :
+      if (!gParameters.UsePopulationFile())
+        break;
+    case BERNOULLI :
+    case ORDINAL :
+      PrintFormat.PrintSectionLabel(fp, "Total population", true, false);
+      sBuffer.printf("%.0f", gpDataSets->GetDataSet(0).GetTotalPopulation());
+      for (i=1; i < gpDataSets->GetNumDataSets(); ++i) {
+        sWork.printf(", %.0f", gpDataSets->GetDataSet(i).GetTotalPopulation());
+        sBuffer << sWork;
+      }
+      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+      break;
+    default : break;
   }
 
-  PrintFormat.PrintSectionLabel(fp, "Total cases", true, false);
-  sBuffer.printf("%ld", gpDataSets->GetDataSet(0).GetTotalCasesAtStart());
-  for (i=1; i < gpDataSets->GetNumDataSets(); ++i) {
-     sWork.printf(", %ld", gpDataSets->GetDataSet(i).GetTotalCasesAtStart());
-     sBuffer << sWork;
+  // print total cases per data set
+  switch (gParameters.GetProbabilityModelType()) {
+    case POISSON :
+    case BERNOULLI :
+      PrintFormat.PrintSectionLabel(fp, "Total cases", true, false);
+      sBuffer.printf("%ld", gpDataSets->GetDataSet(0).GetTotalCasesAtStart());
+      for (i=1; i < gpDataSets->GetNumDataSets(); ++i) {
+        sWork.printf(", %ld", gpDataSets->GetDataSet(i).GetTotalCasesAtStart());
+        sBuffer << sWork;
+      }
+      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+      break;
+    case ORDINAL :
+      //total cases per data set, per category
+      for (i=0; i < gpDataSets->GetNumDataSets(); ++i, sBuffer="") {
+        sLabel.printf("Total cases data set #%d per category", i + 1);
+        PrintFormat.PrintSectionLabel(fp, sLabel.GetCString(), false, false);
+        const PopulationData& Population = gpDataSets->GetDataSet(i).GetPopulationData();
+        for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
+           sWork.printf("%s%ld", (j ? ", " : ""), Population.GetNumOrdinalCategoryCases(j));
+           sBuffer << sWork;
+        }
+        PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+      }
+      break;
+    default : break;
   }
-  PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+
 
   if (gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile()) {
     sBuffer.printf("Annual cases / %.0f",  GetAnnualRatePop());
