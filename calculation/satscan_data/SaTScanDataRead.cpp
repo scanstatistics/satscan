@@ -404,17 +404,17 @@ bool CSaTScanData::ReadPops() {
           //                used, and if the population for a tract is defined at more than one
           //                time period, error message should be shown in the running window and
           //                the application terminated.
-          if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
+          if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME && m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)
             {
-            iDateIndex = gpTInfo->tiGetPopDateIndex(nPopDate);
-            if (vFirstTractDateIndex[tract] == -2/* -1 is unknown */ || vFirstTractDateIndex[tract] == iDateIndex)
-              vFirstTractDateIndex[tract] = iDateIndex;
-            else
-              {// track invalid tracts 
-              if (std::find(vInvalidTractIndex.begin(), vInvalidTractIndex.end(), tract) == vInvalidTractIndex.end())
-                vInvalidTractIndex.push_back(tract);
+            //iDateIndex = gpTInfo->tiGetPopDateIndex(nPopDate);
+            //if (vFirstTractDateIndex[tract] == -2/* -1 is unknown */ || vFirstTractDateIndex[tract] == iDateIndex)
+            //  vFirstTractDateIndex[tract] = iDateIndex;
+            //else
+            //  {// track invalid tracts
+            //  if (std::find(vInvalidTractIndex.begin(), vInvalidTractIndex.end(), tract) == vInvalidTractIndex.end())
+            //    vInvalidTractIndex.push_back(tract);
               InvalidForProspective = true;
-              }
+            //  }
             }
 
           // Add Category to the tract
@@ -444,6 +444,7 @@ bool CSaTScanData::ReadPops() {
              gpPrintDirection->SatScanPrintWarning("                                      %s\n", gpTInfo->tiGetTid(vInvalidTractIndex[t]));
 */
       gpPrintDirection->SatScanPrintWarning("\n\n");
+
       }
       if (bValid && ncats > 0)
        free(cvec);
