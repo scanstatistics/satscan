@@ -69,11 +69,9 @@ void SpaceTimeRandomizer::AssignRandomizedData(const RealDataStream& thisRealStr
           in SortPermutedAttribute() must be done. */
 void SpaceTimeRandomizer::CreateRandomizationData(const RealDataStream& thisStream) {
   int	                i;
-  unsigned int          j, k, c, iNumCases, iNumCategories(thisStream.GetPopulationData().GetNumPopulationCategories());
+  unsigned int          j, k, c, iNumCases, iNumCategories(thisStream.GetPopulationData().GetNumCovariateCategories());
   std::vector<int>      vCummulatedCases;
-  count_t               iMaxCasesPerCategory,
-                     ** ppCases(thisStream.GetCaseArray()),
-                    *** pppCategoryCases(thisStream.GetCategoryCaseArray());
+  count_t               iMaxCasesPerCategory, ** ppCases=0;
 
   gCategoryAttributes.resize(iNumCategories);
   vCummulatedCases.resize(thisStream.GetNumTracts());
@@ -81,10 +79,10 @@ void SpaceTimeRandomizer::CreateRandomizationData(const RealDataStream& thisStre
   for (c=0; c < iNumCategories; ++c) {
      CategoryGrouping & theseCategoryAttributes = gCategoryAttributes[c];
      memset(&vCummulatedCases[0], 0, thisStream.GetNumTracts()*sizeof(int));
-     
+     ppCases = thisStream.GetCategoryCaseArray(c);
      for (i=thisStream.GetNumTimeIntervals() - 1; i >= 0; --i) {
         for (j=0; j < thisStream.GetNumTracts(); ++j) {
-           iNumCases = pppCategoryCases[i][j][c] - vCummulatedCases[j];
+           iNumCases = ppCases[i][j] - vCummulatedCases[j];
            for (k=0; k < iNumCases; ++k) {
               theseCategoryAttributes.gvStationaryAttribute.push_back(j);
               theseCategoryAttributes.gvPermutedAttribute.push_back(0);
