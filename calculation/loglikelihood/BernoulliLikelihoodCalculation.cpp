@@ -6,14 +6,14 @@
 #include "PurelySpatialMonotoneCluster.h"
 
 /** constructor */
-BernoulliLikelihoodCalculator::BernoulliLikelihoodCalculator(count_t tTotalCases, measure_t tTotalMeasure)
-                              :AbstractLikelihoodCalculator(tTotalCases, tTotalMeasure) {}
+BernoulliLikelihoodCalculator::BernoulliLikelihoodCalculator(const CSaTScanData& Data)
+                              :AbstractLikelihoodCalculator(Data) {}
 
 /** destructor */
 BernoulliLikelihoodCalculator::~BernoulliLikelihoodCalculator() {}
 
 /** calculates the Bernoulli log likelihood given the number of observed and expected cases */
-double BernoulliLikelihoodCalculator::CalcLogLikelihood(count_t n, measure_t u) {
+double BernoulliLikelihoodCalculator::CalcLogLikelihood(count_t n, measure_t u) const {
   count_t   N = gtTotalCasesInDataSet;
   measure_t U = gtTotalMeasureInDataSet;
 
@@ -35,7 +35,7 @@ double BernoulliLikelihoodCalculator::CalcLogLikelihood(count_t n, measure_t u) 
 }
 
 /** calculates the Bernoulli log likelihood ratio given the number of observed and expected cases */
-double BernoulliLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_t u, count_t N, measure_t U) {
+double BernoulliLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_t u, count_t N, measure_t U) const {
   double    dLogLikelihood;
   double    nLL_A = 0.0;
   double    nLL_B = 0.0;
@@ -67,7 +67,7 @@ double BernoulliLikelihoodCalculator::GetLogLikelihoodForTotal() const {
 }
 
 /** calculates loglikelihood ratio for purely spatial monotone analysis given passed cluster */
-double BernoulliLikelihoodCalculator::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) {
+double BernoulliLikelihoodCalculator::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) const {
   double    nLogLikelihood = 0;
   count_t   n;
   measure_t u;

@@ -8,14 +8,13 @@
 
 /** constructor */
 PoissonLikelihoodCalculator::PoissonLikelihoodCalculator(const CSaTScanData& Data)
-                            :AbstractLikelihoodCalculator(Data.GetTotalCases(), Data.GetTotalMeasure()),
-                             gData(Data), gParameters(Data.GetParameters()) {}
+                            :AbstractLikelihoodCalculator(Data), gParameters(Data.GetParameters()) {}
 
 /** destructor */
 PoissonLikelihoodCalculator::~PoissonLikelihoodCalculator() {}
 
 /** calculates the Poisson log likelihood given the number of observed and expected cases */
-double PoissonLikelihoodCalculator::CalcLogLikelihood(count_t n, measure_t u) {
+double PoissonLikelihoodCalculator::CalcLogLikelihood(count_t n, measure_t u) const {
    count_t   N = gtTotalCasesInDataSet;
    measure_t U = gtTotalMeasureInDataSet;
 
@@ -28,7 +27,7 @@ double PoissonLikelihoodCalculator::CalcLogLikelihood(count_t n, measure_t u) {
 }
 
 /** calculates the Poisson log likelihood ratio given the number of observed and expected cases */
-double PoissonLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_t u, count_t N, measure_t U) {
+double PoissonLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_t u, count_t N, measure_t U) const {
   double    dLogLikelihood;
 
   // calculate the loglikelihood
@@ -44,7 +43,7 @@ double PoissonLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_t 
 }
 
 /** needs documentation */
-double PoissonLikelihoodCalculator::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) {
+double PoissonLikelihoodCalculator::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) const {
   double nLogLikelihood=0;
 
   for (int i=0; i < PSMCluster.m_nSteps; i++) {
@@ -57,7 +56,7 @@ double PoissonLikelihoodCalculator::CalcMonotoneLogLikelihood(const CPSMonotoneC
 /** needs documentation */
 double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(count_t*   pCases, measure_t* pMeasure,
                                                           count_t pTotalCases, double nAlpha,
-                                                          double nBeta, int nStatus) {
+                                                          double nBeta, int nStatus) const {
   double nLL;
 
   /* Check for extremes where all the cases in the first or last interval
@@ -96,7 +95,7 @@ double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(count_t*   pCases, mea
 }
 
 /** needs documentation */
-double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tStream, CSVTTCluster* Cluster, const CTimeTrend& GlobalTimeTrend) {
+double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tStream, CSVTTCluster* Cluster, const CTimeTrend& GlobalTimeTrend) const {
   double nLogLikelihood   = 0.0;
   double nGlobalAlphaIn   = 0.0;
   double nGlobalAlphaOut = 0.0;

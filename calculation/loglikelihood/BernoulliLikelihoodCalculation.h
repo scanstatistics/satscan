@@ -4,15 +4,16 @@
 //*****************************************************************************
 #include "LikelihoodCalculation.h"
 
+/** Bernoulli log likelihood calculator. */
 class BernoulliLikelihoodCalculator : public AbstractLikelihoodCalculator {
   public:
-    BernoulliLikelihoodCalculator(count_t tTotalCases, measure_t tTotalMeasure);
+    BernoulliLikelihoodCalculator(const CSaTScanData& Data);
     virtual ~BernoulliLikelihoodCalculator();
 
-    virtual double      CalcLogLikelihood(count_t n, measure_t u);
-    virtual double      CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure);
+    virtual double      CalcLogLikelihood(count_t n, measure_t u) const;
+    virtual double      CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure) const;
     virtual double      GetLogLikelihoodForTotal() const;
-    virtual double      CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster);
+    virtual double      CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) const;
 };
 //*****************************************************************************
 #endif
