@@ -28,10 +28,10 @@ class CPurelyTemporalCluster : public CCluster {
     CPurelyTemporalCluster            & CPurelyTemporalCluster::operator=(const CPurelyTemporalCluster& rhs);
 
     virtual void                        DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
-                                                            measure_t nMinMeasure, const ClusterPrintFormat& PrintFormat) const;
-    virtual void                        DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const {}
-    virtual void                        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const {}
-    virtual void                        DisplayPopulation(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const {};
+                                                            measure_t nMinMeasure, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                        DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {}
+    virtual void                        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {}
+    virtual void                        DisplayPopulation(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {};
     virtual count_t                     GetCaseCount(unsigned int iStream) const;
     virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual AbstractClusterData       * GetClusterData() {return gpClusterData;}

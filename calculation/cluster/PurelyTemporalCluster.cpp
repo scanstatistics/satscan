@@ -60,9 +60,9 @@ CPurelyTemporalCluster * CPurelyTemporalCluster::Clone() const {
   return new CPurelyTemporalCluster(*this);
 }
 
-void CPurelyTemporalCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData&, measure_t, const ClusterPrintFormat& PrintFormat) const {
-  if (PrintFormat.GetLeftMargin() > 0)
-    fprintf(fp, "included.: All\n");
+void CPurelyTemporalCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData&, measure_t, const AsciiPrintFormat& PrintFormat) const {
+  PrintFormat.PrintSectionLabel(fp, "Location IDs included", false, false);
+  fprintf(fp, "All\n");
 }
 
 /** re-initializes cluster data */
