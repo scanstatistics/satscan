@@ -191,6 +191,9 @@ class CParameters {
     ~CParameters();
 
     CParameters                       & operator=(const CParameters &rhs);
+    bool                                operator==(const CParameters& rhs) const;
+    bool                                operator!=(const CParameters& rhs) const;
+
     void                                DisplayAdjustments(FILE* fp, const DataSetHandler& SetHandler) const;
     void                                DisplayAnalysisSummary(FILE* fp) const;
     void                                DisplayCalculatedTimeTrend(FILE* fp, const DataSetHandler& SetHandler) const;

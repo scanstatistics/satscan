@@ -40,6 +40,90 @@ CParameters &CParameters::operator=(const CParameters &rhs) {
   return (*this);
 }
 
+bool  CParameters::operator==(const CParameters& rhs) const {
+  bool bEqual;
+
+  if (giNumberEllipses                    != rhs.giNumberEllipses) return false;
+  if (gvEllipseShapes                     != rhs.gvEllipseShapes) return false;
+  if (gvEllipseRotations                  != rhs.gvEllipseRotations) return false;
+  if (gbNonCompactnessPenalty             != rhs.gbNonCompactnessPenalty) return false;
+  if (glTotalNumEllipses                  != rhs.glTotalNumEllipses) return false;
+  if (geAnalysisType                      != rhs.geAnalysisType) return false;
+  if (geAreaScanRate                      != rhs.geAreaScanRate) return false;
+  if (geProbabilityModelType              != rhs.geProbabilityModelType) return false;
+  if (geRiskFunctionType                  != rhs.geRiskFunctionType) return false;
+  if (giReplications                      != rhs.giReplications) return false;
+  if (gbPowerCalculation                  != rhs.gbPowerCalculation) return false;
+  if (gdPower_X                           != rhs.gdPower_X) return false;
+  if (gdPower_Y                           != rhs.gdPower_Y) return false;
+  if (gsStudyPeriodStartDate              != rhs.gsStudyPeriodStartDate) return false;
+  if (gsStudyPeriodEndDate                != rhs.gsStudyPeriodEndDate) return false;
+  if (gfMaxGeographicClusterSize          != rhs.gfMaxGeographicClusterSize) return false;
+  if (gfMaxTemporalClusterSize            != rhs.gfMaxTemporalClusterSize) return false;
+  if (geIncludeClustersType               != rhs.geIncludeClustersType) return false;
+  if (geTimeAggregationUnitsType          != rhs.geTimeAggregationUnitsType) return false;
+  if (glTimeAggregationLength             != rhs.glTimeAggregationLength) return false;
+  if (geTimeTrendAdjustType               != rhs.geTimeTrendAdjustType) return false;
+  if (gdTimeTrendAdjustPercentage         != rhs.gdTimeTrendAdjustPercentage) return false;
+  if (gbIncludePurelySpatialClusters      != rhs.gbIncludePurelySpatialClusters) return false;
+  if (gbIncludePurelyTemporalClusters     != rhs.gbIncludePurelyTemporalClusters) return false;
+  if (gvCaseFilenames                     != rhs.gvCaseFilenames) return false;
+  if (gvControlFilenames                  != rhs.gvControlFilenames) return false;
+  if (gvPopulationFilenames               != rhs.gvPopulationFilenames) return false;
+  if (gsCoordinatesFileName               != rhs.gsCoordinatesFileName) return false;
+  if (gsSpecialGridFileName               != rhs.gsSpecialGridFileName) return false;
+  if (gbUseSpecialGridFile                != rhs.gbUseSpecialGridFile) return false;
+  if (gsMaxCirclePopulationFileName       != rhs.gsMaxCirclePopulationFileName) return false;
+  if (gePrecisionOfTimesType              != rhs.gePrecisionOfTimesType) return false;
+  if (giDimensionsOfData                  != rhs.giDimensionsOfData) return false;
+  if (geCoordinatesType                   != rhs.geCoordinatesType) return false;
+  if (gsOutputFileName                    != rhs.gsOutputFileName) return false;
+  if (gbOutputSimLogLikeliRatiosAscii     != rhs.gbOutputSimLogLikeliRatiosAscii) return false;
+  if (gbOutputRelativeRisksAscii          != rhs.gbOutputRelativeRisksAscii) return false;
+  if (gbSequentialRuns                    != rhs.gbSequentialRuns) return false;
+  if (giNumSequentialRuns                 != rhs.giNumSequentialRuns) return false;
+  if (gbSequentialCutOffPValue            != rhs.gbSequentialCutOffPValue) return false;
+  if (gbValidatePriorToCalc               != rhs.gbValidatePriorToCalc) return false;
+  if (gsProspectiveStartDate              != rhs.gsProspectiveStartDate) return false;
+  if (gbOutputAreaSpecificAscii           != rhs.gbOutputAreaSpecificAscii) return false;
+  if (gbOutputClusterLevelAscii           != rhs.gbOutputClusterLevelAscii) return false;
+  if (geCriteriaSecondClustersType        != rhs.geCriteriaSecondClustersType) return false;
+  if (geMaxTemporalClusterSizeType        != rhs.geMaxTemporalClusterSizeType) return false;
+  if (geMaxGeographicClusterSizeType      != rhs.geMaxGeographicClusterSizeType) return false;
+  if (gbOutputClusterLevelDBase           != rhs.gbOutputClusterLevelDBase) return false;
+  if (gbOutputAreaSpecificDBase           != rhs.gbOutputAreaSpecificDBase) return false;
+  if (gbOutputRelativeRisksDBase          != rhs.gbOutputRelativeRisksDBase) return false;
+  if (gbOutputSimLogLikeliRatiosDBase     != rhs.gbOutputSimLogLikeliRatiosDBase) return false;
+  if (gsRunHistoryFilename                != rhs.gsRunHistoryFilename) return false;
+  if (gbLogRunHistory                     != rhs.gbLogRunHistory) return false;
+  if (gsParametersSourceFileName          != rhs.gsParametersSourceFileName) return false;
+  if (gsEndRangeStartDate                 != rhs.gsEndRangeStartDate) return false;
+  if (gsEndRangeEndDate                   != rhs.gsEndRangeEndDate) return false;
+  if (gsStartRangeStartDate               != rhs.gsStartRangeStartDate) return false;
+  if (gsStartRangeEndDate                 != rhs.gsStartRangeEndDate) return false;
+  if (gdTimeTrendConverge		  != rhs.gdTimeTrendConverge) return false;
+  if (gbEarlyTerminationSimulations       != rhs.gbEarlyTerminationSimulations) return false;
+  if (gbRestrictReportedClusters          != rhs.gbRestrictReportedClusters) return false;
+  if (gfMaxReportedGeographicClusterSize  != rhs.gfMaxReportedGeographicClusterSize) return false;
+  if (geSimulationType                    != rhs.geSimulationType) return false;
+  if (gsSimulationDataSourceFileName      != rhs.gsSimulationDataSourceFileName) return false;
+  if (gsAdjustmentsByRelativeRisksFileName!= rhs.gsAdjustmentsByRelativeRisksFileName) return false;
+  if (gbOutputSimulationData              != rhs.gbOutputSimulationData) return false;
+  if (gsSimulationDataOutputFilename      != rhs.gsSimulationDataOutputFilename) return false;
+  if (gbAdjustForEarlierAnalyses          != rhs.gbAdjustForEarlierAnalyses) return false;
+  if (gbUseAdjustmentsForRRFile           != rhs.gbUseAdjustmentsForRRFile) return false;
+  if (geSpatialAdjustmentType             != rhs.geSpatialAdjustmentType) return false;
+  if (geMultipleSetPurposeType            != rhs.geMultipleSetPurposeType) return false;
+  //if (gCreationVersion                    != rhs.gCreationVersion) return false;
+  if (gbUsePopulationFile                 != rhs.gbUsePopulationFile) return false;
+  return true;
+}
+
+bool  CParameters::operator!=(const CParameters& rhs) const{
+   return !(*this == rhs);
+}
+
+
 /** If passed filename contains a slash, then assumes that path is complete and
     sInputFilename is not modified. If filename does not contain a slash, it is
     assumed that filename is located in same directory of parameter file.
@@ -969,7 +1053,7 @@ void CParameters::SetAsDefaulted() {
   gsSpecialGridFileName                 = "";
   gfMaxGeographicClusterSize            = 50.0; //GG980716
   geMaxGeographicClusterSizeType        = PERCENTOFPOPULATIONTYPE;
-  gsStudyPeriodStartDate                = "2000/01/01";
+  gsStudyPeriodStartDate                = "2000/1/1";
   gsStudyPeriodEndDate                  = "2000/12/31";
   geIncludeClustersType                 = ALLCLUSTERS;
   geTimeAggregationUnitsType            = NONE;
