@@ -74,10 +74,6 @@ void __fastcall CalcThread::Execute() {
     time_t      RunTime;
 
     time(&RunTime);         // Pass to analysis to include in report
-
-    //Do not need to place this check in the Dos app.  It is automatically
-    //run by the Dos app when the parameter file is read in.
-    gpParams->SetDisplayParameters(true);
     if (!gpParams->ValidateParameters())
        SSGenerateException("\nInvalid parameter(s) encountered. Job cancelled.", "Execute()");
 
