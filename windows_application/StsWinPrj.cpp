@@ -63,7 +63,6 @@ USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
 USEUNIT("..\calculation\SaTScanBasis.cpp");
 USEUNIT("..\calculation\Output\stsRunHistoryFile.cpp");
 USEUNIT("..\calculation\utility\DBFFile.cpp");
-USEUNIT("..\calculation\Output\stsAreaSpecificDBF.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
 USEUNIT("..\calculation\Output\stsOutputDBF.cpp");
 USEUNIT("..\calculation\Output\stsRelativeRisk.cpp");
