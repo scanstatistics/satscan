@@ -148,13 +148,6 @@ bool CAnalysis::Execute(time_t RunTime) {
         if (gpPrintDirection->GetIsCanceled() || !UpdateReport(lRunNumber))
           return false;
 
-        bContinue = RepeatAnalysis();
-        if (bContinue)
-          RemoveTopClusterData();
-    
-        if (gpPrintDirection->GetIsCanceled())
-           return false;
-
 #ifdef INCLUDE_RUN_HISTORY
         // log new history for each analysis run - AJV 9/10/2002
         gpPrintDirection->SatScanPrintf("\nLogging run history...");
@@ -163,6 +156,13 @@ bool CAnalysis::Execute(time_t RunTime) {
         guwSignificantAt005 = 0;
 #endif
 
+        bContinue = RepeatAnalysis();
+        if (bContinue)
+          RemoveTopClusterData();
+    
+        if (gpPrintDirection->GetIsCanceled())
+           return false;
+           
       } while (bContinue);
 
       m_pData->DeAllocSimCases();
