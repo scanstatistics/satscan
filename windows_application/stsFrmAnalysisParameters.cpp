@@ -19,13 +19,11 @@
 #include "stsSaTScan.h"
 #pragma hdrstop
 #include "stsFrmAdvancedParameters.h"
-//---------------------------------------------------------------------------
+#include "ParameterFileAccess.h"
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 
-//---------------------------------------------------------------------------
 /** constructor */
-//---------------------------------------------------------------------------
 __fastcall TfrmAnalysis::TfrmAnalysis(TComponent* Owner, TActionList* theList, char *sParamFileName)
                         :stsBaseAnalysisChildForm (Owner, theList) {
   try {
@@ -1329,7 +1327,7 @@ void TfrmAnalysis::Setup(const char * sParameterFileName) {
     PageControl1->ActivePage = tbInputFiles;
     try {
       if (sParameterFileName)
-        gParameters.Read(sParameterFileName, gNullPrint);
+        ParameterAccessCoordinator(gParameters).Read(sParameterFileName, gNullPrint);
     }
     catch (ZdException &x) {
       x.SetLevel(ZdException::Notify);
@@ -1583,7 +1581,7 @@ void TfrmAnalysis::WriteSession(const char * sParameterFilename) {
                                           "The file is either read only or you do not have write privledges to the directory.",
                                           "WriteSession()");
       SaveParameterSettings();
-      gParameters.Write(sFilename.c_str(), gNullPrint);
+      ParameterAccessCoordinator(gParameters).Write(sFilename.c_str(), gNullPrint);
     }
   }
   catch (ZdException & x) {
