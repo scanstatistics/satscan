@@ -13,6 +13,7 @@
 #include "Salloc.h"
 #include "BasePrint.h"
 #include "SSException.h"
+#include <Basis540Unix.h>
 
 /**********************************************************************
  file: SaTScan.h
