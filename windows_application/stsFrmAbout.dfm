@@ -3,7 +3,7 @@ object frmAbout: TfrmAbout
   Top = 232
   BorderStyle = bsDialog
   Caption = 'About SatScan'
-  ClientHeight = 392
+  ClientHeight = 401
   ClientWidth = 474
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -74,9 +74,9 @@ object frmAbout: TfrmAbout
   object Label9: TLabel
     Left = 24
     Top = 72
-    Width = 323
+    Width = 319
     Height = 16
-    Caption = 'Software for the spacial and space-time scan statistics.'
+    Caption = 'Software for the spatial and space-time scan statistics.'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -118,7 +118,7 @@ object frmAbout: TfrmAbout
     Width = 313
     Height = 17
     AutoSize = False
-    Caption = 'http://www3.cancer.gov/prevention/bb/satscan.html'
+    Caption = 'http://srab.cancer.gov/satscan/'
     Font.Charset = ANSI_CHARSET
     Font.Color = clBlack
     Font.Height = -13
@@ -130,13 +130,13 @@ object frmAbout: TfrmAbout
   object Label2: TLabel
     Left = 24
     Top = 176
-    Width = 439
+    Width = 431
     Height = 64
     Caption = 
       'Written by Martin Kulldorff, Associate Professor of Biostatistic' +
-      's, University of Connecticut and Don Green, Kathrine Rand, Greg ' +
-      'Gherman, Grey Williams and David DeFrancesco, Information Manage' +
-      'ment Services, Inc., Silver Spring, Maryland.'
+      's, University of Connecticut and Scott Hostovich, Don Green, Kat' +
+      'hrine Rand, Greg Gherman, Grey Williams and David DeFrancesco, I' +
+      'nformation Management Services, Inc., Silver Spring, Maryland.'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -163,7 +163,7 @@ object frmAbout: TfrmAbout
   end
   object Label5: TLabel
     Left = 24
-    Top = 312
+    Top = 329
     Width = 425
     Height = 32
     Caption = 
@@ -180,17 +180,18 @@ object frmAbout: TfrmAbout
   object Label6: TLabel
     Left = 24
     Top = 296
-    Width = 415
-    Height = 16
+    Width = 425
+    Height = 32
     Caption = 
-      'Kulldorff M, Green D, Rand K, Gherman G, Williams G, DeFrancesco' +
-      ' D.'
+      'Kulldorff M, Hostovich S, Green D, Rand K, Gherman G, Williams G' +
+      ', DeFrancesco D.'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
+    WordWrap = True
   end
   object lblVersion: TLabel
     Left = 144
@@ -220,7 +221,7 @@ object frmAbout: TfrmAbout
   end
   object Button1: TButton
     Left = 368
-    Top = 352
+    Top = 371
     Width = 90
     Height = 25
     Caption = 'Ok'
