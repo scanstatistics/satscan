@@ -104,8 +104,9 @@ int main(int argc, char *argv[])
          pPrintScreen->SatScanPrintf("\nSaTScan completed successfully.\n");
          pPrintScreen->SatScanPrintf("The results have been written to: \n");
          pPrintScreen->SatScanPrintf("  %s\n\n",pParams->m_szOutputFilename);
-         pPrintScreen->SatScanPrintf("\nPress <Enter> to exit the SaTScan program.");
-         getc(stdin);
+         //requested removal by Jessica Hartman on Aug. 9,2002
+         //pPrintScreen->SatScanPrintf("\nPress <Enter> to exit the SaTScan program.");
+         //getc(stdin);
 //  #if !PROFILE_RUN
 //  HoldForEnter();
 //  #endif
@@ -127,8 +128,8 @@ int main(int argc, char *argv[])
       pPrintScreen->SatScanPrintf(x.GetErrorMessage());
       pPrintScreen->SatScanPrintf("\nProgram terminated.");
       //then print this....
-      pPrintScreen->SatScanPrintf("\nPress <Enter> to exit the SaTScan program.");
-      getc(stdin);
+      //pPrintScreen->SatScanPrintf("\nPress <Enter> to exit the SaTScan program.");
+      //getc(stdin);
       delete pPrintScreen;
       exit(1);
       }
