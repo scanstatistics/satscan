@@ -168,6 +168,7 @@ void CCluster::Display(FILE*     fp,
         fprintf(fp, "\n");
         }
       DisplayNullOccurrence(fp, Data, szSpacesOnLeft);
+      DisplayTimeTrend(fp, szSpacesOnLeft);
       }
    catch (ZdException & x)
       {
@@ -261,6 +262,7 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
               fprintf(fp, "\t %12i", GetCaseCountForTract(tTract, Data));      // area level obeserved clusters
               fprintf(fp, "\t %12.3f", GetMeasureForTract(tTract, Data));      // area level expected clusters
               fprintf(fp, "\t %12.3f", GetRelativeRiskForTract(tTract, Data));   // area level relative risk
+              DisplayAnnualTimeTrendWithoutTitle(fp);
             }
             if (i < nLastTract)
               fprintf(fp, "%c ", cDeliminator);

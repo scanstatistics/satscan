@@ -53,6 +53,7 @@ class CCluster {
     CCluster& operator =(const CCluster& cluster);
     virtual void Initialize(tract_t nCenter=0);
 
+    inline virtual void AssignAsType(const CCluster& rhs) {*this = rhs;}
     virtual void        AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {};
     virtual bool        ClusterDefined() {return (m_bClusterDefined==true);}
     const double        ConvertAngleToDegrees(double dAngle) const;
@@ -61,6 +62,7 @@ class CCluster {
                                 const CSaTScanData& Data,
                                 int       nCluster,
                                  measure_t nMinMeasure);
+    virtual void        DisplayAnnualTimeTrendWithoutTitle(FILE* fp) {/*stub - no action*/}                                 
     virtual void        DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
                                             int nCluster,  measure_t nMinMeasure, int nReplicas,
                                             long lReportHistoryRunNumber,
@@ -84,14 +86,13 @@ class CCluster {
                                         char cDeliminator, char* szSpacesOnLeft);
     virtual void        DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft);
     virtual void        DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft);
-
     virtual void        DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft);
     virtual void        DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment,
                                         int nLeftMargin, int nRightMargin,
                                         char cDeliminator, char* szSpacesOnLeft);
     virtual void        DisplaySteps(FILE* fp, char* szSpacesOnLeft) {};
     virtual void        DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType);
-
+    virtual void        DisplayTimeTrend(FILE* fp, char* szSpacesOnLeft) {/*stub - no action*/}
     virtual count_t     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {return 0;}
     const int           GetClusterType() const  {return m_nClusterType;}
     double              GetDuczmalCorrectedLogLikelihoodRatio() const;
