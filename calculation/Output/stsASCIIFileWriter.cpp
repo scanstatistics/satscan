@@ -57,7 +57,7 @@ void ASCIIFileWriter::CreateFormatString(ZdString& sValue, const int iFieldNumbe
             sValue.printf(sFormat.GetCString(), fv.AsDouble());
             break;
          default :
-            ZdGenerateException("Unsupported field type %c", "Error!", pField->GetType());
+            ZdGenerateException("Unsupported field type %c", "Error!", fv.GetType());
       }
    }
    catch (ZdException &x) {
