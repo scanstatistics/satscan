@@ -183,14 +183,15 @@ Item25=\\Nfsd\imsdev\Basis\Production\Basis540;Calc;C:\Program Files\Borland\CBu
 Item26=Calc;C:\Program Files\Borland\CBuilder5\Projects\;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
-Count=7
-Item0=$(BCB)\source\vcl;C:\Prj\SaTScan Project\3.0\zero dimension;C:\Prj\SaTScan Project\3.0\basisdev\source\vcldep;C:\Prj\SaTScan Project\3.0\basisdev\source\nonvcl
-Item1=$(BCB)\source\vcl;\\Nfse\imsdev\zd\zd540;C:\Prj\SaTScan Project\3.0\basisdev\source\vcldep;C:\Prj\SaTScan Project\3.0\basisdev\source\nonvcl
-Item2=$(BCB)\source\vcl;\\Nfse\imsdev\zd\zd540;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl
-Item3=$(BCB)\source\vcl;\\Nfsd\imsdev\zd\zd540;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl
-Item4=$(BCB)\source\vcl;\\Nfsd\imsdev\zd\zd540
-Item5=$(BCB)\source\vcl;\\Nfsd\home\hostovic\prj\basisdev;\\Nfsd\imsdev\zd\zd540
-Item6=$(BCB)\source\vcl
+Count=8
+Item0=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SaTScan Project\3.0\zero dimension;C:\Prj\SaTScan Project\3.0\basisdev\source\vcldep;C:\Prj\SaTScan Project\3.0\basisdev\source\nonvcl;F:\
+Item1=$(BCB)\source\vcl;C:\Prj\SaTScan Project\3.0\zero dimension;C:\Prj\SaTScan Project\3.0\basisdev\source\vcldep;C:\Prj\SaTScan Project\3.0\basisdev\source\nonvcl
+Item2=$(BCB)\source\vcl;\\Nfse\imsdev\zd\zd540;C:\Prj\SaTScan Project\3.0\basisdev\source\vcldep;C:\Prj\SaTScan Project\3.0\basisdev\source\nonvcl
+Item3=$(BCB)\source\vcl;\\Nfse\imsdev\zd\zd540;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl
+Item4=$(BCB)\source\vcl;\\Nfsd\imsdev\zd\zd540;\\Nfsd\home\hostovic\prj\basisdev\source\vcldep;\\Nfsd\home\hostovic\prj\basisdev\source\nonvcl
+Item5=$(BCB)\source\vcl;\\Nfsd\imsdev\zd\zd540
+Item6=$(BCB)\source\vcl;\\Nfsd\home\hostovic\prj\basisdev;\\Nfsd\imsdev\zd\zd540
+Item7=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=13
@@ -209,7 +210,7 @@ Item11=_DEBUG;OUTPUT_TO_WINDOW;INTEL_BASED
 Item12=_DEBUG
 
 [Debugging]
-DebugSourceDirs=$(BCB)\source\vcl;C:\Prj\SaTScan Project\3.0\zero dimension;C:\Prj\SaTScan Project\3.0\basisdev\source\vcldep;C:\Prj\SaTScan Project\3.0\basisdev\source\nonvcl
+DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SaTScan Project\3.0\zero dimension;C:\Prj\SaTScan Project\3.0\basisdev\source\vcldep;C:\Prj\SaTScan Project\3.0\basisdev\source\nonvcl;F:\
 
 [Parameters]
 RunParams=
