@@ -1245,12 +1245,12 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
        rbUnitMonths->Checked = gpParams->m_nPrecision == 2;
        rbUnitDay->Enabled = rgPrecisionTimes->ItemIndex == DAY;
        rbUnitDay->Checked = gpParams->m_nPrecision == 3;
+       // set time interval radio button option
+       rbUnitYear->Checked =  true;
+       rbUnitMonths->Checked = false;
+       rbUnitDay->Checked = false;
+       gpParams->m_nIntervalUnits = 1;
     }
-
-    // set time interval radio button option
-    rbUnitYear->Checked = gpParams->m_nIntervalUnits == 1 && rbUnitYear->Enabled;
-    rbUnitMonths->Checked = gpParams->m_nIntervalUnits == 2 && rbUnitMonths->Enabled;
-    rbUnitDay->Checked = gpParams->m_nIntervalUnits == 3 && rbUnitDay->Enabled;
 
     // prospective year group box
     if(GroupBox8->Enabled) {
