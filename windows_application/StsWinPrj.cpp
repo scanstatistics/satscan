@@ -76,6 +76,7 @@ USEUNIT("..\calculation\Output\stsASCIIFileWriter.cpp");
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib");
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
+USEUNIT("stsBaseAnalysisChildForm.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         try {
@@ -86,7 +87,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
            Application->Title = "SaTScan";
            Application->HelpFile = "";
            Application->CreateForm(__classid(TfrmMainForm), &frmMainForm);
-           Application->Run();
+                 Application->Run();
            BasisExit();
         }
         catch (ZdException &x) {
