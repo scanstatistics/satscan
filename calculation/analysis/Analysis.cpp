@@ -2,6 +2,9 @@
 #pragma hdrstop
 #include "Analysis.h"
 
+// #define INCLUDE_RUN_HISTORY    // define to determine whether or not we should log run history, if included
+                                  // then we will, if not then we won't - AJV 10/4/2002
+
 #include "stsClusterLevelDBF.h"
 #include "stsAreaSpecificDBF.h"
 #include "stsRunHistoryFile.h"
@@ -67,7 +70,7 @@ CAnalysis::~CAnalysis() {
 
 bool CAnalysis::Execute(time_t RunTime) {
    bool bContinue;
-   long lRunNumber;
+   long lRunNumber = 0;
 
    try {
       SetMaxNumClusters();
@@ -100,9 +103,10 @@ bool CAnalysis::Execute(time_t RunTime) {
 
       do {
         ++m_nAnalysisCount;
-
-        // declare variable for each analysis - AJV 9/10/2002
+#ifdef INCLUDE_RUN_HISTORY
+         // declare variable for each analysis - AJV 9/10/2002
         stsRunHistoryFile historyFile(m_pParameters->GetRunHistoryFilename(), *gpPrintDirection);
+#endif
 
 #ifdef DEBUGANALYSIS
         fprintf(m_pDebugFile, "Analysis Loop #%i\n", m_nAnalysisCount);
@@ -138,7 +142,9 @@ bool CAnalysis::Execute(time_t RunTime) {
 //#ifdef DEBUGANALYSIS
 //        DisplayTopClusters(-DBL_MAX, INT_MAX, m_pDebugFile, NULL);
 //#endif
+#ifdef INCLUDE_RUN_HISTORY
         lRunNumber = historyFile.GetRunNumber();
+#endif
         if (gpPrintDirection->GetIsCanceled() || !UpdateReport(lRunNumber))
           return false;
 
@@ -149,11 +155,13 @@ bool CAnalysis::Execute(time_t RunTime) {
         if (gpPrintDirection->GetIsCanceled())
            return false;
 
+#ifdef INCLUDE_RUN_HISTORY
         // log new history for each analysis run - AJV 9/10/2002
         gpPrintDirection->SatScanPrintf("\nLogging run history...");
         historyFile.LogNewHistory(*this, guwSignificantAt005);
         // reset the number of significants back to zero for each analysis - AJV 9/10/2002
         guwSignificantAt005 = 0;
+#endif
 
       } while (bContinue);
 
@@ -222,9 +230,9 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
             fExpectedCases = m_pData->GetMeasureAdjustment()*m_pTopClusters[i]->m_nMeasure;
             fRelativeRisk = m_pTopClusters[i]->GetRelativeRisk(m_pData->GetMeasureAdjustment());
 
-            
+#ifdef INCLUDE_RUN_HISTORY
             fprintf(fpMCL, "%-8ld", lReportHistoryRunNumber);
-
+#endif
             //if a special grid file is specified, then do NOT output ID of central tract
             if (strlen(m_pParameters->m_szGridFilename) == 0) {
                if (m_pTopClusters[i]->GetClusterType() == PURELYTEMPORAL)

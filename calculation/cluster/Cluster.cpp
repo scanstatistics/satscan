@@ -216,11 +216,11 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                   for (int j=0; j<nLeftMargin; ++j)
                     fprintf(fp, " ");
                 }
-
+#ifdef INCLUDE_RUN_HISTORY
                 // run history number
                 if (bIncludeRelRisk)
                    fprintf(fp, "%-12d", lReportHistoryRunNumber);
-
+#endif
                 // tract name
                 if (bFormat)
                    fprintf(fp, "%s", tid);

@@ -55,8 +55,9 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
 
       // define record data
       // run number - from run history file AJV 9/4/2002
+#ifdef INCLUDE_RUN_HISTORY
       SetDoubleField(*pRecord, double(glRunNumber), GetFieldNumber(gvFields, RUN_NUM));
-
+#endif
       // cluster number
       SetDoubleField(*pRecord, iClusterNumber, GetFieldNumber(gvFields, CLUST_NUM));
 
@@ -135,7 +136,9 @@ void stsAreaSpecificDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
       // please take note that this function here determines the ordering of the fields in the file
       // everything else is written generically enough that ordering does not matter due to the
       // GetFieldNumber function - AJV 10/2/2002
+#ifdef INCLUDE_RUN_HISTORY
       CreateNewField(vFields, RUN_NUM, ZD_NUMBER_FLD, 8, 0, uwOffset);
+#endif
       CreateNewField(vFields, LOC_ID, ZD_ALPHA_FLD, 30, 0, uwOffset);
       CreateNewField(vFields, CLUST_NUM, ZD_NUMBER_FLD, 5, 0, uwOffset);
       CreateNewField(vFields, CLU_OBS, ZD_NUMBER_FLD, 12, 0, uwOffset);
