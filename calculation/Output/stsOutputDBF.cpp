@@ -83,6 +83,7 @@ void DBaseOutput::Setup(const ZdString& sFileName) {
       gsFileName = sFileName;
 
       // ugly hack to get the run number from the history file - need a new way to do this - AJV 9/7/2002
+      // consider making GetRunHistoryNumber or something of the like a function of the RunHistory file - AJV 9/9/2002
       if(ZdIO::Exists("c:\\AnalysisHistory.txd") && ZdIO::Exists("c:\\AnalysisHistory.zds"))  {
          TXDFile File("c:\\AnalysisHistory.txd", ZDIO_OPEN_READ);
 
@@ -91,7 +92,7 @@ void DBaseOutput::Setup(const ZdString& sFileName) {
          if(ulNumRecords) {
             pLastRecord = File.GetNewRecord();
             File.GotoRecord(ulNumRecords, pLastRecord);
-            glRunNumber = pLastRecord->GetLong((long)0);        // BUGBUG access violation AJV 9/8/2002
+            glRunNumber = pLastRecord->GetLong((long)0);       
          }
          delete pLastRecord; pLastRecord = 0;
          File.Close();
