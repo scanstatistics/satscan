@@ -1,4 +1,4 @@
-// $Revision: 1.2 $
+// $Revision: 1.3 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -49,8 +49,6 @@ class TBDlgDataImporter : public TForm {
      TLabel *Label12;
      TEdit *edtIgnoreFirstRows;
      TMemo *memRawData;
-     TGroupBox *grpInputFileType;
-     TComboBox *cmbInputFileType;
      TLabel *Label2;
      TLabel *Label9;
      TGroupBox *grpImportSourceFile;
@@ -64,12 +62,13 @@ class TBDlgDataImporter : public TForm {
      TButton *btnAutoAlign;
      TRadioGroup *rdoCoordinates;
      TCheckBox *chkFirstRowIsName;
+     TButton *btnClearFldDefs;
+        TRadioGroup *rdgInputFileType;
      void __fastcall NumericKeyPressMask(TObject *Sender, char &Key);
      void __fastcall OnAddFldDefClick(TObject *Sender);
      void __fastcall OnAutoAlignClick(TObject *Sender);
      void __fastcall OnBackClick(TObject *Sender);
      void __fastcall OnBrowseForImportFile(TObject *Sender);
-     void __fastcall OnCmbDestinationChange(TObject *Sender);
      void __fastcall OnClearImportsClick(TObject *Sender);
      void __fastcall OnCSVComboChange(TObject *Sender);
      void __fastcall OnDeleteFldDefClick(TObject *Sender);
@@ -90,6 +89,7 @@ class TBDlgDataImporter : public TForm {
      void __fastcall OnStartColumnChange(TObject *Sender);
      void __fastcall tsfieldGridResize(TObject *Sender);
      void __fastcall OnCoordinatesClick(TObject *Sender);
+     void __fastcall OnClearFldDefsClick(TObject *Sender);
 
   public:
      enum Import_Panels {Start=0, FileType, DataMapping};
@@ -121,6 +121,8 @@ class TBDlgDataImporter : public TForm {
      void                            AutoAlign();
      void                            BringPanelToFront(int iWhich);
      void                            CheckForRequiredVariables();
+     void                            ClearFixedColumnDefinitions();
+     void                            ClearFixedColDefinitionEnable();
      void                            ClearImportFieldSelections();
      void                            ContinueButtonEnable();
      void                            CreateDestinationInformation();
@@ -138,7 +140,6 @@ class TBDlgDataImporter : public TForm {
      void                            MakePanelVisible(int iWhich);
      void                            OnAddFieldDefinitionClick();
      void                            OnAutoAlignClick();
-     void                            OnCmbDestinationChange();
      void                            OnDeleteFieldDefinitionClick();
      void                            OnExecuteImport();
      void                            OnExitStartPanel();

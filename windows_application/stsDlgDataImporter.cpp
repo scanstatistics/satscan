@@ -114,7 +114,7 @@ void TBDlgDataImporter::CheckForRequiredVariables() {
   bool                  bLatitudeBlank, bLongitudeBlank, bXBlank, bYBlank, bAllOptionalBlank=true;
 
   try {
-    switch (cmbInputFileType->ItemIndex) {
+    switch (rdgInputFileType->ItemIndex) {
       case Case        : //Case and Control file require first two fields only.
       case Control     : for (t=0; t < 2; t++)
                             if (*gvImportingFields[t] == gsBlank)
@@ -199,11 +199,11 @@ void TBDlgDataImporter::CheckForRequiredVariables() {
                            ExclusiveError << "selected together.\n";
                          }
                          break;
-      default : ZdGenerateException("Unknown file type index: \"%d\"", "CheckForRequiredVariables()", cmbInputFileType->ItemIndex);
+      default : ZdGenerateException("Unknown file type index: \"%d\"", "CheckForRequiredVariables()", rdgInputFileType->ItemIndex);
     };
 
     if (vMissingFieldIndex.size()) {
-      sMessage << "For the " << cmbInputFileType->Items->Strings[cmbInputFileType->ItemIndex].c_str();
+      sMessage << "For the " << rdgInputFileType->Items->Strings[rdgInputFileType->ItemIndex].c_str();
       sMessage << ", the following SaTScan Variable(s) are required\nand an Input File Variable must";
       sMessage << " be selected for each before import can proceed.\n\nSaTScan Variable(s): ";
       sMessage << gSaTScanVariablesFieldMap[vMissingFieldIndex[0]].first << "\n";
@@ -240,12 +240,34 @@ void TBDlgDataImporter::ClearImportFieldSelections() {
   }
 }
 
+/** Clears ZdIniSections for fixed column file. */
+void TBDlgDataImporter::ClearFixedColumnDefinitions() {
+  try {
+    gvIniSections.clear();
+    lstFixedColFieldDefs->Items->Clear();
+    edtStartColumn->Text = "1";
+    edtFieldLength->Text = "1";
+    AddFixedColDefinitionEnable();
+    DeleteFixedColDefinitionEnable();
+    ClearFixedColDefinitionEnable();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ClearFixedColumnDefinitions()", "TBDlgDataImporter");
+    throw;
+  }
+}
+
+/** Enables 'Clear' button for fixed column file defs. */
+void TBDlgDataImporter::ClearFixedColDefinitionEnable() {
+  btnClearFldDefs->Enabled = lstFixedColFieldDefs->Items->Count;
+}
+
 /** Enables continue button based upon current panels settings. */
 void TBDlgDataImporter::ContinueButtonEnable() {
   btnNextPanel->Enabled = false;
   btnExecuteImport->Enabled = false;
   switch (*gitrCurrentPanel) {
-    case Start       : btnNextPanel->Enabled = FileExists(edtDataFile->Text.c_str()) && cmbInputFileType->ItemIndex > -1;
+    case Start       : btnNextPanel->Enabled = FileExists(edtDataFile->Text.c_str()) && rdgInputFileType->ItemIndex > -1;
                        break;
     case FileType    : btnNextPanel->Enabled = (rdoFileType->ItemIndex == 2 ||
                                                (rdoFileType->ItemIndex == 0 && cmbColDelimiter->GetTextLen()) ||
@@ -275,7 +297,7 @@ void TBDlgDataImporter::CreateDestinationInformation() {
     GetTempPath(sizeof(sBuffer), sBuffer);
     sFileName.SetLocation(sBuffer);
     //File extension to file type.
-    switch (cmbInputFileType->ItemIndex) {
+    switch (rdgInputFileType->ItemIndex) {
       case Case        : sFileName.SetExtension(".cas");
                          break;
       case Control     : sFileName.SetExtension(".ctl");
@@ -286,7 +308,7 @@ void TBDlgDataImporter::CreateDestinationInformation() {
                          break;
       case SpecialGrid : sFileName.SetExtension(".grd");
                          break;
-      default  : ZdGenerateException("Unknown file type : \"%d\"", "ConvertImportedDataFile()", cmbInputFileType->ItemIndex);
+      default  : ZdGenerateException("Unknown file type : \"%d\"", "ConvertImportedDataFile()", rdgInputFileType->ItemIndex);
     };
     gDestDescriptor.SetDestinationFile(sFileName.GetFullPath());
 
@@ -305,9 +327,9 @@ void TBDlgDataImporter::CreateDestinationInformation() {
        //Skip fields 'X' and 'Y', they are equivalant to 'Latitude' and 'Longitude'
        //in terms of creating a ZdIniFile since they will never exist together
        //and map to the same field index.
-       if (cmbInputFileType->ItemIndex == Coordinates && (t == 3 || t == 4))
+       if (rdgInputFileType->ItemIndex == Coordinates && (t == 3 || t == 4))
          continue;
-       if (cmbInputFileType->ItemIndex == SpecialGrid && (t == 2 || t == 3))
+       if (rdgInputFileType->ItemIndex == SpecialGrid && (t == 2 || t == 3))
          continue;
 
        sFieldSection.printf("[Field%d]", gSaTScanVariablesFieldMap[t].second + 1);
@@ -449,7 +471,7 @@ const char  TBDlgDataImporter::GetGroupMarker() const {
 /** Hides rows based on coordinates variables selected to be shown. */
 void TBDlgDataImporter::HideRows() {
   try {
-    switch (cmbInputFileType->ItemIndex) {
+    switch (rdgInputFileType->ItemIndex) {
       case Case        :
       case Control     :
       case Population  : for (int i=1; i <= tsfieldGrid->Rows; i++)
@@ -489,7 +511,7 @@ TModalResult TBDlgDataImporter::ImportFile() {
     gSourceDescriptor.SetNumberOfRowsToIgnore(gSourceDescriptor.GetNumberOfRowsToIgnore() + 1);
 
   BFileImportSourceInterface    FileImportSourceInterface(gpImportFile, gSourceDescriptor.GetNumberOfRowsToIgnore());
-  SaTScanFileImporter           FileImporter(gDestinationFileDefinition, (InputFileType)cmbInputFileType->ItemIndex,
+  SaTScanFileImporter           FileImporter(gDestinationFileDefinition, (InputFileType)rdgInputFileType->ItemIndex,
                                              gSourceDataFileType, FileImportSourceInterface, gDestDescriptor);
 
   try {
@@ -568,7 +590,7 @@ void TBDlgDataImporter::LoadMappingPanel() {
 /** Sets TfrmAnalysis data members to reflect import. */
 void TBDlgDataImporter::LoadResultFileNameIntoAnalysis() {
   try {
-    switch (cmbInputFileType->ItemIndex) {
+    switch (rdgInputFileType->ItemIndex) {
       case Case        : gAnalysisForm.SetCaseFile(gDestDescriptor.GetDestinationFileName());
                          break;
       case Control     : gAnalysisForm.SetControlFile(gDestDescriptor.GetDestinationFileName());
@@ -579,7 +601,7 @@ void TBDlgDataImporter::LoadResultFileNameIntoAnalysis() {
                          break;
       case SpecialGrid : gAnalysisForm.SetSpecialGridFile(gDestDescriptor.GetDestinationFileName());
                          break;
-      default : ZdGenerateException("Unknown file type index: \"%d\"", "LoadResultFileNameIntoAnalysis()", cmbInputFileType->ItemIndex);
+      default : ZdGenerateException("Unknown file type index: \"%d\"", "LoadResultFileNameIntoAnalysis()", rdgInputFileType->ItemIndex);
     };
   }
   catch (ZdException &x) {
@@ -635,6 +657,7 @@ void TBDlgDataImporter::OnAddFieldDefinitionClick() {
     lstFixedColFieldDefs->Items->Add(sListBox.GetCString());
     edtFieldName->Text = GetFixedColumnFieldName(gvIniSections.size() + 1, sFieldName).GetCString();
     lstFixedColFieldDefs->ItemIndex = -1;
+    ClearFixedColDefinitionEnable();
     ContinueButtonEnable();
     edtFieldName->SetFocus();
     edtFieldName->SelStart = 0;
@@ -665,22 +688,11 @@ void TBDlgDataImporter::OnDeleteFieldDefinitionClick() {
       lstFixedColFieldDefs->Items->Delete(lstFixedColFieldDefs->ItemIndex);
     }
     DeleteFixedColDefinitionEnable();
+    ClearFixedColDefinitionEnable();
     ContinueButtonEnable();
   }
   catch (ZdException &x) {
     x.AddCallpath("OnDeleteFieldDefinitionClick()","TBDlgDataImporter");
-    throw;
-  }
-}
-
-/** Called when the index of destination combo box changes. */
-void TBDlgDataImporter::OnCmbDestinationChange() {
-  try {
-    cmbInputFileType->Hint = cmbInputFileType->Text;
-    ContinueButtonEnable();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("OnDestinationChange()","TBDlgDataImporter");
     throw;
   }
 }
@@ -699,6 +711,7 @@ void TBDlgDataImporter::OnExecuteImport() {
       case mrOk    : if (TBMessageBox::Response(this, "Continue?", "Would you like to import another file into this session?", MB_YESNO) == IDYES) {
                        gDestDescriptor.SetDestinationFile("");
                        edtDataFile->Text = "";
+                       ClearFixedColumnDefinitions();
                        ShowFirstPanel();
                      }
                      else
@@ -720,7 +733,7 @@ void TBDlgDataImporter::OnExitStartPanel() {
   try {
     SetPanelsToShow();
     gitrCurrentPanel = gvPanels.begin();
-    switch (cmbInputFileType->ItemIndex) {
+    switch (rdgInputFileType->ItemIndex) {
       case Case        : SetupCaseFileFieldDescriptors();
                          rdoCoordinates->Enabled = false;
                          break;
@@ -736,7 +749,7 @@ void TBDlgDataImporter::OnExitStartPanel() {
       case SpecialGrid : SetupGridFileFieldDescriptors();
                          rdoCoordinates->Enabled = true;
                          break;
-      default : ZdGenerateException("Unknown file type index: \"%d\"","OnExitStartPanel()", cmbInputFileType->ItemIndex);
+      default : ZdGenerateException("Unknown file type index: \"%d\"","OnExitStartPanel()", rdgInputFileType->ItemIndex);
     };
   }
   catch (ZdException &x) {
@@ -861,7 +874,7 @@ void TBDlgDataImporter::ShowFileTypeFormatPanel(int iFileType) {
     filters based upon SaTScan data file type. */
 void TBDlgDataImporter::SelectImportFile() {
   try {
-    switch (cmbInputFileType->ItemIndex) {
+    switch (rdgInputFileType->ItemIndex) {
       case Case        : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Case files (*.cas)|*.cas|Text files (*.txt)|*.txt|All files (*.*)|*.*";
                          OpenDialog->Title = "Select Source Case File";
                          break;
@@ -877,7 +890,7 @@ void TBDlgDataImporter::SelectImportFile() {
       case SpecialGrid : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Special Grid files (*.grd)|*.grd|Text files (*.txt)|*.txt|All files (*.*)|*.*";
                          OpenDialog->Title = "Select Source Special Grid File";
                          break;
-      default : ZdGenerateException("Unknown file type index: \"%d\"","SetImportFields()", cmbInputFileType->ItemIndex);
+      default : ZdGenerateException("Unknown file type index: \"%d\"","SetImportFields()", rdgInputFileType->ItemIndex);
     };
 
     OpenDialog->FileName =  "";
@@ -998,7 +1011,7 @@ void TBDlgDataImporter::Setup() {
     gDestDescriptor.SetModifyType(BFileDestDescriptor::OverWriteExistingData);
     gDestDescriptor.SetGenerateReport(false);
     gDestDescriptor.SetErrorOptionsType(BFileDestDescriptor::RejectBatch);
-    cmbInputFileType->ItemIndex = 0;
+    rdgInputFileType->ItemIndex = 0;
   }
   catch (ZdException &x) {
     x.AddCallpath("SetUp()","TBDlgDataImporter");
@@ -1289,13 +1302,14 @@ void __fastcall TBDlgDataImporter::OnClearImportsClick(TObject *Sender) {
   }
 }
 
-void __fastcall TBDlgDataImporter::OnCmbDestinationChange(TObject *Sender) {
+void __fastcall TBDlgDataImporter::OnClearFldDefsClick(TObject *Sender) {
   try {
-    OnCmbDestinationChange();
+    ClearFixedColumnDefinitions();
+    ContinueButtonEnable();
   }
   catch (ZdException &x) {
-    x.AddCallpath("OnCmbDestinationChange()","TBDlgDataImporter");
-    DisplayBasisException(this,x);
+    x.AddCallpath("OnClearFldDefsClick()","TBDlgDataImporter");
+    DisplayBasisException(this, x);
   }
 }
 
@@ -1452,6 +1466,7 @@ void __fastcall TBDlgDataImporter::OnFixedColFieldDefsClick(TObject *Sender) {
       edtFieldName->Text = tempSection.GetLine(0)->GetValue();
     }
     DeleteFixedColDefinitionEnable();
+    ClearFixedColDefinitionEnable();
   }
   catch (ZdException &x) {
     x.AddCallpath("OnFixedColFieldDefsClick()","TBDlgDataImporter");
@@ -1538,4 +1553,5 @@ void __fastcall TBDlgDataImporter::tsfieldGridResize(TObject *Sender) {
     tsfieldGrid->Col[2]->Width = tsfieldGrid->Width - ((tsfieldGrid->RowBarOn ? tsfieldGrid->RowBarWidth + 5/*buffer*/ : 5/*buffer*/) + tsfieldGrid->Col[1]->Width + 15);
 }
 //---------------------------------------------------------------------------
+
 
