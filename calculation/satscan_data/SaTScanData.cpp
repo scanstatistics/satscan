@@ -168,11 +168,6 @@ bool CSaTScanData::FindNeighbors(bool bSimulations) {
     if (! bSimulations) {
       AllocateSortedArray();
       AllocateNeighborArray();
-      //adjust special population file now that we know the total case count
-      if (m_pParameters->UseMaxCirclePopulationFile()) {
-        for (i=0; i < (int)gvCircleMeasure.size(); i++)
-          gvCircleMeasure[i] *= m_nTotalCases / m_nTotalMaxCirclePopulation;
-      }
       //for real data, settings my indicate to report only smaller clusters
       dMaxCircleSize = (m_pParameters->GetRestrictingMaximumReportedGeoClusterSize() ? m_nMaxReportedCircleSize : m_nMaxCircleSize);
     }
