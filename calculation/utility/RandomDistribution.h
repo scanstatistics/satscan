@@ -29,7 +29,7 @@ class BinomialGenerator {
 
   public:
     BinomialGenerator() {/*Init();*/}
-    ~BinomialGenerator(){}
+    virtual ~BinomialGenerator(){}
 
     long        GetBinomialDistributedVariable(long n, float pp, RandomNumberGenerator & rng);
 };
