@@ -71,10 +71,8 @@ void MakeNeighbors(TInfo *pTInfo,
    double Xnew,Ynew;
    long   lTotalIterations = 0, lCurrentEllipse = 0;
    int es,ea;
-
    std::vector<TractDistance> vTractDistances;
    vTractDistances.reserve(NumTracts);
-
 
    try
       {
@@ -102,10 +100,10 @@ void MakeNeighbors(TInfo *pTInfo,
         for (k=0; k < NumTracts; k++)  // find distances
         {
           vTractDistances[k].SetTractNumber(k);
-          pTInfo->tiGetCoords2(k, pCoords2);
-          vTractDistances[k].SetDistance(sqrt(pTInfo->tiGetDistanceSq(pCoords, pCoords2)));
+          pTInfo->tiGetCoords2(k, pCoords2);               
+          vTractDistances[k].SetDistanceSquared(pTInfo->tiGetDistanceSq(pCoords, pCoords2));
         }
-        std::sort(vTractDistances.begin(), vTractDistances.end(), CompareTractDistance());
+        std::stable_sort(vTractDistances.begin(), vTractDistances.end(), CompareTractDistance(*pTInfo));
         if (iSpatialMaxType == PERCENTAGEOFMEASURETYPE)
           NeighborCounts[0][t] += CountNeighborsByMeasure(vTractDistances, Measure, MaxCircleSize, nMaxMeasure);
         else if (iSpatialMaxType == DISTANCETYPE)
@@ -117,7 +115,7 @@ void MakeNeighbors(TInfo *pTInfo,
            {
            SortedInt[0][t] = (tract_t*)Smalloc(NeighborCounts[0][t] * sizeof(tract_t), pPrintDirection);
            /* copy tract numbers */
-           for (j = NeighborCounts[0][t]-1; j >= 0; j--)   
+           for (j = NeighborCounts[0][t]-1; j >= 0; j--)
              SortedInt[0][t][j] = vTractDistances[j].GetTractNumber();
            }
         else
@@ -173,9 +171,9 @@ void MakeNeighbors(TInfo *pTInfo,
                       vTractDistances[k].SetTractNumber(k);
                       pCoords2[0] = pNewXCoord[k];
                       pCoords2[1] = pNewYCoord[k];
-                      vTractDistances[k].SetDistance(sqrt(pTInfo->tiGetDistanceSq(pCoords, pCoords2)));
+                      vTractDistances[k].SetDistanceSquared(pTInfo->tiGetDistanceSq(pCoords, pCoords2));
                       }
-                   std::sort(vTractDistances.begin(), vTractDistances.end(), CompareTractDistance());
+                   std::stable_sort(vTractDistances.begin(), vTractDistances.end(), CompareTractDistance(*pTInfo));
                    if (iSpatialMaxType == PERCENTAGEOFMEASURETYPE)
                      NeighborCounts[lCurrentEllipse][t] += CountNeighborsByMeasure(vTractDistances, Measure, MaxCircleSize, nMaxMeasure);
                    else if (iSpatialMaxType == DISTANCETYPE)
@@ -208,9 +206,6 @@ void MakeNeighbors(TInfo *pTInfo,
           }
        free(pCoords); pCoords = 0;
        free(pCoords2);pCoords2 = 0;
-
-     //temporary print function to view contents of sorted array
-     // PrintNeighbors((iNumEllipses + 1), NumTracts, Sorted);
      }
    catch (SSException & x)
       {

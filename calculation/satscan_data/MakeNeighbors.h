@@ -13,26 +13,59 @@
 /** tract-distance class for accumulating neighbors */
 class TractDistance {
    private:
-     tract_t m_tTractNumber;     /* tract number     */
-     float   m_fDistance;        /* distance */
+     tract_t            m_tTractNumber;     /* tract number      */
+     float              m_fDistanceSquared; /* distance squared  */
 
    public:
-     TractDistance(tract_t t=0, float f=0) {SetTractNumber(t);
-                                            SetDistance(f);}
-     virtual ~TractDistance() {}
+     TractDistance(tract_t t=0, float f=0) {SetTractNumber(t); SetDistanceSquared(f);}
+     ~TractDistance() {}
 
-     const float      & GetDistance() const {return m_fDistance;}
+     const double       GetDistance() const {return sqrt(m_fDistanceSquared);}
+     const float      & GetDistanceSquared() const {return m_fDistanceSquared;}
      const tract_t    & GetTractNumber() const {return m_tTractNumber;}
-     void               SetDistance(float f) {m_fDistance=f;}
+     void               SetDistanceSquared(float f) {m_fDistanceSquared=f;}
      void               SetTractNumber(tract_t t) {m_tTractNumber=t;}
 };
 
-/** Function object used to compare TractDistance objects by m_fDistance. */
+/** Function object used to compare TractDistance objects by m_fDistanceSquared. */
 class CompareTractDistance {
+  private:
+    int                 gi;                     /* loop index */
+    double              gdCoordinateLHS,        /* coordinate variables */
+                        gdCoordinateRHS;
+    bool                gbContinue;             /* stops coordinate comparisons */
+    const TInfo       & gTractInformation;      /* tract information */
+
   public:
-    bool operator() (const TractDistance& lhs, const TractDistance& rhs)
-           {
-           return ( lhs.GetDistance() < rhs.GetDistance() );
+    CompareTractDistance(const TInfo & TractInformation) : gTractInformation(TractInformation) {}
+
+    bool operator() (const TractDistance& lhs, const TractDistance& rhs) {
+           //first check whether distances are equal - we may need to break a tie
+           if (lhs.GetDistanceSquared() == rhs.GetDistanceSquared()) {
+              // break ties in a controlled scheme:
+              //   - compare coordinates starting at first dimension and
+              //       continue until last dimension(if needed)
+              //   - lesser coordinate breaks tie, not for any particular reason
+              //     that was the decision made by Martin Kulldorph.
+              //   - if all coordinates are equal, than something is wrong as
+              //     duplicate coordinates should have been handled by this point
+              //     in program execution. Throw exception - else we've lost tie
+              //     breaking control.
+              for (gbContinue=true,gi=0; gi < gTractInformation.tiGetDimensions() && gbContinue; gi++) {
+                 gdCoordinateLHS = gTractInformation.tiGetTractCoordinate(lhs.GetTractNumber(), gi);
+                 gdCoordinateRHS = gTractInformation.tiGetTractCoordinate(rhs.GetTractNumber(), gi);
+                 gbContinue = (gdCoordinateLHS == gdCoordinateRHS);
+              }
+              if (gbContinue) // Done comparing coordinates, are they duplicates?
+                ZdGenerateException("Identical coordinates found during sort comparison for tracts \"%s\" and \"%s\".",
+                                  "CompareTractDistance()",
+                                  gTractInformation.tiGetTid(lhs.GetTractNumber()),
+                                  gTractInformation.tiGetTid(rhs.GetTractNumber()));
+              return (gdCoordinateLHS < gdCoordinateRHS);
+           }
+           //distances not equal, compare as normal
+           else
+             return (lhs.GetDistanceSquared() < rhs.GetDistanceSquared());
            }
 };
 
