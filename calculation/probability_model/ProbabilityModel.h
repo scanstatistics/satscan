@@ -34,7 +34,6 @@ class CModel {
                                               int nStartInterval, int nStopInterval) = 0;
     virtual void                MakeData(int iSimulationNumber) = 0;
     virtual bool                ReadData() = 0;
-    virtual bool                ReCalculateMeasure() {/* No action taken by default. */return true;}
 };
 
 //*****************************************************************************

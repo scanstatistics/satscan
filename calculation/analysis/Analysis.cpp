@@ -169,7 +169,6 @@ bool CAnalysis::Execute(time_t RunTime) {
       if (gpPrintDirection->GetIsCanceled() || !CreateReport(RunTime))
         return false;
 
-      m_pData->m_pModel->ReCalculateMeasure();
 #ifdef DEBUGANALYSIS
       DisplayVersion(m_pDebugFile, 0);
       fprintf(m_pDebugFile, "Program run on: %s", ctime(&RunTime));
