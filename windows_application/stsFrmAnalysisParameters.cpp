@@ -421,20 +421,22 @@ void TfrmAnalysis::EnableAdditionalOutFilesOptionsGroup(bool bRelativeRisks) {
 //---------------------------------------------------------------------------
 /** enables correct advanced settings button on Analysis and Output tabs */
 void TfrmAnalysis::EnableAdvancedButtons() {
+   bool bTemp ;
+
+   // Input tab Advanced button
+   bTemp = gpfrmAdvancedParameters->GetDefaultsSetForInputOptions();
+   btnAdvanced3_No->Visible = bTemp;
+   btnAdvanced3_Yes->Visible = !bTemp;
+
    // Analysis tab Advanced button
-   btnAdvanced1_No->Visible = false;
-   btnAdvanced1_Yes->Visible = false;
-   if (gpfrmAdvancedParameters->GetDefaultsSetForAnalysisOptions())
-      btnAdvanced1_No->Visible = true;
-   else
-      btnAdvanced1_Yes->Visible = true;
+   bTemp = gpfrmAdvancedParameters->GetDefaultsSetForAnalysisOptions();
+   btnAdvanced1_No->Visible = bTemp;
+   btnAdvanced1_Yes->Visible = !bTemp;
+
    // Output tab Advanced button
-   btnAdvanced2_No->Visible = false;
-   btnAdvanced2_Yes->Visible = false;
-   if (gpfrmAdvancedParameters->GetDefaultsSetForOutputOptions())
-      btnAdvanced2_No->Visible = true;
-   else
-      btnAdvanced2_Yes->Visible = true;
+   bTemp = gpfrmAdvancedParameters->GetDefaultsSetForOutputOptions();
+   btnAdvanced2_No->Visible = bTemp;
+   btnAdvanced2_Yes->Visible = !bTemp;
 }
 //---------------------------------------------------------------------------
 /** enables analysis control based upon the setting in probability model control */
@@ -1244,12 +1246,9 @@ void TfrmAnalysis::SetupInterface() {
 //---------------------------------------------------------------------------
 /** Modally shows advanced features dialog. */
 void TfrmAnalysis::ShowAdvancedFeaturesDialog() {
-   bool bAnalysis = true;    // show Analysis or Output tabs in Advanced Features dlg
 
    try {
-     if (PageControl1->ActivePage->Caption == "Output")
-        bAnalysis = false;
-     gpfrmAdvancedParameters->ShowDialog(0, bAnalysis);
+     gpfrmAdvancedParameters->ShowDialog(0, PageControl1->ActivePageIndex+1);
      // PAG - update Advanced buttons if parameters were set
      EnableAdvancedButtons();
    }

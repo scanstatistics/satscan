@@ -10,7 +10,13 @@
 #include "stsFrmAnalysisParameters.h"
 #include <Dialogs.hpp>
 #include <ComCtrls.hpp>
+#include "Grids_ts.hpp"
+#include "TSGrid.hpp"
 //---------------------------------------------------------------------------
+const int INPUT_TABS     = 1;
+const int ANALYSIS_TABS  = 2;
+const int OUTPUT_TABS    = 3;
+
 class TfrmAdvancedParameters : public TForm {
 
 __published:	// IDE-managed Components
@@ -18,7 +24,7 @@ __published:	// IDE-managed Components
    TButton *btnOk;
    TOpenDialog *OpenDialog;
    TPageControl *PageControl;
-   TTabSheet *tsAdjustmentsTabSheet;
+   TTabSheet *tsAdjustments;
    TTabSheet *tsOther;
    TGroupBox *grpScanningWindow;
    TCheckBox *chkRestrictTemporalRange;
@@ -46,12 +52,12 @@ __published:	// IDE-managed Components
    TEdit *edtAdjustmentsByRelativeRisksFile;
    TButton *btnBrowseAdjustmentsFile;
    TCheckBox *chkAdjustForKnownRelativeRisks;
-   TTabSheet *TabSheet1;
+   TTabSheet *tsOutput;
    TTabSheet *TabSheet2;
    TCheckBox *chkRestrictReportedClusters;
    TEdit *edtReportClustersSmallerThan;
    TLabel *lblReportSmallerClusters;
-   TTabSheet *TabSheet3;
+   TTabSheet *tsInference;
    TGroupBox *grpAnalysis;
    TCheckBox *chkTerminateEarly;
    TButton *btnShowAll;
@@ -89,6 +95,21 @@ __published:	// IDE-managed Components
    TEdit *edtProspectiveStartDateDay;
    TCheckBox *chkAdjustForEarlierAnalyses;
    TButton *btnSetDefaults;
+   TTabSheet *tsInput;
+   TEdit *edtCaseFileName;
+   TButton *btnCaseBrowse;
+   TEdit *edtControlFileName;
+   TButton *btnControlBrowse;
+   TEdit *edtPopFileName;
+   TButton *btnPopBrowse;
+   TGroupBox *GroupBox1;
+   TLabel *Label3;
+   TLabel *Label1;
+   TLabel *Label2;
+   TGroupBox *GroupBox2;
+   TButton *Button1;
+   TButton *Button2;
+   TListBox *ListBox1;
 
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
    void __fastcall btnBrowseMaxCirclePopFileClick(TObject *Sender);
@@ -129,7 +150,7 @@ __published:	// IDE-managed Components
 
    TfrmAnalysis             & gAnalysisSettings;
    TWinControl              * gpFocusControl;
-   bool                     gbAnalysisShow;
+   int                      giCategory;          /** category - input,analysis,output - of parameters to show */
    bool                     gbEnableRangeYears;  /** stores enable dictated by main interface */
    bool                     gbEnableRangeMonths; /** stores enable dictated by main interface */
    bool                     gbEnableRangeDays;   /** stores enable dictated by main interface */
@@ -162,6 +183,7 @@ public:
    void                  EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges);
    void                  EnableTemporalRanges(bool bEnable, bool bEnableRanges);
    bool                  GetDefaultsSetForAnalysisOptions();
+   bool                  GetDefaultsSetForInputOptions();
    bool                  GetDefaultsSetForOutputOptions();
    SpatialSizeType       GetMaxSpatialClusterSizeControlType() const;
    float                 GetMaxSpatialClusterSizeFromControl() const;
@@ -178,7 +200,7 @@ public:
    void                  SetReportingSmallerClustersText();
    void                  SetSpatialDistanceCaption();
    void                  SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
-   void                  ShowDialog(TWinControl * pFocusControl=0, bool bAnalysis=true);
+   void                  ShowDialog(TWinControl * pFocusControl=0, int iCategory=ANALYSIS_TABS);
    void                  Validate();
    void                  ValidateAdjustmentSettings();
    void                  ValidateOutputSettings();

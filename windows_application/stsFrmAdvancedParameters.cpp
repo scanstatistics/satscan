@@ -5,6 +5,8 @@
 #include "stsFrmAdvancedParameters.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
+#pragma link "Grids_ts"
+#pragma link "TSGrid"
 #pragma resource "*.dfm"
 
 
@@ -58,10 +60,16 @@ void __fastcall TfrmAdvancedParameters::btnBrowseMaxCirclePopFileClick(TObject *
 // Resets advanced settings to default values
 void __fastcall TfrmAdvancedParameters::btnSetDefaultsClick(TObject *Sender)
 {
-   if (gbAnalysisShow)
-      SetDefaultsForAnalysisTabs();
-   else
-      SetDefaultsForOutputTab();
+   switch (giCategory) {
+      case INPUT_TABS:
+         break;
+      case ANALYSIS_TABS:
+         SetDefaultsForAnalysisTabs();
+         break;
+      case OUTPUT_TABS:
+         SetDefaultsForOutputTab();
+         break;
+      }
    btnSetDefaults->Enabled = false;  // defaults are set so can't choose button again
 }
 //---------------------------------------------------------------------------
@@ -94,13 +102,18 @@ void __fastcall TfrmAdvancedParameters::chkRestrictTemporalRangeClick(TObject *S
 /** event triggered when user exits a control*/
 void TfrmAdvancedParameters::DoControlExit() {
    // update enable/disable of Set Defaults button
-   if ((gbAnalysisShow && GetDefaultsSetForAnalysisOptions()) ||
-       (!gbAnalysisShow && GetDefaultsSetForOutputOptions()) )
-      btnSetDefaults->Enabled = false;
-   else
-      btnSetDefaults->Enabled = true;
+   switch (giCategory) {
+      case INPUT_TABS:
+         btnSetDefaults->Enabled = !GetDefaultsSetForInputOptions();
+         break;
+      case ANALYSIS_TABS:
+         btnSetDefaults->Enabled = !GetDefaultsSetForAnalysisOptions();
+         break;
+      case OUTPUT_TABS:
+         btnSetDefaults->Enabled = !GetDefaultsSetForOutputOptions();
+         break;
+   }
 }
-
 /** event triggered when loginear percentage control exited */
 void __fastcall TfrmAdvancedParameters::edtLogLinearExit(TObject *Sender) {
   if (edtLogLinear->Text.IsEmpty() || atof(edtLogLinear->Text.c_str()) <= -100)
@@ -417,77 +430,55 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    bool bReturn = true;
 
    // Inference tab
-   if (chkAdjustForEarlierAnalyses->Enabled)
-      bReturn &= (chkAdjustForEarlierAnalyses->Checked == false);
-   if (chkTerminateEarly->Enabled)
-      bReturn &= (chkTerminateEarly->Checked == false);
-   if (edtProspectiveStartDateYear->Enabled)
-      bReturn &= (edtProspectiveStartDateYear->Text.ToInt() == 1900);
-   if (edtProspectiveStartDateMonth->Enabled)
-      bReturn &= (edtProspectiveStartDateMonth->Text.ToInt() == 12);
-   if (edtProspectiveStartDateDay->Enabled)
-      bReturn &= (edtProspectiveStartDateDay->Text.ToInt() == 31);
+   bReturn &= (chkAdjustForEarlierAnalyses->Checked == false);
+   bReturn &= (chkTerminateEarly->Checked == false);
+   bReturn &= (edtProspectiveStartDateYear->Text.ToInt() == 1900);
+   bReturn &= (edtProspectiveStartDateMonth->Text.ToInt() == 12);
+   bReturn &= (edtProspectiveStartDateDay->Text.ToInt() == 31);
 
    // Spatial Window tab
-   if (rdoSpatialPercentage->Enabled || rdoSpatialPopulationFile->Enabled || rdoSpatialDistance->Enabled)
-      bReturn &= (GetMaxSpatialClusterSizeControlType()==PERCENTOFPOPULATIONTYPE);
-   if (edtMaxSpatialClusterSize->Enabled)
-      bReturn &= (edtMaxSpatialClusterSize->Text.ToInt() == 50);
-   if (edtMaxSpatialPercentFile->Enabled)
-      bReturn &= (edtMaxSpatialPercentFile->Text.ToInt() == 50);
-   if (edtMaxSpatialRadius->Enabled)
-      bReturn &= (edtMaxSpatialRadius->Text.ToInt() == 1);
-   if (edtMaxCirclePopulationFilename->Enabled)
-      bReturn &= (edtMaxCirclePopulationFilename->Text == "");
-   if (chkInclPureTempClust->Enabled)
-      bReturn &= (chkInclPureTempClust->Checked == false);
+   bReturn &= (GetMaxSpatialClusterSizeControlType()==PERCENTOFPOPULATIONTYPE);
+   bReturn &= (edtMaxSpatialClusterSize->Text.ToInt() == 50);
+   bReturn &= (edtMaxSpatialPercentFile->Text.ToInt() == 50);
+   bReturn &= (edtMaxSpatialRadius->Text.ToInt() == 1);
+   bReturn &= (edtMaxCirclePopulationFilename->Text == "");
+   bReturn &= (chkInclPureTempClust->Checked == false);
 
    // Temporal tab
-   if (rdoPercentageTemporal->Enabled || rdoTimeTemporal->Enabled)
-      bReturn &= (GetMaxTemporalClusterSizeControlType()==PERCENTAGETYPE);
-   if (edtMaxTemporalClusterSize->Enabled)
-      bReturn &= (edtMaxTemporalClusterSize->Text.ToDouble() == 50);
-   if (edtMaxTemporalClusterSizeUnits->Enabled)
-      bReturn &= (edtMaxTemporalClusterSizeUnits->Text.ToInt() == 1);
-   if (chkIncludePureSpacClust->Enabled)
-      bReturn &= (chkIncludePureSpacClust->Checked == false);
+   bReturn &= (GetMaxTemporalClusterSizeControlType()==PERCENTAGETYPE);
+   bReturn &= (edtMaxTemporalClusterSize->Text.ToDouble() == 50);
+   bReturn &= (edtMaxTemporalClusterSizeUnits->Text.ToInt() == 1);
+   bReturn &= (chkIncludePureSpacClust->Checked == false);
 
-   if (edtStartRangeStartYear->Enabled)
-      bReturn &= (edtStartRangeStartYear->Text.ToInt() == 1900);
-   if (edtStartRangeStartMonth->Enabled)
-      bReturn &= (edtStartRangeStartMonth->Text.ToInt() == 1);
-   if (edtStartRangeStartDay->Enabled)
-      bReturn &= (edtStartRangeStartDay->Text.ToInt() == 1);
-   if (edtStartRangeEndYear->Enabled)
-      bReturn &= (edtStartRangeEndYear->Text.ToInt() == 1900);
-   if (edtStartRangeEndMonth->Enabled)
-      bReturn &= (edtStartRangeEndMonth->Text.ToInt() == 1);
-   if (edtStartRangeEndDay->Enabled)
-      bReturn &= (edtStartRangeEndDay->Text.ToInt() == 1);
-   if (edtEndRangeStartYear->Enabled)
-      bReturn &= (edtEndRangeStartYear->Text.ToInt() == 1900);
-   if (edtEndRangeStartMonth->Enabled)
-      bReturn &= (edtEndRangeStartMonth->Text.ToInt() == 12);
-   if (edtEndRangeStartDay->Enabled)
-      bReturn &= (edtEndRangeStartDay->Text.ToInt() == 31);
-   if (edtEndRangeEndYear->Enabled)
-      bReturn &= (edtEndRangeEndYear->Text.ToInt() == 1900);
-   if (edtEndRangeEndMonth->Enabled)
-      bReturn &= (edtEndRangeEndMonth->Text.ToInt() == 12);
-   if (edtEndRangeEndDay->Enabled)
-      bReturn &= (edtEndRangeEndDay->Text.ToInt() == 31);
-   if (chkRestrictTemporalRange->Enabled)
-      bReturn &= (chkRestrictTemporalRange->Checked == false);
+   bReturn &= (edtStartRangeStartYear->Text.ToInt() == 1900);
+   bReturn &= (edtStartRangeStartMonth->Text.ToInt() == 1);
+   bReturn &= (edtStartRangeStartDay->Text.ToInt() == 1);
+   bReturn &= (edtStartRangeEndYear->Text.ToInt() == 1900);
+   bReturn &= (edtStartRangeEndMonth->Text.ToInt() == 1);
+   bReturn &= (edtStartRangeEndDay->Text.ToInt() == 1);
+   bReturn &= (edtEndRangeStartYear->Text.ToInt() == 1900);
+   bReturn &= (edtEndRangeStartMonth->Text.ToInt() == 12);
+   bReturn &= (edtEndRangeStartDay->Text.ToInt() == 31);
+   bReturn &= (edtEndRangeEndYear->Text.ToInt() == 1900);
+   bReturn &= (edtEndRangeEndMonth->Text.ToInt() == 12);
+   bReturn &= (edtEndRangeEndDay->Text.ToInt() == 31);
+   bReturn &= (chkRestrictTemporalRange->Checked == false);
 
    // Risk tab
-   if (chkAdjustForKnownRelativeRisks->Enabled)
-      bReturn &= (chkAdjustForKnownRelativeRisks->Checked == false);
-   if (edtAdjustmentsByRelativeRisksFile->Enabled)
-      bReturn &= (edtAdjustmentsByRelativeRisksFile->Text == "");
-   if (rdgTemporalTrendAdj->Enabled)
-      bReturn &= (rdgTemporalTrendAdj->ItemIndex == 0);
-   if (edtLogLinear->Enabled)
-      bReturn &= (edtLogLinear->Text.ToInt() == 0);
+   bReturn &= (chkAdjustForKnownRelativeRisks->Checked == false);
+   bReturn &= (edtAdjustmentsByRelativeRisksFile->Text == "");
+   bReturn &= (rdgTemporalTrendAdj->ItemIndex == 0);
+   bReturn &= (edtLogLinear->Text.ToInt() == 0);
+
+   return bReturn;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//** Checks to determine if only default values are set in the dialog
+//** Returns true if only default values are set
+//** Returns false if user specified a value other than a default
+bool TfrmAdvancedParameters::GetDefaultsSetForInputOptions() {
+   bool bReturn = true;
 
    return bReturn;
 }
@@ -500,12 +491,9 @@ bool TfrmAdvancedParameters::GetDefaultsSetForOutputOptions() {
    bool bReturn = true;
 
    // Output tab
-   if (chkRestrictReportedClusters->Enabled)
-      bReturn &= (chkRestrictReportedClusters->Checked == false);
-   if (rdgCriteriaSecClusters->Enabled)
-      bReturn &= (rdgCriteriaSecClusters->ItemIndex == NOGEOOVERLAP);
-   if (edtReportClustersSmallerThan->Enabled)
-      bReturn &= (edtReportClustersSmallerThan->Text.ToDouble() == 50.0);
+   bReturn &= (chkRestrictReportedClusters->Checked == false);
+   bReturn &= (rdgCriteriaSecClusters->ItemIndex == NOGEOOVERLAP);
+   bReturn &= (edtReportClustersSmallerThan->Text.ToDouble() == 50.0);
 
    return bReturn;
 }
@@ -569,7 +557,7 @@ float TfrmAdvancedParameters::GetMaxTemporalClusterSizeFromControl() const {
 void TfrmAdvancedParameters::Init() {
   gpFocusControl=0;
   rdgCriteriaSecClusters->ItemIndex = 0;
-  gbAnalysisShow = true;
+  giCategory = 0;
 }
 
 /** event triggered when key pressed for control that can contain natural numbers */
@@ -918,24 +906,33 @@ void TfrmAdvancedParameters::Setup() {
 }
 
 /** sets control to focus when form shows then shows form modal */
-void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, bool bAnalysis) {
+void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCategory) {
   bool          bFound=false;
   int           i;
 
   // PAG - not the best coding here but am trying to show/hide only
   // certain pages/tabs of page control
-  gbAnalysisShow = bAnalysis;
-  if (bAnalysis) {  // show Analysis pages
-     Caption = "Advanced Analysis Features";
-     for (i=0; i < PageControl->PageCount-1; i++)
-        PageControl->Pages[i]->TabVisible=true;
-     PageControl->Pages[PageControl->PageCount-1]->TabVisible=false;
-  }
-  else {           // show Output pages
-     Caption = "Advanced Output Features";
-     for (i=0; i < PageControl->PageCount-1; i++)
-        PageControl->Pages[i]->TabVisible=false;
-     PageControl->Pages[PageControl->PageCount-1]->TabVisible=true;
+  giCategory = iCategory;
+  switch (iCategory){
+     case INPUT_TABS:       // show Input page
+        Caption = "Advanced Input Features";
+        PageControl->Pages[0]->TabVisible=true;
+        for (i=1; i < PageControl->PageCount; i++)
+           PageControl->Pages[i]->TabVisible=false;
+        break;
+     case ANALYSIS_TABS:    // show Analysis pages
+        Caption = "Advanced Analysis Features";
+        PageControl->Pages[0]->TabVisible=false;
+        for (i=1; i < PageControl->PageCount-1; i++)
+           PageControl->Pages[i]->TabVisible=true;
+        PageControl->Pages[PageControl->PageCount-1]->TabVisible=false;
+        break;
+     case OUTPUT_TABS:     // show Output pages
+        Caption = "Advanced Output Features";
+        for (i=0; i < PageControl->PageCount-1; i++)
+           PageControl->Pages[i]->TabVisible=false;
+        PageControl->Pages[PageControl->PageCount-1]->TabVisible=true;
+        break;
   }
 
   for (i=0; i < PageControl->PageCount && !bFound; ++i) {

@@ -4,8 +4,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
   ActiveControl = PageControl
   BorderStyle = bsDialog
   Caption = 'Advanced Features'
-  ClientHeight = 294
-  ClientWidth = 508
+  ClientHeight = 307
+  ClientWidth = 511
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,10 +19,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
   PixelsPerInch = 96
   TextHeight = 13
   object pnlButtons: TPanel
-    Left = 424
+    Left = 427
     Top = 0
     Width = 84
-    Height = 294
+    Height = 307
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 1
@@ -38,7 +38,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     end
     object btnShowAll: TButton
       Left = 6
-      Top = 122
+      Top = 214
       Width = 72
       Height = 24
       Caption = '&Show All'
@@ -60,10 +60,157 @@ object frmAdvancedParameters: TfrmAdvancedParameters
   object PageControl: TPageControl
     Left = 2
     Top = 6
-    Width = 419
-    Height = 283
-    ActivePage = tsOther
+    Width = 423
+    Height = 299
+    ActivePage = tsInput
     TabOrder = 0
+    object tsInput: TTabSheet
+      Caption = 'Input'
+      ImageIndex = 5
+      object GroupBox1: TGroupBox
+        Left = 8
+        Top = 8
+        Width = 399
+        Height = 141
+        Caption = 'Additional Input Stream Detail'
+        TabOrder = 6
+        object Label3: TLabel
+          Left = 16
+          Top = 16
+          Width = 24
+          Height = 13
+          Caption = 'Case'
+        end
+        object Label1: TLabel
+          Left = 16
+          Top = 54
+          Width = 33
+          Height = 13
+          Caption = 'Control'
+        end
+        object Label2: TLabel
+          Left = 16
+          Top = 92
+          Width = 50
+          Height = 13
+          Caption = 'Population'
+        end
+      end
+      object edtCaseFileName: TEdit
+        Left = 24
+        Top = 36
+        Width = 336
+        Height = 21
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 0
+        Text = 'SeerTest2.cas'
+      end
+      object btnCaseBrowse: TButton
+        Left = 368
+        Top = 36
+        Width = 25
+        Height = 21
+        Hint = 'browse for case file'
+        Caption = '...'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 1
+      end
+      object edtControlFileName: TEdit
+        Left = 24
+        Top = 74
+        Width = 336
+        Height = 21
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 2
+      end
+      object btnControlBrowse: TButton
+        Left = 368
+        Top = 74
+        Width = 25
+        Height = 21
+        Hint = 'browse for control file'
+        Caption = '...'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 3
+      end
+      object edtPopFileName: TEdit
+        Left = 24
+        Top = 113
+        Width = 336
+        Height = 21
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 4
+        Text = 'SeerTest2.pop'
+      end
+      object btnPopBrowse: TButton
+        Left = 368
+        Top = 113
+        Width = 25
+        Height = 21
+        Hint = 'browse for population file'
+        Caption = '...'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 5
+      end
+      object GroupBox2: TGroupBox
+        Left = 8
+        Top = 156
+        Width = 399
+        Height = 105
+        Caption = 'All Additional Input Streams'
+        TabOrder = 7
+        object Button1: TButton
+          Left = 312
+          Top = 28
+          Width = 75
+          Height = 25
+          Caption = 'Add'
+          TabOrder = 0
+        end
+        object Button2: TButton
+          Left = 312
+          Top = 64
+          Width = 75
+          Height = 25
+          Caption = 'Remove'
+          TabOrder = 1
+        end
+        object ListBox1: TListBox
+          Left = 16
+          Top = 24
+          Width = 285
+          Height = 73
+          ItemHeight = 13
+          Items.Strings = (
+            'Input Stream 1')
+          TabOrder = 2
+        end
+      end
+    end
     object TabSheet2: TTabSheet
       Caption = 'Spatial Window'
       ImageIndex = 3
@@ -491,7 +638,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
       end
     end
-    object tsAdjustmentsTabSheet: TTabSheet
+    object tsAdjustments: TTabSheet
       Caption = 'Risk Adjustments'
       object rdgTemporalTrendAdj: TRadioGroup
         Left = 8
@@ -588,7 +735,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
       end
     end
-    object TabSheet3: TTabSheet
+    object tsInference: TTabSheet
       Caption = 'Inference'
       ImageIndex = 4
       object grpAnalysis: TGroupBox
@@ -709,12 +856,12 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
       end
     end
-    object TabSheet1: TTabSheet
+    object tsOutput: TTabSheet
       Caption = 'Output'
       ImageIndex = 2
       object lblReportSmallerClusters: TLabel
         Left = 238
-        Top = 222
+        Top = 226
         Width = 151
         Height = 27
         AutoSize = False
@@ -723,7 +870,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object chkRestrictReportedClusters: TCheckBox
         Left = 20
-        Top = 222
+        Top = 226
         Width = 175
         Height = 17
         Caption = 'Report only clusters smaller than'
@@ -733,7 +880,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object edtReportClustersSmallerThan: TEdit
         Left = 200
-        Top = 220
+        Top = 224
         Width = 30
         Height = 21
         TabOrder = 1
@@ -745,7 +892,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 16
         Top = 8
         Width = 377
-        Height = 193
+        Height = 201
         Caption = 'Criteria for Reporting Secondary Clusters'
         Items.Strings = (
           'No Geographical Overlap'

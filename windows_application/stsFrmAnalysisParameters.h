@@ -116,6 +116,8 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TBitBtn *btnAdvanced1_No;
    TBitBtn *btnAdvanced2_Yes;
    TBitBtn *btnAdvanced2_No;
+   TBitBtn *btnAdvanced3_No;
+   TBitBtn *btnAdvanced3_Yes;
    
    void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
    void __fastcall rgpPrecisionTimesClick(TObject *Sender);
@@ -152,7 +154,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     PrintNull                   gNullPrint;
     CParameters                 gParameters;
     TfrmAdvancedParameters    * gpfrmAdvancedParameters;
-    Graphics::TBitmap         * gpBmpAdvanced;
+
 
     void                        Check_IntervalLength();
     void                        CheckAnalysisParams();
