@@ -5,9 +5,12 @@
 // #define INCLUDE_RUN_HISTORY    // define to determine whether or not we should log run history, if included
                                   // then we will, if not then we won't - AJV 10/4/2002
 
-#include "stsClusterLevelDBF.h"
 #include "stsAreaSpecificDBF.h"
 #include "stsRunHistoryFile.h"
+#include "stsClusterData.h"
+#include "stsASCIIFileWriter.h"
+#include "stsDBaseFileWriter.h"
+#include "stsLogLikelihood.h"
 //static int CompClust(const void *a, const void *b);
 
 CAnalysis::CAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
@@ -45,7 +48,6 @@ CAnalysis::CAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *p
 #ifdef DEBUGPROSPECTIVETIME
       if ((m_pDebugFile = fopen("DebugSaTScan.TXT", "w")) == NULL) {
          fprintf(stderr, "  Error: Unable to create debug file.\n");
-         //FatalError(0, gpPrintDirection);
          SSGenerateException("  Error: Unable to create debug file.\n", "CAnalysis constructor");
       }
 #endif
@@ -202,90 +204,54 @@ void CAnalysis::AllocateTopClusterList() {
 //  Create the Grid Output File (Most Likely Cluster for each Centroid)
 //******************************************************************************
 void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
-   FILE *fpMCL = 0;
-   const char *szTID;
-   float fExpectedCases, fRelativeRisk, fPVal;
-   char sStartDate[15], sEndDate[15];
-   auto_ptr<stsClusterLevelDBF> pDBFClusterReport;    // dbf cluster report
+   stsClusterData* pData = 0;
+//   TestOutputClass * pTest = 0;
 
    try {
-      if (m_pParameters->m_bMostLikelyClusters)
-         OpenGridOutputFile(fpMCL, "w");
-      if(m_pParameters->GetOutputClusterLevelDBF())
-         pDBFClusterReport.reset(new stsClusterLevelDBF(lReportHistoryRunNumber, GetCoordinateType(),
-                                                        m_pParameters->m_szOutputFilename,
-                                                        m_pParameters->m_nModel,
-                                                        m_pParameters->m_nDimension,
-                                                        m_pParameters->m_nReplicas > 99,
-                                                        m_pParameters->m_nNumEllipses > 0));
+      if (m_pParameters->m_bMostLikelyClusters || m_pParameters->GetOutputClusterLevelDBF()) {
+         pData = new stsClusterData(m_pParameters->m_szOutputFilename, lReportHistoryRunNumber, GetCoordinateType(),
+                                    m_pParameters->m_nModel, m_pParameters->m_nDimension, m_pParameters->m_nReplicas > 99,
+                                    m_pParameters->m_nNumEllipses > 0);
 
-      for (int i = 0; i < m_nClustersRetained; ++i) {
-         // print out user notification every 20 recorded clusters to let user know program is still working - AJV 10/3/2002
-         if((i%20) == 0)
+         for (int i = 0; i < m_nClustersRetained; ++i) {
+            // print out user notification every 20 recorded clusters to let user know program is still working - AJV 10/3/2002
+            if((i%20) == 0)
                gpPrintDirection->SatScanPrintf("%i out of %i records recorded to cluster file so far...", i, m_nClustersRetained);
-      	 if (m_pParameters->m_bMostLikelyClusters) {
-            fExpectedCases = m_pData->GetMeasureAdjustment()*m_pTopClusters[i]->m_nMeasure;
-            fRelativeRisk = m_pTopClusters[i]->GetRelativeRisk(m_pData->GetMeasureAdjustment());
-
-#ifdef INCLUDE_RUN_HISTORY
-            fprintf(fpMCL, "%-8ld", lReportHistoryRunNumber);
-#endif
-            //if a special grid file is specified, then do NOT output ID of central tract
-            if (strlen(m_pParameters->m_szGridFilename) == 0) {
-               if (m_pTopClusters[i]->GetClusterType() == PURELYTEMPORAL)
-                   fprintf(fpMCL, "%-29s", "n/a");
-               else {
-                  szTID = m_pData->GetGInfo()->giGetGid(m_pTopClusters[i]->m_Center);
-                  fprintf(fpMCL, "%-29s", szTID);
-                  //fprintf(fpMCL, "%12ld", m_pTopClusters[i]->m_Center);
-               }
-            }
-
-            //print the cluster number....
-            fprintf(fpMCL, " %-5d ", i+1);
-
-            //show the coordinates.. x, y, additional coordinates (if applicable)
-            //if ellipsoids are specified, then the WriteCoordinates function
-            //also prints the coordinates, SEMI-MINOR AXIS, shape, and angle
-            // for the circle, it will print coordinates, Radius, and 1.0 for shape, and 0.0 for angle
-            if (m_pParameters->m_nCoordType == CARTESIAN)
-               m_pTopClusters[i]->WriteCoordinates(fpMCL, m_pData);
-            else
-               m_pTopClusters[i]->WriteLatLongCoords(fpMCL, m_pData);
-
-            //Write the number of areas, Obs cases, expected cases, and the relative risk
-            fprintf(fpMCL, " %12i %12ld %12.2f %12.3f", m_pTopClusters[i]->m_nTracts, m_pTopClusters[i]->m_nCases, fExpectedCases, fRelativeRisk);
-   
-            //Write the Log likelihood ratio and then compute and display PValue
-            fprintf(fpMCL, " %16.6f", m_pTopClusters[i]->m_nRatio);
-            fPVal = (float) m_pTopClusters[i]->GetPVal(m_pParameters->m_nReplicas);
-            if (m_pParameters->m_nReplicas > 9999)
-               fprintf(fpMCL, "   %.5f", fPVal);
-            else if (m_pParameters->m_nReplicas > 999)
-               fprintf(fpMCL, "   %.4f", fPVal);
-            else if (m_pParameters->m_nReplicas > 99)
-              fprintf(fpMCL, "   %.3f", fPVal);
-            else fprintf(fpMCL, "     ");
-   
-            // If Space-Time analysis...  put Start and End of Cluster
-            if (m_pParameters->m_nAnalysisType != PURELYSPATIAL) {
-               JulianToChar(sStartDate, m_pTopClusters[i]->m_nStartDate);
-               JulianToChar(sEndDate, m_pTopClusters[i]->m_nEndDate);
-               fprintf(fpMCL, " %11s %11s", sStartDate, sEndDate);
-            }
-            else //purely spacial - print study begin and end dates
-               fprintf(fpMCL, " %11s %11s", m_pParameters->m_szStartDate, m_pParameters->m_szEndDate);
-            fprintf(fpMCL, "\n");
+            pData->RecordClusterData(*m_pTopClusters[i], *m_pData, i+1);
          }
-         if(m_pParameters->GetOutputClusterLevelDBF())
-           pDBFClusterReport->RecordClusterData(*m_pTopClusters[i], *m_pData, i+1);
+
+         if (m_pParameters->m_bMostLikelyClusters) {
+            ASCIIFileWriter writer(pData);
+            writer.Print();
+         }
+         if (m_pParameters->GetOutputClusterLevelDBF()) {
+            DBaseFileWriter writer(pData);
+            writer.Print();
+         }
+         
+         delete pData;
+         pData = 0;
       }
-      if (fpMCL)
-         fclose(fpMCL);
+/* testing mechanism for output files - this is a generic test class which houses several different types of fields
+   test by creating an instance of the class and setting various test values to the fields and try to print out in
+   each of the outputfilewriters - AJV 11/2002
+      pTest = new TestOutputClass(m_pParameters->m_szOutputFilename);
+      pTest->SetTestValues("", 0, 0.000, 0.000, 0, true);
+      pTest->SetTestValues("test string", 69, 4.1698321, 3.14159257136, -42, false);
+      pTest->SetTestValues("very long string which might be truncated well hopefully", 12, 6.000, 6.5, 0, true);
+      pTest->SetTestValues("W%#$#^#$^%#FDSF", 3049858, 0.0001, 487.623, -48763, false);
+      pTest->SetTestValues("kusdyh", 654, 10, -7, 3, true);
+
+      ASCIIFileWriter writer(pTest);
+      writer.Print();
+
+      DBaseFileWriter Dwriter(pTest);
+      Dwriter.Print();
+*/
    }
    catch (ZdException & x) {
-      if (fpMCL)
-         fclose(fpMCL);
+      delete pData; pData = 0;
+//      delete pTest; pTest = 0;
       x.AddCallpath("CreateGridOutputFile()", "CAnalysis");
       throw;
    }
@@ -293,15 +259,9 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
 
 bool CAnalysis::CreateReport(time_t RunTime) {
    FILE* fp;
-   FILE* fpGIS  = 0;
-   FILE* fpRRE  = 0;
 
    try {
       OpenReportFile(fp, "w");
-      if (m_pParameters->m_bOutputCensusAreas)
-         OpenGISFile(fpGIS, "w");
-      if (m_pParameters->m_bOutputRelRisks)
-         OpenRREFile(fpRRE, "w");
 
       fprintf(fp,  "                 _____________________________\n\n");
       DisplayVersion(fp, 1);
@@ -316,17 +276,9 @@ bool CAnalysis::CreateReport(time_t RunTime) {
       m_pData->DisplaySummary(fp);
 
       fclose(fp);
-      if (fpGIS)
-         fclose(fpGIS);
-      if (fpRRE)
-         fclose(fpRRE);
    }
    catch (ZdException & x) {
       fclose(fp);
-      if (fpGIS)
-         fclose(fpGIS);
-      if (fpRRE)
-         fclose(fpRRE);
       x.AddCallpath("CreateReport(time_t)", "CAnalysis");
       throw;
    }
@@ -644,41 +596,6 @@ void CAnalysis::OpenGISFile(FILE*& fpGIS, const char* szType)
    }
 }
 
-void CAnalysis::OpenGridOutputFile(FILE*& fpMLC, const char* szType)
-{
-   try {
-      if ((fpMLC = fopen(m_pParameters->m_szMLClusterFilename, szType)) == NULL) {
-         if (!strcmp(szType, "w"))
-            SSGenerateException("  Error: Unable to create MLC file.","OpenGridOutputFile");
-         else if (!strcmp(szType, "a"))
-            SSGenerateException("  Error: Unable to open MLC file.", "OpenGridOutputFile");
-      }
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("OpenGridOutputFile(File *, const char *)", "CAnalysis");
-      throw;
-   }
-}
-
-// Start V.2.0.4.1
-void CAnalysis::OpenLLRFile(FILE*& fpLLR, const char* szType)
-{
-   try {
-      if ((fpLLR = fopen(m_pParameters->m_szLLRFilename, szType)) == NULL) {
-         if (!strcmp(szType, "w"))
-            SSGenerateException("  Error: Unable to create LLR file.", "OpenLLRFile");
-         else if (!strcmp(szType, "a"))
-            SSGenerateException("  Error: Unable to open LLR file.", "OpenLLRFile");
-         //FatalError(0, gpPrintDirection);
-      }
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("OpenLLRFile(File *, const char *)", "CAnalysis");
-      throw;
-   }
-}
-// End V.2.0.4.1
-
 void CAnalysis::OpenReportFile(FILE*& fp, const char* szType)
 {
    try {
@@ -713,12 +630,11 @@ void CAnalysis::OpenRREFile(FILE*& fpRRE, const char* szType)
 }
 
 // performs Monte Carlo Simulations and prints out the results for each one
-void CAnalysis::PerformSimulations()
-{
+void CAnalysis::PerformSimulations() {
    double               r;
    int                  iSimulationNumber;
-   FILE               * fpLLR = 0;
    const char         * sReplicationFormatString = 0;
+   LogLikelihoodData  * pLLRData = 0;
 
    try {
       gpPrintDirection->SatScanPrintf("Doing the Monte Carlo replications\n");
@@ -729,17 +645,9 @@ void CAnalysis::PerformSimulations()
       else
         sReplicationFormatString = "Log Likelihood Ratio for #%ld of %ld Replications: %7.2f\n";
 
-      if (m_pParameters->m_bSaveSimLogLikelihoods)
-         OpenLLRFile(fpLLR, "w");
-
-
-//#define PRINTSIMS 0    // Must defined the same as in the PoissonModel.cpp file
-//#if PRINTSIMS
-//      FILE* fpSIM;
-//      if ((fpSIM = fopen("simdata.txt", "w")) == NULL)
-//         SSGenerateException(" Error: Could not open file to print simulated data\n", "PerformSimulations");
-//      fclose(fpSIM);
-//#endif
+      if (m_pParameters->m_bSaveSimLogLikelihoods) {
+         pLLRData = new LogLikelihoodData(m_pParameters->m_szOutputFilename);
+      }
 
       clock_t nStartTime = clock();
       SimRatios.Initialize();
@@ -760,7 +668,7 @@ void CAnalysis::PerformSimulations()
         gpPrintDirection->SatScanPrintf(sReplicationFormatString, iSimulationNumber, m_pParameters->m_nReplicas, r);
 
         if (m_pParameters->m_bSaveSimLogLikelihoods)
-          fprintf(fpLLR, "%7.2f\n", r);
+           pLLRData->AddLikelihood(r);
 
         #ifdef DEBUGANALYSIS
         fprintf(m_pDebugFile, "---- Replication #%ld ----------------------\n\n",i+1);
@@ -774,14 +682,15 @@ void CAnalysis::PerformSimulations()
           ReportTimeEstimate(nStartTime, m_pParameters->m_nReplicas, iSimulationNumber, gpPrintDirection);
       }
 
-      if (m_pParameters->m_bSaveSimLogLikelihoods)
-        fclose(fpLLR);
+      if (m_pParameters->m_bSaveSimLogLikelihoods) {
+         ASCIIFileWriter writer(pLLRData);
+         writer.Print();
+      }
 
-    //  m_pData->DeAllocSimCases();
+       delete pLLRData; pLLRData = 0;
    }
    catch (ZdException & x) {
-      if (fpLLR)
-         fclose(fpLLR);
+      delete pLLRData;
       x.AddCallpath("PerformSimulations()", "CAnalysis");
       throw;
    }
