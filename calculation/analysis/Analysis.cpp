@@ -707,7 +707,11 @@ void CAnalysis::PerformSimulations() {
             //Simulations taking less than one second to complete hinder user seeing most likely clusters
             //loglikelihood ratio, so pause program.
             if ((clock() - nStartTime)/CLK_TCK < 1)
+#ifdef INTEL_BASED
               Sleep(5000);
+#else
+              sleep(5);
+#endif
           }
           gpPrintDirection->SatScanPrintf(sReplicationFormatString, iSimulationNumber, m_pParameters->GetNumReplicationsRequested(), r);
 
