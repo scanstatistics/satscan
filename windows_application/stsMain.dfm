@@ -401,7 +401,7 @@ object frmMainForm: TfrmMainForm
     end
     object UpdateAction: TAction
       Category = 'All'
-      Hint = 'Check for Updates'
+      Hint = 'Check for New Version'
       OnExecute = UpdateActionExecute
     end
     object AdvancedParametersAction: TAction
