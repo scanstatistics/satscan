@@ -134,8 +134,8 @@ void CSaTScanData::AdjustNeighborCounts() {
            }
       }
       //Recompute neighbors.
-      MakeNeighbors(gpTInfo, gpGInfo, m_pSortedInt, m_pSortedUShort, m_nTotalTractsAtStart/*m_nTracts*/, m_nGridTracts,
-                    m_pMeasure[0], m_nMaxCircleSize, m_nMaxCircleSize, m_NeighborCounts,
+      MakeNeighbors(gpTInfo, gpGInfo, m_pSortedInt, m_pSortedUShort, static_cast<int>(m_nTotalTractsAtStart)/*m_nTracts*/, 
+                    m_nGridTracts, m_pMeasure[0], m_nMaxCircleSize, m_nMaxCircleSize, m_NeighborCounts,
                     m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                     m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
                     m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
@@ -186,7 +186,7 @@ int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian& jEndDate) 
    long lTimeBetween;
 
    if (m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
-     lTimeBetween = (TimeBetween(jStartDate, jEndDate, m_pParameters->GetTimeIntervalUnitsType()))*m_pParameters->GetMaximumTemporalClusterSize()/100.0;
+     lTimeBetween = static_cast<long>((TimeBetween(jStartDate, jEndDate, m_pParameters->GetTimeIntervalUnitsType()))*m_pParameters->GetMaximumTemporalClusterSize()/100.0);
      iIntervalCut = lTimeBetween / m_pParameters->GetTimeIntervalLength();
      //now compute a new Current Date by subtracting the interval duration
      jEndDate = DecrementDate(jEndDate, m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
@@ -391,11 +391,11 @@ void CSaTScanData::SetIntervalCut() {
     else if (m_nTimeIntervals > 1) {
       if (m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
         lStudyPeriodLength = TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->GetTimeIntervalUnitsType());
-        lMaxTemporalLength = lStudyPeriodLength * m_pParameters->GetMaximumTemporalClusterSize()/100.0;
+        lMaxTemporalLength = static_cast<long>(lStudyPeriodLength * m_pParameters->GetMaximumTemporalClusterSize()/100.0);
         m_nIntervalCut = lMaxTemporalLength / m_pParameters->GetTimeIntervalLength();
       }
       else
-        m_nIntervalCut = m_pParameters->GetMaximumTemporalClusterSize() / m_pParameters->GetTimeIntervalLength();
+        m_nIntervalCut = static_cast<int>(m_pParameters->GetMaximumTemporalClusterSize() / m_pParameters->GetTimeIntervalLength());
     }
 
     if (m_nIntervalCut==0) {
