@@ -80,6 +80,6 @@ clean :
 Makedepend : Makedepend.stub ${SOURCEFILES:o=d}
 	echo "default : ${SOURCEFILES}" > Makedepend.1
 	cat Makedepend.stub Makedepend.1 ${SOURCEFILES:o=d} > Makedepend
-	/usr/bin/rm Makedepend.1
+	rm Makedepend.1
 	
 
