@@ -276,13 +276,13 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
          CreateTXDFile(sFileName, vFieldDescriptors);
          auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
-         if (pImporter->ShowModal() ==mrOk) {
-           gpParams->SetSpecialGridFileName(sFileName.GetFullPath());
+         if (pImporter->ShowModal() == mrOk) {
+           gpParams->SetSpecialGridFileName(sFileName.GetFullPath(), false, true);
            edtGridFileName->Text = sFileName.GetFullPath();
          }
       }
       else {
-        gpParams->SetSpecialGridFileName(sFileName.GetFullPath());
+        gpParams->SetSpecialGridFileName(sFileName.GetFullPath(), false, true);
         edtGridFileName->Text = sFileName.GetFullPath();
       }  
     }
@@ -1075,7 +1075,7 @@ void TfrmAnalysis::Init() {
 //------------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::mitClearSpecialGridEditClick(TObject *Sender) {
   edtGridFileName->Clear();
-  gpParams->SetSpecialGridFileName("");
+  gpParams->SetSpecialGridFileName("", false, true);
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::NaturalNumberKeyPress(TObject *Sender, char &Key) {
@@ -1395,7 +1395,7 @@ void TfrmAnalysis::SaveTextParameters() {
     gpParams->SetControlFileName(edtControlFileName->Text.c_str());
     gpParams->SetPopulationFileName(edtPopFileName->Text.c_str());
     gpParams->SetCoordinatesFileName(edtCoordinateFileName->Text.c_str());
-    gpParams->SetSpecialGridFileName(edtGridFileName->Text.c_str());
+    gpParams->SetSpecialGridFileName(edtGridFileName->Text.c_str(), false, true);
     //Analysis Tab
     sprintf(gpParams->m_szStartDate, "%i/%i/%i", atoi(edtStartYear->Text.c_str()), atoi(edtStartMonth->Text.c_str()), atoi(edtStartDay->Text.c_str()));
     sprintf(gpParams->m_szEndDate, "%i/%i/%i", atoi(edtEndYear->Text.c_str()), atoi(edtEndMonth->Text.c_str()), atoi(edtEndDay->Text.c_str()));
