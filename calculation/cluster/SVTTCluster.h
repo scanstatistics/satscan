@@ -82,11 +82,13 @@ class CSVTTCluster : public CCluster  {
     virtual void                DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const;
     virtual void                DisplayTimeFrame(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {};
     virtual void                DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintFormat) const;
-    virtual count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual count_t             GetCaseCount(unsigned int iStream) const {return gvStreamData[iStream].gtTotalCasesInsideCluster;}
+    virtual count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const;
     virtual AbstractClusterData * GetClusterData();
-    virtual int                 GetClusterType() const {return SPATIALVARTEMPTREND;}
+    virtual ClusterType         GetClusterType() const {return SPATIALVARTEMPTRENDCLUSTER;}
     virtual ZdString          & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
-    virtual measure_t           GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual measure_t           GetMeasure(unsigned int iStream) const {return gvStreamData[iStream].gtTotalMeasureInsideCluster;}
+    virtual measure_t           GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const;
     virtual ZdString          & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     SVTTClusterStreamData     & GetStream(unsigned int tStream) {return gvStreamData[tStream];}
     virtual void                InitializeSVTT(tract_t nCenter, const AbtractDataStreamGateway & DataGateway);

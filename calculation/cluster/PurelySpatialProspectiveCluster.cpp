@@ -79,33 +79,13 @@ void CPurelySpatialProspectiveCluster::AddNeighborAndCompare(tract_t tEllipseOff
   }    
 }
 
-///** add neighbor tract data from DataStreamInterface */
-//void CPurelySpatialProspectiveCluster::AddNeighbor(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway) {
-// ++m_nTracts;
-//  gpClusterData->AddNeighborData(tNeighbor, DataGateway);
-//}
-
-///** add neighbor tract data from DataStreamInterface */
-//void CPurelySpatialProspectiveCluster::AddNeighborData(tract_t tNeighbor, const DataStreamInterface & Interface) {
-//  gpClusterData->AddNeighborData(tNeighbor, Interface);
-//}
-
 /** returns newly cloned CPurelySpatialCluster */
 CPurelySpatialProspectiveCluster * CPurelySpatialProspectiveCluster::Clone() const {
   return new CPurelySpatialProspectiveCluster(*this);
 }
 
-/** modifies measure list given this cluster definition */
-/*void CPurelySpatialProspectiveCluster::ComputeBestMeasures(CMeasureList & MeasureList) {
-  int   iWindowEnd;
-
-  for (iWindowEnd=1; iWindowEnd < m_nNumIntervals; ++iWindowEnd)
-     MeasureList.AddMeasure(m_pCumCases[0] - m_pCumCases[iWindowEnd], m_pCumMeasure[0] - m_pCumMeasure[iWindowEnd]);
-  MeasureList.AddMeasure(m_pCumCases[0], m_pCumMeasure[0]);
-} */
-
 /** Returns the number of case for tract as defined by cluster. */
-count_t CPurelySpatialProspectiveCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {
+count_t CPurelySpatialProspectiveCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
   ZdGenerateException("GetCaseCountForTract() not implemented.","CPurelySpatialProspectiveCluster");
   return 0;
 }
@@ -117,7 +97,7 @@ ZdString& CPurelySpatialProspectiveCluster::GetEndDate(ZdString& sDateString, co
 }
 
 /** Returns the measure for tract as defined by cluster. */
-measure_t CPurelySpatialProspectiveCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {
+measure_t CPurelySpatialProspectiveCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
   ZdGenerateException("GetMeasureForTract() not implemented.","CPurelySpatialProspectiveCluster");
   return 0;
 }

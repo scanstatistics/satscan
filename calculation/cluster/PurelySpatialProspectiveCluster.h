@@ -34,11 +34,13 @@ class CPurelySpatialProspectiveCluster : public CCluster {
                                                                      AbstractLikelihoodCalculator & Calculator);
     inline virtual void                        AssignAsType(const CCluster& rhs) {*this = (CPurelySpatialProspectiveCluster&)rhs;}
     virtual CPurelySpatialProspectiveCluster * Clone() const;
-    virtual count_t                            GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual count_t                            GetCaseCount(unsigned int iStream) const {return gpClusterData->GetCaseCount(iStream);}
+    virtual count_t                            GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const;
     virtual AbstractClusterData              * GetClusterData() {return gpClusterData;}
-    virtual int                                GetClusterType() const {return PURELYSPATIAL;}
+    virtual ClusterType                        GetClusterType() const {return PURELYSPATIALPROSPECTIVECLUSTER;}
     virtual ZdString                         & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
-    virtual measure_t                          GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual measure_t                          GetMeasure(unsigned int iStream) const {return gpClusterData->GetMeasure(iStream);}
+    virtual measure_t                          GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const;
     virtual ZdString                         & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     virtual void                               Initialize(tract_t nCenter);
 };
