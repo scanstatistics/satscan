@@ -78,7 +78,7 @@ void DBFRecord::AppendToDbf(xbDbf & theDbf) const
       AccessExpediter ae(*this);
       rc = theDbf.AppendRecord();
       if (rc != XB_NO_ERROR)
-         ZdException::Generate("Could not append record to the file, \"%c\".  xbase error: \"%s\".", "DBFRecord", theDbf.GetDbfName(), theDbf.xbase->GetErrorMessage(rc));
+         ZdException::Generate("Could not append record to the file, \"%c\".  xbase error: \"%s\".", "DBFRecord", theDbf.GetDbfName().c_str(), theDbf.xbase->GetErrorMessage(rc));
       }
    catch (ZdException & e)
       {
