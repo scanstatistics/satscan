@@ -13,7 +13,7 @@
 #include "stsAreaSpecificData.h"
 
 CAnalysis::CAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-          :SimRatios(pParameters->m_nReplicas, pPrintDirection) {
+          :SimRatios(pParameters->GetNumReplicationsRequested(), pPrintDirection) {
    try {
       m_pParameters = pParameters;
       m_pData       = pData;
@@ -28,10 +28,10 @@ CAnalysis::CAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *p
 
       guwSignificantAt005       = 0;
 
-      if (m_pParameters->m_bSequential)
+      if (m_pParameters->GetIsSequentialScanning())
         m_nClustersToKeepEachPass = 1;
       else {
-         if (m_pParameters->m_iCriteriaSecondClusters == NORESTRICTIONS)
+         if (m_pParameters->GetCriteriaSecondClustersType() == NORESTRICTIONS)
             m_nClustersToKeepEachPass = m_pData->m_nTracts;
          else
               m_nClustersToKeepEachPass = (m_pData->m_nGridTracts <= NUM_RANKED ? m_pData->m_nGridTracts : NUM_RANKED);
@@ -95,7 +95,8 @@ bool CAnalysis::Execute(time_t RunTime) {
 
 #ifdef INCLUDE_RUN_HISTORY
      // only create one history object and record to it only once ( first iteration if sequential analysis ) -- AJV
-     stsRunHistoryFile historyFile(m_pParameters->GetRunHistoryFilename(), *gpPrintDirection, m_pParameters->m_nReplicas > 99, m_pParameters->m_bSequential);
+     stsRunHistoryFile historyFile(m_pParameters->GetRunHistoryFilename(), *gpPrintDirection,
+                                   m_pParameters->GetNumReplicationsRequested() > 99, m_pParameters->GetIsSequentialScanning());
      lRunNumber = historyFile.GetRunNumber();
 #endif
 
@@ -108,7 +109,7 @@ bool CAnalysis::Execute(time_t RunTime) {
         m_pData->DisplaySummary2(m_pDebugFile);
         fprintf(m_pDebugFile, "\n---- Actual Data ----------------------\n\n");
         m_pData->DisplayCases(m_pDebugFile);
-        if (m_pParameters->m_nModel==BERNOULLI)
+        if (m_pParameters->GetProbabiltyModelType() == BERNOULLI)
           m_pData->DisplayControls(m_pDebugFile);
         m_pData->DisplayMeasure(m_pDebugFile);
         m_pData->DisplayNeighbors(m_pDebugFile);
@@ -134,7 +135,7 @@ bool CAnalysis::Execute(time_t RunTime) {
         // log history for first analysis run - AJV 12/27/2002
         if (m_nAnalysisCount == 1) {
            gpPrintDirection->SatScanPrintf("\nLogging run history...");
-           double dPVal((m_nClustersRetained > 0) ? m_pTopClusters[0]->GetPVal(m_pParameters->m_nReplicas): 0.0);
+           double dPVal((m_nClustersRetained > 0) ? m_pTopClusters[0]->GetPVal(m_pParameters->GetNumReplicationsRequested()) : 0.0);
            historyFile.LogNewHistory(*this, guwSignificantAt005, dPVal);
         }
 #endif
@@ -144,8 +145,8 @@ bool CAnalysis::Execute(time_t RunTime) {
         // report to output files here before clusters are readjusted in sequential scan function RemoveTopClusters() - AJV 12/30/2002
         CreateGridOutputFile(lRunNumber);
         // report relative risks output only on first iteration - AJV
-        if (m_nAnalysisCount == 1 && (m_pParameters->m_bOutputRelRisks || m_pParameters->GetDBaseOutputRelRisks()))
-           m_pData->DisplayRelativeRisksForEachTract(m_pParameters->m_bOutputRelRisks, m_pParameters->GetDBaseOutputRelRisks());
+        if (m_nAnalysisCount == 1 && m_pParameters->GetOutputRelativeRisksFiles())
+           m_pData->DisplayRelativeRisksForEachTract(m_pParameters->GetOutputRelativeRisksAscii(), m_pParameters->GetOutputRelativeRisksDBase());
 
         bContinue = RepeatAnalysis();
         if (bContinue)
@@ -194,11 +195,11 @@ void CAnalysis::AllocateTopClusterList() {
 //******************************************************************************
 void CAnalysis::CreateGridOutputFile(const long lReportHistoryRunNumber) {
    try {
-      if (m_pParameters->m_bMostLikelyClusters || m_pParameters->GetOutputClusterLevelDBF()) {
+      if (m_pParameters->GetOutputClusterLevelFiles()) {
          std::auto_ptr<stsClusterData> pData( new stsClusterData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(),
-                                                                 lReportHistoryRunNumber, GetCoordinateType(), m_pParameters->m_nModel,
-                                                                 m_pParameters->m_nDimension, m_pParameters->m_nReplicas > 99,
-                                                                 m_pParameters->m_nNumEllipses > 0, m_pParameters->m_bDuczmalCorrectEllipses) );
+                                                                 lReportHistoryRunNumber, m_pParameters->GetCoordinatesType(), m_pParameters->GetProbabiltyModelType(),
+                                                                 m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumReplicationsRequested() > 99,
+                                                                 m_pParameters->GetNumRequestedEllipses() > 0, m_pParameters->GetDuczmalCorrectEllipses()));
 
          for (int i = 0; i < m_nClustersRetained; ++i) {
             // print out user notification every 20 recorded clusters to let user know program is still working - AJV 10/3/2002
@@ -210,9 +211,9 @@ void CAnalysis::CreateGridOutputFile(const long lReportHistoryRunNumber) {
          // only append if analysis count is greater than 1 which implies sequential scan is taking place with
          // more than one iteration -- AJV 12/30/2002
          bool bAppend(m_nAnalysisCount > 1);        
-         if (m_pParameters->m_bMostLikelyClusters)
+         if (m_pParameters->GetOutputClusterLevelAscii())
             ASCIIFileWriter(pData.get(), bAppend).Print();
-         if (m_pParameters->GetOutputClusterLevelDBF())
+         if (m_pParameters->GetOutputClusterLevelDBase())
             DBaseFileWriter(pData.get(), bAppend).Print();
       }
 /* testing mechanism for output files - this is a generic test class which houses several different types of fields
@@ -273,7 +274,7 @@ bool CAnalysis::CreateReport(time_t RunTime) {
 // post: prints a progress message to the user
 void CAnalysis::DisplayFindClusterHeading() {
    try {
-      if (!m_pParameters->m_bSequential)
+      if (!m_pParameters->GetIsSequentialScanning())
          gpPrintDirection->SatScanPrintf("Finding the most likely clusters\n");
       else {
          switch(m_nAnalysisCount) {
@@ -300,8 +301,8 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long lRepor
 
   try {
     if (m_nClustersRetained > 0) {
-      if (m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
-        pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
+      if (m_pParameters->GetOutputAreaSpecificFiles())
+        pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->GetNumReplicationsRequested() > 99));
       if (m_pTopClusters[0]->m_nRatio > nMinRatio && (nReps == 0 || m_pTopClusters[0]->m_nRank  <= nReps)) {
         ++m_nClustersReported;
         switch(m_nAnalysisCount) {
@@ -315,8 +316,8 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long lRepor
         // if we want area specific report, set the report pointer in cluster
         if (pData.get()) {
           m_pTopClusters[0]->SetAreaReport(pData.get());
-          m_pTopClusters[0]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
-                                                  lReportHistoryRunNumber, true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);
+          m_pTopClusters[0]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->GetNumReplicationsRequested(),
+                                                  lReportHistoryRunNumber, true, m_pParameters->GetNumReplicationsRequested() > 99, 0, 0, ' ', NULL, false);
         }
       }
       fprintf(fp, "\n");
@@ -324,9 +325,9 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long lRepor
       // need to do append here because this is a sequential function, but don't append on the first analysis so that
       // the file can be deleted if it exists and started over fresh - AJV
       bool bAppendData(m_nAnalysisCount > 1);
-      if (m_pParameters->m_bOutputCensusAreas)
+      if (m_pParameters->GetOutputAreaSpecificAscii())
          ASCIIFileWriter(pData.get(), bAppendData).Print();// print area ASCII
-      if (m_pParameters->GetOutputAreaSpecificDBF())
+      if (m_pParameters->GetOutputAreaSpecificDBase())
          DBaseFileWriter(pData.get(), bAppendData).Print();// print area dBase
     }
   }
@@ -348,8 +349,8 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long lRepo
 
   try {
     m_nClustersReported = 0;
-    if (m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
-      pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
+    if (m_pParameters->GetOutputAreaSpecificFiles())
+      pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->GetNumReplicationsRequested() > 99));
     dSignifRatio05 = SimRatios.GetAlpha05();
     //If  no replications, attempt to display up to top 10 clusters.
     tract_t tNumClustersToDisplay(nReps == 0 ? min(10, m_nClustersRetained) : m_nClustersRetained);
@@ -370,17 +371,17 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long lRepo
          // if doing area specific output, set the report pointer - not the most effective way to do this, but the least intrusive - AJV
          if (pData.get()) {
            m_pTopClusters[i]->SetAreaReport(pData.get());
-           m_pTopClusters[i]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
-                                                    lReportHistoryRunNumber, true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);
+           m_pTopClusters[i]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->GetNumReplicationsRequested(),
+                                                    lReportHistoryRunNumber, true, m_pParameters->GetNumReplicationsRequested() > 99, 0, 0, ' ', NULL, false);
          }
        }   // end if top cluster > minratio
     }   // end for loop
     fprintf(fp, "\n");
 
     // no need to worry about appending here because this function is not called in sequential analysis - AJV 12/30/2002
-    if (m_pParameters->m_bOutputCensusAreas) // print area ASCII
+    if (m_pParameters->GetOutputAreaSpecificAscii()) // print area ASCII
       ASCIIFileWriter(pData.get()).Print();
-    if (m_pParameters->GetOutputAreaSpecificDBF()) // print area dBase
+    if (m_pParameters->GetOutputAreaSpecificDBase()) // print area dBase
       DBaseFileWriter(pData.get()).Print();
   }
   catch (ZdException & x) {
@@ -393,7 +394,7 @@ void CAnalysis::DisplayTopClusterLogLikelihood() {
    try {
       if (m_nClustersRetained > 0) {
          gpPrintDirection->SatScanPrintf("  SaTScan %s for the most likely cluster: %7.2f\n\n",
-                                         (m_pParameters->m_nModel == SPACETIMEPERMUTATION ? "test statistic" : "log likelihood ratio" ),
+                                         (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION ? "test statistic" : "log likelihood ratio" ),
                                          m_pTopClusters[0]->m_nRatio);
       }
    }
@@ -409,7 +410,7 @@ void CAnalysis::DisplayTopClustersLogLikelihoods(FILE* fp) {
   try {
      for (tract_t i = 0; i<m_nClustersRetained; ++i) {
        fprintf(fp,"  %s for the most likely cluster: %7.21f\n\n",
-            (m_pParameters->m_nModel == SPACETIMEPERMUTATION ? "Test statistic" : "Log likelihood ratio" ),
+            (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION ? "Test statistic" : "Log likelihood ratio" ),
             m_pTopClusters[i]->m_nRatio);
      }
      fprintf(fp, "\n");
@@ -437,9 +438,9 @@ bool CAnalysis::FinalizeReport(time_t RunTime) {
 
       if (m_nClustersRetained == 0) {
         fprintf(fp, "\nNo clusters were found.\n");
-        if (m_pParameters->m_nAreas == HIGH)
+        if (m_pParameters->GetAreaScanRateType() == HIGH)
           fprintf(fp, "All areas scanned had equal or fewer cases than expected.\n");
-        else if (m_pParameters->m_nAreas == LOW)
+        else if (m_pParameters->GetAreaScanRateType() == LOW)
           fprintf(fp, "All areas scanned had equal or greater cases than expected.\n");
         else
           fprintf(fp, "All areas scanned had cases equal to expected.\n");
@@ -447,22 +448,22 @@ bool CAnalysis::FinalizeReport(time_t RunTime) {
       else if (m_nClustersReported == 0) {
         fprintf(fp, "\nNo clusters reported.\n");
         fprintf(fp, "All clusters had a ratio less than %f or\n"
-                    "a rank greater than %i.\n", m_nMinRatioToReport, m_pParameters->m_nReplicas);
+                    "a rank greater than %i.\n", m_nMinRatioToReport, m_pParameters->GetNumReplicationsRequested());
       }
-      else if (m_pParameters->m_nReplicas==0) {
+      else if (m_pParameters->GetNumReplicationsRequested() == 0) {
         fprintf(fp, "\nNote: As the number of Monte Carlo replications was set to\n");
         fprintf(fp, "zero, no hypothesis testing was done and no p-values were\n");
         fprintf(fp, "printed.\n");
       }
-      else if (m_pParameters->m_nReplicas<=99) {
+      else if (m_pParameters->GetNumReplicationsRequested() <= 99) {
         fprintf(fp, "\nNote: The number of Monte Carlo replications was set too low,\n");
         fprintf(fp, "and a meaningful hypothesis test cannot be done.  Consequently,\n");
         fprintf(fp, "no p-values were printed.\n");
       }
 
-      if (m_pParameters->m_nModel == POISSON ||
-          (m_pParameters->m_nModel == SPACETIMEPERMUTATION &&
-           m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE))
+      if (m_pParameters->GetProbabiltyModelType() == POISSON ||
+          (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION &&
+           m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE))
         (m_pData->GetTInfo())->tiReportZeroPops(fp);
 
       m_pData->GetTInfo()->tiReportDuplicateTracts(fp);
@@ -572,25 +573,25 @@ void CAnalysis::PerformSimulations() {
    std::auto_ptr<LogLikelihoodData>     pLLRData;
 
    try {
-      if (m_pParameters->m_nReplicas > 0) {
+      if (m_pParameters->GetNumReplicationsRequested() > 0) {
         gpPrintDirection->SatScanPrintf("Doing the Monte Carlo replications\n");
 
         // assign replication format string here to prevent another check in loop
-        if (m_pParameters->m_nModel == SPACETIMEPERMUTATION)
+        if (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION)
           sReplicationFormatString = "SaTScan test statistic for #%ld of %ld replications: %7.2f\n";
         else
           sReplicationFormatString = "SaTScan log likelihood ratio for #%ld of %ld replications: %7.2f\n";
 
         // record only the first set of log likelihoods - AJV 12/27/2002  
-        if ((m_pParameters->m_bSaveSimLogLikelihoods || m_pParameters->GetDBaseOutputLogLikeli()) && m_nAnalysisCount == 1)
+        if (m_pParameters->GetOutputSimLoglikeliRatiosFiles() && m_nAnalysisCount == 1)
            pLLRData.reset( new LogLikelihoodData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str()) );
 
         clock_t nStartTime = clock();
         SimRatios.Initialize();
 
-        for (iSimulationNumber=1; (iSimulationNumber <= m_pParameters->m_nReplicas) && !gpPrintDirection->GetIsCanceled(); iSimulationNumber++) {
+        for (iSimulationNumber=1; (iSimulationNumber <= m_pParameters->GetNumReplicationsRequested()) && !gpPrintDirection->GetIsCanceled(); iSimulationNumber++) {
           m_pData->MakeData(iSimulationNumber);
-          r = (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME) ? MonteCarloProspective() : MonteCarlo();
+          r = (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME) ? MonteCarloProspective() : MonteCarlo();
           UpdateTopClustersRank(r);
           SimRatios.AddRatio(r);
           UpdatePowerCounts(r);
@@ -599,16 +600,16 @@ void CAnalysis::PerformSimulations() {
           m_pData->DisplaySimCases(m_pDebugFile);
           // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
           fprintf(m_pDebugFile, "%s = %7.21f\n\n",
-                  (Parameters.m_nModel == SPACETIMEPERMUTATION ? "Test statistic" : "Log Likelihood Ratio"), r);
+                  (Parameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION ? "Test statistic" : "Log Likelihood Ratio"), r);
  #endif
           if (iSimulationNumber==1) {
-            ReportTimeEstimate(nStartTime, m_pParameters->m_nReplicas, iSimulationNumber, gpPrintDirection);
+            ReportTimeEstimate(nStartTime, m_pParameters->GetNumReplicationsRequested(), iSimulationNumber, gpPrintDirection);
             //Simulations taking less than one second to complete hinder user seeing most likely clusters
             //loglikelihood ratio, so pause program.
             if ((clock() - nStartTime)/CLK_TCK < 1)
               Sleep(5000);
           }
-          gpPrintDirection->SatScanPrintf(sReplicationFormatString, iSimulationNumber, m_pParameters->m_nReplicas, r);
+          gpPrintDirection->SatScanPrintf(sReplicationFormatString, iSimulationNumber, m_pParameters->GetNumReplicationsRequested(), r);
 
           // best to just check if the data pointer is set instead of checking the criteria for setting again so will
           // only have to check that criteria in one place instead of two -- AJV 12/30/2002
@@ -617,9 +618,9 @@ void CAnalysis::PerformSimulations() {
         }
 
         // only write to output formats on the first analysis/iteration -- AJV
-        if (m_pParameters->m_bSaveSimLogLikelihoods && pLLRData.get())
+        if (m_pParameters->GetOutputSimLoglikeliRatiosAscii() && pLLRData.get())
            ASCIIFileWriter(pLLRData.get()).Print();
-        if (m_pParameters->GetDBaseOutputLogLikeli() && pLLRData.get())
+        if (m_pParameters->GetOutputSimLoglikeliRatiosDBase() && pLLRData.get())
            DBaseFileWriter(pLLRData.get()).Print();
       }
    }
@@ -699,7 +700,7 @@ void CAnalysis::RankTopClusters() {
       //if no restrictions then need array to have m_nNumTracts number of elements
       //else just set it to NUM_RANKED (500) elements.....
       iNumElements = NUM_RANKED;
-      if (m_pParameters->m_iCriteriaSecondClusters == NORESTRICTIONS)
+      if (m_pParameters->GetCriteriaSecondClustersType() == NORESTRICTIONS)
          iNumElements = m_pData->m_nTracts;
       pRadius = new float[iNumElements];
       pCoords = (double**)Smalloc(iNumElements * sizeof(double*),gpPrintDirection);
@@ -745,10 +746,10 @@ void CAnalysis::RankTopClusters() {
           while (bInclude && j<t)  {
             clusterdistance = (float)sqrt((m_pData->GetTInfo())->tiGetDistanceSq(pCoords1,pCoords[j]));
             //IF ELLIPSOID RUN, THEN SET TO "NO RESTRICTIONS"
-            if (m_pParameters->m_nNumEllipses > 0)
+            if (m_pParameters->GetNumRequestedEllipses() > 0)
                 bInclude = 1;
             else {
-               switch (m_pParameters->m_iCriteriaSecondClusters) {
+               switch (m_pParameters->GetCriteriaSecondClustersType()) {
                   case NOGEOOVERLAP: //no geographical overlap
                      if (clusterdistance <= (pRadius[j]+newradius))
                        bInclude=0;
@@ -781,10 +782,10 @@ void CAnalysis::RankTopClusters() {
           if (bInclude) {
             pRadius[t] = newradius;
             // Now allocate new pCoords[]
-            pCoords[t] = (double*)Smalloc(m_pParameters->m_nDimension * sizeof(double),gpPrintDirection);
+            pCoords[t] = (double*)Smalloc(m_pParameters->GetDimensionsOfData() * sizeof(double),gpPrintDirection);
 
             // Loop through values of pCoords1
-            for (i=0; i<m_pParameters->m_nDimension; i++) {
+            for (i=0; i<m_pParameters->GetDimensionsOfData(); i++) {
             	pCoords[t][i] = pCoords1[i];
             }
             // Don't need pCoords1 anymore
@@ -847,7 +848,7 @@ void CAnalysis::RemoveTopClusterData() {
         m_pData->m_pCases[0][nNeighbor]   = 0;
         m_pData->m_pMeasure[0][nNeighbor] = 0;
 
-        if (m_pParameters->m_nModel==BERNOULLI) {
+        if (m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
           m_pData->m_nTotalControls -= m_pData->m_pControls[0][nNeighbor];
           m_pData->m_pControls[0][nNeighbor]   = 0;
         }
@@ -882,10 +883,10 @@ bool CAnalysis::RepeatAnalysis()
    bool bReturn = false;
 
    try {
-      if (m_pParameters->m_bSequential)
+      if (m_pParameters->GetIsSequentialScanning())
          bReturn = ( m_pTopClusters[0] &&
-                    (m_nAnalysisCount < m_pParameters->m_nAnalysisTimes) &&
-                    (m_pTopClusters[0]->GetPVal(m_pParameters->m_nReplicas) < m_pParameters->m_nCutOffPVal) &&
+                    (m_nAnalysisCount < m_pParameters->GetNumSequentialScansRequested()) &&
+                    (m_pTopClusters[0]->GetPVal(m_pParameters->GetNumReplicationsRequested()) < m_pParameters->GetSequentialCutOffPValue()) &&
                     (m_pData->m_nTracts > 1));
    }
    catch (ZdException & x) {
@@ -902,10 +903,10 @@ void CAnalysis::SortTopClusters()
 
 void CAnalysis::UpdatePowerCounts(double r)
 {
-  if (m_pParameters->m_bPowerCalc) {
-    if (r > m_pParameters->m_nPower_X)
+  if (m_pParameters->GetIsPowerCalculated()) {
+    if (r > m_pParameters->GetPowerCalculationX())
       ++m_nPower_X_Count;
-    if (r > m_pParameters->m_nPower_Y)
+    if (r > m_pParameters->GetPowerCalculationY())
       ++m_nPower_Y_Count;
   }
 }
@@ -917,32 +918,32 @@ bool CAnalysis::UpdateReport(const long lReportHistoryRunNumber) {
       gpPrintDirection->SatScanPrintf("\nRecording results to file...");
       OpenReportFile(fp, "a");
 
-      if (m_pParameters->m_bSequential)
-        DisplayTopCluster(m_nMinRatioToReport, m_pParameters->m_nReplicas, lReportHistoryRunNumber, fp);
+      if (m_pParameters->GetIsSequentialScanning())
+        DisplayTopCluster(m_nMinRatioToReport, m_pParameters->GetNumReplicationsRequested(), lReportHistoryRunNumber, fp);
       else
-        DisplayTopClusters(m_nMinRatioToReport, m_pParameters->m_nReplicas, lReportHistoryRunNumber, fp);
+        DisplayTopClusters(m_nMinRatioToReport, m_pParameters->GetNumReplicationsRequested(), lReportHistoryRunNumber, fp);
 
-      if (m_pParameters->m_nReplicas>=19 && m_nClustersReported > 0) {
+      if (m_pParameters->GetNumReplicationsRequested() >= 19 && m_nClustersReported > 0) {
         // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
         fprintf(fp, "The %s value required for an observed\n",
-               (m_pParameters->m_nModel == SPACETIMEPERMUTATION ? "test statistic" : "log likelihood ratio"));
+               (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION ? "test statistic" : "log likelihood ratio"));
         fprintf(fp, "cluster to be significant at level\n");
-        if (m_pParameters->m_nReplicas>=99)
+        if (m_pParameters->GetNumReplicationsRequested() >= 99)
           fprintf(fp,"... 0.01: %f\n", SimRatios.GetAlpha01());
-        if (m_pParameters->m_nReplicas>=19)
+        if (m_pParameters->GetNumReplicationsRequested() >= 19)
           fprintf(fp,"... 0.05: %f\n", SimRatios.GetAlpha05());
         fprintf(fp, "\n");
       }
 
-      if (m_pParameters->m_bPowerCalc) {
+      if (m_pParameters->GetIsPowerCalculated()) {
         fprintf(fp,"Percentage of Monte Carlo replications with a likelihood greater than\n");
-        fprintf(fp,"... X (%f) : %f\n", m_pParameters->m_nPower_X,
-                ((double)m_nPower_X_Count)/m_pParameters->m_nReplicas);
-        fprintf(fp,"... Y (%f) : %f\n\n", m_pParameters->m_nPower_Y,
-                ((double)m_nPower_Y_Count)/m_pParameters->m_nReplicas);
+        fprintf(fp,"... X (%f) : %f\n", m_pParameters->GetPowerCalculationX(),
+                ((double)m_nPower_X_Count)/m_pParameters->GetNumReplicationsRequested());
+        fprintf(fp,"... Y (%f) : %f\n\n", m_pParameters->GetPowerCalculationY(),
+                ((double)m_nPower_Y_Count)/m_pParameters->GetNumReplicationsRequested());
       }
 
-      if (!m_pParameters->UseSpecialGrid() && m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME) {
+      if (!m_pParameters->UseSpecialGrid() && m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME) {
         fprintf(fp, "\nIMPORTANT:\nFor the prospective analysis to be correct, it is important\n");
         fprintf(fp, "that the scanning spatial window is the same for each analysis that is\n");
         fprintf(fp, "performed once a day, week, year, etc. This means that the grid points\n");

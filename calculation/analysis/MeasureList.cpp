@@ -30,19 +30,19 @@ void CMeasureList::SetForNextIteration(int iIteration, double & dMaxLogLikelihoo
 void CMeasureList::Setup() {
   int   iEllipse, iBoundry=0;
 
-  if (gSaTScanData.m_pParameters->m_bDuczmalCorrectEllipses) {
+  if (gSaTScanData.m_pParameters->GetDuczmalCorrectEllipses()) {
     //If Duczmal corrected, accumulate best measure for each shape.
     //Set calculation boundries between circle/each ellipse shape(s).
     gvCalculationBoundries.push_back(iBoundry); //circle
     for (iEllipse=0; iEllipse < gSaTScanData.m_nNumEllipsoids; ++iEllipse) {
        //Get the number of angles this ellipse shape rotates through.
-       iBoundry += gSaTScanData.m_pParameters->mp_nENumbers[iEllipse];
+       iBoundry += gSaTScanData.m_pParameters->GetEllipseRotations()[iEllipse];
        gvCalculationBoundries.push_back(iBoundry);
      }
    }
    else
      //No correction - accumulate best measure through all circle/ellipses.
-     gvCalculationBoundries.push_back(gSaTScanData.m_pParameters->m_lTotalNumEllipses);
+     gvCalculationBoundries.push_back(gSaTScanData.m_pParameters->GetNumTotalEllipses());
 }
 
 /** Constructor */
@@ -81,7 +81,7 @@ double CMinMeasureList::GetMaxLogLikelihood(double dMaxLogLikelihood, int iEllip
   double        dLogLikelihood, dDuczmal=1;
 
   //Get Duczmal correction if option set and this calculation involves an ellispe.
-  if (gSaTScanData.m_pParameters->m_bDuczmalCorrectEllipses && iEllipseOffset > 0)
+  if (gSaTScanData.m_pParameters->GetDuczmalCorrectEllipses() && iEllipseOffset > 0)
     dDuczmal = GetDuczmalCorrection(gSaTScanData.mdE_Shapes[iEllipseOffset - 1]);
 
   i = 2; //Start case index at two -- don't want to consider simulations
@@ -157,7 +157,7 @@ double CMaxMeasureList::GetMaxLogLikelihood(double dMaxLogLikelihood, int iEllip
   double        dLogLikelihood, dDuczmal=1;
 
   //Get Duczmal correction if option set and this calculation involves an ellispe.
-  if (gSaTScanData.m_pParameters->m_bDuczmalCorrectEllipses && iEllipseOffset > 0)
+  if (gSaTScanData.m_pParameters->GetDuczmalCorrectEllipses() && iEllipseOffset > 0)
     dDuczmal = GetDuczmalCorrection(gSaTScanData.mdE_Shapes[iEllipseOffset - 1]);
 
   for (i=0; i < iListSize; i++) {
@@ -239,7 +239,7 @@ double CMinMaxMeasureList::GetMaxLogLikelihood(double dMaxLogLikelihood, int iEl
   double        dLogLikelihood, dDuczmal=1;
 
   //Get Duczmal correction if option set and this calculation involves an ellispe.
-  if (gSaTScanData.m_pParameters->m_bDuczmalCorrectEllipses && iEllipseOffset > 0)
+  if (gSaTScanData.m_pParameters->GetDuczmalCorrectEllipses() && iEllipseOffset > 0)
     dDuczmal = GetDuczmalCorrection(gSaTScanData.mdE_Shapes[iEllipseOffset - 1]);
 
   for (i=0; i < iListSize; i++) {

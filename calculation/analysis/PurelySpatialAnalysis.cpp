@@ -24,12 +24,12 @@ CCluster* CPurelySpatialAnalysis::GetTopCluster(tract_t nCenter) {
     // If you do not, then AddNeighbor creates invalid case counts as you tally
     // over multiple objects (i.e. the circle and ellipses.
     //***************************************************************************
-    for (j = 0; j <= m_pParameters->m_lTotalNumEllipses; j++) {   //circle is 0 offset... (always there)
+    for (j = 0; j <= m_pParameters->GetNumTotalEllipses(); j++) {   //circle is 0 offset... (always there)
        CPurelySpatialCluster thisCluster(gpPrintDirection);
        thisCluster.SetCenter(nCenter);
-       thisCluster.SetRate(m_pParameters->m_nAreas);
+       thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
        thisCluster.SetEllipseOffset(j);                       // store the ellipse link in the cluster obj
-       thisCluster.SetDuczmalCorrection((j == 0 || !m_pParameters->m_bDuczmalCorrectEllipses ? 1 : m_pData->mdE_Shapes[j - 1]));
+       thisCluster.SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->mdE_Shapes[j - 1]));
        for (i=1; i <= m_pData->m_NeighborCounts[j][nCenter]; i++) {
           thisCluster.AddNeighbor(j, *m_pData, m_pData->m_pCases, i);
           if (thisCluster.RateIsOfInterest(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure)) {
@@ -58,9 +58,9 @@ double CPurelySpatialAnalysis::MonteCarlo() {
   int                             k;
 
   try {
-    C.SetRate(m_pParameters->m_nAreas);
+    C.SetRate(m_pParameters->GetAreaScanRateType());
     dMaxLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
-    switch (m_pParameters->m_nAreas) {
+    switch (m_pParameters->GetAreaScanRateType()) {
      case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
                        break;
      case LOW        : pMeasureList = new CMaxMeasureList(*m_pData, *gpPrintDirection);
@@ -68,10 +68,10 @@ double CPurelySpatialAnalysis::MonteCarlo() {
      case HIGHANDLOW : pMeasureList = new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
                        break;
      default         : ZdGenerateException("Unknown incidence rate specifier \"%d\".","MonteCarlo()",
-                                           m_pParameters->m_nAreas);
+                                           m_pParameters->GetAreaScanRateType());
     }
 
-    for (k=0; k <= m_pParameters->m_lTotalNumEllipses; k++) { //circle is 0 offset... (always there)
+    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) { //circle is 0 offset... (always there)
        for (i=0; i < m_pData->m_nGridTracts; i++) {
           C.Initialize(i);
           for (j=1; j <= m_pData->m_NeighborCounts[k][i]; j++) {
@@ -100,9 +100,9 @@ double CPurelySpatialAnalysis::MonteCarloProspective() {
   int                           k;
 
   try {
-    C.SetRate(m_pParameters->m_nAreas);
+    C.SetRate(m_pParameters->GetAreaScanRateType());
     dMaxLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
-    switch (m_pParameters->m_nAreas) {
+    switch (m_pParameters->GetAreaScanRateType()) {
       case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
                         break;
       case LOW        : pMeasureList = new CMaxMeasureList(*m_pData, *gpPrintDirection);
@@ -110,10 +110,10 @@ double CPurelySpatialAnalysis::MonteCarloProspective() {
       case HIGHANDLOW : pMeasureList = new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
                         break;
       default         : ZdGenerateException("Unknown incidence rate specifier \"%d\".","MonteCarloProspective()",
-                                             m_pParameters->m_nAreas);
+                                             m_pParameters->GetAreaScanRateType());
     }
 
-    for (k=0; k <= m_pParameters->m_lTotalNumEllipses; k++) {  //circle is 0 offset... (always there)
+    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {  //circle is 0 offset... (always there)
        for (tract_t i = 0; i<m_pData->m_nGridTracts; i++) {
           C.Initialize(i);
           for (tract_t j=1; j<=m_pData->m_NeighborCounts[k][i]; j++) {

@@ -66,7 +66,6 @@ class CAnalysis
     const double                GetSimRatio05() const { return SimRatios.GetAlpha05(); }
     const ZdString&             GetStartTime() const { return gsStartTime; }
     virtual CCluster*           GetTopCluster(tract_t nCenter) = 0;
-    const int&                  GetCoordinateType() const { return m_pParameters->m_nCoordType; }
 
 };
 //*****************************************************************************
