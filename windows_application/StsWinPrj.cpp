@@ -151,9 +151,9 @@ USEUNIT("..\calculation\randomization\ExponentialRandomizer.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;
-        AnsiString      sUpdateParameter;
+        AnsiString      sUpdateApplication, sUpdateDataParameter, sError;
         AnsiString      sOmitULA_Parameter(AnsiString("-ver_id=") + VERSION_ID);
-        int i;
+        HINSTANCE       hReturn;
 
         try {
            Application->Initialize();
@@ -162,22 +162,17 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
            ZdGetFileTypeArray()->AddElement( &(DBFFileType::GetDefaultInstance()) );
            Application->Title = "SaTScan";
            Application->HelpFile = "";
-           sUpdateParameter.printf("%s%s", ExtractFilePath(Application->ExeName).c_str(), TfrmUpdateCheck::gsUpdaterFilename);
-           if (!access(sUpdateParameter.c_str(), 00)) {
+           sUpdateApplication.printf("%s%s", ExtractFilePath(Application->ExeName).c_str(), TfrmUpdateCheck::gsUpdaterFilename);
+           if (!access(sUpdateApplication.c_str(), 00)) {
              _sleep(1); // give updater moment to shutdown
-             i = remove(sUpdateParameter.c_str());
+             remove(sUpdateApplication.c_str());
            }
            Application->CreateForm(__classid(TfrmMainForm), &frmMainForm);
-                 Application->Run();
+           Application->Run();
            if ((bRunUpdate = GetToolkit().GetRunUpdateOnTerminate()) == true)
-             sUpdateParameter.printf
-             (
-               "\"%s%s\" \"%s\" %s"
-              ,ExtractFilePath(Application->ExeName).c_str()
-              ,GetToolkit().GetUpdateArchiveFilename().GetCString()
-              ,Application->ExeName.c_str()
-              ,sOmitULA_Parameter.c_str()
-             );
+             sUpdateDataParameter.printf("\"%s%s\" \"%s\" %s", ExtractFilePath(Application->ExeName).c_str(),
+                                         GetToolkit().GetUpdateArchiveFilename().GetCString(), Application->ExeName.c_str(),
+                                         sOmitULA_Parameter.c_str());
            BasisExit();
         }
         catch (ZdException &x) {
@@ -191,8 +186,18 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         catch(...) {
            BasisExit();
         }
-        if (bRunUpdate)
-          HINSTANCE hReturn = ShellExecute(NULL, "open", TfrmUpdateCheck::gsUpdaterFilename, sUpdateParameter.c_str(), NULL, SW_SHOWNORMAL);
+        // run update application if flag set
+        if (bRunUpdate) {
+          hReturn = ShellExecute(NULL, "open", sUpdateApplication.c_str(), sUpdateDataParameter.c_str(), NULL, SW_SHOWNORMAL);
+          if ((int)hReturn <= 32) { // check that updater launched
+            sError.printf("Update application was unable to launch (Error Code %d).\n\n"
+                          "Please send an email to the address referenced in the about box\n"
+                          "indicating this situation and the error code. SaTScan will now restart.", (int)hReturn);
+            Application->MessageBox(sError.c_str(), "Update Failed!", MB_OK);
+            // relaunch SaTScan
+            ShellExecute(NULL, "open", Application->ExeName.c_str(), NULL, NULL, SW_SHOWNORMAL);
+          }
+        }
         return 0;
 }
 //---------------------------------------------------------------------------
