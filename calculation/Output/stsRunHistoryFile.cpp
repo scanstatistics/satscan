@@ -280,7 +280,21 @@ void stsRunHistoryFile::OpenRunHistoryFile(const unsigned short& uwSignificantAt
 
       // interval units field
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsLong() = gpAnalysis->GetSatScanData()->m_pParameters->m_nIntervalUnits;
+      switch (gpAnalysis->GetSatScanData()->m_pParameters->m_nIntervalUnits) {
+         case 0:
+            sTempValue << ZdString::reset << "None";
+            break;
+         case 1:
+            sTempValue << ZdString::reset << "Year";
+            break;
+         case 2:
+            sTempValue << ZdString::reset << "Month";
+            break;
+         case 3:
+            sTempValue << ZdString::reset << "Day";
+            break;
+      }
+      fv.AsZdString() = sTempValue;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // intervals length field
@@ -311,11 +325,10 @@ void stsRunHistoryFile::OpenRunHistoryFile(const unsigned short& uwSignificantAt
       File.AppendRecord(*pTransaction, *pRecord);
       delete pRecord; pRecord = 0;
 
-      File.EndTransaction(pTransaction); pTransaction = 0;
+      File.EndTransaction(pTransaction);
       File.Close();
    }
    catch(ZdException &x) {
-      pTransaction = 0;
       delete pRecord; pRecord = 0;
       delete pLastRecord; pLastRecord = 0;
       x.AddCallpath("OpenRunHistoryFile()", "stsRunHistoryFile");
@@ -434,8 +447,8 @@ void stsRunHistoryFile::SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Interv_Units";
-      field.first.second = ZD_LONG_FLD;
-      field.second = 8;
+      field.first.second = ZD_ALPHA_FLD;
+      field.second = 16;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Interv_Len";
