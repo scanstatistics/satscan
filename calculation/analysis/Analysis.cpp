@@ -210,7 +210,7 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
       if (m_pParameters->m_bMostLikelyClusters)
          OpenGridOutputFile(fpMCL, "w");
       if(m_pParameters->GetOutputClusterLevelDBF())
-         pDBFClusterReport.reset(new stsClusterLevelDBF(lReportHistoryRunNumber, GetCoordinateType(), m_pParameters->m_szOutputFilename));
+         pDBFClusterReport.reset(new stsClusterLevelDBF(lReportHistoryRunNumber, GetCoordinateType(), m_pParameters->m_szOutputFilename, m_pParameters->m_nDimension));
 
       for (int i = 0; i < m_nClustersRetained; ++i) {
       	 if (m_pParameters->m_bMostLikelyClusters) {
