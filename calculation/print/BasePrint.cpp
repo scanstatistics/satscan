@@ -7,7 +7,7 @@ const int MAX_INPUT_FILE_WARNING_LIMIT = 75;
 //---------------------------------------------------------------------------
 BasePrint::BasePrint()
 {
-   Init();
+   SetImpliedInputFileType(CASEFILE);
    gsMessage = new char[1];
    gsMessage[0] = 0;
 }
@@ -17,23 +17,6 @@ BasePrint::~BasePrint() {
     delete [] gsMessage;
   }
   catch (...){}
-}
-
-// returns the string representation of what the enumeration actually stands for
-// pre : none
-// post : returns a string by reference of the file type name if eType is valid
-std::string & BasePrint::GetInputFileType(eInputFileType eType, std::string& sName) {
-  switch (eType) {
-    case CASEFILE         : sName = "case"; break;
-    case CONTROLFILE      : sName = "control"; break;
-    case POPFILE          : sName = "population"; break;
-    case COORDFILE        : sName = "coordinates"; break;
-    case GRIDFILE         : sName = "special grid"; break;
-    case MAXCIRCLEPOPFILE : sName = "max circle size"; break;
-    case ADJ_BY_RR_FILE   : sName = "adjustments"; break;
-    default : ZdException::GenerateNotification("Invalid input file type warning message!", "GetInputFileType()");
-  }
-  return sName;
 }
 
 void BasePrint::SatScanPrintf(const char * sMessage, ... )
@@ -76,11 +59,10 @@ void BasePrint::PrintInputWarning(const char* sMessage, ...)
       // print the excessive warning message on the MAX_INPUT_FILE_WARNING_LIMIT time - else print nothing past -- AJV
       if (iter->second == MAX_INPUT_FILE_WARNING_LIMIT) {
          bPrintAsNormal = false;
-         std::string sInputFile, message;
-         GetInputFileType(geInputFileType, sInputFile);
-         message = "Error: Excessive number of warnings in the ";
-         message += sInputFile;
-         message += " input file.\n";
+         std::string message;
+         message = "Error: Excessive number of warnings in  ";
+         message += GetImpliedFileTypeString().c_str();
+         message += ".\n";
          PrintWarningLine(const_cast<char*>(message.c_str()));
       }
       else if(iter->second > MAX_INPUT_FILE_WARNING_LIMIT)
@@ -160,3 +142,27 @@ void BasePrint::PrintMessage(va_list varArgs, const char * sMessage ) {
    catch (...) {};
 }
 #endif
+
+void BasePrint::SetImpliedInputFileType(eInputFileType eType, unsigned int iStream) {
+  geInputFileType = eType;
+  switch (eType) {
+    case CASEFILE         : gsInputFileString = "case file"; break;
+    case CONTROLFILE      : gsInputFileString = "control file"; break;
+    case POPFILE          : gsInputFileString = "population file"; break;
+    case COORDFILE        : gsInputFileString = "coordinates file"; break;
+    case GRIDFILE         : gsInputFileString = "special grid file"; break;
+    case MAXCIRCLEPOPFILE : gsInputFileString = "max circle size file"; break;
+    case ADJ_BY_RR_FILE   : gsInputFileString = "adjustments file"; break;
+    default : ZdException::GenerateNotification("Invalid input file type warning message!", "SetImpliedInputFileType()");
+  }
+
+//  if (iStream) {
+//    ZdString s;
+//    s.printf("%s (input stream %u)", gsInputFileString.c_str(), iStream);
+//    gsInputFileString = s.GetCString();
+//    gsInputFileString += "(input stream ";
+//    gsInputFileString += itoa(iStream;
+//    gsInputFileString += ")";
+//  }
+}
+
