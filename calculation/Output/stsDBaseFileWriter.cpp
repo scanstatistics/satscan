@@ -62,7 +62,7 @@ void DBaseFileWriter::Print() {
 
    try {
       pTransaction = pFile->BeginTransaction();
-      for(unsigned short i = 0; i < gpOutputFileData->GetNumRecords(); ++i) {
+      for(unsigned long i = 0; i < gpOutputFileData->GetNumRecords(); ++i) {
          pRecord = gpOutputFileData->GetRecord(i);
          pDBaseRecord.reset(pFile->GetNewRecord());
          for (unsigned short j = 0; j < pRecord->GetNumFields(); ++j) {

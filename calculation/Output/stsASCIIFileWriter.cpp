@@ -44,10 +44,10 @@ void ASCIIFileWriter::CreateFormatString(ZdString& sValue, const int iFieldNumbe
          case ZD_ALPHA_FLD :
             ulStringLength = fv.AsZdString().GetLength();
             sTemp = fv.AsZdString();
-            if (ulStringLength < pField->GetLength())
+            if (ulStringLength < (unsigned long)pField->GetLength())
                for(int i = sTemp.GetLength(); i < pField->GetLength() + 1; ++i)
                   sTemp << " ";
-            else if(ulStringLength > pField->GetLength())
+            else if(ulStringLength > (unsigned long)pField->GetLength())
                sTemp.Truncate(pField->GetLength());
             sValue << sTemp;
             break;
