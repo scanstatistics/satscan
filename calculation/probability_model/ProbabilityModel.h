@@ -29,6 +29,7 @@ class CModel
     virtual void   MakeData() = 0;
     virtual double GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
                                  int nStartInterval, int nStopInterval) = 0;
+    virtual bool   ReCalculateMeasure() {/* No action taken by default. */}
 };
 
 //*****************************************************************************
