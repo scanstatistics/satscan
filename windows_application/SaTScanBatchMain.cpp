@@ -3,7 +3,6 @@
 //---------------------------------------------------------------------------
 
 #include <time.h>
-#include <process.h>
 #include "UtilityFunctions.h"
 #include "Parameters.h"
 #include "PurelySpatialAnalysis.h"
@@ -29,7 +28,7 @@ int main(int argc, char *argv[]) {
 
   try {
     BasisInit(); //initialize basis/zero dimension libraries
-    BasisSetToolkit(new SaTScanToolkit()); //Set toolkit
+    BasisSetToolkit(new SaTScanToolkit(argv[0])); //Set toolkit
     ZdGetFileTypeArray()->AddElement(&(DBFFileType::GetDefaultInstance()));
     ConsolePrint.SatScanPrintf(GetToolkit().GetAcknowledgment(sMessage));
     if (argc < 2)
