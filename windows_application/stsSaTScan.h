@@ -14,7 +14,8 @@
 #include "stsFrmAnalysisParameters.h"
 #include "stsFrmAnalysisRun.h"
 #include "stsCalculationThread.h"
-#include "StsMain.h"
+#include "stsMain.h"
+#include <Basis540.h>
 
 #define TECH_EMAIL "satscan@nih.gov"
 #define VERSION_NUMBER "v 3.0.0"
