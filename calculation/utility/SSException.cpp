@@ -26,11 +26,15 @@ void GenerateResolvableException(const char * sMessage, const char * sSourceModu
 /**  Construct. This is an alternate constructor for when the varArgs list for sMessage
      has already been prepared. Primarily, this will be used by derived classes.        */
 UsageException::UsageException(const char * sExecutableFullpathName) : ZdException () {
-   SetErrorMessage((const char*)"usage: %s [parameters file] [options]\n\n"
-                   "options: -v -- suppress instance particular information in results\n"
-                   "         -o -- ignore parameter result filename setting, use next parameter\n"
-                   "               ex. c:\\>satscan.exe c:\\parameters.prm -o c:\\alternate.out.txt\n",
-                   ZdFileName(sExecutableFullpathName).GetCompleteFileName());
+   ZdString s;
+   
+   s.printf("usage: %s [parameters file] [options]\n\n"
+            "options: -v -- suppress instance particular information in results\n"
+            "         -o -- ignore parameter result filename setting, use next parameter\n"
+            "               ex. c:\\>satscan.exe c:\\parameters.prm -o c:\\alternate.out.txt\n",
+            ZdFileName(sExecutableFullpathName).GetCompleteFileName());
+                   	
+   SetErrorMessage(s.GetCString());
 }
 
 /**  This function will throw the exception with the parameters.  It is equivalent to
