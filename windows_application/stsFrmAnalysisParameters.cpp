@@ -549,7 +549,7 @@ void TfrmAnalysis::EnableActions(bool bEnable) {
       if (pAction) {
          if(pAction->Category == CATEGORY_ALL || pAction->Category == CATEGORY_ANALYSIS)
              pAction->Enabled = bEnable;
-         else if(pAction->Category == CATEGORY_ANALYSIS_RUN)
+         else
              pAction->Enabled = !bEnable;
       }
    }
