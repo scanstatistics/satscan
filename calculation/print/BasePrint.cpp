@@ -25,15 +25,15 @@ BasePrint::~BasePrint() {
 void BasePrint::GetInputFileType(eInputFileType eType, std::string& sName) {
    switch (eType) {
       case CASEFILE :
-         sName = "Cases"; break;
+         sName = "case"; break;
       case CONTROLFILE :
-         sName = "Controls"; break;
+         sName = "control"; break;
       case POPFILE :
-         sName = "Population"; break;
+         sName = "population"; break;
       case COORDFILE :
-         sName = "Coordinates"; break;
+         sName = "coordinates"; break;
       case GRIDFILE :
-         sName = "Special Grid"; break;
+         sName = "special grid"; break;
       default :
          ZdException::GenerateNotification("Invalid input file type warning message!", "ERROR!");
    }
@@ -81,9 +81,9 @@ void BasePrint::PrintInputWarning(const char* sMessage, ...)
          bPrintAsNormal = false;
          std::string sInputFile, message;
          GetInputFileType(geInputFileType, sInputFile);
-         message = "ERROR: Excessive number of warnings in the ";
+         message = "Error: Excessive number of warnings in the ";
          message += sInputFile;
-         message += " input file.\n       Please check the file structure.\n";
+         message += " input file.\n";
          PrintWarningLine(const_cast<char*>(message.c_str()));
       }
       else if(iter->second > MAX_INPUT_FILE_WARNING_LIMIT)
