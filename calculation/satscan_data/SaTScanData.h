@@ -123,7 +123,7 @@ class CSaTScanData {
     virtual tract_t                             GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
     inline tract_t                           ** GetNeighborCountArray() {return gpNeighborCountHandler->GetArray();}
     inline tract_t                           ** GetNeighborCountArray() const {return gpNeighborCountHandler->GetArray();}
-    inline size_t                               GetNumDataStreams() const {return gpDataStreams->GetStreams().size();}
+    inline size_t                               GetNumDataStreams() const {return gpDataStreams->GetNumStreams();}
     inline int                                  GetNumTimeIntervals() const {return m_nTimeIntervals;}
     inline tract_t                              GetNumTracts() const {return m_nTracts;}
     const CParameters                         & GetParameters() const {return *m_pParameters;}
