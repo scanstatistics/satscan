@@ -51,6 +51,7 @@ const char*      ELLIPSES_SECTION               = "[Ellipses]";
 const char*      NUMBER_ELLIPSES_LINE           = "NumberOfEllipses";
 const char*      ELLIPSE_SHAPES_LINE            = "EllipseShapes";
 const char*      ELLIPSE_ANGLES_LINE            = "EllipseAngles";
+const char*      ELLIPSE_DUCZMAL_COMPACT_LINE   = "DuczmalCompactnessCorrection";
 
 const char*      OUTPUT_FILES_SECTION           = "[OutputFiles]";
 const char*      RESULTS_FILE_LINE              = "ResultsFile";
@@ -65,7 +66,7 @@ const char*      INCLUDE_REL_RISKS_LINE         = "IncludeRelativeRisksCensusAre
 const char*      DBASE_RELATIVE_RISKS           = "IncludeRelativeRisksCensusAreasDBase";
 
 
-char mgsVariableLabels[50][100] = {
+char mgsVariableLabels[51][100] = {
    "Analysis Type",
    "Scan Areas",
    "Case File",
@@ -115,7 +116,8 @@ char mgsVariableLabels[50][100] = {
    "Output for cluster information",
    "Output for area information",
    "dBase output for Relative Risks",
-   "dBase output for Log Likelihoods"
+   "dBase output for Log Likelihoods",
+   "Duczmal compactness correction for ellipses"
    };
 
 CParameters::CParameters(bool bDisplayErrors) {
@@ -169,6 +171,13 @@ void CParameters::CheckEllipseIniSection(ZdIniFile& file, bool bCreateIfMissing)
   //       if (bCreateIfMissing)
             pSection->AddComment(" ellipse angles");
             pSection->AddLine(ELLIPSE_ANGLES_LINE, "");
+  //       else
+  //          ZdException::GenerateNotification("Error reading parameter file. Ellipse angles line is missing!", "Error!");
+      }
+      if ( pSection->FindKey(ELLIPSE_DUCZMAL_COMPACT_LINE) == -1 ) {
+  //       if (bCreateIfMissing)
+            pSection->AddComment(" Duczmal Compactness Correction (y/n)");
+            pSection->AddLine(ELLIPSE_DUCZMAL_COMPACT_LINE, "");
   //       else
   //          ZdException::GenerateNotification("Error reading parameter file. Ellipse angles line is missing!", "Error!");
       }
@@ -645,6 +654,7 @@ void CParameters::copy(const CParameters &rhs) {
        mp_nENumbers = new int[ m_nNumEllipses ];
        memcpy(mp_dEShapes, rhs.mp_dEShapes, (sizeof(double)*m_nNumEllipses));
        memcpy(mp_nENumbers, rhs.mp_nENumbers, (sizeof(int)*m_nNumEllipses));
+       m_bDuczmalCorrectEllipses = rhs.m_bDuczmalCorrectEllipses;
     }
     else {
        mp_dEShapes = 0;
@@ -827,19 +837,24 @@ void CParameters::DisplayParameters(FILE* fp) {
      if (m_nNumEllipses > 0) {
         fprintf(fp, "\nEllipses\n");
         fprintf(fp, "----------\n");
-        fprintf(fp, "Number of Ellipse Shapes Requested:  %i\n", m_nNumEllipses);
-        fprintf(fp, "Shape for Each Ellipse:  ");
+        fprintf(fp, "  Number of Ellipse Shapes Requested       : %i\n", m_nNumEllipses);
+        fprintf(fp, "  Shape for Each Ellipse                   : ");
         for (int i = 0; i < m_nNumEllipses; ++i)
-           fprintf(fp, "%7.3f ", mp_dEShapes[i]);
-        fprintf(fp, "\nNumber of Angles for Each Ellipse Shape:  ");
+           fprintf(fp, "%.3f ", mp_dEShapes[i]);
+        fprintf(fp, "\n  Number of Angles for Each Ellipse Shape  : ");
         for (int i = 0; i < m_nNumEllipses; ++i)
            fprintf(fp, "%i ", mp_nENumbers[i]);
+        fprintf(fp, "\n  Duczmal Compactness Correction           : ");
+        switch (m_bDuczmalCorrectEllipses) {
+          case true  : fprintf(fp, "Yes"); break;
+          case false : fprintf(fp, "No");  break;
+        }
      }
      fprintf(fp, "\n\nScanning Window\n");
      fprintf(fp, "---------------\n");
 
      if (m_nAnalysisType == PURELYSPATIAL || m_nAnalysisType == SPACETIME || m_nAnalysisType == PROSPECTIVESPACETIME) {
-       fprintf(fp, "  Maximum Spatial Cluster Size : %.2f", m_nMaxGeographicClusterSize);
+       fprintf(fp, "  Maximum Spatial Cluster Size          : %.2f", m_nMaxGeographicClusterSize);
        switch (m_nMaxSpatialClusterSizeType) {
           case    PERCENTAGEOFMEASURETYPE    : fprintf(fp, " %%\n"); break;
           case    DISTANCETYPE               : if (m_nCoordType == CARTESIAN)
@@ -859,7 +874,7 @@ void CParameters::DisplayParameters(FILE* fp) {
      }
 
      if (m_nAnalysisType == PURELYTEMPORAL || m_nAnalysisType == SPACETIME || (m_nAnalysisType == PROSPECTIVESPACETIME)) {
-       fprintf(fp, "  Maximum Temporal Cluster Size : %.2f", m_nInitialMaxTemporalClusterSize);
+       fprintf(fp, "  Maximum Temporal Cluster Size         : %.2f", m_nInitialMaxTemporalClusterSize);
        switch (m_nInitialMaxClusterSizeType) {
          case    PERCENTAGETYPE : fprintf(fp, " %%\n"); break;
          case    TIMETYPE       : if (m_nIntervalUnits == YEAR)
@@ -876,7 +891,7 @@ void CParameters::DisplayParameters(FILE* fp) {
      }
 
      if ((m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME)) {
-       fprintf(fp, "  Also Include Purely Spatial Clusters : ");
+       fprintf(fp, "  Also Include Purely Spatial Clusters  : ");
        switch (m_bIncludePurelySpatial) {
          case true  : fprintf(fp, "Yes\n"); break;
          case false : fprintf(fp, "No\n");  break;
@@ -896,7 +911,7 @@ void CParameters::DisplayParameters(FILE* fp) {
        fprintf(fp, "\nTime Parameters\n");
        fprintf(fp, "---------------\n");
    
-       fprintf(fp, "\n  Time Interval Units  : ");
+       fprintf(fp, "  Time Interval Units  : ");
        switch (m_nIntervalUnits) {
          case 1 : fprintf(fp, "Years\n"); break;
          case 2 : fprintf(fp, "Months\n"); break;
@@ -1158,6 +1173,7 @@ void CParameters::ReadEllipseSectionFromIni(ZdIniFile& file) {
       m_nNumEllipses = atoi(pSection->GetLine(pSection->FindKey(NUMBER_ELLIPSES_LINE))->GetValue());
       SetEShapesFromIniFile(pSection->GetLine(pSection->FindKey(ELLIPSE_SHAPES_LINE))->GetValue());
       SetEAnglesFromIniFile(pSection->GetLine(pSection->FindKey(ELLIPSE_ANGLES_LINE))->GetValue());
+      m_bDuczmalCorrectEllipses = ValueIsYes(pSection->GetLine(pSection->FindKey(ELLIPSE_DUCZMAL_COMPACT_LINE))->GetValue());
    }
    catch (ZdException &x) {
       x.AddCallpath("ReadEllipseSectionFromIni()", "CParameters");
@@ -1320,6 +1336,7 @@ void CParameters::SaveEllipseSection(ZdIniFile& file) {
       for (int i = 0; i < m_nNumEllipses; ++i)
          sAngles << (i == 0 ? "" : ",") << mp_nENumbers[i];
       pSection->GetLine(pSection->FindKey(ELLIPSE_ANGLES_LINE))->SetValue(sAngles.GetCString());
+      pSection->SetString(ELLIPSE_DUCZMAL_COMPACT_LINE, m_bDuczmalCorrectEllipses ? YES : NO);
    }
    catch (ZdException &x) {
       x.AddCallpath("SaveEllipseSection()", "CParameters");
@@ -1529,6 +1546,7 @@ void CParameters::SetDefaultsV2() {
   m_bMostLikelyClusters    = false;
   m_iCriteriaSecondClusters = 0;
   m_lTotalNumEllipses      = 0;
+  m_bDuczmalCorrectEllipses = false;
 
    //need to convert old parameter analysis settings to new ones..
   if (m_nAnalysisType == 2) m_nAnalysisType = 3;
@@ -1549,6 +1567,7 @@ void CParameters::SetDefaultsV3() {
      mp_nENumbers             = 0;
      m_lTotalNumEllipses      = 0;
      m_iCriteriaSecondClusters = 0;
+     m_bDuczmalCorrectEllipses = false;     
   }
   // someone has set up some old session to run with ellipses...
   else {

@@ -5,7 +5,7 @@
 #include "SatScan.h"
 #include "JulianDates.h"
 
-#define PARAMETERS 50
+#define PARAMETERS 51
 
 extern const char*      ANALYSIS_HISTORY_FILE;
 extern const char*      YES;
@@ -59,6 +59,7 @@ extern const char*      ELLIPSES_SECTION;
 extern const char*      NUMBER_ELLIPSES_LINE;
 extern const char*      ELLIPSE_SHAPES_LINE;
 extern const char*      ELLIPSE_ANGLES_LINE;
+extern const char*      ELLIPSE_DUCZMAL_COMPACT_LINE;
 
 // output files section
 extern const char*      OUTPUT_FILES_SECTION;
@@ -83,7 +84,7 @@ enum {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE, COORDFILE, OUTPUTFILE, PRECI
       VALIDATE, OUTPUTRR, ELLIPSES, ESHAPES, ENUMBERS, START_PROSP_SURV,
       OUTPUT_CENSUS_AREAS, OUTPUT_MOST_LIKE_CLUSTERS, CRITERIA_SECOND_CLUSTERS,
       MAX_TEMPORAL_TYPE,MAX_SPATIAL_TYPE, RUN_HISTORY_FILENAME, OUTPUTCLUSTERDBF, OUTPUTAREADBF,
-      RELATIVE_RISK_DBF, LOG_LIKELI_DBF};
+      RELATIVE_RISK_DBF, LOG_LIKELI_DBF, DUCZMAL_COMPACTNESS};
 enum {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE}; //analysis, clusters
 enum {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION};
 enum {ALLCLUSTERS=0, ALIVECLUSTERS};   // Clusers
@@ -149,6 +150,7 @@ class CParameters
     double *mp_dEShapes;                  /** Shape of each ellipsoid */
     int    *mp_nENumbers;                 /** Number of rotations for each ellipsoid */
     long    m_lTotalNumEllipses;          /** Total number of Ellipses (ellipses by each shape) */
+    bool    m_bDuczmalCorrectEllipses;    /** Indicates whether ellispes should be penalized */
 
     int    m_nAnalysisType;               /** Analysis (PS, PT, ST-Retro, ST-Prospective). */
     int    m_nAreas;                      /** Scan for high, low, high&low areas. */
