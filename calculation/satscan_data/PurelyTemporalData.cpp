@@ -21,7 +21,7 @@ void CPurelyTemporalData::AllocSimCases()
    try
       {
       CSaTScanData::AllocSimCases();  // Use until MakePurelyTemporalData implemented
-      m_pPTSimCases = (count_t*)Smalloc(m_nTimeIntervals * sizeof(count_t), gpPrintDirection);
+      m_pPTSimCases = (count_t*)Smalloc(m_nTimeIntervals * sizeof(count_t), gpPrint);
       }
    catch (SSException & x)
       {
