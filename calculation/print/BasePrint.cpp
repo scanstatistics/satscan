@@ -7,6 +7,7 @@ const int MAX_INPUT_FILE_WARNING_LIMIT = 75;
 //---------------------------------------------------------------------------
 BasePrint::BasePrint()
 {
+   Init();
    gsMessage = new char[1];
    gsMessage[0] = 0;
 }
@@ -64,13 +65,13 @@ void BasePrint::SatScanPrintWarning(const char * sMessage, ... )
 // pre : none
 // post : increments the counter in the global map for the message type (or starts a new counter if not found) and
 //       if the number of messages for that file type is less than the maximum then it just prints as normal
-void BasePrint::SatScanPrintInputFileWarning(eInputFileType eType, const char* sMessage, ...)
+void BasePrint::PrintInputWarning(const char* sMessage, ...)
 {
    bool bPrintAsNormal(true);
-   std::map<eInputFileType, int>::iterator iter = gInputFileWarningsMap.find(eType);
+   std::map<eInputFileType, int>::iterator iter = gInputFileWarningsMap.find(geInputFileType);
 
    if (iter == gInputFileWarningsMap.end()) {
-      gInputFileWarningsMap.insert(std::make_pair(eType, 1));
+      gInputFileWarningsMap.insert(std::make_pair(geInputFileType, 1));
    }
    else {
       iter->second++;
@@ -79,7 +80,7 @@ void BasePrint::SatScanPrintInputFileWarning(eInputFileType eType, const char* s
       if (iter->second == MAX_INPUT_FILE_WARNING_LIMIT) {
          bPrintAsNormal = false;
          std::string sInputFile, message;
-         GetInputFileType(eType, sInputFile);
+         GetInputFileType(geInputFileType, sInputFile);
          message = "ERROR: Excessive number of warnings in the ";
          message += sInputFile;
          message += " input file.\n       Please check the file structure.\n";
@@ -112,15 +113,23 @@ void BasePrint::SatScanPrintInputFileWarning(eInputFileType eType, const char* s
 // message is cleared.
 void BasePrint::PrintMessage(va_list varArgs, const char * sMessage) {
   int   iStringLength;   // Holds the length of the formatted output
+  int   iCurrentLength;  // Current length of the buffer
 
   try {
     // vsnprintf will calculate the required length, not including the NULL,
     // for the format string when given a NULL pointer and a zero length as
     // the first two parameters.
-    delete [] gsMessage; gsMessage=0;
-    iStringLength = vsnprintf ( 0, 0, sMessage, varArgs );
-    gsMessage = new char[iStringLength + 1];
-    vsnprintf ( gsMessage, iStringLength + 1, sMessage, varArgs );
+
+    iCurrentLength = strlen (gsMessage);
+
+    iStringLength = vsnprintf(gsMessage, iCurrentLength + 1, sMessage, varArgs);
+    //iStringLength = vsnprintf ( 0, 0, sMessage, varArgs );
+
+    if ( iStringLength > iCurrentLength ) {
+      delete [] gsMessage; gsMessage=0;
+      gsMessage = new char[iStringLength + 1];
+      vsnprintf (gsMessage, iStringLength + 1, sMessage, varArgs);
+    }
   }
   catch (...) {}
 }
