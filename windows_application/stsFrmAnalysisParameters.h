@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 #ifndef stsFrmAnalysisParametersH
 #define stsFrmAnalysisParametersH
-
 //---------------------------------------------------------------------------
 #include <Classes.hpp>
 #include <Controls.hpp>
@@ -105,11 +104,7 @@ class TfrmAnalysis : public TForm {
         TCheckBox *chkInclSimLogLik;
         TRadioButton *rdoPercentageTemproal;
         TRadioButton *rdoTimeTemproal;
-        TGroupBox *grpCriteriaSecClusters;
         TComboBox *cboCriteriaSecClusters;
-        TGroupBox *grpB2;
-        TCheckBox *chkDbaseFile1;
-        TCheckBox *chkDbaseFile2;
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall rgPrecisionTimesClick(TObject *Sender);
         void __fastcall btnCaseBrowseClick(TObject *Sender);
@@ -161,6 +156,11 @@ class TfrmAnalysis : public TForm {
   private:	// User declarations
     CParameters       * gpParams;
     AnsiString          gsParamFileName;
+    ZdVector<const char*>       gvGeoFileFieldDescriptors,
+                                gvCaseFileFieldDescriptors,
+                                gvGridFileFieldDescriptors,
+                                gvPopFileFieldDescriptors,
+                                gvControlFileFieldDescriptors;
 
     bool                Check_Days(int iYear, int iMonth, int iDay, char *sDateName);
     bool                Check_IntervalLength(int iStartYear, int iStartMonth, int iStartDay,
@@ -181,8 +181,8 @@ class TfrmAnalysis : public TForm {
     bool                CheckScanningWindowParams();
     bool                CheckTimeParams();
     void                ConvertPurelySpacialIntervals();
+    void                CreateCSVFile(const ZdFileName& sFileName, const ZdVector<const char*>& vFieldNames);
     void                DataExchange();
-    bool                DetermineIfDbfExtension(AnsiString sFileName);
     void                EnableAdditionalAsciiFileOptions();
     void                EnableAnalysisType(bool bValue);
     void                EnablePrecision();
@@ -190,11 +190,16 @@ class TfrmAnalysis : public TForm {
     void                EnableScanningWindow();
     void                EnableTimeIntervals();
     void                EnableTimeTrendAdj();
-    void                Init() {gpParams=0; cboCriteriaSecClusters->ItemIndex = 0;}
-
+    void                Init();
     void                ParseDate(char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *pDay);
     bool                ReadSession(char *sFileName);
     void                SaveTextParameters();
+    void                SetupCaseFileFieldDescriptors();
+    void                SetupControlFileFieldDescriptors();
+    void                SetupGeoFileFieldDescriptors();
+    void                SetupGridFileFieldDescriptors();
+    void                SetupImportDescriptor(BFTFImportDescriptor& descrip, const ZdString& sImportFileName);
+    void                SetupPopFileFieldDescriptors();
     void                SetupInterface();
     bool                ValidateInputFiles();
     bool                ValidateTemoralClusterSize();
