@@ -25,13 +25,14 @@ CPurelyTemporalAnalysis::~CPurelyTemporalAnalysis() {
 /** Allocates objects used during simulations, instead of repeated allocations
     for each simulation. Which objects that are allocated depends on whether
     the simluations process uses same process as real data or uses measure list. */
-void CPurelyTemporalAnalysis::AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway) {
+void CPurelyTemporalAnalysis::AllocateSimulationObjects(const AbtractDataStreamGateway& DataGateway) {
   IncludeClustersType           eIncludeClustersType;
 
   try {
     //create new time intervals object - delete existing object used during real data process
     delete gpTimeIntervals; gpTimeIntervals=0;
     if (gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)
+      //for prospective analyses, allocate time object with ALLCLUSTERS for simulations
       eIncludeClustersType = ALLCLUSTERS;
     else
       eIncludeClustersType = gParameters.GetIncludeClustersType();
@@ -64,18 +65,16 @@ void CPurelyTemporalAnalysis::AllocateSimulationObjects(const AbtractDataStreamG
     of repeated allocations for each simulation.
     NOTE: No action taken in this function for this class. Objects are allocated
           directly in CPurelyTemporalAnalysis::FindTopClusters(). */
-void CPurelyTemporalAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway) {
-  //no action taken for purely temporal analysis
-}
+void CPurelyTemporalAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGateway& DataGateway) {}
 
 const CCluster & CPurelyTemporalAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway) {
   ZdGenerateException("CalculateTopCluster() can not be called for CPurelyTemporalAnalysis.","CPurelyTemporalAnalysis");
   return *gpTopCluster;
 }
 
-/** Calculate most likely, purely temporal, cluster and adds clone
-    of top cluster to top cluster array. */
-void CPurelyTemporalAnalysis::FindTopClusters(const AbtractDataStreamGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
+/** Calculate most likely, purely temporal, cluster and adds clone of top cluster
+    to top cluster array. */
+void CPurelyTemporalAnalysis::FindTopClusters(const AbtractDataStreamGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
   IncludeClustersType           eIncludeClustersType;
   CTimeIntervals              * pTimeIntervals=0;  
 
@@ -124,7 +123,7 @@ void CPurelyTemporalAnalysis::Init() {
   gpClusterComparator=0;
 }
 
-/** Returns loglikelihood for Monte Carlo replication. */
+/** Returns log likelihood ratio for Monte Carlo replication. */
 double CPurelyTemporalAnalysis::MonteCarlo(const DataStreamInterface&) {
   gpMeasureList->Reset();
   gpTimeIntervals->CompareMeasures(*gpClusterData, *gpMeasureList);
