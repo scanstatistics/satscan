@@ -6,10 +6,12 @@
 #include "SaTScanData.h"
 #include "IncidentRate.h"
 
-class CCluster
-{
+class stsAreaSpecificDBF;
+
+class CCluster {
   protected:
     BasePrint *gpPrintDirection;
+    stsAreaSpecificDBF*         gpAreaDBFReport;
   public:
     CCluster(BasePrint *pPrintDirection);
     virtual ~CCluster();
@@ -48,68 +50,67 @@ class CCluster
     CCluster& operator =(const CCluster& cluster);
     virtual void Initialize(tract_t nCenter=0);
 
-    void   SetCenter(tract_t nCenter);
+    virtual void        AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {};
+    virtual bool        ClusterDefined() {return (m_bClusterDefined==true);}
+    double              ConvertAngleToDegrees(double dAngle);
+    virtual void        Display(FILE*     fp,
+                                const     CParameters& Parameters,
+                                const CSaTScanData& Data,
+                                int       nCluster,
+                                 measure_t nMinMeasure);
+    virtual void        DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
+                                            int nCluster,  measure_t nMinMeasure, int nReplicas,
+                                            bool bIncludeRelRisk, bool bIncludePVal,
+                                            int nLeftMargin, int nRightMargin,
+                                            char cDeliminator, char* szSpacesOnLeft,
+                                            bool bFormat = true);
+    void                DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
+                                                tract_t nFirstTract, tract_t nLastTract,
+                                                int nCluster, measure_t nMinMeasure, int nReplicas,
+                                                bool bIncludeRelRisk, bool bIncludePVal,
+                                                int nLeftMargin, int nRightMargin,
+                                                char cDeliminator, char* szSpacesOnLeft,
+                                                bool bFormat = true);
+    virtual void        DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
+                                        int nLeftMargin, int nRightMargin,
+                                        char cDeliminator, char* szSpacesOnLeft);
+    virtual void        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
+                                        int nLeftMargin, int nRightMargin,
+                                        char cDeliminator, char* szSpacesOnLeft);
+    virtual void        DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft);
 
-    void   SetRate(int nRate);
-    double SetLogLikelihood(double nLogLikelihood) {m_nLogLikelihood = nLogLikelihood; return m_nLogLikelihood;};
-//    double SetLogLikelihood(count_t N, measure_t U);
+    virtual void        DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft);
+    virtual void        DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment,
+                                        int nLeftMargin, int nRightMargin,
+                                        char cDeliminator, char* szSpacesOnLeft);
+    virtual void        DisplaySteps(FILE* fp, char* szSpacesOnLeft) {};
+    virtual void        DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType);
 
-    void   SetRatioAndDates(const CSaTScanData& Data);
-    double SetRatio(double nLogLikelihoodForTotal);
-    virtual void SetStartAndEndDates(const Julian* pIntervalStartTimes,
-                                     int nTimeIntervals);
-    double  ConvertAngleToDegrees(double dAngle);
-    int     GetClusterType()   {return m_nClusterType;};
-    double  GetLogLikelihood() {return m_nLogLikelihood;};
-    tract_t GetNumCircles()    {return m_nSteps;};
-    double   GetPVal(int nReps) {return (double)m_nRank/(double)(nReps+1);};
-//  double  GetRelativeRisk()  {return ((double)(m_nCases))/m_nMeasure;};
-    double  GetRelativeRisk(double nMeasureAdjustment);
-//    double  GetPopulation(const CSaTScanData& Data);
+    int                 GetClusterType()   {return m_nClusterType;}
+    double              GetLogLikelihood() {return m_nLogLikelihood;}
+    tract_t             GetNumCircles()    {return m_nSteps;}
+    virtual tract_t     GetNumTractsInnerCircle() { return m_nTracts; }
+    double              GetPVal(int nReps) {return (double)m_nRank/(double)(nReps+1);}
+    double              GetRelativeRisk(double nMeasureAdjustment);
+    
 
-    virtual tract_t GetNumTractsInnerCircle() { return m_nTracts; };
+    bool                RateIsOfInterest(count_t nTotalCases, measure_t nTotalMeasure);
 
-    virtual bool ClusterDefined() {return (m_bClusterDefined==true);};
-    bool RateIsOfInterest(count_t nTotalCases, measure_t nTotalMeasure);
+    void                SetAreaReport(stsAreaSpecificDBF* pAreaDBFReport) { gpAreaDBFReport = pAreaDBFReport; }
+    void                SetCenter(tract_t nCenter);
+    void                SetEllipseOffset(int iOffset);
+    double              SetLogLikelihood(double nLogLikelihood) {m_nLogLikelihood = nLogLikelihood; return m_nLogLikelihood;}
+    void                SetRate(int nRate);
+    double              SetRatio(double nLogLikelihoodForTotal);
+    void                SetRatioAndDates(const CSaTScanData& Data);
+    virtual void        SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals);
 
-    virtual void AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {};
+    void                WriteCoordinates(FILE* fp, CSaTScanData* pData);
+    void                WriteLatLongCoords(FILE* fp, CSaTScanData* pData);
 
-    virtual void Display(FILE*     fp,
-                         const     CParameters& Parameters,
-                         const CSaTScanData& Data,
-                         int       nCluster,
-                         measure_t nMinMeasure);
-    virtual void DisplaySteps(FILE* fp, char* szSpacesOnLeft) {};
-    virtual void DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment,
-                                     int nLeftMargin, int nRightMargin,
-                                     char cDeliminator, char* szSpacesOnLeft);
-    virtual void DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType);
-    virtual void DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft);
-    virtual void DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft);
-    virtual void DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
-                                    int nLeftMargin, int nRightMargin,
-                                    char cDeliminator, char* szSpacesOnLeft);
-    virtual void DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
-                                    int nLeftMargin, int nRightMargin,
-                                    char cDeliminator, char* szSpacesOnLeft);
-    virtual void DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
-                                     int nCluster,  measure_t nMinMeasure,
-                                     int nReplicas,
-                                     bool bIncludeRelRisk, bool bIncludePVal,
-                                     int nLeftMargin, int nRightMargin,
-                                     char cDeliminator, char* szSpacesOnLeft,
-                                     bool bFormat = true);
-    void DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
-                                   tract_t nFirstTract, tract_t nLastTract,
-                                   int nCluster, measure_t nMinMeasure,
-                                   int nReplicas,
-                                   bool bIncludeRelRisk, bool bIncludePVal,
-                                   int nLeftMargin, int nRightMargin,
-                                   char cDeliminator, char* szSpacesOnLeft,
-                                   bool bFormat = true);
-     void SetEllipseOffset(int iOffset);
-     void WriteCoordinates(FILE* fp, CSaTScanData* pData);
-     void WriteLatLongCoords(FILE* fp, CSaTScanData* pData);
+    //    double  GetPopulation(const CSaTScanData& Data);
+    //  double  GetRelativeRisk()  {return ((double)(m_nCases))/m_nMeasure;};
+   //    double SetLogLikelihood(count_t N, measure_t U);
 };
 
 //*****************************************************************************

@@ -1,6 +1,8 @@
 #include "SaTScan.h"
 #pragma hdrstop
+
 #include "Cluster.h"
+#include "stsAreaSpecificDBF.h"
 
 CCluster::CCluster(BasePrint *pPrintDirection)
 {
@@ -39,12 +41,9 @@ void CCluster::Initialize(tract_t nCenter)
   m_iEllipseOffset = 0;         // use to be -1, but bombed when R = 1
 
   gfPValue = 0.0;
+  gpAreaDBFReport = 0;
 }
 
-void CCluster::SetCenter(tract_t nCenter)
-{
-  m_Center = nCenter;
-}
 
 CCluster& CCluster::operator =(const CCluster& cluster)
 {
@@ -75,6 +74,23 @@ CCluster& CCluster::operator =(const CCluster& cluster)
   return *this;
 }
 
+double CCluster::ConvertAngleToDegrees(double dAngle)
+{
+   double dDegrees;
+   
+   try
+      {
+      dDegrees = 180.00 * (dAngle / (double)M_PI);
+      if (dDegrees > 90.00)
+         dDegrees -= 180.00;
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("ConvertAngleToDegrees()", "CCluster");
+      throw;
+      }
+   return dDegrees;
+}
 
 void CCluster::Display(FILE*     fp,
                        const     CParameters& Parameters,
@@ -90,7 +106,7 @@ void CCluster::Display(FILE*     fp,
    try
       {
       fprintf(fp, "%i.", nCluster);
-    
+
       // Adjust for spacing of cluster number
       strcpy(szSpacesOnLeft, "  ");
       int n = (int)floor(((double)nCluster)/10);
@@ -100,7 +116,7 @@ void CCluster::Display(FILE*     fp,
         nLeftMargin += n;
         n = (int)floor(((double)n)/10);
         }
-    
+
       DisplaySteps(fp, szSpacesOnLeft);
       //  fprintf(fp, "Census areas included");
       fprintf(fp, "Census areas ");
@@ -112,11 +128,11 @@ void CCluster::Display(FILE*     fp,
       	DisplayCoordinates(fp, Data, nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
       else
       	DisplayLatLongCoords(fp, Data, nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
-    
+
       DisplayTimeFrame(fp, szSpacesOnLeft, Parameters.m_nAnalysisType);
       if (Parameters.m_nModel != SPACETIMEPERMUTATION)
         DisplayPopulation(fp, Data, szSpacesOnLeft);
-    
+
       fprintf(fp, "%sNumber of cases.......: %ld", szSpacesOnLeft, m_nCases);
       fprintf(fp, "          (%.2f expected)\n", Data.GetMeasureAdjustment()*m_nMeasure);
     
@@ -124,16 +140,16 @@ void CCluster::Display(FILE*     fp,
         fprintf(fp, "%sAnnual cases / %.0f.: %.1f\n",
                      szSpacesOnLeft, Data.GetAnnualRatePop(),
                      Data.GetAnnualRateAtStart()*GetRelativeRisk(Data.GetMeasureAdjustment()));
-    
+
       DisplayRelativeRisk(fp, Data.GetMeasureAdjustment(), nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
-    
+
       // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
       fprintf(fp, "%s%s: %f\n", szSpacesOnLeft,
               (Parameters.m_nModel == SPACETIMEPERMUTATION ? "Test statistic........" : "Log likelihood ratio.."),
               m_nRatio);
       fprintf(fp, "%sMonte Carlo rank......: %ld/%ld\n",
                    szSpacesOnLeft, m_nRank, Parameters.m_nReplicas+1);
-    
+
       if (Parameters.m_nReplicas > 99)
         {
         fprintf(fp, "%sP-value...............: ", szSpacesOnLeft);
@@ -148,68 +164,44 @@ void CCluster::Display(FILE*     fp,
       }
 }
 
-void CCluster::DisplayRelativeRisk(FILE* fp,
-                                   double nMeasureAdjustment,
-                                   int nLeftMargin, int nRightMargin,
-                                   char cDeliminator, char* szSpacesOnLeft)
-{
-   try
-      {	
-      //  fprintf(fp, "          (Relative risk: %.2f)\n", GetRelativeRisk());
-      fprintf(fp, "%sOverall relative risk.: %.3f\n", szSpacesOnLeft, GetRelativeRisk(nMeasureAdjustment));
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("DisplayRelativeRisk()", "CCluster");
-      throw;
-      }
-}
-
 void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
-                                   int nCluster, measure_t nMinMeasure,
-                                   int nReplicas, bool bIncludeRelRisk, bool bIncludePVal,
-                                   int nLeftMargin, int nRightMargin,
-                                   char cDeliminator, char* szSpacesOnLeft, bool bFormat)
+                                   int nCluster, measure_t nMinMeasure, int nReplicas, bool bIncludeRelRisk,
+                                   bool bIncludePVal, int nLeftMargin, int nRightMargin, char cDeliminator,
+                                   char* szSpacesOnLeft, bool bFormat)
 {
-   try
-      {	
+   try {
       if (nLeftMargin > 0)
          fprintf(fp, "included.: ");
 
        DisplayCensusTractsInStep(fp, Data, 1, m_nTracts, nCluster, nMinMeasure,
                             nReplicas, bIncludeRelRisk, bIncludePVal,
                             nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft, bFormat);
-      }
-   catch (SSException & x)
-      {
+   }
+   catch (SSException & x) {
       x.AddCallpath("DisplayCensusTracts()", "CCluster");
       throw;
-      }
+   }
 }
 
 void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                                          tract_t nFirstTract, tract_t nLastTract,
-                                         int nCluster, measure_t nMinMeasure,
-                                         int nReplicas,
-                                         bool bIncludeRelRisk, bool bIncludePVal,
-                                         int nLeftMargin, int nRightMargin,
-                                         char cDeliminator, char* szSpacesOnLeft,
-                                         bool bFormat)
+                                         int nCluster, measure_t nMinMeasure, int nReplicas, bool bIncludeRelRisk,
+                                         bool bIncludePVal, int nLeftMargin, int nRightMargin, char cDeliminator,
+                                         char* szSpacesOnLeft, bool bFormat)
 {
    int   pos  = nLeftMargin;
    char* tid;
    int   nCount=0;
 
    try
-      {
+   {
       for (int i = nFirstTract; i <= nLastTract; i++)
       {
         //if (Data.m_pMeasure[0][Data.GetNeighbor(0, m_Center, i)]>nMinMeasure)       // access over-run here
         //if (Data.m_pMeasure[m_iEllipseOffset][Data.GetNeighbor(m_iEllipseOffset, m_Center, i)]>nMinMeasure) // access over-run here
 
         // the first dimension of m_pMeasure is Time Interval !!!
-        if (Data.m_pMeasure[0][Data.GetNeighbor(m_iEllipseOffset, m_Center, i)]>nMinMeasure)
-        {
+        if (Data.m_pMeasure[0][Data.GetNeighbor(m_iEllipseOffset, m_Center, i)]>nMinMeasure) {
           nCount++;
           tid = (Data.GetTInfo())->tiGetTid(Data.GetNeighbor(m_iEllipseOffset, m_Center, i));
           pos += strlen(tid) + 2;
@@ -218,7 +210,7 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
           {
             pos = nLeftMargin + strlen(tid) + 2;
             fprintf(fp, "\n");
-            for (int j=0; j<nLeftMargin; j++)
+            for (int j=0; j<nLeftMargin; ++j)
               fprintf(fp, " ");
           }
 
@@ -240,6 +232,10 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
           if (i < nLastTract)
             fprintf(fp, "%c ", cDeliminator);
 
+          // record DBF output data - AJV
+          if(Data.m_pParameters->GetOutputAreaSpecificDBF())
+             if(gpAreaDBFReport)
+                gpAreaDBFReport->RecordClusterData(*this, Data, i);
         }
       }
       fprintf(fp, "\n");
@@ -249,24 +245,6 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
       x.AddCallpath("DisplayCensusTractsInStep()", "CCluster");
       throw;
       }
-}
-
-double CCluster::ConvertAngleToDegrees(double dAngle)
-{
-   double dDegrees;
-   
-   try
-      {
-      dDegrees = 180.00 * (dAngle / (double)M_PI);
-      if (dDegrees > 90.00)
-         dDegrees -= 180.00;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("ConvertAngleToDegrees()", "CCluster");
-      throw;
-      }
-   return dDegrees;
 }
 
 void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
@@ -347,7 +325,7 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
            //fprintf(fp, "%s              Length..: \n", szSpacesOnLeft);
            }
       }
-    
+
       free(pCoords);
       free(pCoords2);
       }
@@ -356,6 +334,202 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
       free(pCoords);
       free(pCoords2);
       x.AddCallpath("DisplayCoordinates()", "CCluster");
+      throw;
+      }
+}
+
+//**********************************************************************
+//  Since Ellipsoid option can NOT be run under the Lat/Long do not
+//  need to update this function at this time...
+//
+//**********************************************************************
+void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
+                                  int nLeftMargin, int nRightMargin,
+                                  char cDeliminator, char* szSpacesOnLeft)
+{
+   double *pCoords = 0, *pCoords2 = 0;
+   float nRadius;
+   float Latitude, Longitude;
+   char  cNorthSouth, cEastWest;
+
+   try
+      {
+      (Data.GetGInfo())->giGetCoords(m_Center, &pCoords);
+      (Data.GetTInfo())->tiGetCoords(Data.GetNeighbor(0, m_Center, m_nTracts), &pCoords2);
+
+      nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
+
+      ConvertToLatLong(&Latitude, &Longitude, pCoords);
+
+      Latitude >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
+      Longitude >= 0 ? cEastWest = 'E' : cEastWest = 'W';
+
+    //  fprintf(fp, "  Coordinates / radius..........: (%.3f %c, %.3f %c) / %5.2f\n",
+    //               fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
+
+      // use to be .3f
+      fprintf(fp, "%sCoordinates / radius..: (%.6f %c, %.6f %c) / %5.2f km\n",
+                   szSpacesOnLeft, fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
+
+      free(pCoords);
+      free(pCoords2);
+      }
+   catch (SSException & x)
+      {
+      free(pCoords);
+      free(pCoords2);
+      x.AddCallpath("DisplayLatLongCoords()", "CCluster");
+      throw;
+      }
+}
+
+void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft)
+{
+  fprintf(fp, "%sPopulation............: %-10.0f\n",
+  szSpacesOnLeft,
+  Data.m_pModel->GetPopulation(m_iEllipseOffset, m_Center, m_nTracts, m_nFirstInterval, m_nLastInterval));
+}
+
+void CCluster::DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft)
+{
+   try
+      {
+      float pVal = (float)GetPVal(nReplicas);
+      gfPValue = pVal;
+
+      if (nReplicas > 9999)
+         fprintf(fp, "%.5f", pVal);
+      else if (nReplicas > 999)
+         fprintf(fp, "%.4f", pVal);
+      else if (nReplicas > 99)
+         fprintf(fp, "%.3f", pVal);
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("DisplayPVal()", "CCluster");
+      throw;
+      }
+}
+
+void CCluster::DisplayRelativeRisk(FILE* fp,
+                                   double nMeasureAdjustment,
+                                   int nLeftMargin, int nRightMargin,
+                                   char cDeliminator, char* szSpacesOnLeft)
+{
+   try
+      {
+      //  fprintf(fp, "          (Relative risk: %.2f)\n", GetRelativeRisk());
+      fprintf(fp, "%sOverall relative risk.: %.3f\n", szSpacesOnLeft, GetRelativeRisk(nMeasureAdjustment));
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("DisplayRelativeRisk()", "CCluster");
+      throw;
+      }
+}
+
+void CCluster::DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType)
+{
+  char szStartDt[MAX_DT_STR];
+  char szEndDt[MAX_DT_STR];
+
+   try
+      {
+      fprintf(fp, "%sTime frame............: %s - %s\n",
+               szSpacesOnLeft,
+               JulianToChar(szStartDt, m_nStartDate),
+               JulianToChar(szEndDt, m_nEndDate));
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("DisplayTimeFrame()", "CCluster");
+      throw;
+      }
+}
+
+double CCluster::GetRelativeRisk(double nMeasureAdjustment)
+{
+  double        dRelativeRisk=0;
+
+  if (m_nMeasure*nMeasureAdjustment)
+    dRelativeRisk = ((double)(m_nCases))/(m_nMeasure*nMeasureAdjustment);
+
+  return dRelativeRisk;
+}
+
+bool CCluster::RateIsOfInterest(count_t nTotalCases, measure_t nTotalMeasure)
+{
+  return(m_pfRateOfInterest(m_nCases,m_nMeasure,
+                            nTotalCases, nTotalMeasure));
+}
+
+void CCluster::SetCenter(tract_t nCenter)
+{
+  m_Center = nCenter;
+}
+
+void CCluster::SetEllipseOffset(int iOffset)
+{
+   m_iEllipseOffset = iOffset;
+}
+
+void CCluster::SetRate(int nRate)
+{
+  switch (nRate)
+  {
+    case HIGH       : m_pfRateOfInterest = HighRate;      break;
+    case LOW        : m_pfRateOfInterest = LowRate;       break;
+    case HIGHANDLOW : m_pfRateOfInterest = HighOrLowRate; break;
+    default         : ;
+  }
+}
+
+double CCluster::SetRatio(double nLogLikelihoodForTotal)
+{
+   try
+      {
+      m_bRatioSet = true;
+      m_nRatio    = GetLogLikelihood() - nLogLikelihoodForTotal;
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("SetRatio()", "CCluster");
+      throw;
+      }
+  return m_nRatio;
+
+}
+
+void CCluster::SetRatioAndDates(const CSaTScanData& Data)
+{
+   try
+      {
+      if (ClusterDefined())
+         {
+         m_bClusterSet = true;
+         SetRatio(Data.m_pModel->GetLogLikelihoodForTotal());
+         SetStartAndEndDates(Data.m_pIntervalStartTimes,
+                        Data.m_nTimeIntervals);
+         }
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("SetRatioAndDates()", "CCluster");
+      throw;
+      }
+}
+
+void CCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes,
+                                   int nTimeIntervals)
+{
+   try
+      {
+      m_nStartDate = pIntervalStartTimes[m_nFirstInterval];
+      m_nEndDate   = pIntervalStartTimes[m_nLastInterval]-1;
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("SetStartAndEndDates()", "CCluster");
       throw;
       }
 }
@@ -488,179 +662,3 @@ void CCluster::WriteLatLongCoords(FILE* fp, CSaTScanData* pData)
       throw;
       }
 }
-
-
-//**********************************************************************
-//  Since Ellipsoid option can NOT be run under the Lat/Long do not
-//  need to update this function at this time...
-//
-//**********************************************************************
-void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
-                                  int nLeftMargin, int nRightMargin,
-                                  char cDeliminator, char* szSpacesOnLeft)
-{
-   double *pCoords = 0, *pCoords2 = 0;
-   float nRadius;
-   float Latitude, Longitude;
-   char  cNorthSouth, cEastWest;
-
-   try
-      {
-      (Data.GetGInfo())->giGetCoords(m_Center, &pCoords);
-      (Data.GetTInfo())->tiGetCoords(Data.GetNeighbor(0, m_Center, m_nTracts), &pCoords2);
-
-      nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
-
-      ConvertToLatLong(&Latitude, &Longitude, pCoords);
-
-      Latitude >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
-      Longitude >= 0 ? cEastWest = 'E' : cEastWest = 'W';
-
-    //  fprintf(fp, "  Coordinates / radius..........: (%.3f %c, %.3f %c) / %5.2f\n",
-    //               fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
-
-      // use to be .3f
-      fprintf(fp, "%sCoordinates / radius..: (%.6f %c, %.6f %c) / %5.2f km\n",
-                   szSpacesOnLeft, fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
-
-      free(pCoords);
-      free(pCoords2);
-      }
-   catch (SSException & x)
-      {
-      free(pCoords);
-      free(pCoords2);
-      x.AddCallpath("DisplayLatLongCoords()", "CCluster");
-      throw;
-      }
-}
-
-void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft)
-{
-  fprintf(fp, "%sPopulation............: %-10.0f\n",
-  szSpacesOnLeft,
-  Data.m_pModel->GetPopulation(m_iEllipseOffset, m_Center, m_nTracts, m_nFirstInterval, m_nLastInterval));
-}
-
-void CCluster::DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType)
-{
-  char szStartDt[MAX_DT_STR];
-  char szEndDt[MAX_DT_STR];
-
-   try
-      {
-      fprintf(fp, "%sTime frame............: %s - %s\n",
-               szSpacesOnLeft,
-               JulianToChar(szStartDt, m_nStartDate),
-               JulianToChar(szEndDt, m_nEndDate));
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("DisplayTimeFrame()", "CCluster");
-      throw;
-      }
-}
-
-void CCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes,
-                                   int nTimeIntervals)
-{   
-   try
-      {	
-      m_nStartDate = pIntervalStartTimes[m_nFirstInterval];
-      m_nEndDate   = pIntervalStartTimes[m_nLastInterval]-1;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("SetStartAndEndDates()", "CCluster");
-      throw;
-      }
-}
-
-void CCluster::SetRate(int nRate)
-{
-  switch (nRate)
-  {
-    case HIGH       : m_pfRateOfInterest = HighRate;      break;
-    case LOW        : m_pfRateOfInterest = LowRate;       break;
-    case HIGHANDLOW : m_pfRateOfInterest = HighOrLowRate; break;
-    default         : ;
-  }
-}
-
-double CCluster::SetRatio(double nLogLikelihoodForTotal)
-{
-   try
-      {
-      m_bRatioSet = true;
-      m_nRatio    = GetLogLikelihood() - nLogLikelihoodForTotal;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("SetRatio()", "CCluster");
-      throw;
-      }
-  return m_nRatio;
-
-}
-
-bool CCluster::RateIsOfInterest(count_t nTotalCases, measure_t nTotalMeasure)
-{
-  return(m_pfRateOfInterest(m_nCases,m_nMeasure,
-                            nTotalCases, nTotalMeasure));
-}
-
-void CCluster::SetRatioAndDates(const CSaTScanData& Data)
-{
-   try
-      {	
-      if (ClusterDefined())
-         {
-         m_bClusterSet = true;
-         SetRatio(Data.m_pModel->GetLogLikelihoodForTotal());
-         SetStartAndEndDates(Data.m_pIntervalStartTimes,
-                        Data.m_nTimeIntervals);
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("SetRatioAndDates()", "CCluster");
-      throw;
-      }
-}
-
-double CCluster::GetRelativeRisk(double nMeasureAdjustment)
-{
-  double        dRelativeRisk=0;
-
-  if (m_nMeasure*nMeasureAdjustment)
-    dRelativeRisk = ((double)(m_nCases))/(m_nMeasure*nMeasureAdjustment);
-
-  return dRelativeRisk;
-}
-
-void CCluster::DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft)
-{
-   try
-      {	
-      float pVal = (float)GetPVal(nReplicas);
-      gfPValue = pVal;
-
-      if (nReplicas > 9999)
-         fprintf(fp, "%.5f", pVal);
-      else if (nReplicas > 999)
-         fprintf(fp, "%.4f", pVal);
-      else if (nReplicas > 99)
-         fprintf(fp, "%.3f", pVal);
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("DisplayPVal()", "CCluster");
-      throw;
-      }
-}
-
-void CCluster::SetEllipseOffset(int iOffset)
-{
-   m_iEllipseOffset = iOffset;
-}
-

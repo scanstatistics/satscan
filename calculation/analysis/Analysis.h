@@ -26,9 +26,9 @@ class CAnalysis
 
     virtual void                AllocateTopClusterList();
     static int                  CompareClusters(const void *a, const void *b);
-    void                        CreateGridOutputFile();
+    void                        CreateGridOutputFile(const long& lReportHistoryRunNumber);
     bool                        CreateReport(time_t RunTime);
-    bool                        FinalizeReport(time_t RunTime);
+    bool                        FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumber);
     virtual bool                FindTopClusters();
     tract_t                     GetMaxNumClusters() {return m_nMaxClusters;};      // why have a protected function to get a protected variable? AJV
     void                        InitializeTopClusterList();

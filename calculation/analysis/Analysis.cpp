@@ -67,6 +67,7 @@ CAnalysis::~CAnalysis() {
 
 bool CAnalysis::Execute(time_t RunTime) {
    bool bContinue;
+   long lRunNumber;
 
    try {
       SetMaxNumClusters();
@@ -101,7 +102,7 @@ bool CAnalysis::Execute(time_t RunTime) {
         ++m_nAnalysisCount;
 
         // declare variable for each analysis - AJV 9/10/2002
-        stsRunHistoryFile historyFile(m_pParameters->GetRunHistoryFilename());
+        stsRunHistoryFile historyFile(m_pParameters->GetRunHistoryFilename(), *gpPrintDirection);
 
 #ifdef DEBUGANALYSIS
         fprintf(m_pDebugFile, "Analysis Loop #%i\n", m_nAnalysisCount);
@@ -137,8 +138,8 @@ bool CAnalysis::Execute(time_t RunTime) {
 //#ifdef DEBUGANALYSIS
 //        DisplayTopClusters(-DBL_MAX, INT_MAX, m_pDebugFile, NULL);
 //#endif
-    
-        if (gpPrintDirection->GetIsCanceled() || !UpdateReport(historyFile.GetRunNumber()))
+        lRunNumber = historyFile.GetRunNumber();
+        if (gpPrintDirection->GetIsCanceled() || !UpdateReport(lRunNumber))
           return false;
 
         bContinue = RepeatAnalysis();
@@ -149,14 +150,14 @@ bool CAnalysis::Execute(time_t RunTime) {
            return false;
 
         // log new history for each analysis run - AJV 9/10/2002   
-        historyFile.LogNewHistory(*this, guwSignificantAt005, *gpPrintDirection);
+        historyFile.LogNewHistory(*this, guwSignificantAt005);
         // reset the number of significants back to zero for each analysis - AJV 9/10/2002
         guwSignificantAt005 = 0;
 
       } while (bContinue);
 
       m_pData->DeAllocSimCases();
-      FinalizeReport(RunTime);
+      FinalizeReport(RunTime, lRunNumber);
    }
    catch (ZdException & x) {
       x.AddCallpath("Execute(time_t)", "CAnalysis");
@@ -197,15 +198,19 @@ void CAnalysis::AllocateTopClusterList() {
 //******************************************************************************
 //  Create the Grid Output File (Most Likely Cluster for each Centroid)
 //******************************************************************************
-void CAnalysis::CreateGridOutputFile() {
+void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
    FILE *fpMCL = 0;
    char *szTID;
    float fExpectedCases, fRelativeRisk;
    float fPVal;
    char sStartDate[15], sEndDate[15];
+   auto_ptr<stsClusterLevelDBF> pDBFClusterReport;
 
    try {
       OpenGridOutputFile(fpMCL, "w");
+      if(m_pParameters->GetOutputClusterLevelDBF())
+         pDBFClusterReport.reset(new stsClusterLevelDBF(lReportHistoryRunNumber, GetCoordinateType(), m_pParameters->m_szOutputFilename));
+
       for (int i = 0; i < m_nClustersRetained; ++i) {
          fExpectedCases = m_pData->GetMeasureAdjustment()*m_pTopClusters[i]->m_nMeasure;
          fRelativeRisk = m_pTopClusters[i]->GetRelativeRisk(m_pData->GetMeasureAdjustment());
@@ -256,6 +261,9 @@ void CAnalysis::CreateGridOutputFile() {
          else //purely spacial - print study begin and end dates
             fprintf(fpMCL, " %11s %11s", m_pParameters->m_szStartDate, m_pParameters->m_szEndDate);
          fprintf(fpMCL, "\n");
+
+         if(m_pParameters->GetOutputClusterLevelDBF())
+           pDBFClusterReport->RecordClusterData(*m_pTopClusters[i], *m_pData, i+1);
       }
       if (fpMCL)
          fclose(fpMCL);
@@ -341,15 +349,11 @@ void CAnalysis::DisplayFindClusterHeading() {
 }
 
 void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp, FILE* fpGIS) {
-   auto_ptr<stsClusterLevelDBF> pDBFClusterReport;
    auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;
 
    try {
-      // AJV 9/5/2002
-      if(m_pParameters->GetOutputClusterLevelDBF())
-         pDBFClusterReport.reset(new stsClusterLevelDBF(lReportHistoryRunNumber, GetCoordinateType(), m_pParameters->m_szOutputFilename));
       if(m_pParameters->GetOutputAreaSpecificDBF())
-         pDBFAreaReport.reset(new stsAreaSpecificDBF(lReportHistoryRunNumber, GetCoordinateType(), m_pParameters->m_szOutputFilename ));
+         pDBFAreaReport.reset(new stsAreaSpecificDBF( lReportHistoryRunNumber, GetCoordinateType(), m_pParameters->m_szOutputFilename ));
       measure_t nMinMeasure = 0;
 
       if (m_nClustersRetained == 0)
@@ -366,18 +370,14 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
 
         m_pTopClusters[0]->Display(fp, *m_pParameters, *m_pData, m_nClustersReported, nMinMeasure);
 
-        // record DBF output data - AJV
-        if(m_pParameters->GetOutputClusterLevelDBF())
-           pDBFClusterReport->RecordClusterData(*m_pTopClusters[0], *m_pData, m_nClustersReported);
-        if(m_pParameters->GetOutputAreaSpecificDBF())
-           pDBFAreaReport->RecordClusterData(*m_pTopClusters[0], *m_pData, m_nClustersReported);
-
         if(m_pTopClusters[0]->m_nLogLikelihood >= SimRatios.GetAlpha05())
            ++guwSignificantAt005;
 
-        if (fpGIS != NULL)
+        if (fpGIS != NULL) {
+          m_pTopClusters[0]->SetAreaReport(pDBFAreaReport.get());
           m_pTopClusters[0]->DisplayCensusTracts(fpGIS, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
                                                  true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);
+        }
       }
 
       fprintf(fp, "\n");
@@ -390,16 +390,12 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
 
 void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp, FILE* fpGIS) {
    double       dSignifRatio05 = 0.0;
-   auto_ptr<stsClusterLevelDBF> pDBFClusterReport;
    auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;
 
    try {
       m_nClustersReported = 0;
       measure_t nMinMeasure = -1;
 
-      // AJV 9/5/2002
-      if(m_pParameters->GetOutputClusterLevelDBF())
-         pDBFClusterReport.reset(new stsClusterLevelDBF(lReportHistoryRunNumber, GetCoordinateType(), m_pParameters->m_szOutputFilename));
       if(m_pParameters->GetOutputAreaSpecificDBF())
          pDBFAreaReport.reset(new stsAreaSpecificDBF(lReportHistoryRunNumber, GetCoordinateType(), m_pParameters->m_szOutputFilename));
 
@@ -417,18 +413,14 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
 
           m_pTopClusters[i]->Display(fp, *m_pParameters, *m_pData, m_nClustersReported, nMinMeasure);
 
-          // record DBF output data - AJV
-          if(m_pParameters->GetOutputClusterLevelDBF())
-             pDBFClusterReport->RecordClusterData(*m_pTopClusters[i], *m_pData, m_nClustersReported);
-          if(m_pParameters->GetOutputAreaSpecificDBF())
-             pDBFAreaReport->RecordClusterData(*m_pTopClusters[i], *m_pData, m_nClustersReported);
-
           if(m_pTopClusters[i]->m_nLogLikelihood >= dSignifRatio05)
              ++guwSignificantAt005;
 
-          if (m_pParameters->m_bOutputCensusAreas && (fpGIS != NULL))
+          if (m_pParameters->m_bOutputCensusAreas && (fpGIS != NULL)) {
+              m_pTopClusters[i]->SetAreaReport(pDBFAreaReport.get());
               m_pTopClusters[i]->DisplayCensusTracts(fpGIS, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
                                                    true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);
+          }
         }   // end if top cluster > minratio
       }   // end for loop
 
@@ -469,7 +461,7 @@ void CAnalysis::DisplayTopClustersLogLikelihoods(FILE* fp) {
   }
 }
 
-bool CAnalysis::FinalizeReport(time_t RunTime) {
+bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumber) {
    FILE* fp;
    FILE* fpRRE = 0;
    time_t CompletionTime;
@@ -486,7 +478,7 @@ bool CAnalysis::FinalizeReport(time_t RunTime) {
       if (m_pParameters->m_bOutputRelRisks)
          OpenRREFile(fpRRE, "a");
       if (m_pParameters->m_bMostLikelyClusters)
-         CreateGridOutputFile();
+         CreateGridOutputFile(lReportHistoryRunNumber);
 
       if (m_nClustersRetained == 0) {
         fprintf(fp, "No clusters were found.\n");
