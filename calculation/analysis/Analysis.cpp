@@ -239,6 +239,11 @@ bool CAnalysis::FindTopClusters()
   return true;
 }
 
+// function to access the coordinate type
+const int& CAnalysis::GetCoordinateType() const {
+   return m_pParameters->m_nCoordType;
+}
+
 // function to access the CParameters
 const CSaTScanData* CAnalysis::GetSatScanData() const {
    return m_pData;
@@ -435,10 +440,10 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, FILE* fp, FILE* 
       // AJV 9/5/2002
       auto_ptr<stsClusterLevelDBF> pDBFClusterReport;
       if(m_pParameters->GetOutputClusterLevelDBF())
-         pDBFClusterReport.reset(new stsClusterLevelDBF(CLUSTER_LEVEL_DBF_FILE));
+         pDBFClusterReport.reset(new stsClusterLevelDBF(CLUSTER_LEVEL_DBF_FILE, GetCoordinateType()));
       auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;
       if(m_pParameters->GetOutputAreaSpecificDBF())
-         pDBFAreaReport.reset(new stsAreaSpecificDBF(AREA_SPECIFIC_DBF_FILE));
+         pDBFAreaReport.reset(new stsAreaSpecificDBF(AREA_SPECIFIC_DBF_FILE, GetCoordinateType()));
     
       for (tract_t i=0; i<m_nClustersRetained; ++i) {
         if (m_pTopClusters[i]->m_nRatio > nMinRatio && m_pTopClusters[i]->m_nRank  <= nReps) {
@@ -481,15 +486,15 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps,
       // AJV 9/5/2002
       auto_ptr<stsClusterLevelDBF> pDBFClusterReport;
       if(m_pParameters->GetOutputClusterLevelDBF())
-         pDBFClusterReport.reset(new stsClusterLevelDBF(CLUSTER_LEVEL_DBF_FILE));
+         pDBFClusterReport.reset(new stsClusterLevelDBF(CLUSTER_LEVEL_DBF_FILE, GetCoordinateType()));
       auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;
       if(m_pParameters->GetOutputAreaSpecificDBF())
-         pDBFAreaReport.reset(new stsAreaSpecificDBF(AREA_SPECIFIC_DBF_FILE));
+         pDBFAreaReport.reset(new stsAreaSpecificDBF(AREA_SPECIFIC_DBF_FILE, GetCoordinateType() ));
       measure_t nMinMeasure = 0;
-    
+
       if (m_nClustersRetained == 0)
         return;
-    
+
       if (m_pTopClusters[0]->m_nRatio > nMinRatio &&
           m_pTopClusters[0]->m_nRank  <= nReps)
       {

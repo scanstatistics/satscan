@@ -59,6 +59,8 @@ class CAnalysis
     const ZdString&             GetStartTime() const;
     virtual CCluster*           GetTopCluster(tract_t nCenter) = 0;
 
+    const int&                  GetCoordinateType() const;
+
   protected:
     bool RepeatAnalysis();
     void RemoveTopClusterData();
