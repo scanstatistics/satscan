@@ -683,11 +683,11 @@ bool CParameters::SaveParameters(char* szFilename) {
          fprintf(pFile, "%i ", mp_nENumbers[i]);
       fprintf(pFile, "                 // Ellipse Angles\n");
       fprintf(pFile, "%s            // Prospective surveillance start date (YYYY/MM/DD). \n", m_szProspStartDate);
-      fprintf(pFile, "%i                 // Output File: Census Areas in Reported Clusters\n", m_bOutputCensusAreas);
-      fprintf(pFile, "%i                 // Output File: Clusters in Column Format\n", m_bMostLikelyClusters);
-      fprintf(pFile, "%i                 //Criteria for Reporting Secondary Clusters{NOGEOOVERLAP=0,..., NORESTRICTIONS=5}\n", m_iCriteriaSecondClusters);
-      fprintf(pFile, "%i                 //How Max Temporal Size Should Be Interperated - enum {PERCENTAGETYPE=0, TIMETYPE=1}\n", m_nMaxClusterSizeType);
-      fprintf(pFile, "%i                 //How Max Spatial Size Should Be Interperated - enum {PERCENTAGEOFMEASURETYPE=0, DISTANCETYPE=1}\n", m_nMaxSpatialClusterSizeType);
+      fprintf(pFile, "%i                     // Output File: Census Areas in Reported Clusters\n", m_bOutputCensusAreas);
+      fprintf(pFile, "%i                     // Output File: Clusters in Column Format\n", m_bMostLikelyClusters);
+      fprintf(pFile, "%i                     //Criteria for Reporting Secondary Clusters(NoGeoOverlap=0,..., NoRestrictions=5)\n", m_iCriteriaSecondClusters);
+      fprintf(pFile, "%i                     //How Max Temporal Size Should Be Interperated (Percentage=0, Time=1)\n", m_nMaxClusterSizeType);
+      fprintf(pFile, "%i                     //How Max Spatial Size Should Be Interperated (PercentageofMeasure=0, Distance=1)\n", m_nMaxSpatialClusterSizeType);
       fprintf(pFile, "%s\n", gsRunHistoryFilename.GetCString());
       fprintf(pFile, "%i                     // Use Output Cluster Level DBF? (0=No, 1=Yes)\n", gbOutputClusterLevelDBF);
       fprintf(pFile, "%i                     // Use Output Area Specific DBF? (0=No, 1=Yes)\n", gbOutputAreaSpecificDBF);
