@@ -36,7 +36,7 @@ double CMeasureList::GetMaximumLogLikelihoodRatio() {
   //-- analyses like purely temporal never have cause to call
   //   SetForNextIteration(), so calculate LLR when asked.
   if (! gvMaximumLogLikelihoodRatios.size()) {
-    if (gSaTScanData.GetParameters().GetProbabiltyModelType() == BERNOULLI)
+    if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI)
       CalculateBernoulliMaximumLogLikelihood(0);
     else  
       CalculateMaximumLogLikelihood(0);
@@ -65,7 +65,7 @@ void CMeasureList::SetForNextIteration(int iIteration) {
   itr = std::find(gvCalculationBoundries.begin(), gvCalculationBoundries.end(), iIteration);
   if (itr != gvCalculationBoundries.end()) {
     //Hit a boundry, so calculate loglikelihood for current measure values.
-    if (gSaTScanData.GetParameters().GetProbabiltyModelType() == BERNOULLI)
+    if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI)
       CalculateBernoulliMaximumLogLikelihood(iIteration);
     else
       CalculateMaximumLogLikelihood(iIteration);
@@ -201,7 +201,7 @@ void CMinMeasureList::Init() {
 void CMinMeasureList::SetMeasures() {
   int   i, iListSize = gSaTScanData.GetTotalCases() + 1;
 
-  if (gSaTScanData.GetParameters().GetProbabiltyModelType() == BERNOULLI)
+  if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI)
     //Bernoulli model has cases + controls = total measure
     for (i=0; i < iListSize; ++i)
        gpMinMeasures[i] = (gSaTScanData.GetTotalMeasure() *  i) / gSaTScanData.GetTotalCases();
@@ -298,7 +298,7 @@ void CMaxMeasureList::Init() {
 void CMaxMeasureList::SetMeasures() {
   int   i, iListSize = gSaTScanData.GetTotalCases() + 1;
 
-  if (gSaTScanData.GetParameters().GetProbabiltyModelType() == BERNOULLI)
+  if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI)
     //Bernoulli model has cases + controls = total measure
     for (i=0; i < iListSize; ++i)
        gpMaxMeasures[i] = (gSaTScanData.GetTotalMeasure() * i) / gSaTScanData.GetTotalCases();
@@ -452,7 +452,7 @@ void CMinMaxMeasureList::Init() {
 void CMinMaxMeasureList::SetMeasures() {
   int   i, iListSize = gSaTScanData.GetTotalCases() + 1;
 
-  if (gSaTScanData.GetParameters().GetProbabiltyModelType() == BERNOULLI)
+  if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI)
     //Bernoulli model has cases + controls = total measure
     for (i=0; i < iListSize; ++i)
        gpMaxMeasures[i] = gpMinMeasures[i] = (gSaTScanData.GetTotalMeasure() * i) / gSaTScanData.GetTotalCases();
