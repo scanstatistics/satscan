@@ -187,7 +187,7 @@ object frmAbout: TfrmAbout
           'Suggested software citation: Kulldorff M and Information Managem' +
           'ent '
         
-          'Services Inc., SaTScan v3.1: Software for the spatial and space-' +
+          'Services Inc., SaTScan v4.0: Software for the spatial and space-' +
           'time scan'
         'statistics. http://www.satscan.org/, 2003. '
         ''
