@@ -18,8 +18,8 @@ CPurelySpatialProspectiveCluster::CPurelySpatialProspectiveCluster(BasePrint *pP
 /** destructor */
 CPurelySpatialProspectiveCluster::~CPurelySpatialProspectiveCluster() {
   try {
-    free(m_pCumCases);
-    free(m_pCumMeasure);
+    delete m_pCumulatedCases;
+    delete m_pCumulatedMeasure;
   }
   catch(...){}  	
 }
@@ -47,8 +47,8 @@ CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator =(c
   m_nStartDate     = cluster.m_nStartDate;
   m_nEndDate       = cluster.m_nEndDate;
   m_nTotalIntervals = cluster.m_nTotalIntervals;
-  memcpy(m_pCumCases, cluster.m_pCumCases, m_nTotalIntervals*sizeof(count_t));
-  memcpy(m_pCumMeasure, cluster.m_pCumMeasure, m_nTotalIntervals*sizeof(measure_t));
+  memcpy(m_pCumulatedCases, cluster.m_pCumulatedCases, m_nTotalIntervals*sizeof(count_t));
+  memcpy(m_pCumulatedMeasure, cluster.m_pCumulatedMeasure, m_nTotalIntervals*sizeof(measure_t));
   m_nSteps           = cluster.m_nSteps;
   m_bClusterInit   = cluster.m_bClusterInit;
   m_bClusterDefined= cluster.m_bClusterDefined;
@@ -66,70 +66,64 @@ void CPurelySpatialProspectiveCluster::AddNeighbor(int iEllipse, const CSaTScanD
 
   m_nTracts = n;
   tract_t nNeighbor = Data.GetNeighbor(iEllipse, m_Center, n);
-  for (i=0; i<m_nTotalIntervals; i++) {
-     m_pCumCases[i]   += pCases[i][nNeighbor];
-     m_pCumMeasure[i] += Data.m_pMeasure[i][nNeighbor];
+  for (i=0; i < m_nTotalIntervals; i++) {
+     m_pCumulatedCases[i]   += pCases[i][nNeighbor];
+     m_pCumulatedMeasure[i] += Data.m_pMeasure[i][nNeighbor];
   }
   m_bClusterDefined = true;
 }
 
 /** prints time window*/
 void CPurelySpatialProspectiveCluster::DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType) {
-  ZdGenerateException("DisplayTimeFrame() not implemented. CPurelySpatialProspectiveCluster's current implementation\n"
-                      "only meant for use in simulations.","CPurelySpatialProspectiveCluster");
+  ZdGenerateException("DisplayTimeFrame() not implemented.","CPurelySpatialProspectiveCluster");
 }
 
 /** Returns the number of case for tract as defined by cluster. */
 count_t CPurelySpatialProspectiveCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {
-  ZdGenerateException("GetCaseCountForTract() not implemented. CPurelySpatialProspectiveCluster's current implementation\n"
-                      "only meant for use in simulations.","CPurelySpatialProspectiveCluster");
+  ZdGenerateException("GetCaseCountForTract() not implemented.","CPurelySpatialProspectiveCluster");
   return 0;
 }
 
 /** Returns the measure for tract as defined by cluster. */
 measure_t CPurelySpatialProspectiveCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {
-  ZdGenerateException("GetMeasureForTract() not implemented. CPurelySpatialProspectiveCluster's current implementation\n"
-                      "only meant for use in simulations.","CPurelySpatialProspectiveCluster");
+  ZdGenerateException("GetMeasureForTract() not implemented.","CPurelySpatialProspectiveCluster");
   return 0;
 }
 
 /** initializes cluster for centroid. */
 void CPurelySpatialProspectiveCluster::Initialize(tract_t nCenter=0) {
   CCluster::Initialize(nCenter);
-
-  m_nSteps     = 1;
   m_nClusterType = PURELYSPATIAL;
-  memset(m_pCumCases, 0, sizeof(count_t) * m_nTotalIntervals);
-  memset(m_pCumMeasure, 0, sizeof(measure_t) * m_nTotalIntervals);  
+  memset(m_pCumulatedCases, 0, (m_nTotalIntervals)*sizeof(count_t));
+  memset(m_pCumulatedMeasure, 0, (m_nTotalIntervals)*sizeof(measure_t));
 }
 
 void CPurelySpatialProspectiveCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals) {
-  ZdGenerateException("SetStartAndEndDates() not implemented. CPurelySpatialProspectiveCluster's current implementation\n"
-                      "only meant for use in simulations.","CPurelySpatialProspectiveCluster");
+  ZdGenerateException("SetStartAndEndDates() not implemented.","CPurelySpatialProspectiveCluster");
 }
 
 /** determines cases and measure for cluster for current end date */
-void CPurelySpatialProspectiveCluster::SetTimeIntervalEndDate(int iTimeIntervalEndDateIndex) {
-  if (iTimeIntervalEndDateIndex == m_nTotalIntervals) {
-    m_nCases   = m_pCumCases[0];
-    m_nMeasure = m_pCumMeasure[0];
+void CPurelySpatialProspectiveCluster::SetForProspectiveEndDate(int iProspectiveEndDateIndex) {
+  if (iProspectiveEndDateIndex < m_nTotalIntervals) {
+    m_nMeasure = m_pCumulatedMeasure[0]-m_pCumulatedMeasure[iProspectiveEndDateIndex];
+    m_nCases = m_pCumulatedCases[0]-m_pCumulatedCases[iProspectiveEndDateIndex];
   }
   else {
-    m_nCases   = m_pCumCases[0] - m_pCumCases[iTimeIntervalEndDateIndex];
-    m_nMeasure = m_pCumMeasure[0] - m_pCumMeasure[iTimeIntervalEndDateIndex];
+    m_nCases = m_pCumulatedCases[0];
+    m_nMeasure = m_pCumulatedMeasure[0];
   }
 }
 
 /** internal setup function */
 void CPurelySpatialProspectiveCluster::Setup() {
   try {
-    m_pCumCases   = (count_t*) Smalloc((m_nTotalIntervals)*sizeof(count_t), gpPrintDirection);
-    m_pCumMeasure = (measure_t*) Smalloc((m_nTotalIntervals)*sizeof(measure_t), gpPrintDirection);
+    m_pCumulatedCases   = new count_t[m_nTotalIntervals];
+    m_pCumulatedMeasure = new measure_t[m_nTotalIntervals];
     Initialize(0);
   }
   catch (ZdException &x) {
-    free(m_pCumCases); m_pCumCases=0;
-    free(m_pCumMeasure); m_pCumMeasure=0;
+    delete m_pCumulatedCases; m_pCumulatedCases=0;
+    delete m_pCumulatedMeasure; m_pCumulatedMeasure=0;
     x.AddCallpath("Setup()","CPurelySpatialProspectiveCluster");
     throw;
   }

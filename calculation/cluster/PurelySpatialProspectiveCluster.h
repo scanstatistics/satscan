@@ -7,16 +7,17 @@
 
 class CPurelySpatialProspectiveCluster : public CCluster {
   private:
-    count_t                   * m_pCumCases;
-    measure_t                 * m_pCumMeasure;
+    void                        Init() {m_pCumulatedCases=0;m_pCumulatedMeasure=0;}
+    void                        Setup();
+
+  protected:
+    count_t                   * m_pCumulatedCases;
+    measure_t                 * m_pCumulatedMeasure;
     int                         m_nTotalIntervals;
 
-    void                        Init() {m_pCumCases=0;m_pCumMeasure=0;}
-    void                        Setup();
-	
   public:
     CPurelySpatialProspectiveCluster(BasePrint *pPrintDirection, int nTotalIntervals);
-    ~CPurelySpatialProspectiveCluster();
+    virtual ~CPurelySpatialProspectiveCluster();
 
     CPurelySpatialProspectiveCluster          & operator =(const CPurelySpatialProspectiveCluster& cluster);
 
@@ -27,7 +28,7 @@ class CPurelySpatialProspectiveCluster : public CCluster {
     virtual measure_t                   	GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual void                        	Initialize(tract_t nCenter);
     virtual void                        	SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals);
-    virtual void                        	SetTimeIntervalEndDate(int iTimeIntervalEndDateIndex);    
+    void                        	        SetForProspectiveEndDate(int iProspectiveEndDateIndex);    
 };
 //*****************************************************************************
 #endif
