@@ -93,6 +93,7 @@ USEUNIT("..\calculation\satscan_data\AdjustmentHandler.cpp");
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;
         AnsiString      sUpdateParameter;
+        AnsiString      sOmitULA_Parameter(AnsiString("-ver_id=") + VERSION_ID);
         int i;
 
         try {
@@ -110,8 +111,14 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
            Application->CreateForm(__classid(TfrmMainForm), &frmMainForm);
                  Application->Run();
            if ((bRunUpdate = GetToolkit().GetRunUpdateOnTerminate()) == true)
-             sUpdateParameter.printf("\"%s%s\" \"%s\"", ExtractFilePath(Application->ExeName).c_str(),
-                                     GetToolkit().GetUpdateArchiveFilename().GetCString(), Application->ExeName.c_str());
+             sUpdateParameter.printf
+             (
+               "\"%s%s\" \"%s\" %s"
+              ,ExtractFilePath(Application->ExeName).c_str()
+              ,GetToolkit().GetUpdateArchiveFilename().GetCString()
+              ,Application->ExeName.c_str()
+              ,sOmitULA_Parameter.c_str()
+             );
            BasisExit();
         }
         catch (ZdException &x) {
