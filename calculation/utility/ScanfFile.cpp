@@ -21,7 +21,7 @@ ScanfRecord::ScanfRecord(ScanfFile & associatedFile, const ZdVector<ZdField *> &
       gvValues.resize(associatedFile.GetNumFields());
       for (short w = 0; w < associatedFile.GetNumFields(); ++w)
       {
-         ZdFieldValue & value(gvValues.at(w));
+         ZdFieldValue & value(gvValues[w]);
          value.SetType(associatedFile.GetFieldInfo(w)->GetType());
       }
       //register this record with 'associatedFile'
@@ -62,7 +62,7 @@ bool ScanfRecord::GetIsBlank(unsigned short uwFieldIndex) const
 
    try
    {
-     bIsBlank = gvValues.at(uwFieldIndex).AsZdString().GetIsEmpty();
+     bIsBlank = gvValues[uwFieldIndex].AsZdString().GetIsEmpty();
    }
    catch (ZdException & theException)
    {
@@ -87,7 +87,7 @@ char * ScanfRecord::GetAlpha(unsigned short uwFieldNumber, char *pFieldValue, un
       if (ulLength < (unsigned long)(wFieldLength + 1))
          ZdException::Generate("Buffer %d too small in GetAlpha(); need buffer length of %d", "TXDRec", ulLength, wFieldLength + 1 );
 
-      const ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      const ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_ALPHA_FLD)
       {
          std::strncpy(pFieldValue, value.AsZdString().GetCString(), wFieldLength);
@@ -133,7 +133,7 @@ void ScanfRecord::GetBLOB(unsigned short uwFieldNumber, ZdBlob & theValue) const
 {
    try
    {
-      const ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      const ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_BLOB_FLD)
       {
          theValue = value.AsZdBlob();
@@ -154,7 +154,7 @@ bool ScanfRecord::GetBoolean(unsigned short uwFieldNumber) const
 
    try
    {
-      const ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      const ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_BOOLEAN_FLD)
       {
          bResult = value.AsBool();
@@ -174,7 +174,7 @@ ZdDate & ScanfRecord::GetDate(unsigned short uwFieldNumber, ZdDate &theDate ) co
 {
    try
    {
-      const ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      const ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_DATE_FLD)
       {
          theDate = value.AsZdDate();
@@ -196,7 +196,7 @@ long ScanfRecord::GetLong(unsigned short uwFieldNumber) const
 
    try
    {
-      const ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      const ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_LONG_FLD)
       {
          lResult = value.AsLong();
@@ -218,7 +218,7 @@ double ScanfRecord::GetNumber(unsigned short uwFieldNumber) const
 
    try
    {
-      const ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      const ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_NUMBER_FLD)
       {
          dResult = value.AsDouble();
@@ -240,7 +240,7 @@ short ScanfRecord::GetShort(unsigned short uwFieldNumber) const
 
    try
    {
-      const ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      const ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_SHORT_FLD)
       {
          wResult = value.AsShort();
@@ -260,7 +260,7 @@ ZdTime & ScanfRecord::GetTime(unsigned short uwFieldNumber, ZdTime & theValue) c
 {
    try
    {
-      const ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      const ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_TIME_FLD)
       {
          theValue = value.AsZdTime();
@@ -280,7 +280,7 @@ ZdTimestamp & ScanfRecord::GetTimestamp(unsigned short uwFieldNumber, ZdTimestam
 {
    try
    {
-      const ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      const ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_STAMP_FLD)
       {
          theValue = value.AsZdTimestamp();
@@ -301,7 +301,7 @@ unsigned long ScanfRecord::GetUnsignedLong(unsigned short uwFieldNumber) const
    unsigned long ulResult(0);
    try
    {
-      const ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      const ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_ULONG_FLD)
       {
          ulResult = value.AsUnsignedLong();
@@ -322,7 +322,7 @@ unsigned short ScanfRecord::GetUnsignedShort(unsigned short uwFieldNumber) const
    unsigned short uwResult(0);
    try
    {
-      const ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      const ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_USHORT_FLD)
       {
          uwResult = value.AsUnsignedShort();
@@ -347,7 +347,7 @@ void ScanfRecord::PutAlpha(unsigned short uwFieldNumber, const char *pFieldValue
       if ((unsigned)wFieldLength < std::strlen(pFieldValue))
          ZdException::Generate( "String Value, \"%s\", of length, %d, must not be longer than %d.", "ScanfRecord", pFieldValue, strlen(pFieldValue), wFieldLength );
 
-      ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_ALPHA_FLD)
       {
          value.AsZdString() = pFieldValue;
@@ -394,7 +394,7 @@ void ScanfRecord::PutBLOB(unsigned short uwFieldNumber, const ZdBlob & theValue)
 {
    try
    {
-      ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_BLOB_FLD)
       {
          value.AsZdBlob() = theValue;
@@ -412,7 +412,7 @@ void ScanfRecord::PutBoolean(unsigned short uwFieldNumber, bool bValue)
 {
    try
    {
-      ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_BOOLEAN_FLD)
       {
          value.AsBool() = bValue;
@@ -430,7 +430,7 @@ void ScanfRecord::PutDate( unsigned short uwFieldNumber, const ZdDate &theDate )
 {
    try
    {
-      ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_DATE_FLD)
       {
          value.AsZdDate() = theDate;
@@ -448,7 +448,7 @@ void ScanfRecord::PutLong(unsigned short uwFieldNumber, long lFieldValue)
 {
    try
    {
-      ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_LONG_FLD)
       {
          value.AsLong() = lFieldValue;
@@ -466,7 +466,7 @@ void ScanfRecord::PutNumber(unsigned short uwFieldNumber, double dFieldValue)
 {
    try
    {
-      ZdFieldValue & value(gvValues.at(uwFieldNumber));
+      ZdFieldValue & value(gvValues[uwFieldNumber]);
       if (value.GetType() == ZD_NUMBER_FLD)
       {
          value.AsDouble() = dFieldValue;
@@ -1255,7 +1255,7 @@ unsigned int ScanfFile::FwdScan ( char cFindMe, char cQuote ) {
 // If GetFieldNamesLineNumber() > 0, it will contain as many fields as are named
 // on that line; otherwise, it will contain as many fields as are found on the first
 // data line.
-ZdIniFile *ScanfFile::GenerateZDSAllFieldsAlpha ( const char *sFileName ) /*const*/ {
+ZdIniFile *ScanfFile::GenerateZDSAllFieldsAlpha ( const char *sFileName ) {
    ZdIniFile                   *pIniFile(0);
    ZdString                     sName, sScanBuffer, sFormatString;
    ZdPointerVector<ZdField>     vFields;
@@ -1342,7 +1342,7 @@ const ZdFileType & ScanfFile::GetFileType() const
 }
 
 // At what offset from the beginning of the data file does the data start ?
-long ScanfFile::GetInitialDataByteOffset() /*const*/ {
+long ScanfFile::GetInitialDataByteOffset() {
    try {
       if (glInitialDataByteOffset < 0)
          CalculateInitialDataByteOffset(gFileName.GetFullPath());
@@ -1603,7 +1603,7 @@ void ScanfFile::PackFields ( ZdVector<ZdField*> &vFields ) const
       {
       for (u = 0; u < vFields.size(); u++)
          {
-         if (! vFields.at(u))
+         if (! vFields[u])
             ZdException::Generate("null field at position %d in field vector.", "PackFields", u);
          }
       //nothing else needs to be done.
