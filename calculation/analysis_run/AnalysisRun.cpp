@@ -395,7 +395,7 @@ void AnalysisRunner::FinalizeReport() {
   char        * szSeconds = "seconds";
 
   try {
-    gPrintDirection.SatScanPrintf("\nFinishing up results...");
+    gPrintDirection.SatScanPrintf("Finishing up results...\n");
     OpenReportFile(fp, true);
     if (gTopClustersContainer.GetNumClustersRetained() == 0) {
       fprintf(fp, "\nNo clusters were found.\n");
