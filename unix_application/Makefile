@@ -20,6 +20,7 @@ DEBUG       := -gstabs+
 
 CALCULATION    := $(SATSCAN)/calculation/
 ANALYSIS       := $(SATSCAN)/calculation/analysis/
+ANALYSISRUN    := $(SATSCAN)/calculation/analysis_run/
 CLUSTER        := $(SATSCAN)/calculation/cluster/
 OUTPUT         := $(SATSCAN)/calculation/Output/
 PRINT          := $(SATSCAN)/calculation/print/
@@ -42,7 +43,7 @@ XBASEDIR2   := $(SATSCAN)/xbase/xbase_2.0.0
 
 INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(ZDDIR) -I$(ZDANNEX) -I$(CLUSTER) -I$(UTILITY) -I$(XBASEDIR) -I$(XBASEDIR2)\
                -I$(BASIS)/include -I$(BASIS)/source/nonvcl -I$(BASIS)/source/vcldep -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL)\
-	       -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD)
+	       -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(ANALYSISRUN)
 
 DEFINES     := -D__BASIS_NO_VCL \
                -D__BATCH_COMPILE
@@ -64,6 +65,8 @@ SRC         := Main.cpp \
                ../calculation/analysis/SpaceTimeIncludePurelySpatialAnalysis.cpp \
                ../calculation/analysis/SpaceTimeIncludePurelyTemporalAnalysis.cpp \
 	       ../calculation/analysis/SVTTAnalysis.cpp \
+	       ../calculation/analysis_run/AnalysisRun.cpp \
+	       ../calculation/analysis_run/MostLikelyClustersContainer.cpp\
                ../calculation/cluster/Cluster.cpp \
                ../calculation/cluster/IncidentRate.cpp \
                ../calculation/cluster/PurelySpatialCluster.cpp \
