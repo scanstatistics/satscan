@@ -62,7 +62,7 @@ void __fastcall TfrmMainForm::ExitActionExecute(TObject *Sender) {
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmMainForm::HelpActionExecute(TObject *Sender) {
-  if (ShellExecute(NULL, "open", "SaTScan_Help.chm", NULL, NULL, SW_SHOWNORMAL) < static_cast<void*>(32))
+  if (ShellExecute(NULL, "open", "SaTScan_Help.chm", NULL, NULL, SW_SHOWNORMAL) < (void*)32)
     Application->MessageBox("Unable to open SaTScan help.", NULL, MB_OK);
 }
 //---------------------------------------------------------------------------
