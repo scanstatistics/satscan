@@ -43,15 +43,6 @@ double CModel::CalcSVTTLogLikelihood(CSVTTCluster* Cluster, CTimeTrend GlobalTim
 
 /** returns whether special maximum circle population file should be read */
 bool CModel::DoesReadMaxCirclePopulationFile() {
-  bool  bRequiredForProspective, bAskForByUser;
-
-  bAskForByUser = gParameters.UseMaxCirclePopulationFile();
-  bAskForByUser &= gParameters.GetAnalysisType() != PURELYTEMPORAL &&
-                   gParameters.GetAnalysisType() != PROSPECTIVEPURELYTEMPORAL;
-  bRequiredForProspective = gParameters.GetAnalysisType() == PROSPECTIVESPACETIME;
-  bRequiredForProspective &= gParameters.GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE;
-  bRequiredForProspective &= gParameters.GetAdjustForEarlierAnalyses();
-
-  return bAskForByUser || bRequiredForProspective;
+  return gParameters.UseMaxCirclePopulationFile();
 }
 
