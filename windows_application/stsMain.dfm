@@ -313,7 +313,10 @@ object frmMainForm: TfrmMainForm
       Caption = '&Help'
       object Contents1: TMenuItem
         Action = HelpAction
-        Caption = '&Contents'
+        Caption = '&Help Contents'
+      end
+      object SaTScanUserGuide1: TMenuItem
+        Action = AdobeUserGuideAction
       end
       object N4: TMenuItem
         Caption = '-'
@@ -401,7 +404,7 @@ object frmMainForm: TfrmMainForm
     end
     object HelpAction: TAction
       Category = 'All'
-      Hint = 'Help'
+      Hint = 'User Guide'
       ImageIndex = 1
       ShortCut = 112
       OnExecute = HelpActionExecute
@@ -428,6 +431,11 @@ object frmMainForm: TfrmMainForm
       Hint = 'Advanced Features'
       ShortCut = 16449
       OnExecute = AdvancedParametersActionExecute
+    end
+    object AdobeUserGuideAction: TAction
+      Category = 'All'
+      Caption = '&SaTScan User Guide'
+      OnExecute = AdobeUserGuideActionExecute
     end
   end
   object ImageList: TImageList

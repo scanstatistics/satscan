@@ -31,6 +31,28 @@ void __fastcall TfrmMainForm::AboutSatscanActionExecute(TObject *Sender) {
   TfrmAbout(this).ShowModal();
 }
 
+/** event triggiered when selects user guide action */
+void __fastcall TfrmMainForm::AdobeUserGuideActionExecute(TObject *Sender) {
+  HINSTANCE     hReturn;
+  ZdString      sMessage, sUserGuide;
+
+  //Attempt to open chm user guide.
+  sUserGuide.printf("%sSaTScan_Users_Guide.pdf", ExtractFilePath(Application->ExeName).c_str());
+  hReturn = ShellExecute(Handle, "open", sUserGuide.GetCString(), NULL, NULL, SW_SHOWNORMAL);
+  if (hReturn <= (void*)32) {
+    if (hReturn == (void*)SE_ERR_NOASSOC) {
+      sMessage  << "Please note that the SaTScan User Guide requires Adobe Acrobat Reader.\n"
+                   "You can download Adobe Acrobat Reader for free at http://www.adobe.com/";
+    }
+    else {
+      sMessage  << "SaTScan User Guide was unable to open. File may be missing or corrupt."
+                   "\nPlease contact technical support at website: "
+                << GetToolkit().GetWebSite() << ".";
+    }
+    Application->MessageBox(sMessage.GetCString(), "SaTScan User Guide", MB_OK);
+  }
+}
+
 /** event triggiered when associated advanced features action clicked */
 void __fastcall TfrmMainForm::AdvancedParametersActionExecute(TObject *Sender) {
   try {

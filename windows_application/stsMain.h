@@ -72,6 +72,8 @@ class TfrmMainForm : public TForm{
         TMenuItem *Print1;
         TBevel *Bevel7;
         TSpeedButton *SpeedButton1;
+        TMenuItem *SaTScanUserGuide1;
+        TAction *AdobeUserGuideAction;
         void __fastcall PrintResultsActionExecute(TObject *Sender);
         void __fastcall NewSessionActionExecute(TObject *Sender);
         void __fastcall OpenParameterFileActionExecute(TObject *Sender);
@@ -87,6 +89,7 @@ class TfrmMainForm : public TForm{
         void __fastcall OnFormActivate(TObject *Sender);
         void __fastcall UpdateActionExecute(TObject *Sender);
         void __fastcall AdvancedParametersActionExecute(TObject *Sender);
+        void __fastcall AdobeUserGuideActionExecute(TObject *Sender);
   private:	// User declarations
     bool                        gbShowStartWindow;
     stsOutputFileRegister       gRegistry;
