@@ -30,7 +30,7 @@ __fastcall TfrmAnalysis::TfrmAnalysis(TComponent* Owner, char *sParamFileName) :
     else
       SetupInterface();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("constructor()", "TfrmAnalysis");
     throw;
   }
@@ -61,8 +61,11 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
          pBFTFPointer = new BFTFImportDescriptor();
+         pBFTFPointer->SetGenerateReport(false);
          SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
+         //sFileName.SetLocation("C:\\Prj\\SatScan\\windows_application\\");
          sFileName.SetExtension(TXD_EXT);
+         pBFTFPointer->SetDestinationFile(sFileName.GetFullPath());
          CreateTXDFile(sFileName, gvCaseFileFieldDescriptors);
          auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, pBFTFPointer));
          pImporter->ShowOptionalPanels(false, false, false);
@@ -77,10 +80,10 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
       strcpy(gpParams->m_szCaseFilename, edtCaseFileName->Text.c_str());
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnCaseBrowseClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -116,10 +119,10 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
       strcpy(gpParams->m_szControlFilename, edtControlFileName->Text.c_str());
      }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnControlBrowseClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -155,10 +158,10 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
       strcpy(gpParams->m_szCoordFilename, edtCoordinateFileName->Text.c_str());
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnCoordBrowseClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -194,10 +197,10 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
       strcpy(gpParams->m_szGridFilename, edtGridFileName->Text.c_str());
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnGridBrowseClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -233,10 +236,10 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
       strcpy(gpParams->m_szPopFilename, edtPopFileName->Text.c_str());
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnPopBrowseClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //------------------------------------------------------------------------------
@@ -254,9 +257,9 @@ void __fastcall TfrmAnalysis::btnResultFileBrowseClick(TObject *Sender) {
       //UpdateData(false);
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("btnResultFileBrowseClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //------------------------------------------------------------------------------
@@ -279,7 +282,7 @@ bool TfrmAnalysis::Check_Days(int iYear, int iMonth, int iDay, char *sDateName) 
       bDayOk = false;
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("Check_Days()", "TfrmAnalysis");
     throw;
   }
@@ -306,7 +309,7 @@ bool TfrmAnalysis::Check_IntervalLength(int iStartYear, int iStartMonth, int iSt
       bIntervalLenOk = false;
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("Check_IntervalLength()", "TfrmAnalysis");
     throw;
   }
@@ -327,7 +330,7 @@ bool TfrmAnalysis::Check_Month(int iMonth, char *sDateName) {
       bMonthOk = false;
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("Check_Month()", "TfrmAnalysis");
     throw;
   }
@@ -363,7 +366,7 @@ bool TfrmAnalysis::Check_Year(int iYear, char *sDateName) {
       bYearOk = false;
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("Check_Year", "TfrmAnalysis");
     throw;
   }
@@ -401,7 +404,7 @@ bool TfrmAnalysis::CheckAnalysisParams() {
     if (bParamsOk)
       bParamsOk = CheckReplicas(atoi(edtMontCarloReps->Text.c_str()));
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("CheckAnalysisParams()", "TfrmAnalysis");
     throw;
   }
@@ -435,7 +438,7 @@ bool TfrmAnalysis::CheckDateRange(int iStartYear, int iStartMonth, int iStartDay
       bRangeOk = false;
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("CheckDateRange", "TfrmAnalysis");
     throw;
   }
@@ -451,7 +454,7 @@ bool TfrmAnalysis::CheckOutputParams() {
     if (edtResultFile->Enabled)
       bReturn = ValidateFileCanCreate(edtResultFile->Text, "Output");
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("CheckOutputParams", "TfrmAnalysis");
     throw;
   }
@@ -483,7 +486,7 @@ bool TfrmAnalysis::CheckProspDateRange(int iStartYear, int iStartMonth, int iSta
       bRangeOk = false;
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("CheckProspDateRange()", "TfrmAnalysis");
     throw;
   }
@@ -501,7 +504,7 @@ bool TfrmAnalysis::CheckReplicas(int iReplicas) {
       bReplicasOk = false;
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("CheckReplicas()", "TfrmAnalysis");
     throw;
   }
@@ -521,7 +524,7 @@ bool TfrmAnalysis::CheckScanningWindowParams() {
     if (bParamsOk)
       bParamsOk = ValidateTemoralClusterSize();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("CheckScanningWindowParams()", "TfrmAnalysis");
     throw;
   }
@@ -563,7 +566,7 @@ bool TfrmAnalysis::CheckTimeParams() {
       }
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("CheckTimeParams()", "TfrmAnalysis");
     throw;
   }
@@ -582,9 +585,9 @@ void __fastcall TfrmAnalysis::chkInclRelRiskEstClick(TObject *Sender) {
     gpParams->m_bOutputRelRisks = chkInclRelRiskEst->Checked;
     DataExchange();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("chkInclRelRiskEstClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //------------------------------------------------------------------------------
@@ -595,9 +598,9 @@ void __fastcall TfrmAnalysis::chkIncludePurSpacClustClick(TObject *Sender) {
     gpParams->m_bIncludePurelySpatial = chkIncludePurSpacClust->Checked;
     DataExchange();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("chkIncludePurSpacClustClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //------------------------------------------------------------------------------
@@ -608,9 +611,9 @@ void __fastcall TfrmAnalysis::chkInclPurTempClustClick(TObject *Sender) {
     gpParams->m_bIncludePurelyTemporal = chkInclPurTempClust->Checked;
     DataExchange();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("chkInclPurTempClustClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //------------------------------------------------------------------------------
@@ -621,9 +624,9 @@ void __fastcall TfrmAnalysis::chkInclSimLogLikClick(TObject *Sender) {
     gpParams->m_bSaveSimLogLikelihoods = chkInclSimLogLik->Checked;
     DataExchange();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("chkInclSimLogLikClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -663,18 +666,26 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<con
             pField->SetRequired(true);
           // field 1 the only alpha field in the input so allow to greater width here, consider
           // other options for this in the future - AJV 9/4/2002
-         uwLength = (!i ? 128 : 32);      
+         pField->SetType(ZD_ALPHA_FLD);
+         uwLength = (!i ? 200 : 50);      
          pField->SetOffset(uwOffset);
          pField->SetLength(uwLength);
+         pField->SetIndexCount(0);
          vFields.AddElement(pField->Clone());
          delete pField;
-         uwOffset += ( 2 + uwLength );        // forced spacing so that SatScan can backfit its scanf reads - AJV 9/4/2002
+         // NOTE: Our original design would simply make gaps in the fields offsets
+         //       to allow created ZdTXD file to work like current SaTScan data files.
+         //       But, unfortunetly, those gaps would have value 0x00 causing problems
+         //       for scanf. So, let's assume that there will be gaps between fields.
+         //       I think this is a pretty good assumption for now considering the
+         //       large field lengths we are defining and given sample data observed.
+         uwOffset += ( uwLength );
       }
 
       // don't pack fields or else you'll lose the offset!!! AJV 9/5/2002
       // BUGBUG - we'll temporarily delete the txd file if it already exists - AJV 9/5/2002
-      if(ZdIO::Exists(sFileName.GetFullPath()))
-         ZdIO::Delete(sFileName.GetFullPath());
+      pFile->Delete(sFileName.GetFullPath());
+      pFile->SetTitle(sFileName.GetFileName());
       pFile->Create(sFileName.GetFullPath(), vFields, 0);
       pFile->Close();
 
@@ -717,7 +728,7 @@ void TfrmAnalysis::DataExchange() {
     EnablePrecision();
     EnableScanningWindow();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("DataExchange()", "TfrmAnalysis");
     throw;
   }
@@ -730,7 +741,7 @@ bool TfrmAnalysis::DetermineIfDbfExtension(AnsiString sFileName) {
   try {
      bDbfStatus = ! std::strcmp(((sFileName.SubString(sFileName.Length() - 3, 4)).LowerCase()).c_str(), ".dbf");
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("DetermineIfDbaseFile(AnsiString & sFileName)", "TfrmAnalysis");
     throw;
   }
@@ -745,9 +756,9 @@ void __fastcall TfrmAnalysis::edtEndDayExit(TObject *Sender) {
       edtEndDay->SetFocus();
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("edtEndDayExit()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -758,9 +769,9 @@ void __fastcall TfrmAnalysis::edtEndMonthExit(TObject *Sender) {
       edtStartMonth->SetFocus();
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("edtEndMonthExit", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -771,9 +782,9 @@ void __fastcall TfrmAnalysis::edtEndYearExit(TObject *Sender) {
       edtEndYear->SetFocus();
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("edtEndYearExit()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -806,9 +817,9 @@ void __fastcall TfrmAnalysis::edtMontCarloRepsExit(TObject *Sender) {
        edtMontCarloReps->SetFocus();
      }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("edtMontCarloRepsExit()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //------------------------------------------------------------------------------
@@ -826,9 +837,9 @@ void __fastcall TfrmAnalysis::edtProspDayExit(TObject *Sender) {
       edtProspDay->SetFocus();
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("edtProspDayExit()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -839,9 +850,9 @@ void __fastcall TfrmAnalysis::edtProspYearExit(TObject *Sender) {
       edtProspYear->SetFocus();
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("edtProspYearExit()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -852,9 +863,9 @@ void __fastcall TfrmAnalysis::edtProspMonthExit(TObject *Sender) {
       edtProspMonth->SetFocus();
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("edtProspMonthExit()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -866,9 +877,9 @@ void __fastcall TfrmAnalysis::edtStartDayExit(TObject *Sender) {
       edtStartDay->SetFocus();
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("edtStartDayExit()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -880,9 +891,9 @@ void __fastcall TfrmAnalysis::edtStartMonthExit(TObject *Sender) {
       edtStartMonth->SetFocus();
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("edtStartMonthExit()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -894,9 +905,9 @@ void __fastcall TfrmAnalysis::edtStartYearExit(TObject *Sender) {
       edtStartYear->SetFocus();
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("edtStartYearExit()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -964,7 +975,7 @@ void TfrmAnalysis::EnablePrecision() {
       ChildControl->Enabled = (gpParams->m_nIntervalUnits < 3);   // use to be 2
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("EnablePrecision()", "TfrmAnalysis");
     throw;
   }
@@ -1088,7 +1099,7 @@ void TfrmAnalysis::EnableTimeTrendAdj() {
       edtLogPerYear->Color = clInactiveBorder;
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("EnableTimeTrendAdj()", "TfrmAnalysis");
     throw;
   }
@@ -1117,7 +1128,7 @@ CParameters * TfrmAnalysis::GetSession() {
   try {
     SaveTextParameters();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("GetSession()", "TfrmAnalysis");
     throw;
   }
@@ -1154,14 +1165,14 @@ void TfrmAnalysis::ParseDate(char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *
       theDate = szDate;
       iLoc = theDate.Pos("/");
       if (iLoc == 0)
-        SSException::GenerateNotification("Invalid date found in parameter file.", "ParseDate()");
+        ZdException::GenerateNotification("Invalid date found in parameter file.", "ParseDate()");
       else {
         thePart = theDate.SubString(1,iLoc-1);
         pYear->Text  = thePart.c_str();
         theDate.Delete(1, iLoc);
         iLoc = theDate.Pos("/");
         if (iLoc == 0)
-          SSException::GenerateNotification("Invalid date found in parameter file.", "ParseDate()");
+          ZdException::GenerateNotification("Invalid date found in parameter file.", "ParseDate()");
         else {
           thePart = theDate.SubString(1,iLoc-1);
           pMonth->Text = thePart.c_str();
@@ -1171,9 +1182,9 @@ void TfrmAnalysis::ParseDate(char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *
       }
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("ParseDate()", "TfrmAnalysis");
-    DisplayException(this, x);//trap exception and display for now since I'm not sure why a
+    DisplayBasisException(this, x);//trap exception and display for now since I'm not sure why a
                               //messagebox was being used inplace of exception thrown ...
   }
 }
@@ -1195,7 +1206,7 @@ bool TfrmAnalysis::ReadSession(char *sFileName) {
     gpParams->SetParameters(sFileName);
     SetupInterface();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("ReadSession()", "TfrmAnalysis");
     throw;
   }
@@ -1209,9 +1220,9 @@ void __fastcall TfrmAnalysis::rbUnitDayClick(TObject *Sender) {
     gpParams->m_nIntervalUnits = 3; // use to be 2
     DataExchange();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("rbUnitDayClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
    }
 }
 //------------------------------------------------------------------------------
@@ -1222,9 +1233,9 @@ void __fastcall TfrmAnalysis::rbUnitMonthsClick(TObject *Sender) {
     gpParams->m_nIntervalUnits = 2; // use to be 1
     DataExchange();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("rbUnitMonthsClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //------------------------------------------------------------------------------
@@ -1235,9 +1246,9 @@ void __fastcall TfrmAnalysis::rbUnitYearClick(TObject *Sender) {
     gpParams->m_nIntervalUnits = 1; // use to be 0
     DataExchange();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("rbUnitYearClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //------------------------------------------------------------------------------
@@ -1248,9 +1259,9 @@ void __fastcall TfrmAnalysis::rgClustersToIncludeClick(TObject *Sender) {
     gpParams->m_bAliveClustersOnly = (rgClustersToInclude->ItemIndex == 0 ? 0:1);
     DataExchange();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("rgClustersToIncludeClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //------------------------------------------------------------------------------
@@ -1263,9 +1274,9 @@ void __fastcall TfrmAnalysis::rgCoordinatesClick(TObject *Sender) {
     SetSpatialDistanceCaption();
     DataExchange();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("rgCoordinatesClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -1355,7 +1366,7 @@ void __fastcall TfrmAnalysis::rgPrecisionTimesClick(TObject *Sender) {
     }
     DataExchange();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("rgPrecisionTimesClick()", "TfrmAnalysis");
     throw;
   }
@@ -1386,9 +1397,9 @@ void __fastcall TfrmAnalysis::rgProbabilityClick(TObject *Sender) {
     else
       DataExchange();
   }
-  catch ( SSException & x ) {
+  catch ( ZdException & x ) {
     x.AddCallpath( "rgProbabilityClick()", "TfrmAnalysis" );
-    DisplayException( this, x );
+    DisplayBasisException( this, x );
   }
 }
 //------------------------------------------------------------------------------
@@ -1400,9 +1411,9 @@ void __fastcall TfrmAnalysis::rgScanAreasClick(TObject *Sender) {
     gpParams->m_nAreas = rgScanAreas->ItemIndex + 1;
     DataExchange();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("rgScanAreasClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //------------------------------------------------------------------------------
@@ -1426,9 +1437,9 @@ void __fastcall TfrmAnalysis::rgTemporalTrendAdjClick(TObject *Sender) {
     }
     DataExchange();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("rgTemporalTrendAdjClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
    }
 }
 //------------------------------------------------------------------------------
@@ -1464,9 +1475,9 @@ void __fastcall TfrmAnalysis::rgTypeAnalysisClick(TObject *Sender) {
 
     DataExchange();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("rgTypeAnalysisClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -1480,7 +1491,7 @@ void TfrmAnalysis::SaveAs() {
       WriteSession();
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("SaveAs()", "TfrmAnalysis");
     throw;
   }
@@ -1513,7 +1524,7 @@ void TfrmAnalysis::SaveTextParameters() {
     //Output File Tab
     strcpy(gpParams->m_szOutputFilename, edtResultFile->Text.c_str());
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("SaveTextParameters()", "TfrmAnalysis");
     throw;
   }
@@ -1529,11 +1540,11 @@ void TfrmAnalysis::SetSpatialDistanceCaption() {
                  break;
        case 1  : rdoSpatialDistance->Caption = "Distance (in kilometers)";
                  break;
-       default : SSException::Generate("Unknown coordinates radio button index: \"%i\".",
+       default : ZdException::Generate("Unknown coordinates radio button index: \"%i\".",
                                        "rgCoordinatesClick()", rgCoordinates->ItemIndex);
        }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("SetSpatialDistanceCaption()", "TfrmAnalysis");
     throw;
   }
@@ -1739,7 +1750,7 @@ void TfrmAnalysis::SetupInterface() {
     //now enable or disable controls appropriately
     DataExchange();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("SetupInterface()", "TfrmAnalysis");
     throw;
   }
@@ -1756,7 +1767,7 @@ bool TfrmAnalysis::WriteSession() {
       bWriteOk = gpParams->SaveParameters(gsParamFileName.c_str());
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("WriteSession()", "TfrmAnalysis");
     throw;
   }
@@ -1836,7 +1847,7 @@ bool TfrmAnalysis::ValidateInputFiles() {
       }
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("ValidateInputFiles()", "TfrmAnalysis");
     throw;
   }
@@ -1863,9 +1874,9 @@ bool TfrmAnalysis::ValidateParams() {
     if (bDataOk)
       bDataOk = CheckOutputParams();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("ValidateParams()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
   return bDataOk;
 }
@@ -1878,11 +1889,11 @@ bool TfrmAnalysis::ValidateSpatialClusterSize() {
     if (! edtMaxClusterSize->Text.Length()) {
       PageControl1->ActivePage = tbScanningWindow;
       edtMaxClusterSize->SetFocus();
-      SSException::GenerateNotification("Please specify maximum geographic size.", "ValidateSpatialClusterSize()");
+      ZdException::GenerateNotification("Please specify maximum geographic size.", "ValidateSpatialClusterSize()");
     }
 
     if (!(dValue > 0.0 && dValue <= 50.0) && rdoSpatialPercentage->Checked) {
-      SSException::GenerateNotification("Please specify valid maximum geographic size between %d - %d.",
+      ZdException::GenerateNotification("Please specify valid maximum geographic size between %d - %d.",
                                         "ValidateSpatialClusterSize()", 0, 50);
       PageControl1->ActivePage = tbScanningWindow;
       edtMaxClusterSize->SetFocus();
@@ -1890,10 +1901,10 @@ bool TfrmAnalysis::ValidateSpatialClusterSize() {
     else
       gpParams->m_nMaxGeographicClusterSize = atof(edtMaxClusterSize->Text.c_str());
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("ValidateSpatialClusterSize()", "TfrmAnalysis");
     bOkParams = false;
-    MessageBox( NULL, x.GetErrorMessage(), "Notification", MB_OK );
+    DisplayBasisException(this, x);
   }
   return bOkParams;
 }
@@ -1911,7 +1922,7 @@ bool TfrmAnalysis::ValidateTemoralClusterSize() {
         dMaxValue = (rgProbability->ItemIndex == SPACETIMEPERMUTATION ? 50 : 90);
         dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
         if (!(dValue > 0.0 && dValue <= dMaxValue))
-          SSException::GenerateNotification("Please specify valid maximum time size between %d - %.0f", "ValidateTemoralClusterSize()", 0, dMaxValue);
+          ZdException::GenerateNotification("Please specify valid maximum time size between %d - %.0f", "ValidateTemoralClusterSize()", 0, dMaxValue);
       }
       else if (rdoTimeTemproal->Checked) {
         dMaxValue = 90; 
@@ -1919,7 +1930,7 @@ bool TfrmAnalysis::ValidateTemoralClusterSize() {
           dTimeBetween = TimeBetween(CharToJulian(gpParams->m_szStartDate),CharToJulian(gpParams->m_szEndDate),gpParams->m_nIntervalUnits);
           dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
           if (dTimeBetween <= 0 || dValue > dTimeBetween*(dMaxValue/100))
-            SSException::GenerateNotification("Maximum temporal cluster size must be less than %d of duration of study period.",
+            ZdException::GenerateNotification("Maximum temporal cluster size must be less than %d of duration of study period.",
                                               "ValidateTemoralClusterSize()", dMaxValue);
           if (floor(dValue/dTimeBetween*100) < 1) {
             sMessage = "Invalid maximum temoral cluster size specified.\nWith study period spanning from year ";
@@ -1935,19 +1946,19 @@ bool TfrmAnalysis::ValidateTemoralClusterSize() {
             if (rbUnitDay->Checked)
               sMessage += " days(s) ";
             sMessage += " is less than 1 percent of study period.";
-            SSException::GenerateNotification(sMessage.c_str(), "ValidateTemoralClusterSize()");
+            ZdException::GenerateNotification(sMessage.c_str(), "ValidateTemoralClusterSize()");
           }
         }
         else
-          SSException::GenerateNotification("Maximum temporal cluster size must be greater than interval length.",
+          ZdException::GenerateNotification("Maximum temporal cluster size must be greater than interval length.",
                                             "ValidateTemoralClusterSize()");
       }
       else
-        SSException::GenerateNotification("Type specified as neither percentage nor time.",
+        ZdException::GenerateNotification("Type specified as neither percentage nor time.",
                                             "ValidateTemoralClusterSize()");
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("ValidateTemoralClusterSize()", "TfrmAnalysis");
     bParamsOk = false;
     PageControl1->ActivePage = tbScanningWindow;
@@ -1991,9 +2002,9 @@ void __fastcall TfrmAnalysis::rdoSpatialPercentageClick(TObject *Sender) {
     EnablePopulationFileInput();
     gpParams->m_nMaxSpatialClusterSizeType = PERCENTAGEOFMEASURETYPE;
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("rdoSpatialPercentageClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -2002,9 +2013,9 @@ void __fastcall TfrmAnalysis::rdoSpatialDistanceClick(TObject *Sender){
     EnablePopulationFileInput();
     gpParams->m_nMaxSpatialClusterSizeType = DISTANCETYPE;
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("rdoSpatialDistanceClick()", "TfrmAnalysis");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
