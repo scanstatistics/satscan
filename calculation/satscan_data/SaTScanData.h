@@ -79,7 +79,7 @@ class CSaTScanData
 
     void        AdjustNeighborCounts(); // For sequential analysis, after top cluster removed
     inline Cats *GetCats() { return gpCats; };           // DTG
-    int         ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate);
+    int         ComputeNewCutoffInterval(Julian jStartDate, Julian& jEndDate);
     void        DisplaySummary(FILE* fp);
     void        DisplaySummary2(FILE* fp);
 

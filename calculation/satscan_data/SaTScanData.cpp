@@ -165,28 +165,19 @@ bool CSaTScanData::CalculateMeasure() {
   return bReturn;
 }
 
-int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate) {
-   int iIntervalCut;
+int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian& jEndDate) {
+   int  iIntervalCut;
    long lTimeBetween;
 
-   try {
-      if (m_nTimeIntervals == 1)
-         iIntervalCut = 1;
-      else if (m_nTimeIntervals > 1) {
-         iIntervalCut = 0;
-//         if (m_pParameters->m_nMaxClusterSizeType == PERCENTAGETYPE)
-           lTimeBetween = (TimeBetween(jStartDate, jEndDate, m_pParameters->m_nIntervalUnits))*m_pParameters->m_nMaxTemporalClusterSize/100.0;
-//         else
-//           lTimeBetween = (TimeBetween(jStartDate, jEndDate, m_pParameters->m_nIntervalUnits))*
-//                          (m_pParameters->m_nMaxTemporalClusterSize/TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->m_nIntervalUnits));
-//
-         iIntervalCut = lTimeBetween / m_pParameters->m_nIntervalLength;
-      }
+   if (m_pParameters->m_nMaxClusterSizeType == PERCENTAGETYPE) {
+     lTimeBetween = (TimeBetween(jStartDate, jEndDate, m_pParameters->m_nIntervalUnits))*(m_pParameters->m_nMaxTemporalClusterSize/100.0);
+     iIntervalCut = lTimeBetween / m_pParameters->m_nIntervalLength;
+     //now compute a new Current Date by subtracting the interval duration
+     jEndDate = DecrementDate(jEndDate, m_pParameters->m_nIntervalUnits, m_pParameters->m_nIntervalLength);
    }
-   catch (SSException & x) {
-      x.AddCallpath("ComputeNewCutoffInterval()", "CSaTScanData");
-      throw;
-   }
+   else
+     iIntervalCut = m_nIntervalCut;
+
    return iIntervalCut;
 }
 
@@ -384,19 +375,20 @@ void CSaTScanData::SetIntervalCut() {
   /* Calculates the number of time intervals to include in potential clusters */
   /* without exceeding the maximum cluster size with respect to time.         */
   /* gpPrintDirection->SatScanPrintf("Calculate number of time intervals...\n"); /*KR-6/22/97*/
-   long lTimeBetween;
+  long          lMaxTemporalLength, lStudyPeriodLength;
 
    try {
-      if (m_nTimeIntervals == 1)
-         m_nIntervalCut = 1;
-      else if (m_nTimeIntervals > 1) {
-//         if (m_pParameters->m_nMaxClusterSizeType == PERCENTAGETYPE) {
-           lTimeBetween = TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->m_nIntervalUnits)*m_pParameters->m_nMaxTemporalClusterSize/100.0;
-           m_nIntervalCut = lTimeBetween / m_pParameters->m_nIntervalLength;
-//         }
-//        else
-//           m_nIntervalCut = m_pParameters->m_nMaxTemporalClusterSize / m_pParameters->m_nIntervalLength;
+    if (m_nTimeIntervals == 1)
+      m_nIntervalCut = 1;
+    else if (m_nTimeIntervals > 1) {
+      if (m_pParameters->m_nMaxClusterSizeType == PERCENTAGETYPE) {
+        lStudyPeriodLength = TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->m_nIntervalUnits);
+        lMaxTemporalLength = lStudyPeriodLength * (m_pParameters->m_nMaxTemporalClusterSize/100.0);
+        m_nIntervalCut = lMaxTemporalLength / m_pParameters->m_nIntervalLength;
       }
+      else
+        m_nIntervalCut = m_pParameters->m_nMaxTemporalClusterSize / m_pParameters->m_nIntervalLength;
+    }
 
       if (m_nIntervalCut==0) {
          char sMessage[200];
