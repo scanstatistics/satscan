@@ -474,9 +474,6 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
 
     fprintf(fp, "\nOutput\n");
     fprintf(fp, "------\n");
-#ifdef INCLUDE_RUN_HISTORY
-    fprintf(fp, "  Analysis History  : %s\n", gsRunHistoryFilename.GetCString());
-#endif
     fprintf(fp, "  Results File      : %s\n", gsOutputFileName.c_str());
 
     // area specific files
