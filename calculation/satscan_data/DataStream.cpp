@@ -1,9 +1,9 @@
 //---------------------------------------------------------------------------
 #include "SaTScan.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 #include "DataStream.h"
 #include "SaTScanData.h"
-//---------------------------------------------------------------------------
 
 /** constructor */
 DataStream::DataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts)
@@ -37,6 +37,11 @@ DataStream::~DataStream() {
   catch(...){}
 }
 
+/** Creates a three dimensional array for storing case information, stratified
+    by time interval index / location index / population category index.
+    Initializes data to zero. If array already exists, only initialization occurs.
+    Note that data in this array will be cumulated with respect to time intervals
+    such that each earlier time interval will include later intervals data. */
 void DataStream::AllocateCategoryCasesArray() {
   try {
     if (!gpCategoryCasesHandler)
@@ -49,6 +54,11 @@ void DataStream::AllocateCategoryCasesArray() {
   }
 }
 
+/** Creates a two dimensional array for storing case information, stratified
+    by time interval index / location index. Initializes data to zero. If array
+    already exists, only initialization occurs.
+    Note that data in this array will be cumulated with respect to time intervals
+    such that each earlier time interval will include later intervals data. */
 void DataStream::AllocateCasesArray() {
   try {
     if (!gpCasesHandler)
@@ -61,6 +71,11 @@ void DataStream::AllocateCasesArray() {
   }
 }
 
+/** Creates a two dimensional array for storing control information, stratified
+    by time interval index / location index. Initializes data to zero. If array
+    already exists, only initialization occurs.
+    Note that data in this array will be cumulated with respect to time intervals
+    such that each earlier time interval will include later intervals data. */
 void DataStream::AllocateControlsArray() {
   try {
     if (!gpControlsHandler)
@@ -73,6 +88,11 @@ void DataStream::AllocateControlsArray() {
   }
 }
 
+/** Creates a two dimensional array for storing expected case information (measure),
+    stratified by time interval index / location index. Initializes data to zero.
+    If array already exists, only initialization occurs.
+    Note that data in this array will be cumulated with respect to time intervals
+    such that each earlier time interval will include later intervals data. */
 void DataStream::AllocateMeasureArray() {
   try {
     if (!gpMeasureHandler)
@@ -85,6 +105,11 @@ void DataStream::AllocateMeasureArray() {
   }
 }
 
+/** Creates a two dimensional array for storing simulated expected case
+    information (measure), stratified by time interval index / location index.
+    Initializes data to zero. If array already exists, only initialization occurs.
+    Note that data in this array will be cumulated with respect to time intervals
+    such that each earlier time interval will include later intervals data. */
 void DataStream::AllocateSimMeasureArray() {
   try {
     if (!gpSimMeasureHandler)
@@ -97,6 +122,11 @@ void DataStream::AllocateSimMeasureArray() {
   }
 }
 
+/** Creates a two dimensional array for storing expected case
+    information (measure) squared, stratified by time interval index / location index.
+    Initializes data to zero. If array already exists, only initialization occurs.
+    Note that data in this array will be cumulated with respect to time intervals
+    such that each earlier time interval will include later intervals data. */
 void DataStream::AllocateSqMeasureArray() {
   try {
     if (!gpSqMeasureHandler)
@@ -109,6 +139,11 @@ void DataStream::AllocateSqMeasureArray() {
   }
 }
 
+/** Creates a two dimensional array for storing simulated expected case
+    information (measure) squared, stratified by time interval index / location index.
+    Initializes data to zero. If array already exists, only initialization occurs.
+    Note that data in this array will be cumulated with respect to time intervals
+    such that each earlier time interval will include later intervals data. */
 void DataStream::AllocateSqSimMeasureArray() {
   try {
     if (!gpSimSqMeasureHandler)
@@ -121,6 +156,11 @@ void DataStream::AllocateSqSimMeasureArray() {
   }
 }
 
+/** Creates a one dimensional array for storing simulated expected case
+    information (measure), stratified by time interval index. Initializes data
+    to zero. If array already exists, only initialization occurs.
+    Note that data in this array will be cumulated with respect to time intervals
+    such that each earlier time interval will include later intervals data. */
 void DataStream::AllocatePTSimMeasureArray() {
   try {
     if (!gpPTSimMeasureArray)
@@ -133,6 +173,11 @@ void DataStream::AllocatePTSimMeasureArray() {
   }
 }
 
+/** Creates a one dimensional array for storing simulated expected case
+    information (measure) squared, stratified by time interval index. Initializes data
+    to zero. If array already exists, only initialization occurs.
+    Note that data in this array will be cumulated with respect to time intervals
+    such that each earlier time interval will include later intervals data. */
 void DataStream::AllocatePTSimSqMeasureArray() {
   try {
     if (!gpPTSimSqMeasureArray)
@@ -145,6 +190,11 @@ void DataStream::AllocatePTSimSqMeasureArray() {
   }
 }
 
+/** Creates a one dimensional array for storing expected case information
+    (measure), stratified by time interval index. Initializes data to zero. If
+    array already exists, only initialization occurs.
+    Note that data in this array will be cumulated with respect to time intervals
+    such that each earlier time interval will include later intervals data. */
 void DataStream::AllocatePTMeasureArray() {
   try {
     if (!gpPTMeasureArray)
@@ -157,6 +207,10 @@ void DataStream::AllocatePTMeasureArray() {
   }
 }
 
+/** Creates a two dimensional array for storing expected case information (measure),
+    stratified by time interval index / location index. Initializes data to zero.
+    If array already exists, only initialization occurs.
+    Note that data is not cumulative.*/
 void DataStream::AllocateNCMeasureArray() {
   try {
     if (!gpNCMeasureHandler)
@@ -169,6 +223,9 @@ void DataStream::AllocateNCMeasureArray() {
   }
 }
 
+/** Creates a two dimensional array for storing expected case information (measure),
+    stratified by population date index / location index. Initializes data to zero.
+    If array already exists, only initialization occurs. */
 void DataStream::AllocatePopulationMeasureArray() {
   try {
     if (!gpPopulationMeasureHandler)
@@ -181,6 +238,11 @@ void DataStream::AllocatePopulationMeasureArray() {
   }
 }
 
+/** Creates a two dimensional array for storing simulated case information,
+    stratified by time interval index / location index. Initializes data to zero.
+    If array already exists, only initialization occurs.
+    Note that data in this array will be cumulated with respect to time intervals
+    such that each earlier time interval will include later intervals data. */
 void DataStream::AllocateSimulationCasesArray() {
   try {
     if (!gpSimCasesHandler)
@@ -193,6 +255,10 @@ void DataStream::AllocateSimulationCasesArray() {
   }
 }
 
+/** Creates a two dimensional array for storing simulated case information,
+    stratified by time interval index / location index. Initializes data to zero.
+    If array already exists, only initialization occurs.
+    Note that data in this array is not cumulative. */
 void DataStream::AllocateSimulationNCCasesArray() {
   try {
     if (!gpNCSimCasesHandler)
@@ -205,6 +271,11 @@ void DataStream::AllocateSimulationNCCasesArray() {
   }
 }
 
+/** Creates a one dimensional array for storing case information, stratified by
+    time interval index. Initializes data to zero. If array already exists, only
+    initialization occurs.
+    Note that data in this array will be cumulated with respect to time intervals
+    such that each earlier time interval will include later intervals data. */
 void DataStream::AllocateSimulationPTCasesArray() {
   try {
     if (!gpPTSimCasesArray)
@@ -217,6 +288,8 @@ void DataStream::AllocateSimulationPTCasesArray() {
   }
 }
 
+/** Validates that the population data read from file is correct in that a location
+    does not contain case data while having zero population. */
 void DataStream::CheckPopulationDataCases(CSaTScanData& Data) {
   try {
     gPopulation.CheckCasesHavePopulations(gpCasesHandler->GetArray()[0], Data);
@@ -227,6 +300,8 @@ void DataStream::CheckPopulationDataCases(CSaTScanData& Data) {
   }
 }
 
+/** Frees two dimensional array representing expected case data data stratified by
+    population date index / location index. */
 void DataStream::FreePopulationMeasureArray() {
   try {
     delete gpPopulationMeasureHandler; gpPopulationMeasureHandler=0;
@@ -234,7 +309,7 @@ void DataStream::FreePopulationMeasureArray() {
   catch(...){}
 }
 
-/** frees all memory allocated to simulation structures */
+/** Frees all memory allocated to simulation structures. */
 void DataStream::FreeSimulationStructures() {
   try {
     delete[] gpPTSimCasesArray; gpPTSimCasesArray=0;
@@ -248,6 +323,11 @@ void DataStream::FreeSimulationStructures() {
   catch(...){}
 }
 
+/** Returns reference to class that contains three dimensional array of cases
+    stratified by time interval index / location index / category index. Throws
+    exception if structure not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
 ThreeDimCountArray_t & DataStream::GetCategoryCaseArrayHandler() {
   try {
     if (!gpCategoryCasesHandler)
@@ -260,6 +340,10 @@ ThreeDimCountArray_t & DataStream::GetCategoryCaseArrayHandler() {
   return *gpCategoryCasesHandler;
 }
 
+/** Returns pointer to one dimensional array representing case data stratified by
+    time interval index. Throws exception of not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
 count_t * DataStream::GetPTCasesArray() const {
   try {
     if (!gpPTCasesArray)
@@ -272,6 +356,11 @@ count_t * DataStream::GetPTCasesArray() const {
   return gpPTCasesArray;
 }
 
+/** Returns pointer to three dimensional array representing case data stratified
+    by time interval index / location index / population category index. Throws
+    exception of not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
 count_t *** DataStream::GetCategoryCaseArray() const {
   try {
     if (!gpCategoryCasesHandler)
@@ -284,7 +373,10 @@ count_t *** DataStream::GetCategoryCaseArray() const {
   return gpCategoryCasesHandler->GetArray();
 }
 
-/** returns pointer to two-dimensional array representing cases in a cumulative state. */
+/** Returns pointer to two dimensional array representing case data stratified
+    by time interval index / location index. Throws exception of not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
 count_t ** DataStream::GetCaseArray() const {
   try {
     if (!gpCasesHandler)
@@ -297,6 +389,10 @@ count_t ** DataStream::GetCaseArray() const {
   return gpCasesHandler->GetArray();
 }
 
+/** Returns pointer to two dimensional array representing control data stratified
+    by time interval index / location index. Throws exception of not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
 count_t ** DataStream::GetControlArray() const {
   try {
     if (!gpControlsHandler)
@@ -309,12 +405,14 @@ count_t ** DataStream::GetControlArray() const {
   return gpControlsHandler->GetArray();
 }
 
-/** returns pointer to two-dimensional array representing expected cases in
-    a cumulative state. */
+/** Returns pointer to two dimensional array representing expected case data stratified
+    by time interval index / location index. Throws exception of not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
 measure_t ** DataStream::GetMeasureArray() const {
   try {
     if (!gpMeasureHandler)
-      ZdGenerateException("Non-cumulative measure not allocated.","GetMeasureArray()");
+      ZdGenerateException("Cumulative measure array not allocated.","GetMeasureArray()");
   }
   catch (ZdException &x) {
     x.AddCallpath("GetMeasureArray()","DataStream");
@@ -323,11 +421,14 @@ measure_t ** DataStream::GetMeasureArray() const {
   return gpMeasureHandler->GetArray();
 }
 
-/** returns pointer to two-dimensional array representing cases in a cumulative state. */
+/** Returns pointer to two dimensional array representing simulated case data stratified
+    by time interval index / location index. Throws exception of not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
 count_t ** DataStream::GetSimCaseArray() const {
   try {
     if (!gpSimCasesHandler)
-      ZdGenerateException("Cumulative case array not allocated.","GetSimCaseArray()");
+      ZdGenerateException("Cumulative simulation case array not allocated.","GetSimCaseArray()");
   }
   catch (ZdException &x) {
     x.AddCallpath("GetSimCaseArray()","DataStream");
@@ -336,6 +437,11 @@ count_t ** DataStream::GetSimCaseArray() const {
   return gpSimCasesHandler->GetArray();
 }
 
+/** Returns pointer to two dimensional array representing simulated expected case
+    data stratified by time interval index / location index. Throws exception of
+    not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
 measure_t ** DataStream::GetSimMeasureArray() const {
   try {
     if (!gpSimMeasureHandler)
@@ -348,6 +454,11 @@ measure_t ** DataStream::GetSimMeasureArray() const {
   return gpSimMeasureHandler->GetArray();
 }
 
+/** Returns reference to object to manages the two dimensional array representing
+    simulated expected case data stratified by time interval index / location index.
+    Throws exception of not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
 TwoDimMeasureArray_t & DataStream::GetSimMeasureArrayHandler() {
   try {
     if (!gpSimMeasureHandler)
@@ -360,6 +471,11 @@ TwoDimMeasureArray_t & DataStream::GetSimMeasureArrayHandler() {
   return *gpSimMeasureHandler;
 }
 
+/** Returns reference to object to manages the two dimensional array representing
+    simulated expected case data, squared and stratified by
+    time interval index / location index. Throws exception of not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
 TwoDimMeasureArray_t & DataStream::GetSimSqMeasureArrayHandler() {
   try {
     if (!gpSimSqMeasureHandler)
@@ -372,6 +488,11 @@ TwoDimMeasureArray_t & DataStream::GetSimSqMeasureArrayHandler() {
   return *gpSimSqMeasureHandler;
 }
 
+/** Returns pointer to two dimensional array representing simulated expected
+    case data, squared and stratified by time interval index / location index.
+    Throws exception of not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
 measure_t ** DataStream::GetSimSqMeasureArray() {
   try {
     if (!gpSimSqMeasureHandler)
@@ -384,6 +505,11 @@ measure_t ** DataStream::GetSimSqMeasureArray() {
   return gpSimSqMeasureHandler->GetArray();
 }
 
+/** Returns pointer to two dimensional array representing expected case data
+    stratified by time interval index / location index. Throws exception of not
+    allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
 measure_t ** DataStream::GetSqMeasureArray() {
   try {
     if (!gpSqMeasureHandler)
@@ -396,7 +522,9 @@ measure_t ** DataStream::GetSqMeasureArray() {
   return gpSqMeasureHandler->GetArray();
 }
 
-/** returns pointer to two-dimensional array representing cases in a cumulative state. */
+/** Returns pointer to two dimensional array representing case data stratified
+    by time interval index / location index. Throws exception of not allocated.
+    Note that data in this array is not cumulated. */
 count_t ** DataStream::GetNCCaseArray() const {
   try {
     if (!gpNCCasesHandler)
@@ -409,12 +537,14 @@ count_t ** DataStream::GetNCCaseArray() const {
   return gpNCCasesHandler->GetArray();
 }
 
-/** returns pointer to two-dimensional array representing expected cases in
-    a non cumulative state. */
+/** Returns pointer to two dimensional array representing expected case data
+    stratified by time interval index / location index. Throws exception of not
+    allocated.
+    Note that data in this array is not cumulated. */
 measure_t ** DataStream::GetNCMeasureArray() const {
   try {
     if (!gpNCMeasureHandler)
-      ZdGenerateException("Non-cumulative measure not allocated.","GetNCMeasureArray()");
+      ZdGenerateException("Non-cumulative measure array not allocated.","GetNCMeasureArray()");
   }
   catch (ZdException &x) {
     x.AddCallpath("GetNCMeasureArray()","DataStream");
@@ -423,7 +553,10 @@ measure_t ** DataStream::GetNCMeasureArray() const {
   return gpNCMeasureHandler->GetArray();
 }
 
-/** returns pointer to two-dimensional array representing cases in a cumulative state. */
+/** Returns pointer to two dimensional array representing simulated case data
+    stratified by time interval index / location index. Throws exception of not
+    allocated.
+    Note that data in this array is not cumulated. */
 count_t ** DataStream::GetNCSimCaseArray() const {
   try {
     if (!gpNCSimCasesHandler)
@@ -436,6 +569,10 @@ count_t ** DataStream::GetNCSimCaseArray() const {
   return gpNCSimCasesHandler->GetArray();
 }
 
+/** Returns pointer to two dimensional array representing expected case data
+    stratified by population data index / location index. Throws exception of not
+    allocated.
+    Note that data in this array is not cumulated. */
 measure_t ** DataStream::GetPopulationMeasureArray() const {
   try {
     if (!gpPopulationMeasureHandler)
@@ -448,6 +585,10 @@ measure_t ** DataStream::GetPopulationMeasureArray() const {
   return gpPopulationMeasureHandler->GetArray();
 }
 
+/** Returns pointer to one dimensional array representing expected case data
+    stratified by time interval index. Throws exception of not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
 measure_t * DataStream::GetPTMeasureArray() const {
   try {
     if (!gpPTMeasureArray)
@@ -460,6 +601,10 @@ measure_t * DataStream::GetPTMeasureArray() const {
   return gpPTMeasureArray;
 }
 
+/** Returns pointer to one dimensional array representing simulated case data
+    stratified by time interval index. Throws exception of not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
 count_t * DataStream::GetPTSimCasesArray() const {
   try {
     if (!gpPTSimCasesArray)
@@ -472,7 +617,7 @@ count_t * DataStream::GetPTSimCasesArray() const {
   return gpPTSimCasesArray;
 }
 
-/** internal intialization function */
+/** internal class intialization function */
 void DataStream::Init() {
   gtTotalCases=0;
   gtTotalCasesAtStart=0;
@@ -503,6 +648,9 @@ void DataStream::Init() {
   gpPTSqMeasureArray=0;
 }
 
+/** Resets to all zero, the two dimensional array representing simulated case data,
+    stratified by time interval index / location index and cumulative by time
+    intervals. Throws exception if array not allocated. */
 void DataStream::ResetCumulativeSimCaseArray() {
   try {
     if (!gpSimCasesHandler)
@@ -516,8 +664,8 @@ void DataStream::ResetCumulativeSimCaseArray() {
   }
 }
 
-/** Allocates and sets two dimensional non-cumulative case array and purely
-    temporal case array. */
+/** Ensures that two dimensional non-cumulative case array and purely temporal
+    case arrays are allocated and passes to function SetCaseArrays(). */
 void DataStream::SetCaseArrays() {
   try {
     if (!gpNCCasesHandler)
@@ -533,7 +681,9 @@ void DataStream::SetCaseArrays() {
 }
 
 /** Given two dimensional cumulative case array 'ppCases' - sets elements of
-    non-cumulative two dimensional case array and purely temporal case array. */
+    non-cumulative two dimensional case array and purely temporal case array.
+    Caller of function is responsible for ensuring that dimensions of arrays
+    are inline with those expected in function. */
 void DataStream::SetCaseArrays(count_t** ppCases, count_t** pCases_NC, count_t* pCasesByTimeInt) {
   int   i, j;
 
@@ -548,7 +698,7 @@ void DataStream::SetCaseArrays(count_t** ppCases, count_t** pCases_NC, count_t* 
   }
 }
 
-/** Allocates array that stores the total number of cases for each time
+/** Allocates and sets array that stores the total number of cases for each time
     interval as gotten from cumulative two dimensional case array. */
 void DataStream::SetCasesByTimeInterval() {
   int             i, j;
@@ -570,8 +720,10 @@ void DataStream::SetCasesByTimeInterval() {
   }
 }
 
-/** Allocates two-dimensional array to be used as cumulative measure.
-    Data assembled using previously defined non-cumulative measure. */
+/** Allocates and sets two-dimensional array to be used as cumulative measure.
+    Data assembled using previously defined non-cumulative measure. Cumulative
+    array allocated if not already allocated. Throws exception if non-cumulative
+    array is not allocated. */
 void DataStream::SetCumulativeMeasureArrayFromNonCumulative() {
   int                   i, t;
   measure_t          ** ppMeasure, ** ppMeasureNC;
@@ -599,7 +751,10 @@ void DataStream::SetCumulativeMeasureArrayFromNonCumulative() {
   }
 }
 
-/** sets cumulative measure array as cumulative 'in-place'
+/** Sets cumulative measure array as cumulative 'in-place'. Note that it is assumed
+    that the cumulative measure array is currently not cumulative. Throws exception
+    if array not already allocated. Repeated calls to this function will produce
+    erroneous data.
     - Currently the Poisson model adjusts the measure only when the it is non-cumulative.
       CPoissonModel::CalculateMeasure() and SVTT need to be looked at further
       to reduce the oddness here. */
@@ -616,8 +771,10 @@ void DataStream::SetMeasureArrayAsCumulative() {
         ppMeasure[i][t]= ppMeasure[i+1][t] + ppMeasure[i][t];
 }
 
-/** Allocates and sets measure array that represents non-cumulative measure
-    for all time intervals from passed non-cumulative measure array. */
+/** Sets measure array that represents expected case data for all time intervals
+    from passed non-cumulative measure array. Array is allocated is not already
+    allocated. Note that caller of function is responsible for ensuring the passed
+    array is correct in terms of dimensions and non-cumulative attribute. */
 void DataStream::SetMeasureByTimeIntervalsArray(measure_t ** ppNonCumulativeMeasure) {
   unsigned int   i, j;
 
@@ -637,7 +794,8 @@ void DataStream::SetMeasureByTimeIntervalsArray(measure_t ** ppNonCumulativeMeas
 }
 
 /** Sets non-cumulative measure from cumulative measure.
-    Non-cumulative measure array should not be already allocated. */
+    Throw exception of cumulative measure array not allocated. Allocates
+    non-cumulative measure array if not already allocated. */
 void DataStream::SetNonCumulativeMeasureArrayFromCumulative() {
   int           i, j;
   measure_t  ** ppMeasureNC, ** ppMeasure;
@@ -666,6 +824,9 @@ void DataStream::SetNonCumulativeMeasureArrayFromCumulative() {
   }
 }
 
+/** Sets one dimensional array representing case data stratified by time intervals
+    from cumulative two dimensional case array. Allocates the one dimensional array
+    is not allocated. Throws exception if two dimensional array is not allocated. */
 void DataStream::SetPTCasesArray() {
   int                   i, j;
   count_t            ** ppCases;
@@ -690,6 +851,10 @@ void DataStream::SetPTCasesArray() {
   }
 }
 
+/** Sets one dimensional array representing expected case data stratified by time
+    intervals from cumulative two dimensional expected case array. Allocates the
+    one dimensional array if not allocated. Throws exception if two dimensional
+    array is not allocated. */
 void DataStream::SetPTMeasureArray() {
   int           i, j;
   measure_t  ** ppMeasure;
@@ -698,10 +863,11 @@ void DataStream::SetPTMeasureArray() {
     if (!gpMeasureHandler)
       ZdGenerateException("Cumulative measure array not allocated.","SetPTMeasureArray()");
 
-//     delete[] gpPTMeasureArray; gpPTMeasureArray=0;
-    gpPTMeasureArray = new measure_t[giNumTimeIntervals+1];
-    memset(gpPTMeasureArray, 0, (giNumTimeIntervals+1)*sizeof(measure_t));
+    //delete[] gpPTMeasureArray; gpPTMeasureArray=0;
+    if (!gpPTMeasureArray)
+      gpPTMeasureArray = new measure_t[giNumTimeIntervals+1];
 
+    memset(gpPTMeasureArray, 0, (giNumTimeIntervals+1)*sizeof(measure_t));
     ppMeasure = gpMeasureHandler->GetArray();
     for (i=0; i < (int)giNumTimeIntervals; ++i)
        for (j=0; j < (int)giNumTracts; ++j)
@@ -713,6 +879,10 @@ void DataStream::SetPTMeasureArray() {
   }
 }
 
+/** Sets one dimensional array representing expected case data stratified by time
+    intervals and squared from cumulative squared two dimensional expected case array.
+    Allocates the one dimensional array if not allocated. Throws exception if two
+    dimensional array is not allocated. */
 void DataStream::SetPTSqMeasureArray() {
   int           i, j;
   measure_t  ** ppMeasure;
@@ -722,9 +892,10 @@ void DataStream::SetPTSqMeasureArray() {
       ZdGenerateException("Cumulative square measure array not allocated.","SetPTSqMeasureArray()");
 
 //     delete[] gpPTMeasureArray; gpPTMeasureArray=0;
-    gpPTSqMeasureArray = new measure_t[giNumTimeIntervals+1];
-    memset(gpPTSqMeasureArray, 0, (giNumTimeIntervals+1)*sizeof(measure_t));
+    if (!gpPTSqMeasureArray)
+      gpPTSqMeasureArray = new measure_t[giNumTimeIntervals+1];
 
+    memset(gpPTSqMeasureArray, 0, (giNumTimeIntervals+1)*sizeof(measure_t));
     ppMeasure = gpSqMeasureHandler->GetArray();
     for (i=0; i < (int)giNumTimeIntervals; ++i)
        for (j=0; j < (int)giNumTracts; ++j)
@@ -736,6 +907,10 @@ void DataStream::SetPTSqMeasureArray() {
   }
 }
 
+/** Sets one dimensional array representing simulated expected case data stratified
+    by time intervals from cumulative two dimensional simulated expected case array.
+    Allocates the one dimensional array if not allocated. Throws exception if two
+    dimensional array is not allocated. */
 void DataStream::SetPTSimMeasureArray() {
   int           i, j;
   measure_t  ** ppMeasure;
@@ -757,6 +932,10 @@ void DataStream::SetPTSimMeasureArray() {
   }
 }
 
+/** Sets one dimensional array representing simulated expected case data stratified
+    by time intervals and squared from cumulative squared two dimensional simulated
+    expected case array. Allocates the one dimensional array if not allocated.
+    Throws exception if two dimensional array is not allocated. */
 void DataStream::SetPTSqSimMeasureArray() {
   int           i, j;
   measure_t  ** ppMeasure;
@@ -778,6 +957,10 @@ void DataStream::SetPTSqSimMeasureArray() {
   }
 }
 
+/** Sets one dimensional array representing simulated case data stratified
+    by time intervals from cumulative two dimensional simulated case array.
+    Allocates the one dimensional array if not allocated. Throws exception
+    if two dimensional array is not allocated. */
 void DataStream::SetPTSimCasesArray() {
   int           i, j;
   count_t    ** ppSimCases;
@@ -800,6 +983,8 @@ void DataStream::SetPTSimCasesArray() {
   }
 }
 
+/** Ensures that two dimensional non-cumulative simulated case array and purely temporal
+    simulated case arrays are allocated and passes to function SetCaseArrays(). */
 void DataStream::SetSimCaseArrays() {
   try {
 
@@ -815,6 +1000,7 @@ void DataStream::SetSimCaseArrays() {
   }
 }
 
+/** internal class setup function */
 void DataStream::Setup() {
   try {
     gPopulation.SetNumTracts(giNumTracts);

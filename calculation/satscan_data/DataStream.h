@@ -8,13 +8,14 @@
 #include "PopulationData.h"
 #include "TimeTrend.h"
 
+//typedefs for multiple dimension arrays
 typedef TwoDimensionArrayHandler<count_t>      TwoDimCountArray_t;
 typedef ThreeDimensionArrayHandler<count_t>    ThreeDimCountArray_t;
 typedef TwoDimensionArrayHandler<measure_t>    TwoDimMeasureArray_t;
 typedef ThreeDimensionArrayHandler<measure_t>  ThreeDimMeasureArray_t;
 
-class CSaTScanData;
-class DataStreamHandler;
+class CSaTScanData; /** forward class declaration */
+class DataStreamHandler; /** forward class declaration */
 
 /** Encapsulates data for each stream of data.
     NOTE: Look into derived DataStream classes for each handler class. */
