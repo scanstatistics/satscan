@@ -1523,6 +1523,9 @@ void TfrmAnalysis::SaveTextParameters() {
     sprintf(gpParams->m_szProspStartDate, "%i/%i/%i", atoi(edtProspYear->Text.c_str()), atoi(edtProspMonth->Text.c_str()), atoi(edtProspDay->Text.c_str()));
     //Output File Tab
     strcpy(gpParams->m_szOutputFilename, edtResultFile->Text.c_str());
+
+    gpParams->SetOutputClusterLevelDBF(chkDbaseFile1->Checked);
+    gpParams->SetOutputAreaSpecificDBF(chkDbaseFile2->Checked);
   }
   catch (ZdException & x) {
     x.AddCallpath("SaveTextParameters()", "TfrmAnalysis");
