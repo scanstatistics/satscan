@@ -353,7 +353,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
                        // the log file was not able to be written to - AJV 9/24/2002
          x.AddCallpath("LogNewHistory()", "stsRunHistoryFile");
          gpPrintDirection->SatScanPrintWarning("\nUnable to log analysis information:\n");
-         gpPrintDirection->SatScanPrintWarning(x.GetCallpath());
+//         gpPrintDirection->SatScanPrintWarning(x.GetCallpath());
          gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
          gpPrintDirection->SatScanPrintWarning("\n");
       }
