@@ -1,5 +1,7 @@
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//***************************************************************************
 #include "SignificantRatios05.h"
 
 CSignificantRatios05::CSignificantRatios05(int nReplications, BasePrint *pPrintDirection)
