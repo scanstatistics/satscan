@@ -434,12 +434,6 @@ void __fastcall TfrmAdvancedParameters::edtReportClustersSmallerThanExit(TObject
   DoControlExit();
 }
 //---------------------------------------------------------------------------
-/** event triggered when key pressed for control that can contain positive real numbers */
-void __fastcall TfrmAdvancedParameters::edtReportClustersSmallerThanKeyPress(TObject *Sender, char &Key) {
-  if (!strchr("0123456789.\b",Key))
-    Key = 0;
-}
-//---------------------------------------------------------------------------
 /** event triggered when year control, of prospective start date, is exited. */
 void __fastcall TfrmAdvancedParameters::edtProspectiveStartDateExit(TObject *Sender) {
   TfrmAnalysis::ValidateDate(*edtProspectiveStartDateYear, *edtProspectiveStartDateMonth, *edtProspectiveStartDateDay);

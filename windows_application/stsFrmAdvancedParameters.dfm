@@ -342,21 +342,21 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'The Maximum Spatial Cluster Size:  '
         end
         object lblPercentOfPopulation: TLabel
-          Left = 96
+          Left = 101
           Top = 38
           Width = 263
           Height = 13
           Caption = 'percent of the population at risk (<= 50%, default = 50%)'
         end
         object lblMaxRadius: TLabel
-          Left = 166
+          Left = 197
           Top = 124
           Width = 73
           Height = 13
           Caption = 'kilometer radius'
         end
         object lblPercentageOfPopFile: TLabel
-          Left = 96
+          Left = 101
           Top = 62
           Width = 316
           Height = 13
@@ -368,7 +368,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtMaxSpatialClusterSize: TEdit
           Left = 62
           Top = 35
-          Width = 30
+          Width = 34
           Height = 21
           AutoSelect = False
           MaxLength = 5
@@ -420,7 +420,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtMaxSpatialRadius: TEdit
           Left = 133
           Top = 122
-          Width = 25
+          Width = 58
           Height = 21
           TabOrder = 8
           Text = '1'
@@ -431,8 +431,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtMaxSpatialPercentFile: TEdit
           Left = 62
           Top = 60
-          Width = 30
+          Width = 34
           Height = 21
+          MaxLength = 5
           TabOrder = 3
           Text = '50'
           OnChange = edtMaxSpatialPercentFileChange
@@ -723,7 +724,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtMaxTemporalClusterSize: TEdit
           Left = 62
           Top = 35
-          Width = 35
+          Width = 34
           Height = 21
           MaxLength = 5
           TabOrder = 1
@@ -764,9 +765,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtMaxTemporalClusterSizeUnits: TEdit
           Left = 62
           Top = 60
-          Width = 35
+          Width = 34
           Height = 21
-          MaxLength = 5
+          MaxLength = 6
           TabOrder = 3
           Text = '1'
           OnExit = edtMaxTemporalClusterSizeUnitsExit
@@ -799,7 +800,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object edtLogLinear: TEdit
         Left = 108
         Top = 80
-        Width = 30
+        Width = 34
         Height = 21
         Enabled = False
         MaxLength = 5
@@ -809,7 +810,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         OnKeyPress = FloatKeyPress
       end
       object lblLogLinear: TStaticText
-        Left = 144
+        Left = 148
         Top = 82
         Width = 67
         Height = 17
@@ -1025,7 +1026,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       Caption = 'Clusters Reported'
       ImageIndex = 2
       object lblReportSmallerClusters: TLabel
-        Left = 238
+        Left = 241
         Top = 222
         Width = 151
         Height = 27
@@ -1045,12 +1046,12 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object edtReportClustersSmallerThan: TEdit
         Left = 200
         Top = 220
-        Width = 30
+        Width = 34
         Height = 21
         TabOrder = 1
         Text = '50'
         OnExit = edtReportClustersSmallerThanExit
-        OnKeyPress = edtReportClustersSmallerThanKeyPress
+        OnKeyPress = PositiveFloatKeyPress
       end
       object rdgCriteriaSecClusters: TRadioGroup
         Left = 16

@@ -146,7 +146,6 @@ __published:	// IDE-managed Components
    void __fastcall edtMaxTemporalClusterSizeUnitsExit(TObject *Sender) ;
    void __fastcall edtProspectiveStartDateExit(TObject *Sender);
    void __fastcall edtReportClustersSmallerThanExit(TObject *Sender);
-   void __fastcall edtReportClustersSmallerThanKeyPress(TObject *Sender, char &Key);
    void __fastcall edtStartRangeStartDateExit(TObject *Sender);
    void __fastcall edtEndRangeStartDateExit(TObject *Sender);
    void __fastcall edtStartRangeEndDateExit(TObject *Sender);
