@@ -101,7 +101,7 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
     if (OpenDialog1->Execute()) {
       sFileName = OpenDialog1->FileName.c_str();
       //Detect dbf file and launch importer if detected
-      if ( DetermineIfDbfExtension(sFileName.GetFileName()) ) {
+      if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
          ImportDescriptor.SetGenerateReport(false);
          SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
          // create destination file in user's temp directory
@@ -150,7 +150,7 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
     if (OpenDialog1->Execute()) {
       sFileName = OpenDialog1->FileName.c_str();
       //Detect dbf file and launch importer if detected
-      if ( DetermineIfDbfExtension(sFileName.GetFileName()) ) {
+      if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
          ImportDescriptor.SetGenerateReport(false);
          SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
          // create destination file in user's temp directory
@@ -199,7 +199,7 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
     if (OpenDialog1->Execute()) {
       sFileName = OpenDialog1->FileName.c_str();
       //Detect dbf file and launch importer if detected
-      if ( DetermineIfDbfExtension(sFileName.GetFileName()) ) {
+      if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
          ImportDescriptor.SetGenerateReport(false);
          SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
          // create destination file in user's temp directory
@@ -247,7 +247,7 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
     if (OpenDialog1->Execute()) {
       sFileName = OpenDialog1->FileName.c_str();
       //Detect dbf file and launch importer if detected
-      if ( DetermineIfDbfExtension(sFileName.GetFileName()) ) {
+      if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
          ImportDescriptor.SetGenerateReport(false);
          SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
          // create destination file in user's temp directory
@@ -295,7 +295,7 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
     if (OpenDialog1->Execute()) {
        sFileName = OpenDialog1->FileName.c_str();
        //Detect dbf file and launch importer if detected
-       if ( DetermineIfDbfExtension(sFileName.GetFileName()) ) {
+       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
           ImportDescriptor.SetGenerateReport(false);
           SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
           // create destination file in user's temp directory
@@ -750,8 +750,17 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const std::vector<
    }
 }
 
-bool TfrmAnalysis::DetermineIfDbfExtension(const ZdString& sFileName) {
-   return sFileName.EndsWith(".dbf");
+bool TfrmAnalysis::DetermineIfDbfExtension(const AnsiString& sFileName) {
+  bool bDbfStatus = false;
+
+  try {
+     bDbfStatus = !strcmp(((sFileName.SubString(sFileName.Length() - 3, 4)).LowerCase()).c_str(), ".dbf");
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("DetermineIfDbaseFile(AnsiString & sFileName)", "TfrmAnalysis");
+    throw;
+  }
+   return bDbfStatus;
 }
 
 void __fastcall TfrmAnalysis::edtEndDayExit(TObject *Sender) {
@@ -1080,8 +1089,6 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           // Disables Spatial
           rdoSpatialPercentage->Enabled = false;
           rdoSpatialDistance->Enabled = false;
-//          edtMaxClusterSize->Enabled = false;
-//          edtMaxClusterSize->Color = clInactiveBorder;
           chkInclPurTempClust->Enabled = false;
           gpParams->m_bIncludePurelySpatial = false;
           chkInclPurTempClust->Checked = false;
@@ -1091,8 +1098,6 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           edtUnitLength->Color = clWindow;
           // Enables temporal without checkbox
           GroupBox5->Enabled = true;
-//          edtMaxTemporalClusterSize->Enabled = true;
-//          edtMaxTemporalClusterSize->Color = clWindow;
           rdoPercentageTemproal->Enabled = true;
           rdoTimeTemproal->Enabled = true;
           chkIncludePurSpacClust->Enabled = false;
@@ -1114,8 +1119,6 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           //Enables spatial
           rdoSpatialPercentage->Enabled = true;
           rdoSpatialDistance->Enabled = true;
-//          edtMaxClusterSize->Enabled = true;
-//          edtMaxClusterSize->Color = clWindow;
           chkInclPurTempClust->Enabled = true;
           chkInclPurTempClust->Checked = gpParams->m_bIncludePurelyTemporal;
           //Enables time intervals
@@ -1124,8 +1127,6 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           edtUnitLength->Color = clWindow;
           //Enables temporal
           GroupBox5->Enabled = true;
-//          edtMaxTemporalClusterSize->Enabled = true;
-//          edtMaxTemporalClusterSize->Color = clWindow;
           rdoPercentageTemproal->Enabled = true;
           rdoPercentageTemproal->Checked = (gpParams->m_nMaxClusterSizeType == 0 ? true : false);
           rdoTimeTemproal->Enabled = true;
@@ -1147,8 +1148,6 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           rdoSpatialPercentage->Enabled = false;
           rdoSpatialDistance->Enabled = true;
           rdoSpatialDistance->Checked = true;
-//          edtMaxClusterSize->Enabled = false;
-//          edtMaxClusterSize->Color = clInactiveBorder;
           chkInclPurTempClust->Enabled = true;
           chkInclPurTempClust->Checked = gpParams->m_bIncludePurelyTemporal;
           //Enables time intervals
@@ -1157,8 +1156,6 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           edtUnitLength->Color = clWindow;
           //Enables temporal with checkbox but disable % box
           GroupBox5->Enabled = true;
-//          edtMaxTemporalClusterSize->Enabled = false;
-//          edtMaxTemporalClusterSize->Color = clInactiveBorder;
           rdoPercentageTemproal->Enabled = false;
           rdoPercentageTemproal->Checked = false;
           rdoTimeTemproal->Enabled = true;

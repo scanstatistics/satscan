@@ -203,7 +203,7 @@ class TfrmAnalysis : public TForm {
     bool                CheckScanningWindowParams();
     bool                CheckTimeParams();
     void                CreateTXDFile(const ZdFileName& sFileName, const std::vector<std::string>& vFieldNames);
-    bool                DetermineIfDbfExtension(const ZdString& sFileName);
+    bool                DetermineIfDbfExtension(const AnsiString& sFileName);
     ZdDate            & GetStudyPeriodEndDate(ZdDate & Date);
     ZdDate            & GetStudyPeriodStartDate(ZdDate & Date);
     void                Init();
