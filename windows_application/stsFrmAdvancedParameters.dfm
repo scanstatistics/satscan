@@ -1,6 +1,6 @@
 object frmAdvancedParameters: TfrmAdvancedParameters
-  Left = 189
-  Top = 131
+  Left = 195
+  Top = 168
   ActiveControl = PageControl
   BorderStyle = bsDialog
   Caption = 'Advanced Features'
@@ -71,12 +71,12 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 8
         Top = 8
         Width = 401
-        Height = 181
+        Height = 189
         Caption = 'Additional Input Streams'
         TabOrder = 0
         object Label3: TLabel
           Left = 110
-          Top = 16
+          Top = 18
           Width = 46
           Height = 13
           Hint = 'Additional Case File Name'
@@ -86,28 +86,28 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object Label1: TLabel
           Left = 110
-          Top = 58
+          Top = 60
           Width = 55
           Height = 13
           Caption = 'Control File:'
         end
         object Label2: TLabel
           Left = 110
-          Top = 100
+          Top = 102
           Width = 72
           Height = 13
           Caption = 'Population File:'
         end
         object Label4: TLabel
           Left = 216
-          Top = 58
+          Top = 60
           Width = 78
           Height = 13
           Caption = '(Bernoulli Model)'
         end
         object Label5: TLabel
           Left = 216
-          Top = 100
+          Top = 102
           Width = 75
           Height = 13
           Caption = '(Poisson Model)'
@@ -115,7 +115,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object edtCaseFileName: TEdit
         Left = 118
-        Top = 36
+        Top = 40
         Width = 250
         Height = 21
         Hint = 'Additional Case File Name'
@@ -126,7 +126,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object btnCaseBrowse: TButton
         Left = 376
-        Top = 36
+        Top = 40
         Width = 25
         Height = 21
         Hint = 'browse for case file'
@@ -144,7 +144,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object edtControlFileName: TEdit
         Left = 118
-        Top = 78
+        Top = 82
         Width = 250
         Height = 21
         Hint = 'Additional Control File Name'
@@ -155,7 +155,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object btnControlBrowse: TButton
         Left = 376
-        Top = 78
+        Top = 82
         Width = 25
         Height = 21
         Hint = 'browse for control file'
@@ -173,7 +173,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object edtPopFileName: TEdit
         Left = 118
-        Top = 121
+        Top = 125
         Width = 250
         Height = 21
         Hint = 'Additional Population File Name'
@@ -184,7 +184,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object btnPopBrowse: TButton
         Left = 376
-        Top = 121
+        Top = 125
         Width = 25
         Height = 21
         Hint = 'browse for population file'
@@ -204,7 +204,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 16
         Top = 36
         Width = 93
-        Height = 106
+        Height = 111
         Hint = 'All Additional Input Streams'
         ItemHeight = 13
         ParentShowHint = False
@@ -214,7 +214,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object btnNewStream: TButton
         Left = 16
-        Top = 152
+        Top = 156
         Width = 45
         Height = 25
         Hint = 'Add an Additional Input Stream'
@@ -226,7 +226,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object btnRemoveStream: TButton
         Left = 64
-        Top = 152
+        Top = 156
         Width = 45
         Height = 25
         Hint = 'Remove an Additional Input Stream'

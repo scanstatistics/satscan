@@ -120,7 +120,8 @@ void __fastcall TfrmAdvancedParameters::btnNewClick(TObject *Sender) {
      lstInputStreams->Items->Add("Input Stream " + IntToStr(giStreamNum++));
      lstInputStreams->ItemIndex = (lstInputStreams->Items->Count-1);
 
-     // clear the edit boxes
+     // enable and clear the edit boxes
+     EnableInputFileEdits(true);
      edtCaseFileName->Text = "";
      edtControlFileName->Text = "";
      edtPopFileName->Text = "";
@@ -132,6 +133,7 @@ void __fastcall TfrmAdvancedParameters::btnNewClick(TObject *Sender) {
      gvPopFiles.AddElement("");
 
      EnableNewButton();
+     EnableRemoveButton();
      DoControlExit();
    }
    catch (ZdException &x) {
@@ -164,9 +166,18 @@ void __fastcall TfrmAdvancedParameters::btnRemoveStreamClick(TObject *Sender){
       }
       // remove list box name
       lstInputStreams->Items->Delete(iStreamNum);
+      // select/highlight previous name in box
+      if (lstInputStreams->Items->Count) {
+         iStreamNum = (iStreamNum > 0) ? iStreamNum-1 : 0;
+         lstInputStreams->ItemIndex = iStreamNum;
+         lstInputStreams->OnClick(this);
+      }
+      else
+         EnableInputFileEdits(false);
       giStreamNum--;
 
       EnableNewButton();
+      EnableRemoveButton();
       DoControlExit();
    }
    catch (ZdException &x) {
@@ -393,6 +404,16 @@ void TfrmAdvancedParameters::EnableAdjustmentsGroup(bool bEnable) {
   btnBrowseAdjustmentsFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
 }
 //---------------------------------------------------------------------------
+/** enables input tab case/control/pop files edit boxes */
+void TfrmAdvancedParameters::EnableInputFileEdits(bool bEnable) {
+   edtCaseFileName->Enabled = bEnable;
+   btnCaseBrowse->Enabled = bEnable;
+   edtControlFileName->Enabled = bEnable;
+   btnControlBrowse->Enabled = bEnable;
+   edtPopFileName->Enabled = bEnable;
+   btnPopBrowse->Enabled = bEnable;
+}
+//---------------------------------------------------------------------------
 //** enables or disables the New button on the Input tab
 void TfrmAdvancedParameters::EnableNewButton() {
   btnNewStream->Enabled = (lstInputStreams->Items->Count < MAX_STREAMS) ? true: false;
@@ -424,6 +445,11 @@ void TfrmAdvancedParameters::EnableProspectiveSurveillanceGroup(bool bEnable) {
    gbxProspectiveSurveillance->Enabled = bEnable;
    chkAdjustForEarlierAnalyses->Enabled = bEnable;
    EnableProspectiveStartDate(bEnable);
+}
+//---------------------------------------------------------------------------
+//** enables or disables the New button on the Input tab
+void TfrmAdvancedParameters::EnableRemoveButton() {
+  btnRemoveStream->Enabled = (lstInputStreams->Items->Count > 0) ? true: false;
 }
 //---------------------------------------------------------------------------
 /** enables or disables the spatial options group control */
@@ -464,7 +490,7 @@ void TfrmAdvancedParameters::EnableSpatialOutputOptions(bool bEnable) {
   edtReportClustersSmallerThan->Color = bEnable && chkRestrictReportedClusters->Checked ? clWindow : clInactiveBorder;
   lblReportSmallerClusters->Enabled = bEnable;
 }
-
+//---------------------------------------------------------------------------
 /** enables temporal options controls */
 void TfrmAdvancedParameters::EnableTemporalRanges(bool bEnable, bool bEnableRanges) {
   chkRestrictTemporalRange->Enabled = bEnable && bEnableRanges;
@@ -610,7 +636,6 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    return bReturn;
 }
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 //** Checks to determine if only default values are set in the dialog
 //** Returns true if only default values are set
 //** Returns false if user specified a value other than a default
@@ -621,7 +646,6 @@ bool TfrmAdvancedParameters::GetDefaultsSetForInputOptions() {
 
    return bReturn;
 }
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //** Checks to determine if only default values are set in the dialog
 //** Returns true if only default values are set
@@ -708,7 +732,8 @@ void __fastcall TfrmAdvancedParameters::lstInputStreamsClick(TObject *Sender) {
    try {
       // determine the input stream selected
       iStreamNum = lstInputStreams->ItemIndex;
-      // set the case file
+      // set the files
+      EnableInputFileEdits(true);
       edtCaseFileName->Text = gvCaseFiles.GetElement(iStreamNum);
       edtControlFileName->Text = gvControlFiles.GetElement(iStreamNum);
       edtPopFileName->Text = gvPopFiles.GetElement(iStreamNum);
@@ -912,6 +937,8 @@ void TfrmAdvancedParameters::SetDefaultsForInputTab() {
    gvPopFiles.RemoveAllElements();
    giStreamNum = 2;
    EnableNewButton();
+   EnableRemoveButton();
+   EnableInputFileEdits(false);
 }
 //---------------------------------------------------------------------------
 /** Sets adjustments filename in interface */
@@ -1095,6 +1122,7 @@ void TfrmAdvancedParameters::Setup() {
         edtReportClustersSmallerThan->Text = 50;
 
       // Input tab
+      EnableInputFileEdits(false);
       for (unsigned int i = 1; i < ref.GetNumDataStreams(); i++) { // multiple data streams
          lstInputStreams->Items->Add("Input Stream " + IntToStr(i+1));
          gvCaseFiles.AddElement(AnsiString(ref.GetCaseFileName(i+1).c_str()));
@@ -1130,6 +1158,7 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
            lstInputStreams->OnClick(this);
         }
         EnableNewButton();
+        EnableRemoveButton();
         break;
      case ANALYSIS_TABS:    // show Analysis pages
         Caption = "Advanced Analysis Features";
@@ -1255,34 +1284,35 @@ void TfrmAdvancedParameters::ValidateInputFilesAtInput() {
 void TfrmAdvancedParameters::ValidateInputFiles() {
   try {
     for (unsigned int i = 0; i < gvCaseFiles.GetNumElements(); i++){
+       lstInputStreams->ItemIndex = i;
+       lstInputStreams->OnClick(this);
        //validate the case file
        if (gvCaseFiles.GetElement(i).IsEmpty()) {
-          GenerateAFException("Please specify a case file.", "ValidateInputFiles()",*edtCaseFileName);
+          GenerateAFException("Please specify a case file for this additional input stream.", "ValidateInputFiles()",*edtCaseFileName);
        }
        if (!File_Exists(gvCaseFiles.GetElement(i).c_str())) {
-         GenerateAFException("Case file could not be opened.", "ValidateInputFiles()",*edtCaseFileName);
+         GenerateAFException("Case file could not be opened for this additional input stream.", "ValidateInputFiles()",*edtCaseFileName);
        }
 
        //validate the control file - Bernoulli model only
        if (gAnalysisSettings.GetModelControlType() == BERNOULLI) {
           if (gvControlFiles.GetElement(i).IsEmpty()) {
-             GenerateAFException("For the Bernoulli model, please specify a control file.","ValidateInputFiles()", *edtControlFileName);
+             GenerateAFException("For the Bernoulli model, please specify a control file for this additional input stream.","ValidateInputFiles()", *edtControlFileName);
           }
           if (!File_Exists(gvControlFiles.GetElement(i).c_str())) {
-             GenerateAFException("Control file could not be opened.","ValidateInputFiles()", *edtControlFileName);
+             GenerateAFException("Control file could not be opened for this additional input stream.","ValidateInputFiles()", *edtControlFileName);
           }
        }
 
        //validate the population file -  Poisson model only
        if (gAnalysisSettings.GetModelControlType() == POISSON) {
           if (gvPopFiles.GetElement(i).IsEmpty()) {
-             GenerateAFException("For the Poisson model, please specify a population file.","ValidateInputFiles()", *edtPopFileName);
+             GenerateAFException("For the Poisson model, please specify a population file for this additional input stream.","ValidateInputFiles()", *edtPopFileName);
           }
           if (!File_Exists(gvPopFiles.GetElement(i).c_str())) {
-             GenerateAFException("Population file could not be opened.","ValidateInputFiles()", *edtPopFileName);
+             GenerateAFException("Population file could not be opened for this additional input stream.","ValidateInputFiles()", *edtPopFileName);
           }
        }
-       lstInputStreams->ItemIndex = i-1;
     }  //for loop
   }
   catch (ZdException & x) {

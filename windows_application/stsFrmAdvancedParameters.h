@@ -170,6 +170,9 @@ __published:	// IDE-managed Components
    int                      giStreamNum;   /** number of additional input streams added*/
                                            /** does not go down with removals */
    void                     DoControlExit();
+   void                     EnableNewButton();
+   void                     EnableRemoveButton();
+   void                     EnableInputFileEdits(bool bEnable);
    TimeTrendAdjustmentType  GetAdjustmentTimeTrendControlType() const;
    void                     Init();
    void                     ParseDate(const std::string& sDate, TEdit& Year, TEdit& Month, TEdit& Day, bool bStartRange);
@@ -192,7 +195,6 @@ public:
 
    void                  EnableAdjustmentsGroup(bool bEnable);
    void                  EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage, bool bCalculatedLog);
-   void                  EnableNewButton();
    void                  EnableOutputOptions(bool bEnable);
    void                  EnableProspectiveStartDate(bool bEnable);
    void                  EnableProspectiveSurveillanceGroup(bool bEnable);
