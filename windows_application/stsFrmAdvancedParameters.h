@@ -12,6 +12,7 @@
 #include <ComCtrls.hpp>
 #include "Grids_ts.hpp"
 #include "TSGrid.hpp"
+#include <Buttons.hpp>
 //---------------------------------------------------------------------------
 const int INPUT_TABS     = 1;
 const int ANALYSIS_TABS  = 2;
@@ -112,6 +113,7 @@ __published:	// IDE-managed Components
    TListBox *lstInputStreams;
    TButton *btnNewStream;
    TButton *btnRemoveStream;
+   TSpeedButton *SpeedButton1;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);

@@ -608,7 +608,7 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    bReturn &= (GetMaxSpatialClusterSizeControlType()==PERCENTOFPOPULATIONTYPE);
    bReturn &= (edtMaxSpatialClusterSize->Text.ToDouble() == 50);
    bReturn &= (edtMaxSpatialPercentFile->Text.ToDouble() == 50);
-   bReturn &= (edtMaxSpatialRadius->Text.ToInt() == 1);
+   bReturn &= (edtMaxSpatialRadius->Text.ToDouble() == 1);
    bReturn &= (edtMaxCirclePopulationFilename->Text == "");
    bReturn &= (chkInclPureTempClust->Checked == false);
 
@@ -1635,6 +1635,7 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
 
   throw theException;
 }
+
 
 
 

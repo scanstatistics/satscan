@@ -1,11 +1,11 @@
 object frmAdvancedParameters: TfrmAdvancedParameters
-  Left = 195
+  Left = 187
   Top = 168
   ActiveControl = PageControl
   BorderStyle = bsDialog
   Caption = 'Advanced Features'
   ClientHeight = 297
-  ClientWidth = 511
+  ClientWidth = 534
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,7 +19,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
   PixelsPerInch = 96
   TextHeight = 13
   object pnlButtons: TPanel
-    Left = 427
+    Left = 450
     Top = 0
     Width = 84
     Height = 297
@@ -60,9 +60,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
   object PageControl: TPageControl
     Left = 2
     Top = 6
-    Width = 423
+    Width = 447
     Height = 283
-    ActivePage = tsOutput
+    ActivePage = tsInput
     TabOrder = 0
     object tsInput: TTabSheet
       Caption = 'Multiple Data Streams'
@@ -70,7 +70,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object GroupBox1: TGroupBox
         Left = 8
         Top = 8
-        Width = 401
+        Width = 425
         Height = 189
         Caption = 'Additional Input Data Streams'
         TabOrder = 0
@@ -112,6 +112,12 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Height = 13
           Caption = '(Poisson Model)'
         end
+        object SpeedButton1: TSpeedButton
+          Left = 396
+          Top = 117
+          Width = 23
+          Height = 21
+        end
       end
       object edtCaseFileName: TEdit
         Left = 118
@@ -125,9 +131,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         OnExit = edtFileNameExit
       end
       object btnCaseBrowse: TButton
-        Left = 376
+        Left = 374
         Top = 40
-        Width = 25
+        Width = 23
         Height = 21
         Hint = 'browse for case file'
         Caption = '...'
@@ -154,9 +160,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         OnExit = edtFileNameExit
       end
       object btnControlBrowse: TButton
-        Left = 376
+        Left = 374
         Top = 82
-        Width = 25
+        Width = 23
         Height = 21
         Hint = 'browse for control file'
         Caption = '...'
@@ -183,9 +189,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         OnExit = edtFileNameExit
       end
       object btnPopBrowse: TButton
-        Left = 376
+        Left = 374
         Top = 125
-        Width = 25
+        Width = 23
         Height = 21
         Hint = 'browse for population file'
         Caption = '...'
@@ -243,7 +249,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object rdgSpatialOptions: TGroupBox
         Left = 8
         Top = 8
-        Width = 385
+        Width = 425
         Height = 177
         Caption = 'Spatial'
         TabOrder = 0
@@ -271,7 +277,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object lblPercentageOfPopFile: TLabel
           Left = 96
           Top = 62
-          Width = 259
+          Width = 321
           Height = 26
           Caption = 
             'percent of the population defined in the max circle size file (<' +
@@ -353,9 +359,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = PositiveFloatKeyPress
         end
         object edtMaxCirclePopulationFilename: TEdit
-          Left = 53
+          Left = 49
           Top = 94
-          Width = 278
+          Width = 280
           Height = 21
           ParentShowHint = False
           ShowHint = True
@@ -364,9 +370,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnExit = OnControlExit
         end
         object btnBrowseMaxCirclePopFile: TButton
-          Left = 341
+          Left = 337
           Top = 94
-          Width = 25
+          Width = 23
           Height = 21
           Hint = 'browse for special population file'
           Caption = '...'
@@ -389,21 +395,21 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object grpScanningWindow: TGroupBox
         Left = 8
         Top = 132
-        Width = 389
+        Width = 421
         Height = 111
         Caption = 'Scanning Window'
         TabOrder = 0
         object chkRestrictTemporalRange: TCheckBox
           Left = 12
           Top = 22
-          Width = 349
+          Width = 353
           Height = 17
           Caption = 'Include only windows with:'
           TabOrder = 0
           OnClick = chkRestrictTemporalRangeClick
         end
         object stStartRangeTo: TStaticText
-          Left = 245
+          Left = 257
           Top = 49
           Width = 19
           Height = 17
@@ -411,7 +417,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           TabOrder = 5
         end
         object edtStartRangeStartYear: TEdit
-          Left = 142
+          Left = 154
           Top = 46
           Width = 31
           Height = 21
@@ -422,7 +428,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStartRangeStartMonth: TEdit
-          Left = 182
+          Left = 194
           Top = 46
           Width = 20
           Height = 21
@@ -434,7 +440,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStartRangeStartDay: TEdit
-          Left = 211
+          Left = 223
           Top = 46
           Width = 20
           Height = 21
@@ -446,7 +452,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStartRangeEndYear: TEdit
-          Left = 268
+          Left = 280
           Top = 46
           Width = 31
           Height = 21
@@ -457,7 +463,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStartRangeEndMonth: TEdit
-          Left = 308
+          Left = 320
           Top = 46
           Width = 20
           Height = 21
@@ -469,7 +475,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtStartRangeEndDay: TEdit
-          Left = 337
+          Left = 349
           Top = 46
           Width = 20
           Height = 21
@@ -498,7 +504,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           TabOrder = 9
         end
         object edtEndRangeStartYear: TEdit
-          Left = 142
+          Left = 154
           Top = 78
           Width = 31
           Height = 21
@@ -509,7 +515,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtEndRangeStartMonth: TEdit
-          Left = 182
+          Left = 194
           Top = 78
           Width = 20
           Height = 21
@@ -521,7 +527,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtEndRangeStartDay: TEdit
-          Left = 211
+          Left = 223
           Top = 78
           Width = 20
           Height = 21
@@ -533,7 +539,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object stEndRangeTo: TStaticText
-          Left = 245
+          Left = 257
           Top = 81
           Width = 19
           Height = 17
@@ -541,7 +547,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           TabOrder = 13
         end
         object edtEndRangeEndYear: TEdit
-          Left = 268
+          Left = 280
           Top = 78
           Width = 31
           Height = 21
@@ -552,7 +558,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtEndRangeEndMonth: TEdit
-          Left = 308
+          Left = 320
           Top = 78
           Width = 20
           Height = 21
@@ -564,7 +570,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtEndRangeEndDay: TEdit
-          Left = 337
+          Left = 349
           Top = 78
           Width = 20
           Height = 21
@@ -579,7 +585,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object rdgTemporalOptions: TGroupBox
         Left = 8
         Top = 8
-        Width = 389
+        Width = 421
         Height = 112
         Caption = 'Temporal Cluster'
         TabOrder = 1
@@ -663,7 +669,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object rdgTemporalTrendAdj: TRadioGroup
         Left = 8
         Top = 8
-        Width = 397
+        Width = 421
         Height = 129
         Hint = 'Temporal Trend Adjustments'
         Caption = 'Temporal Adjustments'
@@ -704,12 +710,12 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object grpAdjustments: TGroupBox
         Left = 8
         Top = 148
-        Width = 397
+        Width = 421
         Height = 89
         Caption = 'Temporal, Spatial and/or Space-Time Adjustments'
         TabOrder = 3
         object lblAdjustmentsByRelativeRisksFile: TLabel
-          Left = 13
+          Left = 16
           Top = 43
           Width = 79
           Height = 13
@@ -717,11 +723,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Adjustments File:'
         end
         object edtAdjustmentsByRelativeRisksFile: TEdit
-          Left = 11
+          Left = 16
           Top = 57
           Width = 320
           Height = 21
-          Anchors = []
           ParentShowHint = False
           ShowHint = True
           TabOrder = 1
@@ -729,12 +734,11 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnExit = OnControlExit
         end
         object btnBrowseAdjustmentsFile: TButton
-          Left = 338
+          Left = 347
           Top = 57
-          Width = 25
+          Width = 23
           Height = 21
           Hint = 'browse for adjustments file'
-          Anchors = []
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -764,7 +768,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object grpAnalysis: TGroupBox
         Left = 8
         Top = 8
-        Width = 389
+        Width = 421
         Height = 50
         Caption = 'Analysis'
         TabOrder = 0
@@ -781,13 +785,13 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object gbxProspectiveSurveillance: TGroupBox
         Left = 8
         Top = 76
-        Width = 389
+        Width = 417
         Height = 129
         Caption = 'Prospective Surveillance'
         TabOrder = 1
         object lblProspectiveStartYear: TLabel
-          Left = 40
-          Top = 78
+          Left = 48
+          Top = 74
           Width = 19
           Height = 11
           Caption = 'Year'
@@ -799,8 +803,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ParentFont = False
         end
         object lblProspectiveStartMonth: TLabel
-          Left = 92
-          Top = 78
+          Left = 100
+          Top = 74
           Width = 28
           Height = 11
           Caption = 'Month'
@@ -812,8 +816,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ParentFont = False
         end
         object lblProspectiveStartDay: TLabel
-          Left = 143
-          Top = 78
+          Left = 151
+          Top = 74
           Width = 16
           Height = 11
           Caption = 'Day'
@@ -825,15 +829,15 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ParentFont = False
         end
         object lblProspectiveStartDate: TLabel
-          Left = 31
-          Top = 58
-          Width = 81
+          Left = 39
+          Top = 54
+          Width = 79
           Height = 13
-          Caption = ' performed since:'
+          Caption = 'Performed since:'
         end
         object edtProspectiveStartDateYear: TEdit
-          Left = 33
-          Top = 89
+          Left = 41
+          Top = 85
           Width = 41
           Height = 21
           Enabled = False
@@ -844,8 +848,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtProspectiveStartDateMonth: TEdit
-          Left = 93
-          Top = 89
+          Left = 101
+          Top = 85
           Width = 25
           Height = 21
           Enabled = False
@@ -856,8 +860,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtProspectiveStartDateDay: TEdit
-          Left = 139
-          Top = 89
+          Left = 147
+          Top = 85
           Width = 25
           Height = 21
           Enabled = False
@@ -912,8 +916,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object rdgCriteriaSecClusters: TRadioGroup
         Left = 16
         Top = 8
-        Width = 377
-        Height = 201
+        Width = 409
+        Height = 197
         Caption = 'Criteria for Reporting Secondary Clusters'
         Items.Strings = (
           'No Geographical Overlap'
