@@ -1,5 +1,7 @@
+//*****************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//*****************************************************************************
 #include "PurelySpatialData.h"
 #include "PoissonModel.h"
 #include "BernoulliModel.h"
@@ -8,7 +10,7 @@
 #include "SurvivalModel.h"
 #include "RankModel.h"
 
-/** constructor */
+/** class constructor */
 CPurelySpatialData::CPurelySpatialData(const CParameters* pParameters, BasePrint *pPrintDirection)
                    :CSaTScanData(pParameters, pPrintDirection) {
   try {
@@ -20,10 +22,20 @@ CPurelySpatialData::CPurelySpatialData(const CParameters* pParameters, BasePrint
   }
 }
 
-/** destructor */
+/** class destructor */
 CPurelySpatialData::~CPurelySpatialData() {}
 
-/** allocates probability model */
+/** Calculates time interval start times for a purely spatial analysis; of which
+    there is only one time interval - the study period. */
+void CPurelySpatialData::SetIntervalStartTimes() {
+  gvTimeIntervalStartTimes.clear();
+  gvTimeIntervalStartTimes.push_back(m_nStartDate);
+  gvTimeIntervalStartTimes.push_back(m_nEndDate+1);
+  m_nTimeIntervals = 1;
+}
+
+/** Allocates probability model object. Throws ZdException if probability model
+    type is space-time permutation. */
 void CPurelySpatialData::SetProbabilityModel() {
   try {
     switch (m_pParameters->GetProbabiltyModelType()) {
