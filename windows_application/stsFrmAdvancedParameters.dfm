@@ -239,7 +239,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 110
           Top = 32
           Width = 250
-          Height = 22
+          Height = 21
           Hint = 'Additional Case File Name'
           ParentShowHint = False
           ShowHint = True
@@ -250,7 +250,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 110
           Top = 74
           Width = 250
-          Height = 22
+          Height = 21
           Hint = 'Additional Control File Name'
           ParentShowHint = False
           ShowHint = True
@@ -261,7 +261,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 110
           Top = 117
           Width = 250
-          Height = 22
+          Height = 21
           Hint = 'Additional Population File Name'
           ParentShowHint = False
           ShowHint = True
@@ -443,7 +443,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 49
           Top = 94
           Width = 280
-          Height = 22
+          Height = 21
           ParentShowHint = False
           ShowHint = True
           TabOrder = 4
@@ -836,7 +836,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 16
           Top = 58
           Width = 320
-          Height = 22
+          Height = 21
           ParentShowHint = False
           ShowHint = True
           TabOrder = 1

@@ -650,7 +650,12 @@ void TfrmAdvancedParameters::EnableTemporalOptionsGroup(bool bEnable, bool bEnab
 //---------------------------------------------------------------------------
 /** event triggered when key pressed for controls that can contain real numbers. */
 void __fastcall TfrmAdvancedParameters::FloatKeyPress(TObject *Sender, char &Key) {
-  if (!strchr("-0123456789.\b",Key))
+  TEdit * pEdit;
+  //permit only characters that could comprise a floating point variable
+  if (!strchr("-0123456789.\b", Key))
+    Key = 0;
+  //permit only one decimal place or negative character
+  else if ((Key == '.' || Key == '-') && (pEdit = dynamic_cast<TEdit*>(Sender)) != 0 && strchr(pEdit->Text.c_str(), Key))
     Key = 0;
 }
 
@@ -914,7 +919,12 @@ void TfrmAdvancedParameters::ParseDate(const std::string& sDate, TEdit& Year, TE
 //---------------------------------------------------------------------------
 /** event triggered when key pressed for control that can contain positive real numbers */
 void __fastcall TfrmAdvancedParameters::PositiveFloatKeyPress(TObject *Sender, char &Key) {
-  if (!strchr("0123456789.\b",Key))
+  TEdit * pEdit;
+  //permit only characters that could comprise a positive floating point variable
+  if (!strchr("0123456789.\b", Key))
+    Key = 0;
+  //permit only one decimal place
+  else if (Key == '.' && (pEdit = dynamic_cast<TEdit*>(Sender)) != 0 && strchr(pEdit->Text.c_str(), Key))
     Key = 0;
 }
 //---------------------------------------------------------------------------

@@ -45,7 +45,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 507
     Height = 389
-    ActivePage = tbAnalysis
+    ActivePage = tbInputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input'
@@ -111,7 +111,7 @@ object frmAnalysis: TfrmAnalysis
           Left = 8
           Top = 26
           Width = 284
-          Height = 22
+          Height = 21
           ParentShowHint = False
           ShowHint = True
           TabOrder = 0
@@ -121,7 +121,7 @@ object frmAnalysis: TfrmAnalysis
           Left = 8
           Top = 68
           Width = 284
-          Height = 22
+          Height = 21
           ParentShowHint = False
           ShowHint = True
           TabOrder = 3
@@ -427,7 +427,7 @@ object frmAnalysis: TfrmAnalysis
         Left = 16
         Top = 189
         Width = 284
-        Height = 22
+        Height = 21
         ParentShowHint = False
         ShowHint = True
         TabOrder = 1
@@ -475,7 +475,7 @@ object frmAnalysis: TfrmAnalysis
           Left = 8
           Top = 24
           Width = 284
-          Height = 22
+          Height = 21
           ParentShowHint = False
           ShowHint = True
           TabOrder = 0
@@ -485,7 +485,7 @@ object frmAnalysis: TfrmAnalysis
           Left = 8
           Top = 68
           Width = 284
-          Height = 22
+          Height = 21
           ParentShowHint = False
           ShowHint = True
           TabOrder = 3
@@ -1077,7 +1077,7 @@ object frmAnalysis: TfrmAnalysis
           Left = 8
           Top = 26
           Width = 391
-          Height = 22
+          Height = 21
           AutoSelect = False
           ParentShowHint = False
           ShowHint = True

@@ -758,7 +758,12 @@ void TfrmAnalysis::EnableTimeIntervalUnitsGroup(bool bEnable) {
 //---------------------------------------------------------------------------
 /** event triggered when key pressed for controls that can contain real numbers. */
 void __fastcall TfrmAnalysis::FloatKeyPress(TObject *Sender, char &Key) {
-  if (!strchr("-0123456789.\b",Key))
+  TEdit * pEdit;
+  //permit only characters that could comprise a floating point variable
+  if (!strchr("-0123456789.\b", Key))
+    Key = 0;
+  //permit only one decimal place or negative character
+  else if ((Key == '.' || Key == '-') && (pEdit = dynamic_cast<TEdit*>(Sender)) != 0 && strchr(pEdit->Text.c_str(), Key))
     Key = 0;
 }
 
@@ -1066,7 +1071,12 @@ void TfrmAnalysis::ParseDate(const char * szDate, TEdit *pYear, TEdit *pMonth, T
 //---------------------------------------------------------------------------
 /** event triggered when key pressed for control that can contain positive real numbers */
 void __fastcall TfrmAnalysis::PositiveFloatKeyPress(TObject *Sender, char &Key) {
-  if (!strchr("0123456789.\b",Key))
+  TEdit * pEdit;
+  //permit only characters that could comprise a positive floating point variable
+  if (!strchr("0123456789.\b", Key))
+    Key = 0;
+  //permit only one decimal place
+  else if (Key == '.' && (pEdit = dynamic_cast<TEdit*>(Sender)) != 0 && strchr(pEdit->Text.c_str(), Key))
     Key = 0;
 }
 
