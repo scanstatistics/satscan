@@ -52,11 +52,7 @@ void __fastcall TfrmStartWindow::FormKeyDown(TObject *Sender, WORD &Key,TShiftSt
 
 /** internal setup function */
 void TfrmStartWindow::Setup() {
-  ZdString      sCaption;
-
   try {
-    sCaption.printf("SaTScan v%s", VERSION_NUMBER);
-    Caption = sCaption.GetCString();
     btnOpenLast->Enabled = GetToolkit().GetParameterHistory().size();
   }
   catch (ZdException & x) {

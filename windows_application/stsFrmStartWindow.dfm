@@ -2,9 +2,9 @@ object frmStartWindow: TfrmStartWindow
   Left = 390
   Top = 336
   BorderStyle = bsDialog
-  Caption = 'SaTScan v4.0'
-  ClientHeight = 149
-  ClientWidth = 182
+  Caption = '        Welcome to SaTScan'
+  ClientHeight = 144
+  ClientWidth = 174
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,14 +20,14 @@ object frmStartWindow: TfrmStartWindow
   object pnlClient: TPanel
     Left = 0
     Top = 0
-    Width = 182
-    Height = 149
+    Width = 174
+    Height = 144
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
     object btnCreateNew: TButton
-      Left = 16
-      Top = 16
+      Left = 12
+      Top = 12
       Width = 150
       Height = 25
       Caption = 'Create &New Session'
@@ -36,8 +36,8 @@ object frmStartWindow: TfrmStartWindow
       OnClick = btnCreateNewClick
     end
     object btnOpenSaved: TButton
-      Left = 16
-      Top = 48
+      Left = 12
+      Top = 44
       Width = 150
       Height = 25
       Caption = 'Open &Saved Session'
@@ -45,8 +45,8 @@ object frmStartWindow: TfrmStartWindow
       OnClick = btnOpenSavedClick
     end
     object btnOpenLast: TButton
-      Left = 16
-      Top = 80
+      Left = 12
+      Top = 76
       Width = 150
       Height = 25
       Caption = 'Open &Last Session'
@@ -54,8 +54,8 @@ object frmStartWindow: TfrmStartWindow
       OnClick = btnOpenLastClick
     end
     object btnCancel: TButton
-      Left = 16
-      Top = 112
+      Left = 12
+      Top = 108
       Width = 150
       Height = 25
       Caption = '&Cancel'
