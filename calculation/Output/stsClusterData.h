@@ -36,9 +36,9 @@ class stsClusterData : public BaseOutputStorageClass {
       bool                      gbExcludePValueField;
 
       ZdString                & GetAreaID(ZdString& sAreaId, const CCluster& thisCluster, const CSaTScanData& DataHub) const;
-      ZdString                & GetEllipseAngle(ZdString& sAngle, const CCluster& thisCluster, const CSaTScanData& DataHub) const;
-      ZdString                & GetEllipseShape(ZdString& sShape, const CCluster& thisCluster, const CSaTScanData& DataHub) const;
       void                      WriteCoordinates(OutputRecord& Record, const CCluster& pCluster, const CSaTScanData& DataHub);
+      void                      WriteEllipseAngle(OutputRecord& Record, const CCluster& thisCluster, const CSaTScanData& DataHub) const;
+      void                      WriteEllipseShape(OutputRecord& Record, const CCluster& thisCluster, const CSaTScanData& DataHub) const;
 
    public:
       stsClusterData(const CParameters& Parameters, bool bExcludePValueField);

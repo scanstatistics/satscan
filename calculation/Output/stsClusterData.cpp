@@ -59,28 +59,6 @@ ZdString& stsClusterData::GetAreaID(ZdString& sAreaId, const CCluster& thisClust
   return sAreaId;
 }
 
-ZdString& stsClusterData::GetEllipseAngle(ZdString& sAngle, const CCluster& thisCluster, const CSaTScanData& DataHub) const {
-  if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
-    sAngle = "n/a";
-  else if (thisCluster.GetEllipseOffset() == 0)
-    sAngle = "0.000";
-  else
-    sAngle.printf("%-8.3f", thisCluster.ConvertAngleToDegrees(DataHub.GetAnglesArray()[thisCluster.GetEllipseOffset()-1]));
-
-  return sAngle;
-}
-
-ZdString& stsClusterData::GetEllipseShape(ZdString& sShape, const CCluster& thisCluster, const CSaTScanData& DataHub) const {
-  if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
-    sShape = "n/a";
-  else if (thisCluster.GetEllipseOffset() == 0)
-    sShape = "1.000";
-  else
-    sShape.printf("%-8.3f", DataHub.GetShapesArray()[thisCluster.GetEllipseOffset()-1]);
-
-  return sShape;
-}
-
 /** Records the required data to be stored in the cluster output file, stores
     the values in the global vector of cluster records.
     pre: pCluster has been initialized with calculated data
@@ -98,8 +76,8 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
     pRecord->GetFieldValue(GetFieldNumber(NUM_LOCATIONS_FIELD)).AsDouble() =
         theCluster.GetClusterType() == PURELYTEMPORALCLUSTER ? theData.GetNumTracts() : theCluster.GetNumTractsInnerCircle();
     if (gParameters.GetNumRequestedEllipses()) { // ellipse shape and angle - if requested
-      pRecord->GetFieldValue(GetFieldNumber(E_ANGLE_FIELD)).AsZdString() = GetEllipseAngle(sBuffer, theCluster, theData);
-      pRecord->GetFieldValue(GetFieldNumber(E_SHAPE_FIELD)).AsZdString() = GetEllipseShape(sBuffer, theCluster, theData);
+      WriteEllipseAngle(*pRecord, theCluster, theData);
+      WriteEllipseShape(*pRecord, theCluster, theData);
     }
 
     if (gParameters.GetNumDataStreams() == 1) {
@@ -157,15 +135,15 @@ void stsClusterData::WriteCoordinates(OutputRecord& Record, const CCluster& this
      iSecondCoordIndex = GetFieldNumber(gParameters.GetCoordinatesType() != CARTESIAN ? COORD_LONG_FIELD : COORD_Y_FIELD);
 
      if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER) {
-       Record.GetFieldValue(iFirstCoordIndex).AsZdString() = "n/a";
-       Record.GetFieldValue(iSecondCoordIndex).AsZdString() = "n/a";
+       Record.SetFieldIsBlank(iFirstCoordIndex, true);
+       Record.SetFieldIsBlank(iSecondCoordIndex, true);
        if (gParameters.GetCoordinatesType() == CARTESIAN) {
          for (i=2; i < gParameters.GetDimensionsOfData(); ++i) {
             sBuffer << ZdString::reset << COORD_Z_FIELD << i - 1;
-            Record.GetFieldValue(GetFieldNumber(sBuffer)).AsZdString() = "n/a";
+            Record.SetFieldIsBlank(GetFieldNumber(sBuffer), true);
          }
        }
-       Record.GetFieldValue(GetFieldNumber(RADIUS_FIELD)).AsZdString() = "n/a";
+       Record.SetFieldIsBlank(GetFieldNumber(RADIUS_FIELD), true);
      }
      else {
        DataHub.GetGInfo()->giGetCoords(thisCluster.GetCentroidIndex(), &pCoords);
@@ -174,28 +152,22 @@ void stsClusterData::WriteCoordinates(OutputRecord& Record, const CCluster& this
                                          thisCluster.GetNumTractsInnerCircle());
        DataHub.GetTInfo()->tiGetCoords(tTractIndex, &pCoords2);
        switch (gParameters.GetCoordinatesType()) {
-         case CARTESIAN : sBuffer.printf("%12.2lf", pCoords[0]);
-                          Record.GetFieldValue(iFirstCoordIndex).AsZdString() = sBuffer;
-                          sBuffer.printf("%12.2lf", pCoords[1]);
-                          Record.GetFieldValue(iSecondCoordIndex).AsZdString() = sBuffer;
+         case CARTESIAN : Record.GetFieldValue(iFirstCoordIndex).AsDouble() =  pCoords[0];
+                          Record.GetFieldValue(iSecondCoordIndex).AsDouble() =  pCoords[1];
                           for (i=2; i < gParameters.GetDimensionsOfData(); ++i) {
                              sBuffer << ZdString::reset << COORD_Z_FIELD << i - 1;
                              iThCoordIndex = GetFieldNumber(sBuffer);
-                             sBuffer.printf("%12.2lf", pCoords[i]);
-                             Record.GetFieldValue(iThCoordIndex).AsZdString() = sBuffer;
+                             Record.GetFieldValue(iThCoordIndex).AsDouble() = pCoords[i];
                           }
                           break;
          case LATLON    : ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
-                          sBuffer.printf("%f", fLatitude);
-                          Record.GetFieldValue(iFirstCoordIndex).AsZdString() = sBuffer;
-                          sBuffer.printf("%f", fLongitude);
-                          Record.GetFieldValue(iSecondCoordIndex).AsZdString() = sBuffer;
+                          Record.GetFieldValue(iFirstCoordIndex).AsDouble() = fLatitude;
+                          Record.GetFieldValue(iSecondCoordIndex).AsDouble() = fLongitude;
                           break;
          default : ZdGenerateException("Unknown coordinate type '%d'.","SetCoordinates()", gParameters.GetCoordinatesType());
        }
        fRadius = (float)(sqrt((DataHub.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2)));
-       sBuffer.printf("%5.2f", fRadius);
-       Record.GetFieldValue(GetFieldNumber(RADIUS_FIELD)).AsZdString() = sBuffer;
+       Record.GetFieldValue(GetFieldNumber(RADIUS_FIELD)).AsDouble() = fRadius;
        free(pCoords);
        free(pCoords2);
      }
@@ -203,9 +175,29 @@ void stsClusterData::WriteCoordinates(OutputRecord& Record, const CCluster& this
    catch (ZdException &x) {
       free(pCoords);
       free(pCoords2);
-      x.AddCallpath("SetCoordinates()", "stsClusterData");
+      x.AddCallpath("WriteCoordinates()", "stsClusterData");
       throw;
    }
+}
+
+/** write cluster's elliptical angle to record */
+void stsClusterData::WriteEllipseAngle(OutputRecord& Record, const CCluster& thisCluster, const CSaTScanData& DataHub) const {
+  if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
+    Record.SetFieldIsBlank(GetFieldNumber(E_ANGLE_FIELD), true);
+  else if (thisCluster.GetEllipseOffset() == 0)
+    Record.GetFieldValue(GetFieldNumber(E_ANGLE_FIELD)).AsDouble() = 0.0;
+  else
+    Record.GetFieldValue(GetFieldNumber(E_ANGLE_FIELD)).AsDouble() = thisCluster.ConvertAngleToDegrees(DataHub.GetAnglesArray()[thisCluster.GetEllipseOffset()-1]);
+}
+
+/** write cluster's elliptical shape to record */
+void stsClusterData::WriteEllipseShape(OutputRecord& Record, const CCluster& thisCluster, const CSaTScanData& DataHub) const {
+  if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
+    Record.SetFieldIsBlank(GetFieldNumber(E_SHAPE_FIELD), true);
+  else if (thisCluster.GetEllipseOffset() == 0)
+    Record.GetFieldValue(GetFieldNumber(E_SHAPE_FIELD)).AsDouble() = 1.0;
+  else
+    Record.GetFieldValue(GetFieldNumber(E_SHAPE_FIELD)).AsDouble() = DataHub.GetShapesArray()[thisCluster.GetEllipseOffset()-1];
 }
 
 // sets up the vector of field structs so that the ZdField Vector can be created
@@ -219,27 +211,27 @@ void stsClusterData::SetupFields() {
   try {
     CreateField(gvFields, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
     CreateField(gvFields, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
-    CreateField(gvFields, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-    CreateField(gvFields, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+    CreateField(gvFields, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_NUMBER_FLD, 12, 4, uwOffset);
+    CreateField(gvFields, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_NUMBER_FLD, 12, 4, uwOffset);
     // Only Cartesian coordinates have more than two dimensions. Lat/Long is consistently assigned to 3 dims
     // throughout the program eventhough the third dim is never used. When you print the third it is blank
     // and meaningless and thus does not need to be included here. - AJV 10/2/2002
     if (gParameters.GetCoordinatesType() == CARTESIAN && gParameters.GetDimensionsOfData() > 2) {
       for (i=3; i <= (unsigned int)gParameters.GetDimensionsOfData(); ++i) {
          sBuffer.printf("%s%i", COORD_Z_FIELD, i - 2);
-         CreateField(gvFields, sBuffer.GetCString(), ZD_ALPHA_FLD, 16, 0, uwOffset);
+         CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 4, uwOffset);
       }
     }
-    CreateField(gvFields, RADIUS_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
+    CreateField(gvFields, RADIUS_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
     if (gParameters.GetNumRequestedEllipses()) {
-      CreateField(gvFields, E_ANGLE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      CreateField(gvFields, E_SHAPE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      CreateField(gvFields, E_ANGLE_FIELD, ZD_NUMBER_FLD, 16, 0, uwOffset);
+      CreateField(gvFields, E_SHAPE_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
     }
     CreateField(gvFields, NUM_LOCATIONS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
     if (gParameters.GetNumDataStreams() == 1) {
       CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
       CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      CreateField(gvFields, OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateField(gvFields, OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
     }
     else {
       for (i=1; i <= gParameters.GetNumDataStreams(); ++i) {
@@ -248,7 +240,7 @@ void stsClusterData::SetupFields() {
         sBuffer.printf("%s%i", STREAM_EXPECTED_FIELD, i);
         CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 2, uwOffset);
         sBuffer.printf("%s%i", STREAM_OBS_DIV_EXP_FIELD, i);
-        CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 3, uwOffset);
+        CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 2, uwOffset);
       }
     }
     if (gParameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION)
