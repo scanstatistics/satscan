@@ -1300,6 +1300,8 @@ bool CParameters::ValidateParameters() {
         if (m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)
           if (strlen(m_szPopFilename)==0 || (pFile = fopen(m_szPopFilename, "r")) == NULL)
             bValid = DisplayParamError(POPFILE);
+          else
+            fclose(pFile);
         if (!(m_nAnalysisType == SPACETIME || m_nAnalysisType == PROSPECTIVESPACETIME))
           bValid = DisplayParamError(ANALYSISTYPE);
         if (m_bIncludePurelySpatial)
@@ -1309,7 +1311,6 @@ bool CParameters::ValidateParameters() {
         if (m_bOutputRelRisks)
           bValid = DisplayParamError(OUTPUTRR);
       }
-      fclose(pFile);
 
       if (strlen(m_szCoordFilename)==0 || (pFile = fopen(m_szCoordFilename, "r")) == NULL)
         bValid = DisplayParamError(COORDFILE);
