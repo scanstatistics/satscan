@@ -95,7 +95,7 @@ double GetDuczmalCorrection(double dEllipseShape) {
 
 
 /** constructor */
-StringParser::StringParser(const ZdString & sSource) : gsSource(sSource) {
+StringParser::StringParser() {
   gwCurrentWordIndex = -1;
   giSizeOfWordBuffer = MAX_LINEITEMSIZE;
   gpWord = new char[MAX_LINEITEMSIZE];
@@ -129,7 +129,7 @@ int StringParser::GetNumberWords() {
 const char * StringParser::GetWord(short wWordIndex) {
   int           inwd, wdlen;
   short         w = wWordIndex;
-  const char  * cp = gsSource.GetCString();
+  const char  * cp = gsString.GetCString();
   const char  * cp2;
 
   //short cut if this word has already been read
@@ -170,16 +170,46 @@ const char * StringParser::GetWord(short wWordIndex) {
   return gpWord;
 }
 
-/** Resets current string index and appends new line character.
-    This function should be called whenever the string is modified
-    especially after ZdIO::ReadLine(). The GetWord() function uses
-    isspace() to parse string and could scan into invalid memory
-    without presence of newline. The data read routines used to use
-    fgets(), which retained newline characters, but ZdIO::ReadLine()
-    does not have this behavior.                                    */
-void StringParser::StringReloaded() {
-  ClearWordIndex();
-  const_cast<ZdString&>(gsSource).Append('\n');
+/** Reads a string into gsFileLine and returns the number of bytes read.
+   If we are at EOF, this function will return 0.
+   NOTE: This code was taken from ZdInputStreamInterface::ReadLine( ZdString &theString ).
+         The only alteration is that the char buffer was made a class variable
+         to prevent repreated allocation. */
+unsigned int StringParser::ReadString(ZdInputStreamInterface & theStream) {
+  unsigned int  uiRetVal;                         // Return value
+  unsigned int  uiBlockLength;                    // Length of a single segment of the string
+
+  try {
+    // Intialize
+    uiRetVal = 0;
+    gsString.Clear();
+    ClearWordIndex();
+
+    do {
+      gsReadBuffer[giReadLineBlockLength-2] = 0;
+      uiBlockLength = theStream.ReadLine(gsReadBuffer, giReadLineBlockLength);
+      uiRetVal += uiBlockLength;
+      gsString.Append(gsReadBuffer);
+      //If we read in a whole block and the last character read was not NULL continue.
+    } while ((uiBlockLength == giReadLineBlockLength - 1) && gsReadBuffer[giReadLineBlockLength-2]);
+
+    //Reset current string index and append new line character.
+    //The GetWord() function uses isspace() to parse string and
+    //could scan into invalid memory without presence of newline.
+    //The data read routines used to use fgets(), which retained
+    // newline characters, but ZdIO::ReadLine() does not have this behavior.
+    //ZdInputStreamInterface reads into string even if the data
+    //is no ascii characters, where fgets only read characters.
+    if (uiRetVal) {
+      gsString.Deblank();
+      gsString.Append('\n');
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadString()","StringParser");
+    throw;
+  }
+  return uiRetVal;
 }
 
 /**********************************************************************

@@ -27,21 +27,26 @@ const char	      * GetWord(const char *s, int num, BasePrint *pPrintDirection);
           3 - there may be other concerns/problems as this hasn't been completely thought through */
 class StringParser {
   private:
-    const ZdString    & gsSource;
+    //file read buffer
+    static const int    giReadLineBlockLength = 1024;
+    char                gsReadBuffer[giReadLineBlockLength];
+    ZdString            gsString;
+    //word data
     char              * gpWord;
     int                 giSizeOfWordBuffer;
     short               gwCurrentWordIndex;
 
+    void                ClearWordIndex() {gwCurrentWordIndex=-1;}
+
   public:
-    StringParser(const ZdString & sSource);
+    StringParser();
     ~StringParser();
 
-    void                ClearWordIndex() {gwCurrentWordIndex=-1;}
     bool                HasWords();
     int                 GetNumberWords();
     const char        * GetWord(short wWordIndex);
-    const char        * GetString() const {return gsSource.GetCString();}
-    void                StringReloaded();
+    const char        * GetString() const {return gsString.GetCString();}
+    unsigned int        ReadString(ZdInputStreamInterface & theStream); 
 };
 //*****************************************************************************
 #endif 
