@@ -218,7 +218,7 @@ void CParameters::Copy(const CParameters &rhs) {
     geTimeIntervalUnitsType             = rhs.geTimeIntervalUnitsType;
     glTimeIntervalLength                = rhs.glTimeIntervalLength;
     geTimeTrendAdjustType               = rhs.geTimeTrendAdjustType;
-    gbTimeTrendAdjustPercentage         = rhs.gbTimeTrendAdjustPercentage;
+    gdTimeTrendAdjustPercentage         = rhs.gdTimeTrendAdjustPercentage;
     gbIncludePurelySpatialClusters      = rhs.gbIncludePurelySpatialClusters;
     gbIncludePurelyTemporalClusters     = rhs.gbIncludePurelyTemporalClusters;
     gsCaseFileName                      = rhs.gsCaseFileName;
@@ -258,7 +258,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gsEndRangeEndDate                   = rhs.gsEndRangeEndDate;
     gsStartRangeStartDate               = rhs.gsStartRangeStartDate;
     gsStartRangeEndDate                 = rhs.gsStartRangeEndDate;
-    gbTimeTrendConverge			= rhs.gbTimeTrendConverge;
+    gdTimeTrendConverge			= rhs.gdTimeTrendConverge;
     gbEarlyTerminationSimulations       = rhs.gbEarlyTerminationSimulations;
     gbRestrictReportedClusters          = rhs.gbRestrictReportedClusters;
     gfMaxReportedGeographicClusterSize  = rhs.gfMaxReportedGeographicClusterSize;
@@ -440,14 +440,15 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
 
     //The "Clusters to Include" do not apply to PROSPECTIVESPACETIME
     if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME)  {
-      fprintf(fp, "  Clusters to Include                   : ");
       switch (geIncludeClustersType) {
-         case ALIVECLUSTERS   : fprintf(fp, "Only those including the study end date\n"); break;
+         case ALIVECLUSTERS   : fprintf(fp, "  Clusters to Include                   : ");
+                                fprintf(fp, "Only those including the study end date\n"); break;
          case ALLCLUSTERS     : /*fprintf(fp, "All\n");
                                   -- since this feature is now longer in the gui, ALLCLUSTERS
                                      is default and only others are should be shown are exception when
                                      specified in hand edited parameter file */ break;
-         case CLUSTERSINRANGE : fprintf(fp, "Start Range %s - %s\n",
+         case CLUSTERSINRANGE : fprintf(fp, "  Clusters to Include                   : ");
+                                fprintf(fp, "Start Range %s - %s\n",
                                         gsStartRangeStartDate.c_str(), gsStartRangeEndDate.c_str());
                                 fprintf(fp, "                                          End Range   %s - %s\n",
                                         gsEndRangeStartDate.c_str(), gsEndRangeEndDate.c_str()); break;
@@ -467,9 +468,9 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
       switch (geTimeTrendAdjustType) {
          case NOTADJUSTED               : fprintf(fp, "None\n"); break;
          case NONPARAMETRIC             : fprintf(fp, "Nonparametric\n"); break;
-         case LOGLINEAR_PERC            : fprintf(fp, "Linear with %0.2f%% per year\n", gbTimeTrendAdjustPercentage); break;
-         case CALCULATED_LOGLINEAR_PERC : fprintf(fp, "Log linear\n"); break;
-         case STRATIFIED_RANDOMIZATION  : fprintf(fp, "Time Stratified Randomization\n"); break;
+         case LOGLINEAR_PERC            : fprintf(fp, "Log linear with %g%% per year\n", gdTimeTrendAdjustPercentage); break;
+         case CALCULATED_LOGLINEAR_PERC : fprintf(fp, "Log linear with calculated trend of %g%% per year\n", gdTimeTrendAdjustPercentage); break;
+         case STRATIFIED_RANDOMIZATION  : fprintf(fp, "Stratified randomization by time interval\n"); break;
          default : ZdException::Generate("Unknown time trend adjustment type '%d'.\n", "DisplayParameters()", geTimeTrendAdjustType);
       }
     }
@@ -556,11 +557,11 @@ void CParameters::DisplayTimeAdjustments(FILE* fp) const {
       case NOTADJUSTED               : break;
       case NONPARAMETRIC             : fprintf(fp, "Adjusted for time nonparametrically.\n"); break;
       case LOGLINEAR_PERC            :
-      case CALCULATED_LOGLINEAR_PERC : if (gbTimeTrendAdjustPercentage < 0)
+      case CALCULATED_LOGLINEAR_PERC : if (gdTimeTrendAdjustPercentage < 0)
                                          fprintf(fp, "Adjusted for time with a decrease ");
                                        else
                                          fprintf(fp, "Adjusted for time with an increase ");
-                                       fprintf(fp, "of %0.2f%% per year.\n", fabs(gbTimeTrendAdjustPercentage));
+                                       fprintf(fp, "of %0.2f%% per year.\n", fabs(gdTimeTrendAdjustPercentage));
                                        break;
       case STRATIFIED_RANDOMIZATION  : fprintf(fp, "Adjusted for time by stratified randomization.\n"); break;
       default : ZdException::Generate("Unknown time trend adjustment type '%d'\n.", "DisplayTimeAdjustments()", geTimeTrendAdjustType);
@@ -981,7 +982,7 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
                                       break;
       case INTERVAL_ENDRANGE        : sDefaultValue.printf("%s,%s", gsEndRangeStartDate.c_str(), gsEndRangeEndDate.c_str());
                                       break;
-      case TIMETRENDCONVRG	    : sDefaultValue = gbTimeTrendConverge; break;
+      case TIMETRENDCONVRG	    : sDefaultValue = gdTimeTrendConverge; break;
       case MAXCIRCLEPOPFILE         : sDefaultValue = "<blank>"; break;
       case USEMAXCIRCLEPOPFILE      : sDefaultValue = (gbUseMaxCirclePopulationFile ? YES : NO); break;
       case EARLY_SIM_TERMINATION    : sDefaultValue = (gbEarlyTerminationSimulations ? YES : NO); break;
@@ -2014,7 +2015,7 @@ void CParameters::SaveTimeParametersSection(ZdIniFile& file) {
     pSection->AddComment(" time trend adjustment percentage (>-100)");
     pSection->AddLine(TIME_TREND_PERCENT_LINE, AsString(sValue, GetTimeTrendAdjustmentPercentage()));
     pSection->AddComment(" time trend convergence (> 0)");
-    pSection->AddLine(TIME_TREND_CONVERGENCE_LINE, AsString(sValue, gbTimeTrendConverge));
+    pSection->AddLine(TIME_TREND_CONVERGENCE_LINE, AsString(sValue, gdTimeTrendConverge));
     pSection->AddComment(" adjust for earlier analyses -- prospective only (y/n)");
     pSection->AddLine(ADJUST_EALIER_ANALYSES_LINE, gbAdjustForEarlierAnalyses ? YES : NO);
   }
@@ -2184,7 +2185,7 @@ void CParameters::SetDefaults() {
   gdPower_X                             = 0.0;
   gdPower_Y                             = 0.0;
   geTimeTrendAdjustType                 = NOTADJUSTED;
-  gbTimeTrendAdjustPercentage           = 0;
+  gdTimeTrendAdjustPercentage           = 0;
   gbIncludePurelyTemporalClusters       = false;
   gsControlFileName                     = "";
   geCoordinatesType                     = CARTESIAN;
@@ -2209,7 +2210,7 @@ void CParameters::SetDefaults() {
   gsEndRangeEndDate                     = gsStudyPeriodEndDate;
   gsStartRangeStartDate                 = gsStudyPeriodStartDate;
   gsStartRangeEndDate                   = gsStudyPeriodEndDate;
-  gbTimeTrendConverge			= 0;
+  gdTimeTrendConverge			= 0.001;
   gbEarlyTerminationSimulations         = false;
   gbRestrictReportedClusters            = false;
   gfMaxReportedGeographicClusterSize    = 49;
@@ -2768,7 +2769,7 @@ void CParameters::SetTimeIntervalUnitsType(DatePrecisionType eTimeIntervalUnits)
 void CParameters::SetTimeTrendAdjustmentPercentage(double dPercentage) {
   //Validity of setting is checked in ValidateParameters() since this setting
   //might not be pertinent in calculation.
-   gbTimeTrendAdjustPercentage = dPercentage;
+   gdTimeTrendAdjustPercentage = dPercentage;
 }
 
 /** Sets time rend adjustment type. Throws exception if out of range. */
@@ -2793,7 +2794,7 @@ void CParameters::SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendA
 void CParameters::SetTimeTrendConvergence(double dTimeTrendConvergence) {
   //Validity of setting is checked in ValidateParameters() since this setting
   //might not be pertinent in calculation.
-   gbTimeTrendConverge = dTimeTrendConvergence;
+   gdTimeTrendConverge = dTimeTrendConvergence;
 }
 
 /** Validates date parameters based upon current settings. Error messages
@@ -2984,7 +2985,7 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
       PrintDirection.SatScanPrintWarning("Error: Maximum Circle Population file '%s' does not exist.\n", gsMaxCirclePopulationFileName.c_str());
       PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
     }
-    //validate maximum circle population file for a space-time permutation model w/ maximum geographical cluster size
+    //validate maximum circle population file for a space-time permutatiom model w/ maximum geographical cluster size
     //defined as a percentage of the population.
     if (geProbabiltyModelType == SPACETIMEPERMUTATION) {
       if (geMaxGeographicClusterSizeType == PERCENTAGEOFMEASURETYPE) {
@@ -3003,6 +3004,25 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
         else
           gbUseMaxCirclePopulationFile = true;
       }
+    }
+    //validate maximum circle population file for a prospective space-time analysis w/ maximum geographical cluster size
+    //defined as a percentage of the population and adjusting for earlier analyses.
+    if (geAnalysisType == PROSPECTIVESPACETIME && gbAdjustForEarlierAnalyses && geMaxGeographicClusterSizeType == PERCENTAGEOFMEASURETYPE) {
+        if (gsMaxCirclePopulationFileName.empty()) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: For a Prospective Space-Time analysis adjusting for ealier analyses, with the maximum spatial\n");
+          PrintDirection.SatScanPrintWarning("       cluster size defined as a percentage of the population at risk, a Maximum Circle\n");
+          PrintDirection.SatScanPrintWarning("       Population file must be specified.\n");
+          PrintDirection.SatScanPrintWarning("       Alternatively you may choose to specify the maximum as a fixed radius, in which no\n");
+          PrintDirection.SatScanPrintWarning("       Maximum Circle Population file is required.\n");
+        }
+        else if (access(gsMaxCirclePopulationFileName.c_str(), 00)) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: Maximum Circle Population file '%s' does not exist.\n", gsMaxCirclePopulationFileName.c_str());
+          PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+        }
+        else
+          gbUseMaxCirclePopulationFile = true;
     }
     //validate output file
     if (gsOutputFileName.empty()) {
@@ -3491,36 +3511,36 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
         case BERNOULLI            : //Bernoulli can only have time trend adjustments for SVTT analysis.
                                     if (geAnalysisType == SPATIALVARTEMPTREND) {
                                       if (geTimeTrendAdjustType == CALCULATED_LOGLINEAR_PERC) {
-                                        if (gbTimeTrendConverge < 0.0) {
+                                        if (gdTimeTrendConverge < 0.0) {
                                           bValid = false;
-                                          PrintDirection.SatScanPrintWarning("Error: Time trend convergence value of '%2g' is less than zero.\n", gbTimeTrendConverge);
+                                          PrintDirection.SatScanPrintWarning("Error: Time trend convergence value of '%2g' is less than zero.\n", gdTimeTrendConverge);
                                         }
                                       }
                                       else if (geTimeTrendAdjustType == LOGLINEAR_PERC) {
-                                         if (-100.0 >= gbTimeTrendAdjustPercentage) {
+                                         if (-100.0 >= gdTimeTrendAdjustPercentage) {
                                            bValid = false;
                                            PrintDirection.SatScanPrintWarning("Error: Time adjustment percentage of '%2g' is not greater than -100.\n",
-                                                                              gbTimeTrendAdjustPercentage);
+                                                                              gdTimeTrendAdjustPercentage);
                                          }                                     
                                       }
                                       else if (geTimeTrendAdjustType == STRATIFIED_RANDOMIZATION)
                                           break;
                                       else {
                                         geTimeTrendAdjustType = NOTADJUSTED;
-                                        gbTimeTrendAdjustPercentage = 0.0;
+                                        gdTimeTrendAdjustPercentage = 0.0;
                                       }
                                     }
                                     else if (geTimeTrendAdjustType != NOTADJUSTED) {
                                       PrintDirection.SatScanPrintWarning("Warning: For the Bernoulli model, adjusting temporal trends is only permitted\n");
                                       PrintDirection.SatScanPrintWarning("         with Spatial Variation of Temporal Trends analyses.\n");
                                       geTimeTrendAdjustType = NOTADJUSTED;
-                                      gbTimeTrendAdjustPercentage = 0.0;
+                                      gdTimeTrendAdjustPercentage = 0.0;
                                     }
                                     break;
         case SPACETIMEPERMUTATION : if (geTimeTrendAdjustType != NOTADJUSTED) {
                                       PrintDirection.SatScanPrintWarning("Warning: For the Space-Time Permutation model, adjusting for temporal trends is not permitted.\n");
                                       geTimeTrendAdjustType = NOTADJUSTED;
-                                      gbTimeTrendAdjustPercentage = 0.0;
+                                      gdTimeTrendAdjustPercentage = 0.0;
                                     }
                                     break;
          case POISSON             : if (geTimeTrendAdjustType == NONPARAMETRIC && (geAnalysisType == PURELYTEMPORAL ||geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
@@ -3533,24 +3553,24 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
                                       PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting for time trend adjustment.\n");
                                       PrintDirection.SatScanPrintWarning("       You may not use stratified randomization by time intervals with a purely temporal analysis.\n");
                                     }
-                                    if (geTimeTrendAdjustType == LOGLINEAR_PERC && -100.0 >= gbTimeTrendAdjustPercentage) {
+                                    if (geTimeTrendAdjustType == LOGLINEAR_PERC && -100.0 >= gdTimeTrendAdjustPercentage) {
                                       bValid = false;
                                       PrintDirection.SatScanPrintWarning("Error: Time adjustment percentage of '%2g' is not greater than -100.\n",
-                                                                         gbTimeTrendAdjustPercentage);
+                                                                         gdTimeTrendAdjustPercentage);
                                     }
                                     if (geTimeTrendAdjustType == NOTADJUSTED) {
-                                      gbTimeTrendAdjustPercentage = 0;
+                                      gdTimeTrendAdjustPercentage = 0;
                                       if (geAnalysisType != SPATIALVARTEMPTREND)
-                                        gbTimeTrendConverge = 0.0;
+                                        gdTimeTrendConverge = 0.0;
                                     }
                                     if (geTimeTrendAdjustType == CALCULATED_LOGLINEAR_PERC && geAnalysisType == PURELYSPATIAL) {
                                       bValid = false;
-                                      PrintDirection.SatScanPrintWarning("Error: Time trend adjustment .\n", gbTimeTrendConverge);
+                                      PrintDirection.SatScanPrintWarning("Error: Time trend adjustment .\n", gdTimeTrendConverge);
                                     }
                                     if (geTimeTrendAdjustType == CALCULATED_LOGLINEAR_PERC || geAnalysisType == SPATIALVARTEMPTREND) {
-                                      if (gbTimeTrendConverge < 0.0) {
+                                      if (gdTimeTrendConverge < 0.0) {
                                         bValid = false;
-                                        PrintDirection.SatScanPrintWarning("Error: Time trend convergence value of '%2g' is less than zero.\n", gbTimeTrendConverge);
+                                        PrintDirection.SatScanPrintWarning("Error: Time trend convergence value of '%2g' is less than zero.\n", gdTimeTrendConverge);
                                       }
                                     }
                                     break;
@@ -3568,7 +3588,7 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
       geTimeIntervalUnitsType            = NONE;
       glTimeIntervalLength               = 0;
       geTimeTrendAdjustType              = NOTADJUSTED;
-      gbTimeTrendAdjustPercentage        = 0;
+      gdTimeTrendAdjustPercentage        = 0;
     }
     if (gbIncludePurelyTemporalClusters) {
       if (!(geProbabiltyModelType == POISSON || geProbabiltyModelType == BERNOULLI)) {

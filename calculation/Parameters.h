@@ -173,7 +173,7 @@ class CParameters {
     IncludeClustersType                 geIncludeClustersType;
     int                                 giReplications;                         /** number of MonteCarlo replicas */
     CriteriaSecondaryClustersType       geCriteriaSecondClustersType;           /** Criteria for Reporting Secondary Clusters */
-    double                              gbTimeTrendConverge;                    /** time trend convergence value */
+    double                              gdTimeTrendConverge;                    /** time trend convergence value */
     bool                                gbEarlyTerminationSimulations;          /** indicates whether to stop simulations if large p-values */
     SimulationType                      geSimulationType;                       /** indicates simulation procedure - Poisson only */
     bool                                gbOutputSimulationData;                 /** indicates whether to output simulation data to file */
@@ -194,7 +194,7 @@ class CParameters {
     long                                glTimeIntervalLength;                   /** length of time intervals */
     DatePrecisionType                   geTimeIntervalUnitsType;                /** time interval units type */
         /* Temporal trend adjusment variables */
-    double                              gbTimeTrendAdjustPercentage;            /** percentage for log linear adjustment */
+    double                              gdTimeTrendAdjustPercentage;            /** percentage for log linear adjustment */
     TimeTrendAdjustmentType             geTimeTrendAdjustType;                  /** Adjust for time trend: no, discrete, % */
         /* Input precision variables */
     DatePrecisionType                   gePrecisionOfTimesType;                 /** precision of case/control data: none, years, mon, days. */
@@ -396,9 +396,9 @@ class CParameters {
     bool                                GetTerminateSimulationsEarly() const {return gbEarlyTerminationSimulations;}
     long                                GetTimeIntervalLength() const {return glTimeIntervalLength;}
     DatePrecisionType                   GetTimeIntervalUnitsType() const {return geTimeIntervalUnitsType;}
-    double                              GetTimeTrendAdjustmentPercentage() const {return gbTimeTrendAdjustPercentage;}
+    double                              GetTimeTrendAdjustmentPercentage() const {return gdTimeTrendAdjustPercentage;}
     TimeTrendAdjustmentType             GetTimeTrendAdjustmentType() const {return geTimeTrendAdjustType;}
-    double                              GetTimeTrendConvergence() const {return gbTimeTrendConverge;}
+    double                              GetTimeTrendConvergence() const {return gdTimeTrendConverge;}
     void                                Read(const char* szFilename, BasePrint & PrintDirection);
     void                                SetAdjustForEarlierAnalyses(bool b) {gbAdjustForEarlierAnalyses = b;}
     void                                SetAnalysisType(AnalysisType eAnalysisType);
