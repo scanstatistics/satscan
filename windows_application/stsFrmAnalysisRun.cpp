@@ -154,9 +154,9 @@ void __fastcall TfrmAnalysisRun::OnEMailClick(TObject *Sender) {
 
    ulError = MapiResolveName ( 0, 0, const_cast<char *>(GetToolkit().GetTechnicalSupportEmail()), 0, 0, pRecipient );
    if ( ulError == SUCCESS_SUCCESS ){
-      lMsgTitleLength = snprintf ( sMsgTitle, 0, "%s -- %s -- Automated Error Message", Application->Title.c_str(), VERSION_NUMBER );
+      lMsgTitleLength = snprintf ( sMsgTitle, 0, "%s -- %s -- Automated Error Message", Application->Title.c_str(), GetToolkit().GetVersion());
       sMsgTitle = new char[lMsgTitleLength + 1];
-      sprintf ( sMsgTitle, "%s -- %s -- Automated Error Message", Application->Title.c_str(), VERSION_NUMBER );
+      sprintf ( sMsgTitle, "%s -- %s -- Automated Error Message", Application->Title.c_str(), GetToolkit().GetVersion());
       sMsgTitle[lMsgTitleLength] = 0;
 
       sMessageText = "--Job Progress Information--\n";

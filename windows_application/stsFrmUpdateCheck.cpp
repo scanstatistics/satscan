@@ -43,7 +43,7 @@ void TfrmUpdateCheck::ConnectToServerForUpdateCheck() {
 
   try {
     Show();
-    sUpdateURL.printf(gsURLFormat, VERSION_ID, VERSION_NUMBER);
+    sUpdateURL.printf(gsURLFormat, VERSION_ID, GetToolkit().GetVersion());
     try {
       // let the Get() do the connecting since reading results from perlscript
       // is the only purpose for connecting to remote host ... currently.
