@@ -99,7 +99,7 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
                                                            theCluster.GetRelativeRisk(theData.GetMeasureAdjustment(i), i);
       }
     }
-    if (gParameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION)
+    if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
       pRecord->GetFieldValue(GetFieldNumber(TST_STAT_FIELD)).AsDouble() = theCluster.m_nRatio;
     else {
       pRecord->GetFieldValue(GetFieldNumber(LOG_LIKL_RATIO_FIELD)).AsDouble() = theCluster.m_nRatio/theCluster.GetNonCompactnessPenalty();
@@ -243,7 +243,7 @@ void stsClusterData::SetupFields() {
         CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 2, uwOffset);
       }
     }
-    if (gParameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION)
+    if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
       CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
     else {
       CreateField(gvFields, LOG_LIKL_RATIO_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
