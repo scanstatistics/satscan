@@ -65,6 +65,7 @@ class CSVTTCluster : public CCluster  {
     virtual void                DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType) {};
     virtual void                DisplayTimeTrend(FILE* fp, char* szSpacesOnLeft);
     virtual count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual int                 GetClusterType() const {return SPATIALVARTEMPTREND;}
     virtual measure_t           GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
     SVTTClusterStreamData     & GetStream(unsigned int tStream) {return gvStreamData[tStream];}
     virtual void                InitializeSVTT(tract_t nCenter, const DataStreamGateway & DataGateway);

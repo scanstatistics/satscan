@@ -175,9 +175,7 @@ CSVTTCluster& CSVTTCluster::operator=(const CSVTTCluster& rhs) {
   m_nStartDate                  = rhs.m_nStartDate;
   m_nEndDate                    = rhs.m_nEndDate;
   giTotalIntervals              = rhs.giTotalIntervals;
-  m_nSteps                      = rhs.m_nSteps;
   m_bClusterDefined             = rhs.m_bClusterDefined;
-  m_nClusterType                = rhs.m_nClusterType;
   gvStreamData                  = rhs.gvStreamData;
   return *this;
 }
@@ -265,9 +263,6 @@ void CSVTTCluster::Init() {
 /** re-initializes cluster data */
 void CSVTTCluster::InitializeSVTT(tract_t nCenter, const DataStreamGateway & DataGateway) {
   CCluster::Initialize(nCenter);
-  m_nSteps        = 1;
-  m_nClusterType  = SPATIALVARTEMPTREND;
-
   for (size_t t=0; t < gvStreamData.size(); ++t)
      gvStreamData[t].InitializeSVTTData(DataGateway.GetDataStreamInterface(t));
 }
@@ -275,8 +270,6 @@ void CSVTTCluster::InitializeSVTT(tract_t nCenter, const DataStreamGateway & Dat
 /** re-initializes cluster data */
 void CSVTTCluster::InitializeSVTT(tract_t nCenter, const DataStreamInterface & Interface) {
   CCluster::Initialize(nCenter);
-  m_nSteps        = 1;
-  m_nClusterType  = SPATIALVARTEMPTREND;
   gvStreamData.back().InitializeSVTTData(Interface);
 }
 
