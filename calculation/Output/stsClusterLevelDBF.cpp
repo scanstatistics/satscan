@@ -54,20 +54,21 @@ void stsClusterLevelDBF::CleanupFieldVector() {
 // pre: sFileName is name of the dbf file needing to be created
 // post: creates the dbf file with the appropraite fields
 void stsClusterLevelDBF::CreateDBFFile() {
-   DBFFile		*pFile = 0;
+   TXDFile		*pFile = 0;
    
    try {
       GetFields();
 
       // pack up and create
-      pFile = new DBFFile();
+      pFile = new TXDFile();
       pFile->PackFields(gvFields);
 
       // BUGBUG
       // for now we'll overwrite files, in the future we may wish to display an exception instead - AJV 9/4/2002
-      if(ZdIO::Exists(gsFileName))
-        ZdIO::Delete(gsFileName);
-      pFile->Create(gsFileName, gvFields, 1);
+      pFile->Delete(gsFileName);
+//      if(ZdIO::Exists(gsFileName))
+//        ZdIO::Delete(gsFileName);
+      pFile->Create(gsFileName, gvFields);
       pFile->Close();
 
       delete pFile;	
@@ -85,7 +86,7 @@ void stsClusterLevelDBF::CreateDBFFile() {
 // pre: pass in an empty vector
 // post: vector will be defined using the names and field types provided by the descendant classes
 void stsClusterLevelDBF::GetFields() {
-   DBFFile*		pFile = 0;
+   TXDFile*		pFile = 0;
    ZdField*		pField = 0;
    ZdVector<pair<pair<ZdString, char>, short> > vFieldDescrips;
 
@@ -93,7 +94,7 @@ void stsClusterLevelDBF::GetFields() {
       CleanupFieldVector();
       SetupFields(vFieldDescrips);
 
-      pFile = new DBFFile();
+      pFile = new TXDFile();
       
       for(unsigned int i = 0; i < vFieldDescrips.GetNumElements(); ++i) {
          pField = pFile->GetNewField();
@@ -123,7 +124,7 @@ void stsClusterLevelDBF::Init() {
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
 void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber) {
-   DBFFile*		pFile = 0;
+   TXDFile*		pFile = 0;
    ZdFileRecord*	pRecord = 0;
    ZdTransaction *	pTransaction = 0;
    unsigned short       uwFieldNumber = 0;
@@ -132,7 +133,7 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
    ZdFieldValue         fv;
 
    try {
-      pFile = new DBFFile(gsFileName.GetCString());
+      pFile = new TXDFile(gsFileName.GetCString(), ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
 
       pTransaction = pFile->BeginTransaction();
 
@@ -222,7 +223,6 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 
       pFile->EndTransaction(pTransaction);
       pFile->Close();
-      delete pTransaction;
       delete pFile;
    }
    catch (ZdException &x) {
@@ -231,9 +231,10 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
             pFile->EndTransaction(pTransaction);
          pFile->Close();
       }
-      delete pFile; pFile = 0;
-      delete pTransaction; pTransaction = 0;
+      pTransaction = 0;    // can't delete transactions, this is done by pFile->EndTransaction which smudges the pointer
       delete pRecord; pRecord = 0;
+      delete pFile; pFile = 0;
+
       x.AddCallpath("RecordClusterData()", "stsClusterLevelDBF");
       throw;
    }

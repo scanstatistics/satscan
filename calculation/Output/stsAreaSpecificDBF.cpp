@@ -53,20 +53,21 @@ void stsAreaSpecificDBF::CleanupFieldVector() {
 // pre: sFileName is name of the dbf file needing to be created
 // post: creates the dbf file with the appropraite fields
 void stsAreaSpecificDBF::CreateDBFFile() {
-   DBFFile		*pFile = 0;
-   
+   TXDFile		*pFile = 0;
+
    try {
       GetFields();
 
       // pack up and create
-      pFile = new DBFFile();
+      pFile = new TXDFile();
       pFile->PackFields(gvFields);
 
       // BUGBUG
       // for now we'll overwrite files, in the future we may wish to display an exception instead - AJV 9/4/2002
-      if(ZdIO::Exists(gsFileName))
-        ZdIO::Delete(gsFileName);
-      pFile->Create(gsFileName, gvFields, 1);
+      pFile->Delete(gsFileName);
+//      if(ZdIO::Exists(gsFileName))
+//        ZdIO::Delete(gsFileName);
+      pFile->Create(gsFileName, gvFields);
       pFile->Close();
 
       delete pFile;	
@@ -84,7 +85,7 @@ void stsAreaSpecificDBF::CreateDBFFile() {
 // pre: pass in an empty vector
 // post: vector will be defined using the names and field types provided by the descendant classes
 void stsAreaSpecificDBF::GetFields() {
-   DBFFile*		pFile = 0;
+   TXDFile*		pFile = 0;
    ZdField*		pField = 0;
    ZdVector<std::pair<std::pair<ZdString, char>, short> > vFieldDescrips;
 
@@ -92,7 +93,7 @@ void stsAreaSpecificDBF::GetFields() {
       CleanupFieldVector();           // empty out the global field vector
       SetupFields(vFieldDescrips);
 
-      pFile = new DBFFile();
+      pFile = new TXDFile();
 
       for(unsigned int i = 0; i < vFieldDescrips.GetNumElements(); ++i) {
          pField = pFile->GetNewField();
@@ -122,14 +123,14 @@ void stsAreaSpecificDBF::Init() {
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
 void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber) {
-   DBFFile*		pFile = 0;
+   TXDFile*		pFile = 0;
    ZdFileRecord*	pRecord = 0;
    ZdTransaction *	pTransaction = 0;
    unsigned long        uwFieldNumber = 0;
    ZdFieldValue         fv;
 
    try {
-      pFile = new DBFFile(gsFileName.GetCString());
+      pFile = new TXDFile(gsFileName.GetCString(), ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
       pTransaction = pFile->BeginTransaction();
       pRecord = pFile->GetNewRecord();
 
@@ -174,7 +175,6 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 
       pFile->EndTransaction(pTransaction);
       pFile->Close();
-      delete pTransaction;
       delete pFile;
    }
    catch (ZdException &x) {
@@ -184,7 +184,7 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
          pFile->Close();
       }
       delete pFile; pFile = 0;
-      delete pTransaction; pTransaction = 0;
+      pTransaction = 0;
       delete pRecord; pRecord = 0;
       x.AddCallpath("RecordClusterData()", "stsAreaSpecificDBF");
       throw;
@@ -248,7 +248,7 @@ void stsAreaSpecificDBF::SetupFields(ZdVector<std::pair<std::pair<ZdString, char
       field.second = 12;
       vFieldDescrips.AddElement(field);
 
-      field.first.first = "P-VALUE";
+      field.first.first = "P_VALUE";
       field.first.second = ZD_NUMBER_FLD;
       field.second = 12;
       vFieldDescrips.AddElement(field);
