@@ -97,11 +97,12 @@ void __fastcall TfrmMainForm::HelpActionExecute(TObject *Sender) {
       sMessage << "SaTScan Help was unable to open. Please note that SaTScan Help ";
       sMessage << "requires Internet Explorer 4.0 or later installed.";
       sMessage << "\nPlease contact technical support at website: ";
-      sMessage << SATSCAN_WEBSITE << " for more information.";
+      sMessage << GetToolkit().GetWebSite() << " for more information.";
     }
     else {
       sMessage << "SaTScan Help was unable to open. Help file may be missing or corrupt.";
-      sMessage << "\nPlease contact technical support at website: " << SATSCAN_WEBSITE << ".";
+      sMessage << "\nPlease contact technical support at website: ";
+      sMessage << GetToolkit().GetWebSite() << ".";
     }
     Application->MessageBox(sMessage.GetCString(), "SaTScan Help", MB_OK);
   }

@@ -7,10 +7,10 @@
 TfrmAbout *frmAbout;
 //---------------------------------------------------------------------------
 __fastcall TfrmAbout::TfrmAbout(TComponent* Owner) : TForm(Owner) {
-   lblEmail->Caption = SUBSTANTIVE_SUPPORT_EMAIL;
+   lblEmail->Caption = GetToolkit().GetSubstantiveSupportEmail();
    lblVersion->Caption = AnsiString("v ") + VERSION_NUMBER;
    lblVersionDate->Caption = VERSION_DATE;
-   lblWebSite->Caption = SATSCAN_WEBSITE;
+   lblWebSite->Caption = GetToolkit().GetWebSite();
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAbout::Button1Click(TObject *Sender) {
@@ -20,7 +20,7 @@ void __fastcall TfrmAbout::Button1Click(TObject *Sender) {
 
 void __fastcall TfrmAbout::lblWebSiteClick(TObject *Sender) {
   try {
-    int iResult = ( int )ShellExecute(Handle, "open", SATSCAN_WEBSITE, 0, 0, SW_SHOWDEFAULT);
+    int iResult = ( int )ShellExecute(Handle, "open", GetToolkit().GetWebSite(), 0, 0, SW_SHOWDEFAULT);
     if (iResult <= 32)
       ZdException::GenerateNotification("Unable to open SaTScan Web site.\nIf problem persists, please contact technical support.( code %d )", "OnSquishClick()", iResult);
   }
@@ -39,7 +39,7 @@ void __fastcall TfrmAbout::lblEmailClick(TObject *Sender) {
 
    try {
       Screen->Cursor = crHourGlass;
-      ulError = MapiResolveName ( 0, 0, SUBSTANTIVE_SUPPORT_EMAIL, 0, 0, pRecipient );
+      ulError = MapiResolveName ( 0, 0, const_cast<char*>(GetToolkit().GetSubstantiveSupportEmail()), 0, 0, pRecipient );
       if ( ulError == SUCCESS_SUCCESS ){
          theMapiMessage.ulReserved = 0;
          theMapiMessage.lpszSubject = "SaTScan";
@@ -102,7 +102,7 @@ void __fastcall TfrmAbout::lblEmailClick(TObject *Sender) {
 
 void __fastcall TfrmAbout::lblLicenseClick(TObject *Sender) {
    try {
-    int iResult = ( int )ShellExecute(Handle, "open", SATSCAN_LICENSE, 0, 0, SW_SHOWDEFAULT);
+    int iResult = ( int )ShellExecute(Handle, "open", GetToolkit().GetLicenceWebSite(), 0, 0, SW_SHOWDEFAULT);
     if (iResult <= 32)
       ZdException::GenerateNotification("Unable to open SaTScan Web site.\nIf problem persists, please contact technical support.( code %d )", "OnSquishClick()", iResult);
   }
