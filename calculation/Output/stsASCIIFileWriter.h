@@ -2,28 +2,29 @@
 #ifndef ASCIIFileWriter_H
 #define ASCIIFileWriter_H
 //***************************************************************************
-#include "stsOutputFileWriter.h"
 #include "Parameters.h"
 
-class OutputFileData;
+class RecordBuffer;  /** forward class declaration */
 
-/** This class object is used to print out an OutputFileData type in ASCII format. */
-class ASCIIFileWriter : public OutputFileWriter {
+/** ASCII data writer. */
+class ASCIIDataFileWriter {
   private:
-     void                       Setup(const CParameters& Parameters, bool bAppend);
+     void                       Setup(const CParameters& Parameters, const ZdString& sFileExtension, bool bAppend);
 
    protected :
+     FILE                     * gpFile;   
      static const char        * ASCII_FILE_EXT;
+     ZdFileName                 gsFileName;        /** output filename */
 
-     void                       CreateBlankString(ZdString& sFormatString, int iFieldNumber);
-     void                       CreateFormatString(ZdString& sValue, const int iFieldNumber, const ZdFieldValue& fv);
-     virtual void               CreateOutputFile();
-     virtual void	        Print();
+     void                       CreateBlankString(ZdString& sFormatString, const ZdField& FieldDef);
+     void                       CreateFormatString(ZdString& sValue, const ZdField& FieldDef, const ZdFieldValue& fv);
 
    public :
-      ASCIIFileWriter(BaseOutputStorageClass& OutputFileData, BasePrint& PrintDirection,
-                      const CParameters& Parameters, bool bAppend = false);
-      virtual ~ASCIIFileWriter();
+      ASCIIDataFileWriter(const CParameters& Parameters, const ZdString& sFileExtension, bool bAppend=false);
+      virtual ~ASCIIDataFileWriter();
+
+     virtual void	        WriteRecord(const RecordBuffer& Record);
 };
+
 //***************************************************************************
 #endif

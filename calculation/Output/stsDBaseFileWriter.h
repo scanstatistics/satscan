@@ -1,24 +1,29 @@
-//***************************************************************************
+//******************************************************************************
 #ifndef DBaseFileWriter_H
 #define DBaseFileWriter_H
-//***************************************************************************
-#include "stsOutputFileWriter.h"
+//******************************************************************************
 #include "Parameters.h"
 
-/** This class object is used to print out an OutputFileData type in dBase format. */
-class DBaseFileWriter : public OutputFileWriter {
+class RecordBuffer;  /** forward class declaration */
+
+/** dBase data writer. */
+class DBaseDataFileWriter {
    private :
-      void	                Setup(const CParameters& Parameters, bool bAppend);
+      void	          Setup(const CParameters& Parameters, ZdPointerVector<ZdField>& vFieldDefs, const ZdString& sFileExtension,  bool bAppend);
 
    protected:
-      static const char * 	DBASE_FILE_EXT;
-
-      virtual void              CreateOutputFile();
-      virtual void 	        Print();
+      DBFFile             gFile;
+      DBFRecord         * gpFileRecord;
+      ZdTransaction     * gpTransaction;
+      static const char * DBASE_FILE_EXT;
+      ZdFileName          gsFileName;        /** output filename */
 
    public :
-      DBaseFileWriter(BaseOutputStorageClass& OutputFileData, BasePrint& PrintDirection, 
-                      const CParameters& Parameters, bool bAppend = false);
+      DBaseDataFileWriter(const CParameters& Parameters, ZdPointerVector<ZdField>& vFieldDefs, const ZdString& sFileExtension, bool bAppend = false);
+      virtual ~DBaseDataFileWriter();
+
+     virtual void	  WriteRecord(const RecordBuffer& Record);
 };
-//***************************************************************************
+//******************************************************************************
 #endif
+
