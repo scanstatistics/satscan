@@ -56,7 +56,7 @@ LFLAGS      := -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -Wl,-Bstatic
 
 SRC         := Main.cpp \
                $(ANALYSIS)/Analysis.cpp \
-	       $(ANALYSIS)/MeasureList.cpp \
+	             $(ANALYSIS)/MeasureList.cpp \
                $(ANALYSIS)/PurelySpatialAnalysis.cpp \
                $(ANALYSIS)/PurelySpatialMonotoneAnalysis.cpp \
                $(ANALYSIS)/PurelyTemporalAnalysis.cpp \
@@ -65,26 +65,31 @@ SRC         := Main.cpp \
                $(ANALYSIS)/SpaceTimeIncludePureAnalysis.cpp \
                $(ANALYSIS)/SpaceTimeIncludePurelySpatialAnalysis.cpp \
                $(ANALYSIS)/SpaceTimeIncludePurelyTemporalAnalysis.cpp \
-	       $(ANALYSIS)/SVTTAnalysis.cpp \
-	       $(ANALYSIS)_run/AnalysisRun.cpp \
-	       $(ANALYSIS)_run/MostLikelyClustersContainer.cpp\
+	             $(ANALYSIS)/SVTTAnalysis.cpp \
+	             $(ANALYSIS)_run/AnalysisRun.cpp \
+	             $(ANALYSIS)_run/MostLikelyClustersContainer.cpp\
                $(CLUSTER)/Cluster.cpp \
                $(CLUSTER)/IncidentRate.cpp \
                $(CLUSTER)/PurelySpatialCluster.cpp \
                $(CLUSTER)/PurelySpatialMonotoneCluster.cpp \
                $(CLUSTER)/PurelyTemporalCluster.cpp \
                $(CLUSTER)/SpaceTimeCluster.cpp \
-	       $(CLUSTER)/SVTTCluster.cpp \
-	       $(CLUSTER)/PurelySpatialProspectiveCluster.cpp \
+	             $(CLUSTER)/SVTTCluster.cpp \
+	             $(CLUSTER)/PurelySpatialProspectiveCluster.cpp \
                $(CLUSTER)/TimeEstimate.cpp \
                $(CLUSTER)/TimeTrend.cpp \
-	       $(CLUSTER)/TimeIntervalRange.cpp \
-	       $(CLUSTER)/AbstractClusterData.cpp \
-	       $(CLUSTER)/ClusterData.cpp \
-	       $(CLUSTER)/ClusterDataFactory.cpp \
-	       $(CLUSTER)/MultipleStreamClusterData.cpp \
-	       $(CLUSTER)/NormalClusterData.cpp \
-	       $(OUTPUT)/stsAreaSpecificData.cpp \
+	             $(CLUSTER)/TimeIntervalRange.cpp \
+	             $(CLUSTER)/AbstractClusterData.cpp \
+	             $(CLUSTER)/ClusterData.cpp \
+	             $(CLUSTER)/NormalClusterData.cpp \
+	             $(CLUSTER)/CategoricalClusterData.cpp \
+	             $(CLUSTER)/AbstractClusterDataFactory.cpp \
+	             $(CLUSTER)/ClusterDataFactory.cpp \
+	             $(CLUSTER)/NormalClusterDataFactory.cpp \
+	             $(CLUSTER)/CategoricalClusterDataFactory.cpp \
+	             $(CLUSTER)/MultipleStreamClusterData.cpp \
+	             $(CLUSTER)/MultiSetCategoricalClusterData.cpp \
+	             $(OUTPUT)/stsAreaSpecificData.cpp \
                $(OUTPUT)/stsASCIIFileWriter.cpp \
                $(OUTPUT)/stsClusterData.cpp \
                $(OUTPUT)/stsDBaseFileWriter.cpp \
@@ -92,82 +97,87 @@ SRC         := Main.cpp \
                $(OUTPUT)/stsOutputFileData.cpp \
                $(OUTPUT)/stsOutputFileWriter.cpp \
                $(OUTPUT)/stsRelativeRisk.cpp \
-	       $(OUTPUT)/stsRunHistoryFile.cpp \
-	       $(OUTPUT)/AsciiPrintFormat.cpp \
-	       $(PRINT)/BasePrint.cpp \
-	       $(PRINT)/PrintScreen.cpp \
-	       $(PRINT)/PrintQueue.cpp \
-	       $(PROBMODEL)/ProbabilityModel.cpp \
-	       $(PROBMODEL)/BernoulliModel.cpp \
-	       $(PROBMODEL)/CalculateMeasure.cpp \
-	       $(PROBMODEL)/PoissonModel.cpp \
-	       $(PROBMODEL)/SpaceTimePermutationModel.cpp \
-	       $(PROBMODEL)/NormalModel.cpp \
-	       $(PROBMODEL)/SurvivalModel.cpp \
-	       $(PROBMODEL)/RankModel.cpp \
-	       $(RANDOMIZER)/BernoulliRandomizer.cpp \
-	       $(RANDOMIZER)/PoissonRandomizer.cpp \
-	       $(RANDOMIZER)/ContinuousVariableRandomizer.cpp \
-	       $(RANDOMIZER)/DenominatorDataRandomizer.cpp \
-	       $(RANDOMIZER)/PermutationDataRandomizer.cpp \
-	       $(RANDOMIZER)/Randomizer.cpp \
-	       $(RANDOMIZER)/SpaceTimeRandomizer.cpp \
-	       $(LOGLIKELIHOOD)/BernoulliLikelihoodCalculation.cpp \
-	       $(LOGLIKELIHOOD)/ExponentialLikelihoodCalculation.cpp \
-	       $(LOGLIKELIHOOD)/LikelihoodCalculation.cpp \
-	       $(LOGLIKELIHOOD)/NormalLikelihoodCalculation.cpp \
-	       $(LOGLIKELIHOOD)/PoissonLikelihoodCalculation.cpp \
-	       $(LOGLIKELIHOOD)/WilcoxonLikelihoodCalculation.cpp \
-	       $(SATDATA)/GridTractCoordinates.cpp \
-	       $(SATDATA)/MakeNeighbors.cpp \
-	       $(SATDATA)/PopulationData.cpp \
-	       $(SATDATA)/PurelySpatialData.cpp \
-	       $(SATDATA)/PurelyTemporalData.cpp \
-	       $(SATDATA)/SaTScanData.cpp \
-	       $(SATDATA)/SaTScanDataDisplay.cpp \
-	       $(SATDATA)/SaTScanDataRead.cpp \
-	       $(SATDATA)/SpaceTimeData.cpp \
-	       $(SATDATA)/SVTTData.cpp \
-	       $(SATDATA)/Tracts.cpp \
-	       $(SATDATA)/MaxWindowLengthIndicator.cpp \
-	       $(SATDATA)/AdjustmentHandler.cpp \
-	       $(SATDATA)/DataStream.cpp \
-	       $(SATDATA)/DataStreamGateway.cpp \
-	       $(SATDATA)/DataStreamHandler.cpp \
-	       $(SATDATA)/DataStreamInterface.cpp \
-	       $(SATDATA)/BernoulliDataStreamHandler.cpp \
-	       $(SATDATA)/NormalDataStreamHandler.cpp \
-	       $(SATDATA)/PoissonDataStreamHandler.cpp \
-	       $(SATDATA)/RankDataStreamHandler.cpp \
-	       $(SATDATA)/SpaceTimePermutationDataStreamHandler.cpp \
-	       $(SATDATA)/SurvivalDataStreamHandler.cpp \
-	       $(UTILITY)/DBFFile.cpp \
-	       $(UTILITY)/JulianDates.cpp \
-	       $(UTILITY)/RandomDistribution.cpp \
-	       $(UTILITY)/RandomNumberGenerator.cpp \
-	       $(UTILITY)/Salloc.cpp \
-	       $(UTILITY)/ScanfFile.cpp \
-	       $(UTILITY)/SSException.cpp \
-	       $(UTILITY)/UtilityFunctions.cpp \
-	       $(UTILITY)/MultipleDimensionArrayHandler.cpp \
-	       $(UTILITY)/stsMonteCarloSimFunctor.cpp \
-	       $(UTILITY)/stsMCSimReporter.cpp \
-	       $(UTILITY)/stsMCSimContinuationPolicy.cpp \
-	       $(UTILITY)/DateStringParser.cpp \
-	       $(CALCULATION)/Parameters.cpp \
-	       $(CALCULATION)/SaTScanBasis.cpp \
-	       $(CALCULATION)/Toolkit.cpp \
-	       $(CALCULATION)/ParameterFileAccess.cpp \
-	       $(CALCULATION)/ScanLineParameterFileAccess.cpp \
-	       $(CALCULATION)/IniParameterSpecification.cpp \
-	       $(CALCULATION)/IniParameterFileAccess.cpp \
-	       $(BOOSTDIR)/libs/thread/src/xtime.cpp \
-	       $(BOOSTDIR)/libs/thread/src/exceptions.cpp \
-	       $(BOOSTDIR)/libs/thread/src/mutex.cpp \
-	       $(BOOSTDIR)/libs/thread/src/once.cpp \
-	       $(BOOSTDIR)/libs/thread/src/recursive_mutex.cpp \
-	       $(BOOSTDIR)/libs/thread/src/thread.cpp \
-	       $(BOOSTDIR)/libs/thread/src/condition.cpp
+	             $(OUTPUT)/stsRunHistoryFile.cpp \
+	             $(OUTPUT)/AsciiPrintFormat.cpp \
+	             $(PRINT)/BasePrint.cpp \
+	             $(PRINT)/PrintScreen.cpp \
+	             $(PRINT)/PrintQueue.cpp \
+	             $(PROBMODEL)/ProbabilityModel.cpp \
+	             $(PROBMODEL)/BernoulliModel.cpp \
+	             $(PROBMODEL)/CalculateMeasure.cpp \
+	             $(PROBMODEL)/PoissonModel.cpp \
+	             $(PROBMODEL)/SpaceTimePermutationModel.cpp \
+	             $(PROBMODEL)/NormalModel.cpp \
+	             $(PROBMODEL)/SurvivalModel.cpp \
+	             $(PROBMODEL)/RankModel.cpp \
+	             $(PROBMODEL)/OrdinalModel.cpp \
+	             $(RANDOMIZER)/BernoulliRandomizer.cpp \
+	             $(RANDOMIZER)/PoissonRandomizer.cpp \
+	             $(RANDOMIZER)/ContinuousVariableRandomizer.cpp \
+	             $(RANDOMIZER)/DenominatorDataRandomizer.cpp \
+	             $(RANDOMIZER)/PermutationDataRandomizer.cpp \
+	             $(RANDOMIZER)/Randomizer.cpp \
+	             $(RANDOMIZER)/SpaceTimeRandomizer.cpp \
+	             $(RANDOMIZER)/OrdinalDataRandomizer.cpp \
+	             $(LOGLIKELIHOOD)/BernoulliLikelihoodCalculation.cpp \
+	             $(LOGLIKELIHOOD)/ExponentialLikelihoodCalculation.cpp \
+	             $(LOGLIKELIHOOD)/LikelihoodCalculation.cpp \
+	             $(LOGLIKELIHOOD)/LoglikelihoodRatioUnifier.cpp \
+	             $(LOGLIKELIHOOD)/NormalLikelihoodCalculation.cpp \
+	             $(LOGLIKELIHOOD)/PoissonLikelihoodCalculation.cpp \
+	             $(LOGLIKELIHOOD)/WilcoxonLikelihoodCalculation.cpp \
+	             $(LOGLIKELIHOOD)/OrdinalLikelihoodCalculation.cpp \
+	             $(SATDATA)/GridTractCoordinates.cpp \
+	             $(SATDATA)/MakeNeighbors.cpp \
+	             $(SATDATA)/PopulationData.cpp \
+	             $(SATDATA)/PurelySpatialData.cpp \
+	             $(SATDATA)/PurelyTemporalData.cpp \
+	             $(SATDATA)/SaTScanData.cpp \
+	             $(SATDATA)/SaTScanDataDisplay.cpp \
+	             $(SATDATA)/SaTScanDataRead.cpp \
+	             $(SATDATA)/SpaceTimeData.cpp \
+	             $(SATDATA)/SVTTData.cpp \
+	             $(SATDATA)/Tracts.cpp \
+	             $(SATDATA)/MaxWindowLengthIndicator.cpp \
+	             $(SATDATA)/AdjustmentHandler.cpp \
+	             $(SATDATA)/DataStream.cpp \
+	             $(SATDATA)/DataStreamGateway.cpp \
+	             $(SATDATA)/DataStreamHandler.cpp \
+	             $(SATDATA)/DataStreamInterface.cpp \
+	             $(SATDATA)/BernoulliDataStreamHandler.cpp \
+	             $(SATDATA)/NormalDataStreamHandler.cpp \
+	             $(SATDATA)/PoissonDataStreamHandler.cpp \
+	             $(SATDATA)/RankDataStreamHandler.cpp \
+	             $(SATDATA)/SpaceTimePermutationDataStreamHandler.cpp \
+	             $(SATDATA)/SurvivalDataStreamHandler.cpp \
+	             $(SATDATA)/OrdinalDataSetHandler.cpp \
+	             $(UTILITY)/DBFFile.cpp \
+	             $(UTILITY)/JulianDates.cpp \
+	             $(UTILITY)/RandomDistribution.cpp \
+	             $(UTILITY)/RandomNumberGenerator.cpp \
+	             $(UTILITY)/Salloc.cpp \
+	             $(UTILITY)/ScanfFile.cpp \
+	             $(UTILITY)/SSException.cpp \
+	             $(UTILITY)/UtilityFunctions.cpp \
+	             $(UTILITY)/MultipleDimensionArrayHandler.cpp \
+	             $(UTILITY)/stsMonteCarloSimFunctor.cpp \
+	             $(UTILITY)/stsMCSimReporter.cpp \
+	             $(UTILITY)/stsMCSimContinuationPolicy.cpp \
+	             $(UTILITY)/DateStringParser.cpp \
+	             $(CALCULATION)/Parameters.cpp \
+	             $(CALCULATION)/SaTScanBasis.cpp \
+	             $(CALCULATION)/Toolkit.cpp \
+	             $(CALCULATION)/ParameterFileAccess.cpp \
+	             $(CALCULATION)/ScanLineParameterFileAccess.cpp \
+	             $(CALCULATION)/IniParameterSpecification.cpp \
+	             $(CALCULATION)/IniParameterFileAccess.cpp \
+	             $(BOOSTDIR)/libs/thread/src/xtime.cpp \
+	             $(BOOSTDIR)/libs/thread/src/exceptions.cpp \
+	             $(BOOSTDIR)/libs/thread/src/mutex.cpp \
+	             $(BOOSTDIR)/libs/thread/src/once.cpp \
+	             $(BOOSTDIR)/libs/thread/src/recursive_mutex.cpp \
+	             $(BOOSTDIR)/libs/thread/src/thread.cpp \
+	             $(BOOSTDIR)/libs/thread/src/condition.cpp
 
 
 OBJS        := $(SRC:.cpp=.o)

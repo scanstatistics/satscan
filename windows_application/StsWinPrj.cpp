@@ -120,8 +120,6 @@ USEUNIT("..\calculation\loglikelihood\NormalLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\analysis_run\AnalysisRun.cpp");
 USEUNIT("..\calculation\analysis_run\MostLikelyClustersContainer.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
-USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd543.lib");
-USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex543.lib");
 USEUNIT("..\..\boost\release_1_29_0\libs\thread\src\xtime.cpp");
 USEUNIT("..\..\boost\release_1_29_0\libs\thread\src\exceptions.cpp");
 USEUNIT("..\..\boost\release_1_29_0\libs\thread\src\mutex.cpp");
@@ -138,6 +136,18 @@ USEUNIT("..\calculation\ParameterFileAccess.cpp");
 USEUNIT("..\calculation\ScanLineParameterFileAccess.cpp");
 USEUNIT("..\calculation\IniParameterFileAccess.cpp");
 USEUNIT("..\calculation\IniParameterSpecification.cpp");
+USELIB("..\..\zero.dimension\zd543.lib");
+USELIB("..\..\zero.dimension\zdannex543.lib");
+USEUNIT("..\calculation\probability_model\OrdinalModel.cpp");
+USEUNIT("..\calculation\randomization\OrdinalDataRandomizer.cpp");
+USEUNIT("..\calculation\satscan_data\OrdinalDataSetHandler.cpp");
+USEUNIT("..\calculation\cluster\AbstractClusterDataFactory.cpp");
+USEUNIT("..\calculation\cluster\CategoricalClusterData.cpp");
+USEUNIT("..\calculation\cluster\CategoricalClusterDataFactory.cpp");
+USEUNIT("..\calculation\cluster\MultiSetCategoricalClusterData.cpp");
+USEUNIT("..\calculation\cluster\NormalClusterDataFactory.cpp");
+USEUNIT("..\calculation\loglikelihood\LoglikelihoodRatioUnifier.cpp");
+USEUNIT("..\calculation\loglikelihood\OrdinalLikelihoodCalculation.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;
