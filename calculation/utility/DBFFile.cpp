@@ -884,7 +884,7 @@ DBFFile::~DBFFile()
 void DBFFile::AssertLegalFieldname(const ZdString & sCandidate)
 {
    if (! DBFFile::IsLegalFieldname(sCandidate))
-      ZdException::Generate("The string, \"%c\", is not legal for use as the name of a field in a DBF file.", "DBFFile", sCandidate.GetCString());
+      ZdException::Generate("The string, \"%s\", is not legal for use as the name of a field in a DBF file.", "DBFFile", sCandidate.GetCString());
 }
 
 // Throw an exception if GetIsOpen() returns 'false'.
@@ -929,7 +929,7 @@ void DBFFile::Close()
          rc = gpDbf->CloseDatabase(true);
          if (rc != XB_NO_ERROR)
             {
-            ZdException::Generate("Could not close file, \"%c\".  xbase error: \"%s\".", "DBFFile", GetFileName(), GetDbfErrorString(rc));
+            ZdException::Generate("Could not close file, \"%s\".  xbase error: \"%s\".", "DBFFile", GetFileName(), GetDbfErrorString(rc));
             }
          }
       }
@@ -1008,7 +1008,7 @@ void DBFFile::Create(const char * sFilename, ZdVector<ZdField*> &vFields, unsign
 
       rc = gpDbf->CreateDatabase(ZdFileName(sFilename).GetFullPath(), aXBaseFieldDefs, 0);
       if (rc != XB_NO_ERROR)
-         ZdException::Generate("could not create database, \"%c\".  xbase error:  \"%s\".", "DBFFile", ZdFileName(sFilename).GetFullPath(), gXBase.GetErrorMessage(rc));
+         ZdException::Generate("could not create database, \"%s\".  xbase error:  \"%s\".", "DBFFile", ZdFileName(sFilename).GetFullPath(), gXBase.GetErrorMessage(rc));
 
       delete[] aXBaseFieldDefs;
       }
@@ -1481,13 +1481,13 @@ void DBFFile::Open(const char *sFilename, ZdIOFlag Flags, const char * sPassword
          rc = gpDbf->CloseDatabase(true);
          if (rc != XB_NO_ERROR)
             {
-            ZdException::Generate("Could not close file, \"%c\".  xbase error: \"%s\".", "DBFFile", GetFileName(), gXBase.GetErrorMessage(rc));
+            ZdException::Generate("Could not close file, \"%s\".  xbase error: \"%s\".", "DBFFile", GetFileName(), gXBase.GetErrorMessage(rc));
             }
          }
 
       rc = gpDbf->OpenDatabase(fn.GetFullPath());
       if (rc != XB_NO_ERROR)
-         ZdException::Generate("Could not open file, \"%c\".  xbase error: \"%s\".", "DBFFile", fn.GetFullPath(), gXBase.GetErrorMessage(rc));
+         ZdException::Generate("Could not open file, \"%s\".  xbase error: \"%s\".", "DBFFile", fn.GetFullPath(), gXBase.GetErrorMessage(rc));
 
       OpenFinish();
       }
@@ -1569,7 +1569,7 @@ void DBFFile::ReadStructure( ZdIniFile *pAlternateZDSFile )
          rc = gpDbf->OpenDatabase(gFileName.GetFullPath());
          }
       if (rc != XB_NO_ERROR)
-         ZdException::Generate("Could not open file: \"%c\".  xbase error: \"%s\"", "DBFFile", gFileName.GetFullPath(), gXBase.GetErrorMessage(rc));
+         ZdException::Generate("Could not open file: \"%s\".  xbase error: \"%s\"", "DBFFile", gFileName.GetFullPath(), gXBase.GetErrorMessage(rc));
 
       // Create the standard .ZDS file, if necessary
 //      if ( pAlternateZDSFile == 0 )
