@@ -311,9 +311,10 @@ void MultiStreamTimeIntervalRange::CompareClusters(CCluster & Running, CCluster 
           TemporalData & Datum = *pData->gvStreamData[t];
           Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
           Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
-          if (fRateOfInterest(Datum.gtCases, Datum.gtMeasure, Datum.gtTotalCases, Datum.gtTotalMeasure))
-            Running.m_nRatio += gLikelihoodCalculator.CalcLogLikelihoodRatio(Datum.gtCases, Datum.gtMeasure, Datum.gtTotalCases, Datum.gtTotalMeasure);
+          gLikelihoodCalculator.GetUnifier().AdjoinRatio(gLikelihoodCalculator, t, Datum.gtCases, Datum.gtMeasure,
+                                                         Datum.gtTotalCases, Datum.gtTotalMeasure);
         }
+        Running.m_nRatio = gLikelihoodCalculator.GetUnifier().GetLoglikelihoodRatio();
         if (Running.m_nRatio && Running.m_nRatio > TopCluster.m_nRatio) {
           TopCluster.AssignAsType(Running);
           TopCluster.m_nFirstInterval = iWindowStart;
