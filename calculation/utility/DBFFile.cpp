@@ -1476,7 +1476,8 @@ void DBFFile::Open(const char *sFilename, ZdIOFlag Flags, const char * sPassword
 
       //store open flags for ReadStructure() -- current interface prevents this function from getting this information   
       gFlags = Flags;
-      OpenSetup(sFilename, gFlags);
+      //OpenSetup(sFilename, gFlags);
+      OpenSetup_DBFFile(sFilename, gFlags);
 
       if (gpDbf->GetDbfStatus() != XB_CLOSED)
          {
@@ -1500,6 +1501,82 @@ void DBFFile::Open(const char *sFilename, ZdIOFlag Flags, const char * sPassword
       e.AddCallpath("Open()", "DBFFile");
       throw;
       }
+}
+
+// Function to open the file
+//NOTE: This function is a non-virtual function of ZdFile, a exact copy but with
+//      the code to create the log file commented out. This should be a short
+//      term solution to preventing a log file from being created when opening
+//      file with write permissions. The 540 version of zero dimension library
+//      is being lockdown and the proper solution will be implemented sometime
+//      after 550 version implementation.
+void DBFFile::OpenSetup_DBFFile(const char * sFileName, ZdIOFlag Flags, const char * sAlternateZDSFile, ZdIniFile *pZDSFile )
+{
+   short       i, wNumFields;
+   ZdString    sBuffer;
+   ZdFileName  zdsFile;
+
+   try
+   {
+      // Clear the indexes
+      ClearIndexes();
+      // make sure the old file is closed
+      Close();
+      // Set the file name
+      gFileName.SetFullPath(sFileName);
+      // Remove old categories
+      while (GetNumCategories())
+         RemoveCategory(0);
+      // reset the system buffer
+      delete gPSystemRecord;
+      gPSystemRecord = 0;
+
+      // DCH 09/13/2000
+      delete gPTemporaryRecord;
+      gPTemporaryRecord = 0;
+      // 09/13
+
+      // DCH 01/11/2000
+      // If no previously opened IniFile is passed to the function, it attempts
+      // to figure out the file to open.
+      if ( !pZDSFile && sAlternateZDSFile)
+      {
+         zdsFile.SetFullPath(sAlternateZDSFile);
+
+         if (! ZdIOInterface::Exists(zdsFile.GetFullPath()) )
+            ZdGenerateFileException("Alternate .ZDS file \"%s\" not found", "ZdFile", GetFileName(), sAlternateZDSFile );
+
+         // Open ini file and read
+         ZdIniFile IniFile(zdsFile.GetFullPath(), true);
+         ReadStructure( &IniFile );
+      }
+      else
+         ReadStructure ( pZDSFile );
+
+      // Reset the indexes
+      gvIndexes.RemoveAllElements();
+      wNumFields = GetNumFields();
+      for (i=0; i < wNumFields; i++)
+         gvIndexes.push_back ( 0 );
+
+      // On a truncate, make sure that all of the indexes are deleted
+      if ( Flags & ZDIO_OPEN_TRUNC )
+         DeleteIndexes();
+
+      //Prevent creation of log file. This ZdFile derivative does not currently
+      //use this feature and we don't want the .zlg file to exist at all.
+
+      //// DCH 04/19/2001
+      ////
+      //// Create the file transaction log, if necessary
+      //if ( Flags & ZDIO_OPEN_WRITE )
+      //   gpXactLog.reset ( new ZdFileTransactionLog ( *this ) );
+   }
+   catch (ZdException & theException)
+   {
+      theException.AddCallpath("OpenSetup_DBFFile()", "DBFFile");
+      throw;
+   }
 }
 
 // Pack the data as tightly as possible.
