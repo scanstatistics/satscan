@@ -177,21 +177,23 @@ bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tStream, FILE * fp
          if (Parser.HasWords()) {
            bEmpty = false;
            if (ParseCountLine(thisStream.GetPopulationData(), Parser, TractIndex, Count, Date, iCategoryIndex)) {
-             //cumulatively add count to time by location structure
-             pCounts[0][TractIndex] += Count;
-             if (pCounts[0][TractIndex] < 0)
-               SSGenerateException("Error: Total case greater than maximum allowed of %ld.\n", "ReadCounts()",
-                                   std::numeric_limits<count_t>::max());
-             for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
-               pCounts[i][TractIndex] += Count;
-             //record count as a case
-             thisStream.GetPopulationData().AddCaseCount(iCategoryIndex, Count);
-             //record count in structure(s) based upon population category
-             if (iCategoryIndex >= static_cast<int>(CategoryHandler.Get3rdDimension()))
-               CategoryHandler.ExpandThirdDimension(0);
-             CategoryHandler.GetArray()[0][TractIndex][iCategoryIndex] += Count;
-             for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
-                CategoryHandler.GetArray()[i][TractIndex][iCategoryIndex] += Count;
+              if (Count > 0) {//ignore records that specify a count of zero
+                //cumulatively add count to time by location structure
+                pCounts[0][TractIndex] += Count;
+                if (pCounts[0][TractIndex] < 0)
+                  SSGenerateException("Error: Total case greater than maximum allowed of %ld.\n", "ReadCounts()",
+                                      std::numeric_limits<count_t>::max());
+                for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
+                  pCounts[i][TractIndex] += Count;
+                //record count as a case
+                thisStream.GetPopulationData().AddCaseCount(iCategoryIndex, Count);
+                //record count in structure(s) based upon population category
+                if (iCategoryIndex >= static_cast<int>(CategoryHandler.Get3rdDimension()))
+                  CategoryHandler.ExpandThirdDimension(0);
+                CategoryHandler.GetArray()[0][TractIndex][iCategoryIndex] += Count;
+                for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
+                   CategoryHandler.GetArray()[i][TractIndex][iCategoryIndex] += Count;
+              }
            }
            else
              bValid = false;
