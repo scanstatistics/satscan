@@ -37,32 +37,4 @@ class RandomNumberGenerator {
     void        SetSeed(long lSeed);
     int         Test();
 };
-
-/**********************************************************************
- Lehmer generator which returns a pseudo-random real number uniformly
- distributed between 0 and 1.
- **********************************************************************/
-//double rngRand(void);
-//float rngRandFloat(void);
-
-/**********************************************************************
- Returns the current random number generator seed.
- **********************************************************************/
-//long rngGetSeed(void);
-
-/**********************************************************************
- Sets the random number generator seed.  Note:
-   0 < newseed < m (see top of file)
- **********************************************************************/
-//void rngPutSeed(long newseed);
-
-/**********************************************************************
- Tests for a correct implementation.
- Return value:
-   1 = Correct
-   0 = incorrect
- **********************************************************************/
-//int rngTestRand(void);
-
-//*****************************************************************************
 #endif
