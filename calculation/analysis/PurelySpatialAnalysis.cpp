@@ -43,8 +43,7 @@ CCluster* CPurelySpatialAnalysis::GetTopCluster(tract_t nCenter)
            C->AddNeighbor(j, *m_pData, m_pData->m_pCases, i);
            if (C->RateIsOfInterest(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure))
              {
-             C->m_nLogLikelihood = m_pData->m_pModel->CalcLogLikelihood
-                                                   (C->m_nCases, C->m_nMeasure);
+             C->m_nLogLikelihood = m_pData->m_pModel->CalcLogLikelihood(C->m_nCases, C->m_nMeasure);
              //C->SetLogLikelihood(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure);
              if (C->m_nLogLikelihood > MaxCluster->m_nLogLikelihood)
                 {
@@ -70,9 +69,10 @@ CCluster* CPurelySpatialAnalysis::GetTopCluster(tract_t nCenter)
 
 double CPurelySpatialAnalysis::MonteCarlo()
 {
-   CMeasureList* pMeasureList = 0;
-   CPurelySpatialCluster C(gpPrintDirection);
-   double nMaxLogLikelihood;
+   CMeasureList               * pMeasureList = 0;
+   CPurelySpatialCluster        C(gpPrintDirection);
+   double                       nMaxLogLikelihood;
+   tract_t                      i, j;
 
    try
       {
@@ -91,10 +91,10 @@ double CPurelySpatialAnalysis::MonteCarlo()
     
       for (int k = 0; k <= m_pParameters->m_lTotalNumEllipses; k++)   //circle is 0 offset... (always there)
          {
-         for (tract_t i = 0; i<m_pData->m_nGridTracts; i++)
+         for (i=0; i<m_pData->m_nGridTracts; i++)
          {
            C.Initialize(i);
-           for (tract_t j=1; j<=m_pData->m_NeighborCounts[k][i]; j++)   //k use to be "0"
+           for (j=1; j<=m_pData->m_NeighborCounts[k][i]; j++)   //k use to be "0"
            {
              C.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);       //k use to be "0"
              pMeasureList->AddMeasure(C.m_nCases, C.m_nMeasure);
