@@ -446,7 +446,7 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long lRepo
       pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->GetNumReplicationsRequested() > 99));
     dSignifRatio05 = SimRatios.GetAlpha05();
     //If  no replications, attempt to display up to top 10 clusters.
-    tract_t tNumClustersToDisplay(nReps == 0 ? min(10, m_nClustersRetained) : m_nClustersRetained);
+    tract_t tNumClustersToDisplay(nReps == 0 ? std::min(10, m_nClustersRetained) : m_nClustersRetained);
     lStartTime = clock(); //get clock for calculating output time
     for (tract_t i=0; i < tNumClustersToDisplay; ++i) {
        if (i==1)
