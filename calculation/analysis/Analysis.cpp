@@ -149,7 +149,8 @@ bool CAnalysis::Execute(time_t RunTime) {
         if (gpPrintDirection->GetIsCanceled())
            return false;
 
-        // log new history for each analysis run - AJV 9/10/2002   
+        // log new history for each analysis run - AJV 9/10/2002
+        gpPrintDirection->SatScanPrintf("\nLogging run history...");
         historyFile.LogNewHistory(*this, guwSignificantAt005);
         // reset the number of significants back to zero for each analysis - AJV 9/10/2002
         guwSignificantAt005 = 0;
@@ -215,10 +216,13 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
                                                         m_pParameters->m_nNumEllipses > 0));
 
       for (int i = 0; i < m_nClustersRetained; ++i) {
+         if((i%20) == 0)
+               gpPrintDirection->SatScanPrintf("%i out of %i records recorded to cluster file so far...", i, m_nClustersRetained);
       	 if (m_pParameters->m_bMostLikelyClusters) {
             fExpectedCases = m_pData->GetMeasureAdjustment()*m_pTopClusters[i]->m_nMeasure;
             fRelativeRisk = m_pTopClusters[i]->GetRelativeRisk(m_pData->GetMeasureAdjustment());
 
+            
             fprintf(fpMCL, "%-8ld", lReportHistoryRunNumber);
 
             //if a special grid file is specified, then do NOT output ID of central tract
@@ -415,6 +419,9 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
       dSignifRatio05 = SimRatios.GetAlpha05();
 
       for (tract_t i=0; i<m_nClustersRetained; ++i) {
+        if((i%15)== 0)
+             gpPrintDirection->SatScanPrintf("%i out of %i clusters recorded so far...", i, m_nClustersRetained);
+
         if (m_pTopClusters[i]->m_nRatio > nMinRatio && m_pTopClusters[i]->m_nRank  <= nReps) {
           ++m_nClustersReported;
 
@@ -424,6 +431,7 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
             default: fprintf(fp, "\n"); break;
           }   // end switch
 
+          
           m_pTopClusters[i]->Display(fp, *m_pParameters, *m_pData, m_nClustersReported, nMinMeasure);
 
           if(m_pTopClusters[i]->m_nLogLikelihood >= dSignifRatio05)
@@ -493,6 +501,7 @@ bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumb
    char* szSeconds = "seconds";
 
    try {
+      gpPrintDirection->SatScanPrintf("\nFinishing up reports...");
       OpenReportFile(fp, "a");
       if (m_pParameters->m_bOutputRelRisks)
          OpenRREFile(fpRRE, "a");
@@ -1083,6 +1092,7 @@ bool CAnalysis::UpdateReport(const long& lReportHistoryRunNumber)
    FILE* fpGIS = 0;
 
    try {
+      gpPrintDirection->SatScanPrintf("\nRecording results to file...");
       OpenReportFile(fp, "a");
       if (m_pParameters->m_bOutputCensusAreas)
          OpenGISFile(fpGIS, "a");
