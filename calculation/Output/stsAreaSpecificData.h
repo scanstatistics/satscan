@@ -11,17 +11,17 @@ class CSaTScanData;
 class stsAreaSpecificData : public BaseOutputStorageClass {
    private:
       long	glRunNumber;
-      bool	gbPrintPVal;
+      bool	gbPrintPVal, gbIncludeRunHistory;
        
       void	Init();
       void	Setup(const ZdString& sOutputFileName, const long lRunNumber, const bool bPrintPVal);
    protected:
-      virtual void              SetupFields();
+      virtual void   SetupFields();
    public:
       __fastcall stsAreaSpecificData(const ZdString& sOutputFileName, const long lRunNumber, const bool bPrintPVal);
       virtual ~stsAreaSpecificData();
 
-      virtual void              RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, tract_t tTract);
+      virtual void   RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, tract_t tTract);
 };
 
 class AreaSpecificRecord : public BaseOutputRecord {
@@ -36,13 +36,14 @@ class AreaSpecificRecord : public BaseOutputRecord {
       long 	glAreaObserved;
       double 	gdAreaExpected;
       double 	gdAreaRelRisk;
-      
+
+      bool	gbPrintPVal, gbIncludeRunHistory;
       void 	Init();
    public :
-      AreaSpecificRecord();
+      AreaSpecificRecord(const bool bPrintPVal = true, const bool bIncludeRunHistory = true);
       virtual ~AreaSpecificRecord();
-   
-      virtual int GetNumFields() { return 10; }
+
+      virtual int GetNumFields();
       virtual ZdFieldValue GetValue(int iFieldNumber);
         
       void	SetAreaExpected(const double dAreaExpected) { gdAreaExpected = dAreaExpected; }

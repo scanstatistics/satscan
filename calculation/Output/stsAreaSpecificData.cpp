@@ -12,7 +12,9 @@ const char *	AREA_SPECIFIC_FILE_EXT		= ".gis";
 
 // record storage class for area specific data
 // constrcutor
-AreaSpecificRecord::AreaSpecificRecord() : BaseOutputRecord() {
+AreaSpecificRecord::AreaSpecificRecord(const bool bPrintPVal, const bool bIncludeRunHistory) : BaseOutputRecord() {
+   gbPrintPVal = bPrintPVal;
+   gbIncludeRunHistory = bIncludeRunHistory;
    Init();
 }
 
@@ -20,6 +22,9 @@ AreaSpecificRecord::AreaSpecificRecord() : BaseOutputRecord() {
 AreaSpecificRecord::~AreaSpecificRecord() {
 }
 
+int AreaSpecificRecord::GetNumFields() {
+  return ( 8 + (gbPrintPVal ? 1 : 0) + (gbIncludeRunHistory ? 1 : 0));
+}
 // returns the field value of the requested field
 // pre : iFieldNumber is in valid range, else an exception is thrown
 // post : returns a ZdFieldValue with the appropriate type and value of the field requested
@@ -29,38 +34,54 @@ ZdFieldValue AreaSpecificRecord::GetValue(int iFieldNumber) {
    try {   
       if (iFieldNumber < 0 || iFieldNumber >= GetNumFields())
          ZdGenerateException ("Index out of range!", "Error!");
-      
+
+      // if we should include run history then do so, if not just skip to the next field
+      if(gbIncludeRunHistory) {
+         if ( iFieldNumber == 0 )
+            BaseOutputRecord::SetFieldValueAsDouble(fv, double(glRunNumber));
+      }
+      else
+         ++iFieldNumber;
+
       switch (iFieldNumber) {
-         case 0 :
-            BaseOutputRecord::SetFieldValueAsLong(fv, glRunNumber);  break;
          case 1 :
             BaseOutputRecord::SetFieldValueAsString(fv, gsLocationID);   break;
          case 2 :
-            BaseOutputRecord::SetFieldValueAsLong(fv, giClusterNumber);  break;
+            BaseOutputRecord::SetFieldValueAsDouble(fv, double(giClusterNumber));  break;
          case 3 :
-            BaseOutputRecord::SetFieldValueAsLong(fv, glClusterObserved);   break;
+            BaseOutputRecord::SetFieldValueAsDouble(fv, double(glClusterObserved));   break;
          case 4 :
-            BaseOutputRecord::SetFieldValueAsDouble(fv, gdClusterExpected);   break;         
+            BaseOutputRecord::SetFieldValueAsDouble(fv, gdClusterExpected);   break;
          case 5 :
             BaseOutputRecord::SetFieldValueAsDouble(fv, gdRelRisk);  break;
-         case 6 :
-            BaseOutputRecord::SetFieldValueAsDouble(fv, gdPValue);  break;
-         case 7 :
-            BaseOutputRecord::SetFieldValueAsLong(fv, glAreaObserved);  break;
-         case 8 :
-            BaseOutputRecord::SetFieldValueAsDouble(fv, gdAreaExpected);  break;
-         case 9 :
-            BaseOutputRecord::SetFieldValueAsDouble(fv, gdAreaRelRisk);   break;
-         default :
-            ZdGenerateException ("Invalid index, out of range", "Error!");
       }
-      
-      return fv;
+
+      // if p-Value should be included then do so else skip ahead to the next field
+      if (gbPrintPVal) {
+         if (iFieldNumber == 6)
+            BaseOutputRecord::SetFieldValueAsDouble(fv, gdPValue);         
+      }
+      else
+         ++iFieldNumber;
+
+      if (iFieldNumber > 6) {
+         switch(iFieldNumber) {
+            case 7 :
+               BaseOutputRecord::SetFieldValueAsDouble(fv, double(glAreaObserved));  break;
+            case 8 :
+               BaseOutputRecord::SetFieldValueAsDouble(fv, gdAreaExpected);  break;
+            case 9 :
+               BaseOutputRecord::SetFieldValueAsDouble(fv, gdAreaRelRisk);   break;
+            default :
+               ZdGenerateException ("Invalid index, out of range", "Error!");
+         }
+      }
    }
    catch (ZdException &x) {
       x.AddCallpath("GetValue()", "AreaSpecificRecord");
       throw;
-   }   
+   }
+   return fv;
 }
 
 // internal global initialization
@@ -117,7 +138,7 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& pCluster, const CSaT
    AreaSpecificRecord*	pRecord = 0;
 
    try {
-      pRecord = new AreaSpecificRecord();
+      pRecord = new AreaSpecificRecord(gbPrintPVal, gbIncludeRunHistory);
       pRecord->SetAreaExpected(pCluster.GetMeasureForTract(tTract, pData));
       pRecord->SetAreaObserved(pCluster.GetCaseCountForTract(tTract, pData));
       pRecord->SetAreaRelativeRisk(pCluster.GetRelativeRiskForTract(tTract, pData));
@@ -136,10 +157,9 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& pCluster, const CSaT
          pRecord->SetPValue(fPVal);
       }
       
-#ifdef INCLUDE_RUN_HISTORY
-      pRecord->SetRunNumber(glRunNumber);
-#endif
-                                                
+      if (gbIncludeRunHistory)
+         pRecord->SetRunNumber(glRunNumber);
+
       BaseOutputStorageClass::AddRecord(pRecord);
    }  
    catch (ZdException &x) {
@@ -161,7 +181,12 @@ void stsAreaSpecificData::Setup(const ZdString& sOutputFileName, const long lRun
       gsFileName = sTempName;
       
       glRunNumber = lRunNumber;
-      gbPrintPVal = bPrintPVal;	
+      gbPrintPVal = bPrintPVal;
+#ifdef INCLUDE_RUN_HISTORY
+      gbIncludeRunHistory = true;
+#else
+      gbIncludeRunHistory = false;
+#endif
       SetupFields();
    }
    catch(ZdException &x) {
@@ -178,12 +203,8 @@ void stsAreaSpecificData::SetupFields() {
    unsigned short uwOffset = 0;     // this is altered by the create new field function, so this must be here as is-AJV 9/30/2002
    
    try {
-      // please take note that this function here determines the ordering of the fields in the file
-      // everything else is written generically enough that ordering does not matter due to the
-      // GetFieldNumber function - AJV 10/2/2002
-#ifdef INCLUDE_RUN_HISTORY
-      ::CreateField(gvFields, RUN_NUM_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
-#endif
+      if(gbIncludeRunHistory)
+         ::CreateField(gvFields, RUN_NUM_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
       ::CreateField(gvFields, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
       ::CreateField(gvFields, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
       ::CreateField(gvFields, CLU_OBS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
