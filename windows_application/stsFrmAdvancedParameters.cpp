@@ -1284,8 +1284,8 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
         PageControl->Pages[0]->TabVisible=true;
         for (i=1; i < PageControl->PageCount; i++)
            PageControl->Pages[i]->TabVisible=false;
-        // give control to list box if anything in it
-        if (lstInputStreams->Items->Count) {
+        // give control to list box if it contains items but none are selected
+        if (lstInputStreams->Items->Count && lstInputStreams->ItemIndex == -1) {
            lstInputStreams->ItemIndex = 0;
            lstInputStreams->OnClick(this);
         }
