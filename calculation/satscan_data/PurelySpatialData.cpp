@@ -9,7 +9,7 @@
 #include "RankModel.h"
 
 /** constructor */
-CPurelySpatialData::CPurelySpatialData(CParameters* pParameters, BasePrint *pPrintDirection)
+CPurelySpatialData::CPurelySpatialData(const CParameters* pParameters, BasePrint *pPrintDirection)
                    :CSaTScanData(pParameters, pPrintDirection) {
   try {
     SetProbabilityModel();

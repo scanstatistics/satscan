@@ -12,7 +12,7 @@ class CPurelySpatialData : public CSaTScanData {
     virtual void        SetNumTimeIntervals() {m_nTimeIntervals = 1;};
 
   public:
-    CPurelySpatialData(CParameters* pParameters, BasePrint *pPrintDirection);
+    CPurelySpatialData(const CParameters* pParameters, BasePrint *pPrintDirection);
     virtual ~CPurelySpatialData();
 };
 
