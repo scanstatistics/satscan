@@ -1,7 +1,7 @@
-//*****************************************************************************
+//******************************************************************************
 #ifndef __DataStream_H
 #define __DataStream_H
-//*****************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #include "Parameters.h"
 #include "MultipleDimensionArrayHandler.h"
@@ -15,12 +15,13 @@ typedef TwoDimensionArrayHandler<count_t>      TwoDimCountArray_t;
 typedef ThreeDimensionArrayHandler<count_t>    ThreeDimCountArray_t;
 typedef TwoDimensionArrayHandler<measure_t>    TwoDimMeasureArray_t;
 typedef ThreeDimensionArrayHandler<measure_t>  ThreeDimMeasureArray_t;
+typedef ZdPointerVector<TwoDimCountArray_t>    CasesByCategory_t;
 
 class CSaTScanData; /** forward class declaration */
 class DataStreamHandler; /** forward class declaration */
 
 /** Encapsulates data for each stream of data. */
-class DataStream {
+class DataSet {
   friend class DataStreamHandler;
   private:
     void                        Init();
@@ -36,7 +37,7 @@ class DataStream {
     TwoDimCountArray_t        * gpNCCasesHandler;                       /** number of cases stratified with respect to time intervals by tract index
                                                                             - cases are NOT distributed in time intervals cumulatively */
     measure_t                 * gpPTMeasureArray;                       /** number of expected cases, cumulatively stratified by time intervals */
-    measure_t                 * gpMeasurePerIntervalArray;               /** number of expected cases in each time interval */
+    measure_t                 * gpMeasurePerIntervalArray;              /** number of expected cases in each time interval */
     measure_t                 * gpPTSqMeasureArray;                     /** number of expected cases squared, cumulatively stratified by time intervals and
                                                                             as gotten from gpSqMeasureHandler */
     TwoDimMeasureArray_t      * gpMeasureHandler;                       /** number of expected cases stratified with respect to time intervals by tract index
@@ -46,26 +47,33 @@ class DataStream {
                                                                               of entries accumulated in gpMeasureHandler */
     TwoDimMeasureArray_t      * gpNCMeasureHandler;                     /** number of expected cases stratified with respect to time intervals by tract index
                                                                             - expected cases are NOT distributed in time intervals cumulatively */
+    CasesByCategory_t           gvCasesByCategory;                      /** number of cases stratified with respect to time intervals by tract index for each category
+                                                                            - cases are distributed in time intervals cumulatively */
+    TwoDimCountArray_t        * gpPTCategoryCasesHandler;               /** number of cases stratified with respect to time intervals by category index
+                                                                            - cases are distributed in time intervals cumulatively */
     CTimeTrend                  gTimeTrend;                             /** time trend data */
 
     unsigned int                giStreamIndex;
 
-    DataStream(const DataStream& thisStream);
-    DataStream                & operator=(const DataStream& rhs);
+    DataSet(const DataSet& thisStream);
+    DataSet                   & operator=(const DataSet& rhs);
 
   public:
-    DataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iStreamIndex);
-    virtual ~DataStream();
+    DataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iStreamIndex);
+    virtual ~DataSet();
 
     void                        AllocateCasesArray();
+    void                        AllocateCategoryCasesArray(unsigned int iNumCategories);
     void                        AllocateMeasureArray();
     void                        AllocateSqMeasureArray();
     void                        AllocatePTCasesArray();
+    void                        AllocatePTCategoryCasesArray();
     void                        AllocatePTMeasureArray();
     void                        AllocatePTSqMeasureArray();
     void                        AllocateNCMeasureArray();
     void                        AllocateNCCasesArray();
     count_t                  ** GetCaseArray() const;
+    const CasesByCategory_t   & GetCasesByCategory() const {return gvCasesByCategory;}
     count_t                   * GetCasesPerTimeIntervalArray() const;
     measure_t                ** GetMeasureArray() const;
     TwoDimMeasureArray_t      & GetMeasureArrayHandler();
@@ -76,6 +84,7 @@ class DataStream {
     inline unsigned int         GetNumTimeIntervals() const {return giNumTimeIntervals;}
     inline unsigned int         GetNumTracts() const {return giNumTracts;}
     count_t                   * GetPTCasesArray() const;
+    count_t                  ** GetPTCategoryCasesArray() const;
     measure_t                 * GetPTMeasureArray() const;
     measure_t                 * GetPTSqMeasureArray() const {return gpPTSqMeasureArray;}
     CTimeTrend                & GetTimeTrend() {return gTimeTrend;}
@@ -85,12 +94,13 @@ class DataStream {
     unsigned int                GetStreamIndex() const {return giStreamIndex;}
     void                        SetNonCumulativeCaseArrays();
     void                        SetPTCasesArray();
+    void                        SetPTCategoryCasesArray();
     void                        SetPTMeasureArray();
     void                        SetPTSqMeasureArray();
 };
 
 /** Encapsulates real data of a data stream. */
-class RealDataStream : public DataStream {
+class RealDataStream : public DataSet {
   friend class DataStreamHandler;
 
   private:
@@ -98,7 +108,7 @@ class RealDataStream : public DataStream {
     void                        Setup();
 
     RealDataStream(const RealDataStream& thisStream);
-    
+
   protected:
     PopulationData              gPopulation;                            /** population data */
     measure_t                   gtTotalMeasure;                         /** number of expected cases in data stream */
@@ -110,8 +120,6 @@ class RealDataStream : public DataStream {
     measure_t                   gtTotalMeasureAtStart;                  /** number of expected cases as defined at analysis start */
     TwoDimCountArray_t        * gpControlsHandler;                      /** number of controls stratified with respect to time intervals by tract index
                                                                             - controls are distributed in time intervals cumulatively */
-    ThreeDimCountArray_t      * gpCategoryCasesHandler;                 /** number of cases stratified with respect to time intervals by tract index by category index
-                                                                            - cases are distributed in time intervals cumulatively */
     TwoDimMeasureArray_t      * gpPopulationMeasureHandler;             /** expected number of cases in time intervals by population dates */
     double                      gdCalculatedTimeTrendPercentage;        /** calculated time trend percentage used to temporal adjust expected cases*/
 
@@ -119,14 +127,14 @@ class RealDataStream : public DataStream {
     RealDataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iStreamIndex);
     virtual ~RealDataStream();
 
-    void                        AllocateCategoryCasesArray();
     void                        AllocateControlsArray();
     measure_t                ** AllocatePopulationMeasureArray();
+    count_t                  ** AddOrdinalCategoryCaseCount(double dOrdinalNumber, count_t Count);
     void                        CheckPopulationDataCases(CSaTScanData& Data);
     void                        FreePopulationMeasureArray();
     double                      GetCalculatedTimeTrendPercentage() const {return gdCalculatedTimeTrendPercentage;}
-    count_t                 *** GetCategoryCaseArray() const;
-    ThreeDimCountArray_t      & GetCategoryCaseArrayHandler();
+    count_t                  ** GetCategoryCaseArray(unsigned int iCategoryIndex) const;
+    count_t                  ** GetCategoryCaseArray(unsigned int iCategoryIndex, bool bCreateable=false);
     count_t                  ** GetControlArray()const;
     measure_t                ** GetPopulationMeasureArray() const;
     PopulationData            & GetPopulationData() {return gPopulation;}
@@ -138,7 +146,7 @@ class RealDataStream : public DataStream {
     measure_t                   GetTotalMeasure() const {return gtTotalMeasure;}
     measure_t                   GetTotalMeasureAtStart() const {return gtTotalMeasureAtStart;}
     double                      GetTotalPopulation() const {return gdTotalPop;}
-    void                        SetAggregateCategories(bool b) {gPopulation.SetAggregateCategories(b);}
+    void                        SetAggregateCovariateCategories(bool b) {gPopulation.SetAggregateCovariateCategories(b);}
     void                        SetCalculatedTimeTrendPercentage(double dTimeTrend) {gdCalculatedTimeTrendPercentage=dTimeTrend;}
     void                        SetCasesPerTimeIntervalArray();
     void                        SetCumulativeMeasureArrayFromNonCumulative();
@@ -155,9 +163,15 @@ class RealDataStream : public DataStream {
 };
 
 /** Encapsulates simulation data of a data stream. */
-class SimulationDataStream : public DataStream {
+class SimulationDataStream : public DataSet {
   private:
     SimulationDataStream(const SimulationDataStream& thisStream);
+
+  protected:  
+    void                        ReadSimulationDataOrdinal(std::ifstream& filestream, unsigned int iSimulation);
+    void                        ReadSimulationDataStandard(std::ifstream& filestream, unsigned int iSimulation);
+    void                        WriteSimulationDataOrdinal(std::ofstream& filestream) const;
+    void                        WriteSimulationDataStandard(std::ofstream& filestream) const;
 
   public:
     SimulationDataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iStreamIndex);
