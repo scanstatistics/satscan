@@ -35,7 +35,7 @@ class RelativeRiskData : public BaseOutputStorageClass {
    protected:
       virtual void              SetupFields();
    public:
-      __fastcall RelativeRiskData(BasePrint *pPrintDirection, const ZdString& sOutputFileName);
+      RelativeRiskData(BasePrint *pPrintDirection, const ZdString& sOutputFileName);
       virtual ~RelativeRiskData();
 
       void      SetRelativeRiskData(const ZdString& sLocationID, const long lObserved, const double dExpected, const ZdString& sRelRisk);   

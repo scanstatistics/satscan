@@ -174,7 +174,7 @@ void ClusterRecord::SetFieldIsBlank(int iFieldNumber, bool bBlank) {
 //===============================================================================
 
 // constructor
-__fastcall stsClusterData::stsClusterData(BasePrint *pPrintDirection, const ZdString& sOutputFileName,
+stsClusterData::stsClusterData(BasePrint *pPrintDirection, const ZdString& sOutputFileName,
                                           const long lRunNumber, const int iCoordType,
                                           ProbabiltyModelType eProbabiltyModelType, const int iDimension,
                                           const bool bPrintPVal, const bool bPrintEllipses, const bool bDuczmalCorrect)

@@ -18,7 +18,7 @@ class stsAreaSpecificData : public BaseOutputStorageClass {
    protected:
       virtual void   SetupFields();
    public:
-      __fastcall stsAreaSpecificData(BasePrint *pPrintDirection, const ZdString& sOutputFileName, const long lRunNumber, const bool bPrintPVal);
+      stsAreaSpecificData(BasePrint *pPrintDirection, const ZdString& sOutputFileName, const long lRunNumber, const bool bPrintPVal);
       virtual ~stsAreaSpecificData();
 
       virtual void   RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, tract_t tTract);

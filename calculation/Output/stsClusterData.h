@@ -27,7 +27,7 @@ class stsClusterData : public BaseOutputStorageClass {
       void  	SetupFields();
 
    public:
-      __fastcall stsClusterData(BasePrint *pPrintDirection, const ZdString& sOutputFileName,
+      stsClusterData(BasePrint *pPrintDirection, const ZdString& sOutputFileName,
                                 const long lRunNumber, const int iCoordType,
                                 ProbabiltyModelType eProbabiltyModelType, const int iDimension = 2,
                                 const bool bPrintPVal = true, const bool bPrintEllipses = false,

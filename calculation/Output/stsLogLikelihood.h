@@ -30,7 +30,7 @@ class LogLikelihoodData : public BaseOutputStorageClass {
    protected:
       virtual void              SetupFields();
    public:
-      __fastcall LogLikelihoodData(BasePrint *pPrintDirection, const CParameters& Parameters);
+      LogLikelihoodData(BasePrint *pPrintDirection, const CParameters& Parameters);
       virtual ~LogLikelihoodData();
 
       void	                AddLikelihood(const double dLikelihood);	

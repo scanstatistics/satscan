@@ -139,7 +139,7 @@ void AreaSpecificRecord::SetFieldIsBlank(int iFieldNumber, bool bBlank) {
 // ============================================================================
 
 // constructor
-__fastcall stsAreaSpecificData::stsAreaSpecificData(BasePrint *pPrintDirection, const ZdString& sOutputFileName, const long lRunNumber, const bool bPrintPVal)
+stsAreaSpecificData::stsAreaSpecificData(BasePrint *pPrintDirection, const ZdString& sOutputFileName, const long lRunNumber, const bool bPrintPVal)
                              : BaseOutputStorageClass (pPrintDirection) {
    try {
       Init();

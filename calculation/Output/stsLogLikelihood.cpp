@@ -44,7 +44,7 @@ ZdFieldValue LogLikelihoodRecord::GetValue(int iFieldNumber) {
 // ============================================================================
 
 // constructor
-__fastcall LogLikelihoodData::LogLikelihoodData(BasePrint *pPrintDirection, const CParameters& Parameters)
+LogLikelihoodData::LogLikelihoodData(BasePrint *pPrintDirection, const CParameters& Parameters)
                           : BaseOutputStorageClass(pPrintDirection), gParameters(Parameters) {
    try {
       Init();
