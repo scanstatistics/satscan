@@ -851,13 +851,13 @@ void DBFRecord::ResizeBuffers(unsigned long ulReqdSize)
 ////////////////////////////////////////////////////////////////////////////////
 
 //construct
-DBFFile::DBFFile(const char * sFilename)
+DBFFile::DBFFile(const char * sFilename, ZdIOFlag Flags)
 {
    try
       {
       gpDbf = new xbDbf( &gXBase );
       if (sFilename)
-         Open(sFilename, 0);
+         Open(sFilename, Flags);
       }
    catch (ZdException & e)
       {
@@ -1474,7 +1474,9 @@ void DBFFile::Open(const char *sFilename, ZdIOFlag Flags, const char * sPassword
       if (! sFilename)
          ZdException::Generate("null pointer: sFilename", "DBFFile");
 
-      OpenSetup(sFilename, Flags);
+      //store open flags for ReadStructure() -- current interface prevents this function from getting this information   
+      gFlags = Flags;
+      OpenSetup(sFilename, gFlags);
 
       if (gpDbf->GetDbfStatus() != XB_CLOSED)
          {
@@ -1485,7 +1487,9 @@ void DBFFile::Open(const char *sFilename, ZdIOFlag Flags, const char * sPassword
             }
          }
 
-      rc = gpDbf->OpenDatabase(fn.GetFullPath());
+      //determine open read/write mode and open database
+      // -- currnetly we only need to open for update or open read only
+      rc = gpDbf->OpenDatabase(fn.GetFullPath(), (gFlags & ZDIO_OPEN_READ ? "rb" : "r+b"));
       if (rc != XB_NO_ERROR)
          ZdException::Generate("Could not open file, \"%s\".  xbase error: \"%s\".", "DBFFile", fn.GetFullPath(), gXBase.GetErrorMessage(rc));
 
@@ -1566,7 +1570,7 @@ void DBFFile::ReadStructure( ZdIniFile *pAlternateZDSFile )
       //make sure the .dbf file is open:
       if (gpDbf->GetDbfStatus() == XB_CLOSED)
          {
-         rc = gpDbf->OpenDatabase(gFileName.GetFullPath());
+         rc = gpDbf->OpenDatabase(gFileName.GetFullPath() , (gFlags & ZDIO_OPEN_READ ? "rb" : "r+b"));
          }
       if (rc != XB_NO_ERROR)
          ZdException::Generate("Could not open file: \"%s\".  xbase error: \"%s\"", "DBFFile", gFileName.GetFullPath(), gXBase.GetErrorMessage(rc));

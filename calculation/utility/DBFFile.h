@@ -127,7 +127,10 @@ public:
    virtual void            WriteToBuffer ( void *pBuffer ) const { ZdException::Generate("can't write a DBFSystemRecord to a buffer", "DBFSystemRecord"); }
 };
 
-
+// Currently ZDIO_OPEN_WRITE flag is not supported and causes un-wanted side
+// effects(particularly the creation of a log file '.zlg'), but we do want
+// to distinguish between opening read verses read/write permissions.
+const int   DBIO_OPEN_WRITE  =   0;
 
 class DBFFile : public ZdFile
 {
@@ -137,6 +140,7 @@ private:
 
    xbXBase gXBase;//must have one of these objects
    xbDbf * gpDbf;//the DBF file
+   ZdIOFlag gFlags;//open flags
 
    void AssertNotXBaseError(xbShort code) const;
 //   const ZdIniSection     *FindFieldByName ( const ZdIniFile &theFile, const char *sFieldName, unsigned short *pwFieldNumber = 0 ) const;
@@ -213,7 +217,7 @@ protected://static interface
 
 public:
    // Public functions
-   DBFFile(const char * sFileName = 0);
+   DBFFile(const char * sFileName = 0, ZdIOFlag Flags = DBIO_OPEN_WRITE);
    virtual ~DBFFile();
 
 //   bool                 operator==  (const ZdFile &rhs) const;
@@ -379,7 +383,7 @@ public:
    virtual DBFRecord *     GetNewRecord() const  { return new DBFRecord(const_cast<DBFFile &>(*this), *gpDbf, gvFields); }
    virtual unsigned long   GetNumRecords() const;
    virtual void            GotoRecord(unsigned long lRecNum, ZdFileRecord * PRecordBuffer = 0);
-   virtual void            Open(const char *sFileName, ZdIOFlag Flags = ZDIO_OPEN_READ, const char * sPassword = 0, const char * sAlternateZDSFile = 0, ZdIniFile *pZDSFile = 0);
+   virtual void            Open(const char *sFileName, ZdIOFlag Flags = DBIO_OPEN_WRITE, const char * sPassword = 0, const char * sAlternateZDSFile = 0, ZdIniFile *pZDSFile = 0);
    virtual void            PackFields ( ZdVector<ZdField*> &vFields ) const;
    virtual bool            TryLock ( ZdIOFlag iType );
 
