@@ -34,12 +34,7 @@ CCluster* CPurelySpatialAnalysis::GetTopCluster(tract_t nCenter) {
     pTopCluster->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
     gpTopShapeClusters->SetTopClusters(*pTopCluster);
 
-    //***************************************************************************
-    // Need to create a new cluster object for each circle or ellipse.
-    // If you do not, then AddNeighbor creates invalid case counts as you tally
-    // over multiple objects (i.e. the circle and ellipses.
-    //***************************************************************************
-    for (j = 0; j <= m_pParameters->GetNumTotalEllipses(); j++) {   //circle is 0 offset... (always there)
+    for (j=0; j <= m_pParameters->GetNumTotalEllipses(); j++) {   //circle is 0 offset... (always there)
        CPurelySpatialCluster thisCluster(gpPrintDirection);
        thisCluster.SetCenter(nCenter);
        thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
@@ -108,46 +103,10 @@ double CPurelySpatialAnalysis::MonteCarlo() {
   return dMaxLogLikelihoodRatio;
 }
 
-/** For purely spatial analysis, prospective monte carlo is the same as monte carlo. */
+/** Prospective monte carlo not valid for purely spatial analysis. */
 double CPurelySpatialAnalysis::MonteCarloProspective() {
-  CMeasureList                * pMeasureList=0;
-  CPurelySpatialCluster         C(gpPrintDirection);
-  double                        dMaxLogLikelihoodRatio;
-  tract_t                       i, j;
-  int                           k;
-
-  try {
-    C.SetRate(m_pParameters->GetAreaScanRateType());
-    switch (m_pParameters->GetAreaScanRateType()) {
-      case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
-                        break;
-      case LOW        : pMeasureList = new CMaxMeasureList(*m_pData, *gpPrintDirection);
-                        break;
-      case HIGHANDLOW : pMeasureList = new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
-                        break;
-      default         : ZdGenerateException("Unknown incidence rate specifier \"%d\".","MonteCarloProspective()",
-                                             m_pParameters->GetAreaScanRateType());
-    }
-
-    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {  //circle is 0 offset... (always there)
-       for (tract_t i = 0; i<m_pData->m_nGridTracts; i++) {
-          C.Initialize(i);
-          for (tract_t j=1; j<=m_pData->m_NeighborCounts[k][i]; j++) {
-             C.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);
-             pMeasureList->AddMeasure(C.m_nCases, C.m_nMeasure);
-          }
-       }
-       pMeasureList->SetForNextIteration(k);
-    }
-    dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
-    delete pMeasureList;
-  }
-  catch (ZdException & x) {
-    delete pMeasureList;
-    x.AddCallpath("MonteCarloProspective()", "CPurelySpatialAnalysis");
-    throw;
-  }
-  return dMaxLogLikelihoodRatio;
+  ZdGenerateException("MonteCarloProspective() not implemented for CPurelySpatialAnalysis.","MonteCarloProspective()");
+  return 0;
 }
 
 void CPurelySpatialAnalysis::Setup() {
