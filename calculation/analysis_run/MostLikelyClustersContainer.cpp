@@ -5,9 +5,7 @@
 #include "MostLikelyClustersContainer.h"
 #include "SaTScanData.h"
 
-MostLikelyClustersContainer::MostLikelyClustersContainer() {
-  Init();
-}
+MostLikelyClustersContainer::MostLikelyClustersContainer() {}
 
 MostLikelyClustersContainer::~MostLikelyClustersContainer() {}
 
@@ -15,7 +13,6 @@ MostLikelyClustersContainer::~MostLikelyClustersContainer() {}
 void MostLikelyClustersContainer::Add(const CCluster& Cluster) {
   gvTopClusterList.push_back(0);
   gvTopClusterList.back() = Cluster.Clone();
-  m_nClustersRetained++;
 }
 
 /** Comparison function for sorting clusters by descending m_ratio */
@@ -29,14 +26,13 @@ int MostLikelyClustersContainer::CompareClustersByRatio(const void *a, const voi
 /** */
 void MostLikelyClustersContainer::Empty() {
   gvTopClusterList.DeleteAllElements();
-  m_nClustersRetained=0;
 }
 
 /** */
 const CCluster& MostLikelyClustersContainer::GetCluster(tract_t tClusterIndex) const {
   try {
-    if (tClusterIndex < 0 || tClusterIndex > m_nClustersRetained - 1)
-      ZdGenerateException("Index '%d' out of range[%d-%d].","GetCluster()", 0, m_nClustersRetained - 1);
+    if (tClusterIndex < 0 || (unsigned int)tClusterIndex > gvTopClusterList.size() - 1)
+      ZdGenerateException("Index '%d' out of range[%d-%d].","GetCluster()", 0, gvTopClusterList.size() - 1);
   }
   catch (ZdException &x) {
      x.AddCallpath("GetCluster()","MostLikelyClustersContainer");
@@ -58,7 +54,7 @@ double MostLikelyClustersContainer::GetClusterRadius(const CSaTScanData& DataHub
       DataHub.GetNeighbor(theCluster.GetEllipseOffset() ,theCluster.GetCentroidIndex() ,theCluster.GetNumTractsInnerCircle())
      ,vCoordsOfNeighborCluster
     );
-    dResult = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(vCoordsOfCluster.begin(),vCoordsOfNeighborCluster.begin()));
+    dResult = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(&vCoordsOfCluster.begin()[0],&vCoordsOfNeighborCluster.begin()[0]));
   }
   catch (ZdException &x) {
     x.AddCallpath("GetClusterRadius()","MostLikelyClustersContainer");
@@ -70,7 +66,7 @@ double MostLikelyClustersContainer::GetClusterRadius(const CSaTScanData& DataHub
 /** */
 const CCluster& MostLikelyClustersContainer::GetTopRankedCluster() const {
   try {
-    if (m_nClustersRetained == 0)
+    if (gvTopClusterList.size() == 0)
       ZdGenerateException("No clusters in container.","GetTopRankedCluster()");
   }
   catch (ZdException &x) {
@@ -138,15 +134,15 @@ bool MostLikelyClustersContainer::PointLiesWithinEllipseArea(double dXPoint, dou
   return bResult;
 }
 
-void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, int nHowMany) {
+void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, unsigned int nHowMany) {
    FILE* pFile;
 
    try {
       if ((pFile = fopen(sFilename, "w")) == NULL)
         SSGenerateException("  Error: Unable to open top clusters file.\n", "PrintTopClusters()");
       else {
-         nHowMany = std::min(m_nClustersRetained, nHowMany);
-         for (int i = 0; i < nHowMany; ++i) {
+         nHowMany = std::min(gvTopClusterList.size(), nHowMany);
+         for (unsigned int i = 0; i < nHowMany; ++i) {
            fprintf(pFile, "GridTract:  %i\n", i);
            fprintf(pFile, "  Ellipe Offset:  %i\n", gvTopClusterList[i]->GetEllipseOffset());
            fprintf(pFile, "         Center:  %i\n", gvTopClusterList[i]->GetCentroidIndex());
@@ -212,11 +208,11 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
       /* a "new cluster" is the present candidate for inclusion.               */
 
       /* Sort by descending m_ratio, without regard to overlap */
-      qsort(&gvTopClusterList[0], m_nClustersRetained, sizeof(CCluster*), CompareClustersByRatio);
+      qsort(&gvTopClusterList[0], gvTopClusterList.size(), sizeof(CCluster*), CompareClustersByRatio);
 
       // Remove "Undefined" clusters that have been sorted to bottom of list because ratio=-DBL_MAX
       for (unsigned u=0; u < gvTopClusterList.size(); ) {
-        if (gvTopClusterList.at(u)->ClusterDefined()) {
+        if (gvTopClusterList[u]->ClusterDefined()) {
           ++u;//skip this cluster
         }
         else {
@@ -239,7 +235,6 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
         gvTopClusterList.DeleteAllElements();
         gvTopClusterList.resize(vRetainedClusters.size());
         std::copy(vRetainedClusters.begin(), vRetainedClusters.end(), gvTopClusterList.begin());
-        m_nClustersRetained = gvTopClusterList.size();
       }
    }
    catch (ZdException & x) {
@@ -308,21 +303,21 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
           if (CandidateCluster.GetEllipseOffset() > 0) {
             if (currCluster.GetEllipseOffset() > 0) {//both are ellipses
               bResult = !(
-                PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates().at(0), CandidateCenter.GetCoordinates().at(1), currCenter.GetCoordinates().at(0), currCenter.GetCoordinates().at(1), dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
-               || PointLiesWithinEllipseArea(currCenter.GetCoordinates().at(0), currCenter.GetCoordinates().at(1), CandidateCenter.GetCoordinates().at(0), CandidateCenter.GetCoordinates().at(1), dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
+                PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
+               || PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
               );
             }
             else {//candidate is ellipse, curr is circle
               bResult = !(
                 CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius)
-               || PointLiesWithinEllipseArea(currCenter.GetCoordinates().at(0), currCenter.GetCoordinates().at(1), CandidateCenter.GetCoordinates().at(0), CandidateCenter.GetCoordinates().at(1), dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
+               || PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
               );
             }
           }
           else {
             if (currCluster.GetEllipseOffset() > 0) {//candidate is circle, curr is ellipse
               bResult = !(
-                PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates().at(0), CandidateCenter.GetCoordinates().at(1), currCenter.GetCoordinates().at(0), currCenter.GetCoordinates().at(1), dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
+                PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
                || CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius)
               );
             }
@@ -336,14 +331,14 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
           if (currCluster.GetEllipseOffset() == 0)
             bResult = !CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius);
           else
-            bResult = !(PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates().at(0), CandidateCenter.GetCoordinates().at(1), currCenter.GetCoordinates().at(0), currCenter.GetCoordinates().at(1), dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1]));
+            bResult = !(PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1]));
         }
         break;
         case NOCENTROIDSINLESSLIKE: {//no cluster centroids in less likely clusters
           if (CandidateCluster.GetEllipseOffset() == 0)
             bResult = !CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius);
           else
-            bResult = !PointLiesWithinEllipseArea(currCenter.GetCoordinates().at(0), currCenter.GetCoordinates().at(1), CandidateCenter.GetCoordinates().at(0), CandidateCenter.GetCoordinates().at(1), dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1]);
+            bResult = !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1]);
         }
         break;
         case NOPAIRSINEACHOTHERS: {//no pairs of centroids in each others clusters
@@ -351,21 +346,21 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
           if (CandidateCluster.GetEllipseOffset() > 0) {
             if (currCluster.GetEllipseOffset() > 0) {//both are ellipses
               bResult =
-                !PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates().at(0), CandidateCenter.GetCoordinates().at(1), currCenter.GetCoordinates().at(0), currCenter.GetCoordinates().at(1), dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
-               || !PointLiesWithinEllipseArea(currCenter.GetCoordinates().at(0), currCenter.GetCoordinates().at(1), CandidateCenter.GetCoordinates().at(0), CandidateCenter.GetCoordinates().at(1), dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
+                !PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
+               || !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
               ;
             }
             else {//candidate is ellipse, curr is circle
               bResult =
                 !CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius)
-               || !PointLiesWithinEllipseArea(currCenter.GetCoordinates().at(0), currCenter.GetCoordinates().at(1), CandidateCenter.GetCoordinates().at(0), CandidateCenter.GetCoordinates().at(1), dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
+               || !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
               ;
             }
           }
           else {
             if (currCluster.GetEllipseOffset() > 0) {//candidate is circle, curr is ellipse
               bResult =
-                !PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates().at(0), CandidateCenter.GetCoordinates().at(1), currCenter.GetCoordinates().at(0), currCenter.GetCoordinates().at(1), dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
+                !PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
                || !CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius)
               ;
             }
@@ -390,7 +385,7 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
 }
 
 void MostLikelyClustersContainer::SortTopClusters() {
-  qsort(&gvTopClusterList[0], m_nClustersRetained, sizeof(CCluster*), CompareClustersByRatio);
+  qsort(&gvTopClusterList[0], gvTopClusterList.size(), sizeof(CCluster*), CompareClustersByRatio);
 }
 
 /** Updates rank of top clusters by comparing simulated loglikelihood ratio(LLR)
@@ -398,12 +393,13 @@ void MostLikelyClustersContainer::SortTopClusters() {
     duczmal correcting their LLRs, then the duczmal corrected LLR is is used
     to rank the clusters instead of LLR. */
 void MostLikelyClustersContainer::UpdateTopClustersRank(double r) {
-  int   i;
+  ZdPointerVector<CCluster>::reverse_iterator rev(gvTopClusterList.end());
+  ZdPointerVector<CCluster>::reverse_iterator rev_end(gvTopClusterList.begin());
 
-  for (i=m_nClustersRetained-1; i >= 0; i--) {
-     if (gvTopClusterList[i]->m_nRatio > r)
-       break;
-     gvTopClusterList[i]->IncrementRank();
-  }
+  for (; rev != rev_end; rev++) {
+     if ((*rev)->GetRatio() > r)
+        break;
+     (*rev)->IncrementRank();
+   }
 }
 

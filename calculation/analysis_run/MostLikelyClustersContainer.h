@@ -15,7 +15,7 @@ public:
   stsClusterCentroidGeometry(Sequence const & theCoordinates) {
     gvCoordinates.resize(theCoordinates.size());
     std::vector<double>::iterator itrCurr = gvCoordinates.begin();
-    Sequence::const_iterator itrSourceCurr = theCoordinates.begin();
+    typename Sequence::const_iterator itrSourceCurr = theCoordinates.begin();
     std::vector<double>::iterator itrEnd(gvCoordinates.end());
     for (; itrCurr != itrEnd; ++itrCurr, ++itrSourceCurr) {
       *itrCurr = *itrSourceCurr;
@@ -57,12 +57,10 @@ class CSaTScanData;
 class MostLikelyClustersContainer {
   private:
     ZdPointerVector<CCluster>   gvTopClusterList;
-    tract_t                     m_nClustersRetained;
 
     static int                  CompareClustersByRatio(const void *a, const void *b);
     static bool                 PointLiesWithinEllipseArea(double dXPoint, double dYPoint, double dXEllipseCenter, double dYEllipseCenter, double dEllipseRadius, double dEllipseAngle, double dEllipseShape);
     static bool                 CentroidLiesWithinSphereRegion(stsClusterCentroidGeometry const & theCentroid, stsClusterCentroidGeometry const & theSphereCentroid, double dSphereRadius);
-    void                        Init() {m_nClustersRetained=0;}
     bool                        ShouldRetainCandidateCluster(std::vector<CCluster *> const & vRetainedClusters, CCluster const & CandidateCluster, const CSaTScanData& DataHub, CriteriaSecondaryClustersType eCriterion);
     static double               GetClusterRadius(const CSaTScanData& DataHub, CCluster const & theCluster);
 
@@ -72,10 +70,10 @@ class MostLikelyClustersContainer {
 
     void                        Add(const CCluster& Cluster);
     void                        Empty();
-    tract_t                     GetNumClustersRetained() const {return m_nClustersRetained;}
+    tract_t                     GetNumClustersRetained() const {return (tract_t)gvTopClusterList.size();}
     const CCluster            & GetCluster(tract_t tClusterIndex) const;
     const CCluster            & GetTopRankedCluster() const;
-    void                        PrintTopClusters(const char * sFilename, int nHowMany);
+    void                        PrintTopClusters(const char * sFilename, unsigned int nHowMany);
     void                        RankTopClusters(const CParameters& Parameters, const CSaTScanData& DataHub);
     void                        SortTopClusters();
     void                        UpdateTopClustersRank(double r);
