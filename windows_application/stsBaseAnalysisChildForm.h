@@ -13,8 +13,6 @@ class stsBaseAnalysisChildForm : public TForm {
       virtual __fastcall stsBaseAnalysisChildForm(TComponent* Owner, TActionList* pList);
       virtual __fastcall ~stsBaseAnalysisChildForm();
 
-      virtual void      CloseForm(bool bForce=false) {Close();}
-
    protected :
       TActionList     * gpList;
 
