@@ -798,7 +798,6 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Top = 8
         Width = 421
         Height = 107
-        Hint = 'Temporal Trend Adjustments'
         Caption = 'Temporal Adjustment'
         Enabled = False
         ItemIndex = 0
@@ -808,7 +807,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           'Log linear trend with'
           'Log linear with automatically calculated trend')
         ParentShowHint = False
-        ShowHint = True
+        ShowHint = False
         TabOrder = 0
         OnClick = rdgTemporalTrendAdjClick
         OnExit = OnControlExit
@@ -928,7 +927,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           'None'
           'Nonparametric, with spatial stratified randomization')
         TabOrder = 3
-        OnClick = OnControlExit
+        OnClick = rdgSpatialAdjustmentsClick
+        OnExit = OnControlExit
       end
     end
     object tsInference: TTabSheet

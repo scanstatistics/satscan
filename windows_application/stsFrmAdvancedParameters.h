@@ -166,6 +166,7 @@ __published:	// IDE-managed Components
    void __fastcall edtCaseFileNameChange(TObject *Sender);
    void __fastcall edtControlFileNameChange(TObject *Sender);
    void __fastcall edtPopFileNameChange(TObject *Sender);
+        void __fastcall rdgSpatialAdjustmentsClick(TObject *Sender);
 
  private:
    const TfrmAnalysis     & gAnalysisSettings;
@@ -179,11 +180,22 @@ __published:	// IDE-managed Components
    static const int         MAXIMUM_STREAMS;         /* maximum number of additional input streams */
 
    void                     DoControlExit();
+   void                     EnableAdjustmentsGroup(bool bEnable);
+   void                     EnableAdjustmentForSpatialOptionsGroup(bool bEnable, bool bEnableStratified);
+   void                     EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage, bool bCalculatedLog);
    void                     EnableDataStreamList(bool bEnable);
    void                     EnableDataStreamPurposeControls(bool bEnable);
    void                     EnableNewButton();
    void                     EnableRemoveButton();
    void                     EnableInputFileEdits(bool bEnable);
+   void                     EnableOutputOptions(bool bEnable);
+   void                     EnableProspectiveStartDate();
+   void                     EnableProspectiveSurveillanceGroup(bool bEnable);
+   void                     EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal, bool bEnablePercentage);
+   void                     EnableSpatialOutputOptions(bool bEnable);
+   void                     EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges);
+   void                     EnableTemporalRanges(bool bEnable, bool bEnableRanges);
+   SpatialAdjustmentType    GetAdjustmentSpatialControlType() const;
    TimeTrendAdjustmentType  GetAdjustmentTimeTrendControlType() const;
    void                     Init();
    void                     LaunchImporter(const char * sFileName, InputFileType eFileType) ;
@@ -206,18 +218,8 @@ __published:	// IDE-managed Components
 public:
    __fastcall TfrmAdvancedParameters(const TfrmAnalysis& AnalysisSettings);
 
-   void                  EnableAdjustmentsGroup(bool bEnable);
-   void                  EnableAdjustmentForSpatialOptionsGroup(bool bEnable);
-   void                  EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage, bool bCalculatedLog);
    void                  EnableSettingsForAnalysisModelCombination();
    void                  EnableDatesByTimePrecisionUnits();
-   void                  EnableOutputOptions(bool bEnable);
-   void                  EnableProspectiveStartDate();
-   void                  EnableProspectiveSurveillanceGroup(bool bEnable);
-   void                  EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal, bool bEnablePercentage);
-   void                  EnableSpatialOutputOptions(bool bEnable);
-   void                  EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges);
-   void                  EnableTemporalRanges(bool bEnable, bool bEnableRanges);
    bool                  GetDefaultsSetForAnalysisOptions();
    bool                  GetDefaultsSetForInputOptions();
    bool                  GetDefaultsSetForOutputOptions();

@@ -472,6 +472,10 @@ void TfrmAnalysis::DefaultHiddenParameters() {
   //if still ALIVECLUSTERS, default to ALLCLUSTERS
   if (gParameters.GetIncludeClustersType() == ALIVECLUSTERS)
     gParameters.SetIncludeClustersType(ALLCLUSTERS);
+  //prevent stratified temporal and spatial adjustments from being set as same time
+  if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION &&
+      gParameters.GetSpatialAdjustmentType() == SPATIALLY_STRATIFIED_RANDOMIZATION)
+    gParameters.SetSpatialAdjustmentType(NO_SPATIAL_ADJUSTMENT);
 }
 //---------------------------------------------------------------------------
 /** event triggered when case file edit control text changes */

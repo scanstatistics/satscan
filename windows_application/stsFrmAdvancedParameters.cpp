@@ -466,8 +466,12 @@ void __fastcall TfrmAdvancedParameters::edtStartRangeStartDateExit(TObject *Send
   DoControlExit();
 }
 
-void TfrmAdvancedParameters::EnableAdjustmentForSpatialOptionsGroup(bool bEnable) {
+void TfrmAdvancedParameters::EnableAdjustmentForSpatialOptionsGroup(bool bEnable, bool bEnableStratified) {
   rdgSpatialAdjustments->Enabled = bEnable;
+  bEnableStratified &= bEnable;
+  rdgSpatialAdjustments->Controls[1]->Enabled = bEnableStratified;
+  if (bEnable && !bEnableStratified && rdgSpatialAdjustments->ItemIndex == 1)
+      rdgSpatialAdjustments->ItemIndex = 0;
 }
 
 /** enables or disables the temporal time trend adjustment control group */
@@ -516,7 +520,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
     switch (gAnalysisSettings.GetAnalysisControlType()) {
       case PURELYSPATIAL             :
         EnableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
-        EnableAdjustmentForSpatialOptionsGroup(false);
+        EnableAdjustmentForSpatialOptionsGroup(false, false);
         EnableSpatialOptionsGroup(true, false, true);
         EnableTemporalOptionsGroup(false, false, false);
         EnableProspectiveSurveillanceGroup(false);
@@ -524,23 +528,27 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         break;
       case PURELYTEMPORAL            :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
-        EnableAdjustmentForSpatialOptionsGroup(false);
+        EnableAdjustmentForSpatialOptionsGroup(false, false);
         EnableSpatialOptionsGroup(false, false, false);
         EnableTemporalOptionsGroup(true, false, true);
         EnableProspectiveSurveillanceGroup(false);
         EnableOutputOptions(false);
         break;
       case SPACETIME                 :
-        EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
-        EnableAdjustmentForSpatialOptionsGroup(bPoisson);
+        EnableAdjustmentForTimeTrendOptionsGroup(bPoisson,
+                                                 bPoisson && GetAdjustmentSpatialControlType() != SPATIALLY_STRATIFIED_RANDOMIZATION,
+                                                 bPoisson, bPoisson);
+        EnableAdjustmentForSpatialOptionsGroup(bPoisson, GetAdjustmentTimeTrendControlType() != STRATIFIED_RANDOMIZATION);
         EnableSpatialOptionsGroup(true, !bSpaceTimePermutation, true);
         EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
         EnableProspectiveSurveillanceGroup(false);
         EnableOutputOptions(true);
         break;
       case PROSPECTIVESPACETIME      :
-        EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
-        EnableAdjustmentForSpatialOptionsGroup(bPoisson);
+        EnableAdjustmentForTimeTrendOptionsGroup(bPoisson,
+                                                 bPoisson && GetAdjustmentSpatialControlType() != SPATIALLY_STRATIFIED_RANDOMIZATION,
+                                                 bPoisson, bPoisson);
+        EnableAdjustmentForSpatialOptionsGroup(bPoisson, GetAdjustmentTimeTrendControlType() != STRATIFIED_RANDOMIZATION);
         EnableSpatialOptionsGroup(true, !bSpaceTimePermutation, !chkAdjustForEarlierAnalyses->Checked);
         EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
         EnableProspectiveSurveillanceGroup(true);
@@ -548,7 +556,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         break;
       case PROSPECTIVEPURELYTEMPORAL :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
-        EnableAdjustmentForSpatialOptionsGroup(false);
+        EnableAdjustmentForSpatialOptionsGroup(false, false);
         EnableSpatialOptionsGroup(false, false, false);
         EnableTemporalOptionsGroup(true, false, false);
         EnableProspectiveSurveillanceGroup(true);
@@ -802,6 +810,18 @@ void __fastcall TfrmAdvancedParameters::FormShow(TObject *Sender) {
 }
 
 //---------------------------------------------------------------------------
+/** returns spatial adjustment type from control index  */
+SpatialAdjustmentType TfrmAdvancedParameters::GetAdjustmentSpatialControlType() const {
+  SpatialAdjustmentType eReturn;
+
+  switch (rdgSpatialAdjustments->ItemIndex) {
+    case 0  : eReturn = NO_SPATIAL_ADJUSTMENT; break;
+    case 1  : eReturn = SPATIALLY_STRATIFIED_RANDOMIZATION; break;
+    default : ZdGenerateException("Unknown index type '%d'.", "GetAdjustmentSpatialControlType()", rdgSpatialAdjustments->ItemIndex);
+  }
+  return eReturn;
+}
+
 /** returns adjustment for time trend type for control index */
 TimeTrendAdjustmentType TfrmAdvancedParameters::GetAdjustmentTimeTrendControlType() const {
   TimeTrendAdjustmentType eReturn;
@@ -1058,13 +1078,15 @@ void __fastcall TfrmAdvancedParameters::PositiveFloatKeyPress(TObject *Sender, c
 /** event triggered when 'Adjustment for time trend' type control clicked */
 void __fastcall TfrmAdvancedParameters::rdgTemporalTrendAdjClick(TObject *Sender) {
   switch (GetAdjustmentTimeTrendControlType()) {
-    case LOGLINEAR_PERC : edtLogLinear->Enabled = true;
-                          edtLogLinear->Color = clWindow;
-                          break;
-    default             : edtLogLinear->Enabled = false;
-                          edtLogLinear->Color = clInactiveBorder;
+    case LOGLINEAR_PERC           : edtLogLinear->Enabled = true;
+                                    edtLogLinear->Color = clWindow;
+                                    break;
+    case STRATIFIED_RANDOMIZATION : rdgSpatialAdjustments->Controls[1]->Enabled = false;
+    default                       : edtLogLinear->Enabled = false;
+                                    edtLogLinear->Color = clInactiveBorder;
   }
   DoControlExit();
+  EnableSettingsForAnalysisModelCombination();
 }
 /** event triggered when maximum temporal cluster size type edit control clicked */
 void __fastcall TfrmAdvancedParameters::rdoMaxTemporalClusterSizelick(TObject *Sender) {
@@ -1869,4 +1891,10 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
   throw theException;
 }
 
+
+void __fastcall TfrmAdvancedParameters::rdgSpatialAdjustmentsClick(TObject *Sender) {
+  DoControlExit();
+  EnableSettingsForAnalysisModelCombination();
+}
+//---------------------------------------------------------------------------
 
