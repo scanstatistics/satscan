@@ -20,7 +20,7 @@ void __fastcall TfrmMainForm::sbEditSessionClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("sbEditSessionClick", "TForm1");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
 }
 //---------------------------------------------------------------------------
@@ -33,7 +33,7 @@ void __fastcall TfrmMainForm::New1Click(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("New1Click", "TForm1");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
 }
 //---------------------------------------------------------------------------
@@ -74,7 +74,7 @@ void __fastcall TfrmMainForm::sbOpenClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("sbOpenClick", "TForm1");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
 }
 //---------------------------------------------------------------------------
@@ -151,7 +151,7 @@ void TfrmMainForm::ExecuteSession()
    catch (SSException & x)
       {
       x.AddCallpath("sbOpenClick", "TForm1");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
 }
 //---------------------------------------------------------------------------
@@ -187,7 +187,7 @@ void TfrmMainForm::Save()
    catch (SSException & x)
       {
       x.AddCallpath("Save", "TForm1");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
 }
 //---------------------------------------------------------------------------
@@ -262,7 +262,7 @@ void __fastcall TfrmMainForm::Print1Click(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("Print1Click", "TForm1");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }  */
 }
 //---------------------------------------------------------------------------
@@ -276,7 +276,7 @@ void __fastcall TfrmMainForm::ParameterFile1Click(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("ParameterFile1Click", "TForm1");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
 }
 //---------------------------------------------------------------------------
