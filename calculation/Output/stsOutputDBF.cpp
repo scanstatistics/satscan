@@ -14,7 +14,7 @@
 #include "Cluster.h"
 
 const char *    CLUSTER_LEVEL_EXT       = ".col.dbf";
-const char *    AREA_SPECIFIC_EXT       = ".col.dbf";
+const char *    AREA_SPECIFIC_EXT       = ".gis.dbf";
 
 const char *    RUN_NUM		        = "RUN_NUM";
 const char *    CLUST_NUM 		= "CLUST_NUM";
@@ -27,11 +27,11 @@ const char *    EXPECTED		= "EXPECTED";
 const char *    REL_RISK		= "REL_RISK";
 const char *    LOG_LIKL		= "LOG_LIKL";
 const char *    NUM_AREAS		= "NUM_AREAS";
-const char *    COORD_LAT		= "COORD_LAT";
-const char *    COORD_LONG		= "COORD_LONG";
-const char *    COORD_X		        = "COORD_X";
-const char *    COORD_Y                 = "COORD_Y";
-const char *    COORD_Z                 = "COORD_Z";
+const char *    COORD_LAT		= "LATITUDE";
+const char *    COORD_LONG		= "LONGITUDE";
+const char *    COORD_X		        = "X";
+const char *    COORD_Y                 = "Y";
+const char *    COORD_Z                 = "Z";
 const char *    RADIUS		        = "RADIUS";
 const char *    AREA_OBS                = "AREA_OBS";
 const char *    AREA_EXP                = "AREA_EXP";
