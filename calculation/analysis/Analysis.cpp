@@ -94,10 +94,11 @@ bool CAnalysis::Execute(time_t RunTime)
       //
       if (gpPrintDirection->GetIsCanceled() || !m_pData->FindNeighbors())
         return false;
-    
+
       if (gpPrintDirection->GetIsCanceled() || !CreateReport(RunTime))
         return false;
-    
+
+      m_pData->m_pModel->ReCalculateMeasure();
 #ifdef DEBUGANALYSIS
       DisplayVersion(m_pDebugFile, 0);
       fprintf(m_pDebugFile, "Program run on: %s", ctime(&RunTime));
@@ -594,9 +595,22 @@ bool CAnalysis::CreateReport(time_t RunTime)
       fprintf(fp,"                 _____________________________ \n\n");
     
       fprintf(fp,"\nProgram run on: %s\n", ctime(&RunTime));
-    
+
       m_pParameters->DisplayAnalysisType(fp);
       m_pParameters->DisplayTimeAdjustments(fp);
+
+      if ( !strlen(m_pParameters->m_szGridFilename) && m_pParameters->m_nAnalysisType ==PROSPECTIVESPACETIME)
+        {
+        fprintf(fp, "\nIMPORTANT:\nFor the prospective analysis to be correct, it is important\n");
+        fprintf(fp, "that the scanning spatial window is the same for each analysis that is\n");
+        fprintf(fp, "performed once a day, week, year, etc. This means that the grid points\n");
+        fprintf(fp, "defining the circle centroids must remain the same. If the location IDs in\n");
+        fprintf(fp, "the coordinates file remain the same in each time-periodic analysis, then\n");
+        fprintf(fp, "there is no problem. On the other hand, if new IDs are added to the\n");
+        fprintf(fp, "coordinates file over time, then you must use a special grid file and\n");
+        fprintf(fp, "retain this file through all the analyses.\n");
+        }
+
       m_pData->DisplaySummary(fp);
 
       fclose(fp);
@@ -707,8 +721,10 @@ bool CAnalysis::FinalizeReport(time_t RunTime)
         fprintf(fp, "and a meaningful hypothesis test cannot be done.  Consequently,\n");
         fprintf(fp, "no p-values were printed.\n");
       }
-    
-      if (m_pParameters->m_nModel == POISSON)
+
+      if (m_pParameters->m_nModel == POISSON ||
+          (m_pParameters->m_nModel == SPACETIMEPERMUTATION &&
+           m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE))
         (m_pData->GetTInfo())->tiReportZeroPops(fp);
     
       if (m_pParameters->m_bOutputRelRisks)
