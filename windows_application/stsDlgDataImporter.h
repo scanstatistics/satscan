@@ -1,4 +1,4 @@
-// $Revision: 1.11 $
+// $Revision: 1.12 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -30,6 +30,7 @@ class SaTScanVariable {
     short                  gwTargetFieldIndex;
     bool                   gbRequiredVariable;
     short                  gwInputFileVariableIndex;
+    ZdString               gsHelpText;
 
     void                   Init();
     void                   Copy(const SaTScanVariable & rhs);
@@ -37,18 +38,20 @@ class SaTScanVariable {
   public:
     SaTScanVariable() {Init();}
     SaTScanVariable(const SaTScanVariable & rhs);
-    SaTScanVariable(const char * sVariableName, short wTargetFieldIndex, bool bRequiredVariable);
+    SaTScanVariable(const char * sVariableName, short wTargetFieldIndex, bool bRequiredVariable, const char * sHelpText=0);
     ~SaTScanVariable();
 
     SaTScanVariable      & operator=(const SaTScanVariable & rhs);
     SaTScanVariable      * Clone() const;
 
+    const ZdString       & GetHelpText() const {return gsHelpText;}
     short                  GetInputFileVariableIndex() const {return gwInputFileVariableIndex;}
     bool                   GetIsMappedToInputFileVariable() {return gwInputFileVariableIndex > 0;}
     bool                   GetIsRequiredField() const {return gbRequiredVariable;}
     short                  GetTargetFieldIndex() const {return gwTargetFieldIndex;}
     void                   GetVariableDisplayName(Variant & Value) const;
-    const ZdString &       GetVariableName() const {return gsVariableName;}
+    const ZdString       & GetVariableName() const {return gsVariableName;}
+    void                   SetHelpText(const char * sHelpText) {gsHelpText = sHelpText;}
     void                   SetIsRequiredField(bool bRequiredVariable) {gbRequiredVariable = bRequiredVariable;}
     void                   SetInputFileVariableIndex(short wInputFileVariableIndex) {gwInputFileVariableIndex = wInputFileVariableIndex;}
     void                   SetTargetFieldIndex(short wTargetFieldIndex) {gwTargetFieldIndex = wTargetFieldIndex;}

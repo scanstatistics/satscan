@@ -21,12 +21,17 @@ void SourceViewController::OnCellLoaded(int DataCol, int DataRow, Variant &Value
 }
 
 /** Constructor */
-SaTScanVariable::SaTScanVariable(const char * sVariableName, short wTargetFieldIndex, bool bRequiredVariable) {
+SaTScanVariable::SaTScanVariable(const char * sVariableName, short wTargetFieldIndex, bool bRequiredVariable, const char * sHelpText) {
   try {
     Init();
     SetVariableName(sVariableName);
     SetTargetFieldIndex(wTargetFieldIndex);
     SetIsRequiredField(bRequiredVariable);
+    if (!bRequiredVariable)                 /** Currently, a non-required variable trumps any other help text.**/
+      SetHelpText("optional");              
+    else if (sHelpText)
+      SetHelpText(sHelpText);
+    //else nothing  
   }
   catch (ZdException &x) {
     x.AddCallpath("constructor()","SaTScanVariable");
@@ -74,6 +79,7 @@ void SaTScanVariable::Copy(const SaTScanVariable & rhs) {
     SetTargetFieldIndex(rhs.gwTargetFieldIndex);
     SetIsRequiredField(rhs.gbRequiredVariable);
     SetInputFileVariableIndex(rhs.gwInputFileVariableIndex);
+    SetHelpText(rhs.gsHelpText);
   }
   catch (ZdException &x) {
     x.AddCallpath("Copy()", "SaTScanVariable");
@@ -83,10 +89,10 @@ void SaTScanVariable::Copy(const SaTScanVariable & rhs) {
 
 /** Returns variable display name. */
 void SaTScanVariable::GetVariableDisplayName(Variant & Value) const {
-  if (! gbRequiredVariable) {
+  if (gsHelpText.GetLength()) {
     ZdString      sTemp;
 
-    sTemp << gsVariableName << " (optional)";
+    sTemp << gsVariableName << " (" << gsHelpText << ")";
     Value = sTemp.GetCString();
   }
   else
@@ -1271,8 +1277,8 @@ void TBDlgDataImporter::SetupGeoFileVariableDescriptors() {
   try {
     gvSaTScanVariables.clear();
     gvSaTScanVariables.push_back(SaTScanVariable("Location ID", 0, true));
-    gvSaTScanVariables.push_back(SaTScanVariable("Latitude", 1, true));
-    gvSaTScanVariables.push_back(SaTScanVariable("Longitude", 2, true));
+    gvSaTScanVariables.push_back(SaTScanVariable("Latitude", 1, true, "y-axis"));
+    gvSaTScanVariables.push_back(SaTScanVariable("Longitude", 2, true, "x-axis"));
     gvSaTScanVariables.push_back(SaTScanVariable("X", 1, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Y", 2, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Z1", 3, false ));
@@ -1294,8 +1300,8 @@ void TBDlgDataImporter::SetupGeoFileVariableDescriptors() {
 void TBDlgDataImporter::SetupGridFileVariableDescriptors() {
   try {
     gvSaTScanVariables.clear();
-    gvSaTScanVariables.push_back(SaTScanVariable("Latitude", 0, true));
-    gvSaTScanVariables.push_back(SaTScanVariable("Longitude", 1, true));
+    gvSaTScanVariables.push_back(SaTScanVariable("Latitude", 0, true, "y-axis"));
+    gvSaTScanVariables.push_back(SaTScanVariable("Longitude", 1, true, "x-axis"));
     gvSaTScanVariables.push_back(SaTScanVariable("X", 0, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Y", 1, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Z1", 2, false));
