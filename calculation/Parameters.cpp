@@ -99,47 +99,6 @@ bool CParameters::CheckProspDateRange(int iStartYear, int iStartMonth, int iStar
    return bRangeOk;
 }
 
-//** Converts m_nMaxClusterSizeType to passed type. */
-void CParameters::ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporalSizeType) {
-  double dTemp, dPrecision = 10000, dTimeBetween;
-
-  try {
-    dTimeBetween = TimeBetween(CharToJulian(m_szStartDate),CharToJulian(m_szEndDate), m_nIntervalUnits);
-    if (dTimeBetween <= 0)
-      SSException::Generate("Invalid study period with start date \"%s\" and end date \"%s\".",
-                            "ConvertMaxTemporalClusterSizeToType()", m_szStartDate, m_szEndDate);
-
-    // store intial type and size for parameter output display
-    m_nInitialMaxTemporalClusterSize = m_nMaxTemporalClusterSize;
-    m_nInitialMaxClusterSizeType = (TemporalSizeType)m_nMaxClusterSizeType;
-
-    switch (eTemporalSizeType) {
-       case PERCENTAGETYPE     : if (m_nMaxClusterSizeType == PERCENTAGETYPE)
-                                   break;
-                                 // convert from TIMETYPE to PERCENTAGETYPE
-                                 // Since some variables are hard to accurately represent
-                                 // as a double, we will cause variable to round up at some
-                                 // fixed precision.
-                                 dTemp = static_cast<double>(m_nMaxTemporalClusterSize)/dTimeBetween*100 * dPrecision;
-                                 dTemp = ceil(dTemp);
-                                 m_nMaxTemporalClusterSize = static_cast<float>(dTemp / dPrecision);
-                                 break;
-       case TIMETYPE           : if (m_nMaxClusterSizeType == TIMETYPE)
-                                   break;
-                                 // convert from PERCENTAGETYPE to TIMETYPE
-                                 //m_nMaxTemporalClusterSize should be an integer from 1-90
-                                 m_nMaxTemporalClusterSize = dTimeBetween * m_nMaxTemporalClusterSize/100;
-                                 break;
-       default                 : SSException::Generate("Unknown TemporalSizeType type %d", "ConvertMaxTemporalClusterSizeToType()", eTemporalSizeType);
-    };
-    m_nMaxClusterSizeType = eTemporalSizeType;
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("ConvertMaxTemporalClusterSizeToType()", "CParameters");
-    throw;
-  }
-}
-
 //------------------------------------------------------------------------------
 // copies all class variables from the given CParameters object (rhs) into this one
 //------------------------------------------------------------------------------
@@ -381,8 +340,8 @@ void CParameters::DisplayParameters(FILE* fp) {
      }
 
      if (m_nAnalysisType == PURELYTEMPORAL || m_nAnalysisType == SPACETIME || (m_nAnalysisType == PROSPECTIVESPACETIME)) {
-       fprintf(fp, "  Maximum Temporal Cluster Size : %.2f", m_nInitialMaxTemporalClusterSize);
-       switch (m_nInitialMaxClusterSizeType) {
+       fprintf(fp, "  Maximum Temporal Cluster Size : %.2f", m_nMaxTemporalClusterSize);
+       switch (m_nMaxClusterSizeType) {
          case    PERCENTAGETYPE : fprintf(fp, " %%\n"); break;
          case    TIMETYPE       : if (m_nIntervalUnits == YEAR)
                                     fprintf(fp, " Years\n");

@@ -44,10 +44,6 @@ class CParameters
       void TrimLeft(char *sString);
       bool ValidHistoryFileName(const ZdString& sRunHistoryFilename);
 
-  protected:
-      float             m_nInitialMaxTemporalClusterSize;
-      TemporalSizeType  m_nInitialMaxClusterSizeType;  
-
   public:
     CParameters(bool bDisplayErrors);
     CParameters(const CParameters &other);
@@ -133,7 +129,6 @@ class CParameters
     bool                CheckProspDateRange(int iStartYear, int iStartMonth, int iStartDay,
                                             int iEndYear, int iEndMonth, int iEndDay,
                                             int iProspYear, int iProspMonth, int iProspDay);
-    void                ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporalSizeType);
     void                DisplayAnalysisType(FILE* fp);
     bool                DisplayParamError(int nLine);
     void                DisplayParameters(FILE* fp);
