@@ -316,9 +316,9 @@ void CSaTScanData::Init() {
       mdE_Shapes = 0;
 }
 
-void CSaTScanData::MakeData() {
+void CSaTScanData::MakeData(int iSimulationNumber) {
    try {
-      m_pModel->MakeData();
+      m_pModel->MakeData(iSimulationNumber);
    }
    catch (SSException & x) {
       x.AddCallpath("MakeData()", "CSaTScanData");

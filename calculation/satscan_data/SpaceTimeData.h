@@ -14,7 +14,7 @@ class CSpaceTimeData : public CSaTScanData
 
     virtual void AllocSimCases();
     virtual void DeAllocSimCases();
-    virtual void MakeData();
+    virtual void MakeData(int iSimulationNumber);
     
   protected:
     virtual void SetIntervalCut();

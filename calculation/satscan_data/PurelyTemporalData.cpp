@@ -122,11 +122,11 @@ void CPurelyTemporalData::DisplayMeasure(FILE* pFile)
       }
 }
 
-void CPurelyTemporalData::MakeData()
+void CPurelyTemporalData::MakeData(int iSimulationNumber)
 {
    try
       {
-      CSaTScanData::MakeData();
+      CSaTScanData::MakeData(iSimulationNumber);
       SetPurelyTemporalSimCases();
       }
    catch (SSException & x)

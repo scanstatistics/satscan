@@ -19,7 +19,7 @@ class CPurelyTemporalData : public CSaTScanData
     virtual bool CalculateMeasure();
     virtual void AllocSimCases();
     virtual void DeAllocSimCases();
-    virtual void MakeData();
+    virtual void MakeData(int iSimulationNumber);
 
 };
 

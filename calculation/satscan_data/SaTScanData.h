@@ -66,7 +66,7 @@ class CSaTScanData
     virtual bool CalculateMeasure();
     virtual void DeAllocSimCases();
     virtual bool FindNeighbors();
-    virtual void MakeData();
+    virtual void MakeData(int iSimulationNumber);
     virtual void ReadDataFromFiles();
 
     virtual void DisplayCases(FILE* pFile);

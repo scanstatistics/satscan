@@ -94,11 +94,11 @@ void CSpaceTimeData::DeAllocSimCases()
       }
 }
 
-void CSpaceTimeData::MakeData()
+void CSpaceTimeData::MakeData(int iSimulationNumber)
 {
    try
       {
-      CSaTScanData::MakeData();
+      CSaTScanData::MakeData(iSimulationNumber);
       if (m_pParameters->m_bIncludePurelyTemporal)
          SetPurelyTemporalSimCases();
       }

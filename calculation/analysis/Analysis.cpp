@@ -726,10 +726,10 @@ void CAnalysis::OpenRREFile(FILE*& fpRRE, const char* szType)
 // performs Monte Carlo Simulations and prints out the results for each one
 void CAnalysis::PerformSimulations()
 {
-   double  r;
-   int     i;
-   FILE* fpLLR = 0;
-   const char * sReplicationFormatString = 0;
+   double               r;
+   int                  iSimulationNumber;
+   FILE               * fpLLR = 0;
+   const char         * sReplicationFormatString = 0;
 
    try {
       gpPrintDirection->SatScanPrintf("Doing the Monte Carlo replications\n");
@@ -755,8 +755,8 @@ void CAnalysis::PerformSimulations()
       clock_t nStartTime = clock();
       SimRatios.Initialize();
 
-      for (i = 0; (i<m_pParameters->m_nReplicas) && !gpPrintDirection->GetIsCanceled(); i++) {
-        m_pData->MakeData();
+      for (iSimulationNumber=1; (iSimulationNumber <= m_pParameters->m_nReplicas) && !gpPrintDirection->GetIsCanceled(); iSimulationNumber++) {
+        m_pData->MakeData(iSimulationNumber);
         if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
            r = MonteCarloProspective();
         else
@@ -768,7 +768,7 @@ void CAnalysis::PerformSimulations()
         UpdatePowerCounts(r);
 
     //    if (!(i % 200)) KR-980326 Limit printing to increase speed of program
-        gpPrintDirection->SatScanPrintf(sReplicationFormatString, i+1, m_pParameters->m_nReplicas, r);
+        gpPrintDirection->SatScanPrintf(sReplicationFormatString, iSimulationNumber, m_pParameters->m_nReplicas, r);
 
         if (m_pParameters->m_bSaveSimLogLikelihoods)
           fprintf(fpLLR, "%7.2f\n", r);
@@ -781,8 +781,8 @@ void CAnalysis::PerformSimulations()
                 (Parameters.m_nModel == SPACETIMEPERMUTATION ? "Test statistic" : "Log Likelihood Ratio"), r);
         #endif
 
-        if (i==0)
-          ReportTimeEstimate(nStartTime, m_pParameters->m_nReplicas, i+1, gpPrintDirection);
+        if (iSimulationNumber==1)
+          ReportTimeEstimate(nStartTime, m_pParameters->m_nReplicas, iSimulationNumber, gpPrintDirection);
       }
 
       if (m_pParameters->m_bSaveSimLogLikelihoods)
