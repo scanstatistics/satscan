@@ -10,7 +10,7 @@
 
 const char*      ANALYSIS_HISTORY_FILE  = "AnalysisHistory.txd";
 
-char mgsVariableLabels[46][100] = {
+char mgsVariableLabels[48][100] = {
    "Analysis Type",
    "Scan Areas",
    "Case File",
@@ -56,7 +56,9 @@ char mgsVariableLabels[46][100] = {
    "Criteria for Reporting Secondary Clusters",
    "How Max Temporal Size Should Be Interperated",
    "How Max Spatial Size Should Be Interperated",
-   "Analysis Run History File"
+   "Analysis Run History File",
+   "Output for cluster informration",
+   "Output for area information"
    };
 
 CParameters::CParameters(bool bDisplayErrors) {
@@ -660,10 +662,13 @@ bool CParameters::SaveParameters(char* szFilename) {
       fprintf(pFile, "%s            // Prospective surveillance start date (YYYY/MM/DD). \n", m_szProspStartDate);
       fprintf(pFile, "%i                 // Output File: Census Areas in Reported Clusters\n", m_bOutputCensusAreas);
       fprintf(pFile, "%i                 // Output File: Clusters in Column Format\n", m_bMostLikelyClusters);
-      fprintf(pFile, "%i                 //Criteria for Reporting Secondary Clusters\n", m_iCriteriaSecondClusters);
+      fprintf(pFile, "%i                 //Criteria for Reporting Secondary Clusters{NOGEOOVERLAP=0,..., NORESTRICTIONS=5}\n", m_iCriteriaSecondClusters);
       fprintf(pFile, "%i                 //How Max Temporal Size Should Be Interperated - enum {PERCENTAGETYPE=0, TIMETYPE=1}\n", m_nMaxClusterSizeType);
       fprintf(pFile, "%i                 //How Max Spatial Size Should Be Interperated - enum {PERCENTAGEOFMEASURETYPE=0, DISTANCETYPE=1}\n", m_nMaxSpatialClusterSizeType);
-      fprintf(pFile, "%s                 // Run History File Name \n", gsRunHistoryFilename.GetCString());
+      fprintf(pFile, "%s\n", gsRunHistoryFilename.GetCString());
+      fprintf(pFile, "%i                     // Use Output Cluster Level DBF? (0=No, 1=Yes)\n", gbOutputClusterLevelDBF);
+      fprintf(pFile, "%i                     // Use Output Area Specific DBF? (0=No, 1=Yes)\n", gbOutputAreaSpecificDBF);
+
       fclose(pFile);
    }
    catch (ZdException & x) {
@@ -973,6 +978,12 @@ bool CParameters::SetParameter(int nParam, const char* szParam) {
         case RUN_HISTORY_FILENAME: nScanCount = sscanf(szParam, "%s", sTemp);
                                    gsRunHistoryFilename << ZdString::reset << sTemp;
                                    break;
+        case OUTPUTCLUSTERDBF: nScanCount=sscanf(szParam, "%i", &nTemp);
+                               gbOutputClusterLevelDBF = (nTemp ? true : false);
+                               break;
+        case OUTPUTAREADBF: nScanCount=sscanf(szParam, "%i", &nTemp);
+                            gbOutputAreaSpecificDBF = (nTemp ? true : false);
+                            break;
       }
 
       if (nParam==POPFILE || nParam==GRIDFILE || nParam==CONTROLFILE)
@@ -1008,6 +1019,9 @@ bool CParameters::SetParameters(const char* szFilename, bool bValidate) {
       // needs to be revised. Backward compatibility may be a thorn in our side.
       m_nMaxClusterSizeType = PERCENTAGETYPE;
       m_nMaxSpatialClusterSizeType = PERCENTAGEOFMEASURETYPE;
+      gsRunHistoryFilename << ZdString::reset;
+      gbOutputClusterLevelDBF = false;
+      gbOutputAreaSpecificDBF = false;
 
       while (i<=PARAMETERS && !bEOF) {
         if (fgets(szTemp, MAX_STR_LEN, pFile) == NULL)
@@ -1333,7 +1347,7 @@ bool CParameters::ValidateParameters() {
       if( !ValidHistoryFileName(gsRunHistoryFilename) ) {
          getcwd(sBuffer, 256);
          ZdFileName sFileName(sBuffer);
-         gsRunHistoryFilename << sFileName.GetLocation() << ANALYSIS_HISTORY_FILE;
+         gsRunHistoryFilename << ZdString::reset << sFileName.GetLocation() << ANALYSIS_HISTORY_FILE;
       }
    }
    catch (ZdException & x) {
