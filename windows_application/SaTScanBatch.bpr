@@ -80,6 +80,7 @@
       ..\calculation\Output\stsOutputFileWriter.obj 
       ..\calculation\Output\stsRelativeRisk.obj 
       ..\calculation\Output\stsAreaSpecificData.obj 
+      ..\calculation\Output\AsciiPrintFormat.obj 
       ..\calculation\randomization\Randomizer.obj 
       ..\calculation\randomization\SpaceTimeRandomizer.obj 
       ..\calculation\randomization\ContinuousVariableRandomizer.obj 
@@ -193,7 +194,7 @@ Item0=INTEL_BASED;__BATCH_COMPILE;_DEBUG
 DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SaTScan Project\basisdev\include;C:\Prj\SaTScan Project\basisdev\source\nonvcl;C:\Prj\SaTScan Project\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd543;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
 
 [Parameters]
-RunParams=&quot;C:\Documents and Settings\hostovic\Desktop\sat2003_SVTT.prm&quot;
+RunParams=&quot;C:\Prj\SaTScan Project\SaTScan Data Sets\installed.multiple.streams\nm.multiple.streams.prm&quot;
 HostApplication=C:\SatScan v3.0\calc\Satscan.exe
 RemoteHost=
 RemotePath=

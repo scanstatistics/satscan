@@ -103,6 +103,7 @@ USEUNIT("..\calculation\Output\stsAreaSpecificData.cpp");
 USEUNIT("..\calculation\Output\stsOutputFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsDBaseFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsASCIIFileWriter.cpp");
+USEUNIT("..\calculation\Output\AsciiPrintFormat.cpp");
 USEUNIT("..\calculation\randomization\SpaceTimeRandomizer.cpp");
 USEUNIT("..\calculation\randomization\ContinuousVariableRandomizer.cpp");
 USEUNIT("..\calculation\randomization\DenominatorDataRandomizer.cpp");

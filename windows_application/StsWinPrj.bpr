@@ -89,6 +89,7 @@
       ..\calculation\Output\stsOutputFileWriter.obj 
       ..\calculation\Output\stsDBaseFileWriter.obj 
       ..\calculation\Output\stsASCIIFileWriter.obj 
+      ..\calculation\Output\AsciiPrintFormat.obj 
       ..\calculation\randomization\SpaceTimeRandomizer.obj 
       ..\calculation\randomization\ContinuousVariableRandomizer.obj 
       ..\calculation\randomization\DenominatorDataRandomizer.obj 
