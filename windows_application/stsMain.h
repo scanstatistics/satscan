@@ -13,8 +13,6 @@
 #include <ActnList.hpp>
 #include <ImgList.hpp>
 
-class stsOutputFileRegister;
-
 //---------------------------------------------------------------------------
 class TfrmMainForm : public TForm{
   __published:	// IDE-managed Components
@@ -81,11 +79,12 @@ class TfrmMainForm : public TForm{
         void __fastcall UsingHelpActionExecute(TObject *Sender);
         void __fastcall AboutSatscanActionExecute(TObject *Sender);
   private:	// User declarations
-    void        __fastcall OpenAFile();
-    void        ExecuteSession();
-    void        Save();
-    void        SaveAs();
-    stsOutputFileRegister*      gpRegistry;
+    void __fastcall             OpenAFile();
+    void                        ExecuteSession();
+    void                        Save();
+    void                        SaveAs();
+    stsOutputFileRegister       gRegistry;
+    
   public:		// User declarations
     __fastcall TfrmMainForm(TComponent* Owner);
     virtual __fastcall ~TfrmMainForm();

@@ -9,16 +9,9 @@
 
 TfrmMainForm *frmMainForm;
 //---------------------------------------------------------------------------
-__fastcall TfrmMainForm::TfrmMainForm(TComponent* Owner): TForm(Owner){
-   gpRegistry = new stsOutputFileRegister();
-}
+__fastcall TfrmMainForm::TfrmMainForm(TComponent* Owner): TForm(Owner){}
 
-__fastcall TfrmMainForm::~TfrmMainForm() {
-   try {
-      delete gpRegistry; gpRegistry = 0;
-   }
-   catch (...) {}
-}
+__fastcall TfrmMainForm::~TfrmMainForm() {}
 
 //---------------------------------------------------------------------------
 void __fastcall TfrmMainForm::AboutSatscanActionExecute(TObject *Sender) {
@@ -63,10 +56,10 @@ void TfrmMainForm::ExecuteSession() {
 
         sFileName = pSession->GetOutputFileName();
         // if we don't already have a thread with the result file running then launch one
-        if(!gpRegistry->IsAlreadyRegistered(sFileName)) {
-           gpRegistry->Register(sFileName);
-           pAnalysisRun = new TfrmAnalysisRun(this, sFileName, gpRegistry);
-           CalcThread * pThread = new CalcThread(true, *pSession, sCaption.c_str(), pAnalysisRun);
+        if(!gRegistry.IsAlreadyRegistered(sFileName)) {
+           gRegistry.Register(sFileName);
+           pAnalysisRun = new TfrmAnalysisRun(this, sFileName, gRegistry);
+           CalcThread * pThread = new CalcThread(true, *pSession, sCaption.c_str(), *pAnalysisRun);
            pThread->Resume(); // starts the thread
         }
         else   // there's already a thread writing to this output file
