@@ -10,9 +10,10 @@ class stsClusterLevelDBF {
       ZdVector<ZdField*>        gvFields;
       long                      glRunNumber;
 
+      void              CleanupFieldVector();
       void 	        CreateDBFFile();
-      void              GetFields(ZdVector<ZdField*>& vFields);
-      void 	        SetupFields(ZdVector<ZdString>& vFieldNames, ZdVector<char>& vFieldTypes, ZdVector<short>& vFieldLengths);
+      void              GetFields();
+      void 	        SetupFields(ZdVector<pair<pair<ZdString, char>, short> >& vFieldDescrips);
    public:
       __fastcall stsClusterLevelDBF(const ZdString& sFileName);
       virtual ~stsClusterLevelDBF();

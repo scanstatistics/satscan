@@ -29,12 +29,25 @@ __fastcall stsClusterLevelDBF::stsClusterLevelDBF(const ZdString& sFileName) {
 // destructor
 stsClusterLevelDBF::~stsClusterLevelDBF() {
    try {
+      CleanupFieldVector();
+   }
+   catch (...) {/* munch munch, yummy*/}
+}
+
+// deletes all of the field pointers in the vector and empties the vector
+// pre: none
+// post: field vector is empty and all of the pointers are deleted
+void stsClusterLevelDBF::CleanupFieldVector() {
+   try {
       for(unsigned int i = gvFields.GetNumElements() - 1; i > 0; --i) {
          delete gvFields[0]; gvFields[0] = 0;
          gvFields.RemoveElement(0);
       }
    }
-   catch (...) {/* munch munch, yummy*/}
+   catch(ZdException &x) {
+      x.AddCallpath("CleanupFieldVector()", "stsClusterLevelDBF");
+      throw;
+   }
 }
 
 // create the output file
@@ -44,7 +57,7 @@ void stsClusterLevelDBF::CreateDBFFile() {
    DBFFile		*pFile = 0;
    
    try {
-      GetFields(gvFields);
+      GetFields();
 
       // pack up and create
       pFile = new DBFFile();
@@ -68,26 +81,26 @@ void stsClusterLevelDBF::CreateDBFFile() {
    }
 }
 
-// sets up the ZdFields and puts them into the vector
+// sets up the global vecotr of ZdFields
 // pre: pass in an empty vector
 // post: vector will be defined using the names and field types provided by the descendant classes
-void stsClusterLevelDBF::GetFields(ZdVector<ZdField*>& vFields) {
+void stsClusterLevelDBF::GetFields() {
    DBFFile*		pFile = 0;
-   ZdVector<ZdString> 	vFieldNames;
-   ZdVector<char> 	vFieldTypes;
    ZdField*		pField = 0;
-   ZdVector<short>      vFieldLengths;
+   ZdVector<pair<pair<ZdString, char>, short> > vFieldDescrips;
 
    try {
-      pFile = new DBFFile();
-      SetupFields(vFieldNames, vFieldTypes, vFieldLengths);
+      CleanupFieldVector();
+      SetupFields(vFieldDescrips);
 
-      for(unsigned int i = 0; i < vFieldNames.GetNumElements(); ++i) {
+      pFile = new DBFFile();
+      
+      for(unsigned int i = 0; i < vFieldDescrips.GetNumElements(); ++i) {
          pField = pFile->GetNewField();
-         pField->SetName(vFieldNames[i]);
-         pField->SetType(vFieldTypes[i]);
-         pField->SetLength(vFieldLengths[i]);
-         vFields.AddElement(pField->Clone());
+         pField->SetName(vFieldDescrips[i].first.first);
+         pField->SetType(vFieldDescrips[i].first.second);
+         pField->SetLength(vFieldDescrips[i].second);
+         gvFields.AddElement(pField->Clone());
          delete pField;
       }
 
@@ -150,7 +163,6 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
       pRecord->PutNumber(++uwFieldNumber, pCluster->m_nLogLikelihood);
 
       // p value
-      // I'm very tempted to store this value as part of the cluster - AJV 9/4/2002
       pRecord->PutNumber(++uwFieldNumber, pCluster->gfPValue);
 
       // number of areas in the cluster
@@ -230,55 +242,86 @@ void stsClusterLevelDBF::Setup(const ZdString& sFileName) {
 }
 
 // field names for the cluster level output dbf file
-// pre: empty vector of strings passed in
+// pre: empty vector of triplets
 // post: passes back through reference a vector of strings will the field names for the dbf file
-void stsClusterLevelDBF::SetupFields(ZdVector<ZdString>& vFieldNames, ZdVector<char>& vFieldTypes, ZdVector<short>& vFieldLengths) {
+void stsClusterLevelDBF::SetupFields(ZdVector<pair<pair<ZdString, char>, short> >& vFieldDescrips) {
+   pair<pair<ZdString, char>, short>    field;
+
    try {
-      vFieldNames.AddElement("RUN_NUM");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
-      vFieldNames.AddElement("START_DATE");
-      vFieldTypes.AddElement(ZD_ALPHA_FLD);
-      vFieldLengths.AddElement(32);
-      vFieldNames.AddElement("END_DATE");
-      vFieldTypes.AddElement(ZD_ALPHA_FLD);
-      vFieldLengths.AddElement(32);
-      vFieldNames.AddElement("CLUST_NUM");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
-      vFieldNames.AddElement("OBSERVED");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
-      vFieldNames.AddElement("EXPECTED");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
-      vFieldNames.AddElement("REL_RISK");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
-      vFieldNames.AddElement("LOG_LIKL");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
-      vFieldNames.AddElement("P_VALUE");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
-      vFieldNames.AddElement("NUM_AREAS");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
-      vFieldNames.AddElement("AREA_ID");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
-      vFieldNames.AddElement("COORD_NOR");
-      vFieldTypes.AddElement(ZD_ALPHA_FLD);
-      vFieldLengths.AddElement(32);
-      vFieldNames.AddElement("COORD_WES");
-      vFieldTypes.AddElement(ZD_ALPHA_FLD);
-      vFieldLengths.AddElement(32);
-      vFieldNames.AddElement("COORD_ADD");
-      vFieldTypes.AddElement(ZD_ALPHA_FLD);
-      vFieldLengths.AddElement(32);
-      vFieldNames.AddElement("RADIUS");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
+      field.first.first = "RUN_NUM";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "START_DATE";
+      field.first.second = ZD_ALPHA_FLD;
+      field.second = 32;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "END_DATE";
+      field.first.second = ZD_ALPHA_FLD;
+      field.second = 32;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "CLUST_NUM";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "OBSERVED";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "EXPECTED";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "REL_RISK";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "LOG_LIKL";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "P_VALUE";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "NUM_AREAS";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "AREA_ID";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "COORD_NOR";
+      field.first.second = ZD_ALPHA_FLD;
+      field.second = 32;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "COORD_WES";
+      field.first.second = ZD_ALPHA_FLD;
+      field.second = 32;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "COORD_ADD";
+      field.first.second = ZD_ALPHA_FLD;
+      field.second = 32;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "RADIUS";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupClusterLevelOutputFieldNames()", "DBaseOutput");

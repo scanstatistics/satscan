@@ -10,8 +10,9 @@ class stsAreaSpecificDBF {
       ZdVector<ZdField*>        gvFields;
       long                      glRunNumber;
 
+      void              CleanupFieldVector();
       void 	        CreateDBFFile();
-      void              GetFields(ZdVector<ZdField*>& vFields);
+      void              GetFields();
       void      	SetupFields(ZdVector<std::pair<std::pair<ZdString, char>, short> >& vFieldDescrips);
    public:
       __fastcall stsAreaSpecificDBF(const ZdString& sFileName);

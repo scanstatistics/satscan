@@ -28,12 +28,25 @@ __fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const ZdString& sFileName) {
 // destructor
 stsAreaSpecificDBF::~stsAreaSpecificDBF() {
    try {
+      CleanupFieldVector();
+   }
+   catch (...) {/* munch munch, yummy*/}
+}
+
+// deletes all of the field pointers in the vector and empties the vector
+// pre: none
+// post: field vector is empty and all of the pointers are deleted
+void stsAreaSpecificDBF::CleanupFieldVector() {
+   try {
       for(unsigned int i = gvFields.GetNumElements() - 1; i > 0; --i) {
          delete gvFields[0]; gvFields[0] = 0;
          gvFields.RemoveElement(0);
       }
    }
-   catch (...) {/* munch munch, yummy*/}
+   catch(ZdException &x) {
+      x.AddCallpath("CleanupFieldVector()", "stsAreaSpecificDBF");
+      throw;
+   }
 }
 
 // create the output file
@@ -43,7 +56,7 @@ void stsAreaSpecificDBF::CreateDBFFile() {
    DBFFile		*pFile = 0;
    
    try {
-      GetFields(gvFields);
+      GetFields();
 
       // pack up and create
       pFile = new DBFFile();
@@ -67,24 +80,26 @@ void stsAreaSpecificDBF::CreateDBFFile() {
    }
 }
 
-// sets up the ZdFields and puts them into the vector
+// sets up the global vecotr of ZdFields
 // pre: pass in an empty vector
 // post: vector will be defined using the names and field types provided by the descendant classes
-void stsAreaSpecificDBF::GetFields(ZdVector<ZdField*>& vFields) {
+void stsAreaSpecificDBF::GetFields() {
    DBFFile*		pFile = 0;
    ZdField*		pField = 0;
    ZdVector<std::pair<std::pair<ZdString, char>, short> > vFieldDescrips;
 
    try {
-      pFile = new DBFFile();
+      CleanupFieldVector();           // empty out the global field vector
       SetupFields(vFieldDescrips);
+
+      pFile = new DBFFile();
 
       for(unsigned int i = 0; i < vFieldDescrips.GetNumElements(); ++i) {
          pField = pFile->GetNewField();
          pField->SetName(vFieldDescrips[i].first.first.GetCString());
          pField->SetType(vFieldDescrips[i].first.second);
          pField->SetLength(vFieldDescrips[i].second);
-         vFields.AddElement(pField->Clone());
+         gvFields.AddElement(pField->Clone());
          delete pField;
       }
 
@@ -128,7 +143,6 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
       pRecord->PutNumber(++uwFieldNumber, pCluster->m_Center);
 
       // p value
-      // I'm very tempted to store this value as part of the cluster - AJV 9/4/2002
       pRecord->PutNumber(++uwFieldNumber, pCluster->gfPValue);
 
       // observed
