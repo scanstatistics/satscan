@@ -1,6 +1,10 @@
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//***************************************************************************
 #include "PoissonModel.h"
+
+const double CPoissonModel::gTimeTrendConvergence = 0.0000001;
 
 /** constructor */
 CPoissonModel::CPoissonModel(const CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection)
@@ -103,7 +107,7 @@ void CPoissonModel::AdjustForLogLinear(RealDataStream& thisStream, measure_t ** 
 
   //Calculate time trend for whole dataset
   TimeTrend.CalculateAndSet(thisStream.GetCasesPerTimeIntervalArray(), thisStream.GetMeasurePerTimeIntervalArray(),
-                            gData.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
+                            gData.GetNumTimeIntervals(), gTimeTrendConvergence);
 
   //Cancel analysis execution if calculation of time trend fails for various reasons.
   switch (TimeTrend.GetStatus()) {

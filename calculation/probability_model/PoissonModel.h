@@ -2,7 +2,6 @@
 #ifndef __POISSONMODEL_H
 #define __POISSONMODEL_H
 //*****************************************************************************
-#include "SaTScan.h"
 #include "ProbabilityModel.h"
 #include "CalculateMeasure.h"
 #include "RandomDistribution.h"
@@ -13,6 +12,8 @@
 
 class CPoissonModel : public CModel {
   private:
+    static const double         gTimeTrendConvergence; /* time trend convergence variable */
+
     void                        AdjustForNonParameteric(RealDataStream & thisStream, measure_t ** pNonCumulativeMeasure);
     void                        AdjustForLLPercentage(RealDataStream & thisStream, measure_t ** pNonCumulativeMeasure, double nPercentage);
     void                        AdjustForLogLinear(RealDataStream & thisStream, measure_t ** pNonCumulativeMeasure);
