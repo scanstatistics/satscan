@@ -17,7 +17,7 @@
        or registory value if this is becomes a problem. */
 const char * TfrmUpdateCheck::gsUpdaterFilename   = "update_app.exe";
 /** perl script for determining updates */
-const char * TfrmUpdateCheck::gsURLFormat         = "http://satscan.us/cgi-bin/satscan/update/satscan_version_update.pl?todo=return_update_version_info&form_current_version_id=value%s&form_current_version_number=value%s";
+const char * TfrmUpdateCheck::gsURLFormat         = "http://satscan.us/cgi-bin/satscan/update/satscan_version_update.pl?todo=return_update_version_info&form_current_version_id=%s&form_current_version_number=%s";
 const int TfrmUpdateCheck::giUpdateTokens         = 9;
 const int TfrmUpdateCheck::giUpdateIndicatorIndex = 0;
 const int TfrmUpdateCheck::giUpdateVersionIdIndex = 3;
