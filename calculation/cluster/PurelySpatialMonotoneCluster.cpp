@@ -2,8 +2,9 @@
 #pragma hdrstop
 #include "PurelySpatialMonotoneCluster.h"
 
-CPSMonotoneCluster::CPSMonotoneCluster(const CSaTScanData & Data, BasePrint *pPrintDirection)
-                   :CPurelySpatialCluster(Data, pPrintDirection) {
+CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway,
+                                       int iRate, BasePrint *pPrintDirection)
+                   :CPurelySpatialCluster(pClusterFactory, DataGateway, iRate, pPrintDirection) {
   m_nMaxCircles        = 0;
   m_pCasesList         = NULL;
   m_pMeasureList       = NULL;
@@ -12,6 +13,27 @@ CPSMonotoneCluster::CPSMonotoneCluster(const CSaTScanData & Data, BasePrint *pPr
 
   Initialize(0);
 }
+CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const DataStreamInterface & Interface,
+                                       int iRate, BasePrint *pPrintDirection)
+                   :CPurelySpatialCluster(pClusterFactory, Interface, iRate, pPrintDirection) {
+  m_nMaxCircles        = 0;
+  m_pCasesList         = NULL;
+  m_pMeasureList       = NULL;
+  m_pFirstNeighborList = NULL;
+  m_pLastNeighborList  = NULL;
+
+  Initialize(0);
+}
+//CPSMonotoneCluster::CPSMonotoneCluster(const CSaTScanData & Data, BasePrint *pPrintDirection)
+//                   :CPurelySpatialCluster(Data, pPrintDirection) {
+//  m_nMaxCircles        = 0;
+//  m_pCasesList         = NULL;
+//  m_pMeasureList       = NULL;
+//  m_pFirstNeighborList = NULL;
+//  m_pLastNeighborList  = NULL;
+//
+//  Initialize(0);
+//}
 
 CPSMonotoneCluster::CPSMonotoneCluster(const CPSMonotoneCluster& rhs) : CPurelySpatialCluster(rhs){
   m_nMaxCircles        = 0;
@@ -40,6 +62,11 @@ CPSMonotoneCluster * CPSMonotoneCluster::Clone() const {
   //Note: Replace this code with copy constructor...
   CPSMonotoneCluster * pClone = new CPSMonotoneCluster(*this);
   return pClone;
+}
+
+AbstractClusterData * CPSMonotoneCluster::GetClusterData() {
+ ZdGenerateException("GetClusterData() not implemented.","CPSMonotoneCluster");
+ return 0;
 }
 
 /** initialize cluster data */
@@ -114,7 +141,6 @@ CPSMonotoneCluster& CPSMonotoneCluster::operator =(const CPSMonotoneCluster& clu
         m_pLastNeighborList[i]  = cluster.m_pLastNeighborList[i];
       }
     
-      m_bClusterDefined= cluster.m_bClusterDefined;
       m_bRatioSet      = cluster.m_bRatioSet;
       }
    catch (ZdException & x)
@@ -203,10 +229,9 @@ double CPSMonotoneCluster::SetRatio(double nLikelihoodForTotal)
   return m_nRatio;
 }
 
-/*double CPSMonotoneCluster::SetLogLikelihood()
+double CPSMonotoneCluster::SetLogLikelihood()
 {
   m_nLogLikelihood = 0;
-  m_bLogLSet       = true;
 
   for (int i=0; i<m_nSteps; i++)
   {
@@ -216,7 +241,7 @@ double CPSMonotoneCluster::SetRatio(double nLikelihoodForTotal)
 
   return m_nLogLikelihood;
 }
-*/
+
 double CPSMonotoneCluster::GetRatio()
 {
   if (m_bRatioSet)
@@ -225,14 +250,11 @@ double CPSMonotoneCluster::GetRatio()
     return -1;
 }
 
-/*double CPSMonotoneCluster::GetLogLikelihood()
+double CPSMonotoneCluster::GetLogLikelihood()
 {
-  if (m_bLogLSet)
-    return m_nLogLikelihood;
-  else
-    return -1;
+  return m_nLogLikelihood;
 }
-*/
+
 void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, count_t** pCases) {
   tract_t            ** ppNeighborCount(Data.GetNeighborCountArray());
   CModel              & ProbModel(Data.GetProbabilityModel());  
@@ -462,10 +484,9 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
                                   char cDeliminator, char* szSpacesOnLeft)
 {
    double *pCoords, *pCoords2;
-   float nRadius;
-   int   pos = nLeftMargin;
-   float Latitude, Longitude;
-   char  cNorthSouth, cEastWest;
+   int     pos = nLeftMargin;
+   float   Latitude, Longitude, nRadius;
+   char    cNorthSouth, cEastWest;
 
    try
       {

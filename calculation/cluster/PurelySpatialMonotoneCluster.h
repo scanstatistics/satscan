@@ -8,7 +8,9 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
 {
   public:
 
-    CPSMonotoneCluster(const CSaTScanData & Data, BasePrint *pPrintDirection);
+    CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, int iRate, BasePrint *pPrintDirection);
+    CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const DataStreamInterface & Interface, int iRate, BasePrint *pPrintDirection);
+//    CPSMonotoneCluster(const CSaTScanData & Data, BasePrint *pPrintDirection);
     CPSMonotoneCluster(const CPSMonotoneCluster& rhs);
 //    CPSMonotoneCluster(int nRate, tract_t nCircles);
     ~CPSMonotoneCluster();
@@ -31,6 +33,7 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
     count_t                     m_nCases;             // Number of cases in cluster
     measure_t                   m_nMeasure;           // Expected count for cluster
     tract_t                     m_nSteps;             // Number of concentric steps in cluster    
+    double                      m_nLogLikelihood;     // Log Likelihood
 
     void                AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n);
     void                AddRemainder(count_t nTotalCases, measure_t nTotalMeasure);
@@ -57,18 +60,19 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
     virtual void        DisplaySteps(FILE* fp, char* szSpacesOnLeft);
     virtual void        Initialize(tract_t nCenter);
     void                RemoveRemainder();
+    virtual AbstractClusterData * GetClusterData();
     virtual int         GetClusterType() const {return PURELYSPATIALMONOTONE;}
     tract_t             GetLastCircleIndex() {return m_nSteps-1;};
     tract_t             GetNumCircles()    {return m_nSteps;}
     virtual tract_t     GetNumTractsInnerCircle() { return m_pLastNeighborList[0]; };
     double              GetRelativeRisk(tract_t nStep, double nMeasureAdjustment);
     double              GetRatio();
-    //double              GetLogLikelihood();
+    double              GetLogLikelihood();
 
   protected:
     void   SetCasesAndMeasures();
     void   SetTotalTracts();
-//    double SetLogLikelihood();
+    double SetLogLikelihood();
     double SetRatio(double nLogLikelihoodForTotal);
 
     void   ConcatLastCircles();
