@@ -158,8 +158,9 @@ __published:	// IDE-managed Components
     static const char                 * ARCHIVE_APP_DATA;
     static const char                 * USE_ARCHIVE_APP_DATA;
     static const char                 * ARCHIVE_APP_OPTIONS_DATA;
+    static const char                 * ARCHIVE_DELETE_FILES_DATA;
 
-    TfrmOptions                       * gpFrmOptions;  
+    TfrmOptions                       * gpFrmOptions;
 
     void                                AddList();
     void                                AddList(const char * sMessage);

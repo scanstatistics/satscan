@@ -3,7 +3,7 @@ object frmOptions: TfrmOptions
   Top = 204
   BorderStyle = bsDialog
   Caption = 'Options'
-  ClientHeight = 135
+  ClientHeight = 154
   ClientWidth = 367
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,7 +19,7 @@ object frmOptions: TfrmOptions
     Left = 0
     Top = 0
     Width = 367
-    Height = 135
+    Height = 154
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
@@ -108,6 +108,14 @@ object frmOptions: TfrmOptions
       Width = 70
       Height = 21
       TabOrder = 5
+    end
+    object chkDeleteFileAfterArchiving: TCheckBox
+      Left = 24
+      Top = 131
+      Width = 177
+      Height = 17
+      Caption = 'Delete Files After Archiving'
+      TabOrder = 6
     end
   end
   object OpenDialog: TOpenDialog

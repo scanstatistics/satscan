@@ -48,6 +48,7 @@ const char * TfrmMain::COMPARE_FILE_EXTENSION   = ".out.compare.txt";
 const char * TfrmMain::ARCHIVE_APP_DATA         = "ArchiveApp";
 const char * TfrmMain::USE_ARCHIVE_APP_DATA     = "ArchivingResults";
 const char * TfrmMain::ARCHIVE_APP_OPTIONS_DATA = "ArchiveOptions";
+const char * TfrmMain::ARCHIVE_DELETE_FILES_DATA= "DeleteArchivedFiles";
 
 /** constructor */
 __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner), gpFrmOptions(0) {
@@ -73,6 +74,8 @@ __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner), gpFrmOptions(0)
       gpFrmOptions->chkArchiveResults->Checked = pRegistry->ReadBool(USE_ARCHIVE_APP_DATA);
     gpFrmOptions->edtArchiveApplication->Text = pRegistry->ReadString(ARCHIVE_APP_DATA);
     gpFrmOptions->edtArchiveApplicationOptions->Text = pRegistry->ReadString(ARCHIVE_APP_OPTIONS_DATA);
+    if (pRegistry->GetDataSize(ARCHIVE_DELETE_FILES_DATA) != -1)
+      gpFrmOptions->chkDeleteFileAfterArchiving->Checked = pRegistry->ReadBool(ARCHIVE_DELETE_FILES_DATA);
     pRegistry->CloseKey();
   }
   delete pRegistry;
@@ -108,6 +111,7 @@ __fastcall TfrmMain::~TfrmMain() {
       pRegistry->WriteBool(USE_ARCHIVE_APP_DATA, gpFrmOptions->chkArchiveResults->Checked);
       pRegistry->WriteString(ARCHIVE_APP_DATA, gpFrmOptions->edtArchiveApplication->Text);
       pRegistry->WriteString(ARCHIVE_APP_OPTIONS_DATA, gpFrmOptions->edtArchiveApplicationOptions->Text);
+      pRegistry->WriteBool(ARCHIVE_DELETE_FILES_DATA, gpFrmOptions->chkDeleteFileAfterArchiving->Checked);
       pRegistry->CloseKey();
     }
     delete pRegistry;
@@ -250,7 +254,10 @@ void TfrmMain::ArchiveResults() {
                      sArchiveFilename.c_str(),
                      GetResultFileName(Ref.GetFilename(), sMaster).c_str(),
                      GetCompareFilename(Ref.GetFilename(), sCompare).c_str());
-    Execute(sCommand, false);
+    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
+      remove(sMaster.c_str());
+      remove(sCompare.c_str());
+    }
 
     //add cluster information file
     sTemp1 = sMaster;
@@ -261,7 +268,10 @@ void TfrmMain::ArchiveResults() {
                      gpFrmOptions->edtArchiveApplication->Text.c_str(),
                      gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
                      sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-    Execute(sCommand, false);
+    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
+      remove(sTemp1.c_str());
+      remove(sTemp2.c_str());
+    }
 
     //add location information file
     sTemp1 = sMaster;
@@ -272,7 +282,10 @@ void TfrmMain::ArchiveResults() {
                      gpFrmOptions->edtArchiveApplication->Text.c_str(),
                      gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
                      sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-    Execute(sCommand, false);
+    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
+      remove(sTemp1.c_str());
+      remove(sTemp2.c_str());
+    }
 
     //add relatives risks
     if (Ref.GetRelativeRisksType() == EQUAL || Ref.GetRelativeRisksType() == NOT_EQUAL) {
@@ -284,7 +297,10 @@ void TfrmMain::ArchiveResults() {
                        gpFrmOptions->edtArchiveApplication->Text.c_str(),
                        gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
                        sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-      Execute(sCommand, false);
+      if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
+        remove(sTemp1.c_str());
+        remove(sTemp2.c_str());
+      }
     }
 
     //add simulated ratios
@@ -296,7 +312,10 @@ void TfrmMain::ArchiveResults() {
                      gpFrmOptions->edtArchiveApplication->Text.c_str(),
                      gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
                      sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-    Execute(sCommand, false);
+    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
+      remove(sTemp1.c_str());
+      remove(sTemp2.c_str());
+    }
   }
 }
 

@@ -25,6 +25,7 @@ __published:	// IDE-managed Components
         TEdit *edtArchiveApplicationOptions;
         TLabel *lblArchiveApplicationOptions;
         TOpenDialog *OpenDialog;
+        TCheckBox *chkDeleteFileAfterArchiving;
         void __fastcall btnBrowseComparisonAppClick(TObject *Sender);
         void __fastcall btnBrowseArchiveApplicationClick(TObject *Sender);
 private:	// User declarations
