@@ -102,9 +102,10 @@ class TfrmAnalysis : public TForm {
         TCheckBox *chkLikelyClusters;
         TCheckBox *chkInclRelRiskEst;
         TCheckBox *chkInclSimLogLik;
-        TRadioGroup *rgCriteriaSecClusters;
         TRadioButton *rdoPercentageTemproal;
         TRadioButton *rdoTimeTemproal;
+        TGroupBox *rgCriteriaSecClusters;
+        TComboBox *cboCriteriaSecClusters;
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall rgPrecisionTimesClick(TObject *Sender);
         void __fastcall btnCaseBrowseClick(TObject *Sender);
@@ -143,7 +144,6 @@ class TfrmAnalysis : public TForm {
         void __fastcall edtProspDayExit(TObject *Sender);
         void __fastcall chkCensusAreasClick(TObject *Sender);
         void __fastcall chkLikelyClustersClick(TObject *Sender);
-        void __fastcall rgCriteriaSecClustersClick(TObject *Sender);
         void __fastcall edtUnitLengthExit(TObject *Sender);
         void __fastcall edtLogPerYearExit(TObject *Sender);
         void __fastcall edtCaseFileNameChange(TObject *Sender);
@@ -152,6 +152,7 @@ class TfrmAnalysis : public TForm {
         void __fastcall edtCoordinateFileNameChange(TObject *Sender);
         void __fastcall edtGridFileNameChange(TObject *Sender);
         void __fastcall edtResultFileChange(TObject *Sender);
+        void __fastcall cboCriteriaSecClustersChange(TObject *Sender);
 
   private:	// User declarations
     CParameters       * gpParams;
@@ -184,7 +185,7 @@ class TfrmAnalysis : public TForm {
     void                EnableScanningWindow();
     void                EnableTimeIntervals();
     void                EnableTimeTrendAdj();
-    void                Init() {gpParams=0;}
+    void                Init() {gpParams=0; cboCriteriaSecClusters->ItemIndex = 0;}
     void                ParseDate(char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *pDay);
     bool                ReadSession(char *sFileName);
     void                SaveTextParameters();

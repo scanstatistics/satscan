@@ -584,7 +584,7 @@ void __fastcall TfrmAnalysis::edtEndDayExit(TObject *Sender) {
   catch (SSException & x) {
     x.AddCallpath("edtEndDayExit()", "TfrmAnalysis");
     DisplayException(this, x);
-  }  
+  }
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::edtEndMonthExit(TObject *Sender) {
@@ -1111,10 +1111,7 @@ void __fastcall TfrmAnalysis::rgCoordinatesClick(TObject *Sender) {
   }
 }
 //---------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::rgCriteriaSecClustersClick(TObject *Sender) {
-   gpParams->m_iCriteriaSecondClusters = rgCriteriaSecClusters->ItemIndex;
-}
-//---------------------------------------------------------------------------
+
 //  When the time precision control is changed, various interace options are
 //  toggled and changed.
 //---------------------------------------------------------------------------
@@ -1426,7 +1423,7 @@ void TfrmAnalysis::SetupInterface() {
     chkInclSimLogLik->Checked  = gpParams->m_bSaveSimLogLikelihoods;
     chkCensusAreas->Checked    = gpParams->m_bOutputCensusAreas;  // Output Census areas in Reported Clusters
     chkLikelyClusters->Checked = gpParams->m_bMostLikelyClusters;  // Output Most Likely Cluster for each Centroid
-    rgCriteriaSecClusters->ItemIndex = gpParams->m_iCriteriaSecondClusters;
+    cboCriteriaSecClusters->ItemIndex = gpParams->m_iCriteriaSecondClusters;
     //now enable or disable controls appropriately
     DataExchange();
   }
@@ -1649,6 +1646,11 @@ void __fastcall TfrmAnalysis::edtGridFileNameChange(TObject *Sender) {
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::edtResultFileChange(TObject *Sender){
   edtResultFile->Hint = edtResultFile->Text;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfrmAnalysis::cboCriteriaSecClustersChange(TObject *Sender){
+   gpParams->m_iCriteriaSecondClusters = cboCriteriaSecClusters->ItemIndex;
 }
 //---------------------------------------------------------------------------
 

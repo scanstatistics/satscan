@@ -865,22 +865,30 @@ object frmAnalysis: TfrmAnalysis
           OnClick = chkInclSimLogLikClick
         end
       end
-      object rgCriteriaSecClusters: TRadioGroup
+      object rgCriteriaSecClusters: TGroupBox
         Left = 16
-        Top = 160
+        Top = 154
         Width = 449
-        Height = 129
+        Height = 50
         Caption = 'Criteria for Reporting Secondary Clusters'
-        ItemIndex = 0
-        Items.Strings = (
-          'No Geographical Overlap'
-          'No Cluster Centers in Other Clusters'
-          'No Cluster Centers in More Likely Clusters'
-          'No Cluster Centers in Less Likely Clusters'
-          'No Pairs of Centers Both in Each Others Clusters'
-          'No Restrictions = Most Likely Cluster for Each Grid Point')
         TabOrder = 3
-        OnClick = rgCriteriaSecClustersClick
+        object cboCriteriaSecClusters: TComboBox
+          Left = 10
+          Top = 18
+          Width = 301
+          Height = 21
+          Style = csDropDownList
+          ItemHeight = 13
+          TabOrder = 0
+          OnChange = cboCriteriaSecClustersChange
+          Items.Strings = (
+            'No Geographical Overlap'
+            'No Cluster Centers in Other Clusters'
+            'No Cluster Centers in More Likely Clusters'
+            'No Cluster Centers in Less Likely Clusters'
+            'No Pairs of Centers Both in Each Others Clusters'
+            'No Restrictions = Most Likely Cluster for Each Grid Point')
+        end
       end
     end
   end
