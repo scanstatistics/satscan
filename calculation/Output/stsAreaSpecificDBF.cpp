@@ -19,7 +19,7 @@ __fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const long lRunNumber, const i
                              : DBaseOutput(lRunNumber, iCoordType) {
    try {
       Init();
-      Setup(sOutputFileName.GetLocation());
+      Setup(sOutputFileName.GetFullPath());
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsAreaSpecificDBF");
@@ -62,7 +62,6 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
       SetDoubleField(*pRecord, iClusterNumber, GetFieldNumber(gvFields, CLUST_NUM));
 
       // area id
-//      SetAreaID(sTempValue, pCluster, pData);
       sTempValue = (pData.GetTInfo())->tiGetTid(pData.GetNeighbor(pCluster.m_iEllipseOffset, pCluster.m_Center, iClusterNumber));
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, AREA_ID));
 
@@ -96,7 +95,11 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
 // internal setup
 void stsAreaSpecificDBF::Setup(const ZdString& sOutputFileName) {
    try {
-      gsFileName << ZdString::reset << sOutputFileName << AREA_SPECIFIC_DBF_FILE;
+      // area specific dbf has same filename as output file with area specific extension - AJV 9/30/2002
+      ZdString sTempName(sOutputFileName);
+      sTempName.Replace(ZdFileName(sOutputFileName).GetExtension(), AREA_SPECIFIC_EXT);
+      gsFileName = sTempName;
+
       SetupFields(gvFields);
       CreateDBFFile();
    }

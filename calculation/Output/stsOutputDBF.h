@@ -3,8 +3,8 @@
 
 //#include "Cluster.h"
 
-extern const char *    CLUSTER_LEVEL_DBF_FILE;
-extern const char *    AREA_SPECIFIC_DBF_FILE;
+extern const char * CLUSTER_LEVEL_EXT;
+extern const char * AREA_SPECIFIC_EXT;
 
 extern const char * RUN_NUM;	
 extern const char * CLUST_NUM;
@@ -18,9 +18,11 @@ extern const char * END_DATE;
 extern const char * LOG_LIKL;
 extern const char * P_VALUE;
 extern const char * NUM_AREAS;
-extern const char * COORD_NOR;
-extern const char * COORD_WES;
-extern const char * COORD_ADD;
+extern const char * COORD_LAT;
+extern const char * COORD_LONG;
+extern const char * COORD_X;
+extern const char * COORD_Y;
+extern const char * COORD_Z;
 extern const char * RADIUS;
 
 class CCluster;

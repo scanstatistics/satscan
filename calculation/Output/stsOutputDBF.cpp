@@ -13,8 +13,8 @@
 #include <DBFFile.h>
 #include "Cluster.h"
 
-const char *    CLUSTER_LEVEL_DBF_FILE  = "ClusterLevel.dbf";
-const char *    AREA_SPECIFIC_DBF_FILE  = "AreaSpecific.dbf";
+const char *    CLUSTER_LEVEL_EXT       = ".col.dbf";
+const char *    AREA_SPECIFIC_EXT       = ".col.dbf";
 
 const char *    RUN_NUM		        = "RUN_NUM";
 const char *    CLUST_NUM 		= "CLUST_NUM";
@@ -27,9 +27,11 @@ const char *    EXPECTED		= "EXPECTED";
 const char *    REL_RISK		= "REL_RISK";
 const char *    LOG_LIKL		= "LOG_LIKL";
 const char *    NUM_AREAS		= "NUM_AREAS";
-const char *    COORD_NOR		= "COORD_NOR";
-const char *    COORD_WES		= "COORD_WES";
-const char *    COORD_ADD		= "COORD_ADD";
+const char *    COORD_LAT		= "COORD_LAT";
+const char *    COORD_LONG		= "COORD_LONG";
+const char *    COORD_X		        = "COORD_X";
+const char *    COORD_Y                 = "COORD_Y";
+const char *    COORD_Z                 = "COORD_Z";
 const char *    RADIUS		        = "RADIUS";
 
 // constructor
