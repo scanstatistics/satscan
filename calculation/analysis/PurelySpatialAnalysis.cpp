@@ -73,6 +73,7 @@ double CPurelySpatialAnalysis::MonteCarlo() {
   tract_t                         i, j, iNumNeighbors;
   int                             k;
   count_t                      ** ppSimCases(m_pData->GetSimCasesArray());
+  tract_t                      ** ppNeighbors(m_pData->GetNeighborCountArray());
 
   try {
     C.SetRate(m_pParameters->GetAreaScanRateType());
@@ -90,7 +91,7 @@ double CPurelySpatialAnalysis::MonteCarlo() {
     for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) { //circle is 0 offset... (always there)
        for (i=0; i < m_pData->m_nGridTracts; i++) {
           C.Initialize(i);
-          iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];
+          iNumNeighbors = ppNeighbors[k][i];
           for (j=1; j <= iNumNeighbors; j++) {
              C.AddNeighbor(k, *m_pData, ppSimCases, j);
              pMeasureList->AddMeasure(C.m_nCases, C.m_nMeasure);

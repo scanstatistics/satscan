@@ -23,11 +23,10 @@ CPurelySpatialCluster * CPurelySpatialCluster::Clone() const {
 
 void CPurelySpatialCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {
   tract_t       nNeighbor = Data.GetNeighbor(iEllipse, m_Center, n);
-  measure_t   * pMeasure(Data.GetMeasureArray()[0]);
 
   m_nTracts++;
-  m_nCases   += pCases[0][nNeighbor];                        // the first dimension [0] applies to the time interval...
-  m_nMeasure += pMeasure[nNeighbor];               // the first dimension [0] applies to the time interval...
+  m_nCases   += pCases[0][nNeighbor];                 // the first dimension [0] applies to the time interval...
+  m_nMeasure += Data.GetMeasureArray()[0][nNeighbor]; // the first dimension [0] applies to the time interval...
 
   m_bClusterDefined = true;
 }
