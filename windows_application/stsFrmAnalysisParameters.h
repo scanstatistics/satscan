@@ -14,9 +14,8 @@
 #include "JulianDates.h"
 #include "Parameters.h"
 //---------------------------------------------------------------------------
-class TfrmAnalysis : public TForm
-{
-__published:	// IDE-managed Components
+class TfrmAnalysis : public TForm {
+  __published:  // IDE-managed Components
         TPageControl *PageControl1;
         TTabSheet *tbInputFiles;
         TTabSheet *tbAnalysis;
@@ -83,7 +82,7 @@ __published:	// IDE-managed Components
         TRadioGroup *rgTemporalTrendAdj;
         TEdit *edtLogPerYear;
         TOpenDialog *OpenDialog1;
-        TSaveDialog *SaveDialog1;
+        TSaveDialog *SaveDialog;
         TEdit *Edit1;
         TGroupBox *GroupBox8;
         TLabel *Label23;
@@ -147,65 +146,62 @@ __published:	// IDE-managed Components
         void __fastcall rgCriteriaSecClustersClick(TObject *Sender);
         void __fastcall edtUnitLengthExit(TObject *Sender);
         void __fastcall edtLogPerYearExit(TObject *Sender);
-private:	// User declarations
-        CParameters *gpParams;
-        AnsiString   gsParamFileName;
-        enum Precision { enNone, enYear, enMonth, enDay };
-        enum ScanAreas { enHigh, enLow, enHighAndLow };
-        enum Model  { enPoisson, enBernoulli };
+        void __fastcall edtCaseFileNameChange(TObject *Sender);
+        void __fastcall edtControlFileNameChange(TObject *Sender);
+        void __fastcall edtPopFileNameChange(TObject *Sender);
+        void __fastcall edtCoordinateFileNameChange(TObject *Sender);
+        void __fastcall edtGridFileNameChange(TObject *Sender);
+        void __fastcall edtResultFileChange(TObject *Sender);
 
-        // general functions
-        void DataExchange();
-        bool ReadSession(char *sFileName);
-        void SetupInterface();
-        void ParseDate(char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *pDay);
-        void SaveTextParameters();
-        void ConvertPurelySpacialIntervals();
+  private:	// User declarations
+    CParameters       * gpParams;
+    AnsiString          gsParamFileName;
 
-        bool CheckAnalysisParams();
-        bool CheckScanningWindowParams();
-        bool CheckTimeParams();
-        bool CheckOutputParams();
-
-        void EnablePrecision();
-        void EnableAnalysisType(bool bValue);
-        bool ValidateInputFiles();
-
-        //Analysis Tab
-        bool Check_Month(int iMonth, char *sDateName);
-        bool Check_Days(int iYear, int iMonth, int iDay, char *sDateName);
-        bool Check_Year(int iYear, char *sDateName);
-        bool CheckDateRange(int iStartYear, int iStartMonth, int iStartDay,
-                            int iEndYear, int iEndMonth, int iEndDay,
-                            int iIntervalUnits, int iIntervalLength);
-        bool CheckReplicas(int iReplicas);
-
-        // Output tab
-        //bool ValidOutputFiles();
-
-        //time tab
-        void EnableTimeTrendAdj();
-        void EnableTimeIntervals();
-        void EnableProspStartDate();
-        bool Check_IntervalLength(int iStartYear, int iStartMonth, int iStartDay,
-            int iEndYear, int iEndMonth, int iEndDay, int iIntervalUnits, int iIntervalLength);
-        bool Check_TimeTrendPercentage(double dValue);
-        bool CheckProspDateRange(int iStartYear, int iStartMonth, int iStartDay,
-                                  int iEndYear, int iEndMonth, int iEndDay,
-                                  int iProspYear, int iProspMonth, int iProspDay);
-        bool VerifyUnitAndLength();
-        
-        //scanning tab
-        void EnableScanningWindow();
-        bool ValidateTemoralClusterSize();
+    bool                Check_Days(int iYear, int iMonth, int iDay, char *sDateName);
+    bool                Check_IntervalLength(int iStartYear, int iStartMonth, int iStartDay,
+                                             int iEndYear, int iEndMonth, int iEndDay,
+                                             int iIntervalUnits, int iIntervalLength);
+    bool                Check_Month(int iMonth, char *sDateName);
+    bool                Check_TimeTrendPercentage(double dValue);
+    bool                Check_Year(int iYear, char *sDateName);
+    bool                CheckAnalysisParams();
+    bool                CheckDateRange(int iStartYear, int iStartMonth, int iStartDay,
+                                       int iEndYear, int iEndMonth, int iEndDay,
+                                       int iIntervalUnits, int iIntervalLength);
+    bool                CheckOutputParams();
+    bool                CheckProspDateRange(int iStartYear, int iStartMonth, int iStartDay,
+                                            int iEndYear, int iEndMonth, int iEndDay,
+                                            int iProspYear, int iProspMonth, int iProspDay);
+    bool                CheckReplicas(int iReplicas);
+    bool                CheckScanningWindowParams();
+    bool                CheckTimeParams();
+    void                ConvertPurelySpacialIntervals();
+    void                DataExchange();
+    void                EnableAdditionalAsciiFileOptions();
+    void                EnableAnalysisType(bool bValue);
+    void                EnablePrecision();
+    void                EnableProspStartDate();
+    void                EnableScanningWindow();
+    void                EnableTimeIntervals();
+    void                EnableTimeTrendAdj();
+    void                Init() {gpParams=0;}
+    void                ParseDate(char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *pDay);
+    bool                ReadSession(char *sFileName);
+    void                SaveTextParameters();
+    void                SetupInterface();
+    bool                ValidateInputFiles();
+    bool                ValidateTemoralClusterSize();
+    bool                VerifyUnitAndLength();
 
 public:		// User declarations
-        __fastcall TfrmAnalysis(TComponent* Owner, char *sParamFileName = 0);
-        char *        GetFileName();
-        CParameters * GetSession();
-        bool          SaveAs();
-        bool          ValidateParams();
-        bool          WriteSession();
+            __fastcall TfrmAnalysis(TComponent* Owner, char *sParamFileName = 0);
+    virtual __fastcall ~TfrmAnalysis();
+
+    char              * GetFileName();
+    CParameters       * GetSession();
+    void                SaveAs();
+    bool                ValidateParams();
+    bool                WriteSession();
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfrmAnalysis *frmAnalysis;

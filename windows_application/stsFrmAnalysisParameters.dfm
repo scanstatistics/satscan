@@ -24,7 +24,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbScanningWindow
+    ActivePage = tbOutputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -47,6 +47,8 @@ object frmAnalysis: TfrmAnalysis
         Top = 8
         Width = 457
         Height = 113
+        Color = clBtnFace
+        ParentColor = False
         TabOrder = 0
         object Label1: TLabel
           Left = 8
@@ -61,6 +63,8 @@ object frmAnalysis: TfrmAnalysis
           Width = 55
           Height = 13
           Caption = 'Control File:'
+          Color = clBtnFace
+          ParentColor = False
         end
         object Label3: TLabel
           Left = 112
@@ -89,20 +93,27 @@ object frmAnalysis: TfrmAnalysis
           Top = 32
           Width = 273
           Height = 21
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 1
+          OnChange = edtCaseFileNameChange
         end
         object edtControlFileName: TEdit
           Left = 8
           Top = 80
           Width = 273
           Height = 21
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 2
+          OnChange = edtControlFileNameChange
         end
         object btnCaseBrowse: TButton
           Left = 288
           Top = 32
           Width = 25
           Height = 21
+          Hint = 'browse for case file'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -110,6 +121,8 @@ object frmAnalysis: TfrmAnalysis
           Font.Name = 'MS Sans Serif'
           Font.Style = [fsBold]
           ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 3
           OnClick = btnCaseBrowseClick
         end
@@ -118,6 +131,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 80
           Width = 25
           Height = 21
+          Hint = 'browse for control file'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -125,6 +139,8 @@ object frmAnalysis: TfrmAnalysis
           Font.Name = 'MS Sans Serif'
           Font.Style = [fsBold]
           ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 4
           OnClick = btnControlBrowseClick
         end
@@ -134,13 +150,17 @@ object frmAnalysis: TfrmAnalysis
         Top = 152
         Width = 273
         Height = 21
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 1
+        OnChange = edtPopFileNameChange
       end
       object btnPopBrowse: TButton
         Left = 304
         Top = 152
         Width = 25
         Height = 21
+        Hint = 'browse for population file'
         Caption = '...'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -148,6 +168,8 @@ object frmAnalysis: TfrmAnalysis
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsBold]
         ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 2
         OnClick = btnPopBrowseClick
       end
@@ -176,20 +198,27 @@ object frmAnalysis: TfrmAnalysis
           Top = 27
           Width = 273
           Height = 21
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 0
+          OnChange = edtCoordinateFileNameChange
         end
         object edtGridFileName: TEdit
           Left = 8
           Top = 70
           Width = 273
           Height = 21
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 1
+          OnChange = edtGridFileNameChange
         end
         object btnCoordBrowse: TButton
           Left = 288
           Top = 27
           Width = 25
           Height = 21
+          Hint = 'browse for coordinates file'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -197,6 +226,8 @@ object frmAnalysis: TfrmAnalysis
           Font.Name = 'MS Sans Serif'
           Font.Style = [fsBold]
           ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 2
           OnClick = btnCoordBrowseClick
         end
@@ -205,6 +236,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 70
           Width = 25
           Height = 21
+          Hint = 'browse for special grid file'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -212,6 +244,8 @@ object frmAnalysis: TfrmAnalysis
           Font.Name = 'MS Sans Serif'
           Font.Style = [fsBold]
           ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 3
           OnClick = btnGridBrowseClick
         end
@@ -258,20 +292,21 @@ object frmAnalysis: TfrmAnalysis
       object rgProbability: TRadioGroup
         Left = 176
         Top = 8
-        Width = 129
-        Height = 81
+        Width = 153
+        Height = 121
         Caption = 'Probability Model'
         ItemIndex = 0
         Items.Strings = (
           'Poisson'
-          'Bernoulli')
+          'Bernoulli'
+          'Space-Time Permutation')
         TabOrder = 1
         OnClick = rgProbabilityClick
       end
       object rgScanAreas: TRadioGroup
-        Left = 320
+        Left = 336
         Top = 8
-        Width = 153
+        Width = 137
         Height = 121
         Caption = 'Scan for Areas with:'
         ItemIndex = 0
@@ -762,12 +797,14 @@ object frmAnalysis: TfrmAnalysis
         Height = 21
         AutoSelect = False
         TabOrder = 0
+        OnChange = edtResultFileChange
       end
       object btnResultFileBrowse: TButton
         Left = 432
         Top = 24
         Width = 30
         Height = 23
+        Hint = 'browse for results file'
         Caption = '...'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -775,6 +812,8 @@ object frmAnalysis: TfrmAnalysis
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsBold]
         ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 1
         OnClick = btnResultFileBrowseClick
       end
@@ -846,10 +885,14 @@ object frmAnalysis: TfrmAnalysis
     end
   end
   object OpenDialog1: TOpenDialog
-    Options = [ofEnableSizing]
+    Options = [ofAllowMultiSelect, ofEnableSizing]
     Left = 408
   end
-  object SaveDialog1: TSaveDialog
+  object SaveDialog: TSaveDialog
+    DefaultExt = '*.prm'
+    Filter = 'Parameter Files (*.prm)|*.prm'
+    Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
+    Title = 'Save Parameter File As'
     Left = 440
   end
 end
