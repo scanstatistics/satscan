@@ -149,7 +149,7 @@ bool CAnalysis::Execute(time_t RunTime) {
            return false;
 
         // log new history for each analysis run - AJV 9/10/2002   
-        historyFile.LogNewHistory(this, guwSignificantAt005, *gpPrintDirection);
+        historyFile.LogNewHistory(*this, guwSignificantAt005, *gpPrintDirection);
         // reset the number of significants back to zero for each analysis - AJV 9/10/2002
         guwSignificantAt005 = 0;
 
@@ -368,9 +368,9 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
 
         // record DBF output data - AJV
         if(m_pParameters->GetOutputClusterLevelDBF())
-           pDBFClusterReport->RecordClusterData(m_pTopClusters[0], m_pData, m_nClustersReported);
+           pDBFClusterReport->RecordClusterData(*m_pTopClusters[0], *m_pData, m_nClustersReported);
         if(m_pParameters->GetOutputAreaSpecificDBF())
-           pDBFAreaReport->RecordClusterData(m_pTopClusters[0], m_pData, m_nClustersReported);
+           pDBFAreaReport->RecordClusterData(*m_pTopClusters[0], *m_pData, m_nClustersReported);
 
         if(m_pTopClusters[0]->m_nLogLikelihood >= SimRatios.GetAlpha05())
            ++guwSignificantAt005;
@@ -419,9 +419,9 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
 
           // record DBF output data - AJV
           if(m_pParameters->GetOutputClusterLevelDBF())
-             pDBFClusterReport->RecordClusterData(m_pTopClusters[i], m_pData, m_nClustersReported);
+             pDBFClusterReport->RecordClusterData(*m_pTopClusters[i], *m_pData, m_nClustersReported);
           if(m_pParameters->GetOutputAreaSpecificDBF())
-             pDBFAreaReport->RecordClusterData(m_pTopClusters[i], m_pData, m_nClustersReported);
+             pDBFAreaReport->RecordClusterData(*m_pTopClusters[i], *m_pData, m_nClustersReported);
 
           if(m_pTopClusters[i]->m_nLogLikelihood >= dSignifRatio05)
              ++guwSignificantAt005;
