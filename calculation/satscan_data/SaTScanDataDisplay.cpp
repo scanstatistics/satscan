@@ -95,7 +95,7 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
           m_pParameters->GetStudyPeriodStartDate().c_str(),
           m_pParameters->GetStudyPeriodEndDate().c_str());
 
-  PrintFormat.PrintSectionLabel(fp, "Number of census areas", false, false);
+  PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
   fprintf(fp, "%ld\n", (long) m_nTracts);
 
   if (m_pParameters->GetProbabiltyModelType() == POISSON || m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
