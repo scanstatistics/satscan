@@ -278,7 +278,6 @@ void CalcThread::Setup(const CParameters& session, char *pTitle, TfrmAnalysisRun
     gpParams = new CParameters(session);
     gpPrintWindow = new PrintWindow(*this);
     gpParams->SetPrintDirection(gpPrintWindow);
-    gpParams->ConvertMaxTemporalClusterSizeToType(PERCENTAGETYPE);
     gsThreadTitle = pTitle;
     gpFormStatus =  pProgress;
     Priority = tpNormal;  //tpHighest
