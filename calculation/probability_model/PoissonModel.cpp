@@ -64,7 +64,7 @@ void CPoissonModel::AdjustForNonParameteric(RealDataStream & thisStream, measure
 }
 
 /** Adjusts passed non-cumulative measure given passed log linear percentage. */
-void CPoissonModel::AdjustForLLPercentage(RealDataStream & thisStream, measure_t ** pNonCumulativeMeasure, double nPercentage)
+void CPoissonModel::AdjustForLLPercentage(RealDataStream & thisStream, measure_t ** ppNonCumulativeMeasure, double nPercentage)
 {
   int    i,t;
   double c;
@@ -77,14 +77,14 @@ void CPoissonModel::AdjustForLLPercentage(RealDataStream & thisStream, measure_t
   #endif
 
   /* Adjust the measure assigned to each interval/tract by yearly percentage */
-  for (i=0; i<gData.m_nTimeIntervals; i++)
-    for (t=0; t<gData.m_nTracts; t++)
-    {
-      (pNonCumulativeMeasure)[i][t] = (pNonCumulativeMeasure)[i][t]*(pow(p,i*k)) /* * c */ ;
-      nAdjustedMeasure += (pNonCumulativeMeasure)[i][t];
-
-      if (nAdjustedMeasure > DBL_MAX)
-        SSGenerateException("Error: Data overflow due to time trend adjustment.\n","AdjustForLLPercentage()");
+  for (i=0; i < gData.m_nTimeIntervals; ++i)
+    for (t=0; t < gData.m_nTracts; ++t) {
+      ppNonCumulativeMeasure[i][t] = ppNonCumulativeMeasure[i][t]*(pow(p,i*k)) /* * c */ ;
+      if (nAdjustedMeasure > std::numeric_limits<measure_t>::max() - ppNonCumulativeMeasure[i][t])
+        GenerateResolvableException("Error: Data overflow occurs when performing the time trend adjustment in data stream %u.\n"
+                                    "       Please run analysis without the time trend adjustment.\n",
+                                    "AdjustForLLPercentage()", thisStream.GetStreamIndex());
+      nAdjustedMeasure += ppNonCumulativeMeasure[i][t];
     }
 
   /* Mutlipy the measure for each interval/tract by constant (c) to obtain */
@@ -93,7 +93,7 @@ void CPoissonModel::AdjustForLLPercentage(RealDataStream & thisStream, measure_t
   c = (double)(thisStream.GetTotalMeasure())/nAdjustedMeasure;
   for (i=0; i<gData.m_nTimeIntervals; ++i)
     for (t=0; t<gData.m_nTracts; ++t)
-     pNonCumulativeMeasure[i][t] *= c;
+     ppNonCumulativeMeasure[i][t] *= c;
 }
 
 /** Calculates time trend for data stream, calls CParameters::SetTimeTrendAdjustmentPercentage()
@@ -108,17 +108,17 @@ void CPoissonModel::AdjustForLogLinear(RealDataStream& thisStream, measure_t ** 
   //Cancel analysis execution if calculation of time trend fails for various reasons.
   switch (TimeTrend.GetStatus()) {
     case CTimeTrend::TREND_UNDEF :
-      SSGenerateException("Note: Temporal adjustment could not be performed. The calculated time trend is undefined.\n"
-                          "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
+      GenerateResolvableException("Note: The time trend is undefined and the temporal adjustment could not be performed.\n"
+                                  "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
     case CTimeTrend::TREND_INF :
-      SSGenerateException("Note: Temporal adjustment could not be performed. The calculated time trend is infinite.\n"
-                          "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
+      GenerateResolvableException("Note: The time trend is infinite and the temporal adjustment could not be performed.\n"
+                                  "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
     case CTimeTrend::TREND_NOTCONVERGED :
-      SSGenerateException("Note: Temporal adjustment could not be performed. The time trend does not converge.\n"
-                          "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
+      GenerateResolvableException("Note: The time trend calculation did not converge and the temporal adjustment could not be performed.\n"
+                                  "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
     case CTimeTrend::TREND_NEGATIVE :
-      SSGenerateException("Note: Temporal adjustment could not be performed. The calculated time trend is negative.\n"
-                          "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
+      GenerateResolvableException("Note: Temporal adjustment could not be performed. The calculated time trend is negative.\n"
+                                  "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
     case CTimeTrend::TREND_CONVERGED : break;
     default :
       ZdGenerateException("Unknown time trend status type '%d'.", "AdjustForLogLinear()", TimeTrend.GetStatus());
