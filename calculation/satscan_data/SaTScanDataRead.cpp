@@ -527,7 +527,7 @@ bool CSaTScanData::ReadCounts(FILE * fp, const char* szDescription) {
            if (ParseCountLine(szDescription, iRecNum, Parser, TractIndex, Count, Date, iCategoryIndex)) {
              //cumulatively add count to time by location structure
              pCounts[0][TractIndex] += Count;
-             for (int i=1; Date >= m_pIntervalStartTimes[i]; ++i)
+             for (i=1; Date >= m_pIntervalStartTimes[i]; ++i)
                pCounts[i][TractIndex] += Count;
              //record count as a case or control  
              if (bCaseFile)
