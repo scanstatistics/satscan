@@ -21,7 +21,7 @@ void PopulationCategories::Display(BasePrint & PrintDirection) const {
     for (t=0; t < gvPopulationCategories.size(); t++) {
        PrintDirection.SatScanPrintf("%d     ",  t);
        for (j=0; j < gvPopulationCategories[t].size(); j++)
-          PrintDirection.SatScanPrintf("%s  ", gvCovariateNames[gvPopulationCategories[t][j]]);
+          PrintDirection.SatScanPrintf("%s  ", gvCovariateNames[gvPopulationCategories[t][j]].c_str());
        PrintDirection.SatScanPrintf("\n");
     }
     PrintDirection.SatScanPrintf("\n");
@@ -56,7 +56,7 @@ const char * PopulationCategories::GetPopulationCategoryAsString(int iCategoryIn
       ZdException::Generate("Index out of range '%d', range is 0 - %d.", "GetPopulationCategoryAsString()",
                             iCategoryIndex, gvPopulationCategories.size() - 1);
 
-    sBuffer.clear();
+    sBuffer = "";
     for (t=0; t < gvPopulationCategories[iCategoryIndex].size(); t++) {
        if (t > 0)
           sBuffer += " ";

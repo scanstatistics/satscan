@@ -2,7 +2,7 @@
 #ifndef __POPULATIONCATEGORIES_H
 #define __POPULATIONCATEGORIES_H
 //*****************************************************************************
-#include "SatScan.h"
+#include "SaTScan.h"
 #include "UtilityFunctions.h"
 
 /** This file abstracts "categories" of populations(.i.e covariate combinations).
