@@ -361,7 +361,7 @@ bool TfrmAnalysis::Check_Days(int iYear, int iMonth, int iDay, char *sDateName) 
       sFinalMessage += sDateName;
       sprintf(szMessage, ":  Please specify a day between %i and %i.", iMin, iMax);
       sFinalMessage += szMessage;
-      MessageBox(NULL, sFinalMessage.c_str(), "Parameter Error" , MB_OK);
+      Application->MessageBox(sFinalMessage.c_str(), "Parameter Error" , MB_OK);
       bDayOk = false;
     }
   }
@@ -380,7 +380,7 @@ bool TfrmAnalysis::Check_IntervalLength(int iStartYear, int iStartMonth, int iSt
 
   try {
     if (atoi(edtUnitLength->Text.c_str()) < 1) {
-      MessageBox(NULL, "Interval length can not be zero.\nPlease specify an interval length.", "Notification" , MB_OK);
+      Application->MessageBox("Interval length can not be zero.\nPlease specify an interval length.", "Notification" , MB_OK);
       bIntervalLenOk = false;
     }
   }
@@ -401,7 +401,7 @@ bool TfrmAnalysis::Check_Month(int iMonth, char *sDateName) {
     if ((iMonth < 1) || (iMonth > 12)) {
       sFinalMessage += sDateName;
       sFinalMessage += ":  Please specify an month between 1 and 12.";
-      MessageBox(NULL, sFinalMessage.c_str(), "Parameter Error" , MB_OK);
+      Application->MessageBox(sFinalMessage.c_str(), "Parameter Error" , MB_OK);
       bMonthOk = false;
     }
   }
@@ -416,7 +416,7 @@ bool TfrmAnalysis::Check_Month(int iMonth, char *sDateName) {
 //------------------------------------------------------------------------------
 bool TfrmAnalysis::Check_TimeTrendPercentage(double dValue) {
   if ( ! (dValue > -100.00)) {
-    MessageBox(NULL, "Invalid time trend percentage specified.", "Parameter Error" , MB_OK);
+    Application->MessageBox("Invalid time trend percentage specified.", "Parameter Error" , MB_OK);
     return false;
   }
   else
@@ -436,7 +436,7 @@ bool TfrmAnalysis::Check_Year(int iYear, char *sDateName) {
       sFinalMessage += sDateName;
       sprintf(szMessage, ":  Please specify a year between %i and %i.", MIN_YEAR, MAX_YEAR);
       sFinalMessage += szMessage;
-      MessageBox(NULL, sFinalMessage.c_str(), "Parameter Error" , MB_OK);
+      Application->MessageBox(sFinalMessage.c_str(), "Parameter Error" , MB_OK);
       bYearOk = false;
     }
   }
@@ -512,7 +512,7 @@ bool TfrmAnalysis::CheckDateRange(int iStartYear, int iStartMonth, int iStartDay
       DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), EndDate.GetRawDate());
       sErrorMessage << " does not occur before study period end date of " << FilterBuffer;
       sErrorMessage << ".\nPlease review settings.";
-      MessageBox(NULL, sErrorMessage.GetCString(), "Notification" , MB_OK);
+      Application->MessageBox(sErrorMessage.GetCString(), "Notification" , MB_OK);
       PageControl1->ActivePage = tbAnalysis;
       bRangeOk = false;
     }
@@ -538,7 +538,7 @@ bool TfrmAnalysis::CheckDateRange(int iStartYear, int iStartMonth, int iStartDay
       if (StartDate > EndDate) {
         sErrorMessage << "Interval length of " << iIntervalLength << " " << FilterBuffer;
         sErrorMessage << " is greater than study period length.\nPlease review settings.";
-        MessageBox(NULL, sErrorMessage.GetCString(), "Notification" , MB_OK);
+        Application->MessageBox(sErrorMessage.GetCString(), "Notification" , MB_OK);
         PageControl1->ActivePage = tbTimeParameter;
         bRangeOk = false;
       }
@@ -586,7 +586,7 @@ bool TfrmAnalysis::CheckProspDateRange(int iStartYear, int iStartMonth, int iSta
       bRangeOk = false;
     }
     else if ((Prosp < Start) || (Prosp > End)) {
-      MessageBox(NULL, "The Start date of Prospective Space-Time must be between the Study Period start and end dates.", "Parameter Error" , MB_OK);
+      Application->MessageBox("The Start date of Prospective Space-Time must be between the Study Period start and end dates.", "Parameter Error" , MB_OK);
       PageControl1->ActivePage = tbTimeParameter;
       edtProspYear->SetFocus();
       bRangeOk = false;
@@ -603,7 +603,7 @@ bool TfrmAnalysis::CheckProspDateRange(int iStartYear, int iStartMonth, int iSta
 //------------------------------------------------------------------------------
 bool TfrmAnalysis::CheckReplicas(int iReplicas) {
     if (! ((iReplicas == 0) || (iReplicas == 9) || (iReplicas == 19) || (fmod(iReplicas+1, 1000) == 0.0)) ) {
-      MessageBox(NULL, "Invalid number of replicas specified.", "Parameter Error" , MB_OK);
+      Application->MessageBox("Invalid number of replicas specified.", "Parameter Error" , MB_OK);
       return false;
     }
     else
@@ -646,7 +646,7 @@ bool TfrmAnalysis::CheckTimeParams() {
       if (bParamsOk && edtLogPerYear->Enabled) {
         if (edtLogPerYear->Text.IsEmpty()) {
           bParamsOk = false;
-          MessageBox(NULL, "Please enter a number in time trend percentage.", "Parameter Error" , MB_OK);
+          Application->MessageBox("Please enter a number in time trend percentage.", "Parameter Error" , MB_OK);
           PageControl1->ActivePage = tbTimeParameter;
         }
         else {
@@ -806,7 +806,7 @@ void __fastcall TfrmAnalysis::edtEndYearExit(TObject *Sender) {
 void __fastcall TfrmAnalysis::edtLogPerYearExit(TObject *Sender) {
   double dValue = atof(edtLogPerYear->Text.c_str());
   if (edtLogPerYear->Text.IsEmpty()) {
-    MessageBox(NULL, "The percentage per year value can not be blank.", "Parameter Error" , MB_OK);
+    Application->MessageBox("The percentage per year value can not be blank.", "Parameter Error" , MB_OK);
     PageControl1->ActivePage = tbTimeParameter;
     edtLogPerYear->SetFocus();
   }
@@ -866,7 +866,7 @@ void __fastcall TfrmAnalysis::edtMaxTemporalClusterSizeExit(TObject *Sender) {
 void __fastcall TfrmAnalysis::edtProspDayExit(TObject *Sender) {
   try {
     if ((atoi(edtProspDay->Text.c_str()) < 1) || (atoi(edtProspDay->Text.c_str()) > 31)) {
-      MessageBox(NULL, "Please specify a valid day.", "Parameter Error" , MB_OK);
+      Application->MessageBox("Please specify a valid day.", "Parameter Error" , MB_OK);
       PageControl1->ActivePage = tbTimeParameter;
       edtProspDay->SetFocus();
     }
@@ -906,7 +906,7 @@ void __fastcall TfrmAnalysis::edtProspMonthExit(TObject *Sender) {
 void __fastcall TfrmAnalysis::edtStartDayExit(TObject *Sender) {
   try {
     if ((atoi(edtStartDay->Text.c_str()) < 1) || (atoi(edtStartDay->Text.c_str()) > 31)) {
-      MessageBox(NULL, "Please specify a valid day.", "Parameter Error" , MB_OK);
+      Application->MessageBox("Please specify a valid day.", "Parameter Error" , MB_OK);
       PageControl1->ActivePage = tbAnalysis;
       edtStartDay->SetFocus();
     }
@@ -1668,7 +1668,7 @@ bool TfrmAnalysis::ValidateInputFiles() {
   try {
     if (edtCaseFileName->Enabled) {// case file edit box enabled
       if (edtCaseFileName->Text.IsEmpty()) {
-        MessageBox(NULL, "Please specify a case file.", "Parameter Error" , MB_OK);
+        Application->MessageBox("Please specify a case file.", "Parameter Error" , MB_OK);
         bOk = false;
       }
       else
@@ -1682,7 +1682,7 @@ bool TfrmAnalysis::ValidateInputFiles() {
     //Control file for Bernoulli model only
     if (bOk & (rgProbability->ItemIndex==1)) {// Control file edit box enabled
       if (edtControlFileName->Text.IsEmpty()) {
-        MessageBox(NULL, "For the Bernoulli model, please specify a control file.", "Parameter Error" , MB_OK);
+        Application->MessageBox("For the Bernoulli model, please specify a control file.", "Parameter Error" , MB_OK);
         bOk = false;
       }
       else
@@ -1696,7 +1696,7 @@ bool TfrmAnalysis::ValidateInputFiles() {
     //Pop file for Poisson model only
     if (bOk & (rgProbability->ItemIndex==0)) {// Population file edit box enabled
       if (edtPopFileName->Text.IsEmpty()) {
-        MessageBox(NULL, "For the Poisson model, please specify a population file.", "Parameter Error" , MB_OK);
+        Application->MessageBox("For the Poisson model, please specify a population file.", "Parameter Error" , MB_OK);
         bOk = false;
       }
       else
@@ -1709,7 +1709,7 @@ bool TfrmAnalysis::ValidateInputFiles() {
     }
     if (bOk & edtCoordinateFileName->Enabled) {// Coordinates file edit box enabled
       if (edtCoordinateFileName->Text.IsEmpty()) {
-        MessageBox(NULL, "Please specify a coordinates file.", "Parameter Error" , MB_OK);
+        Application->MessageBox("Please specify a coordinates file.", "Parameter Error" , MB_OK);
         bOk = false;
       }
       else
@@ -1869,7 +1869,7 @@ bool TfrmAnalysis::ValidateTemoralClusterSize() {
     bParamsOk = false;
     PageControl1->ActivePage = tbScanningWindow;
     edtMaxTemporalClusterSize->SetFocus();
-    MessageBox( NULL, x.GetErrorMessage(), "Notification", MB_OK );
+    Application->MessageBox(x.GetErrorMessage(), "Notification", MB_OK );
   }
   return bParamsOk;
 }
