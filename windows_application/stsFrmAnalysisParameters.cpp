@@ -645,6 +645,9 @@ void __fastcall TfrmAnalysis::edtStudyPeriodEndDateMonthExit(TObject *Sender) {
       PageControl1->ActivePage = tbAnalysis;
       edtStudyPeriodEndDateMonth->SetFocus();
     }
+    else if (!edtStudyPeriodEndDateDay->Enabled)  // reset day to last day of month
+      edtStudyPeriodEndDateDay->Text = DaysThisMonth(atoi(edtStudyPeriodEndDateYear->Text.c_str()),
+                                                     atoi(edtStudyPeriodEndDateMonth->Text.c_str()));
   }
   catch (ZdException &x) {
     x.AddCallpath("edtStudyPeriodEndDateMonthExit","TfrmAnalysis");
@@ -654,11 +657,16 @@ void __fastcall TfrmAnalysis::edtStudyPeriodEndDateMonthExit(TObject *Sender) {
 
 /** event triggered when year control, of study period end date, is exited. */
 void __fastcall TfrmAnalysis::edtStudyPeriodEndDateYearExit(TObject *Sender) {
+  int   iYear = atoi(edtStudyPeriodEndDateYear->Text.c_str()),
+        iMonth =  atoi(edtStudyPeriodEndDateMonth->Text.c_str());
+
   try {
-    if (! Check_Year(atoi(edtStudyPeriodEndDateYear->Text.c_str()), "Study Period End Year")) {
+    if (! Check_Year(iYear, "Study Period End Year")) {
       PageControl1->ActivePage = tbAnalysis;
       edtStudyPeriodEndDateYear->SetFocus();
     }
+    else if (!edtStudyPeriodEndDateDay->Enabled && iMonth == 2/*February*/) // reset day to last day of month
+      edtStudyPeriodEndDateDay->Text = DaysThisMonth(iYear, iMonth);
   }
   catch (ZdException &x) {
     x.AddCallpath("edtStudyPeriodEndDateYearExit()","TfrmAnalysis");
