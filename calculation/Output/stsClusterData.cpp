@@ -142,10 +142,11 @@ void ClusterRecord::Init() {
 // constructor
 __fastcall stsClusterData::stsClusterData(BasePrint *pPrintDirection, const ZdString& sOutputFileName, const long lRunNumber, const int iCoordType, const int iModelType,
                                           const int iDimension, const bool bPrintPVal, const bool bPrintEllipses)
-                          : BaseOutputStorageClass(pPrintDirection) {
+                          : BaseOutputStorageClass(pPrintDirection) , gbPrintEllipses(bPrintEllipses), giModelType(iModelType), giDimension(iDimension),
+                                                                      glRunNumber(lRunNumber), gbPrintPVal(bPrintPVal), giCoordType(iCoordType) {
    try {
       Init();
-      Setup(sOutputFileName, iModelType, iDimension, iCoordType, lRunNumber, bPrintEllipses,bPrintPVal);
+      Setup(sOutputFileName);
    }
    catch (ZdException &x) {
       if(pPrintDirection) {
@@ -161,13 +162,7 @@ stsClusterData::~stsClusterData() {
 
 // global inits
 void stsClusterData::Init() {
-   giDimension = 0;
-   giModelType = 0;
-   glRunNumber = 0;
-   giCoordType = 0;
    gbIncludeRunHistory = false;
-   gbPrintEllipses = false;
-   gbPrintPVal = false;
 }
 
 // records the calculated data from the cluster into the dBase file
@@ -208,7 +203,7 @@ void stsClusterData::RecordClusterData(const CCluster& pCluster, const CSaTScanD
       pRecord->SetLocationID(sTempValue);
             
       // log likliehood or tst_stat if space-time permutation
-      pRecord->SetLogLikelihood(pCluster.m_nLogLikelihood);
+      pRecord->SetLogLikelihood(pCluster.m_nRatio);
       
       pRecord->SetNumAreas(pCluster.m_nTracts);
            
@@ -380,9 +375,7 @@ void stsClusterData::SetStartAndEndDates(ZdString& sStartDate, ZdString& sEndDat
 }
 
 // internal setup
-void stsClusterData::Setup(const ZdString& sOutputFileName, const int iModelType,
-                          const int iDimension,  const int iCoordType,
-                          const long lRunNumber, const bool bPrintEllipses, const bool bPrintPVal) {
+void stsClusterData::Setup(const ZdString& sOutputFileName) {
    try {
       ZdString sTempName(sOutputFileName);
       ZdString sExt(ZdFileName(sOutputFileName).GetExtension());
@@ -392,12 +385,6 @@ void stsClusterData::Setup(const ZdString& sOutputFileName, const int iModelType
          sTempName << CLUSTER_FILE_EXT;
       gsFileName = sTempName;
 
-      gbPrintEllipses = bPrintEllipses;
-      giModelType = iModelType;
-      giDimension = iDimension;
-      glRunNumber = lRunNumber;
-      gbPrintPVal = bPrintPVal;
-      giCoordType = iCoordType;
 #ifdef INCLUDE_RUN_HISTORY
       gbIncludeRunHistory = true;
 #else

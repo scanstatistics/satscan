@@ -21,9 +21,7 @@ class stsClusterData : public BaseOutputStorageClass {
                                const CCluster& pCluster, const CSaTScanData& pData);
       void      SetEllipseString(ZdString& sAngle, ZdString& sShape, const CCluster& pCluster, const CSaTScanData& pData);
       void      SetStartAndEndDates(ZdString& sStartDate, ZdString& sEndDate, const CCluster& pCluster, const CSaTScanData& pData);                         
-      void	Setup(const ZdString& sOutputFileName, const int iModelType,
-                      const int iDimension,  const int iCoordType,
-                      const long lRunNumber, const bool bPrintEllipses, const bool bPrintPVal);
+      void	Setup(const ZdString& sOutputFileName);
       void  	SetupFields();
 
    public:
