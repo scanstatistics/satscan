@@ -4,22 +4,23 @@
 //**********************************************************************************
 #include "SaTScan.h"
 
-class CSignificantRatios05
-{
+/** Maintains ordered list of significant log likelihood ratios as calculated
+    during simulation process. */
+class CSignificantRatios05 {
+  private:
+    int         m_nTotalReplications;
+    int         m_nRatios;
+    double    * m_pRatiosList;
+
   public:
     CSignificantRatios05(int nReplications, BasePrint *pPrintDirection);
     ~CSignificantRatios05();
 
-    void   Initialize();
-    bool   AddRatio(double r);
-    void   CalcAlphas();
-    const double GetAlpha01() const;
-    const double GetAlpha05() const;
-
-  private:
-    int     m_nTotalReplications;
-    int     m_nRatios;
-    double* m_pRatiosList;
+    bool        AddRatio(double r);
+    void        CalcAlphas();
+    double      GetAlpha01() const;
+    double      GetAlpha05() const;
+    void        Initialize();
 };
 //**********************************************************************************
 #endif
