@@ -57,6 +57,8 @@ const char*      OUTPUT_SIM_LLR_DBASE_LINE      	= "SaveSimLLRsDBase";
 const char*      OUTPUT_REL_RISKS_ASCII_LINE    	= "IncludeRelativeRisksCensusAreasASCII";
 const char*      OUTPUT_REL_RISKS_DBASE_LINE    	= "IncludeRelativeRisksCensusAreasDBase";
 const char*      CRIT_REPORT_SEC_CLUSTERS_LINE  	= "CriteriaForReportingSecondaryClusters";
+const char*      REPORTED_GEOSIZE_LINE                  = "MaxReportedGeoClusterSize";
+const char*      USE_REPORTED_GEOSIZE_LINE              = "UseReportOnlySmallerClusters";
 
 const char*      SEQUENTIAL_SCAN_SECTION        	= "[Sequential Scan]";
 const char*      SEQUENTIAL_SCAN_LINE           	= "SequentialScan";
@@ -97,9 +99,9 @@ const char*      YEAR_PRECISION_TYPE            	= "Years";
 const char*      MONTH_PRECISION_TYPE           	= "Months";
 const char*      DAY_PRECISION_TYPE             	= "Days";
 
-int CParameters::giNumParameters 			= 57;
+int CParameters::giNumParameters 			= 59;
 
-char mgsVariableLabels[57][100] = {
+char mgsVariableLabels[59][100] = {
    "Analysis Type",
    "Scan Areas",
    "Case File",
@@ -156,7 +158,9 @@ char mgsVariableLabels[57][100] = {
    "Time Trend Convergence",
    "Special Population File",
    "Special Population File Use",
-   "Early Termination of Simulations"
+   "Early Termination of Simulations",
+   "Maximum Reported Geographical Cluster Size",
+   "Restrict Reported Max Geographical Cluster Size"
 };
 
 /** Constructor */   
@@ -281,7 +285,9 @@ void CParameters::Copy(const CParameters &rhs) {
     gsStartRangeStartDate               = rhs.gsStartRangeStartDate;
     gsStartRangeEndDate                 = rhs.gsStartRangeEndDate;
     gbTimeTrendConverge			= rhs.gbTimeTrendConverge;
-    gbEarlyTerminationSimulations       = rhs.gbEarlyTerminationSimulations;        
+    gbEarlyTerminationSimulations       = rhs.gbEarlyTerminationSimulations;
+    gbRestrictReportedClusters          = rhs.gbRestrictReportedClusters;
+    gfMaxReportedGeographicClusterSize  = rhs.gfMaxReportedGeographicClusterSize;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -555,6 +561,12 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
          default : ZdException::Generate("Unknown secondary clusters type '%d'.\n", "DisplayParameters()", geCriteriaSecondClustersType);
       }
     }
+
+    if (gbRestrictReportedClusters)
+      fprintf(fp, "  Only clusters smaller than %g %s reported.\n", gfMaxReportedGeographicClusterSize,
+                  (geMaxGeographicClusterSizeType == DISTANCETYPE ?
+                    (geCoordinatesType == CARTESIAN ? "cartesian units" : "km") : "percent of population at risk"));
+
     fprintf(fp, "\n________________________________________________________________\n");
   }
   catch (ZdException &x) {
@@ -721,6 +733,8 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
         case MAXCIRCLEPOPFILE          : sParameterLineLabel = MAX_CIRCLE_POP_FILE_LINE; break;
         case USEMAXCIRCLEPOPFILE       : sParameterLineLabel = USE_MAX_CIRCLE_POP_FILE_LINE; break;
         case EARLY_SIM_TERMINATION     : sParameterLineLabel = EARLY_SIM_TERMINATION_LINE; break;
+        case REPORTED_GEOSIZE          : sParameterLineLabel = REPORTED_GEOSIZE_LINE; break;
+        case USE_REPORTED_GEOSIZE      : sParameterLineLabel = USE_REPORTED_GEOSIZE_LINE; break;
         default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLineLabel()", eParameterType);
       };
     }
@@ -992,6 +1006,8 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case MAXCIRCLEPOPFILE          : sDefaultValue = "<blank>"; break;
       case USEMAXCIRCLEPOPFILE       : sDefaultValue = (gbUseMaxCirclePopulationFile ? YES : NO); break;
       case EARLY_SIM_TERMINATION     : sDefaultValue = (gbEarlyTerminationSimulations ? YES : NO); break;
+      case REPORTED_GEOSIZE          : sDefaultValue = gfMaxReportedGeographicClusterSize; break;
+      case USE_REPORTED_GEOSIZE      : sDefaultValue = (gbRestrictReportedClusters ? YES : NO); break;
       default : ZdException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -1557,6 +1573,8 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case USEMAXCIRCLEPOPFILE       : SetUseMaxCirclePopulationFile(ReadBoolean(sParameter, eParameterType)); break;
       case MAXCIRCLEPOPFILE          : SetMaxCirclePopulationFileName(sParameter.GetCString(), true); break;
       case EARLY_SIM_TERMINATION     : SetTerminateSimulationsEarly(ReadBoolean(sParameter, eParameterType)); break;
+      case REPORTED_GEOSIZE          : SetMaximumReportedGeographicalClusterSize(ReadFloat(sParameter, eParameterType)); break;
+      case USE_REPORTED_GEOSIZE      : SetRestrictReportedClusters(ReadBoolean(sParameter, eParameterType)); break;
       default : ZdException::Generate("Unknown parameter enumeration %d.","ReadParameter()", eParameterType);
     };
   }
@@ -1591,6 +1609,8 @@ void CParameters::ReadOutputFileSection(ZdIniFile& file, BasePrint & PrintDirect
     ReadIniParameter(*pSection, OUTPUT_REL_RISKS_DBASE_LINE, OUTPUT_RR_DBASE, PrintDirection);
     ReadIniParameter(*pSection, OUTPUT_SIM_LLR_DBASE_LINE, OUTPUT_SIM_LLR_DBASE, PrintDirection);
     ReadIniParameter(*pSection, CRIT_REPORT_SEC_CLUSTERS_LINE, CRITERIA_SECOND_CLUSTERS, PrintDirection);
+    ReadIniParameter(*pSection, REPORTED_GEOSIZE_LINE, REPORTED_GEOSIZE, PrintDirection);
+    ReadIniParameter(*pSection, USE_REPORTED_GEOSIZE_LINE, USE_REPORTED_GEOSIZE, PrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadOutputFileSection()", "CParameters");
@@ -1790,7 +1810,7 @@ void CParameters::SaveAnalysisSection(ZdIniFile& file) {
 
   try {
     pSection = file.GetSection(ANALYSIS_SECTION);
-    pSection->AddComment(" analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time, 5=Spatial Variation/Temporal Trends, 6=PurelySpatialMonotone)");
+    pSection->AddComment(" analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time, 5=Spatial Variation/Temporal Trends, 6=Prospective Purely Temporal, 7=PurelySpatialMonotone)");
     pSection->AddLine(ANALYSIS_TYPE_LINE, AsString(sValue, geAnalysisType));
     pSection->AddComment(" model type (0=Poisson, 1=Bernoulli, 2=Space-Time Permutation)");
     pSection->AddLine(MODEL_TYPE_LINE, AsString(sValue, geProbabiltyModelType));
@@ -1898,6 +1918,10 @@ void CParameters::SaveOutputFileSection(ZdIniFile& file) {
     pSection->AddLine(OUTPUT_REL_RISKS_DBASE_LINE, gbOutputRelativeRisksDBase ? YES : NO);
     pSection->AddComment(" criteria for reporting secondary clusters(0=NoGeoOverlap, 1=NoCentersInOther, 2=NoCentersInMostLikely, 3=NoCentersInLessLikely, 4=NoPairsCentersEachOther, 5=NoRestrictions)");
     pSection->AddLine(CRIT_REPORT_SEC_CLUSTERS_LINE, AsString(sValue, geCriteriaSecondClustersType));
+    pSection->AddComment(" max reported geographic size (< max geographical cluster size%)");
+    pSection->AddLine(REPORTED_GEOSIZE_LINE, AsString(sValue, gfMaxReportedGeographicClusterSize));
+    pSection->AddComment(" use reported maximum geographical cluster size (y/n)");
+    pSection->AddLine(USE_REPORTED_GEOSIZE_LINE, gbRestrictReportedClusters ? YES : NO);
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveOutputFileSection()","CParameters");
@@ -2178,6 +2202,8 @@ void CParameters::SetDefaults() {
   gsStartRangeEndDate                   = gsStudyPeriodEndDate;
   gbTimeTrendConverge			= 0;
   gbEarlyTerminationSimulations         = false;
+  gbRestrictReportedClusters            = false;
+  gfMaxReportedGeographicClusterSize    = 49;
 }
 
 /** Sets dimensions of input data. */
@@ -2275,6 +2301,13 @@ void CParameters::SetMaximumGeographicClusterSize(float fMaxGeographicClusterSiz
   //Validity of setting is checked in ValidateParameters() since this setting
   //might not be pertinent in calculation.
   gfMaxGeographicClusterSize = fMaxGeographicClusterSize;
+}
+
+/** Sets maximum reported geographic cluster size. */
+void CParameters::SetMaximumReportedGeographicalClusterSize(float fMaxReportedGeographicClusterSize) {
+  //Validity of setting is checked in ValidateParameters() since this setting
+  //might not be pertinent in calculation.
+  gfMaxReportedGeographicClusterSize = fMaxReportedGeographicClusterSize;
 }
 
 /** Sets maximum spacial cluster size type. Throws exception if out of range. */
@@ -3165,12 +3198,21 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
         geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == SPATIALVARTEMPTREND) {
       if (gfMaxGeographicClusterSize <= 0) {
         bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Maximum geographical cluster size of '%2g%%' is invalid. Value must be greater than zero.\n", gfMaxGeographicClusterSize);
+        PrintDirection.SatScanPrintWarning("Error: Maximum spatial cluster size of '%2g%%' is invalid. Value must be greater than zero.\n", gfMaxGeographicClusterSize);
       }
       if (geMaxGeographicClusterSizeType == PERCENTAGEOFMEASURETYPE && gfMaxGeographicClusterSize > 50.0) {
         bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting of '%2g%%' for maximum geographical cluster size.\n", gfMaxGeographicClusterSize);
-        PrintDirection.SatScanPrintWarning("       When defined as a percentage of the population at risk, the maximum geographical cluster size is 50%%.\n");
+        PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting of '%2g%%' for maximum spatial cluster size.\n", gfMaxGeographicClusterSize);
+        PrintDirection.SatScanPrintWarning("       When defined as a percentage of the population at risk, the maximum spatial cluster size is 50%%.\n");
+      }
+      if (gbRestrictReportedClusters && gfMaxReportedGeographicClusterSize <= 0) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Maximum spatial cluster size of '%2g%%' for reported clusters is invalid. Value must be greater than zero.\n", gfMaxGeographicClusterSize);
+      }
+      if (gbRestrictReportedClusters && gfMaxReportedGeographicClusterSize >= gfMaxGeographicClusterSize) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting of '%2g' for maximum reported spatial cluster size.\n", gfMaxReportedGeographicClusterSize);
+        PrintDirection.SatScanPrintWarning("       Settings must be less than maximum spatial size.\n");
       }
     }
     else {
@@ -3180,6 +3222,7 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
       //routine should really be skipped for this analysis type.
       gfMaxGeographicClusterSize = 50.0; //KR980707 0 GG980716;
       geMaxGeographicClusterSizeType = PERCENTAGEOFMEASURETYPE;
+      gbRestrictReportedClusters = false;
     }
 
     if (gbIncludePurelySpatialClusters) {
@@ -3301,22 +3344,50 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
       }
       //time trend adjustment
       switch (geProbabiltyModelType) {
-        case BERNOULLI            : if (geTimeTrendAdjustType == CALCULATED_LOGLINEAR_PERC && geAnalysisType == SPATIALVARTEMPTREND) {
-                                      if (gbTimeTrendConverge < 0.0) {
-                                        bValid = false;
-                                        PrintDirection.SatScanPrintWarning("Error: Time trend convergence value of '%2g' is less than zero.\n", gbTimeTrendConverge);
+        case BERNOULLI            : //Bernoulli can only have time trend adjustments for SVTT analysis.
+                                    if (geAnalysisType == SPATIALVARTEMPTREND) {
+                                      if (geTimeTrendAdjustType == CALCULATED_LOGLINEAR_PERC) {
+                                        if (gbTimeTrendConverge < 0.0) {
+                                          bValid = false;
+                                          PrintDirection.SatScanPrintWarning("Error: Time trend convergence value of '%2g' is less than zero.\n", gbTimeTrendConverge);
+                                        }
                                       }
-                                      break;
+                                      else if (geTimeTrendAdjustType == LOGLINEAR_PERC) {
+                                         if (-100.0 >= gbTimeTrendAdjustPercentage) {
+                                           bValid = false;
+                                           PrintDirection.SatScanPrintWarning("Error: Time adjustment percentage of '%2g' is not greater than -100.\n",
+                                                                              gbTimeTrendAdjustPercentage);
+                                         }                                     
+                                      }
+                                      else if (geTimeTrendAdjustType == STRATIFIED_RANDOMIZATION)
+                                          break;
+                                      else {
+                                        geTimeTrendAdjustType = NOTADJUSTED;
+                                        gbTimeTrendAdjustPercentage = 0.0;
+                                      }
                                     }
-                                    if (geTimeTrendAdjustType == STRATIFIED_RANDOMIZATION)
-                                      break;
-        case SPACETIMEPERMUTATION : geTimeTrendAdjustType = NOTADJUSTED;
-                                    gbTimeTrendAdjustPercentage = 0.0;
+                                    else if (geTimeTrendAdjustType != NOTADJUSTED) {
+                                      PrintDirection.SatScanPrintWarning("Warning: For the Bernoulli model, adjusting temporal trends is only permitted\n");
+                                      PrintDirection.SatScanPrintWarning("         with Spatial Variation of Temporal Trends analyses.\n");
+                                      geTimeTrendAdjustType = NOTADJUSTED;
+                                      gbTimeTrendAdjustPercentage = 0.0;
+                                    }
                                     break;
-         case POISSON             : if (geTimeTrendAdjustType == NONPARAMETRIC && geAnalysisType == PURELYTEMPORAL) {
+        case SPACETIMEPERMUTATION : if (geTimeTrendAdjustType != NOTADJUSTED) {
+                                      PrintDirection.SatScanPrintWarning("Warning: For the Space-Time Permutation model, adjusting for temporal trends is not permitted.\n");
+                                      geTimeTrendAdjustType = NOTADJUSTED;
+                                      gbTimeTrendAdjustPercentage = 0.0;
+                                    }
+                                    break;
+         case POISSON             : if (geTimeTrendAdjustType == NONPARAMETRIC && (geAnalysisType == PURELYTEMPORAL ||geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
                                       bValid = false;
-                                      PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting for time adjustment type.\n");
-                                      PrintDirection.SatScanPrintWarning("       You may not use non-parametric time in a Purely Temporal analysis.\n");
+                                      PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting for time trend adjustment.\n");
+                                      PrintDirection.SatScanPrintWarning("       You may not use non-parametric time in a purely temporal analysis.\n");
+                                    }
+                                    if (geTimeTrendAdjustType == STRATIFIED_RANDOMIZATION && (geAnalysisType == PURELYTEMPORAL ||geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
+                                      bValid = false;
+                                      PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting for time trend adjustment.\n");
+                                      PrintDirection.SatScanPrintWarning("       You may not use stratified randomization by time intervals with a purely temporal analysis.\n");
                                     }
                                     if (geTimeTrendAdjustType == LOGLINEAR_PERC && -100.0 >= gbTimeTrendAdjustPercentage) {
                                       bValid = false;

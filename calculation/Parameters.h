@@ -85,6 +85,8 @@ extern const char*      OUTPUT_SIM_LLR_DBASE_LINE;
 extern const char*      OUTPUT_REL_RISKS_ASCII_LINE;
 extern const char*      OUTPUT_REL_RISKS_DBASE_LINE;
 extern const char*      CRIT_REPORT_SEC_CLUSTERS_LINE;
+extern const char*      REPORTED_GEOSIZE_LINE;
+extern const char*      USE_REPORTED_GEOSIZE_LINE;
 
 /** Note: Ini formatted parameter file is stored in sections that 
           reflect grouping of parameters on gui interface tabs. */
@@ -128,7 +130,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     RUN_HISTORY_FILENAME, OUTPUT_MLC_DBASE, OUTPUT_AREAS_DBASE, OUTPUT_RR_DBASE,
                                     OUTPUT_SIM_LLR_DBASE, DUCZMAL_COMPACTNESS, INTERVAL_STARTRANGE, 
                                     INTERVAL_ENDRANGE, TIMETRENDCONVRG, MAXCIRCLEPOPFILE, USEMAXCIRCLEPOPFILE,
-                                    EARLY_SIM_TERMINATION};
+                                    EARLY_SIM_TERMINATION, REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL, PURELYSPATIALMONOTONE};
@@ -169,7 +171,9 @@ class CParameters {
         /* Maximum spatial cluster variables */
     float                               gfMaxGeographicClusterSize;             /** maximum value for spatial cluster */
     SpatialSizeType                     geMaxGeographicClusterSizeType;         /** maximum spatial cluster value type */
-        /* Maximum temporal cluster variables */
+    bool                                gbRestrictReportedClusters;             /** indicates whether reported clusters are limited to specified maximum size */
+    float                               gfMaxReportedGeographicClusterSize;     /** maximum spatial cluster size reported */
+    /* Maximum temporal cluster variables */
     float                               gfMaxTemporalClusterSize;               /** maximum value for temporal cluster */
     TemporalSizeType                    geMaxTemporalClusterSizeType;           /** maximum temporal cluster value type */
         /* Time interval variables */
@@ -321,10 +325,12 @@ class CParameters {
     bool                                GetIsProspectiveAnalysis() const;
     bool                                GetIsSequentialScanning() const {return gbSequentialRuns;}
     bool                                GetLogLikelihoodRatioIsTestStatistic() const;
+    const std::string                 & GetMaxCirclePopulationFileName() const {return gsMaxCirclePopulationFileName;}
     float                               GetMaximumGeographicClusterSize() const {return gfMaxGeographicClusterSize;}
     SpatialSizeType                     GetMaxGeographicClusterSizeType() const {return geMaxGeographicClusterSizeType;}
     float                               GetMaximumTemporalClusterSize() const {return gfMaxTemporalClusterSize;}
     TemporalSizeType                    GetMaximumTemporalClusterSizeType() const {return geMaxTemporalClusterSizeType;}
+    float                               GetMaximumReportedGeoClusterSize() const {return gfMaxReportedGeographicClusterSize;}
     int                                 GetNumReplicationsRequested() const {return giReplications;}
     int                                 GetNumRequestedEllipses() const {return giNumberEllipses;}
     int                                 GetNumSequentialScansRequested() const {return giNumSequentialRuns;}
@@ -350,11 +356,11 @@ class CParameters {
     const char                        * GetProbabiltyModelTypeAsString() const;
     const std::string                 & GetProspectiveStartDate() const {return gsProspectiveStartDate;}
     Julian                              GetProspectiveStartDateAsJulian() /*const*/;
+    bool                                GetRestrictingMaximumReportedGeoClusterSize() const {return gbRestrictReportedClusters;}
     RiskType                            GetRiskType() const {return geRiskFunctionType;}
     const ZdString                    & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
     double                              GetSequentialCutOffPValue() {return gbSequentialCutOffPValue;}
     const std::string                 & GetSpecialGridFileName() const {return gsSpecialGridFileName;}
-    const std::string                 & GetMaxCirclePopulationFileName() const {return gsMaxCirclePopulationFileName;}
     const std::string                 & GetSourceFileName() const {return gsParametersSourceFileName;}
     const std::string                 & GetStartRangeEndDate() const {return gsStartRangeEndDate;}
     Julian                              GetStartRangeDateAsJulian(const std::string & sStartRangeDate) /*const*/;
@@ -388,6 +394,7 @@ class CParameters {
     void                                SetIsLoggingHistory(bool b) {gbLogRunHistory = b;}
     void                                SetMaxCirclePopulationFileName(const char * sMaxCirclePopulationFileName, bool bCorrectForRelativePath=false, bool bSetUsingFlag=false);
     void                                SetMaximumGeographicClusterSize(float fMaxGeographicClusterSize);
+    void                                SetMaximumReportedGeographicalClusterSize(float fMaxReportedGeographicClusterSize);
     void                                SetMaximumSpacialClusterSizeType(SpatialSizeType eSpatialSizeType);
     void                                SetMaximumTemporalClusterSize(float fMaxTemporalClusterSize);
     void                                SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSizeType);
@@ -411,6 +418,7 @@ class CParameters {
     void                                SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType);
     void                                SetProbabilityModelType(ProbabiltyModelType eProbabiltyModelType);
     void                                SetProspectiveStartDate(const char * sProspectiveStartDate);
+    void                                SetRestrictReportedClusters(bool b) {gbRestrictReportedClusters = b;}
     void                                SetRiskType(RiskType eRiskType);
     void                                SetRunHistoryFilename(const ZdString& sFilename) {gsRunHistoryFilename = sFilename;}
     void                                SetSequentialScanning(bool b) {gbSequentialRuns = b;}
