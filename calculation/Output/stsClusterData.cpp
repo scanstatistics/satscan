@@ -244,7 +244,7 @@ void stsClusterData::RecordClusterData(const CCluster& pCluster, const CSaTScanD
       // log likliehood or tst_stat if space-time permutation
       if(geProbabiltyModelType == SPACETIMEPERMUTATION) {
          if(pCluster.m_iEllipseOffset !=0 && gbDuczmalCorrect)
-            pRecord->SetTestStat(pCluster.GetDuczmalCompactnessCorrection());
+            pRecord->SetTestStat(pCluster.GetDuczmalCorrectedLogLikelihoodRatio());
          else
             pRecord->SetTestStat(pCluster.m_nRatio);
       }
@@ -252,7 +252,7 @@ void stsClusterData::RecordClusterData(const CCluster& pCluster, const CSaTScanD
          pRecord->SetLogLikelihood(pCluster.m_nRatio);
          if(gbDuczmalCorrect) {
             if(pCluster.m_iEllipseOffset !=0)
-               pRecord->SetTestStat(pCluster.GetDuczmalCompactnessCorrection());
+               pRecord->SetTestStat(pCluster.GetDuczmalCorrectedLogLikelihoodRatio());
             else
                pRecord->SetFieldIsBlank(GetFieldNumber(TST_STAT_FIELD), true);
          }            
