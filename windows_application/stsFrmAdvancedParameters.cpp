@@ -1167,7 +1167,7 @@ void TfrmAdvancedParameters::SetReportingSmallerClustersText() {
       break;
     case DISTANCETYPE:
       if (gAnalysisSettings.rgpCoordinates->ItemIndex == CARTESIAN)
-        sTemp.printf("cartesian units in radius\n        (<= %s)", edtMaxSpatialRadius->Text.c_str());
+        sTemp.printf("Cartesian units in radius\n        (<= %s)", edtMaxSpatialRadius->Text.c_str());
       else
         sTemp.printf("kilometers in radius\n        (<= %s)", edtMaxSpatialRadius->Text.c_str());
   }
@@ -1179,7 +1179,7 @@ void TfrmAdvancedParameters::SetReportingSmallerClustersText() {
 void TfrmAdvancedParameters::SetSpatialDistanceCaption() {
   try {
     switch (gAnalysisSettings.rgpCoordinates->ItemIndex) {
-      case 0  : lblMaxRadius->Caption = "cartesian units radius";
+      case 0  : lblMaxRadius->Caption = "Cartesian units radius";
                 break;
       case 1  : lblMaxRadius->Caption = "kilometer radius";
                 break;
@@ -1351,6 +1351,7 @@ void TfrmAdvancedParameters::Validate() {
    ValidateTemporalWindowSettings();
    if (chkAdjustForEarlierAnalyses->Enabled && chkAdjustForEarlierAnalyses->Checked)
       ValidateProspDateRange();        // inference tab settings
+   ValidateOutputSettings();   
 }
 
 /** validates adjustment settings - throws exception */

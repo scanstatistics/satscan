@@ -27,7 +27,7 @@ __published:	// IDE-managed Components
    TOpenDialog *OpenDialog;
    TPageControl *PageControl;
    TTabSheet *tsAdjustments;
-        TTabSheet *tsTemporal;
+   TTabSheet *tsTemporal;
    TGroupBox *grpScanningWindow;
    TCheckBox *chkRestrictTemporalRange;
    TStaticText *stStartRangeTo;
@@ -54,8 +54,8 @@ __published:	// IDE-managed Components
    TEdit *edtAdjustmentsByRelativeRisksFile;
    TButton *btnBrowseAdjustmentsFile;
    TCheckBox *chkAdjustForKnownRelativeRisks;
-   TTabSheet *tsOutput;
-        TTabSheet *tbSpatial;
+   TTabSheet *tsClustersReported;
+   TTabSheet *tbSpatial;
    TCheckBox *chkRestrictReportedClusters;
    TEdit *edtReportClustersSmallerThan;
    TLabel *lblReportSmallerClusters;
@@ -97,27 +97,27 @@ __published:	// IDE-managed Components
    TEdit *edtProspectiveStartDateDay;
    TCheckBox *chkAdjustForEarlierAnalyses;
    TButton *btnSetDefaults;
-   TTabSheet *tsInput;
-   TEdit *edtCaseFileName;
-   TButton *btnCaseBrowse;
-   TEdit *edtControlFileName;
-   TButton *btnControlBrowse;
-   TEdit *edtPopFileName;
-   TButton *btnPopBrowse;
-   TGroupBox *GroupBox1;
+   TTabSheet *tsDataStreams;
+   TGroupBox *grpDataStreams;
    TLabel *Label3;
    TLabel *Label1;
    TLabel *Label2;
    TLabel *Label4;
    TLabel *Label5;
+   TBitBtn *btnPopImport;
+   TBitBtn *btnControlImport;
+   TBitBtn *btnCaseImport;
    TListBox *lstInputStreams;
    TButton *btnNewStream;
    TButton *btnRemoveStream;
-   TSpeedButton *btnPopImport;
-   TSpeedButton *btnImportMaxCirclePopFile;
-   TSpeedButton *btnImportAdjustmentsFile;
-   TSpeedButton *btnControlImport;
-   TSpeedButton *btnCaseImport;
+   TEdit *edtCaseFileName;
+   TEdit *edtControlFileName;
+   TEdit *edtPopFileName;
+   TButton *btnPopBrowse;
+   TButton *btnControlBrowse;
+   TButton *btnCaseBrowse;
+   TBitBtn *btnImportMaxCirclePopFile;
+   TBitBtn *btnImportAdjustmentsFile;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
@@ -169,8 +169,8 @@ __published:	// IDE-managed Components
 
  private:
 
-   TfrmAnalysis             & gAnalysisSettings;
-   TWinControl              * gpFocusControl;
+   TfrmAnalysis           & gAnalysisSettings;
+   TWinControl            * gpFocusControl;
    int                      giCategory;          /** category - input,analysis,output - of parameters to show */
    bool                     gbEnableRangeYears;  /** stores enable dictated by main interface */
    bool                     gbEnableRangeMonths; /** stores enable dictated by main interface */
@@ -195,13 +195,16 @@ __published:	// IDE-managed Components
    void                     SetDefaultsForOutputTab();
    void                     Setup();
    void                     UpdateInputFiles();
+   void                     ValidateAdjustmentSettings();
    void                     ValidateInputFilesAtInput();
    void                     ValidateInputFiles();
+   void                     ValidateOutputSettings();
    void                     ValidateProspDateRange();
    void                     ValidateReportedSpatialClusterSize();
    void                     ValidateScanningWindowRanges();
    void                     ValidateSpatialClusterSize();
    void                     ValidateTemporalClusterSize();
+   void                     ValidateTemporalWindowSettings();
 
 public:
    __fastcall TfrmAdvancedParameters(TfrmAnalysis & AnalysisSettings);
@@ -235,9 +238,6 @@ public:
    void                  SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
    void                  ShowDialog(TWinControl * pFocusControl=0, int iCategory=-1);
    void                  Validate();
-   void                  ValidateAdjustmentSettings();
-   void                  ValidateOutputSettings();
-   void                  ValidateTemporalWindowSettings();
 };
 
 class AdvancedFeaturesException : public virtual ZdException {

@@ -62,12 +62,12 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Top = 6
     Width = 447
     Height = 283
-    ActivePage = tsInput
+    ActivePage = tsDataStreams
     TabOrder = 0
-    object tsInput: TTabSheet
+    object tsDataStreams: TTabSheet
       Caption = 'Multiple Data Streams'
       ImageIndex = 5
-      object GroupBox1: TGroupBox
+      object grpDataStreams: TGroupBox
         Left = 8
         Top = 8
         Width = 425
@@ -112,12 +112,16 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Height = 13
           Caption = '(Poisson Model)'
         end
-        object btnPopImport: TSpeedButton
-          Left = 394
+        object btnPopImport: TBitBtn
+          Left = 393
           Top = 117
           Width = 23
-          Height = 21
+          Height = 22
           Hint = 'Import population file ...'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 11
+          OnClick = btnPopImportClick
           Glyph.Data = {
             DE010000424DDE01000000000000760000002800000024000000120000000100
             04000000000068010000C40E0000C40E00001000000000000000000000000000
@@ -136,16 +140,17 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             6666668F7F786666666666660000888886666666666666888886666666666666
             0000}
           NumGlyphs = 2
-          ParentShowHint = False
-          ShowHint = True
-          OnClick = btnPopImportClick
         end
-        object btnControlImport: TSpeedButton
-          Left = 394
+        object btnControlImport: TBitBtn
+          Left = 393
           Top = 74
           Width = 23
-          Height = 21
+          Height = 22
           Hint = 'Import control file ...'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 8
+          OnClick = btnControlImportClick
           Glyph.Data = {
             DE010000424DDE01000000000000760000002800000024000000120000000100
             04000000000068010000C40E0000C40E00001000000000000000000000000000
@@ -164,16 +169,17 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             6666668F7F786666666666660000888886666666666666888886666666666666
             0000}
           NumGlyphs = 2
-          ParentShowHint = False
-          ShowHint = True
-          OnClick = btnControlImportClick
         end
-        object btnCaseImport: TSpeedButton
+        object btnCaseImport: TBitBtn
           Left = 394
           Top = 32
           Width = 23
-          Height = 21
+          Height = 22
           Hint = 'Import case file ...'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 5
+          OnClick = btnCaseImportClick
           Glyph.Data = {
             DE010000424DDE01000000000000760000002800000024000000120000000100
             04000000000068010000C40E0000C40E00001000000000000000000000000000
@@ -192,133 +198,130 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             6666668F7F786666666666660000888886666666666666888886666666666666
             0000}
           NumGlyphs = 2
+        end
+        object lstInputStreams: TListBox
+          Left = 8
+          Top = 28
+          Width = 93
+          Height = 111
+          Hint = 'All Additional Input Streams'
+          ItemHeight = 13
           ParentShowHint = False
           ShowHint = True
-          OnClick = btnCaseImportClick
+          TabOrder = 0
+          OnClick = lstInputStreamsClick
         end
-      end
-      object edtCaseFileName: TEdit
-        Left = 118
-        Top = 40
-        Width = 250
-        Height = 21
-        Hint = 'Additional Case File Name'
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 1
-        OnExit = edtFileNameExit
-      end
-      object btnCaseBrowse: TButton
-        Left = 374
-        Top = 40
-        Width = 23
-        Height = 21
-        Hint = 'Browse for case file ...'
-        Caption = '...'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -13
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 2
-        OnClick = btnCaseBrowseClick
-      end
-      object edtControlFileName: TEdit
-        Left = 118
-        Top = 82
-        Width = 250
-        Height = 21
-        Hint = 'Additional Control File Name'
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 3
-        OnExit = edtFileNameExit
-      end
-      object btnControlBrowse: TButton
-        Left = 374
-        Top = 82
-        Width = 23
-        Height = 21
-        Hint = 'Browse for control file ...'
-        Caption = '...'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -13
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 4
-        OnClick = btnControlBrowseClick
-      end
-      object edtPopFileName: TEdit
-        Left = 118
-        Top = 125
-        Width = 250
-        Height = 21
-        Hint = 'Additional Population File Name'
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 5
-        OnExit = edtFileNameExit
-      end
-      object btnPopBrowse: TButton
-        Left = 374
-        Top = 125
-        Width = 23
-        Height = 21
-        Hint = 'Browse for population file ...'
-        Caption = '...'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -13
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 6
-        OnClick = btnPopBrowseClick
-      end
-      object lstInputStreams: TListBox
-        Left = 16
-        Top = 36
-        Width = 93
-        Height = 111
-        Hint = 'All Additional Input Streams'
-        ItemHeight = 13
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 7
-        OnClick = lstInputStreamsClick
-      end
-      object btnNewStream: TButton
-        Left = 16
-        Top = 156
-        Width = 45
-        Height = 25
-        Hint = 'Add an Additional Input Stream'
-        Caption = 'New'
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 8
-        OnClick = btnNewClick
-      end
-      object btnRemoveStream: TButton
-        Left = 64
-        Top = 156
-        Width = 45
-        Height = 25
-        Hint = 'Remove an Additional Input Stream'
-        Caption = 'Delete'
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 9
-        OnClick = btnRemoveStreamClick
+        object btnNewStream: TButton
+          Left = 8
+          Top = 148
+          Width = 45
+          Height = 25
+          Hint = 'Add an Additional Input Stream'
+          Caption = 'New'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 1
+          OnClick = btnNewClick
+        end
+        object btnRemoveStream: TButton
+          Left = 56
+          Top = 148
+          Width = 45
+          Height = 25
+          Hint = 'Remove an Additional Input Stream'
+          Caption = 'Delete'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 2
+          OnClick = btnRemoveStreamClick
+        end
+        object edtCaseFileName: TEdit
+          Left = 110
+          Top = 32
+          Width = 250
+          Height = 22
+          Hint = 'Additional Case File Name'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 3
+          OnExit = edtFileNameExit
+        end
+        object edtControlFileName: TEdit
+          Left = 110
+          Top = 74
+          Width = 250
+          Height = 22
+          Hint = 'Additional Control File Name'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 6
+          OnExit = edtFileNameExit
+        end
+        object edtPopFileName: TEdit
+          Left = 110
+          Top = 117
+          Width = 250
+          Height = 22
+          Hint = 'Additional Population File Name'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 9
+          OnExit = edtFileNameExit
+        end
+        object btnPopBrowse: TButton
+          Left = 366
+          Top = 117
+          Width = 23
+          Height = 22
+          Hint = 'Browse for population file ...'
+          Caption = '...'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 10
+          OnClick = btnPopBrowseClick
+        end
+        object btnControlBrowse: TButton
+          Left = 366
+          Top = 74
+          Width = 23
+          Height = 22
+          Hint = 'Browse for control file ...'
+          Caption = '...'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 7
+          OnClick = btnControlBrowseClick
+        end
+        object btnCaseBrowse: TButton
+          Left = 366
+          Top = 32
+          Width = 23
+          Height = 22
+          Hint = 'Browse for case file ...'
+          Caption = '...'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 4
+          OnClick = btnCaseBrowseClick
+        end
       end
     end
     object tbSpatial: TTabSheet
@@ -362,34 +365,6 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             '= 50%)'
           WordWrap = True
         end
-        object btnImportMaxCirclePopFile: TSpeedButton
-          Left = 363
-          Top = 94
-          Width = 23
-          Height = 21
-          Hint = 'Import special population file ...'
-          Glyph.Data = {
-            DE010000424DDE01000000000000760000002800000024000000120000000100
-            04000000000068010000C40E0000C40E00001000000000000000000000000000
-            80000080000000808000800000008000800080800000C0C0C000808080000000
-            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
-            0000066666666666668888860000666666846668777780666666886668777788
-            0000666666644668FF7780666666688668FF77880000666844444468F7F78066
-            6888888868F7F7880000666486644668FF7780666886688668FF778800006664
-            86846668F7F780666886886668F7F7880000666486666668FF77806668866666
-            68FF778800006666666666688888806666666666688888880000000000006668
-            FF7F70888888886668FF7F780000877777706666888886877777786666888886
-            00008F0F0F7066666666668F7F7F786666666666000080F0F070666666666687
-            F7F778666666666600008F0F0F7066666666668F7F7F786666666666000080F0
-            F070666666666687F7F778666666666600008F0F000066666666668F7F888866
-            66666666000080F07F86666666666687F77F86666666666600008F0F78666666
-            6666668F7F786666666666660000888886666666666666888886666666666666
-            0000}
-          NumGlyphs = 2
-          ParentShowHint = False
-          ShowHint = True
-          OnClick = btnImportMaxCirclePopFileClick
-        end
         object edtMaxSpatialClusterSize: TEdit
           Left = 62
           Top = 35
@@ -408,9 +383,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 149
           Width = 305
           Height = 17
-          Caption = 'Include Purely Temporal Cluster (Spatial Size = 100%)'
+          Caption = 'Include Purely Temporal Clusters (Spatial Size = 100%)'
           Enabled = False
-          TabOrder = 8
+          TabOrder = 9
           OnClick = OnControlExit
         end
         object rdoSpatialPercentage: TRadioButton
@@ -430,7 +405,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Width = 97
           Height = 17
           Caption = 'is a circle with a'
-          TabOrder = 6
+          TabOrder = 7
           OnClick = rdoMaxSpatialTypeClick
         end
         object rdoSpatialPopulationFile: TRadioButton
@@ -447,7 +422,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 122
           Width = 25
           Height = 21
-          TabOrder = 7
+          TabOrder = 8
           Text = '1'
           OnChange = edtMaxSpatialRadiusChange
           OnExit = edtMaxSpatialRadiusExit
@@ -468,7 +443,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 49
           Top = 94
           Width = 280
-          Height = 21
+          Height = 22
           ParentShowHint = False
           ShowHint = True
           TabOrder = 4
@@ -479,8 +454,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 335
           Top = 94
           Width = 23
-          Height = 21
-          Hint = 'Browse for special population file ...'
+          Height = 22
+          Hint = 'Browse for max circle size file ...'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -492,6 +467,35 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ShowHint = True
           TabOrder = 5
           OnClick = btnBrowseMaxCirclePopFileClick
+        end
+        object btnImportMaxCirclePopFile: TBitBtn
+          Left = 363
+          Top = 94
+          Width = 23
+          Height = 22
+          Hint = 'Import max circle size file ...'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 6
+          OnClick = btnImportMaxCirclePopFileClick
+          Glyph.Data = {
+            DE010000424DDE01000000000000760000002800000024000000120000000100
+            04000000000068010000C40E0000C40E00001000000000000000000000000000
+            80000080000000808000800000008000800080800000C0C0C000808080000000
+            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
+            0000066666666666668888860000666666846668777780666666886668777788
+            0000666666644668FF7780666666688668FF77880000666844444468F7F78066
+            6888888868F7F7880000666486644668FF7780666886688668FF778800006664
+            86846668F7F780666886886668F7F7880000666486666668FF77806668866666
+            68FF778800006666666666688888806666666666688888880000000000006668
+            FF7F70888888886668FF7F780000877777706666888886877777786666888886
+            00008F0F0F7066666666668F7F7F786666666666000080F0F070666666666687
+            F7F778666666666600008F0F0F7066666666668F7F7F786666666666000080F0
+            F070666666666687F7F778666666666600008F0F000066666666668F7F888866
+            66666666000080F07F86666666666687F77F86666666666600008F0F78666666
+            6666668F7F786666666666660000888886666666666666888886666666666666
+            0000}
+          NumGlyphs = 2
         end
       end
     end
@@ -734,7 +738,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Height = 17
           Caption = 'Include Purely Spatial Clusters (Temporal Size = 100%)'
           Enabled = False
-          TabOrder = 3
+          TabOrder = 4
           OnClick = OnControlExit
         end
         object rdoPercentageTemporal: TRadioButton
@@ -763,7 +767,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Width = 35
           Height = 21
           MaxLength = 5
-          TabOrder = 4
+          TabOrder = 3
           Text = '1'
           OnExit = edtMaxTemporalClusterSizeUnitsExit
           OnKeyPress = NaturalNumberKeyPress
@@ -828,39 +832,11 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Anchors = []
           Caption = 'Adjustments File:'
         end
-        object btnImportAdjustmentsFile: TSpeedButton
-          Left = 370
-          Top = 57
-          Width = 23
-          Height = 21
-          Hint = 'Import adjustments file ...'
-          Glyph.Data = {
-            DE010000424DDE01000000000000760000002800000024000000120000000100
-            04000000000068010000C40E0000C40E00001000000000000000000000000000
-            80000080000000808000800000008000800080800000C0C0C000808080000000
-            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
-            0000066666666666668888860000666666846668777780666666886668777788
-            0000666666644668FF7780666666688668FF77880000666844444468F7F78066
-            6888888868F7F7880000666486644668FF7780666886688668FF778800006664
-            86846668F7F780666886886668F7F7880000666486666668FF77806668866666
-            68FF778800006666666666688888806666666666688888880000000000006668
-            FF7F70888888886668FF7F780000877777706666888886877777786666888886
-            00008F0F0F7066666666668F7F7F786666666666000080F0F070666666666687
-            F7F778666666666600008F0F0F7066666666668F7F7F786666666666000080F0
-            F070666666666687F7F778666666666600008F0F000066666666668F7F888866
-            66666666000080F07F86666666666687F77F86666666666600008F0F78666666
-            6666668F7F786666666666660000888886666666666666888886666666666666
-            0000}
-          NumGlyphs = 2
-          ParentShowHint = False
-          ShowHint = True
-          OnClick = btnImportAdjustmentsFileClick
-        end
         object edtAdjustmentsByRelativeRisksFile: TEdit
           Left = 16
-          Top = 57
+          Top = 58
           Width = 320
-          Height = 21
+          Height = 22
           ParentShowHint = False
           ShowHint = True
           TabOrder = 1
@@ -869,9 +845,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object btnBrowseAdjustmentsFile: TButton
           Left = 342
-          Top = 57
+          Top = 58
           Width = 23
-          Height = 21
+          Height = 22
           Hint = 'Browse for adjustments file ...'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
@@ -893,6 +869,35 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Adjust for known relative risks'
           TabOrder = 0
           OnClick = chkAdjustForKnownRelativeRisksClick
+        end
+        object btnImportAdjustmentsFile: TBitBtn
+          Left = 370
+          Top = 58
+          Width = 23
+          Height = 22
+          Hint = 'Import adjustments file ...'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 3
+          OnClick = btnImportAdjustmentsFileClick
+          Glyph.Data = {
+            DE010000424DDE01000000000000760000002800000024000000120000000100
+            04000000000068010000C40E0000C40E00001000000000000000000000000000
+            80000080000000808000800000008000800080800000C0C0C000808080000000
+            FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
+            0000066666666666668888860000666666846668777780666666886668777788
+            0000666666644668FF7780666666688668FF77880000666844444468F7F78066
+            6888888868F7F7880000666486644668FF7780666886688668FF778800006664
+            86846668F7F780666886886668F7F7880000666486666668FF77806668866666
+            68FF778800006666666666688888806666666666688888880000000000006668
+            FF7F70888888886668FF7F780000877777706666888886877777786666888886
+            00008F0F0F7066666666668F7F7F786666666666000080F0F070666666666687
+            F7F778666666666600008F0F0F7066666666668F7F7F786666666666000080F0
+            F070666666666687F7F778666666666600008F0F000066666666668F7F888866
+            66666666000080F07F86666666666687F77F86666666666600008F0F78666666
+            6666668F7F786666666666660000888886666666666666888886666666666666
+            0000}
+          NumGlyphs = 2
         end
       end
     end
@@ -1016,8 +1021,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
       end
     end
-    object tsOutput: TTabSheet
-      Caption = 'Output'
+    object tsClustersReported: TTabSheet
+      Caption = 'Clusters Reported'
       ImageIndex = 2
       object lblReportSmallerClusters: TLabel
         Left = 238
