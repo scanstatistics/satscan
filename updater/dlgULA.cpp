@@ -111,49 +111,54 @@ heading 3;}{\\*\\cs10 \\additive \\ssemihidden Default Paragraph Font;}{\\*\
 \\levelfollow0\\levelstartat1\\levelspace0\\levelindent0{\\leveltext\\leveltemplateid67698703\\'02\\'06.;}{\\levelnumbers\\'01;}\\fi-360\\li5040\\jclisttab\\tx5040\\lin5040 }{\\listlevel\\levelnfc4\\levelnfcn4\\leveljc0\\leveljcn0\\levelfollow0\\levelstartat1\\levelspace0\
 \\levelindent0{\\leveltext\\leveltemplateid67698713\\'02\\'07.;}{\\levelnumbers\\'01;}\\fi-360\\li5760\\jclisttab\\tx5760\\lin5760 }{\\listlevel\\levelnfc2\\levelnfcn2\\leveljc2\\leveljcn2\\levelfollow0\\levelstartat1\\levelspace0\\levelindent0{\\leveltext\
 \\leveltemplateid67698715\\'02\\'08.;}{\\levelnumbers\\'01;}\\fi-180\\li6480\\jclisttab\\tx6480\\lin6480 }{\\listname ;}\\listid1658805600}}{\\*\\listoverridetable{\\listoverride\\listid1658805600\\listoverridecount0\\ls1}{\\listoverride\\listid153450926\
-\\listoverridecount0\\ls2}}{\\*\\rsidtbl \\rsid1339669}{\\*\\generator Microsoft Word 10.0.5522;}{\\info{\\title SaTScanTM User License Agreement}{\\author HPHC}{\\operator Simpson}{\\creatim\\yr2004\\mo1\\dy13\\hr15\\min40}{\\revtim\\yr2004\\mo1\\dy13\\hr15\\min40}{\\version2}\
-{\\edmins2}{\\nofpages2}{\\nofwords515}{\\nofchars2940}{\\*\\company HPHC}{\\nofcharsws3449}{\\vern16495}}\\widowctrl\\ftnbj\\aenddoc\\noxlattoyen\\expshrtn\\noultrlspc\\dntblnsbdb\\nospaceforul\\formshade\\horzdoc\\dgmargin\\dghspace180\\dgvspace180\\dghorigin1800\
-\\dgvorigin1440\\dghshow1\\dgvshow1\\jexpand\\viewkind1\\viewscale114\\viewzk2\\pgbrdrhead\\pgbrdrfoot\\splytwnine\\ftnlytwnine\\htmautsp\\nolnhtadjtbl\\useltbaln\\alntblind\\lytcalctblwd\\lyttblrtgr\\lnbrkrule\\rsidroot1339669 \\fet0\\sectd \\linex0\\sectdefaultcl\\sftnbj \
-{\\*\\pnseclvl1\\pnucrm\\pnstart1\\pnindent720\\pnhang {\\pntxta .}}{\\*\\pnseclvl2\\pnucltr\\pnstart1\\pnindent720\\pnhang {\\pntxta .}}{\\*\\pnseclvl3\\pndec\\pnstart1\\pnindent720\\pnhang {\\pntxta .}}{\\*\\pnseclvl4\\pnlcltr\\pnstart1\\pnindent720\\pnhang {\\pntxta )}}\
-{\\*\\pnseclvl5\\pndec\\pnstart1\\pnindent720\\pnhang {\\pntxtb (}{\\pntxta )}}{\\*\\pnseclvl6\\pnlcltr\\pnstart1\\pnindent720\\pnhang {\\pntxtb (}{\\pntxta )}}{\\*\\pnseclvl7\\pnlcrm\\pnstart1\\pnindent720\\pnhang {\\pntxtb (}{\\pntxta )}}{\\*\\pnseclvl8\
-\\pnlcltr\\pnstart1\\pnindent720\\pnhang {\\pntxtb (}{\\pntxta )}}{\\*\\pnseclvl9\\pnlcrm\\pnstart1\\pnindent720\\pnhang {\\pntxtb (}{\\pntxta )}}\\pard\\plain \\s1\\qc \\li0\\ri0\\sb100\\sa100\\keepn\\widctlpar\\faauto\\outlinelevel0\\rin0\\lin0\\itap0 \
-\\b\\fs28\\lang1033\\langfe1033\\cgrid\\langnp1033\\langfenp1033 {\\fs32\\insrsid1339669 SaTScan}{\\b0\\fs24\\up6\\super\\insrsid1339669 TM}{\\fs32\\insrsid1339669  User License Agreement\
-\\par }\\pard\\plain \\qj \\li0\\ri0\\sb100\\sa100\\widctlpar\\faauto\\rin0\\lin0\\itap0 \\fs24\\lang1033\\langfe1033\\cgrid\\langnp1033\\langfenp1033 {\\insrsid1339669 \
-\\par These are the terms and conditions upon which Martin Kulldorff (\"the Provider\") offers the free use of the SaTScan}{\\fs20\\super\\insrsid1339669 TM}{\\insrsid1339669 \
+\\listoverridecount0\\ls2}}{\\*\\rsidtbl \\rsid8013810\\rsid14104391}{\\*\\generator Microsoft Word 10.0.5522;}{\\info{\\title SaTScanTM User License Agreement}{\\author HPHC}{\\operator Scott Hostovich}{\\creatim\\yr2004\\mo2\\dy2\\hr15\\min46}\
+{\\revtim\\yr2004\\mo2\\dy2\\hr15\\min46}{\\version2}{\\edmins6}{\\nofpages2}{\\nofwords580}{\\nofchars3310}{\\*\\company HPHC}{\\nofcharsws3883}{\\vern16495}}\\widowctrl\\ftnbj\\aenddoc\\noxlattoyen\\expshrtn\\noultrlspc\\dntblnsbdb\\nospaceforul\\formshade\\horzdoc\\dgmargin\
+\\dghspace180\\dgvspace180\\dghorigin1800\\dgvorigin1440\\dghshow1\\dgvshow1\\jexpand\\viewkind1\\viewscale114\\viewzk2\\pgbrdrhead\\pgbrdrfoot\\splytwnine\\ftnlytwnine\\nolnhtadjtbl\\useltbaln\\alntblind\\lytcalctblwd\\lyttblrtgr\\lnbrkrule\\rsidroot8013810 \\fet0\\sectd \
+\\linex0\\sectdefaultcl\\sftnbj {\\*\\pnseclvl1\\pnucrm\\pnstart1\\pnindent720\\pnhang {\\pntxta .}}{\\*\\pnseclvl2\\pnucltr\\pnstart1\\pnindent720\\pnhang {\\pntxta .}}{\\*\\pnseclvl3\\pndec\\pnstart1\\pnindent720\\pnhang {\\pntxta .}}{\\*\\pnseclvl4\
+\\pnlcltr\\pnstart1\\pnindent720\\pnhang {\\pntxta )}}{\\*\\pnseclvl5\\pndec\\pnstart1\\pnindent720\\pnhang {\\pntxtb (}{\\pntxta )}}{\\*\\pnseclvl6\\pnlcltr\\pnstart1\\pnindent720\\pnhang {\\pntxtb (}{\\pntxta )}}{\\*\\pnseclvl7\\pnlcrm\\pnstart1\\pnindent720\\pnhang {\\pntxtb (}\
+{\\pntxta )}}{\\*\\pnseclvl8\\pnlcltr\\pnstart1\\pnindent720\\pnhang {\\pntxtb (}{\\pntxta )}}{\\*\\pnseclvl9\\pnlcrm\\pnstart1\\pnindent720\\pnhang {\\pntxtb (}{\\pntxta )}}\\pard\\plain \\s1\\qc \\li0\\ri0\\sb100\\sa100\\keepn\\widctlpar\\faauto\\outlinelevel0\\rin0\\lin0\\itap0 \
+\\b\\fs28\\lang1033\\langfe1033\\cgrid\\langnp1033\\langfenp1033 {\\fs32\\insrsid15484636 SaTScan}{\\b0\\fs24\\up6\\super\\insrsid15484636 TM}{\\fs32\\insrsid15484636  User License Agreement\
+\\par }\\pard\\plain \\qj \\li0\\ri0\\sb100\\sa100\\widctlpar\\faauto\\rin0\\lin0\\itap0 \\fs24\\lang1033\\langfe1033\\cgrid\\langnp1033\\langfenp1033 {\\insrsid15484636 \
+\\par These are the terms and conditions upon which Martin Kulldorff (\"the Provider\") offers the free use of the SaTScan}{\\fs20\\super\\insrsid15484636 TM}{\\insrsid15484636 \
  software (\"the Software\"). By installing or updating the Software you (either an individual or a single entity) become bound by the terms of this agreement, unless you have a separate signed agreement with the Provider.\
-\\par }\\pard\\plain \\s2\\qj \\li0\\ri0\\sb100\\sa100\\keepn\\widctlpar\\faauto\\outlinelevel1\\rin0\\lin0\\itap0 \\fs24\\ul\\lang1033\\langfe1033\\cgrid\\langnp1033\\langfenp1033 {\\b\\ulnone\\insrsid1339669 \
+\\par }\\pard\\plain \\s2\\qj \\li0\\ri0\\sb100\\sa100\\keepn\\widctlpar\\faauto\\outlinelevel1\\rin0\\lin0\\itap0 \\fs24\\ul\\lang1033\\langfe1033\\cgrid\\langnp1033\\langfenp1033 {\\b\\ulnone\\insrsid15484636 \
 \\par       Use.\
-\\par {\\listtext\\pard\\plain\\hich\\af0\\dbch\\af0\\loch\\f0 1.\\tab}}\\pard\\plain \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\jclisttab\\tx720\\faauto\\ls1\\rin0\\lin720\\itap0 \\fs24\\lang1033\\langfe1033\\cgrid\\langnp1033\\langfenp1033 {\\insrsid1339669 \
+\\par {\\listtext\\pard\\plain\\insrsid15484636 \\hich\\af0\\dbch\\af0\\loch\\f0 1.\\tab}}\\pard\\plain \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\jclisttab\\tx720\\faauto\\ls1\\rin0\\lin720\\itap0 \\fs24\\lang1033\\langfe1033\\cgrid\\langnp1033\\langfenp1033 {\\insrsid15484636 \
 Subject to the terms and conditions of this agreement, the Provider hereby grants to you a non-exclusive, non-transferable right to use the Software and the accompanying documentation (the \"Documentation\") free of charge.\
-\\par {\\listtext\\pard\\plain\\hich\\af0\\dbch\\af0\\loch\\f0 2.\\tab}Any publications and presentations providing results from analyses using the Software should include a citation to both the statistical methodology and the Softwar\
+\\par {\\listtext\\pard\\plain\\insrsid15484636 \\hich\\af0\\dbch\\af0\\loch\\f0 2.\\tab}Any publications and presentations providing results from analyses using the Software should include a citation to both the statistical methodology and the Softwar\
 e itself. Suggested citations are provided in the bibliography section of the SaTScan user guide and in the about box, respectively.\
-\\par {\\listtext\\pard\\plain\\hich\\af0\\dbch\\af0\\loch\\f0 3.\\tab}You may install and use a copy of the Software on as many computers as you wish. \
-\\par {\\listtext\\pard\\plain\\hich\\af0\\dbch\\af0\\loch\\f0 4.\\tab}You may loan or give the software or copies of the software to others, under condition that they read and agree to this license agreement.\
-\\par {\\listtext\\pard\\plain\\hich\\af0\\dbch\\af0\\loch\\f0 5.\\tab}The SaTScan}{\\fs20\\super\\insrsid1339669 TM}{\\insrsid1339669  name is a trademark and should be designated as such.\
-\\par }\\pard \\qj \\li360\\ri0\\sb100\\sa100\\widctlpar\\faauto\\rin0\\lin360\\itap0 {\\b\\insrsid1339669 Term.\
-\\par {\\listtext\\pard\\plain\\hich\\af0\\dbch\\af0\\loch\\f0 6.\\tab}}\\pard \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\jclisttab\\tx720\\faauto\\ls1\\rin0\\lin720\\itap0 {\\insrsid1339669 This Agreement is effective for an unlimited duration. This Agreement will terminate\
- automatically if you fail to comply with any of the limitations or other requirements described herein. Upon any termination or expiration of this Agreement, you must destroy all copies of the Software and the Documentation. You may terminate this Agreem\
-ent at any point by destroying all copies of the Software and the Documentation. \
-\\par }\\pard\\plain \\s3\\qj \\li360\\ri0\\sb100\\sa100\\keepn\\widctlpar\\faauto\\outlinelevel2\\rin0\\lin360\\itap0 \\b\\fs24\\lang1033\\langfe1033\\cgrid\\langnp1033\\langfenp1033 {\\insrsid1339669 Updates.\
-\\par {\\listtext\\pard\\plain\\hich\\af0\\dbch\\af0\\loch\\f0 7.\\tab}}\\pard\\plain \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\jclisttab\\tx720\\faauto\\ls1\\rin0\\lin720\\itap0 \\fs24\\lang1033\\langfe1033\\cgrid\\langnp1033\\langfenp1033 {\\insrsid1339669 \
+\\par {\\listtext\\pard\\plain\\insrsid15484636 \\hich\\af0\\dbch\\af0\\loch\\f0 3.\\tab}You may install and use the Software on as many computers as you wish. \
+\\par {\\listtext\\pard\\plain\\insrsid15484636 \\hich\\af0\\dbch\\af0\\loch\\f0 4.\\tab}You may loan or give the software or copies of the software to others, under condition that they read and agree to this license agreement.\
+\\par {\\listtext\\pard\\plain\\insrsid15484636 \\hich\\af0\\dbch\\af0\\loch\\f0 5.\\tab}You may incorporate and distribute the Software with other software to create a \"Combined Product\" that you loan, give or sell to others, under conditions that (i) all \
+users of the Combined Product read and agree to this license agreement, (ii) the SaTScan}{\\fs20\\super\\insrsid15484636 TM}{\\insrsid15484636  component is clearly distinguished and marked as \"SaTScan}{\\fs20\\super\\insrsid15484636 TM}{\\insrsid15484636 \
+\", and (iii) the SaTScan}{\\fs20\\super\\insrsid15484636 TM}{\\insrsid15484636  running window is clearly shown to users when they run the SaTScan component of the Combined Product.\
+\\par {\\listtext\\pard\\plain\\insrsid15484636 \\hich\\af0\\dbch\\af0\\loch\\f0 6.\\tab}The SaTScan}{\\fs20\\super\\insrsid15484636 TM}{\\insrsid15484636  name is a trademark and should be designated as such.\
+\\par }\\pard \\qj \\li360\\ri0\\sb100\\sa100\\widctlpar\\faauto\\rin0\\lin360\\itap0 {\\b\\insrsid15484636 Term.\
+\\par {\\listtext\\pard\\plain\\insrsid15484636 \\hich\\af0\\dbch\\af0\\loch\\f0 7.\\tab}}\\pard \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\jclisttab\\tx720\\faauto\\ls1\\rin0\\lin720\\itap0 {\\insrsid15484636 \
+This Agreement is effective for an unlimited duration. This Agreement will terminate automatically if you fail to comply with any of the limitations or other r\
+equirements described herein. Upon any termination or expiration of this Agreement, you must destroy all copies of the Software and the Documentation. You may terminate this Agreement at any point by destroying all copies of the Software and the Documenta\
+tion. \
+\\par }\\pard\\plain \\s3\\qj \\li360\\ri0\\sb100\\sa100\\keepn\\widctlpar\\faauto\\outlinelevel2\\rin0\\lin360\\itap0 \\b\\fs24\\lang1033\\langfe1033\\cgrid\\langnp1033\\langfenp1033 {\\insrsid15484636 Updates.\
+\\par {\\listtext\\pard\\plain\\insrsid15484636 \\hich\\af0\\dbch\\af0\\loch\\f0 8.\\tab}}\\pard\\plain \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\jclisttab\\tx720\\faauto\\ls1\\rin0\\lin720\\itap0 \\fs24\\lang1033\\langfe1033\\cgrid\\langnp1033\\langfenp1033 {\\insrsid15484636 \
 You may download revisions and upgrades to the Software through the automatic update button on the SaTScan help menu. Any such updates of the Software are bound to this license agreement in the same manner as the original download. \
-\\par }\\pard \\qj \\li360\\ri0\\sb100\\sa100\\widctlpar\\faauto\\rin0\\lin360\\itap0 {\\b\\insrsid1339669 Ownership Rights.}{\\insrsid1339669  \
-\\par {\\listtext\\pard\\plain\\hich\\af0\\dbch\\af0\\loch\\f0 8.\\tab}}\\pard \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\jclisttab\\tx720\\faauto\\ls1\\rin0\\lin720\\itap0 {\\insrsid1339669 \
-Your possession, installation, or use of the Software does not transfer to you any title to the intellectual property in the Software, and you will not acquire any rights\
- to the Software except as expressly set forth in this Agreement. All copies of the Software and Documentation made hereunder must contain the same proprietary notices that appear on and in the Software and Documentation. \
-\\par }\\pard \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\tx720\\faauto\\rin0\\lin720\\itap0 {\\b\\insrsid1339669 \
-\\par \
-\\par Restrictions.\
-\\par {\\listtext\\pard\\plain\\b \\hich\\af0\\dbch\\af0\\loch\\f0 7.\\tab}}\\pard \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\jclisttab\\tx720\\faauto\\ls2\\rin0\\lin720\\itap0 {\\insrsid1339669 You may not trans\
-fer any of the rights granted to you under this Agreement. You may not reverse engineer, decompile, or disassemble the Software, except to the extent the foregoing restriction is expressly prohibited by applicable law. You may not modify the Software in w\
-hole or in part. You may not remove any proprietary notices or labels on the Software. All rights not expressly set forth hereunder are reserved by the Provider. \
-\\par }\\pard \\qj \\li360\\ri0\\sb100\\sa100\\widctlpar\\faauto\\rin0\\lin360\\itap0 {\\b\\insrsid1339669 Warranty and Disclaimer.}{\\insrsid1339669  \
-\\par {\\listtext\\pard\\plain\\b \\hich\\af0\\dbch\\af0\\loch\\f0 8.\\tab}}\\pard \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\jclisttab\\tx720\\faauto\\ls2\\rin0\\lin720\\itap0 {\\insrsid1339669 The provider does not warrant that the Software and User Guide will \
-meet your requirements or operate free from error, and disclaims all other warranties and conditions either expressed or implied, including the warranty of merchantability and fitness for a particular purpose.\
-\\par }\\pard \\qj \\li360\\ri0\\sb100\\sa100\\widctlpar\\faauto\\rin0\\lin360\\itap0 {\\b\\insrsid1339669 Limitation of Liability.}{\\insrsid1339669  \
-\\par {\\listtext\\pard\\plain\\b \\hich\\af0\\dbch\\af0\\loch\\f0 9.\\tab}}\\pard \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\jclisttab\\tx720\\faauto\\ls2\\rin0\\lin720\\itap0 {\\insrsid1339669 Under no circumstanc\
-es and under no legal theory, whether in tort, contract, or otherwise, shall the provider or its contractors be liable to you or to any other person for any indirect, special, incidental, or consequential damages of any character including, without limita\
-tion, damages for loss or goodwill, work stoppage, computer failure or malfunction, or for any and all other damages or losses.\
+\\par }\\pard \\qj \\li360\\ri0\\sb100\\sa100\\widctlpar\\faauto\\rin0\\lin360\\itap0 {\\b\\insrsid15484636 Ownership Rights.}{\\insrsid15484636  \
+\\par {\\listtext\\pard\\plain\\insrsid15484636 \\hich\\af0\\dbch\\af0\\loch\\f0 9.\\tab}}\\pard \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\jclisttab\\tx720\\faauto\\ls1\\rin0\\lin720\\itap0 {\\insrsid15484636 \
+Your possession, installation, or use of the Software does not transfer to you any title to the intellectual property in the Software, and you will not acquire any rights to the Software except as expressly set forth in this Agreement. All copie\
+s of the Software and Documentation made hereunder must contain the same proprietary notices that appear on and in the Software and Documentation. \
+\\par }\\pard \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\tx720\\faauto\\rin0\\lin720\\itap0 {\\b\\insrsid15484636 Restrictions.\
+\\par {\\listtext\\pard\\plain\\insrsid15484636 \\hich\\af0\\dbch\\af0\\loch\\f0 10.\\tab}}\\pard \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\jclisttab\\tx720\\faauto\\ls1\\rin0\\lin720\\itap0 {\\insrsid15484636 \
+You may not transfer any of the rights granted to you under this Agreement. You may not revers\
+e engineer, decompile, or disassemble the Software, except to the extent the foregoing restriction is expressly prohibited by applicable law. You may not modify the Software in whole or in part. You may not remove any proprietary notices or labels on the \
+Software. All rights not expressly set forth hereunder are reserved by the Provider. \
+\\par }\\pard \\qj \\li360\\ri0\\sb100\\sa100\\widctlpar\\faauto\\rin0\\lin360\\itap0 {\\b\\insrsid15484636 Warranty and Disclaimer.}{\\insrsid15484636  \
+\\par {\\listtext\\pard\\plain\\insrsid15484636 \\hich\\af0\\dbch\\af0\\loch\\f0 11.\\tab}}\\pard \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\jclisttab\\tx720\\faauto\\ls1\\rin0\\lin720\\itap0 {\\insrsid15484636 \
+The provider does not warrant that the Software and User Guide will meet your requirements or operate free from error, and disclaims all other wa\
+rranties and conditions either expressed or implied, including the warranty of merchantability and fitness for a particular purpose.\
+\\par }\\pard \\qj \\li360\\ri0\\sb100\\sa100\\widctlpar\\faauto\\rin0\\lin360\\itap0 {\\b\\insrsid15484636 Limitation of Liability.}{\\insrsid15484636  \
+\\par {\\listtext\\pard\\plain\\insrsid15484636 \\hich\\af0\\dbch\\af0\\loch\\f0 12.\\tab}}\\pard \\qj \\fi-360\\li720\\ri0\\sb100\\sa100\\widctlpar\\jclisttab\\tx720\\faauto\\ls1\\rin0\\lin720\\itap0 {\\insrsid15484636 \
+Under no circumstances and under no legal theory, whether in tort, contract, or otherwise, shall \
+the provider or its contractors be liable to you or to any other person for any indirect, special, incidental, or consequential damages of any character including, without limitation, damages for loss or goodwill, work stoppage, computer failure or malfun\
+ction, or for any and all other damages or losses.\
 \\par }}\
 ";
 
