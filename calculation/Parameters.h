@@ -174,7 +174,7 @@ class CParameters {
     AreaRateType                        geAreaScanRate;                         /** areas incidence rate type of interest */
     RiskType                            geRiskFunctionType;                     /**  */
     IncludeClustersType                 geIncludeClustersType;
-    int                                 giReplications;                         /** number of MonteCarlo replicas */
+    unsigned int                        giReplications;                         /** number of MonteCarlo replicas */
     CriteriaSecondaryClustersType       geCriteriaSecondClustersType;           /** Criteria for Reporting Secondary Clusters */
     double                              gdTimeTrendConverge;                    /** time trend convergence value */
     bool                                gbEarlyTerminationSimulations;          /** indicates whether to stop simulations if large p-values */
@@ -223,7 +223,7 @@ class CParameters {
                                         gbOutputAreaSpecificDBase;              /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in dBase format */
         /* Sequential scans variables */
     bool                                gbSequentialRuns;                       /* sequential analysis? */
-    int                                 giNumSequentialRuns;                    /* number of sequential scans to attempt */
+    unsigned int                        giNumSequentialRuns;                    /* number of sequential scans to attempt */
     double                              gbSequentialCutOffPValue;               /* P-Value used to exit sequential analysis */
         /* Input/Output filenames */
     std::string                         gsParametersSourceFileName;             /** parameters source filename */
@@ -263,6 +263,7 @@ class CParameters {
     static int                          giNumParameters;                        /** number enumerated parameters */
 
     ZdString                          & AsString(ZdString & ref, int i) {ref = i; return ref;}
+    ZdString                          & AsString(ZdString & ref, unsigned int i) {ref.Clear(); ref << i; return ref;}
     ZdString                          & AsString(ZdString & ref, float f) {ref = f;return ref;}
     ZdString                          & AsString(ZdString & ref, double d) {ref = d;return ref;}
     void                                ConvertRelativePath(std::string & sInputFilename);
@@ -289,6 +290,7 @@ class CParameters {
     void                                ReadScanningWindowSection(ZdIniFile& file, BasePrint & PrintDirection);
     void                                ReadSequentialScanSection(ZdIniFile& file, BasePrint & PrintDirection);
     void                                ReadTimeParametersSection(ZdIniFile& file, BasePrint & PrintDirection);
+    int                                 ReadUnsignedInt(const ZdString & sValue, ParameterType eParameterType);
     void                                SaveAdvancedFeaturesSection(ZdIniFile& file);
     void                                SaveAnalysisSection(ZdIniFile& file);
     void                                SaveInputFileSection(ZdIniFile& file);
@@ -319,7 +321,7 @@ class CParameters {
 
     CParameters                       & operator=(const CParameters &rhs);
     void                                DisplayAnalysisType(FILE* fp) const;
-    void                                DisplayParameters(FILE* fp, int iNumSimulations) const;
+    void                                DisplayParameters(FILE* fp, unsigned int iNumSimulationsCompleted) const;
     void                                DisplayTimeAdjustments(FILE* fp) const;
     bool                                GetAdjustForEarlierAnalyses() const {return gbAdjustForEarlierAnalyses;}
     const std::string                 & GetAdjustmentsByRelativeRisksFilename() const {return gsAdjustmentsByRelativeRisksFileName;}  
@@ -337,7 +339,7 @@ class CParameters {
     const std::vector<int>            & GetEllipseRotations() const {return gvEllipseRotations;}
     const std::vector<double>         & GetEllipseShapes() const {return gvEllipseShapes;}
     const std::string                 & GetEndRangeEndDate() const {return gsEndRangeEndDate;}
-    Julian                              GetEndRangeDateAsJulian(const std::string & sEndRangeDate) /*const*/;
+    Julian                              GetEndRangeDateAsJulian(const std::string & sEndRangeDate) const;
     const std::string                 & GetEndRangeStartDate() const {return gsEndRangeStartDate;}
     bool                                GetErrorOnRead() {return gbReadStatusError;}
     IncludeClustersType                 GetIncludeClustersType() const {return geIncludeClustersType;}
@@ -358,9 +360,9 @@ class CParameters {
     TemporalSizeType                    GetMaximumTemporalClusterSizeType() const {return geMaxTemporalClusterSizeType;}
     float                               GetMaximumReportedGeoClusterSize() const {return gfMaxReportedGeographicClusterSize;}
     unsigned int                        GetNumDataStreams() const {return gvCaseFilenames.size();}
-    int                                 GetNumReplicationsRequested() const {return giReplications;}
+    unsigned int                        GetNumReplicationsRequested() const {return giReplications;}
     int                                 GetNumRequestedEllipses() const {return giNumberEllipses;}
-    int                                 GetNumSequentialScansRequested() const {return giNumSequentialRuns;}
+    unsigned int                        GetNumSequentialScansRequested() const {return giNumSequentialRuns;}
     long                                GetNumTotalEllipses() const {return glTotalNumEllipses;}
     bool                                GetOutputAreaSpecificAscii() const  {return gbOutputAreaSpecificAscii;}
     bool                                GetOutputAreaSpecificDBase() const  {return gbOutputAreaSpecificDBase;}
@@ -387,23 +389,23 @@ class CParameters {
     ProbabiltyModelType                 GetProbabiltyModelType() const {return geProbabiltyModelType;}
     const char                        * GetProbabiltyModelTypeAsString(ProbabiltyModelType eProbabiltyModelType) const;
     const std::string                 & GetProspectiveStartDate() const {return gsProspectiveStartDate;}
-    Julian                              GetProspectiveStartDateAsJulian() /*const*/;
+    Julian                              GetProspectiveStartDateAsJulian() const;
     bool                                GetRestrictingMaximumReportedGeoClusterSize() const {return gbRestrictReportedClusters;}
     RiskType                            GetRiskType() const {return geRiskFunctionType;}
     const ZdString                    & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
-    double                              GetSequentialCutOffPValue() {return gbSequentialCutOffPValue;}
+    double                              GetSequentialCutOffPValue() const {return gbSequentialCutOffPValue;}
     const std::string                 & GetSimulationDataOutputFilename() const {return gsSimulationDataOutputFilename;}  
     const std::string                 & GetSimulationDataSourceFilename() const {return gsSimulationDataSourceFileName;}
     SimulationType                      GetSimulationType() const {return geSimulationType;}
     const std::string                 & GetSpecialGridFileName() const {return gsSpecialGridFileName;}
     const std::string                 & GetSourceFileName() const {return gsParametersSourceFileName;}
     const std::string                 & GetStartRangeEndDate() const {return gsStartRangeEndDate;}
-    Julian                              GetStartRangeDateAsJulian(const std::string & sStartRangeDate) /*const*/;
+    Julian                              GetStartRangeDateAsJulian(const std::string & sStartRangeDate) const;
     const std::string                 & GetStartRangeStartDate() const {return gsStartRangeStartDate;}
     const std::string                 & GetStudyPeriodEndDate() const {return gsStudyPeriodEndDate;}
-    Julian                              GetStudyPeriodEndDateAsJulian() /*const*/;
+    Julian                              GetStudyPeriodEndDateAsJulian() const;
     const std::string                 & GetStudyPeriodStartDate() const {return gsStudyPeriodStartDate;}
-    Julian                              GetStudyPeriodStartDateAsJulian() /*const*/;
+    Julian                              GetStudyPeriodStartDateAsJulian() const;
     bool                                GetTerminateSimulationsEarly() const {return gbEarlyTerminationSimulations;}
     long                                GetTimeIntervalLength() const {return glTimeIntervalLength;}
     DatePrecisionType                   GetTimeIntervalUnitsType() const {return geTimeIntervalUnitsType;}

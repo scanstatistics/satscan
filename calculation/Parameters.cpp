@@ -1,5 +1,7 @@
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//***************************************************************************
 #include "Parameters.h"
 
 #define INCLUDE_RUN_HISTORY
@@ -332,7 +334,7 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
 }
 
 /** Prints parameters, in a particular format, to passed ascii file. */
-void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
+void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsCompleted) const {
   int           i;
   size_t        t;
   ZdFileName    AdditionalOutputFile(gsOutputFileName.c_str());
@@ -401,10 +403,10 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
     fprintf(fp, "\n  Start Date : %s\n", gsStudyPeriodStartDate.c_str());
     fprintf(fp, "  End Date   : %s\n\n", gsStudyPeriodEndDate.c_str());
 
-    if (iNumSimulations < giReplications)
-      fprintf(fp, "  Number of Replications : %i (requested %i)\n", iNumSimulations, giReplications);
+    if (iNumSimulationsCompleted < giReplications)
+      fprintf(fp, "  Number of Replications : %u (requested %u)\n", iNumSimulationsCompleted, giReplications);
     else
-      fprintf(fp, "  Number of Replications : %i\n", giReplications);
+      fprintf(fp, "  Number of Replications : %u\n", giReplications);
 
     if (giNumberEllipses > 0) {
       fprintf(fp, "\nEllipses\n");
@@ -831,7 +833,7 @@ const char * CParameters::GetProbabiltyModelTypeAsString(ProbabiltyModelType ePr
     (ex. study period end date: 2001/12/31
          prospective start date as read from parameters: 2001/11 --> 2001/11/30)
     Throws exception if date can not be converted to a valid julian date. */
-Julian CParameters::GetProspectiveStartDateAsJulian() /*const*/ {
+Julian CParameters::GetProspectiveStartDateAsJulian() const {
   int           iPrecision;
   UInt          uiYear, uiMonth, uiDay, uiEDYear, uiEDMonth, uiEDDay;
   Julian        ProspectiveStartDate, StudyPeriodEndDate;
@@ -864,7 +866,7 @@ Julian CParameters::GetProspectiveStartDateAsJulian() /*const*/ {
   return ProspectiveStartDate;
 }
 
-Julian CParameters::GetEndRangeDateAsJulian(const std::string & sEndRangeDate) /*const*/ {
+Julian CParameters::GetEndRangeDateAsJulian(const std::string & sEndRangeDate) const {
   int           iPrecision;
   UInt          uiYear, uiMonth, uiDay, uiDefaultMonth=12;
   Julian        EndDate;
@@ -898,7 +900,7 @@ Julian CParameters::GetEndRangeDateAsJulian(const std::string & sEndRangeDate) /
   return EndDate;
 }
 
-Julian CParameters::GetStartRangeDateAsJulian(const std::string & sStartRangeDate) /*const*/ {
+Julian CParameters::GetStartRangeDateAsJulian(const std::string & sStartRangeDate) const {
   int           iPrecision;
   UInt          uiYear, uiMonth, uiDay, uiDefaultMonth=1, uiDefaultDay=1;
   Julian        StartDate;
@@ -934,7 +936,7 @@ Julian CParameters::GetStartRangeDateAsJulian(const std::string & sStartRangeDat
 
 /** Returns study period end date as a julian date.
     Throws exception if date can not be converted to a valid julian date. */
-Julian CParameters::GetStudyPeriodEndDateAsJulian() /*const*/ {
+Julian CParameters::GetStudyPeriodEndDateAsJulian() const {
   int           iPrecision;
   UInt          uiYear, uiMonth, uiDay, uiDefaultMonth=12;
   Julian        EndDate;
@@ -967,7 +969,7 @@ Julian CParameters::GetStudyPeriodEndDateAsJulian() /*const*/ {
 
 /** Returns study period start date as a julian date.
     Throws exception if date can not be converted to a valid julian date. */
-Julian CParameters::GetStudyPeriodStartDateAsJulian() /*const*/ {
+Julian CParameters::GetStudyPeriodStartDateAsJulian() const {
   int           iPrecision;
   UInt          uiYear, uiMonth, uiDay, uiDefaultMonth=1, uiDefaultDay=1;
   Julian        StartDate;
@@ -1025,7 +1027,7 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case TIMEINTLEN               : sDefaultValue = glTimeIntervalLength; break;
       case PURESPATIAL              : sDefaultValue = (gbIncludePurelySpatialClusters ? YES : NO); break;
       case TIMESIZE                 : sDefaultValue = gfMaxTemporalClusterSize; break;
-      case REPLICAS                 : sDefaultValue = giReplications; break;
+      case REPLICAS                 : sDefaultValue << giReplications; break;
       case MODEL                    : sDefaultValue = geProbabiltyModelType; break;
       case RISKFUNCTION             : sDefaultValue = geRiskFunctionType; break;
       case POWERCALC                : sDefaultValue = (gbPowerCalculation ? YES : NO); break;
@@ -1038,7 +1040,7 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case COORDTYPE                : sDefaultValue = geCoordinatesType; break;
       case OUTPUT_SIM_LLR_ASCII     : sDefaultValue = (gbOutputSimLogLikeliRatiosAscii ? YES : NO); break;
       case SEQUENTIAL               : sDefaultValue = (gbSequentialRuns ? YES : NO); break;
-      case SEQNUM                   : sDefaultValue = giNumSequentialRuns; break;
+      case SEQNUM                   : sDefaultValue << giNumSequentialRuns; break;
       case SEQPVAL                  : sDefaultValue = gbSequentialCutOffPValue; break;
       case VALIDATE                 : sDefaultValue = (gbValidatePriorToCalc ? YES : NO); break;
       case OUTPUT_RR_ASCII          : sDefaultValue = (gbOutputRelativeRisksAscii ? YES : NO); break;
@@ -1620,7 +1622,7 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case TIMEINTLEN                : SetTimeIntervalLength((long)ReadInt(sParameter, eParameterType)); break;
       case PURESPATIAL               : SetIncludePurelySpatialClusters(ReadBoolean(sParameter, eParameterType)); break;
       case TIMESIZE                  : SetMaximumTemporalClusterSize(ReadFloat(sParameter, eParameterType)); break;
-      case REPLICAS                  : SetNumberMonteCarloReplications(ReadInt(sParameter, eParameterType)); break;
+      case REPLICAS                  : SetNumberMonteCarloReplications(ReadUnsignedInt(sParameter, eParameterType)); break;
       case MODEL                     : SetProbabilityModelType((ProbabiltyModelType)ReadInt(sParameter, eParameterType)); break;
       case RISKFUNCTION              : SetRiskType((RiskType)ReadInt(sParameter, eParameterType)); break;
       case POWERCALC                 : SetPowerCalculation(ReadBoolean(sParameter, eParameterType)); break;
@@ -1633,7 +1635,7 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case COORDTYPE                 : SetCoordinatesType((CoordinatesType)ReadInt(sParameter, eParameterType)); break;
       case OUTPUT_SIM_LLR_ASCII      : SetOutputSimLogLikeliRatiosAscii(ReadBoolean(sParameter, eParameterType)); break;
       case SEQUENTIAL                : SetSequentialScanning(ReadBoolean(sParameter, eParameterType)); break;
-      case SEQNUM                    : SetNumSequentialScans(ReadInt(sParameter, eParameterType)); break;
+      case SEQNUM                    : SetNumSequentialScans(ReadUnsignedInt(sParameter, eParameterType)); break;
       case SEQPVAL                   : SetSequentialCutOffPValue(ReadDouble(sParameter, eParameterType)); break;
       case VALIDATE                  : SetValidatePriorToCalculation(ReadBoolean(sParameter, eParameterType)); break;
       case OUTPUT_RR_ASCII           : SetOutputRelativeRisksAscii(ReadBoolean(sParameter, eParameterType)); break;
@@ -1868,6 +1870,33 @@ void CParameters::ReadTimeParametersSection(ZdIniFile& file, BasePrint & PrintDi
     x.AddCallpath("ReadTimeParametersSection()", "CParameters");
     throw;
   }
+}
+
+/** Attempts to interpret passed string as an integer value. Throws exception. */
+int CParameters::ReadUnsignedInt(const ZdString & sValue, ParameterType eParameterType) {
+  int           iReadResult;
+  ZdString      sLabel;
+
+  try {
+   if (sValue.GetIsEmpty()) {
+     gbReadStatusError = true;
+     InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n",
+                                         "ReadUnsignedInt()",
+                                         GetParameterLineLabel(eParameterType, sLabel, geReadType == INI));
+   }
+   else if (sscanf(sValue.GetCString(), "%u", &iReadResult) != 1) {
+     gbReadStatusError = true;
+     InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not a valid integer.\n",
+                                         "ReadUnsignedInt()",
+                                         GetParameterLineLabel(eParameterType, sLabel, geReadType == INI),
+                                         sValue.GetCString());
+   }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadUnsignedInt()","CParameters");
+    throw;
+  }
+  return iReadResult;
 }
 
 // saves the model info section to the ini file
@@ -2336,7 +2365,7 @@ void CParameters::SetDefaults() {
   gsEndRangeEndDate                     = gsStudyPeriodEndDate;
   gsStartRangeStartDate                 = gsStudyPeriodStartDate;
   gsStartRangeEndDate                   = gsStudyPeriodEndDate;
-  gdTimeTrendConverge			= 0.00000001;
+  gdTimeTrendConverge			= 0.001;
   gbEarlyTerminationSimulations         = false;
   gbRestrictReportedClusters            = false;
   gfMaxReportedGeographicClusterSize    = gfMaxGeographicClusterSize;
@@ -3224,7 +3253,7 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
       //validate number of replications requested
       if (!(giReplications == 0 || giReplications == 9 || giReplications == 19 || fmod(giReplications+1, 1000) == 0.0)) {
         bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Invalid number of replications '%d', value must be 0, 9, 999, or n999.\n", giReplications);
+        PrintDirection.SatScanPrintWarning("Error: Invalid number of replications '%u', value must be 0, 9, 999, or n999.\n", giReplications);
       }
 
       //validate input/oupt files
