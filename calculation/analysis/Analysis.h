@@ -24,9 +24,9 @@ class CAnalysis
 
     virtual void                AllocateTopClusterList();
     static int                  CompareClusters(const void *a, const void *b);
-    void                        CreateGridOutputFile(const long& lReportHistoryRunNumber);
+    void                        CreateGridOutputFile(const long lReportHistoryRunNumber);
     bool                        CreateReport(time_t RunTime);
-    bool                        FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumber);
+    bool                        FinalizeReport(time_t RunTime);
     virtual bool                FindTopClusters();
     tract_t                     GetMaxNumClusters() {return m_nMaxClusters;};      // why have a protected function to get a protected variable? AJV
     void                        InitializeTopClusterList();
@@ -42,7 +42,7 @@ class CAnalysis
     virtual void                SetMaxNumClusters() {m_nMaxClusters=m_pData->m_nGridTracts;};
     void                        SortTopClusters();
     void                        UpdatePowerCounts(double r);
-    bool                        UpdateReport(const long& lReportHistoryRunNumber);
+    bool                        UpdateReport(const long lReportHistoryRunNumber);
     void                        UpdateTopClustersRank(double r);
 
 //    CModel*       m_pModel;
@@ -56,8 +56,8 @@ class CAnalysis
     void                        DisplayFindClusterHeading();
     void                        DisplayTopClusterLogLikelihood();
     void                        DisplayTopClustersLogLikelihoods(FILE* fp);
-    virtual void                DisplayTopClusters(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp=stdout);
-    virtual void                DisplayTopCluster(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp=stdout);
+    virtual void                DisplayTopClusters(double nMinRatio, int nReps, const long lReportHistoryRunNumber, FILE* fp=stdout);
+    virtual void                DisplayTopCluster(double nMinRatio, int nReps, const long lReportHistoryRunNumber, FILE* fp=stdout);
 
     bool                        Execute(time_t RunTime);
 

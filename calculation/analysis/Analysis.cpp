@@ -1,5 +1,5 @@
 #include "SaTScan.h"
-#pragma hdrstop
+#pragma hdrstop                                       
 #include "Analysis.h"
 
 #define INCLUDE_RUN_HISTORY    // define to determine whether or not we should log run history, if included
@@ -69,12 +69,10 @@ bool CAnalysis::Execute(time_t RunTime) {
 
    try {
       SetMaxNumClusters();
-      //Allocate array which will store most likely clusters.
-      AllocateTopClusterList();
-      //Allocate two-dimensional array to be used in replications.
-      m_pData->AllocSimCases();
-      //Calculate expected number of cases.
-      if (!m_pData->CalculateMeasure())
+      AllocateTopClusterList();                //Allocate array which will store most likely clusters.
+      m_pData->AllocSimCases();                //Allocate two-dimensional array to be used in replications.
+
+      if (!m_pData->CalculateMeasure())        //Calculate expected number of cases.
          return false;
     
       if (m_pData->m_nTotalCases < 1)
@@ -82,7 +80,6 @@ bool CAnalysis::Execute(time_t RunTime) {
 
       //For circle and each ellipse, find closest neighboring tracts points for
       //each grid point limiting distance by max circle size and cumulated measure.
-      //
       if (gpPrintDirection->GetIsCanceled() || !m_pData->FindNeighbors())
         return false;
 
@@ -96,12 +93,15 @@ bool CAnalysis::Execute(time_t RunTime) {
       m_pParameters->DisplayParameters(m_pDebugFile);
 #endif
 
-      do {
-        ++m_nAnalysisCount;
 #ifdef INCLUDE_RUN_HISTORY
-         // declare variable for each analysis - AJV 9/10/2002
-        stsRunHistoryFile historyFile(m_pParameters->GetRunHistoryFilename(), *gpPrintDirection, m_pParameters->m_nReplicas > 99);
+     // only create one history object and record to it only once ( first iteration if sequential analysis ) -- AJV
+     stsRunHistoryFile historyFile(m_pParameters->GetRunHistoryFilename(), *gpPrintDirection, m_pParameters->m_nReplicas > 99, m_pParameters->m_bSequential);
+     lRunNumber = historyFile.GetRunNumber();
 #endif
+
+      do {
+         ++m_nAnalysisCount;
+
 
 #ifdef DEBUGANALYSIS
         fprintf(m_pDebugFile, "Analysis Loop #%i\n", m_nAnalysisCount);
@@ -113,14 +113,11 @@ bool CAnalysis::Execute(time_t RunTime) {
         m_pData->DisplayMeasure(m_pDebugFile);
         m_pData->DisplayNeighbors(m_pDebugFile);
 #endif
-    
-        if (! gpPrintDirection->GetIsCanceled()) {
-           //For each grid point, find the cluster with the greatest loglikihood.
-           //Removes any clusters that violate criteria for reporting secondary clusters.
-           if (! FindTopClusters())
-             return false;
-        }
-        else return false;
+        
+        //For each grid point, find the cluster with the greatest loglikihood.
+        //Removes any clusters that violate criteria for reporting secondary clusters.
+        if (gpPrintDirection->GetIsCanceled() || !FindTopClusters())
+          return false;
 
         DisplayTopClusterLogLikelihood();
 
@@ -130,24 +127,25 @@ bool CAnalysis::Execute(time_t RunTime) {
         else
           gpPrintDirection->SatScanPrintf("No clusters retained.\n"); // USE return valuse from FindTopClusters to indicate this.
 
-//#ifdef DEBUGANALYSIS
-//        DisplayTopClusters(-DBL_MAX, INT_MAX, m_pDebugFile, NULL);
-//#endif
-#ifdef INCLUDE_RUN_HISTORY
-        lRunNumber = historyFile.GetRunNumber();
-#endif
         if (gpPrintDirection->GetIsCanceled() || !UpdateReport(lRunNumber))
           return false;
 
 #ifdef INCLUDE_RUN_HISTORY
-        // log new history for each analysis run - AJV 9/10/2002
-        gpPrintDirection->SatScanPrintf("\nLogging run history...");
-        
-        double dPVal((m_nClustersRetained > 0) ? m_pTopClusters[0]->GetPVal(m_pParameters->m_nReplicas): 0.0);
-        historyFile.LogNewHistory(*this, guwSignificantAt005, dPVal);
-        // reset the number of significants back to zero for each analysis - AJV 9/10/2002
-        guwSignificantAt005 = 0;
+        // log history for first analysis run - AJV 12/27/2002
+        if (m_nAnalysisCount == 1) {
+           gpPrintDirection->SatScanPrintf("\nLogging run history...");
+           double dPVal((m_nClustersRetained > 0) ? m_pTopClusters[0]->GetPVal(m_pParameters->m_nReplicas): 0.0);
+           historyFile.LogNewHistory(*this, guwSignificantAt005, dPVal);
+        }
 #endif
+
+        guwSignificantAt005 = 0;      // reset the number of significants back to zero for each iteration - AJV 9/10/2002
+
+        // report to output files here before clusters are readjusted in sequential scan function RemoveTopClusters() - AJV 12/30/2002
+        CreateGridOutputFile(lRunNumber);
+        // report relative risks output only on first iteration - AJV
+        if (m_nAnalysisCount == 1 && (m_pParameters->m_bOutputRelRisks || m_pParameters->GetDBaseOutputRelRisks()))
+           m_pData->DisplayRelativeRisksForEachTract(m_pParameters->m_bOutputRelRisks, m_pParameters->GetDBaseOutputRelRisks());
 
         bContinue = RepeatAnalysis();
         if (bContinue)
@@ -155,11 +153,11 @@ bool CAnalysis::Execute(time_t RunTime) {
     
         if (gpPrintDirection->GetIsCanceled())
            return false;
-           
+
       } while (bContinue);
 
       m_pData->DeAllocSimCases();
-      FinalizeReport(RunTime, lRunNumber);
+      FinalizeReport(RunTime);
    }
    catch (ZdException & x) {
       x.AddCallpath("Execute(time_t)", "CAnalysis");
@@ -192,16 +190,15 @@ void CAnalysis::AllocateTopClusterList() {
 } /* CompareClusters() */
 
 //******************************************************************************
-//  Create the Grid Output File (Most Likely Cluster for each Centroid)
+//  Create the Most Likely Cluster Output File
 //******************************************************************************
-void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
-   std::auto_ptr<stsClusterData>        pData;
-
+void CAnalysis::CreateGridOutputFile(const long lReportHistoryRunNumber) {
    try {
       if (m_pParameters->m_bMostLikelyClusters || m_pParameters->GetOutputClusterLevelDBF()) {
-         pData.reset( new stsClusterData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, GetCoordinateType(),
-                                    m_pParameters->m_nModel, m_pParameters->m_nDimension, m_pParameters->m_nReplicas > 99,
-                                    m_pParameters->m_nNumEllipses > 0, m_pParameters->m_bDuczmalCorrectEllipses) );
+         std::auto_ptr<stsClusterData> pData( new stsClusterData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(),
+                                                                 lReportHistoryRunNumber, GetCoordinateType(), m_pParameters->m_nModel,
+                                                                 m_pParameters->m_nDimension, m_pParameters->m_nReplicas > 99,
+                                                                 m_pParameters->m_nNumEllipses > 0, m_pParameters->m_bDuczmalCorrectEllipses) );
 
          for (int i = 0; i < m_nClustersRetained; ++i) {
             // print out user notification every 20 recorded clusters to let user know program is still working - AJV 10/3/2002
@@ -210,14 +207,13 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
             pData->RecordClusterData(*m_pTopClusters[i], *m_pData, i+1);
          }
 
-         if (m_pParameters->m_bMostLikelyClusters) {
-            ASCIIFileWriter writer(pData.get());
-            writer.Print();
-         }
-         if (m_pParameters->GetOutputClusterLevelDBF()) {
-            DBaseFileWriter writer(pData.get());
-            writer.Print();
-         }
+         // only append if analysis count is greater than 1 which implies sequential scan is taking place with
+         // more than one iteration -- AJV 12/30/2002
+         bool bAppend(m_nAnalysisCount > 1);        
+         if (m_pParameters->m_bMostLikelyClusters)
+            ASCIIFileWriter(pData.get(), bAppend).Print();
+         if (m_pParameters->GetOutputClusterLevelDBF())
+            DBaseFileWriter(pData.get(), bAppend).Print();
       }
 /* testing mechanism for output files - this is a generic test class which houses several different types of fields
    test by creating an instance of the class and setting various test values to the fields and try to print out in
@@ -232,11 +228,8 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
       pTest->SetTestValues("kusdyh", 654, 10, -7, 3, true);
       pTest->AddBlankRecord();
 
-      ASCIIFileWriter writer(pTest.get());
-      writer.Print();
-
-      DBaseFileWriter Dwriter(pTest.get());
-      Dwriter.Print();
+      ASCIIFileWriter(pTest.get()).Print();
+      DBaseFileWriter(pTest.get()).Print();
 */
    }
    catch (ZdException & x) {
@@ -245,22 +238,24 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
    }
 }
 
+// opens the results file and prints the header to it
+// pre: none
+// post: creates/overwrites results file and prints the file header
 bool CAnalysis::CreateReport(time_t RunTime) {
    FILE* fp;
 
    try {
       OpenReportFile(fp, "w");
 
-      fprintf(fp,  "                 _____________________________\n\n");
+      fprintf(fp, "                 _____________________________\n\n");
       DisplayVersion(fp, 1);
-      fprintf(fp,"                 _____________________________ \n\n");
+      fprintf(fp, "                 _____________________________\n\n");
 
       gsStartTime = ctime(&RunTime);
       fprintf(fp,"\nProgram run on: %s\n", gsStartTime.GetCString());
 
       m_pParameters->DisplayAnalysisType(fp);
       m_pParameters->DisplayTimeAdjustments(fp);
-
       m_pData->DisplaySummary(fp);
 
       fclose(fp);
@@ -273,6 +268,9 @@ bool CAnalysis::CreateReport(time_t RunTime) {
   return true;
 }
 
+// prints message to progress output letting user know which cluster the program is currently looking for
+// pre: none
+// post: prints a progress message to the user
 void CAnalysis::DisplayFindClusterHeading() {
    try {
       if (!m_pParameters->m_bSequential)
@@ -292,7 +290,11 @@ void CAnalysis::DisplayFindClusterHeading() {
    }
 }
 
-void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp) {
+// function used by the sequential scan to report the top cluster to file, also responsible for reporting
+// to area specific output file, if applicable
+// pre: none
+// post: prints the information for the top cluster to the area, if applicable, and result files
+void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long lReportHistoryRunNumber, FILE* fp) {
   measure_t                             nMinMeasure = 0;
   std::auto_ptr<stsAreaSpecificData>    pData;
 
@@ -310,19 +312,22 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
         m_pTopClusters[0]->Display(fp, *m_pParameters, *m_pData, m_nClustersReported, nMinMeasure);
         if (m_pTopClusters[0]->m_nRatio > SimRatios.GetAlpha05())
           ++guwSignificantAt005;
-        // if we want dBase report, set the report pointer in cluster
-        if (m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
+        // if we want area specific report, set the report pointer in cluster
+        if (pData.get()) {
           m_pTopClusters[0]->SetAreaReport(pData.get());
-        // if we are doing dBase or ASCII
-        if (m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
-           m_pTopClusters[0]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
+          m_pTopClusters[0]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
                                                   lReportHistoryRunNumber, true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);
+        }
       }
       fprintf(fp, "\n");
+
+      // need to do append here because this is a sequential function, but don't append on the first analysis so that
+      // the file can be deleted if it exists and started over fresh - AJV
+      bool bAppendData(m_nAnalysisCount > 1);
       if (m_pParameters->m_bOutputCensusAreas)
-        ASCIIFileWriter(pData.get()).Print();// print area ASCII
+         ASCIIFileWriter(pData.get(), bAppendData).Print();// print area ASCII
       if (m_pParameters->GetOutputAreaSpecificDBF())
-        DBaseFileWriter(pData.get()).Print();// print area dBase
+         DBaseFileWriter(pData.get(), bAppendData).Print();// print area dBase
     }
   }
   catch (ZdException & x) {
@@ -331,9 +336,12 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
   }
 }
 
-void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp) {
+// function used by the non-sequential scan to report the top clusters to file, also responsible for reporting
+// to area specific output file, if applicable
+// pre: none
+// post: prints the information for the top clusters to the area, if applicable, and result files
+void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long lReportHistoryRunNumber, FILE* fp) {
   double                               dSignifRatio05;
-  tract_t                              i, tNumClustersToDisplay;
   std::auto_ptr<stsAreaSpecificData>   pData;
   clock_t                              lStartTime;
   measure_t                            nMinMeasure = -1;
@@ -344,9 +352,9 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
       pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
     dSignifRatio05 = SimRatios.GetAlpha05();
     //If  no replications, attempt to display up to top 10 clusters.
-    tNumClustersToDisplay = (nReps == 0 ? min(10, m_nClustersRetained) : m_nClustersRetained);
+    tract_t tNumClustersToDisplay(nReps == 0 ? min(10, m_nClustersRetained) : m_nClustersRetained);
     lStartTime = clock(); //get clock for calculating output time
-    for (i=0; i < tNumClustersToDisplay; ++i) {
+    for (tract_t i=0; i < tNumClustersToDisplay; ++i) {
        if (i==1)
          ReportTimeEstimate(lStartTime, tNumClustersToDisplay, i, gpPrintDirection);
        if (m_pTopClusters[i]->m_nRatio > nMinRatio && (nReps == 0 || m_pTopClusters[i]->m_nRank  <= nReps)) {
@@ -359,16 +367,17 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
          m_pTopClusters[i]->Display(fp, *m_pParameters, *m_pData, m_nClustersReported, nMinMeasure);
          if (m_pTopClusters[i]->m_nRatio > dSignifRatio05)
            ++guwSignificantAt005;
-         // if doing dBase output, set the report pointer - not the most effective way to do this, but the least intrusive - AJV
-         if (m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
+         // if doing area specific output, set the report pointer - not the most effective way to do this, but the least intrusive - AJV
+         if (pData.get()) {
            m_pTopClusters[i]->SetAreaReport(pData.get());
-         // if were are doing census areas and theres a file pointer OR we are doing dBase output
-         if (m_pParameters->m_bOutputCensusAreas || m_pParameters->GetOutputAreaSpecificDBF())
            m_pTopClusters[i]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
                                                     lReportHistoryRunNumber, true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);
+         }
        }   // end if top cluster > minratio
     }   // end for loop
     fprintf(fp, "\n");
+
+    // no need to worry about appending here because this function is not called in sequential analysis - AJV 12/30/2002
     if (m_pParameters->m_bOutputCensusAreas) // print area ASCII
       ASCIIFileWriter(pData.get()).Print();
     if (m_pParameters->GetOutputAreaSpecificDBF()) // print area dBase
@@ -394,6 +403,8 @@ void CAnalysis::DisplayTopClusterLogLikelihood() {
    }
 }
 
+// can't find any reference to this function ever being called, appears to be an old debugging function
+// that was forgotten about
 void CAnalysis::DisplayTopClustersLogLikelihoods(FILE* fp) {
   try {
      for (tract_t i = 0; i<m_nClustersRetained; ++i) {
@@ -409,7 +420,10 @@ void CAnalysis::DisplayTopClustersLogLikelihoods(FILE* fp) {
   }
 }
 
-bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumber) {
+// displays summary type data for the end of the results file
+// pre: none
+// post: prints the appropraite summary data to the results file
+bool CAnalysis::FinalizeReport(time_t RunTime) {
    FILE* fp;
    time_t CompletionTime;
    double nTotalTime,  nSeconds,  nMinutes,  nHours;
@@ -418,10 +432,8 @@ bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumb
    char* szSeconds = "seconds";
 
    try {
-      gpPrintDirection->SatScanPrintf("\nFinishing up reports...");
+      gpPrintDirection->SatScanPrintf("\nFinishing up results...");
       OpenReportFile(fp, "a");
-      
-      CreateGridOutputFile(lReportHistoryRunNumber);
 
       if (m_nClustersRetained == 0) {
         fprintf(fp, "\nNo clusters were found.\n");
@@ -454,17 +466,6 @@ bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumb
         (m_pData->GetTInfo())->tiReportZeroPops(fp);
 
       m_pData->GetTInfo()->tiReportDuplicateTracts(fp);
-
-      if (m_pParameters->m_bOutputRelRisks || m_pParameters->GetDBaseOutputRelRisks())
-        m_pData->DisplayRelativeRisksForEachTract(m_pParameters->m_bOutputRelRisks, m_pParameters->GetDBaseOutputRelRisks());
-
-      //if (m_pParameters->m_bOutputCensusAreas)
-      //   {
-      //   fprintf(fp, "________________________________________________________________\n\n");
-      //   fprintf(fp,"For further study using a GIS or database program, an ASCII\n"
-      //           "format GIS file has been created, describing the detected clusters.\n"
-      //           "The name of this file is %s.\n", m_pParameters->m_szGISFilename);
-      //   }        
 
       m_pParameters->DisplayParameters(fp);
 
@@ -544,6 +545,10 @@ void CAnalysis::InitializeTopClusterList() {
    }
 }
 
+// attempts to open the results file and return a handle to it
+// pre: szType is either "a" or "w"
+// post: will return a file pointer handle if successful in opening file, else will generate
+//       exception if correct szType used
 void CAnalysis::OpenReportFile(FILE*& fp, const char* szType) {
    try {
       if ((fp = fopen(m_pParameters->GetOutputFileName().c_str(), szType)) == NULL) {
@@ -576,7 +581,8 @@ void CAnalysis::PerformSimulations() {
         else
           sReplicationFormatString = "SaTScan log likelihood ratio for #%ld of %ld replications: %7.2f\n";
 
-        if (m_pParameters->m_bSaveSimLogLikelihoods || m_pParameters->GetDBaseOutputLogLikeli())
+        // record only the first set of log likelihoods - AJV 12/27/2002  
+        if ((m_pParameters->m_bSaveSimLogLikelihoods || m_pParameters->GetDBaseOutputLogLikeli()) && m_nAnalysisCount == 1)
            pLLRData.reset( new LogLikelihoodData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str()) );
 
         clock_t nStartTime = clock();
@@ -584,20 +590,17 @@ void CAnalysis::PerformSimulations() {
 
         for (iSimulationNumber=1; (iSimulationNumber <= m_pParameters->m_nReplicas) && !gpPrintDirection->GetIsCanceled(); iSimulationNumber++) {
           m_pData->MakeData(iSimulationNumber);
-          if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
-             r = MonteCarloProspective();
-          else
-             r = MonteCarlo();
+          r = (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME) ? MonteCarloProspective() : MonteCarlo();
           UpdateTopClustersRank(r);
           SimRatios.AddRatio(r);
           UpdatePowerCounts(r);
-          #ifdef DEBUGANALYSIS
+ #ifdef DEBUGANALYSIS
           fprintf(m_pDebugFile, "---- Replication #%ld ----------------------\n\n",i+1);
           m_pData->DisplaySimCases(m_pDebugFile);
           // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
           fprintf(m_pDebugFile, "%s = %7.21f\n\n",
                   (Parameters.m_nModel == SPACETIMEPERMUTATION ? "Test statistic" : "Log Likelihood Ratio"), r);
-          #endif
+ #endif
           if (iSimulationNumber==1) {
             ReportTimeEstimate(nStartTime, m_pParameters->m_nReplicas, iSimulationNumber, gpPrintDirection);
             //Simulations taking less than one second to complete hinder user seeing most likely clusters
@@ -606,12 +609,17 @@ void CAnalysis::PerformSimulations() {
               Sleep(5000);
           }
           gpPrintDirection->SatScanPrintf(sReplicationFormatString, iSimulationNumber, m_pParameters->m_nReplicas, r);
-          if (m_pParameters->m_bSaveSimLogLikelihoods || m_pParameters->GetDBaseOutputLogLikeli())
+
+          // best to just check if the data pointer is set instead of checking the criteria for setting again so will
+          // only have to check that criteria in one place instead of two -- AJV 12/30/2002
+          if(pLLRData.get())
              pLLRData->AddLikelihood(r);
         }
-        if (m_pParameters->m_bSaveSimLogLikelihoods)
+
+        // only write to output formats on the first analysis/iteration -- AJV
+        if (m_pParameters->m_bSaveSimLogLikelihoods && pLLRData.get())
            ASCIIFileWriter(pLLRData.get()).Print();
-        if (m_pParameters->GetDBaseOutputLogLikeli())
+        if (m_pParameters->GetDBaseOutputLogLikeli() && pLLRData.get())
            DBaseFileWriter(pLLRData.get()).Print();
       }
    }
@@ -680,21 +688,12 @@ void CAnalysis::RankTopClusters() {
    float newradius;                      /* Radius of new cluster tested */
    float clusterdistance;                /* Distance between the centers */
                                          /* of old and new clusters      */
-   //float radius[NUM_RANKED];             /* Array of old cluster radiia  */
    float *pRadius = 0;
-   //float* x = new float[NUM_RANKED];
-   //float* y = new float[NUM_RANKED];
-   //float* z = new float[NUM_RANKED];     /* Coordinates for old clusters */
-   //float x1, y1, z1;                     /* Coordinates for new cluster  */
-   //float x2, y2, z2;                     /* Coordinates for edge tract   */
-                                         	/* in the new cluster           */
    double** pCoords = 0;
-   double* pCoords1 = 0;
-   double* pCoords2 = 0;
-   int     iNumElements;
+   double* pCoords1 = 0, *pCoords2 = 0;
+   int     i, iNumElements;
    bool bInclude;                 /* 0/1 variable put to zero when a new */
                                   /* cluster should not be incuded.      */
-   int i;
 
    try {
       //if no restrictions then need array to have m_nNumTracts number of elements
@@ -835,8 +834,7 @@ void CAnalysis::RankTopClusters() {
    }
 } /* RankTopClusters() */
 
-void CAnalysis::RemoveTopClusterData()
-{
+void CAnalysis::RemoveTopClusterData() {
    tract_t nNeighbor;
 
    try {
@@ -875,8 +873,9 @@ bool CAnalysis::RepeatAnalysis()
 
    try {
       if (m_pParameters->m_bSequential)
-         bReturn = ((m_nAnalysisCount < m_pParameters->m_nAnalysisTimes) && (m_pTopClusters[0]->GetPVal(m_pParameters->m_nReplicas)
-                    < m_pParameters->m_nCutOffPVal) && (m_pData->m_nTracts > 1));
+         bReturn = ((m_nAnalysisCount < m_pParameters->m_nAnalysisTimes) &&
+                    (m_pTopClusters[0]->GetPVal(m_pParameters->m_nReplicas) < m_pParameters->m_nCutOffPVal) &&
+                    (m_pData->m_nTracts > 1));
    }
    catch (ZdException & x) {
       x.AddCallpath("RepeatAnalysis()", "CAnalysis");
@@ -900,7 +899,7 @@ void CAnalysis::UpdatePowerCounts(double r)
   }
 }
 
-bool CAnalysis::UpdateReport(const long& lReportHistoryRunNumber) {
+bool CAnalysis::UpdateReport(const long lReportHistoryRunNumber) {
    FILE* fp;
 
    try {
