@@ -89,14 +89,13 @@ SRC         := Main.cpp \
 	             $(CLUSTER)/CategoricalClusterDataFactory.cpp \
 	             $(CLUSTER)/MultiSetClusterData.cpp \
 	             $(CLUSTER)/MultiSetCategoricalClusterData.cpp \
-	             $(OUTPUT)/stsAreaSpecificData.cpp \
+	             $(OUTPUT)/ClusterLocationsWriter.cpp \
                $(OUTPUT)/stsASCIIFileWriter.cpp \
-               $(OUTPUT)/stsClusterData.cpp \
+               $(OUTPUT)/ClusterInformationWriter.cpp \
                $(OUTPUT)/stsDBaseFileWriter.cpp \
-               $(OUTPUT)/stsLogLikelihood.cpp \
-               $(OUTPUT)/stsOutputFileData.cpp \
-               $(OUTPUT)/stsOutputFileWriter.cpp \
-               $(OUTPUT)/stsRelativeRisk.cpp \
+               $(OUTPUT)/LoglikelihoodRatioWriter.cpp \
+               $(OUTPUT)/AbstractDataFileWriter.cpp \
+               $(OUTPUT)/LocationRiskEstimateWriter.cpp \
 	             $(OUTPUT)/stsRunHistoryFile.cpp \
 	             $(OUTPUT)/AsciiPrintFormat.cpp \
 	             $(PRINT)/BasePrint.cpp \
