@@ -338,24 +338,24 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
 
     fprintf(fp, "Input Files\n");
     fprintf(fp, "-----------\n");
-    fprintf(fp, "  Case File                      : %s\n", gsCaseFileName.c_str());
+    fprintf(fp, "  Case File                  : %s\n", gsCaseFileName.c_str());
 
     switch (geProbabiltyModelType) {
-      case POISSON              : fprintf(fp, "  Population File                : %s\n", gsPopulationFileName.c_str()); break;
-      case BERNOULLI            : fprintf(fp, "  Control File                   : %s\n", gsControlFileName.c_str()); break;
+      case POISSON              : fprintf(fp, "  Population File            : %s\n", gsPopulationFileName.c_str()); break;
+      case BERNOULLI            : fprintf(fp, "  Control File               : %s\n", gsControlFileName.c_str()); break;
       case SPACETIMEPERMUTATION : break;
       default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayParameters()", geProbabiltyModelType);
     }
 
-    if (geMaxGeographicClusterSizeType == PERCENTOFPOPULATIONFILETYPE)
-      fprintf(fp, "  Maximum Circle Population File : %s\n", gsMaxCirclePopulationFileName.c_str());
-    fprintf(fp, "  Coordinates File               : %s\n", gsCoordinatesFileName.c_str());
+    fprintf(fp, "  Coordinates File           : %s\n", gsCoordinatesFileName.c_str());
     if (gbUseSpecialGridFile)
-      fprintf(fp, "  Special Grid File              : %s\n", gsSpecialGridFileName.c_str());
+      fprintf(fp, "  Special Grid File          : %s\n", gsSpecialGridFileName.c_str());
+    if (geMaxGeographicClusterSizeType == PERCENTOFPOPULATIONFILETYPE)
+      fprintf(fp, "  Max Circle Size File       : %s\n", gsMaxCirclePopulationFileName.c_str());
     if (geSimulationType == FILESOURCE)
-      fprintf(fp, "  Simulated Data Import File     : %s\n", gsSimulationDataSourceFileName.c_str());
+      fprintf(fp, "  Simulated Data Import File : %s\n", gsSimulationDataSourceFileName.c_str());
     if(geSimulationType == HA_RANDOMIZATION || gbUseAdjustmentsForRRFile)
-      fprintf(fp, "  Adjustments File               : %s\n", gsAdjustmentsByRelativeRisksFileName.c_str());
+      fprintf(fp, "  Adjustments File           : %s\n", gsAdjustmentsByRelativeRisksFileName.c_str());
 
     fprintf(fp, "\n  Precision of Times : %s\n", gePrecisionOfTimesType == NONE ? "No" : "Yes");
 

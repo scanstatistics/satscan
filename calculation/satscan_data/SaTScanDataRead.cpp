@@ -1179,9 +1179,9 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
     gpPrint->SetImpliedInputFileType(BasePrint::MAXCIRCLEPOPFILE);
     StringParser Parser(gpPrint->GetImpliedInputFileType());
 
-    gpPrint->SatScanPrintf("Reading the maximum circle population file\n");
+    gpPrint->SatScanPrintf("Reading the max circle size file\n");
     if ((fp = fopen(m_pParameters->GetMaxCirclePopulationFileName().c_str(), "r")) == NULL) {
-      gpPrint->SatScanPrintWarning("Error: Could not open maximum circle population file:\n'%s'.\n",
+      gpPrint->SatScanPrintWarning("Error: Could not open max circle size file:\n'%s'.\n",
                                    m_pParameters->GetMaxCirclePopulationFileName().c_str());
       return false;
     }
@@ -1198,19 +1198,19 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
         bEmpty=false;
         //read tract identifier
         if ((TractIdentifierIndex = gpTInfo->tiGetTractIndex(Parser.GetWord(0))) == -1) {
-          gpPrint->PrintInputWarning("Error: Unknown location identifier in special population file, record %ld.\n", iRecNum);
+          gpPrint->PrintInputWarning("Error: Unknown location identifier in max circle size file, record %ld.\n", iRecNum);
           gpPrint->PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
           bValid = false;
           continue;
         }
         //read population
         if (!Parser.GetWord(1)) {
-          gpPrint->PrintInputWarning("Error: Record %d of special population file missing population.\n", iRecNum);
+          gpPrint->PrintInputWarning("Error: Record %d of max circle size file missing population.\n", iRecNum);
           bValid = false;
           continue;
         }
         if (sscanf(Parser.GetWord(1), "%f", &fPopulation) != 1) {
-          gpPrint->PrintInputWarning("Error: Population value '%s' in record %ld, of special population file, is not a number.\n",
+          gpPrint->PrintInputWarning("Error: Population value '%s' in record %ld, of max circle size file, is not a number.\n",
                                      Parser.GetWord(1), iRecNum);
           bValid = false;
           continue;
@@ -1218,9 +1218,9 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
         //validate that population is not negative or exceeding type precision
         if (fPopulation < 0) {//validate that count is not negative or exceeds type precision
           if (strstr(Parser.GetWord(1), "-"))
-             gpPrint->PrintInputWarning("Error: Negative population in record %ld of special population file.\n", iRecNum);
+             gpPrint->PrintInputWarning("Error: Negative population in record %ld of max circle size file.\n", iRecNum);
           else
-             gpPrint->PrintInputWarning("Error: Population '%s' exceeds maximum value of %i in record %ld of special population file.\n",
+             gpPrint->PrintInputWarning("Error: Population '%s' exceeds maximum value of %i in record %ld of max circle size file.\n",
                                         Parser.GetWord(1), std::numeric_limits<float>::max(), iRecNum);
            bValid = false;
            continue;
@@ -1233,15 +1233,15 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
     // total population can not be zero
     if (m_nTotalMaxCirclePopulation == 0) {
       bValid = false;
-      gpPrint->PrintWarningLine("Error: Total population for special population file can not be zero.\n");
+      gpPrint->PrintWarningLine("Error: Total population for max circle size file can not be zero.\n");
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->PrintWarningLine("Please see 'special population file format' in the user guide for help.\n");
+      gpPrint->PrintWarningLine("Please see 'Special Max Circle Size File' in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->PrintWarningLine("Error: Special Population file contains no data.\n");
+      gpPrint->PrintWarningLine("Error: Max circle size file contains no data.\n");
       bValid = false;
     }
   }

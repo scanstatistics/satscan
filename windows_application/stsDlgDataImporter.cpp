@@ -1094,8 +1094,8 @@ void TBDlgDataImporter::SelectImportFile() {
       case SpecialGrid          : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Special Grid files (*.grd)|*.grd|Text files (*.txt)|*.txt|All files (*.*)|*.*";
                                   OpenDialog->Title = "Select Source Special Grid File";
                                   break;
-      case MaxCirclePopulation  : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Maximum Circle Population files (*.max)|*.max|Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                                  OpenDialog->Title = "Select Source Maximum Circle Population File";
+      case MaxCirclePopulation  : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Max Circle Size files (*.max)|*.max|Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+                                  OpenDialog->Title = "Select Source Max Circle Size File";
                                   break;
       case AdjustmentsByRR      : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Adjustments files (*.adj)|*.adj|Text files (*.txt)|*.txt|All files (*.*)|*.*";
                                   OpenDialog->Title = "Select Source Adjustments File";
