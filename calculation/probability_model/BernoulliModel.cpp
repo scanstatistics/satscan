@@ -177,7 +177,14 @@ void CBernoulliModel::MakeData(int iSimulationNumber) {
     MakeDataUnderNullHypothesis();
 }
 
-/** creates array of which indicates individuals are random cases */
+/*********************************************************************
+ Each of the totalMeasure number of individuals (sum of cases and
+ controls), are randomized to either be a case or a control. The
+ output is an array with the indices of the TotalCounts number of
+ cases. For example, if there are 20 cases and 80 controls, the
+ output is an array the the indices between 0 and 99 that correspond
+ to the randomized cases. (MK Oct 27, 2003)
+ *********************************************************************/
 void CBernoulliModel::MakeDataB(count_t tTotalCounts, measure_t tTotalMeasure, std::vector<count_t>& RandCounts) {
   int           i;
   count_t       nCumCounts=0;
