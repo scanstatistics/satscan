@@ -167,7 +167,7 @@ IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=5
 MinorVer=1
-Release=0
+Release=1
 Build=0
 Debug=0
 PreRelease=0
@@ -180,14 +180,14 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=SaTScan
 FileDescription=SaTScan - Spatial and Space-Time Scan Statistics
-FileVersion=5.1.0.0
+FileVersion=5.1.1.0
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=
-ProductVersion=5.1
-Comments=Released December 30, 2004
+ProductVersion=5.1.1
+Comments=Released March 18, 2005
 
 [HistoryLists\hlIncludePath]
 Count=2
