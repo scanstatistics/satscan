@@ -117,7 +117,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 117
           Width = 23
           Height = 21
-          Hint = 'Import population file'
+          Hint = 'Import population file ...'
           Glyph.Data = {
             DE010000424DDE01000000000000760000002800000024000000120000000100
             04000000000068010000C40E0000C40E00001000000000000000000000000000
@@ -136,6 +136,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             6666668F7F786666666666660000888886666666666666888886666666666666
             0000}
           NumGlyphs = 2
+          ParentShowHint = False
+          ShowHint = True
           OnClick = btnPopImportClick
         end
         object btnControlImport: TSpeedButton
@@ -143,7 +145,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 74
           Width = 23
           Height = 21
-          Hint = 'Import control file'
+          Hint = 'Import control file ...'
           Glyph.Data = {
             DE010000424DDE01000000000000760000002800000024000000120000000100
             04000000000068010000C40E0000C40E00001000000000000000000000000000
@@ -162,6 +164,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             6666668F7F786666666666660000888886666666666666888886666666666666
             0000}
           NumGlyphs = 2
+          ParentShowHint = False
+          ShowHint = True
           OnClick = btnControlImportClick
         end
         object btnCaseImport: TSpeedButton
@@ -169,7 +173,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 32
           Width = 23
           Height = 21
-          Hint = 'Import case file'
+          Hint = 'Import case file ...'
           Glyph.Data = {
             DE010000424DDE01000000000000760000002800000024000000120000000100
             04000000000068010000C40E0000C40E00001000000000000000000000000000
@@ -188,6 +192,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             6666668F7F786666666666660000888886666666666666888886666666666666
             0000}
           NumGlyphs = 2
+          ParentShowHint = False
+          ShowHint = True
           OnClick = btnCaseImportClick
         end
       end
@@ -207,7 +213,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Top = 40
         Width = 23
         Height = 21
-        Hint = 'browse for case file'
+        Hint = 'Browse for case file ...'
         Caption = '...'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -236,7 +242,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Top = 82
         Width = 23
         Height = 21
-        Hint = 'browse for control file'
+        Hint = 'Browse for control file ...'
         Caption = '...'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -265,7 +271,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Top = 125
         Width = 23
         Height = 21
-        Hint = 'Browse for population file'
+        Hint = 'Browse for population file ...'
         Caption = '...'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -357,11 +363,11 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           WordWrap = True
         end
         object btnImportMaxCirclePopFile: TSpeedButton
-          Left = 368
+          Left = 365
           Top = 94
           Width = 23
-          Height = 22
-          Hint = 'Import special population file'
+          Height = 21
+          Hint = 'Import special population file ...'
           Glyph.Data = {
             DE010000424DDE01000000000000760000002800000024000000120000000100
             04000000000068010000C40E0000C40E00001000000000000000000000000000
@@ -380,6 +386,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             6666668F7F786666666666660000888886666666666666888886666666666666
             0000}
           NumGlyphs = 2
+          ParentShowHint = False
+          ShowHint = True
           OnClick = btnImportMaxCirclePopFileClick
         end
         object edtMaxSpatialClusterSize: TEdit
@@ -471,8 +479,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 337
           Top = 94
           Width = 23
-          Height = 22
-          Hint = 'Browse for special population file'
+          Height = 21
+          Hint = 'Browse for special population file ...'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -821,11 +829,11 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Adjustments File:'
         end
         object btnImportAdjustmentsFile: TSpeedButton
-          Left = 374
+          Left = 372
           Top = 57
           Width = 23
-          Height = 22
-          Hint = 'Import adjustments file'
+          Height = 21
+          Hint = 'Import adjustments file ...'
           Glyph.Data = {
             DE010000424DDE01000000000000760000002800000024000000120000000100
             04000000000068010000C40E0000C40E00001000000000000000000000000000
@@ -844,6 +852,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             6666668F7F786666666666660000888886666666666666888886666666666666
             0000}
           NumGlyphs = 2
+          ParentShowHint = False
+          ShowHint = True
           OnClick = btnImportAdjustmentsFileClick
         end
         object edtAdjustmentsByRelativeRisksFile: TEdit
@@ -861,8 +871,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 343
           Top = 57
           Width = 23
-          Height = 22
-          Hint = 'Browse for adjustments file'
+          Height = 21
+          Hint = 'Browse for adjustments file ...'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText

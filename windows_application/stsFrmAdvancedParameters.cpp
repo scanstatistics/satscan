@@ -153,7 +153,7 @@ void __fastcall TfrmAdvancedParameters::btnControlImportClick(TObject *Sender) {
 
   try {
     OpenDialog->FileName =  "";
-    OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Text files (*.txt)|*.txt|Control files (*.ctl)|*.ctl|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Control files (*.ctl)|*.ctl|Text files (*.txt)|*.txt|All files (*.*)|*.*";
     OpenDialog->Title = "Select Source Control File";
     if (OpenDialog->Execute())
        LaunchImporter(OpenDialog->FileName.c_str(), eType);
@@ -302,6 +302,7 @@ void __fastcall TfrmAdvancedParameters::chkAdjustForKnownRelativeRisksClick(TObj
   edtAdjustmentsByRelativeRisksFile->Enabled = gbEnableAdjustmentsByRR && chkAdjustForKnownRelativeRisks->Checked;
   edtAdjustmentsByRelativeRisksFile->Color = edtAdjustmentsByRelativeRisksFile->Enabled ? clWindow : clInactiveBorder;
   btnBrowseAdjustmentsFile->Enabled = gbEnableAdjustmentsByRR && chkAdjustForKnownRelativeRisks->Checked;
+  btnImportAdjustmentsFile->Enabled = gbEnableAdjustmentsByRR && chkAdjustForKnownRelativeRisks->Checked;
   DoControlExit();
 }
 
@@ -493,6 +494,7 @@ void TfrmAdvancedParameters::EnableAdjustmentsGroup(bool bEnable) {
   edtAdjustmentsByRelativeRisksFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
   edtAdjustmentsByRelativeRisksFile->Color = edtAdjustmentsByRelativeRisksFile->Enabled ? clWindow : clInactiveBorder;
   btnBrowseAdjustmentsFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
+  btnImportAdjustmentsFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
 }
 //---------------------------------------------------------------------------
 /** enables input tab case/control/pop files edit boxes */
@@ -563,6 +565,7 @@ void TfrmAdvancedParameters::EnableSpatialOptionsGroup(bool bEnable, bool bEnabl
    edtMaxCirclePopulationFilename->Enabled = bEnable && rdoSpatialPopulationFile->Checked;
    edtMaxCirclePopulationFilename->Color = bEnable && rdoSpatialPopulationFile->Checked ? clWindow : clInactiveBorder;
    btnBrowseMaxCirclePopFile->Enabled = bEnable && rdoSpatialPopulationFile->Checked;
+   btnImportMaxCirclePopFile->Enabled = bEnable && rdoSpatialPopulationFile->Checked;
 
    rdoSpatialDistance->Enabled = bEnable;
    edtMaxSpatialRadius->Enabled = bEnable && rdoSpatialDistance->Checked;
