@@ -576,7 +576,6 @@ void TfrmAdvancedParameters::EnableRemoveButton() {
 /** enables or disables the spatial options group control */
 void TfrmAdvancedParameters::EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal, bool bEnablePercentage) {
    rdgSpatialOptions->Enabled = bEnable;
-   lblMaxSpatialClusterSize->Enabled = bEnable;
 
    rdoSpatialPercentage->Enabled = bEnable && bEnablePercentage;
    edtMaxSpatialClusterSize->Enabled = bEnable && bEnablePercentage && rdoSpatialPercentage->Checked;
@@ -630,10 +629,10 @@ void TfrmAdvancedParameters::EnableTemporalRanges(bool bEnable, bool bEnableRang
   edtStartRangeEndYear->Color = edtStartRangeEndYear->Enabled ? clWindow : clInactiveBorder;
   edtStartRangeEndMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeMonths;
   edtStartRangeEndMonth->Color = edtStartRangeEndMonth->Enabled ? clWindow : clInactiveBorder;
-  if (!edtStartRangeEndMonth->Enabled) edtStartRangeEndMonth->Text = 1; 
+  if (!edtStartRangeEndMonth->Enabled) edtStartRangeEndMonth->Text = 12;
   edtStartRangeEndDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeDays;
   edtStartRangeEndDay->Color = edtStartRangeEndDay->Enabled ? clWindow : clInactiveBorder;
-  if (!edtStartRangeEndDay->Enabled) edtStartRangeEndDay->Text = 1; 
+  if (!edtStartRangeEndDay->Enabled) edtStartRangeEndDay->Text = DaysThisMonth(atoi(edtStartRangeEndYear->Text.c_str()), atoi(edtStartRangeEndMonth->Text.c_str())); 
 
   stEndWindowRange->Enabled = bEnable && bEnableRanges;
   stEndRangeTo->Enabled = bEnable && bEnableRanges;
@@ -641,10 +640,10 @@ void TfrmAdvancedParameters::EnableTemporalRanges(bool bEnable, bool bEnableRang
   edtEndRangeStartYear->Color = edtEndRangeStartYear->Enabled ? clWindow : clInactiveBorder;
   edtEndRangeStartMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeMonths;
   edtEndRangeStartMonth->Color = edtEndRangeStartMonth->Enabled ? clWindow : clInactiveBorder;
-  if (!edtEndRangeStartMonth->Enabled) edtEndRangeStartMonth->Text = 12;
+  if (!edtEndRangeStartMonth->Enabled) edtEndRangeStartMonth->Text = 1;
   edtEndRangeStartDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeDays;
   edtEndRangeStartDay->Color = edtEndRangeStartDay->Enabled ? clWindow : clInactiveBorder;
-  if (!edtEndRangeStartDay->Enabled) edtEndRangeStartDay->Text = DaysThisMonth(atoi(edtEndRangeStartYear->Text.c_str()), atoi(edtEndRangeStartMonth->Text.c_str())); 
+  if (!edtEndRangeStartDay->Enabled) edtEndRangeStartDay->Text = 1;
   edtEndRangeEndYear->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeYears;
   edtEndRangeEndYear->Color = edtEndRangeEndYear->Enabled ? clWindow : clInactiveBorder;
   edtEndRangeEndMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeMonths;
@@ -652,12 +651,11 @@ void TfrmAdvancedParameters::EnableTemporalRanges(bool bEnable, bool bEnableRang
   if (!edtEndRangeEndMonth->Enabled) edtEndRangeEndMonth->Text = 12;
   edtEndRangeEndDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeDays;
   edtEndRangeEndDay->Color = edtEndRangeEndDay->Enabled ? clWindow : clInactiveBorder;
-  if (!edtEndRangeStartDay->Enabled) edtEndRangeStartDay->Text = DaysThisMonth(atoi(edtEndRangeEndYear->Text.c_str()), atoi(edtEndRangeStartDay->Text.c_str()));
+  if (!edtEndRangeEndDay->Enabled) edtEndRangeEndDay->Text = DaysThisMonth(atoi(edtEndRangeEndYear->Text.c_str()), atoi(edtEndRangeEndMonth->Text.c_str()));
 }
 /** enables or disables the temporal options group control */
 void TfrmAdvancedParameters::EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges) {
   rdgTemporalOptions->Enabled = bEnable;
-  lblMaxTemporalClusterSize->Enabled = bEnable;
 
   rdoPercentageTemporal->Enabled = bEnable;
   edtMaxTemporalClusterSize->Enabled = bEnable && rdoPercentageTemporal->Checked;
@@ -722,7 +720,7 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    // Inference tab
    bReturn &= (chkAdjustForEarlierAnalyses->Checked == false);
    bReturn &= (chkTerminateEarly->Checked == false);
-   bReturn &= (edtProspectiveStartDateYear->Text.ToInt() == 1900);
+   bReturn &= (edtProspectiveStartDateYear->Text.ToInt() == 2000);
    bReturn &= (edtProspectiveStartDateMonth->Text.ToInt() == 12);
    bReturn &= (edtProspectiveStartDateDay->Text.ToInt() == 31);
 
@@ -740,16 +738,16 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    bReturn &= (edtMaxTemporalClusterSizeUnits->Text.ToInt() == 1);
    bReturn &= (chkIncludePureSpacClust->Checked == false);
 
-   bReturn &= (edtStartRangeStartYear->Text.ToInt() == 1900);
+   bReturn &= (edtStartRangeStartYear->Text.ToInt() == 2000);
    bReturn &= (edtStartRangeStartMonth->Text.ToInt() == 1);
    bReturn &= (edtStartRangeStartDay->Text.ToInt() == 1);
-   bReturn &= (edtStartRangeEndYear->Text.ToInt() == 1900);
-   bReturn &= (edtStartRangeEndMonth->Text.ToInt() == 1);
-   bReturn &= (edtStartRangeEndDay->Text.ToInt() == 1);
-   bReturn &= (edtEndRangeStartYear->Text.ToInt() == 1900);
-   bReturn &= (edtEndRangeStartMonth->Text.ToInt() == 12);
-   bReturn &= (edtEndRangeStartDay->Text.ToInt() == 31);
-   bReturn &= (edtEndRangeEndYear->Text.ToInt() == 1900);
+   bReturn &= (edtStartRangeEndYear->Text.ToInt() == 2000);
+   bReturn &= (edtStartRangeEndMonth->Text.ToInt() == 12);
+   bReturn &= (edtStartRangeEndDay->Text.ToInt() == 31);
+   bReturn &= (edtEndRangeStartYear->Text.ToInt() == 2000);
+   bReturn &= (edtEndRangeStartMonth->Text.ToInt() == 1);
+   bReturn &= (edtEndRangeStartDay->Text.ToInt() == 1);
+   bReturn &= (edtEndRangeEndYear->Text.ToInt() == 2000);
    bReturn &= (edtEndRangeEndMonth->Text.ToInt() == 12);
    bReturn &= (edtEndRangeEndDay->Text.ToInt() == 31);
    bReturn &= (chkRestrictTemporalRange->Checked == false);
@@ -1049,7 +1047,7 @@ void TfrmAdvancedParameters::SetDefaultsForAnalysisTabs() {
    // PAG - moved to first position since other controls dependent on the 'earlier analyses' control
    chkAdjustForEarlierAnalyses->Checked = false;
    chkTerminateEarly->Checked = false;
-   edtProspectiveStartDateYear->Text = "1900";
+   edtProspectiveStartDateYear->Text = "2000";
    edtProspectiveStartDateMonth->Text = "12";
    edtProspectiveStartDateDay->Text = "31";
 
@@ -1065,14 +1063,14 @@ void TfrmAdvancedParameters::SetDefaultsForAnalysisTabs() {
 
    // Temporal tab
    SetMaxTemporalClusterSizeTypeControl(PERCENTAGETYPE);
-   edtMaxTemporalClusterSize->Text = "50.0";
+   edtMaxTemporalClusterSize->Text = "50";
    edtMaxTemporalClusterSizeUnits->Text = "1";
    chkIncludePureSpacClust->Checked = false;
 
-   ParseDate("1900/01/01", *edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay, true);
-   ParseDate("1900/01/01", *edtStartRangeEndYear, *edtStartRangeEndMonth, *edtStartRangeEndDay, false);
-   ParseDate("1900/12/31", *edtEndRangeStartYear, *edtEndRangeStartMonth, *edtEndRangeStartDay, true);
-   ParseDate("1900/12/31", *edtEndRangeEndYear, *edtEndRangeEndMonth, *edtEndRangeEndDay, false);
+   ParseDate("2000/01/01", *edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay, true);
+   ParseDate("2000/12/31", *edtStartRangeEndYear, *edtStartRangeEndMonth, *edtStartRangeEndDay, false);
+   ParseDate("2000/01/01", *edtEndRangeStartYear, *edtEndRangeStartMonth, *edtEndRangeStartDay, true);
+   ParseDate("2000/12/31", *edtEndRangeEndYear, *edtEndRangeEndMonth, *edtEndRangeEndDay, false);
    chkRestrictTemporalRange->Checked = false;
 
    // Risk tab

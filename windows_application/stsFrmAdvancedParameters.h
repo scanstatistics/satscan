@@ -64,21 +64,17 @@ __published:	// IDE-managed Components
    TButton *btnShowAll;
    TRadioGroup *rdgCriteriaSecClusters;
    TGroupBox *rdgTemporalOptions;
-   TLabel *lblMaxTemporalClusterSize;
    TLabel *lblPercentageOfStudyPeriod;
    TLabel *lblMaxTemporalTimeUnits;
    TEdit *edtMaxTemporalClusterSize;
-   TCheckBox *chkIncludePureSpacClust;
    TRadioButton *rdoPercentageTemporal;
    TRadioButton *rdoTimeTemporal;
    TEdit *edtMaxTemporalClusterSizeUnits;
    TGroupBox *rdgSpatialOptions;
-   TLabel *lblMaxSpatialClusterSize;
    TLabel *lblPercentOfPopulation;
    TLabel *lblMaxRadius;
    TLabel *lblPercentageOfPopFile;
    TEdit *edtMaxSpatialClusterSize;
-   TCheckBox *chkInclPureTempClust;
    TRadioButton *rdoSpatialPercentage;
    TRadioButton *rdoSpatialDistance;
    TRadioButton *rdoSpatialPopulationFile;
@@ -121,6 +117,8 @@ __published:	// IDE-managed Components
    TStaticText *lblMultipleStreamPurpose;
    TRadioButton *rdoMultivariate;
    TRadioButton *rdoAdjustmentByStreams;
+        TCheckBox *chkInclPureTempClust;
+        TCheckBox *chkIncludePureSpacClust;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);

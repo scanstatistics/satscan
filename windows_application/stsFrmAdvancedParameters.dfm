@@ -63,7 +63,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Top = 0
     Width = 450
     Height = 311
-    ActivePage = tsDataStreams
+    ActivePage = tsTemporal
     Align = alClient
     TabOrder = 0
     object tsDataStreams: TTabSheet
@@ -361,33 +361,26 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 8
         Top = 8
         Width = 425
-        Height = 177
-        Caption = 'Spatial'
+        Height = 146
+        Caption = 'Maximum Spatial Cluster Size'
         TabOrder = 0
-        object lblMaxSpatialClusterSize: TLabel
-          Left = 18
-          Top = 18
-          Width = 168
-          Height = 13
-          Caption = 'The Maximum Spatial Cluster Size:  '
-        end
         object lblPercentOfPopulation: TLabel
-          Left = 101
-          Top = 38
+          Left = 78
+          Top = 25
           Width = 263
           Height = 13
           Caption = 'percent of the population at risk (<= 50%, default = 50%)'
         end
         object lblMaxRadius: TLabel
-          Left = 197
-          Top = 124
+          Left = 174
+          Top = 111
           Width = 73
           Height = 13
           Caption = 'kilometer radius'
         end
         object lblPercentageOfPopFile: TLabel
-          Left = 101
-          Top = 62
+          Left = 78
+          Top = 49
           Width = 316
           Height = 13
           Caption = 
@@ -396,8 +389,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           WordWrap = True
         end
         object edtMaxSpatialClusterSize: TEdit
-          Left = 62
-          Top = 36
+          Left = 39
+          Top = 23
           Width = 34
           Height = 21
           AutoSelect = False
@@ -408,19 +401,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnExit = edtMaxSpatialClusterSizeExit
           OnKeyPress = PositiveFloatKeyPress
         end
-        object chkInclPureTempClust: TCheckBox
-          Left = 18
-          Top = 149
-          Width = 305
-          Height = 17
-          Caption = 'Include Purely Temporal Clusters (Spatial Size = 100%)'
-          Enabled = False
-          TabOrder = 9
-          OnClick = OnControlExit
-        end
         object rdoSpatialPercentage: TRadioButton
-          Left = 30
-          Top = 36
+          Left = 7
+          Top = 23
           Width = 28
           Height = 17
           Caption = 'is '
@@ -430,8 +413,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = rdoMaxSpatialTypeClick
         end
         object rdoSpatialDistance: TRadioButton
-          Left = 30
-          Top = 124
+          Left = 7
+          Top = 111
           Width = 97
           Height = 17
           Caption = 'is a circle with a'
@@ -439,8 +422,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = rdoMaxSpatialTypeClick
         end
         object rdoSpatialPopulationFile: TRadioButton
-          Left = 30
-          Top = 62
+          Left = 7
+          Top = 49
           Width = 28
           Height = 17
           Caption = 'is'
@@ -448,8 +431,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = rdoMaxSpatialTypeClick
         end
         object edtMaxSpatialRadius: TEdit
-          Left = 133
-          Top = 123
+          Left = 110
+          Top = 110
           Width = 58
           Height = 21
           TabOrder = 8
@@ -459,8 +442,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = PositiveFloatKeyPress
         end
         object edtMaxSpatialPercentFile: TEdit
-          Left = 62
-          Top = 62
+          Left = 39
+          Top = 49
           Width = 34
           Height = 21
           MaxLength = 5
@@ -471,8 +454,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = PositiveFloatKeyPress
         end
         object edtMaxCirclePopulationFilename: TEdit
-          Left = 49
-          Top = 94
+          Left = 26
+          Top = 81
           Width = 280
           Height = 21
           ParentShowHint = False
@@ -482,8 +465,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnExit = OnControlExit
         end
         object btnBrowseMaxCirclePopFile: TButton
-          Left = 335
-          Top = 94
+          Left = 312
+          Top = 81
           Width = 23
           Height = 22
           Hint = 'Browse for max circle size file ...'
@@ -500,8 +483,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = btnBrowseMaxCirclePopFileClick
         end
         object btnImportMaxCirclePopFile: TBitBtn
-          Left = 363
-          Top = 94
+          Left = 340
+          Top = 81
           Width = 23
           Height = 22
           Hint = 'Import max circle size file ...'
@@ -529,17 +512,27 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           NumGlyphs = 2
         end
       end
+      object chkInclPureTempClust: TCheckBox
+        Left = 8
+        Top = 165
+        Width = 305
+        Height = 17
+        Caption = 'Include Purely Temporal Clusters (Spatial Size = 100%)'
+        Enabled = False
+        TabOrder = 1
+        OnClick = OnControlExit
+      end
     end
     object tsTemporal: TTabSheet
       Caption = 'Temporal Window'
       ImageIndex = 1
       object grpScanningWindow: TGroupBox
         Left = 8
-        Top = 132
+        Top = 131
         Width = 421
         Height = 111
-        Caption = 'Scanning Window'
-        TabOrder = 0
+        Caption = 'Flexible Temporal Window Definition'
+        TabOrder = 2
         object chkRestrictTemporalRange: TCheckBox
           Left = 12
           Top = 22
@@ -727,54 +720,37 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 8
         Top = 8
         Width = 421
-        Height = 112
-        Caption = 'Temporal Cluster'
-        TabOrder = 1
-        object lblMaxTemporalClusterSize: TLabel
-          Left = 18
-          Top = 18
-          Width = 180
-          Height = 13
-          Caption = 'The Maximum Temporal Cluster Size:  '
-        end
+        Height = 84
+        Caption = 'Maximum Temporal Cluster Size'
+        TabOrder = 0
         object lblPercentageOfStudyPeriod: TLabel
-          Left = 104
-          Top = 37
+          Left = 81
+          Top = 24
           Width = 240
           Height = 13
           Caption = 'percent of the study period (<= 90%, default = 50%)'
         end
         object lblMaxTemporalTimeUnits: TLabel
-          Left = 104
-          Top = 63
+          Left = 81
+          Top = 50
           Width = 25
           Height = 13
           Caption = 'years'
         end
         object edtMaxTemporalClusterSize: TEdit
-          Left = 62
-          Top = 36
+          Left = 39
+          Top = 23
           Width = 34
-          Height = 18
+          Height = 21
           MaxLength = 5
           TabOrder = 1
           Text = '50'
           OnExit = edtMaxTemporalClusterSizeExit
           OnKeyPress = PositiveFloatKeyPress
         end
-        object chkIncludePureSpacClust: TCheckBox
-          Left = 18
-          Top = 87
-          Width = 297
-          Height = 17
-          Caption = 'Include Purely Spatial Clusters (Temporal Size = 100%)'
-          Enabled = False
-          TabOrder = 4
-          OnClick = OnControlExit
-        end
         object rdoPercentageTemporal: TRadioButton
-          Left = 30
-          Top = 36
+          Left = 7
+          Top = 23
           Width = 31
           Height = 17
           Caption = 'is'
@@ -784,8 +760,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = rdoMaxTemporalClusterSizelick
         end
         object rdoTimeTemporal: TRadioButton
-          Left = 30
-          Top = 62
+          Left = 7
+          Top = 49
           Width = 28
           Height = 17
           Caption = 'is'
@@ -793,16 +769,26 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = rdoMaxTemporalClusterSizelick
         end
         object edtMaxTemporalClusterSizeUnits: TEdit
-          Left = 62
-          Top = 62
+          Left = 39
+          Top = 49
           Width = 34
-          Height = 18
+          Height = 21
           MaxLength = 6
           TabOrder = 3
           Text = '1'
           OnExit = edtMaxTemporalClusterSizeUnitsExit
           OnKeyPress = NaturalNumberKeyPress
         end
+      end
+      object chkIncludePureSpacClust: TCheckBox
+        Left = 8
+        Top = 104
+        Width = 297
+        Height = 17
+        Caption = 'Include Purely Spatial Clusters (Temporal Size = 100%)'
+        Enabled = False
+        TabOrder = 1
+        OnClick = OnControlExit
       end
     end
     object tsAdjustments: TTabSheet
@@ -813,7 +799,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Width = 421
         Height = 107
         Hint = 'Temporal Trend Adjustments'
-        Caption = 'Temporal Adjustments'
+        Caption = 'Temporal Trend Adjustment'
         Enabled = False
         ItemIndex = 0
         Items.Strings = (
