@@ -1257,6 +1257,8 @@ void TfrmAnalysis::OnProbabilityModelClick() {
      switch (rgProbability->ItemIndex) {
         case 0:  // drop through, same as 1
         case 1:
+           rgTypeAnalysis->Controls[0]->Enabled = true;
+           rgTypeAnalysis->Controls[1]->Enabled =(rgPrecisionTimes->ItemIndex != 0);
            chkRelativeRiskEstimatesAreaAscii->Enabled = true;
            chkRelativeRiskEstimatesAreaDBase->Enabled = true;
            rdoPercentageTemproal->Caption = "Percent of Study Period (<= 90%)";
