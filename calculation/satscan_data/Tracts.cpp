@@ -25,12 +25,10 @@ CategoryDescriptor::~CategoryDescriptor() {
 
 void CategoryDescriptor::AddCaseCount(count_t tCaseCount) {
   try {
-    if (gtCaseCount + tCaseCount < 0) {
-      char      sDateString[20];
-
-      ZdGenerateException("  Error: Attempt to add cases of \"%d\" to current cases of \"%d\" causes data overflow.",
+    if (gtCaseCount + tCaseCount < 0)
+      ZdGenerateException("Error: Attempt to add cases of '%d' to current cases of '%d' causes data overflow.",
                           "AddCaseCount()", tCaseCount, gtCaseCount);
-    }
+
     gtCaseCount += tCaseCount;
   }
   catch (ZdException &x) {
@@ -49,7 +47,7 @@ void CategoryDescriptor::AddPopulationAtDateIndex(float fPopluation, int iDateIn
     if (gpPopulationList[iDateIndex] + fPopluation < 0) {
       char      sDateString[20];
 
-      ZdGenerateException("  Error: Attempt to add population of \"%.2f\" to current population of \"%.2f\" at date \"%s\" causes data overflow.",
+      ZdGenerateException("Error: Attempt to add population of '%.2f' to current population of '%.2f' at date '%s' causes data overflow.",
                           "AddPopulationAtDateIndex()", fPopluation, gpPopulationList[iDateIndex],
                           JulianToChar(sDateString, theTractHandler.tiGetPopDate(iDateIndex)));
     }
@@ -97,10 +95,9 @@ float CategoryDescriptor::GetPopulationAtDateIndex(int iDateIndex, const TractHa
 
 void CategoryDescriptor::SetCaseCount(count_t tCaseCount) {
   try {
-    if (tCaseCount < 0) {
-      char      sDateString[20];
-      ZdGenerateException("  Error: Invalid case count \"%d\".", "SetCaseCount()", tCaseCount);
-    }
+    if (tCaseCount < 0)
+      ZdGenerateException("Error: Invalid case count '%d'.", "SetCaseCount()", tCaseCount);
+      
     gtCaseCount = tCaseCount;
   }
   catch (ZdException &x) {
@@ -430,9 +427,9 @@ void TractDescriptor::Setup(const char * sTractIdentifier, const double* pCoordi
 }
 
 /** Constructor*/
-TractHandler::TractHandler(Cats & Categories, BasePrint & PrintDirection) {
+TractHandler::TractHandler(const PopulationCategories & thePopulationCategories, BasePrint & PrintDirection) {
   Init();
-  Setup(Categories, PrintDirection);
+  Setup(thePopulationCategories, PrintDirection);
 }
 
 /** Destructor */
@@ -449,6 +446,7 @@ void TractHandler::Init() {
   bEndAsPopDt   = false;
   nDimensions   = 0;
   gpSearchTractDescriptor=0;
+  gpPopulationCategories = 0;
 }
 
 /** Adds a category to the tract info structure. */
@@ -565,7 +563,7 @@ void TractHandler::tiCalculateAlpha(double** pAlpha, Julian StartDate, Julian En
      for (n = 0; n <= N+1; n++) sumalpha = sumalpha + (*pAlpha)[n];
      if (sumalpha>1.0001 || sumalpha<0.9999) {
        char sMessage[200], sTmp[50];
-       strcpy(sMessage, "\n\n  Error: Alpha values not calculated correctly in");
+       strcpy(sMessage, "\n\nError: Alpha values not calculated correctly in");
        strcat(sMessage, "\n  file tinfo.c, function tiCalcAlpha. The sum of the ");
        sprintf(sTmp, "\n  alpha values is %8.6lf rather than 1.\n", sumalpha);
        strcat(sMessage, sTmp);
@@ -606,13 +604,13 @@ void TractHandler::tiCheckCasesHavePopulations() const {
              dCategoryTotal += pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
           dTractPopulation += dCategoryTotal;
           if (dCategoryTotal == 0 && pCategoryDescriptor->GetCaseCount() > 0) {
-            if (gpCategories->catNumCats() > 1)
-              //If there is only one covariate, then this warning is redundant as the error
+            if (gpPopulationCategories->GetNumPopulationCategories() > 1)
+              //If there is only one population category, then this warning is redundant as the error
               //message below will be displayed with same information. So we only want to
               //show this warning if there is more than one covariate for this location.
               gpPrintDirection->SatScanPrintWarning("Warning: Tract %s  covariate %s has %d cases but zero population.\n",
                                 gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer),
-                                gpCategories->catGetCategoriesString(pCategoryDescriptor->GetCategoryIndex(), sBuffer2),
+                                gpPopulationCategories->GetPopulationCategoryAsString(pCategoryDescriptor->GetCategoryIndex(), sBuffer2),
                                 pCategoryDescriptor->GetCaseCount());
           }
           pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();
@@ -662,8 +660,8 @@ bool TractHandler::tiCheckZeroPopulations(FILE *pDisplay) const {
        if (PopTotalsArray[j]==0) {
           bValid = false;
           JulianToMDY(&month, &day, &year, gvPopulationDates[j]);
-          fprintf(pDisplay, "  Error: Population of zero found for all tracts in %d.\n", year);
-          gpPrintDirection->SatScanPrintWarning("  Error: Population of zero found for all tracts in %d.\n", year);
+          fprintf(pDisplay, "Error: Population of zero found for all tracts in %d.\n", year);
+          gpPrintDirection->SatScanPrintWarning("Error: Population of zero found for all tracts in %d.\n", year);
        }
     }
 
@@ -1030,7 +1028,7 @@ void TractHandler::tiGetTractIdentifiers(tract_t t, std::vector<std::string>& vI
 }
 
 /** Searches tract-id "tid".  Returns the index, or -1 if not found. */
-tract_t TractHandler::tiGetTractIndex(char *tid) {
+tract_t TractHandler::tiGetTractIndex(const char *tid) {
   ZdPointerVector<TractDescriptor>::iterator           itr;
   std::map<std::string,TractDescriptor*>::iterator     itrmap;
   tract_t                                              tPosReturn;
@@ -1062,7 +1060,7 @@ tract_t TractHandler::tiGetTractIndex(char *tid) {
     Sorted insert appears to be done solely for TractHandler::tiGetTractIndex(char *tid).
 
     Return value: 0 = duplicate tract ID 1 = success */
-int TractHandler::tiInsertTnode(char *tid, double* pCoordinates) {
+int TractHandler::tiInsertTnode(const char *tid, std::vector<double>& vCoordinates) {
   std::map<std::string,TractDescriptor*>::iterator     itrmap;
   ZdPointerVector<TractDescriptor>::iterator           itrCoordinates, itrPosition;
   TractDescriptor                                    * pTractDescriptor=0;
@@ -1072,23 +1070,23 @@ int TractHandler::tiInsertTnode(char *tid, double* pCoordinates) {
     //check for tract identifier is duplicates map
     itrmap = gmDuplicateTracts.find(std::string(tid));
     if (itrmap != gmDuplicateTracts.end())
-      ZdException::Generate("Error:\nTract %s is specified multiple times in geographical file.", "tiInsertTnode()", tid);
+      ZdException::Generate("Error: Tract %s is specified multiple times in geographical file.", "tiInsertTnode()", tid);
     else {//search for tract identifier in vector
       gpSearchTractDescriptor->SetTractIdentifier(tid);
       itrPosition = lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), gpSearchTractDescriptor, CompareTractDescriptorIdentifier());
       if (itrPosition != gvTractDescriptors.end() && !strcmp((*itrPosition)->GetTractIdentifier(),tid))
-        ZdException::Generate("Error:\nTract %s is specified multiple times in geographical file.", "tiInsertTnode()", tid);
+        ZdException::Generate("Error: Tract %s is specified multiple times in geographical file.", "tiInsertTnode()", tid);
     }
 
     //check that coordinates are not duplicate
     for (itrCoordinates=gvTractDescriptors.begin(); itrCoordinates != gvTractDescriptors.end() && !bDuplicate; itrCoordinates++)
-       if ((*itrCoordinates)->CompareCoordinates(pCoordinates, nDimensions)) {
+       if ((*itrCoordinates)->CompareCoordinates(reinterpret_cast<double*>(vCoordinates.begin()), nDimensions)) {
          gmDuplicateTracts[tid] = (*itrCoordinates);
          bDuplicate = true;
        }
 
     if (! bDuplicate) {
-      pTractDescriptor = new TractDescriptor(tid, pCoordinates, nDimensions);
+      pTractDescriptor = new TractDescriptor(tid, reinterpret_cast<double*>(vCoordinates.begin()), nDimensions);
       gvTractDescriptors.insert(itrPosition, pTractDescriptor);
     }
   }
@@ -1246,13 +1244,13 @@ int TractHandler::tiSetCount(tract_t t, int iCategoryIndex, count_t Count) {
 }
 
 /** Internal setup function. */
-void TractHandler::Setup(Cats & Categories, BasePrint & PrintDirection) {
+void TractHandler::Setup(const PopulationCategories & thePopulationCategories, BasePrint & PrintDirection) {
   double Coordinates[1] ={0}; 
 
   try {
-    gpCategories = &Categories;
     gpPrintDirection = &PrintDirection;
     gpSearchTractDescriptor = new TractDescriptor(" ", Coordinates, 1);
+    gpPopulationCategories = &thePopulationCategories;
   }
   catch (SSException & x) {
     x.AddCallpath("Setup()", "TractHandler");

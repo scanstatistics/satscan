@@ -113,7 +113,7 @@ class CompareTractDescriptorIdentifier {
 
 class TractHandler {
   private:
-    Cats                                       * gpCategories;
+    const PopulationCategories                 * gpPopulationCategories;
     BasePrint                                  * gpPrintDirection;
     ZdPointerVector<TractDescriptor>             gvTractDescriptors;
     std::vector<Julian>                          gvPopulationDates;
@@ -124,11 +124,10 @@ class TractHandler {
     std::map<std::string,TractDescriptor*>       gmDuplicateTracts;
 
     void                                Init();
-    void                                Setup(Cats & Categories, BasePrint & PrintDirection);
+    void                                Setup(const PopulationCategories & thePopulationCategories, BasePrint & PrintDirection);
 
   public:
-    TractHandler();
-    TractHandler(Cats & Categories, BasePrint & PrintDirection);
+    TractHandler(const PopulationCategories & PopulationCategories, BasePrint & PrintDirection);
     ~TractHandler();
 
     void                                tiAddCategoryToTract(tract_t tTractIndex, int iCategoryIndex, Julian PopulationDate, float fPopulation);
@@ -150,7 +149,7 @@ class TractHandler {
     count_t                             tiGetCount(tract_t t, int iCategoryIndex) const;
     int                                 tiGetDimensions() const {return nDimensions;}
     double                              tiGetDistanceSq(double* pCoords, double* pCoords2) const;
-    int                                 tiGetNumCategories() const {return gpCategories->catNumCats();}
+    int                                 tiGetNumCategories() const {return gpPopulationCategories->GetNumPopulationCategories();}
     int                                 tiGetNumPopDates() const {return (int)gvPopulationDates.size();}
     tract_t                             tiGetNumTracts() const {return (int)gvTractDescriptors.size();}
     Julian                              tiGetPopDate(int iPopulationDateIndex) const;
@@ -164,8 +163,8 @@ class TractHandler {
 //    const char                        * tiGetTid(tract_t t) const;
     double                              tiGetTractCoordinate(tract_t t, int iDimension) const;
     void                                tiGetTractIdentifiers(tract_t t, std::vector<std::string>& vIdentifiers) const;
-    tract_t                             tiGetTractIndex(char *tid);
-    int                                 tiInsertTnode(char *tid, double* pCoords);
+    tract_t                             tiGetTractIndex(const char *tid);
+    int                                 tiInsertTnode(const char *tid, std::vector<double>& vCoordinates);
     void                                tiReportDuplicateTracts(FILE * fDisplay) const;
     void                                tiReportZeroPops(FILE *pDisplay) const;
     int                                 tiSetCount(tract_t t, int iCategoryIndex, count_t Count);
