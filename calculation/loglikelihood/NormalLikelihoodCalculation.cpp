@@ -24,8 +24,8 @@ double NormalLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_t u
 }
 
 /** calculates the Poisson log likelihood ratio given the number of observed and expected cases, and second measure */
-double NormalLikelihoodCalculator::CalcLogLikelihoodRatioEx(count_t tCases, measure_t tMeasure, measure_t tMeasure2, count_t tTotalCases, measure_t tTotalMeasure) const {
-  ZdGenerateException("CalcLogLikelihoodRatioEx() not implementated.","NormalLikelihoodCalculator");
+double NormalLikelihoodCalculator::CalcLogLikelihoodRatioNormal(count_t tCases, measure_t tMeasure, measure_t tMeasure2, count_t tTotalCases, measure_t tTotalMeasure) const {
+  ZdGenerateException("CalcLogLikelihoodRatioNormal() not implementated.","NormalLikelihoodCalculator");
   return 0;
 }
 
