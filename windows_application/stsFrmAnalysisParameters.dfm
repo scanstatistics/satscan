@@ -24,7 +24,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbOutputFiles
+    ActivePage = tbInputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -74,9 +74,9 @@ object frmAnalysis: TfrmAnalysis
           Caption = '(Bernoulli Model)'
         end
         object rgPrecisionTimes: TRadioGroup
-          Left = 320
+          Left = 328
           Top = 16
-          Width = 129
+          Width = 121
           Height = 89
           Caption = 'Precision of Times'
           ItemIndex = 1
@@ -94,7 +94,6 @@ object frmAnalysis: TfrmAnalysis
           Width = 273
           Height = 21
           ParentShowHint = False
-          ReadOnly = True
           ShowHint = True
           TabOrder = 1
           OnChange = edtCaseFileNameChange
@@ -105,7 +104,6 @@ object frmAnalysis: TfrmAnalysis
           Width = 273
           Height = 21
           ParentShowHint = False
-          ReadOnly = True
           ShowHint = True
           TabOrder = 2
           OnChange = edtControlFileNameChange
@@ -153,7 +151,6 @@ object frmAnalysis: TfrmAnalysis
         Width = 273
         Height = 21
         ParentShowHint = False
-        ReadOnly = True
         ShowHint = True
         TabOrder = 1
         OnChange = edtPopFileNameChange
@@ -202,7 +199,6 @@ object frmAnalysis: TfrmAnalysis
           Width = 273
           Height = 21
           ParentShowHint = False
-          ReadOnly = True
           ShowHint = True
           TabOrder = 0
           OnChange = edtCoordinateFileNameChange
@@ -214,7 +210,6 @@ object frmAnalysis: TfrmAnalysis
           Height = 21
           ParentShowHint = False
           PopupMenu = SpecialGridPopupMenu
-          ReadOnly = True
           ShowHint = True
           TabOrder = 1
           OnChange = edtGridFileNameChange

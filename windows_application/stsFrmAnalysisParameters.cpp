@@ -6,74 +6,6 @@
 #pragma resource "*.dfm"
 TfrmAnalysis *frmAnalysis;
 
-/** Constructor */
-__fastcall TDlgSaTScanDataImporter::TDlgSaTScanDataImporter(TComponent* Owner, ZdDatabase * pDatabase, BFTFImportDescriptor * pImportDescriptor)
-                                   :TBdlgImporter(Owner, pDatabase, pImportDescriptor) {
-  Setup();
-}
-
-/** Constructor */
-__fastcall TDlgSaTScanDataImporter::TDlgSaTScanDataImporter(TComponent* Owner, ZdDatabase * pDatabase, BCSVFileImportSpecs * pImportDescriptor)
-                                   :TBdlgImporter(Owner, pDatabase, pImportDescriptor) {
-  Setup();
-}
-
-/** Destructor */
-__fastcall TDlgSaTScanDataImporter::~TDlgSaTScanDataImporter() {}
-
-void __fastcall TDlgSaTScanDataImporter::tsfieldGridResize(TObject *Sender) {
-  //Adjust width of 'input file variable' column to fit.
-  if (!tsfieldGrid->VertScrollBarVisible)
-    tsfieldGrid->Col[2]->Width = tsfieldGrid->Width - ((tsfieldGrid->RowBarOn ? tsfieldGrid->RowBarWidth + 5/*buffer*/ : 5/*buffer*/) + tsfieldGrid->Col[1]->Width);
-  else
-    tsfieldGrid->Col[2]->Width = tsfieldGrid->Width - ((tsfieldGrid->RowBarOn ? tsfieldGrid->RowBarWidth + 5/*buffer*/ : 5/*buffer*/) + tsfieldGrid->Col[1]->Width + 15);
-}
-
-
-/** Initially sets the File Type for the import file. */
-void TDlgSaTScanDataImporter::SetInitialImportFileType() {
-  try {
-    TBdlgImporter::SetInitialImportFileType();
-    //Trump base classes settings, we currently always want dBase as default.
-    rdoFileType->ItemIndex = 2;
-  }
-  catch ( ZdException & x ) {
-      x.AddCallpath( "SetInitialImportFileType()", "TDlgSaTScanDataImporter" );
-      throw;
-  }
-}
-
-/** Internal setup function */
-void TDlgSaTScanDataImporter::Setup() {
-  //Change third filetype option to dbase.
-  rdoFileType->Items->Strings[2] = "dBase";
-  //Change import mapping grid headers.
-  tsfieldGrid->Col[1]->Heading = "SaTScan Variable";
-  tsfieldGrid->Col[2]->Heading = "Input File Variable";
-  tsfieldGrid->RowBarOn = false;
-  tsImportFileGrid->RowBarOn = false;
-  tsfieldGrid->OnResize = tsfieldGridResize;
-}
-
-void TDlgSaTScanDataImporter::SetUpDataGrid() {
-  unsigned short        w;
-  ZdField             * pField;
-
-  try {
-    TBdlgImporter::SetUpDataGrid();
-    //Set date filter for dbase date fields
-    for (w=0; w < gpImportFile->GetNumFields(); w++) {
-       pField = gpImportFile->GetFieldInfo(w);
-       if (pField->GetType() == ZD_DATE_FLD)
-         pField->SetFormat(ZdField::Filtered, "", new ZdDateFilter("%y/%m/%d"));
-    }
-  }
-  catch ( ZdException & x ) {
-      x.AddCallpath( "SetUpDataGrid()", "TDlgSaTScanDataImporter" );
-      throw;
-  }
-}
-
 //ClassDesc Begin TfrmAnalysis
 // This class contains all the main interface controls and relationships.
 // Since it the main session interface is a tab dialog, decided to keep
@@ -99,94 +31,18 @@ __fastcall TfrmAnalysis::TfrmAnalysis(TComponent* Owner, char *sParamFileName) :
 //---------------------------------------------------------------------------
 __fastcall TfrmAnalysis::~TfrmAnalysis() {}
 
-/** This a temporary hack function that formats date fields to sFormat. This is needed because satscan
-    expects dates in human readable form such as '12/08/2002' as apposed to raw data form of 20021208. 
-    This function should be removed once the zdfile interface for satscan is implementated! */
-void TfrmAnalysis::AttemptFilterDateFields(const char * sFileName, const char * sFormat, unsigned short uwField) {
-  ZdFile              * pFile=0;
-  ZdTransaction       * pTransaction=0;
-  unsigned long         u;
-  ZdFieldValue          Value;
-  ZdDateFilter          Filter(sFormat);
-  char                  sFiltered[1024];
-
-  try {
-    pFile = BasisGetToolkit().OpenZdFile(sFileName , ZDIO_OPEN_READ|ZDIO_OPEN_WRITE);
-    pTransaction = pFile->BeginTransaction();
-    for (u=1; u <= pFile->GetNumRecords(); u++) {
-       pFile->GotoRecord(u);
-       if (! pFile->GetSystemRecord()->GetIsBlank (uwField)) {
-         pFile->GetSystemRecord()->RetrieveFieldValue(uwField, Value);
-         try {
-           Filter.FilterValue(sFiltered, sizeof(sFiltered), Value.AsCString());
-           Value.AsZdString() = sFiltered;
-           pFile->GetSystemRecord()->PutFieldValue(uwField, Value);
-           pFile->SaveRecord(pTransaction);
-         }
-         catch (...){}
-       }
-    }
-    if (pTransaction)
-      pFile->EndTransaction(pTransaction);
-    pTransaction=0;  
-    delete pFile; pFile=0;
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("AttemptFilterDateFields()", "TfrmAnalysis");
-    if (pTransaction)
-      pFile->EndTransaction(pTransaction);
-    delete pFile;
-    throw;
-  }
-}
-
 //---------------------------------------------------------------------------
 // case file selector
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
-  BFTFImportDescriptor  ImportDescriptor;
-  ZdFileName            sFileName;
-  ZdString              sFileNamePrefix("Case_");
-  char                  sBuffer[1024];
-  std::vector<std::string>      vFieldDescriptors;
-
   try {
     OpenDialog1->FileName =  "";
     OpenDialog1->DefaultExt = "*.cas";
-    OpenDialog1->Filter = "CAS Files (*.cas)|*.cas|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
+    OpenDialog1->Filter = "Case files (*.cas)|*.cas|All files (*.*)|*.*";
     OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Case File";
-    if (OpenDialog1->Execute()) {
-      sFileName = OpenDialog1->FileName.c_str();
-      //Detect dbf file and launch importer if detected
-      if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-         ImportDescriptor.SetGenerateReport(false);
-         SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
-         // create destination file in user's temp directory
-         GetTempPath(sizeof(sBuffer), sBuffer);
-         //GetLongPathName(sBuffer, sBuffer, sizeof(sBuffer));
-         sFileName.SetLocation(sBuffer);
-         sFileName.SetExtension(TXD_EXT);
-         // Prefix filename so that we know this sessions created imported files are unique.
-         sFileNamePrefix << sFileName.GetFileName();
-         sFileName.SetFileName(sFileNamePrefix);
-         ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
-         SetupCaseFileFieldDescriptors(vFieldDescriptors);
-         CreateTXDFile(sFileName, vFieldDescriptors);
-         auto_ptr<TDlgSaTScanDataImporter> pImporter(new TDlgSaTScanDataImporter(0, 0, &ImportDescriptor));
-         pImporter->ShowOptionalPanels(false, false, false);
-         pImporter->SetInputFileTypeName("Case");
-         if (pImporter->ShowModal() == mrOk) {
-           AttemptFilterDateFields(sFileName.GetFullPath(), "%y/%m/%d", 2);
-           gParameters.SetCaseFileName(sFileName.GetFullPath());
-           edtCaseFileName->Text = sFileName.GetFullPath();
-         }
-      }
-      else {
-        gParameters.SetCaseFileName(sFileName.GetFullPath());
-        edtCaseFileName->Text = sFileName.GetFullPath();
-      }
-    }
+    if (OpenDialog1->Execute())
+      SetCaseFile(OpenDialog1->FileName.c_str());
   }
   catch (ZdException & x) {
     x.AddCallpath("btnCaseBrowseClick()", "TfrmAnalysis");
@@ -197,49 +53,14 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
 // Control file selector -- *.ctl files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
-  BFTFImportDescriptor  ImportDescriptor;
-  ZdFileName            sFileName;
-  ZdString              sFileNamePrefix("Control_");
-  char                  sBuffer[1024];
-  std::vector<std::string>      vFieldDescriptors;
-
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.ctl";
-    OpenDialog1->Filter = "CTL Files (*.ctl)|*.ctl|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
+    OpenDialog1->Filter = "Control files (*.ctl)|*.ctl|All files (*.*)|*.*";
     OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Control File";
-    if (OpenDialog1->Execute()) {
-      sFileName = OpenDialog1->FileName.c_str();
-      //Detect dbf file and launch importer if detected
-      if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-         ImportDescriptor.SetGenerateReport(false);
-         SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
-         // create destination file in user's temp directory
-         GetTempPath(sizeof(sBuffer), sBuffer);
-         //GetLongPathName(sBuffer, sBuffer, sizeof(sBuffer));
-         sFileName.SetLocation(sBuffer);
-         sFileName.SetExtension(TXD_EXT);
-         // Prefix filename so that we know this sessions created imported files are unique.
-         sFileNamePrefix << sFileName.GetFileName();
-         sFileName.SetFileName(sFileNamePrefix);
-         ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
-         SetupControlFileFieldDescriptors(vFieldDescriptors);
-         CreateTXDFile(sFileName, vFieldDescriptors);
-         auto_ptr<TDlgSaTScanDataImporter> pImporter(new TDlgSaTScanDataImporter(0, 0, &ImportDescriptor));
-         pImporter->ShowOptionalPanels(false, false, false);
-         pImporter->SetInputFileTypeName("Control");
-         if (pImporter->ShowModal() == mrOk) {
-           AttemptFilterDateFields(sFileName.GetFullPath(), "%y/%m/%d", 2);
-           gParameters.SetControlFileName(sFileName.GetFullPath());
-           edtControlFileName->Text = sFileName.GetFullPath();
-         }
-      }
-      else {
-        gParameters.SetControlFileName(sFileName.GetFullPath());
-        edtControlFileName->Text = sFileName.GetFullPath();
-      }
-    }
+    if (OpenDialog1->Execute())
+      SetControlFile(OpenDialog1->FileName.c_str());
   }
   catch (ZdException & x) {
     x.AddCallpath("btnControlBrowseClick()", "TfrmAnalysis");
@@ -250,48 +71,14 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
 // Geographic file selector -- *.geo files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
-  BFTFImportDescriptor  ImportDescriptor;
-  ZdFileName            sFileName;
-  ZdString              sFileNamePrefix("Geographical_");
-  char                  sBuffer[1024];
-  std::vector<std::string>      vFieldDescriptors;
-
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.geo";
-    OpenDialog1->Filter = "GEO Files (*.geo)|*.geo|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
+    OpenDialog1->Filter = "Coordinates files (*.geo)|*.geo|All files (*.*)|*.*";
     OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Coordinates File";
-    if (OpenDialog1->Execute()) {
-      sFileName = OpenDialog1->FileName.c_str();
-      //Detect dbf file and launch importer if detected
-      if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-         ImportDescriptor.SetGenerateReport(false);
-         SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
-         // create destination file in user's temp directory
-         GetTempPath(sizeof(sBuffer), sBuffer);
-         //GetLongPathName(sBuffer, sBuffer, sizeof(sBuffer));
-         sFileName.SetLocation(sBuffer);
-         sFileName.SetExtension(TXD_EXT);
-         // Prefix filename so that we know this sessions created imported files are unique.
-         sFileNamePrefix << sFileName.GetFileName();
-         sFileName.SetFileName(sFileNamePrefix);
-         ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
-         SetupGeoFileFieldDescriptors(vFieldDescriptors);
-         CreateTXDFile(sFileName, vFieldDescriptors);
-         auto_ptr<TDlgSaTScanDataImporter> pImporter(new TDlgSaTScanDataImporter(0, 0, &ImportDescriptor));
-         pImporter->ShowOptionalPanels(false, false, false);
-         pImporter->SetInputFileTypeName("Coordinates");
-         if (pImporter->ShowModal() == mrOk) {
-           gParameters.SetCoordinatesFileName(sFileName.GetFullPath());
-           edtCoordinateFileName->Text = sFileName.GetFullPath();
-         }
-      }
-      else {
-        gParameters.SetCoordinatesFileName(sFileName.GetFullPath());
-        edtCoordinateFileName->Text = sFileName.GetFullPath();
-      }
-    }
+    if (OpenDialog1->Execute())
+      SetCoordinateFile(OpenDialog1->FileName.c_str());
   }
   catch (ZdException & x) {
     x.AddCallpath("btnCoordBrowseClick()", "TfrmAnalysis");
@@ -302,48 +89,14 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
 //  Grid file selector -- *.grd files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
-  BFTFImportDescriptor  ImportDescriptor;
-  ZdFileName            sFileName;
-  ZdString              sFileNamePrefix("SpecialGrid_");
-  char                  sBuffer[1024];
-  std::vector<std::string>      vFieldDescriptors;
-
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.grd";
-    OpenDialog1->Filter = "GRD Files (*.grd)|*.grd|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
+    OpenDialog1->Filter = "Special Grid files (*.grd)|*.grd|All files (*.*)|*.*";
     OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Special Grid File";
-    if (OpenDialog1->Execute()) {
-      sFileName = OpenDialog1->FileName.c_str();
-      //Detect dbf file and launch importer if detected
-      if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-         ImportDescriptor.SetGenerateReport(false);
-         SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
-         // create destination file in user's temp directory
-         GetTempPath(sizeof(sBuffer), sBuffer);
-         //GetLongPathName(sBuffer, sBuffer, sizeof(sBuffer));
-         sFileName.SetLocation(sBuffer);
-         sFileName.SetExtension(TXD_EXT);
-         // Prefix filename so that we know this sessions created imported files are unique.
-         sFileNamePrefix << sFileName.GetFileName();
-         sFileName.SetFileName(sFileNamePrefix);
-         ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
-         SetupGridFileFieldDescriptors(vFieldDescriptors);
-         CreateTXDFile(sFileName, vFieldDescriptors);
-         auto_ptr<TDlgSaTScanDataImporter> pImporter(new TDlgSaTScanDataImporter(0, 0, &ImportDescriptor));
-         pImporter->ShowOptionalPanels(false, false, false);
-         pImporter->SetInputFileTypeName("Special Grid");
-         if (pImporter->ShowModal() == mrOk) {
-           gParameters.SetSpecialGridFileName(sFileName.GetFullPath(), false, true);
-           edtGridFileName->Text = sFileName.GetFullPath();
-         }
-      }
-      else {
-        gParameters.SetSpecialGridFileName(sFileName.GetFullPath(), false, true);
-        edtGridFileName->Text = sFileName.GetFullPath();
-      }  
-    }
+    if (OpenDialog1->Execute())
+      SetSpecialGridFile(OpenDialog1->FileName.c_str());
   }
   catch (ZdException & x) {
     x.AddCallpath("btnGridBrowseClick()", "TfrmAnalysis");
@@ -354,49 +107,14 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
 // Population file selector -- *.pop files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
-  BFTFImportDescriptor  ImportDescriptor;
-  ZdFileName            sFileName;
-  ZdString              sFileNamePrefix("Population_");
-  char                  sBuffer[1024];
-  std::vector<std::string>      vFieldDescriptors;
-
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.pop";
-    OpenDialog1->Filter = "POP Files (*.pop)|*.pop|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
+    OpenDialog1->Filter = "Population files (*.pop)|*.pop|All files (*.*)|*.*";
     OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Population File";
-    if (OpenDialog1->Execute()) {
-       sFileName = OpenDialog1->FileName.c_str();
-       //Detect dbf file and launch importer if detected
-       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-          ImportDescriptor.SetGenerateReport(false);
-          SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
-          // create destination file in user's temp directory
-          GetTempPath(sizeof(sBuffer), sBuffer);
-          //GetLongPathName(sBuffer, sBuffer, sizeof(sBuffer));
-          sFileName.SetLocation(sBuffer);
-          sFileName.SetExtension(TXD_EXT);
-          // Prefix filename so that we know this sessions created imported files are unique.
-          sFileNamePrefix << sFileName.GetFileName();
-          sFileName.SetFileName(sFileNamePrefix);
-          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
-          SetupPopFileFieldDescriptors(vFieldDescriptors);
-          CreateTXDFile(sFileName, vFieldDescriptors);
-          auto_ptr<TDlgSaTScanDataImporter> pImporter(new TDlgSaTScanDataImporter(0, 0, &ImportDescriptor));
-          pImporter->ShowOptionalPanels(false, false, false);
-          pImporter->SetInputFileTypeName("Population");
-          if (pImporter->ShowModal() == mrOk) {
-            AttemptFilterDateFields(sFileName.GetFullPath(), "%y/%m/%d", 1);
-            gParameters.SetPopulationFileName(sFileName.GetFullPath());
-            edtPopFileName->Text = sFileName.GetFullPath();
-          }
-       }
-       else {
-         gParameters.SetPopulationFileName(sFileName.GetFullPath());
-         edtPopFileName->Text = sFileName.GetFullPath();
-       }
-    }
+    if (OpenDialog1->Execute())
+      SetPopulationFile(OpenDialog1->FileName.c_str());
   }
   catch (ZdException & x) {
     x.AddCallpath("btnPopBrowseClick()", "TfrmAnalysis");
@@ -410,7 +128,7 @@ void __fastcall TfrmAnalysis::btnResultFileBrowseClick(TObject *Sender) {
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.txt";
-    OpenDialog1->Filter = "GRD Files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog1->Filter = "Results files (*.txt)|*.txt|All files (*.*)|*.*";
     OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Results File";
     if (OpenDialog1->Execute()) {
@@ -754,56 +472,6 @@ void __fastcall TfrmAnalysis::chkClustersInColumnFormatAsciiClick(TObject *Sende
    gParameters.m_bMostLikelyClusters = chkClustersInColumnFormatAscii->Checked;
 }
 
-// create the TXD file with the appropriate field names - AJV 8/29/2002
-// pre: sFilename has a txd extension and vFieldNames has been filled with the appropraite field names
-// post: will create a txd file with padded spaces delimiting the fields
-void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const std::vector<std::string>& vFieldNames) {
-   ZdPointerVector<ZdField>	vFields;
-   ZdField		        *pField = 0;
-   unsigned short               uwOffset(0), uwLength;
-
-   try {
-      TXDFile File;
-
-      // creates the field vector from the provided field names
-      for(size_t i = 0; i < vFieldNames.size(); ++i) {
-      	 pField = File.GetNewField();
-         pField->SetName(vFieldNames[i].c_str());
-         if(i == 0)     // need a better system here to define which fields are required
-            pField->SetRequired(true);
-          // field 1 the only alpha field in the input so allow to greater width here, consider
-          // other options for this in the future - AJV 9/4/2002
-         pField->SetType(ZD_ALPHA_FLD);
-         uwLength = (!i ? 200 : 50);
-         pField->SetOffset(uwOffset);
-         pField->SetLength(uwLength);
-         pField->SetIndexCount(0);
-         vFields.AddElement(pField);
-         // NOTE: Our original design would simply make gaps in the fields offsets
-         //       to allow created ZdTXD file to work like current SaTScan data files.
-         //       But, unfortunetly, those gaps would have value 0x00 causing problems
-         //       for scanf. So, let's assume that there will be gaps between fields.
-         //       I think this is a pretty good assumption for now considering the
-         //       large field lengths we are defining and given sample data observed.
-         uwOffset += ( uwLength );
-      }
-
-      File.Delete(sFileName.GetFullPath());
-      File.SetTitle(sFileName.GetFileName());
-      File.Create(sFileName.GetFullPath(), vFields, 0);
-      File.Close();
-   }
-   catch (ZdException &x) {
-      delete pField; pField = 0;
-      x.AddCallpath("CreateTXDFile()", "TfrmAnalysis");
-      throw;
-   }
-}
-
-bool TfrmAnalysis::DetermineIfDbfExtension(const AnsiString& sFileName) {
-  return ZdString(sFileName.c_str()).ToLowercase().EndsWith(".dbf");
-}
-
 void __fastcall TfrmAnalysis::edtEndDayExit(TObject *Sender) {
   if ((atoi(edtEndDay->Text.c_str()) < 1) || (atoi(edtEndDay->Text.c_str()) > 31)) {
     PageControl1->ActivePage = tbAnalysis;
@@ -1130,6 +798,17 @@ void TfrmAnalysis::Init() {
    cboCriteriaSecClusters->ItemIndex = 0;
 }
 
+/** Modally shows import dialog. */
+void TfrmAnalysis::LaunchImporter() {
+  try {
+    std::auto_ptr<TBDlgDataImporter> pDialog(new TBDlgDataImporter(0, *this));
+    pDialog->ShowModal();
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("LaunchImporter()", "TfrmAnalysis");
+    throw;
+  }
+}
 //------------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::mitClearSpecialGridEditClick(TObject *Sender) {
   edtGridFileName->Clear();
@@ -1472,6 +1151,30 @@ void TfrmAnalysis::SaveTextParameters() {
   }
 }
 
+/** Sets case filename in interface and parameters class. */
+void TfrmAnalysis::SetCaseFile(const char * sCaseFileName) {
+  gParameters.SetCaseFileName(sCaseFileName);
+  edtCaseFileName->Text = sCaseFileName;
+}
+
+/** Sets control filename in interface and parameters class. */
+void TfrmAnalysis::SetControlFile(const char * sControlFileName) {
+  gParameters.SetControlFileName(sControlFileName);
+  edtControlFileName->Text = sControlFileName;
+}
+
+/** Sets coordinates filename in interface and parameters class. */
+void TfrmAnalysis::SetCoordinateFile(const char * sCoordinateFileName) {
+  gParameters.SetCoordinatesFileName(sCoordinateFileName);
+  edtCoordinateFileName->Text = sCoordinateFileName;
+}
+
+/** Sets population filename in interface and parameters class. */
+void TfrmAnalysis::SetPopulationFile(const char * sPopulationFileName) {
+  gParameters.SetPopulationFileName(sPopulationFileName);
+  edtPopFileName->Text = sPopulationFileName;
+}
+
 // Sets caption of radio button that indicates maximum spatial cluster size is
 // in distance units.
 void TfrmAnalysis::SetSpatialDistanceCaption() {
@@ -1492,6 +1195,12 @@ void TfrmAnalysis::SetSpatialDistanceCaption() {
   }
 }
 
+/** Sets special grid filename in interface and parameters class. */
+void TfrmAnalysis::SetSpecialGridFile(const char * sSpecialGridFileName) {
+  gParameters.SetSpecialGridFileName(sSpecialGridFileName, false, true);
+  edtGridFileName->Text = sSpecialGridFileName;
+}
+
 /** Internal setup */
 void TfrmAnalysis::Setup(const char * sParameterFileName) {
   try {
@@ -1506,103 +1215,6 @@ void TfrmAnalysis::Setup(const char * sParameterFileName) {
     x.AddCallpath("Setup()", "TfrmAnalysis");
     throw;
   }
-}
-
-// fill the Case File field descriptor vector with the appropriate field names for a case file
-void TfrmAnalysis::SetupCaseFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors) {
-   vFieldDescriptors.clear();
-   vFieldDescriptors.reserve(13);
-   vFieldDescriptors.push_back("Tract ID");
-   vFieldDescriptors.push_back("Number of Cases");
-   vFieldDescriptors.push_back("Date/Time (optional)");
-   vFieldDescriptors.push_back("Covariate1 (optional)");
-   vFieldDescriptors.push_back("Covariate2 (optional)");
-   vFieldDescriptors.push_back("Covariate3 (optional)");
-   vFieldDescriptors.push_back("Covariate4 (optional)");
-   vFieldDescriptors.push_back("Covariate5 (optional)");
-   vFieldDescriptors.push_back("Covariate6 (optional)");
-   vFieldDescriptors.push_back("Covariate7 (optional)");
-   vFieldDescriptors.push_back("Covariate8 (optional)");
-   vFieldDescriptors.push_back("Covariate9 (optional)");
-   vFieldDescriptors.push_back("Covariate10 (optional)");
-}
-
-// fill the control File field descriptor vector with the appropriate field names for a control file
-void TfrmAnalysis::SetupControlFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors) {
-   vFieldDescriptors.clear();
-   vFieldDescriptors.reserve(3);
-   vFieldDescriptors.push_back("Tract ID");
-   vFieldDescriptors.push_back("Number of Controls");
-   vFieldDescriptors.push_back("Date/Time (optional)");
-   /** covariates not currently usable for control file, but is planned for future release. */
-   //vFieldDescriptors.push_back("Covariate1 (optional)");
-   //vFieldDescriptors.push_back("Covariate2 (optional)");
-   //vFieldDescriptors.push_back("Covariate3 (optional)");
-   //vFieldDescriptors.push_back("Covariate4 (optional)");
-   //vFieldDescriptors.push_back("Covariate5 (optional)");
-   //vFieldDescriptors.push_back("Covariate6 (optional)");
-   //vFieldDescriptors.push_back("Covariate7 (optional)");
-   //vFieldDescriptors.push_back("Covariate8 (optional)");
-   //vFieldDescriptors.push_back("Covariate9 (optional)");
-   //vFieldDescriptors.push_back("Covariate10 (optional)");
-}
-
-// fill the Geo File field descriptor vector with the appropriate field names for a geo file
-void TfrmAnalysis::SetupGeoFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors) {
-   vFieldDescriptors.clear();
-   vFieldDescriptors.reserve(13);
-   vFieldDescriptors.push_back("Tract ID");
-   vFieldDescriptors.push_back("Latitude");
-   vFieldDescriptors.push_back("Longitude");
-   vFieldDescriptors.push_back("Dimension1");
-   vFieldDescriptors.push_back("Dimension2");
-   vFieldDescriptors.push_back("Dimension3 (optional)");
-   vFieldDescriptors.push_back("Dimension4 (optional)");
-   vFieldDescriptors.push_back("Dimension5 (optional)");
-   vFieldDescriptors.push_back("Dimension6 (optional)");
-   vFieldDescriptors.push_back("Dimension7 (optional)");
-   vFieldDescriptors.push_back("Dimension8 (optional)");
-   vFieldDescriptors.push_back("Dimension9 (optional)");
-   vFieldDescriptors.push_back("Dimension10 (optional)");
-}
-
-// fill the Geo File field descriptor vector with the appropriate field names for a geo file
-void TfrmAnalysis::SetupGridFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors) {
-   vFieldDescriptors.clear();
-   vFieldDescriptors.reserve(6);
-   vFieldDescriptors.push_back("Latitude");
-   vFieldDescriptors.push_back("Longitude");
-   vFieldDescriptors.push_back("Dimension1");
-   vFieldDescriptors.push_back("Dimension2");
-   vFieldDescriptors.push_back("Dimension3 (optional)");
-   vFieldDescriptors.push_back("Dimension4 (optional)");
-}
-
-// sets up the appropriate options for the FTFImportDescriptor
-// pre: create and pass in a default FTFDescriptor and a .dbf ImportFileName
-// post: function will modify the FTFDescriptor to contain the appropraite import options for our purposes
-void TfrmAnalysis::SetupImportDescriptor(BFTFImportDescriptor& descrip, const ZdString& sImportFileName) {
-   try {
-      descrip.SetDestinationType(BFileDestDescriptor::SingleFile);
-      descrip.SetModifyType(BFileDestDescriptor::OverWriteExistingData);
-      descrip.SetImportFile(sImportFileName);
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("SetupImportDescriptor()", "TfrmAnalysis");
-      throw;
-   }
-}
-
-// fill the Geo File field descriptor vector with the appropriate field names for a geo file
-void TfrmAnalysis::SetupPopFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors) {
-   vFieldDescriptors.clear();
-   vFieldDescriptors.reserve(6);
-   vFieldDescriptors.push_back("Tract ID");
-   vFieldDescriptors.push_back("Date/Time");
-   vFieldDescriptors.push_back("Population");
-   vFieldDescriptors.push_back("Covariate1 (optional)");
-   vFieldDescriptors.push_back("Covariate2 (optional)");
-   vFieldDescriptors.push_back("Covariate3 (optional)");
 }
 
 //---------------------------------------------------------------------------
@@ -2066,6 +1678,8 @@ void __fastcall TfrmAnalysis::rgTypeAnalysisClick(TObject *Sender) {
     DisplayBasisException(this, x);
   }
 }
+
+
 
 
 

@@ -10,33 +10,12 @@
 #include <ExtCtrls.hpp>
 #include <Dialogs.hpp>
 #include <io.h>
-
+#include <Menus.hpp>
+#include <Buttons.hpp>
 #include "JulianDates.h"
 #include "Parameters.h"
-#include <Menus.hpp>
 
 //---------------------------------------------------------------------------
-
-class TDlgSaTScanDataImporter : public TBdlgImporter {
-  __published:
-    void __fastcall     tsfieldGridResize(TObject *Sender);
-
-  private:
-    void                Setup();
-
-  protected:
-    std::string         gsInputFileTypeName;
-
-    virtual void        SetInitialImportFileType();
-    virtual void        SetUpDataGrid();
-
-  public:
-    virtual __fastcall TDlgSaTScanDataImporter(TComponent* Owner, ZdDatabase * pDatabase, BFTFImportDescriptor * pImportDescriptor);
-    virtual __fastcall TDlgSaTScanDataImporter(TComponent* Owner, ZdDatabase * pDatabase = 0, BCSVFileImportSpecs * pCVSImportDescriptor = 0);
-    virtual __fastcall ~TDlgSaTScanDataImporter();
-
-    void                SetInputFileTypeName(const char * sInputFileTypeName) {gsInputFileTypeName = sInputFileTypeName;}
-};
 
 class TfrmAnalysis : public TForm {
   __published:  // IDE-managed Components
@@ -199,8 +178,6 @@ class TfrmAnalysis : public TForm {
     CParameters         gParameters;
     AnsiString          gsParamFileName;
 
-    void                AttemptFilterDateFields(const char * sFileName, const char * sFormat, unsigned short uwField);
-
     bool                Check_Days(int iYear, int iMonth, int iDay, char *sDateName);
     bool                Check_IntervalLength(int iStartYear, int iStartMonth, int iStartDay,
                                              int iEndYear, int iEndMonth, int iEndDay,
@@ -219,8 +196,6 @@ class TfrmAnalysis : public TForm {
     bool                CheckReplicas(int iReplicas);
     bool                CheckScanningWindowParams();
     bool                CheckTimeParams();
-    void                CreateTXDFile(const ZdFileName& sFileName, const std::vector<std::string>& vFieldNames);
-    bool                DetermineIfDbfExtension(const AnsiString& sFileName);
     void                EnablePSTDate(bool bEnable);
     void                EnableSpatial(bool bEnable, bool bEnableCheckbox, bool bEnableSpatialPercentage);
     void                EnableStartAndEndYear(bool bEnable);
@@ -240,12 +215,6 @@ class TfrmAnalysis : public TForm {
     void                SaveTextParameters();
     void                SetSpatialDistanceCaption();
     void                Setup(const char * sParameterFileName);
-    void                SetupCaseFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors);
-    void                SetupControlFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors);
-    void                SetupGeoFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors);
-    void                SetupGridFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors);
-    void                SetupImportDescriptor(BFTFImportDescriptor& descrip, const ZdString& sImportFileName);
-    void                SetupPopFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors);
     void                SetupInterface();
     bool                ValidateInputFiles();
     bool                ValidateSpatialClusterSize();
@@ -256,9 +225,15 @@ public:		// User declarations
             __fastcall TfrmAnalysis(TComponent* Owner, char *sParamFileName = 0);
     virtual __fastcall ~TfrmAnalysis();
 
+    void                LaunchImporter();
     char              * GetFileName();
     CParameters       * GetSession();
     void                SaveAs();
+    void                SetCaseFile(const char * sCaseFileName);
+    void                SetControlFile(const char * sControlFileName);
+    void                SetCoordinateFile(const char * sCoordinateFileName);
+    void                SetPopulationFile(const char * sPopulationFileName);
+    void                SetSpecialGridFile(const char * sSpecialGridFileName);
     bool                ValidateParams();
     void                WriteSession();
 };
