@@ -12,7 +12,9 @@
 #include "Analysis.h"
 #include "stsRunHistoryFile.h"
 #include "DBFFile.h"
-#include <syncobjs.hpp>
+#ifdef INTEL_BASED
+  #include <syncobjs.hpp>
+#endif  
 
 const int       OUTPUT_FILE_FIELD_LENGTH        = 254;
 
@@ -354,8 +356,10 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
    bool                 bFound(false);
    
    try {
+#ifdef INTEL_BASED
       std::auto_ptr<TCriticalSection> pSection(new TCriticalSection());
       pSection->Acquire();
+#endif      
 
       const CParameters    params(*(pAnalysis.GetSatScanData()->m_pParameters));
 
@@ -469,7 +473,9 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       pFile->EndTransaction(pTransaction); pTransaction = 0;
       pFile->Close();
 
+#ifdef INTEL_BASED
       pSection->Release();
+#endif      
    }
    catch(ZdException &x) {
       gpPrintDirection->SatScanPrintWarning("ERROR - Unable to record analysis information to the log history file:\n");
@@ -571,9 +577,10 @@ void stsRunHistoryFile::SetRunNumber() {
    std::auto_ptr<DBFFile>       pFile;
 
    try {
+#ifdef INTEL_BASED
       std::auto_ptr<TCriticalSection> pSection(new TCriticalSection());
       pSection->Acquire();
-
+#endif
       // if we don't have one then create it
       if(!ZdIO::Exists(gsFilename.GetCString()))
          CreateRunHistoryFile();
@@ -603,7 +610,9 @@ void stsRunHistoryFile::SetRunNumber() {
       pFile->EndTransaction(pTransaction); pTransaction = 0;
       pFile->Close();
 
+#ifdef INTEL_BASED
       pSection->Release();
+#endif      
    }
    catch (ZdException &x) {
       if(pTransaction)
