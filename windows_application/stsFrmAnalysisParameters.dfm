@@ -25,7 +25,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbScanningWindow
+    ActivePage = tbInputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -763,7 +763,7 @@ object frmAnalysis: TfrmAnalysis
       end
     end
     object tbOutputFiles: TTabSheet
-      Caption = 'Output Files'
+      Caption = 'Output'
       ImageIndex = 4
       object grpAdditionalOutputFiles: TGroupBox
         Left = 16
