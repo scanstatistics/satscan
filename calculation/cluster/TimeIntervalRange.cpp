@@ -83,8 +83,10 @@ void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopShapeC
     measure for number of cases.*/
 void TimeIntervalRange::ComputeBestMeasures(const count_t* pCases, const measure_t* pMeasure,
                                             CMeasureList & MeasureList) {
-  int           iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  int                                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  AbstractMaxWindowLengthIndicator    * pMWL_Indicator = gData.gpMaxWindowLengthIndicator;
 
+  pMWL_Indicator->Reset();
   //iterate through 'alive' windows separately, so we don't have to conditionally
   //check whether we need to do a subtraction.
   iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
@@ -97,7 +99,7 @@ void TimeIntervalRange::ComputeBestMeasures(const count_t* pCases, const measure
   }
   //now iterate through rest of windows
   for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - giMaxWindowLength, giStartRange_Start);
+     iWindowStart = std::max(iWindowEnd - pMWL_Indicator->GetNextWindowLength(), giStartRange_Start);
      iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart)
         MeasureList.AddMeasure(pCases[iWindowStart] - pCases[iWindowEnd],

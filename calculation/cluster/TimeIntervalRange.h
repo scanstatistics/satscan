@@ -24,10 +24,9 @@ class TimeIntervalRange : public CTimeIntervals {
   public:
     TimeIntervalRange(const CSaTScanData& Data);
     TimeIntervalRange(const TimeIntervalRange & rhs);
-    ~TimeIntervalRange() {};
+    ~TimeIntervalRange() {}
 
     TimeIntervalRange         & operator=(const TimeIntervalRange& rhs);
-
     virtual TimeIntervalRange * Clone() const;
     void                        CompareClusters(CCluster & Running,
                                                 CCluster & TopShapeCluster,
