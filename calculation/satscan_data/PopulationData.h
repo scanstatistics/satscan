@@ -6,7 +6,8 @@
 #include "UtilityFunctions.h"
 #include "JulianDates.h"
 
-class PopulationData;
+class PopulationData; /** forward class declaration */
+
 /** record for one population category in a single tract */
 class PopulationCategory {
   friend class PopulationData;
@@ -15,7 +16,6 @@ class PopulationCategory {
     float                     * gpPopulationList;      /* population at date index      */
     PopulationCategory        * gpNextDescriptor;      /* next CategoryDescriptor class in link-list */
 
-    //Restricted to CategoryDescriptor - only this class should call these methods.
     void			Init() {giCategoryIndex=0;gpPopulationList=0; gpNextDescriptor=0;}
     void                        Setup(int iPopulationListSize, int iCategoryIndex);
 
@@ -29,6 +29,7 @@ class PopulationCategory {
     void                        SetPopulationAtDateIndex(float fPopluation, unsigned int iDateIndex, const PopulationData & thePopulation);
     void                        SetPopulationListSize(int iPopulationListSize);
 
+    //private constructor - accessible only to class PopulationData
     PopulationCategory(int iPopulationListSize, int iCategoryIndex = -1);
 
   public:
@@ -36,29 +37,35 @@ class PopulationCategory {
 };
 
 
-class CSaTScanData;
-/** This file abstracts "categories" of populations(.i.e covariate combinations).
-    Each data and case record has a variable number of fields which specify
-    arbitrary string values.  Each combination of these values defines a
-    separate category, by which the data is stratified. */
+class CSaTScanData; /** forward class declaration */
+
+/** Population data. Maintains:
+    - list of population dates as read from population, if Poisson model.
+    - functionality to aide in measure calculation for Poisson model
+    - populations for each location in separate categories; as per input data.
+    - list of total cases/controls for each population category */
 class PopulationData {
   private:
-    bool                                gbAggregateCategories;
-    int                                 giNumberCovariates;            /** number covariates expected in each record
-                                                                           - as defined by first non-blank record of population file */
-    std::vector<std::string>            gvCovariateNames;              /** names of covariates */
-    std::vector<std::vector<int> >      gvPopulationCategories;        /** vector of population categories
-                                                                           - integers are indexes of covariate names */
-    std::vector<count_t>                gvCategoryCasesCount;          /** number of cases for category */                                                                        
-    std::vector<count_t>                gvCategoryControlsCount;       /** number of controls for category */
-    
-    std::vector<PopulationCategory*>    gTractCategories;          /** one for each tract */
+    bool                                gbAggregateCategories;     /** indicates that category data should be aggregated
+                                                                       together, not maintained separate - Bernoulli */
+    int                                 giNumberCovariates;        /** number covariates expected in each record
+                                                                       - as defined by first non-blank record of population file */
+    std::vector<std::string>            gvCovariateNames;          /** names of covariates */
+    std::vector<std::vector<int> >      gvPopulationCategories;    /** vector of population categories
+                                                                       - integers are indexes of covariate names */
+    std::vector<count_t>                gvCategoryCasesCount;      /** number of cases for category */
+    std::vector<count_t>                gvCategoryControlsCount;   /** number of controls for category */
 
-    std::vector<Julian>                 gvPopulationDates;
+    std::vector<PopulationCategory*>    gTractCategories;          /** population categories for each tract */
 
-    bool                                gbStartAsPopDt;
-    bool                                gbEndAsPopDt;    
+    std::vector<Julian>                 gvPopulationDates;         /** collection of all population dates */
 
+    bool                                gbStartAsPopDt;            /** indicates whether the study period start
+                                                                       date was introduced into gvPopulationDates */
+    bool                                gbEndAsPopDt;              /** indicates whether the study period end
+                                                                       date was introduced into gvPopulationDates */
+
+    void                                AssignPopulation(PopulationCategory& thisPopulationCategory, Julian PopulationDate, float fPopulation, bool bTrueDate);
     void                                Init() {giNumberCovariates=0;gbAggregateCategories=false;}
 
   public:
@@ -66,18 +73,14 @@ class PopulationData {
     ~PopulationData();
 
     void                                AddCaseCount(int iCategoryIndex, count_t Count);
-    void                                AddCategoryToTract(tract_t tTractIndex, unsigned int iCategoryIndex, Julian PopulationDate, float fPopulation);
+    void                                AddCategoryToTract(tract_t tTractIndex, unsigned int iCategoryIndex,
+                                                           const std::pair<Julian, DatePrecisionType>& prPopulationDate, float fPopulation);
     void                                AddControlCount(int iCategoryIndex, count_t Count);
-    void                                AssignPopulation(PopulationCategory & thisPopulationCategory, Julian PopulationDate, float fPopulation);
     void                                CalculateAlpha(double** pAlpha, Julian StartDate, Julian EndDate) const;
-    void                                CheckCasesHavePopulations(const count_t * pCases, CSaTScanData & Data) const;    
-    bool                                CheckZeroPopulations(FILE *pDisplay, BasePrint * pPrintDirection) const;
+    void                                CheckCasesHavePopulations(const count_t * pCases, const CSaTScanData& Data) const;    
+    bool                                CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirection) const;
     void                                Display(BasePrint & PrintDirection) const;
-    void                                FindPopDatesToUse(std::vector<Julian>& PopulationDates, Julian StartDate,
-                                                          Julian EndDate, int* pnSourceOffset, int* pnDestOffset,
-                                                          bool* pbAddStart, bool* pbAddEnd, int* pnDatesUsed,
-                                                          int* pnPopDates);
-    double                              GetAlphaAdjustedPopulation(double & dPopulation, tract_t t,
+    double                              GetAlphaAdjustedPopulation(double& dPopulation, tract_t t,
                                                                    int iCategoryIndex, int iStartPopulationDateIndex,
                                                                    int iEndPopulationDateIndex, double Alpha[]) const;
     count_t                             GetNumCategoryCases(int iCategoryIndex) const;
@@ -92,18 +95,18 @@ class PopulationData {
     const char                        * GetPopulationCategoryAsString(int iCategoryIndex, std::string & sBuffer) const;
     int                                 GetPopulationCategoryIndex(const std::vector<std::string>& vCategoryCovariates) const;
     Julian                              GetPopulationDate(int iDateIndex) const;
-    int                                 GetPopulationDateIndex(Julian Date) const;
-    int                                 GetPopUpLowIndex(Julian* pDates, int nDateIndex,
-                                                         int nMaxDateIndex, int* nUpIndex, int* nLowIndex) const;
-    double                              GetRiskAdjustedPopulation(measure_t & dMeanPopulation, tract_t t,
+    int                                 GetPopulationDateIndex(Julian Date, bool bTrueDate) const;
+    void                                GetPopUpLowIndex(Julian* pDates, int nDateIndex,
+                                                         int nMaxDateIndex, int& nUpIndex, int& nLowIndex) const;
+    measure_t                           GetRiskAdjustedPopulation(measure_t& dMeanPopulation, tract_t t,
                                                                   int iPopulationDateIndex, double Risk[]) const;
     int                                 LowerPopIndex(Julian Date) const;                                                                  
-    int                                 MakePopulationCategory(StringParser & Parser, int iScanOffset, BasePrint & PrintDirection);
-    void                                ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePrint * pPrintDirection) const;
+    int                                 MakePopulationCategory(StringParser& Parser, unsigned int iScanOffset, BasePrint& PrintDirection);
+    void                                ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, BasePrint& PrintDirection) const;
     void                                SetAggregateCategories(bool b);
     void                                SetNumTracts(unsigned int iTracts) {gTractCategories.resize(iTracts, 0);}
-    void                                SetupPopDates(std::vector<Julian>& PopulationDates, Julian StartDate,
-                                                      Julian EndDate, BasePrint * pPrintDirection);
+    void                                SetPopulationDates(std::vector<std::pair<Julian, DatePrecisionType> >& PopulationDates,
+                                                           Julian StartDate, Julian EndDate);
     int                                 UpperPopIndex(Julian Date) const;                                                   
 };
 //*****************************************************************************

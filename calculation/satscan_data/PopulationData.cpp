@@ -128,6 +128,10 @@ PopulationData::~PopulationData() {
   catch (...){}
 }
 
+/** Adds case count to internal structure that records counts by population category.
+    Throws ZdException if category index is invalid or category cases exceeds positive
+    limits for count_t(signed int). Caller of function is responsible for ensuring
+    that parameter 'Count' is a postive count_t(signed int). */
 void PopulationData::AddCaseCount(int iCategoryIndex, count_t Count) {
   if (iCategoryIndex < 0 || iCategoryIndex > (int)gvCategoryCasesCount.size() - 1)
     ZdGenerateException("Index '%d' out of range.","AddCaseCount()", iCategoryIndex);
@@ -136,15 +140,23 @@ void PopulationData::AddCaseCount(int iCategoryIndex, count_t Count) {
     SSGenerateException("Error: Total cases greater than maximum allowed of %ld.\n", "AddCaseCount()", std::numeric_limits<count_t>::max());
 }
 
-/** Adds a category to the tract info structure. */
-void PopulationData::AddCategoryToTract(tract_t tTractIndex, unsigned int iCategoryIndex, Julian PopulationDate, float fPopulation) {
+/** Adds category data to the tract info structure. Caller is responsible for ensuring that
+    parameter 'fPopulation' is a positive value. An exception is thrown if 'tTractIndex' is invalid.
+    If precision of parameter 'prPopulationDate' is DAY, the passed population is also assigned to
+    day following date indicated by prPopulationDate.first. */
+void PopulationData::AddCategoryToTract(tract_t tTractIndex, unsigned int iCategoryIndex, const std::pair<Julian, DatePrecisionType>& prPopulationDate, float fPopulation) {
   try {
     if (0 > tTractIndex || tTractIndex > (tract_t)gTractCategories.size() - 1 )
       ZdGenerateException("Index %d out of range(0 - %d).","AddPopulation()",
                           ZdException::Normal, tTractIndex, gTractCategories.size() - 1);
 
     PopulationCategory & thisDescriptor = GetPopulationCategory(tTractIndex, iCategoryIndex, (int)gvPopulationDates.size());
-    AssignPopulation(thisDescriptor, PopulationDate, fPopulation);
+    AssignPopulation(thisDescriptor, prPopulationDate.first, fPopulation, true);
+    //If precision of read population date is day, assign the day afters population to be the same.
+    //This is needed for the interpolation process. In method SetPopulationDates(...), it is
+    //ensured that this date is listed as one of the possible population dates.
+    if (prPopulationDate.second == DAY)
+      AssignPopulation(thisDescriptor, prPopulationDate.first + 1, fPopulation, false);
   }
   catch (ZdException &x) {
     x.AddCallpath("AddCategoryToTract()","PopulationData");
@@ -152,6 +164,10 @@ void PopulationData::AddCategoryToTract(tract_t tTractIndex, unsigned int iCateg
   }
 }
 
+/** Adds control count to internal structure that records counts by population category.
+    Throws ZdException if category index is invalid or category controls exceeds positive
+    limits for count_t(signed int). Caller of function is responsible for ensuring
+    that parameter 'Count' is a postive count_t(signed int). */
 void PopulationData::AddControlCount(int iCategoryIndex, count_t Count) {
   if (iCategoryIndex < 0 || iCategoryIndex > (int)gvCategoryControlsCount.size() - 1)
     ZdGenerateException("Index '%d' out of range.","AddControlCount()", iCategoryIndex);
@@ -160,24 +176,28 @@ void PopulationData::AddControlCount(int iCategoryIndex, count_t Count) {
     SSGenerateException("Error: Total controls greater than maximum allowed of %ld.\n", "AddControlCount()", std::numeric_limits<count_t>::max());
 }
 
-/** Assigns a population count to the appropriate location in the population list.
-    Note: An exception probably should be thrown here when population date index
-          if not found, but previous code did not.
-          Is this correct behavior?
-          Should an exception be thrown or will that break previous program design? */
-void PopulationData::AssignPopulation(PopulationCategory & thisPopulationCategory, Julian PopulationDate, float fPopulation) {
+/** Adds population count to categories population list. Passing bTrueDate == true
+    indicates that the population date was read from the population file; having
+    bTrueDate == false indicates that the population date is one of the introduced
+    population dates through method: SetPopulationDates(...). */
+void PopulationData::AssignPopulation(PopulationCategory & thisPopulationCategory, Julian PopulationDate, float fPopulation, bool bTrueDate) {
   int iPopulationDateIndex, iNumPopulationDates;
 
   try {
-    iPopulationDateIndex = GetPopulationDateIndex(PopulationDate);
+    iPopulationDateIndex = GetPopulationDateIndex(PopulationDate, bTrueDate);
     if (iPopulationDateIndex != -1) {
       iNumPopulationDates = (int)gvPopulationDates.size();
       thisPopulationCategory.AddPopulationAtDateIndex(fPopulation, iPopulationDateIndex, *this);
-
-
+      //If the study period start date was introduced and this is the population date immediately
+      //after it; then assign it the same population. We are assuming that the study period start
+      //date has the same population as first actual population date since we can't use interpolation
+      //to determine the population.
       if (iPopulationDateIndex == 1 && gbStartAsPopDt)
         thisPopulationCategory.AddPopulationAtDateIndex(fPopulation, 0L, *this);
-
+      //If the study period end date was introduced and this is the population date immediately
+      //prior to it; then assign it the same population. We are assuming that the study period end
+      //date has the same population as last actual population date since we can't use interpolation
+      //to determine the population.
       if (iPopulationDateIndex == iNumPopulationDates - 2 && gbEndAsPopDt)
         thisPopulationCategory.AddPopulationAtDateIndex(fPopulation, iNumPopulationDates - 1, *this);
     }
@@ -188,12 +208,18 @@ void PopulationData::AssignPopulation(PopulationCategory & thisPopulationCategor
   }
 }
 
-/** These calculations assumes that the population of a given day refers to the beginning of that day.
-    Returns array that indicates population dates percentage of the whole study period.               */
+/** Returns array that indicates population dates percentage of the whole study
+    period. Calculation assumes that the population of a given day refers to the
+    beginning of that day. Caller is responsible for:
+    - ensuring passed pointer address does not point to allocated memory.
+    - deallocation of 'pAlpha', using function free(), not delete[]
+    - ensuring that StartDate <= EndDate
+    An exception is thrown if the summation of calculated pAlpha elements does
+    note equal 1.0(+/- .0001). */
 void PopulationData::CalculateAlpha(double** pAlpha, Julian StartDate, Julian EndDate) const {
   int                   nPopDates = (int)gvPopulationDates.size();
   int                   n, N = nPopDates-2;
-  long                  nTotalYears = TimeBetween(StartDate, EndDate, DAY)/*EndDate-StartDate*/ ;
+  long                  nTotalDays = TimeBetween(StartDate, EndDate, DAY);
   double                sumalpha;
 
    try {
@@ -204,35 +230,26 @@ void PopulationData::CalculateAlpha(double** pAlpha, Julian StartDate, Julian En
        (*pAlpha)[1] = 0.5*((StartDate-gvPopulationDates[0])+((EndDate+1)-gvPopulationDates[0]))/(double)(gvPopulationDates[1]-gvPopulationDates[0]);
      }
      else if(N==1) {
-       (*pAlpha)[0] = (0.5*((double)(gvPopulationDates[1]-StartDate)/(gvPopulationDates[1]-gvPopulationDates[0]))*(gvPopulationDates[1]-StartDate)) / (double)nTotalYears;
-       (*pAlpha)[1] = (0.5*(gvPopulationDates[1]-StartDate)*(1+((double)(StartDate-gvPopulationDates[0])/(gvPopulationDates[1]-gvPopulationDates[0])))) / (double)nTotalYears
-                       + (0.5*(double)(EndDate+1-gvPopulationDates[N])*(1+((double)(gvPopulationDates[N+1]-(EndDate+1))/(gvPopulationDates[N+1]-gvPopulationDates[N])))) /  (double)nTotalYears;
-       (*pAlpha)[N+1] = (0.5*((double)(EndDate+1-gvPopulationDates[N])/(gvPopulationDates[N+1]-gvPopulationDates[N]))*(EndDate+1-gvPopulationDates[N])) / nTotalYears;
+       (*pAlpha)[0] = (0.5*((double)(gvPopulationDates[1]-StartDate)/(gvPopulationDates[1]-gvPopulationDates[0]))*(gvPopulationDates[1]-StartDate)) / (double)nTotalDays;
+       (*pAlpha)[1] = (0.5*(gvPopulationDates[1]-StartDate)*(1+((double)(StartDate-gvPopulationDates[0])/(gvPopulationDates[1]-gvPopulationDates[0])))) / (double)nTotalDays
+                       + (0.5*(double)(EndDate+1-gvPopulationDates[N])*(1+((double)(gvPopulationDates[N+1]-(EndDate+1))/(gvPopulationDates[N+1]-gvPopulationDates[N])))) /  (double)nTotalDays;
+       (*pAlpha)[N+1] = (0.5*((double)(EndDate+1-gvPopulationDates[N])/(gvPopulationDates[N+1]-gvPopulationDates[N]))*(EndDate+1-gvPopulationDates[N])) / nTotalDays;
      }
      else {
-       (*pAlpha)[0] = (0.5*((double)(gvPopulationDates[1]-StartDate)/(gvPopulationDates[1]-gvPopulationDates[0]))*(gvPopulationDates[1]-StartDate)) / (double)nTotalYears;
-       (*pAlpha)[1] = (0.5*(gvPopulationDates[2]-gvPopulationDates[1]) + 0.5*(gvPopulationDates[1]-StartDate)*(1+((double)(StartDate-gvPopulationDates[0])/(gvPopulationDates[1]-gvPopulationDates[0])))) / (double)nTotalYears;
+       (*pAlpha)[0] = (0.5*((double)(gvPopulationDates[1]-StartDate)/(gvPopulationDates[1]-gvPopulationDates[0]))*(gvPopulationDates[1]-StartDate)) / (double)nTotalDays;
+       (*pAlpha)[1] = (0.5*(gvPopulationDates[2]-gvPopulationDates[1]) + 0.5*(gvPopulationDates[1]-StartDate)*(1+((double)(StartDate-gvPopulationDates[0])/(gvPopulationDates[1]-gvPopulationDates[0])))) / (double)nTotalDays;
        for (n = 2; n < N; n++) {
-         (*pAlpha)[n] = 0.5*(double)(gvPopulationDates[n+1] - gvPopulationDates[n-1]) / (double)nTotalYears;
+         (*pAlpha)[n] = 0.5*(double)(gvPopulationDates[n+1] - gvPopulationDates[n-1]) / (double)nTotalDays;
        }
-       (*pAlpha)[N]   = (0.5*(gvPopulationDates[N]-gvPopulationDates[N-1]) + 0.5*(double)(EndDate+1-gvPopulationDates[N])*(1+((double)(gvPopulationDates[N+1]-(EndDate+1))/(gvPopulationDates[N+1]-gvPopulationDates[N])))) /  (double)nTotalYears;
-       (*pAlpha)[N+1] = (0.5*((double)(EndDate+1-gvPopulationDates[N])/(gvPopulationDates[N+1]-gvPopulationDates[N]))*(EndDate+1-gvPopulationDates[N])) / nTotalYears;
+       (*pAlpha)[N]   = (0.5*(gvPopulationDates[N]-gvPopulationDates[N-1]) + 0.5*(double)(EndDate+1-gvPopulationDates[N])*(1+((double)(gvPopulationDates[N+1]-(EndDate+1))/(gvPopulationDates[N+1]-gvPopulationDates[N])))) /  (double)nTotalDays;
+       (*pAlpha)[N+1] = (0.5*((double)(EndDate+1-gvPopulationDates[N])/(gvPopulationDates[N+1]-gvPopulationDates[N]))*(EndDate+1-gvPopulationDates[N])) / nTotalDays;
      }
-
-#if 0 /* DEBUG */
-     printf("\nTotal years = %ld, N=%ld\n", nTotalYears, N);
-     gpPrintDirection->SatScanPrintf("Pop\nIndex   PopDates        Alpha\n");
-     for (n=0;n<=N+1;n++) {
-       JulianToChar(szDate,pPopDates[n]);
-       gpPrintDirection->SatScanPrintf("%i       %s        %f\n",n, szDate, (*pAlpha)[n]);
-     }
-     gpPrintDirection->SatScanPrintf("\n");
-#endif
 
      /* Bug check, seeing that alpha values add to one. */
      sumalpha = 0;
-     for (n = 0; n <= N+1; n++) sumalpha = sumalpha + (*pAlpha)[n];
-     if (sumalpha>1.0001 || sumalpha<0.9999)
+     for (n = 0; n <= N+1; ++n)
+       sumalpha = sumalpha + (*pAlpha)[n];
+     if (sumalpha > 1.0001 || sumalpha < 0.9999)
        ZdGenerateException("Alpha values not calculated correctly.\nThe sum of the alpha values is %8.6lf rather than 1.\n",
                            "CalculateAlpha()", sumalpha);
   }
@@ -243,8 +260,10 @@ void PopulationData::CalculateAlpha(double** pAlpha, Julian StartDate, Julian En
 }
 
 /** Prints warning if there are tract categories with cases but no population.
-    Throws exception if total population for tract is zero. */
-void PopulationData::CheckCasesHavePopulations(const count_t * pCases, CSaTScanData & Data) const {
+    Throws ZdException if total population for tract is zero. Caller is responsible
+    for ensuring 'pCases' points to allocates memory and contains a number of
+    elements equal to gTractCategories.size(). */
+void PopulationData::CheckCasesHavePopulations(const count_t * pCases, const CSaTScanData& Data) const {
   int                           i, j, nPEndIndex, nPStartIndex = 0;
   const PopulationCategory *    pCategoryDescriptor;
   std::string                   sBuffer, sBuffer2;
@@ -298,8 +317,11 @@ void PopulationData::CheckCasesHavePopulations(const count_t * pCases, CSaTScanD
   }
 }
 
-/** Check to see that no years have a total population of zero. */
-bool PopulationData::CheckZeroPopulations(FILE *pDisplay, BasePrint * pPrintDirection) const {
+/** Check to see that no years have a total population of zero. If so, prints
+    error message to print direction object and FILE handle (if pointer not NULL).
+    Caller is responsible for ensuring that if 'pDisplay' is not NULL, that is points
+    to a valid file handle. */
+bool PopulationData::CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirection) const {
   UInt                          month, day, year;
   bool                          bValid = true;
   float                       * PopTotalsArray = 0;
@@ -330,8 +352,9 @@ bool PopulationData::CheckZeroPopulations(FILE *pDisplay, BasePrint * pPrintDire
        if (PopTotalsArray[j]==0) {
           bValid = false;
           JulianToMDY(&month, &day, &year, gvPopulationDates[j]);
-          fprintf(pDisplay, "Error: Population of zero found for all tracts in %d.\n", year);
-          pPrintDirection->SatScanPrintWarning("Error: Population of zero found for all tracts in %d.\n", year);
+          if (pDisplay)
+            fprintf(pDisplay, "Error: Population of zero found for all tracts in %d.\n", year);
+          PrintDirection.SatScanPrintWarning("Error: Population of zero found for all tracts in %d.\n", year);
        }
     }
 
@@ -346,7 +369,7 @@ bool PopulationData::CheckZeroPopulations(FILE *pDisplay, BasePrint * pPrintDire
 }
 
 /** Prints formatted text depicting state of population categories. */
-void PopulationData::Display(BasePrint & PrintDirection) const {
+void PopulationData::Display(BasePrint& PrintDirection) const {
   size_t        t, j;
 
   try {
@@ -366,62 +389,12 @@ void PopulationData::Display(BasePrint & PrintDirection) const {
   }
 }
 
-/** Determines which available population years should be used. */
-void PopulationData::FindPopDatesToUse(std::vector<Julian>& PopulationDates, Julian StartDate, Julian EndDate,
-                                             int* pnSourceOffset, int* pnDestOffset, bool* pbAddStart, bool* pbAddEnd,
-                                             int* pnDatesUsed, int* pnPopDates) {
-  int    n, nLastIndex, nDates;
-  bool   bStartFound=false, bEndFound=false;
-
-  try {
-    *pnSourceOffset = 0;
-    *pnDestOffset   = 0;
-    *pbAddStart     = false;
-    *pbAddEnd       = false;
-
-    /* Determine which pop dates to use */
-    nDates = (int)PopulationDates.size();
-    for (n=0; n < nDates; n++) {
-       if (!bStartFound) {
-         if (PopulationDates[n] > StartDate) {
-           bStartFound = true;
-           if (n==0) {
-             *pbAddStart = true;
-             *pnDestOffset = 1;
-           }
-         }
-         else
-          *pnSourceOffset = n;
-       }
-
-       if (!bEndFound) {
-         nLastIndex = n;
-         if (PopulationDates[n] > EndDate)
-           bEndFound = true;
-       }
-    }
-
-    *pnDatesUsed = nLastIndex - *pnSourceOffset + 1;
-    *pnPopDates  = *pnDatesUsed;
-
-    if (*pbAddStart)
-      *pnPopDates = *pnPopDates+1;
-
-    if (!bEndFound && nLastIndex==(nDates-1)) {
-      *pbAddEnd = true;
-      *pnPopDates = *pnPopDates+1;
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("FindPopDatesToUse()","PopulationData");
-    throw;
-  }
-}
-
-/** Returns the population for category of tract between date intervals. */
-double PopulationData::GetAlphaAdjustedPopulation(double & dPopulation, tract_t t,
-                                                        int iCategoryIndex, int iStartPopulationDateIndex,
-                                                        int iEndPopulationDateIndex, double Alpha[]) const {
+/** Adds the population for category of tract between date intervals. If
+    tract_t t is not a valid index, an exception id thrown. Caller is responsible
+    for ensuring that parameter 'Alpha' points to valid memory and number of elements
+    is in accordance with range [iStartPopulationDateIndex .. iEndPopulationDateIndex). */
+double PopulationData::GetAlphaAdjustedPopulation(double& dPopulation, tract_t t, int iCategoryIndex,
+                                                  int iStartPopulationDateIndex, int iEndPopulationDateIndex, double Alpha[]) const {
   int                           j;
   const PopulationCategory    * pCategoryDescriptor;
 
@@ -442,7 +415,9 @@ double PopulationData::GetAlphaAdjustedPopulation(double & dPopulation, tract_t 
   return dPopulation;
 }
 
-/** Finds the date of the largest PopDate < Date. If none exist return -1. */
+/** Finds the date of the largest population date < 'Date'. If 'Date' is less than
+    or equal to first population date, negative one is returned; else returns
+    index of found population date. */
 int PopulationData::LowerPopIndex(Julian Date) const {
   int i;
 
@@ -455,6 +430,8 @@ int PopulationData::LowerPopIndex(Julian Date) const {
   return i;
 }
 
+/** Returns the number of cases for category at index. Throws ZdException if
+    category index is out of range. */
 count_t PopulationData::GetNumCategoryCases(int iCategoryIndex) const {
   try {
     if (iCategoryIndex < 0 || iCategoryIndex > static_cast<int>(gvCategoryCasesCount.size()) - 1)
@@ -463,11 +440,13 @@ count_t PopulationData::GetNumCategoryCases(int iCategoryIndex) const {
     return gvCategoryCasesCount[iCategoryIndex];
   }
   catch (ZdException &x) {
-    x.AddCallpath("GetNumCategoryCases()", "PopulationData");
+    x.AddCallpath("GetNumCategoryCases()","PopulationData");
     throw;
   }
 }
 
+/** Returns the number of controls for category at index. Throws ZdException if
+    category index is out of range. */
 count_t PopulationData::GetNumCategoryControls(int iCategoryIndex) const {
   try {
     if (iCategoryIndex < 0 || iCategoryIndex > static_cast<int>(gvCategoryControlsCount.size()) - 1)
@@ -476,15 +455,19 @@ count_t PopulationData::GetNumCategoryControls(int iCategoryIndex) const {
     return gvCategoryControlsCount[iCategoryIndex];
   }
   catch (ZdException &x) {
-    x.AddCallpath("GetNumCategoryControls()", "PopulationData");
+    x.AddCallpath("GetNumCategoryControls()","PopulationData");
     throw;
   }
 }
 
-/** Returns pointer to category class with iCategoryIndex. Returns null pointer if not found. */
+/** Returns pointer to category class with iCategoryIndex. Returns null pointer
+    if tract category not found. Throws ZdException if tTractIndex is out of range.*/
 PopulationCategory * PopulationData::GetCategoryDescriptor(tract_t tTractIndex, unsigned int iCategoryIndex) {
   PopulationCategory  * pCategoryDescriptor;
   bool                  bDone=false;
+
+  if (tTractIndex < 0 || tTractIndex > static_cast<int>(gTractCategories.size()) - 1)
+    ZdGenerateException("Index '%d' out of ranges.","GetCategoryDescriptor()");
 
   pCategoryDescriptor = gTractCategories[tTractIndex];
   while (pCategoryDescriptor && !bDone) {
@@ -496,10 +479,15 @@ PopulationCategory * PopulationData::GetCategoryDescriptor(tract_t tTractIndex, 
   return pCategoryDescriptor;
 }
 
-/** Returns pointer to category class with iCategoryIndex. Returns null pointer if not found. */
+/** Returns pointer to category class with iCategoryIndex. Returns null pointer
+    if tract category not found else returns const pointer to object. Throws
+    ZdException if tTractIndex is out of range.*/
 const PopulationCategory * PopulationData::GetCategoryDescriptor(tract_t tTractIndex, unsigned int iCategoryIndex) const {
   PopulationCategory  * pCategoryDescriptor;
   bool                  bDone=false;
+
+  if (tTractIndex < 0 || tTractIndex > static_cast<int>(gTractCategories.size()) - 1)
+    ZdGenerateException("Index '%d' out of ranges.","GetCategoryDescriptor()");
 
   pCategoryDescriptor = gTractCategories[tTractIndex];
   while (pCategoryDescriptor && !bDone) {
@@ -512,21 +500,18 @@ const PopulationCategory * PopulationData::GetCategoryDescriptor(tract_t tTractI
 }
 
 /** Returns the population for a given year and category in a given tract
-    Returns 0 if no population for category.                              */
+    Returns 0 if no population for category. */
 float PopulationData::GetPopulation(tract_t t, int iCategoryIndex, int iPopulationDateIndex){
   float                         fValue=0;
   const PopulationCategory    * pCategoryDescriptor;
 
   try {
-    if (0 > t || t > (tract_t)gTractCategories.size() - 1)
-       ZdException::Generate("Index %d out of range(0 - %d)", "tiGetPop()", t, gTractCategories.size() - 1);
-
     pCategoryDescriptor = GetCategoryDescriptor(t, iCategoryIndex);
     if (pCategoryDescriptor)
       fValue = pCategoryDescriptor->GetPopulationAtDateIndex(iPopulationDateIndex, *this);
   }
   catch (ZdException &x) {
-    x.AddCallpath("tiGetPopulation()","PopulationData");
+    x.AddCallpath("GetPopulation()","PopulationData");
     throw;
   }
   return fValue;
@@ -539,6 +524,9 @@ PopulationCategory & PopulationData::GetPopulationCategory(tract_t tTractIndex, 
   bool                          bFound=false;
 
   try {
+    if (0 > tTractIndex || tTractIndex > (tract_t)gTractCategories.size() - 1)
+      ZdException::Generate("Index %d out of range(0 - %d)", "GetPopulationCategory()", tTractIndex, gTractCategories.size() - 1);
+
     if (!gTractCategories[tTractIndex]) {
       gTractCategories[tTractIndex] = new PopulationCategory(iPopulationListSize, iCategoryIndex);
       pCurrentDescriptor = gTractCategories[tTractIndex];
@@ -580,7 +568,8 @@ int PopulationData::GetPopulationCategoryIndex(const std::vector<std::string>& v
   return iIndex;
 }
 
-/** Returns population category as string of space delimited covariates. */
+/** Returns population category as string of space delimited covariates. Throws
+    ZdException if category index if invalid. */
 const char * PopulationData::GetPopulationCategoryAsString(int iCategoryIndex, std::string & sBuffer) const {
   size_t        t;
 
@@ -603,15 +592,15 @@ const char * PopulationData::GetPopulationCategoryAsString(int iCategoryIndex, s
   return sBuffer.c_str();
 }
 
-/** Returns the population date for a given index into the Pop date array. */
+/** Returns the population date for a given index into the population date array.
+    NOTE: If the population date index is invalid, negative one is returned. This
+          is a bit strange as Julian is defined as unsigned long. If caller is not
+          positive that passed index is valid, returned value should be compared
+          against 'static_cast<Julian>(-1)'. */
 Julian PopulationData::GetPopulationDate(int iPopulationDateIndex) const {
   Julian        ReturnDate;
 
   try {
-    //NOTE: This section of code is a bit strange. Julian is defined as unsigned long
-    //      but here we are potentially assigning it a negative number. Only code in
-    //      AssignMeasure() functions access this function currently. In return section
-    //      , value as a Julian is compared against -1. 
     if (0 > iPopulationDateIndex || iPopulationDateIndex > (int)gvPopulationDates.size() - 1)
       ReturnDate = -1;
     else
@@ -624,39 +613,56 @@ Julian PopulationData::GetPopulationDate(int iPopulationDateIndex) const {
   return ReturnDate;
 }
 
-/** Returns the index into the Pop date array for a given date. */
-int PopulationData::GetPopulationDateIndex(Julian Date) const {
+/** Returns the index into the population date array for a given date. Pass
+    bReverse == true if the population date was read from the population file;
+    pass bReverse == false if the date is one of the dates introduced in method
+    SetPopulationDates(...).
+    The returned index could be -1; this does not necessarily indicate a problem.
+    In SetPopulationDates(...), the list of population dates, as read from file,
+    is adjusted based upon the specified study period. That process can cause
+    population dates to be removed. */
+int PopulationData::GetPopulationDateIndex(Julian Date, bool bTrueDate) const {
   int           i, iReturn = - 1;
   bool          bFound=false;
 
-  try {
+  //NOTE: If there was an identical date introduced in SetPopulationDates(...),
+  //      these dates will be adjacent in the population date array.
+  if (bTrueDate)
+    //Look for a population date that was read from population file. The date
+    //we are looking for is the first matching date, searching from most recent
+    //date to less recent. That was how SetPopulationDates(...) created array.
+    for (i=gvPopulationDates.size() - 1; i >= 0 && !bFound; --i) {
+       if (Date == gvPopulationDates[i]) {
+         iReturn = i;
+         bFound = true;
+       }
+  }
+  else {
+    //Look for a population date that was introduced in SetPopulationDates(...).
+    //The date we are looking for is the first matching date, searching from less
+    //recent date to most recent. That was how SetPopulationDates(...) created array.
     for (i=0; i < (int)gvPopulationDates.size() && !bFound; ++i)
        if (Date == gvPopulationDates[i]) {
          iReturn = i;
          bFound = true;
        }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetPopulationDateIndex()","PopulationData");
-    throw;
-  }
-  return iReturn; /** was returning -1 if not found !!!!!*/
+
+  return iReturn;
 } 
 
-/** Returns the indeces to population dates that bound a given interval date. */
-int PopulationData::GetPopUpLowIndex(Julian* pDates, int nDateIndex, int nMaxDateIndex,
-                                           int* nUpIndex, int* nLowIndex) const {
+/** Sets the indeces to population dates that mark the lower and upper boundaries
+    for time interval defined by [nDateIndex .. nMaxDateIndex] on pDates array.
+    Caller is responsible for ensuring that pDates points to valid memory and
+    contains a number of elements in accordance with [nDateIndex .. nMaxDateIndex + 1]. */
+void PopulationData::GetPopUpLowIndex(Julian* pDates, int nDateIndex, int nMaxDateIndex, int& nUpIndex, int& nLowIndex) const {
   int   i, index;
   bool  bUpFound = false;
 
   try {
-    /*  if (nDateIndex == nMaxDateIndex)
-          return(0);
-    */
-
     for (i=0; i < (int)gvPopulationDates.size(); ++i) {
        if (gvPopulationDates[i] <= pDates[nDateIndex])
-         *nLowIndex = i;
+         nLowIndex = i;
 
        if (nDateIndex == nMaxDateIndex)
          index = nDateIndex;
@@ -665,19 +671,21 @@ int PopulationData::GetPopUpLowIndex(Julian* pDates, int nDateIndex, int nMaxDat
 
        if (!bUpFound && (gvPopulationDates[i] >= pDates[index])) {
          bUpFound = true;
-         *nUpIndex = i;
+         nUpIndex = i;
        }
     }
   }
   catch (ZdException &x) {
-    x.AddCallpath("tiGetPopUpLowIndex()","PopulationData");
+    x.AddCallpath("GetPopUpLowIndex()","PopulationData");
     throw;
   }
-  return 1;
 }
 
-/** Returns the population for population date index of tract for all categories. */
-double PopulationData::GetRiskAdjustedPopulation(measure_t & dMeanPopulation, tract_t t, int iPopulationDateIndex, double Risk[]) const {
+/** Returns the risk adjusted population for population date index of tract for
+    all categories. Throws ZdException if tract 't' is invalid. Caller is
+    responsible for ensuring that 'Risk' points to valid memory and contains
+    a number of elements equal to the number of population categories. */
+measure_t PopulationData::GetRiskAdjustedPopulation(measure_t& dMeanPopulation, tract_t t, int iPopulationDateIndex, double Risk[]) const {
   const PopulationCategory    * pCategoryDescriptor;
 
   try {
@@ -699,15 +707,22 @@ double PopulationData::GetRiskAdjustedPopulation(measure_t & dMeanPopulation, tr
   return dMeanPopulation;
 }
 
-/** Creates new population category and returns category index. */
-int PopulationData::MakePopulationCategory(StringParser & Parser, int iScanOffset, BasePrint & PrintDirection) {
-  int                                           iCategoryIndex, iNumCovariatesScanned=0;
+/** Attmepts to create new population category through parsing record contained
+    by StringParser with covariates indicated to start at 'iScanOffset'. If
+    previously specified to aggregate population categories, nothing is done
+    and category index returned is zero.
+    If no population categories exist at function call, the number of expected
+    covariates is set to that of currently parsing record. Subsequent function
+    calls will be required to adhere to the number of previously defined
+    covariates or an error message will be printed to PrintDirection and returned
+    category in returned will be negative one. Upon successful creation of
+    population category, index is returned. */
+int PopulationData::MakePopulationCategory(StringParser& Parser, unsigned int iScanOffset, BasePrint& PrintDirection) {
+  unsigned int                                  iCategoryIndex, iNumCovariatesScanned=0;
   std::vector<int>                              vPopulationCategory;
   const char                                  * pCovariate;
   std::vector<std::string>::iterator            itr;
   std::vector<std::vector<int> >::iterator      itr_int;
-
-//  iScanOffset = 3; //tract identifier, population date, population, covariate 1, ...
 
   if (gbAggregateCategories)
     iCategoryIndex = 0;
@@ -735,7 +750,7 @@ int PopulationData::MakePopulationCategory(StringParser & Parser, int iScanOffse
     gvCategoryCasesCount.resize(1, 0);
     gvCategoryControlsCount.resize(1, 0);
   }
-  else if (iNumCovariatesScanned != giNumberCovariates){
+  else if (iNumCovariatesScanned != static_cast<unsigned int>(giNumberCovariates)){
     PrintDirection.PrintInputWarning("Error: Record %d of %s contains %d covariate%s but expecting %d covariate%s.",
                                      Parser.GetReadCount(), PrintDirection.GetImpliedFileTypeString().c_str(),
                                      iNumCovariatesScanned,(iNumCovariatesScanned == 1 ? "" : "s"),
@@ -758,8 +773,10 @@ int PopulationData::MakePopulationCategory(StringParser & Parser, int iScanOffse
   return iCategoryIndex;
 }
 
-/** Look for and display tracts with zero population for any population year. */
-void PopulationData::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePrint * pPrintDirection) const {
+/** Scans for tracts that have population dates which have zero populations.
+    Reports such tract populations dates for pDisplay (is not NULL) and
+    PrintDirection as formatted warning. */
+void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, BasePrint& PrintDirection) const {
   int                           i, j, nPEndIndex, nPStartIndex = 0;
   UInt                          month, day, year;
   bool                          bZeroFound = false;
@@ -776,7 +793,7 @@ void PopulationData::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePri
     else
       nPEndIndex = GetNumPopulationDates() - 1;
 
-    PopTotalsArray = (float*)Smalloc(GetNumPopulationDates() *sizeof(float), pPrintDirection);
+    PopTotalsArray = (float*)Smalloc(GetNumPopulationDates() * sizeof(float));
 
     for (i=0; i < (int)gTractCategories.size(); i++) {
        memset(PopTotalsArray, 0, GetNumPopulationDates() * sizeof(float));
@@ -792,15 +809,15 @@ void PopulationData::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePri
             if (!bZeroFound) {
               bZeroFound = true;
               AsciiPrintFormat::PrintSectionSeparatorString(pDisplay, 1, 2);
-              fprintf(pDisplay,"Warning: According to the input data, the following tracts have a \n");
+              fprintf(pDisplay,"Warning: According to the input data, the following locations have a\n");
               fprintf(pDisplay,"         population totaling zero for the specified date(s).\n\n");
-              pPrintDirection->SatScanPrintWarning("Warning: According to the input data, the following tracts have a \n");
-              pPrintDirection->SatScanPrintWarning("         population totaling zero for the specified date(s).\n\n");
+              PrintDirection.SatScanPrintWarning("Warning: According to the input data, the following locations have a\n");
+              PrintDirection.SatScanPrintWarning("         population totaling zero for the specified date(s).\n\n");
             }
-            //JulianToMDY(&month, &day, &year, gvPopulationDates[j]);
             JulianToChar(sDateBuffer, gvPopulationDates[j]);
-            fprintf(pDisplay,"         Tract %s, %s\n", Data.GetTInfo()->tiGetTid(i, sBuffer), sDateBuffer);
-            pPrintDirection->SatScanPrintWarning("         Tract %s, %s\n", Data.GetTInfo()->tiGetTid(i, sBuffer), sDateBuffer);
+            if (pDisplay)
+              fprintf(pDisplay,"         Location %s, %s\n", Data.GetTInfo()->tiGetTid(i, sBuffer), sDateBuffer);
+            PrintDirection.SatScanPrintWarning("         Location %s, %s\n", Data.GetTInfo()->tiGetTid(i, sBuffer), sDateBuffer);
           }
        }
     }
@@ -809,11 +826,14 @@ void PopulationData::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePri
   }
   catch (ZdException &x) {
     free (PopTotalsArray);
-    x.AddCallpath("tiReportZeroPops()","PopulationData");
+    x.AddCallpath("ReportZeroPops()","PopulationData");
     throw;
   }
 }
 
+/** Sets internal flag that indicates to aggregate population categories. Calling
+    this function with parameter false after any population categories have already
+    been created through MakePopulationCategory() is not recommended. */
 void PopulationData::SetAggregateCategories(bool b) {
    gbAggregateCategories = b;
 
@@ -826,57 +846,71 @@ void PopulationData::SetAggregateCategories(bool b) {
    }
 }
 
-/** Initializes the Population dates vector. */
-void PopulationData::SetupPopDates(std::vector<Julian>& PopulationDates, Julian StartDate,
-                                         Julian EndDate, BasePrint * pPrintDirection) {
-  int  n, nSourceOffset, nDestOffset, nDatesUsed, nPopDates;
+/** Determines which population dates should be keep based upon specified study
+    period. Later we will use interpolation to estimate the population on dates
+    that were not supplied by input data with respect to the study period. Caller
+    is responsible for ensuring that StartDate <= EndDate. */
+void PopulationData::SetPopulationDates(std::vector<std::pair<Julian, DatePrecisionType> >& PopulationDates,
+                                        Julian StartDate, Julian EndDate) {
+  unsigned int  n, iLastIndexedDateIndex, iDateIndexOffset=0, iRetainedDates, iTotalPopulationDates;
+  bool          bStartFound=false, bEndFound=false;
 
-  try {
-    FindPopDatesToUse(PopulationDates, StartDate, EndDate,
-                        &nSourceOffset, &nDestOffset, &gbStartAsPopDt, &gbEndAsPopDt,
-                        &nDatesUsed, &nPopDates);
-
-    gvPopulationDates.resize(nPopDates);
-
-    if (gbStartAsPopDt)
-      gvPopulationDates[0] = StartDate;
-
-    for (n=0; n<nDatesUsed; n++)
-       gvPopulationDates[n + nDestOffset] = PopulationDates[n + nSourceOffset];
-
-    if (gbEndAsPopDt)
-      gvPopulationDates[nPopDates-1] = EndDate+1;
-
-/* debug */
-#if 0
-       DisplayDatesArray(pDates, nDates, "Array of Potential Pop Dates", stdout);
-
-       JulianToChar(szDate, StartDate);
-      pPrintDirection->SatScanPrintf("\nStart Date = %s\n", szDate);
-       JulianToChar(szDate, EndDate);
-      pPrintDirection->SatScanPrintf("End Date   = %s\n", szDate);
-
-      pPrintDirection->SatScanPrintf("\nSource offset      = %i\n", nSourceOffset);
-      pPrintDirection->SatScanPrintf("Destination offset = %i\n", nDestOffset);
-      pPrintDirection->SatScanPrintf("Add Start          = %i\n", bStartAsPopDt);
-      pPrintDirection->SatScanPrintf("Add End            = %i\n", bEndAsPopDt);
-      pPrintDirection->SatScanPrintf("Number Dates Used  = %i\n", nDatesUsed);
-      pPrintDirection->SatScanPrintf("Number Pop Dates   = %i\n", nPopDates);
-      pPrintDirection->SatScanPrintf("\n");
-
-      pPrintDirection->SatScanPrintf("<Press any key to continue>");
-       c = getc(stdin);
-
-       DisplayDatesArray(pPopDates, nPopDates, "Array of Selected Pop Dates", stdout);
-#endif
-      }
-  catch (ZdException &x) {
-    x.AddCallpath("SetupPopDates()","PopulationData");
-    throw;
+  //first insert additional population dates for those read with precision of day
+  for (n=0; n < PopulationDates.size(); ++n)
+     if (PopulationDates[n].second == DAY) {
+       PopulationDates.insert(PopulationDates.begin() + (n + 1), std::make_pair(PopulationDates[n].first + 1, DAY));
+       ++n;
+     }
+  //Loop over input defined population period to ascertain which population dates to keep.
+  for (n=0; n < PopulationDates.size() && (!bStartFound || !bEndFound); ++n) {
+     if (!bStartFound) {
+       //With respects to interpolation, we can only make use of one population date prior
+       //to the study period start date. Keep first prior population date but ignore rest.
+       if (PopulationDates[n].first > StartDate) {
+         bStartFound = true;
+         //If the study period start date is less than all population dates, it will be
+         //added as first population date. Note that in this case, the population for the
+         //start date will be assumed to that of first population date.
+         gbStartAsPopDt = (n == 0);
+       }
+       else
+         //Keep advancing offset index - we're removing population dates.
+         iDateIndexOffset = n;
+         //Note that the first population date could be equal to the study period start
+         //date. That date is kept through the nSourceOffset equaling 0 and therefore
+         //the calculated number of population dates retained is not effected.
+     }
+     if (!bEndFound) {
+       iLastIndexedDateIndex = n;
+       //With respects to interpolation, we can only make use of one population date after
+       //to the study period end date. Keep first post population date but ignore rest.
+       if (PopulationDates[n].first > EndDate)
+         bEndFound = true;
+     }
   }
+  //Calculate number of population dates retained from original list and total
+  //number of population dates.                                                                                                                   
+  iTotalPopulationDates = iRetainedDates = iLastIndexedDateIndex - iDateIndexOffset + 1;
+  gbEndAsPopDt = !bEndFound && (iLastIndexedDateIndex == PopulationDates.size() - 1);
+  if (gbStartAsPopDt)
+    ++iTotalPopulationDates;
+  if (gbEndAsPopDt)
+    ++iTotalPopulationDates;
+  //Copy retained population dates to class container.
+  gvPopulationDates.clear();
+  gvPopulationDates.reserve(iTotalPopulationDates);
+  if (gbStartAsPopDt)
+    gvPopulationDates.push_back(StartDate);
+  for (n=0; n < iRetainedDates; ++n)
+     gvPopulationDates.push_back(PopulationDates[n + iDateIndexOffset].first);
+  if (gbEndAsPopDt)
+    gvPopulationDates.push_back(EndDate + 1);                                         
 }
 
 /** Finds the date of the smallest PopDate > Date. If none exist return -1. */
+/** Finds the date of the largest population date > 'Date'. If 'Date' is greater
+    than or equal to last population date, negative one is returned; else returns
+    index of found population date. */
 int PopulationData::UpperPopIndex(Julian Date) const {
   int   i;
 
