@@ -20,6 +20,9 @@
  This file contains header information for all SaTScan program files
  **********************************************************************/
 
+/** Current version number. */ 
+#define VERSION_NUMBER "3.0"
+
 /** New defines for ellipsoid calculations. */
 #define MAXELLIPSESHAPES 10
 #define PI 3.1415926535897932384626433832795028841972
