@@ -18,7 +18,7 @@
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <LINKER value="TLib"/>
-    <USERDEFINES value="_DEBUG"/>
+    <USERDEFINES value=""/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="xbaselib.bpf"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl;.."/>
@@ -27,10 +27,10 @@
     <LISTFILE value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl50.csm -Hc -Q -Vx -Ve -X- -r- -a8 -5 -b- -k -y -v 
-      -vi- -c -tW -tWM"/>
-    <PFLAGS value="-$YD -$W -$O- -v -JPHNE -M"/>
-    <AFLAGS value="/mx /w2 /zd"/>
+    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl50.csm -Hc -Q -Vx -Ve -X- -a8 -5 -b- -k- -vi -c -tW 
+      -tWM"/>
+    <PFLAGS value="-$Y- -$L- -$D- -v -JPHNE -M"/>
+    <AFLAGS value="/mx /w2 /zn"/>
     <LFLAGS value="/P256 /E"/>
   </OPTIONS>
   <LINKER>
@@ -101,5 +101,10 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=0
 LinkCGLIB=0
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
   </IDEOPTIONS>
 </PROJECT>
