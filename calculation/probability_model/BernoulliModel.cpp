@@ -34,15 +34,15 @@ void CBernoulliModel::CalculateMeasure(RealDataStream & thisStream) {
 
        // Check to see if total case or control values have wrapped
         if (tTotalCases < 0)
-          SSGenerateException("Error: Total cases in data stream %u greater than maximum allowed of %ld.\n",
-                              "CBernoulliModel", thisStream.GetStreamIndex(), std::numeric_limits<count_t>::max());
+          GenerateResolvableException("Error: : The total number of cases in data stream %u is greater than the maximum allowed of %ld.\n",
+                                      "CBernoulliModel", thisStream.GetStreamIndex(), std::numeric_limits<count_t>::max());
         if (tTotalControls < 0)
-          SSGenerateException("Error: Total controls in data stream %u greater than maximum allowed of %ld.\n",
-                              "CBernoulliModel", thisStream.GetStreamIndex(), std::numeric_limits<count_t>::max());
+          GenerateResolvableException("Error: The total number of controls in data stream %u is greater than the maximum allowed of %ld.\n",
+                                      "CBernoulliModel", thisStream.GetStreamIndex(), std::numeric_limits<count_t>::max());
     }
 
     if (tTotalControls == 0)
-      SSGenerateException("Error: No controls found in input stream %u.\n", "CBernoulliModel", thisStream.GetStreamIndex());
+      GenerateResolvableException("Error: No controls found in input stream %u.\n", "CBernoulliModel", thisStream.GetStreamIndex());
 
     thisStream.SetTotalCases(tTotalCases);
     thisStream.SetTotalControls(tTotalControls);
