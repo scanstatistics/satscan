@@ -1,6 +1,7 @@
+//***************************************************************************
 #ifndef stsClusterFile_H
 #define stsClusterFile_H
-
+//***************************************************************************
 #include "stsOutputFileData.h"
 #include "Parameters.h"
 
@@ -34,7 +35,7 @@ class stsClusterData : public BaseOutputStorageClass {
                                 const bool bDuczmalCorrect = false);
       virtual    ~stsClusterData();
 
-      void      RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, int iNumSimulations);
+      void      RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, unsigned int iNumSimsCompleted);
 };
 
 class ClusterRecord : public BaseOutputRecord {
@@ -89,5 +90,5 @@ class ClusterRecord : public BaseOutputRecord {
       void	SetStartDate(const ZdString& sStartDate) { gsStartDate = sStartDate; }
       void      SetTestStat(const double dTestStat) { gdTestStat = dTestStat; }      
 };
-
+//***************************************************************************
 #endif

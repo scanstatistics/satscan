@@ -1,12 +1,13 @@
+//***************************************************************************
+#include "SaTScan.h"
+#pragma hdrstop
+//***************************************************************************
+#include "stsClusterData.h"
+#include "cluster.h"
+
 // Class stsClusterData
 // Adam J Vaughn
 // 9/4/2002
-
-#include "SaTScan.h"
-#pragma hdrstop
-
-#include "stsClusterData.h"
-#include "cluster.h"
 
 const char *	CLUSTER_FILE_EXT	= ".col";
 
@@ -210,7 +211,7 @@ void stsClusterData::Init() {
 // in the global vector of cluster records
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropriate data into the cluster record
-void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, int iNumSimulations) {
+void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, unsigned int iNumSimsCompleted) {
    ZdString                     sRadius, sLatitude, sLongitude;
    float                        fPVal;
    ZdString                     sStartDate, sEndDate, sShape, sAngle;
@@ -249,16 +250,16 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
       if (geProbabiltyModelType == SPACETIMEPERMUTATION)
         pRecord->SetTestStat(theCluster.m_nRatio);
       else {
-        pRecord->SetLogLikelihoodRatio(theCluster.m_nRatio/theCluster.m_DuczmalCorrection);
+        pRecord->SetLogLikelihoodRatio(theCluster.m_nRatio/theCluster.GetDuczmal());
         if (gbDuczmalCorrect)
           pRecord->SetTestStat(theCluster.m_nRatio);
       }
 
-      pRecord->SetNumAreas(theCluster.GetClusterType() == PURELYTEMPORAL ? theData.GetNumTracts() : theCluster.m_nTracts);
+      pRecord->SetNumAreas(theCluster.GetClusterType() == PURELYTEMPORAL ? theData.GetNumTracts() : theCluster.GetNumTractsInnerCircle());
            
       // p value
       if (gbPrintPVal) {
-         fPVal = (float) theCluster.GetPVal(iNumSimulations);
+         fPVal = (float) theCluster.GetPValue(iNumSimsCompleted);
          pRecord->SetPValue(fPVal);
       }
                  
@@ -289,7 +290,7 @@ void stsClusterData::SetAreaID(std::string& sId, const CCluster& pCluster, const
     if (pCluster.GetClusterType() == PURELYTEMPORAL)
       sId = "All";
     else
-      pData.GetTInfo()->tiGetTid(pData.GetNeighbor(pCluster.m_iEllipseOffset, pCluster.m_Center, 1), sId);
+      pData.GetTInfo()->tiGetTid(pData.GetNeighbor(pCluster.GetEllipseOffset(), pCluster.GetCentroidIndex(), 1), sId);
   }
   catch (ZdException &x) {
     x.AddCallpath("SetAreaID","stsClusterData");
@@ -301,14 +302,14 @@ void stsClusterData::SetAreaID(std::string& sId, const CCluster& pCluster, const
 // post : sets the values for long, lat, sAdditCoords, and radius
 void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, ZdString& sRadius,
                                     std::vector<std::string>& vAdditCoords,
-                                    const CCluster& pCluster, const CSaTScanData& pData) {
+                                    const CCluster& thisCluster, const CSaTScanData& pData) {
   int          i;
   double     * pCoords=0, * pCoords2=0;
   float        fLatitude, fLongitude, fRadius;
   char         sAdditBuffer[64], sRadBuffer[64];
 
    try {
-     if (pCluster.GetClusterType() == PURELYTEMPORAL) {
+     if (thisCluster.GetClusterType() == PURELYTEMPORAL) {
        sLatitude = "n/a";
        sLongitude = "n/a";
        if (giCoordType == CARTESIAN)
@@ -317,8 +318,8 @@ void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, Z
        sRadius = "n/a";
      }
      else {
-       pData.GetGInfo()->giGetCoords(pCluster.m_Center, &pCoords);
-       pData.GetTInfo()->tiGetCoords(pData.GetNeighbor(pCluster.m_iEllipseOffset, pCluster.m_Center, pCluster.m_nTracts), &pCoords2);
+       pData.GetGInfo()->giGetCoords(thisCluster.GetCentroidIndex(), &pCoords);
+       pData.GetTInfo()->tiGetCoords(pData.GetNeighbor(thisCluster.GetEllipseOffset(), thisCluster.GetCentroidIndex(), thisCluster.GetNumTractsInnerCircle()), &pCoords2);
        switch (giCoordType) {
          case CARTESIAN : for (i=0; i < pData.GetParameters().GetDimensionsOfData(); ++i) {
                              if (i == 0)
@@ -363,13 +364,13 @@ void stsClusterData::SetEllipseString(ZdString& sAngle, ZdString& sShape, const 
          sShape = "n/a";
       }
       else {
-         if(pCluster.m_iEllipseOffset == 0 && pData.GetParameters().GetNumRequestedEllipses() > 0) {
+         if(pCluster.GetEllipseOffset() == 0 && pData.GetParameters().GetNumRequestedEllipses() > 0) {
             sShape = "1.000";
             sAngle = "0.000";
          }
          else {
-            sprintf(sAngleBuffer, "%-8.3f", pCluster.ConvertAngleToDegrees(pData.GetAnglesArray()[pCluster.m_iEllipseOffset-1]));
-            sprintf(sShapeBuffer, "%-8.3f", pData.GetShapesArray()[pCluster.m_iEllipseOffset-1]);
+            sprintf(sAngleBuffer, "%-8.3f", pCluster.ConvertAngleToDegrees(pData.GetAnglesArray()[pCluster.GetEllipseOffset()-1]));
+            sprintf(sShapeBuffer, "%-8.3f", pData.GetShapesArray()[pCluster.GetEllipseOffset()-1]);
             sShape = sShapeBuffer;
             sAngle = sAngleBuffer;
          }
@@ -386,19 +387,15 @@ void stsClusterData::SetEllipseString(ZdString& sAngle, ZdString& sShape, const 
 // this is the same method used in the ASCII file so we'll follow their lead - AJV 10/2/2002
 // pre : pCluster and pData are initialized with the correct data
 // post : will set sStartDate and sEndDate with the appropriate value based upon the analysis type
-void stsClusterData::SetStartAndEndDates(ZdString& sStartDate, ZdString& sEndDate, const CCluster& pCluster, const CSaTScanData& pData) {
-   char       sStart[64], sEnd[64];
-
+void stsClusterData::SetStartAndEndDates(ZdString& sStartDate, ZdString& sEndDate, const CCluster& pCluster, const CSaTScanData& DataHub) {
    try {
-      if (pData.GetParameters().GetAnalysisType() != PURELYSPATIAL) {
-         JulianToChar(sStart, pCluster.m_nStartDate);
-         JulianToChar(sEnd, pCluster.m_nEndDate);
-         sStartDate = sStart;
-         sEndDate = sEnd;
+      if (DataHub.GetParameters().GetAnalysisType() != PURELYSPATIAL) {
+         pCluster.GetStartDate(sStartDate, DataHub);
+         pCluster.GetEndDate(sEndDate, DataHub);
       }
       else {
-         sStartDate = pData.GetParameters().GetStudyPeriodStartDate().c_str();
-         sEndDate = pData.GetParameters().GetStudyPeriodEndDate().c_str();
+         sStartDate = DataHub.GetParameters().GetStudyPeriodStartDate().c_str();
+         sEndDate = DataHub.GetParameters().GetStudyPeriodEndDate().c_str();
       }
    }
    catch (ZdException &x) {
