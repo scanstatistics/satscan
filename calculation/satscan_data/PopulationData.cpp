@@ -217,7 +217,7 @@ void PopulationData::AssignPopulation(PopulationCategory & thisPopulationCategor
 void PopulationData::CalculateAlpha(std::vector<double>& vAlpha, Julian StartDate, Julian EndDate) const {
   int                   nPopDates = (int)gvPopulationDates.size();
   int                   n, N = nPopDates-2;
-  long                  nTotalDays = TimeBetween(StartDate, EndDate, DAY);
+  long                  nTotalDays = EndDate + 1 - StartDate;
   double                sumalpha;
 
    try {
