@@ -189,7 +189,8 @@ bool CSpaceTimePermutationModel::ReadData() {
   try {
     if (!gData.ReadCoordinatesFile())
       return false;
-    if (gData.m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE && !gData.ReadMaxCirclePopulationFile())
+    if ((gParameters.GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE || gParameters.UseMaxCirclePopulationFile())
+        && !gData.ReadMaxCirclePopulationFile())
        return false;
     if (! gData.ReadCaseFile())
       return false;

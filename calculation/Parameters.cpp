@@ -351,22 +351,20 @@ void CParameters::DisplayParameters(FILE* fp) const {
     fprintf(fp, "Input Files\n");
     fprintf(fp, "-----------\n");
 
-    fprintf(fp, "  Case File               : %s\n", gsCaseFileName.c_str());
+    fprintf(fp, "  Case File                      : %s\n", gsCaseFileName.c_str());
 
     switch (geProbabiltyModelType) {
-      case POISSON              : fprintf(fp, "  Population File         : %s\n", gsPopulationFileName.c_str()); break;
-      case BERNOULLI            : fprintf(fp, "  Control File            : %s\n", gsControlFileName.c_str()); break;
-      case SPACETIMEPERMUTATION : if (geMaxGeographicClusterSizeType == PERCENTAGEOFMEASURETYPE)
-                                    fprintf(fp, "  Population File         : %s\n", gsPopulationFileName.c_str());
-                                  break;
+      case POISSON              : fprintf(fp, "  Population File                : %s\n", gsPopulationFileName.c_str()); break;
+      case BERNOULLI            : fprintf(fp, "  Control File                   : %s\n", gsControlFileName.c_str()); break;
+      case SPACETIMEPERMUTATION : break;
       default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayParameters()", geProbabiltyModelType);
     }
 
     if (gbUseMaxCirclePopulationFile)
       fprintf(fp, "  Maximum Circle Population File : %s\n", gsMaxCirclePopulationFileName.c_str());
-    fprintf(fp, "  Coordinates File        : %s\n", gsCoordinatesFileName.c_str());
+    fprintf(fp, "  Coordinates File               : %s\n", gsCoordinatesFileName.c_str());
     if (gbUseSpecialGridFile)
-      fprintf(fp, "  Special Grid File       : %s\n", gsSpecialGridFileName.c_str());
+      fprintf(fp, "  Special Grid File              : %s\n", gsSpecialGridFileName.c_str());
 
     fprintf(fp, "\n  Precision of Times : %s\n", GetDatePrecisionAsString(gePrecisionOfTimesType));
 
@@ -2822,22 +2820,6 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
         PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
       }
     }
-    //validate population file for a space-time permutation model w/ maximum geographical cluster size
-    //defined as a percentage of the population.
-    if (geProbabiltyModelType == SPACETIMEPERMUTATION && geMaxGeographicClusterSizeType == PERCENTAGEOFMEASURETYPE) {
-      if (gsPopulationFileName.empty()) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: For a Space-Time Permutation model with the maximum spatial cluster size defined\n");
-        PrintDirection.SatScanPrintWarning("       as a percentage of the population at risk, a Population file must be specified.\n");
-        PrintDirection.SatScanPrintWarning("       Alternatively you may choose to specify the maximum as a fixed radius, in which\n");
-        PrintDirection.SatScanPrintWarning("       no Population file is required.\n");
-      }
-      else if (access(gsPopulationFileName.c_str(), 00)) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Population file '%s' does not exist.\n", gsPopulationFileName.c_str());
-        PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
-      }
-    }
     //validate coordinates file
     if (gsCoordinatesFileName.empty()) {
       bValid = false;
@@ -2858,18 +2840,38 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
       PrintDirection.SatScanPrintWarning("Error: Special Grid file '%s' does not exist.\n", gsSpecialGridFileName.c_str());
       PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
     }
-    //validate special population file
-    if (!(geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
-      if (gbUseMaxCirclePopulationFile && gsMaxCirclePopulationFileName.empty()) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Settings indicate to use a Maximum Circle Population file, but file name not specified.\n");
+    //validate maximum circle population file
+    if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL)
+      gbUseMaxCirclePopulationFile = false;
+    if (gbUseMaxCirclePopulationFile && gsMaxCirclePopulationFileName.empty()) {
+      bValid = false;
+      PrintDirection.SatScanPrintWarning("Error: Settings indicate to use a Maximum Circle Population file, but file name not specified.\n");
+    }
+    else if (gbUseMaxCirclePopulationFile && access(gsMaxCirclePopulationFileName.c_str(), 00)) {
+      bValid = false;
+      PrintDirection.SatScanPrintWarning("Error: Maximum Circle Population file '%s' does not exist.\n", gsMaxCirclePopulationFileName.c_str());
+      PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+    }
+    //validate maximum circle population file for a space-time permutation model w/ maximum geographical cluster size
+    //defined as a percentage of the population.
+    if (geProbabiltyModelType == SPACETIMEPERMUTATION) {
+      if (geMaxGeographicClusterSizeType == PERCENTAGEOFMEASURETYPE) {
+        if (gsMaxCirclePopulationFileName.empty()) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: For a Space-Time Permutation model with the maximum spatial cluster size defined as a\n");
+          PrintDirection.SatScanPrintWarning("       as a percentage of the population at risk, a Maximum Circle Population file must be specified.\n");
+          PrintDirection.SatScanPrintWarning("       Alternatively you may choose to specify the maximum as a fixed radius, in which no\n");
+          PrintDirection.SatScanPrintWarning("       Maximum Circle Population file is required.\n");
+        }
+        else if (access(gsMaxCirclePopulationFileName.c_str(), 00)) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: Maximum Circle Population file '%s' does not exist.\n", gsMaxCirclePopulationFileName.c_str());
+          PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+        }
+        else
+          gbUseMaxCirclePopulationFile = true;
       }
-      else if (gbUseMaxCirclePopulationFile && access(gsMaxCirclePopulationFileName.c_str(), 00)) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Maximum Circle Population file '%s' does not exist.\n", gsMaxCirclePopulationFileName.c_str());
-        PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
-      }
-    }  
+    }
     //validate output file
     if (gsOutputFileName.empty()) {
       bValid = false;
