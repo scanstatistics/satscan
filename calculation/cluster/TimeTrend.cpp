@@ -118,7 +118,7 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
         nSumTimeSquared_Msr_ExpBeta += (t*t) * pMeasure[t] * exp(nBetaStart * t);
      }
      if ( S(nSumCases,nSumTime_Cases,nSumTime_Msr_ExpBeta,nSumTimeSquared_Msr_ExpBeta) < -1)
-         bGoodBetaStart = TRUE;
+         bGoodBetaStart = true;
      else
        nBetaStart += 1;
      nIterations++;  
