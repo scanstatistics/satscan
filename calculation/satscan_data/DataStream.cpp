@@ -11,6 +11,11 @@ DataStream::DataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts, 
   Init();
 }
 
+/** copy constructor */
+DataStream::DataStream(const DataStream& thisStream) {
+  ZdGenerateException("copy constructor not implemented.","DataStream");
+}
+
 /** destructor */
 DataStream::~DataStream() {
   try {
@@ -23,6 +28,12 @@ DataStream::~DataStream() {
     delete[] gpPTMeasureArray;
   }
   catch(...){}
+}
+
+/** overloaded assignment operator */
+DataStream & DataStream::operator=(const DataStream& rhs) {
+  ZdGenerateException("operator=() not implemented.","DataStream");
+  return *this;
 }
 
 /** Creates a two dimensional array for storing case information, stratified
@@ -436,6 +447,9 @@ RealDataStream::RealDataStream(unsigned int iNumTimeIntervals, unsigned int iNum
   Setup();
 }
 
+/** copy constructor */
+RealDataStream::RealDataStream(const RealDataStream& thisStream) : DataStream(thisStream) {}
+
 /** destructor */
 RealDataStream::~RealDataStream() {
   try {
@@ -740,6 +754,9 @@ void RealDataStream::Setup() {
 /** constructor */
 SimulationDataStream::SimulationDataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iStreamIndex)
                      :DataStream(iNumTimeIntervals, iNumTracts, iStreamIndex) {}
+
+/** copy constructor */
+SimulationDataStream::SimulationDataStream(const SimulationDataStream& thisStream) : DataStream(thisStream) {}
 
 /** destructor */
 SimulationDataStream::~SimulationDataStream() {}

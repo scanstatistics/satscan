@@ -47,6 +47,10 @@ class DataStream {
     unsigned int                giStreamIndex;
 
     void                        SetCaseArrays(count_t** pCases, count_t** pCases_NC, count_t* pCasesByTimeInt);
+
+    DataStream(const DataStream& thisStream);
+    DataStream                & operator=(const DataStream& rhs);
+
   public:
     DataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iStreamIndex);
     virtual ~DataStream();
@@ -86,6 +90,8 @@ class RealDataStream : public DataStream {
   private:
     void                        Init();
     void                        Setup();
+
+    RealDataStream(const RealDataStream& thisStream);
 
   protected:
     PopulationData              gPopulation;                            /** population data */
@@ -141,6 +147,9 @@ class RealDataStream : public DataStream {
 
 /** Encapsulates simulation data of a data stream. */
 class SimulationDataStream : public DataStream {
+  private:
+    SimulationDataStream(const SimulationDataStream& thisStream);
+
   public:
     SimulationDataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iStreamIndex);
     virtual ~SimulationDataStream();
