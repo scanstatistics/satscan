@@ -8,7 +8,7 @@
 #include "DataStream.h"
 #include "ClusterData.h"
 #include "NormalClusterData.h"
-#include "MutlipleStreamClusterData.h"
+#include "MultipleStreamClusterData.h"
 
 class CSaTScanData;
 class CCluster;

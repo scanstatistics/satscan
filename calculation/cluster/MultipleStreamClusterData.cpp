@@ -6,35 +6,35 @@
 #include "ClusterDataFactory.h"
 
 /** constructor */
-MutlipleStreamSpatialData::MutlipleStreamSpatialData(const ClusterDataFactory& DataFactory, const AbtractDataStreamGateway & DataGateway, int iRate)
+MultipleStreamSpatialData::MultipleStreamSpatialData(const ClusterDataFactory& DataFactory, const AbtractDataStreamGateway & DataGateway, int iRate)
                           :AbstractSpatialClusterData(iRate) {
   for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
      gvStreamData.push_back(DataFactory.GetNewSpatialClusterData(DataGateway.GetDataStreamInterface(t), iRate));
 }
 
 /** destructor */
-MutlipleStreamSpatialData::~MutlipleStreamSpatialData() {}
+MultipleStreamSpatialData::~MultipleStreamSpatialData() {}
 
-/** return newly cloned MutlipleStreamSpatialData object */
-MutlipleStreamSpatialData * MutlipleStreamSpatialData::Clone() const {
-  return new MutlipleStreamSpatialData(*this);
+/** return newly cloned MultipleStreamSpatialData object */
+MultipleStreamSpatialData * MultipleStreamSpatialData::Clone() const {
+  return new MultipleStreamSpatialData(*this);
 }
 
 /** assigns cluster data of passed object to *this* object
     NOTE: Caller of function is responsible for ensuring that passed object
           is of same class type as *this* object. */
-void MutlipleStreamSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
-  const MutlipleStreamSpatialData& _rhs = (const MutlipleStreamSpatialData&)rhs;
+void MultipleStreamSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
+  const MultipleStreamSpatialData& _rhs = (const MultipleStreamSpatialData&)rhs;
   gvStreamData = _rhs.gvStreamData;
 }
 
 /** not implemented - throws exception */
-void MutlipleStreamSpatialData::AddMeasureList(CMeasureList * pMeasureList, tract_t tNeighbor, const DataStreamInterface & Interface) {
-   ZdGenerateException("AddMeasureList() not implemented.","MutlipleStreamSpatialData");
+void MultipleStreamSpatialData::AddMeasureList(CMeasureList * pMeasureList, tract_t tNeighbor, const DataStreamInterface & Interface) {
+   ZdGenerateException("AddMeasureList() not implemented.","MultipleStreamSpatialData");
 }
 
 /** adds neighbor data to accumulation */
-void MutlipleStreamSpatialData::AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t) {
+void MultipleStreamSpatialData::AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t) {
   unsigned int i;
   for (i=0, gitr=gvStreamData.begin(); gitr != gvStreamData.end(); ++i, ++gitr)
      (*gitr)->AddNeighborData(tNeighbor, DataGateway, i);
@@ -42,7 +42,7 @@ void MutlipleStreamSpatialData::AddNeighborData(tract_t tNeighbor, const Abtract
 
 /** Calculates loglikelihood ratio given current accumulated cluster data in
     each data stream and adds together. */
-double MutlipleStreamSpatialData::CalculateLoglikelihoodRatio(CModel & Model) {
+double MultipleStreamSpatialData::CalculateLoglikelihoodRatio(CModel & Model) {
   double        dLogLikelihoodRatio=0;
 
   for (gitr=gvStreamData.begin(); gitr != gvStreamData.end(); ++gitr)
@@ -52,70 +52,70 @@ double MutlipleStreamSpatialData::CalculateLoglikelihoodRatio(CModel & Model) {
 }
 
 /** returns number of cases in accumulated respective data streams's cluster data */
-count_t MutlipleStreamSpatialData::GetCaseCount(unsigned int iStream) const {
+count_t MultipleStreamSpatialData::GetCaseCount(unsigned int iStream) const {
   return gvStreamData[iStream]->GetCaseCount();
 }
 
 /** returns expected number of cases in accumulated respective data streams's cluster data */
-measure_t MutlipleStreamSpatialData::GetMeasure(unsigned int iStream) const {
+measure_t MultipleStreamSpatialData::GetMeasure(unsigned int iStream) const {
   return gvStreamData[iStream]->GetMeasure();
 }
 
 /** initializes cluster data in each data stream */
-void MutlipleStreamSpatialData::InitializeData() {
+void MultipleStreamSpatialData::InitializeData() {
   for (gitr=gvStreamData.begin(); gitr != gvStreamData.end(); ++gitr)
      (*gitr)->InitializeData();
 }
 
 
 /** constructor */
-MutlipleStreamTemporalData::MutlipleStreamTemporalData(const ClusterDataFactory& DataFactory, const AbtractDataStreamGateway & DataGateway)
-                           :AbstractMutlipleStreamTemporalData() {
+MultipleStreamTemporalData::MultipleStreamTemporalData(const ClusterDataFactory& DataFactory, const AbtractDataStreamGateway & DataGateway)
+                           :AbstractMultipleStreamTemporalData() {
   for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
      gvStreamData.push_back(DataFactory.GetNewTemporalClusterDataAsTemporalData(DataGateway.GetDataStreamInterface(t)));
 }
 
 /** destructor */
-MutlipleStreamTemporalData::~MutlipleStreamTemporalData() {}
+MultipleStreamTemporalData::~MultipleStreamTemporalData() {}
 
-/** return newly cloned MutlipleStreamTemporalData object */
-MutlipleStreamTemporalData * MutlipleStreamTemporalData::Clone() const {
-  return new MutlipleStreamTemporalData(*this);
+/** return newly cloned MultipleStreamTemporalData object */
+MultipleStreamTemporalData * MultipleStreamTemporalData::Clone() const {
+  return new MultipleStreamTemporalData(*this);
 }
 
 /** assigns cluster data of passed object to *this* object
     NOTE: Caller of function is responsible for ensuring that passed object
           is of same class type as *this* object. */
-void MutlipleStreamTemporalData::Assign(const AbstractTemporalClusterData& rhs) {
-  const MutlipleStreamTemporalData& _rhs = (const MutlipleStreamTemporalData&)rhs;
+void MultipleStreamTemporalData::Assign(const AbstractTemporalClusterData& rhs) {
+  const MultipleStreamTemporalData& _rhs = (const MultipleStreamTemporalData&)rhs;
   gvStreamData = _rhs.gvStreamData;
 }
 
 /** not implemented - throws exception */
-void MutlipleStreamTemporalData::AddNeighborData(tract_t, const AbtractDataStreamGateway&, size_t) {
+void MultipleStreamTemporalData::AddNeighborData(tract_t, const AbtractDataStreamGateway&, size_t) {
   ZdGenerateException("AddNeighbor() not implemeneted.","TemporalData");
 }
 
 /** returns number of cases in accumulated respective data streams's cluster data */
-count_t MutlipleStreamTemporalData::GetCaseCount(unsigned int iStream) const {
+count_t MultipleStreamTemporalData::GetCaseCount(unsigned int iStream) const {
   return gvStreamData[iStream]->gtCases;
 }
 
 /** returns expected number of cases in accumulated respective data streams's cluster data */
-measure_t MutlipleStreamTemporalData::GetMeasure(unsigned int iStream) const {
+measure_t MultipleStreamTemporalData::GetMeasure(unsigned int iStream) const {
   return gvStreamData[iStream]->gtMeasure;
 }
 
 /** initializes cluster data in each data stream */
-void MutlipleStreamTemporalData::InitializeData() {
+void MultipleStreamTemporalData::InitializeData() {
   for (gitr=gvStreamData.begin(); gitr != gvStreamData.end(); ++gitr)
      (*gitr)->InitializeData();
 }
 
 
 /** constructor */
-MutlipleStreamProspectiveSpatialData::MutlipleStreamProspectiveSpatialData(const ClusterDataFactory& DataFactory, const CSaTScanData & Data, const AbtractDataStreamGateway & DataGateway)
-                                     :AbstractMutlipleStreamTemporalData() {
+MultipleStreamProspectiveSpatialData::MultipleStreamProspectiveSpatialData(const ClusterDataFactory& DataFactory, const CSaTScanData & Data, const AbtractDataStreamGateway & DataGateway)
+                                     :AbstractMultipleStreamTemporalData() {
   for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
      gvStreamData.push_back(DataFactory.GetNewProspectiveSpatialClusterDataAsTemporalData(Data, DataGateway.GetDataStreamInterface(t)));
   switch (Data.GetParameters().GetAreaScanRateType()) {
@@ -127,23 +127,23 @@ MutlipleStreamProspectiveSpatialData::MutlipleStreamProspectiveSpatialData(const
 }
 
 /** destructor */
-MutlipleStreamProspectiveSpatialData::~MutlipleStreamProspectiveSpatialData() {}
+MultipleStreamProspectiveSpatialData::~MultipleStreamProspectiveSpatialData() {}
 
-/** return newly cloned MutlipleStreamProspectiveSpatialData object */
-MutlipleStreamProspectiveSpatialData * MutlipleStreamProspectiveSpatialData::Clone() const {
-  return new MutlipleStreamProspectiveSpatialData(*this);
+/** return newly cloned MultipleStreamProspectiveSpatialData object */
+MultipleStreamProspectiveSpatialData * MultipleStreamProspectiveSpatialData::Clone() const {
+  return new MultipleStreamProspectiveSpatialData(*this);
 }
 
 /** assigns cluster data of passed object to *this* object
     NOTE: Caller of function is responsible for ensuring that passed object
           is of same class type as *this* object. */
-void MutlipleStreamProspectiveSpatialData::Assign(const AbstractTemporalClusterData& rhs) {
-  const MutlipleStreamProspectiveSpatialData& _rhs = (const MutlipleStreamProspectiveSpatialData&)rhs;
+void MultipleStreamProspectiveSpatialData::Assign(const AbstractTemporalClusterData& rhs) {
+  const MultipleStreamProspectiveSpatialData& _rhs = (const MultipleStreamProspectiveSpatialData&)rhs;
   gvStreamData = _rhs.gvStreamData;
 }
 
 /** adds neighbor data to accumulated cluster data*/
-void MutlipleStreamProspectiveSpatialData::AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t) {
+void MultipleStreamProspectiveSpatialData::AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t) {
   unsigned int i;
   for (i=0, gitr=gvStreamData.begin(); gitr != gvStreamData.end(); ++i, ++gitr)
      (*gitr)->AddNeighborData(tNeighbor, DataGateway, i);
@@ -151,7 +151,7 @@ void MutlipleStreamProspectiveSpatialData::AddNeighborData(tract_t tNeighbor, co
 
 /** Calculates loglikelihood ratio given current accumulated cluster data in
     each data stream and adds together.*/
-double MutlipleStreamProspectiveSpatialData::CalculateLoglikelihoodRatio(CModel & Model) {
+double MultipleStreamProspectiveSpatialData::CalculateLoglikelihoodRatio(CModel & Model) {
   unsigned int  iWindowEnd, iAllocationSize;
   double        dLoglikelihood, dMaxLoglikelihood=0;
 
@@ -179,17 +179,17 @@ double MutlipleStreamProspectiveSpatialData::CalculateLoglikelihoodRatio(CModel 
 }
 
 /** returns number of cases in accumulated respective data streams's cluster data */
-count_t MutlipleStreamProspectiveSpatialData::GetCaseCount(unsigned int iStream) const {
+count_t MultipleStreamProspectiveSpatialData::GetCaseCount(unsigned int iStream) const {
   return gvStreamData[iStream]->gtCases;
 }
 
 /** returns expected number of cases in accumulated respective data streams's cluster data */
-measure_t MutlipleStreamProspectiveSpatialData::GetMeasure(unsigned int iStream) const {
+measure_t MultipleStreamProspectiveSpatialData::GetMeasure(unsigned int iStream) const {
   return gvStreamData[iStream]->gtMeasure;
 }
 
 /** initializes cluster data in each data stream */
-void MutlipleStreamProspectiveSpatialData::InitializeData() {
+void MultipleStreamProspectiveSpatialData::InitializeData() {
   for (gitr=gvStreamData.begin(); gitr != gvStreamData.end(); ++gitr)
      (*gitr)->InitializeData();
 }
@@ -197,48 +197,48 @@ void MutlipleStreamProspectiveSpatialData::InitializeData() {
 
 
 /** constructor */
-MutlipleStreamSpaceTimeData::MutlipleStreamSpaceTimeData(const ClusterDataFactory& DataFactory, const AbtractDataStreamGateway & DataGateway)
-                            :AbstractMutlipleStreamTemporalData() {
+MultipleStreamSpaceTimeData::MultipleStreamSpaceTimeData(const ClusterDataFactory& DataFactory, const AbtractDataStreamGateway & DataGateway)
+                            :AbstractMultipleStreamTemporalData() {
   gvStreamData.resize(DataGateway.GetNumInterfaces(), 0);
   for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
      gvStreamData[t] = DataFactory.GetNewSpaceTimeClusterDataAsTemporalData(DataGateway.GetDataStreamInterface(t));
 }
 
 /** destructor */
-MutlipleStreamSpaceTimeData::~MutlipleStreamSpaceTimeData() {}
+MultipleStreamSpaceTimeData::~MultipleStreamSpaceTimeData() {}
 
-/** return newly cloned MutlipleStreamSpaceTimeData object */
-MutlipleStreamSpaceTimeData * MutlipleStreamSpaceTimeData::Clone() const {
-  return new MutlipleStreamSpaceTimeData(*this);
+/** return newly cloned MultipleStreamSpaceTimeData object */
+MultipleStreamSpaceTimeData * MultipleStreamSpaceTimeData::Clone() const {
+  return new MultipleStreamSpaceTimeData(*this);
 }
 
 /** assigns cluster data of passed object to *this* object
     NOTE: Caller of function is responsible for ensuring that passed object
           is of same class type as *this* object. */
-void MutlipleStreamSpaceTimeData::Assign(const AbstractTemporalClusterData& rhs) {
-  const MutlipleStreamSpaceTimeData& _rhs = (const MutlipleStreamSpaceTimeData&)rhs;
+void MultipleStreamSpaceTimeData::Assign(const AbstractTemporalClusterData& rhs) {
+  const MultipleStreamSpaceTimeData& _rhs = (const MultipleStreamSpaceTimeData&)rhs;
   gvStreamData = _rhs.gvStreamData;
 }
 
 /** add neighbor data to accumulation */
-void MutlipleStreamSpaceTimeData::AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t) {
+void MultipleStreamSpaceTimeData::AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t) {
   unsigned int i;
   for (i=0, gitr=gvStreamData.begin(); gitr != gvStreamData.end(); ++i, ++gitr)
      (*gitr)->AddNeighborData(tNeighbor, DataGateway, i);
 }
  
 /** returns number of cases in accumulated respective data streams's cluster data */
-count_t MutlipleStreamSpaceTimeData::GetCaseCount(unsigned int iStream) const {
+count_t MultipleStreamSpaceTimeData::GetCaseCount(unsigned int iStream) const {
   return gvStreamData[iStream]->gtCases;
 }
 
 /** returns expected number of cases in accumulated respective data streams's cluster data */
-measure_t MutlipleStreamSpaceTimeData::GetMeasure(unsigned int iStream) const {
+measure_t MultipleStreamSpaceTimeData::GetMeasure(unsigned int iStream) const {
   return gvStreamData[iStream]->gtMeasure;
 }
 
 /** initializes cluster data in each data stream */
-void MutlipleStreamSpaceTimeData::InitializeData() {
+void MultipleStreamSpaceTimeData::InitializeData() {
   for (gitr=gvStreamData.begin(); gitr != gvStreamData.end(); ++gitr)
      (*gitr)->InitializeData();
 }

@@ -274,7 +274,7 @@ void MultiStreamTimeIntervalRange::CompareClusters(CCluster & Running, CCluster 
   int                                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
   CModel                              & ProbabilityModel(gData.GetProbabilityModel());
 
-  MutlipleStreamTemporalData * pData = (MutlipleStreamTemporalData*)Running.GetClusterData(); //dynamic cast ?
+  MultipleStreamTemporalData * pData = (MultipleStreamTemporalData*)Running.GetClusterData(); //dynamic cast ?
 
   //iterate through windows
   iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);

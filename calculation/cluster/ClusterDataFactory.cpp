@@ -5,7 +5,7 @@
 #include "ClusterDataFactory.h"
 #include "ClusterData.h"
 #include "NormalClusterData.h"
-#include "MutlipleStreamClusterData.h"
+#include "MultipleStreamClusterData.h"
 
 /** constructor*/
 ClusterDataFactory::ClusterDataFactory() : AbstractClusterDataFactory() {}
@@ -194,9 +194,9 @@ AbstractSpatialClusterData * MultipleStreamsClusterDataFactory::GetNewSpatialClu
   return 0;
 }
 
-/** returns newly created MutlipleStreamSpatialData */
+/** returns newly created MultipleStreamSpatialData */
 AbstractSpatialClusterData * MultipleStreamsClusterDataFactory::GetNewSpatialClusterData(const AbtractDataStreamGateway & DataGateway, int iRate) const {
-  return new MutlipleStreamSpatialData(*gpStreamClusterFactory, DataGateway, iRate);
+  return new MultipleStreamSpatialData(*gpStreamClusterFactory, DataGateway, iRate);
 }
 
 /** no implemented - throw exception */
@@ -205,9 +205,9 @@ AbstractTemporalClusterData * MultipleStreamsClusterDataFactory::GetNewProspecti
   return 0;
 }
 
-/** returns newly created MutlipleStreamProspectiveSpatialData */
+/** returns newly created MultipleStreamProspectiveSpatialData */
 AbstractTemporalClusterData * MultipleStreamsClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData & Data, const AbtractDataStreamGateway& DataGateway) const {
-  return new MutlipleStreamProspectiveSpatialData(*gpStreamClusterFactory, Data, DataGateway);
+  return new MultipleStreamProspectiveSpatialData(*gpStreamClusterFactory, Data, DataGateway);
 }
 
 /** no implemented - throw exception */
@@ -216,9 +216,9 @@ AbstractTemporalClusterData * MultipleStreamsClusterDataFactory::GetNewTemporalC
   return 0;
 }
 
-/** returns newly created MutlipleStreamTemporalData */
+/** returns newly created MultipleStreamTemporalData */
 AbstractTemporalClusterData * MultipleStreamsClusterDataFactory::GetNewTemporalClusterData(const AbtractDataStreamGateway & DataGateway) const {
-  return new MutlipleStreamTemporalData(*gpStreamClusterFactory, DataGateway);
+  return new MultipleStreamTemporalData(*gpStreamClusterFactory, DataGateway);
 }
 
 /** no implemented - throw exception */
@@ -227,9 +227,9 @@ AbstractTemporalClusterData * MultipleStreamsClusterDataFactory::GetNewSpaceTime
   return 0;
 }
 
-/** returns newly created MutlipleStreamSpaceTimeData */
+/** returns newly created MultipleStreamSpaceTimeData */
 AbstractTemporalClusterData * MultipleStreamsClusterDataFactory::GetNewSpaceTimeClusterData(const AbtractDataStreamGateway& DataGateway) const {
-  return new MutlipleStreamSpaceTimeData(*gpStreamClusterFactory ,DataGateway);
+  return new MultipleStreamSpaceTimeData(*gpStreamClusterFactory ,DataGateway);
 }
 
 void MultipleStreamsClusterDataFactory::Setup(const CParameters & Parameters) {
