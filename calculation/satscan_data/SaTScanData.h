@@ -77,7 +77,7 @@ class CSaTScanData {
                                               * gpCategoryControlsHandler;
     ThreeDimensionArrayHandler<measure_t>     * gpCategoryMeasureHandler;
 
-    bool                                        AdjustMeasure(tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate);
+    bool                                        AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate);
     void                                        AllocateCaseStructures();
     void                                        AllocateControlStructures();
     void                                        AllocateNeighborArray();
@@ -86,6 +86,7 @@ class CSaTScanData {
     bool                                        ConvertAdjustmentDateToJulian(StringParser & Parser, Julian & JulianDate, bool bStartDate);
     bool                                        ConvertCountDateToJulian(StringParser & Parser, const char * szDescription, Julian & JulianDate);
     bool                                        ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, Julian & JulianDate);
+    bool                                        ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativeMeasure);
     bool                                        ReadCartesianCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
                                                                          int & iScanCount, int iWordOffSet, const char * sSourceFile);
     bool                                        ReadCoordinatesFileAsCartesian(FILE * fp);
@@ -191,7 +192,6 @@ class CSaTScanData {
     virtual void                                MakeData(int iSimulationNumber);
     bool                                        ParseCountLine(const char*  szDescription, StringParser & Parser, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex);
     bool                                        ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, const char*  szDescription, StringParser& Parser);
-    bool                                        ReadAdjustmentsByRelativeRisksFile();
     bool                                        ReadCaseFile();
     bool                                        ReadControlFile();
     bool                                        ReadCoordinatesFile();
