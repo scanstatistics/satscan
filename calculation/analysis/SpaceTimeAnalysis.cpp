@@ -90,7 +90,7 @@ double CSpaceTimeAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
           C.Initialize(i);
           iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];
           for (j=1; j <= iNumNeighbors; ++j) {
-             C.AddNeighbor(m_pData->GetNeighbor(k, i, j), Interface, 0);
+             C.AddNeighbor(m_pData->GetNeighbor(k, i, j), Interface);
              C.ComputeBestMeasures(*pMeasureList);
           }
        }
@@ -134,7 +134,7 @@ double CSpaceTimeAnalysis::MonteCarloProspective(const DataStreamInterface & Int
           C.Initialize(i);
           iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];
           for (tract_t j=1; j <= iNumNeighbors; ++j) {
-             C.AddNeighbor(m_pData->GetNeighbor(k, i, j), Interface, 0);
+             C.AddNeighbor(m_pData->GetNeighbor(k, i, j), Interface);
              C.ComputeBestMeasures(*pMeasureList);
           }
        }
