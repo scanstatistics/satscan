@@ -4,6 +4,9 @@
 #include "PoissonModel.h"
 #include "BernoulliModel.h"
 #include "SpaceTimePermutationModel.h"
+#include "NormalModel.h"
+#include "SurvivalModel.h"
+#include "RankModel.h"
 
 /** constructor */
 CPurelyTemporalData::CPurelyTemporalData(CParameters* pParameters, BasePrint *pPrintDirection)
@@ -24,35 +27,15 @@ void CPurelyTemporalData::AdjustNeighborCounts() {
   ZdGenerateException("AdjustNeighborCounts() not implemented for CPurelyTemporalData.","AdjustNeighborCounts()");
 }
 
-void CPurelyTemporalData::AllocateSimulationStructures() {
-  ProbabiltyModelType   eProbabiltyModelType(m_pParameters->GetProbabiltyModelType());
-  AnalysisType          eAnalysisType(m_pParameters->GetAnalysisType());
-
-  try {
-    CSaTScanData::AllocateSimulationStructures();  // Use until MakePurelyTemporalData implemented
-    
-    //allocate simulation case arrays
-    if (eProbabiltyModelType != 10/*normal*/ && eProbabiltyModelType != 11/*rank*/)
-      gpDataStreams->AllocatePTSimCases();
-    //allocate simulation measure arrays
-    if (eProbabiltyModelType != 10/*normal*/ || eProbabiltyModelType != 11/*rank*/ || eProbabiltyModelType != 12/*survival*/)
-      gpDataStreams->AllocateSimulationPTMeasure();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateSimulationStructures()","CPurelyTemporalData");
-    throw;
-  }
-}
-
 bool CPurelyTemporalData::CalculateMeasure(DataStream & thisStream) {
   bool bResult;
 
   try {
     bResult = CSaTScanData::CalculateMeasure(thisStream);
-    thisStream.SetPTMeasureArray();
+    gpDataStreams->SetPurelyTemporalMeasureData(thisStream);
   }
   catch (ZdException &x) {
-    x.AddCallpath("CalculateMeasure()", "CPurelyTemporalData");
+    x.AddCallpath("CalculateMeasure()","CPurelyTemporalData");
     throw;
   }
   return bResult;
@@ -102,13 +85,13 @@ tract_t CPurelyTemporalData::GetNeighbor(int iEllipse, tract_t t, unsigned int n
   return 0;
 }
 
-void CPurelyTemporalData::MakeData(int iSimulationNumber, DataStreamGateway & DataGateway) {
+void CPurelyTemporalData::RandomizeData(int iSimulationNumber) {
   try {
-    CSaTScanData::MakeData(iSimulationNumber, DataGateway);
-    gpDataStreams->SetPurelyTemporalSimCases();
+    CSaTScanData::RandomizeData(iSimulationNumber);
+    gpDataStreams->SetPurelyTemporalSimulationData();
   }
   catch (ZdException &x) {
-    x.AddCallpath("MakeData()","CPurelyTemporalData");
+    x.AddCallpath("RandomizeData()","CPurelyTemporalData");
     throw;
   }
 }
@@ -130,6 +113,9 @@ void CPurelyTemporalData::SetProbabilityModel() {
     switch (m_pParameters->GetProbabiltyModelType()) {
        case POISSON              : m_pModel = new CPoissonModel(*m_pParameters, *this, *gpPrint);   break;
        case BERNOULLI            : m_pModel = new CBernoulliModel(*m_pParameters, *this, *gpPrint); break;
+       case NORMAL               : m_pModel = new CNormalModel(*m_pParameters, *this, *gpPrint); break;
+       case SURVIVAL             : m_pModel = new CSurvivalModel(*m_pParameters, *this, *gpPrint); break;
+       case RANK                 : m_pModel = new CRankModel(*m_pParameters, *this, *gpPrint); break;
        case SPACETIMEPERMUTATION : ZdException::Generate("Purely Temporal analysis not implemented for Space-Time Permutation model.\n",
                                                          "SetProbabilityModel()");
        default : ZdException::Generate("Unknown probability model type: '%d'.\n", "SetProbabilityModel()",

@@ -15,8 +15,7 @@ class CSpaceTimeData : public CSaTScanData {
     CSpaceTimeData(CParameters* pParameters, BasePrint *pPrintDirection);
     virtual ~CSpaceTimeData();
 
-    virtual void        AllocateSimulationStructures();
-    virtual void        MakeData(int iSimulationNumber, DataStreamGateway & DataGateway);
+    virtual void        RandomizeData(int iSimulationNumber);
 };
 
 //**************************************************************************
