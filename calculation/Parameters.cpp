@@ -1646,9 +1646,9 @@ bool CParameters::ValidateDateParameters(BasePrint& PrintDirection) const {
       bEndDateValid = false;
     }
     //validate prospective start date based upon precision of times parameter setting
-    if (GetIsProspectiveAnalysis() && !ValidateProspectiveDate(PrintDirection)) {
-      bValid = false;
-      bProspectiveDateValid = false;
+    if (GetIsProspectiveAnalysis() && gbAdjustForEarlierAnalyses && !ValidateProspectiveDate(PrintDirection)) {
+        bValid = false;
+        bProspectiveDateValid = false;
     }
 
     if (bStartDateValid && bEndDateValid) {
@@ -1659,7 +1659,7 @@ bool CParameters::ValidateDateParameters(BasePrint& PrintDirection) const {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: The study period start date occurs after the end date.\n");
       }
-      if (bValid && GetIsProspectiveAnalysis() && bProspectiveDateValid) {
+      if (bValid && GetIsProspectiveAnalysis() && gbAdjustForEarlierAnalyses && bProspectiveDateValid) {
         //validate prospective start date
         ProspectiveStartDate = CharToJulian(gsProspectiveStartDate.c_str());
         if (ProspectiveStartDate < StudyPeriodStartDate || ProspectiveStartDate > StudyPeriodEndDate) {
@@ -2159,13 +2159,6 @@ bool CParameters::ValidateProspectiveDate(BasePrint& PrintDirection) const {
   ZdString      sDate;
 
   try {
-    if (!gbAdjustForEarlierAnalyses && gsProspectiveStartDate != gsStudyPeriodEndDate) {
-      //when not adjusting for earlier analyses,
-      PrintDirection.SatScanPrintWarning("Error: A prospective analysis that does not adjust for earlier\n"
-                                         "       analyses must have the start of prospective surveillance\n"
-                                         "       set to the same date as the study period end date.\n");
-      bReturnValue = false;
-    }
     //validate study period end date based upon precision of times parameter setting
     //parse date in parts
     if (CharToMDY(&uiMonth, &uiDay, &uiYear, gsProspectiveStartDate.c_str()) != 3) {
