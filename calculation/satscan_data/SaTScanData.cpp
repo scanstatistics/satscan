@@ -378,7 +378,7 @@ double CSaTScanData::GetMeasureAdjustment(unsigned int iStream) const {
     return 1.0;
 }
 
-/** Input: Date.                                                    **/   
+/** Input: Date.                                                    **/
 /** Returns: Index of the time interval to which the date belongs.   **/
 /** If Date does not belong to any time interval, -1 is returned. **/
 /** Note: First time interval has index 0.                          **/
@@ -391,8 +391,20 @@ int CSaTScanData::GetTimeIntervalOfDate(Julian Date) const {
 
   while (Date >=  gvTimeIntervalStartTimes[i+1])
        ++i;
-       
+
   return i;
+}
+
+/** Gets time interval index into interval start times array for end date. */
+int CSaTScanData::GetTimeIntervalOfEndDate(Julian EndDate) const {
+  int   i, iDateIndex = -1;
+
+  //find index for end date, the interval beyond where date fits
+  for (i=m_nTimeIntervals; i > 0  && iDateIndex == -1; --i)
+     if (EndDate <= gvTimeIntervalStartTimes[i] - 1 && EndDate > gvTimeIntervalStartTimes[i - 1] - 1)
+        iDateIndex = i;
+        
+  return iDateIndex;
 }
 
 /** internal class initializaton */
@@ -660,49 +672,29 @@ void CSaTScanData::SetAdditionalCaseArrays(RealDataStream & thisStream) {
    without exceeding the maximum cluster size with respect to time.*/
 void CSaTScanData::SetIntervalCut() {
   ZdString      sIntervalCutMessage, sTimeIntervalType;
-  long          lMaxTemporalLength, lStudyPeriodLength;
+  double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
 
   try {
     if (m_nTimeIntervals == 1)
       m_nIntervalCut = 1;
     else if (m_nTimeIntervals > 1) {
       if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
-        lStudyPeriodLength = TimeBetween(m_nStartDate, m_nEndDate, gParameters.GetTimeIntervalUnitsType());
-        lMaxTemporalLength = static_cast<long>(floor(lStudyPeriodLength * gParameters.GetMaximumTemporalClusterSize()/100.0));
-        m_nIntervalCut = static_cast<int>(floor(lMaxTemporalLength / gParameters.GetTimeIntervalLength()));
+        //calculate the number of time interval units which comprise the maximum
+        //temporal cluster size in the study period
+        dStudyPeriodLengthInUnits = CalculateNumberOfTimeIntervals(m_nStartDate, m_nEndDate, gParameters.GetTimeAggregationUnitsType(), 1);
+        dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * gParameters.GetMaximumTemporalClusterSize()/100.0);
+        //now calculate number of those time units a cluster can contain with respects to the specified aggregation length
+        m_nIntervalCut = static_cast<int>(floor(dMaxTemporalLengthInUnits / gParameters.GetTimeAggregationLength()));
       }
       else
-        m_nIntervalCut = static_cast<int>(gParameters.GetMaximumTemporalClusterSize() / gParameters.GetTimeIntervalLength());
+        m_nIntervalCut = static_cast<int>(gParameters.GetMaximumTemporalClusterSize() / gParameters.GetTimeAggregationLength());
     }
 
-    if (m_nIntervalCut==0) {
-      switch (gParameters.GetTimeIntervalUnitsType()) {
-          case YEAR  : sTimeIntervalType = "year"; break;
-          case MONTH : sTimeIntervalType = "month"; break;
-          case DAY   : sTimeIntervalType = "day"; break;
-          // if we get here, there is an error somewhere else
-          default: sTimeIntervalType = "none"; break;
-        };
-
-        if (gParameters.GetMaximumTemporalClusterSizeType() == TIMETYPE) {
-          sIntervalCutMessage << "Error: A maximum temporal cluster size of %g %s%s is less than one %d %s time interval.\n";
-          sIntervalCutMessage << "       No clusters can be found.\n";
-          GenerateResolvableException(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
-                                      gParameters.GetMaximumTemporalClusterSize(), sTimeIntervalType.GetCString(),
-                                      (gParameters.GetMaximumTemporalClusterSize() == 1 ? "" : "s"),
-                                      gParameters.GetTimeIntervalLength(), sTimeIntervalType.GetCString());
-        }
-        else if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
-          sIntervalCutMessage << "Error: A maximum temporal cluster size that is %g percent of a %d %s study period\n";
-          sIntervalCutMessage << "       equates to %d %s%s, which is less than one %d %s time interval.\n";
-          sIntervalCutMessage << "       No clusters can be found.\n";
-          GenerateResolvableException(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
-                                      gParameters.GetMaximumTemporalClusterSize(),
-                                      lStudyPeriodLength, sTimeIntervalType.GetCString(),
-                                      lMaxTemporalLength, sTimeIntervalType.GetCString(), (lMaxTemporalLength == 1 ? "" : "s"),
-                                      gParameters.GetTimeIntervalLength(), sTimeIntervalType.GetCString());
-        }
-      }
+    if (m_nIntervalCut==0)
+      //Validation in CParameters should have produced error before this body of code.
+      //Only a program error or user selecting not to validate parameters should cause
+      //this error to occur.
+      ZdException::Generate("The calculated number of time aggregation units is zero.","SetIntervalCut()");
    }
   catch (ZdException &x) {
     x.AddCallpath("SetIntervalCut()","CSaTScanData");
@@ -716,19 +708,18 @@ void CSaTScanData::SetIntervalCut() {
     interval length. Throws ResolvableException if the time stratified time trend
     adjustment was requested and the number of calculated time intervals is one.*/
 void CSaTScanData::SetIntervalStartTimes() {
-  Julian IntervalStartingDate = m_nEndDate+1;
+  Julian                IntervalStartingDate = m_nEndDate+1;
+  DecrementableEndDate  DecrementingDate(m_nEndDate, gParameters.GetTimeAggregationUnitsType());
 
   gvTimeIntervalStartTimes.clear();
   //latest interval start time is the day after study period end date
   gvTimeIntervalStartTimes.push_back(IntervalStartingDate);
-  //find the next prior interval start time from previous, given length of time intervals
-  IntervalStartingDate = DecrementDate(IntervalStartingDate, gParameters.GetTimeIntervalUnitsType(), gParameters.GetTimeIntervalLength());
-  //continue decrementing from current interval start time until study period start date boundry hit 
+  IntervalStartingDate = DecrementingDate.Decrement(gParameters.GetTimeAggregationLength());
   while (IntervalStartingDate > m_nStartDate) {
       //push interval start time onto vector
       gvTimeIntervalStartTimes.push_back(IntervalStartingDate);
       //find the next prior interval start time from current, given length of time intervals
-      IntervalStartingDate = DecrementDate(IntervalStartingDate, gParameters.GetTimeIntervalUnitsType(), gParameters.GetTimeIntervalLength());
+      IntervalStartingDate = DecrementingDate.Decrement(gParameters.GetTimeAggregationLength());
   }
   //push study period start date onto vector
   gvTimeIntervalStartTimes.push_back(m_nStartDate);
@@ -736,6 +727,8 @@ void CSaTScanData::SetIntervalStartTimes() {
   std::reverse(gvTimeIntervalStartTimes.begin(), gvTimeIntervalStartTimes.end());
   //record number of time intervals, not including 'study period end date + 1' date
   m_nTimeIntervals = (int)gvTimeIntervalStartTimes.size() - 1;
+
+//  PrintJulianDates(gvTimeIntervalStartTimes, "c:\\StartDates.txt");
 
   if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION && m_nTimeIntervals <= 1)
     GenerateResolvableException("Error: The time stratified randomization adjustment requires more than\n"
@@ -778,13 +771,8 @@ void CSaTScanData::SetMaxCircleSize() {
 /* Calculates which time interval the prospectice space-time start date is in.*/
 /* MAKE SURE THIS IS EXECUTED AFTER THE  m_nTimeIntervals VARIABLE HAS BEEN SET */
 void CSaTScanData::SetProspectiveIntervalStart() {
-  long    lTime;
-  Julian  lProspStartDate;
-
   try {
-    lProspStartDate = CharToJulian(gParameters.GetProspectiveStartDate().c_str());
-    lTime = TimeBetween(lProspStartDate, m_nEndDate, gParameters.GetTimeIntervalUnitsType());
-    m_nProspectiveIntervalStart = m_nTimeIntervals - (int)ceil((float)lTime/(float)gParameters.GetTimeIntervalLength()) + 1;
+    m_nProspectiveIntervalStart = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetProspectiveStartDate().c_str()));
 
     if (m_nProspectiveIntervalStart < 0)
       GenerateResolvableException("Error: : The start date for prospective analyses '%s' is prior to the study period start date '%s'.\n",
@@ -815,27 +803,6 @@ void CSaTScanData::SetPurelyTemporalCases() {
   }
 }
 
-/** Sets time interval end range index into interval start times array. */
-void CSaTScanData::SetScanningWindowEndRangeIndex(Julian EndRangeDate, int& iEndRangeDateIndex) {
-  int   i;
-
-  //find index for end range end date, the interval where date fits, rounding to higher index
-  iEndRangeDateIndex = -1;
-  for (i=m_nTimeIntervals; i > 0  && iEndRangeDateIndex == -1; --i)
-     if (EndRangeDate <= gvTimeIntervalStartTimes[i] - 1 && EndRangeDate > gvTimeIntervalStartTimes[i - 1] - 1)
-        iEndRangeDateIndex = i;
-}
-
-/** Sets time interval start range index into interval start times array. */
-void CSaTScanData::SetScanningWindowStartRangeIndex(Julian StartRangeDate, int& iStartRangeDateIndex) {
-  int   i;
-
-  iStartRangeDateIndex = -1;
-  for (i=0; i < m_nTimeIntervals && iStartRangeDateIndex == -1; ++i)
-     if (StartRangeDate >= gvTimeIntervalStartTimes[i] && StartRangeDate < gvTimeIntervalStartTimes[i + 1])
-       iStartRangeDateIndex = i;
-}
-
 /** Sets indexes of time interval ranges into interval start time array. */
 void CSaTScanData::SetTimeIntervalRangeIndexes() {
   ZdString      sTimeIntervalType, sMessage;
@@ -844,18 +811,17 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
 
   if (gParameters.GetIncludeClustersType() == CLUSTERSINRANGE) {
     //find start range date indexes
-    SetScanningWindowStartRangeIndex(CharToJulian(gParameters.GetStartRangeStartDate().c_str()), m_nStartRangeStartDateIndex);
-    SetScanningWindowStartRangeIndex(CharToJulian(gParameters.GetStartRangeEndDate().c_str()), m_nStartRangeEndDateIndex);
+    m_nStartRangeStartDateIndex = GetTimeIntervalOfDate(CharToJulian(gParameters.GetStartRangeStartDate().c_str()));
+    m_nStartRangeEndDateIndex = GetTimeIntervalOfDate(CharToJulian(gParameters.GetStartRangeEndDate().c_str()));
     //find end range date indexes
-    SetScanningWindowEndRangeIndex(CharToJulian(gParameters.GetEndRangeStartDate().c_str()), m_nEndRangeStartDateIndex);
-    SetScanningWindowEndRangeIndex(CharToJulian(gParameters.GetEndRangeEndDate().c_str()), m_nEndRangeEndDateIndex);
+    m_nEndRangeStartDateIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetEndRangeStartDate().c_str()));
+    m_nEndRangeEndDateIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetEndRangeEndDate().c_str()));
     //validate windows will be evaluated
     //check that there will be clusters evaluated...
     iMaxEndWindow = std::min(m_nEndRangeEndDateIndex, m_nStartRangeEndDateIndex + m_nIntervalCut);
     iWindowStart = std::max(m_nEndRangeStartDateIndex - m_nIntervalCut, m_nStartRangeStartDateIndex);
     if (iWindowStart >= iMaxEndWindow) {
-      sTimeIntervalType = gParameters.GetDatePrecisionAsString(gParameters.GetTimeIntervalUnitsType());
-      sTimeIntervalType.ToLowercase();
+      GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sTimeIntervalType, true, false);
       JulianToChar(sDateWST, gvTimeIntervalStartTimes[iWindowStart]);
       JulianToChar(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1);
       GenerateResolvableException("Error: No clusters will be evaluated.\n"
@@ -863,25 +829,24 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
                                   "       the temporal window scanned has a start time of %s (end range\n"
                                   "       ending time minus %i %s) and a maximum window end time of %s\n"
                                   "       (start range ending time plus %i %s), which results in no windows scanned.",
-                                  "Setup()", m_nIntervalCut * gParameters.GetTimeIntervalLength(),
+                                  "Setup()", m_nIntervalCut * gParameters.GetTimeAggregationLength(),
                                   sTimeIntervalType.GetCString(), sDateWST,
-                                  m_nIntervalCut * gParameters.GetTimeIntervalLength(),
+                                  m_nIntervalCut * gParameters.GetTimeAggregationLength(),
                                   sTimeIntervalType.GetCString(), sDateMaxWET,
-                                  m_nIntervalCut * gParameters.GetTimeIntervalLength(), sTimeIntervalType.GetCString());
+                                  m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.GetCString());
     }
     //The parameter validation checked already whether the end range dates conflicted,
     //but the maxium temporal cluster size may actually cause the range dates to be
     //different than the user defined.
     if (m_nEndRangeStartDateIndex > iMaxEndWindow) {
-      sTimeIntervalType = gParameters.GetDatePrecisionAsString(gParameters.GetTimeIntervalUnitsType());
-      sTimeIntervalType.ToLowercase();
+      GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sTimeIntervalType, true, false);
       JulianToChar(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1);
       GenerateResolvableException("Error: No clusters will be evaluated.\n"
                                   "       With the incorporation of a maximum temporal cluster size of %i %s\n"
                                   "       the maximum window end time becomes %s (start range ending\n"
                                   "       time plus %i %s), which does not intersect with scanning window end range.\n","Setup()",
-                                  m_nIntervalCut * gParameters.GetTimeIntervalLength(), sTimeIntervalType.GetCString(),
-                                  sDateMaxWET, m_nIntervalCut * gParameters.GetTimeIntervalLength(), sTimeIntervalType.GetCString());
+                                  m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.GetCString(),
+                                  sDateMaxWET, m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.GetCString());
     }
   }
 }

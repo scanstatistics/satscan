@@ -75,8 +75,6 @@ class CSaTScanData {
     void                                        SetMeasureByTimeIntervalArray(measure_t ** pNonCumulativeMeasure);
     void                                        SetProspectiveIntervalStart();
     void                                        SetPurelyTemporalCases();
-    void                                        SetScanningWindowEndRangeIndex(Julian EndRangeDate, int & iEndRangeDateIndex);
-    void                                        SetScanningWindowStartRangeIndex(Julian StartRangeDate, int & iStartRangeDateIndex);
     void                                        SetTimeIntervalRangeIndexes();
 
   public:
@@ -109,9 +107,7 @@ class CSaTScanData {
     inline const GInfo                        * GetGInfo() const { return &gCentroidsHandler;}
     double                                      GetMaxCircleSize() {return m_nMaxCircleSize;}
     double                                      GetMeasureAdjustment(unsigned int iStream) const;
-
     inline virtual tract_t                      GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
-
     inline tract_t                           ** GetNeighborCountArray() {return gpNeighborCountHandler->GetArray();}
     inline tract_t                           ** GetNeighborCountArray() const {return gpNeighborCountHandler->GetArray();}
     inline size_t                               GetNumDataStreams() const {return gpDataStreams->GetNumStreams();}
@@ -123,6 +119,7 @@ class CSaTScanData {
     Julian                                      GetStudyPeriodEndDate() const {return m_nEndDate;}
     Julian                                      GetStudyPeriodStartDate() const {return m_nStartDate;}
     int                                         GetTimeIntervalOfDate(Julian Date) const;
+    int                                         GetTimeIntervalOfEndDate(Julian EndDate) const;
     const std::vector<Julian>                 & GetTimeIntervalStartTimes() const {return gvTimeIntervalStartTimes;}
     inline const TractHandler                 * GetTInfo() const {return &gTractHandler;}
     double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}
