@@ -46,9 +46,9 @@ object frmAnalysis: TfrmAnalysis
       object Label21: TLabel
         Left = 24
         Top = 152
-        Width = 148
+        Width = 194
         Height = 13
-        Caption = 'Maximum Circle Population File:'
+        Caption = 'Maximum Circle Population File (optional):'
       end
       object GroupBox1: TGroupBox
         Left = 16
@@ -197,9 +197,9 @@ object frmAnalysis: TfrmAnalysis
         object Label7: TLabel
           Left = 8
           Top = 54
-          Width = 79
+          Width = 125
           Height = 13
-          Caption = 'Special Grid File:'
+          Caption = 'Special Grid File (optional):'
         end
         object edtCoordinateFileName: TEdit
           Left = 8
