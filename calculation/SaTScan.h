@@ -22,7 +22,7 @@
 
 #define SATSCAN_WEBSITE "http:/\/srab.cancer.gov/satscan/"
 #define VERSION_NUMBER "v3.0.3"
-#define VERSION_DATE "December 27, 2002"
+#define VERSION_DATE "January 2, 2003"
 
 /** New defines for ellipsoid calculations. */
 #define MAXELLIPSESHAPES 10
