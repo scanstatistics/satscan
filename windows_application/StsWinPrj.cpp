@@ -58,8 +58,6 @@ USEUNIT("..\calculation\analysis\PurelySpatialMonotoneAnalysis.cpp");
 USEUNIT("..\calculation\analysis\PurelyTemporalAnalysis.cpp");
 USEUNIT("..\calculation\Parameters.cpp");
 USEUNIT("..\calculation\probability_model\SpaceTimePermutationModel.cpp");
-USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib");
-USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
 USEUNIT("..\calculation\SaTScanBasis.cpp");
 USEUNIT("..\calculation\Output\stsRunHistoryFile.cpp");
 USEUNIT("..\calculation\utility\DBFFile.cpp");
@@ -67,6 +65,8 @@ USEUNIT("..\calculation\Output\stsAreaSpecificDBF.cpp");
 USEUNIT("..\calculation\Output\stsClusterLevelDBF.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
 USEUNIT("..\calculation\Output\stsOutputDBF.cpp");
+USELIB("..\..\zero dimension\zd540.lib");
+USELIB("..\..\zero dimension\zdannex540.lib");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         try {
@@ -79,7 +79,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
            BasisGetToolkit().SetErrorReportDestination(TECH_EMAIL);
            Application->HelpFile = "";
            Application->CreateForm(__classid(TfrmMainForm), &frmMainForm);
-           Application->Run();
+                 Application->Run();
            BasisExit();
         }
         catch (ZdException &x) {
