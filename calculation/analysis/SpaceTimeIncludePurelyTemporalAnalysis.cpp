@@ -179,9 +179,7 @@ double C_ST_PT_Analysis::MonteCarloProspective() {
              for (n = m_pData->m_nTimeIntervals; n >= m_pData->m_nProspectiveIntervalStart; n--) {
                 //Need to re-compute duration due to by using current date (whatever date loop "n" is at)
                 //and the Begin Study Date
-                iThisStartInterval = m_pData->ComputeNewCutoffInterval(m_pData->m_nStartDate,jCurrentDate);
-                //Now compute a new Current Date by subtracting the interval duration
-                jCurrentDate = DecrementDate(jCurrentDate, m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
+                iThisStartInterval = std::max(0, n - m_pData->ComputeNewCutoffInterval(m_pData->m_nStartDate,jCurrentDate));
                 C_ST.InitTimeIntervalIndeces(iThisStartInterval, n);
                 while (C_ST.SetNextProspTimeInterval())
                      pMeasureList->AddMeasure(C_ST.m_nCases, C_ST.m_nMeasure);
