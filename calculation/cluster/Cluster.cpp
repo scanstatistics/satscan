@@ -222,13 +222,13 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
 
                 // cluster number
                 if (nCluster > -1)
-                  fprintf(fp, "%i         ", nCluster);
+                  fprintf(fp, "%-5d ", nCluster);
 
                   // relative risk
                 if (bIncludeRelRisk) {
-                  fprintf(fp, "  %i", m_nCases);      // cluster level Observed
-                  fprintf(fp, "   %-12.2f", m_nMeasure);    // cluster level expected
-                  fprintf(fp, "   %-12.3f", GetRelativeRisk(Data.GetMeasureAdjustment()));  // cluster level rel risk
+                  fprintf(fp, "  %-08d", m_nCases);      // cluster level Observed
+                  fprintf(fp, " %-012.2f", m_nMeasure);    // cluster level expected
+                  fprintf(fp, " %-012.3f", GetRelativeRisk(Data.GetMeasureAdjustment()));  // cluster level rel risk
                 }
                 if (bIncludePVal)    // this is only displayed if Reps > 99
                 {
@@ -237,8 +237,8 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                 }
                 if (bIncludeRelRisk)   // if we include the cluster rel risk, then we also include obs, exp, and rel_risk as well
                 {
-                  fprintf(fp, "\t %12i", GetCaseCountForTract(tTract, Data));      // area level obeserved clusters
-                  fprintf(fp, "\t %12.3f", GetMeasureForTract(tTract, Data));      // area level expected clusters
+                  fprintf(fp, "\t %-12i", GetCaseCountForTract(tTract, Data));      // area level obeserved clusters
+                  fprintf(fp, "\t %-12.3f", GetMeasureForTract(tTract, Data));      // area level expected clusters
                   fprintf(fp, "\t %12.3f", GetRelativeRiskForTract(tTract, Data));   // area level relative risk
                 }
                 if (i < nLastTract)
