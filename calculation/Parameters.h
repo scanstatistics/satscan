@@ -128,7 +128,7 @@ class CParameters
     void SetDefaults();
     void SetDefaultsV2();
     void SetDefaultsV3();
-    bool SetParameters(const char* szFilename);
+    bool SetParameters(const char* szFilename, bool bValidate=true);
     bool SetParameter(int nParam, const char* szParam);
     bool SetGISFilename();
     bool SetLLRFilename();

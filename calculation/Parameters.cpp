@@ -161,7 +161,7 @@ void CParameters::Free()
       delete [] mp_nENumbers;
 }
 
-bool CParameters::SetParameters(const char* szFilename)
+bool CParameters::SetParameters(const char* szFilename, bool bValidate)
 {
    FILE* pFile;
    char  szTemp [MAX_STR_LEN];
@@ -207,7 +207,7 @@ bool CParameters::SetParameters(const char* szFilename)
       if (!SetRelRiskFilename()) //rel risk estimate for each centroid - file name
         bValid = false;
       
-      if (bValid)
+      if (bValid && bValidate)
         bValid = ValidateParameters();
        }
    catch (SSException & x)
