@@ -31,10 +31,10 @@ CCluster & TopClustersContainer::GetTopCluster(int iShapeOffset) {
   CCluster    * pTopCluster=0;
   int           iEllipse, iBoundry=0;
 
-  if (iShapeOffset && gData.m_pParameters->GetNumRequestedEllipses() && gData.m_pParameters->GetDuczmalCorrectEllipses())
-    for (iEllipse=0; iEllipse < gData.m_pParameters->GetNumRequestedEllipses() && !pTopCluster; ++iEllipse) {
+  if (iShapeOffset && gData.GetParameters().GetNumRequestedEllipses() && gData.GetParameters().GetDuczmalCorrectEllipses())
+    for (iEllipse=0; iEllipse < gData.GetParameters().GetNumRequestedEllipses() && !pTopCluster; ++iEllipse) {
        //Get the number of angles this ellipse shape rotates through.
-       iBoundry += gData.m_pParameters->GetEllipseRotations()[iEllipse];
+       iBoundry += gData.GetParameters().GetEllipseRotations()[iEllipse];
        if (iShapeOffset <= iBoundry)
          pTopCluster = gvTopShapeClusters[iEllipse + 1];
     }
@@ -80,8 +80,8 @@ void TopClustersContainer::SetTopClusters(const CCluster& InitialCluster) {
     gvTopShapeClusters.DeleteAllElements();
     //if there are ellipses and duczmal correction is true, then we need
     //a top cluster for the circle and each ellipse shape
-    if (gData.m_pParameters->GetNumRequestedEllipses() && gData.m_pParameters->GetDuczmalCorrectEllipses())
-      iNumTopClusters = gData.m_pParameters->GetNumRequestedEllipses() + 1;
+    if (gData.GetParameters().GetNumRequestedEllipses() && gData.GetParameters().GetDuczmalCorrectEllipses())
+      iNumTopClusters = gData.GetParameters().GetNumRequestedEllipses() + 1;
     else
     //else there is only one top cluster - regardless of whether there are ellipses
       iNumTopClusters = 1;
@@ -116,7 +116,7 @@ CAnalysis::CAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *p
         m_nClustersToKeepEachPass = 1;
       else {
          if (m_pParameters->GetCriteriaSecondClustersType() == NORESTRICTIONS)
-            m_nClustersToKeepEachPass = m_pData->m_nTracts;
+            m_nClustersToKeepEachPass = m_pData->GetNumTracts();
          else
               m_nClustersToKeepEachPass = (m_pData->m_nGridTracts <= NUM_RANKED ? m_pData->m_nGridTracts : NUM_RANKED);
       }
@@ -139,8 +139,6 @@ CAnalysis::~CAnalysis() {
    InitializeTopClusterList();
    delete [] m_pTopClusters;
 
-  //  delete m_pModel;
-
 //#ifdef DEBUGANALYSIS
 #ifdef DEBUGPROSPECTIVETIME
    fclose(m_pDebugFile);
@@ -159,7 +157,7 @@ bool CAnalysis::Execute(time_t RunTime) {
       if (!m_pData->CalculateMeasure())        //Calculate expected number of cases.
          return false;
     
-      if (m_pData->m_nTotalCases < 1)
+      if (m_pData->GetNumCases() < 1)
          ZdException::Generate("Error: No cases found in input data.\n","CAnalysis");    //KR V.2.1
 
       //For circle and each ellipse, find closest neighboring tracts points for
@@ -828,7 +826,7 @@ void CAnalysis::RankTopClusters() {
       //else just set it to NUM_RANKED (500) elements.....
       iNumElements = NUM_RANKED;
       if (m_pParameters->GetCriteriaSecondClustersType() == NORESTRICTIONS)
-         iNumElements = m_pData->m_nTracts;
+         iNumElements = m_pData->GetNumTracts();
       pRadius = new float[iNumElements];
       pCoords = (double**)Smalloc(iNumElements * sizeof(double*),gpPrintDirection);
       memset(pCoords, 0, iNumElements * sizeof(double*));
@@ -966,23 +964,9 @@ void CAnalysis::RankTopClusters() {
 } /* RankTopClusters() */
 
 void CAnalysis::RemoveTopClusterData() {
-   tract_t nNeighbor;
-
    try {
       for (int i=1; i <= m_pTopClusters[0]->m_nTracts; i++)  {
-        nNeighbor = m_pData->GetNeighbor(0, m_pTopClusters[0]->m_Center, i);
-
-        m_pData->m_nTotalCases    -= m_pData->m_pCases[0][nNeighbor];
-        m_pData->m_nTotalMeasure  -= m_pData->m_pMeasure[0][nNeighbor];
-
-        m_pData->m_pCases[0][nNeighbor]   = 0;
-        m_pData->m_pMeasure[0][nNeighbor] = 0;
-
-        if (m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
-          m_pData->m_nTotalControls -= m_pData->m_pControls[0][nNeighbor];
-          m_pData->m_pControls[0][nNeighbor]   = 0;
-        }
-
+        m_pData->RemoveTractSignificance(m_pData->GetNeighbor(0, m_pTopClusters[0]->m_Center, i));
         //The next statement is believed to have been a mistake. There was no
         //documentation as to it's purpose but I believe the coder was intending
         //to remove the actual tract from the total tracts. Thinking this, the
@@ -1017,7 +1001,7 @@ bool CAnalysis::RepeatAnalysis()
          bReturn = ( m_pTopClusters[0] &&
                     (m_nAnalysisCount < m_pParameters->GetNumSequentialScansRequested()) &&
                     (m_pTopClusters[0]->GetPVal(giSimulationNumber) < m_pParameters->GetSequentialCutOffPValue()) &&
-                    (m_pData->m_nTracts > 1) && (giSimulationNumber < m_pParameters->GetNumReplicationsRequested()));
+                    (m_pData->GetNumTracts() > 1) && (giSimulationNumber < m_pParameters->GetNumReplicationsRequested()));
    }
    catch (ZdException & x) {
       x.AddCallpath("RepeatAnalysis()", "CAnalysis");
