@@ -1128,7 +1128,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           //Enables spatial
           rdoSpatialPercentage->Enabled = true;
           rdoSpatialDistance->Enabled = true;
-          chkInclPurTempClust->Enabled = true;
+          chkInclPurTempClust->Enabled = gpParams->m_nModel == 2 ? false : true;
           chkInclPurTempClust->Checked = gpParams->m_bIncludePurelyTemporal;
           edtMaxClusterSize->Enabled = true;
           edtMaxClusterSize->Color = clWindow;
@@ -1142,7 +1142,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           rdoPercentageTemproal->Checked = (gpParams->m_nMaxClusterSizeType == 0 ? true : false);
           rdoTimeTemproal->Enabled = true;
           rdoTimeTemproal->Checked = (gpParams->m_nMaxClusterSizeType == 0 ? false : true);
-          chkIncludePurSpacClust->Enabled = true;
+          chkIncludePurSpacClust->Enabled = gpParams->m_nModel == 2 ? false : true;
           chkIncludePurSpacClust->Checked = gpParams->m_bIncludePurelySpatial;
           edtMaxTemporalClusterSize->Enabled = true;
           edtMaxTemporalClusterSize->Color = clWindow;
@@ -1161,7 +1161,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           rdoSpatialPercentage->Enabled = false;
           rdoSpatialDistance->Enabled = true;
           rdoSpatialDistance->Checked = true;
-          chkInclPurTempClust->Enabled = true;
+          chkInclPurTempClust->Enabled = gpParams->m_nModel == 2 ? false : true;
           chkInclPurTempClust->Checked = gpParams->m_bIncludePurelyTemporal;
           edtMaxClusterSize->Enabled = true;
           edtMaxClusterSize->Color = clWindow;
@@ -1175,7 +1175,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           rdoPercentageTemproal->Checked = false;
           rdoTimeTemproal->Enabled = true;
           rdoTimeTemproal->Checked = true;
-          chkIncludePurSpacClust->Enabled = true;
+          chkIncludePurSpacClust->Enabled = gpParams->m_nModel == 2 ? false : true;
           chkIncludePurSpacClust->Checked = gpParams->m_bIncludePurelySpatial;
           edtMaxTemporalClusterSize->Enabled = true;
           edtMaxTemporalClusterSize->Color = clWindow;
