@@ -235,7 +235,7 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
                if (m_pTopClusters[i]->GetClusterType() == PURELYTEMPORAL)
                    fprintf(fpMCL, "%-29s", "n/a");
                else {
-                  szTID = m_pData->gpTInfo->tiGetTid(m_pTopClusters[i]->m_Center);
+                  szTID = m_pData->GetGInfo()->giGetGid(m_pTopClusters[i]->m_Center);
                   fprintf(fpMCL, "%-29s", szTID);
                   //fprintf(fpMCL, "%12ld", m_pTopClusters[i]->m_Center);
                }
@@ -532,6 +532,8 @@ bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumb
           (m_pParameters->m_nModel == SPACETIMEPERMUTATION &&
            m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE))
         (m_pData->GetTInfo())->tiReportZeroPops(fp);
+
+      m_pData->GetTInfo()->tiReportDuplicateTracts(fp);
 
       if (m_pParameters->m_bOutputRelRisks)
         m_pData->DisplayRelativeRisksForEachTract(fpRRE);
