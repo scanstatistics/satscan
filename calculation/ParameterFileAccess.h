@@ -17,23 +17,23 @@ class ParameterAccessCoordinator {
     void                        Write(const char * sFilename, BasePrint& PrintDirection /* ability to specify a version to write as ?*/);
 };
 
-//enum FileFormatType {INI_FORMAT=0, SCAN_FORMAT}; /** file structure types of file supplied parameter settings */
-
 /** Abstract base class for reading/writing parameters from file. */
 class AbtractParameterFileAccess {
+  public:
+  typedef std::pair<std::string, std::string> DateRange_t;
+
   private:
     virtual const char        * GetParameterLabel(ParameterType eParameterType) const = 0;
-    bool                        ReadBoolean(const ZdString& sValue, ParameterType eParameterType);
-    void                        ReadDate(const ZdString& sValue, ParameterType eParameterType);
-    double                      ReadDouble(const ZdString& sValue, ParameterType eParameterType);
-    void                        ReadEllipseRotations(const ZdString& sParameter);
-    void                        ReadEllipseShapes(const ZdString& sParameter);
-    void                        ReadEndIntervalRange(const ZdString& sParameter);
-    int                         ReadEnumeration(int iValue, ParameterType eParameterType, int iLow, int iHigh);
-    float                       ReadFloat(const ZdString& sValue, ParameterType eParameterType);
-    int                         ReadInt(const ZdString& sValue, ParameterType eParameterType);
-    void                        ReadStartIntervalRange(const ZdString& sParameter);
-    int                         ReadUnsignedInt(const ZdString& sValue, ParameterType eParameterType);
+    bool                        ReadBoolean(const ZdString& sValue, ParameterType eParameterType) const;
+    void                        ReadDate(const ZdString& sValue, ParameterType eParameterType) const;
+    void                        ReadDateRange(const ZdString& sValue, ParameterType eParameterType, DateRange_t& Range) const;
+    double                      ReadDouble(const ZdString& sValue, ParameterType eParameterType) const;
+    void                        ReadEllipseRotations(const ZdString& sParameter) const;
+    void                        ReadEllipseShapes(const ZdString& sParameter) const;
+    int                         ReadEnumeration(int iValue, ParameterType eParameterType, int iLow, int iHigh) const;
+    float                       ReadFloat(const ZdString& sValue, ParameterType eParameterType) const;
+    int                         ReadInt(const ZdString& sValue, ParameterType eParameterType) const;
+    int                         ReadUnsignedInt(const ZdString& sValue, ParameterType eParameterType) const;
 
   protected:
     CParameters               & gParameters;
@@ -41,12 +41,12 @@ class AbtractParameterFileAccess {
     std::vector<int>            gvParametersMissingDefaulted;           /** collection of missing ParameterTypes on read from file */
     bool                        gbReadStatusError;                      /** marker of errors encountered while reading parameters from file */
 
-    ZdString                  & AsString(ZdString& ref, int i) {ref = i; return ref;}
-    ZdString                  & AsString(ZdString& ref, unsigned int i) {ref.Clear(); ref << i; return ref;}
-    ZdString                  & AsString(ZdString& ref, float f) {ref = f; return ref;}
-    ZdString                  & AsString(ZdString& ref, double d) {ref = d; return ref;}
-    ZdString                  & AsString(ZdString& ref, bool b) {ref = (b ? "y" : "n"); return ref;}
-    ZdString                  & AsString(ZdString& ref, const CParameters::CreationVersion& v) {ref.printf("%d.%d.%d", v.iMajor, v.iMinor, v.iRelease); return ref;}
+    ZdString                  & AsString(ZdString& ref, int i) const {ref = i; return ref;}
+    ZdString                  & AsString(ZdString& ref, unsigned int i) const {ref.Clear(); ref << i; return ref;}
+    ZdString                  & AsString(ZdString& ref, float f) const {ref = f; return ref;}
+    ZdString                  & AsString(ZdString& ref, double d) const {ref = d; return ref;}
+    ZdString                  & AsString(ZdString& ref, bool b) const {ref = (b ? "y" : "n"); return ref;}
+    ZdString                  & AsString(ZdString& ref, const CParameters::CreationVersion& v) const {ref.printf("%d.%d.%d", v.iMajor, v.iMinor, v.iRelease); return ref;}
     void                        MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint& PrintDirection);
     void                        SetParameter(ParameterType eParameterType, const ZdString& sParameter, BasePrint& PrintDirection);
 

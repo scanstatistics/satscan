@@ -32,6 +32,7 @@ bool ParameterAccessCoordinator::Read(const char* sFilename, BasePrint& PrintDir
   return bSuccess;
 }
 
+/** Writes parameters to ini file in most recent format. */
 void ParameterAccessCoordinator::Write(const char * sFilename, BasePrint& PrintDirection /* ability to specify a version to write as ?*/) {
   try {
     IniParameterFileAccess(gParameters, PrintDirection).Write(sFilename);
@@ -53,109 +54,108 @@ AbtractParameterFileAccess::~AbtractParameterFileAccess() {}
 /** Prints message to print direction that parameter was missing when read from
     parameter file and that a default value as assigned. */
 void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint& PrintDirection) {
-//  ZdString      sDefaultValue, sParameterLineLabel;
-//
-//  try {
-//    switch (eParameterType) {
-//      case ANALYSISTYPE             : sDefaultValue = gParameters.GetAnalysisType(); break;
-//      case SCANAREAS                : sDefaultValue = geAreaScanRate; break;
-//      case CASEFILE                 : sDefaultValue = "<blank>"; break;
-//      case POPFILE                  : sDefaultValue = "<blank>"; break;
-//      case COORDFILE                : sDefaultValue = "<blank>"; break;
-//      case OUTPUTFILE               : sDefaultValue = "<blank>"; break;
-//      case PRECISION                : sDefaultValue = gePrecisionOfTimesType; break;
-//      case DIMENSION                : /*  */ break;
-//      case SPECIALGRID              : sDefaultValue = (gbUseSpecialGridFile ? YES : NO); break;
-//      case GRIDFILE                 : sDefaultValue = "<blank>"; break;
-//      case GEOSIZE                  : sDefaultValue = gfMaxGeographicClusterSize; break;
-//      case STARTDATE                : sDefaultValue = gsStudyPeriodStartDate.c_str(); break;
-//      case ENDDATE                  : sDefaultValue = gsStudyPeriodEndDate.c_str(); break;
-//      case CLUSTERS                 : sDefaultValue = geIncludeClustersType; break;
-//      case EXACTTIMES               : /* no longer used */ break;
-//      case TIME_AGGREGATION_UNITS   : sDefaultValue = geTimeAggregationUnitsType; break;
-//      case TIME_AGGREGATION         : sDefaultValue = glTimeAggregationLength; break;
-//      case PURESPATIAL              : sDefaultValue = (gbIncludePurelySpatialClusters ? YES : NO); break;
-//      case TIMESIZE                 : sDefaultValue = gfMaxTemporalClusterSize; break;
-//      case REPLICAS                 : sDefaultValue << giReplications; break;
-//      case MODEL                    : sDefaultValue = geProbabiltyModelType; break;
-//      case RISKFUNCTION             : sDefaultValue = geRiskFunctionType; break;
-//      case POWERCALC                : sDefaultValue = (gbPowerCalculation ? YES : NO); break;
-//      case POWERX                   : sDefaultValue = gdPower_X; break;
-//      case POWERY                   : sDefaultValue = gdPower_Y; break;
-//      case TIMETREND                : sDefaultValue = geTimeTrendAdjustType; break;
-//      case TIMETRENDPERC            : sDefaultValue = GetTimeTrendAdjustmentPercentage(); break;
-//      case PURETEMPORAL             : sDefaultValue = (gbIncludePurelyTemporalClusters ? YES : NO); break;
-//      case CONTROLFILE              : sDefaultValue = "<blank>"; break;
-//      case COORDTYPE                : sDefaultValue = geCoordinatesType; break;
-//      case OUTPUT_SIM_LLR_ASCII     : sDefaultValue = (gbOutputSimLogLikeliRatiosAscii ? YES : NO); break;
-//      case SEQUENTIAL               : sDefaultValue = (gbSequentialRuns ? YES : NO); break;
-//      case SEQNUM                   : sDefaultValue << giNumSequentialRuns; break;
-//      case SEQPVAL                  : sDefaultValue = gbSequentialCutOffPValue; break;
-//      case VALIDATE                 : sDefaultValue = (gbValidatePriorToCalc ? YES : NO); break;
-//      case OUTPUT_RR_ASCII          : sDefaultValue = (gbOutputRelativeRisksAscii ? YES : NO); break;
-//      case ELLIPSES                 : sDefaultValue = giNumberEllipses; break;
-//      case ESHAPES                  : sDefaultValue = "<blank>"; break;
-//      case ENUMBERS                 : sDefaultValue = "<blank>"; break;
-//      case START_PROSP_SURV         : sDefaultValue = gsProspectiveStartDate.c_str(); break;
-//      case OUTPUT_AREAS_ASCII       : sDefaultValue = (gbOutputAreaSpecificAscii ? YES : NO); break;
-//      case OUTPUT_MLC_ASCII         : sDefaultValue = (gbOutputClusterLevelAscii ? YES : NO); break;
-//      case CRITERIA_SECOND_CLUSTERS : sDefaultValue = geCriteriaSecondClustersType; break;
-//      case MAX_TEMPORAL_TYPE        : sDefaultValue = geMaxTemporalClusterSizeType; break;
-//      case MAX_SPATIAL_TYPE         : sDefaultValue = geMaxGeographicClusterSizeType; break;
-//      case RUN_HISTORY_FILENAME     : /* no longer read in from parameter file */ break;
-//      case OUTPUT_MLC_DBASE         : sDefaultValue = (gbOutputClusterLevelDBase ? YES : NO); break;
-//      case OUTPUT_AREAS_DBASE       : sDefaultValue = (gbOutputAreaSpecificDBase ? YES : NO); break;
-//      case OUTPUT_RR_DBASE          : sDefaultValue = (gbOutputRelativeRisksDBase ? YES : NO); break;
-//      case OUTPUT_SIM_LLR_DBASE     : sDefaultValue = (gbOutputSimLogLikeliRatiosDBase ? YES : NO); break;
-//      case NON_COMPACTNESS_PENALTY  : sDefaultValue = (gbNonCompactnessPenalty ? YES : NO); break;
-//      case INTERVAL_STARTRANGE      : sDefaultValue.printf("%s,%s", gsStartRangeStartDate.c_str(), gsStartRangeEndDate.c_str());
-//                                      break;
-//      case INTERVAL_ENDRANGE        : sDefaultValue.printf("%s,%s", gsEndRangeStartDate.c_str(), gsEndRangeEndDate.c_str());
-//                                      break;
-//      case TIMETRENDCONVRG	    : sDefaultValue = gdTimeTrendConverge; break;
-//      case MAXCIRCLEPOPFILE         : sDefaultValue = "<blank>"; break;
-//      case EARLY_SIM_TERMINATION    : sDefaultValue = (gbEarlyTerminationSimulations ? YES : NO); break;
-//      case REPORTED_GEOSIZE         : sDefaultValue = gfMaxReportedGeographicClusterSize; break;
-//      case USE_REPORTED_GEOSIZE     : sDefaultValue = (gbRestrictReportedClusters ? YES : NO); break;
-//      case SIMULATION_TYPE          : sDefaultValue = geSimulationType; break;
-//      case SIMULATION_SOURCEFILE    : sDefaultValue = "<blank>"; break;
-//      case ADJ_BY_RR_FILE           : sDefaultValue = "<blank>"; break;
-//      case OUTPUT_SIMULATION_DATA   : sDefaultValue = (gbOutputSimulationData ? YES : NO); break;
-//      case SIMULATION_DATA_OUTFILE  : sDefaultValue = "<blank>"; break;
-//      case ADJ_FOR_EALIER_ANALYSES  : sDefaultValue = (gbAdjustForEarlierAnalyses ? YES : NO); break;
-//      case USE_ADJ_BY_RR_FILE       : sDefaultValue = (gbUseAdjustmentsForRRFile ? YES : NO); break;
-//      case SPATIAL_ADJ_TYPE         : sDefaultValue = geSpatialAdjustmentType; break;
-//      case MULTI_DATASET_PURPOSE_TYPE : sDefaultValue = geMultipleStreamPurposeType; break;
-//      case CREATION_VERSION         : sDefaultValue.printf("%u.%u.%u", gCreationVersion.iMajor, gCreationVersion.iMinor, gCreationVersion.iRelease); break;
-//      default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
-//    };
-//
-//    if (sDefaultValue.GetLength()) {
-//      gvParametersMissingDefaulted.push_back(static_cast<int>(eParameterType)); //and default retained.
-//      PrintDirection.SatScanPrintWarning("Warning: The parameter '%s' is missing from the parameter file,\n",
-//                                         GetParameterLineLabel(eParameterType, sParameterLineLabel, geReadType == INI));
-//      PrintDirection.SatScanPrintWarning("         defaulted value '%s' assigned.\n", sDefaultValue.GetCString());
-//    }
-//  }
-//  catch (ZdException & x) {
-//    x.AddCallpath("MarkAsMissingDefaulted()","AbtractParameterFileAccess");
-//    throw;
-// }
+  ZdString      sDefaultValue, sParameterLineLabel;
+
+  try {
+    switch (eParameterType) {
+      case ANALYSISTYPE             : sDefaultValue = gParameters.GetAnalysisType(); break;
+      case SCANAREAS                : sDefaultValue = gParameters.GetAreaScanRateType(); break;
+      case CASEFILE                 : sDefaultValue = "<blank>"; break;
+      case POPFILE                  : sDefaultValue = "<blank>"; break;
+      case COORDFILE                : sDefaultValue = "<blank>"; break;
+      case OUTPUTFILE               : sDefaultValue = "<blank>"; break;
+      case PRECISION                : sDefaultValue = gParameters.GetPrecisionOfTimesType(); break;
+      case DIMENSION                : /*  */ break;
+      case SPECIALGRID              : sDefaultValue = (gParameters.UseSpecialGrid() ? YES : NO); break;
+      case GRIDFILE                 : sDefaultValue = "<blank>"; break;
+      case GEOSIZE                  : sDefaultValue = gParameters.GetMaximumGeographicClusterSize(); break;
+      case STARTDATE                : sDefaultValue = gParameters.GetStudyPeriodStartDate().c_str(); break;
+      case ENDDATE                  : sDefaultValue = gParameters.GetStudyPeriodEndDate().c_str(); break;
+      case CLUSTERS                 : sDefaultValue = gParameters.GetIncludeClustersType(); break;
+      case EXACTTIMES               : /* no longer used */ break;
+      case TIME_AGGREGATION_UNITS   : sDefaultValue = gParameters.GetTimeAggregationUnitsType(); break;
+      case TIME_AGGREGATION         : sDefaultValue = gParameters.GetTimeAggregationLength(); break;
+      case PURESPATIAL              : sDefaultValue = (gParameters.GetIncludePurelySpatialClusters() ? YES : NO); break;
+      case TIMESIZE                 : sDefaultValue = gParameters.GetMaximumTemporalClusterSize(); break;
+      case REPLICAS                 : sDefaultValue << gParameters.GetNumReplicationsRequested(); break;
+      case MODEL                    : sDefaultValue = gParameters.GetProbabiltyModelType(); break;
+      case RISKFUNCTION             : sDefaultValue = gParameters.GetRiskType(); break;
+      case POWERCALC                : sDefaultValue = (gParameters.GetIsPowerCalculated() ? YES : NO); break;
+      case POWERX                   : sDefaultValue = gParameters.GetPowerCalculationX(); break;
+      case POWERY                   : sDefaultValue = gParameters.GetPowerCalculationY(); break;
+      case TIMETREND                : sDefaultValue = gParameters.GetTimeTrendAdjustmentType(); break;
+      case TIMETRENDPERC            : sDefaultValue = gParameters.GetTimeTrendAdjustmentPercentage(); break;
+      case PURETEMPORAL             : sDefaultValue = (gParameters.GetIncludePurelyTemporalClusters() ? YES : NO); break;
+      case CONTROLFILE              : sDefaultValue = "<blank>"; break;
+      case COORDTYPE                : sDefaultValue = gParameters.GetCoordinatesType(); break;
+      case OUTPUT_SIM_LLR_ASCII     : sDefaultValue = (gParameters.GetOutputSimLoglikeliRatiosAscii() ? YES : NO); break;
+      case SEQUENTIAL               : sDefaultValue = (gParameters.GetIsSequentialScanning() ? YES : NO); break;
+      case SEQNUM                   : sDefaultValue << gParameters.GetNumSequentialScansRequested(); break;
+      case SEQPVAL                  : sDefaultValue = gParameters.GetSequentialCutOffPValue(); break;
+      case VALIDATE                 : sDefaultValue = (gParameters.GetValidatingParameters() ? YES : NO); break;
+      case OUTPUT_RR_ASCII          : sDefaultValue = (gParameters.GetOutputRelativeRisksAscii() ? YES : NO); break;
+      case ELLIPSES                 : sDefaultValue = gParameters.GetNumRequestedEllipses(); break;
+      case ESHAPES                  : sDefaultValue = "<blank>"; break;
+      case ENUMBERS                 : sDefaultValue = "<blank>"; break;
+      case START_PROSP_SURV         : sDefaultValue = gParameters.GetProspectiveStartDate().c_str(); break;
+      case OUTPUT_AREAS_ASCII       : sDefaultValue = (gParameters.GetOutputAreaSpecificAscii() ? YES : NO); break;
+      case OUTPUT_MLC_ASCII         : sDefaultValue = (gParameters.GetOutputClusterLevelAscii() ? YES : NO); break;
+      case CRITERIA_SECOND_CLUSTERS : sDefaultValue = gParameters.GetCriteriaSecondClustersType(); break;
+      case MAX_TEMPORAL_TYPE        : sDefaultValue = gParameters.GetMaximumTemporalClusterSizeType(); break;
+      case MAX_SPATIAL_TYPE         : sDefaultValue = gParameters.GetMaxGeographicClusterSizeType(); break;
+      case RUN_HISTORY_FILENAME     : /* no longer read in from parameter file */ break;
+      case OUTPUT_MLC_DBASE         : sDefaultValue = (gParameters.GetOutputClusterLevelDBase() ? YES : NO); break;
+      case OUTPUT_AREAS_DBASE       : sDefaultValue = (gParameters.GetOutputAreaSpecificDBase() ? YES : NO); break;
+      case OUTPUT_RR_DBASE          : sDefaultValue = (gParameters.GetOutputRelativeRisksDBase() ? YES : NO); break;
+      case OUTPUT_SIM_LLR_DBASE     : sDefaultValue = (gParameters.GetOutputSimLoglikeliRatiosDBase() ? YES : NO); break;
+      case NON_COMPACTNESS_PENALTY  : sDefaultValue = (gParameters.GetNonCompactnessPenalty() ? YES : NO); break;
+      case INTERVAL_STARTRANGE      : sDefaultValue.printf("%s,%s", gParameters.GetStartRangeStartDate().c_str(), gParameters.GetStartRangeEndDate().c_str());
+                                      break;
+      case INTERVAL_ENDRANGE        : sDefaultValue.printf("%s,%s", gParameters.GetEndRangeStartDate().c_str(), gParameters.GetEndRangeEndDate().c_str());
+                                      break;
+      case TIMETRENDCONVRG	    : sDefaultValue = gParameters.GetTimeTrendConvergence(); break;
+      case MAXCIRCLEPOPFILE         : sDefaultValue = "<blank>"; break;
+      case EARLY_SIM_TERMINATION    : sDefaultValue = (gParameters.GetTerminateSimulationsEarly() ? YES : NO); break;
+      case REPORTED_GEOSIZE         : sDefaultValue = gParameters.GetMaximumReportedGeoClusterSize(); break;
+      case USE_REPORTED_GEOSIZE     : sDefaultValue = (gParameters.GetRestrictingMaximumReportedGeoClusterSize() ? YES : NO); break;
+      case SIMULATION_TYPE          : sDefaultValue = gParameters.GetSimulationType(); break;
+      case SIMULATION_SOURCEFILE    : sDefaultValue = "<blank>"; break;
+      case ADJ_BY_RR_FILE           : sDefaultValue = "<blank>"; break;
+      case OUTPUT_SIMULATION_DATA   : sDefaultValue = (gParameters.GetOutputSimulationData() ? YES : NO); break;
+      case SIMULATION_DATA_OUTFILE  : sDefaultValue = "<blank>"; break;
+      case ADJ_FOR_EALIER_ANALYSES  : sDefaultValue = (gParameters.GetAdjustForEarlierAnalyses() ? YES : NO); break;
+      case USE_ADJ_BY_RR_FILE       : sDefaultValue = (gParameters.UseAdjustmentForRelativeRisksFile() ? YES : NO); break;
+      case SPATIAL_ADJ_TYPE         : sDefaultValue = gParameters.GetSpatialAdjustmentType(); break;
+      case MULTI_DATASET_PURPOSE_TYPE : sDefaultValue = gParameters.GetMultipleDataStreamPurposeType(); break;
+      case CREATION_VERSION         : sDefaultValue.printf("%u.%u.%u", gParameters.GetCreationVersion().iMajor,
+                                                           gParameters.GetCreationVersion().iMinor, gParameters.GetCreationVersion().iRelease); break;
+      default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
+    };
+
+    if (sDefaultValue.GetLength()) {
+      gvParametersMissingDefaulted.push_back(static_cast<int>(eParameterType)); //and default retained.
+      PrintDirection.SatScanPrintWarning("Warning: The parameter '%s' is missing from the parameter file,\n"
+                                         "         defaulted value '%s' assigned.\n",
+                                         GetParameterLabel(eParameterType), sDefaultValue.GetCString());
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("MarkAsMissingDefaulted()","AbtractParameterFileAccess");
+    throw;
+ }
 }
 
-/** Attempts to interpret passed string as a boolean value. Throws exception. */
-bool AbtractParameterFileAccess::ReadBoolean(const ZdString& sValue, ParameterType eParameterType) {
+/** Attempts to interpret passed string as a boolean value. Throws InvalidParameterException. */
+bool AbtractParameterFileAccess::ReadBoolean(const ZdString& sValue, ParameterType eParameterType) const {
   bool          bReadResult;
 
   try {
     if (sValue.GetIsEmpty()) {
-      gbReadStatusError = true;
       InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n", "ReadBoolean()", GetParameterLabel(eParameterType));
     }
     else if (!(!stricmp(sValue.GetCString(),"y")   || !stricmp(sValue.GetCString(),"n") ||
                !strcmp(sValue.GetCString(),"1")    || !strcmp(sValue.GetCString(),"0")   ||
                !stricmp(sValue.GetCString(),"yes")  || !stricmp(sValue.GetCString(),"no"))) {
-      gbReadStatusError = true;
       InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is invalid. Valid values are 'y' or 'n'.\n",
                                           "ReadBoolean()", GetParameterLabel(eParameterType), sValue.GetCString());
     }
@@ -169,8 +169,9 @@ bool AbtractParameterFileAccess::ReadBoolean(const ZdString& sValue, ParameterTy
   return bReadResult;
 }
 
+
 /** Set date parameter with passed string using appropriate set function. */
-void AbtractParameterFileAccess::ReadDate(const ZdString& sValue, ParameterType eParameterType) {
+void AbtractParameterFileAccess::ReadDate(const ZdString& sValue, ParameterType eParameterType) const {
  try {
    switch (eParameterType) {
      case START_PROSP_SURV      : //As a legacy of the old parameters code,
@@ -198,18 +199,37 @@ void AbtractParameterFileAccess::ReadDate(const ZdString& sValue, ParameterType 
   }
 }
 
-/** Attempts to interpret passed string as a double value. Throws exception. */
-double AbtractParameterFileAccess::ReadDouble(const ZdString & sValue, ParameterType eParameterType) {
+/** Attempts to interpret passed string as comma separated string of dates. Throws InvalidParameterException. */
+void AbtractParameterFileAccess::ReadDateRange(const ZdString& sValue, ParameterType eParameterType, DateRange_t& Range) const {
+  int                   i, iNumTokens;
+
+  try {
+    if (sValue.GetLength()) {
+      ZdStringTokenizer     Tokenizer(sValue, ",");
+      iNumTokens = Tokenizer.GetNumTokens();
+      if (iNumTokens != 2)
+        InvalidParameterException::Generate("Error: For parameter '%s', %d values specified but should have 2.\n",
+                                            "ReadDateRange()", GetParameterLabel(eParameterType), iNumTokens);
+      Range.first = Tokenizer.GetNextToken().GetCString();
+      Range.second = Tokenizer.GetNextToken().GetCString();
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ReadDateRange()","AbtractParameterFileAccess");
+    throw;
+  }
+}
+
+/** Attempts to interpret passed string as a double value. Throws InvalidParameterException. */
+double AbtractParameterFileAccess::ReadDouble(const ZdString & sValue, ParameterType eParameterType) const {
   double        dReadResult;
 
   try {
     if (sValue.GetIsEmpty()) {
-      gbReadStatusError = true;
       InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n", "ReadDouble()",
                                           GetParameterLabel(eParameterType));
     }
     else if (sscanf(sValue.GetCString(), "%lf", &dReadResult) != 1) {
-      gbReadStatusError = true;
       InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not a valid real number.\n", "ReadDouble()",
                                           GetParameterLabel(eParameterType), sValue.GetCString());
     }
@@ -221,22 +241,17 @@ double AbtractParameterFileAccess::ReadDouble(const ZdString & sValue, Parameter
   return dReadResult;
 }
 
-/** Attempts to interpret passed string as a space delimited string of integers that represent
-    the number of rotations ellipse will make. No attempt to convert is made if there are no
-    ellipses defined.  Throws exception. */
-void AbtractParameterFileAccess::ReadEllipseRotations(const ZdString& sParameter) {
+/** Attempts to interpret passed string as a space/comma delimited string of integers that represent
+    the number of rotations ellipse will make. No attempt to convert is made if no
+    ellipses defined.  Throws InvalidParameterException. */
+void AbtractParameterFileAccess::ReadEllipseRotations(const ZdString& sParameter) const {
   int                   i, iNumTokens, iReadNumberRotations;
   ZdString              sLabel;
 
   try {
-    ZdStringTokenizer     Tokenizer("", (sParameter.Find(',') == -1 ? " " : "," ));
     if (sParameter.GetLength() && gParameters.GetNumRequestedEllipses()) {
-      Tokenizer.SetString(sParameter);
+      ZdStringTokenizer     Tokenizer(sParameter, (sParameter.Find(',') == -1 ? " " : "," ));
       iNumTokens = Tokenizer.GetNumTokens();
-      //if (iNumTokens != giNumberEllipses)
-      //  InvalidParameterException::Generate("Error: For parameter '%s', %d ellipses requested but there are %d rotation numbers defined.\n",
-      //                                      "ReadEllipseRotations()", GetParameterLineLabel(ENUMBERS, sLabel, geReadType == INI).GetCString(),
-      //                                      giNumberEllipses, iNumTokens);
       for (i=0; i < iNumTokens; i++) {
          if (sscanf(Tokenizer.GetToken(i).GetCString(), "%i", &iReadNumberRotations))
            gParameters.SetNumberEllipsoidRotations(iReadNumberRotations);
@@ -247,28 +262,22 @@ void AbtractParameterFileAccess::ReadEllipseRotations(const ZdString& sParameter
     }
   }
   catch (ZdException & x) {
-    x.AddCallpath("AbtractParameterFileAccess()","CParameters");
+    x.AddCallpath("ReadEllipseRotations()","AbtractParameterFileAccess");
     throw;
   }
 }
 
 /** Attempts to interpret passed string as a space delimited string of integers that represent
     the shape of each ellipsoid. No attempt to convert is made if there are no
-    ellipses defined.  Throws exception. */
-void AbtractParameterFileAccess::ReadEllipseShapes(const ZdString& sParameter) {
+    ellipses defined.  Throws InvalidParameterException. */
+void AbtractParameterFileAccess::ReadEllipseShapes(const ZdString& sParameter) const {
   int                   i, iNumTokens;
   double                dReadShape;
 
   try {
-    ZdStringTokenizer     Tokenizer("", (sParameter.Find(',') == -1 ? " " : "," ));
     if (sParameter.GetLength() && gParameters.GetNumRequestedEllipses()) {
-      Tokenizer.SetString(sParameter);
+      ZdStringTokenizer     Tokenizer(sParameter, (sParameter.Find(',') == -1 ? " " : "," ));
       iNumTokens = Tokenizer.GetNumTokens();
-      //if (iNumTokens != giNumberEllipses)
-      //  InvalidParameterException::Generate("Error: For parameter '%s', %d ellipses requested but there are %d shapes defined.\n",
-      //                                      "ReadEllipseShapes()",
-      //                                      GetParameterLineLabel(ESHAPES, sLabel, geReadType == INI).GetCString(),
-      //                                      giNumberEllipses, iNumTokens);
       for (i=0; i < iNumTokens; i++) {
          if (sscanf(Tokenizer.GetToken(i).GetCString(), "%lf", &dReadShape))
            gParameters.SetEllipsoidShape(dReadShape);
@@ -284,29 +293,8 @@ void AbtractParameterFileAccess::ReadEllipseShapes(const ZdString& sParameter) {
   }
 }
 
-/**  Reads date range for the end range of cluster time interval. */
-void AbtractParameterFileAccess::ReadEndIntervalRange(const ZdString & sParameter) {
-  int                   i, iNumTokens;
-  ZdStringTokenizer     Tokenizer("", ",");
-
-  try {
-    if (sParameter.GetLength()) {
-      Tokenizer.SetString(sParameter);
-      iNumTokens = Tokenizer.GetNumTokens();
-      if (iNumTokens != 2)
-        InvalidParameterException::Generate("Error: For parameter '%s', start interval range contains '%d' values but should have 2.\n",
-                                            "ReadEndIntervalRange()", GetParameterLabel(INTERVAL_STARTRANGE), iNumTokens);
-      gParameters.SetEndRangeStartDate(Tokenizer.GetNextToken().GetCString());
-      gParameters.SetEndRangeEndDate(Tokenizer.GetNextToken().GetCString());
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("AbtractParameterFileAccess()","CParameters");
-    throw;
-  }
-}
-
-int AbtractParameterFileAccess::ReadEnumeration(int iValue, ParameterType eParameterType, int iLow, int iHigh) {
+/** Attempts to validate integer as enumeration within specified range. Throws InvalidParameterException. */
+int AbtractParameterFileAccess::ReadEnumeration(int iValue, ParameterType eParameterType, int iLow, int iHigh) const {
   try {
     if (iValue < iLow || iValue > iHigh)
       InvalidParameterException::Generate("Error: For parameter '%s', setting '%d' is out of range(%d - %d).\n", "SetCoordinatesType()",
@@ -319,18 +307,16 @@ int AbtractParameterFileAccess::ReadEnumeration(int iValue, ParameterType eParam
   return iValue;
 }
 
-/** Attempts to interpret passed string as a float value. Throws exception. */
-float AbtractParameterFileAccess::ReadFloat(const ZdString& sValue, ParameterType eParameterType) {
+/** Attempts to interpret passed string as a float value. Throws InvalidParameterException. */
+float AbtractParameterFileAccess::ReadFloat(const ZdString& sValue, ParameterType eParameterType) const {
   float         fReadResult;
 
   try {
     if (sValue.GetIsEmpty()) {
-      gbReadStatusError = true;
       InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n",
                                           "ReadFloat()", GetParameterLabel(eParameterType));
     }
     else if (sscanf(sValue.GetCString(), "%f", &fReadResult) != 1) {
-      gbReadStatusError = true;
       InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not a valid real number.\n",
                                           "ReadFloat()", GetParameterLabel(eParameterType), sValue.GetCString());
     }
@@ -343,18 +329,16 @@ float AbtractParameterFileAccess::ReadFloat(const ZdString& sValue, ParameterTyp
 }
 
 
-/** Attempts to interpret passed string as an integer value. Throws exception. */
-int AbtractParameterFileAccess::ReadInt(const ZdString& sValue, ParameterType eParameterType) {
+/** Attempts to interpret passed string as an integer value. Throws InvalidParameterException. */
+int AbtractParameterFileAccess::ReadInt(const ZdString& sValue, ParameterType eParameterType) const {
   int           iReadResult;
 
   try {
     if (sValue.GetIsEmpty()) {
-      gbReadStatusError = true;
       InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n",
                                           "ReadInt()", GetParameterLabel(eParameterType));
     }
     else if (sscanf(sValue.GetCString(), "%i", &iReadResult) != 1) {
-      gbReadStatusError = true;
       InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not a valid integer.\n",
                                          "ReadInt()", GetParameterLabel(eParameterType), sValue.GetCString());
     }
@@ -366,40 +350,16 @@ int AbtractParameterFileAccess::ReadInt(const ZdString& sValue, ParameterType eP
   return iReadResult;
 }
 
-/** . */
-void AbtractParameterFileAccess::ReadStartIntervalRange(const ZdString & sParameter) {
-  int                   i, iNumTokens;
-  ZdStringTokenizer     Tokenizer("", ",");
-
-  try {
-    if (sParameter.GetLength()) {
-      Tokenizer.SetString(sParameter);
-      iNumTokens = Tokenizer.GetNumTokens();
-      if (iNumTokens != 2)
-        InvalidParameterException::Generate("Error: For parameter '%s', end interval range contains '%d' values but should have 2.\n",
-                                            "ReadStartIntervalRange()", GetParameterLabel(INTERVAL_ENDRANGE), iNumTokens);
-      gParameters.SetStartRangeStartDate(Tokenizer.GetNextToken().GetCString());
-      gParameters.SetStartRangeEndDate(Tokenizer.GetNextToken().GetCString());
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadStartIntervalRange()","AbtractParameterFileAccess");
-    throw;
-  }
-}
-
-/** Attempts to interpret passed string as an integer value. Throws exception. */
-int AbtractParameterFileAccess::ReadUnsignedInt(const ZdString& sValue, ParameterType eParameterType) {
+/** Attempts to interpret passed string as an integer value. Throws InvalidParameterException. */
+int AbtractParameterFileAccess::ReadUnsignedInt(const ZdString& sValue, ParameterType eParameterType) const {
   int           iReadResult;
 
   try {
    if (sValue.GetIsEmpty()) {
-     gbReadStatusError = true;
      InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n",
                                          "ReadUnsignedInt()", GetParameterLabel(eParameterType));
    }
    else if (sscanf(sValue.GetCString(), "%u", &iReadResult) != 1) {
-     gbReadStatusError = true;
      InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not a valid integer.\n",
                                          "ReadUnsignedInt()", GetParameterLabel(eParameterType), sValue.GetCString());
    }
@@ -411,9 +371,10 @@ int AbtractParameterFileAccess::ReadUnsignedInt(const ZdString& sValue, Paramete
   return iReadResult;
 }
 
-/** Calls appropriate read/or set function for parameter type to set parameter from a string. */
+/** Calls appropriate read and set function for parameter type. */
 void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, const ZdString& sParameter, BasePrint& PrintDirection) {
-  int   iValue;
+  int           iValue;
+  DateRange_t   Range;
 
   try {
     switch (eParameterType) {
@@ -481,8 +442,12 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case OUTPUT_RR_DBASE           : gParameters.SetOutputRelativeRisksDBase(ReadBoolean(sParameter, eParameterType)); break;
       case OUTPUT_SIM_LLR_DBASE      : gParameters.SetOutputSimLogLikeliRatiosDBase(ReadBoolean(sParameter, eParameterType)); break;
       case NON_COMPACTNESS_PENALTY   : gParameters.SetNonCompactnessPenalty(ReadBoolean(sParameter, eParameterType)); break;
-      case INTERVAL_STARTRANGE       : ReadStartIntervalRange(sParameter); break;
-      case INTERVAL_ENDRANGE         : ReadEndIntervalRange(sParameter); break;
+      case INTERVAL_STARTRANGE       : ReadDateRange(sParameter, eParameterType, Range);
+                                       gParameters.SetStartRangeStartDate(Range.first.c_str());
+                                       gParameters.SetStartRangeEndDate(Range.second.c_str()); break;
+      case INTERVAL_ENDRANGE         : ReadDateRange(sParameter, eParameterType, Range);
+                                       gParameters.SetEndRangeStartDate(Range.first.c_str());
+                                       gParameters.SetEndRangeEndDate(Range.second.c_str()); break;
       case TIMETRENDCONVRG           : gParameters.SetTimeTrendConvergence(ReadDouble(sParameter, eParameterType)); break;
       case MAXCIRCLEPOPFILE          : gParameters.SetMaxCirclePopulationFileName(sParameter.GetCString(), true); break;
       case EARLY_SIM_TERMINATION     : gParameters.SetTerminateSimulationsEarly(ReadBoolean(sParameter, eParameterType)); break;
