@@ -168,9 +168,7 @@ void AnalysisRunner::CreateReport() {
 
   try {
     OpenReportFile(fp, false);
-    fprintf(fp, "                 _____________________________\n\n");
-    DisplayVersion(fp, 1);
-    fprintf(fp, "                 _____________________________\n\n");
+    AsciiPrintFormat::PrintVersionHeader(fp);
     sStartTime = ctime(&gStartTime);
     fprintf(fp,"\nProgram run on: %s\n", sStartTime.GetCString());
     gParameters.DisplayAnalysisType(fp);
@@ -243,7 +241,7 @@ void AnalysisRunner::DisplayTopCluster(long lReportHistoryRunNumber) {
           default : fprintf(fp,"                  _____________________________\n\n");
         }
         //print cluster definition to file stream
-        TopCluster.Display(fp, gParameters, *gpDataHub, giClustersReported, nMinMeasure, giNumSimsExecuted);
+        TopCluster.Display(fp, *gpDataHub, giClustersReported, nMinMeasure, giNumSimsExecuted);
         //check track of whether this cluster was significant in top five percentage
         if (TopCluster.m_nRatio > gSimulatedRatios.GetAlpha05())
           ++guwSignificantAt005;
@@ -302,7 +300,7 @@ void AnalysisRunner::DisplayTopClusters(long lReportHistoryRunNumber) {
            default : fprintf(fp, "\n"); break;
          }
          //print cluster definition to file stream
-         TopCluster.Display(fp, gParameters, *gpDataHub, giClustersReported, nMinMeasure, giNumSimsExecuted);
+         TopCluster.Display(fp, *gpDataHub, giClustersReported, nMinMeasure, giNumSimsExecuted);
          //check track of whether this cluster was significant in top five percentage
          if (TopCluster.m_nRatio > dSignifRatio05)
            ++guwSignificantAt005;
