@@ -1506,7 +1506,8 @@ void TfrmAnalysis::ValidateInputFiles() {
           PageControl1->ActivePage = tbInputFiles;
           edtPopFileName->SetFocus();
           ZdException::GenerateNotification("For the Poisson model, please specify a population file.\n"
-                                            "Note that for purely temporal analyses, the population file is optional.","ValidateInputFiles()");
+                                            "Note that for purely temporal analyses, if the risk does\n"
+                                            "not change over time, the population file is optional.","ValidateInputFiles()");
         }                                    
       }
       else if (!File_Exists(edtPopFileName->Text.c_str())) {

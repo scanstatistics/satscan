@@ -1521,12 +1521,12 @@ void TfrmAdvancedParameters::ValidateAdjustmentSettings() {
                              "with the nonparametric temporal adjustment.",
                              "ValidateAdjustmentSettings()", *rdgSpatialAdjustments, ANALYSIS_TABS);
     }
-    //validate spatial adjustments
+    //validate temporal adjustments
     if (rdgTemporalTrendAdj->Enabled && gAnalysisSettings.GetModelControlType() == POISSON && bAnalysisIsPurelyTemporal &&
         gAnalysisSettings.edtPopFileName->Text.IsEmpty() && GetAdjustmentTimeTrendControlType() != NOTADJUSTED) {
-         GenerateAFException("Temporal adjustments can not performed for the Poisson model,\n"
-                             "executed with a purely temporal analysis, when no population file\n"
-                             "has been specfied.","ValidateAdjustmentSettings()", *rdgTemporalTrendAdj, ANALYSIS_TABS);
+         GenerateAFException("Temporal adjustments can not performed for the Poisson model when executed\n"
+                             "with a purely temporal analysis, when no population file has been specfied.",
+                             "ValidateAdjustmentSettings()", *rdgTemporalTrendAdj, ANALYSIS_TABS);
     }
     //validate spatial/temporal/space-time adjustments
     if (chkAdjustForKnownRelativeRisks->Enabled && chkAdjustForKnownRelativeRisks->Checked) {
@@ -1575,7 +1575,8 @@ void TfrmAdvancedParameters::ValidateInputFilesAtInput() {
         if (gAnalysisSettings.GetAnalysisControlType() != PURELYTEMPORAL && gAnalysisSettings.GetAnalysisControlType() != PROSPECTIVEPURELYTEMPORAL) {
           edtPopFileName->SetFocus();
           GenerateAFException("For the Poisson model, please specify a population file.\n"
-                              "Note that for purely temporal analyses, the population file is optional."
+                              "Note that for purely temporal analyses, if the risk does\n"
+                              "not change over time, the population file is optional."
                               ,"ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
         }
       }
