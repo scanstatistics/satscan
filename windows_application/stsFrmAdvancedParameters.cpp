@@ -786,9 +786,9 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
     // save the input files on Input tab
     if (lstInputStreams->Items->Count) {
        for (int i = 0; i < lstInputStreams->Items->Count; i++) {
-          ref.SetCaseFileName((gvCaseFiles.GetElement(i)).c_str(), i+2);
-          ref.SetControlFileName((gvControlFiles.GetElement(i)).c_str(), i+2);
-          ref.SetPopulationFileName((gvPopFiles.GetElement(i)).c_str(), i+2);
+          ref.SetCaseFileName((gvCaseFiles.GetElement(i)).c_str(), false, i+2);
+          ref.SetControlFileName((gvControlFiles.GetElement(i)).c_str(), false, i+2);
+          ref.SetPopulationFileName((gvPopFiles.GetElement(i)).c_str(), false, i+2);
        }
     }
   }
