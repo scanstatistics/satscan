@@ -59,6 +59,11 @@ extern const char*      PVALUE_PROSPECT_LLR_LINE;
 extern const char*      LLR_1_LINE;
 extern const char*      LLR_2_LINE;
 extern const char*      EARLY_SIM_TERMINATION_LINE;
+extern const char*      SIMULATION_TYPE_LINE;
+extern const char*      SIMULATION_FILESOURCE_LINE;
+extern const char*      POWER_ESTIMATIONFILE_LINE;
+extern const char*      OUTPUT_SIMULATION_DATA_LINE;
+extern const char*      SIMULATION_DATA_OUTFILE_LINE;
 
 /** sequential scan ini section */
 extern const char*      SEQUENTIAL_SCAN_SECTION;
@@ -130,7 +135,9 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     RUN_HISTORY_FILENAME, OUTPUT_MLC_DBASE, OUTPUT_AREAS_DBASE, OUTPUT_RR_DBASE,
                                     OUTPUT_SIM_LLR_DBASE, DUCZMAL_COMPACTNESS, INTERVAL_STARTRANGE, 
                                     INTERVAL_ENDRANGE, TIMETRENDCONVRG, MAXCIRCLEPOPFILE, USEMAXCIRCLEPOPFILE,
-                                    EARLY_SIM_TERMINATION, REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE};
+                                    EARLY_SIM_TERMINATION, REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE, SIMULATION_TYPE,
+                                    SIMULATION_SOURCEFILE, POWER_ESTIMATIONFILE, OUTPUT_SIMULATION_DATA,
+                                    SIMULATION_DATA_OUTFILE};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL, PURELYSPATIALMONOTONE};
@@ -152,7 +159,9 @@ enum TemporalSizeType              {PERCENTAGETYPE=0, TIMETYPE};
 /** interperation types for maximum spatial size */
 enum SpatialSizeType               {PERCENTAGEOFMEASURETYPE=0, DISTANCETYPE};
 /** file structure types of file supplied parameter settings */
-enum ReadType                      {INI, SCAN};
+enum ReadType                      {INI=0, SCAN};
+/** defines how simulated data will be created - only pertinent for Poisson */
+enum SimulationType                {STANDARD=0, POWER_ESTIMATION, FILESOURCE};
 
 class CParameters {
   private:
@@ -165,6 +174,8 @@ class CParameters {
     CriteriaSecondaryClustersType       geCriteriaSecondClustersType;           /** Criteria for Reporting Secondary Clusters */
     double                              gbTimeTrendConverge;                    /** time trend convergence value */
     bool                                gbEarlyTerminationSimulations;          /** indicates whether to stop simulations if large p-values */
+    SimulationType                      geSimulationType;                       /** indicates simulation procedure - Poisson only */
+    bool                                gbOutputSimulationData;                 /** indicates whether to output simulation data to file */
         /* Power Calcution variables */
     bool                                gbPowerCalculation;                     /** indicator of whether to perform power calculations */
     double                              gdPower_X, gdPower_Y;                   /** power calculation variables */
@@ -221,6 +232,9 @@ class CParameters {
     std::string                         gsOutputFileName;                       /** results output filename */
     ZdString                            gsRunHistoryFilename;                   /** run history filename */
     bool                                gbLogRunHistory;                        /** indicates whether to log history */
+    std::string                         gsSimulationDataSourceFileName;         /** simualtion data source filename */
+    std::string                         gsPowerEstimationSourceFileName;        /** power estimation for data generation of simulations */
+    std::string                         gsSimulationDataOutputFilename;         /** simulation data output filename */
         /* Analysis dates */
     std::string                         gsProspectiveStartDate;                 /** prospective start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
     std::string                         gsStudyPeriodStartDate;                 /** study period start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
@@ -286,6 +300,7 @@ class CParameters {
     bool                                ValidatePowerCalculationParameters(BasePrint & PrintDirection);
     bool                                ValidateProspectiveDateString();
     bool                                ValidateRangeParameters(BasePrint & PrintDirection);
+    bool                                ValidateSimulationDataParameters(BasePrint & PrintDirection);
     bool                                ValidateSequentialScanParameters(BasePrint & PrintDirection);
     bool                                ValidateSpatialParameters(BasePrint & PrintDirection);
     bool                                ValidateStudyPeriodDateString(std::string & sDateString, ParameterType eDateType);
@@ -348,9 +363,11 @@ class CParameters {
     bool                                GetOutputSimLoglikeliRatiosAscii() const {return gbOutputSimLogLikeliRatiosAscii;}
     bool                                GetOutputSimLoglikeliRatiosDBase() const {return gbOutputSimLogLikeliRatiosDBase;}
     bool                                GetOutputSimLoglikeliRatiosFiles() const;
+    bool                                GetOutputSimulationData() const {return gbOutputSimulationData;}
     const std::string                 & GetPopulationFileName() const {return gsPopulationFileName;}
     double                              GetPowerCalculationX() const {return gdPower_X;}
     double                              GetPowerCalculationY() const {return gdPower_Y;}
+    const std::string                 & GetPowerEstimationFilename() const {return gsPowerEstimationSourceFileName;}  
     DatePrecisionType                   GetPrecisionOfTimesType() const {return gePrecisionOfTimesType;}
     ProbabiltyModelType                 GetProbabiltyModelType() const {return geProbabiltyModelType;}
     const char                        * GetProbabiltyModelTypeAsString() const;
@@ -360,6 +377,9 @@ class CParameters {
     RiskType                            GetRiskType() const {return geRiskFunctionType;}
     const ZdString                    & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
     double                              GetSequentialCutOffPValue() {return gbSequentialCutOffPValue;}
+    const std::string                 & GetSimulationDataOutputFilename() const {return gsSimulationDataOutputFilename;}  
+    const std::string                 & GetSimulationDataSourceFilename() const {return gsSimulationDataSourceFileName;}
+    SimulationType                      GetSimulationType() const {return geSimulationType;}
     const std::string                 & GetSpecialGridFileName() const {return gsSpecialGridFileName;}
     const std::string                 & GetSourceFileName() const {return gsParametersSourceFileName;}
     const std::string                 & GetStartRangeEndDate() const {return gsStartRangeEndDate;}
@@ -379,7 +399,7 @@ class CParameters {
     void                                SetAnalysisType(AnalysisType eAnalysisType);
     void                                SetAreaRateType(AreaRateType eAreaRateType);
     void                                SetDimensionsOfData(int iDimensions);
-    void                                SetEndRangeEndDate(const char * sEndRangeEndDate);    
+    void                                SetEndRangeEndDate(const char * sEndRangeEndDate);
     void                                SetEndRangeStartDate(const char * sEndRangeStartDate);
     void                                SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath=false);
     void                                SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath=false);
@@ -411,21 +431,24 @@ class CParameters {
     void                                SetOutputRelativeRisksDBase(bool b) {gbOutputRelativeRisksDBase = b;}
     void                                SetOutputSimLogLikeliRatiosAscii(bool b) {gbOutputSimLogLikeliRatiosAscii = b;}
     void                                SetOutputSimLogLikeliRatiosDBase(bool b) {gbOutputSimLogLikeliRatiosDBase = b;}
+    void                                SetOutputSimulationData(bool b) {gbOutputSimulationData = b;}
     void                                SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath=false);
     void                                SetPowerCalculation(bool b) {gbPowerCalculation = b;}
     void                                SetPowerCalculationX(double dPowerX);
     void                                SetPowerCalculationY(double dPowerY);
+    void                                SetPowerEstimationFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType);
     void                                SetProbabilityModelType(ProbabiltyModelType eProbabiltyModelType);
     void                                SetProspectiveStartDate(const char * sProspectiveStartDate);
     void                                SetRestrictReportedClusters(bool b) {gbRestrictReportedClusters = b;}
     void                                SetRiskType(RiskType eRiskType);
     void                                SetRunHistoryFilename(const ZdString& sFilename) {gsRunHistoryFilename = sFilename;}
+    void                                SetSimulationDataOutputFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
+    void                                SetSimulationDataSourceFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
+    void                                SetSimulationType(SimulationType eSimulationType);
     void                                SetSequentialScanning(bool b) {gbSequentialRuns = b;}
     void                                SetSequentialCutOffPValue(double dPValue);
     void                                SetSpecialGridFileName(const char * sSpecialGridFileName, bool bCorrectForRelativePath=false, bool bSetUsingFlag=false);
-    bool                                UseMaxCirclePopulationFile() const {return gbUseMaxCirclePopulationFile;}
-    bool                                UseSpecialGrid() const {return gbUseSpecialGridFile;}
     void                                SetStartRangeEndDate(const char * sStartRangeEndDate);
     void                                SetStartRangeStartDate(const char * sStartRangeStartDate);
     void                                SetStudyPeriodEndDate(const char * sStudyPeriodEndDate);
@@ -440,6 +463,8 @@ class CParameters {
     void                                SetUseMaxCirclePopulationFile(bool b) {gbUseMaxCirclePopulationFile = b;}
     void                                SetValidatePriorToCalculation(bool b) {gbValidatePriorToCalc = b;}
     bool                                ValidateParameters(BasePrint & PrintDirection);
+    bool                                UseMaxCirclePopulationFile() const {return gbUseMaxCirclePopulationFile;}
+    bool                                UseSpecialGrid() const {return gbUseSpecialGridFile;}
     void                                Write(const char * sParameterFileName);
 };
 

@@ -78,6 +78,11 @@ const char*      PVALUE_PROSPECT_LLR_LINE       	= "PValues2PrespecifiedLLRs";
 const char*      LLR_1_LINE                     	= "LLR1";
 const char*      LLR_2_LINE                    		= "LLR2";
 const char*      EARLY_SIM_TERMINATION_LINE             = "EarlySimulationTermination";
+const char*      SIMULATION_TYPE_LINE                   = "SimulationProcedureType";
+const char*      SIMULATION_FILESOURCE_LINE             = "SimulationDataSourceFilename";
+const char*      POWER_ESTIMATIONFILE_LINE              = "PowerEstimationFilename";
+const char*      OUTPUT_SIMULATION_DATA_LINE            = "OutputSimulationData";
+const char*      SIMULATION_DATA_OUTFILE_LINE           = "SimulationDataOutputFilename";
 
 const int        MAXIMUM_SEQUENTIAL_ANALYSES    	= 32000;
 const int        MAXIMUM_ELLIPSOIDS             	= 10;
@@ -99,71 +104,39 @@ const char*      YEAR_PRECISION_TYPE            	= "Years";
 const char*      MONTH_PRECISION_TYPE           	= "Months";
 const char*      DAY_PRECISION_TYPE             	= "Days";
 
-int CParameters::giNumParameters 			= 59;
+int CParameters::giNumParameters 			= 64;
 
-char mgsVariableLabels[59][100] = {
-   "Analysis Type",
-   "Scan Areas",
-   "Case File",
-   "Population File",
-   "Coordinates File",
-   "Results File",
-   "Precision of Case Times",
-   "Not applicable",
-   "Special Grid File Use",
-   "Grid File",
-   "Maximum Geographic size",
-   "Study Period Start Date",
-   "Study Period End Date",
-   "Include Clusters Type",
-   "Exact Times",
-   "Interval Units",
-   "Interval Length",
-   "Include Purely Spatial Cluster",
-   "Maximum Temporal Size",
-   "Replications",
-   "Model Type",
-   "Isotonic Scan",
-   "p-Values for 2 Prospective LLR's",
-   "LLR #1",
-   "LLR #2",
-   "Time Trend Adjustment Type",
-   "Time Trend Percentage",
-   "Include Purely Temporal Cluster",
-   "Control File",
-   "Coordinates Type",
-   "Output Simulated Loglikelihood Ratios Ascii Format",
-   "Sequential Scan",
-   "Sequential Scan Max Iterations",
-   "Sequential Scan Max p-Value",
-   "Validate Parameters",
-   "Output Relative Risks Ascii Format",
-   "Number of Ellipses",
-   "Ellipse Shapes",
-   "Ellipse Angles",
-   "Prospective Start Date",
-   "Output Location Information Ascii Format",
-   "Output Cluster Infomration Ascii Format",
-   "Criteria for Reporting Secondary Clusters",
-   "Maximum Temporal Cluster Size Type",
-   "Maximum Geographic Cluster Size Type",
-   "Analysis History File",
-   "Output Cluster Information DBase Format",
-   "Output Location Information DBase Format",
-   "Output Relative Risks DBase Format",
+char mgsVariableLabels[64][100] = {
+   "Analysis Type", "Scan Areas", "Case File", "Population File",
+   "Coordinates File", "Results File", "Precision of Case Times",
+   "Not applicable", "Special Grid File Use", "Grid File",
+   "Maximum Geographic size", "Study Period Start Date",
+   "Study Period End Date", "Include Clusters Type", "Exact Times",
+   "Interval Units", "Interval Length", "Include Purely Spatial Cluster",
+   "Maximum Temporal Size", "Replications", "Model Type", "Isotonic Scan",
+   "p-Values for 2 Prospective LLR's", "LLR #1", "LLR #2",
+   "Time Trend Adjustment Type", "Time Trend Percentage",
+   "Include Purely Temporal Cluster", "Control File", "Coordinates Type",
+   "Output Simulated Loglikelihood Ratios Ascii Format", "Sequential Scan",
+   "Sequential Scan Max Iterations", "Sequential Scan Max p-Value",
+   "Validate Parameters", "Output Relative Risks Ascii Format",
+   "Number of Ellipses", "Ellipse Shapes", "Ellipse Angles",
+   "Prospective Start Date", "Output Location Information Ascii Format",
+   "Output Cluster Infomration Ascii Format", "Criteria for Reporting Secondary Clusters",
+   "Maximum Temporal Cluster Size Type", "Maximum Geographic Cluster Size Type",
+   "Analysis History File", "Output Cluster Information DBase Format",
+   "Output Location Information DBase Format", "Output Relative Risks DBase Format",
    "Output Simulated Loglikelihood Ratios DBase Format",
-   "Ellipsoid Duczmal Compactness Correction",
-   "Interval Start Range",
-   "Interval End Range",
-   "Time Trend Convergence",
-   "Special Population File",
-   "Special Population File Use",
-   "Early Termination of Simulations",
+   "Ellipsoid Duczmal Compactness Correction", "Interval Start Range",
+   "Interval End Range", "Time Trend Convergence", "Special Population File",
+   "Special Population File Use", "Early Termination of Simulations",
    "Maximum Reported Geographical Cluster Size",
-   "Restrict Reported Max Geographical Cluster Size"
+   "Restrict Reported Max Geographical Cluster Size", "Simulation Procedure Type",
+   "Simulation Data Source File", "Power Estimation File", "Output Simulation Data",
+   "Simulation Data Output File"
 };
 
-/** Constructor */   
+/** Constructor */
 CParameters::CParameters() {
   SetDefaults();
 }
@@ -288,6 +261,11 @@ void CParameters::Copy(const CParameters &rhs) {
     gbEarlyTerminationSimulations       = rhs.gbEarlyTerminationSimulations;
     gbRestrictReportedClusters          = rhs.gbRestrictReportedClusters;
     gfMaxReportedGeographicClusterSize  = rhs.gfMaxReportedGeographicClusterSize;
+    geSimulationType                    = rhs.geSimulationType;
+    gsSimulationDataSourceFileName      = rhs.gsSimulationDataSourceFileName;
+    gsPowerEstimationSourceFileName     = rhs.gsPowerEstimationSourceFileName;
+    gbOutputSimulationData              = rhs.gbOutputSimulationData;
+    gsSimulationDataOutputFilename      = rhs.gsSimulationDataOutputFilename;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -374,6 +352,10 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
     fprintf(fp, "  Coordinates File               : %s\n", gsCoordinatesFileName.c_str());
     if (gbUseSpecialGridFile)
       fprintf(fp, "  Special Grid File              : %s\n", gsSpecialGridFileName.c_str());
+    if (geSimulationType == FILESOURCE)
+      fprintf(fp, "  Simulation Data Source File    : %s\n", gsSimulationDataSourceFileName.c_str());
+    else if(geSimulationType == POWER_ESTIMATION)
+      fprintf(fp, "  Power Estimation File          : %s\n", gsPowerEstimationSourceFileName.c_str());
 
     fprintf(fp, "\n  Precision of Times : %s\n", GetDatePrecisionAsString(gePrecisionOfTimesType));
 
@@ -548,6 +530,9 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
        else
          fprintf(fp, "  LLR File(s)       : %s\n", DBaseOutput.GetFullPath());
     }
+
+    if (gbOutputSimulationData)
+      fprintf(fp, "  Simulations File  : %s\n", gsSimulationDataOutputFilename.c_str());
 
     if (!(geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
       fprintf(fp, "\n  Criteria for Reporting Secondary Clusters : ");
@@ -735,6 +720,11 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
         case EARLY_SIM_TERMINATION     : sParameterLineLabel = EARLY_SIM_TERMINATION_LINE; break;
         case REPORTED_GEOSIZE          : sParameterLineLabel = REPORTED_GEOSIZE_LINE; break;
         case USE_REPORTED_GEOSIZE      : sParameterLineLabel = USE_REPORTED_GEOSIZE_LINE; break;
+        case SIMULATION_TYPE           : sParameterLineLabel = SIMULATION_TYPE_LINE; break;
+        case SIMULATION_SOURCEFILE     : sParameterLineLabel = SIMULATION_FILESOURCE_LINE; break;
+        case POWER_ESTIMATIONFILE      : sParameterLineLabel = POWER_ESTIMATIONFILE_LINE; break;
+        case OUTPUT_SIMULATION_DATA    : sParameterLineLabel = OUTPUT_SIMULATION_DATA_LINE; break;
+        case SIMULATION_DATA_OUTFILE   : sParameterLineLabel = SIMULATION_DATA_OUTFILE_LINE; break;
         default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLineLabel()", eParameterType);
       };
     }
@@ -947,67 +937,72 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
 
   try {
     switch (eParameterType) {
-      case ANALYSISTYPE              : sDefaultValue = geAnalysisType; break;
-      case SCANAREAS                 : sDefaultValue = geAreaScanRate; break;
-      case CASEFILE                  : sDefaultValue = "<blank>"; break;
-      case POPFILE                   : sDefaultValue = "<blank>"; break;
-      case COORDFILE                 : sDefaultValue = "<blank>"; break;
-      case OUTPUTFILE                : sDefaultValue = "<blank>"; break;
-      case PRECISION                 : sDefaultValue = gePrecisionOfTimesType; break;
-      case DIMENSION                 : /*  */ break;
-      case SPECIALGRID               : sDefaultValue = (gbUseSpecialGridFile ? YES : NO); break;
-      case GRIDFILE                  : sDefaultValue = "<blank>"; break;
-      case GEOSIZE                   : sDefaultValue = gfMaxGeographicClusterSize; break;
-      case STARTDATE                 : sDefaultValue = gsStudyPeriodStartDate.c_str(); break;
-      case ENDDATE                   : sDefaultValue = gsStudyPeriodEndDate.c_str(); break;
-      case CLUSTERS                  : sDefaultValue = geIncludeClustersType; break;
-      case EXACTTIMES                : /* no longer used */ break;
-      case INTERVALUNITS             : sDefaultValue = geTimeIntervalUnitsType; break;
-      case TIMEINTLEN                : sDefaultValue = glTimeIntervalLength; break;
-      case PURESPATIAL               : sDefaultValue = (gbIncludePurelySpatialClusters ? YES : NO); break;
-      case TIMESIZE                  : sDefaultValue = gfMaxTemporalClusterSize; break;
-      case REPLICAS                  : sDefaultValue = giReplications; break;
-      case MODEL                     : sDefaultValue = geProbabiltyModelType; break;
-      case RISKFUNCTION              : sDefaultValue = geRiskFunctionType; break;
-      case POWERCALC                 : sDefaultValue = (gbPowerCalculation ? YES : NO); break;
-      case POWERX                    : sDefaultValue = gdPower_X; break;
-      case POWERY                    : sDefaultValue = gdPower_Y; break;
-      case TIMETREND                 : sDefaultValue = geTimeTrendAdjustType; break;
-      case TIMETRENDPERC             : sDefaultValue = GetTimeTrendAdjustmentPercentage(); break;
-      case PURETEMPORAL              : sDefaultValue = (gbIncludePurelyTemporalClusters ? YES : NO); break;
-      case CONTROLFILE               : sDefaultValue = "<blank>"; break;
-      case COORDTYPE                 : sDefaultValue = geCoordinatesType; break;
-      case OUTPUT_SIM_LLR_ASCII      : sDefaultValue = (gbOutputSimLogLikeliRatiosAscii ? YES : NO); break;
-      case SEQUENTIAL                : sDefaultValue = (gbSequentialRuns ? YES : NO); break;
-      case SEQNUM                    : sDefaultValue = giNumSequentialRuns; break;
-      case SEQPVAL                   : sDefaultValue = gbSequentialCutOffPValue; break;
-      case VALIDATE                  : sDefaultValue = (gbValidatePriorToCalc ? YES : NO); break;
-      case OUTPUT_RR_ASCII           : sDefaultValue = (gbOutputRelativeRisksAscii ? YES : NO); break;
-      case ELLIPSES                  : sDefaultValue = giNumberEllipses; break;
-      case ESHAPES                   : sDefaultValue = "<blank>"; break;
-      case ENUMBERS                  : sDefaultValue = "<blank>"; break;
-      case START_PROSP_SURV          : sDefaultValue = gsProspectiveStartDate.c_str(); break;
-      case OUTPUT_AREAS_ASCII        : sDefaultValue = (gbOutputAreaSpecificAscii ? YES : NO); break;
-      case OUTPUT_MLC_ASCII          : sDefaultValue = (gbOutputClusterLevelAscii ? YES : NO); break;
-      case CRITERIA_SECOND_CLUSTERS  : sDefaultValue = geCriteriaSecondClustersType; break;
-      case MAX_TEMPORAL_TYPE         : sDefaultValue = geMaxTemporalClusterSizeType; break;
-      case MAX_SPATIAL_TYPE          : sDefaultValue = geMaxGeographicClusterSizeType; break;
-      case RUN_HISTORY_FILENAME      : /* no longer read in from parameter file */ break;
-      case OUTPUT_MLC_DBASE          : sDefaultValue = (gbOutputClusterLevelDBase ? YES : NO); break;
-      case OUTPUT_AREAS_DBASE        : sDefaultValue = (gbOutputAreaSpecificDBase ? YES : NO); break;
-      case OUTPUT_RR_DBASE           : sDefaultValue = (gbOutputRelativeRisksDBase ? YES : NO); break;
-      case OUTPUT_SIM_LLR_DBASE      : sDefaultValue = (gbOutputSimLogLikeliRatiosDBase ? YES : NO); break;
-      case DUCZMAL_COMPACTNESS       : sDefaultValue = (gbDuczmalCorrectEllipses ? YES : NO); break;
-      case INTERVAL_STARTRANGE       : sDefaultValue.printf("%s,%s", gsStartRangeStartDate.c_str(), gsStartRangeEndDate.c_str());
-                                       break;
-      case INTERVAL_ENDRANGE         : sDefaultValue.printf("%s,%s", gsEndRangeStartDate.c_str(), gsEndRangeEndDate.c_str());
-                                       break;
-      case TIMETRENDCONVRG	     : sDefaultValue = gbTimeTrendConverge; break;
-      case MAXCIRCLEPOPFILE          : sDefaultValue = "<blank>"; break;
-      case USEMAXCIRCLEPOPFILE       : sDefaultValue = (gbUseMaxCirclePopulationFile ? YES : NO); break;
-      case EARLY_SIM_TERMINATION     : sDefaultValue = (gbEarlyTerminationSimulations ? YES : NO); break;
-      case REPORTED_GEOSIZE          : sDefaultValue = gfMaxReportedGeographicClusterSize; break;
-      case USE_REPORTED_GEOSIZE      : sDefaultValue = (gbRestrictReportedClusters ? YES : NO); break;
+      case ANALYSISTYPE             : sDefaultValue = geAnalysisType; break;
+      case SCANAREAS                : sDefaultValue = geAreaScanRate; break;
+      case CASEFILE                 : sDefaultValue = "<blank>"; break;
+      case POPFILE                  : sDefaultValue = "<blank>"; break;
+      case COORDFILE                : sDefaultValue = "<blank>"; break;
+      case OUTPUTFILE               : sDefaultValue = "<blank>"; break;
+      case PRECISION                : sDefaultValue = gePrecisionOfTimesType; break;
+      case DIMENSION                : /*  */ break;
+      case SPECIALGRID              : sDefaultValue = (gbUseSpecialGridFile ? YES : NO); break;
+      case GRIDFILE                 : sDefaultValue = "<blank>"; break;
+      case GEOSIZE                  : sDefaultValue = gfMaxGeographicClusterSize; break;
+      case STARTDATE                : sDefaultValue = gsStudyPeriodStartDate.c_str(); break;
+      case ENDDATE                  : sDefaultValue = gsStudyPeriodEndDate.c_str(); break;
+      case CLUSTERS                 : sDefaultValue = geIncludeClustersType; break;
+      case EXACTTIMES               : /* no longer used */ break;
+      case INTERVALUNITS            : sDefaultValue = geTimeIntervalUnitsType; break;
+      case TIMEINTLEN               : sDefaultValue = glTimeIntervalLength; break;
+      case PURESPATIAL              : sDefaultValue = (gbIncludePurelySpatialClusters ? YES : NO); break;
+      case TIMESIZE                 : sDefaultValue = gfMaxTemporalClusterSize; break;
+      case REPLICAS                 : sDefaultValue = giReplications; break;
+      case MODEL                    : sDefaultValue = geProbabiltyModelType; break;
+      case RISKFUNCTION             : sDefaultValue = geRiskFunctionType; break;
+      case POWERCALC                : sDefaultValue = (gbPowerCalculation ? YES : NO); break;
+      case POWERX                   : sDefaultValue = gdPower_X; break;
+      case POWERY                   : sDefaultValue = gdPower_Y; break;
+      case TIMETREND                : sDefaultValue = geTimeTrendAdjustType; break;
+      case TIMETRENDPERC            : sDefaultValue = GetTimeTrendAdjustmentPercentage(); break;
+      case PURETEMPORAL             : sDefaultValue = (gbIncludePurelyTemporalClusters ? YES : NO); break;
+      case CONTROLFILE              : sDefaultValue = "<blank>"; break;
+      case COORDTYPE                : sDefaultValue = geCoordinatesType; break;
+      case OUTPUT_SIM_LLR_ASCII     : sDefaultValue = (gbOutputSimLogLikeliRatiosAscii ? YES : NO); break;
+      case SEQUENTIAL               : sDefaultValue = (gbSequentialRuns ? YES : NO); break;
+      case SEQNUM                   : sDefaultValue = giNumSequentialRuns; break;
+      case SEQPVAL                  : sDefaultValue = gbSequentialCutOffPValue; break;
+      case VALIDATE                 : sDefaultValue = (gbValidatePriorToCalc ? YES : NO); break;
+      case OUTPUT_RR_ASCII          : sDefaultValue = (gbOutputRelativeRisksAscii ? YES : NO); break;
+      case ELLIPSES                 : sDefaultValue = giNumberEllipses; break;
+      case ESHAPES                  : sDefaultValue = "<blank>"; break;
+      case ENUMBERS                 : sDefaultValue = "<blank>"; break;
+      case START_PROSP_SURV         : sDefaultValue = gsProspectiveStartDate.c_str(); break;
+      case OUTPUT_AREAS_ASCII       : sDefaultValue = (gbOutputAreaSpecificAscii ? YES : NO); break;
+      case OUTPUT_MLC_ASCII         : sDefaultValue = (gbOutputClusterLevelAscii ? YES : NO); break;
+      case CRITERIA_SECOND_CLUSTERS : sDefaultValue = geCriteriaSecondClustersType; break;
+      case MAX_TEMPORAL_TYPE        : sDefaultValue = geMaxTemporalClusterSizeType; break;
+      case MAX_SPATIAL_TYPE         : sDefaultValue = geMaxGeographicClusterSizeType; break;
+      case RUN_HISTORY_FILENAME     : /* no longer read in from parameter file */ break;
+      case OUTPUT_MLC_DBASE         : sDefaultValue = (gbOutputClusterLevelDBase ? YES : NO); break;
+      case OUTPUT_AREAS_DBASE       : sDefaultValue = (gbOutputAreaSpecificDBase ? YES : NO); break;
+      case OUTPUT_RR_DBASE          : sDefaultValue = (gbOutputRelativeRisksDBase ? YES : NO); break;
+      case OUTPUT_SIM_LLR_DBASE     : sDefaultValue = (gbOutputSimLogLikeliRatiosDBase ? YES : NO); break;
+      case DUCZMAL_COMPACTNESS      : sDefaultValue = (gbDuczmalCorrectEllipses ? YES : NO); break;
+      case INTERVAL_STARTRANGE      : sDefaultValue.printf("%s,%s", gsStartRangeStartDate.c_str(), gsStartRangeEndDate.c_str());
+                                      break;
+      case INTERVAL_ENDRANGE        : sDefaultValue.printf("%s,%s", gsEndRangeStartDate.c_str(), gsEndRangeEndDate.c_str());
+                                      break;
+      case TIMETRENDCONVRG	    : sDefaultValue = gbTimeTrendConverge; break;
+      case MAXCIRCLEPOPFILE         : sDefaultValue = "<blank>"; break;
+      case USEMAXCIRCLEPOPFILE      : sDefaultValue = (gbUseMaxCirclePopulationFile ? YES : NO); break;
+      case EARLY_SIM_TERMINATION    : sDefaultValue = (gbEarlyTerminationSimulations ? YES : NO); break;
+      case REPORTED_GEOSIZE         : sDefaultValue = gfMaxReportedGeographicClusterSize; break;
+      case USE_REPORTED_GEOSIZE     : sDefaultValue = (gbRestrictReportedClusters ? YES : NO); break;
+      case SIMULATION_TYPE          : sDefaultValue = geSimulationType; break;
+      case SIMULATION_SOURCEFILE    : sDefaultValue = "<blank>"; break;
+      case POWER_ESTIMATIONFILE     : sDefaultValue = "<blank>"; break;
+      case OUTPUT_SIMULATION_DATA   : sDefaultValue = (gbOutputSimulationData ? YES : NO); break;
+      case SIMULATION_DATA_OUTFILE  : sDefaultValue = "<blank>"; break;
       default : ZdException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -1064,6 +1059,11 @@ void CParameters::ReadAdvancedFeatures(ZdIniFile& file, BasePrint & PrintDirecti
     ReadIniParameter(*pSection, LLR_1_LINE, POWERX, PrintDirection);
     ReadIniParameter(*pSection, LLR_2_LINE, POWERY, PrintDirection);
     ReadIniParameter(*pSection, EARLY_SIM_TERMINATION_LINE, EARLY_SIM_TERMINATION, PrintDirection);
+    ReadIniParameter(*pSection, SIMULATION_TYPE_LINE, SIMULATION_TYPE, PrintDirection);
+    ReadIniParameter(*pSection, SIMULATION_FILESOURCE_LINE, SIMULATION_SOURCEFILE, PrintDirection);
+    ReadIniParameter(*pSection, POWER_ESTIMATIONFILE_LINE, POWER_ESTIMATIONFILE, PrintDirection);
+    ReadIniParameter(*pSection, OUTPUT_SIMULATION_DATA_LINE, OUTPUT_SIMULATION_DATA, PrintDirection);
+    ReadIniParameter(*pSection, SIMULATION_DATA_OUTFILE_LINE, SIMULATION_DATA_OUTFILE, PrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadAdvancedFeatures()", "CParameters");
@@ -1575,6 +1575,11 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case EARLY_SIM_TERMINATION     : SetTerminateSimulationsEarly(ReadBoolean(sParameter, eParameterType)); break;
       case REPORTED_GEOSIZE          : SetMaximumReportedGeographicalClusterSize(ReadFloat(sParameter, eParameterType)); break;
       case USE_REPORTED_GEOSIZE      : SetRestrictReportedClusters(ReadBoolean(sParameter, eParameterType)); break;
+      case SIMULATION_TYPE           : SetSimulationType((SimulationType)ReadInt(sParameter, eParameterType)); break;
+      case SIMULATION_SOURCEFILE     : SetSimulationDataSourceFileName(sParameter.GetCString(), true); break;
+      case POWER_ESTIMATIONFILE      : SetPowerEstimationFileName(sParameter.GetCString(), true); break;
+      case OUTPUT_SIMULATION_DATA    : SetOutputSimulationData(ReadBoolean(sParameter, eParameterType)); break;
+      case SIMULATION_DATA_OUTFILE   : SetSimulationDataOutputFileName(sParameter.GetCString(), true); break;
       default : ZdException::Generate("Unknown parameter enumeration %d.","ReadParameter()", eParameterType);
     };
   }
@@ -1794,6 +1799,16 @@ void CParameters::SaveAdvancedFeaturesSection(ZdIniFile& file) {
     pSection->AddLine(LLR_1_LINE, AsString(sValue, gdPower_X));
     pSection->AddLine(LLR_2_LINE, AsString(sValue, gdPower_Y));
     pSection->AddLine(EARLY_SIM_TERMINATION_LINE, gbEarlyTerminationSimulations ? YES : NO);
+    pSection->AddComment(" Simulation options (Standard=0, Power Estimation=1, File Source=2)");
+    pSection->AddLine(SIMULATION_TYPE_LINE, AsString(sValue, geSimulationType));
+    pSection->AddComment(" Simulation source file name (with File Source=2)");
+    pSection->AddLine(SIMULATION_FILESOURCE_LINE, gsSimulationDataSourceFileName.c_str());
+    pSection->AddComment(" Power estimation source file name (with Power Estimation=1)");
+    pSection->AddLine(POWER_ESTIMATIONFILE_LINE, gsPowerEstimationSourceFileName.c_str());
+    pSection->AddComment(" Print simulation data to file (y/n)");
+    pSection->AddLine(OUTPUT_SIMULATION_DATA_LINE, gbOutputSimulationData ? YES : NO);
+    pSection->AddComment(" Simulation data output file name");
+    pSection->AddLine(SIMULATION_DATA_OUTFILE_LINE, gsSimulationDataOutputFilename.c_str());
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveAdvancedFeaturesSection()","CParameters");
@@ -2067,7 +2082,7 @@ void CParameters::SetCaseFileName(const char * sCaseFileName, bool bCorrectForRe
   }
 }
 
-/** Sets control data file name. 
+/** Sets control data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
 void CParameters::SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath) {
@@ -2204,6 +2219,11 @@ void CParameters::SetDefaults() {
   gbEarlyTerminationSimulations         = false;
   gbRestrictReportedClusters            = false;
   gfMaxReportedGeographicClusterSize    = 49;
+  geSimulationType                      = STANDARD;
+  gsSimulationDataSourceFileName        = "";
+  gsPowerEstimationSourceFileName       = "";
+  gbOutputSimulationData                = false;
+  gsSimulationDataOutputFilename        = "";
 }
 
 /** Sets dimensions of input data. */
@@ -2459,6 +2479,24 @@ void CParameters::SetPowerCalculationY(double dPowerY) {
   gdPower_Y = dPowerY;
 }
 
+/** Sets power estimation data file name.
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file does not exist. */
+void CParameters::SetPowerEstimationFileName(const char * sSourceFileName, bool bCorrectForRelativePath) {
+  try {
+    if (! sSourceFileName)
+      ZdGenerateException("Null pointer.", "SetPowerEstimationFileName()");
+
+    gsPowerEstimationSourceFileName = sSourceFileName;
+    if (bCorrectForRelativePath)
+      ConvertRelativePath(gsPowerEstimationSourceFileName);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetPowerEstimationFileName()", "CParameters");
+    throw;
+  }
+}
+
 /** Sets precision of input file dates type. Throws exception if out of range. */
 void CParameters::SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType) {
   ZdString      sLabel;
@@ -2531,6 +2569,60 @@ void CParameters::SetRiskType(RiskType eRiskType) {
   }
   catch (ZdException &x) {
     x.AddCallpath("SetRiskType()","CParameters");
+    throw;
+  }
+}
+
+/** sets simulation procedure type */
+void CParameters::SetSimulationType(SimulationType eSimulationType) {
+  ZdString      sLabel;
+
+  try {
+    if (eSimulationType < STANDARD || eSimulationType > FILESOURCE)
+      InvalidParameterException::Generate("Error: For parameter %s, setting '%d' is out of range(%d - %d).\n",
+                                          "SetSimulationType()",
+                                          GetParameterLineLabel(SIMULATION_TYPE, sLabel, geReadType == INI),
+                                          eSimulationType, STANDARD, FILESOURCE);
+    geSimulationType = eSimulationType;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetSimulationType()","CParameters");
+    throw;
+  }
+}
+
+/** Sets simulation data output file name.
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file does not exist. */
+void CParameters::SetSimulationDataOutputFileName(const char * sSourceFileName, bool bCorrectForRelativePath) {
+  try {
+    if (! sSourceFileName)
+      ZdGenerateException("Null pointer.", "SetSimulationDataOutputFileName()");
+
+    gsSimulationDataOutputFilename = sSourceFileName;
+    if (bCorrectForRelativePath)
+      ConvertRelativePath(gsSimulationDataOutputFilename);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetSimulationDataOutputFileName()", "CParameters");
+    throw;
+  }
+}
+
+/** Sets simulation data source file name.
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file does not exist. */
+void CParameters::SetSimulationDataSourceFileName(const char * sSourceFileName, bool bCorrectForRelativePath) {
+  try {
+    if (! sSourceFileName)
+      ZdGenerateException("Null pointer.", "SetSimulationDataSourceFileName()");
+
+    gsSimulationDataSourceFileName = sSourceFileName;
+    if (bCorrectForRelativePath)
+      ConvertRelativePath(gsSimulationDataSourceFileName);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetSimulationDataSourceFileName()", "CParameters");
     throw;
   }
 }
@@ -2996,11 +3088,16 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
       //validate ellipse parameters
       if (! ValidateEllipseParameters(PrintDirection))
         bValid = false;
+
+      //validate simulation options
+      if (! ValidateSimulationDataParameters(PrintDirection))
+        bValid = false;
     }
     else {
       PrintDirection.SatScanPrintWarning("Warning: Parameters will not be validated, in accordance with settings.\n");
       PrintDirection.SatScanPrintWarning("         Note that this may have adverse effects on analysis results and/or program operation.\n\n");
-    }  
+    }
+
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateParameters()","CParameters");
@@ -3151,6 +3248,58 @@ bool CParameters::ValidateProspectiveDateString() {
     throw;
   }
   return bReturnValue;
+}
+
+/** Validates parameters used in making simulation data. */
+bool CParameters::ValidateSimulationDataParameters(BasePrint & PrintDirection) {
+  bool  bValid=true;
+
+  try {
+    if (geProbabiltyModelType == POISSON) {
+      switch (geSimulationType) {
+        case STANDARD           : break;
+        case POWER_ESTIMATION   : if (gsPowerEstimationSourceFileName.empty()) {
+                                    bValid = false;
+                                    PrintDirection.SatScanPrintWarning("Error: No power estimation source file specified.\n");
+                                  }
+                                  else if (access(gsPowerEstimationSourceFileName.c_str(), 00)) {
+                                    bValid = false;
+                                    PrintDirection.SatScanPrintWarning("Error: Power estimation source file '%s' does not exist.\n",
+                                                                       gsPowerEstimationSourceFileName.c_str());
+                                    PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+                                  }
+                                  break;
+        case FILESOURCE         : if (gsSimulationDataSourceFileName.empty()) {
+                                    bValid = false;
+                                    PrintDirection.SatScanPrintWarning("Error: No Simulation data source file specified.\n");
+                                  }
+                                  else if (access(gsSimulationDataSourceFileName.c_str(), 00)) {
+                                    bValid = false;
+                                    PrintDirection.SatScanPrintWarning("Error: Simulation data source file '%s' does not exist.\n",
+                                                                       gsSimulationDataSourceFileName.c_str());
+                                    PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+                                  }
+                                  if (gbOutputSimulationData && gsSimulationDataSourceFileName == gsSimulationDataOutputFilename) {
+                                    bValid = false;
+                                    PrintDirection.SatScanPrintWarning("Error: File '%s' specified as both\n",
+                                                                       gsSimulationDataSourceFileName.c_str());
+                                    PrintDirection.SatScanPrintWarning("       simulation data source file and output file for simulation data.\n");                                  }
+                                  break;
+        default : ZdGenerateException("Unknown simulation type '%d'.","ValidateSimulationDataParameters()", geSimulationType);
+      };
+      if (giReplications == 0)
+        gbOutputSimulationData = false;
+    }
+    else {
+      geSimulationType = STANDARD;
+      gbOutputSimulationData = false;
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ValidateSimulationDataParameters()","CParameters");
+    throw;
+  }
+  return bValid;
 }
 
 /** Validates parameters used in optional sequenatial scan feature.
