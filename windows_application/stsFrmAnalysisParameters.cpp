@@ -61,14 +61,16 @@ void TfrmAnalysis::AttemptFilterDateFields(const char * sFileName, const char * 
     pTransaction = pFile->BeginTransaction();
     for (u=1; u <= pFile->GetNumRecords(); u++) {
        pFile->GotoRecord(u);
-       pFile->GetSystemRecord()->RetrieveFieldValue(uwField, Value);
-       try {
-         Filter.FilterValue(sFiltered, sizeof(sFiltered), Value.AsCString());
-         Value.AsZdString() = sFiltered;
-         pFile->GetSystemRecord()->PutFieldValue(uwField, Value);
-         pFile->SaveRecord(pTransaction);
+       if (! pFile->GetSystemRecord()->GetIsBlank (uwField)) {
+         pFile->GetSystemRecord()->RetrieveFieldValue(uwField, Value);
+         try {
+           Filter.FilterValue(sFiltered, sizeof(sFiltered), Value.AsCString());
+           Value.AsZdString() = sFiltered;
+           pFile->GetSystemRecord()->PutFieldValue(uwField, Value);
+           pFile->SaveRecord(pTransaction);
+         }
+         catch (...){}
        }
-       catch (...){}
     }
     if (pTransaction)
       pFile->EndTransaction(pTransaction);
