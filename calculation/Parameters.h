@@ -66,6 +66,7 @@ extern const char*      SIMULATION_DATA_OUTFILE_LINE;
 extern const char*      ADJUSTMENTS_BY_RR_FILE_LINE;
 extern const char*      USE_ADJUSTMENTS_BY_RR_FILE_LINE;
 extern const char*      MAX_CIRCLE_POP_FILE_LINE;
+extern const char*      SPATIAL_ADJ_TYPE_LINE;
 
 /** sequential scan ini section */
 extern const char*      SEQUENTIAL_SCAN_SECTION;
@@ -144,7 +145,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     INTERVAL_ENDRANGE, TIMETRENDCONVRG, MAXCIRCLEPOPFILE, EARLY_SIM_TERMINATION,
                                     REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE, SIMULATION_TYPE,
                                     SIMULATION_SOURCEFILE, ADJ_BY_RR_FILE, OUTPUT_SIMULATION_DATA,
-                                    SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE};
+                                    SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL, PURELYSPATIALMONOTONE};
@@ -157,6 +158,8 @@ enum AreaRateType                  {HIGH=1, LOW, HIGHANDLOW};
 /** time trend adjustment types */
 enum TimeTrendAdjustmentType       {NOTADJUSTED=0, NONPARAMETRIC, LOGLINEAR_PERC,
                                     CALCULATED_LOGLINEAR_PERC, STRATIFIED_RANDOMIZATION};
+/** spatial adjustment types */
+enum SpatialAdjustmentType         {NO_SPATIAL_ADJUSTMENT=0, SPATIALLY_STRATIFIED_RANDOMIZATION};
 enum CoordinatesType               {CARTESIAN=0, LATLON};
 /** criteria for reporting secondary clusters types */
 enum CriteriaSecondaryClustersType {NOGEOOVERLAP=0, NOCENTROIDSINOTHER, NOCENTROIDSINMORELIKE,
@@ -187,6 +190,7 @@ class CParameters {
     bool                                gbOutputSimulationData;                 /** indicates whether to output simulation data to file */
     bool                                gbAdjustForEarlierAnalyses;             /** indicates whether to adjust for earlier analyses,
                                                                                     pertinent for prospective analyses */
+    SpatialAdjustmentType               geSpatialAdjustmentType;                /** type of spatial adjustment*/
         /* Power Calcution variables */
     bool                                gbPowerCalculation;                     /** indicator of whether to perform power calculations */
     double                              gdPower_X, gdPower_Y;                   /** power calculation variables */
@@ -404,8 +408,9 @@ class CParameters {
     const std::string                 & GetSimulationDataOutputFilename() const {return gsSimulationDataOutputFilename;}  
     const std::string                 & GetSimulationDataSourceFilename() const {return gsSimulationDataSourceFileName;}
     SimulationType                      GetSimulationType() const {return geSimulationType;}
-    const std::string                 & GetSpecialGridFileName() const {return gsSpecialGridFileName;}
     const std::string                 & GetSourceFileName() const {return gsParametersSourceFileName;}
+    SpatialAdjustmentType               GetSpatialAdjustmentType() const {return geSpatialAdjustmentType;}
+    const std::string                 & GetSpecialGridFileName() const {return gsSpecialGridFileName;}
     const std::string                 & GetStartRangeEndDate() const {return gsStartRangeEndDate;}
     Julian                              GetStartRangeDateAsJulian(const std::string & sStartRangeDate) const;
     const std::string                 & GetStartRangeStartDate() const {return gsStartRangeStartDate;}
@@ -421,6 +426,7 @@ class CParameters {
     double                              GetTimeTrendConvergence() const {return gdTimeTrendConverge;}
     void                                Read(const char* szFilename, BasePrint & PrintDirection);
     void                                SetAdjustForEarlierAnalyses(bool b) {gbAdjustForEarlierAnalyses = b;}
+    void                                SetAdjustmentsByRelativeRisksFilename(const char * sAdjustmentsByRelativeRisksFileName, bool bCorrectForRelativePath=false);  
     void                                SetAnalysisType(AnalysisType eAnalysisType);
     void                                SetAreaRateType(AreaRateType eAreaRateType);
     void                                SetDimensionsOfData(int iDimensions);
@@ -465,15 +471,15 @@ class CParameters {
     void                                SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType);
     void                                SetProbabilityModelType(ProbabiltyModelType eProbabiltyModelType);
     void                                SetProspectiveStartDate(const char * sProspectiveStartDate);
-    void                                SetAdjustmentsByRelativeRisksFilename(const char * sAdjustmentsByRelativeRisksFileName, bool bCorrectForRelativePath=false);  
     void                                SetRestrictReportedClusters(bool b) {gbRestrictReportedClusters = b;}
     void                                SetRiskType(RiskType eRiskType);
     void                                SetRunHistoryFilename(const ZdString& sFilename) {gsRunHistoryFilename = sFilename;}
+    void                                SetSequentialCutOffPValue(double dPValue);
+    void                                SetSequentialScanning(bool b) {gbSequentialRuns = b;}
     void                                SetSimulationDataOutputFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                SetSimulationDataSourceFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                SetSimulationType(SimulationType eSimulationType);
-    void                                SetSequentialScanning(bool b) {gbSequentialRuns = b;}
-    void                                SetSequentialCutOffPValue(double dPValue);
+    void                                SetSpatialAdjustmentType(SpatialAdjustmentType eSpatialAdjustmentType);
     void                                SetSpecialGridFileName(const char * sSpecialGridFileName, bool bCorrectForRelativePath=false, bool bSetUsingFlag=false);
     void                                SetStartRangeEndDate(const char * sStartRangeEndDate);
     void                                SetStartRangeStartDate(const char * sStartRangeStartDate);

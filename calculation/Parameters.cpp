@@ -87,6 +87,7 @@ const char*      SIMULATION_DATA_OUTFILE_LINE           = "SimulatedDataOutputFi
 const char*      ADJUSTMENTS_BY_RR_FILE_LINE            = "AdjustmentsByKnownRelativeRisksFilename";
 const char*      USE_ADJUSTMENTS_BY_RR_FILE_LINE        = "UseAdjustmentsByRRFile";
 const char*      MAX_CIRCLE_POP_FILE_LINE               = "MaxCirclePopulationFile";
+const char*      SPATIAL_ADJ_TYPE_LINE                  = "SpatialAdjustmentType";
 
 const int        MAXIMUM_SEQUENTIAL_ANALYSES    	= 32000;
 const int        MAXIMUM_ELLIPSOIDS             	= 10;
@@ -114,9 +115,9 @@ const char*      DAY_PRECISION_TYPE             	= "days";
 /** width of ASCII results file line */
 const unsigned int PRINT_WIDTH                          = 65;
 
-int CParameters::giNumParameters 			= 65;
+int CParameters::giNumParameters 			= 66;
 
-char mgsVariableLabels[66][100] = {
+char mgsVariableLabels[67][100] = {
    "Analysis Type", "Scan Areas", "Case File", "Population File",
    "Coordinates File", "Results File", "Precision of Case Times",
    "Not applicable", "Special Grid File Use", "Grid File",
@@ -142,7 +143,8 @@ char mgsVariableLabels[66][100] = {
    "Early Termination of Simulations", "Maximum Reported Geographical Cluster Size",
    "Restrict Reported Max Geographical Cluster Size", "Simulation Method Type",
    "Simulated Data Import File", "Adjustments By Known Relative Risks File", "Printing Simulated Data",
-   "Simulated Data Output File", "Adjust for Earlier Analyses", "Use Adjustments By Known Relative Risks File"
+   "Simulated Data Output File", "Adjust for Earlier Analyses", "Use Adjustments By Known Relative Risks File",
+   "Spatial Adjustments Type"
 };
 
 /** Constructor */
@@ -861,6 +863,7 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
         case SIMULATION_DATA_OUTFILE   : sParameterLineLabel = SIMULATION_DATA_OUTFILE_LINE; break;
         case ADJ_FOR_EALIER_ANALYSES   : sParameterLineLabel = ADJUST_EALIER_ANALYSES_LINE; break;
         case USE_ADJ_BY_RR_FILE        : sParameterLineLabel = USE_ADJUSTMENTS_BY_RR_FILE_LINE; break;
+        case SPATIAL_ADJ_TYPE          : sParameterLineLabel = SPATIAL_ADJ_TYPE_LINE; break;
         default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLineLabel()", eParameterType);
       };
     }
@@ -1177,6 +1180,7 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case SIMULATION_DATA_OUTFILE  : sDefaultValue = "<blank>"; break;
       case ADJ_FOR_EALIER_ANALYSES  : sDefaultValue = (gbAdjustForEarlierAnalyses ? YES : NO); break;
       case USE_ADJ_BY_RR_FILE       : sDefaultValue = (gbUseAdjustmentsForRRFile ? YES : NO); break;
+      case SPATIAL_ADJ_TYPE         : sDefaultValue = geSpatialAdjustmentType; break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -1234,6 +1238,7 @@ void CParameters::ReadAdvancedFeatures(ZdIniFile& file, BasePrint & PrintDirecti
     ReadIniParameter(*pSection, OUTPUT_SIMULATION_DATA_LINE, OUTPUT_SIMULATION_DATA, PrintDirection);
     ReadIniParameter(*pSection, SIMULATION_DATA_OUTFILE_LINE, SIMULATION_DATA_OUTFILE, PrintDirection);
     ReadIniParameter(*pSection, MAX_CIRCLE_POP_FILE_LINE, MAXCIRCLEPOPFILE, PrintDirection);
+    ReadIniParameter(*pSection, SPATIAL_ADJ_TYPE_LINE, SPATIAL_ADJ_TYPE, PrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadAdvancedFeatures()", "CParameters");
@@ -1779,6 +1784,7 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case SIMULATION_DATA_OUTFILE   : SetSimulationDataOutputFileName(sParameter.GetCString(), true); break;
       case ADJ_FOR_EALIER_ANALYSES   : SetAdjustForEarlierAnalyses(ReadBoolean(sParameter, eParameterType)); break;
       case USE_ADJ_BY_RR_FILE        : SetUseAdjustmentForRelativeRisksFile(ReadBoolean(sParameter, eParameterType)); break;
+      case SPATIAL_ADJ_TYPE          : SetSpatialAdjustmentType((SpatialAdjustmentType)ReadInt(sParameter, eParameterType)); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","ReadParameter()", eParameterType);
     };
   }
@@ -2039,6 +2045,8 @@ void CParameters::SaveAdvancedFeaturesSection(ZdIniFile& file) {
     pSection->AddComment(" Simulated data output file name");
     pSection->AddLine(SIMULATION_DATA_OUTFILE_LINE, gsSimulationDataOutputFilename.c_str());
     pSection->AddLine(MAX_CIRCLE_POP_FILE_LINE, gsMaxCirclePopulationFileName.c_str());
+    pSection->AddComment(" Spatial Adjustments Type (no spatial adjustment=0, spatially stratified randomization=1)");
+    pSection->AddLine(SPATIAL_ADJ_TYPE_LINE, AsString(sValue, geSpatialAdjustmentType));
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveAdvancedFeaturesSection()","CParameters");
@@ -2485,6 +2493,7 @@ void CParameters::SetDefaults() {
   gsSimulationDataOutputFilename        = "";
   gbAdjustForEarlierAnalyses            = false;
   gbUseAdjustmentsForRRFile             = false;
+  geSpatialAdjustmentType               = NO_SPATIAL_ADJUSTMENT;
 }
 
 /** Sets dimensions of input data. */
@@ -2909,6 +2918,24 @@ void CParameters::SetSimulationDataSourceFileName(const char * sSourceFileName, 
   }
   catch (ZdException &x) {
     x.AddCallpath("SetSimulationDataSourceFileName()", "CParameters");
+    throw;
+  }
+}
+
+/** Set spatial adjustment type. Throws exception if out of range. */
+void CParameters::SetSpatialAdjustmentType(SpatialAdjustmentType eSpatialAdjustmentType) {
+  ZdString      sLabel;
+
+  try {
+    if (eSpatialAdjustmentType < NO_SPATIAL_ADJUSTMENT || eSpatialAdjustmentType > SPATIALLY_STRATIFIED_RANDOMIZATION)
+      InvalidParameterException::Generate("Error: For parameter %s, setting '%d' is out of range(%d - %d).\n",
+                                          "SetSpatialAdjustmentType()",
+                                          GetParameterLineLabel(SPATIAL_ADJ_TYPE, sLabel, geReadType == INI),
+                                          eSpatialAdjustmentType, NO_SPATIAL_ADJUSTMENT, SPATIALLY_STRATIFIED_RANDOMIZATION);
+    geSpatialAdjustmentType = eSpatialAdjustmentType;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetSpatialAdjustmentType()","CParameters");
     throw;
   }
 }
@@ -3749,6 +3776,23 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
       else if (!GetPermitsPurelySpatialCluster(geAnalysisType)) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: A purely spatial cluster can only be included for spatial based analyses.\n");
+      }
+    }
+    if (geSpatialAdjustmentType == SPATIALLY_STRATIFIED_RANDOMIZATION) {
+      if (!(geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Spatial adjustment by stratified randomization is valid for\n"
+                                           "       either retrospective or prospectove space-time analyses only\n.");
+      }
+      if (geTimeTrendAdjustType == STRATIFIED_RANDOMIZATION) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Spatial adjustment by stratified randomization can not be performed\n"
+                                           "       in conjunction with the temporal adjustment by stratified randomization\n.");
+      }
+      if (gbIncludePurelySpatialClusters) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Spatial adjustment by stratified randomization does not permit\n"
+                                           "       the inclusion of a purely spatial cluster.\n");
       }
     }
   }
