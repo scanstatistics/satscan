@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     ZdGetFileTypeArray()->AddElement(&(DBFFileType::GetDefaultInstance()));
     ConsolePrint.SatScanPrintf(GetToolkit().GetAcknowledgment(sMessage));
     if (argc < 2)
-      GenerateUsageException();
+      GenerateUsageException(argv[0]);
     time(&RunTime); //get start time
     Parameters.Read(argv[1], ConsolePrint);
     if (Parameters.GetErrorOnRead()) {
@@ -48,11 +48,11 @@ int main(int argc, char *argv[]) {
        }
        else if (!stricmp(argv[i], "-o")) {
          if (argc < i + 2)
-           GenerateUsageException();
+           GenerateUsageException(argv[0]);
          Parameters.SetOutputFileName(argv[++i]);
        }
        else
-         GenerateUsageException();
+         GenerateUsageException(argv[0]);
     }
     Parameters.SetRunHistoryFilename(GetToolkit().GetRunHistoryFileName());
     Parameters.SetIsLoggingHistory(GetToolkit().GetLogRunHistory());

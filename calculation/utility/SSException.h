@@ -18,9 +18,9 @@ void SSGenerateException(const char * sMessage, const char * sSourceModule, ... 
 
 class UsageException : public ZdException {
   public:
-    UsageException();
+    UsageException(const char * sExecutableFullpathName);
 };
 
-void GenerateUsageException();
+void GenerateUsageException(const char * sExecutableFullpathName);
 //*****************************************************************************
 #endif
