@@ -19,9 +19,9 @@ CSaTScanData::CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection)
       gpGInfo = new GInfo(pPrintDirection);          // DTG
 
       switch (m_pParameters->GetProbabiltyModelType()) {
-        case POISSON              : m_pModel = new CPoissonModel(pParameters, this, pPrintDirection);   break;
-        case BERNOULLI            : m_pModel = new CBernoulliModel(pParameters, this, pPrintDirection); break;
-        case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(pParameters, this, pPrintDirection); break;
+        case POISSON              : m_pModel = new CPoissonModel(*pParameters, *this, *pPrintDirection);   break;
+        case BERNOULLI            : m_pModel = new CBernoulliModel(*pParameters, *this, *pPrintDirection); break;
+        case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(*pParameters, *this, *pPrintDirection); break;
       }
 
       //For now, compute the angle and store the angle and shape
