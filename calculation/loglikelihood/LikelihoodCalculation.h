@@ -15,7 +15,6 @@ class AbstractLoglikelihoodRatioUnifier {
     ~AbstractLoglikelihoodRatioUnifier() {}
 
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
-                                    unsigned int iStream,
                                     count_t tCases,
                                     measure_t tMeasure,
                                     count_t tTotalCases,
@@ -36,14 +35,12 @@ class MultivariateUnifier : public AbstractLoglikelihoodRatioUnifier {
    double       gdLowRateRatios;           /** loglikelihood ratios for low rates */
    bool         gbScanHighRates;           /** indicates whether to scan for high rates */
    bool         gbScanLowRates;            /** indicates whether to scan for low rates */
-   bool         gbRatioSet;
 
   public:
     MultivariateUnifier(AreaRateType eScanningArea);
     ~MultivariateUnifier() {}
 
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
-                                    unsigned int iStream,    
                                     count_t tCases,
                                     measure_t tMeasure,
                                     count_t tTotalCases,
@@ -61,16 +58,13 @@ class MultivariateUnifier : public AbstractLoglikelihoodRatioUnifier {
                       loglikelihood ratios. */
 class AdjustmentUnifier : public AbstractLoglikelihoodRatioUnifier {
    double               gdRatio;              /** summed log likelihood ratios */
-   RATE_FUNCPTRTYPE     gfRateOfInterest;     /** function pointer to scanning area funciton */
    AreaRateType         geScanningArea;       /** type of area scanned for */
-   bool                 gbRatioSet;
 
   public:
     AdjustmentUnifier(AreaRateType eScanningArea);
     ~AdjustmentUnifier() {}
 
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
-                                    unsigned int iStream,
                                     count_t tCases,
                                     measure_t tMeasure,
                                     count_t tTotalCases,
