@@ -425,7 +425,8 @@ bool CSaTScanData::ReadBernoulliData() {
       return false;
 
     gpDataStreams = new BernoulliDataStreamHandler(*this, gpPrint);
-    gpDataStreams->ReadData();
+    if (!gpDataStreams->ReadData())
+      return false;
     if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
     if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
@@ -479,7 +480,8 @@ bool CSaTScanData::ReadNormalData() {
     if (!ReadCoordinatesFile())
       return false;
     gpDataStreams = new NormalDataStreamHandler(*this, gpPrint);
-    gpDataStreams->ReadData();
+    if (!gpDataStreams->ReadData())
+      return false;
     if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
     if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
@@ -502,7 +504,8 @@ bool CSaTScanData::ReadPoissonData() {
       return false;
 
     gpDataStreams = new PoissonDataStreamHandler(*this, gpPrint);
-    gpDataStreams->ReadData();
+    if (!gpDataStreams->ReadData())
+      return false;
     if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
     if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
@@ -524,7 +527,8 @@ bool CSaTScanData::ReadRankData() {
     if (!ReadCoordinatesFile())
       return false;
     gpDataStreams = new RankDataStreamHandler(*this, gpPrint);
-    gpDataStreams->ReadData();
+    if (!gpDataStreams->ReadData())
+      return false;
     if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
     if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
@@ -548,7 +552,8 @@ bool CSaTScanData::ReadSpaceTimePermutationData() {
     if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
        return false;
     gpDataStreams = new SpaceTimePermutationDataStreamHandler(*this, gpPrint);
-    gpDataStreams->ReadData();
+    if (!gpDataStreams->ReadData())
+      return false;
     if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
       return false;
   }
@@ -568,7 +573,8 @@ bool CSaTScanData::ReadSurvivalData() {
     if (!ReadCoordinatesFile())
       return false;
     gpDataStreams = new SurvivalDataStreamHandler(*this, gpPrint);
-    gpDataStreams->ReadData();
+    if (!gpDataStreams->ReadData())
+      return false;
     if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
     if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
