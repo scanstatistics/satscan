@@ -372,20 +372,12 @@ class CParameters {
     void                                SetUseAdjustmentForRelativeRisksFile(bool b) {gbUseAdjustmentsForRRFile = b;}
     void                                SetUseSpecialGrid(bool b) {gbUseSpecialGridFile = b;}
     void                                SetValidatePriorToCalculation(bool b) {gbValidatePriorToCalc = b;}
-    void                                SetVersion(const ZdString & sValue);
+    void                                SetVersion(const CreationVersion& vVersion);
     bool                                ValidateParameters(BasePrint & PrintDirection);
     bool                                UseAdjustmentForRelativeRisksFile() const {return gbUseAdjustmentsForRRFile;}
     bool                                UseMaxCirclePopulationFile() const;
     bool                                UsePopulationFile() const {return gbUsePopulationFile;}
     bool                                UseSpecialGrid() const {return gbUseSpecialGridFile;}
-};
-
-class InvalidParameterException : public ResolvableException {
-  public:
-   InvalidParameterException(va_list varArgs, const char *sMessage, const char *sSourceModule, ZdException::Level iLevel);
-   virtual ~InvalidParameterException() {}
-
-   static void Generate (const char *sMessage, const char *sSourceModule,  ... );
 };
 //*****************************************************************************
 #endif

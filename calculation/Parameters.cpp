@@ -1612,13 +1612,8 @@ void CParameters::SetTimeTrendConvergence(double dTimeTrendConvergence) {
 }
 
 /** Set version number that indicates what version of SaTScan created these parameters. */
-void CParameters::SetVersion(const ZdString& sValue) {
-  sscanf(sValue.GetCString(), "%u.%u.%u", &gCreationVersion.iMajor, &gCreationVersion.iMinor, &gCreationVersion.iRelease);
-//  if (gCreationVersion.iMajor > (unsigned int)atoi(VERSION_MAJOR)) {
-//    gCreationVersion.iMajor = atoi(VERSION_MAJOR);
-//    gCreationVersion.iMinor = atoi(VERSION_MINOR);
-//    gCreationVersion.iRelease = atoi(VERSION_RELEASE);
-//  }
+void CParameters::SetVersion(const CreationVersion& vVersion) {
+  gCreationVersion = vVersion;
 }
 
 bool CParameters::UseMaxCirclePopulationFile() const {
@@ -1751,10 +1746,11 @@ bool CParameters::ValidateEllipseParameters(BasePrint & PrintDirection) {
   size_t        t;
 
   try {
-    if (giNumberEllipses < 0 || giNumberEllipses > MAXIMUM_ELLIPSOIDS)
-      InvalidParameterException::Generate("Error: The number of requested ellipses '%d' is not within allowable range of 0 - %d.\n",
-                                          "ValidateEllipseParameters()", giNumberEllipses, MAXIMUM_ELLIPSOIDS);
-
+    if (giNumberEllipses < 0 || giNumberEllipses > MAXIMUM_ELLIPSOIDS) {
+      bValid = false;
+      PrintDirection.SatScanPrintWarning("Error: The number of requested ellipses '%d' is not within allowable range of 0 - %d.\n",
+                                          giNumberEllipses, MAXIMUM_ELLIPSOIDS);
+    }
     if (giNumberEllipses) {
       //analyses with ellipses can not be performed with coordinates defiend in latitude/longitude system (currently)
       if (geCoordinatesType == LATLON) {
@@ -2754,24 +2750,4 @@ bool CParameters::ValidateTimeAggregationUnits(BasePrint& PrintDirection) const 
     
   return true;
 }
-
-//var_arg constructor
-InvalidParameterException::InvalidParameterException(va_list varArgs, const char *sMessage, const char *sSourceModule, ZdException::Level iLevel)
-                          :ResolvableException(varArgs, sMessage, sSourceModule, iLevel){}
-
-//static generation function:
-void InvalidParameterException::Generate(const char *sMessage, const char *sSourceModule, ...) {
-   va_list varArgs;
-   va_start(varArgs, sSourceModule);
-
-   InvalidParameterException theException(varArgs, sMessage, sSourceModule, Normal);
-   va_end(varArgs);
-   throw theException;
-}
-
-
-
-
-
-
 
