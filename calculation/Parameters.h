@@ -34,6 +34,8 @@ class CParameters
 {
   private:
      BasePrint *gpPrintDirection;         /** where to direct 'console' output */
+     bool       gbOutputClusterLevelDBF, gbOutputAreaSpecificDBF;
+
   public:
     CParameters(bool bDisplayErrors);
     CParameters(const CParameters &other);
@@ -120,6 +122,12 @@ class CParameters
     int      m_iCriteriaSecondClusters;       /** Criteria for Reporting Secondary Clusters */
 
     bool   m_bDisplayErrors;
+
+    const bool&         GetOutputClusterLevelDBF() const;
+    const bool&         GetOutputAreaSpecificDBF() const;
+
+    void                SetOutputClusterLevelDBF(const bool& bOutput);
+    void                SetOutputAreaSpecificDBF(const bool& bOutput);
 
     void Free();
 

@@ -154,6 +154,8 @@ void CParameters::copy(const CParameters &rhs)
 
     m_nMaxClusterSizeType = rhs.m_nMaxClusterSizeType;
     m_nMaxSpatialClusterSizeType = rhs.m_nMaxSpatialClusterSizeType;
+    gbOutputClusterLevelDBF = rhs.gbOutputClusterLevelDBF;
+    gbOutputAreaSpecificDBF = rhs.gbOutputAreaSpecificDBF;
 }
 
 void CParameters::Free()
@@ -162,6 +164,26 @@ void CParameters::Free()
       delete [] mp_dEShapes;
    if (mp_nENumbers)
       delete [] mp_nENumbers;
+}
+
+// accessor function for the private variable gbOutputClusterLevelDBF
+const bool& CParameters::GetOutputClusterLevelDBF() const {
+   return gbOutputClusterLevelDBF;
+}
+
+// accessor function for the private variable gbOutputAreaSpecificDBF
+const bool& CParameters::GetOutputAreaSpecificDBF() const {
+   return gbOutputAreaSpecificDBF;
+}
+
+// set function to set the value of the global private variable gbOutputClusterLevelDBF
+void CParameters::SetOutputClusterLevelDBF(const bool& bOutput) {
+   gbOutputClusterLevelDBF = bOutput;
+}
+
+// set function to set the value of the global private variable gbOutputAreaSpecificDBF 
+void CParameters::SetOutputAreaSpecificDBF(const bool& bOutput) {
+   gbOutputAreaSpecificDBF = bOutput;
 }
 
 bool CParameters::SetParameters(const char* szFilename, bool bValidate)
@@ -1086,6 +1108,9 @@ void CParameters::SetDefaults()
   m_bIncludePurelySpatial     = false;
   m_nMaxTemporalClusterSize   = 50.0;//KR980707 0 GG980716;
   m_nReplicas                 = 999;
+
+  gbOutputClusterLevelDBF = false;
+  gbOutputAreaSpecificDBF = false;
 
   SetDefaultsV2();
 }
