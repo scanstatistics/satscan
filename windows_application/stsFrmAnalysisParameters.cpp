@@ -997,6 +997,10 @@ void TfrmAnalysis::EnableTimeInterval(bool bEnable) {
    rbUnitYear->Enabled = bEnable;
    edtUnitLength->Enabled = bEnable;
    edtUnitLength->Color = bEnable ? clWindow : clInactiveBorder;
+
+   rbUnitYear->Enabled = (rgPrecisionTimes->ItemIndex == DAY || rgPrecisionTimes->ItemIndex == MONTH || rgPrecisionTimes->ItemIndex == YEAR) && bEnable;
+   rbUnitMonths->Enabled = (rgPrecisionTimes->ItemIndex == DAY || rgPrecisionTimes->ItemIndex == MONTH) && bEnable;
+   rbUnitDay->Enabled = (rgPrecisionTimes->ItemIndex == DAY) && bEnable;
 }
 
 //---------------------------------------------------------------------------
@@ -1110,7 +1114,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           // Enables Clusters to include
           rgClustersToInclude->Enabled = true;
           rgClustersToInclude->ItemIndex = (gpParams->m_bAliveClustersOnly ? 1 : 0);
-          
+
           EnableSpatial(false, false, false);  // Disables Spatial
           EnableTimeInterval(true);            // Enables time intervals
           EnableTemporal(true, false, true);   // Enables temporal without checkbox
@@ -1122,7 +1126,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           //Enables clusters to include
           rgClustersToInclude->Enabled = true;
           rgClustersToInclude->ItemIndex = (gpParams->m_bAliveClustersOnly ? 1 : 0);
-          
+
           EnableSpatial(true, !(gpParams->m_nModel == 2), true);     //Enables spatial
           EnableTimeInterval(true);                                  //Enables time intervals
           EnableTemporal(true,!(gpParams->m_nModel == 2), true);     //Enables temporal
@@ -1203,9 +1207,6 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
 
     //Time intervals same or greater precision enabled if enabled
     if (GroupBox6->Enabled) {
-      rbUnitYear->Enabled = rgPrecisionTimes->ItemIndex == DAY || rgPrecisionTimes->ItemIndex == MONTH || rgPrecisionTimes->ItemIndex == YEAR;
-      rbUnitMonths->Enabled = rgPrecisionTimes->ItemIndex == DAY || rgPrecisionTimes->ItemIndex == MONTH;
-      rbUnitDay->Enabled = rgPrecisionTimes->ItemIndex == DAY;
       switch (gpParams->m_nPrecision) {
          case 1  : rbUnitYear->Checked = true;
                    rbUnitMonths->Checked = false;
