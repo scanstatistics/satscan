@@ -174,7 +174,7 @@ Julian DecrementDate(Julian nDate, int nUnits, long nValue)
     //DTG
     // Need to change the day value if day for initial month is greater
     // than the max number of days for the resultant month
-    if (nDay1 > DaysInMonth[ nMon2-1 ])
+    if (nDay1 > (UInt)DaysInMonth[ nMon2-1 ])
         nDay1 = DaysInMonth[ nMon2-1 ];
     nNewDate     = MDYToJulian(nMon2, nDay1, nYear2);
   }
