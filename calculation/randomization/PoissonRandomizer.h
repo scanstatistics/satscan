@@ -12,14 +12,14 @@ class PoissonRandomizer : public AbstractDenominatorDataRandomizer {
     const CParameters & gParameters;
 
   public:
-    PoissonRandomizer(const CParameters & Parameters);
+    PoissonRandomizer(long lInitialSeed, const CParameters & Parameters);
     virtual ~PoissonRandomizer();
 };
 
 /** Randomizes Poisson data stream under null hypothesis */
 class PoissonNullHypothesisRandomizer : public PoissonRandomizer {
   public:
-    PoissonNullHypothesisRandomizer(const CParameters & Parameters);
+    PoissonNullHypothesisRandomizer(long lInitialSeed, const CParameters & Parameters);
     virtual ~PoissonNullHypothesisRandomizer();
 
     virtual PoissonNullHypothesisRandomizer * Clone() const;
@@ -32,7 +32,7 @@ class PoissonNullHypothesisRandomizer : public PoissonRandomizer {
 /** Randomizes Poisson data stream in time stratified manner. */
 class PoissonTimeStratifiedRandomizer : public PoissonRandomizer {
   public:
-    PoissonTimeStratifiedRandomizer(const CParameters & Parameters);
+    PoissonTimeStratifiedRandomizer(long lInitialSeed, const CParameters & Parameters);
     virtual ~PoissonTimeStratifiedRandomizer();
 
     virtual PoissonTimeStratifiedRandomizer * Clone() const;
@@ -44,7 +44,7 @@ class PoissonTimeStratifiedRandomizer : public PoissonRandomizer {
 /** Randomizes Poisson data stream in spatial stratified manner. */
 class PoissonSpatialStratifiedRandomizer : public PoissonRandomizer {
   public:
-    PoissonSpatialStratifiedRandomizer(const CParameters & Parameters);
+    PoissonSpatialStratifiedRandomizer(long lInitialSeed, const CParameters & Parameters);
     virtual ~PoissonSpatialStratifiedRandomizer();
 
     virtual PoissonSpatialStratifiedRandomizer * Clone() const;
@@ -70,7 +70,7 @@ class AlternateHypothesisRandomizer : public PoissonRandomizer {
     CSaTScanData                              & gData;
 
   public:
-    AlternateHypothesisRandomizer(CSaTScanData & Data);
+    AlternateHypothesisRandomizer(long lInitialSeed, CSaTScanData & Data);
     AlternateHypothesisRandomizer(const AlternateHypothesisRandomizer & rhs);
     virtual ~AlternateHypothesisRandomizer();
 

@@ -7,7 +7,7 @@
 const long AbstractRandomizer::glStreamSeedOffSet        = 1000000;
 
 /** constructor */
-AbstractRandomizer::AbstractRandomizer() {}
+AbstractRandomizer::AbstractRandomizer(long lInitialSeed) : gRandomNumberGenerator(lInitialSeed) {}
 
 /** destructor */
 AbstractRandomizer::~AbstractRandomizer() {}
@@ -26,7 +26,7 @@ void AbstractRandomizer::SetSeed(unsigned int iSimulationIndex, unsigned int iDa
 
   try {
     //calculate seed as unsigned long
-    ulSeed = gRandomNumberGenerator.GetDefaultSeed() + iSimulationIndex +  ((iDataStreamIndex - 1) * glStreamSeedOffSet);
+    ulSeed = gRandomNumberGenerator.GetInitialSeed() + iSimulationIndex +  ((iDataStreamIndex - 1) * glStreamSeedOffSet);
     //compare to max seed(declared as positive signed long)
     if (ulSeed >= static_cast<unsigned long>(gRandomNumberGenerator.GetMaxSeed()))
       ZdGenerateException("Calculated seed for simulation %u, data stream %u, exceeds defined limit of %i.",
@@ -41,8 +41,8 @@ void AbstractRandomizer::SetSeed(unsigned int iSimulationIndex, unsigned int iDa
 }
 
 /** constructor */
-FileSourceRandomizer::FileSourceRandomizer(const CParameters& Parameters)
-                     :AbstractRandomizer(), gParameters(Parameters) {}
+FileSourceRandomizer::FileSourceRandomizer(long lInitialSeed, const CParameters& Parameters)
+                     :AbstractRandomizer(lInitialSeed), gParameters(Parameters) {}
 
 /** copy constructor */
 FileSourceRandomizer::FileSourceRandomizer(const FileSourceRandomizer& rhs)

@@ -30,7 +30,7 @@ SpaceTimeStationaryAttribute * SpaceTimeStationaryAttribute::Clone() const {
 
 
 /** constructor */
-ContinuousVariableRandomizer::ContinuousVariableRandomizer() : AbstractPermutedDataRandomizer() {}
+ContinuousVariableRandomizer::ContinuousVariableRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer(lInitialSeed) {}
 
 /** destructor */
 ContinuousVariableRandomizer::~ContinuousVariableRandomizer() {}
@@ -43,7 +43,7 @@ void ContinuousVariableRandomizer::SortPermutedAttribute() {
 
 
 /** constructor */
-NormalRandomizer::NormalRandomizer() : ContinuousVariableRandomizer() {}
+NormalRandomizer::NormalRandomizer(long lInitialSeed) : ContinuousVariableRandomizer(lInitialSeed) {}
 
 /** destructor */
 NormalRandomizer::~NormalRandomizer() {}
@@ -95,7 +95,7 @@ void NormalRandomizer::AssignRandomizedData(const RealDataStream& thisRealStream
 
 
 /** constructor */
-RankRandomizer::RankRandomizer() : ContinuousVariableRandomizer() {}
+RankRandomizer::RankRandomizer(long lInitialSeed) : ContinuousVariableRandomizer(lInitialSeed) {}
 
 /** destructor */
 RankRandomizer::~RankRandomizer() {}
@@ -153,7 +153,7 @@ PermutedSurvivalAttributes * PermutedSurvivalAttributes::Clone() const {
 
 
 /** constructor */
-SurvivalRandomizer::SurvivalRandomizer() : AbstractPermutedDataRandomizer() {}
+SurvivalRandomizer::SurvivalRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer(lInitialSeed) {}
 
 /** destructor */
 SurvivalRandomizer::~SurvivalRandomizer() {}

@@ -43,7 +43,7 @@ class ContinuousVariableRandomizer : public AbstractPermutedDataRandomizer {
     virtual void                                SortPermutedAttribute();
     
   public:
-    ContinuousVariableRandomizer();
+    ContinuousVariableRandomizer(long lInitialSeed);
     virtual ~ContinuousVariableRandomizer();
 };
 
@@ -56,7 +56,7 @@ class NormalRandomizer : public ContinuousVariableRandomizer {
                                                                      SimulationDataStream& thisSimulationStream);
 
   public:
-    NormalRandomizer();
+    NormalRandomizer(long lInitialSeed);
     virtual ~NormalRandomizer();
 
     virtual NormalRandomizer          * Clone() const;
@@ -74,7 +74,7 @@ class RankRandomizer : public ContinuousVariableRandomizer {
                                                                      SimulationDataStream& thisSimulationStream);
 
   public:
-    RankRandomizer();
+    RankRandomizer(long lInitialSeed);
     virtual ~RankRandomizer();
 
     virtual RankRandomizer            * Clone() const;
@@ -110,7 +110,7 @@ class SurvivalRandomizer : public AbstractPermutedDataRandomizer {
     virtual void                                SortPermutedAttribute();
 
   public:
-    SurvivalRandomizer();
+    SurvivalRandomizer(long lInitialSeed);
     virtual ~SurvivalRandomizer();
 
     virtual SurvivalRandomizer        * Clone() const;

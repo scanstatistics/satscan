@@ -10,7 +10,7 @@ class AbstractDenominatorDataRandomizer : public AbstractRandomizer {
     BinomialGenerator   gBinomialGenerator;
 
   public:
-            AbstractDenominatorDataRandomizer();
+            AbstractDenominatorDataRandomizer(long lInitialSeed);
     virtual ~AbstractDenominatorDataRandomizer();
 };
 //---------------------------------------------------------------------------

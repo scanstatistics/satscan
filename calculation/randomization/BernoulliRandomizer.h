@@ -7,7 +7,7 @@
 /** abstract Bernoulli randomizer */
 class BernoulliRandomizer : public AbstractDenominatorDataRandomizer {
   public:
-    BernoulliRandomizer();
+    BernoulliRandomizer(long lInitialSeed);
     virtual ~BernoulliRandomizer();
 };
 
@@ -17,7 +17,7 @@ class BernoulliNullHypothesisRandomizer : public BernoulliRandomizer {
     void                        MakeDataB(count_t tTotalCounts, measure_t tTotalMeasure, std::vector<count_t>& RandCounts);
 
   public:
-    BernoulliNullHypothesisRandomizer();
+    BernoulliNullHypothesisRandomizer(long lInitialSeed);
     virtual ~BernoulliNullHypothesisRandomizer();
 
     virtual BernoulliNullHypothesisRandomizer * Clone() const;

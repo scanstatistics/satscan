@@ -35,7 +35,7 @@ class SpaceTimeRandomizer : public AbstractPermutedDataRandomizer {
     virtual void                     SortPermutedAttribute();
 
   public:
-    	    SpaceTimeRandomizer();
+    	    SpaceTimeRandomizer(long lInitialSeed);
     virtual ~SpaceTimeRandomizer();
 
     virtual SpaceTimeRandomizer    * Clone() const;

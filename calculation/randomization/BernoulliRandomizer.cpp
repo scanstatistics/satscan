@@ -6,13 +6,13 @@
 #include "SaTScanData.h"
 
 /** constructor */
-BernoulliRandomizer::BernoulliRandomizer() : AbstractDenominatorDataRandomizer() {}
+BernoulliRandomizer::BernoulliRandomizer(long lInitialSeed) : AbstractDenominatorDataRandomizer(lInitialSeed) {}
 
 /** destructor */
 BernoulliRandomizer::~BernoulliRandomizer() {}
 
 /** constructor */
-BernoulliNullHypothesisRandomizer::BernoulliNullHypothesisRandomizer() : BernoulliRandomizer() {}
+BernoulliNullHypothesisRandomizer::BernoulliNullHypothesisRandomizer(long lInitialSeed) : BernoulliRandomizer(lInitialSeed) {}
 
 /** destructor */
 BernoulliNullHypothesisRandomizer::~BernoulliNullHypothesisRandomizer() {}

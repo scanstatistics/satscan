@@ -15,7 +15,7 @@ class AbstractRandomizer {
     void                        SetSeed(unsigned int iSimulationIndex, unsigned int iDataStreamIndex);
 
   public:
-    AbstractRandomizer();
+    AbstractRandomizer(long lInitialSeed);
     virtual ~AbstractRandomizer();
 
     virtual AbstractRandomizer* Clone() const = 0;
@@ -35,7 +35,7 @@ class FileSourceRandomizer : public AbstractRandomizer {
     const CParameters                & gParameters;
 
   public:
-    	    FileSourceRandomizer(const CParameters& Parameters);
+    	    FileSourceRandomizer(long lInitialSeed, const CParameters& Parameters);
     	    FileSourceRandomizer(const FileSourceRandomizer & rhs);
     virtual ~FileSourceRandomizer();
 

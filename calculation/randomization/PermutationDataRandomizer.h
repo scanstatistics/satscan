@@ -14,7 +14,7 @@ class AbstractPermutedDataRandomizer : public AbstractRandomizer {
     virtual void        SortPermutedAttribute() = 0;
 
   public:
-    AbstractPermutedDataRandomizer();
+    AbstractPermutedDataRandomizer(long lInitialSeed);
     virtual ~AbstractPermutedDataRandomizer();
 
     virtual void	RandomizeData(const RealDataStream& thisRealStream,
