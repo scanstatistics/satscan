@@ -153,9 +153,7 @@ class CSaTScanData {
     inline measure_t                            GetTotalMeasure() const {return gtTotalMeasure;}
     inline count_t                              GetTotalCases() const {return gtTotalCases;}
     inline count_t                              GetTotalDataStreamCases(unsigned int iStream) const {return gpDataStreams->GetStream(iStream).GetTotalCases();}
-
-    double                                      GetAnnualRate() const;
-    double                                      GetAnnualRateAtStart() const;
+    double                                      GetAnnualRateAtStart(unsigned int iStream) const;
     double                                      GetAnnualRatePop() const {return m_nAnnualRatePop;}
 
     virtual void                                DisplayCases(FILE* pFile);

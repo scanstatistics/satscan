@@ -316,23 +316,10 @@ void CSaTScanData::FindNeighbors(bool bSimulations) {
    }
 }
 
-double CSaTScanData::GetAnnualRate() const {
+double CSaTScanData::GetAnnualRateAtStart(unsigned int iStream) const {
   double nYears      = (double)(m_nEndDate+1 - m_nStartDate) / 365.2425;
-  //NOTE: This function is hard code to report only the annual rate based
-  //      upon data from first data stream, at least for the time being. 
-  double dTotalCases = gpDataStreams->GetStream(0).GetTotalCases();
-  double dTotalPopulation = gpDataStreams->GetStream(0).GetTotalPopulation();
-  double nAnnualRate = (m_nAnnualRatePop*dTotalCases) / (dTotalPopulation*nYears);
-
-  return nAnnualRate;
-}
-
-double CSaTScanData::GetAnnualRateAtStart() const {
-  double nYears      = (double)(m_nEndDate+1 - m_nStartDate) / 365.2425;
-  //NOTE: This function is hard code to report only the annual rate based
-  //      upon data from first data stream, at least for the time being. 
-  double dTotalCasesAtStart = gpDataStreams->GetStream(0).GetTotalCasesAtStart();
-  double dTotalPopulation = gpDataStreams->GetStream(0).GetTotalPopulation();
+  double dTotalCasesAtStart = gpDataStreams->GetStream(iStream).GetTotalCasesAtStart();
+  double dTotalPopulation = gpDataStreams->GetStream(iStream).GetTotalPopulation();
   double nAnnualRate = (m_nAnnualRatePop*dTotalCasesAtStart) / (dTotalPopulation*nYears);
 
   return nAnnualRate;
