@@ -63,15 +63,6 @@ void ConvertToLatLong(float* Latitude, float* Longitude, double* pCoords) {
   *Latitude = (float)((pCoords[2] >= 0 ? (1.0) : (-1.0)) * acos(tmp) * 180.0 / PI);
 }
 
-void DisplayVersion(FILE* fp=stdout, int nPos=0)
-{
-  if (nPos==1)
-    fprintf(fp,"                        ");
-  fprintf(fp, "SaTScan v");
-  fprintf(fp, VERSION_NUMBER);
-  fprintf(fp, "\n");
-}
-
 /** Return Duczmal Compactness Correction coefficient. */
 double GetDuczmalCorrection(double dEllipseShape) {
   return ( 4*dEllipseShape/(pow(dEllipseShape + 1, 2)) );
