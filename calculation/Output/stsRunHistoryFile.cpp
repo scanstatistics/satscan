@@ -313,9 +313,9 @@ void stsRunHistoryFile::GetRatesString(ZdString& sTempValue, int iRate) {
 // converts the iType to a legible string for printing
 //  pre : iType is conatined in (NOTADJUSTED, NONPARAMETRIC, LINEAR)
 // post : string will be assigned a formatted value based upon iType
-void stsRunHistoryFile::GetTimeAdjustmentString(ZdString& sTempValue, int iType, int iAnalysisType) {
+void stsRunHistoryFile::GetTimeAdjustmentString(ZdString& sTempValue, int iType, int iAnalysisType, int iModel) {
    try {
-      if (iAnalysisType == PURELYSPATIAL)
+      if (iModel != POISSON || iAnalysisType == PURELYSPATIAL)
          sTempValue = "n/a";
       else {
          switch(iType) {
@@ -424,7 +424,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, MAX_TIME_EXTENT_FIELD));
 
       // time trend adjustment field
-      GetTimeAdjustmentString(sTempValue, params.m_nTimeAdjustType, params.m_nAnalysisType);
+      GetTimeAdjustmentString(sTempValue, params.m_nTimeAdjustType, params.m_nAnalysisType, params.m_nModel);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, TIME_TREND_ADJUSTMENT_FIELD));
 
       // covariates number
