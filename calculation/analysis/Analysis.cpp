@@ -265,10 +265,13 @@ void CAnalysis::DisplayTopClusterLogLikelihood(FILE* fp)
       {
       if (m_nClustersRetained > 0)
          {
-         fprintf(fp,"  Log likelihood ratio for the most likely cluster: %7.2f\n\n",
-               m_pTopClusters[0]->m_nRatio);
-         gpPrintDirection->SatScanPrintf("  Log likelihood ratio for the most likely cluster: %7.2f\n\n",
-               m_pTopClusters[0]->m_nRatio);
+         // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
+         fprintf(fp,"  %s for the most likely cluster: %7.2f\n\n",
+                 (m_pParameters->m_nModel == SPACETIMEPERMUTATION ? "Test statistic" : "Log likelihood ratio" ),
+                  m_pTopClusters[0]->m_nRatio);
+         gpPrintDirection->SatScanPrintf("  %s for the most likely cluster: %7.2f\n\n",
+                                         (m_pParameters->m_nModel == SPACETIMEPERMUTATION ? "Test statistic" : "Log likelihood ratio" ),
+                                         m_pTopClusters[0]->m_nRatio);
          }
       }
    catch (SSException & x)
@@ -282,8 +285,9 @@ void CAnalysis::DisplayTopClustersLogLikelihoods(FILE* fp)
 {
   for (tract_t i=0; i<m_nClustersRetained; i++)
   {
-    fprintf(fp,"  Log likelihood ratio for the most likely cluster: %7.21f\n\n",
-               m_pTopClusters[i]->m_nRatio);
+    fprintf(fp,"  %s for the most likely cluster: %7.21f\n\n",
+            (m_pParameters->m_nModel == SPACETIMEPERMUTATION ? "Test statistic" : "Log likelihood ratio" ),
+            m_pTopClusters[i]->m_nRatio);
   }
   fprintf(fp, "\n");
 }
@@ -293,10 +297,17 @@ void CAnalysis::PerformSimulations()
    double  r;
    int     i;
    FILE* fpLLR = 0;
+   const char * sReplicationFormatString = 0;
 
    try
       {	
       gpPrintDirection->SatScanPrintf("Doing the Monte Carlo replications\n");
+
+      // assign replication format string here to prevent another check in loop
+      if (m_pParameters->m_nModel == SPACETIMEPERMUTATION)
+        sReplicationFormatString = "Test statistic for #%ld of %ld Replications: %7.2f\n";
+      else
+        sReplicationFormatString = "Log Likelihood Ratio for #%ld of %ld Replications: %7.2f\n";
 
       if (m_pParameters->m_bSaveSimLogLikelihoods)
          OpenLLRFile(fpLLR, "w");
@@ -327,8 +338,7 @@ void CAnalysis::PerformSimulations()
         UpdatePowerCounts(r);
     
     //    if (!(i % 200)) KR-980326 Limit printing to increase speed of program
-          gpPrintDirection->SatScanPrintf("Log Likelihood Ratio for #%ld of %ld Replications: %7.2f\n",
-                  i+1, m_pParameters->m_nReplicas, r);
+        gpPrintDirection->SatScanPrintf(sReplicationFormatString, i+1, m_pParameters->m_nReplicas, r);
     
         if (m_pParameters->m_bSaveSimLogLikelihoods)
           fprintf(fpLLR, "%7.2f\n", r);
@@ -336,9 +346,11 @@ void CAnalysis::PerformSimulations()
         #ifdef DEBUGANALYSIS
         fprintf(m_pDebugFile, "---- Replication #%ld ----------------------\n\n",i+1);
         m_pData->DisplaySimCases(m_pDebugFile);
-        fprintf(m_pDebugFile, "Log Likelihood Ratio = %7.21f\n\n", r);
+        // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
+        fprintf(m_pDebugFile, "%s = %7.21f\n\n",
+                (Parameters.m_nModel == SPACETIMEPERMUTATION ? "Test statistic" : "Log Likelihood Ratio"), r);
         #endif
-    
+
         if (i==0)
           ReportTimeEstimate(nStartTime, m_pParameters->m_nReplicas, i+1, gpPrintDirection);
       }
@@ -619,9 +631,10 @@ bool CAnalysis::UpdateReport()
 
       if (m_pParameters->m_nReplicas>=19 && m_nClustersReported > 0)
       {
-        fprintf(fp, "The log likelihood ratio value required for an observed\n");
+        // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
+        fprintf(fp, "The %s value required for an observed\n",
+               (m_pParameters->m_nModel == SPACETIMEPERMUTATION ? "test statistic" : "log likelihood ratio"));
         fprintf(fp, "cluster to be significant at level\n");
-
         if (m_pParameters->m_nReplicas>=99)
           fprintf(fp,"... 0.01: %f\n", SimRatios.GetAlpha01());
         if (m_pParameters->m_nReplicas>=19)
