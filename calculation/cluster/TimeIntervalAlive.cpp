@@ -15,6 +15,32 @@ void CTIAlive::Initialize()
    m_nStop  = m_nTotal;
 }
 
+/** Returns the number of cases that tract attributed to accumulated case count. */
+count_t CTIAlive::GetCaseCountForTract(tract_t tTract, count_t** pCases) const
+{
+   count_t      tCaseCount;
+
+   if (m_nStart == m_nStop)
+     tCaseCount = 0;
+   else
+     tCaseCount = pCases[m_nStart][tTract];
+
+   return tCaseCount;
+}
+
+/** Returns the measure that tract attributed to accumulated measure. */
+measure_t CTIAlive::GetMeasureForTract(tract_t tTract, measure_t** pMeasure) const
+{
+   measure_t      tMeasure;
+
+   if (m_nStart == m_nStop)
+     tMeasure = 0;
+   else
+     tMeasure = pMeasure[m_nStart][tTract];
+
+   return tMeasure;
+}
+
 bool CTIAlive::GetNextTimeInterval(const count_t*& pCases,
                                    const measure_t*& pMeasure,
                                    count_t& nCases,
