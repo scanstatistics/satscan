@@ -148,10 +148,11 @@ char* Cats::catGetCategoriesString(int n, std::string & sBuffer)
    if (node)
      {
      sBuffer.clear();
-     for (i = 0; i < CatVecLength; i++)
+     for (i=0; i < CatVecLength; i++)
         {
+        if (i > 0)
+          sBuffer += " ";
         sBuffer += node->dvec[i];
-        sBuffer += " ";
         }
      }
 
