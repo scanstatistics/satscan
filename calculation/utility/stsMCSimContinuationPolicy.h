@@ -3,19 +3,33 @@
 #ifndef stsMCSimContinuationPolicyH
 #define stsMCSimContinuationPolicyH
 //---------------------------------------------------------------------------
+#include "BasePrint.h"
+#include "boost/dynamic_bitset_fwd.hpp"
 
+class stsMCSimReporter;//forward declared for friendship declaration
 
 //template <typename ParamsType, typename ResultsType>
 class stsMCSimContinuationPolicy
 {
-  typedef long params_type;
+public:
+  typedef unsigned int params_type;
   typedef double results_type;
 
+  friend class stsMCSimReporter;
+
+private:
+
+  BasePrint const & grPrintDirection;
+  bool gbShortCircuitConditionExists;
+
 public:
+  stsMCSimContinuationPolicy(BasePrint const & rPrintDirection);
 
+  bool ShouldContinue() const;
+  void Report_ResultsRegistered(unsigned job_idx,boost::dynamic_bitset<> const & result_registration_conditions,std::deque< std::pair<params_type, results_type> > const & jobs);
 
-  bool ShouldContinue() const { return true; }
-  void Report_ResultsRegistered(params_type const & params,results_type const & result,long results_registered_count,long jobs_total_count) {}
+  bool ShortCircuitConditionExists() const { return gbShortCircuitConditionExists; }
+  bool UserCancelConditionExists() const { return grPrintDirection.GetIsCanceled(); }
 };
 
 

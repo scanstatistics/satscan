@@ -24,6 +24,7 @@
 #include "PrintQueue.h"
 #include "stsMonteCarloSimFunctor.h"
 #include "stsMCSimReporter.h"
+#include "stsMCSimContinuationPolicy.h"
 #include "contractor.h"
 
 /** constructor */
@@ -527,10 +528,6 @@ void AnalysisRunner::OpenReportFile(FILE*& fp, bool bOpenAppend) {
     - significant loglikelihood ratio indicator
     - power calculation data, if requested by user
     - additional output file(s)
-
-******discontinuation behavior is not yet implemented:
-//--based on user cancellation
-//--based on incremental analysis
 *****************************************************
 */
 void AnalysisRunner::PerformParallelSimulations() {
@@ -558,15 +555,17 @@ void AnalysisRunner::PerformParallelSimulations() {
       pLLRData.reset(new LogLikelihoodData(gParameters));
     //set/reset loglikelihood ratio significance indicator
     gSimulatedRatios.Initialize();
+    giNumSimsExecuted = 0;
 
     std::deque< std::pair<unsigned int, double> > qParamsAndResults;
     for (unsigned int ui = 0; ui < gParameters.GetNumReplicationsRequested(); ++ui)
     {
        qParamsAndResults.push_back(std::make_pair(ui + 1,0));
     }
-    stsMCSimReporter rptr(*this, gTopClustersContainer, gPrintDirection, sReplicationFormatString);
-    typedef contractor<unsigned int, double, stsMCSimReporter, null_contractor_continuation_policy<unsigned int, double> > contractor_type;
-    contractor_type theContractor(qParamsAndResults, rptr);
+    stsMCSimContinuationPolicy CtPlcy(gPrintDirection);
+    stsMCSimReporter Rptr(gParameters, CtPlcy, gSimulatedRatios, gTopClustersContainer, gPrintDirection, sReplicationFormatString);
+    typedef contractor<unsigned int, double, stsMCSimReporter, stsMCSimContinuationPolicy> contractor_type;
+    contractor_type theContractor(qParamsAndResults, Rptr, CtPlcy);
     //run threads:
     boost::thread_group tg;
     for (int i = 0; i < iParallelProcessCount; ++i)
@@ -576,16 +575,16 @@ void AnalysisRunner::PerformParallelSimulations() {
     }
     tg.join_all();
 
-    //if not stopped early (whether cancelled or self-disciplined):
-    for (unsigned int ui = 0; ui < gParameters.GetNumReplicationsRequested(); ++ui)
-    {
-      double dSimulatedRatio = qParamsAndResults[ui].second;
-      //update significance indicator
-      gSimulatedRatios.AddRatio(dSimulatedRatio);
-      //update power calculations
-      UpdatePowerCounts(dSimulatedRatio);
-      //update simulated loglikelihood record buffer
-      if(pLLRData.get()) pLLRData->AddLikelihoodRatio(dSimulatedRatio);
+    if (!CtPlcy.UserCancelConditionExists()) {
+      giNumSimsExecuted = (Rptr.ShortCircuitConditionExists() ? Rptr.ResultsNotShortCircuitedCount() : qParamsAndResults.size());
+      for (unsigned int ui = 0; ui < giNumSimsExecuted; ++ui)
+      {
+        double dSimulatedRatio = qParamsAndResults[ui].second;
+        //update power calculations
+        UpdatePowerCounts(dSimulatedRatio);
+        //update simulated loglikelihood record buffer
+        if(pLLRData.get()) pLLRData->AddLikelihoodRatio(dSimulatedRatio);
+      }
     }
     //write to additional data to files
     if (gParameters.GetOutputSimLoglikeliRatiosAscii() && pLLRData.get())

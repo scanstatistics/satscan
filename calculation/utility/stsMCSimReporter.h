@@ -4,44 +4,51 @@
 #define stsMCSimReporterH
 //---------------------------------------------------------------------------
 #include "AnalysisRun.h"
+#include "stsMCSimContinuationPolicy.h"
+#include "boost/dynamic_bitset.hpp"
 //---------------------------------------------------------------------------
 
 
 class stsMCSimReporter
 {
-  typedef double result_type;
+public:
+  typedef unsigned int params_type;
+  typedef double results_type;
 
-  AnalysisRunner const & gAnalysisRunner;
-  MostLikelyClustersContainer & gMLCs;
-  BasePrint & gPrintDirection;
+private:
+  static const unsigned guaShortCircuitCheckPoints[];
+  static const float guaShortCircuitCheckCutoffValues[];
+  static const unsigned guMaxShortCircuitCheckCount = 4;//the two above arrays must have at least this many elements.
+
+//  CParameters const & grParameters;
+  stsMCSimContinuationPolicy & grContinuationPolicy;
+  MostLikelyClustersContainer & grMLCs;
+  CSignificantRatios05 & grSignificantRatios;
+  BasePrint & grPrintDirection;
   const char * gszReplicationFormatString;
 
-public:
-  stsMCSimReporter(AnalysisRunner const & theAnalysisRunner, MostLikelyClustersContainer & theMLCs, BasePrint & thePrintDirection, const char * szReplicationFormatString)
-   : gAnalysisRunner(theAnalysisRunner)
-   , gMLCs(theMLCs)
-   , gPrintDirection(thePrintDirection)
-   , gszReplicationFormatString(szReplicationFormatString)
-  {}
-  void Report_SubcontractLet(long id,long how_many_job_results_registered,long how_many_jobs_total)
-  {}
-  void Report_ResultsRegistered(long id,result_type const & result,long how_many_job_results_registered,long how_many_jobs_total)
-  {
-    try
-    {
-      gMLCs.UpdateTopClustersRank(result);
-      bool bFinish = gAnalysisRunner.CheckForEarlyTermination(id);
-      //if (bFinish) {} else {}//to be added--bws17mar2004
-      //if appropriate, estimate time required to complete all jobs and report it.
+  boost::dynamic_bitset<> gResultRegistrationConditions;//contains bits for only the first guaShortCircuitCheckPoints[guShortCircuitCheckIndex] bits.
+  bool gbShortCircuitConditionExists;
+  unsigned guShortCircuitCheckCount;//how many short-circuit tests will we have?
+  unsigned guShortCircuitCheckIdx;//which short-circuit test comes next?
+  unsigned guResultsNotShortCircuitedCount;//how many results have been communicated to ratios, etc?
 
-      gPrintDirection.SatScanPrintf(gszReplicationFormatString, how_many_job_results_registered, how_many_jobs_total, result);
-    }
-    catch (ZdException & e)
-    {
-      e.AddCallpath("", "stsMCSimReporter");
-      throw;
-    }
-  }
+public:
+  stsMCSimReporter
+   ( CParameters const & rParameters
+    ,stsMCSimContinuationPolicy & rCtPlcy
+    ,CSignificantRatios05 & theSignificantRatios
+    ,MostLikelyClustersContainer & theMLCs
+    ,BasePrint & thePrintDirection
+    ,const char * szReplicationFormatString
+   );
+
+  void Report_SubcontractLet(unsigned job_idx,boost::dynamic_bitset<> const & result_registration_conditions,std::deque< std::pair<params_type, results_type> > const & jobs)
+  {}
+  void Report_ResultsRegistered(unsigned job_idx,boost::dynamic_bitset<> const & result_registration_conditions,std::deque< std::pair<params_type, results_type> > const & jobs);
+
+  bool ShortCircuitConditionExists() const { return gbShortCircuitConditionExists; }
+  unsigned ResultsNotShortCircuitedCount() const { return guResultsNotShortCircuitedCount; }//Meaningful only if ShortCircuitConditionExists()
 };
 
 
