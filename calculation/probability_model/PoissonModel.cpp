@@ -336,10 +336,12 @@ void CPoissonModel::StratifiedSpatialAdjustment(RealDataStream& thisStream, meas
      //calculates total measure for current tract across all time intervals
      for (tTotalTractMeasure=0, i=0; i < gData.GetNumTimeIntervals(); ++i)
         tTotalTractMeasure += ppNonCumulativeMeasure[i][t];
-     dTractAdjustment = ppCases[0][t]/tTotalTractMeasure;
-     //now multiply each time interval/tract location by (total cases)/(total measure)
-     for (i=0; tTotalTractMeasure && i < gData.GetNumTimeIntervals(); ++i)
-        ppNonCumulativeMeasure[i][t] *= dTractAdjustment;
+     if (tTotalTractMeasure) {
+       dTractAdjustment = ppCases[0][t]/tTotalTractMeasure;
+       //now multiply each time interval/tract location by (total cases)/(total measure)
+       for (i=0; tTotalTractMeasure && i < gData.GetNumTimeIntervals(); ++i)
+          ppNonCumulativeMeasure[i][t] *= dTractAdjustment;
+     }
   }
 }
 
