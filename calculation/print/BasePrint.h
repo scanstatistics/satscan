@@ -14,7 +14,6 @@ class BasePrint
    private:
      char *gsMessage;
      std::map<eInputFileType, int>   gInputFileWarningsMap;
-     std::map<eInputFileType, bool>  gInputFileWarningsExceeded;
 
      void GetInputFileType(eInputFileType eType, std::string& sName);
      void PrintMessage( va_list varArgs, const char *sMessage );
