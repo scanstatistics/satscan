@@ -8,7 +8,7 @@
 OutputFileWriter::OutputFileWriter(BaseOutputStorageClass& OutputFileData, BasePrint& PrintDirection)
                  :gOutputFileData(OutputFileData), gPrintDirection(PrintDirection) {}
 
-/** class desctructor */
+/** class destructor */
 OutputFileWriter::~OutputFileWriter() {}
 
 /** Sets outfile name base upon passed sBaseFileName and sWriterExtension. */
