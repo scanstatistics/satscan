@@ -552,6 +552,43 @@ void TfrmAnalysis::ConvertPurelySpacialIntervals() {
     gpParams->m_nIntervalLength = 0;
   }
 }
+
+// create the CSV file with the appropriate field names - AJV 8/29/2002
+void TfrmAnalysis::CreateCSVFile(const ZdFileName& sFileName, const ZdVector<const char*>& vFieldNames) {
+   ZdVector<ZdField*>	vFields;
+   CSVField*		pField = 0;
+   CSVFile*             pFile = 0;
+
+   try {
+      // create a CSV file with a space delimiter
+      pFile = new CSVFile(sFileName.GetFullPath(), ZDIO_OPEN_READ | ZDIO_OPEN_WRITE | ZDIO_OPEN_CREATE, 0, 0, 0, ' ');
+
+      // creates the field vector from the provided field names
+      for(unsigned long i = 0; i < vFieldNames.GetNumElements(); ++i) {
+      	 pField = pFile->GetNewField();
+         pField->SetName(vFieldNames[i]);
+         if(!i)
+            pField->SetRequired(true);
+         vFields.AddElement(pField->Clone());
+         delete pField;
+      }	
+      
+      pFile->PackFields(vFields);
+
+      pFile->Close();
+      delete pFile;
+   }
+   catch (ZdException &x) {
+      if(pFile)
+         pFile->Close();
+      delete pFile; pFile = 0;
+      delete pField; pField = 0;	 
+      x.AddCallpath("CreateCSVFile()", "TfrmAnalysis");
+      throw;
+   }
+}
+
+
 //---------------------------------------------------------------------------
 // THIS FUNCTIONS IS THE MAIN CONTROLLING FUNCTION FOR CHECKING RELATIONSHIPS
 // AND TURNING ON AND OFF CONTROLS.  Each tab has an "Enable" function that

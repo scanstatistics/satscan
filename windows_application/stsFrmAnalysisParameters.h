@@ -177,6 +177,7 @@ class TfrmAnalysis : public TForm {
     bool                CheckScanningWindowParams();
     bool                CheckTimeParams();
     void                ConvertPurelySpacialIntervals();
+    void                CreateCSVFile(const ZdFileName& sFileName, const ZdVector<const char*>& vFieldNames);
     void                DataExchange();
     void                EnableAdditionalAsciiFileOptions();
     void                EnableAnalysisType(bool bValue);
