@@ -110,7 +110,7 @@ const CCluster& C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const Abt
        gpPSClusterComparator->SetEllipseOffset(j);
        gpPSClusterComparator->SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[j - 1]));
        CPurelySpatialCluster & Top_PS_ShapeCluster = (CPurelySpatialCluster&)(gpPSTopShapeClusters->GetTopCluster(j));
-       gpPSClusterComparator->AddNeighborDataAndCompare(DataGateway, m_pData, Top_PS_ShapeCluster, Model);
+       gpPSClusterComparator->AddNeighborDataAndCompare(DataGateway, m_pData, Top_PS_ShapeCluster, *gpLikelihoodCalculator);
      }
      else {
        gpPSPClusterComparator->Initialize(tCenter);
@@ -118,7 +118,7 @@ const CCluster& C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const Abt
        gpPSPClusterComparator->SetEllipseOffset(j);
        gpPSPClusterComparator->SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[j - 1]));
        CPurelySpatialProspectiveCluster & Top_PSP_ShapeCluster = (CPurelySpatialProspectiveCluster&)(gpPSTopShapeClusters->GetTopCluster(j));
-       gpPSPClusterComparator->AddNeighborAndCompare(DataGateway, m_pData, Top_PSP_ShapeCluster, Model);
+       gpPSPClusterComparator->AddNeighborAndCompare(DataGateway, m_pData, Top_PSP_ShapeCluster, *gpLikelihoodCalculator);
      }
      gpClusterComparator->AddNeighborDataAndCompare(DataGateway, m_pData, Top_ST_ShapeCluster, gpTimeIntervals);
   }

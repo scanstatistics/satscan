@@ -29,21 +29,3 @@ CModel::~CModel() {
 #endif
 }
 
-/** Throws exception. Defined in parent class as pure virtual. */
-double CModel::CalcLogLikelihoodRatioEx(count_t tCases, measure_t tMeasure, measure_t tMeasure2, count_t tTotalCases, measure_t tTotalMeasure) {
-  ZdGenerateException("CalcLogLikelihoodRatioEx() not implementated.","CModel");
-  return 0;
-}
-
-/** Throws exception. Defined in parent class as pure virtual. */
-double CModel::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) {
-  ZdGenerateException("CalcMonotoneLogLikelihood() not implementated.","CModel");
-  return 0;
-}
-
-/** NEEDS DOCUMENTATION */
-double CModel::CalcSVTTLogLikelihoodRatio(size_t tStream, CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend) {
-  ZdGenerateException("CalcSVTTLogLikelihoodRatio() not implementated.","CModel");
-  return 0;
-}
-

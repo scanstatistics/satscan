@@ -10,38 +10,6 @@ CSpaceTimePermutationModel::CSpaceTimePermutationModel(CParameters& Parameters, 
 /** destructor */
 CSpaceTimePermutationModel::~CSpaceTimePermutationModel() {}
 
-/** Calculates loglikelihood, this routine is identical to Possion model. */
-double CSpaceTimePermutationModel::CalcLogLikelihood(count_t n, measure_t u) {
-   double    nLogLikelihood;
-   count_t   N = gData.GetTotalCases();
-   measure_t U = gData.GetTotalMeasure();
-
-   if (n != N && n != 0)
-     nLogLikelihood = n*log(n/u) + (N-n)*log((N-n)/(U-u));
-   else if (n == 0)
-     nLogLikelihood = (N-n) * log((N-n)/(U-u));
-   else
-     nLogLikelihood = n*log(n/u);
-
-   return (nLogLikelihood);
-}
-
-/** Calculates loglikelihood, this routine is identical to Possion model. */
-double CSpaceTimePermutationModel::CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure) {
-  double    dLogLikelihood;
-
-  // calculate the loglikelihood
-  if (tCases != tTotalCases && tCases != 0)
-    dLogLikelihood = tCases*log(tCases/tMeasure) + (tTotalCases-tCases)*log((tTotalCases-tCases)/(tTotalMeasure-tMeasure));
-  else if (tCases == 0)
-    dLogLikelihood = (tTotalCases-tCases) * log((tTotalCases-tCases)/(tTotalMeasure-tMeasure));
-  else
-    dLogLikelihood = tCases*log(tCases/tMeasure);
-
-  // return the logliklihood ratio (loglikelihood - loglikelihood for total)
-  return (dLogLikelihood - (tTotalCases * log(tTotalCases/tTotalMeasure)));
-}
-
 /** Determines the expected number of cases for each time interval/tract.
     Assigns values to CSatScanData::Measure array. Calculates total measure
     and validates that total measure equals total number of cases in set. */
@@ -101,20 +69,6 @@ bool CSpaceTimePermutationModel::CalculateMeasure(DataStream & thisStream) {
     throw;
   }
   return true;
-}
-
-/** Same log likelihood as for the Poisson model.
-    It is no longer a "likelihood", but it will serve the same purpose.
-    Martin Kulldorph derived the true log likelihoods, but they are too complex
-    and there is no way to implement them in a time efficient way, so using them
-    would  lead to slow execution times. The Poisson model is a very good
-    approximation of the likelihood, and that can be shown mathematically. */
-double CSpaceTimePermutationModel::GetLogLikelihoodForTotal() const
-{
-  count_t   N = gData.GetTotalCases();
-  measure_t U = gData.GetTotalMeasure();
-
-  return N*log(N/U);
 }
 
 /** Throws exception. Defined in parent class as pure virtual. */

@@ -8,6 +8,7 @@
 #include "TimeIntervalRange.h"
 #include "ClusterDataFactory.h"
 #include "SignificantRatios05.h"
+#include "LikelihoodCalculation.h"
 
 /** Container class to store top clusters for a spatial analysis during
     method - GetTopCluster(). This class stores the top cluster for a
@@ -54,6 +55,7 @@ class CAnalysis {
     unsigned short              guwSignificantAt005;
     AbstractClusterDataFactory* gpClusterDataFactory;
     bool                        gbMeasureListReplications;
+    AbstractLikelihoodCalculator* gpLikelihoodCalculator;
 
     virtual void                AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway)  = 0;
     virtual void                AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway) = 0;
@@ -64,6 +66,7 @@ class CAnalysis {
 
 
     virtual void                AllocateTopClusterList();
+    void                        AllocateLikelihoodObject();
     static int                  CompareClustersByRatio(const void *a, const void *b);
     bool                        CheckForEarlyTermination(int iSimulation) const;
     void                        CreateGridOutputFile(const long lReportHistoryRunNumber);

@@ -68,7 +68,7 @@ const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCent
           thisCluster.AddNeighbor(m_pData->GetNeighbor(k, tCenter, i), DataGateway);
           thisCluster.m_nRatio = 0;
           for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
-            thisCluster.m_nRatio += ProbModel.CalcSVTTLogLikelihoodRatio(t, &thisCluster, *(DataGateway.GetDataStreamInterface(t).GetTimeTrend()));
+            thisCluster.m_nRatio += gpLikelihoodCalculator->CalcSVTTLogLikelihoodRatio(t, &thisCluster, *(DataGateway.GetDataStreamInterface(t).GetTimeTrend()));
           if (thisCluster.m_nRatio > TopShapeCluster.m_nRatio)
            TopShapeCluster = thisCluster;
        }
@@ -76,7 +76,7 @@ const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCent
 
     // the ratio needs to be calculated for each circle/cylinder, instead of here !!!!
     CSVTTCluster & Cluster = (CSVTTCluster&)(gpTopShapeClusters->GetTopCluster());
-    Cluster.m_nRatio = Cluster.m_nLogLikelihood - m_pData->GetProbabilityModel().GetLogLikelihoodForTotal();
+    Cluster.m_nRatio = Cluster.m_nLogLikelihood - gpLikelihoodCalculator->GetLogLikelihoodForTotal();
     Cluster.SetTimeTrend(m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
   }
   catch (ZdException &x) {
@@ -107,7 +107,7 @@ double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataStreamInterface & Inte
           iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];	
           for (j=1; j <= iNumNeighbors; j++) {
              thisCluster.AddNeighbor(m_pData->GetNeighbor(k, i, j), Interface, 0);
-             thisCluster.m_nRatio = ProbModel.CalcSVTTLogLikelihoodRatio(0, &thisCluster, *(Interface.GetTimeTrend()));
+             thisCluster.m_nRatio = gpLikelihoodCalculator->CalcSVTTLogLikelihoodRatio(0, &thisCluster, *(Interface.GetTimeTrend()));
              if (thisCluster.m_nRatio > TopShapeCluster.m_nRatio)
                TopShapeCluster = thisCluster;
           }

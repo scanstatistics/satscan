@@ -198,176 +198,6 @@ void CPoissonModel::AssignMeasure(DataStream & thisStream, measure_t ** ppNonCum
   }
 }
 
-double CPoissonModel::CalcLogLikelihood(count_t n, measure_t u) {
-   double    nLogLikelihood;
-   count_t   N = gData.GetTotalCases();
-   measure_t U = gData.GetTotalMeasure();
-
-   if (n != N && n != 0)
-     nLogLikelihood = n*log(n/u) + (N-n)*log((N-n)/(U-u));
-   else if (n == 0)
-     nLogLikelihood = (N-n) * log((N-n)/(U-u));
-   else
-     nLogLikelihood = n*log(n/u);
-
-   return (nLogLikelihood);
-}
-
-/** calculates the Poisson loglikelihood ratio */
-double CPoissonModel::CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure) {
-  double    dLogLikelihood;
-
-  // calculate the loglikelihood
-  if (tCases != tTotalCases && tCases != 0)
-    dLogLikelihood = tCases *log(tCases/tMeasure) + (tTotalCases-tCases)*log((tTotalCases-tCases)/(tTotalMeasure-tMeasure));
-  else if (tCases == 0)
-    dLogLikelihood = (tTotalCases-tCases) * log((tTotalCases-tCases)/(tTotalMeasure-tMeasure));
-  else
-    dLogLikelihood = tCases*log(tCases/tMeasure);
-
-  // return the logliklihood ratio (loglikelihood - loglikelihood for total)
-  return (dLogLikelihood - (tTotalCases * log(tTotalCases/tTotalMeasure)));
-}
-
-double CPoissonModel::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster)
-{
-  double nLogLikelihood = 0;
-
-  for (int i=0; i<PSMCluster.m_nSteps; i++)
-     {
-     if (PSMCluster.m_pCasesList[i] != 0)
-       nLogLikelihood += PSMCluster.m_pCasesList[i] * log(PSMCluster.m_pCasesList[i]/PSMCluster.m_pMeasureList[i]);
-     }
-
-   return nLogLikelihood;
-}
-
-/** NEEDS DOCUMENTATION */
-double CPoissonModel::CalcSVTTLogLikelihood(count_t*   pCases,
-                                            measure_t* pMeasure,
-                                            count_t    pTotalCases,
-                                            double     nAlpha,
-                                            double     nBeta,
-                                            int        nStatus)
-{
-  double nLL;
-
-  /* Check for extremes where all the cases in the first or last interval
-     or 0 cases in given tract.  For now there are multiple returns. */
-  if (nStatus == TREND_UNDEF) // No cases in tract
-  {
-    nLL = 0;
-  }
-  else if (nStatus == TREND_INF) // All cases in first/last t.i.
-  {
-    nLL = (pTotalCases*log(pTotalCases) - pTotalCases )/**-
-          ((CSVTTData&)gData).m_pSumLogs[pTotalCases])**/;
-    // -x+x*log(x)-log(x!) from M Kulldorff
-  }
-  else
-  {
-    double nSum1 = 0;
-    double nSum2 = 0;
-    double nSum3 = 0;
-    int i;
-
-    for (i=0; i<(gData.m_nTimeIntervals); i++)
-    {
-      nSum1 += pCases[i] * (log(pMeasure[i]) + nAlpha + (nBeta)*i);
-      nSum2 += pMeasure[i] * exp(nAlpha + (nBeta)*i);
-      /**nSum3 += ((CSVTTData&)gData).m_pSumLogs[pCases[i]]; // Modified 990916 GG**/
-    }
-    nLL = nSum1-nSum2-nSum3;
-  }
-
-  #if DEBUGMODEL
-  fprintf(m_pDebugModelFile, "Alpha = %f  nBeta = %f  nStatus = %i  LogLikelihood = %f\n", nAlpha, nBeta, nStatus, nLL);
-  #endif
-
-  return(nLL);
-}
-
-
-/** NEEDS DOCUMENTATION */
-double CPoissonModel::CalcSVTTLogLikelihoodRatio(size_t tStream, CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend)
-{
-  double nLogLikelihood   = 0.0;
-  double nGlobalAlphaIn   = 0.0;
-  double nGlobalAlphaOut = 0.0;
-
-  SVTTClusterStreamData & StreamData = Cluster->GetStream(tStream);
-
-  StreamData.gTimeTrendInside.CalculateAndSet(StreamData.gpCasesInsideCluster,         // Inside Cluster
-                                              StreamData.gpMeasureInsideCluster,
-                                              gData.m_nTimeIntervals,
-                                              gParameters.GetTimeTrendConvergence());
-
-  nGlobalAlphaIn = StreamData.gTimeTrendInside.Alpha(StreamData.gtTotalCasesInsideCluster,
-                                                     StreamData.gpMeasureInsideCluster,
-                                                     gData.m_nTimeIntervals,
-                                                     GlobalTimeTrend.m_nBeta);
-
-  StreamData.gTimeTrendOutside.CalculateAndSet(StreamData.gpCasesOutsideCluster,         // Outside Cluster
-                                               StreamData.gpMeasureOutsideCluster,
-                                               gData.m_nTimeIntervals,
-                                               gParameters.GetTimeTrendConvergence());
-
-  nGlobalAlphaOut = StreamData.gTimeTrendOutside.Alpha(StreamData.gtTotalCasesOutsideCluster,
-                                                       StreamData.gpMeasureOutsideCluster,
-                                                       gData.m_nTimeIntervals,
-                                                       GlobalTimeTrend.m_nBeta);
-  #if DEBUGMODEL
-  fprintf(m_pDebugModelFile, "Inside                Outside\n");
-  fprintf(m_pDebugModelFile, "Cases    Msr          Cases    Msr\n");
-  fprintf(m_pDebugModelFile, "==========================================\n");
-  for (int i=0; i<m_pData->m_nTimeIntervals; i++)
-    fprintf (m_pDebugModelFile, "%i       %.2f        %i       %.2f\n",
-                                Cluster->m_pCumCases[i], Cluster->m_pCumMeasure[i],
-                                Cluster->m_pRemCases[i], Cluster->m_pRemMeasure[i]);
-  fprintf(m_pDebugModelFile, "------------------------------------------\n");
-  fprintf (m_pDebugModelFile, "%i                   %i\n\n",
-                              Cluster->GetCaseCount(0), Cluster->m_nRemCases);
-
-//  fprintf(m_pDebugModelFile, "\nGlobal Time Trend: Alpha = %f, Beta = %f\n\n",
-//          GlobalTimeTrend.m_nAlpha, GlobalTimeTrend.m_nBeta);
-  #endif
-
-  nLogLikelihood = (CalcSVTTLogLikelihood(StreamData.gpCasesInsideCluster,
-                                          StreamData.gpMeasureInsideCluster,
-                                          StreamData.gtTotalCasesInsideCluster,
-                                          StreamData.gTimeTrendInside.m_nAlpha,
-                                          StreamData.gTimeTrendInside.m_nBeta,
-                                          StreamData.gTimeTrendInside.m_nStatus)
-                    +
-                    CalcSVTTLogLikelihood(StreamData.gpCasesOutsideCluster,
-                                          StreamData.gpMeasureOutsideCluster,
-                                          StreamData.gtTotalCasesOutsideCluster,
-                                          StreamData.gTimeTrendOutside.m_nAlpha,
-                                          StreamData.gTimeTrendOutside.m_nBeta,
-                                          StreamData.gTimeTrendOutside.m_nStatus))
-                    -
-                   (CalcSVTTLogLikelihood(StreamData.gpCasesInsideCluster,
-                                          StreamData.gpMeasureInsideCluster,
-                                          StreamData.gtTotalCasesInsideCluster,
-                                          nGlobalAlphaIn,
-                                          GlobalTimeTrend.m_nBeta,
-                                          StreamData.gTimeTrendInside.m_nStatus)
-                    +
-                    CalcSVTTLogLikelihood(StreamData.gpCasesOutsideCluster,
-                                          StreamData.gpMeasureOutsideCluster,
-                                          StreamData.gtTotalCasesOutsideCluster,
-                                          nGlobalAlphaOut,
-                                          GlobalTimeTrend.m_nBeta,
-                                          StreamData.gTimeTrendOutside.m_nStatus));
-
-
-  #if DEBUGMODEL
-  fprintf(m_pDebugModelFile, "\nTotal LogLikelihood = %f\n\n\n", nLogLikelihood);
-  #endif
-
-  return nLogLikelihood;
-}
-
 bool CPoissonModel::CalculateMeasure(DataStream & thisStream) {
   bool                  bResult=true;
   double              * pAlpha=0, * pRisk=0;
@@ -380,11 +210,11 @@ bool CPoissonModel::CalculateMeasure(DataStream & thisStream) {
     CalcRisk(thisStream, &pRisk, pAlpha, gData.GetTInfo()->tiGetNumTracts(), &gPrintDirection);
     //allocate 2D array of population dates by number of tracts
     thisStream.AllocatePopulationMeasureArray();
-    //calculate expected number of cases in terms of population dates                                                                           
+    //calculate expected number of cases in terms of population dates
     Calcm(Population, thisStream.GetPopulationMeasureArray(), pRisk,
           Population.GetNumPopulationCategories(), gData.GetTInfo()->tiGetNumTracts(),
           Population.GetNumPopulationDates(), &gPrintDirection);
-          
+
     //assign measure, perform adjustments as requested, and set measure array as cumulative
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
       thisStream.AllocateNCMeasureArray();
@@ -432,14 +262,6 @@ bool CPoissonModel::CalculateMeasure(DataStream & thisStream) {
     throw;
   }
   return bResult;
-}
-
-double CPoissonModel::GetLogLikelihoodForTotal() const
-{
-  count_t   N = gData.GetTotalCases();
-  measure_t U = gData.GetTotalMeasure();
-
-  return N*log(N/U);
 }
 
 double CPoissonModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,

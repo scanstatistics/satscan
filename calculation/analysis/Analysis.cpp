@@ -12,6 +12,11 @@
 #include "stsLogLikelihood.h"
 #include "stsAreaSpecificData.h"
 #include "PrintQueue.h"
+#include "PoissonLikelihoodCalculation.h"
+#include "BernoulliLikelihoodCalculation.h"
+#include "WillcoxomLikelihoodCalculation.h"
+#include "NormalLikelihoodCalculation.h"
+#include "ExponentialLikelihoodCalculation.h"
 
 /** constructor */
 TopClustersContainer::TopClustersContainer(const CSaTScanData & Data)
@@ -126,11 +131,32 @@ CAnalysis::~CAnalysis() {
     InitializeTopClusterList();
     delete [] m_pTopClusters;
     delete gpClusterDataFactory;
+    delete gpLikelihoodCalculator;
 #ifdef DEBUGPROSPECTIVETIME
     fclose(m_pDebugFile);
 #endif
   }
   catch(...){}
+}
+
+/** allocates Likelihood object
+    - this function should not be called prior to calculation of total cases
+      and total measure                                                       */
+void CAnalysis::AllocateLikelihoodObject() {
+  try {
+    //create likelihood calculator
+    if (m_pParameters->GetProbabiltyModelType() == BERNOULLI)
+      gpLikelihoodCalculator = new BernoulliLikelihoodCalculator(m_pData->GetTotalCases(), m_pData->GetTotalMeasure());
+    else if (m_pParameters->GetProbabiltyModelType() == NORMAL)
+      gpLikelihoodCalculator = new NormalLikelihoodCalculator(m_pData->GetTotalCases(), m_pData->GetTotalMeasure());
+    else
+      gpLikelihoodCalculator = new PoissonLikelihoodCalculator(*m_pData);
+  }
+  catch (ZdException &x) {
+    delete gpLikelihoodCalculator;
+    x.AddCallpath("AllocateLikelihoodObject()","CAnalysis");
+    throw;
+  }
 }
 
 bool CAnalysis::Execute(time_t RunTime) {
@@ -141,13 +167,11 @@ bool CAnalysis::Execute(time_t RunTime) {
       SetMaxNumClusters();
       AllocateTopClusterList();                //Allocate array which will store most likely clusters.
       m_pData->GetDataStreamHandler().AllocateSimulationStructures(); 
-
       if (!m_pData->CalculateExpectedCases())        //Calculate expected number of cases.
          return false;
-
       if (m_pData->GetTotalCases() < 1)
          ZdException::Generate("Error: No cases found in input data.\n","CAnalysis");    //KR V.2.1
-
+      AllocateLikelihoodObject();
       //For circle and each ellipse, find closest neighboring tracts points for
       //each grid point limiting distance by max circle size and cumulated measure.
       if (gpPrintDirection->GetIsCanceled() || !m_pData->FindNeighbors(false))
@@ -161,15 +185,11 @@ bool CAnalysis::Execute(time_t RunTime) {
       fprintf(m_pDebugFile, "Program run on: %s", ctime(&RunTime));
       m_pParameters->DisplayParameters(m_pDebugFile, giSimulationNumber);
 #endif
-
-#ifdef INCLUDE_RUN_HISTORY
      // only create one history object and record to it only once ( first iteration if sequential analysis ) -- AJV
      stsRunHistoryFile historyFile(m_pParameters->GetRunHistoryFilename(), *gpPrintDirection,
                                    m_pParameters->GetNumReplicationsRequested() > 98, m_pParameters->GetIsSequentialScanning());
      lRunNumber = historyFile.GetRunNumber();
-#endif
-
-      do {
+     do {
          ++m_nAnalysisCount;
 #ifdef DEBUGANALYSIS
         fprintf(m_pDebugFile, "Analysis Loop #%i\n", m_nAnalysisCount);
@@ -653,9 +673,9 @@ double CAnalysis::FindTopRatio(const AbtractDataStreamGateway & DataGateway) {
 
 CMeasureList * CAnalysis::GetNewMeasureListObject() const {
   switch (m_pParameters->GetAreaScanRateType()) {
-    case HIGH       : return new CMinMeasureList(*m_pData, *gpPrintDirection);
-    case LOW        : return new CMaxMeasureList(*m_pData, *gpPrintDirection);
-    case HIGHANDLOW : return new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
+    case HIGH       : return new CMinMeasureList(*m_pData, *gpLikelihoodCalculator, *gpPrintDirection);
+    case LOW        : return new CMaxMeasureList(*m_pData, *gpLikelihoodCalculator, *gpPrintDirection);
+    case HIGHANDLOW : return new CMinMaxMeasureList(*m_pData, *gpLikelihoodCalculator, *gpPrintDirection);
     default         : ZdGenerateException("Unknown incidence rate specifier \"%d\".","MonteCarlo()",
                                           m_pParameters->GetAreaScanRateType());
   }
@@ -664,11 +684,11 @@ CMeasureList * CAnalysis::GetNewMeasureListObject() const {
 
 CTimeIntervals * CAnalysis::GetNewTimeIntervalsObject(IncludeClustersType eType) const {
   if (m_pParameters->GetProbabiltyModelType() == NORMAL)
-    return new NormalTimeIntervalRange(*m_pData, eType);
+    return new NormalTimeIntervalRange(*m_pData, *gpLikelihoodCalculator, eType);
   else if (m_pParameters->GetNumDataStreams() > 1)
-    return new MultiStreamTimeIntervalRange(*m_pData, eType);
+    return new MultiStreamTimeIntervalRange(*m_pData, *gpLikelihoodCalculator, eType);
   else
-    return new TimeIntervalRange(*m_pData, eType);
+    return new TimeIntervalRange(*m_pData, *gpLikelihoodCalculator, eType);
 }
 
 /** internal initialization */
@@ -683,6 +703,7 @@ void CAnalysis::Init() {
   giSimulationNumber=0;
   guwSignificantAt005=0;
   gbMeasureListReplications=true;
+  gpLikelihoodCalculator=0;
 }
 
 void CAnalysis::InitializeTopClusterList() {
