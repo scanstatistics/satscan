@@ -489,10 +489,10 @@ void CAnalysis::DisplayTopClusterLogLikelihood() {
     //if any clusters were retained, display either loglikelihood or test statistic
     if (m_nClustersRetained > 0) {
       if (m_pParameters->GetLogLikelihoodRatioIsTestStatistic())
-        gpPrintDirection->SatScanPrintf("  SaTScan test statistic for the most likely cluster: %7.2f\n\n",
+        gpPrintDirection->SatScanPrintf("SaTScan test statistic for the most likely cluster: %7.2f\n",
                                         m_pTopClusters[0]->m_nRatio);
       else
-        gpPrintDirection->SatScanPrintf("  SaTScan log likelihood ratio for the most likely cluster: %7.2f\n\n",
+        gpPrintDirection->SatScanPrintf("SaTScan log likelihood ratio for the most likely cluster: %7.2f\n",
                                         m_pTopClusters[0]->m_nRatio);
       }
   }
