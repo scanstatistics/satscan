@@ -13,6 +13,7 @@ object frmMainForm: TfrmMainForm
   FormStyle = fsMDIForm
   Menu = MainMenu1
   OldCreateOrder = False
+  Position = poScreenCenter
   PixelsPerInch = 96
   TextHeight = 13
   object Bevel1: TBevel
