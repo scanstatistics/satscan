@@ -94,7 +94,7 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
       ::CreateNewField(gvFields, END_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
       ::CreateNewField(gvFields, PRECISION_TIMES_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
       ::CreateNewField(gvFields, NUM_CASES_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
-      ::CreateNewField(gvFields, TOTAL_POP_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
+      ::CreateNewField(gvFields, TOTAL_POP_FIELD, ZD_NUMBER_FLD, 16, 0, uwOffset);
 
       ::CreateNewField(gvFields, P_VALUE_FIELD, ZD_NUMBER_FLD, 12, 5, uwOffset);
       ::CreateNewField(gvFields, NUM_SIGNIF_005_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
