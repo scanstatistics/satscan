@@ -87,7 +87,7 @@ SRC         := Main.cpp \
 	             $(CLUSTER)/ClusterDataFactory.cpp \
 	             $(CLUSTER)/NormalClusterDataFactory.cpp \
 	             $(CLUSTER)/CategoricalClusterDataFactory.cpp \
-	             $(CLUSTER)/MultipleStreamClusterData.cpp \
+	             $(CLUSTER)/MultiSetClusterData.cpp \
 	             $(CLUSTER)/MultiSetCategoricalClusterData.cpp \
 	             $(OUTPUT)/stsAreaSpecificData.cpp \
                $(OUTPUT)/stsASCIIFileWriter.cpp \
@@ -108,7 +108,7 @@ SRC         := Main.cpp \
 	             $(PROBMODEL)/PoissonModel.cpp \
 	             $(PROBMODEL)/SpaceTimePermutationModel.cpp \
 	             $(PROBMODEL)/NormalModel.cpp \
-	             $(PROBMODEL)/SurvivalModel.cpp \
+	             $(PROBMODEL)/ExponentialModel.cpp \
 	             $(PROBMODEL)/RankModel.cpp \
 	             $(PROBMODEL)/OrdinalModel.cpp \
 	             $(RANDOMIZER)/BernoulliRandomizer.cpp \
@@ -116,11 +116,11 @@ SRC         := Main.cpp \
 	             $(RANDOMIZER)/ContinuousVariableRandomizer.cpp \
 	             $(RANDOMIZER)/DenominatorDataRandomizer.cpp \
 	             $(RANDOMIZER)/PermutationDataRandomizer.cpp \
+	             $(RANDOMIZER)/ExponentialRandomizer.cpp \
 	             $(RANDOMIZER)/Randomizer.cpp \
 	             $(RANDOMIZER)/SpaceTimeRandomizer.cpp \
 	             $(RANDOMIZER)/OrdinalDataRandomizer.cpp \
 	             $(LOGLIKELIHOOD)/BernoulliLikelihoodCalculation.cpp \
-	             $(LOGLIKELIHOOD)/ExponentialLikelihoodCalculation.cpp \
 	             $(LOGLIKELIHOOD)/LikelihoodCalculation.cpp \
 	             $(LOGLIKELIHOOD)/LoglikelihoodRatioUnifier.cpp \
 	             $(LOGLIKELIHOOD)/NormalLikelihoodCalculation.cpp \
@@ -140,16 +140,16 @@ SRC         := Main.cpp \
 	             $(SATDATA)/Tracts.cpp \
 	             $(SATDATA)/MaxWindowLengthIndicator.cpp \
 	             $(SATDATA)/AdjustmentHandler.cpp \
-	             $(SATDATA)/DataStream.cpp \
-	             $(SATDATA)/DataStreamGateway.cpp \
-	             $(SATDATA)/DataStreamHandler.cpp \
-	             $(SATDATA)/DataStreamInterface.cpp \
-	             $(SATDATA)/BernoulliDataStreamHandler.cpp \
-	             $(SATDATA)/NormalDataStreamHandler.cpp \
-	             $(SATDATA)/PoissonDataStreamHandler.cpp \
-	             $(SATDATA)/RankDataStreamHandler.cpp \
-	             $(SATDATA)/SpaceTimePermutationDataStreamHandler.cpp \
-	             $(SATDATA)/SurvivalDataStreamHandler.cpp \
+	             $(SATDATA)/DataSet.cpp \
+	             $(SATDATA)/DataSetGateway.cpp \
+	             $(SATDATA)/DataSetHandler.cpp \
+	             $(SATDATA)/DataSetInterface.cpp \
+	             $(SATDATA)/BernoulliDataSetHandler.cpp \
+	             $(SATDATA)/NormalDataSetHandler.cpp \
+	             $(SATDATA)/PoissonDataSetHandler.cpp \
+	             $(SATDATA)/RankDataSetHandler.cpp \
+	             $(SATDATA)/SpaceTimePermutationDataSetHandler.cpp \
+	             $(SATDATA)/ExponentialDataSetHandler.cpp \
 	             $(SATDATA)/OrdinalDataSetHandler.cpp \
 	             $(UTILITY)/DBFFile.cpp \
 	             $(UTILITY)/JulianDates.cpp \
