@@ -4,21 +4,16 @@
 //*****************************************************************************
 #include "SaTScanData.h"
 
-class CPurelySpatialData : public CSaTScanData
-{
+class CPurelySpatialData : public CSaTScanData {
+  private:
+    virtual void        SetProbabilityModel();
+
+  protected:
+    virtual void        SetNumTimeIntervals() {m_nTimeIntervals = 1;};
+
   public:
     CPurelySpatialData(CParameters* pParameters, BasePrint *pPrintDirection);
     virtual ~CPurelySpatialData();
-
-//    int* m_pCases;
-//    int* m_pMeasures;
-
-  protected:
-    virtual void SetNumTimeIntervals() {m_nTimeIntervals = 1;};
-
-    //    virtual void AllocateForCasesAndMeasures();
-
-//    int* AllocateCountsArray();
 };
 
 //******************************************************************************
