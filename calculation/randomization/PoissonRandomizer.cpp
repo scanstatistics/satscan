@@ -74,18 +74,18 @@ void PoissonTimeStratifiedRandomizer::RandomizeData(const RealDataStream& thisRe
                                                     SimulationDataStream& thisSimulationStream,
                                                     unsigned int iSimulation) {
   unsigned int          tract, tNumTracts = thisRealStream.GetNumTracts();
-  count_t               c, cumcases=0, * pPTCases = thisRealStream.GetPTCasesArray(),
+  count_t               c, cumcases=0, * pCasesPerInterval = thisRealStream.GetCasesPerTimeIntervalArray(),
                      ** ppSimCases = thisSimulationStream.GetCaseArray();
-  measure_t             cummeasure=0, * pPTMeasure = thisRealStream.GetPTMeasureArray(),
+  measure_t             cummeasure=0, * pMeasurePerInterval = thisRealStream.GetMeasurePerTimeIntervalArray(),
                      ** ppMeasure = thisRealStream.GetMeasureArray();
   int                   interval;
 
   SetSeed(iSimulation, thisSimulationStream.GetStreamIndex());
   interval = thisRealStream.GetNumTimeIntervals() - 1;
   for (tract=0; tract < tNumTracts; ++tract) {
-     if (pPTCases[interval] - cumcases > 0)
-       c = gBinomialGenerator.GetBinomialDistributedVariable(pPTCases[interval] - cumcases,
-                                                             ppMeasure[interval][tract]/(pPTMeasure[interval] - cummeasure),
+     if (pCasesPerInterval[interval] - cumcases > 0)
+       c = gBinomialGenerator.GetBinomialDistributedVariable(pCasesPerInterval[interval] - cumcases,
+                                                             ppMeasure[interval][tract]/(pMeasurePerInterval[interval] - cummeasure),
                                                              gRandomNumberGenerator);
      else
        c = 0;
@@ -97,9 +97,9 @@ void PoissonTimeStratifiedRandomizer::RandomizeData(const RealDataStream& thisRe
      cumcases = 0;
      cummeasure = 0;
      for (tract=0; tract < tNumTracts; ++tract) { //For each tract:
-       if (pPTCases[interval] - cumcases > 0)
-          c = gBinomialGenerator.GetBinomialDistributedVariable(pPTCases[interval] - cumcases,
-                      (ppMeasure[interval][tract] - ppMeasure[interval + 1][tract])/(pPTMeasure[interval] - cummeasure),
+       if (pCasesPerInterval[interval] - cumcases > 0)
+          c = gBinomialGenerator.GetBinomialDistributedVariable(pCasesPerInterval[interval] - cumcases,
+                      (ppMeasure[interval][tract] - ppMeasure[interval + 1][tract])/(pMeasurePerInterval[interval] - cummeasure),
                       gRandomNumberGenerator);
         else
           c = 0;
