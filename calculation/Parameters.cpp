@@ -268,6 +268,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gbOutputSimulationData              = rhs.gbOutputSimulationData;
     gsSimulationDataOutputFilename      = rhs.gsSimulationDataOutputFilename;
     gbAdjustForEarlierAnalyses          = rhs.gbAdjustForEarlierAnalyses;
+    gbSuppressInstanceParticularOutput  = rhs.gbSuppressInstanceParticularOutput;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -339,26 +340,26 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
 
     fprintf(fp, "Input Files\n");
     fprintf(fp, "-----------\n");
+    if (! gbSuppressInstanceParticularOutput) {
+      fprintf(fp, "  Case File                      : %s\n", gsCaseFileName.c_str());
 
-    fprintf(fp, "  Case File                      : %s\n", gsCaseFileName.c_str());
+      switch (geProbabiltyModelType) {
+        case POISSON              : fprintf(fp, "  Population File                : %s\n", gsPopulationFileName.c_str()); break;
+        case BERNOULLI            : fprintf(fp, "  Control File                   : %s\n", gsControlFileName.c_str()); break;
+        case SPACETIMEPERMUTATION : break;
+        default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayParameters()", geProbabiltyModelType);
+      }
 
-    switch (geProbabiltyModelType) {
-      case POISSON              : fprintf(fp, "  Population File                : %s\n", gsPopulationFileName.c_str()); break;
-      case BERNOULLI            : fprintf(fp, "  Control File                   : %s\n", gsControlFileName.c_str()); break;
-      case SPACETIMEPERMUTATION : break;
-      default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayParameters()", geProbabiltyModelType);
+      if (gbUseMaxCirclePopulationFile)
+        fprintf(fp, "  Maximum Circle Population File : %s\n", gsMaxCirclePopulationFileName.c_str());
+      fprintf(fp, "  Coordinates File               : %s\n", gsCoordinatesFileName.c_str());
+      if (gbUseSpecialGridFile)
+        fprintf(fp, "  Special Grid File              : %s\n", gsSpecialGridFileName.c_str());
+      if (geSimulationType == FILESOURCE)
+        fprintf(fp, "  Simulation Data Source File    : %s\n", gsSimulationDataSourceFileName.c_str());
+      else if(geSimulationType == POWER_ESTIMATION)
+        fprintf(fp, "  Power Estimation File          : %s\n", gsPowerEstimationSourceFileName.c_str());
     }
-
-    if (gbUseMaxCirclePopulationFile)
-      fprintf(fp, "  Maximum Circle Population File : %s\n", gsMaxCirclePopulationFileName.c_str());
-    fprintf(fp, "  Coordinates File               : %s\n", gsCoordinatesFileName.c_str());
-    if (gbUseSpecialGridFile)
-      fprintf(fp, "  Special Grid File              : %s\n", gsSpecialGridFileName.c_str());
-    if (geSimulationType == FILESOURCE)
-      fprintf(fp, "  Simulation Data Source File    : %s\n", gsSimulationDataSourceFileName.c_str());
-    else if(geSimulationType == POWER_ESTIMATION)
-      fprintf(fp, "  Power Estimation File          : %s\n", gsPowerEstimationSourceFileName.c_str());
-
     fprintf(fp, "\n  Precision of Times : %s\n", GetDatePrecisionAsString(gePrecisionOfTimesType));
 
     fprintf(fp, "  Coordinates        : ");
@@ -482,48 +483,47 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
 
     fprintf(fp, "\nOutput\n");
     fprintf(fp, "------\n");
-    fprintf(fp,   "  Results File          : %s\n", gsOutputFileName.c_str());
-
-
-    // cluster information files
-    if (gbOutputClusterLevelAscii) {
-      AdditionalOutputFile.SetExtension(".col.txt");
-      fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
+    if (! gbSuppressInstanceParticularOutput) {
+      fprintf(fp,   "  Results File          : %s\n", gsOutputFileName.c_str());
+      // cluster information files
+      if (gbOutputClusterLevelAscii) {
+        AdditionalOutputFile.SetExtension(".col.txt");
+        fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
+      }
+      if (gbOutputClusterLevelAscii) {
+        AdditionalOutputFile.SetExtension(".col.dbf");
+        fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
+      }
+      // area specific files
+      if (gbOutputAreaSpecificAscii) {
+        AdditionalOutputFile.SetExtension(".gis.txt");
+        fprintf(fp, "  Location File         : %s\n", AdditionalOutputFile.GetFullPath());
+      }
+      if (gbOutputAreaSpecificDBase) {
+        AdditionalOutputFile.SetExtension(".gis.dbf");
+        fprintf(fp, "  Location File         : %s\n", AdditionalOutputFile.GetFullPath());
+      }
+      // relative risk files
+      if (gbOutputRelativeRisksAscii) {
+        AdditionalOutputFile.SetExtension(".rr.txt");
+        fprintf(fp, "  Relative Risks File   : %s\n", AdditionalOutputFile.GetFullPath());
+      }
+      if (gbOutputRelativeRisksDBase) {
+        AdditionalOutputFile.SetExtension(".rr.dbf");
+        fprintf(fp, "  Relative Risks File   : %s\n", AdditionalOutputFile.GetFullPath());
+      }
+      // loglikelihood ratio files
+      if (gbOutputSimLogLikeliRatiosAscii) {
+        AdditionalOutputFile.SetExtension(".llr.txt");
+        fprintf(fp, "  Simulated LLRs File   : %s\n", AdditionalOutputFile.GetFullPath());
+      }
+      if (gbOutputSimLogLikeliRatiosDBase) {
+        AdditionalOutputFile.SetExtension(".llr.dbf");
+        fprintf(fp, "  Simulated LLRs File   : %s\n", AdditionalOutputFile.GetFullPath());
+      }
+      if (gbOutputSimulationData)
+        fprintf(fp, "  Simulations Data File : %s\n", gsSimulationDataOutputFilename.c_str());
     }
-    if (gbOutputClusterLevelAscii) {
-      AdditionalOutputFile.SetExtension(".col.dbf");
-      fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    // area specific files
-    if (gbOutputAreaSpecificAscii) {
-      AdditionalOutputFile.SetExtension(".gis.txt");
-      fprintf(fp, "  Location File         : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    if (gbOutputAreaSpecificDBase) {
-      AdditionalOutputFile.SetExtension(".gis.dbf");
-      fprintf(fp, "  Location File         : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    // relative risk files
-    if (gbOutputRelativeRisksAscii) {
-      AdditionalOutputFile.SetExtension(".rr.txt");
-      fprintf(fp, "  Relative Risks File   : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    if (gbOutputRelativeRisksDBase) {
-      AdditionalOutputFile.SetExtension(".rr.dbf");
-      fprintf(fp, "  Relative Risks File   : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    // loglikelihood ratio files
-    if (gbOutputSimLogLikeliRatiosAscii) {
-      AdditionalOutputFile.SetExtension(".llr.txt");
-      fprintf(fp, "  Simulated LLRs File   : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    if (gbOutputSimLogLikeliRatiosDBase) {
-      AdditionalOutputFile.SetExtension(".llr.dbf");
-      fprintf(fp, "  Simulated LLRs File   : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    if (gbOutputSimulationData)
-      fprintf(fp, "  Simulations Data File : %s\n", gsSimulationDataOutputFilename.c_str());
-
     if (!(geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
       fprintf(fp, "\n  Criteria for Reporting Secondary Clusters : ");
       switch (geCriteriaSecondClustersType) {
@@ -2220,6 +2220,7 @@ void CParameters::SetDefaults() {
   gbOutputSimulationData                = false;
   gsSimulationDataOutputFilename        = "";
   gbAdjustForEarlierAnalyses            = false;
+  gbSuppressInstanceParticularOutput    = false;
 }
 
 /** Sets dimensions of input data. */
