@@ -21,6 +21,7 @@ CSpaceTimeCluster::CSpaceTimeCluster(int nTIType, int nIntervals, int nIntervalC
       // need to keep both of these?
       m_nTotalIntervals = nIntervals;
       m_nIntervalCut    = nIntervalCut;
+      m_nTIType = nTIType;
 
       m_pCumCases   = (count_t*) Smalloc((m_nTotalIntervals)*sizeof(count_t), gpPrintDirection);
       m_pCumMeasure = (measure_t*) Smalloc((m_nTotalIntervals)*sizeof(measure_t), gpPrintDirection);
@@ -63,6 +64,7 @@ CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& cluste
 
   m_nTotalIntervals = cluster.m_nTotalIntervals;
   m_nIntervalCut    = cluster.m_nIntervalCut;
+  m_nTIType         = cluster.m_nTIType;
 
   memcpy(m_pCumCases, cluster.m_pCumCases, m_nTotalIntervals*sizeof(count_t));
   memcpy(m_pCumMeasure, cluster.m_pCumMeasure, m_nTotalIntervals*sizeof(measure_t));
@@ -95,6 +97,14 @@ void CSpaceTimeCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, coun
       m_pCumCases[i]   += pCases[i][nNeighbor];
       m_pCumMeasure[i] += Data.m_pMeasure[i][nNeighbor];
       }
+}
+
+/** returns newly cloned CSpaceTimeCluster */
+CSpaceTimeCluster * CSpaceTimeCluster::Clone() const {
+  //Note: Replace this code with copy constructor...
+  CSpaceTimeCluster * pClone = new CSpaceTimeCluster(m_nTIType, m_nTotalIntervals, m_nIntervalCut, gpPrintDirection);
+  *pClone = *this;
+  return pClone;
 }
 
 void CSpaceTimeCluster::DeAllocCumulativeCounts()

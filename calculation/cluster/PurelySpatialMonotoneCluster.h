@@ -24,6 +24,7 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
 
   public:
     CPSMonotoneCluster& operator =(const CPSMonotoneCluster& cluster);
+    virtual CPSMonotoneCluster * Clone() const;
 
     virtual void Initialize(tract_t nCenter);
     void AllocateForMaxCircles(tract_t nCircles);

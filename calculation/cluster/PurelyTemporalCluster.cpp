@@ -8,6 +8,7 @@ CPurelyTemporalCluster::CPurelyTemporalCluster(int nTIType, int nIntervals, int 
    try
       {
       m_TI = 0;
+      m_nTIType = nTIType;
       switch (nTIType)
          {
          case (ALLCLUSTERS)   : m_TI = new CTIAll(nIntervals, nIntervalCut);   break;
@@ -31,6 +32,15 @@ CPurelyTemporalCluster::~CPurelyTemporalCluster()
     delete m_TI;
   }
   catch(...){}  
+}
+
+/** returns newly cloned CPurelyTemporalCluster */
+CPurelyTemporalCluster * CPurelyTemporalCluster::Clone() const {
+  //Note: Replace this code with copy constructor...
+  CPurelyTemporalCluster * pClone = new CPurelyTemporalCluster(m_nTIType, m_nTotalIntervals,
+                                                               m_nIntervalCut, gpPrintDirection);
+  *pClone = *this;
+  return pClone;
 }
 
 void CPurelyTemporalCluster::Initialize(tract_t nCenter)
@@ -57,6 +67,7 @@ CPurelyTemporalCluster& CPurelyTemporalCluster::operator =(const CPurelyTemporal
 
   m_nTotalIntervals = cluster.m_nTotalIntervals;
   m_nIntervalCut    = cluster.m_nIntervalCut;
+  m_nTIType         = cluster.m_nTIType;
 
   m_nSteps          = cluster.m_nSteps;
 

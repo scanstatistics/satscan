@@ -11,6 +11,14 @@ CPurelySpatialCluster::CPurelySpatialCluster(BasePrint *pPrintDirection)
 
 CPurelySpatialCluster::~CPurelySpatialCluster() {}
 
+/** returns newly cloned CPurelySpatialCluster */
+CPurelySpatialCluster * CPurelySpatialCluster::Clone() const {
+  //Note: Replace this code with copy constructor...
+  CPurelySpatialCluster * pClone = new CPurelySpatialCluster(gpPrintDirection);
+  *pClone = *this;
+  return pClone;
+}
+
 void CPurelySpatialCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n)
 {
   tract_t nNeighbor = Data.GetNeighbor(iEllipse, m_Center, n);

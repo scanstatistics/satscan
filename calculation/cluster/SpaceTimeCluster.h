@@ -15,6 +15,7 @@ class CSpaceTimeCluster : public CCluster
     CSpaceTimeCluster         & operator =(const CSpaceTimeCluster& cluster);
 
     virtual void                AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n);
+    virtual CSpaceTimeCluster * Clone() const;
     void                        DeAllocCumulativeCounts();
     virtual count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual measure_t           GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
@@ -30,6 +31,7 @@ class CSpaceTimeCluster : public CCluster
     measure_t                 * m_pCumMeasure;
     int                         m_nTotalIntervals;
     int                         m_nIntervalCut;
+    int                         m_nTIType;
     CTimeIntervals            * TI;
 };
 //*****************************************************************************

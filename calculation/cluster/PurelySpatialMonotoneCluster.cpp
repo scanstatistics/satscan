@@ -26,6 +26,14 @@ CPSMonotoneCluster::~CPSMonotoneCluster()
     free(m_pLastNeighborList);
 }
 
+/** returns newly cloned CPSMonotoneCluster */
+CPSMonotoneCluster * CPSMonotoneCluster::Clone() const {
+  //Note: Replace this code with copy constructor...
+  CPSMonotoneCluster * pClone = new CPSMonotoneCluster(gpPrintDirection);
+  *pClone = *this;
+  return pClone;
+}
+
 void CPSMonotoneCluster::Initialize(tract_t nCenter=0)
 {
   CCluster::Initialize(nCenter);
