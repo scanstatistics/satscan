@@ -22,7 +22,7 @@ class CBernoulliModel : public CModel
     virtual double              GetLogLikelihoodForTotal() const;
     virtual double              GetPopulation(int m_iEllipseOffset, tract_t nCenter,
                                               tract_t nTracts, int nStartInterval, int nStopInterval);
-    virtual void                MakeData();
+    virtual void                MakeData(int iSimulationNumber);
     virtual count_t           * MakeDataB(count_t nTotalCounts, count_t* RandCounts);
     virtual bool                ReadData();
 };

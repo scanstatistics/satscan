@@ -152,13 +152,16 @@ double CSpaceTimePermutationModel::GetPopulation(int m_iEllipseOffset, tract_t n
 }
 
 /** Creates simulation data. Permutates the cases occurance dates through random sorting. */
-void CSpaceTimePermutationModel::MakeData()
+void CSpaceTimePermutationModel::MakeData(int iSimulationNumber)
 {
   int           i, k;
   size_t        t, RandomizerSize;
 
    try
       {
+      //reset seed to simulation number
+      m_RandomNumberGenerator.SetSeed(iSimulationNumber + m_RandomNumberGenerator.GetDefaultSeed());
+
       // reset simulation cases to zero
       for (i=0; i < m_pData->m_nTimeIntervals; i++)
          for (k=0; k < m_pData->m_nTracts; k++)

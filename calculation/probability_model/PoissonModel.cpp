@@ -137,7 +137,7 @@ double CPoissonModel::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMClu
    return nLogLikelihood;
 }
 
-void CPoissonModel::MakeData()
+void CPoissonModel::MakeData(int iSimulationNumber)
 {
    count_t   cumcases = 0;                       // simulated cases so far
    measure_t cummeasure = 0;                             // measure so far
@@ -148,6 +148,9 @@ void CPoissonModel::MakeData()
 
    try
       {
+      //reset seed to simulation number
+      m_RandomNumberGenerator.SetSeed(iSimulationNumber + m_RandomNumberGenerator.GetDefaultSeed());
+      
 // One and only one of these can be set to one:
 #define H0 1            // standard, generates simulated case data under H0
 #define READSIMS 0      // reads simulated data from a file

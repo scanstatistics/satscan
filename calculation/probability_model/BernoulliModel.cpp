@@ -187,7 +187,7 @@ double CBernoulliModel::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMC
    return nLogLikelihood;
 }
 
-void CBernoulliModel::MakeData()
+void CBernoulliModel::MakeData(int iSimulationNumber)
 {
    count_t nCumCounts;
    count_t nCumMeasure;
@@ -197,6 +197,8 @@ void CBernoulliModel::MakeData()
 
    try
       {
+      //reset seed to simulation number
+      m_RandomNumberGenerator.SetSeed(iSimulationNumber + m_RandomNumberGenerator.GetDefaultSeed());
       if (m_pData->m_nTotalCases < m_pData->m_nTotalControls)
          {
   	 RandCounts = MakeDataB(m_pData->m_nTotalCases, RandCounts);

@@ -26,7 +26,7 @@ class CModel
     virtual double GetLogLikelihoodForTotal() const = 0;
     virtual double CalcLogLikelihood(count_t n, measure_t u) = 0;
     virtual double CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) = 0;
-    virtual void   MakeData() = 0;
+    virtual void   MakeData(int iSimulationNumber) = 0;
     virtual double GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
                                  int nStartInterval, int nStopInterval) = 0;
     virtual bool   ReCalculateMeasure() {/* No action taken by default. */return true;}
