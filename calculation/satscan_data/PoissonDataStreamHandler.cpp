@@ -85,7 +85,7 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewDataGateway() const {
     pDataStreamGateway = GetNewDataGatewayObject();
     for (t=0; t < gvDataStreams.size(); ++t) {
       //get reference to stream
-      const RealDataStream& thisStream = gvDataStreams[t];
+      const RealDataStream& thisStream = *gvDataStreams[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisStream.GetTotalCases());
       Interface.SetTotalMeasureCount(thisStream.GetTotalMeasure());
@@ -143,8 +143,8 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewSimulationDataGateway
     pDataStreamGateway = GetNewDataGatewayObject();
     for (t=0; t < gvDataStreams.size(); ++t) {
       //get reference to stream
-      const RealDataStream& thisRealStream = gvDataStreams[t];
-      const SimulationDataStream& thisSimulationStream = Container[t];
+      const RealDataStream& thisRealStream = *gvDataStreams[t];
+      const SimulationDataStream& thisSimulationStream = *Container[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisRealStream.GetTotalCases());
       Interface.SetTotalMeasureCount(thisRealStream.GetTotalMeasure());
@@ -214,36 +214,36 @@ RandomizerContainer_t& PoissonDataStreamHandler::GetRandomizerContainer(Randomiz
 SimulationDataContainer_t& PoissonDataStreamHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
   Container.clear();
   for (unsigned int t=0; t < gParameters.GetNumDataStreams(); ++t)
-    Container.push_back(SimulationDataStream(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
+    Container.push_back(new SimulationDataStream(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
 
   switch (gParameters.GetAnalysisType()) {
     case PURELYSPATIAL :
         for (size_t t=0; t < Container.size(); ++t)
-          Container[t].AllocateCasesArray();
+          Container[t]->AllocateCasesArray();
         break;
     case PURELYSPATIALMONOTONE :
         ZdGenerateException("GetSimulationDataContainer() not implemented for purely spatial monotone analysis.","GetSimulationDataContainer()");
     case PURELYTEMPORAL :
     case PROSPECTIVEPURELYTEMPORAL :
         for (size_t t=0; t < Container.size(); ++t) {
-          Container[t].AllocateCasesArray();
-          Container[t].AllocatePTCasesArray();
+          Container[t]->AllocateCasesArray();
+          Container[t]->AllocatePTCasesArray();
         }
         break;
     case SPACETIME :
     case PROSPECTIVESPACETIME :
         for (size_t t=0; t < Container.size(); ++t) {
-          Container[t].AllocateCasesArray();
+          Container[t]->AllocateCasesArray();
           if (gParameters.GetIncludePurelyTemporalClusters())
-            Container[t].AllocatePTCasesArray();
+            Container[t]->AllocatePTCasesArray();
         }
         break;
     case SPATIALVARTEMPTREND :
         for (size_t t=0; t < Container.size(); ++t) {
-          Container[t].AllocateCasesArray();
-          Container[t].AllocateNCCasesArray();
+          Container[t]->AllocateCasesArray();
+          Container[t]->AllocateNCCasesArray();
           if (gParameters.GetIncludePurelyTemporalClusters())
-            Container[t].AllocatePTCasesArray();
+            Container[t]->AllocatePTCasesArray();
         }
         break;
     default :
@@ -255,7 +255,7 @@ SimulationDataContainer_t& PoissonDataStreamHandler::GetSimulationDataContainer(
 /** randomizes each data streams */
 void PoissonDataStreamHandler::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
   for (size_t t=0; t < gvDataStreams.size(); ++t)
-     gvDataStreamRandomizers[t]->RandomizeData(gvDataStreams[t], SimDataContainer[t], iSimulationNumber);
+     gvDataStreamRandomizers[t]->RandomizeData(*gvDataStreams[t], *SimDataContainer[t], iSimulationNumber);
 }
 
 /** */
@@ -303,7 +303,7 @@ bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
   std::vector<Julian>::iterator itrdates;
 
   try {
-    RealDataStream & thisStream = gvDataStreams[tStream];
+    RealDataStream& thisStream = *gvDataStreams[tStream];
     gpPrint->SetImpliedInputFileType(BasePrint::POPFILE, (GetNumStreams() == 1 ? 0 : tStream + 1));
     StringParser Parser(*gpPrint);
 

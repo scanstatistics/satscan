@@ -23,7 +23,7 @@ DataStreamHandler::~DataStreamHandler() {}
 /** allocates cases structures for stream */
 void DataStreamHandler::AllocateCaseStructures(unsigned int iStream) {
   try {
-    gvDataStreams[iStream].AllocateCasesArray();
+    gvDataStreams[iStream]->AllocateCasesArray();
   }
   catch(ZdException &x) {
     x.AddCallpath("AllocateCaseStructures()","DataStreamHandler");
@@ -218,7 +218,7 @@ bool DataStreamHandler::ParseCovariates(PopulationData & thePopulation, int& iCa
     real data through passed collection of passed randomizers. */
 void DataStreamHandler::RandomizeIsolatedData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const {
   for (size_t t=0; t < gvDataStreams.size(); ++t)
-     Container[t]->RandomizeData(gvDataStreams[t], SimDataContainer[t], iSimulationNumber);
+     Container[t]->RandomizeData(*gvDataStreams[t], *SimDataContainer[t], iSimulationNumber);
 }
 
 /** Read the case data file.
@@ -262,7 +262,7 @@ bool DataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDesc
   count_t                               Count, ** pCounts;
 
   try {
-    RealDataStream & thisStream = gvDataStreams[tStream];
+    RealDataStream& thisStream = *gvDataStreams[tStream];
 
     bCaseFile = !strcmp(szDescription, "case");
     pCounts = (bCaseFile ? thisStream.gpCasesHandler->GetArray() : thisStream.gpControlsHandler->GetArray());
@@ -309,7 +309,7 @@ bool DataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDesc
 /** reports whether any data stream has cases with a zero population. */
 void DataStreamHandler::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePrint * pPrintDirection) {
   for (size_t t=0; t < gvDataStreams.size(); ++t)
-    gvDataStreams[t].GetPopulationData().ReportZeroPops(Data, pDisplay, pPrintDirection);
+    gvDataStreams[t]->GetPopulationData().ReportZeroPops(Data, pDisplay, pPrintDirection);
 }
 
 void DataStreamHandler::SetPurelyTemporalMeasureData(RealDataStream & thisRealStream) {
@@ -326,7 +326,7 @@ void DataStreamHandler::SetPurelyTemporalMeasureData(RealDataStream & thisRealSt
 void DataStreamHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer) {
   try {
     for (size_t t=0; t < SimDataContainer.size(); ++t)
-       SimDataContainer[t].SetPTCasesArray();
+       SimDataContainer[t]->SetPTCasesArray();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalSimulationData()","DataStreamHandler");
@@ -338,7 +338,7 @@ void DataStreamHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_
 void DataStreamHandler::Setup() {
   try {
     for (unsigned int i=0; i < gParameters.GetNumDataStreams(); ++i)
-      gvDataStreams.push_back(RealDataStream(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), i + 1));
+      gvDataStreams.push_back(new RealDataStream(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), i + 1));
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()","DataStreamHandler");

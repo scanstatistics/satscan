@@ -15,8 +15,8 @@ SpaceTimePermutationDataStreamHandler::~SpaceTimePermutationDataStreamHandler() 
 /** allocates cases structures for stream */
 void SpaceTimePermutationDataStreamHandler::AllocateCaseStructures(unsigned int iStream) {
   try {
-    gvDataStreams[iStream].AllocateCasesArray();
-    gvDataStreams[iStream].AllocateCategoryCasesArray();
+    gvDataStreams[iStream]->AllocateCasesArray();
+    gvDataStreams[iStream]->AllocateCategoryCasesArray();
   }
   catch(ZdException &x) {
     x.AddCallpath("AllocateCaseStructures()","SpaceTimePermutationDataStreamHandler");
@@ -34,7 +34,7 @@ AbtractDataStreamGateway * SpaceTimePermutationDataStreamHandler::GetNewDataGate
     pDataStreamGateway = GetNewDataGatewayObject();
     for (t=0; t < gvDataStreams.size(); ++t) {
       //get reference to stream
-      const RealDataStream& thisStream = gvDataStreams[t];
+      const RealDataStream& thisStream = *gvDataStreams[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisStream.GetTotalCases());
       Interface.SetTotalMeasureCount(thisStream.GetTotalMeasure());
@@ -78,8 +78,8 @@ AbtractDataStreamGateway * SpaceTimePermutationDataStreamHandler::GetNewSimulati
     pDataStreamGateway = GetNewDataGatewayObject();
     for (t=0; t < gvDataStreams.size(); ++t) {
       //get reference to stream
-      const RealDataStream& thisRealStream = gvDataStreams[t];
-      const SimulationDataStream& thisSimulationStream = Container[t];
+      const RealDataStream& thisRealStream = *gvDataStreams[t];
+      const SimulationDataStream& thisSimulationStream = *Container[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisRealStream.GetTotalCases());
       Interface.SetTotalMeasureCount(thisRealStream.GetTotalMeasure());
@@ -135,7 +135,7 @@ RandomizerContainer_t& SpaceTimePermutationDataStreamHandler::GetRandomizerConta
 SimulationDataContainer_t& SpaceTimePermutationDataStreamHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
   Container.clear();
   for (unsigned int t=0; t < gParameters.GetNumDataStreams(); ++t)
-    Container.push_back(SimulationDataStream(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
+    Container.push_back(new SimulationDataStream(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
 
   switch (gParameters.GetAnalysisType()) {
     case PURELYSPATIAL :
@@ -148,7 +148,7 @@ SimulationDataContainer_t& SpaceTimePermutationDataStreamHandler::GetSimulationD
     case SPACETIME :
     case PROSPECTIVESPACETIME :
         for (size_t t=0; t < Container.size(); ++t)
-          Container[t].AllocateCasesArray();
+          Container[t]->AllocateCasesArray();
         break;
     case SPATIALVARTEMPTREND :
         ZdGenerateException("GetSimulationDataContainer() not implemented for spatial variation and temporal trends analysis.","GetSimulationDataContainer()");
@@ -161,7 +161,7 @@ SimulationDataContainer_t& SpaceTimePermutationDataStreamHandler::GetSimulationD
 /** randomizes each data streams */
 void SpaceTimePermutationDataStreamHandler::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
   for (size_t t=0; t < gvDataStreams.size(); ++t)
-     gvDataStreamRandomizers[t].RandomizeData(gvDataStreams[t], SimDataContainer[t], iSimulationNumber);
+     gvDataStreamRandomizers[t].RandomizeData(*gvDataStreams[t], *SimDataContainer[t], iSimulationNumber);
 }
 
 /** Read the count data file.
@@ -178,7 +178,7 @@ bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tStream, FILE * fp
   count_t                               Count, ** pCounts;
 
   try {
-    RealDataStream & thisStream = gvDataStreams[tStream];
+    RealDataStream& thisStream = *gvDataStreams[tStream];
     SpaceTimeRandomizer & Randomizer = gvDataStreamRandomizers[tStream];
 
     pCounts = thisStream.GetCaseArray();

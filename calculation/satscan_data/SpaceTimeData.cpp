@@ -42,7 +42,7 @@ void CSpaceTimeData::RandomizeData(SimulationDataContainer_t& SimDataContainer, 
     CSaTScanData::RandomizeData(SimDataContainer, iSimulationNumber);
     if (m_pParameters->GetIncludePurelyTemporalClusters())
       for (size_t t=0; t < SimDataContainer.size(); ++t)
-        SimDataContainer[t].SetPTCasesArray();
+        SimDataContainer[t]->SetPTCasesArray();
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CSpaceTimeData");
@@ -58,7 +58,7 @@ void CSpaceTimeData::RandomizeIsolatedData(RandomizerContainer_t& RandomizerCont
     CSaTScanData::RandomizeIsolatedData(RandomizerContainer, SimDataContainer, iSimulationNumber);
     if (m_pParameters->GetIncludePurelyTemporalClusters())
       for (size_t t=0; t < SimDataContainer.size(); ++t)
-        SimDataContainer[t].SetPTCasesArray();
+        SimDataContainer[t]->SetPTCasesArray();
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeIsolatedData()","CSpaceTimeData");

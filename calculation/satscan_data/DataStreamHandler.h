@@ -8,7 +8,7 @@
 
 class CSaTScanData; /** forward class definition */
 
-typedef std::vector<SimulationDataStream> SimulationDataContainer_t;
+typedef ZdPointerVector<SimulationDataStream> SimulationDataContainer_t;
 
 /** Manages all data streams. */
 class DataStreamHandler {
@@ -19,7 +19,7 @@ class DataStreamHandler {
     const CParameters                 & gParameters;            /** reference to parameters */
     BasePrint                         * gpPrint;                /** pointer to print direction */
     CSaTScanData                      & gDataHub;               /** reference to data hub */
-    std::vector<RealDataStream>         gvDataStreams;          /** collection of data streams */
+    ZdPointerVector<RealDataStream>     gvDataStreams;          /** collection of data streams */
 
     virtual void                        AllocateCaseStructures(unsigned int iStream);
     bool                                ConvertCountDateToJulian(StringParser & Parser, Julian & JulianDate);
@@ -49,8 +49,8 @@ class DataStreamHandler {
     virtual bool                        ReadData() = 0;
 
     size_t                              GetNumStreams() const {return gvDataStreams.size();}
-    const RealDataStream              & GetStream(unsigned int iStream) const {return gvDataStreams[iStream];}
-    RealDataStream                    & GetStream(unsigned int iStream) {return gvDataStreams[iStream];}
+    const RealDataStream              & GetStream(unsigned int iStream) const {return *gvDataStreams[iStream];}
+    RealDataStream                    & GetStream(unsigned int iStream) {return *gvDataStreams[iStream];}
     void                                ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePrint * pPrintDirection);
     virtual void                        SetPurelyTemporalMeasureData(RealDataStream & thisRealStream);
     virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);

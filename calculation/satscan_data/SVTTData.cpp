@@ -146,15 +146,15 @@ void CSVTTData::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsig
   try {
     CSaTScanData::RandomizeData(SimDataContainer, iSimulationNumber);
     for (size_t t=0; t < SimDataContainer.size(); ++t) {
-       SimDataContainer[t].SetCaseArrays();
+       SimDataContainer[t]->SetCaseArrays();
        //calculate time trend for entire randomized data set
        //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
        //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
        //      has not been decided yet.
-       SimDataContainer[t].GetTimeTrend().CalculateAndSet(gpDataStreams->GetStream(t).GetPTCasesArray(),
-                                                          gpDataStreams->GetStream(t).GetPTMeasureArray(),
-                                                          m_nTimeIntervals,
-                                                          m_pParameters->GetTimeTrendConvergence());
+       SimDataContainer[t]->GetTimeTrend().CalculateAndSet(gpDataStreams->GetStream(t).GetPTCasesArray(),
+                                                           gpDataStreams->GetStream(t).GetPTMeasureArray(),
+                                                           m_nTimeIntervals,
+                                                           m_pParameters->GetTimeTrendConvergence());
     }
   }
   catch (ZdException &x) {
@@ -170,15 +170,15 @@ void CSVTTData::RandomizeIsolatedData(RandomizerContainer_t& RandomizerContainer
   try {
     CSaTScanData::RandomizeIsolatedData(RandomizerContainer, SimDataContainer, iSimulationNumber);
     for (size_t t=0; t < SimDataContainer.size(); ++t) {
-       SimDataContainer[t].SetCaseArrays();
+       SimDataContainer[t]->SetCaseArrays();
        //calculate time trend for entire randomized data set
        //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
        //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
        //      has not been decided yet.
-       SimDataContainer[t].GetTimeTrend().CalculateAndSet(gpDataStreams->GetStream(t).GetPTCasesArray(),
-                                                          gpDataStreams->GetStream(t).GetPTMeasureArray(),
-                                                          m_nTimeIntervals,
-                                                          m_pParameters->GetTimeTrendConvergence());
+       SimDataContainer[t]->GetTimeTrend().CalculateAndSet(gpDataStreams->GetStream(t).GetPTCasesArray(),
+                                                           gpDataStreams->GetStream(t).GetPTMeasureArray(),
+                                                           m_nTimeIntervals,
+                                                           m_pParameters->GetTimeTrendConvergence());
     }
   }
   catch (ZdException &x) {
