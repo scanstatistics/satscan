@@ -9,11 +9,11 @@ class SaTScanToolkit : public BToolkit {
     // system file
     static const char         * gsSystemIniFileName;
     static const char         * gsHistoryFileNameProperty;
-    static const char         * gsLoggingProperty;
-    static const char         * gsSaTScanWebSiteProperty;
-    static const char         * gsSaTScanLicenceWebSiteProperty;
-    static const char         * gsSubstantiveSupportEmailProperty;
-    static const char         * gsTechnicalSupportEmailProperty;
+    //static const char         * gsLoggingProperty;
+    //static const char         * gsSaTScanWebSiteProperty;
+    //static const char         * gsSaTScanLicenceWebSiteProperty;
+    //static const char         * gsSubstantiveSupportEmailProperty;
+    //static const char         * gsTechnicalSupportEmailProperty;
 
     // default defines
     static const char         * gsDefaultRunHistoryFileName;

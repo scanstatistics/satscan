@@ -8,15 +8,15 @@ const char * SaTScanToolkit::gsSystemIniFileName = "system.ini";
 /** ini section property name for run history filename */
 const char * SaTScanToolkit::gsHistoryFileNameProperty = "[RunHistory].FileName";
 /** ini section property name for logging run history */
-const char * SaTScanToolkit::gsLoggingProperty = "[RunHistory].LogHistory";
+//const char * SaTScanToolkit::gsLoggingProperty = "[RunHistory].LogHistory";
 /** ini section property name for website */
-const char * SaTScanToolkit::gsSaTScanWebSiteProperty = "[Internet].WebsiteURL";
+//const char * SaTScanToolkit::gsSaTScanWebSiteProperty = "[Internet].WebsiteURL";
 /** ini section property name for license website */
-const char * SaTScanToolkit::gsSaTScanLicenceWebSiteProperty = "[Internet].LicenceURL";
+//const char * SaTScanToolkit::gsSaTScanLicenceWebSiteProperty = "[Internet].LicenceURL";
 /** ini section property name for substantive support email */
-const char * SaTScanToolkit::gsSubstantiveSupportEmailProperty = "[Email].SubstantiveSupportEmail";
+//const char * SaTScanToolkit::gsSubstantiveSupportEmailProperty = "[Email].SubstantiveSupportEmail";
 /** ini section property name for technical support email */
-const char * SaTScanToolkit::gsTechnicalSupportEmailProperty = "[Email].TechnicalSupportEmail";
+//const char * SaTScanToolkit::gsTechnicalSupportEmailProperty = "[Email].TechnicalSupportEmail";
 /** analysis history filename */
 const char * SaTScanToolkit::gsDefaultRunHistoryFileName = "AnalysisHistory";
 /** Default website. */
@@ -44,7 +44,8 @@ SaTScanToolkit::~SaTScanToolkit() {}
 
 /** Returns license URL. */
 const char * SaTScanToolkit::GetLicenceWebSite() /*const*/ {
-  return GetSession().GetProperty(gsSaTScanLicenceWebSiteProperty)->GetValue();
+  //return GetSession().GetProperty(gsSaTScanLicenceWebSiteProperty)->GetValue();
+  return gsDefaultSaTScanLicenceWebSite;
 }
 
 /** Returns indicator of run history logging. */
@@ -77,16 +78,19 @@ const char * SaTScanToolkit::GetRunHistoryFileName() /*const*/ {
 
 /** Returns substantive support email address. */
 const char * SaTScanToolkit::GetSubstantiveSupportEmail() /*const*/ {
-  return GetSession().GetProperty(gsSubstantiveSupportEmailProperty)->GetValue();
+  //return GetSession().GetProperty(gsSubstantiveSupportEmailProperty)->GetValue();
+  return gsDefaultSubstantiveSupportEmail;
 }
 /** Returns substantive support email address. */
 const char * SaTScanToolkit::GetTechnicalSupportEmail() /*const*/ {
-  return GetSession().GetProperty(gsTechnicalSupportEmailProperty)->GetValue();
+  //return GetSession().GetProperty(gsTechnicalSupportEmailProperty)->GetValue();
+  return gsDefaultTechnicalSupportEmail;
 }
 
 /** Returns website URL. */
 const char * SaTScanToolkit::GetWebSite() /*const*/ {
-  return GetSession().GetProperty(gsSaTScanWebSiteProperty)->GetValue();
+  //return GetSession().GetProperty(gsSaTScanWebSiteProperty)->GetValue();
+  return gsDefaultSaTScanWebSite;
 }
 
 /** Insures run history filename section in ZdIniSession. */
@@ -178,14 +182,14 @@ void SaTScanToolkit::InsureSessionStructure() {
       bNeedsWrite = true;
     //if (InsureSessionProperty(gsLoggingProperty, "true"))
     //  bNeedsWrite = true;
-    if (InsureSessionProperty(gsSaTScanWebSiteProperty, gsDefaultSaTScanWebSite))
-      bNeedsWrite = true;
-    if (InsureSessionProperty(gsSaTScanLicenceWebSiteProperty, gsDefaultSaTScanLicenceWebSite))
-      bNeedsWrite = true;
-    if (InsureSessionProperty(gsSubstantiveSupportEmailProperty, gsDefaultSubstantiveSupportEmail))
-      bNeedsWrite = true;
-    if (InsureSessionProperty(gsTechnicalSupportEmailProperty, gsDefaultTechnicalSupportEmail))
-      bNeedsWrite = true;
+    //if (InsureSessionProperty(gsSaTScanWebSiteProperty, gsDefaultSaTScanWebSite))
+    // bNeedsWrite = true;
+    //if (InsureSessionProperty(gsSaTScanLicenceWebSiteProperty, gsDefaultSaTScanLicenceWebSite))
+    //  bNeedsWrite = true;
+    //if (InsureSessionProperty(gsSubstantiveSupportEmailProperty, gsDefaultSubstantiveSupportEmail))
+    //  bNeedsWrite = true;
+    //if (InsureSessionProperty(gsTechnicalSupportEmailProperty, gsDefaultTechnicalSupportEmail))
+    //  bNeedsWrite = true;
 
     //Write to same directory as executable, when needed.
     if (bNeedsWrite) {
