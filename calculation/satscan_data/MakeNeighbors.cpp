@@ -26,7 +26,6 @@ tract_t CountNeighborsByDistance(std::vector<TractDistance>& vTractDistances,
 {
    size_t    i;
    tract_t   tCount=0;
-   bool      bDone=false;
 
    for (i=0; (i < vTractDistances.size()) && (vTractDistances[i].GetDistance() <= MaxDistance); i++)
        tCount++;
