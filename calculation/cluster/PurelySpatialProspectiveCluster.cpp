@@ -84,21 +84,21 @@ CPurelySpatialProspectiveCluster * CPurelySpatialProspectiveCluster::Clone() con
   return new CPurelySpatialProspectiveCluster(*this);
 }
 
-/** Returns the number of case for tract as defined by cluster. */
-count_t CPurelySpatialProspectiveCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
-  ZdGenerateException("GetCaseCountForTract() not implemented.","CPurelySpatialProspectiveCluster");
-  return 0;
-}
-
 /** returns end date of defined cluster as formated string */
 ZdString& CPurelySpatialProspectiveCluster::GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
   sDateString.Clear();
   return sDateString;
 }
 
-/** Returns the measure for tract as defined by cluster. */
-measure_t CPurelySpatialProspectiveCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
-  ZdGenerateException("GetMeasureForTract() not implemented.","CPurelySpatialProspectiveCluster");
+/** Returns the measure for tract as defined by cluster - not implemented - throws exception. */
+measure_t CPurelySpatialProspectiveCluster::GetExpectedCountForTract(tract_t, const CSaTScanData&, size_t) const {
+  ZdGenerateException("GetExpectedCountForTract() not implemented.","CPurelySpatialProspectiveCluster");
+  return 0;
+}
+
+/** Returns the number of case for tract as defined by cluster - not implemented - throws exception. */
+count_t CPurelySpatialProspectiveCluster::GetObservedCountForTract(tract_t, const CSaTScanData&, size_t) const {
+  ZdGenerateException("GetObservedCountForTract() not implemented.","CPurelySpatialProspectiveCluster");
   return 0;
 }
 

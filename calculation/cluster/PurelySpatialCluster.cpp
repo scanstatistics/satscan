@@ -101,19 +101,19 @@ void CPurelySpatialCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataH
     CCluster::DisplayTimeFrame(fp, DataHub, PrintFormat);
 }
 
-/** returns the number of cases for tract as defined by cluster */
-count_t CPurelySpatialCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
-  return Data.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray()[0][tTract];
-}
-
 /** returns end date of defined cluster as formated string */
 ZdString& CPurelySpatialCluster::GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1);
 }
 
-/** Returns the measure for tract as defined by cluster. */
-measure_t CPurelySpatialCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
-  return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray()[0][tTract];
+/** Returns the measure for location as defined by cluster. */
+measure_t CPurelySpatialCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
+  return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray()[0][tTractIndex];
+}
+
+/** returns the number of cases for location as defined by cluster */
+count_t CPurelySpatialCluster::GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
+  return Data.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray()[0][tTractIndex];
 }
 
 /** returns start date of defined cluster as formated string */
