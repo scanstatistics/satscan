@@ -66,6 +66,7 @@ USEUNIT("..\calculation\satscan_data\MaxWindowLengthIndicator.cpp");
 USERES("SaTScanBatch.res");
 USELIB("..\..\zero dimension\zdannex540.lib");
 USELIB("..\..\zero dimension\zd540.lib");
+USEUNIT("..\calculation\satscan_data\AdjustmentHandler.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
