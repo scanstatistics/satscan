@@ -206,10 +206,10 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
              nCount++;
              tid = (Data.GetTInfo())->tiGetTid(tTract);
 
-             if(fp != NULL) {
+             if(fp != NULL) {        // if we have a file to print to
                 pos += strlen(tid) + 2;
 
-                if (nCount>1 && pos>nRightMargin)
+                if (nCount>1 && pos>nRightMargin)    // strange and sad but true print formatting
                 {
                   pos = nLeftMargin + strlen(tid) + 2;
                   fprintf(fp, "\n");
@@ -217,27 +217,35 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                     fprintf(fp, " ");
                 }
 
+                // run history number
                 if (bIncludeRelRisk)
                    fprintf(fp, "%-12d", lReportHistoryRunNumber);
-                   
-                if (nCluster > -1)
-                  fprintf(fp, "%i         ", nCluster);
+
+                // tract name
                 if (bFormat)
                    fprintf(fp, "%s", tid);
                 else
                    fprintf(fp, "%-29s", tid);
 
-                if (bIncludeRelRisk)
-                  fprintf(fp, "   %-12.3f", GetRelativeRisk(Data.GetMeasureAdjustment()));
-                if (bIncludePVal)    // this is only displayed if Reps > 99 
+                // cluster number
+                if (nCluster > -1)
+                  fprintf(fp, "%i         ", nCluster);
+
+                  // relative risk
+                if (bIncludeRelRisk) {
+                  fprintf(fp, "  %i", m_nCases);      // cluster level Observed
+                  fprintf(fp, "   %-12.2f", m_nMeasure);    // cluster level expected
+                  fprintf(fp, "   %-12.3f", GetRelativeRisk(Data.GetMeasureAdjustment()));  // cluster level rel risk
+                }
+                if (bIncludePVal)    // this is only displayed if Reps > 99
                 {
                   fprintf(fp, "     ");
                   DisplayPVal(fp, nReplicas, szSpacesOnLeft);
                 }
                 if (bIncludeRelRisk)   // if we include the cluster rel risk, then we also include obs, exp, and rel_risk as well
                 {
-                  fprintf(fp, "\t %12i", GetCaseCountForTract(tTract, Data));      // obeserved clusters
-                  fprintf(fp, "\t %12.3f", GetMeasureForTract(tTract, Data));      // expected clusters
+                  fprintf(fp, "\t %12i", GetCaseCountForTract(tTract, Data));      // area level obeserved clusters
+                  fprintf(fp, "\t %12.3f", GetMeasureForTract(tTract, Data));      // area level expected clusters
                   fprintf(fp, "\t %12.3f", GetRelativeRiskForTract(tTract, Data));   // area level relative risk
                 }
                 if (i < nLastTract)
