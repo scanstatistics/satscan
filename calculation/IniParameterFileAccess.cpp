@@ -74,7 +74,7 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
     x.AddCallpath("Read()","IniParameterFileAccess");
     throw;
   }
-  return gbReadStatusError;
+  return !gbReadStatusError;
 }
 
 /** Reads parameter settings grouped under 'Analysis'. */
