@@ -62,7 +62,8 @@
       ..\calculation\cluster\SVTTCluster.obj 
       ..\calculation\cluster\TimeIntervalRange.obj 
       ..\calculation\cluster\PurelySpatialProspectiveCluster.obj 
-      ..\calculation\utility\MultipleDimensionArrayHandler.obj"/>
+      ..\calculation\utility\MultipleDimensionArrayHandler.obj 
+      ..\calculation\satscan_data\MaxWindowLengthIndicator.obj"/>
     <RESFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>

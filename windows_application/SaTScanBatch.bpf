@@ -64,6 +64,7 @@ USEUNIT("..\calculation\cluster\SVTTCluster.cpp");
 USEUNIT("..\calculation\cluster\TimeIntervalRange.cpp");
 USEUNIT("..\calculation\cluster\PurelySpatialProspectiveCluster.cpp");
 USEUNIT("..\calculation\utility\MultipleDimensionArrayHandler.cpp");
+USEUNIT("..\calculation\satscan_data\MaxWindowLengthIndicator.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
