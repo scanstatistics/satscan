@@ -13,15 +13,15 @@
 
 class CPoissonModel : public CModel {
   private:
-    RandomNumberGenerator       m_RandomNumberGenerator;
-    BinomialGenerator           gBinomialGenerator;
-    float                     * gpRelativeRisks;
-    measure_t                 * gpMeasure;  
-    measure_t                ** gpAlternativeMeasure;
-    ifstream                    gSimulationDataInputFile;
+    RandomNumberGenerator                       m_RandomNumberGenerator;
+    BinomialGenerator                           gBinomialGenerator;
+    float                                     * gpRelativeRisks;
+    measure_t                                 * gpMeasure;
+    measure_t                                ** gpAlternativeMeasure;
+    ifstream                                    gSimulationDataInputFile;
 
     void                        AllocateAlternateHypothesisStructures();
-    int                         AssignMeasure(measure_t ** ppMeasure);
+    int                         AssignMeasure(measure_t ** ppNonCumulativeMeasure);
 
     virtual double              CalcSVTTLogLikelihood(count_t* pCases, measure_t* pMeasure,
                                                       count_t pTotalCases, double nAlpha,
@@ -41,7 +41,7 @@ class CPoissonModel : public CModel {
     virtual void                AdjustForNonParameteric(measure_t ** pNonCumulativeMeasure);
     virtual void                AdjustForLLPercentage(measure_t ** pNonCumulativeMeasure, double nPercentage);
     virtual void                AdjustForLogLinear(measure_t ** pNonCumulativeMeasure);
-    void                        AdjustMeasure(measure_t ** pNonCumulativeMeasure);
+    void                        AdjustMeasure(measure_t ** ppNonCumulativeMeasure);
     virtual double              CalcLogLikelihood(count_t n, measure_t u);
     virtual double              CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster);
     virtual double              CalcSVTTLogLikelihood(CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend);

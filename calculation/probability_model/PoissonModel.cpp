@@ -125,23 +125,23 @@ void CPoissonModel::AdjustForLogLinear(measure_t ** pNonCumulativeMeasure)
   AdjustForLLPercentage(pNonCumulativeMeasure, gData.m_nTimeTrend.m_nBeta);  // Adjust Measure             */
 }
 
-void CPoissonModel::AdjustMeasure(measure_t ** pNonCumulativeMeasure) {
+void CPoissonModel::AdjustMeasure(measure_t ** ppNonCumulativeMeasure) {
   measure_t     AdjustedTotalMeasure_t=0;
   int           i;
   tract_t       t;
 
   try {
-    if (!gData.ReadAdjustmentsByRelativeRisksFile(pNonCumulativeMeasure))
+    if (!gData.ReadAdjustmentsByRelativeRisksFile(ppNonCumulativeMeasure))
       SSGenerateException("\nProblem encountered reading in data.", "AdjustMeasure()");
 
     if (gData.m_nTimeIntervals > 1) {
       switch (gParameters.GetTimeTrendAdjustmentType()) {
         case NOTADJUSTED               : break;
-        case NONPARAMETRIC             : AdjustForNonParameteric(pNonCumulativeMeasure); break;
-        case LOGLINEAR_PERC            : AdjustForLLPercentage(pNonCumulativeMeasure, gParameters.GetTimeTrendAdjustmentPercentage()); break;
-        case CALCULATED_LOGLINEAR_PERC : gData.SetMeasureByTimeIntervalArray(pNonCumulativeMeasure);
-                                         AdjustForLogLinear(pNonCumulativeMeasure); break;
-        case STRATIFIED_RANDOMIZATION  : AdjustForNonParameteric(pNonCumulativeMeasure); break;//this adjustment occurs during randomization also
+        case NONPARAMETRIC             : AdjustForNonParameteric(ppNonCumulativeMeasure); break;
+        case LOGLINEAR_PERC            : AdjustForLLPercentage(ppNonCumulativeMeasure, gParameters.GetTimeTrendAdjustmentPercentage()); break;
+        case CALCULATED_LOGLINEAR_PERC : gData.SetMeasureByTimeIntervalArray(ppNonCumulativeMeasure);
+                                         AdjustForLogLinear(ppNonCumulativeMeasure); break;
+        case STRATIFIED_RANDOMIZATION  : AdjustForNonParameteric(ppNonCumulativeMeasure); break;//this adjustment occurs during randomization also
         default : ZdGenerateException("Unknown time trend adjustment type: '%d'.",
                                       "AdjustMeasure()", gParameters.GetTimeTrendAdjustmentType());
       }
@@ -150,7 +150,7 @@ void CPoissonModel::AdjustMeasure(measure_t ** pNonCumulativeMeasure) {
     // Bug check, to ensure that adjusted  total measure equals previously determined total measure
     for (AdjustedTotalMeasure_t=0, i=0; i < gData.m_nTimeIntervals; ++i)
        for (t=0; t < gData.m_nTracts; ++t)
-          AdjustedTotalMeasure_t += pNonCumulativeMeasure[i][t];
+          AdjustedTotalMeasure_t += ppNonCumulativeMeasure[i][t];
 
     if (fabs(AdjustedTotalMeasure_t - gData.m_nTotalMeasure) > 0.0001)
       ZdGenerateException("Error: The adjusted total measure '%8.6lf' is not equal to the total measure '%8.6lf'.\n",
@@ -186,59 +186,51 @@ void CPoissonModel::AllocateAlternateHypothesisStructures() {
 }
 
 /** Calculates and sets non-cumulative measure array. */
-int CPoissonModel::AssignMeasure(measure_t ** ppMeasure) {
-  int                                   i, interval,
-                                        iNumCategories(gData.GetTInfo()->tiGetNumCategories()),
-                                        nPops(gData.GetTInfo()->tiGetNumPopDates());
-  double                              * pAlpha=0, * pRisk=0;
-  tract_t                               tract, nTracts(gData.GetTInfo()->tiGetNumTracts());
-  const char                          * tid;
-  Julian                              * IntervalDates=0;
+int CPoissonModel::AssignMeasure(measure_t ** ppNonCumulativeMeasure) {
+  int           i, interval;
+  tract_t       tract;
+  Julian      * pIntervalDates=0;
 
   try {
-    TwoDimensionArrayHandler<measure_t>   Calcm_ArrayHandler(nPops, nTracts, 0);
+    if (!gData.gpPopulationMeasureHandler)
+      ZdGenerateException("Population dates based measure array not allocated.","AssignMeasure()");
+
     /* Create & Use array of interval dates where last interval date = EndDate */
-    IntervalDates = (unsigned long*)Smalloc((gData.m_nTimeIntervals+1)*sizeof(Julian), &gPrintDirection);
-    memcpy(IntervalDates, gData.GetTimeIntervalStartTimes(), (gData.m_nTimeIntervals+1)*sizeof(Julian));
+    pIntervalDates = (unsigned long*)Smalloc((gData.m_nTimeIntervals+1)*sizeof(Julian), &gPrintDirection);
+    memcpy(pIntervalDates, gData.GetTimeIntervalStartTimes(), (gData.m_nTimeIntervals+1)*sizeof(Julian));
+
 #ifdef DEBUGMEASURE
     if ((pMResult = fopen("MEASURE.TXT", "w")) == NULL)
       SSGenerateException("Error: Cannot open output file.\n","AssignMeasure()");
+
+    DisplayInitialData(gData.m_nStartDate, gData.m_nEndDate, pIntervalDates, gData.m_nTimeIntervals, pAlpha, nPops);
 #endif
-    gData.GetTInfo()->tiCalculateAlpha(&pAlpha, gData.m_nStartDate, gData.m_nEndDate);
-#ifdef DEBUGMEASURE
-    DisplayInitialData(gData.m_nStartDate, gData.m_nEndDate, IntervalDates, gData.m_nTimeIntervals, pAlpha, nPops);
-#endif
-    CalcRisk(gData.GetTInfo(), &pRisk, pAlpha, iNumCategories, nTracts, nPops, &gData.m_nTotalPop, &gData.m_nTotalCases, &gPrintDirection);
-    Calcm(gData.GetTInfo(), Calcm_ArrayHandler.GetArray(), pRisk, iNumCategories, nTracts, nPops, &gPrintDirection);
-    CalcMeasure(gData.GetTInfo(), ppMeasure, Calcm_ArrayHandler.GetArray(), IntervalDates, gData.m_nStartDate, gData.m_nEndDate,
-                iNumCategories, nTracts, nPops, gData.m_nTimeIntervals, &gData.m_nTotalMeasure, &gPrintDirection);
-    free(pAlpha);  pAlpha = 0;
-    free(pRisk);   pRisk = 0;
-/* Bug report: Check to see that Measure matrix has positive entries. */
+
+    CalcMeasure(gData.GetTInfo(), ppNonCumulativeMeasure, gData.gpPopulationMeasureHandler->GetArray(), pIntervalDates,
+                gData.m_nStartDate, gData.m_nEndDate, gData.GetTInfo()->tiGetNumCategories(), gData.m_nTracts,
+                gData.GetTInfo()->tiGetNumPopDates(), gData.m_nTimeIntervals, &gData.m_nTotalMeasure, &gPrintDirection);
+
+    //Check to see that Measure matrix has positive entries.
 #if 1
-    for (tract=0; tract < gData.m_nTracts; ++tract) {
-       for (interval=0; interval < gData.m_nTimeIntervals; ++interval) {
-          if(ppMeasure[interval][tract] < 0) {
-             char        sMessage[200];
+    for (tract=0; tract < gData.m_nTracts; ++tract)
+       for (interval=0; interval < gData.m_nTimeIntervals; ++interval)
+          if (ppNonCumulativeMeasure[interval][tract] < 0) {
              std::string sBuffer;
-    	     tid = gData.GetTInfo()->tiGetTid(tract, sBuffer);
-             sprintf(sMessage,"Error: Negative Measure (%8.4f) in function AssignMeasure(),\n\ttract %d, tractid %s, interval %d.\n",ppMeasure[interval][tract], tract, tid, interval);
-    	     SSGenerateException(sMessage, "AssignMeasure()");
-          } /* endif Measure */
-       } /* endfor interval*/
-    } /* endfor tract*/
+    	     ZdGenerateException("Negative measure: %g\ntract %d, tractid %s, interval %d.", "AssignMeasure()",
+                                 ppNonCumulativeMeasure[interval][tract], tract, gData.GetTInfo()->tiGetTid(tract, sBuffer), interval);
+          }
 #endif
+
 #ifdef DEBUGMEASURE
-   fprintf(pMResult, "Totals: \n\n");
-   fprintf(pMResult, "   Cases      = %li\n   Measure    = %f\n   Population = %f\n", *pTotalCases, *pTotalMeasure, *pTotalPop);
-   fclose(pMResult);
+    fprintf(pMResult, "Totals: \n\n");
+    fprintf(pMResult, "   Cases      = %li\n   Measure    = %f\n   Population = %f\n", *pTotalCases, *pTotalMeasure, *pTotalPop);
+    fclose(pMResult);
 #endif
-   free(IntervalDates);
+
+    free(pIntervalDates);
   }
   catch (ZdException & x) {
-    free(pAlpha);
-    free(pRisk);
-    free(IntervalDates);
+    free(pIntervalDates);
     x.AddCallpath("AssignMeasure()", "CPoissonModel");
     throw;
   }
@@ -399,12 +391,29 @@ double CPoissonModel::CalcSVTTLogLikelihood(CSVTTCluster* Cluster, CTimeTrend Gl
 
 bool CPoissonModel::CalculateMeasure() {
   bool                  bResult;
+  double              * pAlpha=0, * pRisk=0;
 
   try {
+    //calculate alpha - an array that indicates each population interval's percentage of study period. 
+    gData.GetTInfo()->tiCalculateAlpha(&pAlpha, gData.m_nStartDate, gData.m_nEndDate);
+    //calculate risk for each population category
+    CalcRisk(gData.GetTInfo(), &pRisk, pAlpha, gData.GetTInfo()->tiGetNumCategories(),
+             gData.GetTInfo()->tiGetNumTracts(), gData.GetTInfo()->tiGetNumPopDates(),
+             &gData.m_nTotalPop, &gData.m_nTotalCases, &gPrintDirection);
+    //allocate 2D array of population dates by number of tracts         
+    gData.gpPopulationMeasureHandler = new TwoDimensionArrayHandler<measure_t>(gData.GetTInfo()->tiGetNumPopDates(),
+                                                                               gData.GetTInfo()->tiGetNumTracts(), 0);
+    //calculate expected number of cases in terms of population dates                                                                           
+    Calcm(gData.GetTInfo(), gData.gpPopulationMeasureHandler->GetArray(), pRisk, gData.GetTInfo()->tiGetNumCategories(),
+          gData.GetTInfo()->tiGetNumTracts(), gData.GetTInfo()->tiGetNumPopDates(), &gPrintDirection);
+    //assign measure, perform adjustments as requested, and set measure array as cumulative
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
       gData.gpMeasureNonCumulativeHandler = new TwoDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals+1/*no sure why + 1*/, gData.m_nTracts);
+      //calculate non-cumulative measure array
       bResult = AssignMeasure(gData.gpMeasureNonCumulativeHandler->GetArray());
-      //adjust non-cumulative measure
+      //validate that observed and expected agree
+      gData.ValidateObservedToExpectedCases(gData.gpMeasureNonCumulativeHandler->GetArray());
+      //apply adjustments
       AdjustMeasure(gData.gpMeasureNonCumulativeHandler->GetArray());
       //create cumulative measure from non-cumulative measure
       gData.SetCumulativeMeasure();
@@ -413,7 +422,11 @@ bool CPoissonModel::CalculateMeasure() {
     }
     else {
       gData.gpMeasureHandler = new TwoDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals+1/*no sure why + 1*/, gData.m_nTracts);
+      //calculate non-cumulative measure array
       bResult = AssignMeasure(gData.gpMeasureHandler->GetArray());
+      //validate that observed and expected agree
+      gData.ValidateObservedToExpectedCases(gData.gpMeasureHandler->GetArray());
+      //apply adjustments
       AdjustMeasure(gData.gpMeasureHandler->GetArray());
       if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
           gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
@@ -425,10 +438,17 @@ bool CPoissonModel::CalculateMeasure() {
     if (fabs(gData.m_nTotalCases - gData.m_nTotalMeasure) > 0.0001)
       ZdGenerateException("Error: The total measure '%8.6lf' is not equal to the total number of cases '%ld'.\n",
                           "CalculateMeasure()", gData.m_nTotalMeasure, gData.m_nTotalCases);
+
+    free(pAlpha); pAlpha=0;
+    free(pRisk); pRisk=0;
+    delete gData.gpPopulationMeasureHandler; gData.gpPopulationMeasureHandler=0;
   }
   catch (ZdException &x) {
     delete gData.gpMeasureNonCumulativeHandler; gData.gpMeasureNonCumulativeHandler=0;
     delete gData.gpMeasureHandler; gData.gpMeasureHandler=0;
+    free(pAlpha); pAlpha=0;
+    free(pRisk); pRisk=0;
+    delete gData.gpPopulationMeasureHandler; gData.gpPopulationMeasureHandler=0;
     x.AddCallpath("CalculateMeasure()","CPoissonModel");
     throw;
   }
