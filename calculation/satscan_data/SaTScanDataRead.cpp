@@ -7,6 +7,37 @@ const int POPULATION_DATE_PRECISION_MONTH_DEFAULT_DAY   = 15;
 const int POPULATION_DATE_PRECISION_YEAR_DEFAULT_DAY    = 1;
 const int POPULATION_DATE_PRECISION_YEAR_DEFAULT_MONTH  = 7;
 
+/** Adjusts measure in interval  by relative risk
+    -- returns false if adjustment could not occur because relative risk
+       is zero but there are cases in adjustment interval. */
+bool CSaTScanData::AdjustMeasure(tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate) {
+  int           i, j, iMaxTract, iStartInterval, iEndInterval;
+  Julian        EndDayMin, StartDayMax, PeriodDays;
+  measure_t     Adjustment_t, fP;
+  ZdString      s;
+
+  //first determine time interval index for period that is being modfied
+  SetScanningWindowStartRangeIndex(StartDate, iStartInterval);
+  SetScanningWindowEndRangeIndex(EndDate, iEndInterval);
+  //scan for zero cases if relative risk = 0
+  if (dRelativeRisk == 0 && CasesExist(Tract, iStartInterval, iEndInterval))
+    return false;
+    
+  //adjust measure, if valid
+  StartDayMax = max(StartDate, m_pIntervalStartTimes[iStartInterval]);
+  EndDayMin = min(m_nEndDate, m_pIntervalStartTimes[iEndInterval]-1);
+  PeriodDays = (m_pIntervalStartTimes[iEndInterval] - 1) - m_pIntervalStartTimes[iStartInterval] + 1;
+  fP = (measure_t)(EndDayMin - StartDayMax + 1)/(measure_t)PeriodDays;
+  Adjustment_t = (fP == 1 ? dRelativeRisk : (1 + fP * dRelativeRisk));
+  j = (Tract == -1 ? 0 : Tract);
+  iMaxTract = (Tract == -1 ? m_nTracts : Tract + 1);
+  for (; j < iMaxTract; ++j)
+     for (i=iStartInterval; i < iEndInterval; ++i)
+        gpMeasureHandler->GetArray()[i][j] *= Adjustment_t;
+
+  return true;
+}
+
 /** Allocates count structures */
 void CSaTScanData::AllocateCaseStructures() {
   try {
@@ -38,6 +69,86 @@ void CSaTScanData::AllocateControlStructures() {
     delete gpControlsByTimeByCategoryHandler; gpControlsByTimeByCategoryHandler=0;
     throw;
   }
+}
+
+/** scans case array for cases in defined interval - returns true if cases exist */
+bool CSaTScanData::CasesExist(tract_t Tract, int iStartInterval, int iEndInterval) {
+  int           i, j, iMaxTract;
+  bool          bHasCases=false;
+  count_t    ** ppCases(gpCasesHandler->GetArray());
+
+  j = (Tract == -1 ? 0 : Tract);
+  iMaxTract = (Tract == -1 ? m_nTracts : Tract + 1);
+  for (; j < iMaxTract && !bHasCases; ++j)
+    for (i=iStartInterval; i < iEndInterval && !bHasCases; ++i)
+       bHasCases = ppCases[i][j];
+
+  return bHasCases;
+}
+
+/** Converts passed string specifiying a adjustment file date to a julian date.
+    Precision is determined by date formats( YYYY/MM/DD, YYYY/MM, YYYY, YY/MM/DD,
+    YY/MM, YY ) which is the complete set of valid formats that SaTScan currently
+    supports. Since we accumulate errors/warnings when reading input files,
+    indication of a bad date is returned and any messages sent to print direction. */
+bool CSaTScanData::ConvertAdjustmentDateToJulian(StringParser & Parser, Julian & JulianDate, bool bStartDate) {
+  bool          bValidDate=true;
+  int           iDateIndex, iYear, iMonth=1, iDay=1, iPrecision=1;
+  const char  * ptr;
+
+
+  if (m_pParameters->GetPrecisionOfTimesType() == NONE)
+    JulianDate = (bStartDate ? m_nStartDate: m_nEndDate);
+  else {
+    iDateIndex = (bStartDate ? 2: 3);
+    //read and validate date
+    if (!Parser.GetWord(iDateIndex)) {
+      gpPrint->PrintInputWarning("Error: Record %ld in adjustments file does not contain a %s date.\n",
+                                 Parser.GetReadCount(), (bStartDate ? "start": "end"));
+      return false;
+    }
+    //determine precision 
+    ptr = strchr(Parser.GetWord(iDateIndex), '/');
+    while (ptr) {
+         iPrecision++;
+         ptr = strchr(++ptr, '/');
+    }
+    switch (iPrecision) {
+      case YEAR  : bValidDate = (sscanf(Parser.GetWord(iDateIndex), "%d", &iYear) == 1 && iYear > 0); break;
+      case MONTH : bValidDate = (sscanf(Parser.GetWord(iDateIndex), "%d/%d", &iYear, &iMonth) == 2 && iYear > 0 && iMonth > 0); break;
+      case DAY   : bValidDate = (sscanf(Parser.GetWord(iDateIndex), "%d/%d/%d", &iYear, &iMonth, &iDay) == 3 && iYear > 0 && iMonth > 0 && iDay > 0); break;
+      default    : bValidDate = false;
+    };
+    if (! bValidDate)
+      gpPrint->PrintInputWarning("Error: Invalid %s date '%s' in adjustment file, record %ld.\n",
+                                 (bStartDate ? "start": "end"), Parser.GetWord(iDateIndex), Parser.GetReadCount());
+    else {
+      //Ensure four digit years
+      iYear = Ensure4DigitYear(iYear, m_pParameters->GetStudyPeriodStartDate().c_str(), m_pParameters->GetStudyPeriodEndDate().c_str());
+      switch (iYear) {
+        case -1 : gpPrint->PrintInputWarning("Error: Due to study period greater than 100 years, unable\n"
+                                             "       to convert two digit year '%d' in adjustment file, record %ld.\n"
+                                             "       Please use four digit years.\n", iYear, Parser.GetReadCount());
+                  return false;
+        case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in adjustment file, record %ld.\n", iYear, Parser.GetReadCount());
+                  return false;
+      }
+      //default as needed given either start or end date and precision of date
+      switch (iPrecision) {
+        case YEAR  : iMonth = (bStartDate ? 1 : 12);
+        case MONTH : iDay = (bStartDate ? 1 : DaysThisMonth(iYear, iMonth));
+      };
+      //validate that date is between study period start and end dates
+      JulianDate = MDYToJulian(iMonth, iDay, iYear);
+      if (!(m_nStartDate <= JulianDate && JulianDate <= m_nEndDate)) {
+        gpPrint->PrintInputWarning("Error: Date '%s' in record %ld of adjustment file is not\n", Parser.GetWord(iDateIndex), Parser.GetReadCount());
+        gpPrint->PrintInputWarning("       within study period beginning %s and ending %s.\n",
+                                   m_pParameters->GetStudyPeriodStartDate().c_str(), m_pParameters->GetStudyPeriodEndDate().c_str());
+        return false;
+      }
+    }  
+  }
+  return bValidDate;
 }
 
 /** Converts passed string specifiying a count date to a julian date.
@@ -247,6 +358,117 @@ bool CSaTScanData::ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, c
     throw;
   }
   return true;
+}
+
+/** Read the relative risks file
+    -- unlike other input files of system, records read from relative risks
+       file are applied directly to the measure structure, just post calculation
+       of measure and prior to temporal adjustments and making cumulative. */
+bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
+  bool                          bValid=true, bEmpty=true;
+  tract_t                       t, TractIndex;
+  double                        dRelativeRisk;
+  Julian                        StartDate, EndDate;
+  FILE                        * fp=0;
+  int                           i, iNumWords;
+
+  try {
+    if (!m_pParameters->UseAdjustmentForRelativeRisksFile())
+      return true;
+
+    gpPrint->SetImpliedInputFileType(BasePrint::ADJ_BY_RR_FILE);
+    StringParser Parser(gpPrint->GetImpliedInputFileType());
+
+    gpPrint->SatScanPrintf("Reading the adjustments file\n");
+    if ((fp = fopen(m_pParameters->GetAdjustmentsByRelativeRisksFilename().c_str(), "r")) == NULL) {
+      gpPrint->SatScanPrintWarning("Error: Could not open adjustments file:\n'%s'.\n",
+                                   m_pParameters->GetAdjustmentsByRelativeRisksFilename().c_str());
+      return false;
+    }
+
+    while (Parser.ReadString(fp)) {
+        //skip lines that do not contain data
+        if (!Parser.HasWords())
+          continue;
+        bEmpty=false;
+        //read tract identifier
+        if (!stricmp(Parser.GetWord(0),"all"))
+          TractIndex = -1;
+        else if ((TractIndex = gpTInfo->tiGetTractIndex(Parser.GetWord(0))) == -1) {
+          gpPrint->PrintInputWarning("Error: Unknown location identifier in Adjustments file, record %ld.\n", Parser.GetReadCount());
+          gpPrint->PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
+          bValid = false;
+          continue;
+        }
+        //read population
+        if (!Parser.GetWord(1)) {
+          gpPrint->PrintInputWarning("Error: Record %d of Adjustments file missing relative risk.\n", Parser.GetReadCount());
+          bValid = false;
+          continue;
+        }
+        if (sscanf(Parser.GetWord(1), "%lf", &dRelativeRisk) != 1) {
+          gpPrint->PrintInputWarning("Error: Relative risk value '%s' in record %ld, of Adjustments file, is not a number.\n",
+                                     Parser.GetWord(1), Parser.GetReadCount());
+          bValid = false;
+          continue;
+        }
+        //validate that relative risk is not negative or exceeding type precision
+        if (dRelativeRisk < 0) {//validate that count is not negative or exceeds type precision
+          if (strstr(Parser.GetWord(1), "-"))
+             gpPrint->PrintInputWarning("Error: Negative relative risk in record %ld of adjustments file.\n", Parser.GetReadCount());
+          else
+             gpPrint->PrintInputWarning("Error: Relative risk '%s' exceeds maximum value of %i in record %lf of adjustments file.\n",
+                                        Parser.GetWord(1), std::numeric_limits<double>::max(), Parser.GetReadCount());
+           bValid = false;
+           continue;
+        }
+        //read start and end dates
+        iNumWords = Parser.GetNumberWords();
+        if (iNumWords == 3) {
+          gpPrint->PrintInputWarning("Error: Record %i, of adjustment file, missing end date.\n", Parser.GetReadCount());
+          bValid = false;
+          continue;
+        }
+        if (iNumWords == 2) {
+          StartDate = m_nStartDate;
+          EndDate = m_nEndDate;
+        }
+        else {
+          ConvertAdjustmentDateToJulian(Parser, StartDate, true);
+          ConvertAdjustmentDateToJulian(Parser, EndDate, false);
+        }
+        //perform adjustment
+        if (!AdjustMeasure(TractIndex, dRelativeRisk, StartDate, EndDate)) {
+          gpPrint->PrintInputWarning("Error: Record %d, of adjustment file, indicates a zero relative risk\n", Parser.GetReadCount());
+          gpPrint->PrintInputWarning("       but cases exist for location in specified interval.\n");
+          bValid = false;
+        }
+    }
+    //close file pointer
+    fclose(fp); fp=0;
+    //if invalid at this point then read encountered problems with data format,
+    //inform user of section to refer to in user guide for assistance
+    if (! bValid)
+      gpPrint->PrintWarningLine("Please see 'Adjustments file format' in the user guide for help.\n");
+    //print indication if file contained no data
+    else if (bEmpty) {
+      gpPrint->PrintWarningLine("Error: Adjustments file contains no data.\n");
+      bValid = false;
+    }
+
+    //recalculate total measure
+    m_nTotalMeasure = 0;
+    for (i=0; i < m_nTimeIntervals; ++i)
+       for (t=0; t < m_nTracts; ++t)
+          m_nTotalMeasure += gpMeasureHandler->GetArray()[i][t];
+  }
+  catch (ZdException &x) {
+    //close file pointer
+    if (fp) fclose(fp);
+    x.AddCallpath("ReadAdjustmentsByRelativeRisksFile()", "CSaTScanData");
+    throw;
+  }
+  return bValid;
 }
 
 /** Reads cartesian coordinates into vector.
@@ -820,7 +1042,7 @@ bool CSaTScanData::ReadLatitudeLongitudeCoordinates(StringParser & Parser, std::
     one read in ReadCoordinatesFile().
     Return value: true = success, false = errors encountered */
 bool CSaTScanData::ReadPopulationFile() {
-  int                           iCategoryIndex, iRecNum=0;
+  int                           iCategoryIndex;
   bool                          bValid=true, bEmpty=true;
   tract_t                       TractIdentifierIndex;
   float                         fPopulation;
@@ -828,31 +1050,31 @@ bool CSaTScanData::ReadPopulationFile() {
   FILE                        * fp=0; // Ptr to population file
   std::vector<Julian>           vPopulationDates;
   std::vector<Julian>::iterator itrdates;
-  StringParser                  Parser(gpPrint->GetImpliedInputFileType());
 
   try {
+    gpPrint->SetImpliedInputFileType(BasePrint::POPFILE);
+    StringParser Parser(gpPrint->GetImpliedInputFileType());
+
     gpPrint->SatScanPrintf("Reading the population file\n");
     if ((fp = fopen(m_pParameters->GetPopulationFileName().c_str(), "r")) == NULL) {
       gpPrint->SatScanPrintWarning("Error: Could not open population file:\n'%s'.\n",
                                    m_pParameters->GetPopulationFileName().c_str());
       return false;
     }
-    gpPrint->SetImpliedInputFileType(BasePrint::POPFILE);
 
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
     while (Parser.ReadString(fp)) {
-        ++iRecNum;
         //skip lines that do not contain data
         if (!Parser.HasWords())
           continue;
         bEmpty=false;
         //scan values and validate - population file records must contain tract id, date and population.
         if (!Parser.GetWord(1)) {
-            gpPrint->PrintInputWarning("Error: Record %ld of population file missing date.\n", iRecNum);
+            gpPrint->PrintInputWarning("Error: Record %ld of population file missing date.\n", Parser.GetReadCount());
             bValid = false;
             continue;
         }
-        if (!ConvertPopulationDateToJulian(Parser.GetWord(1), iRecNum, PopulationDate)) {
+        if (!ConvertPopulationDateToJulian(Parser.GetWord(1), Parser.GetReadCount(), PopulationDate)) {
             bValid = false;
             continue;
         }
@@ -881,31 +1103,29 @@ bool CSaTScanData::ReadPopulationFile() {
       gpTInfo->tiSetupPopDates(vPopulationDates, m_nStartDate, m_nEndDate);
       //reset for second read
       fseek(fp, 0L, SEEK_SET);
-      iRecNum = 0;
       //We can ignore error checking for population date and population since we already did this above.
       while (Parser.ReadString(fp)) {
-          ++iRecNum;
           if (!Parser.HasWords()) // Skip Blank Lines
             continue;
-          ConvertPopulationDateToJulian(Parser.GetWord(1), iRecNum, PopulationDate);
+          ConvertPopulationDateToJulian(Parser.GetWord(1), Parser.GetReadCount(), PopulationDate);
           if (!Parser.GetWord(2)) {
-            gpPrint->PrintInputWarning("Error: Record %d of population file missing population.\n", iRecNum);
+            gpPrint->PrintInputWarning("Error: Record %d of population file missing population.\n", Parser.GetReadCount());
             bValid = false;
             continue;
           }
           if (sscanf(Parser.GetWord(2), "%f", &fPopulation) != 1) {
             gpPrint->PrintInputWarning("Error: Population value '%s' in record %ld, of population file, is not a number.\n",
-                                       Parser.GetWord(2), iRecNum);
+                                       Parser.GetWord(2), Parser.GetReadCount());
             bValid = false;
             continue;
           }
           //validate that population is not negative or exceeding type precision
           if (fPopulation < 0) {//validate that count is not negative or exceeds type precision
             if (strstr(Parser.GetWord(2), "-"))
-              gpPrint->PrintInputWarning("Error: Negative population in record %ld of population file.\n", iRecNum);
+              gpPrint->PrintInputWarning("Error: Negative population in record %ld of population file.\n", Parser.GetReadCount());
             else
               gpPrint->PrintInputWarning("Error: Population '%s' exceeds maximum value of %i in record %ld of population file.\n",
-                                         Parser.GetWord(2), std::numeric_limits<float>::max(), iRecNum);
+                                         Parser.GetWord(2), std::numeric_limits<float>::max(), Parser.GetReadCount());
             bValid = false;
             continue;
           }
@@ -917,7 +1137,7 @@ bool CSaTScanData::ReadPopulationFile() {
           }
           //Validate that tract identifer is one of those defined in the coordinates file.
           if ((TractIdentifierIndex = gpTInfo->tiGetTractIndex(Parser.GetWord(0))) == -1) {
-            gpPrint->PrintInputWarning("Error: Unknown location identifier in population file, record %ld.\n", iRecNum);
+            gpPrint->PrintInputWarning("Error: Unknown location identifier in population file, record %ld.\n", Parser.GetReadCount());
             gpPrint->PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
             bValid = false;
             continue;
@@ -955,16 +1175,17 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
   tract_t                       TractIdentifierIndex;
   float                         fPopulation;
   FILE                        * fp=0; // Ptr to population file
-  StringParser                  Parser(gpPrint->GetImpliedInputFileType());
 
   try {
+    gpPrint->SetImpliedInputFileType(BasePrint::MAXCIRCLEPOPFILE);
+    StringParser Parser(gpPrint->GetImpliedInputFileType());
+
     gpPrint->SatScanPrintf("Reading the maximum circle population file\n");
     if ((fp = fopen(m_pParameters->GetMaxCirclePopulationFileName().c_str(), "r")) == NULL) {
       gpPrint->SatScanPrintWarning("Error: Could not open maximum circle population file:\n'%s'.\n",
                                    m_pParameters->GetMaxCirclePopulationFileName().c_str());
       return false;
     }
-    gpPrint->SetImpliedInputFileType(BasePrint::MAXCIRCLEPOPFILE);
 
     //initialize circle-measure array
     gvCircleMeasure.resize(m_nTracts, 0);
@@ -1027,3 +1248,4 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
   }
   return bValid;
 }
+

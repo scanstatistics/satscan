@@ -77,10 +77,13 @@ class CSaTScanData {
                                               * gpCategoryControlsHandler;
     ThreeDimensionArrayHandler<measure_t>     * gpCategoryMeasureHandler;
 
+    bool                                        AdjustMeasure(tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate);
     void                                        AllocateCaseStructures();
     void                                        AllocateControlStructures();
     void                                        AllocateNeighborArray();
     void                                        AllocateSortedArray();
+    bool                                        CasesExist(tract_t Tract, int iStartInterval, int iEndInterval);
+    bool                                        ConvertAdjustmentDateToJulian(StringParser & Parser, Julian & JulianDate, bool bStartDate);
     bool                                        ConvertCountDateToJulian(StringParser & Parser, const char * szDescription, Julian & JulianDate);
     bool                                        ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, Julian & JulianDate);
     bool                                        ReadCartesianCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
@@ -188,14 +191,15 @@ class CSaTScanData {
     virtual void                                MakeData(int iSimulationNumber);
     bool                                        ParseCountLine(const char*  szDescription, StringParser & Parser, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex);
     bool                                        ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, const char*  szDescription, StringParser& Parser);
+    bool                                        ReadAdjustmentsByRelativeRisksFile();
     bool                                        ReadCaseFile();
     bool                                        ReadControlFile();
     bool                                        ReadCoordinatesFile();
     virtual void                                ReadDataFromFiles();
     bool                                        ReadGridFile();
     bool                                        ReadMaxCirclePopulationFile();
-    void                                        RemoveTractSignificance(tract_t tTractIndex);
     bool                                        ReadPopulationFile();
+    void                                        RemoveTractSignificance(tract_t tTractIndex);
     void                                        SetPurelyTemporalSimCases();
     void                                        SetMaxCircleSize();
 };
