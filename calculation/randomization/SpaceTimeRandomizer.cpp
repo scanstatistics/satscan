@@ -3,9 +3,10 @@
 #pragma hdrstop                 
 //---------------------------------------------------------------------------
 #include "SpaceTimeRandomizer.h"
+#include "DataStream.h"
 
 /** constructor */
-PermutedTime::PermutedTime(int iTimeInterval) :  PermutedAttribute(), giTimeIntervalIndex(iTimeInterval) {}
+PermutedTime::PermutedTime(int iTimeInterval) : PermutedAttribute(), giTimeIntervalIndex(iTimeInterval) {}
 
 /** destructor */
 PermutedTime::~PermutedTime() {}
@@ -60,11 +61,51 @@ void SpaceTimeRandomizer::AssignRandomizedData(DataStream & thisStream) {
         ppSimCases[iInterval][tTract] = ppSimCases[iInterval+1][tTract] + ppSimCases[iInterval][tTract];
 }
 
+/** Creates structures used during randomizations - this functions should be
+    called once all cases data has been read from file.
+    NOTE: Inorder for this randomization process to remain consistant with
+          previous versions, this function and the sorting of the time interval
+          in SortPermutedAttribute() must be done. */
+void SpaceTimeRandomizer::CreateRandomizationData(const DataStream& thisStream) {
+  int	                i;
+  unsigned int          j, k, c, iNumCases, iNumCategories(thisStream.GetPopulationData().GetNumPopulationCategories());
+  std::vector<int>      vCummulatedCases;
+  count_t               iMaxCasesPerCategory,
+                     ** ppCases(thisStream.GetCaseArray()),
+                    *** pppCategoryCases(thisStream.GetCategoryCaseArray());
+
+  gCategoryAttributes.resize(iNumCategories);
+  vCummulatedCases.resize(thisStream.GetNumTracts());
+  
+  for (c=0; c < iNumCategories; ++c) {
+     CategoryGrouping & theseCategoryAttributes = gCategoryAttributes[c];
+     memset(&vCummulatedCases[0], 0, thisStream.GetNumTracts()*sizeof(int));
+     
+     for (i=thisStream.GetNumTimeIntervals() - 1; i >= 0; --i) {
+        for (j=0; j < thisStream.GetNumTracts(); ++j) {
+           iNumCases = pppCategoryCases[i][j][c] - vCummulatedCases[j];
+           for (k=0; k < iNumCases; ++k) {
+              theseCategoryAttributes.gvStationaryAttribute.push_back(j);
+              theseCategoryAttributes.gvPermutedAttribute.push_back(0);
+              theseCategoryAttributes.gvPermutedAttribute[theseCategoryAttributes.gvPermutedAttribute.size() - 1] = new PermutedTime(i);
+           }   
+           vCummulatedCases[j] += iNumCases;
+        }
+     }
+  }
+}
+
 /** Re-assigns random number to permuted attribute and sorts. */
 void SpaceTimeRandomizer::SortPermutedAttribute() {
   for (size_t t=0; t < gCategoryAttributes.size(); ++t) {
     ZdPointerVector<PermutedTime> & theseAttributes = gCategoryAttributes[t].gvPermutedAttribute;
+
+    //re-sort time intervals to descending order - this is needed to maintain consistancy
+    //with previous versions
+    std::sort(theseAttributes.begin(), theseAttributes.end(), ComparePermutedTime());
+    //assign random number to each
     std::for_each(theseAttributes.begin(), theseAttributes.end(), AssignPermutedAttribute(gRandomNumberGenerator));
+    //randomize time intervals
     std::sort(theseAttributes.begin(), theseAttributes.end(), ComparePermutedAttribute());
   }
 }
