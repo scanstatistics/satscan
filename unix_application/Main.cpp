@@ -13,9 +13,11 @@
 #include "SpaceTimeIncludePurelySpatialAnalysis.h"
 #include "SpaceTimeIncludePurelyTemporalAnalysis.h"
 #include "SpaceTimeIncludePureAnalysis.h"
+#include "SVTTAnalysis.h"
 #include "PurelySpatialData.h"
 #include "PurelyTemporalData.h"
 #include "SpaceTimeData.h"
+#include "SVTTData.h"
 #include "PrintScreen.h"
 #include "DBFFile.h"
 
@@ -55,6 +57,7 @@ int main(int argc, char *argv[]) {
       case PURELYTEMPORAL       : pData = new CPurelyTemporalData(&Parameters, &ConsolePrint); break;
       case SPACETIME            : pData = new CSpaceTimeData(&Parameters, &ConsolePrint); break;
       case PROSPECTIVESPACETIME : pData = new CSpaceTimeData(&Parameters, &ConsolePrint); break;
+      case SPATIALVARTEMPTREND  : pData = new CSVTTData(&Parameters, &ConsolePrint); break;
       default                   : ZdGenerateException("Invalid Analysis Type Encountered.", "main(int,char*)");
     };
     pData->ReadDataFromFiles();
@@ -84,6 +87,7 @@ int main(int argc, char *argv[]) {
                                   else
                                     pAnalysis = new CSpaceTimeAnalysis(&Parameters, pData, &ConsolePrint);
                                   break;
+       case SPATIALVARTEMPTREND : pAnalysis = new CSpatialVarTempTrendAnalysis(&Parameters, pData, &ConsolePrint); break;
        default                  : ZdGenerateException("Invalid Analysis Type Encountered.", "main(int,char*)");
     }
     if (! pAnalysis->Execute(RunTime))
@@ -111,7 +115,6 @@ int main(int argc, char *argv[]) {
     ConsolePrint.SatScanPrintf("Please contact technical support with the following information.\n");
     ConsolePrint.SatScanPrintf("Program Error:\n");
     ConsolePrint.SatScanPrintf(x.GetErrorMessage());
-    ConsolePrint.SatScanPrintf("\n\nCallpath:\n");
     ConsolePrint.SatScanPrintf(x.GetCallpath());
     BasisExit();
     exit(1);
