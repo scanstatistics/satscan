@@ -216,9 +216,11 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
       	 if (m_pParameters->m_bMostLikelyClusters) {
             fExpectedCases = m_pData->GetMeasureAdjustment()*m_pTopClusters[i]->m_nMeasure;
             fRelativeRisk = m_pTopClusters[i]->GetRelativeRisk(m_pData->GetMeasureAdjustment());
-   
+
+            fprintf(fpMCL, "%-8ld", lReportHistoryRunNumber);
+
             //print the cluster number....
-            fprintf(fpMCL, "%-5d ", i+1);
+            fprintf(fpMCL, " %-5d ", i+1);
             
             //if a special grid file is specified, then do NOT output ID of central tract
             if (strlen(m_pParameters->m_szGridFilename) == 0) {
@@ -239,9 +241,9 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
          	    m_pTopClusters[i]->WriteCoordinates(fpMCL, m_pData);
             else
                m_pTopClusters[i]->WriteLatLongCoords(fpMCL, m_pData);
-   
-            //Write the Obs cases, expected cases, and the relative risk
-            fprintf(fpMCL, " %12ld %12.2f %12.3f", m_pTopClusters[i]->m_nCases, fExpectedCases, fRelativeRisk);
+
+            //Write the number of areas, Obs cases, expected cases, and the relative risk
+            fprintf(fpMCL, " %12i %12ld %12.2f %12.3f", m_pTopClusters[i]->m_nTracts, m_pTopClusters[i]->m_nCases, fExpectedCases, fRelativeRisk);
    
             //Write the Log likelihood ratio and then compute and display PValue
             fprintf(fpMCL, " %16.6f", m_pTopClusters[i]->m_nRatio);
