@@ -367,14 +367,14 @@ object frmMainForm: TfrmMainForm
       Category = 'Analysis'
       Caption = 'Save Session As'
       Hint = 'Save Session As'
-      ShortCut = 16470
+      ShortCut = 16450
       OnExecute = SaveSessionAsActionExecute
     end
     object CloseSessionAction: TAction
       Category = 'Analysis'
       Caption = 'Close Session'
       Hint = 'Close Session'
-      ShortCut = 16451
+      ShortCut = 16456
       OnExecute = CloseSessionActionExecute
     end
     object PrintSessionAction: TAction
