@@ -1,47 +1,36 @@
 #include "SaTScan.h"
 #pragma hdrstop
 #include "SpaceTimeData.h"
+#include "PoissonModel.h"
+#include "BernoulliModel.h"
+#include "SpaceTimePermutationModel.h"
 
+/** constructor */
 CSpaceTimeData::CSpaceTimeData(CParameters* pParameters, BasePrint *pPrintDirection)
-               :CSaTScanData(pParameters, pPrintDirection)
-{
+               :CSaTScanData(pParameters, pPrintDirection) {
+  try {
+    SetProbabilityModel();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("constructor()","CSpaceTimeData");
+    throw;
+  }
 }
 
-CSpaceTimeData::~CSpaceTimeData()
-{
-}
+/** desctructor */
+CSpaceTimeData::~CSpaceTimeData() {}
 
-void CSpaceTimeData::SetIntervalCut()
+void CSpaceTimeData::AllocSimCases()
 {
    try
       {
-      CSaTScanData::SetIntervalCut();
-
-      /* Avoids double calculations of the loglikelihood when IPS==1 and     */
-      /* IntervalCut==nTimeIntervals. Increases speed in functions Cluster2() */
-      /* and Montercarlo2().                                                 */
-      if (m_pParameters->GetIncludePurelySpatialClusters())
-         if (m_nTimeIntervals == m_nIntervalCut)
-            m_nIntervalCut--;
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("SetIntervalCut()", "CSpaceTimeData");
-      throw;
-      }
-}
-
-void CSpaceTimeData::ReadDataFromFiles()
-{
-   try
-      {
-      CSaTScanData::ReadDataFromFiles();
+      CSaTScanData::AllocSimCases();
       if (m_pParameters->GetIncludePurelyTemporalClusters())
-         SetPurelyTemporalCases();
+         m_pPTSimCases = (count_t*)Smalloc(m_nTimeIntervals * sizeof(count_t), gpPrint);
       }
    catch (ZdException & x)
       {
-      x.AddCallpath("ReadDataFromFiles()", "CSpaceTimeData");
+      x.AddCallpath("AllocSimCases()", "CSpaceTimeData");
       throw;
       }
 }
@@ -62,21 +51,6 @@ bool CSpaceTimeData::CalculateMeasure()
       throw;
       }
   return bResult;
-}
-
-void CSpaceTimeData::AllocSimCases()
-{
-   try
-      {
-      CSaTScanData::AllocSimCases();
-      if (m_pParameters->GetIncludePurelyTemporalClusters())
-         m_pPTSimCases = (count_t*)Smalloc(m_nTimeIntervals * sizeof(count_t), gpPrint);
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("AllocSimCases()", "CSpaceTimeData");
-      throw;
-      }
 }
 
 void CSpaceTimeData::DeAllocSimCases()
@@ -109,5 +83,56 @@ void CSpaceTimeData::MakeData(int iSimulationNumber)
       }
 }
 
+void CSpaceTimeData::ReadDataFromFiles()
+{
+   try
+      {
+      CSaTScanData::ReadDataFromFiles();
+      if (m_pParameters->GetIncludePurelyTemporalClusters())
+         SetPurelyTemporalCases();
+      }
+   catch (ZdException & x)
+      {
+      x.AddCallpath("ReadDataFromFiles()", "CSpaceTimeData");
+      throw;
+      }
+}
+
+void CSpaceTimeData::SetIntervalCut()
+{
+   try
+      {
+      CSaTScanData::SetIntervalCut();
+
+      /* Avoids double calculations of the loglikelihood when IPS==1 and     */
+      /* IntervalCut==nTimeIntervals. Increases speed in functions Cluster2() */
+      /* and Montercarlo2().                                                 */
+      if (m_pParameters->GetIncludePurelySpatialClusters())
+         if (m_nTimeIntervals == m_nIntervalCut)
+            m_nIntervalCut--;
+      }
+   catch (ZdException & x)
+      {
+      x.AddCallpath("SetIntervalCut()", "CSpaceTimeData");
+      throw;
+      }
+}
+
+/** allocates probability model */
+void CSpaceTimeData::SetProbabilityModel() {
+  try {
+    switch (m_pParameters->GetProbabiltyModelType()) {
+       case POISSON              : m_pModel = new CPoissonModel(*m_pParameters, *this, *gpPrint);   break;
+       case BERNOULLI            : m_pModel = new CBernoulliModel(*m_pParameters, *this, *gpPrint); break;
+       case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(*m_pParameters, *this, *gpPrint); break;
+       default : ZdException::Generate("Unknown probability model type: '%d'.\n",
+                                       "SetProbabilityModel()", m_pParameters->GetProbabiltyModelType());
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetProbabilityModel()","CSpaceTimeData");
+    throw;
+  }
+}
 
 

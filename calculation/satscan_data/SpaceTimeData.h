@@ -4,24 +4,20 @@
 //**************************************************************************
 #include "SaTScanData.h"
 
-class CSpaceTimeData : public CSaTScanData
-{
+class CSpaceTimeData : public CSaTScanData {
+  protected:
+    virtual bool        CalculateMeasure();
+    virtual void        ReadDataFromFiles();
+    virtual void        SetIntervalCut();
+    virtual void        SetProbabilityModel();
+
   public:
     CSpaceTimeData(CParameters* pParameters, BasePrint *pPrintDirection);
     virtual ~CSpaceTimeData();
 
-//    void SetPurelyTemporalSimCases();
-
-    virtual void AllocSimCases();
-    virtual void DeAllocSimCases();
-    virtual void MakeData(int iSimulationNumber);
-    
-  protected:
-    virtual void SetIntervalCut();
-
-    virtual void ReadDataFromFiles();
-    virtual bool CalculateMeasure();
-
+    virtual void        AllocSimCases();
+    virtual void        DeAllocSimCases();
+    virtual void        MakeData(int iSimulationNumber);
 };
 
 //**************************************************************************
