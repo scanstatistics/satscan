@@ -1537,7 +1537,7 @@ void __fastcall TBDlgDataImporter::OnFieldGridComboCellLoaded(TObject *Sender, T
 
 void __fastcall TBDlgDataImporter::OnFieldGridComboDropDown(TObject *Sender, TtsComboGrid *Combo, int DataCol, int DataRow) {
   try {
-    Combo->Grid->Rows = min(GetNumInputFileVariables(),10);
+    Combo->Grid->Rows = GetNumInputFileVariables();
   }
   catch (ZdException &x) {
     x.AddCallpath("OnFieldGridComboDropDown()","TBDlgDataImporter");
