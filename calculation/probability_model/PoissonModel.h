@@ -21,6 +21,8 @@ class CPoissonModel : public CModel {
     long int                    glFilePosition;
 
     void                        AllocateAlternateHypothesisStructures();
+    int                         AssignMeasure(measure_t ** ppMeasure);
+
     virtual double              CalcSVTTLogLikelihood(count_t* pCases, measure_t* pMeasure,
                                                       count_t pTotalCases, double nAlpha,
                                                       double nBeta, int nStatus);
