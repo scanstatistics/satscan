@@ -17,18 +17,18 @@ double  gammln(double xx);
 /** Generates binomial(n, p) distributed variable. */
 class BinomialGenerator {
   private:
-    double      pold;
-    double      pc;
-    double      plog;
-    double      pclog;
-    double      en;
-    double      oldg;
-    int         nold;
+    //double      pold;
+    //double      pc;
+    //double      plog;
+    //double      pclog;
+    //double      en;
+    //double      oldg;
+    //int         nold;
 
-    void        Init() {pold = -1.0; nold = -1;}
+    ///void        Init() {pold = -1.0; nold = -1;}
 
   public:
-    BinomialGenerator() {Init();}
+    BinomialGenerator() {/*Init();*/}
     ~BinomialGenerator(){}
 
     long        GetBinomialDistributedVariable(long n, float pp, RandomNumberGenerator & rng);

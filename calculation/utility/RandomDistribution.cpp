@@ -62,6 +62,17 @@ long BinomialGenerator::GetBinomialDistributedVariable(long n, float pp, RandomN
    long         j, rtn;
    double       am,em,g,angle,p,bnl,sq,t,y;
 
+   // NOTE: these variables were defined as static at one time - that was
+   //       determined to be unneccesary as results of continuous calls
+   //       ,whether static or not, produced identical results.
+   double      pold = -1;
+   double      pc;
+   double      plog;
+   double      pclog;
+   double      en;
+   double      oldg;
+   int         nold = -1;
+
    p=(pp <= 0.5 ? pp : 1.0-pp);
    am=n*p;
    if (n < 25) {
