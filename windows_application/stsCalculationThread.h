@@ -31,7 +31,10 @@ class CalcThread : public TThread {
     void                Init();
     void __fastcall     EnableProgressEmailButton(void);
     void __fastcall     EnableProgressPrintButton(void);
+    void __fastcall     ProcessAcknowledgesCancellation(void);
+    void __fastcall     ProcessSignalsCompletion(void);
     void __fastcall     GetIsCanceledFromProgress(void);
+    void __fastcall     LoadResultsFromFile();
     void __fastcall     PrintLineToProgress(void);
     void __fastcall     PrintWarningLineToProgress(void);
     void __fastcall     ResetProgressCloseButton(void);

@@ -68,38 +68,9 @@ void __fastcall CalcThread::EnableProgressPrintButton(void) {
   gpFormStatus->btnPrint->Enabled = false;// true; -- disable printing until printing bug fix completed.
 }
 
-/** Internal initialization function. */
-void CalcThread::Init(){
-  gpParams   = 0;
-  gpData     = 0;
-  gpAnalysis = 0;
-  gpFormStatus = 0;
-  gpPrintWindow = 0;
-  gbJobCanceled = false;
-  gsPrintString = 0;
-}
-
-/** Synchronizes cancel check in run analysis form in the main application thread. */
-bool CalcThread::IsCancelled() {
-  Synchronize((TThreadMethod)&GetIsCanceledFromProgress);
-  return gbJobCanceled;
-}
-
-/** Cleanup. */
-void CalcThread::Free() {
-   delete gpData;
-   delete gpAnalysis;
-   delete gpPrintWindow;
-
-   //deletion of gpData must happen before this
-   //or more importantly, gpParams deletion must happen AFTER gpData
-   delete gpParams;
-}
-
 /** Main Thread execution function. */
 void __fastcall CalcThread::Execute() {
   try {
-    char        szOutputFilename[400];
     time_t      RunTime;
 
     time(&RunTime);         // Pass to analysis to include in report
@@ -118,52 +89,56 @@ void __fastcall CalcThread::Execute() {
        default                   : SSGenerateException("Invalid Analysis Type Encountered.", "Execute()");
     };
 
-    if (! IsCancelled())
+    if (! IsCancelled()) {
       gpData->ReadDataFromFiles();
+      switch (gpParams->m_nAnalysisType) {
+         case PURELYSPATIAL        : if (gpParams->m_nRiskFunctionType == STANDARDRISK)
+                                       gpAnalysis = new CPurelySpatialAnalysis(gpParams, gpData, gpPrintWindow);
+                                     else if (gpParams->m_nRiskFunctionType == MONOTONERISK)
+                                       gpAnalysis = new CPSMonotoneAnalysis(gpParams, gpData, gpPrintWindow);
+                                     break;
+         case PURELYTEMPORAL       : gpAnalysis = new CPurelyTemporalAnalysis(gpParams, gpData, gpPrintWindow);
+                                     break;
+         case SPACETIME            : if (gpParams->m_bIncludePurelySpatial && gpParams->m_bIncludePurelyTemporal)
+                                       gpAnalysis = new C_ST_PS_PT_Analysis(gpParams, gpData, gpPrintWindow);
+                                     else if (gpParams->m_bIncludePurelySpatial)
+                                       gpAnalysis = new C_ST_PS_Analysis(gpParams, gpData, gpPrintWindow);
+                                     else if (gpParams->m_bIncludePurelyTemporal)
+                                       gpAnalysis = new C_ST_PT_Analysis(gpParams, gpData, gpPrintWindow);
+                                     else
+                                       gpAnalysis = new CSpaceTimeAnalysis(gpParams, gpData, gpPrintWindow);
+                                     break;
+         case PROSPECTIVESPACETIME : if (gpParams->m_bIncludePurelySpatial && gpParams->m_bIncludePurelyTemporal)
+                                       gpAnalysis = new C_ST_PS_PT_Analysis(gpParams, gpData, gpPrintWindow);
+                                     else if (gpParams->m_bIncludePurelySpatial)
+                                       gpAnalysis = new C_ST_PS_Analysis(gpParams, gpData, gpPrintWindow);
+                                     else if (gpParams->m_bIncludePurelyTemporal)
+                                       gpAnalysis = new C_ST_PT_Analysis(gpParams, gpData, gpPrintWindow);
+                                     else
+                                       gpAnalysis = new CSpaceTimeAnalysis(gpParams, gpData, gpPrintWindow);
+                                     break;
+      };
 
-    switch (gpParams->m_nAnalysisType) {
-       case PURELYSPATIAL        : if (gpParams->m_nRiskFunctionType == STANDARDRISK)
-                                     gpAnalysis = new CPurelySpatialAnalysis(gpParams, gpData, gpPrintWindow);
-                                   else if (gpParams->m_nRiskFunctionType == MONOTONERISK)
-                                     gpAnalysis = new CPSMonotoneAnalysis(gpParams, gpData, gpPrintWindow);
-                                   break;
-       case PURELYTEMPORAL       : gpAnalysis = new CPurelyTemporalAnalysis(gpParams, gpData, gpPrintWindow);
-                                   break;
-       case SPACETIME            : if (gpParams->m_bIncludePurelySpatial && gpParams->m_bIncludePurelyTemporal)
-                                     gpAnalysis = new C_ST_PS_PT_Analysis(gpParams, gpData, gpPrintWindow);
-                                   else if (gpParams->m_bIncludePurelySpatial)
-                                     gpAnalysis = new C_ST_PS_Analysis(gpParams, gpData, gpPrintWindow);
-                                   else if (gpParams->m_bIncludePurelyTemporal)
-                                     gpAnalysis = new C_ST_PT_Analysis(gpParams, gpData, gpPrintWindow);
-                                   else
-                                     gpAnalysis = new CSpaceTimeAnalysis(gpParams, gpData, gpPrintWindow);
-                                   break;
-       case PROSPECTIVESPACETIME : if (gpParams->m_bIncludePurelySpatial && gpParams->m_bIncludePurelyTemporal)
-                                     gpAnalysis = new C_ST_PS_PT_Analysis(gpParams, gpData, gpPrintWindow);
-                                   else if (gpParams->m_bIncludePurelySpatial)
-                                     gpAnalysis = new C_ST_PS_Analysis(gpParams, gpData, gpPrintWindow);
-                                   else if (gpParams->m_bIncludePurelyTemporal)
-                                     gpAnalysis = new C_ST_PT_Analysis(gpParams, gpData, gpPrintWindow);
-                                   else
-                                     gpAnalysis = new CSpaceTimeAnalysis(gpParams, gpData, gpPrintWindow);
-                                   break;
-    };
-
-    if (! gpAnalysis->Execute(RunTime)) {
-      if (! IsCancelled())
-        gpPrintWindow->SatScanPrintf("An Error has occured within the Calculation Module.");
-    }
-    else {
-      gpPrintWindow->SatScanPrintf("\nSaTScan completed successfully.\n");
-      gpPrintWindow->SatScanPrintf("The results have been written to: \n");
-      gpPrintWindow->SatScanPrintf("  %s\n\n",gpParams->m_szOutputFilename);
-      strcpy(szOutputFilename, gpParams->m_szOutputFilename);
-      gpFormStatus->LoadFromFile(szOutputFilename);
+      if (! gpAnalysis->Execute(RunTime)) {
+        if (! IsCancelled())
+          gpPrintWindow->SatScanPrintf("An Error has occured within the Calculation Module.");
+      }
+      else {
+        gpPrintWindow->SatScanPrintf("\nSaTScan completed successfully.\n");
+        gpPrintWindow->SatScanPrintf("The results have been written to: \n");
+        gpPrintWindow->SatScanPrintf("  %s\n\n",gpParams->m_szOutputFilename);
+        Synchronize((TThreadMethod)&LoadResultsFromFile);
+      }
     }
 
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
     Synchronize((TThreadMethod)&EnableProgressPrintButton);
     Synchronize((TThreadMethod)&SetProgressWarnings);
+    if (IsCancelled())
+      // Process is done interacting with run analysis window. So if analysis
+      // was cancelled, we can now safely tell run analysis that we are finished
+      // with it(i.e. we won't we accessing gpFormStatus anymore).
+      Synchronize((TThreadMethod)&ProcessAcknowledgesCancellation);
   }
   catch (ZdException & x) {
     x.AddCallpath("Execute()", "CalcThread");
@@ -176,6 +151,35 @@ void __fastcall CalcThread::Execute() {
     Synchronize((TThreadMethod)&EnableProgressEmailButton);
     CancellJob();
   }
+  Synchronize((TThreadMethod)&ProcessSignalsCompletion);
+}
+
+/** Cleanup. */
+void CalcThread::Free() {
+   delete gpData;
+   delete gpAnalysis;
+   delete gpPrintWindow;
+
+   //deletion of gpData must happen before this
+   //or more importantly, gpParams deletion must happen AFTER gpData
+   delete gpParams;
+}
+
+/** Internal initialization function. */
+void CalcThread::Init(){
+  gpParams   = 0;
+  gpData     = 0;
+  gpAnalysis = 0;
+  gpFormStatus = 0;
+  gpPrintWindow = 0;
+  gbJobCanceled = false;
+  gsPrintString = 0;
+}
+
+/** Synchronizes cancel check in run analysis form in the main application thread. */
+bool CalcThread::IsCancelled() {
+  Synchronize((TThreadMethod)&GetIsCanceledFromProgress);
+  return gbJobCanceled;
 }
 
 /** Checks whether job has been cancelled through Run Analysis interface. */
@@ -183,7 +187,17 @@ void __fastcall CalcThread::GetIsCanceledFromProgress(void) {
   gbJobCanceled = gpFormStatus->IsJobCanceled();
 }
 
-/** Adds print string to Run Analysis interface. */
+/** Loads analysis run memo field with results of analysis. */
+void __fastcall CalcThread::LoadResultsFromFile() {
+  try {
+    gpFormStatus->LoadFromFile(gpParams->m_szOutputFilename);
+  }
+  catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
+}
+
+/** Adds print string to Run Analysis interface. Prevents printing string
+    if job already cancelled. This prevents any messages from being printed
+    will in some loop/function that hasn't checked for cancellation. */
 void __fastcall CalcThread::PrintLineToProgress(void) {
   try {
     if (! gpFormStatus->IsJobCanceled())
@@ -192,11 +206,31 @@ void __fastcall CalcThread::PrintLineToProgress(void) {
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
 }
 
-/** Adds print string to Run Analysis interface. */
+/** Adds print string to Run Analysis interface. Prevents printing string
+    if job already cancelled. This prevents any messages from being printed
+    will in some loop/function that hasn't checked for cancellation. */
 void __fastcall CalcThread::PrintWarningLineToProgress(void) {
   try {
     if (! gpFormStatus->IsJobCanceled())
       gpFormStatus->AddWarningLine(gsPrintString);
+  }
+  catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
+}
+
+/** Indicates that process have acknowledged cancellation and is in proper state 
+    for cancelling by posting message to run analysis window. */
+void __fastcall CalcThread::ProcessAcknowledgesCancellation(void) {
+  try {
+    gpFormStatus->AddLine("Job cancelled by user.");
+  }
+  catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
+}
+
+/** Promise to run analysis window that it is free to close.
+    (i.e. gpFormStatus will never be dereferenced again by this class) */
+void __fastcall CalcThread::ProcessSignalsCompletion(void) {
+  try {
+    gpFormStatus->SetCanClose(true);
   }
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
 }
@@ -227,15 +261,7 @@ void __fastcall CalcThread::SetProgressWarnings(void) {
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
 }
 
-/** Setup for run analysis window to be called in Synchronized call. */
-void __fastcall CalcThread::SetupProgress(void) {
-  try {
-    gpFormStatus->Caption = gsThreadTitle;
-    gpFormStatus->reAnalysisBox->SetFocus();
-  }
-  catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
-}
-
+/** Internal setup function. */
 void CalcThread::Setup(const CParameters& session, char *pTitle, TfrmAnalysisRun *pProgress) {
   try {
     if (! pTitle || !pProgress )
@@ -257,3 +283,12 @@ void CalcThread::Setup(const CParameters& session, char *pTitle, TfrmAnalysisRun
     throw;
   }
 }  
+
+/** Setup for run analysis window to be called in Synchronized call. */
+void __fastcall CalcThread::SetupProgress(void) {
+  try {
+    gpFormStatus->Caption = gsThreadTitle;
+    gpFormStatus->reAnalysisBox->SetFocus();
+  }
+  catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
+}
