@@ -16,15 +16,9 @@
 #include "DataStreamHandler.h"
 #include "AdjustmentHandler.h"
 
-class CPoissonModel;
-class CBernoulliModel;
-class CSpaceTimePermutationModel;
-
+/** Central data hub class which contains all data either read or created from
+    input files. Defines public interface for reading and accessing contained data. */
 class CSaTScanData {
-  friend class CPoissonModel;
-  friend class CBernoulliModel;
-  friend class CSpaceTimePermutationModel;
-
   private:
     void                                        Init();
     virtual void                                SetProbabilityModel() = 0;
@@ -46,9 +40,9 @@ class CSaTScanData {
     double                                      m_nAnnualRatePop;
     double                                    * mdE_Angles;
     double                                    * mdE_Shapes;                     /* temp storage for the angles, shapes of each "possible" ellipsoid */
-    Julian                                      m_nStartDate;
-    Julian                                      m_nEndDate;       /* study period start/end dates */
-    Julian                                    * m_pIntervalStartTimes;          /* time interval start times */
+    const Julian                                m_nStartDate;
+    const Julian                                m_nEndDate;                     /* study period start/end dates */
+    std::vector<Julian>                         gvTimeIntervalStartTimes;       /* time interval start times */
     std::vector<measure_t>                      gvCircleMeasure;
     tract_t                                     m_nTracts;
     measure_t                                   m_nTotalTractsAtStart;
@@ -79,14 +73,11 @@ class CSaTScanData {
     virtual void                                SetIntervalStartTimes();
     void                                        SetMeasureByTimeIntervalArray();
     void                                        SetMeasureByTimeIntervalArray(measure_t ** pNonCumulativeMeasure);
-    virtual void                                SetNumTimeIntervals();
     void                                        SetProspectiveIntervalStart();
     void                                        SetPurelyTemporalCases();
     void                                        SetScanningWindowEndRangeIndex(Julian EndRangeDate, int & iEndRangeDateIndex);
     void                                        SetScanningWindowStartRangeIndex(Julian StartRangeDate, int & iStartRangeDateIndex);
-    void                                        SetStartAndEndDates();
     void                                        SetTimeIntervalRangeIndexes();
-    virtual void                                ValidateObservedToExpectedCases(count_t ** ppCumulativeCases, measure_t ** ppNonCumulativeMeasure) const;
 
   public:
     CSaTScanData(const CParameters* pParameters, BasePrint *pPrintDirection);
@@ -105,7 +96,6 @@ class CSaTScanData {
     virtual void                                AdjustNeighborCounts(); // For sequential analysis, after top cluster removed
     virtual void                                CalculateMeasure(RealDataStream& thisStream);
     void                                        CalculateExpectedCases();
-    int                                         ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate);
     bool                                        ConvertAdjustmentDateToJulian(StringParser & Parser, Julian & JulianDate, bool bStartDate);
     virtual void                                DisplayNeighbors(FILE* pFile);
     virtual void                                DisplayRelativeRisksForEachTract() const;
@@ -133,7 +123,7 @@ class CSaTScanData {
     Julian                                      GetStudyPeriodEndDate() const {return m_nEndDate;}
     Julian                                      GetStudyPeriodStartDate() const {return m_nStartDate;}
     int                                         GetTimeIntervalOfDate(Julian Date) const;
-    const Julian                              * GetTimeIntervalStartTimes() const {return m_pIntervalStartTimes;}
+    const std::vector<Julian>                 & GetTimeIntervalStartTimes() const {return gvTimeIntervalStartTimes;}
     inline const TractHandler                 * GetTInfo() const {return &gTractHandler;}
     double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}
     virtual void                                RandomizeData(RandomizerContainer_t& RandomizerContainer,
@@ -151,6 +141,7 @@ class CSaTScanData {
     bool                                        ReadSurvivalData();
     void                                        RemoveTractSignificance(tract_t tTractIndex);
     void                                        SetMaxCircleSize();
+    virtual void                                ValidateObservedToExpectedCases(count_t ** ppCumulativeCases, measure_t ** ppNonCumulativeMeasure) const;
 
     inline measure_t                            GetTotalDataStreamMeasure(unsigned int iStream) const {return gpDataStreams->GetStream(iStream).GetTotalMeasure();}
     inline measure_t                            GetTotalMeasure() const {return gtTotalMeasure;}

@@ -11,7 +11,10 @@
 #include "BernoulliDataStreamHandler.h"
 #include "SpaceTimePermutationDataStreamHandler.h"
 
-CSaTScanData::CSaTScanData(const CParameters* pParameters, BasePrint *pPrintDirection) {
+/** class constructor */
+CSaTScanData::CSaTScanData(const CParameters* pParameters, BasePrint *pPrintDirection)
+             : m_nStartDate(pParameters->GetStudyPeriodStartDateAsJulian()),
+               m_nEndDate(pParameters->GetStudyPeriodEndDateAsJulian()) {
   try {
     Init();
     Setup(pParameters, pPrintDirection);
@@ -22,6 +25,7 @@ CSaTScanData::CSaTScanData(const CParameters* pParameters, BasePrint *pPrintDire
   }
 }
 
+/** class destructor */
 CSaTScanData::~CSaTScanData() {
   try {
     delete gpDataStreams; gpDataStreams=0;
@@ -31,11 +35,17 @@ CSaTScanData::~CSaTScanData() {
     delete gpSortedUShortHandler; gpSortedUShortHandler=0;
     delete [] mdE_Angles;
     delete [] mdE_Shapes;
-    free(m_pIntervalStartTimes);
   }
   catch (...){}  
 }
 
+/** Adjusts passed non cumulative measure are for known relative risks, as
+    previously read from user specified file. Caller is responsible for ensuring:
+    - that passed 'measure **' points to a multiple dimensional array contained
+      by passed RealDataStream object.
+    - passed 'measure **' is in fact non-cumulative
+    - passed 'measure **' points to valid memory, allocated to dimensions (number
+      of time intervals plus one by number of tracts)                            */
 void CSaTScanData::AdjustForKnownRelativeRisks(RealDataStream& thisStream, measure_t ** ppNonCumulativeMeasure) {
   measure_t                             c, AdjustedTotalMeasure_t;
   int                                   i;
@@ -91,14 +101,14 @@ bool CSaTScanData::AdjustMeasure(RealDataStream& thisStream, measure_t ** pNonCu
   count_t ** ppCases = thisStream.GetCaseArray();
 
   for (interval=GetTimeIntervalOfDate(StartDate); interval <= GetTimeIntervalOfDate(EndDate); ++interval) {
-     AdjustmentStart = std::max(StartDate, m_pIntervalStartTimes[interval]);
-     AdjustmentEnd = std::min(EndDate, m_pIntervalStartTimes[interval+1] - 1);
+     AdjustmentStart = std::max(StartDate, gvTimeIntervalStartTimes[interval]);
+     AdjustmentEnd = std::min(EndDate, gvTimeIntervalStartTimes[interval+1] - 1);
      //calculate measure for lower interval date to adjustment start date
-     MeasurePre = CalcMeasureForTimeInterval(Population, pp_m, Tract, m_pIntervalStartTimes[interval], AdjustmentStart);
+     MeasurePre = CalcMeasureForTimeInterval(Population, pp_m, Tract, gvTimeIntervalStartTimes[interval], AdjustmentStart);
      //calculate measure for adjustment period
      MeasureDuring = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentStart, AdjustmentEnd+1);
      //calculate measure for adjustment end date to upper interval date
-     MeasurePost = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentEnd+1, m_pIntervalStartTimes[interval+1]);
+     MeasurePost = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentEnd+1, gvTimeIntervalStartTimes[interval+1]);
      //validate that data overflow will not occur
      if (MeasureDuring && (dRelativeRisk > (tMaxMeasure_tValue - MeasurePre - MeasurePost) / MeasureDuring))
        GenerateResolvableException("Error: Data overflow occurs when adjusting expected number of cases.\n"
@@ -168,8 +178,12 @@ void CSaTScanData::AllocateNeighborArray() {
   }
 }
 
-/** Allocates multi-dimensional array that stores tract index for each neighbor
-    of each ellipse/grid point combination. */
+/** Allocates three dimensional array that stores tract index for each neighbor
+    of each ellipse by grid point combination. Data type of array is conditionally
+    either unsigned short or tract_t; based upon number of tracts in coordinates
+    file. Note that third dimension is allocated with zero length. Later, when
+    neighbors are calculated, the third dimension will be re-allocated based upon
+    the number of calculated neighbors for each (circle/ellipse) and grid point pair. */
 void CSaTScanData::AllocateSortedArray() {
   try {
     if (m_nTracts < std::numeric_limits<unsigned short>::max())
@@ -221,7 +235,9 @@ measure_t CSaTScanData::CalcMeasureForTimeInterval(PopulationData & Population, 
    return SumMeasure / nTotalDays;
 }
 
-/** calculates expected number of cases */
+/** Calculates expected number of cases for each data stream. Records total
+    measure, cases, and population for all streams. Calls method to determines
+    the maximum spatial cluster size. */
 void CSaTScanData::CalculateExpectedCases() {
   size_t        t;
 
@@ -237,10 +253,12 @@ void CSaTScanData::CalculateExpectedCases() {
   FreeRelativeRisksAdjustments();
 }
 
+/** Calculates expected number of cases for data stream. */
 void CSaTScanData::CalculateMeasure(RealDataStream & thisStream) {
   try {
     SetAdditionalCaseArrays(thisStream);
     m_pModel->CalculateMeasure(thisStream);
+    //record totals at start, the optional sequential scan feature modifies start values
     thisStream.SetTotalCasesAtStart(thisStream.GetTotalCases());
     thisStream.SetTotalControlsAtStart(thisStream.GetTotalControls());
     thisStream.SetTotalMeasureAtStart(thisStream.GetTotalMeasure());
@@ -249,20 +267,6 @@ void CSaTScanData::CalculateMeasure(RealDataStream & thisStream) {
     x.AddCallpath("CalculateMeasure()","CSaTScanData");
     throw;
   }
-}
-
-int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate) {
-   int  iIntervalCut;
-   long lTimeBetween;
-
-   if (m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
-     lTimeBetween = static_cast<long>(floor((TimeBetween(jStartDate, jEndDate, m_pParameters->GetTimeIntervalUnitsType()))*m_pParameters->GetMaximumTemporalClusterSize()/100.0));
-     iIntervalCut = static_cast<int>(floor(lTimeBetween / m_pParameters->GetTimeIntervalLength()));
-   }
-   else
-     iIntervalCut = m_nIntervalCut;
-
-   return iIntervalCut;
 }
 
 /********************************************************************
@@ -381,22 +385,22 @@ int CSaTScanData::GetTimeIntervalOfDate(Julian Date) const {
   int   i=0;
 
   //check that date is within study period
-  if (Date < m_pIntervalStartTimes[0] || Date >= m_pIntervalStartTimes[m_nTimeIntervals])
+  if (Date < gvTimeIntervalStartTimes[0] || Date >= gvTimeIntervalStartTimes[m_nTimeIntervals])
     return -1;
 
-  while (Date >=  m_pIntervalStartTimes[i+1])
+  while (Date >=  gvTimeIntervalStartTimes[i+1])
        ++i;
        
   return i;
 }
 
+/** internal class initializaton */
 void CSaTScanData::Init() {
   m_pModel = 0;
   gpDataStreams = 0;
   gpNeighborCountHandler=0;
   gpSortedIntHandler=0;
   gpSortedUShortHandler=0;
-  m_pIntervalStartTimes = 0;
   m_nAnnualRatePop = 100000;
   mdE_Angles = 0;
   mdE_Shapes = 0;
@@ -447,14 +451,19 @@ bool CSaTScanData::ReadBernoulliData() {
   return true;
 }
 
+/** First calls internal methods to prepare internal structure:
+    - calculate time interval start times
+    - calculate a clusters maximum temporal window length in terms of time intervals
+    - calculate indexes of flexible scanning window, if requested
+    - calculate start interval index of start date of prospective analyses
+    - read input data from files base upon probability model
+    Throws ResolvableException if read fails. */
 void CSaTScanData::ReadDataFromFiles() {
   bool  bReadSuccess;
 
   try {
-    SetStartAndEndDates();
-    SetNumTimeIntervals();
-    SetIntervalCut();
     SetIntervalStartTimes();
+    SetIntervalCut();
     SetTimeIntervalRangeIndexes();
     if (m_pParameters->GetIsProspectiveAnalysis())
       SetProspectiveIntervalStart();
@@ -470,6 +479,7 @@ void CSaTScanData::ReadDataFromFiles() {
     };
     if (!bReadSuccess)
       GenerateResolvableException("\nProblem encountered when reading the data from the input files.", "ReadDataFromFiles");
+    //now that all data has been read, the tract handler can combine references locations with duplicate coordinates
     gTractHandler.tiConcaticateDuplicateTractIdentifiers();
   }
   catch (ZdException & x) {
@@ -478,7 +488,7 @@ void CSaTScanData::ReadDataFromFiles() {
   }
 }
 
-/** reads data from input files for a Poisson probability model */
+/** reads data from input files for a normal probability model */
 bool CSaTScanData::ReadNormalData() {
   size_t        t;
 
@@ -550,7 +560,7 @@ bool CSaTScanData::ReadRankData() {
   return true;
 }
 
-/** reads data from input files for a Space-Time Permutation probability model */
+/** reads data from input files for a space-time permutation probability model */
 bool CSaTScanData::ReadSpaceTimePermutationData() {
   size_t        t;
 
@@ -596,6 +606,9 @@ bool CSaTScanData::ReadSurvivalData() {
   return true;
 }
 
+/** For tract at tTractIndex - zeros case, control, and population data from data
+    stream structures. This function is utilized by the optional sequential scan
+    feature and is designed only for purely spatial analyses at this time.*/
 void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
   count_t       tTotalCases, tTotalControls;
   measure_t     tTotalMeasure;
@@ -696,22 +709,36 @@ void CSaTScanData::SetIntervalCut() {
   }
 }
 
-/** Set array of interval start times. */
+/** Calculates the time interval start times given study period and time interval
+    length. Start times are calculated from the study period end date backwards,
+    which means that first time interval could possibly not be the requested time
+    interval length. Throws ResolvableException if the time stratified time trend
+    adjustment was requested and the number of calculated time intervals is one.*/
 void CSaTScanData::SetIntervalStartTimes() {
-   // Not neccessary for purely spatial?
-   try {
-      m_pIntervalStartTimes = (Julian*) Smalloc((m_nTimeIntervals+1)*sizeof(Julian), gpPrint);
+  Julian IntervalStartingDate = m_nEndDate+1;
 
-      m_pIntervalStartTimes[0] = m_nStartDate;
-      m_pIntervalStartTimes[m_nTimeIntervals] = m_nEndDate+1;
+  gvTimeIntervalStartTimes.clear();
+  //latest interval start time is the day after study period end date
+  gvTimeIntervalStartTimes.push_back(IntervalStartingDate);
+  //find the next prior interval start time from previous, given length of time intervals
+  IntervalStartingDate = DecrementDate(IntervalStartingDate, m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
+  //continue decrementing from current interval start time until study period start date boundry hit 
+  while (IntervalStartingDate > m_nStartDate) {
+      //push interval start time onto vector
+      gvTimeIntervalStartTimes.push_back(IntervalStartingDate);
+      //find the next prior interval start time from current, given length of time intervals
+      IntervalStartingDate = DecrementDate(IntervalStartingDate, m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
+  }
+  //push study period start date onto vector
+  gvTimeIntervalStartTimes.push_back(m_nStartDate);
+  //reverse elements of vector so that elements are ordered: study period start --> 'study period end + 1'
+  std::reverse(gvTimeIntervalStartTimes.begin(), gvTimeIntervalStartTimes.end());
+  //record number of time intervals, not including 'study period end date + 1' date
+  m_nTimeIntervals = (int)gvTimeIntervalStartTimes.size() - 1;
 
-      for (int i = m_nTimeIntervals-1; i > 0; --i)
-         m_pIntervalStartTimes[i] = DecrementDate(m_pIntervalStartTimes[i+1], m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("SetIntervalStartTimes()", "CSaTScanData");
-      throw;
-   }
+  if (m_pParameters->GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION && m_nTimeIntervals <= 1)
+    GenerateResolvableException("Error: The time stratified randomization adjustment requires more than\n"
+                                "       one time interval.\n", "SetIntervalStartTimes()");
 }
 
 /** Causes maximum circle size to be set based on parameters settings. */
@@ -747,15 +774,6 @@ void CSaTScanData::SetMaxCircleSize() {
   }
 }
 
-void CSaTScanData::SetNumTimeIntervals() {
-  long nTime = TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->GetTimeIntervalUnitsType());
-  m_nTimeIntervals = (int)ceil((float)nTime / (float)m_pParameters->GetTimeIntervalLength());
-
-  if (m_pParameters->GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION && m_nTimeIntervals <= 1)
-    GenerateResolvableException("Error: The time stratified randomization adjustment requires more than\n"
-                                "       one time interval.\n", "SetNumTimeIntervals()");
-}
-
 /* Calculates which time interval the prospectice space-time start date is in.*/
 /* MAKE SURE THIS IS EXECUTED AFTER THE  m_nTimeIntervals VARIABLE HAS BEEN SET */
 void CSaTScanData::SetProspectiveIntervalStart() {
@@ -782,6 +800,7 @@ void CSaTScanData::SetProspectiveIntervalStart() {
   }
 }
 
+/** For all data streams, causes temporal structures to be allocated and set. */
 void CSaTScanData::SetPurelyTemporalCases() {
   size_t        t;
 
@@ -795,35 +814,24 @@ void CSaTScanData::SetPurelyTemporalCases() {
   }
 }
 
-void CSaTScanData::SetStartAndEndDates() {
-  try {
-    m_nStartDate = m_pParameters->GetStudyPeriodStartDateAsJulian();
-    m_nEndDate   = m_pParameters->GetStudyPeriodEndDateAsJulian();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetStartAndEndDates()","CSaTScanData");
-    throw;
-  }
-}
-
 /** Sets time interval end range index into interval start times array. */
-void CSaTScanData::SetScanningWindowEndRangeIndex(Julian EndRangeDate, int & iEndRangeDateIndex) {
+void CSaTScanData::SetScanningWindowEndRangeIndex(Julian EndRangeDate, int& iEndRangeDateIndex) {
   int   i;
 
   //find index for end range end date, the interval where date fits, rounding to higher index
   iEndRangeDateIndex = -1;
   for (i=m_nTimeIntervals; i > 0  && iEndRangeDateIndex == -1; --i)
-     if (EndRangeDate <= m_pIntervalStartTimes[i] - 1 && EndRangeDate > m_pIntervalStartTimes[i - 1] - 1)
+     if (EndRangeDate <= gvTimeIntervalStartTimes[i] - 1 && EndRangeDate > gvTimeIntervalStartTimes[i - 1] - 1)
         iEndRangeDateIndex = i;
 }
 
 /** Sets time interval start range index into interval start times array. */
-void CSaTScanData::SetScanningWindowStartRangeIndex(Julian StartRangeDate, int & iStartRangeDateIndex) {
+void CSaTScanData::SetScanningWindowStartRangeIndex(Julian StartRangeDate, int& iStartRangeDateIndex) {
   int   i;
 
   iStartRangeDateIndex = -1;
   for (i=0; i < m_nTimeIntervals && iStartRangeDateIndex == -1; ++i)
-     if (StartRangeDate >= m_pIntervalStartTimes[i] && StartRangeDate < m_pIntervalStartTimes[i + 1])
+     if (StartRangeDate >= gvTimeIntervalStartTimes[i] && StartRangeDate < gvTimeIntervalStartTimes[i + 1])
        iStartRangeDateIndex = i;
 }
 
@@ -847,8 +855,8 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
     if (iWindowStart >= iMaxEndWindow) {
       sTimeIntervalType = m_pParameters->GetDatePrecisionAsString(m_pParameters->GetTimeIntervalUnitsType());
       sTimeIntervalType.ToLowercase();
-      JulianToChar(sDateWST, m_pIntervalStartTimes[iWindowStart]);
-      JulianToChar(sDateMaxWET, m_pIntervalStartTimes[iMaxEndWindow] - 1);
+      JulianToChar(sDateWST, gvTimeIntervalStartTimes[iWindowStart]);
+      JulianToChar(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1);
       GenerateResolvableException("Error: No clusters will be evaluated.\n"
                                   "       With the incorporation of a maximum temporal cluster size of %i %s,\n"
                                   "       the temporal window scanned has a start time of %s (end range\n"
@@ -866,7 +874,7 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
     if (m_nEndRangeStartDateIndex > iMaxEndWindow) {
       sTimeIntervalType = m_pParameters->GetDatePrecisionAsString(m_pParameters->GetTimeIntervalUnitsType());
       sTimeIntervalType.ToLowercase();
-      JulianToChar(sDateMaxWET, m_pIntervalStartTimes[iMaxEndWindow] - 1);
+      JulianToChar(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1);
       GenerateResolvableException("Error: No clusters will be evaluated.\n"
                                   "       With the incorporation of a maximum temporal cluster size of %i %s\n"
                                   "       the maximum window end time becomes %s (start range ending\n"
@@ -929,8 +937,8 @@ void CSaTScanData::ValidateObservedToExpectedCases(count_t ** ppCumulativeCases,
                                         "       Please review the correctness of population and case files.",
                                         "ValidateObservedToExpectedCases()",
                                         gTractHandler.tiGetTid(t, sId),
-                                        JulianToString(sStart, m_pIntervalStartTimes[i]).GetCString(),
-                                        JulianToString(sEnd, m_pIntervalStartTimes[i + 1] - 1).GetCString());
+                                        JulianToString(sStart, gvTimeIntervalStartTimes[i]).GetCString(),
+                                        JulianToString(sEnd, gvTimeIntervalStartTimes[i + 1] - 1).GetCString());
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateObservedToExpectedCases()","CSaTScanData");
