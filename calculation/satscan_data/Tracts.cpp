@@ -1021,11 +1021,11 @@ void TractHandler::tiGetTractIdentifiers(tract_t t, std::vector<std::string>& vI
   }
 }
 
-/** Searches tract-id "tid".  Returns the index, or -1 if not found.                                                          */
+/** Searches tract-id "tid".  Returns the index, or -1 if not found. */
 tract_t TractHandler::tiGetTractIndex(char *tid) {
-   ZdPointerVector<TractDescriptor>::iterator           itr;
-   std::map<std::string,TractDescriptor*>::iterator     itrmap;
-   tract_t                                              tPosReturn;
+  ZdPointerVector<TractDescriptor>::iterator           itr;
+  std::map<std::string,TractDescriptor*>::iterator     itrmap;
+  tract_t                                              tPosReturn;
 
   try {
     //check for tract identifier is duplicates map
@@ -1055,26 +1055,33 @@ tract_t TractHandler::tiGetTractIndex(char *tid) {
 
     Return value: 0 = duplicate tract ID 1 = success */
 int TractHandler::tiInsertTnode(char *tid, double* pCoordinates) {
-  ZdPointerVector<TractDescriptor>::iterator    itr;
-  TractDescriptor                             * pTractDescriptor=0;
-  bool                                          bDuplicate=false;
+  std::map<std::string,TractDescriptor*>::iterator     itrmap;
+  ZdPointerVector<TractDescriptor>::iterator           itrCoordinates, itrPosition;
+  TractDescriptor                                    * pTractDescriptor=0;
+  bool                                                 bDuplicate=false;
 
   try {
-    //does this tract already exist?
-    if (tiGetTractIndex(tid) != -1)
+    //check for tract identifier is duplicates map
+    itrmap = gmDuplicateTracts.find(std::string(tid));
+    if (itrmap != gmDuplicateTracts.end())
       ZdException::Generate("Error:\nTract %s is specified multiple times in geographical file.", "tiInsertTnode()", tid);
+    else {//search for tract identifier in vector
+      gpSearchTractDescriptor->SetTractIdentifier(tid);
+      itrPosition = lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), gpSearchTractDescriptor, CompareTractDescriptorIdentifier());
+      if (itrPosition != gvTractDescriptors.end() && !strcmp((*itrPosition)->GetTractIdentifier(),tid))
+        ZdException::Generate("Error:\nTract %s is specified multiple times in geographical file.", "tiInsertTnode()", tid);
+    }
 
     //check that coordinates are not duplicate
-    for (itr=gvTractDescriptors.begin(); itr != gvTractDescriptors.end() && !bDuplicate; itr++)
-       if ((*itr)->CompareCoordinates(pCoordinates, nDimensions)) {
-         gmDuplicateTracts[tid] = (*itr);
+    for (itrCoordinates=gvTractDescriptors.begin(); itrCoordinates != gvTractDescriptors.end() && !bDuplicate; itrCoordinates++)
+       if ((*itrCoordinates)->CompareCoordinates(pCoordinates, nDimensions)) {
+         gmDuplicateTracts[tid] = (*itrCoordinates);
          bDuplicate = true;
        }
 
     if (! bDuplicate) {
       pTractDescriptor = new TractDescriptor(tid, pCoordinates, nDimensions);
-      itr = lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), pTractDescriptor, CompareTractDescriptorIdentifier());
-      gvTractDescriptors.insert(itr, pTractDescriptor);
+      gvTractDescriptors.insert(itrPosition, pTractDescriptor);
     }
   }
   catch (SSException & x) {
