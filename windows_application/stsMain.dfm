@@ -103,7 +103,7 @@ object frmMainForm: TfrmMainForm
       ShowHint = True
     end
     object sbHelp: TSpeedButton
-      Left = 232
+      Left = 200
       Top = 3
       Width = 25
       Height = 25
@@ -189,13 +189,13 @@ object frmMainForm: TfrmMainForm
       Height = 23
     end
     object Bevel5: TBevel
-      Left = 224
+      Left = 192
       Top = 3
       Width = 2
       Height = 23
     end
     object btnImportInputFile: TSpeedButton
-      Left = 160
+      Left = 324
       Top = 3
       Width = 25
       Height = 25
@@ -221,9 +221,10 @@ object frmMainForm: TfrmMainForm
       NumGlyphs = 2
       ParentShowHint = False
       ShowHint = True
+      Visible = False
     end
     object sbUpdate: TSpeedButton
-      Left = 192
+      Left = 160
       Top = 3
       Width = 25
       Height = 25
@@ -303,6 +304,7 @@ object frmMainForm: TfrmMainForm
       object ImportInputFile1: TMenuItem
         Action = ImportAction
         Caption = '&Import Files'
+        Visible = False
       end
     end
     object Help1: TMenuItem
@@ -447,7 +449,7 @@ object frmMainForm: TfrmMainForm
     Left = 16
     Top = 344
     Bitmap = {
-      494C010108000900040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010108000900040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001001000000000000018
       000000000000000000000000000000000000FF7FFF7FFF7FFF7FFF7FFF7FFF7F
       FF7FEF3DEF3DEF3DEF3DEF3DEF3DEF3DEF3DEF3DEF3DEF3DEF3DEF3DEF3DEF3D
@@ -655,6 +657,7 @@ object frmMainForm: TfrmMainForm
       FFFFFFFFFDFFE003C00FFC3FFEFFE033C007FC3FFE7FE033C007FEFFF83FE003
       C003FC7FF81FE003C001FC7FFC0FE003C01FFC3FE01FE7F3C01FF21FE00FE7F3
       E7F3E10FF007E7F3FFFBE10FF03FE7F3FF73E00FF81FE7F3FFFFF83FFC07FFFF
-      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
 end
