@@ -19,23 +19,6 @@ CPurelyTemporalCluster::CPurelyTemporalCluster(const AbstractClusterDataFactory 
   }
 }
 
-/** constructor */
-CPurelyTemporalCluster::CPurelyTemporalCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                               const DataStreamInterface & Interface,
-                                               IncludeClustersType eIncludeClustersType,
-                                               const CSaTScanData & Data,
-                                               BasePrint & PrintDirection)
-                       :CCluster(&PrintDirection) {
-  try {
-    Init();
-    Setup(pClusterFactory, Interface, eIncludeClustersType, Data);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","CPurelyTemporalCluster");
-    throw;
-  }
-}
-
 /** copy constructor */
 CPurelyTemporalCluster::CPurelyTemporalCluster(const CPurelyTemporalCluster& rhs)
                        : CCluster(rhs.gpPrintDirection) {
@@ -134,18 +117,6 @@ measure_t CPurelyTemporalCluster::GetMeasureForTract(tract_t tTract, const CSaTS
 void CPurelyTemporalCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, IncludeClustersType eIncludeClustersType, const CSaTScanData & Data) {
   try {
     gpClusterData = pClusterFactory->GetNewTemporalClusterData(DataGateway);
-  }
-  catch (ZdException &x) {
-    delete gpClusterData;
-    x.AddCallpath("Setup()","CPurelyTemporalCluster");
-    throw;
-  }
-}
-
-/** internal setup function */
-void CPurelyTemporalCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const DataStreamInterface & Interface, IncludeClustersType eIncludeClustersType, const CSaTScanData & Data) {
-  try {
-    gpClusterData = pClusterFactory->GetNewTemporalClusterData(Interface);
   }
   catch (ZdException &x) {
     delete gpClusterData;

@@ -7,22 +7,6 @@
 
 /** constructor */
 CPurelySpatialProspectiveCluster::CPurelySpatialProspectiveCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                                                   const DataStreamInterface & Interface,     
-                                                                   const CSaTScanData & Data,
-                                                                   BasePrint *pPrintDirection)
-                                 :CCluster(pPrintDirection) {
-  try {
-    Init();
-    Setup(pClusterFactory, Interface, Data);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","CPurelySpatialProspectiveCluster");
-    throw;
-  }
-}
-
-/** constructor */
-CPurelySpatialProspectiveCluster::CPurelySpatialProspectiveCluster(const AbstractClusterDataFactory * pClusterFactory,
                                                                    const AbtractDataStreamGateway & DataGateway,
                                                                    const CSaTScanData & Data, BasePrint *pPrintDirection)
                                  :CCluster(pPrintDirection) {
@@ -138,18 +122,6 @@ void CPurelySpatialProspectiveCluster::Initialize(tract_t nCenter = 0) {
 
 void CPurelySpatialProspectiveCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals) {
 //  ZdGenerateException("SetStartAndEndDates() not implemented.","CPurelySpatialProspectiveCluster");
-}
-
-
-void CPurelySpatialProspectiveCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const DataStreamInterface & Interface, const CSaTScanData & Data) {
-  try {
-    gpClusterData = pClusterFactory->GetNewProspectiveSpatialClusterData(Data, Interface);
-  }
-  catch (ZdException &x) {       
-    delete gpClusterData;
-    x.AddCallpath("Setup()","CPurelySpatialProspectiveCluster");
-    throw;
-  }
 }
 
 void CPurelySpatialProspectiveCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, const CSaTScanData & Data) {
