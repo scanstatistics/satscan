@@ -121,7 +121,7 @@ void CCluster::Display(FILE*     fp,
 
       DisplaySteps(fp, szSpacesOnLeft);
       //  fprintf(fp, "Census areas included");
-      fprintf(fp, "Census areas ");
+      fprintf(fp, "Location IDs ");
       DisplayCensusTracts(fp, Data, -1, nMinMeasure,
                           Parameters.GetNumReplicationsRequested(), 0, false, false,
                           nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
