@@ -67,15 +67,20 @@ SRC         := Main.cpp \
                ../calculation/analysis/SpaceTimeIncludePureAnalysis.cpp \
                ../calculation/analysis/SpaceTimeIncludePurelySpatialAnalysis.cpp \
                ../calculation/analysis/SpaceTimeIncludePurelyTemporalAnalysis.cpp \
+	       ../calculation/analysis/SVTTAnalysis.cpp \
                ../calculation/cluster/Cluster.cpp \
                ../calculation/cluster/IncidentRate.cpp \
                ../calculation/cluster/PurelySpatialCluster.cpp \
                ../calculation/cluster/PurelySpatialMonotoneCluster.cpp \
                ../calculation/cluster/PurelyTemporalCluster.cpp \
                ../calculation/cluster/SpaceTimeCluster.cpp \
+	       ../calculation/cluster/SVTTCluster.cpp \
+	       ../calculation/cluster/PurelySpatialProspectiveCluster.cpp \
                ../calculation/cluster/TimeEstimate.cpp \
                ../calculation/cluster/TimeIntervalAlive.cpp \
                ../calculation/cluster/TimeIntervalAll.cpp \
+	       ../calculation/cluster/TimeTrend.cpp \
+	       ../calculation/cluster/TimeIntervalRange.cpp \
                ../calculation/output/stsAreaSpecificData.cpp \
                ../calculation/output/stsASCIIFileWriter.cpp \
                ../calculation/output/stsClusterData.cpp \
@@ -101,6 +106,7 @@ SRC         := Main.cpp \
 	       ../calculation/satscan_data/SaTScanDataDisplay.cpp \
 	       ../calculation/satscan_data/SaTScanDataRead.cpp \
 	       ../calculation/satscan_data/SpaceTimeData.cpp \
+	       ../calculation/satscan_data/SVTTData.cpp \
 	       ../calculation/satscan_data/Tracts.cpp \
 	       ../calculation/utility/DBFFile.cpp \
 	       ../calculation/utility/JulianDates.cpp \
