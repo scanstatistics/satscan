@@ -123,7 +123,7 @@ void __fastcall TfrmMainForm::OutputTextFile1Click(TObject *Sender) {
       /* close the file */
       close(iHandle);
       if (lFileLength > 500000)
-        MessageBox(NULL, "The output results file is too big for SaTScan to view.  Please use an independent text viewer to review the results file." ,"Warning", MB_OK);
+        Application->MessageBox("The output results file is too big for SaTScan to view.  Please use an independent text viewer to review the results file." ,"Warning", MB_OK);
       else
         new TfrmOutputViewer(this, OpenDialog1->FileName.c_str());
       }
@@ -187,7 +187,7 @@ void TfrmMainForm::Save() {
         if (access(frmBaseForm->GetFileName(), 02) == 0)
           frmBaseForm->WriteSession();
         else
-          MessageBox(NULL, "Can not save session.  The file is either read only or you do not have write privledges to the directory." ,"Error", MB_OK);
+          Application->MessageBox("Can not save session.  The file is either read only or you do not have write privledges to the directory." ,"Error", MB_OK);
       }
     }
   }
