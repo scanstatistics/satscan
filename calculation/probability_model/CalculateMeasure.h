@@ -29,7 +29,7 @@ int AdjustForDiscreteTimeTrend(measure_t*** pMeasure,
 
 void AdjustForPercentageTimeTrend(double       nTimeAdjPercent,
                                   int          nTimeIntervals,
-                                  int          nIntervalUnits,
+                                  DatePrecisionType eIntervalUnits,
                                   long         nIntervalLength,
                                   tract_t      nTracts,
                                   measure_t*   pTotalMeasure,

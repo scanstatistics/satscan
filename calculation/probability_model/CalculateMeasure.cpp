@@ -118,7 +118,7 @@ measure_t CalcMeasure(RealDataStream& thisStream, TwoDimMeasureArray_t& NonCumul
   measure_t          ** ppM, ** pPopulationMeasure, ** ppNonCumulativeMeasure, tTotalMeasure=0;
   double                tempRatio, tempSum, temp1, temp2;
   Julian                jLowDate, jLowDatePlus1;
-  long                  nTotalDays = EndDate+1-StartDate/*TimeBetween(StartDate, EndDate, DAY)*/;
+  long                  nTotalDays = EndDate + 1 - StartDate;
 
   try {
     //get reference to data streams population measure
@@ -259,7 +259,7 @@ int AdjustForDiscreteTimeTrend(measure_t*** pMeasure,
 /*************************************************************************/
 void AdjustForPercentageTimeTrend(double       nTimeAdjPercent,
                                   int          nTimeIntervals,
-                                  int          nIntervalUnits,
+                                  DatePrecisionType eIntervalUnits,
                                   long         nIntervalLength,
                                   tract_t      nTracts,
                                   measure_t*   pTotalMeasure,
@@ -268,7 +268,7 @@ void AdjustForPercentageTimeTrend(double       nTimeAdjPercent,
 {
    int    i,t;
    double c;
-   double k = IntervalInYears(nIntervalUnits, nIntervalLength);
+   double k = IntervalInYears(eIntervalUnits, nIntervalLength);
    double p = 1 + (nTimeAdjPercent/100);
    double nAdjustedMeasure = 0;
  
