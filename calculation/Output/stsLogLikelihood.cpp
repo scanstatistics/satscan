@@ -47,9 +47,9 @@ void LogLikelihoodData::SetupFields() {
    
    try {
      if (gParameters.GetLogLikelihoodRatioIsTestStatistic())
-       CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 7, 2, uwOffset);
+       CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
      else
-       CreateField(gvFields, LOG_LIKL_FIELD, ZD_NUMBER_FLD, 7, 2, uwOffset);
+       CreateField(gvFields, LOG_LIKL_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupFields()", "LogLikelihoodData");
