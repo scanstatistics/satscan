@@ -1,4 +1,4 @@
-// $Revision: 1.9 $
+// $Revision: 1.10 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -209,6 +209,7 @@ class TBDlgDataImporter : public TForm {
      void                            SetupGridFileVariableDescriptors();
      void                            SetupMaxCirclePopFileVariableDescriptors();
      void                            SetupPopFileVariableDescriptors();
+     void                            SetupRelativeRisksFileVariableDescriptors();    
      void                            ShowFileTypeFormatPanel(int iFileType);
      void                            ShowFirstPanel();
      void                            ShowNextPanel();

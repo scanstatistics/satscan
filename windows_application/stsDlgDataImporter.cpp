@@ -318,6 +318,8 @@ void TBDlgDataImporter::CreateDestinationInformation() {
                                  break;
       case SpecialGrid         : sFileName.SetExtension(".grd");
                                  break;
+      case RelativeRisks       : sFileName.SetExtension(".rr");
+                                 break;
       default : ZdGenerateException("Unknown file type : \"%d\"", "ConvertImportedDataFile()", rdgInputFileType->ItemIndex);
     };
     gDestDescriptor.SetDestinationFile(sFileName.GetFullPath());
@@ -471,11 +473,6 @@ int TBDlgDataImporter::GetNumInputFileVariables() const {
 void TBDlgDataImporter::HideRows() {
   try {
     switch (rdgInputFileType->ItemIndex) {
-      case Case        :
-      case Control     :
-      case Population  : for (int i=1; i <= tsfieldGrid->Rows; i++)
-                            tsfieldGrid->RowVisible[i] = true;
-                         break;
       case Coordinates : for (int i=1; i <= tsfieldGrid->Rows; i++) {
                             if (i == 2 || i == 3) //Latitude and Longitude
                               tsfieldGrid->RowVisible[i] = (rdoCoordinates->ItemIndex == 1 ? true : false);
@@ -492,7 +489,8 @@ void TBDlgDataImporter::HideRows() {
                               tsfieldGrid->RowVisible[i] = (rdoCoordinates->ItemIndex == 1 ? false : true);
                          }
                          break;
-      default          : break;
+      default          : for (int i=1; i <= tsfieldGrid->Rows; i++)
+                            tsfieldGrid->RowVisible[i] = true;
     };
   }
   catch (ZdException &x) {
@@ -594,7 +592,9 @@ void TBDlgDataImporter::LoadResultFileNameIntoAnalysis() {
                                  gAnalysisForm.SetCoordinateType((CoordinatesType)rdoCoordinates->ItemIndex);
                                  break;
       case MaxCirclePopulation : gAnalysisForm.SetMaximumCirclePopulationFile(gDestDescriptor.GetDestinationFileName());
-                               break;
+                                 break;
+      case RelativeRisks       : gAnalysisForm.SetAdjustmentsForRelativeRisksFile(gDestDescriptor.GetDestinationFileName());
+                                 break;
       default : ZdGenerateException("Unknown file type index: \"%d\"", "LoadResultFileNameIntoAnalysis()", rdgInputFileType->ItemIndex);
     };
   }
@@ -761,6 +761,10 @@ void TBDlgDataImporter::OnExitStartPanel() {
                                  pnlBottomPanelTopAligned->Visible = true;
                                  break;
       case MaxCirclePopulation : SetupMaxCirclePopFileVariableDescriptors();
+                                 rdoCoordinates->Enabled = false;
+                                 pnlBottomPanelTopAligned->Visible = false;
+                                 break;
+      case RelativeRisks       : SetupRelativeRisksFileVariableDescriptors();
                                  rdoCoordinates->Enabled = false;
                                  pnlBottomPanelTopAligned->Visible = false;
                                  break;
@@ -1071,6 +1075,9 @@ void TBDlgDataImporter::SelectImportFile() {
       case MaxCirclePopulation  : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Maximum Circle Population files (*.max)|*.max|Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
                                   OpenDialog->Title = "Select Source Maximum Circle Population File";
                                   break;
+      case RelativeRisks        : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Relative Risks files (*.rr)|*.rr|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+                                  OpenDialog->Title = "Select Source Relative Risks File";
+                                  break;
       default : ZdGenerateException("Unknown file type index: \"%d\"","SetImportFields()", rdgInputFileType->ItemIndex);
     };
 
@@ -1309,6 +1316,21 @@ void TBDlgDataImporter::SetupPopFileVariableDescriptors() {
   }
   catch (ZdException &x) {
     x.AddCallpath("SetupPopFileVariableDescriptors()", "TBDlgDataImporter");
+    throw;
+  }
+}
+
+/** Setup field descriptors for relative risks file. */
+void TBDlgDataImporter::SetupRelativeRisksFileVariableDescriptors() {
+  try {
+    gvSaTScanVariables.clear();
+    gvSaTScanVariables.push_back(SaTScanVariable("Tract ID", 0, true));
+    gvSaTScanVariables.push_back(SaTScanVariable("Relative Risk", 1, true));
+    gvSaTScanVariables.push_back(SaTScanVariable("Start Date", 2, false));
+    gvSaTScanVariables.push_back(SaTScanVariable("End Date", 3, false));
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetupRelativeRiskFileVariableDescriptors()", "TBDlgDataImporter");
     throw;
   }
 }
