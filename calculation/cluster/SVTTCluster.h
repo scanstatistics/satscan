@@ -79,17 +79,18 @@ class CSVTTCluster : public CCluster  {
     void                        AddNeighbor(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway);
     void                        AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream);    
     virtual CSVTTCluster      * Clone() const;
-    virtual void                DisplayAnnualTimeTrendWithoutTitle(FILE* fp);
-    virtual void                DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType) {};
-    virtual void                DisplayTimeTrend(FILE* fp, char* szSpacesOnLeft);
+    virtual void                DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const;
+    virtual void                DisplayTimeFrame(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const {};
+    virtual void                DisplayTimeTrend(FILE* fp, const ClusterPrintFormat& PrintFormat) const;
     virtual count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual AbstractClusterData * GetClusterData();
     virtual int                 GetClusterType() const {return SPATIALVARTEMPTREND;}
+    virtual ZdString          & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     virtual measure_t           GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual ZdString          & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     SVTTClusterStreamData     & GetStream(unsigned int tStream) {return gvStreamData[tStream];}
     virtual void                InitializeSVTT(tract_t nCenter, const AbtractDataStreamGateway & DataGateway);
     virtual void                InitializeSVTT(tract_t nCenter, const DataStreamInterface & Interface);
-    virtual void                SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals);
     void                        SetTimeTrend(DatePrecisionType eDatePrecision, double nIntervalLen);
 };
 

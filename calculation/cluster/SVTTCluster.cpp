@@ -174,8 +174,6 @@ CSVTTCluster& CSVTTCluster::operator=(const CSVTTCluster& rhs) {
   m_nRank                       = rhs.m_nRank;
   m_nFirstInterval              = rhs.m_nFirstInterval;
   m_nLastInterval               = rhs.m_nLastInterval;
-  m_nStartDate                  = rhs.m_nStartDate;
-  m_nEndDate                    = rhs.m_nEndDate;
   giTotalIntervals              = rhs.giTotalIntervals;
   gvStreamData                  = rhs.gvStreamData;
   return *this;
@@ -218,7 +216,7 @@ CSVTTCluster * CSVTTCluster::Clone() const {
   return new CSVTTCluster(*this);
 }
 
-void CSVTTCluster::DisplayAnnualTimeTrendWithoutTitle(FILE* fp) {
+void CSVTTCluster::DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const {
   if (gvStreamData[0].gTimeTrendInside.IsNegative())
     fprintf(fp, "     -");
   else
@@ -227,9 +225,9 @@ void CSVTTCluster::DisplayAnnualTimeTrendWithoutTitle(FILE* fp) {
   fprintf(fp, "%.3f", gvStreamData[0].gTimeTrendInside.GetAnnualTimeTrend());
 }
 
-void CSVTTCluster::DisplayTimeTrend(FILE* fp, char* szSpacesOnLeft) {
+void CSVTTCluster::DisplayTimeTrend(FILE* fp, const ClusterPrintFormat& PrintFormat) const {
   fprintf(fp, "%sTime trend............: %f  (%.3f%% ",
-              szSpacesOnLeft, gvStreamData[0].gTimeTrendInside.GetBeta(),
+              PrintFormat.GetSpacesOnLeft(), gvStreamData[0].gTimeTrendInside.GetBeta(),
               gvStreamData[0].gTimeTrendInside.GetAnnualTimeTrend());
 
   if (gvStreamData[0].gTimeTrendInside.IsNegative())
@@ -252,12 +250,22 @@ AbstractClusterData * CSVTTCluster::GetClusterData() {
  return 0;
 }
 
+/** returns end date of defined cluster as formated string */
+ZdString& CSVTTCluster::GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1);
+}
+
 /** Returns the measure for tract as defined by cluster.
     NOTE: Hard coded to return the measure from first data stream.
           This will need modification when the reporting aspect of multiple
           data streams is hashed out.                                      */
 measure_t CSVTTCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {
   return Data.GetMeasureAdjustment() * Data.GetDataStreamHandler().GetStream(0/*for now*/).GetMeasureArray()[0][tTract];
+}
+
+/** returns start date of defined cluster as formated string */
+ZdString& CSVTTCluster::GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[0]);
 }
 
 /** internal initialization function */
@@ -276,13 +284,6 @@ void CSVTTCluster::InitializeSVTT(tract_t nCenter, const AbtractDataStreamGatewa
 void CSVTTCluster::InitializeSVTT(tract_t nCenter, const DataStreamInterface & Interface) {
   CCluster::Initialize(nCenter);
   gvStreamData.back().InitializeSVTTData(Interface);
-}
-
-void CSVTTCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals) {
-  m_nFirstInterval = 0;
-  m_nLastInterval  = nTimeIntervals;
-  m_nStartDate     = pIntervalStartTimes[m_nFirstInterval];
-  m_nEndDate       = pIntervalStartTimes[m_nLastInterval]-1;
 }
 
 void CSVTTCluster::SetTimeTrend(DatePrecisionType eDatePrecision, double nIntervalLen) {
