@@ -32,7 +32,7 @@ class CPurelySpatialCluster : public CCluster {
                                                                   const CSaTScanData * pData,
                                                                   CPurelySpatialCluster & TopCluster,                                                                  
                                                                   AbstractLikelihoodCalculator & Calculator);
-    virtual void                        DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const ClusterPrintFormat& PrintFormat) const;
+    virtual void                        DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual count_t                     GetCaseCount(unsigned int iStream) const {return gpClusterData->GetCaseCount(iStream);}
     virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual inline AbstractClusterData * GetClusterData() {return gpClusterData;}

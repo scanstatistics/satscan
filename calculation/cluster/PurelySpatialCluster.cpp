@@ -96,10 +96,8 @@ CPurelySpatialCluster * CPurelySpatialCluster::Clone() const {
   return new CPurelySpatialCluster(*this);;
 }
 
-void CPurelySpatialCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const ClusterPrintFormat& PrintFormat) const {
-  ZdString      sStart, sEnd;
-
-  if (DataHub.GetParameters().GetAnalysisType() == SPACETIME)
+void CPurelySpatialCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+  if (DataHub.GetParameters().GetIsSpaceTimeAnalysis())
     CCluster::DisplayTimeFrame(fp, DataHub, PrintFormat);
 }
 
@@ -135,6 +133,7 @@ void CPurelySpatialCluster::Initialize(tract_t nCenter) {
   m_Center = nCenter;
   m_nTracts = 0;
   m_nRatio = 0;
+  m_nLastInterval = 1;
   gpClusterData->InitializeData();
 }
 
