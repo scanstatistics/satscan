@@ -313,7 +313,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
            }
            //ok, first record indicates that there are iScanCount - 1 dimensions (first scan is tract identifier)
            //data still could be invalid, but this will be determined like the remaining records
-           m_pParameters->SetDimensionsOfData(iScanCount - 1);
+           const_cast<CParameters*>(m_pParameters)->SetDimensionsOfData(iScanCount - 1);
            gpTInfo->tiSetDimensions(m_pParameters->GetDimensionsOfData());
            gpGInfo->giSetDimensions(m_pParameters->GetDimensionsOfData());
            vCoordinates.resize(m_pParameters->GetDimensionsOfData(), 0);
@@ -385,7 +385,7 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
 
   try {
     vCoordinates.resize(3/*for conversion*/, 0);
-    m_pParameters->SetDimensionsOfData(3/*for conversion*/);
+    const_cast<CParameters*>(m_pParameters)->SetDimensionsOfData(3/*for conversion*/);
     gpTInfo->tiSetDimensions(m_pParameters->GetDimensionsOfData());
     gpGInfo->giSetDimensions(m_pParameters->GetDimensionsOfData());
     while (Parser.ReadString(fp)) {
