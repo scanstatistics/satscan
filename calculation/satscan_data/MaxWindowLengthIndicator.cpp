@@ -1,13 +1,12 @@
 //---------------------------------------------------------------------------
 #include "SaTScan.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 #include "MaxWindowLengthIndicator.h"
 #include "SaTScanData.h"
-//---------------------------------------------------------------------------
-#pragma package(smart_init)
 
 /** constructor */
-FixedMaxWindowLengthIndicator::FixedMaxWindowLengthIndicator(CSaTScanData & Data)
+FixedMaxWindowLengthIndicator::FixedMaxWindowLengthIndicator(const CSaTScanData & Data)
                              :AbstractMaxWindowLengthIndicator(), giMaxWindowLength(Data.m_nIntervalCut) {}
 
 /** destructor */
@@ -15,7 +14,7 @@ FixedMaxWindowLengthIndicator::~FixedMaxWindowLengthIndicator() {}
 
 
 /** constructor */
-ProspectiveMaxWindowLengthIndicator::ProspectiveMaxWindowLengthIndicator(CSaTScanData & Data)
+ProspectiveMaxWindowLengthIndicator::ProspectiveMaxWindowLengthIndicator(const CSaTScanData & Data)
                                    :AbstractMaxWindowLengthIndicator() {
   int iMaxEndWindow, iWindowEnd, iIntervalCut, lTimeBetween;
 

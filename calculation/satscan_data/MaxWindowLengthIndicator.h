@@ -20,7 +20,7 @@ class FixedMaxWindowLengthIndicator : public AbstractMaxWindowLengthIndicator {
     int                                 giMaxWindowLength;
 
   public:
-    FixedMaxWindowLengthIndicator(CSaTScanData & Data);
+    FixedMaxWindowLengthIndicator(const CSaTScanData & Data);
     virtual ~FixedMaxWindowLengthIndicator();
 
     virtual int                         GetNextWindowLength() {return giMaxWindowLength;}
@@ -32,7 +32,7 @@ class ProspectiveMaxWindowLengthIndicator : public AbstractMaxWindowLengthIndica
     std::vector<int>::const_iterator    gitr;
 
   public:
-    ProspectiveMaxWindowLengthIndicator(CSaTScanData & Data);
+    ProspectiveMaxWindowLengthIndicator(const CSaTScanData & Data);
     virtual ~ProspectiveMaxWindowLengthIndicator();
 
     virtual int                         GetNextWindowLength() {++gitr; return *(gitr);}
