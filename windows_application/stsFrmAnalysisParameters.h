@@ -14,12 +14,14 @@
 #include <Buttons.hpp>
 #include "JulianDates.h"
 #include "Parameters.h"
-
+#include "stsBaseAnalysisChildForm.h"
 //---------------------------------------------------------------------------
 
-#include "stsBaseAnalysisChildForm.h"
+class TfrmAdvancedParameters;
 
 class TfrmAnalysis : public stsBaseAnalysisChildForm  {
+  friend class TfrmAdvancedParameters;
+
   __published:  // IDE-managed Components
         TButton *btnCaseBrowse;
         TButton *btnControlBrowse;
@@ -112,20 +114,13 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TTabSheet *tbOutputFiles;
         TTabSheet *tbScanningWindow;
         TTabSheet *tbTimeParameter;
-        TLabel *Label21;
-        TEdit *edtMaxCirclePopulationFilename;
-        TButton *btnBrowseMaxCirclePopFile;
         TPanel *pnlTop;
         TLabel *Label29;
         TEdit *edtResultFile;
         TButton *btnResultFileBrowse;
-        TCheckBox *chkTerminateEarly;
         TLabel *lblProspectiveStartDate;
         TCheckBox *chkAdjustForEarlierAnalyses;
         TLabel *lblAdjustForEarlierAnalyses;
-        TCheckBox *chkRestrictReportedClusters;
-        TEdit *edtReportClustersSmallerThan;
-        TLabel *lblReportSmallerClusters;
         TStaticText *lblLogLinear;
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall rgPrecisionTimesClick(TObject *Sender);
@@ -167,15 +162,12 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         void __fastcall edtResultFileChange(TObject *Sender);
         void __fastcall rdoMaximumSpatialTypeClick(TObject *Sender);
         void __fastcall FormActivate(TObject *Sender);
-        void __fastcall edtMaxCirclePopulationFilenameChange(TObject *Sender);
-        void __fastcall btnMaxCirclePopFileBrowseClick(TObject *Sender);
-        void __fastcall edtReportClustersSmallerThanExit(TObject *Sender);
-        void __fastcall chkRestrictReportedClustersClick(TObject *Sender);
         void __fastcall chkAdjustForEarlierAnalysesClick(TObject *Sender);
 
   private:	
     PrintNull                   gNullPrint;
     CParameters                 gParameters;
+    TfrmAdvancedParameters    * gpfrmAdvancedParameters;  
 
     bool                        Check_Days(int iYear, int iMonth, int iDay, const char *sDateName);
     bool                        Check_IntervalLength();
@@ -198,7 +190,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        EnableProspectiveSurveillanceGroup(bool bEnable);
     void                        EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal);
     void                        EnableStudyPeriodDates(bool bYear, bool bMonth, bool bDay);
-    void                        EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial);
+    void                        EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges);
     void                        EnableTimeIntervalUnitsGroup(bool bEnable);
     TimeTrendAdjustmentType     GetAdjustmentTimeTrendControlType() const;
     AnalysisType                GetAnalysisControlType() const;
@@ -219,7 +211,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        Setup(const char * sParameterFileName);
     void                        SetupInterface();
     bool                        ValidateInputFiles();
-    bool                        ValidateReportedSpatialClusterSize();
     bool                        ValidateSpatialClusterSize();
     bool                        ValidateTemoralClusterSize();
     bool                        VerifyUnitAndLength();
@@ -243,6 +234,7 @@ public:		// User declarations
     void                        SetPopulationFile(const char * sPopulationFileName);
     void                        SetPrecisionOfTimesControl(DatePrecisionType eDatePrecisionType);
     void                        SetSpecialGridFile(const char * sSpecialGridFileName);
+    void                        ShowAdvancedFeaturesDialog();
     bool                        ValidateParams();
     void                        WriteSession(const char * sParameterFilename=0);
 };

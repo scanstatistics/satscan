@@ -25,30 +25,23 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbInputFiles
+    ActivePage = tbScanningWindow
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
       object Label4: TLabel
         Left = 24
-        Top = 110
+        Top = 118
         Width = 72
         Height = 13
         Caption = 'Population File:'
       end
       object Label5: TLabel
         Left = 128
-        Top = 110
+        Top = 118
         Width = 75
         Height = 13
         Caption = '(Poisson Model)'
-      end
-      object Label21: TLabel
-        Left = 24
-        Top = 152
-        Width = 208
-        Height = 13
-        Caption = 'Special Max Circle Population File: (optional)'
       end
       object GroupBox1: TGroupBox
         Left = 16
@@ -154,7 +147,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object edtPopFileName: TEdit
         Left = 24
-        Top = 126
+        Top = 134
         Width = 273
         Height = 21
         ParentShowHint = False
@@ -164,7 +157,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object btnPopBrowse: TButton
         Left = 304
-        Top = 126
+        Top = 134
         Width = 25
         Height = 21
         Hint = 'browse for population file'
@@ -182,9 +175,9 @@ object frmAnalysis: TfrmAnalysis
       end
       object GroupBox2: TGroupBox
         Left = 16
-        Top = 192
+        Top = 163
         Width = 457
-        Height = 97
+        Height = 102
         TabOrder = 3
         object Label6: TLabel
           Left = 8
@@ -270,41 +263,13 @@ object frmAnalysis: TfrmAnalysis
           OnClick = rgCoordinatesClick
         end
       end
-      object edtMaxCirclePopulationFilename: TEdit
-        Left = 24
-        Top = 168
-        Width = 273
-        Height = 21
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 4
-        OnChange = edtMaxCirclePopulationFilenameChange
-      end
-      object btnBrowseMaxCirclePopFile: TButton
-        Left = 304
-        Top = 168
-        Width = 25
-        Height = 21
-        Hint = 'browse for special population file'
-        Caption = '...'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -13
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 5
-        OnClick = btnMaxCirclePopFileBrowseClick
-      end
     end
     object tbAnalysis: TTabSheet
       Caption = 'Analysis'
       ImageIndex = 1
       object Label16: TLabel
         Left = 40
-        Top = 248
+        Top = 268
         Width = 266
         Height = 13
         Caption = 'Monte Carlo replications (9, 999, or value ending in 999):'
@@ -313,7 +278,7 @@ object frmAnalysis: TfrmAnalysis
         Left = 8
         Top = 8
         Width = 178
-        Height = 135
+        Height = 145
         Caption = 'Type of Analysis'
         ItemIndex = 0
         Items.Strings = (
@@ -329,7 +294,7 @@ object frmAnalysis: TfrmAnalysis
         Left = 193
         Top = 8
         Width = 148
-        Height = 135
+        Height = 145
         Caption = 'Probability Model'
         ItemIndex = 0
         Items.Strings = (
@@ -343,7 +308,7 @@ object frmAnalysis: TfrmAnalysis
         Left = 348
         Top = 8
         Width = 125
-        Height = 135
+        Height = 145
         Caption = 'Scan for Areas with:'
         ItemIndex = 0
         Items.Strings = (
@@ -354,14 +319,14 @@ object frmAnalysis: TfrmAnalysis
       end
       object GroupBox3: TGroupBox
         Left = 8
-        Top = 145
+        Top = 159
         Width = 465
-        Height = 95
+        Height = 97
         Caption = 'Study Period'
         TabOrder = 3
         object Label8: TLabel
           Left = 56
-          Top = 34
+          Top = 39
           Width = 51
           Height = 13
           Anchors = [akLeft, akTop, akRight]
@@ -369,7 +334,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object Label9: TLabel
           Left = 56
-          Top = 66
+          Top = 71
           Width = 48
           Height = 13
           Anchors = [akLeft, akTop, akRight]
@@ -377,7 +342,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object Label10: TLabel
           Left = 120
-          Top = 8
+          Top = 13
           Width = 22
           Height = 13
           Anchors = [akLeft, akTop, akRight]
@@ -385,7 +350,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object Label12: TLabel
           Left = 171
-          Top = 8
+          Top = 13
           Width = 30
           Height = 13
           Anchors = [akLeft, akTop, akRight]
@@ -393,7 +358,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object Label14: TLabel
           Left = 208
-          Top = 8
+          Top = 13
           Width = 19
           Height = 13
           Anchors = [akLeft, akTop, akRight]
@@ -401,7 +366,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtStudyPeriodStartDateYear: TEdit
           Left = 120
-          Top = 26
+          Top = 31
           Width = 41
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -413,7 +378,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtStudyPeriodEndDateYear: TEdit
           Left = 120
-          Top = 58
+          Top = 63
           Width = 41
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -425,7 +390,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtStudyPeriodStartDateMonth: TEdit
           Left = 171
-          Top = 26
+          Top = 31
           Width = 25
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -438,7 +403,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtStudyPeriodEndDateMonth: TEdit
           Left = 171
-          Top = 58
+          Top = 63
           Width = 25
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -451,7 +416,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtStudyPeriodStartDateDay: TEdit
           Left = 208
-          Top = 26
+          Top = 31
           Width = 25
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -464,7 +429,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtStudyPeriodEndDateDay: TEdit
           Left = 208
-          Top = 58
+          Top = 63
           Width = 25
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -478,7 +443,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object edtMontCarloReps: TEdit
         Left = 318
-        Top = 245
+        Top = 265
         Width = 65
         Height = 21
         MaxLength = 9
@@ -486,14 +451,6 @@ object frmAnalysis: TfrmAnalysis
         Text = '999'
         OnExit = edtMontCarloRepsExit
         OnKeyPress = NaturalNumberKeyPress
-      end
-      object chkTerminateEarly: TCheckBox
-        Left = 40
-        Top = 270
-        Width = 241
-        Height = 17
-        Caption = 'Terminate replications early for large p-values'
-        TabOrder = 5
       end
     end
     object tbTimeParameter: TTabSheet
@@ -699,7 +656,7 @@ object frmAnalysis: TfrmAnalysis
         Left = 16
         Top = 8
         Width = 457
-        Height = 116
+        Height = 87
         Caption = 'Spatial'
         TabOrder = 0
         object lblMaxSpatialClusterSize: TLabel
@@ -708,13 +665,6 @@ object frmAnalysis: TfrmAnalysis
           Width = 146
           Height = 13
           Caption = 'Maximum Spatial Cluster Size:  '
-        end
-        object lblReportSmallerClusters: TLabel
-          Left = 246
-          Top = 85
-          Width = 134
-          Height = 13
-          Caption = 'percent of population at risk.'
         end
         object edtMaxSpatialClusterSize: TEdit
           Left = 184
@@ -757,29 +707,10 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 3
           OnClick = rdoMaximumSpatialTypeClick
         end
-        object chkRestrictReportedClusters: TCheckBox
-          Left = 24
-          Top = 85
-          Width = 175
-          Height = 17
-          Caption = 'Report only clusters smaller than'
-          TabOrder = 4
-          OnClick = chkRestrictReportedClustersClick
-        end
-        object edtReportClustersSmallerThan: TEdit
-          Left = 200
-          Top = 81
-          Width = 40
-          Height = 21
-          TabOrder = 5
-          Text = '49'
-          OnExit = edtReportClustersSmallerThanExit
-          OnKeyPress = PositiveFloatKeyPress
-        end
       end
       object rdgTemporalOptions: TGroupBox
         Left = 16
-        Top = 131
+        Top = 105
         Width = 457
         Height = 89
         Caption = 'Temporal'

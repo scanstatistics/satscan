@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 #include "stsSaTScan.h"
 #pragma hdrstop
+#include "stsFrmAdvancedParameters.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -26,7 +27,12 @@ __fastcall TfrmAnalysis::TfrmAnalysis(TComponent* Owner, TActionList* theList, c
   }
 }
 /** destructor */
-__fastcall TfrmAnalysis::~TfrmAnalysis() {}
+__fastcall TfrmAnalysis::~TfrmAnalysis() {
+  try {
+    delete gpfrmAdvancedParameters;
+  }
+  catch (...){}   
+}
 
 /** button click event for case file browse
     - shows open dialog and sets appropriate case file interface controls */
@@ -96,22 +102,6 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
   }
   catch (ZdException & x) {
     x.AddCallpath("btnGridBrowseClick()", "TfrmAnalysis");
-    DisplayBasisException(this, x);
-  }
-}
-
-void __fastcall TfrmAnalysis::btnMaxCirclePopFileBrowseClick(TObject *Sender) {
-  try {
-    OpenDialog1->FileName = "";
-    OpenDialog1->DefaultExt = "*.pop";
-    OpenDialog1->Filter = "Maximum Circle Population files (*.max)|*.max|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-    OpenDialog1->FilterIndex = 0;
-    OpenDialog1->Title = "Select Maximum Circle Population File";
-    if (OpenDialog1->Execute())
-      SetMaximumCirclePopulationFile(OpenDialog1->FileName.c_str());
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("btnPopBrowseClick()", "TfrmAnalysis");
     DisplayBasisException(this, x);
   }
 }
@@ -349,7 +339,20 @@ bool TfrmAnalysis::CheckReplicas() {
 
 /** Checks the validity of the 'Scanning Window' tab */
 bool TfrmAnalysis::CheckScanningWindowParams() {
-  return ValidateTemoralClusterSize() && ValidateSpatialClusterSize() && ValidateReportedSpatialClusterSize();
+  bool  bValid=true;
+
+  try {
+    bValid = ValidateTemoralClusterSize();
+    if (bValid)
+      bValid = ValidateSpatialClusterSize();
+    if (bValid)
+      gpfrmAdvancedParameters->ValidateScanningWindowSettings();
+  }    
+  catch (ZdException &x) {
+    x.AddCallpath("CheckScanningWindowParams()","TfrmAnalysis");
+    throw;
+  }
+  return bValid;
 }
 
 /** Checks the relationship between a start date, end date, and interval length.
@@ -452,12 +455,6 @@ void __fastcall TfrmAnalysis::chkAdjustForEarlierAnalysesClick(TObject *Sender) 
   EnableProspectiveStartDate(chkAdjustForEarlierAnalyses->Checked);
 }
 
-/** event triggered when 'Report only clusters smaller than ...' checkbox if clicked */
-void __fastcall TfrmAnalysis::chkRestrictReportedClustersClick(TObject *Sender){
-  edtReportClustersSmallerThan->Enabled = rdgSpatialOptions->Enabled && chkRestrictReportedClusters->Checked;
-  edtReportClustersSmallerThan->Color = edtMaxSpatialClusterSize->Enabled && chkRestrictReportedClusters->Checked ? clWindow : clInactiveBorder;
-}
-
 /** Resets parameters that are not present in interface to default value.
     Hidden features are to be used soley in dos version at this time.     */
 void TfrmAnalysis::DefaultHiddenParameters() {
@@ -483,7 +480,9 @@ void TfrmAnalysis::DefaultHiddenParameters() {
     gParameters.SetAnalysisType(PROSPECTIVESPACETIME);
     gParameters.SetAdjustForEarlierAnalyses(false);
   }
-  gParameters.SetIncludeClustersType(ALLCLUSTERS);
+  //if still ALIVECLUSTERS, default to ALLCLUSTERS
+  if (gParameters.GetIncludeClustersType() == ALIVECLUSTERS)
+    gParameters.SetIncludeClustersType(ALLCLUSTERS);
 }
 
 /** event triggered when case file edit control text changes */
@@ -518,11 +517,6 @@ void __fastcall TfrmAnalysis::edtLogLinearExit(TObject *Sender) {
     PageControl1->ActivePage = tbTimeParameter;
     edtLogLinear->SetFocus();
   }
-}
-
-/** event triggered when maximum circle population file edit control text changes */
-void __fastcall TfrmAnalysis::edtMaxCirclePopulationFilenameChange(TObject *Sender) {
-  edtMaxCirclePopulationFilename->Hint = edtMaxCirclePopulationFilename->Text;
 }
 
 /** event triggered when maximum spatial cluster size edit control is exited. */
@@ -609,23 +603,6 @@ void __fastcall TfrmAnalysis::edtProspectiveStartDateYearExit(TObject *Sender) {
     DisplayBasisException(this, x);
   }
 }
-
-/** event triggered when 'Report only clusters smaller than ...' edit control is exited */
-void __fastcall TfrmAnalysis::edtReportClustersSmallerThanExit(TObject *Sender){
-  try {                                     
-    if (!edtReportClustersSmallerThan->Text.Length() || atof(edtReportClustersSmallerThan->Text.c_str()) == 0)
-      ZdException::GenerateNotification("Please specify a maximum cluster size for reported clusters\n"
-                                        "between 0 and the maximum spatial cluster size of %g.",
-                                        "edtReportClustersSmallerThanExit()", atof(edtMaxSpatialClusterSize->Text.c_str()));
-  }
-  catch (ZdException & x) {
-    PageControl1->ActivePage = tbScanningWindow;
-    edtReportClustersSmallerThan->SetFocus();
-    x.AddCallpath("edtReportClustersSmallerThanExit()","TfrmAnalysis");
-    DisplayBasisException(this, x);
-  }
-}
-
 /** event triggered when results file edit control text changes */
 void __fastcall TfrmAnalysis::edtResultFileChange(TObject *Sender){
   edtResultFile->Hint = edtResultFile->Text;
@@ -824,10 +801,7 @@ void TfrmAnalysis::EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePu
    lblMaxSpatialClusterSize->Enabled = bEnable;
    edtMaxSpatialClusterSize->Enabled = bEnable;
    edtMaxSpatialClusterSize->Color = bEnable ? clWindow : clInactiveBorder;
-   chkRestrictReportedClusters->Enabled = bEnable;
-   edtReportClustersSmallerThan->Enabled = bEnable && chkRestrictReportedClusters->Checked;
-   edtReportClustersSmallerThan->Color = bEnable && chkRestrictReportedClusters->Checked ? clWindow : clInactiveBorder;
-   lblReportSmallerClusters->Enabled = bEnable;
+   gpfrmAdvancedParameters->EnableSpatialOptions(bEnable);
 }
 
 /** enables or disables the study period group controls */
@@ -853,7 +827,7 @@ void TfrmAnalysis::EnableStudyPeriodDates(bool bYear, bool bMonth, bool bDay) {
 }
 
 /** enables or disables the temporal options group control */
-void TfrmAnalysis::EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial) {
+void TfrmAnalysis::EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges) {
   rdgTemporalOptions->Enabled = bEnable;
   rdoPercentageTemproal->Enabled = bEnable;
   rdoTimeTemproal->Enabled = bEnable;
@@ -861,6 +835,7 @@ void TfrmAnalysis::EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludeP
   edtMaxTemporalClusterSize->Enabled = bEnable;
   edtMaxTemporalClusterSize->Color = bEnable ? clWindow : clInactiveBorder;
   lblMaxTemporalClusterSize->Enabled = bEnable;
+  gpfrmAdvancedParameters->EnableTemporalOptions(bEnable, bEnableRanges);
 }
 
 /** enables or disables the time interval group control */
@@ -1002,6 +977,7 @@ DatePrecisionType TfrmAnalysis::GetTimeIntervalControlType() const {
 void TfrmAnalysis::Init() {
   cboCriteriaSecClusters->ItemIndex = 0;
   rgPrecisionTimes->ItemIndex = -1; //ensures that click event will trigger
+  gpfrmAdvancedParameters = 0;
 }
 
 /** Modally shows import dialog. */
@@ -1034,31 +1010,31 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
         EnableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
         EnableSpatialOptionsGroup(true, false);
         EnableTimeIntervalUnitsGroup(false);
-        EnableTemporalOptionsGroup(false, false);
+        EnableTemporalOptionsGroup(false, false, false);
         break;
       case PURELYTEMPORAL            :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
         EnableSpatialOptionsGroup(false, false);
         EnableTimeIntervalUnitsGroup(true);
-        EnableTemporalOptionsGroup(true, false);
+        EnableTemporalOptionsGroup(true, false, true);
         break;
       case SPACETIME                 :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
         EnableSpatialOptionsGroup(true, !bSpaceTimePermutation);
         EnableTimeIntervalUnitsGroup(true);
-        EnableTemporalOptionsGroup(true, !bSpaceTimePermutation);
+        EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
         break;
       case PROSPECTIVESPACETIME      :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
         EnableSpatialOptionsGroup(true, !bSpaceTimePermutation);
         EnableTimeIntervalUnitsGroup(true);
-        EnableTemporalOptionsGroup(true, !bSpaceTimePermutation);
+        EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
         break;
       case PROSPECTIVEPURELYTEMPORAL :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
         EnableSpatialOptionsGroup(false, false);
         EnableTimeIntervalUnitsGroup(true);
-        EnableTemporalOptionsGroup(true, false);
+        EnableTemporalOptionsGroup(true, false, false);
         break;
       default : ZdGenerateException("Unknown analysis type '%d'.", "OnAnalysisTypeClick()", GetAnalysisControlType());
     }
@@ -1286,7 +1262,6 @@ void TfrmAnalysis::SaveParameterSettings() {
     gParameters.SetPopulationFileName(edtPopFileName->Text.c_str());
     gParameters.SetCoordinatesFileName(edtCoordinateFileName->Text.c_str());
     gParameters.SetSpecialGridFileName(edtGridFileName->Text.c_str(), false, true);
-    gParameters.SetMaxCirclePopulationFileName(edtMaxCirclePopulationFilename->Text.c_str(), false, true);
     gParameters.SetCoordinatesType((CoordinatesType)rgCoordinates->ItemIndex);
     //Analysis Tab
     gParameters.SetAnalysisType(GetAnalysisControlType());
@@ -1299,15 +1274,12 @@ void TfrmAnalysis::SaveParameterSettings() {
                    atoi(edtStudyPeriodEndDateMonth->Text.c_str()), atoi(edtStudyPeriodEndDateDay->Text.c_str()));
     gParameters.SetStudyPeriodEndDate(sString.GetCString());
     gParameters.SetNumberMonteCarloReplications(atoi(edtMontCarloReps->Text.c_str()));
-    gParameters.SetTerminateSimulationsEarly(chkTerminateEarly->Checked);
     //Scanning Window Tab
     gParameters.SetMaximumGeographicClusterSize(atof(edtMaxSpatialClusterSize->Text.c_str()));
     gParameters.SetMaximumSpacialClusterSizeType(rdoSpatialPercentage->Checked ? PERCENTAGEOFMEASURETYPE : DISTANCETYPE);
     gParameters.SetMaximumTemporalClusterSize(atof(edtMaxTemporalClusterSize->Text.c_str()));
     gParameters.SetMaximumTemporalClusterSizeType(rdoPercentageTemproal->Checked ? PERCENTAGETYPE : TIMETYPE);
     gParameters.SetIncludePurelyTemporalClusters(chkInclPurTempClust->Enabled && chkInclPurTempClust->Checked);
-    gParameters.SetRestrictReportedClusters(chkRestrictReportedClusters->Enabled && chkRestrictReportedClusters->Checked);
-    gParameters.SetMaximumReportedGeographicalClusterSize(atof(edtReportClustersSmallerThan->Text.c_str()));
     gParameters.SetIncludePurelySpatialClusters(chkIncludePurSpacClust->Enabled && chkIncludePurSpacClust->Checked);
     //Time Parameter Tab
     gParameters.SetTimeIntervalUnitsType(GetTimeIntervalControlType());
@@ -1329,9 +1301,10 @@ void TfrmAnalysis::SaveParameterSettings() {
     gParameters.SetOutputSimLogLikeliRatiosAscii(chkSimulatedLogLikelihoodRatiosAscii->Checked);
     gParameters.SetOutputSimLogLikeliRatiosDBase(chkSimulatedLogLikelihoodRatiosDBase->Checked);
     gParameters.SetCriteriaForReportingSecondaryClusters((CriteriaSecondaryClustersType)cboCriteriaSecClusters->ItemIndex);
+    gpfrmAdvancedParameters->SaveParameterSettings();
   }
-  catch (ZdException & x) {
-    x.AddCallpath("SaveParameterSettings()", "TfrmAnalysis");
+  catch (ZdException &x) {
+    x.AddCallpath("SaveParameterSettings()","TfrmAnalysis");
     throw;
   }
 }
@@ -1372,7 +1345,7 @@ void TfrmAnalysis::SetCoordinateType(CoordinatesType eCoordinatesType) {
 
 /** Sets special population filename in interface and parameters class. */
 void TfrmAnalysis::SetMaximumCirclePopulationFile(const char * sMaximumCirclePopulationFileName) {
-  edtMaxCirclePopulationFilename->Text = sMaximumCirclePopulationFileName;
+  gpfrmAdvancedParameters->SetMaximumCirclePopulationFile(sMaximumCirclePopulationFileName);
 }
 
 /** Sets population filename in interface and parameters class. */
@@ -1397,13 +1370,13 @@ void TfrmAnalysis::SetReportingSmallerClustersText() {
   ZdString      sTemp;
 
   if (rdoSpatialPercentage->Checked)
-    sTemp.printf("percent of population at risk (< %s).", edtMaxSpatialClusterSize->Text.c_str());
+    sTemp.printf("percent of population at risk\n     (less than %s%%)", edtMaxSpatialClusterSize->Text.c_str());
   else if (rgCoordinates->ItemIndex == CARTESIAN)
-    sTemp.printf("cartesian units in radius (< %s).", edtMaxSpatialClusterSize->Text.c_str());
+    sTemp.printf("cartesian units in radius\n     (less than %s)", edtMaxSpatialClusterSize->Text.c_str());
   else
-    sTemp.printf("kilometers in radius (< %s).", edtMaxSpatialClusterSize->Text.c_str());
+    sTemp.printf("kilometers in radius\n     (less than %s)", edtMaxSpatialClusterSize->Text.c_str());
 
-  lblReportSmallerClusters->Caption = sTemp.GetCString();
+  gpfrmAdvancedParameters->SetReportingClustersText(sTemp);
 }
 
 /** Sets caption of spatial distance radio button based upon coordinates group setting. */
@@ -1459,13 +1432,13 @@ void TfrmAnalysis::Setup(const char * sParameterFileName) {
 /** Sets all interface controls using the CParameters session object */
 void TfrmAnalysis::SetupInterface() {
   try {
+    gpfrmAdvancedParameters = new TfrmAdvancedParameters(*this);
     //Input File Tab
     Caption = gParameters.GetSourceFileName().c_str();
     edtCaseFileName->Text = gParameters.GetCaseFileName().c_str();
     edtControlFileName->Text = gParameters.GetControlFileName().c_str();
     SetPrecisionOfTimesControl(gParameters.GetPrecisionOfTimesType());
     edtPopFileName->Text = gParameters.GetPopulationFileName().c_str();
-    edtMaxCirclePopulationFilename->Text = gParameters.GetMaxCirclePopulationFileName().c_str();
     edtCoordinateFileName->Text = gParameters.GetCoordinatesFileName().c_str();
     edtGridFileName->Text = gParameters.GetSpecialGridFileName().c_str();
     rgCoordinates->ItemIndex = gParameters.GetCoordinatesType();
@@ -1476,7 +1449,6 @@ void TfrmAnalysis::SetupInterface() {
     ParseDate(gParameters.GetStudyPeriodStartDate().c_str(), edtStudyPeriodStartDateYear, edtStudyPeriodStartDateMonth, edtStudyPeriodStartDateDay);
     ParseDate(gParameters.GetStudyPeriodEndDate().c_str(), edtStudyPeriodEndDateYear, edtStudyPeriodEndDateMonth, edtStudyPeriodEndDateDay);
     edtMontCarloReps->Text = gParameters.GetNumReplicationsRequested();
-    chkTerminateEarly->Checked = gParameters.GetTerminateSimulationsEarly();
     //Scanning Window Tab
     edtMaxSpatialClusterSize->Text = gParameters.GetMaximumGeographicClusterSize();
     chkInclPurTempClust->Checked = gParameters.GetIncludePurelyTemporalClusters();
@@ -1487,6 +1459,7 @@ void TfrmAnalysis::SetupInterface() {
     rdoSpatialPercentage->Checked = gParameters.GetMaxGeographicClusterSizeType() != DISTANCETYPE; // default checked
     rdoSpatialDistance->Checked = gParameters.GetMaxGeographicClusterSizeType() == DISTANCETYPE;
     SetSpatialDistanceCaption();
+    SetReportingSmallerClustersText();
     //Time Parameter Tab
     if (gParameters.GetTimeIntervalUnitsType() == NONE) gParameters.SetTimeIntervalUnitsType(YEAR);
     if (gParameters.GetTimeIntervalLength() == 0) gParameters.SetTimeIntervalLength(1);
@@ -1510,13 +1483,21 @@ void TfrmAnalysis::SetupInterface() {
     cboCriteriaSecClusters->ItemIndex = gParameters.GetCriteriaSecondClustersType();
     chkClustersInColumnFormatDBase->Checked = gParameters.GetOutputClusterLevelDBase();
     chkCensusAreasReportedClustersDBase->Checked = gParameters.GetOutputAreaSpecificDBase();
-    edtReportClustersSmallerThan->Text = gParameters.GetMaximumReportedGeoClusterSize();
-    chkRestrictReportedClusters->Checked = gParameters.GetRestrictingMaximumReportedGeoClusterSize();
-    //now enable or disable controls appropriately
-    SetReportingSmallerClustersText();
   }
   catch (ZdException & x) {
     x.AddCallpath("SetupInterface()", "TfrmAnalysis");
+    delete gpfrmAdvancedParameters; gpfrmAdvancedParameters=0;
+    throw;
+  }
+}
+
+/** Modally shows advanced features dialog. */
+void TfrmAnalysis::ShowAdvancedFeaturesDialog() {
+  try {
+    gpfrmAdvancedParameters->ShowDialog();
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ShowAdvancedFeatureDialog()", "TfrmAnalysis");
     throw;
   }
 }
@@ -1587,6 +1568,7 @@ bool TfrmAnalysis::ValidateInputFiles() {
         edtGridFileName->SetFocus();
       }
     }
+    gpfrmAdvancedParameters->ValidateInputFilesSettings();
   }
   catch (ZdException & x) {
     x.AddCallpath("ValidateInputFiles()", "TfrmAnalysis");
@@ -1615,38 +1597,18 @@ bool TfrmAnalysis::ValidateParams() {
     if (bDataOk)
       bDataOk = CheckOutputParams();
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ValidateParams()", "TfrmAnalysis");
+  catch (AdvancedFeaturesException &x) {
+    x.AddCallpath("ValidateParams()","TfrmAnalysis");
+    bDataOk = false;
+    DisplayBasisException(this, x);
+    gpfrmAdvancedParameters->ShowDialog(&x.GetFocusControl());
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ValidateParams()","TfrmAnalysis");
     bDataOk = false;
     DisplayBasisException(this, x);
   }
   return bDataOk;
-}
-
-bool TfrmAnalysis::ValidateReportedSpatialClusterSize() {
-  bool   bOkParams=true;
-
-  try {
-    if (edtMaxSpatialClusterSize->Enabled && edtReportClustersSmallerThan->Enabled) {
-      if (!edtReportClustersSmallerThan->Text.Length() || atof(edtReportClustersSmallerThan->Text.c_str()) == 0)
-        ZdException::GenerateNotification("Please specify a maximum cluster size for reported clusters\n"
-                                          "between 0 and the maximum spatial cluster size of %g.",
-                                          "edtReportClustersSmallerThanExit()", atof(edtMaxSpatialClusterSize->Text.c_str()));
-
-
-      if (atof(edtReportClustersSmallerThan->Text.c_str()) >= atof(edtMaxSpatialClusterSize->Text.c_str()))
-        ZdException::GenerateNotification("The maximum cluster size for reported clusters must be less than the maximum spatial cluster size.\n",
-                                          "ValidateReportedSpatialClusterSize()");
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("ValidateReportedSpatialClusterSize()","TfrmAnalysis");
-    PageControl1->ActivePage = tbScanningWindow;
-    edtReportClustersSmallerThan->SetFocus();
-    bOkParams = false;
-    DisplayBasisException(this, x);
-  }
-  return bOkParams;
 }
 
 bool TfrmAnalysis::ValidateSpatialClusterSize() {
@@ -1662,23 +1624,7 @@ bool TfrmAnalysis::ValidateSpatialClusterSize() {
       if (!(dValue > 0.0 && dValue <= 50.0) && rdoSpatialPercentage->Checked)
         ZdException::GenerateNotification("Please specify valid maximum spatial cluster size between %d - %d.",
                                           "ValidateSpatialClusterSize()", 0, 50);
-
       gParameters.SetMaximumGeographicClusterSize(atof(edtMaxSpatialClusterSize->Text.c_str()));
-
-      if (rgProbability->ItemIndex == SPACETIMEPERMUTATION && rdoSpatialPercentage->Checked && !edtMaxCirclePopulationFilename->Text.Length())
-        ZdException::GenerateNotification("For a Space-Time Permutation model with the maximum spatial cluster size defined as a\n"
-                                          "percentage of the population at risk, a Maximum Circle Population file must be specified.\n"
-                                          "Alternatively you may choose to specify the maximum as a fixed radius,\n"
-                                          " in which no Maximum Circle Population file is required.","ValidateSpatialClusterSize()");
-
-      if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && chkAdjustForEarlierAnalyses->Checked &&
-          rdoSpatialPercentage->Checked && rdoSpatialPercentage->Enabled && !edtMaxCirclePopulationFilename->Text.Length())
-        ZdException::GenerateNotification("For a Prospective Space-Time analysis adjusting for ealier analyses,\n"
-                                          "with the maximum spatial cluster size defined as a percentage of the\n"
-                                          "population at risk, a Maximum Circle Population file must be specified.\n"
-                                          "Alternatively you may choose to specify the maximum as a fixed radius,\n"
-                                          "in which no Maximum Circle Population file is required.","ValidateSpatialClusterSize()");
-
     }
   }
   catch (ZdException & x) {
