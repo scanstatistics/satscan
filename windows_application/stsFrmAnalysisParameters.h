@@ -14,8 +14,6 @@
 #include "JulianDates.h"
 #include "Parameters.h"
 
-extern const char*     TXD_EXTENSION;
-
 //---------------------------------------------------------------------------
 class TfrmAnalysis : public TForm {
   __published:  // IDE-managed Components

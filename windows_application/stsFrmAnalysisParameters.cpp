@@ -12,8 +12,6 @@ TfrmAnalysis *frmAnalysis;
 // everything in one class and one cpp.
 //ClassDesc End TfrmAnalysis
 
-const char*     TXD_EXTENSION = ".txd";
-
 //---------------------------------------------------------------------------
 // Constructor
 // If a parameter file is passed it, it will parse it (read it) and set up the interface.
@@ -50,7 +48,6 @@ __fastcall TfrmAnalysis::~TfrmAnalysis() {
 // case file selector
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
-  TBdlgImporter         * pImporter = 0;
   BFTFImportDescriptor  * pBFTFPointer = 0;
   ZdFileName            sFileName;
 
@@ -65,12 +62,12 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
          pBFTFPointer = new BFTFImportDescriptor();
          SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
-         sFileName.SetExtension(TXD_EXTENSION);
+         sFileName.SetExtension(TXD_EXT);
          CreateTXDFile(sFileName, gvCaseFileFieldDescriptors);
-         pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
+         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, pBFTFPointer));
          pImporter->ShowOptionalPanels(false, false, false);
          pImporter->ShowModal();
-         delete pImporter;
+         delete pBFTFPointer;
       }
 
       //Why is this here? KMC 8/30/2002
@@ -81,7 +78,6 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
     }
   }
   catch (SSException & x) {
-    delete pImporter; pImporter = 0;
     delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnCaseBrowseClick()", "TfrmAnalysis");
     DisplayException(this, x);
@@ -91,7 +87,6 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
 // Control file selector -- *.ctl files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
-  TBdlgImporter         * pImporter = 0;
   BFTFImportDescriptor  * pBFTFPointer = 0;
   ZdFileName            sFileName;
 
@@ -106,12 +101,12 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
          pBFTFPointer = new BFTFImportDescriptor();
          SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
-         sFileName.SetExtension(TXD_EXTENSION);
+         sFileName.SetExtension(TXD_EXT);
          CreateTXDFile(sFileName, gvControlFileFieldDescriptors);
-         pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
+         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, pBFTFPointer));
          pImporter->ShowOptionalPanels(false, false, false);
          pImporter->ShowModal();
-         delete pImporter;
+         delete pBFTFPointer;
       }
 
       //Why is this here? KMC 8/30/2002
@@ -122,7 +117,6 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
      }
   }
   catch (SSException & x) {
-    delete pImporter; pImporter = 0;
     delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnControlBrowseClick()", "TfrmAnalysis");
     DisplayException(this, x);
@@ -132,7 +126,6 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
 // Geographic file selector -- *.geo files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
-  TBdlgImporter         * pImporter = 0;
   BFTFImportDescriptor  * pBFTFPointer = 0;
   ZdFileName            sFileName;
 
@@ -147,12 +140,12 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
          pBFTFPointer = new BFTFImportDescriptor();
          SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
-         sFileName.SetExtension(TXD_EXTENSION);
+         sFileName.SetExtension(TXD_EXT);
          CreateTXDFile(sFileName, gvGeoFileFieldDescriptors);
-         pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
+         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, pBFTFPointer));
          pImporter->ShowOptionalPanels(false, false, false);
          pImporter->ShowModal();
-         delete pImporter;
+         delete pBFTFPointer;
       }
 
       //Why is this here? KMC 8/30/2002
@@ -163,7 +156,6 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
     }
   }
   catch (SSException & x) {
-    delete pImporter; pImporter = 0;
     delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnCoordBrowseClick()", "TfrmAnalysis");
     DisplayException(this, x);
@@ -173,7 +165,6 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
 //  Grid file selector -- *.grd files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
-  TBdlgImporter         * pImporter = 0;
   BFTFImportDescriptor  * pBFTFPointer = 0;
   ZdFileName            sFileName;
 
@@ -188,12 +179,12 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
          pBFTFPointer = new BFTFImportDescriptor();
          SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
-         sFileName.SetExtension(TXD_EXTENSION);
+         sFileName.SetExtension(TXD_EXT);
          CreateTXDFile(sFileName, gvGridFileFieldDescriptors);
-         pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
+         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, pBFTFPointer));
          pImporter->ShowOptionalPanels(false, false, false);
          pImporter->ShowModal();
-         delete pImporter;
+         delete pBFTFPointer;
       }
 
       //Why is this here? KMC 8/30/2002
@@ -204,7 +195,6 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
     }
   }
   catch (SSException & x) {
-    delete pImporter; pImporter = 0;
     delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnGridBrowseClick()", "TfrmAnalysis");
     DisplayException(this, x);
@@ -214,7 +204,6 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
 // Population file selector -- *.pop files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
-  TBdlgImporter         * pImporter = 0;
   BFTFImportDescriptor  * pBFTFPointer = 0;
   ZdFileName            sFileName;
 
@@ -229,12 +218,12 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
        if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
           pBFTFPointer = new BFTFImportDescriptor();
           SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
-          sFileName.SetExtension(TXD_EXTENSION);
+          sFileName.SetExtension(TXD_EXT);
           CreateTXDFile(sFileName, gvPopFileFieldDescriptors);
-          pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
+          auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, pBFTFPointer));
           pImporter->ShowOptionalPanels(false, false, false);
           pImporter->ShowModal();
-          delete pImporter;
+          delete pBFTFPointer;
        }
 
       //Why is this here? KMC 8/30/2002
@@ -245,7 +234,6 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
     }
   }
   catch (SSException & x) {
-    delete pImporter; pImporter = 0;
     delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnPopBrowseClick()", "TfrmAnalysis");
     DisplayException(this, x);
@@ -681,10 +669,9 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<con
          vFields.AddElement(pField->Clone());
          delete pField;
          uwOffset += ( 2 + uwLength );        // forced spacing so that SatScan can backfit its scanf reads - AJV 9/4/2002
-      }	
-      
-      pFile->PackFields(vFields);
-      pFile->Close();
+      }
+
+      // don't pack fields or else you'll lose the offset!!! AJV 9/5/2002
       pFile->Create(sFileName.GetFullPath(), vFields, 1);
       pFile->Close();
 
