@@ -1759,7 +1759,7 @@ void __fastcall TBDlgDataImporter::OnOutputDirectoryChange(TObject *Sender) {
 
 void __fastcall TBDlgDataImporter::OnChangeDirectoryClick(TObject *Sender) {
   AnsiString Directory;
-  if (SelectDirectory("Select directory to save import file", "", Directory))
+  if (SelectDirectory("Select directory to save imported file", "", Directory))
     edtOutputDirectory->Text = Directory;
 }
 //---------------------------------------------------------------------------
