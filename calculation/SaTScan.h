@@ -42,7 +42,8 @@
  **********************************************************************/
 /** Current version information. */
 #define VERSION_ID "50" /*50 inorder to prevent update of Alpha*/
-#define VERSION_NUMBER "5.0 Alpha 2"
+#define VERSION_NUMBER "5.0"
+#define VERSION_PHASE "Alpha 2" /** testing phase name - leave blank for release */
 #define VERSION_DATE "Not Released"
 /** New defines for ellipsoid calculations. */
 #define MAXELLIPSESHAPES 10
