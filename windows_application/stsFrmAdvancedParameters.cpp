@@ -606,8 +606,8 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
 
    // Spatial Window tab
    bReturn &= (GetMaxSpatialClusterSizeControlType()==PERCENTOFPOPULATIONTYPE);
-   bReturn &= (edtMaxSpatialClusterSize->Text.ToInt() == 50);
-   bReturn &= (edtMaxSpatialPercentFile->Text.ToInt() == 50);
+   bReturn &= (edtMaxSpatialClusterSize->Text.ToDouble() == 50);
+   bReturn &= (edtMaxSpatialPercentFile->Text.ToDouble() == 50);
    bReturn &= (edtMaxSpatialRadius->Text.ToInt() == 1);
    bReturn &= (edtMaxCirclePopulationFilename->Text == "");
    bReturn &= (chkInclPureTempClust->Checked == false);
@@ -636,7 +636,7 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    bReturn &= (chkAdjustForKnownRelativeRisks->Checked == false);
    bReturn &= (edtAdjustmentsByRelativeRisksFile->Text == "");
    bReturn &= (rdgTemporalTrendAdj->ItemIndex == 0);
-   bReturn &= (edtLogLinear->Text.ToInt() == 0);
+   bReturn &= (edtLogLinear->Text.ToDouble() == 0);
 
    return bReturn;
 }
@@ -790,7 +790,12 @@ void TfrmAdvancedParameters::ParseDate(const std::string& sDate, TEdit& Year, TE
     };
   }
 }
-
+//---------------------------------------------------------------------------
+/** event triggered when key pressed for control that can contain positive real numbers */
+void __fastcall TfrmAdvancedParameters::PositiveFloatKeyPress(TObject *Sender, char &Key) {
+  if (!strchr("0123456789.\b",Key))
+    Key = 0;
+}
 //---------------------------------------------------------------------------
 /** event triggered when 'Adjustment for time trend' type control clicked */
 void __fastcall TfrmAdvancedParameters::rdgTemporalTrendAdjClick(TObject *Sender) {
@@ -1630,5 +1635,6 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
 
   throw theException;
 }
+
 
 

@@ -146,6 +146,7 @@ __published:	// IDE-managed Components
    void __fastcall FormKeyPress(TObject *Sender, char &Key);
    void __fastcall FormShow(TObject *Sender);
    void __fastcall NaturalNumberKeyPress(TObject *Sender, char &Key);
+   void __fastcall PositiveFloatKeyPress(TObject *Sender, char &Key);
    void __fastcall rdgTemporalTrendAdjClick(TObject *Sender);
    void __fastcall rdoMaxTemporalClusterSizelick(TObject *Sender);
    void __fastcall rdoMaxSpatialTypeClick(TObject *Sender);

@@ -279,9 +279,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           WordWrap = True
         end
         object edtMaxSpatialClusterSize: TEdit
-          Left = 64
+          Left = 62
           Top = 35
-          Width = 25
+          Width = 30
           Height = 21
           AutoSelect = False
           MaxLength = 5
@@ -289,7 +289,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Text = '50'
           OnChange = edtMaxSpatialClusterSizeChange
           OnExit = edtMaxSpatialClusterSizeExit
-          OnKeyPress = NaturalNumberKeyPress
+          OnKeyPress = PositiveFloatKeyPress
         end
         object chkInclPureTempClust: TCheckBox
           Left = 18
@@ -302,7 +302,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = OnControlExit
         end
         object rdoSpatialPercentage: TRadioButton
-          Left = 34
+          Left = 30
           Top = 36
           Width = 28
           Height = 17
@@ -313,7 +313,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = rdoMaxSpatialTypeClick
         end
         object rdoSpatialDistance: TRadioButton
-          Left = 34
+          Left = 30
           Top = 124
           Width = 97
           Height = 17
@@ -322,7 +322,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = rdoMaxSpatialTypeClick
         end
         object rdoSpatialPopulationFile: TRadioButton
-          Left = 34
+          Left = 30
           Top = 62
           Width = 28
           Height = 17
@@ -339,18 +339,18 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Text = '1'
           OnChange = edtMaxSpatialRadiusChange
           OnExit = edtMaxSpatialRadiusExit
-          OnKeyPress = NaturalNumberKeyPress
+          OnKeyPress = PositiveFloatKeyPress
         end
         object edtMaxSpatialPercentFile: TEdit
-          Left = 64
+          Left = 62
           Top = 60
-          Width = 25
+          Width = 30
           Height = 21
           TabOrder = 3
           Text = '50'
           OnChange = edtMaxSpatialPercentFileChange
           OnExit = edtMaxSpatialPercentFileExit
-          OnKeyPress = NaturalNumberKeyPress
+          OnKeyPress = PositiveFloatKeyPress
         end
         object edtMaxCirclePopulationFilename: TEdit
           Left = 53
@@ -591,15 +591,15 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'The Maximum Temporal Cluster Size:  '
         end
         object lblPercentageOfStudyPeriod: TLabel
-          Left = 108
+          Left = 104
           Top = 37
           Width = 240
           Height = 13
           Caption = 'percent of the study period (<= 90%, default = 50%)'
         end
         object lblMaxTemporalTimeUnits: TLabel
-          Left = 108
-          Top = 62
+          Left = 104
+          Top = 63
           Width = 25
           Height = 13
           Caption = 'years'
@@ -607,13 +607,13 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtMaxTemporalClusterSize: TEdit
           Left = 62
           Top = 35
-          Width = 38
+          Width = 35
           Height = 21
           MaxLength = 5
           TabOrder = 1
           Text = '50'
           OnExit = edtMaxTemporalClusterSizeExit
-          OnKeyPress = NaturalNumberKeyPress
+          OnKeyPress = PositiveFloatKeyPress
         end
         object chkIncludePureSpacClust: TCheckBox
           Left = 18
@@ -648,7 +648,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtMaxTemporalClusterSizeUnits: TEdit
           Left = 62
           Top = 60
-          Width = 38
+          Width = 35
           Height = 21
           MaxLength = 5
           TabOrder = 4
@@ -683,7 +683,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object edtLogLinear: TEdit
         Left = 108
         Top = 80
-        Width = 25
+        Width = 30
         Height = 21
         Enabled = False
         MaxLength = 5
@@ -693,7 +693,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         OnKeyPress = FloatKeyPress
       end
       object lblLogLinear: TStaticText
-        Left = 136
+        Left = 144
         Top = 82
         Width = 67
         Height = 17
@@ -717,9 +717,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Adjustments File:'
         end
         object edtAdjustmentsByRelativeRisksFile: TEdit
-          Left = 15
+          Left = 11
           Top = 57
-          Width = 335
+          Width = 320
           Height = 21
           Anchors = []
           ParentShowHint = False
@@ -729,7 +729,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnExit = OnControlExit
         end
         object btnBrowseAdjustmentsFile: TButton
-          Left = 362
+          Left = 338
           Top = 57
           Width = 25
           Height = 21
