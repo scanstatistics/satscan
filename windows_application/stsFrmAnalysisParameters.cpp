@@ -50,6 +50,7 @@ __fastcall TfrmAnalysis::~TfrmAnalysis() {
 void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
   BFTFImportDescriptor  * pBFTFPointer = 0;
   ZdFileName            sFileName;
+  char                  sBuffer[1024];
 
   try {
     OpenDialog1->FileName = "";
@@ -63,7 +64,8 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
          pBFTFPointer = new BFTFImportDescriptor();
          pBFTFPointer->SetGenerateReport(false);
          SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
-         //sFileName.SetLocation("C:\\Prj\\SatScan\\windows_application\\");
+         GetTempPath(sizeof(sBuffer), sBuffer);
+         sFileName.SetLocation(sBuffer);
          sFileName.SetExtension(TXD_EXT);
          pBFTFPointer->SetDestinationFile(sFileName.GetFullPath());
          CreateTXDFile(sFileName, gvCaseFileFieldDescriptors);
@@ -92,7 +94,8 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
 void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
   BFTFImportDescriptor  * pBFTFPointer = 0;
   ZdFileName            sFileName;
-
+  char                  sBuffer[1024];
+  
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.ctl";
@@ -103,8 +106,12 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
          pBFTFPointer = new BFTFImportDescriptor();
+         pBFTFPointer->SetGenerateReport(false);
          SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
+         GetTempPath(sizeof(sBuffer), sBuffer);
+         sFileName.SetLocation(sBuffer);
          sFileName.SetExtension(TXD_EXT);
+         pBFTFPointer->SetDestinationFile(sFileName.GetFullPath());
          CreateTXDFile(sFileName, gvControlFileFieldDescriptors);
          auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, pBFTFPointer));
          pImporter->ShowOptionalPanels(false, false, false);
@@ -131,6 +138,7 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
 void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
   BFTFImportDescriptor  * pBFTFPointer = 0;
   ZdFileName            sFileName;
+  char                  sBuffer[1024];
 
   try {
     OpenDialog1->FileName = "";
@@ -142,8 +150,12 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
          pBFTFPointer = new BFTFImportDescriptor();
+         pBFTFPointer->SetGenerateReport(false);
          SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
+         GetTempPath(sizeof(sBuffer), sBuffer);
+         sFileName.SetLocation(sBuffer);
          sFileName.SetExtension(TXD_EXT);
+         pBFTFPointer->SetDestinationFile(sFileName.GetFullPath());
          CreateTXDFile(sFileName, gvGeoFileFieldDescriptors);
          auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, pBFTFPointer));
          pImporter->ShowOptionalPanels(false, false, false);
@@ -170,6 +182,7 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
 void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
   BFTFImportDescriptor  * pBFTFPointer = 0;
   ZdFileName            sFileName;
+  char                  sBuffer[1024];
 
   try {
     OpenDialog1->FileName = "";
@@ -181,8 +194,12 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
          pBFTFPointer = new BFTFImportDescriptor();
+         pBFTFPointer->SetGenerateReport(false);
          SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
+         GetTempPath(sizeof(sBuffer), sBuffer);
+         sFileName.SetLocation(sBuffer);
          sFileName.SetExtension(TXD_EXT);
+         pBFTFPointer->SetDestinationFile(sFileName.GetFullPath());
          CreateTXDFile(sFileName, gvGridFileFieldDescriptors);
          auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, pBFTFPointer));
          pImporter->ShowOptionalPanels(false, false, false);
@@ -209,6 +226,7 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
 void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
   BFTFImportDescriptor  * pBFTFPointer = 0;
   ZdFileName            sFileName;
+  char                  sBuffer[1024];
 
   try {
     OpenDialog1->FileName = "";
@@ -220,8 +238,12 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
        //Detect dbf file and launch importer if detected
        if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
           pBFTFPointer = new BFTFImportDescriptor();
+          pBFTFPointer->SetGenerateReport(false);
           SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
+          GetTempPath(sizeof(sBuffer), sBuffer);
+          sFileName.SetLocation(sBuffer);
           sFileName.SetExtension(TXD_EXT);
+          pBFTFPointer->SetDestinationFile(sFileName.GetFullPath());
           CreateTXDFile(sFileName, gvPopFileFieldDescriptors);
           auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, pBFTFPointer));
           pImporter->ShowOptionalPanels(false, false, false);
@@ -672,7 +694,7 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<con
          pField->SetLength(uwLength);
          pField->SetIndexCount(0);
          vFields.AddElement(pField->Clone());
-         delete pField;
+         delete pField; pField=0;
          // NOTE: Our original design would simply make gaps in the fields offsets
          //       to allow created ZdTXD file to work like current SaTScan data files.
          //       But, unfortunetly, those gaps would have value 0x00 causing problems
@@ -689,7 +711,7 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<con
       pFile->Create(sFileName.GetFullPath(), vFields, 0);
       pFile->Close();
 
-      for(unsigned int i = vFields.GetNumElements() - 1; i > 0; --i) {
+      for(int i = vFields.GetNumElements() - 1; i > 0; --i) {
          delete vFields[0]; vFields[0] = 0;
          vFields.RemoveElement(0);
       }
@@ -701,7 +723,7 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<con
          pFile->Close();
       delete pFile; pFile = 0;
       delete pField; pField = 0;
-      for(unsigned int i = vFields.GetNumElements() - 1; i > 0; --i) {
+      for(int i = vFields.GetNumElements() - 1; i > 0; --i) {
          delete vFields[0]; vFields[0] = 0;
          vFields.RemoveElement(0);
       }	 
@@ -739,7 +761,7 @@ bool TfrmAnalysis::DetermineIfDbfExtension(AnsiString sFileName) {
   bool bDbfStatus = false;
 
   try {
-     bDbfStatus = ! std::strcmp(((sFileName.SubString(sFileName.Length() - 3, 4)).LowerCase()).c_str(), ".dbf");
+     bDbfStatus = ! std::strcmp(((sFileName.SubString(sFileName.Length() - 3, 4)).LowerCase()).c_str(), ".txd"/*".dbf"*/);
   }
   catch (ZdException & x) {
     x.AddCallpath("DetermineIfDbaseFile(AnsiString & sFileName)", "TfrmAnalysis");
@@ -1650,11 +1672,11 @@ void TfrmAnalysis::SetupImportDescriptor(BFTFImportDescriptor& descrip, const Zd
       descrip.SetDestinationType(BFileDestDescriptor::SingleFile);
       descrip.SetModifyType(BFileDestDescriptor::OverWriteExistingData);
       descrip.SetImportFile(sImportFileName);
-      sDestFile = sImportFileName;
+//      sDestFile = sImportFileName;
       // these here should probably be defines later on, also there should be some type of checking to make
       // sure that we are getting a dbf extension file - AJV 8/30/2002
-      sDestFile.Replace(".dbf", ".txd");
-      descrip.SetDestinationFile(sDestFile);
+//      sDestFile.Replace(".dbf", ".txd");
+//      descrip.SetDestinationFile(sDestFile);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupImportDescriptor()", "TfrmAnalysis");
