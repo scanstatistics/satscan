@@ -25,12 +25,8 @@ void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
     gdHighRateRatios += Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tTotalCases, tTotalMeasure);
 }
 
-void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
-                                      const std::vector<count_t>& vOrdinalCases, const std::vector<count_t>& vOrdinalTotalCases) {
-//  if (gbScanLowRates && LowRate(tCases, tMeasure, tTotalCases, tTotalMeasure))
-    gdLowRateRatios += Calculator.CalcLogLikelihoodRatioOrdinal(vOrdinalCases, vOrdinalTotalCases);
-//  if (gbScanHighRates && MultipleSetsHighRate(tCases, tMeasure, tTotalCases, tTotalMeasure))
-//    gdHighRateRatios += Calculator.CalcLogLikelihoodRatio(vOrdinalCases, vOrdinalTotalCases);
+void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) {
+  gdLowRateRatios += Calculator.CalcLogLikelihoodRatioOrdinal(vOrdinalCases, tSetIndex);
 }
 
 /** Returns the largest calculated loglikelihood ratio by comparing summed ratios
@@ -66,12 +62,8 @@ void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
     gdRatio += -1 * Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tTotalCases, tTotalMeasure);
 }
 
-void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
-                                    const std::vector<count_t>& vOrdinalCases, const std::vector<count_t>& vOrdinalTotalCases) {
-//  if (MultipleSetsHighRate(tCases, tMeasure, tTotalCases, tTotalMeasure))
-    gdRatio += Calculator.CalcLogLikelihoodRatioOrdinal(vOrdinalCases, vOrdinalTotalCases);
-//  else
-//    gdRatio += -1 * Calculator.CalcLogLikelihoodRatio(vOrdinalCases, vOrdinalTotalCases);
+void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) {
+    gdRatio += Calculator.CalcLogLikelihoodRatioOrdinal(vOrdinalCases, tSetIndex);
 }
 
 /** Returns calculated loglikelihood ratio that is the sum of adjoined values.

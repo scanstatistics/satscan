@@ -27,7 +27,7 @@ class AbstractLikelihoodCalculator {
 
     virtual double                      CalcLogLikelihood(count_t n, measure_t u) const = 0;
     virtual double                      CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure) const = 0;
-    virtual double                      CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>& vOrdinalCases, const std::vector<count_t>& vOrdinalTotalCases) const;
+    virtual double                      CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex=0) const;
     virtual double                      CalcLogLikelihoodRatioNormal(count_t tCases, measure_t tMeasure, measure_t tMeasure2, count_t tTotalCases, measure_t tTotalMeasure) const;
     virtual double                      CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) const;
     virtual double                      CalcSVTTLogLikelihood(size_t tSetIndex, CSVTTCluster* Cluster, const CTimeTrend& GlobalTimeTrend) const;

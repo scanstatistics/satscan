@@ -20,7 +20,7 @@ class AbstractLoglikelihoodRatioUnifier {
                                     count_t tTotalCases,
                                     measure_t tTotalMeasure) = 0;
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
-                                    const std::vector<count_t>& vOrdinalCases, const std::vector<count_t>& vOrdinalTotalCases) = 0;
+                                    const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) = 0;
     virtual double      GetLoglikelihoodRatio() const = 0;
     virtual void        Reset() = 0;
 };
@@ -48,7 +48,7 @@ class MultivariateUnifier : public AbstractLoglikelihoodRatioUnifier {
                                     count_t tTotalCases,
                                     measure_t tTotalMeasure);
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
-                                    const std::vector<count_t>& vOrdinalCases, const std::vector<count_t>& vOrdinalTotalCases);
+                                    const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
     virtual double      GetLoglikelihoodRatio() const;
     virtual void        Reset();
 };
@@ -74,7 +74,7 @@ class AdjustmentUnifier : public AbstractLoglikelihoodRatioUnifier {
                                     count_t tTotalCases,
                                     measure_t tTotalMeasure);
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
-                                    const std::vector<count_t>& vOrdinalCases, const std::vector<count_t>& vOrdinalTotalCases);
+                                    const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
     virtual double      GetLoglikelihoodRatio() const;
     virtual void        Reset();
 };

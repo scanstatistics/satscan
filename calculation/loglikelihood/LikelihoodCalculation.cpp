@@ -23,8 +23,7 @@ AbstractLikelihoodCalculator::~AbstractLikelihoodCalculator() {
 }
 
 /** Throws exception. Not implemented in base class */
-double AbstractLikelihoodCalculator::CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>& vOrdinalCases,
-                                                                   const std::vector<count_t>& vOrdinalTotalCases) const {
+double AbstractLikelihoodCalculator::CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) const {
   ZdGenerateException("CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>&,const std::vector<count_t>&) not implementated.","AbstractLikelihoodCalculator");
   return 0;
 }
