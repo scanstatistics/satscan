@@ -204,6 +204,10 @@ class TfrmAnalysis : public TForm {
     bool                CheckTimeParams();
     void                CreateTXDFile(const ZdFileName& sFileName, const std::vector<std::string>& vFieldNames);
     bool                DetermineIfDbfExtension(const AnsiString& sFileName);
+    void                EnablePSTDate(bool bEnable);
+    void                EnableSpatial(bool bEnable, bool bEnableCheckbox, bool bEnableSpatialPercentage);
+    void                EnableTemporal(bool bEnable, bool bEnableCheckbox, bool bEnablePercentage);
+    void                EnableTimeInterval(bool bEnable);
     ZdDate            & GetStudyPeriodEndDate(ZdDate & Date);
     ZdDate            & GetStudyPeriodStartDate(ZdDate & Date);
     void                Init();

@@ -958,6 +958,53 @@ void __fastcall TfrmAnalysis::edtUnitLengthExit(TObject *Sender) {
   }
 }
 
+// enables or disables the PST start date control
+void TfrmAnalysis::EnablePSTDate(bool bEnable) {
+   GroupBox8->Enabled = bEnable;
+   edtProspYear->Enabled = bEnable;
+   edtProspMonth->Enabled = bEnable;
+   edtProspDay->Enabled = bEnable;
+   edtProspYear->Color =  bEnable ? clWindow : clInactiveBorder;
+   edtProspMonth->Color = bEnable ? clWindow : clInactiveBorder;
+   edtProspDay->Color =  bEnable ? clWindow : clInactiveBorder;
+}
+
+// enables or disables the spatial control
+void TfrmAnalysis::EnableSpatial(bool bEnable, bool bEnableCheckbox, bool bEnableSpatialPercentage) {
+   rdoSpatialPercentage->Enabled = bEnableSpatialPercentage;
+   rdoSpatialPercentage->Checked = (gpParams->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE && bEnableSpatialPercentage) ? true : false;
+   rdoSpatialDistance->Enabled = bEnable;
+   rdoSpatialDistance->Checked = (gpParams->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE && bEnableSpatialPercentage) ? false : true;
+   chkInclPurTempClust->Enabled = bEnableCheckbox;
+   chkInclPurTempClust->Checked = (bEnableCheckbox && gpParams->m_bIncludePurelyTemporal);
+   edtMaxClusterSize->Enabled = bEnable;
+   edtMaxClusterSize->Color = bEnable ? clWindow : clInactiveBorder;
+}
+
+// enables or disables the temporal control
+void TfrmAnalysis::EnableTemporal(bool bEnable, bool bEnableCheckbox, bool bEnablePercentage) {
+  GroupBox5->Enabled = bEnable;
+  rdoPercentageTemproal->Enabled = bEnablePercentage;
+  rdoPercentageTemproal->Checked = (gpParams->m_nMaxClusterSizeType == PERCENTAGETYPE && bEnablePercentage) ? true : false;
+  rdoTimeTemproal->Enabled = bEnable;
+  rdoTimeTemproal->Checked = (gpParams->m_nMaxClusterSizeType == PERCENTAGETYPE && bEnablePercentage) ? false : true;
+  chkIncludePurSpacClust->Enabled = bEnableCheckbox;
+  chkIncludePurSpacClust->Checked = (bEnableCheckbox && gpParams->m_bIncludePurelySpatial);
+  edtMaxTemporalClusterSize->Enabled = bEnable;
+  edtMaxTemporalClusterSize->Color = bEnable ? clWindow : clInactiveBorder;
+}
+
+// enables or disables the time interval control
+void TfrmAnalysis::EnableTimeInterval(bool bEnable) {
+   GroupBox6->Enabled = bEnable;
+   rbUnitDay->Enabled = bEnable;
+   rbUnitMonths->Enabled = bEnable;
+   rbUnitYear->Enabled = bEnable;
+   rbUnitYear->Checked = bEnable;
+   edtUnitLength->Enabled = bEnable;
+   edtUnitLength->Color = bEnable ? clWindow : clInactiveBorder;
+}
+
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::FloatKeyPress(TObject *Sender, char &Key) {
   if (!strchr("-0123456789.\b",Key))
@@ -977,7 +1024,7 @@ void __fastcall TfrmAnalysis::FormClose(TObject *Sender, TCloseAction &Action) {
 char * TfrmAnalysis::GetFileName() {
   return gsParamFileName.c_str();
 }
-
+ 
 //---------------------------------------------------------------------------
 // returns the class global gpParams
 //---------------------------------------------------------------------------
@@ -1062,30 +1109,13 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           // disable clusters to include
           rgClustersToInclude->Enabled = false;
           // enable spatial but not checkbox
-          rdoSpatialPercentage->Enabled = true;
-          rdoSpatialDistance->Enabled = true;
-          chkInclPurTempClust->Enabled = false;
-          gpParams->m_bIncludePurelyTemporal = false;
-          chkInclPurTempClust->Checked = false;
-          edtMaxClusterSize->Enabled = true;
-          edtMaxClusterSize->Color = clWindow;
-          // disable time intervals - just turn off the whole group box
-          GroupBox6->Enabled = false;
+          EnableSpatial(true, false, true);
+          // disable time intervals
+          EnableTimeInterval(false);
           // disable temporal
-          GroupBox5->Enabled = false;
-          rdoPercentageTemproal->Enabled = false;
-          rdoTimeTemproal->Enabled = false;
-          chkIncludePurSpacClust->Enabled = false;
-          edtMaxTemporalClusterSize->Enabled = false;
-          edtMaxTemporalClusterSize->Color = clInactiveBorder;
+          EnableTemporal(false, false, false);
           // disable start date PST
-          GroupBox8->Enabled = false;
-          edtProspYear->Enabled = false;
-          edtProspMonth->Enabled = false;
-          edtProspDay->Enabled = false;
-          edtProspYear->Color = clInactiveBorder;
-          edtProspMonth->Color = clInactiveBorder;
-          edtProspDay->Color = clInactiveBorder;
+          EnablePSTDate(false);
           break;
        case 1:                     // purely temporal
           // disable None option in case precision time
@@ -1098,34 +1128,13 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           rgClustersToInclude->Enabled = true;
           rgClustersToInclude->ItemIndex = (gpParams->m_bAliveClustersOnly ? 1 : 0);
           // Disables Spatial
-          rdoSpatialPercentage->Enabled = false;
-          rdoSpatialDistance->Enabled = false;
-          chkInclPurTempClust->Enabled = false;
-          gpParams->m_bIncludePurelySpatial = false;
-          chkInclPurTempClust->Checked = false;
-          edtMaxClusterSize->Enabled = false;
-          edtMaxClusterSize->Color = clInactiveBorder;
+          EnableSpatial(false, false, false);
           // Enables time intervals
-          GroupBox6->Enabled = true;
-          edtUnitLength->Enabled = true;
-          edtUnitLength->Color = clWindow;
+          EnableTimeInterval(true);
           // Enables temporal without checkbox
-          GroupBox5->Enabled = true;
-          rdoPercentageTemproal->Enabled = true;
-          rdoTimeTemproal->Enabled = true;
-          chkIncludePurSpacClust->Enabled = false;
-          gpParams->m_bIncludePurelySpatial = false;
-          chkIncludePurSpacClust->Checked = false;
-          edtMaxTemporalClusterSize->Enabled = true;
-          edtMaxTemporalClusterSize->Color = clWindow;
+          EnableTemporal(true, false, true);
           // Disables Start date PST
-          GroupBox8->Enabled = false;
-          edtProspYear->Enabled = false;
-          edtProspMonth->Enabled = false;
-          edtProspDay->Enabled = false;
-          edtProspYear->Color = clInactiveBorder;
-          edtProspMonth->Color = clInactiveBorder;
-          edtProspDay->Color = clInactiveBorder;
+          EnablePSTDate(false);
           break;
        case 2:                     // retrospective space-time
           // disable None option in case precision time
@@ -1138,34 +1147,13 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           rgClustersToInclude->Enabled = true;
           rgClustersToInclude->ItemIndex = (gpParams->m_bAliveClustersOnly ? 1 : 0);
           //Enables spatial
-          rdoSpatialPercentage->Enabled = true;
-          rdoSpatialDistance->Enabled = true;
-          chkInclPurTempClust->Enabled = gpParams->m_nModel == 2 ? false : true;
-          chkInclPurTempClust->Checked = gpParams->m_bIncludePurelyTemporal;
-          edtMaxClusterSize->Enabled = true;
-          edtMaxClusterSize->Color = clWindow;
+          EnableSpatial(true, !(gpParams->m_nModel == 2), true);
           //Enables time intervals
-          GroupBox6->Enabled = true;
-          edtUnitLength->Enabled = true;
-          edtUnitLength->Color = clWindow;
+          EnableTimeInterval(true);
           //Enables temporal
-          GroupBox5->Enabled = true;
-          rdoPercentageTemproal->Enabled = true;
-          rdoPercentageTemproal->Checked = (gpParams->m_nMaxClusterSizeType == 0 ? true : false);
-          rdoTimeTemproal->Enabled = true;
-          rdoTimeTemproal->Checked = (gpParams->m_nMaxClusterSizeType == 0 ? false : true);
-          chkIncludePurSpacClust->Enabled = gpParams->m_nModel == 2 ? false : true;
-          chkIncludePurSpacClust->Checked = gpParams->m_bIncludePurelySpatial;
-          edtMaxTemporalClusterSize->Enabled = true;
-          edtMaxTemporalClusterSize->Color = clWindow;
+          EnableTemporal(true,!(gpParams->m_nModel == 2), true);
           //Disables Start date PST
-          GroupBox8->Enabled = false;
-          edtProspYear->Enabled = false;
-          edtProspMonth->Enabled = false;
-          edtProspDay->Enabled = false;
-          edtProspYear->Color = clInactiveBorder;
-          edtProspMonth->Color = clInactiveBorder;
-          edtProspDay->Color = clInactiveBorder;
+          EnablePSTDate(false);
           break;
        case 3:                     // prospective space-time
           rgPrecisionTimes->Controls[0]->Enabled = false;
@@ -1176,38 +1164,15 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           //disables clusters to include
           rgClustersToInclude->Enabled = false; 
           //Enables Spatial % box disable
-          rdoSpatialPercentage->Enabled = false;
-          rdoSpatialDistance->Enabled = true;
-          rdoSpatialDistance->Checked = true;
-          chkInclPurTempClust->Enabled = gpParams->m_nModel == 2 ? false : true;
-          chkInclPurTempClust->Checked = gpParams->m_bIncludePurelyTemporal;
-          edtMaxClusterSize->Enabled = true;
-          edtMaxClusterSize->Color = clWindow;
+          EnableSpatial(true, !(gpParams->m_nModel == 2), false);
           //Enables time intervals
-          GroupBox6->Enabled = true;
-          edtUnitLength->Enabled = true;
-          edtUnitLength->Color = clWindow;
+          EnableTimeInterval(true);
           //Enables temporal with checkbox but disable % option radio button
-          GroupBox5->Enabled = true;
-          rdoPercentageTemproal->Enabled = false;
-          rdoPercentageTemproal->Checked = false;
-          rdoTimeTemproal->Enabled = true;
-          rdoTimeTemproal->Checked = true;
-          chkIncludePurSpacClust->Enabled = gpParams->m_nModel == 2 ? false : true;
-          chkIncludePurSpacClust->Checked = gpParams->m_bIncludePurelySpatial;
-          edtMaxTemporalClusterSize->Enabled = true;
-          edtMaxTemporalClusterSize->Color = clWindow;
+          EnableTemporal(true, !(gpParams->m_nModel == 2), false);
           //Enables Start Date PST
-          GroupBox8->Enabled = true;
-          edtProspYear->Enabled = true;
-          edtProspMonth->Enabled = true;
-          edtProspDay->Enabled = true;
-          edtProspYear->Color =  clWindow;
-          edtProspMonth->Color = clWindow;
-          edtProspDay->Color =  clWindow;
+          EnablePSTDate(true);
           break;
     }
-
     OnPrecisionTimesClick();
 
     // if none not enabled and set, then set to case precision Year instead - AJV 10/4/2002
