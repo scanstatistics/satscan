@@ -178,16 +178,11 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringPa
     //Parse file for categories but conditionally:
     //Poisson - always scan for covariates, the number of covariates per category should always
     //          be the same as defined in population category class(.i.e as read from population file).
-    //Space-Time Permutation - if maximum spatial cluster size is defined as a percentage of the population
-    //                         at risk, then this is the same same Poisson. Else covariate information is not
-    //                         pertinent for analysis, so any extra information on line is assumed
-    //                         to be covariates and will be ignored.
-    //Bernoulli - for the case file, this is the same as Space-Time Permutation as far as ignoring
-    //            non-pertinent covariates. For the control file, any extra information will be assumed
-    //            to be covariates. This is an error as covaraites are not supported currently for
-    //            Bernoulli model.
+    //Space-Time Permutation - ignore extra data, assumed to be covariates.
+    //Bernoulli - For the case file, ignoring non-pertinent covariates. For the control file, any extra
+    //            information will be assumed to be covariates. This is an error as covariates are not
+    //            supported currently for Bernoulli model.
     if (m_pParameters->GetProbabiltyModelType() == POISSON ||
-        (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION && m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE) ||
         (m_pParameters->GetProbabiltyModelType() == BERNOULLI && strcmp(szDescription,"control")==0)) {
       //scan covariates into vector
       iCategoryOffSet = m_pParameters->GetPrecisionOfTimesType() == NONE ? 2 : 3;
@@ -213,8 +208,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringPa
       //and count information to tract handler if model is Poisson or Space-Time Permutation
       //with maximum spatial cluster size is percentage of population. These two situations
       //are the only ones that use this information in the calculate measure routines.
-      if (m_pParameters->GetProbabiltyModelType() == POISSON ||
-          (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION && m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE)) {
+      if (m_pParameters->GetProbabiltyModelType() == POISSON) {
         //category should already exist
         if ((iCategoryIndex = gPopulationCategories.GetPopulationCategoryIndex(vCategoryCovariates)) == -1) {
           gpPrint->PrintInputWarning("Error: Record %ld of case file refers to a population category that\n", nRec);
