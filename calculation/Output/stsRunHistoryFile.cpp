@@ -369,13 +369,13 @@ void stsRunHistoryFile::SetRunNumber() {
    std::auto_ptr<TXDFile>       pFile;
 
    try {
-      pFile.reset(new TXDFile(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE));
       // if we don't have one then create it
       if(!ZdIO::Exists(gsFilename.GetCString()))
          CreateRunHistoryFile();
-      else
-         SetFieldVector(gvFields, *pFile);
 
+      pFile.reset(new TXDFile(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE));
+      if(!gvFields.empty())
+         SetFieldVector(gvFields, *pFile);
       // get a record buffer, input data and append the record
       pLastRecord.reset(pFile->GetNewRecord());
       if(pFile->GotoLastRecord(pLastRecord.get()))      // if there's records in the file
@@ -398,7 +398,6 @@ void stsRunHistoryFile::SetRunNumber() {
       if(pTransaction)
             pFile->EndTransaction(pTransaction);
          pTransaction = 0;
-      pFile->Close();
       x.AddCallpath("SetRunNumber()", "stsRunHistoryFile");
       throw;
    }
