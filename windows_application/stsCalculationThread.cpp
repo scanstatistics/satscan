@@ -152,7 +152,7 @@ void __fastcall CalcThread::Execute()
 
       gpFormStatus->btnPrint->Enabled = true;    
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       gpFormStatus->CancelJob();
       x.AddCallpath("Execute()", "CalcThread");
