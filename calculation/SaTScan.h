@@ -14,14 +14,16 @@
 #include "BasePrint.h"
 #include "SSException.h"
 #include <Basis540Unix.h>
+#include "Toolkit.h"
 
 /**********************************************************************
  file: SaTScan.h
  This file contains header information for all SaTScan program files
  **********************************************************************/
 
-/** Current version number. */ 
+/** Current version information. */ 
 #define VERSION_NUMBER "3.0"
+#define VERSION_DATE "October 17, 2002"
 
 /** New defines for ellipsoid calculations. */
 #define MAXELLIPSESHAPES 10
