@@ -150,15 +150,15 @@ void stsClusterLevelDBF::SetCoordinates(std::string& sLatitude, std::string& sLo
          if(pCluster.m_nClusterType != PURELYTEMPORAL) {
             for (int i = 0; i < pData.m_pParameters->m_nDimension; ++i) {
                if (i == 0) {
-                  sprintf(sLatBuffer, "%12.6f", pCoords[i]);
+                  sprintf(sLatBuffer, "%12.2f", pCoords[i]);
                   sLatitude = sLatBuffer;
                }
                else if (i == 1) {
-                  sprintf(sLongBuffer, "%12.6f", pCoords[i]);
+                  sprintf(sLongBuffer, "%12.2f", pCoords[i]);
                   sLongitude = sLongBuffer;
                }
                else  {
-                  sprintf(sAdditBuffer, "%12.6f", pCoords[i]);
+                  sprintf(sAdditBuffer, "%12.2f", pCoords[i]);
                   vAdditCoords.push_back(sAdditBuffer);
                }
             }
@@ -174,9 +174,9 @@ void stsClusterLevelDBF::SetCoordinates(std::string& sLatitude, std::string& sLo
       }
       else {
          ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
-         sprintf(sLongBuffer, "%12.6f", fLongitude);
+         sprintf(sLongBuffer, "%lf", fLongitude);
          sLongitude = sLongBuffer;
-         sprintf(sLatBuffer, "%12.6f", fLatitude);
+         sprintf(sLatBuffer, "%lf", fLatitude);
          sLatitude = sLatBuffer;
       }
 
