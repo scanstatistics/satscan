@@ -337,12 +337,14 @@ void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, Z
                           }
                           break;
          case LATLON    : ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
+                          fLatitude = static_cast<float>(fLatitude);
+                          fLongitude = static_cast<float>(fLongitude);
                           sLongitude.printf("%lf", fLongitude);
                           sLatitude.printf("%lf", fLatitude);
                           break;
          default : ZdGenerateException("Unknown coordinate type '%d'.","SetCoordinates()", giCoordType);
        }
-       fRadius = sqrt((pData.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
+       fRadius = static_cast<float>(sqrt((pData.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2)));
        sRadius.printf("%5.2lf", fRadius);
        free(pCoords);
        free(pCoords2);
