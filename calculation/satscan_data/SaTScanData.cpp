@@ -44,8 +44,65 @@ CSaTScanData::~CSaTScanData() {
     delete gpTInfo;
     delete gpGInfo;
     delete gpMaxWindowLengthIndicator; gpMaxWindowLengthIndicator=0;
+    delete gpPopulationMeasureHandler; gpPopulationMeasureHandler=0;
   }
   catch (...){}  
+}
+
+/**************************************************************************************
+Adjusts the measure for a particular tract and a set of time intervals, reflecting an
+increased or decreased relative risk in a specified adjustment time period. For time
+intervals completely within the adjustment period, the measure is simply multiplied by
+the relative risk. For time intervals that are only partly within the adjustment period,
+only that proportion is multiplied by the relative risk, and the other proportion remains
+the same, after which they are added.
+Input: Tract, Adjustment Time Period, Relative Risk
+*****************************************************************************************/
+bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate) {
+  int                                   interval;
+  Julian                                AdjustmentStart, AdjustmentEnd, IntervalLength;
+  measure_t                             Adjustment_t, fProportionAdjusted, tMaxMeasure_tValue;
+  measure_t				MeasurePre, MeasurePost, MeasureDuring, ** pp_m;
+  ZdString                              s;
+  std::numeric_limits<measure_t>        measure_limit;
+
+  tMaxMeasure_tValue = measure_limit.max();
+
+  if (!gpPopulationMeasureHandler)
+    ZdGenerateException("Population dates based measure array not allocated.","AssignMeasure()");
+  pp_m = gpPopulationMeasureHandler->GetArray();
+
+  for (interval=GetTimeIntervalOfDate(StartDate); interval <= GetTimeIntervalOfDate(EndDate); ++interval) {
+     AdjustmentStart = max(StartDate, m_pIntervalStartTimes[interval]);
+     AdjustmentEnd = min(EndDate, m_pIntervalStartTimes[interval+1] - 1);
+     //calculate measure for lower interval date to adjustment start date
+     MeasurePre = CalcMeasureForTimeInterval(pp_m, Tract, m_pIntervalStartTimes[interval], AdjustmentStart);
+     //calculate measure for adjustment period
+     MeasureDuring = CalcMeasureForTimeInterval(pp_m, Tract, AdjustmentStart, AdjustmentEnd+1);
+     //calculate measure for adjustment end date to upper interval date
+     MeasurePost = CalcMeasureForTimeInterval(pp_m, Tract, AdjustmentEnd+1, m_pIntervalStartTimes[interval+1]);
+     //validate that data overflow will not occur
+     if (MeasureDuring && (dRelativeRisk > (tMaxMeasure_tValue - MeasurePre - MeasurePost) / MeasureDuring))
+       SSGenerateException("Error: Data overflow occurs when adjusting expected number of cases.\n"
+                           "       The specified relative risk %lf in the adjustment file\n"
+                           "       is too large.\n", "AssignMeasure()", dRelativeRisk);
+     //assign adjusted measure                      
+     pNonCumulativeMeasure[interval][Tract] = MeasurePre + dRelativeRisk * MeasureDuring + MeasurePost;
+     //if measure has been adjusted to zero, check that cases adjusted interval are also zero
+     if (pNonCumulativeMeasure[interval][Tract] == 0 && GetCaseCount(interval, Tract)) {
+       ZdString         sStart, sEnd;
+       std::string      sId;
+       SSGenerateException("Error: For locationID '%s', you have adjusted the expected number\n"
+                           "       of cases in the period %s to %s to be zero, but there\n"
+                           "       are cases in that interval.\n"
+                           "       If the expected is zero, the number of cases must also be zero.\n",
+                           (Tract == -1 ? "All" : gpTInfo->tiGetTid(Tract, sId)),
+                           JulianToString(sStart, StartDate).GetCString(),
+                           JulianToString(sEnd, EndDate).GetCString());
+       return false;
+     }
+  }
+  return true;
 }
 
 /** Sequential analyses will call this function to clear neighbor information and
@@ -114,9 +171,45 @@ void CSaTScanData::AllocSimCases() {
     gpSimCasesHandler = new TwoDimensionArrayHandler<count_t>(m_nTimeIntervals, m_nTracts, 0);
   }
   catch (ZdException &x) {
-    x.AddCallpath("GetNeighbor()", "CSaTScanData");
+    x.AddCallpath("AllocSimCases()", "CSaTScanData");
     throw;
   }
+}
+
+/**************************************************************************************
+Calculates measure M for a requested tract and time interval.
+Input: Tract, Time Interval, # Pop Points, Measure array for population points
+       StudyStartDate, StudyEndDate
+Time Interval = [StartDate , EndDate]; EndDate = NextStartDate-1
+Note: The measure 'M' is the same measure used for the population points, which is later
+calibrated before being put into the measure array.
+**************************************************************************************/
+measure_t CSaTScanData::CalcMeasureForTimeInterval(measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate) {
+  int           i, iStartUpperIndex, iNextLowerIndex;
+  long          nTotalDays = m_nEndDate+1 - m_nStartDate;
+  measure_t     SumMeasure;
+
+  if (StartDate >= NextStartDate )
+    return 0;
+
+  SumMeasure = 0;
+  iStartUpperIndex = UpperPopIndex(StartDate);
+  iNextLowerIndex = LowerPopIndex(NextStartDate);
+
+  if (iStartUpperIndex <= iNextLowerIndex) {
+    SumMeasure += 0.5 * (DateMeasure(ppPopulationMeasure, StartDate, Tract) + ppPopulationMeasure[iStartUpperIndex][Tract]) *
+                  (GetTInfo()->tiGetPopDate(iStartUpperIndex) - StartDate);
+    for (i=iStartUpperIndex; i < iNextLowerIndex; ++i)
+       SumMeasure += 0.5 * (ppPopulationMeasure[i][Tract] + ppPopulationMeasure[i+1][Tract] ) *
+                    (GetTInfo()->tiGetPopDate(i+1) - GetTInfo()->tiGetPopDate(i));
+    SumMeasure += 0.5 * (DateMeasure(ppPopulationMeasure, NextStartDate, Tract) + ppPopulationMeasure[iNextLowerIndex][Tract])
+                  * (NextStartDate - GetTInfo()->tiGetPopDate(iNextLowerIndex));
+  }
+  else
+    SumMeasure += 0.5 * (DateMeasure(ppPopulationMeasure, StartDate,Tract) +
+                        DateMeasure(ppPopulationMeasure, NextStartDate,Tract)) * (NextStartDate - StartDate);
+
+   return SumMeasure / nTotalDays;
 }
 
 bool CSaTScanData::CalculateMeasure() {
@@ -151,6 +244,31 @@ int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate) {
      iIntervalCut = m_nIntervalCut;
 
    return iIntervalCut;
+}
+
+/********************************************************************
+  Finds the measure M for a requested tract and date.
+  Input: Date, Tracts, #PopPoints
+ ********************************************************************/
+measure_t CSaTScanData::DateMeasure(measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract) {
+  int           iPopDateIndex=0, iNumPopDates = GetTInfo()->tiGetNumPopDates();
+  measure_t     tRelativePosition;
+
+  if (Date <= GetTInfo()->tiGetPopDate(0))
+    return ppPopulationMeasure[0][Tract];
+  else if (Date >= GetTInfo()->tiGetPopDate(iNumPopDates - 1))
+    return ppPopulationMeasure[iNumPopDates - 1][Tract];
+  else {
+    /** Finds the index of the last PopDate before or on the Date **/
+    while (GetTInfo()->tiGetPopDate(iPopDateIndex+1) <= Date)
+        iPopDateIndex++;
+    //Calculates the relative position of the Date between the Previous PopDate and
+    //the following PopDate, on a scale from zero to one.
+    tRelativePosition = (measure_t)(Date - GetTInfo()->tiGetPopDate(iPopDateIndex)) /
+                        (measure_t)(GetTInfo()->tiGetPopDate(iPopDateIndex+1) - GetTInfo()->tiGetPopDate(iPopDateIndex));
+    //Calculates measure M at the time of the StartDate
+    return (1 - tRelativePosition) * ppPopulationMeasure[iPopDateIndex][Tract] + tRelativePosition * ppPopulationMeasure[iPopDateIndex+1][Tract];
+  }
 }
 
 void CSaTScanData::DeAllocSimCases() {
@@ -225,6 +343,15 @@ double CSaTScanData::GetAnnualRateAtStart() const {
   return nAnnualRate;
 }
 
+/** Returns the number of cases for a specified tract and time interval.
+    Note: iInterval and tTract should be valid indexes of the cases array .**/
+count_t CSaTScanData::GetCaseCount(int iInterval, tract_t tTract) const {
+  if (iInterval + 1 == m_nTimeIntervals)
+    return gpCasesHandler->GetArray()[iInterval][tTract];
+  else
+    return gpCasesHandler->GetArray()[iInterval][tTract] - gpCasesHandler->GetArray()[iInterval + 1][tTract];
+}
+
 //Measure Adjustment used when calculating relative risk/expected counts
 //to disply in report file.
 double CSaTScanData::GetMeasureAdjustment() const {
@@ -245,6 +372,23 @@ tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness
       return (tract_t)gpSortedUShortHandler->GetArray()[iEllipse][t][nearness - 1];
    else
       return gpSortedIntHandler->GetArray()[iEllipse][t][nearness - 1];
+}
+
+/** Input: Date.                                                    **/   
+/** Returns: Index of the time interval to which the date belongs.   **/
+/** If Date does not belong to any time interval, -1 is returned. **/
+/** Note: First time interval has index 0.                          **/
+int CSaTScanData::GetTimeIntervalOfDate(Julian Date) const {
+  int   i=0;
+
+  //check that date is within study period
+  if (Date < m_pIntervalStartTimes[0] || Date >= m_pIntervalStartTimes[m_nTimeIntervals])
+    return -1;
+
+  while (Date >=  m_pIntervalStartTimes[i+1])
+       ++i;
+       
+  return i;
 }
 
 /** Returns total population count */
@@ -288,7 +432,24 @@ void CSaTScanData::Init() {
   m_nMaxReportedCircleSize = 0;
   gpMaxWindowLengthIndicator = 0;
   m_nTotalMaxCirclePopulation = 0;
+  gpPopulationMeasureHandler = 0;
 }
+
+/***********************************************************************************
+Finds the date of the largest PopDate < Date. If none exist return -1.
+***********************************************************************************/
+int CSaTScanData::LowerPopIndex(Julian Date) const {
+  int i;
+
+  if (gpTInfo->tiGetPopDate(0) >= Date )
+    return -1;
+
+  i=0;
+  while (gpTInfo->tiGetPopDate(i+1) < Date)
+       i++;
+  return i;
+}
+
 void CSaTScanData::MakeData(int iSimulationNumber) {
    try {
       m_pModel->MakeData(iSimulationNumber);
@@ -793,7 +954,7 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
                           "       time plus %i %s), which does not intersect with scanning window end range.\n","Setup()",
                           m_nIntervalCut * m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString(),
                           sDateMaxWET, m_nIntervalCut * m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
-    } 
+    }
   }
 }
 
@@ -832,4 +993,54 @@ void CSaTScanData::Setup(CParameters* pParameters, BasePrint *pPrintDirection) {
     throw;
   }
 }
+
+/***********************************************************************************
+Finds the date of the smallest PopDate > Date. If none exist return -1.
+***********************************************************************************/
+int CSaTScanData::UpperPopIndex(Julian Date) const {
+  int   i, iNumPopDates = gpTInfo->tiGetNumPopDates();
+
+  if (gpTInfo->tiGetPopDate(iNumPopDates - 1) <= Date)
+    return -1;
+
+  i = iNumPopDates - 1;
+  while (gpTInfo->tiGetPopDate(i-1) > Date)
+       i--;
+
+  return i;
+}
+
+/** Throws exception if case(s) were observed for an interval/location
+    but the expected number of cases for interval/location is zero. For
+    the Poisson model, this situation is likely the result of incorrect
+    data provided in the population file, possibly the case file. For the
+    other probability models, this is probably a bug in the code itself. */
+void CSaTScanData::ValidateObservedToExpectedCases(measure_t ** ppNonCumulativeMeasure) const {
+  int           i;
+  tract_t       t;
+  ZdString      sStart, sEnd;
+  std::string   sId;
+
+  try {
+    if (!gpCasesHandler)
+      ZdGenerateException("Case array not allocated.", "ValidateObservedToExpectedCases()");
+
+    for (i=0; i < m_nTimeIntervals; ++i)
+       for (t=0; t < m_nTracts; ++t)
+          if (!ppNonCumulativeMeasure[i][t] && GetCaseCount(i, t))
+            SSGenerateException("Error: For locationID '%s' in time interval %s - %s,\n"
+                                "       the expected number of cases is zero but there were cases observed.\n"
+                                "       Please review the correctness of population and case files.",
+                                "ValidateObservedToExpectedCases()",
+                                gpTInfo->tiGetTid(t, sId),
+                                JulianToString(sStart, m_pIntervalStartTimes[i]).GetCString(),
+                                JulianToString(sEnd, m_pIntervalStartTimes[i + 1] - 1).GetCString());
+
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ValidateObservedToExpectedCases()","CSaTScanData");
+    throw;
+  }
+}
+
 
