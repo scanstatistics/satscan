@@ -404,6 +404,10 @@ public://static interface
    static std::pair<long, long> DecimalCountRangeForXBaseFieldType(char cFieldType, long lFieldLength);
 };
 
+class DBFFileType;
+//--- The static file type object for DBFs
+extern DBFFileType  ZdDBFFileType;
+
 class ZDEXPORT DBFFileType : public ZdFileType
 {
 public:
@@ -418,10 +422,10 @@ public:
    virtual DBFFile *             Instantiate() const;
    virtual DBFFile *             InstantiateFromStream ( ZdInputStreamInterface &theStream ) const;
 
-   static DBFFileType & GetDefaultInstance() { return gDefaultInstance; }
+   static DBFFileType & GetDefaultInstance() { return ZdDBFFileType/*gDefaultInstance*/; }
 
 private:
-   static DBFFileType gDefaultInstance;
+//   static DBFFileType gDefaultInstance;
 };
 
 

@@ -1692,7 +1692,7 @@ void DBFFile::WriteStructure ( ZdIniFile *pAlternateZDSFile, const ZdVector<ZdFi
 // instantiation will be identical.
 //ClassDesc End
 
-DBFFileType DBFFileType::gDefaultInstance;
+//DBFFileType DBFFileType::gDefaultInstance;
 
 DBFFileType *DBFFileType::Clone() const
 {
@@ -1757,6 +1757,8 @@ DBFFile *DBFFileType::InstantiateFromStream ( ZdInputStreamInterface &theStream)
    return pRetVal;
 }
 
+//Here it is!
+DBFFileType  ZdDBFFileType;
 
 
 
