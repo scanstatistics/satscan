@@ -125,7 +125,7 @@ bool CAnalysis::Execute(time_t RunTime)
         }
         else return false;
     
-        DisplayTopClusterLogLikelihood(stdout);
+        DisplayTopClusterLogLikelihood();
 
 //#ifdef DEBUGANALYSIS
 //        DisplayTopClustersLogLikelihoods(m_pDebugFile);
@@ -444,14 +444,10 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, FILE* fp, FILE* 
    }
 }
 
-void CAnalysis::DisplayTopClusterLogLikelihood(FILE* fp)
+void CAnalysis::DisplayTopClusterLogLikelihood()
 {
    try {
       if (m_nClustersRetained > 0) {
-         // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
-         fprintf(fp,"  %s for the most likely cluster: %7.2f\n\n",
-                 (m_pParameters->m_nModel == SPACETIMEPERMUTATION ? "Test statistic" : "Log likelihood ratio" ),
-                  m_pTopClusters[0]->m_nRatio);
          gpPrintDirection->SatScanPrintf("  %s for the most likely cluster: %7.2f\n\n",
                                          (m_pParameters->m_nModel == SPACETIMEPERMUTATION ? "Test statistic" : "Log likelihood ratio" ),
                                          m_pTopClusters[0]->m_nRatio);

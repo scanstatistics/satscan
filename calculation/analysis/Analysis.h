@@ -60,7 +60,7 @@ class CAnalysis
     virtual ~CAnalysis();
 
     void                        DisplayFindClusterHeading();
-    void                        DisplayTopClusterLogLikelihood(FILE* fp);
+    void                        DisplayTopClusterLogLikelihood();
     void                        DisplayTopClustersLogLikelihoods(FILE* fp);
     virtual void                DisplayTopClusters(double nMinRatio, int nReps, FILE* fp=stdout, FILE* fpGIS=NULL, const ZdString& sReportHistoryFilename = "");
     virtual void                DisplayTopCluster(double nMinRatio, int nReps, FILE* fp=stdout, FILE* fpGIS=NULL, const ZdString& sReportHistoryFilename = "");
