@@ -10,15 +10,15 @@
 #include "stsSaTScan.h"
 #pragma hdrstop
 
-#include <DBFFile.h>
-#include "stsOutputDBF.h"
 #include "stsClusterLevelDBF.h"
+#include <DBFFile.h>
+
 
 // constructor
-stsClusterLevelDBF::stsClusterLevelDBF(const ZdString& sFileName) : DBaseOutput(sFileName) {
+__fastcall stsClusterLevelDBF::stsClusterLevelDBF(const ZdString& sFileName) {
    try {
       Init();
-      Setup();
+      Setup(sFileName);
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsClusterLevelDBF");
@@ -29,6 +29,10 @@ stsClusterLevelDBF::stsClusterLevelDBF(const ZdString& sFileName) : DBaseOutput(
 // destructor
 stsClusterLevelDBF::~stsClusterLevelDBF() {
    try {
+      for(unsigned int i = gvFields.GetNumElements() - 1; i > 0; --i) {
+         delete gvFields[0]; gvFields[0] = 0;
+         gvFields.RemoveElement(0);
+      }
    }
    catch (...) {/* munch munch, yummy*/}
 }
@@ -99,6 +103,7 @@ void stsClusterLevelDBF::GetFields(ZdVector<ZdField*>& vFields) {
 
 // global inits
 void stsClusterLevelDBF::Init() {
+   glRunNumber = 0;
 }
 
 // records the calculated data from the cluster into the dBase file
@@ -192,11 +197,33 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 }
 
 // internal setup
-void stsClusterLevelDBF::Setup() {
+void stsClusterLevelDBF::Setup(const ZdString& sFileName) {
+   TXDFile	        *pFile = 0;
+   ZdFileRecord         *pLastRecord = 0;
+   unsigned long        ulLastRecordNumber;
+
    try {
+      pFile = new TXDFile("AnalysisHistory.txd", ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
+
+      // get a record buffer, input data and append the record
+      ulLastRecordNumber = pFile->GotoLastRecord(pLastRecord);
+      // if there's records in the file
+      if(ulLastRecordNumber)
+         pLastRecord->GetField(0, glRunNumber);
+      delete pLastRecord;
+      pFile->Close();
+
+      delete pFile;
+
+      gsFileName = sFileName;
+
       CreateDBFFile();
    }
-   catch (ZdException &x) {
+   catch(ZdException &x) {
+      if(pFile)
+         pFile->Close();
+      delete pFile; pFile = 0;
+      delete pLastRecord; pLastRecord = 0;
       x.AddCallpath("Setup()", "stsClusterLevelDBF");
       throw;
    }

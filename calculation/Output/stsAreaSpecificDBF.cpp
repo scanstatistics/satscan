@@ -10,15 +10,14 @@
 #include "stsSaTScan.h"
 #pragma hdrstop
 
-#include <DBFFile.h>
-#include "stsOutputDBF.h"
 #include "stsAreaSpecificDBF.h"
+#include <DBFFile.h>
 
 // constructor
-stsAreaSpecificDBF::stsAreaSpecificDBF(const ZdString& sFileName) : DBaseOutput(sFileName) {
+__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const ZdString& sFileName) {
    try {
       Init();
-      Setup();
+      Setup(sFileName);
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsAreaSpecificDBF");
@@ -29,6 +28,10 @@ stsAreaSpecificDBF::stsAreaSpecificDBF(const ZdString& sFileName) : DBaseOutput(
 // destructor
 stsAreaSpecificDBF::~stsAreaSpecificDBF() {
    try {
+      for(unsigned int i = gvFields.GetNumElements() - 1; i > 0; --i) {
+         delete gvFields[0]; gvFields[0] = 0;
+         gvFields.RemoveElement(0);
+      }
    }
    catch (...) {/* munch munch, yummy*/}
 }
@@ -69,20 +72,18 @@ void stsAreaSpecificDBF::CreateDBFFile() {
 // post: vector will be defined using the names and field types provided by the descendant classes
 void stsAreaSpecificDBF::GetFields(ZdVector<ZdField*>& vFields) {
    DBFFile*		pFile = 0;
-   ZdVector<ZdString> 	vFieldNames;
-   ZdVector<char> 	vFieldTypes;
    ZdField*		pField = 0;
-   ZdVector<short>      vFieldLengths;
+   ZdVector<std::pair<std::pair<ZdString, char>, short> > vFieldDescrips;
 
    try {
       pFile = new DBFFile();
-      SetupFields(vFieldNames, vFieldTypes, vFieldLengths);
+      SetupFields(vFieldDescrips);
 
-      for(unsigned int i = 0; i < vFieldNames.GetNumElements(); ++i) {
+      for(unsigned int i = 0; i < vFieldDescrips.GetNumElements(); ++i) {
          pField = pFile->GetNewField();
-         pField->SetName(vFieldNames[i]);
-         pField->SetType(vFieldTypes[i]);
-         pField->SetLength(vFieldLengths[i]);
+         pField->SetName(vFieldDescrips[i].first.first.GetCString());
+         pField->SetType(vFieldDescrips[i].first.second);
+         pField->SetLength(vFieldDescrips[i].second);
          vFields.AddElement(pField->Clone());
          delete pField;
       }
@@ -99,6 +100,7 @@ void stsAreaSpecificDBF::GetFields(ZdVector<ZdField*>& vFields) {
 
 // global inits
 void stsAreaSpecificDBF::Init() {
+   glRunNumber = 0;
 }
 
 // records the calculated data from the cluster into the dBase file
@@ -161,42 +163,79 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 }
 
 // internal setup
-void stsAreaSpecificDBF::Setup() {
+void stsAreaSpecificDBF::Setup(const ZdString& sFileName) {
+   TXDFile	        *pFile = 0;
+   ZdFileRecord         *pLastRecord = 0;
+   unsigned long        ulLastRecordNumber;
+
    try {
+      pFile = new TXDFile("AnalysisHistory.txd", ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
+
+      // get a record buffer, input data and append the record
+      ulLastRecordNumber = pFile->GotoLastRecord(pLastRecord);
+      // if there's records in the file
+      if(ulLastRecordNumber)
+         pLastRecord->GetField(0, glRunNumber);
+      delete pLastRecord;
+      pFile->Close();
+
+      delete pFile;
+
+      gsFileName = sFileName;
+
       CreateDBFFile();
    }
-   catch (ZdException &x) {
+   catch(ZdException &x) {
+      if(pFile)
+         pFile->Close();
+      delete pFile; pFile = 0;
+      delete pLastRecord; pLastRecord = 0;
       x.AddCallpath("Setup()", "stsAreaSpecificDBF");
       throw;
    }
 }
 
 // field names for the cluster level output dbf file
-// pre: empty vector of strings passed in
+// pre: empty vector of triplets passed in
 // post: passes back through reference a vector of strings will the field names for the dbf file
-void stsAreaSpecificDBF::SetupFields(ZdVector<ZdString>& vFieldNames, ZdVector<char>& vFieldTypes, ZdVector<short>& vFieldLengths) {
+void stsAreaSpecificDBF::SetupFields(ZdVector<std::pair<std::pair<ZdString, char>, short> >& vFieldDescrips){
+   std::pair<pair<ZdString, char>, long>        field;
+
    try {
-      vFieldNames.AddElement("RUN_NUM");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
-      vFieldNames.AddElement("CLUST_NUM");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
-      vFieldNames.AddElement("AREA_ID");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
-      vFieldNames.AddElement("P-VALUE");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
-      vFieldNames.AddElement("OBSERVED");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
-      vFieldNames.AddElement("EXPECTED");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
-      vFieldNames.AddElement("REL_RISK");
-      vFieldTypes.AddElement(ZD_NUMBER_FLD);
-      vFieldLengths.AddElement(12);
+      field.first.first = "RUN_NUM";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "CLUST_NUM";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "AREA_ID";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "P-VALUE";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "OBSERVED";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "EXPECTED";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
+
+      field.first.first = "REL_RISK";
+      field.first.second = ZD_NUMBER_FLD;
+      field.second = 12;
+      vFieldDescrips.AddElement(field);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupFields()", "stsAreaSpecificDBF");

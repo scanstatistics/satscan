@@ -1,21 +1,23 @@
 #ifndef stsAreaSpecificDBF_H
 #define stsAreaSpecificDBF_H
 
-#include "stsOutputDBF.h"
-
-class stsAreaSpecificDBF : public DBaseOutput {
+class stsAreaSpecificDBF {
    private:
       void	Init();
-      void	Setup();
+      void	Setup(const ZdString& sFileName);
    protected:
+      ZdString	                gsFileName;
+      ZdVector<ZdField*>        gvFields;
+      long                      glRunNumber;
+
       void 	        CreateDBFFile();
       void              GetFields(ZdVector<ZdField*>& vFields);
-      virtual void 	SetupFields(ZdVector<ZdString>& vFieldNames, ZdVector<char>& vFieldTypes, ZdVector<short>& vFieldLengths);
+      void      	SetupFields(ZdVector<std::pair<std::pair<ZdString, char>, short> >& vFieldDescrips);
    public:
-      stsAreaSpecificDBF(const ZdString& sFileName);
+      __fastcall stsAreaSpecificDBF(const ZdString& sFileName);
       virtual ~stsAreaSpecificDBF();
 
-      virtual void      RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber);
+      void              RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber);
 };
 
 #endif

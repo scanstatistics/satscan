@@ -1,21 +1,23 @@
 #ifndef stsClusterLevelDBF_H
 #define stsClusterLevelDBF_H
 
-#include "stsOutputDBF.h"
-
-class stsClusterLevelDBF:public DBaseOutput {
+class stsClusterLevelDBF {
    private:
       void	Init();
-      void	Setup();
+      void	Setup(const ZdString& sFileName);
    protected:
+      ZdString	                gsFileName;
+      ZdVector<ZdField*>        gvFields;
+      long                      glRunNumber;
+
       void 	        CreateDBFFile();
       void              GetFields(ZdVector<ZdField*>& vFields);
-      virtual void 	SetupFields(ZdVector<ZdString>& vFieldNames, ZdVector<char>& vFieldTypes, ZdVector<short>& vFieldLengths);
+      void 	        SetupFields(ZdVector<ZdString>& vFieldNames, ZdVector<char>& vFieldTypes, ZdVector<short>& vFieldLengths);
    public:
-      stsClusterLevelDBF(const ZdString& sFileName);
+      __fastcall stsClusterLevelDBF(const ZdString& sFileName);
       virtual ~stsClusterLevelDBF();
 
-      virtual void      RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber);
+      void              RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber);
 };
 
 #endif
