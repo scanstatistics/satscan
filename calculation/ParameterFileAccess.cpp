@@ -371,6 +371,17 @@ int AbtractParameterFileAccess::ReadUnsignedInt(const ZdString& sValue, Paramete
   return iReadResult;
 }
 
+/** Attempts to interpret passed string as version number of format '#.#.#'. Throws InvalidParameterException. */
+void AbtractParameterFileAccess::ReadVersion(const ZdString& sValue) const {
+  CParameters::CreationVersion       vVersion;
+
+   if (sValue.GetIsEmpty())
+     InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n", "ReadVersion()", GetParameterLabel(CREATION_VERSION));
+   else if (sscanf(sValue.GetCString(), "%u.%u.%u", &vVersion.iMajor, &vVersion.iMinor, &vVersion.iRelease) < 3)
+    InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n", "ReadVersion()", GetParameterLabel(CREATION_VERSION));
+  gParameters.SetVersion(vVersion);
+}
+
 /** Calls appropriate read and set function for parameter type. */
 void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, const ZdString& sParameter, BasePrint& PrintDirection) {
   int           iValue;
@@ -448,7 +459,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case INTERVAL_ENDRANGE         : ReadDateRange(sParameter, eParameterType, Range);
                                        gParameters.SetEndRangeStartDate(Range.first.c_str());
                                        gParameters.SetEndRangeEndDate(Range.second.c_str()); break;
-      case TIMETRENDCONVRG           : gParameters.SetTimeTrendConvergence(ReadDouble(sParameter, eParameterType)); break;
+      case TIMETRENDCONVRG           : /*gParameters.SetTimeTrendConvergence(ReadDouble(sParameter, eParameterType));*/ break;
       case MAXCIRCLEPOPFILE          : gParameters.SetMaxCirclePopulationFileName(sParameter.GetCString(), true); break;
       case EARLY_SIM_TERMINATION     : gParameters.SetTerminateSimulationsEarly(ReadBoolean(sParameter, eParameterType)); break;
       case REPORTED_GEOSIZE          : gParameters.SetMaximumReportedGeographicalClusterSize(ReadFloat(sParameter, eParameterType)); break;
@@ -465,7 +476,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
                                        gParameters.SetSpatialAdjustmentType((SpatialAdjustmentType)ReadInt(sParameter, eParameterType)); break;
       case MULTI_DATASET_PURPOSE_TYPE: iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, MULTIVARIATE, ADJUSTMENT);
                                        gParameters.SetMultipleDataStreamPurposeType((MultipleStreamPurposeType)ReadInt(sParameter, eParameterType)); break;
-      case CREATION_VERSION          : gParameters.SetVersion(sParameter); break;
+      case CREATION_VERSION          : ReadVersion(sParameter); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","SetParameter()", eParameterType);
     };
   }
@@ -477,5 +488,19 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
     x.AddCallpath("SetParameter()","AbtractParameterFileAccess");
     throw;
   }
+}
+
+//var_arg constructor
+InvalidParameterException::InvalidParameterException(va_list varArgs, const char *sMessage, const char *sSourceModule, ZdException::Level iLevel)
+                          :ResolvableException(varArgs, sMessage, sSourceModule, iLevel){}
+
+//static generation function:
+void InvalidParameterException::Generate(const char *sMessage, const char *sSourceModule, ...) {
+   va_list varArgs;
+   va_start(varArgs, sSourceModule);
+
+   InvalidParameterException theException(varArgs, sMessage, sSourceModule, Normal);
+   va_end(varArgs);
+   throw theException;
 }
 

@@ -34,6 +34,7 @@ class AbtractParameterFileAccess {
     float                       ReadFloat(const ZdString& sValue, ParameterType eParameterType) const;
     int                         ReadInt(const ZdString& sValue, ParameterType eParameterType) const;
     int                         ReadUnsignedInt(const ZdString& sValue, ParameterType eParameterType) const;
+    void                        ReadVersion(const ZdString& sValue) const;
 
   protected:
     CParameters               & gParameters;
@@ -56,6 +57,15 @@ class AbtractParameterFileAccess {
 
      virtual bool               Read(const char* szFilename) = 0;
      virtual void               Write(const char * szFilename) = 0;
+};
+
+/** Execption class of invalid parameters */
+class InvalidParameterException : public ResolvableException {
+  public:
+   InvalidParameterException(va_list varArgs, const char *sMessage, const char *sSourceModule, ZdException::Level iLevel);
+   virtual ~InvalidParameterException() {}
+
+   static void Generate (const char *sMessage, const char *sSourceModule,  ... );
 };
 //***************************************************************************
 #endif
