@@ -8,7 +8,7 @@
 #include <Dialogs.hpp>
 #include <StdCtrls.hpp>
 #include <Mapi.hpp>       // VCL Header
-#include <Printers.hpp>   // VCL Header
+//#include <Printers.hpp>   // VCL Header
 #include <ExtCtrls.hpp>
 #include <fcntl.h>
 //---------------------------------------------------------------------------
@@ -17,17 +17,16 @@ class TfrmAnalysisRun : public TForm {
   friend class CalcThread;
   
   __published:	// IDE-managed Components
-        TRichEdit *reAnalysisBox;
-        TPrintDialog *PrintDialog1;
         TSplitter *Splitter1;
         TPanel *Panel1;
-        TRichEdit *reWarningsBox;
         TLabel *lbWarning;
         TPanel *Panel2;
         TButton *btnPrint;
         TButton *btnCancel;
         TButton *btnEMail;
-        TRichEdit *RichEdit1;
+        TRichEdit *rteAnalysisBox;
+        TRichEdit *rteWarningsBox;
+        TPrintDialog *PrintDialog;
         void __fastcall OnCancelClick(TObject *Sender);
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall OnPrintClick(TObject *Sender);

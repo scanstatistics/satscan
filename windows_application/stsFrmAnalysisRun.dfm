@@ -29,22 +29,6 @@ object frmAnalysisRun: TfrmAnalysisRun
     Align = alBottom
     Beveled = True
   end
-  object reAnalysisBox: TRichEdit
-    Left = 0
-    Top = 0
-    Width = 505
-    Height = 243
-    Align = alClient
-    Lines.Strings = (
-      '')
-    ParentShowHint = False
-    ReadOnly = True
-    ScrollBars = ssBoth
-    ShowHint = False
-    TabOrder = 0
-    WantReturns = False
-    WordWrap = False
-  end
   object Panel1: TPanel
     Left = 0
     Top = 248
@@ -52,7 +36,7 @@ object frmAnalysisRun: TfrmAnalysisRun
     Height = 125
     Align = alBottom
     BevelOuter = bvNone
-    TabOrder = 1
+    TabOrder = 0
     object lbWarning: TLabel
       Left = 0
       Top = 0
@@ -67,20 +51,6 @@ object frmAnalysisRun: TfrmAnalysisRun
       Font.Style = [fsBold]
       ParentFont = False
     end
-    object reWarningsBox: TRichEdit
-      Left = 0
-      Top = 19
-      Width = 505
-      Height = 65
-      Align = alClient
-      ParentShowHint = False
-      ReadOnly = True
-      ScrollBars = ssBoth
-      ShowHint = False
-      TabOrder = 0
-      WantReturns = False
-      WordWrap = False
-    end
     object Panel2: TPanel
       Left = 0
       Top = 84
@@ -88,7 +58,7 @@ object frmAnalysisRun: TfrmAnalysisRun
       Height = 41
       Align = alBottom
       BevelOuter = bvNone
-      TabOrder = 1
+      TabOrder = 0
       object btnPrint: TButton
         Left = 310
         Top = 8
@@ -140,21 +110,34 @@ object frmAnalysisRun: TfrmAnalysisRun
         OnClick = OnEMailClick
       end
     end
+    object rteWarningsBox: TRichEdit
+      Left = 0
+      Top = 19
+      Width = 505
+      Height = 65
+      TabStop = False
+      Align = alClient
+      ReadOnly = True
+      ScrollBars = ssVertical
+      TabOrder = 1
+      WantReturns = False
+    end
   end
-  object RichEdit1: TRichEdit
-    Left = 16
-    Top = 8
-    Width = 41
-    Height = 25
-    Lines.Strings = (
-      'Rich'
-      'Edit'
-      '1')
-    TabOrder = 2
-    Visible = False
+  object rteAnalysisBox: TRichEdit
+    Left = 0
+    Top = 0
+    Width = 505
+    Height = 243
+    TabStop = False
+    Align = alClient
+    ReadOnly = True
+    ScrollBars = ssVertical
+    TabOrder = 1
+    WantReturns = False
+    WordWrap = False
   end
-  object PrintDialog1: TPrintDialog
-    Left = 248
-    Top = 448
+  object PrintDialog: TPrintDialog
+    Left = 8
+    Top = 12
   end
 end
