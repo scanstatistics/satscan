@@ -427,14 +427,14 @@ void stsRunHistoryFile::SetAdditionalOutputFileNameString(ZdString& sOutputFileN
          ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".rr.dbf");
 
       if(params.m_bOutputCensusAreas)
-         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".col.txt");
+         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".gis.txt");
       if(params.GetOutputAreaSpecificDBF())
-         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".col.dbf");
+         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".gis.dbf");
 
       if(params.m_bMostLikelyClusters)
-         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".gis.txt");
-      if(params.GetOutputClusterLevelDBF()) 
-         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".gis.dbf");
+         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".col.txt");
+      if(params.GetOutputClusterLevelDBF())
+         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".col.dbf");
 
    }
    catch (ZdException &x) {
