@@ -207,6 +207,7 @@ class TfrmAnalysis : public TForm {
     void                ParseDate(char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *pDay);
     bool                ReadSession(char *sFileName);
     void                SaveTextParameters();
+    void                SetSpatialDistanceCaption();
     void                SetupCaseFileFieldDescriptors();
     void                SetupControlFileFieldDescriptors();
     void                SetupGeoFileFieldDescriptors();

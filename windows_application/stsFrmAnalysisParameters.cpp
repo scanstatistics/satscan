@@ -1270,15 +1270,7 @@ void __fastcall TfrmAnalysis::rgClustersToIncludeClick(TObject *Sender) {
 void __fastcall TfrmAnalysis::rgCoordinatesClick(TObject *Sender) {
   try {
     gpParams->m_nCoordType = rgCoordinates->ItemIndex;
-    switch (rgCoordinates->ItemIndex)
-       {
-       case 0  : rdoSpatialDistance->Caption = "Distance (in kilometers)";
-                 break;
-       case 1  : rdoSpatialDistance->Caption = "Distance (data defined units)";
-                 break;
-       default : SSException::Generate("Unknown coordinates radio button index: \"%i\".",
-                                       "rgCoordinatesClick()", rgCoordinates->ItemIndex);
-       }
+    SetSpatialDistanceCaption();
     DataExchange();
   }
   catch (SSException & x) {
@@ -1537,6 +1529,26 @@ void TfrmAnalysis::SaveTextParameters() {
   }
 }
 
+// Sets caption of radio button that indicates maximum spatial cluster size is
+// in distance units.
+void TfrmAnalysis::SetSpatialDistanceCaption() {
+  try {
+    switch (rgCoordinates->ItemIndex)
+       {
+       case 0  : rdoSpatialDistance->Caption = "Distance (Cartesian units)";
+                 break;
+       case 1  : rdoSpatialDistance->Caption = "Distance (in kilometers)";
+                 break;
+       default : SSException::Generate("Unknown coordinates radio button index: \"%i\".",
+                                       "rgCoordinatesClick()", rgCoordinates->ItemIndex);
+       }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("SetSpatialDistanceCaption()", "TfrmAnalysis");
+    throw;
+  }
+}
+
 // fill the Case File field descriptor vector with the appropriate field names for a case file
 void TfrmAnalysis::SetupCaseFileFieldDescriptors() {
    try {
@@ -1704,6 +1716,7 @@ void TfrmAnalysis::SetupInterface() {
     rdoSpatialPercentage->Checked = gpParams->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE;
     rdoSpatialDistance->Checked = gpParams->m_nMaxSpatialClusterSizeType == DISTANCETYPE;
     EnablePopulationFileInput();
+    SetSpatialDistanceCaption();
 
     //***************** check this code ******************************
     rgClustersToInclude->ItemIndex = (gpParams->m_bAliveClustersOnly ? 1:0);  // IS THIS RETURNING THE RIGHT INDEX OR SHOULD I SWITCH IT AROUND ???
