@@ -23,12 +23,37 @@ CategoryDescriptor::~CategoryDescriptor() {
   catch(...){}
 }
 
+void CategoryDescriptor::AddCaseCount(count_t tCaseCount) {
+  try {
+    if (gtCaseCount + tCaseCount < 0) {
+      char      sDateString[20];
+
+      ZdGenerateException("  Error: Attempt to add cases of \"%d\" to current cases of \"%d\" causes data overflow.",
+                          "AddCaseCount()", tCaseCount, gtCaseCount);
+    }
+    gtCaseCount += tCaseCount;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("AddCaseCount()","CategoryDescriptor");
+    throw;
+  }
+}
+
 /** Adds population to existing population for date index. */
 void CategoryDescriptor::AddPopulationAtDateIndex(long lPopluation, int iDateIndex, const TractHandler & theTractHandler) {
   try {
     if (0 > iDateIndex || iDateIndex > theTractHandler.tiGetNumPopDates() - 1)
       ZdGenerateException("Index %d out of range(0 - %d).","AddPopulationAtDateIndex()",
-                          ZdException::Normal, iDateIndex, theTractHandler.tiGetNumPopDates() -1);
+                          iDateIndex, theTractHandler.tiGetNumPopDates() -1);
+
+    if (gpPopulationList[iDateIndex] + lPopluation < 0) {
+      char      sDateString[20];
+
+      ZdGenerateException("  Error: Attempt to add population of \"%d\" to current population of \"%d\" at date \"%s\" causes data overflow.",
+                          "AddPopulationAtDateIndex()", lPopluation, gpPopulationList[iDateIndex],
+                          JulianToChar(sDateString, theTractHandler.tiGetPopDate(iDateIndex)));
+    }
+
     gpPopulationList[iDateIndex] += lPopluation;
   }
   catch (ZdException &x) {
@@ -68,6 +93,20 @@ long CategoryDescriptor::GetPopulationAtDateIndex(int iDateIndex, const TractHan
     throw;
   }
   return gpPopulationList[iDateIndex];
+}
+
+void CategoryDescriptor::SetCaseCount(count_t tCaseCount) {
+  try {
+    if (tCaseCount < 0) {
+      char      sDateString[20];
+      ZdGenerateException("  Error: Invalid case count \"%d\".", "SetCaseCount()", tCaseCount);
+    }
+    gtCaseCount = tCaseCount;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetCaseCount()","CategoryDescriptor");
+    throw;
+  }
 }
 
 /** Allocates next CategoryDescriptor. Returns pointer to allocated object. */

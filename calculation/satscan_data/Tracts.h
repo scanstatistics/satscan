@@ -35,7 +35,7 @@ class CategoryDescriptor {
     void			Init() {giCategoryIndex=-1; gtCaseCount=0; gpPopulationList=0; gpNextDescriptor=0;}
     void                        Setup(int iPopulationListSize, int iCategoryIndex);
 
-    void			AddCaseCount(count_t tCaseCount) {gtCaseCount += tCaseCount;}
+    void			AddCaseCount(count_t tCaseCount);
     void                        AddPopulationAtDateIndex(long lPopluation, int iDateIndex, const TractHandler & theTractHandler);
     void                        Combine(const CategoryDescriptor * pCategoryDescriptor, const TractHandler & theTractHandler);
     count_t			GetCaseCount() const {return gtCaseCount;}
@@ -43,7 +43,7 @@ class CategoryDescriptor {
     CategoryDescriptor        * GetNextDescriptor() {return gpNextDescriptor;}
     const CategoryDescriptor  * GetNextDescriptor() const {return gpNextDescriptor;}
     long			GetPopulationAtDateIndex(int iDateIndex, const TractHandler & theTractHandler) const;
-    void			SetCaseCount(count_t tCaseCount) {gtCaseCount = tCaseCount;}
+    void			SetCaseCount(count_t tCaseCount);
     void			SetCategoryIndex(int iCategoryIndex) {giCategoryIndex = iCategoryIndex;}
     CategoryDescriptor        * SetNextDescriptor(int iPopulationListSize, int iCategoryIndex);
     void                        SetPopulationAtDateIndex(long lPopluation, int iDateIndex, const TractHandler & theTractHandler);
