@@ -1,6 +1,6 @@
 object frmMainForm: TfrmMainForm
-  Left = 172
-  Top = 131
+  Left = 215
+  Top = 140
   Width = 784
   Height = 557
   Caption = 
@@ -99,7 +99,7 @@ object frmMainForm: TfrmMainForm
       ShowHint = True
     end
     object sbHelp: TSpeedButton
-      Left = 200
+      Left = 240
       Top = 3
       Width = 25
       Height = 25
@@ -191,7 +191,7 @@ object frmMainForm: TfrmMainForm
       Height = 23
     end
     object sbUpdate: TSpeedButton
-      Left = 160
+      Left = 200
       Top = 3
       Width = 25
       Height = 25
@@ -210,6 +210,40 @@ object frmMainForm: TfrmMainForm
         C4C575F7755F777FF5755CCCCC3333334C5557F5FF777777F7F554C333333333
         CC55575777777777F755553333CC3C33C555557777557577755555533CC4C4CC
         5555555775FFFF77555555555C4CCC5555555555577777555555}
+      NumGlyphs = 2
+      ParentShowHint = False
+      ShowHint = True
+    end
+    object Bevel7: TBevel
+      Left = 232
+      Top = 3
+      Width = 2
+      Height = 23
+    end
+    object SpeedButton1: TSpeedButton
+      Left = 160
+      Top = 3
+      Width = 25
+      Height = 25
+      Action = PrintResultsAction
+      Flat = True
+      Glyph.Data = {
+        DE010000424DDE01000000000000760000002800000024000000120000000100
+        0400000000006801000000000000000000001000000010000000000000000000
+        80000080000000808000800000008000800080800000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
+        66666666666666FFF66666660000666666600066666666666666F888FFF66666
+        00006666600788006666666666F8866888FFF666000066600778008800666666
+        688668888888FFF60000660778878800880066668F688688888888F600006688
+        877788880080666688866688888888F600006887777788888800666886666688
+        888888F6000068F7777F888888880668F6666F888888888F000068F77FF77788
+        88880668F66FF6FF8888888F000068FFF779977788880668FFF6F8866688888F
+        000068F77AA7778807880668F6688666888F888600006688F77788FF07006666
+        88F666886686F8660000666688F8FFFFF06666666688F8F666686F6600006666
+        6688FFFFFF0666666666886F666686FF0000666666668FFFFFF0066666666686
+        F666F88600006666666668FFF8866666666666686FF886660000666666666688
+        8666666666666666888666660000666666666666666666666666666666666666
+        0000}
       NumGlyphs = 2
       ParentShowHint = False
       ShowHint = True
@@ -248,8 +282,9 @@ object frmMainForm: TfrmMainForm
       object Exit1: TMenuItem
         Caption = '-'
       end
-      object mitPrintSetup: TMenuItem
-        Action = PrintSetupAction
+      object Print1: TMenuItem
+        Action = PrintResultsAction
+        Caption = '&Print'
       end
       object N3: TMenuItem
         Caption = '-'
@@ -298,15 +333,11 @@ object frmMainForm: TfrmMainForm
   object OpenDialog1: TOpenDialog
     Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
     Left = 48
-    Top = 408
+    Top = 376
   end
   object SaveDialog1: TSaveDialog
     Left = 48
     Top = 344
-  end
-  object PrinterSetupDialog1: TPrinterSetupDialog
-    Left = 48
-    Top = 376
   end
   object ActionList: TActionList
     Images = ImageList
@@ -347,20 +378,12 @@ object frmMainForm: TfrmMainForm
       ShortCut = 16456
       OnExecute = CloseSessionActionExecute
     end
-    object PrintSessionAction: TAction
-      Category = 'AnalysisRun'
-      Caption = 'Print Session Information'
+    object PrintResultsAction: TAction
+      Category = 'AnalysisRunPrint'
       Enabled = False
-      Hint = 'Print Session Information'
+      Hint = 'Print Analysis Results'
       ShortCut = 16464
-      OnExecute = PrintSessionActionExecute
-    end
-    object PrintSetupAction: TAction
-      Category = 'All'
-      Caption = 'Print Setup'
-      Hint = 'Print Setup'
-      ShortCut = 16464
-      OnExecute = PrintSetupActionExecute
+      OnExecute = PrintResultsActionExecute
     end
     object ExitAction: TAction
       Category = 'All'

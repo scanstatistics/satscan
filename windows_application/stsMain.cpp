@@ -8,6 +8,7 @@
 #include "stsFrmStartWindow.h"
 #include "stsFrmUpdateCheck.h"
 #include "stsFrmDownloadProgress.h"
+#include "stsBaseAnalysisChildForm.h"
 TfrmMainForm *frmMainForm;
 
 /** contructor */
@@ -54,9 +55,9 @@ void TfrmMainForm::EnableActions(bool bEnable) {
   for (int i=0; i < ActionList->ActionCount; ++i) {
      TAction* pAction = dynamic_cast<TAction*>(ActionList->Actions[i]);
      if (pAction) {
-       if (pAction->Category == "All")
+       if (pAction->Category == CATEGORY_ALL)
          pAction->Enabled = bEnable;
-       else if(pAction->Category == "AnalysisRun" || pAction->Category == "Analysis")
+       else
          pAction->Enabled = !bEnable;
      }
   }
@@ -251,19 +252,17 @@ void __fastcall TfrmMainForm::OpenParameterFileActionExecute(TObject *Sender) {
   }
 }
 
-/** print action event -- not defined currently, printing selected in analysis window */
-void __fastcall TfrmMainForm::PrintSessionActionExecute(TObject *Sender) {
-  //try {
-  //}
-  //catch (ZdException &x) {
-  //  x.AddCallpath("PrintSessionActionExecute","TfrmMainForm");
-  //  DisplayBasisException(this, x);
-  //}
-}
-
-/** print setup action event -- launches print setup dialog */
-void __fastcall TfrmMainForm::PrintSetupActionExecute(TObject *Sender) {
-  PrinterSetupDialog1->Execute();
+/** print action event -- sends selected in analysis window results to printer */
+void __fastcall TfrmMainForm::PrintResultsActionExecute(TObject *Sender) {
+  try {
+    TfrmAnalysisRun * frmAnalysisRun = dynamic_cast<TfrmAnalysisRun *>(frmMainForm->ActiveMDIChild);
+    if (frmAnalysisRun)
+      frmAnalysisRun->Print();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("PrintResultsActionExecute()","TfrmMainForm");
+    DisplayBasisException(this, x);
+  }
 }
 
 /** refreshes 'reopen' menu item to reflect possibly updated history list */
@@ -418,5 +417,6 @@ void __fastcall TfrmMainForm::UpdateActionExecute(TObject *Sender) {
     DisplayBasisException(this, x);
   }
 }
+
 
 
