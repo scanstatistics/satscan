@@ -121,6 +121,11 @@ __published:	// IDE-managed Components
         TPanel *pnlBottom;
         TMemo *memMessages;
         TLabel *lblMessages;
+        TButton *btnClear;
+        TAction *ActionClearList;
+        TToolButton *ToolButton1;
+        TToolButton *btnDeleteAnlysesFiles;
+        TAction *ActionDeleteAnalysesFiles;
         void __fastcall btnBrowseBatchExecutableClick(TObject *Sender);
         void __fastcall btnBrowseBatchExecutableComparatorClick(TObject *Sender);
         void __fastcall ActionStartExecute(TObject *Sender);
@@ -138,11 +143,13 @@ __published:	// IDE-managed Components
         void __fastcall ActionRemoveParameterFileExecute(TObject *Sender);
         void __fastcall ActionSaveParametersListExecute(TObject *Sender);
         void __fastcall ActionLoadParameterListExecute(TObject *Sender);
-        void __fastcall ltvScheduledBatchsKeyDown(TObject *Sender,
+        void __fastcall lstScheduledBatchsKeyDown(TObject *Sender,
           WORD &Key, TShiftState Shift);
-        void __fastcall ltvScheduledBatchsSelectItem(TObject *Sender,
+        void __fastcall lstScheduledBatchsSelectItem(TObject *Sender,
           TListItem *Item, bool Selected);
         void __fastcall ActionOptionsExecute(TObject *Sender);
+        void __fastcall ActionClearListExecute(TObject *Sender);
+        void __fastcall ActionDeleteAnalysesFilesExecute(TObject *Sender);
    
   private:
     std::vector<ParameterResultsInfo>   gvParameterResultsInfo;

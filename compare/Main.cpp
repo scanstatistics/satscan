@@ -120,6 +120,30 @@ __fastcall TfrmMain::~TfrmMain() {
   catch (...){}
 }
 
+/** browses for parameter file and adds to list */
+void __fastcall TfrmMain::ActionAddParameterFileExecute(TObject *Sender) {
+  OpenDialog->FileName =  "";
+  OpenDialog->DefaultExt = "*.prm";
+  OpenDialog->Filter = "Parameters files (*.prm)|*.prm|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+  OpenDialog->FilterIndex = 0;
+  OpenDialog->Title = "Add Parameter File";
+  OpenDialog->Options << ofAllowMultiSelect;
+  if (OpenDialog->Execute())
+    for (int i=0; i < OpenDialog->Files->Count; i++)
+      ltvScheduledBatchs->Items->Add()->Caption = OpenDialog->Files->Strings[i];
+  EnableStartAction();
+  EnableSaveParametersListAction();
+  EnableRemoveParameterAction();
+}
+
+/** clears parameter list*/
+void __fastcall TfrmMain::ActionClearListExecute(TObject *Sender) {
+  ltvScheduledBatchs->Items->Clear();
+  EnableStartAction();
+  EnableSaveParametersListAction();
+  EnableRemoveParameterAction();
+}
+
 /** launches compare program for viewing differences in cluster information files */
 void __fastcall TfrmMain::ActionCompareClusterInformationExecute(TObject *Sender) {
   std::string   sMaster, sCompare;
@@ -212,117 +236,6 @@ void __fastcall TfrmMain::ActionCompareSimulatedLLRsExecute(TObject *Sender) {
     Application->MessageBox("Unable to launch comparison program.", "Error", MB_OK);
 }
 
-void TfrmMain::ArchiveResults() {
-  AnsiString    sArchiveFilename, sStatsFilename, sCommand;
-  std::string   sMaster, sCompare, sTemp1, sTemp2;
-  TDateTime     Date;
-
-  //create archive name
-  Date = TDateTime::CurrentDateTime();
-  DateSeparator = '_';
-  TimeSeparator = '.';
-  sArchiveFilename.printf("%s%s.zip", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(Date).c_str());
-  if (!access(sArchiveFilename.c_str(), 00) && remove(sArchiveFilename.c_str()))
-    return;
-
-  //print archive filename
-  memMessages->Lines->Add("Archive Filename:");
-  memMessages->Lines->Add(sArchiveFilename);
-  memMessages->Lines->Add("");
-  //create analysis stats file
-  sStatsFilename.printf("%s%s.stats.txt", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(Date).c_str());
-  CreateStatsFile(sStatsFilename.c_str());
-  sCommand.sprintf("\"%s\" %s \"%s\" \"%s\"",
-                   gpFrmOptions->edtArchiveApplication->Text.c_str(),
-                   gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
-                   sArchiveFilename.c_str(),
-                   sStatsFilename.c_str());
-  Execute(sCommand, false);
-  remove(sStatsFilename.c_str());
-  //add files of each comparison process
-  for (int i=0; i < lstDisplay->Items->Count; ++i) {
-    const ParameterResultsInfo & Ref = gvParameterResultsInfo[(size_t)lstDisplay->Items->Item[i]->Data];
-
-    //add parameter file
-    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\"",
-                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
-                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
-                     sArchiveFilename.c_str(),
-                     ltvScheduledBatchs->Items->Item[i]->Caption.c_str());
-    Execute(sCommand, false);
-
-    //add results file
-    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
-                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
-                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
-                     sArchiveFilename.c_str(),
-                     GetResultFileName(Ref.GetFilename(), sMaster).c_str(),
-                     GetCompareFilename(Ref.GetFilename(), sCompare).c_str());
-    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
-      remove(sMaster.c_str());
-      remove(sCompare.c_str());
-    }
-
-    //add cluster information file
-    sTemp1 = sMaster;
-    sTemp1.insert(sTemp1.find_last_of("."),".col");
-    sTemp2 = sCompare;
-    sTemp2.insert(sTemp2.find_last_of("."),".col");
-    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
-                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
-                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
-                     sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
-      remove(sTemp1.c_str());
-      remove(sTemp2.c_str());
-    }
-
-    //add location information file
-    sTemp1 = sMaster;
-    sTemp1.insert(sTemp1.find_last_of("."),".gis");
-    sTemp2 = sCompare;
-    sTemp2.insert(sTemp2.find_last_of("."),".gis");
-    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
-                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
-                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
-                     sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
-      remove(sTemp1.c_str());
-      remove(sTemp2.c_str());
-    }
-
-    //add relatives risks
-    if (Ref.GetRelativeRisksType() == EQUAL || Ref.GetRelativeRisksType() == NOT_EQUAL) {
-      sTemp1 = sMaster;
-      sTemp1.insert(sTemp1.find_last_of("."),".rr");
-      sTemp2 = sCompare;
-      sTemp2.insert(sTemp2.find_last_of("."),".rr");
-      sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
-                       gpFrmOptions->edtArchiveApplication->Text.c_str(),
-                       gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
-                       sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-      if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
-        remove(sTemp1.c_str());
-        remove(sTemp2.c_str());
-      }
-    }
-
-    //add simulated ratios
-    sTemp1 = sMaster;
-    sTemp1.insert(sTemp1.find_last_of("."),".llr");
-    sTemp2 = sCompare;
-    sTemp2.insert(sTemp2.find_last_of("."),".llr");
-    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
-                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
-                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
-                     sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
-      remove(sTemp1.c_str());
-      remove(sTemp2.c_str());
-    }
-  }
-}
-
 /** launches compare program for viewing differences in output files */
 void __fastcall TfrmMain::ActionCompareResultFilesExecute(TObject *Sender) {
   std::string   sMaster, sCompare;
@@ -342,6 +255,100 @@ void __fastcall TfrmMain::ActionCompareResultFilesExecute(TObject *Sender) {
     Application->MessageBox("Unable to launch comparison program.", "Error", MB_OK);
 }
 
+/** delete analyses files created */
+void __fastcall TfrmMain::ActionDeleteAnalysesFilesExecute(TObject *Sender) {
+  std::string   sMaster, sCompare, sDeleteMe;
+  TCursor aCursor = Screen->Cursor;
+
+  Screen->Cursor = crHourGlass;
+  //add files of each comparison process
+  for (int i=0; i < lstDisplay->Items->Count; ++i) {
+    const ParameterResultsInfo & Ref = gvParameterResultsInfo[(size_t)lstDisplay->Items->Item[i]->Data];
+
+    //delete results file
+    remove(GetResultFileName(Ref.GetFilename(), sMaster).c_str());
+    remove(GetCompareFilename(Ref.GetFilename(), sCompare).c_str());
+    //delete cluster information file
+    sDeleteMe = sMaster;
+    sDeleteMe.insert(sDeleteMe.find_last_of("."),".col");
+    remove(sDeleteMe.c_str());
+    sDeleteMe = sCompare;
+    sDeleteMe.insert(sDeleteMe.find_last_of("."),".col");
+    remove(sDeleteMe.c_str());
+    //delete location information file
+    sDeleteMe = sMaster;
+    sDeleteMe.insert(sDeleteMe.find_last_of("."),".gis");
+    remove(sDeleteMe.c_str());
+    sDeleteMe = sCompare;
+    sDeleteMe.insert(sDeleteMe.find_last_of("."),".gis");
+    remove(sDeleteMe.c_str());
+    //add relatives risks
+    if (Ref.GetRelativeRisksType() == EQUAL || Ref.GetRelativeRisksType() == NOT_EQUAL) {
+      sDeleteMe = sMaster;
+      sDeleteMe.insert(sDeleteMe.find_last_of("."),".rr");
+      remove(sDeleteMe.c_str());
+      sDeleteMe = sCompare;
+      sDeleteMe.insert(sDeleteMe.find_last_of("."),".rr");
+      remove(sDeleteMe.c_str());
+    }
+    //delete simulated ratios
+    sDeleteMe = sMaster;
+    sDeleteMe.insert(sDeleteMe.find_last_of("."),".llr");
+    remove(sDeleteMe.c_str());
+    sDeleteMe = sCompare;
+    sDeleteMe.insert(sDeleteMe.find_last_of("."),".llr");
+    remove(sDeleteMe.c_str());
+  }
+  Screen->Cursor = aCursor;
+}
+
+/** loads parameters from file */
+void __fastcall TfrmMain::ActionLoadParameterListExecute(TObject *Sender){
+  std::string   sParameterFilename;
+
+  OpenDialog->FileName =  "";
+  OpenDialog->DefaultExt = "*.prml";
+  OpenDialog->Filter = "Parameters List files (*.prml)|*.prml|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+  OpenDialog->FilterIndex = 0;
+  OpenDialog->Title = "Load Parameters List from File";
+  OpenDialog->Options >> ofAllowMultiSelect;
+  if (OpenDialog->Execute()) {
+    ltvScheduledBatchs->Items->Clear();
+    std::ifstream in(OpenDialog->FileName.c_str());
+    while (!in.eof()) {
+         std::getline(in, sParameterFilename);
+          TListItem * pItem = ltvScheduledBatchs->Items->Add();
+          pItem->Caption = sParameterFilename.c_str();
+          pItem->Caption = pItem->Caption.Trim();
+          if (!pItem->Caption.Length())
+            pItem->Delete();
+
+    }
+  }
+  EnableStartAction();
+  EnableSaveParametersListAction();
+  EnableRemoveParameterAction();
+}
+
+/** launches options dialog */
+void __fastcall TfrmMain::ActionOptionsExecute(TObject *Sender) {
+  gpFrmOptions->ShowModal();
+}
+
+/** removes selected parameter file from list */
+void __fastcall TfrmMain::ActionRemoveParameterFileExecute(TObject *Sender){
+  TListItem   * pListItem;
+
+  for (int i=0; i < ltvScheduledBatchs->Items->Count; i++) {
+     pListItem = ltvScheduledBatchs->Items->Item[i];
+     if (pListItem->Selected)
+      ltvScheduledBatchs->Items->Delete(pListItem->Index);
+  }
+  EnableStartAction();
+  EnableSaveParametersListAction();
+  EnableRemoveParameterAction();
+}
+
 /** saves results of comparison to file */
 void __fastcall TfrmMain::ActionSaveComparisonStatsExecute(TObject *Sender) {
   SaveDialog->FileName =  "";
@@ -351,6 +358,23 @@ void __fastcall TfrmMain::ActionSaveComparisonStatsExecute(TObject *Sender) {
   SaveDialog->Title = "Save Analysis Results to File";
   if (SaveDialog->Execute())
     CreateStatsFile(SaveDialog->FileName.c_str());
+}
+
+/** saves parameters to file */
+void __fastcall TfrmMain::ActionSaveParametersListExecute(TObject *Sender){
+  int           i;
+  TListItem   * pListItem;
+
+  SaveDialog->FileName =  "";
+  SaveDialog->DefaultExt = "*.prml";
+  SaveDialog->Filter = "Parameters List files (*.prml)|*.prml|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+  SaveDialog->FilterIndex = 0;
+  SaveDialog->Title = "Save Parameters List to File";
+  if (SaveDialog->Execute()) {
+    std::ofstream out(SaveDialog->FileName.c_str(), std::ios_base::in|std::ios_base::out|std::ios_base::trunc);
+    for (i=0; i < ltvScheduledBatchs->Items->Count; i++)
+       out << ltvScheduledBatchs->Items->Item[i]->Caption.c_str() << std::endl;
+  }
 }
 
 /** starts process of comparing output files */
@@ -468,6 +492,118 @@ void TfrmMain::AddSubItemForType(TListItem * pListItem, CompareType eType) {
   };
 }
 
+/** creates and adds analyses results to arhive file */
+void TfrmMain::ArchiveResults() {
+  AnsiString    sArchiveFilename, sStatsFilename, sCommand;
+  std::string   sMaster, sCompare, sTemp1, sTemp2;
+  TDateTime     Date;
+
+  //create archive name
+  Date = TDateTime::CurrentDateTime();
+  DateSeparator = '_';
+  TimeSeparator = '.';
+  sArchiveFilename.printf("%s%s.zip", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(Date).c_str());
+  if (!access(sArchiveFilename.c_str(), 00) && remove(sArchiveFilename.c_str()))
+    return;
+
+  //print archive filename
+  memMessages->Lines->Add("Archive Filename:");
+  memMessages->Lines->Add(sArchiveFilename);
+  memMessages->Lines->Add("");
+  //create analysis stats file
+  sStatsFilename.printf("%s%s.stats.txt", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(Date).c_str());
+  CreateStatsFile(sStatsFilename.c_str());
+  sCommand.sprintf("\"%s\" %s \"%s\" \"%s\"",
+                   gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                   gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                   sArchiveFilename.c_str(),
+                   sStatsFilename.c_str());
+  Execute(sCommand, false);
+  remove(sStatsFilename.c_str());
+  //add files of each comparison process
+  for (int i=0; i < lstDisplay->Items->Count; ++i) {
+    const ParameterResultsInfo & Ref = gvParameterResultsInfo[(size_t)lstDisplay->Items->Item[i]->Data];
+
+    //add parameter file
+    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\"",
+                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                     sArchiveFilename.c_str(),
+                     ltvScheduledBatchs->Items->Item[i]->Caption.c_str());
+    Execute(sCommand, false);
+
+    //add results file
+    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
+                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                     sArchiveFilename.c_str(),
+                     GetResultFileName(Ref.GetFilename(), sMaster).c_str(),
+                     GetCompareFilename(Ref.GetFilename(), sCompare).c_str());
+    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
+      remove(sMaster.c_str());
+      remove(sCompare.c_str());
+    }
+
+    //add cluster information file
+    sTemp1 = sMaster;
+    sTemp1.insert(sTemp1.find_last_of("."),".col");
+    sTemp2 = sCompare;
+    sTemp2.insert(sTemp2.find_last_of("."),".col");
+    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
+                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                     sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
+    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
+      remove(sTemp1.c_str());
+      remove(sTemp2.c_str());
+    }
+
+    //add location information file
+    sTemp1 = sMaster;
+    sTemp1.insert(sTemp1.find_last_of("."),".gis");
+    sTemp2 = sCompare;
+    sTemp2.insert(sTemp2.find_last_of("."),".gis");
+    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
+                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                     sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
+    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
+      remove(sTemp1.c_str());
+      remove(sTemp2.c_str());
+    }
+
+    //add relatives risks
+    if (Ref.GetRelativeRisksType() == EQUAL || Ref.GetRelativeRisksType() == NOT_EQUAL) {
+      sTemp1 = sMaster;
+      sTemp1.insert(sTemp1.find_last_of("."),".rr");
+      sTemp2 = sCompare;
+      sTemp2.insert(sTemp2.find_last_of("."),".rr");
+      sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
+                       gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                       gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                       sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
+      if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
+        remove(sTemp1.c_str());
+        remove(sTemp2.c_str());
+      }
+    }
+
+    //add simulated ratios
+    sTemp1 = sMaster;
+    sTemp1.insert(sTemp1.find_last_of("."),".llr");
+    sTemp2 = sCompare;
+    sTemp2.insert(sTemp2.find_last_of("."),".llr");
+    sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
+                     gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                     gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                     sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
+    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
+      remove(sTemp1.c_str());
+      remove(sTemp2.c_str());
+    }
+  }
+}
+
 /** Sets open dialog filters and displays for selecting executable. */
 void __fastcall TfrmMain::btnBrowseBatchExecutableComparatorClick(TObject *Sender) {
   OpenDialog->FileName =  "";
@@ -512,7 +648,7 @@ void TfrmMain::CompareClusterInformationFiles() {
     eType = NOT_EQUAL;
 
   gvParameterResultsInfo.back().SetClusterInformationType(eType);
-}  
+}
 
 /** compare Location Information files */
 void TfrmMain::CompareLocationInformationFiles() {
@@ -726,6 +862,14 @@ void TfrmMain::EnableCompareActions() {
   }
 }
 
+void TfrmMain::EnableRemoveParameterAction() {
+  ActionRemoveParameterFile->Enabled = ltvScheduledBatchs->SelCount;
+}
+
+void TfrmMain::EnableSaveParametersListAction() {
+  ActionSaveParametersList->Enabled = ltvScheduledBatchs->Items->Count;
+}
+
 /** enables save results action */
 void TfrmMain::EnableSaveResultsAction() {
   ActionSaveComparisonStats->Enabled = lstDisplay->Items->Count;
@@ -894,11 +1038,20 @@ void __fastcall TfrmMain::lstDisplayCompare(TObject *Sender, TListItem *Item1, T
   else
     Compare = CompareText(Item1->SubItems->Strings[giSortColumnIndex - 1], Item2->SubItems->Strings[giSortColumnIndex - 1]);
 
-  Compare *=  gvColumnSortOrder[giSortColumnIndex];  
+  Compare *=  gvColumnSortOrder[giSortColumnIndex];
 }
-                           
+
 void __fastcall TfrmMain::lstDisplaySelectItem(TObject *Sender, TListItem *Item, bool Selected) {
   EnableCompareActions();
+}
+
+void __fastcall TfrmMain::lstScheduledBatchsKeyDown(TObject *Sender, WORD &Key, TShiftState Shift) {
+ if (Key == VK_DELETE)
+   ActionRemoveParameterFileExecute(Sender);
+}
+
+void __fastcall TfrmMain::lstScheduledBatchsSelectItem(TObject *Sender, TListItem *Item, bool Selected) {
+  EnableRemoveParameterAction();
 }
 
 /** displays open dialog when compare program not set */
@@ -910,103 +1063,5 @@ bool TfrmMain::PromptForCompareProgram() {
   return true;
 }
 
-void __fastcall TfrmMain::ActionAddParameterFileExecute(TObject *Sender) {
-  OpenDialog->FileName =  "";
-  OpenDialog->DefaultExt = "*.prm";
-  OpenDialog->Filter = "Parameters files (*.prm)|*.prm|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-  OpenDialog->FilterIndex = 0;
-  OpenDialog->Title = "Add Parameter File";
-  OpenDialog->Options << ofAllowMultiSelect;
-  if (OpenDialog->Execute())
-    for (int i=0; i < OpenDialog->Files->Count; i++)
-      ltvScheduledBatchs->Items->Add()->Caption = OpenDialog->Files->Strings[i];
-  EnableStartAction();
-  EnableSaveParametersListAction();
-  EnableRemoveParameterAction();
-}
-//---------------------------------------------------------------------------
 
-void __fastcall TfrmMain::ActionRemoveParameterFileExecute(TObject *Sender){
-  TListItem   * pListItem;
-
-  for (int i=0; i < ltvScheduledBatchs->Items->Count; i++) {
-     pListItem = ltvScheduledBatchs->Items->Item[i];
-     if (pListItem->Selected)
-      ltvScheduledBatchs->Items->Delete(pListItem->Index);
-  }
-  EnableStartAction();
-  EnableSaveParametersListAction();
-  EnableRemoveParameterAction();
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfrmMain::ActionSaveParametersListExecute(TObject *Sender){
-  int           i;
-  TListItem   * pListItem;
-
-  SaveDialog->FileName =  "";
-  SaveDialog->DefaultExt = "*.prml";
-  SaveDialog->Filter = "Parameters List files (*.prml)|*.prml|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-  SaveDialog->FilterIndex = 0;
-  SaveDialog->Title = "Save Parameters List to File";
-  if (SaveDialog->Execute()) {
-    std::ofstream out(SaveDialog->FileName.c_str(), std::ios_base::in|std::ios_base::out|std::ios_base::trunc);
-    for (i=0; i < ltvScheduledBatchs->Items->Count; i++)
-       out << ltvScheduledBatchs->Items->Item[i]->Caption.c_str() << std::endl;
-  }
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfrmMain::ActionLoadParameterListExecute(TObject *Sender){
-  std::string   sParameterFilename;
-
-  OpenDialog->FileName =  "";
-  OpenDialog->DefaultExt = "*.prml";
-  OpenDialog->Filter = "Parameters List files (*.prml)|*.prml|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-  OpenDialog->FilterIndex = 0;
-  OpenDialog->Title = "Load Parameters List from File";
-  OpenDialog->Options >> ofAllowMultiSelect;
-  if (OpenDialog->Execute()) {
-    ltvScheduledBatchs->Items->Clear();
-    std::ifstream in(OpenDialog->FileName.c_str());
-    while (!in.eof()) {
-         std::getline(in, sParameterFilename);
-          TListItem * pItem = ltvScheduledBatchs->Items->Add();
-          pItem->Caption = sParameterFilename.c_str();
-          pItem->Caption = pItem->Caption.Trim();
-          if (!pItem->Caption.Length())
-            pItem->Delete();
-
-    }
-  }
-  EnableStartAction();
-  EnableSaveParametersListAction();
-  EnableRemoveParameterAction();
-}
-//---------------------------------------------------------------------------
-
-void TfrmMain::EnableSaveParametersListAction() {
-  ActionSaveParametersList->Enabled = ltvScheduledBatchs->Items->Count;
-}
-
-void TfrmMain::EnableRemoveParameterAction() {
-  ActionRemoveParameterFile->Enabled = ltvScheduledBatchs->SelCount;
-}
-
-
-void __fastcall TfrmMain::ltvScheduledBatchsKeyDown(TObject *Sender, WORD &Key, TShiftState Shift) {
- if (Key == VK_DELETE)
-   ActionRemoveParameterFileExecute(Sender);
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfrmMain::ltvScheduledBatchsSelectItem(TObject *Sender, TListItem *Item, bool Selected) {
-  EnableRemoveParameterAction();
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfrmMain::ActionOptionsExecute(TObject *Sender) {
-  gpFrmOptions->ShowModal();
-}
-//---------------------------------------------------------------------------
 
