@@ -319,7 +319,7 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
     // If iNumCollapsedIntervals is at least two, them collapse intervals. The reason we don't collapse when
     // iNumCollapsedIntervals is one is because iNumCollapsedIntervals does not take into account the
     // first time interval, which will be the bucket for the collapsed intervals.
-    if ((iNumCollapsibleIntervals = std::max(iNumCollapsibleIntervals, 0)) > 1) {
+    if (iNumCollapsibleIntervals > 1) {
       // Removes collaped intervals from the data structure which details time interval start times.
       // When input data is read, what would have gone into the respective second interval, third, etc.
       // will be cummulated into first interval.
