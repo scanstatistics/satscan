@@ -14,7 +14,7 @@
 #include "PrintQueue.h"
 #include "PoissonLikelihoodCalculation.h"
 #include "BernoulliLikelihoodCalculation.h"
-#include "WillcoxomLikelihoodCalculation.h"
+#include "WilcoxonLikelihoodCalculation.h"
 #include "NormalLikelihoodCalculation.h"
 #include "ExponentialLikelihoodCalculation.h"
 
