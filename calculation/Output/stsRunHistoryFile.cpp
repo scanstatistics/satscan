@@ -58,12 +58,9 @@ stsRunHistoryFile::stsRunHistoryFile(const CParameters& Parameters, BasePrint& P
       SetRunNumber();
    }
    catch (ZdException &x) {
-      PrintDirection.SatScanPrintWarning("Warning: Run history file \"%s\" is not accessible.\n",
+      PrintDirection.SatScanPrintWarning("Warning: The run history file \"%s\" is not accessible.\n"
+                                         "         Analysis history information will not be recorded.\n\n",
                                          Parameters.GetRunHistoryFilename().GetCString());
-      PrintDirection.SatScanPrintWarning("         No history information will not be recorded.\n\n");
-      //PrintDirection.SatScanPrintWarning("The following error occured in attempting to log run history to file:\n");
-      //PrintDirection.SatScanPrintWarning(x.GetErrorMessage());
-      //PrintDirection.SatScanPrintWarning("\n");
    }
 }
 

@@ -16,7 +16,7 @@ DBaseFileWriter::DBaseFileWriter(BaseOutputStorageClass& OutputFileData, BasePri
   }
   catch (ZdException &x) {
     gPrintDirection.SatScanPrintWarning(x.GetErrorMessage());
-    gPrintDirection.SatScanPrintWarning("\nWarning - Unable to create dBase output file.\n");
+    gPrintDirection.SatScanPrintWarning("\nWarning - Unable to create the dBase output file.\n");
   }
 }
 
@@ -70,7 +70,7 @@ void DBaseFileWriter::Print() {
       if (pTransaction)
          pFile->EndTransaction(pTransaction);
       gPrintDirection.SatScanPrintWarning(x.GetErrorMessage());
-      gPrintDirection.SatScanPrintWarning("\nWarning - Unable to write record to dBase file %s.\n", gsFileName.GetCString());
+      gPrintDirection.SatScanPrintWarning("\nWarning - Unable to write to dBase file %s.\n", gsFileName.GetCString());
    }
 }
 

@@ -16,7 +16,7 @@ ASCIIFileWriter::ASCIIFileWriter(BaseOutputStorageClass& OutputFileData, BasePri
   }
   catch (ZdException &x) {
     gPrintDirection.SatScanPrintWarning(x.GetErrorMessage());
-    gPrintDirection.SatScanPrintWarning("\nWarning - Unable to create ASCII output file.\n");
+    gPrintDirection.SatScanPrintWarning("\nWarning - Unable to create the ASCII output file.\n");
   }
 }
 
@@ -117,7 +117,7 @@ void ASCIIFileWriter::Print() {
    catch (ZdException &x) {
       fclose(pFile);
       gPrintDirection.SatScanPrintWarning(x.GetErrorMessage());
-      gPrintDirection.SatScanPrintWarning("\nWarning - Unable to write record to ASCII file: %s.\n", gsFileName.GetCString());
+      gPrintDirection.SatScanPrintWarning("\nWarning - Unable to write to ASCII file: %s.\n", gsFileName.GetCString());
    }
 }
 
