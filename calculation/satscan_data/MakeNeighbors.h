@@ -91,7 +91,6 @@ class CentroidNeighborCalculatorByPopulation : public CentroidNeighborCalculator
   protected:
     measure_t                 * gpLocationsPopulation;
     std::vector<measure_t>      gvCalculatedPopulations;
-    measure_t                   gtMaxMeasure;
 
     virtual tract_t             CalculateNumberOfNeighboringLocations() const;
 

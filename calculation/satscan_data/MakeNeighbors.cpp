@@ -293,17 +293,6 @@ CentroidNeighborCalculatorByPopulation::CentroidNeighborCalculatorByPopulation(C
   }
   else
     gpLocationsPopulation = gDataHub.GetDataStreamHandler().GetStream(0).GetMeasureArray()[0];
-
-
-  //$$ This section of code will need revision since GetStream(0).GetTotalMeasure() is always zero for
-  //$$ the Ordinal model. Need to talk with Martin regarding the expected functionality of this feature. 
-
-  //determine maximum measure ---- NOT SURE WHY THIS IS; MIGHT HAVE TO DO WITH SEQUENTIAL SCAN
-     // Actually, if MaxMeasure to be kept, neighbors don't need to be counted...KR-980327
-  if (gDataHub.GetParameters().GetIsSequentialScanning() && gDataHub.GetDataStreamHandler().GetStream(0).GetTotalMeasure() > gtMaximumSize)
-    gtMaxMeasure = gDataHub.GetDataStreamHandler().GetStream(0).GetTotalMeasure();
-  else
-    gtMaxMeasure = gtMaximumSize;
 }
 
 /** destructor */
@@ -317,7 +306,7 @@ tract_t CentroidNeighborCalculatorByPopulation::CalculateNumberOfNeighboringLoca
   tract_t                                       tCount=0;
   measure_t                                     tCumMeasure=0;
 
-  for (; itr != itr_end && (tCumMeasure + gpLocationsPopulation[itr->GetTractNumber()]) <= gtMaxMeasure; ++itr) {
+  for (; itr != itr_end && (tCumMeasure + gpLocationsPopulation[itr->GetTractNumber()]) <= gtMaximumSize; ++itr) {
      tCumMeasure += gpLocationsPopulation[itr->GetTractNumber()];
      if (tCumMeasure <= gtMaximumSize)
        ++tCount;
