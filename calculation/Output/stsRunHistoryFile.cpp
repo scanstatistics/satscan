@@ -52,7 +52,7 @@ void stsRunHistoryFile::CleanupFieldVector(ZdVector<ZdField*>& vFields) {
 // pre: txd file doesn't not already exist
 // post: will create the csv file with the appropraite fields
 void stsRunHistoryFile::CreateRunHistoryFile() {
-   ZdField		Field;
+   ZdField		*pField = 0;
    ZdVector<ZdField*>	vFields;
    TXDFile              File;
    ZdVector<pair<pair<ZdString, char>, long> >  vFieldDescrip;
@@ -61,13 +61,13 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
    try {
       SetupFields(vFieldDescrip);
       for(unsigned int i = 0; i < vFieldDescrip.GetNumElements(); ++i) {
-         Field = *(File.GetNewField());
-         Field.SetName(vFieldDescrip[i].first.first.GetCString());
-         Field.SetType(vFieldDescrip[i].first.second);
-         Field.SetLength(vFieldDescrip[i].second);
-         Field.SetOffset(uwOffset);
+         pField = (File.GetNewField());
+         pField->SetName(vFieldDescrip[i].first.first.GetCString());
+         pField->SetType(vFieldDescrip[i].first.second);
+         pField->SetLength(vFieldDescrip[i].second);
+         pField->SetOffset(uwOffset);
          uwOffset += vFieldDescrip[i].second;
-         vFields.AddElement(Field.Clone());
+         vFields.AddElement(pField);
       }
 
       File.PackFields(vFields);
@@ -123,27 +123,28 @@ void stsRunHistoryFile::OpenRunHistoryFile(const unsigned short& uwSignificantAt
    ZdString             sTempValue;
    ZdFieldValue         fv;
    auto_ptr<ZdFileRecord> pLastRecord, pRecord;
+   auto_ptr<TXDFile>    pFile;
 
    try {
       // if we don't have one then create it
       if(!ZdIO::Exists(gsFilename.GetCString()))
          CreateRunHistoryFile();
 
-      TXDFile File(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
+      pFile.reset(new TXDFile(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE));
 
       // get a record buffer, input data and append the record
-      pLastRecord.reset(File.GetNewRecord());
-      ulLastRecordNumber = File.GotoLastRecord(&(*pLastRecord));
+      pLastRecord.reset(pFile->GetNewRecord());
+      ulLastRecordNumber = pFile->GotoLastRecord(&(*pLastRecord));
       // if there's records in the file
       if(ulLastRecordNumber)
          pLastRecord->GetField(0, glRunNumber);
 
-      pTransaction = (File.BeginTransaction());
+      pTransaction = (pFile->BeginTransaction());
 
       // note: I'm going to document the heck out of this section in case they can't the run
       // specs on us at any time and that way I can interpret my assumptions in case any just so
       // happen to be incorrect, so bear with me - AJV 9/3/2002
-      pRecord.reset(File.GetNewRecord());
+      pRecord.reset(pFile->GetNewRecord());
       //  run number field -- increment the run number so that we have a new unique run number - AJV 9/4/2002
       fv.SetType(pRecord->GetFieldType(uwFieldNumber));
       fv.AsDouble() = ++glRunNumber;
@@ -349,11 +350,15 @@ void stsRunHistoryFile::OpenRunHistoryFile(const unsigned short& uwSignificantAt
       fv.AsLong() = (long)uwSignificantAt005;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
-      File.AppendRecord(*pTransaction, *pRecord);
-      File.EndTransaction(pTransaction);
-      File.Close();
+      pFile->AppendRecord(*pTransaction, *pRecord);
+      pFile->EndTransaction(pTransaction); pTransaction = 0;
+      pFile->Close();
    }
    catch(ZdException &x) {
+      if(pTransaction)
+         pFile->EndTransaction(pTransaction);
+      pTransaction = 0;
+      pFile->Close();
       x.AddCallpath("OpenRunHistoryFile()", "stsRunHistoryFile");
       throw;
    }
