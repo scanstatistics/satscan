@@ -106,7 +106,7 @@ void MakeNeighbors(TractHandler *pTInfo,
 
    try
       {
-      pPrintDirection->SatScanPrintf("Constructing the circles\n\n");
+      pPrintDirection->SatScanPrintf("Constructing the circles\n");
 
       // Actually, if MaxMeasure to be kept, neighbors don't need to be counted...KR-980327
       if (nMaxMeasureToKeep > MaxCircleSize)
@@ -162,7 +162,7 @@ void MakeNeighbors(TractHandler *pTInfo,
        //Ellipsoid calculations.
        if (iNumEllipses>0)
           {
-         pPrintDirection->SatScanPrintf("Constructing the ellipsoids\n\n");
+         pPrintDirection->SatScanPrintf("Constructing the ellipsoids\n");
           nStartTime = clock();
           //For computation "time" - compute the number of iterations..
           for (es=0; es<iNumEllipses; es++)
