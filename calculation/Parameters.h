@@ -257,7 +257,8 @@ class CParameters
     void                SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath=false);
     void                SetPrintDirection(BasePrint *pPrintDirection);
     void                SetRunHistoryFilename(const ZdString& sFilename) {gsRunHistoryFilename = sFilename;}
-    void                SetSpecialGridFileName(const char * sSpecialGridFileName, bool bCorrectForRelativePath=false);
+    void                SetSpecialGridFileName(const char * sSpecialGridFileName, bool bCorrectForRelativePath=false, bool bSetUsingFlag=false);
+    void                SetUseSpecialGrid(bool bUseSpecialGridFile) { m_bSpecialGridFile = bUseSpecialGridFile; }
     bool                UseSpecialGrid() const { return m_bSpecialGridFile; }
     bool                ValidateParameters();
     bool                ValidateDateString(char* szDate, int nDateType);

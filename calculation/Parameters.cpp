@@ -2020,7 +2020,7 @@ void CParameters::SetPrintDirection(BasePrint *pPrintDirection) {
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file
     does not exist. */
-void CParameters::SetSpecialGridFileName(const char * sSpecialGridFileName, bool bCorrectForRelativePath) {
+void CParameters::SetSpecialGridFileName(const char * sSpecialGridFileName, bool bCorrectForRelativePath, bool bSetUsingFlag) {
   try {
     if (! sSpecialGridFileName)
       ZdGenerateException("Null pointer.", "SetSpecialGridFileName()");
@@ -2028,10 +2028,15 @@ void CParameters::SetSpecialGridFileName(const char * sSpecialGridFileName, bool
     m_sSpecialGridFileName = sSpecialGridFileName;
     if (bCorrectForRelativePath)
       ConvertRelativePath(m_sSpecialGridFileName);
-    //If empty, then definately not using special grid. But someone could have
-    //the special grid filename specified but turned using it off in parameters file.  
+
     if (m_sSpecialGridFileName.empty())
-      m_bSpecialGridFile = false;
+      m_bSpecialGridFile = false; //If empty, then definately not using special grid.
+    else if (bSetUsingFlag)
+      m_bSpecialGridFile = true;  //Permits setting special grid filename in GUI interface
+                                  //where obviously the use of special grid file is the desire.
+    //else m_bSpecialGridFile is as set from parameters read. This permits the situation
+    //where user has modified the paramters file manually so that there is a named
+    //special grid file but they turned off option to use it. 
   }
   catch (ZdException &x) {
     x.AddCallpath("SetSpecialGridFileName()", "CParameters");
