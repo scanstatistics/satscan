@@ -1495,11 +1495,11 @@ bool TfrmAnalysis::ValidateSpatialClusterSize() {
 
       gParameters.SetMaximumGeographicClusterSize(atof(edtMaxClusterSize->Text.c_str()));
 
-      if (rgProbability->ItemIndex == SPACETIMEPERMUTATION && rdoSpatialPercentage->Checked && !edtPopFileName->Text.Length())
-        ZdException::GenerateNotification("For a Space-Time Permutation model with the maximum spatial cluster size defined\n"
-                                          "as a percentage of the population at risk, a Population file must be specified.\n"
-                                          "Alternatively you may choose to specify the maximum as a fixed radius, in which\n"
-                                          "no Population file is required.","ValidateSpatialClusterSize()");
+      if (rgProbability->ItemIndex == SPACETIMEPERMUTATION && rdoSpatialPercentage->Checked && !edtMaxCirclePopulationFilename->Text.Length())
+        ZdException::GenerateNotification("For a Space-Time Permutation model with the maximum spatial cluster size defined as a\n"
+                                          "percentage of the population at risk, a Maximum Circle Population file must be specified.\n"
+                                          "Alternatively you may choose to specify the maximum as a fixed radius, in which no\n"
+                                          "Maximum Circle Population file is required.","ValidateSpatialClusterSize()");
     }
   }
   catch (ZdException & x) {
@@ -1776,4 +1776,6 @@ void __fastcall TfrmAnalysis::edtMaxCirclePopulationFilenameChange(TObject *Send
   edtMaxCirclePopulationFilename->Hint = edtMaxCirclePopulationFilename->Text;
 }
 //---------------------------------------------------------------------------
+
+
 
