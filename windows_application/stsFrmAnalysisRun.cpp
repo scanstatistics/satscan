@@ -5,13 +5,13 @@
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 TfrmAnalysisRun *frmAnalysisRun;
+
 //---------------------------------------------------------------------------
 __fastcall TfrmAnalysisRun::TfrmAnalysisRun(TComponent* Owner) : TForm(Owner) {
   Init();
 }
 //---------------------------------------------------------------------------
 void TfrmAnalysisRun::AddLine(char *sLine) {
-  // if (reAnalysisBox->Lines->Count < 2000)
   reAnalysisBox->Lines->Add(sLine);
 }
 //---------------------------------------------------------------------------
@@ -19,17 +19,22 @@ void TfrmAnalysisRun::AddWarningLine(char *sLine) {
    // Since the SatScan program prints an error message for each input file
    // record in error, just set some odd max here for now, so it does not
    // print and print and print until it runs out of input file lines...
-   //
-   // Yes, this is not a good way to handle this...  BUT !!!!!!
-   // I DO NOT HAVE TIME TO RE-WRITE THE DATA_READ CPP !!!!!!!
-   //
-   //  SO BACK OFF !!!!
-   if (reWarningsBox->Lines->Count < 300)
-      reWarningsBox->Lines->Add(sLine);
+   // --- This still needs to be revisited.
+   if (! gbMaximumWarningsReached) {
+     if (reWarningsBox->Lines->Count < gbMaximumWarningsPrinted)
+       reWarningsBox->Lines->Add(sLine);
+     else {
+       reWarningsBox->Lines->Add("Output exceeded limit...");
+       gbMaximumWarningsReached = true;
+     }
+   }
 }
 //---------------------------------------------------------------------------
 void TfrmAnalysisRun::CancelJob() {
-  reAnalysisBox->Lines->Add("Job cancelled.");
+  if (reWarningsBox->Lines->Count)
+    reAnalysisBox->Lines->Add("Analysis cancelled. Please review 'Warnings/Errors' window below.");
+  else
+    reAnalysisBox->Lines->Add("Analysis cancelled.");
   btnCancel->Caption = "Close";
   gbCancel = true;
   SetCanClose(true);
@@ -40,6 +45,13 @@ void __fastcall TfrmAnalysisRun::FormClose(TObject *Sender, TCloseAction &Action
     Action = caFree;
   else
     Action = caNone;
+}
+//---------------------------------------------------------------------------
+void TfrmAnalysisRun::Init() {
+  gbCanClose=false;
+  gbCancel=false;
+  gbPrintWarnings=true;
+  gbMaximumWarningsReached=false;
 }
 //---------------------------------------------------------------------------
 void TfrmAnalysisRun::LoadFromFile(char *sFileName) {
@@ -69,7 +81,7 @@ void __fastcall TfrmAnalysisRun::OnCancelClick(TObject *Sender) {
   if (btnCancel->Caption == "Close")
     Close();
   else {
-    reAnalysisBox->Lines->Add("Cancelling job, please wait...");
+    reAnalysisBox->Lines->Add("Cancelling analysis, please wait...");
     gbCancel = true;
   }
 }

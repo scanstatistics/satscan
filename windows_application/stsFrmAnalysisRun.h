@@ -36,9 +36,11 @@ class TfrmAnalysisRun : public TForm {
     bool                gbCancel;
     bool                gbPrintWarnings;
     bool                gbCanClose;
+    bool                gbMaximumWarningsReached;
     AnsiString          FFileName;
+    static const int    gbMaximumWarningsPrinted = 300; 
 
-    void                Init() {gbCanClose=false; gbCancel=false; gbPrintWarnings=true;}
+    void                Init();
 
   protected:
     void                AddLine(char *sLine);
