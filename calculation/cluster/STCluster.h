@@ -9,19 +9,19 @@
 class CSpaceTimeCluster : public CCluster
 {
   public:
-    CSpaceTimeCluster(int nTIType, int nIntervals, int nMaxIntervals);
+    CSpaceTimeCluster(int nTIType, int nIntervals, int nMaxIntervals, BasePrint *pPrintDirection);
     virtual ~CSpaceTimeCluster();
 
     CSpaceTimeCluster& operator =(const CSpaceTimeCluster& cluster);
 
     virtual void Initialize(tract_t nCenter);
-
+    virtual void InitTimeIntervalIndeces(int nLow, int nHigh);
     virtual void InitTimeIntervalIndeces();
     void DeAllocCumulativeCounts();
-
-    virtual bool SetNextTimeInterval();
-
-    virtual void AddNeighbor(const CSaTScanData& Data, count_t** pCases, tract_t n);
+    inline virtual bool SetNextTimeInterval();
+    virtual bool SetNextProspTimeInterval();
+    virtual void AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n);
+    void GetMeasure();
 
   protected:
     count_t*   m_pCumCases;

@@ -1,27 +1,36 @@
 //model.cpp
 
 #include "model.h"
-#include "error.h"
 
-CModel::CModel(CParameters* pParameters, CSaTScanData* pData)
+CModel::CModel(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
 {
-  m_pParameters = pParameters;
-  m_pData       = pData;
+   try
+      {
+      m_pParameters = pParameters;
+      m_pData       = pData;
+      gpPrintDirection = pPrintDirection;
 
-  #if DEBUGMODEL
-  if ((m_pDebugModelFile = fopen("DebugModel.TXT", "w")) == NULL)
-  {
-    fprintf(stderr, "  Error: Unable to create makedata debug file.\n");
-    FatalError(0);
-  }
-  #endif
+#ifdef DEBUGMODEL
+      if ((m_pDebugModelFile = fopen("DebugModel.TXT", "w")) == NULL)
+         {
+         fprintf(stderr, "  Error: Unable to create makedata debug file.\n");
+         //FatalError(0, gpPrintDirection);
+         SSGenerateException("  Error: Unable to create makedata debug file.\n","CModel constructor");
+         }
+#endif
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("CModel", "CModel");
+      throw;
+      }
 }
 
 CModel::~CModel()
 {
-  #if DEBUGMODEL
+#ifdef DEBUGMODEL
   fclose(m_pDebugModelFile);
-  #endif
+#endif
 }
 
 

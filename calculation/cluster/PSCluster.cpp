@@ -5,8 +5,8 @@
 #include "param.h"
 #include "display.h"
 
-CPurelySpatialCluster::CPurelySpatialCluster()
-                   :CCluster()
+CPurelySpatialCluster::CPurelySpatialCluster(BasePrint *pPrintDirection)
+                   :CCluster(pPrintDirection)
 {
   Initialize(0);
 }
@@ -23,16 +23,24 @@ void CPurelySpatialCluster::Initialize(tract_t nCenter=0)
   m_nClusterType = PURELYSPATIAL;
 }
 
-void CPurelySpatialCluster::AddNeighbor(const CSaTScanData& Data, count_t** pCases, tract_t n)
+void CPurelySpatialCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n)
 {
-//  printf("Add neighbor.\n");
-  tract_t nNeighbor = Data.GetNeighbor(m_Center, n);
+   try
+      {
+      //  printf("Add neighbor.\n");
+      tract_t nNeighbor = Data.GetNeighbor(iEllipse, m_Center, n);
 
-  m_nTracts++;
-  m_nCases   += pCases[0][nNeighbor];
-  m_nMeasure += Data.m_pMeasure[0][nNeighbor];
+       m_nTracts++;
+       m_nCases   += pCases[0][nNeighbor];                        // the first dimension [0] applies to the time interval...
+       m_nMeasure += Data.m_pMeasure[0][nNeighbor];               // the first dimension [0] applies to the time interval...
 
-  m_bClusterDefined = true;
+       m_bClusterDefined = true;
+       }
+   catch (SSException & x)
+      {
+      x.AddCallpath("AddNeighbor()", "CPurelySpatialCluster");
+      throw;
+      }
 }
 
 void CPurelySpatialCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes,

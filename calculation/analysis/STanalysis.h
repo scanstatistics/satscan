@@ -8,11 +8,12 @@
 class CSpaceTimeAnalysis : public CAnalysis
 {
   public:
-    CSpaceTimeAnalysis(CParameters* pParameters, CSaTScanData* pData);
+    CSpaceTimeAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
     virtual ~CSpaceTimeAnalysis();
 
     virtual CCluster* GetTopCluster(tract_t nCenter);
     virtual double    MonteCarlo();
+    virtual double    MonteCarloProspective();
 };
 
 #endif

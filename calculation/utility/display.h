@@ -7,7 +7,7 @@
 
 void DisplayVersion(FILE* fp, int nPos);
 
-void HoldForEnter();
-void HoldForEnter(const char* szMessage);
+//void HoldForEnter();
+//void HoldForEnter(const char* szMessage);
 
 #endif 

@@ -9,14 +9,14 @@
 class CPurelySpatialAnalysis : public CAnalysis
 {
   public:
-    CPurelySpatialAnalysis(CParameters* pParameters, CSaTScanData* pData);
+    CPurelySpatialAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
     virtual ~CPurelySpatialAnalysis();
 
     virtual CCluster* GetTopCluster(tract_t nCenter);
 
   protected:
     virtual double    MonteCarlo();
-
+    virtual double    MonteCarloProspective();
 };
 
 #endif

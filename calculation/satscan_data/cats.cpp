@@ -19,27 +19,46 @@
 #include "cats.h"
 #include "salloc.h"
 
-struct catnode {     /* associates a combination of values with cat number */
-   int num;                /* category number       */
-   char **dvec;            /* array of values       */
-   struct catnode *next;   /* link to next category */
-};
-
-static struct catnode *CatList=0;             /* linked list of categories */
-static int CatVecLength;  /* = 0; (KR 1/14/97) */         /* length of "dvec" */
 
 static int CompList(char *dv1[], char *dv2[], int len);
 
+
+Cats::Cats(BasePrint *pPrintDirection)
+{
+   Init();
+   gpPrintDirection = pPrintDirection;
+}
+Cats::~Cats()
+{
+   Free();
+}
+void Cats::Free()
+{
+   catCleanup();
+}
+void Cats::Init()
+{
+   CatList = 0;
+   //CatVecLength;  /* = 0; (KR 1/14/97) */
+
+   CatVecLength = 0;
+}
 /**********************************************************************
  Translate a list of values into its category number (-1 if none)
  **********************************************************************/
-int catGetCat(char *dvec[])
+int Cats::catGetCat(char *dvec[])
 {
    struct catnode *node = CatList;
-
-   while (node && CompList(dvec, node->dvec, CatVecLength))
-      node = node->next;
-
+   try
+      {
+      while (node && CompList(dvec, node->dvec, CatVecLength))
+         node = node->next;
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("catGetCat(char *)", "Cats");
+      throw;
+      }
    return node ? (node->num) : -1;
 } /* catGetCat() */
 
@@ -48,23 +67,31 @@ int catGetCat(char *dvec[])
  If the value list is unique, make a new category for it.
  Return the category number.
  **********************************************************************/
-int catMakeCat(char *dvec[])
+int Cats::catMakeCat(char *dvec[])
 {
    struct catnode *node;
    int i;
 
-   if ((i = catGetCat(dvec)) != -1)
-      return i;
-
-   node = (catnode*)Smalloc(sizeof(struct catnode));
-   node->num = CatList ? CatList->num + 1 : 0;
-   node->dvec = (char**)Smalloc(CatVecLength * sizeof(char *));
-   for (i = 0; i < CatVecLength; i++)
-/*      node->dvec[i] = Sstrdup(dvec[i]); */
-      Sstrcpy(&(node->dvec[i]), dvec[i]);
-
-   node->next = CatList;
-   CatList = node;
+   try
+      {
+      if ((i = catGetCat(dvec)) != -1)
+         return i;
+   
+      node = (catnode*)Smalloc(sizeof(struct catnode), gpPrintDirection);
+      node->num = CatList ? CatList->num + 1 : 0;
+      node->dvec = (char**)Smalloc(CatVecLength * sizeof(char *), gpPrintDirection);
+      for (i = 0; i < CatVecLength; i++)
+   /*      node->dvec[i] = Sstrdup(dvec[i]); */
+         Sstrcpy(&(node->dvec[i]), dvec[i], gpPrintDirection);
+   
+      node->next = CatList;
+      CatList = node;
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("catMakeCat(char *)", "Cats");
+      throw;
+      }
    return node->num;
 } /* catMakeCat() */
 
@@ -72,7 +99,7 @@ int catMakeCat(char *dvec[])
 /**********************************************************************
  Returns the number of categories found so far
  **********************************************************************/
-int catNumCats(void)
+int Cats::catNumCats(void)
 {
    return CatList ? (CatList->num + 1) : 0;
 } /* catNumCats() */
@@ -82,7 +109,7 @@ int catNumCats(void)
  Sets the number of elements in a category vector.
  This should only be called once.  Future calls will have no effect
  **********************************************************************/
-void catSetNumEls(int n)
+void Cats::catSetNumEls(int n)
 {
 /*   if (CatVecLength == 0)  (KR 1/14/97) */
    CatVecLength = n;
@@ -91,7 +118,7 @@ void catSetNumEls(int n)
 /**********************************************************************
  Returns the number of elements per category vector.
  **********************************************************************/
-int catGetNumEls(void)
+int Cats::catGetNumEls(void)
 {
    return CatVecLength;
 } /* catGetNumEls() */
@@ -107,79 +134,107 @@ int catGetNumEls(void)
 static int CompList(char *dv1[], char *dv2[], int len)
 {
    int i;
-   while (len--)
-      if ((i = strcmp(*dv1++, *dv2++)) != 0)
-         return i;
+   
+   try
+      {
+      while (len--)
+         if ((i = strcmp(*dv1++, *dv2++)) != 0)
+            return i;
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("CompList(char *, char *, int)", "Cats");
+      throw;
+      }
    return 0;
 } /* CompList() */
 
 /**********************************************************************
  Return Category String
  **********************************************************************/
-char* catGetCategoriesString(int n, char* dvec)
+char* Cats::catGetCategoriesString(int n, char* dvec)
 {
-  int    i;
-  struct catnode *node = CatList;
+   int    i;
+   struct catnode *node = CatList;
 
-  while (node && n != node->num)
-    node = node->next;
+   try
+      {
+      while (node && n != node->num)
+         node = node->next;
 
-  if (node)
-  {
-    for (i = 0; i < CatVecLength; i++)
-    {
-      strcat(dvec, node->dvec[i]);
-      strcat(dvec, "  ");
-    }
-  }
-
+      if (node)
+         {
+         for (i = 0; i < CatVecLength; i++)
+            {
+            strcat(dvec, node->dvec[i]);
+            strcat(dvec, "  ");
+            }
+         }
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("catGetCategoriesString(int, char *)", "Cats");
+      throw;
+      }
   return dvec;
 } /* DisplayCats() */
 
 /**********************************************************************
  Display categories in the list
  **********************************************************************/
-void catDisplay(void)
+void Cats::catDisplay(void)
 {
-  //int i;
-  int j;
-  int nCatCombs = catNumCats();
-  int nCatVars  = catGetNumEls();
-  struct catnode *node = CatList;
+   //int i;
+   int j;
+   //  int nCatCombs = catNumCats();
+   int nCatVars  = catGetNumEls();
+   struct catnode *node = CatList;
 
-  printf("DISPLAY:CatVecLength=%i\n",CatVecLength);
-  printf("\n#   Category Combination\n");
-
-   while (node)
-   {
-     printf("%d     ",  node->num);
-     for (j=0; j<nCatVars; j++)
-       printf("%s  ", node->dvec[j]);
-     printf("\n");
-     node = node->next;
-   }
-
-   printf("\n");
-
+   try
+      {
+      gpPrintDirection->SatScanPrintf("DISPLAY:CatVecLength=%i\n",CatVecLength);
+      gpPrintDirection->SatScanPrintf("\n#   Category Combination\n");
+     
+      while (node)
+         {
+         gpPrintDirection->SatScanPrintf("%d     ",  node->num);
+          for (j=0; j<nCatVars; j++)
+           gpPrintDirection->SatScanPrintf("%s  ", node->dvec[j]);
+         gpPrintDirection->SatScanPrintf("\n");
+          node = node->next;
+         }
+     
+      gpPrintDirection->SatScanPrintf("\n");
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("catDisplay()", "Cats");
+      throw;
+      }
 } /* DisplayCats() */
 
-void catCleanup()
+void Cats::catCleanup()
 {
-  struct catnode* pCurrCat;
-  struct catnode* pNextCat;
-  int    i;
+   struct catnode* pCurrCat;
+   struct catnode* pNextCat;
+   int    i;
   
-  pCurrCat = CatList;
-
-  while (pCurrCat != NULL)
-  {
-    pNextCat = pCurrCat->next;
-    for (i = 0; i < CatVecLength; i++)
-      free(pCurrCat->dvec[i]);
-    free(pCurrCat->dvec);
-    free(pCurrCat);
-    pCurrCat = pNextCat;
-  }
-
+   try
+      {
+      pCurrCat = CatList;
+    
+      while (pCurrCat != NULL)
+        {
+        pNextCat = pCurrCat->next;
+        for (i = 0; i < CatVecLength; i++)
+          free(pCurrCat->dvec[i]);
+        free(pCurrCat->dvec);
+        free(pCurrCat);
+        pCurrCat = pNextCat;
+        }
+      }
+   catch (...)
+      {
+      }
 }
 

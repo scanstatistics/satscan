@@ -8,8 +8,8 @@
 #include "Model.h"
 
 C_ST_PS_PT_Analysis::C_ST_PS_PT_Analysis(CParameters*  pParameters,
-                                         CSaTScanData* pData)
-                    :C_ST_PS_Analysis(pParameters, pData)
+                                         CSaTScanData* pData, BasePrint *pPrintDirection)
+                    :C_ST_PS_Analysis(pParameters, pData, pPrintDirection)
 {
 }
 
@@ -17,109 +17,245 @@ C_ST_PS_PT_Analysis::~C_ST_PS_PT_Analysis()
 {
 }
 
-void C_ST_PS_PT_Analysis::FindTopClusters()
+bool C_ST_PS_PT_Analysis::FindTopClusters()
 {
-  C_ST_PS_Analysis::FindTopClusters();  // KR-980327 Changed from CSpaceTimeAnalysis::
+   try
+      {
+      if (! C_ST_PS_Analysis::FindTopClusters())  // KR-980327 Changed from CSpaceTimeAnalysis::
+         return false;
+      tract_t nLastClusterIndex = m_nClustersRetained;
+      m_pTopClusters[nLastClusterIndex] = GetTopPTCluster();
 
-  tract_t nLastClusterIndex = m_nClustersRetained;
-  m_pTopClusters[nLastClusterIndex] = GetTopPTCluster();
-
-  SortTopClusters();
+      SortTopClusters();
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("FindTopClusters()", "C_ST_PS_PT_Analysis");
+      throw;
+      }
+   return true;
 }
 
 CPurelyTemporalCluster* C_ST_PS_PT_Analysis::GetTopPTCluster()
 {
-  CPurelyTemporalCluster* MaxCluster = new CPurelyTemporalCluster
-                                           (m_pParameters->m_bAliveClustersOnly,
+   CPurelyTemporalCluster* MaxCluster = 0;
+   CPurelyTemporalCluster* C_PT       = 0;
+   bool  bAliveCluster;
+
+   try
+      {
+      // if Prospective Space-Time then Alive Clusters Only.
+      if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
+         bAliveCluster = true;
+      else
+         bAliveCluster = m_pParameters->m_bAliveClustersOnly;
+
+      MaxCluster = new CPurelyTemporalCluster
+                                           (bAliveCluster,
                                             m_pData->m_nTimeIntervals,
-                                            m_pData->m_nIntervalCut);
+                                            m_pData->m_nIntervalCut,
+                                            gpPrintDirection);
 
-  CPurelyTemporalCluster* C_PT = new CPurelyTemporalCluster
-                                     (m_pParameters->m_bAliveClustersOnly,
+      C_PT = new CPurelyTemporalCluster
+                                     (bAliveCluster,
                                       m_pData->m_nTimeIntervals,
-                                      m_pData->m_nIntervalCut);
+                                      m_pData->m_nIntervalCut,
+                                      gpPrintDirection);
 
-  MaxCluster->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
-
-  C_PT->SetRate(m_pParameters->m_nAreas);
-  C_PT->InitTimeIntervalIndeces();
-
-  while (C_PT->SetNextTimeInterval(m_pData->m_pPTCases,
-                                   m_pData->m_pPTMeasure))
-  {
-    if (C_PT->RateIsOfInterest(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure))
-    {
-      C_PT->m_nLogLikelihood = m_pData->m_pModel->CalcLogLikelihood
-                                                  (C_PT->m_nCases, C_PT->m_nMeasure);
-      //C_PT->SetLogLikelihood(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure);
-      if (C_PT->m_nLogLikelihood > MaxCluster->m_nLogLikelihood)
-        *MaxCluster = *C_PT;
-    }
-  }
-
-  delete C_PT;
-
-  MaxCluster->SetRatioAndDates(*m_pData);
-  m_nClustersRetained++;
-
+      MaxCluster->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
+    
+      C_PT->SetRate(m_pParameters->m_nAreas);
+      C_PT->InitTimeIntervalIndeces();
+    
+      while (C_PT->SetNextTimeInterval(m_pData->m_pPTCases,
+                                       m_pData->m_pPTMeasure))
+      {
+        if (C_PT->RateIsOfInterest(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure))
+        {
+          C_PT->m_nLogLikelihood = m_pData->m_pModel->CalcLogLikelihood
+                                                      (C_PT->m_nCases, C_PT->m_nMeasure);
+          //C_PT->SetLogLikelihood(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure);
+          if (C_PT->m_nLogLikelihood > MaxCluster->m_nLogLikelihood)
+            *MaxCluster = *C_PT;
+        }
+      }
+    
+      delete C_PT; C_PT = 0;
+    
+      MaxCluster->SetRatioAndDates(*m_pData);
+      m_nClustersRetained++;
+      }
+   catch (SSException & x)
+      {
+      delete C_PT; C_PT = 0;
+      delete MaxCluster;
+      x.AddCallpath("GetTopPTCluster()", "C_ST_PS_PT_Analysis");
+      throw;
+      }
   return MaxCluster;
 }
 
 double C_ST_PS_PT_Analysis::MonteCarlo()
 {
-  CMeasureList* pMeasureList;
+   CMeasureList* pMeasureList = 0;
+   double nMaxLogLikelihood;
+   
+   try
+      {
+      CPurelySpatialCluster C_PS(gpPrintDirection);
+      CSpaceTimeCluster     C_ST(m_pParameters->m_bAliveClustersOnly,
+                                 m_pData->m_nTimeIntervals,
+                                 m_pData->m_nIntervalCut,
+                                 gpPrintDirection);
+      CPurelyTemporalCluster C_PT(m_pParameters->m_bAliveClustersOnly,
+                                  m_pData->m_nTimeIntervals,
+                                  m_pData->m_nIntervalCut,
+                                  gpPrintDirection);
+    
+      C_PS.SetRate(m_pParameters->m_nAreas);
+      C_ST.SetRate(m_pParameters->m_nAreas);
+    
+      nMaxLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
+    
+      switch (m_pParameters->m_nAreas)
+      {
+        case HIGH      : pMeasureList = new CMinMeasureList(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure, gpPrintDirection);
+                         break;
+        case LOW       : pMeasureList = new CMaxMeasureList(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure, gpPrintDirection);
+                         break;
+        case HIGHANDLOW: pMeasureList = new CMinMaxMeasureList(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure, gpPrintDirection);
+                         break;
+        default        : ;
+      }
+    
+      for (int k = 0; k <= m_pParameters->m_lTotalNumEllipses; k++)   //circle is 0 offset... (always there)
+         {
+         for (tract_t i = 0; i<m_pData->m_nGridTracts; i++)
+         {
+           C_PS.Initialize(i);
+           C_ST.Initialize(i);
+    
+           for (tract_t j=1; j<=m_pData->m_NeighborCounts[k][i]; j++)    //k use to be "0"
+           {
+             C_PS.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);      //k use to be "0"
+             pMeasureList->AddMeasure(C_PS.m_nCases, C_PS.m_nMeasure);
+    
+             C_ST.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);        //k use to be "0"
+             C_ST.InitTimeIntervalIndeces();
+             while (C_ST.SetNextTimeInterval())
+               pMeasureList->AddMeasure(C_ST.m_nCases, C_ST.m_nMeasure);
+           }
+        }
+      }
+    
+      C_PT.Initialize(0);
+      C_PT.SetRate(m_pParameters->m_nAreas);
+      C_PT.InitTimeIntervalIndeces();
+      while (C_PT.SetNextTimeInterval(m_pData->m_pPTSimCases,
+                                      m_pData->m_pPTMeasure))
+        pMeasureList->AddMeasure(C_PT.m_nCases, C_PT.m_nMeasure);
+    
+      nMaxLogLikelihood = pMeasureList->GetMaxLogLikelihood(*m_pData);
+    
+      delete pMeasureList;
+      }
+   catch (SSException & x)
+      {
+      delete pMeasureList;
+      x.AddCallpath("MonteCarlo()", "C_ST_PS_PT_Analysis");
+      throw;
+      }
+  return (nMaxLogLikelihood - m_pData->m_pModel->GetLogLikelihoodForTotal());
+}
 
-  CPurelySpatialCluster C_PS;
-  CSpaceTimeCluster     C_ST(m_pParameters->m_bAliveClustersOnly,
-                             m_pData->m_nTimeIntervals,
-                             m_pData->m_nIntervalCut);
-  CPurelyTemporalCluster C_PT(m_pParameters->m_bAliveClustersOnly,
-                              m_pData->m_nTimeIntervals,
-                              m_pData->m_nIntervalCut);
+double C_ST_PS_PT_Analysis::MonteCarloProspective()
+{
+   CMeasureList* pMeasureList = 0;
+   double nMaxLogLikelihood;
+   long lTime;
+   Julian jCurrentDate;
+   int iThisStartInterval, n, m;
 
-  C_PS.SetRate(m_pParameters->m_nAreas);
-  C_ST.SetRate(m_pParameters->m_nAreas);
+   try
+      {
+      //for prospective Space-Time, m_bAliveClustersOnly should be false..
+      //m_bAliveClustersOnly is the first parameter into the CSpaceTimeCluster class
+      CPurelySpatialCluster C_PS(gpPrintDirection);
+      CSpaceTimeCluster     C_ST(false,
+                                 m_pData->m_nTimeIntervals,
+                                 m_pData->m_nIntervalCut,
+                                 gpPrintDirection);
+      CPurelyTemporalCluster C_PT(false,
+                                  m_pData->m_nTimeIntervals,
+                                  m_pData->m_nIntervalCut,
+                                  gpPrintDirection);
+    
+      C_PS.SetRate(m_pParameters->m_nAreas);
+      C_ST.SetRate(m_pParameters->m_nAreas);
+    
+      nMaxLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
+    
+      switch (m_pParameters->m_nAreas)
+      {
+        case HIGH      : pMeasureList = new CMinMeasureList(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure, gpPrintDirection);
+                         break;
+        case LOW       : pMeasureList = new CMaxMeasureList(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure, gpPrintDirection);
+                         break;
+        case HIGHANDLOW: pMeasureList = new CMinMaxMeasureList(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure, gpPrintDirection);
+                         break;
+        default        : ;
+      }
 
-  double nMaxLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
+      for (int k = 0; k <= m_pParameters->m_lTotalNumEllipses; k++)   //circle is 0 offset... (always there)
+         {
+         for (tract_t i = 0; i<m_pData->m_nGridTracts; i++)
+           {
+           C_PS.Initialize(i);
+           C_ST.Initialize(i);
 
-  switch (m_pParameters->m_nAreas)
-  {
-    case HIGH      : pMeasureList = new CMinMeasureList(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure);
-                     break;
-    case LOW       : pMeasureList = new CMaxMeasureList(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure);
-                     break;
-    case HIGHANDLOW: pMeasureList = new CMinMaxMeasureList(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure);
-                     break;
-    default        : ;
-  }
+           for (tract_t j=1; j<=m_pData->m_NeighborCounts[k][i]; j++)   // k use to be "0"
+             {
+             C_PS.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);    // k use to be "0"
+             pMeasureList->AddMeasure(C_PS.m_nCases, C_PS.m_nMeasure);
 
-  for (tract_t i = 0; i<m_pData->m_nGridTracts; i++)
-  {
-    C_PS.Initialize(i);
-    C_ST.Initialize(i);
+             C_ST.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);
+             //Need to keep track of the current date as you loop through intervals
+             jCurrentDate = m_pData->m_nEndDate;
+             // Loop from study end date back to Prospective start date -- loop by interval
+             for (n = m_pData->m_nTimeIntervals; n >= m_pData->m_nProspectiveIntervalStart; n--)
+                {
+                //Need to re-compute duration due to by using current date (whatever date loop "n" is at)
+                //and the Begin Study Date
+                iThisStartInterval = m_pData->ComputeNewCutoffInterval(m_pData->m_nStartDate,jCurrentDate);
 
-    for (tract_t j=1; j<=m_pData->m_NeighborCounts[i]; j++)
-    {
-      C_PS.AddNeighbor(*m_pData, m_pData->m_pSimCases, j);
-      pMeasureList->AddMeasure(C_PS.m_nCases, C_PS.m_nMeasure);
+                //Now compute a new Current Date by subtracting the interval duration
+                jCurrentDate = DecrementDate(jCurrentDate, m_pParameters->m_nIntervalUnits, m_pParameters->m_nIntervalLength);
 
-      C_ST.AddNeighbor(*m_pData, m_pData->m_pSimCases, j);
-      C_ST.InitTimeIntervalIndeces();
-      while (C_ST.SetNextTimeInterval())
-        pMeasureList->AddMeasure(C_ST.m_nCases, C_ST.m_nMeasure);
-    }
-  }
+                C_ST.InitTimeIntervalIndeces(iThisStartInterval, n);
+                while (C_ST.SetNextProspTimeInterval())
+                   pMeasureList->AddMeasure(C_ST.m_nCases, C_ST.m_nMeasure);
+                }
+             }
+           }
+         }
 
-  C_PT.Initialize(0);
-  C_PT.SetRate(m_pParameters->m_nAreas);
-  C_PT.InitTimeIntervalIndeces();
-  while (C_PT.SetNextTimeInterval(m_pData->m_pPTSimCases,
-                                  m_pData->m_pPTMeasure))
-    pMeasureList->AddMeasure(C_PT.m_nCases, C_PT.m_nMeasure);
-
-  nMaxLogLikelihood = pMeasureList->GetMaxLogLikelihood(*m_pData);
-
-  delete pMeasureList;
+      C_PT.Initialize(0);
+      C_PT.SetRate(m_pParameters->m_nAreas);
+      C_PT.InitTimeIntervalIndeces();
+      while (C_PT.SetNextTimeInterval(m_pData->m_pPTSimCases,
+                                      m_pData->m_pPTMeasure))
+        pMeasureList->AddMeasure(C_PT.m_nCases, C_PT.m_nMeasure);
+    
+      nMaxLogLikelihood = pMeasureList->GetMaxLogLikelihood(*m_pData);
+    
+      delete pMeasureList;
+      }
+   catch (SSException & x)
+      {
+      delete pMeasureList;
+      x.AddCallpath("MonteCarloProspective()", "C_ST_PS_PT_Analysis");
+      throw;
+      }
   return (nMaxLogLikelihood - m_pData->m_pModel->GetLogLikelihoodForTotal());
 }
 

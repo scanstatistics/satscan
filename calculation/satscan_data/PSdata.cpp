@@ -1,10 +1,9 @@
 // dataPS.cpp
 
 #include "PSdata.h"
-#include "error.h"
 
-CPurelySpatialData::CPurelySpatialData(CParameters* pParameters)
-                   :CSaTScanData(pParameters)
+CPurelySpatialData::CPurelySpatialData(CParameters* pParameters, BasePrint *pPrintDirection)
+                   :CSaTScanData(pParameters, pPrintDirection)
 {
 }
 

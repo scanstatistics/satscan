@@ -9,17 +9,18 @@
 #include "cluster.h"
 #include "SigRatios05.h"
 
-#define  DEBUGANALYSIS 1
+//#define  DEBUGANALYSIS 0
 
 class CAnalysis
 {
   public:
-    CAnalysis(CParameters* pParameters, CSaTScanData* pData);
+    CAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
     virtual ~CAnalysis();
 
   protected:
     CParameters*  m_pParameters;
     CSaTScanData* m_pData;
+    BasePrint   * gpPrintDirection;
 //    CModel*       m_pModel;
 
     int     m_nAnalysisCount;
@@ -62,11 +63,14 @@ class CAnalysis
     virtual void AllocateTopClusterList();
     void         InitializeTopClusterList();
 
-    virtual void FindTopClusters();
+    virtual bool FindTopClusters();
     virtual void PerformSimulations();
 //    virtual void MakeData();
     virtual double MonteCarlo() = 0;
+    virtual double MonteCarloProspective() = 0;
 
+    //void ObtainEllipsoidSettings();
+    void PrintTopClusters(int nHowMany);
     void SortTopClusters();
     static int CompareClusters(const void *a, const void *b);
 
@@ -79,6 +83,9 @@ class CAnalysis
 // Start V.2.0.4.1
     void OpenLLRFile(FILE*& fpLLR, const char* szType);
 // End V.2.0.4.1
+    void OpenRREFile(FILE*& fpRRE, const char* szType);
+    void OpenGridOutputFile(FILE*& fpMLC, const char* szType);
+    void CreateGridOutputFile();
 
     bool CreateReport(time_t RunTime);
     bool UpdateReport();

@@ -1,38 +1,43 @@
 // MeasureList.cpp
 
 #include "MeasureList.h"
-//#include "rate.h"
-//#include "loglikelihood.h"
 #include "Model.h"
 #include "display.h"
-#include "error.h"
 #include <malloc.h>
 
-CMeasureList::CMeasureList(count_t N)
+CMeasureList::CMeasureList(count_t N, BasePrint *pPrintDirection)
 {
   m_nListSize = N+1;
+  gpPrintDirection = pPrintDirection;
 }
 
 CMeasureList::~CMeasureList()
 {
 }
 
-CMinMeasureList::CMinMeasureList(count_t N, measure_t U)
-                :CMeasureList(N)
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+CMinMeasureList::CMinMeasureList(count_t N, measure_t U, BasePrint *pPrintDirection)
+                :CMeasureList(N, pPrintDirection)
 {
-  try
-  {
-    m_pMinMeasures = new measure_t [m_nListSize];
-  }
-  catch (...)
-  {
-    printf("  Error: Unable to allocate sufficient memory.\n");
-    printf("         Please see 'memory requirements' in the help file.\n");
-    FatalError(0);
-  }
+   try
+      {
+       m_pMinMeasures = new measure_t [m_nListSize];
+       if (! m_pMinMeasures)
+          {
+          SSGenerateException("  Error: Unable to allocate sufficient memory.\n         Please see 'memory requirements' in the help file.\n", "CMinMeasureList constructor");
+          //FatalError(0, gpPrintDirection);
+          }
 
-  for (int i=0; i<m_nListSize; i++)
-    m_pMinMeasures[i] = (U*i)/N;
+      for (int i=0; i<m_nListSize; i++)
+         m_pMinMeasures[i] = (U*i)/N;
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("CMinMeasureList()", "CMinMeasureList");
+      throw;
+      }
 }
 
 CMinMeasureList::~CMinMeasureList()
@@ -49,23 +54,30 @@ void CMinMeasureList::AddMeasure(count_t n, measure_t u)
 //double CMinMeasureList::GetMaxLogLikelihood(count_t N, measure_t U, double& nMaxLogLikelihood)
 double CMinMeasureList::GetMaxLogLikelihood(const CSaTScanData& Data)
 {
-  double nLogLikelihood;
-  double nMaxLogLikelihood = Data.m_pModel->GetLogLikelihoodForTotal();
+   double nLogLikelihood;
+   double nMaxLogLikelihood = Data.m_pModel->GetLogLikelihoodForTotal();
 
-  for (int i = 0; i < m_nListSize; i++)
-  {
-//    if (HighRate(i, m_pMinMeasures[i], N, U))
-    if (m_pMinMeasures[i] != 0 &&
-        i*Data.m_nTotalMeasure > m_pMinMeasures[i]*Data.m_nTotalCases)
-    {
-      nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMinMeasures[i]);
-      if (nLogLikelihood > nMaxLogLikelihood)
-        nMaxLogLikelihood = nLogLikelihood;
-    }
+   try
+      {
+      for (int i = 0; i < m_nListSize; i++)
+         {
+         //    if (HighRate(i, m_pMinMeasures[i], N, U))
+         if (m_pMinMeasures[i] != 0 &&
+            i*Data.m_nTotalMeasure > m_pMinMeasures[i]*Data.m_nTotalCases)
+            {
+            nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMinMeasures[i]);
+            if (nLogLikelihood > nMaxLogLikelihood)
+               nMaxLogLikelihood = nLogLikelihood;
+            }
 
-  }
-
-  return (nMaxLogLikelihood);
+         }
+      }   
+   catch (SSException & x)
+      {
+      x.AddCallpath("GetMaxLogLikelihood()", "CMinMeasureList");
+      throw;
+      }
+   return (nMaxLogLikelihood);
 }
 
 void CMinMeasureList::Display(FILE* pFile)
@@ -75,22 +87,28 @@ void CMinMeasureList::Display(FILE* pFile)
     fprintf(pFile, "m_pMinMeasures[%i] = %f\n", i, m_pMinMeasures[i]);
 }
 
-CMaxMeasureList::CMaxMeasureList(count_t N, measure_t U)
-                :CMeasureList(N)
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+CMaxMeasureList::CMaxMeasureList(count_t N, measure_t U, BasePrint *pPrintDirection)
+                :CMeasureList(N, pPrintDirection)
 {
-  try
-  {
-    m_pMaxMeasures = new measure_t [m_nListSize];
-  }
-  catch (...)
-  {
-    printf("  Error: Unable to allocate sufficient memory.\n");
-    printf("         Please see 'memory requirements' in the help file.\n");
-    FatalError(0);
-  }
-
-  for (int i=0; i<m_nListSize; i++)
-    m_pMaxMeasures[i] = (U*i)/N;
+   try
+      {
+      m_pMaxMeasures = new measure_t [m_nListSize];
+      if (! m_pMaxMeasures)
+         {
+         SSGenerateException("  Error: Unable to allocate sufficient memory.\n         Please see 'memory requirements' in the help file.\n", "CMaxMeauseList constructor");
+         //FatalError(0, gpPrintDirection);
+         }
+       for (int i=0; i<m_nListSize; i++)
+          m_pMaxMeasures[i] = (U*i)/N;
+       }
+   catch (SSException & x)
+      {
+      x.AddCallpath("CMaxMeasureList()", "CMaxMeasureList");
+      throw;
+      }
 }
 
 CMaxMeasureList::~CMaxMeasureList()
@@ -107,21 +125,28 @@ void CMaxMeasureList::AddMeasure(count_t n, measure_t u)
 //double CMaxMeasureList::GetMaxLogLikelihood(count_t N, measure_t U, double& nMaxLogLikelihood)
 double CMaxMeasureList::GetMaxLogLikelihood(const CSaTScanData& Data)
 {
-  double nLogLikelihood;
-  double nMaxLogLikelihood = Data.m_pModel->GetLogLikelihoodForTotal();
+   double nLogLikelihood;
+   double nMaxLogLikelihood = Data.m_pModel->GetLogLikelihoodForTotal();
 
-  for (int i = 0; i < m_nListSize; i++)
-  {
-//    if (LowRate(i, m_pMaxMeasures[i], N, U))
-    if (m_pMaxMeasures[i] != 0 &&
-        i*Data.m_nTotalMeasure < m_pMaxMeasures[i]*Data.m_nTotalCases)
-    {
-      nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMaxMeasures[i]);
-      if (nLogLikelihood > nMaxLogLikelihood)
-        nMaxLogLikelihood = nLogLikelihood;
-    }
-
-  }
+   try
+      {
+      for (int i = 0; i < m_nListSize; i++)
+         {
+         //    if (LowRate(i, m_pMaxMeasures[i], N, U))
+         if (m_pMaxMeasures[i] != 0 &&
+            i*Data.m_nTotalMeasure < m_pMaxMeasures[i]*Data.m_nTotalCases)
+            {
+            nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMaxMeasures[i]);
+            if (nLogLikelihood > nMaxLogLikelihood)
+               nMaxLogLikelihood = nLogLikelihood;
+            }
+         }
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("GetMaxLogLikelihood()", "CMaxMeasureList");
+      throw;
+      }
 
   return (nMaxLogLikelihood);
 }
@@ -133,26 +158,32 @@ void CMaxMeasureList::Display(FILE* pFile)
     fprintf(pFile, "m_pMaxMeasures[%i] = %f\n", i, m_pMaxMeasures[i]);
 }
 
-CMinMaxMeasureList::CMinMaxMeasureList(count_t N, measure_t U)
-                   :CMeasureList(N)
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+CMinMaxMeasureList::CMinMaxMeasureList(count_t N, measure_t U, BasePrint *pPrintDirection)
+                   :CMeasureList(N, pPrintDirection)
 {
-  try
-  {
-    m_pMinMeasures = new measure_t [m_nListSize];
-    m_pMaxMeasures = new measure_t [m_nListSize];
-  }
-  catch (...)
-  {
-    printf("  Error: Unable to allocate sufficient memory.\n");
-    printf("         Please see 'memory requirements' in the help file.\n");
-    FatalError(0);
-  }
-
-  for (int i=0; i<m_nListSize; i++)
-  {
-    m_pMinMeasures[i] = (U*i)/N;
-    m_pMaxMeasures[i] = (U*i)/N;
-  }
+   try
+      {
+      m_pMinMeasures = new measure_t [m_nListSize];
+      m_pMaxMeasures = new measure_t [m_nListSize];
+      if ((!m_pMinMeasures) || (!m_pMaxMeasures))
+         {
+         SSGenerateException("  Error: Unable to allocate sufficient memory.\n         Please see 'memory requirements' in the help file.\n", "CMinMaxMeasureList constructor");
+         //FatalError(0, gpPrintDirection);
+         }
+      for (int i=0; i<m_nListSize; i++)
+         {
+         m_pMinMeasures[i] = (U*i)/N;
+         m_pMaxMeasures[i] = (U*i)/N;
+         }
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("CMinMaxMeasureList()", "CMinMaxMeasureList");
+      throw;
+      }
 }
 
 CMinMaxMeasureList::~CMinMaxMeasureList()
@@ -168,7 +199,7 @@ void CMinMaxMeasureList::AddMeasure(count_t n, measure_t u)
   if (m_pMaxMeasures[n] < u)
     m_pMaxMeasures[n] = u;
 
-//  printf("n = %i, u = %f, m_pMaxMeasures[0] = %f\n",
+// gpPrintDirection->SatScanPrintf("n = %i, u = %f, m_pMaxMeasures[0] = %f\n",
 //          n, u, m_pMaxMeasures[0]);
 //  HoldForEnter();
 }
@@ -176,48 +207,60 @@ void CMinMaxMeasureList::AddMeasure(count_t n, measure_t u)
 //double CMinMaxMeasureList::GetMaxLogLikelihood(count_t N, measure_t U, double& nMaxLogLikelihood)
 double CMinMaxMeasureList::GetMaxLogLikelihood(const CSaTScanData& Data)
 {
-  double nLogLikelihood;
-  double nMaxLogLikelihood = Data.m_pModel->GetLogLikelihoodForTotal();
+   double nLogLikelihood;
+   double nMaxLogLikelihood = Data.m_pModel->GetLogLikelihoodForTotal();
 
-  for (int i = 0; i < m_nListSize; i++)
-  {
-//    if (HighRate(i, m_pMinMeasures[i], N, U))
-    if (m_pMinMeasures[i] != 0 &&
-        i*Data.m_nTotalMeasure > m_pMinMeasures[i]*Data.m_nTotalCases)
-    {
-      nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMinMeasures[i]);
-      if (nLogLikelihood > nMaxLogLikelihood)
-        nMaxLogLikelihood = nLogLikelihood;
-    }
-
-//    if (LowRate(i, m_pMaxMeasures[i], N, U))
-    if (m_pMaxMeasures[i] != 0 &&
-        i*Data.m_nTotalMeasure < m_pMaxMeasures[i]*Data.m_nTotalCases)
-    {
-      nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMaxMeasures[i]);
-      if (nLogLikelihood > nMaxLogLikelihood)
-        nMaxLogLikelihood = nLogLikelihood;
-    }
-
-  }
-
-  return (nMaxLogLikelihood);
+   try
+      {
+      for (int i = 0; i < m_nListSize; i++)
+         {
+         //    if (HighRate(i, m_pMinMeasures[i], N, U))
+         if (m_pMinMeasures[i] != 0 &&
+            i*Data.m_nTotalMeasure > m_pMinMeasures[i]*Data.m_nTotalCases)
+            {
+            nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMinMeasures[i]);
+            if (nLogLikelihood > nMaxLogLikelihood)
+               nMaxLogLikelihood = nLogLikelihood;
+            }
+         //    if (LowRate(i, m_pMaxMeasures[i], N, U))
+         if (m_pMaxMeasures[i] != 0 &&
+            i*Data.m_nTotalMeasure < m_pMaxMeasures[i]*Data.m_nTotalCases)
+            {
+            nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMaxMeasures[i]);
+            if (nLogLikelihood > nMaxLogLikelihood)
+               nMaxLogLikelihood = nLogLikelihood;
+            }
+         }
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("GetMaxLogLikelihood()", "CMinMaxMeasureList");
+      throw;
+      }
+   return (nMaxLogLikelihood);
 }
 
 void CMinMaxMeasureList::Display(FILE* pFile)
 {
-  int i;
+   int i;
 
-  fprintf(pFile, "Min Measure List\n");
-  for (i=0; i<m_nListSize; i++)
-    fprintf(pFile, "m_pMinMeasures[%i] = %f\n", i, m_pMinMeasures[i]);
-  fprintf(pFile, "\n");
+   try
+      {
+      fprintf(pFile, "Min Measure List\n");
+      for (i=0; i<m_nListSize; i++)
+        fprintf(pFile, "m_pMinMeasures[%i] = %f\n", i, m_pMinMeasures[i]);
+      fprintf(pFile, "\n");
 
-  fprintf(pFile, "Max Measure List\n");
-  for (i=0; i<m_nListSize; i++)
-    fprintf(pFile, "m_pMaxMeasures[%i] = %f\n", i, m_pMaxMeasures[i]);
-  fprintf(pFile, "\n");
-
+      fprintf(pFile, "Max Measure List\n");
+      for (i=0; i<m_nListSize; i++)
+        fprintf(pFile, "m_pMaxMeasures[%i] = %f\n", i, m_pMaxMeasures[i]);
+      fprintf(pFile, "\n");
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("Display()", "CMinMaxMeasureList");
+      throw;
+      }
 }
 
 

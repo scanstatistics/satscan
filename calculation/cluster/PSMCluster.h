@@ -11,7 +11,7 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
 {
   public:
 
-    CPSMonotoneCluster();
+    CPSMonotoneCluster(BasePrint *pPrintDirection);
     CPSMonotoneCluster(int nRate, tract_t nCircles);
     ~CPSMonotoneCluster();
 
@@ -33,7 +33,7 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
 
     virtual void DefineTopCluster(const CSaTScanData& Data, count_t** pCases);
 
-    void AddNeighbor(const CSaTScanData& Data, count_t** pCases, tract_t n);
+    void AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n);
     void CheckCircle(tract_t n);
     void AddRemainder(count_t nTotalCases, measure_t nTotalMeasure);
     void RemoveRemainder();
@@ -57,7 +57,8 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
                                      int nReplicas,
                                      bool bIncludeRelRisk, bool bIncludePVal,
                                      int nLeftMargin, int nRightMargin,
-                                     char cDeliminator, char* szSpacesOnLeft);
+                                     char cDeliminator, char* szSpacesOnLeft,
+                                     bool bFormat = true);
     virtual void DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
                                     int nLeftMargin, int nRightMargin,
                                     char cDeliminator, char* szSpacesOnLeft);

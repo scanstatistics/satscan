@@ -10,12 +10,13 @@
 class C_ST_PS_PT_Analysis : public C_ST_PS_Analysis
 {
   public:
-    C_ST_PS_PT_Analysis(CParameters* pParameters, CSaTScanData* pData);
+    C_ST_PS_PT_Analysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
     virtual ~C_ST_PS_PT_Analysis();
 
-    virtual void   FindTopClusters();
+    virtual bool   FindTopClusters();
 //    virtual void   MakeData();
     virtual double MonteCarlo();
+    virtual double MonteCarloProspective();
     CPurelyTemporalCluster* GetTopPTCluster();
 };
 

@@ -54,9 +54,13 @@ void CSaTScanData::DisplayNeighbors(FILE* pFile)
   for (int i = 0; i < m_nGridTracts; i++)
   {
     fprintf(pFile, "Grid Point # %i : ", i);
-    for (int j = 0; j < m_NeighborCounts[i]; j++)
-      fprintf(pFile, "%s ", tiGetTid(m_pSorted[i][j]));
-    fprintf(pFile, "(# of neighbors=%i)\n", m_NeighborCounts[i]);
+    if (m_pSortedInt)
+       for (int j = 0; j < m_NeighborCounts[0][i]; j++)
+         fprintf(pFile, "%s ", gpTInfo->tiGetTid(m_pSortedInt[0][i][j]));
+    else
+       for (int j = 0; j < m_NeighborCounts[0][i]; j++)
+         fprintf(pFile, "%s ", gpTInfo->tiGetTid(m_pSortedUShort[0][i][j]));
+    fprintf(pFile, "(# of neighbors=%i)\n", m_NeighborCounts[0][i]);
   }
 
   fprintf(pFile,"\n");
@@ -98,16 +102,16 @@ void CSaTScanData::DisplaySummary2(FILE* fp)
 void CSaTScanData::DisplayRelativeRisksForEachTract(FILE* pFile)
 {
   char* szTID;
-  int   nTIDLen;
+ // int   nTIDLen;
 
-  fprintf(pFile, "_____________________________________________________________________\n\n");
-  fprintf(pFile, "RELATIVE RISK FOR EACH INDIVIDUAL CENSUS AREA\n\n");
-  fprintf(pFile, "Census                        Observed    Expected    Relative\n");
-  fprintf(pFile, "Area                          Cases       Cases       Risk    \n\n");
+  //fprintf(pFile, "_____________________________________________________________________\n\n");
+  //fprintf(pFile, "RELATIVE RISK FOR EACH INDIVIDUAL CENSUS AREA\n\n");
+  //fprintf(pFile, "Census                        Observed    Expected    Relative\n");
+  //fprintf(pFile, "Area                          Cases       Cases       Risk    \n\n");
   for (int i = 0; i < m_nTracts; i++)
   {
-    szTID = tiGetTid(i);
-    nTIDLen = strlen(szTID);
+    szTID = gpTInfo->tiGetTid(i);
+  //  nTIDLen = strlen(szTID);
 
     fprintf(pFile, "%-29s", szTID);
 

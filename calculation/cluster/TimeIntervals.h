@@ -12,13 +12,23 @@ class CTimeIntervals
     virtual ~CTimeIntervals() {};
 
     virtual void Initialize() {};
+    virtual void InitializeRange(int nLow, int nHigh) { };
     virtual bool GetNextTimeInterval(const count_t*& pCases,
                                      const measure_t*& pMeasure,
                                      count_t&   nCases,
                                      measure_t& nMeasure,
                                      int&       nStart,
                                      int&       nStop) {return false;};
-
+    virtual bool GetNextTimeIntervalProsp(const count_t*& pCases,
+                                     const measure_t*& pMeasure,
+                                     count_t& nCases,
+                                     measure_t& nMeasure) {return false;};
+    /*virtual bool GetNextTimeIntervalProsp(const count_t*& pCases,
+                                     const measure_t*& pMeasure,
+                                     count_t& nCases,
+                                     measure_t& nMeasure,
+                                     int& nStart,
+                                     int& nStop) {return false;};*/
   protected:
     int m_nStart;
     int m_nStop;

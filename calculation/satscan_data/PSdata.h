@@ -8,7 +8,7 @@
 class CPurelySpatialData : public CSaTScanData
 {
   public:
-    CPurelySpatialData(CParameters* pParameters);
+    CPurelySpatialData(CParameters* pParameters, BasePrint *pPrintDirection);
     virtual ~CPurelySpatialData();
 
 //    int* m_pCases;

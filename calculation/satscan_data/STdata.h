@@ -8,7 +8,7 @@
 class CSpaceTimeData : public CSaTScanData
 {
   public:
-    CSpaceTimeData(CParameters* pParameters);
+    CSpaceTimeData(CParameters* pParameters, BasePrint *pPrintDirection);
     virtual ~CSpaceTimeData();
 
 //    void SetPurelyTemporalSimCases();

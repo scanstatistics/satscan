@@ -4,7 +4,7 @@
 /*          values.                                       */
 /* Author : Katherine Rand, IMS                           */
 /* Date   : 12/94 - 1/95                                  */
-
+                               
 #include "date.h"
 
 static const unsigned char DaysInMonth[12] =
@@ -168,6 +168,12 @@ Julian DecrementDate(Julian nDate, int nUnits, long nValue)
     nTotalMonths = ((nYear1*12) + nMon1) - nValue -1;
     nMon2        = (nTotalMonths%12)+1;
     nYear2       = (UInt) floor(nTotalMonths/12);
+
+    //DTG
+    // Need to change the day value if day for initial month is greater
+    // than the max number of days for the resultant month
+    if (nDay1 > DaysInMonth[ nMon2-1 ])
+        nDay1 = DaysInMonth[ nMon2-1 ];
     nNewDate     = MDYToJulian(nMon2, nDay1, nYear2);
   }
   else if (nUnits == YEAR)

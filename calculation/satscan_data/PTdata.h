@@ -8,7 +8,7 @@
 class CPurelyTemporalData : public CSaTScanData
 {
   public:
-    CPurelyTemporalData(CParameters* pParameters);
+    CPurelyTemporalData(CParameters* pParameters, BasePrint *pPrintDirection);
     virtual ~CPurelyTemporalData();
 
     virtual void DisplayCases(FILE* pFile);

@@ -11,14 +11,25 @@ class CTIAll : public CTimeIntervals
     CTIAll(int nTotal, int nCut);
     virtual ~CTIAll() {};
 
-    virtual void Initialize();
+    inline virtual void Initialize();
+    void  InitializeRange(int nLow, int nHigh);
     virtual bool GetNextTimeInterval(const count_t*& pCases,
                                      const measure_t*& pMeasure,
                                      count_t& nCases,
                                      measure_t& nMeasure,
                                      int& nStart,
                                      int& nStop);
-
+    inline virtual bool GetNextTimeIntervalProsp(const count_t*& pCases,
+                                     const measure_t*& pMeasure,
+                                     count_t& nCases,
+                                     measure_t& nMeasure);
+   /*virtual bool GetNextTimeIntervalProsp(const count_t*& pCases,
+                                     const measure_t*& pMeasure,
+                                     count_t& nCases,
+                                     measure_t& nMeasure,
+                                     int& nStart,
+                                     int& nStop);
+*/
 };
 
 #endif

@@ -4,6 +4,7 @@
 #define __LOGLIKELIHOOD_H
 
 #include "spatscan.h"
+#include "SSException.h"
 
 double CalcLogLikelihood(count_t n, measure_t u,
                          count_t N, measure_t U);

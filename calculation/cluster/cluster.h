@@ -9,11 +9,15 @@
 
 class CCluster
 {
+  protected:
+    BasePrint *gpPrintDirection;
   public:
-    CCluster();
+    CCluster(BasePrint *pPrintDirection);
     virtual ~CCluster();
 
     tract_t    m_Center;             // Center of cluster (index to grid)
+
+    int        m_iEllipseOffset;     // Link to Circle or Ellipse (top cluster)
 
     count_t    m_nCases;             // Number of cases in cluster
     measure_t  m_nMeasure;           // Expected count for cluster
@@ -53,7 +57,7 @@ class CCluster
     double SetRatio(double nLogLikelihoodForTotal);
     virtual void SetStartAndEndDates(const Julian* pIntervalStartTimes,
                                      int nTimeIntervals);
-
+    double  ConvertAngleToDegrees(double dAngle);
     int     GetClusterType()   {return m_nClusterType;};
     double  GetLogLikelihood() {return m_nLogLikelihood;};
     tract_t GetNumCircles()    {return m_nSteps;};
@@ -67,11 +71,11 @@ class CCluster
     virtual bool ClusterDefined() {return (m_bClusterDefined==true);};
     bool RateIsOfInterest(count_t nTotalCases, measure_t nTotalMeasure);
 
-    virtual void AddNeighbor(const CSaTScanData& Data, count_t** pCases, tract_t n) {};
+    virtual void AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {};
 
     virtual void Display(FILE*     fp,
                          const     CParameters& Parameters,
-                         const     CSaTScanData& Data,
+                         const CSaTScanData& Data,
                          int       nCluster,
                          measure_t nMinMeasure);
     virtual void DisplaySteps(FILE* fp, char* szSpacesOnLeft) {};
@@ -92,14 +96,19 @@ class CCluster
                                      int nReplicas,
                                      bool bIncludeRelRisk, bool bIncludePVal,
                                      int nLeftMargin, int nRightMargin,
-                                     char cDeliminator, char* szSpacesOnLeft);
+                                     char cDeliminator, char* szSpacesOnLeft,
+                                     bool bFormat = true);
     void DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                                    tract_t nFirstTract, tract_t nLastTract,
                                    int nCluster, measure_t nMinMeasure,
                                    int nReplicas,
                                    bool bIncludeRelRisk, bool bIncludePVal,
                                    int nLeftMargin, int nRightMargin,
-                                   char cDeliminator, char* szSpacesOnLeft);
+                                   char cDeliminator, char* szSpacesOnLeft,
+                                   bool bFormat = true);
+     void SetEllipseOffset(int iOffset);
+     void WriteCoordinates(FILE* fp, CSaTScanData* pData);
+     void WriteLatLongCoords(FILE* fp, CSaTScanData* pData);
 };
 
 #endif

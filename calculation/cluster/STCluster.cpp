@@ -5,24 +5,36 @@
 #include "TIAll.h"
 #include "TIAlive.h"
 
-CSpaceTimeCluster::CSpaceTimeCluster(int nTIType, int nIntervals, int nIntervalCut)
-                  :CCluster()
+CSpaceTimeCluster::CSpaceTimeCluster(int nTIType, int nIntervals, int nIntervalCut, BasePrint *pPrintDirection)
+                  :CCluster(pPrintDirection)
 {
-  switch (nTIType)
-  {
-    case (ALLCLUSTERS)   : TI = new CTIAll(nIntervals, nIntervalCut);   break;
-    case (ALIVECLUSTERS) : TI = new CTIAlive(nIntervals, nIntervalCut); break;
-    default              : break;
-  }
+   try
+      {
+      TI = 0;
+      m_pCumCases = 0;
+      m_pCumMeasure = 0;
 
-  // need to keep both of these?
-  m_nTotalIntervals = nIntervals;
-  m_nIntervalCut    = nIntervalCut;
+      switch (nTIType)
+      {
+        case (ALLCLUSTERS)   : TI = new CTIAll(nIntervals, nIntervalCut);   break;
+        case (ALIVECLUSTERS) : TI = new CTIAlive(nIntervals, nIntervalCut); break;
+        default              : break;
+      }
+    
+      // need to keep both of these?
+      m_nTotalIntervals = nIntervals;
+      m_nIntervalCut    = nIntervalCut;
+    
+      m_pCumCases   = (count_t*) Smalloc((m_nTotalIntervals)*sizeof(count_t), gpPrintDirection);
+      m_pCumMeasure = (measure_t*) Smalloc((m_nTotalIntervals)*sizeof(measure_t), gpPrintDirection);
 
-  m_pCumCases   = (count_t*) Smalloc((m_nTotalIntervals)*sizeof(count_t));
-  m_pCumMeasure = (measure_t*) Smalloc((m_nTotalIntervals)*sizeof(measure_t));
-
-  Initialize(0);
+      Initialize(0);
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("CSpaceTimeCluster()", "CSpaceTimeCluster");
+      throw;
+      }
 }
 
 CSpaceTimeCluster::~CSpaceTimeCluster()
@@ -37,16 +49,25 @@ CSpaceTimeCluster::~CSpaceTimeCluster()
 
 void CSpaceTimeCluster::Initialize(tract_t nCenter = 0)
 {
-  CCluster::Initialize(nCenter);
-
-  m_nClusterType = SPACETIME;
-
-  for (int i=0; i<m_nTotalIntervals; i++)
-  {
-    m_pCumCases[i]   = 0;
-    m_pCumMeasure[i] = 0;
-  }
-
+   try
+      {
+      CCluster::Initialize(nCenter);
+    
+      m_nClusterType = SPACETIME;
+    
+      //for (int i=0; i<m_nTotalIntervals; i++)
+      //  {
+      //  m_pCumCases[i]   = 0;
+      //  m_pCumMeasure[i] = 0;
+      //  }
+      memset(m_pCumCases, 0, sizeof(count_t) * m_nTotalIntervals);
+      memset(m_pCumMeasure, 0, sizeof(measure_t) * m_nTotalIntervals);
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("Initialize()", "CSpaceTimeCluster");
+      throw;
+      }
 }
 
 void CSpaceTimeCluster::DeAllocCumulativeCounts()
@@ -101,35 +122,108 @@ CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& cluste
   return *this;
 }
 
-void CSpaceTimeCluster::AddNeighbor(const CSaTScanData& Data, count_t** pCases, tract_t n)
+void CSpaceTimeCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n)
 {
-  m_nTracts = n;
-  tract_t nNeighbor = Data.GetNeighbor(m_Center, n);
+   int i;
 
-  for (int i=0; i<m_nTotalIntervals; i++)
-  {
-    m_pCumCases[i]   += pCases[i][nNeighbor];
-    m_pCumMeasure[i] += Data.m_pMeasure[i][nNeighbor];
-  }
+   try
+      {
+      m_nTracts = n;
+      tract_t nNeighbor = Data.GetNeighbor(iEllipse, m_Center, n);
 
+      for (i=0; i<m_nTotalIntervals; i++)
+        {
+        m_pCumCases[i]   += pCases[i][nNeighbor];
+        m_pCumMeasure[i] += Data.m_pMeasure[i][nNeighbor];
+        }
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("AddNeighbor()", "CSpaceTimeCluster");
+      throw;
+      }
 }
 
 void CSpaceTimeCluster::InitTimeIntervalIndeces()
 {
-  TI->Initialize();
+   try
+      {
+      TI->Initialize();
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("InitTimeIntervalIndeces()", "CSpaceTimeCluster");
+      throw;
+      }
+}
+
+void CSpaceTimeCluster::InitTimeIntervalIndeces(int nLow, int nHigh)
+{
+   try
+      {
+      TI->InitializeRange(nLow, nHigh);
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("InitTimeIntervalIndeces()", "CSpaceTimeCluster");
+      throw;
+      }
 }
 
 bool CSpaceTimeCluster::SetNextTimeInterval()
 {
-  m_bClusterDefined = true;
-  return(TI->GetNextTimeInterval(m_pCumCases,
+   bool bRetVal;
+
+   m_bClusterDefined = true;
+   bRetVal = (TI->GetNextTimeInterval(m_pCumCases,
                                  m_pCumMeasure,
                                  m_nCases,
                                  m_nMeasure,
                                  m_nFirstInterval,
                                  m_nLastInterval));
+   return bRetVal;
 }
 
+void CSpaceTimeCluster::GetMeasure()
+{
+     TI->GetNextTimeIntervalProsp(m_pCumCases,
+                                 m_pCumMeasure,
+                                 m_nCases,
+                                 m_nMeasure);
+     /*TI->GetNextTimeIntervalProsp(m_pCumCases,
+                                 m_pCumMeasure,
+                                 m_nCases,
+                                 m_nMeasure,
+                                 m_nFirstInterval,
+                                 m_nLastInterval); */
+}
+
+bool CSpaceTimeCluster::SetNextProspTimeInterval()
+{
+   bool bRetVal;
+
+   try
+      {
+      m_bClusterDefined = true;
+      bRetVal = (TI->GetNextTimeIntervalProsp(m_pCumCases,
+                                 m_pCumMeasure,
+                                 m_nCases,
+                                 m_nMeasure));
+      /*bRetVal = (TI->GetNextTimeIntervalProsp(m_pCumCases,
+                                 m_pCumMeasure,
+                                 m_nCases,
+                                 m_nMeasure,
+                                 m_nFirstInterval,
+                                 m_nLastInterval)); */
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("SetNextProspTimeInterval()", "CSpaceTimeCluster");
+      throw;
+      }
+   return bRetVal;
+}
+//------------------------------------------------------------------------------
 /*void CSpaceTimeCluster::Display(FILE* pFile)
 {
   fprintf(pFile, "\nCenter Grid Point #%i\n", m_Center);

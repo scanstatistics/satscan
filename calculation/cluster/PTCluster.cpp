@@ -6,31 +6,38 @@
 #include "Param.h"
 #include "tinfo.h"
 
-CPurelyTemporalCluster::CPurelyTemporalCluster(int nTIType, int nIntervals, int nIntervalCut)
-                  :CCluster()
+CPurelyTemporalCluster::CPurelyTemporalCluster(int nTIType, int nIntervals, int nIntervalCut, BasePrint *pPrintDirection)
+                  :CCluster(pPrintDirection)
 {
-  switch (nTIType)
-  {
-    case (ALLCLUSTERS)   : m_TI = new CTIAll(nIntervals, nIntervalCut);   break;
-    case (ALIVECLUSTERS) : m_TI = new CTIAlive(nIntervals, nIntervalCut); break;
-    default              : break;
-  }
-
-  m_nTotalIntervals = nIntervals;
-  m_nIntervalCut    = nIntervalCut;
-
-  Initialize(0);
+   try
+      {
+      m_TI = 0;
+      switch (nTIType)
+         {
+         case (ALLCLUSTERS)   : m_TI = new CTIAll(nIntervals, nIntervalCut);   break;
+         case (ALIVECLUSTERS) : m_TI = new CTIAlive(nIntervals, nIntervalCut); break;
+         default              : break;
+         }
+      m_nTotalIntervals = nIntervals;
+      m_nIntervalCut    = nIntervalCut;
+      Initialize(0);
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("CPurelyTemporalCluster()", "CPurelyTemporalCluster");
+      throw;
+      }
 }
 
 CPurelyTemporalCluster::~CPurelyTemporalCluster()
 {
-  delete m_TI;
+   delete m_TI;
 }
 
 void CPurelyTemporalCluster::Initialize(tract_t nCenter)
 {
-  CCluster::Initialize(nCenter);
-  m_nClusterType = PURELYTEMPORAL;
+   CCluster::Initialize(nCenter);
+   m_nClusterType = PURELYTEMPORAL;
 }
 
 CPurelyTemporalCluster& CPurelyTemporalCluster::operator =(const CPurelyTemporalCluster& cluster)
@@ -68,19 +75,30 @@ CPurelyTemporalCluster& CPurelyTemporalCluster::operator =(const CPurelyTemporal
 
 void CPurelyTemporalCluster::InitTimeIntervalIndeces()
 {
-  m_TI->Initialize();
+   try
+      {
+      m_TI->Initialize();
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("InitTimeIntervalIndeces()", "CPurelyTemporalCluster");
+      throw;
+      }
 }
 
 bool CPurelyTemporalCluster::SetNextTimeInterval(const count_t*& pCases,
                                                  const measure_t*& pMeasure)
 {
+   bool bValue;
+
   m_bClusterDefined = true;
-  return(m_TI->GetNextTimeInterval(pCases,
+  bValue = (m_TI->GetNextTimeInterval(pCases,
                                    pMeasure,
                                    m_nCases,
                                    m_nMeasure,
                                    m_nFirstInterval,
                                    m_nLastInterval));
+   return bValue;
 }
 
 void CPurelyTemporalCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
@@ -88,24 +106,31 @@ void CPurelyTemporalCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& D
                                                  int nReplicas,
                                                  bool bIncludeRelRisk, bool bIncludePVal,
                                                  int nLeftMargin, int nRightMargin,
-                                                 char cDeliminator, char* szSpacesOnLeft)
+                                                 char cDeliminator, char* szSpacesOnLeft,
+                                                 bool bFormat)
 {
-  //char* szTID;
-
-  if (nLeftMargin > 0)
-    fprintf(fp, "included.: All\n");
-
-// Code to print tracts for purely temporal clusters
-/*  else
-  {
-    for (int i=0; i<Data.m_nTracts; i++)
-    {
-      szTID = tiGetTid(i);
-      fprintf(fp, "%i         ", nCluster);
-      fprintf(fp, "%s\n", szTID);
-    }
-  }
-*/
+   //char* szTID;
+   try
+      {
+      if (nLeftMargin > 0)
+         fprintf(fp, "included.: All\n");
+      // Code to print tracts for purely temporal clusters
+      /*else
+        {
+        for (int i=0; i<Data.m_nTracts; i++)
+           {
+           szTID = tiGetTid(i);
+           fprintf(fp, "%i         ", nCluster);
+           fprintf(fp, "%s\n", szTID);
+           }
+        }
+        */
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("DisplayCensusTracts()", "CPurelyTemporalCluster");
+      throw;
+      }
 }
 
 

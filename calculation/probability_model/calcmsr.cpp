@@ -9,309 +9,364 @@
 #include "tinfo.h"
 #include "cats.h"
 #include "analysis.h"
-#include "error.h"
 
-#define DEBUGMEASURE 0
+//#define DEBUGMEASURE 0
 
+#ifdef DEBUGMEASURE
 static FILE* pMResult;
+#endif
 
 int AssignMeasure(
+            const TInfo  *pTInfo,
+            Cats         *pCats,
             count_t      *Cases[],
             Julian**     Times,
             tract_t      NumTracts,
-				Julian       StartDate,
+	    Julian       StartDate,
             Julian       EndDate,
             Julian*      IntervalStart,
-            BOOL         bExactTimes,
+            bool         bExactTimes,
             int          nTimeAdjust,
             double       nTimeAdjPercent,
-				int          nTimeIntervals,
+	    int          nTimeIntervals,
             int          nIntervalUnits,
-  				long         nIntervalLength,
+  	    long         nIntervalLength,
             measure_t*** pMeasure,
             count_t*     pTotalCases,
             double*      pTotalPop,
-				measure_t*   pTotalMeasure)
+	    measure_t*   pTotalMeasure,
+            BasePrint *pPrintDirection)
 {
-  int         i, interval;
-  double*     pAlpha;
-  double*     pRisk;
-  int         nCats;
-  int         nPops;
-  tract_t     nTracts, tract;
-  measure_t** m;
-  char       *tid;
+   int         i, interval;
+   double*     pAlpha = 0;
+   double*     pRisk = 0;
+   int         nCats;
+   int         nPops;
+   tract_t     nTracts, tract;
+   measure_t** m = 0;
+   char       *tid;
+   Julian *IntervalDates = 0;
 
-  /* Create & Use array of interval dates where last interval date = EndDate */
-  Julian *IntervalDates = (unsigned long*)Smalloc((nTimeIntervals+1)*sizeof(Julian));
-  memcpy(IntervalDates, IntervalStart, (nTimeIntervals+1)*sizeof(Julian));
+   try
+      {
+      /* Create & Use array of interval dates where last interval date = EndDate */
+      IntervalDates = (unsigned long*)Smalloc((nTimeIntervals+1)*sizeof(Julian), pPrintDirection);
+      memcpy(IntervalDates, IntervalStart, (nTimeIntervals+1)*sizeof(Julian));
 
-  printf("Calculating expected number of cases\n");
+      pPrintDirection->SatScanPrintf("Calculating expected number of cases\n");
 
-#if DEBUGMEASURE
-  if ((pMResult = fopen("MEASURE.TXT", "w")) == NULL)
-  {
-	  fprintf(stderr, "  Error: Cannot open output file.\n");
-  }
+#ifdef DEBUGMEASURE
+      if ((pMResult = fopen("MEASURE.TXT", "w")) == NULL)
+         {
+	 fprintf(stderr, "  Error: Cannot open output file.\n");
+         SSGenerateException("  Error: Cannot open output file.\n","AssignMeasure()");
+         }
 #endif
 
-  tiCalcAlpha(&pAlpha, StartDate, EndDate);
+      pTInfo->tiCalcAlpha(&pAlpha, StartDate, EndDate);
+    
+      nTracts = pTInfo->tiGetNumTracts();
+      nPops   = pTInfo->tiGetNumPopDates();
+      nCats   = pCats->catNumCats();
 
-  nTracts = tiGetNumTracts();
-  nPops   = tiGetNumPopDates();
-  nCats   = catNumCats();
-
-#if DEBUGMEASURE
-  DisplayInitialData(StartDate, EndDate, IntervalDates, nTimeIntervals, pAlpha, nPops);
+#ifdef DEBUGMEASURE
+      DisplayInitialData(StartDate, EndDate, IntervalDates, nTimeIntervals, pAlpha, nPops);
 #endif
 
-  CalcRisk(&pRisk, pAlpha, nCats, nTracts, nPops, pTotalPop, pTotalCases);
-  Calcm(&m, pRisk, nCats, nTracts, nPops);
-  CalcMeasure(pMeasure, m, IntervalDates, StartDate, EndDate, nCats, nTracts, nPops, nTimeIntervals, pTotalMeasure);
-  if (nTimeIntervals>1)
-    if (nTimeAdjust==1)
-      AdjustForDiscreteTimeTrend(pMeasure, Cases, nTracts, nTimeIntervals, pTotalCases, pTotalMeasure);
-    else if (nTimeAdjust==2)
-      AdjustForPercentageTimeTrend(nTimeAdjPercent, nTimeIntervals, nIntervalUnits, nIntervalLength,
-                                   nTracts, pTotalMeasure, pMeasure);
+      CalcRisk(pTInfo, &pRisk, pAlpha, nCats, nTracts, nPops, pTotalPop, pTotalCases, pPrintDirection);
+      Calcm(pTInfo, &m, pRisk, nCats, nTracts, nPops, pPrintDirection);
+      CalcMeasure(pTInfo, pMeasure, m, IntervalDates, StartDate, EndDate, nCats, nTracts, nPops, nTimeIntervals, pTotalMeasure, pPrintDirection);
+      if (nTimeIntervals>1)
+        if (nTimeAdjust==1)
+          AdjustForDiscreteTimeTrend(pMeasure, Cases, nTracts, nTimeIntervals, pTotalCases, pTotalMeasure);
+        else if (nTimeAdjust==2)
+          AdjustForPercentageTimeTrend(nTimeAdjPercent, nTimeIntervals, nIntervalUnits, nIntervalLength,
+                                       nTracts, pTotalMeasure, pMeasure, pPrintDirection);
+    
+      free(pAlpha);  pAlpha = 0;
+      free(pRisk);   pRisk = 0;
 
-  free(pAlpha);
-  free(pRisk);
-
-  for(i=0;i<nPops;i++)
-    free(m[i]);
-  free(m);
+      for(i=0;i<nPops;i++)
+        free(m[i]);
+      free(m); m = 0;
 
 
 
 /* Bug report: Check to see that Measure matrix has positive entries. */
 #if 1
-for (tract=0;tract<NumTracts;tract++) {
-   for (interval=0;interval<nTimeIntervals;interval++) {
-      if((*pMeasure)[interval][tract]<0) {
-			tid = tiGetTid(tract);
-			printf("  Error: Negative Measure (%8.4f) in function AssignMeasure(),\n\ttract %d, tractid %s, interval %d.\n",(*pMeasure)[interval][tract], tract, tid, interval);
-			FatalError("");
-         } /* endif Measure */
+    for (tract=0;tract<NumTracts;tract++) {
+       for (interval=0;interval<nTimeIntervals;interval++) {
+          if((*pMeasure)[interval][tract]<0)
+             {
+             char sMessage[200];
+    	     tid = pTInfo->tiGetTid(tract);
+    	     //printf("  Error: Negative Measure (%8.4f) in function AssignMeasure(),\n\ttract %d, tractid %s, interval %d.\n",(*pMeasure)[interval][tract], tract, tid, interval);
+    	     //FatalError("", pPrintDirection);
+             sprintf(sMessage,"  Error: Negative Measure (%8.4f) in function AssignMeasure(),\n\ttract %d, tractid %s, interval %d.\n",(*pMeasure)[interval][tract], tract, tid, interval);
+    	     SSGenerateException(sMessage, "AssignMeasure");
+             } /* endif Measure */
 
-      } /* endfor interval*/
-   } /* endfor tract*/
+          } /* endfor interval*/
+       } /* endfor tract*/
 #endif
 
 
 /**** Replaces the raw Measure array with a cummulitative one **************/
 #if 0
-for(i=0;i<nTimeIntervals;i++) printf("%10.6f\t",(*pMeasure)[i][0]);
-printf("\n");
+    for(i=0;i<nTimeIntervals;i++)pPrintDirection->SatScanPrintf("%10.6f\t",(*pMeasure)[i][0]);
+      printf("\n");
 #endif
   for(tract=0; tract<NumTracts; tract++)
      for(i=nTimeIntervals-2;i>=0;i--)
         (*pMeasure)[i][tract]=(*pMeasure)[i+1][tract]+(*pMeasure)[i][tract];
 #if 0
-for(i=0;i<nTimeIntervals;i++) printf("%10.2f\t",(*pMeasure)[i][0]);
-printf("\n");
+    for(i=0;i<nTimeIntervals;i++)pPrintDirection->SatScanPrintf("%10.2f\t",(*pMeasure)[i][0]);
+        printf("\n");
 #endif
 
-#if DEBUGMEASURE
-  fprintf(pMResult, "Totals: \n\n");
-  fprintf(pMResult, "   Cases      = %li\n   Measure    = %f\n   Population = %f\n", *pTotalCases, *pTotalMeasure, *pTotalPop);
+#ifdef DEBUGMEASURE
+    fprintf(pMResult, "Totals: \n\n");
+      fprintf(pMResult, "   Cases      = %li\n   Measure    = %f\n   Population = %f\n", *pTotalCases, *pTotalMeasure, *pTotalPop);
   fclose(pMResult);
 #endif
 
-/* Bug check, to ensure that TotalCases=TotalMeasure */
-  if(fabs(*pTotalCases-*pTotalMeasure)>0.0001) {
-     printf("\n  Error: In function AssignMeasure (calcmsr.c),");
-     printf("\n  the total measure is not equal to the total number of cases.");
-     printf("\n  TotalCases=%ld,  TotalMeasure=%8.6lf\n",*pTotalCases, *pTotalMeasure);
-     FatalError("Program canceled.\n");
-     }
+    /* Bug check, to ensure that TotalCases=TotalMeasure */
+     if(fabs(*pTotalCases-*pTotalMeasure)>0.0001) {
+         //pPrintDirection->SatScanPrintf("\n  Error: In function AssignMeasure (calcmsr.c),");
+         //pPrintDirection->SatScanPrintf("\n  the total measure is not equal to the total number of cases.");
+         //pPrintDirection->SatScanPrintf("\n  TotalCases=%ld,  TotalMeasure=%8.6lf\n",*pTotalCases, *pTotalMeasure);
+         //FatalError("Program canceled.\n", pPrintDirection);
+         char sMessage[200], sTmp[100];
+         strcpy(sMessage, "\n  Error: In function AssignMeasure (calcmsr.c),");
+         strcat(sMessage, "\n  the total measure is not equal to the total number of cases.");
+         sprintf(sTmp,"\n  TotalCases=%ld,  TotalMeasure=%8.6lf\n",*pTotalCases, *pTotalMeasure);
+         strcat(sMessage, sTmp);
+         SSGenerateException(sMessage, "AssignMeasure");
+         }
 
-  printf("\n");
+      pPrintDirection->SatScanPrintf("\n");
 
-  free(IntervalDates);
-
+      free(IntervalDates);
+      }
+   catch (SSException & x)
+      {
+      free(pAlpha);
+      free(pRisk);
+      free(m);
+      free(IntervalDates);
+      x.AddCallpath("AssignMeasure()", "calcmsr.cpp");
+      throw;
+      }
   return(1);
 }
 
-int CalcRisk(double** pRisk, double* pAlpha,
-             int nCats, tract_t nTracts, int nPops, double* pTotalPop, count_t* pTotalCases)
+int CalcRisk(const TInfo *pTInfo, double** pRisk, double* pAlpha,
+             int nCats, tract_t nTracts, int nPops, double* pTotalPop, count_t* pTotalCases, BasePrint *pPrintDirection)
 {
-  int      c, n;
-  tract_t  t;
-  double   nPop;
-  count_t  nCaseCount;
+   int      c, i, n;
+   tract_t  t;
+   double   nPop;
+   count_t  nCaseCount;
 
-  *pRisk = (double*)Smalloc(nCats * sizeof(double));
-
-#if DEBUGMEASURE
-  fprintf(pMResult, "Category #    Pop Count           Case Count   Risk\n");
-#endif
-
-  *pTotalCases = 0;
-  *pTotalPop   = 0;
-
-  for (c=0; c<nCats; c++)
-  {
-    nPop       = 0;
-    nCaseCount = 0;
-
-    for (t=0; t<nTracts; t++)
-    {
-      nCaseCount = nCaseCount + tiGetCount(t, c);
-
-      if (nCaseCount < 0)
+   try
       {
-        fprintf(stderr, "  Error: Total cases is greater than maximum allowed.\n");
-        FatalError(0);
-      }
-
-      for (n=0; n<nPops; n++)
-        nPop = nPop + (pAlpha[n]*tiGetPop(t, c, n));
-    }
-    (*pRisk)[c] = (double)nCaseCount / nPop;
-#if DEBUGMEASURE
-    fprintf(pMResult, "%i             %f        %li            %f\n",c, nPop, nCaseCount, (*pRisk)[c]);
+      *pRisk = (double*)Smalloc(nCats * sizeof(double), pPrintDirection);
+      
+#ifdef DEBUGMEASURE
+      fprintf(pMResult, "Category #    Pop Count           Case Count   Risk\n");
 #endif
-	 *pTotalCases += nCaseCount;
-    *pTotalPop   += nPop;
-  }
 
-#if DEBUGMEASURE
+      *pTotalCases = 0;
+      *pTotalPop   = 0;
+    
+      for (c=0; c<nCats; c++)
+      {
+        nPop       = 0;
+        nCaseCount = 0;
+    
+        for (t=0; t<nTracts; t++)
+        {
+          nCaseCount = nCaseCount + pTInfo->tiGetCount(t, c);
+    
+          if (nCaseCount < 0)
+          {
+            fprintf(stderr, "  Error: Total cases is greater than maximum allowed.\n");
+            //FatalError(0, pPrintDirection);
+            SSGenerateException("  Error: Total cases is greater than maximum allowed.\n", "CalcRisk");
+          }
+    
+          for (n=0; n<nPops; n++)
+            nPop = nPop + (pAlpha[n]*pTInfo->tiGetPop(t, c, n));
+        }
+        (*pRisk)[c] = (double)nCaseCount / nPop;
+#ifdef DEBUGMEASURE
+       fprintf(pMResult, "%i             %f        %li            %f\n",c, nPop, nCaseCount, (*pRisk)[c]);
+#endif
+       *pTotalCases += nCaseCount;
+       *pTotalPop   += nPop;
+       }
+
+#ifdef DEBUGMEASURE
   fprintf(pMResult, "\n");
   fprintf(pMResult, "Total Cases = %li    Total Population = %f\n\n", *pTotalCases, *pTotalPop); 
 #endif
-
-  return(1);
-}
-
-int Calcm(measure_t*** m, double* pRisk, int nCats, tract_t nTracts, int nPops)
-{
-  int      c, n;
-  tract_t  t;
-
-  *m = (double**)Smalloc(nPops * sizeof(measure_t *));
-  for(n=0;n<nPops;n++)
-    (*m)[n] = (double*)Smalloc(nTracts * sizeof(measure_t));
-
-  for (n=0; n<nPops; n++)
-    for (t=0; t<nTracts; t++)
-    {
-      (*m)[n][t] = 0.0;
-
-      for (c=0; c<nCats; c++)
-        (*m)[n][t] = (*m)[n][t] + (pRisk[c]*tiGetPop(t, c, n));
-
-    }
-
-#if DEBUGMEASURE
-  fprintf(pMResult, "Pop\n");
-  fprintf(pMResult, "Index  Tract   m\n");
-  for (n=0; n<nPops; n++)
-  {
-	 for (t=0; t<nTracts; t++)
-    {
-      if (t==0)
-        fprintf(pMResult, "%i      ",n);
-      else
-        fprintf(pMResult, "       ");
-      fprintf(pMResult, "%i       %f\n", t, (*m)[n][t]);
-    }
-  }
-  fprintf(pMResult, "\n");
-#endif
-
-  return(1);
-}
-
-int CalcMeasure(measure_t*** pMeasure, measure_t** m, Julian* IntervalDates, Julian StartDate, Julian EndDate,
-                int nCats, tract_t nTracts, int nPops, int nTimeIntervals, measure_t* pTotalMeasure)
-{
-  int         i;
-  int         n;
-  tract_t     t;
-  measure_t** M;
-  int         lower;
-  int         upper;
-  double      tempRatio, tempSum, temp1, temp2;
-  Julian      jLowDate;
-  Julian      jLowDatePlus1;
-  int         nLowerPlus1;
-  long        nTotalYears = EndDate+1-StartDate/*TimeBetween(StartDate, EndDate, DAY)*/;
-
-  M = (double**)Smalloc((nTimeIntervals+1) * sizeof(measure_t *));
-  for(i=0;i<nTimeIntervals+1;i++)
-	 M[i] = (double*)Smalloc(nTracts * sizeof(measure_t));
-
-  *pMeasure = (double**)Smalloc((nTimeIntervals+1) * sizeof(measure_t *));
-  for(i=0;i<nTimeIntervals+1;i++)
-	 (*pMeasure)[i] = (double*)Smalloc(nTracts * sizeof(measure_t));
-
-  for (i=0; i<nTimeIntervals+1; i++)
-  {
-	 tiGetPopUpLowIndex(IntervalDates, i, nTimeIntervals, &upper, &lower);
-    jLowDate      = tiGetPopDate(lower);
-    nLowerPlus1   = lower+1;
-    jLowDatePlus1 = tiGetPopDate(lower+1);
-
-    for (t=0; t<nTracts; t++)
-    {
-      if (jLowDatePlus1 == -1)
-        M[i][t] = m[lower][t];
-		else
-		{
-        temp1     = IntervalDates[i] - jLowDate;
-        temp2     = jLowDatePlus1-jLowDate;
-        tempRatio = (double)(temp1/temp2);
-        M[i][t]   = tempRatio * m[nLowerPlus1][t] + (1 - tempRatio) * m[lower][t];
-		}
-    } /* nTracts */
-  }   /* nTimeIntervals */
-
-  *pTotalMeasure = 0.0;
-  for (i=0; i<nTimeIntervals; i++)
-  {
-    tiGetPopUpLowIndex(IntervalDates, i, nTimeIntervals, &upper, &lower);
-
-    for (t=0; t<nTracts; t++)
-    {
-      (*pMeasure)[i][t] = 0.0;
-		tempSum  = 0.0;
-		temp1    = .5*(m[lower][t] + M[i][t])*(IntervalDates[i]-tiGetPopDate(lower));
-      temp2    = .5*(m[upper][t] + M[i+1][t])*(tiGetPopDate(upper)-IntervalDates[i+1]);
-
-      for (n=lower; n<upper; n++)
-      {
-		  tempSum = tempSum + (((m[n][t] + m[n+1][t]) / 2) * (tiGetPopDate(n+1)-tiGetPopDate(n)));
       }
-      (*pMeasure)[i][t] = ((tempSum - temp1 - temp2) / nTotalYears);
+   catch (SSException & x)
+      {
+      x.AddCallpath("CalcRisk()", "calcmsr.cpp");
+      throw;
+      }
+  return(1);
+}
 
-      *pTotalMeasure += (*pMeasure)[i][t];
-    } /* nTracts */
-  } /* nTimeIntervals */
+int Calcm(const TInfo *pTInfo, measure_t*** m, double* pRisk, int nCats, tract_t nTracts, int nPops, BasePrint *pPrintDirection)
+{
+   int      c, n;
+   tract_t  t;
 
-#if DEBUGMEASURE
-  fprintf(pMResult, "Time  Lower  Upper\n");
-  fprintf(pMResult, "Intv  Index  Index    Tract   M           Measure\n");
-  for (i=0; i<nTimeIntervals; i++)
-  {
-	 tiGetPopUpLowIndex(IntervalDates, i, nTimeIntervals, &upper, &lower);
-    for (t=0; t<nTracts; t++)
-    {
-      if (t==0)
-        fprintf(pMResult, "%i     %i      %i        ", i, lower, upper);
-		else
-        fprintf(pMResult, "                      ");
-      fprintf(pMResult, "%i       %f    %f\n", t, M[i][t], (*pMeasure)[i][t]);
-	 }
-  }
-  fprintf(pMResult, "\n");
-  fprintf(pMResult, "Total Measure = %f\n\n", *pTotalMeasure); 
+   try
+     {
+     *m = (double**)Smalloc(nPops * sizeof(measure_t *), pPrintDirection);
+     for(n=0;n<nPops;n++)
+       (*m)[n] = (double*)Smalloc(nTracts * sizeof(measure_t), pPrintDirection);
+    
+     for (n=0; n<nPops; n++)
+       for (t=0; t<nTracts; t++)
+       {
+         (*m)[n][t] = 0.0;
+    
+         for (c=0; c<nCats; c++)
+           (*m)[n][t] = (*m)[n][t] + (pRisk[c]*pTInfo->tiGetPop(t, c, n));
+    
+       }
+
+#ifdef DEBUGMEASURE
+      fprintf(pMResult, "Pop\n");
+      fprintf(pMResult, "Index  Tract   m\n");
+      for (n=0; n<nPops; n++)
+      {
+    	 for (t=0; t<nTracts; t++)
+        {
+          if (t==0)
+            fprintf(pMResult, "%i      ",n);
+          else
+            fprintf(pMResult, "       ");
+          fprintf(pMResult, "%i       %f\n", t, (*m)[n][t]);
+        }
+      }
+      fprintf(pMResult, "\n");
+#endif
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("Calcm()", "calcmsr.cpp");
+      throw;
+      }
+  return(1);
+}
+
+int CalcMeasure(const TInfo *pTInfo, measure_t*** pMeasure, measure_t** m, Julian* IntervalDates, Julian StartDate, Julian EndDate,
+                int nCats, tract_t nTracts, int nPops, int nTimeIntervals, measure_t* pTotalMeasure, BasePrint *pPrintDirection)
+{
+   int         i;
+   int         n;
+   tract_t     t;
+   measure_t** M = 0;
+   int         lower;
+   int         upper;
+   double      tempRatio, tempSum, temp1, temp2;
+   Julian      jLowDate;
+   Julian      jLowDatePlus1;
+   int         nLowerPlus1;
+   long        nTotalYears = EndDate+1-StartDate/*TimeBetween(StartDate, EndDate, DAY)*/;
+
+   try
+      {
+      M = (double**)Smalloc((nTimeIntervals+1) * sizeof(measure_t *), pPrintDirection);
+      for(i=0;i<nTimeIntervals+1;i++)
+    	 M[i] = (double*)Smalloc(nTracts * sizeof(measure_t), pPrintDirection);
+    
+      *pMeasure = (double**)Smalloc((nTimeIntervals+1) * sizeof(measure_t *), pPrintDirection);
+      for(i=0;i<nTimeIntervals+1;i++)
+    	 (*pMeasure)[i] = (double*)Smalloc(nTracts * sizeof(measure_t), pPrintDirection);
+    
+      for (i=0; i<nTimeIntervals+1; i++)
+      {
+    	 pTInfo->tiGetPopUpLowIndex(IntervalDates, i, nTimeIntervals, &upper, &lower);
+        jLowDate      = pTInfo->tiGetPopDate(lower);
+        nLowerPlus1   = lower+1;
+        jLowDatePlus1 = pTInfo->tiGetPopDate(lower+1);
+
+        for (t=0; t<nTracts; t++)
+        {
+          if (jLowDatePlus1 == -1)
+            M[i][t] = m[lower][t];
+    		else
+    		{
+            temp1     = IntervalDates[i] - jLowDate;
+            temp2     = jLowDatePlus1-jLowDate;
+            tempRatio = (double)(temp1/temp2);
+            M[i][t]   = tempRatio * m[nLowerPlus1][t] + (1 - tempRatio) * m[lower][t];
+    		}
+        } /* nTracts */
+      }   /* nTimeIntervals */
+    
+      *pTotalMeasure = 0.0;
+      for (i=0; i<nTimeIntervals; i++)
+      {
+        pTInfo->tiGetPopUpLowIndex(IntervalDates, i, nTimeIntervals, &upper, &lower);
+    
+        for (t=0; t<nTracts; t++)
+        {
+          (*pMeasure)[i][t] = 0.0;
+    		tempSum  = 0.0;
+    		temp1    = .5*(m[lower][t] + M[i][t])*(IntervalDates[i]-pTInfo->tiGetPopDate(lower));
+          temp2    = .5*(m[upper][t] + M[i+1][t])*(pTInfo->tiGetPopDate(upper)-IntervalDates[i+1]);
+    
+          for (n=lower; n<upper; n++)
+          {
+    		  tempSum = tempSum + (((m[n][t] + m[n+1][t]) / 2) * (pTInfo->tiGetPopDate(n+1)-pTInfo->tiGetPopDate(n)));
+          }
+          (*pMeasure)[i][t] = ((tempSum - temp1 - temp2) / nTotalYears);
+    
+          *pTotalMeasure += (*pMeasure)[i][t];
+        } /* nTracts */
+      } /* nTimeIntervals */
+
+#ifdef DEBUGMEASURE
+      fprintf(pMResult, "Time  Lower  Upper\n");
+      fprintf(pMResult, "Intv  Index  Index    Tract   M           Measure\n");
+      for (i=0; i<nTimeIntervals; i++)
+      {
+    	 pTInfo->tiGetPopUpLowIndex(IntervalDates, i, nTimeIntervals, &upper, &lower);
+        for (t=0; t<nTracts; t++)
+        {
+          if (t==0)
+            fprintf(pMResult, "%i     %i      %i        ", i, lower, upper);
+    		else
+            fprintf(pMResult, "                      ");
+          fprintf(pMResult, "%i       %f    %f\n", t, M[i][t], (*pMeasure)[i][t]);
+    	 }
+      }
+      fprintf(pMResult, "\n");
+      fprintf(pMResult, "Total Measure = %f\n\n", *pTotalMeasure); 
 #endif
 
-  for(i=0;i<nTimeIntervals+1;i++)
-    free(M[i]);
-  free(M);
-
+      for(i=0;i<nTimeIntervals+1;i++)
+        free(M[i]);
+      free(M);
+      }
+   catch (SSException & x)
+      {
+      if (M)
+         {
+         for(int i=0;i<nTimeIntervals+1;i++)
+           free(M[i]);
+         free(M);
+         }
+      x.AddCallpath("CalcMeasure()", "calcmsr.cpp");
+      throw;
+      }
   return(1);
 }
 
@@ -329,44 +384,57 @@ int CalcMeasure(measure_t*** pMeasure, measure_t** m, Julian* IntervalDates, Jul
 int AdjustForDiscreteTimeTrend(measure_t*** pMeasure,
                                count_t      *Cases[],
                                tract_t      nTracts,
-		               			 int          nTimeIntervals,
+		               int          nTimeIntervals,
                                count_t*     pTotalCases,
                                measure_t*   pTotalMeasure)
 {
-  int     AdjustIntervals;
-  int     i,j,jj,k,tract;
-  double  sumcases,summeasure;
+   int     AdjustIntervals;
+   int     i,j,jj,k,tract;
+   double  sumcases,summeasure;
 
-  AdjustIntervals=nTimeIntervals;
-  k=1;j=0;jj=0;
-
-  for(i=0;i<AdjustIntervals;i++) {
-	  sumcases=0;
-	  summeasure=0;
-	  while(j<k*nTimeIntervals/AdjustIntervals && j<nTimeIntervals) {
-		  if(j==nTimeIntervals-1)
-			  for(tract=0;tract<nTracts;tract++) {
-				  sumcases = sumcases + Cases[j][tract];
-				  summeasure = summeasure + (*pMeasure)[j][tract];
-				  } /* for tract */
-		  else for(tract=0;tract<nTracts;tract++) {
-				  sumcases = sumcases + (Cases[j][tract]-Cases[j+1][tract]);
-              summeasure = summeasure + (*pMeasure)[j][tract];
-              } /* for tract */
-        j++;
-        }  /* while */
+   try
+      {
+      AdjustIntervals=nTimeIntervals;
+      k=1;j=0;jj=0;
+    
+      for(i=0;i<AdjustIntervals;i++) 
+         {
+    	 sumcases=0;
+    	 summeasure=0;
+    	 while(j<k*nTimeIntervals/AdjustIntervals && j<nTimeIntervals) 
+    	    {
+    	    if(j==nTimeIntervals-1)
+    	       for(tract=0;tract<nTracts;tract++) 
+    	          {
+    		  sumcases = sumcases + Cases[j][tract];
+    		  summeasure = summeasure + (*pMeasure)[j][tract];
+    		  } /* for tract */
+    	    else 
+    	       for(tract=0;tract<nTracts;tract++) 
+    	          {
+    		  sumcases = sumcases + (Cases[j][tract]-Cases[j+1][tract]);
+                  summeasure = summeasure + (*pMeasure)[j][tract];
+                  } /* for tract */
+            j++;
+            }  /* while */
 #if 0
-printf("i=%i sc=%.1lf sm=%.1lf kvot=%.2lf\n",
-   i, sumcases,summeasure,(sumcases/summeasure)/((*pTotalCases)/(*pTotalMeasure)));
+   printf("i=%i sc=%.1lf sm=%.1lf kvot=%.2lf\n",
+      i, sumcases,summeasure,(sumcases/summeasure)/((*pTotalCases)/(*pTotalMeasure)));
 #endif
-     while(jj<k*nTimeIntervals/AdjustIntervals && jj<nTimeIntervals) {
-        for(tract=0;tract<nTracts;tract++) (*pMeasure)[jj][tract]=
-           (*pMeasure)[jj][tract]*(sumcases/summeasure)/((*pTotalCases)/(*pTotalMeasure));
-        jj++;
-        }  /* while */
-     k++;
-	  } /* for i<AdjustIntervals */
-
+      while(jj<k*nTimeIntervals/AdjustIntervals && jj<nTimeIntervals) 
+         {
+         for(tract=0;tract<nTracts;tract++) 
+            (*pMeasure)[jj][tract]=(*pMeasure)[jj][tract]*(sumcases/summeasure)/((*pTotalCases)/(*pTotalMeasure));
+         jj++;
+         }  /* while */
+      k++;
+      } /* for i<AdjustIntervals */
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("AdjustForDiscreteTimeTrend()", "calcmsr.cpp");
+      throw;
+      }
   return(1);
 }
 
@@ -378,59 +446,69 @@ void AdjustForPercentageTimeTrend(double       nTimeAdjPercent,
                                   long         nIntervalLength,
                                   tract_t      nTracts,
                                   measure_t*   pTotalMeasure,
-                                  measure_t*** pMeasure)
+                                  measure_t*** pMeasure,
+                                  BasePrint *pPrintDirection)
 {
-  int    i,t;
-  double c;
-  double k = IntervalInYears(nIntervalUnits, nIntervalLength);
-  double p = 1 + (nTimeAdjPercent/100);
-  double nAdjustedMeasure = 0;
-
-  #if DEBUGMEASURE
-  fprintf(pMResult, "\nAdjust Measure for Time Trend - %f%% per year.\n\n", nTimeAdjPercent);
-  fprintf(pMResult, "\nTime Intv   Tract   Measure\n");
-  #endif
-
-  /* Adjust the measure assigned to each interval/tract by yearly percentage */
-  for (i=0; i<nTimeIntervals; i++)
-    for (t=0; t<nTracts; t++)
-    {
-      (*pMeasure)[i][t] = (*pMeasure)[i][t]*(pow(p,i*k)) /* * c */ ;
-      nAdjustedMeasure += (*pMeasure)[i][t];
-
-      if (nAdjustedMeasure > DBL_MAX)
+   int    i,t;
+   double c;
+   double k = IntervalInYears(nIntervalUnits, nIntervalLength);
+   double p = 1 + (nTimeAdjPercent/100);
+   double nAdjustedMeasure = 0;
+ 
+   try
       {
-        printf("  Error: Data overflow due to time trend adjustment.\n");
-        FatalError("");
-      }
-    }
-
-
-  /* Mutlipy the measure for each interval/tract by constant (c) to obtain */
-  /* total adjusted measure (nAdjustedMeasure) equal to previous total     */
-  /* measure (*pTotalMeasure).                                             */
-  c = (double)(*pTotalMeasure)/nAdjustedMeasure;
-  nAdjustedMeasure=0;
-
-  for (i=0; i<nTimeIntervals; i++)
-    for (t=0; t<nTracts; t++)
-    {
-      (*pMeasure)[i][t] = (*pMeasure)[i][t]*c;
-      nAdjustedMeasure += (*pMeasure)[i][t];
-      #if DEBUGMEASURE
-/*      fprintf(pMResult, "%i      %i       %f\n",i,t,(*pMeasure)[i][t]);*/
-      fprintf(pMResult, "%f\n",(*pMeasure)[i][t]);
+      #ifdef DEBUGMEASURE
+      fprintf(pMResult, "\nAdjust Measure for Time Trend - %f%% per year.\n\n", nTimeAdjPercent);
+      fprintf(pMResult, "\nTime Intv   Tract   Measure\n");
       #endif
-    }
+    
+      /* Adjust the measure assigned to each interval/tract by yearly percentage */
+      for (i=0; i<nTimeIntervals; i++)
+        for (t=0; t<nTracts; t++)
+        {
+          (*pMeasure)[i][t] = (*pMeasure)[i][t]*(pow(p,i*k)) /* * c */ ;
+          nAdjustedMeasure += (*pMeasure)[i][t];
+    
+          if (nAdjustedMeasure > DBL_MAX)
+          {
+           //pPrintDirection->SatScanPrintf("  Error: Data overflow due to time trend adjustment.\n");
+           // FatalError("", pPrintDirection);
+           SSGenerateException("  Error: Data overflow due to time trend adjustment.\n", "AdjustForPercentageTimeTrend");
+          }
+        }
+    
 
-  #if DEBUGMEASURE
-  fprintf(pMResult, "\nAdjusted Measure Total = %0.2f.\n", nAdjustedMeasure);
-  #endif
+      /* Mutlipy the measure for each interval/tract by constant (c) to obtain */
+      /* total adjusted measure (nAdjustedMeasure) equal to previous total     */
+      /* measure (*pTotalMeasure).                                             */
+      c = (double)(*pTotalMeasure)/nAdjustedMeasure;
+      nAdjustedMeasure=0;
+    
+      for (i=0; i<nTimeIntervals; i++)
+        for (t=0; t<nTracts; t++)
+        {
+          (*pMeasure)[i][t] = (*pMeasure)[i][t]*c;
+          nAdjustedMeasure += (*pMeasure)[i][t];
+          #ifdef DEBUGMEASURE
+    /*      fprintf(pMResult, "%i      %i       %f\n",i,t,(*pMeasure)[i][t]);*/
+          fprintf(pMResult, "%f\n",(*pMeasure)[i][t]);
+          #endif
+        }
+    
+      #ifdef DEBUGMEASURE
+      fprintf(pMResult, "\nAdjusted Measure Total = %0.2f.\n", nAdjustedMeasure);
+      #endif  
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("AdjustForPercentageTimeTrend()", "calcmsr.cpp");
+      throw;
+      }
 }
 
 void DisplayInitialData(Julian StartDate, Julian EndDate, Julian* pIntvDates, int nTimeIntervals, double* pAlpha, int nPops)
 {
-#if DEBUGMEASURE
+#ifdef DEBUGMEASURE
   int  i;
   char szDate[MAX_DT_STR];
 
@@ -460,52 +538,72 @@ void DisplayInitialData(Julian StartDate, Julian EndDate, Julian* pIntvDates, in
 /* If any measures meet this condition, the function returns a value  */
 /* false.                                                             */
 /* Function added 5/31/97 by K. Rand                                  */
-BOOL ValidateMeasures(measure_t** Measures,
-							 measure_t   nTotalMeasure,
-							 measure_t   nMaxCircleSize,
-							 tract_t     nTracts,
-							 int         nTimeIntervals,
-							 int         nGeoSize)
+bool ValidateMeasures(const TInfo *pTInfo,
+                      measure_t** Measures,
+		      measure_t   nTotalMeasure,
+		      measure_t   nMaxCircleSize,
+		      tract_t     nTracts,
+		      int         nTimeIntervals,
+		      int         nGeoSize,
+                      BasePrint *pPrintDirection)
 {
-  int       i;
-  tract_t   t;
-  char*     tid;
-  int       nMinGeoSize;
-  BOOL      bError = FALSE;
-  BOOL      bErrorThisTract;
-  measure_t nMaxMeasure=0;
+   int       i;
+   tract_t   t;
+   char*     tid;
+   int       nMinGeoSize;
+   bool      bError = false;
+   bool      bErrorThisTract;
+   measure_t nMaxMeasure=0;
 
+   try
+      {
+      for (t=0; t<nTracts; t++)
+      {
+         bErrorThisTract=false;
+    
+    	 for(i=0; i<nTimeIntervals; i++)
+    	 {
+    		if (Measures[i][t] > nMaxCircleSize)
+    		{
+    		  bErrorThisTract = true;
+    		  nMaxMeasure     = (Measures[i][t] > nMaxMeasure ? Measures[i][t] : nMaxMeasure);
+    /*		  fprintf(stderr, "tract= %i, interval=%i, measure=%f, max=%f\n",t,i,Measures[i][t],nMaxCircleSize);*/
+    		}
+    	 } /* for i=0-<nTimeIntervals */
 
-  for (t=0; t<nTracts; t++)
-  {
-	 bErrorThisTract=FALSE;
+    	 if (bErrorThisTract)
+    	 {
+    		bError = true;
+    		tid    = pTInfo->tiGetTid(t);
+                char sMessage[200], sTemp[100];
+    		sprintf(sMessage, "The maximum circle size is less than the expected number\n");
+    		sprintf(sTemp, "  of cases in tract %s, therefore the program will not run.\n", tid);
+                strcat(sMessage, sTemp);
+                fprintf(stderr, sMessage);
+                //SSGenerateException(sMessage, "ValidateMeasures()");
 
-	 for(i=0; i<nTimeIntervals; i++)
-	 {
-		if (Measures[i][t] > nMaxCircleSize)
-		{
-		  bErrorThisTract = TRUE;
-		  nMaxMeasure     = (Measures[i][t] > nMaxMeasure ? Measures[i][t] : nMaxMeasure);
-/*		  fprintf(stderr, "tract= %i, interval=%i, measure=%f, max=%f\n",t,i,Measures[i][t],nMaxCircleSize);*/
-		}
-	 } /* for i=0-<nTimeIntervals */
-
-	 if (bErrorThisTract)
-	 {
-		bError = TRUE;
-		tid    = tiGetTid(t);
-		fprintf(stderr, "The maximum circle size is less than the expected number\n");
-		fprintf(stderr, "  of cases in tract %s, therefore the program will not run.\n", tid);
-	 }
-  } /* for t=0-<nTracts */
-
-  if (bError)
-  {
-	 nMinGeoSize = (int)ceil( ((float)(nMaxMeasure/nTotalMeasure))*100 );
-	 fprintf(stderr, "\nError: To perform an analysis, the maximum geographic\n");
-	 fprintf(stderr, "  cluster size needs to be increased to at least %i%%.\n\n", nMinGeoSize);
-  }
-
+                //DO NOT THROW EXCEPTION HERE... PRINT THE INFO...
+                //EXCEPTION THROW BELOW !!!
+                pPrintDirection->SatScanPrintWarning(sMessage);
+    	 }
+      } /* for t=0-<nTracts */
+    
+      if (bError)
+      {
+         char sMessage[200], sTemp[100];
+    	 nMinGeoSize = (int)ceil( ((float)(nMaxMeasure/nTotalMeasure))*100 );
+    	 sprintf(sMessage, "\nError: To perform an analysis, the maximum geographic\n");
+    	 sprintf(sTemp, "  cluster size needs to be increased to at least %i%%.\n\n", nMinGeoSize);
+         strcat(sMessage, sTemp);
+    	 fprintf(stderr, sMessage);
+         SSGenerateException(sMessage, "ValidateMeasures()");
+      }
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("ValidateMeasures()", "calcmsr.cpp");
+      throw;
+      }
   return(!bError);
 }
 
@@ -552,60 +650,78 @@ void AssignTemporalCases(int        nTimeIntervals,
 
 }
 */
-BOOL ValidateAllCountsArePossitive(tract_t   nTracts,
+bool ValidateAllCountsArePossitive(tract_t   nTracts,
                                    int       nTimeIntervals,
                                    count_t** Counts,
-                                   count_t   nTotalCount)
+                                   count_t   nTotalCount,
+                                   BasePrint *pPrintDirection)
 {
-  tract_t t;
-  int     i;
-  count_t nSumCount=0;
+   tract_t t;
+   int     i;
+   count_t nSumCount=0;
 
-  for (t=0; t<nTracts; t++)
-  {
-    for (i=0; i<nTimeIntervals; i++ )
-      if (Counts[i][t]<0)
+   try
       {
-        printf("  Error: Negative value found.\n");
-        return(FALSE);
+      for (t=0; t<nTracts; t++)
+         {
+         for (i=0; i<nTimeIntervals; i++ )
+            if (Counts[i][t]<0)
+            {
+            pPrintDirection->SatScanPrintf("  Error: Negative value found.\n");
+            return(false);
+            }
+         nSumCount += Counts[0][t];
+         }
+    
+      if (nSumCount != nTotalCount)
+         {
+         //FatalError("  Error: Totals do not match.\n", pPrintDirection);
+         SSGenerateException("  Error: Totals do not match.\n", "ValidateAllCountsArePossitive");
+         //return(false);
+         }
       }
-    nSumCount += Counts[0][t];
-  }
-
-  if (nSumCount != nTotalCount)
-  {
-    FatalError("  Error: Totals do not match.\n");
-    return(FALSE);
-  }
-
-  return(TRUE);
+   catch (SSException & x)
+      {
+      x.AddCallpath("ValidateAllCountsArePossitive()", "calcmsr.cpp");
+      throw;
+      }
+  return(true);
 }
 
-BOOL ValidateAllPTCountsArePossitive(tract_t  nTracts,
+bool ValidateAllPTCountsArePossitive(tract_t  nTracts,
                                    int      nTimeIntervals,
                                    count_t* Counts,
-                                   count_t  nTotalCount)
+                                   count_t  nTotalCount,
+                                   BasePrint *pPrintDirection)
 {
-  int     i;
-  count_t nSumCount=0;
+   int     i;
+   count_t nSumCount=0;
 
-  for (i=0; i<nTimeIntervals; i++ )
-  {
-    if (Counts[i]<0)
-    {
-      printf("  Error: Negative value found.\n");
-      return(FALSE);
-    }
-    nSumCount += Counts[i];
-  }
-
-  if (nSumCount != nTotalCount)
-  {
-    FatalError("  Error: Totals do not match.\n");
-    return(FALSE);
-  }
-
-  return(TRUE);
+   try
+      {
+      for (i=0; i<nTimeIntervals; i++ )
+         {
+         if (Counts[i]<0)
+            {
+            pPrintDirection->SatScanPrintf("  Error: Negative value found.\n");
+            return(false);
+            }
+         nSumCount += Counts[i];
+         }
+    
+      if (nSumCount != nTotalCount)
+         {
+         //FatalError("  Error: Totals do not match.\n", pPrintDirection);
+         //return(false);
+         SSGenerateException("  Error: Totals do not match.\n", "ValidateAllPTCountsArePossitive");
+         }
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("ValidateAllPTCountsArePossitive()", "calcmsr.cpp");
+      throw;
+      }
+  return(true);
 }
 
 

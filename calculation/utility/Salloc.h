@@ -11,13 +11,15 @@
 #define SMALLOC_H
 
 #include <stdlib.h>
+#include "SSException.h"
+#include "baseprint.h"
 
-extern void *(*SallocError)(size_t size);
+extern void *(*SallocError)(size_t size, BasePrint *pPrintDirection);
 
-void *Scalloc(size_t, size_t);
-void *Smalloc(size_t);
-void *Srealloc(void *, size_t);
-char *Sstrdup(char *s);
-char* Sstrcpy(char** s1, char* s2);
+void *Scalloc(size_t, size_t, BasePrint *pPrintDirection);
+void *Smalloc(size_t, BasePrint *pPrintDirection);
+void *Srealloc(void *, size_t, BasePrint *pPrintDirection);
+char *Sstrdup(char *s, BasePrint *pPrintDirection);
+char* Sstrcpy(char** s1, char* s2, BasePrint *pPrintDirection);
 
 #endif

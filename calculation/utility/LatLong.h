@@ -3,12 +3,12 @@
 #ifndef __LATLONG_H
 #define __LATLONG_H
 
-//#include
+#include "SSException.h"
 
 #define DEBUGLATLONG 0
 
-void ConvertFromLatLong(float Latitude, float Longitude, float* pCoords);
-void ConvertToLatLong(float* Latitude, float* Longitude, float* pCoords);
+void ConvertFromLatLong(float Latitude, float Longitude, double* pCoords);
+void ConvertToLatLong(float* Latitude, float* Longitude, double* pCoords);
 
 #endif
 

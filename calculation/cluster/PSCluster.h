@@ -11,7 +11,7 @@ class CPurelySpatialCluster : public CCluster
 {
   public:
 
-    CPurelySpatialCluster();
+    CPurelySpatialCluster(BasePrint *pPrintDirection);
     CPurelySpatialCluster(int nRate, tract_t nCircles);
     ~CPurelySpatialCluster();
 
@@ -20,7 +20,7 @@ class CPurelySpatialCluster : public CCluster
     virtual void SetStartAndEndDates(const Julian* pIntervalStartTimes,
                                      int nTimeIntervals);
 
-    virtual void AddNeighbor(const CSaTScanData& Data, count_t** pCases, tract_t n);
+    virtual void AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n);
 };
 
 #endif

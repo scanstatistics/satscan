@@ -9,7 +9,7 @@
 class CPurelyTemporalCluster : public CCluster
 {
   public:
-    CPurelyTemporalCluster(int nTIType, int nIntervals, int nMaxIntervals);
+    CPurelyTemporalCluster(int nTIType, int nIntervals, int nMaxIntervals, BasePrint *pPrintDirection);
     virtual ~CPurelyTemporalCluster();
 
     CPurelyTemporalCluster& CPurelyTemporalCluster::operator =(const CPurelyTemporalCluster& cluster);
@@ -17,7 +17,7 @@ class CPurelyTemporalCluster : public CCluster
 
     virtual void InitTimeIntervalIndeces();
 
-    virtual bool SetNextTimeInterval(const count_t*& pCases,
+    inline virtual bool SetNextTimeInterval(const count_t*& pCases,
                                      const measure_t*& pMeasure);
 
     virtual void DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft) {};
@@ -29,7 +29,8 @@ class CPurelyTemporalCluster : public CCluster
                                      int nReplicas,
                                      bool bIncludeRelRisk, bool bIncludePVal,
                                      int nLeftMargin, int nRightMargin,
-                                     char cDeliminator, char* szSpacesOnLeft);
+                                     char cDeliminator, char* szSpacesOnLeft,
+                                     bool bFormat = true);
   protected:
     int m_nTotalIntervals;
     int m_nIntervalCut;

@@ -8,15 +8,16 @@
 class CPurelyTemporalAnalysis : public CAnalysis
 {
   public:
-    CPurelyTemporalAnalysis(CParameters* pParameters, CSaTScanData* pData);
+    CPurelyTemporalAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
     virtual ~CPurelyTemporalAnalysis();
 
     virtual CCluster* GetTopCluster(tract_t nCenter);
 
   protected:
-    virtual void FindTopClusters();
+    virtual bool FindTopClusters();
 //    virtual void MakeData();
     virtual double MonteCarlo();
+    virtual double MonteCarloProspective();
     void SetMaxNumClusters() {m_nMaxClusters = 1;};
 
 };

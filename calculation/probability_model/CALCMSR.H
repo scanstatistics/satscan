@@ -5,15 +5,19 @@
 
 #include "basic.h"
 #include "spatscan.h"
+#include "cats.h"
+#include "tinfo.h"
 
 int AssignMeasure(
+            const TInfo  *pTInfo,
+            Cats         *pCats,
             count_t      *Cases[],
             Julian**     Times,
             tract_t      NumTracts,
             Julian       StartDate,
             Julian       EndDate,
             Julian*      pStartDates,
-            BOOL         bExactTimes,
+            bool         bExactTimes,
             int          nTimeAdjust,
             double       nTimeAdjPercent,
             int          nTimeIntervals,
@@ -22,24 +26,30 @@ int AssignMeasure(
             measure_t*** pMeasure,
             count_t*     pTotalCases,
             double*      pTotalPop,
-            measure_t*   pTotalMeasure);
+            measure_t*   pTotalMeasure,
+            BasePrint *pPrintDirection);
 
-int CalcRisk(double** pRisk,
+int CalcRisk(const TInfo *pTInfo,
+             double** pRisk,
              double*  pAlpha,
              int      nCats,
              tract_t  nTracts,
              int      nPops,
              double*    pTotalPop,
-             count_t* pTotalCases);
+             count_t* pTotalCases,
+             BasePrint *pPrintDirection);
 
-int Calcm(measure_t*** m,
+int Calcm(const TInfo *pTInfo,
+          measure_t*** m,
           double*      pRisk,
           int          nCats,
           tract_t      nTracts,
-          int          nPops);
+          int          nPops,
+          BasePrint *pPrintDirection);
 
 
-int CalcMeasure(measure_t*** pMeasure,
+int CalcMeasure(const TInfo *pTInfo,
+                measure_t*** pMeasure,
                 measure_t**  m,
                 Julian*      pStartDates,
                 Julian       StartDate,
@@ -48,7 +58,8 @@ int CalcMeasure(measure_t*** pMeasure,
                 tract_t      nTracts,
                 int          nPops,
                 int          nTimeIntervals,
-                measure_t*   pTotalMeasure);
+                measure_t*   pTotalMeasure,
+                BasePrint *pPrintDirection);
 
 int AdjustForDiscreteTimeTrend(measure_t*** pMeasure,
                                count_t      *Cases[],
@@ -63,7 +74,8 @@ void AdjustForPercentageTimeTrend(double       nTimeAdjPercent,
                                   long         nIntervalLength,
                                   tract_t      nTracts,
                                   measure_t*   pTotalMeasure,
-                                  measure_t*** pMeasure);
+                                  measure_t*** pMeasure,
+                                  BasePrint *pPrintDirection);
 
 void DisplayInitialData(Julian  StartDate,
                         Julian  EndDate,
@@ -72,12 +84,14 @@ void DisplayInitialData(Julian  StartDate,
                         double* pAlpha,
                         int     nPops);
 
-BOOL ValidateMeasures(measure_t** Measures,
-							 measure_t   nTotalMeasure,
-							 measure_t   nMaxCircleSize,
-							 tract_t     nNumTracts,
-							 int         nTimeIntervals,
-							 int         nGeoSize);
+bool ValidateMeasures(const TInfo *pTInfo,
+                      measure_t** Measures,
+		      measure_t   nTotalMeasure,
+		      measure_t   nMaxCircleSize,
+		      tract_t     nNumTracts,
+		      int         nTimeIntervals,
+		      int         nGeoSize,
+                      BasePrint *pPrintDirection);
 
 /*void AssignTemporalMeasuresAndCases(int         nTimeIntervals,
                                     tract_t     nTracts,
@@ -91,15 +105,17 @@ void AssignTemporalCases(int       nTimeIntervals,
                          count_t** Cases,
                          count_t*  pPTCases);
 */
-BOOL ValidateAllCountsArePossitive(tract_t   nTracts,
+bool ValidateAllCountsArePossitive(tract_t   nTracts,
                                    int       nTimeIntervals,
                                    count_t** Counts,
-                                   count_t   nTotalCount);
+                                   count_t   nTotalCount,
+                                   BasePrint *pPrintDirection);
 
-BOOL ValidateAllPTCountsArePossitive(tract_t  nTracts,
+bool ValidateAllPTCountsArePossitive(tract_t  nTracts,
                                    int      nTimeIntervals,
                                    count_t* Counts,
-                                   count_t  nTotalCount);
+                                   count_t  nTotalCount,
+                                   BasePrint *pPrintDirection);
 
 #endif
 
