@@ -32,9 +32,9 @@ void TfrmAnalysisRun::AddWarningLine(char *sLine) {
 //---------------------------------------------------------------------------
 void TfrmAnalysisRun::CancelJob() {
   if (reWarningsBox->Lines->Count)
-    reAnalysisBox->Lines->Add("Analysis cancelled. Please review 'Warnings/Errors' window below.");
+    reAnalysisBox->Lines->Add("Job cancelled. Please review 'Warnings/Errors' window below.");
   else
-    reAnalysisBox->Lines->Add("Analysis cancelled.");
+    reAnalysisBox->Lines->Add("Job cancelled.");
   btnCancel->Caption = "Close";
   gbCancel = true;
   SetCanClose(true);
@@ -81,7 +81,7 @@ void __fastcall TfrmAnalysisRun::OnCancelClick(TObject *Sender) {
   if (btnCancel->Caption == "Close")
     Close();
   else {
-    reAnalysisBox->Lines->Add("Cancelling analysis, please wait...");
+    reAnalysisBox->Lines->Add("Cancelling job, please wait...");
     gbCancel = true;
   }
 }
