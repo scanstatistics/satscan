@@ -183,17 +183,11 @@ void PoissonSpatialStratifiedRandomizer::RandomizeData(const RealDataStream& thi
   //create randomized data for each tract's last time interval
   interval = thisRealStream.GetNumTimeIntervals() - 1;
   for (tract=0; tract < thisRealStream.GetNumTracts(); ++tract) {
-     tCumCases = 0;
-     tCumMeasure = 0;
-     if (ppCases[0][tract] - tCumCases)
-       tCases = gBinomialGenerator.GetBinomialDistributedVariable(ppCases[0][tract] - tCumCases,
-                     ppMeasure[interval][tract]/(ppMeasure[0][tract] - tCumMeasure),
-                     gRandomNumberGenerator);
+     if (ppCases[0][tract])
+       ppSimCases[interval][tract] = gBinomialGenerator.GetBinomialDistributedVariable(ppCases[0][tract],
+                                           ppMeasure[interval][tract]/(ppMeasure[0][tract]), gRandomNumberGenerator);
      else
-       tCases = 0;
-     tCumCases += tCases;
-     tCumMeasure += ppMeasure[interval][tract];
-     ppSimCases[interval][tract] = tCases;
+       ppSimCases[interval][tract] = 0;
   }
   //create randomized data for each tract's remaining time intervals
   for (tract=0; tract < thisRealStream.GetNumTracts(); ++tract) {
