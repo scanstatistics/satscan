@@ -36,7 +36,7 @@ void CPSMonotoneAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGate
 const CCluster & CPSMonotoneAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway& DataGateway) {
   CPSMonotoneCluster          * C_High = 0;
   CPSMonotoneCluster          * C_Low = 0;
-  count_t                    ** ppCases(DataGateway.GetDataStreamInterface(0/*for now*/).GetCaseArray());
+  count_t                    ** ppCases(DataGateway.GetDataSetInterface(0/*for now*/).GetCaseArray());
 
   try {
     if (gParameters.GetAreaScanRateType() == HIGHANDLOW) {

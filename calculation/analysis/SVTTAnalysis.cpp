@@ -68,7 +68,7 @@ const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCent
        for (i=1; i <= iNumNeighbors; ++i) {
           thisCluster.AddNeighbor(gDataHub.GetNeighbor(k, tCenter, i), DataGateway);
           //TODO: -- Calculate loglikelihood ratio for all data streams.
-          thisCluster.m_nRatio = gpLikelihoodCalculator->CalcSVTTLogLikelihood(0, &thisCluster, *(DataGateway.GetDataStreamInterface(0).GetTimeTrend()));
+          thisCluster.m_nRatio = gpLikelihoodCalculator->CalcSVTTLogLikelihood(0, &thisCluster, *(DataGateway.GetDataSetInterface(0).GetTimeTrend()));
           if (thisCluster.m_nRatio > TopShapeCluster.m_nRatio)
            TopShapeCluster = thisCluster;
        }
