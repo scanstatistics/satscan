@@ -99,13 +99,14 @@ void CPoissonModel::AdjustForLLPercentage(RealDataStream & thisStream, measure_t
 /** Calculates time trend for data stream, calls CParameters::SetTimeTrendAdjustmentPercentage()
     with calculated value, and calls AdjustForLLPercentage(). */
 void CPoissonModel::AdjustForLogLinear(RealDataStream& thisStream, measure_t ** pNonCumulativeMeasure) {
+  CTimeTrend    TimeTrend;
+
   //Calculate time trend for whole dataset
-  thisStream.GetTimeTrend().CalculateAndSet(thisStream.GetPTCasesArray(),
-                                            thisStream.GetPTMeasureArray(),
-                                            gData.m_nTimeIntervals,
-                                            gParameters.GetTimeTrendConvergence());
+  TimeTrend.CalculateAndSet(thisStream.GetPTCasesArray(), thisStream.GetPTMeasureArray(),
+                            gData.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
+
    //Cancel analysis execution if calculation of time trend fails for various reasons.
-   switch (thisStream.GetTimeTrend().GetStatus()) {
+   switch (TimeTrend.GetStatus()) {
      case CTimeTrend::TREND_UNDEF :
        SSGenerateException("Note: Temporal adjustment could not be performed. The calculated time trend is undefined.\n"
                            "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
@@ -117,17 +118,12 @@ void CPoissonModel::AdjustForLogLinear(RealDataStream& thisStream, measure_t ** 
                            "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
      case CTimeTrend::TREND_CONVERGED : break;
      default :
-       ZdGenerateException("Unknown time trend status type '%d'.",
-                           "AdjustForLogLinear()", thisStream.GetTimeTrend().GetStatus());
+       ZdGenerateException("Unknown time trend status type '%d'.", "AdjustForLogLinear()", TimeTrend.GetStatus());
    };
 
-  // Global time trend will be recalculated after the measure is adjusted.
-  // Therefore this value will be lost unless retain in parameters for
-  // display in the report.
-  //TODO: How should this be handled with mutliple data streams?
-  //       - last streams calculated percenatage reported only, as it stands
-  const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(thisStream.GetTimeTrend().GetBeta());
-  AdjustForLLPercentage(thisStream, pNonCumulativeMeasure, thisStream.GetTimeTrend().GetBeta());  // Adjust Measure             */
+  AdjustForLLPercentage(thisStream, pNonCumulativeMeasure, TimeTrend.GetBeta());
+  //store calculated time trend adjustment for reporting later
+  thisStream.SetCalculatedTimeTrendPercentage(TimeTrend.GetBeta());
 }
 
 void CPoissonModel::AdjustMeasure(RealDataStream & thisStream, measure_t ** ppNonCumulativeMeasure) {
