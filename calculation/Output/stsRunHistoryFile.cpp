@@ -13,7 +13,7 @@
 #include "stsRunHistoryFile.h"
 #include "DBFFile.h"
 
-const int       OUTPUT_FILE_FIELD_LENGTH        = 256;
+const int       OUTPUT_FILE_FIELD_LENGTH        = 254;
 
 const char* RUN_NUMBER_FIELD            = "RUN_NUM";
 const char* RUN_TIME_FIELD              = "RUN_TIME";
