@@ -49,7 +49,8 @@ const char * SaTScanToolkit::GetLicenceWebSite() /*const*/ {
 
 /** Returns indicator of run history logging. */
 bool SaTScanToolkit::GetLogRunHistory() /*const*/ {
-  return GetSession().GetProperty(gsLoggingProperty)->GetBool(true);
+  /** NOTE: This is not a requested feature, the hook is in place. */
+  return true;//GetSession().GetProperty(gsLoggingProperty)->GetBool(true);
 }
 
 /** Returns acknowledgment statement indicating program version, website, and
@@ -175,8 +176,8 @@ void SaTScanToolkit::InsureSessionStructure() {
   try {
     if (InsureRunHistoryFileName())
       bNeedsWrite = true;
-    if (InsureSessionProperty(gsLoggingProperty, "true"))
-      bNeedsWrite = true;
+    //if (InsureSessionProperty(gsLoggingProperty, "true"))
+    //  bNeedsWrite = true;
     if (InsureSessionProperty(gsSaTScanWebSiteProperty, gsDefaultSaTScanWebSite))
       bNeedsWrite = true;
     if (InsureSessionProperty(gsSaTScanLicenceWebSiteProperty, gsDefaultSaTScanLicenceWebSite))

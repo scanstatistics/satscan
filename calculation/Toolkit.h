@@ -24,7 +24,6 @@ class SaTScanToolkit : public BToolkit {
 
     ZdString                    gsSystemFileName;
 
-    bool                        InsureLogRunHistory();
     bool                        InsureRunHistoryFileName();
     bool                        InsureSessionProperty(const char * sSessionProperty, const char * sDefaultValue);
     void                        InsureSessionStructure();
