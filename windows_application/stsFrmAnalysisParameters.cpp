@@ -1223,6 +1223,8 @@ void TfrmAnalysis::Init() {
 //------------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::mitClearSpecialGridEditClick(TObject *Sender) {
   edtGridFileName->Clear();
+  strcpy(gpParams->m_szGridFilename, "");
+  gpParams->m_bSpecialGridFile = false;
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::NaturalNumberKeyPress(TObject *Sender, char &Key) {
