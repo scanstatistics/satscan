@@ -76,6 +76,13 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
   if (m_pParameters->GetProbabiltyModelType() == POISSON)
     fprintf(fp, "Annual cases / %.0f.: %.1f\n",
                 GetAnnualRatePop(), GetAnnualRateAtStart());
+  if (m_pParameters->GetAnalysisType() == SPATIALVARTEMPTREND) {
+    double nAnnualTT = m_nTimeTrend.SetAnnualTimeTrend(m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
+    if (m_nTimeTrend.IsNegative())
+      fprintf(fp, "Annual decrease.......: %.3lf%%\n", nAnnualTT);
+    else
+      fprintf(fp, "Annual increase.......: %.3lf%%\n", nAnnualTT);
+  }
   fprintf(fp, "________________________________________________________________\n");
 }
 
@@ -103,7 +110,7 @@ void CSaTScanData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, con
    std::vector<std::string>             vIdentifiers;
 
    try {
-      std::auto_ptr<RelativeRiskData> pData( new RelativeRiskData(gpPrint, m_pParameters->GetOutputFileName().c_str()) );
+      std::auto_ptr<RelativeRiskData> pData( new RelativeRiskData(gpPrint, *m_pParameters) );
       for(int i = 0; i < m_nTracts; ++i) {
          if (GetMeasureAdjustment() && m_pMeasure[0][i])
             sRisk.printf("%12.3f", ((double)(m_pCases[0][i]))/(GetMeasureAdjustment()*m_pMeasure[0][i]));
@@ -113,9 +120,7 @@ void CSaTScanData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, con
          sLocation = gpTInfo->tiGetTid(i, sBuffer);
          if (vIdentifiers.size() > 1)
             sLocation << " et al";
-         pData->SetRelativeRiskData(sLocation, m_pCases[0][i],
-                                    GetMeasureAdjustment()*m_pMeasure[0][i],
-                                    sRisk);
+         pData->SetRelativeRiskData(sLocation, m_pCases[0][i], GetMeasureAdjustment()*m_pMeasure[0][i], sRisk);
       }
       if (bASCIIOutput)
          ASCIIFileWriter(pData.get()).Print();
