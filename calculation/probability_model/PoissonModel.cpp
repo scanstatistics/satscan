@@ -700,7 +700,7 @@ bool CPoissonModel::ReadData() {
       return false;
     if (! gData.ReadCaseFile())
       return false;
-    gData.GetTInfo()->tiCheckCasesHavePopulations();
+    gData.GetTInfo()->tiCheckCasesHavePopulations(gData);
     if (DoesReadMaxCirclePopulationFile() && !gData.ReadMaxCirclePopulationFile())
         return false;
     if (gParameters.UseSpecialGrid() && !gData.ReadGridFile())
