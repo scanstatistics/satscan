@@ -323,7 +323,8 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
           sFileNamePrefix << sFileName.GetFileName();
           sFileName.SetFileName(sFileNamePrefix);
           ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
-          CreateTXDFile(sFileName, gvPopFileFieldDescriptors);
+          SetupPopFileFieldDescriptors(vFieldDescriptors);
+          CreateTXDFile(sFileName, vFieldDescriptors);
           auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
           pImporter->ShowOptionalPanels(false, false, false);
           if (pImporter->ShowModal() == mrOk) {
