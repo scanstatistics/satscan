@@ -29,6 +29,7 @@ extern const char * E_SHAPE_FIELD;
 extern const char * CLU_OBS_FIELD;
 extern const char * CLU_EXP_FIELD;
 extern const char * TST_STAT_FIELD;
+extern const char * TIME_TREND_FIELD;
 
 // base record class for the individual output types records
 class BaseOutputRecord {

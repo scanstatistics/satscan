@@ -31,6 +31,7 @@ const char *    E_SHAPE_FIELD                   = "E_SHAPE";
 const char *    CLU_OBS_FIELD                   = "CLU_OBS";
 const char *    CLU_EXP_FIELD                   = "CLU_EXP";
 const char *    TST_STAT_FIELD                  = "TST_STAT";
+const char *    TIME_TREND_FIELD                = "TIME_TREND";
 
 // base class for all output file record structures
 BaseOutputRecord::BaseOutputRecord() {

@@ -34,6 +34,8 @@ ZdFieldValue RelativeRiskRecord::GetValue(int iFieldNumber) {
             BaseOutputRecord::SetFieldValueAsDouble(fv, gdExpected);  break;
          case 3:
             BaseOutputRecord::SetFieldValueAsString(fv, gsRelRisk);  break;
+         case 4:
+            BaseOutputRecord::SetFieldValueAsString(fv, gsTimeTrend);  break;
          default :
             ZdGenerateException ("Invalid index, out of range", "Error!");
       } 
@@ -50,6 +52,7 @@ void RelativeRiskRecord::Init() {
    glObserved = 0;
    gdExpected = 0.0;
    gsRelRisk = 0.0;
+   gsTimeTrend = 0.0;
 }
 
 // ============================================================================
@@ -57,11 +60,11 @@ void RelativeRiskRecord::Init() {
 // ============================================================================
 
 // constructor
-RelativeRiskData::RelativeRiskData(BasePrint *pPrintDirection, const ZdString& sOutputFileName) 
-                           : BaseOutputStorageClass(pPrintDirection) {
+RelativeRiskData::RelativeRiskData(BasePrint *pPrintDirection, const CParameters & Parameters)
+                           : BaseOutputStorageClass(pPrintDirection), gParameters(Parameters) {
    try {
       Init();
-      Setup(sOutputFileName);
+      Setup();
    }
    catch (ZdException &x) {
       if(pPrintDirection) {
@@ -81,8 +84,28 @@ RelativeRiskData::~RelativeRiskData() {
 void RelativeRiskData::Init() {
 }
 
-//
-void RelativeRiskData::SetRelativeRiskData(const ZdString& sLocationID, const long lObserved, 
+void RelativeRiskData::SetRelativeRiskData(const ZdString& sLocationID, const long lObserved, const double dExpected,
+                                           const ZdString& sRelRisk, const ZdString& sTimeTrend) {
+   RelativeRiskRecord*	pRecord = 0;
+
+   try {
+      pRecord = new RelativeRiskRecord();
+      pRecord->SetExpected(dExpected);
+      pRecord->SetLocationID(sLocationID);
+      pRecord->SetObserved(lObserved);
+      pRecord->SetRelativeRisk(sRelRisk);
+      pRecord->SetTimeTrend(sTimeTrend);
+      pRecord->SetNumFields(5);
+      BaseOutputStorageClass::AddRecord(pRecord);
+   }
+   catch (ZdException &x) {
+      delete pRecord;
+      gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
+      gpPrintDirection->SatScanPrintWarning("\nWarning - Unable to record relative risk output data.\n");
+   }
+}
+
+void RelativeRiskData::SetRelativeRiskData(const ZdString& sLocationID, const long lObserved,
                                            const double dExpected, const ZdString& sRelRisk) {
    RelativeRiskRecord*	pRecord = 0;
 
@@ -92,20 +115,21 @@ void RelativeRiskData::SetRelativeRiskData(const ZdString& sLocationID, const lo
       pRecord->SetLocationID(sLocationID);
       pRecord->SetObserved(lObserved);
       pRecord->SetRelativeRisk(sRelRisk);
+      pRecord->SetNumFields(4);
       BaseOutputStorageClass::AddRecord(pRecord);
-   }  
+   }
    catch (ZdException &x) {
       delete pRecord;
       gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
       gpPrintDirection->SatScanPrintWarning("\nWarning - Unable to record relative risk output data.\n");
-   }	 	
-} 
+   }
+}
 
 // internal setup function
-void RelativeRiskData::Setup(const ZdString& sOutputFileName) {
+void RelativeRiskData::Setup() {
    try {
-      ZdString sTempName(sOutputFileName);
-      ZdString sExt(ZdFileName(sOutputFileName).GetExtension());
+      ZdString sTempName(gParameters.GetOutputFileName().c_str());
+      ZdString sExt(ZdFileName(gParameters.GetOutputFileName().c_str()).GetExtension());
       if(sExt.GetLength()) 
          sTempName.Replace(sExt, REL_RISK_EXT);
       else
@@ -131,6 +155,8 @@ void RelativeRiskData::SetupFields() {
       ::CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
       ::CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
       ::CreateField(gvFields, REL_RISK_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
+      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
+        ::CreateField(gvFields, TIME_TREND_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupFields()", "RelativeRiskData");
