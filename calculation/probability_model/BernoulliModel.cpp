@@ -69,6 +69,16 @@ bool CBernoulliModel::CalculateMeasure() {
       SSGenerateException("Error: No controls found in input data.\n", "CBernoulliModel");
 
     gData.m_nTotalPop = gData.m_nTotalMeasure;
+
+    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
+        gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC ||
+        gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
+      //need measure by time intervals for time stratified adjustment
+      gData.SetMeasureByTimeIntervalArray();
+    if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
+      //procedure above produces cumulative measure, for spatial variation analysis
+      //we also need the non-cumulative measure/
+      gData.SetNonCumulativeMeasure();
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateMeasure()","CBernoulliModel");
@@ -127,78 +137,13 @@ double CBernoulliModel::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMC
   return nLogLikelihood;
 }
 
-void CBernoulliModel::MakeData(int iSimulationNumber)
-{
-   count_t nCumCounts;
-   count_t nCumMeasure;
-   tract_t   tract;                                       // current tract
-   int       interval;                            // current time interval
-   count_t* RandCounts = 0;
-
-   try
-      {
-      //reset seed to simulation number
-      m_RandomNumberGenerator.SetSeed(iSimulationNumber + m_RandomNumberGenerator.GetDefaultSeed());
-      if (gData.m_nTotalCases < gData.m_nTotalControls)
-         {
-  	 RandCounts = MakeDataB(gData.m_nTotalCases, RandCounts);
-         nCumCounts = gData.m_nTotalCases;
-         }
-      else
-         {
-  	 RandCounts = MakeDataB(gData.m_nTotalControls, RandCounts);
-         nCumCounts = gData.m_nTotalControls;
-         }
-      // The following works if Cases < Controls but what about the other way
-
-      //nCumCounts = gData.m_nTotalCases;
-      nCumMeasure = (count_t)(gData.m_nTotalMeasure-1);
-    
-      for (tract = (tract_t)(gData.m_nTotalTractsAtStart-1); tract >= 0; tract--)
-      {
-      	for (interval = gData.m_nTimeIntervals-1; interval >= 0; interval--)
-           {
-      	   gData.m_pSimCases[interval][tract] = 0;
-           if (interval == gData.m_nTimeIntervals-1)
-       	      nCumMeasure -= (count_t)(gData.m_pMeasure[interval][tract]);
-           else
-              nCumMeasure -= (count_t)(gData.m_pMeasure[interval][tract] - gData.m_pMeasure[interval+1][tract]);
-
-           while (nCumCounts > 0 && RandCounts[nCumCounts-1] > nCumMeasure)
-           {
-              gData.m_pSimCases[interval][tract]++;
-              nCumCounts--;
-           }
-          if (interval != gData.m_nTimeIntervals-1)
-    	   	gData.m_pSimCases[interval][tract] += gData.m_pSimCases[interval+1][tract];
-    
-          #ifdef DEBUGMODEL
-          fprintf(m_pDebugModelFile,"SimCases[%d][%d] = %d\n", interval, tract,
-          	gData.m_pSimCases[interval][tract]);
-          #endif
-    		}
-//    #if (DEBUG)
-    //    HoldForEnter();
-//    #endif
-      }
-      // Now reverse everything if Controls < Cases
-      if (gData.m_nTotalCases >= gData.m_nTotalControls)
-      {
-      	for (tract = 0; tract < gData.m_nTotalTractsAtStart; tract++)
-          for (interval = 0; interval < gData.m_nTimeIntervals; interval++)
-          {
-          gData.m_pSimCases[interval][tract] = (long)(gData.m_pMeasure[interval][tract]) -
-          gData.m_pSimCases[interval][tract];
-          }
-      }
-      free(RandCounts);
-      }
-   catch (ZdException & x)
-      {
-      free(RandCounts);
-      x.AddCallpath("MakeData()", "CBernoulliModel");
-      throw;
-      }
+void CBernoulliModel::MakeData(int iSimulationNumber) {
+  //reset seed to simulation number
+  m_RandomNumberGenerator.SetSeed(iSimulationNumber + m_RandomNumberGenerator.GetDefaultSeed());
+  if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
+    MakeDataTimeStratified();
+  else
+    MakeDataUnderNullHypothesis();
 }
 
 count_t * CBernoulliModel::MakeDataB(count_t nTotalCounts, count_t* RandCounts)
@@ -237,6 +182,95 @@ count_t * CBernoulliModel::MakeDataB(count_t nTotalCounts, count_t* RandCounts)
       throw;
       }
    return(RandCounts);
+}
+
+void CBernoulliModel::MakeDataTimeStratified() {
+  tract_t       tract;         // current tract
+  int           interval;      // current time interval
+  count_t       c, cumcases=0;
+  measure_t     cummeasure=0;
+
+  interval = gData.m_nTimeIntervals - 1;
+  for (tract=0; tract < gData.m_nTotalTractsAtStart; tract++) {
+     if (gData.m_pCases_TotalByTimeInt[interval] - cumcases > 0)
+        c = gBinomialGenerator.GetBinomialDistributedVariable(gData.m_pCases_TotalByTimeInt[interval] - cumcases,
+                                                              gData.m_pMeasure[interval][tract]/(gData.m_pMeasure_TotalByTimeInt[interval] - cummeasure),
+                                                              m_RandomNumberGenerator);
+     else
+         c = 0;
+
+     cumcases += c;
+     cummeasure += gData.m_pMeasure[interval][tract];
+     gData.m_pSimCases[interval][tract] = c;
+  }
+  for (interval--; interval >= 0; --interval) { //For each other interval, from 2nd to last until the first:
+     cumcases = 0;
+     cummeasure = 0;
+     for (tract=0; tract < gData.m_nTotalTractsAtStart; tract++) { //For each tract:
+        if (gData.m_pCases_TotalByTimeInt[interval] - cumcases > 0)
+          c = gBinomialGenerator.GetBinomialDistributedVariable(gData.m_pCases_TotalByTimeInt[interval] - cumcases,
+                                                                (gData.m_pMeasure[interval][tract] - gData.m_pMeasure[interval + 1][tract])/(gData.m_pMeasure_TotalByTimeInt[interval] - cummeasure),
+                                                                 m_RandomNumberGenerator);
+        else
+          c = 0;
+
+        cumcases += c;
+        cummeasure += (gData.m_pMeasure[interval][tract] - gData.m_pMeasure[interval + 1][tract]);
+        gData.m_pSimCases[interval][tract] = c + gData.m_pSimCases[interval + 1][tract];
+     }
+  }
+}
+
+/** standard procedure for randomized data */
+void CBernoulliModel::MakeDataUnderNullHypothesis() {
+  count_t       nCumCounts, nCumMeasure, * RandCounts=0;
+  tract_t       tract;                                       // current tract
+  int           interval;                            // current time interval
+
+  try {
+    if (gData.m_nTotalCases < gData.m_nTotalControls) {
+      RandCounts = MakeDataB(gData.m_nTotalCases, RandCounts);
+      nCumCounts = gData.m_nTotalCases;
+    }
+    else {
+      RandCounts = MakeDataB(gData.m_nTotalControls, RandCounts);
+      nCumCounts = gData.m_nTotalControls;
+    }
+    // The following works if Cases < Controls but what about the other way
+    //nCumCounts = gData.m_nTotalCases;
+    nCumMeasure = (count_t)(gData.m_nTotalMeasure-1);
+    for (tract = (tract_t)(gData.m_nTotalTractsAtStart-1); tract >= 0; tract--) {
+       for (interval = gData.m_nTimeIntervals-1; interval >= 0; interval--) {
+          gData.m_pSimCases[interval][tract] = 0;
+          if (interval == gData.m_nTimeIntervals-1)
+            nCumMeasure -= (count_t)(gData.m_pMeasure[interval][tract]);
+          else
+            nCumMeasure -= (count_t)(gData.m_pMeasure[interval][tract] - gData.m_pMeasure[interval+1][tract]);
+          while (nCumCounts > 0 && RandCounts[nCumCounts-1] > nCumMeasure) {
+               gData.m_pSimCases[interval][tract]++;
+               nCumCounts--;
+          }
+          if (interval != gData.m_nTimeIntervals-1)
+            gData.m_pSimCases[interval][tract] += gData.m_pSimCases[interval+1][tract];
+#ifdef DEBUGMODEL
+          fprintf(m_pDebugModelFile,"SimCases[%d][%d] = %d\n", interval, tract,	gData.m_pSimCases[interval][tract]);
+#endif
+       }
+    }
+
+    // Now reverse everything if Controls < Cases
+    if (gData.m_nTotalCases >= gData.m_nTotalControls) {
+      for (tract = 0; tract < gData.m_nTotalTractsAtStart; tract++)
+         for (interval = 0; interval < gData.m_nTimeIntervals; interval++)
+            gData.m_pSimCases[interval][tract] = (long)(gData.m_pMeasure[interval][tract]) - gData.m_pSimCases[interval][tract];
+    }
+    free(RandCounts);
+  }
+  catch (ZdException &x) {
+    free(RandCounts);
+    x.AddCallpath("MakeDataUnderNullHypothesis()","CBernoulliModel");
+    throw;
+  }
 }
 
 double CBernoulliModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts, int nStartInterval, int nStopInterval) {

@@ -10,6 +10,7 @@
 class CBernoulliModel : public CModel
 {
   private:
+    BinomialGenerator           gBinomialGenerator;
     RandomNumberGenerator       m_RandomNumberGenerator;
 
   public:
@@ -24,6 +25,8 @@ class CBernoulliModel : public CModel
                                               tract_t nTracts, int nStartInterval, int nStopInterval);
     virtual void                MakeData(int iSimulationNumber);
     virtual count_t           * MakeDataB(count_t nTotalCounts, count_t* RandCounts);
+    void                        MakeDataTimeStratified();
+    void                        MakeDataUnderNullHypothesis();
     virtual bool                ReadData();
 };
 
