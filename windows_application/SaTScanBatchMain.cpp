@@ -68,15 +68,7 @@ int main(int argc, char *argv[]) {
                                   break;
       case PURELYTEMPORAL       : pAnalysis = new CPurelyTemporalAnalysis(&Parameters, pData, &ConsolePrint);
                                   break;
-      case SPACETIME            : if (Parameters.GetIncludePurelySpatialClusters() && Parameters.GetIncludePurelyTemporalClusters())
-                                    pAnalysis = new C_ST_PS_PT_Analysis(&Parameters, pData, &ConsolePrint);
-                                  else if (Parameters.GetIncludePurelySpatialClusters())
-                                    pAnalysis = new C_ST_PS_Analysis(&Parameters, pData, &ConsolePrint);
-                                  else if (Parameters.GetIncludePurelyTemporalClusters())
-                                    pAnalysis = new C_ST_PT_Analysis(&Parameters, pData, &ConsolePrint);
-                                  else
-                                    pAnalysis = new CSpaceTimeAnalysis(&Parameters, pData, &ConsolePrint);
-                                  break;
+      case SPACETIME            : 
       case PROSPECTIVESPACETIME : if (Parameters.GetIncludePurelySpatialClusters() && Parameters.GetIncludePurelyTemporalClusters())
                                     pAnalysis = new C_ST_PS_PT_Analysis(&Parameters, pData, &ConsolePrint);
                                   else if (Parameters.GetIncludePurelySpatialClusters())

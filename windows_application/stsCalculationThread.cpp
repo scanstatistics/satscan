@@ -98,15 +98,7 @@ void __fastcall CalcThread::Execute() {
                                      break;
          case PURELYTEMPORAL       : gpAnalysis = new CPurelyTemporalAnalysis(gpParams, gpData, gpPrintWindow);
                                      break;
-         case SPACETIME            : if (gpParams->GetIncludePurelySpatialClusters() && gpParams->GetIncludePurelyTemporalClusters())
-                                       gpAnalysis = new C_ST_PS_PT_Analysis(gpParams, gpData, gpPrintWindow);
-                                     else if (gpParams->GetIncludePurelySpatialClusters())
-                                       gpAnalysis = new C_ST_PS_Analysis(gpParams, gpData, gpPrintWindow);
-                                     else if (gpParams->GetIncludePurelyTemporalClusters())
-                                       gpAnalysis = new C_ST_PT_Analysis(gpParams, gpData, gpPrintWindow);
-                                     else
-                                       gpAnalysis = new CSpaceTimeAnalysis(gpParams, gpData, gpPrintWindow);
-                                     break;
+         case SPACETIME            : 
          case PROSPECTIVESPACETIME : if (gpParams->GetIncludePurelySpatialClusters() && gpParams->GetIncludePurelyTemporalClusters())
                                        gpAnalysis = new C_ST_PS_PT_Analysis(gpParams, gpData, gpPrintWindow);
                                      else if (gpParams->GetIncludePurelySpatialClusters())
