@@ -20,6 +20,10 @@
  This file contains header information for all SaTScan program files
  **********************************************************************/
 
+#define SATSCAN_WEBSITE "http:/\/srab.cancer.gov/satscan/"
+#define VERSION_NUMBER "v3.0.3"
+#define VERSION_DATE "December 27, 2002"
+
 /** New defines for ellipsoid calculations. */
 #define MAXELLIPSESHAPES 10
 #define PI 3.1415926535897932384626433832795028841972
