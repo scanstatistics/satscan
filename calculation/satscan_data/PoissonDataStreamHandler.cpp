@@ -117,7 +117,7 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewDataGateway() const {
           Interface.SetMeasureArray(thisStream.GetMeasureArray());
           Interface.SetNCMeasureArray(thisStream.GetNCMeasureArray());
           Interface.SetPTMeasureArray(thisStream.GetPTMeasureArray());
-          Interface.SetTimeTrend(&(const_cast<RealDataStream&>(thisStream)).GetTimeTrend());
+          Interface.SetTimeTrend(&thisStream.GetTimeTrend());
           break;
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
@@ -176,7 +176,7 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewSimulationDataGateway
           Interface.SetMeasureArray(thisRealStream.GetMeasureArray());
           Interface.SetNCMeasureArray(thisRealStream.GetNCMeasureArray());
           Interface.SetPTMeasureArray(thisRealStream.GetPTMeasureArray());
-          Interface.SetTimeTrend(&(const_cast<SimulationDataStream&>(thisSimulationStream).GetTimeTrend()));
+          Interface.SetTimeTrend(&thisSimulationStream.GetTimeTrend());
           break;
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
