@@ -7,7 +7,7 @@
 #include "JulianDates.h"
 #include "DataStream.h"
 
-int CalcRisk(DataStream & thisStream,
+int CalcRisk(RealDataStream & thisStream,
              double                  ** pRisk,
              double                   * pAlpha,
              tract_t                    nTracts,

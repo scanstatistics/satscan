@@ -10,7 +10,7 @@ static FILE* pMResult;
 #endif
 
 /** calculates the risk for each category */
-int CalcRisk(DataStream & thisStream, double** pRisk, double* pAlpha, tract_t nTracts, BasePrint *pPrintDirection) {
+int CalcRisk(RealDataStream & thisStream, double** pRisk, double* pAlpha, tract_t nTracts, BasePrint *pPrintDirection) {
   int                   c, i, n;
   tract_t               t;
   double                nPop, dTotalPopulation=0;
