@@ -123,7 +123,7 @@ CAnalysis::~CAnalysis() {
   catch(...){}
 }
 
-/** allocates Likelihood object
+/** allocates likelihood calculator object
     - this function should not be called prior to calculation of total cases
       and total measure                                                       */
 void CAnalysis::AllocateLikelihoodObject() {
@@ -145,6 +145,16 @@ void CAnalysis::AllocateLikelihoodObject() {
     x.AddCallpath("AllocateLikelihoodObject()","CAnalysis");
     throw;
   }
+}
+
+/** Executes simulation. Calls MonteCarlo() for analyses that can utilize
+    TMeasureList class or FindTopRatio() for analyses which must perform
+    simulations by the same algorithm as the real data. */
+double CAnalysis::ExecuteSimulation(const AbtractDataStreamGateway& DataGateway) {
+  if (gbMeasureListReplications)
+    return MonteCarlo(DataGateway.GetDataStreamInterface(0));
+  else
+    return FindTopRatio(DataGateway);
 }
 
 /** Given data gate way, calculates and collects most likely clusters about

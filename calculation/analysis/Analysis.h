@@ -33,6 +33,8 @@ class TopClustersContainer {
     void                                SetTopClusters(const CCluster& InitialCluster);
 };
 
+/** Abstract base class which defines methods for calculating top clusters and
+    simulated log likelihood ratios. */
 class CAnalysis {
   private:
     void                                Init();
@@ -57,9 +59,9 @@ class CAnalysis {
 
     virtual void                        AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway)  = 0;
     virtual void                        AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway) = 0;
+    double                              ExecuteSimulation(const AbtractDataStreamGateway& DataGateway);
     virtual void                        FindTopClusters(const AbtractDataStreamGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer);
     virtual double                      FindTopRatio(const AbtractDataStreamGateway & DataGateway);
-    bool                                IsMonteCarlo() const {return gbMeasureListReplications;}
     virtual double                      MonteCarlo(const DataStreamInterface & Interface) = 0;
 };
 //*****************************************************************************
