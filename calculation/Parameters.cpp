@@ -5,6 +5,7 @@
 #include "Parameters.h"
 #include "DataSetHandler.h"
 #include "ParameterFileAccess.h"
+#include "RandomNumberGenerator.h"
 
 #define INCLUDE_RUN_HISTORY
 
@@ -12,7 +13,7 @@ const char*      YES                            	= "y";
 const char*      NO                             	= "n";
 const int        MAXIMUM_SEQUENTIAL_ANALYSES    	= 32000;
 const int        MAXIMUM_ELLIPSOIDS             	= 10;
-int CParameters::giNumParameters 			= 68;
+int CParameters::giNumParameters 			= 69;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -116,6 +117,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (geMultipleSetPurposeType            != rhs.geMultipleSetPurposeType) return false;
   //if (gCreationVersion                    != rhs.gCreationVersion) return false;
   if (gbUsePopulationFile                 != rhs.gbUsePopulationFile) return false;
+  //if (glRandomizationSeed                 != rhs.glRandomizationSeed) return false;
   return true;
 }
 
@@ -231,6 +233,7 @@ void CParameters::Copy(const CParameters &rhs) {
     geMultipleSetPurposeType         = rhs.geMultipleSetPurposeType;
     gCreationVersion                    = rhs.gCreationVersion;
     gbUsePopulationFile                 = rhs.gbUsePopulationFile;
+    glRandomizationSeed                 = rhs.glRandomizationSeed;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -457,6 +460,9 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
     fprintf(fp, "  End Date   : %s\n\n", gsStudyPeriodEndDate.c_str());
 
     fprintf(fp, "  Number of Replications : %u\n", giReplications);
+
+    if (glRandomizationSeed != RandomNumberGenerator::glDefaultSeed)
+       fprintf(fp, "  Randomization Seed     : %ld", glRandomizationSeed);
 
     if (giNumberEllipses > 0) {
       fprintf(fp, "\nEllipses\n");
@@ -1115,6 +1121,7 @@ void CParameters::SetAsDefaulted() {
   gCreationVersion.iMinor               = 0;
   gCreationVersion.iRelease             = 3;
   gbUsePopulationFile                   = false;
+  glRandomizationSeed                   = RandomNumberGenerator::glDefaultSeed;
 }
 
 /** Sets dimensions of input data. */
@@ -1442,6 +1449,12 @@ void CParameters::SetProspectiveStartDate(const char * sProspectiveStartDate) {
     x.AddCallpath("SetProspectiveStartDate()","CParameters");
     throw;
   }
+}
+
+/** Set seed used by randomization process. */
+void CParameters::SetRandomizationSeed(long lSeed) {
+  //Validity of setting is checked in ValidateParameters().
+  glRandomizationSeed = lSeed;
 }
 
 /** Sets risk type. Throws exception if out of range. */
@@ -2187,6 +2200,12 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
       //validate simulation options
       if (! ValidateSimulationDataParameters(PrintDirection))
         bValid = false;
+
+      //validate hidden parameter which specifies randomization seed
+      if (!(0 < glRandomizationSeed && glRandomizationSeed < RandomNumberGenerator::glM)) {
+         bValid = false;
+         PrintDirection.SatScanPrintWarning("Error: Randomization seed out of range [1 - %ld].\n", RandomNumberGenerator::glM);
+      }
     }
     else {
       PrintDirection.SatScanPrintWarning("Warning: Parameters will not be validated, in accordance with the setting of the validation\n"
@@ -2238,13 +2257,6 @@ bool CParameters::ValidateProspectiveDate(BasePrint& PrintDirection) const {
   ZdString      sDate;
 
   try {
-    if (!gbAdjustForEarlierAnalyses && gsProspectiveStartDate != gsStudyPeriodEndDate) {
-      //when not adjusting for earlier analyses,
-      PrintDirection.SatScanPrintWarning("Error: A prospective analysis that does not adjust for earlier\n"
-                                         "       analyses must have the start of prospective surveillance\n"
-                                         "       set to the same date as the study period end date.\n");
-      bReturnValue = false;
-    }
     //validate study period end date based upon precision of times parameter setting
     //parse date in parts
     if (CharToMDY(&uiMonth, &uiDay, &uiYear, gsProspectiveStartDate.c_str()) != 3) {
