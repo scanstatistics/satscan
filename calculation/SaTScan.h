@@ -34,6 +34,7 @@
   #undef auto_ptr
   #undef auto_ptr_ref
 #endif
+
 #include "Toolkit.h"
 
 /**********************************************************************
@@ -41,10 +42,12 @@
  This file contains header information for all SaTScan program files
  **********************************************************************/
 /** Current version information. */
-#define VERSION_ID "50" /*50 inorder to prevent update of Alpha*/
-#define VERSION_NUMBER "5.0"
-#define VERSION_PHASE "Alpha 3" /** testing phase name - leave blank for release */
-#define VERSION_DATE "Not Released"
+#define VERSION_ID      "5"
+#define VERSION_MAJOR   "5"
+#define VERSION_MINOR   "0"
+#define VERSION_RELEASE "0"
+#define VERSION_PHASE   "Alpha 3" /** testing phase name - leave blank for release */
+#define VERSION_DATE    "Not Released"
 /** New defines for ellipsoid calculations. */
 #define MAXELLIPSESHAPES 10
 /** PI declaration - this is now defined in math.h but changing may cause
