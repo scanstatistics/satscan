@@ -38,6 +38,17 @@ double rngRand(void)
    return (double) seed /  (double) M;
 } /* rngRand() */
 
+float rngRandFloat(void)
+{
+   long t;
+
+   t = A * (seed % Q) - R * (seed / Q);
+   if (t > 0)
+      seed = t;
+   else
+      seed = t + M;
+   return (float) seed / (float) M;
+} /* rngRandFloat() */
 
 long rngGetSeed(void)
 {

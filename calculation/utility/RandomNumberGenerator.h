@@ -26,6 +26,7 @@
  distributed between 0 and 1.
  **********************************************************************/
 double rngRand(void);
+float rngRandFloat(void);
 
 /**********************************************************************
  Returns the current random number generator seed.
