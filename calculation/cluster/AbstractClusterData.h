@@ -1,16 +1,12 @@
-//---------------------------------------------------------------------------
-#ifndef AbstractClusterDataH
-#define AbstractClusterDataH
-//---------------------------------------------------------------------------
+//******************************************************************************
+#ifndef __AbstractClusterData_H
+#define __AbstractClusterData_H
+//******************************************************************************
 #include "IncidentRate.h"
-#include "ProbabilityModel.h"
 #include "DataStreamGateway.h"
 #include "LikelihoodCalculation.h"
 
-class CMeasureList; /** forward class declaration */
-class CSaTScanData; /** forward class declaration */
-
-/** abstract class representing accumulated cluster data */
+/** Abstract class representing accumulated cluster data. */
 class AbstractClusterData {
   public:
     AbstractClusterData();
@@ -18,14 +14,17 @@ class AbstractClusterData {
 
     virtual AbstractClusterData * Clone() const = 0;
 
-    virtual void        AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0) = 0;
-    virtual double      CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator);
-    virtual count_t     GetCaseCount(unsigned int iStream=0) const = 0;
-    virtual measure_t   GetMeasure(unsigned int iStream=0) const = 0;
+    virtual void        AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex=0) = 0;
+    virtual double      CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
+    virtual count_t     GetCaseCount(unsigned int tSetIndex=0) const = 0;
+
+    virtual count_t     GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const {return 0;}// make virtual later = 0;
+
+    virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const = 0;
     virtual void        InitializeData() = 0;
 };
 
-/** abstract class representing accumulated data of spatial clustering */
+/** Abstract class representing accumulated data of spatial clustering. */
 class AbstractSpatialClusterData : public AbstractClusterData {
   protected:
     RATE_FUNCPTRTYPE            gfRateOfInterest;
@@ -38,7 +37,7 @@ class AbstractSpatialClusterData : public AbstractClusterData {
     virtual AbstractSpatialClusterData * Clone() const = 0;
 };
 
-/** abstract class representing accumulated data of temporal clustering */
+/** Abstract class representing accumulated data of temporal clustering. */
 class AbstractTemporalClusterData : public AbstractClusterData {
   public:
     AbstractTemporalClusterData();
@@ -47,5 +46,6 @@ class AbstractTemporalClusterData : public AbstractClusterData {
     virtual void                          Assign(const AbstractTemporalClusterData& rhs) = 0;
     virtual AbstractTemporalClusterData * Clone() const = 0;
 };
-//---------------------------------------------------------------------------
+//******************************************************************************
 #endif
+

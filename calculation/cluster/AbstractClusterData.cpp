@@ -1,22 +1,22 @@
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//******************************************************************************
 #include "AbstractClusterData.h"
-//---------------------------------------------------------------------------
 
-/** constructor */
+/** class constructor */
 AbstractClusterData::AbstractClusterData() {}
 
-/** destructor */
+/** class destructor */
 AbstractClusterData::~AbstractClusterData() {}
 
-/** Calculates the log likelihood ratio of accumulated data through
-    AbstractLikelihoodCalculator object. Not implementated in base class, throws
-    ZdException. */
-double AbstractClusterData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
-  ZdGenerateException("CalculateLoglikelihoodRatio() not implemented.","AbstractClusterData");
+/** Not implemented - throws ZdException. */
+double AbstractClusterData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
+  ZdGenerateException("CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator&) not implemented.","AbstractClusterData");
   return 0;
 }
+
+//******************************************************************************
 
 /** class constructor */
 AbstractSpatialClusterData::AbstractSpatialClusterData(int iRate) : AbstractClusterData() {
@@ -30,6 +30,8 @@ AbstractSpatialClusterData::AbstractSpatialClusterData(int iRate) : AbstractClus
 
 /** class destructor */
 AbstractSpatialClusterData::~AbstractSpatialClusterData() {}
+
+//******************************************************************************
 
 /** class constructor */
 AbstractTemporalClusterData::AbstractTemporalClusterData() : AbstractClusterData() {}
