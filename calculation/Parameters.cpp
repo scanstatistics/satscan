@@ -1893,30 +1893,42 @@ bool CParameters::ValidateParameters() {
 
    try {
       if (m_bValidatePriorToCalc) {
-        if (!(PURELYSPATIAL <= m_nAnalysisType && m_nAnalysisType <= PROSPECTIVESPACETIME))   // used to be <= PURELYTEMPORAL
+        if (!(PURELYSPATIAL <= m_nAnalysisType && m_nAnalysisType <= PROSPECTIVESPACETIME)) {   // used to be <= PURELYTEMPORAL
+           bValid = false;
            if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for analysis type. Please use a value between 1 and 3.\n");
+        }
 
-        if (!(HIGH <= m_nAreas && m_nAreas<= HIGHANDLOW))
+        if (!(HIGH <= m_nAreas && m_nAreas<= HIGHANDLOW)) {
+           bValid = false;
            if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for scan areas. Please use a value between 1 and 3.\n");
+        }
 
-        if (!(POISSON == m_nModel || m_nModel == BERNOULLI || m_nModel == SPACETIMEPERMUTATION))
+        if (!(POISSON == m_nModel || m_nModel == BERNOULLI || m_nModel == SPACETIMEPERMUTATION)) {
+           bValid = false;
            if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for model type. Please use a value between 0 and 2.\n");
+        }
 
-        if (!(STANDARDRISK == m_nRiskFunctionType || m_nRiskFunctionType == MONOTONERISK))
+        if (!(STANDARDRISK == m_nRiskFunctionType || m_nRiskFunctionType == MONOTONERISK)) {
+           bValid = false;
            if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for risk function type. Please use a value of 0 or 1.\n");
+        }
 
         if (m_bSequential) {
           //if (!((1 <= m_nAnalysisTimes) && (m_nAnalysisTimes <= INT_MAX)))
-          if (!(1 <= m_nAnalysisTimes))
+          if (!(1 <= m_nAnalysisTimes)) {
+             bValid = false;
              if (m_bDisplayErrors)
                 gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for max sequential scan iterations. Please use a value between 1 and 32000.\n");
-          if (!(0.0 <= m_nCutOffPVal && m_nCutOffPVal <= 1.0))
+          }
+          if (!(0.0 <= m_nCutOffPVal && m_nCutOffPVal <= 1.0)) {
+             bValid = false;
              if (m_bDisplayErrors)
                 gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for sequential p-value. Please use a value between 0 and 1.\n");
+          }
         }
         else {
           m_nAnalysisTimes = 0;
@@ -1924,12 +1936,16 @@ bool CParameters::ValidateParameters() {
         }
 
         if (m_bPowerCalc) {
-          if (!(0.0 <= m_nPower_X && m_nPower_X<= DBL_MAX))
+          if (!(0.0 <= m_nPower_X && m_nPower_X<= DBL_MAX)) {
+             bValid = false;
              if (m_bDisplayErrors)
                 gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for LLR#1. Please use a value between 0 and %12.4f\n", DBL_MAX);
-          if (!(0.0 <= m_nPower_Y && m_nPower_Y <= DBL_MAX))
+          }
+          if (!(0.0 <= m_nPower_Y && m_nPower_Y <= DBL_MAX)) {
+             bValid = false;
              if (m_bDisplayErrors)
                 gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for LLR#2. Please use a value between 0 and %12.4f\n", DBL_MAX);
+          }
         }
         else {
           m_nPower_X = 0.0;
@@ -1937,44 +1953,55 @@ bool CParameters::ValidateParameters() {
         }
 
         if (!(CARTESIAN == m_nCoordType || m_nCoordType == LATLON)) {
+           bValid = false;
            if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for coordinate type. Please use a value of 0 or 1.\n");
         }
         else if ((m_nCoordType == LATLON) && (m_nNumEllipses > 0)) {
+           bValid = false;
            if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for ellipses. Program currently does not support ellipses with lat/long coordinates.\n");
         }
-        
+
         // If number of ellipsoids > 0, then criteria for reporting secondary clusters must be "No Restrictions"
         if ((m_nNumEllipses > 0) && (m_iCriteriaSecondClusters != 5))
            SSGenerateException("  Error: Number of Ellipsiods is greater than zero and Criteria for Secondary Clusters is NOT set to No Restrictions.", "ValidateParameters()");
 
-        if (!ValidateReplications(m_nReplicas))
+        if (!ValidateReplications(m_nReplicas)) {
+           bValid = false;
            if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for Monte Carlo reps. Please use a value of 0, 9, 999, or n999.\n");
+        }
 
         if (m_nAnalysisType == PURELYSPATIAL) {
-          if (!(NONE <= m_nPrecision && m_nPrecision <= DAY))
+          if (!(NONE <= m_nPrecision && m_nPrecision <= DAY)) {
+            bValid = false;
             if (m_bDisplayErrors)
                gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for precision of case times. Please use a value between 0 and 3.\n");
+          }
         }
         else {
-          if (!(YEAR <= m_nPrecision && m_nPrecision <= DAY))  // Change to DAYS, YEARS
+          if (!(YEAR <= m_nPrecision && m_nPrecision <= DAY)) { // Change to DAYS, YEARS
+             bValid = false;
              if (m_bDisplayErrors)
                 gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for precision of case times. Please use a value between 1 and 3.\n");
+          }
         }
 
         if (!ValidateDateString(m_szStartDate, STARTDATE)) {
+           bValid = false;
            if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for start date. Please use a valid date of the form YYYY/MM/DD.\n");
            bValidDate = false;
         }
         else if (!ValidateDateString(m_szEndDate, ENDDATE)) {
+          bValid = false;
           if (m_bDisplayErrors)
              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for end date. Please use a valid date of the form YYYY/MM/DD.\n");
           bValidDate = false;
         }
         else if (CharToJulian(m_szStartDate) >= CharToJulian(m_szEndDate)) {
+          bValid = false;
           if (m_bDisplayErrors)
              gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for start date. Please use a valid date of the form YYYY/MM/DD.\n");
           bValidDate = false;
@@ -1982,43 +2009,58 @@ bool CParameters::ValidateParameters() {
 
         // Spatial Options
         if ((m_nAnalysisType == PURELYSPATIAL) || (m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME)) {
-          if (m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE && !(0.0 < m_nMaxGeographicClusterSize && m_nMaxGeographicClusterSize <= 50.0))
+          if (m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE && !(0.0 < m_nMaxGeographicClusterSize && m_nMaxGeographicClusterSize <= 50.0)) {
+             bValid = false;
+             if (m_bDisplayErrors)
+               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for max geographic size. Please use a value between 0 and 50.\n");
+          }
+          if (0.0 > m_nMaxGeographicClusterSize) {
+            bValid = false;
             if (m_bDisplayErrors)
                gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for max geographic size. Please use a value between 0 and 50.\n");
-          if (0.0 > m_nMaxGeographicClusterSize)
-            if (m_bDisplayErrors)
-               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for max geographic size. Please use a value between 0 and 50.\n");
+          }
         }
         else
           m_nMaxGeographicClusterSize = 50.0; //KR980707 0 GG980716;
 
         // Temporal Options
         if ((m_nAnalysisType == PURELYTEMPORAL) || (m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME)) {
-          if (m_nMaxClusterSizeType == PERCENTAGETYPE && !(0.0 < m_nMaxTemporalClusterSize && m_nMaxTemporalClusterSize <= (m_nModel == SPACETIMEPERMUTATION ? 50 : 90)))
+          if (m_nMaxClusterSizeType == PERCENTAGETYPE && !(0.0 < m_nMaxTemporalClusterSize && m_nMaxTemporalClusterSize <= (m_nModel == SPACETIMEPERMUTATION ? 50 : 90))) {
+            bValid = false;
             if (m_bDisplayErrors)
                gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for max temporal size. Please use a value between 0 and %d.\n", (m_nModel == SPACETIMEPERMUTATION ? 50 : 90));
-          if (!(YEAR <= m_nIntervalUnits && m_nIntervalUnits <= m_nPrecision))
+          }
+          if (!(YEAR <= m_nIntervalUnits && m_nIntervalUnits <= m_nPrecision)) {
             if (m_bDisplayErrors)
                gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for interval units. Please use a value between 1 and 3.\n");
-          if (!(1 <= m_nIntervalLength && m_nIntervalLength <= TimeBetween(CharToJulian(m_szStartDate), CharToJulian(m_szEndDate), m_nIntervalUnits) ))// Change to Max Interval
+            bValid = false;
+          }
+          if (!(1 <= m_nIntervalLength && m_nIntervalLength <= TimeBetween(CharToJulian(m_szStartDate), CharToJulian(m_szEndDate), m_nIntervalUnits) )) {  // Change to Max Interval
+            bValid = false;
             if (m_bDisplayErrors)
                gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for interval length. Please use a value between 1 and the length of the study period.\n");
-
+          }
           if (m_nModel == BERNOULLI || m_nModel == SPACETIMEPERMUTATION) {
             m_nTimeAdjustType = NOTADJUSTED;
             m_nTimeAdjPercent = 0.0;
           }
           else {
-            if (!(NOTADJUSTED <= m_nTimeAdjustType && m_nTimeAdjustType <= LINEAR))
+            if (!(NOTADJUSTED <= m_nTimeAdjustType && m_nTimeAdjustType <= LINEAR)) {
+               bValid = false;
                if (m_bDisplayErrors)
                   gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for time adjustment type. Please use a value 0, 1 or 2.\n");
-            if (m_nTimeAdjustType == NONPARAMETRIC && m_nAnalysisType == PURELYTEMPORAL)
+            }
+            if (m_nTimeAdjustType == NONPARAMETRIC && m_nAnalysisType == PURELYTEMPORAL) {
+              bValid = false;
               if (m_bDisplayErrors)
                gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for time adjustment type. You may not use non-parametric time in a Purely Temporal analysis.\n");
+            }
             if (m_nTimeAdjustType == LINEAR)
-              if (!(-100.0 < m_nTimeAdjPercent))
+              if (!(-100.0 < m_nTimeAdjPercent)) {
+                bValid = false;
                 if (m_bDisplayErrors)
                    gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for time adjustment percentage. Please use a value greater than -100.\n");
+              }
           }
         }
         else {
@@ -2032,6 +2074,7 @@ bool CParameters::ValidateParameters() {
       }
 
       if (strlen(m_szCaseFilename)==0 || (pFile = fopen(m_szCaseFilename, "r")) == NULL) {
+        bValid = false;
         if (m_bDisplayErrors)
           gpPrintDirection->SatScanPrintWarning("Unable to open the case file %s. Please check to make sure the path is correct.\n", m_szCaseFilename);
       }
@@ -2040,6 +2083,7 @@ bool CParameters::ValidateParameters() {
     
       if (m_nModel == POISSON) {
         if (strlen(m_szPopFilename)==0 || (pFile = fopen(m_szPopFilename, "r")) == NULL) {
+           bValid = false;
            if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Unable to open the population file %s. Please check to make sure the path is correct.\n", m_szPopFilename);
         }
@@ -2049,6 +2093,7 @@ bool CParameters::ValidateParameters() {
       }
       else if (m_nModel == BERNOULLI) {
         if (strlen(m_szControlFilename)==0 || (pFile = fopen(m_szControlFilename, "r")) == NULL) {
+          bValid = false;
           if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Unable to open the population file %s. Please check to make sure the path is correct.\n", m_szControlFilename);
         }
@@ -2059,26 +2104,36 @@ bool CParameters::ValidateParameters() {
       else if (m_nModel == SPACETIMEPERMUTATION) {
         if (m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)
           if (strlen(m_szPopFilename)==0 || (pFile = fopen(m_szPopFilename, "r")) == NULL) {
+            bValid = false;
             if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Unable to open the population file %s. Please check to make sure the path is correct.\n", m_szPopFilename);
           }
           else
             fclose(pFile);
-        if (!(m_nAnalysisType == SPACETIME || m_nAnalysisType == PROSPECTIVESPACETIME))
+        if (!(m_nAnalysisType == SPACETIME || m_nAnalysisType == PROSPECTIVESPACETIME)) {
+          bValid = false;
           if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for analysis type. For Space-Time Permutation model,\n\t analysis type must be either Prospective or Retrospective Space-Time.\n");
-        if (m_bIncludePurelySpatial)
+        }
+        if (m_bIncludePurelySpatial) {
+          bValid = false;
           if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for include purely spatial. Cannot include purely spatial clusters in the Space-Time model.\n");
-        if (m_bIncludePurelyTemporal)
+        }
+        if (m_bIncludePurelyTemporal) {
+          bValid = false;
           if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for include purely temporal. Cannot include purely temporal clusters in the Space-Time model.\n");
-        if (m_bOutputRelRisks || gbRelativeRiskDBF)
+        }
+        if (m_bOutputRelRisks || gbRelativeRiskDBF) {
+          bValid = false;
           if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for output relative risks. Cannot output relative risks for the Space-Time model.\n");
+        }
       }
 
       if (strlen(m_szCoordFilename)==0 || (pFile = fopen(m_szCoordFilename, "r")) == NULL) {
+        bValid = false;
         if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Unable to open Coordinate file: %s. Please check to make sure the path is correct.\n", m_szCoordFilename);
       }
@@ -2087,6 +2142,7 @@ bool CParameters::ValidateParameters() {
 
       if (m_bSpecialGridFile) {
         if (strlen(m_szGridFilename)==0 || (pFile = fopen(m_szGridFilename, "r")) == NULL) {
+          bValid = false;
           if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Unable to open Grid file: %s. Please check to make sure the path is correct.\n", m_szGridFilename);
         }
@@ -2098,6 +2154,7 @@ bool CParameters::ValidateParameters() {
 
       if (strlen(m_szOutputFilename)==0 || (pFile = fopen(m_szOutputFilename, "r")) == NULL) {
         if ((pFile = fopen(m_szOutputFilename, "w")) == NULL) {
+          bValid = false;
           if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Unable to open Results file: %s. Please check to make sure the path is correct.\n", m_szOutputFilename);
         }
@@ -2107,16 +2164,20 @@ bool CParameters::ValidateParameters() {
       else
         fclose(pFile);
 
-      if (!(m_iCriteriaSecondClusters>=0 && m_iCriteriaSecondClusters<=5))
+      if (!(m_iCriteriaSecondClusters>=0 && m_iCriteriaSecondClusters<=5)) {
+          bValid = false;
           if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for criteria for reporting secondary clusters.\n\tPlease use a value between 0 and 5.\n");
+      }
 
       // Verify Character Prospective start date (YYYY/MM/DD).
       // THIS IS RUN AFTER STUDY DATES HAVE BEEN CHECKED !!!
       if (bValid && (m_nAnalysisType == PROSPECTIVESPACETIME) && bValidDate)
-         if (! ValidateProspectiveStartDate(m_szProspStartDate, m_szStartDate, m_szEndDate))
+         if (! ValidateProspectiveStartDate(m_szProspStartDate, m_szStartDate, m_szEndDate)) {
+            bValid = false;
             if (m_bDisplayErrors)
               gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for prospective start date. Please use a valid dat of the form YYYY/MM/DD.\n");
+         }
 
       m_bExactTimes = 0;
       m_nDimension  = 0;
