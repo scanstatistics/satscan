@@ -101,8 +101,8 @@ void C_ST_PS_PT_Analysis::Init() {
 
 /** Returns loglikelihood for Monte Carlo replication. */
 double C_ST_PS_PT_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
-  double                        dMaxLogLikelihoodRatio;
-  tract_t                       k, i;
+  tract_t                       k, i, * pNeighborCounts, ** ppSorted_Tract_T;
+  unsigned short             ** ppSorted_UShort_T;
 
   if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
     return MonteCarloProspective(Interface);
@@ -110,12 +110,18 @@ double C_ST_PS_PT_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
   gpMeasureList->Reset();
   //Add measure values for purely space first - so that this cluster's values
   //will be calculated with circle's measure values.
-  gpTimeIntervals->CompareMeasures(gpPTClusterData, gpMeasureList);
+  gpTimeIntervals->CompareMeasures(gpPTClusterData, *gpMeasureList);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-  for (k=0; k <= gParameters.GetNumTotalEllipses(); k++) {
-     for (i=0; i < gDataHub.m_nGridTracts; i++) {
-        gpPSClusterData->AddMeasureList(k, i, Interface, gpMeasureList, &gDataHub);
-        gpClusterData->AddNeighborDataAndCompare(k, i, Interface, &gDataHub, gpTimeIntervals, gpMeasureList);
+  for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
+     ppSorted_Tract_T = gDataHub.GetSortedArrayAsTract_T(k);
+     ppSorted_UShort_T = gDataHub.GetSortedArrayAsUShort_T(k);
+     pNeighborCounts = gDataHub.GetNeighborCountArray()[k];
+     for (i=0; i < gDataHub.m_nGridTracts; ++i) {
+        gpPSClusterData->AddMeasureList(i, Interface, gpMeasureList, pNeighborCounts[i],
+                                        ppSorted_UShort_T, ppSorted_Tract_T);
+        gpClusterData->AddNeighborDataAndCompare(i, Interface, pNeighborCounts[i],
+                                                 ppSorted_UShort_T, ppSorted_Tract_T,
+                                                 *gpTimeIntervals, *gpMeasureList);
      }
      gpMeasureList->SetForNextIteration(k);
   }
@@ -124,18 +130,24 @@ double C_ST_PS_PT_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
 
 /** Returns loglikelihood for Monte Carlo Prospective replication. */
 double C_ST_PS_PT_Analysis::MonteCarloProspective(const DataStreamInterface & Interface) {
-  double                        dMaxLogLikelihoodRatio;
-  tract_t                       k, i;
+  tract_t                 k, i, * pNeighborCounts, ** ppSorted_Tract_T;
+  unsigned short       ** ppSorted_UShort_T;
 
   gpMeasureList->Reset();
   //Add measure values for purely space first - so that this cluster's values
   //will be calculated with circle's measure values.
-  gpTimeIntervals->CompareMeasures(gpPTClusterData, gpMeasureList);
+  gpTimeIntervals->CompareMeasures(gpPTClusterData, *gpMeasureList);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-  for (k=0; k <= gParameters.GetNumTotalEllipses(); k++) {
-     for (i=0; i < gDataHub.m_nGridTracts; i++) {
-        gpPSPClusterData->AddMeasureList(k, i, Interface, gpMeasureList, &gDataHub);
-        gpClusterData->AddNeighborDataAndCompare(k, i, Interface, &gDataHub, gpTimeIntervals, gpMeasureList);
+  for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
+     ppSorted_Tract_T = gDataHub.GetSortedArrayAsTract_T(k);
+     ppSorted_UShort_T = gDataHub.GetSortedArrayAsUShort_T(k);
+     pNeighborCounts = gDataHub.GetNeighborCountArray()[k];
+     for (i=0; i < gDataHub.m_nGridTracts; ++i) {
+        gpPSPClusterData->AddMeasureList(i, Interface, gpMeasureList, pNeighborCounts[i],
+                                         ppSorted_UShort_T, ppSorted_Tract_T);
+        gpClusterData->AddNeighborDataAndCompare(i, Interface, pNeighborCounts[i],
+                                                 ppSorted_UShort_T, ppSorted_Tract_T,
+                                                 *gpTimeIntervals, *gpMeasureList);
      }
      gpMeasureList->SetForNextIteration(k);
   }

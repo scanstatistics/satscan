@@ -107,16 +107,21 @@ void C_ST_PT_Analysis::Init() {
 
 /** Returns loglikelihood for Monte Carlo replication. */
 double C_ST_PT_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
-  double                        dMaxLogLikelihoodRatio;
-  tract_t                       k, i, j, iNumNeighbors;
+  tract_t                       k, i, *  pNeighborCounts, ** ppSorted_Tract_T;
+  unsigned short             ** ppSorted_UShort_T;
 
   gpMeasureList->Reset();
   //compare purely temporal cluster in same ratio correction as circle
-  gpTimeIntervals->CompareMeasures(gpPTClusterData, gpMeasureList);
+  gpTimeIntervals->CompareMeasures(gpPTClusterData, *gpMeasureList);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
+     ppSorted_Tract_T = gDataHub.GetSortedArrayAsTract_T(k);
+     ppSorted_UShort_T = gDataHub.GetSortedArrayAsUShort_T(k);
+     pNeighborCounts = gDataHub.GetNeighborCountArray()[k];
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
-        gpClusterData->AddNeighborDataAndCompare(k, i, Interface, &gDataHub, gpTimeIntervals, gpMeasureList);
+        gpClusterData->AddNeighborDataAndCompare(i, Interface, pNeighborCounts[i],
+                                                 ppSorted_UShort_T, ppSorted_Tract_T,
+                                                 *gpTimeIntervals, *gpMeasureList);
      }
      gpMeasureList->SetForNextIteration(k);
   }

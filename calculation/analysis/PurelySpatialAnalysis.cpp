@@ -91,13 +91,17 @@ void CPurelySpatialAnalysis::Init() {
 
 /** Returns loglikelihood for Monte Carlo replication. */
 double CPurelySpatialAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
-  double                          dMaxLogLikelihoodRatio;
-  tract_t                         k, i;
+  tract_t               k, i, * pNeighborCounts, ** ppSorted_Tract_T;
+  unsigned short     ** ppSorted_UShort_T;
 
   gpMeasureList->Reset();
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) { //circle is 0 offset... (always there)
+     ppSorted_Tract_T = gDataHub.GetSortedArrayAsTract_T(k);
+     ppSorted_UShort_T = gDataHub.GetSortedArrayAsUShort_T(k);
+     pNeighborCounts = gDataHub.GetNeighborCountArray()[k];
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
-        gpClusterData->AddMeasureList(k, i, Interface, gpMeasureList, &gDataHub);
+        gpClusterData->AddMeasureList(i, Interface, gpMeasureList, pNeighborCounts[i],
+                                      ppSorted_UShort_T, ppSorted_Tract_T);
      }
      gpMeasureList->SetForNextIteration(k);
   }
