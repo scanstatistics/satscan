@@ -26,5 +26,23 @@ class AbstractRandomizer {
 };
 
 typedef ZdPointerVector<AbstractRandomizer>     RandomizerContainer_t;
+
+/** Reads simulation data from file.
+    NOTE: This unit has note been thoughly tested, especially with multiple
+          data streams. */
+class FileSourceRandomizer : public AbstractRandomizer {
+  protected:
+    const CParameters                & gParameters;
+
+  public:
+    	    FileSourceRandomizer(const CParameters& Parameters);
+    	    FileSourceRandomizer(const FileSourceRandomizer & rhs);
+    virtual ~FileSourceRandomizer();
+
+    virtual FileSourceRandomizer     * Clone() const;
+    virtual void	               RandomizeData(const RealDataStream& thisRealStream,
+                                                     SimulationDataStream& thisSimulationStream,
+                                                     unsigned int iSimulation);
+};
 //---------------------------------------------------------------------------
 #endif

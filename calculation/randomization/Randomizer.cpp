@@ -39,3 +39,34 @@ void AbstractRandomizer::SetSeed(unsigned int iSimulationIndex, unsigned int iDa
     throw;
   }
 }
+
+/** constructor */
+FileSourceRandomizer::FileSourceRandomizer(const CParameters& Parameters)
+                     :AbstractRandomizer(), gParameters(Parameters) {}
+
+/** copy constructor */
+FileSourceRandomizer::FileSourceRandomizer(const FileSourceRandomizer& rhs)
+                     :AbstractRandomizer(rhs), gParameters(rhs.gParameters) {}
+
+/** destructor */
+FileSourceRandomizer::~FileSourceRandomizer() {}
+
+/** returns pointer to newly cloned FileSourceRandomizer */
+FileSourceRandomizer * FileSourceRandomizer::Clone() const {
+  return new FileSourceRandomizer(*this);
+}
+
+/** Reads number of simulated cases from a text file rather than generating them randomly.
+    NOTE: Data read from the file is not validated. This means that there is potential
+          for the program to behave badly if:
+          1) the data read from file does not match dimensions of ppSimCases
+          2) the case counts read from file is inappropriate given real data -- probably access violations
+          3) file does not actually contains numerical data
+          Use of this feature should be discouraged except from someone who has
+          detailed knowledge of how code works.                                                           */
+void FileSourceRandomizer::RandomizeData(const RealDataStream&,
+                                         SimulationDataStream& thisSimulationStream,
+                                         unsigned int iSimulation) {
+
+  thisSimulationStream.ReadSimulationData(gParameters, iSimulation);
+}
