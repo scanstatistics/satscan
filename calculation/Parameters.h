@@ -238,6 +238,8 @@ class CParameters
     const std::string & GetCoordinatesFileName() const { return m_sCoordinatesFileName; }
     const bool          GetDBaseOutputRelRisks() const { return gbRelativeRiskDBF; }
     const bool          GetDBaseOutputLogLikeli() const { return gbLogLikelihoodDBF; }
+    const float         GetInitialMaxTemporalClusterSize() const { return m_nInitialMaxTemporalClusterSize; }
+    const TemporalSizeType  GetInitialMaxTemporalClusterSizeType() const { return m_nInitialMaxClusterSizeType; }
     const bool          GetOutputClusterLevelDBF() const { return gbOutputClusterLevelDBF; }
     const bool          GetOutputAreaSpecificDBF() const  { return gbOutputAreaSpecificDBF; }
     const std::string & GetOutputFileName() const { return m_sOutputFileName; }
