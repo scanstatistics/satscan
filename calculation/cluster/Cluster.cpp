@@ -247,20 +247,21 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
 
 /** Writes clusters lat/long coordinates in format required by result output file. */
 void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
-  double *pCoords = 0, *pCoords2 = 0;
-  float   Latitude, Longitude, nRadius;
+  double  dRadius, * pCoords = 0, * pCoords2 = 0, EARTH_RADIUS = 6367/*radius of earth in km*/;
+  float   Latitude, Longitude;
   char    cNorthSouth, cEastWest;
 
   try {
     Data.GetGInfo()->giGetCoords(m_Center, &pCoords);
     Data.GetTInfo()->tiGetCoords(Data.GetNeighbor(0, m_Center, m_nTracts), &pCoords2);
-    nRadius = (float)(sqrt(Data.GetTInfo()->tiGetDistanceSq(pCoords, pCoords2)));
+    dRadius = 2 * EARTH_RADIUS * asin(sqrt(Data.GetTInfo()->tiGetDistanceSq(pCoords, pCoords2))/(2 * EARTH_RADIUS));
+
     ConvertToLatLong(&Latitude, &Longitude, pCoords);
     Latitude >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
     Longitude >= 0 ? cEastWest = 'E' : cEastWest = 'W';
     PrintFormat.PrintSectionLabel(fp, "Coordinates / radius", false, true);
-    fprintf(fp, "(%.6f %c, %.6f %c) / %5.2f km\n",
-            fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
+    fprintf(fp, "(%.6f %c, %.6f %c) / %5.2lf km\n",
+            fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, dRadius);
     free(pCoords);
     free(pCoords2);
   }

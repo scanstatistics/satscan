@@ -245,27 +245,27 @@ void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, 
 
 /** Prints latitude/longitude coordinates of cluster to file pointer in ACSII format. */
 void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
-  double      * pCoords=0, * pCoords2=0;
+  double        dRadius, * pCoords=0, * pCoords2=0, EARTH_RADIUS = 6367/*radius of earth in km*/;
   int           i;
-  float         Latitude, Longitude, nRadius;
+  float         Latitude, Longitude;
   char          cNorthSouth, cEastWest;
   ZdString      sBuffer, sWork;
 
   try {
     Data.GetGInfo()->giGetCoords(m_Center, &pCoords);
     Data.GetTInfo()->tiGetCoords(Data.GetNeighbor(0, m_Center, m_nTracts), &pCoords2);
-    nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
+    dRadius = 2 * EARTH_RADIUS * asin(sqrt(Data.GetTInfo()->tiGetDistanceSq(pCoords, pCoords2))/(2 * EARTH_RADIUS));
     ConvertToLatLong(&Latitude, &Longitude, pCoords);
     Latitude >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
     Longitude >= 0 ? cEastWest = 'W' : cEastWest = 'E';
     PrintFormat.PrintSectionLabel(fp, "Coordinates", false, true);
-    fprintf(fp, "(%.6f %c, %.6f %c)\n", fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
+    fprintf(fp, "(%.6f %c, %.6f %c)\n", fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest);
     PrintFormat.PrintSectionLabel(fp, "Radius for each step", false, true);
     for (i=0; i < m_nSteps; ++i) {
       Data.GetTInfo()->tiGetCoords(Data.GetNeighbor(0, m_Center, m_pLastNeighborList[i]), &pCoords2);
-      nRadius = (float)sqrt(Data.GetTInfo()->tiGetDistanceSq(pCoords, pCoords2));
+      dRadius = 2 * EARTH_RADIUS * asin(sqrt(Data.GetTInfo()->tiGetDistanceSq(pCoords, pCoords2))/(2 * EARTH_RADIUS));
       free(pCoords2);
-      sWork.printf("%s%5.2f km", (i == 0 ? "(" : "" ), nRadius);
+      sWork.printf("%s%5.2lf km", (i == 0 ? "(" : "" ), dRadius);
       sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
