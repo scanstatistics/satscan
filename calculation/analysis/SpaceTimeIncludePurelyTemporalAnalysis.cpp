@@ -35,18 +35,18 @@ bool C_ST_PT_Analysis::FindTopClusters() {
     Caller is responsible for deleting returned cluster. */
 CPurelyTemporalCluster* C_ST_PT_Analysis::GetTopPTCluster() {
   CPurelyTemporalCluster      * pTopCluster=0;
-  bool                          bAliveCluster;
+  IncludeClustersType           eIncludeClustersType;
 
   try {
     // if Prospective Space-Time then Alive Clusters Only.
     if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
-      bAliveCluster = true;
+      eIncludeClustersType = ALIVECLUSTERS;
     else
-      bAliveCluster = m_pParameters->GetAliveClustersOnly();
+      eIncludeClustersType = m_pParameters->GetIncludeClustersType();
 
-    pTopCluster = new CPurelyTemporalCluster(bAliveCluster, m_pData->m_nTimeIntervals,
+    pTopCluster = new CPurelyTemporalCluster(eIncludeClustersType, m_pData->m_nTimeIntervals,
                                              m_pData->m_nIntervalCut, gpPrintDirection);
-    CPurelyTemporalCluster C_PT(bAliveCluster, m_pData->m_nTimeIntervals,
+    CPurelyTemporalCluster C_PT(eIncludeClustersType, m_pData->m_nTimeIntervals,
                                 m_pData->m_nIntervalCut, gpPrintDirection);
 
     pTopCluster->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
@@ -83,9 +83,9 @@ double C_ST_PT_Analysis::MonteCarlo() {
   tract_t               i, j;
 
   try {
-    CPurelyTemporalCluster C_PT(m_pParameters->GetAliveClustersOnly(), m_pData->m_nTimeIntervals,
+    CPurelyTemporalCluster C_PT(m_pParameters->GetIncludeClustersType(), m_pData->m_nTimeIntervals,
                                 m_pData->m_nIntervalCut, gpPrintDirection);
-    CSpaceTimeCluster C_ST(m_pParameters->GetAliveClustersOnly(), m_pData->m_nTimeIntervals,
+    CSpaceTimeCluster C_ST(m_pParameters->GetIncludeClustersType(), m_pData->m_nTimeIntervals,
                            m_pData->m_nIntervalCut, gpPrintDirection);
     
     C_ST.SetRate(m_pParameters->GetAreaScanRateType());
@@ -144,8 +144,8 @@ double C_ST_PT_Analysis::MonteCarloProspective() {
   try {
     //for prospective Space-Time, m_bAliveClustersOnly should be false..
     //m_bAliveClustersOnly is the first parameter into the CSpaceTimeCluster class
-    CPurelyTemporalCluster C_PT(false, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
-    CSpaceTimeCluster C_ST(false, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
+    CPurelyTemporalCluster C_PT(ALLCLUSTERS, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
+    CSpaceTimeCluster C_ST(ALLCLUSTERS, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
 
     C_ST.SetRate(m_pParameters->GetAreaScanRateType());
     switch (m_pParameters->GetAreaScanRateType()) {

@@ -32,19 +32,19 @@ CCluster* C_ST_PS_Analysis::GetTopCluster(tract_t nCenter) {
   CCluster                    * pTopCluster;
   CPurelySpatialCluster       * C_PS_MAX=0;
   CSpaceTimeCluster           * C_ST_MAX=0;
-  bool                          bAliveCluster;
+  IncludeClustersType           eIncludeClustersType;
 
   try {
     // if Prospective Space-Time then Alive Clusters Only.
     if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
-      bAliveCluster = true;
+      eIncludeClustersType = ALIVECLUSTERS;
     else
-      bAliveCluster = m_pParameters->GetAliveClustersOnly();
+      eIncludeClustersType = m_pParameters->GetIncludeClustersType();
 
     C_PS_MAX = new CPurelySpatialCluster(gpPrintDirection);
     C_PS_MAX->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
     gp_PS_TopShapeClusters->SetTopClusters(*C_PS_MAX);
-    C_ST_MAX = new CSpaceTimeCluster(bAliveCluster, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
+    C_ST_MAX = new CSpaceTimeCluster(eIncludeClustersType, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
     C_ST_MAX->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
     gp_ST_TopShapeClusters->SetTopClusters(*C_ST_MAX);
     for (j=0 ;j <= m_pParameters->GetNumTotalEllipses(); j++) {
@@ -55,7 +55,7 @@ CCluster* C_ST_PS_Analysis::GetTopCluster(tract_t nCenter) {
         C_PS.SetEllipseOffset(j);
         C_PS.SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->mdE_Shapes[j - 1]));
         //set space-time cluster
-        CSpaceTimeCluster C_ST(bAliveCluster, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
+        CSpaceTimeCluster C_ST(eIncludeClustersType, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
         C_ST.SetCenter(nCenter);
         C_ST.SetRate(m_pParameters->GetAreaScanRateType());
         C_ST.SetEllipseOffset(j);
@@ -123,7 +123,7 @@ double C_ST_PS_Analysis::MonteCarlo() {
   tract_t                       i, j;
 
   try {
-    CSpaceTimeCluster C_ST(m_pParameters->GetAliveClustersOnly(), m_pData->m_nTimeIntervals,
+    CSpaceTimeCluster C_ST(m_pParameters->GetIncludeClustersType(), m_pData->m_nTimeIntervals,
                            m_pData->m_nIntervalCut, gpPrintDirection);
     C_PS.SetRate(m_pParameters->GetAreaScanRateType());
     C_ST.SetRate(m_pParameters->GetAreaScanRateType());
@@ -179,7 +179,7 @@ double C_ST_PS_Analysis::MonteCarloProspective() {
   try {
     //for prospective Space-Time, m_bAliveClustersOnly should be false..
     //m_bAliveClustersOnly is the first parameter into the CSpaceTimeCluster class
-    CSpaceTimeCluster     C_ST(false, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
+    CSpaceTimeCluster     C_ST(ALLCLUSTERS, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
     C_PS.SetRate(m_pParameters->GetAreaScanRateType());
     C_ST.SetRate(m_pParameters->GetAreaScanRateType());
     switch (m_pParameters->GetAreaScanRateType()) {

@@ -34,19 +34,19 @@ bool CPurelyTemporalAnalysis::FindTopClusters() {
     Caller is responsible for deleting returned cluster. */
 CCluster* CPurelyTemporalAnalysis::GetTopCluster(tract_t nCenter) {
   CPurelyTemporalCluster              * pTopCluster=0;
-  bool                                  bAliveCluster;
+  IncludeClustersType                   eIncludeClustersType;
 
   try {
     // if Prospective Space-Time then Alive Clusters Only.
     if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
-      bAliveCluster = true;
+      eIncludeClustersType = ALIVECLUSTERS;
     else
-      bAliveCluster = m_pParameters->GetAliveClustersOnly();
+      eIncludeClustersType = m_pParameters->GetIncludeClustersType();
 
     gpPrintDirection->SatScanPrintf("Get Top P.T. Cluster.\n");
-    pTopCluster = new CPurelyTemporalCluster(bAliveCluster, m_pData->m_nTimeIntervals,
+    pTopCluster = new CPurelyTemporalCluster(eIncludeClustersType, m_pData->m_nTimeIntervals,
                                              m_pData->m_nIntervalCut, gpPrintDirection);
-    CPurelyTemporalCluster thisCluster(bAliveCluster, m_pData->m_nTimeIntervals,
+    CPurelyTemporalCluster thisCluster(eIncludeClustersType, m_pData->m_nTimeIntervals,
                                        m_pData->m_nIntervalCut, gpPrintDirection);
     
     pTopCluster->CCluster::SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
@@ -80,7 +80,7 @@ double CPurelyTemporalAnalysis::MonteCarlo() {
   double                dMaxLogLikelihoodRatio;
 
   try {
-    CPurelyTemporalCluster C(m_pParameters->GetAliveClustersOnly(), m_pData->m_nTimeIntervals,
+    CPurelyTemporalCluster C(m_pParameters->GetIncludeClustersType(), m_pData->m_nTimeIntervals,
                              m_pData->m_nIntervalCut, gpPrintDirection);
     C.SetRate(m_pParameters->GetAreaScanRateType());
     switch (m_pParameters->GetAreaScanRateType()) {
@@ -116,7 +116,7 @@ double CPurelyTemporalAnalysis::MonteCarloProspective() {
   double                        dMaxLogLikelihoodRatio;
 
   try {
-    CPurelyTemporalCluster C(m_pParameters->GetAliveClustersOnly(), m_pData->m_nTimeIntervals,
+    CPurelyTemporalCluster C(m_pParameters->GetIncludeClustersType(), m_pData->m_nTimeIntervals,
                              m_pData->m_nIntervalCut, gpPrintDirection);
     C.SetRate(m_pParameters->GetAreaScanRateType());
     switch (m_pParameters->GetAreaScanRateType()) {
