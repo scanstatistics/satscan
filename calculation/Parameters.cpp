@@ -1,6 +1,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 #include "Parameters.h"
+#include <io.h>
 
 const char*      ANALYSIS_HISTORY_FILE  = "AnalysisHistory.txd";
 
@@ -1342,8 +1343,7 @@ bool CParameters::ValidateDateString(char* szDate, int nDateType) {
         }
       }
     
-      if (m_nPrecision== YEAR || m_nPrecision == MONTH
-          || nScanCount  == 1    || nScanCount   == 2) {
+      if (m_nPrecision== YEAR || m_nPrecision == MONTH || nScanCount  == 1 || nScanCount   == 2) {
         switch(nDateType) {
           case STARTDATE: nDay = 1; break;
           case ENDDATE  : nDay = DaysThisMonth(nYear, nMonth); break;
@@ -1414,20 +1414,17 @@ bool CParameters::ValidateReplications(int nReps) {
 // name to a more appropraite path - AJV 9/16/2002
 bool CParameters::ValidHistoryFileName(const ZdString& sRunHistoryFilename) {
    bool         bValid = false;
-   FILE*        pFile = 0;
 
    try {
       if(!sRunHistoryFilename.GetIsEmpty())
          // in the old parameter file if the name was empty it would interpret the // as the filename which
          // cause an exception and error later on - AJV 9/16/2002
          if(!(sRunHistoryFilename == "\/\/"))
-            if((pFile = fopen(sRunHistoryFilename.GetCString(), "r+")) == NULL)
-               bValid = true;
-      if (pFile)
-         fclose(pFile);
+            if(!access(sRunHistoryFilename.GetCString(), 00))    // check for existence of file
+               if(!access(sRunHistoryFilename.GetCString(), 06)) // check for read and write access
+                  bValid = true;
    }
    catch (ZdException &x) {
-      fclose(pFile);
       x.AddCallpath("ValidHistoryFileName()", "CParameters");
       throw;
    }
