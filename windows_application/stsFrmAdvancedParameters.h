@@ -9,11 +9,16 @@
 #include <ExtCtrls.hpp>
 #include "stsFrmAnalysisParameters.h"
 #include <Dialogs.hpp>
+#include <ComCtrls.hpp>
 //---------------------------------------------------------------------------
 class TfrmAdvancedParameters : public TForm {
 __published:	// IDE-managed Components
         TPanel *pnlButtons;
-        TPanel *pnlClient;
+        TButton *btnOk;
+        TOpenDialog *OpenDialog;
+        TPageControl *PageControl;
+        TTabSheet *tsAdjustmentsTabSheet;
+        TTabSheet *tsOther;
         TGroupBox *grpInputFiles;
         TLabel *Label21;
         TEdit *edtMaxCirclePopulationFilename;
@@ -21,7 +26,6 @@ __published:	// IDE-managed Components
         TGroupBox *grpAnalysis;
         TCheckBox *chkTerminateEarly;
         TGroupBox *grpScanningWindow;
-        TButton *btnOk;
         TCheckBox *chkRestrictTemporalRange;
         TStaticText *stStartRangeTo;
         TEdit *edtStartRangeStartYear;
@@ -30,7 +34,6 @@ __published:	// IDE-managed Components
         TEdit *edtStartRangeEndYear;
         TEdit *edtStartRangeEndMonth;
         TEdit *edtStartRangeEndDay;
-        TOpenDialog *OpenDialog;
         TStaticText *stStartWindowRange;
         TStaticText *stEndWindowRange;
         TEdit *edtEndRangeStartYear;
@@ -41,9 +44,16 @@ __published:	// IDE-managed Components
         TEdit *edtEndRangeEndMonth;
         TEdit *edtEndRangeEndDay;
         TGroupBox *grpOutput;
+        TLabel *lblReportSmallerClusters;
         TCheckBox *chkRestrictReportedClusters;
         TEdit *edtReportClustersSmallerThan;
-        TLabel *lblReportSmallerClusters;
+        TRadioGroup *rdgTemporalTrendAdj;
+        TEdit *edtLogLinear;
+        TStaticText *lblLogLinear;
+        TGroupBox *grpRelativeRiskAdjustment;
+        TLabel *lblRelativeRisksAdjustmentFile;
+        TEdit *edtRelativeRisksAdjustmentFile;
+        TButton *btnBrowseRelativeRisksFile;
         void __fastcall FormKeyPress(TObject *Sender, char &Key);
         void __fastcall chkRestrictTemporalRangeClick(TObject *Sender);
         void __fastcall btnBrowseMaxCirclePopFileClick(TObject *Sender);
@@ -57,13 +67,24 @@ __published:	// IDE-managed Components
         void __fastcall edtEndRangeStartDateExit(TObject *Sender);
         void __fastcall edtStartRangeEndDateExit(TObject *Sender);
         void __fastcall edtEndRangeEndDateExit(TObject *Sender);
+        void __fastcall rdgTemporalTrendAdjClick(TObject *Sender);
+        void __fastcall edtLogLinearExit(TObject *Sender);
+        void __fastcall FloatKeyPress(TObject *Sender, char &Key);
+        void __fastcall btnBrowseRelativeRisksFileClick(TObject *Sender);
+        void __fastcall edtRelativeRisksAdjustmentFileChange(
+          TObject *Sender);
 
   private:
     TfrmAnalysis              & gAnalysisSettings;
     TWinControl               * gpFocusControl;
+    bool                        gbEnableRangeYears;  /** stores enable dictated by main interface */
+    bool                        gbEnableRangeMonths; /** stores enable dictated by main interface */
+    bool                        gbEnableRangeDays;   /** stores enable dictated by main interface */
 
+    TimeTrendAdjustmentType     GetAdjustmentTimeTrendControlType() const;
     void                        Init() {gpFocusControl=0;}
     void                        ParseDate(const std::string& sDate, TEdit& Year, TEdit& Month, TEdit& Day, bool bStartRange);
+    void                        RefreshTemporalOptionsEnables();
     void                        Setup();
     void                        ValidateReportedSpatialClusterSize();
     void                        ValidateScanningWindowRanges();
@@ -71,13 +92,17 @@ __published:	// IDE-managed Components
   public:
     __fastcall TfrmAdvancedParameters(TfrmAnalysis & AnalysisSettings);
 
+    void                        EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage);
+    void                        EnableRelativeRisksGroup(bool bEnable);
     void                        EnableSpatialOutputOptions(bool bEnable);
     void                        EnableTemporalOptions(bool bEnable, bool bEnableRanges);
     void                        SaveParameterSettings();
+    void                        SetAdjustmentsForRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName);
     void                        SetMaximumCirclePopulationFile(const char * sMaximumCirclePopulationFileName);
+    void                        SetRangeDateEnables(bool bYear, bool bMonth, bool bDay);
     void                        SetReportingClustersText(const ZdString& sText);
+    void                        SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                        ShowDialog(TWinControl * pFocusControl=0);
-    static void                 ValidateDate(TEdit& YearControl, TEdit& MonthControl, TEdit& DayControl);
     void                        ValidateInputFilesSettings();
     void                        ValidateScanningWindowSettings();
 };

@@ -30,10 +30,27 @@ void __fastcall TfrmAdvancedParameters::btnBrowseMaxCirclePopFileClick(TObject *
     OpenDialog->FilterIndex = 0;
     OpenDialog->Title = "Select Maximum Circle Population File";
     if (OpenDialog->Execute())
-      gAnalysisSettings.SetMaximumCirclePopulationFile(OpenDialog->FileName.c_str());
+      edtMaxCirclePopulationFilename->Text = OpenDialog->FileName;
   }
   catch (ZdException & x) {
     x.AddCallpath("btnBrowseMaxCirclePopFileClick()","TfrmAdvancedParameters");
+    DisplayBasisException(this, x);
+  }
+}
+
+/** event triggered when selects browse button for adjustment for relative risks file */
+void __fastcall TfrmAdvancedParameters::btnBrowseRelativeRisksFileClick(TObject *Sender) {
+  try {
+    OpenDialog->FileName = "";
+    OpenDialog->DefaultExt = "*.rr";
+    OpenDialog->Filter = "Adjustment For Relative Risks files (*.rr)|*.rr|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog->FilterIndex = 0;
+    OpenDialog->Title = "Select Adjustment For Relative Risks File";
+    if (OpenDialog->Execute())
+      edtRelativeRisksAdjustmentFile->Text = OpenDialog->FileName;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("btnBrowseRelativeRisksFileClick()","TfrmAdvancedParameters");
     DisplayBasisException(this, x);
   }
 }
@@ -46,10 +63,8 @@ void __fastcall TfrmAdvancedParameters::chkRestrictReportedClustersClick(TObject
 
 /** event triggered when user selects restrict range check box */
 void __fastcall TfrmAdvancedParameters::chkRestrictTemporalRangeClick(TObject *Sender) {
-  AnalysisType  eType = gAnalysisSettings.GetAnalysisControlType();
-  
   EnableSpatialOutputOptions(gAnalysisSettings.rdgSpatialOptions->Enabled);
-  EnableTemporalOptions(gAnalysisSettings.rdgTemporalOptions->Enabled, eType == PURELYTEMPORAL || eType == SPACETIME);
+  RefreshTemporalOptionsEnables();
 }
 
 /** event triggered when text of maximum circle edit control changes */
@@ -59,12 +74,17 @@ void __fastcall TfrmAdvancedParameters::edtMaxCirclePopulationFilenameChange(TOb
 
 /** event triggered when end window end ranges year, month or day control is exited */
 void __fastcall TfrmAdvancedParameters::edtEndRangeEndDateExit(TObject *Sender) {
-  ValidateDate(*edtEndRangeEndYear, *edtEndRangeEndMonth, *edtEndRangeEndDay);
+  TfrmAnalysis::ValidateDate(*edtEndRangeEndYear, *edtEndRangeEndMonth, *edtEndRangeEndDay);
 }
 
 /** event triggered when end window start ranges year, month or day control is exited */
 void __fastcall TfrmAdvancedParameters::edtEndRangeStartDateExit(TObject *Sender) {
-  ValidateDate(*edtEndRangeStartYear, *edtEndRangeStartMonth, *edtEndRangeStartDay);
+  TfrmAnalysis::ValidateDate(*edtEndRangeStartYear, *edtEndRangeStartMonth, *edtEndRangeStartDay);
+}
+
+/** event triggered when text of adjustment for relative risks edit control changes */
+void __fastcall TfrmAdvancedParameters::edtRelativeRisksAdjustmentFileChange(TObject *Sender) {
+  edtRelativeRisksAdjustmentFile->Hint = edtRelativeRisksAdjustmentFile->Text;
 }
 
 /** event triggered when 'Report only clusters smaller than ...' edit control is exited */
@@ -91,15 +111,46 @@ void __fastcall TfrmAdvancedParameters::edtReportClustersSmallerThanKeyPress(TOb
 
 /** event triggered when start window end ranges year, month or day control is exited */
 void __fastcall TfrmAdvancedParameters::edtStartRangeEndDateExit(TObject *Sender) {
-  ValidateDate(*edtStartRangeEndYear, *edtStartRangeEndMonth, *edtStartRangeEndDay);
+  TfrmAnalysis::ValidateDate(*edtStartRangeEndYear, *edtStartRangeEndMonth, *edtStartRangeEndDay);
 }
 
 /** event triggered when start window start ranges year, month or day control is exited */
 void __fastcall TfrmAdvancedParameters::edtStartRangeStartDateExit(TObject *Sender) {
-  ValidateDate(*edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay);
+  TfrmAnalysis::ValidateDate(*edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay);
 }
 
-/** enables output options controls */
+/** enables or disables the temporal time trend adjustment control group */
+void TfrmAdvancedParameters::EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage) {
+  TimeTrendAdjustmentType eTimeTrendAdjustmentType(GetAdjustmentTimeTrendControlType());
+
+  // trump control enables
+  bTimeStratified &= bEnable;
+  bLogYearPercentage &= bEnable;
+
+  rdgTemporalTrendAdj->Enabled = bEnable;
+
+  rdgTemporalTrendAdj->Controls[1]->Enabled = bTimeStratified;
+  if (bEnable && !bTimeStratified && eTimeTrendAdjustmentType == STRATIFIED_RANDOMIZATION)
+    SetTemporalTrendAdjustmentControl(NOTADJUSTED);
+
+  rdgTemporalTrendAdj->Controls[2]->Enabled = bLogYearPercentage;
+  lblLogLinear->Enabled = bLogYearPercentage;
+  edtLogLinear->Enabled = bLogYearPercentage && eTimeTrendAdjustmentType == LOGLINEAR_PERC;
+  edtLogLinear->Color = edtLogLinear->Enabled ? clWindow : clInactiveBorder;
+  if (bEnable && !bLogYearPercentage && eTimeTrendAdjustmentType == LOGLINEAR_PERC)
+    SetTemporalTrendAdjustmentControl(NOTADJUSTED);
+}
+
+/** enables relative risks input options controls */
+void TfrmAdvancedParameters::EnableRelativeRisksGroup(bool bEnable) {
+  grpRelativeRiskAdjustment->Enabled = bEnable;
+  lblRelativeRisksAdjustmentFile->Enabled = bEnable;
+  edtRelativeRisksAdjustmentFile->Enabled = bEnable;
+  edtRelativeRisksAdjustmentFile->Color = edtRelativeRisksAdjustmentFile->Enabled ? clWindow : clInactiveBorder;
+  btnBrowseRelativeRisksFile->Enabled = bEnable;
+}
+
+/** enables spatial output options controls */
 void TfrmAdvancedParameters::EnableSpatialOutputOptions(bool bEnable) {
   chkRestrictReportedClusters->Enabled = bEnable;
   edtReportClustersSmallerThan->Enabled = bEnable && chkRestrictReportedClusters->Checked;
@@ -112,33 +163,47 @@ void TfrmAdvancedParameters::EnableTemporalOptions(bool bEnable, bool bEnableRan
   chkRestrictTemporalRange->Enabled = bEnable && bEnableRanges;
   stStartWindowRange->Enabled = bEnable && bEnableRanges;
   stStartRangeTo->Enabled = bEnable && bEnableRanges;
-  edtStartRangeStartYear->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked;
+  edtStartRangeStartYear->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeYears;
   edtStartRangeStartYear->Color = edtStartRangeStartYear->Enabled ? clWindow : clInactiveBorder;
-  edtStartRangeStartMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked;
+  edtStartRangeStartMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeMonths;
   edtStartRangeStartMonth->Color = edtStartRangeStartMonth->Enabled ? clWindow : clInactiveBorder;
-  edtStartRangeStartDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked;
+  if (!edtStartRangeStartMonth->Enabled) edtStartRangeStartMonth->Text = 1; 
+  edtStartRangeStartDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeDays;
   edtStartRangeStartDay->Color = edtStartRangeStartDay->Enabled ? clWindow : clInactiveBorder;
-  edtStartRangeEndYear->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked;
+  if (!edtStartRangeStartDay->Enabled) edtStartRangeStartDay->Text = 1; 
+  edtStartRangeEndYear->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeYears;
   edtStartRangeEndYear->Color = edtStartRangeEndYear->Enabled ? clWindow : clInactiveBorder;
-  edtStartRangeEndMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked;
+  edtStartRangeEndMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeMonths;
   edtStartRangeEndMonth->Color = edtStartRangeEndMonth->Enabled ? clWindow : clInactiveBorder;
-  edtStartRangeEndDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked;
+  if (!edtStartRangeEndMonth->Enabled) edtStartRangeEndMonth->Text = 1; 
+  edtStartRangeEndDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeDays;
   edtStartRangeEndDay->Color = edtStartRangeEndDay->Enabled ? clWindow : clInactiveBorder;
+  if (!edtStartRangeEndDay->Enabled) edtStartRangeEndDay->Text = 1; 
 
   stEndWindowRange->Enabled = bEnable && bEnableRanges;
   stEndRangeTo->Enabled = bEnable && bEnableRanges;
-  edtEndRangeStartYear->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked;
+  edtEndRangeStartYear->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeYears;
   edtEndRangeStartYear->Color = edtEndRangeStartYear->Enabled ? clWindow : clInactiveBorder;
-  edtEndRangeStartMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked;
+  edtEndRangeStartMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeMonths;
   edtEndRangeStartMonth->Color = edtEndRangeStartMonth->Enabled ? clWindow : clInactiveBorder;
-  edtEndRangeStartDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked;
+  if (!edtEndRangeStartMonth->Enabled) edtEndRangeStartMonth->Text = 12;
+  edtEndRangeStartDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeDays;
   edtEndRangeStartDay->Color = edtEndRangeStartDay->Enabled ? clWindow : clInactiveBorder;
-  edtEndRangeEndYear->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked;
+  if (!edtEndRangeStartDay->Enabled) edtEndRangeStartDay->Text = DaysThisMonth(atoi(edtEndRangeStartYear->Text.c_str()), atoi(edtEndRangeStartMonth->Text.c_str())); 
+  edtEndRangeEndYear->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeYears;
   edtEndRangeEndYear->Color = edtEndRangeEndYear->Enabled ? clWindow : clInactiveBorder;
-  edtEndRangeEndMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked;
+  edtEndRangeEndMonth->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeMonths;
   edtEndRangeEndMonth->Color = edtEndRangeEndMonth->Enabled ? clWindow : clInactiveBorder;
-  edtEndRangeEndDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked;
+  if (!edtEndRangeEndMonth->Enabled) edtEndRangeEndMonth->Text = 12; 
+  edtEndRangeEndDay->Enabled = bEnable && bEnableRanges && chkRestrictTemporalRange->Checked && gbEnableRangeDays;
   edtEndRangeEndDay->Color = edtEndRangeEndDay->Enabled ? clWindow : clInactiveBorder;
+  if (!edtEndRangeStartDay->Enabled) edtEndRangeStartDay->Text = DaysThisMonth(atoi(edtEndRangeEndYear->Text.c_str()), atoi(edtEndRangeStartDay->Text.c_str()));
+}
+
+/** event triggered when key pressed for controls that can contain real numbers. */
+void __fastcall TfrmAdvancedParameters::FloatKeyPress(TObject *Sender, char &Key) {
+  if (!strchr("-0123456789.\b",Key))
+    Key = 0;
 }
 
 /** event triggered when user presses key -- cancels dialog if escape key pressed */
@@ -151,6 +216,19 @@ void __fastcall TfrmAdvancedParameters::FormKeyPress(TObject *Sender, char &Key)
 void __fastcall TfrmAdvancedParameters::FormShow(TObject *Sender) {
   if (gpFocusControl)
    gpFocusControl->SetFocus();
+}
+
+/** returns adjustment for time trend type for control index */
+TimeTrendAdjustmentType TfrmAdvancedParameters::GetAdjustmentTimeTrendControlType() const {
+  TimeTrendAdjustmentType eReturn;
+
+  switch (rdgTemporalTrendAdj->ItemIndex) {
+    case 0  : eReturn = NOTADJUSTED; break;
+    case 1  : eReturn = STRATIFIED_RANDOMIZATION; break;
+    case 2  : eReturn = LOGLINEAR_PERC; break;
+    default : ZdGenerateException("Unknown index type '%d'.", "GetAdjustmentTimeTrendControlType()", rdgTemporalTrendAdj->ItemIndex);
+  }
+  return eReturn;
 }
 
 /** event triggered when key pressed for control that can contain natural numbers */
@@ -188,12 +266,21 @@ void TfrmAdvancedParameters::ParseDate(const std::string& sDate, TEdit& Year, TE
   }
 }
 
+/** */
+void TfrmAdvancedParameters::RefreshTemporalOptionsEnables() {
+  AnalysisType  eType = gAnalysisSettings.GetAnalysisControlType();
+  EnableTemporalOptions(gAnalysisSettings.rdgTemporalOptions->Enabled, eType == PURELYTEMPORAL || eType == SPACETIME);
+}
+
 /** parameter settings to parameters class */
 void TfrmAdvancedParameters::SaveParameterSettings() {
   CParameters & ref = gAnalysisSettings.gParameters;
   ZdString      sString;
 
   try {
+    ref.SetRelativeRisksFilename(edtRelativeRisksAdjustmentFile->Text.c_str(), false);
+    ref.SetTimeTrendAdjustmentType(rdgTemporalTrendAdj->Enabled ? GetAdjustmentTimeTrendControlType() : NOTADJUSTED);
+    ref.SetTimeTrendAdjustmentPercentage(atof(edtLogLinear->Text.c_str()));
     ref.SetMaxCirclePopulationFileName(edtMaxCirclePopulationFilename->Text.c_str(), false, true);
     ref.SetTerminateSimulationsEarly(chkTerminateEarly->Checked);
     ref.SetRestrictReportedClusters(chkRestrictReportedClusters->Enabled && chkRestrictReportedClusters->Checked);
@@ -227,8 +314,21 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
 }
 
 /** Sets special population filename in interface and parameters class. */
+void TfrmAdvancedParameters::SetAdjustmentsForRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName) {
+  edtRelativeRisksAdjustmentFile->Text = sAdjustmentsForRelativeRisksFileName;
+}
+
+/** Sets special population filename in interface and parameters class. */
 void TfrmAdvancedParameters::SetMaximumCirclePopulationFile(const char * sMaximumCirclePopulationFileName) {
   edtMaxCirclePopulationFilename->Text = sMaximumCirclePopulationFileName;
+}
+
+/** */
+void TfrmAdvancedParameters::SetRangeDateEnables(bool bYear, bool bMonth, bool bDay) {
+  gbEnableRangeYears = bYear;
+  gbEnableRangeMonths = bMonth;
+  gbEnableRangeDays = bDay;
+  RefreshTemporalOptionsEnables();
 }
 
 /** sets static label that describes what the reporting clusters will be limited as */
@@ -236,11 +336,28 @@ void TfrmAdvancedParameters::SetReportingClustersText(const ZdString& sText) {
   lblReportSmallerClusters->Caption = sText.GetCString();
 }
 
+/** Sets time trend adjustment control's index */
+void TfrmAdvancedParameters::SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType) {
+  switch (eTimeTrendAdjustmentType) {
+    case NOTADJUSTED               : rdgTemporalTrendAdj->ItemIndex = 0; break;
+    case NONPARAMETRIC             : rdgTemporalTrendAdj->ItemIndex = 1; break;
+    case LOGLINEAR_PERC            : rdgTemporalTrendAdj->ItemIndex = 2; break;
+    case STRATIFIED_RANDOMIZATION  : rdgTemporalTrendAdj->ItemIndex = 1; break;
+    default                        : rdgTemporalTrendAdj->ItemIndex = 0;
+  }
+}
+
 /** internal setup function */
 void TfrmAdvancedParameters::Setup() {
   const CParameters & ref = gAnalysisSettings.gParameters;
 
   try {
+    edtRelativeRisksAdjustmentFile->Text = ref.GetRelativeRisksFilename().c_str();
+    SetTemporalTrendAdjustmentControl(ref.GetTimeTrendAdjustmentType());
+    if (ref.GetTimeTrendAdjustmentPercentage() <= -100)
+      edtLogLinear->Text = 0;
+    else
+      edtLogLinear->Text = ref.GetTimeTrendAdjustmentPercentage();
     edtMaxCirclePopulationFilename->Text = ref.GetMaxCirclePopulationFileName().c_str();
     chkTerminateEarly->Checked = ref.GetTerminateSimulationsEarly();
     edtReportClustersSmallerThan->Text = ref.GetMaximumReportedGeoClusterSize();
@@ -263,48 +380,23 @@ void TfrmAdvancedParameters::Setup() {
 
 /** sets control to focus when form shows then shows form modal */
 void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl) {
-  gpFocusControl = pFocusControl;
+  bool          bFound=false;
+  int           i;      
+
+  for (i=0; i < PageControl->PageCount && !bFound; ++i) {
+     if (PageControl->Pages[i]->ContainsControl(pFocusControl)) {
+       PageControl->ActivePage = PageControl->Pages[i];
+       gpFocusControl = pFocusControl;
+       bFound=true;
+     }
+  }
+
+  if (!bFound) {
+    gpFocusControl=0;
+    PageControl->ActivePage = PageControl->Pages[0];
+  }
+
   ShowModal();
-}
-
-/** validates date controls represented by three passed edit controls - prevents an invalid date */
-void TfrmAdvancedParameters::ValidateDate(TEdit& YearControl, TEdit& MonthControl, TEdit& DayControl) {
-  int   iDay, iMonth, iYear, iDaysInMonth;
-
-  //first check year
-  if (YearControl.Text.IsEmpty())
-    YearControl.Undo();
-  else {
-    //set year to a valid setting if out of valid range
-    iYear = atoi(YearControl.Text.c_str());
-    if (iYear < MIN_YEAR)
-      YearControl.Text = MIN_YEAR;
-    else if (iYear > MAX_YEAR)
-      YearControl.Text = MAX_YEAR;
-  }
-  //now check month
-  if (MonthControl.Text.IsEmpty())
-    MonthControl.Undo();
-  else {
-    //set month to a valid setting if out of valid range
-    iMonth = atoi(MonthControl.Text.c_str());
-    if (iMonth < 1)
-      MonthControl.Text = 1;
-    else if (iMonth > 12)
-      MonthControl.Text = 12;
-  }
-  //now check day
-  if (DayControl.Text.IsEmpty())
-    DayControl.Undo();
-  else {
-    iDaysInMonth = DaysThisMonth(atoi(YearControl.Text.c_str()), atoi(MonthControl.Text.c_str()));
-    //set month to a valid setting if out of valid range
-    iDay = atoi(DayControl.Text.c_str());
-    if (iDay < 1)
-      DayControl.Text = 1;
-    else if (iDay > iDaysInMonth)
-      DayControl.Text = iDaysInMonth;
-  }
 }
 
 /** validates input file settings - throws exception */
@@ -412,4 +504,25 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
 
   throw theException;
 }
+
+
+/** event triggered when 'Adjustment for time trend' type control clicked */
+void __fastcall TfrmAdvancedParameters::rdgTemporalTrendAdjClick(TObject *Sender) {
+  switch (GetAdjustmentTimeTrendControlType()) {
+    case LOGLINEAR_PERC : edtLogLinear->Enabled = true;
+                          edtLogLinear->Color = clWindow;
+                          break;
+    default             : edtLogLinear->Enabled = false;
+                          edtLogLinear->Color = clInactiveBorder;
+  }
+}
+
+
+/** */
+void __fastcall TfrmAdvancedParameters::edtLogLinearExit(TObject *Sender) {
+  if (edtLogLinear->Text.IsEmpty() || atof(edtLogLinear->Text.c_str()) <= -100)
+    edtLogLinear->Text = 0;
+}
+
+
 
