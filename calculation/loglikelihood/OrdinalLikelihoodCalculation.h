@@ -8,7 +8,7 @@
 /** Ordinal log likelihood calculator. */
 class OrdinalLikelihoodCalculator : public AbstractLikelihoodCalculator {
   private:
-    RandomNumberGenerator	gRandomNumberGenerator;
+    mutable RandomNumberGenerator	gRandomNumberGenerator;
 
   public:
     OrdinalLikelihoodCalculator(const CSaTScanData& Data);
