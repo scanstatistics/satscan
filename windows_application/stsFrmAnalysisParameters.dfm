@@ -422,7 +422,7 @@ object frmAnalysis: TfrmAnalysis
         Left = 395
         Top = 328
         Width = 90
-        Height = 25
+        Height = 24
         Hint = 'Advanced Input Features'
         Caption = 'Advanced...'
         Default = True
@@ -451,7 +451,7 @@ object frmAnalysis: TfrmAnalysis
         NumGlyphs = 2
       end
       object edtPopFileName: TEdit
-        Left = 15
+        Left = 16
         Top = 189
         Width = 284
         Height = 21
@@ -628,7 +628,7 @@ object frmAnalysis: TfrmAnalysis
         Left = 395
         Top = 328
         Width = 90
-        Height = 25
+        Height = 24
         Hint = 'Advanced Input Features'
         Caption = 'Advanced...'
         Default = True
@@ -880,7 +880,7 @@ object frmAnalysis: TfrmAnalysis
         Left = 395
         Top = 328
         Width = 90
-        Height = 25
+        Height = 24
         Hint = 'Advanced Analysis Features'
         Caption = 'Advanced...'
         Default = True
@@ -912,7 +912,7 @@ object frmAnalysis: TfrmAnalysis
         Left = 395
         Top = 328
         Width = 90
-        Height = 25
+        Height = 24
         Hint = 'Advanced Analysis Features'
         Caption = 'Advanced...'
         Default = True
@@ -928,7 +928,7 @@ object frmAnalysis: TfrmAnalysis
       ImageIndex = 4
       object gbxAdditionalOutputFiles: TGroupBox
         Left = 8
-        Top = 68
+        Top = 59
         Width = 477
         Height = 153
         Caption = 'Additional Optional Output Files:'
@@ -1074,8 +1074,8 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtResultFile: TEdit
           Left = 8
-          Top = 24
-          Width = 337
+          Top = 26
+          Width = 391
           Height = 21
           AutoSelect = False
           ParentShowHint = False
@@ -1084,8 +1084,8 @@ object frmAnalysis: TfrmAnalysis
           OnChange = edtResultFileChange
         end
         object btnResultFileBrowse: TButton
-          Left = 357
-          Top = 24
+          Left = 406
+          Top = 26
           Width = 23
           Height = 21
           Hint = 'Browse for results file ...'
@@ -1106,7 +1106,7 @@ object frmAnalysis: TfrmAnalysis
         Left = 395
         Top = 328
         Width = 90
-        Height = 25
+        Height = 24
         Hint = 'Advanced Output Features'
         Caption = 'Advanced...'
         Default = True
@@ -1138,7 +1138,7 @@ object frmAnalysis: TfrmAnalysis
         Left = 395
         Top = 328
         Width = 90
-        Height = 25
+        Height = 24
         Hint = 'Advanced Output Features'
         Caption = 'Advanced...'
         Default = True
