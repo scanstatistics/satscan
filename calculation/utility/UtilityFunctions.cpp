@@ -87,11 +87,9 @@ StringParser::~StringParser(){
 }
 
 void StringParser::ThrowAsciiException() {
-  std::string s;
-
-  SSGenerateException("Error: The %s contains data that is not ASCII formatted.\n"
-                      "       Please see 'ASCII Input File Format' in the user guide for help.\n",
-                      "CheckIsASCII()", gPrint.GetImpliedFileTypeString().c_str());
+  GenerateResolvableException("Error: The %s contains data that are not ASCII formatted.\n"
+                              "       Please see 'ASCII Input File Format' in the user guide for help.\n",
+                              "CheckIsASCII()", gPrint.GetImpliedFileTypeString().c_str());
 }
 
 /** Returns whether string has words. */
