@@ -413,7 +413,7 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, char* s
   float         fUnitsInOccurrence, fYears, fMonths, fDays, fIntervals, fAdjustedP_Value;
 
   try {
-    if (Data.m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME && Data.m_pParameters->GetNumReplicationsRequested() > 99) {
+    if (Data.m_pParameters->GetIsProspectiveAnalysis() && Data.m_pParameters->GetNumReplicationsRequested() > 99) {
       fprintf(fp, "%sNull Occurrence.......: ", szSpacesOnLeft);
       fIntervals = Data.m_nTimeIntervals - Data.m_nProspectiveIntervalStart + 1;
       fAdjustedP_Value = 1 - pow(1 - GetPVal(Data.m_pParameters->GetNumReplicationsRequested()), 1/fIntervals);

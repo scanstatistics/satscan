@@ -129,10 +129,11 @@ measure_t TimeIntervalRange::GetMeasureForTract(const CCluster & Cluster, tract_
 /** internal setup function */
 void TimeIntervalRange::Setup(const CSaTScanData& Data) {
   switch(Data.m_pParameters->GetAnalysisType()) {
-    case PROSPECTIVESPACETIME : giStartRange_Start = 0;
-                                giStartRange_End = Data.m_nTimeIntervals;
-                                giEndRange_Start = Data.m_nProspectiveIntervalStart;
-                                giEndRange_End = Data.m_nTimeIntervals; break;
+    case PROSPECTIVEPURELYTEMPORAL :
+    case PROSPECTIVESPACETIME      : giStartRange_Start = 0;
+                                     giStartRange_End = Data.m_nTimeIntervals;
+                                     giEndRange_Start = Data.m_nProspectiveIntervalStart;
+                                     giEndRange_End = Data.m_nTimeIntervals; break;
     case PURELYTEMPORAL :
     case SPACETIME      : switch (Data.m_pParameters->GetIncludeClustersType()) {
                             case ALLCLUSTERS     : giStartRange_Start = 0;

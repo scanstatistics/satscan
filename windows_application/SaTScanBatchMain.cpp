@@ -52,34 +52,36 @@ int main(int argc, char *argv[]) {
     }
 
     switch (Parameters.GetAnalysisType()) {
-      case PURELYSPATIAL        : pData = new CPurelySpatialData(&Parameters, &ConsolePrint); break;
-      case PURELYTEMPORAL       : pData = new CPurelyTemporalData(&Parameters, &ConsolePrint); break;
-      case SPACETIME            : pData = new CSpaceTimeData(&Parameters, &ConsolePrint); break;
-      case PROSPECTIVESPACETIME : pData = new CSpaceTimeData(&Parameters, &ConsolePrint); break;
-      case SPATIALVARTEMPTREND  : pData = new CSVTTData(&Parameters, &ConsolePrint); break;
-      default                   : ZdGenerateException("Invalid Analysis Type Encountered.", "main(int,char*)");
+      case PURELYSPATIAL             : pData = new CPurelySpatialData(&Parameters, &ConsolePrint); break;
+      case PROSPECTIVEPURELYTEMPORAL :
+      case PURELYTEMPORAL            : pData = new CPurelyTemporalData(&Parameters, &ConsolePrint); break;
+      case SPACETIME                 :
+      case PROSPECTIVESPACETIME      : pData = new CSpaceTimeData(&Parameters, &ConsolePrint); break;
+      case SPATIALVARTEMPTREND       : pData = new CSVTTData(&Parameters, &ConsolePrint); break;
+      default : ZdGenerateException("Invalid Analysis Type Encountered.", "main(int,char*)");
     };
     pData->ReadDataFromFiles();
     switch (Parameters.GetAnalysisType()) {
-      case PURELYSPATIAL        : if (Parameters.GetRiskType() == STANDARDRISK)
-                                    pAnalysis = new CPurelySpatialAnalysis(&Parameters, pData, &ConsolePrint);
-                                  else if (Parameters.GetRiskType() == MONOTONERISK)
-                                    pAnalysis = new CPSMonotoneAnalysis(&Parameters, pData, &ConsolePrint);
-                                  break;
-      case PURELYTEMPORAL       : pAnalysis = new CPurelyTemporalAnalysis(&Parameters, pData, &ConsolePrint);
-                                  break;
-      case SPACETIME            : 
-      case PROSPECTIVESPACETIME : if (Parameters.GetIncludePurelySpatialClusters() && Parameters.GetIncludePurelyTemporalClusters())
-                                    pAnalysis = new C_ST_PS_PT_Analysis(&Parameters, pData, &ConsolePrint);
-                                  else if (Parameters.GetIncludePurelySpatialClusters())
-                                    pAnalysis = new C_ST_PS_Analysis(&Parameters, pData, &ConsolePrint);
-                                  else if (Parameters.GetIncludePurelyTemporalClusters())
-                                    pAnalysis = new C_ST_PT_Analysis(&Parameters, pData, &ConsolePrint);
-                                  else
-                                    pAnalysis = new CSpaceTimeAnalysis(&Parameters, pData, &ConsolePrint);
-                                  break;
-       case SPATIALVARTEMPTREND : pAnalysis = new CSpatialVarTempTrendAnalysis(&Parameters, pData, &ConsolePrint); break;
-       default                  : ZdGenerateException("Invalid Analysis Type Encountered.", "main(int,char*)");
+      case PURELYSPATIAL             : if (Parameters.GetRiskType() == STANDARDRISK)
+                                         pAnalysis = new CPurelySpatialAnalysis(&Parameters, pData, &ConsolePrint);
+                                       else if (Parameters.GetRiskType() == MONOTONERISK)
+                                         pAnalysis = new CPSMonotoneAnalysis(&Parameters, pData, &ConsolePrint);
+                                       break;
+      case PURELYTEMPORAL            :
+      case PROSPECTIVEPURELYTEMPORAL : pAnalysis = new CPurelyTemporalAnalysis(&Parameters, pData, &ConsolePrint);
+                                       break;
+      case SPACETIME                 :
+      case PROSPECTIVESPACETIME      : if (Parameters.GetIncludePurelySpatialClusters() && Parameters.GetIncludePurelyTemporalClusters())
+                                         pAnalysis = new C_ST_PS_PT_Analysis(&Parameters, pData, &ConsolePrint);
+                                       else if (Parameters.GetIncludePurelySpatialClusters())
+                                         pAnalysis = new C_ST_PS_Analysis(&Parameters, pData, &ConsolePrint);
+                                       else if (Parameters.GetIncludePurelyTemporalClusters())
+                                         pAnalysis = new C_ST_PT_Analysis(&Parameters, pData, &ConsolePrint);
+                                       else
+                                         pAnalysis = new CSpaceTimeAnalysis(&Parameters, pData, &ConsolePrint);
+                                       break;
+       case SPATIALVARTEMPTREND      : pAnalysis = new CSpatialVarTempTrendAnalysis(&Parameters, pData, &ConsolePrint); break;
+       default : ZdGenerateException("Invalid Analysis Type Encountered.", "main(int,char*)");
     }
     if (! pAnalysis->Execute(RunTime))
       SSGenerateException("\nProblem(s) occurred that caused the analysis to stop.\n", "main(int,char*)");

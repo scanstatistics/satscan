@@ -122,28 +122,22 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
 // pre :  eAnalysisType is contained in (PURELYSPATIAL, PURELYTEMPORAL, SPACETIME, PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE)
 // post : string will be assigned a formatted value based on iType
 void stsRunHistoryFile::GetAnalysisTypeString(ZdString& sTempValue, AnalysisType eAnalysisType) {
-   try {
-      switch(eAnalysisType) {
-         case PURELYSPATIAL :
-            sTempValue = "Purely Spatial"; break;
-         case PURELYTEMPORAL :
-            sTempValue = "Purely Temporal"; break;
-         case SPACETIME :
-            sTempValue = "Space Time";  break;
-         case PROSPECTIVESPACETIME :
-            sTempValue = "Prospective Space Time"; break;
-         case PURELYSPATIALMONOTONE :
-            sTempValue = "Purely Spatial Monotone"; break;
-         case SPATIALVARTEMPTREND :
-            sTempValue = "Spatial Variation/Temporal Trend"; break;
-         default :
-            ZdException::GenerateNotification("Invalid analysis type in the run history file.", "stsRunHistoryFile");   
-      }
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetAnalysisTypeString()", "stsRunHistoryFile");
-      throw;
-   }
+  try {
+    switch(eAnalysisType) {
+      case PURELYSPATIAL             : sTempValue = "Purely Spatial"; break;
+      case PURELYTEMPORAL            : sTempValue = "Purely Temporal"; break;
+      case SPACETIME                 : sTempValue = "Space Time";  break;
+      case PROSPECTIVESPACETIME      : sTempValue = "Prospective Space Time"; break;
+      case PURELYSPATIALMONOTONE     : sTempValue = "Purely Spatial Monotone"; break;
+      case SPATIALVARTEMPTREND       : sTempValue = "Spatial Variation/Temporal Trend"; break;
+      case PROSPECTIVEPURELYTEMPORAL : sTempValue = "Prospective Purely Temporal"; break;
+      default : ZdException::GenerateNotification("Invalid analysis type in the run history file.", "stsRunHistoryFile");
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetAnalysisTypeString()", "stsRunHistoryFile");
+    throw;
+  }
 }
 
 // converts the iPrecision into a legible string for printing
@@ -176,7 +170,7 @@ void stsRunHistoryFile::GetCasePrecisionString(ZdString& sTempValue, int iPrecis
 //       "true" or "false" string
 void stsRunHistoryFile::GetIncludeClustersTypeString(ZdString& sTempValue, AnalysisType eAnalysisType, IncludeClustersType eIncludeClustersType) {
    try {
-      if (eAnalysisType == PURELYSPATIAL || eAnalysisType == PROSPECTIVESPACETIME)
+      if (eAnalysisType == PURELYSPATIAL || eAnalysisType == PROSPECTIVESPACETIME || eAnalysisType == PROSPECTIVEPURELYTEMPORAL)
          sTempValue = "n/a";
       else
          sTempValue = (eIncludeClustersType == ALIVECLUSTERS ? "true" : "false");

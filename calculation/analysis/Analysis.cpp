@@ -691,7 +691,7 @@ void CAnalysis::PerformSimulations() {
 
         for (iSimulationNumber=1; (iSimulationNumber <= m_pParameters->GetNumReplicationsRequested()) && !gpPrintDirection->GetIsCanceled(); iSimulationNumber++) {
           m_pData->MakeData(iSimulationNumber);
-          r = (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME) ? MonteCarloProspective() : MonteCarlo();
+          r = (m_pParameters->GetIsProspectiveAnalysis()) ? MonteCarloProspective() : MonteCarlo();
           UpdateTopClustersRank(r);
           SimRatios.AddRatio(r);
           UpdatePowerCounts(r);

@@ -38,7 +38,7 @@ CCluster* CPurelyTemporalAnalysis::GetTopCluster(tract_t nCenter) {
 
   try {
     // if Prospective Space-Time then Alive Clusters Only.
-    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+    if (m_pParameters->GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)
       eIncludeClustersType = ALIVECLUSTERS;
     else
       eIncludeClustersType = m_pParameters->GetIncludeClustersType();
@@ -100,7 +100,7 @@ double CPurelyTemporalAnalysis::MonteCarloProspective() {
   double                        dMaxLogLikelihoodRatio;
 
   try {
-    CPurelyTemporalCluster C(m_pParameters->GetIncludeClustersType(), *m_pData, *gpPrintDirection);
+    CPurelyTemporalCluster C(ALLCLUSTERS, *m_pData, *gpPrintDirection);
     C.SetRate(m_pParameters->GetAreaScanRateType());
     switch (m_pParameters->GetAreaScanRateType()) {
       case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
