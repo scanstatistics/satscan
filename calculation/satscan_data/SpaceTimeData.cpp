@@ -10,7 +10,7 @@
 #include "SurvivalModel.h"
 #include "RankModel.h"
 
-/** constructor */
+/** class constructor */
 CSpaceTimeData::CSpaceTimeData(const CParameters* pParameters, BasePrint *pPrintDirection)
                :CSaTScanData(pParameters, pPrintDirection) {
   try {
@@ -22,10 +22,13 @@ CSpaceTimeData::CSpaceTimeData(const CParameters* pParameters, BasePrint *pPrint
   }
 }
 
-/** desctructor */
+/** class destructor */
 CSpaceTimeData::~CSpaceTimeData() {}
 
-void CSpaceTimeData::CalculateMeasure(RealDataStream & thisStream) {
+/** Calls base class CSaTScanData::CalculateMeasure(). If purely temporal
+    clusters were requested, ensures that each data streams' corresponding
+    temporal data structures are allocated and set. */
+void CSpaceTimeData::CalculateMeasure(RealDataStream& thisStream) {
   try {
     CSaTScanData::CalculateMeasure(thisStream);
     if (m_pParameters->GetIncludePurelyTemporalClusters())
@@ -53,6 +56,9 @@ void CSpaceTimeData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
   }
 }
 
+/** Calls base class CSaTScanData::ReadDataFromFiles().If purely temporal
+    clusters were requested, ensures that each data streams' corresponding
+    data structures are allocated and set. */
 void CSpaceTimeData::ReadDataFromFiles() {
   try {
     CSaTScanData::ReadDataFromFiles();
@@ -65,27 +71,26 @@ void CSpaceTimeData::ReadDataFromFiles() {
   }
 }
 
-void CSpaceTimeData::SetIntervalCut()
-{
-   try
-      {
-      CSaTScanData::SetIntervalCut();
-
-      /* Avoids double calculations of the loglikelihood when IPS==1 and     */
-      /* IntervalCut==nTimeIntervals. Increases speed in functions Cluster2() */
-      /* and Montercarlo2().                                                 */
-      if (m_pParameters->GetIncludePurelySpatialClusters())
-         if (m_nTimeIntervals == m_nIntervalCut)
-            m_nIntervalCut--;
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("SetIntervalCut()", "CSpaceTimeData");
-      throw;
-      }
+/** Calls base class method CSaTScanData::SetIntervalCut() to calculate the
+    maximum temporal cluster size in terms of time interval slices. Please see
+    documentation cotained in function for further explain of derived functions
+    other tasks. */
+void CSpaceTimeData::SetIntervalCut() {
+  try {
+    CSaTScanData::SetIntervalCut();
+    if (m_pParameters->GetIncludePurelySpatialClusters() && m_nTimeIntervals == m_nIntervalCut)
+      //This code supposedly prevents calculating a purely temporal cluster twice, once
+      //expliciatly by user's request; another when the maximum temporal window is equal
+      //to the number of time interval slices. I'm not sure if the latter is possible.
+      m_nIntervalCut--;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetIntervalCut()","CSpaceTimeData");
+    throw;
+  }
 }
 
-/** allocates probability model */
+/** Allocates probability model object.  */
 void CSpaceTimeData::SetProbabilityModel() {
   try {
     switch (m_pParameters->GetProbabiltyModelType()) {
