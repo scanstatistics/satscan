@@ -1,8 +1,7 @@
 //---------------------------------------------------------------------------
-#include "xbDlgException.h"      // curious but for some reason this is needed here AJV 9/5/2002
+//#include "xbDlgException.h"      // curious but for some reason this is needed here AJV 9/5/2002
 
 #include "stsSaTScan.h"
-#include "DBFFile.h"		//need for registration of filetype.  Maybe it should go in stsSaTScan.h ?
 #pragma hdrstop
 //---------------------------------------------------------------------------
 
@@ -14,7 +13,6 @@ USEFORM("stsFrmAnalysisRun.cpp", frmAnalysisRun);
 USEUNIT("stsUtilityFunctions.cpp");
 USEUNIT("stsCalculationThread.cpp");
 USEUNIT("stsPrintWindow.cpp");
-USEFORM("stsDlgException.cpp", DlgException);
 USEFORM("stsFrmOutPutViewer.cpp", frmOutputViewer);
 USEUNIT("..\calculation\utility\UtilityFunctions.cpp");
 USEUNIT("..\calculation\utility\JulianDates.cpp");
