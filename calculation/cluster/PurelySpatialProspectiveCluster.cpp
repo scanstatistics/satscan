@@ -5,7 +5,7 @@
 
 /** Purely spatial cluster to be used in simulations of prospective analysis.*/
 
-
+/** constructor */
 CPurelySpatialProspectiveCluster::CPurelySpatialProspectiveCluster(const CSaTScanData & Data, BasePrint *pPrintDirection)
                                  :CCluster(pPrintDirection) {
   try {
@@ -18,6 +18,7 @@ CPurelySpatialProspectiveCluster::CPurelySpatialProspectiveCluster(const CSaTSca
   }
 }
 
+/** copy constructor */
 CPurelySpatialProspectiveCluster::CPurelySpatialProspectiveCluster(const CPurelySpatialProspectiveCluster& rhs)
                                  :CCluster(rhs.gpPrintDirection) {
   try {
@@ -31,6 +32,7 @@ CPurelySpatialProspectiveCluster::CPurelySpatialProspectiveCluster(const CPurely
   }
 }
 
+/** destructor */
 CPurelySpatialProspectiveCluster::~CPurelySpatialProspectiveCluster() {
   try {
     free(m_pCumCases);
@@ -39,49 +41,53 @@ CPurelySpatialProspectiveCluster::~CPurelySpatialProspectiveCluster() {
   catch(...){}
 }
 
+/** overloaded assignment operator */
 CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator=(const CPurelySpatialProspectiveCluster& cluster) {
-  m_Center         = cluster.m_Center;
-  m_nCases         = cluster.m_nCases ;
-  m_nMeasure       = cluster.m_nMeasure;
-  m_nTracts        = cluster.m_nTracts;
-  m_nRatio         = cluster.m_nRatio;
-  m_nLogLikelihood = cluster.m_nLogLikelihood;
-  m_nRank          = cluster.m_nRank;
-  m_DuczmalCorrection = cluster.m_DuczmalCorrection;
-  m_nFirstInterval = cluster.m_nFirstInterval;
-  m_nLastInterval  = cluster.m_nLastInterval;
-  m_nStartDate     = cluster.m_nStartDate;
-  m_nEndDate       = cluster.m_nEndDate;
-  m_nTotalIntervals = cluster.m_nTotalIntervals;
+  m_Center                      = cluster.m_Center;
+  m_nTracts                     = cluster.m_nTracts;
+  m_nRatio                      = cluster.m_nRatio;
+  m_nLogLikelihood              = cluster.m_nLogLikelihood;
+  m_nRank                       = cluster.m_nRank;
+  m_DuczmalCorrection           = cluster.m_DuczmalCorrection;
+  m_nFirstInterval              = cluster.m_nFirstInterval;
+  m_nLastInterval               = cluster.m_nLastInterval;
+  m_nStartDate                  = cluster.m_nStartDate;
+  m_nEndDate                    = cluster.m_nEndDate;
+  m_nTotalIntervals             = cluster.m_nTotalIntervals;
   memcpy(m_pCumCases, cluster.m_pCumCases, m_nNumIntervals*sizeof(count_t));
   memcpy(m_pCumMeasure, cluster.m_pCumMeasure, m_nNumIntervals*sizeof(measure_t));
-  m_nSteps           = cluster.m_nSteps;
-  m_bClusterInit   = cluster.m_bClusterInit;
-  m_bClusterDefined= cluster.m_bClusterDefined;
-  m_bClusterSet    = cluster.m_bClusterSet;
-  m_bLogLSet       = cluster.m_bLogLSet;
-  m_bRatioSet      = cluster.m_bRatioSet;
-  m_nClusterType   = cluster.m_nClusterType;
-  m_iEllipseOffset = cluster.m_iEllipseOffset;
-  m_nProspectiveStartInterval = cluster.m_nProspectiveStartInterval;
-  m_nNumIntervals  = cluster.m_nNumIntervals;     
+  if (cluster.m_pCumMeasureSquared)
+    memcpy(m_pCumMeasureSquared, cluster.m_pCumMeasureSquared, m_nNumIntervals*sizeof(measure_t));
+  m_nSteps                      = cluster.m_nSteps;
+  m_bClusterDefined             = cluster.m_bClusterDefined;
+  m_nClusterType                = cluster.m_nClusterType;
+  m_iEllipseOffset              = cluster.m_iEllipseOffset;
+  m_nProspectiveStartInterval   = cluster.m_nProspectiveStartInterval;
+  m_nNumIntervals               = cluster.m_nNumIntervals;     
   return *this;
 }
 
-void CPurelySpatialProspectiveCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {
+/** add neighbor tract data from DataStreamInterface */
+void CPurelySpatialProspectiveCluster::AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream) {
   int           i, j;
-  measure_t  ** ppMeasure(Data.GetMeasureArray());   
+  count_t    ** ppCases = Interface.GetCaseArray();
+  measure_t  ** ppMeasure = Interface.GetMeasureArray(),
+             ** ppMeasureSquared;
 
-  m_nTracts = n;
-  tract_t nNeighbor = Data.GetNeighbor(iEllipse, m_Center, n);
+  ++m_nTracts;
 
   //set cases for entire period added by this neighbor
-  m_pCumCases[0]   += pCases[0][nNeighbor];
-  m_pCumMeasure[0] += ppMeasure[0][nNeighbor];
-
-  for (j=1, i=m_nProspectiveStartInterval; i < m_nTotalIntervals; j++, i++) {
-      m_pCumCases[j]   += pCases[i][nNeighbor];
-      m_pCumMeasure[j] += ppMeasure[i][nNeighbor];
+  m_pCumCases[0]   += ppCases[0][tNeighbor];                            
+  m_pCumMeasure[0] += ppMeasure[0][tNeighbor];
+  for (j=1, i=m_nProspectiveStartInterval; i < m_nTotalIntervals; ++j, ++i) {
+      m_pCumCases[j]   += ppCases[i][tNeighbor];
+      m_pCumMeasure[j] += ppMeasure[i][tNeighbor];
+  }
+  if (Interface.IsSqMeasureArray()) {
+    ppMeasureSquared = Interface.GetSqMeasureArray();
+    m_pCumMeasureSquared[0] += ppMeasureSquared[0][tNeighbor];
+    for (j=1, i=m_nProspectiveStartInterval; i < m_nTotalIntervals; ++j, ++i)
+        m_pCumMeasureSquared[j] += ppMeasureSquared[i][tNeighbor];
   }
 }
 
@@ -90,13 +96,13 @@ CPurelySpatialProspectiveCluster * CPurelySpatialProspectiveCluster::Clone() con
   return new CPurelySpatialProspectiveCluster(*this);
 }
 
+/** modifies measure list given this cluster definition */
 void CPurelySpatialProspectiveCluster::ComputeBestMeasures(CMeasureList & MeasureList) {
   int   iWindowEnd;
 
   for (iWindowEnd=1; iWindowEnd < m_nNumIntervals; ++iWindowEnd)
-     MeasureList.AddMeasure(m_pCumCases[0] - m_pCumCases[iWindowEnd], m_pCumMeasure[0] - m_pCumMeasure[iWindowEnd]);
-
-  MeasureList.AddMeasure(m_pCumCases[0], m_pCumMeasure[0]);
+     MeasureList.AddMeasure(m_pCumCases[0] - m_pCumCases[iWindowEnd], gMeasure_(0, iWindowEnd, m_pCumMeasure, m_pCumMeasureSquared));
+  MeasureList.AddMeasure(m_pCumCases[0], g_Measure_(0, m_pCumMeasure, m_pCumMeasureSquared));
 }
 
 /** Returns the number of case for tract as defined by cluster. */
@@ -111,11 +117,14 @@ measure_t CPurelySpatialProspectiveCluster::GetMeasureForTract(tract_t tTract, c
   return 0;
 }
 
+/** re-initializes cluster data */
 void CPurelySpatialProspectiveCluster::Initialize(tract_t nCenter = 0) {
   CCluster::Initialize(nCenter);
   m_nClusterType = PURELYSPATIAL/*PROSPECTIVE*/;
   memset(m_pCumCases, 0, sizeof(count_t) * m_nNumIntervals);
   memset(m_pCumMeasure, 0, sizeof(measure_t) * m_nNumIntervals);
+  if (m_pCumMeasureSquared)
+    memcpy(m_pCumMeasureSquared, m_pCumMeasureSquared, m_nNumIntervals*sizeof(measure_t));
 }
 
 void CPurelySpatialProspectiveCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals) {
@@ -130,11 +139,14 @@ void CPurelySpatialProspectiveCluster::Setup(const CSaTScanData & Data) {
     m_nProspectiveStartInterval = Data.m_nProspectiveIntervalStart;
     m_pCumCases   = (count_t*) Smalloc((m_nNumIntervals)*sizeof(count_t), gpPrintDirection);
     m_pCumMeasure = (measure_t*) Smalloc((m_nNumIntervals)*sizeof(measure_t), gpPrintDirection);
+    if (this == 0x0/*normal model*/)
+      m_pCumMeasureSquared = (measure_t*) Smalloc((m_nNumIntervals)*sizeof(measure_t), gpPrintDirection);
     Initialize(0);
   }
   catch (ZdException &x) {
     free(m_pCumCases);
     free(m_pCumMeasure);
+    free(m_pCumMeasureSquared);
     x.AddCallpath("Setup()","CPurelySpatialProspectiveCluster");
     throw;
   }
@@ -145,10 +157,13 @@ void CPurelySpatialProspectiveCluster::Setup(const CPurelySpatialProspectiveClus
   try {
     m_pCumCases   = (count_t*) Smalloc((rhs.m_nNumIntervals)*sizeof(count_t), rhs.gpPrintDirection);
     m_pCumMeasure = (measure_t*) Smalloc((rhs.m_nNumIntervals)*sizeof(measure_t), rhs.gpPrintDirection);
+    if (rhs.m_pCumMeasureSquared)
+      m_pCumMeasureSquared = (measure_t*) Smalloc((rhs.m_nNumIntervals)*sizeof(measure_t), rhs.gpPrintDirection);
   }
   catch (ZdException &x) {
     free(m_pCumCases);
     free(m_pCumMeasure);
+    free(m_pCumMeasureSquared);
     x.AddCallpath("Setup()","CPurelySpatialProspectiveCluster");
     throw;
   }

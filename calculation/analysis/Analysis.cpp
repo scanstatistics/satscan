@@ -55,20 +55,26 @@ CCluster & TopClustersContainer::GetTopCluster(int iShapeOffset) {
 CCluster & TopClustersContainer::GetTopCluster() {
   CCluster    * pTopCluster;
 
-  //first set ratios
-  for (size_t t=0; t < gvTopShapeClusters.size(); t++)
-    gvTopShapeClusters[t]->SetRatioAndDates(gData);
+//  //first set ratios
+//  for (size_t t=0; t < gvTopShapeClusters.size(); t++)
+//   gvTopShapeClusters[t]->SetRatioAndDates(gData);
   //set the maximum cluster to the circle shape initially
   pTopCluster = gvTopShapeClusters[0];
   //if the there are ellipses, compare current top cluster against them
   //note: we don't have to be concerned with whether we are comparing circles and ellipses,
   //     the adjusted loglikelihood ratio for a circle is just the loglikelihood ratio
   for (size_t t=1; t < gvTopShapeClusters.size(); t++)
-     if (gvTopShapeClusters[t]->ClusterDefined() && /* could be that no cluster was defined as max for iteration*/
-         gvTopShapeClusters[t]->GetDuczmalCorrectedLogLikelihoodRatio() > pTopCluster->GetDuczmalCorrectedLogLikelihoodRatio())
+     /* could be that no cluster was defined as max for iteration*/
+     if (gvTopShapeClusters[t]->ClusterDefined() && gvTopShapeClusters[t]->m_nRatio > pTopCluster->m_nRatio)
        pTopCluster = gvTopShapeClusters[t];
 
+  pTopCluster->SetStartAndEndDates(gData.GetTimeIntervalStartTimes(), gData.m_nTimeIntervals);
   return *pTopCluster;
+}
+
+void TopClustersContainer::Reset(int iCenter) {
+  for (size_t t=0; t < gvTopShapeClusters.size(); ++t)
+     gvTopShapeClusters[t]->Initialize(iCenter);
 }
 
 /** Initialzies the vector of top clusters to cloned copies of cluster,
@@ -152,12 +158,12 @@ bool CAnalysis::Execute(time_t RunTime) {
    try {
       SetMaxNumClusters();
       AllocateTopClusterList();                //Allocate array which will store most likely clusters.
-      m_pData->AllocSimCases();                //Allocate two-dimensional array to be used in replications.
+      m_pData->AllocateSimulationStructures(); 
 
-      if (!m_pData->CalculateMeasure())        //Calculate expected number of cases.
+      if (!m_pData->CalculateExpectedCases())        //Calculate expected number of cases.
          return false;
-    
-      if (m_pData->GetNumCases() < 1)
+
+      if (m_pData->GetTotalCases() < 1)
          ZdException::Generate("Error: No cases found in input data.\n","CAnalysis");    //KR V.2.1
 
       //For circle and each ellipse, find closest neighboring tracts points for
@@ -238,7 +244,7 @@ bool CAnalysis::Execute(time_t RunTime) {
 
       } while (bContinue);
 
-      m_pData->DeAllocSimCases();
+      m_pData->GetDataStreamHandler().FreeSimulationStructures();
       FinalizeReport(RunTime);
    }
    catch (ZdException & x) {
@@ -573,10 +579,8 @@ bool CAnalysis::FinalizeReport(time_t RunTime) {
         fprintf(fp, "no p-values were printed.\n");
       }
 
-      if (m_pParameters->GetProbabiltyModelType() == POISSON ||
-          (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION &&
-           m_pParameters->GetMaxGeoClusterSizeTypeIsPopulationBased()))
-        (m_pData->GetTInfo())->tiReportZeroPops(fp);
+      if (m_pParameters->GetProbabiltyModelType() == POISSON)
+         m_pData->GetDataStreamHandler().ReportZeroPops(*m_pData, fp, gpPrintDirection);
 
       m_pData->GetTInfo()->tiReportDuplicateTracts(fp);
 
@@ -613,30 +617,67 @@ bool CAnalysis::FinalizeReport(time_t RunTime) {
 }
 
 bool CAnalysis::FindTopClusters() {
-   bool         bReturn=true;
-   
-   try {
-      DisplayFindClusterHeading();
+  int                   i;
+  bool                  bReturn=true;
+  clock_t               tStartTime;
+  DataStreamGateway   * pDataStreamGateway=0;
 
-      clock_t nStartTime = clock();
+  try {
+    DisplayFindClusterHeading();
+    pDataStreamGateway = m_pData->GetDataStreamHandler().GetNewDataGateway();
+    tStartTime = clock();
 
-      for (int i = 0; (i<m_pData->m_nGridTracts) && !gpPrintDirection->GetIsCanceled(); i++) {
-        m_pTopClusters[i] = GetTopCluster(i);
-        ++m_nClustersRetained;
-        if (i==9)
-          ReportTimeEstimate(nStartTime, m_pData->m_nGridTracts, i+1, gpPrintDirection);
-      }
+    SetTopClusters(*pDataStreamGateway, false);
+    for (i=0; i < m_pData->m_nGridTracts && !gpPrintDirection->GetIsCanceled(); ++i) {
+       CalculateTopCluster(i, *pDataStreamGateway, false);
+       m_pTopClusters[i] = GetTopCalculatedCluster().Clone();
+       m_pTopClusters[i]->SetStartAndEndDates(m_pData->GetTimeIntervalStartTimes(), m_pData->m_nTimeIntervals);
+       ++m_nClustersRetained;
+       if (i==9)
+         ReportTimeEstimate(tStartTime, m_pData->m_nGridTracts, i+1, gpPrintDirection);
+    }
+    delete pDataStreamGateway; pDataStreamGateway=0;
 
-      if (gpPrintDirection->GetIsCanceled())
-         bReturn = false;
-      else
-         RankTopClusters();          // DTG  -- MODIFY THIS FUNCTION !!!!!!!!
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("FindTopClusters()", "CAnalysis");
-      throw;
-   }
+    if (gpPrintDirection->GetIsCanceled())
+      bReturn = false;
+    else
+      RankTopClusters();
+  }
+  catch (ZdException &x) {
+    delete pDataStreamGateway;
+    x.AddCallpath("FindTopClusters()", "CAnalysis");
+    throw;
+  }
   return bReturn;
+}
+
+/** Returns loglikelihood for Monte Carlo replication. */
+double CAnalysis::GetMonteCarloLoglikelihoodRatio(const DataStreamGateway & DataGateway) {
+  int                   i;
+  double                dMaxLogLikelihoodRatio=0;
+
+  try {
+    if (DataGateway.GetNumInterfaces() == 1) {
+      if (m_pParameters->GetIsProspectiveAnalysis())
+        dMaxLogLikelihoodRatio = MonteCarloProspective(DataGateway.GetDataStreamInterface(0));
+      else
+        dMaxLogLikelihoodRatio = MonteCarlo(DataGateway.GetDataStreamInterface(0));
+    }
+    else {
+      SetTopClusters(DataGateway, true);
+      for (i=0; i < m_pData->m_nGridTracts && !gpPrintDirection->GetIsCanceled(); ++i) {
+         CalculateTopCluster(i, DataGateway, true);
+         CCluster & Cluster = GetTopCalculatedCluster();
+         if (Cluster.ClusterDefined())
+           dMaxLogLikelihoodRatio = std::max(Cluster.GetDuczmalCorrectedLogLikelihoodRatio(), dMaxLogLikelihoodRatio);
+      }
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetMonteCarloLoglikelihoodRatio()","CAnalysis");
+    throw;
+  }
+  return dMaxLogLikelihoodRatio;
 }
 
 void CAnalysis::InitializeTopClusterList() {
@@ -675,10 +716,11 @@ void CAnalysis::OpenReportFile(FILE*& fp, const char* szType) {
 
 // performs Monte Carlo Simulations and prints out the results for each one
 void CAnalysis::PerformSimulations() {
-   double               r;
-   int                  iSimulationNumber;
-   char               * sReplicationFormatString;
+   double                               r;
+   int                                  iSimulationNumber;
+   char                               * sReplicationFormatString;
    std::auto_ptr<LogLikelihoodData>     pLLRData;
+   DataStreamGateway                  * pDataGateway=0;
 
    try {
       if (m_pParameters->GetNumReplicationsRequested() > 0) {
@@ -700,11 +742,15 @@ void CAnalysis::PerformSimulations() {
 
         clock_t nStartTime = clock();
         SimRatios.Initialize();
+        pDataGateway = m_pData->GetDataStreamHandler().GetNewSimulationDataGateway();
 
         for (iSimulationNumber=1; (iSimulationNumber <= m_pParameters->GetNumReplicationsRequested()) && !gpPrintDirection->GetIsCanceled(); iSimulationNumber++) {
           giSimulationNumber = iSimulationNumber;
-          m_pData->MakeData(giSimulationNumber);
-          r = (m_pParameters->GetIsProspectiveAnalysis()) ? MonteCarloProspective() : MonteCarlo();
+
+          //passed 'pDataInterface' to make data routine or is that to be handler operation ???
+          m_pData->MakeData(giSimulationNumber, *pDataGateway);
+
+          r = GetMonteCarloLoglikelihoodRatio(*pDataGateway);
           UpdateTopClustersRank(r);
           SimRatios.AddRatio(r);
           UpdatePowerCounts(r);
@@ -735,7 +781,7 @@ void CAnalysis::PerformSimulations() {
           if(pLLRData.get())
              pLLRData->AddLikelihood(r);
         }
-
+        delete pDataGateway; pDataGateway=0;
         // only write to output formats on the first analysis/iteration -- AJV
         if (m_pParameters->GetOutputSimLoglikeliRatiosAscii() && pLLRData.get())
            ASCIIFileWriter(pLLRData.get()).Print();
@@ -743,9 +789,10 @@ void CAnalysis::PerformSimulations() {
            DBaseFileWriter(pLLRData.get()).Print();
       }
    }
-   catch (ZdException & x) {
-      x.AddCallpath("PerformSimulations()", "CAnalysis");
-      throw;
+   catch (ZdException &x) {
+     delete pDataGateway;
+     x.AddCallpath("PerformSimulations()", "CAnalysis");
+     throw;
    }
 }
 
@@ -760,7 +807,7 @@ void CAnalysis::PrintTopClusters(int nHowMany) {
            fprintf(pFile, "GridTract:  %i\n", i);
            fprintf(pFile, "  Ellipe Offset:  %i\n", m_pTopClusters[i]->m_iEllipseOffset);
            fprintf(pFile, "         Center:  %i\n", m_pTopClusters[i]->m_Center );
-           fprintf(pFile, "        Measure:  %f\n", m_pTopClusters[i]->m_nMeasure);      //measure_t
+           fprintf(pFile, "        Measure:  %f\n", m_pTopClusters[i]->GetMeasure(0));      //measure_t
            fprintf(pFile, "         Tracts:  %i\n", m_pTopClusters[i]->m_nTracts);
            fprintf(pFile, "     Likelihood:  %f\n", m_pTopClusters[i]->m_nLogLikelihood );
            fprintf(pFile, "           Rank:  %i\n", m_pTopClusters[i]->m_nRank );
@@ -831,10 +878,10 @@ void CAnalysis::RankTopClusters() {
       /* Sort by descending m_ratio, without regard to overlap */
       //  SortTopClusters();
       //  if (m_nClustersToKeepEachPass != 1)
-      if (!m_pParameters->GetDuczmalCorrectEllipses())
+//      if (!m_pParameters->GetDuczmalCorrectEllipses())
         qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByRatio);
-      else  
-        qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByDuzcmalCorrectedRatio);
+//      else
+//        qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByDuzcmalCorrectedRatio);
 
       // Remove "Undefined" clusters that have been sorted to bottome of list because ratio=-DBL_MAX
       tract_t nClustersAssigned = m_nClustersRetained;
@@ -1010,10 +1057,10 @@ bool CAnalysis::RepeatAnalysis() {
 
 void CAnalysis::SortTopClusters()
 {
-  if (!m_pParameters->GetDuczmalCorrectEllipses())
-    qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByDuzcmalCorrectedRatio);
-  else
-    qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByDuzcmalCorrectedRatio);
+//  if (!m_pParameters->GetDuczmalCorrectEllipses())
+    qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByRatio);
+//  else
+//    qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByDuzcmalCorrectedRatio);
 }
 
 void CAnalysis::UpdatePowerCounts(double r)

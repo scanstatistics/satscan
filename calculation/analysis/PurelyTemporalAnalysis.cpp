@@ -4,69 +4,76 @@
 
 /** Constructor */
 CPurelyTemporalAnalysis::CPurelyTemporalAnalysis(CParameters*  pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-                        :CAnalysis(pParameters, pData, pPrintDirection) {}
+                        :CAnalysis(pParameters, pData, pPrintDirection) {
+  Init();
+}
 
 /** Destructor */
-CPurelyTemporalAnalysis::~CPurelyTemporalAnalysis() {}
-
-/** Finds top cluster. */
-bool CPurelyTemporalAnalysis::FindTopClusters() {
-  bool  bOk = true;
-
+CPurelyTemporalAnalysis::~CPurelyTemporalAnalysis() {
   try {
-    gpPrintDirection->SatScanPrintf("Finding the most likely clusters\n");
-    m_pTopClusters[0] = GetTopCluster(0);
-    if (m_pTopClusters[0]->ClusterDefined())
-      m_nClustersRetained++;
-    else {
-      delete m_pTopClusters[0];
-      m_pTopClusters[0] = NULL;
-    }
+    delete gpTopCluster;
   }
-  catch (ZdException & x) {
-    x.AddCallpath("FindTopClusters()", "CPurelyTemporalAnalysis");
-    throw;
-  }
-  return bOk;
+  catch (...){}
 }
 
 /** Returns cluster centered at grid point nCenter, with the greatest loglikelihood.
     Caller is responsible for deleting returned cluster. */
-CCluster* CPurelyTemporalAnalysis::GetTopCluster(tract_t nCenter) {
-  CPurelyTemporalCluster              * pTopCluster=0;
+void CPurelyTemporalAnalysis::CalculateTopCluster(tract_t tCenter, const DataStreamGateway & DataGateway, bool bSimulation) {
   IncludeClustersType                   eIncludeClustersType;
 
   try {
     // if Prospective Space-Time then Alive Clusters Only.
     if (m_pParameters->GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)
-      eIncludeClustersType = ALIVECLUSTERS;
+      eIncludeClustersType = (bSimulation ? ALLCLUSTERS : ALIVECLUSTERS);
     else
       eIncludeClustersType = m_pParameters->GetIncludeClustersType();
 
-    pTopCluster = new CPurelyTemporalCluster(eIncludeClustersType, *m_pData, *gpPrintDirection);
-    CPurelyTemporalCluster thisCluster(eIncludeClustersType, *m_pData, *gpPrintDirection);
+    gpTopCluster = new CPurelyTemporalCluster(DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
+    CPurelyTemporalCluster thisCluster(DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
     
-    pTopCluster->CCluster::SetLogLikelihood(m_pData->GetProbabilityModel().GetLogLikelihoodForTotal());
-    thisCluster.SetCenter(nCenter);
     thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
-    thisCluster.CompareTopCluster(*pTopCluster, *m_pData);
-    pTopCluster->SetRatioAndDates(*m_pData);
+    thisCluster.CompareTopCluster(*gpTopCluster, *m_pData);
   }
-  catch (ZdException & x) {
-    delete pTopCluster;
-    x.AddCallpath("GetTopCluster()", "CPurelyTemporalAnalysis");
+  catch (ZdException &x) {
+    delete gpTopCluster; gpTopCluster=0;
+    x.AddCallpath("CalculateTopCluster()","CPurelyTemporalAnalysis");
     throw;
   }
-  return pTopCluster;
+}
+
+/** Finds top cluster. */
+bool CPurelyTemporalAnalysis::FindTopClusters() {
+  DataStreamGateway   * pDataStreamGateway=0;
+
+  try {
+    gpPrintDirection->SatScanPrintf("Finding the most likely clusters\n");
+    pDataStreamGateway = m_pData->GetDataStreamHandler().GetNewDataGateway();
+    CalculateTopCluster(0, *pDataStreamGateway, false);
+    if (gpTopCluster->ClusterDefined()) {
+      ++m_nClustersRetained;
+      m_pTopClusters[0] = gpTopCluster->Clone();
+      m_pTopClusters[0]->SetStartAndEndDates(m_pData->GetTimeIntervalStartTimes(), m_pData->m_nTimeIntervals);
+    }
+    else {
+      gpTopCluster; gpTopCluster=0;
+    }
+    delete pDataStreamGateway; pDataStreamGateway=0;
+  }
+  catch (ZdException &x) {
+    delete pDataStreamGateway;
+    x.AddCallpath("FindTopClusters()","CPurelyTemporalAnalysis");
+    throw;
+  }
+  return true;
 }
 
 /** Returns loglikelihood for Monte Carlo replication. */
-double CPurelyTemporalAnalysis::MonteCarlo() {
+double CPurelyTemporalAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
   CMeasureList        * pMeasureList=0;
   double                dMaxLogLikelihoodRatio;
 
   try {
-    CPurelyTemporalCluster C(m_pParameters->GetIncludeClustersType(), *m_pData, *gpPrintDirection);
+    CPurelyTemporalCluster C(Interface, m_pParameters->GetIncludeClustersType(), *m_pData, *gpPrintDirection);
     C.SetRate(m_pParameters->GetAreaScanRateType());
     switch (m_pParameters->GetAreaScanRateType()) {
       case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
@@ -80,7 +87,7 @@ double CPurelyTemporalAnalysis::MonteCarlo() {
     }
 
     C.Initialize(0);
-    C.ComputeBestMeasures(m_pData->GetSimCasesPTArray(), m_pData->GetMeasurePTArray(), *pMeasureList);
+    C.ComputeBestMeasures(*m_pData, *pMeasureList);
 
     dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
     delete pMeasureList;
@@ -94,12 +101,12 @@ double CPurelyTemporalAnalysis::MonteCarlo() {
 }
 
 /** For purely temporal analysis, prospective monte carlo is the same as monte carlo. */
-double CPurelyTemporalAnalysis::MonteCarloProspective() {
+double CPurelyTemporalAnalysis::MonteCarloProspective(const DataStreamInterface & Interface) {
   CMeasureList                * pMeasureList=0;
   double                        dMaxLogLikelihoodRatio;
 
   try {
-    CPurelyTemporalCluster C(ALLCLUSTERS, *m_pData, *gpPrintDirection);
+    CPurelyTemporalCluster C(Interface, ALLCLUSTERS, *m_pData, *gpPrintDirection);
     C.SetRate(m_pParameters->GetAreaScanRateType());
     switch (m_pParameters->GetAreaScanRateType()) {
       case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
@@ -111,9 +118,9 @@ double CPurelyTemporalAnalysis::MonteCarloProspective() {
       default        : ZdGenerateException("Unknown incidence rate specifier \"%d\".", "MonteCarloProspective()",
                                              m_pParameters->GetAreaScanRateType());
     }
-    
+
     C.Initialize(0);
-    C.ComputeBestMeasures(m_pData->GetSimCasesPTArray(), m_pData->GetMeasurePTArray(), *pMeasureList);
+    C.ComputeBestMeasures(*m_pData, *pMeasureList);
 
     dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
     delete pMeasureList;

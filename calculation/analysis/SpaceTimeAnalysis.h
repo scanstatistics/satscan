@@ -9,15 +9,17 @@
 
 class CSpaceTimeAnalysis : public CAnalysis {
   private:
+    TopClustersContainer              * gpTopShapeClusters;
+
     void                                Init() {gpTopShapeClusters=0;}
+    virtual double                      MonteCarlo(const DataStreamInterface & Interface);
+    virtual double                      MonteCarloProspective(const DataStreamInterface & Interface);
     void                                Setup();
 
   protected:
-    TopClustersContainer              * gpTopShapeClusters;
-
-    virtual CCluster                  * GetTopCluster(tract_t nCenter);
-    virtual double                      MonteCarlo();
-    virtual double                      MonteCarloProspective();
+    virtual void                        CalculateTopCluster(tract_t tCenter, const DataStreamGateway & DataGateway, bool bSimulation);
+    virtual CCluster                  & GetTopCalculatedCluster();
+    virtual void                        SetTopClusters(const DataStreamGateway & DataGateway, bool bSimulation);
 
   public:
     CSpaceTimeAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);

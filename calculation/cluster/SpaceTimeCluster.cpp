@@ -2,6 +2,76 @@
 #pragma hdrstop
 #include "SpaceTimeCluster.h"
 
+SpaceTimeClusterStreamData::SpaceTimeClusterStreamData(int unsigned iAllocationSize)
+                           :AbstractTemporalClusterStreamData(), giAllocationSize(iAllocationSize) {
+  try {
+    Init();
+    Setup();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("constructor()","SpaceTimeClusterStreamData");
+    throw;
+  }
+}
+
+SpaceTimeClusterStreamData::SpaceTimeClusterStreamData(const SpaceTimeClusterStreamData& rhs) {
+  try {
+    Init();
+    gpCases = new count_t[rhs.giAllocationSize];
+    gpMeasure = new measure_t[rhs.giAllocationSize];
+    gpSqMeasure = new measure_t[rhs.giAllocationSize];
+    *this = rhs;
+  }
+  catch (ZdException &x) {
+    delete[] gpCases; delete[] gpMeasure; delete[] gpSqMeasure;
+    x.AddCallpath("constructor()","SpaceTimeClusterStreamData");
+    throw;
+  }
+}
+
+SpaceTimeClusterStreamData::~SpaceTimeClusterStreamData() {
+  try {
+    delete[] gpCases; delete[] gpMeasure; delete[] gpSqMeasure;
+  }
+  catch(...){}
+}
+
+SpaceTimeClusterStreamData & SpaceTimeClusterStreamData::operator=(const SpaceTimeClusterStreamData& rhs) {
+   gCases = rhs.gCases;
+   gMeasure = rhs.gMeasure;
+   gSqMeasure = rhs.gSqMeasure;
+   giAllocationSize = rhs.giAllocationSize;
+   memcpy(gpCases, rhs.gpCases, giAllocationSize * sizeof(count_t));
+   memcpy(gpMeasure, rhs.gpMeasure, giAllocationSize * sizeof(measure_t));
+   memcpy(gpSqMeasure, rhs.gpSqMeasure, giAllocationSize * sizeof(measure_t));
+   return *this;
+}
+
+SpaceTimeClusterStreamData * SpaceTimeClusterStreamData::Clone() const {
+  return new SpaceTimeClusterStreamData(*this);
+}
+
+void SpaceTimeClusterStreamData::InitializeData() {
+  gCases=gMeasure=gSqMeasure=0;
+  memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
+  memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
+  memset(gpSqMeasure, 0, sizeof(measure_t) * giAllocationSize);
+}
+
+void SpaceTimeClusterStreamData::Setup() {
+  try {
+    gpCases = new count_t[giAllocationSize];
+    gpMeasure = new measure_t[giAllocationSize];
+    gpSqMeasure = new measure_t[giAllocationSize];
+    InitializeData();
+  }
+  catch (ZdException &x) {
+    delete[] gpCases; delete[] gpMeasure; delete[] gpSqMeasure;
+    x.AddCallpath("Setup()","SpaceTimeClusterStreamData");
+    throw;
+  }
+}
+
 /** constructor */
 CSpaceTimeCluster::CSpaceTimeCluster(IncludeClustersType eIncludeClustersType, const CSaTScanData & Data, BasePrint & PrintDirection)
                   :CCluster(&PrintDirection) {
@@ -33,123 +103,136 @@ CSpaceTimeCluster::CSpaceTimeCluster(const CSpaceTimeCluster& rhs)
 CSpaceTimeCluster::~CSpaceTimeCluster() {
   try {
     delete TI;
-    DeAllocCumulativeCounts();
   }
   catch(...){}
-} 
+}
 
-CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& cluster) {
-  m_Center         = cluster.m_Center;
-  m_nCases         = cluster.m_nCases ;
-  m_nMeasure       = cluster.m_nMeasure;
-  m_nTracts        = cluster.m_nTracts;
-  m_nRatio         = cluster.m_nRatio;
-  m_nLogLikelihood = cluster.m_nLogLikelihood;
-  m_nRank          = cluster.m_nRank;
-  m_DuczmalCorrection = cluster.m_DuczmalCorrection;
-  m_nFirstInterval = cluster.m_nFirstInterval;
-  m_nLastInterval  = cluster.m_nLastInterval;
-  m_nStartDate     = cluster.m_nStartDate;
-  m_nEndDate       = cluster.m_nEndDate;
-  m_nTotalIntervals = cluster.m_nTotalIntervals;
-  m_nIntervalCut    = cluster.m_nIntervalCut;
-  m_nTIType         = cluster.m_nTIType;
-  memcpy(m_pCumCases, cluster.m_pCumCases, m_nTotalIntervals*sizeof(count_t));
-  memcpy(m_pCumMeasure, cluster.m_pCumMeasure, m_nTotalIntervals*sizeof(measure_t));
-  m_nSteps           = cluster.m_nSteps;
-  m_bClusterInit   = cluster.m_bClusterInit;
-  m_bClusterDefined= cluster.m_bClusterDefined;
-  m_bClusterSet    = cluster.m_bClusterSet;
-  m_bLogLSet       = cluster.m_bLogLSet;
-  m_bRatioSet      = cluster.m_bRatioSet;
-  m_nClusterType   = cluster.m_nClusterType;
-  m_iEllipseOffset = cluster.m_iEllipseOffset;
-  *TI = *(cluster.TI);
+/** overloaded assignment operator */
+CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& rhs) {
+  m_Center                      = rhs.m_Center;
+  m_nTracts                     = rhs.m_nTracts;
+  m_nRatio                      = rhs.m_nRatio;
+  m_nLogLikelihood              = rhs.m_nLogLikelihood;
+  m_nRank                       = rhs.m_nRank;
+  m_DuczmalCorrection           = rhs.m_DuczmalCorrection;
+  m_nFirstInterval              = rhs.m_nFirstInterval;
+  m_nLastInterval               = rhs.m_nLastInterval;
+  m_nStartDate                  = rhs.m_nStartDate;
+  m_nEndDate                    = rhs.m_nEndDate;
+  m_nTotalIntervals             = rhs.m_nTotalIntervals;
+  m_nIntervalCut                = rhs.m_nIntervalCut;
+  m_nTIType                     = rhs.m_nTIType;
+  m_nSteps                      = rhs.m_nSteps;
+  m_bClusterDefined             = rhs.m_bClusterDefined;
+  m_nClusterType                = rhs.m_nClusterType;
+  m_iEllipseOffset              = rhs.m_iEllipseOffset;
+  *TI                           = *(rhs.TI);
+  gStreamData                   = rhs.gStreamData;
   return *this;
 }
 
-void CSpaceTimeCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {
+/** add neighbor tract data from DataGateway */
+void CSpaceTimeCluster::AddNeighbor(tract_t tNeighbor, const DataStreamGateway & DataGateway) {
+  ++m_nTracts;
+
+  for (size_t tStream=0; tStream < DataGateway.GetNumInterfaces(); ++tStream)
+    AddNeighbor(tNeighbor, DataGateway.GetDataStreamInterface(tStream), tStream);
+}
+
+/** add neighbor tract data from DataStreamInterface */
+void CSpaceTimeCluster::AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream) {
   int           i;
-  measure_t  ** ppMeasure(Data.GetMeasureArray());
+  count_t    ** ppCases = Interface.GetCaseArray();
+  measure_t  ** ppMeasure = Interface.GetMeasureArray(),
+             ** ppMeasureSquared = Interface.GetSqMeasureArray();
 
-  m_nTracts = n;
-  tract_t nNeighbor = Data.GetNeighbor(iEllipse, m_Center, n);
-
-  for (i=0; i<m_nTotalIntervals; i++) {
-      m_pCumCases[i]   += pCases[i][nNeighbor];
-      m_pCumMeasure[i] += ppMeasure[i][nNeighbor];
+  AbstractTemporalClusterStreamData * pStreamData = gStreamData[tStream];
+  for (i=0; i < m_nTotalIntervals; ++i) {
+     pStreamData->gpCases[i]   += ppCases[i][tNeighbor];
+     pStreamData->gpMeasure[i] += ppMeasure[i][tNeighbor];
   }
+  if (ppMeasureSquared)
+    for (i=0; i < m_nTotalIntervals; ++i)
+       pStreamData->gpSqMeasure[i] += ppMeasureSquared[i][tNeighbor];
 }
 
 /** returns newly cloned CSpaceTimeCluster */
 CSpaceTimeCluster * CSpaceTimeCluster::Clone() const {
-  return new CSpaceTimeCluster(*this);;
+  return new CSpaceTimeCluster(*this);
 }
 
+/** compares this cluster definition to passed cluster definition */
 void CSpaceTimeCluster::CompareTopCluster(CSpaceTimeCluster & TopShapeCluster, const CSaTScanData & Data) {
   m_bClusterDefined = true;
-  TI->CompareClusters(*this, TopShapeCluster, Data, m_pCumCases, m_pCumMeasure);
+  if (Data.GetNumDataStreams() > 1)
+    TI->CompareDataStreamClusters(*this, TopShapeCluster, gStreamData);
+  else
+    TI->CompareClusters(*this, TopShapeCluster, gStreamData[0]->gpCases, gStreamData[0]->gpMeasure, gStreamData[0]->gpSqMeasure);
 }
 
+/** modifies measure list given this cluster definition */
 void CSpaceTimeCluster::ComputeBestMeasures(CMeasureList & MeasureList) {
-  TI->ComputeBestMeasures(m_pCumCases, m_pCumMeasure,MeasureList);
+  AbstractTemporalClusterStreamData * pStreamData = gStreamData[0];
+  TI->ComputeBestMeasures(pStreamData->gpCases, pStreamData->gpMeasure, pStreamData->gpSqMeasure, MeasureList);
 }
 
-void CSpaceTimeCluster::DeAllocCumulativeCounts()
-{
-  if (m_pCumCases != NULL)
-  {
-    free(m_pCumCases);
-    m_pCumCases = NULL;
-  }
-
-  if (m_pCumMeasure != NULL)
-  {
-    free(m_pCumMeasure);
-    m_pCumMeasure = NULL;
-  }
+/** returns the number of cases for tract as defined by cluster
+    NOTE: Hard coded to return the number of cases from first data stream.
+          This will need modification when the reporting aspect of multiple
+          data streams is hashed out.                                        */
+count_t CSpaceTimeCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {
+  return TI->GetCaseCountForTract(*this, tTract, Data.GetDataStreamHandler().GetStream(0/*for now*/).GetCaseArray());
 }
 
-/** Returns the number of case for tract as defined by cluster. */
-count_t CSpaceTimeCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const
-{
-  return TI->GetCaseCountForTract(*this, tTract, Data.GetCasesArray());
+/** Returns the measure for tract as defined by cluster.
+    NOTE: Hard coded to return the measure from first data stream.
+          This will need modification when the reporting aspect of multiple
+          data streams is hashed out.                                       */
+measure_t CSpaceTimeCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {
+  return Data.GetMeasureAdjustment() *
+         TI->GetMeasureForTract(*this, tTract, Data.GetDataStreamHandler().GetStream(0/*for now*/).GetMeasureArray());
 }
 
-/** Returns the measure for tract as defined by cluster. */
-measure_t CSpaceTimeCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const
-{
-  return Data.GetMeasureAdjustment() * TI->GetMeasureForTract(*this, tTract, Data.GetMeasureArray());
+/** internal class initialization */
+void CSpaceTimeCluster::Init() {
+  TI=0;
+  m_nTotalIntervals=0;
+  m_nIntervalCut=0;
 }
 
+/** re-initializes cluster data */
 void CSpaceTimeCluster::Initialize(tract_t nCenter = 0) {
   CCluster::Initialize(nCenter);
   m_nClusterType = SPACETIME;
-  memset(m_pCumCases, 0, sizeof(count_t) * m_nTotalIntervals);
-  memset(m_pCumMeasure, 0, sizeof(measure_t) * m_nTotalIntervals);
+  for (size_t t=0; t < gStreamData.size(); ++t)
+     gStreamData[t]->InitializeData();
 }
 
 /** internal setup function */
 void CSpaceTimeCluster::Setup(IncludeClustersType eIncludeClustersType, const CSaTScanData & Data) {
+  AbstractTemporalClusterStreamData * pStreamData;
+
   try {
     m_nTotalIntervals = Data.m_nTimeIntervals;
     m_nIntervalCut = Data.m_nIntervalCut;
     m_nTIType = eIncludeClustersType;
 
     switch (m_nTIType) {
-      case ALLCLUSTERS     : //TI = new CTIAll(m_nTotalIntervals, m_nIntervalCut);   break;
+      case ALLCLUSTERS     :
       case CLUSTERSINRANGE : TI = new TimeIntervalRange(Data); break;
-      case ALIVECLUSTERS   : TI = new CTIAlive(m_nTotalIntervals, m_nIntervalCut); break;
+      case ALIVECLUSTERS   : TI = new CTIAlive(Data); break;
       default : ZdGenerateException("Unknown clusters type: '%d'.","Setup()", m_nTIType);
     }
-    m_pCumCases   = (count_t*) Smalloc((m_nTotalIntervals)*sizeof(count_t), gpPrintDirection);
-    m_pCumMeasure = (measure_t*) Smalloc((m_nTotalIntervals)*sizeof(measure_t), gpPrintDirection);
+    gStreamData.resize(Data.GetNumDataStreams(), 0);
+    for (size_t t=0; t < Data.GetNumDataStreams(); ++t) {
+       pStreamData = gStreamData[t] = new SpaceTimeClusterStreamData(Data.m_nTimeIntervals + 1);
+       pStreamData->gTotalMeasure = Data.GetTotalDataStreamMeasure(t);
+       pStreamData->gTotalCases = Data.GetTotalDataStreamCases(t);
+    }
     Initialize(0);
   }
   catch (ZdException &x) {
     delete TI;
-    free(m_pCumCases);
-    free(m_pCumMeasure);
     x.AddCallpath("Setup()","CSpaceTimeCluster");
     throw;
   }
@@ -159,25 +242,9 @@ void CSpaceTimeCluster::Setup(IncludeClustersType eIncludeClustersType, const CS
 void CSpaceTimeCluster::Setup(const CSpaceTimeCluster& rhs) {
   try {
     TI = rhs.TI->Clone();
-    m_pCumCases   = (count_t*) Smalloc((rhs.m_nTotalIntervals)*sizeof(count_t), rhs.gpPrintDirection);
-    m_pCumMeasure = (measure_t*) Smalloc((rhs.m_nTotalIntervals)*sizeof(measure_t), rhs.gpPrintDirection);
   }
   catch (ZdException &x) {
-    delete TI;
-    free(m_pCumCases);
-    free(m_pCumMeasure);
     x.AddCallpath("Setup()","CSpaceTimeCluster");
     throw;
   }
 }
-
-//------------------------------------------------------------------------------
-/*void CSpaceTimeCluster::Display(FILE* pFile)
-{
-  fprintf(pFile, "\nCenter Grid Point #%i\n", m_Center);
-  fprintf(pFile, "Cases=%i, Measure=%f, Tracts=%i, Ratio=%f, Rank=%i\n",
-          m_nCases, m_nMeasure, m_nTracts, m_nRatio, m_nRank);
-  fprintf(pFile, "Start Interval=%i, Last Interval=%i\n\n",
-          m_nFirstInterval, m_nLastInterval);
-}
-*/

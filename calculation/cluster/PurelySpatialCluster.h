@@ -4,17 +4,38 @@
 //*****************************************************************************
 #include "Cluster.h"
 #include "UtilityFunctions.h"
+#include "MeasureList.h"
 
-class CPurelySpatialCluster : public CCluster
-{
+/** cluster class for purely spatial analysis and purely spatial cluster
+    of space-time analysis */
+class CPurelySpatialCluster : public CCluster {
+  typedef std::deque<ClusterStreamData>           StreamDataContainer_t;
+  typedef std::deque<ClusterStreamData>::iterator StreamDataContainerIterator_t;
+  
+  private:
+    StreamDataContainer_t               gStreamData;
+
+    void                                Setup(const CSaTScanData & Data);
+    void                                Setup(const CPurelySpatialCluster& rhs);
+
   public:
-    CPurelySpatialCluster(BasePrint *pPrintDirection);
+    CPurelySpatialCluster(const CSaTScanData & Data, BasePrint *pPrintDirection);
     CPurelySpatialCluster(const CPurelySpatialCluster& rhs);
     ~CPurelySpatialCluster();
+    
+    CPurelySpatialCluster             & operator=(const CPurelySpatialCluster& rhs);
 
-    virtual void                        AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n);
+    virtual count_t             GetCaseCount(unsigned int iStream) const {return gStreamData[iStream].gCases;}
+    virtual measure_t           GetMeasure(unsigned int iStream) const {return gStreamData[iStream].gMeasure;}
+    virtual void                SetCaseCount(unsigned int iStream, count_t tCount) {gStreamData[iStream].gCases = tCount;}
+    virtual void                SetMeasure(unsigned int iStream, measure_t tMeasure) {gStreamData[iStream].gMeasure = tMeasure;}
+
+    void                                AddNeighbor(tract_t tNeighbor, const DataStreamGateway & DataGateway);
+    void                                AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream);
     inline virtual void                 AssignAsType(const CCluster& rhs) {*this = (CPurelySpatialCluster&)rhs;}
     virtual CPurelySpatialCluster     * Clone() const;
+    virtual void                        CompareTopCluster(CPurelySpatialCluster & TopShapeCluster, const CSaTScanData * pData);
+    virtual void                        ComputeBestMeasures(CMeasureList & MeasureList);
     virtual void                        DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType);
     virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual measure_t                   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;

@@ -25,54 +25,44 @@ CPurelySpatialAnalysis::~CPurelySpatialAnalysis(){
 
 /** Returns cluster centered at grid point nCenter, with the greatest loglikelihood.
     Caller is responsible for deleting returned cluster. */
-CCluster* CPurelySpatialAnalysis::GetTopCluster(tract_t nCenter) {
+void CPurelySpatialAnalysis::CalculateTopCluster(tract_t tCenter, const DataStreamGateway & DataGateway, bool bSimulation) {
   int                           i, j;
-  CPurelySpatialCluster       * pTopCluster=0;
-  count_t                    ** ppCases(m_pData->GetCasesArray());
   tract_t                       iNumNeighbors;
   CModel                      & ProbModel(m_pData->GetProbabilityModel());
 
   try {
-    pTopCluster = new CPurelySpatialCluster(gpPrintDirection);
-    pTopCluster->SetLogLikelihood(ProbModel.GetLogLikelihoodForTotal());
-    gpTopShapeClusters->SetTopClusters(*pTopCluster);
-
-    for (j=0; j <= m_pParameters->GetNumTotalEllipses(); j++) {   //circle is 0 offset... (always there)
-       CPurelySpatialCluster thisCluster(gpPrintDirection);
-       thisCluster.SetCenter(nCenter);
+    gpTopShapeClusters->Reset(tCenter);
+    for (j=0; j <= m_pParameters->GetNumTotalEllipses(); ++j) {   //circle is 0 offset... (always there)
+       CPurelySpatialCluster thisCluster(*m_pData, gpPrintDirection);
+       thisCluster.SetCenter(tCenter);
        thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
        thisCluster.SetEllipseOffset(j);                       // store the ellipse link in the cluster obj
        thisCluster.SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[j - 1]));
-       CPurelySpatialCluster & TopShapeCluster = (CPurelySpatialCluster&)(gpTopShapeClusters->GetTopCluster(j));       
-       iNumNeighbors = m_pData->GetNeighborCountArray()[j][nCenter];
-       for (i=1; i <= iNumNeighbors; i++) {
-          thisCluster.AddNeighbor(j, *m_pData, ppCases, i);
-          if (thisCluster.RateIsOfInterest(m_pData->GetNumCases(), m_pData->GetTotalMeasure())) {
-            thisCluster.m_nLogLikelihood = ProbModel.CalcLogLikelihood(thisCluster.m_nCases, thisCluster.m_nMeasure);
-            if (thisCluster.m_nLogLikelihood > TopShapeCluster.m_nLogLikelihood)
-              TopShapeCluster = thisCluster;
-          }
+       CPurelySpatialCluster & TopShapeCluster = (CPurelySpatialCluster&)(gpTopShapeClusters->GetTopCluster(j));
+       iNumNeighbors = m_pData->GetNeighborCountArray()[j][tCenter];
+       for (i=1; i <= iNumNeighbors; ++i) {
+          thisCluster.AddNeighbor(m_pData->GetNeighbor(j, tCenter, i), DataGateway);
+          thisCluster.CompareTopCluster(TopShapeCluster, m_pData);
        }
     }
-    //get copy of best cluster over all iterations
-    *pTopCluster = (CPurelySpatialCluster&)(gpTopShapeClusters->GetTopCluster());
   }
-  catch (ZdException & x) {
-    x.AddCallpath("GetTopCluster()", "CPurelySpatialAnalysis");
-    delete pTopCluster;
+  catch (ZdException &x) {
+    x.AddCallpath("CalculateTopCluster()","CPurelySpatialAnalysis");
     throw;
   }
-  return pTopCluster;
+}
+
+CCluster & CPurelySpatialAnalysis::GetTopCalculatedCluster() {
+  return gpTopShapeClusters->GetTopCluster();
 }
 
 /** Returns loglikelihood for Monte Carlo replication. */
-double CPurelySpatialAnalysis::MonteCarlo() {
+double CPurelySpatialAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
   CMeasureList                  * pMeasureList=0;
-  CPurelySpatialCluster           C(gpPrintDirection);
+  CPurelySpatialCluster           C(*m_pData, gpPrintDirection);
   double                          dMaxLogLikelihoodRatio;
   tract_t                         i, j, iNumNeighbors;
   int                             k;
-  count_t                      ** ppSimCases(m_pData->GetSimCasesArray());
   tract_t                      ** ppNeighbors(m_pData->GetNeighborCountArray());
 
   try {
@@ -93,8 +83,8 @@ double CPurelySpatialAnalysis::MonteCarlo() {
           C.Initialize(i);
           iNumNeighbors = ppNeighbors[k][i];
           for (j=1; j <= iNumNeighbors; j++) {
-             C.AddNeighbor(k, *m_pData, ppSimCases, j);
-             pMeasureList->AddMeasure(C.m_nCases, C.m_nMeasure);
+             C.AddNeighbor(m_pData->GetNeighbor(k, i, j), Interface, 0);
+             C.ComputeBestMeasures(*pMeasureList);
           }
        }
        pMeasureList->SetForNextIteration(k);
@@ -111,9 +101,19 @@ double CPurelySpatialAnalysis::MonteCarlo() {
 }
 
 /** Prospective monte carlo not valid for purely spatial analysis. */
-double CPurelySpatialAnalysis::MonteCarloProspective() {
+double CPurelySpatialAnalysis::MonteCarloProspective(const DataStreamInterface & Interface) {
   ZdGenerateException("MonteCarloProspective() not implemented for CPurelySpatialAnalysis.","MonteCarloProspective()");
   return 0;
+}
+
+void CPurelySpatialAnalysis::SetTopClusters(const DataStreamGateway & DataGateway, bool bSimulation) {
+  try {
+    gpTopShapeClusters->SetTopClusters(CPurelySpatialCluster(*m_pData, gpPrintDirection));
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetTopClusters()","CPurelySpatialAnalysis");
+    throw;
+  }
 }
 
 void CPurelySpatialAnalysis::Setup() {

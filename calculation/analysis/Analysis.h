@@ -5,6 +5,7 @@
 #include "Cluster.h"
 #include "TimeEstimate.h"
 #include "SignificantRatios05.h"
+#include "DataStream.h"
 
 /** Container class to store top clusters for a spatial analysis during
     method - GetTopCluster(). This class stores the top cluster for a
@@ -26,10 +27,15 @@ class TopClustersContainer {
 
     CCluster                  & GetTopCluster(int iShapeOffset);
     CCluster                  & GetTopCluster();
+    void                        Reset(int iCenter);
     void                        SetTopClusters(const CCluster& InitialCluster);
 };
 
 class CAnalysis {
+  private:
+    double                      GetMonteCarloLoglikelihoodRatio(const DataStreamGateway & DataGateway);
+    virtual void                SetMaxNumClusters() {m_nMaxClusters = m_pData->m_nGridTracts;}
+
   protected:
     CParameters*                m_pParameters;
     CSaTScanData*               m_pData;
@@ -44,6 +50,12 @@ class CAnalysis {
     FILE*                       m_pDebugFile;
     unsigned short              guwSignificantAt005;
 
+    virtual void                CalculateTopCluster(tract_t tCenter, const DataStreamGateway & DataGateway, bool bSimulation) = 0;
+    virtual bool                FindTopClusters();
+    virtual CCluster          & GetTopCalculatedCluster() = 0;
+    virtual void                SetTopClusters(const DataStreamGateway & DataGateway, bool bSimulation) = 0;
+
+
     virtual void                AllocateTopClusterList();
     static int                  CompareClustersByRatio(const void *a, const void *b);
     static int                  CompareClustersByDuzcmalCorrectedRatio(const void *a, const void *b);
@@ -51,18 +63,16 @@ class CAnalysis {
     void                        CreateGridOutputFile(const long lReportHistoryRunNumber);
     bool                        CreateReport(time_t RunTime);
     bool                        FinalizeReport(time_t RunTime);
-    virtual bool                FindTopClusters();
     tract_t                     GetMaxNumClusters() {return m_nMaxClusters;}
     void                        InitializeTopClusterList();
-    virtual double              MonteCarlo() = 0;
-    virtual double              MonteCarloProspective() = 0;
+    virtual double              MonteCarlo(const DataStreamInterface & Interface) = 0;
+    virtual double              MonteCarloProspective(const DataStreamInterface & Interface) = 0;
     void                        OpenReportFile(FILE*& fp, const char* szType);
     virtual void                PerformSimulations();
     void                        PrintTopClusters(int nHowMany);
     virtual void                RankTopClusters();
     void                        RemoveTopClusterData();
     bool                        RepeatAnalysis();
-    virtual void                SetMaxNumClusters() {m_nMaxClusters=m_pData->m_nGridTracts;}
     void                        SortTopClusters();
     void                        UpdatePowerCounts(double r);
     bool                        UpdateReport(const long lReportHistoryRunNumber);
@@ -83,8 +93,6 @@ class CAnalysis {
     const double                GetSimRatio01() const { return SimRatios.GetAlpha01(); }
     const double                GetSimRatio05() const { return SimRatios.GetAlpha05(); }
     const ZdString&             GetStartTime() const { return gsStartTime; }
-    virtual CCluster*           GetTopCluster(tract_t nCenter) = 0;
-
 };
 //*****************************************************************************
 #endif

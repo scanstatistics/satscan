@@ -9,15 +9,17 @@
 
 class CPurelySpatialAnalysis : public CAnalysis {
   private:
-    void                                Init() {gpTopShapeClusters=0;}
-    void                                Setup();
+    TopClustersContainer      * gpTopShapeClusters;
+
+    virtual double              MonteCarlo(const DataStreamInterface & Interface);
+    virtual double              MonteCarloProspective(const DataStreamInterface & Interface);
+    void                        Init() {gpTopShapeClusters=0;}
+    void                        Setup();
 
   protected:
-    TopClustersContainer              * gpTopShapeClusters;
-
-    virtual CCluster                  * GetTopCluster(tract_t nCenter);
-    virtual double                      MonteCarlo();
-    virtual double                      MonteCarloProspective();
+    virtual void                CalculateTopCluster(tract_t nCenter, const DataStreamGateway & DataGateway, bool bSimulation);
+    virtual CCluster          & GetTopCalculatedCluster();
+    virtual void                SetTopClusters(const DataStreamGateway & DataGateway, bool bSimulation);
 
   public:
     CPurelySpatialAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
