@@ -18,35 +18,43 @@ extern const char*      COORD_FILE_LINE;
 extern const char*      GRID_FILE_LINE;
 extern const char*      CONTROL_FILE_LINE;
 extern const char*      USE_GRID_FILE_LINE;
+extern const char*      PRECISION_TIMES_LINE;
+extern const char*      COORD_TYPE_LINE;
 
-// model info section
-extern const char*      MODEL_INFO_SECTION;
+// analysis section
+extern const char*      ANALYSIS_SECTION;
 extern const char*      ANALYSIS_TYPE_LINE;
 extern const char*      SCAN_AREAS_LINE;
-extern const char*      MAX_GEO_SIZE_LINE;
 extern const char*      START_DATE_LINE;
 extern const char*      END_DATE_LINE;
-extern const char*      ALIVE_CLUSTERS_LINE;
-extern const char*      INTERVAL_UNITS_LINE;
-extern const char*      INTERVAL_LENGTH_LINE;
-extern const char*      INCLUDE_PURELY_SPATIAL_LINE;
-extern const char*      MAX_TEMP_SIZE_LINE;
 extern const char*      MONTE_CARLO_REPS_LINE;
 extern const char*      MODEL_TYPE_LINE;
+
+// time parameters section
+extern const char*      TIME_PARAMS_SECTION;
+extern const char*      INTERVAL_UNITS_LINE;
+extern const char*      INTERVAL_LENGTH_LINE;
+extern const char*      TIME_TREND_ADJ_LINE;
+extern const char*      TIME_TREND_PERCENT_LINE;
+extern const char*      PROSPECT_START_LINE;
+
+// scanning window section
+extern const char*      SCANNING_WINDOW_SECTION;
+extern const char*      MAX_GEO_SIZE_LINE;
+extern const char*      INCLUDE_PURELY_SPATIAL_LINE;
+extern const char*      MAX_TEMP_SIZE_LINE;
+extern const char*      ALIVE_CLUSTERS_LINE;
+extern const char*      INCLUDE_PURE_TEMP_LINE;
+extern const char*      MAX_TEMP_INTERPRET_LINE;
+extern const char*      MAX_SPATIAL_SIZE_LINE;
+
+// advanced features section
+extern const char*      ADVANCED_FEATURES_SECTION;
+extern const char*      VALID_PARAMS_LINE;
 extern const char*      ISOTONIC_SCAN_LINE;
 extern const char*      PVALUE_PROSPECT_LLR_LINE;
 extern const char*      LLR_1_LINE;
 extern const char*      LLR_2_LINE;
-extern const char*      TIME_TREND_ADJ_LINE;
-extern const char*      TIME_TREND_PERCENT_LINE;
-extern const char*      INCLUDE_PURE_TEMP_LINE;
-extern const char*      COORD_TYPE_LINE;
-extern const char*      VALID_PARAMS_LINE;
-extern const char*      PROSPECT_START_LINE;
-extern const char*      CRIT_REPORT_SEC_CLUSTERS_LINE;
-extern const char*      MAX_TEMP_INTERPRET_LINE;
-extern const char*      MAX_SPATIAL_SIZE_LINE;
-extern const char*      PRECISION_TIMES_LINE;
 
 // sequential scan section
 extern const char*      SEQUENTIAL_SCAN_SECTION;
@@ -72,6 +80,8 @@ extern const char*      CENSUS_REPORT_CLUSTERS_LINE;
 extern const char*      MOST_LIKELY_CLUSTER_LINE;
 extern const char*      DBASE_RELATIVE_RISKS;
 extern const char*      DBASE_LOG_LIKELI;
+extern const char*      CRIT_REPORT_SEC_CLUSTERS_LINE;
+
 
 enum {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE, COORDFILE, OUTPUTFILE, PRECISION,
       DIMENSION, SPECIALGRID, GRIDFILE, GEOSIZE, STARTDATE, ENDDATE,
@@ -121,30 +131,39 @@ class CParameters
 
       void      copy(const CParameters &rhs);
 
+      void      CheckAdvancedFeaturesIniSection(ZdIniFile& file);
+      void      CheckAnalysisIniSection(ZdIniFile& file);
       void      CheckEllipseIniSection(ZdIniFile& file);
       void      CheckIniSectionsExist(ZdIniFile& file);
       void      CheckInputFileSection(ZdIniFile& file);
-      void      CheckModelInfoIniSection(ZdIniFile& file);
       void      CheckOutputFileIniSection(ZdIniFile& file);
+      void      CheckScanningWindowIniSection(ZdIniFile& file);
       void      CheckSequentialScanIniSection(ZdIniFile& file);
+      void      CheckTimeParametersIniSection(ZdIniFile& file);
       void      ConvertRelativePath(std::string & sInputFilename);
       void      FindDelimiter(char *sString, char cDelimiter);
       void      Free();
       int       LoadEAngles(const char* szParam);
       int       LoadEShapes(const char* szParam);
+      void      ReadAdvancedFeaturesFromIni(ZdIniFile& file);
+      void      ReadAnalysisSectionFromIni(ZdIniFile& file);
+      void      ReadEllipseSectionFromIni(ZdIniFile& file);
       void      ReadFromIniFile(ZdString sFileName);
       void      ReadInputFilesSectionFromIni(ZdIniFile& file);
-      void      ReadModelInfoSectionFromIni(ZdIniFile& file);
-      void      ReadSequentialScanSectionFromIni(ZdIniFile& file);
-      void      ReadEllipseSectionFromIni(ZdIniFile& file);
-      void      ReadScanningLineParameterFile(const char * sParameterFileName);
       void      ReadOutputFileSectionFromIni(ZdIniFile& file);
+      void      ReadScanningLineParameterFile(const char * sParameterFileName);
+      void      ReadScanningWindowSectionFromIni(ZdIniFile& file);
+      void      ReadSequentialScanSectionFromIni(ZdIniFile& file);
+      void      ReadTimeParametersSectionFromIni(ZdIniFile& file);
       void      ReportDefaultValueWarnings();
+      void      SaveAdvancedFeaturesSection(ZdIniFile& file);
+      void      SaveAnalysisSection(ZdIniFile& file);
       void      SaveInputFileSection(ZdIniFile& file);
-      void      SaveModelInfoSection(ZdIniFile& file);
       void      SaveEllipseSection(ZdIniFile& file);
-      void      SaveSequentialScanSection(ZdIniFile& file);
       void      SaveOutputFileSection(ZdIniFile& file);
+      void      SaveScanningWindowSection(ZdIniFile& file);
+      void      SaveSequentialScanSection(ZdIniFile& file);
+      void      SaveTimeParametersSection(ZdIniFile& file);
       void      SetDefaults();
       void      SetDoubleValue(double &dValue, const std::string& sValueFromFile, int iLineNumberFromFile, double dDefaultValue);
       void      SetEAnglesFromIniFile(const ZdString& sAngles);
