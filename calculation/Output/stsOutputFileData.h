@@ -1,6 +1,8 @@
 #ifndef OUTPUTFILEDATA_H
 #define OUTPUTFILEDATA_H
 
+#define INCLUDE_RUN_HISTORY
+
 extern const char * RUN_NUM_FIELD;
 extern const char * CLUST_NUM_FIELD;
 extern const char * LOC_ID_FIELD;
