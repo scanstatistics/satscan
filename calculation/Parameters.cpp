@@ -2367,11 +2367,14 @@ bool CParameters::ValidateSequentialScanParameters(BasePrint & PrintDirection) {
 
   try {
     if (gbSequentialRuns && giNumSequentialRuns > 0) {
-      //if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL) {
       if (geAnalysisType != PURELYSPATIAL) {
         //code only implemented for purley spatial analyses
-        giNumSequentialRuns = 0;
-        PrintDirection.SatScanPrintWarning("Error: The sequential scan feature is only implememted for purely spatial analyses only.\n");
+        PrintDirection.SatScanPrintWarning("Error: The sequential scan feature is only implemented for purely spatial analyses.\n");
+        return false;
+      }
+      if (!(geProbabilityModelType == POISSON || geProbabilityModelType == BERNOULLI || geProbabilityModelType == ORDINAL)) {
+        //code only implemented for Poisson or Bernoulli models
+        PrintDirection.SatScanPrintWarning("Error: The sequential scan feature is only implemented for Poisson, Bernoulli and Ordinal models only.\n");
         return false;
       }
       if (giNumSequentialRuns > MAXIMUM_SEQUENTIAL_ANALYSES) {
