@@ -45,7 +45,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 507
     Height = 389
-    ActivePage = tbInputFiles
+    ActivePage = tbOutputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input'
@@ -951,9 +951,9 @@ object frmAnalysis: TfrmAnalysis
         object lblRelativeRiskEstimatesArea: TLabel
           Left = 16
           Top = 96
-          Width = 155
+          Width = 174
           Height = 13
-          Caption = 'Relative Risks for Each Location'
+          Caption = 'Relative Estimates for Each Location'
         end
         object lblSimulatedLogLikelihoodRatios: TLabel
           Left = 16
