@@ -51,6 +51,9 @@ int main(int argc, char *argv[]) {
          if (Parameters.GetProbabiltyModelType() != SPACETIMEPERMUTATION)
            Parameters.SetOutputRelativeRisksAscii(true);
          Parameters.SetOutputSimLogLikeliRatiosAscii(true);
+         if (Parameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL || Parameters.GetAnalysisType() == PROSPECTIVESPACETIME)
+           //so that we can compare prospective analyses with v3.1 and prior, which didn't have below option 
+           Parameters.SetAdjustForEarlierAnalyses(true);
        }
        else if (!stricmp(argv[i], "-o")) {
          if (argc < i + 2)
