@@ -1,0 +1,171 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="SaTScanBatch.exe"/>
+    <OBJFILES value="SaTScanBatchMain.obj ..\calculation\utility\UtilityFunctions.obj 
+      ..\calculation\utility\JulianDates.obj 
+      ..\calculation\utility\RandomNumberGenerator.obj 
+      ..\calculation\utility\Salloc.obj 
+      ..\calculation\utility\RandomDistribution.obj 
+      ..\calculation\utility\Sort.obj ..\calculation\utility\SSException.obj 
+      ..\calculation\print\BasePrint.obj ..\calculation\print\PrintScreen.obj 
+      ..\calculation\probability_model\BernoulliModel.obj 
+      ..\calculation\probability_model\CalculateMeasure.obj 
+      ..\calculation\probability_model\ProbabilityModel.obj 
+      ..\calculation\probability_model\PoissonModel.obj 
+      ..\calculation\satscan_data\Tracts.obj 
+      ..\calculation\satscan_data\PopulationCategories.obj 
+      ..\calculation\satscan_data\SaTScanData.obj 
+      ..\calculation\satscan_data\SaTScanDataDisplay.obj 
+      ..\calculation\satscan_data\GridTractCoordinates.obj 
+      ..\calculation\satscan_data\MakeNeighbors.obj 
+      ..\calculation\satscan_data\PurelySpatialData.obj 
+      ..\calculation\satscan_data\PurelyTemporalData.obj 
+      ..\calculation\satscan_data\SaTScanDataRead.obj 
+      ..\calculation\satscan_data\SpaceTimeData.obj 
+      ..\calculation\cluster\Cluster.obj 
+      ..\calculation\cluster\SpaceTimeCluster.obj 
+      ..\calculation\cluster\TimeIntervalAlive.obj 
+      ..\calculation\cluster\TimeIntervalAll.obj 
+      ..\calculation\cluster\TimeEstimate.obj 
+      ..\calculation\cluster\IncidentRate.obj 
+      ..\calculation\cluster\PurelySpatialCluster.obj 
+      ..\calculation\cluster\PurelyTemporalCluster.obj 
+      ..\calculation\cluster\PurelySpatialMonotoneCluster.obj 
+      ..\calculation\analysis\MeasureList.obj 
+      ..\calculation\analysis\Analysis.obj 
+      ..\calculation\analysis\SignificantRatios05.obj 
+      ..\calculation\analysis\SpaceTimeIncludePureAnalysis.obj 
+      ..\calculation\analysis\SpaceTimeIncludePurelySpatialAnalysis.obj 
+      ..\calculation\analysis\SpaceTimeIncludePurelyTemporalAnalysis.obj 
+      ..\calculation\analysis\SpaceTimeAnalysis.obj 
+      ..\calculation\analysis\PurelySpatialAnalysis.obj 
+      ..\calculation\analysis\PurelySpatialMonotoneAnalysis.obj 
+      ..\calculation\analysis\PurelyTemporalAnalysis.obj 
+      ..\calculation\Parameters.obj"/>
+    <RESFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value="Vcl50.lib"/>
+    <SPARELIBS value="Vcl50.lib"/>
+    <PACKAGES value="Vcl50.bpi Vclx50.bpi Vcldb50.bpi Vclbde50.bpi vcldbx50.bpi bcbie50.bpi 
+      bcb2kaxserver50.bpi bcbsmp50.bpi ibsmp50.bpi dclocx50.bpi vclie50.bpi 
+      Inetdb50.bpi Inet50.bpi TeeQR50.bpi TeeUI50.bpi TeeDB50.bpi Tee50.bpi 
+      Qrpt50.bpi NMFast50.bpi VCLIB50.bpi TSGC5201.bpi TSDGC5201.bpi"/>
+    <PATHCPP value=".;..\calculation\utility;..\calculation\print;..\calculation\probability_model;..\calculation\satscan_data;..\calculation\cluster;..\calculation\analysis;..\calculation"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="tlink32"/>
+    <USERDEFINES value="INTEL_BASED"/>
+    <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
+    <MAINSOURCE value="SaTScanBatch.bpf"/>
+    <INCLUDEPATH value="..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <WARNINGS value="-w-par"/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-O2 -Vx -Ve -ff -X- -a8 -5 -b- -k- -vi -tWC -tWM- -c"/>
+    <PFLAGS value="-$Y- -$L- -$D- -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0x32.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cw32.lib"/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1033
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[Excluded Packages]
+$(BCB)\Bin\dcl31w50.bpl=Delphi 1.0 Compatibility Components
+$(BCB)\Bin\dcltqr50.bpl=TeeChart 5.0 for QuickReport Components Design Package
+$(BCB)\Bin\dclib50.bpl=InterBase Data Access Components
+$(BCB)\Bin\DBWEBXPRT.BPL=Borland Web Wizard Package
+$(BCB)\Bin\DCLNMF50.bpl=NetMasters Fastnet Tools
+C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\TSGDCLC5.bpl=Top Support TopGrid Components
+$(BCB)\Bin\dclocx50.bpl=Borland Sample Imported ActiveX Controls
+$(BCB)\Bin\mfcwizard.bpl=MFC Wizard
+$(BCB)\Bin\dclqrt50.bpl=QuickReport 3 Package
+$(BCB)\Bin\dcltee50.bpl=TeeChart 5.0 Components
+
+[HistoryLists\hlIncludePath]
+Count=5
+Item0=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;satscan_data;$(BCB)\include;$(BCB)\include\vcl;analysis;cluster;print;probability_model;utility
+Item2=satscan_data;$(BCB)\include;$(BCB)\include\vcl;analysis;cluster;print;probability_model;utility
+Item3=$(BCB)\include;$(BCB)\include\vcl;C:\Prj\SatScan\calculation;C:\Prj\SatScan\calculation\analysis;C:\Prj\SatScan\calculation\cluster;C:\Prj\SatScan\calculation\print;C:\Prj\SatScan\calculation\probability_model;C:\Prj\SatScan\calculation\utility
+Item4=$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=6
+Item0=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;analysis;cluster;print;utility;satscan_data;probability_model
+Item2=$(BCB)\lib\obj;$(BCB)\lib;analysis;cluster;print;utility;satscan_data;probability_model
+Item3=$(BCB)\lib\obj;$(BCB)\lib;C:\Prj\SatScan\calculation;C:\Prj\SatScan\calculation\analysis;C:\Prj\SatScan\calculation\cluster;C:\Prj\SatScan\calculation\print;C:\Prj\SatScan\calculation\utility;C:\Prj\SatScan\calculation\satscan_data;C:\Prj\SatScan\calculation\probability_model
+Item4=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib
+Item5=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=3
+Item0=INTEL_BASED
+Item1=INTEL_BASED;_DEBUG
+Item2=_DEBUG
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=C:\retro.prm
+HostApplication=C:\SatScan v3.0\calc\Satscan.exe
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>
