@@ -83,8 +83,9 @@ double * TractDescriptor::GetCoordinates(double* pCoordinates, const TractHandle
 }
 
 /** Get coordinates of tract. */
-std::vector<double> TractDescriptor::GetCoordinates(TractHandler const & theTractHandler) const {
-  return std::vector<double>(gpCoordinates, gpCoordinates + theTractHandler.tiGetDimensions());
+void TractDescriptor::RetrieveCoordinates(TractHandler const & theTractHandler, std::vector<double> & vRepository) const {
+  vRepository.resize(theTractHandler.tiGetDimensions());
+  std::copy(gpCoordinates, gpCoordinates + theTractHandler.tiGetDimensions(), vRepository.begin());
 }
 
 /** Returns coordinate at dimension. */
@@ -274,10 +275,10 @@ void TractHandler::tiGetCoords(tract_t t, double** pCoords) const {
 /**
 Get the tract coords for the given tract_t index.
 */
-std::vector<double> TractHandler::tiGetCoords(tract_t t) const {
+void TractHandler::tiRetrieveCoords(tract_t t, std::vector<double> & vRepository) const {
   if ((t < 0) || (t >= (tract_t)gvTractDescriptors.size()))
     ZdException::Generate("index, %d, is out of bounds: [0, %d].", "TractHandler", t, gvTractDescriptors.size() - 1);
-  return gvTractDescriptors[t]->GetCoordinates(*this);
+  gvTractDescriptors[t]->RetrieveCoordinates(*this, vRepository);
 }
 
 /** Returns the tract coords for the given tract_t index. */

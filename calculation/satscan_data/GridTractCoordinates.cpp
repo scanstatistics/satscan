@@ -196,10 +196,11 @@ void GInfo::giGetCoords(tract_t t, double** pCoord) const
 /**
 Get the tract coords for the given tract_t index.
 */
-std::vector<double> GInfo::giGetCoords(tract_t t) const {
+void GInfo::giRetrieveCoords(tract_t t, std::vector<double> & vRepository) const {
   if ((t < 0) || (t >= NumGridTracts))
     ZdException::Generate("index, %d, is out of bounds: [0, %d].", "TractHandler", t, NumGridTracts - 1);
-  return std::vector<double>(GridTractInfo[t].pCoords, GridTractInfo[t].pCoords + nDimensions);
+  vRepository.resize(nDimensions);
+  std::copy(GridTractInfo[t].pCoords, GridTractInfo[t].pCoords + nDimensions, vRepository.begin());
 }
 
 /**********************************************************************

@@ -37,12 +37,12 @@ class TractDescriptor {
     bool                                CompareCoordinates(const TractDescriptor & Descriptor, const TractHandler & theTractHandler) const;
     const double                      *	GetCoordinates() const {return gpCoordinates;}
     double                            *	GetCoordinates(double* pCoordinates, const TractHandler & theTractHandler) const;
-    std::vector<double>                 GetCoordinates(TractHandler const & theTractHandler) const;
     double                            	GetCoordinatesAtDimension(int iDimension, const TractHandler & theTractHandler) const;
     int                                 GetNumTractIdentifiers() const;
     const char                        * GetTractIdentifier() const {return gsTractIdentifiers;}
     const char 			      * GetTractIdentifier(int iTractIdentifierIndex, std::string & sIndentifier);
     void                                GetTractIdentifiers(std::vector<std::string>& vIdentifiers) const;
+    void                                RetrieveCoordinates(TractHandler const & theTractHandler, std::vector<double> & vRepository) const;
     void                                SetCoordinates(const double* pCoordinates, int iDimensions);
     void				SetTractIdentifier(const char * sTractIdentifier);
 
@@ -82,7 +82,6 @@ class TractHandler {
     tract_t                             tiCombineDuplicatesByCoordinates();
     void                                tiConcaticateDuplicateTractIdentifiers();
     void                                tiGetCoords(tract_t t, double** pCoords) const;
-    std::vector<double>                 tiGetCoords(tract_t t) const;
     void                                tiGetCoords2(tract_t t, double* pCoords) const;
     int                                 tiGetDimensions() const {return nDimensions;}
     double                              tiGetDistanceSq(double* pCoords, double* pCoords2) const;
@@ -93,6 +92,7 @@ class TractHandler {
     tract_t                             tiGetTractIndex(const char *tid) const;
     int                                 tiInsertTnode(const char *tid, std::vector<double>& vCoordinates);
     void                                tiReportDuplicateTracts(FILE * fDisplay) const;
+    void                                tiRetrieveCoords(tract_t t, std::vector<double> & vRepository) const;
     void                                tiSetDimensions(int iDimensions) {nDimensions = iDimensions;}
 };
 //*****************************************************************************
