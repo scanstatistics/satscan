@@ -13,15 +13,14 @@ class CPurelyTemporalData : public CSaTScanData {
     virtual ~CPurelyTemporalData();
 
     virtual void        AdjustNeighborCounts();
-    virtual void        AllocSimCases();
-    virtual bool        CalculateMeasure();
-    virtual void        DeAllocSimCases();
+    virtual void        AllocateSimulationStructures();
+    virtual bool        CalculateMeasure(DataStream & thisStream);
     virtual void        DisplayCases(FILE* pFile);
     virtual void        DisplayMeasure(FILE* pFile);
     virtual void        DisplaySimCases(FILE* pFile);
     virtual bool        FindNeighbors(bool bSimulations) {return true;/** no action - all locations included */}
     virtual tract_t     GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
-    virtual void        MakeData(int iSimulationNumber);
+    virtual void        MakeData(int iSimulationNumber, DataStreamGateway & DataGateway);
     virtual void        ReadDataFromFiles();
 };
 

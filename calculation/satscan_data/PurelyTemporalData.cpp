@@ -18,34 +18,38 @@ CPurelyTemporalData::CPurelyTemporalData(CParameters* pParameters, BasePrint *pP
 }
 
 /** destructor */
-CPurelyTemporalData::~CPurelyTemporalData() {
-  try {
-    if (m_pPTSimCases) DeAllocSimCases();
-  }
-  catch(...){}  
-}
+CPurelyTemporalData::~CPurelyTemporalData() {}
 
 void CPurelyTemporalData::AdjustNeighborCounts() {
   ZdGenerateException("AdjustNeighborCounts() not implemented for CPurelyTemporalData.","AdjustNeighborCounts()");
 }
 
-void CPurelyTemporalData::AllocSimCases() {
+void CPurelyTemporalData::AllocateSimulationStructures() {
+  ProbabiltyModelType   eProbabiltyModelType(m_pParameters->GetProbabiltyModelType());
+  AnalysisType          eAnalysisType(m_pParameters->GetAnalysisType());
+
   try {
-    CSaTScanData::AllocSimCases();  // Use until MakePurelyTemporalData implemented
-    m_pPTSimCases = (count_t*)Smalloc(m_nTimeIntervals * sizeof(count_t), gpPrint);
+    CSaTScanData::AllocateSimulationStructures();  // Use until MakePurelyTemporalData implemented
+    
+    //allocate simulation case arrays
+    if (eProbabiltyModelType != 10/*normal*/ && eProbabiltyModelType != 11/*rank*/)
+      gpDataStreams->AllocatePTSimCases();
+    //allocate simulation measure arrays
+    if (eProbabiltyModelType != 10/*normal*/ || eProbabiltyModelType != 11/*rank*/ || eProbabiltyModelType != 12/*survival*/)
+      gpDataStreams->AllocateSimulationPTMeasure();
   }
   catch (ZdException &x) {
-    x.AddCallpath("AllocSimCases()","CPurelyTemporalData");
+    x.AddCallpath("AllocateSimulationStructures()","CPurelyTemporalData");
     throw;
   }
 }
 
-bool CPurelyTemporalData::CalculateMeasure() {
+bool CPurelyTemporalData::CalculateMeasure(DataStream & thisStream) {
   bool bResult;
 
   try {
-    bResult = CSaTScanData::CalculateMeasure();
-    SetPurelyTemporalMeasures();
+    bResult = CSaTScanData::CalculateMeasure(thisStream);
+    thisStream.SetPTMeasureArray();
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateMeasure()", "CPurelyTemporalData");
@@ -54,23 +58,11 @@ bool CPurelyTemporalData::CalculateMeasure() {
   return bResult;
 }
 
-void CPurelyTemporalData::DeAllocSimCases() {
-  try {
-    CSaTScanData::DeAllocSimCases();  // Use until MakePurelyTemporalData implemented
-    free(m_pPTSimCases);
-    m_pPTSimCases = 0;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("DeAllocSimCases()","CPurelyTemporalData");
-    throw;
-  }
-}
-
 void CPurelyTemporalData::DisplayCases(FILE* pFile) {
   try {
-    fprintf(pFile, "PT Case counts (m_pPTCases)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
+    fprintf(pFile, "PT Case counts (PTCases)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
     for (int i = 0; i < m_nTimeIntervals; i++)
-       fprintf(pFile, "PTCases [%i] = %i\n", i,m_pPTCases[i]);
+       fprintf(pFile, "PTCases [%i] = %i\n", i, gpDataStreams->GetStream(0/*for now*/).GetPTCasesArray()[i]);
     fprintf(pFile, "\n\n");
   }
   catch (ZdException &x) {
@@ -81,9 +73,9 @@ void CPurelyTemporalData::DisplayCases(FILE* pFile) {
 
 void CPurelyTemporalData::DisplayMeasure(FILE* pFile) {
   try {
-    fprintf(pFile, "PT Measures (m_pPTMeasure)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
+    fprintf(pFile, "PT Measures (PTMeasure)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
     for (int i = 0; i < m_nTimeIntervals; i++)
-       fprintf(pFile, "PTMeasure [%i] = %f\n", i, m_pPTMeasure[i]);
+       fprintf(pFile, "PTMeasure [%i] = %f\n", i, gpDataStreams->GetStream(0/*for now*/).GetPTMeasureArray()[i]);
     fprintf(pFile, "\n\n");
   }
   catch (ZdException &x) {
@@ -94,9 +86,9 @@ void CPurelyTemporalData::DisplayMeasure(FILE* pFile) {
 
 void CPurelyTemporalData::DisplaySimCases(FILE* pFile) {
   try {
-    fprintf(pFile, "PT Simulated Case counts (m_pPTSimCases)\n\n");
+    fprintf(pFile, "PT Simulated Case counts (PTSimCases)\n\n");
     for (int i = 0; i < m_nTimeIntervals; i++)
-       fprintf(pFile, "PTSimCases [%i] = %i\n", i,m_pPTSimCases[i]);
+       fprintf(pFile, "PTSimCases [%i] = %i\n", i, gpDataStreams->GetStream(0/*for now*/).GetPTSimCasesArray()[i]);
     fprintf(pFile, "\n");
   }
   catch (ZdException &x) {
@@ -110,13 +102,13 @@ tract_t CPurelyTemporalData::GetNeighbor(int iEllipse, tract_t t, unsigned int n
   return 0;
 }
 
-void CPurelyTemporalData::MakeData(int iSimulationNumber) {
+void CPurelyTemporalData::MakeData(int iSimulationNumber, DataStreamGateway & DataGateway) {
   try {
-    CSaTScanData::MakeData(iSimulationNumber);
-    SetPurelyTemporalSimCases();
+    CSaTScanData::MakeData(iSimulationNumber, DataGateway);
+    gpDataStreams->SetPurelyTemporalSimCases();
   }
   catch (ZdException &x) {
-    x.AddCallpath("MakeData()", "CPurelyTemporalData");
+    x.AddCallpath("MakeData()","CPurelyTemporalData");
     throw;
   }
 }
