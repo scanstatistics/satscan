@@ -37,6 +37,7 @@ tract_t giGetNumTracts(void);
 tract_t giGetTractNum(const char *gid);
 char*   giGetGid(tract_t t) const;
 void    giGetCoords(tract_t t, double** pCoords) const ;
+std::vector<double> giGetCoords(tract_t t) const;
 void    giGetCoords2(tract_t t, double* pCoord) const ;
 int     giGetNumDimensions() const;
 
