@@ -66,26 +66,24 @@ USEUNIT("..\calculation\utility\DBFFile.cpp");
 USEUNIT("..\calculation\Output\stsAreaSpecificDBF.cpp");
 USEUNIT("..\calculation\Output\stsClusterLevelDBF.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
+USEUNIT("..\calculation\Output\stsOutputDBF.cpp");
 //---------------------------------------------------------------------------
-WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
-{
-        try
-        {
-                 BasisInit();
-                 ZdGetFileTypeArray()->AddElement( &(DBFFileType::GetDefaultInstance()) );
-                 Application->Initialize();
-                 Application->Title = "SaTScan";
-                 Application->HelpFile = "Stswinprj.HLP";
-                 Application->CreateForm(__classid(TfrmMainForm), &frmMainForm);
-                 Application->Run();
-                 BasisExit();
+WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+        try {
+           BasisInit();
+           ZdGetFileTypeArray()->AddElement( &(DBFFileType::GetDefaultInstance()) );
+           Application->Initialize();
+           Application->Title = "SaTScan";
+           Application->HelpFile = "Stswinprj.HLP";
+           Application->CreateForm(__classid(TfrmMainForm), &frmMainForm);
+           Application->Run();
+           BasisExit();
         }
         catch (ZdException &x) {
            DisplayBasisException(Application, x);
            BasisExit();
         }
-        catch (Exception &exception)
-        {
+        catch (Exception &exception) {
            Application->ShowException(&exception);
            BasisExit();
         }
