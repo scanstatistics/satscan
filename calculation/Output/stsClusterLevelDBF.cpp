@@ -15,7 +15,7 @@
 
 
 // constructor
-__fastcall stsClusterLevelDBF::stsClusterLevelDBF(const long& lRunNumber, const int& iCoordType, const ZdFileName& sOutputFileName)
+__fastcall stsClusterLevelDBF::stsClusterLevelDBF(const long lRunNumber, const int iCoordType, const ZdFileName& sOutputFileName)
                              : DBaseOutput(lRunNumber, iCoordType) {
    try {
       Init();
@@ -34,33 +34,6 @@ stsClusterLevelDBF::~stsClusterLevelDBF() {
    catch (...) {/* munch munch, yummy*/}
 }
 
-// sets up the global vecotr of ZdFields
-// pre: pass in an empty vector
-// post: vector will be defined using the names and field types provided by the descendant classes
-void stsClusterLevelDBF::GetFields() {
-   DBFFile		File;
-   ZdField		*pField = 0;
-   std::vector<field_t>         vFields;
-
-   try {
-      CleanupFieldVector();
-      SetupFields(vFields);
-
-      for(unsigned int i = 0; i < vFields.size(); ++i) {
-         pField = (File.GetNewField());
-         pField->SetName(vFields[i].gsFieldName.c_str());
-         pField->SetType(vFields[i].gcFieldType);
-         pField->SetLength(vFields[i].gwLength);
-         pField->SetPrecision(vFields[i].gwPrecision);
-         gvFields.AddElement(pField);  ;
-      }
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetFields()", "DBaseOutput");
-      throw;
-   }
-}
-
 // global inits
 void stsClusterLevelDBF::Init() {
 }
@@ -68,19 +41,18 @@ void stsClusterLevelDBF::Init() {
 // records the calculated data from the cluster into the dBase file
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
-void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber) {
-   unsigned short       uwFieldNumber = 0;
-   float                fRadius = 0, fLatitude = 0, fLongitude = 0;
-   double               *pCoords = 0, *pCoords2 = 0;
-   ZdFieldValue         fv;
-   ZdString             sAdditCoords;
-   ZdTransaction*       pTransaction = 0;
+void stsClusterLevelDBF::RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber) {
+   unsigned short               uwFieldNumber = 0;
+   float                        fRadius = 0.0, fLatitude = 0.0, fLongitude = 0.0;
+   ZdFieldValue                 fv;
+   ZdString                     sAdditCoords;
+   ZdTransaction*               pTransaction = 0;
 
    try {
       DBFFile File(gsFileName.GetCString());
-      pTransaction= (File.BeginTransaction());
+      pTransaction= File.BeginTransaction();
 
-      auto_ptr<ZdFileRecord> pRecord;
+      std::auto_ptr<ZdFileRecord>  pRecord;
       pRecord.reset(File.GetNewRecord());
 
       // define record data
@@ -88,52 +60,36 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
       SetDoubleField(*pRecord, double(glRunNumber), uwFieldNumber);
 
       // cluster start date
-      SetDoubleField(*pRecord, pCluster->m_nStartDate, (++uwFieldNumber));
+      SetDoubleField(*pRecord, pCluster.m_nStartDate, (++uwFieldNumber));
 
       // cluster end date
-      SetDoubleField(*pRecord, pCluster->m_nEndDate, (++uwFieldNumber));
+      SetDoubleField(*pRecord, pCluster.m_nEndDate, (++uwFieldNumber));
 
       // cluster number
       SetDoubleField(*pRecord, iClusterNumber, (++uwFieldNumber));
 
       // observed
-      SetDoubleField(*pRecord, pCluster->m_nCases, (++uwFieldNumber));
+      SetDoubleField(*pRecord, pCluster.m_nCases, (++uwFieldNumber));
 
       // expected
-      SetDoubleField(*pRecord, pCluster->m_nMeasure, (++uwFieldNumber));
+      SetDoubleField(*pRecord, pCluster.m_nMeasure, (++uwFieldNumber));
 
       // relative risk
-      SetDoubleField(*pRecord, pCluster->GetRelativeRisk(pData->GetMeasureAdjustment()), (++uwFieldNumber));
+      SetDoubleField(*pRecord, pCluster.GetRelativeRisk(pData.GetMeasureAdjustment()), (++uwFieldNumber));
 
       // log likliehood
-      SetDoubleField(*pRecord, pCluster->m_nLogLikelihood, (++uwFieldNumber));
+      SetDoubleField(*pRecord, pCluster.m_nLogLikelihood, (++uwFieldNumber));
 
       // p value
-      SetDoubleField(*pRecord, pCluster->gfPValue, (++uwFieldNumber));
+      SetDoubleField(*pRecord, pCluster.gfPValue, (++uwFieldNumber));
 
       // number of areas in the cluster
-      SetDoubleField(*pRecord, pCluster->m_nTracts, (++uwFieldNumber));
+      SetDoubleField(*pRecord, pCluster.m_nTracts, (++uwFieldNumber));
 
       // central area id
-      SetDoubleField(*pRecord, pCluster->m_Center, (++uwFieldNumber));
+      SetDoubleField(*pRecord, pCluster.m_Center, (++uwFieldNumber));
 
-      (pData->GetGInfo())->giGetCoords(pCluster->m_Center, &pCoords);
-      (pData->GetTInfo())->tiGetCoords(pData->GetNeighbor(pCluster->m_iEllipseOffset, pCluster->m_Center, pCluster->m_nTracts), &pCoords2);
-      fRadius = (float)sqrt((pData->GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
-      if(giCoordType == CARTESIAN) {
-         for (int i = 0; i < (pData->m_pParameters->m_nDimension); ++i) {
-            if (i == 0)
-               fLatitude = pCoords[i];
-            else if (i == 1)
-               fLongitude = pCoords[i];
-            else
-               sAdditCoords << pCoords[i] << ", ";
-         }
-         if(sAdditCoords.GetLength() > 0)
-            sAdditCoords = sAdditCoords.Remove(sAdditCoords.GetLength()-2, 1);    // strip off the last comma AJV 9/9/2002
-      }
-      else
-         ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
+      SetCoordinates(fLatitude, fLongitude, fRadius, sAdditCoords, pCluster, pData);
 
       // coord north
       SetDoubleField(*pRecord, fLatitude, (++uwFieldNumber));
@@ -150,13 +106,8 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
       File.AppendRecord(*pTransaction, *pRecord);
       File.EndTransaction(pTransaction); pTransaction = 0;
       File.Close();
-
-      free(pCoords);
-      free(pCoords2);
    }
    catch (ZdException &x) {
-      free(pCoords);
-      free(pCoords2);
       pTransaction = 0;
       x.AddCallpath("RecordClusterData()", "stsClusterLevelDBF");
       throw;
@@ -172,6 +123,42 @@ void stsClusterLevelDBF::Setup(const ZdString& sOutputFileName) {
    }
    catch(ZdException &x) {
       x.AddCallpath("Setup()", "stsClusterLevelDBF");
+      throw;
+   }
+}
+
+// this a a very ugly function, I will be the first to admit, but it is borrowed code from the
+// way SatScan uses to calculate and print these Coordinate values, so don't blame me that it
+// stinks cause someone else wrote it, I just plagurized it - AJV 9/25/2002
+// pre : none that I can think of
+// post : sets the values for long, lat, sAdditCoords, and radius
+void stsClusterLevelDBF::SetCoordinates(float& fLatitude, float& fLongitude, float& fRadius, ZdString& sAdditCoords,
+                                        const CCluster& pCluster, const CSaTScanData& pData) {
+   double *pCoords = 0, *pCoords2 = 0;
+
+   try {
+      (pData.GetGInfo())->giGetCoords(pCluster.m_Center, &pCoords);
+      (pData.GetTInfo())->tiGetCoords(pData.GetNeighbor(pCluster.m_iEllipseOffset, pCluster.m_Center, pCluster.m_nTracts), &pCoords2);
+      fRadius = (float)sqrt((pData.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
+      if(giCoordType == CARTESIAN) {
+         for (int i = 0; i < (pData.m_pParameters->m_nDimension); ++i) {
+            if (i == 0)
+               fLatitude = pCoords[i];
+            else if (i == 1)
+               fLongitude = pCoords[i];
+            else if (i > 2 ? (sAdditCoords << ", ") : (sAdditCoords << ""));
+               sAdditCoords << pCoords[i];
+         }
+      }
+      else
+         ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
+      free(pCoords);
+      free(pCoords2);
+   }
+   catch (ZdException &x) {
+      free(pCoords);
+      free(pCoords2);
+      x.AddCallpath("SetCoordinates()", "stsClusterLevelDBF");
       throw;
    }
 }

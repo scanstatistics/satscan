@@ -14,33 +14,34 @@ class field_t {
       short        gwLength;
       short        gwPrecision;
 
-      field_t(std::string  sFieldName, char cFieldType, short wLength, short wPrecision)
+      field_t(const std::string&  sFieldName, char cFieldType, short wLength, short wPrecision)
               {gsFieldName = sFieldName; gcFieldType = cFieldType; gwLength = wLength; gwPrecision = wPrecision;}
 };
 
 class DBaseOutput {
    private:
       void	Init();
-      void	Setup(const long& lRunNumber, const int& iCoordType = 0);
+      void	Setup(const long lRunNumber, const int iCoordType = 0);
    protected:
       ZdVector<ZdField*>        gvFields;
-      long                      glRunNumber;
+      long                      glRunNumber;  // unique run number assigned in Run History file and sent to dbf to be recorded - AJV 9/24/2002
       int                       giCoordType;
-      ZdString                  gsFileName;
+      ZdString                  gsFileName;  // although it is not defined in this class, it is set by the decendant classes
+                                             // and used in this class, therefore since its used by both I factored it up - AJV 9/24/2002
 
       virtual void      CleanupFieldVector();
       virtual void      CreateDBFFile();
-      virtual void      GetFields() = 0;
-      virtual void      SetBoolField(ZdFileRecord& record, const bool& bValue, const unsigned long& uwFieldNumber);
-      virtual void      SetDoubleField(ZdFileRecord& record, const double& dValue, const unsigned long& uwFieldNumber);
-      virtual void      SetLongField(ZdFileRecord& record, const long& lValue, const unsigned long& uwFieldNumber);
-      virtual void      SetStringField(ZdFileRecord& record, const ZdString& sValue, const unsigned long& uwFieldNumber);
+      virtual void      GetFields();
+      virtual void      SetBoolField(ZdFileRecord& record, const bool bValue, const unsigned long uwFieldNumber);
+      virtual void      SetDoubleField(ZdFileRecord& record, const double dValue, const unsigned long uwFieldNumber);
+      virtual void      SetLongField(ZdFileRecord& record, const long lValue, const unsigned long uwFieldNumber);
+      virtual void      SetStringField(ZdFileRecord& record, const ZdString& sValue, const unsigned long uwFieldNumber);
       virtual void      SetupFields(std::vector<field_t>& vFields) = 0;
    public:
-      __fastcall DBaseOutput(const long& lRunNumber, const int& iCoordType = 0);
+      __fastcall DBaseOutput(const long lRunNumber, const int iCoordType = 0);
       virtual ~DBaseOutput();
 
-      virtual void      RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber) = 0;
+      virtual void      RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber) = 0;
 };
 
 #endif

@@ -16,7 +16,7 @@ const char *    CLUSTER_LEVEL_DBF_FILE  =       "ClusterLevel.dbf";
 const char *    AREA_SPECIFIC_DBF_FILE  =       "AreaSpecific.dbf";
 
 // constructor
-__fastcall DBaseOutput::DBaseOutput(const long& lRunNumber, const int& iCoordType) {
+__fastcall DBaseOutput::DBaseOutput(const long lRunNumber, const int iCoordType) {
    try {
       Init();
       Setup(lRunNumber, iCoordType);
@@ -73,6 +73,33 @@ void DBaseOutput::CreateDBFFile() {
    }
 }
 
+// sets up the global vector of ZdFields
+// pre: pass in an empty vector
+// post: vector will be defined using the names and field types provided by the descendant classes
+void DBaseOutput::GetFields() {
+   DBFFile		File;
+   ZdField		*pField = 0;
+   std::vector<field_t>         vFields;
+
+   try {
+      CleanupFieldVector();           // empty out the global field vector
+      SetupFields(vFields);
+
+      for(unsigned int i = 0; i < vFields.size(); ++i) {
+         pField = (File.GetNewField());
+         pField->SetName(vFields[i].gsFieldName.c_str());
+         pField->SetType(vFields[i].gcFieldType);
+         pField->SetLength(vFields[i].gwLength);
+         pField->SetPrecision(vFields[i].gwPrecision);
+         gvFields.AddElement(pField);  ;
+      }
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("GetFields()", "DBaseOutput");
+      throw;
+   }
+}
+
 // global inits
 void DBaseOutput::Init() {
    glRunNumber = 0;
@@ -82,7 +109,7 @@ void DBaseOutput::Init() {
 // function to set the value of boolean fields
 // pre: record has been allocated
 // post: sets the values in the FieldNumber field of the record
-void DBaseOutput::SetBoolField(ZdFileRecord& record, const bool& bValue, const unsigned long& uwFieldNumber) {
+void DBaseOutput::SetBoolField(ZdFileRecord& record, const bool bValue, const unsigned long uwFieldNumber) {
    ZdFieldValue fv;
 
    try {
@@ -99,7 +126,7 @@ void DBaseOutput::SetBoolField(ZdFileRecord& record, const bool& bValue, const u
 // function to set the value of double fields
 // pre: record has been allocated
 // post: sets the values in the FieldNumber field of the record
-void DBaseOutput::SetDoubleField(ZdFileRecord& record, const double& dValue, const unsigned long& uwFieldNumber) {
+void DBaseOutput::SetDoubleField(ZdFileRecord& record, const double dValue, const unsigned long uwFieldNumber) {
    ZdFieldValue fv;
 
    try {
@@ -116,7 +143,7 @@ void DBaseOutput::SetDoubleField(ZdFileRecord& record, const double& dValue, con
 // function to set the value of long fields
 // pre: record has been allocated
 // post: sets the values in the FieldNumber field of the record
-void DBaseOutput::SetLongField(ZdFileRecord& record, const long& lValue, const unsigned long& uwFieldNumber) {
+void DBaseOutput::SetLongField(ZdFileRecord& record, const long lValue, const unsigned long uwFieldNumber) {
    ZdFieldValue fv;
 
    try {
@@ -133,7 +160,7 @@ void DBaseOutput::SetLongField(ZdFileRecord& record, const long& lValue, const u
 // function to set the value of string fields
 // pre: record has been allocated
 // post: sets the values in the FieldNumber field of the record
-void DBaseOutput::SetStringField(ZdFileRecord& record, const ZdString& sValue, const unsigned long& uwFieldNumber) {
+void DBaseOutput::SetStringField(ZdFileRecord& record, const ZdString& sValue, const unsigned long uwFieldNumber) {
    ZdFieldValue fv;
 
    try {
@@ -148,7 +175,7 @@ void DBaseOutput::SetStringField(ZdFileRecord& record, const ZdString& sValue, c
 }
 
 // internal setup function
-void DBaseOutput::Setup(const long& lRunNumber, const int& iCoordType) {
+void DBaseOutput::Setup(const long lRunNumber, const int iCoordType) {
    giCoordType = iCoordType;
    glRunNumber = lRunNumber;
 }	

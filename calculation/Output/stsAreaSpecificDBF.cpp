@@ -14,7 +14,7 @@
 #include <DBFFile.h>
 
 // constructor
-__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const long& lRunNumber, const int& iCoordType, const ZdFileName& sOutputFileName)
+__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const long lRunNumber, const int iCoordType, const ZdFileName& sOutputFileName)
                              : DBaseOutput(lRunNumber, iCoordType) {
    try {
       Init();
@@ -33,33 +33,6 @@ stsAreaSpecificDBF::~stsAreaSpecificDBF() {
    catch (...) {/* munch munch, yummy*/}
 }
 
-// sets up the global vecotr of ZdFields
-// pre: pass in an empty vector
-// post: vector will be defined using the names and field types provided by the descendant classes
-void stsAreaSpecificDBF::GetFields() {
-   DBFFile		File;
-   ZdField		*pField = 0;
-   std::vector<field_t>         vFields;
-
-   try {
-      CleanupFieldVector();           // empty out the global field vector
-      SetupFields(vFields);
-
-      for(unsigned int i = 0; i < vFields.size(); ++i) {
-         pField = (File.GetNewField());
-         pField->SetName(vFields[i].gsFieldName.c_str());
-         pField->SetType(vFields[i].gcFieldType);
-         pField->SetLength(vFields[i].gwLength);
-         pField->SetPrecision(vFields[i].gwPrecision);
-         gvFields.AddElement(pField);  ;
-      }
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetFields()", "DBaseOutput");
-      throw;
-   }
-}
-
 // global inits
 void stsAreaSpecificDBF::Init() {
 }
@@ -67,7 +40,7 @@ void stsAreaSpecificDBF::Init() {
 // records the calculated data from the cluster into the dBase file
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
-void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber) {
+void stsAreaSpecificDBF::RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber) {
    unsigned long        uwFieldNumber = 0;
    ZdFieldValue         fv;
    ZdTransaction*       pTransaction = 0;
@@ -86,19 +59,19 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
       SetDoubleField(*pRecord, iClusterNumber, (++uwFieldNumber));
 
       // area id
-      SetDoubleField(*pRecord, pCluster->m_Center, (++uwFieldNumber));
+      SetDoubleField(*pRecord, pCluster.m_Center, (++uwFieldNumber));
 
       // p value
-      SetDoubleField(*pRecord, pCluster->gfPValue, (++uwFieldNumber));
+      SetDoubleField(*pRecord, pCluster.gfPValue, (++uwFieldNumber));
 
       // observed
-      SetDoubleField(*pRecord, pCluster->m_nCases, (++uwFieldNumber));
+      SetDoubleField(*pRecord, pCluster.m_nCases, (++uwFieldNumber));
 
       // expected
-      SetDoubleField(*pRecord, pCluster->m_nMeasure, (++uwFieldNumber));
+      SetDoubleField(*pRecord, pCluster.m_nMeasure, (++uwFieldNumber));
 
       // relative risk
-      SetDoubleField(*pRecord, pCluster->GetRelativeRisk(pData->GetMeasureAdjustment()), (++uwFieldNumber));
+      SetDoubleField(*pRecord, pCluster.GetRelativeRisk(pData.GetMeasureAdjustment()), (++uwFieldNumber));
 
       File.AppendRecord(*pTransaction, *pRecord);
 

@@ -7,14 +7,15 @@ class stsClusterLevelDBF : public DBaseOutput {
    private:
       void	Init();
       void	Setup(const ZdString& sOutputFileName);
+      void      SetCoordinates(float& fLatitude, float& fLongitude, float& fRadius, ZdString& sAdditCoords,
+                               const CCluster& pCluster, const CSaTScanData& pData);
    protected:
-      virtual void              GetFields();
       virtual void              SetupFields(std::vector<field_t>& vFields);
    public:
-      __fastcall stsClusterLevelDBF(const long& lRunNumber, const int& iCoordType, const ZdFileName& sOutputFileName);
+      __fastcall stsClusterLevelDBF(const long lRunNumber, const int iCoordType, const ZdFileName& sOutputFileName);
       virtual ~stsClusterLevelDBF();
 
-      void              RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber);
+      void              RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber);
 };
 
 #endif

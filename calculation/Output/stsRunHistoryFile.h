@@ -20,6 +20,12 @@ class stsRunHistoryFile {
       long              glRunNumber;
 
       void      CleanupFieldVector(ZdVector<ZdField*>& vFields);
+      void      GetAnalysisTypeString(ZdString& sTempValue, int iType);
+      void      GetCasePrecisionString(ZdString& sTempValue, int iPrecision);
+      void      GetIntervalUnitsString(ZdString& sTempValue, int iUnits);
+      void      GetProbabilityModelString(ZdString& sTempValue, int iModel);
+      void      GetRatesString(ZdString& sTempValue, int iRate);
+      void      GetTimeAdjustmentString(ZdString& sTempValue, int iType);
       void	Init();
       void      SetRunNumber();
       void	Setup(const ZdString& sFileName);
@@ -27,17 +33,17 @@ class stsRunHistoryFile {
       void      CreateRunHistoryFile();
       void      SetupFields(std::vector<history_field_t>&  vFieldDescrip );
 
-      void      SetBoolField(ZdFileRecord& record, const bool& bValue, const unsigned long& uwFieldNumber);
-      void      SetDoubleField(ZdFileRecord& record, const double& dValue, const unsigned long& uwFieldNumber);
-      void      SetLongField(ZdFileRecord& record, const long& lValue, const unsigned long& uwFieldNumber);
-      void      SetStringField(ZdFileRecord& record, const ZdString& sValue, const unsigned long& uwFieldNumber);
+      void      SetBoolField(ZdFileRecord& record, const bool bValue, const unsigned long uwFieldNumber);
+      void      SetDoubleField(ZdFileRecord& record, const double dValue, const unsigned long uwFieldNumber);
+      void      SetLongField(ZdFileRecord& record, const long lValue, const unsigned long uwFieldNumber);
+      void      SetStringField(ZdFileRecord& record, const ZdString& sValue, const unsigned long uwFieldNumber);
    public:
       stsRunHistoryFile(const ZdString& sFileName);
       ~stsRunHistoryFile();
 
-      const long&       GetRunNumber() const {return glRunNumber;}
+      const long        GetRunNumber() const {return glRunNumber;}
       const ZdString&   GetRunHistoryFileName() const {return gsFilename;}
-      void              LogNewHistory(const CAnalysis* pAnalysis, const unsigned short& uwSignificantAt005, BasePrint& PrintDirection);
+      void              LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005, BasePrint& PrintDirection);
 };
 
 //---------------------------------------------------------------------------
