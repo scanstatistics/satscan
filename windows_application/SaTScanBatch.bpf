@@ -57,6 +57,12 @@ USEUNIT("..\calculation\Output\stsOutputFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsRelativeRisk.cpp");
 USEUNIT("..\calculation\Output\stsAreaSpecificData.cpp");
 USEUNIT("..\calculation\Toolkit.cpp");
+USEUNIT("..\calculation\cluster\TimeTrend.cpp");
+USEUNIT("..\calculation\satscan_data\SVTTData.cpp");
+USEUNIT("..\calculation\analysis\SVTTAnalysis.cpp");
+USEUNIT("..\calculation\cluster\SVTTCluster.cpp");
+USEUNIT("..\calculation\cluster\TimeIntervalRange.cpp");
+USEUNIT("..\calculation\cluster\PurelySpatialProspectiveCluster.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -55,7 +55,13 @@
       ..\calculation\Output\stsOutputFileData.obj 
       ..\calculation\Output\stsOutputFileWriter.obj 
       ..\calculation\Output\stsRelativeRisk.obj 
-      ..\calculation\Output\stsAreaSpecificData.obj ..\calculation\Toolkit.obj"/>
+      ..\calculation\Output\stsAreaSpecificData.obj ..\calculation\Toolkit.obj 
+      ..\calculation\cluster\TimeTrend.obj 
+      ..\calculation\satscan_data\SVTTData.obj 
+      ..\calculation\analysis\SVTTAnalysis.obj 
+      ..\calculation\cluster\SVTTCluster.obj 
+      ..\calculation\cluster\TimeIntervalRange.obj 
+      ..\calculation\cluster\PurelySpatialProspectiveCluster.obj"/>
     <RESFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -80,10 +86,10 @@
     <MAINSOURCE value="SaTScanBatch.bpf"/>
     <INCLUDEPATH value="..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
     <LIBPATH value="..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
-    <WARNINGS value="-w-par -w-8027 -w-8026"/>
+    <WARNINGS value="-w-par -w-8027 -w-8026 -w-aus"/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl51.csm -Hc -Q -Vx -Ve -ff -X- -r- -a8 -5 -b- -k -y -v 
+    <CFLAG1 value="-Od -H=vcl_trunk_batch.csm -Hc -Q -Vx -Ve -ff -X- -r- -a8 -5 -b- -k -y -v 
       -vi- -tWC -tWM- -c"/>
     <PFLAGS value="-$Y+ -$W -$O- -v -JPHNE -M"/>
     <RFLAGS value=""/>
@@ -186,7 +192,7 @@ Item5=_DEBUG
 DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd540;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
 
 [Parameters]
-RunParams=&quot;C:\test\Sample Data(line)\nycfever.prm&quot;
+RunParams=&quot;C:\Documents and Settings\Hostovic.OMNI\Desktop\NYCfever.scanwindow.prm&quot;
 HostApplication=C:\SatScan v3.0\calc\Satscan.exe
 RemoteHost=
 RemotePath=

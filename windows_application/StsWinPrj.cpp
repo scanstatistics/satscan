@@ -77,6 +77,12 @@ USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib");
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
 USEUNIT("stsBaseAnalysisChildForm.cpp");
+USEUNIT("..\calculation\cluster\TimeIntervalRange.cpp");
+USEUNIT("..\calculation\cluster\TimeTrend.cpp");
+USEUNIT("..\calculation\cluster\SVTTCluster.cpp");
+USEUNIT("..\calculation\satscan_data\SVTTData.cpp");
+USEUNIT("..\calculation\analysis\SVTTAnalysis.cpp");
+USEUNIT("..\calculation\cluster\PurelySpatialProspectiveCluster.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         try {
