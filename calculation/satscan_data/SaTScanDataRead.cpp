@@ -67,7 +67,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
    int    		i, cat, nScanResult, nDataElements=3, nCats=gpCats->catGetNumEls();
    bool   		bCatsMissing=false;
    long   		count;
-   char	             ** cvec, szTid[MAX_LINESIZE];
+   char	             ** cvec, szTid[MAX_LINEITEMSIZE];
    BasePrint::eInputFileType       eFileType;
 
    try {
@@ -287,7 +287,7 @@ bool CSaTScanData::ReadPops() {
   std::vector<Julian>             vPopulationDates;
   std::vector<Julian>::iterator   itrdates;
   char                          * ptr, ** cvec = 0,
-                                  sDateString[MAX_LINESIZE], szData[MAX_LINESIZE], szTid[MAX_LINESIZE];
+                                  sDateString[MAX_LINEITEMSIZE], szData[MAX_LINESIZE], szTid[MAX_LINEITEMSIZE];
   int                             i, iCategoryIndex, iNumCategories;
   bool                            bValid=true, bEmpty=true, InvalidForProspective=false;
   tract_t                         nRec=0, nNonBlankLines, tract;
@@ -482,7 +482,7 @@ bool CSaTScanData::ReadGeo() {
  **********************************************************************/
 bool CSaTScanData::ReadGeoLatLong() {
    bool    bValid = true,  bEmpty = true;
-   char    szData[MAX_LINESIZE], szTid[MAX_LINESIZE];
+   char    szData[MAX_LINESIZE], szTid[MAX_LINEITEMSIZE];
    int     nScanCount;                        // Num of items on input line
    tract_t nRec = 0;                              // File record number
    double   Latitude, Longitude, pCoords[3];													 // 3-dimensional coords
@@ -589,7 +589,7 @@ bool CSaTScanData::ReadGeoLatLong() {
  **********************************************************************/
 bool CSaTScanData::ReadGeoCoords() {
    bool    bValid = true, bEmpty = true;
-   char    szData[MAX_LINESIZE], szFirstLine[MAX_LINESIZE], szTid[MAX_LINESIZE];
+   char    szData[MAX_LINESIZE], szFirstLine[MAX_LINESIZE], szTid[MAX_LINEITEMSIZE];
    int     i, nScanCount = 0;                        // Num of items on input line
    tract_t nRec = 0;                              // File record number
    double*  pCoords = NULL;                    // Ptr to Tract coords
@@ -769,7 +769,7 @@ bool CSaTScanData::ReadGrid() {
  **********************************************************************/
 bool CSaTScanData::ReadGridCoords() {
    bool    bValid = true, bEmpty = true;
-   char    szData[MAX_LINESIZE], szTid[MAX_LINESIZE];
+   char    szData[MAX_LINESIZE], szTid[MAX_LINEITEMSIZE];
    int     i, nScanCount = 0;                        // Num of items on input line
    tract_t nRec = 0;                              // File record number
    double*   pCoords = 0;                           // Ptr to Grid tract coords
@@ -857,7 +857,7 @@ bool CSaTScanData::ReadGridCoords() {
 
 bool CSaTScanData::ReadGridLatLong() {
    bool    	bValid=true, bEmpty=true;
-   char    	szData[MAX_LINESIZE], szTid[MAX_LINESIZE];
+   char    	szData[MAX_LINESIZE], szTid[MAX_LINEITEMSIZE];
    int     	nScanCount;                                 // Num of items on input line
    tract_t 	nRec = 0;                                   // File record number
    double   	Latitude, Longitude, * pCoords=0;
