@@ -128,9 +128,7 @@ void SaTScanFileImporter::ImportToRemoteFile( ZdVector< ZdVector<const ZdField*>
   bool                                 bErrorOccurred;
   BFileDestDescriptor::ErrorOptions    eErrorOptions;
   ZdFileRecord                       * pRecordBuffer = 0;
-  //ZdDatabaseTransaction                DBTransaction ( 0, "ImportToRemoteFile() transaction" );
-
-  ZdTransactionOld  DBTransaction(*gpRemoteFile);
+  ZdTransactionOld                     DBTransaction(*gpRemoteFile);
 
   try {
      eErrorOptions = gpFileDestDescriptor->GetErrorOptionsType();
@@ -145,7 +143,9 @@ void SaTScanFileImporter::ImportToRemoteFile( ZdVector< ZdVector<const ZdField*>
            gStats.ulRecordsRead++;
            bErrorOccurred = false;
            while ( ++iColumn <= gpSourceInterface->GetNumColumns() ) {
-                sValue = gpSourceInterface->GetValueAt( iColumn );
+                sValue = gpSourceInterface->GetValueAt(iColumn);
+                if (gpSourceInterface->GetColumnType(iColumn) == ZD_DATE_FLD)
+                  AttemptFilterDateField(sValue);
                 ZdVector<const ZdField*>& vec = vMappings.GetElement( iColumn - 1 );
                 gPutError.SetCurrent( gpSourceInterface->GetCurrentRecordNum(), iColumn );
                 for ( j=0; j < ( int )vec.size(); j++ ) {
@@ -210,8 +210,6 @@ bool SaTScanFileImporter::PutTokenToRecord(ZdFileRecord & Record, ZdString & sTo
   bool     bErrorFound = false;
 
   try {
-    if (wField == gwDateFilteredField)
-      AttemptFilterDateField(sToken);
     if (sToken.GetLength())
       Record.PutField(wField, sToken);
   }
