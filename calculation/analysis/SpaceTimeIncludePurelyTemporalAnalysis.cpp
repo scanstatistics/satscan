@@ -1,10 +1,12 @@
+//*****************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//*****************************************************************************
 #include "SpaceTimeIncludePurelyTemporalAnalysis.h"
 
 /** Constructor */
-C_ST_PT_Analysis::C_ST_PT_Analysis(CParameters*  pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-                 :CSpaceTimeAnalysis(pParameters, pData, pPrintDirection) {
+C_ST_PT_Analysis::C_ST_PT_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
+                 :CSpaceTimeAnalysis(Parameters, DataHub, PrintDirection) {
   Init();
 }
 
@@ -27,17 +29,17 @@ void C_ST_PT_Analysis::AllocateSimulationObjects(const AbtractDataStreamGateway 
   try {
     //allocate objects for space-time part of simulations
     CSpaceTimeAnalysis::AllocateSimulationObjects(DataGateway);
-    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+    if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
       eIncludeClustersType = ALLCLUSTERS;
     else
-      eIncludeClustersType = m_pParameters->GetIncludeClustersType();
+      eIncludeClustersType = gParameters.GetIncludeClustersType();
 
     //create simulation objects based upon which process used to perform simulations
     if (gbMeasureListReplications)
       gpPTClusterData = new TemporalData(DataGateway);
     else {
       //allocate purely temporal, comparator cluster and top cluster
-      gpTopPurelyTemporalCluster = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
+      gpTopPurelyTemporalCluster = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
       gpPurelyTemporalClusterComparator = gpTopPurelyTemporalCluster->Clone();
     }  
   }
@@ -54,36 +56,34 @@ void C_ST_PT_Analysis::AllocateSimulationObjects(const AbtractDataStreamGateway 
     all possible time intervals - populates top cluster array with most likely
     cluster about each grid point plus , possible, one more for purely temporal
     cluster. */
-bool C_ST_PT_Analysis::FindTopClusters(const AbtractDataStreamGateway & DataGateway) {
+void C_ST_PT_Analysis::FindTopClusters(const AbtractDataStreamGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
   IncludeClustersType           eIncludeClustersType;
 
   try {
     //calculate top cluster over all space-time
-    if (!CSpaceTimeAnalysis::FindTopClusters(DataGateway))
-      return false;
-
+    CSpaceTimeAnalysis::FindTopClusters(DataGateway, TopClustersContainer);
+    //detect user cancellation
+    if (gPrintDirection.GetIsCanceled())
+      return;
     //calculate top purely temporal cluster
-    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+    if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
       eIncludeClustersType = ALIVECLUSTERS;
     else
-      eIncludeClustersType = m_pParameters->GetIncludeClustersType();
+      eIncludeClustersType = gParameters.GetIncludeClustersType();
     //create top cluster
-    CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
+    CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
     //create comparator cluster
-    CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
+    CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
     gpTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
     if (TopCluster.ClusterDefined()) {
-      m_pTopClusters[m_nClustersRetained] = TopCluster.Clone();
-      m_pTopClusters[m_nClustersRetained]->SetStartAndEndDates(m_pData->GetTimeIntervalStartTimes(), m_pData->m_nTimeIntervals);
-      m_nClustersRetained++;
-      SortTopClusters();
+      TopClustersContainer.Add(TopCluster);
+      TopClustersContainer.SortTopClusters();
     }
   }
   catch (ZdException &x) {
     x.AddCallpath("FindTopClusters()","C_ST_PT_Analysis");
     throw;
   }
-  return true;
 }
 
 /** calculates largest loglikelihood ratio for simulation data - using same
@@ -114,18 +114,12 @@ double C_ST_PT_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
   //compare purely temporal cluster in same ratio correction as circle
   gpTimeIntervals->CompareMeasures(gpPTClusterData, gpMeasureList);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-  for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {
-     for (i=0; i < m_pData->m_nGridTracts; ++i) {
-        m_pData->SetImpliedCentroid(k, i);
-        gpClusterData->AddNeighborDataAndCompare(Interface, m_pData, gpTimeIntervals, gpMeasureList);
+  for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
+     for (i=0; i < gDataHub.m_nGridTracts; ++i) {
+        gpClusterData->AddNeighborDataAndCompare(k, i, Interface, &gDataHub, gpTimeIntervals, gpMeasureList);
      }
      gpMeasureList->SetForNextIteration(k);
   }
   return gpMeasureList->GetMaximumLogLikelihoodRatio();
-}
-
-/** Sets maximum number of clusters in top cluster array */
-void C_ST_PT_Analysis::SetMaxNumClusters() {
-  m_nMaxClusters = m_pData->m_nGridTracts+1;
 }
 

@@ -19,15 +19,14 @@ class C_ST_PT_Analysis : public CSpaceTimeAnalysis {
 
   protected:
     virtual void                AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway);  
-    virtual double              FindTopRatio(const AbtractDataStreamGateway & DataGateway);
-    virtual double              MonteCarlo(const DataStreamInterface & Interface);
-    virtual void                SetMaxNumClusters();
 
   public:
-    C_ST_PT_Analysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
+    C_ST_PT_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~C_ST_PT_Analysis();
 
-    virtual bool                FindTopClusters(const AbtractDataStreamGateway & DataGateway);
+    virtual void                FindTopClusters(const AbtractDataStreamGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer);
+    virtual double              FindTopRatio(const AbtractDataStreamGateway & DataGateway);
+    virtual double              MonteCarlo(const DataStreamInterface & Interface);
 };
 //*****************************************************************************
 #endif

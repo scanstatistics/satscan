@@ -22,11 +22,12 @@ class CSpaceTimeAnalysis : public CAnalysis {
     virtual void                        AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway);
     virtual void                        AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway);
     virtual const CCluster &            CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway);
-    virtual double                      MonteCarlo(const DataStreamInterface & Interface);
 
   public:
-    CSpaceTimeAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
+    CSpaceTimeAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CSpaceTimeAnalysis();
+
+    virtual double                      MonteCarlo(const DataStreamInterface & Interface);
 };
 //***********************************************************************************
 #endif

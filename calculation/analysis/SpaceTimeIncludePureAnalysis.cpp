@@ -1,10 +1,12 @@
+//*****************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//*****************************************************************************
 #include "SpaceTimeIncludePureAnalysis.h"
 
 /** Constructor */
-C_ST_PS_PT_Analysis::C_ST_PS_PT_Analysis(CParameters*  pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-                    :C_ST_PS_Analysis(pParameters, pData, pPrintDirection) {
+C_ST_PS_PT_Analysis::C_ST_PS_PT_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
+                    :C_ST_PS_Analysis(Parameters, DataHub, PrintDirection) {
   Init();                  
 }
 
@@ -27,17 +29,17 @@ void C_ST_PS_PT_Analysis::AllocateSimulationObjects(const AbtractDataStreamGatew
   try {
     //allocate objects for space-time part of simulations
     C_ST_PS_Analysis::AllocateSimulationObjects(DataGateway);
-    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+    if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
       eIncludeClustersType = ALLCLUSTERS;
     else
-      eIncludeClustersType = m_pParameters->GetIncludeClustersType();
+      eIncludeClustersType = gParameters.GetIncludeClustersType();
 
     //create simulation objects based upon which process used to perform simulations
     if (gbMeasureListReplications)
       gpPTClusterData = new TemporalData(DataGateway);
     else {
       //allocate purely temporal, comparator cluster and top cluster
-      gpTopPurelyTemporalCluster = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
+      gpTopPurelyTemporalCluster = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
       gpPTClusterComparator = gpTopPurelyTemporalCluster->Clone();
     }  
   }
@@ -53,29 +55,28 @@ void C_ST_PS_PT_Analysis::AllocateSimulationObjects(const AbtractDataStreamGatew
 /** Given data gate way, calculates and collects most likely clusters about
     each grid point. Collection of clusters are sorted by loglikelihood ratio
     and condensed based upon overlapping parameter settings.                */
-bool C_ST_PS_PT_Analysis::FindTopClusters(const AbtractDataStreamGateway & DataGateway) {
+void C_ST_PS_PT_Analysis::FindTopClusters(const AbtractDataStreamGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
   IncludeClustersType           eIncludeClustersType;
 
   //calculate top cluster over all space-time
-  if (!C_ST_PS_Analysis::FindTopClusters(DataGateway))
-    return false;
-  if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+  C_ST_PS_Analysis::FindTopClusters(DataGateway, TopClustersContainer);
+  //detect user cancellation
+  if (gPrintDirection.GetIsCanceled())
+    return;
+  //calculate top purely temporal cluster  
+  if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
     eIncludeClustersType = ALIVECLUSTERS;
   else
-    eIncludeClustersType = m_pParameters->GetIncludeClustersType();
+    eIncludeClustersType = gParameters.GetIncludeClustersType();
   //create cluster objects
-  CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
-  CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData);
+  CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
+  CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
   //iterate through time intervals - looking for top purely temporal cluster
   gpTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
   if (TopCluster.ClusterDefined()) {
-    m_pTopClusters[m_nClustersRetained] = TopCluster.Clone();
-    m_pTopClusters[m_nClustersRetained]->SetStartAndEndDates(m_pData->GetTimeIntervalStartTimes(), m_pData->m_nTimeIntervals);
-    ++m_nClustersRetained;
-    //re-sort top clusters array given addition of purely temporal cluster
-    SortTopClusters();
+    TopClustersContainer.Add(TopCluster);
+    TopClustersContainer.SortTopClusters();
   }
-  return true;
 }
 
 double C_ST_PS_PT_Analysis::FindTopRatio(const AbtractDataStreamGateway & DataGateway) {
@@ -103,7 +104,7 @@ double C_ST_PS_PT_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
   double                        dMaxLogLikelihoodRatio;
   tract_t                       k, i;
 
-  if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+  if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
     return MonteCarloProspective(Interface);
     
   gpMeasureList->Reset();
@@ -111,11 +112,10 @@ double C_ST_PS_PT_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
   //will be calculated with circle's measure values.
   gpTimeIntervals->CompareMeasures(gpPTClusterData, gpMeasureList);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-  for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
-     for (i=0; i < m_pData->m_nGridTracts; i++) {
-        m_pData->SetImpliedCentroid(k, i);
-        gpPSClusterData->AddMeasureList(Interface, gpMeasureList, m_pData);
-        gpClusterData->AddNeighborDataAndCompare(Interface, m_pData, gpTimeIntervals, gpMeasureList);
+  for (k=0; k <= gParameters.GetNumTotalEllipses(); k++) {
+     for (i=0; i < gDataHub.m_nGridTracts; i++) {
+        gpPSClusterData->AddMeasureList(k, i, Interface, gpMeasureList, &gDataHub);
+        gpClusterData->AddNeighborDataAndCompare(k, i, Interface, &gDataHub, gpTimeIntervals, gpMeasureList);
      }
      gpMeasureList->SetForNextIteration(k);
   }
@@ -132,11 +132,10 @@ double C_ST_PS_PT_Analysis::MonteCarloProspective(const DataStreamInterface & In
   //will be calculated with circle's measure values.
   gpTimeIntervals->CompareMeasures(gpPTClusterData, gpMeasureList);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-  for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
-     for (i=0; i < m_pData->m_nGridTracts; i++) {
-        m_pData->SetImpliedCentroid(k, i);
-        gpPSPClusterData->AddMeasureList(Interface, gpMeasureList, m_pData);
-        gpClusterData->AddNeighborDataAndCompare(Interface, m_pData, gpTimeIntervals, gpMeasureList);
+  for (k=0; k <= gParameters.GetNumTotalEllipses(); k++) {
+     for (i=0; i < gDataHub.m_nGridTracts; i++) {
+        gpPSPClusterData->AddMeasureList(k, i, Interface, gpMeasureList, &gDataHub);
+        gpClusterData->AddNeighborDataAndCompare(k, i, Interface, &gDataHub, gpTimeIntervals, gpMeasureList);
      }
      gpMeasureList->SetForNextIteration(k);
   }

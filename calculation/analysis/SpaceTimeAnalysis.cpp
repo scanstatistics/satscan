@@ -1,10 +1,12 @@
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//***************************************************************************
 #include "SpaceTimeAnalysis.h"
 
 /** Constructor */
-CSpaceTimeAnalysis::CSpaceTimeAnalysis(CParameters*  pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-                   :CAnalysis(pParameters, pData, pPrintDirection) {
+CSpaceTimeAnalysis::CSpaceTimeAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
+                   :CAnalysis(Parameters, DataHub, PrintDirection) {
   try {
     Init();
     Setup();
@@ -38,10 +40,10 @@ void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbtractDataStreamGatewa
     delete gpClusterComparator; gpClusterComparator=0;
     //create new time intervals object - delete existing object used during real data process
     delete gpTimeIntervals; gpTimeIntervals=0;
-    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+    if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
       eIncludeClustersType = ALLCLUSTERS;
     else
-      eIncludeClustersType = m_pParameters->GetIncludeClustersType();
+      eIncludeClustersType = gParameters.GetIncludeClustersType();
     gpTimeIntervals = GetNewTimeIntervalsObject(eIncludeClustersType);
 
     //create simulation objects based upon which process used to perform simulations
@@ -76,10 +78,10 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGatew
   try {
     //create new time intervals object - delete existing object used during real data process
     delete gpTimeIntervals; gpTimeIntervals=0;
-    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+    if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
       eIncludeClustersType = ALIVECLUSTERS;
     else
-      eIncludeClustersType = m_pParameters->GetIncludeClustersType();
+      eIncludeClustersType = gParameters.GetIncludeClustersType();
     gpTimeIntervals = GetNewTimeIntervalsObject(eIncludeClustersType);
     //create cluster object used as comparator when iterating over centroids and time intervals
     gpClusterComparator = new CSpaceTimeCluster(gpClusterDataFactory, DataGateway);
@@ -101,14 +103,13 @@ const CCluster & CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const 
 
   gpTopShapeClusters->Reset(tCenter);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-  for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {
-     m_pData->SetImpliedCentroid(k, tCenter);
+  for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
      gpClusterComparator->Initialize(tCenter);
-     gpClusterComparator->SetRate(m_pParameters->GetAreaScanRateType());
+     gpClusterComparator->SetRate(gParameters.GetAreaScanRateType());
      gpClusterComparator->SetEllipseOffset(k);
-     gpClusterComparator->SetDuczmalCorrection((k == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[k - 1]));
+     gpClusterComparator->SetDuczmalCorrection((k == 0 || !gParameters.GetDuczmalCorrectEllipses() ? 1 : gDataHub.GetShapesArray()[k - 1]));
      CSpaceTimeCluster & TopCluster = (CSpaceTimeCluster&)(gpTopShapeClusters->GetTopCluster(k));
-     gpClusterComparator->AddNeighborDataAndCompare(DataGateway, m_pData, TopCluster, gpTimeIntervals);
+     gpClusterComparator->AddNeighborDataAndCompare(k, tCenter, DataGateway, &gDataHub, TopCluster, gpTimeIntervals);
   }
   return gpTopShapeClusters->GetTopCluster();
 }
@@ -129,10 +130,9 @@ double CSpaceTimeAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
 
   gpMeasureList->Reset();
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-  for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
-     for (i=0; i < m_pData->m_nGridTracts; i++) {
-        m_pData->SetImpliedCentroid(k, i);
-        gpClusterData->AddNeighborDataAndCompare(Interface, m_pData, gpTimeIntervals, gpMeasureList);
+  for (k=0; k <= gParameters.GetNumTotalEllipses(); k++) {
+     for (i=0; i < gDataHub.m_nGridTracts; i++) {
+        gpClusterData->AddNeighborDataAndCompare(k, i, Interface, &gDataHub, gpTimeIntervals, gpMeasureList);
      }
      gpMeasureList->SetForNextIteration(k);
   }
@@ -142,7 +142,7 @@ double CSpaceTimeAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
 /** internal setup function */
 void CSpaceTimeAnalysis::Setup() {
   try {
-    gpTopShapeClusters = new TopClustersContainer(*m_pData);
+    gpTopShapeClusters = new TopClustersContainer(gDataHub);
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()", "CSpaceTimeAnalysis");

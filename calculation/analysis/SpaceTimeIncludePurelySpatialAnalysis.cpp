@@ -1,10 +1,12 @@
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//***************************************************************************
 #include "SpaceTimeIncludePurelySpatialAnalysis.h"
 
 /** Constructor */
-C_ST_PS_Analysis::C_ST_PS_Analysis(CParameters*  pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-                 :CSpaceTimeAnalysis(pParameters, pData, pPrintDirection) {
+C_ST_PS_Analysis::C_ST_PS_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
+                 :CSpaceTimeAnalysis(Parameters, DataHub, PrintDirection) {
   try {
     Init();
     Setup();
@@ -38,15 +40,15 @@ void C_ST_PS_Analysis::AllocateSimulationObjects(const AbtractDataStreamGateway 
     delete gpPSClusterComparator; gpPSClusterComparator=0;
     //create simulation objects based upon which process used to perform simulations
     if (gbMeasureListReplications) {
-      if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
-        gpPSPClusterData = new ProspectiveSpatialData(*m_pData, DataGateway);
+      if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
+        gpPSPClusterData = new ProspectiveSpatialData(gDataHub, DataGateway);
       else
-        gpPSClusterData = new SpatialData(DataGateway, m_pParameters->GetAreaScanRateType());
+        gpPSClusterData = new SpatialData(DataGateway, gParameters.GetAreaScanRateType());
     }
     else {
-      if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME) {
+      if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME) {
         //create cluster object used as comparator when iterating over centroids and time intervals
-        gpPSPClusterComparator = new CPurelySpatialProspectiveCluster(gpClusterDataFactory, DataGateway, *m_pData);
+        gpPSPClusterComparator = new CPurelySpatialProspectiveCluster(gpClusterDataFactory, DataGateway, gDataHub);
         //initialize list of top circle/ellipse clusters
         gpPSTopShapeClusters->SetTopClusters(*gpPSPClusterComparator);
       }
@@ -77,7 +79,7 @@ void C_ST_PS_Analysis::AllocateTopClustersObjects(const AbtractDataStreamGateway
     //create top cluster objects for space-time portion
     CSpaceTimeAnalysis::AllocateTopClustersObjects(DataGateway);
     //create comparator cluster for purely spatial cluster
-    gpPSClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, m_pParameters->GetAreaScanRateType());
+    gpPSClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, gParameters.GetAreaScanRateType());
     gpPSTopShapeClusters->SetTopClusters(*gpPSClusterComparator);
   }
   catch (ZdException &x) {
@@ -91,36 +93,34 @@ void C_ST_PS_Analysis::AllocateTopClustersObjects(const AbtractDataStreamGateway
     Caller is responsible for deleting returned cluster. */
 const CCluster& C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway) {
   int           j;
-  CModel      & Model(m_pData->GetProbabilityModel());
 
   //re-initialize clusters
   gpPSTopShapeClusters->Reset(tCenter);
   gpTopShapeClusters->Reset(tCenter);
 
-  for (j=0 ;j <= m_pParameters->GetNumTotalEllipses(); ++j) {
-     m_pData->SetImpliedCentroid(j, tCenter);
+  for (j=0 ;j <= gParameters.GetNumTotalEllipses(); ++j) {
      gpClusterComparator->Initialize(tCenter);
-     gpClusterComparator->SetRate(m_pParameters->GetAreaScanRateType());
+     gpClusterComparator->SetRate(gParameters.GetAreaScanRateType());
      gpClusterComparator->SetEllipseOffset(j);
-     gpClusterComparator->SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[j - 1]));
+     gpClusterComparator->SetDuczmalCorrection((j == 0 || !gParameters.GetDuczmalCorrectEllipses() ? 1 : gDataHub.GetShapesArray()[j - 1]));
      CSpaceTimeCluster & Top_ST_ShapeCluster = (CSpaceTimeCluster&)(gpTopShapeClusters->GetTopCluster(j));
      if (gpPSClusterComparator) {
        gpPSClusterComparator->Initialize(tCenter);
-       gpPSClusterComparator->SetRate(m_pParameters->GetAreaScanRateType());
+       gpPSClusterComparator->SetRate(gParameters.GetAreaScanRateType());
        gpPSClusterComparator->SetEllipseOffset(j);
-       gpPSClusterComparator->SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[j - 1]));
+       gpPSClusterComparator->SetDuczmalCorrection((j == 0 || !gParameters.GetDuczmalCorrectEllipses() ? 1 : gDataHub.GetShapesArray()[j - 1]));
        CPurelySpatialCluster & Top_PS_ShapeCluster = (CPurelySpatialCluster&)(gpPSTopShapeClusters->GetTopCluster(j));
-       gpPSClusterComparator->AddNeighborDataAndCompare(DataGateway, m_pData, Top_PS_ShapeCluster, *gpLikelihoodCalculator);
+       gpPSClusterComparator->AddNeighborDataAndCompare(j, tCenter, DataGateway, &gDataHub, Top_PS_ShapeCluster, *gpLikelihoodCalculator);
      }
      else {
        gpPSPClusterComparator->Initialize(tCenter);
-       gpPSPClusterComparator->SetRate(m_pParameters->GetAreaScanRateType());
+       gpPSPClusterComparator->SetRate(gParameters.GetAreaScanRateType());
        gpPSPClusterComparator->SetEllipseOffset(j);
-       gpPSPClusterComparator->SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[j - 1]));
+       gpPSPClusterComparator->SetDuczmalCorrection((j == 0 || !gParameters.GetDuczmalCorrectEllipses() ? 1 : gDataHub.GetShapesArray()[j - 1]));
        CPurelySpatialProspectiveCluster & Top_PSP_ShapeCluster = (CPurelySpatialProspectiveCluster&)(gpPSTopShapeClusters->GetTopCluster(j));
-       gpPSPClusterComparator->AddNeighborAndCompare(DataGateway, m_pData, Top_PSP_ShapeCluster, *gpLikelihoodCalculator);
+       gpPSPClusterComparator->AddNeighborAndCompare(j, tCenter, DataGateway, &gDataHub, Top_PSP_ShapeCluster, *gpLikelihoodCalculator);
      }
-     gpClusterComparator->AddNeighborDataAndCompare(DataGateway, m_pData, Top_ST_ShapeCluster, gpTimeIntervals);
+     gpClusterComparator->AddNeighborDataAndCompare(j, tCenter, DataGateway, &gDataHub, Top_ST_ShapeCluster, gpTimeIntervals);
   }
   return GetTopCalculatedCluster();
 }
@@ -157,16 +157,15 @@ double C_ST_PS_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
   double                        dMaxLogLikelihoodRatio;
   tract_t                       k, i;
 
-  if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+  if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
     return MonteCarloProspective(Interface);
 
   gpMeasureList->Reset();
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-  for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {
-     for (i=0; i < m_pData->m_nGridTracts; ++i) {
-        m_pData->SetImpliedCentroid(k, i);
-        gpPSClusterData->AddMeasureList(Interface, gpMeasureList, m_pData);
-        gpClusterData->AddNeighborDataAndCompare(Interface, m_pData, gpTimeIntervals, gpMeasureList);
+  for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
+     for (i=0; i < gDataHub.m_nGridTracts; ++i) {
+        gpPSClusterData->AddMeasureList(k, i, Interface, gpMeasureList, &gDataHub);
+        gpClusterData->AddNeighborDataAndCompare(k, i, Interface, &gDataHub, gpTimeIntervals, gpMeasureList);
      }
      gpMeasureList->SetForNextIteration(k);
   }
@@ -181,11 +180,10 @@ double C_ST_PS_Analysis::MonteCarloProspective(const DataStreamInterface & Inter
 
   gpMeasureList->Reset();
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-  for (k=0; k <= m_pParameters->GetNumTotalEllipses(); ++k) {
-     for (i=0; i < m_pData->m_nGridTracts; ++i) {
-        m_pData->SetImpliedCentroid(k, i);
-        gpPSPClusterData->AddMeasureList(Interface, gpMeasureList, m_pData);
-        gpClusterData->AddNeighborDataAndCompare(Interface, m_pData, gpTimeIntervals, gpMeasureList);
+  for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
+     for (i=0; i < gDataHub.m_nGridTracts; ++i) {
+        gpPSPClusterData->AddMeasureList(k, i, Interface, gpMeasureList, &gDataHub);
+        gpClusterData->AddNeighborDataAndCompare(k, i, Interface, &gDataHub, gpTimeIntervals, gpMeasureList);
      }
      gpMeasureList->SetForNextIteration(k);
   }
@@ -194,7 +192,7 @@ double C_ST_PS_Analysis::MonteCarloProspective(const DataStreamInterface & Inter
 
 void C_ST_PS_Analysis::Setup() {
   try {
-    gpPSTopShapeClusters = new TopClustersContainer(*m_pData);
+    gpPSTopShapeClusters = new TopClustersContainer(gDataHub);
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()", "C_ST_PS_Analysis");

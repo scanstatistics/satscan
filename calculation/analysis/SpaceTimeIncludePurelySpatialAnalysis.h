@@ -25,12 +25,13 @@ class C_ST_PS_Analysis : public CSpaceTimeAnalysis {
     virtual void                        AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway);
     virtual const CCluster            & CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway);
     virtual const CCluster            & GetTopCalculatedCluster();
-    virtual double                      MonteCarlo(const DataStreamInterface & Interface);
     double                              MonteCarloProspective(const DataStreamInterface & Interface);
 
   public:
-    C_ST_PS_Analysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
+    C_ST_PS_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~C_ST_PS_Analysis();
+
+    virtual double                      MonteCarlo(const DataStreamInterface & Interface);
 };
 //***********************************************************************************
 #endif
