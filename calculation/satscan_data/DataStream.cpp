@@ -674,8 +674,10 @@ void DataStream::SetPTCasesArray() {
     if (!gpCasesHandler)
       ZdGenerateException("Cumulative measure array not allocated.","SetPTMeasureArray()");
 
-    if (!gpPTCasesArray)
+    if (!gpPTCasesArray) {
       gpPTCasesArray = new count_t[giNumTimeIntervals+1];
+      memset(gpPTCasesArray, 0, (giNumTimeIntervals+1) * sizeof(count_t));
+    }
 
     ppCases = gpCasesHandler->GetArray();
     for (i=0; i < (int)giNumTimeIntervals; ++i)
