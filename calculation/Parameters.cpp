@@ -120,7 +120,7 @@ int CParameters::giNumParameters 			= 67;
 char mgsVariableLabels[68][100] = {
    "Analysis Type", "Scan Areas", "Case File", "Population File",
    "Coordinates File", "Results File", "Precision of Case Times",
-   "Not applicable", "Special Grid File Use", "Grid File",
+   "Not applicable", "Grid File Use", "Grid File",
    "Maximum Geographic size", "Study Period Start Date",
    "Study Period End Date", "Include Clusters Type", "Exact Times",
    "Interval Units", "Interval Length", "Include Purely Spatial Cluster",
@@ -424,7 +424,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
 
     fprintf(fp, "  Coordinates File           : %s\n", gsCoordinatesFileName.c_str());
     if (gbUseSpecialGridFile)
-      fprintf(fp, "  Special Grid File          : %s\n", gsSpecialGridFileName.c_str());
+      fprintf(fp, "  Grid File                  : %s\n", gsSpecialGridFileName.c_str());
     if (geMaxGeographicClusterSizeType == PERCENTOFPOPULATIONFILETYPE)
       fprintf(fp, "  Max Circle Size File       : %s\n", gsMaxCirclePopulationFileName.c_str());
     if (geSimulationType == FILESOURCE)
@@ -2199,7 +2199,7 @@ void CParameters::SaveInputFileSection(ZdIniFile& file) {
     }
     pSection->AddLine(COORD_FILE_LINE, gsCoordinatesFileName.c_str());
     pSection->AddLine(GRID_FILE_LINE, gsSpecialGridFileName.c_str());
-    pSection->AddComment(" use special grid file? (y/n)");
+    pSection->AddComment(" use grid file? (y/n)");
     pSection->AddLine(USE_GRID_FILE_LINE, gbUseSpecialGridFile ? YES : NO);
     pSection->AddComment(" precision of case times (0=No, 1-3=Yes)");
     pSection->AddLine(PRECISION_TIMES_LINE, AsString(sValue, gePrecisionOfTimesType));

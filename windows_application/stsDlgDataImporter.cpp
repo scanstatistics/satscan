@@ -490,7 +490,7 @@ const char * TBDlgDataImporter::GetInputFileTypeString() const {
     case Control             : sFilename = "Control File"; break;
     case Population          : sFilename = "Population File"; break;
     case Coordinates         : sFilename = "Coordinates File"; break;
-    case SpecialGrid         : sFilename = "Special Grid File"; break;
+    case SpecialGrid         : sFilename = "Grid File"; break;
     case MaxCirclePopulation : sFilename = "Max Circle Size File"; break;
     case AdjustmentsByRR     : sFilename = "Adjustments File"; break;
     default : ZdGenerateException("Unknown file type index: \"%d\"", "GetInputFileTypeString()", geFileType);

@@ -436,9 +436,9 @@ object frmAnalysis: TfrmAnalysis
         object Label7: TLabel
           Left = 8
           Top = 54
-          Width = 125
+          Width = 156
           Height = 13
-          Caption = 'Special Grid File: (optional)'
+          Caption = 'Grid File:                        (optional)'
         end
         object edtCoordinateFileName: TEdit
           Left = 8
@@ -483,7 +483,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 68
           Width = 23
           Height = 22
-          Hint = 'Browse for special grid file ...'
+          Hint = 'Browse for grid file ...'
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -543,7 +543,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 68
           Width = 23
           Height = 22
-          Hint = 'Import special grid file ...'
+          Hint = 'Import grid file ...'
           ParentShowHint = False
           ShowHint = True
           TabOrder = 5

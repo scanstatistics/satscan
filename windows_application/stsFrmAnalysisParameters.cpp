@@ -177,9 +177,9 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.grd";
-    OpenDialog1->Filter = "Special Grid files (*.grd)|*.grd|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog1->Filter = "Grid files (*.grd)|*.grd|Text files (*.txt)|*.txt|All files (*.*)|*.*";
     OpenDialog1->FilterIndex = 0;
-    OpenDialog1->Title = "Select Special Grid File";
+    OpenDialog1->Title = "Select Grid File";
     if (OpenDialog1->Execute())
       SetSpecialGridFile(OpenDialog1->FileName.c_str());
   }
@@ -197,8 +197,8 @@ void __fastcall TfrmAnalysis::btnGridImportClick(TObject *Sender) {
 
   try {
     OpenDialog1->FileName =  "";
-    OpenDialog1->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Special Grid files (*.grd)|*.grd|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-    OpenDialog1->Title = "Select Source Special Grid File";
+    OpenDialog1->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Grid files (*.grd)|*.grd|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog1->Title = "Select Source Grid File";
     if (OpenDialog1->Execute()) {
        LaunchImporter(OpenDialog1->FileName.c_str(), eType);
     }
@@ -1533,7 +1533,7 @@ void TfrmAnalysis::ValidateInputFiles() {
     if (!edtGridFileName->Text.IsEmpty() &&  !File_Exists(edtGridFileName->Text.c_str())) {
       PageControl1->ActivePage = tbInputFiles;
       edtGridFileName->SetFocus();
-      ZdException::GenerateNotification("Special Grid file could not be opened.","ValidateInputFiles()");
+      ZdException::GenerateNotification("Grid file could not be opened.","ValidateInputFiles()");
     }
   }
   catch (ZdException & x) {

@@ -150,7 +150,7 @@ void BasePrint::SetImpliedInputFileType(eInputFileType eType, unsigned int iStre
     case CONTROLFILE      : gsInputFileString = "control file"; break;
     case POPFILE          : gsInputFileString = "population file"; break;
     case COORDFILE        : gsInputFileString = "coordinates file"; break;
-    case GRIDFILE         : gsInputFileString = "special grid file"; break;
+    case GRIDFILE         : gsInputFileString = "grid file"; break;
     case MAXCIRCLEPOPFILE : gsInputFileString = "max circle size file"; break;
     case ADJ_BY_RR_FILE   : gsInputFileString = "adjustments file"; break;
     default : ZdException::GenerateNotification("Invalid input file type warning message!", "SetImpliedInputFileType()");
