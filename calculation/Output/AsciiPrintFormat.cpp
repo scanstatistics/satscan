@@ -4,18 +4,20 @@
 //***************************************************************************
 #include "AsciiPrintFormat.h"
 
-/** width of label with one dataset */
-const unsigned int AsciiPrintFormat::giOneDataSetLabelWidth          = 22;
+/** width of label with one dataset for cluster section */
+const unsigned int AsciiPrintFormat::giOneDataSetClusterLabelWidth   = 22;
+/** width of label for summary section with one data set */
+const unsigned int AsciiPrintFormat::giOneDataSetSummuaryLabelWidth  = 25;
 /** width of label for cluster section with multiple datasets */
 const unsigned int AsciiPrintFormat::giMultiDataSetClusterLabelWidth = 32;
 /** width of label for summary section with multiple datasets */
 const unsigned int AsciiPrintFormat::giMultiDataSetSummaryLabelWidth = 38;
 /** width of output area - this value is untested below 64 */
-const unsigned int AsciiPrintFormat::giRightMargin                  = 64;
+const unsigned int AsciiPrintFormat::giRightMargin                   = 64;
 /** width of version header section */
-const unsigned int AsciiPrintFormat::giVersionHeaderWidth           = 29;
+const unsigned int AsciiPrintFormat::giVersionHeaderWidth            = 29;
 /** text appended to label for multiple dataset */
-const char * AsciiPrintFormat::gsPerDataSetText                     = "per data set";
+const char * AsciiPrintFormat::gsPerDataSetText                      = "per data set";
 
 /** constructor */
 AsciiPrintFormat::AsciiPrintFormat(bool bOneDataSet) : gbOneDataSet(bOneDataSet) {
@@ -182,8 +184,8 @@ void AsciiPrintFormat::SetMarginsAsClusterSection(unsigned int iNumber) {
       n = (int)floor(((double)n)/10);
   }
   //set margin for data print
-  giDataLeftMargin = (gbOneDataSet ? giOneDataSetLabelWidth : giMultiDataSetClusterLabelWidth) + giLeftMargin + strlen(": ");
-  giLabelWidth = (gbOneDataSet ? giOneDataSetLabelWidth : giMultiDataSetClusterLabelWidth);
+  giDataLeftMargin = (gbOneDataSet ? giOneDataSetClusterLabelWidth : giMultiDataSetClusterLabelWidth) + giLeftMargin + strlen(": ");
+  giLabelWidth = (gbOneDataSet ? giOneDataSetClusterLabelWidth : giMultiDataSetClusterLabelWidth);
 }
 
 /** Adjusts margins for run overview section. The overview section contains
@@ -197,7 +199,7 @@ void AsciiPrintFormat::SetMarginsAsOverviewSection() {
     label width and data margins are calculated. */
 void AsciiPrintFormat::SetMarginsAsSummarySection() {
   giLeftMargin = 0;
-  giLabelWidth = (gbOneDataSet ? giOneDataSetLabelWidth : giMultiDataSetSummaryLabelWidth);
+  giLabelWidth = (gbOneDataSet ? giOneDataSetSummuaryLabelWidth : giMultiDataSetSummaryLabelWidth);
   giDataLeftMargin = giLabelWidth + giLeftMargin + strlen(": ");
 }
 

@@ -15,7 +15,8 @@ class AsciiPrintFormat {
      unsigned int               giLabelWidth;
      bool                       gbOneDataSet;
      static const char *        gsPerDataSetText;
-     static const unsigned int  giOneDataSetLabelWidth;
+     static const unsigned int  giOneDataSetClusterLabelWidth;
+     static const unsigned int  giOneDataSetSummuaryLabelWidth;
      static const unsigned int  giMultiDataSetClusterLabelWidth;
      static const unsigned int  giMultiDataSetSummaryLabelWidth;
      static const unsigned int  giRightMargin;
