@@ -20,7 +20,6 @@ class CSignificantRatios05
     int     m_nTotalReplications;
     int     m_nRatios;
     double* m_pRatiosList;
-
 };
 //**********************************************************************************
 #endif
