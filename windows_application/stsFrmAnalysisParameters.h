@@ -176,7 +176,7 @@ class TfrmAnalysis : public TForm {
   private:	// User declarations
     CParameters       * gpParams;
     AnsiString          gsParamFileName;
-    ZdVector<std::string>       gvGeoFileFieldDescriptors,
+    std::vector<std::string>    gvGeoFileFieldDescriptors,
                                 gvCaseFileFieldDescriptors,
                                 gvGridFileFieldDescriptors,
                                 gvPopFileFieldDescriptors,
@@ -202,20 +202,15 @@ class TfrmAnalysis : public TForm {
     bool                CheckReplicas(int iReplicas);
     bool                CheckScanningWindowParams();
     bool                CheckTimeParams();
-    void                ConvertPurelySpacialIntervals();
-    void                CreateTXDFile(const ZdFileName& sFileName, const ZdVector<std::string>& vFieldNames);
-    void                DataExchange();
-    bool                DetermineIfDbfExtension(AnsiString sFileName);
-    void                EnableAdditionalAsciiFileOptions();
-    void                EnableAnalysisType(bool bValue);
-    void                EnablePrecision();
-    void                EnableProspStartDate();
-    void                EnableScanningWindow();
-    void                EnableTimeIntervals();
-    void                EnableTimeTrendAdj();
+    void                CreateTXDFile(const ZdFileName& sFileName, const std::vector<std::string>& vFieldNames);
+    bool                DetermineIfDbfExtension(const ZdString& sFileName);
     ZdDate            & GetStudyPeriodEndDate(ZdDate & Date);
     ZdDate            & GetStudyPeriodStartDate(ZdDate & Date);
     void                Init();
+    void                OnAnalysisTypeClick();
+    void                OnPrecisionTimesClick();
+    void                OnProbabilityModelClick();
+    void                OnTemporalTrendClick();
     void                ParseDate(char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *pDay);
     bool                ReadSession(char *sFileName);
     void                SaveTextParameters();
