@@ -17,9 +17,9 @@
  Returns 1 with probability p,
          0 with probability 1-p.
  **********************************************************************/
-long Bernoulli(float p)
+long Bernoulli(float p, RandomNumberGenerator & rng)
 {
-   if (rngRand() < (1 - p))
+   if (rng.GetRandomDouble() < (1 - p))
       return 0;
    return 1;
 } /* Bernoulli() */
@@ -27,7 +27,7 @@ long Bernoulli(float p)
 /**********************************************************************
  Returns binomial(n, p) distributed variable
  **********************************************************************/
-long Binomial(long n, float pp)
+long Binomial(long n, float pp, RandomNumberGenerator & rng)
 {
    long j;
    static int nold=(-1);
@@ -42,12 +42,12 @@ long Binomial(long n, float pp)
    if (n < 25) {
       bnl=0.0;
       for (j=1;j<=n;j++)
-         if (rngRand() < p) bnl += 1.0;
+         if (rng.GetRandomDouble() < p) bnl += 1.0;
    } else if (am < 1.0) {
       g=exp(-am);
       t=1.0;
       for (j=0;j<=n;j++) {
-         t *= rngRand();
+         t *= rng.GetRandomDouble();
          if (t < g) break;
       }
       bnl=(j <= n ? j : n);
@@ -65,14 +65,14 @@ long Binomial(long n, float pp)
       sq=sqrt(2.0*am*pc);
       do {
          do {
-            angle=PI*rngRand();
+            angle=PI*rng.GetRandomDouble();
             y=tan(angle);
             em=sq*y+am;
          } while (em < 0.0 || em >= (en+1.0));
          em=floor(em);
          t=1.2*sq*(1.0+y*y)*exp(oldg-gammln(em+1.0)
             -gammln(en-em+1.0)+em*plog+(en-em)*pclog);
-      } while (rngRand() > t);
+      } while (rng.GetRandomDouble() > t);
       bnl=em;
    }
    if (p != pp) bnl=n-bnl;
@@ -108,9 +108,9 @@ double gammln(double xx)
 /**********************************************************************
  Returns integers uniformly distributed from a to b, inclusive
  **********************************************************************/
-long Equilikely(long a, long b)
+long Equilikely(long a, long b, RandomNumberGenerator & rng)
 {
-   return a + (long) floor((b - a + 1) * rngRand());
+   return a + (long) floor((b - a + 1) * rng.GetRandomDouble());
 } /* Equilikely() */
 
 

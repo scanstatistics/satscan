@@ -10,10 +10,9 @@
  file: RandomDistribution.h
  Header file for RandomDistribution.cpp
  **********************************************************************/
-long Bernoulli(float p);
-long Binomial(long n, float p);
-long Equilikely(long a, long b);
-double gammln(double xx);
-
+long    Bernoulli(float p, RandomNumberGenerator & rng);
+long    Binomial(long n, float p, RandomNumberGenerator & rng);
+long    Equilikely(long a, long b, RandomNumberGenerator & rng);
+double  gammln(double xx);
 //*****************************************************************************
 #endif
