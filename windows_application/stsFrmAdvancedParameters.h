@@ -50,10 +50,11 @@ __published:	// IDE-managed Components
         TRadioGroup *rdgTemporalTrendAdj;
         TEdit *edtLogLinear;
         TStaticText *lblLogLinear;
-        TGroupBox *grpRelativeRiskAdjustment;
-        TLabel *lblRelativeRisksAdjustmentFile;
-        TEdit *edtRelativeRisksAdjustmentFile;
-        TButton *btnBrowseRelativeRisksFile;
+        TGroupBox *grpAdjustments;
+        TLabel *lblAdjustmentsByRelativeRisksFile;
+        TEdit *edtAdjustmentsByRelativeRisksFile;
+        TButton *btnBrowseAdjustmentsFile;
+        TCheckBox *chkAdjustForKnownRelativeRisks;
         void __fastcall FormKeyPress(TObject *Sender, char &Key);
         void __fastcall chkRestrictTemporalRangeClick(TObject *Sender);
         void __fastcall btnBrowseMaxCirclePopFileClick(TObject *Sender);
@@ -70,9 +71,9 @@ __published:	// IDE-managed Components
         void __fastcall rdgTemporalTrendAdjClick(TObject *Sender);
         void __fastcall edtLogLinearExit(TObject *Sender);
         void __fastcall FloatKeyPress(TObject *Sender, char &Key);
-        void __fastcall btnBrowseRelativeRisksFileClick(TObject *Sender);
-        void __fastcall edtRelativeRisksAdjustmentFileChange(
-          TObject *Sender);
+        void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
+        void __fastcall edtAdjustmentsByRelativeRisksFileChange(TObject *Sender);
+        void __fastcall chkAdjustForKnownRelativeRisksClick(TObject *Sender);
 
   private:
     TfrmAnalysis              & gAnalysisSettings;
@@ -80,6 +81,7 @@ __published:	// IDE-managed Components
     bool                        gbEnableRangeYears;  /** stores enable dictated by main interface */
     bool                        gbEnableRangeMonths; /** stores enable dictated by main interface */
     bool                        gbEnableRangeDays;   /** stores enable dictated by main interface */
+    bool                        gbEnableAdjustmentsByRR; /** stores enable dictated by main interface */
 
     TimeTrendAdjustmentType     GetAdjustmentTimeTrendControlType() const;
     void                        Init() {gpFocusControl=0;}
@@ -92,12 +94,12 @@ __published:	// IDE-managed Components
   public:
     __fastcall TfrmAdvancedParameters(TfrmAnalysis & AnalysisSettings);
 
+    void                        EnableAdjustmentsGroup(bool bEnable);
     void                        EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage);
-    void                        EnableRelativeRisksGroup(bool bEnable);
     void                        EnableSpatialOutputOptions(bool bEnable);
     void                        EnableTemporalOptions(bool bEnable, bool bEnableRanges);
     void                        SaveParameterSettings();
-    void                        SetAdjustmentsForRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName);
+    void                        SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName);
     void                        SetMaximumCirclePopulationFile(const char * sMaximumCirclePopulationFileName);
     void                        SetRangeDateEnables(bool bYear, bool bMonth, bool bDay);
     void                        SetReportingClustersText(const ZdString& sText);

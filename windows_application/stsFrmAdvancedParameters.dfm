@@ -1,6 +1,6 @@
 object frmAdvancedParameters: TfrmAdvancedParameters
-  Left = 233
-  Top = 215
+  Left = 382
+  Top = 189
   BorderStyle = bsDialog
   Caption = 'Advanced Features'
   ClientHeight = 348
@@ -48,10 +48,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       Caption = 'Adjustments'
       object rdgTemporalTrendAdj: TRadioGroup
         Left = 6
-        Top = 81
+        Top = 3
         Width = 392
         Height = 121
-        Caption = 'Adjustment for Temporal Trend'
+        Caption = 'Temporal Adjustments'
         Enabled = False
         ItemIndex = 0
         Items.Strings = (
@@ -64,7 +64,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object edtLogLinear: TEdit
         Left = 106
-        Top = 170
+        Top = 92
         Width = 35
         Height = 21
         Enabled = False
@@ -76,45 +76,45 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object lblLogLinear: TStaticText
         Left = 144
-        Top = 174
+        Top = 96
         Width = 67
         Height = 17
         AutoSize = False
         Caption = '%  per year'
         TabOrder = 2
       end
-      object grpRelativeRiskAdjustment: TGroupBox
+      object grpAdjustments: TGroupBox
         Left = 6
-        Top = 3
+        Top = 131
         Width = 392
-        Height = 70
-        Caption = 'Adjustment for Relative Risks'
+        Height = 95
+        Caption = 'Temporal, Spatial and/or Space-Time Adjustments'
         TabOrder = 3
-        object lblRelativeRisksAdjustmentFile: TLabel
-          Left = 12
-          Top = 21
+        object lblAdjustmentsByRelativeRisksFile: TLabel
+          Left = 8
+          Top = 45
           Width = 163
           Height = 13
           Anchors = []
           Caption = 'Adjustment For Relative Risks File:'
         end
-        object edtRelativeRisksAdjustmentFile: TEdit
-          Left = 13
-          Top = 37
-          Width = 337
+        object edtAdjustmentsByRelativeRisksFile: TEdit
+          Left = 8
+          Top = 64
+          Width = 343
           Height = 21
           Anchors = []
           ParentShowHint = False
           ShowHint = True
           TabOrder = 0
-          OnChange = edtRelativeRisksAdjustmentFileChange
+          OnChange = edtAdjustmentsByRelativeRisksFileChange
         end
-        object btnBrowseRelativeRisksFile: TButton
+        object btnBrowseAdjustmentsFile: TButton
           Left = 357
-          Top = 37
+          Top = 64
           Width = 25
           Height = 21
-          Hint = 'browse for special population file'
+          Hint = 'browse for adjustments file'
           Anchors = []
           Caption = '...'
           Font.Charset = DEFAULT_CHARSET
@@ -126,7 +126,16 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ParentShowHint = False
           ShowHint = True
           TabOrder = 1
-          OnClick = btnBrowseRelativeRisksFileClick
+          OnClick = btnBrowseAdjustmentsFileClick
+        end
+        object chkAdjustForKnownRelativeRisks: TCheckBox
+          Left = 8
+          Top = 20
+          Width = 233
+          Height = 17
+          Caption = 'Adjust for known relative risks'
+          TabOrder = 2
+          OnClick = chkAdjustForKnownRelativeRisksClick
         end
       end
     end
@@ -210,7 +219,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 22
           Width = 349
           Height = 17
-          Caption = 'Include only clusters in:'
+          Caption = 'Include only windows with:'
           TabOrder = 0
           OnClick = chkRestrictTemporalRangeClick
         end
@@ -299,19 +308,20 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnKeyPress = NaturalNumberKeyPress
         end
         object stStartWindowRange: TStaticText
-          Left = 30
+          Left = 46
           Top = 49
-          Width = 106
+          Width = 91
           Height = 17
-          Caption = 'Start Window Range:'
+          AutoSize = False
+          Caption = 'Start time in range:'
           TabOrder = 8
         end
         object stEndWindowRange: TStaticText
-          Left = 30
+          Left = 46
           Top = 81
-          Width = 103
+          Width = 89
           Height = 17
-          Caption = 'End Window Range:'
+          Caption = 'End time in range:'
           TabOrder = 9
         end
         object edtEndRangeStartYear: TEdit
@@ -430,7 +440,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Width = 40
           Height = 21
           TabOrder = 1
-          Text = '49'
+          Text = '50'
           OnExit = edtReportClustersSmallerThanExit
           OnKeyPress = edtReportClustersSmallerThanKeyPress
         end

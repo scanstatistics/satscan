@@ -39,20 +39,28 @@ void __fastcall TfrmAdvancedParameters::btnBrowseMaxCirclePopFileClick(TObject *
 }
 
 /** event triggered when selects browse button for adjustment for relative risks file */
-void __fastcall TfrmAdvancedParameters::btnBrowseRelativeRisksFileClick(TObject *Sender) {
+void __fastcall TfrmAdvancedParameters::btnBrowseAdjustmentsFileClick(TObject *Sender) {
   try {
     OpenDialog->FileName = "";
     OpenDialog->DefaultExt = "*.rr";
-    OpenDialog->Filter = "Adjustment For Relative Risks files (*.rr)|*.rr|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog->Filter = "Adjustment files (*.adj)|*.adj|Text files (*.txt)|*.txt|All files (*.*)|*.*";
     OpenDialog->FilterIndex = 0;
-    OpenDialog->Title = "Select Adjustment For Relative Risks File";
+    OpenDialog->Title = "Select Adjustments File";
     if (OpenDialog->Execute())
-      edtRelativeRisksAdjustmentFile->Text = OpenDialog->FileName;
+      edtAdjustmentsByRelativeRisksFile->Text = OpenDialog->FileName;
   }
   catch (ZdException &x) {
-    x.AddCallpath("btnBrowseRelativeRisksFileClick()","TfrmAdvancedParameters");
+    x.AddCallpath("btnBrowseAdjustmentsFileClick()","TfrmAdvancedParameters");
     DisplayBasisException(this, x);
   }
+}
+
+/** event triggered when adjust for known relative risks is clicked */
+void __fastcall TfrmAdvancedParameters::chkAdjustForKnownRelativeRisksClick(TObject *Sender) {
+  lblAdjustmentsByRelativeRisksFile->Enabled = gbEnableAdjustmentsByRR && chkAdjustForKnownRelativeRisks->Checked;
+  edtAdjustmentsByRelativeRisksFile->Enabled = gbEnableAdjustmentsByRR && chkAdjustForKnownRelativeRisks->Checked;
+  edtAdjustmentsByRelativeRisksFile->Color = edtAdjustmentsByRelativeRisksFile->Enabled ? clWindow : clInactiveBorder;
+  btnBrowseAdjustmentsFile->Enabled = gbEnableAdjustmentsByRR && chkAdjustForKnownRelativeRisks->Checked;
 }
 
 /** event triggered when user selects restrict reported clusters check box */
@@ -65,6 +73,12 @@ void __fastcall TfrmAdvancedParameters::chkRestrictReportedClustersClick(TObject
 void __fastcall TfrmAdvancedParameters::chkRestrictTemporalRangeClick(TObject *Sender) {
   EnableSpatialOutputOptions(gAnalysisSettings.rdgSpatialOptions->Enabled);
   RefreshTemporalOptionsEnables();
+}
+
+/** event triggered when loginear percentage control exited */
+void __fastcall TfrmAdvancedParameters::edtLogLinearExit(TObject *Sender) {
+  if (edtLogLinear->Text.IsEmpty() || atof(edtLogLinear->Text.c_str()) <= -100)
+    edtLogLinear->Text = 0;
 }
 
 /** event triggered when text of maximum circle edit control changes */
@@ -82,25 +96,17 @@ void __fastcall TfrmAdvancedParameters::edtEndRangeStartDateExit(TObject *Sender
   TfrmAnalysis::ValidateDate(*edtEndRangeStartYear, *edtEndRangeStartMonth, *edtEndRangeStartDay);
 }
 
-/** event triggered when text of adjustment for relative risks edit control changes */
-void __fastcall TfrmAdvancedParameters::edtRelativeRisksAdjustmentFileChange(TObject *Sender) {
-  edtRelativeRisksAdjustmentFile->Hint = edtRelativeRisksAdjustmentFile->Text;
+/** event triggered when text of adjustment by relative risks edit control changes */
+void __fastcall TfrmAdvancedParameters::edtAdjustmentsByRelativeRisksFileChange(TObject *Sender) {
+  edtAdjustmentsByRelativeRisksFile->Hint = edtAdjustmentsByRelativeRisksFile->Text;
 }
 
 /** event triggered when 'Report only clusters smaller than ...' edit control is exited */
 void __fastcall TfrmAdvancedParameters::edtReportClustersSmallerThanExit(TObject *Sender) {
-  try {
-    if (!edtReportClustersSmallerThan->Text.Length() || atof(edtReportClustersSmallerThan->Text.c_str()) == 0)
-      ZdException::GenerateNotification("Please specify a maximum cluster size for reported clusters\n"
-                                        "between 0 and the maximum spatial cluster size of %g.",
-                                        "edtReportClustersSmallerThanExit()",
-                                        atof(gAnalysisSettings.edtMaxSpatialClusterSize->Text.c_str()));
-  }
-  catch (ZdException & x) {
-    edtReportClustersSmallerThan->SetFocus();
-    x.AddCallpath("edtReportClustersSmallerThanExit()","TfrmAdvancedParameters");
-    DisplayBasisException(this, x);
-  }
+  if (!edtReportClustersSmallerThan->Text.Length()
+       || atof(edtReportClustersSmallerThan->Text.c_str()) == 0
+       || atof(edtReportClustersSmallerThan->Text.c_str()) > atof(gAnalysisSettings.edtMaxSpatialClusterSize->Text.c_str()))
+    edtReportClustersSmallerThan->Text = gAnalysisSettings.edtMaxSpatialClusterSize->Text;
 }
 
 /** event triggered when key pressed for control that can contain positive real numbers */
@@ -141,13 +147,15 @@ void TfrmAdvancedParameters::EnableAdjustmentForTimeTrendOptionsGroup(bool bEnab
     SetTemporalTrendAdjustmentControl(NOTADJUSTED);
 }
 
-/** enables relative risks input options controls */
-void TfrmAdvancedParameters::EnableRelativeRisksGroup(bool bEnable) {
-  grpRelativeRiskAdjustment->Enabled = bEnable;
-  lblRelativeRisksAdjustmentFile->Enabled = bEnable;
-  edtRelativeRisksAdjustmentFile->Enabled = bEnable;
-  edtRelativeRisksAdjustmentFile->Color = edtRelativeRisksAdjustmentFile->Enabled ? clWindow : clInactiveBorder;
-  btnBrowseRelativeRisksFile->Enabled = bEnable;
+/** enables adjustment options controls */
+void TfrmAdvancedParameters::EnableAdjustmentsGroup(bool bEnable) {
+  gbEnableAdjustmentsByRR = bEnable;
+  grpAdjustments->Enabled = bEnable;
+  chkAdjustForKnownRelativeRisks->Enabled = bEnable;
+  lblAdjustmentsByRelativeRisksFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
+  edtAdjustmentsByRelativeRisksFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
+  edtAdjustmentsByRelativeRisksFile->Color = edtAdjustmentsByRelativeRisksFile->Enabled ? clWindow : clInactiveBorder;
+  btnBrowseAdjustmentsFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
 }
 
 /** enables spatial output options controls */
@@ -266,6 +274,17 @@ void TfrmAdvancedParameters::ParseDate(const std::string& sDate, TEdit& Year, TE
   }
 }
 
+/** event triggered when 'Adjustment for time trend' type control clicked */
+void __fastcall TfrmAdvancedParameters::rdgTemporalTrendAdjClick(TObject *Sender) {
+  switch (GetAdjustmentTimeTrendControlType()) {
+    case LOGLINEAR_PERC : edtLogLinear->Enabled = true;
+                          edtLogLinear->Color = clWindow;
+                          break;
+    default             : edtLogLinear->Enabled = false;
+                          edtLogLinear->Color = clInactiveBorder;
+  }
+}
+
 /** */
 void TfrmAdvancedParameters::RefreshTemporalOptionsEnables() {
   AnalysisType  eType = gAnalysisSettings.GetAnalysisControlType();
@@ -278,7 +297,8 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
   ZdString      sString;
 
   try {
-    ref.SetRelativeRisksFilename(edtRelativeRisksAdjustmentFile->Text.c_str(), false);
+    ref.SetUseAdjustmentForRelativeRisksFile(chkAdjustForKnownRelativeRisks->Checked);
+    ref.SetAdjustmentsByRelativeRisksFilename(edtAdjustmentsByRelativeRisksFile->Text.c_str(), false);
     ref.SetTimeTrendAdjustmentType(rdgTemporalTrendAdj->Enabled ? GetAdjustmentTimeTrendControlType() : NOTADJUSTED);
     ref.SetTimeTrendAdjustmentPercentage(atof(edtLogLinear->Text.c_str()));
     ref.SetMaxCirclePopulationFileName(edtMaxCirclePopulationFilename->Text.c_str(), false, true);
@@ -313,12 +333,12 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
   }
 }
 
-/** Sets special population filename in interface and parameters class. */
-void TfrmAdvancedParameters::SetAdjustmentsForRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName) {
-  edtRelativeRisksAdjustmentFile->Text = sAdjustmentsForRelativeRisksFileName;
+/** Sets adjustments filename in interface */
+void TfrmAdvancedParameters::SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsByRelativeRisksFileName) {
+  edtAdjustmentsByRelativeRisksFile->Text = sAdjustmentsByRelativeRisksFileName;
 }
 
-/** Sets special population filename in interface and parameters class. */
+/** Sets special population filename in interface */
 void TfrmAdvancedParameters::SetMaximumCirclePopulationFile(const char * sMaximumCirclePopulationFileName) {
   edtMaxCirclePopulationFilename->Text = sMaximumCirclePopulationFileName;
 }
@@ -352,7 +372,8 @@ void TfrmAdvancedParameters::Setup() {
   const CParameters & ref = gAnalysisSettings.gParameters;
 
   try {
-    edtRelativeRisksAdjustmentFile->Text = ref.GetRelativeRisksFilename().c_str();
+    chkAdjustForKnownRelativeRisks->Checked = ref.UseAdjustmentForRelativeRisksFile();
+    edtAdjustmentsByRelativeRisksFile->Text = ref.GetAdjustmentsByRelativeRisksFilename().c_str();
     SetTemporalTrendAdjustmentControl(ref.GetTimeTrendAdjustmentType());
     if (ref.GetTimeTrendAdjustmentPercentage() <= -100)
       edtLogLinear->Text = 0;
@@ -360,7 +381,10 @@ void TfrmAdvancedParameters::Setup() {
       edtLogLinear->Text = ref.GetTimeTrendAdjustmentPercentage();
     edtMaxCirclePopulationFilename->Text = ref.GetMaxCirclePopulationFileName().c_str();
     chkTerminateEarly->Checked = ref.GetTerminateSimulationsEarly();
-    edtReportClustersSmallerThan->Text = ref.GetMaximumReportedGeoClusterSize();
+    if (ref.GetMaximumReportedGeoClusterSize() > atof(gAnalysisSettings.edtMaxSpatialClusterSize->Text.c_str()))
+      edtReportClustersSmallerThan->Text = gAnalysisSettings.edtMaxSpatialClusterSize->Text;
+    else
+      edtReportClustersSmallerThan->Text = ref.GetMaximumReportedGeoClusterSize();
     chkRestrictReportedClusters->Checked = ref.GetRestrictingMaximumReportedGeoClusterSize();
     chkRestrictTemporalRange->Checked = ref.GetIncludeClustersType() == CLUSTERSINRANGE;
     if (ref.GetStartRangeStartDate().length() > 0)
@@ -395,6 +419,10 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl) {
     gpFocusControl=0;
     PageControl->ActivePage = PageControl->Pages[0];
   }
+  //reporting clusters text dependent on maximum spatial cluster size
+  //-- ensure that it has text
+  if (!gAnalysisSettings.edtMaxSpatialClusterSize->Text.Length())
+    gAnalysisSettings.edtMaxSpatialClusterSize->Text = 50;
 
   ShowModal();
 }
@@ -432,13 +460,13 @@ void TfrmAdvancedParameters::ValidateReportedSpatialClusterSize() {
     if (gAnalysisSettings.edtMaxSpatialClusterSize->Enabled && edtReportClustersSmallerThan->Enabled) {
       if (!edtReportClustersSmallerThan->Text.Length() || atof(edtReportClustersSmallerThan->Text.c_str()) == 0)
         GenerateAFException("Please specify a maximum cluster size for reported clusters\n"
-                            "between 0 and the maximum spatial cluster size of %g.",
-                            "edtReportClustersSmallerThanExit()", *edtReportClustersSmallerThan,
+                            "greater than 0 and less than or equal to the maximum spatial cluster size of %g.",
+                            "ValidateReportedSpatialClusterSize()", *edtReportClustersSmallerThan,
                             atof(gAnalysisSettings.edtMaxSpatialClusterSize->Text.c_str()));
 
 
-      if (atof(edtReportClustersSmallerThan->Text.c_str()) >= atof(gAnalysisSettings.edtMaxSpatialClusterSize->Text.c_str()))
-        GenerateAFException("The maximum cluster size for reported clusters must be less than the maximum spatial cluster size.\n",
+      if (atof(edtReportClustersSmallerThan->Text.c_str()) > atof(gAnalysisSettings.edtMaxSpatialClusterSize->Text.c_str()))
+        GenerateAFException("The maximum cluster size for reported clusters can not be greater than the maximum spatial cluster size.\n",
                             "ValidateReportedSpatialClusterSize()", *edtReportClustersSmallerThan);
     }
   }
@@ -503,25 +531,6 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
   va_end(varArgs);
 
   throw theException;
-}
-
-
-/** event triggered when 'Adjustment for time trend' type control clicked */
-void __fastcall TfrmAdvancedParameters::rdgTemporalTrendAdjClick(TObject *Sender) {
-  switch (GetAdjustmentTimeTrendControlType()) {
-    case LOGLINEAR_PERC : edtLogLinear->Enabled = true;
-                          edtLogLinear->Color = clWindow;
-                          break;
-    default             : edtLogLinear->Enabled = false;
-                          edtLogLinear->Color = clInactiveBorder;
-  }
-}
-
-
-/** */
-void __fastcall TfrmAdvancedParameters::edtLogLinearExit(TObject *Sender) {
-  if (edtLogLinear->Text.IsEmpty() || atof(edtLogLinear->Text.c_str()) <= -100)
-    edtLogLinear->Text = 0;
 }
 
 
