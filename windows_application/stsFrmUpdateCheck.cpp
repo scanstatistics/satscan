@@ -59,7 +59,7 @@ void TfrmUpdateCheck::ConnectToServerForUpdateCheck() {
     sHTTP_Body.SetString(pHTTPConnect->Body.c_str());
     if (sHTTP_Body.GetNumTokens() < (unsigned int)giUpdateTokens || !stricmp(sHTTP_Body.GetToken(0).GetCString(), "no"))
       gbHasUpdates = false;
-    else if (sHTTP_Body.GetToken(giUpdateVersionIdIndex) == VERSION_ID) {
+    else if (atoi(sHTTP_Body.GetToken(giUpdateVersionIdIndex).GetCString()) > atoi(VERSION_ID)) {
       gbHasUpdates = true;
       //get update information
       gsUpdateVersion = sHTTP_Body.GetToken(giUpdateVersionIndex);
