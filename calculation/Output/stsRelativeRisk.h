@@ -1,55 +1,33 @@
+//*****************************************************************************
 #ifndef RELATIVERISK_H
 #define RELATIVERISK_H
-
+//*****************************************************************************
 #include "Parameters.h"
 #include "stsOutputFileData.h"
 
-extern const char *	REL_RISK_EXT;
+class CSaTScanData;
+class CSVTTData;
 
-class RelativeRiskRecord : public BaseOutputRecord {
-   private:
-      ZdString 	gsLocationID;
-      long 	glObserved;
-      double 	gdExpected;
-      ZdString 	gsRelRisk;
-      ZdString  gsTimeTrend;
-      int       giNumFields;
-
-      void 	Init(); 
-   public :
-      RelativeRiskRecord();
-      virtual ~RelativeRiskRecord();
-
-      virtual bool GetFieldIsBlank(int iFieldNumber) { return false; }
-      virtual int GetNumFields() { return giNumFields;}
-      virtual ZdFieldValue GetValue(int iFieldNumber); 
-       
-      void	SetExpected(const double dExpected) { gdExpected = dExpected; }
-      void	SetLocationID(const ZdString& sLocationID) { gsLocationID = sLocationID; }
-      void      SetNumFields(int iNumFields) {giNumFields = iNumFields;} 
-      void	SetObserved(const long lObserved) { glObserved = lObserved; }
-      void	SetRelativeRisk(const ZdString& sRelRisk) { gsRelRisk = sRelRisk; }
-      void      SetTimeTrend(const ZdString& sTimeTrend) { gsTimeTrend = sTimeTrend;}
-};  
-
-
+/** data model for the relative risk output file type */
 class RelativeRiskData : public BaseOutputStorageClass {
    private:
-      const CParameters & gParameters;
-
-      void	Init();
-      void	Setup();
-   protected:
       virtual void              SetupFields();
+
+   protected:
+      static const char       * REL_RISK_EXT;
+      static const char       * TIME_TREND_FIELD;
+      static const char       * DATASTREAM_FIELD;
+      const CParameters       & gParameters;
+
+      ZdString                & GetLocationId(ZdString& sId, tract_t tTractIndex, const CSaTScanData& DataHub);
+
    public:
-      RelativeRiskData(BasePrint *pPrintDirection, const CParameters & Parameters);
+      RelativeRiskData(const CParameters& Parameters);
       virtual ~RelativeRiskData();
 
-      void      SetRelativeRiskData(const ZdString& sLocationID, const long lObserved,
-                                    const double dExpected, const ZdString& sRelRisk,
-                                    const ZdString& sTimeTrend);
-      void      SetRelativeRiskData(const ZdString& sLocationID, const long lObserved,
-                                    const double dExpected, const ZdString& sRelRisk);
+      virtual const char      * GetOutputExtension() const {return REL_RISK_EXT;}
+      void                      RecordRelativeRiskData(const CSaTScanData& DataHub);
+      void                      RecordRelativeRiskData(const CSVTTData& DataHub);
 };
-
+//*****************************************************************************
 #endif

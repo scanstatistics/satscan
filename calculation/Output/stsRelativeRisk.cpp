@@ -1,165 +1,147 @@
-// Adam J Vaughn
-// November 2002
-
+//*****************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-
+//*****************************************************************************
 #include "stsRelativeRisk.h"
+#include "SaTScanData.h"
+#include "SVTTData.h"
 
-const char *	REL_RISK_EXT		= ".rr";
-
-// ============================================================================
-// record data model for the relative risk file
-// ============================================================================
-
-RelativeRiskRecord::RelativeRiskRecord() : BaseOutputRecord() {
-   Init();
+/** class constructor */
+RelativeRiskData::RelativeRiskData(const CParameters& Parameters)
+                 :BaseOutputStorageClass(), gParameters(Parameters) {
+  try {
+    SetupFields();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("constructor()","RelativeRiskData");
+    throw;
+  }
 }
 
-RelativeRiskRecord::~RelativeRiskRecord() {
+/** class destructor */
+RelativeRiskData::~RelativeRiskData() {}
+
+const char * RelativeRiskData::REL_RISK_EXT                = ".rr";
+const char * RelativeRiskData::TIME_TREND_FIELD            = "TIME_TREND";
+const char * RelativeRiskData::DATASTREAM_FIELD            = "STREAM";
+
+/** Returns location identifier for tract at tTractIndex. If tTractIndex refers
+    to more than one location identifier, string returned contains first
+    encountered location with string "et al" concatenated. */
+ZdString & RelativeRiskData::GetLocationId(ZdString& sId, tract_t tTractIndex, const CSaTScanData& DataHub) {
+  std::vector<std::string> vIdentifiers;
+
+  DataHub.GetTInfo()->tiGetTractIdentifiers(tTractIndex, vIdentifiers);
+  sId = vIdentifiers.front().c_str();
+  if (vIdentifiers.size() > 1)
+    sId << " et al";
+  return sId;
 }
 
-ZdFieldValue RelativeRiskRecord::GetValue(int iFieldNumber) {
-   ZdFieldValue fv;
-   
-   try {     
-      if (iFieldNumber < 0 || iFieldNumber >= GetNumFields())
-         ZdGenerateException ("Index out of range!", "Error!");
-      switch (iFieldNumber) {
-         case 0:
-            BaseOutputRecord::SetFieldValueAsString(fv, gsLocationID);  break;
-         case 1:
-            BaseOutputRecord::SetFieldValueAsDouble(fv, double(glObserved));  break;
-         case 2:
-            BaseOutputRecord::SetFieldValueAsDouble(fv, gdExpected);  break;
-         case 3:
-            BaseOutputRecord::SetFieldValueAsString(fv, gsRelRisk);  break;
-         case 4:
-            BaseOutputRecord::SetFieldValueAsString(fv, gsTimeTrend);  break;
-         default :
-            ZdGenerateException ("Invalid index, out of range", "Error!");
-      } 
-      return fv;   
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetValue()" , "RelativeRiskRecord");
-      throw;
-   }
+void RelativeRiskData::RecordRelativeRiskData(const CSaTScanData& DataHub) {
+  OutputRecord        * pRecord = 0;
+  unsigned int          i;
+  tract_t               t;
+  ZdString              sBuffer;
+  count_t             * pCases;
+  measure_t           * pMeasure;
+  double                dExpected;
+
+  try {
+    for (i=0; i < gParameters.GetNumDataStreams(); ++i) {
+       pCases = DataHub.GetDataStreamHandler().GetStream(i).GetCaseArray()[0];
+       pMeasure = DataHub.GetDataStreamHandler().GetStream(i).GetMeasureArray()[0];
+       for (t=0; t < DataHub.GetNumTracts(); ++t) {
+          pRecord = new OutputRecord(gvFields);
+          pRecord->GetFieldValue(GetFieldNumber(LOC_ID_FIELD)).AsZdString() = GetLocationId(sBuffer, t, DataHub);
+          pRecord->GetFieldValue(GetFieldNumber(DATASTREAM_FIELD)).AsDouble() = i + 1;
+          pRecord->GetFieldValue(GetFieldNumber(OBSERVED_FIELD)).AsDouble() = pCases[t];
+          dExpected = DataHub.GetMeasureAdjustment() * pMeasure[t];
+          pRecord->GetFieldValue(GetFieldNumber(EXPECTED_FIELD)).AsDouble() = dExpected;
+          if (dExpected)
+            pRecord->GetFieldValue(GetFieldNumber(REL_RISK_FIELD)).AsZdString().printf("%12.3f",
+                                                                                       ((double)pCases[t])/dExpected);
+          else
+            pRecord->GetFieldValue(GetFieldNumber(REL_RISK_FIELD)).AsZdString() = "n/a";
+          BaseOutputStorageClass::AddRecord(pRecord);
+       }
+    }
+  }
+  catch (ZdException &x) {
+    delete pRecord;
+    x.AddCallpath("RecordRelativeRiskData(const CSaTScanData&)","RelativeRiskData");
+    throw;
+  }
 }
 
-void RelativeRiskRecord::Init() {
-   gsLocationID = "";
-   glObserved = 0;
-   gdExpected = 0.0;
-   gsRelRisk = 0.0;
-   gsTimeTrend = 0.0;
-}
+void RelativeRiskData::RecordRelativeRiskData(const CSVTTData& DataHub) {
+  OutputRecord                * pRecord = 0;
+  unsigned int                  i, j;
+  tract_t                       t;
+  ZdString                      sBuffer;
+  count_t                     * pCases, ** ppCasesNC;
+  std::vector<count_t>          vTemporalTractCases(DataHub.GetNumTimeIntervals());
+  measure_t                   * pMeasure, ** ppMeasureNC;
+  std::vector<measure_t>        vTemporalTractObserved(DataHub.GetNumTimeIntervals());
+  double                        dExpected;
+  CTimeTrend                    TractTimeTrend;
 
-// ============================================================================
-// data model for the relative risk output file type
-// ============================================================================
-
-// constructor
-RelativeRiskData::RelativeRiskData(BasePrint *pPrintDirection, const CParameters & Parameters)
-                           : BaseOutputStorageClass(pPrintDirection), gParameters(Parameters) {
-   try {
-      Init();
-      Setup();
-   }
-   catch (ZdException &x) {
-      if(pPrintDirection) {
-         pPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
-         pPrintDirection->SatScanPrintWarning("\nWarning - Unable to create relative risk output file.\n");
-      }
-   }
-}
-
-// destructor
-RelativeRiskData::~RelativeRiskData() {
-   try {
-   }
-   catch (...) { }
-}
-
-void RelativeRiskData::Init() {
-}
-
-void RelativeRiskData::SetRelativeRiskData(const ZdString& sLocationID, const long lObserved, const double dExpected,
-                                           const ZdString& sRelRisk, const ZdString& sTimeTrend) {
-   RelativeRiskRecord*	pRecord = 0;
-
-   try {
-      pRecord = new RelativeRiskRecord();
-      pRecord->SetExpected(dExpected);
-      pRecord->SetLocationID(sLocationID);
-      pRecord->SetObserved(lObserved);
-      pRecord->SetRelativeRisk(sRelRisk);
-      pRecord->SetTimeTrend(sTimeTrend);
-      pRecord->SetNumFields(5);
-      BaseOutputStorageClass::AddRecord(pRecord);
-   }
-   catch (ZdException &x) {
-      delete pRecord;
-      gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
-      gpPrintDirection->SatScanPrintWarning("\nWarning - Unable to record relative risk output data.\n");
-   }
-}
-
-void RelativeRiskData::SetRelativeRiskData(const ZdString& sLocationID, const long lObserved,
-                                           const double dExpected, const ZdString& sRelRisk) {
-   RelativeRiskRecord*	pRecord = 0;
-
-   try {
-      pRecord = new RelativeRiskRecord();
-      pRecord->SetExpected(dExpected);
-      pRecord->SetLocationID(sLocationID);
-      pRecord->SetObserved(lObserved);
-      pRecord->SetRelativeRisk(sRelRisk);
-      pRecord->SetNumFields(4);
-      BaseOutputStorageClass::AddRecord(pRecord);
-   }
-   catch (ZdException &x) {
-      delete pRecord;
-      gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
-      gpPrintDirection->SatScanPrintWarning("\nWarning - Unable to record relative risk output data.\n");
-   }
-}
-
-// internal setup function
-void RelativeRiskData::Setup() {
-   try {
-      ZdString sTempName(gParameters.GetOutputFileName().c_str());
-      ZdString sExt(ZdFileName(gParameters.GetOutputFileName().c_str()).GetExtension());
-      if(sExt.GetLength()) 
-         sTempName.Replace(sExt, REL_RISK_EXT);
-      else
-         sTempName << REL_RISK_EXT;
-      gsFileName = sTempName;
-
-      SetupFields();
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("Setup()", "RelativeRiskData");
-      throw;
-   }
+  try {
+    for (i=0; i < gParameters.GetNumDataStreams(); ++i) {
+       pCases = DataHub.GetDataStreamHandler().GetStream(i).GetCaseArray()[0];
+       pMeasure = DataHub.GetDataStreamHandler().GetStream(i).GetMeasureArray()[0];
+       ppCasesNC = DataHub.GetDataStreamHandler().GetStream(i).GetNCCaseArray();
+       ppMeasureNC = DataHub.GetDataStreamHandler().GetStream(i).GetNCMeasureArray();
+       for (t=0; t < DataHub.GetNumTracts(); ++t) {
+          pRecord = new OutputRecord(gvFields);
+          pRecord->GetFieldValue(GetFieldNumber(LOC_ID_FIELD)).AsZdString() = GetLocationId(sBuffer, t, DataHub);
+          pRecord->GetFieldValue(GetFieldNumber(DATASTREAM_FIELD)).AsDouble() = i + 1;
+          pRecord->GetFieldValue(GetFieldNumber(OBSERVED_FIELD)).AsDouble() = pCases[t];
+          dExpected = DataHub.GetMeasureAdjustment() * pMeasure[t];
+          pRecord->GetFieldValue(GetFieldNumber(EXPECTED_FIELD)).AsDouble() = dExpected;
+          if (dExpected)
+            pRecord->GetFieldValue(GetFieldNumber(REL_RISK_FIELD)).AsZdString().printf("%12.3f",
+                                                                                       ((double)pCases[t])/dExpected);
+          else
+            pRecord->GetFieldValue(GetFieldNumber(REL_RISK_FIELD)).AsZdString() = "n/a";
+          //calculate total cases by time intervals for this tract
+          for (j=0; j < (unsigned int)DataHub.GetNumTimeIntervals(); ++j) {
+             vTemporalTractCases[j] = ppCasesNC[j][t];
+             vTemporalTractObserved[j] = ppMeasureNC[j][t];
+          }
+          TractTimeTrend.CalculateAndSet(&vTemporalTractCases[0], &vTemporalTractObserved[0],
+                                         DataHub.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
+          TractTimeTrend.SetAnnualTimeTrend(gParameters.GetTimeIntervalUnitsType(), gParameters.GetTimeIntervalLength());
+          sBuffer.printf("%6.3f", (TractTimeTrend.IsNegative() ? -1 : 1) * TractTimeTrend.GetAnnualTimeTrend());
+          pRecord->GetFieldValue(GetFieldNumber(TIME_TREND_FIELD)).AsZdString() = sBuffer;
+          BaseOutputStorageClass::AddRecord(pRecord);
+       }
+    }
+  }
+  catch (ZdException &x) {
+    delete pRecord;
+    x.AddCallpath("RecordRelativeRiskData(const CSVTTData&)","RelativeRiskData");
+    throw;
+  }
 }
 
 // sets up the vector of field structs so that the ZdField Vector can be created
 // pre: none
 // post : returns through reference a vector of ZdFields to determine the structure of the data
 void RelativeRiskData::SetupFields() {
-   unsigned short uwOffset = 0;     // this is altered by the create new field function, so this must be here as is-AJV 9/30/2002
-   
-   try {
-      ::CreateField(gvFields, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
-      ::CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
-      ::CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      ::CreateField(gvFields, REL_RISK_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
-      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
-        ::CreateField(gvFields, TIME_TREND_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("SetupFields()", "RelativeRiskData");
-      throw;
-   }
+  unsigned short uwOffset = 0;
+
+  try {
+    CreateField(gvFields, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
+    CreateField(gvFields, DATASTREAM_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
+    CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
+    CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
+    CreateField(gvFields, REL_RISK_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
+    if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
+      CreateField(gvFields, TIME_TREND_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetupFields()","RelativeRiskData");
+    throw;
+  }
 }
