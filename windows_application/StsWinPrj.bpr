@@ -136,7 +136,7 @@ LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=
-ProductVersion=4.0 Beta 3
+ProductVersion=4.0 Beta 4
 Comments=Beta Release
 
 [HistoryLists\hlIncludePath]
@@ -152,8 +152,9 @@ Count=1
 Item0=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\imsdev\zd\zd540;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
 
 [HistoryLists\hlConditionals]
-Count=1
+Count=2
 Item0=INTEL_BASED;WIN32
+Item1=INTEL_BASED;WIN32;_DEBUG
 
 [Debugging]
 DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\imsdev\zd\zd540;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
