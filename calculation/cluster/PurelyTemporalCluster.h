@@ -28,16 +28,10 @@ class CPurelyTemporalCluster : public CCluster {
     CPurelyTemporalCluster            & CPurelyTemporalCluster::operator=(const CPurelyTemporalCluster& rhs);
 
     virtual void                        DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
-                                                            int nCluster,  measure_t nMinMeasure,
-                                                            int iNumSimulations, long lReportHistoryRunNumber,
-                                                            bool bIncludeRelRisk, bool bIncludePVal,
-                                                            int nLeftMargin, int nRightMargin,
-                                                            char cDeliminator, char* szSpacesOnLeft, bool bFormat = true);
-    virtual void                        DisplayCoordinates(FILE* fp, const CSaTScanData& Data, int nLeftMargin,
-                                                           int nRightMargin, char cDeliminator, char* szSpacesOnLeft) {}
-    virtual void                        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, int nLeftMargin,
-                                                             int nRightMargin, char cDeliminator, char* szSpacesOnLeft) {}
-    virtual void                        DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft) {};
+                                                            measure_t nMinMeasure, const ClusterPrintFormat& PrintFormat) const;
+    virtual void                        DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const {}
+    virtual void                        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const {}
+    virtual void                        DisplayPopulation(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const {};
     virtual count_t                     GetCaseCount(unsigned int iStream) const;
     virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual AbstractClusterData       * GetClusterData() {return gpClusterData;}
@@ -45,6 +39,8 @@ class CPurelyTemporalCluster : public CCluster {
     virtual measure_t                   GetMeasure(unsigned int iStream) const;
     virtual measure_t                   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual void                        Initialize(tract_t nCenter=0);
+    virtual void                        Write(stsAreaSpecificData& AreaData, const CSaTScanData& Data,
+                                              unsigned int iClusterNumber, unsigned int iNumSimsCompleted) const {/*nop*/}
 };
 //*****************************************************************************
 #endif

@@ -35,7 +35,7 @@ CPurelyTemporalCluster::CPurelyTemporalCluster(const CPurelyTemporalCluster& rhs
   }
 }
 
-/** desctructor */
+/** destructor */
 CPurelyTemporalCluster::~CPurelyTemporalCluster() {
   try {
     delete gpClusterData;
@@ -51,8 +51,6 @@ CPurelyTemporalCluster& CPurelyTemporalCluster::operator=(const CPurelyTemporalC
   m_nRank               = rhs.m_nRank;
   m_nFirstInterval      = rhs.m_nFirstInterval;
   m_nLastInterval       = rhs.m_nLastInterval;
-  m_nStartDate          = rhs.m_nStartDate;
-  m_nEndDate            = rhs.m_nEndDate;
   gpClusterData->Assign(*(rhs.gpClusterData));
   return *this;
 }
@@ -62,9 +60,8 @@ CPurelyTemporalCluster * CPurelyTemporalCluster::Clone() const {
   return new CPurelyTemporalCluster(*this);
 }
 
-void CPurelyTemporalCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData&, int, measure_t, int,
-                                                 long, bool, bool, int nLeftMargin, int, char, char*, bool) {
-  if (nLeftMargin > 0)
+void CPurelyTemporalCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData&, measure_t, const ClusterPrintFormat& PrintFormat) const {
+  if (PrintFormat.GetLeftMargin() > 0)
     fprintf(fp, "included.: All\n");
 }
 
