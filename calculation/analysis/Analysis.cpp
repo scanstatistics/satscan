@@ -736,9 +736,9 @@ void CAnalysis::PerformSimulations()
 
       // assign replication format string here to prevent another check in loop
       if (m_pParameters->m_nModel == SPACETIMEPERMUTATION)
-        sReplicationFormatString = "Test statistic for #%ld of %ld Replications: %7.2f\n";
+        sReplicationFormatString = "SaTScan test statistic for #%ld of %ld replications: %7.2f\n";
       else
-        sReplicationFormatString = "Log Likelihood Ratio for #%ld of %ld Replications: %7.2f\n";
+        sReplicationFormatString = "SaTScan log likelihood ratio for #%ld of %ld replications: %7.2f\n";
 
       if (m_pParameters->m_bSaveSimLogLikelihoods)
          OpenLLRFile(fpLLR, "w");
@@ -767,8 +767,6 @@ void CAnalysis::PerformSimulations()
     
         UpdatePowerCounts(r);
 
-    //    if (!(i % 200)) KR-980326 Limit printing to increase speed of program
-        gpPrintDirection->SatScanPrintf(sReplicationFormatString, iSimulationNumber, m_pParameters->m_nReplicas, r);
 
         if (m_pParameters->m_bSaveSimLogLikelihoods)
           fprintf(fpLLR, "%7.2f\n", r);
@@ -781,8 +779,14 @@ void CAnalysis::PerformSimulations()
                 (Parameters.m_nModel == SPACETIMEPERMUTATION ? "Test statistic" : "Log Likelihood Ratio"), r);
         #endif
 
-        if (iSimulationNumber==1)
+        if (iSimulationNumber==1) {
           ReportTimeEstimate(nStartTime, m_pParameters->m_nReplicas, iSimulationNumber, gpPrintDirection);
+          //Simulations taking less than one second to complete hinder user seeing most likely clusters
+          //loglikelihood ratio, so pause program.
+          if ((clock() - nStartTime)/CLK_TCK < 1)
+            Sleep(5000);
+        }
+        gpPrintDirection->SatScanPrintf(sReplicationFormatString, iSimulationNumber, m_pParameters->m_nReplicas, r);
       }
 
       if (m_pParameters->m_bSaveSimLogLikelihoods)
