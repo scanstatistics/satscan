@@ -55,18 +55,22 @@ CCluster & TopClustersContainer::GetTopCluster(int iShapeOffset) {
 CCluster & TopClustersContainer::GetTopCluster() {
   CCluster    * pTopCluster;
 
-//  //first set ratios
-//  for (size_t t=0; t < gvTopShapeClusters.size(); t++)
-//   gvTopShapeClusters[t]->SetRatioAndDates(gData);
   //set the maximum cluster to the circle shape initially
   pTopCluster = gvTopShapeClusters[0];
+  //apply compactness correction
+  pTopCluster->m_nRatio *= pTopCluster->m_DuczmalCorrection;
   //if the there are ellipses, compare current top cluster against them
   //note: we don't have to be concerned with whether we are comparing circles and ellipses,
   //     the adjusted loglikelihood ratio for a circle is just the loglikelihood ratio
-  for (size_t t=1; t < gvTopShapeClusters.size(); t++)
-     /* could be that no cluster was defined as max for iteration*/
-     if (gvTopShapeClusters[t]->ClusterDefined() && gvTopShapeClusters[t]->m_nRatio > pTopCluster->m_nRatio)
-       pTopCluster = gvTopShapeClusters[t];
+  for (size_t t=1; t < gvTopShapeClusters.size(); t++) {
+     if (gvTopShapeClusters[t]->ClusterDefined()) {
+       //apply compactness correction
+       gvTopShapeClusters[t]->m_nRatio *= gvTopShapeClusters[t]->m_DuczmalCorrection;
+       //compare against current top cluster
+       if (gvTopShapeClusters[t]->m_nRatio > pTopCluster->m_nRatio)
+         pTopCluster = gvTopShapeClusters[t];
+     }    
+  }
 
   pTopCluster->SetStartAndEndDates(gData.GetTimeIntervalStartTimes(), gData.m_nTimeIntervals);
   return *pTopCluster;
@@ -101,54 +105,31 @@ void TopClustersContainer::SetTopClusters(const CCluster& InitialCluster) {
   }
 }
 
+/** constructor */
 CAnalysis::CAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-          :SimRatios(pParameters->GetNumReplicationsRequested(), pPrintDirection) {
-   try {
-      m_pParameters = pParameters;
-      m_pData       = pData;
-      gpPrintDirection = pPrintDirection;
-    
-      m_nClustersRetained  = 0;
-      m_nAnalysisCount     = 0;
-      m_nClustersReported  = 0;
-      m_nMinRatioToReport  = 0.001;
-      m_nPower_X_Count     = 0;
-      m_nPower_Y_Count     = 0;
-      giSimulationNumber   = 0;
-
-      guwSignificantAt005       = 0;
-
-      if (m_pParameters->GetIsSequentialScanning())
-        m_nClustersToKeepEachPass = 1;
-      else {
-         if (m_pParameters->GetCriteriaSecondClustersType() == NORESTRICTIONS)
-            m_nClustersToKeepEachPass = m_pData->GetNumTracts();
-         else
-              m_nClustersToKeepEachPass = (m_pData->m_nGridTracts <= NUM_RANKED ? m_pData->m_nGridTracts : NUM_RANKED);
-      }
-    
-//#ifdef DEBUGANALYSIS
-#ifdef DEBUGPROSPECTIVETIME
-      if ((m_pDebugFile = fopen("DebugSaTScan.TXT", "w")) == NULL) {
-         fprintf(stderr, "  Error: Unable to create debug file.\n");
-         SSGenerateException("  Error: Unable to create debug file.\n", "CAnalysis constructor");
-      }
-#endif
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("CAnalysis(CParameters *, CSaTScanData *)", "CAnalysis");
-      throw;
-   }
+          :SimRatios(pParameters->GetNumReplicationsRequested(), pPrintDirection),
+           m_pParameters(pParameters), m_pData(pData), gpPrintDirection(pPrintDirection) {
+  try {
+    Init();
+    Setup();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("constructor()","CAnalysis");
+    throw;
+  }
 }
 
+/** destructor */
 CAnalysis::~CAnalysis() {
-   InitializeTopClusterList();
-   delete [] m_pTopClusters;
-
-//#ifdef DEBUGANALYSIS
+  try {
+    InitializeTopClusterList();
+    delete [] m_pTopClusters;
+    delete gpClusterDataFactory;
 #ifdef DEBUGPROSPECTIVETIME
-   fclose(m_pDebugFile);
+    fclose(m_pDebugFile);
 #endif
+  }
+  catch(...){}
 }
 
 bool CAnalysis::Execute(time_t RunTime) {
@@ -158,7 +139,7 @@ bool CAnalysis::Execute(time_t RunTime) {
    try {
       SetMaxNumClusters();
       AllocateTopClusterList();                //Allocate array which will store most likely clusters.
-      m_pData->AllocateSimulationStructures(); 
+      m_pData->GetDataStreamHandler().AllocateSimulationStructures(); 
 
       if (!m_pData->CalculateExpectedCases())        //Calculate expected number of cases.
          return false;
@@ -189,8 +170,6 @@ bool CAnalysis::Execute(time_t RunTime) {
 
       do {
          ++m_nAnalysisCount;
-
-
 #ifdef DEBUGANALYSIS
         fprintf(m_pDebugFile, "Analysis Loop #%i\n", m_nAnalysisCount);
         m_pData->DisplaySummary2(m_pDebugFile);
@@ -201,13 +180,10 @@ bool CAnalysis::Execute(time_t RunTime) {
         m_pData->DisplayMeasure(m_pDebugFile);
         m_pData->DisplayNeighbors(m_pDebugFile);
 #endif
-        
         //For each grid point, find the cluster with the greatest loglikihood.
         //Removes any clusters that violate criteria for reporting secondary clusters.
-        if (gpPrintDirection->GetIsCanceled() || !FindTopClusters())
+        if (gpPrintDirection->GetIsCanceled() || !CalculateMostLikelyClusters())
           return false;
-
-        DisplayTopClusterLogLikelihood();
 
         //Do Monte Carlo replications.
         if (m_nClustersRetained > 0)
@@ -267,6 +243,34 @@ void CAnalysis::AllocateTopClusterList() {
    }
 }
 
+/** creates data stream gateway for real data set and calls FindTopClusters()
+    to determine and collect most likely clusters
+    - returns false if process is cancelled, else true */
+bool CAnalysis::CalculateMostLikelyClusters() {
+  bool                         bSuccess; 
+  AbtractDataStreamGateway   * pDataStreamGateway=0;
+
+  try {
+    //display process heading
+    DisplayFindClusterHeading();
+    //allocate date gateway object
+    pDataStreamGateway = m_pData->GetDataStreamHandler().GetNewDataGateway();
+    //allocate objects used in 'FindTopClusters()' process
+    AllocateTopClustersObjects(*pDataStreamGateway);
+    //calculate most likely clusters
+    bSuccess = FindTopClusters(*pDataStreamGateway);
+    delete pDataStreamGateway; pDataStreamGateway=0;
+    //display the loglikelihood of most likely cluster
+    DisplayTopClusterLogLikelihood();
+  }
+  catch (ZdException &x) {
+    delete pDataStreamGateway;
+    x.AddCallpath("CalculateMostLikelyClusters()","CAnalysis");
+    throw;
+  }
+  return bSuccess;
+}
+
 /**********************************************************************
  Comparison function for sorting clusters by descending m_ratio
  **********************************************************************/
@@ -276,17 +280,6 @@ void CAnalysis::AllocateTopClusterList() {
   if (rdif > 0.0)   return 1;
   return 0;
 } /* CompareClusters() */
-
-/**********************************************************************
- Comparison function for sorting clusters by descending duczmal corrected ratio.
- **********************************************************************/
-/*static*/ int CAnalysis::CompareClustersByDuzcmalCorrectedRatio(const void *a, const void *b) {
-  double rdif = (*(CCluster**)b)->GetDuczmalCorrectedLogLikelihoodRatio() - (*(CCluster**)a)->GetDuczmalCorrectedLogLikelihoodRatio() ;
-  if (rdif < 0.0)   return -1;
-  if (rdif > 0.0)   return 1;
-  return 0;
-} /* CompareClusters() */
-
 
 bool CAnalysis::CheckForEarlyTermination(int iSimulation) const {
   float fCutOff;
@@ -514,7 +507,7 @@ void CAnalysis::DisplayTopClusterLogLikelihood() {
       else
         gpPrintDirection->SatScanPrintf("SaTScan log likelihood ratio for the most likely cluster: %7.2f\n",
                                         m_pTopClusters[0]->m_nRatio);
-      }
+    }
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayTopClusterLogLikelihood()", "CAnalysis");
@@ -616,68 +609,97 @@ bool CAnalysis::FinalizeReport(time_t RunTime) {
   return true;
 }
 
-bool CAnalysis::FindTopClusters() {
+/** Given data gate way, calculates and collects most likely clusters about
+    each grid point. Collection of clusters are sorted by loglikelihood ratio
+    and condensed based upon overlapping geographical areas.                */
+bool CAnalysis::FindTopClusters(const AbtractDataStreamGateway & DataGateway) {
   int                   i;
-  bool                  bReturn=true;
   clock_t               tStartTime;
-  DataStreamGateway   * pDataStreamGateway=0;
 
   try {
-    DisplayFindClusterHeading();
-    pDataStreamGateway = m_pData->GetDataStreamHandler().GetNewDataGateway();
+    //start clock which will help determine how long this process will take
     tStartTime = clock();
-
-    SetTopClusters(*pDataStreamGateway, false);
+    //calculate top cluster about each centroid(grid point) and store copy in top cluster array
     for (i=0; i < m_pData->m_nGridTracts && !gpPrintDirection->GetIsCanceled(); ++i) {
-       CalculateTopCluster(i, *pDataStreamGateway, false);
-       m_pTopClusters[i] = GetTopCalculatedCluster().Clone();
+       m_pTopClusters[i] = CalculateTopCluster(i, DataGateway).Clone();
        m_pTopClusters[i]->SetStartAndEndDates(m_pData->GetTimeIntervalStartTimes(), m_pData->m_nTimeIntervals);
        ++m_nClustersRetained;
        if (i==9)
          ReportTimeEstimate(tStartTime, m_pData->m_nGridTracts, i+1, gpPrintDirection);
     }
-    delete pDataStreamGateway; pDataStreamGateway=0;
-
     if (gpPrintDirection->GetIsCanceled())
-      bReturn = false;
-    else
-      RankTopClusters();
+      return false;
+    //now sort top cluster array by ratio and possibly remove overlapping clusters 
+    RankTopClusters();
   }
   catch (ZdException &x) {
-    delete pDataStreamGateway;
-    x.AddCallpath("FindTopClusters()", "CAnalysis");
+    x.AddCallpath("FindTopClusters()","CAnalysis");
     throw;
   }
-  return bReturn;
+  return true;
 }
 
-/** Returns loglikelihood for Monte Carlo replication. */
-double CAnalysis::GetMonteCarloLoglikelihoodRatio(const DataStreamGateway & DataGateway) {
+/** calculates greatest loglikelihood ratio about each centroid(grid point) */
+double CAnalysis::FindTopRatio(const AbtractDataStreamGateway & DataGateway) {
   int                   i;
   double                dMaxLogLikelihoodRatio=0;
 
+  //calculate greatest loglikelihood ratio about each centroid
+  for (i=0; i < m_pData->m_nGridTracts && !gpPrintDirection->GetIsCanceled(); ++i)
+    dMaxLogLikelihoodRatio = std::max(CalculateTopCluster(i, DataGateway).m_nRatio, dMaxLogLikelihoodRatio);
+  return dMaxLogLikelihoodRatio;
+}
+
+/** Returns loglikelihood for Monte Carlo replication. */
+double CAnalysis::GetMonteCarloLoglikelihoodRatio(const AbtractDataStreamGateway & DataGateway) {
   try {
-    if (DataGateway.GetNumInterfaces() == 1) {
+    if (gbMeasureListReplications) {
       if (m_pParameters->GetIsProspectiveAnalysis())
-        dMaxLogLikelihoodRatio = MonteCarloProspective(DataGateway.GetDataStreamInterface(0));
+        return MonteCarloProspective(DataGateway.GetDataStreamInterface(0));
       else
-        dMaxLogLikelihoodRatio = MonteCarlo(DataGateway.GetDataStreamInterface(0));
+        return MonteCarlo(DataGateway.GetDataStreamInterface(0));
     }
-    else {
-      SetTopClusters(DataGateway, true);
-      for (i=0; i < m_pData->m_nGridTracts && !gpPrintDirection->GetIsCanceled(); ++i) {
-         CalculateTopCluster(i, DataGateway, true);
-         CCluster & Cluster = GetTopCalculatedCluster();
-         if (Cluster.ClusterDefined())
-           dMaxLogLikelihoodRatio = std::max(Cluster.GetDuczmalCorrectedLogLikelihoodRatio(), dMaxLogLikelihoodRatio);
-      }
-    }
+    else
+      return FindTopRatio(DataGateway);
   }
   catch (ZdException &x) {
     x.AddCallpath("GetMonteCarloLoglikelihoodRatio()","CAnalysis");
     throw;
   }
-  return dMaxLogLikelihoodRatio;
+}
+
+CMeasureList * CAnalysis::GetNewMeasureListObject() const {
+  switch (m_pParameters->GetAreaScanRateType()) {
+    case HIGH       : return new CMinMeasureList(*m_pData, *gpPrintDirection);
+    case LOW        : return new CMaxMeasureList(*m_pData, *gpPrintDirection);
+    case HIGHANDLOW : return new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
+    default         : ZdGenerateException("Unknown incidence rate specifier \"%d\".","MonteCarlo()",
+                                          m_pParameters->GetAreaScanRateType());
+  }
+  return 0;
+}
+
+CTimeIntervals * CAnalysis::GetNewTimeIntervalsObject(IncludeClustersType eType) const {
+  if (m_pParameters->GetProbabiltyModelType() == NORMAL)
+    return new NormalTimeIntervalRange(*m_pData, eType);
+  else if (m_pParameters->GetNumDataStreams() > 1)
+    return new MultiStreamTimeIntervalRange(*m_pData, eType);
+  else
+    return new TimeIntervalRange(*m_pData, eType);
+}
+
+/** internal initialization */
+void CAnalysis::Init() {
+  gpClusterDataFactory=0;
+  m_nClustersRetained=0;
+  m_nAnalysisCount=0;
+  m_nClustersReported=0;
+  m_nMinRatioToReport=0.001;
+  m_nPower_X_Count=0;
+  m_nPower_Y_Count=0;
+  giSimulationNumber=0;
+  guwSignificantAt005=0;
+  gbMeasureListReplications=true;
 }
 
 void CAnalysis::InitializeTopClusterList() {
@@ -720,8 +742,8 @@ void CAnalysis::PerformSimulations() {
    int                                  iSimulationNumber;
    char                               * sReplicationFormatString;
    std::auto_ptr<LogLikelihoodData>     pLLRData;
-   DataStreamGateway                  * pDataGateway=0;
-
+   AbtractDataStreamGateway           * pDataGateway=0;
+                                                  
    try {
       if (m_pParameters->GetNumReplicationsRequested() > 0) {
         //recompute neighbors if settings indicate that smaller clusters are reported
@@ -736,20 +758,18 @@ void CAnalysis::PerformSimulations() {
         else
           sReplicationFormatString = "SaTScan log likelihood ratio for #%ld of %ld replications: %7.2f\n";
 
-        // record only the first set of log likelihoods - AJV 12/27/2002  
+        // record only the first set of log likelihoods - AJV 12/27/2002
         if (m_pParameters->GetOutputSimLoglikeliRatiosFiles() && m_nAnalysisCount == 1)
            pLLRData.reset(new LogLikelihoodData(gpPrintDirection, *m_pParameters));
 
         clock_t nStartTime = clock();
         SimRatios.Initialize();
         pDataGateway = m_pData->GetDataStreamHandler().GetNewSimulationDataGateway();
+        AllocateSimulationObjects(*pDataGateway);
 
         for (iSimulationNumber=1; (iSimulationNumber <= m_pParameters->GetNumReplicationsRequested()) && !gpPrintDirection->GetIsCanceled(); iSimulationNumber++) {
           giSimulationNumber = iSimulationNumber;
-
-          //passed 'pDataInterface' to make data routine or is that to be handler operation ???
-          m_pData->MakeData(giSimulationNumber, *pDataGateway);
-
+          m_pData->RandomizeData(giSimulationNumber);
           r = GetMonteCarloLoglikelihoodRatio(*pDataGateway);
           UpdateTopClustersRank(r);
           SimRatios.AddRatio(r);
@@ -809,7 +829,7 @@ void CAnalysis::PrintTopClusters(int nHowMany) {
            fprintf(pFile, "         Center:  %i\n", m_pTopClusters[i]->m_Center );
            fprintf(pFile, "        Measure:  %f\n", m_pTopClusters[i]->GetMeasure(0));      //measure_t
            fprintf(pFile, "         Tracts:  %i\n", m_pTopClusters[i]->m_nTracts);
-           fprintf(pFile, "     Likelihood:  %f\n", m_pTopClusters[i]->m_nLogLikelihood );
+           fprintf(pFile, "LikelihoodRatio:  %f\n", m_pTopClusters[i]->m_nRatio );
            fprintf(pFile, "           Rank:  %i\n", m_pTopClusters[i]->m_nRank );
            fprintf(pFile, " \n");
            fprintf(pFile, " \n");
@@ -876,12 +896,7 @@ void CAnalysis::RankTopClusters() {
       /* a "new cluster" is the present candidate for inclusion.               */
 
       /* Sort by descending m_ratio, without regard to overlap */
-      //  SortTopClusters();
-      //  if (m_nClustersToKeepEachPass != 1)
-//      if (!m_pParameters->GetDuczmalCorrectEllipses())
-        qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByRatio);
-//      else
-//        qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByDuzcmalCorrectedRatio);
+      qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByRatio);
 
       // Remove "Undefined" clusters that have been sorted to bottome of list because ratio=-DBL_MAX
       tract_t nClustersAssigned = m_nClustersRetained;
@@ -1055,12 +1070,47 @@ bool CAnalysis::RepeatAnalysis() {
    return bReturn;
 }
 
-void CAnalysis::SortTopClusters()
-{
-//  if (!m_pParameters->GetDuczmalCorrectEllipses())
-    qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByRatio);
-//  else
-//    qsort(m_pTopClusters, m_nClustersRetained/*m_nMaxClusters/*NumClusters*/, sizeof(CCluster*), CompareClustersByDuzcmalCorrectedRatio);
+/** internal setup function */
+void CAnalysis::Setup() {
+  try {
+    if (m_pParameters->GetIsSequentialScanning())
+      m_nClustersToKeepEachPass = 1;
+    else {
+      if (m_pParameters->GetCriteriaSecondClustersType() == NORESTRICTIONS)
+        m_nClustersToKeepEachPass = m_pData->GetNumTracts();
+      else
+        m_nClustersToKeepEachPass = (m_pData->m_nGridTracts <= NUM_RANKED ? m_pData->m_nGridTracts : NUM_RANKED);
+    }
+    //create cluster data factory
+    if (m_pParameters->GetProbabiltyModelType() == NORMAL) {
+      gpClusterDataFactory = new NormalClusterDataFactory();
+      gbMeasureListReplications = false;
+    }
+    else if (m_pParameters->GetNumDataStreams() > 1) {
+      gpClusterDataFactory = new MultipleStreamsClusterDataFactory(*m_pParameters);
+      gbMeasureListReplications = false;
+    }
+    else {
+      gpClusterDataFactory = new ClusterDataFactory();
+      gbMeasureListReplications = true;
+    }
+      
+#ifdef DEBUGPROSPECTIVETIME
+    if ((m_pDebugFile = fopen("DebugSaTScan.TXT", "w")) == NULL) {
+      fprintf(stderr, "  Error: Unable to create debug file.\n");
+      SSGenerateException("  Error: Unable to create debug file.\n", "CAnalysis constructor");
+    }
+#endif
+  }
+  catch (ZdException &x) {
+    delete gpClusterDataFactory;
+    x.AddCallpath("CAnalysis()","CAnalysis");
+    throw;
+  }
+}
+
+void CAnalysis::SortTopClusters() {
+  qsort(m_pTopClusters, m_nClustersRetained, sizeof(CCluster*), CompareClustersByRatio);
 }
 
 void CAnalysis::UpdatePowerCounts(double r)
@@ -1131,7 +1181,7 @@ void CAnalysis::UpdateTopClustersRank(double r) {
   //then we want to compare parameter 'r' with the duczmal corrected ratio
   if (m_pParameters->GetNumRequestedEllipses() && m_pParameters->GetDuczmalCorrectEllipses())
     for (i=m_nClustersRetained-1; i >= 0; i--) {
-       if (m_pTopClusters[i]->GetDuczmalCorrectedLogLikelihoodRatio() > r)
+       if (m_pTopClusters[i]->m_nRatio > r)
          break;
        m_pTopClusters[i]->m_nRank++;
     }

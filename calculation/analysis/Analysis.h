@@ -3,9 +3,11 @@
 #define __ANALYSIS_H
 //*****************************************************************************
 #include "Cluster.h"
-#include "TimeEstimate.h"
-#include "SignificantRatios05.h"
 #include "DataStream.h"
+#include "TimeEstimate.h"
+#include "TimeIntervalRange.h"
+#include "ClusterDataFactory.h"
+#include "SignificantRatios05.h"
 
 /** Container class to store top clusters for a spatial analysis during
     method - GetTopCluster(). This class stores the top cluster for a
@@ -33,8 +35,10 @@ class TopClustersContainer {
 
 class CAnalysis {
   private:
-    double                      GetMonteCarloLoglikelihoodRatio(const DataStreamGateway & DataGateway);
+    double                      GetMonteCarloLoglikelihoodRatio(const AbtractDataStreamGateway & DataGateway);
+    void                        Init();
     virtual void                SetMaxNumClusters() {m_nMaxClusters = m_pData->m_nGridTracts;}
+    void                        Setup();
 
   protected:
     CParameters*                m_pParameters;
@@ -49,21 +53,26 @@ class CAnalysis {
     ZdString                    gsStartTime;
     FILE*                       m_pDebugFile;
     unsigned short              guwSignificantAt005;
+    AbstractClusterDataFactory* gpClusterDataFactory;
+    bool                        gbMeasureListReplications;
 
-    virtual void                CalculateTopCluster(tract_t tCenter, const DataStreamGateway & DataGateway, bool bSimulation) = 0;
-    virtual bool                FindTopClusters();
-    virtual CCluster          & GetTopCalculatedCluster() = 0;
-    virtual void                SetTopClusters(const DataStreamGateway & DataGateway, bool bSimulation) = 0;
+    virtual void                AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway)  = 0;
+    virtual void                AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway) = 0;
+    virtual bool                CalculateMostLikelyClusters();
+    virtual const CCluster    & CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway) = 0;
+    virtual bool                FindTopClusters(const AbtractDataStreamGateway & DataGateway);
+    virtual double              FindTopRatio(const AbtractDataStreamGateway & DataGateway); //MonteCarlo_BruteForce
 
 
     virtual void                AllocateTopClusterList();
     static int                  CompareClustersByRatio(const void *a, const void *b);
-    static int                  CompareClustersByDuzcmalCorrectedRatio(const void *a, const void *b);
     bool                        CheckForEarlyTermination(int iSimulation) const;
     void                        CreateGridOutputFile(const long lReportHistoryRunNumber);
     bool                        CreateReport(time_t RunTime);
     bool                        FinalizeReport(time_t RunTime);
     tract_t                     GetMaxNumClusters() {return m_nMaxClusters;}
+    CMeasureList              * GetNewMeasureListObject() const;
+    CTimeIntervals            * GetNewTimeIntervalsObject(IncludeClustersType eType) const;
     void                        InitializeTopClusterList();
     virtual double              MonteCarlo(const DataStreamInterface & Interface) = 0;
     virtual double              MonteCarloProspective(const DataStreamInterface & Interface) = 0;
