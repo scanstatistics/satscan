@@ -1,4 +1,4 @@
-// $Revision: 1.15 $
+// $Revision: 1.16 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -12,6 +12,7 @@
 #include <Dialogs.hpp>
 #include <ExtCtrls.hpp>
 #include <StdCtrls.hpp>
+#include <FileCtrl.hpp>
 //------------------------------------------------------------------------------
 #include "ScanfFile.h"
 
@@ -111,6 +112,10 @@ class TBDlgDataImporter : public TForm {
      TLabel *Label12;
      TEdit *edtIgnoreFirstRows;
      TMemo *memRawData;
+     TTabSheet *tabOutputSettings;
+     TLabel *lblOutputDirectoryLabel;
+     TEdit *edtOutputDirectory;
+     TButton *btnChangeDirectory;
      void __fastcall NumericKeyPressMask(TObject *Sender, char &Key);
      void __fastcall OnAddFldDefClick(TObject *Sender);
      void __fastcall OnAutoAlignClick(TObject *Sender);
@@ -136,6 +141,8 @@ class TBDlgDataImporter : public TForm {
      void __fastcall OnCoordinatesClick(TObject *Sender);
      void __fastcall OnClearFldDefsClick(TObject *Sender);
      void __fastcall OnUpdateFldDefClick(TObject *Sender);
+     void __fastcall OnOutputDirectoryChange(TObject *Sender);
+     void __fastcall OnChangeDirectoryClick(TObject *Sender);
 
   private:	// User declarations
      void                            Init();
@@ -194,6 +201,7 @@ class TBDlgDataImporter : public TForm {
      void                            OpenSource();
      void                            OnViewFileFormatPanel();
      void                            OnViewMappingPanel();
+     void                            OnViewOutputSettingsPanel();
      void                            ReadDataFileIntoRawDisplayField();
      void                            SelectImportFile();
      void                            SetGridHeaders(bool bFirstRowIsHeader=false);

@@ -189,11 +189,10 @@ void TBDlgDataImporter::AutoAlign() {
 void TBDlgDataImporter::BringPanelToFront(TTabSheet* tabShowTab) {
   try {
     pgcImportPages->ActivePage = tabShowTab;
-    btnPreviousPanel->Visible = tabShowTab == tabDataMapping &&
-                                strcmpi(ZdFileName(gSourceDescriptor.GetImportFileName()).GetExtension(),
-                                                    ZdDBFFileType.GetFileTypeExtension());
-    btnNextPanel->Visible = (pgcImportPages->ActivePage == tabFileFormat);
-    btnExecuteImport->Visible = (pgcImportPages->ActivePage == tabDataMapping);
+    btnPreviousPanel->Visible = (tabShowTab == tabDataMapping && strcmpi(ZdFileName(gSourceDescriptor.GetImportFileName()).GetExtension(),
+                                                                         ZdDBFFileType.GetFileTypeExtension()) ||  (tabShowTab == tabOutputSettings));
+    btnNextPanel->Visible = (pgcImportPages->ActivePage == tabFileFormat || pgcImportPages->ActivePage == tabDataMapping);
+    btnExecuteImport->Visible = (pgcImportPages->ActivePage == tabOutputSettings);
     chkFirstRowIsName->Visible = (pgcImportPages->ActivePage == tabDataMapping);
     ContinueButtonEnable();
     if (btnNextPanel->Visible && btnNextPanel->Enabled) btnNextPanel->SetFocus();
@@ -296,12 +295,15 @@ void TBDlgDataImporter::ContinueButtonEnable() {
                                (rdoFileType->ItemIndex == 0 && cmbColDelimiter->GetTextLen()) ||
                                 (rdoFileType->ItemIndex == 1 &&  lstFixedColFieldDefs->Items->Count > 0)));
   else if (*gitrCurrentTabSheet == tabDataMapping) {
-    for (size_t i=0; i < gvSaTScanVariables.size() && !btnExecuteImport->Enabled; ++i) {
+    for (size_t i=0; i < gvSaTScanVariables.size() && !btnNextPanel->Enabled; ++i) {
        if (tsfieldGrid->RowVisible[i+1])
-          btnExecuteImport->Enabled = gvSaTScanVariables[i].GetIsMappedToInputFileVariable();
+          btnNextPanel->Enabled = gvSaTScanVariables[i].GetIsMappedToInputFileVariable();
     }
-    if (btnExecuteImport->Enabled)
-      btnExecuteImport->Enabled = gpController->GetGridVisibleRowCount();
+    if (btnNextPanel->Enabled)
+      btnNextPanel->Enabled = gpController->GetGridVisibleRowCount();
+  }
+  else if (*gitrCurrentTabSheet == tabOutputSettings) {
+    btnExecuteImport->Enabled = (!edtOutputDirectory->Text.IsEmpty() && DirectoryExists(edtOutputDirectory->Text));
   }
   else
     ZdGenerateException("Unknown tabsheet.", "ContinueButtonEnable()");
@@ -309,17 +311,14 @@ void TBDlgDataImporter::ContinueButtonEnable() {
 
 /** Sets target filename and creates ZdIniFile used in target file creation. */
 void TBDlgDataImporter::CreateDestinationInformation() {
-  char                  sBuffer[1024];
   int                   iOffSet=0;
   ZdString              sFieldSection;
   ZdFileName            sFileName;
   ZdIniSection          Section;
 
   try {
-    //Reset location of target file to users temp directory.
     sFileName.SetFullPath(gSourceDescriptor.GetImportFileName());
-    GetTempPath(sizeof(sBuffer), sBuffer);
-    sFileName.SetLocation(sBuffer);
+    sFileName.SetLocation(edtOutputDirectory->Text.c_str());
     //File extension to file type.
     switch (geFileType) {
       case Case                : sFileName.SetExtension(".cas");
@@ -568,6 +567,14 @@ TModalResult TBDlgDataImporter::ImportFile() {
   TModalResult                  Modal=mrAbort;
   ZdString                      sMessage;
 
+  CreateDestinationInformation();
+  if (access(edtOutputDirectory->Text.c_str(), 02)) {
+    sMessage << "The import wizard is unable to create import file. This is likely because you\n"
+             << "don't have permissions to write to the specified directory.";
+    chdir(GetToolkit().GetLastDirectory());         
+    BImporterException::GenerateException(sMessage, "ImportFile()", ZdException::Notify);
+  }
+
   if (chkFirstRowIsName->Checked)
     gSourceDescriptor.SetNumberOfRowsToIgnore(1);
   else
@@ -581,8 +588,14 @@ TModalResult TBDlgDataImporter::ImportFile() {
     FileImporter.OpenDestination();
     SetMappings(FileImporter);
     FileImporter.Import();
-//    LoadResultFileNameIntoAnalysis();
     Modal = mrOk;
+  }
+  catch (ZdFileOpenFailedException &x) {
+    sMessage << "The import wizard encountered an error attempting to create the import file.\n";
+    sMessage << "This is most likely occuring because write permissions are not granted for\n";
+    sMessage << "specified directory. Please check path or review user permissions for specified directory.\n";
+    TBMessageBox(0, "Import cancelled!", sMessage.GetCString(), XBMB_OK|XBMB_EXCLAMATION).ShowModal();
+    Modal = mrNone;
   }
   catch (BImportRejectedException &x) {
     sMessage << "The import wizard encountered an error importing";
@@ -596,6 +609,7 @@ TModalResult TBDlgDataImporter::ImportFile() {
       sMessage << x.GetErrorMessage();
     }
     TBMessageBox(0, "Import cancelled!", sMessage.GetCString(), XBMB_OK|XBMB_EXCLAMATION).ShowModal();
+    Modal = mrNone;
   }
   catch (ZdException &x) {
     x.AddCallpath("ImportFile()", "TBDlgDataImporter");
@@ -620,7 +634,6 @@ void TBDlgDataImporter::Init() {
 void TBDlgDataImporter::LoadMappingPanel() {
   try {
     OpenSource();
-    CreateDestinationInformation();
     tsfieldGrid->Rows = gvSaTScanVariables.size();
     ClearSaTScanVariableFieldIndexes();
     AutoAlign();
@@ -644,6 +657,8 @@ void TBDlgDataImporter::MakePanelVisible(TTabSheet* tabShowTab) {
        OnViewFileFormatPanel();
      else if (tabShowTab == tabDataMapping)
        OnViewMappingPanel();
+     else if (tabShowTab == tabOutputSettings)
+       OnViewOutputSettingsPanel();
      else
        ImporterException::GenerateException("Unknown tab sheet.","MakePanelVisible()");
      BringPanelToFront(tabShowTab);
@@ -732,7 +747,6 @@ void TBDlgDataImporter::OnExecuteImport() {
   TModalResult          Modal;
 
   try {
-    CheckForRequiredVariables();
     DisableButtonsForImport(true);
     ModalResult = ImportFile();
     DisableButtonsForImport(false);
@@ -807,6 +821,13 @@ void TBDlgDataImporter::OnViewMappingPanel() {
     Screen->Cursor = crDefault;
     throw;
   }
+}
+
+/** Preparation for viewing output settings panel. */
+void TBDlgDataImporter::OnViewOutputSettingsPanel() {
+  CheckForRequiredVariables();
+  if (edtOutputDirectory->Text.IsEmpty())
+     edtOutputDirectory->Text = GetCurrentDir();
 }
 
 /** Opens source file as character delimited source file. */
@@ -1081,6 +1102,7 @@ void TBDlgDataImporter::SetPanelsToShow() {
     if (!strcmpi(ZdFileName(gSourceDescriptor.GetImportFileName()).GetExtension(), ZdDBFFileType.GetFileTypeExtension())) {
       gvTabSheets.clear();
       gvTabSheets.push_back(tabDataMapping);
+      gvTabSheets.push_back(tabOutputSettings);
       gSourceDataFileType = dBase;
       rdoFileType->ItemIndex = -1;
     }
@@ -1088,6 +1110,7 @@ void TBDlgDataImporter::SetPanelsToShow() {
       gvTabSheets.clear();
       gvTabSheets.push_back(tabFileFormat);
       gvTabSheets.push_back(tabDataMapping);
+      gvTabSheets.push_back(tabOutputSettings);
       gSourceDataFileType = Delimited;
       rdoFileType->ItemIndex = 0;
     }
@@ -1732,6 +1755,19 @@ void __fastcall TBDlgDataImporter::tsfieldGridResize(TObject *Sender) {
     tsfieldGrid->Col[2]->Width = tsfieldGrid->Width - ((tsfieldGrid->RowBarOn ? tsfieldGrid->RowBarWidth + 5/*buffer*/ : 5/*buffer*/) + tsfieldGrid->Col[1]->Width);
   else
     tsfieldGrid->Col[2]->Width = tsfieldGrid->Width - ((tsfieldGrid->RowBarOn ? tsfieldGrid->RowBarWidth + 5/*buffer*/ : 5/*buffer*/) + tsfieldGrid->Col[1]->Width + 15);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TBDlgDataImporter::OnOutputDirectoryChange(TObject *Sender) {
+   ContinueButtonEnable();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TBDlgDataImporter::OnChangeDirectoryClick(TObject *Sender) {
+  AnsiString Directory;
+  if (SelectDirectory(Directory, TSelectDirOpts(), NULL)) {
+    edtOutputDirectory->Text = Directory;
+  }
 }
 //---------------------------------------------------------------------------
 
