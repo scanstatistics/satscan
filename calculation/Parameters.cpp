@@ -2285,17 +2285,21 @@ bool CParameters::ValidateReplications(int nReps) {
 // determines whether or not the history file name from the parameters file is a valid one
 // if it is not, the controlling branch which calls this function must set the history file
 // name to a more appropraite path - AJV 9/16/2002
-bool CParameters::ValidHistoryFileName(const ZdString& sRunHistoryFilename) {
-   bool         bValid = false;
+bool CParameters::ValidHistoryFileName(ZdString& sRunHistoryFilename) {
+   bool bValid(false);
+   ZdString sExt(ZdFileName(sRunHistoryFilename.GetCString()).GetExtension());
 
    try {
-      if(!sRunHistoryFilename.GetIsEmpty())
-         // in the old parameter file if the name was empty it would interpret the // as the filename which
-         // cause an exception and error later on - AJV 9/16/2002
-         if(!(sRunHistoryFilename == "\/\/"))
-            if(!access(sRunHistoryFilename.GetCString(), 00))    // check for existence of file
-               if(!access(sRunHistoryFilename.GetCString(), 06)) // check for read and write access
-                  bValid = true;
+      if(!sRunHistoryFilename.GetIsEmpty()) {
+         if(sExt != ".dbf") {
+            if(sExt.GetIsEmpty())
+               sRunHistoryFilename << ".dbf";
+            else
+               sRunHistoryFilename.Replace(sExt.GetCString(), ".dbf");
+         }
+
+         bValid = true;
+      }
    }
    catch (ZdException &x) {
       x.AddCallpath("ValidHistoryFileName()", "CParameters");

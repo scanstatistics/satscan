@@ -133,7 +133,7 @@ class CParameters
       void      SetFloatValue(float &fValue, const ZdString& sValueFromFile, int iLineNumberFromFile, float fDefaultValue);
       void      SetIntValue(int &iValue, const ZdString& sValueFromFile, int iLineNumberFromFile, int iDefaultValue);
       void      TrimLeft(char *sString);
-      bool      ValidHistoryFileName(const ZdString& sRunHistoryFilename);
+      bool      ValidHistoryFileName(ZdString& sRunHistoryFilename);
       bool      ValueIsYes(const ZdString& sTestValue);
       void      VerifyIniFileSetup(const ZdString& sFileName, bool bCreateIfMissing = false);
 
