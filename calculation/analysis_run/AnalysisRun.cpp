@@ -174,7 +174,7 @@ void AnalysisRunner::CreateReport() {
     sStartTime = ctime(&gStartTime);
     fprintf(fp,"\nProgram run on: %s\n", sStartTime.GetCString());
     gParameters.DisplayAnalysisType(fp);
-    gParameters.DisplayTimeAdjustments(fp);
+    gParameters.DisplayTimeAdjustments(fp, gpDataHub->GetDataStreamHandler());
     gpDataHub->DisplaySummary(fp);
     fclose(fp);
   }
@@ -443,7 +443,7 @@ void AnalysisRunner::FinalizeReport() {
       gpDataHub->GetDataStreamHandler().ReportZeroPops(*gpDataHub, fp, &gPrintDirection);
 
     gpDataHub->GetTInfo()->tiReportDuplicateTracts(fp);
-    gParameters.DisplayParameters(fp, giNumSimsExecuted);
+    gParameters.DisplayParameters(fp, giNumSimsExecuted, gpDataHub->GetDataStreamHandler());
     time(&CompletionTime);
     nTotalTime = difftime(CompletionTime, gStartTime);
     nHours     = floor(nTotalTime/(60*60));
