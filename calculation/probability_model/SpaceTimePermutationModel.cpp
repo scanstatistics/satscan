@@ -183,8 +183,9 @@ bool CSpaceTimePermutationModel::ReadData() {
       return false;
     if (! gData.ReadCaseFile())
       return false;
-    if (gParameters.UseSpecialPopulationFile() && !gData.ReadSpecialPopulationFile())
-      return false;
+    if (!(gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL))
+      if (gParameters.UseMaxCirclePopulationFile() && !gData.ReadMaxCirclePopulationFile())
+        return false;
     if (gParameters.UseSpecialGrid() && !gData.ReadGridFile())
       return false;
     InitializeRandomizationStructures();

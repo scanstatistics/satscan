@@ -573,8 +573,9 @@ bool CPoissonModel::ReadData() {
     if (! gData.ReadCaseFile())
       return false;
     gData.GetTInfo()->tiCheckCasesHavePopulations();
-    if (gParameters.UseSpecialPopulationFile() && !gData.ReadSpecialPopulationFile())
-      return false;
+    if (!(gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL))
+      if (gParameters.UseMaxCirclePopulationFile() && !gData.ReadMaxCirclePopulationFile())
+        return false;
     if (gParameters.UseSpecialGrid() && !gData.ReadGridFile())
       return false;
   }

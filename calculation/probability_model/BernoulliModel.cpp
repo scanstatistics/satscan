@@ -19,8 +19,9 @@ bool CBernoulliModel::ReadData() {
       return false;
     if (! gData.ReadControlFile())
       return false;
-    if (gParameters.UseSpecialPopulationFile() && !gData.ReadSpecialPopulationFile())
-      return false;
+    if (!(gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL))
+      if (gParameters.UseMaxCirclePopulationFile() && !gData.ReadMaxCirclePopulationFile())
+        return false;
     if (gParameters.UseSpecialGrid() && !gData.ReadGridFile())
       return false;
   }
