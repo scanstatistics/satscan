@@ -573,9 +573,10 @@ void AnalysisRunner::PerformParallelSimulations() {
     contractor_type theContractor(qParamsAndResults, Rptr, CtPlcy);
     //run threads:
     boost::thread_group tg;
+    boost::mutex        thread_mutex;
     for (int i = 0; i < iParallelProcessCount; ++i)
     {
-      stsMonteCarloSimFunctor mcsf(GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), boost::shared_ptr<RandomizerContainer_t>(new RandomizerContainer_t()));
+      stsMonteCarloSimFunctor mcsf(thread_mutex, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), boost::shared_ptr<RandomizerContainer_t>(new RandomizerContainer_t()));
       tg.create_thread(subcontractor<contractor_type,stsMonteCarloSimFunctor>(theContractor,mcsf));
     }
     tg.join_all();
@@ -651,7 +652,11 @@ void AnalysisRunner::PerformSerializedSimulations() {
       for (giNumSimsExecuted=0, iSimulationNumber=1; (iSimulationNumber <= gParameters.GetNumReplicationsRequested()) && !gPrintDirection.GetIsCanceled(); iSimulationNumber++) {
         ++giNumSimsExecuted;
         //randomize data
-        GetDataHub().RandomizeIsolatedData(RandomizationContainer, SimulationDataContainer, iSimulationNumber);
+        GetDataHub().RandomizeData(RandomizationContainer, SimulationDataContainer, iSimulationNumber);
+        //print simulation data to file, if requested
+        if (gParameters.GetOutputSimulationData())
+          for (size_t t=0; t < SimulationDataContainer.size(); ++t)
+             SimulationDataContainer[t]->WriteSimulationData(gParameters, iSimulationNumber);
         //perform simulation to get loglikelihood ratio
         dSimulatedRatio = (pAnalysis->IsMonteCarlo() ? pAnalysis->MonteCarlo(pDataGateway->GetDataStreamInterface(0)) : pAnalysis->FindTopRatio(*pDataGateway));
         //update most likely clusters given latest simulated loglikelihood ratio
