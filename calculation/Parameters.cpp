@@ -642,28 +642,31 @@ void CParameters::ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporal
   }
 }
 
-/** If passed filenames path does not indicate a valid file, then attempts
-    to determine if filename is relative to executables location.*/
-void CParameters::ConvertRelativePath(std::string & sInputFilename) {
+/** If passed filename contains a slash, then assumes that path is complete and
+    sInputFilename is not modified.
+    If filename does not contain a slash, it is assumed that filename is located
+    in same directory of parameter file. sInputFilename is reset to this
+    location if existance is confirmed or if bNeedNotExist is true.
+    Note that the primary reason for implementing this feature was to permit
+    the program to be installed in any location and sample parameter files
+    run immediately with no modifications to settings. */
+void CParameters::ConvertRelativePath(std::string & sInputFilename, bool bNeedNotExist) {
+  ZdFileName    fParameterFilename;                              
   ZdFileName    fFilename;
   std::string   sFile;
 
   try {
     if (! sInputFilename.empty()) {
-      //If file does not exist -
-      // attempt to determine if passed filename is relative to executable location.
-      if (access(sInputFilename.c_str(), 0)) {
-        fFilename.SetFullPath(_argv[0]);
-        sFile = fFilename.GetLocation();
-        //If slash exists, exclude from path since ZdFilename already has it.
-        if (sInputFilename[0] == ZDFILENAME_SLASH)
-          sFile += sInputFilename.substr(1).c_str();
-        else
-          sFile += sInputFilename.c_str();
-
-        //Does file exist at relative path?
-        if (! access(sFile.c_str(), 0))
-          sInputFilename = sFile;
+      //Assume that if slashes exist, then this is a complete file path, so
+      //we'll make no attempts to determine what path might be otherwise.
+      if (sInputFilename.find(ZDFILENAME_SLASH) == sInputFilename.npos) {
+        //If no slashes then this file is assumed to be in same directory
+        //as parameters file. But let confirm this.
+        fParameterFilename.SetFullPath(GetSourceFileName().c_str());
+        fFilename.SetFullPath(sInputFilename.c_str());
+        fFilename.SetLocation(fParameterFilename.GetLocation());
+        if (access(fFilename.GetFullPath(), 0) == 0 || bNeedNotExist)
+          sInputFilename = fFilename.GetFullPath();
       }
     }
   }
@@ -1225,6 +1228,7 @@ void CParameters::ReadFromIniFile(ZdString sFileName) {
       // verify all the keys exist in the file so we can safely call the findkey() here without worrying
       // about it returning a -1  -- AJV 10/24/2002
       VerifyIniFileSetup(sFileName, true);
+      SetSourceFileName(sFileName.GetCString());
       ZdIniFile file(sFileName.GetCString());
       ReadInputFilesSectionFromIni(file);
       ReadModelInfoSectionFromIni(file);
@@ -1507,6 +1511,7 @@ void CParameters::SaveToIniFile(ZdString sFileName) {
       VerifyIniFileSetup(sFileName, true);
 
       ZdIniFile file(sFileName.GetCString());
+      SetSourceFileName(sFileName.GetCString());
       SaveInputFileSection(file);
       SaveModelInfoSection(file);
       SaveEllipseSection(file);
@@ -1785,7 +1790,7 @@ void CParameters::SetOutputFileName(const char * sOutPutFileName, bool bCorrectF
 
     m_sOutputFileName = sOutPutFileName;
     if (bCorrectForRelativePath)
-      ConvertRelativePath(m_sOutputFileName);
+      ConvertRelativePath(m_sOutputFileName, true);
   }
   catch (ZdException &x) {
     x.AddCallpath("SetOutputFileName()", "CParameters");
@@ -1958,6 +1963,7 @@ bool CParameters::SetParameters(const char* szFilename, bool bValidate) {
    //         ReportDefaultValueWarnings();
       }
       else {
+         SetSourceFileName(szFilename);
          while (i<=PARAMETERS && !bEOF) {
             if (fgets(szTemp, MAX_STR_LEN, pFile) == NULL)
                bEOF   = true;
@@ -2014,6 +2020,20 @@ void CParameters::SetPopulationFileName(const char * sPopulationFileName, bool b
 // sets the global print direction pointer
 void CParameters::SetPrintDirection(BasePrint *pPrintDirection) {
    gpPrintDirection = pPrintDirection;
+}
+
+/** Sets filename of file used to load parameters. */
+void CParameters::SetSourceFileName(const char * sParametersSourceFileName) {
+  try {
+    if (! sParametersSourceFileName)
+      ZdGenerateException("Null pointer.", "SetSourceFileName()");
+
+    m_sParametersSourceFileName = sParametersSourceFileName;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetSourceFileName()", "CParameters");
+    throw;
+  }
 }
 
 /** Sets special grid data file name.

@@ -106,6 +106,7 @@ class CParameters
                         gbRelativeRiskDBF, gbLogLikelihoodDBF;
       ZdString          gsRunHistoryFilename;
       std::vector<int>  gvDefaultedValues;
+      std::string       m_sParametersSourceFileName; /** parameters source filename */
 
       void      copy(const CParameters &rhs);
 
@@ -132,17 +133,22 @@ class CParameters
       void      SetEShapesFromIniFile(const ZdString& sShapes);
       void      SetFloatValue(float &fValue, const ZdString& sValueFromFile, int iLineNumberFromFile, float fDefaultValue);
       void      SetIntValue(int &iValue, const ZdString& sValueFromFile, int iLineNumberFromFile, int iDefaultValue);
+      void      SetSourceFileName(const char * sParametersSourceFileName);
       void      TrimLeft(char *sString);
       bool      ValidHistoryFileName(ZdString& sRunHistoryFilename);
       bool      ValueIsYes(const ZdString& sTestValue);
       void      VerifyIniFileSetup(const ZdString& sFileName, bool bCreateIfMissing = false);
 
   protected:
-    float               m_nInitialMaxTemporalClusterSize;
-    TemporalSizeType    m_nInitialMaxClusterSizeType;
-    std::string         m_sCaseFileName, m_sControlFileName, m_sPopulationFileName,
-                        m_sCoordinatesFileName, m_sSpecialGridFileName, m_sOutputFileName;
-    bool                m_bSpecialGridFile;
+    float               m_nInitialMaxTemporalClusterSize;       /** initial setting prior to convertion  */
+    TemporalSizeType    m_nInitialMaxClusterSizeType;           /** initial setting prior to convertion  */
+    std::string         m_sCaseFileName;                        /** case data source filename            */
+    std::string         m_sControlFileName;                     /** control data source filename         */
+    std::string         m_sPopulationFileName;                  /** population data source filename      */
+    std::string         m_sCoordinatesFileName;                 /** coordinates data source filename     */
+    std::string         m_sSpecialGridFileName;                 /** special grid data source filename    */
+    std::string         m_sOutputFileName;                      /** results output filename              */
+    bool                m_bSpecialGridFile;                     /** indicator of special grid file usage */
 
   public:
     CParameters(bool bDisplayErrors);
@@ -216,7 +222,7 @@ class CParameters
                                             int iEndYear, int iEndMonth, int iEndDay,
                                             int iProspYear, int iProspMonth, int iProspDay);
     void                ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporalSizeType);
-    void                ConvertRelativePath(std::string & sInputFilename);
+    void                ConvertRelativePath(std::string & sInputFilename, bool bNeedNotExist=false);
     void                DisplayAnalysisType(FILE* fp);
     bool                DisplayParamError(int nLine);
     void                DisplayParameters(FILE* fp);
@@ -233,6 +239,7 @@ class CParameters
     const std::string & GetPopulationFileName() const { return m_sPopulationFileName; }
     const ZdString&     GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
     const std::string & GetSpecialGridFileName() const { return m_sSpecialGridFileName; }
+    const std::string & GetSourceFileName() const { return m_sParametersSourceFileName; }
 
     int                 LoadEAngles(const char* szParam);
     int                 LoadEShapes(const char* szParam);
