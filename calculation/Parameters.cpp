@@ -79,11 +79,11 @@ const char*      PVALUE_PROSPECT_LLR_LINE       	= "PValues2PrespecifiedLLRs";
 const char*      LLR_1_LINE                     	= "LLR1";
 const char*      LLR_2_LINE                    		= "LLR2";
 const char*      EARLY_SIM_TERMINATION_LINE             = "EarlySimulationTermination";
-const char*      SIMULATION_TYPE_LINE                   = "SimulationProcedureType";
-const char*      SIMULATION_FILESOURCE_LINE             = "SimulationDataSourceFilename";
-const char*      POWER_ESTIMATIONFILE_LINE              = "PowerEstimationFilename";
-const char*      OUTPUT_SIMULATION_DATA_LINE            = "OutputSimulationData";
-const char*      SIMULATION_DATA_OUTFILE_LINE           = "SimulationDataOutputFilename";
+const char*      SIMULATION_TYPE_LINE                   = "SimulatedDataMethodType";
+const char*      SIMULATION_FILESOURCE_LINE             = "SimulatedDataInputFilename";
+const char*      SIM_RELATIVE_RISKS_FILE_LINE           = "RelativeRiskFilename";
+const char*      OUTPUT_SIMULATION_DATA_LINE            = "PrintSimulatedDataToFile";
+const char*      SIMULATION_DATA_OUTFILE_LINE           = "SimulatedDataOutputFilename";
 
 const int        MAXIMUM_SEQUENTIAL_ANALYSES    	= 32000;
 const int        MAXIMUM_ELLIPSOIDS             	= 10;
@@ -132,9 +132,9 @@ char mgsVariableLabels[65][100] = {
    "Interval End Range", "Time Trend Convergence", "Special Population File",
    "Special Population File Use", "Early Termination of Simulations",
    "Maximum Reported Geographical Cluster Size",
-   "Restrict Reported Max Geographical Cluster Size", "Simulation Procedure Type",
-   "Simulation Data Source File", "Power Estimation File", "Output Simulation Data",
-   "Simulation Data Output File", "Adjust for Earlier Analyses"
+   "Restrict Reported Max Geographical Cluster Size", "Simulation Method Type",
+   "Simulated Data Import File", "Simulation Relative Risks File", "Printing Simulated Data",
+   "Simulated Data Output File", "Adjust for Earlier Analyses"
 };
 
 /** Constructor */
@@ -264,7 +264,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gfMaxReportedGeographicClusterSize  = rhs.gfMaxReportedGeographicClusterSize;
     geSimulationType                    = rhs.geSimulationType;
     gsSimulationDataSourceFileName      = rhs.gsSimulationDataSourceFileName;
-    gsPowerEstimationSourceFileName     = rhs.gsPowerEstimationSourceFileName;
+    gsRelativeRisksSourceFileName       = rhs.gsRelativeRisksSourceFileName;
     gbOutputSimulationData              = rhs.gbOutputSimulationData;
     gsSimulationDataOutputFilename      = rhs.gsSimulationDataOutputFilename;
     gbAdjustForEarlierAnalyses          = rhs.gbAdjustForEarlierAnalyses;
@@ -356,9 +356,9 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
       if (gbUseSpecialGridFile)
         fprintf(fp, "  Special Grid File              : %s\n", gsSpecialGridFileName.c_str());
       if (geSimulationType == FILESOURCE)
-        fprintf(fp, "  Simulation Data Source File    : %s\n", gsSimulationDataSourceFileName.c_str());
-      else if(geSimulationType == POWER_ESTIMATION)
-        fprintf(fp, "  Power Estimation File          : %s\n", gsPowerEstimationSourceFileName.c_str());
+        fprintf(fp, "  Simulated Data Import File     : %s\n", gsSimulationDataSourceFileName.c_str());
+      else if(geSimulationType == HA_RANDOMIZATION)
+        fprintf(fp, "  Relative Risks File            : %s\n", gsRelativeRisksSourceFileName.c_str());
     }
     fprintf(fp, "\n  Precision of Times : %s\n", GetDatePrecisionAsString(gePrecisionOfTimesType));
 
@@ -522,7 +522,7 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
         fprintf(fp, "  Simulated LLRs File   : %s\n", AdditionalOutputFile.GetFullPath());
       }
       if (gbOutputSimulationData)
-        fprintf(fp, "  Simulations Data File : %s\n", gsSimulationDataOutputFilename.c_str());
+        fprintf(fp, "  Simulated Data Output File : %s\n", gsSimulationDataOutputFilename.c_str());
     }
     if (!(geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
       fprintf(fp, "\n  Criteria for Reporting Secondary Clusters : ");
@@ -712,7 +712,7 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
         case USE_REPORTED_GEOSIZE      : sParameterLineLabel = USE_REPORTED_GEOSIZE_LINE; break;
         case SIMULATION_TYPE           : sParameterLineLabel = SIMULATION_TYPE_LINE; break;
         case SIMULATION_SOURCEFILE     : sParameterLineLabel = SIMULATION_FILESOURCE_LINE; break;
-        case POWER_ESTIMATIONFILE      : sParameterLineLabel = POWER_ESTIMATIONFILE_LINE; break;
+        case SIM_RELATIVE_RISKS_FILE   : sParameterLineLabel = SIM_RELATIVE_RISKS_FILE_LINE; break;
         case OUTPUT_SIMULATION_DATA    : sParameterLineLabel = OUTPUT_SIMULATION_DATA_LINE; break;
         case SIMULATION_DATA_OUTFILE   : sParameterLineLabel = SIMULATION_DATA_OUTFILE_LINE; break;
         default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLineLabel()", eParameterType);
@@ -990,7 +990,7 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case USE_REPORTED_GEOSIZE     : sDefaultValue = (gbRestrictReportedClusters ? YES : NO); break;
       case SIMULATION_TYPE          : sDefaultValue = geSimulationType; break;
       case SIMULATION_SOURCEFILE    : sDefaultValue = "<blank>"; break;
-      case POWER_ESTIMATIONFILE     : sDefaultValue = "<blank>"; break;
+      case SIM_RELATIVE_RISKS_FILE  : sDefaultValue = "<blank>"; break;
       case OUTPUT_SIMULATION_DATA   : sDefaultValue = (gbOutputSimulationData ? YES : NO); break;
       case SIMULATION_DATA_OUTFILE  : sDefaultValue = "<blank>"; break;
       case ADJUST_ANALYSES          : sDefaultValue = (gbAdjustForEarlierAnalyses ? YES : NO); break;
@@ -1052,7 +1052,7 @@ void CParameters::ReadAdvancedFeatures(ZdIniFile& file, BasePrint & PrintDirecti
     ReadIniParameter(*pSection, EARLY_SIM_TERMINATION_LINE, EARLY_SIM_TERMINATION, PrintDirection);
     ReadIniParameter(*pSection, SIMULATION_TYPE_LINE, SIMULATION_TYPE, PrintDirection);
     ReadIniParameter(*pSection, SIMULATION_FILESOURCE_LINE, SIMULATION_SOURCEFILE, PrintDirection);
-    ReadIniParameter(*pSection, POWER_ESTIMATIONFILE_LINE, POWER_ESTIMATIONFILE, PrintDirection);
+    ReadIniParameter(*pSection, SIM_RELATIVE_RISKS_FILE_LINE, SIM_RELATIVE_RISKS_FILE, PrintDirection);
     ReadIniParameter(*pSection, OUTPUT_SIMULATION_DATA_LINE, OUTPUT_SIMULATION_DATA, PrintDirection);
     ReadIniParameter(*pSection, SIMULATION_DATA_OUTFILE_LINE, SIMULATION_DATA_OUTFILE, PrintDirection);
   }
@@ -1568,7 +1568,7 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case USE_REPORTED_GEOSIZE      : SetRestrictReportedClusters(ReadBoolean(sParameter, eParameterType)); break;
       case SIMULATION_TYPE           : SetSimulationType((SimulationType)ReadInt(sParameter, eParameterType)); break;
       case SIMULATION_SOURCEFILE     : SetSimulationDataSourceFileName(sParameter.GetCString(), true); break;
-      case POWER_ESTIMATIONFILE      : SetPowerEstimationFileName(sParameter.GetCString(), true); break;
+      case SIM_RELATIVE_RISKS_FILE   : SetRelativeRisksFileName(sParameter.GetCString(), true); break;
       case OUTPUT_SIMULATION_DATA    : SetOutputSimulationData(ReadBoolean(sParameter, eParameterType)); break;
       case SIMULATION_DATA_OUTFILE   : SetSimulationDataOutputFileName(sParameter.GetCString(), true); break;
       case ADJUST_ANALYSES           : SetAdjustForEarlierAnalyses(ReadBoolean(sParameter, eParameterType)); break;
@@ -1792,15 +1792,15 @@ void CParameters::SaveAdvancedFeaturesSection(ZdIniFile& file) {
     pSection->AddLine(LLR_1_LINE, AsString(sValue, gdPower_X));
     pSection->AddLine(LLR_2_LINE, AsString(sValue, gdPower_Y));
     pSection->AddLine(EARLY_SIM_TERMINATION_LINE, gbEarlyTerminationSimulations ? YES : NO);
-    pSection->AddComment(" Simulation options (Standard=0, Power Estimation=1, File Source=2)");
+    pSection->AddComment(" Simulated data methods (Null Randomization=0, HA Randomization=1, File Import=2)");
     pSection->AddLine(SIMULATION_TYPE_LINE, AsString(sValue, geSimulationType));
-    pSection->AddComment(" Simulation source file name (with File Source=2)");
+    pSection->AddComment(" Simulated date input file name (with File Import=2)");
     pSection->AddLine(SIMULATION_FILESOURCE_LINE, gsSimulationDataSourceFileName.c_str());
-    pSection->AddComment(" Power estimation source file name (with Power Estimation=1)");
-    pSection->AddLine(POWER_ESTIMATIONFILE_LINE, gsPowerEstimationSourceFileName.c_str());
-    pSection->AddComment(" Print simulation data to file (y/n)");
+    pSection->AddComment(" Relative risk file name (with HA Randomization=1)");
+    pSection->AddLine(SIM_RELATIVE_RISKS_FILE_LINE, gsRelativeRisksSourceFileName.c_str());
+    pSection->AddComment(" Print simulated data to file (y/n)");
     pSection->AddLine(OUTPUT_SIMULATION_DATA_LINE, gbOutputSimulationData ? YES : NO);
-    pSection->AddComment(" Simulation data output file name");
+    pSection->AddComment(" Simulated data output file name");
     pSection->AddLine(SIMULATION_DATA_OUTFILE_LINE, gsSimulationDataOutputFilename.c_str());
   }
   catch (ZdException &x) {
@@ -2216,7 +2216,7 @@ void CParameters::SetDefaults() {
   gfMaxReportedGeographicClusterSize    = 49;
   geSimulationType                      = STANDARD;
   gsSimulationDataSourceFileName        = "";
-  gsPowerEstimationSourceFileName       = "";
+  gsRelativeRisksSourceFileName         = "";
   gbOutputSimulationData                = false;
   gsSimulationDataOutputFilename        = "";
   gbAdjustForEarlierAnalyses            = false;
@@ -2476,20 +2476,20 @@ void CParameters::SetPowerCalculationY(double dPowerY) {
   gdPower_Y = dPowerY;
 }
 
-/** Sets power estimation data file name.
+/** Sets relative risks data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
-void CParameters::SetPowerEstimationFileName(const char * sSourceFileName, bool bCorrectForRelativePath) {
+void CParameters::SetRelativeRisksFileName(const char * sSourceFileName, bool bCorrectForRelativePath) {
   try {
     if (! sSourceFileName)
-      ZdGenerateException("Null pointer.", "SetPowerEstimationFileName()");
+      ZdGenerateException("Null pointer.", "SetRelativeRisksFileName()");
 
-    gsPowerEstimationSourceFileName = sSourceFileName;
+    gsRelativeRisksSourceFileName = sSourceFileName;
     if (bCorrectForRelativePath)
-      ConvertRelativePath(gsPowerEstimationSourceFileName);
+      ConvertRelativePath(gsRelativeRisksSourceFileName);
   }
   catch (ZdException &x) {
-    x.AddCallpath("SetPowerEstimationFileName()", "CParameters");
+    x.AddCallpath("SetRelativeRisksFileName()", "CParameters");
     throw;
   }
 }
@@ -3276,24 +3276,24 @@ bool CParameters::ValidateSimulationDataParameters(BasePrint & PrintDirection) {
     if (geProbabiltyModelType == POISSON) {
       switch (geSimulationType) {
         case STANDARD           : break;
-        case POWER_ESTIMATION   : if (gsPowerEstimationSourceFileName.empty()) {
+        case HA_RANDOMIZATION   : if (gsRelativeRisksSourceFileName.empty()) {
                                     bValid = false;
-                                    PrintDirection.SatScanPrintWarning("Error: No power estimation source file specified.\n");
+                                    PrintDirection.SatScanPrintWarning("Error: No relative risks source file specified.\n");
                                   }
-                                  else if (access(gsPowerEstimationSourceFileName.c_str(), 00)) {
+                                  else if (access(gsRelativeRisksSourceFileName.c_str(), 00)) {
                                     bValid = false;
-                                    PrintDirection.SatScanPrintWarning("Error: Power estimation source file '%s' does not exist.\n",
-                                                                       gsPowerEstimationSourceFileName.c_str());
+                                    PrintDirection.SatScanPrintWarning("Error: Relative risks source file '%s' does not exist.\n",
+                                                                       gsRelativeRisksSourceFileName.c_str());
                                     PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
                                   }
                                   break;
         case FILESOURCE         : if (gsSimulationDataSourceFileName.empty()) {
                                     bValid = false;
-                                    PrintDirection.SatScanPrintWarning("Error: No Simulation data source file specified.\n");
+                                    PrintDirection.SatScanPrintWarning("Error: No simulation data import file specified.\n");
                                   }
                                   else if (access(gsSimulationDataSourceFileName.c_str(), 00)) {
                                     bValid = false;
-                                    PrintDirection.SatScanPrintWarning("Error: Simulation data source file '%s' does not exist.\n",
+                                    PrintDirection.SatScanPrintWarning("Error: Simulation data import file '%s' does not exist.\n",
                                                                        gsSimulationDataSourceFileName.c_str());
                                     PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
                                   }
@@ -3301,7 +3301,7 @@ bool CParameters::ValidateSimulationDataParameters(BasePrint & PrintDirection) {
                                     bValid = false;
                                     PrintDirection.SatScanPrintWarning("Error: File '%s' specified as both\n",
                                                                        gsSimulationDataSourceFileName.c_str());
-                                    PrintDirection.SatScanPrintWarning("       simulation data source file and output file for simulation data.\n");                                  }
+                                    PrintDirection.SatScanPrintWarning("       simulation data import file and output file for simulated data.\n");                                  }
                                   break;
         default : ZdGenerateException("Unknown simulation type '%d'.","ValidateSimulationDataParameters()", geSimulationType);
       };

@@ -62,7 +62,7 @@ extern const char*      LLR_2_LINE;
 extern const char*      EARLY_SIM_TERMINATION_LINE;
 extern const char*      SIMULATION_TYPE_LINE;
 extern const char*      SIMULATION_FILESOURCE_LINE;
-extern const char*      POWER_ESTIMATIONFILE_LINE;
+extern const char*      SIM_RELATIVE_RISKS_FILE_LINE;
 extern const char*      OUTPUT_SIMULATION_DATA_LINE;
 extern const char*      SIMULATION_DATA_OUTFILE_LINE;
 
@@ -137,7 +137,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     OUTPUT_SIM_LLR_DBASE, DUCZMAL_COMPACTNESS, INTERVAL_STARTRANGE, 
                                     INTERVAL_ENDRANGE, TIMETRENDCONVRG, MAXCIRCLEPOPFILE, USEMAXCIRCLEPOPFILE,
                                     EARLY_SIM_TERMINATION, REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE, SIMULATION_TYPE,
-                                    SIMULATION_SOURCEFILE, POWER_ESTIMATIONFILE, OUTPUT_SIMULATION_DATA,
+                                    SIMULATION_SOURCEFILE, SIM_RELATIVE_RISKS_FILE, OUTPUT_SIMULATION_DATA,
                                     SIMULATION_DATA_OUTFILE, ADJUST_ANALYSES};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
@@ -162,7 +162,7 @@ enum SpatialSizeType               {PERCENTAGEOFMEASURETYPE=0, DISTANCETYPE};
 /** file structure types of file supplied parameter settings */
 enum ReadType                      {INI=0, SCAN};
 /** defines how simulated data will be created - only pertinent for Poisson */
-enum SimulationType                {STANDARD=0, POWER_ESTIMATION, FILESOURCE};
+enum SimulationType                {STANDARD=0, HA_RANDOMIZATION, FILESOURCE};
 
 class CParameters {
   private:
@@ -236,7 +236,7 @@ class CParameters {
     ZdString                            gsRunHistoryFilename;                   /** run history filename */
     bool                                gbLogRunHistory;                        /** indicates whether to log history */
     std::string                         gsSimulationDataSourceFileName;         /** simualtion data source filename */
-    std::string                         gsPowerEstimationSourceFileName;        /** power estimation for data generation of simulations */
+    std::string                         gsRelativeRisksSourceFileName;        /** relative risks for data generation of simulations */
     std::string                         gsSimulationDataOutputFilename;         /** simulation data output filename */
         /* Analysis dates */
     std::string                         gsProspectiveStartDate;                 /** prospective start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
@@ -373,7 +373,7 @@ class CParameters {
     const std::string                 & GetPopulationFileName() const {return gsPopulationFileName;}
     double                              GetPowerCalculationX() const {return gdPower_X;}
     double                              GetPowerCalculationY() const {return gdPower_Y;}
-    const std::string                 & GetPowerEstimationFilename() const {return gsPowerEstimationSourceFileName;}  
+    const std::string                 & GetPowerEstimationFilename() const {return gsRelativeRisksSourceFileName;}  
     DatePrecisionType                   GetPrecisionOfTimesType() const {return gePrecisionOfTimesType;}
     ProbabiltyModelType                 GetProbabiltyModelType() const {return geProbabiltyModelType;}
     const char                        * GetProbabiltyModelTypeAsString() const;
@@ -444,7 +444,7 @@ class CParameters {
     void                                SetPowerCalculation(bool b) {gbPowerCalculation = b;}
     void                                SetPowerCalculationX(double dPowerX);
     void                                SetPowerCalculationY(double dPowerY);
-    void                                SetPowerEstimationFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
+    void                                SetRelativeRisksFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType);
     void                                SetProbabilityModelType(ProbabiltyModelType eProbabiltyModelType);
     void                                SetProspectiveStartDate(const char * sProspectiveStartDate);
