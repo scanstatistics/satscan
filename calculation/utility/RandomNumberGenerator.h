@@ -22,16 +22,17 @@
 class RandomNumberGenerator {
   private:
     long                glSeed;
-    static const long   glDefaultSeed = 12345678;       /** default seed                */
-    static const long   glCheck       = 399268537;      /** value to check test against */
-    static const long   glM           = 2147483647;     /** maximum signed 32 bit long  */
-    static const long   glA           = 48271;          /** ???                         */
+    static const long   glDefaultSeed = 12345678;       /** default seed                  */
+    static const long   glCheck       = 399268537;      /** value to check test against   */
+    static const long   glM           = 2147483647;     /** fixed prime modulus, 2^31 - 1 */
+    static const long   glA           = 48271;          /** multiplier                    */
 
   public:
     RandomNumberGenerator(long lSeed=glDefaultSeed) {SetSeed(lSeed);}
     ~RandomNumberGenerator() {}
 
-    const long  GetDefaultSeed() const {return glDefaultSeed;}
+    long        GetDefaultSeed() const {return glDefaultSeed;}
+    long        GetMaxSeed() const {return glM;}
     double      GetRandomDouble();
     float       GetRandomFloat();
     long        GetSeed() const {return glSeed;}
