@@ -55,7 +55,7 @@ CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator=(co
   m_nStartDate                  = cluster.m_nStartDate;
   m_nEndDate                    = cluster.m_nEndDate;
   m_iEllipseOffset              = cluster.m_iEllipseOffset;
-  gpClusterData->Assign(*gpClusterData);
+  gpClusterData->Assign(*cluster.gpClusterData);
   return *this;
 }
 
