@@ -506,21 +506,21 @@ bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumb
       CreateGridOutputFile(lReportHistoryRunNumber);
 
       if (m_nClustersRetained == 0) {
-        fprintf(fp, "No clusters were found.\n\n");
+        fprintf(fp, "\nNo clusters were found.\n");
         fprintf(fp, "All areas scanned had equal or fewer cases than expected.\n");
       }
       else if (m_nClustersReported == 0) {
-        fprintf(fp, "No clusters reported.\n\n");
+        fprintf(fp, "\nNo clusters reported.\n");
         fprintf(fp, "All clusters had a ratio less than %f or\n"
                     "a rank greater than %i.\n", m_nMinRatioToReport, m_pParameters->m_nReplicas);
       }
       else if (m_pParameters->m_nReplicas==0) {
-        fprintf(fp, "Note: As the number of Monte Carlo replications was set to\n");
+        fprintf(fp, "\nNote: As the number of Monte Carlo replications was set to\n");
         fprintf(fp, "zero, no hypothesis testing was done and no p-values were\n");
         fprintf(fp, "printed.\n");
       }
       else if (m_pParameters->m_nReplicas<=99) {
-        fprintf(fp, "Note: The number of Monte Carlo replications was set too low,\n");
+        fprintf(fp, "\nNote: The number of Monte Carlo replications was set too low,\n");
         fprintf(fp, "and a meaningful hypothesis test cannot be done.  Consequently,\n");
         fprintf(fp, "no p-values were printed.\n");
       }
