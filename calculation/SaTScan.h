@@ -34,7 +34,8 @@
 #define TS_GROW   20
 
 /** Max. length of a line in an input file */
-#define MAX_LINESIZE 512
+#define MAX_LINESIZE 4096
+#define MAX_LINEITEMSIZE 512
 
 /** Growth increment for TractInfo in tinfo.c */
 #define TI_GROW 100
