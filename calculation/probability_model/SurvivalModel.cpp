@@ -6,7 +6,7 @@
 #include "SaTScanData.h"
 
 /** constructor */
-CSurvivalModel::CSurvivalModel(CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection)
+CSurvivalModel::CSurvivalModel(const CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection)
                :CModel(Parameters, Data, PrintDirection) {}
 
 /** destructor */

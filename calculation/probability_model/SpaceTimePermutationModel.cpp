@@ -4,7 +4,7 @@
 
 
 /** constructor */
-CSpaceTimePermutationModel::CSpaceTimePermutationModel(CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection)
+CSpaceTimePermutationModel::CSpaceTimePermutationModel(const CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection)
                            :CModel(Parameters, Data, PrintDirection) {}
 
 /** destructor */
@@ -13,7 +13,7 @@ CSpaceTimePermutationModel::~CSpaceTimePermutationModel() {}
 /** Determines the expected number of cases for each time interval/tract.
     Assigns values to CSatScanData::Measure array. Calculates total measure
     and validates that total measure equals total number of cases in set. */
-bool CSpaceTimePermutationModel::CalculateMeasure(DataStream & thisStream) {
+void CSpaceTimePermutationModel::CalculateMeasure(RealDataStream & thisStream) {
   int                   i, j, c, iNumCategories(thisStream.GetPopulationData().GetNumPopulationCategories());
   count_t               tTotalCases(0),
                      ** ppCases(thisStream.GetCaseArray()),
@@ -68,7 +68,6 @@ bool CSpaceTimePermutationModel::CalculateMeasure(DataStream & thisStream) {
     x.AddCallpath("CalculateMeasure()","CSpaceTimePermutationModel");
     throw;
   }
-  return true;
 }
 
 /** Throws exception. Defined in parent class as pure virtual. */

@@ -7,10 +7,10 @@
 /** normal data model. */
 class CNormalModel : public CModel {
   public:
-    CNormalModel(CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection);
+    CNormalModel(const CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection);
     virtual ~CNormalModel();
 
-    virtual bool                CalculateMeasure(DataStream & thisStream) {/* no action here */ return true;}
+    virtual void                CalculateMeasure(RealDataStream & thisStream) {/* no action here */}
     virtual double              GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
                                               int nStartInterval, int nStopInterval);
 };

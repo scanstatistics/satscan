@@ -6,7 +6,7 @@
 #include "SaTScanData.h"
 
 /** constructor */
-CRankModel::CRankModel(CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection)
+CRankModel::CRankModel(const CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection)
            :CModel(Parameters, Data, PrintDirection) {}
 
 /** destructor */

@@ -4,7 +4,7 @@
 #include "SaTScanData.h"
 
 /** constructor */
-CModel::CModel(CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection)
+CModel::CModel(const CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection)
        : gParameters(Parameters), gData(Data), gPrintDirection(PrintDirection) {
 #ifdef DEBUGMODEL
   try {

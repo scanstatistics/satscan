@@ -5,14 +5,14 @@
 #define DEBUG 1
 
 /** Constructor */
-CBernoulliModel::CBernoulliModel(CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection)
+CBernoulliModel::CBernoulliModel(const CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection)
                 :CModel(Parameters, Data, PrintDirection) {}
 
 /** Destructor */                
 CBernoulliModel::~CBernoulliModel() {}
 
 /** calculates expected number of cases */
-bool CBernoulliModel::CalculateMeasure(DataStream & thisStream) {
+void CBernoulliModel::CalculateMeasure(RealDataStream & thisStream) {
   int                   i, j, k;
   count_t               tTotalCases(0), tTotalControls(0),
                      ** ppCases(thisStream.GetCaseArray()),
@@ -53,7 +53,6 @@ bool CBernoulliModel::CalculateMeasure(DataStream & thisStream) {
     x.AddCallpath("CalculateMeasure()","CBernoulliModel");
     throw;
   }
-  return true;
 }
 
 /** returns population for a given ellipse offset, grid point and time interval period */

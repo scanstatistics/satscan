@@ -5,7 +5,7 @@
 #include "NormalModel.h"
 
 /** constructor */
-CNormalModel::CNormalModel(CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection)
+CNormalModel::CNormalModel(const CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection)
              :CModel(Parameters, Data, PrintDirection) {}
 
 /** destructor */

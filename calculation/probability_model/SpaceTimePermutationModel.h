@@ -13,10 +13,10 @@
     Calculates loglikelihood identically to Poisson model. */
 class CSpaceTimePermutationModel : public CModel {
   public:
-    CSpaceTimePermutationModel(CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection);
+    CSpaceTimePermutationModel(const CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection);
     virtual ~CSpaceTimePermutationModel();
 
-    virtual bool   	        CalculateMeasure(DataStream & thisStream);
+    virtual void   	        CalculateMeasure(RealDataStream & thisStream);
     virtual double              GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
                                               int nStartInterval, int nStopInterval);
 };
