@@ -40,6 +40,7 @@ ZdString & RelativeRiskData::GetLocationId(ZdString& sId, tract_t tTractIndex, c
   return sId;
 }
 
+/** writes relative risk data to record and appends to internal buffer of records */
 void RelativeRiskData::RecordRelativeRiskData(const CSaTScanData& DataHub) {
   OutputRecord        * pRecord = 0;
   unsigned int          i;
@@ -62,17 +63,17 @@ void RelativeRiskData::RecordRelativeRiskData(const CSaTScanData& DataHub) {
           dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
           pRecord->GetFieldValue(GetFieldNumber(EXPECTED_FIELD)).AsDouble() = dExpected;
           if (dExpected) {
-            pRecord->GetFieldValue(GetFieldNumber(OBSERVED_DIV_EXPECTED_FIELD)).AsZdString().printf("%12.3f",
-                                                                                       ((double)pCases[t])/dExpected);
+            pRecord->GetFieldValue(GetFieldNumber(OBSERVED_DIV_EXPECTED_FIELD)).AsDouble() = ((double)pCases[t])/dExpected;
             dDenominator = DataHub.GetDataStreamHandler().GetStream(i).GetTotalCases() - dExpected;
             dNumerator = DataHub.GetDataStreamHandler().GetStream(i).GetTotalCases() - pCases[t];
             if (dDenominator && dNumerator/dDenominator)
-              pRecord->GetFieldValue(GetFieldNumber(RELATIVE_RISK_FIELD)).AsZdString().printf("%12.3f",
-                (((double)pCases[t])/dExpected)/(dNumerator/dDenominator));
+              pRecord->GetFieldValue(GetFieldNumber(RELATIVE_RISK_FIELD)).AsDouble() = (((double)pCases[t])/dExpected)/(dNumerator/dDenominator);
+            else
+              pRecord->SetFieldIsBlank(GetFieldNumber(RELATIVE_RISK_FIELD), true);
           }
           else {
-            pRecord->GetFieldValue(GetFieldNumber(OBSERVED_DIV_EXPECTED_FIELD)).AsZdString() = "n/a";
-            pRecord->GetFieldValue(GetFieldNumber(RELATIVE_RISK_FIELD)).AsZdString() = "n/a";
+            pRecord->SetFieldIsBlank(GetFieldNumber(OBSERVED_DIV_EXPECTED_FIELD), true);
+            pRecord->SetFieldIsBlank(GetFieldNumber(RELATIVE_RISK_FIELD), true);
           }
           BaseOutputStorageClass::AddRecord(pRecord);
        }
@@ -85,6 +86,8 @@ void RelativeRiskData::RecordRelativeRiskData(const CSaTScanData& DataHub) {
   }
 }
 
+/** writes relative risk data to record and appends to internal buffer of records
+    - particular functionality for SVTT analysis  */
 void RelativeRiskData::RecordRelativeRiskData(const CSVTTData& DataHub) {
   OutputRecord                * pRecord = 0;
   unsigned int                  i, j;
@@ -112,17 +115,17 @@ void RelativeRiskData::RecordRelativeRiskData(const CSVTTData& DataHub) {
           dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
           pRecord->GetFieldValue(GetFieldNumber(EXPECTED_FIELD)).AsDouble() = dExpected;
           if (dExpected) {
-            pRecord->GetFieldValue(GetFieldNumber(OBSERVED_DIV_EXPECTED_FIELD)).AsZdString().printf("%12.3f",
-                                                                                       ((double)pCases[t])/dExpected);
+            pRecord->GetFieldValue(GetFieldNumber(OBSERVED_DIV_EXPECTED_FIELD)).AsDouble() = ((double)pCases[t])/dExpected;
             dDenominator = DataHub.GetDataStreamHandler().GetStream(i).GetTotalCases() - dExpected;
             dNumerator = DataHub.GetDataStreamHandler().GetStream(i).GetTotalCases() - pCases[t];
             if (dDenominator && dNumerator/dDenominator)
-              pRecord->GetFieldValue(GetFieldNumber(RELATIVE_RISK_FIELD)).AsZdString().printf("%12.3f",
-                (((double)pCases[t])/dExpected)/(dNumerator/dDenominator));
+              pRecord->GetFieldValue(GetFieldNumber(RELATIVE_RISK_FIELD)).AsDouble() = (((double)pCases[t])/dExpected)/(dNumerator/dDenominator);
+            else
+              pRecord->SetFieldIsBlank(GetFieldNumber(RELATIVE_RISK_FIELD), true);
           }
           else {
-            pRecord->GetFieldValue(GetFieldNumber(OBSERVED_DIV_EXPECTED_FIELD)).AsZdString() = "n/a";
-            pRecord->GetFieldValue(GetFieldNumber(RELATIVE_RISK_FIELD)).AsZdString() = "n/a";
+            pRecord->SetFieldIsBlank(GetFieldNumber(OBSERVED_DIV_EXPECTED_FIELD), true);
+            pRecord->SetFieldIsBlank(GetFieldNumber(RELATIVE_RISK_FIELD), true);
           }
           //calculate total cases by time intervals for this tract
           for (j=0; j < (unsigned int)DataHub.GetNumTimeIntervals(); ++j) {
@@ -132,8 +135,7 @@ void RelativeRiskData::RecordRelativeRiskData(const CSVTTData& DataHub) {
           TractTimeTrend.CalculateAndSet(&vTemporalTractCases[0], &vTemporalTractObserved[0],
                                          DataHub.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
           TractTimeTrend.SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-          sBuffer.printf("%6.3f", (TractTimeTrend.IsNegative() ? -1 : 1) * TractTimeTrend.GetAnnualTimeTrend());
-          pRecord->GetFieldValue(GetFieldNumber(TIME_TREND_FIELD)).AsZdString() = sBuffer;
+          pRecord->GetFieldValue(GetFieldNumber(TIME_TREND_FIELD)).AsDouble() = (TractTimeTrend.IsNegative() ? -1 : 1) * TractTimeTrend.GetAnnualTimeTrend();
           BaseOutputStorageClass::AddRecord(pRecord);
        }
     }
@@ -157,10 +159,10 @@ void RelativeRiskData::SetupFields() {
       CreateField(gvFields, DATASTREAM_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
     CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
     CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-    CreateField(gvFields, OBSERVED_DIV_EXPECTED_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
-    CreateField(gvFields, RELATIVE_RISK_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
+    CreateField(gvFields, OBSERVED_DIV_EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+    CreateField(gvFields, RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
-      CreateField(gvFields, TIME_TREND_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
+      CreateField(gvFields, TIME_TREND_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
   }
   catch (ZdException &x) {
     x.AddCallpath("SetupFields()","RelativeRiskData");
