@@ -73,9 +73,14 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                  Application->Run();
                  BasisExit();
         }
+        catch (ZdException &x) {
+           //DisplayBasisException(Application, x);
+           BasisExit();
+        }
         catch (Exception &exception)
         {
-                 Application->ShowException(&exception);
+           Application->ShowException(&exception);
+           BasisExit();
         }
         return 0;
 }
