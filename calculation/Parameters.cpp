@@ -3445,21 +3445,22 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
 /** Returns whether passed date is a valid date given parameter type and precision of times.
     If parameter type is not one of the defined dates, an exeption is thrown. */
 bool CParameters::ValidateStudyPeriodDateString(std::string & sDateString, ParameterType eDateType) {
-  UInt          nYear, nMonth, nDay;
-  int           nScanCount;
-  bool          bReturnValue=false;
-  ZdString      sDate;
+  UInt                  nYear, nMonth, nDay;
+  int                   nScanCount;
+  bool                  bReturnValue=false;
+  ZdString              sDate;
+  DatePrecisionType     eTimeUnits = (geAnalysisType == PURELYSPATIAL ? DAY : geTimeIntervalUnitsType);
 
   try {
     if ((nScanCount = CharToMDY(&nMonth, &nDay, &nYear, sDateString.c_str())) > 0) {
-      if (geTimeIntervalUnitsType == YEAR || nScanCount == 1) {
+      if (eTimeUnits == YEAR || nScanCount == 1) {
         switch(eDateType) {
           case STARTDATE          : nMonth = 1; break;
           case ENDDATE            : nMonth = 12; break;
           default : ZdException::Generate("Unkwown date parameter type '%d'.\n", "ValidateStudyPeriodDateString()", eDateType);
         }
       }
-      if (geTimeIntervalUnitsType == YEAR || geTimeIntervalUnitsType == MONTH || nScanCount == 1 || nScanCount == 2) {
+      if (eTimeUnits == YEAR || eTimeUnits == MONTH || nScanCount == 1 || nScanCount == 2) {
         switch(eDateType) {
           case STARTDATE          : nDay = 1; break;
           case ENDDATE            : nDay = DaysThisMonth(nYear, nMonth); break;
