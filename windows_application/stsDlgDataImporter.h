@@ -1,4 +1,4 @@
-// $Revision: 1.12 $
+// $Revision: 1.13 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -61,16 +61,44 @@ class SaTScanVariable {
 class TfrmAnalysis;
 class TBDlgDataImporter : public TForm {
   __published:	// IDE-managed Components
-     TPanel *pnlImportData;
-     TPanel *pnlImportWizard;
      TOpenDialog *OpenDialog;
+     TPanel *pnlButtons;
+     TBitBtn *btnPreviousPanel;
+     TBitBtn *btnNextPanel;
+     TBitBtn *btnCancel;
+     TBitBtn *btnExecuteImport;
+     TCheckBox *chkFirstRowIsName;
+     TPageControl *pgcImportPages;
+     TTabSheet *tabStart;
+     TTabSheet *tabDataMapping;
+     TTabSheet *tabFileFormat;
+     TPanel *pnlImportWizard;
+     TGroupBox *grpImportSourceFile;
+     TEdit *edtDataFile;
+     TBitBtn *btnBrowseForSourceFile;
+     TRadioGroup *rdgInputFileType;
+     TPanel *pnlImportData;
+     TPanel *pnlMappingPanelTop;
+     TPanel *pnlTopPanelClient;
+     TtsGrid *tsfieldGrid;
+     TButton *btnClearImports;
+     TButton *btnAutoAlign;
+     TPanel *pnlMappingPanelClient;
+     TPanel *pnlBottomPanelTopAligned;
+     TRadioGroup *rdoCoordinates;
+     TPanel *pnlBottomClient;
+     TBevel *Bevel1;
+     TtsGrid *tsImportFileGrid;
      TPanel *pnlFileFormat;
      TPanel *pnlCSVDefs;
      TLabel *Label3;
+     TLabel *Label4;
      TComboBox *cmbColDelimiter;
      TComboBox *cmbGroupMarker;
-     TLabel *Label4;
      TPanel *pnlFixedColumnDefs;
+     TLabel *Label10;
+     TLabel *lblFieldLength;
+     TLabel *Label9;
      TGroupBox *GroupBox1;
      TLabel *Label6;
      TLabel *lblFldLen;
@@ -78,41 +106,17 @@ class TBDlgDataImporter : public TForm {
      TEdit *edtStartColumn;
      TEdit *edtFieldLength;
      TEdit *edtFieldName;
-     TLabel *Label10;
      TListBox *lstFixedColFieldDefs;
      TButton *btnAddFldDef;
      TButton *btnDeleteFldDef;
+     TButton *btnClearFldDefs;
+     TButton *btnUpdateFldDef;
      TRadioGroup *rdoFileType;
      TGroupBox *GroupBox3;
      TLabel *Label11;
      TLabel *Label12;
      TEdit *edtIgnoreFirstRows;
      TMemo *memRawData;
-     TLabel *lblFieldLength;
-     TLabel *Label9;
-     TGroupBox *grpImportSourceFile;
-     TEdit *edtDataFile;
-     TBitBtn *btnBrowseForSourceFile;
-     TPanel *pnlButtons;
-     TBitBtn *btnPreviousPanel;
-     TBitBtn *btnNextPanel;
-     TBitBtn *btnCancel;
-     TBitBtn *btnExecuteImport;
-     TCheckBox *chkFirstRowIsName;
-     TButton *btnClearFldDefs;
-     TRadioGroup *rdgInputFileType;
-     TPanel *pnlMappingPanelTop;
-     TPanel *pnlMappingPanelClient;
-     TPanel *pnlTopPanelClient;
-     TtsGrid *tsfieldGrid;
-     TButton *btnClearImports;
-     TButton *btnAutoAlign;
-     TPanel *pnlBottomPanelTopAligned;
-     TRadioGroup *rdoCoordinates;
-     TPanel *pnlBottomClient;
-     TtsGrid *tsImportFileGrid;
-     TBevel *Bevel1;
-     TButton *btnUpdateFldDef;
      void __fastcall NumericKeyPressMask(TObject *Sender, char &Key);
      void __fastcall OnAddFldDefClick(TObject *Sender);
      void __fastcall OnAutoAlignClick(TObject *Sender);
@@ -141,9 +145,6 @@ class TBDlgDataImporter : public TForm {
      void __fastcall OnClearFldDefsClick(TObject *Sender);
      void __fastcall OnUpdateFldDefClick(TObject *Sender);
 
-  public:
-     enum Import_Panels {Start=0, FileType, DataMapping};
-
   private:	// User declarations
      void                            Init();
      virtual void                    Setup();
@@ -154,8 +155,8 @@ class TBDlgDataImporter : public TForm {
      SourceViewController          * gpController;
      BGridZdSingleFileModel        * gpDataModel;
      ZdFile                        * gpSourceFile;
-     ZdVector<int>                   gvPanels;
-     ZdVector<int>::const_iterator   gitrCurrentPanel;
+     std::vector<TTabSheet*>         gvTabSheets;
+     std::vector<TTabSheet*>::iterator gitrCurrentTabSheet;
      ZdVector<ZdIniSection>          gvIniSections;
      ZdVector<SaTScanVariable>       gvSaTScanVariables;
      ZdIniFile                       gDestinationFileDefinition;
@@ -167,7 +168,7 @@ class TBDlgDataImporter : public TForm {
      void                            AddFixedColDefinitionEnable();
      void                            AdjustSourceFileAttributes(ZdFile & File);
      void                            AutoAlign();
-     void                            BringPanelToFront(int iWhich);
+     void                            BringPanelToFront(TTabSheet* tabShowTab);
      void                            CheckForRequiredVariables();
      void                            ClearFixedColumnDefinitions();
      void                            ClearFixedColDefinitionEnable();
@@ -187,7 +188,7 @@ class TBDlgDataImporter : public TForm {
      void                            InitializeInputFileVariableMappings();
      void                            LoadMappingPanel();
      void                            LoadResultFileNameIntoAnalysis();
-     void                            MakePanelVisible(int iWhich);
+     void                            MakePanelVisible(TTabSheet* tabShowTab);
      void                            OnAddFieldDefinitionClick();
      void                            OnAutoAlignClick();
      void                            OnDeleteFieldDefinitionClick();

@@ -182,19 +182,13 @@ void TBDlgDataImporter::AutoAlign() {
 }
 
 /** Causes all panels except iWhich to be invisible. */
-void TBDlgDataImporter::BringPanelToFront(int iWhich) {
+void TBDlgDataImporter::BringPanelToFront(TTabSheet* tabShowTab) {
   try {
-    if (iWhich < Start || iWhich > DataMapping)
-      ImporterException::GenerateException("Index out of range(%d - %d): %d ", "BringPanelToFront()", ZdException::Normal,
-                                             Start, DataMapping, iWhich);
-
-    pnlImportWizard->Visible = (iWhich == Start);
-    btnPreviousPanel->Visible = (iWhich != Start);
-    pnlFileFormat->Visible = (iWhich == FileType);
-    pnlImportData->Visible = (iWhich == DataMapping);
-    btnNextPanel->Visible = (iWhich == Start || iWhich == FileType);
-    btnExecuteImport->Visible = (iWhich == DataMapping);
-    chkFirstRowIsName->Visible = (iWhich == DataMapping);
+    pgcImportPages->ActivePage = tabShowTab;
+    btnPreviousPanel->Visible = (pgcImportPages->ActivePage != tabStart);
+    btnNextPanel->Visible = (pgcImportPages->ActivePage == tabStart || pgcImportPages->ActivePage == tabFileFormat);
+    btnExecuteImport->Visible = (pgcImportPages->ActivePage == tabDataMapping);
+    chkFirstRowIsName->Visible = (pgcImportPages->ActivePage == tabDataMapping);
     ContinueButtonEnable();
     if (btnNextPanel->Visible && btnNextPanel->Enabled) btnNextPanel->SetFocus();
     if (btnExecuteImport->Visible && btnExecuteImport->Enabled) btnExecuteImport->SetFocus();
@@ -289,23 +283,24 @@ void TBDlgDataImporter::ClearFixedColDefinitionEnable() {
 void TBDlgDataImporter::ContinueButtonEnable() {
   btnNextPanel->Enabled = false;
   btnExecuteImport->Enabled = false;
-  switch (*gitrCurrentPanel) {
-    case Start       : btnNextPanel->Enabled = FileExists(edtDataFile->Text.c_str()) && rdgInputFileType->ItemIndex > -1;
-                       break;
-    case FileType    : btnNextPanel->Enabled = (!gbErrorSamplingSourceFile &&
-                                                (rdoFileType->ItemIndex == 2 ||
-                                                (rdoFileType->ItemIndex == 0 && cmbColDelimiter->GetTextLen()) ||
-                                                (rdoFileType->ItemIndex == 1 &&  lstFixedColFieldDefs->Items->Count > 0)));
-                       break;
-    case DataMapping : for (size_t i=0; i < gvSaTScanVariables.size() && !btnExecuteImport->Enabled; ++i) {
-                          if (tsfieldGrid->RowVisible[i+1])
-                            btnExecuteImport->Enabled = gvSaTScanVariables[i].GetIsMappedToInputFileVariable();
-                       }
-                       if (btnExecuteImport->Enabled)
-                         btnExecuteImport->Enabled = gpController->GetGridVisibleRowCount();
-                       break;
-    default : ZdGenerateException("Invalid panel index \"%d\".", "ContinueButtonEnable()", *gitrCurrentPanel);
-  };
+  
+  if (*gitrCurrentTabSheet == tabStart)
+    btnNextPanel->Enabled = FileExists(edtDataFile->Text.c_str()) && rdgInputFileType->ItemIndex > -1;
+  else if (*gitrCurrentTabSheet == tabFileFormat)
+    btnNextPanel->Enabled = (!gbErrorSamplingSourceFile &&
+                              (rdoFileType->ItemIndex == 2 ||
+                               (rdoFileType->ItemIndex == 0 && cmbColDelimiter->GetTextLen()) ||
+                                (rdoFileType->ItemIndex == 1 &&  lstFixedColFieldDefs->Items->Count > 0)));
+  else if (*gitrCurrentTabSheet == tabDataMapping) {
+    for (size_t i=0; i < gvSaTScanVariables.size() && !btnExecuteImport->Enabled; ++i) {
+       if (tsfieldGrid->RowVisible[i+1])
+          btnExecuteImport->Enabled = gvSaTScanVariables[i].GetIsMappedToInputFileVariable();
+    }
+    if (btnExecuteImport->Enabled)
+      btnExecuteImport->Enabled = gpController->GetGridVisibleRowCount();
+  }
+  else
+    ZdGenerateException("Unknown tabsheet.", "ContinueButtonEnable()");
 }
 
 /** Sets target filename and creates ZdIniFile used in target file creation. */
@@ -635,18 +630,17 @@ void TBDlgDataImporter::LoadResultFileNameIntoAnalysis() {
 }
 
 /** Setup for panel to show. */
-void TBDlgDataImporter::MakePanelVisible(int iWhich) {
+void TBDlgDataImporter::MakePanelVisible(TTabSheet* tabShowTab) {
   try {
-     switch ( iWhich ) {
-       case Start       : ContinueButtonEnable();
-                          break;
-       case FileType    : OnViewFileFormatPanel();
-                          break;
-       case DataMapping : OnViewMappingPanel();
-                          break;
-       default : ImporterException::GenerateException("Unknown panel trying to be shown", "MakePanelVisible()");
-     }
-     BringPanelToFront(iWhich);
+     if (tabShowTab == tabStart)
+       ContinueButtonEnable();
+     else if (tabShowTab == tabFileFormat)
+       OnViewFileFormatPanel();
+     else if (tabShowTab == tabDataMapping)
+       OnViewMappingPanel();
+     else
+       ImporterException::GenerateException("Unknown tab sheet.","MakePanelVisible()");
+     BringPanelToFront(tabShowTab);
   }
   catch (ZdException &x) {
     x.AddCallpath("MakePanelVisible()", "TBDlgDataImporter");
@@ -768,7 +762,7 @@ void TBDlgDataImporter::OnExecuteImport() {
 void TBDlgDataImporter::OnExitStartPanel() {
   try {
     SetPanelsToShow();
-    gitrCurrentPanel = gvPanels.begin();
+    gitrCurrentTabSheet = gvTabSheets.begin();
     switch (rdgInputFileType->ItemIndex) {
       case Case                : SetupCaseFileVariableDescriptors();
                                  rdoCoordinates->Enabled = false;
@@ -1185,17 +1179,17 @@ void TBDlgDataImporter::SetPanelsToShow() {
   try {
     //Skip file format panel for dBase since we already know structure.
     if (! strcmpi(ZdFileName(edtDataFile->Text.c_str()).GetExtension(), ZdDBFFileType.GetFileTypeExtension())) {
-      gvPanels.clear();
-      gvPanels.push_back(Start);
-      gvPanels.push_back(DataMapping);
+      gvTabSheets.clear();
+      gvTabSheets.push_back(tabStart);
+      gvTabSheets.push_back(tabDataMapping);
       gSourceDataFileType = dBase;
       rdoFileType->ItemIndex = -1;
     }
     else {
-      gvPanels.clear();
-      gvPanels.push_back(Start);
-      gvPanels.push_back(FileType);
-      gvPanels.push_back(DataMapping);
+      gvTabSheets.clear();
+      gvTabSheets.push_back(tabStart);
+      gvTabSheets.push_back(tabFileFormat);
+      gvTabSheets.push_back(tabDataMapping);
       gSourceDataFileType = Delimited;
       rdoFileType->ItemIndex = 0;
     }
@@ -1376,8 +1370,8 @@ void TBDlgDataImporter::SetupRelativeRisksFileVariableDescriptors() {
 /** Causes the first panel of importer to be shown. */
 void TBDlgDataImporter::ShowFirstPanel() {
   try {
-    gitrCurrentPanel = gvPanels.begin();
-    MakePanelVisible(*gitrCurrentPanel);
+    gitrCurrentTabSheet = gvTabSheets.begin();
+    MakePanelVisible(*gitrCurrentTabSheet);
   }
   catch (ZdException &x) {
     x.AddCallpath("ShowFirstPanel()", "TBDlgDataImporter");
@@ -1389,16 +1383,16 @@ void TBDlgDataImporter::ShowFirstPanel() {
 void TBDlgDataImporter::ShowNextPanel() {
   try {
     //Note attributes of current panel when needed.
-    if (*gitrCurrentPanel == Start)
+    if (*gitrCurrentTabSheet == tabStart)
       OnExitStartPanel();
 
-    if (*gitrCurrentPanel != gvPanels.back()) {
-      ++gitrCurrentPanel;
+    if (*gitrCurrentTabSheet != gvTabSheets.back()) {
+      ++gitrCurrentTabSheet;
       try {
-        MakePanelVisible(*gitrCurrentPanel);
+        MakePanelVisible(*gitrCurrentTabSheet);
       }
       catch (ZdException &x) {
-        --gitrCurrentPanel;
+        --gitrCurrentTabSheet;
         throw;
       }
     }
@@ -1412,13 +1406,13 @@ void TBDlgDataImporter::ShowNextPanel() {
 /** Causes previous panel of importer to be shown. */
 void TBDlgDataImporter::ShowPreviousPanel() {
   try {
-    if (gitrCurrentPanel != gvPanels.begin()) {
-      --gitrCurrentPanel;
+    if (gitrCurrentTabSheet != gvTabSheets.begin()) {
+      --gitrCurrentTabSheet;
       try {
-        BringPanelToFront(*gitrCurrentPanel);
+        BringPanelToFront(*gitrCurrentTabSheet);
       }
       catch (ZdException &x) {
-        ++gitrCurrentPanel;
+        ++gitrCurrentTabSheet;
         throw;
       }
     }
