@@ -42,6 +42,3 @@ ProspectiveMaxWindowLengthIndicator::ProspectiveMaxWindowLengthIndicator(const C
 
 /** destructor */
 ProspectiveMaxWindowLengthIndicator::~ProspectiveMaxWindowLengthIndicator() {}
-
-
- 
