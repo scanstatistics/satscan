@@ -174,7 +174,7 @@ class TfrmAnalysis : public TForm {
         void __fastcall mitClearSpecialGridEditClick(TObject *Sender);
 
   private:	// User declarations
-    CParameters       * gpParams;
+    CParameters         gParameters;
     AnsiString          gsParamFileName;
 
     void                AttemptFilterDateFields(const char * sFileName, const char * sFormat, unsigned short uwField);
@@ -215,9 +215,9 @@ class TfrmAnalysis : public TForm {
     void                OnProbabilityModelClick();
     void                OnTemporalTrendClick();
     void                ParseDate(char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *pDay);
-    bool                ReadSession(char *sFileName);
     void                SaveTextParameters();
     void                SetSpatialDistanceCaption();
+    void                Setup(const char * sParameterFileName);
     void                SetupCaseFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors);
     void                SetupControlFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors);
     void                SetupGeoFileFieldDescriptors(std::vector<std::string>& vFieldDescriptors);
@@ -238,7 +238,7 @@ public:		// User declarations
     CParameters       * GetSession();
     void                SaveAs();
     bool                ValidateParams();
-    bool                WriteSession();
+    void                WriteSession();
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfrmAnalysis *frmAnalysis;
