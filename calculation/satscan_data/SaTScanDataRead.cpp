@@ -1226,9 +1226,15 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
            continue;
         }
         gvCircleMeasure[TractIdentifierIndex] += fPopulation;
+        m_nTotalMaxCirclePopulation += fPopulation;
     }
     //close file pointer
     fclose(fp); fp=0;
+    // total population can not be zero
+    if (m_nTotalMaxCirclePopulation == 0) {
+      bValid = false;
+      gpPrint->PrintWarningLine("Error: Total population for special population file can not be zero.\n");
+    }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
