@@ -329,7 +329,7 @@ void AnalysisRunner::Execute() {
     //calculate expected cases
     gpDataHub->CalculateExpectedCases();
     //validate that data set contains cases
-    for (unsigned int i=0; i < gpDataHub->GetDataStreamHandler().GetNumStreams(); ++i)
+    for (unsigned int i=0; i < gpDataHub->GetDataStreamHandler().GetNumDataSets(); ++i)
        if (gpDataHub->GetDataStreamHandler().GetStream(i).GetTotalCases() == 0)
          GenerateResolvableException("Error: No cases found in data set %u.\n","Execute()", i);
     //detect user cancellation
@@ -427,7 +427,7 @@ void AnalysisRunner::FinalizeReport() {
       fprintf(fp, "no p-values were printed.\n");
     }
 
-    if (gParameters.GetProbabiltyModelType() == POISSON)
+    if (gParameters.GetProbabilityModelType() == POISSON)
       gpDataHub->GetDataStreamHandler().ReportZeroPops(*gpDataHub, fp, &gPrintDirection);
 
     gpDataHub->GetTInfo()->tiReportDuplicateTracts(fp);
