@@ -5,7 +5,15 @@
 //---------------------------------------------------------------------------
 #include "AnalysisRun.h"
 #include "stsMCSimContinuationPolicy.h"
+#pragma warn -8012
+#pragma warn -8008
+#pragma warn -8066
+#pragma warn -8055
 #include "boost/dynamic_bitset.hpp"
+#pragma warn +8012
+#pragma warn +8008
+#pragma warn +8066
+#pragma warn +8055
 //---------------------------------------------------------------------------
 
 
