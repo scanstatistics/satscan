@@ -56,6 +56,7 @@ USEUNIT("..\calculation\analysis\PurelySpatialAnalysis.cpp");
 USEUNIT("..\calculation\analysis\PurelySpatialMonotoneAnalysis.cpp");
 USEUNIT("..\calculation\analysis\PurelyTemporalAnalysis.cpp");
 USEUNIT("..\calculation\Parameters.cpp");
+USEUNIT("..\calculation\probability_model\SpaceTimePermutationModel.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
