@@ -44,7 +44,7 @@ class stsRunHistoryFile {
       void      GetMaxGeoExtentString(ZdString& sTempValue, const CParameters& params);
       void      GetMaxTemporalExtentString(ZdString& sTempValue, const CParameters& params);
       void      GetProbabilityModelString(ZdString& sTempValue, ProbabiltyModelType eProbabiltyModelType);
-      void      GetRatesString(ZdString& sTempValue, AreaRateType eAreaRateType);
+      void      GetRatesString(ZdString& sTempValue, AnalysisType eAnalysisType, AreaRateType eAreaRateType);
       void      GetTimeAdjustmentString(ZdString& sTempValue, int iType, AnalysisType eAnalysisType, ProbabiltyModelType eProbabiltyModelType);
       void	Init();
       void      ReplaceExtensionAndAppend(ZdString& sOutputFileNames, const ZdFileName& sSourceFileName, const ZdString& sReplacementExtension);

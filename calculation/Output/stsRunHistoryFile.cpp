@@ -134,6 +134,8 @@ void stsRunHistoryFile::GetAnalysisTypeString(ZdString& sTempValue, AnalysisType
             sTempValue = "Prospective Space Time"; break;
          case PURELYSPATIALMONOTONE :
             sTempValue = "Purely Spatial Monotone"; break;
+         case SPATIALVARTEMPTREND :
+            sTempValue = "Spatial Variation/Temporal Trend"; break;
          default :
             ZdException::GenerateNotification("Invalid analysis type in the run history file.", "stsRunHistoryFile");   
       }
@@ -295,45 +297,47 @@ void stsRunHistoryFile::GetProbabilityModelString(ZdString& sTempValue, Probabil
 // converter function to make a legible string for printing
 // pre : eAreaRateType conatined in (HIGH, LOW, HIGHANDLOW) and sTempValue allocated
 // post : will assign the appropraite formated value to sTempValue
-void stsRunHistoryFile::GetRatesString(ZdString& sTempValue, AreaRateType eAreaRateType) {
-   try {
+void stsRunHistoryFile::GetRatesString(ZdString& sTempValue, AnalysisType eAnalysisType, AreaRateType eAreaRateType) {
+  try {
+    if (eAnalysisType == SPATIALVARTEMPTREND)
+      sTempValue = "n/a";
+    else {
       switch (eAreaRateType) {
-         case HIGH :
-            sTempValue = "High"; break;
-         case LOW :
-            sTempValue = "Low"; break;
-         case HIGHANDLOW :
-            sTempValue = "Both"; break;
-         default :
-            ZdException::GenerateNotification("Invalid rate defined in run history file.", "stsRunHistoryFile");   
+        case HIGH       : sTempValue = "High"; break;
+        case LOW        : sTempValue = "Low"; break;
+        case HIGHANDLOW : sTempValue = "Both"; break;
+        default : ZdException::GenerateNotification("Invalid rate defined in run history file.", "stsRunHistoryFile");
       }
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetRatesString()", "stsRunHistoryFile");
-      throw;
-   }
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetRatesString()", "stsRunHistoryFile");
+    throw;
+  }
 }
 
 // converts the iType to a legible string for printing
-//  pre : iType is conatined in (NOTADJUSTED, NONPARAMETRIC, LINEAR)
+//  pre : iType is conatined in (NOTADJUSTED, NONPARAMETRIC, LOGLINEAR_PERC, CALCULATED_LOGLINEAR_PERC)
 // post : string will be assigned a formatted value based upon iType
 void stsRunHistoryFile::GetTimeAdjustmentString(ZdString& sTempValue, int iType, AnalysisType eAnalysisType,
                                                 ProbabiltyModelType eProbabiltyModelType) {
-   try {
-      if (eProbabiltyModelType != POISSON || eAnalysisType == PURELYSPATIAL)
-         sTempValue = "n/a";
-      else {
-         switch(iType) {
-            case NOTADJUSTED :
-               sTempValue = "None"; break;
-            case NONPARAMETRIC :
-               sTempValue = "Non-parametric"; break;
-            case LINEAR :
-               sTempValue = "Linear"; break;
-            default :
-               ZdException::GenerateNotification("Invalid time trend adjuestment type in run history file.", "stsRunHistoryFile");
-         }
+  try {
+    if (eProbabiltyModelType == SPACETIMEPERMUTATION)
+      sTempValue = "n/a";
+    else if (eProbabiltyModelType == POISSON && eAnalysisType == PURELYSPATIAL)
+      sTempValue = "n/a";
+    else if (eProbabiltyModelType == BERNOULLI && eAnalysisType != SPATIALVARTEMPTREND)
+      sTempValue = "n/a";
+    else {
+      switch(iType) {
+        case NOTADJUSTED               : sTempValue = "None"; break;
+        case NONPARAMETRIC             : sTempValue = "Non-parametric"; break;
+        case LOGLINEAR_PERC            : sTempValue = "Linear"; break;
+        case CALCULATED_LOGLINEAR_PERC : sTempValue = "Log Linear"; break;
+        case STRATIFIED_RANDOMIZATION  : sTempValue = "Time Stratified"; break;
+        default : ZdException::GenerateNotification("Invalid time trend adjuestment type in run history file.", "stsRunHistoryFile");
       }
+    }
    }
    catch (ZdException &x) {
       x.AddCallpath("GetTimeAdjustmentString()", "stsRunHistoryFile");
@@ -361,7 +365,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       pSection->Acquire();
 #endif      
 
-      const CParameters    params(*(pAnalysis.GetSatScanData()->m_pParameters));
+      const CParameters & params(*(pAnalysis.GetSatScanData()->m_pParameters));
 
       // NOTE: I'm going to document the heck out of this section for two reasons :
       // 1) in case they change the run specs on us at any time
@@ -403,7 +407,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, PROB_MODEL_FIELD));
 
       // rates(high, low or both) field
-      GetRatesString(sTempValue, params.GetAreaScanRateType());
+      GetRatesString(sTempValue, params.GetAnalysisType(), params.GetAreaScanRateType());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, RATES_FIELD));
 
       // coordinate type field
