@@ -476,7 +476,8 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
 
     if (geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == PROSPECTIVEPURELYTEMPORAL) {
       fprintf(fp, "  Adjusted for Earlier Analyses : %s\n", (gbAdjustForEarlierAnalyses ? "Yes" : "No"));
-      fprintf(fp, "  Prospective Start Date : %s\n", gsProspectiveStartDate.c_str());
+      if (gbAdjustForEarlierAnalyses)
+        fprintf(fp, "  Prospective Start Date : %s\n", gsProspectiveStartDate.c_str());
     }
 
     fprintf(fp, "\nOutput\n");
