@@ -105,7 +105,7 @@ class CSaTScanData {
     void                                        CalculateExpectedCases();
     int                                         ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate);
     virtual void                                DisplayNeighbors(FILE* pFile);
-    virtual void                                DisplayRelativeRisksForEachTract(const bool bASCIIOutput, const bool bDBaseOutput);
+    virtual void                                DisplayRelativeRisksForEachTract() const;
     void                                        DisplaySummary(FILE* fp);
     void                                        DisplaySummary2(FILE* fp);
     virtual void                                FindNeighbors(bool bSimulations);

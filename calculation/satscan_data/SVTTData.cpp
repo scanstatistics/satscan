@@ -1,5 +1,7 @@
+//*****************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//*****************************************************************************
 #include "SVTTData.h"
 #include "PoissonModel.h"
 #include "BernoulliModel.h"
@@ -86,59 +88,19 @@ void CSVTTData::DisplayMeasures(FILE* pFile) {
 }
 
 // formats the information necessary in the relative risk output file and prints to the specified format
-void CSVTTData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, const bool bDBaseOutput) {
-  std::string                          sBuffer;
-  ZdString                             sRisk, sLocation, sTimeTrend;
-  std::vector<std::string>             vIdentifiers;
-  CTimeTrend                           nTractTT;
-  count_t                              nTractCases, * CasesByTI=0,
-                                    ** ppCases(gpDataStreams->GetStream(0/*for now*/).GetCaseArray()),
-                                    ** ppCaseNC(gpDataStreams->GetStream(0/*for now*/).GetNCCaseArray());
-  measure_t                          * MsrByTI=0, ** ppMeasure(gpDataStreams->GetStream(0/*for now*/).GetMeasureArray()),
-                                    ** ppMeasureNC(gpDataStreams->GetStream(0/*for now*/).GetNCMeasureArray());
-  int                                  i ,j;
-
-   try {
-      std::auto_ptr<RelativeRiskData> pData( new RelativeRiskData(gpPrint, *m_pParameters) );
-      CasesByTI = (count_t*)   Smalloc((m_nTimeIntervals)*sizeof(count_t), gpPrint);
-      MsrByTI   = (measure_t*) Smalloc((m_nTimeIntervals)*sizeof(measure_t), gpPrint);
-
-      for(i=0; i < m_nTracts; ++i) {
-         if (GetMeasureAdjustment() && ppMeasure[0][i])
-            sRisk.printf("%12.3f", ((double)(ppCases[0][i]))/(GetMeasureAdjustment()*ppMeasure[0][i]));
-         else
-            sRisk = "n/a";
-         gpTInfo->tiGetTractIdentifiers(i, vIdentifiers);
-         sLocation = gpTInfo->tiGetTid(i, sBuffer);
-         if (vIdentifiers.size() > 1)
-            sLocation << " et al";
-         // Set Array of cases/measures by time interval for current time tract
-         for (j=0; j < m_nTimeIntervals; j++) {
-           CasesByTI[j]  = ppCaseNC[j][i];
-           MsrByTI[j]    = ppMeasureNC[j][i];
-         }
-         //calculate time trend for location
-         //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
-         //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
-         //      has not been decided yet.
-         nTractTT.CalculateAndSet(CasesByTI, MsrByTI, m_nTimeIntervals, m_pParameters->GetTimeTrendConvergence());   //KR990921 - Handle Bernoulli if implemented!
-         nTractTT.SetAnnualTimeTrend(m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
-         sTimeTrend.printf("%6.3f", (nTractTT.IsNegative() ? -1 : 1) * nTractTT.GetAnnualTimeTrend());
-         pData->SetRelativeRiskData(sLocation, ppCases[0][i], GetMeasureAdjustment()*ppMeasure[0][i], sRisk, sTimeTrend);
-      }
-      free(CasesByTI);
-      free(MsrByTI);
-      if (bASCIIOutput)
-         ASCIIFileWriter(pData.get()).Print();
-      if (bDBaseOutput)
-         DBaseFileWriter(pData.get()).Print();
-   }
-   catch (ZdException &x) {
-      free(CasesByTI);
-      free(MsrByTI);
-      x.AddCallpath("DisplayRelativeRisksForEachTract()","CSVTTData");
-      throw;
-   }
+void CSVTTData::DisplayRelativeRisksForEachTract() const {
+  try {
+    RelativeRiskData  RelRiskData(*m_pParameters);
+    RelRiskData.RecordRelativeRiskData(*this);
+    if (m_pParameters->GetOutputRelativeRisksAscii())
+      ASCIIFileWriter(RelRiskData, *gpPrint, *m_pParameters);
+    if (m_pParameters->GetOutputRelativeRisksDBase())
+      DBaseFileWriter(RelRiskData, *gpPrint, *m_pParameters);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("DisplayRelativeRisksForEachTract()","CSVTTData");
+    throw;
+  }
 }
 void CSVTTData::DisplaySimCases(FILE* pFile) {
 //  DisplayCounts(pFile, gpDataStreams->GetStream(0/*for now*/).GetSimCaseArray(), "Simulated Cases Array",

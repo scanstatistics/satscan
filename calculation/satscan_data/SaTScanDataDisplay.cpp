@@ -161,36 +161,18 @@ void CSaTScanData::DisplaySummary2(FILE* fp) {
 // formats the information necessary in the relative risk output file and prints to the specified format
 // pre: none
 // post: prints the relative risk data to the output file
-void CSaTScanData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, const bool bDBaseOutput) {
-  std::string                          sBuffer;
-  ZdString                             sRisk, sLocation;
-  std::vector<std::string>             vIdentifiers;
-  //NOTE: Displaying of relative risk information is restricted to the first
-  //      data stream, at least for the time being. 
-  count_t                           ** ppCases(gpDataStreams->GetStream(0).GetCaseArray());
-  measure_t                         ** ppMeasure(gpDataStreams->GetStream(0).GetMeasureArray());
-
-   try {
-      std::auto_ptr<RelativeRiskData> pData( new RelativeRiskData(gpPrint, *m_pParameters) );
-      for(int i = 0; i < m_nTracts; ++i) {
-         if (GetMeasureAdjustment() && ppMeasure[0][i])
-            sRisk.printf("%12.3f", ((double)(ppCases[0][i]))/(GetMeasureAdjustment()*ppMeasure[0][i]));
-         else
-            sRisk = "n/a";
-         gpTInfo->tiGetTractIdentifiers(i, vIdentifiers);
-         sLocation = gpTInfo->tiGetTid(i, sBuffer);
-         if (vIdentifiers.size() > 1)
-            sLocation << " et al";
-         pData->SetRelativeRiskData(sLocation, ppCases[0][i], GetMeasureAdjustment()*ppMeasure[0][i], sRisk);
-      }
-      if (bASCIIOutput)
-         ASCIIFileWriter(pData.get()).Print();
-      if (bDBaseOutput)
-         DBaseFileWriter(pData.get()).Print();
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("DisplayRelativeRisksForEachTract()", "CSaTScanData");
-      throw;
-   }
+void CSaTScanData::DisplayRelativeRisksForEachTract() const {
+  try {
+    RelativeRiskData RelRiskData(*m_pParameters);
+    RelRiskData.RecordRelativeRiskData(*this);
+    if (m_pParameters->GetOutputRelativeRisksAscii())
+      ASCIIFileWriter(RelRiskData, *gpPrint, *m_pParameters);
+    if (m_pParameters->GetOutputRelativeRisksDBase())
+      DBaseFileWriter(RelRiskData, *gpPrint, *m_pParameters);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("DisplayRelativeRisksForEachTract()", "CSaTScanData");
+    throw;
+  }
 }
 
