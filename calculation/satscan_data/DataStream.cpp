@@ -608,6 +608,7 @@ void RealDataStream::Init() {
   gtTotalMeasureAtStart=0;
   gpCategoryCasesHandler=0;
   gpPopulationMeasureHandler=0;
+  gdCalculatedTimeTrendPercentage=0;
 }
 
 /** Allocates and sets array that stores the total number of cases for each time

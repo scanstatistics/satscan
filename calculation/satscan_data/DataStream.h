@@ -75,6 +75,7 @@ class DataStream {
     measure_t                 * GetPTMeasureArray() const;
     measure_t                 * GetPTSqMeasureArray() const {return gpPTSqMeasureArray;}
     CTimeTrend                & GetTimeTrend() {return gTimeTrend;}
+    const CTimeTrend          & GetTimeTrend() const {return gTimeTrend;}
     measure_t                ** GetSqMeasureArray() const;
     unsigned int                GetStreamIndex() const {return giStreamIndex;}
     void                        SetCaseArrays();
@@ -107,6 +108,7 @@ class RealDataStream : public DataStream {
     ThreeDimCountArray_t      * gpCategoryCasesHandler;                 /** number of cases stratified with respect to time intervals by tract index by category index
                                                                             - cases are distributed in time intervals cumulatively */
     TwoDimMeasureArray_t      * gpPopulationMeasureHandler;             /** expected number of cases in time intervals by population dates */
+    double                      gdCalculatedTimeTrendPercentage;        /** calculated time trend percentage used to temporal adjust expected cases*/
 
   public:
     RealDataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iStreamIndex);
@@ -117,6 +119,7 @@ class RealDataStream : public DataStream {
     void                        AllocatePopulationMeasureArray();
     void                        CheckPopulationDataCases(CSaTScanData& Data);
     void                        FreePopulationMeasureArray();
+    double                      GetCalculatedTimeTrendPercentage() const {return gdCalculatedTimeTrendPercentage;}
     count_t                 *** GetCategoryCaseArray() const;
     ThreeDimCountArray_t      & GetCategoryCaseArrayHandler();
     count_t                  ** GetControlArray()const;
@@ -131,6 +134,7 @@ class RealDataStream : public DataStream {
     measure_t                   GetTotalMeasureAtStart() const {return gtTotalMeasureAtStart;}
     double                      GetTotalPopulation() const {return gdTotalPop;}
     void                        SetAggregateCategories(bool b) {gPopulation.SetAggregateCategories(b);}
+    void                        SetCalculatedTimeTrendPercentage(double dTimeTrend) {gdCalculatedTimeTrendPercentage=dTimeTrend;}
     void                        SetCasesByTimeInterval();
     void                        SetCumulativeMeasureArrayFromNonCumulative();
     void                        SetMeasureByTimeIntervalsArray(measure_t ** ppNonCumulativeMeasure);
