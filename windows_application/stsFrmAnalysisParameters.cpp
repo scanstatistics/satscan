@@ -475,7 +475,6 @@ void TfrmAnalysis::DefaultHiddenParameters() {
   //if still ALIVECLUSTERS, default to ALLCLUSTERS
   if (gParameters.GetIncludeClustersType() == ALIVECLUSTERS)
     gParameters.SetIncludeClustersType(ALLCLUSTERS);
-  gParameters.SetSpatialAdjustmentType(NO_SPATIAL_ADJUSTMENT);
 }
 //---------------------------------------------------------------------------
 /** event triggered when case file edit control text changes */
@@ -672,6 +671,7 @@ void TfrmAnalysis::EnableSettingsForAnalysisModelCombination() {
     switch (GetAnalysisControlType()) {
       case PURELYSPATIAL             :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
+        gpfrmAdvancedParameters->EnableAdjustmentForSpatialOptionsGroup(false);
         gpfrmAdvancedParameters->EnableSpatialOptionsGroup(true, false, true);
         EnableTimeIntervalUnitsGroup(false);
         gpfrmAdvancedParameters->EnableTemporalOptionsGroup(false, false, false);
@@ -679,6 +679,7 @@ void TfrmAnalysis::EnableSettingsForAnalysisModelCombination() {
         break;
       case PURELYTEMPORAL            :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
+        gpfrmAdvancedParameters->EnableAdjustmentForSpatialOptionsGroup(false);
         gpfrmAdvancedParameters->EnableSpatialOptionsGroup(false, false, false);
         EnableTimeIntervalUnitsGroup(true);
         gpfrmAdvancedParameters->EnableTemporalOptionsGroup(true, false, true);
@@ -686,6 +687,7 @@ void TfrmAnalysis::EnableSettingsForAnalysisModelCombination() {
         break;
       case SPACETIME                 :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
+        gpfrmAdvancedParameters->EnableAdjustmentForSpatialOptionsGroup(bPoisson);
         gpfrmAdvancedParameters->EnableSpatialOptionsGroup(true, !bSpaceTimePermutation, true);
         EnableTimeIntervalUnitsGroup(true);
         gpfrmAdvancedParameters->EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
@@ -693,6 +695,7 @@ void TfrmAnalysis::EnableSettingsForAnalysisModelCombination() {
         break;
       case PROSPECTIVESPACETIME      :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
+        gpfrmAdvancedParameters->EnableAdjustmentForSpatialOptionsGroup(bPoisson);
         gpfrmAdvancedParameters->EnableSpatialOptionsGroup(true, !bSpaceTimePermutation, !gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked);
         EnableTimeIntervalUnitsGroup(true);
         gpfrmAdvancedParameters->EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
@@ -700,6 +703,7 @@ void TfrmAnalysis::EnableSettingsForAnalysisModelCombination() {
         break;
       case PROSPECTIVEPURELYTEMPORAL :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
+        gpfrmAdvancedParameters->EnableAdjustmentForSpatialOptionsGroup(false);
         gpfrmAdvancedParameters->EnableSpatialOptionsGroup(false, false, false);
         EnableTimeIntervalUnitsGroup(true);
         gpfrmAdvancedParameters->EnableTemporalOptionsGroup(true, false, false);
