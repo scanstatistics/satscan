@@ -1,4 +1,4 @@
-// $Revision: 1.6 $
+// $Revision: 1.7 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -24,6 +24,37 @@ class SourceViewController : public BZdFileViewController {
     virtual ~SourceViewController() {}
 };
 
+class SaTScanVariable {
+  private:
+    ZdString               gsVariableName;
+    short                  gwTargetFieldIndex;
+    bool                   gbRequiredVariable;
+    short                  gwInputFileVariableIndex;
+
+    void                   Init();
+    void                   Copy(const SaTScanVariable & rhs);
+
+  public:
+    SaTScanVariable() {Init();}
+    SaTScanVariable(const SaTScanVariable & rhs);
+    SaTScanVariable(const char * sVariableName, short wTargetFieldIndex, bool bRequiredVariable);
+    ~SaTScanVariable();
+
+    SaTScanVariable      & operator=(const SaTScanVariable & rhs);
+    SaTScanVariable      * Clone() const;
+
+    short                  GetInputFileVariableIndex() const {return gwInputFileVariableIndex;}
+    bool                   GetIsMappedToInputFileVariable() {return gwInputFileVariableIndex > 0;}
+    bool                   GetIsRequiredField() const {return gbRequiredVariable;}
+    short                  GetTargetFieldIndex() const {return gwTargetFieldIndex;}
+    void                   GetVariableDisplayName(Variant & Value) const;
+    const ZdString &       GetVariableName() const {return gsVariableName;}
+    void                   SetIsRequiredField(bool bRequiredVariable) {gbRequiredVariable = bRequiredVariable;}
+    void                   SetInputFileVariableIndex(short wInputFileVariableIndex) {gwInputFileVariableIndex = wInputFileVariableIndex;}
+    void                   SetTargetFieldIndex(short wTargetFieldIndex) {gwTargetFieldIndex = wTargetFieldIndex;}
+    void                   SetVariableName(const char * sVariableName) {gsVariableName = sVariableName;}
+};
+
 class TfrmAnalysis;
 class TBDlgDataImporter : public TForm {
   __published:	// IDE-managed Components
@@ -39,7 +70,7 @@ class TBDlgDataImporter : public TForm {
      TPanel *pnlFixedColumnDefs;
      TGroupBox *GroupBox1;
      TLabel *Label6;
-     TLabel *Label7;
+     TLabel *lblFldLen;
      TLabel *Label8;
      TEdit *edtStartColumn;
      TEdit *edtFieldLength;
@@ -54,7 +85,7 @@ class TBDlgDataImporter : public TForm {
      TLabel *Label12;
      TEdit *edtIgnoreFirstRows;
      TMemo *memRawData;
-     TLabel *Label2;
+     TLabel *lblFieldLength;
      TLabel *Label9;
      TGroupBox *grpImportSourceFile;
      TEdit *edtDataFile;
@@ -66,18 +97,19 @@ class TBDlgDataImporter : public TForm {
      TBitBtn *btnExecuteImport;
      TCheckBox *chkFirstRowIsName;
      TButton *btnClearFldDefs;
-        TRadioGroup *rdgInputFileType;
-        TPanel *pnlMappingPanelTop;
-        TPanel *pnlMappingPanelClient;
-        TPanel *pnlTopPanelClient;
-        TtsGrid *tsfieldGrid;
-        TButton *btnClearImports;
-        TButton *btnAutoAlign;
-        TPanel *pnlBottomPanelTopAligned;
-        TRadioGroup *rdoCoordinates;
-        TPanel *pnlBottomClient;
-        TtsGrid *tsImportFileGrid;
-        TBevel *Bevel1;
+     TRadioGroup *rdgInputFileType;
+     TPanel *pnlMappingPanelTop;
+     TPanel *pnlMappingPanelClient;
+     TPanel *pnlTopPanelClient;
+     TtsGrid *tsfieldGrid;
+     TButton *btnClearImports;
+     TButton *btnAutoAlign;
+     TPanel *pnlBottomPanelTopAligned;
+     TRadioGroup *rdoCoordinates;
+     TPanel *pnlBottomClient;
+     TtsGrid *tsImportFileGrid;
+     TBevel *Bevel1;
+     TButton *btnUpdateFldDef;
      void __fastcall NumericKeyPressMask(TObject *Sender, char &Key);
      void __fastcall OnAddFldDefClick(TObject *Sender);
      void __fastcall OnAutoAlignClick(TObject *Sender);
@@ -104,6 +136,7 @@ class TBDlgDataImporter : public TForm {
      void __fastcall tsfieldGridResize(TObject *Sender);
      void __fastcall OnCoordinatesClick(TObject *Sender);
      void __fastcall OnClearFldDefsClick(TObject *Sender);
+     void __fastcall OnUpdateFldDefClick(TObject *Sender);
 
   public:
      enum Import_Panels {Start=0, FileType, DataMapping};
@@ -113,43 +146,41 @@ class TBDlgDataImporter : public TForm {
      virtual void                    Setup();
 
   protected:
-     BFileSourceDescriptor                      gSourceDescriptor;
-     BFileDestDescriptor                        gDestDescriptor;
-     SourceViewController                     * gpController;
-     BGridZdSingleFileModel                   * gpDataModel;
-     ZdFile                                   * gpImportFile;
-     ZdVector<int>                              gvPanels;
-     ZdVector<int>::const_iterator              gitrCurrentPanel;
-     ZdVector<ZdIniSection>                     gvIniSections;
-     ZdVector< std::pair<ZdString,short> >      gSaTScanVariablesFieldMap;
-     ZdPointerVector<ZdString>                  gvImportFieldChoices;
-     ZdVector<ZdString*>                        gvImportingFields;
-     ZdIniFile                                  gDataFileDefinition;
-     ZdIniFile                                  gDestinationFileDefinition;
-     TfrmAnalysis                             & gAnalysisForm;
-     ZdString                                   gsBlank;
-     SourceDataFileType                         gSourceDataFileType;
-     bool                                       gbErrorSamplingSourceFile;
+     BFileSourceDescriptor           gSourceDescriptor;
+     BFileDestDescriptor             gDestDescriptor;
+     SourceViewController          * gpController;
+     BGridZdSingleFileModel        * gpDataModel;
+     ZdFile                        * gpSourceFile;
+     ZdVector<int>                   gvPanels;
+     ZdVector<int>::const_iterator   gitrCurrentPanel;
+     ZdVector<ZdIniSection>          gvIniSections;
+     ZdVector<SaTScanVariable>       gvSaTScanVariables;
+     ZdIniFile                       gDestinationFileDefinition;
+     TfrmAnalysis                  & gAnalysisForm;
+     ZdString                        gsUnassigned;
+     SourceDataFileType              gSourceDataFileType;
+     bool                            gbErrorSamplingSourceFile;
 
      void                            AddFixedColDefinitionEnable();
-     void                            AdjustFileSourceFileAttributes(ZdFile & File);
+     void                            AdjustSourceFileAttributes(ZdFile & File);
      void                            AutoAlign();
      void                            BringPanelToFront(int iWhich);
      void                            CheckForRequiredVariables();
      void                            ClearFixedColumnDefinitions();
      void                            ClearFixedColDefinitionEnable();
-     void                            ClearImportFieldSelections();
+     void                            ClearSaTScanVariableFieldIndexes();
      void                            ContinueButtonEnable();
      void                            CreateDestinationInformation();
-     void                            DefineSourceFileStructure();
      void                            DeleteFixedColDefinitionEnable();
      void                            DisableButtonsForImport(bool bEnable);
      const char                      GetColumnDelimiter() const;
      ZdString                      & GetFixedColumnFieldName(unsigned int uwFieldIndex, ZdString & sFieldName);
      const char                      GetGroupMarker() const;
+     const char                    * GetInputFileVariableName(int iFieldIndex) const;
+     int                             GetNumInputFileVariables() const;   
      void                            HideRows();
      TModalResult                    ImportFile();
-     void                            InitializeImportingFields();
+     void                            InitializeInputFileVariableMappings();
      void                            LoadMappingPanel();
      void                            LoadResultFileNameIntoAnalysis();
      void                            MakePanelVisible(int iWhich);
@@ -160,25 +191,31 @@ class TBDlgDataImporter : public TForm {
      void                            OnExitStartPanel();
      void                            OnFieldDefinitionChange();
      void                            OnFirstRowIsHeadersClick();
-     void                            OpenSourceFile();
+     void                            OpenSourceAsCSVFile();
+     void                            OpenSourceAsDBaseFile();
+     void                            OpenSourceAsScanfFile();
+     void                            OpenSourceAsTXVFile();
+     void                            OpenSource();
      void                            OnViewFileFormatPanel();
      void                            OnViewMappingPanel();
      void                            ReadDataFileIntoRawDisplayField();
      void                            SelectImportFile();
      void                            SetGridHeaders(bool bFirstRowIsHeader=false);
-     void                            SetImportFieldChoices();
      void                            SetMappings(BZdFileImporter & FileImporter);
      void                            SetPanelsToShow();
-     void                            SetupCaseFileFieldDescriptors();
-     void                            SetupControlFileFieldDescriptors();
-     void                            SetupGeoFileFieldDescriptors();
-     void                            SetupGridFileFieldDescriptors();
-     void                            SetupPopFileFieldDescriptors();
+     void                            SetupCaseFileVariableDescriptors();
+     void                            SetupControlFileVariableDescriptors();
+     void                            SetupGeoFileVariableDescriptors();
+     void                            SetupGridFileVariableDescriptors();
+     void                            SetupPopFileVariableDescriptors();
      void                            ShowFileTypeFormatPanel(int iFileType);
      void                            ShowFirstPanel();
      void                            ShowNextPanel();
      void                            ShowPreviousPanel();
+     void                            UpdateFieldDefinition();
      void                            UpdateFileFormatOptions();
+     void                            UpdateFixedColDefinitionEnable();
+     void                            ValidateImportSource();
 
 public:		// User declarations
      virtual __fastcall TBDlgDataImporter(TComponent* Owner, TfrmAnalysis & AnalysisForm);
