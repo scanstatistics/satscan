@@ -231,7 +231,7 @@ bool CSaTScanData::FindNeighbors() {
         for (i=0; i < (int)gvCircleMeasure.size(); i++)
            dTotalPopulation += gvCircleMeasure[i];
         if (dTotalPopulation ==0)
-          SSGenerateException("Error: Total population for special population file is zero.","FindNeighbors()");
+          SSGenerateException("Error: Total population for special population file can not be zero.","FindNeighbors()");
         for (i=0; i < (int)gvCircleMeasure.size(); i++)
           gvCircleMeasure[i] *= m_nTotalCases/dTotalPopulation;
       }
