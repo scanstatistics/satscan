@@ -5,7 +5,7 @@
 #include "SatScan.h"
 #include "JulianDates.h"
 
-#define PARAMETERS 43
+#define PARAMETERS 44
 
 enum { ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE, COORDFILE, OUTPUTFILE, PRECISION,
        DIMENSION, SPECIALGRID, GRIDFILE, GEOSIZE, STARTDATE, ENDDATE,
@@ -15,7 +15,8 @@ enum { ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE, COORDFILE, OUTPUTFILE, PREC
        TIMETREND, TIMETRENDPERC, PURETEMPORAL, CONTROLFILE, COORDTYPE, SAVESIMLL,
        SEQUENTIAL, SEQNUM, SEQPVAL,
        VALIDATE, OUTPUTRR, ELLIPSES, ESHAPES, ENUMBERS, START_PROSP_SURV,
-        OUTPUT_CENSUS_AREAS, OUTPUT_MOST_LIKE_CLUSTERS, CRITERIA_SECOND_CLUSTERS};
+       OUTPUT_CENSUS_AREAS, OUTPUT_MOST_LIKE_CLUSTERS, CRITERIA_SECOND_CLUSTERS,
+       MAX_TEMPORAL_TYPE};
 
 enum {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE};  // Analysis,Cluster Type
 enum {POISSON=0, BERNOULLI};            // Model
@@ -27,6 +28,7 @@ enum {NOTADJUSTED=0, NONPARAMETRIC, LINEAR}; // Time Trends
 enum {CARTESIAN=0, LATLON};                 // Coords Type
 enum {NOGEOOVERLAP, NOCENTROIDSINOTHER, NOCENTROIDSINMORELIKE,
       NOCENTROIDSINLESSLIKE, NOPAIRSINEACHOTHERS, NORESTRICTIONS }; // Criteria for reporting secondary clusters
+enum TemporalSizeType {PERCENTAGETYPE=0, TIMETYPE}; // How Max Temporal Size Should Be Interperated
 
 class CParameters
 {
@@ -62,6 +64,7 @@ class CParameters
     // Temporal options
     float  m_nMaxTemporalClusterSize;
     bool   m_bAliveClustersOnly;          /** Use alive clusters only? */
+    int    m_nMaxClusterSizeType;         /** How Max Temporal Size Should Be Interperated - enum {PERCENTAGETYPE=0, TIMETYPE} */  
 
     int    m_nIntervalUnits;              /** Interval Units (0=None, 1=Year, 2=Month, 3=Day) */
     long   m_nIntervalLength;
@@ -147,6 +150,7 @@ class CParameters
 
     bool SaveParameters(char* szFilename);
     void SetDisplayParameters(bool bValue);
+    void ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporalSizeType);
 
     //Overloaded operators
    CParameters &operator= (const CParameters &rhs);

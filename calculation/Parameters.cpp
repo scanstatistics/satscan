@@ -1,7 +1,7 @@
 #pragma hdrstop
 #include "Parameters.h"
 
-char mgsVariableLabels[43][50] = {
+char mgsVariableLabels[44][50] = {
    "Analysis Type",
    "Scan Areas",
    "Case File",
@@ -44,7 +44,8 @@ char mgsVariableLabels[43][50] = {
    "Prospective Start Date",
    "Output Census areas in Reported Clusters",
    "Output Most Likely Cluster for each Centroid",
-   "Criteria for Reporting Secondary Clusters"
+   "Criteria for Reporting Secondary Clusters",
+   "How Max Temporal Size Should Be Interperated"
    };
 
 CParameters::CParameters(bool bDisplayErrors)
@@ -148,6 +149,8 @@ void CParameters::copy(const CParameters &rhs)
     m_bOutputCensusAreas     = rhs.m_bOutputCensusAreas;
     m_bMostLikelyClusters    = rhs.m_bMostLikelyClusters;
     m_iCriteriaSecondClusters = rhs.m_iCriteriaSecondClusters;
+
+    m_nMaxClusterSizeType = rhs.m_nMaxClusterSizeType;
 }
 
 void CParameters::Free()
@@ -167,13 +170,13 @@ bool CParameters::SetParameters(const char* szFilename)
    try
       {
       //gpPrintDirection->SatScanPrintf("Reading Parameters.\n");
-    
+
       if ((pFile = fopen(szFilename, "r")) == NULL)
         SSGenerateException("  Error: Unable to open parameter file.", "SetParameters()");
 
       int  i    = 1;
       bool bEOF = false;
-    
+
       while (i<=PARAMETERS && !bEOF)
         {
         if (fgets(szTemp, MAX_STR_LEN, pFile) == NULL)
@@ -187,8 +190,10 @@ bool CParameters::SetParameters(const char* szFilename)
     
       if (bEOF && ((i-1)==MODEL))              // Accept V.1 parameter files
         SetDefaultsV2();
-      else if (bEOF && ((i-1) < PARAMETERS))      // Accept V.1.3 parameter files
+      else if (bEOF && ((i-2) < CRITERIA_SECOND_CLUSTERS))      // Accept V.1.3 parameter files
          SetDefaultsV3();
+      else if ( (bEOF && (i-2) < MAX_TEMPORAL_TYPE) || (!bEOF && (i-1) < MAX_TEMPORAL_TYPE ) )
+         m_nMaxClusterSizeType = PERCENTAGETYPE;
 
       if (!SetGISFilename())   //Census areas in reported clusters
         bValid = false;
@@ -276,6 +281,7 @@ bool CParameters::SetParameter(int nParam, const char* szParam)
         case OUTPUT_CENSUS_AREAS:  nScanCount=sscanf(szParam, "%i", &nTemp); m_bOutputCensusAreas = nTemp?true:false; break;;
         case OUTPUT_MOST_LIKE_CLUSTERS: nScanCount=sscanf(szParam, "%i", &nTemp); m_bMostLikelyClusters = nTemp?true:false; break;;
         case CRITERIA_SECOND_CLUSTERS: nScanCount=sscanf(szParam, "%i", &m_iCriteriaSecondClusters); break;
+        case MAX_TEMPORAL_TYPE: nScanCount=sscanf(szParam, "%i", &m_nMaxClusterSizeType); break;
       }
     
       if (nParam==POPFILE || nParam==GRIDFILE || nParam==CONTROLFILE)
@@ -457,6 +463,38 @@ void CParameters::FindDelimiter(char *sString, char cDelimiter)
       x.AddCallpath("FindDelimiter()", "CParameters");
       throw;
       }
+}
+
+//** Converts m_nMaxClusterSizeType to passed type. */
+void CParameters::ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporalSizeType) {
+  double dValue, dTimeBetween;
+
+  try {
+    switch (eTemporalSizeType) {
+       PERCENTAGETYPE     : if (m_nMaxClusterSizeType == PERCENTAGETYPE)
+                              break;
+                            // convert from TIMETYPE to PERCENTAGETYPE
+                            dTimeBetween = TimeBetween(CharToJulian(m_szStartDate),CharToJulian(m_szEndDate), m_nIntervalUnits);
+                            //m_nMaxTemporalClusterSize should be in time units of m_nIntervalUnits
+                            m_nMaxTemporalClusterSize = floor(m_nMaxTemporalClusterSize/dTimeBetween*100);
+                            m_nMaxClusterSizeType = PERCENTAGETYPE;
+                            break;
+       TIMETYPE           : if (m_nMaxClusterSizeType == TIMETYPE)
+                              break;
+                            // convert from PERCENTAGETYPE to TIMETYPE
+                            dTimeBetween = TimeBetween(CharToJulian(m_szStartDate),CharToJulian(m_szEndDate), m_nIntervalUnits);
+                            //m_nMaxTemporalClusterSize should be an integer from 1-90
+                            m_nMaxTemporalClusterSize = dTimeBetween * m_nMaxTemporalClusterSize/100;
+                            m_nMaxClusterSizeType = TIMETYPE;
+                            break;
+       default            : SSException::Generate("Unknown TemporalSizeType type %d", "ConvertMaxTemporalClusterSizeToType()",
+                                                  SSException::Normal, eTemporalSizeType);
+    };
+  }
+  catch (SSException & x) {
+    x.AddCallpath("ConvertMaxTemporalClusterSizeToType()", "CParameters");
+    throw;
+  }
 }
 
 bool CParameters::SetMLCFilename() //most likely cluster for each centroid - file name
@@ -1159,6 +1197,9 @@ bool CParameters::SaveParameters(char* szFilename)
       fprintf(pFile, "%i                 // Output File: Census Areas in Reported Clusters\n", m_bOutputCensusAreas);
       fprintf(pFile, "%i                 // Output File: Clusters in Column Format\n", m_bMostLikelyClusters);
       fprintf(pFile, "%i                 //Criteria for Reporting Secondary Clusters\n", m_iCriteriaSecondClusters);
+
+      fprintf(pFile, "%i                 //How Max Temporal Size Should Be Interperated - enum {PERCENTAGETYPE=0, TIMETYPE}\n", m_nMaxClusterSizeType);
+
       fclose(pFile);
        }
    catch (SSException & x)
