@@ -2,6 +2,33 @@
 #ifndef __MULTIDIMARRAYHANDLER_H
 #define __MULTIDIMARRAYHANDLER_H
 //---------------------------------------------------------------------------
+
+/** Templated multi-dimensional array handler classes. These classes are intended
+    to help manage allocation and deallocation of multiple dimensional arrays. The
+    arrays themselves are public to whom ever wants them, inorder to keep access
+    times as it was below creation of these classes. When used properly, there
+    should be less risk for mishap then previous allocating/deallocating methods.
+    QUESTION: Why not us vectors of vectors?
+              The size of the multi-dimensional arrays used in SaTScan can be
+              indeterminably large. Compounded with the number of arrays created
+              for each analysis, can cause memory problems. Compare the amount of
+              memory for a vector vs an array:
+              array  - pointer plus allocation size as asked
+              vector<> - vector class ~32 bytes plus initial allocation of
+                         256 bytes(in Builder, you can change this but it is
+                         a #define, so you effect all vectors), though subsequent
+                         allocations can be defined by creating own allocator class.
+    QUESTION: Why not use the boost library, or similiar, multi-dimensional array?
+              The boost library implements a multi-dimensional array class that
+              has to drawbacks for use with SaTScan, both memory problems.
+              - The multi-dimensional array is not arrays of pointers to arrays
+                but one array, allocated to the total size needed for entire structure.
+                Since we could be asking for large multi-dimensional arrays, we are
+                compounding are memory demands by asking for a contiguous block.
+              - Accessing elements of the array is done through overloaded [] operator.
+                Each time we want to access an element of array, we are adding the
+                overhead of a function call.                                            */
+
 template <class T>
 class MultipleDimesionArrayHandler {
   protected:
