@@ -11,7 +11,9 @@ class PoissonRandomizer : public AbstractDenominatorDataRandomizer {
   protected:
     const CParameters & gParameters;
 
-    void                DumpDateToFile(DataStream & thisStream, int iSimulation);
+    void                DumpDateToFile(const RealDataStream& thisRealStream,
+                                       SimulationDataStream& thisSimulationStream,
+                                       int iSimulation);
 
   public:
     PoissonRandomizer(const CParameters & Parameters);
@@ -26,7 +28,9 @@ class PoissonNullHypothesisRandomizer : public PoissonRandomizer {
 
     virtual PoissonNullHypothesisRandomizer * Clone() const;
 
-    virtual void	RandomizeData(DataStream & thisStream, unsigned int iSimulation);
+    virtual void	RandomizeData(const RealDataStream& thisRealStream,
+                                      SimulationDataStream& thisSimulationStream,
+                                      unsigned int iSimulation);
 };
 
 /** Randomizes Poisson data stream in time stratified manner. */
@@ -36,7 +40,9 @@ class PoissonTimeStratifiedRandomizer : public PoissonRandomizer {
     virtual ~PoissonTimeStratifiedRandomizer();
 
     virtual PoissonTimeStratifiedRandomizer * Clone() const;
-    virtual void	                      RandomizeData(DataStream & thisStream, unsigned int iSimulation);
+    virtual void	                      RandomizeData(const RealDataStream& thisRealStream,
+                                                            SimulationDataStream& thisSimulationStream,
+                                                            unsigned int iSimulation);
 };
 
 class CSaTScanData; /** forward class declaration */
@@ -61,7 +67,9 @@ class AlternateHypothesisRandomizer : public PoissonRandomizer {
     virtual ~AlternateHypothesisRandomizer();
 
     virtual AlternateHypothesisRandomizer     * Clone() const;
-    virtual void	                        RandomizeData(DataStream & thisStream, unsigned int iSimulation);
+    virtual void	                        RandomizeData(const RealDataStream& thisRealStream,
+                                                              SimulationDataStream& thisSimulationStream,
+                                                              unsigned int iSimulation);
 };
 
 /** Reads simulation data from file.
@@ -78,7 +86,9 @@ class FileSourceRandomizer : public PoissonRandomizer {
     virtual ~FileSourceRandomizer();
 
     virtual FileSourceRandomizer     * Clone() const;
-    virtual void	               RandomizeData(DataStream & thisStream, unsigned int iSimulation);
+    virtual void	               RandomizeData(const RealDataStream& thisRealStream,
+                                                     SimulationDataStream& thisSimulationStream,
+                                                     unsigned int iSimulation);
 };
 //---------------------------------------------------------------------------
 #endif

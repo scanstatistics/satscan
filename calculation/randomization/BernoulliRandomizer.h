@@ -22,7 +22,9 @@ class BernoulliNullHypothesisRandomizer : public BernoulliRandomizer {
 
     virtual BernoulliNullHypothesisRandomizer * Clone() const;
 
-    virtual void                RandomizeData(DataStream & thisStream, unsigned int iSimulation);
+    virtual void                RandomizeData(const RealDataStream& thisRealStream,
+                                              SimulationDataStream& thisSimulationStream,
+                                              unsigned int iSimulation);
 };
 //---------------------------------------------------------------------------
 #endif

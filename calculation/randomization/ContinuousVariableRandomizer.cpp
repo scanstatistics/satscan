@@ -84,12 +84,13 @@ void NormalRandomizer::AssignMeasure(measure_t ** ppMeasure, measure_t ** ppSqMe
 }
 
 /** Assigns randomized data to data stream's simulation measure structures. */
-void NormalRandomizer::AssignRandomizedData(DataStream & thisStream) {
+void NormalRandomizer::AssignRandomizedData(const RealDataStream& thisRealStream,
+                                            SimulationDataStream& thisSimulationStream) {
   //reset simulation measure arrays to zero
-  thisStream.GetSimMeasureArrayHandler().Set(0);
-  thisStream.GetSimSqMeasureArrayHandler().Set(0);
-  AssignMeasure(thisStream.GetSimMeasureArray(), thisStream.GetSimSqMeasureArray(),
-                thisStream.GetNumTimeIntervals(), thisStream.GetNumTracts());
+  thisSimulationStream.GetMeasureArrayHandler().Set(0);
+  thisSimulationStream.GetSqMeasureArrayHandler().Set(0);
+  AssignMeasure(thisSimulationStream.GetMeasureArray(), thisSimulationStream.GetSqMeasureArray(),
+                thisRealStream.GetNumTimeIntervals(), thisRealStream.GetNumTracts());
 }
 
 
@@ -131,10 +132,11 @@ void RankRandomizer::AssignMeasure(measure_t ** ppMeasure, int iNumTimeIntervals
 }
 
 /** Assigns randomized data to data stream's simulation measure structures. */
-void RankRandomizer::AssignRandomizedData(DataStream & thisStream) {
+void RankRandomizer::AssignRandomizedData(const RealDataStream& thisRealStream,
+                                          SimulationDataStream& thisSimulationStream) {
   //reset simulation measure arrays to zero
-  thisStream.GetSimMeasureArrayHandler().Set(0);
-  AssignMeasure(thisStream.GetSimMeasureArray(), thisStream.GetNumTimeIntervals(), thisStream.GetNumTracts());
+  thisSimulationStream.GetMeasureArrayHandler().Set(0);
+  AssignMeasure(thisSimulationStream.GetMeasureArray(), thisRealStream.GetNumTimeIntervals(), thisRealStream.GetNumTracts());
 }
 
 /** constructor */
@@ -193,13 +195,14 @@ void SurvivalRandomizer::Assign(count_t ** ppCases, measure_t ** ppMeasure, int 
 }
 
 /** Assigns randomized data to data stream's simulation measure structures. */
-void SurvivalRandomizer::AssignRandomizedData(DataStream & thisStream) {
+void SurvivalRandomizer::AssignRandomizedData(const RealDataStream& thisRealStream,
+                                              SimulationDataStream& thisSimulationStream) {
   //reset simulation case structure to zero
-  thisStream.ResetCumulativeSimCaseArray();
+  thisSimulationStream.ResetCumulativeCaseArray();
 
   //reset simulation measure array to zero
-  thisStream.GetSimMeasureArrayHandler().Set(0);
-  Assign(thisStream.GetSimCaseArray(), thisStream.GetSimMeasureArray(), thisStream.GetNumTimeIntervals(), thisStream.GetNumTracts());
+  thisSimulationStream.GetMeasureArrayHandler().Set(0);
+  Assign(thisSimulationStream.GetCaseArray(), thisSimulationStream.GetMeasureArray(), thisRealStream.GetNumTimeIntervals(), thisRealStream.GetNumTracts());
 }
 
 /** re-initializes and  sorts permutated attribute */

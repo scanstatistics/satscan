@@ -52,7 +52,8 @@ class ContinuousVariableRandomizer : public AbstractPermutedDataRandomizer {
     randomized data to simulation meaure structures. */
 class NormalRandomizer : public ContinuousVariableRandomizer {
   protected:
-    virtual void                                AssignRandomizedData(DataStream & thisStream);
+    virtual void                                AssignRandomizedData(const RealDataStream& thisRealStream,
+                                                                     SimulationDataStream& thisSimulationStream);
 
   public:
     NormalRandomizer();
@@ -69,7 +70,8 @@ class NormalRandomizer : public ContinuousVariableRandomizer {
     randomized data to simulation meaure structures. */
 class RankRandomizer : public ContinuousVariableRandomizer {
   protected:
-    virtual void                                AssignRandomizedData(DataStream & thisStream);
+    virtual void                                AssignRandomizedData(const RealDataStream& thisRealStream,
+                                                                     SimulationDataStream& thisSimulationStream);
 
   public:
     RankRandomizer();
@@ -103,7 +105,8 @@ class SurvivalRandomizer : public AbstractPermutedDataRandomizer {
     std::vector<SpaceTimeStationaryAttribute>	gvStationaryAttribute;
     ZdPointerVector<PermutedSurvivalAttributes> gvPermutedAttribute;
 
-    virtual void                                AssignRandomizedData(DataStream & thisStream);
+    virtual void                                AssignRandomizedData(const RealDataStream& thisRealStream,
+                                                                     SimulationDataStream& thisSimulationStream);
     virtual void                                SortPermutedAttribute();
 
   public:

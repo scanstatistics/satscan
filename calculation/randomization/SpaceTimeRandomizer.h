@@ -30,7 +30,8 @@ class SpaceTimeRandomizer : public AbstractPermutedDataRandomizer {
   protected:
     std::vector<CategoryGrouping>    gCategoryAttributes;
 
-    virtual void                     AssignRandomizedData(DataStream & thisStream);
+    virtual void                     AssignRandomizedData(const RealDataStream& thisRealStream,
+                                                          SimulationDataStream& thisSimulationStream);
     virtual void                     SortPermutedAttribute();
 
   public:
@@ -40,7 +41,7 @@ class SpaceTimeRandomizer : public AbstractPermutedDataRandomizer {
     virtual SpaceTimeRandomizer    * Clone() const;
 
     void                             AddCase(unsigned int iCategory, int iTimeInterval, tract_t tTractIndex);
-    void                             CreateRandomizationData(const DataStream& thisStream);
+    void                             CreateRandomizationData(const RealDataStream& thisStream);
 };
 
 /** Function object used to compare permuted attributes. */

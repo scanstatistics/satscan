@@ -9,14 +9,17 @@ class AbstractPermutedDataRandomizer : public AbstractRandomizer {
   protected:
     BinomialGenerator   gBinomialGenerator;
 
-    virtual void        AssignRandomizedData(DataStream & thisStream) = 0;
+    virtual void        AssignRandomizedData(const RealDataStream& thisRealStream,
+                                             SimulationDataStream& thisSimulationStream) = 0;
     virtual void        SortPermutedAttribute() = 0;
 
   public:
     AbstractPermutedDataRandomizer();
     virtual ~AbstractPermutedDataRandomizer();
 
-    virtual void	RandomizeData(DataStream & thisStream, unsigned int iSimulation);
+    virtual void	RandomizeData(const RealDataStream& thisRealStream,
+                                      SimulationDataStream& thisSimulationStream,
+                                      unsigned int iSimulation);
 };
 
 /** abstract permutation attribute - used to randomize permuted attribute */

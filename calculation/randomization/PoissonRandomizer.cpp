@@ -21,10 +21,12 @@ PoissonRandomizer::~PoissonRandomizer() {}
           of the files themselves or in relation to the running analysis.
           Also, not previsions have been made for this code to work for multiple
           data streams at this time.                                             */
-void PoissonRandomizer::DumpDateToFile(DataStream & thisStream, int iSimulation) {
+void PoissonRandomizer::DumpDateToFile(const RealDataStream& thisRealStream,
+                                       SimulationDataStream& thisSimulationStream,
+                                       int iSimulation) {
   std::ofstream         SimulationOutputFile;
   unsigned int          tract, interval;
-  count_t            ** ppSimCases(thisStream.GetSimCaseArray());
+  count_t            ** ppSimCases(thisSimulationStream.GetCaseArray());
 
   //open output file
   SimulationOutputFile.open(gParameters.GetSimulationDataOutputFilename().c_str(), (iSimulation == 1 ? ios::trunc : ios::ate));
@@ -32,11 +34,11 @@ void PoissonRandomizer::DumpDateToFile(DataStream & thisStream, int iSimulation)
     SSGenerateException("Error: Could not open file simulation output file '%s'.\n", "PrintSimulationDateToFile()",
                         gParameters.GetSimulationDataOutputFilename().c_str());
 
-  //print to file for time based analyses                      
+  //print to file for time based analyses
   if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME || gParameters.GetAnalysisType() == SPACETIME ||
       gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL) {
-    for (tract=0; tract < thisStream.GetNumTracts(); tract++) {
-       for (interval=0; interval < thisStream.GetNumTimeIntervals();interval++)
+    for (tract=0; tract < thisRealStream.GetNumTracts(); tract++) {
+       for (interval=0; interval < thisRealStream.GetNumTimeIntervals();interval++)
            SimulationOutputFile << ppSimCases[interval][tract] << " ";
        SimulationOutputFile << "\n";
     }
@@ -44,7 +46,7 @@ void PoissonRandomizer::DumpDateToFile(DataStream & thisStream, int iSimulation)
   }
   //print to file for spatial only analysis
   else if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
-    for (tract = 0; tract < thisStream.GetNumTracts(); tract++)
+    for (tract = 0; tract < thisRealStream.GetNumTracts(); tract++)
        SimulationOutputFile << ppSimCases[0][tract] << " ";
     SimulationOutputFile << "\n";
   }
@@ -66,21 +68,23 @@ PoissonNullHypothesisRandomizer * PoissonNullHypothesisRandomizer::Clone() const
 }
 
 /** Generate case counts under the null hypothesis (standard) */
-void PoissonNullHypothesisRandomizer::RandomizeData(DataStream & thisStream, unsigned int iSimulation) {
-  unsigned int          t, tNumTracts = thisStream.GetNumTracts(),
-                        i, tNumTimeIntervals = thisStream.GetNumTimeIntervals();
-  count_t               c, d, cumcases=0, tTotalCases = thisStream.GetTotalCases(),
-                     ** ppSimCases = thisStream.GetSimCaseArray();
-  measure_t             cummeasure=0, tTotalMeasure = thisStream.GetTotalMeasure(),
-                     ** ppMeasure(thisStream.GetMeasureArray());
-
+void PoissonNullHypothesisRandomizer::RandomizeData(const RealDataStream& thisRealStream,
+                                                    SimulationDataStream& thisSimulationStream,
+                                                    unsigned int iSimulation) {
+  unsigned int          t, tNumTracts = thisRealStream.GetNumTracts(),
+                        i, tNumTimeIntervals = thisRealStream.GetNumTimeIntervals();
+  count_t               c, d, cumcases=0, tTotalCases = thisRealStream.GetTotalCases(),
+                     ** ppSimCases = thisSimulationStream.GetCaseArray();
+  measure_t             cummeasure=0, tTotalMeasure = thisRealStream.GetTotalMeasure(),
+                     ** ppMeasure(thisRealStream.GetMeasureArray());
+                     
   gRandomNumberGenerator.SetSeed(iSimulation + gRandomNumberGenerator.GetDefaultSeed());
   for (t=0; t < tNumTracts; ++t) {
      if (tTotalMeasure-cummeasure > 0)
        c = gBinomialGenerator.GetBinomialDistributedVariable(tTotalCases - cumcases,
                               ppMeasure[0][t] / (tTotalMeasure-cummeasure), gRandomNumberGenerator);
      else
-       c = 0;
+      c = 0;
      ppSimCases[0][t] = c;
      cumcases += c;
      cummeasure += ppMeasure[0][t];
@@ -92,7 +96,7 @@ void PoissonNullHypothesisRandomizer::RandomizeData(DataStream & thisStream, uns
         else
           d = 0;
         ppSimCases[i+1][t] = ppSimCases[i][t] - d;
-     }
+    }
   }
 }
 
@@ -110,16 +114,18 @@ PoissonTimeStratifiedRandomizer * PoissonTimeStratifiedRandomizer::Clone() const
 }
 
 /** Randomizes data of data stream, stratified by time */
-void PoissonTimeStratifiedRandomizer::RandomizeData(DataStream & thisStream, unsigned int iSimulation) {
-  unsigned int          tract, tNumTracts = thisStream.GetNumTracts();
-  count_t               c, cumcases=0, * pPTCases = thisStream.GetPTCasesArray(),
-                     ** ppSimCases = thisStream.GetSimCaseArray();
-  measure_t             cummeasure=0, * pPTMeasure = thisStream.GetPTMeasureArray(),
-                     ** ppMeasure = thisStream.GetMeasureArray();
+void PoissonTimeStratifiedRandomizer::RandomizeData(const RealDataStream& thisRealStream,
+                                                    SimulationDataStream& thisSimulationStream,
+                                                    unsigned int iSimulation) {
+  unsigned int          tract, tNumTracts = thisRealStream.GetNumTracts();
+  count_t               c, cumcases=0, * pPTCases = thisRealStream.GetPTCasesArray(),
+                     ** ppSimCases = thisSimulationStream.GetCaseArray();
+  measure_t             cummeasure=0, * pPTMeasure = thisRealStream.GetPTMeasureArray(),
+                     ** ppMeasure = thisRealStream.GetMeasureArray();
   int                   interval;
 
   gRandomNumberGenerator.SetSeed(iSimulation + gRandomNumberGenerator.GetDefaultSeed());
-  interval = thisStream.GetNumTimeIntervals() - 1;
+  interval = thisRealStream.GetNumTimeIntervals() - 1;
   for (tract=0; tract < tNumTracts; ++tract) {
      if (pPTCases[interval] - cumcases > 0)
        c = gBinomialGenerator.GetBinomialDistributedVariable(pPTCases[interval] - cumcases,
@@ -135,7 +141,7 @@ void PoissonTimeStratifiedRandomizer::RandomizeData(DataStream & thisStream, uns
      cumcases = 0;
      cummeasure = 0;
      for (tract=0; tract < tNumTracts; ++tract) { //For each tract:
-        if (pPTCases[interval] - cumcases > 0)
+       if (pPTCases[interval] - cumcases > 0)
           c = gBinomialGenerator.GetBinomialDistributedVariable(pPTCases[interval] - cumcases,
                       (ppMeasure[interval][tract] - ppMeasure[interval + 1][tract])/(pPTMeasure[interval] - cummeasure),
                       gRandomNumberGenerator);
@@ -145,7 +151,7 @@ void PoissonTimeStratifiedRandomizer::RandomizeData(DataStream & thisStream, uns
         cummeasure += (ppMeasure[interval][tract] - ppMeasure[interval + 1][tract]);
         ppSimCases[interval][tract] = c + ppSimCases[interval + 1][tract];
      }
-  }
+ }
 }
 
 /** constructor */
@@ -193,16 +199,18 @@ AlternateHypothesisRandomizer * AlternateHypothesisRandomizer::Clone() const {
 
 /** Randomizes data of data stream under alternate hypothesis.
     NOTE: This procedure is in an experiential stage. */
-void AlternateHypothesisRandomizer::RandomizeData(DataStream & thisStream, unsigned int iSimulation) {
-  unsigned int          j, t, i, tNumTracts = thisStream.GetNumTracts(),
-                        tNumTimeIntervals = thisStream.GetNumTimeIntervals();
+void AlternateHypothesisRandomizer::RandomizeData(const RealDataStream& thisRealStream,
+                                                  SimulationDataStream& thisSimulationStream,
+                                                  unsigned int iSimulation) {
+  unsigned int          j, t, i, tNumTracts = thisRealStream.GetNumTracts(),
+                        tNumTimeIntervals = thisRealStream.GetNumTimeIntervals();
   int                   iInterval;
   std::ifstream         RelativeRiskFile;
   std::string           sTractId;
   tract_t               tractIndex;
-  measure_t             cummeasure=0, TotalMeasure = thisStream.GetTotalMeasure(),
-                     ** ppMeasure = thisStream.GetMeasureArray();
-  count_t               c, d, cumcases=0, ** ppSimCases = thisStream.GetSimCaseArray();
+  measure_t             cummeasure=0, TotalMeasure = thisRealStream.GetTotalMeasure(),
+                     ** ppMeasure = thisRealStream.GetMeasureArray();
+  count_t               c, d, cumcases=0, ** ppSimCases = thisSimulationStream.GetCaseArray();
 
   //duplicate the  ppMeasure[][] into gpAlternativeMeasure[][], gpAlternativeMeasure[][] will be changed depending upon
   //the gvRelativeRisks[], and ppMeasure[][] remains the same as the expected measure
@@ -220,13 +228,13 @@ void AlternateHypothesisRandomizer::RandomizeData(DataStream & thisStream, unsig
        RelativeRiskFile >> sTractId;
        if ((tractIndex = gData.GetTInfo()->tiGetTractIndex(sTractId.c_str())) == -1)
          SSGenerateException("Unknown location identifier '%s', in power estimation file.",
-                             "MakeData_AlternateHypothesis()", sTractId.c_str());
+                            "MakeData_AlternateHypothesis()", sTractId.c_str());
         RelativeRiskFile >> gvRelativeRisks[tractIndex];
   }
   RelativeRiskFile.close();
 
   //modify the measures
-  for (t=0; t < tNumTracts; ++t) {
+ for (t=0; t < tNumTracts; ++t) {
      gvMeasure[t] = ppMeasure[0][t];
      for (i=tNumTimeIntervals; i >= 30/* ??? */ ; i--) {
         if (i == tNumTimeIntervals-1) {//if the last interval, the cummulative measure is the measure itself
@@ -250,7 +258,7 @@ void AlternateHypothesisRandomizer::RandomizeData(DataStream & thisStream, unsig
    //start alternative simulations
   for (t=0; t < tNumTracts; ++t) {
     if (TotalMeasure-cummeasure > 0)
-        c = gBinomialGenerator.GetBinomialDistributedVariable(thisStream.GetTotalCases() - cumcases,
+        c = gBinomialGenerator.GetBinomialDistributedVariable(thisRealStream.GetTotalCases() - cumcases,
                                                               gvMeasure[t] / (TotalMeasure-cummeasure),
                                                               gRandomNumberGenerator);
     else
@@ -259,7 +267,7 @@ void AlternateHypothesisRandomizer::RandomizeData(DataStream & thisStream, unsig
     cumcases += c;
     cummeasure += gvMeasure[t];
 
-    for (i=0; i < tNumTimeIntervals-1; ++i) {
+   for (i=0; i < tNumTimeIntervals-1; ++i) {
        if (gpAlternativeMeasure->GetArray()[i][t] > 0)
         d = gBinomialGenerator.GetBinomialDistributedVariable(ppSimCases[i][t],
               1 - gpAlternativeMeasure->GetArray()[i+1][t] / gpAlternativeMeasure->GetArray()[i][t], gRandomNumberGenerator);
@@ -308,11 +316,13 @@ FileSourceRandomizer * FileSourceRandomizer::Clone() const {
           3) file does not actually contains numerical data
           Use of this feature should be discouraged except from someone who has
           detailed knowledge of how code works.                                                           */
-void FileSourceRandomizer::RandomizeData(DataStream & thisStream, unsigned int iSimulation) {
-  unsigned int          i, t, tNumTracts = thisStream.GetNumTracts(),
-                        tNumTimeIntervals = thisStream.GetNumTimeIntervals();
+void FileSourceRandomizer::RandomizeData(const RealDataStream& thisRealStream,
+                                         SimulationDataStream& thisSimulationStream,
+                                         unsigned int iSimulation) {
+  unsigned int          i, t, tNumTracts = thisRealStream.GetNumTracts(),
+                        tNumTimeIntervals = thisRealStream.GetNumTimeIntervals();
   count_t               c;
-  count_t            ** ppSimCases = thisStream.GetSimCaseArray();
+  count_t            ** ppSimCases = thisSimulationStream.GetCaseArray();
 
   if (!gSimulationDataInputFile.is_open())
     gSimulationDataInputFile.open(gData.GetParameters().GetSimulationDataSourceFilename().c_str());

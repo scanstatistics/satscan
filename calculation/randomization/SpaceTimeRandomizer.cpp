@@ -38,20 +38,21 @@ void SpaceTimeRandomizer::AddCase(unsigned int iCategory, int iTimeInterval, tra
 }
 
 /** Assigns randomized data to data stream's simulation case array. */
-void SpaceTimeRandomizer::AssignRandomizedData(DataStream & thisStream) {
+void SpaceTimeRandomizer::AssignRandomizedData(const RealDataStream& thisRealStream,
+                                               SimulationDataStream& thisSimulationStream) {
   size_t          tCategory, tCase;
-  int             iInterval, tNumTimeIntervals = thisStream.GetNumTimeIntervals();
-  unsigned int    tTract, tNumTracts = thisStream.GetNumTracts();
-  count_t      ** ppSimCases = thisStream.GetSimCaseArray();
+  int             iInterval, tNumTimeIntervals = thisRealStream.GetNumTimeIntervals();
+  unsigned int    tTract, tNumTracts = thisRealStream.GetNumTracts();
+  count_t      ** ppSimCases = thisSimulationStream.GetCaseArray();
 
   //reset simulation case structure to zero
-  thisStream.ResetCumulativeSimCaseArray();
+  thisSimulationStream.ResetCumulativeCaseArray();
 
   //assign permuted attribute to simulation case array
   for (size_t t=0; t < gCategoryAttributes.size(); ++t) {
      std::vector<tract_t>& Stationary = gCategoryAttributes[t].gvStationaryAttribute;
      ZdPointerVector<PermutedTime>& Permuted = gCategoryAttributes[t].gvPermutedAttribute;
-     for (tCase=0; tCase < Permuted.size(); ++tCase)
+    for (tCase=0; tCase < Permuted.size(); ++tCase)
         ppSimCases[Permuted[tCase]->GetTimeInterval()][Stationary[tCase]]++;
   }
 
@@ -66,7 +67,7 @@ void SpaceTimeRandomizer::AssignRandomizedData(DataStream & thisStream) {
     NOTE: Inorder for this randomization process to remain consistant with
           previous versions, this function and the sorting of the time interval
           in SortPermutedAttribute() must be done. */
-void SpaceTimeRandomizer::CreateRandomizationData(const DataStream& thisStream) {
+void SpaceTimeRandomizer::CreateRandomizationData(const RealDataStream& thisStream) {
   int	                i;
   unsigned int          j, k, c, iNumCases, iNumCategories(thisStream.GetPopulationData().GetNumPopulationCategories());
   std::vector<int>      vCummulatedCases;

@@ -11,13 +11,15 @@ AbstractPermutedDataRandomizer::AbstractPermutedDataRandomizer() : AbstractRando
 AbstractPermutedDataRandomizer::~AbstractPermutedDataRandomizer() {}
 
 /** randomizes data of data stream */
-void AbstractPermutedDataRandomizer::RandomizeData(DataStream & thisStream, unsigned int iSimulation) {
+void AbstractPermutedDataRandomizer::RandomizeData(const RealDataStream& thisRealStream,
+                                                   SimulationDataStream& thisSimulationStream,
+                                                   unsigned int iSimulation) {
   //set seed for simulation number
   gRandomNumberGenerator.SetSeed(iSimulation + gRandomNumberGenerator.GetDefaultSeed());
   //assign random numbers to permuted attribute and sort
   SortPermutedAttribute();
   //re-assign data stream's simulation data
-  AssignRandomizedData(thisStream);
+  AssignRandomizedData(thisRealStream, thisSimulationStream);
 };
 
 

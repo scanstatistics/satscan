@@ -44,18 +44,20 @@ void BernoulliNullHypothesisRandomizer::MakeDataB(count_t tTotalCounts, measure_
 }
 
 /** Randomizes data stream's data under null hypothesis for Bernoulli model. */
-void BernoulliNullHypothesisRandomizer::RandomizeData(DataStream & thisStream, unsigned int iSimulation) {
-  int                           t, tNumTracts = thisStream.GetNumTracts(),
-                                i, c, tNumTimeIntervals = thisStream.GetNumTimeIntervals();
-  count_t                    ** ppSimCases(thisStream.GetSimCaseArray()), nCumCounts, nCumMeasure,
-                                tNumCases(thisStream.GetTotalCases()), tNumControls(thisStream.GetTotalControls());
-  measure_t                  ** ppMeasure(thisStream.GetMeasureArray());
+void BernoulliNullHypothesisRandomizer::RandomizeData(const RealDataStream& thisRealStream,
+                                              SimulationDataStream& thisSimulationStream,
+                                              unsigned int iSimulation) {
+  int                           t, tNumTracts = thisRealStream.GetNumTracts(),
+                                i, c, tNumTimeIntervals = thisRealStream.GetNumTimeIntervals();
+  count_t                    ** ppSimCases(thisSimulationStream.GetCaseArray()), nCumCounts, nCumMeasure,
+                                tNumCases(thisRealStream.GetTotalCases()), tNumControls(thisRealStream.GetTotalControls());
+  measure_t                  ** ppMeasure(thisRealStream.GetMeasureArray());
   std::vector<count_t>          RandCounts;
 
-  // reset seed of random number generator 
+  // reset seed of random number generator
   gRandomNumberGenerator.SetSeed(iSimulation + gRandomNumberGenerator.GetDefaultSeed());
   // reset simulation cases to zero
-  thisStream.ResetCumulativeSimCaseArray();
+  thisSimulationStream.ResetCumulativeCaseArray();
 
   if (tNumCases < tNumControls)
     nCumCounts = tNumCases;
