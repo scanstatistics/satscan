@@ -229,12 +229,14 @@ bool CSaTScanData::ReadCoordinatesFile() {
       case CARTESIAN : bReturn = ReadCoordinatesFileAsCartesian(fp);
                        //now that the number of dimensions is known, validate against requested ellipses
                        if (m_pParameters->GetDimensionsOfData() > 2 && m_pParameters->GetNumRequestedEllipses() &&
-                           m_pParameters->GetCriteriaSecondClustersType() != NORESTRICTIONS) {
+                           !(m_pParameters->GetCriteriaSecondClustersType() == NORESTRICTIONS ||
+                            m_pParameters->GetCriteriaSecondClustersType() == NOGEOOVERLAP)) {
                          gpPrint->SatScanPrintWarning("Error: Invalid parameter setting for ellipses. SaTScan permits only two\n"
                                                       "       dimensions be specified for a centroid when performing an analysis\n"
-                                                      "       which contain ellipses and restricts reporting of secondary clusters.\n"
-                                                      "       You may want to change the criteria for reporting secondary clusters to\n"
-                                                      "       'No Restrictions' and run the analysis again.\n");
+                                                      "       which contain ellipses and restricts reporting of secondary clusters\n"
+                                                      "       to anything other than 'No Geographical Overlap'. You may want to\n"
+                                                      "       change the criteria for reporting secondary clusters and run the\n"
+                                                      "       analysis again.\n");
                          bReturn = false;          
                        }
                        break;
