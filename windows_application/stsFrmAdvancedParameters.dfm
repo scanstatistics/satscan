@@ -149,7 +149,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Top = 56
         Width = 349
         Height = 17
-        Caption = 'Include only clusters in ranges'
+        Caption = 'Include only clusters in:'
         TabOrder = 2
         OnClick = chkRestrictTemporalRangeClick
       end
