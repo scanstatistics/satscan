@@ -34,6 +34,7 @@ __published:	// IDE-managed Components
         void __fastcall lblEmailClick(TObject *Sender);
         void __fastcall lblLicenseClick(TObject *Sender);
 private:	// User declarations
+        void    Setup();
 public:		// User declarations
         __fastcall TfrmAbout(TComponent* Owner);
 };
