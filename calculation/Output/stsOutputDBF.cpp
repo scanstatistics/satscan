@@ -33,6 +33,9 @@ const char *    COORD_X		        = "COORD_X";
 const char *    COORD_Y                 = "COORD_Y";
 const char *    COORD_Z                 = "COORD_Z";
 const char *    RADIUS		        = "RADIUS";
+const char *    AREA_OBS                = "AREA_OBS";
+const char *    AREA_EXP                = "AREA_EXP";
+const char *    AREA_RSK                = "AREA_RSK";
 
 // constructor
 __fastcall DBaseOutput::DBaseOutput(const long lRunNumber, const int iCoordType) {

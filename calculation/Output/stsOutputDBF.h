@@ -24,6 +24,9 @@ extern const char * COORD_X;
 extern const char * COORD_Y;
 extern const char * COORD_Z;
 extern const char * RADIUS;
+extern const char * AREA_OBS;
+extern const char * AREA_EXP;
+extern const char * AREA_RSK;
 
 class CCluster;
 class CSaTScanData;
@@ -47,7 +50,7 @@ class DBaseOutput {
       __fastcall DBaseOutput(const long lRunNumber, const int iCoordType = 0);
       virtual ~DBaseOutput();
 
-      virtual void      RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber) = 0;
+      virtual void      RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, int iAreaIndex = 0) = 0;
 
       
 };
