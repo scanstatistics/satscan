@@ -14,7 +14,7 @@ object frmAnalysis: TfrmAnalysis
   Font.Style = []
   FormStyle = fsMDIChild
   OldCreateOrder = False
-  Position = poDefault
+  Position = poDefaultPosOnly
   Visible = True
   OnClose = FormClose
   PixelsPerInch = 96
