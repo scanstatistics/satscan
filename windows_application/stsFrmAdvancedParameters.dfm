@@ -2,9 +2,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
   Left = 187
   Top = 168
   ActiveControl = PageControl
+  BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Advanced Features'
-  ClientHeight = 297
+  ClientHeight = 311
   ClientWidth = 534
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -22,7 +23,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Left = 450
     Top = 0
     Width = 84
-    Height = 297
+    Height = 311
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 1
@@ -58,11 +59,12 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     end
   end
   object PageControl: TPageControl
-    Left = 2
-    Top = 6
-    Width = 447
-    Height = 283
-    ActivePage = tsDataStreams
+    Left = 0
+    Top = 0
+    Width = 450
+    Height = 311
+    ActivePage = tsAdjustments
+    Align = alClient
     TabOrder = 0
     object tsDataStreams: TTabSheet
       Caption = 'Multiple Data Streams'
@@ -367,9 +369,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtMaxSpatialClusterSize: TEdit
           Left = 62
-          Top = 35
+          Top = 36
           Width = 34
-          Height = 21
+          Height = 18
           AutoSelect = False
           MaxLength = 5
           TabOrder = 1
@@ -419,9 +421,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtMaxSpatialRadius: TEdit
           Left = 133
-          Top = 122
+          Top = 123
           Width = 58
-          Height = 21
+          Height = 18
           TabOrder = 8
           Text = '1'
           OnChange = edtMaxSpatialRadiusChange
@@ -430,9 +432,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtMaxSpatialPercentFile: TEdit
           Left = 62
-          Top = 60
+          Top = 62
           Width = 34
-          Height = 21
+          Height = 18
           MaxLength = 5
           TabOrder = 3
           Text = '50'
@@ -723,9 +725,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtMaxTemporalClusterSize: TEdit
           Left = 62
-          Top = 35
+          Top = 36
           Width = 34
-          Height = 21
+          Height = 18
           MaxLength = 5
           TabOrder = 1
           Text = '50'
@@ -764,9 +766,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtMaxTemporalClusterSizeUnits: TEdit
           Left = 62
-          Top = 60
+          Top = 62
           Width = 34
-          Height = 21
+          Height = 18
           MaxLength = 6
           TabOrder = 3
           Text = '1'
@@ -776,12 +778,12 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
     end
     object tsAdjustments: TTabSheet
-      Caption = 'Risk Adjustments'
+      Caption = 'Adjustments'
       object rdgTemporalTrendAdj: TRadioGroup
         Left = 8
         Top = 8
         Width = 421
-        Height = 129
+        Height = 107
         Hint = 'Temporal Trend Adjustments'
         Caption = 'Temporal Adjustments'
         Enabled = False
@@ -798,10 +800,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         OnExit = OnControlExit
       end
       object edtLogLinear: TEdit
-        Left = 108
-        Top = 80
+        Left = 109
+        Top = 68
         Width = 34
-        Height = 21
+        Height = 18
         Enabled = False
         MaxLength = 5
         TabOrder = 1
@@ -811,7 +813,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object lblLogLinear: TStaticText
         Left = 148
-        Top = 82
+        Top = 70
         Width = 67
         Height = 17
         AutoSize = False
@@ -820,22 +822,22 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object grpAdjustments: TGroupBox
         Left = 8
-        Top = 148
+        Top = 189
         Width = 421
-        Height = 89
+        Height = 85
         Caption = 'Temporal, Spatial and/or Space-Time Adjustments'
-        TabOrder = 3
+        TabOrder = 4
         object lblAdjustmentsByRelativeRisksFile: TLabel
-          Left = 16
-          Top = 43
+          Left = 30
+          Top = 37
           Width = 79
           Height = 13
           Anchors = []
           Caption = 'Adjustments File:'
         end
         object edtAdjustmentsByRelativeRisksFile: TEdit
-          Left = 16
-          Top = 58
+          Left = 30
+          Top = 54
           Width = 320
           Height = 21
           ParentShowHint = False
@@ -845,8 +847,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnExit = OnControlExit
         end
         object btnBrowseAdjustmentsFile: TButton
-          Left = 342
-          Top = 58
+          Left = 356
+          Top = 54
           Width = 23
           Height = 22
           Hint = 'Browse for adjustments file ...'
@@ -864,7 +866,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object chkAdjustForKnownRelativeRisks: TCheckBox
           Left = 12
-          Top = 20
+          Top = 17
           Width = 233
           Height = 17
           Caption = 'Adjust for known relative risks'
@@ -872,8 +874,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = chkAdjustForKnownRelativeRisksClick
         end
         object btnImportAdjustmentsFile: TBitBtn
-          Left = 370
-          Top = 58
+          Left = 384
+          Top = 54
           Width = 23
           Height = 22
           Hint = 'Import adjustments file ...'
@@ -900,6 +902,19 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             0000}
           NumGlyphs = 2
         end
+      end
+      object rdgSpatialAdjustments: TRadioGroup
+        Left = 8
+        Top = 121
+        Width = 421
+        Height = 63
+        Caption = 'Spatial Adjustments'
+        ItemIndex = 0
+        Items.Strings = (
+          'None'
+          'Nonparametric, with spatial stratified randomization')
+        TabOrder = 3
+        OnClick = OnControlExit
       end
     end
     object tsInference: TTabSheet
@@ -1047,7 +1062,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 200
         Top = 220
         Width = 34
-        Height = 21
+        Height = 18
         TabOrder = 1
         Text = '50'
         OnExit = edtReportClustersSmallerThanExit

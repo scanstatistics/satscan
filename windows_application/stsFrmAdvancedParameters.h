@@ -20,7 +20,6 @@ const int OUTPUT_TABS    = 3;
 const int MAX_STREAMS    = 3;      /*Maximum number of additional input streams*/
 
 class TfrmAdvancedParameters : public TForm {
-
 __published:	// IDE-managed Components
    TPanel *pnlButtons;
    TButton *btnOk;
@@ -118,6 +117,7 @@ __published:	// IDE-managed Components
    TButton *btnCaseBrowse;
    TBitBtn *btnImportMaxCirclePopFile;
    TBitBtn *btnImportAdjustmentsFile;
+   TRadioGroup *rdgSpatialAdjustments;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
@@ -211,6 +211,7 @@ public:
    __fastcall TfrmAdvancedParameters(TfrmAnalysis & AnalysisSettings);
 
    void                  EnableAdjustmentsGroup(bool bEnable);
+   void                  EnableAdjustmentForSpatialOptionsGroup(bool bEnable);
    void                  EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage, bool bCalculatedLog);
    void                  EnableOutputOptions(bool bEnable);
    void                  EnableProspectiveStartDate(bool bEnable);

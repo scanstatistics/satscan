@@ -466,6 +466,10 @@ void TfrmAdvancedParameters::EnableDataStreamList(bool bEnable) {
   lstInputStreams->Color = lstInputStreams->Enabled ? clWindow : clInactiveBorder;
 }
 
+void TfrmAdvancedParameters::EnableAdjustmentForSpatialOptionsGroup(bool bEnable) {
+  rdgSpatialAdjustments->Enabled = bEnable;
+}
+
 /** enables or disables the temporal time trend adjustment control group */
 void TfrmAdvancedParameters::EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage, bool bCalculatedLog) {
   TimeTrendAdjustmentType eTimeTrendAdjustmentType(GetAdjustmentTimeTrendControlType());
@@ -745,6 +749,7 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    bReturn &= (edtAdjustmentsByRelativeRisksFile->Text == "");
    bReturn &= (rdgTemporalTrendAdj->ItemIndex == 0);
    bReturn &= (edtLogLinear->Text.ToDouble() == 0);
+   bReturn &= (rdgSpatialAdjustments->ItemIndex == 0);
 
    return bReturn;
 }
@@ -892,10 +897,7 @@ void __fastcall TfrmAdvancedParameters::NaturalNumberKeyPress(TObject *Sender, c
     Key = 0;
 }
 //---------------------------------------------------------------------------
-
-void __fastcall TfrmAdvancedParameters::OnControlExit(
-      TObject *Sender)
-{
+void __fastcall TfrmAdvancedParameters::OnControlExit(TObject *Sender) {
    DoControlExit();
 }
 //---------------------------------------------------------------------------
@@ -948,6 +950,7 @@ void __fastcall TfrmAdvancedParameters::rdgTemporalTrendAdjClick(TObject *Sender
     default             : edtLogLinear->Enabled = false;
                           edtLogLinear->Color = clInactiveBorder;
   }
+  DoControlExit();
 }
 /** event triggered when maximum temporal cluster size type edit control clicked */
 void __fastcall TfrmAdvancedParameters::rdoMaxTemporalClusterSizelick(TObject *Sender) {
@@ -983,6 +986,7 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
     ref.SetAdjustmentsByRelativeRisksFilename(edtAdjustmentsByRelativeRisksFile->Text.c_str(), false);
     ref.SetTimeTrendAdjustmentType(rdgTemporalTrendAdj->Enabled ? GetAdjustmentTimeTrendControlType() : NOTADJUSTED);
     ref.SetTimeTrendAdjustmentPercentage(atof(edtLogLinear->Text.c_str()));
+    ref.SetSpatialAdjustmentType((SpatialAdjustmentType)rdgSpatialAdjustments->ItemIndex);
     ref.SetTerminateSimulationsEarly(chkTerminateEarly->Checked);
     ref.SetRestrictReportedClusters(chkRestrictReportedClusters->Enabled && chkRestrictReportedClusters->Checked);
     ref.SetMaximumReportedGeographicalClusterSize(atof(edtReportClustersSmallerThan->Text.c_str()));
@@ -1063,6 +1067,7 @@ void TfrmAdvancedParameters::SetDefaultsForAnalysisTabs() {
    chkAdjustForKnownRelativeRisks->Checked = false;
    edtAdjustmentsByRelativeRisksFile->Text = "";
    SetTemporalTrendAdjustmentControl(NOTADJUSTED);
+   rdgSpatialAdjustments->ItemIndex = NO_SPATIAL_ADJUSTMENT;
    edtLogLinear->Text = "0";
 }
 //---------------------------------------------------------------------------
@@ -1255,6 +1260,7 @@ void TfrmAdvancedParameters::Setup() {
         ParseDate(ref.GetEndRangeEndDate(), *edtEndRangeEndYear, *edtEndRangeEndMonth, *edtEndRangeEndDay, false);
 
       // Risk tab
+      rdgSpatialAdjustments->ItemIndex = ref.GetSpatialAdjustmentType();
       chkAdjustForKnownRelativeRisks->Checked = ref.UseAdjustmentForRelativeRisksFile();
       edtAdjustmentsByRelativeRisksFile->Text = ref.GetAdjustmentsByRelativeRisksFilename().c_str();
       SetTemporalTrendAdjustmentControl(ref.GetTimeTrendAdjustmentType());
@@ -1369,6 +1375,18 @@ void TfrmAdvancedParameters::Validate() {
 /** validates adjustment settings - throws exception */
 void TfrmAdvancedParameters::ValidateAdjustmentSettings() {
   try {
+    //validate spatial adjustments
+    if (rdgSpatialAdjustments->Enabled && rdgSpatialAdjustments->ItemIndex == SPATIALLY_STRATIFIED_RANDOMIZATION) {
+      if (chkIncludePureSpacClust->Enabled && chkIncludePureSpacClust->Checked)
+         GenerateAFException("Spatial adjustments can not performed in conjunction\n"
+                             " with the inclusion of purely spatial clusters.",
+                             "ValidateAdjustmentSettings()", *rdgSpatialAdjustments, ANALYSIS_TABS);
+      if (rdgTemporalTrendAdj->Enabled && GetAdjustmentTimeTrendControlType() == STRATIFIED_RANDOMIZATION)
+         GenerateAFException("Spatial adjustments can not performed in conjunction\n"
+                             "with the nonparametric temporal adjustment.",
+                             "ValidateAdjustmentSettings()", *rdgSpatialAdjustments, ANALYSIS_TABS);
+    }
+    //validate spatial/temporal/space-time adjustments
     if (chkAdjustForKnownRelativeRisks->Enabled && chkAdjustForKnownRelativeRisks->Checked) {
       if (edtAdjustmentsByRelativeRisksFile->Text.IsEmpty())
         GenerateAFException("Please specify an adjustments file.",
@@ -1769,5 +1787,4 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
 
   throw theException;
 }
-
 
