@@ -3,6 +3,8 @@
 #include "Parameters.h"
 #include <io.h>
 
+#define INCLUDE_RUN_HISTORY
+
 const char*      ANALYSIS_HISTORY_FILE  = "AnalysisHistory.dbf";
 const char*      YES                    = "y";
 const char*      NO                     = "n";
