@@ -54,7 +54,6 @@ CCluster & TopClustersContainer::GetTopCluster(int iShapeOffset) {
           CAnalysis::GetTopCluster() are completed. */
 CCluster & TopClustersContainer::GetTopCluster() {
   CCluster    * pTopCluster;
-  double        dMaximumForTotal = gData.m_pModel->GetLogLikelihoodForTotal();
 
   //first set ratios
   for (size_t t=0; t < gvTopShapeClusters.size(); t++)
@@ -484,18 +483,26 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long lRepo
   }
 }
 
+/** Either diplays top cluster's loglikelihood ratio or test statistic. */
 void CAnalysis::DisplayTopClusterLogLikelihood() {
-   try {
-      if (m_nClustersRetained > 0) {
-         gpPrintDirection->SatScanPrintf("  SaTScan %s for the most likely cluster: %7.2f\n\n",
-                                         (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION ? "test statistic" : "log likelihood ratio" ),
-                                         m_pTopClusters[0]->m_nRatio);
+  try {
+    //if any clusters were retained, display either loglikelihood or test statistic
+    if (m_nClustersRetained > 0) {
+      if (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION)
+        gpPrintDirection->SatScanPrintf("  SaTScan test statistic for the most likely cluster: %7.2f\n\n",
+                                        m_pTopClusters[0]->m_nRatio);
+      else if (m_pParameters->GetNumRequestedEllipses() && m_pParameters->GetDuczmalCorrectEllipses())
+        gpPrintDirection->SatScanPrintf("  SaTScan test statistic for the most likely cluster: %7.2f\n\n",
+                                        m_pTopClusters[0]->GetDuczmalCorrectedLogLikelihoodRatio());
+      else
+        gpPrintDirection->SatScanPrintf("  SaTScan log likelihood ratio for the most likely cluster: %7.2f\n\n",
+                                        m_pTopClusters[0]->m_nRatio);
       }
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("DisplayTopClusterLogLikelihood()", "CAnalysis");
-      throw;
-   }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("DisplayTopClusterLogLikelihood()", "CAnalysis");
+    throw;
+  }
 }
 
 // can't find any reference to this function ever being called, appears to be an old debugging function
@@ -673,14 +680,15 @@ void CAnalysis::PerformSimulations() {
         gpPrintDirection->SatScanPrintf("Doing the Monte Carlo replications\n");
 
         // assign replication format string here to prevent another check in loop
-        if (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION)
+        if (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION ||
+            (m_pParameters->GetNumRequestedEllipses() && m_pParameters->GetDuczmalCorrectEllipses()))
           sReplicationFormatString = "SaTScan test statistic for #%ld of %ld replications: %7.2f\n";
         else
           sReplicationFormatString = "SaTScan log likelihood ratio for #%ld of %ld replications: %7.2f\n";
 
         // record only the first set of log likelihoods - AJV 12/27/2002  
         if (m_pParameters->GetOutputSimLoglikeliRatiosFiles() && m_nAnalysisCount == 1)
-           pLLRData.reset( new LogLikelihoodData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str()) );
+           pLLRData.reset(new LogLikelihoodData(gpPrintDirection, *m_pParameters));
 
         clock_t nStartTime = clock();
         SimRatios.Initialize();
