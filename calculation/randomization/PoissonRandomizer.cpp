@@ -7,7 +7,7 @@
 
 /** constructor */
 PoissonRandomizer::PoissonRandomizer(const CParameters & Parameters)
-                  :AbstractDenominaterDataRandomizer(), gParameters(Parameters) {}
+                  :AbstractDenominatorDataRandomizer(), gParameters(Parameters) {}
 
 /** destructor */
 PoissonRandomizer::~PoissonRandomizer() {}

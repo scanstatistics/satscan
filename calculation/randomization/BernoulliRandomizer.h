@@ -2,10 +2,10 @@
 #ifndef BernoulliRandomizerH
 #define BernoulliRandomizerH
 //---------------------------------------------------------------------------
-#include "DenominaterDataRandomizer.h"
+#include "DenominatorDataRandomizer.h"
 
 /** abstract Bernoulli randomizer */
-class BernoulliRandomizer : public AbstractDenominaterDataRandomizer {
+class BernoulliRandomizer : public AbstractDenominatorDataRandomizer {
   public:
     BernoulliRandomizer();
     virtual ~BernoulliRandomizer();

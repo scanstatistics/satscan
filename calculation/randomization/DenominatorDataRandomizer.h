@@ -5,13 +5,13 @@
 #include "Randomizer.h"
 
 /** abstract denominator data randomizer class */
-class AbstractDenominaterDataRandomizer : public AbstractRandomizer {
+class AbstractDenominatorDataRandomizer : public AbstractRandomizer {
   protected:
     BinomialGenerator   gBinomialGenerator;
 
   public:
-            AbstractDenominaterDataRandomizer();
-    virtual ~AbstractDenominaterDataRandomizer();
+            AbstractDenominatorDataRandomizer();
+    virtual ~AbstractDenominatorDataRandomizer();
 };
 //---------------------------------------------------------------------------
 #endif

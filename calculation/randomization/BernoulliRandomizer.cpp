@@ -6,7 +6,7 @@
 #include "SaTScanData.h"
 
 /** constructor */
-BernoulliRandomizer::BernoulliRandomizer() : AbstractDenominaterDataRandomizer() {}
+BernoulliRandomizer::BernoulliRandomizer() : AbstractDenominatorDataRandomizer() {}
 
 /** destructor */
 BernoulliRandomizer::~BernoulliRandomizer() {}

@@ -2,12 +2,12 @@
 #ifndef PoissonRandomizerH
 #define PoissonRandomizerH
 //---------------------------------------------------------------------------
-#include "DenominaterDataRandomizer.h"
+#include "DenominatorDataRandomizer.h"
 #include <iostream>
 #include <fstream>
 
 /** abstract base class for Poisson randomizers */
-class PoissonRandomizer : public AbstractDenominaterDataRandomizer {
+class PoissonRandomizer : public AbstractDenominatorDataRandomizer {
   protected:
     const CParameters & gParameters;
 

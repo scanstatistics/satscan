@@ -5,9 +5,9 @@
 #include "DenominatorDataRandomizer.h"
 
 /** constructor */
-AbstractDenominaterDataRandomizer::AbstractDenominaterDataRandomizer()
+AbstractDenominatorDataRandomizer::AbstractDenominatorDataRandomizer()
                   :AbstractRandomizer() {}
 
 /** destructor */
-AbstractDenominaterDataRandomizer::~AbstractDenominaterDataRandomizer() {}
+AbstractDenominatorDataRandomizer::~AbstractDenominatorDataRandomizer() {}
  
