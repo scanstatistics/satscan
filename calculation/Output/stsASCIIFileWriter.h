@@ -12,11 +12,9 @@ class ASCIIFileWriter : public OutputFileWriter {
       void              CreateBlankString(ZdString& sFormatString, int iFieldNumber);
       void              CreateFormatString(ZdString& sValue, const int iFieldNumber, const ZdFieldValue& fv);
       virtual void      CreateOutputFile();
-      void              Init();
       void              Setup();
    public :
-      ASCIIFileWriter(BaseOutputStorageClass* pOutputFileData);
-      virtual ~ASCIIFileWriter();
+      ASCIIFileWriter(BaseOutputStorageClass* pOutputFileData, const bool bAppend = false);
 
       virtual void	Print();
 };

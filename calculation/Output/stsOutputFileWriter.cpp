@@ -9,7 +9,7 @@
 
 #include "stsOutputFileWriter.h"
 
-OutputFileWriter::OutputFileWriter(BaseOutputStorageClass* pOutputFileData) {
+OutputFileWriter::OutputFileWriter(BaseOutputStorageClass* pOutputFileData, const bool bAppend) : gbAppend(bAppend) {
    try {
       if (!pOutputFileData)
          ZdGenerateException("NULL output file data pointer!", "Error!");

@@ -7,13 +7,11 @@ extern const char * 	DBASE_FILE_EXT;
 
 class DBaseFileWriter : public OutputFileWriter {
    private :
-      void	Init();
       void	Setup();
    protected:    
       virtual void      CreateOutputFile();  
    public :
-      DBaseFileWriter(BaseOutputStorageClass* pOutputFileData);
-      virtual ~DBaseFileWriter();
+      DBaseFileWriter(BaseOutputStorageClass* pOutputFileData, const bool bAppend = false);
       
       virtual void 	Print();
 };

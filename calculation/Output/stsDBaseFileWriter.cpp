@@ -11,10 +11,9 @@
 
 const char * 	DBASE_FILE_EXT	= ".dbf";
 
-DBaseFileWriter::DBaseFileWriter(BaseOutputStorageClass* pOutputFileData)
-                 : OutputFileWriter(pOutputFileData) {
+DBaseFileWriter::DBaseFileWriter(BaseOutputStorageClass* pOutputFileData, const bool bAppend)
+                 : OutputFileWriter(pOutputFileData, bAppend) {
    try {
-      Init();
       Setup();
    }
    catch (ZdException &x) {
@@ -23,19 +22,16 @@ DBaseFileWriter::DBaseFileWriter(BaseOutputStorageClass* pOutputFileData)
    }
 }
 
-DBaseFileWriter::~DBaseFileWriter() {
-}
-
 // creates the dBase file with the appropraite fields, if the file already exists it
 // just overwrites the existing file
 // pre : none
 // post : creates the dBase file structure with the correct fields
 void DBaseFileWriter::CreateOutputFile() {
    try {
-      ZdVector<ZdField*> vFields(gpOutputFileData->GetFields());
-      DBFFile file;
       if (ZdIO::Exists(gsFileName))
          ZdIO::Delete(gsFileName);
+      DBFFile file;
+      ZdVector<ZdField*> vFields(gpOutputFileData->GetFields());
       file.PackFields(vFields);
       file.Create(gsFileName, vFields);
       file.Close();
@@ -44,10 +40,6 @@ void DBaseFileWriter::CreateOutputFile() {
       x.AddCallpath("CreateOutputFile()", "DBaseFileWriter");
       throw;
    }			
-}	
-
-// init
-void DBaseFileWriter::Init() {
 }
 
 // prints the data from the global output file data pointer to the
@@ -88,5 +80,6 @@ void DBaseFileWriter::Print() {
 void DBaseFileWriter::Setup() {
    gsFileName = gpOutputFileData->GetFileName();
    gsFileName << DBASE_FILE_EXT;
-   CreateOutputFile();
+   if(!gbAppend)
+      CreateOutputFile();
 }

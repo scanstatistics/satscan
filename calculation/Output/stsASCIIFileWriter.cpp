@@ -11,10 +11,9 @@
 const char *	ASCII_FILE_EXT		= ".txt";
 
 // constructor
-ASCIIFileWriter::ASCIIFileWriter(BaseOutputStorageClass* pOutputFileData)
-                 : OutputFileWriter(pOutputFileData) {
+ASCIIFileWriter::ASCIIFileWriter(BaseOutputStorageClass* pOutputFileData, const bool bAppend)
+                 : OutputFileWriter(pOutputFileData, bAppend) {
    try {
-      Init();
       Setup();
    }
    catch (ZdException &x) {
@@ -23,17 +22,12 @@ ASCIIFileWriter::ASCIIFileWriter(BaseOutputStorageClass* pOutputFileData)
    }
 }
 
-ASCIIFileWriter::~ASCIIFileWriter() {
-}
-
 // creates a blank string of the length of the specified field
 // pre: 0 <= iFieldNumber < vFields.size()
 // post: sFormatString conatins field length number of spaces
 void ASCIIFileWriter::CreateBlankString(ZdString& sFormatString, int iFieldNumber) {
-   ZdField*             pField = 0;
-
    try {
-      pField = gpOutputFileData->GetField(iFieldNumber);
+      ZdField* pField = gpOutputFileData->GetField(iFieldNumber);
 
       for(int i = 0; i < pField->GetLength(); ++i)
          sFormatString << " ";
@@ -59,8 +53,8 @@ void ASCIIFileWriter::CreateFormatString(ZdString& sValue, const int iFieldNumbe
 
       switch(fv.GetType()) {
          case ZD_ALPHA_FLD :
-            ulStringLength = fv.AsZdString().GetLength();
             sTemp = fv.AsZdString();
+            ulStringLength = sTemp.GetLength();
             if (ulStringLength < (unsigned long)pField->GetLength())
                for(int i = sTemp.GetLength(); i < pField->GetLength() + 1; ++i)
                   sTemp << " ";
@@ -69,8 +63,7 @@ void ASCIIFileWriter::CreateFormatString(ZdString& sValue, const int iFieldNumbe
             sValue << sTemp;
             break;
          case ZD_NUMBER_FLD :
-            sFormat << "-0" << pField->GetLength() << "." << pField->GetPrecision();
-            sFormat << "f";
+            sFormat << "-0" << pField->GetLength() << "." << pField->GetPrecision() << "f";
             sValue.printf(sFormat.GetCString(), fv.AsDouble());
             break;
          default :
@@ -96,10 +89,6 @@ void ASCIIFileWriter::CreateOutputFile() {
    }
 }
 
-// initialize global variables
-void ASCIIFileWriter::Init() {
-}
-
 // prints the data from the global output file data pointer to the
 // dBase file      
 void ASCIIFileWriter::Print() {
@@ -108,19 +97,16 @@ void ASCIIFileWriter::Print() {
    FILE*                pFile = 0;
 
    try {
-      if ((pFile = fopen(gsFileName, "w")) == NULL)
+      if ((pFile = fopen(gsFileName, "a")) == NULL)
          ZdGenerateException("Unable to open/create file %s", "Error!", gsFileName.GetCString());
       for(unsigned long i = 0; i < gpOutputFileData->GetNumRecords(); ++i) {
          pRecord = gpOutputFileData->GetRecord(i);
          for(unsigned short j = 0; j < pRecord->GetNumFields(); ++j) {
-            if (!pRecord->GetFieldIsBlank(j)) {
-               sFormatString << ZdString::reset;
+            sFormatString << ZdString::reset;
+            if (!pRecord->GetFieldIsBlank(j))
                CreateFormatString(sFormatString, j, pRecord->GetValue(j));
-            }
-            else {
-               sFormatString << ZdString::reset;
+            else
                CreateBlankString(sFormatString, j);
-            }
             fprintf(pFile, "%s ", sFormatString.GetCString());
          }
          fprintf(pFile, "\n");
@@ -138,7 +124,8 @@ void ASCIIFileWriter::Print() {
 void ASCIIFileWriter::Setup() {
    gsFileName = gpOutputFileData->GetFileName();
    gsFileName << ASCII_FILE_EXT;
-   CreateOutputFile();
+   if(!gbAppend)
+      CreateOutputFile();
 }
 
    
