@@ -1,26 +1,26 @@
-// Adam J Vaughn
-// November 2002
-//
-// This is a base output file printer class. The descendants of this heirarchy define
-// which file types the output files get written in.
-
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-
+//***************************************************************************
 #include "stsOutputFileWriter.h"
 
-OutputFileWriter::OutputFileWriter(BaseOutputStorageClass* pOutputFileData, const bool bAppend) : gbAppend(bAppend) {
-   try {
-      if (!pOutputFileData)
-         ZdGenerateException("NULL output file data pointer!", "Error!");
-      gpOutputFileData = pOutputFileData;
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("Constructor", "OutputFileWriter");
-      throw;
-   }
-}
+/** class constructor */
+OutputFileWriter::OutputFileWriter(BaseOutputStorageClass& OutputFileData, BasePrint& PrintDirection)
+                 :gOutputFileData(OutputFileData), gPrintDirection(PrintDirection) {}
 
-OutputFileWriter::~OutputFileWriter() {
+/** class desctructor */
+OutputFileWriter::~OutputFileWriter() {}
+
+/** Sets outfile name base upon passed sBaseFileName and sWriterExtension. */
+void OutputFileWriter::SetOutputFileName(const char * sBaseFileName, const char * sWriterExtension) {
+  ZdString sExt;
+
+  gsFileName = sBaseFileName;
+  sExt = ZdFileName(gsFileName).GetExtension();
+  if (sExt.GetLength())
+    gsFileName.Replace(sExt, gOutputFileData.GetOutputExtension());
+  else
+    gsFileName << gOutputFileData.GetOutputExtension();
+  gsFileName << sWriterExtension;
 }
 
