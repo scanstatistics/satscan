@@ -42,8 +42,6 @@ AbtractDataStreamGateway * SpaceTimePermutationDataStreamHandler::GetNewDataGate
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
           ZdGenerateException("GetNewDataGateway() not implemented for purely spatial analysis.","GetNewDataGateway()");
-        case PURELYSPATIALMONOTONE      :
-          ZdGenerateException("GetNewDataGateway() not implemented for purely spatial monotone analysis.","GetNewDataGateway()");
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
           ZdGenerateException("GetNewDataGateway() not implemented for purely temporal analysis.","GetNewDataGateway()");
@@ -87,8 +85,6 @@ AbtractDataStreamGateway * SpaceTimePermutationDataStreamHandler::GetNewSimulati
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
           ZdGenerateException("GetNewSimulationDataGateway() not implemented for purely spatial analysis.","GetNewSimulationDataGateway()");
-        case PURELYSPATIALMONOTONE      :
-          ZdGenerateException("GetNewSimulationDataGateway() not implemented for purely spatial monotone analysis.","GetNewSimulationDataGateway()");
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
           ZdGenerateException("GetNewSimulationDataGateway() not implemented for purely temporal analysis.","GetNewSimulationDataGateway()");
@@ -140,8 +136,6 @@ SimulationDataContainer_t& SpaceTimePermutationDataStreamHandler::GetSimulationD
   switch (gParameters.GetAnalysisType()) {
     case PURELYSPATIAL :
         ZdGenerateException("GetSimulationDataContainer() not implemented for purely spatial analysis.","GetSimulationDataContainer()");
-    case PURELYSPATIALMONOTONE :
-        ZdGenerateException("GetSimulationDataContainer() not implemented for purely spatial monotone analysis.","GetSimulationDataContainer()");
     case PURELYTEMPORAL :
     case PROSPECTIVEPURELYTEMPORAL :
         ZdGenerateException("GetSimulationDataContainer() not implemented for purely temporal analysis.","GetSimulationDataContainer()");

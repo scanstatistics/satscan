@@ -92,7 +92,6 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewDataGateway() const {
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-        case PURELYSPATIALMONOTONE      :
           Interface.SetCaseArray(thisStream.GetCaseArray());
           Interface.SetMeasureArray(thisStream.GetMeasureArray());
           break;
@@ -151,7 +150,6 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewSimulationDataGateway
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-        case PURELYSPATIALMONOTONE      :
           Interface.SetCaseArray(thisSimulationStream.GetCaseArray());
           Interface.SetMeasureArray(thisRealStream.GetMeasureArray());
           break;
@@ -221,8 +219,6 @@ SimulationDataContainer_t& PoissonDataStreamHandler::GetSimulationDataContainer(
         for (size_t t=0; t < Container.size(); ++t)
           Container[t]->AllocateCasesArray();
         break;
-    case PURELYSPATIALMONOTONE :
-        ZdGenerateException("GetSimulationDataContainer() not implemented for purely spatial monotone analysis.","GetSimulationDataContainer()");
     case PURELYTEMPORAL :
     case PROSPECTIVEPURELYTEMPORAL :
         for (size_t t=0; t < Container.size(); ++t) {

@@ -44,8 +44,6 @@ AbtractDataStreamGateway * SurvivalDataStreamHandler::GetNewDataGateway() const 
           Interface.SetCaseArray(thisStream.GetCaseArray());
           Interface.SetMeasureArray(thisStream.GetMeasureArray());
           break;
-        case PURELYSPATIALMONOTONE      :
-          ZdGenerateException("GetNewDataGateway() not implemented for purely spatial monotone analysis.","GetNewDataGateway()");
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
           Interface.SetPTMeasureArray(thisStream.GetPTMeasureArray());
@@ -97,8 +95,6 @@ AbtractDataStreamGateway * SurvivalDataStreamHandler::GetNewSimulationDataGatewa
           Interface.SetCaseArray(thisSimulationStream.GetCaseArray());
           Interface.SetMeasureArray(thisSimulationStream.GetMeasureArray());
           break;
-        case PURELYSPATIALMONOTONE      :
-          ZdGenerateException("GetNewDataGateway() not implemented for purely spatial monotone analysis.","GetNewDataGateway()");
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
           Interface.SetPTCaseArray(thisSimulationStream.GetPTCasesArray());
@@ -160,8 +156,6 @@ SimulationDataContainer_t& SurvivalDataStreamHandler::GetSimulationDataContainer
           Container[t]->AllocateMeasureArray();
         }
         break;
-    case PURELYSPATIALMONOTONE :
-        ZdGenerateException("GetSimulationDataContainer() not implemented for purely spatial monotone analysis.","GetSimulationDataContainer()");
     case PURELYTEMPORAL :
     case PROSPECTIVEPURELYTEMPORAL :
         for (size_t t=0; t < Container.size(); ++t) {
