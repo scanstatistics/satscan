@@ -158,25 +158,24 @@ bool MostLikelyClustersContainer::PointLiesWithinEllipseArea(double dXPoint, dou
 }
 
 /** Prints properties of cluster objects in top cluster list to ASCII file. */
-void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, size_t nHowMany) {
+void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const CSaTScanData& DataHub) {
    FILE* pFile;
 
    try {
       if ((pFile = fopen(sFilename, "w")) == NULL)
         GenerateResolvableException("  Error: Unable to open top clusters file.\n", "PrintTopClusters()");
       else {
-         nHowMany = std::min(gvTopClusterList.size(), nHowMany);
-         for (unsigned int i = 0; i < nHowMany; ++i) {
-           fprintf(pFile, "GridTract:  %i\n", i);
-           fprintf(pFile, "  Ellipe Offset:  %i\n", gvTopClusterList[i]->GetEllipseOffset());
-           fprintf(pFile, "         Center:  %i\n", gvTopClusterList[i]->GetCentroidIndex());
-           fprintf(pFile, "        Measure:  %f\n", gvTopClusterList[i]->GetMeasure(0));      //measure_t
-           fprintf(pFile, "         Tracts:  %i\n", gvTopClusterList[i]->GetNumTractsInnerCircle());
-           fprintf(pFile, "LikelihoodRatio:  %f\n", gvTopClusterList[i]->m_nRatio);
-           fprintf(pFile, "           Rank:  %u\n", gvTopClusterList[i]->GetRank());
-           fprintf(pFile, " \n");
-           fprintf(pFile, " \n");
-         }
+        for (size_t i=0; i < gvTopClusterList.size(); ++i) {
+          fprintf(pFile, "GridTract:  %i\n", i);
+          fprintf(pFile, "  Ellipe Offset:  %i\n", gvTopClusterList[i]->GetEllipseOffset());
+          fprintf(pFile, "         Center:  %i\n", gvTopClusterList[i]->GetCentroidIndex());
+          fprintf(pFile, "        Measure:  %f\n", gvTopClusterList[i]->GetExpectedCount(DataHub));
+          fprintf(pFile, "         Tracts:  %i\n", gvTopClusterList[i]->GetNumTractsInnerCircle());
+          fprintf(pFile, "LikelihoodRatio:  %f\n", gvTopClusterList[i]->m_nRatio);
+          fprintf(pFile, "           Rank:  %u\n", gvTopClusterList[i]->GetRank());
+          fprintf(pFile, " \n");
+          fprintf(pFile, " \n");
+        }
       }
       fclose(pFile);
    }

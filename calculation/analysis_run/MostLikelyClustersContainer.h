@@ -75,7 +75,7 @@ class MostLikelyClustersContainer {
     tract_t                     GetNumClustersRetained() const {return (tract_t)gvTopClusterList.size();}
     const CCluster            & GetCluster(tract_t tClusterIndex) const;
     const CCluster            & GetTopRankedCluster() const;
-    void                        PrintTopClusters(const char * sFilename, size_t nHowMany);
+    void                        PrintTopClusters(const char * sFilename, const CSaTScanData& DataHub);
     void                        RankTopClusters(const CParameters& Parameters, const CSaTScanData& DataHub);
     void                        SortTopClusters();
     void                        UpdateTopClustersRank(double r);
