@@ -138,7 +138,7 @@ void AsciiPrintFormat::PrintVersionHeader(FILE* fp) {
      putc('_', fp);
   fprintf(fp, "\n\n");
 
-  sBuffer.printf("SaTScan v%s%s%s", VERSION_NUMBER, (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE);
+  sBuffer.printf("SaTScan v%s", GetToolkit().GetVersion());
   iTextMargin = (giRightMargin - sBuffer.GetLength())/2;
   iPrint=0;
   while (iPrint++ < iTextMargin)
