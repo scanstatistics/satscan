@@ -4,20 +4,35 @@
 
 /** Constructor */
 CPurelySpatialAnalysis::CPurelySpatialAnalysis(CParameters*  pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
-                       :CAnalysis(pParameters, pData, pPrintDirection) {}
+                       :CAnalysis(pParameters, pData, pPrintDirection) {
+  try {
+    Init();
+    Setup();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("constructor()","CPurelySpatialAnalysis");
+    throw;
+  }
+}
 
 /** Desctructor */
-CPurelySpatialAnalysis::~CPurelySpatialAnalysis(){}
+CPurelySpatialAnalysis::~CPurelySpatialAnalysis(){
+  try {
+    delete gpTopShapeClusters;
+  }
+  catch(...){}
+}
 
 /** Returns cluster centered at grid point nCenter, with the greatest loglikelihood.
     Caller is responsible for deleting returned cluster. */
 CCluster* CPurelySpatialAnalysis::GetTopCluster(tract_t nCenter) {
   int                           i, j;
-  CPurelySpatialCluster       * pMaxCluster=0;
+  CPurelySpatialCluster       * pTopCluster=0;
 
   try {
-    pMaxCluster = new CPurelySpatialCluster(gpPrintDirection);
-    pMaxCluster->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
+    pTopCluster = new CPurelySpatialCluster(gpPrintDirection);
+    pTopCluster->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
+    gpTopShapeClusters->SetTopClusters(*pTopCluster);
 
     //***************************************************************************
     // Need to create a new cluster object for each circle or ellipse.
@@ -30,36 +45,37 @@ CCluster* CPurelySpatialAnalysis::GetTopCluster(tract_t nCenter) {
        thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
        thisCluster.SetEllipseOffset(j);                       // store the ellipse link in the cluster obj
        thisCluster.SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->mdE_Shapes[j - 1]));
+       CPurelySpatialCluster & TopShapeCluster = (CPurelySpatialCluster&)(gpTopShapeClusters->GetTopCluster(j));       
        for (i=1; i <= m_pData->m_NeighborCounts[j][nCenter]; i++) {
           thisCluster.AddNeighbor(j, *m_pData, m_pData->m_pCases, i);
           if (thisCluster.RateIsOfInterest(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure)) {
             thisCluster.m_nLogLikelihood = m_pData->m_pModel->CalcLogLikelihood(thisCluster.m_nCases, thisCluster.m_nMeasure);
-            if (thisCluster.m_nLogLikelihood * thisCluster.m_DuczmalCorrection > pMaxCluster->m_nLogLikelihood)
-              *pMaxCluster = thisCluster;
+            if (thisCluster.m_nLogLikelihood > TopShapeCluster.m_nLogLikelihood)
+              TopShapeCluster = thisCluster;
           }
        }
     }
-    pMaxCluster->SetRatioAndDates(*m_pData);
+    //get copy of best cluster over all iterations
+    *pTopCluster = (CPurelySpatialCluster&)(gpTopShapeClusters->GetTopCluster());
   }
   catch (ZdException & x) {
     x.AddCallpath("GetTopCluster()", "CPurelySpatialAnalysis");
-    delete pMaxCluster;
+    delete pTopCluster;
     throw;
   }
-  return pMaxCluster;
+  return pTopCluster;
 }
 
 /** Returns loglikelihood for Monte Carlo replication. */
 double CPurelySpatialAnalysis::MonteCarlo() {
   CMeasureList                  * pMeasureList=0;
   CPurelySpatialCluster           C(gpPrintDirection);
-  double                          dMaxLogLikelihood;
+  double                          dMaxLogLikelihoodRatio;
   tract_t                         i, j;
   int                             k;
 
   try {
     C.SetRate(m_pParameters->GetAreaScanRateType());
-    dMaxLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
     switch (m_pParameters->GetAreaScanRateType()) {
      case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
                        break;
@@ -79,8 +95,9 @@ double CPurelySpatialAnalysis::MonteCarlo() {
              pMeasureList->AddMeasure(C.m_nCases, C.m_nMeasure);
           }
        }
-       pMeasureList->SetForNextIteration(k, dMaxLogLikelihood);
+       pMeasureList->SetForNextIteration(k);
     }
+    dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
     delete pMeasureList;
   }
   catch (ZdException & x) {
@@ -88,20 +105,19 @@ double CPurelySpatialAnalysis::MonteCarlo() {
     x.AddCallpath("MonteCarlo()", "CPurelySpatialAnalysis");
     throw;
   }
-  return (dMaxLogLikelihood - m_pData->m_pModel->GetLogLikelihoodForTotal());
+  return dMaxLogLikelihoodRatio;
 }
 
 /** For purely spatial analysis, prospective monte carlo is the same as monte carlo. */
 double CPurelySpatialAnalysis::MonteCarloProspective() {
   CMeasureList                * pMeasureList=0;
   CPurelySpatialCluster         C(gpPrintDirection);
-  double                        dMaxLogLikelihood;
+  double                        dMaxLogLikelihoodRatio;
   tract_t                       i, j;
   int                           k;
 
   try {
     C.SetRate(m_pParameters->GetAreaScanRateType());
-    dMaxLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
     switch (m_pParameters->GetAreaScanRateType()) {
       case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
                         break;
@@ -121,8 +137,9 @@ double CPurelySpatialAnalysis::MonteCarloProspective() {
              pMeasureList->AddMeasure(C.m_nCases, C.m_nMeasure);
           }
        }
-       pMeasureList->SetForNextIteration(k, dMaxLogLikelihood);
+       pMeasureList->SetForNextIteration(k);
     }
+    dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
     delete pMeasureList;
   }
   catch (ZdException & x) {
@@ -130,6 +147,17 @@ double CPurelySpatialAnalysis::MonteCarloProspective() {
     x.AddCallpath("MonteCarloProspective()", "CPurelySpatialAnalysis");
     throw;
   }
-  return (dMaxLogLikelihood - m_pData->m_pModel->GetLogLikelihoodForTotal());
+  return dMaxLogLikelihoodRatio;
+}
+
+void CPurelySpatialAnalysis::Setup() {
+  try {
+    gpTopShapeClusters = new TopClustersContainer(*m_pData);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Setup()", "CPurelySpatialAnalysis");
+    delete gpTopShapeClusters;
+    throw;
+  }
 }
 

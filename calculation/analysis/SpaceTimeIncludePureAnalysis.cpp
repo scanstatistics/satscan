@@ -29,7 +29,7 @@ bool C_ST_PS_PT_Analysis::FindTopClusters() {
 /** Returns cluster centered at grid point nCenter, with the greatest loglikelihood.
     Caller is responsible for deleting returned cluster. */
 CPurelyTemporalCluster* C_ST_PS_PT_Analysis::GetTopPTCluster() {
-  CPurelyTemporalCluster              * MaxCluster=0;
+  CPurelyTemporalCluster              * pTopCluster=0;
   bool                                  bAliveCluster;
 
   try {
@@ -39,36 +39,36 @@ CPurelyTemporalCluster* C_ST_PS_PT_Analysis::GetTopPTCluster() {
     else
       bAliveCluster = m_pParameters->GetAliveClustersOnly();
 
-    MaxCluster = new CPurelyTemporalCluster(bAliveCluster, m_pData->m_nTimeIntervals,
+    pTopCluster = new CPurelyTemporalCluster(bAliveCluster, m_pData->m_nTimeIntervals,
                                             m_pData->m_nIntervalCut, gpPrintDirection);
     CPurelyTemporalCluster C_PT(bAliveCluster, m_pData->m_nTimeIntervals,
                                 m_pData->m_nIntervalCut, gpPrintDirection);
-    MaxCluster->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
+    pTopCluster->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
 
     C_PT.SetRate(m_pParameters->GetAreaScanRateType());
     C_PT.InitTimeIntervalIndeces();
     while (C_PT.SetNextTimeInterval(m_pData->m_pPTCases, m_pData->m_pPTMeasure)) {
          if (C_PT.RateIsOfInterest(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure)) {
           C_PT.m_nLogLikelihood = m_pData->m_pModel->CalcLogLikelihood(C_PT.m_nCases, C_PT.m_nMeasure);
-          if (C_PT.m_nLogLikelihood > MaxCluster->m_nLogLikelihood)
-            *MaxCluster = C_PT;
+          if (C_PT.m_nLogLikelihood > pTopCluster->m_nLogLikelihood)
+            *pTopCluster = C_PT;
         }
     }
-    MaxCluster->SetRatioAndDates(*m_pData);
+    pTopCluster->SetRatioAndDates(*m_pData);
     m_nClustersRetained++;
   }
   catch (ZdException & x) {
-    delete MaxCluster;
+    delete pTopCluster;
     x.AddCallpath("GetTopPTCluster()", "C_ST_PS_PT_Analysis");
     throw;
   }
-  return MaxCluster;
+  return pTopCluster;
 }
 
 /** Returns loglikelihood for Monte Carlo replication. */
 double C_ST_PS_PT_Analysis::MonteCarlo() {
   CMeasureList                * pMeasureList=0;
-  double                        dMaxLogLikelihood;
+  double                        dMaxLogLikelihoodRatio;
   int                           k;
   tract_t                       i, j;
 
@@ -80,8 +80,6 @@ double C_ST_PS_PT_Analysis::MonteCarlo() {
                                 m_pData->m_nIntervalCut, gpPrintDirection);
     C_PS.SetRate(m_pParameters->GetAreaScanRateType());
     C_ST.SetRate(m_pParameters->GetAreaScanRateType());
-    dMaxLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
-
     switch (m_pParameters->GetAreaScanRateType()) {
       case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
                         break;
@@ -115,9 +113,9 @@ double C_ST_PS_PT_Analysis::MonteCarlo() {
                pMeasureList->AddMeasure(C_ST.m_nCases, C_ST.m_nMeasure);
           }
        }
-       pMeasureList->SetForNextIteration(k, dMaxLogLikelihood);
+       pMeasureList->SetForNextIteration(k);
     }
-
+    dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
     delete pMeasureList;
   }
   catch (ZdException & x) {
@@ -125,13 +123,13 @@ double C_ST_PS_PT_Analysis::MonteCarlo() {
     x.AddCallpath("MonteCarlo()", "C_ST_PS_PT_Analysis");
     throw;
   }
-  return (dMaxLogLikelihood - m_pData->m_pModel->GetLogLikelihoodForTotal());
+  return dMaxLogLikelihoodRatio;
 }
 
 /** Returns loglikelihood for Monte Carlo Prospective replication. */
 double C_ST_PS_PT_Analysis::MonteCarloProspective() {
   CMeasureList                * pMeasureList=0;
-  double                        dMaxLogLikelihood;
+  double                        dMaxLogLikelihoodRatio;
   long                          lTime;
   Julian                        jCurrentDate;
   int                           iThisStartInterval, n, m, k;
@@ -146,7 +144,6 @@ double C_ST_PS_PT_Analysis::MonteCarloProspective() {
     
     C_PS.SetRate(m_pParameters->GetAreaScanRateType());
     C_ST.SetRate(m_pParameters->GetAreaScanRateType());
-    dMaxLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
     switch (m_pParameters->GetAreaScanRateType()) {
      case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
                        break;
@@ -190,9 +187,9 @@ double C_ST_PS_PT_Analysis::MonteCarloProspective() {
              }
           }
        }
-       pMeasureList->SetForNextIteration(k, dMaxLogLikelihood);
+       pMeasureList->SetForNextIteration(k);
     }
-
+    dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
     delete pMeasureList;
   }
   catch (ZdException & x) {
@@ -200,6 +197,6 @@ double C_ST_PS_PT_Analysis::MonteCarloProspective() {
     x.AddCallpath("MonteCarloProspective()", "C_ST_PS_PT_Analysis");
     throw;
   }
-  return (dMaxLogLikelihood - m_pData->m_pModel->GetLogLikelihoodForTotal());
+  return dMaxLogLikelihoodRatio;
 }
 

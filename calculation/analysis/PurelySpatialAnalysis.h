@@ -7,17 +7,21 @@
 #include "PurelySpatialCluster.h"
 #include "MeasureList.h"
 
-class CPurelySpatialAnalysis : public CAnalysis
-{
+class CPurelySpatialAnalysis : public CAnalysis {
+  private:
+    void                                Init() {gpTopShapeClusters=0;}
+    void                                Setup();
+
+  protected:
+    TopClustersContainer              * gpTopShapeClusters;
+
+    virtual CCluster                  * GetTopCluster(tract_t nCenter);
+    virtual double                      MonteCarlo();
+    virtual double                      MonteCarloProspective();
+
   public:
     CPurelySpatialAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
     virtual ~CPurelySpatialAnalysis();
-
-    virtual CCluster* GetTopCluster(tract_t nCenter);
-
-  protected:
-    virtual double    MonteCarlo();
-    virtual double    MonteCarloProspective();
 };
 //*****************************************************************************
 #endif
