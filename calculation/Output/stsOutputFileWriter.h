@@ -20,5 +20,22 @@ class OutputFileWriter {
       OutputFileWriter(BaseOutputStorageClass& OutputFileData, BasePrint& PrintDirection);
       virtual ~OutputFileWriter();
 };
+
+class RecordBuffer;
+
+/** This is a base output file printer class. The descendants of this heirarchy
+    define which file types the output files get written in.                 */
+class DataFileWriter {
+   protected :
+      ZdFileName                gsFileName;        /** output filename */
+
+//      virtual void              CreateOutputFile();
+      virtual void              SetOutputFileName(const char * sBaseFileName, const char * sWriterExtension);
+
+   public :
+      DataFileWriter();
+      virtual ~DataFileWriter();
+};
+
 //***************************************************************************
 #endif
