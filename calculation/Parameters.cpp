@@ -1,7 +1,7 @@
 #pragma hdrstop
 #include "Parameters.h"
 
-char mgsVariableLabels[44][50] = {
+char mgsVariableLabels[44][100] = {
    "Analysis Type",
    "Scan Areas",
    "Case File",
@@ -22,7 +22,7 @@ char mgsVariableLabels[44][50] = {
    "Include Purely Spacial",
    "Max Temporal Size",
    "Replications",
-   "Model Type (Poisson, Bernoulli)",
+   "Model Type (Poisson, Bernoulli, Poisson, Bernoulli or Space-Time Permutation)",
    "R Parameter 1",
    "P Parameter 1",
    "P Parameter 2",
@@ -668,11 +668,11 @@ bool CParameters::ValidateParameters()
     
         if (!(PURELYSPATIAL <= m_nAnalysisType && m_nAnalysisType <= PROSPECTIVESPACETIME))   // use to be <= PURELYTEMPORAL
           bValid = DisplayParamError(ANALYSISTYPE);
-    
+
         if (!(HIGH <= m_nAreas && m_nAreas<= HIGHANDLOW))
           bValid = DisplayParamError(SCANAREAS);
     
-        if (!(POISSON == m_nModel || m_nModel == BERNOULLI))
+        if (!(POISSON == m_nModel || m_nModel == BERNOULLI || m_nModel == SPACETIMEPERMUTATION))
           bValid = DisplayParamError(MODEL);
     
         if (!(STANDARDRISK == m_nRiskFunctionType || m_nRiskFunctionType == MONOTONERISK))
@@ -775,10 +775,10 @@ bool CParameters::ValidateParameters()
           if (!(1 <= m_nIntervalLength && m_nIntervalLength <= TimeBetween(CharToJulian(m_szStartDate), CharToJulian(m_szEndDate), m_nIntervalUnits) ))// Change to Max Interval
             bValid = DisplayParamError(TIMEINTLEN);
 
-          if (m_nModel == BERNOULLI)
+          if (m_nModel == BERNOULLI || m_nModel == SPACETIMEPERMUTATION)
           {
-            m_nTimeAdjustType == NOTADJUSTED;
-            m_nTimeAdjPercent == 0.0;
+            m_nTimeAdjustType = NOTADJUSTED;
+            m_nTimeAdjPercent = 0.0;
           }
           else
           {
@@ -837,6 +837,17 @@ bool CParameters::ValidateParameters()
         else
           fclose(pFile);
         strcpy(m_szPopFilename, "");
+      }
+      else if (m_nModel == SPACETIMEPERMUTATION)
+      {
+        if (!(m_nAnalysisType == SPACETIME || m_nAnalysisType == PROSPECTIVESPACETIME))
+          bValid = DisplayParamError(ANALYSISTYPE);
+        if (m_bIncludePurelySpatial==1)
+          bValid = DisplayParamError(PURESPATIAL);
+        if (m_bIncludePurelyTemporal==1)
+          bValid = DisplayParamError(PURETEMPORAL);
+        if (m_bOutputRelRisks==1)
+          bValid = DisplayParamError(OUTPUTRR);
       }
     
       if (strlen(m_szCoordFilename)==0 || (pFile = fopen(m_szCoordFilename, "r")) == NULL)
@@ -1170,7 +1181,7 @@ bool CParameters::SaveParameters(char* szFilename)
       fprintf(pFile, "%i                     // Include Pure Spatial Clusters? (0=No, 1=Yes)\n", m_bIncludePurelySpatial);
       fprintf(pFile, "%f                     // Max Temporal Size (<=90%)\n", m_nMaxTemporalClusterSize);
       fprintf(pFile, "%i                     // Monte Carlo Replications (0, 9, 999, n999)\n", m_nReplicas);
-      fprintf(pFile, "%i                     // Probability Model (0=Poisson, 1=Bernoulli)\n", m_nModel);
+      fprintf(pFile, "%i                     // Probability Model (0=Poisson, 1=Bernoulli or Space-Time Permutation=2)\n", m_nModel);
       fprintf(pFile, "%i                     // Isotonic Scan (0=standard, 1=isotonic)\n", m_nRiskFunctionType);
       fprintf(pFile, "%i                     // P-Values for Two Prespecified LLR's (0=No, 1=Yes)\n", m_bPowerCalc);
       fprintf(pFile, "%f              // LLR #1\n", m_nPower_X);
@@ -1271,6 +1282,7 @@ void CParameters::DisplayParameters(FILE* fp)
      {
        case POISSON   : fprintf(fp, "Poisson\n"); break;
        case BERNOULLI : fprintf(fp, "Bernoulli\n"); break;
+       case SPACETIMEPERMUTATION : fprintf(fp, "Space-Time Permutation\n"); break;
      }
    
      fprintf(fp, "  Scan for Areas with : ");
@@ -1422,7 +1434,12 @@ void CParameters::DisplayAnalysisType(FILE* fp)
         fprintf(fp, " using the Poisson model.\n");
       else if (m_nModel == BERNOULLI)
         fprintf(fp, " using the Bernoulli model.\n");
-    
+      else if (m_nModel == SPACETIMEPERMUTATION)
+        fprintf(fp, " using the Space-Time Permutation model.\n");
+      else
+        fprintf(fp, " using unspecified model.\n");
+
+
       if ((m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME))
       {
         if (m_bIncludePurelySpatial && m_bIncludePurelyTemporal)
