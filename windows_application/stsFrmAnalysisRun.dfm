@@ -1,10 +1,10 @@
 object frmAnalysisRun: TfrmAnalysisRun
-  Left = 208
-  Top = 182
+  Left = 117
+  Top = 106
   BorderStyle = bsDialog
   Caption = 'SatScan Analysis Run'
   ClientHeight = 373
-  ClientWidth = 505
+  ClientWidth = 516
   Color = clBtnFace
   Constraints.MinHeight = 400
   Constraints.MinWidth = 500
@@ -24,7 +24,7 @@ object frmAnalysisRun: TfrmAnalysisRun
   object Splitter1: TSplitter
     Left = 0
     Top = 243
-    Width = 505
+    Width = 516
     Height = 5
     Cursor = crVSplit
     Align = alBottom
@@ -33,7 +33,7 @@ object frmAnalysisRun: TfrmAnalysisRun
   object Panel1: TPanel
     Left = 0
     Top = 248
-    Width = 505
+    Width = 516
     Height = 125
     Align = alBottom
     BevelOuter = bvNone
@@ -41,7 +41,7 @@ object frmAnalysisRun: TfrmAnalysisRun
     object lbWarning: TLabel
       Left = 0
       Top = 0
-      Width = 505
+      Width = 516
       Height = 19
       Align = alTop
       Caption = ' Warnings / Errors:'
@@ -55,13 +55,13 @@ object frmAnalysisRun: TfrmAnalysisRun
     object Panel2: TPanel
       Left = 0
       Top = 84
-      Width = 505
+      Width = 516
       Height = 41
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 0
       object btnPrint: TButton
-        Left = 310
+        Left = 321
         Top = 8
         Width = 90
         Height = 25
@@ -78,7 +78,7 @@ object frmAnalysisRun: TfrmAnalysisRun
         OnClick = OnPrintClick
       end
       object btnCancel: TButton
-        Left = 406
+        Left = 417
         Top = 8
         Width = 90
         Height = 25
@@ -94,7 +94,7 @@ object frmAnalysisRun: TfrmAnalysisRun
         OnClick = OnCancelClick
       end
       object btnEMail: TButton
-        Left = 214
+        Left = 225
         Top = 8
         Width = 90
         Height = 25
@@ -114,7 +114,7 @@ object frmAnalysisRun: TfrmAnalysisRun
     object rteWarningsBox: TRichEdit
       Left = 0
       Top = 19
-      Width = 505
+      Width = 516
       Height = 65
       TabStop = False
       Align = alClient
@@ -128,7 +128,7 @@ object frmAnalysisRun: TfrmAnalysisRun
   object rteAnalysisBox: TRichEdit
     Left = 0
     Top = 0
-    Width = 505
+    Width = 516
     Height = 243
     TabStop = False
     Align = alClient
