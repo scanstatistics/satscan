@@ -56,8 +56,9 @@ class BaseOutputStorageClass {
       BaseOutputStorageClass(BasePrint *pPrintDirection);
       virtual ~BaseOutputStorageClass();
       
-      void			AddRecord(BaseOutputRecord* pRecord);
+      void			        AddRecord(BaseOutputRecord* pRecord);
 
+      BasePrint*                        GetBasePrinter()        { return gpPrintDirection; }
       ZdField*                          GetField(unsigned short uwFieldNumber); 
       const ZdVector<ZdField*>&	        GetFields() { return gvFields; }
       const ZdString&			GetFileName() { return gsFileName; }
