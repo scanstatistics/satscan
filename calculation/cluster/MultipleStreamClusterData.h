@@ -9,8 +9,8 @@ class ClusterDataFactory; /** forward class declaration */
 /** class representing accumulated data of spatial clustering in multiple data streams */
 class MultipleStreamSpatialData : public AbstractSpatialClusterData {
   protected:
-    ZdPointerVector<AbstractSpatialClusterData>             gvStreamData;
-    ZdPointerVector<AbstractSpatialClusterData>::iterator   gitr;
+    ZdPointerVector<SpatialData>             gvStreamData;
+    ZdPointerVector<SpatialData>::iterator   gitr;
 
   public:
     MultipleStreamSpatialData(const ClusterDataFactory& DataFactory, const AbtractDataStreamGateway & DataGateway, int iRate);
