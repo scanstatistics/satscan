@@ -323,7 +323,7 @@ bool CSaTScanData::ReadPops() {
         // initialize vector for prospective check
         if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
           for (t=0; t < gpTInfo->tiGetNumTracts(); t++)
-             vFirstTractDateIndex.push_back(0);
+             vFirstTractDateIndex.push_back(-2);
 
         fseek(fp, 0L, SEEK_SET);
         nRec = 0;
@@ -407,9 +407,8 @@ bool CSaTScanData::ReadPops() {
           //                the application terminated.
           if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
             {
-            //nTempDate = MDYToJulian(POP_MONTH, POP_DAY, nYear4);
             iDateIndex = gpTInfo->tiGetPopDateIndex(nPopDate);
-            if (! vFirstTractDateIndex[tract] || vFirstTractDateIndex[tract] == iDateIndex)
+            if (vFirstTractDateIndex[tract] == -2/* -1 is unknown */ || vFirstTractDateIndex[tract] == iDateIndex)
               vFirstTractDateIndex[tract] = iDateIndex;
             else
               {// track invalid tracts 
