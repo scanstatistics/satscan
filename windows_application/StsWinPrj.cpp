@@ -81,7 +81,7 @@ USEUNIT("stsBaseAnalysisChildForm.cpp");
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         try {
            BasisInit();
-           BasisSetToolkit(new SaTScanToolkit());
+           BasisSetToolkit(new SaTScanToolkit(_argv[0]));
            ZdGetFileTypeArray()->AddElement( &(DBFFileType::GetDefaultInstance()) );
            Application->Initialize();
            Application->Title = "SaTScan";
