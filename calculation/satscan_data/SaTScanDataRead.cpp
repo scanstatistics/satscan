@@ -40,6 +40,70 @@ void CSaTScanData::AllocateControlStructures() {
   }
 }
 
+/** Converts passed string specifiying a count date to a julian date.
+    Precision is determined by date formats( YYYY/MM/DD, YYYY/MM, YYYY, YY/MM/DD,
+    YY/MM, YY ) which is the complete set of valid formats that SaTScan currently
+    supports. Since we accumulate errors/warnings when reading input files,
+    indication of a bad date is returned and any messages sent to print direction. */
+bool CSaTScanData::ConvertCountDateToJulian(StringParser & Parser, const char * szDescription, Julian & JulianDate) {
+  bool          bValidDate=true;
+  int           iYear, iMonth=1, iDay=1, iPrecision=1;
+  const char  * ptr;
+
+
+  if (m_pParameters->GetPrecisionOfTimesType() == NONE)
+    JulianDate = m_nStartDate;
+  else {
+    //read and validate date
+    if (!Parser.GetWord(2)) {
+      gpPrint->PrintInputWarning("Error: Record %ld in %s file does not contain a date.\n", Parser.GetReadCount(), szDescription);
+      return false;
+    }
+    //determine precision - must be as accurate as time interval units
+    ptr = strchr(Parser.GetWord(2), '/');
+    while (ptr) {
+         iPrecision++;
+         ptr = strchr(++ptr, '/');
+    }
+    if (iPrecision < m_pParameters->GetTimeIntervalUnitsType()) {
+      gpPrint->PrintInputWarning("Error: Date '%s' of record %ld in %s file must be precise to %s, as specified by time interval units.\n",
+                                 Parser.GetWord(2), Parser.GetReadCount(), szDescription,
+                                 m_pParameters->GetDatePrecisionAsString(m_pParameters->GetTimeIntervalUnitsType()));
+      return false;
+    }
+    switch (iPrecision) {
+      //case NONE  : JulianToMDY(&uiMonth, &uiDay, &uiYear, m_nStartDate); iScanPrecision = 3; break;
+      case YEAR  : bValidDate = (sscanf(Parser.GetWord(2), "%d", &iYear) == 1 && iYear > 0); break;
+      case MONTH : bValidDate = (sscanf(Parser.GetWord(2), "%d/%d", &iYear, &iMonth) == 2 && iYear > 0 && iMonth > 0); break;
+      case DAY   : bValidDate = (sscanf(Parser.GetWord(2), "%d/%d/%d", &iYear, &iMonth, &iDay) == 3 && iYear > 0 && iMonth > 0 && iDay > 0); break;
+      default    : bValidDate = false;
+    };
+    if (! bValidDate)
+      gpPrint->PrintInputWarning("Error: Invalid date '%s' in %s file, record %ld.\n", Parser.GetWord(2), szDescription, Parser.GetReadCount());
+    else {
+      //Ensure four digit years
+      iYear = Ensure4DigitYear(iYear, m_pParameters->GetStudyPeriodStartDate().c_str(), m_pParameters->GetStudyPeriodEndDate().c_str());
+      switch (iYear) {
+        case -1 : gpPrint->PrintInputWarning("Error: Due to study period greater than 100 years, unable\n"
+                                             "       to convert two digit year '%d' in %s file, record %ld.\n"
+                                             "       Please use four digit years.\n", iYear, szDescription, Parser.GetReadCount());
+                  return false;
+        case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in %s file, record %ld.\n", iYear, szDescription, Parser.GetReadCount());
+                  return false;
+      }
+      //validate that date is between study period start and end dates
+      JulianDate = MDYToJulian(iMonth, iDay, iYear);
+      if (!(m_nStartDate <= JulianDate && JulianDate <= m_nEndDate)) {
+        gpPrint->PrintInputWarning("Error: Date '%s' in record %ld of %s file is not\n", Parser.GetWord(2), Parser.GetReadCount(), szDescription);
+        gpPrint->PrintInputWarning("       within study period beginning %s and ending %s.\n",
+                                   m_pParameters->GetStudyPeriodStartDate().c_str(), m_pParameters->GetStudyPeriodEndDate().c_str());
+        return false;
+      }
+    }  
+  }
+  return bValidDate;
+}
+
 /** Converts passed string specifiying a population date to a julian date.
     Precision is determined by date formats( YYYY/MM/DD, YYYY/MM, YYYY, YY/MM/DD,
     YY/MM, YY ) which is the complete set of valid formats that SaTScan currently
@@ -101,7 +165,6 @@ bool CSaTScanData::ConvertPopulationDateToJulian(const char * sDateString, int i
     Returns whether parse completed without errors. */
 bool CSaTScanData::ParseCountLine(const char*  szDescription, StringParser & Parser,
                                   tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex) {
-  UInt   	               uiYear4, uiYear, uiMonth=1, uiDay=1;
   int                          iCategoryOffSet, iScanPrecision;
 
   try {
@@ -132,43 +195,8 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, StringParser & Par
                                    Parser.GetWord(1), std::numeric_limits<count_t>::max(), Parser.GetReadCount(), szDescription);
       return false;
     }
-    //read and validate date
-    if (m_pParameters->GetPrecisionOfTimesType() > NONE && !Parser.GetWord(2)) {
-      gpPrint->PrintInputWarning("Error: Record %ld in %s file does not contain a date, which is required for a precision of '%s'.\n",
-                                 Parser.GetReadCount(), szDescription, m_pParameters->GetDatePrecisionAsString(m_pParameters->GetPrecisionOfTimesType()));
+    if (!ConvertCountDateToJulian(Parser, szDescription, nDate))
       return false;
-    }
-    switch (m_pParameters->GetPrecisionOfTimesType()) {
-      case NONE  : JulianToMDY(&uiMonth, &uiDay, &uiYear, m_nStartDate); iScanPrecision = 3; break;
-      case YEAR  : iScanPrecision = sscanf(Parser.GetWord(2), "%d", &uiYear); break;
-      case MONTH : iScanPrecision = sscanf(Parser.GetWord(2), "%d/%d", &uiYear, &uiMonth); break;
-      case DAY   : iScanPrecision = sscanf(Parser.GetWord(2), "%d/%d/%d", &uiYear, &uiMonth, &uiDay); break;
-      default : ZdException::Generate("Unknown precision of time type '%d'.","ParseCountLine()", m_pParameters->GetPrecisionOfTimesType());
-    };
-    if (iScanPrecision < m_pParameters->GetPrecisionOfTimesType()) {
-      gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file, could not be read as date with precision '%s'.\n",
-                                 Parser.GetWord(2), Parser.GetReadCount(), szDescription,
-                                 m_pParameters->GetDatePrecisionAsString(m_pParameters->GetPrecisionOfTimesType()));
-      return false;
-    }
-    //Ensure four digit years 
-    uiYear4 = Ensure4DigitYear(uiYear, m_pParameters->GetStudyPeriodStartDate().c_str(), m_pParameters->GetStudyPeriodEndDate().c_str());
-    switch (uiYear4) {
-      case -1 : gpPrint->PrintInputWarning("Error: Due to study period greater than 100 years, unable\n"
-                                                    "       to convert two digit year '%d' in %s file, record %ld.\n"
-                                                    "       Please use four digit years.\n", uiYear, szDescription, Parser.GetReadCount());
-                return false;
-      case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in %s file, record %ld.\n", uiYear, szDescription, Parser.GetReadCount());
-                return false;
-    }
-    //validate that date is between study period start and end dates
-    nDate = MDYToJulian(uiMonth, uiDay, uiYear4);
-    if (!(m_nStartDate <= nDate && nDate <= m_nEndDate)) {
-      gpPrint->PrintInputWarning("Error: Date '%s' in record %ld of %s file is not\n", Parser.GetWord(2), Parser.GetReadCount(), szDescription);
-      gpPrint->PrintInputWarning("       within study period beginning %s and ending %s.\n",
-                                 m_pParameters->GetStudyPeriodStartDate().c_str(), m_pParameters->GetStudyPeriodEndDate().c_str());
-      return false;
-    }
     iCategoryOffSet = m_pParameters->GetPrecisionOfTimesType() == NONE ? 2 : 3;
     if (! ParseCovariates(iCategoryIndex, iCategoryOffSet, szDescription, Parser.GetReadCount(), Parser))
         return false;
