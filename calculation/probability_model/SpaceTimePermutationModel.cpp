@@ -27,7 +27,8 @@ void CSpaceTimePermutationModel::CalculateMeasure(RealDataStream & thisStream) {
        tTotalCases += ppCases[0][j];
        // Check to see if total case or control values have wrapped
        if (tTotalCases < 0)
-         SSGenerateException("Error: Total cases greater than maximum allowed of %ld.\n", "CalculateMeasure()", std::numeric_limits<count_t>::max());
+         GenerateResolvableException("Error: The total number of cases in data stream %u is greater than the maximum allowed of %ld.\n",
+                                     "CalculateMeasure()", thisStream.GetStreamIndex(), std::numeric_limits<count_t>::max());
     }
 
     thisStream.AllocateMeasureArray();
@@ -56,10 +57,10 @@ void CSpaceTimePermutationModel::CalculateMeasure(RealDataStream & thisStream) {
        tTotalMeasure += ppMeasure[0][j];
 
     // Ensure that TotalCases=TotalMeasure
-    if (fabs(tTotalCases - tTotalMeasure)>0.0001)
-      SSGenerateException("Error: The total measure is not equal to the total number of cases.\n"
-                          "Total Cases = %i, Total Measure = %.2lf\n", "CalculateMeasure()",
-                          tTotalCases, tTotalMeasure);
+    if (fabs(tTotalCases - tTotalMeasure) > 0.0001)
+      ZdGenerateException("Error: The total measure is not equal to the total number of cases.\n"
+                          "       Total Cases = %i, Total Measure = %.2lf.\n",
+                          "CalculateMeasure()", tTotalCases, tTotalMeasure);
 
     thisStream.SetTotalCases(tTotalCases);
     thisStream.SetTotalControls(0);
