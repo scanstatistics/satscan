@@ -404,7 +404,7 @@ bool CSaTScanData::ReadPops() {
           //                used, and if the population for a tract is defined at more than one
           //                time period, error message should be shown in the running window and
           //                the application terminated.
-          if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME && m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)
+          if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME && m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE && nDates > 1)
             {
             //iDateIndex = gpTInfo->tiGetPopDateIndex(nPopDate);
             //if (vFirstTractDateIndex[tract] == -2/* -1 is unknown */ || vFirstTractDateIndex[tract] == iDateIndex)
