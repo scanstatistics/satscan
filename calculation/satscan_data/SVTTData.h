@@ -4,7 +4,14 @@
 //*****************************************************************************
 #include "SaTScanData.h"
 
-/** central data hub for spatial variation and temporal trends analysis */
+/** Data hub class that derives from base class to define alternate functionality
+    for spatial variation in temporal trends analyses.
+    The code to generate data structures for 'number of cases', 'number of
+    expected cases', 'simulated cases', etc. is designed to modify a multiple
+    dimension array (time intervals by tracts) in a cumulative manner(in respect
+    to time). The primary purpose of this class is to direct data streams to set
+    corresponding temporal and non cumulative structures from data of multiple
+    dimension array. */
 class CSVTTData : public CSaTScanData {
   private:
     virtual void        DisplayCounts(FILE* pFile, count_t** pCounts,
@@ -16,7 +23,7 @@ class CSVTTData : public CSaTScanData {
   protected:
     virtual void        CalculateMeasure(RealDataStream& thisStream);
     virtual void        SetAdditionalCaseArrays(RealDataStream & thisStream);
-    virtual void        SetNumTimeIntervals();
+    virtual void        SetIntervalStartTimes();
 
   public:
     CSVTTData(const CParameters* pParameters, BasePrint *pPrintDirection);

@@ -10,7 +10,7 @@
 #include "stsASCIIFileWriter.h"
 #include "stsDBaseFileWriter.h"
 
-/** constructor */
+/** class constructor */
 CSVTTData::CSVTTData(const CParameters* pParameters, BasePrint *pPrintDirection)
           :CSaTScanData(pParameters, pPrintDirection) {
   try {
@@ -22,7 +22,7 @@ CSVTTData::CSVTTData(const CParameters* pParameters, BasePrint *pPrintDirection)
   }
 }
 
-/** destructor */
+/** class destructor */
 CSVTTData::~CSVTTData() {}
 
 void CSVTTData::CalculateMeasure(RealDataStream & thisStream) {
@@ -35,18 +35,29 @@ void CSVTTData::CalculateMeasure(RealDataStream & thisStream) {
                                             m_nTimeIntervals, m_pParameters->GetTimeTrendConvergence());
 }
 
+/** Debug utility function - prints case counts for all data streams. Caller is
+    responsible for ensuring that passed file pointer points to valid, open file
+    handle. */
 void CSVTTData::DisplayCases(FILE* pFile) {
-    DisplayCounts(pFile, gpDataStreams->GetStream(0/*for now*/).GetCaseArray(), "Cases Array",
-                  gpDataStreams->GetStream(0/*for now*/).GetNCCaseArray(), "Cases Non-Cumulative Array",
-                  gpDataStreams->GetStream(0/*for now*/).GetPTCasesArray(), "Cases_TotalByTimeInt");
+  unsigned int i;
+
+  for (i=0; i < gpDataStreams->GetNumStreams(); ++i) {
+     fprintf(pFile, "Data Stream %u:\n", i);
+     DisplayCounts(pFile, gpDataStreams->GetStream(i).GetCaseArray(), "Cases Array",
+                   gpDataStreams->GetStream(i).GetNCCaseArray(), "Cases Non-Cumulative Array",
+                   gpDataStreams->GetStream(i).GetPTCasesArray(), "Cases_TotalByTimeInt");
+  }                 
 }
 
+/** Debug utility function - prints counts for passed arrays. Caller is
+    responsible for ensuring that passed file pointer points to valid, open file
+    handle and array pointers are valid. Probably should call
+    DisplayCases(FILE* pFile) instead of this function directly. */
 void CSVTTData::DisplayCounts(FILE* pFile,
                               count_t** pCounts,   char* szVarName,
                               count_t** pCountsNC, char* szVarNameNC,
                               count_t*  pCountsTI, char* szVarNameTI,
-                              char* szTitle)
-{
+                              char* szTitle) {
   if (szTitle != NULL)
     fprintf(pFile, "%s", szTitle);
 
@@ -66,25 +77,33 @@ void CSVTTData::DisplayCounts(FILE* pFile,
   fprintf(pFile, "\n");
 }
 
+/** Debug utility function - prints expected counts for for all data streams.
+    Caller is responsible for ensuring that passed file pointer points to valid,
+    open file handle. */
 void CSVTTData::DisplayMeasures(FILE* pFile) {
-  int           i;
-  measure_t  ** ppMeasure, ** ppMeasureNC;
+  unsigned int           i, j, k;
+  measure_t           ** ppMeasure, ** ppMeasureNC;
 
   fprintf(pFile, "Measures                        Measures - Not Accumulated\n\n");
-  ppMeasure = gpDataStreams->GetStream(0/*for now*/).GetMeasureArray();
-  ppMeasureNC = gpDataStreams->GetStream(0/*for now*/).GetNCMeasureArray();
-  for (i = 0; i < m_nTimeIntervals; i++)
-    for (int j = 0; j < m_nTracts; j++)
-    {
-      fprintf(pFile, "ppMeasure [%i][%i] = %12.5f     ", i, j, ppMeasure[i][j]);
-      fprintf(pFile, "ppMeasure_NC [%i][%i] = %12.5f\n", i, j, ppMeasureNC[i][j]);
-    }
+
+  for (k=0; k < gpDataStreams->GetNumStreams(); ++k) {
+     fprintf(pFile, "Data Stream %u:\n", k);
+     ppMeasure = gpDataStreams->GetStream(k).GetMeasureArray();
+     ppMeasureNC = gpDataStreams->GetStream(k).GetNCMeasureArray();
+     for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
+        for (j=0; j < (unsigned int)m_nTracts; ++j) {
+           fprintf(pFile, "ppMeasure [%i][%i] = %12.5f     ", i, j, ppMeasure[i][j]);
+           fprintf(pFile, "ppMeasure_NC [%i][%i] = %12.5f\n", i, j, ppMeasureNC[i][j]);
+        }
+  }
 
   fprintf(pFile, "\nMeasures Accumulated by Time Interval\n\n");
-  for (i=0; i<m_nTimeIntervals; i++)
-    fprintf(pFile, "Measure_TotalByTimeInt [%i] = %12.5f\n", i, gpDataStreams->GetStream(0/*for now*/).GetPTMeasureArray()[i]);
-
-  fprintf(pFile, "\n");
+  for (k=0; k < gpDataStreams->GetNumStreams(); ++k) {
+     fprintf(pFile, "Data Stream %u:\n", k);
+     for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
+       fprintf(pFile, "Measure_TotalByTimeInt [%i] = %12.5f\n", i, gpDataStreams->GetStream(k).GetPTMeasureArray()[i]);
+     fprintf(pFile, "\n");
+  }
 }
 
 // formats the information necessary in the relative risk output file and prints to the specified format
@@ -102,10 +121,17 @@ void CSVTTData::DisplayRelativeRisksForEachTract() const {
     throw;
   }
 }
+
+/** Not implemented - needs to be updated */
 void CSVTTData::DisplaySimCases(FILE* pFile) {
-//  DisplayCounts(pFile, gpDataStreams->GetStream(0/*for now*/).GetSimCaseArray(), "Simulated Cases Array",
-//               gpDataStreams->GetStream(0/*for now*/).GetNCSimCaseArray(), "Simulated Non-Cumulative Cases Array",
-//                gpDataStreams->GetStream(0/*for now*/).GetPTSimCasesArray(), "SimCases_TotalByTimeInt");
+//  unsigned int i;                                             
+//
+//  for (i=0; i < gpDataStreams->GetNumStreams(); ++i) {
+//     fprintf(pFile, "Data Stream %u:\n", i);
+//     DisplayCounts(pFile, gpDataStreams->GetStream(i).GetSimCaseArray(), "Simulated Cases Array",
+//                   gpDataStreams->GetStream(i).GetNCSimCaseArray(), "Simulated Non-Cumulative Cases Array",
+//                   gpDataStreams->GetStream(i).GetPTSimCasesArray(), "SimCases_TotalByTimeInt");
+//  }
 }
 
 /** Randomizes collection of simulation data in concert with passed collection of randomizers. */
@@ -134,7 +160,10 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
   }
 }
 
-void CSVTTData::SetAdditionalCaseArrays(RealDataStream & thisStream) {
+/** Redefines base class method to call data stream method
+    DataStream::SetCaseArrays() which allocates and set temporal case array and
+    non cumulative case array. */
+void CSVTTData::SetAdditionalCaseArrays(RealDataStream& thisStream) {
   try {
     thisStream.SetCaseArrays();
   }
@@ -144,14 +173,18 @@ void CSVTTData::SetAdditionalCaseArrays(RealDataStream & thisStream) {
   }
 }
 
-void CSVTTData::SetNumTimeIntervals() {
-  CSaTScanData::SetNumTimeIntervals();
+/** Calculates time interval start times through base class method
+    CSaTScanData::SetIntervalStartTimes(). Throws ResolvableException if the
+    number of calculated time intervals is less than two. */
+void CSVTTData::SetIntervalStartTimes() {
+  CSaTScanData::SetIntervalStartTimes();
   if (m_nTimeIntervals <= 1)
     GenerateResolvableException("Error: A spatial variation of temporal trends analysis requires\n"
-                                "       more than one time interval.\n", "SetNumTimeIntervals()");
+                                "       more than one time interval.\n", "SetIntervalStartTimes()");
 }
 
-/** allocates probability model */
+/** Allocates probability model obect. Throws ZdException for all probability
+    model type except Poisson. */
 void CSVTTData::SetProbabilityModel() {
   try {
     switch (m_pParameters->GetProbabiltyModelType()) {
