@@ -1,0 +1,237 @@
+//---------------------------------------------------------------------------
+#include "SaTScan.h"
+#pragma hdrstop
+#include "SpaceTimePermutationDataStreamHandler.h"
+#include "SaTScanData.h"
+//---------------------------------------------------------------------------
+
+/** constructor */
+SpaceTimePermutationDataStreamHandler::SpaceTimePermutationDataStreamHandler(CSaTScanData & Data, BasePrint * pPrint)
+                                      :DataStreamHandler(Data, pPrint) {}
+
+/** destructor */
+SpaceTimePermutationDataStreamHandler::~SpaceTimePermutationDataStreamHandler() {}
+
+/** allocates cases structures for stream */
+void SpaceTimePermutationDataStreamHandler::AllocateCaseStructures(unsigned int iStream) {
+  try {
+    gvDataStreams[iStream].AllocateCasesArray();
+    gvDataStreams[iStream].AllocateCategoryCasesArray();
+  }
+  catch(ZdException &x) {
+    x.AddCallpath("AllocateCaseStructures()","SpaceTimePermutationDataStreamHandler");
+    throw;
+  }
+}
+
+/** allocates structures used during simulations - based particularly upon analysis type */
+void SpaceTimePermutationDataStreamHandler::AllocateSimulationStructures() {
+  try {
+    switch (gParameters.GetAnalysisType()) {
+       case PURELYSPATIAL :
+         ZdGenerateException("AllocateSimulationStructures() not implemented for purely spatial analysis.","AllocateSimulationStructures()");
+       case PURELYSPATIALMONOTONE :
+         ZdGenerateException("AllocateSimulationStructures() not implemented for purely spatial monotone analysis.","AllocateSimulationStructures()");
+       case PURELYTEMPORAL :
+       case PROSPECTIVEPURELYTEMPORAL :
+         ZdGenerateException("AllocateSimulationStructures() not implemented for purely temporal analysis.","AllocateSimulationStructures()");
+       case SPACETIME :
+       case PROSPECTIVESPACETIME :
+         AllocateSimulationCases();
+         break;
+       case SPATIALVARTEMPTREND :
+         ZdGenerateException("AllocateSimulationStructures() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationStructures()");
+      default :
+         ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationStructures()", gParameters.GetAnalysisType());
+   };
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("AllocateSimulationStructures()","SpaceTimePermutationDataStreamHandler");
+    throw;
+  }
+}
+
+/** returns new data gateway for real data */
+AbtractDataStreamGateway * SpaceTimePermutationDataStreamHandler::GetNewDataGateway() {
+  AbtractDataStreamGateway    * pDataStreamGateway=0;
+  DataStreamInterface           Interface(gData.GetNumTimeIntervals(), gData.GetNumTracts());
+  size_t                        t;
+
+  try {
+    pDataStreamGateway = GetNewDataGatewayObject();
+    for (t=0; t < gvDataStreams.size(); ++t) {
+      //get reference to stream
+      DataStream & thisStream = gvDataStreams[t];
+      //set total cases and measure
+      Interface.SetTotalCasesCount(thisStream.GetTotalCases());
+      Interface.SetTotalMeasureCount(thisStream.GetTotalMeasure());
+      //set pointers to data structures
+      switch (gParameters.GetAnalysisType()) {
+        case PURELYSPATIAL              :
+          ZdGenerateException("GetNewDataGateway() not implemented for purely spatial analysis.","GetNewDataGateway()");
+        case PURELYSPATIALMONOTONE      :
+          ZdGenerateException("GetNewDataGateway() not implemented for purely spatial monotone analysis.","GetNewDataGateway()");
+        case PROSPECTIVEPURELYTEMPORAL  :
+        case PURELYTEMPORAL             :
+          ZdGenerateException("GetNewDataGateway() not implemented for purely temporal analysis.","GetNewDataGateway()");
+        case SPACETIME                  :
+        case PROSPECTIVESPACETIME       :
+          Interface.SetCaseArray(thisStream.GetCaseArray());
+          Interface.SetMeasureArray(thisStream.GetMeasureArray());
+          break;
+        case SPATIALVARTEMPTREND        :
+          ZdGenerateException("GetNewDataGateway() not implemented for spatial variation and temporal trends analysis.","GetNewDataGateway()");
+        default :
+          ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
+      };
+      pDataStreamGateway->AddDataStreamInterface(Interface);
+    }
+  }
+  catch (ZdException &x) {
+    delete pDataStreamGateway;
+    x.AddCallpath("GetNewDataGateway()","SpaceTimePermutationDataStreamHandler");
+    throw;
+  }  
+  return pDataStreamGateway;
+}
+
+/** returns new data gateway for simulation data */
+AbtractDataStreamGateway * SpaceTimePermutationDataStreamHandler::GetNewSimulationDataGateway() {
+  AbtractDataStreamGateway    * pDataStreamGateway=0;
+  DataStreamInterface           Interface(gData.GetNumTimeIntervals(), gData.GetNumTracts());
+  size_t                        t;
+
+  try {
+    pDataStreamGateway = GetNewDataGatewayObject();
+    for (t=0; t < gvDataStreams.size(); ++t) {
+      //get reference to stream
+      DataStream & thisStream = gvDataStreams[t];
+      //set total cases and measure
+      Interface.SetTotalCasesCount(thisStream.GetTotalCases());
+      Interface.SetTotalMeasureCount(thisStream.GetTotalMeasure());
+      //set pointers to data structures
+      switch (gParameters.GetAnalysisType()) {
+        case PURELYSPATIAL              :
+          ZdGenerateException("GetNewSimulationDataGateway() not implemented for purely spatial analysis.","GetNewSimulationDataGateway()");
+        case PURELYSPATIALMONOTONE      :
+          ZdGenerateException("GetNewSimulationDataGateway() not implemented for purely spatial monotone analysis.","GetNewSimulationDataGateway()");
+        case PROSPECTIVEPURELYTEMPORAL  :
+        case PURELYTEMPORAL             :
+          ZdGenerateException("GetNewSimulationDataGateway() not implemented for purely temporal analysis.","GetNewSimulationDataGateway()");
+        case SPACETIME                  :
+        case PROSPECTIVESPACETIME       :
+          Interface.SetCaseArray(thisStream.GetSimCaseArray());
+          Interface.SetMeasureArray(thisStream.GetMeasureArray());
+          break;
+        case SPATIALVARTEMPTREND        :
+          ZdGenerateException("GetNewSimulationDataGateway() not implemented for spatial variation and temporal trends analysis.","GetNewSimulationDataGateway()");
+        default :
+          ZdGenerateException("Unknown analysis type '%d'.","GetNewSimulationDataGateway()",gParameters.GetAnalysisType());
+      };
+      pDataStreamGateway->AddDataStreamInterface(Interface);
+    }
+  }
+  catch (ZdException &x) {
+    delete pDataStreamGateway;
+    x.AddCallpath("GetNewSimulationDataGateway()","SpaceTimePermutationDataStreamHandler");
+    throw;
+  }  
+  return pDataStreamGateway;
+}
+
+/** randomizes each data streams */
+void SpaceTimePermutationDataStreamHandler::RandomizeData(unsigned int iSimulationNumber) {
+  for (size_t t=0; t < gvDataStreams.size(); ++t)
+     gvDataStreamRandomizers[t].RandomizeData(gvDataStreams[t], iSimulationNumber);
+}
+
+/** Read the count data file.
+    If invalid data is found in the file, an error message is printed,
+    that record is ignored, and reading continues.
+    Return value: true = success, false = errors encountered           */
+bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDescription) {
+  int                                   i, j, iCategoryIndex;
+  bool                                  bValid=true, bEmpty=true;
+  Julian                                Date;
+  tract_t                               TractIndex;
+  StringParser                          Parser(gpPrint->GetImpliedInputFileType());
+  std::string                           sBuffer;
+  count_t                               Count, ** pCounts;
+
+  try {
+    DataStream & thisStream = gvDataStreams[tStream];
+    SpaceTimeRandomizer & Randomizer = gvDataStreamRandomizers[tStream];
+
+    pCounts = thisStream.GetCaseArray();
+    ThreeDimCountArray_t & CategoryHandler = thisStream.GetCategoryCaseArrayHandler();
+
+    //Read data, parse and if no errors, increment count for tract at date.
+    while (Parser.ReadString(fp)) {
+         if (Parser.HasWords()) {
+           bEmpty = false;
+           if (ParseCountLine(thisStream.GetPopulationData(), szDescription, Parser, TractIndex, Count, Date, iCategoryIndex)) {
+             //cumulatively add count to time by location structure
+             pCounts[0][TractIndex] += Count;
+             if (pCounts[0][TractIndex] < 0)
+               SSGenerateException("Error: Total case greater than maximum allowed of %ld.\n", "ReadCounts()",
+                                   std::numeric_limits<count_t>::max());
+             for (i=1; Date >= gData.GetTimeIntervalStartTimes()[i]; ++i)
+               pCounts[i][TractIndex] += Count;
+             //record count as a case
+             thisStream.GetPopulationData().AddCaseCount(iCategoryIndex, Count);
+             Randomizer.AddCase(iCategoryIndex, gData.GetTimeIntervalOfDate(Date), TractIndex);
+             //record count in structure(s) based upon population category
+             if (iCategoryIndex >= static_cast<int>(CategoryHandler.Get3rdDimension()))
+               CategoryHandler.ExpandThirdDimension(0);
+             CategoryHandler.GetArray()[0][TractIndex][iCategoryIndex] += Count;
+             for (i=1; Date >= gData.GetTimeIntervalStartTimes()[i]; ++i)
+                CategoryHandler.GetArray()[i][TractIndex][iCategoryIndex] += Count;
+           }
+           else
+             bValid = false;
+         }
+    }
+    //if invalid at this point then read encountered problems with data format,
+    //inform user of section to refer to in user guide for assistance
+    if (! bValid)
+      gpPrint->SatScanPrintWarning("Please see '%s file format' in the user guide for help.\n", szDescription);
+    //print indication if file contained no data
+    else if (bEmpty) {
+      gpPrint->SatScanPrintWarning("Error: %s file does not contain data.\n", szDescription);
+      bValid = false;
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ReadCounts()","SpaceTimePermutationDataStreamHandler");
+    throw;
+  }
+  return bValid;
+}
+
+/** */
+bool SpaceTimePermutationDataStreamHandler::ReadData() {
+  try {
+    SetRandomizers();
+    for (size_t t=0; t < GetNumStreams(); ++t) {
+       if (!ReadCaseFile(t))
+         return false;
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ReadData()","SpaceTimePermutationDataStreamHandler");
+    throw;
+  }
+  return true;
+}
+
+void SpaceTimePermutationDataStreamHandler::SetRandomizers() {
+  try {
+    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), SpaceTimeRandomizer());
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Setup()","SpaceTimePermutationDataStreamHandler");
+    throw;
+  }
+}
+
+
