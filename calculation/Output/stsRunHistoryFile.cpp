@@ -369,7 +369,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       pFile.reset(new DBFFile(gsFilename));
       std::auto_ptr<ZdFileRecord> pRecord(pFile->GetNewRecord());
 
-      for(unsigned long i = 1; i <= pFile->GetNumRecords() && !bFound; ++i) {
+      for(unsigned long i=pFile->GetNumRecords(); i >= 1 && !bFound; --i) {
          pFile->GotoRecord(i, pRecord.get());
          bFound = (pRecord->GetLong(0) == glRunNumber);
       }
@@ -453,7 +453,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
          SetDoubleField(*pRecord, dVal, GetFieldNumber(gvFields, P_VALUE_FIELD));
       else
          pRecord->PutBlank(GetFieldNumber(gvFields, P_VALUE_FIELD));
-      SetDoubleField(*pRecord, (double)params.GetNumReplicationsRequested(), GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
+      SetDoubleField(*pRecord, (double)pAnalysis.GetNumSimulationsExecuted(), GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
 
       if(!gbSequential && gbPrintPVal) {    // only print 0.01 and 0.05 cutoffs if pVals are printed, else this would result in access underrun - AJV
          SetDoubleField(*pRecord, pAnalysis.GetSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
