@@ -68,8 +68,8 @@ class CAnalysis
     bool                        Execute(time_t RunTime);
 
     const CSaTScanData*         GetSatScanData() const { return m_pData; }
-    const double&               GetSimRatio01() const { return SimRatios.GetAlpha01(); }
-    const double&               GetSimRatio05() const { return SimRatios.GetAlpha05(); }
+    const double                GetSimRatio01() const { return SimRatios.GetAlpha01(); }
+    const double                GetSimRatio05() const { return SimRatios.GetAlpha05(); }
     const ZdString&             GetStartTime() const { return gsStartTime; }
     virtual CCluster*           GetTopCluster(tract_t nCenter) = 0;
     const int&                  GetCoordinateType() const { return m_pParameters->m_nCoordType; }
