@@ -507,7 +507,12 @@ bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumb
 
       if (m_nClustersRetained == 0) {
         fprintf(fp, "\nNo clusters were found.\n");
-        fprintf(fp, "All areas scanned had equal or fewer cases than expected.\n");
+        if (m_pParameters->m_nAreas == HIGH)
+          fprintf(fp, "All areas scanned had equal or fewer cases than expected.\n");
+        else if (m_pParameters->m_nAreas == LOW)
+          fprintf(fp, "All areas scanned had equal or greater cases than expected.\n");
+        else
+          fprintf(fp, "All areas scanned had cases equal to expected.\n");
       }
       else if (m_nClustersReported == 0) {
         fprintf(fp, "\nNo clusters reported.\n");
