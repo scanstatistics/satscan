@@ -26,18 +26,21 @@ class CPurelySpatialProspectiveCluster : public CCluster {
 
      CPurelySpatialProspectiveCluster        & operator=(const CPurelySpatialProspectiveCluster& cluster);
 
-    void                                       AddNeighborAndCompare(const AbtractDataStreamGateway & DataGateway,
-                                                             const CSaTScanData * pData,
-                                                             CPurelySpatialProspectiveCluster & TopCluster,
-                                                             AbstractLikelihoodCalculator & Calculator);
+    void                                       AddNeighborAndCompare(tract_t tEllipseOffset,
+                                                                     tract_t tCentroid,
+                                                                     const AbtractDataStreamGateway & DataGateway,
+                                                                     const CSaTScanData * pData,
+                                                                     CPurelySpatialProspectiveCluster & TopCluster,
+                                                                     AbstractLikelihoodCalculator & Calculator);
     inline virtual void                        AssignAsType(const CCluster& rhs) {*this = (CPurelySpatialProspectiveCluster&)rhs;}
     virtual CPurelySpatialProspectiveCluster * Clone() const;
     virtual count_t                            GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual AbstractClusterData              * GetClusterData() {return gpClusterData;}
     virtual int                                GetClusterType() const {return PURELYSPATIAL;}
+    virtual ZdString                         & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     virtual measure_t                          GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual ZdString                         & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     virtual void                               Initialize(tract_t nCenter);
-    virtual void                               SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals);
 };
 //*****************************************************************************
 #endif

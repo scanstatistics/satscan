@@ -54,24 +54,24 @@ CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator=(co
   m_DuczmalCorrection           = cluster.m_DuczmalCorrection;
   m_nFirstInterval              = cluster.m_nFirstInterval;
   m_nLastInterval               = cluster.m_nLastInterval;
-  m_nStartDate                  = cluster.m_nStartDate;
-  m_nEndDate                    = cluster.m_nEndDate;
   m_iEllipseOffset              = cluster.m_iEllipseOffset;
   gpClusterData->Assign(*cluster.gpClusterData);
   return *this;
 }
 
 /** add neighbor tract data from DataGateway */
-void CPurelySpatialProspectiveCluster::AddNeighborAndCompare(const AbtractDataStreamGateway & DataGateway,
+void CPurelySpatialProspectiveCluster::AddNeighborAndCompare(tract_t tEllipseOffset,
+                                                             tract_t tCentroid,
+                                                             const AbtractDataStreamGateway & DataGateway,
                                                              const CSaTScanData * pData,
                                                              CPurelySpatialProspectiveCluster & TopCluster,
                                                              AbstractLikelihoodCalculator & Calculator) {
-  tract_t       t, tNumNeighbors = pData->GetImpliedNeighborCount();
+  tract_t       t, tNumNeighbors = pData->GetNeighborCountArray()[tEllipseOffset][tCentroid];
 
   for (t=1; t <= tNumNeighbors; ++t) {
     //update cluster data
     ++m_nTracts;
-    gpClusterData->AddNeighborData(pData->GetNeighborTractIndex(t), DataGateway);
+    gpClusterData->AddNeighborData(pData->GetNeighbor(tEllipseOffset, tCentroid, t), DataGateway);
     //calculate loglikehood ratio and compare against current top cluster
     m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
     if (m_nRatio && m_nRatio > TopCluster.m_nRatio)
@@ -110,20 +110,28 @@ count_t CPurelySpatialProspectiveCluster::GetCaseCountForTract(tract_t tTract, c
   return 0;
 }
 
+/** returns end date of defined cluster as formated string */
+ZdString& CPurelySpatialProspectiveCluster::GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
+  sDateString.Clear();
+  return sDateString;
+}
+
 /** Returns the measure for tract as defined by cluster. */
 measure_t CPurelySpatialProspectiveCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {
   ZdGenerateException("GetMeasureForTract() not implemented.","CPurelySpatialProspectiveCluster");
   return 0;
 }
 
+/** returns start date of defined cluster as formated string */
+ZdString& CPurelySpatialProspectiveCluster::GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
+  sDateString.Clear();
+  return sDateString;
+}
+
 /** re-initializes cluster data */
 void CPurelySpatialProspectiveCluster::Initialize(tract_t nCenter = 0) {
   CCluster::Initialize(nCenter);
   gpClusterData->InitializeData();
-}
-
-void CPurelySpatialProspectiveCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals) {
-//  ZdGenerateException("SetStartAndEndDates() not implemented.","CPurelySpatialProspectiveCluster");
 }
 
 void CPurelySpatialProspectiveCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, const CSaTScanData & Data) {
