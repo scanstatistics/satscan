@@ -242,11 +242,14 @@ void TBDlgDataImporter::ClearImportFieldSelections() {
 
 /** Clears ZdIniSections for fixed column file. */
 void TBDlgDataImporter::ClearFixedColumnDefinitions() {
+  ZdString      sFieldName;
+
   try {
     gvIniSections.clear();
     lstFixedColFieldDefs->Items->Clear();
     edtStartColumn->Text = "1";
     edtFieldLength->Text = "1";
+    edtFieldName->Text = GetFixedColumnFieldName(1, sFieldName).GetCString();
     AddFixedColDefinitionEnable();
     DeleteFixedColDefinitionEnable();
     ClearFixedColDefinitionEnable();
