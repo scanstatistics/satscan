@@ -363,6 +363,7 @@ void TfrmAnalysis::CheckTimeParams() {
 /** event triggered when 'adjustment for ealier analyses' checkbox if clicked */
 void __fastcall TfrmAnalysis::chkAdjustForEarlierAnalysesClick(TObject *Sender) {
   EnableProspectiveStartDate(chkAdjustForEarlierAnalyses->Checked);
+  EnableSettingsForAnalysisModelCombination();
 }
 
 /** Resets parameters that are not present in interface to default value.
@@ -659,7 +660,7 @@ void TfrmAnalysis::EnableSettingsForAnalysisModelCombination() {
         break;
       case PROSPECTIVESPACETIME      :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson);
-        EnableSpatialOptionsGroup(true, !bSpaceTimePermutation, false);
+        EnableSpatialOptionsGroup(true, !bSpaceTimePermutation, !chkAdjustForEarlierAnalyses->Checked);
         EnableTimeIntervalUnitsGroup(true);
         EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
         break;
@@ -1489,9 +1490,9 @@ void TfrmAnalysis::SetupInterface() {
     rbUnitMonths->Checked = (gParameters.GetTimeIntervalUnitsType() == MONTH);
     rbUnitDay->Checked = (gParameters.GetTimeIntervalUnitsType() == DAY);
     edtTimeIntervalLength->Text = gParameters.GetTimeIntervalLength();
-    chkAdjustForEarlierAnalyses->Checked = gParameters.GetAdjustForEarlierAnalyses();
     if (gParameters.GetProspectiveStartDate().length() > 0)
       ParseDate(gParameters.GetProspectiveStartDate().c_str(), edtProspectiveStartDateYear, edtProspectiveStartDateMonth, edtProspectiveStartDateDay);
+    chkAdjustForEarlierAnalyses->Checked = gParameters.GetAdjustForEarlierAnalyses();
     //Output File Tab
     edtResultFile->Text = gParameters.GetOutputFileName().c_str();
     chkRelativeRiskEstimatesAreaAscii->Checked = gParameters.GetOutputRelativeRisksAscii();

@@ -757,7 +757,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object chkInclPurTempClust: TCheckBox
           Left = 18
-          Top = 140
+          Top = 137
           Width = 305
           Height = 17
           Caption = 'Include Purely Temporal Cluster (Spatial Size = 100%)'
@@ -848,9 +848,9 @@ object frmAnalysis: TfrmAnalysis
       end
       object rdgTemporalOptions: TGroupBox
         Left = 8
-        Top = 175
+        Top = 173
         Width = 465
-        Height = 110
+        Height = 112
         Caption = 'Temporal'
         TabOrder = 1
         object lblMaxTemporalClusterSize: TLabel
