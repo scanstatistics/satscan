@@ -428,7 +428,7 @@ void CCluster::DisplayPopulationOrdinal(FILE* fp, const CSaTScanData& DataHub, c
   double                 dPopulation=0;
 
   //print population data per category
-  PrintFormat.PrintSectionLabel(fp, "Population", false, true);
+  PrintFormat.PrintSectionLabel(fp, "Total cases", false, true);
   dPopulation = DataHub.GetProbabilityModel().GetPopulation(DataSet.GetSetIndex() - 1, *this);
   GetPopulationAsString(sBuffer, dPopulation);
   PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
