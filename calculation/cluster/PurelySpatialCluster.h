@@ -36,6 +36,7 @@ class CPurelySpatialCluster : public CCluster {
     virtual count_t                     GetCaseCount(unsigned int iStream) const {return gpClusterData->GetCaseCount(iStream);}
     virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const;
     virtual inline AbstractClusterData * GetClusterData() {return gpClusterData;}
+    virtual inline const AbstractClusterData * GetClusterData() const {return gpClusterData;}
     virtual ClusterType                 GetClusterType() const {return PURELYSPATIALCLUSTER;}
     virtual ZdString                  & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     virtual measure_t                   GetMeasure(unsigned int iStream) const {return gpClusterData->GetMeasure(iStream);}

@@ -93,7 +93,7 @@ void CPurelySpatialCluster::AddNeighborDataAndCompare(tract_t tEllipseOffset,
 
 /** returns newly cloned CPurelySpatialCluster */
 CPurelySpatialCluster * CPurelySpatialCluster::Clone() const {
-  return new CPurelySpatialCluster(*this);;
+  return new CPurelySpatialCluster(*this);
 }
 
 void CPurelySpatialCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {

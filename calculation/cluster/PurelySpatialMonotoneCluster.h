@@ -55,6 +55,7 @@ class CPSMonotoneCluster : public CCluster {
     virtual count_t             GetCaseCount(unsigned int iStream) const {return m_nCases;}
     virtual count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const;
     virtual AbstractClusterData * GetClusterData();
+    virtual const AbstractClusterData * GetClusterData() const;
     virtual ClusterType         GetClusterType() const {return PURELYSPATIALMONOTONECLUSTER;}
     virtual ZdString          & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     tract_t                     GetLastCircleIndex() const {return m_nSteps-1;};

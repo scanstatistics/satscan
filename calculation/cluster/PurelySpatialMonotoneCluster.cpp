@@ -319,6 +319,12 @@ AbstractClusterData * CPSMonotoneCluster::GetClusterData() {
  return 0;
 }
 
+/** Returns pointer cluster data object - not implemented, throws exception. */
+const AbstractClusterData * CPSMonotoneCluster::GetClusterData() const {
+ ZdGenerateException("GetClusterData() not implemented.","CPSMonotoneCluster");
+ return 0;
+}
+
 /** returns end date of defined cluster as formated string */
 ZdString& CPSMonotoneCluster::GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1);
