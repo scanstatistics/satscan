@@ -565,7 +565,7 @@ bool TfrmAnalysis::CheckOutputParams() {
   }
   catch (ZdException & x) {
     x.AddCallpath("CheckOutputParams", "TfrmAnalysis");
-    edtResultFile->SetFocus();
+ //   edtResultFile->SetFocus();
     throw;
   }
   return true;
