@@ -2,9 +2,8 @@
 #pragma hdrstop
 #include "PurelySpatialMonotoneCluster.h"
 
-CPSMonotoneCluster::CPSMonotoneCluster(BasePrint *pPrintDirection)
-                   :CPurelySpatialCluster(pPrintDirection)
-{
+CPSMonotoneCluster::CPSMonotoneCluster(const CSaTScanData & Data, BasePrint *pPrintDirection)
+                   :CPurelySpatialCluster(Data, pPrintDirection) {
   m_nMaxCircles        = 0;
   m_pCasesList         = NULL;
   m_pMeasureList       = NULL;
@@ -12,6 +11,16 @@ CPSMonotoneCluster::CPSMonotoneCluster(BasePrint *pPrintDirection)
   m_pLastNeighborList  = NULL;
 
   Initialize(0);
+}
+
+CPSMonotoneCluster::CPSMonotoneCluster(const CPSMonotoneCluster& rhs) : CPurelySpatialCluster(rhs){
+  m_nMaxCircles        = 0;
+  m_pCasesList         = NULL;
+  m_pMeasureList       = NULL;
+  m_pFirstNeighborList = NULL;
+  m_pLastNeighborList  = NULL;
+
+  *this = rhs;
 }
 
 CPSMonotoneCluster::~CPSMonotoneCluster()
@@ -29,24 +38,21 @@ CPSMonotoneCluster::~CPSMonotoneCluster()
 /** returns newly cloned CPSMonotoneCluster */
 CPSMonotoneCluster * CPSMonotoneCluster::Clone() const {
   //Note: Replace this code with copy constructor...
-  CPSMonotoneCluster * pClone = new CPSMonotoneCluster(gpPrintDirection);
-  *pClone = *this;
+  CPSMonotoneCluster * pClone = new CPSMonotoneCluster(*this);
   return pClone;
 }
 
-void CPSMonotoneCluster::Initialize(tract_t nCenter=0)
-{
+/** initialize cluster data */
+void CPSMonotoneCluster::Initialize(tract_t nCenter=0) {
   CCluster::Initialize(nCenter);
-
   m_nClusterType = PURELYSPATIALMONOTONE;
-
-  for (int i=0; i<m_nMaxCircles; i++)
-     {
+  m_bRatioSet = false;
+  for (int i=0; i<m_nMaxCircles; i++) {
      m_pCasesList[i]         = 0;
      m_pMeasureList[i]       = 0;
      m_pFirstNeighborList[i] = 0;
      m_pLastNeighborList[i]  = 0;
-     }
+  }
 }
 
 void CPSMonotoneCluster::AllocateForMaxCircles(tract_t nCircles)
@@ -109,10 +115,7 @@ CPSMonotoneCluster& CPSMonotoneCluster::operator =(const CPSMonotoneCluster& clu
         m_pLastNeighborList[i]  = cluster.m_pLastNeighborList[i];
       }
     
-      m_bClusterInit   = cluster.m_bClusterInit;
       m_bClusterDefined= cluster.m_bClusterDefined;
-      m_bClusterSet    = cluster.m_bClusterSet;
-      m_bLogLSet       = cluster.m_bLogLSet;
       m_bRatioSet      = cluster.m_bRatioSet;
       m_nClusterType   = cluster.m_nClusterType;
       }
@@ -126,7 +129,7 @@ CPSMonotoneCluster& CPSMonotoneCluster::operator =(const CPSMonotoneCluster& clu
 
 void CPSMonotoneCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {
   tract_t       nNeighbor = Data.GetNeighbor(0, m_Center, n);
-  measure_t   * pMeasure(Data.GetMeasureArray()[0]);
+  measure_t   * pMeasure(Data.GetDataStreamHandler().GetStream(0/*for now*/).GetMeasureArray()[0]);
 
   m_nSteps++;
 
@@ -253,18 +256,17 @@ void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, count_t** pC
         }
       // }
     
-      if (Data.GetNumCases() != m_nCases)
+      if (Data.GetTotalCases() != m_nCases)
       {
-        AddRemainder(Data.GetNumCases(), Data.GetTotalMeasure());
+        AddRemainder(Data.GetTotalCases(), Data.GetTotalMeasure());
         CheckCircle(GetLastCircleIndex());
       }
     
       m_nLogLikelihood = ProbModel.CalcMonotoneLogLikelihood(*this);
-      m_bLogLSet        = true;
     
       SetRatio(ProbModel.GetLogLikelihoodForTotal());
     
-      if (Data.GetNumCases() != m_nCases)
+      if (Data.GetTotalCases() != m_nCases)
         RemoveRemainder();
     
       // Recalc Total Cases, Measure, and Tracts to  account for

@@ -8,8 +8,9 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
 {
   public:
 
-    CPSMonotoneCluster(BasePrint *pPrintDirection);
-    CPSMonotoneCluster(int nRate, tract_t nCircles);
+    CPSMonotoneCluster(const CSaTScanData & Data, BasePrint *pPrintDirection);
+    CPSMonotoneCluster(const CPSMonotoneCluster& rhs);
+//    CPSMonotoneCluster(int nRate, tract_t nCircles);
     ~CPSMonotoneCluster();
 
     friend class CPoissonModel;
@@ -21,10 +22,15 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
     measure_t* m_pMeasureList;       // Expected count for each circle
     tract_t*   m_pFirstNeighborList; // 1st neighbor in circle
     tract_t*   m_pLastNeighborList;  // Last neighbor in circle
+    bool       m_bRatioSet;          // Has the loglikelihood ratio been set?
 
   public:
     CPSMonotoneCluster& operator =(const CPSMonotoneCluster& cluster);
     virtual CPSMonotoneCluster * Clone() const;
+
+    count_t                     m_nCases;             // Number of cases in cluster
+    measure_t                   m_nMeasure;           // Expected count for cluster
+    
 
     void                AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n);
     void                AddRemainder(count_t nTotalCases, measure_t nTotalMeasure);
