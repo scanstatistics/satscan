@@ -436,8 +436,8 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativ
     for (itr=Adjustments.GetAdjustments().begin(); itr != Adjustments.GetAdjustments().end(); ++itr) {
        const TractContainer_t & tract_deque = itr->second;
        for (itr_deque=tract_deque.begin(); itr_deque != tract_deque.end(); ++itr_deque) 
-          AdjustMeasure(pNonCumulativeMeasure, itr->first, itr_deque->GetRelativeRisk(),
-                        itr_deque->GetStartDate(), itr_deque->GetEndDate());
+          AdjustMeasure(pNonCumulativeMeasure, itr->first, (*itr_deque).GetRelativeRisk(),
+                        (*itr_deque).GetStartDate(), (*itr_deque).GetEndDate());
     }
 
     // calculate total adjusted measure
