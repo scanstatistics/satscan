@@ -68,12 +68,14 @@
       ..\calculation\analysis\SVTTAnalysis.obj 
       ..\calculation\cluster\PurelySpatialProspectiveCluster.obj 
       ..\calculation\utility\MultipleDimensionArrayHandler.obj 
-      ..\calculation\satscan_data\MaxWindowLengthIndicator.obj"/>
+      ..\calculation\satscan_data\MaxWindowLengthIndicator.obj 
+      stsFrmAdvancedParameters.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
       stsFrmAnalysisRun.dfm stsFrmOutPutViewer.dfm stsDlgDataImporter.dfm 
-      stsFrmDownloadProgress.dfm stsFrmUpdateCheck.dfm stsFrmStartWindow.dfm"/>
+      stsFrmDownloadProgress.dfm stsFrmUpdateCheck.dfm stsFrmStartWindow.dfm 
+      stsFrmAdvancedParameters.dfm"/>
     <LIBFILES value="..\xbase\xbase_2.0.0\xbase\xbase.lib 
       &quot;C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib&quot; &quot;C:\Program Files\Borland\CBuilder5\Lib\zd540.lib&quot;"/>
     <LIBRARIES value="NMFast50.lib TSGC5201.lib vcldb50.lib vclbde50.lib vclx50.lib Qrpt50.lib 
