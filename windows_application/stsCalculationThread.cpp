@@ -21,6 +21,7 @@ __fastcall CalcThread::CalcThread(bool CreateSuspended, const CParameters& sessi
 {
    Init();
    gpParams = new CParameters(session);
+   gpParams->ConvertMaxTemporalClusterSizeToType(PERCENTAGETYPE);
    gpPrintWindow = new PrintWindow(pProgress);
    gpParams->SetPrintDirection(gpPrintWindow);
    pProgress->reAnalysisBox->SetFocus();
