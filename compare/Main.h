@@ -126,6 +126,8 @@ __published:	// IDE-managed Components
         TToolButton *ToolButton1;
         TToolButton *btnDeleteAnlysesFiles;
         TAction *ActionDeleteAnalysesFiles;
+        TAction *ActionViewParameters;
+        TButton *Button1;
         void __fastcall btnBrowseBatchExecutableClick(TObject *Sender);
         void __fastcall btnBrowseBatchExecutableComparatorClick(TObject *Sender);
         void __fastcall ActionStartExecute(TObject *Sender);
@@ -150,6 +152,7 @@ __published:	// IDE-managed Components
         void __fastcall ActionOptionsExecute(TObject *Sender);
         void __fastcall ActionClearListExecute(TObject *Sender);
         void __fastcall ActionDeleteAnalysesFilesExecute(TObject *Sender);
+        void __fastcall ActionViewParametersExecute(TObject *Sender);
    
   private:
     std::vector<ParameterResultsInfo>   gvParameterResultsInfo;
@@ -186,6 +189,7 @@ __published:	// IDE-managed Components
     void                                EnableSaveParametersListAction();
     void                                EnableSaveResultsAction();
     void                                EnableStartAction();
+    void                                EnableViewAction();
     bool                                Execute(const AnsiString & sCommandLine, bool bWindowed=true);
     std::string                       & GetCompareFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename);
     AnsiString                        & GetDisplayTime(AnsiString & sDisplay);

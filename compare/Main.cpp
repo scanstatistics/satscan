@@ -85,6 +85,7 @@ __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner), gpFrmOptions(0)
   EnableStartAction();
   EnableSaveParametersListAction();
   EnableRemoveParameterAction();
+  EnableViewAction();
 }
 
 /** destructor */
@@ -134,6 +135,7 @@ void __fastcall TfrmMain::ActionAddParameterFileExecute(TObject *Sender) {
   EnableStartAction();
   EnableSaveParametersListAction();
   EnableRemoveParameterAction();
+  EnableViewAction();
 }
 
 /** clears parameter list*/
@@ -142,6 +144,7 @@ void __fastcall TfrmMain::ActionClearListExecute(TObject *Sender) {
   EnableStartAction();
   EnableSaveParametersListAction();
   EnableRemoveParameterAction();
+  EnableViewAction();
 }
 
 /** launches compare program for viewing differences in cluster information files */
@@ -328,6 +331,7 @@ void __fastcall TfrmMain::ActionLoadParameterListExecute(TObject *Sender){
   EnableStartAction();
   EnableSaveParametersListAction();
   EnableRemoveParameterAction();
+  EnableViewAction();
 }
 
 /** launches options dialog */
@@ -347,6 +351,7 @@ void __fastcall TfrmMain::ActionRemoveParameterFileExecute(TObject *Sender){
   EnableStartAction();
   EnableSaveParametersListAction();
   EnableRemoveParameterAction();
+  EnableViewAction();
 }
 
 /** saves results of comparison to file */
@@ -448,6 +453,22 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
    sCommand.printf("Start time: %s    Stop time: %s", DateTimeToStr(StartDate).c_str(), DateTimeToStr(TDateTime::CurrentDateTime()).c_str());
    memMessages->Lines->Add(sCommand);
    memMessages->SelStart = 0;
+}
+
+/** opens selected parameter files in associated text viewer */
+void __fastcall TfrmMain::ActionViewParametersExecute(TObject *Sender) {
+  HINSTANCE     hReturn;
+  TListItem   * pListItem;
+
+  for (int i=0; i < ltvScheduledBatchs->Items->Count; i++) {
+     pListItem = ltvScheduledBatchs->Items->Item[i];
+     if (pListItem->Selected) {
+       //Attempt to open chm user guide.
+       hReturn = ShellExecute(Handle, "open", pListItem->Caption.c_str(), NULL, NULL, SW_SHOWNORMAL);
+       if (hReturn <= (void*)32)
+         Application->MessageBox("Unable to open file.", "Failed open", MB_OK);
+     }
+  }
 }
 
 /** add item to display indicating results of analysis comparison */
@@ -912,6 +933,11 @@ void TfrmMain::EnableStartAction() {
                          ltvScheduledBatchs->Items->Count;
 }
 
+/** enables view parameters action */
+void TfrmMain::EnableViewAction() {
+  ActionViewParameters->Enabled = ltvScheduledBatchs->SelCount;
+}
+
 /** creates process to execute command */
 bool TfrmMain::Execute(const AnsiString & sCommandLine, bool bWindowed) {
    STARTUPINFO          si;
@@ -1082,6 +1108,7 @@ void __fastcall TfrmMain::lstScheduledBatchsKeyDown(TObject *Sender, WORD &Key, 
 
 void __fastcall TfrmMain::lstScheduledBatchsSelectItem(TObject *Sender, TListItem *Item, bool Selected) {
   EnableRemoveParameterAction();
+  EnableViewAction();
 }
 
 /** displays open dialog when compare program not set */
@@ -1092,6 +1119,4 @@ bool TfrmMain::PromptForCompareProgram() {
   }
   return true;
 }
-
-
 

@@ -123,7 +123,7 @@ object frmMain: TfrmMain
     object Panel1: TPanel
       Left = 0
       Top = 89
-      Width = 516
+      Width = 453
       Height = 134
       Align = alClient
       BevelOuter = bvNone
@@ -140,16 +140,17 @@ object frmMain: TfrmMain
       object ltvScheduledBatchs: TListView
         Left = 12
         Top = 8
-        Width = 504
+        Width = 441
         Height = 115
         Anchors = [akLeft, akTop, akRight, akBottom]
         Columns = <
           item
             Caption = 'Parameter Filename'
-            Width = 500
+            Width = 437
           end>
         HideSelection = False
         MultiSelect = True
+        ReadOnly = True
         RowSelect = True
         TabOrder = 0
         ViewStyle = vsReport
@@ -158,9 +159,9 @@ object frmMain: TfrmMain
       end
     end
     object pnlTopButtons: TPanel
-      Left = 516
+      Left = 453
       Top = 89
-      Width = 80
+      Width = 143
       Height = 134
       Align = alRight
       BevelOuter = bvNone
@@ -197,8 +198,8 @@ object frmMain: TfrmMain
         TabOrder = 2
       end
       object btnLoadDefinitions: TBitBtn
-        Left = 10
-        Top = 83
+        Left = 74
+        Top = 11
         Width = 57
         Height = 18
         Action = ActionLoadParameterList
@@ -208,14 +209,24 @@ object frmMain: TfrmMain
         TabOrder = 3
       end
       object btnClear: TButton
-        Left = 10
-        Top = 105
+        Left = 74
+        Top = 33
         Width = 57
         Height = 18
         Action = ActionClearList
         ParentShowHint = False
         ShowHint = True
         TabOrder = 4
+      end
+      object Button1: TButton
+        Left = 74
+        Top = 59
+        Width = 57
+        Height = 18
+        Action = ActionViewParameters
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 5
       end
     end
   end
@@ -501,7 +512,7 @@ object frmMain: TfrmMain
     Left = 16
     Top = 400
     Bitmap = {
-      494C010106000900040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010106000900040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001001000000000000018
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -709,7 +720,8 @@ object frmMain: TfrmMain
       FFFFFFFFFFFFFFFFF81FF81FF81FF81FE00FE00FE00FE00FE00FE00FE00FE00F
       C007C007C007C007C007C007C007C007C007C007C007C007C007C007C007C007
       C007C007C007C007E00FE00FE00FE00FF00FF00FF00FF00FF83FF83FF83FF83F
-      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object ActionList1: TActionList
     Left = 16
@@ -781,6 +793,11 @@ object frmMain: TfrmMain
     object ActionDeleteAnalysesFiles: TAction
       Hint = 'Delete Analyses Files'
       OnExecute = ActionDeleteAnalysesFilesExecute
+    end
+    object ActionViewParameters: TAction
+      Caption = 'View'
+      Hint = 'View Parameters'
+      OnExecute = ActionViewParametersExecute
     end
   end
   object SaveDialog: TSaveDialog
