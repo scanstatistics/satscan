@@ -38,8 +38,9 @@ void TBDlgDataImporter::AddFixedColDefinitionEnable() {
                            StrToInt(edtStartColumn->Text) > 0);
 }
 
-/** Adjust file/ file field attributes for import - currently that means settings
-    a date filter that SaTScan uses. */
+/** Adjust file/ file field attributes for import
+    - currently this function only applies to dBase files.
+      Sets date filter to YYYY/MM/DD. */
 void TBDlgDataImporter::AdjustFileSourceFileAttributes(ZdFile & File) {
   unsigned short        w;
   ZdField             * pField;
@@ -239,7 +240,7 @@ void TBDlgDataImporter::ClearImportFieldSelections() {
   }
 }
 
-/** */
+/** Enables continue button based upon current panels settings. */
 void TBDlgDataImporter::ContinueButtonEnable() {
   btnNextPanel->Enabled = false;
   btnExecuteImport->Enabled = false;
@@ -260,14 +261,20 @@ void TBDlgDataImporter::ContinueButtonEnable() {
   };
 }
 
+/** Sets target filename and creates ZdIniFile used in target file creation. */
 void TBDlgDataImporter::CreateDestinationInformation() {
   char                  sBuffer[1024];
+  int                   iOffSet=0;
+  ZdString              sFieldSection;
+  ZdFileName            sFileName;
+  ZdIniSection          Section;
 
   try {
-    //Create the temporary ZdFile to be the destination of the import in the users temp directory.
-    ZdFileName   sFileName(edtDataFile->Text.c_str());
+    //Reset location of target file to users temp directory.
+    sFileName.SetFullPath(edtDataFile->Text.c_str());
     GetTempPath(sizeof(sBuffer), sBuffer);
     sFileName.SetLocation(sBuffer);
+    //File extension to file type.
     switch (cmbInputFileType->ItemIndex) {
       case Case        : sFileName.SetExtension(".cas");
                          break;
@@ -283,36 +290,24 @@ void TBDlgDataImporter::CreateDestinationInformation() {
     };
     gDestDescriptor.SetDestinationFile(sFileName.GetFullPath());
 
-
-    ZdFileName    fFileName;
-    ZdString      sFieldSection;
+    //Define ZdIniFile that will be used by import class to create and open target file.
     gDestinationFileDefinition.Clear();
-
-    ZdIniSection  Section("[FileInfo]");
+    Section.SetName("[FileInfo]");
     Section.AddLine("FileName", sFileName.GetCompleteFileName());
     Section.AddLine("Title", sFileName.GetFileName());
     Section.AddLine("InputLayoutNumber", "0");
     Section.AddLine("PrimaryKeyFields", "0");
     Section.AddLine("UserFlagCount", "0");
-
-
-//    Section.AddLine("NumberOfFields", "3");
-//    Section.AddLine("RecordLength", "3314");
-//    Section.AddLine("Use CR", "No");
-//    Section.AddLine("Use LF", "Yes");
-//    Section.AddLine("StartingCol", "1");
-
     gDestinationFileDefinition.AddSection(Section.Clone());
+
     Section.ClearSection();
-    int iOffSet=0;
     for (size_t t=0; t < gSaTScanVariablesFieldMap.size(); t++) {
+       //Skip fields 'X' and 'Y', they are equivalant to 'Latitude' and 'Longitude'
+       //in terms of creating a ZdIniFile since they will never exist together
+       //and map to the same field index.
        if (cmbInputFileType->ItemIndex == Coordinates && (t == 3 || t == 4))
          continue;
-       if (cmbInputFileType->ItemIndex == Coordinates && rdoCoordinates->ItemIndex == 1 && t > 4)
-         continue;
        if (cmbInputFileType->ItemIndex == SpecialGrid && (t == 2 || t == 3))
-         continue;
-       if (cmbInputFileType->ItemIndex == SpecialGrid && rdoCoordinates->ItemIndex == 1 && t > 3)
          continue;
 
        sFieldSection.printf("[Field%d]", gSaTScanVariablesFieldMap[t].second + 1);
@@ -332,45 +327,45 @@ void TBDlgDataImporter::CreateDestinationInformation() {
   }
 }
 
-
-/** Creates ZdIniFile to be used when opening CSV and fixed column file types. */
+/** Creates ZdIniFile to be used when opening source file for view/import. */
 void TBDlgDataImporter::DefineSourceFileStructure() {
+  size_t        t;
   ZdFileName    fFileName;
   ZdString      sFieldSection;
 
   try {
     gDataFileDefinition.Clear();
-    if ( rdoFileType->ItemIndex == 0  ) {//CSV File
-      if (cmbColDelimiter->ItemIndex == 2/*white space*/) {
+    if (rdoFileType->ItemIndex == 0) {//CSV File
+      if (cmbColDelimiter->ItemIndex == 2/*white spacetab*/) {
         ScanfFile  fScanfFile;
-        fScanfFile.OpenAsAlpha ( edtDataFile->Text.c_str(), ZDIO_OPEN_READ, false );
-        fScanfFile.WriteStructure( &gDataFileDefinition );
+        fScanfFile.OpenAsAlpha(edtDataFile->Text.c_str(), ZDIO_OPEN_READ, false);
+        fScanfFile.WriteStructure(&gDataFileDefinition);
       }
       else {
-        CSVFile  fCSVFile( GetColumnDelimiter(), GetGroupMarker() );
-        fCSVFile.OpenAsAlpha ( edtDataFile->Text.c_str(), ZDIO_OPEN_READ, false );
-        fCSVFile.WriteStructure( &gDataFileDefinition );
+        CSVFile  fCSVFile(GetColumnDelimiter(), GetGroupMarker() );
+        fCSVFile.OpenAsAlpha(edtDataFile->Text.c_str(), ZDIO_OPEN_READ, false);
+        fCSVFile.WriteStructure(&gDataFileDefinition);
       }  
     }
-    else if ( rdoFileType->ItemIndex == 1 ) {//Variable record length file
-      ZdIniSection  tempSection( "[FileInfo]" );
-      fFileName.SetFullPath( edtDataFile->Text.c_str() );
-      tempSection.AddLine( "FileName", fFileName.GetCompleteFileName() );
-      tempSection.AddLine( "Title", fFileName.GetFileName() );
-      tempSection.AddLine( "NumberOfFields", IntToStr( ( int )gvIniSections.size() ).c_str() );
+    else if (rdoFileType->ItemIndex == 1) {//Variable record length file
+      ZdIniSection  tempSection("[FileInfo]");
+      fFileName.SetFullPath(edtDataFile->Text.c_str());
+      tempSection.AddLine("FileName", fFileName.GetCompleteFileName());
+      tempSection.AddLine("Title", fFileName.GetFileName());
+      tempSection.AddLine("NumberOfFields", IntToStr((int)gvIniSections.size()).c_str());
       int iRecordLength, iMaxLength = 0;
-      for ( unsigned int i = 0; i < gvIniSections.size(); ++i ) {
-        iRecordLength = StrToInt( gvIniSections.GetElement( i ).GetString( "Length" ) );
-        iRecordLength += StrToInt( gvIniSections.GetElement( i ).GetString( "ByteOffSet" ) );
-        iMaxLength = max( iRecordLength, iMaxLength );
+      for (t=0; t < gvIniSections.size(); ++t) {
+        iRecordLength = StrToInt(gvIniSections[t].GetString("Length"));
+        iRecordLength += StrToInt(gvIniSections[t].GetString("ByteOffSet"));
+        iMaxLength = max(iRecordLength, iMaxLength);
       }
-      tempSection.AddLine( "RecordLength", IntToStr( iMaxLength ).c_str() );
-      tempSection.AddLine( "StartingCol", "1" );
-      gDataFileDefinition.AddSection( tempSection.Clone() );
-      for ( unsigned int j = 0; j < gvIniSections.size(); ++j )
-         gDataFileDefinition.AddSection( new ZdIniSection( gvIniSections.GetElement( j ) ) );
+      tempSection.AddLine("RecordLength", IntToStr(iMaxLength).c_str());
+      tempSection.AddLine("StartingCol", "1");
+      gDataFileDefinition.AddSection(tempSection.Clone());
+      for (t=0; t < gvIniSections.size(); ++t)
+         gDataFileDefinition.AddSection(gvIniSections[t].Clone());
     }
-    //else { /* Nothing */ }
+    else { /* Nothing */ }
   }
   catch (ZdException &x) {
     x.AddCallpath("DefineSourceFileStructure()","TBDlgDataImporter");
@@ -378,11 +373,12 @@ void TBDlgDataImporter::DefineSourceFileStructure() {
   }
 }
 
-//Enables the deleting of fixed column field definitions.
+/** Enables the deleting of fixed column field definitions. */
 void TBDlgDataImporter::DeleteFixedColDefinitionEnable() {
   btnDeleteFldDef->Enabled = ( lstFixedColFieldDefs->ItemIndex != -1 );
 }
 
+/** Disables buttons during import operation. */
 void TBDlgDataImporter::DisableButtonsForImport( bool bEnable ) {
   btnPreviousPanel->Enabled = !bEnable;
   btnExecuteImport->Enabled = !bEnable;
@@ -390,7 +386,7 @@ void TBDlgDataImporter::DisableButtonsForImport( bool bEnable ) {
   btnCancel->Enabled = !bEnable;
 }
 
-/** Gets column delimter for CSV files. */
+/** Gets column delimter. */
 const char TBDlgDataImporter::GetColumnDelimiter() const {
   char  cColDelimiter;
 
@@ -400,9 +396,7 @@ const char TBDlgDataImporter::GetColumnDelimiter() const {
                 break;
       case 1  : cColDelimiter = ';';
                break;
-      case 2  : cColDelimiter = '\t';
-                break;
-      case 3  : cColDelimiter = ' ';
+      case 2  : cColDelimiter = ' ';
                 break;
       default : ZdString sString( cmbColDelimiter->Text.c_str() );
                 cColDelimiter = (sString.GetLength() ? sString[0] : COMMA);
@@ -415,6 +409,7 @@ const char TBDlgDataImporter::GetColumnDelimiter() const {
   return cColDelimiter;
 }
 
+/** Returns name to call uwFieldIndex'th column of fixed column file type. */
 ZdString & TBDlgDataImporter::GetFixedColumnFieldName(unsigned int uwFieldIndex, ZdString & sFieldName) {
   try {
     sFieldName.printf("Field %d", uwFieldIndex);
@@ -426,7 +421,7 @@ ZdString & TBDlgDataImporter::GetFixedColumnFieldName(unsigned int uwFieldIndex,
   return sFieldName;
 }
 
-/** Gets group marker for CSV files. */
+/** Gets group marker. */
 const char  TBDlgDataImporter::GetGroupMarker() const {
   char  cGroupMarker;
 
@@ -442,7 +437,7 @@ const char  TBDlgDataImporter::GetGroupMarker() const {
       }
     }
     else
-     cGroupMarker = '\0'/*known*/;
+     cGroupMarker = '\0'/*no group marker*/;
   }
   catch (ZdException &x) {
     x.AddCallpath("GetGroupMarker()","TBDlgDataImporter");
@@ -451,6 +446,7 @@ const char  TBDlgDataImporter::GetGroupMarker() const {
   return cGroupMarker;
 }
 
+/** Hides rows based on coordinates variables selected to be shown. */
 void TBDlgDataImporter::HideRows() {
   try {
     switch (cmbInputFileType->ItemIndex) {
@@ -460,18 +456,18 @@ void TBDlgDataImporter::HideRows() {
                             tsfieldGrid->RowVisible[i] = true;
                          break;
       case Coordinates : for (int i=1; i <= tsfieldGrid->Rows; i++) {
-                            if (i == 2 || i == 3)
+                            if (i == 2 || i == 3) //Latitude and Longitude
                               tsfieldGrid->RowVisible[i] = (rdoCoordinates->ItemIndex == 1 ? true : false);
-                            else if (i >= 4)
+                            else if (i >= 4) //Cartesian variables
                               tsfieldGrid->RowVisible[i] = (rdoCoordinates->ItemIndex == 1 ? false : true);
                             else
                               tsfieldGrid->RowVisible[i] = true;
                          }
                          break;
       case SpecialGrid : for (int i=1; i <= tsfieldGrid->Rows; i++) {
-                            if (i == 1 || i == 2)
+                            if (i == 1 || i == 2) //Latitude and Longitude
                               tsfieldGrid->RowVisible[i] = (rdoCoordinates->ItemIndex == 1 ? true : false);
-                            else
+                            else //Cartesian variables
                               tsfieldGrid->RowVisible[i] = (rdoCoordinates->ItemIndex == 1 ? false : true);
                          }
                          break;
@@ -493,8 +489,8 @@ TModalResult TBDlgDataImporter::ImportFile() {
     gSourceDescriptor.SetNumberOfRowsToIgnore(gSourceDescriptor.GetNumberOfRowsToIgnore() + 1);
 
   BFileImportSourceInterface    FileImportSourceInterface(gpImportFile, gSourceDescriptor.GetNumberOfRowsToIgnore());
-  SaTScanFileImporter           FileImporter(gDestinationFileDefinition, (InputFileType)cmbInputFileType->ItemIndex, gSourceDataFileType,
-                                             FileImportSourceInterface, gDestDescriptor);
+  SaTScanFileImporter           FileImporter(gDestinationFileDefinition, (InputFileType)cmbInputFileType->ItemIndex,
+                                             gSourceDataFileType, FileImportSourceInterface, gDestDescriptor);
 
   try {
     FileImporter.OpenDestination();
@@ -521,7 +517,7 @@ TModalResult TBDlgDataImporter::ImportFile() {
   return Modal; 
 }
 
-//Initialize class.
+/** Initialize class. */
 void TBDlgDataImporter::Init() {
   gsBlank << "unassigned";
   gpController = 0;
@@ -532,7 +528,7 @@ void TBDlgDataImporter::Init() {
   gSourceDataFileType=Delimited;
 }
 
-/** */
+/** Allocates and initializes vector to contains field mapping choices. */
 void TBDlgDataImporter::InitializeImportingFields() {
   size_t     t;
 
@@ -553,10 +549,11 @@ void TBDlgDataImporter::LoadMappingPanel() {
     OpenSourceFile();                          //Display the data in grid
     CreateDestinationInformation();
     tsfieldGrid->Rows = gSaTScanVariablesFieldMap.size();
-    InitializeImportingFields();               //Initialize array that will indicate what fields model that are imported
-    SetImportFieldChoices();                   //Initialize array that will populate grid combo dropdown
+    InitializeImportingFields();
+    SetImportFieldChoices();                   
     AutoAlign();
     if (rdoCoordinates->ItemIndex == -1)
+      //If coordinates index not set, set to current settings of analysis. 
       rdoCoordinates->ItemIndex = gAnalysisForm.rgCoordinates->ItemIndex;
     else
       HideRows();
@@ -591,7 +588,7 @@ void TBDlgDataImporter::LoadResultFileNameIntoAnalysis() {
   }
 }
 
-//Setup for panel to show.
+/** Setup for panel to show. */
 void TBDlgDataImporter::MakePanelVisible(int iWhich) {
   try {
      switch ( iWhich ) {
@@ -611,12 +608,13 @@ void TBDlgDataImporter::MakePanelVisible(int iWhich) {
   }
 }
 
-//Adds fixed column definition( ZdIniSection ).
+/** Adds fixed column definition( ZdIniSection ). */
 void TBDlgDataImporter::OnAddFieldDefinitionClick() {
   ZdIniSection  addSection;
   AnsiString    sFieldSection;
   ZdString      sListBox, sFieldName;
   char        * sBuffer = "A";
+  int           iStart;
 
   try {
     sFieldSection.sprintf("[Field%d]", ( int )gvIniSections.size() + 1);
@@ -625,8 +623,7 @@ void TBDlgDataImporter::OnAddFieldDefinitionClick() {
     addSection.AddLine("Type", sBuffer);
     addSection.AddLine("Length", edtFieldLength->Text.c_str());
     //Add one to Byte off set, memo starts at zero.
-    int  iStart = StrToInt(edtStartColumn->Text);
-    //iStart++;
+    iStart = StrToInt(edtStartColumn->Text);
     addSection.AddLine("ByteOffset", IntToStr(iStart).c_str());
     gvIniSections.push_back(addSection);
 
@@ -648,6 +645,7 @@ void TBDlgDataImporter::OnAddFieldDefinitionClick() {
   }
 }
 
+/** Response to auto-align button click. */
 void TBDlgDataImporter::OnAutoAlignClick() {
   try {
     AutoAlign();
@@ -659,35 +657,35 @@ void TBDlgDataImporter::OnAutoAlignClick() {
   }
 }
 
-//Deletes fixed column field definition
+/** Deletes fixed column field definition. */
 void TBDlgDataImporter::OnDeleteFieldDefinitionClick() {
   try {
-     if ( lstFixedColFieldDefs->ItemIndex > -1 && lstFixedColFieldDefs->ItemIndex <= ( int )gvIniSections.size() ) {
-       gvIniSections.RemoveElement( lstFixedColFieldDefs->ItemIndex );
-       lstFixedColFieldDefs->Items->Delete( lstFixedColFieldDefs->ItemIndex );
-     }
-     DeleteFixedColDefinitionEnable();
-     ContinueButtonEnable();
+    if (lstFixedColFieldDefs->ItemIndex > -1 && lstFixedColFieldDefs->ItemIndex <= (int)gvIniSections.size()) {
+      gvIniSections.RemoveElement(lstFixedColFieldDefs->ItemIndex);
+      lstFixedColFieldDefs->Items->Delete(lstFixedColFieldDefs->ItemIndex);
+    }
+    DeleteFixedColDefinitionEnable();
+    ContinueButtonEnable();
   }
-  catch ( ZdException & x ) {
-      x.AddCallpath( "OnDeleteFieldDefinitionClick()", "TBDlgDataImporter" );
-      throw;
+  catch (ZdException &x) {
+    x.AddCallpath("OnDeleteFieldDefinitionClick()","TBDlgDataImporter");
+    throw;
   }
 }
 
-//Called when the index of destination combo box changes
+/** Called when the index of destination combo box changes. */
 void TBDlgDataImporter::OnCmbDestinationChange() {
   try {
     cmbInputFileType->Hint = cmbInputFileType->Text;
     ContinueButtonEnable();
   }
-  catch ( ZdException & x ) {
-      x.AddCallpath( "OnDestinationChange()", "TBDlgDataImporter" );
-      throw;
+  catch (ZdException &x) {
+    x.AddCallpath("OnDestinationChange()","TBDlgDataImporter");
+    throw;
   }
 }
 
-//Response to import click.
+/** Response to import click. */
 void TBDlgDataImporter::OnExecuteImport() {
   TModalResult          Modal;
 
@@ -717,7 +715,7 @@ void TBDlgDataImporter::OnExecuteImport() {
   }
 }
 
-/** */
+/** Sets file descriptors based on file type. */
 void TBDlgDataImporter::OnExitStartPanel() {
   try {
     SetPanelsToShow();
@@ -747,7 +745,7 @@ void TBDlgDataImporter::OnExitStartPanel() {
   }
 }
 
-//Event response to changing import file type.
+/** Event response to changing import file type. */
 void TBDlgDataImporter::OnFieldDefinitionChange() {
   int   iStartColumn, iSelStart=0, iSelLength=0;
 
@@ -762,15 +760,17 @@ void TBDlgDataImporter::OnFieldDefinitionChange() {
       }
     }
   }
-
   memRawData->SelStart = iSelStart;
   memRawData->SelLength = iSelLength;
 }
 
+/** Resets grid headers in reponse to user action. */
 void TBDlgDataImporter::OnFirstRowIsHeadersClick() {
+  int   i;
+
   try {
     SetGridHeaders(chkFirstRowIsName->Checked);
-    for (int i=1; gpController && i <= gpController->GetGridColCount(); i++)
+    for (i=1; gpController && i <= gpController->GetGridColCount(); i++)
         *(gvImportFieldChoices[i]) = gpController->GetTopGrid()->Col[i]->Heading.c_str();
     tsfieldGrid->Invalidate();
     ContinueButtonEnable();
@@ -781,6 +781,7 @@ void TBDlgDataImporter::OnFirstRowIsHeadersClick() {
   }
 }
 
+/** Preparation for viewing file format panel. */
 void TBDlgDataImporter::OnViewFileFormatPanel() {
   ZdString      sFieldName;
 
@@ -797,6 +798,7 @@ void TBDlgDataImporter::OnViewFileFormatPanel() {
   }
 }
 
+/** Preparation for viewing mapping panel. */
 void TBDlgDataImporter::OnViewMappingPanel() {
   try {
     Screen->Cursor = crHourGlass;
@@ -812,8 +814,8 @@ void TBDlgDataImporter::OnViewMappingPanel() {
   }
 }
 
-//Reads in a sample of data file into a memo field to help user to determine
-//how to import file.
+/** Reads in a sample of data file into a memo field to help user
+    to determine structure of source file. */
 void TBDlgDataImporter::ReadDataFileIntoRawDisplayField() {
   ZdIO        fImportDataFile;
   char        sFileLineBuffer[1024];
@@ -836,7 +838,7 @@ void TBDlgDataImporter::ReadDataFileIntoRawDisplayField() {
   }
 }
 
-//Updates which format options panels are shown.
+/** Updates which format options panels are shown. */
 void TBDlgDataImporter::ShowFileTypeFormatPanel(int iFileType) {
   switch (iFileType) {
     case 0 : pnlCSVDefs->Visible = true;
@@ -892,7 +894,7 @@ void TBDlgDataImporter::SelectImportFile() {
   }
 }
 
-//Re-assigns grid headers to that of first row of model if not blank.
+/** Re-assigns grid headers to that of first row of model if not blank. */
 void TBDlgDataImporter::SetGridHeaders(bool bFirstRowIsHeader) {
   ZdString    sHeaderValue;
   char        sBuffer[1024];
@@ -921,10 +923,12 @@ void TBDlgDataImporter::SetGridHeaders(bool bFirstRowIsHeader) {
 
 /** Makes column headers of data grid combobox items of selection grid. */
 void TBDlgDataImporter::SetImportFieldChoices() {
+  int   i;
+  
   try {
     gvImportFieldChoices.DeleteAllElements();
     gvImportFieldChoices.push_back(gsBlank.Clone());
-    for (int i=1; gpController && i <= gpController->GetGridColCount(); i++)
+    for (i=1; gpController && i <= gpController->GetGridColCount(); i++)
         gvImportFieldChoices.push_back(new ZdString(gpController->GetTopGrid()->Col[i]->Heading.c_str()));
     tsfieldGrid->Invalidate();
   }
@@ -961,9 +965,10 @@ void TBDlgDataImporter::SetMappings(BZdFileImporter & FileImporter) {
   }
 }
 
-//Sets which panels and the order of showing panels.
+/** Sets which panels and the order of showing panels. */
 void TBDlgDataImporter::SetPanelsToShow() {
   try {
+    //Skip file format panel for dBase since we already know structure.
     if (! strcmpi(ZdFileName(edtDataFile->Text.c_str()).GetExtension(), ZdDBFFileType.GetFileTypeExtension())) {
       gvPanels.clear();
       gvPanels.push_back(Start);
@@ -1001,8 +1006,7 @@ void TBDlgDataImporter::Setup() {
   }
 }
 
-//Prepares grid for sample viewing of import file.
-//At this point, we have a zds file
+/** Prepares grid for sample viewing of source file. */
 void TBDlgDataImporter::OpenSourceFile() {
   try {
     delete gpController; gpController = 0;
@@ -1058,7 +1062,7 @@ void TBDlgDataImporter::OpenSourceFile() {
   }
 }
 
-/** */
+/** Setup field descriptors for case file. */
 void TBDlgDataImporter::SetupCaseFileFieldDescriptors() {
   try {
     gSaTScanVariablesFieldMap.clear();
@@ -1082,7 +1086,7 @@ void TBDlgDataImporter::SetupCaseFileFieldDescriptors() {
   }
 }
 
-// fill the control File field descriptor vector with the appropriate field names for a control file
+/** Setup field descriptors for control file. */
 void TBDlgDataImporter::SetupControlFileFieldDescriptors() {
   try {
     gSaTScanVariablesFieldMap.clear();
@@ -1096,7 +1100,7 @@ void TBDlgDataImporter::SetupControlFileFieldDescriptors() {
   }
 }
 
-// fill the Geo File field descriptor vector with the appropriate field names for a geo file
+/** Setup field descriptors for coordinates file. */
 void TBDlgDataImporter::SetupGeoFileFieldDescriptors() {
   try {
     gSaTScanVariablesFieldMap.clear();
@@ -1120,7 +1124,7 @@ void TBDlgDataImporter::SetupGeoFileFieldDescriptors() {
   }
 }
 
-// fill the Geo File field descriptor vector with the appropriate field names for a geo file
+/** Setup field descriptors for special grid file. */
 void TBDlgDataImporter::SetupGridFileFieldDescriptors() {
   try {
     gSaTScanVariablesFieldMap.clear();
@@ -1137,7 +1141,7 @@ void TBDlgDataImporter::SetupGridFileFieldDescriptors() {
   }
 }
 
-// fill the Geo File field descriptor vector with the appropriate field names for a geo file
+/** Setup field descriptors for population file. */
 void TBDlgDataImporter::SetupPopFileFieldDescriptors() {
   try {
     gSaTScanVariablesFieldMap.clear();
@@ -1154,7 +1158,7 @@ void TBDlgDataImporter::SetupPopFileFieldDescriptors() {
   }
 }
 
-//Causes the first panel of importer to be shown.
+/** Causes the first panel of importer to be shown. */
 void TBDlgDataImporter::ShowFirstPanel() {
   try {
     gitrCurrentPanel = gvPanels.begin();
@@ -1166,7 +1170,7 @@ void TBDlgDataImporter::ShowFirstPanel() {
   }
 }
 
-//Causes next panel of importer to be shown.
+/** Causes next panel of importer to be shown. */
 void TBDlgDataImporter::ShowNextPanel() {
   try {
     //Note attributes of current panel when needed.
@@ -1190,7 +1194,7 @@ void TBDlgDataImporter::ShowNextPanel() {
   }
 }
 
-//Causes previous panel of importer to be shown.
+/** Causes previous panel of importer to be shown. */
 void TBDlgDataImporter::ShowPreviousPanel() {
   try {
     if (gitrCurrentPanel != gvPanels.begin()) {
@@ -1210,6 +1214,7 @@ void TBDlgDataImporter::ShowPreviousPanel() {
   }
 }
 
+/** Set options from file format panel. */
 void TBDlgDataImporter::UpdateFileFormatOptions() {
   int  iIgnoreFirstRows = 0;
 
