@@ -6,6 +6,8 @@
 #include "TimeEstimate.h"
 #include "TimeIntervalRange.h"
 #include "ClusterDataFactory.h"
+#include "NormalClusterDataFactory.h"
+#include "CategoricalClusterDataFactory.h"
 #include "LikelihoodCalculation.h"
 #include "MostLikelyClustersContainer.h"
 
@@ -51,7 +53,7 @@ class CAnalysis {
     void                                AllocateLikelihoodObject();
     virtual const CCluster            & CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway) = 0;
     CMeasureList                      * GetNewMeasureListObject() const;
-    CTimeIntervals                    * GetNewTimeIntervalsObject(IncludeClustersType eType) const;
+    CTimeIntervals                    * GetNewTemporalDataEvaluatorObject(IncludeClustersType eType) const;
 
   public:
     CAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection);

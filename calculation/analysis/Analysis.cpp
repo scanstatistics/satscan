@@ -9,6 +9,8 @@
 #include "WilcoxonLikelihoodCalculation.h"
 #include "NormalLikelihoodCalculation.h"
 #include "ExponentialLikelihoodCalculation.h"
+#include "OrdinalLikelihoodCalculation.h"
+#include "MeasureList.h"
 
 /** constructor */
 TopClustersContainer::TopClustersContainer(const CSaTScanData & Data)
@@ -129,13 +131,15 @@ CAnalysis::~CAnalysis() {
 void CAnalysis::AllocateLikelihoodObject() {
   try {
     //create likelihood calculator
-    if (gParameters.GetProbabiltyModelType() == BERNOULLI)
+    if (gParameters.GetProbabilityModelType() == BERNOULLI)
       gpLikelihoodCalculator = new BernoulliLikelihoodCalculator(gDataHub);
-    else if (gParameters.GetProbabiltyModelType() == NORMAL)
+    else if (gParameters.GetProbabilityModelType() == NORMAL)
       gpLikelihoodCalculator = new NormalLikelihoodCalculator(gDataHub);
-    else if (gParameters.GetProbabiltyModelType() == SURVIVAL)
+    else if (gParameters.GetProbabilityModelType() == ORDINAL)
+      gpLikelihoodCalculator = new OrdinalLikelihoodCalculator(gDataHub);
+    else if (gParameters.GetProbabilityModelType() == SURVIVAL)
       gpLikelihoodCalculator = new ExponentialLikelihoodCalculator(gDataHub);
-    else if (gParameters.GetProbabiltyModelType() == RANK)
+    else if (gParameters.GetProbabilityModelType() == RANK)
       gpLikelihoodCalculator = new WilcoxonLikelihoodCalculator(gDataHub);
     else
       gpLikelihoodCalculator = new PoissonLikelihoodCalculator(gDataHub);
@@ -152,7 +156,7 @@ void CAnalysis::AllocateLikelihoodObject() {
     simulations by the same algorithm as the real data. */
 double CAnalysis::ExecuteSimulation(const AbtractDataStreamGateway& DataGateway) {
   if (gbMeasureListReplications)
-    return MonteCarlo(DataGateway.GetDataStreamInterface(0));
+    return MonteCarlo(DataGateway.GetDataSetInterface(0));
   else
     return FindTopRatio(DataGateway);
 }
@@ -204,13 +208,21 @@ CMeasureList * CAnalysis::GetNewMeasureListObject() const {
   return 0;
 }
 
-CTimeIntervals * CAnalysis::GetNewTimeIntervalsObject(IncludeClustersType eType) const {
-  if (gParameters.GetProbabiltyModelType() == NORMAL)
-    return new NormalTimeIntervalRange(gDataHub, *gpLikelihoodCalculator, eType);
+/** Returns newly allocated CTimeIntervals derived object based upon parameter
+    settings. Note that caller is responsible for deletion of object. */
+CTimeIntervals * CAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClustersType eType) const {
+  if (gParameters.GetProbabilityModelType() == NORMAL)
+    return new NormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
+  else if (gParameters.GetProbabilityModelType() == ORDINAL) {
+    if (gParameters.GetNumDataStreams() == 1)
+      return new CategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
+    else
+      return new MultiSetCategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
+  }
   else if (gParameters.GetNumDataStreams() > 1)
-    return new MultiStreamTimeIntervalRange(gDataHub, *gpLikelihoodCalculator, eType);
+    return new MultiSetTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
   else
-    return new TimeIntervalRange(gDataHub, *gpLikelihoodCalculator, eType);
+    return new TemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
 }
 
 /** internal initialization */
@@ -224,12 +236,19 @@ void CAnalysis::Init() {
 void CAnalysis::Setup() {
   try {
     //create cluster data factory
-    if (gParameters.GetProbabiltyModelType() == NORMAL) {
+    if (gParameters.GetProbabilityModelType() == NORMAL) {
       gpClusterDataFactory = new NormalClusterDataFactory();
       gbMeasureListReplications = false;
     }
+    else if (gParameters.GetProbabilityModelType() == ORDINAL) {
+      gbMeasureListReplications = false;
+      if (gParameters.GetNumDataStreams() == 1)
+        gpClusterDataFactory = new CategoricalClusterDataFactory();
+      else
+        gpClusterDataFactory = new MultiSetsCategoricalClusterDataFactory(gParameters);
+    }
     else if (gParameters.GetNumDataStreams() > 1) {
-      gpClusterDataFactory = new MultipleStreamsClusterDataFactory(gParameters);
+      gpClusterDataFactory = new MultiSetClusterDataFactory(gParameters);
       gbMeasureListReplications = false;
     }
     else {
