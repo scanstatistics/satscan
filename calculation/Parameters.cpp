@@ -1470,6 +1470,7 @@ void CParameters::SaveOutputFileSection(ZdIniFile& file) {
       pSection->SetString(DBASE_RELATIVE_RISKS, gbRelativeRiskDBF ? YES : NO);
       pSection->SetString(SAVE_SIM_LLRS, m_bSaveSimLogLikelihoods ? YES : NO);
       pSection->SetString(DBASE_LOG_LIKELI, gbLogLikelihoodDBF ? YES : NO);
+      pSection->SetInt(CRIT_REPORT_SEC_CLUSTERS_LINE, m_iCriteriaSecondClusters);
    }
    catch (ZdException &x) {
       x.AddCallpath("SaveOutputFileSection()", "CParameters");
