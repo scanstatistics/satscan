@@ -11,8 +11,27 @@
  Header file for RandomDistribution.cpp
  **********************************************************************/
 long    Bernoulli(float p, RandomNumberGenerator & rng);
-long    Binomial(long n, float p, RandomNumberGenerator & rng);
 long    Equilikely(long a, long b, RandomNumberGenerator & rng);
 double  gammln(double xx);
+
+/** Generates binomial(n, p) distributed variable. */
+class BinomialGenerator {
+  private:
+    double      pold;
+    double      pc;
+    double      plog;
+    double      pclog;
+    double      en;
+    double      oldg;
+    int         nold;
+
+    void        Init() {pold = -1.0; nold = -1;}
+
+  public:
+    BinomialGenerator() {Init();}
+    ~BinomialGenerator(){}
+
+    long        GetBinomialDistributedVariable(long n, float pp, RandomNumberGenerator & rng);
+};
 //*****************************************************************************
 #endif

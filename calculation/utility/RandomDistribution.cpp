@@ -25,17 +25,42 @@ long Bernoulli(float p, RandomNumberGenerator & rng)
 } /* Bernoulli() */
 
 /**********************************************************************
- Returns binomial(n, p) distributed variable
+ Gamma function as used by the Binomial random generator function
  **********************************************************************/
-long Binomial(long n, float pp, RandomNumberGenerator & rng)
+
+//double /*floatKR-7/11/97*/ gammln(xx)
+//double /*floatKR-7/11/97*/ xx;
+double gammln(double xx)
 {
-   long j;
-   static int nold=(-1);
-   double am,em,g,angle,p,bnl,sq,t,y;
-   static double pold=(-1.0),pc,plog,pclog,en,oldg;
-//   double /*floatKR-7/11/97*/ gammln();
-   long rtn;
-  // double rando;
+   double x,tmp,ser;
+   static double cof[6]={76.18009173,-86.50532033,24.01409822,
+      -1.231739516,0.120858003e-2,-0.536382e-5};
+   int j;
+
+   x=xx-1.0;
+   tmp=x+5.5;
+   tmp -= (x+0.5)*log(tmp);
+   ser=1.0;
+   for (j=0;j<=5;j++) {
+      x += 1.0;
+      ser += cof[j]/x;
+   }
+   return -tmp+log(2.50662827465*ser);
+} /* Gammln() */
+
+
+/**********************************************************************
+ Returns integers uniformly distributed from a to b, inclusive
+ **********************************************************************/
+long Equilikely(long a, long b, RandomNumberGenerator & rng)
+{
+   return a + (long) floor((b - a + 1) * rng.GetRandomDouble());
+} /* Equilikely() */
+
+/** Returns binomial(n, p) distributed variable. */
+long BinomialGenerator::GetBinomialDistributedVariable(long n, float pp, RandomNumberGenerator & rng) {
+   long         j, rtn;
+   double       am,em,g,angle,p,bnl,sq,t,y;
 
    p=(pp <= 0.5 ? pp : 1.0-pp);
    am=n*p;
@@ -78,43 +103,5 @@ long Binomial(long n, float pp, RandomNumberGenerator & rng)
    if (p != pp) bnl=n-bnl;
    rtn = (long)bnl;
    return rtn;
-} /* Binomial() */
-
-/**********************************************************************
- Gamma function as used by the Binomial random generator function
- **********************************************************************/
-
-//double /*floatKR-7/11/97*/ gammln(xx)
-//double /*floatKR-7/11/97*/ xx;
-double gammln(double xx)
-{
-   double x,tmp,ser;
-   static double cof[6]={76.18009173,-86.50532033,24.01409822,
-      -1.231739516,0.120858003e-2,-0.536382e-5};
-   int j;
-
-   x=xx-1.0;
-   tmp=x+5.5;
-   tmp -= (x+0.5)*log(tmp);
-   ser=1.0;
-   for (j=0;j<=5;j++) {
-      x += 1.0;
-      ser += cof[j]/x;
-   }
-   return -tmp+log(2.50662827465*ser);
-} /* Gammln() */
-
-
-/**********************************************************************
- Returns integers uniformly distributed from a to b, inclusive
- **********************************************************************/
-long Equilikely(long a, long b, RandomNumberGenerator & rng)
-{
-   return a + (long) floor((b - a + 1) * rng.GetRandomDouble());
-} /* Equilikely() */
-
-
-
-
-
+}
 
