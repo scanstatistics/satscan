@@ -3,8 +3,8 @@
 #include "MeasureList.h"
 
 /** Constructor */
-CMeasureList::CMeasureList(const CSaTScanData & SaTScanData, BasePrint & PrintDirection)
-             : gSaTScanData(SaTScanData), gPrintDirection(PrintDirection) {
+CMeasureList::CMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator, BasePrint & PrintDirection)
+             : gSaTScanData(SaTScanData), gPrintDirection(PrintDirection), gLikelihoodCalculator(LikelihoodCalculator) {
   Setup();
 }
 
@@ -15,7 +15,7 @@ CMeasureList::~CMeasureList() {}
 void CMeasureList::AddMaximumLogLikelihood(double dMaxLogLikelihood, int iIteration) {
   double dMaxLogLikelihoodRatio, dDuczmalCorrection;
 
-  dMaxLogLikelihoodRatio = dMaxLogLikelihood - gSaTScanData.GetProbabilityModel().GetLogLikelihoodForTotal();
+  dMaxLogLikelihoodRatio = dMaxLogLikelihood - gLikelihoodCalculator.GetLogLikelihoodForTotal();
   if (iIteration > 0 && gSaTScanData.GetParameters().GetNumRequestedEllipses() && gSaTScanData.GetParameters().GetDuczmalCorrectEllipses()) {
     dDuczmalCorrection = GetDuczmalCorrection(gSaTScanData.GetShapesArray()[iIteration - 1]);
     gvMaximumLogLikelihoodRatios.push_back(dMaxLogLikelihoodRatio * dDuczmalCorrection);
@@ -91,8 +91,8 @@ void CMeasureList::Setup() {
 }
 
 /** Constructor */
-CMinMeasureList::CMinMeasureList(const CSaTScanData & SaTScanData, BasePrint & PrintDirection)
-                :CMeasureList(SaTScanData, PrintDirection) {
+CMinMeasureList::CMinMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator, BasePrint & PrintDirection)
+                :CMeasureList(SaTScanData, LikelihoodCalculator, PrintDirection) {
   try {
     Init();
     Setup();
@@ -120,18 +120,25 @@ void CMinMeasureList::Display(FILE* pFile) const {
 }
 
 void CMinMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
-  int           i, iListSize = gSaTScanData.GetTotalCases();
-  CModel      & ProbModel(gSaTScanData.GetProbabilityModel());
+  int           i, iHalfListSize = gSaTScanData.GetTotalCases()/2, iListSize = gSaTScanData.GetTotalCases();
   double        dLogLikelihood, dMaxExcess(0),
                 dRisk(gSaTScanData.GetTotalCases()/gSaTScanData.GetTotalMeasure()),
-                dMaximumLogLikelihood(ProbModel.GetLogLikelihoodForTotal());
+                dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
   i = 2; //Start case index at two -- don't want to consider simulations
          //with one case as this could indicate a false high loglikelihood.
-  for (;i <= iListSize; i++) {
+  for (;i < iHalfListSize; i++) {
      if (i - gpMinMeasures[i] * dRisk > dMaxExcess) {
        dMaxExcess = i - gpMinMeasures[i] * dRisk;
-       dLogLikelihood = ProbModel.CalcLogLikelihood(i, gpMinMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
+       if (dLogLikelihood > dMaximumLogLikelihood)
+         dMaximumLogLikelihood = dLogLikelihood;
+     }
+  }
+
+  for (i=max(iHalfListSize, 2); i <= iListSize; i++) {
+     if (gpMinMeasures[i] != 0 && i > gpMinMeasures[i]) {
+       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
@@ -142,16 +149,23 @@ void CMinMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
 }
 
 void CMinMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
-  int           i, iListSize = gSaTScanData.GetTotalCases();
-  CModel      & ProbModel(gSaTScanData.GetProbabilityModel());
+  int           i, iHalfListSize = gSaTScanData.GetTotalCases()/2, iListSize = gSaTScanData.GetTotalCases();
   double        dLogLikelihood, dMaxExcess(0),
-                dMaximumLogLikelihood(ProbModel.GetLogLikelihoodForTotal());
+                dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
   i = 2; //Start case index at two -- don't want to consider simulations
          //with one case as this could indicate a false high loglikelihood.
-  for (;i <= iListSize; i++) {
+  for (;i < iHalfListSize; i++) {
      if (i - gpMinMeasures[i] > dMaxExcess) {
        dMaxExcess = i - gpMinMeasures[i];
-       dLogLikelihood = ProbModel.CalcLogLikelihood(i, gpMinMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
+       if (dLogLikelihood > dMaximumLogLikelihood)
+         dMaximumLogLikelihood = dLogLikelihood;
+     }
+  }
+
+  for (i=max(iHalfListSize, 2); i <= iListSize; i++) {
+     if (gpMinMeasures[i] != 0 && i > gpMinMeasures[i]) {
+       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
@@ -193,8 +207,8 @@ void CMinMeasureList::Setup() {
 
 
 /** Constructor */
-CMaxMeasureList::CMaxMeasureList(const CSaTScanData & SaTScanData, BasePrint & PrintDirection)
-                :CMeasureList(SaTScanData, PrintDirection) {
+CMaxMeasureList::CMaxMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator, BasePrint & PrintDirection)
+                :CMeasureList(SaTScanData, LikelihoodCalculator, PrintDirection) {
   try {
     Init();
     Setup();
@@ -223,17 +237,14 @@ void CMaxMeasureList::Display(FILE* pFile) const {
 
 void CMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
   int           i, iListSize = gSaTScanData.GetTotalCases();
-  CModel      & ProbModel(gSaTScanData.GetProbabilityModel());
-  double        dLogLikelihood, dMaxDeficiency(0),
-                dRisk(gSaTScanData.GetTotalCases()/gSaTScanData.GetTotalMeasure()),
-                dMaximumLogLikelihood(ProbModel.GetLogLikelihoodForTotal());
+  double        dLogLikelihood, dTotalMeasure(gSaTScanData.GetTotalMeasure()),
+                dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
-  for (i=0; i <= iListSize; ++i) {
-     if (gpMaxMeasures[i] * dRisk - i > dMaxDeficiency) {
-       dMaxDeficiency = gpMaxMeasures[i] * dRisk - i;
-       dLogLikelihood = ProbModel.CalcLogLikelihood(i, gpMaxMeasures[i]);
+  for (i=0; i <= iListSize; i++) {
+     if (gpMaxMeasures[i] != 0 && i * dTotalMeasure < gpMaxMeasures[i] * iListSize) {
+       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
-         dMaximumLogLikelihood = dLogLikelihood;
+           dMaximumLogLikelihood = dLogLikelihood;
      }
   }
 
@@ -243,16 +254,14 @@ void CMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
 
 void CMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
   int           i, iListSize = gSaTScanData.GetTotalCases();
-  CModel      & ProbModel(gSaTScanData.GetProbabilityModel());
-  double        dLogLikelihood, dMaxDeficiency(0),
-                dMaximumLogLikelihood(ProbModel.GetLogLikelihoodForTotal());
+  double        dLogLikelihood, dTotalMeasure(gSaTScanData.GetTotalMeasure()),
+                dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
-  for (i=0; i <= iListSize; ++i) {
-     if (gpMaxMeasures[i] - i > dMaxDeficiency) {
-       dMaxDeficiency = gpMaxMeasures[i] - i;
-       dLogLikelihood = ProbModel.CalcLogLikelihood(i, gpMaxMeasures[i]);
+  for (i=0; i <= iListSize; i++) {
+     if (gpMaxMeasures[i] != 0 && i < gpMaxMeasures[i]) {
+       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
-         dMaximumLogLikelihood = dLogLikelihood;
+           dMaximumLogLikelihood = dLogLikelihood;
      }
   }
 
@@ -292,8 +301,8 @@ void CMaxMeasureList::Setup() {
 
 
 /** Constructor */
-CMinMaxMeasureList::CMinMaxMeasureList(const CSaTScanData & SaTScanData, BasePrint & PrintDirection)
-                   :CMeasureList(SaTScanData, PrintDirection) {
+CMinMaxMeasureList::CMinMaxMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator, BasePrint & PrintDirection)
+                   :CMeasureList(SaTScanData, LikelihoodCalculator, PrintDirection) {
   try {
     Init();
     Setup();
@@ -329,22 +338,22 @@ void CMinMaxMeasureList::Display(FILE* pFile) const {
 
 void CMinMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
   int           i, iListSize = gSaTScanData.GetTotalCases();
-  CModel      & ProbModel(gSaTScanData.GetProbabilityModel());
   double        dLogLikelihood, dMaxExcess(0), dMaxDeficiency(0),
+                dTotalMeasure(gSaTScanData.GetTotalMeasure()),
                 dRisk(gSaTScanData.GetTotalCases()/gSaTScanData.GetTotalMeasure()),
-  		dMaximumLogLikelihood(ProbModel.GetLogLikelihoodForTotal());
+  		dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
   for (i=0; i <= iListSize; ++i) {
      if (i > 1 && i - gpMinMeasures[i] * dRisk > dMaxExcess) {
        dMaxExcess = i - gpMinMeasures[i] * dRisk;
-       dLogLikelihood = ProbModel.CalcLogLikelihood(i, gpMinMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
 
      if (gpMaxMeasures[i] * dRisk - i > dMaxDeficiency) {
        dMaxDeficiency = gpMaxMeasures[i] * dRisk - i;
-       dLogLikelihood = ProbModel.CalcLogLikelihood(i, gpMaxMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
            dMaximumLogLikelihood = dLogLikelihood;
      }
@@ -355,21 +364,32 @@ void CMinMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) 
 }
 
 void CMinMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
-  int           i, iListSize = gSaTScanData.GetTotalCases();
-  CModel      & ProbModel(gSaTScanData.GetProbabilityModel());
-  double        dLogLikelihood, dMaxExcess(0), dMaxDeficiency(0),
-  		dMaximumLogLikelihood(ProbModel.GetLogLikelihoodForTotal());
+  int           i, iHalfListSize = gSaTScanData.GetTotalCases()/2, iListSize = gSaTScanData.GetTotalCases();
+  double        dLogLikelihood, dMaxExcess(0),
+  		dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
-  for (i=0; i <= iListSize; ++i) {
+  for (i=0; i < iHalfListSize; ++i) {
      if (i > 1 && i - gpMinMeasures[i] > dMaxExcess) {
        dMaxExcess = i - gpMinMeasures[i];
-       dLogLikelihood = ProbModel.CalcLogLikelihood(i, gpMinMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
-     if (gpMaxMeasures[i] - i > dMaxDeficiency) {
-       dMaxDeficiency = gpMaxMeasures[i] - i;
-       dLogLikelihood = ProbModel.CalcLogLikelihood(i, gpMaxMeasures[i]);
+     if (gpMaxMeasures[i] != 0 && i < gpMaxMeasures[i]) {
+       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMaxMeasures[i]);
+       if (dLogLikelihood > dMaximumLogLikelihood)
+           dMaximumLogLikelihood = dLogLikelihood;
+     }
+  }
+
+  for (i=iHalfListSize; i <= iListSize; ++i) {
+     if (i > 1 && gpMinMeasures[i] != 0 && i > gpMinMeasures[i]) {
+       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
+       if (dLogLikelihood > dMaximumLogLikelihood)
+         dMaximumLogLikelihood = dLogLikelihood;
+     }
+     if (gpMaxMeasures[i] != 0 && i < gpMaxMeasures[i]) {
+       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
            dMaximumLogLikelihood = dLogLikelihood;
      }
