@@ -1066,7 +1066,7 @@ bool TInfo::tiCheckCasesHavePop() const
           }
         if (iTractPopulation == 0)
            {
-           sprintf(sMessage,"Total population is zero for tract %i", TractInfo[i].tid);
+           sprintf(sMessage,"Total population is zero for tract %s", TractInfo[i].tid);
            SSGenerateException(sMessage, "TInfo");
            }
     
