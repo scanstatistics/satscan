@@ -166,7 +166,8 @@ void CPoissonModel::MakeData()
   {
     if (m_pData->m_nTotalMeasure-cummeasure > 0)
        c = Binomial(m_pData->m_nTotalCases - cumcases,
-          m_pData->m_pMeasure[0][tract] / (m_pData->m_nTotalMeasure-cummeasure));
+          m_pData->m_pMeasure[0][tract] / (m_pData->m_nTotalMeasure-cummeasure),
+          m_RandomNumberGenerator);
       //c = Binomial(m_pData->m_nTotalCases - cumcases,
       //    (float)(m_pData->m_pMeasure[0][tract] / (m_pData->m_nTotalMeasure-cummeasure)));
     else
@@ -180,7 +181,8 @@ void CPoissonModel::MakeData()
     {
       if(m_pData->m_pMeasure[interval][tract]>0)
         d = Binomial(m_pData->m_pSimCases[interval][tract],
-            1 - m_pData->m_pMeasure[interval+1][tract] / m_pData->m_pMeasure[interval][tract]);
+            1 - m_pData->m_pMeasure[interval+1][tract] / m_pData->m_pMeasure[interval][tract],
+            m_RandomNumberGenerator);
         //d = Binomial(m_pData->m_pSimCases[interval][tract],
         //    (float)(1 - m_pData->m_pMeasure[interval+1][tract] / m_pData->m_pMeasure[interval][tract]));
       else
