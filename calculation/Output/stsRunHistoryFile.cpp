@@ -124,7 +124,7 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
 }
 
 // converter function to turn the iType into a legible string for printing
-// pre :  eAnalysisType is contained in (PURELYSPATIAL, PURELYTEMPORAL, SPACETIME, PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE)
+// pre :  eAnalysisType is contained in (PURELYSPATIAL, PURELYTEMPORAL, SPACETIME, PROSPECTIVESPACETIME)
 // post : string will be assigned a formatted value based on iType
 void stsRunHistoryFile::GetAnalysisTypeString(ZdString& sTempValue, AnalysisType eAnalysisType) {
   try {
@@ -133,7 +133,6 @@ void stsRunHistoryFile::GetAnalysisTypeString(ZdString& sTempValue, AnalysisType
       case PURELYTEMPORAL            : sTempValue = "Purely Temporal"; break;
       case SPACETIME                 : sTempValue = "Space Time";  break;
       case PROSPECTIVESPACETIME      : sTempValue = "Prospective Space Time"; break;
-      case PURELYSPATIALMONOTONE     : sTempValue = "Purely Spatial Monotone"; break;
       case SPATIALVARTEMPTREND       : sTempValue = "Spatial Variation/Temporal Trend"; break;
       case PROSPECTIVEPURELYTEMPORAL : sTempValue = "Prospective Purely Temporal"; break;
       default : ZdException::GenerateNotification("Invalid analysis type in the run history file.", "stsRunHistoryFile");
