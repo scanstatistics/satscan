@@ -1080,6 +1080,12 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           edtMaxTemporalClusterSize->Color = clInactiveBorder;
           // disable start date PST
           GroupBox8->Enabled = false;
+          edtProspYear->Enabled = false;
+          edtProspMonth->Enabled = false;
+          edtProspDay->Enabled = false;
+          edtProspYear->Color = clInactiveBorder;
+          edtProspMonth->Color = clInactiveBorder;
+          edtProspDay->Color = clInactiveBorder;
           break;
        case 1:                     // purely temporal
           // disable None option in case precision time
@@ -1114,6 +1120,12 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           edtMaxTemporalClusterSize->Color = clWindow;
           // Disables Start date PST
           GroupBox8->Enabled = false;
+          edtProspYear->Enabled = false;
+          edtProspMonth->Enabled = false;
+          edtProspDay->Enabled = false;
+          edtProspYear->Color = clInactiveBorder;
+          edtProspMonth->Color = clInactiveBorder;
+          edtProspDay->Color = clInactiveBorder;
           break;
        case 2:                     // retrospective space-time
           // disable None option in case precision time
@@ -1148,6 +1160,12 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           edtMaxTemporalClusterSize->Color = clWindow;
           //Disables Start date PST
           GroupBox8->Enabled = false;
+          edtProspYear->Enabled = false;
+          edtProspMonth->Enabled = false;
+          edtProspDay->Enabled = false;
+          edtProspYear->Color = clInactiveBorder;
+          edtProspMonth->Color = clInactiveBorder;
+          edtProspDay->Color = clInactiveBorder;
           break;
        case 3:                     // prospective space-time
           rgPrecisionTimes->Controls[0]->Enabled = false;
@@ -1181,6 +1199,12 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           edtMaxTemporalClusterSize->Color = clWindow;
           //Enables Start Date PST
           GroupBox8->Enabled = true;
+          edtProspYear->Enabled = true;
+          edtProspMonth->Enabled = true;
+          edtProspDay->Enabled = true;
+          edtProspYear->Color =  clWindow;
+          edtProspMonth->Color = clWindow;
+          edtProspDay->Color =  clWindow;
           break;
     }
 
@@ -1267,10 +1291,10 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
     }
 
     // prospective year group box
-    if(GroupBox8->Enabled) {
-       edtProspYear->Enabled = rgPrecisionTimes->ItemIndex == DAY || rgPrecisionTimes->ItemIndex == MONTH || rgPrecisionTimes->ItemIndex == YEAR;
-       edtProspMonth->Enabled = rgPrecisionTimes->ItemIndex == DAY || rgPrecisionTimes->ItemIndex == MONTH;
-       edtProspDay->Enabled = rgPrecisionTimes->ItemIndex == DAY;
+    if(gpParams->m_nAnalysisType == PROSPECTIVESPACETIME) {
+       edtProspYear->Enabled &= rgPrecisionTimes->ItemIndex == DAY || rgPrecisionTimes->ItemIndex == MONTH || rgPrecisionTimes->ItemIndex == YEAR;
+       edtProspMonth->Enabled &= rgPrecisionTimes->ItemIndex == DAY || rgPrecisionTimes->ItemIndex == MONTH;
+       edtProspDay->Enabled &= rgPrecisionTimes->ItemIndex == DAY;
 
        edtProspYear->Color = edtProspYear->Enabled ? clWindow : clInactiveBorder;
        edtProspMonth->Color = edtProspMonth->Enabled ? clWindow : clInactiveBorder;
