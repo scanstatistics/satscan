@@ -78,7 +78,7 @@ class ClusterRecord : public BaseOutputRecord {
       void	SetExpected(const double dExpected) { gdExpected = dExpected; }
       void	SetFirstCoordinate(const ZdString& sFirstCoord) { gsFirstCoord = sFirstCoord; }
       void	SetLocationID(const ZdString& sLocationID) { gsLocationID = sLocationID; }
-      void	SetLogLikelihood(const double dLogLikelihood) { gdLogLikelihood = dLogLikelihood; }
+      void	SetLogLikelihoodRatio(const double dLogLikelihood) { gdLogLikelihood = dLogLikelihood; }
       void	SetNumAreas(const long lNumAreas) { glNumAreas = lNumAreas; }
       void	SetObserved(const long lObserved) { glObserved = lObserved; }
       void	SetPValue(const double dPValue) { gdPValue = dPValue; }

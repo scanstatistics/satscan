@@ -245,18 +245,12 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
       pRecord->SetLocationID(sTempValue);
 
       // log likliehood or tst_stat if space-time permutation
-      if(geProbabiltyModelType == SPACETIMEPERMUTATION) {
-         if(theCluster.m_iEllipseOffset !=0 && gbDuczmalCorrect)
-            pRecord->SetTestStat(theCluster.GetDuczmalCorrectedLogLikelihoodRatio());
-         else
-            pRecord->SetTestStat(theCluster.m_nRatio);
-      }
+      if (geProbabiltyModelType == SPACETIMEPERMUTATION)
+        pRecord->SetTestStat(theCluster.m_nRatio);
       else {
-         pRecord->SetLogLikelihood(theCluster.m_nRatio);
-         if (gbDuczmalCorrect)
-           //print duczmal adjusted LLR even if shape is circle, like in results file.
-           //calling GetDuczmalCorrectedLogLikelihoodRatio() for a circle returns LLR.
-           pRecord->SetTestStat(theCluster.GetDuczmalCorrectedLogLikelihoodRatio());
+        pRecord->SetLogLikelihoodRatio(theCluster.m_nRatio/theCluster.m_DuczmalCorrection);
+        if (gbDuczmalCorrect)
+          pRecord->SetTestStat(theCluster.m_nRatio);
       }
 
       pRecord->SetNumAreas(theCluster.GetClusterType() == PURELYTEMPORAL ? theData.GetNumTracts() : theCluster.m_nTracts);
@@ -327,22 +321,22 @@ void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, Z
        switch (giCoordType) {
          case CARTESIAN : for (i=0; i < pData.GetParameters().GetDimensionsOfData(); ++i) {
                              if (i == 0)
-                               sLatitude.printf("%12.2f", pCoords[i]);
+                               sLatitude.printf("%12.2lf", pCoords[i]);
                              else if (i == 1)
-                               sLongitude.printf("%12.2f", pCoords[i]);
+                               sLongitude.printf("%12.2lf", pCoords[i]);
                              else  {
-                               sprintf(sAdditBuffer, "%12.2f", pCoords[i]);
+                               sprintf(sAdditBuffer, "%12.2lf", pCoords[i]);
                                vAdditCoords.push_back(sAdditBuffer);
                              }
                           }
                           break;
          case LATLON    : ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
-                          sLongitude.printf("%lf", fLongitude);
-                          sLatitude.printf("%lf", fLatitude);
+                          sLongitude.printf("%f", fLongitude);
+                          sLatitude.printf("%f", fLatitude);
                           break;
          default : ZdGenerateException("Unknown coordinate type '%d'.","SetCoordinates()", giCoordType);
        }
-       fRadius = (float)sqrt((pData.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
+       fRadius = (float)(sqrt((pData.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2)));
        sRadius.printf("%5.2f", fRadius);
        free(pCoords);
        free(pCoords2);
