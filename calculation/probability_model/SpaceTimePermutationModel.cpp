@@ -230,6 +230,7 @@ bool CSpaceTimePermutationModel::ReCalculateMeasure()
        if (! m_pData->m_pMeasure)
          SSGenerateException("m_pMeasure array not allocated.", "ReCalculateMeasure()");
        m_pData->m_nTotalMeasure  = 0;
+       m_pData->m_nTotalPop = 0;
 
        // set m_pMeasure[i] = S*T/C (expected number of cases in a time/tract)
        // S = number of cases in spacial area irrespective of time
