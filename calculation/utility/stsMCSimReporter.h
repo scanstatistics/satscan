@@ -34,7 +34,7 @@ public:
       //if (bFinish) {} else {}//to be added--bws17mar2004
       //if appropriate, estimate time required to complete all jobs and report it.
 
-      gPrintDirection.SatScanPrintf(gszReplicationFormatString, id, how_many_jobs_total, result);
+      gPrintDirection.SatScanPrintf(gszReplicationFormatString, how_many_job_results_registered, how_many_jobs_total, result);
     }
     catch (ZdException & e)
     {
