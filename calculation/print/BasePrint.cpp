@@ -30,6 +30,7 @@ std::string & BasePrint::GetInputFileType(eInputFileType eType, std::string& sNa
     case COORDFILE        : sName = "coordinates"; break;
     case GRIDFILE         : sName = "special grid"; break;
     case MAXCIRCLEPOPFILE : sName = "maximum circle population"; break;
+    case RELATIVERISKFILE : sName = "relative risks"; break;
     default : ZdException::GenerateNotification("Invalid input file type warning message!", "GetInputFileType()");
   }
   return sName;

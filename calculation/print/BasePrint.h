@@ -9,7 +9,7 @@
 
 class BasePrint {
   public:
-    enum eInputFileType {CASEFILE, CONTROLFILE, POPFILE, COORDFILE, GRIDFILE, MAXCIRCLEPOPFILE};
+    enum eInputFileType {CASEFILE, CONTROLFILE, POPFILE, COORDFILE, GRIDFILE, MAXCIRCLEPOPFILE, RELATIVERISKFILE};
   private:
     char                              * gsMessage;
     eInputFileType                      geInputFileType;
