@@ -800,10 +800,7 @@ void CAnalysis::RankTopClusters()
          iNumElements = m_pData->m_nTracts;
       pRadius = new float[iNumElements];
       pCoords = (double**)Smalloc(iNumElements * sizeof(double*),gpPrintDirection);
-
-      // Initialize pCoords[] to NULL for now
-      for(i=0; i<iNumElements; i++)
-      	pCoords[i] = NULL;
+      memset(pCoords, NULL, iNumElements * sizeof(double*));
     
       /* Note: "Old clusters" are clusters already included on the list, while */
       /* a "new cluster" is the present candidate for inclusion.               */
