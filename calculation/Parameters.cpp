@@ -97,7 +97,6 @@ const char*      RETROSPECTIVE_PURELY_TEMPORAL_ANALYSIS = "Retrospective Purely 
 const char*      PROSPECTIVE_PURELY_TEMPORAL_ANALYSIS   = "Prospective Purely Temporal";
 const char*      RETROSPECTIVE_SPACETIME_ANALYSIS 	= "Retrospective Space-Time";
 const char*      PROSPECTIVE_SPACETIME_ANALYSIS 	= "Prospective Space-Time";
-const char*      PURELY_SPATIAL_MONOTONE_ANALYSIS 	= "Purely Spatial Monotone";
 const char*      SPATIALVARIATION_TEMPORALTREND         = "Spatial Variation and Temporal Trends";
 
 const char*      POISSON_MODEL                 		= "Poisson";
@@ -293,7 +292,6 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
       case PROSPECTIVESPACETIME      : fprintf(fp, "Prospective Space-Time analysis\n"); break;
       case SPATIALVARTEMPTREND       : fprintf(fp, "Spatial Variation of Temporal Trends analysis\n"); break;
       case PROSPECTIVEPURELYTEMPORAL : fprintf(fp, "Prospective Purely Temporal analysis\n"); break;
-      case PURELYSPATIALMONOTONE     : fprintf(fp, "Purely Spatial Monotone analysis\n"); break;
       default : ZdException::Generate("Unknown analysis type '%d'.\n", "DisplayAnalysisType()", geAnalysisType);
     }
 
@@ -709,7 +707,6 @@ const char * CParameters::GetAnalysisTypeAsString() const {
       case PURELYTEMPORAL            : sAnalysisType = RETROSPECTIVE_PURELY_TEMPORAL_ANALYSIS; break;
       case SPACETIME                 : sAnalysisType = RETROSPECTIVE_SPACETIME_ANALYSIS; break;
       case PROSPECTIVESPACETIME      : sAnalysisType = PROSPECTIVE_SPACETIME_ANALYSIS; break;
-      case PURELYSPATIALMONOTONE     : sAnalysisType = PURELY_SPATIAL_MONOTONE_ANALYSIS; break;
       case SPATIALVARTEMPTREND       : sAnalysisType = SPATIALVARIATION_TEMPORALTREND; break;
       case PROSPECTIVEPURELYTEMPORAL : sAnalysisType = PROSPECTIVE_PURELY_TEMPORAL_ANALYSIS; break;
       default : ZdException::Generate("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", geAnalysisType);
@@ -2076,7 +2073,7 @@ void CParameters::SaveAnalysisSection(ZdIniFile& file) {
 
   try {
     pSection = file.GetSection(ANALYSIS_SECTION);
-    pSection->AddComment(" analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time, 5=Spatial Variation/Temporal Trends, 6=Prospective Purely Temporal, 7=PurelySpatialMonotone)");
+    pSection->AddComment(" analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time, 5=Spatial Variation/Temporal Trends, 6=Prospective Purely Temporal)");
     pSection->AddLine(ANALYSIS_TYPE_LINE, AsString(sValue, geAnalysisType));
     pSection->AddComment(" model type (0=Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Normal, 4=Survival, 5=Rank)");
     pSection->AddLine(MODEL_TYPE_LINE, AsString(sValue, geProbabiltyModelType));
@@ -2304,10 +2301,10 @@ void CParameters::SetAnalysisType(AnalysisType eAnalysisType) {
   ZdString      sLabel;
 
   try {
-    if (eAnalysisType < PURELYSPATIAL || eAnalysisType > PURELYSPATIALMONOTONE)
+    if (eAnalysisType < PURELYSPATIAL || eAnalysisType > PROSPECTIVEPURELYTEMPORAL)
       InvalidParameterException::Generate("Error: For parameter '%s', setting '%d' is out of range(%d - %d).\n", "SetAnalysisType()",
                                           GetParameterLineLabel(ANALYSISTYPE, sLabel, geReadType == INI),
-                                          eAnalysisType, PURELYSPATIAL, PURELYSPATIALMONOTONE);
+                                          eAnalysisType, PURELYSPATIAL, PROSPECTIVEPURELYTEMPORAL);
     geAnalysisType = eAnalysisType;
   }
   catch (ZdException &x) {
@@ -3389,10 +3386,10 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
         PrintDirection.SatScanPrintWarning("Error: Please note that Spatial Variation and Temporal Trends analysis is not implemented\n");
         PrintDirection.SatScanPrintWarning("       in this version of SaTScan.\n");
       }
-      if (geAnalysisType == PURELYSPATIALMONOTONE && GetNumDataStreams() > 1) {
+      if (geAnalysisType == PURELYSPATIAL && geRiskFunctionType == MONOTONERISK && GetNumDataStreams() > 1) {
         bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Multiple data streams are not permitted with purely spatial monotone analyses\n");
-        PrintDirection.SatScanPrintWarning("       in this version of SaTScan.\n");
+        PrintDirection.SatScanPrintWarning("Error: Multiple data streams are not permitted with purely spatial analyses,\n");
+        PrintDirection.SatScanPrintWarning("       scanning for monotone clusters, in this version of SaTScan.\n");
       }
       if (geProbabiltyModelType == NORMAL && GetNumDataStreams() > 1) {
         bValid = false;

@@ -111,7 +111,6 @@ extern const char*      RETROSPECTIVE_PURELY_TEMPORAL_ANALYSIS;
 extern const char*      PROSPECTIVE_PURELY_TEMPORAL_ANALYSIS;
 extern const char*      RETROSPECTIVE_SPACETIME_ANALYSIS;
 extern const char*      PROSPECTIVE_SPACETIME_ANALYSIS;
-extern const char*      PURELY_SPATIAL_MONOTONE_ANALYSIS;
 extern const char*      SPATIALVARIATION_TEMPORALTREND;
 
 /** probabilty model type names */
@@ -148,7 +147,12 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
-                                    SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL, PURELYSPATIALMONOTONE};
+                                    SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
+/** cluster types */
+enum ClusterType                   {PURELYSPATIALCLUSTER=1, PURELYTEMPORALCLUSTER, SPACETIMECLUSTER,
+                                    PROSPECTIVESPACETIMECLUSTER, SPATIALVARTEMPTRENDCLUSTER,
+                                    PROSPECTIVEPURELYTEMPORALCLUSTER, PURELYSPATIALMONOTONECLUSTER,
+                                    PURELYSPATIALPROSPECTIVECLUSTER};
 /** probabilty model types */
 enum ProbabiltyModelType           {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION, NORMAL, SURVIVAL, RANK};
 enum IncludeClustersType           {ALLCLUSTERS=0, ALIVECLUSTERS, CLUSTERSINRANGE};
