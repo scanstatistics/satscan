@@ -41,11 +41,11 @@ void CSVTTData::CalculateMeasure(RealDataStream & thisStream) {
 void CSVTTData::DisplayCases(FILE* pFile) {
   unsigned int i;
 
-  for (i=0; i < gpDataStreams->GetNumStreams(); ++i) {
+  for (i=0; i < gpDataSets->GetNumDataSets(); ++i) {
      fprintf(pFile, "Data Stream %u:\n", i);
-     DisplayCounts(pFile, gpDataStreams->GetStream(i).GetCaseArray(), "Cases Array",
-                   gpDataStreams->GetStream(i).GetNCCaseArray(), "Cases Non-Cumulative Array",
-                   gpDataStreams->GetStream(i).GetPTCasesArray(), "Cases_TotalByTimeInt");
+     DisplayCounts(pFile, gpDataSets->GetStream(i).GetCaseArray(), "Cases Array",
+                   gpDataSets->GetStream(i).GetNCCaseArray(), "Cases Non-Cumulative Array",
+                   gpDataSets->GetStream(i).GetPTCasesArray(), "Cases_TotalByTimeInt");
   }                 
 }
 
@@ -86,10 +86,10 @@ void CSVTTData::DisplayMeasures(FILE* pFile) {
 
   fprintf(pFile, "Measures                        Measures - Not Accumulated\n\n");
 
-  for (k=0; k < gpDataStreams->GetNumStreams(); ++k) {
+  for (k=0; k < gpDataSets->GetNumDataSets(); ++k) {
      fprintf(pFile, "Data Stream %u:\n", k);
-     ppMeasure = gpDataStreams->GetStream(k).GetMeasureArray();
-     ppMeasureNC = gpDataStreams->GetStream(k).GetNCMeasureArray();
+     ppMeasure = gpDataSets->GetStream(k).GetMeasureArray();
+     ppMeasureNC = gpDataSets->GetStream(k).GetNCMeasureArray();
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
         for (j=0; j < (unsigned int)m_nTracts; ++j) {
            fprintf(pFile, "ppMeasure [%i][%i] = %12.5f     ", i, j, ppMeasure[i][j]);
@@ -98,10 +98,10 @@ void CSVTTData::DisplayMeasures(FILE* pFile) {
   }
 
   fprintf(pFile, "\nMeasures Accumulated by Time Interval\n\n");
-  for (k=0; k < gpDataStreams->GetNumStreams(); ++k) {
+  for (k=0; k < gpDataSets->GetNumDataSets(); ++k) {
      fprintf(pFile, "Data Stream %u:\n", k);
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
-       fprintf(pFile, "Measure_TotalByTimeInt [%i] = %12.5f\n", i, gpDataStreams->GetStream(k).GetPTMeasureArray()[i]);
+       fprintf(pFile, "Measure_TotalByTimeInt [%i] = %12.5f\n", i, gpDataSets->GetStream(k).GetPTMeasureArray()[i]);
      fprintf(pFile, "\n");
   }
 }
@@ -126,11 +126,11 @@ void CSVTTData::DisplayRelativeRisksForEachTract() const {
 void CSVTTData::DisplaySimCases(FILE* pFile) {
 //  unsigned int i;                                             
 //
-//  for (i=0; i < gpDataStreams->GetNumStreams(); ++i) {
+//  for (i=0; i < gpDataSets->GetNumDataSets(); ++i) {
 //     fprintf(pFile, "Data Stream %u:\n", i);
-//     DisplayCounts(pFile, gpDataStreams->GetStream(i).GetSimCaseArray(), "Simulated Cases Array",
-//                   gpDataStreams->GetStream(i).GetNCSimCaseArray(), "Simulated Non-Cumulative Cases Array",
-//                   gpDataStreams->GetStream(i).GetPTSimCasesArray(), "SimCases_TotalByTimeInt");
+//     DisplayCounts(pFile, gpDataSets->GetStream(i).GetSimCaseArray(), "Simulated Cases Array",
+//                   gpDataSets->GetStream(i).GetNCSimCaseArray(), "Simulated Non-Cumulative Cases Array",
+//                   gpDataSets->GetStream(i).GetPTSimCasesArray(), "SimCases_TotalByTimeInt");
 //  }
 }
 
@@ -146,8 +146,8 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
        //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
        //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
        //      has not been decided yet.
-       SimDataContainer[t]->GetTimeTrend().CalculateAndSet(gpDataStreams->GetStream(t).GetCasesPerTimeIntervalArray(),
-                                                           gpDataStreams->GetStream(t).GetMeasurePerTimeIntervalArray(),
+       SimDataContainer[t]->GetTimeTrend().CalculateAndSet(gpDataSets->GetStream(t).GetCasesPerTimeIntervalArray(),
+                                                           gpDataSets->GetStream(t).GetMeasurePerTimeIntervalArray(),
                                                            m_nTimeIntervals,
                                                            gParameters.GetTimeTrendConvergence());
        //QUESTION: Should the purely temporal case array passed to CalculateAndSet() be from
@@ -177,20 +177,22 @@ void CSVTTData::SetAdditionalCaseArrays(RealDataStream& thisStream) {
     model type except Poisson. */
 void CSVTTData::SetProbabilityModel() {
   try {
-    switch (gParameters.GetProbabiltyModelType()) {
+    switch (gParameters.GetProbabilityModelType()) {
        case POISSON              : m_pModel = new CPoissonModel(gParameters, *this, gPrint);   break;
        case BERNOULLI            : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Bernoulli model.\n",
                                                          "SetProbabilityModel()");
        case SPACETIMEPERMUTATION : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Space-Time Permutation model.\n",
                                                          "SetProbabilityModel()");
-       case NORMAL               : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Normal model.\n",
+       case ORDINAL              : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Ordinal model.\n",
                                                          "SetProbabilityModel()");
        case SURVIVAL             : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Survival model.\n",
+                                                         "SetProbabilityModel()");
+       case NORMAL               : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Normal model.\n",
                                                          "SetProbabilityModel()");
        case RANK                 : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Rank model.\n",
                                                          "SetProbabilityModel()");
        default : ZdException::Generate("Unknown probability model type: '%d'.\n",
-                                       "SetProbabilityModel()", gParameters.GetProbabiltyModelType());
+                                       "SetProbabilityModel()", gParameters.GetProbabilityModelType());
     }
   }
   catch (ZdException &x) {
