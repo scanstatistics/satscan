@@ -1415,10 +1415,6 @@ void TfrmAnalysis::SaveTextParameters() {
     sprintf(gpParams->m_szProspStartDate, "%i/%i/%i", atoi(edtProspYear->Text.c_str()), atoi(edtProspMonth->Text.c_str()), atoi(edtProspDay->Text.c_str()));
     //Output File Tab
     strcpy(gpParams->m_szOutputFilename, edtResultFile->Text.c_str());
-    gpParams->SetGISFilename();
-    gpParams->SetLLRFilename();
-    gpParams->SetMLCFilename();
-    gpParams->SetRelRiskFilename();
 
     gpParams->m_bOutputRelRisks = chkRelativeRiskEstimatesAreaAscii->Enabled && chkRelativeRiskEstimatesAreaAscii->Checked;
 
