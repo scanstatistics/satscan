@@ -2047,8 +2047,14 @@ bool CParameters::ValidateParameters() {
             gpPrintDirection->SatScanPrintWarning("Invalid parameter setting for max geographic size. Please use a value between 0 and 50.\n");
           }
         }
-        else
+        else {
+          //Purely temporal clusters should default maximum geographical clusters size to 50 of population.
+          //This actually has no bearing on analysis results. These variables are used primarly for
+          //finding neighbors which purely temporal analyses don't utilize. The finding neighbors
+          //routine should really be skipped for this analysis type.
           m_nMaxGeographicClusterSize = 50.0; //KR980707 0 GG980716;
+          m_nMaxSpatialClusterSizeType = PERCENTAGEOFMEASURETYPE;
+        }
 
         // Temporal Options
         if ((m_nAnalysisType == PURELYTEMPORAL) || (m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME)) {
@@ -2085,7 +2091,12 @@ bool CParameters::ValidateParameters() {
           }
         }
         else {
+          //Purely spatial clusters should default maximum temporal clusters size to 50 of study period.
+          //Actually for purely spatial analyses, these settings has no bearing on results since maximum
+          //temporal cluster size is used primarly for computing the interval cuts, which purely spatial
+          //analyses have a fixed 1 time interval and interval cut.
           m_nMaxTemporalClusterSize = 50.0; // KR980707 0 GG980716;
+          m_nMaxClusterSizeType = PERCENTAGETYPE;
           m_bAliveClustersOnly      = false;
           m_nIntervalUnits          = NONE;
           m_nIntervalLength         = 0;
