@@ -46,10 +46,10 @@ double MultipleStreamSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihood
   unsigned int                          i=0;
   AbstractLoglikelihoodRatioUnifier   & Unifier = Calculator.GetUnifier();
 
-
+  Unifier.Reset();
   for (gitr=gvStreamData.begin(); gitr != gvStreamData.end(); ++gitr, ++i)
-     Unifier.AdjoinRatio(Calculator, i, (*gitr)->gtCases, (*gitr)->gtMeasure,
-                                         (*gitr)->gtTotalCases, (*gitr)->gtTotalMeasure);
+     Unifier.AdjoinRatio(Calculator, (*gitr)->gtCases, (*gitr)->gtMeasure,
+                         (*gitr)->gtTotalCases, (*gitr)->gtTotalMeasure);
   return Unifier.GetLoglikelihoodRatio();
 }
 
@@ -154,20 +154,22 @@ void MultipleStreamProspectiveSpatialData::AddNeighborData(tract_t tNeighbor, co
 /** Calculates loglikelihood ratio given current accumulated cluster data in
     each data stream and adds together.*/
 double MultipleStreamProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
-  unsigned int                          i, iWindowEnd, iAllocationSize;
+  unsigned int                          iWindowEnd, iAllocationSize;
   double                                dMaxLoglikelihoodRatio=0;
   AbstractLoglikelihoodRatioUnifier   & Unifier = Calculator.GetUnifier();
 
+  Unifier.Reset();
   iAllocationSize = (*gvStreamData.begin())->GetAllocationSize();
-  for (i=0, gitr=gvStreamData.begin(); gitr != gvStreamData.end(); ++gitr, ++i)
-     Unifier.AdjoinRatio(Calculator, i, (*gitr)->gpCases[0], (*gitr)->gpMeasure[0], (*gitr)->gtTotalCases, (*gitr)->gtTotalMeasure);
+  for (gitr=gvStreamData.begin(); gitr != gvStreamData.end(); ++gitr)
+     Unifier.AdjoinRatio(Calculator, (*gitr)->gpCases[0], (*gitr)->gpMeasure[0], (*gitr)->gtTotalCases, (*gitr)->gtTotalMeasure);
   dMaxLoglikelihoodRatio = Unifier.GetLoglikelihoodRatio();
 
   for (iWindowEnd=1; iWindowEnd < iAllocationSize; ++iWindowEnd) {
-     for (i=0, gitr=gvStreamData.begin(); gitr != gvStreamData.end(); ++gitr, ++i) {
+     Unifier.Reset();
+     for (gitr=gvStreamData.begin(); gitr != gvStreamData.end(); ++gitr) {
         (*gitr)->gtCases = (*gitr)->gpCases[0] - (*gitr)->gpCases[iWindowEnd];
         (*gitr)->gtMeasure =  (*gitr)->gpMeasure[0] - (*gitr)->gpMeasure[iWindowEnd];
-        Unifier.AdjoinRatio(Calculator, i, (*gitr)->gtCases, (*gitr)->gtMeasure,
+        Unifier.AdjoinRatio(Calculator, (*gitr)->gtCases, (*gitr)->gtMeasure,
                             (*gitr)->gtTotalCases, (*gitr)->gtTotalMeasure);
      }
      dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Unifier.GetLoglikelihoodRatio());
