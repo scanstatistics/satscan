@@ -6,12 +6,12 @@
 #include "SaTScanData.h"
 #include "IncidentRate.h"
 
-class stsAreaSpecificDBF;
+class stsAreaSpecificData;
 
 class CCluster {
   protected:
-    BasePrint *gpPrintDirection;
-    stsAreaSpecificDBF*         gpAreaDBFReport;
+    BasePrint *                 gpPrintDirection;
+    stsAreaSpecificData*        gpAreaData;
   public:
     CCluster(BasePrint *pPrintDirection);
     virtual ~CCluster();
@@ -100,7 +100,7 @@ class CCluster {
 
     bool                RateIsOfInterest(count_t nTotalCases, measure_t nTotalMeasure);
 
-    void                SetAreaReport(stsAreaSpecificDBF* pAreaDBFReport) { gpAreaDBFReport = pAreaDBFReport; }
+    void                SetAreaReport(stsAreaSpecificData* pAreaData) { gpAreaData = pAreaData; }
     void                SetCenter(tract_t nCenter);
     void                SetEllipseOffset(int iOffset);
     double              SetLogLikelihood(double nLogLikelihood) {m_nLogLikelihood = nLogLikelihood; return m_nLogLikelihood;}

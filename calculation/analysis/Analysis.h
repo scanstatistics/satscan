@@ -35,7 +35,6 @@ class CAnalysis
 
     virtual double              MonteCarlo() = 0;
     virtual double              MonteCarloProspective() = 0;
-    virtual void                OpenGISFile(FILE*& fpGIS, const char* szType);
     void                        OpenReportFile(FILE*& fp, const char* szType);
     virtual void                PerformSimulations();
     void                        PrintTopClusters(int nHowMany);
@@ -59,8 +58,8 @@ class CAnalysis
     void                        DisplayFindClusterHeading();
     void                        DisplayTopClusterLogLikelihood();
     void                        DisplayTopClustersLogLikelihoods(FILE* fp);
-    virtual void                DisplayTopClusters(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp=stdout, FILE* fpGIS=NULL);
-    virtual void                DisplayTopCluster(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp=stdout, FILE* fpGIS=NULL);
+    virtual void                DisplayTopClusters(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp=stdout);
+    virtual void                DisplayTopCluster(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp=stdout);
 
     bool                        Execute(time_t RunTime);
 

@@ -2,7 +2,7 @@
 #pragma hdrstop
 
 #include "Cluster.h"
-#include "stsAreaSpecificDBF.h"
+#include "stsAreaSpecificData.h"
 
 CCluster::CCluster(BasePrint *pPrintDirection)
 {
@@ -41,7 +41,7 @@ void CCluster::Initialize(tract_t nCenter)
   m_iEllipseOffset = 0;         // use to be -1, but bombed when R = 1
 
   gfPValue = 0.0;
-  gpAreaDBFReport = 0;
+  gpAreaData = 0;
 }
 
 
@@ -185,7 +185,6 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
 {
   int                                  pos  = nLeftMargin, nCount=0;
   tract_t                              tTract;
-  const char                         * tid;
   std::vector<std::string>             vTractIdentifiers;
 
   try {
@@ -250,8 +249,8 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
        }
 
        // record DBF output data - AJV
-       if(gpAreaDBFReport && Data.m_pParameters->GetOutputAreaSpecificDBF())
-          gpAreaDBFReport->RecordClusterData(*this, Data, nCluster, tTract);
+       if(gpAreaData)
+          gpAreaData->RecordClusterData(*this, Data, nCluster, tTract);
     }
 
     if (fp != NULL)

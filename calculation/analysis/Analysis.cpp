@@ -5,12 +5,12 @@
 // #define INCLUDE_RUN_HISTORY    // define to determine whether or not we should log run history, if included
                                   // then we will, if not then we won't - AJV 10/4/2002
 
-#include "stsAreaSpecificDBF.h"
 #include "stsRunHistoryFile.h"
 #include "stsClusterData.h"
 #include "stsASCIIFileWriter.h"
 #include "stsDBaseFileWriter.h"
 #include "stsLogLikelihood.h"
+#include "stsAreaSpecificData.h"
 //static int CompClust(const void *a, const void *b);
 
 CAnalysis::CAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
@@ -304,14 +304,13 @@ void CAnalysis::DisplayFindClusterHeading() {
    }
 }
 
-void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp, FILE* fpGIS) {
-   auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;
+void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp) {
+   std::auto_ptr<stsAreaSpecificData>   pData;
 
    try {
-      if(m_pParameters->GetOutputAreaSpecificDBF())
-         pDBFAreaReport.reset(new stsAreaSpecificDBF( lReportHistoryRunNumber, GetCoordinateType(),
-                                                      m_pParameters->m_szOutputFilename,
-                                                      m_pParameters->m_nReplicas > 99 ));
+      if(m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
+         pData.reset(new stsAreaSpecificData(m_pParameters->m_szOutputFilename, lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
+
       measure_t nMinMeasure = 0;
 
       if (m_nClustersRetained == 0)
@@ -333,35 +332,45 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
         
         // if we want dBase report, set the report pointer in cluster
         if(m_pParameters->GetOutputAreaSpecificDBF())
-           m_pTopClusters[0]->SetAreaReport(pDBFAreaReport.get()); 
+           m_pTopClusters[0]->SetAreaReport(pData.get());
         
         // if we are doing dBase or ASCII   
-        if(m_pParameters->GetOutputAreaSpecificDBF() || fpGIS != NULL) {	                              
-            m_pTopClusters[0]->DisplayCensusTracts(fpGIS, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
+        if(m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas) {
+            m_pTopClusters[0]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
                                                      lReportHistoryRunNumber, true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);                                      
         }
       }
 
       fprintf(fp, "\n");
+
+      // print area ASCII
+      if (m_pParameters->m_bOutputCensusAreas) {
+         ASCIIFileWriter AWriter(pData.get());
+         AWriter.Print();
+      }
+      // print area dBase
+      if (m_pParameters->GetOutputAreaSpecificDBF()) {
+         DBaseFileWriter DWriter(pData.get());
+         DWriter.Print();
+      }
    }
    catch (ZdException & x) {
-      x.AddCallpath("DisplayTopCluster(double, int, File *, File *)", "CAnalysis");
+      x.AddCallpath("DisplayTopCluster(double, int, File *)", "CAnalysis");
       throw;
    }
 }
 
-void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp, FILE* fpGIS) {
+void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp) {
    double                       dSignifRatio05 = 0.0;
-   auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;     // area specific dbf report gets set and sent into each cluster for reporting - AJV 10/3/2002
    tract_t                      tNumClustersToDisplay;
+   std::auto_ptr<stsAreaSpecificData>   pData;
 
    try {
       m_nClustersReported = 0;
       measure_t nMinMeasure = -1;
-
-      if(m_pParameters->GetOutputAreaSpecificDBF())
-         pDBFAreaReport.reset(new stsAreaSpecificDBF(lReportHistoryRunNumber, GetCoordinateType(),
-                                                     m_pParameters->m_szOutputFilename, m_pParameters->m_nReplicas > 99));
+      
+      if(m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
+         pData.reset(new stsAreaSpecificData(m_pParameters->m_szOutputFilename, lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
 
       dSignifRatio05 = SimRatios.GetAlpha05();
 
@@ -390,22 +399,31 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
           
           // if doing dBase output, set the report pointer - not the most effective way to do this, but the least intrusive - AJV
           if(m_pParameters->GetOutputAreaSpecificDBF())
-             m_pTopClusters[i]->SetAreaReport(pDBFAreaReport.get());
+             m_pTopClusters[i]->SetAreaReport(pData.get());
 
           // if were are doing census areas and theres a file pointer OR we are doing dBase output
-          if ((m_pParameters->m_bOutputCensusAreas && (fpGIS != NULL))
-                                                  || m_pParameters->GetOutputAreaSpecificDBF()) {
-              	             
-              m_pTopClusters[i]->DisplayCensusTracts(fpGIS, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
+          if (m_pParameters->m_bOutputCensusAreas || m_pParameters->GetOutputAreaSpecificDBF()) {
+              m_pTopClusters[i]->DisplayCensusTracts(0, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
                                                    lReportHistoryRunNumber, true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);
           }
         }   // end if top cluster > minratio
       }   // end for loop
 
       fprintf(fp, "\n");
+
+      // print area ASCII
+      if (m_pParameters->m_bOutputCensusAreas) {
+         ASCIIFileWriter AWriter(pData.get());
+         AWriter.Print();
+      }
+      // print AREA dBase
+      if (m_pParameters->GetOutputAreaSpecificDBF()) {
+         DBaseFileWriter DWriter(pData.get());
+         DWriter.Print();
+      }
    }
    catch (ZdException & x) {
-      x.AddCallpath("DisplayTopClusters(double, int, File*, File *)", "CAnalysis");
+      x.AddCallpath("DisplayTopClusters(double, int, File*)", "CAnalysis");
       throw;
    }
 }
@@ -573,25 +591,8 @@ void CAnalysis::InitializeTopClusterList() {
       throw;
    }
 }
-void CAnalysis::OpenGISFile(FILE*& fpGIS, const char* szType)
-{
-   try {
-      if ((fpGIS = fopen(m_pParameters->m_szGISFilename, szType)) == NULL) {
-        if (!strcmp(szType, "w"))
-          SSGenerateException("  Error: Unable to create GIS file.", "OpenGISFile");
-        else if (!strcmp(szType ,"a"))
-          SSGenerateException("  Error: Unable to open GIS file.", "OpenGISFile");
-        //FatalError(0, gpPrintDirection);
-      }
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("OpenGISFile(File *, const char *)", "CAnalysis");
-      throw;
-   }
-}
 
-void CAnalysis::OpenReportFile(FILE*& fp, const char* szType)
-{
+void CAnalysis::OpenReportFile(FILE*& fp, const char* szType) {
    try {
       if ((fp = fopen(m_pParameters->m_szOutputFilename, szType)) == NULL) {
         if (!strcmp(szType, "w"))
@@ -956,21 +957,17 @@ void CAnalysis::UpdatePowerCounts(double r)
   }
 }
 
-bool CAnalysis::UpdateReport(const long& lReportHistoryRunNumber)
-{
+bool CAnalysis::UpdateReport(const long& lReportHistoryRunNumber) {
    FILE* fp;
-   FILE* fpGIS = 0;
 
    try {
       gpPrintDirection->SatScanPrintf("\nRecording results to file...");
       OpenReportFile(fp, "a");
-      if (m_pParameters->m_bOutputCensusAreas)
-         OpenGISFile(fpGIS, "a");
 
       if (m_pParameters->m_bSequential)
-        DisplayTopCluster(m_nMinRatioToReport, m_pParameters->m_nReplicas, lReportHistoryRunNumber, fp, fpGIS);
+        DisplayTopCluster(m_nMinRatioToReport, m_pParameters->m_nReplicas, lReportHistoryRunNumber, fp);
       else
-        DisplayTopClusters(m_nMinRatioToReport, m_pParameters->m_nReplicas, lReportHistoryRunNumber, fp, fpGIS);
+        DisplayTopClusters(m_nMinRatioToReport, m_pParameters->m_nReplicas, lReportHistoryRunNumber, fp);
 
       if (m_pParameters->m_nReplicas>=19 && m_nClustersReported > 0) {
         // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
@@ -1004,13 +1001,9 @@ bool CAnalysis::UpdateReport(const long& lReportHistoryRunNumber)
       }
 
       fclose(fp);
-      if (fpGIS)
-        fclose(fpGIS);
    }
    catch (ZdException & x) {
       fclose(fp);
-      if (fpGIS)
-        fclose(fpGIS);
       x.AddCallpath("UpdateReport()", "CAnalysis");
       throw;
    }
