@@ -1,5 +1,7 @@
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//***************************************************************************
 #include "SaTScanData.h"
 #include "TimeIntervalRange.h"
 #include "RankDataStreamHandler.h"
@@ -9,7 +11,7 @@
 #include "BernoulliDataStreamHandler.h"
 #include "SpaceTimePermutationDataStreamHandler.h"
 
-CSaTScanData::CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection) {
+CSaTScanData::CSaTScanData(const CParameters* pParameters, BasePrint *pPrintDirection) {
   try {
     Init();
     Setup(pParameters, pPrintDirection);
@@ -57,7 +59,7 @@ bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tra
 
   //NOTE: The adjustment for known relative risks is hard coded to the first
   //      data stream for the time being.
-  DataStream & thisStream = gpDataStreams->GetStream(0);
+  RealDataStream & thisStream = gpDataStreams->GetStream(0);
   PopulationData & Population = thisStream.GetPopulationData();
   pp_m = thisStream.GetPopulationMeasureArray();
   count_t ** ppCases = thisStream.GetCaseArray();
@@ -194,29 +196,24 @@ measure_t CSaTScanData::CalcMeasureForTimeInterval(PopulationData & Population, 
 }
 
 /** calculates expected number of cases */
-bool CSaTScanData::CalculateExpectedCases() {
+void CSaTScanData::CalculateExpectedCases() {
   size_t        t;
-  bool          bReturn=true;
 
   gpPrint->SatScanPrintf("Calculating expected number of cases\n");
   //calculates expected cases for each data stream
-  for (t=0; t < gpDataStreams->GetNumStreams() && bReturn; ++t) {
-     bReturn = CalculateMeasure(gpDataStreams->GetStream(t));
+  for (t=0; t < gpDataStreams->GetNumStreams(); ++t) {
+     CalculateMeasure(gpDataStreams->GetStream(t));
      gtTotalMeasure += gpDataStreams->GetStream(t).GetTotalMeasure();
      gtTotalCases += gpDataStreams->GetStream(t).GetTotalCases();
-     gtTotalPopulation += gpDataStreams->GetStream(t).GetTotalPopulation(); 
+     gtTotalPopulation += gpDataStreams->GetStream(t).GetTotalPopulation();
   }
   SetMaxCircleSize();
-
-  return bReturn;
 }
 
-bool CSaTScanData::CalculateMeasure(DataStream & thisStream) {
-  bool bReturn;
-
+void CSaTScanData::CalculateMeasure(RealDataStream & thisStream) {
   try {
     SetAdditionalCaseArrays(thisStream);
-    bReturn = (m_pModel->CalculateMeasure(thisStream));
+    m_pModel->CalculateMeasure(thisStream);
     thisStream.SetTotalCasesAtStart(thisStream.GetTotalCases());
     thisStream.SetTotalControlsAtStart(thisStream.GetTotalControls());
     thisStream.SetTotalMeasureAtStart(thisStream.GetTotalMeasure());
@@ -225,7 +222,6 @@ bool CSaTScanData::CalculateMeasure(DataStream & thisStream) {
     x.AddCallpath("CalculateMeasure()","CSaTScanData");
     throw;
   }
-  return bReturn;
 }
 
 int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate) {
@@ -271,7 +267,7 @@ measure_t CSaTScanData::DateMeasure(PopulationData & Population, measure_t ** pp
 
 /** Allocates/deallocates memory to store neighbor information.
     Calls MakeNeighbor() function to calculate neighbors for each centroid. */
-bool CSaTScanData::FindNeighbors(bool bSimulations) {
+void CSaTScanData::FindNeighbors(bool bSimulations) {
   int           i, j;
   double        dMaxCircleSize;
 
@@ -318,7 +314,6 @@ bool CSaTScanData::FindNeighbors(bool bSimulations) {
       x.AddCallpath("FindNeighbors()", "CSaTScanData");
       throw;
    }
-  return true;
 }
 
 double CSaTScanData::GetAnnualRate() const {
@@ -400,18 +395,28 @@ void CSaTScanData::Init() {
   gtTotalMeasure=0;
   gtTotalCases=0;
   gtTotalPopulation=0;
-  gpSortedIntReference = 0;
-  gpSortedUShortReference = 0;
-  giImpliedNeighborCount = 0;
 }
 
 /** invokes randomization on all stream randomization data */ 
-void CSaTScanData::RandomizeData(int iSimulationNumber) {
+void CSaTScanData::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
   try {
-    gpDataStreams->RandomizeData(iSimulationNumber);
+    gpDataStreams->RandomizeData(SimDataContainer, iSimulationNumber);
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CSaTScanData");
+    throw;
+  }
+}
+
+/** Randomizes collection of simulation data in concert with passed collection of randomizers. */
+void CSaTScanData::RandomizeIsolatedData(RandomizerContainer_t& RandomizerContainer,
+                                         SimulationDataContainer_t& SimDataContainer,
+                                         unsigned int iSimulationNumber) const {
+  try {
+    gpDataStreams->RandomizeIsolatedData(RandomizerContainer, SimDataContainer, iSimulationNumber);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("RandomizeIsolatedData()","CSaTScanData");
     throw;
   }
 }
@@ -594,7 +599,7 @@ void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
 
   try {
     for (size_t t=0; t < gpDataStreams->GetNumStreams(); ++t) {
-       DataStream & thisStream = gpDataStreams->GetStream(t);
+       RealDataStream & thisStream = gpDataStreams->GetStream(t);
        tTotalCases = thisStream.GetTotalCases();
        tTotalCases -= thisStream.GetCaseArray()[0][tTractIndex];
        thisStream.GetCaseArray()[0][tTractIndex] = 0;
@@ -622,7 +627,7 @@ void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
 }
 
 /** Conditionally allocates and sets additional case arrays. */
-void CSaTScanData::SetAdditionalCaseArrays(DataStream & thisStream) {
+void CSaTScanData::SetAdditionalCaseArrays(RealDataStream & thisStream) {
   try {
     if (m_pParameters->GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
         m_pParameters->GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
@@ -870,7 +875,7 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
 }
 
 /** internal setup function */
-void CSaTScanData::Setup(CParameters* pParameters, BasePrint *pPrintDirection) {
+void CSaTScanData::Setup(const CParameters* pParameters, BasePrint *pPrintDirection) {
   long  lCurrentEllipse=0;
 
   try {
