@@ -8,12 +8,13 @@
     during simulation process. */
 class CSignificantRatios05 {
   private:
-    int         m_nTotalReplications;
-    int         m_nRatios;
-    double    * m_pRatiosList;
+    unsigned int m_nTotalReplications;
+    unsigned int m_nRatios;
+    double     * m_pRatiosList;
+    bool         m_bSuppressed;
 
   public:
-    CSignificantRatios05(int nReplications, BasePrint *pPrintDirection);
+    CSignificantRatios05(bool bSuppress, unsigned int iReplications);
     ~CSignificantRatios05();
 
     bool        AddRatio(double r);
