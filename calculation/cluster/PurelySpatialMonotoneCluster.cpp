@@ -3,7 +3,7 @@
 #pragma hdrstop
 //*****************************************************************************
 #include "PurelySpatialMonotoneCluster.h"
-#include "stsAreaSpecificData.h"
+#include "ClusterLocationsWriter.h"
 
 /** class constructor - const AbtractDataSetGateway */
 CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory,
@@ -426,7 +426,7 @@ void CPSMonotoneCluster::SetTotalTracts() {
 }
 
 /** Writes cluster data to passed record buffer. */
-void CPSMonotoneCluster::Write(stsAreaSpecificData& AreaData, const CSaTScanData& Data,
+void CPSMonotoneCluster::Write(LocationInformationWriter& LocationWriter, const CSaTScanData& Data,
                      unsigned int iClusterNumber, unsigned int iNumSimsCompleted) const {
   tract_t       t, tTract;
   int           i;
@@ -435,7 +435,7 @@ void CPSMonotoneCluster::Write(stsAreaSpecificData& AreaData, const CSaTScanData
     for (i=0; i < m_nSteps; ++i) {
        for (t=m_pFirstNeighborList[i]; t <= m_pLastNeighborList[i]; t++) {
          tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, t);
-         AreaData.RecordClusterData(*this, Data, iClusterNumber, tTract, iNumSimsCompleted);
+         LocationWriter.Write(*this, Data, iClusterNumber, tTract, iNumSimsCompleted);
        }
     }
   }

@@ -10,6 +10,8 @@
 
 /** Coordinates the execution of analysis defined by parameters. */
 class AnalysisRunner {
+  friend class stsMCSimReporter;
+  
   private:
     void                                Init();
     void                                Setup();

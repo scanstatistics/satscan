@@ -67,7 +67,7 @@ class CPSMonotoneCluster : public CCluster {
     double                      GetRatio() const;
     double                      GetLogLikelihood() const;
     virtual ZdString          & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
-    virtual void                Write(stsAreaSpecificData& AreaData, const CSaTScanData& Data,
+    virtual void                Write(LocationInformationWriter& LocationWriter, const CSaTScanData& Data,
                                       unsigned int iClusterNumber, unsigned int iNumSimsCompleted) const;
 };
 //*****************************************************************************

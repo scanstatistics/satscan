@@ -3,7 +3,7 @@
 #pragma hdrstop
 //*****************************************************************************
 #include "cluster.h"
-#include "stsAreaSpecificData.h"
+#include "ClusterLocationsWriter.h"
 
 /** constructor */
 CCluster::CCluster() {
@@ -578,7 +578,7 @@ void CCluster::SetRate(int nRate) {
 
 /** Writes location information to stsAreaSpecificData object for each tract
     contained in cluster. */
-void CCluster::Write(stsAreaSpecificData& AreaData, const CSaTScanData& DataHub,
+void CCluster::Write(LocationInformationWriter& LocationWriter, const CSaTScanData& DataHub,
                      unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const {
   tract_t       tTract;
   int           i;
@@ -586,11 +586,11 @@ void CCluster::Write(stsAreaSpecificData& AreaData, const CSaTScanData& DataHub,
   try {
     for (i=1; i <= m_nTracts; i++) {
        tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i);
-       AreaData.RecordClusterData(*this, DataHub, iReportedCluster, tTract, iNumSimsCompleted);
+       LocationWriter.Write(*this, DataHub, iReportedCluster, tTract, iNumSimsCompleted);
     }   
   }
   catch (ZdException &x) {
-    x.AddCallpath("Write(stsAreaSpecificData*)","CCluster");
+    x.AddCallpath("Write()","CCluster");
     throw;
   }
 }

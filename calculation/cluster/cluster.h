@@ -10,7 +10,7 @@
 #include "ClusterDataFactory.h"
 #include "AsciiPrintFormat.h"
 
-class stsAreaSpecificData;
+class LocationInformationWriter; /** forward class declaration */
 
 /** Defines properties of each potential cluster evaluated by analysis. Provides
     functionality for printing cluster properties to file stream in predefined
@@ -98,7 +98,7 @@ class CCluster {
     void                          SetEllipseOffset(int iOffset);
     void                          SetNonCompactnessPenalty(double dEllipseShape);
     void                          SetRate(int nRate);
-    virtual void                  Write(stsAreaSpecificData& AreaData, const CSaTScanData& DataHub,
+    virtual void                  Write(LocationInformationWriter& LocationWriter, const CSaTScanData& DataHub,
                                         unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const;
 };
 //*****************************************************************************

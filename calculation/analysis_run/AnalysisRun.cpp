@@ -8,11 +8,9 @@
 #include "SpaceTimeData.h"
 #include "SVTTData.h"
 #include "stsRunHistoryFile.h"
-#include "stsClusterData.h"
-#include "stsASCIIFileWriter.h"
-#include "stsDBaseFileWriter.h"
-#include "stsLogLikelihood.h"
-#include "stsAreaSpecificData.h"
+#include "LoglikelihoodRatioWriter.h"
+#include "ClusterInformationWriter.h"
+#include "ClusterLocationsWriter.h"
 #include "PurelySpatialAnalysis.h"
 #include "PurelySpatialMonotoneAnalysis.h"
 #include "PurelyTemporalAnalysis.h"
@@ -120,21 +118,15 @@ void AnalysisRunner::CreateClusterInformationFile() {
   try {
     if (gParameters.GetOutputClusterLevelFiles()) {
       //create file record data buffers
-      stsClusterData ClusterDataBuffers(*gpDataHub, giNumSimsExecuted < 99);
-      //print progress to print direction                                                        
+      ClusterInformationWriter ClusterWriter(*gpDataHub, giNumSimsExecuted < 99);
+      //print progress to print direction
       if (gTopClustersContainer.GetNumClustersRetained())
         gPrintDirection.SatScanPrintf("Recording results for %i cluster%s...\n",
                                       gTopClustersContainer.GetNumClustersRetained(),
                                      (gTopClustersContainer.GetNumClustersRetained() == 1 ? "" : "s"));
       //collect most likely cluster data in record buffers
       for (int i=0; i < gTopClustersContainer.GetNumClustersRetained(); ++i)
-         ClusterDataBuffers.RecordClusterData(gTopClustersContainer.GetCluster(i), i+1, giNumSimsExecuted);
-      //print record buffers to ASCII file
-      if (gParameters.GetOutputClusterLevelAscii())
-        ASCIIFileWriter(ClusterDataBuffers, gPrintDirection, gParameters, giAnalysisCount > 1);
-      //print record buffers to dBase file
-      if (gParameters.GetOutputClusterLevelDBase())
-        DBaseFileWriter(ClusterDataBuffers, gPrintDirection, gParameters, giAnalysisCount > 1);
+         ClusterWriter.Write(gTopClustersContainer.GetCluster(i), i+1, giNumSimsExecuted);
     }
   }
   catch (ZdException &x) {
@@ -214,7 +206,7 @@ void AnalysisRunner::DisplayTopClusterLogLikelihood() {
     If user requested 'location information' output file(s), they are created
     simultaneously with reported clusters. */
 void AnalysisRunner::DisplayTopCluster() {
-  std::auto_ptr<stsAreaSpecificData>    pData;
+  std::auto_ptr<LocationInformationWriter>    ClusterLocationWriter;
   FILE                                * fp=0;
 
   try {
@@ -225,7 +217,7 @@ void AnalysisRunner::DisplayTopCluster() {
       const CCluster& TopCluster = gTopClustersContainer.GetTopRankedCluster();
       //if creating 'location information files, create record data buffers
       if (gParameters.GetOutputAreaSpecificFiles())
-        pData.reset(new stsAreaSpecificData(gParameters, gParameters.GetNumReplicationsRequested() < 99));
+        ClusterLocationWriter.reset(new LocationInformationWriter(gParameters, gParameters.GetNumReplicationsRequested() < 99));
       //only report clutser if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
       if (TopCluster.m_nRatio > gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank()  <= giNumSimsExecuted)) {
         ++giClustersReported;
@@ -241,15 +233,10 @@ void AnalysisRunner::DisplayTopCluster() {
           ++guwSignificantAt005;
         //print cluster definition to 'location information' record buffer
         if (gParameters.GetOutputAreaSpecificFiles())
-           TopCluster.Write(*(pData.get()), *gpDataHub, giClustersReported, giNumSimsExecuted);
+           TopCluster.Write(*(ClusterLocationWriter.get()), *gpDataHub, giClustersReported, giNumSimsExecuted);
       }
       fprintf(fp, "\n");
       fclose(fp); fp=0;
-      //print 'location information' record buffers to file(s)
-      if (gParameters.GetOutputAreaSpecificAscii())
-         ASCIIFileWriter(*(pData.get()), gPrintDirection, gParameters, giAnalysisCount > 1);
-      if (gParameters.GetOutputAreaSpecificDBase())
-         DBaseFileWriter(*(pData.get()), gPrintDirection, gParameters, giAnalysisCount > 1);
     }
   }
   catch (ZdException &x) {
@@ -263,16 +250,14 @@ void AnalysisRunner::DisplayTopCluster() {
     If user requested 'location information' output file(s), they are created
     simultaneously with reported clusters. */
 void AnalysisRunner::DisplayTopClusters() {
-  double                               dSignifRatio05;
-  std::auto_ptr<stsAreaSpecificData>   pData;
-  clock_t                              lStartTime;
-  FILE                                * fp=0;
+  std::auto_ptr<LocationInformationWriter> ClusterLocationWriter;
+  clock_t                                  lStartTime;
+  FILE                                   * fp=0;
 
   try {
     //if creating 'location information' files, create record data buffers
     if (gParameters.GetOutputAreaSpecificFiles())
-      pData.reset(new stsAreaSpecificData(gParameters, giNumSimsExecuted < 99));
-    dSignifRatio05 = gSimulatedRatios.GetAlpha05();
+      ClusterLocationWriter.reset(new LocationInformationWriter(gParameters, giNumSimsExecuted < 99));
     //if  no replications requested, attempt to display up to top 10 clusters
     tract_t tNumClustersToDisplay(giNumSimsExecuted == 0 ? std::min(10, gTopClustersContainer.GetNumClustersRetained()) : gTopClustersContainer.GetNumClustersRetained());
     lStartTime = clock(); //get clock for calculating output time
@@ -295,20 +280,15 @@ void AnalysisRunner::DisplayTopClusters() {
          //print cluster definition to file stream
          TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
          //check track of whether this cluster was significant in top five percentage
-         if (TopCluster.m_nRatio > dSignifRatio05)
+         if (TopCluster.m_nRatio > gSimulatedRatios.GetAlpha05())
            ++guwSignificantAt005;
          //print cluster definition to 'location information' record buffer
          if (gParameters.GetOutputAreaSpecificFiles())
-           TopCluster.Write(*(pData.get()), *gpDataHub, giClustersReported, giNumSimsExecuted);
+           TopCluster.Write(*(ClusterLocationWriter.get()), *gpDataHub, giClustersReported, giNumSimsExecuted);
        }
     }
     fprintf(fp, "\n");
     fclose(fp); fp=0;
-    //print 'location information' record buffers to file(s)
-    if (gParameters.GetOutputAreaSpecificAscii()) // print area ASCII
-      ASCIIFileWriter(*(pData.get()), gPrintDirection, gParameters);
-    if (gParameters.GetOutputAreaSpecificDBase()) // print area dBase
-      DBaseFileWriter(*(pData.get()), gPrintDirection, gParameters);
   }
   catch (ZdException &x) {
     fclose(fp);
@@ -536,14 +516,13 @@ void AnalysisRunner::PerformParallelSimulations() {
                                                   specified by user (e.g. 8 processors available
                                                   but only utilize 6). */
 
-  double                               dSimulatedRatio;
-  unsigned int                         iSimulationNumber;
-  char                               * sReplicationFormatString;
-  std::auto_ptr<LogLikelihoodData>     pLLRData;
-  AbtractDataSetGateway              * pDataGateway=0;
-  CAnalysis                          * pAnalysis=0;
-  SimulationDataContainer_t            SimulationDataContainer;
-  RandomizerContainer_t                RandomizationContainer;
+  double                      dSimulatedRatio;
+  unsigned int                iSimulationNumber;
+  char                      * sReplicationFormatString;
+  AbtractDataSetGateway     * pDataGateway=0;
+  CAnalysis                 * pAnalysis=0;
+  SimulationDataContainer_t   SimulationDataContainer;
+  RandomizerContainer_t       RandomizationContainer;
 
   try {
     if (gParameters.GetNumReplicationsRequested() == 0)
@@ -553,9 +532,6 @@ void AnalysisRunner::PerformParallelSimulations() {
       sReplicationFormatString = "SaTScan test statistic for #%u of %u replications: %7.2lf\n";
     else
       sReplicationFormatString = "SaTScan log likelihood ratio for #%u of %u replications: %7.2lf\n";
-    //create record buffers for simulated loglikelihood ratios, if user requested these output files
-    if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
-      pLLRData.reset(new LogLikelihoodData(gParameters));
     //set/reset loglikelihood ratio significance indicator
     gSimulatedRatios.Initialize();
     giNumSimsExecuted = 0;
@@ -566,7 +542,7 @@ void AnalysisRunner::PerformParallelSimulations() {
        qParamsAndResults.push_back(std::make_pair(ui + 1,0));
     }
     stsMCSimContinuationPolicy CtPlcy(gPrintDirection);
-    stsMCSimReporter Rptr(gParameters, CtPlcy, gSimulatedRatios, gTopClustersContainer, gPrintDirection, sReplicationFormatString);
+    stsMCSimReporter Rptr(gParameters, CtPlcy, gSimulatedRatios, gTopClustersContainer, gPrintDirection, sReplicationFormatString, *this);
     typedef contractor<unsigned int, double, stsMCSimReporter, stsMCSimContinuationPolicy> contractor_type;
     contractor_type theContractor(qParamsAndResults, Rptr, CtPlcy);
     //run threads:
@@ -578,23 +554,6 @@ void AnalysisRunner::PerformParallelSimulations() {
       tg.create_thread(subcontractor<contractor_type,stsMonteCarloSimFunctor>(theContractor,mcsf));
     }
     tg.join_all();
-
-    if (!CtPlcy.UserCancelConditionExists()) {
-      giNumSimsExecuted = (Rptr.ShortCircuitConditionExists() ? Rptr.ResultsNotShortCircuitedCount() : qParamsAndResults.size());
-      for (unsigned int ui = 0; ui < giNumSimsExecuted; ++ui)
-      {
-        double dSimulatedRatio = qParamsAndResults[ui].second;
-        //update power calculations
-        UpdatePowerCounts(dSimulatedRatio);
-        //update simulated loglikelihood record buffer
-        if(pLLRData.get()) pLLRData->AddLikelihoodRatio(dSimulatedRatio);
-      }
-      //write to additional data to files
-      if (gParameters.GetOutputSimLoglikeliRatiosAscii() && pLLRData.get())
-        ASCIIFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
-      if (gParameters.GetOutputSimLoglikeliRatiosDBase() && pLLRData.get())
-        DBaseFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
-    }
   }
   catch (ZdException &x) {
     delete pDataGateway;
@@ -610,14 +569,14 @@ void AnalysisRunner::PerformParallelSimulations() {
     - power calculation data, if requested by user
     - additional output file(s)                             */
 void AnalysisRunner::PerformSerializedSimulations() {
-  double                               dSimulatedRatio;
-  unsigned int                         iSimulationNumber;
-  char                               * sReplicationFormatString;
-  std::auto_ptr<LogLikelihoodData>     pLLRData;
-  AbtractDataSetGateway              * pDataGateway=0;
-  CAnalysis                          * pAnalysis=0;
-  SimulationDataContainer_t            SimulationDataContainer;
-  RandomizerContainer_t                RandomizationContainer;
+  double                                  dSimulatedRatio;
+  unsigned int                            iSimulationNumber;
+  char                                  * sReplicationFormatString;
+  AbtractDataSetGateway                 * pDataGateway=0;
+  CAnalysis                             * pAnalysis=0;
+  SimulationDataContainer_t               SimulationDataContainer;
+  RandomizerContainer_t                   RandomizationContainer;
+  std::auto_ptr<LoglikelihoodRatioWriter> RatioWriter;
 
   try {
     if (gParameters.GetNumReplicationsRequested() == 0)
@@ -629,7 +588,7 @@ void AnalysisRunner::PerformSerializedSimulations() {
       sReplicationFormatString = "SaTScan log likelihood ratio for #%u of %u replications: %7.2lf\n";
     //create record buffers for simulated loglikelihood ratios, if user requested these output files
     if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
-      pLLRData.reset(new LogLikelihoodData(gParameters));
+      RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
     //set/reset loglikelihood ratio significance indicator
     gSimulatedRatios.Initialize();
     //get container for simulation data - this data will be modified in the randomize process
@@ -664,7 +623,7 @@ void AnalysisRunner::PerformSerializedSimulations() {
         //update power calculations
         UpdatePowerCounts(dSimulatedRatio);
         //update simulated loglikelihood record buffer
-        if(pLLRData.get()) pLLRData->AddLikelihoodRatio(dSimulatedRatio);
+        if(RatioWriter.get()) RatioWriter->Write(dSimulatedRatio);
         //if first simulation, report approximate time to complete simulations and print queue threshold
         if (giNumSimsExecuted==1) {
           //***** time to complete approximate will need modified with incorporation of thread code ******
@@ -684,13 +643,6 @@ void AnalysisRunner::PerformSerializedSimulations() {
     }//end scope of SimulationPrintDirection
     delete pDataGateway; pDataGateway=0;
     delete pAnalysis; pAnalysis=0;
-    if (!gPrintDirection.GetIsCanceled()) {
-      //write to additional data to files
-      if (gParameters.GetOutputSimLoglikeliRatiosAscii() && pLLRData.get())
-        ASCIIFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
-      if (gParameters.GetOutputSimLoglikeliRatiosDBase() && pLLRData.get())
-        DBaseFileWriter(*(pLLRData.get()), gPrintDirection, gParameters);
-    }    
   }
   catch (ZdException &x) {
     delete pDataGateway;
