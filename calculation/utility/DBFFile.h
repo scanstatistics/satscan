@@ -7,20 +7,62 @@
 #include "xbase/xbase.h"
 //---------------------------------------------------------------------------
 
-class DBFSystemRecord : public ZdFileRecord
+class DBFFile;
+
+class DBFRecord : public ZdFileRecord
 {
+friend class DBFFile;
+
 private:
-   xbDbf * gpAssociatedFile;
+   ZdResizableChunk gBuffer;
+   mutable ZdResizableChunk gTempBuffer;
+//   DBFFile * gpAssociatedFile;
+   mutable xbDbf * gpAssociatedDbf;
+   ZdFileName gAssociatedFileName;
+
+   // The following classes are used in all functions that get data from or put data
+   // into the record.
+   class RecordAccessor;
+   class RecordManipulator;
+   friend class RecordAccessor;
+   friend class RecordManipulator;
+   class RecordAccessor
+      {
+      // Implements initial buffering and updating of the RecBuf and final restoring
+      // of the initially buffered data to it.
+      private:
+         const DBFRecord & gR;
+      public:
+         RecordAccessor(const DBFRecord & r) : gR(r) { gR.BufferDbfRecordData(); gR.UpdateDbfRecordData(); }
+         ~RecordAccessor() { gR.RestoreDbfRecordData(); }
+      };
+   class RecordManipulator
+      {
+      // Implements initial buffering of the RecBuf and final copying and restoring
+      // of the initially buffered data to it.
+      private:
+         DBFRecord & gR;
+      public:
+         RecordManipulator(DBFRecord & r) : gR(r) { gR.BufferDbfRecordData(); }
+         ~RecordManipulator() { gR.CopyDbfRecordData(); gR.RestoreDbfRecordData(); }
+      };
 
 protected:
+   char * GetRecBuf() const;
+   xbDbf * GetAssociatedDbf() const;
+
+   void BufferDbfRecordData() const;
+   void CopyDbfRecordData();
+   void RestoreDbfRecordData() const;
+   void UpdateDbfRecordData() const;
 
 public:
-   DBFSystemRecord( xbDbf & associatedFile );
-   virtual ~DBFSystemRecord();
+   DBFRecord( DBFFile & associatedFile, xbDbf & associatedDbf );
+   virtual ~DBFRecord();
 
    //--- Default copy operations are fine.
 
-   virtual DBFSystemRecord *  Clone() const { ZdException::Generate("can't clone a DBFSystemRecord", "DBFSystemRecord"); return 0; }
+   virtual DBFRecord *  Clone() const { return new DBFRecord(*this); }
 
    virtual void            Clear();
 
@@ -71,9 +113,8 @@ public:
 //   virtual void            WriteRecord(ZdOutputStreamInterface &theFile, const char*sPassword = 0) const;
    virtual void            WriteToBuffer ( void *pBuffer ) const { ZdException::Generate("can't write a DBFSystemRecord to a buffer", "DBFSystemRecord"); }
 
+   void                    SetAsCurrentDbfRecord();
 };
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -85,7 +126,6 @@ private:
 
    xbXBase gXBase;//must have one of these objects
    xbDbf * gpDbf;//the DBF file
-   bool gbIsClassLocalRecordRequest;
 
 //   const ZdIniSection     *FindFieldByName ( const ZdIniFile &theFile, const char *sFieldName, unsigned short *pwFieldNumber = 0 ) const;
 //   void              ReadFieldArray ( const ZdIniFile &theFile, ZdVector<ZdField*> &vFields, const ZdPointerVector<ZdFlagType> *pFlagArray = 0 ) const;
@@ -321,7 +361,7 @@ public:
 
    // Pure virtual functions that must be defined by the file classes
    virtual void            Flush();
-   virtual ZdFileRecord *  GetNewRecord() const  { if (gbIsClassLocalRecordRequest) return new DBFSystemRecord(*gpDbf); else ZdException::Generate("not yet implemented: GetNewRecord", "DBFFile"); return 0; }
+   virtual DBFRecord *     GetNewRecord() const  { return new DBFRecord(const_cast<DBFFile &>(*this), *gpDbf); }
    virtual unsigned long   GetNumRecords() const;
    virtual void            GotoRecord(unsigned long lRecNum, ZdFileRecord * PRecordBuffer = 0);
    virtual void            Open(const char *sFileName, ZdIOFlag Flags = ZDIO_OPEN_READ, const char * sPassword = 0, const char * sAlternateZDSFile = 0, ZdIniFile *pZDSFile = 0);
@@ -366,6 +406,9 @@ public:
 private:
    static DBFFileType gDefaultInstance;
 };
+
+//global instance:
+ZdDBFFileTypeInstance
 
 
 

@@ -8,98 +8,161 @@
 
 //construct
 //use an empty field array
-DBFSystemRecord::DBFSystemRecord( xbDbf & associatedFile ) : ZdFileRecord(ZdVector<ZdField*>(), 0)
-   , gpAssociatedFile( &associatedFile )
+DBFRecord::DBFRecord( DBFFile & associatedFile, xbDbf & associatedDbf ) : ZdFileRecord(ZdVector<ZdField*>(), 0)
+//   , gpAssociatedFile( &associatedFile )
+   , gpAssociatedDbf( &associatedDbf )
+   , gBuffer(associatedDbf.GetRecordLen() + 1)
+   , gTempBuffer(associatedDbf.GetRecordLen() + 1)
+   , gAssociatedFileName(associatedFile.GetFileName())
 {
    try
       {
-      if (gpAssociatedFile->GetDbfStatus() == XB_CLOSED)
-         ZdException::Generate("The associated file is not open", "DBFSystemRecord");
+      if (GetAssociatedDbf()->GetDbfStatus() == XB_CLOSED)
+         ZdException::Generate("The associated file is not open", "DBFRecord");
+
+      //register this record with 'associatedFile'
       }
    catch (ZdException & e)
       {
-      e.AddCallpath("constructor(const xbDbf &)", "DBFSystemRecord");
+      e.AddCallpath("constructor(DBFFile &, xbDbf &)", "DBFRecord");
       throw;
       }
 }
 
 //destruct
-DBFSystemRecord::~DBFSystemRecord()
+DBFRecord::~DBFRecord()
 {
 }
 
+// Copy the data from the RecBuf in the associated Dbf to gTempBuffer.
+void DBFRecord::BufferDbfRecordData() const
+{
+   std::memcpy(gTempBuffer.AsVoidPtr(), GetRecBuf(), GetAssociatedDbf()->GetRecordLen());
+}
+
+// Copy the data from the RecBuf in the associated Dbf to gBuffer.
+void DBFRecord::CopyDbfRecordData()
+{
+   std::memcpy(gBuffer.AsVoidPtr(), GetRecBuf(), GetAssociatedDbf()->GetRecordLen());
+}
+
+// Copy the data from gTempBuffer to the RecBuf in the associated Dbf.
+void DBFRecord::RestoreDbfRecordData() const
+{
+   //GetRecordBuf returns the address to the actual memory, so this is correct:
+   std::memcpy(GetRecBuf(), gTempBuffer.AsVoidPtr(), GetAssociatedDbf()->GetRecordLen());
+}
+
+// Copy the data from gBuffer to the RecBuf in the associated Dbf.
+void DBFRecord::UpdateDbfRecordData() const
+{
+   //GetRecordBuf returns the address to the actual memory, so this is correct:
+   std::memcpy(GetRecBuf(), gBuffer.AsVoidPtr(), GetAssociatedDbf()->GetRecordLen());
+}
+
 //Make all fields blank.
-void DBFSystemRecord::Clear()
+void DBFRecord::Clear()
 {
    try
       {
-      gpAssociatedFile->BlankRecord();
+      RecordManipulator rm(*this);
+
+      GetAssociatedDbf()->BlankRecord();
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("Clear()", "DBFSystemRecord");
+      theException.AddCallpath("Clear()", "DBFRecord");
       throw;
       }
 }
 
+// Check to make sure that gpAssociatedDbf is non-null and return its value.
+xbDbf * DBFRecord::GetAssociatedDbf() const
+{
+   xbDbf * pResult;
+   try
+      {
+      if (gpAssociatedDbf)
+         {
+         pResult = gpAssociatedDbf;
+         }
+      else
+         {
+         ZdException::Generate("The file with which this record is associated, \"%c\", is no longer available.", "DBFRecord", gAssociatedFileName.GetFullPath());
+         }
+      }
+   catch (ZdException & e)
+      {
+      e.AddCallpath("GetAssociatedDbf()", "DBFRecord");
+      throw;
+      }
+   return pResult;
+}
+
 //How many fields are in *this ?
-long DBFSystemRecord::GetFieldCount() const
+long DBFRecord::GetFieldCount() const
 {
    long lResult;
    try
       {
-      lResult = gpAssociatedFile->FieldCount();
+      lResult = GetAssociatedDbf()->FieldCount();
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetFieldCount()", "DBFSystemRecord");
+      theException.AddCallpath("GetFieldCount()", "DBFRecord");
       throw;
       }
    return lResult;
 }
 
 //How many bytes does this field require ?
-short DBFSystemRecord::GetFieldLength(unsigned short uwFieldIndex) const
+short DBFRecord::GetFieldLength(unsigned short uwFieldIndex) const
 {
    short wResult;
    try
       {
-      wResult = gpAssociatedFile->GetFieldLen(uwFieldIndex);
+      wResult = GetAssociatedDbf()->GetFieldLen(uwFieldIndex);
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetFieldLength()", "DBFSystemRecord");
+      theException.AddCallpath("GetFieldLength()", "DBFRecord");
       throw;
       }
    return wResult;
 }
 
-//What is the "field type" of the field at 'uwFieldIndex' ?
-char DBFSystemRecord::GetFieldType(unsigned short uwFieldIndex) const
+//What is the "field type" (Zd) of the field at 'uwFieldIndex' ?
+char DBFRecord::GetFieldType(unsigned short uwFieldIndex) const
 {
    char cResult;
    try
       {
-      cResult = DBFFile::GetZdFieldTypeFromXBaseFieldType(gpAssociatedFile->GetFieldType(uwFieldIndex));
+      cResult = DBFFile::GetZdFieldTypeFromXBaseFieldType(GetAssociatedDbf()->GetFieldType(uwFieldIndex));
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetFieldType()", "DBFSystemRecord");
+      theException.AddCallpath("GetFieldType()", "DBFRecord");
       throw;
       }
    return cResult;
 }
 
 //Does the field at 'uwFieldIndex' contain a "blank" value ?
-bool DBFSystemRecord::GetIsBlank(unsigned short uwFieldIndex) const
+bool DBFRecord::GetIsBlank(unsigned short uwFieldIndex) const
 {
    bool bResult;
-   ZdResizableChunk buffer(gpAssociatedFile->GetFieldLen(uwFieldIndex)+1);//GetRawField puts a NULL in the byte following the last byte of the field, so we must allocate that byte
+   ZdResizableChunk buffer(GetAssociatedDbf()->GetFieldLen(uwFieldIndex)+1);//GetRawField puts a NULL in the byte following the last byte of the field, so we must allocate that byte
    const char * pBufBegin;
    const char * pBufEnd;
    try
       {
-      gpAssociatedFile->GetRawField(gpAssociatedFile->GetFieldName(uwFieldIndex), buffer.AsCharPtr());
+
+         {
+         RecordAccessor ra(*this);
+
+         GetAssociatedDbf()->GetRawField(GetAssociatedDbf()->GetFieldName(uwFieldIndex), buffer.AsCharPtr());
+         }
+
       pBufEnd = pBufBegin + (buffer.GetSize() - 1);
       while ( (pBufBegin < pBufEnd) && bResult )
          {
@@ -109,7 +172,7 @@ bool DBFSystemRecord::GetIsBlank(unsigned short uwFieldIndex) const
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetIsBlank()", "DBFSystemRecord");
+      theException.AddCallpath("GetIsBlank()", "DBFRecord");
       throw;
       }
    return bResult;
@@ -119,7 +182,7 @@ bool DBFSystemRecord::GetIsBlank(unsigned short uwFieldIndex) const
 //of bytes in 'pFieldValue'.
 //<br>require
 //<br>  valid_length: ulLength >= (GetFieldLength(uwFieldNumber) + 1)
-char * DBFSystemRecord::GetAlpha(unsigned short uwFieldNumber, char *pFieldValue, unsigned long ulLength, bool bStripBlanks) const
+char * DBFRecord::GetAlpha(unsigned short uwFieldNumber, char *pFieldValue, unsigned long ulLength, bool bStripBlanks) const
 {
    short wFieldLength = GetFieldLength(uwFieldNumber);
    int i;
@@ -129,8 +192,13 @@ char * DBFSystemRecord::GetAlpha(unsigned short uwFieldNumber, char *pFieldValue
       if (ulLength < (unsigned long)(wFieldLength + 1))
          ZdException::Generate("Buffer %d too small in GetAlpha(); need buffer length of %d", "TXDRec", ulLength, wFieldLength + 1 );
 
-      gpAssociatedFile->GetRawField(gpAssociatedFile->GetFieldName(uwFieldNumber), buffer.AsCharPtr());
-      ::memcpy(pFieldValue, buffer.AsCharPtr(), wFieldLength);
+         {
+         RecordAccessor ra(*this);
+
+         GetAssociatedDbf()->GetRawField(GetAssociatedDbf()->GetFieldName(uwFieldNumber), buffer.AsCharPtr());
+         }
+
+      std::memcpy(pFieldValue, buffer.AsCharPtr(), wFieldLength);
       pFieldValue[wFieldLength] = 0;
       if (bStripBlanks)
          for (i = wFieldLength - 1; i >= 0 && pFieldValue[i] == ' '; i--)
@@ -138,7 +206,7 @@ char * DBFSystemRecord::GetAlpha(unsigned short uwFieldNumber, char *pFieldValue
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetAlpha()", "DBFSystemRecord");
+      theException.AddCallpath("GetAlpha()", "DBFRecord");
       throw;
       }
    return pFieldValue;
@@ -146,181 +214,211 @@ char * DBFSystemRecord::GetAlpha(unsigned short uwFieldNumber, char *pFieldValue
 
 //Get the value of the field at 'uwFieldIndex' as a Binary.  Be sure that the buffer
 //at pValue has at least GetFieldLength(uwFieldNumber) bytes available!
-void DBFSystemRecord::GetBinary( unsigned short uwFieldNumber, void *pValue ) const
+void DBFRecord::GetBinary( unsigned short uwFieldNumber, void *pValue ) const
 {
 //   short wFieldLength = GetFieldLength(uwFieldNumber);
 //   ZdResizableChunk buffer(wFieldLength + 1);//GetRawField puts a NULL in the byte following the last byte of the field, so we must allocate that byte
    try
       {
-      ZdException::Generate("GetBinary not implemented", "DBFSystemRecord");
+      ZdException::Generate("GetBinary not implemented", "DBFRecord");
 //      gpAssociatedFile->GetRawField(gpAssociatedFile->GetFieldName(uwFieldNumber), buffer.AsCharPtr());
 //      ::memcpy(pValue, buffer.AsCharPtr(), wFieldLength);
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetBinary()", "DBFSystemRecord");
+      theException.AddCallpath("GetBinary()", "DBFRecord");
       throw;
       }
 }
 
 //Get the value of the field at 'uwFieldNumber' as a ZdBlob.
-void DBFSystemRecord::GetBLOB(unsigned short uwFieldNumber, ZdBlob & theValue) const
+void DBFRecord::GetBLOB(unsigned short uwFieldNumber, ZdBlob & theValue) const
 {
+   ZdResizableChunk databuffer(GetAssociatedDbf()->GetMemoFieldLen(uwFieldNumber));
    try
       {
-      ZdResizableChunk databuffer(gpAssociatedFile->GetMemoFieldLen(uwFieldNumber));
+         {
+         RecordAccessor ra(*this);
 
-      gpAssociatedFile->GetMemoField(uwFieldNumber, databuffer.GetSize(), databuffer.AsCharPtr(), F_SETLKW);
+         databuffer.Resize(GetAssociatedDbf()->GetMemoFieldLen(uwFieldNumber));
+         GetAssociatedDbf()->GetMemoField(uwFieldNumber, databuffer.GetSize(), databuffer.AsCharPtr(), F_SETLKW);
+         }
+
       theValue.SetBlob(databuffer.AsVoidPtr(), databuffer.GetSize());
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetBLOB()", "DBFSystemRecord");
+      theException.AddCallpath("GetBLOB()", "DBFRecord");
       throw;
       }
 }
 
 //Get the value of the field at 'uwFieldIndex' as a boolean.
-bool DBFSystemRecord::GetBoolean(unsigned short uwFieldNumber) const
+bool DBFRecord::GetBoolean(unsigned short uwFieldNumber) const
 {
    bool bResult;
 
    try
       {
-      bResult = gpAssociatedFile->GetLogicalField(uwFieldNumber);
+      RecordAccessor ra(*this);
+      bResult = GetAssociatedDbf()->GetLogicalField(uwFieldNumber);
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetBoolean()", "DBFSystemRecord");
+      theException.AddCallpath("GetBoolean()", "DBFRecord");
       throw;
       }
    return bResult;
 }
 
 //Get the value of the field at 'uwFieldIndex' as a boolean.
-ZdDate & DBFSystemRecord::GetDate(unsigned short uwFieldNumber, ZdDate &theDate ) const
+ZdDate & DBFRecord::GetDate(unsigned short uwFieldNumber, ZdDate &theDate ) const
 {
 //It happens that the form of the date in the DBF format, CCYYMMDD, is identical
 //to a "raw date" value as viewed by ZdDate.
+   ZdResizableChunk buffer;
+
    try
       {
-      ZdResizableChunk buffer(gpAssociatedFile->GetFieldLen(uwFieldNumber)+1);//extra byte because GetRawField sets the extra byte to NULL
-      gpAssociatedFile->GetRawField(uwFieldNumber, buffer.AsCharPtr());
+         {
+         RecordAccessor ra(*this);
+
+         buffer.Resize(GetAssociatedDbf()->GetFieldLen(uwFieldNumber)+1);//extra byte because GetRawField sets the extra byte to NULL
+         GetAssociatedDbf()->GetRawField(uwFieldNumber, buffer.AsCharPtr());
+         }
+         
       theDate.SetRawDate(buffer.AsCharPtr());
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetDate()", "DBFSystemRecord");
+      theException.AddCallpath("GetDate()", "DBFRecord");
       throw;
       }
    return theDate;
 }
 
 //Get the value of the field at 'uwFieldIndex' as a long.
-long DBFSystemRecord::GetLong(unsigned short uwFieldNumber) const
+long DBFRecord::GetLong(unsigned short uwFieldNumber) const
 {
    long lResult;
 
    try
       {
-      lResult = gpAssociatedFile->GetLongField(uwFieldNumber);
+      RecordAccessor ra(*this);
+      lResult = GetAssociatedDbf()->GetLongField(uwFieldNumber);
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetLong()", "DBFSystemRecord");
+      theException.AddCallpath("GetLong()", "DBFRecord");
       throw;
       }
    return lResult;
 }
 
 //Get the value of the field at 'uwFieldIndex' as a double.
-double DBFSystemRecord::GetNumber(unsigned short uwFieldNumber) const
+double DBFRecord::GetNumber(unsigned short uwFieldNumber) const
 {
    double dResult;
 
    try
       {
-      if (gpAssociatedFile->GetFieldType(uwFieldNumber) == XB_NUMERIC_FLD)
-         dResult = gpAssociatedFile->GetDoubleField(uwFieldNumber);
+      RecordAccessor ra(*this);
+
+      if (GetAssociatedDbf()->GetFieldType(uwFieldNumber) == XB_NUMERIC_FLD)
+         dResult = GetAssociatedDbf()->GetDoubleField(uwFieldNumber);
       else
-         dResult = gpAssociatedFile->GetFloatField(uwFieldNumber);
+         dResult = GetAssociatedDbf()->GetFloatField(uwFieldNumber);
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetNumber()", "DBFSystemRecord");
+      theException.AddCallpath("GetNumber()", "DBFRecord");
       throw;
       }
    return dResult;
 }
 
-//Get the value of the field at 'uwFieldIndex' as a short.
-short DBFSystemRecord::GetShort(unsigned short wFieldNumber) const
+// Check to make sure that gpAssociatedDbf is non-null and return the RecBuf.
+char * DBFRecord::GetRecBuf() const
 {
    try
       {
-      ZdException::Generate("GetShort not implemented.  Try GetLong ?", "DBFSystemRecord");
+      return GetAssociatedDbf()->GetRecordBuf();
+      }
+   catch (ZdException & e)
+      {
+      e.AddCallpath("GetRecBuf()", "DBFRecord");
+      throw;
+      }
+}
+
+//Get the value of the field at 'uwFieldIndex' as a short.
+short DBFRecord::GetShort(unsigned short wFieldNumber) const
+{
+   try
+      {
+      ZdException::Generate("GetShort not implemented.  Try GetLong ?", "DBFRecord");
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetShort()", "DBFSystemRecord");
+      theException.AddCallpath("GetShort()", "DBFRecord");
       throw;
       }
    return 0;
 }
 
 //Get the value of the field at 'uwFieldIndex' as a ZdTime.
-ZdTime & DBFSystemRecord::GetTime(unsigned short uwFieldNumber, ZdTime &FieldValue) const
+ZdTime & DBFRecord::GetTime(unsigned short uwFieldNumber, ZdTime &FieldValue) const
 {
    try
       {
-      ZdException::Generate("GetTime not implemented.  Try GetDate ?", "DBFSystemRecord");
+      ZdException::Generate("GetTime not implemented.  Try GetDate ?", "DBFRecord");
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetTime()", "DBFSystemRecord");
+      theException.AddCallpath("GetTime()", "DBFRecord");
       throw;
       }
 }
 
 //Get the value of the field at 'uwFieldIndex' as a ZdTimestamp.
-ZdTimestamp & DBFSystemRecord::GetTimestamp(unsigned short uwFieldNumber, ZdTimestamp &FieldValue) const
+ZdTimestamp & DBFRecord::GetTimestamp(unsigned short uwFieldNumber, ZdTimestamp &FieldValue) const
 {
    try
       {
-      ZdException::Generate("GetTimestamp not implemented.  Try GetDate ?", "DBFSystemRecord");
+      ZdException::Generate("GetTimestamp not implemented.  Try GetDate ?", "DBFRecord");
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetTimestamp()", "DBFSystemRecord");
+      theException.AddCallpath("GetTimestamp()", "DBFRecord");
       throw;
       }
 }
 
 //Get the value of the field at 'uwFieldIndex' as an unsigned long.
-unsigned long DBFSystemRecord::GetUnsignedLong(unsigned short wFieldNumber) const
+unsigned long DBFRecord::GetUnsignedLong(unsigned short wFieldNumber) const
 {
    try
       {
-      ZdException::Generate("GetUnsignedLong not implemented.  Try GetLong ?", "DBFSystemRecord");
+      ZdException::Generate("GetUnsignedLong not implemented.  Try GetLong ?", "DBFRecord");
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetUnsignedLong()", "DBFSystemRecord");
+      theException.AddCallpath("GetUnsignedLong()", "DBFRecord");
       throw;
       }
    return 0;
 }
 
 //Get the value of the field at 'uwFieldIndex' as an unsigned short.
-unsigned short DBFSystemRecord::GetUnsignedShort(unsigned short wFieldNumber) const
+unsigned short DBFRecord::GetUnsignedShort(unsigned short wFieldNumber) const
 {
    try
       {
-      ZdException::Generate("GetUnsignedShort not implemented.  Try GetLong ?", "DBFSystemRecord");
+      ZdException::Generate("GetUnsignedShort not implemented.  Try GetLong ?", "DBFRecord");
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("GetUnsignedShort()", "DBFSystemRecord");
+      theException.AddCallpath("GetUnsignedShort()", "DBFRecord");
       throw;
       }
    return 0;
@@ -329,105 +427,114 @@ unsigned short DBFSystemRecord::GetUnsignedShort(unsigned short wFieldNumber) co
 //Put an Alpha value into the field at 'uwFieldIndex'.
 //<br>require
 //<br>  field_value_short_enough:  std::strlen(pFieldValue) <= GetFieldLength(uwFieldNumber)
-void DBFSystemRecord::PutAlpha(unsigned short uwFieldNumber, const char *pFieldValue)
+void DBFRecord::PutAlpha(unsigned short uwFieldNumber, const char *pFieldValue)
 {
    short wFieldLength = GetFieldLength(uwFieldNumber);
    try
       {
       if ((unsigned)wFieldLength < std::strlen(pFieldValue))
-         ZdException::Generate( "String Value, \"%s\", of length, %d, must not be longer than %d.", "DBFSystemRecord", pFieldValue, strlen(pFieldValue), wFieldLength );
+         ZdException::Generate( "String Value, \"%s\", of length, %d, must not be longer than %d.", "DBFRecord", pFieldValue, strlen(pFieldValue), wFieldLength );
 
-      gpAssociatedFile->PutField(uwFieldNumber, pFieldValue);
+         {
+         RecordManipulator rm(*this);
+         GetAssociatedDbf()->PutField(uwFieldNumber, pFieldValue);
+         }
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("PutAlpha()", "DBFSystemRecord");
+      theException.AddCallpath("PutAlpha()", "DBFRecord");
       throw;
       }
 }
 
 //Put a Binary value into the field at 'uwFieldIndex'.
-void DBFSystemRecord::PutBinary ( unsigned short wFieldNumber, const void *pValue )
+void DBFRecord::PutBinary ( unsigned short wFieldNumber, const void *pValue )
 {
    try
       {
-      ZdException::Generate("PutBinary not implemented", "DBFSystemRecord");
+      ZdException::Generate("PutBinary not implemented", "DBFRecord");
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("PutBinary()", "DBFSystemRecord");
+      theException.AddCallpath("PutBinary()", "DBFRecord");
       throw;
       }
 }
 
 //Put a "blank" value into the field at 'uwFieldIndex'.
-void DBFSystemRecord::PutBlank(unsigned short uwFieldNumber)
+void DBFRecord::PutBlank(unsigned short uwFieldNumber)
 {
    try
       {
       short wFieldLength(GetFieldLength(uwFieldNumber));
       ZdString sTemp((unsigned long)wFieldLength);
-      switch (gpAssociatedFile->GetFieldType(uwFieldNumber))
          {
-         case XB_CHAR_FLD :
-         case XB_NUMERIC_FLD :
-         case XB_DATE_FLD :
-         case XB_FLOAT_FLD :
-            //set all spaces
-            sTemp.Clear();
-            sTemp.Insert(' ', 0, wFieldLength);
-            gpAssociatedFile->PutField(uwFieldNumber, sTemp.GetCString());
-            break;
-         case XB_LOGICAL_FLD :
-            //set to question mark
-            sTemp = '?';
-            gpAssociatedFile->PutField(uwFieldNumber, sTemp.GetCString());
-            break;
-         case XB_MEMO_FLD :
-            //set to an empty memo
-            gpAssociatedFile->UpdateMemoData(uwFieldNumber, 0, (char*)0, F_SETLKW);
-            break;
+         RecordManipulator ra(*this);
+
+         switch (GetAssociatedDbf()->GetFieldType(uwFieldNumber))
+            {
+            case XB_CHAR_FLD :
+            case XB_NUMERIC_FLD :
+            case XB_DATE_FLD :
+            case XB_FLOAT_FLD :
+               //set all spaces
+               sTemp.Clear();
+               sTemp.Insert(' ', 0, wFieldLength);
+               GetAssociatedDbf()->PutField(uwFieldNumber, sTemp.GetCString());
+               break;
+            case XB_LOGICAL_FLD :
+               //set to question mark
+               sTemp = '?';
+               GetAssociatedDbf()->PutField(uwFieldNumber, sTemp.GetCString());
+               break;
+            case XB_MEMO_FLD :
+               //set to an empty memo
+               GetAssociatedDbf()->UpdateMemoData(uwFieldNumber, 0, (char*)0, F_SETLKW);
+               break;
+            }
          }
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("PutBlank()", "DBFSystemRecord");
+      theException.AddCallpath("PutBlank()", "DBFRecord");
       throw;
       }
 }
 
 //Put a ZdBlob value into the field at 'uwFieldNumber'.
-void DBFSystemRecord::PutBLOB(unsigned short uwFieldNumber, const ZdBlob & theValue)
+void DBFRecord::PutBLOB(unsigned short uwFieldNumber, const ZdBlob & theValue)
 {
    try
       {
-      gpAssociatedFile->UpdateMemoData(uwFieldNumber, theValue.GetLength(), (const char *)(theValue.GetBlob()), F_SETLKW);
+      RecordManipulator ra(*this);
+      GetAssociatedDbf()->UpdateMemoData(uwFieldNumber, theValue.GetLength(), (const char *)(theValue.GetBlob()), F_SETLKW);
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("PutBLOB()", "DBFSystemRecord");
+      theException.AddCallpath("PutBLOB()", "DBFRecord");
       throw;
       }
 }
 
 //Put a boolean value into the field at 'uwFieldIndex'.
-void DBFSystemRecord::PutBoolean(unsigned short uwFieldNumber, bool bValue)
+void DBFRecord::PutBoolean(unsigned short uwFieldNumber, bool bValue)
 {
    char sTrue[2] = "T";//we could use any of these: T, t, Y, y
    char sFalse[2] = "F";//we could use any of these: F, f, N, n
    try
       {
-      gpAssociatedFile->PutField(uwFieldNumber, (bValue ? sTrue : sFalse));
+      RecordManipulator ra(*this);
+      GetAssociatedDbf()->PutField(uwFieldNumber, (bValue ? sTrue : sFalse));
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("PutBoolean()", "DBFSystemRecord");
+      theException.AddCallpath("PutBoolean()", "DBFRecord");
       throw;
       }
 }
 
 //Put a date value into the field at 'uwFieldIndex'.
-void DBFSystemRecord::PutDate( unsigned short uwFieldNumber, const ZdDate &theDate )
+void DBFRecord::PutDate( unsigned short uwFieldNumber, const ZdDate &theDate )
 {
 //It happens that the form of the date in the DBF format, CCYYMMDD, is identical
 //to a "raw date" value as viewed by ZdDate.
@@ -435,112 +542,138 @@ void DBFSystemRecord::PutDate( unsigned short uwFieldNumber, const ZdDate &theDa
       {
       ZdString sRawDate;
       theDate.RetrieveRawDate(sRawDate);
-      gpAssociatedFile->PutField(uwFieldNumber, sRawDate.GetCString());
+
+         {
+         RecordManipulator ra(*this);
+
+         GetAssociatedDbf()->PutField(uwFieldNumber, sRawDate.GetCString());
+         }
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("PutDate()", "DBFSystemRecord");
+      theException.AddCallpath("PutDate()", "DBFRecord");
       throw;
       }
 }
 
 //Put a long value into the field at 'uwFieldIndex'.
-void DBFSystemRecord::PutLong(unsigned short uwFieldNumber, long lFieldValue)
+void DBFRecord::PutLong(unsigned short uwFieldNumber, long lFieldValue)
 {
    try
       {
-      gpAssociatedFile->PutLongField(uwFieldNumber, lFieldValue);
+      RecordManipulator ra(*this);
+      GetAssociatedDbf()->PutLongField(uwFieldNumber, lFieldValue);
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("PutLong()", "DBFSystemRecord");
+      theException.AddCallpath("PutLong()", "DBFRecord");
       throw;
       }
 }
 
 //Put a numeric value into the field at 'uwFieldIndex'.
-void DBFSystemRecord::PutNumber(unsigned short uwFieldNumber, double dFieldValue)
+void DBFRecord::PutNumber(unsigned short uwFieldNumber, double dFieldValue)
 {
    try
       {
-      if (gpAssociatedFile->GetFieldType(uwFieldNumber) == XB_NUMERIC_FLD)
-         gpAssociatedFile->PutDoubleField(uwFieldNumber, dFieldValue);
+      RecordManipulator ra(*this);
+
+      if (GetAssociatedDbf()->GetFieldType(uwFieldNumber) == XB_NUMERIC_FLD)
+         GetAssociatedDbf()->PutDoubleField(uwFieldNumber, dFieldValue);
       else
-         gpAssociatedFile->PutFloatField(uwFieldNumber, static_cast<float>(dFieldValue));
+         GetAssociatedDbf()->PutFloatField(uwFieldNumber, static_cast<float>(dFieldValue));
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("PutNumber()", "DBFSystemRecord");
+      theException.AddCallpath("PutNumber()", "DBFRecord");
       throw;
       }
 }
 
 //Put a short value into the field at 'uwFieldIndex'.
-void DBFSystemRecord::PutShort(unsigned short uwFieldNumber, short wFieldValue)
+void DBFRecord::PutShort(unsigned short uwFieldNumber, short wFieldValue)
 {
    try
       {
-      ZdException::Generate("PutShort not implemented.  Try PutLong ?", "DBFSystemRecord");
+      ZdException::Generate("PutShort not implemented.  Try PutLong ?", "DBFRecord");
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("PutShort()", "DBFSystemRecord");
+      theException.AddCallpath("PutShort()", "DBFRecord");
       throw;
       }
 }
 
 //Put a ZdTime value into the field at 'uwFieldIndex'.
-void DBFSystemRecord::PutTime(unsigned short uwFieldNumber, const ZdTime &FieldValue)
+void DBFRecord::PutTime(unsigned short uwFieldNumber, const ZdTime &FieldValue)
 {
    try
       {
-      ZdException::Generate("PutTime not implemented.  Try PutDate ?", "DBFSystemRecord");
+      ZdException::Generate("PutTime not implemented.  Try PutDate ?", "DBFRecord");
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("PutTime()", "DBFSystemRecord");
+      theException.AddCallpath("PutTime()", "DBFRecord");
       throw;
       }
 }
 
 //Put a ZdTimestamp value into the field at 'uwFieldIndex'.
-void DBFSystemRecord::PutTimestamp(unsigned short uwFieldNumber, const ZdTimestamp &FieldValue) 
+void DBFRecord::PutTimestamp(unsigned short uwFieldNumber, const ZdTimestamp &FieldValue) 
 {
    try
       {
-      ZdException::Generate("PutTimestamp not implemented.  Try PutDate ?", "DBFSystemRecord");
+      ZdException::Generate("PutTimestamp not implemented.  Try PutDate ?", "DBFRecord");
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("PutTimestamp()", "DBFSystemRecord");
+      theException.AddCallpath("PutTimestamp()", "DBFRecord");
       throw;
       }
 }
 
 //Put an unsigned long value into the field at 'uwFieldIndex'.
-void DBFSystemRecord::PutUnsignedLong(unsigned short uwFieldNumber, unsigned long ulFieldValue)
+void DBFRecord::PutUnsignedLong(unsigned short uwFieldNumber, unsigned long ulFieldValue)
 {
    try
       {
-      ZdException::Generate("PutUnsignedLong not implemented.  Try PutLong ?", "DBFSystemRecord");
+      ZdException::Generate("PutUnsignedLong not implemented.  Try PutLong ?", "DBFRecord");
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("PutUnsignedLong()", "DBFSystemRecord");
+      theException.AddCallpath("PutUnsignedLong()", "DBFRecord");
       throw;
       }
 }
 
 //Put an unsigned short value into the field at 'uwFieldIndex'.
-void DBFSystemRecord::PutUnsignedShort(unsigned short uwFieldNumber, unsigned short uwFieldValue) 
+void DBFRecord::PutUnsignedShort(unsigned short uwFieldNumber, unsigned short uwFieldValue) 
 {
    try
       {
-      ZdException::Generate("PutUnsignedShort not implemented.  Try PutLong ?", "DBFSystemRecord");
+      ZdException::Generate("PutUnsignedShort not implemented.  Try PutLong ?", "DBFRecord");
       }
    catch (ZdException & theException)
       {
-      theException.AddCallpath("PutUnsignedShort()", "DBFSystemRecord");
+      theException.AddCallpath("PutUnsignedShort()", "DBFRecord");
+      throw;
+      }
+}
+
+// Set the record buffer to hold the same data as the current record in the associated
+// Dbf.
+void DBFRecord::SetAsCurrentDbfRecord()
+{
+   try
+      {
+      RecordManipulator rm(*this);
+
+      GetAssociatedDbf()->GetRecord( GetAssociatedDbf()->GetCurRecNo() );//make sure that the data for the current record is in the RecBuf
+      //when 'rm' goes out of scope, it will copy the RecBuf into gBuffer.
+      }
+   catch (ZdException & theException)
+      {
+      theException.AddCallpath("SetAsCurrentDbfRecord()", "DBFRecord");
       throw;
       }
 }
@@ -557,13 +690,6 @@ DBFFile::DBFFile(const char * sFilename)
       gpDbf = new xbDbf( &gXBase );
       if (sFilename)
          Open(sFilename, 0);
-
-      if (gPSystemRecord)
-         {
-         delete gPSystemRecord;
-         gPSystemRecord = new DBFSystemRecord(*gpDbf);
-         }
-
       }
    catch (ZdException & e)
       {
@@ -939,19 +1065,28 @@ char DBFFile::GetZdFieldTypeFromXBaseFieldType(char cXBaseFieldType)
    return cResult;
 }
 
-//Ensure that the SystemRecord holds the data for the record at 'lRecNum'.
+// Ensure that the SystemRecord holds the data for the record at 'lRecNum'.
+// If PRecordBuffer isn't NULL, ensure that it, also, holds the same data.
 //<br>require
 //<br>  valid_record_index:  (0 <= lRecNum) && (lRecNum < GetNumRecords())
-//<br>  no_supplemental_buffer: PRecordBuffer == NULL
+//<br>  type_conformant_record: (!PRecordBuffer) || (dynamic_cast<DBFRecord *>(PRecordBuffer) != 0)
 void DBFFile::GotoRecord(unsigned long lRecNum, ZdFileRecord * PRecordBuffer)
 {
+   DBFRecord * pTempDBFRecord(0);
    try
       {
       CheckRecNum(lRecNum);
       if (PRecordBuffer)
-         ZdException::Generate("DBFFile doesn't yet support separate record objects.", "DBFFile");
+         {
+         pTempDBFRecord = dynamic_cast<DBFRecord *>(PRecordBuffer);
+         if (! pTempDBFRecord)
+            ZdException::Generate("The record buffer isn't of type DBFRecord or descendant.", "DBFFile");
+         }
 
       gpDbf->GetRecord(lRecNum);
+      dynamic_cast<DBFRecord *>(GetSystemRecord())->SetAsCurrentDbfRecord();
+      if (pTempDBFRecord)
+         pTempDBFRecord->SetAsCurrentDbfRecord();
       }
    catch (ZdException & e)
       {
@@ -1066,9 +1201,7 @@ void DBFFile::Open(const char *sFilename, ZdIOFlag Flags, const char * sPassword
       if (rc != XB_NO_ERROR)
          ZdException::Generate("Could not open file, \"%c\".", "DBFFile", fn.GetFullPath());
 
-      gbIsClassLocalRecordRequest = true;//ensure that calls to GetNewRecord don't fail
       OpenFinish();
-      gbIsClassLocalRecordRequest = false;//ensure that calls to GetNewRecord do fail
       }
    catch (ZdException & e)
       {
