@@ -101,12 +101,9 @@ void CPurelySpatialCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataH
     CCluster::DisplayTimeFrame(fp, DataHub, PrintFormat);
 }
 
-/** returns the number of cases for tract as defined by cluster
-    NOTE: Hard coded to return the number of cases from first data stream.
-          This will need modification when the reporting aspect of multiple
-          data streams is hashed out.                                      */
-count_t CPurelySpatialCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {
-  return Data.GetDataStreamHandler().GetStream(0/*for now*/).GetCaseArray()[0][tTract];
+/** returns the number of cases for tract as defined by cluster */
+count_t CPurelySpatialCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
+  return Data.GetDataStreamHandler().GetStream(iStream).GetCaseArray()[0][tTract];
 }
 
 /** returns end date of defined cluster as formated string */
@@ -114,12 +111,9 @@ ZdString& CPurelySpatialCluster::GetEndDate(ZdString& sDateString, const CSaTSca
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1);
 }
 
-/** Returns the measure for tract as defined by cluster.
-    NOTE: Hard coded to return the measure from first data stream.
-          This will need modification when the reporting aspect of multiple
-          data streams is hashed out.                                      */
-measure_t CPurelySpatialCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {
-  return Data.GetMeasureAdjustment() * Data.GetDataStreamHandler().GetStream(0/*for now*/).GetMeasureArray()[0][tTract];
+/** Returns the measure for tract as defined by cluster. */
+measure_t CPurelySpatialCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
+  return Data.GetMeasureAdjustment(iStream) * Data.GetDataStreamHandler().GetStream(iStream).GetMeasureArray()[0][tTract];
 }
 
 /** returns start date of defined cluster as formated string */
