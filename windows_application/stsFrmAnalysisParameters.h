@@ -38,7 +38,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TCheckBox *chkSimulatedLogLikelihoodRatiosAscii;
         TCheckBox *chkSimulatedLogLikelihoodRatiosDBase;
         TComboBox *cboCriteriaSecClusters;
-        TEdit *Edit1;
+        TEdit *edtLogLinearPercentageRadioTag;
         TEdit *edtCaseFileName;
         TEdit *edtControlFileName;
         TEdit *edtCoordinateFileName;
@@ -212,7 +212,8 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                EnableStartAndEndMonth(bool bEnable);
     void                EnableStartAndEndDay(bool bEnable);
     void                EnableTemporal(bool bEnable, bool bEnableCheckbox, bool bEnablePercentage);
-    void                EnableTemporalTimeTrendAdjust(bool bEnableRadioGroup, bool bEnableNonParametric, bool bEnableLogYearEditBox);
+    void                EnableTemporalTimeTrendAdjust(bool bEnableRadioGroup, bool bEnableNonParametric,
+                                                      bool bEnableLogYearEditBox, bool bEnableTimeStratifiedRandomization);
     void                EnableTimeInterval(bool bEnable);
     ZdDate            & GetStudyPeriodEndDate(ZdDate & Date);
     ZdDate            & GetStudyPeriodStartDate(ZdDate & Date);
@@ -224,6 +225,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                ParseDate(const char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *pDay);
     void                SaveTextParameters();
     void                SetSpatialDistanceCaption();
+    void                SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                Setup(const char * sParameterFileName);
     void                SetupInterface();
     bool                ValidateInputFiles();

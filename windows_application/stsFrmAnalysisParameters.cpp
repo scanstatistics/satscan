@@ -495,7 +495,7 @@ void TfrmAnalysis::DefaultHiddenParameters() {
   gParameters.SetValidatePriorToCalculation(true);
   if (gParameters.GetIncludeClustersType() == CLUSTERSINRANGE)
     gParameters.SetIncludeClustersType(ALLCLUSTERS);
-  if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC || gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
+  if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
     gParameters.SetTimeTrendAdjustmentType(NOTADJUSTED);
 }
 
@@ -731,12 +731,16 @@ void TfrmAnalysis::EnableStartAndEndYear(bool bEnable) {
 }
 
 // enables or disables the temporal time trend adjustment
-void TfrmAnalysis::EnableTemporalTimeTrendAdjust(bool bEnableRadioGroup, bool bEnableNonParametric, bool bEnableLogYearEditBox) {
+void TfrmAnalysis::EnableTemporalTimeTrendAdjust(bool bEnableRadioGroup, bool bEnableNonParametric,
+                                                 bool bEnableLogYearEditBox, bool bEnableTimeStratifiedRandomization) {
   rgTemporalTrendAdj->Enabled = bEnableRadioGroup;
+  edtLogLinearPercentageRadioTag->Enabled = bEnableRadioGroup;
   rgTemporalTrendAdj->Controls[1]->Enabled = bEnableNonParametric;
+  //if radio group enabled but non-parametric is not enabled and non-parametric is selected index, set none as selected
+  if (bEnableRadioGroup && !bEnableNonParametric && rgTemporalTrendAdj->ItemIndex == 1)
+    rgTemporalTrendAdj->ItemIndex = 0;
   edtLogPerYear->Enabled = bEnableLogYearEditBox;
-  rgTemporalTrendAdj->ItemIndex = gParameters.GetTimeTrendAdjustmentType();
-  Edit1->Enabled = bEnableLogYearEditBox;
+  rgTemporalTrendAdj->Controls[3]->Enabled = bEnableTimeStratifiedRandomization;
 }
 
 // enables or disables the temporal control
@@ -859,7 +863,7 @@ void __fastcall TfrmAnalysis::NaturalNumberKeyPress(TObject *Sender, char &Key) 
   if (!strchr("0123456789\b",Key))
     Key = 0;
 }
-
+              
 //------------------------------------------------------------------------------
 // Type of Analsyis is changed - this is the major affector of all other controls
 // this does all enabling and disabling of other controls with the exception of the
@@ -867,15 +871,16 @@ void __fastcall TfrmAnalysis::NaturalNumberKeyPress(TObject *Sender, char &Key) 
 // time control which sync's the precision between time controls
 //------------------------------------------------------------------------------
 void TfrmAnalysis::OnAnalysisTypeClick() {
-  bool bPoisson;
+  bool  bPoisson, bBernoulli;
 
   try {
     bPoisson = (gParameters.GetProbabiltyModelType() == POISSON);
+    bBernoulli = (gParameters.GetProbabiltyModelType() == BERNOULLI);
     switch (rgTypeAnalysis->ItemIndex) {
       case 0: // purely spatial analysis
               // disable time trend adjustment
               gParameters.SetAnalysisType(PURELYSPATIAL);
-              EnableTemporalTimeTrendAdjust(false, false, false);
+              EnableTemporalTimeTrendAdjust(false, false, false, false);
               // disable clusters to include
               rgClustersToInclude->Enabled = false;
               EnableSpatial(true, false, true);       // enable spatial but not checkbox
@@ -886,8 +891,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
       case 1: // purely temporal analysis
               // Enables Time Trend Adjust without Non-Param
               gParameters.SetAnalysisType(PURELYTEMPORAL);
-              EnableTemporalTimeTrendAdjust(bPoisson, false, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2));
-              rgTemporalTrendAdj->ItemIndex = ((rgTemporalTrendAdj->ItemIndex != 1) ? gParameters.GetTimeTrendAdjustmentType() : 0 );
+              EnableTemporalTimeTrendAdjust(bPoisson, false, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2), bPoisson);
               // Enables Clusters to include
               rgClustersToInclude->Enabled = true;
               rgClustersToInclude->ItemIndex = gParameters.GetIncludeClustersType();
@@ -899,7 +903,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
       case 2: // retrospective space-time
               //Enables Time Trend Adjust
               gParameters.SetAnalysisType(SPACETIME);
-              EnableTemporalTimeTrendAdjust(bPoisson, bPoisson, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2));
+              EnableTemporalTimeTrendAdjust(bPoisson, bPoisson, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2), bPoisson);
               //Enables clusters to include
               rgClustersToInclude->Enabled = true;
               rgClustersToInclude->ItemIndex = gParameters.GetIncludeClustersType();
@@ -911,7 +915,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
       case 3: // prospective space-time analysis
               //Enables Time Trend Adjust
               gParameters.SetAnalysisType(PROSPECTIVESPACETIME);
-              EnableTemporalTimeTrendAdjust(bPoisson, bPoisson, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2));
+              EnableTemporalTimeTrendAdjust(bPoisson, bPoisson, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2), bPoisson);
               //disables clusters to include
               rgClustersToInclude->Enabled = false;
               EnableSpatial(true, !(gParameters.GetProbabiltyModelType() == 2), false);      //Enables Spatial % box disable
@@ -922,8 +926,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
       case 4: // prospective purely temporal analysis
               // Enables Time Trend Adjust without Non-Param
               gParameters.SetAnalysisType(PROSPECTIVEPURELYTEMPORAL);
-              EnableTemporalTimeTrendAdjust(bPoisson, false, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2));
-              rgTemporalTrendAdj->ItemIndex = ((rgTemporalTrendAdj->ItemIndex != 1) ? gParameters.GetTimeTrendAdjustmentType() : 0 );
+              EnableTemporalTimeTrendAdjust(bPoisson, false, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2), bPoisson);
               // Enables Clusters to include
               rgClustersToInclude->Enabled = true;
               rgClustersToInclude->ItemIndex = gParameters.GetIncludeClustersType();
@@ -1073,24 +1076,32 @@ void TfrmAnalysis::OnProbabilityModelClick() {
 // Temporal Time Trend control
 //------------------------------------------------------------------------------
 void TfrmAnalysis::OnTemporalTrendClick() {
-   try {
-      gParameters.SetTimeTrendAdjustmentType((TimeTrendAdjustmentType)rgTemporalTrendAdj->ItemIndex);
-      switch (rgTemporalTrendAdj->ItemIndex) {
-       case NOTADJUSTED:                           // none
-       case NONPARAMETRIC:                           // non-parametric
-         edtLogPerYear->Enabled = false;
-         edtLogPerYear->Color = clInactiveBorder;
-         break;
-       case LOGLINEAR_PERC:                             // log linear
-         edtLogPerYear->Enabled = true;
-         edtLogPerYear->Color = clWindow;
-         break;
-      }
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("OnTemporalTrendClick()", "TfrmAnalysis");
-      throw;
-   }
+  try {
+    switch (rgTemporalTrendAdj->ItemIndex) {
+      case 0  : gParameters.SetTimeTrendAdjustmentType(NOTADJUSTED);
+                edtLogPerYear->Enabled = false;
+                edtLogPerYear->Color = clInactiveBorder;
+                break;
+      case 1  : gParameters.SetTimeTrendAdjustmentType(NONPARAMETRIC);
+                edtLogPerYear->Enabled = false;
+                edtLogPerYear->Color = clInactiveBorder;
+                break;
+      case 2  : gParameters.SetTimeTrendAdjustmentType(LOGLINEAR_PERC);
+                edtLogPerYear->Enabled = true;
+                edtLogPerYear->Color = clWindow;
+                break;
+      case 3  : gParameters.SetTimeTrendAdjustmentType(STRATIFIED_RANDOMIZATION);
+                edtLogPerYear->Enabled = false;
+                edtLogPerYear->Color = clInactiveBorder;
+                break;
+      default : ZdGenerateException("Unknown temporal trend adjustment index '%d'.",
+                                    "OnTemporalTrendClick()", rgTemporalTrendAdj->ItemIndex);
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("OnTemporalTrendClick()", "TfrmAnalysis");
+    throw;
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -1189,7 +1200,18 @@ void TfrmAnalysis::SaveTextParameters() {
     //rest time adjustment type if needed - something needs to be worked out so that this isn't needed.
     //Also, this changes settings so that the next time a parameter file is opened, the settings
     //of time trend adjustment are potentially different for model types other than Poisson.
-    gParameters.SetTimeTrendAdjustmentType(gParameters.GetProbabiltyModelType() == POISSON ? gParameters.GetTimeTrendAdjustmentType() : NOTADJUSTED);
+    if (rgTemporalTrendAdj->Enabled) {
+      switch (rgTemporalTrendAdj->ItemIndex) {
+        case 0  : gParameters.SetTimeTrendAdjustmentType(NOTADJUSTED); break;
+        case 1  : gParameters.SetTimeTrendAdjustmentType(NONPARAMETRIC); break;
+        case 2  : gParameters.SetTimeTrendAdjustmentType(LOGLINEAR_PERC); break;
+        case 3  : gParameters.SetTimeTrendAdjustmentType(STRATIFIED_RANDOMIZATION); break;
+        default : gParameters.SetTimeTrendAdjustmentType(NOTADJUSTED); break;
+      }  
+    }
+    else
+      gParameters.SetTimeTrendAdjustmentType(NOTADJUSTED);
+
     sString.printf("%i/%i/%i", atoi(edtProspYear->Text.c_str()), atoi(edtProspMonth->Text.c_str()), atoi(edtProspDay->Text.c_str()));
     gParameters.SetProspectiveStartDate(sString.GetCString());
     //Output File Tab
@@ -1262,6 +1284,17 @@ void TfrmAnalysis::SetSpecialGridFile(const char * sSpecialGridFileName) {
 void TfrmAnalysis::SetMaximumCirclePopulationFile(const char * sMaximumCirclePopulationFileName) {
   gParameters.SetMaxCirclePopulationFileName(sMaximumCirclePopulationFileName, false, true);
   edtMaxCirclePopulationFilename->Text = sMaximumCirclePopulationFileName;
+}
+
+/** Sets time trend adjustment control's index */
+void TfrmAnalysis::SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType) {
+  switch (eTimeTrendAdjustmentType) {
+    case NOTADJUSTED               : rgTemporalTrendAdj->ItemIndex = NOTADJUSTED; break;
+    case NONPARAMETRIC             : rgTemporalTrendAdj->ItemIndex = NONPARAMETRIC; break;
+    case LOGLINEAR_PERC            : rgTemporalTrendAdj->ItemIndex = LOGLINEAR_PERC; break;
+    case STRATIFIED_RANDOMIZATION  : rgTemporalTrendAdj->ItemIndex = LOGLINEAR_PERC + 1; break;
+    default                        : rgTemporalTrendAdj->ItemIndex = NOTADJUSTED;
+  }
 }
 
 /** Internal setup */
@@ -1345,7 +1378,7 @@ void TfrmAnalysis::SetupInterface() {
     rbUnitMonths->Checked = (gParameters.GetTimeIntervalUnitsType() == MONTH);  // use to be 1
     rbUnitDay->Checked = (gParameters.GetTimeIntervalUnitsType() == DAY);  // use to be 2
     edtUnitLength->Text = gParameters.GetTimeIntervalLength();
-    rgTemporalTrendAdj->ItemIndex = gParameters.GetTimeTrendAdjustmentType();
+    SetTemporalTrendAdjustmentControl(gParameters.GetTimeTrendAdjustmentType());
     edtLogPerYear->Text = gParameters.GetTimeTrendAdjustmentPercentage();
     if (gParameters.GetProspectiveStartDate().length() > 0)
       ParseDate(gParameters.GetProspectiveStartDate().c_str(), edtProspYear, edtProspMonth, edtProspDay);

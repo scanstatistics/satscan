@@ -587,20 +587,21 @@ object frmAnalysis: TfrmAnalysis
         Left = 16
         Top = 160
         Width = 449
-        Height = 105
+        Height = 120
         Caption = 'Adjustment for Temporal Trend'
         Enabled = False
         ItemIndex = 0
         Items.Strings = (
           'None'
           'Nonparametric'
-          'Log Linear with')
+          'Log Linear with'
+          'Stratified Randomization by Time Interval')
         TabOrder = 1
         OnClick = rgTemporalTrendAdjClick
       end
       object edtLogPerYear: TEdit
-        Left = 120
-        Top = 232
+        Left = 122
+        Top = 226
         Width = 41
         Height = 21
         Enabled = False
@@ -610,17 +611,18 @@ object frmAnalysis: TfrmAnalysis
         OnExit = edtLogPerYearExit
         OnKeyPress = FloatKeyPress
       end
-      object Edit1: TEdit
-        Left = 168
-        Top = 240
+      object edtLogLinearPercentageRadioTag: TEdit
+        Left = 166
+        Top = 231
         Width = 73
         Height = 13
+        TabStop = False
         AutoSelect = False
         BorderStyle = bsNone
         Color = clInactiveBorder
         ReadOnly = True
         TabOrder = 3
-        Text = '% per year'
+        Text = '%  per year'
       end
       object GroupBox8: TGroupBox
         Left = 232
