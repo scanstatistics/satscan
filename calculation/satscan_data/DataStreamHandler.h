@@ -32,7 +32,6 @@ class DataStreamHandler {
     bool                                ParseCovariates(PopulationData & thePopulation, int& iCategoryIndex, int iCovariatesOffset, StringParser & Parser);
     virtual bool                        ReadCaseFile(size_t tStream);
     virtual bool                        ReadCounts(size_t tStream, FILE * fp, const char* szDescription);
-    void                                SetCaseArrays(count_t**  pCases, count_t** pCases_NC, count_t*  pCasesByTimeInt);
 
     //pure virtual protected functions
     virtual void                        SetRandomizers() = 0;
