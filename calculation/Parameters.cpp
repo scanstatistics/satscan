@@ -2535,6 +2535,8 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: For a Space-Time Permutation model with the maximum spatial cluster size defined\n");
         PrintDirection.SatScanPrintWarning("       as a percentage of the population at risk, a Population file must be specified.\n");
+        PrintDirection.SatScanPrintWarning("       Alternatively you may choose to specify the maximum as a fixed radius, in which\n");
+        PrintDirection.SatScanPrintWarning("       no Population file is required.\n");
       }
       else if (access(gsPopulationFileName.c_str(), 00)) {
         bValid = false;
