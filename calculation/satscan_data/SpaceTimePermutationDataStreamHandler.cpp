@@ -179,7 +179,6 @@ bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tStream, FILE * fp
                pCounts[i][TractIndex] += Count;
              //record count as a case
              thisStream.GetPopulationData().AddCaseCount(iCategoryIndex, Count);
-             Randomizer.AddCase(iCategoryIndex, gData.GetTimeIntervalOfDate(Date), TractIndex);
              //record count in structure(s) based upon population category
              if (iCategoryIndex >= static_cast<int>(CategoryHandler.Get3rdDimension()))
                CategoryHandler.ExpandThirdDimension(0);
@@ -200,6 +199,8 @@ bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tStream, FILE * fp
       gpPrint->SatScanPrintWarning("Error: %s file does not contain data.\n", szDescription);
       bValid = false;
     }
+
+    Randomizer.CreateRandomizationData(thisStream);
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadCounts()","SpaceTimePermutationDataStreamHandler");
