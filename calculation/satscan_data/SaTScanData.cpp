@@ -65,8 +65,8 @@ bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tra
   count_t ** ppCases = thisStream.GetCaseArray();
 
   for (interval=GetTimeIntervalOfDate(StartDate); interval <= GetTimeIntervalOfDate(EndDate); ++interval) {
-     AdjustmentStart = max(StartDate, m_pIntervalStartTimes[interval]);
-     AdjustmentEnd = min(EndDate, m_pIntervalStartTimes[interval+1] - 1);
+     AdjustmentStart = std::max(StartDate, m_pIntervalStartTimes[interval]);
+     AdjustmentEnd = std::min(EndDate, m_pIntervalStartTimes[interval+1] - 1);
      //calculate measure for lower interval date to adjustment start date
      MeasurePre = CalcMeasureForTimeInterval(Population, pp_m, Tract, m_pIntervalStartTimes[interval], AdjustmentStart);
      //calculate measure for adjustment period
