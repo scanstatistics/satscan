@@ -914,7 +914,7 @@ void CParameters::DisplayParameters(FILE* fp) const {
      }
 
      // LLR Files
-     if (gbLogLikelihoodDBF || m_bSaveSimLogLikelihoods) {
+     if (m_nReplicas > 0 && (gbLogLikelihoodDBF || m_bSaveSimLogLikelihoods)) {
         sASCIIName = fileName.GetFullPath();
         if(strlen(fileName.GetExtension()) != 0)
            sASCIIName.Replace(fileName.GetExtension(), ".llr");
@@ -924,7 +924,7 @@ void CParameters::DisplayParameters(FILE* fp) const {
         sASCIIName << ".txt";
         sDBaseName << ".dbf";
      }
-     if (gbLogLikelihoodDBF) {
+     if (m_nReplicas > 0 && gbLogLikelihoodDBF) {
         if(m_bSaveSimLogLikelihoods) {
            fprintf(fp,  "  LLR File(s)       : %s\n", sASCIIName.GetCString());
            fprintf(fp,  "                    : %s\n", sDBaseName.GetCString());
@@ -932,7 +932,7 @@ void CParameters::DisplayParameters(FILE* fp) const {
         else
            fprintf(fp,  "  LLR File          : %s\n", sDBaseName.GetCString());
      }
-     if (m_bSaveSimLogLikelihoods && !gbLogLikelihoodDBF)
+     if (m_nReplicas > 0 && m_bSaveSimLogLikelihoods && !gbLogLikelihoodDBF)
        fprintf(fp,  "  LLR File          : %s\n", sASCIIName.GetCString());
 
      fprintf(fp, "\n  Criteria for Reporting Secondary Clusters : ");
@@ -1118,7 +1118,7 @@ void CParameters::ReadAnalysisSectionFromIni(ZdIniFile& file) {
       SetIntValue(m_nModel, pSection->GetLine(pSection->FindKey(MODEL_TYPE_LINE))->GetValue(), MODEL, POISSON);
       strcpy(m_szStartDate, pSection->GetLine(pSection->FindKey(START_DATE_LINE))->GetValue());
       strcpy(m_szEndDate, pSection->GetLine(pSection->FindKey(END_DATE_LINE))->GetValue());
-      SetIntValue(m_nReplicas, pSection->GetLine(pSection->FindKey(MONTE_CARLO_REPS_LINE))->GetValue(), REPLICAS, 0);
+      SetIntValue(m_nReplicas, pSection->GetLine(pSection->FindKey(MONTE_CARLO_REPS_LINE))->GetValue(), REPLICAS, 999);
    }
    catch (ZdException &x) {
       x.AddCallpath("ReadAnalysisSectionFromIni()", "CParameters");
@@ -1305,8 +1305,8 @@ void CParameters::ReadScanningWindowSectionFromIni(ZdIniFile& file) {
    try {
       ZdIniSection* pSection = file.GetSection(SCANNING_WINDOW_SECTION);
       m_bIncludePurelySpatial = ValueIsYes(pSection->GetLine(pSection->FindKey(INCLUDE_PURELY_SPATIAL_LINE))->GetValue());
-      SetFloatValue(m_nMaxTemporalClusterSize, pSection->GetLine(pSection->FindKey(MAX_TEMP_SIZE_LINE))->GetValue(), TIMESIZE, 0.0);
-      SetFloatValue(m_nMaxGeographicClusterSize, pSection->GetLine(pSection->FindKey(MAX_GEO_SIZE_LINE))->GetValue(), GEOSIZE, 0.0);
+      SetFloatValue(m_nMaxTemporalClusterSize, pSection->GetLine(pSection->FindKey(MAX_TEMP_SIZE_LINE))->GetValue(), TIMESIZE, 50.0);
+      SetFloatValue(m_nMaxGeographicClusterSize, pSection->GetLine(pSection->FindKey(MAX_GEO_SIZE_LINE))->GetValue(), GEOSIZE, 50.0);
       m_bAliveClustersOnly  = ValueIsYes(pSection->GetLine(pSection->FindKey(ALIVE_CLUSTERS_LINE))->GetValue());
       m_bIncludePurelyTemporal = ValueIsYes(pSection->GetLine(pSection->FindKey(INCLUDE_PURE_TEMP_LINE))->GetValue());
       SetIntValue(m_nMaxClusterSizeType, pSection->GetLine(pSection->FindKey(MAX_TEMP_INTERPRET_LINE))->GetValue(), MAX_TEMPORAL_TYPE, PERCENTAGETYPE);
