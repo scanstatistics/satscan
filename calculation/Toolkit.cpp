@@ -52,6 +52,23 @@ bool SaTScanToolkit::GetLogRunHistory() /*const*/ {
   return GetSession().GetProperty(gsLoggingProperty)->GetBool(true);
 }
 
+/** Returns acknowledgment statement indicating program version, website, and
+    brief declaration of usage agreement. */
+const char * SaTScanToolkit::GetAcknowledgment(ZdString & Acknowledgment) /*const*/ {
+  try {
+    Acknowledgment << ZdString::reset << "You are running SaTScan v" << VERSION_NUMBER;
+    Acknowledgment << ".\n\nSaTScan is free, available for download from\n";
+    Acknowledgment << GetWebSite() << ".\nIt may be used free of charge as long as proper ";
+    Acknowledgment << "citations\nare given to both the SaTScan software and the underlying\n";
+    Acknowledgment << "statistical methodology.\n\n";
+  }
+  catch (ZdException& x) {
+    x.AddCallpath("GetAcknowledgment()", "SaTScanToolkit");
+    throw;
+  }
+  return Acknowledgment.GetCString();
+}
+
 /** Returns run history filename. */
 const char * SaTScanToolkit::GetRunHistoryFileName() /*const*/ {
   return GetSession().GetProperty(gsHistoryFileNameProperty)->GetValue();

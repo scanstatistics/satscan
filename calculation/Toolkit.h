@@ -34,6 +34,7 @@ class SaTScanToolkit : public BToolkit {
     SaTScanToolkit();
     virtual ~SaTScanToolkit();
 
+   const char                 * GetAcknowledgment(ZdString & Acknowledgment) /*const*/;  
    const char                 * GetLicenceWebSite() /*const*/;
    bool                         GetLogRunHistory() /*const*/;
    const char                 * GetRunHistoryFileName() /*const*/;
