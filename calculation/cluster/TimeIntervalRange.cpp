@@ -277,7 +277,7 @@ void CategoricalTemporalDataEvaluator::CompareClusters(CCluster& Running, CClust
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         for (size_t t=0; t < pData->gvCasesPerCategory.size(); ++t)
           pData->gvCasesPerCategory[t] = pData->gppCategoryCases[t][iWindowStart] - pData->gppCategoryCases[t][iWindowEnd];
-        Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioOrdinal(pData->gvCasesPerCategory, pData->gvTotalCasesPerCategory);
+        Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioOrdinal(pData->gvCasesPerCategory);
         if (Running.m_nRatio  > TopCluster.m_nRatio) {
           TopCluster.AssignAsType(Running);
           TopCluster.m_nFirstInterval = iWindowStart;
@@ -330,7 +330,7 @@ void MultiSetCategoricalTemporalDataEvaluator::CompareClusters(CCluster& Running
           CategoricalTemporalData& Datum = *pData->gvSetClusterData[t];
           for (size_t c=0; c < Datum.gvCasesPerCategory.size(); ++c)
              Datum.gvCasesPerCategory[c] = Datum.gppCategoryCases[c][iWindowStart] - Datum.gppCategoryCases[c][iWindowEnd];
-          Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gvCasesPerCategory, Datum.gvTotalCasesPerCategory);
+          Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gvCasesPerCategory, t);
         }
         Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
         if (Running.m_nRatio > TopCluster.m_nRatio) {

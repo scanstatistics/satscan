@@ -46,7 +46,7 @@ double MultiSetCategoricalSpatialData::CalculateLoglikelihoodRatio(AbstractLikel
 
  Unifier.Reset();
  for (gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++gitr, ++i)
-     Unifier.AdjoinRatio(Calculator, (*gitr)->gvCasesPerCategory, (*gitr)->gvTotalCasesPerCategory);
+     Unifier.AdjoinRatio(Calculator, (*gitr)->gvCasesPerCategory, i);
   return Unifier.GetLoglikelihoodRatio();
 }
 
@@ -175,25 +175,25 @@ void MultiSetCategoricalProspectiveSpatialData::AddNeighborData(tract_t tNeighbo
 /** Calculates loglikelihood ratio given current accumulated cluster data in
     each data set and adds together.*/
 double MultiSetCategoricalProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-  unsigned int                          iWindowEnd, iAllocationSize;
+  unsigned int                          i, iWindowEnd, iAllocationSize;
   double                                dMaxLoglikelihoodRatio=0;
   AbstractLoglikelihoodRatioUnifier   & Unifier = Calculator.GetUnifier();
 
   Unifier.Reset();
   iAllocationSize = (*gvSetClusterData.begin())->GetAllocationSize();
-  for (gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++gitr) {
+  for (i=0, gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++gitr, ++i) {
      for (size_t t=0; t < (*gitr)->gvCasesPerCategory.size(); ++t)
         (*gitr)->gvCasesPerCategory[t] = (*gitr)->gppCategoryCases[t][0] - (*gitr)->gppCategoryCases[t][iWindowEnd];
-    Unifier.AdjoinRatio(Calculator, (*gitr)->gvCasesPerCategory, (*gitr)->gvTotalCasesPerCategory);
+    Unifier.AdjoinRatio(Calculator, (*gitr)->gvCasesPerCategory, i);
   }  
   dMaxLoglikelihoodRatio = Unifier.GetLoglikelihoodRatio();
 
  for (iWindowEnd=1; iWindowEnd < iAllocationSize; ++iWindowEnd) {
      Unifier.Reset();
-     for (gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++gitr) {
+     for (i=0, gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++gitr, ++i) {
         for (size_t t=0; t < (*gitr)->gvCasesPerCategory.size(); ++t)
            (*gitr)->gvCasesPerCategory[t] = (*gitr)->gppCategoryCases[t][0] - (*gitr)->gppCategoryCases[t][iWindowEnd];
-        Unifier.AdjoinRatio(Calculator, (*gitr)->gvCasesPerCategory, (*gitr)->gvTotalCasesPerCategory);
+        Unifier.AdjoinRatio(Calculator, (*gitr)->gvCasesPerCategory, i);
      }
      dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Unifier.GetLoglikelihoodRatio());
   }
