@@ -261,9 +261,7 @@ void CBernoulliModel::MakeDataUnderNullHypothesis() {
   std::vector<count_t>          RandCounts;
 
   // reset simulation cases to zero
-  for (i=0; i < gData.m_nTimeIntervals; ++i)
-     for (t=0; t < gData.m_nTotalTractsAtStart; ++t)
-        ppSimCases[i][t] = 0;
+  gData.gpSimCasesHandler->Set(0);
 
   for (c=0; c < gData.gPopulationCategories.GetNumPopulationCategories(); ++c) {
      tNumCases = gData.gPopulationCategories.GetNumCategoryCases(c);

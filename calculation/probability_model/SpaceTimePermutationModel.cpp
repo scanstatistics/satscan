@@ -154,12 +154,9 @@ void CSpaceTimePermutationModel::MakeData(int iSimulationNumber) {
   try {
     //reset seed to simulation number
     gRandomNumberGenerator.SetSeed(iSimulationNumber + gRandomNumberGenerator.GetDefaultSeed());
-
     // reset simulation cases to zero
-    for (i=0; i < gData.m_nTimeIntervals; i++)
-       for (k=0; k < gData.m_nTotalTractsAtStart; k++)
-          ppSimCases[i][k] = 0;
-
+    gData.gpSimCasesHandler->Set(0);
+    
     for (c=0; c < gData.GetTInfo()->tiGetNumCategories(); c++) {
        const std::vector<CCaseLocationTimes>& thisCategory = gvCategoryCaseLocationTimes[c];
        tNumCategoryCases = thisCategory.size();
