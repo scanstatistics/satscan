@@ -325,7 +325,7 @@ void TfrmAnalysis::SetupInterface()
       edtMaxClusterSize->Text         = gpParams->m_nMaxGeographicClusterSize;
       chkInclPurTempClust->Checked    = gpParams->m_bIncludePurelyTemporal;
       edtMaxTemporalClusterSize->Text = gpParams->m_nMaxTemporalClusterSize;
-      rdoPercentageTemproal->Checked = gpParams->m_nMaxClusterSizeType == PERCENTAGETYPE;
+      rdoPercentageTemproal->Checked = gpParams->m_nMaxClusterSizeType != TIMETYPE;
       rdoTimeTemproal->Checked = gpParams->m_nMaxClusterSizeType == TIMETYPE;
       chkIncludePurSpacClust->Checked = gpParams->m_bIncludePurelySpatial;
       rgClustersToInclude->ItemIndex  = (gpParams->m_bAliveClustersOnly ? 1:0);  // IS THIS RETURNING THE RIGHT INDEX OR SHOULD I SWITCH IT AROUND ???
