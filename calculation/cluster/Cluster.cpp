@@ -198,11 +198,12 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
       {
            //if (Data.m_pMeasure[0][Data.GetNeighbor(0, m_Center, i)]>nMinMeasure)       // access over-run here
            //if (Data.m_pMeasure[m_iEllipseOffset][Data.GetNeighbor(m_iEllipseOffset, m_Center, i)]>nMinMeasure) // access over-run here
-   
+
            // the first dimension of m_pMeasure is Time Interval !!!
-           if (Data.m_pMeasure[0][Data.GetNeighbor(m_iEllipseOffset, m_Center, i)]>nMinMeasure) {
+           tract_t tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, i);
+           if (Data.m_pMeasure[0][tTract]>nMinMeasure) {
              nCount++;
-             tid = (Data.GetTInfo())->tiGetTid(Data.GetNeighbor(m_iEllipseOffset, m_Center, i));
+             tid = (Data.GetTInfo())->tiGetTid(tTract);
 
              if(fp != NULL) {
                 pos += strlen(tid) + 2;
@@ -214,8 +215,6 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                   for (int j=0; j<nLeftMargin; ++j)
                     fprintf(fp, " ");
                 }
-
-                
 
                 if (nCluster > -1)
                   fprintf(fp, "%i         ", nCluster);
@@ -232,8 +231,7 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                   DisplayPVal(fp, nReplicas, szSpacesOnLeft);
                 }
 
-                tract_t tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, i);
-                fprintf(fp, "\t %12.0f", GetCaseCountForTract(tTract, Data));
+                fprintf(fp, "\t %12i", GetCaseCountForTract(tTract, Data));
                 fprintf(fp, "\t %12.3f", GetMeasureForTract(tTract, Data));
                 fprintf(fp, "\t %12.3f", GetRelativeRiskForTract(tTract, Data));
 
@@ -243,9 +241,8 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
            }
 
        // record DBF output data - AJV
-       if(Data.m_pParameters->GetOutputAreaSpecificDBF())
-          if(gpAreaDBFReport)
-             gpAreaDBFReport->RecordClusterData(*this, Data, nCluster, i);
+       if(gpAreaDBFReport && Data.m_pParameters->GetOutputAreaSpecificDBF())
+          gpAreaDBFReport->RecordClusterData(*this, Data, nCluster, i);
       }
       if(fp != NULL)
          fprintf(fp, "\n");
