@@ -37,7 +37,7 @@ class CSaTScanData
     CParameters* m_pParameters;
     CModel*      m_pModel;
     Cats *gpCats;            // DTG
-    TInfo *gpTInfo;          // DTG
+    TractHandler *gpTInfo;          // DTG
     GInfo *gpGInfo;          // DTG
 
     tract_t     m_nGridTracts, m_nTracts;             // tract_t defined as short in SaTScan.h ?Ever more than 32,000 tracts?
@@ -80,6 +80,7 @@ class CSaTScanData
     void        AdjustNeighborCounts(); // For sequential analysis, after top cluster removed
     inline Cats *GetCats() { return gpCats; };           // DTG
     int         ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate);
+    bool        ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, Julian & JulianDate);
     void        DisplaySummary(FILE* fp);
     void        DisplaySummary2(FILE* fp);
 
@@ -89,7 +90,7 @@ class CSaTScanData
     double      GetMaxCircleSize() {return m_nMaxCircleSize;};
     double      GetMeasureAdjustment() const;
     tract_t     GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
-    inline const TInfo *GetTInfo() const { return gpTInfo;} ;          // DTG
+    inline const TractHandler *GetTInfo() const { return gpTInfo;} ;          // DTG
     inline const GInfo *GetGInfo() const { return gpGInfo;} ;
 
     void        IncrementCount(tract_t nTID, int nCount, Julian nDate, count_t** pCounts);

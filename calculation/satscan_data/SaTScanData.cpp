@@ -16,7 +16,7 @@ CSaTScanData::CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection)
       Init();
 
       gpCats = new Cats(pPrintDirection);            // DTG
-      gpTInfo = new TInfo(gpCats, pPrintDirection);  // DTG
+      gpTInfo = new TractHandler(*gpCats, *pPrintDirection);  // DTG
       gpGInfo = new GInfo(pPrintDirection);          // DTG
 
       switch (m_pParameters->m_nModel) {
@@ -352,32 +352,25 @@ void CSaTScanData::PrintNeighbors() {
 }
 
 void CSaTScanData::ReadDataFromFiles() {
-   bool bDataOk = true;
+  try {
+    SetStartAndEndDates();
+    SetNumTimeIntervals();
+    SetIntervalCut();
+    SetIntervalStartTimes();
 
-   try {
-      SetStartAndEndDates();
-      SetNumTimeIntervals();
-      SetIntervalCut();
-      SetIntervalStartTimes();
+    if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
+      SetProspectiveIntervalStart();
 
-      if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
-         SetProspectiveIntervalStart();
+    if (! m_pModel->ReadData())
+      SSGenerateException("\nProblem encountered reading in data.", "ReadDataFromFiles");
 
-      if (!m_pModel->ReadData())
-         SSGenerateException("\nProblem encountered reading in data.", "ReadDataFromFiles");
-
-      if (bDataOk && gpTInfo->tiFindDuplicateCoords(stderr))
-        SSGenerateException("Program canceled.\n", "ReadDataFromFiles");
-
-      // SINCE giFindDuplicateCoords ONLY RETURNS "FALSE" NOW, I DO NOT KNOW
-      // WHY THIS CHECK IS EVEN HERE...   DELETE AFTER REVIEW !!!!
-      if (bDataOk && gpGInfo->giFindDuplicateCoords(stderr))
-        SSGenerateException("Program canceled.\n", "ReadDataFromFiles");
-   }
-   catch (SSException & x) {
-      x.AddCallpath("ReadDataFromFiles()", "CSaTScanData");
-      throw;
-   }
+    gpTInfo->tiConcaticateDuplicateTractIdentifiers();
+    gpGInfo->giFindDuplicateCoords(stderr);
+  }
+  catch (SSException & x) {
+    x.AddCallpath("ReadDataFromFiles()", "CSaTScanData");
+    throw;
+  }
 }
 
 void CSaTScanData::SetIntervalCut() {
