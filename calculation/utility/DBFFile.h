@@ -22,39 +22,48 @@ private:
 
    // The following classes are used in all functions that get data from or put data
    // into the record.
-   class RecordAccessor;
-   class RecordManipulator;
-   friend class RecordAccessor;
-   friend class RecordManipulator;
-   class RecordAccessor
+   class RecordAccessExpediter;
+   class RecordManipulationExpediter;
+   friend class RecordAccessExpediter;
+   friend class RecordManipulationExpediter;
+   class RecordAccessExpediter
       {
       // Implements initial buffering and updating of the RecBuf and final restoring
       // of the initially buffered data to it.
       private:
          const DBFRecord & gR;
+               xbDbf     & gF;
       public:
-         RecordAccessor(const DBFRecord & r) : gR(r) { gR.BufferDbfRecordData(); gR.UpdateDbfRecordData(); }
-         ~RecordAccessor() { gR.RestoreDbfRecordData(); }
+         RecordAccessExpediter(const DBFRecord & r, xbDbf & f) : gR(r), gF(f) { gR.BufferDbfRecordData(gF); gR.UpdateDbfRecordData(gF); }
+         ~RecordAccessExpediter() { gR.RestoreDbfRecordData(gF); }
       };
-   class RecordManipulator
+   class RecordManipulationExpediter
       {
       // Implements initial buffering of the RecBuf and final copying and restoring
       // of the initially buffered data to it.
       private:
          DBFRecord & gR;
+         xbDbf     & gF;
       public:
-         RecordManipulator(DBFRecord & r) : gR(r) { gR.BufferDbfRecordData(); }
-         ~RecordManipulator() { gR.CopyDbfRecordData(); gR.RestoreDbfRecordData(); }
+         RecordManipulationExpediter(DBFRecord & r, xbDbf & f) : gR(r), gF(f) { gR.BufferDbfRecordData(gF); }
+         ~RecordManipulationExpediter() { gR.CopyDbfRecordData(gF); gR.RestoreDbfRecordData(gF); }
       };
 
-protected:
-   char * GetRecBuf() const;
-   xbDbf * GetAssociatedDbf() const;
+   void AssertSufficientBufferSize(unsigned long ulReqdSize) const;
+   void ResizeBuffers(unsigned long ulReqdSize);
 
-   void BufferDbfRecordData() const;
-   void CopyDbfRecordData();
-   void RestoreDbfRecordData() const;
-   void UpdateDbfRecordData() const;
+protected:
+//   char * GetRecBuf() const;
+   xbDbf & GetAssociatedDbf() const;
+
+   void BufferDbfRecordData(xbDbf & theDbf) const;
+   void CopyDbfRecordData(xbDbf & theDbf);
+   void RestoreDbfRecordData(xbDbf & theDbf) const;
+   void UpdateDbfRecordData(xbDbf & theDbf) const;
+
+   //these functions are called by DBFFile.
+   void SetAsCurrentDbfRecord(xbDbf & theDbf);
+   void AppendToDbf(xbDbf & theDbf) const;
 
 public:
    DBFRecord( DBFFile & associatedFile, xbDbf & associatedDbf, const ZdVector<ZdField*> & vFields );
@@ -112,8 +121,6 @@ public:
 //   virtual void            ReadRecord(ZdInputStreamInterface &theFile, const char *sPassword = 0);
 //   virtual void            WriteRecord(ZdOutputStreamInterface &theFile, const char*sPassword = 0) const;
    virtual void            WriteToBuffer ( void *pBuffer ) const { ZdException::Generate("can't write a DBFSystemRecord to a buffer", "DBFSystemRecord"); }
-
-   void                    SetAsCurrentDbfRecord();
 };
 
 
@@ -163,7 +170,7 @@ protected:
    // ALL they do is modify the data.
    //This functionality is offloaded to xbDbf, so these will be defined to be empty.  They
    //should never be called.
-   virtual unsigned long DataAppend  ( const ZdFileRecord &Record ) { ZdException::Generate("not implemented: DataAppend", "DBFFile"); return 0; }
+   virtual unsigned long DataAppend  ( const ZdFileRecord &Record );
    virtual void          DataDelete  ( unsigned long lPosition, ZdFileRecord *pCurrentValue = 0 ) { ZdException::Generate("not implemented: DataDelete", "DBFFile"); }
 //   virtual unsigned long DataInsert  ( unsigned long lPosition, const ZdFileRecord &Record ); // Defaults to DataAppend()
    virtual unsigned long DataModify  ( unsigned long lPosition, const ZdFileRecord &Record, ZdFileRecord *pCurrentValue = 0 ) { ZdException::Generate("not implemented: DataModify", "DBFFile"); return 0; }
