@@ -627,9 +627,9 @@ void CAnalysis::OpenGISFile(FILE*& fpGIS, const char* szType)
 {
    try {
       if ((fpGIS = fopen(m_pParameters->m_szGISFilename, szType)) == NULL) {
-        if (szType == "w")
+        if (!strcmp(szType, "w"))
           SSGenerateException("  Error: Unable to create GIS file.", "OpenGISFile");
-        else if (szType == "a")
+        else if (!strcmp(szType ,"a"))
           SSGenerateException("  Error: Unable to open GIS file.", "OpenGISFile");
         //FatalError(0, gpPrintDirection);
       }
@@ -644,9 +644,9 @@ void CAnalysis::OpenGridOutputFile(FILE*& fpMLC, const char* szType)
 {
    try {
       if ((fpMLC = fopen(m_pParameters->m_szMLClusterFilename, szType)) == NULL) {
-         if (szType == "w")
+         if (!strcmp(szType, "w"))
             SSGenerateException("  Error: Unable to create MLC file.","OpenGridOutputFile");
-         else if (szType == "a")
+         else if (!strcmp(szType, "a"))
             SSGenerateException("  Error: Unable to open MLC file.", "OpenGridOutputFile");
       }
    }
@@ -661,9 +661,9 @@ void CAnalysis::OpenLLRFile(FILE*& fpLLR, const char* szType)
 {
    try {
       if ((fpLLR = fopen(m_pParameters->m_szLLRFilename, szType)) == NULL) {
-         if (szType == "w")
+         if (!strcmp(szType, "w"))
             SSGenerateException("  Error: Unable to create LLR file.", "OpenLLRFile");
-         else if (szType == "a")
+         else if (!strcmp(szType, "a"))
             SSGenerateException("  Error: Unable to open LLR file.", "OpenLLRFile");
          //FatalError(0, gpPrintDirection);
       }
@@ -679,9 +679,9 @@ void CAnalysis::OpenReportFile(FILE*& fp, const char* szType)
 {
    try {
       if ((fp = fopen(m_pParameters->m_szOutputFilename, szType)) == NULL) {
-        if (szType == "w")
+        if (!strcmp(szType, "w"))
           SSGenerateException("  Error: Unable to create report file.", "OpenReportFile");
-        else if (szType == "a")
+        else if (!strcmp(szType, "a"))
           SSGenerateException("  Error: Unable to open report file.", "OpenReportFile");
       }
    }
@@ -695,9 +695,9 @@ void CAnalysis::OpenRREFile(FILE*& fpRRE, const char* szType)
 {
    try {
       if ((fpRRE = fopen(m_pParameters->m_szRelRiskFilename, szType)) == NULL) {
-         if (szType == "w")
+         if (!strcmp(szType, "w"))
             SSGenerateException("  Error: Unable to create RRE file.","OpenRREFile");
-         else if (szType == "a")
+         else if (!strcmp(szType, "a"))
             SSGenerateException("  Error: Unable to open RRE file.", "OpenRREFile");
          //FatalError(0, gpPrintDirection);
       }
