@@ -27,7 +27,7 @@ __published:	// IDE-managed Components
    TOpenDialog *OpenDialog;
    TPageControl *PageControl;
    TTabSheet *tsAdjustments;
-   TTabSheet *tsOther;
+        TTabSheet *tsTemporal;
    TGroupBox *grpScanningWindow;
    TCheckBox *chkRestrictTemporalRange;
    TStaticText *stStartRangeTo;
@@ -55,7 +55,7 @@ __published:	// IDE-managed Components
    TButton *btnBrowseAdjustmentsFile;
    TCheckBox *chkAdjustForKnownRelativeRisks;
    TTabSheet *tsOutput;
-   TTabSheet *TabSheet2;
+        TTabSheet *tbSpatial;
    TCheckBox *chkRestrictReportedClusters;
    TEdit *edtReportClustersSmallerThan;
    TLabel *lblReportSmallerClusters;

@@ -321,7 +321,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         OnClick = btnRemoveStreamClick
       end
     end
-    object TabSheet2: TTabSheet
+    object tbSpatial: TTabSheet
       Caption = 'Spatial Window'
       ImageIndex = 3
       object rdgSpatialOptions: TGroupBox
@@ -363,7 +363,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           WordWrap = True
         end
         object btnImportMaxCirclePopFile: TSpeedButton
-          Left = 365
+          Left = 363
           Top = 94
           Width = 23
           Height = 21
@@ -476,7 +476,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnExit = OnControlExit
         end
         object btnBrowseMaxCirclePopFile: TButton
-          Left = 337
+          Left = 335
           Top = 94
           Width = 23
           Height = 21
@@ -495,7 +495,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
       end
     end
-    object tsOther: TTabSheet
+    object tsTemporal: TTabSheet
       Caption = 'Temporal Window'
       ImageIndex = 1
       object grpScanningWindow: TGroupBox
@@ -829,7 +829,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Adjustments File:'
         end
         object btnImportAdjustmentsFile: TSpeedButton
-          Left = 372
+          Left = 370
           Top = 57
           Width = 23
           Height = 21
@@ -868,7 +868,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnExit = OnControlExit
         end
         object btnBrowseAdjustmentsFile: TButton
-          Left = 343
+          Left = 342
           Top = 57
           Width = 23
           Height = 21
