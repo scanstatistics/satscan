@@ -22,7 +22,13 @@ bool C_ST_PT_Analysis::FindTopClusters() {
 
     tract_t nLastClusterIndex = m_nClustersRetained;
     m_pTopClusters[nLastClusterIndex] = GetTopPTCluster();
-    SortTopClusters();
+    if (m_pTopClusters[nLastClusterIndex]->ClusterDefined()) {
+      m_nClustersRetained++;
+      SortTopClusters();
+    }
+    else {
+      delete m_pTopClusters[nLastClusterIndex]; m_pTopClusters[nLastClusterIndex]=0;
+    }
   }
   catch (ZdException & x) {
     x.AddCallpath("FindTopClusters()", "C_ST_PT_Analysis");
@@ -50,12 +56,7 @@ CPurelyTemporalCluster* C_ST_PT_Analysis::GetTopPTCluster() {
     pTopCluster->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
     C_PT.SetRate(m_pParameters->GetAreaScanRateType());
     C_PT.CompareTopCluster(*pTopCluster, *m_pData);
-
-    if (pTopCluster->ClusterDefined()) {
-      pTopCluster->SetRatio(m_pData->m_pModel->GetLogLikelihoodForTotal());
-      pTopCluster->SetStartAndEndDates(m_pData->m_pIntervalStartTimes, m_pData->m_nTimeIntervals);
-    }
-    m_nClustersRetained++;
+    pTopCluster->SetRatioAndDates(*m_pData);
   }
   catch (ZdException & x) {
     delete pTopCluster;

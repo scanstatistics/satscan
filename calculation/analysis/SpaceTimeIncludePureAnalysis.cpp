@@ -6,7 +6,7 @@
 C_ST_PS_PT_Analysis::C_ST_PS_PT_Analysis(CParameters*  pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
                     :C_ST_PS_Analysis(pParameters, pData, pPrintDirection) {}
 
-/** Desctructor */                    
+/** Desctructor */
 C_ST_PS_PT_Analysis::~C_ST_PS_PT_Analysis() {}
 
 /** Finds top clusters. */
@@ -14,10 +14,16 @@ bool C_ST_PS_PT_Analysis::FindTopClusters() {
   try {
     if (! C_ST_PS_Analysis::FindTopClusters())  // KR-980327 Changed from CSpaceTimeAnalysis::
       return false;
-      
+
     tract_t nLastClusterIndex = m_nClustersRetained;
     m_pTopClusters[nLastClusterIndex] = GetTopPTCluster();
-    SortTopClusters();
+    if (m_pTopClusters[nLastClusterIndex]->ClusterDefined()) {
+      m_nClustersRetained++;
+      SortTopClusters();
+    }
+    else {
+      delete m_pTopClusters[nLastClusterIndex]; m_pTopClusters[nLastClusterIndex]=0;
+    }
   }
   catch (ZdException & x) {
     x.AddCallpath("FindTopClusters()", "C_ST_PS_PT_Analysis");
@@ -46,7 +52,6 @@ CPurelyTemporalCluster* C_ST_PS_PT_Analysis::GetTopPTCluster() {
     C_PT.SetRate(m_pParameters->GetAreaScanRateType());
     C_PT.CompareTopCluster(*pTopCluster, *m_pData);
     pTopCluster->SetRatioAndDates(*m_pData);
-    m_nClustersRetained++;
   }
   catch (ZdException & x) {
     delete pTopCluster;
