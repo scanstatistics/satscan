@@ -309,7 +309,7 @@ void TfrmAnalysis::CheckStudyPeriodDatesRange() {
 /** Resets parameters that are not present in interface to default value.
     Hidden features are to be used soley in command line version at this time. */
 void TfrmAnalysis::DefaultHiddenParameters() {
-  if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND || gParameters.GetAnalysisType() == PURELYSPATIALMONOTONE)
+  if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
     gParameters.SetAnalysisType(PURELYSPATIAL);
   gParameters.SetSequentialScanning(false);
   gParameters.SetNumberEllipses(0);
@@ -1076,7 +1076,6 @@ void TfrmAnalysis::SetAnalysisControl(AnalysisType eAnalysisType) {
     case PROSPECTIVEPURELYTEMPORAL      : rdoProspectivePurelyTemporal->Checked = true; break;
     case PROSPECTIVESPACETIME           : rdoProspectiveSpaceTime->Checked = true; break;
     case SPATIALVARTEMPTREND            :
-    case PURELYSPATIALMONOTONE          :
     case PURELYSPATIAL                  :
     default                             : rdoRetrospectivePurelySpatial->Checked = true;
   }
