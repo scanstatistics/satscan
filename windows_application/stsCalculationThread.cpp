@@ -77,7 +77,7 @@ void __fastcall CalcThread::Execute() {
     gpPrintWindow->SatScanPrintf(GetToolkit().GetAcknowledgment(Acknowledgment));
 
     time(&RunTime);         // Pass to analysis to include in report
-    if (!gpParams->ValidateParameters(*gpPrintWindow))
+    if (!gpParameters->ValidateParameters(*gpPrintWindow))
        SSGenerateException("\nInvalid parameter(s) encountered. Job cancelled.", "Execute()");
 
     switch (gpParameters->GetAnalysisType()) {
