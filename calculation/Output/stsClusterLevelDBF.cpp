@@ -210,15 +210,15 @@ void stsClusterLevelDBF::SetEllipseString(std::string& sAngle, std::string& sSha
       }
       else {
          if(pCluster.m_iEllipseOffset == 0 && pData.m_nNumEllipsoids > 0) {
-            sprintf(sAngleBuffer, "%8.3f", "1.0");
-            sprintf(sShapeBuffer, "%8.3f", "0.0");
+            sShape = "1.0";
+            sAngle = "0.0";
          }
          else {
             sprintf(sAngleBuffer, "%8.3f", pCluster.ConvertAngleToDegrees(pData.mdE_Angles[pCluster.m_iEllipseOffset-1]));
             sprintf(sShapeBuffer, "%8.3f", pData.mdE_Shapes[pCluster.m_iEllipseOffset-1]);
+            sShape = sShapeBuffer;
+            sAngle = sAngleBuffer;
          }
-         sShape = sShapeBuffer;
-         sAngle = sAngleBuffer;
       }
    }
    catch (ZdException &x) {
