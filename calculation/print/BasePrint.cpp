@@ -137,16 +137,29 @@ void BasePrint::PrintMessage(va_list varArgs, const char * sMessage) {
 // This function sets the current exception message.  If a NULL is passed in, the current
 // message is cleared.
 void BasePrint::PrintMessage(va_list varArgs, const char * sMessage ) {
-  int   iStringLength;   // Holds the length of the formatted output
-  char  * sNewMessage = 0;
+   int   iCurrentLength;  // Current length of the buffer
+   int   iStringLength;   // Holds the length of the formatted output
 
-  try {
-    delete [] gsMessage; gsMessage=0;
-    // vsnprintf will always return the length needed to format the string.
-    iStringLength = vsnprintf ( sNewMessage, iCurrentLength + 1, sMessage, varArgs );
-    gsMessage = new char[iStringLength + 1];
-    vsnprintf ( gsMessage, iStringLength + 1, sMessage, varArgs );
-  }
-  catch (...) {}
+   try
+      {
+      if (sMessage && (sMessage != gsMessage) )
+         {
+         iCurrentLength = strlen ( gsMessage );
+
+         // vsnprintf will always return the length needed to format the string.
+         iStringLength = vsnprintf ( gsMessage, iCurrentLength + 1, sMessage, varArgs );
+
+         if ( iStringLength > iCurrentLength )
+            {
+            delete [] gsMessage; gsMessage = 0;
+            gsMessage = new char[iStringLength + 1];
+
+            vsnprintf ( gsMessage, iStringLength + 1, sMessage, varArgs );
+            }
+         }
+      else
+         gsMessage[0] = 0;
+      }
+   catch (...) {};
 }
 #endif

@@ -4,7 +4,7 @@
 //*****************************************************************************
 #include <stdio.h>
 #include <stdarg.h>
-#include <string.h>
+#include <string>
 #include <map>
 
 class BasePrint {
