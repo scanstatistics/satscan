@@ -126,6 +126,14 @@ int main(int argc, char *argv[]) {
     BasisExit();
     exit(1);
   }
+  catch (ZdMemoryException &x) {
+    delete pAnalysis;
+    delete pData;
+    gpPrintWindow->SatScanPrintWarning("\nSaTScan is unable to perform analysis due to insuffient memory.\n");
+    gpPrintWindow->SatScanPrintWarning("Please see 'Memory Requirements' in user guide for suggested solutions.\n");
+    BasisExit();
+    exit(1);
+  }
   catch (ZdException & x) {
     delete pAnalysis;
     delete pData;

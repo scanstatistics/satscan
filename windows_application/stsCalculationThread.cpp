@@ -135,7 +135,7 @@ void __fastcall CalcThread::Execute() {
       // with it(i.e. we won't we accessing gpFormStatus anymore).
       Synchronize((TThreadMethod)&ProcessAcknowledgesCancellation);
   }
-  catch (SSException & x) {
+  catch (SSException &x) {
     //handle exceptions that occured from user or data errors
     x.AddCallpath("Execute()", "CalcThread");
     gpPrintWindow->SatScanPrintWarning(x.GetErrorMessage());
@@ -145,9 +145,21 @@ void __fastcall CalcThread::Execute() {
     Synchronize((TThreadMethod)&EnableProgressEmailButton);
     CancellJob();
   }
-  catch (ZdException & x) {
+  catch (ZdMemoryException &x) {
+    //handle memory exceptions
+    x.AddCallpath("Execute()", "CalcThread");
+    gpPrintWindow->SatScanPrintWarning("\nSaTScan is unable to perform analysis due to insuffient memory.\n");
+    gpPrintWindow->SatScanPrintWarning("Please see 'Memory Requirements' in user guide for suggested solutions.\n");
+    gsProgramErrorCallPath = x.GetCallpath();
+    Synchronize((TThreadMethod)&SetProgramErrorCallPath);
+    gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
+    Synchronize((TThreadMethod)&ResetProgressCloseButton);
+    Synchronize((TThreadMethod)&EnableProgressPrintButton);
+    Synchronize((TThreadMethod)&EnableProgressEmailButton);
+    CancellJob();
+  }
+  catch (ZdException &x) {
     //handle exceptions that occured from unexcepted program error
-    //we will want to include more information, like the callpath, in the future
     x.AddCallpath("Execute()", "CalcThread");
     gpPrintWindow->SatScanPrintWarning("\nProgram Error:\n");
     gpPrintWindow->SatScanPrintWarning(x.GetErrorMessage());
