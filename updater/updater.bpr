@@ -25,8 +25,8 @@
     <USERDEFINES value="WIN32"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="updater.cpp"/>
-    <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl;ziplib\zziplibrary;ziplib\zziplib_0.10.27;ziplib\untar_1.4"/>
-    <LIBPATH value="$(BCB)\lib\obj;$(BCB)\lib;ziplib\zziplibrary;ziplib\zziplib_0.10.27;ziplib\untar_1.4"/>
+    <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl;ziplib\zziplibrary;ziplib\untar_1.4;ziplib\zziplib-0.10.82\zziplib"/>
+    <LIBPATH value="$(BCB)\lib\obj;$(BCB)\lib;ziplib\zziplibrary;ziplib\zziplib-0.10.82\zziplib;ziplib\untar_1.4"/>
     <WARNINGS value="-w-par"/>
   </MACROS>
   <OPTIONS>
@@ -71,23 +71,27 @@ ProductVersion=1.0.0.0 Beta 1
 Comments=not released
 
 [HistoryLists\hlIncludePath]
-Count=6
-Item0=$(BCB)\include;$(BCB)\include\vcl;ziplib\zziplibrary;ziplib\zziplib_0.10.27;ziplib\untar_1.4
-Item1=$(BCB)\include;$(BCB)\include\vcl;\ziplib\zziplibrary;\ziplib\zziplib_0.10.27;\ziplib\untar_1.4
-Item2=C:\Program Files\Borland\CBuilder5\Projects;$(BCB)\include;$(BCB)\include\vcl;..\..\zziplib\zziplibrary;..\..\zziplib\zziplib_0.10.27;..\..\zziplib\untar_1.4
-Item3=$(BCB)\include;$(BCB)\include\vcl;..\..\zziplib\zziplibrary;..\..\zziplib\zziplib_0.10.27;..\..\zziplib\untar_1.4
-Item4=$(BCB)\include;$(BCB)\include\vcl;C:\Prj\zziplib\zziplibrary;C:\Prj\zziplib\zziplib_0.10.27;C:\Prj\zziplib\untar_1.4
-Item5=$(BCB)\include;$(BCB)\include\vcl
+Count=8
+Item0=$(BCB)\include;$(BCB)\include\vcl;ziplib\zziplibrary;ziplib\untar_1.4;ziplib\zziplib-0.10.82\zziplib
+Item1=$(BCB)\include;$(BCB)\include\vcl;ziplib\zziplibrary;ziplib\untar_1.4;C:\Prj\SaTScan Project\SatScan\updater\ziplib\zziplib-0.10.82\zziplib
+Item2=$(BCB)\include;$(BCB)\include\vcl;ziplib\zziplibrary;ziplib\zziplib_0.10.27;ziplib\untar_1.4
+Item3=$(BCB)\include;$(BCB)\include\vcl;\ziplib\zziplibrary;\ziplib\zziplib_0.10.27;\ziplib\untar_1.4
+Item4=C:\Program Files\Borland\CBuilder5\Projects;$(BCB)\include;$(BCB)\include\vcl;..\..\zziplib\zziplibrary;..\..\zziplib\zziplib_0.10.27;..\..\zziplib\untar_1.4
+Item5=$(BCB)\include;$(BCB)\include\vcl;..\..\zziplib\zziplibrary;..\..\zziplib\zziplib_0.10.27;..\..\zziplib\untar_1.4
+Item6=$(BCB)\include;$(BCB)\include\vcl;C:\Prj\zziplib\zziplibrary;C:\Prj\zziplib\zziplib_0.10.27;C:\Prj\zziplib\untar_1.4
+Item7=$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=7
-Item0=$(BCB)\lib\obj;$(BCB)\lib;ziplib\zziplibrary;ziplib\zziplib_0.10.27;ziplib\untar_1.4
-Item1=$(BCB)\lib\obj;$(BCB)\lib;\ziplib\zziplibrary;\ziplib\zziplib_0.10.27;\ziplib\untar_1.4
-Item2=C:\Program Files\Borland\CBuilder5\Projects;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib;..\..\zziplib\zziplibrary;..\..\zziplib\zziplib_0.10.27;..\..\zziplib\untar_1.4
-Item3=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib;..\..\zziplib\zziplibrary;..\..\zziplib\zziplib_0.10.27;..\..\zziplib\untar_1.4
-Item4=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib;..\..\zziplib\zziplibrary;..\..\zziplib\zziplib_0.10.27;..\..\zziplib\untar_1.4
-Item5=$(BCB)\lib\obj;$(BCB)\lib;C:\Prj\zziplib\zziplibrary;C:\Prj\zziplib\zziplib_0.10.27;C:\Prj\zziplib\untar_1.4
-Item6=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib
+Count=9
+Item0=$(BCB)\lib\obj;$(BCB)\lib;ziplib\zziplibrary;ziplib\zziplib-0.10.82\zziplib;ziplib\untar_1.4
+Item1=$(BCB)\lib\obj;$(BCB)\lib;ziplib\zziplibrary;C:\Prj\SaTScan Project\SatScan\updater\ziplib\zziplib-0.10.82\zziplib;ziplib\untar_1.4
+Item2=$(BCB)\lib\obj;$(BCB)\lib;ziplib\zziplibrary;ziplib\zziplib_0.10.27;ziplib\untar_1.4
+Item3=$(BCB)\lib\obj;$(BCB)\lib;\ziplib\zziplibrary;\ziplib\zziplib_0.10.27;\ziplib\untar_1.4
+Item4=C:\Program Files\Borland\CBuilder5\Projects;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib;..\..\zziplib\zziplibrary;..\..\zziplib\zziplib_0.10.27;..\..\zziplib\untar_1.4
+Item5=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib;..\..\zziplib\zziplibrary;..\..\zziplib\zziplib_0.10.27;..\..\zziplib\untar_1.4
+Item6=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib;..\..\zziplib\zziplibrary;..\..\zziplib\zziplib_0.10.27;..\..\zziplib\untar_1.4
+Item7=$(BCB)\lib\obj;$(BCB)\lib;C:\Prj\zziplib\zziplibrary;C:\Prj\zziplib\zziplib_0.10.27;C:\Prj\zziplib\untar_1.4
+Item8=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=2
