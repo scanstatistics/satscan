@@ -1,39 +1,33 @@
 //---------------------------------------------------------------------------
 #include "stsSaTScan.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
-PrintWindow::PrintWindow(TfrmAnalysisRun *pFormStatus)
-            : BasePrint()
-{
-   gpAnalysisRunForm = pFormStatus;
+//** Constructor */
+PrintWindow::PrintWindow(CalcThread & CalculationThread)
+            :BasePrint(), gCalculationThread(CalculationThread) {}
+
+//** Destructor */
+PrintWindow::~PrintWindow(){}
+
+/** Returns whether analysis has been cancelled through run analysis window
+     via calculation thread . */
+bool PrintWindow::GetIsCanceled() {
+  return gCalculationThread.IsCancelled();
 }
-//---------------------------------------------------------------------------
-PrintWindow::~PrintWindow()
-{
+
+/** Prints text to run analysis window via calculation thread. */
+void PrintWindow::PrintLine(char *s) {
+  if (s) {//if "s" ends with a "\n" then remove it... ???
+    if (s[strlen(s)-1] == '\n')
+      s[strlen(s)-1] = '\0';
+    gCalculationThread.AddLineToProgress(s);
+  }
 }
-//---------------------------------------------------------------------------
-bool PrintWindow::GetIsCanceled()
-{
-   return gpAnalysisRunForm->IsJobCanceled();
+
+/** Prints tet to run analysis window via calculation thread. */
+void PrintWindow::PrintWarningLine(char *s) {
+  if (s) {//if "s" ends with a "\n" then remove it...
+    if (s[strlen(s)-1] == '\n')
+      s[strlen(s)-1] = '\0';
+    gCalculationThread.AddWarningToProgress(s);
+   }
 }
-//---------------------------------------------------------------------------
-void PrintWindow::PrintLine(char *s)
-{
-   //if "s" ends with a "\n" then remove it...
-   if (s)
-      {
-      if (s[strlen(s)-1] == '\n')
-         s[strlen(s)-1] = '\0';
-      gpAnalysisRunForm->AddLine(s);
-      }
-}
-void PrintWindow::PrintWarningLine(char *s)
-{
-   //if "s" ends with a "\n" then remove it...
-   if (s)
-      {
-      if (s[strlen(s)-1] == '\n')
-         s[strlen(s)-1] = '\0';
-      gpAnalysisRunForm->AddWarningLine(s);
-      }
-}//---------------------------------------------------------------------------

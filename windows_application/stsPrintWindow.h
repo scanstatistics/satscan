@@ -4,17 +4,18 @@
 //---------------------------------------------------------------------------
 #include "BasePrint.h"
 //---------------------------------------------------------------------------
-class PrintWindow : public BasePrint
-{
-   private:
-      TfrmAnalysisRun *gpAnalysisRunForm;
-   public:
-      PrintWindow(TfrmAnalysisRun *pFormStatus);
-      ~PrintWindow();
+class CalcThread;
+class PrintWindow : public BasePrint {
+  private:
+    CalcThread        & gCalculationThread;
 
-      bool GetIsCanceled();
-      void PrintLine(char *s);
-      void PrintWarningLine(char *s);
+   public:
+     PrintWindow(CalcThread & CalculationThread);
+     ~PrintWindow();
+
+     bool               GetIsCanceled();
+     void               PrintLine(char *s);
+     void               PrintWarningLine(char *s);
 };
 //---------------------------------------------------------------------------
 #endif
