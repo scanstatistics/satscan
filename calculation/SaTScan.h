@@ -42,7 +42,9 @@
  This file contains header information for all SaTScan program files
  **********************************************************************/
 /** Current version information. */
-#define VERSION_ID      "5"
+#define VERSION_ID      "5"  /** incremental version identifier - this value must
+                                 be incremented for each released version in order
+                                 for update feature to function correctly */
 #define VERSION_MAJOR   "5"
 #define VERSION_MINOR   "0"
 #define VERSION_RELEASE "0"
