@@ -493,7 +493,7 @@ void TfrmMain::CompareTimes() {
   bool                  bMasterDate;
   unsigned short        uHoursM, uMinutesM, uSecondsM, uHoursC, uMinutesC, uSecondsC;
   std::string           sMaster, sCompare;
-  unsigned int          uiMasterTime, uiCompareTime;
+  float                 fMasterTimeInMinutes, fComareTimeInMinutes;
 
   GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sMaster);
   bMasterDate = GetRunTime(sMaster.c_str(), uHoursM, uMinutesM, uSecondsM);
@@ -503,27 +503,27 @@ void TfrmMain::CompareTimes() {
   if (!bMasterDate)
     gvParameterResultsInfo.back().SetTimeDifference(uHoursC, uMinutesC, uSecondsC, INCOMPLETE);
   else {
-    uiMasterTime = (uHoursM * 10000) + (uMinutesM * 100 ) + uSecondsM;
-    uiCompareTime = (uHoursC * 10000) + (uMinutesC * 100) + uSecondsC;
+    fMasterTimeInMinutes = (float)(uHoursM) * 60 + (float)uMinutesM + (float)(uSecondsM)/60;
+    fComareTimeInMinutes = (float)(uHoursC) * 60 + (float)uMinutesC + (float)(uSecondsC)/60;
 
-    if (uiMasterTime == uiCompareTime) {
+    if (fMasterTimeInMinutes == fComareTimeInMinutes) {
       gvParameterResultsInfo.back().SetTimeDifference(uHoursC, uMinutesC, uSecondsC, SAME);
       gvParameterResultsInfo.back().SetTimeDifferencePercentage(0);
     }
-    else if (uiMasterTime > uiCompareTime) {
-      gvParameterResultsInfo.back().SetTimeDifferencePercentage(1 - (float)uiCompareTime/(float)uiMasterTime);
-      uiMasterTime = uiMasterTime - uiCompareTime;
-      uHoursM = uiMasterTime/10000;
-      uMinutesM = (uiMasterTime - (uHoursM * 10000))/100;
-      uSecondsM = uiMasterTime - (uHoursM * 10000) - (uMinutesM * 100);
+    else if (fMasterTimeInMinutes > fComareTimeInMinutes) {
+      gvParameterResultsInfo.back().SetTimeDifferencePercentage(1 - fComareTimeInMinutes/fMasterTimeInMinutes);
+      fMasterTimeInMinutes = fMasterTimeInMinutes - fComareTimeInMinutes;
+      uHoursM = fMasterTimeInMinutes/60;
+      uMinutesM = fMasterTimeInMinutes - uHoursM * 60;
+      uSecondsM = (float)(fMasterTimeInMinutes - uHoursM * 60 - uMinutesM) * 60;
       gvParameterResultsInfo.back().SetTimeDifference(uHoursM, uMinutesM, uSecondsM, FASTER);
     }
     else {
-      gvParameterResultsInfo.back().SetTimeDifferencePercentage(1 - (float)uiMasterTime/(float)uiCompareTime);
-      uiCompareTime = uiCompareTime - uiMasterTime;
-      uHoursC = uiCompareTime/10000;
-      uMinutesC = (uiCompareTime - (uHoursC * 10000))/100;
-      uSecondsC = uiCompareTime - (uHoursC * 10000) - (uMinutesC * 100);
+      gvParameterResultsInfo.back().SetTimeDifferencePercentage(1 - fMasterTimeInMinutes/fComareTimeInMinutes);
+      fComareTimeInMinutes = fComareTimeInMinutes - fMasterTimeInMinutes;
+      uHoursC = fComareTimeInMinutes/60;
+      uMinutesC = fComareTimeInMinutes - uHoursC * 60;
+      uSecondsC = (float)(fComareTimeInMinutes - uHoursC * 60 - uMinutesC) * 60;
       gvParameterResultsInfo.back().SetTimeDifference(uHoursC, uMinutesC, uSecondsC, SLOWER);
     }
   }
@@ -623,14 +623,14 @@ AnsiString & TfrmMain::GetDisplayTime(AnsiString & sDisplay) {
     case INCOMPLETE : sDisplay.printf("%i hr %i min % i sec - ?", Ref.GetHoursDifferent(),
                                       Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent());
                       break;
-    case SLOWER     : sDisplay.printf("%i hr %i min % i sec - slower by %.2f%%", Ref.GetHoursDifferent(),
+    case SLOWER     : sDisplay.printf("%i hr %i min % i sec slower (%.2f)", Ref.GetHoursDifferent(),
                                       Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent(),
                                       Ref.GetTimeDifferencePercentage());
                       break;
-    case SAME       : sDisplay.printf("%i hr %i min % i sec - same", Ref.GetHoursDifferent(),
+    case SAME       : sDisplay.printf("%i hr %i min % i sec - same time", Ref.GetHoursDifferent(),
                                       Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent());
                       break;
-    case FASTER     : sDisplay.printf("%i hr %i min % i sec - faster by %.2f%%", Ref.GetHoursDifferent(),
+    case FASTER     : sDisplay.printf("%i hr %i min % i sec faster (%.2f)", Ref.GetHoursDifferent(),
                                       Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent(),
                                       Ref.GetTimeDifferencePercentage());
                       break;
