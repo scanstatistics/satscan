@@ -15,5 +15,14 @@ class SSException : public virtual ZdException {
 };
 
 void SSGenerateException(const char * sMessage, const char * sSourceModule, ... );
+
+
+class UsageException : public virtual ZdException {
+  public:
+    UsageException();
+    virtual ~UsageException();
+};
+
+void GenerateUsageException();
 //*****************************************************************************
 #endif

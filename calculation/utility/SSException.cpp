@@ -25,3 +25,23 @@ void SSGenerateException(const char * sMessage, const char * sSourceModule, ... 
   throw theException;
 }
 
+
+/**  Construct. This is an alternate constructor for when the varArgs list for sMessage
+     has already been prepared. Primarily, this will be used by derived classes.        */
+UsageException::UsageException() : ZdException () {
+   SetErrorMessage("usage: SaTScanBatch.exe [parameters file] [options]\n\n"
+                   "options: -v -- suppress instance particular information in results\n"
+                   "         -o -- ignore parameter result filename setting, use next parameter\n"
+                   "               ex. c:\\>satscan.exe c:\\parameters.prm -o c:\\alternate.out.txt\n");
+}
+
+/** Destructor. */
+UsageException::~UsageException() {}
+
+/**  This function will throw the exception with the parameters.  It is equivalent to
+     throw ZdException(...), but includes the ability to format the message string.
+     This function should be used to generate all Zd Exceptions within ZD.             */
+void GenerateUsageException() {
+  throw UsageException();
+}
+
