@@ -149,6 +149,13 @@ void CPoissonModel::AdjustMeasure(RealDataStream & thisStream, measure_t ** ppNo
       }
     }
 
+    switch (gParameters.GetSpatialAdjustmentType()) {
+      case NO_SPATIAL_ADJUSTMENT : break;
+      case SPATIALLY_STRATIFIED_RANDOMIZATION : StratifiedSpatialAdjustment(thisStream, ppNonCumulativeMeasure); break;
+      default : ZdGenerateException("Unknown spatial adjustment type: '%d'.",
+                                    "AdjustMeasure()", gParameters.GetSpatialAdjustmentType());
+    }
+
     // Bug check, to ensure that adjusted  total measure equals previously determined total measure
     for (AdjustedTotalMeasure_t=0, i=0; i < gData.m_nTimeIntervals; ++i)
        for (t=0; t < gData.m_nTracts; ++t)
@@ -307,5 +314,25 @@ double CPoissonModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, 
       throw;
       }
    return nPopulation;
+}
+
+/** Adjusts passed non-cumulative measure in a stratified spatial manner.
+    Each time, for a particular tract, is multiplied by the total case divided
+    by total measure of that tract, across all time intervals. */
+void CPoissonModel::StratifiedSpatialAdjustment(RealDataStream& thisStream, measure_t ** ppNonCumulativeMeasure) {
+  measure_t     tTotalTractMeasure;
+  count_t    ** ppCases = thisStream.GetCaseArray();
+  tract_t       t;
+  int           i;
+
+
+  for (t=0; t < gData.GetNumTracts(); ++t) {
+     //calculates total measure for current tract across all time intervals
+     for (tTotalTractMeasure=0, i=0; i < gData.GetNumTimeIntervals(); ++i)
+        tTotalTractMeasure += ppNonCumulativeMeasure[i][t];
+     //now multiply each time interval/tract location by (total cases)/(total measure)
+     for (i=0; tTotalTractMeasure && i < gData.GetNumTimeIntervals(); ++i)
+        ppNonCumulativeMeasure[i][t] *= ppCases[0][t]/tTotalTractMeasure;
+  }
 }
 
