@@ -31,7 +31,8 @@ OUTPUT         := $(SATSCAN)/calculation/output/
 PRINT          := $(SATSCAN)/calculation/print/
 PROBMODEL      := $(SATSCAN)/calculation/probability_model/
 SATDATA        := $(SATSCAN)/calculation/satscan_data/
-UTILITY        := $(SATSCAN)/calculation/utility
+UTILITY        := $(SATSCAN)/calculation/utility/
+RANDOMIZER     := $(SATSCAN)/calculation/randomization/
 
 
 ZDANNEX     := /sprj/imsdev/zd
@@ -45,7 +46,8 @@ XBASEDIR2   := $(SATSCAN)/xbase/xbase_2.0.0
 
 
 INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(ZDDIR) -I$(ZDANNEX) -I$(CLUSTER) -I$(UTILITY) -I$(XBASEDIR) -I$(XBASEDIR2)\
-               -I$(BASIS)/include -I$(BASIS)/source/nonvcl -I$(BASIS)/source/vcldep -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL) -I$(SATDATA) -I$(UTILITY)
+               -I$(BASIS)/include -I$(BASIS)/source/nonvcl -I$(BASIS)/source/vcldep -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL)\
+	       -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER)
 
 DEFINES     := -D__BASIS_NO_VCL \
                -D__BATCH_COMPILE
@@ -53,8 +55,7 @@ DEFINES     := -D__BASIS_NO_VCL \
 CFLAGS      := -c -O3 $(DEBUG) $(INCLUDEDIRS) $(DEFINES)
               
 
-LFLAGS      := -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -lxbaseg -lm -ldl -lsocket -lnsl -lzd$(ZDVER)g -lcrypto -lct -lcomn -lcs -lintl \
-		-lsdce -lskrb -lsrv -lsybdb -ltcl -ltli
+LFLAGS      := -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -lxbaseg -lm -ldl -lnsl -lzd$(ZDVER)g -lcrypto
 
 SRC         := Main.cpp \
                ../calculation/analysis/Analysis.cpp \
@@ -77,11 +78,14 @@ SRC         := Main.cpp \
 	       ../calculation/cluster/SVTTCluster.cpp \
 	       ../calculation/cluster/PurelySpatialProspectiveCluster.cpp \
                ../calculation/cluster/TimeEstimate.cpp \
-               ../calculation/cluster/TimeIntervalAlive.cpp \
-               ../calculation/cluster/TimeIntervalAll.cpp \
-	       ../calculation/cluster/TimeTrend.cpp \
+               ../calculation/cluster/TimeTrend.cpp \
 	       ../calculation/cluster/TimeIntervalRange.cpp \
-               ../calculation/output/stsAreaSpecificData.cpp \
+	       ../calculation/cluster/AbstractClusterData.cpp \
+	       ../calculation/cluster/ClusterData.cpp \
+	       ../calculation/cluster/ClusterDataFactory.cpp \
+	       ../calculation/cluster/MultipleStreamClusterData.cpp \
+	       ../calculation/cluster/NormalClusterData.cpp \
+	       ../calculation/output/stsAreaSpecificData.cpp \
                ../calculation/output/stsASCIIFileWriter.cpp \
                ../calculation/output/stsClusterData.cpp \
                ../calculation/output/stsDBaseFileWriter.cpp \
@@ -97,9 +101,19 @@ SRC         := Main.cpp \
 	       ../calculation/probability_model/CalculateMeasure.cpp \
 	       ../calculation/probability_model/PoissonModel.cpp \
 	       ../calculation/probability_model/SpaceTimePermutationModel.cpp \
+	       ../calculation/probability_model/NormalModel.cpp \
+	       ../calculation/probability_model/SurvivalModel.cpp \
+	       ../calculation/probability_model/RankModel.cpp \
+	       ../calculation/randomization/BernoulliRandomizer.cpp \
+	       ../calculation/randomization/PoissonRandomizer.cpp \
+	       ../calculation/randomization/ContinuousVariableRandomizer.cpp \
+	       ../calculation/randomization/DenominatorDataRandomizer.cpp \
+	       ../calculation/randomization/PermutationDataRandomizer.cpp \
+	       ../calculation/randomization/Randomizer.cpp \
+	       ../calculation/randomization/SpaceTimeRandomizer.cpp \
 	       ../calculation/satscan_data/GridTractCoordinates.cpp \
 	       ../calculation/satscan_data/MakeNeighbors.cpp \
-	       ../calculation/satscan_data/PopulationCategories.cpp \
+	       ../calculation/satscan_data/PopulationData.cpp \
 	       ../calculation/satscan_data/PurelySpatialData.cpp \
 	       ../calculation/satscan_data/PurelyTemporalData.cpp \
 	       ../calculation/satscan_data/SaTScanData.cpp \
@@ -110,6 +124,16 @@ SRC         := Main.cpp \
 	       ../calculation/satscan_data/Tracts.cpp \
 	       ../calculation/satscan_data/MaxWindowLengthIndicator.cpp \
 	       ../calculation/satscan_data/AdjustmentHandler.cpp \
+	       ../calculation/satscan_data/DataStream.cpp \
+	       ../calculation/satscan_data/DataStreamGateway.cpp \
+	       ../calculation/satscan_data/DataStreamHandler.cpp \
+	       ../calculation/satscan_data/DataStreamInterface.cpp \
+	       ../calculation/satscan_data/BernoulliDataStreamHandler.cpp \
+	       ../calculation/satscan_data/NormalDataStreamHandler.cpp \
+	       ../calculation/satscan_data/PoissonDataStreamHandler.cpp \
+	       ../calculation/satscan_data/RankDataStreamHandler.cpp \
+	       ../calculation/satscan_data/SpaceTimePermutationDataStreamHandler.cpp \
+	       ../calculation/satscan_data/SurvivalDataStreamHandler.cpp \
 	       ../calculation/utility/DBFFile.cpp \
 	       ../calculation/utility/JulianDates.cpp \
 	       ../calculation/utility/RandomDistribution.cpp \
