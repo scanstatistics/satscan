@@ -488,12 +488,7 @@ bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
         }
         //add created tract identifer(record number) and read coordinates to structure that mantains list of centroids
         sId = Parser.GetReadCount();
-        if (! gpGInfo->giInsertGnode(sId.GetCString(), vCoordinates))
-          //If there are problems adding then either some other code has errored by
-          //adding to this structure previously or this routine is doing something wrong.
-          //When a special grid file is used to supply centroids, only the routines
-          //read the special grid file should be adding to this structure.
-          ZdException::Generate("Error: Duplicate identifier encountered reading centroids.","ReadGridFileAsCartiesian()");
+        gpGInfo->giInsertGnode(sId.GetCString(), vCoordinates);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -539,12 +534,7 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude(FILE * fp) {
         }
         //add created tract identifer(record number) and read coordinates to structure that mantains list of centroids
         sId = Parser.GetReadCount();
-        if (!gpGInfo->giInsertGnode(sId.GetCString(), vCoordinates))
-          //If there are problems adding then either some other code has errored by
-          //adding to this structure previously or this routine is doing something wrong.
-          //When a special grid file is used to supply centroids, only the routines
-          //read the special grid file should be adding to this structure.
-          ZdException::Generate("Error: Duplicate identifier encountered reading centroids.","ReadGridFileAsLatitudeLongitude()");
+        gpGInfo->giInsertGnode(sId.GetCString(), vCoordinates);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
