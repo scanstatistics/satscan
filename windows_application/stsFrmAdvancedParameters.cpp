@@ -103,7 +103,6 @@ void __fastcall TfrmAdvancedParameters::btnCaseBrowseClick(TObject *Sender) {
     OpenDialog->Title = "Select Case File";
     if (OpenDialog->Execute())
       edtCaseFileName->Text = OpenDialog->FileName.c_str();
-    edtCaseFileName->SetFocus();
   }
   catch (ZdException & x) {
     x.AddCallpath("btnCaseBrowseClick()", "TfrmAdvancedParameters");
@@ -139,7 +138,6 @@ void __fastcall TfrmAdvancedParameters::btnControlBrowseClick(TObject *Sender) {
     OpenDialog->Title = "Select Control File";
     if (OpenDialog->Execute())
        edtControlFileName->Text = OpenDialog->FileName.c_str();
-    edtControlFileName->SetFocus();
   }
   catch (ZdException & x) {
     x.AddCallpath("btnControlBrowseClick()", "TfrmAdvancedParamters");
@@ -174,8 +172,7 @@ void __fastcall TfrmAdvancedParameters::btnPopBrowseClick(TObject *Sender) {
     OpenDialog->FilterIndex = 0;
     OpenDialog->Title = "Select Population File";
     if (OpenDialog->Execute())
-       edtPopFileName->Text = OpenDialog->FileName.c_str();
-    edtPopFileName->SetFocus();
+      edtPopFileName->Text = OpenDialog->FileName.c_str();
   }
   catch (ZdException & x) {
     x.AddCallpath("btnPopBrowseClick()", "TfrmAdvancedParameters");
@@ -209,16 +206,13 @@ void __fastcall TfrmAdvancedParameters::btnNewClick(TObject *Sender) {
 
      // enable and clear the edit boxes
      EnableInputFileEdits(true);
+     gvCaseFiles.push_back("");
+     gvControlFiles.push_back("");
+     gvPopFiles.push_back("");
      edtCaseFileName->Text = "";
      edtControlFileName->Text = "";
      edtPopFileName->Text = "";
      edtCaseFileName->SetFocus();
-
-     // add blank file names to the vectors as placeholders
-     gvCaseFiles.AddElement("");
-     gvControlFiles.AddElement("");
-     gvPopFiles.AddElement("");
-
      EnableNewButton();
      EnableRemoveButton();
      DoControlExit();
@@ -240,11 +234,11 @@ void __fastcall TfrmAdvancedParameters::btnRemoveStreamClick(TObject *Sender){
       iStreamNum = lstInputStreams->ItemIndex;
       // remove files
       edtCaseFileName->Text = "";
-      gvCaseFiles.RemoveElement(iStreamNum);
+      gvCaseFiles.erase(gvCaseFiles.begin() + iStreamNum);
       edtControlFileName->Text = "";
-      gvControlFiles.RemoveElement(iStreamNum);
+      gvControlFiles.erase(gvControlFiles.begin() + iStreamNum);
       edtPopFileName->Text = "";
-      gvPopFiles.RemoveElement(iStreamNum);
+      gvPopFiles.erase(gvPopFiles.begin() + iStreamNum);
 
       // update remaining list box names
       for (int i=iStreamNum+1; i < lstInputStreams->Items->Count ;i++) {
@@ -338,11 +332,20 @@ void TfrmAdvancedParameters::DoControlExit() {
          break;
    }
 }
-/** event triggered when loginear percentage control exited */
-void __fastcall TfrmAdvancedParameters::edtLogLinearExit(TObject *Sender) {
-  if (edtLogLinear->Text.IsEmpty() || atof(edtLogLinear->Text.c_str()) <= -100)
-    edtLogLinear->Text = 0;
-  DoControlExit();
+
+/** event triggered when text of adjustment by relative risks edit control changes */
+void __fastcall TfrmAdvancedParameters::edtAdjustmentsByRelativeRisksFileChange(TObject *Sender) {
+  edtAdjustmentsByRelativeRisksFile->Hint = edtAdjustmentsByRelativeRisksFile->Text;
+}
+
+/** Event triggered when TEdit for case file changes. */
+void __fastcall TfrmAdvancedParameters::edtCaseFileNameChange(TObject *Sender) {
+  gvCaseFiles.at(lstInputStreams->ItemIndex) = edtCaseFileName->Text;
+}
+
+/** Event triggered when TEdit for control file changes. */
+void __fastcall TfrmAdvancedParameters::edtControlFileNameChange(TObject *Sender) {
+  gvControlFiles.at(lstInputStreams->ItemIndex) = edtControlFileName->Text;
 }
 
 /** event triggered when end window end ranges year, month or day control is exited */
@@ -356,17 +359,13 @@ void __fastcall TfrmAdvancedParameters::edtEndRangeStartDateExit(TObject *Sender
   TfrmAnalysis::ValidateDate(*edtEndRangeStartYear, *edtEndRangeStartMonth, *edtEndRangeStartDay);
   DoControlExit();
 }
-
-/** event triggered when text of adjustment by relative risks edit control changes */
-void __fastcall TfrmAdvancedParameters::edtAdjustmentsByRelativeRisksFileChange(TObject *Sender) {
-  edtAdjustmentsByRelativeRisksFile->Hint = edtAdjustmentsByRelativeRisksFile->Text;
-}
 //---------------------------------------------------------------------------
-void __fastcall TfrmAdvancedParameters::edtFileNameExit(TObject *Sender)
-{
-   UpdateInputFiles();
+/** event triggered when loginear percentage control exited */
+void __fastcall TfrmAdvancedParameters::edtLogLinearExit(TObject *Sender) {
+  if (edtLogLinear->Text.IsEmpty() || atof(edtLogLinear->Text.c_str()) <= -100)
+    edtLogLinear->Text = 0;
+  DoControlExit();
 }
-//---------------------------------------------------------------------------
 /** event triggered when text of maximum circle edit control changes */
 void __fastcall TfrmAdvancedParameters::edtMaxCirclePopulationFilenameChange(TObject *Sender) {
   edtMaxCirclePopulationFilename->Hint = edtMaxCirclePopulationFilename->Text;
@@ -430,16 +429,22 @@ void __fastcall TfrmAdvancedParameters::edtMaxTemporalClusterSizeUnitsExit(TObje
 }
 
 
-/** event triggered when 'Report only clusters smaller than ...' edit control is exited */
-void __fastcall TfrmAdvancedParameters::edtReportClustersSmallerThanExit(TObject *Sender) {
-  if (!edtReportClustersSmallerThan->Text.Length() || atof(edtReportClustersSmallerThan->Text.c_str()) == 0)
-    edtReportClustersSmallerThan->Text = GetMaxSpatialClusterSizeFromControl();
-  DoControlExit();
+/** Event triggered when TEdit for population file changes. */
+void __fastcall TfrmAdvancedParameters::edtPopFileNameChange(TObject *Sender) {
+  gvPopFiles.at(lstInputStreams->ItemIndex) = edtPopFileName->Text;
 }
+
 //---------------------------------------------------------------------------
 /** event triggered when year control, of prospective start date, is exited. */
 void __fastcall TfrmAdvancedParameters::edtProspectiveStartDateExit(TObject *Sender) {
   TfrmAnalysis::ValidateDate(*edtProspectiveStartDateYear, *edtProspectiveStartDateMonth, *edtProspectiveStartDateDay);
+  DoControlExit();
+}
+
+/** event triggered when 'Report only clusters smaller than ...' edit control is exited */
+void __fastcall TfrmAdvancedParameters::edtReportClustersSmallerThanExit(TObject *Sender) {
+  if (!edtReportClustersSmallerThan->Text.Length() || atof(edtReportClustersSmallerThan->Text.c_str()) == 0)
+    edtReportClustersSmallerThan->Text = GetMaxSpatialClusterSizeFromControl();
   DoControlExit();
 }
 //---------------------------------------------------------------------------
@@ -871,9 +876,9 @@ void __fastcall TfrmAdvancedParameters::lstInputStreamsClick(TObject *Sender) {
       iStreamNum = lstInputStreams->ItemIndex;
       // set the files
       EnableInputFileEdits(true);
-      edtCaseFileName->Text = gvCaseFiles.GetElement(iStreamNum);
-      edtControlFileName->Text = gvControlFiles.GetElement(iStreamNum);
-      edtPopFileName->Text = gvPopFiles.GetElement(iStreamNum);
+      edtCaseFileName->Text = gvCaseFiles.at(iStreamNum);
+      edtControlFileName->Text = gvControlFiles.at(iStreamNum);
+      edtPopFileName->Text = gvPopFiles.at(iStreamNum);
    }
    catch (ZdException &x) {
      x.AddCallpath("lstInputStreamsClick()","TfrmAdvancedParameters");
@@ -1008,9 +1013,9 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
     ref.SetNumDataStreams(lstInputStreams->Items->Count + 1);
     if (lstInputStreams->Items->Count) {
        for (int i = 0; i < lstInputStreams->Items->Count; i++) {
-          ref.SetCaseFileName((gvCaseFiles.GetElement(i)).c_str(), false, i+2);
-          ref.SetControlFileName((gvControlFiles.GetElement(i)).c_str(), false, i+2);
-          ref.SetPopulationFileName((gvPopFiles.GetElement(i)).c_str(), false, i+2);
+          ref.SetCaseFileName((gvCaseFiles.at(i)).c_str(), false, i+2);
+          ref.SetControlFileName((gvControlFiles.at(i)).c_str(), false, i+2);
+          ref.SetPopulationFileName((gvPopFiles.at(i)).c_str(), false, i+2);
        }
     }
   }
@@ -1080,9 +1085,9 @@ void TfrmAdvancedParameters::SetDefaultsForInputTab() {
    EnableDataStreamList(lstInputStreams->Items->Count);
 
    // clear the non-visual components
-   gvCaseFiles.RemoveAllElements();
-   gvControlFiles.RemoveAllElements();
-   gvPopFiles.RemoveAllElements();
+   gvCaseFiles.clear();
+   gvControlFiles.clear();
+   gvPopFiles.clear();
    giStreamNum = 2;
    EnableNewButton();
    EnableRemoveButton();
@@ -1273,9 +1278,9 @@ void TfrmAdvancedParameters::Setup() {
       EnableInputFileEdits(false);
       for (unsigned int i = 1; i < ref.GetNumDataStreams(); i++) { // multiple data streams
          lstInputStreams->Items->Add("Input Stream " + IntToStr(i+1));
-         gvCaseFiles.AddElement(AnsiString(ref.GetCaseFileName(i+1).c_str()));
-         gvControlFiles.AddElement(AnsiString(ref.GetControlFileName(i+1).c_str()));
-         gvPopFiles.AddElement(AnsiString(ref.GetPopulationFileName(i+1).c_str()));
+         gvCaseFiles.push_back(AnsiString(ref.GetCaseFileName(i+1).c_str()));
+         gvControlFiles.push_back(AnsiString(ref.GetControlFileName(i+1).c_str()));
+         gvPopFiles.push_back(AnsiString(ref.GetPopulationFileName(i+1).c_str()));
          giStreamNum++;
       }
       EnableDataStreamList(lstInputStreams->Items->Count);
@@ -1348,17 +1353,6 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
   DoControlExit();
 
   ShowModal();
-}
-//------------------------------------------------------------------
-/**  */
-void TfrmAdvancedParameters::UpdateInputFiles() {
-   int i = lstInputStreams->ItemIndex;   // selected stream
-
-   if (i >= 0) {
-      gvCaseFiles.PutElement(edtCaseFileName->Text, i);
-      gvControlFiles.PutElement(edtControlFileName->Text, i);
-      gvPopFiles.PutElement(edtPopFileName->Text, i);
-   }
 }
 //------------------------------------------------------------------
 /** validates all the settings in this dialog */
@@ -1435,33 +1429,33 @@ void TfrmAdvancedParameters::ValidateInputFilesAtInput() {
 //------------------------------------------------------------------
 void TfrmAdvancedParameters::ValidateInputFiles() {
   try {
-    for (unsigned int i = 0; i < gvCaseFiles.GetNumElements(); i++){
+    for (unsigned int i = 0; i < gvCaseFiles.size(); i++){
        lstInputStreams->ItemIndex = i;
        lstInputStreams->OnClick(this);
        //validate the case file
-       if (gvCaseFiles.GetElement(i).IsEmpty()) {
+       if (gvCaseFiles.at(i).IsEmpty()) {
           GenerateAFException("Please specify a case file for this additional input stream.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
        }
-       if (!File_Exists(gvCaseFiles.GetElement(i).c_str())) {
+       if (!File_Exists(gvCaseFiles.at(i).c_str())) {
          GenerateAFException("Case file could not be opened for this additional input stream.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
        }
 
        //validate the control file - Bernoulli model only
        if (gAnalysisSettings.GetModelControlType() == BERNOULLI) {
-          if (gvControlFiles.GetElement(i).IsEmpty()) {
+          if (gvControlFiles.at(i).IsEmpty()) {
              GenerateAFException("For the Bernoulli model, please specify a control file for this additional input stream.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
           }
-          if (!File_Exists(gvControlFiles.GetElement(i).c_str())) {
+          if (!File_Exists(gvControlFiles.at(i).c_str())) {
              GenerateAFException("Control file could not be opened for this additional input stream.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
           }
        }
 
        //validate the population file -  Poisson model only
        if (gAnalysisSettings.GetModelControlType() == POISSON) {
-          if (gvPopFiles.GetElement(i).IsEmpty()) {
+          if (gvPopFiles.at(i).IsEmpty()) {
              GenerateAFException("For the Poisson model, please specify a population file for this additional input stream.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
           }
-          if (!File_Exists(gvPopFiles.GetElement(i).c_str())) {
+          if (!File_Exists(gvPopFiles.at(i).c_str())) {
              GenerateAFException("Population file could not be opened for this additional input stream.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
           }
        }
@@ -1775,7 +1769,5 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
 
   throw theException;
 }
-
-
 
 

@@ -164,7 +164,9 @@ __published:	// IDE-managed Components
    void __fastcall OnControlExit(TObject *Sender);
    void __fastcall lstInputStreamsClick(TObject *Sender);
    void __fastcall btnRemoveStreamClick(TObject *Sender);
-   void __fastcall edtFileNameExit(TObject *Sender);
+   void __fastcall edtCaseFileNameChange(TObject *Sender);
+   void __fastcall edtControlFileNameChange(TObject *Sender);
+   void __fastcall edtPopFileNameChange(TObject *Sender);
 
  private:
 
@@ -175,9 +177,9 @@ __published:	// IDE-managed Components
    bool                     gbEnableRangeMonths; /** stores enable dictated by main interface */
    bool                     gbEnableRangeDays;   /** stores enable dictated by main interface */
    bool                     gbEnableAdjustmentsByRR; /** stores enable dictated by main interface */
-   ZdVector <AnsiString>    gvCaseFiles;
-   ZdVector <AnsiString>    gvControlFiles;
-   ZdVector <AnsiString>    gvPopFiles;
+   std::vector<AnsiString>  gvCaseFiles;
+   std::vector<AnsiString>  gvControlFiles;
+   std::vector<AnsiString>  gvPopFiles;
    int                      giStreamNum;   /** number of additional input streams added*/
                                            /** does not go down with removals */
    void                     DoControlExit();
@@ -194,7 +196,6 @@ __published:	// IDE-managed Components
    void                     SetDefaultsForInputTab();
    void                     SetDefaultsForOutputTab();
    void                     Setup();
-   void                     UpdateInputFiles();
    void                     ValidateAdjustmentSettings();
    void                     ValidateInputFilesAtInput();
    void                     ValidateInputFiles();

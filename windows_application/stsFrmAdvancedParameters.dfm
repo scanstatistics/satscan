@@ -244,7 +244,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ParentShowHint = False
           ShowHint = True
           TabOrder = 3
-          OnExit = edtFileNameExit
+          OnChange = edtCaseFileNameChange
         end
         object edtControlFileName: TEdit
           Left = 110
@@ -255,7 +255,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ParentShowHint = False
           ShowHint = True
           TabOrder = 6
-          OnExit = edtFileNameExit
+          OnChange = edtControlFileNameChange
         end
         object edtPopFileName: TEdit
           Left = 110
@@ -266,7 +266,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ParentShowHint = False
           ShowHint = True
           TabOrder = 9
-          OnExit = edtFileNameExit
+          OnChange = edtPopFileNameChange
         end
         object btnPopBrowse: TButton
           Left = 366
