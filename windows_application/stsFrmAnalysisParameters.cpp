@@ -49,6 +49,8 @@ __fastcall TfrmAnalysis::~TfrmAnalysis() {
 // case file selector
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
+  TBdlgImporter     * pImporter = 0;
+
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.cas";
@@ -57,11 +59,11 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
     if (OpenDialog1->Execute()) {
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-         TBdlgImporter     * myImporter;
-         BFTFImportDescriptor * myBFTFPointer = 0;
-         myImporter = new TBdlgImporter(0, 0, myBFTFPointer);
-         myImporter->ShowOptionalPanels(false, false, false);
-         delete myImporter;
+       BFTFImportDescriptor * myBFTFPointer = 0;
+         pImporter = new TBdlgImporter(0, 0, myBFTFPointer);
+         pImporter->ShowOptionalPanels(false, false, false);
+         pImporter->ShowModal();
+         delete pImporter;
       }
 
       //Why is this here? KMC 8/30/2002
@@ -72,6 +74,7 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
     }
   }
   catch (SSException & x) {
+    delete pImporter; pImporter = 0;
     x.AddCallpath("btnCaseBrowseClick()", "TfrmAnalysis");
     DisplayException(this, x);
   }
@@ -80,6 +83,8 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
 // Control file selector -- *.ctl files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
+  TBdlgImporter     * pImporter = 0;
+
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.ctl";
@@ -88,10 +93,11 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
     if (OpenDialog1->Execute()) {
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-         TBdlgImporter     * myImporter;
-         BFTFImportDescriptor * myBFTFPointer = 0;
-         myImporter = new TBdlgImporter(0, 0, myBFTFPointer);
-         delete myImporter;
+         BFTFImportDescriptor * pBFTFPointer = 0;
+         pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
+         pImporter->ShowOptionalPanels(false, false, false);
+         pImporter->ShowModal();
+         delete pImporter;
       }
 
       //Why is this here? KMC 8/30/2002
@@ -101,6 +107,7 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
      }
   }
   catch (SSException & x) {
+    delete pImporter; pImporter = 0;
     x.AddCallpath("btnControlBrowseClick()", "TfrmAnalysis");
     DisplayException(this, x);
   }
@@ -109,6 +116,8 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
 // Geographic file selector -- *.geo files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
+  TBdlgImporter     * pImporter = 0;
+
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.geo";
@@ -117,10 +126,11 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
     if (OpenDialog1->Execute()) {
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-         TBdlgImporter     * myImporter;
          BFTFImportDescriptor * myBFTFPointer = 0;
-         myImporter = new TBdlgImporter(0, 0, myBFTFPointer);
-         delete myImporter;
+         pImporter = new TBdlgImporter(0, 0, myBFTFPointer);
+         pImporter->ShowOptionalPanels(false, false, false);
+         pImporter->ShowModal();
+         delete pImporter;
       }
 
       //Why is this here? KMC 8/30/2002
@@ -130,6 +140,7 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
     }
   }
   catch (SSException & x) {
+    delete pImporter; pImporter = 0;
     x.AddCallpath("btnCoordBrowseClick()", "TfrmAnalysis");
     DisplayException(this, x);
   }
@@ -138,6 +149,8 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
 //  Grid file selector -- *.grd files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
+  TBdlgImporter     * pImporter = 0;
+
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.grd";
@@ -146,10 +159,11 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
     if (OpenDialog1->Execute()) {
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-         TBdlgImporter     * myImporter;
          BFTFImportDescriptor * myBFTFPointer = 0;
-         myImporter = new TBdlgImporter(0, 0, myBFTFPointer);
-         delete myImporter;
+         pImporter = new TBdlgImporter(0, 0, myBFTFPointer);
+         pImporter->ShowOptionalPanels(false, false, false);
+         pImporter->ShowModal();
+         delete pImporter;
       }
 
       //Why is this here? KMC 8/30/2002
@@ -159,6 +173,7 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
     }
   }
   catch (SSException & x) {
+    delete pImporter; pImporter = 0;
     x.AddCallpath("btnGridBrowseClick()", "TfrmAnalysis");
     DisplayException(this, x);
   }
@@ -167,6 +182,8 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
 // Population file selector -- *.pop files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
+  TBdlgImporter     * pImporter = 0;
+
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.pop";
@@ -175,10 +192,11 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
     if (OpenDialog1->Execute()) {
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-         TBdlgImporter     * myImporter;
          BFTFImportDescriptor * myBFTFPointer = 0;
-         myImporter = new TBdlgImporter(0, 0, myBFTFPointer);
-         delete myImporter;
+         pImporter = new TBdlgImporter(0, 0, myBFTFPointer);
+         pImporter->ShowOptionalPanels(false, false, false);
+         pImporter->ShowModal();
+         delete pImporter;
       }
 
       //Why is this here? KMC 8/30/2002
@@ -188,6 +206,7 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
     }
   }
   catch (SSException & x) {
+    delete pImporter; pImporter = 0;
     x.AddCallpath("btnPopBrowseClick()", "TfrmAnalysis");
     DisplayException(this, x);
   }
