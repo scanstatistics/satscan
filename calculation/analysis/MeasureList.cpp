@@ -3,23 +3,57 @@
 #include "MeasureList.h"
 
 /** Constructor */
-CMeasureList::CMeasureList(count_t N, BasePrint *pPrintDirection) {
-  m_nListSize = N+1;
-  gpPrintDirection = pPrintDirection;
+CMeasureList::CMeasureList(const CSaTScanData & SaTScanData, BasePrint & PrintDirection)
+             : gSaTScanData(SaTScanData), gPrintDirection(PrintDirection) {
+  Setup();
 }
 
 /** Destructor */
 CMeasureList::~CMeasureList() {}
 
+/** Sets for next interation.
+    If iteration is a boundry, calculates loglikelihood and resets measure array(s). */
+void CMeasureList::SetForNextIteration(int iIteration, double & dMaxLogLikelihood) {
+  std::vector<int>::iterator itr;
+
+  itr = std::find(gvCalculationBoundries.begin(), gvCalculationBoundries.end(), iIteration);
+  if (itr != gvCalculationBoundries.end()) {
+    //Hit a boundry, so calculate loglikelihood for current measure values.
+    dMaxLogLikelihood = GetMaxLogLikelihood(dMaxLogLikelihood, iIteration);
+    //If this is the last iteration, don't reinitialize measure arrays.
+    if (++itr != gvCalculationBoundries.end())
+      SetMeasures();
+  }
+}
+
+/** Internal setup. */
+void CMeasureList::Setup() {
+  int   iEllipse, iBoundry=0;
+
+  if (gSaTScanData.m_pParameters->m_bDuczmalCorrectEllipses) {
+    //If Duczmal corrected, accumulate best measure for each shape.
+    //Set calculation boundries between circle/each ellipse shape(s).
+    gvCalculationBoundries.push_back(iBoundry); //circle
+    for (iEllipse=0; iEllipse < gSaTScanData.m_nNumEllipsoids; ++iEllipse) {
+       //Get the number of angles this ellipse shape rotates through.
+       iBoundry += gSaTScanData.m_pParameters->mp_nENumbers[iEllipse];
+       gvCalculationBoundries.push_back(iBoundry);
+     }
+   }
+   else
+     //No correction - accumulate best measure through all circle/ellipses.
+     gvCalculationBoundries.push_back(gSaTScanData.m_pParameters->m_lTotalNumEllipses);
+}
+
 /** Constructor */
-CMinMeasureList::CMinMeasureList(count_t N, measure_t U, BasePrint *pPrintDirection) : CMeasureList(N, pPrintDirection) {
+CMinMeasureList::CMinMeasureList(const CSaTScanData & SaTScanData, BasePrint & PrintDirection)
+                :CMeasureList(SaTScanData, PrintDirection) {
   try {
-    m_pMinMeasures = new measure_t [m_nListSize];
-    for (int i=0; i < m_nListSize; i++)
-       m_pMinMeasures[i] = (U * i) / N;
+    Init();
+    Setup();
   }
   catch (ZdException & x) {
-    x.AddCallpath("CMinMeasureList()", "CMinMeasureList");
+    x.AddCallpath("constructor()", "CMinMeasureList");
     throw;
   }
 }
@@ -27,45 +61,76 @@ CMinMeasureList::CMinMeasureList(count_t N, measure_t U, BasePrint *pPrintDirect
 /** Destructor */
 CMinMeasureList::~CMinMeasureList() {
   try {
-    delete[] m_pMinMeasures;
+    delete[] gpMinMeasures;
   }
-  catch(...){}  
+  catch(...){}
+}
+
+void CMinMeasureList::Display(FILE* pFile) const {
+  int   i;
+
+  fprintf(pFile, "Min Measure List\n");
+  for (i=0; i < gSaTScanData.m_nTotalCases + 1; i++)
+     fprintf(pFile, "m_pMinMeasures[%i] = %f\n", i, gpMinMeasures[i]);
 }
 
 /** Returns maximum loglikelihood.
     Does not evaluate loglikelihood for zero and one cases.*/
-double CMinMeasureList::GetMaxLogLikelihood(const CSaTScanData& Data) {
-  int    i;
-  double nLogLikelihood;
-  double nMaxLogLikelihood = Data.m_pModel->GetLogLikelihoodForTotal();
+double CMinMeasureList::GetMaxLogLikelihood(double dMaxLogLikelihood, int iEllipseOffset) {
+  int           i, iListSize = gSaTScanData.m_nTotalCases + 1;
+  double        dLogLikelihood, dDuczmal=1;
 
-  i = 2; //start index at two -- we don't want to consider simulation with one case
-         //since this could indicate a false high loglikelihood. 
-  for (;i < m_nListSize; i++) {
-     if (m_pMinMeasures[i] != 0 && i * Data.m_nTotalMeasure > m_pMinMeasures[i] * Data.m_nTotalCases) {
-        nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMinMeasures[i]);
-        if (nLogLikelihood > nMaxLogLikelihood)
-          nMaxLogLikelihood = nLogLikelihood;
+  //Get Duczmal correction if option set and this calculation involves an ellispe.
+  if (gSaTScanData.m_pParameters->m_bDuczmalCorrectEllipses && iEllipseOffset > 0)
+    dDuczmal = GetDuczmalCorrection(gSaTScanData.mdE_Shapes[iEllipseOffset - 1]);
+
+  i = 2; //Start case index at two -- don't want to consider simulations
+         //with one case as this could indicate a false high loglikelihood.
+  for (;i < iListSize; i++) {
+     if (gpMinMeasures[i] != 0 && i * gSaTScanData.m_nTotalMeasure > gpMinMeasures[i] * gSaTScanData.m_nTotalCases) {
+        dLogLikelihood = gSaTScanData.m_pModel->CalcLogLikelihood(i, gpMinMeasures[i]);
+        if (dLogLikelihood * dDuczmal > dMaxLogLikelihood)
+          dMaxLogLikelihood = dLogLikelihood;
      }
   }
-  return (nMaxLogLikelihood);
+  return dMaxLogLikelihood;
 }
 
-void CMinMeasureList::Display(FILE* pFile) {
-  fprintf(pFile, "Min Measure List\n");
-  for (int i=0; i<m_nListSize; i++)
-     fprintf(pFile, "m_pMinMeasures[%i] = %f\n", i, m_pMinMeasures[i]);
+/** Internal initialization */
+void CMinMeasureList::Init() {
+  gpMinMeasures = 0;
 }
 
-/** Constructor */
-CMaxMeasureList::CMaxMeasureList(count_t N, measure_t U, BasePrint *pPrintDirection) : CMeasureList(N, pPrintDirection) {
+/** Set/Resets measure arrays. */
+void CMinMeasureList::SetMeasures() {
+  int   i, iListSize = gSaTScanData.m_nTotalCases + 1;
+
+  for (i=0; i < iListSize; ++i)
+     gpMinMeasures[i] = (gSaTScanData.m_nTotalMeasure * i) / gSaTScanData.m_nTotalCases;
+}
+
+/** Internal setup */
+void CMinMeasureList::Setup() {
   try {
-    m_pMaxMeasures = new measure_t [m_nListSize];
-    for (int i=0; i < m_nListSize; i++)
-       m_pMaxMeasures[i] = (U * i) / N;
+    gpMinMeasures = new measure_t [gSaTScanData.m_nTotalCases + 1];
+    SetMeasures();
   }
   catch (ZdException & x) {
-    x.AddCallpath("CMaxMeasureList()", "CMaxMeasureList");
+    x.AddCallpath("CMinMeasureList()", "CMinMeasureList");
+    throw;
+  }
+}
+
+
+/** Constructor */
+CMaxMeasureList::CMaxMeasureList(const CSaTScanData & SaTScanData, BasePrint & PrintDirection)
+                :CMeasureList(SaTScanData, PrintDirection) {
+  try {
+    Init();
+    Setup();
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("constructor()", "CMaxMeasureList");
     throw;
   }
 }
@@ -73,48 +138,73 @@ CMaxMeasureList::CMaxMeasureList(count_t N, measure_t U, BasePrint *pPrintDirect
 /** Destructor */
 CMaxMeasureList::~CMaxMeasureList() {
   try {
-    delete[] m_pMaxMeasures;
+    delete[] gpMaxMeasures;
   }
-  catch(...){}  
+  catch(...){}
+}
+
+void CMaxMeasureList::Display(FILE* pFile) const {
+  int   i;
+
+  fprintf(pFile, "Max Measure List\n");
+  for (i=0; i< gSaTScanData.m_nTotalCases + 1; i++)
+    fprintf(pFile, "m_pMaxMeasures[%i] = %f\n", i, gpMaxMeasures[i]);
 }
 
 /** Returns maximum loglikelihood. */
-double CMaxMeasureList::GetMaxLogLikelihood(const CSaTScanData& Data) {
-  double nLogLikelihood;
-  double nMaxLogLikelihood = Data.m_pModel->GetLogLikelihoodForTotal();
+double CMaxMeasureList::GetMaxLogLikelihood(double dMaxLogLikelihood, int iEllipseOffset) {
+  int           i, iListSize = gSaTScanData.m_nTotalCases + 1;
+  double        dLogLikelihood, dDuczmal=1;
 
-  for (int i=0; i < m_nListSize; i++) {
-     if (m_pMaxMeasures[i] != 0 && i * Data.m_nTotalMeasure < m_pMaxMeasures[i] * Data.m_nTotalCases) {
-       nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMaxMeasures[i]);
-       if (nLogLikelihood > nMaxLogLikelihood)
-         nMaxLogLikelihood = nLogLikelihood;
+  //Get Duczmal correction if option set and this calculation involves an ellispe.
+  if (gSaTScanData.m_pParameters->m_bDuczmalCorrectEllipses && iEllipseOffset > 0)
+    dDuczmal = GetDuczmalCorrection(gSaTScanData.mdE_Shapes[iEllipseOffset - 1]);
+
+  for (i=0; i < iListSize; i++) {
+     if (gpMaxMeasures[i] != 0 && i * gSaTScanData.m_nTotalMeasure < gpMaxMeasures[i] * gSaTScanData.m_nTotalCases) {
+       dLogLikelihood = gSaTScanData.m_pModel->CalcLogLikelihood(i, gpMaxMeasures[i]);
+       if (dLogLikelihood * dDuczmal > dMaxLogLikelihood)
+           dMaxLogLikelihood = dLogLikelihood;
      }
   }
-  return (nMaxLogLikelihood);
+  return dMaxLogLikelihood;
 }
 
-void CMaxMeasureList::Display(FILE* pFile) {
-  fprintf(pFile, "Max Measure List\n");
-  for (int i=0; i<m_nListSize; i++)
-    fprintf(pFile, "m_pMaxMeasures[%i] = %f\n", i, m_pMaxMeasures[i]);
+/** Internal initialization */
+void CMaxMeasureList::Init() {
+  gpMaxMeasures = 0;
 }
 
-/** Constructor */
-CMinMaxMeasureList::CMinMaxMeasureList(count_t N, measure_t U, BasePrint *pPrintDirection)
-                   :CMeasureList(N, pPrintDirection) {
+/** Set/Resets measure arrays. */
+void CMaxMeasureList::SetMeasures() {
+  int   i, iListSize = gSaTScanData.m_nTotalCases + 1;
+
+  for (i=0; i < iListSize; ++i)
+     gpMaxMeasures[i] = (gSaTScanData.m_nTotalMeasure * i) / gSaTScanData.m_nTotalCases;
+}
+
+/** Internal initialization */
+void CMaxMeasureList::Setup() {
   try {
-    m_pMinMeasures=0; m_pMaxMeasures=0;
-    m_pMinMeasures = new measure_t [m_nListSize];
-    m_pMaxMeasures = new measure_t [m_nListSize];
-    for (int i=0; i < m_nListSize; i++) {
-       m_pMinMeasures[i] = (U * i) / N;
-       m_pMaxMeasures[i] = (U * i) / N;
-    }
+    gpMaxMeasures = new measure_t [gSaTScanData.m_nTotalCases + 1];
+    SetMeasures();
   }
   catch (ZdException & x) {
-    x.AddCallpath("CMinMaxMeasureList()", "CMinMaxMeasureList");
-    delete m_pMinMeasures;
-    delete m_pMaxMeasures;
+    x.AddCallpath("CMaxMeasureList()", "CMaxMeasureList");
+    throw;
+  }
+}
+
+
+/** Constructor */
+CMinMaxMeasureList::CMinMaxMeasureList(const CSaTScanData & SaTScanData, BasePrint & PrintDirection)
+                   :CMeasureList(SaTScanData, PrintDirection) {
+  try {
+    Init();
+    Setup();
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("constructor()", "CMinMaxMeasureList");
     throw;
   }
 }
@@ -122,46 +212,78 @@ CMinMaxMeasureList::CMinMaxMeasureList(count_t N, measure_t U, BasePrint *pPrint
 /** Destructor */
 CMinMaxMeasureList::~CMinMaxMeasureList() {
   try {
-    delete[] m_pMinMeasures;
-    delete[] m_pMaxMeasures;
+    delete[] gpMinMeasures;
+    delete[] gpMaxMeasures;
   }
-  catch(...){}  
+  catch(...){}
+}
+
+void CMinMaxMeasureList::Display(FILE* pFile) const {
+  int i;
+
+  fprintf(pFile, "Min Measure List\n");
+  for (i=0; i < gSaTScanData.m_nTotalCases + 1; i++)
+     fprintf(pFile, "m_pMinMeasures[%i] = %f\n", i, gpMinMeasures[i]);
+  fprintf(pFile, "\n");
+
+  fprintf(pFile, "Max Measure List\n");
+  for (i=0; i < gSaTScanData.m_nTotalCases + 1; i++)
+     fprintf(pFile, "m_pMaxMeasures[%i] = %f\n", i, gpMaxMeasures[i]);
+  fprintf(pFile, "\n");
 }
 
 /** Returns maximum loglikelihood.
     Skips calculation of one case situation like CMinMeasureList. */
-double CMinMaxMeasureList::GetMaxLogLikelihood(const CSaTScanData& Data) {
-  double nLogLikelihood;
-  double nMaxLogLikelihood = Data.m_pModel->GetLogLikelihoodForTotal();
+double CMinMaxMeasureList::GetMaxLogLikelihood(double dMaxLogLikelihood, int iEllipseOffset) {
+  int           i, iListSize = gSaTScanData.m_nTotalCases + 1;
+  double        dLogLikelihood, dDuczmal=1;
 
-  for (int i=0; i < m_nListSize; i++) {
-     if (i > 1 && m_pMinMeasures[i] != 0 && i * Data.m_nTotalMeasure > m_pMinMeasures[i] * Data.m_nTotalCases) {
-       nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMinMeasures[i]);
-       if (nLogLikelihood > nMaxLogLikelihood)
-         nMaxLogLikelihood = nLogLikelihood;
+  //Get Duczmal correction if option set and this calculation involves an ellispe.
+  if (gSaTScanData.m_pParameters->m_bDuczmalCorrectEllipses && iEllipseOffset > 0)
+    dDuczmal = GetDuczmalCorrection(gSaTScanData.mdE_Shapes[iEllipseOffset - 1]);
+
+  for (i=0; i < iListSize; i++) {
+     if (i > 1 && gpMinMeasures[i] != 0 && i * gSaTScanData.m_nTotalMeasure > gpMinMeasures[i] * gSaTScanData.m_nTotalCases) {
+       dLogLikelihood = gSaTScanData.m_pModel->CalcLogLikelihood(i, gpMinMeasures[i]);
+       if (dLogLikelihood * dDuczmal > dMaxLogLikelihood)
+         dMaxLogLikelihood = dLogLikelihood;
      }
 
-     if (m_pMaxMeasures[i] != 0 && i * Data.m_nTotalMeasure < m_pMaxMeasures[i] * Data.m_nTotalCases) {
-       nLogLikelihood = Data.m_pModel->CalcLogLikelihood(i, m_pMaxMeasures[i]);
-       if (nLogLikelihood > nMaxLogLikelihood)
-         nMaxLogLikelihood = nLogLikelihood;
+     if (gpMaxMeasures[i] != 0 && i * gSaTScanData.m_nTotalMeasure < gpMaxMeasures[i] * gSaTScanData.m_nTotalCases) {
+       dLogLikelihood = gSaTScanData.m_pModel->CalcLogLikelihood(i, gpMaxMeasures[i]);
+       if (dLogLikelihood * dDuczmal > dMaxLogLikelihood)
+         dMaxLogLikelihood = dLogLikelihood;
      }
   }
-  return (nMaxLogLikelihood);
+  return dMaxLogLikelihood;
 }
 
-void CMinMaxMeasureList::Display(FILE* pFile) {
-  int i;
-
-  fprintf(pFile, "Min Measure List\n");
-  for (i=0; i<m_nListSize; i++)
-     fprintf(pFile, "m_pMinMeasures[%i] = %f\n", i, m_pMinMeasures[i]);
-  fprintf(pFile, "\n");
-
-  fprintf(pFile, "Max Measure List\n");
-  for (i=0; i<m_nListSize; i++)
-     fprintf(pFile, "m_pMaxMeasures[%i] = %f\n", i, m_pMaxMeasures[i]);
-  fprintf(pFile, "\n");
+/** Internal initialization */
+void CMinMaxMeasureList::Init() {
+  gpMinMeasures=0;
+  gpMaxMeasures=0;
 }
 
+/** Set/Resets measure arrays. */
+void CMinMaxMeasureList::SetMeasures() {
+  int   i, iListSize = gSaTScanData.m_nTotalCases + 1;
+
+  for (i=0; i < iListSize; ++i)
+     gpMaxMeasures[i] = gpMinMeasures[i] = (gSaTScanData.m_nTotalMeasure * i) / gSaTScanData.m_nTotalCases;
+}
+
+/** Internal setup */
+void CMinMaxMeasureList::Setup() {
+  try {
+    gpMinMeasures = new measure_t [gSaTScanData.m_nTotalCases + 1];
+    gpMaxMeasures = new measure_t [gSaTScanData.m_nTotalCases + 1];
+    SetMeasures();
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("Setup()", "CMinMaxMeasureList");
+    delete gpMinMeasures;
+    delete gpMaxMeasures;
+    throw;
+  }
+}
 
