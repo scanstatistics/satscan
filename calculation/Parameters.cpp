@@ -3192,6 +3192,11 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
         PrintDirection.SatScanPrintWarning("Error: Multiple data streams are not permitted with purely spatial monotone analyses\n");
         PrintDirection.SatScanPrintWarning("       in this version of SaTScan.\n");
       }
+      if (geProbabiltyModelType == NORMAL && GetNumDataStreams() > 1) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Multiple data streams are not permitted with the normal probablility model\n");
+        PrintDirection.SatScanPrintWarning("       in this version of SaTScan.\n");
+      }
 
       //precisions of times can only be defined as 'none' for purely spatial analyses
       if (gePrecisionOfTimesType == NONE && geAnalysisType != PURELYSPATIAL) {
