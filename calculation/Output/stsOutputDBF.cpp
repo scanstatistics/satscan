@@ -111,7 +111,7 @@ void DBaseOutput::SetAreaID(ZdString& sTempValue, const CCluster& pCluster, cons
       if (pCluster.GetClusterType() == PURELYTEMPORAL)
           sTempValue = "n/a";
       else
-         sTempValue = pData.gpTInfo->tiGetTid(pCluster.m_Center);
+         sTempValue = pData.GetGInfo()->giGetGid(pCluster.m_Center);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetAreaID", "DBaseOutput");
