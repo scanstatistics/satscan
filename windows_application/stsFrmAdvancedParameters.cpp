@@ -784,6 +784,7 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
     ref.SetCriteriaForReportingSecondaryClusters((CriteriaSecondaryClustersType)rdgCriteriaSecClusters->ItemIndex);
 
     // save the input files on Input tab
+    ref.SetNumDataStreams(lstInputStreams->Items->Count + 1);
     if (lstInputStreams->Items->Count) {
        for (int i = 0; i < lstInputStreams->Items->Count; i++) {
           ref.SetCaseFileName((gvCaseFiles.GetElement(i)).c_str(), false, i+2);
