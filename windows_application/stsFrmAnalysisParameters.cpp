@@ -1119,8 +1119,8 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           // disable None option in case precision time
           rgPrecisionTimes->Controls[0]->Enabled = false;
           //Enables Time Trend Adjust
-          rgTemporalTrendAdj->Enabled = true;
-          rgTemporalTrendAdj->Controls[1]->Enabled = true;
+          rgTemporalTrendAdj->Enabled = gpParams->m_nModel == 2 ? false : true;
+          rgTemporalTrendAdj->Controls[1]->Enabled = gpParams->m_nModel == 2 ? false : true;
           rgTemporalTrendAdj->ItemIndex = gpParams->m_nTimeAdjustType;
           //Enables clusters to include
           rgClustersToInclude->Enabled = true;
@@ -1152,8 +1152,8 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
        case 3:                     // prospective space-time
           rgPrecisionTimes->Controls[0]->Enabled = false;
           //Enables Time Trend Adjust
-          rgTemporalTrendAdj->Enabled = true;
-          rgTemporalTrendAdj->Controls[1]->Enabled = true;
+          rgTemporalTrendAdj->Enabled = gpParams->m_nModel == 2 ? false : true;
+          rgTemporalTrendAdj->Controls[1]->Enabled = gpParams->m_nModel == 2 ? false : true;
           rgTemporalTrendAdj->ItemIndex = gpParams->m_nTimeAdjustType;
           //disables clusters to include
           rgClustersToInclude->Enabled = false; 
