@@ -23,30 +23,30 @@ char mgsVariableLabels[48][100] = {
    "Exact Times",
    "Interval Units",
    "Interval Length",
-   "Include Purely Spacial",
+   "Include Purely Spatial",
    "Max Temporal Size",
    "Replications",
-   "Model Type (Poisson, Bernoulli, Poisson, Bernoulli or Space-Time Permutation)",
-   "R Parameter 1",
-   "P Parameter 1",
-   "P Parameter 2",
-   "P Parameter 3",
+   "Model Type (Poisson, Bernoulli, or Space-Time Permutation)",
+   "Isotonic Scan",
+   "p-Values for 2 Prospective LLR's",
+   "LLR #1",
+   "LLR #2",
    "Time Trend Adjustment Type",
    "Time Trend Percentage",
    "Include Purely Temporal",
    "Control File",
    "Coordinates Type",
    "Save Sim LLRs",
-   "S Parameter 1",
-   "S Parameter 2",
-   "S Parameter 3",
+   "Sequential Scan",
+   "Sequential Scan Max Iterations",
+   "Sequential Scan Max p-Value",
    "Validate Parameters",
    "Include Relative Risks for Census Areas",
    "Number of Ellipses",
    "Ellipse Shapes",
    "Ellipse Angles",
    "Prospective Start Date",
-   "Output Census areas in Reported Clusters",
+   "Output Census Areas in Reported Clusters",
    "Output Most Likely Cluster for each Centroid",
    "Criteria for Reporting Secondary Clusters",
    "How Max Temporal Size Should Be Interperated",
@@ -87,16 +87,15 @@ bool CParameters::CheckProspDateRange(int iStartYear, int iStartMonth, int iStar
                                       int iEndYear, int iEndMonth, int iEndDay,
                                       int iProspYear, int iProspMonth, int iProspDay)
 {
-   bool bRangeOk = true;
    Julian Start, End, Prosp;
 
    Start = MDYToJulian(iStartMonth, iStartDay, iStartYear);
    End   = MDYToJulian(iEndMonth, iEndDay, iEndYear);
    Prosp = MDYToJulian(iProspMonth, iProspDay, iProspYear);
    if ((Prosp < Start) || (Prosp > End))
-      bRangeOk = false;
-
-   return bRangeOk;
+      return false;
+   else
+      return true;
 }
 
 //** Converts m_nMaxClusterSizeType to passed type. */
@@ -185,85 +184,75 @@ void CParameters::copy(const CParameters &rhs) {
     strcpy(m_szCoordFilename,rhs.m_szCoordFilename);
     strcpy(m_szGridFilename,rhs.m_szGridFilename);
     m_bSpecialGridFile = rhs.m_bSpecialGridFile;
-    m_nPrecision = rhs.m_nPrecision;
-    m_nDimension = rhs.m_nDimension;
-    m_nCoordType = rhs.m_nCoordType;
+    m_nPrecision                = rhs.m_nPrecision;
+    m_nDimension                = rhs.m_nDimension;
+    m_nCoordType                = rhs.m_nCoordType;
     strcpy(m_szOutputFilename,rhs.m_szOutputFilename);
     strcpy(m_szGISFilename,rhs.m_szGISFilename);
     strcpy(m_szLLRFilename,rhs.m_szLLRFilename);
     strcpy(m_szMLClusterFilename,rhs.m_szMLClusterFilename);
     strcpy(m_szRelRiskFilename, rhs.m_szRelRiskFilename);
-    m_bSaveSimLogLikelihoods = rhs.m_bSaveSimLogLikelihoods;
-    m_bOutputRelRisks        = rhs.m_bOutputRelRisks;
-    m_bSequential            = rhs.m_bSequential;
-    m_nAnalysisTimes         = rhs.m_nAnalysisTimes;
-    m_nCutOffPVal            = rhs.m_nCutOffPVal;
-    m_bExactTimes            = rhs.m_bExactTimes;
-    m_nClusterType           = rhs.m_nClusterType;
-    m_bValidatePriorToCalc   = rhs.m_bValidatePriorToCalc;
-    m_bDisplayErrors         = rhs.m_bDisplayErrors;
+    m_bSaveSimLogLikelihoods    = rhs.m_bSaveSimLogLikelihoods;
+    m_bOutputRelRisks           = rhs.m_bOutputRelRisks;
+    m_bSequential               = rhs.m_bSequential;
+    m_nAnalysisTimes            = rhs.m_nAnalysisTimes;
+    m_nCutOffPVal               = rhs.m_nCutOffPVal;
+    m_bExactTimes               = rhs.m_bExactTimes;
+    m_nClusterType              = rhs.m_nClusterType;
+    m_bValidatePriorToCalc      = rhs.m_bValidatePriorToCalc;
+    m_bDisplayErrors            = rhs.m_bDisplayErrors;
 
     strcpy(m_szProspStartDate, rhs.m_szProspStartDate);
-    m_bOutputCensusAreas     = rhs.m_bOutputCensusAreas;
-    m_bMostLikelyClusters    = rhs.m_bMostLikelyClusters;
-    m_iCriteriaSecondClusters = rhs.m_iCriteriaSecondClusters;
+    m_bOutputCensusAreas        = rhs.m_bOutputCensusAreas;
+    m_bMostLikelyClusters       = rhs.m_bMostLikelyClusters;
+    m_iCriteriaSecondClusters   = rhs.m_iCriteriaSecondClusters;
 
-    m_nMaxClusterSizeType = rhs.m_nMaxClusterSizeType;
+    m_nMaxClusterSizeType       = rhs.m_nMaxClusterSizeType;
     m_nMaxSpatialClusterSizeType = rhs.m_nMaxSpatialClusterSizeType;
-    gbOutputClusterLevelDBF = rhs.gbOutputClusterLevelDBF;
-    gbOutputAreaSpecificDBF = rhs.gbOutputAreaSpecificDBF;
-    gsRunHistoryFilename = rhs.gsRunHistoryFilename;
+    gbOutputClusterLevelDBF     = rhs.gbOutputClusterLevelDBF;
+    gbOutputAreaSpecificDBF     = rhs.gbOutputAreaSpecificDBF;
+    gsRunHistoryFilename        = rhs.gsRunHistoryFilename;
 }
 
 void CParameters::DisplayAnalysisType(FILE* fp) {
-   try {
-      switch (m_nAnalysisType) {
-       case PURELYSPATIAL  : fprintf(fp, "Purely Spatial analysis\n"); break;
-       case PURELYTEMPORAL : fprintf(fp, "Purely Temporal analysis\n"); break;
-       case SPACETIME      : fprintf(fp, "Retrospective Space-Time analysis\n"); break;
-       case PROSPECTIVESPACETIME: fprintf(fp, "Prospective Space-Time analysis\n"); break;
-      }
-    
-      fprintf(fp, "scanning for ");
-    
-      if (m_nRiskFunctionType==MONOTONERISK)
-        fprintf(fp, "monotone ");
-    
-      fprintf(fp, "clusters with \n");
-
-      switch (m_nAreas) {
-        case (HIGH)      : fprintf(fp, "high rates"); break;
-        case (LOW)       : fprintf(fp, "low rates"); break;
-        case (HIGHANDLOW): fprintf(fp, "high or low rates"); break;
-      }
-    
-      if (m_nModel == POISSON)
-        fprintf(fp, " using the Poisson model.\n");
-      else if (m_nModel == BERNOULLI)
-        fprintf(fp, " using the Bernoulli model.\n");
-      else if (m_nModel == SPACETIMEPERMUTATION)
-        fprintf(fp, " using the Space-Time Permutation model.\n");
-      else
-        fprintf(fp, " using unspecified model.\n");
-
-
-      if ((m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME)) {
-        if (m_bIncludePurelySpatial && m_bIncludePurelyTemporal)
-          fprintf(fp, "Analysis includes purely spatial and purely temporal clusters.\n");
-        else if (m_bIncludePurelySpatial)
-          fprintf(fp, "Analysis includes purely spatial clusters.\n");
-        else if (m_bIncludePurelyTemporal)
-          fprintf(fp, "Analysis includes purely temporal clusters.\n");
-      }
-
-      if (m_bSequential)
-        fprintf(fp, "Sequential analysis performed.\n");
-
+   switch (m_nAnalysisType) {
+      case PURELYSPATIAL  : fprintf(fp, "Purely Spatial analysis\n"); break;
+      case PURELYTEMPORAL : fprintf(fp, "Purely Temporal analysis\n"); break;
+      case SPACETIME      : fprintf(fp, "Retrospective Space-Time analysis\n"); break;
+      case PROSPECTIVESPACETIME: fprintf(fp, "Prospective Space-Time analysis\n"); break;
    }
-   catch (ZdException & x) {
-      x.AddCallpath("DisplayAnalysisType(FILE *)", "CParameters");
-      throw;
+
+   fprintf(fp, "scanning for ");
+
+   if (m_nRiskFunctionType==MONOTONERISK)
+     fprintf(fp, "monotone ");
+
+   fprintf(fp, "clusters with \n");
+
+   switch (m_nAreas) {
+     case (HIGH)      : fprintf(fp, "high rates"); break;
+     case (LOW)       : fprintf(fp, "low rates"); break;
+     case (HIGHANDLOW): fprintf(fp, "high or low rates"); break;
    }
+
+   switch (m_nModel) {
+      case POISSON :  fprintf(fp, " using the Poisson model.\n"); break;
+      case BERNOULLI :  fprintf(fp, " using the Bernoulli model.\n"); break;
+      case SPACETIMEPERMUTATION : fprintf(fp, " using the Space-Time Permutation model.\n"); break;
+      default : fprintf(fp, " using unspecified model.\n"); break;
+   }
+
+   if ((m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME)) {
+     if (m_bIncludePurelySpatial && m_bIncludePurelyTemporal)
+       fprintf(fp, "Analysis includes purely spatial and purely temporal clusters.\n");
+     else if (m_bIncludePurelySpatial)
+       fprintf(fp, "Analysis includes purely spatial clusters.\n");
+     else if (m_bIncludePurelyTemporal)
+       fprintf(fp, "Analysis includes purely temporal clusters.\n");
+   }
+
+   if (m_bSequential)
+     fprintf(fp, "Sequential analysis performed.\n");
 }
 
 bool CParameters::DisplayParamError(int nLine) {
@@ -292,8 +281,7 @@ void CParameters::DisplayParameters(FILE* fp) {
 
      fprintf(fp, "  Case File        : %s\n", m_szCaseFilename);
    
-     if (m_nModel == POISSON ||
-         (m_nModel == SPACETIMEPERMUTATION && m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE))
+     if (m_nModel == POISSON || (m_nModel == SPACETIMEPERMUTATION && m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE))
        fprintf(fp, "  Population File  : %s\n", m_szPopFilename);
      else if (m_nModel == BERNOULLI)
        fprintf(fp, "  Control File     : %s\n", m_szControlFilename);
@@ -546,18 +534,18 @@ void CParameters::Free() {
 }
 
 // accessor function for the private variable gbOutputClusterLevelDBF
-const bool& CParameters::GetOutputClusterLevelDBF() const {
+const bool CParameters::GetOutputClusterLevelDBF() const {
    return gbOutputClusterLevelDBF;
 }
 
 // accessor function for the private variable gbOutputAreaSpecificDBF
-const bool& CParameters::GetOutputAreaSpecificDBF() const {
+const bool CParameters::GetOutputAreaSpecificDBF() const {
    return gbOutputAreaSpecificDBF;
 }
 
 int CParameters::LoadEShapes(const char* szParam) {
    int         /* nCount=1,*/ nScanCount, iLineLength;
-   bool         bOk=true;
+   bool         bOk(true);
    char *       sTempLine=0;
 
    try {
@@ -597,7 +585,7 @@ int CParameters::LoadEShapes(const char* szParam) {
 
 int CParameters::LoadEAngles(const char* szParam) {
    int /*i, nCount=1,*/ nScanCount, iLineLength;
-   bool bOk = true;
+   bool bOk(true);
    char *sTempLine=0;
 
    try {

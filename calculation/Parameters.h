@@ -140,8 +140,8 @@ class CParameters
     void                DisplayTimeAdjustments(FILE* fp);
 
     void                Free();
-    const bool&         GetOutputClusterLevelDBF() const;
-    const bool&         GetOutputAreaSpecificDBF() const;
+    const bool          GetOutputClusterLevelDBF() const;
+    const bool          GetOutputAreaSpecificDBF() const;
     const ZdString&     GetRunHistoryFilename() const  {return gsRunHistoryFilename;}
 
     int                 LoadEAngles(const char* szParam);
