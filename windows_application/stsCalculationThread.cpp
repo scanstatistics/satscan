@@ -17,11 +17,11 @@
 //      }
 
 /** Constructor */
-__fastcall CalcThread::CalcThread(bool CreateSuspended, const CParameters& session, char *pTitle, TfrmAnalysisRun *pProgress)
-                      :TThread(CreateSuspended) {
+__fastcall CalcThread::CalcThread(bool CreateSuspended, const CParameters& session, char *pTitle, TfrmAnalysisRun & Progress)
+                      :TThread(CreateSuspended), gFormStatus(Progress) {
   try {
     Init();
-    Setup(session, pTitle, pProgress);
+    Setup(session, pTitle);
   }
   catch (ZdException & x) {
     x.AddCallpath("constructor()", "CalcThread");
@@ -60,12 +60,12 @@ void CalcThread::CancellJob() {
 
 /** Synchronizes enabling of run analysis form's email button in the main application thread. */
 void __fastcall CalcThread::EnableProgressEmailButton(void) {
-  gpFormStatus->btnEMail->Enabled = true;
+  gFormStatus.btnEMail->Enabled = true;
 }
 
 /** Synchronizes enabling of run analysis form's print button in the main application thread. */
 void __fastcall CalcThread::EnableProgressPrintButton(void) {
-  gpFormStatus->btnPrint->Enabled = true;
+  gFormStatus.btnPrint->Enabled = true;
 }
 
 /** Main Thread execution function. */
@@ -168,7 +168,6 @@ void CalcThread::Init(){
   gpParams   = 0;
   gpData     = 0;
   gpAnalysis = 0;
-  gpFormStatus = 0;
   gpPrintWindow = 0;
   gbJobCanceled = false;
   gsPrintString = 0;
@@ -182,13 +181,13 @@ bool CalcThread::IsCancelled() {
 
 /** Checks whether job has been cancelled through Run Analysis interface. */
 void __fastcall CalcThread::GetIsCanceledFromProgress(void) {
-  gbJobCanceled = gpFormStatus->IsJobCanceled();
+  gbJobCanceled = gFormStatus.IsJobCanceled();
 }
 
 /** Loads analysis run memo field with results of analysis. */
 void __fastcall CalcThread::LoadResultsFromFile() {
   try {
-    gpFormStatus->LoadFromFile(const_cast<char*>(gpParams->GetOutputFileName().c_str()));
+    gFormStatus.LoadFromFile(const_cast<char*>(gpParams->GetOutputFileName().c_str()));
   }
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
 }
@@ -198,8 +197,8 @@ void __fastcall CalcThread::LoadResultsFromFile() {
     will in some loop/function that hasn't checked for cancellation. */
 void __fastcall CalcThread::PrintLineToProgress(void) {
   try {
-    if (! gpFormStatus->IsJobCanceled())
-      gpFormStatus->AddLine(gsPrintString);
+    if (! gFormStatus.IsJobCanceled())
+      gFormStatus.AddLine(gsPrintString);
   }
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
 }
@@ -209,8 +208,8 @@ void __fastcall CalcThread::PrintLineToProgress(void) {
     will in some loop/function that hasn't checked for cancellation. */
 void __fastcall CalcThread::PrintWarningLineToProgress(void) {
   try {
-    if (! gpFormStatus->IsJobCanceled())
-      gpFormStatus->AddWarningLine(gsPrintString);
+    if (! gFormStatus.IsJobCanceled())
+      gFormStatus.AddWarningLine(gsPrintString);
   }
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
 }
@@ -219,7 +218,7 @@ void __fastcall CalcThread::PrintWarningLineToProgress(void) {
     for cancelling by posting message to run analysis window. */
 void __fastcall CalcThread::ProcessAcknowledgesCancellation(void) {
   try {
-    gpFormStatus->AddLine("Job cancelled by user.");
+    gFormStatus.AddLine("Job cancelled by user.");
   }
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
 }
@@ -228,20 +227,20 @@ void __fastcall CalcThread::ProcessAcknowledgesCancellation(void) {
     (i.e. gpFormStatus will never be dereferenced again by this class) */
 void __fastcall CalcThread::ProcessSignalsCompletion(void) {
   try {
-    gpFormStatus->SetCanClose(true);
+    gFormStatus.SetCanClose(true);
   }
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
 }
 
 /** Resets run analysis close button caption. */
 void __fastcall CalcThread::ResetProgressCloseButton(void) {
-  gpFormStatus->btnCancel->Caption = "Close";
+  gFormStatus.btnCancel->Caption = "Close";
 }
 
 /** Sets job cancelled in run analysis window. */
 void __fastcall CalcThread::SetJobCancelled(void) {
   try {
-    gpFormStatus->CancelJob();
+    gFormStatus.CancelJob();
   }
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
 }
@@ -249,20 +248,16 @@ void __fastcall CalcThread::SetJobCancelled(void) {
 /** Sets warnings in run analysis window. */
 void __fastcall CalcThread::SetProgressWarnings(void) {
   try {
-    if (gpFormStatus->rteWarningsBox->Lines->Count == 0) {
-      gpFormStatus->SetPrintWarnings(false);
-      gpFormStatus->AddWarningLine("No warnings or errors encountered.");
-    }
-    else
-     gpFormStatus->SetPrintWarnings(true);
+    if (gFormStatus.rteWarningsBox->Lines->Count == 0)
+      gFormStatus.AddWarningLine("No warnings or errors encountered.");
   }
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
 }
 
 /** Internal setup function. */
-void CalcThread::Setup(const CParameters& session, char *pTitle, TfrmAnalysisRun *pProgress) {
+void CalcThread::Setup(const CParameters& session, char *pTitle) {
   try {
-    if (! pTitle || !pProgress )
+    if (! pTitle)
       SSGenerateException("Null pointer", "Setup()");
 
     gpParams = new CParameters(session);
@@ -272,7 +267,6 @@ void CalcThread::Setup(const CParameters& session, char *pTitle, TfrmAnalysisRun
     gpParams->SetPrintDirection(gpPrintWindow);
     gpParams->ConvertMaxTemporalClusterSizeToType(PERCENTAGETYPE);
     gsThreadTitle = pTitle;
-    gpFormStatus =  pProgress;
     Priority = tpNormal;  //tpHighest
     FreeOnTerminate = true;
     gsThreadTitle = pTitle;
@@ -287,8 +281,8 @@ void CalcThread::Setup(const CParameters& session, char *pTitle, TfrmAnalysisRun
 /** Setup for run analysis window to be called in Synchronized call. */
 void __fastcall CalcThread::SetupProgress(void) {
   try {
-    gpFormStatus->Caption = gsThreadTitle;
-    gpFormStatus->rteAnalysisBox->SetFocus();
+    gFormStatus.Caption = gsThreadTitle;
+    gFormStatus.rteAnalysisBox->SetFocus();
   }
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
 }
