@@ -76,7 +76,7 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
 
     gpPrint->SatScanPrintf("Reading the adjustments file\n");
     if ((fp = fopen(m_pParameters->GetAdjustmentsByRelativeRisksFilename().c_str(), "r")) == NULL) {
-      gpPrint->SatScanPrintWarning("Error: Could not open adjustments file:\n'%s'.\n",
+      gpPrint->SatScanPrintWarning("Error: Could not open the adjustments file:\n'%s'.\n",
                                    m_pParameters->GetAdjustmentsByRelativeRisksFilename().c_str());
       return false;
     }
@@ -91,7 +91,7 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
         if (!stricmp(Parser.GetWord(0),"all"))
           TractIndex = -1;
         else if ((TractIndex = gTractHandler.tiGetTractIndex(Parser.GetWord(0))) == -1) {
-          gpPrint->PrintInputWarning("Error: Unknown location identifier in %s, record %ld.\n",
+          gpPrint->PrintInputWarning("Error: Unknown location ID in %s, record %ld.\n",
                                      gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
           gpPrint->PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
           bValid = false;
@@ -116,7 +116,7 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
              gpPrint->PrintInputWarning("Error: Negative relative risk in record %ld of %s.\n",
                                         Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
           else
-             gpPrint->PrintInputWarning("Error: Relative risk '%s' exceeds maximum value of %i in record %lf of %s.\n",
+             gpPrint->PrintInputWarning("Error: Relative risk '%s' exceeds the maximum allowed value of %i in record %lf of %s.\n",
                                         Parser.GetWord(1), std::numeric_limits<double>::max(),
                                         Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
            bValid = false;
@@ -125,7 +125,7 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
         //read start and end dates
         iNumWords = Parser.GetNumberWords();
         if (iNumWords == 3) {
-          gpPrint->PrintInputWarning("Error: Record %i, of %s, missing end date.\n",
+          gpPrint->PrintInputWarning("Error: Record %i, of %s, is missing the end date.\n",
                                      Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
           bValid = false;
           continue;
@@ -163,7 +163,7 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->PrintWarningLine("Please see 'Adjustments file format' in the user guide for help.\n");
+      gpPrint->PrintWarningLine("Please see the 'Adjustments File' section in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
       gpPrint->SatScanPrintWarning("Error: %s contains no data.\n", gpPrint->GetImpliedFileTypeString().c_str());
@@ -219,7 +219,7 @@ bool CSaTScanData::ReadCoordinatesFile() {
   try {
     gpPrint->SatScanPrintf("Reading the coordinates file\n");
     if ((fp = fopen(m_pParameters->GetCoordinatesFileName().c_str(), "r")) == NULL) {
-      gpPrint->SatScanPrintWarning("Error: Coordinates file '%s' could not be opened.\n",
+      gpPrint->SatScanPrintWarning("Error: The coordinates file '%s' could not be opened.\n",
                                    m_pParameters->GetCoordinatesFileName().c_str());
       return false;
     }
@@ -278,7 +278,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
            iScanCount = Parser.GetNumberWords();
            //there must be at least two dimensions
            if (iScanCount < 3) {
-             gpPrint->PrintInputWarning("Error: First record of coordinates file contains %s.\n",
+             gpPrint->PrintInputWarning("Error: The first record of the coordinates file contains %s.\n",
                                                  iScanCount == 2 ? "only x-coordinate" : "no coordinates");
              bValid = false;
              break; //stop reading records, the first record defines remaining records format 
@@ -298,7 +298,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
          //validate that we read the correct number of coordinates
          if (iScanCount < m_pParameters->GetDimensionsOfData()) {
            //Note: since the first record defined the number of dimensions, this error could not happen.
-           gpPrint->PrintInputWarning("Error: Record %ld in coordinates file contains %d dimension%s but the\n",
+           gpPrint->PrintInputWarning("Error: Record %ld in the coordinates file contains %d dimension%s but the\n",
                                                Parser.GetReadCount(), iScanCount, (iScanCount == 1 ? "" : "s"));
            gpPrint->PrintInputWarning("       first record defined the number of dimensions as %d.\n", m_pParameters->GetDimensionsOfData());
            bValid = false;
@@ -306,7 +306,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
          }
          //add the tract identifier and coordinates to trac handler
          if (! gTractHandler.tiInsertTnode(Parser.GetWord(0), vCoordinates)) {
-           gpPrint->PrintInputWarning("Error: For record %ld in coordinates file, location '%s' already exists.\n", Parser.GetReadCount(), Parser.GetWord(0));
+           gpPrint->PrintInputWarning("Error: For record %ld in the coordinates file, location ID '%s' has already been specified.\n", Parser.GetReadCount(), Parser.GetWord(0));
            bValid = false;
            continue;
          }
@@ -319,10 +319,10 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->PrintWarningLine("Please see 'coordinate file format' in the user guide for help.\n");
+      gpPrint->PrintWarningLine("Please see the 'Coordinate File' section in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->PrintWarningLine("Error: Coordinates file contains no data.\n");
+      gpPrint->PrintWarningLine("Error: The coordinates file contains no data.\n");
       bValid = false;
     }
     //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
@@ -371,7 +371,7 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
         }
         //add the tract identifier and coordinates to trac handler
         if (! gTractHandler.tiInsertTnode(Parser.GetWord(0), vCoordinates)) {
-          gpPrint->PrintInputWarning("Error: For record %ld in coordinates file, location '%s' already exists.\n", Parser.GetReadCount(), Parser.GetWord(0));
+          gpPrint->PrintInputWarning("Error: For record %ld in the coordinates file, location ID '%s' has already been specified.\n", Parser.GetReadCount(), Parser.GetWord(0));
           bValid = false;
           continue;
         }
@@ -384,10 +384,10 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->PrintWarningLine("Please see 'coordinates file format' in the user guide for help.\n");
+      gpPrint->PrintWarningLine("Please see the 'Coordinates File' section in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->PrintWarningLine("Error: Coordinates file contains no data.\n");
+      gpPrint->PrintWarningLine("Error: The coordinates file contains no data.\n");
       bValid = false;
     }
     //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
@@ -416,7 +416,7 @@ bool CSaTScanData::ReadGridFile() {
   try {
     gpPrint->SatScanPrintf("Reading the grid file\n");
     if ((fp = fopen(m_pParameters->GetSpecialGridFileName().c_str(), "r")) == NULL) {
-      gpPrint->SatScanPrintWarning("Error: Could not open grid file:\n'%s'.\n",
+      gpPrint->SatScanPrintWarning("Error: Could not open the grid file:\n'%s'.\n",
                                    m_pParameters->GetSpecialGridFileName().c_str());
       return false;
     }
@@ -463,7 +463,7 @@ bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
          }
         //validate that we read the correct number of coordinates as defined by coordinates system or coordinates file
         if (iScanCount < m_pParameters->GetDimensionsOfData()) {
-          gpPrint->PrintInputWarning("Error: Record %ld in grid file contains %d dimension%s but the\n",
+          gpPrint->PrintInputWarning("Error: Record %ld in the grid file contains %d dimension%s but the\n",
                                      Parser.GetReadCount(), iScanCount, (iScanCount == 1 ? "" : "s"));
           gpPrint->PrintInputWarning("       coordinates file defined the number of dimensions as %d.\n",
                                      m_pParameters->GetDimensionsOfData());
@@ -477,10 +477,10 @@ bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->PrintWarningLine("Please see 'grid file format' in the user guide for help.\n");
+      gpPrint->PrintWarningLine("Please see the 'grid file' section in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->PrintWarningLine("Error: Grid file does not contain data.\n");
+      gpPrint->PrintWarningLine("Error: The Grid file does not contain any data.\n");
       bValid = false;
     }
     //record number of centroids read
@@ -523,17 +523,17 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude(FILE * fp) {
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->PrintWarningLine("Please see 'grid file format' in the user guide for help.\n");
+      gpPrint->PrintWarningLine("Please see the 'grid file' section in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->PrintWarningLine("Error: Grid file is contains no data.\n");
+      gpPrint->PrintWarningLine("Error: The grid file does not contain any data.\n");
       bValid = false;
     }
     //record number of centroids
     m_nGridTracts = gCentroidsHandler.giGetNumTracts();
   }
   catch (ZdFileOpenFailedException &x) {
-    gpPrint->SatScanPrintWarning("Error: Special Grid file '%s' could not be opened.\n",
+    gpPrint->SatScanPrintWarning("Error: The g rid file '%s' could not be opened.\n",
                                           m_pParameters->GetSpecialGridFileName().c_str());
     return false;
   }
@@ -557,39 +557,39 @@ bool CSaTScanData::ReadLatitudeLongitudeCoordinates(StringParser & Parser, std::
   //read latitude, validating that string can be converted to double
   if ((pCoordinate = Parser.GetWord(iWordOffSet)) != 0) {
     if (! sscanf(pCoordinate, "%lf", &dLatitude)) {
-      gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file could not be read as latitude.\n", pCoordinate, Parser.GetReadCount(), sSourceFile);
+      gpPrint->PrintInputWarning("Error: The value '%s' of record %ld in the %s file could not be read as the latitude coordinate.\n", pCoordinate, Parser.GetReadCount(), sSourceFile);
       return false;
     }
   }
   else {
-    gpPrint->PrintInputWarning("Error: Record %d in %s file missing latitude and longitude coordinates.\n", Parser.GetReadCount(), sSourceFile);
+    gpPrint->PrintInputWarning("Error: Record %d in the %s file is missing the latitude and longitude coordinates.\n", Parser.GetReadCount(), sSourceFile);
     return false;
   }
   //read longitude, validating that string can be converted to double
   if ((pCoordinate = Parser.GetWord(++iWordOffSet)) != 0) {
     if (! sscanf(pCoordinate, "%lf", &dLongitude)) {
-      gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file could not be read as longitude.\n", pCoordinate, Parser.GetReadCount(), sSourceFile);
+      gpPrint->PrintInputWarning("Error: The value '%s' of record %ld in the %s file could not be read as the longitude coordinate.\n", pCoordinate, Parser.GetReadCount(), sSourceFile);
       return false;
     }
   }
   else {
-    gpPrint->PrintInputWarning("Error: Record %ld in %s file missing longitude coordinate.\n", Parser.GetReadCount(), sSourceFile);
+    gpPrint->PrintInputWarning("Error: Record %ld in the %s file is missing the longitude coordinate.\n", Parser.GetReadCount(), sSourceFile);
     return false;
   }
   //validate that there is not extra data for record
   if ((pCoordinate = Parser.GetWord(++iWordOffSet)) != 0) {
-    gpPrint->PrintInputWarning("Error: Record %ld in %s file contains extra data: '%s'.\n", Parser.GetReadCount(), sSourceFile, pCoordinate);
+    gpPrint->PrintInputWarning("Error: Record %ld in the %s file contains extra data: '%s'.\n", Parser.GetReadCount(), sSourceFile, pCoordinate);
     return false;
   }
   //validate range of latitude value
   if ((fabs(dLatitude) > 90.0)) {
-    gpPrint->PrintInputWarning("Error: Latitude %lf, for record %ld in %s file, is out of range.\n",  dLatitude, Parser.GetReadCount(), sSourceFile);
+    gpPrint->PrintInputWarning("Error: Latitude coordinate %lf, for record %ld in the %s file, is out of range.\n",  dLatitude, Parser.GetReadCount(), sSourceFile);
     gpPrint->PrintInputWarning("       Latitude must be between -90 and 90.\n");
     return false;
   }
   //validate range of longitude value
   if ((fabs(dLongitude) > 180.0)) {
-    gpPrint->PrintInputWarning("Error: Longitude %lf, for record %ld in %s file, is out of range.\n", dLongitude, Parser.GetReadCount(), sSourceFile);
+    gpPrint->PrintInputWarning("Error: Longitude coordinate %lf, for record %ld in the %s file, is out of range.\n", dLongitude, Parser.GetReadCount(), sSourceFile);
     gpPrint->PrintInputWarning("       Longitude must be between -180 and 180.\n");
     return false;
   }
@@ -613,7 +613,7 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
 
     gpPrint->SatScanPrintf("Reading the max circle size file\n");
     if ((fp = fopen(m_pParameters->GetMaxCirclePopulationFileName().c_str(), "r")) == NULL) {
-      gpPrint->SatScanPrintWarning("Error: Could not open max circle size file:\n'%s'.\n",
+      gpPrint->SatScanPrintWarning("Error: Could not open the max circle size file:\n'%s'.\n",
                                    m_pParameters->GetMaxCirclePopulationFileName().c_str());
       return false;
     }
@@ -630,7 +630,7 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
         bEmpty=false;
         //read tract identifier
         if ((TractIdentifierIndex = gTractHandler.tiGetTractIndex(Parser.GetWord(0))) == -1) {
-          gpPrint->PrintInputWarning("Error: Unknown location identifier in %s, record %ld.\n",
+          gpPrint->PrintInputWarning("Error: Unknown location ID in the %s, record %ld.\n",
                                      gpPrint->GetImpliedFileTypeString().c_str(), iRecNum);
           gpPrint->PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
           bValid = false;
@@ -638,13 +638,13 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
         }
         //read population
         if (!Parser.GetWord(1)) {
-          gpPrint->PrintInputWarning("Error: Record %d of %s missing population.\n",
+          gpPrint->PrintInputWarning("Error: The population is missing in record %d of the %s.\n",
                                      iRecNum, gpPrint->GetImpliedFileTypeString().c_str());
           bValid = false;
           continue;
         }
         if (sscanf(Parser.GetWord(1), "%f", &fPopulation) != 1) {
-          gpPrint->PrintInputWarning("Error: Population value '%s' in record %ld, of %s, is not a number.\n",
+          gpPrint->PrintInputWarning("Error: The population value '%s' in record %ld, of %s, is not a number.\n",
                                      Parser.GetWord(1), iRecNum, gpPrint->GetImpliedFileTypeString().c_str());
           bValid = false;
           continue;
@@ -655,7 +655,7 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
              gpPrint->PrintInputWarning("Error: Negative population in record %ld of %s.\n",
                                         iRecNum, gpPrint->GetImpliedFileTypeString().c_str());
           else
-             gpPrint->PrintInputWarning("Error: Population '%s' exceeds maximum value of %i in record %ld of %s.\n",
+             gpPrint->PrintInputWarning("Error: Population '%s' exceeds the maximum allowed value of %i in record %ld of %s.\n",
                                         Parser.GetWord(1), std::numeric_limits<float>::max(),
                                         iRecNum, gpPrint->GetImpliedFileTypeString().c_str());
            bValid = false;
@@ -669,13 +669,13 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
     // total population can not be zero
     if (m_nTotalMaxCirclePopulation == 0) {
       bValid = false;
-      gpPrint->SatScanPrintWarning("Error: Total population for %s is zero.\n",
+      gpPrint->SatScanPrintWarning("Error: The total population for %s is zero.\n",
                                    gpPrint->GetImpliedFileTypeString().c_str());
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->PrintWarningLine("Please see 'Special Max Circle Size File' in the user guide for help.\n");
+      gpPrint->PrintWarningLine("Please see the 'Max Circle Size File' section in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
       gpPrint->SatScanPrintWarning("Error: %s contains no data.\n", gpPrint->GetImpliedFileTypeString().c_str());
