@@ -9,11 +9,28 @@
 #include "SaTScan.h"
 #pragma hdrstop
 
-#include <DBFFile.h>
 #include "stsOutputDBF.h"
+#include <DBFFile.h>
+#include "Cluster.h"
 
-const char *    CLUSTER_LEVEL_DBF_FILE  =       "ClusterLevel.dbf";
-const char *    AREA_SPECIFIC_DBF_FILE  =       "AreaSpecific.dbf";
+const char *    CLUSTER_LEVEL_DBF_FILE  = "ClusterLevel.dbf";
+const char *    AREA_SPECIFIC_DBF_FILE  = "AreaSpecific.dbf";
+
+const char *    RUN_NUM		        = "RUN_NUM";
+const char *    CLUST_NUM 		= "CLUST_NUM";
+const char *    AREA_ID   		= "AREA_ID";
+const char *    P_VALUE  		= "P_VALUE";
+const char *    START_DATE		= "START_DATE";
+const char *    END_DATE		= "END_DATE";
+const char *    OBSERVED		= "OBSERVED";
+const char *    EXPECTED		= "EXPECTED";
+const char *    REL_RISK		= "REL_RISK";
+const char *    LOG_LIKL		= "LOG_LIKL";
+const char *    NUM_AREAS		= "NUM_AREAS";
+const char *    COORD_NOR		= "COORD_NOR";
+const char *    COORD_WES		= "COORD_WES";
+const char *    COORD_ADD		= "COORD_ADD";
+const char *    RADIUS		        = "RADIUS";
 
 // constructor
 __fastcall DBaseOutput::DBaseOutput(const long lRunNumber, const int iCoordType) {
@@ -40,10 +57,7 @@ DBaseOutput::~DBaseOutput() {
 // post: field vector is empty and all of the pointers are deleted
 void DBaseOutput::CleanupFieldVector() {
    try {
-      while (gvFields.GetNumElements()) {
-         delete gvFields[0]; gvFields[0] = 0;
-         gvFields.RemoveElement(0);
-      }
+      gvFields.RemoveAllElements();
    }
    catch(ZdException &x) {
       x.AddCallpath("CleanupFieldVector()", "stsClusterLevelDBF");
@@ -73,38 +87,27 @@ void DBaseOutput::CreateDBFFile() {
    }
 }
 
-// sets up the global vector of ZdFields
-// pre: pass in an empty vector
-// post: vector will be defined using the names and field types provided by the descendant classes
-void DBaseOutput::GetFields() {
-   DBFFile		File;
-   ZdField		*pField = 0;
-   std::vector<field_t>         vFields;
-
-   try {
-      CleanupFieldVector();           // empty out the global field vector
-      SetupFields(vFields);
-
-      for(unsigned int i = 0; i < vFields.size(); ++i) {
-         pField = (File.GetNewField());
-         pField->SetName(vFields[i].gsFieldName.c_str());
-         pField->SetType(vFields[i].gcFieldType);
-         pField->SetLength(vFields[i].gwLength);
-         pField->SetPrecision(vFields[i].gwPrecision);
-         gvFields.AddElement(pField);  ;
-      }
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetFields()", "DBaseOutput");
-      throw;
-   }
-}
-
 // global inits
 void DBaseOutput::Init() {
    glRunNumber = 0;
    giCoordType = 0;
 }	
+
+// formats the string for the Area ID
+// pre: none
+// post: sTempvalue will contain the legible area id
+void DBaseOutput::SetAreaID(ZdString& sTempValue, const CCluster& pCluster, const CSaTScanData& pData) {
+   try {
+      if (pCluster.GetClusterType() == PURELYTEMPORAL)
+          sTempValue = "n/a";
+      else
+         sTempValue = pData.gpTInfo->tiGetTid(pCluster.m_Center);
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("SetAreaID", "DBaseOutput");
+      throw;
+   }
+}
 
 // internal setup function
 void DBaseOutput::Setup(const long lRunNumber, const int iCoordType) {

@@ -6,11 +6,11 @@
 class stsClusterLevelDBF : public DBaseOutput {
    private:
       void	Init();
-      void	Setup(const ZdString& sOutputFileName);
       void      SetCoordinates(float& fLatitude, float& fLongitude, float& fRadius, ZdString& sAdditCoords,
                                const CCluster& pCluster, const CSaTScanData& pData);
+      void	Setup(const ZdString& sOutputFileName);
    protected:
-      virtual void              SetupFields(std::vector<field_t>& vFields);
+      virtual void              SetupFields(ZdPointerVector<ZdField>& vFields);
    public:
       __fastcall stsClusterLevelDBF(const long lRunNumber, const int iCoordType, const ZdFileName& sOutputFileName);
       virtual ~stsClusterLevelDBF();

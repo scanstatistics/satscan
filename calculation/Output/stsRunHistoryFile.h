@@ -2,22 +2,37 @@
 #ifndef __stsRunHistoryFile_H
 #define __stsRunHistoryFile_H
 //---------------------------------------------------------------------------
-    /*
-// mini class used to temporarily store field structure - AJV 9/24/2002
-class history_field_t {
-   public:
-      std::string          gsFieldName;
-      char                 gcFieldType;
-      short                gwFieldLength;
-
-      history_field_t(std::string sFieldName, char cFieldType, short wFieldLength)
-                     {gsFieldName = sFieldName; gcFieldType = cFieldType; gwFieldLength = wFieldLength;}
-};  */
+extern const char* RUN_NUMBER_FIELD;
+extern const char* RUN_TIME_FIELD;
+extern const char* OUTPUT_FILE_FIELD;
+extern const char* PROB_MODEL_FIELD;
+extern const char* RATES_FIELD;           
+extern const char* COORD_TYPE_FIELD;
+extern const char* ANALYSIS_TYPE_FIELD;
+extern const char* NUM_CASES_FIELD;
+extern const char* TOTAL_POP_FIELD;
+extern const char* NUM_GEO_AREAS_FIELD;
+extern const char* PRECISION_TIMES_FIELD;
+extern const char* MAX_GEO_EXTENT_FIELD;
+extern const char* MAX_TIME_EXTENT_FIELD;
+extern const char* TIME_TREND_ADJUSTMENT_FIELD;
+extern const char* GRID_FILE_FIELD;
+extern const char* START_DATE_FIELD;
+extern const char* END_DATE_FIELD;
+extern const char* ALIVE_ONLY_FIELD;
+extern const char* INTERVAL_UNITS_FIELD;
+extern const char* INTERVAL_LENGTH_FIELD;
+extern const char* MONTE_CARLO_FIELD;
+extern const char* CUTOFF_001_FIELD;
+extern const char* CUTOFF_005_FIELD;
+extern const char* NUM_SIGNIF_005_FIELD;
 
 class stsRunHistoryFile {
    private:
-      ZdString          gsFilename;
-      long              glRunNumber;
+      ZdString                          gsFilename;
+      long                              glRunNumber;
+      ZdPointerVector<ZdField>	        gvFields;
+      BasePrint*                        gpPrintDirection;
 
       void      GetAnalysisTypeString(ZdString& sTempValue, int iType);
       void      GetCasePrecisionString(ZdString& sTempValue, int iPrecision);
@@ -27,22 +42,18 @@ class stsRunHistoryFile {
       void      GetTimeAdjustmentString(ZdString& sTempValue, int iType);
       void	Init();
       void      SetRunNumber();
-      void	Setup(const ZdString& sFileName);
+      void	Setup(const ZdString& sFileName, BasePrint& PrintDirection);
+      void      StripCRLF(ZdString& sStore);
    protected:
       void      CreateRunHistoryFile();
-      void      SetupFields(std::vector<field_t>&  vFieldDescrip );
-
-//      void      SetBoolField(ZdFileRecord& record, const bool bValue, const unsigned long uwFieldNumber);
- //     void      SetDoubleField(ZdFileRecord& record, const double dValue, const unsigned long uwFieldNumber);
-//      void      SetLongField(ZdFileRecord& record, const long lValue, const unsigned long uwFieldNumber);
-//      void      SetStringField(ZdFileRecord& record, const ZdString& sValue, const unsigned long uwFieldNumber);
    public:
-      stsRunHistoryFile(const ZdString& sFileName);
+      stsRunHistoryFile(const ZdString& sFileName, BasePrint& PrintDirection);
       ~stsRunHistoryFile();
 
       const long        GetRunNumber() const {return glRunNumber;}
       const ZdString&   GetRunHistoryFileName() const {return gsFilename;}
-      void              LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005, BasePrint& PrintDirection);
+      void              LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005);
+
 };
 
 //---------------------------------------------------------------------------
