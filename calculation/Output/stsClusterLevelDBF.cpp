@@ -51,8 +51,7 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
    std::vector<float>           vAdditCoords;
 
    try {
-      std::auto_ptr<ZdFileRecord>  pRecord;
-      pRecord.reset(File.GetNewRecord());
+      std::auto_ptr<ZdFileRecord>  pRecord(File.GetNewRecord());
 
       // define record data
       // run number field  - from the run history file  AJV 9/4/2002
@@ -181,7 +180,7 @@ void stsClusterLevelDBF::Setup(const ZdString& sOutputFileName, const int iDimen
 // post : returns through reference a vector filled with field_t structs to be used
 //        to create the ZdVector of ZdField* required to create the DBF file
 void stsClusterLevelDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
-   unsigned short uwOffset = 0;
+   unsigned short uwOffset = 0;    // this is altered by the create new field function, so this must be here as is-AJV 9/30/2002
    ZdString       sTemp;
 
    try {

@@ -66,7 +66,7 @@ stsRunHistoryFile::~stsRunHistoryFile() {
 // post: will create the txd file with the appropraite fields
 void stsRunHistoryFile::CreateRunHistoryFile() {
    TXDFile          File;
-   unsigned short   uwOffset = 0;
+   unsigned short   uwOffset = 0;     // offset is altered by the CreateNewField function
 
    try {
       CreateNewField(gvFields, RUN_NUMBER_FIELD, ZD_LONG_FLD, 8, 0, uwOffset, true);
@@ -260,8 +260,8 @@ void stsRunHistoryFile::Init() {
 void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005) {
    ZdTransaction	*pTransaction = 0;
    ZdString             sTempValue;
-   auto_ptr<ZdFileRecord> pRecord;
-   auto_ptr<TXDFile>    pFile;
+   std::auto_ptr<ZdFileRecord> pRecord;
+   std::auto_ptr<TXDFile>    pFile;
 
    try {
       pFile.reset(new TXDFile(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE));
@@ -273,7 +273,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
 
       pRecord.reset(pFile->GetNewRecord());
       pRecord->PutField(0, glRunNumber);
-      if(!pFile->GotoRecordByKeys(&(*pRecord), &(*pRecord)))
+      if(!pFile->GotoRecordByKeys(pRecord.get(), pRecord.get()))
          ZdException::GenerateNotification("Error! Run number not found in the run history file.", "LogNewhistory()");
 
       //  run number field
@@ -345,6 +345,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
          if(pTransaction)
             pFile->EndTransaction(pTransaction);   // if there is a pTransaction then there must be a pFile, so this is valid
          pTransaction = 0;
+         pFile->Close();
       }
       catch(...) {   // Although I really hate to do this here, it is necessary because I don't want
                        // to throw because that would cause the thread to terminate and the calculation
@@ -365,8 +366,9 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
 // post: sets the run number and adds a record to the file with that number
 void stsRunHistoryFile::SetRunNumber() {
    ZdTransaction	        *pTransaction = 0;
-   std::auto_ptr<TXDRec>        pLastRecord, pRecord;
+   std::auto_ptr<TXDRec>        pRecord;
    std::auto_ptr<TXDFile>       pFile;
+   unsigned short               uwRunNumberField = 0;
 
    try {
       // if we don't have one then create it
@@ -376,16 +378,20 @@ void stsRunHistoryFile::SetRunNumber() {
       pFile.reset(new TXDFile(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE));
       if(gvFields.empty())
          SetFieldVector(gvFields, *pFile);
+
+      // get the run number field, so that this only has to be found once in the vector 
+      uwRunNumberField = GetFieldNumber(gvFields, RUN_NUMBER_FIELD);
+
       // get a record buffer, input data and append the record
-      pLastRecord.reset(pFile->GetNewRecord());
+      std::auto_ptr<TXDRec> pLastRecord(pFile->GetNewRecord());
       if(pFile->GotoLastRecord(pLastRecord.get()))      // if there's records in the file
-         glRunNumber = pLastRecord->GetLong(0) + 1;
+         glRunNumber = pLastRecord->GetLong(uwRunNumberField) + 1;
       else
          glRunNumber = 1;
 
       pRecord.reset(pFile->GetNewRecord());
       pRecord->Clear();
-      pRecord->PutField(GetFieldNumber(gvFields, RUN_NUMBER_FIELD), glRunNumber);       // run number field
+      pRecord->PutField(uwRunNumberField, glRunNumber);       // run number field
       pRecord->PutField(GetFieldNumber(gvFields, OUTPUT_FILE_FIELD), "Run started, but not completed.");   // output filename field, but for now a text field
                                                                  // that I can use to display this message - will let
                                                                  // the user know if an anlysis failed or was cancelled - AJV 9/24/2002
@@ -398,6 +404,7 @@ void stsRunHistoryFile::SetRunNumber() {
       if(pTransaction)
             pFile->EndTransaction(pTransaction);
          pTransaction = 0;
+      pFile->Close();   
       x.AddCallpath("SetRunNumber()", "stsRunHistoryFile");
       throw;
    }

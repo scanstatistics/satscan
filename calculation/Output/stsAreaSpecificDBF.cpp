@@ -51,8 +51,7 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
    DBFFile              File(gsFileName.GetCString());
 
    try {
-      auto_ptr<ZdFileRecord> pRecord;
-      pRecord.reset(File.GetNewRecord());
+      std::auto_ptr<ZdFileRecord> pRecord(File.GetNewRecord());
 
       // define record data
       // run number - from run history file AJV 9/4/2002
@@ -87,6 +86,7 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
       if(pTransaction)
          File.EndTransaction(pTransaction);
       pTransaction = 0;
+      File.Close();
       x.AddCallpath("RecordClusterData()", "stsAreaSpecificDBF");
       throw;
    }
@@ -114,16 +114,16 @@ void stsAreaSpecificDBF::Setup(const ZdString& sOutputFileName) {
 // post : returns through reference a vector filled with field_t structs to be used
 //        to create the ZdVector of ZdField* required to create the DBF file
 void stsAreaSpecificDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
-   unsigned short uwOffset = 0;
+   unsigned short uwOffset = 0;     // this is altered by the create new field function, so this must be here as is-AJV 9/30/2002
    
    try {
       CreateNewField(vFields, RUN_NUM, ZD_NUMBER_FLD, 8, 0, uwOffset);
       CreateNewField(vFields, CLUST_NUM, ZD_NUMBER_FLD, 5, 0, uwOffset);
       CreateNewField(vFields, LOC_ID, ZD_ALPHA_FLD, 30, 0, uwOffset);
+      CreateNewField(vFields, REL_RISK, ZD_NUMBER_FLD, 12, 3, uwOffset);
       CreateNewField(vFields, P_VALUE, ZD_NUMBER_FLD, 12, 5, uwOffset);
       CreateNewField(vFields, OBSERVED, ZD_NUMBER_FLD, 12, 2, uwOffset);
       CreateNewField(vFields, EXPECTED, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      CreateNewField(vFields, REL_RISK, ZD_NUMBER_FLD, 12, 3, uwOffset);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupFields()", "stsAreaSpecificDBF");

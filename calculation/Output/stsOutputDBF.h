@@ -80,9 +80,10 @@ static void CreateNewField(ZdPointerVector<ZdField>& vFields, const std::string&
       uwOffset += wLength;
       if(bCreateIndex)                    
          pField->SetIndexCount(1);
-      vFields.AddElement(pField);   	
+      vFields.push_back(pField);
    }
    catch (ZdException &x) {
+      delete pField; pField = 0;
       x.AddCallpath("CreateNewField()", "DBaseOutput");
       throw; 	
    }			
