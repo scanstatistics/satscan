@@ -88,12 +88,12 @@ const int        MAXIMUM_SEQUENTIAL_ANALYSES    	= 32000;
 const int        MAXIMUM_ELLIPSOIDS             	= 10;
 
 const char*      PURELY_SPATIAL_ANALYSIS        	= "Purely Spatial";
-const char*      PURELY_TEMPORAL_ANALYSIS       	= "Purely Temporal";
+const char*      RETROSPECTIVE_PURELY_TEMPORAL_ANALYSIS = "Retrospective Purely Temporal";
+const char*      PROSPECTIVE_PURELY_TEMPORAL_ANALYSIS   = "Prospective Purely Temporal";
 const char*      RETROSPECTIVE_SPACETIME_ANALYSIS 	= "Retrospective Space-Time";
 const char*      PROSPECTIVE_SPACETIME_ANALYSIS 	= "Prospective Space-Time";
 const char*      PURELY_SPATIAL_MONOTONE_ANALYSIS 	= "Purely Spatial Monotone";
 const char*      SPATIALVARIATION_TEMPORALTREND         = "Spatial Variation of Temporal Trends";
-const char*      PROSPECTIVE_PURELY_TEMPORAL_ANALYSIS   = "Prospective Purely Temporal";
 
 const char*      POISSON_MODEL                 		= "Poisson";
 const char*      BERNOULLI_MODEL                	= "Bernoulli";
@@ -572,7 +572,7 @@ const char * CParameters::GetAnalysisTypeAsString() const {
   try {
     switch (geAnalysisType) {
       case PURELYSPATIAL             : sAnalysisType = PURELY_SPATIAL_ANALYSIS; break;
-      case PURELYTEMPORAL            : sAnalysisType = PURELY_TEMPORAL_ANALYSIS; break;
+      case PURELYTEMPORAL            : sAnalysisType = RETROSPECTIVE_PURELY_TEMPORAL_ANALYSIS; break;
       case SPACETIME                 : sAnalysisType = RETROSPECTIVE_SPACETIME_ANALYSIS; break;
       case PROSPECTIVESPACETIME      : sAnalysisType = PROSPECTIVE_SPACETIME_ANALYSIS; break;
       case PURELYSPATIALMONOTONE     : sAnalysisType = PURELY_SPATIAL_MONOTONE_ANALYSIS; break;

@@ -104,12 +104,12 @@ extern const int        MAXIMUM_ELLIPSOIDS;
 
 /** analysis type names */
 extern const char*      PURELY_SPATIAL_ANALYSIS;
-extern const char*      PURELY_TEMPORAL_ANALYSIS;
+extern const char*      RETROSPECTIVE_PURELY_TEMPORAL_ANALYSIS;
+extern const char*      PROSPECTIVE_PURELY_TEMPORAL_ANALYSIS;
 extern const char*      RETROSPECTIVE_SPACETIME_ANALYSIS;
 extern const char*      PROSPECTIVE_SPACETIME_ANALYSIS;
 extern const char*      PURELY_SPATIAL_MONOTONE_ANALYSIS;
 extern const char*      SPATIALVARIATION_TEMPORALTREND;
-extern const char*      PROSPECTIVE_PURELY_TEMPORAL_ANALYSIS;
 
 /** probabilty model type names */
 extern const char*      POISSON_MODEL;
