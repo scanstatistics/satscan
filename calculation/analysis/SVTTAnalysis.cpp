@@ -62,7 +62,7 @@ const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCent
        thisCluster.SetCenter(tCenter);
        thisCluster.SetRate(gParameters.GetAreaScanRateType());
        thisCluster.SetEllipseOffset(k);
-       thisCluster.SetNonCompactnessPenalty((k == 0 || !gParameters.GetNonCompactnessPenalty() ? 1 : gDataHub.GetShapesArray()[k - 1]));
+       thisCluster.SetNonCompactnessPenalty((k == 0 || !gParameters.GetNonCompactnessPenalty() ? 1 : gDataHub.GetEllipseShape(k)));
        CSVTTCluster & TopShapeCluster = (CSVTTCluster&)(gpTopShapeClusters->GetTopCluster(k));
        iNumNeighbors = gDataHub.GetNeighborCountArray()[k][tCenter];
        for (i=1; i <= iNumNeighbors; ++i) {
@@ -101,7 +101,7 @@ double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataStreamInterface & Inte
        CSVTTCluster thisCluster(Interface, gDataHub.GetNumTimeIntervals());
        thisCluster.SetRate(gParameters.GetAreaScanRateType());
        thisCluster.SetEllipseOffset(k);
-       thisCluster.SetNonCompactnessPenalty((k == 0 || !gParameters.GetNonCompactnessPenalty() ? 1 : gDataHub.GetShapesArray()[k - 1]));
+       thisCluster.SetNonCompactnessPenalty((k == 0 || !gParameters.GetNonCompactnessPenalty() ? 1 : gDataHub.GetEllipseShape(k)));
        CSVTTCluster & TopShapeCluster = (CSVTTCluster&)(gpTopShapeClusters->GetTopCluster(k));
        for (i=0; i < gDataHub.m_nGridTracts; ++i) {
           thisCluster.InitializeSVTT(i, Interface);

@@ -111,7 +111,7 @@ const CCluster & CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const 
      gpClusterComparator->Initialize(tCenter);
      gpClusterComparator->SetRate(gParameters.GetAreaScanRateType());
      gpClusterComparator->SetEllipseOffset(k);
-     gpClusterComparator->SetNonCompactnessPenalty((k == 0 || !gParameters.GetNonCompactnessPenalty() ? 1 : gDataHub.GetShapesArray()[k - 1]));
+     gpClusterComparator->SetNonCompactnessPenalty((k == 0 || !gParameters.GetNonCompactnessPenalty() ? 1 : gDataHub.GetEllipseShape(k)));
      CSpaceTimeCluster & TopCluster = (CSpaceTimeCluster&)(gpTopShapeClusters->GetTopCluster(k));
      gpClusterComparator->AddNeighborDataAndCompare(k, tCenter, DataGateway, &gDataHub, TopCluster, gpTimeIntervals);
   }

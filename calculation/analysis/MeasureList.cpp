@@ -21,7 +21,7 @@ void CMeasureList::AddMaximumLogLikelihood(double dMaxLogLikelihood, int iIterat
 
   dMaxLogLikelihoodRatio = dMaxLogLikelihood - gLikelihoodCalculator.GetLogLikelihoodForTotal();
   if (iIteration > 0 && gSaTScanData.GetParameters().GetNumRequestedEllipses() && gSaTScanData.GetParameters().GetNonCompactnessPenalty()) {
-    dNonCompactnessPenalty = CalculateNonCompactnessPenalty(gSaTScanData.GetShapesArray()[iIteration - 1]);
+    dNonCompactnessPenalty = CalculateNonCompactnessPenalty(gSaTScanData.GetEllipseShape(iIteration));
     gvMaximumLogLikelihoodRatios.push_back(dMaxLogLikelihoodRatio * dNonCompactnessPenalty);
   }
   else

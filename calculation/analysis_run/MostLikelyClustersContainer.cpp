@@ -306,21 +306,21 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
             if (CandidateCluster.GetEllipseOffset() > 0) {
               if (currCluster.GetEllipseOffset() > 0) {//both are ellipses
                 bResult = !(
-                  PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
-                 || PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
+                  PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetEllipseAngle(currCluster.GetEllipseOffset()), DataHub.GetEllipseShape(currCluster.GetEllipseOffset()))
+                 || PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetEllipseAngle(CandidateCluster.GetEllipseOffset()), DataHub.GetEllipseShape(CandidateCluster.GetEllipseOffset()))
                 );
               }
               else {//candidate is ellipse, curr is circle
                 bResult = !(
                   CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius)
-                 || PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
+                 || PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetEllipseAngle(CandidateCluster.GetEllipseOffset()), DataHub.GetEllipseShape(CandidateCluster.GetEllipseOffset()))
                 );
               }
             }
             else {
               if (currCluster.GetEllipseOffset() > 0) {//candidate is circle, curr is ellipse
                 bResult = !(
-                  PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
+                  PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetEllipseAngle(currCluster.GetEllipseOffset()), DataHub.GetEllipseShape(currCluster.GetEllipseOffset()))
                  || CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius)
                 );
               }
@@ -334,14 +334,14 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
             if (currCluster.GetEllipseOffset() == 0)
               bResult = !CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius);
             else
-              bResult = !(PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1]));
+              bResult = !(PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetEllipseAngle(currCluster.GetEllipseOffset()), DataHub.GetEllipseShape(currCluster.GetEllipseOffset())));
           }
           break;
           case NOCENTROIDSINLESSLIKE: {//no cluster centroids in less likely clusters
             if (CandidateCluster.GetEllipseOffset() == 0)
               bResult = !CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius);
             else
-              bResult = !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1]);
+              bResult = !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetEllipseAngle(CandidateCluster.GetEllipseOffset()), DataHub.GetEllipseShape(CandidateCluster.GetEllipseOffset()));
           }
           break;
           case NOPAIRSINEACHOTHERS: {//no pairs of centroids in each others clusters
@@ -349,21 +349,21 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
             if (CandidateCluster.GetEllipseOffset() > 0) {
               if (currCluster.GetEllipseOffset() > 0) {//both are ellipses
                 bResult =
-                  !PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
-                 || !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
+                  !PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetEllipseAngle(currCluster.GetEllipseOffset()), DataHub.GetEllipseShape(currCluster.GetEllipseOffset()))
+                 || !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetEllipseAngle(CandidateCluster.GetEllipseOffset()), DataHub.GetEllipseShape(CandidateCluster.GetEllipseOffset()))
                 ;
               }
               else {//candidate is ellipse, curr is circle
                 bResult =
                   !CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius)
-                 || !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
+                 || !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetEllipseAngle(CandidateCluster.GetEllipseOffset()), DataHub.GetEllipseShape(CandidateCluster.GetEllipseOffset()))
                 ;
              }
             }
             else {
               if (currCluster.GetEllipseOffset() > 0) {//candidate is circle, curr is ellipse
                 bResult =
-                  !PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
+                  !PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetEllipseAngle(currCluster.GetEllipseOffset()), DataHub.GetEllipseShape(currCluster.GetEllipseOffset()))
                  || !CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius)
                 ;
               }

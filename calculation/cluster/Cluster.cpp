@@ -230,9 +230,9 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
       PrintFormat.PrintSectionLabel(fp, "Ellipse Parameters", false, true);
       fprintf(fp, "\n");
       PrintFormat.PrintSectionLabel(fp, "Angle (degrees)", false, true);
-      fprintf(fp, "%-g\n", ConvertAngleToDegrees(Data.GetAnglesArray()[m_iEllipseOffset - 1]));
+      fprintf(fp, "%-g\n", ConvertAngleToDegrees(Data.GetEllipseAngle(m_iEllipseOffset)));
       PrintFormat.PrintSectionLabel(fp, "Shape", false, true);
-      fprintf(fp, "%-g\n", Data.GetShapesArray()[m_iEllipseOffset - 1]);
+      fprintf(fp, "%-g\n", Data.GetEllipseShape(m_iEllipseOffset));
     }
     free(pCoords);
     free(pCoords2);
@@ -301,7 +301,7 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
   try {
     if (Data.GetParameters().GetIsProspectiveAnalysis() && Data.GetParameters().GetNumReplicationsRequested() > 98) {
       PrintFormat.PrintSectionLabel(fp, "Null Occurrence", false, true);
-      fIntervals = Data.m_nTimeIntervals - Data.m_nProspectiveIntervalStart + 1;
+      fIntervals = Data.GetNumTimeIntervals() - Data.GetProspectiveStartIndex() + 1;
       fAdjustedP_Value = 1 - pow(1 - GetPValue(iNumSimulations), 1/fIntervals);
       fUnitsInOccurrence = (float)Data.GetParameters().GetTimeAggregationLength()/fAdjustedP_Value;
       switch (Data.GetParameters().GetTimeAggregationUnitsType()) {

@@ -187,7 +187,7 @@ void stsClusterData::WriteEllipseAngle(OutputRecord& Record, const CCluster& thi
   else if (thisCluster.GetEllipseOffset() == 0)
     Record.GetFieldValue(GetFieldNumber(E_ANGLE_FIELD)).AsDouble() = 0.0;
   else
-    Record.GetFieldValue(GetFieldNumber(E_ANGLE_FIELD)).AsDouble() = thisCluster.ConvertAngleToDegrees(DataHub.GetAnglesArray()[thisCluster.GetEllipseOffset()-1]);
+    Record.GetFieldValue(GetFieldNumber(E_ANGLE_FIELD)).AsDouble() = thisCluster.ConvertAngleToDegrees(DataHub.GetEllipseAngle(thisCluster.GetEllipseOffset()));
 }
 
 /** write cluster's elliptical shape to record */
@@ -197,7 +197,7 @@ void stsClusterData::WriteEllipseShape(OutputRecord& Record, const CCluster& thi
   else if (thisCluster.GetEllipseOffset() == 0)
     Record.GetFieldValue(GetFieldNumber(E_SHAPE_FIELD)).AsDouble() = 1.0;
   else
-    Record.GetFieldValue(GetFieldNumber(E_SHAPE_FIELD)).AsDouble() = DataHub.GetShapesArray()[thisCluster.GetEllipseOffset()-1];
+    Record.GetFieldValue(GetFieldNumber(E_SHAPE_FIELD)).AsDouble() = DataHub.GetEllipseShape(thisCluster.GetEllipseOffset());
 }
 
 // sets up the vector of field structs so that the ZdField Vector can be created

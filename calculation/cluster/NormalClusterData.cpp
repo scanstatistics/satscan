@@ -236,9 +236,9 @@ void NormalProspectiveSpatialData::InitializeData() {
 /** internal setup function */
 void NormalProspectiveSpatialData::Setup(const CSaTScanData & Data, const DataStreamInterface & Interface) {
   try {
-    giAllocationSize = 1 + Data.m_nTimeIntervals - Data.m_nProspectiveIntervalStart;
+    giAllocationSize = 1 + Data.m_nTimeIntervals - Data.GetProspectiveStartIndex();
     giNumTimeIntervals = Data.m_nTimeIntervals;
-    giProspectiveStart = Data.m_nProspectiveIntervalStart;
+    giProspectiveStart = Data.GetProspectiveStartIndex();
     gtTotalCases = Interface.GetTotalCasesCount();
     gtTotalMeasure = Interface.GetTotalMeasureCount();
 
