@@ -80,11 +80,11 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
       ::CreateNewField(gvFields, PROB_MODEL_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset); 
       ::CreateNewField(gvFields, RATES_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
       ::CreateNewField(gvFields, GRID_FILE_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
-      ::CreateNewField(gvFields, MAX_GEO_EXTENT_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
-      ::CreateNewField(gvFields, MAX_TIME_EXTENT_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
+      ::CreateNewField(gvFields, MAX_GEO_EXTENT_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
+      ::CreateNewField(gvFields, MAX_TIME_EXTENT_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
       ::CreateNewField(gvFields, INTERVAL_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
       ::CreateNewField(gvFields, ALIVE_ONLY_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
-      ::CreateNewField(gvFields, TIME_TREND_ADJUSTMENT_FIELD, ZD_ALPHA_FLD, 20, 3, uwOffset);
+      ::CreateNewField(gvFields, TIME_TREND_ADJUSTMENT_FIELD, ZD_ALPHA_FLD, 20, 0, uwOffset);
       ::CreateNewField(gvFields, COVARIATES_FIELD, ZD_NUMBER_FLD, 3, 0, uwOffset);
       ::CreateNewField(gvFields, MONTE_CARLO_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
 
@@ -185,6 +185,50 @@ void stsRunHistoryFile::GetIntervalUnitsString(ZdString& sTempValue, int iUnits)
    }
    catch (ZdException &x) {
       x.AddCallpath("GetIntervalUnitsString()", "stsRunHistoryFile");
+      throw;
+   }
+}
+
+// sets up the string to be outputted in max geo extent field
+// pre: none
+// post: sets sTempValue to the number and units of max geo extent
+void stsRunHistoryFile::GetMaxGeoExtentString(ZdString& sTempValue, const CParameters& params) {
+   try {
+      sTempValue << ZdString::reset << params.m_nMaxGeographicClusterSize << " ";
+      if(params.m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)
+         sTempValue << "%";
+      else {
+         if(params.m_nCoordType == CARTESIAN)
+            sTempValue << "Cartesian Units";
+         else
+            sTempValue << "Kilometers";
+      }
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("GetMaxGeoExtentString()", "stsRunHistoryFile");
+      throw;
+   }
+}
+
+// sets up the string to be outputted in max temporal extent field
+// pre: none
+// post: sets sTempValue to the number and units of max temporal extent
+void stsRunHistoryFile::GetMaxTemporalExtentString(ZdString& sTempValue, const CParameters& params) {
+   try {
+      sTempValue << ZdString::reset << params.GetInitialMaxTemporalClusterSize() << " ";
+      if(params.GetInitialMaxTemporalClusterSizeType() == PERCENTAGETYPE)
+         sTempValue << "%";
+      else {
+         if(params.m_nIntervalUnits == 3)
+            sTempValue << "Days";
+         else if(params.m_nIntervalUnits == 2)
+            sTempValue << "Months";
+         else
+            sTempValue << "Years";
+      }
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("GetMaxTemporalExtentString()", "stsRunHistoryFile");
       throw;
    }
 }
@@ -332,8 +376,15 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       GetCasePrecisionString(sTempValue, pAnalysis.GetSatScanData()->m_pParameters->m_nPrecision);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, PRECISION_TIMES_FIELD));
 
-      SetDoubleField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_nMaxGeographicClusterSize, GetFieldNumber(gvFields, MAX_GEO_EXTENT_FIELD));   // max geographic extent field
-      SetDoubleField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_nMaxTemporalClusterSize, GetFieldNumber(gvFields, MAX_TIME_EXTENT_FIELD));   // max temporal extent field
+      //  max geographic extent field
+      GetMaxGeoExtentString(sTempValue, *(pAnalysis.GetSatScanData()->m_pParameters));
+      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, MAX_GEO_EXTENT_FIELD));
+
+      // max temporal extent field
+      GetMaxTemporalExtentString(sTempValue, *(pAnalysis.GetSatScanData()->m_pParameters));
+      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, MAX_TIME_EXTENT_FIELD));
+ //     SetDoubleField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_nInitialMaxClusterSizeType, GetFieldNumber(gvFields, MAX_GEO_EXTENT_FIELD));   //
+ //     SetDoubleField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_nInitialMaxTemporalClusterSize, GetFieldNumber(gvFields, MAX_TIME_EXTENT_FIELD));
 
       // time trend adjustment field
       GetTimeAdjustmentString(sTempValue, pAnalysis.GetSatScanData()->m_pParameters->m_nTimeAdjustType);

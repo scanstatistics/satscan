@@ -40,6 +40,8 @@ class stsRunHistoryFile {
       void      GetAnalysisTypeString(ZdString& sTempValue, int iType);
       void      GetCasePrecisionString(ZdString& sTempValue, int iPrecision);
       void      GetIntervalUnitsString(ZdString& sTempValue, int iUnits);
+      void      GetMaxGeoExtentString(ZdString& sTempValue, const CParameters& params);
+      void      GetMaxTemporalExtentString(ZdString& sTempValue, const CParameters& params);
       void      GetProbabilityModelString(ZdString& sTempValue, int iModel);
       void      GetRatesString(ZdString& sTempValue, int iRate);
       void      GetTimeAdjustmentString(ZdString& sTempValue, int iType);
