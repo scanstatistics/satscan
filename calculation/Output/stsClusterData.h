@@ -5,90 +5,47 @@
 #include "stsOutputFileData.h"
 #include "Parameters.h"
 
-extern const char *	CLUSTER_FILE_EXT;
-
 class CCluster;
 class CSaTScanData;
 
+/** This class is responsible for the storage of the cluster information to be
+    outputted. It is not responsible for any writing to a file format, just for
+    the storage of the data.*/
 class stsClusterData : public BaseOutputStorageClass {
    private:
-      ProbabiltyModelType       geProbabiltyModelType;
-      int       giDimension, giCoordType;
-      bool      gbPrintEllipses, gbPrintPVal, gbIncludeRunHistory, gbDuczmalCorrect;
-      long	glRunNumber;
-      
-      void	Init();
-      void      SetAreaID(std::string& sId, const CCluster& pCluster, const CSaTScanData& pData);
-      void      SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, ZdString& sRadius,
-                               std::vector<std::string>& vAdditCoords,
-                               const CCluster& pCluster, const CSaTScanData& pData);
-      void      SetEllipseString(ZdString& sAngle, ZdString& sShape, const CCluster& pCluster, const CSaTScanData& pData);
-      void      SetStartAndEndDates(ZdString& sStartDate, ZdString& sEndDate, const CCluster& pCluster, const CSaTScanData& pData);                         
-      void	Setup(const ZdString& sOutputFileName);
-      void  	SetupFields();
+      void  	                SetupFields();
+
+   protected:
+      static const char       * CLUSTER_FILE_EXT;
+      static const char       * START_DATE_FLD;
+      static const char       * END_DATE_FLD;
+      static const char       * RADIUS_FIELD;
+      static const char       * E_ANGLE_FIELD;
+      static const char       * E_SHAPE_FIELD;
+      static const char       * NUM_AREAS_FIELD;
+      static const char       * COORD_LAT_FIELD;
+      static const char       * COORD_LONG_FIELD;
+      static const char       * COORD_X_FIELD;
+      static const char       * COORD_Y_FIELD;
+      static const char       * COORD_Z_FIELD;
+      static const char       * STREAM_OBSERVED_FIELD;
+      static const char       * STREAM_EXPECTED_FIELD;
+      static const char       * STREAM_REL_RISK_FIELD;
+      const CParameters       & gParameters;
+      bool                      gbExcludePValueField;
+
+      ZdString                & GetAreaID(ZdString& sAreaId, const CCluster& thisCluster, const CSaTScanData& DataHub) const;
+      ZdString                & GetEllipseAngle(ZdString& sAngle, const CCluster& thisCluster, const CSaTScanData& DataHub) const;
+      ZdString                & GetEllipseShape(ZdString& sShape, const CCluster& thisCluster, const CSaTScanData& DataHub) const;
+      void                      WriteCoordinates(OutputRecord& Record, const CCluster& pCluster, const CSaTScanData& DataHub);
 
    public:
-      stsClusterData(BasePrint *pPrintDirection, const ZdString& sOutputFileName,
-                                const long lRunNumber, const int iCoordType,
-                                ProbabiltyModelType eProbabiltyModelType, const int iDimension = 2,
-                                const bool bPrintPVal = true, const bool bPrintEllipses = false,
-                                const bool bDuczmalCorrect = false);
+      stsClusterData(const CParameters& Parameters, bool bExcludePValueField);
       virtual    ~stsClusterData();
 
-      void      RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, unsigned int iNumSimsCompleted);
-};
-
-class ClusterRecord : public BaseOutputRecord {
-   private:
-      long 			glRunNumber;
-      ZdString 			gsLocationID;
-      int 			giClusterNumber;
-      ZdString 			gsFirstCoord;
-      ZdString 			gsSecondCoord;
-      std::vector<std::string> 	gvsAdditCoords;
-      ZdString 			gsRadius;
-      ZdString 			gsEllipseAngles;
-      ZdString 			gsEllipseShapes;
-      long 			glNumAreas;
-      long 			glObserved;
-      double 			gdExpected;
-      double 			gdRelRisk;
-      double 			gdLogLikelihood;
-      double                    gdTestStat;
-      double 			gdPValue;
-      ZdString 			gsStartDate;
-      ZdString 			gsEndDate;
-
-      int                       giNumFields;
-      bool                      gbPrintEllipses, gbPrintPVal, gbIncludeRunHistory, gbSpaceTimeModel, gbDuczmalCorrect;
-      void		        Init();
-   public:
-      ClusterRecord(const bool bPrintEllipses = true, const bool bPrintPVal = true, const bool bIncludeRunHistory = true, const bool bSpaceTimeModel = false, const bool bDuczmalCorrect = false);
-      virtual ~ClusterRecord();
-
-      virtual bool      GetFieldIsBlank(int iFieldNumber);
-      virtual int       GetNumFields() { return giNumFields; }
-      virtual ZdFieldValue GetValue(int iFieldNumber);
-      void              SetFieldIsBlank(int iFieldNumber, bool bBlank);
-
-      void	SetAdditionalCoordinates(const std::vector<std::string>& vsAdditCoords) { gvsAdditCoords = vsAdditCoords; }
-      void	SetClusterNumber(const int iClusterNumber) { giClusterNumber = iClusterNumber; }     
-      void 	SetEllipseAngles(const ZdString& sEllipseAngles) { gsEllipseAngles = sEllipseAngles; }
-      void	SetEllipseShapes(const ZdString& sEllipseShapes) { gsEllipseShapes = sEllipseShapes; }
-      void	SetEndDate(const ZdString& sEndDate) { gsEndDate = sEndDate; }
-      void	SetExpected(const double dExpected) { gdExpected = dExpected; }
-      void	SetFirstCoordinate(const ZdString& sFirstCoord) { gsFirstCoord = sFirstCoord; }
-      void	SetLocationID(const ZdString& sLocationID) { gsLocationID = sLocationID; }
-      void	SetLogLikelihoodRatio(const double dLogLikelihood) { gdLogLikelihood = dLogLikelihood; }
-      void	SetNumAreas(const long lNumAreas) { glNumAreas = lNumAreas; }
-      void	SetObserved(const long lObserved) { glObserved = lObserved; }
-      void	SetPValue(const double dPValue) { gdPValue = dPValue; }
-      void	SetRadius(const ZdString& sRadius) { gsRadius = sRadius; }
-      void	SetRelativeRisk(const double dRelRisk) { gdRelRisk = dRelRisk; }
-      void 	SetRunNumber(const long	lRunNumber) { glRunNumber = lRunNumber; }
-      void	SetSecondCoordinate(const ZdString& sSecondCoord) { gsSecondCoord = sSecondCoord; }
-      void	SetStartDate(const ZdString& sStartDate) { gsStartDate = sStartDate; }
-      void      SetTestStat(const double dTestStat) { gdTestStat = dTestStat; }      
+      virtual const char      * GetOutputExtension() const {return CLUSTER_FILE_EXT;}
+      void                      RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData,
+                                                  int iClusterNumber, unsigned int iNumSimsCompleted);
 };
 //***************************************************************************
 #endif
