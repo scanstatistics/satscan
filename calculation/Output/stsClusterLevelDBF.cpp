@@ -17,10 +17,10 @@
 // constructor
 __fastcall stsClusterLevelDBF::stsClusterLevelDBF(const long lRunNumber, const int iCoordType,
                                                   const ZdFileName& sOutputFileName, const int iDimension,
-                                                  const bool bPrintPVal) : DBaseOutput(lRunNumber, bPrintPVal, iCoordType) {
+                                                  const bool bPrintPVal, const bool bPrintEllipses) : DBaseOutput(lRunNumber, bPrintPVal, iCoordType) {
    try {
       Init();
-      Setup(sOutputFileName.GetFullPath(), iDimension);
+      Setup(sOutputFileName.GetFullPath(), iDimension, bPrintEllipses);
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsClusterLevelDBF");
@@ -44,12 +44,13 @@ void stsClusterLevelDBF::Init() {
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
 void stsClusterLevelDBF::RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, tract_t tTract) {
-   float                        fRadius = 0.0, fLatitude = 0.0, fLongitude = 0.0, fPVal;
+   std::string                  sRadius, sLatitude, sLongitude;
+   float                        fPVal;
    ZdString                     sTempValue;
    ZdTransaction*               pTransaction = 0;
-   std::string                  sStartDate, sEndDate;
+   std::string                  sStartDate, sEndDate, sShape, sAngle;
    DBFFile                      File(gsFileName.GetCString());
-   std::vector<float>           vAdditCoords;
+   std::vector<std::string>     vAdditCoords;
 
    try {
       std::auto_ptr<ZdFileRecord>  pRecord(File.GetNewRecord());
@@ -91,20 +92,26 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
       SetAreaID(sTempValue, pCluster, pData);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, LOC_ID));
 
-      SetCoordinates(fLatitude, fLongitude, fRadius, vAdditCoords, pCluster, pData);
-
       // first two coords
-      SetDoubleField(*pRecord, fLatitude, GetFieldNumber(gvFields, (giCoordType != CARTESIAN) ? COORD_LAT : COORD_X));
-      SetDoubleField(*pRecord, fLongitude, GetFieldNumber(gvFields, (giCoordType != CARTESIAN) ? COORD_LONG : COORD_Y));
+      SetCoordinates(sLatitude, sLongitude, sRadius, vAdditCoords, pCluster, pData);
+      SetStringField(*pRecord, sLatitude.c_str(), GetFieldNumber(gvFields, (giCoordType != CARTESIAN) ? COORD_LAT : COORD_X));
+      SetStringField(*pRecord, sLongitude.c_str(), GetFieldNumber(gvFields, (giCoordType != CARTESIAN) ? COORD_LONG : COORD_Y));
 
       // additional coords
       for(size_t i = 0; i < vAdditCoords.size(); ++i) {
          sTempValue << ZdString::reset << COORD_Z << (i+1);
-         SetDoubleField(*pRecord, vAdditCoords[i], GetFieldNumber(gvFields, sTempValue.GetCString()));
+         SetStringField(*pRecord, vAdditCoords[i].c_str(), GetFieldNumber(gvFields, sTempValue.GetCString()));
       }
 
       // radius
-      SetDoubleField(*pRecord, fRadius, GetFieldNumber(gvFields, RADIUS));
+      SetStringField(*pRecord, sRadius.c_str(), GetFieldNumber(gvFields, RADIUS));
+
+      // ellipse shape and angle      
+      if(gbPrintEllipses) {
+         SetEllipseString(sAngle, sShape, pCluster, pData);
+         SetStringField(*pRecord, sShape.c_str(), GetFieldNumber(gvFields, "E_SHAPE"));
+         SetStringField(*pRecord, sAngle.c_str(), GetFieldNumber(gvFields, "E_ANGLE"));
+      }
 
       pTransaction= File.BeginTransaction();
       File.AppendRecord(*pTransaction, *pRecord);
@@ -123,28 +130,62 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
 // this a a very ugly function, I will be the first to admit, but it is borrowed code from the
 // way SatScan uses to calculate and print these Coordinate values, so don't blame me that it
 // stinks cause someone else wrote it, I just plagurized it - AJV 9/25/2002
+// by the way, all of the sprintf's and bouncing back and forth between floats and strings here
+// is necessary because the customer wishes to print the float if applicable but a "n/a" if not which
+// forces me to make the field a ALPHA_FLD and requires me to do this ugliness - AJV 10/2/2002
 // pre : none that I can think of
 // post : sets the values for long, lat, sAdditCoords, and radius
-void stsClusterLevelDBF::SetCoordinates(float& fLatitude, float& fLongitude, float& fRadius, std::vector<float>& vAdditCoords,
+void stsClusterLevelDBF::SetCoordinates(std::string& sLatitude, std::string& sLongitude, std::string& sRadius,
+                                        std::vector<std::string>& vAdditCoords,
                                         const CCluster& pCluster, const CSaTScanData& pData) {
-   double *pCoords = 0, *pCoords2 = 0;
+   double       *pCoords = 0, *pCoords2 = 0;
+   float        fLatitude, fLongitude, fRadius;
+   char         sLatBuffer[256], sLongBuffer[256], sAdditBuffer[256], sRadBuffer[256];
 
    try {
       (pData.GetGInfo())->giGetCoords(pCluster.m_Center, &pCoords);
       (pData.GetTInfo())->tiGetCoords(pData.GetNeighbor(pCluster.m_iEllipseOffset, pCluster.m_Center, pCluster.m_nTracts), &pCoords2);
-      fRadius = (float)sqrt((pData.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
-      if(giCoordType == CARTESIAN) {
-         for (int i = 0; i < (pData.m_pParameters->m_nDimension); ++i) {
-            if (i == 0)
-               fLatitude = pCoords[i];
-            else if (i == 1)
-               fLongitude = pCoords[i];
-            else
-               vAdditCoords.push_back(pCoords[i]);
+
+      if(giCoordType == CARTESIAN) {        // if cartesian coords
+         if(pCluster.m_nClusterType != PURELYTEMPORAL) {
+            for (int i = 0; i < pData.m_pParameters->m_nDimension; ++i) {
+               if (i == 0) {
+                  sprintf(sLatBuffer, "%12.6f", pCoords[i]);
+                  sLatitude = sLatBuffer;
+               }
+               else if (i == 1) {
+                  sprintf(sLongBuffer, "%12.6f", pCoords[i]);
+                  sLongitude = sLongBuffer;
+               }
+               else  {
+                  sprintf(sAdditBuffer, "%12.6f", pCoords[i]);
+                  vAdditCoords.push_back(sAdditBuffer);
+               }
+            }
+         }
+         else {              // else we are doing a cartesian purely temporal, print out all n/a's
+            sLatitude = "n/a";
+            sLongitude = "n/a";
+            for (int i = 2; i < pData.m_pParameters->m_nDimension; ++i) {
+               vAdditCoords.push_back("n/a");
+            }
+            sRadius = "n/a";
          }
       }
-      else
+      else {
          ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
+         sprintf(sLongBuffer, "%12.6f", fLongitude);
+         sLongitude = sLongBuffer;
+         sprintf(sLatBuffer, "%12.6f", fLatitude);
+         sLatitude = sLatBuffer;
+      }
+
+      if(giCoordType != CARTESIAN || (giCoordType == CARTESIAN && pCluster.m_nClusterType != PURELYTEMPORAL)) {
+         fRadius = (float)sqrt((pData.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
+         sprintf(sRadBuffer, "%5.2f", fRadius);
+         sRadius = sRadBuffer;
+      }
+
       free(pCoords);
       free(pCoords2);
    }
@@ -152,6 +193,36 @@ void stsClusterLevelDBF::SetCoordinates(float& fLatitude, float& fLongitude, flo
       free(pCoords);
       free(pCoords2);
       x.AddCallpath("SetCoordinates()", "stsClusterLevelDBF");
+      throw;
+   }
+}
+
+// function to set the strings that are to be printed in the ellipse fields
+// pre : cluster and data defined with appropraite data
+// post : strings will be returned through reference with the values to be printed
+void stsClusterLevelDBF::SetEllipseString(std::string& sAngle, std::string& sShape, const CCluster& pCluster, const CSaTScanData& pData) {
+   char  sAngleBuffer[256], sShapeBuffer[256];
+
+   try {
+      if (pCluster.m_nClusterType == PURELYTEMPORAL){
+         sAngle = "n/a";
+         sShape = "n/a";
+      }
+      else {
+         if(pCluster.m_iEllipseOffset == 0 && pData.m_nNumEllipsoids > 0) {
+            sprintf(sAngleBuffer, "%8.3f", "1.0");
+            sprintf(sShapeBuffer, "%8.3f", "0.0");
+         }
+         else {
+            sprintf(sAngleBuffer, "%8.3f", pCluster.ConvertAngleToDegrees(pData.mdE_Angles[pCluster.m_iEllipseOffset-1]));
+            sprintf(sShapeBuffer, "%8.3f", pData.mdE_Shapes[pCluster.m_iEllipseOffset-1]);
+         }
+         sShape = sShapeBuffer;
+         sAngle = sAngleBuffer;
+      }
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("SetEllipseString()", "stsClusterLevelDBF");
       throw;
    }
 }
@@ -184,13 +255,13 @@ void stsClusterLevelDBF::SetStartAndEndDates(std::string& sStartDate, std::strin
 
 
 // internal setup
-void stsClusterLevelDBF::Setup(const ZdString& sOutputFileName, const int iDimension) {
+void stsClusterLevelDBF::Setup(const ZdString& sOutputFileName, const int iDimension, const bool bPrintEllipses) {
    try {
       // cluster level dbf has same filename as output file with cluster level extension - AJV 9/30/2002
       ZdString sTempName(sOutputFileName);
       sTempName.Replace(ZdFileName(sOutputFileName).GetExtension(), CLUSTER_LEVEL_EXT);
       gsFileName = sTempName;
-
+      gbPrintEllipses = bPrintEllipses;
       giDimension = iDimension;
       SetupFields(gvFields);
       CreateDBFFile();
@@ -214,8 +285,8 @@ void stsClusterLevelDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
       CreateNewField(vFields, RUN_NUM, ZD_NUMBER_FLD, 8, 0, uwOffset);
       CreateNewField(vFields, CLUST_NUM, ZD_NUMBER_FLD, 5, 0, uwOffset);
       CreateNewField(vFields, LOC_ID, ZD_ALPHA_FLD, 30, 0, uwOffset);
-      CreateNewField(vFields, (giCoordType != CARTESIAN) ? COORD_LAT : COORD_X, ZD_NUMBER_FLD, 12, 6, uwOffset);
-      CreateNewField(vFields, (giCoordType != CARTESIAN) ? COORD_LONG : COORD_Y, ZD_NUMBER_FLD, 12, 6, uwOffset);
+      CreateNewField(vFields, (giCoordType != CARTESIAN) ? COORD_LAT : COORD_X, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      CreateNewField(vFields, (giCoordType != CARTESIAN) ? COORD_LONG : COORD_Y, ZD_ALPHA_FLD, 16, 0, uwOffset);
 
       // Only Cartesian coordinates have more than two dimensions. Lat/Long is consistently assigned to 3 dims
       // throughout the program eventhough the third dim is never used. When you print the third it is blank
@@ -223,11 +294,17 @@ void stsClusterLevelDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
       if(giCoordType == CARTESIAN && giDimension > 2) {
          for(int i = 3; i <= giDimension; ++i) {
             sTemp << ZdString::reset << COORD_Z << (i-2);
-            CreateNewField(vFields, sTemp.GetCString(), ZD_NUMBER_FLD, 12, 6, uwOffset);
+            CreateNewField(vFields, sTemp.GetCString(), ZD_ALPHA_FLD, 16, 0, uwOffset);
          }
       }
 
-      CreateNewField(vFields, RADIUS, ZD_NUMBER_FLD, 12, 2, uwOffset);
+      CreateNewField(vFields, RADIUS, ZD_ALPHA_FLD, 12, 0, uwOffset);
+
+      if(gbPrintEllipses) {    // whether or not to print ellipse descriptors
+         CreateNewField(vFields, "E_ANGLE", ZD_ALPHA_FLD, 16, 0, uwOffset);
+         CreateNewField(vFields, "E_SHAPE", ZD_ALPHA_FLD, 16, 0, uwOffset);
+      }
+
       CreateNewField(vFields, NUM_AREAS, ZD_NUMBER_FLD, 12, 0, uwOffset);
       CreateNewField(vFields, OBSERVED, ZD_NUMBER_FLD, 12, 0, uwOffset);
       CreateNewField(vFields, EXPECTED, ZD_NUMBER_FLD, 12, 2, uwOffset);
