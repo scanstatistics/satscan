@@ -278,6 +278,12 @@ void stsRunHistoryFile::GetProbabilityModelString(ZdString& sTempValue, Probabil
             sTempValue = "Bernoulli";  break;
          case SPACETIMEPERMUTATION :
             sTempValue = "Space Time Permutation"; break;
+         case NORMAL :
+            sTempValue = "Normal"; break;
+         case SURVIVAL :
+            sTempValue = "Survival"; break;
+         case RANK :
+            sTempValue = "Rank"; break;
          default :
             ZdException::GenerateNotification("Invalid probability model in the run history file.", "stsRunHistoryFile");   
       }
