@@ -223,12 +223,6 @@ SimulationDataContainer_t& PoissonDataStreamHandler::GetSimulationDataContainer(
   return Container;
 }
 
-/** randomizes each data streams */
-void PoissonDataStreamHandler::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
-  for (size_t t=0; t < gvDataStreams.size(); ++t)
-     gvDataStreamRandomizers[t]->RandomizeData(*gvDataStreams[t], *SimDataContainer[t], iSimulationNumber);
-}
-
 /** */
 bool PoissonDataStreamHandler::ReadData() {
   try {
@@ -401,7 +395,7 @@ void PoissonDataStreamHandler::SetRandomizers() {
           gvDataStreamRandomizers[0] = new AlternateHypothesisRandomizer(gDataHub);
           break;
       case FILESOURCE :
-          gvDataStreamRandomizers[0] = new FileSourceRandomizer(gDataHub);
+          gvDataStreamRandomizers[0] = new FileSourceRandomizer(gParameters);
           break;
       default :
           ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
