@@ -96,7 +96,7 @@ void AsciiPrintFormat::PrintSectionLabel(FILE* fp, const char * sText, bool bDat
     iStringLength += fprintf(fp, " %s", gsPerDataSetText);
   //check that created label isn't greater than defined maximum width of label
   if (iStringLength > (bPadLeftMargin ? giLabelWidth + giLeftMargin : giLabelWidth))
-    ZdGenerateException("Label text has length of %u, but defined max length is %u.\n", "GetClusterSectionText()",
+    ZdGenerateException("Label text has length of %u, but defined max length is %u.\n", "PrintSectionLabel()",
                         iStringLength, (bPadLeftMargin ? giLabelWidth + giLeftMargin : giLabelWidth));
   //calculate fill length
   iFillLength = (bPadLeftMargin ? giLeftMargin + giLabelWidth : giLabelWidth);
@@ -105,6 +105,25 @@ void AsciiPrintFormat::PrintSectionLabel(FILE* fp, const char * sText, bool bDat
        iStringLength += fprintf(fp, ".");
   //append label colon
   iStringLength += fprintf(fp, ": ");
+}
+
+/** Prints section label to file stream, but starts label text at data column. */
+void AsciiPrintFormat::PrintSectionLabelAtDataColumn(FILE* fp, const char* sText, unsigned int iPostNewlines) const {
+  unsigned int  iStringLength=0, iPad=0;
+
+  //add left margin spacing til data column left margin
+  while (iPad++ < giDataLeftMargin) {
+       putc(' ', fp);
+       ++iStringLength;
+  }
+  //add label
+  iStringLength += fprintf(fp, sText);
+  //check that created label fits in data section
+  if (iStringLength > giRightMargin)
+    ZdGenerateException("Label text extended beyond defined max length is %u.\n", "PrintSectionLabelAtDataColumn()", giRightMargin);
+  //append newlines as requested
+  while (iPostNewlines-- > 0)
+     putc('\n', fp);
 }
 
 /** Prints character cSeparator giRightMargin'th times. Prefixes/postfixes separator

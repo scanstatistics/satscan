@@ -27,6 +27,7 @@ class AsciiPrintFormat {
 
      void                       PrintAlignedMarginsDataString(FILE* fp, ZdString& sDataString, unsigned int iPostNewlines=1) const;
      void                       PrintSectionLabel(FILE* fp, const char* sText, bool bDataSetParticular, bool bPadLeftMargin) const;
+     void                       PrintSectionLabelAtDataColumn(FILE* fp, const char* sText, unsigned int iPostNewlines=1) const;
      static void                PrintSectionSeparatorString(FILE* fp, unsigned int iPreNewlines=0, unsigned int iPostNewlines=1, char cSeparator='_');
      static void                PrintVersionHeader(FILE* fp);
      void                       SetMarginsAsClusterSection(unsigned int iNumber);
