@@ -78,15 +78,15 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iRepo
 
 /** Prints annual cases to file stream is in format required by result output file. */
 void CCluster::DisplayAnnualCaseInformation(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  unsigned int                  i;
-  ZdString                      sWork, sBuffer;
-  const DataStreamHandler     & Streams = DataHub.GetDataStreamHandler();
+  unsigned int           i;
+  ZdString               sWork, sBuffer;
+  const DataSetHandler & DataSets = DataHub.GetDataSetHandler();
 
   if (DataHub.GetParameters().GetProbabilityModelType() == POISSON && DataHub.GetParameters().UsePopulationFile()) {
     sBuffer.printf("Annual cases / %.0f", DataHub.GetAnnualRatePop());
     PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
     sBuffer.printf("%.1f", DataHub.GetAnnualRateAtStart(0) * GetRelativeRisk(DataHub.GetMeasureAdjustment(0), 0));
-    for (i=1; i < Streams.GetNumDataSets(); ++i) {
+    for (i=1; i < DataSets.GetNumDataSets(); ++i) {
        sWork.printf(", %.1f", DataHub.GetAnnualRateAtStart(i) * GetRelativeRisk(DataHub.GetMeasureAdjustment(i), i));
        sBuffer << sWork;
     }
@@ -97,13 +97,13 @@ void CCluster::DisplayAnnualCaseInformation(FILE* fp, const CSaTScanData& DataHu
 /** Prints number of observed and expected cases to file stream is in format
     required by result output file. */
 void CCluster::DisplayCaseInformation(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  unsigned int                  i, j, k;
-  ZdString                      sWork, sBuffer, sNullString;
-  const DataStreamHandler     & DataSets = DataHub.GetDataStreamHandler();
+  unsigned int           i, j, k;
+  ZdString               sWork, sBuffer, sNullString;
+  const DataSetHandler & DataSets = DataHub.GetDataSetHandler();
 
   if (DataHub.GetParameters().GetProbabilityModelType() == ORDINAL) {
     for (i=0; i < DataSets.GetNumDataSets(); ++i) {
-       const RealDataStream& RealSet = DataSets.GetStream(i);
+       const RealDataSet& DataSet = DataSets.GetDataSet(i);
        //print data set number if more than data set 
        if (DataSets.GetNumDataSets() > 1) {
          sWork.printf("Data Set #%ld", i + 1);
@@ -112,16 +112,16 @@ void CCluster::DisplayCaseInformation(FILE* fp, const CSaTScanData& DataHub, con
        }
        //print category ordinal values
        PrintFormat.PrintSectionLabel(fp, "Category", false, true);
-       sBuffer.printf("%g", RealSet.GetPopulationData().GetOrdinalCategoryValue(0));
-       for (k=1; k < RealSet.GetPopulationData().GetNumOrdinalCategories(); ++k) {
-         sWork.printf(", %g", RealSet.GetPopulationData().GetOrdinalCategoryValue(k));
+       sBuffer.printf("%g", DataSet.GetPopulationData().GetOrdinalCategoryValue(0));
+       for (k=1; k < DataSet.GetPopulationData().GetNumOrdinalCategories(); ++k) {
+         sWork.printf(", %g", DataSet.GetPopulationData().GetOrdinalCategoryValue(k));
          sBuffer << sWork;
        }
        PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
        //print observed case data per category
        PrintFormat.PrintSectionLabel(fp, "Number of cases", false, true);
        sBuffer.printf("%ld", GetClusterData()->GetCategoryCaseCount(0, i));
-       for (k=1; k < RealSet.GetPopulationData().GetNumOrdinalCategories(); ++k) {
+       for (k=1; k < DataSet.GetPopulationData().GetNumOrdinalCategories(); ++k) {
          sWork.printf(", %ld", GetClusterData()->GetCategoryCaseCount(k, i));
          sBuffer << sWork;
        }
@@ -385,16 +385,16 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
 
 /** Writes clusters population in format required by result output file. */
 void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
-  unsigned int                  i;
-  ZdString                      sWork, sBuffer;
-  const DataStreamHandler     & Streams = Data.GetDataStreamHandler();
-  double                        dPopulation;
+  unsigned int           i;
+  ZdString               sWork, sBuffer;
+  const DataSetHandler & DataSets = Data.GetDataSetHandler();
+  double                 dPopulation;
 
   if ((Data.GetParameters().GetProbabilityModelType() == POISSON && Data.GetParameters().UsePopulationFile())
       || Data.GetParameters().GetProbabilityModelType() == BERNOULLI) {
     PrintFormat.PrintSectionLabel(fp, "Population", false, true);
 
-    for (i=0; i < Streams.GetNumDataSets(); ++i) {
+    for (i=0; i < DataSets.GetNumDataSets(); ++i) {
       dPopulation = Data.GetProbabilityModel().GetPopulation(i, m_iEllipseOffset, m_Center,
                                                              m_nTracts, m_nFirstInterval, m_nLastInterval);
       if (dPopulation < .5)
@@ -427,13 +427,13 @@ void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPr
 
 /** Writes clusters overall relative risk in format required by result output file. */
 void CCluster::DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  const DataStreamHandler & Streams = DataHub.GetDataStreamHandler();
-  unsigned int              i;
-  ZdString                  sBuffer, sWork;
+  const DataSetHandler & DataSets = DataHub.GetDataSetHandler();
+  unsigned int           i;
+  ZdString               sBuffer, sWork;
 
   PrintFormat.PrintSectionLabel(fp, "Observed / expected", false, true);
   sBuffer.printf("%.3f", GetRelativeRisk(DataHub.GetMeasureAdjustment(0), 0));
-  for (i=1; i < Streams.GetNumDataSets(); ++i) {
+  for (i=1; i < DataSets.GetNumDataSets(); ++i) {
     sWork.printf(", %.3f", GetRelativeRisk(DataHub.GetMeasureAdjustment(i), i));
     sBuffer << sWork;
   }
@@ -459,24 +459,24 @@ const double CCluster::GetPValue(unsigned int uiNumSimulationsCompleted) const {
 }
 
 /** Returns relative risk of cluster.
-    NOTE: Currently this only reports the relative risk of first data stream. */
-const double CCluster::GetRelativeRisk(double nMeasureAdjustment, unsigned int iStream) const {
+    NOTE: Currently this only reports the relative risk of first data set. */
+const double CCluster::GetRelativeRisk(double nMeasureAdjustment, size_t tSetIndex) const {
   double        dRelativeRisk=0;
 
-  if (GetMeasure(iStream) * nMeasureAdjustment)
-    dRelativeRisk = ((double)GetCaseCount(iStream))/(GetMeasure(iStream) * nMeasureAdjustment);
+  if (GetMeasure(tSetIndex) * nMeasureAdjustment)
+    dRelativeRisk = ((double)GetCaseCount(tSetIndex))/(GetMeasure(tSetIndex) * nMeasureAdjustment);
 
   return dRelativeRisk;
 }
 
 /** Returns the relative risk for tract as defined by cluster. */
-double CCluster::GetRelativeRiskForTract(tract_t tTract, const CSaTScanData& DataHub, unsigned int iStream) const {
+double CCluster::GetRelativeRiskForTract(tract_t tTract, const CSaTScanData& DataHub, size_t tSetIndex) const {
   double        dRelativeRisk=0;
   count_t       tCaseCount;
   measure_t     tMeasure;
 
-  tCaseCount = GetCaseCountForTract(tTract, DataHub, iStream);
-  tMeasure = GetMeasureForTract(tTract, DataHub, iStream);
+  tCaseCount = GetCaseCountForTract(tTract, DataHub, tSetIndex);
+  tMeasure = GetMeasureForTract(tTract, DataHub, tSetIndex);
 
   if (tMeasure)
     dRelativeRisk = ((double)(tCaseCount))/tMeasure;

@@ -13,32 +13,32 @@ class ClusterDataFactory : public AbstractClusterDataFactory {
    virtual ~ClusterDataFactory();
 
    //spatial cluster data
-   virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const DataStreamInterface& Interface, int iRate) const;
-   virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const AbtractDataStreamGateway& DataGateway, int iRate) const;
+   virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const DataSetInterface& Interface, int iRate) const;
+   virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const AbtractDataSetGateway& DataGateway, int iRate) const;
 
    //prospective spatial cluster data
-   virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const DataStreamInterface& Interface) const;
-   virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const AbtractDataStreamGateway& DataGateway) const;
+   virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const DataSetInterface& Interface) const;
+   virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway) const;
 
    //temporal cluster data
-   virtual AbstractTemporalClusterData * GetNewTemporalClusterData(const DataStreamInterface& Interface) const;
-   virtual AbstractTemporalClusterData * GetNewTemporalClusterData(const AbtractDataStreamGateway& DataGateway) const;
+   virtual AbstractTemporalClusterData * GetNewTemporalClusterData(const DataSetInterface& Interface) const;
+   virtual AbstractTemporalClusterData * GetNewTemporalClusterData(const AbtractDataSetGateway& DataGateway) const;
 
    //space-time cluster data
-   virtual AbstractTemporalClusterData * GetNewSpaceTimeClusterData(const DataStreamInterface& Interface) const;
-   virtual AbstractTemporalClusterData * GetNewSpaceTimeClusterData(const AbtractDataStreamGateway& DataGateway) const;
+   virtual AbstractTemporalClusterData * GetNewSpaceTimeClusterData(const DataSetInterface& Interface) const;
+   virtual AbstractTemporalClusterData * GetNewSpaceTimeClusterData(const AbtractDataSetGateway& DataGateway) const;
 };
 
 /** Cluster factory class that implements the base class interface for data sets
     which contain multiple data sets.
     Note: This class does not provide functionality for the Normal probability
-          model. A new multiple stream class will likely be needed when that
+          model. A new multiple dataset class will likely be needed when that
           code modification is requested.
     Note: All of the public functions to get new cluster data objects with
-          'const DataStreamInterface&' parameter are not implemented and will
-          throw an ZdException. Having multiple data streams imposes requirement
+          'const DataSetInterface&' parameter are not implemented and will
+          throw an ZdException. Having multiple datasets imposes requirement
           to perform simulations through same process as that of real data and
-          thus only the functions with 'const AbtractDataStreamGateway&' are of
+          thus only the functions with 'const AbtractDataSetGateway&' are of
           us at this time.  */
 class MultiSetClusterDataFactory : public AbstractClusterDataFactory {
  private:
@@ -51,20 +51,20 @@ class MultiSetClusterDataFactory : public AbstractClusterDataFactory {
    virtual ~MultiSetClusterDataFactory();
 
    //spatial cluster data
-   virtual AbstractSpatialClusterData * GetNewSpatialClusterData(const DataStreamInterface& Interface, int iRate) const;
-   virtual AbstractSpatialClusterData * GetNewSpatialClusterData(const AbtractDataStreamGateway& DataGateway, int iRate) const;
+   virtual AbstractSpatialClusterData * GetNewSpatialClusterData(const DataSetInterface& Interface, int iRate) const;
+   virtual AbstractSpatialClusterData * GetNewSpatialClusterData(const AbtractDataSetGateway& DataGateway, int iRate) const;
 
    //prospective spatial cluster data
-   virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const DataStreamInterface& Interface) const;
-   virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const AbtractDataStreamGateway& DataGateway) const;
+   virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const DataSetInterface& Interface) const;
+   virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway) const;
 
    //temporal cluster data
-   virtual AbstractTemporalClusterData * GetNewTemporalClusterData(const DataStreamInterface& Interface) const;
-   virtual AbstractTemporalClusterData * GetNewTemporalClusterData(const AbtractDataStreamGateway& DataGateway) const;
+   virtual AbstractTemporalClusterData * GetNewTemporalClusterData(const DataSetInterface& Interface) const;
+   virtual AbstractTemporalClusterData * GetNewTemporalClusterData(const AbtractDataSetGateway& DataGateway) const;
 
    //space-time cluster data
-   virtual AbstractTemporalClusterData * GetNewSpaceTimeClusterData(const DataStreamInterface& Interface) const;
-   virtual AbstractTemporalClusterData * GetNewSpaceTimeClusterData(const AbtractDataStreamGateway& DataGateway) const;
+   virtual AbstractTemporalClusterData * GetNewSpaceTimeClusterData(const DataSetInterface& Interface) const;
+   virtual AbstractTemporalClusterData * GetNewSpaceTimeClusterData(const AbtractDataSetGateway& DataGateway) const;
 };
 //******************************************************************************
 #endif

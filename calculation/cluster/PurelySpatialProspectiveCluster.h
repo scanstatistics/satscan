@@ -15,11 +15,11 @@ class CPurelySpatialProspectiveCluster : public CCluster {
     AbstractTemporalClusterData              * gpClusterData;
 
     void                        	       Init() {gpClusterData=0;}
-    void			               Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, const CSaTScanData & Data);
+    void			               Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway, const CSaTScanData & Data);
 
   public:
     CPurelySpatialProspectiveCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                     const AbtractDataStreamGateway & DataGateway,
+                                     const AbtractDataSetGateway & DataGateway,
                                      const CSaTScanData & Data);
     CPurelySpatialProspectiveCluster(const CPurelySpatialProspectiveCluster& rhs);
     virtual ~CPurelySpatialProspectiveCluster();
@@ -28,20 +28,20 @@ class CPurelySpatialProspectiveCluster : public CCluster {
 
     void                                       AddNeighborAndCompare(tract_t tEllipseOffset,
                                                                      tract_t tCentroid,
-                                                                     const AbtractDataStreamGateway & DataGateway,
+                                                                     const AbtractDataSetGateway & DataGateway,
                                                                      const CSaTScanData * pData,
                                                                      CPurelySpatialProspectiveCluster & TopCluster,
                                                                      AbstractLikelihoodCalculator & Calculator);
     inline virtual void                        AssignAsType(const CCluster& rhs) {*this = (CPurelySpatialProspectiveCluster&)rhs;}
     virtual CPurelySpatialProspectiveCluster * Clone() const;
-    virtual count_t                            GetCaseCount(unsigned int iStream) const {return gpClusterData->GetCaseCount(iStream);}
-    virtual count_t                            GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const;
+    virtual count_t                            GetCaseCount(size_t tSetIndex) const {return gpClusterData->GetCaseCount(tSetIndex);}
+    virtual count_t                            GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual AbstractClusterData              * GetClusterData() {return gpClusterData;}
     virtual const AbstractClusterData        * GetClusterData() const {return gpClusterData;}
     virtual ClusterType                        GetClusterType() const {return PURELYSPATIALPROSPECTIVECLUSTER;}
     virtual ZdString                         & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
-    virtual measure_t                          GetMeasure(unsigned int iStream) const {return gpClusterData->GetMeasure(iStream);}
-    virtual measure_t                          GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const;
+    virtual measure_t                          GetMeasure(size_t tSetIndex) const {return gpClusterData->GetMeasure(tSetIndex);}
+    virtual measure_t                          GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual ZdString                         & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     virtual void                               Initialize(tract_t nCenter);
 };

@@ -12,13 +12,13 @@
 class CPurelyTemporalCluster : public CCluster {
   private:
     void                                Init() {gpClusterData=0;}
-    void                                Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, IncludeClustersType eIncludeClustersType, const CSaTScanData & Data);
+    void                                Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway, IncludeClustersType eIncludeClustersType, const CSaTScanData & Data);
 
   protected:
     AbstractTemporalClusterData       * gpClusterData;
 
   public:
-    CPurelyTemporalCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway,
+    CPurelyTemporalCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway,
                            IncludeClustersType eIncludeClustersType, const CSaTScanData & Data);
     CPurelyTemporalCluster(const CPurelyTemporalCluster& rhs);
     virtual ~CPurelyTemporalCluster();
@@ -31,13 +31,13 @@ class CPurelyTemporalCluster : public CCluster {
     virtual void                        DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {}
     virtual void                        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {}
     virtual void                        DisplayPopulation(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {};
-    virtual count_t                     GetCaseCount(unsigned int iStream) const;
-    virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const;
+    virtual count_t                     GetCaseCount(size_t tSetIndex) const;
+    virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual AbstractClusterData       * GetClusterData() {return gpClusterData;}
     virtual const AbstractClusterData * GetClusterData() const {return gpClusterData;}
     virtual ClusterType                 GetClusterType() const {return PURELYTEMPORALCLUSTER;}
-    virtual measure_t                   GetMeasure(unsigned int iStream) const;
-    virtual measure_t                   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const;
+    virtual measure_t                   GetMeasure(size_t tSetIndex) const;
+    virtual measure_t                   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual void                        Initialize(tract_t nCenter=0);
     virtual void                        Write(stsAreaSpecificData& AreaData, const CSaTScanData& Data,
                                               unsigned int iClusterNumber, unsigned int iNumSimsCompleted) const {/*nop*/}

@@ -1,18 +1,21 @@
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "NormalModel.h"
 
 /** constructor */
-CNormalModel::CNormalModel(const CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection)
-             :CModel(Parameters, Data, PrintDirection) {}
+CNormalModel::CNormalModel(const CParameters& Parameters, CSaTScanData& DataHub, BasePrint& PrintDirection)
+             :CModel(Parameters, DataHub, PrintDirection) {}
 
 /** destructor */
 CNormalModel::~CNormalModel() {}
 
-double CNormalModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, tract_t nCenter,
-                                   tract_t nTracts, int nStartInterval, int nStopInterval) const {
+void CNormalModel::CalculateMeasure(RealDataSet&) {
+  /* no action here */
+}
+
+double CNormalModel::GetPopulation(size_t, int, tract_t, tract_t, int, int) const {
   ZdGenerateException("GetPopulation() not implementated.","CNormalModel");
   return 0;
 }

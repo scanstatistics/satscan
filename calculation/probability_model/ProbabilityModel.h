@@ -1,11 +1,11 @@
-//*****************************************************************************
+//******************************************************************************
 #ifndef __PROBABILITYMODEL_H
 #define __PROBABILITYMODEL_H
-//*****************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #include "Parameters.h"
-#include "DataStream.h"
-#include "DataStreamInterface.h"
+#include "DataSet.h"
+#include "DataSetInterface.h"
 
 //#define DEBUGMODEL 0
 
@@ -18,20 +18,20 @@ class CModel {
   protected:
     BasePrint                 & gPrintDirection;
     const CParameters         & gParameters;
-    CSaTScanData              & gData;
+    CSaTScanData              & gDataHub;
 #ifdef DEBUGMODEL
     FILE                      * m_pDebugModelFile;
 #endif
 
   public:
-    CModel(const CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection);
+    CModel(const CParameters& Parameters, CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CModel();
 
-    virtual void                CalculateMeasure(RealDataStream & thisStream) = 0;
-    virtual double              GetPopulation(unsigned int iStream, int m_iEllipseOffset,
+    virtual void                CalculateMeasure(RealDataSet& DataSet) = 0;
+    virtual double              GetPopulation(size_t iSetIndex, int m_iEllipseOffset,
                                               tract_t nCenter, tract_t nTracts,
                                               int nStartInterval, int nStopInterval) const;
 };
-
-//*****************************************************************************
+//******************************************************************************
 #endif
+

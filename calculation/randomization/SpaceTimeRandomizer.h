@@ -1,7 +1,7 @@
-//---------------------------------------------------------------------------
+//******************************************************************************
 #ifndef __SPACETIMERANDOMIZER_H
 #define __SPACETIMERANDOMIZER_H
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "PermutationDataRandomizer.h"
 
 /** class representing a premutated attribute which is a time interval. */
@@ -18,9 +18,9 @@ class PermutedTime : public PermutedAttribute {
     inline int 		         GetTimeInterval() const {return giTimeIntervalIndex;}
 };
 
-class DataStream; /** forward class declaration */
+class DataSet; /** forward class declaration */
 
-/** Randomizes data of data stream for a 'space-time permutation' probablility model. */
+/** Randomizes data of dataset for a 'space-time permutation' probablility model. */
 class SpaceTimeRandomizer : public AbstractPermutedDataRandomizer {
   class CategoryGrouping {
     public:
@@ -30,8 +30,7 @@ class SpaceTimeRandomizer : public AbstractPermutedDataRandomizer {
   protected:
     std::vector<CategoryGrouping>    gCategoryAttributes;
 
-    virtual void                     AssignRandomizedData(const RealDataStream& thisRealStream,
-                                                          SimulationDataStream& thisSimulationStream);
+    virtual void                     AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet);
     virtual void                     SortPermutedAttribute();
 
   public:
@@ -41,7 +40,7 @@ class SpaceTimeRandomizer : public AbstractPermutedDataRandomizer {
     virtual SpaceTimeRandomizer    * Clone() const;
 
     void                             AddCase(unsigned int iCategory, int iTimeInterval, tract_t tTractIndex);
-    void                             CreateRandomizationData(const RealDataStream& thisStream);
+    void                             CreateRandomizationData(const RealDataSet& thisRealSet);
 };
 
 /** Function object used to compare permuted attributes. */

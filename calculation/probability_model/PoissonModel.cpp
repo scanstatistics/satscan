@@ -1,14 +1,14 @@
-//***************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//***************************************************************************
+//******************************************************************************
 #include "PoissonModel.h"
 
 const double CPoissonModel::gTimeTrendConvergence = 0.0000001;
 
 /** constructor */
-CPoissonModel::CPoissonModel(const CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection)
-              :CModel(Parameters, Data, PrintDirection) {}
+CPoissonModel::CPoissonModel(const CParameters& Parameters, CSaTScanData& DataHub, BasePrint& PrintDirection)
+              :CModel(Parameters, DataHub, PrintDirection) {}
 
 /** destructor */
 CPoissonModel::~CPoissonModel() {}
@@ -21,12 +21,12 @@ CPoissonModel::~CPoissonModel() {}
     These operations are done on the raw measure matrix rather than the
     later on constructed cumulative measure matrix, while the cumulative
     case matrix is used.                                                */
-void CPoissonModel::AdjustForNonParameteric(RealDataStream & thisStream, measure_t ** pNonCumulativeMeasure) {
+void CPoissonModel::AdjustForNonParameteric(RealDataSet& DataSet, measure_t ** pNonCumulativeMeasure) {
   int                   i, j, jj, k, tract, AdjustIntervals;
   double                sumcases,summeasure;
-  count_t            ** ppCases(thisStream.GetCaseArray());
+  count_t            ** ppCases(DataSet.GetCaseArray());
 
-  AdjustIntervals = gData.m_nTimeIntervals;
+  AdjustIntervals = gDataHub.m_nTimeIntervals;
   k  = 1;
   j  = 0;
   jj = 0;
@@ -35,16 +35,16 @@ void CPoissonModel::AdjustForNonParameteric(RealDataStream & thisStream, measure
   {
 	 sumcases   = 0;
 	 summeasure = 0;
-    while (j < k*gData.m_nTimeIntervals/AdjustIntervals && j < gData.m_nTimeIntervals)
+    while (j < k*gDataHub.m_nTimeIntervals/AdjustIntervals && j < gDataHub.m_nTimeIntervals)
     {
-      if (j == gData.m_nTimeIntervals-1)
-        for (tract=0; tract < gData.GetNumTracts(); tract++)
+      if (j == gDataHub.m_nTimeIntervals-1)
+        for (tract=0; tract < gDataHub.GetNumTracts(); tract++)
         {
           sumcases   = sumcases + ppCases[j][tract];
           summeasure = summeasure + (pNonCumulativeMeasure)[j][tract];
         } /* for tract */
       else
-        for (tract=0; tract < gData.GetNumTracts(); tract++)
+        for (tract=0; tract < gDataHub.GetNumTracts(); tract++)
         {
           sumcases   = sumcases + (ppCases[j][tract]-ppCases[j+1][tract]);
           summeasure = summeasure + (pNonCumulativeMeasure)[j][tract];
@@ -53,11 +53,11 @@ void CPoissonModel::AdjustForNonParameteric(RealDataStream & thisStream, measure
         j++;
     }  /* while */
 
-    while (jj < k*gData.m_nTimeIntervals/AdjustIntervals && jj < gData.m_nTimeIntervals)
+    while (jj < k*gDataHub.m_nTimeIntervals/AdjustIntervals && jj < gDataHub.m_nTimeIntervals)
     {
-      for (tract = 0; tract<gData.GetNumTracts(); tract++)
+      for (tract = 0; tract < gDataHub.GetNumTracts(); tract++)
         (pNonCumulativeMeasure)[jj][tract] =
-          (pNonCumulativeMeasure)[jj][tract]*(sumcases/summeasure)/((thisStream.GetTotalCases())/(thisStream.GetTotalMeasure()));
+          (pNonCumulativeMeasure)[jj][tract]*(sumcases/summeasure)/((DataSet.GetTotalCases())/(DataSet.GetTotalMeasure()));
 
       jj++;
     }  /* while */
@@ -68,7 +68,7 @@ void CPoissonModel::AdjustForNonParameteric(RealDataStream & thisStream, measure
 }
 
 /** Adjusts passed non-cumulative measure given passed log linear percentage. */
-void CPoissonModel::AdjustForLLPercentage(RealDataStream & thisStream, measure_t ** ppNonCumulativeMeasure, double nPercentage)
+void CPoissonModel::AdjustForLLPercentage(RealDataSet& DataSet, measure_t ** ppNonCumulativeMeasure, double nPercentage)
 {
   int    i,t;
   double c;
@@ -81,33 +81,33 @@ void CPoissonModel::AdjustForLLPercentage(RealDataStream & thisStream, measure_t
   #endif
 
   /* Adjust the measure assigned to each interval/tract by yearly percentage */
-  for (i=0; i < gData.m_nTimeIntervals; ++i)
-    for (t=0; t < gData.GetNumTracts(); ++t) {
+  for (i=0; i < gDataHub.m_nTimeIntervals; ++i)
+    for (t=0; t < gDataHub.GetNumTracts(); ++t) {
       ppNonCumulativeMeasure[i][t] = ppNonCumulativeMeasure[i][t]*(pow(p,i*k)) /* * c */ ;
       if (nAdjustedMeasure > std::numeric_limits<measure_t>::max() - ppNonCumulativeMeasure[i][t])
-        GenerateResolvableException("Error: Data overflow occurs when performing the time trend adjustment in data stream %u.\n"
+        GenerateResolvableException("Error: Data overflow occurs when performing the time trend adjustment in data set %u.\n"
                                     "       Please run analysis without the time trend adjustment.\n",
-                                    "AdjustForLLPercentage()", thisStream.GetStreamIndex());
+                                    "AdjustForLLPercentage()", DataSet.GetSetIndex());
       nAdjustedMeasure += ppNonCumulativeMeasure[i][t];
     }
 
   /* Mutlipy the measure for each interval/tract by constant (c) to obtain */
   /* total adjusted measure (nAdjustedMeasure) equal to previous total     */
   /* measure (gData.m_nTotalMeasure).                                             */
-  c = (double)(thisStream.GetTotalMeasure())/nAdjustedMeasure;
-  for (i=0; i<gData.m_nTimeIntervals; ++i)
-    for (t=0; t<gData.GetNumTracts(); ++t)
+  c = (double)(DataSet.GetTotalMeasure())/nAdjustedMeasure;
+  for (i=0; i < gDataHub.m_nTimeIntervals; ++i)
+    for (t=0; t < gDataHub.GetNumTracts(); ++t)
      ppNonCumulativeMeasure[i][t] *= c;
 }
 
-/** Calculates time trend for data stream, calls CParameters::SetTimeTrendAdjustmentPercentage()
+/** Calculates time trend for dataset, calls CParameters::SetTimeTrendAdjustmentPercentage()
     with calculated value, and calls AdjustForLLPercentage(). */
-void CPoissonModel::AdjustForLogLinear(RealDataStream& thisStream, measure_t ** pNonCumulativeMeasure) {
+void CPoissonModel::AdjustForLogLinear(RealDataSet& DataSet, measure_t ** pNonCumulativeMeasure) {
   CTimeTrend    TimeTrend;
 
   //Calculate time trend for whole dataset
-  TimeTrend.CalculateAndSet(thisStream.GetCasesPerTimeIntervalArray(), thisStream.GetMeasurePerTimeIntervalArray(),
-                            gData.GetNumTimeIntervals(), gTimeTrendConvergence);
+  TimeTrend.CalculateAndSet(DataSet.GetCasesPerTimeIntervalArray(), DataSet.GetMeasurePerTimeIntervalArray(),
+                            gDataHub.GetNumTimeIntervals(), gTimeTrendConvergence);
 
   //Cancel analysis execution if calculation of time trend fails for various reasons.
   switch (TimeTrend.GetStatus()) {
@@ -129,14 +129,14 @@ void CPoissonModel::AdjustForLogLinear(RealDataStream& thisStream, measure_t ** 
   };
 
   TimeTrend.SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-  AdjustForLLPercentage(thisStream, pNonCumulativeMeasure, TimeTrend.GetAnnualTimeTrend());
+  AdjustForLLPercentage(DataSet, pNonCumulativeMeasure, TimeTrend.GetAnnualTimeTrend());
   //store calculated time trend adjustment for reporting later
-  thisStream.SetCalculatedTimeTrendPercentage(TimeTrend.GetAnnualTimeTrend());
+  DataSet.SetCalculatedTimeTrendPercentage(TimeTrend.GetAnnualTimeTrend());
 }
 
 /** Adjusts passed non-cumulative measure for parameter specified temporal,
     spatial, and space-time adjustments.                                      */
-void CPoissonModel::AdjustMeasure(RealDataStream& thisStream, measure_t** ppNonCumulativeMeasure) {
+void CPoissonModel::AdjustMeasure(RealDataSet& DataSet, measure_t** ppNonCumulativeMeasure) {
   measure_t     AdjustedTotalMeasure_t=0;
   int           i;
   tract_t       t;
@@ -144,16 +144,16 @@ void CPoissonModel::AdjustMeasure(RealDataStream& thisStream, measure_t** ppNonC
   try {
     //adjust measure for known realtive risks
     if (gParameters.UseAdjustmentForRelativeRisksFile())
-      gData.AdjustForKnownRelativeRisks(thisStream, ppNonCumulativeMeasure);
+      gDataHub.AdjustForKnownRelativeRisks(DataSet, ppNonCumulativeMeasure);
     //adjustment measure temporally
-    if (gData.m_nTimeIntervals > 1) {
+    if (gDataHub.m_nTimeIntervals > 1) {
       switch (gParameters.GetTimeTrendAdjustmentType()) {
         case NOTADJUSTED               : break;
-        case NONPARAMETRIC             : AdjustForNonParameteric(thisStream, ppNonCumulativeMeasure); break;
-        case LOGLINEAR_PERC            : AdjustForLLPercentage(thisStream, ppNonCumulativeMeasure, gParameters.GetTimeTrendAdjustmentPercentage()); break;
-        case CALCULATED_LOGLINEAR_PERC : thisStream.SetMeasurePerTimeIntervalsArray(ppNonCumulativeMeasure);
-                                         AdjustForLogLinear(thisStream, ppNonCumulativeMeasure); break;
-        case STRATIFIED_RANDOMIZATION  : AdjustForNonParameteric(thisStream, ppNonCumulativeMeasure); break;//this adjustment occurs during randomization also
+        case NONPARAMETRIC             : AdjustForNonParameteric(DataSet, ppNonCumulativeMeasure); break;
+        case LOGLINEAR_PERC            : AdjustForLLPercentage(DataSet, ppNonCumulativeMeasure, gParameters.GetTimeTrendAdjustmentPercentage()); break;
+        case CALCULATED_LOGLINEAR_PERC : DataSet.SetMeasurePerTimeIntervalsArray(ppNonCumulativeMeasure);
+                                         AdjustForLogLinear(DataSet, ppNonCumulativeMeasure); break;
+        case STRATIFIED_RANDOMIZATION  : AdjustForNonParameteric(DataSet, ppNonCumulativeMeasure); break;//this adjustment occurs during randomization also
         default : ZdGenerateException("Unknown time trend adjustment type: '%d'.",
                                       "AdjustMeasure()", gParameters.GetTimeTrendAdjustmentType());
       }
@@ -161,17 +161,17 @@ void CPoissonModel::AdjustMeasure(RealDataStream& thisStream, measure_t** ppNonC
     //adjust measure spatially
     switch (gParameters.GetSpatialAdjustmentType()) {
       case NO_SPATIAL_ADJUSTMENT : break;
-      case SPATIALLY_STRATIFIED_RANDOMIZATION : StratifiedSpatialAdjustment(thisStream, ppNonCumulativeMeasure); break;
+      case SPATIALLY_STRATIFIED_RANDOMIZATION : StratifiedSpatialAdjustment(DataSet, ppNonCumulativeMeasure); break;
       default : ZdGenerateException("Unknown spatial adjustment type: '%d'.",
                                     "AdjustMeasure()", gParameters.GetSpatialAdjustmentType());
     }
     // Bug check, to ensure that adjusted  total measure equals previously determined total measure
-    for (AdjustedTotalMeasure_t=0, i=0; i < gData.m_nTimeIntervals; ++i)
-       for (t=0; t < gData.GetNumTracts(); ++t)
+    for (AdjustedTotalMeasure_t=0, i=0; i < gDataHub.m_nTimeIntervals; ++i)
+       for (t=0; t < gDataHub.GetNumTracts(); ++t)
           AdjustedTotalMeasure_t += ppNonCumulativeMeasure[i][t];
-    if (fabs(AdjustedTotalMeasure_t - thisStream.GetTotalMeasure()) > 0.0001)
+    if (fabs(AdjustedTotalMeasure_t - DataSet.GetTotalMeasure()) > 0.0001)
       ZdGenerateException("Error: The adjusted total measure '%8.6lf' is not equal to the total measure '%8.6lf'.\n",
-                          "AdjustMeasure()", AdjustedTotalMeasure_t, thisStream.GetTotalMeasure());
+                          "AdjustMeasure()", AdjustedTotalMeasure_t, DataSet.GetTotalMeasure());
   }
   catch (ZdException &x) {
     x.AddCallpath("AdjustMeasure()","CPoissonModel");
@@ -181,21 +181,19 @@ void CPoissonModel::AdjustMeasure(RealDataStream& thisStream, measure_t** ppNonC
 
 /** Calculates and sets non-cumulative measure array. Validates that no expected
     case counts are negative, throws ZdException. */
-void CPoissonModel::AssignMeasure(RealDataStream & thisStream, TwoDimMeasureArray_t& NonCumulativeMeasureHandler) {
+void CPoissonModel::AssignMeasure(RealDataSet& DataSet, TwoDimMeasureArray_t& NonCumulativeMeasureHandler) {
   try {
-    thisStream.SetTotalMeasure(CalcMeasure(thisStream,
-                                           NonCumulativeMeasureHandler,
-                                           gData.GetTimeIntervalStartTimes(),
-                                           gData.GetStudyPeriodStartDate(), gData.GetStudyPeriodEndDate()));
+    DataSet.SetTotalMeasure(CalcMeasure(DataSet, NonCumulativeMeasureHandler, gDataHub.GetTimeIntervalStartTimes(),
+                                        gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate()));
 
     //Validate that all elements of measure array are not negative.  
     measure_t** ppNonCumulativeMeasure = NonCumulativeMeasureHandler.GetArray();
-    for (tract_t tract=0; tract < gData.GetNumTracts(); ++tract)
-       for (int interval=0; interval < gData.m_nTimeIntervals; ++interval)
+    for (tract_t tract=0; tract < gDataHub.GetNumTracts(); ++tract)
+       for (int interval=0; interval < gDataHub.m_nTimeIntervals; ++interval)
           if (ppNonCumulativeMeasure[interval][tract] < 0) {
              std::string sBuffer;
     	     ZdGenerateException("Negative measure: %g\ntract %d, tractid %s, interval %d.", "AssignMeasure()",
-                                 ppNonCumulativeMeasure[interval][tract], tract, gData.GetTInfo()->tiGetTid(tract, sBuffer), interval);
+                                 ppNonCumulativeMeasure[interval][tract], tract, gDataHub.GetTInfo()->tiGetTid(tract, sBuffer), interval);
           }
 
   }
@@ -205,62 +203,61 @@ void CPoissonModel::AssignMeasure(RealDataStream & thisStream, TwoDimMeasureArra
   }
 }
 
-/** Calculates the expected number of cases for data stream. */
-void CPoissonModel::CalculateMeasure(RealDataStream& thisStream) {
+/** Calculates the expected number of cases for dataset. */
+void CPoissonModel::CalculateMeasure(RealDataSet& DataSet) {
   try {
     //calculate expected number of cases in terms of population dates
-    Calcm(thisStream, gData.GetStudyPeriodStartDate(), gData.GetStudyPeriodEndDate());
+    Calcm(DataSet, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate());
     //assign measure, perform adjustments as requested, and set measure array as cumulative
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-      thisStream.AllocateNCMeasureArray();
+      DataSet.AllocateNCMeasureArray();
       //calculate non-cumulative measure array
-      AssignMeasure(thisStream, thisStream.GetNCMeasureArrayHandler());
+      AssignMeasure(DataSet, DataSet.GetNCMeasureArrayHandler());
       //validate that observed and expected agree
-      gData.ValidateObservedToExpectedCases(thisStream.GetCaseArray(),
-                                            thisStream.GetNCMeasureArray());
+      gDataHub.ValidateObservedToExpectedCases(DataSet.GetCaseArray(), DataSet.GetNCMeasureArray());
       //apply adjustments
-      AdjustMeasure(thisStream, thisStream.GetNCMeasureArray());
+      AdjustMeasure(DataSet, DataSet.GetNCMeasureArray());
       //create cumulative measure from non-cumulative measure
-      thisStream.SetCumulativeMeasureArrayFromNonCumulative();
+      DataSet.SetCumulativeMeasureArrayFromNonCumulative();
       //either reset or set measure by time intervals with non-cumulative measure
-      thisStream.SetMeasurePerTimeIntervalsArray(thisStream.GetNCMeasureArray());
+      DataSet.SetMeasurePerTimeIntervalsArray(DataSet.GetNCMeasureArray());
     }
     else {
-      thisStream.AllocateMeasureArray();
+      DataSet.AllocateMeasureArray();
       //calculate non-cumulative measure array
-      AssignMeasure(thisStream, thisStream.GetMeasureArrayHandler());
+      AssignMeasure(DataSet, DataSet.GetMeasureArrayHandler());
       //validate that observed and expected agree
-      gData.ValidateObservedToExpectedCases(thisStream.GetCaseArray(),
-                                            thisStream.GetMeasureArray());
+      gDataHub.ValidateObservedToExpectedCases(DataSet.GetCaseArray(),
+                                            DataSet.GetMeasureArray());
       //apply adjustments
-      AdjustMeasure(thisStream, thisStream.GetMeasureArray());
+      AdjustMeasure(DataSet, DataSet.GetMeasureArray());
       if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
           gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
         //need measure by time intervals for time stratified adjustment in simulations
-        thisStream.SetMeasurePerTimeIntervalsArray(thisStream.GetMeasureArray());
-      thisStream.SetMeasureArrayAsCumulative();
+        DataSet.SetMeasurePerTimeIntervalsArray(DataSet.GetMeasureArray());
+      DataSet.SetMeasureArrayAsCumulative();
     }
     // Bug check, to ensure that TotalCases=TotalMeasure
-    if (fabs(thisStream.GetTotalCases() - thisStream.GetTotalMeasure()) > 0.0001)
+    if (fabs(DataSet.GetTotalCases() - DataSet.GetTotalMeasure()) > 0.0001)
       ZdGenerateException("Error: The total measure '%8.6lf' is not equal to the total number of cases '%ld'.\n",
-                          "CalculateMeasure()", thisStream.GetTotalMeasure(), thisStream.GetTotalCases());
+                          "CalculateMeasure()", DataSet.GetTotalMeasure(), DataSet.GetTotalCases());
 
-    thisStream.FreePopulationMeasureArray();
+    DataSet.FreePopulationMeasureArray();
   }
   catch (ZdException &x) {
-    thisStream.FreePopulationMeasureArray();
+    DataSet.FreePopulationMeasureArray();
     x.AddCallpath("CalculateMeasure()","CPoissonModel");
     throw;
   }
 }
 
 /** */
-double CPoissonModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, tract_t nCenter,
+double CPoissonModel::GetPopulation(size_t iSetIndex, int m_iEllipseOffset, tract_t nCenter,
                                     tract_t nTracts, int nStartInterval, int nStopInterval) const {
   tract_t T, t;
   int     c, n;
   std::vector<double>   vAlpha;
-  const PopulationData & Population = gData.GetDataStreamHandler().GetStream(iStream).GetPopulationData();
+  const PopulationData & Population = gDataHub.GetDataSetHandler().GetDataSet(iSetIndex).GetPopulationData();
   int     ncats;
   int     nPops;
   double  nPopulation = 0.0;
@@ -268,11 +265,11 @@ double CPoissonModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, 
   try {
     ncats = Population.GetNumCovariateCategories();
     nPops = Population.GetNumPopulationDates();
-    Population.CalculateAlpha(vAlpha, gData.GetStudyPeriodStartDate(), gData.GetStudyPeriodEndDate());
+    Population.CalculateAlpha(vAlpha, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate());
 
       for (T = 1; T <= nTracts; T++)
       {
-         t = gData.GetNeighbor(m_iEllipseOffset, nCenter, T);
+         t = gDataHub.GetNeighbor(m_iEllipseOffset, nCenter, T);
          for (c = 0; c < ncats; c++)
             Population.GetAlphaAdjustedPopulation(nPopulation, t, c, 0, nPops, vAlpha);
       }
@@ -289,22 +286,22 @@ double CPoissonModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, 
 /** Adjusts passed non-cumulative measure in a stratified spatial manner.
     Each time, for a particular tract, is multiplied by the total case divided
     by total measure of that tract, across all time intervals. */
-void CPoissonModel::StratifiedSpatialAdjustment(RealDataStream& thisStream, measure_t ** ppNonCumulativeMeasure) {
+void CPoissonModel::StratifiedSpatialAdjustment(RealDataSet& DataSet, measure_t ** ppNonCumulativeMeasure) {
   measure_t     tTotalTractMeasure;
-  count_t    ** ppCases = thisStream.GetCaseArray();
+  count_t    ** ppCases = DataSet.GetCaseArray();
   tract_t       t;
   int           i;
   double        dTractAdjustment;
 
 
-  for (t=0; t < gData.GetNumTracts(); ++t) {
+  for (t=0; t < gDataHub.GetNumTracts(); ++t) {
      //calculates total measure for current tract across all time intervals
-     for (tTotalTractMeasure=0, i=0; i < gData.GetNumTimeIntervals(); ++i)
+     for (tTotalTractMeasure=0, i=0; i < gDataHub.GetNumTimeIntervals(); ++i)
         tTotalTractMeasure += ppNonCumulativeMeasure[i][t];
      if (tTotalTractMeasure) {
        dTractAdjustment = ppCases[0][t]/tTotalTractMeasure;
        //now multiply each time interval/tract location by (total cases)/(total measure)
-       for (i=0; tTotalTractMeasure && i < gData.GetNumTimeIntervals(); ++i)
+       for (i=0; tTotalTractMeasure && i < gDataHub.GetNumTimeIntervals(); ++i)
           ppNonCumulativeMeasure[i][t] *= dTractAdjustment;
      }
   }

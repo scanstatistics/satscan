@@ -1,11 +1,13 @@
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//******************************************************************************
 #include "ProbabilityModel.h"
 #include "SaTScanData.h"
 
 /** constructor */
-CModel::CModel(const CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection)
-       : gParameters(Parameters), gData(Data), gPrintDirection(PrintDirection) {
+CModel::CModel(const CParameters& Parameters, CSaTScanData& DataHub, BasePrint& PrintDirection)
+       : gParameters(Parameters), gDataHub(DataHub), gPrintDirection(PrintDirection) {
 #ifdef DEBUGMODEL
   try {
     ZdFileName DebugFile(GetToolkit().GetApplicationFullPath());
@@ -30,8 +32,7 @@ CModel::~CModel() {
 }
 
 /** not implemented - throws exception */
-double CModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, tract_t nCenter,
-                             tract_t nTracts, int nStartInterval, int nStopInterval) const {
+double CModel::GetPopulation(size_t, int, tract_t, tract_t, int, int) const {
   ZdGenerateException("GetPopulation() not implementated.","CModel");
   return 0;
 }

@@ -12,7 +12,7 @@ inline bool HighRate(count_t nCases, measure_t nMeasure, count_t nTotalCases, me
 inline bool HighOrLowRate(count_t nCases, measure_t nMeasure, count_t nTotalCases, measure_t nTotalMeasure);
 
 /** Indicates whether an area has lower than expected cases for a clustering
-    within a single data stream. */
+    within a single dataset. */
 inline bool LowRate(count_t nCases, measure_t nMeasure, count_t nTotalCases, measure_t nTotalMeasure)
 {
   if (nMeasure == 0)
@@ -22,9 +22,9 @@ inline bool LowRate(count_t nCases, measure_t nMeasure, count_t nTotalCases, mea
 }
 
 /** Indicates whether an area has high than expected cases for a clustering
-    within a single data stream. Clusterings with less than two cases are not
+    within a single dataset. Clusterings with less than two cases are not
     considered for high rates. Note this function should not be used for scannning
-    for high rates with an analysis with multiple data streams; use MultipleSetsHighRate() */
+    for high rates with an analysis with multiple datasets; use MultipleSetsHighRate() */
 inline bool HighRate(count_t nCases, measure_t nMeasure, count_t nTotalCases, measure_t nTotalMeasure)
 {
  if (nMeasure == 0 || nCases < 2/*one case should not be considered a high rate*/)
@@ -34,7 +34,7 @@ inline bool HighRate(count_t nCases, measure_t nMeasure, count_t nTotalCases, me
 }
 
 /** Indicates whether an area has lower than expected cases for a clustering
-    within a single data stream. */
+    within a single dataset. */
 inline bool HighOrLowRate(count_t nCases, measure_t nMeasure, count_t nTotalCases, measure_t nTotalMeasure)
 {
   if (nMeasure == 0)

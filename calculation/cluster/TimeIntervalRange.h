@@ -5,7 +5,7 @@
 #include "SaTScan.h"
 #include "JulianDates.h"
 #include "TimeIntervals.h"
-#include "DataStream.h"
+#include "DataSet.h"
 #include "MaxWindowLengthIndicator.h"
 
 class CSaTScanData;                /** forward class declaration */

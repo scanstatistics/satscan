@@ -1,7 +1,7 @@
-//---------------------------------------------------------------------------
-#ifndef PermutationDataRandomizerH
-#define PermutationDataRandomizerH
-//---------------------------------------------------------------------------
+//******************************************************************************
+#ifndef __PermutationDataRandomizer_H
+#define __PermutationDataRandomizer_H
+//******************************************************************************
 #include "Randomizer.h"
 
 /** abstract permutation randomizer class */
@@ -9,17 +9,14 @@ class AbstractPermutedDataRandomizer : public AbstractRandomizer {
   protected:
     BinomialGenerator   gBinomialGenerator;
 
-    virtual void        AssignRandomizedData(const RealDataStream& thisRealStream,
-                                             SimulationDataStream& thisSimulationStream) = 0;
+    virtual void        AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet) = 0;
     virtual void        SortPermutedAttribute() = 0;
 
   public:
     AbstractPermutedDataRandomizer();
     virtual ~AbstractPermutedDataRandomizer();
 
-    virtual void	RandomizeData(const RealDataStream& thisRealStream,
-                                      SimulationDataStream& thisSimulationStream,
-                                      unsigned int iSimulation);
+    virtual void	RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);
 };
 
 /** abstract permutation attribute - used to randomize permuted attribute */
@@ -61,5 +58,6 @@ class AssignPermutedAttribute {
 inline void AssignPermutedAttribute::operator() (PermutedAttribute* pAttribute) {
   pAttribute->SetRandomNumber(gGenerator.GetRandomFloat());
 }
-//---------------------------------------------------------------------------
+//******************************************************************************
 #endif
+

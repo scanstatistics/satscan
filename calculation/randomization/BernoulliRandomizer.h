@@ -9,12 +9,9 @@ class BernoulliNullHypothesisRandomizer : public AbstractOrdinalDenominatorDataR
   public:
     BernoulliNullHypothesisRandomizer();
     virtual ~BernoulliNullHypothesisRandomizer();
-
     virtual BernoulliNullHypothesisRandomizer * Clone() const;
 
-    virtual void                RandomizeData(const RealDataStream& thisRealStream,
-                                              SimulationDataStream& thisSimulationStream,
-                                              unsigned int iSimulation);
+    virtual void  RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);
 };
 //******************************************************************************
 #endif

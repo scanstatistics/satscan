@@ -5,9 +5,9 @@
 #include "PurelySpatialMonotoneCluster.h"
 #include "stsAreaSpecificData.h"
 
-/** class constructor - const AbtractDataStreamGateway */
+/** class constructor - const AbtractDataSetGateway */
 CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                       const AbtractDataStreamGateway & DataGateway, int iRate)
+                                       const AbtractDataSetGateway & DataGateway, int iRate)
                    :CCluster() {
   m_nMaxCircles        = 0;
   m_pCasesList         = 0;
@@ -17,9 +17,9 @@ CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClust
   Initialize(0);
 }
 
-/** class constructor - const DataStreamInterface */
+/** class constructor - const DataSetInterface */
 CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                       const DataStreamInterface & Interface, int iRate)
+                                       const DataSetInterface & Interface, int iRate)
                    :CCluster() {
   m_nMaxCircles        = 0;
   m_pCasesList         = 0;
@@ -83,7 +83,7 @@ CPSMonotoneCluster& CPSMonotoneCluster::operator=(const CPSMonotoneCluster& rhs)
 /** Adds neighbor data to cluster definition. */
 void CPSMonotoneCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {
   tract_t       nNeighbor = Data.GetNeighbor(0, m_Center, n);
-  measure_t   * pMeasure(Data.GetDataStreamHandler().GetStream(0/*for now*/).GetMeasureArray()[0]);
+  measure_t   * pMeasure(Data.GetDataSetHandler().GetDataSet(0/*for now*/).GetMeasureArray()[0]);
 
   m_nSteps++;
 
@@ -308,8 +308,8 @@ void CPSMonotoneCluster::DisplaySteps(FILE* fp, const AsciiPrintFormat& PrintFor
 }
 
 /** returns the number of cases for tract as defined by cluster */
-count_t CPSMonotoneCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
-  return Data.GetDataStreamHandler().GetStream(iStream).GetCaseArray()[0][tTract];
+count_t CPSMonotoneCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data,size_t tSetIndex) const {
+  return Data.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray()[0][tTract];
 }
 
 /** Returns pointer cluster data object - not implemented, throws exception. */
@@ -335,8 +335,8 @@ double CPSMonotoneCluster::GetLogLikelihood() const {
 }
 
 /** Returns the measure for tract as defined by cluster. */
-measure_t CPSMonotoneCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
-  return Data.GetMeasureAdjustment(iStream) * Data.GetDataStreamHandler().GetStream(iStream).GetMeasureArray()[0][tTract];
+measure_t CPSMonotoneCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
+  return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray()[0][tTract];
 }
 
 /** If ratio flag is set, returns log likelihood ratio else returns -1.*/

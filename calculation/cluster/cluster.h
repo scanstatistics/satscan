@@ -5,7 +5,7 @@
 #include "SaTScan.h"
 #include "SaTScanData.h"
 #include "IncidentRate.h"
-#include "DataStream.h"
+#include "DataSet.h"
 #include "UtilityFunctions.h"
 #include "ClusterDataFactory.h"
 #include "AsciiPrintFormat.h"
@@ -68,20 +68,20 @@ class CCluster {
     virtual void                  DisplaySteps(FILE* fp, const AsciiPrintFormat& PrintFormat) const {/*stub - no action*/}
     virtual void                  DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintFormat) const {/*stub - no action*/}
-    virtual count_t               GetCaseCount(unsigned int iStream) const = 0;
-    virtual count_t               GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const = 0;
+    virtual count_t               GetCaseCount(size_t tSetIndex) const = 0;
+    virtual count_t               GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex=0) const = 0;
     virtual tract_t               GetCentroidIndex() const {return m_Center;}
     double                        GetNonCompactnessPenalty() const {return m_NonCompactnessPenalty;}
     int                           GetEllipseOffset() const {return m_iEllipseOffset;}
     virtual ZdString            & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
-    virtual measure_t             GetMeasure(unsigned int iStream) const = 0;
-    virtual measure_t             GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const = 0;
+    virtual measure_t             GetMeasure(size_t tSetIndex) const = 0;
+    virtual measure_t             GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex=0) const = 0;
     virtual tract_t               GetNumTractsInnerCircle() const {return m_nTracts;}
     const double                  GetPValue(unsigned int uiNumSimulationsCompleted) const;
     unsigned int                  GetRank() const {return m_nRank;}
     double                        GetRatio() const {return m_nRatio;}
-    const double                  GetRelativeRisk(double nMeasureAdjustment, unsigned int iStream=0) const;
-    virtual double                GetRelativeRiskForTract(tract_t tTract, const CSaTScanData& DataHub, unsigned int iStream=0) const;
+    const double                  GetRelativeRisk(double nMeasureAdjustment, size_t tSetIndex=0) const;
+    virtual double                GetRelativeRiskForTract(tract_t tTract, const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     virtual ZdString            & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     void                          IncrementRank() {m_nRank++;}
     virtual void                  Initialize(tract_t nCenter=0);

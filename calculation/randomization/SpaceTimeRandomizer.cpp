@@ -1,9 +1,9 @@
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "SaTScan.h"
-#pragma hdrstop                 
-//---------------------------------------------------------------------------
+#pragma hdrstop
+//******************************************************************************
 #include "SpaceTimeRandomizer.h"
-#include "DataStream.h"
+#include "DataSet.h"
 
 /** constructor */
 PermutedTime::PermutedTime(int iTimeInterval) : PermutedAttribute(), giTimeIntervalIndex(iTimeInterval) {}
@@ -37,16 +37,15 @@ void SpaceTimeRandomizer::AddCase(unsigned int iCategory, int iTimeInterval, tra
   gCategoryAttributes[iCategory].gvPermutedAttribute[gCategoryAttributes[iCategory].gvPermutedAttribute.size() - 1] = new PermutedTime(iTimeInterval);
 }
 
-/** Assigns randomized data to data stream's simulation case array. */
-void SpaceTimeRandomizer::AssignRandomizedData(const RealDataStream& thisRealStream,
-                                               SimulationDataStream& thisSimulationStream) {
+/** Assigns randomized data to datasets' simulation case array. */
+void SpaceTimeRandomizer::AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet) {
   size_t          tCategory, tCase;
-  int             iInterval, tNumTimeIntervals = thisRealStream.GetNumTimeIntervals();
-  unsigned int    tTract, tNumTracts = thisRealStream.GetNumTracts();
-  count_t      ** ppSimCases = thisSimulationStream.GetCaseArray();
+  int             iInterval, tNumTimeIntervals = thisRealSet.GetNumTimeIntervals();
+  unsigned int    tTract, tNumTracts = thisRealSet.GetNumTracts();
+  count_t      ** ppSimCases = thisSimSet.GetCaseArray();
 
   //reset simulation case structure to zero
-  thisSimulationStream.ResetCumulativeCaseArray();
+  thisSimSet.ResetCumulativeCaseArray();
 
   //assign permuted attribute to simulation case array
   for (size_t t=0; t < gCategoryAttributes.size(); ++t) {
@@ -67,21 +66,21 @@ void SpaceTimeRandomizer::AssignRandomizedData(const RealDataStream& thisRealStr
     NOTE: Inorder for this randomization process to remain consistant with
           previous versions, this function and the sorting of the time interval
           in SortPermutedAttribute() must be done. */
-void SpaceTimeRandomizer::CreateRandomizationData(const RealDataStream& thisStream) {
+void SpaceTimeRandomizer::CreateRandomizationData(const RealDataSet& thisRealSet) {
   int	                i;
-  unsigned int          j, k, c, iNumCases, iNumCategories(thisStream.GetPopulationData().GetNumCovariateCategories());
+  unsigned int          j, k, c, iNumCases, iNumCategories(thisRealSet.GetPopulationData().GetNumCovariateCategories());
   std::vector<int>      vCummulatedCases;
   count_t               iMaxCasesPerCategory, ** ppCases=0;
 
   gCategoryAttributes.resize(iNumCategories);
-  vCummulatedCases.resize(thisStream.GetNumTracts());
+  vCummulatedCases.resize(thisRealSet.GetNumTracts());
   
   for (c=0; c < iNumCategories; ++c) {
      CategoryGrouping & theseCategoryAttributes = gCategoryAttributes[c];
-     memset(&vCummulatedCases[0], 0, thisStream.GetNumTracts()*sizeof(int));
-     ppCases = thisStream.GetCategoryCaseArray(c);
-     for (i=thisStream.GetNumTimeIntervals() - 1; i >= 0; --i) {
-        for (j=0; j < thisStream.GetNumTracts(); ++j) {
+     memset(&vCummulatedCases[0], 0, thisRealSet.GetNumTracts()*sizeof(int));
+     ppCases = thisRealSet.GetCategoryCaseArray(c);
+     for (i=thisRealSet.GetNumTimeIntervals() - 1; i >= 0; --i) {
+        for (j=0; j < thisRealSet.GetNumTracts(); ++j) {
            iNumCases = ppCases[i][j] - vCummulatedCases[j];
            for (k=0; k < iNumCases; ++k) {
               theseCategoryAttributes.gvStationaryAttribute.push_back(j);

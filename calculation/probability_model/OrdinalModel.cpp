@@ -1,18 +1,21 @@
-//***************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//***************************************************************************
+//******************************************************************************
 #include "OrdinalModel.h"
 
 /** constructor */
-OrdinalModel::OrdinalModel(const CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection)
-             :CModel(Parameters, Data, PrintDirection) {}
+OrdinalModel::OrdinalModel(const CParameters& Parameters, CSaTScanData& DataHub, BasePrint& PrintDirection)
+             :CModel(Parameters, DataHub, PrintDirection) {}
 
 /** destructor */
 OrdinalModel::~OrdinalModel() {}
 
-double OrdinalModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, tract_t nCenter,
-                                   tract_t nTracts, int nStartInterval, int nStopInterval) const {
+void OrdinalModel::CalculateMeasure(RealDataSet&) {
+   /* no action here */
+}
+
+double OrdinalModel::GetPopulation(size_t, int, tract_t, tract_t, int, int) const {
   ZdGenerateException("GetPopulation() not implementated YET!","OrdinalModel");
   return 0;
 }

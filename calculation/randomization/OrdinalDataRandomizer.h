@@ -4,18 +4,17 @@
 //******************************************************************************
 #include "DenominatorDataRandomizer.h"
 
-/** Randomizes data of data set for a 'Ordinal' probablility model. */
+/** Randomizes data of dataset for a 'Ordinal' probablility model. */
 class OrdinalDenominatorDataRandomizer : public AbstractOrdinalDenominatorDataRandomizer {
   protected:
-    void                SetMeasure(const RealDataStream& RealSet, TwoDimensionArrayHandler<measure_t>& Measure);
+    void                SetMeasure(const RealDataSet& thisRealSet, TwoDimensionArrayHandler<measure_t>& Measure);
 
   public:
     OrdinalDenominatorDataRandomizer();
     virtual ~OrdinalDenominatorDataRandomizer();
-
     virtual OrdinalDenominatorDataRandomizer * Clone() const;
 
-    virtual void        RandomizeData(const RealDataStream& RealSet, SimulationDataStream& SimSet, unsigned int iSimulation);
+    virtual void        RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);
 };
 //******************************************************************************
 #endif

@@ -5,7 +5,7 @@
 #include "NormalClusterData.h"
 
 /** class constructor */
-NormalSpatialData::NormalSpatialData(const AbtractDataStreamGateway& DataGateway, int iRate)
+NormalSpatialData::NormalSpatialData(const AbtractDataSetGateway& DataGateway, int iRate)
                   :SpatialData(DataGateway, iRate), gtSqMeasure(0) {}
 
 /** class destrcutor */
@@ -30,13 +30,13 @@ void NormalSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
 }
 
 /** Not implemeneted - throws ZdException. */
-void NormalSpatialData::AddMeasureList(const DataStreamInterface&, CMeasureList*, const CSaTScanData*) {
-   ZdGenerateException("AddMeasureList(const DataStreamInterface&, CMeasureList*, const CSaTScanData*) not implemented.","NormalSpatialData");
+void NormalSpatialData::AddMeasureList(const DataSetInterface&, CMeasureList*, const CSaTScanData*) {
+   ZdGenerateException("AddMeasureList(const DataSetInterface&, CMeasureList*, const CSaTScanData*) not implemented.","NormalSpatialData");
 }
 
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
-void NormalSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex) {
+void NormalSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex) {
   gtCases += DataGateway.GetDataSetInterface(tSetIndex).GetPSCaseArray()[tNeighborIndex];
   gtMeasure += DataGateway.GetDataSetInterface(tSetIndex).GetPSMeasureArray()[tNeighborIndex];
   gtSqMeasure += DataGateway.GetDataSetInterface(tSetIndex).GetPSSqMeasureArray()[tNeighborIndex];
@@ -58,7 +58,7 @@ double NormalSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculat
 NormalTemporalData::NormalTemporalData() : TemporalData(), gtSqMeasure(0), gpSqMeasure(0) {}
 
 /** class constructor */
-NormalTemporalData::NormalTemporalData(const AbtractDataStreamGateway& DataGateway)
+NormalTemporalData::NormalTemporalData(const AbtractDataSetGateway& DataGateway)
                    :TemporalData(DataGateway), gtSqMeasure(0),
                     gpSqMeasure(DataGateway.GetDataSetInterface(0).GetPTSqMeasureArray()) {}
 
@@ -88,7 +88,7 @@ void NormalTemporalData::Assign(const AbstractTemporalClusterData& rhs) {
 //******************************************************************************
 
 /** class constructor */
-NormalProspectiveSpatialData::NormalProspectiveSpatialData(const CSaTScanData& Data, const DataStreamInterface& Interface)
+NormalProspectiveSpatialData::NormalProspectiveSpatialData(const CSaTScanData& Data, const DataSetInterface& Interface)
                              :NormalTemporalData() {
   try {
     Init();
@@ -101,7 +101,7 @@ NormalProspectiveSpatialData::NormalProspectiveSpatialData(const CSaTScanData& D
 }
 
 /** class constructor */
-NormalProspectiveSpatialData::NormalProspectiveSpatialData(const CSaTScanData& Data, const AbtractDataStreamGateway& DataGateway)
+NormalProspectiveSpatialData::NormalProspectiveSpatialData(const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway)
                              :NormalTemporalData() {
   try {
     Init();
@@ -182,7 +182,7 @@ NormalProspectiveSpatialData & NormalProspectiveSpatialData::operator=(const Nor
 
 /** Adds neighbor data to accumulation - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
-void NormalProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex) {
+void NormalProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex) {
   unsigned int           i, j;
   count_t             ** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
   measure_t           ** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
@@ -236,7 +236,7 @@ void NormalProspectiveSpatialData::InitializeData() {
 }
 
 /** internal setup function */
-void NormalProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataStreamInterface& Interface) {
+void NormalProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSetInterface& Interface) {
   try {
     giAllocationSize = 1 + Data.m_nTimeIntervals - Data.GetProspectiveStartIndex();
     giNumTimeIntervals = Data.m_nTimeIntervals;
@@ -261,7 +261,7 @@ void NormalProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataStr
     delete[] gpCases;
     delete[] gpMeasure;
     delete[] gpSqMeasure;
-    x.AddCallpath("Setup(const CSaTScanData&, const DataStreamInterface&)","NormalProspectiveSpatialData");
+    x.AddCallpath("Setup(const CSaTScanData&, const DataSetInterface&)","NormalProspectiveSpatialData");
     throw;
   }
 }
@@ -269,27 +269,27 @@ void NormalProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataStr
 //******************************************************************************
 
 /** class constructor */
-NormalSpaceTimeData::NormalSpaceTimeData(const DataStreamInterface& Interface)
+NormalSpaceTimeData::NormalSpaceTimeData(const DataSetInterface& Interface)
                     :NormalTemporalData() {
   try {
     Init();
     Setup(Interface);
   }
   catch (ZdException &x) {
-    x.AddCallpath("constructor(const DataStreamInterface&)","NormalSpaceTimeData");
+    x.AddCallpath("constructor(const DataSetInterface&)","NormalSpaceTimeData");
     throw;
   }
 }
 
 /** constructor */
-NormalSpaceTimeData::NormalSpaceTimeData(const AbtractDataStreamGateway& DataGateway)
+NormalSpaceTimeData::NormalSpaceTimeData(const AbtractDataSetGateway& DataGateway)
                     :NormalTemporalData() {
   try {
     Init();
     Setup(DataGateway.GetDataSetInterface(0));
   }
   catch (ZdException &x) {
-    x.AddCallpath("constructor(const AbtractDataStreamGateway&)","NormalSpaceTimeData");
+    x.AddCallpath("constructor(const AbtractDataSetGateway&)","NormalSpaceTimeData");
     throw;
   }
 }
@@ -359,7 +359,7 @@ NormalSpaceTimeData & NormalSpaceTimeData::operator=(const NormalSpaceTimeData& 
 
 /** Adds neighbor data to accumulation - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
-void NormalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex) {
+void NormalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex) {
   count_t    ** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
   measure_t  ** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
   measure_t  ** ppSqMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetSqMeasureArray();
@@ -382,7 +382,7 @@ void NormalSpaceTimeData::InitializeData() {
 }
 
 /** internal setup function */
-void NormalSpaceTimeData::Setup(const DataStreamInterface& Interface) {
+void NormalSpaceTimeData::Setup(const DataSetInterface& Interface) {
   try {
     giAllocationSize = Interface.GetNumTimIntervals() + 1; 
     gtTotalCases = Interface.GetTotalCasesCount();
@@ -398,7 +398,7 @@ void NormalSpaceTimeData::Setup(const DataStreamInterface& Interface) {
     delete[] gpCases;
     delete[] gpMeasure;
     delete[] gpSqMeasure;
-    x.AddCallpath("Setup(const DataStreamInterface&)","NormalSpaceTimeData");
+    x.AddCallpath("Setup(const DataSetInterface&)","NormalSpaceTimeData");
     throw;
   }
 }

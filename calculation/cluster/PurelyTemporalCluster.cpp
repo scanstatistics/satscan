@@ -6,7 +6,7 @@
 
 /** constructor */
 CPurelyTemporalCluster::CPurelyTemporalCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                               const AbtractDataStreamGateway & DataGateway,
+                                               const AbtractDataSetGateway & DataGateway,
                                                IncludeClustersType eIncludeClustersType,
                                                const CSaTScanData & Data)
                        :CCluster() {
@@ -71,21 +71,21 @@ void CPurelyTemporalCluster::Initialize(tract_t nCenter) {
   gpClusterData->InitializeData();
 }
 
-count_t CPurelyTemporalCluster::GetCaseCount(unsigned int iStream) const {
-  return gpClusterData->GetCaseCount(iStream);
+count_t CPurelyTemporalCluster::GetCaseCount(size_t tSetIndex) const {
+  return gpClusterData->GetCaseCount(tSetIndex);
 }
 
-measure_t CPurelyTemporalCluster::GetMeasure(unsigned int iStream) const {
-  return gpClusterData->GetMeasure(iStream);
+measure_t CPurelyTemporalCluster::GetMeasure(size_t tSetIndex) const {
+  return gpClusterData->GetMeasure(tSetIndex);
 }
 
 /** returns the number of cases for tract as defined by cluster
-    NOTE: Hard coded to return the number of cases from first data stream.
+    NOTE: Hard coded to return the number of cases from first dataset.
           This will need modification when the reporting aspect of multiple
-          data streams is hashed out.                                        */
-count_t CPurelyTemporalCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
+          datasets is hashed out.                                        */
+count_t CPurelyTemporalCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
   count_t      tCaseCount,
-            ** ppCases = Data.GetDataStreamHandler().GetStream(iStream).GetCaseArray();
+            ** ppCases = Data.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray();
 
   if (m_nLastInterval == Data.GetNumTimeIntervals())
     tCaseCount = ppCases[m_nFirstInterval][tTract];
@@ -96,12 +96,12 @@ count_t CPurelyTemporalCluster::GetCaseCountForTract(tract_t tTract, const CSaTS
 }
 
 /** Returns the measure for tract as defined by cluster.
-    NOTE: Hard coded to return the measure from first data stream.
+    NOTE: Hard coded to return the measure from first dataset.
           This will need modification when the reporting aspect of multiple
-          data streams is hashed out.                                       */
-measure_t CPurelyTemporalCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
+          datasets is hashed out.                                       */
+measure_t CPurelyTemporalCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
   measure_t      tMeasure,
-              ** ppMeasure = Data.GetDataStreamHandler().GetStream(iStream).GetMeasureArray();
+              ** ppMeasure = Data.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray();
 
   if (m_nLastInterval == Data.GetNumTimeIntervals())
     tMeasure = ppMeasure[m_nFirstInterval][tTract];
@@ -112,7 +112,7 @@ measure_t CPurelyTemporalCluster::GetMeasureForTract(tract_t tTract, const CSaTS
 }
 
 /** internal setup function */
-void CPurelyTemporalCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, IncludeClustersType eIncludeClustersType, const CSaTScanData & Data) {
+void CPurelyTemporalCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway, IncludeClustersType eIncludeClustersType, const CSaTScanData & Data) {
   try {
     gpClusterData = pClusterFactory->GetNewTemporalClusterData(DataGateway);
   }

@@ -27,8 +27,8 @@ class CPSMonotoneCluster : public CCluster {
     void                        SetTotalTracts();
 
   public:
-    CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, int iRate);
-    CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const DataStreamInterface & Interface, int iRate);
+    CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway, int iRate);
+    CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const DataSetInterface & Interface, int iRate);
     CPSMonotoneCluster(const CPSMonotoneCluster& rhs);
     ~CPSMonotoneCluster();
 
@@ -52,15 +52,15 @@ class CPSMonotoneCluster : public CCluster {
     virtual void                DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {}
     virtual void                Initialize(tract_t nCenter=0);
     void                        RemoveRemainder();
-    virtual count_t             GetCaseCount(unsigned int iStream) const {return m_nCases;}
-    virtual count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const;
+    virtual count_t             GetCaseCount(size_t tSetIndex) const {return m_nCases;}
+    virtual count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual AbstractClusterData * GetClusterData();
     virtual const AbstractClusterData * GetClusterData() const;
     virtual ClusterType         GetClusterType() const {return PURELYSPATIALMONOTONECLUSTER;}
     virtual ZdString          & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     tract_t                     GetLastCircleIndex() const {return m_nSteps-1;};
-    virtual measure_t           GetMeasure(unsigned int iStream) const {return m_nMeasure;}
-    virtual measure_t           GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const;
+    virtual measure_t           GetMeasure(size_t tSetIndex) const {return m_nMeasure;}
+    virtual measure_t           GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex=0) const;
     tract_t                     GetNumCircles() const {return m_nSteps;}
     virtual tract_t             GetNumTractsInnerCircle() const {return m_pLastNeighborList[0];}
     double                      GetRelativeRisk(tract_t nStep, double nMeasureAdjustment) const;

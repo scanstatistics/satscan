@@ -3,7 +3,7 @@
 #define __AbstractClusterData_H
 //******************************************************************************
 #include "IncidentRate.h"
-#include "DataStreamGateway.h"
+#include "DataSetGateway.h"
 #include "LikelihoodCalculation.h"
 
 /** Abstract class representing accumulated cluster data. */
@@ -14,7 +14,7 @@ class AbstractClusterData {
 
     virtual AbstractClusterData * Clone() const = 0;
 
-    virtual void        AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex=0) = 0;
+    virtual void        AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0) = 0;
     virtual double      CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual count_t     GetCaseCount(unsigned int tSetIndex=0) const = 0;
 

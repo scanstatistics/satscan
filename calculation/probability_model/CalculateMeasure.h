@@ -1,21 +1,21 @@
-//*****************************************************************************
+//******************************************************************************
 #ifndef _CALCULATEMEASURE_H
 #define _CALCULATEMEASURE_H
-//*****************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #include "Tracts.h"
 #include "JulianDates.h"
-#include "DataStream.h"
+#include "DataSet.h"
 
 // The functions: CalcRisk(...), Calcm(...), and CalcMeasure(...) are functions
 // designed and utilized for the process of calculating the expected number of
 // cases with the Poisson probability model.
 
-std::vector<double>& CalcRisk(RealDataStream& thisStream, std::vector<double>& vRisk, Julian StudyStartDate, Julian StudyEndDate);
+std::vector<double>& CalcRisk(RealDataSet& DataSet, std::vector<double>& vRisk, Julian StudyStartDate, Julian StudyEndDate);
 
-void Calcm(RealDataStream& thisStream, Julian StudyStartDate, Julian StudyEndDate);
+void Calcm(RealDataSet& thisSet, Julian StudyStartDate, Julian StudyEndDate);
 
-measure_t CalcMeasure(RealDataStream& thisStream, TwoDimMeasureArray_t& NonCumulativeMeasureHandler,
+measure_t CalcMeasure(RealDataSet& DataSet, TwoDimMeasureArray_t& NonCumulativeMeasureHandler,
                       const std::vector<Julian>& vIntervalStartDates, Julian StartDate, Julian EndDate);
 
 // The following functions are either unfinished design thoughts or deprecated.
@@ -76,5 +76,5 @@ bool ValidateAllPTCountsArePossitive(tract_t  nTracts,
                                    count_t  nTotalCount,
                                    BasePrint *pPrintDirection);
 
-//*****************************************************************************
+//******************************************************************************
 #endif

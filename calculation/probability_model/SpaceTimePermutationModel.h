@@ -1,7 +1,7 @@
-//*****************************************************************************
+//******************************************************************************
 #ifndef __SPACETIMEPERMUTATIONMODEL_H
 #define __SPACETIMEPERMUTATIONMODEL_H
-//*****************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #include "ProbabilityModel.h"
 #include "SaTScanData.h"
@@ -13,11 +13,11 @@
     Calculates loglikelihood identically to Poisson model. */
 class CSpaceTimePermutationModel : public CModel {
   public:
-    CSpaceTimePermutationModel(const CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection);
+    CSpaceTimePermutationModel(const CParameters& Parameters, CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CSpaceTimePermutationModel();
 
-    virtual void   	        CalculateMeasure(RealDataStream& RealSet);
+    virtual void   	        CalculateMeasure(RealDataSet& DataSet);
 };
 
-//*****************************************************************************
+//******************************************************************************
 #endif

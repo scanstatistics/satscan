@@ -16,17 +16,15 @@ BernoulliNullHypothesisRandomizer * BernoulliNullHypothesisRandomizer::Clone() c
   return new BernoulliNullHypothesisRandomizer(*this);
 }
 
-/** Randomizes data stream's data under null hypothesis for Bernoulli model. */
-void BernoulliNullHypothesisRandomizer::RandomizeData(const RealDataStream& thisRealStream,
-                                              SimulationDataStream& thisSimulationStream,
-                                              unsigned int iSimulation) {
+/** Randomizes dataset's data under null hypothesis for Bernoulli model. */
+void BernoulliNullHypothesisRandomizer::RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) {
 
   // reset seed of random number generator
-  SetSeed(iSimulation, thisSimulationStream.GetStreamIndex());
+  SetSeed(iSimulation, thisSimSet.GetSetIndex());
   // reset simulation cases to zero
-  thisSimulationStream.ResetCumulativeCaseArray();
+  thisSimSet.ResetCumulativeCaseArray();
   //randomize data
-  RandomizeOrdinalData(thisRealStream.GetTotalCases(), thisRealStream.GetTotalControls(),
-                       thisSimulationStream.GetCaseArray(), thisRealStream.GetMeasureArray(),
-                       thisRealStream.GetNumTracts(), thisRealStream.GetNumTimeIntervals());
+  RandomizeOrdinalData(thisRealSet.GetTotalCases(), thisRealSet.GetTotalControls(),
+                       thisSimSet.GetCaseArray(), thisRealSet.GetMeasureArray(),
+                       thisRealSet.GetNumTracts(), thisRealSet.GetNumTimeIntervals());
 }

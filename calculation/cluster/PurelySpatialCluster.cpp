@@ -6,7 +6,7 @@
 
 /** constructor */
 CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                             const AbtractDataStreamGateway & DataGateway,
+                                             const AbtractDataSetGateway & DataGateway,
                                              int iRate)
                       :CCluster() {
   try {
@@ -21,7 +21,7 @@ CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * 
 
 /** constructor */
 CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                             const DataStreamInterface & Interface,
+                                             const DataSetInterface & Interface,
                                              int iRate)
                       :CCluster() {
   try {
@@ -73,7 +73,7 @@ CPurelySpatialCluster& CPurelySpatialCluster::operator=(const CPurelySpatialClus
 /** add neighbor tract data from DataGateway */
 void CPurelySpatialCluster::AddNeighborDataAndCompare(tract_t tEllipseOffset,
                                                       tract_t tCentroid,
-                                                      const AbtractDataStreamGateway & DataGateway,
+                                                      const AbtractDataSetGateway & DataGateway,
                                                       const CSaTScanData * pData,
                                                       CPurelySpatialCluster & TopCluster,
                                                       AbstractLikelihoodCalculator & Calculator) {
@@ -102,8 +102,8 @@ void CPurelySpatialCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataH
 }
 
 /** returns the number of cases for tract as defined by cluster */
-count_t CPurelySpatialCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
-  return Data.GetDataStreamHandler().GetStream(iStream).GetCaseArray()[0][tTract];
+count_t CPurelySpatialCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
+  return Data.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray()[0][tTract];
 }
 
 /** returns end date of defined cluster as formated string */
@@ -112,8 +112,8 @@ ZdString& CPurelySpatialCluster::GetEndDate(ZdString& sDateString, const CSaTSca
 }
 
 /** Returns the measure for tract as defined by cluster. */
-measure_t CPurelySpatialCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
-  return Data.GetMeasureAdjustment(iStream) * Data.GetDataStreamHandler().GetStream(iStream).GetMeasureArray()[0][tTract];
+measure_t CPurelySpatialCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
+  return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray()[0][tTract];
 }
 
 /** returns start date of defined cluster as formated string */

@@ -1,10 +1,10 @@
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "Randomizer.h"
 
-const long AbstractRandomizer::glStreamSeedOffSet        = 1000000;
+const long AbstractRandomizer::glDataSetSeedOffSet        = 1000000;
 
 /** constructor */
 AbstractRandomizer::AbstractRandomizer() {}
@@ -12,25 +12,25 @@ AbstractRandomizer::AbstractRandomizer() {}
 /** destructor */
 AbstractRandomizer::~AbstractRandomizer() {}
 
-/** Reset seed of randomizer for particular simulation index and data stream
+/** Reset seed of randomizer for particular simulation index and data set
     index combination. Note that neither parameter should be zero. This special
     seed creation is to ensure that, should a data set contain identical data
-    streams; identical randomized data are not created. This situation would be
+    sets; identical randomized data are not created. This situation would be
     unusual and unlikely but this implementation has no ill effects otherwise.
     Note: For requested simulations greater than 999999, the determined seed
-          will not be unique when more than one data stream is in set. This
+          will not be unique when more than one data set is in input. This
           behavior has been OK'ed by Martin through reasoning that having
-          identical data streams will be rare.*/
-void AbstractRandomizer::SetSeed(unsigned int iSimulationIndex, unsigned int iDataStreamIndex) {
+          identical data sets will be rare.*/
+void AbstractRandomizer::SetSeed(unsigned int iSimulationIndex, unsigned int iDataSetIndex) {
   unsigned long ulSeed;
 
   try {
     //calculate seed as unsigned long
-    ulSeed = gRandomNumberGenerator.GetDefaultSeed() + iSimulationIndex +  ((iDataStreamIndex - 1) * glStreamSeedOffSet);
+    ulSeed = gRandomNumberGenerator.GetDefaultSeed() + iSimulationIndex +  ((iDataSetIndex - 1) * glDataSetSeedOffSet);
     //compare to max seed(declared as positive signed long)
     if (ulSeed >= static_cast<unsigned long>(gRandomNumberGenerator.GetMaxSeed()))
-      ZdGenerateException("Calculated seed for simulation %u, data stream %u, exceeds defined limit of %i.",
-                          "SetSeed()", iSimulationIndex, iDataStreamIndex, gRandomNumberGenerator.GetMaxSeed());
+      ZdGenerateException("Calculated seed for simulation %u, data set %u, exceeds defined limit of %i.",
+                          "SetSeed()", iSimulationIndex, iDataSetIndex, gRandomNumberGenerator.GetMaxSeed());
 
     gRandomNumberGenerator.SetSeed(static_cast<long>(ulSeed));
   }
@@ -64,9 +64,6 @@ FileSourceRandomizer * FileSourceRandomizer::Clone() const {
           3) file does not actually contains numerical data
           Use of this feature should be discouraged except from someone who has
           detailed knowledge of how code works.                                                           */
-void FileSourceRandomizer::RandomizeData(const RealDataStream&,
-                                         SimulationDataStream& thisSimulationStream,
-                                         unsigned int iSimulation) {
-
-  thisSimulationStream.ReadSimulationData(gParameters, iSimulation);
+void FileSourceRandomizer::RandomizeData(const RealDataSet&, SimDataSet& thisSimSet, unsigned int iSimulation) {
+  thisSimSet.ReadSimulationData(gParameters, iSimulation);
 }

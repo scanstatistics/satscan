@@ -8,8 +8,8 @@
 /** Class representing accumulated data of spatial clustering. */
 class SpatialData : public AbstractSpatialClusterData {
   public:
-    SpatialData(const DataStreamInterface& Interface, int iRate);
-    SpatialData(const AbtractDataStreamGateway& DataGateway, int iRate);
+    SpatialData(const DataSetInterface& Interface, int iRate);
+    SpatialData(const AbtractDataSetGateway& DataGateway, int iRate);
     virtual ~SpatialData();
 
     //public data members -- public for speed considerations
@@ -22,10 +22,10 @@ class SpatialData : public AbstractSpatialClusterData {
     virtual SpatialData * Clone() const;
     SpatialData         & operator=(const SpatialData& rhs);
 
-    inline /*virtual*/ void   AddMeasureList(tract_t tCentroidIndex, const DataStreamInterface& Interface,
+    inline /*virtual*/ void   AddMeasureList(tract_t tCentroidIndex, const DataSetInterface& Interface,
                                              CMeasureList* pMeasureList, tract_t tNumNeighbors,
                                              unsigned short** ppSorted_UShort_T, tract_t** ppSorted_Tract_T);
-    virtual void          AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex=0);
+    virtual void          AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual double        CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual count_t       GetCaseCount(unsigned int tSetIndex=0) const;
     virtual measure_t     GetMeasure(unsigned int tSetIndex=0) const;
@@ -34,7 +34,7 @@ class SpatialData : public AbstractSpatialClusterData {
 
 /** adds neighbor data to accumulation and updates measure list */
 inline void SpatialData::AddMeasureList(tract_t tCentroidIndex,
-                                        const DataStreamInterface& Interface, CMeasureList* pMeasureList,
+                                        const DataSetInterface& Interface, CMeasureList* pMeasureList,
                                         tract_t tNumNeighbors, unsigned short** ppSorted_UShort_T,
                                         tract_t** ppSorted_Tract_T) {
   tract_t       t, tNeighborIndex;
@@ -61,8 +61,8 @@ class TemporalData : public AbstractTemporalClusterData {
     TemporalData();
 
   public:
-    TemporalData(const DataStreamInterface& Interface);
-    TemporalData(const AbtractDataStreamGateway& DataGateway);
+    TemporalData(const DataSetInterface& Interface);
+    TemporalData(const AbtractDataSetGateway& DataGateway);
     virtual ~TemporalData();
 
     virtual void                Assign(const AbstractTemporalClusterData& rhs);
@@ -76,7 +76,7 @@ class TemporalData : public AbstractTemporalClusterData {
     count_t                     gtTotalCases;
     measure_t                   gtTotalMeasure;
 
-    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex=0);
+    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual unsigned int        GetAllocationSize() const;
     virtual count_t             GetCaseCount(unsigned int tSetIndex=0) const;
     virtual measure_t           GetMeasure(unsigned int tSetIndex=0) const;
@@ -90,7 +90,7 @@ class TemporalData : public AbstractTemporalClusterData {
 class ProspectiveSpatialData : public TemporalData {
   private:
      void                            Init() {gpCases=0;gpMeasure=0;}
-     void                            Setup(const CSaTScanData & Data, const DataStreamInterface& Interface);
+     void                            Setup(const CSaTScanData & Data, const DataSetInterface& Interface);
 
   protected:
      unsigned int                    giAllocationSize;         /** size of allocated arrays */
@@ -99,8 +99,8 @@ class ProspectiveSpatialData : public TemporalData {
      RATE_FUNCPTRTYPE                gfRateOfInterest;         /** function pointer to 'rate of interest' function */
 
   public:
-    ProspectiveSpatialData(const CSaTScanData& Data, const DataStreamInterface& Interface);
-    ProspectiveSpatialData(const CSaTScanData& Data, const AbtractDataStreamGateway& DataGateway);
+    ProspectiveSpatialData(const CSaTScanData& Data, const DataSetInterface& Interface);
+    ProspectiveSpatialData(const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway);
     ProspectiveSpatialData(const ProspectiveSpatialData& rhs);
     virtual ~ProspectiveSpatialData();
 
@@ -108,10 +108,10 @@ class ProspectiveSpatialData : public TemporalData {
     virtual ProspectiveSpatialData * Clone() const;
     ProspectiveSpatialData         & operator=(const ProspectiveSpatialData& rhs);
 
-    /*virtual*/ void                 AddMeasureList(tract_t tCentroidIndex, const DataStreamInterface& Interface,
+    /*virtual*/ void                 AddMeasureList(tract_t tCentroidIndex, const DataSetInterface& Interface,
                                                     CMeasureList* pMeasureList, tract_t tNumNeighbors,
                                                     unsigned short** ppSorted_UShort_T, tract_t** ppSorted_Tract_T);
-    virtual void                     AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex=0);
+    virtual void                     AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual double                   CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual unsigned int             GetAllocationSize() const {return giAllocationSize;}
     inline virtual void              InitializeData();
@@ -130,14 +130,14 @@ class CTimeIntervals; /** forward class declaration */
 class SpaceTimeData : public TemporalData {
   private:
      void                       Init() {gpCases=0;gpMeasure=0;}
-     void                       Setup(const DataStreamInterface& Interface);
+     void                       Setup(const DataSetInterface& Interface);
 
   protected:
      unsigned int               giAllocationSize;
 
   public:
-    SpaceTimeData(const DataStreamInterface& Interface);
-    SpaceTimeData(const AbtractDataStreamGateway& DataGateway);
+    SpaceTimeData(const DataSetInterface& Interface);
+    SpaceTimeData(const AbtractDataSetGateway& DataGateway);
     SpaceTimeData(const SpaceTimeData& rhs);
     virtual ~SpaceTimeData();
 
@@ -146,13 +146,13 @@ class SpaceTimeData : public TemporalData {
     SpaceTimeData             & operator=(const SpaceTimeData& rhs);
 
     /*virtual*/ void            AddNeighborDataAndCompare(tract_t tCentroidIndex,
-                                                          const DataStreamInterface& Interface,
+                                                          const DataSetInterface& Interface,
                                                           tract_t tNumNeighbors,
                                                           unsigned short** ppSorted_UShort_T,
                                                           tract_t** ppSorted_Tract_T,
                                                           CTimeIntervals& TimeIntervals,
                                                           CMeasureList& MeasureList);
-    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway & DataGateway, size_t tSetIndex=0);
+    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway & DataGateway, size_t tSetIndex=0);
     inline virtual void         InitializeData();
 };
 

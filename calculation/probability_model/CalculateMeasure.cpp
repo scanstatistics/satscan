@@ -1,7 +1,7 @@
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "CalculateMeasure.h"
 #include "MultipleDimensionArrayHandler.h"
 
@@ -12,14 +12,14 @@ static FILE* pMResult;
 #endif
 
 /** Calculates the risk for each population category storing results in vector
-    'vRisk'. Sets data stream's total case and population counts. */
-std::vector<double>& CalcRisk(RealDataStream& thisStream, std::vector<double>& vRisk, Julian StudyStartDate, Julian StudyEndDate) {
+    'vRisk'. Sets data set's total case and population counts. */
+std::vector<double>& CalcRisk(RealDataSet& DataSet, std::vector<double>& vRisk, Julian StudyStartDate, Julian StudyEndDate) {
   int                   c, i, n;
   tract_t               t;
   double                nPop, dTotalPopulation=0;
   count_t               nCaseCount, tTotalCases=0;
   std::vector<double>   vAlpha;
-  PopulationData      & Population = thisStream.GetPopulationData();
+  PopulationData      & Population = DataSet.GetPopulationData();
 
   try {
     vRisk.resize(Population.GetNumCovariateCategories(), 0);
@@ -31,7 +31,7 @@ std::vector<double>& CalcRisk(RealDataStream& thisStream, std::vector<double>& v
     for (c=0; c < Population.GetNumCovariateCategories(); ++c) {
        nPop = 0;
        nCaseCount = Population.GetNumCovariateCategoryCases(c);
-       for (t=0; t < (int)thisStream.GetNumTracts(); ++t)
+       for (t=0; t < (int)DataSet.GetNumTracts(); ++t)
           Population.GetAlphaAdjustedPopulation(nPop, t, c, 0, Population.GetNumPopulationDates(), vAlpha);
        if (nPop)
          vRisk[c] = (double)nCaseCount/nPop;
@@ -41,8 +41,8 @@ std::vector<double>& CalcRisk(RealDataStream& thisStream, std::vector<double>& v
       tTotalCases += nCaseCount;
        // Check to see if total case or control values have wrapped
        if (tTotalCases < 0)
-         GenerateResolvableException("Error: The total number of cases in data stream %u is greater than the maximum allowed of %ld.\n",
-                                     "CalcRisk()", thisStream.GetStreamIndex(), std::numeric_limits<count_t>::max());
+         GenerateResolvableException("Error: The total number of cases in data set %u is greater than the maximum allowed of %ld.\n",
+                                     "CalcRisk()", DataSet.GetSetIndex(), std::numeric_limits<count_t>::max());
 
       dTotalPopulation += nPop;
     }
@@ -50,8 +50,8 @@ std::vector<double>& CalcRisk(RealDataStream& thisStream, std::vector<double>& v
   fprintf(pMResult, "\n");
   fprintf(pMResult, "Total Cases = %li    Total Population = %f\n\n", *pTotalCases, *pTotalPop); 
 #endif
-    thisStream.SetTotalCases(tTotalCases);
-    thisStream.SetTotalPopulation(dTotalPopulation);
+    DataSet.SetTotalCases(tTotalCases);
+    DataSet.SetTotalPopulation(dTotalPopulation);
   }
   catch (ZdException & x) {
     x.AddCallpath("CalcRisk()", "CalculateMeasure.cpp");
@@ -61,22 +61,22 @@ std::vector<double>& CalcRisk(RealDataStream& thisStream, std::vector<double>& v
 }
 
 /** Calculates the expected number of cases at a given population date and tract
-    for all categories represented by modifying the data streams population
+    for all categories represented by modifying the data sets population
     measure array such that m[n][t] = expected number of cases at population date
     index n and tract index t, for all categories of that tract. */
-void Calcm(RealDataStream& thisStream, Julian StudyStartDate, Julian StudyEndDate) {
+void Calcm(RealDataSet& DataSet, Julian StudyStartDate, Julian StudyEndDate) {
   std::vector<double>   vRisk;
-  PopulationData      & Population = thisStream.GetPopulationData();
+  PopulationData      & Population = DataSet.GetPopulationData();
   int                   c, n, nCats, nPops;
-  tract_t               t, nTracts = thisStream.GetNumTracts();
+  tract_t               t, nTracts = DataSet.GetNumTracts();
   measure_t          ** m;
 
   try {
     nPops = Population.GetNumPopulationDates();
     //calculate risk for each population category
-    CalcRisk(thisStream, vRisk, StudyStartDate, StudyEndDate);
+    CalcRisk(DataSet, vRisk, StudyStartDate, StudyEndDate);
     //allocate 2D array of population dates by number of tracts
-    m = thisStream.AllocatePopulationMeasureArray();
+    m = DataSet.AllocatePopulationMeasureArray();
     
     for (n=0; n < nPops; ++n)
        for (t=0; t < nTracts; ++t)
@@ -109,20 +109,20 @@ void Calcm(RealDataStream& thisStream, Julian StudyStartDate, Julian StudyEndDat
     at index i and tract at index t. Caller is responsible for ensuring that
     'vIntervalStartDates' contains a number of elements equaling the number of
     time intervals plus one.*/
-measure_t CalcMeasure(RealDataStream& thisStream, TwoDimMeasureArray_t& NonCumulativeMeasureHandler,
+measure_t CalcMeasure(RealDataSet& DataSet, TwoDimMeasureArray_t& NonCumulativeMeasureHandler,
                       const std::vector<Julian>& vIntervalStartDates, Julian StartDate, Julian EndDate) {
 
-  PopulationData      & thisPopulationData = thisStream.GetPopulationData();
-  int                   i, n, lower, upper, nLowerPlus1, nTimeIntervals = thisStream.GetNumTimeIntervals();
-  tract_t               t, nTracts = thisStream.GetNumTracts();                   
+  PopulationData      & thisPopulationData = DataSet.GetPopulationData();
+  int                   i, n, lower, upper, nLowerPlus1, nTimeIntervals = DataSet.GetNumTimeIntervals();
+  tract_t               t, nTracts = DataSet.GetNumTracts();
   measure_t          ** ppM, ** pPopulationMeasure, ** ppNonCumulativeMeasure, tTotalMeasure=0;
   double                tempRatio, tempSum, temp1, temp2;
   Julian                jLowDate, jLowDatePlus1;
   long                  nTotalDays = EndDate + 1 - StartDate;
 
   try {
-    //get reference to data streams population measure
-    pPopulationMeasure = thisStream.GetPopulationMeasureArray();
+    //get reference to data sets population measure
+    pPopulationMeasure = DataSet.GetPopulationMeasureArray();
     //get reference to non-cummulative measure array
     ppNonCumulativeMeasure = NonCumulativeMeasureHandler.GetArray();
     //allocate temporary measure array to aide interpolation process

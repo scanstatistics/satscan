@@ -5,7 +5,7 @@
 #include "SpaceTimeCluster.h"
 
 /** constructor */
-CSpaceTimeCluster::CSpaceTimeCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway)
+CSpaceTimeCluster::CSpaceTimeCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway)
                   :CCluster() {
   try {
     Init();
@@ -58,7 +58,7 @@ CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& rhs) {
 /** add neighbor tract data from DataGateway */
 void CSpaceTimeCluster::AddNeighborDataAndCompare(tract_t tEllipseOffset,
                                                   tract_t tCentroid,
-                                                  const AbtractDataStreamGateway & DataGateway,
+                                                  const AbtractDataSetGateway & DataGateway,
                                                   const CSaTScanData * pData,
                                                   CSpaceTimeCluster & TopCluster,
                                                   CTimeIntervals * pTimeIntervals) {
@@ -78,9 +78,9 @@ CSpaceTimeCluster * CSpaceTimeCluster::Clone() const {
 }
 
 /** returns the number of cases for tract as defined by cluster */
-count_t CSpaceTimeCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
+count_t CSpaceTimeCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
   count_t      tCaseCount,
-            ** ppCases = Data.GetDataStreamHandler().GetStream(iStream).GetCaseArray();
+            ** ppCases = Data.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray();
 
   if (m_nLastInterval == Data.GetNumTimeIntervals())
     tCaseCount = ppCases[m_nFirstInterval][tTract];
@@ -91,16 +91,16 @@ count_t CSpaceTimeCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanDa
 }
 
 /** Returns the measure for tract as defined by cluster. */
-measure_t CSpaceTimeCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
+measure_t CSpaceTimeCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
   measure_t      tMeasure,
-              ** ppMeasure = Data.GetDataStreamHandler().GetStream(iStream).GetMeasureArray();
+              ** ppMeasure = Data.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray();
 
   if (m_nLastInterval == Data.GetNumTimeIntervals())
     tMeasure = ppMeasure[m_nFirstInterval][tTract];
   else
     tMeasure  = ppMeasure[m_nFirstInterval][tTract] - ppMeasure[m_nLastInterval][tTract];
 
-  return Data.GetMeasureAdjustment(iStream) * tMeasure;
+  return Data.GetMeasureAdjustment(tSetIndex) * tMeasure;
 }
 
 /** re-initializes cluster data */
@@ -112,7 +112,7 @@ void CSpaceTimeCluster::Initialize(tract_t nCenter) {
 }
 
 /** internal setup function */
-void CSpaceTimeCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway) {
+void CSpaceTimeCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway) {
   try {
     gpClusterData = pClusterFactory->GetNewSpaceTimeClusterData(DataGateway);
   }

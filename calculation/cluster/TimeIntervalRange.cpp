@@ -8,7 +8,7 @@
 #include "cluster.h"
 #include "ClusterData.h"
 #include "NormalClusterData.h"
-#include "MultipleStreamClusterData.h"
+#include "MultiSetClusterData.h"
 #include "CategoricalClusterData.h"
 #include "MultiSetCategoricalClusterData.h"
 #include "LoglikelihoodRatioUnifier.h"

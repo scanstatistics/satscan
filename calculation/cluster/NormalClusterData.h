@@ -7,7 +7,7 @@
 /** Class representing accumulated data of spatial clustering of a normal probability model. */
 class NormalSpatialData : public SpatialData {
   public:
-    NormalSpatialData(const AbtractDataStreamGateway& DataGateway, int iRate);
+    NormalSpatialData(const AbtractDataSetGateway& DataGateway, int iRate);
     virtual ~NormalSpatialData();
 
     //public data memebers
@@ -16,8 +16,8 @@ class NormalSpatialData : public SpatialData {
     virtual void                Assign(const AbstractSpatialClusterData& rhs);
     virtual NormalSpatialData * Clone() const;
 
-    virtual void                AddMeasureList(const DataStreamInterface& Interface, CMeasureList* pMeasureList, const CSaTScanData* pData);
-    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex=0);
+    virtual void                AddMeasureList(const DataSetInterface& Interface, CMeasureList* pMeasureList, const CSaTScanData* pData);
+    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual double              CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual void                InitializeData() {gtCases=0;gtMeasure=0;gtSqMeasure=0;}
 };
@@ -32,8 +32,8 @@ class NormalTemporalData : public TemporalData {
     NormalTemporalData();
 
   public:
-    NormalTemporalData(const DataStreamInterface& Interface);
-    NormalTemporalData(const AbtractDataStreamGateway& DataGateway);
+    NormalTemporalData(const DataSetInterface& Interface);
+    NormalTemporalData(const AbtractDataSetGateway& DataGateway);
     virtual ~NormalTemporalData();
 
     virtual void                 Assign(const AbstractTemporalClusterData& rhs);
@@ -52,7 +52,7 @@ class NormalTemporalData : public TemporalData {
 class NormalProspectiveSpatialData : public NormalTemporalData {
   private:
      void                                  Init() {gpCases=0;gpMeasure=0;gpSqMeasure=0;}
-     void                                  Setup(const CSaTScanData& Data, const DataStreamInterface& Interface);
+     void                                  Setup(const CSaTScanData& Data, const DataSetInterface& Interface);
 
   protected:
      unsigned int                          giAllocationSize;    /** size of allocated arrays */
@@ -61,8 +61,8 @@ class NormalProspectiveSpatialData : public NormalTemporalData {
      RATE_FUNCPTRTYPE                      gfRateOfInterest;    /** function pointer to 'rate of interest' function */
 
   public:
-    NormalProspectiveSpatialData(const CSaTScanData& Data, const DataStreamInterface& Interface);
-    NormalProspectiveSpatialData(const CSaTScanData& Data, const AbtractDataStreamGateway& DataGateway);
+    NormalProspectiveSpatialData(const CSaTScanData& Data, const DataSetInterface& Interface);
+    NormalProspectiveSpatialData(const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway);
     NormalProspectiveSpatialData(const NormalProspectiveSpatialData& rhs);
     virtual ~NormalProspectiveSpatialData();
 
@@ -70,7 +70,7 @@ class NormalProspectiveSpatialData : public NormalTemporalData {
     virtual NormalProspectiveSpatialData * Clone() const;
     NormalProspectiveSpatialData         & operator=(const NormalProspectiveSpatialData& rhs);
 
-    virtual void                           AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex=0);
+    virtual void                           AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual double                         CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual void                           InitializeData();
 };
@@ -79,14 +79,14 @@ class NormalProspectiveSpatialData : public NormalTemporalData {
 class NormalSpaceTimeData : public NormalTemporalData {
   private:
      void                         Init() {gpCases=0;gpMeasure=0;gpSqMeasure=0;}
-     void                         Setup(const DataStreamInterface & Interface);
+     void                         Setup(const DataSetInterface & Interface);
 
   protected:
      unsigned int                 giAllocationSize;  /** size of allocated arrays */
 
   public:
-    NormalSpaceTimeData(const DataStreamInterface& Interface);
-    NormalSpaceTimeData(const AbtractDataStreamGateway& DataGateway);
+    NormalSpaceTimeData(const DataSetInterface& Interface);
+    NormalSpaceTimeData(const AbtractDataSetGateway& DataGateway);
     NormalSpaceTimeData(const NormalSpaceTimeData& rhs);
     virtual ~NormalSpaceTimeData();
 
@@ -94,7 +94,7 @@ class NormalSpaceTimeData : public NormalTemporalData {
     virtual NormalSpaceTimeData * Clone() const;
     NormalSpaceTimeData         & operator=(const NormalSpaceTimeData& rhs);
 
-    virtual void                  AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex=0);
+    virtual void                  AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual void                  InitializeData();
 };
 //******************************************************************************

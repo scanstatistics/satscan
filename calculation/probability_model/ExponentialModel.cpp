@@ -6,15 +6,18 @@
 #include "SaTScanData.h"
 
 /** constructor */
-ExponentialModel::ExponentialModel(const CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection)
-                 :CModel(Parameters, Data, PrintDirection) {}
+ExponentialModel::ExponentialModel(const CParameters& Parameters, CSaTScanData& DataHub, BasePrint& PrintDirection)
+                 :CModel(Parameters, DataHub, PrintDirection) {}
 
 /** destructor */
 ExponentialModel::~ExponentialModel() {}
 
-double ExponentialModel::GetPopulation(unsigned int iStream, int m_iEllipseOffset, tract_t nCenter,
-                                   tract_t nTracts, int nStartInterval, int nStopInterval) const {
-  ZdGenerateException("GetPopulation() not implementated.","ExponentialModel");
+void ExponentialModel::CalculateMeasure(RealDataSet&) {
+  /* no action here */
+}
+
+double ExponentialModel::GetPopulation(size_t, int, tract_t, tract_t, int, int) const {
+  ZdGenerateException("GetPopulation() not implementated YET!!!.","ExponentialModel");
   return 0;
 }
 

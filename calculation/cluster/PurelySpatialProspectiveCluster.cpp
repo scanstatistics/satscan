@@ -9,7 +9,7 @@
 
 /** constructor */
 CPurelySpatialProspectiveCluster::CPurelySpatialProspectiveCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                                                   const AbtractDataStreamGateway & DataGateway,
+                                                                   const AbtractDataSetGateway & DataGateway,
                                                                    const CSaTScanData & Data)
                                  :CCluster() {
   try {
@@ -62,7 +62,7 @@ CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator=(co
 /** add neighbor tract data from DataGateway */
 void CPurelySpatialProspectiveCluster::AddNeighborAndCompare(tract_t tEllipseOffset,
                                                              tract_t tCentroid,
-                                                             const AbtractDataStreamGateway & DataGateway,
+                                                             const AbtractDataSetGateway & DataGateway,
                                                              const CSaTScanData * pData,
                                                              CPurelySpatialProspectiveCluster & TopCluster,
                                                              AbstractLikelihoodCalculator & Calculator) {
@@ -85,7 +85,7 @@ CPurelySpatialProspectiveCluster * CPurelySpatialProspectiveCluster::Clone() con
 }
 
 /** Returns the number of case for tract as defined by cluster. */
-count_t CPurelySpatialProspectiveCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
+count_t CPurelySpatialProspectiveCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
   ZdGenerateException("GetCaseCountForTract() not implemented.","CPurelySpatialProspectiveCluster");
   return 0;
 }
@@ -97,7 +97,7 @@ ZdString& CPurelySpatialProspectiveCluster::GetEndDate(ZdString& sDateString, co
 }
 
 /** Returns the measure for tract as defined by cluster. */
-measure_t CPurelySpatialProspectiveCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
+measure_t CPurelySpatialProspectiveCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, size_t tSetIndex) const {
   ZdGenerateException("GetMeasureForTract() not implemented.","CPurelySpatialProspectiveCluster");
   return 0;
 }
@@ -114,7 +114,7 @@ void CPurelySpatialProspectiveCluster::Initialize(tract_t nCenter = 0) {
   gpClusterData->InitializeData();
 }
 
-void CPurelySpatialProspectiveCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataStreamGateway & DataGateway, const CSaTScanData & Data) {
+void CPurelySpatialProspectiveCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway, const CSaTScanData & Data) {
   try {
     gpClusterData = pClusterFactory->GetNewProspectiveSpatialClusterData(Data, DataGateway);
   }

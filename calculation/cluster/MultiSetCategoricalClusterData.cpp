@@ -7,7 +7,7 @@
 #include "LoglikelihoodRatioUnifier.h"
 
 /** class constructor */
-MultiSetCategoricalSpatialData::MultiSetCategoricalSpatialData(const CategoricalClusterDataFactory& DataFactory, const AbtractDataStreamGateway& DataGateway, int iRate)
+MultiSetCategoricalSpatialData::MultiSetCategoricalSpatialData(const CategoricalClusterDataFactory& DataFactory, const AbtractDataSetGateway& DataGateway, int iRate)
                                   :AbstractSpatialClusterData(0) {
   for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
      gvSetClusterData.push_back(dynamic_cast<CategoricalSpatialData*>(DataFactory.GetNewSpatialClusterData(DataGateway.GetDataSetInterface(t), iRate)));
@@ -32,7 +32,7 @@ void MultiSetCategoricalSpatialData::Assign(const AbstractSpatialClusterData& rh
 
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
     'tNeighborIndex' is a valid index. */
-void MultiSetCategoricalSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t) {
+void MultiSetCategoricalSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t) {
   unsigned int i;
   for (i=0, gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++i, ++gitr)
      (*gitr)->AddNeighborData(tNeighborIndex, DataGateway, i);
@@ -109,7 +109,7 @@ void AbstractMultiSetCategoricalTemporalData::InitializeData() {
 //******************************************************************************
 
 /** class constructor */
-MultiSetCategoricalTemporalData::MultiSetCategoricalTemporalData(const CategoricalClusterDataFactory& DataFactory, const AbtractDataStreamGateway& DataGateway)
+MultiSetCategoricalTemporalData::MultiSetCategoricalTemporalData(const CategoricalClusterDataFactory& DataFactory, const AbtractDataSetGateway& DataGateway)
                                 :AbstractMultiSetCategoricalTemporalData() {
   for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
      gvSetClusterData.push_back(dynamic_cast<CategoricalTemporalData*>(DataFactory.GetNewTemporalClusterData(DataGateway.GetDataSetInterface(t))));
@@ -133,14 +133,14 @@ void MultiSetCategoricalTemporalData::Assign(const AbstractTemporalClusterData& 
 }
 
 /** Not implemented - throws ZdException. */
-void MultiSetCategoricalTemporalData::AddNeighborData(tract_t, const AbtractDataStreamGateway&, size_t) {
-  ZdGenerateException("AddNeighbor(tract_t, const AbtractDataStreamGateway&, size_t) not implemeneted.","MultiSetCategoricalTemporalData");
+void MultiSetCategoricalTemporalData::AddNeighborData(tract_t, const AbtractDataSetGateway&, size_t) {
+  ZdGenerateException("AddNeighbor(tract_t, const AbtractDataSetGateway&, size_t) not implemeneted.","MultiSetCategoricalTemporalData");
 }
 
 //******************************************************************************
 
 /** class constructor */
-MultiSetCategoricalProspectiveSpatialData::MultiSetCategoricalProspectiveSpatialData(const CategoricalClusterDataFactory& DataFactory, const CSaTScanData& Data, const AbtractDataStreamGateway& DataGateway)
+MultiSetCategoricalProspectiveSpatialData::MultiSetCategoricalProspectiveSpatialData(const CategoricalClusterDataFactory& DataFactory, const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway)
                                           :AbstractMultiSetCategoricalTemporalData() {
   for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
      gvSetClusterData.push_back(dynamic_cast<CategoricalTemporalData*>(DataFactory.GetNewProspectiveSpatialClusterData(Data, DataGateway.GetDataSetInterface(t))));
@@ -165,7 +165,7 @@ void MultiSetCategoricalProspectiveSpatialData::Assign(const AbstractTemporalClu
 
 /** Adds neighbor data to accumulated cluster data  - caller is responsible for
     ensuring that 'tNeighborIndex' is a valid index. */
-void MultiSetCategoricalProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t) {
+void MultiSetCategoricalProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t) {
   unsigned int i;
 
   for (i=0, gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++i, ++gitr)
@@ -204,7 +204,7 @@ double MultiSetCategoricalProspectiveSpatialData::CalculateLoglikelihoodRatio(Ab
 //******************************************************************************
 
 /** class constructor */
-MultiSetCategoricalSpaceTimeData::MultiSetCategoricalSpaceTimeData(const CategoricalClusterDataFactory& DataFactory, const AbtractDataStreamGateway& DataGateway)
+MultiSetCategoricalSpaceTimeData::MultiSetCategoricalSpaceTimeData(const CategoricalClusterDataFactory& DataFactory, const AbtractDataSetGateway& DataGateway)
                                  :AbstractMultiSetCategoricalTemporalData() {
   gvSetClusterData.resize(DataGateway.GetNumInterfaces(), 0);
   for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
@@ -230,7 +230,7 @@ void MultiSetCategoricalSpaceTimeData::Assign(const AbstractTemporalClusterData&
 
 /** Add neighbor data to accumulation  - caller is responsible for ensuring that
    'tNeighborIndex' is a valid index. */
-void MultiSetCategoricalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t) {
+void MultiSetCategoricalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t) {
   unsigned int i;
   for (i=0, gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++i, ++gitr)
      (*gitr)->AddNeighborData(tNeighborIndex, DataGateway, i);

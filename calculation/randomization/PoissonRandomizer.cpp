@@ -1,7 +1,7 @@
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "PoissonRandomizer.h"
 #include "SaTScanData.h"
 
@@ -24,17 +24,15 @@ PoissonNullHypothesisRandomizer * PoissonNullHypothesisRandomizer::Clone() const
 }
 
 /** Generate case counts under the null hypothesis (standard) */
-void PoissonNullHypothesisRandomizer::RandomizeData(const RealDataStream& thisRealStream,
-                                                    SimulationDataStream& thisSimulationStream,
-                                                    unsigned int iSimulation) {
-  unsigned int          t, tNumTracts = thisRealStream.GetNumTracts(),
-                        i, tNumTimeIntervals = thisRealStream.GetNumTimeIntervals();
-  count_t               c, d, cumcases=0, tTotalCases = thisRealStream.GetTotalCases(),
-                     ** ppSimCases = thisSimulationStream.GetCaseArray();
-  measure_t             cummeasure=0, tTotalMeasure = thisRealStream.GetTotalMeasure(),
-                     ** ppMeasure(thisRealStream.GetMeasureArray());
+void PoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) {
+  unsigned int          t, tNumTracts = thisRealSet.GetNumTracts(),
+                        i, tNumTimeIntervals = thisRealSet.GetNumTimeIntervals();
+  count_t               c, d, cumcases=0, tTotalCases = thisRealSet.GetTotalCases(),
+                     ** ppSimCases = thisSimSet.GetCaseArray();
+  measure_t             cummeasure=0, tTotalMeasure = thisRealSet.GetTotalMeasure(),
+                     ** ppMeasure(thisRealSet.GetMeasureArray());
                      
-  SetSeed(iSimulation, thisSimulationStream.GetStreamIndex());
+  SetSeed(iSimulation, thisSimSet.GetSetIndex());
   for (t=0; t < tNumTracts; ++t) {
      if (tTotalMeasure-cummeasure > 0)
        c = gBinomialGenerator.GetBinomialDistributedVariable(tTotalCases - cumcases,
@@ -69,19 +67,17 @@ PoissonTimeStratifiedRandomizer * PoissonTimeStratifiedRandomizer::Clone() const
   return new PoissonTimeStratifiedRandomizer(*this);
 }
 
-/** Randomizes data of data stream, stratified by time */
-void PoissonTimeStratifiedRandomizer::RandomizeData(const RealDataStream& thisRealStream,
-                                                    SimulationDataStream& thisSimulationStream,
-                                                    unsigned int iSimulation) {
-  unsigned int          tract, tNumTracts = thisRealStream.GetNumTracts();
-  count_t               c, cumcases=0, * pCasesPerInterval = thisRealStream.GetCasesPerTimeIntervalArray(),
-                     ** ppSimCases = thisSimulationStream.GetCaseArray();
-  measure_t             cummeasure=0, * pMeasurePerInterval = thisRealStream.GetMeasurePerTimeIntervalArray(),
-                     ** ppMeasure = thisRealStream.GetMeasureArray();
+/** Randomizes data of dataset, stratified by time */
+void PoissonTimeStratifiedRandomizer::RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) {
+  unsigned int          tract, tNumTracts = thisRealSet.GetNumTracts();
+  count_t               c, cumcases=0, * pCasesPerInterval = thisRealSet.GetCasesPerTimeIntervalArray(),
+                     ** ppSimCases = thisSimSet.GetCaseArray();
+  measure_t             cummeasure=0, * pMeasurePerInterval = thisRealSet.GetMeasurePerTimeIntervalArray(),
+                     ** ppMeasure = thisRealSet.GetMeasureArray();
   int                   interval;
 
-  SetSeed(iSimulation, thisSimulationStream.GetStreamIndex());
-  interval = thisRealStream.GetNumTimeIntervals() - 1;
+  SetSeed(iSimulation, thisSimSet.GetSetIndex());
+  interval = thisRealSet.GetNumTimeIntervals() - 1;
   for (tract=0; tract < tNumTracts; ++tract) {
      if (pCasesPerInterval[interval] - cumcases > 0)
        c = gBinomialGenerator.GetBinomialDistributedVariable(pCasesPerInterval[interval] - cumcases,
@@ -122,23 +118,20 @@ PoissonSpatialStratifiedRandomizer * PoissonSpatialStratifiedRandomizer::Clone()
   return new PoissonSpatialStratifiedRandomizer(*this);
 }
 
-/** Randomizes data of data stream, stratified by space */
-void PoissonSpatialStratifiedRandomizer::RandomizeData(const RealDataStream& thisRealStream,
-                                                       SimulationDataStream& thisSimulationStream,
-                                                       unsigned int iSimulation) {
-
+/** Randomizes data of dataset, stratified by space */
+void PoissonSpatialStratifiedRandomizer::RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) {
   int                   interval;
   unsigned int          tract;
   count_t               tCases, tCumCases=0,
-                     ** ppCases = thisRealStream.GetCaseArray(),
-                     ** ppSimCases = thisSimulationStream.GetCaseArray();
-  measure_t             tCumMeasure=0, ** ppMeasure = thisRealStream.GetMeasureArray();
+                     ** ppCases = thisRealSet.GetCaseArray(),
+                     ** ppSimCases = thisSimSet.GetCaseArray();
+  measure_t             tCumMeasure=0, ** ppMeasure = thisRealSet.GetMeasureArray();
 
   //reset seed for simulation number
-  SetSeed(iSimulation, thisSimulationStream.GetStreamIndex());
+  SetSeed(iSimulation, thisSimSet.GetSetIndex());
   //create randomized data for each tract's last time interval
-  interval = thisRealStream.GetNumTimeIntervals() - 1;
-  for (tract=0; tract < thisRealStream.GetNumTracts(); ++tract) {
+  interval = thisRealSet.GetNumTimeIntervals() - 1;
+  for (tract=0; tract < thisRealSet.GetNumTracts(); ++tract) {
      if (ppCases[0][tract])
        ppSimCases[interval][tract] = gBinomialGenerator.GetBinomialDistributedVariable(ppCases[0][tract],
                                            ppMeasure[interval][tract]/(ppMeasure[0][tract]), gRandomNumberGenerator);
@@ -146,10 +139,10 @@ void PoissonSpatialStratifiedRandomizer::RandomizeData(const RealDataStream& thi
        ppSimCases[interval][tract] = 0;
   }
   //create randomized data for each tract's remaining time intervals
-  for (tract=0; tract < thisRealStream.GetNumTracts(); ++tract) {
+  for (tract=0; tract < thisRealSet.GetNumTracts(); ++tract) {
      tCumCases = 0;
      tCumMeasure = 0;
-     interval = thisRealStream.GetNumTimeIntervals() - 2;
+     interval = thisRealSet.GetNumTimeIntervals() - 2;
      for (; interval >= 0; --interval) {
         if (ppCases[0][tract] - tCumCases)
           tCases = gBinomialGenerator.GetBinomialDistributedVariable(ppCases[0][tract] - tCumCases,
@@ -207,20 +200,18 @@ AlternateHypothesisRandomizer * AlternateHypothesisRandomizer::Clone() const {
   return new AlternateHypothesisRandomizer(*this);
 }
 
-/** Randomizes data of data stream under alternate hypothesis.
+/** Randomizes data of dataset under alternate hypothesis.
     NOTE: This procedure is in an experiential stage. */
-void AlternateHypothesisRandomizer::RandomizeData(const RealDataStream& thisRealStream,
-                                                  SimulationDataStream& thisSimulationStream,
-                                                  unsigned int iSimulation) {
-  unsigned int          j, t, i, tNumTracts = thisRealStream.GetNumTracts(),
-                        tNumTimeIntervals = thisRealStream.GetNumTimeIntervals();
+void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) {
+  unsigned int          j, t, i, tNumTracts = thisRealSet.GetNumTracts(),
+                        tNumTimeIntervals = thisRealSet.GetNumTimeIntervals();
   int                   iInterval;
   std::ifstream         RelativeRiskFile;
   std::string           sTractId;
   tract_t               tractIndex;
-  measure_t             cummeasure=0, TotalMeasure = thisRealStream.GetTotalMeasure(),
-                     ** ppMeasure = thisRealStream.GetMeasureArray();
-  count_t               c, d, cumcases=0, ** ppSimCases = thisSimulationStream.GetCaseArray();
+  measure_t             cummeasure=0, TotalMeasure = thisRealSet.GetTotalMeasure(),
+                     ** ppMeasure = thisRealSet.GetMeasureArray();
+  count_t               c, d, cumcases=0, ** ppSimCases = thisSimSet.GetCaseArray();
 
   //duplicate the  ppMeasure[][] into gpAlternativeMeasure[][], gpAlternativeMeasure[][] will be changed depending upon
   //the gvRelativeRisks[], and ppMeasure[][] remains the same as the expected measure
@@ -268,7 +259,7 @@ void AlternateHypothesisRandomizer::RandomizeData(const RealDataStream& thisReal
    //start alternative simulations
   for (t=0; t < tNumTracts; ++t) {
     if (TotalMeasure-cummeasure > 0)
-        c = gBinomialGenerator.GetBinomialDistributedVariable(thisRealStream.GetTotalCases() - cumcases,
+        c = gBinomialGenerator.GetBinomialDistributedVariable(thisRealSet.GetTotalCases() - cumcases,
                                                               gvMeasure[t] / (TotalMeasure-cummeasure),
                                                               gRandomNumberGenerator);
     else
