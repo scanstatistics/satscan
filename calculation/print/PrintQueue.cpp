@@ -251,7 +251,6 @@ long TimedReleaseThresholdPolicy::GetRecommendedThresholdValue_OnDestruction(lon
       //how many seconds to sleep?  round to the nearest:
       unsigned u((ulTimeDifference + 500) / 1000);
       //sleep...
-      printf("sleeping %d seconds\n", u);
       #if defined(__BORLANDC__)
       _sleep(u);
       #else
