@@ -4,7 +4,7 @@
 //---------------------------------------------------------------------------
 #include "ScanfFile.h"
 
-enum InputFileType      {Case=0, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation, RelativeRisks};
+enum InputFileType      {Case=0, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation, AdjustmentsByRR};
 enum SourceDataFileType {Delimited=0, Fixed_Column, dBase};
 
 class SaTScanFileImporter : public BZdFileImporter {

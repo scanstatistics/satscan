@@ -318,7 +318,7 @@ void TBDlgDataImporter::CreateDestinationInformation() {
                                  break;
       case SpecialGrid         : sFileName.SetExtension(".grd");
                                  break;
-      case RelativeRisks       : sFileName.SetExtension(".rr");
+      case AdjustmentsByRR     : sFileName.SetExtension(".adj");
                                  break;
       default : ZdGenerateException("Unknown file type : \"%d\"", "ConvertImportedDataFile()", rdgInputFileType->ItemIndex);
     };
@@ -593,7 +593,7 @@ void TBDlgDataImporter::LoadResultFileNameIntoAnalysis() {
                                  break;
       case MaxCirclePopulation : gAnalysisForm.SetMaximumCirclePopulationFile(gDestDescriptor.GetDestinationFileName());
                                  break;
-      case RelativeRisks       : gAnalysisForm.SetAdjustmentsForRelativeRisksFile(gDestDescriptor.GetDestinationFileName());
+      case AdjustmentsByRR     : gAnalysisForm.SetAdjustmentsByRelativeRisksFile(gDestDescriptor.GetDestinationFileName());
                                  break;
       default : ZdGenerateException("Unknown file type index: \"%d\"", "LoadResultFileNameIntoAnalysis()", rdgInputFileType->ItemIndex);
     };
@@ -764,7 +764,7 @@ void TBDlgDataImporter::OnExitStartPanel() {
                                  rdoCoordinates->Enabled = false;
                                  pnlBottomPanelTopAligned->Visible = false;
                                  break;
-      case RelativeRisks       : SetupRelativeRisksFileVariableDescriptors();
+      case AdjustmentsByRR     : SetupRelativeRisksFileVariableDescriptors();
                                  rdoCoordinates->Enabled = false;
                                  pnlBottomPanelTopAligned->Visible = false;
                                  break;
@@ -1075,8 +1075,8 @@ void TBDlgDataImporter::SelectImportFile() {
       case MaxCirclePopulation  : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Maximum Circle Population files (*.max)|*.max|Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
                                   OpenDialog->Title = "Select Source Maximum Circle Population File";
                                   break;
-      case RelativeRisks        : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Relative Risks files (*.rr)|*.rr|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                                  OpenDialog->Title = "Select Source Relative Risks File";
+      case AdjustmentsByRR      : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Adjustments files (*.adj)|*.adj|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+                                  OpenDialog->Title = "Select Source Adjustments File";
                                   break;
       default : ZdGenerateException("Unknown file type index: \"%d\"","SetImportFields()", rdgInputFileType->ItemIndex);
     };
