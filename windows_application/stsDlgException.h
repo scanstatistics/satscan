@@ -15,7 +15,7 @@
 #include <Mapi.hpp>       // VCL Header
 #include <Printers.hpp>   // VCL Header
 //---------------------------------------------------------------------------
-class TBdlgException : public TForm
+class TDlgException : public TForm
 {
 __published:	// IDE-managed Components
         TImage *imgAlarmLevelImage;
@@ -49,19 +49,16 @@ protected:	// User declarations
    void SetIcon(SSException::Level eLevel);
 
 public:		// User declarations
-   __fastcall TBdlgException(TComponent* Owner, const SSException &theException, const char * sAlarmLevelString = 0);
-   __fastcall virtual ~TBdlgException();
+   __fastcall TDlgException(TComponent* Owner, const SSException &theException, const char * sAlarmLevelString = 0);
+   __fastcall virtual ~TDlgException();
 
    void         Abridge();
    void         Amplify();
    bool         IsAmplified() const;
 };
 
-void DisplayBasisException ( const SSException &theException, const char *sNotify, const char *sWarning );//deprecated
-void DisplayBasisException ( const SSException &theException, const char *sAlarmLevelString = 0 );//deprecated
-void DisplayBasisException ( Classes::TComponent * Owner, const SSException &theException, const char *sAlarmLevelString = 0 );
-
+void DisplayException ( Classes::TComponent * Owner, const SSException &theException, const char *sAlarmLevelString = 0 );
 //---------------------------------------------------------------------------
-extern PACKAGE TBdlgException *BdlgException;
+extern PACKAGE TDlgException *DlgException;
 //---------------------------------------------------------------------------
 #endif

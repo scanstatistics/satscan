@@ -1,22 +1,18 @@
-//Author Dave Hunt, Brian Simpson
-//
-//---------------------------------------------------------------------------
-// BASIS : Exception display unit
-//
-// BdlgException -- a dialog window for graphical display of exceptions
-//
 //---------------------------------------------------------------------------
 #include "stsSaTScan.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
+//Author Dave Hunt, Brian Simpson
+//
+// Exception display unit
+// BdlgException -- a dialog window for graphical display of exceptions
 // Using declarations
-using std::auto_ptr;
 
+using std::auto_ptr;
 #pragma resource "*.dfm"
 
 // This is a global function which will display an exception dialog.  If 'sAlarmLevelString'
 // is NULL, a default message will be displayed.
-void DisplayBasisException ( Classes::TComponent * Owner, const SSException &theException, const char *sAlarmLevelString ) {
+void DisplayException ( Classes::TComponent * Owner, const SSException &theException, const char *sAlarmLevelString ) {
 
    // DCH 8/9/2000
    //
@@ -27,7 +23,7 @@ void DisplayBasisException ( Classes::TComponent * Owner, const SSException &the
       if (theException.GetLevel() == SSException::Notify)
          MessageBox( Owner, "Notification", theException.GetErrorMessage(), MB_OK );
       else {
-         auto_ptr<TBdlgException>  pDialog ( new TBdlgException ( Owner, theException, sAlarmLevelString ) );
+         auto_ptr<TDlgException>  pDialog ( new TDlgException ( Owner, theException, sAlarmLevelString ) );
          pDialog->ShowModal();
       }
    }
@@ -35,54 +31,19 @@ void DisplayBasisException ( Classes::TComponent * Owner, const SSException &the
       // Chomp, chomp...
    }
 }
-
-//DEPRECATED: use function with 'Owner' argument, declared above
-// This is a global function which will display an exception dialog.  If 'sAlarmLevelString'
-// is NULL, a default message will be displayed.
-void DisplayBasisException ( const SSException &theException, const char *sAlarmLevelString ) {
-
-   // DCH 8/9/2000
-   //
-   // To make sure that this function doesn't bomb the system, we black-out
-   // SSExceptions. ( We don't want to consume system or VCL exceptions : we
-   // aren't set up to handle those anyway... )
-   try {
-      if (theException.GetLevel() == SSException::Notify)
-         MessageBox( 0, "Notification", theException.GetErrorMessage(), MB_OK );
-      else {
-         auto_ptr<TBdlgException>  pDialog ( new TBdlgException ( 0, theException, sAlarmLevelString ) );
-         pDialog->ShowModal();
-      }
-   }
-   catch ( SSException &theException ) {
-      // Chomp, chomp...
-   }
-}
-
-//deprecated: instead, use single-string-argument function declared above.
-// This is a global function which will display an exception dialog
-void DisplayBasisException ( const SSException &theException, const char *sNotify, const char *sWarning ) {
-   DisplayBasisException ( theException, sNotify );
-}
-
-
-
 //---------------------------------------------------------------------------
-__fastcall TBdlgException::TBdlgException(TComponent* Owner, const SSException &theException, const char * sAlarmLevelString)
-        : TForm(Owner)
-{
+__fastcall TDlgException::TDlgException(TComponent* Owner, const SSException &theException, const char * sAlarmLevelString)
+        : TForm(Owner) {
    Setup(theException, sAlarmLevelString);
 }
 //---------------------------------------------------------------------------
-__fastcall TBdlgException::~TBdlgException()
-{
-}
+__fastcall TDlgException::~TDlgException(){}
 //---------------------------------------------------------------------------
 // Abridge the form to hide the developer-specific information
 //<br>preconditions:
 //<br>IsAmplified()
 //<br>:end preconditions
-void TBdlgException::Abridge(){
+void TDlgException::Abridge(){
    try{
       if (! IsAmplified())
          SSException::Generate("dialog is already abridged", "Abridge");
@@ -104,7 +65,7 @@ void TBdlgException::Abridge(){
 //<br>preconditions:
 //<br>! IsAmplified()
 //<br>:end preconditions
-void TBdlgException::Amplify(){
+void TDlgException::Amplify(){
    try{
       if (IsAmplified())
          SSException::Generate("dialog is already amplified", "Abridge");
@@ -123,7 +84,7 @@ void TBdlgException::Amplify(){
 }
 
 // Set position, visibility, and enabled status according to eLevel.
-void TBdlgException::ArrangeButtons(SSException::Level eLevel){
+void TDlgException::ArrangeButtons(SSException::Level eLevel){
    switch(eLevel){
       case SSException::Notify :
          btnPrint->Visible = false;
@@ -155,11 +116,11 @@ void TBdlgException::ArrangeButtons(SSException::Level eLevel){
 //}
 
 // Is the form showing the developer-specific information ?
-bool TBdlgException::IsAmplified() const {
+bool TDlgException::IsAmplified() const {
    return gbIsAmplified;
 }
 
-void TBdlgException::OnCreate(SSException::Level eLevel){
+void TDlgException::OnCreate(SSException::Level eLevel){
    ArrangeButtons(eLevel);
 }
 
@@ -211,14 +172,14 @@ void TBdlgException::OnCreate(SSException::Level eLevel){
 } */
 
 // Amplify or abridge the form, depending on its current amplified state.
-void TBdlgException::OnMoreLessClick(){
+void TDlgException::OnMoreLessClick(){
    if (IsAmplified())
       Abridge();
    else
       Amplify();
 }
 
-void TBdlgException::OnPrintClick() {
+void TDlgException::OnPrintClick() {
    int          LogX, LogY;
    TRect        Rect;
    AnsiString   sPrintCaption;
@@ -251,7 +212,7 @@ void TBdlgException::OnPrintClick() {
 }
 
 // This function sets the dialog box icon according to eLevel.
-void TBdlgException::SetIcon ( SSException::Level eLevel ) {
+void TDlgException::SetIcon ( SSException::Level eLevel ) {
    HICON            hWindowsIcon;    // The handle from windows
    auto_ptr<TIcon>  pIcon ( new TIcon ); // VCL icon
 
@@ -276,7 +237,7 @@ void TBdlgException::SetIcon ( SSException::Level eLevel ) {
 }
 
 // Internal function which sets the initial state.
-void TBdlgException::Setup ( const SSException &theException, const char *sAlarmLevelString ) {
+void TDlgException::Setup ( const SSException &theException, const char *sAlarmLevelString ) {
    geLevel = theException.GetLevel();
    gbIsAmplified = true;
    gsMoreLessButtonCaption_More = "More-->>";
@@ -307,19 +268,19 @@ void TBdlgException::Setup ( const SSException &theException, const char *sAlarm
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void __fastcall TBdlgException::btnPrintClick(TObject *Sender)
+void __fastcall TDlgException::btnPrintClick(TObject *Sender)
 {
    OnPrintClick();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TBdlgException::btnEmailClick(TObject *Sender)
+void __fastcall TDlgException::btnEmailClick(TObject *Sender)
 {
   // OnEmailClick();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TBdlgException::btnMoreLessClick(TObject *Sender)
+void __fastcall TDlgException::btnMoreLessClick(TObject *Sender)
 {
    OnMoreLessClick();
 }

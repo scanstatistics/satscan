@@ -1,4 +1,4 @@
-object BdlgException: TBdlgException
+object DlgException: TDlgException
   Left = 222
   Top = 136
   VertScrollBar.Visible = False
