@@ -115,6 +115,7 @@ void stsRunHistoryFile::OpenRunHistoryFile() {
       TXDFile File(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
 
       // get a record buffer, input data and append the record
+      pLastRecord = File.GetNewRecord();
       ulLastRecordNumber = File.GotoLastRecord(pLastRecord);
       // if there's records in the file
       if(ulLastRecordNumber)
