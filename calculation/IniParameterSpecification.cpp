@@ -120,7 +120,7 @@ void IniParameterSpecification::Build_4_0_x_ParameterList() {
   //Versions 4.0.x made no name changes, only defined more parameters
   gvParameterInfo.push_back(std::make_pair(ScanningWindow, (const char*)"IntervalStartRange"));
   gvParameterInfo.push_back(std::make_pair(ScanningWindow, (const char*)"IntervalEndRange"));
-  gvParameterInfo.push_back(std::make_pair(TimeParameters, (const char*)"TimeTrendConvergence"));
+  gvParameterInfo.push_back(std::make_pair(NotUsed, NotUsed);
   gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"MaxCirclePopulationFile"));
   gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"EarlySimulationTermination"));
   gvParameterInfo.push_back(std::make_pair(OutputFiles, (const char*)"MaxReportedGeoClusterSize"));
@@ -210,7 +210,7 @@ void IniParameterSpecification::Build_5_1_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(EllipticScan, (const char*)"NonCompactnessPenalty"));
   gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"IntervalStartRange"));
   gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"IntervalEndRange"));
-  gvParameterInfo.push_back(std::make_pair(BatchModeFeatures, (const char*)"TimeTrendConvergence"));
+  gvParameterInfo.push_back(std::make_pair(NotUsed, NotUsed));
   gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"MaxCirclePopulationFile"));
   gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"EarlySimulationTermination"));
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"MaxReportedGeoClusterSize"));
