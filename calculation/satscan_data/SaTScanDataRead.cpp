@@ -1096,20 +1096,6 @@ bool CSaTScanData::ReadPopulationFile() {
         if (! (itrdates != vPopulationDates.end() && (*itrdates) == PopulationDate))
           vPopulationDates.insert(itrdates, PopulationDate);
     }
-    // When a prospective analysis is conducted and if a population file is used,
-    //and if the population for a tract is defined at more than one time period,
-    //error message should be shown in the running window and the application terminated.
-    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME && m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE && vPopulationDates.size() > 1) {
-        bValid = false;
-        gpPrint->PrintInputWarning("Error: For the prospective space-time analysis to be correct,\n"
-                                   "       it is critical that the scanning spatial window is the\n"
-                                   "       same for each of the analysis performed over time. If \n"
-                                   "       there are multiple years in the population file, so that\n"
-                                   "       the population size changes over time, as it does in your\n"
-                                   "       data, then you must define the maximum circle size in\n"
-                                   "       terms of a specific geographical radius rather than as a\n"
-                                   "       percent of the total population at risk.\n\n\n");
-    }
     //2nd pass, read data in structures.
     if (bValid && !bEmpty) {
       //Set tract handlers population date structures since we already now all the dates from above.
