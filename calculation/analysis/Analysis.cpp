@@ -149,6 +149,10 @@ void CAnalysis::AllocateLikelihoodObject() {
       gpLikelihoodCalculator = new BernoulliLikelihoodCalculator(m_pData->GetTotalCases(), m_pData->GetTotalMeasure());
     else if (m_pParameters->GetProbabiltyModelType() == NORMAL)
       gpLikelihoodCalculator = new NormalLikelihoodCalculator(m_pData->GetTotalCases(), m_pData->GetTotalMeasure());
+    else if (m_pParameters->GetProbabiltyModelType() == SURVIVAL)
+      gpLikelihoodCalculator = new ExponentialLikelihoodCalculator(m_pData->GetTotalCases(), m_pData->GetTotalMeasure());
+    else if (m_pParameters->GetProbabiltyModelType() == RANK)
+      gpLikelihoodCalculator = new WilcoxonLikelihoodCalculator(m_pData->GetTotalCases(), m_pData->GetTotalMeasure());
     else
       gpLikelihoodCalculator = new PoissonLikelihoodCalculator(*m_pData);
   }
@@ -774,11 +778,9 @@ void CAnalysis::PerformSimulations() {
           PrintQueue SimulationPrintDirection(*gpPrintDirection);
 
           for (iSimulationNumber=1; (iSimulationNumber <= m_pParameters->GetNumReplicationsRequested()) && !gpPrintDirection->GetIsCanceled(); iSimulationNumber++) {
-
             giSimulationNumber = iSimulationNumber;
-
-          m_pData->RandomizeData(giSimulationNumber);
-          r = (gbMeasureListReplications ? MonteCarlo(pDataGateway->GetDataStreamInterface(0)) : FindTopRatio(*pDataGateway));
+            m_pData->RandomizeData(giSimulationNumber);
+            r = (gbMeasureListReplications ? MonteCarlo(pDataGateway->GetDataStreamInterface(0)) : FindTopRatio(*pDataGateway));
             UpdateTopClustersRank(r);
             SimRatios.AddRatio(r);
             UpdatePowerCounts(r);
