@@ -6,12 +6,7 @@
 #
 # alter these two lines to be the full path to FAIRView and Basis
 #
-# I modified the paths below so that you must change them to a valid path.
-# When you make changes to this file, replace your account name with
-# "<your path>" before you upload via RCS. For example if the BASIS path
-# you use is /home/beavis/basisdev, make sure you change it back to 
-# /home/<your path>/basisdev prior to uploading it to RCS.  -- Jim
-#  
+#
 SATSCAN     := /home/hostovic/prj/satscan
 BASIS       := /home/hostovic/prj/basisdev/
 INSTALLDIR  := ~/FV
@@ -19,7 +14,6 @@ INSTALLDIR  := ~/FV
 ##########
 # you shouldn't have to change any of this.
 
-SHELL       := /usr/bin/sh
 CC          := g++
 APPLICATION :=SaTScan
 DEBUG       := -gstabs+ 
