@@ -203,7 +203,7 @@ void CParameters::ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporal
                                  //gfMaxTemporalClusterSize should be an integer from 1-90
                                  gfMaxTemporalClusterSize = dTimeBetween * gfMaxTemporalClusterSize/100;
                                  break;
-       default                 : SSException::Generate("Unknown TemporalSizeType type %d.\n", "ConvertMaxTemporalClusterSizeToType()", eTemporalSizeType);
+       default                 : ZdException::Generate("Unknown TemporalSizeType type %d.\n", "ConvertMaxTemporalClusterSizeToType()", eTemporalSizeType);
     };
     geMaxTemporalClusterSizeType = eTemporalSizeType;
   }
@@ -911,7 +911,7 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
 void CParameters::Read(const char* szFilename, BasePrint & PrintDirection) {
   try {
     if (access(szFilename, 04) == -1)
-      ZdGenerateException("Error: Unable to open parameter file '%s'.\n", "Read()", szFilename);
+      SSGenerateException("Error: Unable to open parameter file '%s'.\n", "Read()", szFilename);
 
     ZdIniFile file(szFilename, true, false);
     if (file.GetNumSections())
@@ -2889,7 +2889,7 @@ void CParameters::Write(const char * sParameterFileName) {
 
 //var_arg constructor
 InvalidParameterException::InvalidParameterException(va_list varArgs, const char *sMessage, const char *sSourceModule, ZdException::Level iLevel)
-                          :ZdException(varArgs, sMessage, sSourceModule, iLevel){}
+                          :SSException(varArgs, sMessage, sSourceModule, iLevel){}
 
 //static generation function:
 void InvalidParameterException::Generate(const char *sMessage, const char *sSourceModule, ...) {

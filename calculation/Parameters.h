@@ -396,7 +396,7 @@ class CParameters {
     void                                Write(const char * sParameterFileName);
 };
 
-class InvalidParameterException : public ZdException {
+class InvalidParameterException : public SSException {
   public:
    InvalidParameterException(va_list varArgs, const char *sMessage, const char *sSourceModule, ZdException::Level iLevel);
    virtual ~InvalidParameterException() {}
