@@ -42,7 +42,7 @@ RelativeRiskAdjustmentHandler::~RelativeRiskAdjustmentHandler() {}
 
 /** defines relative risk adjustment for passed data */
 void RelativeRiskAdjustmentHandler::AddAdjustmentData(tract_t tTractIndex, measure_t dRelativeRisk, Julian StartDate, Julian EndDate) {
-  unsigned int	                        i, iStartIndex, iEndIndex;
+  size_t				i, iStartIndex, iEndIndex;
   Julian                                TempDate;
   measure_t                             TempRisk;
   TractContainerIterator_t              itr_Start, itr_End;
@@ -69,66 +69,66 @@ void RelativeRiskAdjustmentHandler::AddAdjustmentData(tract_t tTractIndex, measu
     else
       iEndIndex = std::distance(Adjustments.begin(), itr_End);
 
-    if (iStartIndex == iEndIndex && StartDate < Adjustments.at(iStartIndex).GetStartDate() && EndDate < Adjustments.at(iStartIndex).GetStartDate())
+    if (iStartIndex == iEndIndex && StartDate < Adjustments[iStartIndex].GetStartDate() && EndDate < Adjustments[iStartIndex].GetStartDate())
       //new adjustment period entirely within period were there are no existing adjustments
       Adjustments.insert(Adjustments.begin() + iStartIndex, RelativeRiskAdjustment(dRelativeRisk, StartDate, EndDate));
-    else if (iStartIndex == iEndIndex && StartDate > Adjustments.at(iStartIndex).GetStartDate() && EndDate < Adjustments.at(iStartIndex).GetEndDate()) {
+    else if (iStartIndex == iEndIndex && StartDate > Adjustments[iStartIndex].GetStartDate() && EndDate < Adjustments[iStartIndex].GetEndDate()) {
       // neither date of new adjustment period is on existing adjustment periods boundry
-      TempDate = Adjustments.at(iStartIndex).GetEndDate();
-      TempRisk = Adjustments.at(iStartIndex).GetRelativeRisk();
-      Adjustments.at(iStartIndex).SetEndDate(StartDate - 1);
+      TempDate = Adjustments[iStartIndex].GetEndDate();
+      TempRisk = Adjustments[iStartIndex].GetRelativeRisk();
+      Adjustments[iStartIndex].SetEndDate(StartDate - 1);
       Adjustments.insert(Adjustments.begin() + (iStartIndex + 1), RelativeRiskAdjustment(TempRisk * dRelativeRisk, StartDate, EndDate));
       Adjustments.insert(Adjustments.begin() + (iStartIndex + 2), RelativeRiskAdjustment(TempRisk, EndDate + 1, TempDate));
     }
-    else if (iStartIndex == iEndIndex && StartDate == Adjustments.at(iStartIndex).GetStartDate() && EndDate == Adjustments.at(iStartIndex).GetEndDate())
-      Adjustments.at(iStartIndex).MultiplyRisk(dRelativeRisk);
+    else if (iStartIndex == iEndIndex && StartDate == Adjustments[iStartIndex].GetStartDate() && EndDate == Adjustments[iStartIndex].GetEndDate())
+      Adjustments[iStartIndex].MultiplyRisk(dRelativeRisk);
     else { //now work with StartDate and EndDate separately
-      if (StartDate < Adjustments.at(iStartIndex).GetStartDate()) {
+      if (StartDate < Adjustments[iStartIndex].GetStartDate()) {
         //insert new adjustment before existing - the relative risk will be set in loop below
-        Adjustments.insert(Adjustments.begin() + iStartIndex, RelativeRiskAdjustment(1, StartDate, Adjustments.at(iStartIndex).GetStartDate() - 1));
+        Adjustments.insert(Adjustments.begin() + iStartIndex, RelativeRiskAdjustment(1, StartDate, Adjustments[iStartIndex].GetStartDate() - 1));
         ++iEndIndex;
       }
-      else if (StartDate > Adjustments.at(iStartIndex).GetStartDate()) {
-        TempDate = Adjustments.at(iStartIndex).GetEndDate();
-        TempRisk = Adjustments.at(iStartIndex).GetRelativeRisk();
+      else if (StartDate > Adjustments[iStartIndex].GetStartDate()) {
+        TempDate = Adjustments[iStartIndex].GetEndDate();
+        TempRisk = Adjustments[iStartIndex].GetRelativeRisk();
         //adjust existing periods end date and add new adjustment after it
         //the relative risk for added period will be updated in loop below
-        Adjustments.at(iStartIndex).SetEndDate(StartDate - 1);
+        Adjustments[iStartIndex].SetEndDate(StartDate - 1);
         Adjustments.insert(Adjustments.begin() + (iStartIndex + 1), RelativeRiskAdjustment(TempRisk, StartDate, TempDate));
         ++iStartIndex;
         ++iEndIndex;
       }
       //else falls on boundry -- nothing to do for StartDate
       //... and now the end date of new adjustment period
-      if (EndDate < Adjustments.at(iEndIndex).GetStartDate())
+      if (EndDate < Adjustments[iEndIndex].GetStartDate())
         //insert new adjustment period that fills period down to next lower existing period
         //the relative risk will be set below, before loop
-        Adjustments.insert(Adjustments.begin() + iEndIndex, RelativeRiskAdjustment(1, Adjustments.at(iEndIndex - 1).GetEndDate() + 1, EndDate));
-      else if (EndDate >= Adjustments.at(iEndIndex).GetStartDate() && EndDate < Adjustments.at(iEndIndex).GetEndDate()) {
-        TempDate = Adjustments.at(iEndIndex).GetStartDate();
-        TempRisk = Adjustments.at(iEndIndex).GetRelativeRisk();
+        Adjustments.insert(Adjustments.begin() + iEndIndex, RelativeRiskAdjustment(1, Adjustments[iEndIndex - 1].GetEndDate() + 1, EndDate));
+      else if (EndDate >= Adjustments[iEndIndex].GetStartDate() && EndDate < Adjustments[iEndIndex].GetEndDate()) {
+        TempDate = Adjustments[iEndIndex].GetStartDate();
+        TempRisk = Adjustments[iEndIndex].GetRelativeRisk();
         //insert new period with upper limit determined by new adjustment end date
         //the relative risk will be set below, before loop
-        Adjustments.at(iEndIndex).SetStartDate(EndDate + 1);
+        Adjustments[iEndIndex].SetStartDate(EndDate + 1);
         Adjustments.insert(Adjustments.begin() + iEndIndex, RelativeRiskAdjustment(TempRisk, TempDate, EndDate));
       }
       //else falls on boundry - nothing to do for EndDate
       
       //at this point, adjustment at iEndIndex represents upper boundry for new period
       //that why we don't update risk in above code
-      Adjustments.at(iEndIndex).MultiplyRisk(dRelativeRisk);
+      Adjustments[iEndIndex].MultiplyRisk(dRelativeRisk);
       //create new adjustment periods in existing adjustment period between StartDate and EndDate to cause continious adjustment period
       //ensure two things - the period from StartDate to EndDate is contiguous(i.e. fill 'open' periods between adjustments dates)
       //                  - update relative risk for existing adjustments within new period
       for (i=iEndIndex; i > iStartIndex; --i) {
-         if (Adjustments.at(i).GetStartDate() - 1 != Adjustments.at(i - 1).GetEndDate()) {
+         if (Adjustments[i].GetStartDate() - 1 != Adjustments[i - 1].GetEndDate()) {
            Adjustments.insert(Adjustments.begin() + i,
-                              RelativeRiskAdjustment(dRelativeRisk, Adjustments.at(i - 1).GetEndDate() + 1,
-                                                     Adjustments.at(i).GetStartDate() - 1));
+                              RelativeRiskAdjustment(dRelativeRisk, Adjustments[i - 1].GetEndDate() + 1,
+                                                     Adjustments[i].GetStartDate() - 1));
            ++i; // still need to check between inserted item and current i - 1 element                                          
          }
          else //update relative risk
-           Adjustments.at(i - 1).MultiplyRisk(dRelativeRisk);
+           Adjustments[i - 1].MultiplyRisk(dRelativeRisk);
       }
     }
   }
@@ -170,9 +170,9 @@ void RelativeRiskAdjustmentHandler::PrintAdjustments(TractHandler & tHandler) {
      const TractContainer_t & tract_deque = itr->second;
      fprintf(pFile, "Tract %s:\n", sTractId.c_str());
      for (itr_deque=tract_deque.begin(); itr_deque != tract_deque.end(); ++itr_deque) {
-        JulianToString(sStart, itr_deque->GetStartDate());
-        JulianToString(sEnd, itr_deque->GetEndDate());
-        fprintf(pFile, "%lf\t%s\t%s\n", itr_deque->GetRelativeRisk(), sStart.GetCString(), sEnd.GetCString());
+        JulianToString(sStart,(*itr_deque).GetStartDate());
+        JulianToString(sEnd, (*itr_deque).GetEndDate());
+        fprintf(pFile, "%lf\t%s\t%s\n", (*itr_deque).GetRelativeRisk(), sStart.GetCString(), sEnd.GetCString());
      }
      fprintf(pFile, "\n\n");
   }
