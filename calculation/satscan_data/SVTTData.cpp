@@ -25,6 +25,10 @@ CSVTTData::~CSVTTData() {}
 
 bool CSVTTData::CalculateMeasure(DataStream & thisStream) {
   bool bReturn = CSaTScanData::CalculateMeasure(thisStream);
+  //calculate time trend for entire data stream
+  //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
+  //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
+  //      has not been decided yet.
   thisStream.GetTimeTrend().CalculateAndSet(thisStream.GetPTCasesArray(), thisStream.GetPTMeasureArray(),
                                             m_nTimeIntervals, m_pParameters->GetTimeTrendConvergence());
   return bReturn;
@@ -114,6 +118,10 @@ void CSVTTData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, const 
            CasesByTI[j]  = ppCaseNC[j][i];
            MsrByTI[j]    = ppMeasureNC[j][i];
          }
+         //calculate time trend for location
+         //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
+         //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
+         //      has not been decided yet.
          nTractTT.CalculateAndSet(CasesByTI, MsrByTI, m_nTimeIntervals, m_pParameters->GetTimeTrendConvergence());   //KR990921 - Handle Bernoulli if implemented!
          nTractTT.SetAnnualTimeTrend(m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
          sTimeTrend.printf("%6.3f", (nTractTT.IsNegative() ? -1 : 1) * nTractTT.GetAnnualTimeTrend());
@@ -144,6 +152,10 @@ void CSVTTData::RandomizeData(int iSimulationNumber) {
     CSaTScanData::RandomizeData(iSimulationNumber);
     for (size_t t=0; t < gpDataStreams->GetNumStreams(); ++t) {
        gpDataStreams->GetStream(t).SetSimCaseArrays();
+       //calculate time trend for entire randomized data set
+       //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
+       //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
+       //      has not been decided yet.
        gpDataStreams->GetStream(t).GetSimTimeTrend().CalculateAndSet(gpDataStreams->GetStream(t).GetPTCasesArray(),
                                                                      gpDataStreams->GetStream(t).GetPTMeasureArray(),
                                                                      m_nTimeIntervals,
