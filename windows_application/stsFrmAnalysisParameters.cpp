@@ -1512,7 +1512,6 @@ void TfrmAnalysis::SetupCaseFileFieldDescriptors() {
    gvCaseFileFieldDescriptors.push_back("Tract ID");
    gvCaseFileFieldDescriptors.push_back("Number of Cases");
    gvCaseFileFieldDescriptors.push_back("Date/Time");
-   gvCaseFileFieldDescriptors.push_back("Number of Controls");
    gvCaseFileFieldDescriptors.push_back("Covariant1");
    gvCaseFileFieldDescriptors.push_back("Covariant2");
    gvCaseFileFieldDescriptors.push_back("Covariant3");
@@ -1529,27 +1528,26 @@ void TfrmAnalysis::SetupCaseFileFieldDescriptors() {
 void TfrmAnalysis::SetupControlFileFieldDescriptors() {
    gvControlFileFieldDescriptors.clear();
    gvControlFileFieldDescriptors.push_back("Tract ID");
-   gvControlFileFieldDescriptors.push_back("Number of Cases");
-   gvControlFileFieldDescriptors.push_back("Date/Time");
    gvControlFileFieldDescriptors.push_back("Number of Controls");
-   gvControlFileFieldDescriptors.push_back("Covariant1");
-   gvControlFileFieldDescriptors.push_back("Covariant2");
-   gvControlFileFieldDescriptors.push_back("Covariant3");
-   gvControlFileFieldDescriptors.push_back("Covariant4");
-   gvControlFileFieldDescriptors.push_back("Covariant5");
-   gvControlFileFieldDescriptors.push_back("Covariant6");
-   gvControlFileFieldDescriptors.push_back("Covariant7");
-   gvControlFileFieldDescriptors.push_back("Covariant8");
-   gvControlFileFieldDescriptors.push_back("Covariant9");
-   gvControlFileFieldDescriptors.push_back("Covariant10");
+   gvControlFileFieldDescriptors.push_back("Date/Time");
+//   gvControlFileFieldDescriptors.push_back("Covariant1");
+//   gvControlFileFieldDescriptors.push_back("Covariant2");
+//   gvControlFileFieldDescriptors.push_back("Covariant3");
+//   gvControlFileFieldDescriptors.push_back("Covariant4");
+//   gvControlFileFieldDescriptors.push_back("Covariant5");
+//   gvControlFileFieldDescriptors.push_back("Covariant6");
+//   gvControlFileFieldDescriptors.push_back("Covariant7");
+//   gvControlFileFieldDescriptors.push_back("Covariant8");
+//   gvControlFileFieldDescriptors.push_back("Covariant9");
+//   gvControlFileFieldDescriptors.push_back("Covariant10");
 }
 
 // fill the Geo File field descriptor vector with the appropriate field names for a geo file
 void TfrmAnalysis::SetupGeoFileFieldDescriptors() {
    gvGeoFileFieldDescriptors.clear();
    gvGeoFileFieldDescriptors.push_back("Tract ID");
-   gvGeoFileFieldDescriptors.push_back("Longitude");
    gvGeoFileFieldDescriptors.push_back("Latitude");
+   gvGeoFileFieldDescriptors.push_back("Longitude");
    gvGeoFileFieldDescriptors.push_back("Dimension1");
    gvGeoFileFieldDescriptors.push_back("Dimension2");
    gvGeoFileFieldDescriptors.push_back("Dimension3");
@@ -1565,8 +1563,8 @@ void TfrmAnalysis::SetupGeoFileFieldDescriptors() {
 // fill the Geo File field descriptor vector with the appropriate field names for a geo file
 void TfrmAnalysis::SetupGridFileFieldDescriptors() {
    gvGridFileFieldDescriptors.clear();
-   gvGridFileFieldDescriptors.push_back("Longitude");
    gvGridFileFieldDescriptors.push_back("Latitude");
+   gvGridFileFieldDescriptors.push_back("Longitude");
    gvGridFileFieldDescriptors.push_back("Dimension1");
    gvGridFileFieldDescriptors.push_back("Dimension2");
    gvGridFileFieldDescriptors.push_back("Dimension3");
