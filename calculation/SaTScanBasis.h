@@ -9,8 +9,10 @@
   #define __USE_xbCSVFile
   #define __USE_xbDlgException
 #endif
-                             
+
 // defines for non-vcl dependent stuff here
+#define __USE_xbTree
+
 //---------------------------------------------------------------------------
 #endif
  
