@@ -35,7 +35,7 @@ class CTimeIntervals {
     virtual ~CTimeIntervals() {};
 
     virtual void                CompareClusters(CCluster& Running, CCluster& TopShapeCluster) = 0;
-    virtual void                CompareMeasures(TemporalData& StreamData, CMeasureList& MeasureList) = 0;
+    virtual void                CompareMeasures(AbstractTemporalClusterData& StreamData, CMeasureList& MeasureList) = 0;
     virtual IncludeClustersType GetType() const = 0;
     virtual void                Initialize() {/*stub - no action */}
 };
