@@ -1,4 +1,4 @@
-// $Revision: 1.4 $
+// $Revision: 1.5 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -120,6 +120,7 @@ class TBDlgDataImporter : public TForm {
      TfrmAnalysis                             & gAnalysisForm;
      ZdString                                   gsBlank;
      SourceDataFileType                         gSourceDataFileType;
+     bool                                       gbErrorSamplingSourceFile;
 
      void                            AddFixedColDefinitionEnable();
      void                            AdjustFileSourceFileAttributes(ZdFile & File);

@@ -272,9 +272,10 @@ void TBDlgDataImporter::ContinueButtonEnable() {
   switch (*gitrCurrentPanel) {
     case Start       : btnNextPanel->Enabled = FileExists(edtDataFile->Text.c_str()) && rdgInputFileType->ItemIndex > -1;
                        break;
-    case FileType    : btnNextPanel->Enabled = (rdoFileType->ItemIndex == 2 ||
-                                               (rdoFileType->ItemIndex == 0 && cmbColDelimiter->GetTextLen()) ||
-                                               (rdoFileType->ItemIndex == 1 &&  lstFixedColFieldDefs->Items->Count > 0));
+    case FileType    : btnNextPanel->Enabled = (!gbErrorSamplingSourceFile &&
+                                                (rdoFileType->ItemIndex == 2 ||
+                                                (rdoFileType->ItemIndex == 0 && cmbColDelimiter->GetTextLen()) ||
+                                                (rdoFileType->ItemIndex == 1 &&  lstFixedColFieldDefs->Items->Count > 0)));
                        break;
     case DataMapping : for (size_t i=0; i < gvImportingFields.size() && !btnExecuteImport->Enabled; ++i) {
                           if (tsfieldGrid->RowVisible[i+1])
@@ -354,9 +355,11 @@ void TBDlgDataImporter::CreateDestinationInformation() {
 
 /** Creates ZdIniFile to be used when opening source file for view/import. */
 void TBDlgDataImporter::DefineSourceFileStructure() {
-  size_t        t;
-  ZdFileName    fFileName;
-  ZdString      sFieldSection;
+  size_t                t;
+  int                   iRecordLength, iMaxLength = 0;
+  ZdFileName            fFileName;
+  ZdString              sFieldSection;
+  ZdIniSection          tempSection;
 
   try {
     gDataFileDefinition.Clear();
@@ -370,15 +373,14 @@ void TBDlgDataImporter::DefineSourceFileStructure() {
         CSVFile  fCSVFile(GetColumnDelimiter(), GetGroupMarker() );
         fCSVFile.OpenAsAlpha(edtDataFile->Text.c_str(), ZDIO_OPEN_READ, false);
         fCSVFile.WriteStructure(&gDataFileDefinition);
-      }  
+      }
     }
     else if (rdoFileType->ItemIndex == 1) {//Variable record length file
-      ZdIniSection  tempSection("[FileInfo]");
+      tempSection.SetName("[FileInfo]");
       fFileName.SetFullPath(edtDataFile->Text.c_str());
       tempSection.AddLine("FileName", fFileName.GetCompleteFileName());
       tempSection.AddLine("Title", fFileName.GetFileName());
       tempSection.AddLine("NumberOfFields", IntToStr((int)gvIniSections.size()).c_str());
-      int iRecordLength, iMaxLength = 0;
       for (t=0; t < gvIniSections.size(); ++t) {
         iRecordLength = StrToInt(gvIniSections[t].GetString("Length"));
         iRecordLength += StrToInt(gvIniSections[t].GetString("ByteOffSet"));
@@ -551,6 +553,7 @@ void TBDlgDataImporter::Init() {
   cmbColDelimiter->ItemIndex = 0;
   cmbGroupMarker->ItemIndex = 0;
   gSourceDataFileType=Delimited;
+  gbErrorSamplingSourceFile = false;
 }
 
 /** Allocates and initializes vector to contains field mapping choices. */
@@ -714,6 +717,8 @@ void TBDlgDataImporter::OnExecuteImport() {
       case mrOk    : if (TBMessageBox::Response(this, "Continue?", "Would you like to import another file into this session?", MB_YESNO) == IDYES) {
                        gDestDescriptor.SetDestinationFile("");
                        edtDataFile->Text = "";
+                       edtIgnoreFirstRows->Text = "0";
+                       gSourceDescriptor.SetNumberOfRowsToIgnore(0);
                        ClearFixedColumnDefinitions();
                        ShowFirstPanel();
                      }
@@ -838,24 +843,33 @@ void TBDlgDataImporter::OnViewMappingPanel() {
 /** Reads in a sample of data file into a memo field to help user
     to determine structure of source file. */
 void TBDlgDataImporter::ReadDataFileIntoRawDisplayField() {
+  int         i;
   ZdIO        fImportDataFile;
-  char        sFileLineBuffer[1024];
+  ZdString    sFileLineBuffer;
 
   try {
     memRawData->Clear();
     memRawData->HideSelection = false;
     fImportDataFile.Open(edtDataFile->Text.c_str(), ZDIO_OPEN_READ|ZDIO_SREAD);
 
-    for (int i=0; i < 50 && !fImportDataFile.GetIsEOF(); ++i) {
-       fImportDataFile.ReadLine(sFileLineBuffer, sizeof(sFileLineBuffer));
-       memRawData->Lines->Add(sFileLineBuffer);
+    for (i=0; i < 100 && !fImportDataFile.GetIsEOF(); ++i) {
+       fImportDataFile.ReadLine(sFileLineBuffer);
+       memRawData->Lines->Add(sFileLineBuffer.GetCString());
     }
     fImportDataFile.Close();
+
+    if (i==0) {
+      memRawData->Lines->Add( "Error: Source file contains no data." );
+      gbErrorSamplingSourceFile = true;
+    }
+    else
+    gbErrorSamplingSourceFile = false;
   }
   catch (ZdException &x) {
     memRawData->Clear();
-    memRawData->Lines->Add( "* Unable to view source data file." );
+    memRawData->Lines->Add( "Error: Unable to view source file." );
     memRawData->HideSelection = true;
+    gbErrorSamplingSourceFile = true;
   }
 }
 
