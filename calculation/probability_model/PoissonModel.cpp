@@ -140,7 +140,7 @@ void CPoissonModel::AdjustMeasure(measure_t ** pMeasure) {
         case LOGLINEAR_PERC            : AdjustForLLPercentage(pMeasure, gParameters.GetTimeTrendAdjustmentPercentage()); break;
         case CALCULATED_LOGLINEAR_PERC : gData.SetMeasureByTimeIntervalArray(pMeasure);
                                          AdjustForLogLinear(pMeasure); break;
-        case STRATIFIED_RANDOMIZATION  : break;//this adjustment occurs during randomization
+        case STRATIFIED_RANDOMIZATION  : AdjustForNonParameteric(pMeasure); break;//this adjustment occurs during randomization also
         default : ZdGenerateException("Unknown time trend adjustment type: '%d'.",
                                       "AdjustMeasure()", gParameters.GetTimeTrendAdjustmentType());
       }
@@ -223,7 +223,6 @@ int CPoissonModel::AssignMeasure(measure_t ** ppMeasure) {
    fprintf(pMResult, "   Cases      = %li\n   Measure    = %f\n   Population = %f\n", *pTotalCases, *pTotalMeasure, *pTotalPop);
    fclose(pMResult);
 #endif
-   gPrintDirection.SatScanPrintf("\n");
    free(IntervalDates);
   }
   catch (ZdException & x) {
@@ -395,6 +394,7 @@ bool CPoissonModel::CalculateMeasure() {
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
       gData.gpMeasureNonCumulativeHandler = new TwoDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals+1/*no sure why + 1*/, gData.m_nTracts);
       bResult = AssignMeasure(gData.gpMeasureNonCumulativeHandler->GetArray());
+      gData.ReadAdjustmentsByRelativeRisksFile(); // -- check with Martin about this for SVTT  
       //adjust non-cumulative measure
       AdjustMeasure(gData.gpMeasureNonCumulativeHandler->GetArray());
       //create cumulative measure from non-cumulative measure
@@ -405,6 +405,8 @@ bool CPoissonModel::CalculateMeasure() {
     else {
       gData.gpMeasureHandler = new TwoDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals+1/*no sure why + 1*/, gData.m_nTracts);
       bResult = AssignMeasure(gData.gpMeasureHandler->GetArray());
+      if (!gData.ReadAdjustmentsByRelativeRisksFile())
+        SSGenerateException("\nProblem encountered reading in data.", "CalculateMeasure");
       AdjustMeasure(gData.gpMeasureHandler->GetArray());
       if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
           gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
@@ -591,7 +593,7 @@ void CPoissonModel::MakeData_AlternateHypothesis() {
      gpRelativeRisks[t] = 1.0;
 
   //read in the RR's for those tracts with higher risks
-  RelativeRiskFile.open(gParameters.GetRelativeRisksFilename().c_str());
+  RelativeRiskFile.open(gParameters.GetAdjustmentsByRelativeRisksFilename().c_str());
   while (!RelativeRiskFile.eof()) {
        RelativeRiskFile >> sTractId;
        if ((tractIndex = gData.GetTInfo()->tiGetTractIndex(sTractId.c_str())) == -1)
