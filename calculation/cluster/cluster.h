@@ -28,6 +28,7 @@ class CCluster {
     double     m_nRatio;             // Likelihood ratio
     double     m_nLogLikelihood;     // Log Likelihood
     long       m_nRank;              // Rank based on results of simulations
+    double     m_DuczmalCorrection;  // Duczmal compactness correction, for ellipses
 
     tract_t    m_nSteps;             // Number of concentric steps in cluster
                                      //  (Monotone)
@@ -90,6 +91,7 @@ class CCluster {
 
     virtual count_t     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {return 0;}
     const int           GetClusterType() const  {return m_nClusterType;}
+    double              GetDuczmalCompactnessCorrection() const;
     double              GetLogLikelihood() {return m_nLogLikelihood;}
     virtual measure_t   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {return 0;}
     tract_t             GetNumCircles()    {return m_nSteps;}
@@ -103,6 +105,7 @@ class CCluster {
     void                SetAreaReport(stsAreaSpecificData* pAreaData) { gpAreaData = pAreaData; }
     void                SetCenter(tract_t nCenter);
     void                SetEllipseOffset(int iOffset);
+    void                SetDuczmalCorrection(double dEllipseShape);
     double              SetLogLikelihood(double nLogLikelihood) {m_nLogLikelihood = nLogLikelihood; return m_nLogLikelihood;}
     void                SetRate(int nRate);
     double              SetRatio(double nLogLikelihoodForTotal);

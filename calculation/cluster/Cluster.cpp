@@ -24,6 +24,7 @@ void CCluster::Initialize(tract_t nCenter)
   m_nRatio         = -DBL_MAX;//0;
   m_nLogLikelihood = 0;
   m_nRank          = 1;
+  m_DuczmalCorrection = 1;
 
   m_nFirstInterval = 0;
   m_nLastInterval  = 0;
@@ -55,6 +56,7 @@ CCluster& CCluster::operator =(const CCluster& cluster)
   m_nRatio         = cluster.m_nRatio;
   m_nLogLikelihood = cluster.m_nLogLikelihood;
   m_nRank          = cluster.m_nRank;
+  m_DuczmalCorrection = cluster.m_DuczmalCorrection;
 
   m_nFirstInterval = cluster.m_nFirstInterval;
   m_nLastInterval  = cluster.m_nLastInterval;
@@ -301,6 +303,8 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
             fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
             fprintf(fp, "%sAngle (degrees).......: %-6.3f\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
             fprintf(fp, "%sShape.................: %-6.3f\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
+            if (Data.m_pParameters->m_bDuczmalCorrectEllipses)
+              fprintf(fp, "%sDuczmal................: %-6.3f\n", szSpacesOnLeft, GetDuczmalCompactnessCorrection());
             //fprintf(fp, "%s              Width...: \n", szSpacesOnLeft);
             //fprintf(fp, "%s              Length..: \n", szSpacesOnLeft);
             }
@@ -336,6 +340,8 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
            fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
            fprintf(fp, "%sAngle (degrees).......: %-6.3f\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
            fprintf(fp, "%sShape.................: %-6.3f\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
+            if (Data.m_pParameters->m_bDuczmalCorrectEllipses)
+           fprintf(fp, "%sDuczmal................: %-6.3f\n", szSpacesOnLeft, GetDuczmalCompactnessCorrection());
            //fprintf(fp, "%s              Width...: \n", szSpacesOnLeft);
            //fprintf(fp, "%s              Length..: \n", szSpacesOnLeft);
            }
@@ -462,6 +468,12 @@ void CCluster::DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisTyp
       }
 }
 
+/** Duczmal compactness correction. For circles this should be no different than
+    the loglikelihood as m_DuczmalCorrection should be 1. */
+double CCluster::GetDuczmalCompactnessCorrection() const {
+  return m_DuczmalCorrection * m_nRatio;
+}
+
 const double CCluster::GetRelativeRisk(double nMeasureAdjustment) const
 {
   double        dRelativeRisk=0;
@@ -501,6 +513,11 @@ void CCluster::SetCenter(tract_t nCenter)
 void CCluster::SetEllipseOffset(int iOffset)
 {
    m_iEllipseOffset = iOffset;
+}
+
+/** Sets Duczmal Compactness Correction */
+void CCluster::SetDuczmalCorrection(double dEllipseShape) {
+  m_DuczmalCorrection = GetDuczmalCorrection(dEllipseShape);
 }
 
 void CCluster::SetRate(int nRate)

@@ -54,6 +54,7 @@ CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& cluste
   m_nRatio         = cluster.m_nRatio;
   m_nLogLikelihood = cluster.m_nLogLikelihood;
   m_nRank          = cluster.m_nRank;
+  m_DuczmalCorrection = cluster.m_DuczmalCorrection;
 
   m_nFirstInterval = cluster.m_nFirstInterval;
   m_nLastInterval  = cluster.m_nLastInterval;
