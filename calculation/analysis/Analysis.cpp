@@ -164,7 +164,7 @@ bool CAnalysis::Execute(time_t RunTime) {
 
       //For circle and each ellipse, find closest neighboring tracts points for
       //each grid point limiting distance by max circle size and cumulated measure.
-      if (gpPrintDirection->GetIsCanceled() || !m_pData->FindNeighbors())
+      if (gpPrintDirection->GetIsCanceled() || !m_pData->FindNeighbors(false))
         return false;
 
       if (gpPrintDirection->GetIsCanceled() || !CreateReport(RunTime))
@@ -690,6 +690,10 @@ void CAnalysis::PerformSimulations() {
 
    try {
       if (m_pParameters->GetNumReplicationsRequested() > 0) {
+        //recompute neighbors if settings indicate that smaller clusters are reported
+        if (m_pParameters->GetRestrictingMaximumReportedGeoClusterSize())
+          m_pData->FindNeighbors(true);
+
         gpPrintDirection->SatScanPrintf("Doing the Monte Carlo replications\n");
 
         // assign replication format string here to prevent another check in loop
