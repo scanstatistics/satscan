@@ -821,7 +821,7 @@ void TBDlgDataImporter::OnViewMappingPanel() {
 void TBDlgDataImporter::OnViewOutputSettingsPanel() {
   CheckForRequiredVariables();
   if (edtOutputDirectory->Text.IsEmpty())
-     edtOutputDirectory->Text = GetCurrentDir();
+     edtOutputDirectory->Text = (getenv("TMP") ? getenv("TMP") : GetCurrentDir().c_str());
 }
 
 /** Opens source file as character delimited source file. */
@@ -1759,9 +1759,8 @@ void __fastcall TBDlgDataImporter::OnOutputDirectoryChange(TObject *Sender) {
 
 void __fastcall TBDlgDataImporter::OnChangeDirectoryClick(TObject *Sender) {
   AnsiString Directory;
-  if (SelectDirectory(Directory, TSelectDirOpts(), NULL)) {
+  if (SelectDirectory("Select directory to save import file", "", Directory))
     edtOutputDirectory->Text = Directory;
-  }
 }
 //---------------------------------------------------------------------------
 
