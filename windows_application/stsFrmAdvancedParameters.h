@@ -87,6 +87,7 @@ __published:	// IDE-managed Components
    TEdit *edtProspectiveStartDateMonth;
    TEdit *edtProspectiveStartDateDay;
    TCheckBox *chkAdjustForEarlierAnalyses;
+   TButton *btnSetDefaults;
 
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
    void __fastcall btnBrowseMaxCirclePopFileClick(TObject *Sender);
@@ -120,10 +121,12 @@ __published:	// IDE-managed Components
    void __fastcall rdgTemporalTrendAdjClick(TObject *Sender);
    void __fastcall rdoMaxTemporalClusterSizelick(TObject *Sender);
    void __fastcall rdoMaxSpatialTypeClick(TObject *Sender);
+   void __fastcall btnSetDefaultsClick(TObject *Sender);
 
   private:
     TfrmAnalysis              & gAnalysisSettings;
     TWinControl               * gpFocusControl;
+    bool                        gbAnalysisShow;
     bool                        gbEnableRangeYears;  /** stores enable dictated by main interface */
     bool                        gbEnableRangeMonths; /** stores enable dictated by main interface */
     bool                        gbEnableRangeDays;   /** stores enable dictated by main interface */
@@ -133,6 +136,8 @@ __published:	// IDE-managed Components
     void                        Init();
     void                        ParseDate(const std::string& sDate, TEdit& Year, TEdit& Month, TEdit& Day, bool bStartRange);
     void                        RefreshTemporalRangesEnables();
+    void                        SetDefaultsForAnalysisTabs();
+    void                        SetDefaultsForOutputTab();
     void                        Setup();
     void                        ValidateProspDateRange();
     void                        ValidateReportedSpatialClusterSize();

@@ -4,7 +4,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
   ActiveControl = PageControl
   BorderStyle = bsDialog
   Caption = 'Advanced Features'
-  ClientHeight = 296
+  ClientHeight = 294
   ClientWidth = 508
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -22,7 +22,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Left = 424
     Top = 0
     Width = 84
-    Height = 296
+    Height = 294
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 1
@@ -38,14 +38,22 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     end
     object btnShowAll: TButton
       Left = 6
-      Top = 62
+      Top = 122
       Width = 72
       Height = 24
       Caption = '&Show All'
-      Default = True
       TabOrder = 1
       Visible = False
       OnClick = btnShowAllClick
+    end
+    object btnSetDefaults: TButton
+      Left = 6
+      Top = 60
+      Width = 72
+      Height = 24
+      Caption = 'Set Defaults'
+      TabOrder = 2
+      OnClick = btnSetDefaultsClick
     end
   end
   object PageControl: TPageControl
@@ -53,7 +61,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Top = 6
     Width = 419
     Height = 283
-    ActivePage = TabSheet1
+    ActivePage = tsOther
     TabOrder = 0
     object TabSheet2: TTabSheet
       Caption = 'Spatial Window'
@@ -89,8 +97,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object lblPercentageOfPopFile: TLabel
           Left = 96
           Top = 62
-          Width = 261
-          Height = 27
+          Width = 259
+          Height = 26
           Caption = 
             'percent of the population defined in the max circle size file (<' +
             '= 50%)'
@@ -397,7 +405,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Top = 8
         Width = 380
         Height = 112
-        Caption = 'Temporal'
+        Caption = 'Temporal Cluster'
         TabOrder = 1
         object lblMaxTemporalClusterSize: TLabel
           Left = 18

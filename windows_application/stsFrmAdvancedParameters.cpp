@@ -432,6 +432,7 @@ float TfrmAdvancedParameters::GetMaxTemporalClusterSizeFromControl() const {
 void TfrmAdvancedParameters::Init() {
   gpFocusControl=0;
   rdgCriteriaSecClusters->ItemIndex = 0;
+  gbAnalysisShow = true;
 }
 
 /** event triggered when key pressed for control that can contain natural numbers */
@@ -543,7 +544,58 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
     throw;
   }
 }
+//---------------------------------------------------------------------------
+/** Sets default values for Analysis related tabs and their respective controls
+    PAG:  pulled these default values from the CParameter class */
+void TfrmAdvancedParameters::SetDefaultsForAnalysisTabs() {
+   CParameters & ref = gAnalysisSettings.gParameters;
 
+   // Spatial Window tab
+   SetMaxSpatialClusterSizeTypeControl(PERCENTOFPOPULATIONTYPE);
+   SetMaxSpatialClusterSizeControl(50.0);
+   edtMaxCirclePopulationFilename->Text = "";
+   chkInclPureTempClust->Checked = false;
+   SetSpatialDistanceCaption();
+
+   SetReportingSmallerClustersText();
+
+   // Temporal tab
+   SetMaxTemporalClusterSizeTypeControl(PERCENTAGETYPE);
+   SetMaxTemporalClusterSizeControl(50.0);
+   chkIncludePureSpacClust->Checked = false;
+
+   chkRestrictTemporalRange->Checked = false;
+   ParseDate("01/01/1900", *edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay, true);
+   if (ref.GetStartRangeEndDate().length() > 0)
+      ParseDate(ref.GetStartRangeEndDate(), *edtStartRangeEndYear, *edtStartRangeEndMonth, *edtStartRangeEndDay, true);
+   if (ref.GetEndRangeStartDate().length() > 0)
+      ParseDate(ref.GetEndRangeStartDate(), *edtEndRangeStartYear, *edtEndRangeStartMonth, *edtEndRangeStartDay, false);
+   if (ref.GetEndRangeEndDate().length() > 0)
+      ParseDate(ref.GetEndRangeEndDate(), *edtEndRangeEndYear, *edtEndRangeEndMonth, *edtEndRangeEndDay, false);
+
+   // Risk tab
+   chkAdjustForKnownRelativeRisks->Checked = false;
+   edtAdjustmentsByRelativeRisksFile->Text = "";
+   SetTemporalTrendAdjustmentControl(NOTADJUSTED);
+   edtLogLinear->Text = 0;
+
+   // Inference tab
+   chkTerminateEarly->Checked = false;
+   edtProspectiveStartDateYear->Text = "1900";
+   edtProspectiveStartDateMonth->Text = "12";
+   edtProspectiveStartDateDay->Text = "31";
+   chkAdjustForEarlierAnalyses->Checked = false;
+
+}
+//---------------------------------------------------------------------------
+/** Sets default values for Output related tab and respective controls
+    PAG:  pulled these default values from the CParameter class */
+void TfrmAdvancedParameters::SetDefaultsForOutputTab() {
+
+   chkRestrictReportedClusters->Checked = false;
+   rdgCriteriaSecClusters->ItemIndex = NOGEOOVERLAP;
+   edtReportClustersSmallerThan->Text = 50;
+}
 //---------------------------------------------------------------------------
 /** Sets adjustments filename in interface */
 void TfrmAdvancedParameters::SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsByRelativeRisksFileName) {
@@ -679,38 +731,58 @@ void TfrmAdvancedParameters::SetTemporalTrendAdjustmentControl(TimeTrendAdjustme
 
 /** internal setup function */
 void TfrmAdvancedParameters::Setup() {
-  const CParameters & ref = gAnalysisSettings.gParameters;
+   const CParameters & ref = gAnalysisSettings.gParameters;
 
-  try {
-    chkAdjustForKnownRelativeRisks->Checked = ref.UseAdjustmentForRelativeRisksFile();
-    edtAdjustmentsByRelativeRisksFile->Text = ref.GetAdjustmentsByRelativeRisksFilename().c_str();
-    SetTemporalTrendAdjustmentControl(ref.GetTimeTrendAdjustmentType());
-    if (ref.GetTimeTrendAdjustmentPercentage() <= -100)
-      edtLogLinear->Text = 0;
-    else
-      edtLogLinear->Text = ref.GetTimeTrendAdjustmentPercentage();
-    chkTerminateEarly->Checked = ref.GetTerminateSimulationsEarly();
-    if (ref.GetMaximumReportedGeoClusterSize() > 0)
-      edtReportClustersSmallerThan->Text = ref.GetMaximumReportedGeoClusterSize();
-    else
-      edtReportClustersSmallerThan->Text = 50;
-    chkRestrictReportedClusters->Checked = ref.GetRestrictingMaximumReportedGeoClusterSize();
-    chkRestrictTemporalRange->Checked = ref.GetIncludeClustersType() == CLUSTERSINRANGE;
-    if (ref.GetStartRangeStartDate().length() > 0)
-      ParseDate(ref.GetStartRangeStartDate(), *edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay, true);
-    if (ref.GetStartRangeEndDate().length() > 0)
-      ParseDate(ref.GetStartRangeEndDate(), *edtStartRangeEndYear, *edtStartRangeEndMonth, *edtStartRangeEndDay, true);
-    if (ref.GetEndRangeStartDate().length() > 0)
-      ParseDate(ref.GetEndRangeStartDate(), *edtEndRangeStartYear, *edtEndRangeStartMonth, *edtEndRangeStartDay, false);
-    if (ref.GetEndRangeEndDate().length() > 0)
-      ParseDate(ref.GetEndRangeEndDate(), *edtEndRangeEndYear, *edtEndRangeEndMonth, *edtEndRangeEndDay, false);
+   try {
+      // Spatial Window tab
+      SetMaxSpatialClusterSizeTypeControl(ref.GetMaxGeographicClusterSizeType());
+      SetMaxSpatialClusterSizeControl(ref.GetMaximumGeographicClusterSize());
+      edtMaxCirclePopulationFilename->Text = ref.GetMaxCirclePopulationFileName().c_str();
+      chkInclPureTempClust->Checked = ref.GetIncludePurelyTemporalClusters();
+      SetSpatialDistanceCaption();
+      SetReportingSmallerClustersText();
 
-    rdgCriteriaSecClusters->ItemIndex = ref.GetCriteriaSecondClustersType();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("Setup()","TfrmAdvancedParameters");
-    throw;
-  }
+      // Temporal tab
+      SetMaxTemporalClusterSizeTypeControl(ref.GetMaximumTemporalClusterSizeType());
+      SetMaxTemporalClusterSizeControl(ref.GetMaximumTemporalClusterSize());
+      chkIncludePureSpacClust->Checked = ref.GetIncludePurelySpatialClusters();
+      chkRestrictTemporalRange->Checked = ref.GetIncludeClustersType() == CLUSTERSINRANGE;
+      if (ref.GetStartRangeStartDate().length() > 0)
+        ParseDate(ref.GetStartRangeStartDate(), *edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay, true);
+      if (ref.GetStartRangeEndDate().length() > 0)
+        ParseDate(ref.GetStartRangeEndDate(), *edtStartRangeEndYear, *edtStartRangeEndMonth, *edtStartRangeEndDay, true);
+      if (ref.GetEndRangeStartDate().length() > 0)
+        ParseDate(ref.GetEndRangeStartDate(), *edtEndRangeStartYear, *edtEndRangeStartMonth, *edtEndRangeStartDay, false);
+      if (ref.GetEndRangeEndDate().length() > 0)
+        ParseDate(ref.GetEndRangeEndDate(), *edtEndRangeEndYear, *edtEndRangeEndMonth, *edtEndRangeEndDay, false);
+
+      // Risk tab
+      chkAdjustForKnownRelativeRisks->Checked = ref.UseAdjustmentForRelativeRisksFile();
+      edtAdjustmentsByRelativeRisksFile->Text = ref.GetAdjustmentsByRelativeRisksFilename().c_str();
+      SetTemporalTrendAdjustmentControl(ref.GetTimeTrendAdjustmentType());
+      if (ref.GetTimeTrendAdjustmentPercentage() <= -100)
+        edtLogLinear->Text = 0;
+      else
+        edtLogLinear->Text = ref.GetTimeTrendAdjustmentPercentage();
+
+      // Inference tab
+      chkTerminateEarly->Checked = ref.GetTerminateSimulationsEarly();
+      chkAdjustForEarlierAnalyses->Checked = ref.GetAdjustForEarlierAnalyses();
+      if (ref.GetProspectiveStartDate().length() > 0)
+         ParseDate(ref.GetProspectiveStartDate().c_str(), *edtProspectiveStartDateYear, *edtProspectiveStartDateMonth, *edtProspectiveStartDateDay, false);
+
+      // Output tab
+      chkRestrictReportedClusters->Checked = ref.GetRestrictingMaximumReportedGeoClusterSize();
+      rdgCriteriaSecClusters->ItemIndex = ref.GetCriteriaSecondClustersType();
+      if (ref.GetMaximumReportedGeoClusterSize() > 0)
+        edtReportClustersSmallerThan->Text = ref.GetMaximumReportedGeoClusterSize();
+      else
+        edtReportClustersSmallerThan->Text = 50;
+    }
+    catch (ZdException &x) {
+      x.AddCallpath("Setup()","TfrmAdvancedParameters");
+      throw;
+    }
 }
 
 /** sets control to focus when form shows then shows form modal */
@@ -720,6 +792,7 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, bool bAnaly
 
   // PAG - not the best coding here but am trying to show/hide only
   // certain pages/tabs of page control
+  gbAnalysisShow = bAnalysis;
   if (bAnalysis) {  // show Analysis pages
      Caption = "Advanced Analysis Features";
      for (i=0; i < PageControl->PageCount-1; i++)
@@ -1084,6 +1157,14 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
   throw theException;
 }
 //---------------------------------------------------------------------------
-
-
+// Resets advanced settings to default values
+void __fastcall TfrmAdvancedParameters::btnSetDefaultsClick(
+      TObject *Sender)
+{
+   if (gbAnalysisShow)
+      SetDefaultsForAnalysisTabs();
+   else
+      SetDefaultsForOutputTab();
+}
+//---------------------------------------------------------------------------
 
