@@ -3,6 +3,7 @@
 #define __MEASURELIST_H
 //*****************************************************************************
 #include "SaTScanData.h"
+#include "MeasureDeterminant.h"
 #include <malloc.h>
 
 class CMeasureList {
@@ -16,12 +17,17 @@ class CMeasureList {
     std::vector<double>         gvMaximumLogLikelihoodRatios;
 
     void                        AddMaximumLogLikelihood(double dMaxLogLikelihood, int iIteration);
+    virtual void                CalculateBernoulliMaximumLogLikelihood(int iIteration) = 0;
     virtual void                CalculateMaximumLogLikelihood(int iIteration) = 0;
     virtual void                SetMeasures() = 0;
 
   public:
             CMeasureList(const CSaTScanData & SaTScanData, BasePrint & PrintDirection);
     virtual ~CMeasureList();
+
+    MEAURE_DETERMINANT          gMeasure;
+    MEAURE_DETERMINANT_         gMeasure_;
+    _MEAURE_DETERMINANT_        g_Measure_;
 
     virtual void                AddMeasure(count_t n, measure_t u) = 0;
     virtual void                Display(FILE* pFile) const = 0;
@@ -37,6 +43,7 @@ class CMinMeasureList : public CMeasureList {
   protected:
     measure_t                 * gpMinMeasures;
 
+    virtual void                CalculateBernoulliMaximumLogLikelihood(int iIteration);
     virtual void                CalculateMaximumLogLikelihood(int iIteration);
     virtual void                SetMeasures();
 
@@ -61,6 +68,7 @@ class CMaxMeasureList : public CMeasureList {
   protected:
     measure_t                 * gpMaxMeasures;
 
+    virtual void                CalculateBernoulliMaximumLogLikelihood(int iIteration);
     virtual void                CalculateMaximumLogLikelihood(int iIteration);
     virtual void                SetMeasures();
 
@@ -86,6 +94,7 @@ class CMinMaxMeasureList : public CMeasureList {
     measure_t                 * gpMinMeasures;
     measure_t                 * gpMaxMeasures;
 
+    virtual void                CalculateBernoulliMaximumLogLikelihood(int iIteration);
     virtual void                CalculateMaximumLogLikelihood(int iIteration);
     virtual void                SetMeasures();
 
