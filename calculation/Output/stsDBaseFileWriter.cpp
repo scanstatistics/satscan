@@ -80,7 +80,7 @@ void DBaseFileWriter::Print() {
          pFile->EndTransaction(pTransaction);
       pFile->Close();
       gpOutputFileData->GetBasePrinter()->SatScanPrintWarning(x.GetErrorMessage());
-      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning("\nWarning - Unable to write record to dBase file %s.\n", gsFileName);
+      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning("\nWarning - Unable to write record to dBase file %s.\n", gsFileName.GetCString());
    }
 }
 

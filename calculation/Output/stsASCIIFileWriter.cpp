@@ -109,7 +109,7 @@ void ASCIIFileWriter::Print() {
 
    try {
       if ((pFile = fopen(gsFileName, "w")) == NULL)
-         ZdGenerateException("Unable to open/create file %s", "Error!", gsFileName);
+         ZdGenerateException("Unable to open/create file %s", "Error!", gsFileName.GetCString());
       for(unsigned long i = 0; i < gpOutputFileData->GetNumRecords(); ++i) {
          pRecord = gpOutputFileData->GetRecord(i);
          for(unsigned short j = 0; j < pRecord->GetNumFields(); ++j) {
