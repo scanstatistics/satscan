@@ -657,6 +657,11 @@ bool CParameters::GetIsProspectiveAnalysis() const {
   return (geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == PROSPECTIVEPURELYTEMPORAL);
 }
 
+/** Returns whether analysis is purely temporal. */
+bool CParameters::GetIsPurelyTemporalAnalysis() const {
+  return (geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL);
+}
+
 /** Returns description for LLR. */
 bool CParameters::GetLogLikelihoodRatioIsTestStatistic() const {
   return (geProbabiltyModelType == SPACETIMEPERMUTATION || (giNumberEllipses && gbDuczmalCorrectEllipses));

@@ -347,6 +347,7 @@ class CParameters {
     bool                                GetIsPowerCalculated() const {return gbPowerCalculation;}
     bool                                GetIsProspectiveAnalysis() const;
     bool                                GetIsSequentialScanning() const {return gbSequentialRuns;}
+    bool                                GetIsPurelyTemporalAnalysis() const;
     bool                                GetLogLikelihoodRatioIsTestStatistic() const;
     const std::string                 & GetMaxCirclePopulationFileName() const {return gsMaxCirclePopulationFileName;}
     float                               GetMaximumGeographicClusterSize() const {return gfMaxGeographicClusterSize;}

@@ -342,7 +342,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
       bValid = false;
     }
     //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
-    else if (gpTInfo->tiGetNumTracts() == 1 && m_pParameters->GetAnalysisType() != PURELYTEMPORAL) {
+    else if (gpTInfo->tiGetNumTracts() == 1 && !m_pParameters->GetIsPurelyTemporalAnalysis()) {
       gpPrint->SatScanPrintWarning("Error: For a %s analysis, the coordinates file must contain more than one location.\n",
                                    m_pParameters->GetAnalysisTypeAsString());
       bValid = false;
