@@ -9,6 +9,7 @@
 #include "NormalModel.h"
 #include "SurvivalModel.h"
 #include "RankModel.h"
+#include "OrdinalModel.h"
 
 /** class constructor */
 CPurelySpatialData::CPurelySpatialData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -38,16 +39,17 @@ void CPurelySpatialData::SetIntervalStartTimes() {
     type is space-time permutation. */
 void CPurelySpatialData::SetProbabilityModel() {
   try {
-    switch (gParameters.GetProbabiltyModelType()) {
+    switch (gParameters.GetProbabilityModelType()) {
        case POISSON              : m_pModel = new CPoissonModel(gParameters, *this, gPrint);   break;
        case BERNOULLI            : m_pModel = new CBernoulliModel(gParameters, *this, gPrint); break;
-       case NORMAL               : m_pModel = new CNormalModel(gParameters, *this, gPrint); break;
+       case ORDINAL              : m_pModel = new OrdinalModel(gParameters, *this, gPrint); break;
        case SURVIVAL             : m_pModel = new CSurvivalModel(gParameters, *this, gPrint); break;
+       case NORMAL               : m_pModel = new CNormalModel(gParameters, *this, gPrint); break;
        case RANK                 : m_pModel = new CRankModel(gParameters, *this, gPrint); break;
        case SPACETIMEPERMUTATION : ZdException::Generate("Purely Spatial analysis not implemented for Space-Time Permutation model.\n",
                                                          "SetProbabilityModel()");
        default : ZdException::Generate("Unknown probability model type: '%d'.\n", "SetProbabilityModel()",
-                                       gParameters.GetProbabiltyModelType());
+                                       gParameters.GetProbabilityModelType());
     }
   }
   catch (ZdException &x) {
