@@ -110,7 +110,6 @@ class CSaTScanData {
     tract_t                   * (** m_pSortedInt);
     unsigned short            * (** m_pSortedUShort);
     tract_t                  ** m_NeighborCounts;
-    Julian                   ** m_pTimes; // Used for exact times...
 
     virtual void                AllocSimCases();
     virtual bool                CalculateMeasure();
@@ -121,7 +120,7 @@ class CSaTScanData {
 
     virtual void                AdjustNeighborCounts(); // For sequential analysis, after top cluster removed
     const PopulationCategories& GetPopulationCategories() const {return gPopulationCategories;}
-    int                                 ComputeNewCutoffInterval(Julian jStartDate, Julian& jEndDate);
+    int                         ComputeNewCutoffInterval(Julian jStartDate, Julian& jEndDate);
     bool                        ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, Julian & JulianDate);
     virtual void                DisplayCases(FILE* pFile);
     virtual void                DisplayControls(FILE* pFile);

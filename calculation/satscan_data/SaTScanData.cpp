@@ -374,7 +374,6 @@ void CSaTScanData::Init() {
   m_pSortedInt = 0;
   m_pSortedUShort = 0;
   m_NeighborCounts = 0;
-  m_pTimes = 0;
   m_pIntervalStartTimes = 0;
   m_nTotalCases    = 0;
   m_nTotalControls = 0;

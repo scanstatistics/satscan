@@ -12,7 +12,6 @@ static FILE* pMResult;
 int AssignMeasure(
             const TractHandler  *pTInfo,
             count_t      *Cases[],
-            Julian**     Times,
             tract_t      NumTracts,
 	    Julian       StartDate,
             Julian       EndDate,

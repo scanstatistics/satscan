@@ -331,7 +331,7 @@ bool CPoissonModel::CalculateMeasure() {
   bool bResult;
 
   try {
-    bResult = AssignMeasure(gData.GetTInfo(), gData.m_pCases, gData.m_pTimes, gData.m_nTracts,
+    bResult = AssignMeasure(gData.GetTInfo(), gData.m_pCases, gData.m_nTracts,
                             gData.m_nStartDate, gData.m_nEndDate, gData.m_pIntervalStartTimes,
                             gData.m_nTimeIntervals, gParameters.GetTimeIntervalUnitsType(),
                             gParameters.GetTimeIntervalLength(),
