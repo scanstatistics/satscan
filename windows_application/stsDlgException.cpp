@@ -21,7 +21,7 @@ void DisplayException ( Classes::TComponent * Owner, const SSException &theExcep
    // aren't set up to handle those anyway... )
    try {
       if (theException.GetLevel() == SSException::Notify)
-         MessageBox( Owner, "Notification", theException.GetErrorMessage(), MB_OK );
+         MessageBox( NULL, theException.GetErrorMessage(), "Notification", MB_OK );
       else {
          auto_ptr<TDlgException>  pDialog ( new TDlgException ( Owner, theException, sAlarmLevelString ) );
          pDialog->ShowModal();
