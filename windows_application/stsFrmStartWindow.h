@@ -10,25 +10,28 @@
 //---------------------------------------------------------------------------
 class TfrmStartWindow : public TForm {
 __published:	// IDE-managed Components
-        TPanel *pnlAlignRight;
         TPanel *pnlClient;
-        TRadioGroup *rdgOpenChoices;
-        TButton *btnOk;
+        TButton *btnCreateNew;
+        TButton *btnOpenSaved;
+        TButton *btnOpenLast;
         TButton *btnCancel;
-        void __fastcall rdgOpenChoicesClick(TObject *Sender);
-        void __fastcall FormKeyDown(TObject *Sender, WORD &Key,
-          TShiftState Shift);
+        void __fastcall FormKeyDown(TObject *Sender, WORD &Key, TShiftState Shift);
+        void __fastcall btnCreateNewClick(TObject *Sender);
+        void __fastcall btnOpenSavedClick(TObject *Sender);
+        void __fastcall btnOpenLastClick(TObject *Sender);
+        void __fastcall btnCancelClick(TObject *Sender);
+
+  public:
+    enum StartWindowOpenType {NEW, SAVED, LAST, CANCEL};
+
   private:	// User declarations
-    int                 giSelectedIndex;
+    StartWindowOpenType geOpenType;
 
     void                Setup();
 
   public:		// User declarations
     __fastcall TfrmStartWindow(TComponent* Owner);
 
-    int                 GetSelectedItemIndex() const {return giSelectedIndex;}
+    StartWindowOpenType GetOpenType() const {return geOpenType;}
 };
-//---------------------------------------------------------------------------
-extern PACKAGE TfrmStartWindow *frmStartWindow;
-//---------------------------------------------------------------------------
 #endif
