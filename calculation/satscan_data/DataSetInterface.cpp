@@ -45,6 +45,7 @@ void DataSetInterface::ResetCaseArray(count_t t) {
 
 /** Sets internal data structure to hold pointers to passed category case arrays. */
 void DataSetInterface::SetCategoryCaseArrays(const CasesByCategory_t& vCategoryCases) {
+  gvCategoryCaseArrays.clear();
   for (size_t t=0; t < vCategoryCases.size(); ++t)
      gvCategoryCaseArrays.push_back(vCategoryCases[t]->GetArray());
 }
