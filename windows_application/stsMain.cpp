@@ -68,8 +68,24 @@ void __fastcall TfrmMainForm::ExitActionExecute(TObject *Sender) {
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmMainForm::HelpActionExecute(TObject *Sender) {
-  if (ShellExecute(NULL, "open", "SaTScan_Help.chm", NULL, NULL, SW_SHOWNORMAL) < (void*)32)
-    Application->MessageBox("Unable to open SaTScan help.", NULL, MB_OK);
+  HINSTANCE     hReturn;
+  ZdString      sMessage;
+
+  //Attempt to open chm user guide.
+  hReturn = ShellExecute(NULL, "open", "SaTScan_Help.chm", NULL, NULL, SW_SHOWNORMAL);
+  if (hReturn <= (void*)32) {
+    if (hReturn == (void*)SE_ERR_NOASSOC) {
+      sMessage << "SaTScan Help was unable to open. Please note that SaTScan Help ";
+      sMessage << "requires Internet Explorer 4.0 or later installed.";
+      sMessage << "\nPlease contact technical support at website: ";
+      sMessage << SATSCAN_WEBSITE << " for more information.";
+    }
+    else {
+      sMessage << "SaTScan Help was unable to open. Help file may be missing or corrupt.";
+      sMessage << "\nPlease contact technical support at website: " << SATSCAN_WEBSITE << ".";
+    }
+    Application->MessageBox(sMessage.GetCString(), "SaTScan Help", MB_OK);
+  }
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmMainForm::NewSessionActionExecute(TObject *Sender) {
