@@ -2,18 +2,32 @@
 #pragma hdrstop
 #include "SVTTCluster.h"
 
-/** constructor */
-CSVTTCluster::CSVTTCluster(const CSaTScanData& Data, const count_t* pCasesByTimeInt, BasePrint *pPrintDirection)
+/** constructor for DataStreamGateway - used with calculating most likely clusters */
+CSVTTCluster::CSVTTCluster(const DataStreamGateway & DataGateway, int iNumTimeIntervals, BasePrint *pPrintDirection)
              :CCluster(pPrintDirection){
   try {
     Init();
-    Setup(Data, pCasesByTimeInt);
+    Setup(DataGateway, iNumTimeIntervals);
   }
   catch (ZdException &x) {
     x.AddCallpath("constructor()","CSVTTCluster");
     throw;
   }
 }
+
+/** constructor for DataStreamInterface - used with calculating loglikelihood ratios */
+CSVTTCluster::CSVTTCluster(const DataStreamInterface & Interface, int iNumTimeIntervals, BasePrint *pPrintDirection)
+             :CCluster(pPrintDirection){
+  try {
+    Init();
+    Setup(Interface, iNumTimeIntervals);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("constructor()","CSVTTCluster");
+    throw;
+  }
+}
+
 
 /** copy constructor */
 CSVTTCluster::CSVTTCluster(const CSVTTCluster & rhs): CCluster(rhs.gpPrintDirection) {
@@ -31,66 +45,92 @@ CSVTTCluster::CSVTTCluster(const CSVTTCluster & rhs): CCluster(rhs.gpPrintDirect
 /** destructor */
 CSVTTCluster::~CSVTTCluster() {
   try {
-    free(m_pCumCases);
-    free(m_pCumMeasure);
-    free(m_pRemCases);
-    free(m_pRemMeasure);
+    DeallocateArrays();
   }
   catch (...){}
 }
 
 /** overloaded assignment operator */
-CSVTTCluster& CSVTTCluster::operator =(const CSVTTCluster& rhs) {
+CSVTTCluster& CSVTTCluster::operator=(const CSVTTCluster& rhs) {
   if (this == &rhs)
     return *this;
-  m_Center         = rhs.m_Center;
-  m_nCases         = rhs.m_nCases;
-  m_nMeasure       = rhs.m_nMeasure;
-  m_nTracts        = rhs.m_nTracts;
-  m_nRatio         = rhs.m_nRatio;
-  m_nLogLikelihood = rhs.m_nLogLikelihood;
-  m_nRank          = rhs.m_nRank;
-  m_nFirstInterval = rhs.m_nFirstInterval;
-  m_nLastInterval  = rhs.m_nLastInterval;
-  m_nStartDate     = rhs.m_nStartDate;
-  m_nEndDate       = rhs.m_nEndDate;
-  m_nTotalIntervals = rhs.m_nTotalIntervals;
-  m_nRemCases       = rhs.m_nRemCases;
-  memcpy(m_pCumCases, rhs.m_pCumCases, m_nTotalIntervals * sizeof(count_t));
-  memcpy(m_pCumMeasure, rhs.m_pCumMeasure, m_nTotalIntervals * sizeof(measure_t));
-  memcpy(m_pRemCases, rhs.m_pRemCases, m_nTotalIntervals * sizeof(count_t));
-  memcpy(m_pRemMeasure, rhs.m_pRemMeasure, m_nTotalIntervals * sizeof(measure_t));
-  m_nSteps           = rhs.m_nSteps;
-  m_bClusterInit   = rhs.m_bClusterInit;
-  m_bClusterDefined= rhs.m_bClusterDefined;
-  m_bClusterSet    = rhs.m_bClusterSet;
-  m_bLogLSet       = rhs.m_bLogLSet;
-  m_bRatioSet      = rhs.m_bRatioSet;
-  m_nClusterType   = rhs.m_nClusterType;
-  m_nTimeTrend     = rhs.m_nTimeTrend;
-  m_nRemTimeTrend  = rhs.m_nRemTimeTrend;
-
+  m_Center                      = rhs.m_Center;
+//  m_nCases                      = rhs.m_nCases;
+//  m_nMeasure                    = rhs.m_nMeasure;
+  m_nTracts                     = rhs.m_nTracts;
+  m_nRatio                      = rhs.m_nRatio;
+  m_nLogLikelihood              = rhs.m_nLogLikelihood;
+  m_nRank                       = rhs.m_nRank;
+  m_nFirstInterval              = rhs.m_nFirstInterval;
+  m_nLastInterval               = rhs.m_nLastInterval;
+  m_nStartDate                  = rhs.m_nStartDate;
+  m_nEndDate                    = rhs.m_nEndDate;
+  giTotalIntervals              = rhs.giTotalIntervals;
+  *(gpCasesInsideCluster)       = *(rhs.gpCasesInsideCluster);
+  *(gpCasesOutsideCluster)      = *(rhs.gpCasesOutsideCluster);
+  *(gpMeasureInsideCluster)     = *(rhs.gpMeasureInsideCluster);
+  *(gpMeasureOutsideCluster)    = *(rhs.gpMeasureOutsideCluster);
+  memcpy(gpTotalCasesInsideCluster, rhs.gpTotalCasesInsideCluster, rhs.giNumDataStream * sizeof(count_t));
+  memcpy(gpTotalCasesOutsideCluster, rhs.gpTotalCasesOutsideCluster, rhs.giNumDataStream * sizeof(count_t));
+  memcpy(gpTotalMeasureInsideCluster, rhs.gpTotalMeasureInsideCluster, rhs.giNumDataStream * sizeof(measure_t));
+  m_nSteps                      = rhs.m_nSteps;
+  m_bClusterDefined             = rhs.m_bClusterDefined;
+  m_nClusterType                = rhs.m_nClusterType;
+  gTimeTrendInside              = rhs.gTimeTrendInside;
+  gTimeTrendOutside             = rhs.gTimeTrendOutside;
+  giNumDataStream               = rhs.giNumDataStream;
   return *this;
 }
 
-void CSVTTCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {
-  m_nTracts = n;
+/** add neighbor tract data from DataGateway */
+void CSVTTCluster::AddNeighbor(tract_t tNeighbor, const DataStreamGateway & DataGateway) {
+  ++m_nTracts;
+  for (size_t tStream=0; tStream < DataGateway.GetNumInterfaces(); ++tStream)
+    AddNeighbor(tNeighbor, DataGateway.GetDataStreamInterface(tStream), tStream);
+}
 
-  tract_t       nNeighbor = Data.GetNeighbor(iEllipse, m_Center, n);
-  measure_t  ** pMeasureNC(Data.GetMeasureNCArray());
+/** add neighbor tract data from DataStreamInterface */
+void CSVTTCluster::AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream) {
+  measure_t  ** ppMeasureNC(Interface.GetNCMeasureArray());
+  count_t    ** ppCasesNC(Interface.GetNCCaseArray());
 
-  for (int i=0; i<m_nTotalIntervals; i++)  {
-    m_pCumCases[i]   += pCases[i][nNeighbor];
-    m_pCumMeasure[i] += pMeasureNC[i][nNeighbor];
-    m_pRemCases[i]   -= pCases[i][nNeighbor];
-    m_pRemMeasure[i] -= pMeasureNC[i][nNeighbor];
-
-    m_nCases         += pCases[i][nNeighbor];
-    m_nMeasure       += pMeasureNC[i][nNeighbor];
-    m_nRemCases      -= pCases[i][nNeighbor];
+  for (int i=0; i < giTotalIntervals; ++i) {
+    gpCasesInsideCluster->GetArray()[tStream][i] += ppCasesNC[i][tNeighbor];
+    gpMeasureInsideCluster->GetArray()[tStream][i] += ppMeasureNC[i][tNeighbor];
+    gpCasesOutsideCluster->GetArray()[tStream][i] -= ppCasesNC[i][tNeighbor];
+    gpMeasureOutsideCluster->GetArray()[tStream][i] -= ppMeasureNC[i][tNeighbor];
+    gpTotalCasesInsideCluster[tStream] += ppCasesNC[i][tNeighbor];
+    gpTotalMeasureInsideCluster[tStream] += ppMeasureNC[i][tNeighbor];
+    gpTotalCasesOutsideCluster[tStream] -= ppCasesNC[i][tNeighbor];
   }
+  //NOTE: Reporting of cluster information curently uses CCluster::m_nCases and
+  //      CCluster::m_nMeasure but SVTT cluster does not need to collect this
+  //      information in this manner anymore. It may be better to calculate these
+  //      values from the arrays that replaced them when reporting.
+//  for (int i=0; tStream == 0 && i < giTotalIntervals; ++i) {
+//    m_nCases += ppCasesNC[i][tNeighbor];
+//    m_nMeasure += ppMeasureNC[i][tNeighbor];
+//  }
 
   m_bClusterDefined = true; // KR990421 - What about this? PS-Yes, ST-No?
+}
+
+/** allocates class arrays */
+void CSVTTCluster::AllocateArrays() {
+  try {
+    gpCasesInsideCluster = new TwoDimCountArray_t(giNumDataStream, giTotalIntervals);
+    gpCasesOutsideCluster = new TwoDimCountArray_t(giNumDataStream, giTotalIntervals);
+    gpMeasureInsideCluster = new TwoDimMeasureArray_t(giNumDataStream, giTotalIntervals);
+    gpMeasureOutsideCluster = new TwoDimMeasureArray_t(giNumDataStream, giTotalIntervals);
+    gpTotalCasesInsideCluster = new count_t[giNumDataStream];
+    gpTotalMeasureInsideCluster = new measure_t[giNumDataStream];
+    gpTotalCasesOutsideCluster = new count_t[giNumDataStream];
+  }
+  catch (ZdException &x) {
+    DeallocateArrays();
+    x.AddCallpath("AllocateArrays()","CSVTTCluster");
+    throw;
+  }
 }
 
 /** returns newly cloned CSVTTCluster */
@@ -98,55 +138,110 @@ CSVTTCluster * CSVTTCluster::Clone() const {
   return new CSVTTCluster(*this);
 }
 
+/** deallocates class arrays */
+void CSVTTCluster::DeallocateArrays() {
+  try {
+    delete gpCasesInsideCluster;gpCasesInsideCluster=0;
+    delete gpCasesOutsideCluster;gpCasesOutsideCluster=0;
+    delete gpMeasureInsideCluster;gpMeasureInsideCluster=0;
+    delete gpMeasureOutsideCluster;gpMeasureOutsideCluster=0;
+    delete[] gpTotalCasesInsideCluster;gpTotalCasesInsideCluster=0;
+    delete[] gpTotalMeasureInsideCluster;gpTotalMeasureInsideCluster=0;
+    delete[] gpTotalCasesOutsideCluster;gpTotalCasesOutsideCluster=0;
+  }
+  catch (...){}
+}
+
 void CSVTTCluster::DisplayAnnualTimeTrendWithoutTitle(FILE* fp) {
-  if (m_nTimeTrend.IsNegative())
+  if (gTimeTrendInside.IsNegative())
     fprintf(fp, "     -");
   else
     fprintf(fp, "      ");
 
-  fprintf(fp, "%.3f", m_nTimeTrend.GetAnnualTimeTrend());
+  fprintf(fp, "%.3f", gTimeTrendInside.GetAnnualTimeTrend());
 }
 
 void CSVTTCluster::DisplayTimeTrend(FILE* fp, char* szSpacesOnLeft) {
   fprintf(fp, "%sTime trend............: %f  (%.3f%% ",
-              szSpacesOnLeft, m_nTimeTrend.m_nBeta,
-              m_nTimeTrend.GetAnnualTimeTrend());
+              szSpacesOnLeft, gTimeTrendInside.m_nBeta,
+              gTimeTrendInside.GetAnnualTimeTrend());
 
-  if (m_nTimeTrend.IsNegative())
+  if (gTimeTrendInside.IsNegative())
     fprintf(fp, "annual decrease)\n");
   else
     fprintf(fp, "annual increase)\n");
 }
 
-/** Returns the number of case for tract as defined by cluster. */
-count_t CSVTTCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const
-{
-  return Data.GetCasesArray()[0][tTract];
+/** returns the number of cases for tract as defined by cluster
+    NOTE: Hard coded to return the number of cases from first data stream.
+          This will need modification when the reporting aspect of multiple
+          data streams is hashed out.                                      */
+count_t CSVTTCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {
+  return Data.GetDataStreamHandler().GetStream(0/*for now*/).GetCaseArray()[0][tTract];
 }
 
-/** Returns the measure for tract as defined by cluster. */
+/** Returns the measure for tract as defined by cluster.
+    NOTE: Hard coded to return the measure from first data stream.
+          This will need modification when the reporting aspect of multiple
+          data streams is hashed out.                                      */
 measure_t CSVTTCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {
-  return Data.GetMeasureAdjustment() * Data.GetMeasureArray()[0][tTract];
+  return Data.GetMeasureAdjustment() * Data.GetDataStreamHandler().GetStream(0/*for now*/).GetMeasureArray()[0][tTract];
 }
 
-void CSVTTCluster::InitializeSVTT(tract_t nCenter, const CSaTScanData& Data, const count_t* pCasesByTimeInt) {
+/** internal initialization function */
+void CSVTTCluster::Init() {
+  gpCasesInsideCluster=0;
+  gpTotalCasesInsideCluster=0;
+  gpMeasureInsideCluster=0;
+  gpTotalMeasureInsideCluster=0;
+  gpCasesOutsideCluster=0;
+  gpTotalCasesOutsideCluster=0;
+  gpMeasureOutsideCluster=0;
+  giTotalIntervals=0;
+  giNumDataStream=0;
+}
+
+/** re-initializes cluster data */
+void CSVTTCluster::InitializeSVTT(tract_t nCenter, const DataStreamGateway & DataGateway) {
+  unsigned int  iDim;
+
   CCluster::Initialize(nCenter);
 
   m_nSteps        = 1;
   m_nClusterType  = SPATIALVARTEMPTREND;
 
-  memset(m_pCumCases, 0, m_nTotalIntervals * sizeof(count_t));
-  memset(m_pCumMeasure, 0, m_nTotalIntervals * sizeof(measure_t));
-  memcpy(m_pRemCases, pCasesByTimeInt, m_nTotalIntervals * sizeof(count_t));
-  memcpy(m_pRemMeasure, Data.GetMeasureByTimeIntervalArray(), m_nTotalIntervals * sizeof(measure_t));
+  gpCasesInsideCluster->Set(0);
+  gpMeasureInsideCluster->Set(0);
+  memset(gpTotalCasesInsideCluster, 0, giNumDataStream * sizeof(count_t));
+  memset(gpTotalMeasureInsideCluster, 0, giNumDataStream * sizeof(measure_t));
+  for (iDim=0; iDim < gpCasesOutsideCluster->Get1stDimension(); ++iDim)
+    memcpy(gpCasesOutsideCluster->GetArray()[iDim], DataGateway.GetDataStreamInterface(iDim).GetPTCaseArray(), giTotalIntervals * sizeof(count_t));
+  for (iDim=0; iDim < gpMeasureOutsideCluster->Get1stDimension(); ++iDim)
+    memcpy(gpMeasureOutsideCluster->GetArray()[iDim], DataGateway.GetDataStreamInterface(iDim).GetPTMeasureArray(), giTotalIntervals * sizeof(measure_t));
+  for (iDim=0; iDim < DataGateway.GetNumInterfaces(); ++iDim)
+     gpTotalCasesOutsideCluster[iDim] = DataGateway.GetDataStreamInterface(iDim).GetTotalCasesCount();
 
-  m_nCases    = 0;
-  m_nMeasure  = 0.0;
-  m_nRemCases = 0;
-  m_nRemCases = Data.GetNumCases();
+  gTimeTrendInside.Initialize();
+  gTimeTrendOutside.Initialize();
+}
 
-  m_nTimeTrend.Initialize();
-  m_nRemTimeTrend.Initialize();
+/** re-initializes cluster data */
+void CSVTTCluster::InitializeSVTT(tract_t nCenter, const DataStreamInterface & Interface) {
+  CCluster::Initialize(nCenter);
+
+  m_nSteps        = 1;
+  m_nClusterType  = SPATIALVARTEMPTREND;
+
+  gpCasesInsideCluster->Set(0);
+  gpMeasureInsideCluster->Set(0);
+  gpTotalCasesInsideCluster[0] = 0;
+  gpTotalMeasureInsideCluster[0] = 0;
+  memcpy(gpCasesOutsideCluster->GetArray()[0], Interface.GetPTCaseArray(), giTotalIntervals * sizeof(count_t));
+  memcpy(gpMeasureOutsideCluster->GetArray()[0], Interface.GetPTMeasureArray(), giTotalIntervals * sizeof(measure_t));
+  gpTotalCasesOutsideCluster[0] = Interface.GetTotalCasesCount();
+
+  gTimeTrendInside.Initialize();
+  gTimeTrendOutside.Initialize();
 }
 
 void CSVTTCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals) {
@@ -156,21 +251,31 @@ void CSVTTCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes, int nT
   m_nEndDate       = pIntervalStartTimes[m_nLastInterval]-1;
 }
 
-/** internal setup function */
-void CSVTTCluster::Setup(const CSaTScanData& Data, const count_t* pCasesByTimeInt) {
+/** internal setup function for DataStreamGateway */
+void CSVTTCluster::Setup(const DataStreamGateway & DataGateway, int iNumTimeIntervals) {
   try {
-    m_nTotalIntervals = Data.m_nTimeIntervals;
-    m_pCumCases   = (count_t*) Smalloc((m_nTotalIntervals)*sizeof(count_t), gpPrintDirection);
-    m_pCumMeasure = (measure_t*) Smalloc((m_nTotalIntervals)*sizeof(measure_t), gpPrintDirection);
-    m_pRemCases   = (count_t*) Smalloc((m_nTotalIntervals)*sizeof(count_t), gpPrintDirection);
-    m_pRemMeasure = (measure_t*) Smalloc((m_nTotalIntervals)*sizeof(measure_t), gpPrintDirection);
-    InitializeSVTT(0, Data, pCasesByTimeInt);
+    giTotalIntervals = iNumTimeIntervals;
+    giNumDataStream = DataGateway.GetNumInterfaces();
+    AllocateArrays();
+    InitializeSVTT(0, DataGateway);
   }
   catch (ZdException &x) {
-    free(m_pCumCases);
-    free(m_pCumMeasure);
-    free(m_pRemCases);
-    free(m_pRemMeasure);
+    DeallocateArrays();
+    x.AddCallpath("Setup()","CSVTTCluster");
+    throw;
+  }
+}
+
+/** internal setup function for DataStreamInterface */
+void CSVTTCluster::Setup(const DataStreamInterface & Interface, int iNumTimeIntervals) {
+  try {
+    giTotalIntervals = iNumTimeIntervals;
+    giNumDataStream = 1;
+    AllocateArrays();
+    InitializeSVTT(0, Interface);
+  }
+  catch (ZdException &x) {
+    DeallocateArrays();
     x.AddCallpath("Setup()","CSVTTCluster");
     throw;
   }
@@ -179,17 +284,14 @@ void CSVTTCluster::Setup(const CSaTScanData& Data, const count_t* pCasesByTimeIn
 /** internal setup function */
 void CSVTTCluster::Setup(const CSVTTCluster& rhs) {
   try {
-    m_pCumCases   = (count_t*) Smalloc((rhs.m_nTotalIntervals)*sizeof(count_t), gpPrintDirection);
-    m_pCumMeasure = (measure_t*) Smalloc((rhs.m_nTotalIntervals)*sizeof(measure_t), gpPrintDirection);
-    m_pRemCases   = (count_t*) Smalloc((rhs.m_nTotalIntervals)*sizeof(count_t), gpPrintDirection);
-    m_pRemMeasure = (measure_t*) Smalloc((rhs.m_nTotalIntervals)*sizeof(measure_t), gpPrintDirection);
+    giNumDataStream = rhs.giNumDataStream;
+    giTotalIntervals = rhs.giTotalIntervals;
+    AllocateArrays();
   }
   catch (ZdException &x) {
-    free(m_pCumCases);
-    free(m_pCumMeasure);
-    free(m_pRemCases);
-    free(m_pRemMeasure);
+    DeallocateArrays();
     x.AddCallpath("Setup()","CSVTTCluster");
     throw;
   }
 }
+

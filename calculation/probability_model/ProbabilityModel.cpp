@@ -36,7 +36,7 @@ double CModel::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) {
 }
 
 /** NEEDS DOCUMENTATION */
-double CModel::CalcSVTTLogLikelihood(CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend) {
+double CModel::CalcSVTTLogLikelihood(size_t tStream, CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend) {
   ZdGenerateException("CalcSVTTLogLikelihood() not implementated.","CModel");
   return 0;
 }

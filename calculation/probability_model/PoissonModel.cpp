@@ -27,10 +27,10 @@ CPoissonModel::~CPoissonModel() {
     These operations are done on the raw measure matrix rather than the
     later on constructed cumulative measure matrix, while the cumulative
     case matrix is used.                                                */
-void CPoissonModel::AdjustForNonParameteric(measure_t ** pNonCumulativeMeasure) {
+void CPoissonModel::AdjustForNonParameteric(DataStream & thisStream, measure_t ** pNonCumulativeMeasure) {
   int                   i, j, jj, k, tract, AdjustIntervals;
   double                sumcases,summeasure;
-  count_t            ** ppCases(gData.gpCasesHandler->GetArray());
+  count_t            ** ppCases(thisStream.GetCaseArray());
 
   AdjustIntervals = gData.m_nTimeIntervals;
   k  = 1;
@@ -63,7 +63,7 @@ void CPoissonModel::AdjustForNonParameteric(measure_t ** pNonCumulativeMeasure) 
     {
       for (tract = 0; tract<gData.m_nTracts; tract++)
         (pNonCumulativeMeasure)[jj][tract] =
-          (pNonCumulativeMeasure)[jj][tract]*(sumcases/summeasure)/((gData.m_nTotalCases)/(gData.m_nTotalMeasure));
+          (pNonCumulativeMeasure)[jj][tract]*(sumcases/summeasure)/((thisStream.GetTotalCases())/(thisStream.GetTotalMeasure()));
 
       jj++;
     }  /* while */
@@ -74,7 +74,7 @@ void CPoissonModel::AdjustForNonParameteric(measure_t ** pNonCumulativeMeasure) 
 }
 
 /** */
-void CPoissonModel::AdjustForLLPercentage(measure_t ** pNonCumulativeMeasure, double nPercentage)
+void CPoissonModel::AdjustForLLPercentage(DataStream & thisStream, measure_t ** pNonCumulativeMeasure, double nPercentage)
 {
   int    i,t;
   double c;
@@ -100,32 +100,30 @@ void CPoissonModel::AdjustForLLPercentage(measure_t ** pNonCumulativeMeasure, do
   /* Mutlipy the measure for each interval/tract by constant (c) to obtain */
   /* total adjusted measure (nAdjustedMeasure) equal to previous total     */
   /* measure (gData.m_nTotalMeasure).                                             */
-  c = (double)(gData.m_nTotalMeasure)/nAdjustedMeasure;
+  c = (double)(thisStream.GetTotalMeasure())/nAdjustedMeasure;
   for (i=0; i<gData.m_nTimeIntervals; ++i)
     for (t=0; t<gData.m_nTracts; ++t)
      pNonCumulativeMeasure[i][t] *= c;
 }
 
-void CPoissonModel::AdjustForLogLinear(measure_t ** pNonCumulativeMeasure)
+void CPoissonModel::AdjustForLogLinear(DataStream & thisStream, measure_t ** pNonCumulativeMeasure)
 {
 /*  #if DEBUGMODEL
   fprintf(m_pDebugModelFile, "\nCalculate Time Trend and Adjust for Log Linear\n\n");
   #endif
 */
   // Calculate time trend for whole dataset
-  gData.m_nTimeTrend.CalculateAndSet(gData.m_pCases_TotalByTimeInt,
-                                        gData.m_pMeasure_TotalByTimeInt,
-                                        gData.m_nTimeIntervals,
-                                        gParameters.GetTimeTrendConvergence());
+  thisStream.GetTimeTrend().CalculateAndSet(thisStream.GetPTCasesArray(), thisStream.GetPTMeasureArray(),
+                                            gData.m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
 
   // Global time trend will be recalculated after the measure is adjusted.
   // Therefore this value will be lost unless retain in parameters for
   // display in the report.
-  gParameters.SetTimeTrendAdjustmentPercentage(gData.m_nTimeTrend.m_nBeta);
-  AdjustForLLPercentage(pNonCumulativeMeasure, gData.m_nTimeTrend.m_nBeta);  // Adjust Measure             */
+  gParameters.SetTimeTrendAdjustmentPercentage(thisStream.GetTimeTrend().m_nBeta);
+  AdjustForLLPercentage(thisStream, pNonCumulativeMeasure, thisStream.GetTimeTrend().m_nBeta);  // Adjust Measure             */
 }
 
-void CPoissonModel::AdjustMeasure(measure_t ** ppNonCumulativeMeasure) {
+void CPoissonModel::AdjustMeasure(DataStream & thisStream, measure_t ** ppNonCumulativeMeasure) {
   measure_t     AdjustedTotalMeasure_t=0;
   int           i;
   tract_t       t;
@@ -137,11 +135,11 @@ void CPoissonModel::AdjustMeasure(measure_t ** ppNonCumulativeMeasure) {
     if (gData.m_nTimeIntervals > 1) {
       switch (gParameters.GetTimeTrendAdjustmentType()) {
         case NOTADJUSTED               : break;
-        case NONPARAMETRIC             : AdjustForNonParameteric(ppNonCumulativeMeasure); break;
-        case LOGLINEAR_PERC            : AdjustForLLPercentage(ppNonCumulativeMeasure, gParameters.GetTimeTrendAdjustmentPercentage()); break;
-        case CALCULATED_LOGLINEAR_PERC : gData.SetMeasureByTimeIntervalArray(ppNonCumulativeMeasure);
-                                         AdjustForLogLinear(ppNonCumulativeMeasure); break;
-        case STRATIFIED_RANDOMIZATION  : AdjustForNonParameteric(ppNonCumulativeMeasure); break;//this adjustment occurs during randomization also
+        case NONPARAMETRIC             : AdjustForNonParameteric(thisStream, ppNonCumulativeMeasure); break;
+        case LOGLINEAR_PERC            : AdjustForLLPercentage(thisStream, ppNonCumulativeMeasure, gParameters.GetTimeTrendAdjustmentPercentage()); break;
+        case CALCULATED_LOGLINEAR_PERC : thisStream.SetMeasureByTimeIntervalsArray(ppNonCumulativeMeasure);
+                                         AdjustForLogLinear(thisStream, ppNonCumulativeMeasure); break;
+        case STRATIFIED_RANDOMIZATION  : AdjustForNonParameteric(thisStream, ppNonCumulativeMeasure); break;//this adjustment occurs during randomization also
         default : ZdGenerateException("Unknown time trend adjustment type: '%d'.",
                                       "AdjustMeasure()", gParameters.GetTimeTrendAdjustmentType());
       }
@@ -152,9 +150,9 @@ void CPoissonModel::AdjustMeasure(measure_t ** ppNonCumulativeMeasure) {
        for (t=0; t < gData.m_nTracts; ++t)
           AdjustedTotalMeasure_t += ppNonCumulativeMeasure[i][t];
 
-    if (fabs(AdjustedTotalMeasure_t - gData.m_nTotalMeasure) > 0.0001)
+    if (fabs(AdjustedTotalMeasure_t - thisStream.GetTotalMeasure()) > 0.0001)
       ZdGenerateException("Error: The adjusted total measure '%8.6lf' is not equal to the total measure '%8.6lf'.\n",
-                          "AdjustMeasure()", AdjustedTotalMeasure_t, gData.m_nTotalMeasure);
+                          "AdjustMeasure()", AdjustedTotalMeasure_t, thisStream.GetTotalMeasure());
   }
   catch (ZdException &x) {
     x.AddCallpath("AdjustMeasure()","CPoissonModel");
@@ -167,12 +165,14 @@ void CPoissonModel::AllocateAlternateHypothesisStructures() {
   int   i;
 
   try {
-    gpRelativeRisks = new float[static_cast<long>(gData.m_nTotalTractsAtStart)];
-    gpMeasure = new measure_t[static_cast<long>(gData.m_nTotalTractsAtStart)];
-    gpAlternativeMeasure = (double**)Smalloc((gData.m_nTimeIntervals)*sizeof(measure_t*), &gPrintDirection);
-    memset(gpAlternativeMeasure, 0, (gData.m_nTimeIntervals)*sizeof(measure_t*));
-    for (i=0; i < gData.m_nTimeIntervals; i++)
-       gpAlternativeMeasure[i] = (double*)Smalloc(static_cast<long>(gData.m_nTotalTractsAtStart)*sizeof(measure_t), &gPrintDirection);
+    if (!gpRelativeRisks) { //find better method later
+      gpRelativeRisks = new float[static_cast<long>(gData.m_nTotalTractsAtStart)];
+      gpMeasure = new measure_t[static_cast<long>(gData.m_nTotalTractsAtStart)];
+      gpAlternativeMeasure = (double**)Smalloc((gData.m_nTimeIntervals)*sizeof(measure_t*), &gPrintDirection);
+      memset(gpAlternativeMeasure, 0, (gData.m_nTimeIntervals)*sizeof(measure_t*));
+      for (i=0; i < gData.m_nTimeIntervals; i++)
+         gpAlternativeMeasure[i] = (double*)Smalloc(static_cast<long>(gData.m_nTotalTractsAtStart)*sizeof(measure_t), &gPrintDirection);
+    }
   }
   catch (ZdException &x) {
     //free any allocated memory
@@ -186,15 +186,12 @@ void CPoissonModel::AllocateAlternateHypothesisStructures() {
 }
 
 /** Calculates and sets non-cumulative measure array. */
-int CPoissonModel::AssignMeasure(measure_t ** ppNonCumulativeMeasure) {
+void CPoissonModel::AssignMeasure(DataStream & thisStream, measure_t ** ppNonCumulativeMeasure) {
   int           i, interval;
   tract_t       tract;
   Julian      * pIntervalDates=0;
 
   try {
-    if (!gData.gpPopulationMeasureHandler)
-      ZdGenerateException("Population dates based measure array not allocated.","AssignMeasure()");
-
     /* Create & Use array of interval dates where last interval date = EndDate */
     pIntervalDates = (unsigned long*)Smalloc((gData.m_nTimeIntervals+1)*sizeof(Julian), &gPrintDirection);
     memcpy(pIntervalDates, gData.GetTimeIntervalStartTimes(), (gData.m_nTimeIntervals+1)*sizeof(Julian));
@@ -205,10 +202,10 @@ int CPoissonModel::AssignMeasure(measure_t ** ppNonCumulativeMeasure) {
 
     DisplayInitialData(gData.m_nStartDate, gData.m_nEndDate, pIntervalDates, gData.m_nTimeIntervals, pAlpha, nPops);
 #endif
-
-    CalcMeasure(gData.GetTInfo(), ppNonCumulativeMeasure, gData.gpPopulationMeasureHandler->GetArray(), pIntervalDates,
-                gData.m_nStartDate, gData.m_nEndDate, gData.GetTInfo()->tiGetNumCategories(), gData.m_nTracts,
-                gData.GetTInfo()->tiGetNumPopDates(), gData.m_nTimeIntervals, &gData.m_nTotalMeasure, &gPrintDirection);
+    thisStream.SetTotalMeasure(CalcMeasure(thisStream.GetPopulationData(), ppNonCumulativeMeasure,
+                                           thisStream.GetPopulationMeasureArray(),
+                                           pIntervalDates, gData.m_nStartDate, gData.m_nEndDate,
+                                           gData.m_nTracts, gData.m_nTimeIntervals, &gPrintDirection));
 
     //Check to see that Measure matrix has positive entries.
 #if 1
@@ -234,14 +231,12 @@ int CPoissonModel::AssignMeasure(measure_t ** ppNonCumulativeMeasure) {
     x.AddCallpath("AssignMeasure()", "CPoissonModel");
     throw;
   }
-  return(1);
 }
 
-double CPoissonModel::CalcLogLikelihood(count_t n, measure_t u)
-{
+double CPoissonModel::CalcLogLikelihood(count_t n, measure_t u) {
    double    nLogLikelihood;
-   count_t   N = gData.m_nTotalCases;
-   measure_t U = gData.m_nTotalMeasure;
+   count_t   N = gData.GetTotalCases();
+   measure_t U = gData.GetTotalMeasure();
 
    if (n != N && n != 0)
      nLogLikelihood = n*log(n/u) + (N-n)*log((N-n)/(U-u));
@@ -251,6 +246,22 @@ double CPoissonModel::CalcLogLikelihood(count_t n, measure_t u)
      nLogLikelihood = n*log(n/u);
 
    return (nLogLikelihood);
+}
+
+/** calculates the Poisson loglikelihood ratio */
+double CPoissonModel::CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure, double dCompactnessCorrection) {
+  double    dLogLikelihood;
+
+  // calculate the loglikelihood
+  if (tCases != tTotalCases && tCases != 0)
+    dLogLikelihood = tCases *log(tCases/tMeasure) + (tTotalCases-tCases)*log((tTotalCases-tCases)/(tTotalMeasure-tMeasure));
+  else if (tCases == 0)
+    dLogLikelihood = (tTotalCases-tCases) * log((tTotalCases-tCases)/(tTotalMeasure-tMeasure));
+  else
+    dLogLikelihood = tCases*log(tCases/tMeasure);
+
+  // return the logliklihood ratio (loglikelihood - loglikelihood for total) * duczmal compactness correction
+  return (dLogLikelihood - (tTotalCases * log(tTotalCases/tTotalMeasure))) * dCompactnessCorrection;
 }
 
 double CPoissonModel::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster)
@@ -311,32 +322,33 @@ double CPoissonModel::CalcSVTTLogLikelihood(count_t*   pCases,
   return(nLL);
 }
 
+
 /** NEEDS DOCUMENTATION */
-double CPoissonModel::CalcSVTTLogLikelihood(CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend)
+double CPoissonModel::CalcSVTTLogLikelihood(size_t tStream, CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend)
 {
   double nLogLikelihood   = 0.0;
   double nGlobalAlphaIn   = 0.0;
   double nGlobalAlphaOut = 0.0;
 
-  Cluster->m_nTimeTrend.CalculateAndSet(Cluster->m_pCumCases,         // Inside Cluster
-                                        Cluster->m_pCumMeasure,
-                                        gData.m_nTimeIntervals,
-                                        gParameters.GetTimeTrendConvergence());
+  Cluster->gTimeTrendInside.CalculateAndSet(Cluster->gpCasesInsideCluster->GetArray()[tStream],         // Inside Cluster
+                                            Cluster->gpMeasureInsideCluster->GetArray()[tStream],
+                                            gData.m_nTimeIntervals,
+                                            gParameters.GetTimeTrendConvergence());
 
-  nGlobalAlphaIn = Cluster->m_nTimeTrend.Alpha(Cluster->m_nCases,
-                                               Cluster->m_pCumMeasure,
-                                               gData.m_nTimeIntervals,
-                                               GlobalTimeTrend.m_nBeta);
-
-  Cluster->m_nRemTimeTrend.CalculateAndSet(Cluster->m_pRemCases,         // Outside Cluster
-                                           Cluster->m_pRemMeasure,
-                                           gData.m_nTimeIntervals,
-                                           gParameters.GetTimeTrendConvergence());
-
-  nGlobalAlphaOut = Cluster->m_nRemTimeTrend.Alpha(Cluster->m_nRemCases,
-                                                   Cluster->m_pRemMeasure,
+  nGlobalAlphaIn = Cluster->gTimeTrendInside.Alpha(Cluster->gpTotalCasesInsideCluster[tStream],
+                                                   Cluster->gpMeasureInsideCluster->GetArray()[tStream],
                                                    gData.m_nTimeIntervals,
                                                    GlobalTimeTrend.m_nBeta);
+
+  Cluster->gTimeTrendOutside.CalculateAndSet(Cluster->gpCasesOutsideCluster->GetArray()[tStream],         // Outside Cluster
+                                             Cluster->gpMeasureOutsideCluster->GetArray()[tStream],
+                                             gData.m_nTimeIntervals,
+                                             gParameters.GetTimeTrendConvergence());
+
+  nGlobalAlphaOut = Cluster->gTimeTrendOutside.Alpha(Cluster->gpTotalCasesOutsideCluster[tStream],
+                                                     Cluster->gpMeasureOutsideCluster->GetArray()[tStream],
+                                                     gData.m_nTimeIntervals,
+                                                     GlobalTimeTrend.m_nBeta);
   #if DEBUGMODEL
   fprintf(m_pDebugModelFile, "Inside                Outside\n");
   fprintf(m_pDebugModelFile, "Cases    Msr          Cases    Msr\n");
@@ -347,39 +359,39 @@ double CPoissonModel::CalcSVTTLogLikelihood(CSVTTCluster* Cluster, CTimeTrend Gl
                                 Cluster->m_pRemCases[i], Cluster->m_pRemMeasure[i]);
   fprintf(m_pDebugModelFile, "------------------------------------------\n");
   fprintf (m_pDebugModelFile, "%i                   %i\n\n",
-                              Cluster->m_nCases, Cluster->m_nRemCases);
+                              Cluster->GetCaseCount(0), Cluster->m_nRemCases);
 
 //  fprintf(m_pDebugModelFile, "\nGlobal Time Trend: Alpha = %f, Beta = %f\n\n",
 //          GlobalTimeTrend.m_nAlpha, GlobalTimeTrend.m_nBeta);
   #endif
 
-  nLogLikelihood = (CalcSVTTLogLikelihood(Cluster->m_pCumCases,
-                                          Cluster->m_pCumMeasure,
-                                          Cluster->m_nCases,
-                                          Cluster->m_nTimeTrend.m_nAlpha,
-                                          Cluster->m_nTimeTrend.m_nBeta,
-                                          Cluster->m_nTimeTrend.m_nStatus)
+  nLogLikelihood = (CalcSVTTLogLikelihood(Cluster->gpCasesInsideCluster->GetArray()[tStream],
+                                          Cluster->gpMeasureInsideCluster->GetArray()[tStream],
+                                          Cluster->gpTotalCasesInsideCluster[tStream],
+                                          Cluster->gTimeTrendInside.m_nAlpha,
+                                          Cluster->gTimeTrendInside.m_nBeta,
+                                          Cluster->gTimeTrendInside.m_nStatus)
                     +
-                    CalcSVTTLogLikelihood(Cluster->m_pRemCases,
-                                          Cluster->m_pRemMeasure,
-                                          Cluster->m_nRemCases,
-                                          Cluster->m_nRemTimeTrend.m_nAlpha,
-                                          Cluster->m_nRemTimeTrend.m_nBeta,
-                                          Cluster->m_nRemTimeTrend.m_nStatus))
+                    CalcSVTTLogLikelihood(Cluster->gpCasesOutsideCluster->GetArray()[tStream],
+                                          Cluster->gpMeasureOutsideCluster->GetArray()[tStream],
+                                          Cluster->gpTotalCasesOutsideCluster[tStream],
+                                          Cluster->gTimeTrendOutside.m_nAlpha,
+                                          Cluster->gTimeTrendOutside.m_nBeta,
+                                          Cluster->gTimeTrendOutside.m_nStatus))
                     -
-                   (CalcSVTTLogLikelihood(Cluster->m_pCumCases,
-                                          Cluster->m_pCumMeasure,
-                                          Cluster->m_nCases,
+                   (CalcSVTTLogLikelihood(Cluster->gpCasesInsideCluster->GetArray()[tStream],
+                                          Cluster->gpMeasureInsideCluster->GetArray()[tStream],
+                                          Cluster->gpTotalCasesInsideCluster[tStream],
                                           nGlobalAlphaIn,
                                           GlobalTimeTrend.m_nBeta,
-                                          Cluster->m_nTimeTrend.m_nStatus)
+                                          Cluster->gTimeTrendInside.m_nStatus)
                     +
-                    CalcSVTTLogLikelihood(Cluster->m_pRemCases,
-                                          Cluster->m_pRemMeasure,
-                                          Cluster->m_nRemCases,
+                    CalcSVTTLogLikelihood(Cluster->gpCasesOutsideCluster->GetArray()[tStream],
+                                          Cluster->gpMeasureOutsideCluster->GetArray()[tStream],
+                                          Cluster->gpTotalCasesOutsideCluster[tStream],
                                           nGlobalAlphaOut,
                                           GlobalTimeTrend.m_nBeta,
-                                          Cluster->m_nRemTimeTrend.m_nStatus));
+                                          Cluster->gTimeTrendOutside.m_nStatus));
 
 
   #if DEBUGMODEL
@@ -389,66 +401,66 @@ double CPoissonModel::CalcSVTTLogLikelihood(CSVTTCluster* Cluster, CTimeTrend Gl
   return nLogLikelihood;
 }
 
-bool CPoissonModel::CalculateMeasure() {
-  bool                  bResult;
+bool CPoissonModel::CalculateMeasure(DataStream & thisStream) {
+  bool                  bResult=true;
   double              * pAlpha=0, * pRisk=0;
+  PopulationData      & Population = thisStream.GetPopulationData();
 
   try {
-    //calculate alpha - an array that indicates each population interval's percentage of study period. 
-    gData.GetTInfo()->tiCalculateAlpha(&pAlpha, gData.m_nStartDate, gData.m_nEndDate);
+    //calculate alpha - an array that indicates each population interval's percentage of study period.
+    Population.CalculateAlpha(&pAlpha, gData.m_nStartDate, gData.m_nEndDate);
     //calculate risk for each population category
-    CalcRisk(gData.GetTInfo(), &pRisk, pAlpha, gData.GetTInfo()->tiGetNumCategories(),
-             gData.GetTInfo()->tiGetNumTracts(), gData.GetTInfo()->tiGetNumPopDates(),
-             &gData.m_nTotalPop, &gData.m_nTotalCases, &gPrintDirection);
-    //allocate 2D array of population dates by number of tracts         
-    gData.gpPopulationMeasureHandler = new TwoDimensionArrayHandler<measure_t>(gData.GetTInfo()->tiGetNumPopDates(),
-                                                                               gData.GetTInfo()->tiGetNumTracts(), 0);
+    CalcRisk(thisStream, &pRisk, pAlpha, gData.GetTInfo()->tiGetNumTracts(), &gPrintDirection);
+    //allocate 2D array of population dates by number of tracts
+    thisStream.AllocatePopulationMeasureArray();
     //calculate expected number of cases in terms of population dates                                                                           
-    Calcm(gData.GetTInfo(), gData.gpPopulationMeasureHandler->GetArray(), pRisk, gData.GetTInfo()->tiGetNumCategories(),
-          gData.GetTInfo()->tiGetNumTracts(), gData.GetTInfo()->tiGetNumPopDates(), &gPrintDirection);
+    Calcm(Population, thisStream.GetPopulationMeasureArray(), pRisk,
+          Population.GetNumPopulationCategories(), gData.GetTInfo()->tiGetNumTracts(),
+          Population.GetNumPopulationDates(), &gPrintDirection);
+          
     //assign measure, perform adjustments as requested, and set measure array as cumulative
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-      gData.gpMeasureNonCumulativeHandler = new TwoDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals+1/*no sure why + 1*/, gData.m_nTracts);
+      thisStream.AllocateNCMeasureArray();
       //calculate non-cumulative measure array
-      bResult = AssignMeasure(gData.gpMeasureNonCumulativeHandler->GetArray());
+      AssignMeasure(thisStream, thisStream.GetNCMeasureArray());
       //validate that observed and expected agree
-      gData.ValidateObservedToExpectedCases(gData.gpMeasureNonCumulativeHandler->GetArray());
+      gData.ValidateObservedToExpectedCases(thisStream.GetCaseArray(),
+                                            thisStream.GetNCMeasureArray());
       //apply adjustments
-      AdjustMeasure(gData.gpMeasureNonCumulativeHandler->GetArray());
+      AdjustMeasure(thisStream, thisStream.GetNCMeasureArray());
       //create cumulative measure from non-cumulative measure
-      gData.SetCumulativeMeasure();
+      thisStream.SetCumulativeMeasureArrayFromNonCumulative();
       //either reset or set measure by time intervals with non-cumulative measure
-      gData.SetMeasureByTimeIntervalArray(gData.gpMeasureNonCumulativeHandler->GetArray());
+      thisStream.SetMeasureByTimeIntervalsArray(thisStream.GetNCMeasureArray());
     }
     else {
-      gData.gpMeasureHandler = new TwoDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals+1/*no sure why + 1*/, gData.m_nTracts);
+      thisStream.AllocateMeasureArray();
       //calculate non-cumulative measure array
-      bResult = AssignMeasure(gData.gpMeasureHandler->GetArray());
+      AssignMeasure(thisStream, thisStream.GetMeasureArray());
       //validate that observed and expected agree
-      gData.ValidateObservedToExpectedCases(gData.gpMeasureHandler->GetArray());
+      gData.ValidateObservedToExpectedCases(thisStream.GetCaseArray(),
+                                            thisStream.GetMeasureArray());
       //apply adjustments
-      AdjustMeasure(gData.gpMeasureHandler->GetArray());
+      AdjustMeasure(thisStream, thisStream.GetMeasureArray());
       if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
           gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
         //need measure by time intervals for time stratified adjustment in simulations
-        gData.SetMeasureByTimeIntervalArray(gData.gpMeasureHandler->GetArray());
-      gData.SetMeasureAsCumulative(gData.gpMeasureHandler->GetArray());
+        thisStream.SetMeasureByTimeIntervalsArray(thisStream.GetMeasureArray());
+      thisStream.SetMeasureArrayAsCumulative();
     }
     // Bug check, to ensure that TotalCases=TotalMeasure
-    if (fabs(gData.m_nTotalCases - gData.m_nTotalMeasure) > 0.0001)
+    if (fabs(thisStream.GetTotalCases() - thisStream.GetTotalMeasure()) > 0.0001)
       ZdGenerateException("Error: The total measure '%8.6lf' is not equal to the total number of cases '%ld'.\n",
-                          "CalculateMeasure()", gData.m_nTotalMeasure, gData.m_nTotalCases);
+                          "CalculateMeasure()", thisStream.GetTotalMeasure(), thisStream.GetTotalCases());
 
     free(pAlpha); pAlpha=0;
     free(pRisk); pRisk=0;
-    delete gData.gpPopulationMeasureHandler; gData.gpPopulationMeasureHandler=0;
+    thisStream.FreePopulationMeasureArray();
   }
   catch (ZdException &x) {
-    delete gData.gpMeasureNonCumulativeHandler; gData.gpMeasureNonCumulativeHandler=0;
-    delete gData.gpMeasureHandler; gData.gpMeasureHandler=0;
     free(pAlpha); pAlpha=0;
     free(pRisk); pRisk=0;
-    delete gData.gpPopulationMeasureHandler; gData.gpPopulationMeasureHandler=0;
+    thisStream.FreePopulationMeasureArray();
     x.AddCallpath("CalculateMeasure()","CPoissonModel");
     throw;
   }
@@ -474,30 +486,32 @@ void CPoissonModel::DeallocateAlternateHypothesisStructures() {
 
 double CPoissonModel::GetLogLikelihoodForTotal() const
 {
-  count_t   N = gData.m_nTotalCases;
-  measure_t U = gData.m_nTotalMeasure;
+  count_t   N = gData.GetTotalCases();
+  measure_t U = gData.GetTotalMeasure();
 
   return N*log(N/U);
 }
 
 double CPoissonModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
                                     int nStartInterval, int nStopInterval) {
-   tract_t T, t;
-   int     c, n;
-   double* pAlpha = 0;
-   int     ncats = gData.GetPopulationCategories().GetNumPopulationCategories();
-   int     nPops = (gData.GetTInfo())->tiGetNumPopDates();
-   double  nPopulation = 0.0;
+  tract_t T, t;
+  int     c, n;
+  double* pAlpha = 0;
+  PopulationData & Population = gData.GetDataStreamHandler().GetStream(0/*for now*/).GetPopulationData();
+  int     ncats;
+  int     nPops;
+  double  nPopulation = 0.0;
 
-   try
-      {
-      (gData.GetTInfo())->tiCalculateAlpha(&pAlpha, gData.m_nStartDate, gData.m_nEndDate);
+  try {
+    ncats = Population.GetNumPopulationCategories();
+    nPops = Population.GetNumPopulationDates();
+    Population.CalculateAlpha(&pAlpha, gData.m_nStartDate, gData.m_nEndDate);
 
       for (T = 1; T <= nTracts; T++)
       {
          t = gData.GetNeighbor(m_iEllipseOffset, nCenter, T);
          for (c = 0; c < ncats; c++)
-            gData.GetTInfo()->tiGetAlphaAdjustedPopulation(nPopulation, t, c, 0, nPops, pAlpha);
+            Population.GetAlphaAdjustedPopulation(nPopulation, t, c, 0, nPops, pAlpha);
       }
 
       free(pAlpha); pAlpha = 0;
@@ -512,25 +526,25 @@ double CPoissonModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract
 }
 
 /** Sets simulated data. */
-void CPoissonModel::MakeData(int iSimulationNumber) {
+void CPoissonModel::MakeData(int iSimulationNumber, DataStreamInterface & DataInterface, unsigned int tInterface) {
   try {
     //reset seed to simulation number
     m_RandomNumberGenerator.SetSeed(iSimulationNumber + m_RandomNumberGenerator.GetDefaultSeed());
     switch(gParameters.GetSimulationType()) {
       case STANDARD         : if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
-                                MakeDataTimeStratified();
+                                MakeDataTimeStratified(DataInterface);
                               else
-                                MakeDataUnderNullHypothesis();
+                                MakeDataUnderNullHypothesis(DataInterface);
                               break;
       case HA_RANDOMIZATION : if (iSimulationNumber == 1)
                                 AllocateAlternateHypothesisStructures();
-                              MakeData_AlternateHypothesis(); break;
-      case FILESOURCE       : ReadSimulationDataFromFile(); break;
+                              MakeData_AlternateHypothesis(DataInterface); break;
+      case FILESOURCE       : ReadSimulationDataFromFile(DataInterface); break;
       default : ZdGenerateException("Unknown simulation type '%d'.","MakeData()",gParameters.GetSimulationType());
     };
 
     if (gParameters.GetOutputSimulationData())
-      PrintSimulationDateToFile(iSimulationNumber);
+      PrintSimulationDateToFile(iSimulationNumber, DataInterface);
   }
   catch (ZdException &x) {
     x.AddCallpath("MakeData()", "CPoissonModel");
@@ -539,17 +553,19 @@ void CPoissonModel::MakeData(int iSimulationNumber) {
 }
 
 /** Generate case counts using time stratified algorithm. */
-void CPoissonModel::MakeDataTimeStratified() {
+void CPoissonModel::MakeDataTimeStratified(DataStreamInterface & DataInterface) {
   tract_t               tract;
-  count_t               c, cumcases=0, ** ppSimCases(gData.GetSimCasesArray());
-  measure_t             cummeasure=0, ** ppMeasure(gData.GetMeasureArray());
+  count_t               c, cumcases=0,
+                      * pPTCases(DataInterface.GetPTCaseArray()), ** ppSimCases(DataInterface.GetCaseArray());
+  measure_t             cummeasure=0,
+                      * pPTMeasure(DataInterface.GetPTMeasureArray()), ** ppMeasure(DataInterface.GetMeasureArray());
   int                   interval;      // current time interval
 
   interval = gData.m_nTimeIntervals - 1;
-  for (tract=0; tract < gData.m_nTotalTractsAtStart; tract++) {
-     if (gData.m_pCases_TotalByTimeInt[interval] - cumcases > 0)
-       c = gBinomialGenerator.GetBinomialDistributedVariable(gData.m_pCases_TotalByTimeInt[interval] - cumcases,
-                                                             ppMeasure[interval][tract]/(gData.m_pMeasure_TotalByTimeInt[interval] - cummeasure),
+  for (tract=0; tract < gData.m_nTotalTractsAtStart; ++tract) {
+     if (pPTCases[interval] - cumcases > 0)
+       c = gBinomialGenerator.GetBinomialDistributedVariable(pPTCases[interval] - cumcases,
+                                                             ppMeasure[interval][tract]/(pPTMeasure[interval] - cummeasure),
                                                              m_RandomNumberGenerator);
      else
        c = 0;
@@ -560,10 +576,10 @@ void CPoissonModel::MakeDataTimeStratified() {
   for (interval--; interval >= 0; --interval) { //For each other interval, from 2nd to last until the first:
      cumcases = 0;
      cummeasure = 0;
-     for (tract=0; tract < gData.m_nTotalTractsAtStart; tract++) { //For each tract:
-        if (gData.m_pCases_TotalByTimeInt[interval] - cumcases > 0)
-          c = gBinomialGenerator.GetBinomialDistributedVariable(gData.m_pCases_TotalByTimeInt[interval] - cumcases,
-                      (ppMeasure[interval][tract] - ppMeasure[interval + 1][tract])/(gData.m_pMeasure_TotalByTimeInt[interval] - cummeasure),
+     for (tract=0; tract < gData.m_nTotalTractsAtStart; ++tract) { //For each tract:
+        if (pPTCases[interval] - cumcases > 0)
+          c = gBinomialGenerator.GetBinomialDistributedVariable(pPTCases[interval] - cumcases,
+                      (ppMeasure[interval][tract] - ppMeasure[interval + 1][tract])/(pPTMeasure[interval] - cummeasure),
                       m_RandomNumberGenerator);
         else
           c = 0;
@@ -575,16 +591,16 @@ void CPoissonModel::MakeDataTimeStratified() {
 }
 
 /** Generate case counts under the null hypothesis (standard) */
-void CPoissonModel::MakeDataUnderNullHypothesis() {
+void CPoissonModel::MakeDataUnderNullHypothesis(DataStreamInterface & DataInterface) {
   tract_t               t;
-  count_t               c, d, cumcases=0, ** ppSimCases(gData.GetSimCasesArray());
-  measure_t             cummeasure=0, ** ppMeasure(gData.GetMeasureArray());
+  count_t               c, d, cumcases=0, ** ppSimCases(DataInterface.GetCaseArray());
+  measure_t             cummeasure=0, ** ppMeasure(DataInterface.GetMeasureArray());
   int                   i;
 
   for (t=0; t < gData.m_nTotalTractsAtStart; ++t) {
-     if (gData.m_nTotalMeasure-cummeasure > 0)
-       c = gBinomialGenerator.GetBinomialDistributedVariable(gData.m_nTotalCases - cumcases,
-                              ppMeasure[0][t] / (gData.m_nTotalMeasure-cummeasure), m_RandomNumberGenerator);
+     if (DataInterface.GetTotalMeasureCount() - cummeasure > 0)
+       c = gBinomialGenerator.GetBinomialDistributedVariable(DataInterface.GetTotalCasesCount() - cumcases,
+                              ppMeasure[0][t] / (DataInterface.GetTotalMeasureCount() - cummeasure), m_RandomNumberGenerator);
      else
        c = 0;
      ppSimCases[0][t] = c;
@@ -605,13 +621,14 @@ void CPoissonModel::MakeDataUnderNullHypothesis() {
 /** Generates simulated cases under an alternative hypothesis model.
     NOTE: Reading of the power estimation file data is not validated, potentially
           leading to bad program behavior.                                        */
-void CPoissonModel::MakeData_AlternateHypothesis() {
+void CPoissonModel::MakeData_AlternateHypothesis(DataStreamInterface & DataInterface) {
   int                   i, j, iInterval;
   std::ifstream         RelativeRiskFile;
   std::string           sTractId;
   tract_t               t, tractIndex;
-  measure_t             TotalMeasure=gData.m_nTotalMeasure, cummeasure=0, ** ppMeasure(gData.GetMeasureArray());
-  count_t               c, d, cumcases=0, ** ppSimCases(gData.GetSimCasesArray());  
+  measure_t             TotalMeasure(DataInterface.GetTotalMeasureCount()), cummeasure=0,
+                     ** ppMeasure(DataInterface.GetMeasureArray());
+  count_t               c, d, cumcases=0, ** ppSimCases(DataInterface.GetCaseArray());  
 
   //duplicate the  ppMeasure[][] into gpAlternativeMeasure[][], gpAlternativeMeasure[][] will be changed depending upon
   //the gpRelativeRisks[], and ppMeasure[][] remains the same as the expected measure
@@ -659,7 +676,7 @@ void CPoissonModel::MakeData_AlternateHypothesis() {
    //start alternative simulations
   for (t=0; t < gData.m_nTotalTractsAtStart; ++t) {
     if (TotalMeasure-cummeasure > 0)
-        c = gBinomialGenerator.GetBinomialDistributedVariable(gData.m_nTotalCases - cumcases,
+        c = gBinomialGenerator.GetBinomialDistributedVariable(DataInterface.GetTotalCasesCount() - cumcases,
                                                               gpMeasure[t] / (TotalMeasure-cummeasure),
                                                               m_RandomNumberGenerator);
     else
@@ -683,11 +700,11 @@ void CPoissonModel::MakeData_AlternateHypothesis() {
 /** Prints the simulated data to a file. Format printed to file matches
     format expected for read as simulation data source. Truncates file
     when first opened for each analysis(i.e. first simulation). */
-void CPoissonModel::PrintSimulationDateToFile(int iSimulationNumber) {
+void CPoissonModel::PrintSimulationDateToFile(int iSimulationNumber, DataStreamInterface & DataInterface) {
   std::ofstream         SimulationOutputFile;
   tract_t               tract;
   int                   interval;
-  count_t            ** ppSimCases(gData.GetSimCasesArray());
+  count_t            ** ppSimCases(DataInterface.GetCaseArray());
 
   //NOTE: Since this is a hidden feature
   SimulationOutputFile.open(gParameters.GetSimulationDataOutputFilename().c_str(), (iSimulationNumber == 1 ? ios::trunc : ios::ate));
@@ -716,18 +733,7 @@ void CPoissonModel::PrintSimulationDateToFile(int iSimulationNumber) {
 
 bool CPoissonModel::ReadData() {
   try {
-    if (! gData.ReadCoordinatesFile())
-      return false;
-    if (! gData.ReadPopulationFile())
-      return false;
-    if (! gData.GetTInfo()->tiCheckZeroPopulations(stderr))
-      return false;
-    if (! gData.ReadCaseFile())
-      return false;
-    gData.GetTInfo()->tiCheckCasesHavePopulations(gData);
-    if (DoesReadMaxCirclePopulationFile() && !gData.ReadMaxCirclePopulationFile())
-        return false;
-    if (gParameters.UseSpecialGrid() && !gData.ReadGridFile())
+    if (!gData.ReadPoissonData())
       return false;
   }
   catch (ZdException & x) {
@@ -745,11 +751,11 @@ bool CPoissonModel::ReadData() {
           3) file does not actually contains numerical data
           Use of this feature should be discouraged except from someone who has
           detailed knowledge of how code works.                                                                 */
-void CPoissonModel::ReadSimulationDataFromFile() {
+void CPoissonModel::ReadSimulationDataFromFile(DataStreamInterface & DataInterface) {
   tract_t               t;
   int                   i;
   count_t               c;
-  count_t            ** ppSimCases(gData.GetSimCasesArray());
+  count_t            ** ppSimCases(DataInterface.GetCaseArray());
 
   if (!gSimulationDataInputFile.is_open())
     gSimulationDataInputFile.open(gParameters.GetSimulationDataSourceFilename().c_str());

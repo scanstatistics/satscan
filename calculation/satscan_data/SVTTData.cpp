@@ -12,7 +12,6 @@
 CSVTTData::CSVTTData(CParameters* pParameters, BasePrint *pPrintDirection)
           :CSaTScanData(pParameters, pPrintDirection) {
   try {
-    Init();
     SetProbabilityModel();
   }
   catch (ZdException &x) {
@@ -22,25 +21,40 @@ CSVTTData::CSVTTData(CParameters* pParameters, BasePrint *pPrintDirection)
 }
 
 /** destructor */
-CSVTTData::~CSVTTData() {
+CSVTTData::~CSVTTData() {}
+
+void CSVTTData::AllocateSimulationStructures() {
+  ProbabiltyModelType   eProbabiltyModelType(m_pParameters->GetProbabiltyModelType());
+  AnalysisType          eAnalysisType(m_pParameters->GetAnalysisType());
+
   try {
-    free (m_pSumLogs);
+    //allocate simulation case arrays
+    if (eProbabiltyModelType != 10/*normal*/ && eProbabiltyModelType != 11/*rank*/)
+      gpDataStreams->AllocateSimulationCases();
+    //allocate simulation measure arrays
+    if (eProbabiltyModelType == 10/*normal*/ || eProbabiltyModelType == 11/*rank*/ || eProbabiltyModelType == 12/*survival*/)
+      gpDataStreams->AllocateSimulationMeasure();
+
+    gpDataStreams->AllocateNCSimCases();
+    gpDataStreams->AllocatePTSimCases();
   }
-  catch (...){}
+  catch (ZdException &x) {
+    x.AddCallpath("AllocateSimulationStructures()","CSaTScanData");
+    throw;
+  }
 }
 
-bool CSVTTData::CalculateMeasure() {
-  bool bReturn = CSaTScanData::CalculateMeasure();
-  SetSumLogs();
-  m_nTimeTrend.CalculateAndSet(m_pCases_TotalByTimeInt, m_pMeasure_TotalByTimeInt,
-                               m_nTimeIntervals, m_pParameters->GetTimeTrendConvergence());
+bool CSVTTData::CalculateMeasure(DataStream & thisStream) {
+  bool bReturn = CSaTScanData::CalculateMeasure(thisStream);
+  thisStream.GetTimeTrend().CalculateAndSet(thisStream.GetPTCasesArray(), thisStream.GetPTMeasureArray(),
+                                            m_nTimeIntervals, m_pParameters->GetTimeTrendConvergence());
   return bReturn;
 }
 
 void CSVTTData::DisplayCases(FILE* pFile) {
-    DisplayCounts(pFile, gpCasesHandler->GetArray(), "Cases Array",
-                  gpCasesNonCumulativeHandler->GetArray(), "Cases Non-Cumulative Array",
-                  m_pCases_TotalByTimeInt, "m_pCases_TotalByTimeInt");
+    DisplayCounts(pFile, gpDataStreams->GetStream(0/*for now*/).GetCaseArray(), "Cases Array",
+                  gpDataStreams->GetStream(0/*for now*/).GetNCCaseArray(), "Cases Non-Cumulative Array",
+                  gpDataStreams->GetStream(0/*for now*/).GetPTCasesArray(), "Cases_TotalByTimeInt");
 }
 
 void CSVTTData::DisplayCounts(FILE* pFile,
@@ -73,13 +87,8 @@ void CSVTTData::DisplayMeasures(FILE* pFile) {
   measure_t  ** ppMeasure, ** ppMeasureNC;
 
   fprintf(pFile, "Measures                        Measures - Not Accumulated\n\n");
-  if (!gpMeasureHandler || !gpMeasureNonCumulativeHandler || m_pMeasure_TotalByTimeInt==0) {
-    fprintf(pFile, "Measures are not defined.\n");
-    return;
-  }
-
-  ppMeasure = gpMeasureHandler->GetArray();
-  ppMeasureNC = gpMeasureNonCumulativeHandler->GetArray();
+  ppMeasure = gpDataStreams->GetStream(0/*for now*/).GetMeasureArray();
+  ppMeasureNC = gpDataStreams->GetStream(0/*for now*/).GetNCMeasureArray();
   for (i = 0; i < m_nTimeIntervals; i++)
     for (int j = 0; j < m_nTracts; j++)
     {
@@ -89,7 +98,7 @@ void CSVTTData::DisplayMeasures(FILE* pFile) {
 
   fprintf(pFile, "\nMeasures Accumulated by Time Interval\n\n");
   for (i=0; i<m_nTimeIntervals; i++)
-    fprintf(pFile, "m_pMeasure_TotalByTimeInt [%i] = %12.5f\n", i, m_pMeasure_TotalByTimeInt[i]);
+    fprintf(pFile, "Measure_TotalByTimeInt [%i] = %12.5f\n", i, gpDataStreams->GetStream(0/*for now*/).GetPTMeasureArray()[i]);
 
   fprintf(pFile, "\n");
 }
@@ -101,10 +110,10 @@ void CSVTTData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, const 
   std::vector<std::string>             vIdentifiers;
   CTimeTrend                           nTractTT;
   count_t                              nTractCases, * CasesByTI=0,
-                                    ** ppCases(gpCasesHandler->GetArray()),
-                                    ** ppCaseNC(gpCasesNonCumulativeHandler->GetArray());
-  measure_t                          * MsrByTI=0, ** ppMeasure(gpMeasureHandler->GetArray()),
-                                    ** ppMeasureNC(gpMeasureNonCumulativeHandler->GetArray());
+                                    ** ppCases(gpDataStreams->GetStream(0/*for now*/).GetCaseArray()),
+                                    ** ppCaseNC(gpDataStreams->GetStream(0/*for now*/).GetNCCaseArray());
+  measure_t                          * MsrByTI=0, ** ppMeasure(gpDataStreams->GetStream(0/*for now*/).GetMeasureArray()),
+                                    ** ppMeasureNC(gpDataStreams->GetStream(0/*for now*/).GetNCMeasureArray());
   int                                  i ,j;
 
    try {
@@ -146,61 +155,32 @@ void CSVTTData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, const 
    }
 }
 void CSVTTData::DisplaySimCases(FILE* pFile) {
-  DisplayCounts(pFile, gpSimCasesHandler->GetArray(), "Simulated Cases Array",
-                gpSimCasesNonCumulativeHandler->GetArray(), "Simulated Non-Cumulative Cases Array",
-                m_pSimCases_TotalByTimeInt, "m_pSimCases_TotalByTimeInt");
+  DisplayCounts(pFile, gpDataStreams->GetStream(0/*for now*/).GetSimCaseArray(), "Simulated Cases Array",
+                gpDataStreams->GetStream(0/*for now*/).GetNCSimCaseArray(), "Simulated Non-Cumulative Cases Array",
+                gpDataStreams->GetStream(0/*for now*/).GetPTSimCasesArray(), "SimCases_TotalByTimeInt");
 }
 
-void CSVTTData::MakeData(int iSimulationNumber) {
+void CSVTTData::MakeData(int iSimulationNumber, DataStreamGateway & DataGateway) {
   try {
-    CSaTScanData::MakeData(iSimulationNumber);
-    //allocate/set non-cumulative and by time interval simulation case arrays
-    if (!gpSimCasesNonCumulativeHandler)
-      gpSimCasesNonCumulativeHandler = new TwoDimensionArrayHandler<count_t>(m_nTimeIntervals, m_nTracts, 0);
-    if (!m_pSimCases_TotalByTimeInt)
-      m_pSimCases_TotalByTimeInt = new count_t[m_nTimeIntervals];
-    SetCaseArrays(gpSimCasesHandler->GetArray(), gpSimCasesNonCumulativeHandler->GetArray(), m_pSimCases_TotalByTimeInt);
-    m_nTimeTrend_Sim.CalculateAndSet(m_pCases_TotalByTimeInt, m_pMeasure_TotalByTimeInt,
-                                     m_nTimeIntervals, m_pParameters->GetTimeTrendConvergence());
+    CSaTScanData::MakeData(iSimulationNumber, DataGateway);
+    gpDataStreams->GetStream(0/*for now*/).SetSimCaseArrays();
+    gpDataStreams->GetStream(0/*for now*/).GetSimTimeTrend().CalculateAndSet(gpDataStreams->GetStream(0/*for now*/).GetPTCasesArray(),
+                                              gpDataStreams->GetStream(0/*for now*/).GetPTMeasureArray(),
+                                              m_nTimeIntervals, m_pParameters->GetTimeTrendConvergence());
   }
   catch (ZdException &x) {
-    delete gpSimCasesNonCumulativeHandler; gpSimCasesNonCumulativeHandler=0;
-    delete m_pSimCases_TotalByTimeInt; m_pSimCases_TotalByTimeInt=0;
     x.AddCallpath("MakeData()","CSVTTData");
     throw;
   }
 }
 
-void CSVTTData::SetAdditionalCaseArrays() {
+void CSVTTData::SetAdditionalCaseArrays(DataStream & thisStream) {
   try {
-    //allocate/set non-cumulative and by time interval case arrays
-    if (!gpCasesNonCumulativeHandler)
-      gpCasesNonCumulativeHandler = new TwoDimensionArrayHandler<count_t>(m_nTimeIntervals, m_nTracts);
-    if (!m_pCases_TotalByTimeInt)
-      m_pCases_TotalByTimeInt = new count_t[m_nTimeIntervals];
-    SetCaseArrays(gpCasesHandler->GetArray(), gpCasesNonCumulativeHandler->GetArray(), m_pCases_TotalByTimeInt);
+    thisStream.SetCaseArrays();
   }
   catch (ZdException &x) {
-    delete gpCasesNonCumulativeHandler; gpCasesNonCumulativeHandler=0;
-    delete m_pCases_TotalByTimeInt; m_pCases_TotalByTimeInt=0;
     x.AddCallpath("SetAdditionalCaseArrays()","CSVTTData");
     throw;
-  }
-}
-
-void CSVTTData::SetCaseArrays(count_t** pCases, count_t** pCases_NC, count_t* pCasesByTimeInt) {
-  int   i, j;
-
-  for (i=0; i < m_nTimeIntervals; i++)
-    pCasesByTimeInt[i] = 0;
-
-  for (i=0; i < m_nTracts; i++)  {
-    pCases_NC[m_nTimeIntervals-1][i] = pCases[m_nTimeIntervals-1][i];
-    pCasesByTimeInt[m_nTimeIntervals-1] += pCases_NC[m_nTimeIntervals-1][i];
-    for (j=m_nTimeIntervals-2; j >= 0; j--) {
-      pCases_NC[j][i] = pCases[j][i] - pCases[j+1][i];
-      pCasesByTimeInt[j] += pCases_NC[j][i];
-    }
   }
 }
 
@@ -229,21 +209,4 @@ void CSVTTData::SetProbabilityModel() {
     throw;
   }
 }
-
-// Added 990915 GG
-void CSVTTData::SetSumLogs()
-{
-  if ((m_pSumLogs) == NULL && m_nTotalCases != 0)
-  {
-    m_pSumLogs = (double *) Smalloc((m_nTotalCases+1) * sizeof(double), gpPrint);
-    m_pSumLogs[0] = 0;
-    m_pSumLogs[1] = 0;
-
-    for (int i=2; i<=m_nTotalCases; i++)
-    {
-      m_pSumLogs[i] = m_pSumLogs[i-1] + log(i);
-    }
-  }
-}
-
 

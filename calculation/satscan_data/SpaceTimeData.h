@@ -6,7 +6,7 @@
 
 class CSpaceTimeData : public CSaTScanData {
   protected:
-    virtual bool        CalculateMeasure();
+    virtual bool        CalculateMeasure(DataStream & thisStream);
     virtual void        ReadDataFromFiles();
     virtual void        SetIntervalCut();
     virtual void        SetProbabilityModel();
@@ -15,9 +15,8 @@ class CSpaceTimeData : public CSaTScanData {
     CSpaceTimeData(CParameters* pParameters, BasePrint *pPrintDirection);
     virtual ~CSpaceTimeData();
 
-    virtual void        AllocSimCases();
-    virtual void        DeAllocSimCases();
-    virtual void        MakeData(int iSimulationNumber);
+    virtual void        AllocateSimulationStructures();
+    virtual void        MakeData(int iSimulationNumber, DataStreamGateway & DataGateway);
 };
 
 //**************************************************************************

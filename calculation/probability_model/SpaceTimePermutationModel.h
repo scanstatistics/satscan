@@ -55,10 +55,26 @@ class CCaseLocationTimes {
    void         SetTractIndex(int iIndex) {giTractIndex = iIndex;}
 };
 
+class SpaceTimeRandomizer {
+  private:
+    std::vector<std::vector<CCaseLocationTimes> >       gvCategoryCaseLocationTimes;
+    std::vector<CSimulationTimeRandomizer>              gvTimeIntervalRandomizer;
+    RandomNumberGenerator                               gRandomNumberGenerator;
+  
+  public:
+    SpaceTimeRandomizer() {}
+    virtual ~SpaceTimeRandomizer() {}
+
+    void        InitializeStructures(DataStream & thisStream, int iTimeIntervals, int iTracts);
+    void        MakeData(int iSimulationNumber, DataStreamInterface & DataInterface);    
+};
+
 /** Space-time permutation model. Requires only case and geographical information.
     Calculates loglikelihood identically to Poisson model. */
 class CSpaceTimePermutationModel : public CModel {
   private:
+    std::vector<SpaceTimeRandomizer>                    gvRandomizers;
+
     std::vector<std::vector<CCaseLocationTimes> >       gvCategoryCaseLocationTimes;
     std::vector<CSimulationTimeRandomizer>              gvTimeIntervalRandomizer;
     RandomNumberGenerator                               gRandomNumberGenerator;
@@ -70,11 +86,12 @@ class CSpaceTimePermutationModel : public CModel {
     virtual ~CSpaceTimePermutationModel();
 
     virtual double 	        CalcLogLikelihood(count_t n, measure_t u);
-    virtual bool   	        CalculateMeasure();
+    virtual double              CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure, double dCompactnessCorrection);
+    virtual bool   	        CalculateMeasure(DataStream & thisStream);
     virtual double 	        GetLogLikelihoodForTotal() const;
     virtual double              GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
                                               int nStartInterval, int nStopInterval);
-    virtual void   	        MakeData(int iSimulationNumber);
+    virtual void   	        MakeData(int iSimulationNumber, DataStreamInterface & DataInterface, unsigned int tInterface=0);
     virtual bool   	        ReadData();
 };
 

@@ -5,19 +5,15 @@
 #include "SaTScan.h"
 #include "Tracts.h"
 #include "JulianDates.h"
-#include "PopulationCategories.h"
+#include "DataStream.h"
 
-int CalcRisk(const TractHandler       * pTInfo,
+int CalcRisk(DataStream & thisStream,
              double                  ** pRisk,
              double                   * pAlpha,
-             int                        nCats,
              tract_t                    nTracts,
-             int                        nPops,
-             double                   * pTotalPop,
-             count_t                  * pTotalCases,
              BasePrint                * pPrintDirection);
 
-int Calcm(const TractHandler   * pTInfo,
+int Calcm(PopulationData & thisPopulationData,
           measure_t           ** m,
           double               * pRisk,
           int                    nCats,
@@ -26,18 +22,15 @@ int Calcm(const TractHandler   * pTInfo,
           BasePrint            * pPrintDirection);
 
 
-int CalcMeasure(const TractHandler    * pTInfo,
-                measure_t            ** pMeasure,
-                measure_t            ** m,
-                Julian                * pStartDates,
-                Julian                  StartDate,
-                Julian                  EndDate,
-                int                     nCats,
-                tract_t                 nTracts,
-                int                     nPops,
-                int                     nTimeIntervals,
-                measure_t             * pTotalMeasure,
-                BasePrint             * pPrintDirection);
+measure_t CalcMeasure(PopulationData & thisPopulationData,
+                      measure_t            ** pMeasure,
+                      measure_t            ** m,
+                      Julian                * pStartDates,
+                      Julian                  StartDate,
+                      Julian                  EndDate,
+                      tract_t                 nTracts,
+                      int                     nTimeIntervals,
+                      BasePrint             * pPrintDirection);
 
 int AdjustForDiscreteTimeTrend(measure_t*** pMeasure,
                                count_t      *Cases[],

@@ -20,67 +20,52 @@ CSpaceTimeData::CSpaceTimeData(CParameters* pParameters, BasePrint *pPrintDirect
 /** desctructor */
 CSpaceTimeData::~CSpaceTimeData() {}
 
-void CSpaceTimeData::AllocSimCases()
-{
-   try
-      {
-      CSaTScanData::AllocSimCases();
-      if (m_pParameters->GetIncludePurelyTemporalClusters())
-         m_pPTSimCases = (count_t*)Smalloc(m_nTimeIntervals * sizeof(count_t), gpPrint);
+void CSpaceTimeData::AllocateSimulationStructures() {
+  ProbabiltyModelType   eProbabiltyModelType(m_pParameters->GetProbabiltyModelType());
+  AnalysisType          eAnalysisType(m_pParameters->GetAnalysisType());
+  
+  try {
+      CSaTScanData::AllocateSimulationStructures();
+      if (m_pParameters->GetIncludePurelyTemporalClusters()) {
+        //allocate simulation case arrays
+        if (eProbabiltyModelType != 10/*normal*/ && eProbabiltyModelType != 11/*rank*/)
+          gpDataStreams->AllocatePTSimCases();
+        //allocate simulation measure arrays
+        if (eProbabiltyModelType != 10/*normal*/ || eProbabiltyModelType != 11/*rank*/ || eProbabiltyModelType != 12/*survival*/)
+          gpDataStreams->AllocateSimulationPTMeasure();
       }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("AllocSimCases()", "CSpaceTimeData");
-      throw;
-      }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("AllocateSimulationStructures()", "CSpaceTimeData");
+    throw;
+  }
 }
 
-bool CSpaceTimeData::CalculateMeasure()
-{
+bool CSpaceTimeData::CalculateMeasure(DataStream & thisStream) {
   bool bResult;
 
-  try
-     {
-     bResult = CSaTScanData::CalculateMeasure();
-     if (m_pParameters->GetIncludePurelyTemporalClusters())
-        SetPurelyTemporalMeasures();
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("CalculateMeasure()", "CSpaceTimeData");
-      throw;
-      }
+  try {
+    bResult = CSaTScanData::CalculateMeasure(thisStream);
+    if (m_pParameters->GetIncludePurelyTemporalClusters())
+      thisStream.SetPTMeasureArray();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("CalculateMeasure()","CSpaceTimeData");
+    throw;
+  }
   return bResult;
 }
 
-void CSpaceTimeData::DeAllocSimCases()
-{
-   try
-      {
-      CSaTScanData::DeAllocSimCases();
-      if (m_pParameters->GetIncludePurelyTemporalClusters())
-         free(m_pPTSimCases);
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("DeAllocSimCases()", "CSpaceTimeData");
-      throw;
-      }
-}
-
-void CSpaceTimeData::MakeData(int iSimulationNumber)
-{
-   try
-      {
-      CSaTScanData::MakeData(iSimulationNumber);
-      if (m_pParameters->GetIncludePurelyTemporalClusters())
-         SetPurelyTemporalSimCases();
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("MakeData()", "CSpaceTimeData");
-      throw;
-      }
+void CSpaceTimeData::MakeData(int iSimulationNumber, DataStreamGateway & DataGateway) {
+  try {
+    CSaTScanData::MakeData(iSimulationNumber, DataGateway);
+    if (m_pParameters->GetIncludePurelyTemporalClusters())
+      gpDataStreams->SetPurelyTemporalSimCases();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("MakeData()","CSpaceTimeData");
+    throw;
+  }
 }
 
 void CSpaceTimeData::ReadDataFromFiles()
