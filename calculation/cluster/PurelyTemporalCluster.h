@@ -41,7 +41,7 @@ class CPurelyTemporalCluster : public CCluster {
     virtual measure_t                   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual void                        Initialize(tract_t nCenter);
     virtual void                        InitTimeIntervalIndeces();
-    inline virtual bool                 SetNextTimeInterval(const count_t*& pCases, const measure_t*& pMeasure);
+    inline virtual bool                 SetNextTimeInterval(const count_t* pCases, const measure_t* pMeasure);
 };
 //*****************************************************************************
 #endif
