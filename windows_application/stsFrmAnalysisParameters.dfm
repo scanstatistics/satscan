@@ -25,7 +25,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbInputFiles
+    ActivePage = tbAnalysis
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -46,9 +46,9 @@ object frmAnalysis: TfrmAnalysis
       object Label21: TLabel
         Left = 24
         Top = 152
-        Width = 194
+        Width = 208
         Height = 13
-        Caption = 'Maximum Circle Population File (optional):'
+        Caption = 'Special Max Circle Population File (optional):'
       end
       object GroupBox1: TGroupBox
         Left = 16
@@ -314,23 +314,23 @@ object frmAnalysis: TfrmAnalysis
       object rgTypeAnalysis: TRadioGroup
         Left = 8
         Top = 8
-        Width = 173
+        Width = 178
         Height = 135
         Caption = 'Type of Analysis'
         ItemIndex = 0
         Items.Strings = (
           'Purely Spatial'
-          'Purely Temporal'
+          'Retrospective Purely Temporal'
+          'Prospective Purely Temporal'
           'Retrospective Space-Time '
-          'Prospective Space-Time'
-          'Prospective Purely Temporal')
+          'Prospective Space-Time')
         TabOrder = 0
         OnClick = rgTypeAnalysisClick
       end
       object rgProbability: TRadioGroup
-        Left = 188
+        Left = 193
         Top = 8
-        Width = 153
+        Width = 148
         Height = 135
         Caption = 'Probability Model'
         ItemIndex = 0
@@ -359,12 +359,12 @@ object frmAnalysis: TfrmAnalysis
         Left = 8
         Top = 150
         Width = 465
-        Height = 106
+        Height = 95
         Caption = 'Study Period'
         TabOrder = 3
         object Label8: TLabel
           Left = 56
-          Top = 48
+          Top = 34
           Width = 51
           Height = 13
           Anchors = [akLeft, akTop, akRight]
@@ -372,7 +372,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object Label9: TLabel
           Left = 56
-          Top = 80
+          Top = 66
           Width = 48
           Height = 13
           Anchors = [akLeft, akTop, akRight]
@@ -386,14 +386,6 @@ object frmAnalysis: TfrmAnalysis
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Year'
         end
-        object Label11: TLabel
-          Left = 120
-          Top = 24
-          Width = 34
-          Height = 13
-          Anchors = [akLeft, akTop, akRight]
-          Caption = '(YYYY)'
-        end
         object Label12: TLabel
           Left = 171
           Top = 8
@@ -401,14 +393,6 @@ object frmAnalysis: TfrmAnalysis
           Height = 13
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Month'
-        end
-        object Label13: TLabel
-          Left = 171
-          Top = 24
-          Width = 24
-          Height = 13
-          Anchors = [akLeft, akTop, akRight]
-          Caption = '(MM)'
         end
         object Label14: TLabel
           Left = 208
@@ -418,17 +402,9 @@ object frmAnalysis: TfrmAnalysis
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Day'
         end
-        object Label15: TLabel
-          Left = 208
-          Top = 24
-          Width = 22
-          Height = 13
-          Anchors = [akLeft, akTop, akRight]
-          Caption = '(DD)'
-        end
         object edtStartYear: TEdit
           Left = 120
-          Top = 40
+          Top = 26
           Width = 41
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -440,7 +416,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtEndYear: TEdit
           Left = 120
-          Top = 72
+          Top = 58
           Width = 41
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -452,7 +428,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtStartMonth: TEdit
           Left = 171
-          Top = 40
+          Top = 26
           Width = 25
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -465,7 +441,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtEndMonth: TEdit
           Left = 171
-          Top = 72
+          Top = 58
           Width = 25
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -478,7 +454,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtStartDay: TEdit
           Left = 208
-          Top = 40
+          Top = 26
           Width = 25
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -491,7 +467,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtEndDay: TEdit
           Left = 208
-          Top = 72
+          Top = 58
           Width = 25
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -629,7 +605,7 @@ object frmAnalysis: TfrmAnalysis
         Top = 8
         Width = 233
         Height = 137
-        Caption = 'Start Date of Prospective Space-Time'
+        Caption = 'Prospective Surveillance'
         TabOrder = 4
         object Label23: TLabel
           Left = 43
@@ -637,20 +613,6 @@ object frmAnalysis: TfrmAnalysis
           Width = 22
           Height = 13
           Caption = 'Year'
-        end
-        object Label24: TLabel
-          Left = 42
-          Top = 56
-          Width = 34
-          Height = 13
-          Caption = '(YYYY)'
-        end
-        object Label25: TLabel
-          Left = 100
-          Top = 56
-          Width = 24
-          Height = 13
-          Caption = '(MM)'
         end
         object Label26: TLabel
           Left = 99
@@ -666,16 +628,9 @@ object frmAnalysis: TfrmAnalysis
           Height = 13
           Caption = 'Day'
         end
-        object Label28: TLabel
-          Left = 146
-          Top = 56
-          Width = 22
-          Height = 13
-          Caption = '(DD)'
-        end
         object edtProspYear: TEdit
           Left = 40
-          Top = 72
+          Top = 59
           Width = 41
           Height = 21
           Enabled = False
@@ -687,7 +642,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtProspMonth: TEdit
           Left = 100
-          Top = 72
+          Top = 59
           Width = 25
           Height = 21
           Enabled = False
@@ -699,7 +654,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object edtProspDay: TEdit
           Left = 146
-          Top = 72
+          Top = 59
           Width = 25
           Height = 21
           Enabled = False
@@ -845,49 +800,13 @@ object frmAnalysis: TfrmAnalysis
     object tbOutputFiles: TTabSheet
       Caption = 'Output Files'
       ImageIndex = 4
-      object Label29: TLabel
-        Left = 16
-        Top = 8
-        Width = 57
-        Height = 13
-        Caption = 'Results File:'
-      end
-      object edtResultFile: TEdit
-        Left = 16
-        Top = 24
-        Width = 408
-        Height = 21
-        AutoSelect = False
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 0
-        OnChange = edtResultFileChange
-      end
-      object btnResultFileBrowse: TButton
-        Left = 434
-        Top = 24
-        Width = 30
-        Height = 21
-        Hint = 'browse for results file'
-        Caption = '...'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -13
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 1
-        OnClick = btnResultFileBrowseClick
-      end
       object grpAdditionalOutputFiles: TGroupBox
         Left = 16
-        Top = 52
+        Top = 80
         Width = 449
         Height = 153
         Caption = 'Additional Optional Output Files:'
-        TabOrder = 2
+        TabOrder = 0
         object lblClustersInColumnFormat: TLabel
           Left = 16
           Top = 48
@@ -1017,11 +936,11 @@ object frmAnalysis: TfrmAnalysis
       end
       object grpCriteriaSecClusters: TGroupBox
         Left = 16
-        Top = 209
+        Top = 237
         Width = 449
         Height = 50
         Caption = 'Criteria for Reporting Secondary Clusters'
-        TabOrder = 3
+        TabOrder = 1
         object cboCriteriaSecClusters: TComboBox
           Left = 10
           Top = 18
@@ -1040,36 +959,72 @@ object frmAnalysis: TfrmAnalysis
             'No Restrictions = Most Likely Cluster for Each Grid Point')
         end
       end
-      object pnlOutputFileBottom: TPanel
+      object pnlTop: TPanel
         Left = 0
-        Top = 260
+        Top = 0
         Width = 481
-        Height = 33
-        Align = alBottom
+        Height = 80
+        Align = alTop
         BevelOuter = bvNone
-        TabOrder = 4
+        TabOrder = 2
+        object Label29: TLabel
+          Left = 16
+          Top = 8
+          Width = 57
+          Height = 13
+          Caption = 'Results File:'
+        end
         object lblReportSmallerClusters: TLabel
           Left = 238
-          Top = 8
+          Top = 55
           Width = 134
           Height = 13
           Caption = 'percent of population at risk.'
         end
+        object edtResultFile: TEdit
+          Left = 16
+          Top = 24
+          Width = 408
+          Height = 21
+          AutoSelect = False
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 0
+          OnChange = edtResultFileChange
+        end
+        object btnResultFileBrowse: TButton
+          Left = 434
+          Top = 24
+          Width = 30
+          Height = 21
+          Hint = 'browse for results file'
+          Caption = '...'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 1
+          OnClick = btnResultFileBrowseClick
+        end
         object chkRestrictReportedClusters: TCheckBox
           Left = 16
-          Top = 8
+          Top = 55
           Width = 175
           Height = 17
           Caption = 'Report only clusters smaller than'
-          TabOrder = 0
+          TabOrder = 2
           OnClick = chkRestrictReportedClustersClick
         end
         object edtReportClustersSmallerThan: TEdit
-          Left = 194
-          Top = 6
+          Left = 192
+          Top = 51
           Width = 40
-          Height = 18
-          TabOrder = 1
+          Height = 21
+          TabOrder = 3
           Text = '49'
           OnExit = edtReportClustersSmallerThanExit
           OnKeyPress = PositiveFloatKeyPress

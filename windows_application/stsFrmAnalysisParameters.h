@@ -26,7 +26,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TButton *btnCoordBrowse;
         TButton *btnGridBrowse;
         TButton *btnPopBrowse;
-        TButton *btnResultFileBrowse;
         TCheckBox *chkCensusAreasReportedClustersAscii;
         TCheckBox *chkCensusAreasReportedClustersDBase;
         TCheckBox *chkClustersInColumnFormatAscii;
@@ -54,7 +53,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TEdit *edtProspDay;
         TEdit *edtProspMonth;
         TEdit *edtProspYear;
-        TEdit *edtResultFile;
         TEdit *edtStartDay;
         TEdit *edtStartMonth;
         TEdit *edtStartYear;
@@ -84,23 +82,16 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TLabel *Label8;
         TLabel *Label9;
         TLabel *Label10;
-        TLabel *Label11;
         TLabel *Label12;
-        TLabel *Label13;
         TLabel *Label14;
-        TLabel *Label15;
         TLabel *Label16;
         TLabel *Label17;
         TLabel *Label18;
         TLabel *Label19;
         TLabel *Label20;
         TLabel *Label23;
-        TLabel *Label24;
-        TLabel *Label25;
         TLabel *Label26;
         TLabel *Label27;
-        TLabel *Label28;
-        TLabel *Label29;
         TMenuItem *mitClearSpecialGridEdit;
         TOpenDialog *OpenDialog1;
         TPageControl *PageControl1;
@@ -128,10 +119,13 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TLabel *Label21;
         TEdit *edtMaxCirclePopulationFilename;
         TButton *Button1;
-        TPanel *pnlOutputFileBottom;
+        TPanel *pnlTop;
+        TLabel *Label29;
+        TEdit *edtResultFile;
+        TButton *btnResultFileBrowse;
         TCheckBox *chkRestrictReportedClusters;
-        TEdit *edtReportClustersSmallerThan;
         TLabel *lblReportSmallerClusters;
+        TEdit *edtReportClustersSmallerThan;
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall rgPrecisionTimesClick(TObject *Sender);
         void __fastcall btnCaseBrowseClick(TObject *Sender);
@@ -221,6 +215,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                EnableTemporalTimeTrendAdjust(bool bEnableRadioGroup, bool bEnableNonParametric,
                                                       bool bEnableLogYearEditBox, bool bEnableTimeStratifiedRandomization);
     void                EnableTimeInterval(bool bEnable);
+    AnalysisType        GetAnalysisControlType() const;
     ZdDate            & GetStudyPeriodEndDate(ZdDate & Date);
     ZdDate            & GetStudyPeriodStartDate(ZdDate & Date);
     void                Init();
@@ -229,6 +224,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                OnProbabilityModelClick();
     void                OnTemporalTrendClick();
     void                ParseDate(const char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *pDay);
+    void                SetAnalysisControl(AnalysisType eAnalysisType);
     void                SaveTextParameters();
     void                SetReportingSmallerClustersText();
     void                SetSpatialDistanceCaption();

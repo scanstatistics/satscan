@@ -795,6 +795,21 @@ void __fastcall TfrmAnalysis::FormClose(TObject *Sender, TCloseAction &Action) {
   catch(...){}
 }
 
+/** returns analysis type for analysis control index */
+AnalysisType TfrmAnalysis::GetAnalysisControlType() const {
+  AnalysisType eReturn;
+
+  switch (rgTypeAnalysis->ItemIndex) {
+    case 0  : eReturn = PURELYSPATIAL; break;
+    case 1  : eReturn = PURELYTEMPORAL; break;
+    case 2  : eReturn = PROSPECTIVEPURELYTEMPORAL; break;
+    case 3  : eReturn = SPACETIME; break;
+    case 4  : eReturn = PROSPECTIVESPACETIME; break;
+    default : ZdGenerateException("Unknown index type '%d'", "GetAnalysisControlType()", rgTypeAnalysis->ItemIndex);
+  }
+  return eReturn;
+}
+
 //---------------------------------------------------------------------------
 // Returns parameter filename fullpath.
 //---------------------------------------------------------------------------
@@ -883,8 +898,8 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
   try {
     bPoisson = (gParameters.GetProbabiltyModelType() == POISSON);
     bBernoulli = (gParameters.GetProbabiltyModelType() == BERNOULLI);
-    switch (rgTypeAnalysis->ItemIndex) {
-      case 0: // purely spatial analysis
+    switch (GetAnalysisControlType()) {
+      case PURELYSPATIAL : // purely spatial analysis
               // disable time trend adjustment
               gParameters.SetAnalysisType(PURELYSPATIAL);
               EnableTemporalTimeTrendAdjust(false, false, false, false);
@@ -895,7 +910,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
               EnableTemporal(false, false, false);    // disable temporal
               EnablePSTDate(false);                   // disable start date PST
               break;
-      case 1: // purely temporal analysis
+      case PURELYTEMPORAL: // purely temporal analysis
               // Enables Time Trend Adjust without Non-Param
               gParameters.SetAnalysisType(PURELYTEMPORAL);
               EnableTemporalTimeTrendAdjust(bPoisson, false, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2), bPoisson);
@@ -907,7 +922,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
               EnableTemporal(true, false, true);   // Enables temporal without checkbox
               EnablePSTDate(false);                // Disables Start date PST
               break;
-      case 2: // retrospective space-time
+      case SPACETIME: // retrospective space-time
               //Enables Time Trend Adjust
               gParameters.SetAnalysisType(SPACETIME);
               EnableTemporalTimeTrendAdjust(bPoisson, bPoisson, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2), bPoisson);
@@ -919,7 +934,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
               EnableTemporal(true,!(gParameters.GetProbabiltyModelType() == 2), true);     //Enables temporal
               EnablePSTDate(false);                                      //Disables Start date PST
               break;
-      case 3: // prospective space-time analysis
+      case PROSPECTIVESPACETIME: // prospective space-time analysis
               //Enables Time Trend Adjust
               gParameters.SetAnalysisType(PROSPECTIVESPACETIME);
               EnableTemporalTimeTrendAdjust(bPoisson, bPoisson, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2), bPoisson);
@@ -930,7 +945,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
               EnableTemporal(true, !(gParameters.GetProbabiltyModelType() == 2), false);     //Enables temporal with checkbox but disable % option radio button
               EnablePSTDate(true);                                         //Enables Start Date PST
               break;
-      case 4: // prospective purely temporal analysis
+      case PROSPECTIVEPURELYTEMPORAL: // prospective purely temporal analysis
               // Enables Time Trend Adjust without Non-Param
               gParameters.SetAnalysisType(PROSPECTIVEPURELYTEMPORAL);
               EnableTemporalTimeTrendAdjust(bPoisson, false, (bPoisson && rgTemporalTrendAdj->ItemIndex == 2), bPoisson);
@@ -1000,8 +1015,9 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
     rgTypeAnalysis->Controls[1]->Enabled = !(rgPrecisionTimes->ItemIndex == NONE);
     rgTypeAnalysis->Controls[2]->Enabled = !(rgPrecisionTimes->ItemIndex == NONE);
     rgTypeAnalysis->Controls[3]->Enabled = !(rgPrecisionTimes->ItemIndex == NONE);
-    if(rgPrecisionTimes->ItemIndex == NONE && (rgTypeAnalysis->ItemIndex == 1 || rgTypeAnalysis->ItemIndex == 2 || rgTypeAnalysis->ItemIndex == 3) )
-       rgTypeAnalysis->ItemIndex = 0;    // if none was selected, set the anbalysis type to purely spatial
+    rgTypeAnalysis->Controls[4]->Enabled = !(rgPrecisionTimes->ItemIndex == NONE);
+    if(rgPrecisionTimes->ItemIndex == NONE && rgTypeAnalysis->ItemIndex != 0)
+       rgTypeAnalysis->ItemIndex = 0;    // if none was selected, set the analysis type to purely spatial
     rgProbability->Controls[2]->Enabled = !(rgPrecisionTimes->ItemIndex == NONE);
     if(rgPrecisionTimes->ItemIndex == NONE && rgProbability->ItemIndex == 2)
        rgProbability->ItemIndex = 0;    // if none was selected and space time was selected reset model to Poisson
@@ -1053,6 +1069,8 @@ void TfrmAnalysis::OnProbabilityModelClick() {
         case 1:
            rgTypeAnalysis->Controls[0]->Enabled = true;
            rgTypeAnalysis->Controls[1]->Enabled =(rgPrecisionTimes->ItemIndex != 0);
+           rgTypeAnalysis->Controls[2]->Enabled = (rgPrecisionTimes->ItemIndex != 0);
+           rgTypeAnalysis->Controls[3]->Enabled =(rgPrecisionTimes->ItemIndex != 0);
            rgTypeAnalysis->Controls[4]->Enabled = (rgPrecisionTimes->ItemIndex != 0);
            chkRelativeRiskEstimatesAreaAscii->Enabled = true;
            chkRelativeRiskEstimatesAreaDBase->Enabled = true;
@@ -1062,11 +1080,11 @@ void TfrmAnalysis::OnProbabilityModelClick() {
         case 2:
            rgTypeAnalysis->Controls[0]->Enabled = false;
            rgTypeAnalysis->Controls[1]->Enabled = false;
-           rgTypeAnalysis->Controls[2]->Enabled = true;
+           rgTypeAnalysis->Controls[2]->Enabled = false;
            rgTypeAnalysis->Controls[3]->Enabled = true;
-           rgTypeAnalysis->Controls[4]->Enabled = false;
-           if(rgTypeAnalysis->ItemIndex == 0 || rgTypeAnalysis->ItemIndex == 1 || rgTypeAnalysis->ItemIndex == 4)
-              rgTypeAnalysis->ItemIndex = 2;
+           rgTypeAnalysis->Controls[4]->Enabled = true;
+           if (rgTypeAnalysis->ItemIndex < 3) //default to retro space-time if analysis not
+              rgTypeAnalysis->ItemIndex = 3;  //valid for space-time permutation
            chkRelativeRiskEstimatesAreaAscii->Enabled = false;
            chkRelativeRiskEstimatesAreaDBase->Enabled = false;
            rdoPercentageTemproal->Caption = "Percent of Study Period (<= 50%)";
@@ -1243,6 +1261,20 @@ void TfrmAnalysis::SaveTextParameters() {
   }
 }
 
+/** sets analysis type control for AnalysisType */
+void TfrmAnalysis::SetAnalysisControl(AnalysisType eAnalysisType) {
+  switch (eAnalysisType) {
+    case PURELYSPATIAL                  : rgTypeAnalysis->ItemIndex = 0; break;
+    case PURELYTEMPORAL                 : rgTypeAnalysis->ItemIndex = 1; break;
+    case PROSPECTIVEPURELYTEMPORAL      : rgTypeAnalysis->ItemIndex = 2; break;
+    case SPACETIME                      : rgTypeAnalysis->ItemIndex = 3; break;
+    case PROSPECTIVESPACETIME           : rgTypeAnalysis->ItemIndex = 4; break;
+    case SPATIALVARTEMPTREND            :
+    case PURELYSPATIALMONOTONE          : //not in interface -- default
+    default                             : rgTypeAnalysis->ItemIndex = 0;
+  }
+}
+
 /** Sets case filename in interface and parameters class. */
 void TfrmAnalysis::SetCaseFile(const char * sCaseFileName) {
   gParameters.SetCaseFileName(sCaseFileName);
@@ -1355,7 +1387,7 @@ void TfrmAnalysis::SetupInterface() {
 
     // because precision times has the heirarchal affect on model and analysis type, we need to set these two
     // gui controls before we get to the precision time control setting - AJV 10/23/2002
-    rgTypeAnalysis->ItemIndex = (int)gParameters.GetAnalysisType() - 1;
+    SetAnalysisControl(gParameters.GetAnalysisType());
     rgProbability->ItemIndex = gParameters.GetProbabiltyModelType();
 
     //Input File Tab
@@ -1543,7 +1575,7 @@ bool TfrmAnalysis::ValidateReportedSpatialClusterSize() {
   try {
     if (edtMaxClusterSize->Enabled && edtReportClustersSmallerThan->Enabled) {
       if (!edtReportClustersSmallerThan->Text.Length() || atof(edtReportClustersSmallerThan->Text.c_str()) == 0)
-        ZdException::GenerateNotification("Please specify a maximum cluster size for reported clusters "
+        ZdException::GenerateNotification("Please specify a maximum cluster size for reported clusters\n"
                                           "between 0 and the maximum spatial cluster size of %g.",
                                           "edtReportClustersSmallerThanExit()", atof(edtMaxClusterSize->Text.c_str()));
 
@@ -1864,7 +1896,7 @@ void __fastcall TfrmAnalysis::edtMaxCirclePopulationFilenameChange(TObject *Send
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::edtReportClustersSmallerThanExit(TObject *Sender){
-  try {
+  try {                                     
       if (!edtReportClustersSmallerThan->Text.Length() || atof(edtReportClustersSmallerThan->Text.c_str()) == 0)
         ZdException::GenerateNotification("Please specify a maximum cluster size for reported clusters\n"
                                           "between 0 and the maximum spatial cluster size of %g.",
