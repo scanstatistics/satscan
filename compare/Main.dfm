@@ -447,14 +447,14 @@ object frmMain: TfrmMain
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 3
-    object lblRunErrors: TLabel
+    object lblMessages: TLabel
       Left = 13
       Top = 0
-      Width = 53
+      Width = 51
       Height = 13
-      Caption = 'Run Errors:'
+      Caption = 'Messages:'
     end
-    object memRunErrors: TMemo
+    object memMessages: TMemo
       Left = 12
       Top = 13
       Width = 571

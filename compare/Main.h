@@ -119,8 +119,8 @@ __published:	// IDE-managed Components
         TToolButton *ToolButton3;
         TAction *ActionOptions;
         TPanel *pnlBottom;
-        TMemo *memRunErrors;
-        TLabel *lblRunErrors;
+        TMemo *memMessages;
+        TLabel *lblMessages;
         void __fastcall btnBrowseBatchExecutableClick(TObject *Sender);
         void __fastcall btnBrowseBatchExecutableComparatorClick(TObject *Sender);
         void __fastcall ActionStartExecute(TObject *Sender);

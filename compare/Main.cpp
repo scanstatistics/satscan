@@ -225,6 +225,10 @@ void TfrmMain::ArchiveResults() {
   if (!access(sArchiveFilename.c_str(), 00) && remove(sArchiveFilename.c_str()))
     return;
 
+  //print archive filename
+  memMessages->Lines->Add("Archive Filename:");
+  memMessages->Lines->Add(sArchiveFilename);
+  memMessages->Lines->Add("");
   //create analysis stats file
   sStatsFilename.printf("%s%s.stats.txt", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(Date).c_str());
   CreateStatsFile(sStatsFilename.c_str());
@@ -355,7 +359,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
    AnsiString   sCommand;
    int          iItemIndex=0;
 
-   memRunErrors->Clear();
+   memMessages->Clear();
    lstDisplay->Items->Clear();
    gvParameterResultsInfo.clear();
    gvColumnSortOrder.clear();
@@ -404,6 +408,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
    if (gpFrmOptions->chkArchiveResults->Checked)
      ArchiveResults();
    EnableSaveResultsAction();
+   memMessages->SelStart = 0;
 }
 
 /** add item to display indicating results of analysis comparison */
@@ -749,9 +754,9 @@ bool TfrmMain::Execute(const AnsiString & sCommandLine, bool bWindowed) {
                      &si,                                          //Pointer to STARTUPINFO structure.
                      &pi))                                       //Pointer to PROCESS_INFORMATION structure.
      {
-      memRunErrors->Lines->Add("Process create failed!");
-      memRunErrors->Lines->Add(sCommandLine.c_str());
-      memRunErrors->Lines->Add("");
+      memMessages->Lines->Add("Process create failed!");
+      memMessages->Lines->Add(sCommandLine.c_str());
+      memMessages->Lines->Add("");
      }
 
    //Wait until child process exits.
