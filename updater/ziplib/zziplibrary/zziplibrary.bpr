@@ -4,18 +4,21 @@
   <MACROS>
     <VERSION value="BCB.05.03"/>
     <PROJECT value="zziplibrary.lib"/>
-    <OBJFILES value="..\zziplib_0.10.27\zzip-file.obj ..\zziplib_0.10.27\zzdir.obj 
-      ..\zziplib_0.10.27\zzip-dir.obj ..\zziplib_0.10.27\zzip-err.obj 
-      ..\zziplib_0.10.27\zzcat.obj ..\zziplib_0.10.27\zzip-info.obj 
-      ..\zziplib_0.10.27\zzip-stat.obj ..\zziplib_0.10.27\zzip-zip.obj 
-      ..\untar_1.4\untar.obj"/>
+    <OBJFILES value="..\untar_1.4\untar.obj ..\zziplib_0.10.82\zziplib\zzip-stat.obj 
+      ..\zziplib_0.10.82\zziplib\zzdir.obj 
+      ..\zziplib_0.10.82\zziplib\zzip-dir.obj 
+      ..\zziplib_0.10.82\zziplib\zzip-err.obj 
+      ..\zziplib_0.10.82\zziplib\zzip-file.obj 
+      ..\zziplib_0.10.82\zziplib\zzip-info.obj 
+      ..\zziplib_0.10.82\zziplib\zzip-io.obj 
+      ..\zziplib_0.10.82\zziplib\zzcat.obj ..\zziplib_0.10.82\zziplib\zzip-zip.obj"/>
     <RESFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value=""/>
     <LIBRARIES value=""/>
     <PACKAGES value=""/>
-    <PATHCPP value=".;..\zziplib_0.10.27;..\untar_1.4"/>
+    <PATHCPP value=".;..\untar_1.4;..\zziplib_0.10.82\zziplib"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -23,8 +26,8 @@
     <USERDEFINES value="WIN32;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="zziplibrary.bpf"/>
-    <INCLUDEPATH value="..\untar_1.4;..\zziplib_0.10.27;$(BCB)\include;$(BCB)\include\vcl;."/>
-    <LIBPATH value="..\untar_1.4;..\zziplib_0.10.27;$(BCB)\lib\obj;$(BCB)\lib;."/>
+    <INCLUDEPATH value="..\zziplib_0.10.82\zziplib;..\zziplib_0.10.82\ziplib;..\zziplib_0.10.27;..\zziplib_0.10.82;..\untar_1.4;$(BCB)\include;$(BCB)\include\vcl;."/>
+    <LIBPATH value="..\zziplib_0.10.82\zziplib;..\zziplib_0.10.82\ziplib;..\zziplib_0.10.82;..\zziplib_0.10.8;..\zziplib_0.10;..\zziplib_0.10.7;..\untar_1.4;..\zziplib_0.10.27;$(BCB)\lib\obj;$(BCB)\lib;."/>
     <WARNINGS value="-w-8065 -w-par"/>
     <LISTFILE value=""/>
   </MACROS>
@@ -67,32 +70,35 @@ ProductVersion=1.0.0.0
 Comments=
 
 [HistoryLists\hlIncludePath]
-Count=11
-Item0=..\untar_1.4;..\zziplib_0.10.27;$(BCB)\include;$(BCB)\include\vcl;.
-Item1=..\untar-1.4;..\zziplib-0.10.27;$(BCB)\include;$(BCB)\include\vcl;.
-Item2=..\untar-1.4;..\zziplib-0.10.27;$(BCB)\include;$(BCB)\include\vcl
-Item3=..\untar-1.4;..\zziplib-0.10.27;..\;..\..\dos;$(BCB)\include;$(BCB)\include\vcl;.;..\..\..\zipios
-Item4=..\dos;$(BCB)\include;$(BCB)\include\vcl;.;C:\Prj\zipios
-Item5=..\dos;$(BCB)\include;$(BCB)\include\vcl;.;..\..\zero dimension library\zd540\zlib
-Item6=$(BCB)\include;$(BCB)\include\vcl;.;..\..\zero dimension library\zd540\zlib
-Item7=$(BCB)\include;$(BCB)\include\vcl;.;C:\Documents and Settings\Windows 2000 User\My Documents\Scott\prj\zero dimension library\zd540\zlib
-Item8=$(BCB)\include;$(BCB)\include\vcl;.
-Item9=$(BCB)\include;$(BCB)\include\vcl
-Item10=$(BCB)\include;$(BCB)\include\vcl;C:\Documents and Settings\Windows 2000 User\My Documents\Scott\prj\zziplib\zziplib-0.10.27
+Count=13
+Item0=..\zziplib_0.10.82;..\untar_1.4;$(BCB)\include;$(BCB)\include\vcl;.
+Item1=..\zziplib_0.10.82;..\zziplib_0.10.8;..\zziplib_0.10;..\zziplib_0.10.7;..\untar_1.4;..\zziplib_0.10.27;$(BCB)\include;$(BCB)\include\vcl;.
+Item2=..\untar_1.4;..\zziplib_0.10.27;$(BCB)\include;$(BCB)\include\vcl;.
+Item3=..\untar-1.4;..\zziplib-0.10.27;$(BCB)\include;$(BCB)\include\vcl;.
+Item4=..\untar-1.4;..\zziplib-0.10.27;$(BCB)\include;$(BCB)\include\vcl
+Item5=..\untar-1.4;..\zziplib-0.10.27;..\;..\..\dos;$(BCB)\include;$(BCB)\include\vcl;.;..\..\..\zipios
+Item6=..\dos;$(BCB)\include;$(BCB)\include\vcl;.;C:\Prj\zipios
+Item7=..\dos;$(BCB)\include;$(BCB)\include\vcl;.;..\..\zero dimension library\zd540\zlib
+Item8=$(BCB)\include;$(BCB)\include\vcl;.;..\..\zero dimension library\zd540\zlib
+Item9=$(BCB)\include;$(BCB)\include\vcl;.;C:\Documents and Settings\Windows 2000 User\My Documents\Scott\prj\zero dimension library\zd540\zlib
+Item10=$(BCB)\include;$(BCB)\include\vcl;.
+Item11=$(BCB)\include;$(BCB)\include\vcl
+Item12=$(BCB)\include;$(BCB)\include\vcl;C:\Documents and Settings\Windows 2000 User\My Documents\Scott\prj\zziplib\zziplib-0.10.27
 
 [HistoryLists\hlLibraryPath]
-Count=11
-Item0=..\untar_1.4;..\zziplib_0.10.27;$(BCB)\lib\obj;$(BCB)\lib;.
-Item1=..\untar-1.4;..\zziplib-0.10.27;$(BCB)\lib\obj;$(BCB)\lib;.
-Item2=..\untar-1.4;..\zziplib-0.10.27;$(BCB)\lib\obj;$(BCB)\lib
-Item3=..\untar-1.4;..\zziplib-0.10.27;..\;..\..\dos;$(BCB)\lib\obj;$(BCB)\lib;.;..\..\..\zipios
-Item4=..\dos;$(BCB)\lib\obj;$(BCB)\lib;.;C:\Prj\zipios
-Item5=..\dos;$(BCB)\lib\obj;$(BCB)\lib;.;..\..\zero dimension library\zd540\zlib
-Item6=$(BCB)\lib\obj;$(BCB)\lib;.;..\..\zero dimension library\zd540\zlib
-Item7=$(BCB)\lib\obj;$(BCB)\lib;.;C:\Documents and Settings\Windows 2000 User\My Documents\Scott\prj\zero dimension library\zd540\zlib
-Item8=$(BCB)\lib\obj;$(BCB)\lib;.
-Item9=$(BCB)\lib\obj;$(BCB)\lib
-Item10=$(BCB)\lib\obj;$(BCB)\lib;C:\Documents and Settings\Windows 2000 User\My Documents\Scott\prj\zziplib\zziplib-0.10.27
+Count=12
+Item0=..\zziplib_0.10.82;..\zziplib_0.10.8;..\zziplib_0.10;..\zziplib_0.10.7;..\untar_1.4;..\zziplib_0.10.27;$(BCB)\lib\obj;$(BCB)\lib;.
+Item1=..\untar_1.4;..\zziplib_0.10.27;$(BCB)\lib\obj;$(BCB)\lib;.
+Item2=..\untar-1.4;..\zziplib-0.10.27;$(BCB)\lib\obj;$(BCB)\lib;.
+Item3=..\untar-1.4;..\zziplib-0.10.27;$(BCB)\lib\obj;$(BCB)\lib
+Item4=..\untar-1.4;..\zziplib-0.10.27;..\;..\..\dos;$(BCB)\lib\obj;$(BCB)\lib;.;..\..\..\zipios
+Item5=..\dos;$(BCB)\lib\obj;$(BCB)\lib;.;C:\Prj\zipios
+Item6=..\dos;$(BCB)\lib\obj;$(BCB)\lib;.;..\..\zero dimension library\zd540\zlib
+Item7=$(BCB)\lib\obj;$(BCB)\lib;.;..\..\zero dimension library\zd540\zlib
+Item8=$(BCB)\lib\obj;$(BCB)\lib;.;C:\Documents and Settings\Windows 2000 User\My Documents\Scott\prj\zero dimension library\zd540\zlib
+Item9=$(BCB)\lib\obj;$(BCB)\lib;.
+Item10=$(BCB)\lib\obj;$(BCB)\lib
+Item11=$(BCB)\lib\obj;$(BCB)\lib;C:\Documents and Settings\Windows 2000 User\My Documents\Scott\prj\zziplib\zziplib-0.10.27
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
