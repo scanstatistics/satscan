@@ -37,7 +37,7 @@ void CSaTScanData::DisplayMeasure(FILE* pFile) {
 
   for (int i = 0; i < m_nTimeIntervals; ++i)
     for (int j = 0; j < m_nTracts; ++j)
-      fprintf(pFile, "Measure [%i][%i] = %f\n", i,j,m_pMeasure[i][j]);
+      fprintf(pFile, "Measure [%i][%i] = %12.25f\n", i,j,m_pMeasure[i][j]);
 
   fprintf(pFile, "\n");
 }
@@ -91,13 +91,8 @@ void CSaTScanData::DisplaySummary2(FILE* fp) {
 }
 
 void CSaTScanData::DisplayRelativeRisksForEachTract(FILE* pFile) {
-  char* szTID;
-
   for (int i = 0; i < m_nTracts; ++i) {
-    szTID = gpTInfo->tiGetTid(i);
-
-    fprintf(pFile, "%-29s", szTID);
-
+    fprintf(pFile, "%-29s", gpTInfo->tiGetTid(i));
     fprintf(pFile, "%8i", m_pCases[0][i]);
     fprintf(pFile, "%12.2f   ", GetMeasureAdjustment()*m_pMeasure[0][i]);
     if (GetMeasureAdjustment() && m_pMeasure[0][i])
