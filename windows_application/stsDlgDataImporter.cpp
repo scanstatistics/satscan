@@ -1253,6 +1253,13 @@ void TBDlgDataImporter::SetupPopFileVariableDescriptors() {
     gvSaTScanVariables.push_back(SaTScanVariable("Covariate1", 3, false));
     gvSaTScanVariables.push_back(SaTScanVariable("Covariate2", 4, false));
     gvSaTScanVariables.push_back(SaTScanVariable("Covariate3", 5, false));
+    gvSaTScanVariables.push_back(SaTScanVariable("Covariate4", 6, false));
+    gvSaTScanVariables.push_back(SaTScanVariable("Covariate5", 7, false));
+    gvSaTScanVariables.push_back(SaTScanVariable("Covariate6", 8, false));
+    gvSaTScanVariables.push_back(SaTScanVariable("Covariate7", 9, false));
+    gvSaTScanVariables.push_back(SaTScanVariable("Covariate8", 10, false));
+    gvSaTScanVariables.push_back(SaTScanVariable("Covariate9", 11, false));
+    gvSaTScanVariables.push_back(SaTScanVariable("Covariate10", 12, false));
   }
   catch (ZdException &x) {
     x.AddCallpath("SetupPopFileVariableDescriptors()", "TBDlgDataImporter");
