@@ -571,7 +571,7 @@ TModalResult TBDlgDataImporter::ImportFile() {
   if (access(edtOutputDirectory->Text.c_str(), 02)) {
     sMessage << "The import wizard is unable to create import file. This is likely because you\n"
              << "don't have permissions to write to the specified directory.";
-    chdir(GetToolkit().GetLastDirectory());         
+    SetCurrentDir(GetToolkit().GetLastDirectory());         
     BImporterException::GenerateException(sMessage, "ImportFile()", ZdException::Notify);
   }
 
@@ -595,6 +595,7 @@ TModalResult TBDlgDataImporter::ImportFile() {
     sMessage << "This is most likely occuring because write permissions are not granted for\n";
     sMessage << "specified directory. Please check path or review user permissions for specified directory.\n";
     TBMessageBox(0, "Import cancelled!", sMessage.GetCString(), XBMB_OK|XBMB_EXCLAMATION).ShowModal();
+    SetCurrentDir(GetToolkit().GetLastDirectory());
     Modal = mrNone;
   }
   catch (BImportRejectedException &x) {
