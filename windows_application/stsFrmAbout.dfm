@@ -1,9 +1,9 @@
 object frmAbout: TfrmAbout
-  Left = 312
-  Top = 165
+  Left = 300
+  Top = 156
   BorderStyle = bsDialog
   Caption = 'About SaTScan'
-  ClientHeight = 360
+  ClientHeight = 382
   ClientWidth = 470
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -50,182 +50,165 @@ object frmAbout: TfrmAbout
   Position = poScreenCenter
   PixelsPerInch = 96
   TextHeight = 13
-  object lblReleaseDate: TLabel
-    Left = 12
-    Top = 107
-    Width = 192
-    Height = 16
-    Caption = 'Release Date : January 31, 2003'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-  end
-  object lblWebSiteLabel: TLabel
-    Left = 12
-    Top = 62
-    Width = 61
-    Height = 17
-    AutoSize = False
-    Caption = 'Web Site:  '
-    Font.Charset = ANSI_CHARSET
-    Font.Color = clBlack
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    WordWrap = True
-  end
-  object lblWebSite: TLabel
-    Left = 76
-    Top = 62
-    Width = 136
-    Height = 16
-    Cursor = crHandPoint
-    Caption = 'http://www.satscan.org/'
-    Font.Charset = ANSI_CHARSET
-    Font.Color = clBlue
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = [fsUnderline]
-    ParentFont = False
-    WordWrap = True
-    OnClick = lblWebSiteClick
-  end
-  object lblAuthors: TLabel
-    Left = 12
-    Top = 129
-    Width = 450
-    Height = 32
-    Caption = 
-      'Authors: Martin Kulldorff, University of Connecticut,           ' +
-      '                                                            and ' +
-      'Information Management Services Inc, Silver Spring, Maryland.'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    WordWrap = True
-  end
-  object lblUsuage: TLabel
-    Left = 12
-    Top = 173
-    Width = 432
-    Height = 32
-    Caption = 
-      'This software may be freely used as long as proper citations are' +
-      ' given to both the software and the underlying statistical metho' +
-      'ds.'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    WordWrap = True
-  end
-  object lblCitation: TLabel
-    Left = 12
-    Top = 217
-    Width = 437
-    Height = 48
-    Caption = 
-      'Suggested software citation: Kulldorff M and Information Managem' +
-      'ent Services Inc., SaTScan v3.1: Software for the spatial and sp' +
-      'ace-time scan statistics. http://www.satscan.org/, 2003. '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    WordWrap = True
-  end
-  object lblVersion: TLabel
-    Left = 12
-    Top = 12
-    Width = 440
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'SaTScan v3.1.0'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object lblFurtherInfomation: TLabel
-    Left = 12
-    Top = 277
-    Width = 440
-    Height = 32
-    Caption = 
-      'For suggested methodological citations, see the accompanying SaT' +
-      'Scan User Guide.'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    WordWrap = True
-  end
-  object lblTitle: TLabel
-    Left = 12
-    Top = 32
-    Width = 440
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'Software for the Spatial and Space-Time Scan Statistics.'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-  end
-  object lblEmail: TLabel
-    Left = 12
-    Top = 84
-    Width = 37
-    Height = 16
-    Caption = 'Email:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-  end
-  object lblEmailAddress: TLabel
-    Left = 76
-    Top = 84
-    Width = 130
-    Height = 16
-    Cursor = crHandPoint
-    Caption = 'kulldorff@satscan.org'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlue
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = [fsUnderline]
-    ParentFont = False
-    OnClick = lblEmailAddressClick
-  end
-  object Button1: TButton
-    Left = 200
-    Top = 321
-    Width = 70
-    Height = 24
-    Caption = 'Ok'
+  object Panel1: TPanel
+    Left = 0
+    Top = 0
+    Width = 470
+    Height = 382
+    Align = alClient
+    BevelOuter = bvNone
     TabOrder = 0
-    OnClick = Button1Click
+    object lblVersion: TLabel
+      Left = 15
+      Top = 12
+      Width = 440
+      Height = 16
+      Alignment = taCenter
+      AutoSize = False
+      Caption = 'SaTScan v3.1.0'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object lblTitle: TLabel
+      Left = 15
+      Top = 32
+      Width = 440
+      Height = 16
+      Alignment = taCenter
+      AutoSize = False
+      Caption = 'Software for the Spatial and Space-Time Scan Statistics.'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+    end
+    object lblWebSite: TLabel
+      Left = 76
+      Top = 62
+      Width = 136
+      Height = 16
+      Cursor = crHandPoint
+      Caption = 'http://www.satscan.org/'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlue
+      Font.Height = -13
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsUnderline]
+      ParentFont = False
+      WordWrap = True
+      OnClick = lblWebSiteClick
+    end
+    object lblWebSiteLabel: TLabel
+      Left = 12
+      Top = 62
+      Width = 61
+      Height = 17
+      AutoSize = False
+      Caption = 'Web Site:  '
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+      WordWrap = True
+    end
+    object lblEmail: TLabel
+      Left = 12
+      Top = 84
+      Width = 37
+      Height = 16
+      Caption = 'Email:'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+    end
+    object lblEmailAddress: TLabel
+      Left = 76
+      Top = 84
+      Width = 130
+      Height = 16
+      Cursor = crHandPoint
+      Caption = 'kulldorff@satscan.org'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlue
+      Font.Height = -13
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsUnderline]
+      ParentFont = False
+      OnClick = lblEmailAddressClick
+    end
+    object lblReleaseDate: TLabel
+      Left = 12
+      Top = 107
+      Width = 192
+      Height = 16
+      Caption = 'Release Date : January 31, 2003'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Memo1: TMemo
+      Left = 12
+      Top = 133
+      Width = 453
+      Height = 213
+      BorderStyle = bsNone
+      Color = clBtnFace
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      Lines.Strings = (
+        'Authors: Martin Kulldorff, University of Connecticut,'
+        
+          'and Information Management Services Inc, Silver Spring, Maryland' +
+          '.'
+        ''
+        
+          'This software may be freely used as long as proper citations are' +
+          ' given to '
+        'both the software and the underlying statistical methods.'
+        ''
+        
+          'Suggested software citation: Kulldorff M and Information Managem' +
+          'ent '
+        
+          'Services Inc., SaTScan v3.1: Software for the spatial and space-' +
+          'time scan'
+        'statistics. http://www.satscan.org/, 2003. '
+        ''
+        
+          'For suggested methodological citations, see the accompanying SaT' +
+          'Scan '
+        'User Guide.')
+      ParentFont = False
+      ReadOnly = True
+      TabOrder = 1
+    end
+    object Button1: TButton
+      Left = 200
+      Top = 348
+      Width = 70
+      Height = 24
+      Anchors = [akLeft, akRight, akBottom]
+      Caption = 'Ok'
+      Default = True
+      TabOrder = 0
+      OnClick = Button1Click
+    end
   end
 end

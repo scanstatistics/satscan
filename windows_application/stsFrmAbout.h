@@ -5,22 +5,21 @@
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
+#include <ExtCtrls.hpp>
 //---------------------------------------------------------------------------
 class TfrmAbout : public TForm
 {
 __published:	// IDE-managed Components
-        TLabel *lblReleaseDate;
-        TButton *Button1;
-        TLabel *lblWebSiteLabel;
-        TLabel *lblWebSite;
-        TLabel *lblAuthors;
-        TLabel *lblUsuage;
-        TLabel *lblCitation;
+        TPanel *Panel1;
         TLabel *lblVersion;
-        TLabel *lblFurtherInfomation;
         TLabel *lblTitle;
+        TLabel *lblWebSite;
+        TLabel *lblWebSiteLabel;
         TLabel *lblEmail;
         TLabel *lblEmailAddress;
+        TLabel *lblReleaseDate;
+        TMemo *Memo1;
+        TButton *Button1;
         void __fastcall Button1Click(TObject *Sender);
         void __fastcall lblWebSiteClick(TObject *Sender);
         void __fastcall lblEmailAddressClick(TObject *Sender);
