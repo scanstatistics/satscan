@@ -39,10 +39,11 @@ const char* CUTOFF_005_FIELD            = "005_CutOff";
 const char* NUM_SIGNIF_005_FIELD        = "Num_Signif_005";
 
 // constructor
-stsRunHistoryFile::stsRunHistoryFile(const ZdString& sFileName, BasePrint& PrintDirection) {
+stsRunHistoryFile::stsRunHistoryFile(const ZdString& sFileName, BasePrint& PrintDirection)
+                 : gsFilename(sFileName) , gpPrintDirection(&PrintDirection){
    try {
       Init();
-      Setup(sFileName, PrintDirection);
+      SetRunNumber();
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsRunHistoryFile");
@@ -65,41 +66,40 @@ stsRunHistoryFile::~stsRunHistoryFile() {
 // pre: txd file doesn't not already exist
 // post: will create the txd file with the appropraite fields
 void stsRunHistoryFile::CreateRunHistoryFile() {
-   TXDFile          File;
-   unsigned short   uwOffset = 0;     // offset is altered by the CreateNewField function
+   unsigned short   uwOffset(0);     // offset is altered by the CreateNewField function
 
    try {
-      CreateNewField(gvFields, RUN_NUMBER_FIELD, ZD_LONG_FLD, 8, 0, uwOffset, true);
-      CreateNewField(gvFields, RUN_TIME_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
-      CreateNewField(gvFields, OUTPUT_FILE_FIELD, ZD_ALPHA_FLD, 254, 0, uwOffset);
-      CreateNewField(gvFields, PROB_MODEL_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
-      CreateNewField(gvFields, RATES_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      CreateNewField(gvFields, COORD_TYPE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      CreateNewField(gvFields, ANALYSIS_TYPE_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
-      CreateNewField(gvFields, NUM_CASES_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
-      CreateNewField(gvFields, TOTAL_POP_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
-      CreateNewField(gvFields, NUM_GEO_AREAS_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
-      CreateNewField(gvFields, PRECISION_TIMES_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      CreateNewField(gvFields, MAX_GEO_EXTENT_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
-      CreateNewField(gvFields, MAX_TIME_EXTENT_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
-      CreateNewField(gvFields, TIME_TREND_ADJUSTMENT_FIELD, ZD_ALPHA_FLD, 20, 3, uwOffset);
-      CreateNewField(gvFields, GRID_FILE_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
-      CreateNewField(gvFields, START_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      CreateNewField(gvFields, END_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      CreateNewField(gvFields, ALIVE_ONLY_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
-      CreateNewField(gvFields, INTERVAL_UNITS_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      CreateNewField(gvFields, INTERVAL_LENGTH_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
-      CreateNewField(gvFields, MONTE_CARLO_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
-      CreateNewField(gvFields, CUTOFF_001_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
-      CreateNewField(gvFields, CUTOFF_005_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
-      CreateNewField(gvFields, NUM_SIGNIF_005_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
+      ::CreateNewField(gvFields, RUN_NUMBER_FIELD, ZD_LONG_FLD, 8, 0, uwOffset, true);
+      ::CreateNewField(gvFields, RUN_TIME_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
+      ::CreateNewField(gvFields, OUTPUT_FILE_FIELD, ZD_ALPHA_FLD, 254, 0, uwOffset);
+      ::CreateNewField(gvFields, PROB_MODEL_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
+      ::CreateNewField(gvFields, RATES_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      ::CreateNewField(gvFields, COORD_TYPE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      ::CreateNewField(gvFields, ANALYSIS_TYPE_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
+      ::CreateNewField(gvFields, NUM_CASES_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
+      ::CreateNewField(gvFields, TOTAL_POP_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
+      ::CreateNewField(gvFields, NUM_GEO_AREAS_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
+      ::CreateNewField(gvFields, PRECISION_TIMES_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      ::CreateNewField(gvFields, MAX_GEO_EXTENT_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
+      ::CreateNewField(gvFields, MAX_TIME_EXTENT_FIELD, ZD_NUMBER_FLD, 16, 3, uwOffset);
+      ::CreateNewField(gvFields, TIME_TREND_ADJUSTMENT_FIELD, ZD_ALPHA_FLD, 20, 3, uwOffset);
+      ::CreateNewField(gvFields, GRID_FILE_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
+      ::CreateNewField(gvFields, START_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      ::CreateNewField(gvFields, END_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      ::CreateNewField(gvFields, ALIVE_ONLY_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
+      ::CreateNewField(gvFields, INTERVAL_UNITS_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      ::CreateNewField(gvFields, INTERVAL_LENGTH_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
+      ::CreateNewField(gvFields, MONTE_CARLO_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
+      ::CreateNewField(gvFields, CUTOFF_001_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
+      ::CreateNewField(gvFields, CUTOFF_005_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
+      ::CreateNewField(gvFields, NUM_SIGNIF_005_FIELD, ZD_LONG_FLD, 8, 0, uwOffset);
 
+      TXDFile File;
       File.PackFields(gvFields);
       File.Create(gsFilename, gvFields, 1);
       File.Close();
    }
    catch (ZdException &x) {
-      File.Close();
       x.AddCallpath("CreateRunHistoryFile()", "stsRunHistoryFile");
       throw;
    }
@@ -250,7 +250,6 @@ void stsRunHistoryFile::GetTimeAdjustmentString(ZdString& sTempValue, int iType)
 void stsRunHistoryFile::Init() {
    glRunNumber = 0;
    gvFields.DeleteAllElements();
-   gpPrintDirection = 0;
 }
 
 // although the name implies an oxymoron, this function will record a new run into the history file
@@ -260,7 +259,6 @@ void stsRunHistoryFile::Init() {
 void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005) {
    ZdTransaction	*pTransaction = 0;
    ZdString             sTempValue;
-   std::auto_ptr<ZdFileRecord> pRecord;
    std::auto_ptr<TXDFile>    pFile;
 
    try {
@@ -271,7 +269,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       // 2) to present my assumptions about the output data in case any happen to be incorrect
       // , so bear with me - AJV 9/3/2002
 
-      pRecord.reset(pFile->GetNewRecord());
+      std::auto_ptr<ZdFileRecord> pRecord(pFile->GetNewRecord());
       pRecord->PutField(0, glRunNumber);
       if(!pFile->GotoRecordByKeys(pRecord.get(), pRecord.get()))
          ZdException::GenerateNotification("Error! Run number not found in the run history file.", "LogNewhistory()");
@@ -366,9 +364,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
 // post: sets the run number and adds a record to the file with that number
 void stsRunHistoryFile::SetRunNumber() {
    ZdTransaction	        *pTransaction = 0;
-   std::auto_ptr<TXDRec>        pRecord;
    std::auto_ptr<TXDFile>       pFile;
-   unsigned short               uwRunNumberField = 0;
 
    try {
       // if we don't have one then create it
@@ -379,8 +375,8 @@ void stsRunHistoryFile::SetRunNumber() {
       if(gvFields.empty())
          SetFieldVector(gvFields, *pFile);
 
-      // get the run number field, so that this only has to be found once in the vector 
-      uwRunNumberField = GetFieldNumber(gvFields, RUN_NUMBER_FIELD);
+      // get the run number field, so that this only has to be found once in the vector
+      unsigned short  uwRunNumberField = GetFieldNumber(gvFields, RUN_NUMBER_FIELD);
 
       // get a record buffer, input data and append the record
       std::auto_ptr<TXDRec> pLastRecord(pFile->GetNewRecord());
@@ -389,7 +385,7 @@ void stsRunHistoryFile::SetRunNumber() {
       else
          glRunNumber = 1;
 
-      pRecord.reset(pFile->GetNewRecord());
+      std::auto_ptr<TXDRec> pRecord(pFile->GetNewRecord());
       pRecord->Clear();
       pRecord->PutField(uwRunNumberField, glRunNumber);       // run number field
       pRecord->PutField(GetFieldNumber(gvFields, OUTPUT_FILE_FIELD), "Run started, but not completed.");   // output filename field, but for now a text field
@@ -406,19 +402,6 @@ void stsRunHistoryFile::SetRunNumber() {
          pTransaction = 0;
       pFile->Close();   
       x.AddCallpath("SetRunNumber()", "stsRunHistoryFile");
-      throw;
-   }
-}
-
-// internal setup
-void stsRunHistoryFile::Setup(const ZdString& sFileName, BasePrint& PrintDirection) {
-   try {
-      gsFilename = sFileName;
-      gpPrintDirection = &PrintDirection; 
-      SetRunNumber();
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("Setup()", "stsRunHistoryFile");
       throw;
    }
 }

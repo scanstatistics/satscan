@@ -42,7 +42,6 @@ class stsRunHistoryFile {
       void      GetTimeAdjustmentString(ZdString& sTempValue, int iType);
       void	Init();
       void      SetRunNumber();
-      void	Setup(const ZdString& sFileName, BasePrint& PrintDirection);
       void      StripCRLF(ZdString& sStore);
    protected:
       void      CreateRunHistoryFile();
