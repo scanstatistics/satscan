@@ -28,25 +28,30 @@ class stsClusterData : public BaseOutputStorageClass {
       static const char       * COORD_X_FIELD;
       static const char       * COORD_Y_FIELD;
       static const char       * COORD_Z_FIELD;
+      static const char       * OBS_FIELD_PART;
+      static const char       * EXP_FIELD_PART;
       static const char       * OBS_DIV_EXP_FIELD;
-      static const char       * SET_OBSERVED_FIELD;
-      static const char       * SET_EXPECTED_FIELD;
-      static const char       * SET_OBS_DIV_EXP_FIELD;
+      static const char       * CATEGORY_FIELD_PART;
+      static const char       * SET_FIELD_PART;
+      static const char       * SET_CATEGORY_FIELD_PART;
+
       const CParameters       & gParameters;
+      const CSaTScanData      & gDataHub;
       bool                      gbExcludePValueField;
 
       ZdString                & GetAreaID(ZdString& sAreaId, const CCluster& thisCluster, const CSaTScanData& DataHub) const;
-      void                      WriteCoordinates(OutputRecord& Record, const CCluster& pCluster, const CSaTScanData& DataHub);
-      void                      WriteEllipseAngle(OutputRecord& Record, const CCluster& thisCluster, const CSaTScanData& DataHub) const;
-      void                      WriteEllipseShape(OutputRecord& Record, const CCluster& thisCluster, const CSaTScanData& DataHub) const;
+      void                      WriteCoordinates(OutputRecord& Record, const CCluster& pCluster);
+      void                      WriteCountDataAsOrdinal(OutputRecord& Record, const CCluster& thisCluster) const;
+      void                      WriteCountDataStandard(OutputRecord& Record, const CCluster& thisCluster) const;
+      void                      WriteEllipseAngle(OutputRecord& Record, const CCluster& thisCluster) const;
+      void                      WriteEllipseShape(OutputRecord& Record, const CCluster& thisCluster) const;
 
    public:
-      stsClusterData(const CParameters& Parameters, bool bExcludePValueField);
+      stsClusterData(const CSaTScanData& DataHub, bool bExcludePValueField);
       virtual    ~stsClusterData();
 
       virtual const char      * GetOutputExtension() const {return CLUSTER_FILE_EXT;}
-      void                      RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData,
-                                                  int iClusterNumber, unsigned int iNumSimsCompleted);
+      void                      RecordClusterData(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted);
 };
 //***************************************************************************
 #endif
