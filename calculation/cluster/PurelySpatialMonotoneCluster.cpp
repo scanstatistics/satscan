@@ -3,6 +3,7 @@
 #pragma hdrstop
 //*****************************************************************************
 #include "PurelySpatialMonotoneCluster.h"
+#include "stsAreaSpecificData.h"
 
 CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory,
                                        const AbtractDataStreamGateway & DataGateway,
@@ -96,19 +97,14 @@ CPSMonotoneCluster& CPSMonotoneCluster::operator =(const CPSMonotoneCluster& clu
    try
       {
       m_Center         = cluster.m_Center;
-    
       m_nCases         = cluster.m_nCases ;
       m_nMeasure       = cluster.m_nMeasure;
       m_nTracts        = cluster.m_nTracts;
       m_nRatio         = cluster.m_nRatio;
       m_nLogLikelihood = cluster.m_nLogLikelihood;
       m_nRank          = cluster.m_nRank;
-    
       m_nFirstInterval = cluster.m_nFirstInterval;
       m_nLastInterval  = cluster.m_nLastInterval;
-      m_nStartDate     = cluster.m_nStartDate;
-      m_nEndDate       = cluster.m_nEndDate;
-    
       m_nSteps       = cluster.m_nSteps;
       m_nMaxCircles    = cluster.m_nSteps;
     
@@ -235,7 +231,7 @@ double CPSMonotoneCluster::SetLogLikelihood()
   return m_nLogLikelihood;
 }
 
-double CPSMonotoneCluster::GetRatio()
+double CPSMonotoneCluster::GetRatio() const
 {
   if (m_bRatioSet)
     return m_nRatio;
@@ -243,7 +239,7 @@ double CPSMonotoneCluster::GetRatio()
     return -1;
 }
 
-double CPSMonotoneCluster::GetLogLikelihood()
+double CPSMonotoneCluster::GetLogLikelihood() const
 {
   return m_nLogLikelihood;
 }
@@ -302,182 +298,131 @@ void CPSMonotoneCluster::SetTotalTracts()
 }
 
 void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
-                                             int nCluster, measure_t nMinMeasure,
-                                             int iNumSimulations, long lReportHistoryRunNumber,
-                                             bool bIncludeRelRisk, bool bIncludePVal,
-                                             int nLeftMargin, int nRightMargin,
-                                             char cDeliminator, char* szSpacesOnLeft,
-                                             bool bFormat)
-{
-   try
-      {
-      //  fprintf(fp, "");
-      //KR  fprintf(fp, ".:\n");
-
-      for (int i=0; i<m_nSteps; i++)
-        {
-        if (i>0)
-          for (int j=1; j<=nLeftMargin-11; j++)
+                                             measure_t nMinMeasure, const ClusterPrintFormat& PrintFormat) const {
+  try {
+    for (int i=0; i<m_nSteps; i++) {
+       if (i>0)
+         for (int j=1; j <= PrintFormat.GetLeftMargin() - 11; j++)
             fprintf(fp," ");
-    
-        if (nLeftMargin != 0)
-          fprintf(fp, "- Step %i.: ",i+1);
-        //KR      fprintf(fp, "               - Step %i.: ",i+1);
-    
-        DisplayCensusTractsInStep(fp, Data, m_pFirstNeighborList[i],
-                                  m_pLastNeighborList[i], nCluster, nMinMeasure,
-                                  iNumSimulations, lReportHistoryRunNumber, bIncludeRelRisk, bIncludePVal,
-                                  nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft,
-                                  bFormat);
-        }
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("DisplayCensusTracts()", "CPSMonotoneCluster");
-      throw;
-      }
+
+       if (PrintFormat.GetLeftMargin() != 0)
+         fprintf(fp, "- Step %i.: ",i+1);
+
+       DisplayCensusTractsInStep(fp, Data, m_pFirstNeighborList[i], m_pLastNeighborList[i],
+                                 nMinMeasure, PrintFormat);
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("DisplayCensusTracts()","CPSMonotoneCluster");
+    throw;
+  }
 }
 
-void CPSMonotoneCluster::DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment,
-                                             int nLeftMargin, int nRightMargin,
-                                             char cDeliminator, char* szSpacesOnLeft)
-{
-  //double nExpectedThisStep;
-
-  try
-     {
-     CCluster::DisplayRelativeRisk(fp, nMeasureAdjustment, nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
-   
-     if (m_nSteps == 1)
-       return;
-   
-     fprintf(fp, "%sRelative risk by step.: ", szSpacesOnLeft);
-   
-     int   pos  = nLeftMargin;
-   
-     for (int i=0; i<m_nSteps; i++)
-       {
+void CPSMonotoneCluster::DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment, const ClusterPrintFormat& PrintFormat) const {
+  try {
+    CCluster::DisplayRelativeRisk(fp, nMeasureAdjustment, PrintFormat);
+    if (m_nSteps == 1)
+      return;
+    fprintf(fp, "%sRelative risk by step.: ", PrintFormat.GetSpacesOnLeft());
+    int   pos  = PrintFormat.GetLeftMargin();
+    for (int i=0; i < m_nSteps; i++) {
        pos += 7;
-   
-       if (pos > nRightMargin)
-         {
-         pos = nLeftMargin;
+       if (pos > PrintFormat.GetRightMargin()) {
+         pos = PrintFormat.GetLeftMargin();
          fprintf(fp, "\n");
-         for (int j=0; j<nLeftMargin; j++)
+         for (int j=0; j < PrintFormat.GetLeftMargin(); j++)
            fprintf(fp, " ");
-         }
-   
-       fprintf(fp, "%.3f", GetRelativeRisk(i, nMeasureAdjustment));
-   
-       if (i < m_nSteps-1)
-         fprintf(fp, "%c ", cDeliminator);
        }
-   
-      fprintf(fp, "\n");
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("DisplayRelativeRisk()", "CPSMonotoneCluster");
-      throw;
-      }
+       fprintf(fp, "%.3f", GetRelativeRisk(i, nMeasureAdjustment));
+       if (i < m_nSteps-1)
+         fprintf(fp, "%c ", PrintFormat.GetDeliminator());
+    }
+    fprintf(fp, "\n");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("DisplayRelativeRisk()","CPSMonotoneCluster");
+    throw;
+  }
 }
 
-double CPSMonotoneCluster::GetRelativeRisk(tract_t nStep, double nMeasureAdjustment)
+double CPSMonotoneCluster::GetRelativeRisk(tract_t nStep, double nMeasureAdjustment) const
 {
   return ((double)(m_pCasesList[nStep]))/(m_pMeasureList[nStep] * nMeasureAdjustment);
 }
 
-void CPSMonotoneCluster::DisplaySteps(FILE* fp, char* szSpacesOnLeft)
+void CPSMonotoneCluster::DisplaySteps(FILE* fp, const ClusterPrintFormat& PrintFormat) const
 {
-  fprintf(fp, "Steps in risk function: %i\n%s", m_nSteps, szSpacesOnLeft);
+  fprintf(fp, "Steps in risk function: %i\n%s", m_nSteps, PrintFormat.GetSpacesOnLeft());
 }
 
-void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
-                                            int nLeftMargin, int nRightMargin,
-                                            char cDeliminator, char* szSpacesOnLeft)
-{
-   double *pCoords, *pCoords2;
-   float nRadius;
-   int   pos = nLeftMargin, i;
+void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const {
+  double *pCoords, *pCoords2;
+  float nRadius;
+  int   pos = PrintFormat.GetLeftMargin(), i;
 
-   try
-      {
-      (Data.GetGInfo())->giGetCoords(m_Center, &pCoords);
-      //fprintf(fp, "  Coordinates...................: (%g,%g)\n",x1,y1);
-      if(Data.GetParameters().GetDimensionsOfData() < 5)
-      {
-      	fprintf(fp, "%sCoordinates...........: (", szSpacesOnLeft);
-      	for (i=0; i<(Data.GetParameters().GetDimensionsOfData())-1; i++)
-      	{
-      		fprintf(fp, "%g,",pCoords[i]);
-      	}
-      	fprintf(fp, "%g)\n",pCoords[(Data.GetParameters().GetDimensionsOfData())-1]);
+  try {
+    (Data.GetGInfo())->giGetCoords(m_Center, &pCoords);
+    //fprintf(fp, "  Coordinates...................: (%g,%g)\n",x1,y1);
+    if (Data.GetParameters().GetDimensionsOfData() < 5) {
+      fprintf(fp, "%sCoordinates...........: (", PrintFormat.GetSpacesOnLeft());
+      for (i=0; i<(Data.GetParameters().GetDimensionsOfData())-1; i++) {
+         fprintf(fp, "%g,",pCoords[i]);
       }
-      else /* More than four dimensions: need to wrap output */
-      {
-      	fprintf(fp, "%sCoordinates...........: (", szSpacesOnLeft);
-        int count = 0;
-        for (i=0; i < (Data.GetParameters().GetDimensionsOfData())-1; i++)
-        {
-        	if (count < 4) // This is a magic number: if 5 dimensions they
-          							 // all print on one line; if more, 4 per line
-          {
-    				fprintf(fp, "%g,",pCoords[i]);
-    				count++;
+      fprintf(fp, "%g)\n",pCoords[(Data.GetParameters().GetDimensionsOfData())-1]);
+    }
+    else {/* More than four dimensions: need to wrap output */
+      fprintf(fp, "%sCoordinates...........: (", PrintFormat.GetSpacesOnLeft());
+      int count = 0;
+      for (i=0; i < (Data.GetParameters().GetDimensionsOfData())-1; i++) {
+          if (count < 4) {// This is a magic number: if 5 dimensions they
+          		  // all print on one line; if more, 4 per line
+            fprintf(fp, "%g,",pCoords[i]);
+    	    count++;
           }
-          else /*Start a new line */
-          {
-    //      	fprintf(fp,"\n                                   ");
+          else {/*Start a new line */
             fprintf(fp,"\n");
-            for (int j=0; j<nLeftMargin+1; j++)
+            for (int j=0; j < PrintFormat.GetLeftMargin() + 1; j++)
               fprintf(fp, " ");
             fprintf(fp, "%g,",pCoords[i]);
-          	count = 1;
+            count = 1;
           }
-        }
-        fprintf(fp, "%g)\n",pCoords[(Data.GetParameters().GetDimensionsOfData())-1]);
       }
-      fprintf(fp, "%sRadius for each step..: ", szSpacesOnLeft);
-    
-      for (i=0; i<m_nSteps; i++)
-      {
-        (Data.GetTInfo())->tiGetCoords(Data.GetNeighbor(0, m_Center, m_pLastNeighborList[i]), &pCoords2);
+      fprintf(fp, "%g)\n",pCoords[(Data.GetParameters().GetDimensionsOfData())-1]);
+    }
+    fprintf(fp, "%sRadius for each step..: ", PrintFormat.GetSpacesOnLeft());
+
+    for (i=0; i<m_nSteps; i++) {
+       (Data.GetTInfo())->tiGetCoords(Data.GetNeighbor(0, m_Center, m_pLastNeighborList[i]), &pCoords2);
         nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
         free(pCoords2);
         pos += 10;
-    
-        if (pos > nRightMargin)
+
+        if (pos > PrintFormat.GetRightMargin())
         {
-          pos = nLeftMargin;
+          pos = PrintFormat.GetLeftMargin();
           fprintf(fp, "\n");
-          for (int j=0; j<nLeftMargin; j++)
+          for (int j=0; j < PrintFormat.GetLeftMargin(); j++)
             fprintf(fp, " ");
         }
     
         fprintf(fp,"%4.2f", nRadius);
     
         if (i < m_nSteps-1)
-          fprintf(fp, "%c ", cDeliminator);
+          fprintf(fp, "%c ", PrintFormat.GetDeliminator());
     
-      }
-    
-      fprintf(fp, "\n");
-    
-      free(pCoords);
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("DisplayCoordinates()", "CPSMonotoneCluster");
-      throw;
-      }
+    }
+    fprintf(fp, "\n");
+    free(pCoords);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("DisplayCoordinates()","CPSMonotoneCluster");
+    throw;
+  }
 }
 
-void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
-                                  int nLeftMargin, int nRightMargin,
-                                  char cDeliminator, char* szSpacesOnLeft)
-{
+void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const {
    double *pCoords, *pCoords2;
-   int     pos = nLeftMargin;
+   int     pos = PrintFormat.GetLeftMargin();
    float   Latitude, Longitude, nRadius;
    char    cNorthSouth, cEastWest;
 
@@ -495,8 +440,8 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
 
       // use to be .3f
       fprintf(fp, "%sCoordinates...........: (%.6f %c, %.6f %c)\n",
-                   szSpacesOnLeft, fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
-      fprintf(fp, "%sRadius for each step..: ", szSpacesOnLeft);
+                   PrintFormat.GetSpacesOnLeft(), fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
+      fprintf(fp, "%sRadius for each step..: ", PrintFormat.GetSpacesOnLeft());
 
       for (int i=0; i<m_nSteps; i++)
       {
@@ -505,18 +450,18 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
         free(pCoords2);
         pos += 10;
 
-        if (pos > nRightMargin)
+        if (pos > PrintFormat.GetRightMargin())
         {
-          pos = nLeftMargin;
+          pos = PrintFormat.GetLeftMargin();
           fprintf(fp, "\n");
-          for (int j=0; j<nLeftMargin; j++)
+          for (int j=0; j < PrintFormat.GetLeftMargin(); j++)
             fprintf(fp, " ");
         }
 
         fprintf(fp,"%5.2f km", nRadius);
-    
+
         if (i < m_nSteps-1)
-          fprintf(fp, "%c ", cDeliminator);
+          fprintf(fp, "%c ", PrintFormat.GetDeliminator());
     
       }
     
@@ -531,6 +476,22 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
       }
 }
 
+void CPSMonotoneCluster::Write(stsAreaSpecificData& AreaData, const CSaTScanData& Data,
+                     unsigned int iClusterNumber, unsigned int iNumSimsCompleted) const {
+  tract_t       tTract;
+  int           i;
+
+  try {         
+    for (i=m_pFirstNeighborList[i]; i <= m_pLastNeighborList[i]; i++) {
+       tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, i);
+       AreaData.RecordClusterData(*this, Data, iClusterNumber, tTract, iNumSimsCompleted);
+    }   
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Write(stsAreaSpecificData*)","CPSMonotoneCluster");
+    throw;
+  }
+}
 
 
 

@@ -38,34 +38,25 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
     void                AllocateForMaxCircles(tract_t nCircles);
     inline virtual void AssignAsType(const CCluster& rhs) {*this = (CPSMonotoneCluster&)rhs;}
     void                CheckCircle(tract_t n);
-    virtual bool        ClusterDefined() {return (m_nSteps > 0);};
+    virtual bool        ClusterDefined() const {return (m_nSteps > 0);};
     virtual void        DefineTopCluster(const CSaTScanData& Data, AbstractLikelihoodCalculator & Calculator, count_t** pCases);
-    virtual void        DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
-                                            int nCluster, measure_t nMinMeasure,
-                                            int iNumSimulations, long lReportHistoryRunNumber,
-                                            bool bIncludeRelRisk, bool bIncludePVal,
-                                            int nLeftMargin, int nRightMargin,
-                                            char cDeliminator, char* szSpacesOnLeft, bool bFormat=true);
-    virtual void        DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
-                                           int nLeftMargin, int nRightMargin,
-                                           char cDeliminator, char* szSpacesOnLeft);
-    virtual void        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
-                                             int nLeftMargin, int nRightMargin,
-                                             char cDeliminator, char* szSpacesOnLeft);
-    virtual void        DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment,
-                                            int nLeftMargin, int nRightMargin,
-                                            char cDeliminator, char* szSpacesOnLeft);
-    virtual void        DisplaySteps(FILE* fp, char* szSpacesOnLeft);
+    virtual void        DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, measure_t nMinMeasure, const ClusterPrintFormat& PrintFormat) const;
+    virtual void        DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const;
+    virtual void        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const;
+    virtual void        DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment, const ClusterPrintFormat& PrintFormat) const;
+    virtual void        DisplaySteps(FILE* fp, const ClusterPrintFormat& PrintFormat) const;
     virtual void        Initialize(tract_t nCenter);
     void                RemoveRemainder();
     virtual AbstractClusterData * GetClusterData();
     virtual int         GetClusterType() const {return PURELYSPATIALMONOTONE;}
-    tract_t             GetLastCircleIndex() {return m_nSteps-1;};
-    tract_t             GetNumCircles()    {return m_nSteps;}
-    virtual tract_t     GetNumTractsInnerCircle() { return m_pLastNeighborList[0]; };
-    double              GetRelativeRisk(tract_t nStep, double nMeasureAdjustment);
-    double              GetRatio();
-    double              GetLogLikelihood();
+    tract_t             GetLastCircleIndex() const {return m_nSteps-1;};
+    tract_t             GetNumCircles() const {return m_nSteps;}
+    virtual tract_t     GetNumTractsInnerCircle() const { return m_pLastNeighborList[0]; };
+    double              GetRelativeRisk(tract_t nStep, double nMeasureAdjustment) const;
+    double              GetRatio() const;
+    double              GetLogLikelihood() const;
+    virtual void        Write(stsAreaSpecificData& AreaData, const CSaTScanData& Data,
+                              unsigned int iClusterNumber, unsigned int iNumSimsCompleted) const;
 
   protected:
     void   SetCasesAndMeasures();
