@@ -14,6 +14,9 @@ class CSaTScanData; /** forward class declaration */
 /** Abstract base class which defines methods of iterating through temporal
     windows, evaluating the strength of a clustering.*/
 class CTimeIntervals {
+  private:
+    CTimeIntervals(const CTimeIntervals& rhs) {}
+  
   protected:
     int                         giNumIntervals;         /* number of total time intervals */
     int                         giMaxWindowLength;      /* maximum window length          */
@@ -29,11 +32,7 @@ class CTimeIntervals {
                            default         : fRateOfInterest = HighRate;
                          };
                    }
-    CTimeIntervals(const CTimeIntervals& rhs) {giNumIntervals = rhs.giNumIntervals;
-                                               giMaxWindowLength = rhs.giMaxWindowLength;}
     virtual ~CTimeIntervals() {};
-
-    virtual CTimeIntervals    * Clone() const = 0;
 
     virtual void                CompareClusters(CCluster& Running, CCluster& TopShapeCluster) = 0;
     virtual void                CompareMeasures(TemporalData& StreamData, CMeasureList& MeasureList) = 0;
