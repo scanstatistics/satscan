@@ -42,10 +42,10 @@ bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tra
 void CSaTScanData::AllocateCaseStructures() {
   try {
     gpCasesHandler = new TwoDimensionArrayHandler<count_t>(m_nTimeIntervals, m_nTracts, 0);
-    if (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION || m_pParameters->GetProbabiltyModelType() == BERNOULLI)
+    if (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION /*|| m_pParameters->GetProbabiltyModelType() == BERNOULLI*/)
       gpCategoryCasesHandler = new ThreeDimensionArrayHandler<count_t>(m_nTimeIntervals, m_nTracts, 1/*assume only one category -- i.e. no covariates*/, 0);
-    if (m_pParameters->GetProbabiltyModelType() == BERNOULLI && m_pParameters->GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
-      gpCasesByTimeByCategoryHandler = new TwoDimensionArrayHandler<count_t>(m_nTimeIntervals, 1/*assume only one category -- i.e. no covariates*/, 0);
+    //if (m_pParameters->GetProbabiltyModelType() == BERNOULLI && m_pParameters->GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
+    //  gpCasesByTimeByCategoryHandler = new TwoDimensionArrayHandler<count_t>(m_nTimeIntervals, 1/*assume only one category -- i.e. no covariates*/, 0);
   }
   catch(ZdException &x) {
     delete gpCasesHandler; gpCasesHandler=0;
