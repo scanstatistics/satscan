@@ -408,6 +408,17 @@ const char TBDlgDataImporter::GetColumnDelimiter() const {
   return cColDelimiter;
 }
 
+/** returns interface coordinates type */
+CoordinatesType TBDlgDataImporter::GetCoorinatesControlType() const {
+  CoordinatesType eReturn;
+
+  switch (rdoCoordinates->ItemIndex) {
+    case 1  : eReturn = CARTESIAN; break;
+    default : eReturn = LATLON;
+  }
+  return eReturn;
+}
+
 /** Returns name to call uwFieldIndex'th column of fixed column file type. */
 ZdString & TBDlgDataImporter::GetFixedColumnFieldName(unsigned int uwFieldIndex, ZdString & sFieldName) {
   try {
@@ -468,11 +479,11 @@ const char * TBDlgDataImporter::GetInputFileVariableName(int iFieldIndex) const 
 /** Returns number of input file variables plus one for 'unassigned' field. */
 int TBDlgDataImporter::GetNumInputFileVariables() const {
   int         iNumInputVariables=0;
-  
+
   try {
     if (gpController)
       iNumInputVariables = gpController->GetGridColCount() + 1/*unassigned field*/;
-  }     
+  }
   catch (ZdException &x) {
     x.AddCallpath("GetNumInputFileVariables()","TBDlgDataImporter");
     throw;
@@ -486,18 +497,18 @@ void TBDlgDataImporter::HideRows() {
     switch (rdgInputFileType->ItemIndex) {
       case Coordinates : for (int i=1; i <= tsfieldGrid->Rows; i++) {
                             if (i == 2 || i == 3) //Latitude and Longitude
-                              tsfieldGrid->RowVisible[i] = (rdoCoordinates->ItemIndex == 1 ? true : false);
+                              tsfieldGrid->RowVisible[i] = GetCoorinatesControlType() == LATLON;
                             else if (i >= 4) //Cartesian variables
-                              tsfieldGrid->RowVisible[i] = (rdoCoordinates->ItemIndex == 1 ? false : true);
+                              tsfieldGrid->RowVisible[i] = GetCoorinatesControlType() == CARTESIAN;
                             else
                               tsfieldGrid->RowVisible[i] = true;
                          }
                          break;
       case SpecialGrid : for (int i=1; i <= tsfieldGrid->Rows; i++) {
                             if (i == 1 || i == 2) //Latitude and Longitude
-                              tsfieldGrid->RowVisible[i] = (rdoCoordinates->ItemIndex == 1 ? true : false);
+                              tsfieldGrid->RowVisible[i] = GetCoorinatesControlType() == LATLON;
                             else //Cartesian variables
-                              tsfieldGrid->RowVisible[i] = (rdoCoordinates->ItemIndex == 1 ? false : true);
+                              tsfieldGrid->RowVisible[i] = GetCoorinatesControlType() == CARTESIAN;
                          }
                          break;
       default          : for (int i=1; i <= tsfieldGrid->Rows; i++)
@@ -571,7 +582,7 @@ void TBDlgDataImporter::LoadMappingPanel() {
     AutoAlign();
     if (rdoCoordinates->ItemIndex == -1)
       //If coordinates index not set, set to current settings of analysis. 
-      rdoCoordinates->ItemIndex = gAnalysisForm.rgCoordinates->ItemIndex;
+      SetCoorinatesControlType((CoordinatesType)gAnalysisForm.rgCoordinates->ItemIndex);
     else
       HideRows();
     ContinueButtonEnable();
@@ -596,11 +607,11 @@ void TBDlgDataImporter::LoadResultFileNameIntoAnalysis() {
                                  break;
       case Coordinates         : gAnalysisForm.SetCoordinateFile(gDestDescriptor.GetDestinationFileName());
                                  //set analysis interface coordinates control to match importers
-                                 gAnalysisForm.SetCoordinateType((CoordinatesType)rdoCoordinates->ItemIndex);
+                                 gAnalysisForm.SetCoordinateType(GetCoorinatesControlType());
                                  break;
       case SpecialGrid         : gAnalysisForm.SetSpecialGridFile(gDestDescriptor.GetDestinationFileName());
                                  //set analysis interface coordinates control to match importers
-                                 gAnalysisForm.SetCoordinateType((CoordinatesType)rdoCoordinates->ItemIndex);
+                                 gAnalysisForm.SetCoordinateType(GetCoorinatesControlType());
                                  break;
       case MaxCirclePopulation : gAnalysisForm.SetMaximumCirclePopulationFile(gDestDescriptor.GetDestinationFileName());
                                  break;
@@ -1103,6 +1114,14 @@ void TBDlgDataImporter::SelectImportFile() {
   catch (ZdException &x) {
     x.AddCallpath("SelectImportFile()", "TDlgSaTScanDataImporter");
     throw;
+  }
+}
+
+/** sets interface coordinates type */
+void TBDlgDataImporter::SetCoorinatesControlType(CoordinatesType eCoordinatesType) {
+  switch (eCoordinatesType) {
+    case CARTESIAN : rdoCoordinates->ItemIndex = 1; break;
+    default        : rdoCoordinates->ItemIndex = 0;
   }
 }
 

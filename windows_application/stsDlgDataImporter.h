@@ -1,4 +1,4 @@
-// $Revision: 1.10 $
+// $Revision: 1.11 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -174,6 +174,7 @@ class TBDlgDataImporter : public TForm {
      void                            DeleteFixedColDefinitionEnable();
      void                            DisableButtonsForImport(bool bEnable);
      const char                      GetColumnDelimiter() const;
+     CoordinatesType                 GetCoorinatesControlType() const;
      ZdString                      & GetFixedColumnFieldName(unsigned int uwFieldIndex, ZdString & sFieldName);
      const char                      GetGroupMarker() const;
      const char                    * GetInputFileVariableName(int iFieldIndex) const;
@@ -205,6 +206,7 @@ class TBDlgDataImporter : public TForm {
      void                            SetPanelsToShow();
      void                            SetupCaseFileVariableDescriptors();
      void                            SetupControlFileVariableDescriptors();
+     void                            SetCoorinatesControlType(CoordinatesType eCoordinatesType);
      void                            SetupGeoFileVariableDescriptors();
      void                            SetupGridFileVariableDescriptors();
      void                            SetupMaxCirclePopFileVariableDescriptors();
