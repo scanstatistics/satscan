@@ -108,6 +108,7 @@ SRC         := Main.cpp \
 	       ../calculation/satscan_data/SpaceTimeData.cpp \
 	       ../calculation/satscan_data/SVTTData.cpp \
 	       ../calculation/satscan_data/Tracts.cpp \
+	       ../calculation/satscan_data/MaxWindowLengthIndicator.cpp \
 	       ../calculation/utility/DBFFile.cpp \
 	       ../calculation/utility/JulianDates.cpp \
 	       ../calculation/utility/RandomDistribution.cpp \
