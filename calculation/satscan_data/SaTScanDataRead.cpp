@@ -217,7 +217,7 @@ bool CSaTScanData::ReadCoordinatesFile() {
   FILE        * fp=0; // Ptr to coordinates file
 
   try {
-    gpPrint->SatScanPrintf("Reading the geographic coordinates file\n");
+    gpPrint->SatScanPrintf("Reading the coordinates file\n");
     if ((fp = fopen(m_pParameters->GetCoordinatesFileName().c_str(), "r")) == NULL) {
       gpPrint->SatScanPrintWarning("Error: Coordinates file '%s' could not be opened.\n",
                                    m_pParameters->GetCoordinatesFileName().c_str());
