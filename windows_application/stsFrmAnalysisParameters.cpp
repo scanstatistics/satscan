@@ -695,7 +695,7 @@ void __fastcall TfrmAnalysis::chkCensusAreasReportedClustersAsciiClick(TObject *
 // Include relative risks in output
 //------------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::chkRelativeRiskEstimatesAreaAsciiClick(TObject *Sender) {
-    gpParams->m_bOutputRelRisks = chkRelativeRiskEstimatesAreaAscii->Checked;
+//    gpParams->m_bOutputRelRisks = chkRelativeRiskEstimatesAreaAscii->Checked;
 }
 //------------------------------------------------------------------------------
 // Include Purely Spacial Clusters selection control
@@ -1465,6 +1465,8 @@ void TfrmAnalysis::SaveTextParameters() {
     gpParams->SetLLRFilename();
     gpParams->SetMLCFilename();
     gpParams->SetRelRiskFilename();
+
+    gpParams->m_bOutputRelRisks = chkRelativeRiskEstimatesAreaAscii->Enabled && chkRelativeRiskEstimatesAreaAscii->Checked;
 
     gpParams->SetOutputClusterLevelDBF(chkClustersInColumnFormatDBase->Checked);
     gpParams->SetOutputAreaSpecificDBF(chkCensusAreasReportedClustersDBase->Checked);
