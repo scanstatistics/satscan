@@ -275,20 +275,22 @@ bool CSaTScanData::ReadCartesianCoordinates(StringParser & Parser, std::vector<d
     Return value: true = success, false = errors encountered           */
 bool CSaTScanData::ReadCaseFile() {
   bool          bValid=true;
-  ZdIO          SourceFile;
+  FILE        * fp=0;
 
   try {
     gpPrint->SatScanPrintf("Reading the case file\n");
-    SourceFile.Open(m_pParameters->GetCaseFileName().c_str(), ZDIO_OPEN_READ);
+    if ((fp = fopen(m_pParameters->GetCaseFileName().c_str(), "r")) == NULL) {
+      gpPrint->SatScanPrintWarning("Error: Could not open case file:\n'%s'.\n",
+                                   m_pParameters->GetCaseFileName().c_str());
+      return false;
+    }
     gpPrint->SetImpliedInputFileType(BasePrint::CASEFILE);
     AllocateCountStructure(&m_pCases);
-    bValid = ReadCounts(SourceFile, "case", m_pCases);
-  }
-  catch (ZdFileOpenFailedException & x ) {
-    gpPrint->SatScanPrintWarning("Error: Could not open case file:\n%s.\n", m_pParameters->GetCaseFileName().c_str());
-    return false;
+    bValid = ReadCounts(fp, "case", m_pCases);
+    fclose(fp); fp=0;
   }
   catch (ZdException & x) {
+    if (fp) fclose(fp);
     DeallocateCountStructure(&m_pCases);
     x.AddCallpath("ReadCaseFile()","CSaTScanData");
     throw;
@@ -302,20 +304,22 @@ bool CSaTScanData::ReadCaseFile() {
     Return value: true = success, false = errors encountered           */
 bool CSaTScanData::ReadControlFile() {
   bool          bValid=true;
-  ZdIO          SourceFile;
+  FILE        * fp=0;
 
   try {
     gpPrint->SatScanPrintf("Reading the control file\n");
-    SourceFile.Open(m_pParameters->GetControlFileName().c_str(), ZDIO_OPEN_READ);
+    if ((fp = fopen(m_pParameters->GetControlFileName().c_str(), "r")) == NULL) {
+      gpPrint->SatScanPrintWarning("Error: Could not open control file:\n'%s'.\n",
+                                   m_pParameters->GetControlFileName().c_str());
+      return false;
+    }
     gpPrint->SetImpliedInputFileType(BasePrint::CONTROLFILE);
     AllocateCountStructure(&m_pControls);
-    bValid = ReadCounts(SourceFile, "control", m_pControls);
-  }
-  catch (ZdFileOpenFailedException & x ) {
-    gpPrint->SatScanPrintWarning("Error: Could not open case file:\n%s.\n", m_pParameters->GetControlFileName().c_str());
-    return false;
+    bValid = ReadCounts(fp, "control", m_pControls);
+    fclose(fp); fp=0;
   }
   catch (ZdException & x) {
+    if (fp) fclose(fp);
     DeallocateCountStructure(&m_pControls);
     x.AddCallpath("ReadControlFile()","CSaTScanData");
     throw;
@@ -325,16 +329,27 @@ bool CSaTScanData::ReadControlFile() {
 
 /** Read the geographic data file. Calls particular function for coordinate type. */
 bool CSaTScanData::ReadCoordinatesFile() {
-  bool  bReturn;
+  bool          bReturn;
+  FILE        * fp=0; // Ptr to coordinates file
 
   try {
+    gpPrint->SatScanPrintf("Reading the geographic coordinates file\n");
+    if ((fp = fopen(m_pParameters->GetCoordinatesFileName().c_str(), "r")) == NULL) {
+      gpPrint->SatScanPrintWarning("Error: Coordinates file '%s' could not be opened.\n",
+                                   m_pParameters->GetCoordinatesFileName().c_str());
+      return false;
+    }
+    gpPrint->SetImpliedInputFileType(BasePrint::COORDFILE);
+
     switch (m_pParameters->GetCoordinatesType()) {
-      case CARTESIAN : bReturn = ReadCoordinatesFileAsCartesian(); break;
-      case LATLON    : bReturn = ReadCoordinatesFileAsLatitudeLongitude(); break;
+      case CARTESIAN : bReturn = ReadCoordinatesFileAsCartesian(fp); break;
+      case LATLON    : bReturn = ReadCoordinatesFileAsLatitudeLongitude(fp); break;
       default : ZdException::Generate("Unknown coordinate type '%d'.","ReadCoordinatesFile()",m_pParameters->GetCoordinatesType());
     };
+    fclose(fp); fp=0;
   }
   catch (ZdException &x) {
+    if (fp) fclose(fp);
     x.AddCallpath("ReadCoordinatesFile()","CSaTScanData");
     throw;
   }
@@ -345,22 +360,17 @@ bool CSaTScanData::ReadCoordinatesFile() {
     If invalid data is found in the file, an error message is printed,
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
-bool CSaTScanData::ReadCoordinatesFileAsCartesian() {
+bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
   int                           i, iScanCount=0;
   long                          lRecNum=0;
   bool                          bValidRecord, bValid=true, bEmpty=true;
   const char                  * pCoordinate, * pDimension;
-  ZdIO                          SourceFile;
   ZdString                      TractIdentifier;
   std::vector<double>           vCoordinates;
   StringParser                  Parser;
 
   try {
-    gpPrint->SatScanPrintf("Reading the geographic coordinates file\n");
-    SourceFile.Open(m_pParameters->GetCoordinatesFileName().c_str(), ZDIO_OPEN_READ);
-    gpPrint->SetImpliedInputFileType(BasePrint::COORDFILE);
-
-    while (Parser.ReadString(SourceFile)) {
+    while (Parser.ReadString(fp)) {
      	 lRecNum++;
          //skip records with no data
          if (!Parser.HasWords())
@@ -429,11 +439,6 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian() {
     //record number of centroids read
     m_nGridTracts = gpGInfo->giGetNumTracts();
   }
-  catch (ZdFileOpenFailedException &x){
-    gpPrint->SatScanPrintWarning("Error: Coordinates file '%s' could not be opened.\n",
-                                          m_pParameters->GetCoordinatesFileName().c_str());
-    return false;
-  }
   catch (ZdException &x) {
     x.AddCallpath("ReadCoordinatesFileAsCartesian()", "CSaTScanData");
     throw;
@@ -445,26 +450,21 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian() {
     If invalid data is found in the file, an error message
     is printed, that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered   */
-bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude() {
+bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
   int                           iScanCount;
   long                          lRecNum=0;
   const char                  * pCoordinate;
   bool                          bValid=true, bEmpty=true;
-  ZdIO                          SourceFile;
   ZdString                      TractIdentifier;
   std::vector<double>           vCoordinates;
   StringParser                  Parser;
 
   try {
-    gpPrint->SatScanPrintf("Reading the geographic coordinates file (lat/lon).\n");
-    SourceFile.Open(m_pParameters->GetCoordinatesFileName().c_str(), ZDIO_OPEN_READ);
-    gpPrint->SetImpliedInputFileType(BasePrint::COORDFILE);
     vCoordinates.resize(3/*for conversion*/, 0);
-
     m_pParameters->SetDimensionsOfData(3/*for conversion*/);
     gpTInfo->tiSetDimensions(m_pParameters->GetDimensionsOfData());
     gpGInfo->giSetDimensions(m_pParameters->GetDimensionsOfData());
-    while (Parser.ReadString(SourceFile)) {
+    while (Parser.ReadString(fp)) {
          ++lRecNum;
         //skip records with no data 
         if (! Parser.HasWords())
@@ -506,10 +506,6 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude() {
     //record number of centroids read
     m_nGridTracts = gpGInfo->giGetNumTracts();
   }
-  catch (ZdFileOpenFailedException &x){
-    gpPrint->SatScanPrintWarning("Error: Could not open coordinates file:\n'%s'.\n", m_pParameters->GetCoordinatesFileName().c_str());
-    return false;
-  }
   catch (ZdException &x) {
     x.AddCallpath("ReadCoordinatesFileAsLatitudeLongitude()", "CSaTScanData");
     throw;
@@ -521,7 +517,7 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude() {
     If invalid data is found in the file, an error message is printed,
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
-bool CSaTScanData::ReadCounts(ZdIO & SourceFile, const char* szDescription, count_t**  pCounts) {
+bool CSaTScanData::ReadCounts(FILE * fp, const char* szDescription, count_t**  pCounts) {
   int           i, j, iRecNum=0;
   bool          bValid=true, bEmpty=true;
   count_t       Count;
@@ -531,7 +527,7 @@ bool CSaTScanData::ReadCounts(ZdIO & SourceFile, const char* szDescription, coun
 
   try {
     //Read data, parse and if no errors, increment count for tract at date.
-    while (Parser.ReadString(SourceFile)) {
+    while (Parser.ReadString(fp)) {
          ++iRecNum;
          if (Parser.HasWords()) {
            bEmpty = false;
@@ -560,16 +556,26 @@ bool CSaTScanData::ReadCounts(ZdIO & SourceFile, const char* szDescription, coun
 
 /** Read the special grid file.  Calls particular read given coordinate type. */
 bool CSaTScanData::ReadGridFile() {
-  bool  bReturn;
+  bool          bReturn;
+  FILE        * fp=0;
 
   try {
+    gpPrint->SatScanPrintf("Reading the grid file\n");
+    if ((fp = fopen(m_pParameters->GetSpecialGridFileName().c_str(), "r")) == NULL) {
+      gpPrint->SatScanPrintWarning("Error: Could not open grid file:\n'%s'.\n",
+                                   m_pParameters->GetSpecialGridFileName().c_str());
+      return false;
+    }
+    gpPrint->SetImpliedInputFileType(BasePrint::GRIDFILE);
     switch (m_pParameters->GetCoordinatesType()) {
-      case CARTESIAN : bReturn = ReadGridFileAsCartiesian(); break;
-      case LATLON    : bReturn = ReadGridFileAsLatitudeLongitude(); break;
+      case CARTESIAN : bReturn = ReadGridFileAsCartiesian(fp); break;
+      case LATLON    : bReturn = ReadGridFileAsLatitudeLongitude(fp); break;
       default : ZdException::Generate("Unknown coordinate type '%d'.","ReadGrid()",m_pParameters->GetCoordinatesType());
-    };  
+    };
+    fclose(fp);fp=0;
   }
   catch (ZdException &x) {
+    if (fp) fclose(fp);
     x.AddCallpath("ReadGridFile()", "CSaTScanData");
     throw;
   }
@@ -580,23 +586,18 @@ bool CSaTScanData::ReadGridFile() {
    If invalid data is found in the file, an error message is printed,
    that record is ignored, and reading continues.
    Return value: true = success, false = errors encountered          */
-bool CSaTScanData::ReadGridFileAsCartiesian() {
+bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
   bool                          bValidRecord, bValid=true, bEmpty=true;
   char                          sTractIdentifier[64];
   int                           i, iScanCount;
   long                          lRecNum=0;
   const char                  * pCoordinate;
-  ZdIO                          SourceFile;
   std::vector<double>           vCoordinates;
   StringParser                  Parser;
-   
-  try {
-    gpPrint->SatScanPrintf("Reading the grid file\n");
-    SourceFile.Open(m_pParameters->GetSpecialGridFileName().c_str(), ZDIO_OPEN_READ);
-    gpPrint->SetImpliedInputFileType(BasePrint::GRIDFILE);
-    vCoordinates.resize(m_pParameters->GetDimensionsOfData(), 0);
 
-    while (Parser.ReadString(SourceFile)) {
+  try {
+    vCoordinates.resize(m_pParameters->GetDimensionsOfData(), 0);
+    while (Parser.ReadString(fp)) {
         ++lRecNum;
         //skip blank lines
         if (!Parser.HasWords())
@@ -637,10 +638,6 @@ bool CSaTScanData::ReadGridFileAsCartiesian() {
     //record number of centroids read
     m_nGridTracts = gpGInfo->giGetNumTracts();
   }
-  catch (ZdFileOpenFailedException &x){
-    gpPrint->SatScanPrintWarning("Error: Cound not open grid file:\n'%s'.\n", m_pParameters->GetSpecialGridFileName().c_str());
-    return false;
-  }
   catch (ZdException &x) {
     x.AddCallpath("ReadGridFileAsCartiesian()","CSaTScanData");
     throw;
@@ -652,22 +649,17 @@ bool CSaTScanData::ReadGridFileAsCartiesian() {
    If invalid data is found in the file, an error message is printed,
    that record is ignored, and reading continues.
    Return value: true = success, false = errors encountered           */
-bool CSaTScanData::ReadGridFileAsLatitudeLongitude() {
+bool CSaTScanData::ReadGridFileAsLatitudeLongitude(FILE * fp) {
   bool    	                bValid=true, bEmpty=true;
   long                          lRecNum=0;
   const char                  * pCoordinate;
   char                          szTid[MAX_LINEITEMSIZE];
-  ZdIO                          SourceFile;
   std::vector<double>           vCoordinates;
   StringParser                  Parser;
 
   try {
-    gpPrint->SatScanPrintf("Reading the grid file (lat/lon).\n");
-    SourceFile.Open(m_pParameters->GetSpecialGridFileName().c_str(), ZDIO_OPEN_READ);
-    gpPrint->SetImpliedInputFileType(BasePrint::GRIDFILE);
     vCoordinates.resize(3/*for conversion*/, 0);
-
-    while (Parser.ReadString(SourceFile)) {
+    while (Parser.ReadString(fp)) {
         ++lRecNum;
         //skip lines with no data
         if (!Parser.HasWords())
@@ -771,18 +763,22 @@ bool CSaTScanData::ReadPopulationFile() {
   tract_t                       TractIdentifierIndex;
   float                         fPopulation;
   Julian                        PopulationDate;
-  ZdIO                          SourceFile;
+  FILE                        * fp=0; // Ptr to population file
   std::vector<Julian>           vPopulationDates;
   std::vector<Julian>::iterator itrdates;
   StringParser                  Parser;
 
   try {
-    gpPrint->SatScanPrintf("Reading the population file...\n");
-    SourceFile.Open(m_pParameters->GetPopulationFileName().c_str(), ZDIO_OPEN_READ);
+    gpPrint->SatScanPrintf("Reading the population file\n");
+    if ((fp = fopen(m_pParameters->GetPopulationFileName().c_str(), "r")) == NULL) {
+      gpPrint->SatScanPrintWarning("Error: Could not open population file:\n'%s'.\n",
+                                   m_pParameters->GetPopulationFileName().c_str());
+      return false;
+    }
     gpPrint->SetImpliedInputFileType(BasePrint::POPFILE);
 
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
-    while (Parser.ReadString(SourceFile)) {
+    while (Parser.ReadString(fp)) {
         ++iRecNum;
         //skip lines that do not contain data
         if (!Parser.HasWords())
@@ -823,10 +819,10 @@ bool CSaTScanData::ReadPopulationFile() {
       //Set tract handlers population date structures since we already now all the dates from above.
       gpTInfo->tiSetupPopDates(vPopulationDates, m_nStartDate, m_nEndDate);
       //reset for second read
-      SourceFile.Seek(0L);
+      fseek(fp, 0L, SEEK_SET);
       iRecNum = 0;
       //We can ignore error checking for population date and population since we already did this above.
-      while (Parser.ReadString(SourceFile)) {
+      while (Parser.ReadString(fp)) {
           ++iRecNum;
           if (!Parser.HasWords()) // Skip Blank Lines
             continue;
@@ -864,6 +860,8 @@ bool CSaTScanData::ReadPopulationFile() {
           gpTInfo->tiAddCategoryToTract(TractIdentifierIndex, iCategoryIndex, PopulationDate, fPopulation);
       }
     }
+    //close file pointer
+    fclose(fp); fp=0;
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
@@ -874,12 +872,9 @@ bool CSaTScanData::ReadPopulationFile() {
       bValid = false;
     }
   }
-  catch (ZdFileOpenFailedException &x){
-    gpPrint->SatScanPrintWarning("Error: Could not open population file:\n'%s'.\n",
-                                          m_pParameters->GetPopulationFileName().c_str());
-    return false;
-  }
   catch (ZdException &x) {
+    //close file pointer
+    if (fp) fclose(fp);
     x.AddCallpath("ReadPopulationFile()", "CSaTScanData");
     throw;
   }

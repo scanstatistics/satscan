@@ -26,10 +26,7 @@ double                  GetDuczmalCorrection(double dEllipseShape);
           3 - there may be other concerns/problems as this hasn't been completely thought through */
 class StringParser {
   private:
-    //file read buffer
-    static const int    giReadLineBlockLength = 1024;
-    char                gsReadBuffer[giReadLineBlockLength];
-    ZdString            gsString;
+    char                gsReadBuffer[MAX_LINESIZE];
     //word data
     char              * gpWord;
     int                 giSizeOfWordBuffer;
@@ -44,8 +41,8 @@ class StringParser {
     bool                HasWords();
     int                 GetNumberWords();
     const char        * GetWord(short wWordIndex);
-    const char        * GetString() const {return gsString.GetCString();}
-    unsigned int        ReadString(ZdInputStreamInterface & theStream); 
+    const char        * GetString() const {return gsReadBuffer;}
+    const char        * ReadString(FILE * pSourceFile);
 };
 //*****************************************************************************
 #endif 

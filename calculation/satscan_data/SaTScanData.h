@@ -29,7 +29,11 @@ class CSaTScanData {
     void                        DeallocateCountStructure(count_t***  pCounts);
     bool                        ReadCartesianCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
                                                          int & iScanCount, int iWordOffSet, long lRecNum, const char * sSourceFile);
-    bool                        ReadCounts(ZdIO & SourceFile, const char* szDescription, count_t**  pCounts);
+    bool                        ReadCoordinatesFileAsCartesian(FILE * fp);
+    bool                        ReadCoordinatesFileAsLatitudeLongitude(FILE * fp);
+    bool                        ReadCounts(FILE * fp, const char* szDescription, count_t**  pCounts);
+    bool                        ReadGridFileAsCartiesian(FILE * fp);
+    bool                        ReadGridFileAsLatitudeLongitude(FILE * fp);
     bool                        ReadLatitudeLongitudeCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
                                                                  int iWordOffSet, long lRecNum, const char * sSourceFile);
     void                        SetStartAndEndDates();
@@ -111,11 +115,7 @@ class CSaTScanData {
     bool        ReadCaseFile();
     bool        ReadControlFile();
     bool        ReadCoordinatesFile();
-    bool        ReadCoordinatesFileAsLatitudeLongitude();
-    bool        ReadCoordinatesFileAsCartesian();
     bool        ReadGridFile();
-    bool        ReadGridFileAsCartiesian();
-    bool        ReadGridFileAsLatitudeLongitude();
     bool        ReadPopulationFile();
 
     void        SetPurelyTemporalSimCases();
