@@ -1222,7 +1222,7 @@ void TBDlgDataImporter::Setup() {
 void TBDlgDataImporter::SetupCaseFileVariableDescriptors() {
   try {
     gvSaTScanVariables.clear();
-    gvSaTScanVariables.push_back(SaTScanVariable("Tract ID", 0, true));
+    gvSaTScanVariables.push_back(SaTScanVariable("Location ID", 0, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Number of Cases", 1, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Date/Time", 2, false));
     gvSaTScanVariables.push_back(SaTScanVariable("Covariate1", 3, false));
@@ -1246,7 +1246,7 @@ void TBDlgDataImporter::SetupCaseFileVariableDescriptors() {
 void TBDlgDataImporter::SetupControlFileVariableDescriptors() {
   try {
     gvSaTScanVariables.clear();
-    gvSaTScanVariables.push_back(SaTScanVariable("Tract ID", 0, true));
+    gvSaTScanVariables.push_back(SaTScanVariable("Location ID", 0, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Number of Controls", 1, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Date/Time", 2, false));
 //    gvSaTScanVariables.push_back(SaTScanVariable("Covariate1", 3, false));
@@ -1270,7 +1270,7 @@ void TBDlgDataImporter::SetupControlFileVariableDescriptors() {
 void TBDlgDataImporter::SetupGeoFileVariableDescriptors() {
   try {
     gvSaTScanVariables.clear();
-    gvSaTScanVariables.push_back(SaTScanVariable("Tract ID", 0, true));
+    gvSaTScanVariables.push_back(SaTScanVariable("Location ID", 0, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Latitude", 1, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Longitude", 2, true));
     gvSaTScanVariables.push_back(SaTScanVariable("X", 1, true));
@@ -1317,7 +1317,7 @@ void TBDlgDataImporter::SetupGridFileVariableDescriptors() {
 void TBDlgDataImporter::SetupMaxCirclePopFileVariableDescriptors() {
   try {
     gvSaTScanVariables.clear();
-    gvSaTScanVariables.push_back(SaTScanVariable("Tract ID", 0, true));
+    gvSaTScanVariables.push_back(SaTScanVariable("Location ID", 0, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Population", 1, true));
   }
   catch (ZdException &x) {
@@ -1330,7 +1330,7 @@ void TBDlgDataImporter::SetupMaxCirclePopFileVariableDescriptors() {
 void TBDlgDataImporter::SetupPopFileVariableDescriptors() {
   try {
     gvSaTScanVariables.clear();
-    gvSaTScanVariables.push_back(SaTScanVariable("Tract ID", 0, true));
+    gvSaTScanVariables.push_back(SaTScanVariable("Location ID", 0, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Date/Time", 1, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Population", 2, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Covariate1", 3, false));
@@ -1354,7 +1354,7 @@ void TBDlgDataImporter::SetupPopFileVariableDescriptors() {
 void TBDlgDataImporter::SetupRelativeRisksFileVariableDescriptors() {
   try {
     gvSaTScanVariables.clear();
-    gvSaTScanVariables.push_back(SaTScanVariable("Tract ID", 0, true));
+    gvSaTScanVariables.push_back(SaTScanVariable("Location ID", 0, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Relative Risk", 1, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Start Date", 2, false));
     gvSaTScanVariables.push_back(SaTScanVariable("End Date", 3, false));
