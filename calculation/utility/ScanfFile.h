@@ -106,7 +106,7 @@ private:
 
 protected:
    // Internal functions
-   virtual long GetInitialDataByteOffset() const;
+   virtual long GetInitialDataByteOffset() /*const*/;
    virtual void SetInitialDataByteOffset(long lOffset) { glInitialDataByteOffset = lOffset; }
    void         RetrieveFieldNamesLine(ZdIOInterface & theFile, ZdString & sValue) const;
 
@@ -123,7 +123,7 @@ protected:
 //   ZdIndex *         GetNewIndex(const char cType, short wLength, unsigned long lNumRecords) const;
 //   ZdIndex *         GetNewIndex ( short wField, ZdProgressInterface &theProgress = ZdNullProgress::GetDefaultInstance() );
    virtual unsigned long GetRecordNumberByKey ( const ZdFileRecord &Record ) { ZdException::Generate("not implemented: GetRecordNumberByKey", "ScanfFile"); }
-   ZdIniFile *    GenerateZDSAllFieldsAlpha ( const char *sFileName ) const;
+   ZdIniFile *    GenerateZDSAllFieldsAlpha ( const char *sFileName ) /*const*/;
 //   void              LoadIndexes();
    virtual void      OpenBlobFile(const char * sFileName, ZdIOFlag Flags) { ZdException::Generate("not implemented: OpenBlobFile", "ScanfFile"); }
 //   void              OpenSetup(const char *sFileName, ZdIOFlag Flags, const char *sAlternateZDSFile = 0, ZdIniFile *pZDSFile = 0);

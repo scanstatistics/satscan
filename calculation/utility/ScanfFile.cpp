@@ -2,7 +2,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 //---------------------------------------------------------------------------
-#include "scanffile.h"
+#include "ScanfFile.h"
 
 //ClassDesc Begin ScanfRecord
 // The ScanfRecord implements ZdFileRecord for Scanf (whitespace separated value)
@@ -1255,7 +1255,7 @@ unsigned int ScanfFile::FwdScan ( char cFindMe, char cQuote ) {
 // If GetFieldNamesLineNumber() > 0, it will contain as many fields as are named
 // on that line; otherwise, it will contain as many fields as are found on the first
 // data line.
-ZdIniFile *ScanfFile::GenerateZDSAllFieldsAlpha ( const char *sFileName ) const {
+ZdIniFile *ScanfFile::GenerateZDSAllFieldsAlpha ( const char *sFileName ) /*const*/ {
    ZdIniFile                   *pIniFile(0);
    ZdString                     sName, sScanBuffer, sFormatString;
    ZdPointerVector<ZdField>     vFields;
@@ -1342,7 +1342,7 @@ const ZdFileType & ScanfFile::GetFileType() const
 }
 
 // At what offset from the beginning of the data file does the data start ?
-long ScanfFile::GetInitialDataByteOffset() const {
+long ScanfFile::GetInitialDataByteOffset() /*const*/ {
    try {
       if (glInitialDataByteOffset < 0)
          CalculateInitialDataByteOffset(gFileName.GetFullPath());
