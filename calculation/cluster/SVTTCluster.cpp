@@ -2,6 +2,116 @@
 #pragma hdrstop
 #include "SVTTCluster.h"
 
+/** constructor */
+SVTTClusterStreamData::SVTTClusterStreamData(int unsigned iAllocationSize) : ClusterStreamData(), giAllocationSize(iAllocationSize) {
+  try {
+    Init();
+    Setup();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("constructor()","SVTTClusterStreamData");
+    throw;
+  }
+}
+
+/** copy constructor */
+SVTTClusterStreamData::SVTTClusterStreamData(const SVTTClusterStreamData& rhs) {
+  try {
+    Init();
+    gpCasesInsideCluster = new count_t[rhs.giAllocationSize];
+    gpCasesOutsideCluster = new count_t[rhs.giAllocationSize];
+    gpMeasureInsideCluster = new measure_t[rhs.giAllocationSize];
+    gpMeasureOutsideCluster = new measure_t[rhs.giAllocationSize];
+    *this = rhs;
+  }
+  catch (ZdException &x) {
+    delete[] gpCasesInsideCluster;
+    delete[] gpCasesOutsideCluster;
+    delete[] gpMeasureInsideCluster;
+    delete[] gpMeasureOutsideCluster;
+    x.AddCallpath("constructor()","SVTTClusterStreamData");
+    throw;
+  }
+}
+
+/** destructor */
+SVTTClusterStreamData::~SVTTClusterStreamData() {
+  try {
+    delete[] gpCasesInsideCluster;
+    delete[] gpCasesOutsideCluster;
+    delete[] gpMeasureInsideCluster;
+    delete[] gpMeasureOutsideCluster;
+  }
+  catch(...){}
+}
+
+SVTTClusterStreamData & SVTTClusterStreamData::operator=(const SVTTClusterStreamData& rhs) {
+  gCases = rhs.gCases;
+  gMeasure = rhs.gMeasure;
+  gSqMeasure = rhs.gSqMeasure;
+  giAllocationSize = rhs.giAllocationSize;
+  memcpy(gpCasesInsideCluster, rhs.gpCasesInsideCluster, giAllocationSize * sizeof(count_t));
+  memcpy(gpMeasureInsideCluster, rhs.gpMeasureInsideCluster, giAllocationSize * sizeof(measure_t));
+  gtTotalCasesInsideCluster = rhs.gtTotalCasesInsideCluster;
+  gtTotalMeasureInsideCluster = rhs.gtTotalMeasureInsideCluster;
+  memcpy(gpCasesOutsideCluster, rhs.gpCasesOutsideCluster, giAllocationSize * sizeof(count_t));
+  memcpy(gpMeasureOutsideCluster, rhs.gpMeasureOutsideCluster, giAllocationSize * sizeof(measure_t));
+  gtTotalCasesOutsideCluster = rhs.gtTotalCasesOutsideCluster;
+  gTimeTrendInside = rhs.gTimeTrendInside;
+  gTimeTrendOutside = rhs.gTimeTrendOutside;
+   return *this;
+}
+
+SVTTClusterStreamData * SVTTClusterStreamData::Clone() const {
+  return new SVTTClusterStreamData(*this);
+}
+
+/** internal initialization function */
+void SVTTClusterStreamData::Init() {
+  gCases=0;
+  gMeasure=0;
+  gSqMeasure=0;
+  gtTotalCasesInsideCluster=0;
+  gtTotalMeasureInsideCluster=0;
+  gtTotalCasesOutsideCluster=0;
+  gpCasesInsideCluster=0;
+  gpCasesOutsideCluster=0;
+  gpMeasureInsideCluster=0;
+  gpMeasureOutsideCluster=0;
+}
+
+/** re-intialize stream data */
+void SVTTClusterStreamData::InitializeSVTTData(const DataStreamInterface & Interface) {
+  memcpy(gpCasesInsideCluster, 0, giAllocationSize * sizeof(count_t));
+  memcpy(gpMeasureInsideCluster, 0, giAllocationSize * sizeof(measure_t));
+  gtTotalCasesInsideCluster=0;
+  gtTotalMeasureInsideCluster=0;
+  memcpy(gpCasesOutsideCluster, Interface.GetPTCaseArray(), giAllocationSize * sizeof(count_t));
+  memcpy(gpMeasureOutsideCluster, Interface.GetPTMeasureArray(), giAllocationSize * sizeof(measure_t));
+  gtTotalCasesOutsideCluster = Interface.GetTotalCasesCount();
+
+  gTimeTrendInside.Initialize();
+  gTimeTrendOutside.Initialize();
+}
+
+/** internal setup function */
+void SVTTClusterStreamData::Setup() {
+  try {
+    gpCasesInsideCluster = new count_t[giAllocationSize];
+    gpCasesOutsideCluster = new count_t[giAllocationSize];
+    gpMeasureInsideCluster = new measure_t[giAllocationSize];
+    gpMeasureOutsideCluster = new measure_t[giAllocationSize];
+  }
+  catch (ZdException &x) {
+    delete[] gpCasesInsideCluster;
+    delete[] gpCasesOutsideCluster;
+    delete[] gpMeasureInsideCluster;
+    delete[] gpMeasureOutsideCluster;
+    x.AddCallpath("Setup()","SVTTClusterStreamData");
+    throw;
+  }
+}
+
 /** constructor for DataStreamGateway - used with calculating most likely clusters */
 CSVTTCluster::CSVTTCluster(const DataStreamGateway & DataGateway, int iNumTimeIntervals, BasePrint *pPrintDirection)
              :CCluster(pPrintDirection){
@@ -45,7 +155,6 @@ CSVTTCluster::CSVTTCluster(const CSVTTCluster & rhs): CCluster(rhs.gpPrintDirect
 /** destructor */
 CSVTTCluster::~CSVTTCluster() {
   try {
-    DeallocateArrays();
   }
   catch (...){}
 }
@@ -66,19 +175,10 @@ CSVTTCluster& CSVTTCluster::operator=(const CSVTTCluster& rhs) {
   m_nStartDate                  = rhs.m_nStartDate;
   m_nEndDate                    = rhs.m_nEndDate;
   giTotalIntervals              = rhs.giTotalIntervals;
-  *(gpCasesInsideCluster)       = *(rhs.gpCasesInsideCluster);
-  *(gpCasesOutsideCluster)      = *(rhs.gpCasesOutsideCluster);
-  *(gpMeasureInsideCluster)     = *(rhs.gpMeasureInsideCluster);
-  *(gpMeasureOutsideCluster)    = *(rhs.gpMeasureOutsideCluster);
-  memcpy(gpTotalCasesInsideCluster, rhs.gpTotalCasesInsideCluster, rhs.giNumDataStream * sizeof(count_t));
-  memcpy(gpTotalCasesOutsideCluster, rhs.gpTotalCasesOutsideCluster, rhs.giNumDataStream * sizeof(count_t));
-  memcpy(gpTotalMeasureInsideCluster, rhs.gpTotalMeasureInsideCluster, rhs.giNumDataStream * sizeof(measure_t));
   m_nSteps                      = rhs.m_nSteps;
   m_bClusterDefined             = rhs.m_bClusterDefined;
   m_nClusterType                = rhs.m_nClusterType;
-  gTimeTrendInside              = rhs.gTimeTrendInside;
-  gTimeTrendOutside             = rhs.gTimeTrendOutside;
-  giNumDataStream               = rhs.giNumDataStream;
+  gvStreamData                  = rhs.gvStreamData;
   return *this;
 }
 
@@ -94,14 +194,15 @@ void CSVTTCluster::AddNeighbor(tract_t tNeighbor, const DataStreamInterface & In
   measure_t  ** ppMeasureNC(Interface.GetNCMeasureArray());
   count_t    ** ppCasesNC(Interface.GetNCCaseArray());
 
+  SVTTClusterStreamData & StreamData = gvStreamData[tStream];
   for (int i=0; i < giTotalIntervals; ++i) {
-    gpCasesInsideCluster->GetArray()[tStream][i] += ppCasesNC[i][tNeighbor];
-    gpMeasureInsideCluster->GetArray()[tStream][i] += ppMeasureNC[i][tNeighbor];
-    gpCasesOutsideCluster->GetArray()[tStream][i] -= ppCasesNC[i][tNeighbor];
-    gpMeasureOutsideCluster->GetArray()[tStream][i] -= ppMeasureNC[i][tNeighbor];
-    gpTotalCasesInsideCluster[tStream] += ppCasesNC[i][tNeighbor];
-    gpTotalMeasureInsideCluster[tStream] += ppMeasureNC[i][tNeighbor];
-    gpTotalCasesOutsideCluster[tStream] -= ppCasesNC[i][tNeighbor];
+    StreamData.gpCasesInsideCluster[i] += ppCasesNC[i][tNeighbor];
+    StreamData.gpMeasureInsideCluster[i] += ppMeasureNC[i][tNeighbor];
+    StreamData.gpCasesOutsideCluster[i] -= ppCasesNC[i][tNeighbor];
+    StreamData.gpMeasureOutsideCluster[i] -= ppMeasureNC[i][tNeighbor];
+    StreamData.gtTotalCasesInsideCluster += ppCasesNC[i][tNeighbor];
+    StreamData.gtTotalMeasureInsideCluster += ppMeasureNC[i][tNeighbor];
+    StreamData.gtTotalCasesOutsideCluster -= ppCasesNC[i][tNeighbor];
   }
   //NOTE: Reporting of cluster information curently uses CCluster::m_nCases and
   //      CCluster::m_nMeasure but SVTT cluster does not need to collect this
@@ -115,58 +216,26 @@ void CSVTTCluster::AddNeighbor(tract_t tNeighbor, const DataStreamInterface & In
   m_bClusterDefined = true; // KR990421 - What about this? PS-Yes, ST-No?
 }
 
-/** allocates class arrays */
-void CSVTTCluster::AllocateArrays() {
-  try {
-    gpCasesInsideCluster = new TwoDimCountArray_t(giNumDataStream, giTotalIntervals);
-    gpCasesOutsideCluster = new TwoDimCountArray_t(giNumDataStream, giTotalIntervals);
-    gpMeasureInsideCluster = new TwoDimMeasureArray_t(giNumDataStream, giTotalIntervals);
-    gpMeasureOutsideCluster = new TwoDimMeasureArray_t(giNumDataStream, giTotalIntervals);
-    gpTotalCasesInsideCluster = new count_t[giNumDataStream];
-    gpTotalMeasureInsideCluster = new measure_t[giNumDataStream];
-    gpTotalCasesOutsideCluster = new count_t[giNumDataStream];
-  }
-  catch (ZdException &x) {
-    DeallocateArrays();
-    x.AddCallpath("AllocateArrays()","CSVTTCluster");
-    throw;
-  }
-}
-
 /** returns newly cloned CSVTTCluster */
 CSVTTCluster * CSVTTCluster::Clone() const {
   return new CSVTTCluster(*this);
 }
 
-/** deallocates class arrays */
-void CSVTTCluster::DeallocateArrays() {
-  try {
-    delete gpCasesInsideCluster;gpCasesInsideCluster=0;
-    delete gpCasesOutsideCluster;gpCasesOutsideCluster=0;
-    delete gpMeasureInsideCluster;gpMeasureInsideCluster=0;
-    delete gpMeasureOutsideCluster;gpMeasureOutsideCluster=0;
-    delete[] gpTotalCasesInsideCluster;gpTotalCasesInsideCluster=0;
-    delete[] gpTotalMeasureInsideCluster;gpTotalMeasureInsideCluster=0;
-    delete[] gpTotalCasesOutsideCluster;gpTotalCasesOutsideCluster=0;
-  }
-  catch (...){}
-}
-
 void CSVTTCluster::DisplayAnnualTimeTrendWithoutTitle(FILE* fp) {
-  if (gTimeTrendInside.IsNegative())
+  if (gvStreamData[0].gTimeTrendInside.IsNegative())
     fprintf(fp, "     -");
   else
     fprintf(fp, "      ");
 
-  fprintf(fp, "%.3f", gTimeTrendInside.GetAnnualTimeTrend());
+  fprintf(fp, "%.3f", gvStreamData[0].gTimeTrendInside.GetAnnualTimeTrend());
 }
 
 void CSVTTCluster::DisplayTimeTrend(FILE* fp, char* szSpacesOnLeft) {
   fprintf(fp, "%sTime trend............: %f  (%.3f%% ",
-              szSpacesOnLeft, gTimeTrendInside.m_nBeta,
-              gTimeTrendInside.GetAnnualTimeTrend());
+              szSpacesOnLeft, gvStreamData[0].gTimeTrendInside.m_nBeta,
+              gvStreamData[0].gTimeTrendInside.GetAnnualTimeTrend());
 
-  if (gTimeTrendInside.IsNegative())
+  if (gvStreamData[0].gTimeTrendInside.IsNegative())
     fprintf(fp, "annual decrease)\n");
   else
     fprintf(fp, "annual increase)\n");
@@ -190,58 +259,25 @@ measure_t CSVTTCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& D
 
 /** internal initialization function */
 void CSVTTCluster::Init() {
-  gpCasesInsideCluster=0;
-  gpTotalCasesInsideCluster=0;
-  gpMeasureInsideCluster=0;
-  gpTotalMeasureInsideCluster=0;
-  gpCasesOutsideCluster=0;
-  gpTotalCasesOutsideCluster=0;
-  gpMeasureOutsideCluster=0;
   giTotalIntervals=0;
-  giNumDataStream=0;
 }
 
 /** re-initializes cluster data */
 void CSVTTCluster::InitializeSVTT(tract_t nCenter, const DataStreamGateway & DataGateway) {
-  unsigned int  iDim;
-
   CCluster::Initialize(nCenter);
-
   m_nSteps        = 1;
   m_nClusterType  = SPATIALVARTEMPTREND;
 
-  gpCasesInsideCluster->Set(0);
-  gpMeasureInsideCluster->Set(0);
-  memset(gpTotalCasesInsideCluster, 0, giNumDataStream * sizeof(count_t));
-  memset(gpTotalMeasureInsideCluster, 0, giNumDataStream * sizeof(measure_t));
-  for (iDim=0; iDim < gpCasesOutsideCluster->Get1stDimension(); ++iDim)
-    memcpy(gpCasesOutsideCluster->GetArray()[iDim], DataGateway.GetDataStreamInterface(iDim).GetPTCaseArray(), giTotalIntervals * sizeof(count_t));
-  for (iDim=0; iDim < gpMeasureOutsideCluster->Get1stDimension(); ++iDim)
-    memcpy(gpMeasureOutsideCluster->GetArray()[iDim], DataGateway.GetDataStreamInterface(iDim).GetPTMeasureArray(), giTotalIntervals * sizeof(measure_t));
-  for (iDim=0; iDim < DataGateway.GetNumInterfaces(); ++iDim)
-     gpTotalCasesOutsideCluster[iDim] = DataGateway.GetDataStreamInterface(iDim).GetTotalCasesCount();
-
-  gTimeTrendInside.Initialize();
-  gTimeTrendOutside.Initialize();
+  for (size_t t=0; t < gvStreamData.size(); ++t)
+     gvStreamData[t].InitializeSVTTData(DataGateway.GetDataStreamInterface(t));
 }
 
 /** re-initializes cluster data */
 void CSVTTCluster::InitializeSVTT(tract_t nCenter, const DataStreamInterface & Interface) {
   CCluster::Initialize(nCenter);
-
   m_nSteps        = 1;
   m_nClusterType  = SPATIALVARTEMPTREND;
-
-  gpCasesInsideCluster->Set(0);
-  gpMeasureInsideCluster->Set(0);
-  gpTotalCasesInsideCluster[0] = 0;
-  gpTotalMeasureInsideCluster[0] = 0;
-  memcpy(gpCasesOutsideCluster->GetArray()[0], Interface.GetPTCaseArray(), giTotalIntervals * sizeof(count_t));
-  memcpy(gpMeasureOutsideCluster->GetArray()[0], Interface.GetPTMeasureArray(), giTotalIntervals * sizeof(measure_t));
-  gpTotalCasesOutsideCluster[0] = Interface.GetTotalCasesCount();
-
-  gTimeTrendInside.Initialize();
-  gTimeTrendOutside.Initialize();
+  gvStreamData.back().InitializeSVTTData(Interface);
 }
 
 void CSVTTCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals) {
@@ -251,16 +287,19 @@ void CSVTTCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes, int nT
   m_nEndDate       = pIntervalStartTimes[m_nLastInterval]-1;
 }
 
+void CSVTTCluster::SetTimeTrend(int nIntervalUnits, double nIntervalLen) {
+  for (size_t t=0; t < gvStreamData.size(); ++t)
+     gvStreamData[t].gTimeTrendInside.SetAnnualTimeTrend(nIntervalUnits, nIntervalLen);
+}
+
 /** internal setup function for DataStreamGateway */
 void CSVTTCluster::Setup(const DataStreamGateway & DataGateway, int iNumTimeIntervals) {
   try {
     giTotalIntervals = iNumTimeIntervals;
-    giNumDataStream = DataGateway.GetNumInterfaces();
-    AllocateArrays();
+    gvStreamData.resize(DataGateway.GetNumInterfaces(), SVTTClusterStreamData(iNumTimeIntervals));
     InitializeSVTT(0, DataGateway);
   }
   catch (ZdException &x) {
-    DeallocateArrays();
     x.AddCallpath("Setup()","CSVTTCluster");
     throw;
   }
@@ -270,12 +309,10 @@ void CSVTTCluster::Setup(const DataStreamGateway & DataGateway, int iNumTimeInte
 void CSVTTCluster::Setup(const DataStreamInterface & Interface, int iNumTimeIntervals) {
   try {
     giTotalIntervals = iNumTimeIntervals;
-    giNumDataStream = 1;
-    AllocateArrays();
+    gvStreamData.push_back(SVTTClusterStreamData(iNumTimeIntervals));
     InitializeSVTT(0, Interface);
   }
   catch (ZdException &x) {
-    DeallocateArrays();
     x.AddCallpath("Setup()","CSVTTCluster");
     throw;
   }
@@ -284,12 +321,9 @@ void CSVTTCluster::Setup(const DataStreamInterface & Interface, int iNumTimeInte
 /** internal setup function */
 void CSVTTCluster::Setup(const CSVTTCluster& rhs) {
   try {
-    giNumDataStream = rhs.giNumDataStream;
     giTotalIntervals = rhs.giTotalIntervals;
-    AllocateArrays();
   }
   catch (ZdException &x) {
-    DeallocateArrays();
     x.AddCallpath("Setup()","CSVTTCluster");
     throw;
   }

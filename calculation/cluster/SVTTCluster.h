@@ -6,9 +6,19 @@
 #include "TimeTrend.h"
 
 class SVTTClusterStreamData : public ClusterStreamData {
+  private:
+     int                        giAllocationSize;
+
+     void                       Init();
+     void                       Setup();
+
   public:
-    SVTTClusterStreamData() : ClusterStreamData() {}
-    virtual ~SVTTClusterStreamData() {}
+    SVTTClusterStreamData(int unsigned iAllocationSize);
+    SVTTClusterStreamData(const SVTTClusterStreamData& rhs);
+    virtual ~SVTTClusterStreamData();
+
+    SVTTClusterStreamData     * Clone() const;
+    SVTTClusterStreamData     & operator=(const SVTTClusterStreamData& rhs);
 
     count_t                   * gpCasesInsideCluster;           /** cases inside the cluster */
     count_t                     gtTotalCasesInsideCluster;      /** total cases inside the cluster */
@@ -17,21 +27,20 @@ class SVTTClusterStreamData : public ClusterStreamData {
     count_t                   * gpCasesOutsideCluster;          /** cases outside the cluster */
     count_t                     gtTotalCasesOutsideCluster;     /** total cases outside the cluster */
     measure_t                 * gpMeasureOutsideCluster;        /** measure outside the cluster */
-
-    // are these stream specific ?
     CTimeTrend                  gTimeTrendInside;               /** time trend for defined cluster */
     CTimeTrend                  gTimeTrendOutside;              /** Time trend for area outside cluster */
 
-//    virtual void        InitializeData() {gCases=0;gMeasure=0;gSqMeasure=0;}
+    virtual void                InitializeSVTTData(const DataStreamInterface & Interface);
 };
 
   //std::deque<SVTTClusterStreamData> gStreamData; pass each strea data to poisson calcuclate SVTT
 
 /** cluster class for spatial variation and temporal trends analysis */
 class CSVTTCluster : public CCluster  {
+  typedef std::vector<SVTTClusterStreamData>           StreamDataContainer_t;
+  typedef std::vector<SVTTClusterStreamData>::iterator StreamDataContainerIterator_t;
+
   private:
-    void                        AllocateArrays();
-    void                        DeallocateArrays();
     void                        Init();
     void                        Setup(const DataStreamGateway & DataGateway, int iNumTimeIntervals);
     void                        Setup(const DataStreamInterface & Interface, int iNumTimeIntervals);
@@ -39,17 +48,7 @@ class CSVTTCluster : public CCluster  {
 
   public:
     int                         giTotalIntervals;
-    unsigned int                giNumDataStream;
-
-    TwoDimCountArray_t        * gpCasesInsideCluster;           /** cases inside the cluster */
-    count_t                   * gpTotalCasesInsideCluster;      /** total cases inside the cluster */
-    TwoDimMeasureArray_t      * gpMeasureInsideCluster;         /** measure inside the cluster */
-    measure_t                 * gpTotalMeasureInsideCluster;    /** total measure inside the cluster */
-    TwoDimCountArray_t        * gpCasesOutsideCluster;          /** cases outside the cluster */
-    count_t                   * gpTotalCasesOutsideCluster;     /** total cases outside the cluster */
-    TwoDimMeasureArray_t      * gpMeasureOutsideCluster;        /** measure outside the cluster */
-    CTimeTrend                  gTimeTrendInside;               /** time trend for defined cluster */
-    CTimeTrend                  gTimeTrendOutside;              /** Time trend for area outside cluster */
+    StreamDataContainer_t       gvStreamData;
 
   public:
     CSVTTCluster(const DataStreamGateway & DataGateway, int iNumTimeIntervals, BasePrint *pPrintDirection);
@@ -67,9 +66,11 @@ class CSVTTCluster : public CCluster  {
     virtual void                DisplayTimeTrend(FILE* fp, char* szSpacesOnLeft);
     virtual count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual measure_t           GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
+    SVTTClusterStreamData     & GetStream(unsigned int tStream) {return gvStreamData[tStream];}
     virtual void                InitializeSVTT(tract_t nCenter, const DataStreamGateway & DataGateway);
     virtual void                InitializeSVTT(tract_t nCenter, const DataStreamInterface & Interface);
     virtual void                SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals);
+    void                        SetTimeTrend(int nIntervalUnits, double nIntervalLen);
 };
 
 #endif
