@@ -15,7 +15,7 @@ USEFORM("stsDlgException.cpp", BdlgException);
 USEFORM("stsFrmOutPutViewer.cpp", frmOutputViewer);
 USEUNIT("..\calculation\utility\UtilityFunctions.cpp");
 USEUNIT("..\calculation\utility\JulianDates.cpp");
-USEUNIT("..\calculation\utility\RandonNumberGenerator.cpp");
+USEUNIT("..\calculation\utility\RandomNumberGenerator.cpp");
 USEUNIT("..\calculation\utility\Salloc.cpp");
 USEUNIT("..\calculation\utility\RandomDistribution.cpp");
 USEUNIT("..\calculation\utility\Sort.cpp");

@@ -9,7 +9,7 @@
       stsPrintWindow.obj stsDlgException.obj stsFrmOutPutViewer.obj 
       ..\calculation\utility\UtilityFunctions.obj 
       ..\calculation\utility\JulianDates.obj 
-      ..\calculation\utility\RandonNumberGenerator.obj 
+      ..\calculation\utility\RandomNumberGenerator.obj 
       ..\calculation\utility\Salloc.obj 
       ..\calculation\utility\RandomDistribution.obj 
       ..\calculation\utility\Sort.obj ..\calculation\utility\SSException.obj 
