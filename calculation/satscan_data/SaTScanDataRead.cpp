@@ -244,7 +244,18 @@ bool CSaTScanData::ReadCoordinatesFile() {
     gpPrint->SetImpliedInputFileType(BasePrint::COORDFILE);
 
     switch (m_pParameters->GetCoordinatesType()) {
-      case CARTESIAN : bReturn = ReadCoordinatesFileAsCartesian(fp); break;
+      case CARTESIAN : bReturn = ReadCoordinatesFileAsCartesian(fp);
+                       //now that the number of dimensions is known, validate against requested ellipses
+                       if (m_pParameters->GetDimensionsOfData() > 2 && m_pParameters->GetNumRequestedEllipses() &&
+                           m_pParameters->GetCriteriaSecondClustersType() != NORESTRICTIONS) {
+                         gpPrint->SatScanPrintWarning("Error: Invalid parameter setting for ellipses. SaTScan permits only two\n"
+                                                      "       dimensions be specified for a centroid when performing an analysis\n"
+                                                      "       which contain ellipses and restricts reporting of secondary clusters.\n"
+                                                      "       You may want to change the criteria for reporting secondary clusters to\n"
+                                                      "       'No Restrictions' and run the analysis again.\n");
+                         bReturn = false;          
+                       }
+                       break;
       case LATLON    : bReturn = ReadCoordinatesFileAsLatitudeLongitude(fp); break;
       default : ZdException::Generate("Unknown coordinate type '%d'.","ReadCoordinatesFile()",m_pParameters->GetCoordinatesType());
     };
