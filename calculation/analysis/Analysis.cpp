@@ -242,6 +242,11 @@ const double& CAnalysis::GetSimRatio05() const {
    return SimRatios.GetAlpha05();
 }
 
+// accessor function to get the start time of the analysis so that it can be recorded in the 'run history' file
+const ZdString& CAnalysis::GetStartTime() const {
+   return gsStartTime;
+}
+
 void CAnalysis::PrintTopClusters(int nHowMany)
 {
    int i;
@@ -608,8 +613,9 @@ bool CAnalysis::CreateReport(time_t RunTime)
       fprintf(fp,  "                 _____________________________\n\n");
       DisplayVersion(fp, 1);
       fprintf(fp,"                 _____________________________ \n\n");
-    
-      fprintf(fp,"\nProgram run on: %s\n", ctime(&RunTime));
+
+      gsStartTime = ctime(&RunTime);
+      fprintf(fp,"\nProgram run on: %s\n", gsStartTime.GetCString());
 
       m_pParameters->DisplayAnalysisType(fp);
       m_pParameters->DisplayTimeAdjustments(fp);

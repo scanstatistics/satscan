@@ -29,6 +29,8 @@ class CAnalysis
     tract_t    m_nClustersReported;
     double     m_nMinRatioToReport;
 
+    ZdString         gsStartTime;
+
     CSignificantRatios05 SimRatios;
 
     int m_nPower_X_Count;
@@ -48,10 +50,11 @@ class CAnalysis
     virtual void DisplayTopCluster(double nMinRatio, int nReps,
                                    FILE* fp=stdout, FILE* fpGIS=NULL);
 
-    const CSaTScanData* GetSatScanData() const;
-    const double& GetSimRatio01() const;
-    const double& GetSimRatio05() const;
-    virtual CCluster* GetTopCluster(tract_t nCenter) = 0;
+    const CSaTScanData*         GetSatScanData() const;
+    const double&               GetSimRatio01() const;
+    const double&               GetSimRatio05() const;
+    const ZdString&             GetStartTime() const;
+    virtual CCluster*           GetTopCluster(tract_t nCenter) = 0;
 
   protected:
     bool RepeatAnalysis();
