@@ -48,10 +48,10 @@ INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(ZDDIR) -I$(ZDANNEX) -I$(CLUSTE
 DEFINES     := -D__BASIS_NO_VCL \
                -D__BATCH_COMPILE
 
-CFLAGS      := -c -O3 $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(BASE_SYSTEM_FLAG)
+CFLAGS      := -c -Wno-deprecated -O3 $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(BASE_SYSTEM_FLAG)
               
 
-LFLAGS      := -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -lxbaseg -lm -ldl -lnsl -lzd$(ZDVER)g -lcrypto
+LFLAGS      := -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -lxbaseg -lm -lzd$(ZDVER)g -static
 
 SRC         := Main.cpp \
                ../calculation/analysis/Analysis.cpp \
