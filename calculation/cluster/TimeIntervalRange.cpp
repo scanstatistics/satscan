@@ -47,6 +47,9 @@ void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluste
   count_t        tCases, tTotalCases(gData.GetTotalCases());
   measure_t      tMeasure, tTotalMeasure(gData.GetTotalMeasure());
   TemporalData * pData = (TemporalData*)Running.GetClusterData();  //dynamic cast?
+  count_t      * pCases = pData->gpCases;
+  measure_t    * pMeasure = pData->gpMeasure;
+
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
@@ -55,11 +58,13 @@ void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluste
      iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
      iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
-        pData->gtCases = pData->gpCases[iWindowStart] - pData->gpCases[iWindowEnd];
-        pData->gtMeasure = pData->gpMeasure[iWindowStart] - pData->gpMeasure[iWindowEnd];
-        if (fRateOfInterest(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure)) {
-          Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatio(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure);
+        tCases = pCases[iWindowStart] - pCases[iWindowEnd];
+        tMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
+        if (fRateOfInterest(tCases, tMeasure, tTotalCases, tTotalMeasure)) {
+          Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatio(tCases, tMeasure, tTotalCases, tTotalMeasure);
           if (Running.m_nRatio  > TopCluster.m_nRatio) {
+            pData->gtCases = tCases;
+            pData->gtMeasure = tMeasure;
             TopCluster.AssignAsType(Running);
             TopCluster.m_nFirstInterval = iWindowStart;
             TopCluster.m_nLastInterval = iWindowEnd;
@@ -69,21 +74,22 @@ void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluste
   }
 }
 
-void TimeIntervalRange::CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList * pMeasureList) {
+void TimeIntervalRange::CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList& MeasureList) {
   int                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
   TemporalData        * pData = (TemporalData*)pStreamData;  //dynamic cast?
-  
+  count_t             * pCases = pData->gpCases;
+  measure_t           * pMeasure = pData->gpMeasure;
+
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+ iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
   for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
      iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
      iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart)
-        pMeasureList->AddMeasure(pData->gpCases[iWindowStart] - pData->gpCases[iWindowEnd],
-                                 pData->gpMeasure[iWindowStart] - pData->gpMeasure[iWindowEnd]);
-  }
+        MeasureList.AddMeasure(pCases[iWindowStart] - pCases[iWindowEnd], pMeasure[iWindowStart] - pMeasure[iWindowEnd]);
+ }
 }
 
 /** Returns the number of cases that tract attributed to accumulated case count. */
@@ -265,7 +271,7 @@ void NormalTimeIntervalRange::CompareClusters(CCluster & Running, CCluster & Top
   }
 }
 
-void NormalTimeIntervalRange::CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList * pMeasureList) {
+void NormalTimeIntervalRange::CompareMeasures(AbstractTemporalClusterData*, CMeasureList&) {
   ZdGenerateException("CompareMeasures() not implemented.","NormalTimeIntervalRange");
 }
 
@@ -325,7 +331,7 @@ void MultiStreamTimeIntervalRange::CompareClusters(CCluster & Running, CCluster 
   }
 }
 
-void MultiStreamTimeIntervalRange::CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList * pMeasureList) {
+void MultiStreamTimeIntervalRange::CompareMeasures(AbstractTemporalClusterData*, CMeasureList&) {
   ZdGenerateException("CompareMeasures() not implemented.","MultiStreamTimeIntervalRange");
 }
 

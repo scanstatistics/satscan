@@ -42,7 +42,7 @@ class TimeIntervalRange : public CTimeIntervals {
     virtual count_t             GetCaseCountForTract(const CCluster & Cluster, tract_t tTract, count_t** pCases) const;
     virtual measure_t           GetMeasureForTract(const CCluster & Cluster, tract_t tTract, measure_t** pMeasure) const;
 
-    virtual void                CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList * pMeasureList);
+    virtual void                CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList& MeasureList);
     virtual void                CompareClusters(CCluster & Running, CCluster & TopCluster);
 };
 
@@ -56,7 +56,7 @@ class NormalTimeIntervalRange : public TimeIntervalRange {
     virtual NormalTimeIntervalRange * Clone() const;
 
     virtual void                CompareClusters(CCluster & Running, CCluster & TopCluster);
-    virtual void                CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList * pMeasureList);
+    virtual void                CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList& MeasureList);
 };
 
 class MultiStreamTimeIntervalRange : public TimeIntervalRange {
@@ -69,7 +69,7 @@ class MultiStreamTimeIntervalRange : public TimeIntervalRange {
     virtual MultiStreamTimeIntervalRange * Clone() const;
 
     virtual void                CompareClusters(CCluster & Running, CCluster & TopCluster);
-    virtual void                CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList * pMeasureList);
+    virtual void                CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList& MeasureList);
 };
 //*****************************************************************************
 #endif
