@@ -313,6 +313,7 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
           auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
           pImporter->ShowOptionalPanels(false, false, false);
           if (pImporter->ShowModal() == mrOk) {
+            AttemptFilterDateFields(sFileName.GetFullPath(), "%y", 1);
             strcpy(gpParams->m_szPopFilename, sFileName.GetFullPath());
             edtPopFileName->Text = sFileName.GetFullPath();
           }
