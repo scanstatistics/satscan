@@ -170,7 +170,7 @@ void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
                                    char* szSpacesOnLeft, bool bFormat)
 {
    try {
-      if (nLeftMargin > 0)
+      if (nLeftMargin > 0 && fp != NULL)
          fprintf(fp, "included.: ");
 
        DisplayCensusTractsInStep(fp, Data, 1, m_nTracts, nCluster, nMinMeasure,
@@ -193,53 +193,55 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
    char* tid;
    int   nCount=0;
 
-   try
-   {
+   try {
       for (int i = nFirstTract; i <= nLastTract; i++)
       {
-        //if (Data.m_pMeasure[0][Data.GetNeighbor(0, m_Center, i)]>nMinMeasure)       // access over-run here
-        //if (Data.m_pMeasure[m_iEllipseOffset][Data.GetNeighbor(m_iEllipseOffset, m_Center, i)]>nMinMeasure) // access over-run here
+           //if (Data.m_pMeasure[0][Data.GetNeighbor(0, m_Center, i)]>nMinMeasure)       // access over-run here
+           //if (Data.m_pMeasure[m_iEllipseOffset][Data.GetNeighbor(m_iEllipseOffset, m_Center, i)]>nMinMeasure) // access over-run here
+   
+           // the first dimension of m_pMeasure is Time Interval !!!
+           if (Data.m_pMeasure[0][Data.GetNeighbor(m_iEllipseOffset, m_Center, i)]>nMinMeasure) {
+             nCount++;
+             tid = (Data.GetTInfo())->tiGetTid(Data.GetNeighbor(m_iEllipseOffset, m_Center, i));
 
-        // the first dimension of m_pMeasure is Time Interval !!!
-        if (Data.m_pMeasure[0][Data.GetNeighbor(m_iEllipseOffset, m_Center, i)]>nMinMeasure) {
-          nCount++;
-          tid = (Data.GetTInfo())->tiGetTid(Data.GetNeighbor(m_iEllipseOffset, m_Center, i));
-          pos += strlen(tid) + 2;
+             if(fp != NULL) {
+                pos += strlen(tid) + 2;
 
-          if (nCount>1 && pos>nRightMargin)
-          {
-            pos = nLeftMargin + strlen(tid) + 2;
-            fprintf(fp, "\n");
-            for (int j=0; j<nLeftMargin; ++j)
-              fprintf(fp, " ");
-          }
+                if (nCount>1 && pos>nRightMargin)
+                {
+                  pos = nLeftMargin + strlen(tid) + 2;
+                  fprintf(fp, "\n");
+                  for (int j=0; j<nLeftMargin; ++j)
+                    fprintf(fp, " ");
+                }
 
-          if (nCluster > -1)
-            fprintf(fp, "%i         ", nCluster);
-          if (bFormat)
-             fprintf(fp, "%s", tid);
-          else
-             fprintf(fp, "%-29s", tid);
+                if (nCluster > -1)
+                  fprintf(fp, "%i         ", nCluster);
+                if (bFormat)
+                   fprintf(fp, "%s", tid);
+                else
+                   fprintf(fp, "%-29s", tid);
 
-          if (bIncludeRelRisk)
-            fprintf(fp, "   %-12.3f", GetRelativeRisk(Data.GetMeasureAdjustment()));
-          if (bIncludePVal)
-          {
-            fprintf(fp, "     ");
-            DisplayPVal(fp, nReplicas, szSpacesOnLeft);
-          }
+                if (bIncludeRelRisk)
+                  fprintf(fp, "   %-12.3f", GetRelativeRisk(Data.GetMeasureAdjustment()));
+                if (bIncludePVal)
+                {
+                  fprintf(fp, "     ");
+                  DisplayPVal(fp, nReplicas, szSpacesOnLeft);
+                }
 
-          if (i < nLastTract)
-            fprintf(fp, "%c ", cDeliminator);
-
+                if (i < nLastTract)
+                  fprintf(fp, "%c ", cDeliminator);
+              }     // end if fp
+           }
           // record DBF output data - AJV
-          if(Data.m_pParameters->GetOutputAreaSpecificDBF())
-             if(gpAreaDBFReport)
-                gpAreaDBFReport->RecordClusterData(*this, Data, i);
-        }
+       if(Data.m_pParameters->GetOutputAreaSpecificDBF())
+          if(gpAreaDBFReport)
+             gpAreaDBFReport->RecordClusterData(*this, Data, i);
       }
-      fprintf(fp, "\n");
-      }
+      if(fp != NULL)
+         fprintf(fp, "\n");
+   }
    catch (SSException & x)
       {
       x.AddCallpath("DisplayCensusTractsInStep()", "CCluster");

@@ -212,56 +212,57 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
          pDBFClusterReport.reset(new stsClusterLevelDBF(lReportHistoryRunNumber, GetCoordinateType(), m_pParameters->m_szOutputFilename));
 
       for (int i = 0; i < m_nClustersRetained; ++i) {
-         fExpectedCases = m_pData->GetMeasureAdjustment()*m_pTopClusters[i]->m_nMeasure;
-         fRelativeRisk = m_pTopClusters[i]->GetRelativeRisk(m_pData->GetMeasureAdjustment());
-
-         //print the cluster number....
-         fprintf(fpMCL, "%-5d ", i+1);
-         
-         //if a special grid file is specified, then do NOT output ID of central tract
-         if (strlen(m_pParameters->m_szGridFilename) == 0) {
-            if (m_pTopClusters[i]->GetClusterType() == PURELYTEMPORAL)
-                fprintf(fpMCL, "%-29s", "n/a");
-            else {
-               szTID = m_pData->gpTInfo->tiGetTid(m_pTopClusters[i]->m_Center);
-               fprintf(fpMCL, "%-29s", szTID);
-               //fprintf(fpMCL, "%12ld", m_pTopClusters[i]->m_Center);
+      	 if (m_pParameters->m_bMostLikelyClusters) {
+            fExpectedCases = m_pData->GetMeasureAdjustment()*m_pTopClusters[i]->m_nMeasure;
+            fRelativeRisk = m_pTopClusters[i]->GetRelativeRisk(m_pData->GetMeasureAdjustment());
+   
+            //print the cluster number....
+            fprintf(fpMCL, "%-5d ", i+1);
+            
+            //if a special grid file is specified, then do NOT output ID of central tract
+            if (strlen(m_pParameters->m_szGridFilename) == 0) {
+               if (m_pTopClusters[i]->GetClusterType() == PURELYTEMPORAL)
+                   fprintf(fpMCL, "%-29s", "n/a");
+               else {
+                  szTID = m_pData->gpTInfo->tiGetTid(m_pTopClusters[i]->m_Center);
+                  fprintf(fpMCL, "%-29s", szTID);
+                  //fprintf(fpMCL, "%12ld", m_pTopClusters[i]->m_Center);
+               }
             }
+   
+            //show the coordinates.. x, y, additional coordinates (if applicable)
+            //if ellipsoids are specified, then the WriteCoordinates function
+            //also prints the coordinates, SEMI-MINOR AXIS, shape, and angle
+            // for the circle, it will print coordinates, Radius, and 1.0 for shape, and 0.0 for angle
+            if (m_pParameters->m_nCoordType == CARTESIAN)
+         	    m_pTopClusters[i]->WriteCoordinates(fpMCL, m_pData);
+            else
+               m_pTopClusters[i]->WriteLatLongCoords(fpMCL, m_pData);
+   
+            //Write the Obs cases, expected cases, and the relative risk
+            fprintf(fpMCL, " %12ld %12.2f %12.3f", m_pTopClusters[i]->m_nCases, fExpectedCases, fRelativeRisk);
+   
+            //Write the Log likelihood ratio and then compute and display PValue
+            fprintf(fpMCL, " %16.6f", m_pTopClusters[i]->m_nRatio);
+            fPVal = (float) m_pTopClusters[i]->GetPVal(m_pParameters->m_nReplicas);
+            if (m_pParameters->m_nReplicas > 9999)
+               fprintf(fpMCL, "   %.5f", fPVal);
+            else if (m_pParameters->m_nReplicas > 999)
+               fprintf(fpMCL, "   %.4f", fPVal);
+            else if (m_pParameters->m_nReplicas > 99)
+              fprintf(fpMCL, "   %.3f", fPVal);
+            else fprintf(fpMCL, "     ");
+   
+            // If Space-Time analysis...  put Start and End of Cluster
+            if (m_pParameters->m_nAnalysisType != PURELYSPATIAL) {
+               JulianToChar(sStartDate, m_pTopClusters[i]->m_nStartDate);
+               JulianToChar(sEndDate, m_pTopClusters[i]->m_nEndDate);
+               fprintf(fpMCL, " %11s %11s", sStartDate, sEndDate);
+            }
+            else //purely spacial - print study begin and end dates
+               fprintf(fpMCL, " %11s %11s", m_pParameters->m_szStartDate, m_pParameters->m_szEndDate);
+            fprintf(fpMCL, "\n");
          }
-
-         //show the coordinates.. x, y, additional coordinates (if applicable)
-         //if ellipsoids are specified, then the WriteCoordinates function
-         //also prints the coordinates, SEMI-MINOR AXIS, shape, and angle
-         // for the circle, it will print coordinates, Radius, and 1.0 for shape, and 0.0 for angle
-         if (m_pParameters->m_nCoordType == CARTESIAN)
-      	    m_pTopClusters[i]->WriteCoordinates(fpMCL, m_pData);
-         else
-            m_pTopClusters[i]->WriteLatLongCoords(fpMCL, m_pData);
-
-         //Write the Obs cases, expected cases, and the relative risk
-         fprintf(fpMCL, " %12ld %12.2f %12.3f", m_pTopClusters[i]->m_nCases, fExpectedCases, fRelativeRisk);
-
-         //Write the Log likelihood ratio and then compute and display PValue
-         fprintf(fpMCL, " %16.6f", m_pTopClusters[i]->m_nRatio);
-         fPVal = (float) m_pTopClusters[i]->GetPVal(m_pParameters->m_nReplicas);
-         if (m_pParameters->m_nReplicas > 9999)
-            fprintf(fpMCL, "   %.5f", fPVal);
-         else if (m_pParameters->m_nReplicas > 999)
-            fprintf(fpMCL, "   %.4f", fPVal);
-         else if (m_pParameters->m_nReplicas > 99)
-           fprintf(fpMCL, "   %.3f", fPVal);
-         else fprintf(fpMCL, "     ");
-
-         // If Space-Time analysis...  put Start and End of Cluster
-         if (m_pParameters->m_nAnalysisType != PURELYSPATIAL) {
-            JulianToChar(sStartDate, m_pTopClusters[i]->m_nStartDate);
-            JulianToChar(sEndDate, m_pTopClusters[i]->m_nEndDate);
-            fprintf(fpMCL, " %11s %11s", sStartDate, sEndDate);
-         }
-         else //purely spacial - print study begin and end dates
-            fprintf(fpMCL, " %11s %11s", m_pParameters->m_szStartDate, m_pParameters->m_szEndDate);
-         fprintf(fpMCL, "\n");
-
          if(m_pParameters->GetOutputClusterLevelDBF())
            pDBFClusterReport->RecordClusterData(*m_pTopClusters[i], *m_pData, i+1);
       }
@@ -372,11 +373,15 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
 
         if(m_pTopClusters[0]->m_nLogLikelihood >= SimRatios.GetAlpha05())
            ++guwSignificantAt005;
-
-        if (fpGIS != NULL) {
-          m_pTopClusters[0]->SetAreaReport(pDBFAreaReport.get());
-          m_pTopClusters[0]->DisplayCensusTracts(fpGIS, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
-                                                 true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);
+        
+        // if we want dBase report, set the report pointer in cluster
+        if(m_pParameters->GetOutputAreaSpecificDBF())
+           m_pTopClusters[0]->SetAreaReport(pDBFAreaReport.get()); 
+        
+        // if we are doing dBase or ASCII   
+        if(m_pParameters->GetOutputAreaSpecificDBF() || fpGIS != NULL) {	                              
+            m_pTopClusters[0]->DisplayCensusTracts(fpGIS, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
+                                                     true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);                                      
         }
       }
 
@@ -415,9 +420,15 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
 
           if(m_pTopClusters[i]->m_nLogLikelihood >= dSignifRatio05)
              ++guwSignificantAt005;
+          
+          // if doing dBase output, set the report pointer
+          if(m_pParameters->GetOutputAreaSpecificDBF())
+             m_pTopClusters[i]->SetAreaReport(pDBFAreaReport.get());
 
-          if (m_pParameters->m_bOutputCensusAreas && (fpGIS != NULL)) {
-              m_pTopClusters[i]->SetAreaReport(pDBFAreaReport.get());
+          // if were are doing census areas and theres a file pointer OR we are doing dBase output
+          if ((m_pParameters->m_bOutputCensusAreas && (fpGIS != NULL))
+                                                  || m_pParameters->GetOutputAreaSpecificDBF()) {
+              	             
               m_pTopClusters[i]->DisplayCensusTracts(fpGIS, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
                                                    true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);
           }
@@ -477,8 +488,8 @@ bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumb
       OpenReportFile(fp, "a");
       if (m_pParameters->m_bOutputRelRisks)
          OpenRREFile(fpRRE, "a");
-      if (m_pParameters->m_bMostLikelyClusters)
-         CreateGridOutputFile(lReportHistoryRunNumber);
+      
+      CreateGridOutputFile(lReportHistoryRunNumber);
 
       if (m_nClustersRetained == 0) {
         fprintf(fp, "No clusters were found.\n");
