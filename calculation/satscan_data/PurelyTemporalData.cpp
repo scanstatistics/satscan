@@ -9,6 +9,7 @@
 #include "NormalModel.h"
 #include "SurvivalModel.h"
 #include "RankModel.h"
+#include "OrdinalModel.h"
 
 /** class constructor */
 CPurelyTemporalData::CPurelyTemporalData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -36,7 +37,8 @@ void CPurelyTemporalData::CalculateMeasure(RealDataStream& thisStream) {
   try {
     CSaTScanData::CalculateMeasure(thisStream);
     //Set temporal structures
-    gpDataStreams->SetPurelyTemporalMeasureData(thisStream);
+    if (gParameters.GetProbabilityModelType() != ORDINAL)
+      gpDataSets->SetPurelyTemporalMeasureData(thisStream);
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateMeasure()","CPurelyTemporalData");
@@ -51,10 +53,10 @@ void CPurelyTemporalData::DisplayCases(FILE* pFile) {
   unsigned int   i, j;
 
   fprintf(pFile, "PT Case counts (PTCases)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
-  for (j=0; j <  gpDataStreams->GetNumStreams(); ++j) {
+  for (j=0; j <  gpDataSets->GetNumDataSets(); ++j) {
      fprintf(pFile, "Data Stream %u:\n", j);
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
-        fprintf(pFile, "PTCases [%u] = %i\n", i, gpDataStreams->GetStream(j).GetPTCasesArray()[i]);
+        fprintf(pFile, "PTCases [%u] = %i\n", i, gpDataSets->GetStream(j).GetPTCasesArray()[i]);
      fprintf(pFile, "\n\n");
   }
 }
@@ -66,10 +68,10 @@ void CPurelyTemporalData::DisplayMeasure(FILE* pFile) {
   unsigned int   i, j;
 
   fprintf(pFile, "PT Measures (PTMeasure)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
-  for (j=0; j <  gpDataStreams->GetNumStreams(); ++j) {
+  for (j=0; j <  gpDataSets->GetNumDataSets(); ++j) {
      fprintf(pFile, "Data Stream %u:\n", j);
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
-        fprintf(pFile, "PTMeasure [%u] = %lf\n", i, gpDataStreams->GetStream(j).GetPTMeasureArray()[i]);
+        fprintf(pFile, "PTMeasure [%u] = %lf\n", i, gpDataSets->GetStream(j).GetPTMeasureArray()[i]);
      fprintf(pFile, "\n\n");
   }
 }
@@ -79,10 +81,10 @@ void CPurelyTemporalData::DisplaySimCases(FILE* pFile) {
 //  unsigned int   i, j;
 //
 //  fprintf(pFile, "PT Simulated Case counts (PTSimCases)\n\n");
-// for (j=0; j <  gpDataStreams->GetNumStreams(); ++j) {
+// for (j=0; j <  gpDataSets->GetNumDataSets(); ++j) {
 //     fprintf(pFile, "Data Stream %u:\n", j);
 //     for (i=0; i < m_nTimeIntervals; ++i)
-//        fprintf(pFile, "PTSimCases [%u] = %i\n", i, gpDataStreams->GetStream(j).GetPTSimCasesArray()[i]);
+//        fprintf(pFile, "PTSimCases [%u] = %i\n", i, gpDataSets->GetStream(j).GetPTSimCasesArray()[i]);
 //     fprintf(pFile, "\n\n");
 //  }
 }
@@ -99,7 +101,7 @@ void CPurelyTemporalData::RandomizeData(RandomizerContainer_t& RandomizerContain
                                         unsigned int iSimulationNumber) const {
   try {
     CSaTScanData::RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
-    gpDataStreams->SetPurelyTemporalSimulationData(SimDataContainer);
+    gpDataSets->SetPurelyTemporalSimulationData(SimDataContainer);
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CPurelyTemporalData");
@@ -124,16 +126,17 @@ void CPurelyTemporalData::ReadDataFromFiles() {
     type is space-time permutation. */
 void CPurelyTemporalData::SetProbabilityModel() {
   try {
-    switch (gParameters.GetProbabiltyModelType()) {
+    switch (gParameters.GetProbabilityModelType()) {
        case POISSON              : m_pModel = new CPoissonModel(gParameters, *this, gPrint);   break;
        case BERNOULLI            : m_pModel = new CBernoulliModel(gParameters, *this, gPrint); break;
-       case NORMAL               : m_pModel = new CNormalModel(gParameters, *this, gPrint); break;
+       case ORDINAL              : m_pModel = new OrdinalModel(gParameters, *this, gPrint); break;
        case SURVIVAL             : m_pModel = new CSurvivalModel(gParameters, *this, gPrint); break;
+       case NORMAL               : m_pModel = new CNormalModel(gParameters, *this, gPrint); break;
        case RANK                 : m_pModel = new CRankModel(gParameters, *this, gPrint); break;
        case SPACETIMEPERMUTATION : ZdException::Generate("Purely Temporal analysis not implemented for Space-Time Permutation model.\n",
                                                          "SetProbabilityModel()");
        default : ZdException::Generate("Unknown probability model type: '%d'.\n", "SetProbabilityModel()",
-                                       gParameters.GetProbabiltyModelType());
+                                       gParameters.GetProbabilityModelType());
     }
   }
   catch (ZdException &x) {

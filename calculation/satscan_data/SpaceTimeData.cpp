@@ -9,6 +9,7 @@
 #include "NormalModel.h"
 #include "SurvivalModel.h"
 #include "RankModel.h"
+#include "OrdinalModel.h"
 
 /** class constructor */
 CSpaceTimeData::CSpaceTimeData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -31,8 +32,8 @@ CSpaceTimeData::~CSpaceTimeData() {}
 void CSpaceTimeData::CalculateMeasure(RealDataStream& thisStream) {
   try {
     CSaTScanData::CalculateMeasure(thisStream);
-    if (gParameters.GetIncludePurelyTemporalClusters())
-      gpDataStreams->SetPurelyTemporalMeasureData(thisStream);
+    if (gParameters.GetIncludePurelyTemporalClusters() && gParameters.GetProbabilityModelType() != ORDINAL)
+      gpDataSets->SetPurelyTemporalMeasureData(thisStream);
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateMeasure()","CSpaceTimeData");
@@ -46,9 +47,14 @@ void CSpaceTimeData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
                                    unsigned int iSimulationNumber) const {
   try {
     CSaTScanData::RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
-    if (gParameters.GetIncludePurelyTemporalClusters())
-      for (size_t t=0; t < SimDataContainer.size(); ++t)
-        SimDataContainer[t]->SetPTCasesArray();
+    if (gParameters.GetIncludePurelyTemporalClusters()) {
+      if (gParameters.GetProbabilityModelType() == ORDINAL)
+        for (size_t t=0; t < SimDataContainer.size(); ++t)
+           SimDataContainer[t]->SetPTCategoryCasesArray();
+      else
+        for (size_t t=0; t < SimDataContainer.size(); ++t)
+           SimDataContainer[t]->SetPTCasesArray();
+    }
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CSpaceTimeData");
@@ -93,15 +99,16 @@ void CSpaceTimeData::SetIntervalCut() {
 /** Allocates probability model object.  */
 void CSpaceTimeData::SetProbabilityModel() {
   try {
-    switch (gParameters.GetProbabiltyModelType()) {
+    switch (gParameters.GetProbabilityModelType()) {
        case POISSON              : m_pModel = new CPoissonModel(gParameters, *this, gPrint);   break;
        case BERNOULLI            : m_pModel = new CBernoulliModel(gParameters, *this, gPrint); break;
-       case NORMAL               : m_pModel = new CNormalModel(gParameters, *this, gPrint); break;
+       case ORDINAL              : m_pModel = new OrdinalModel(gParameters, *this, gPrint); break;
        case SURVIVAL             : m_pModel = new CSurvivalModel(gParameters, *this, gPrint); break;
+       case NORMAL               : m_pModel = new CNormalModel(gParameters, *this, gPrint); break;
        case RANK                 : m_pModel = new CRankModel(gParameters, *this, gPrint); break;
        case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(gParameters, *this, gPrint); break;
        default : ZdException::Generate("Unknown probability model type: '%d'.\n",
-                                       "SetProbabilityModel()", gParameters.GetProbabiltyModelType());
+                                       "SetProbabilityModel()", gParameters.GetProbabilityModelType());
     }
   }
   catch (ZdException &x) {
