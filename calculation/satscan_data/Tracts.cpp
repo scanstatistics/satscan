@@ -585,6 +585,7 @@ void TractHandler::tiCheckCasesHavePopulations() const {
   const CategoryDescriptor *    pCategoryDescriptor;
   std::string                   sBuffer, sBuffer2;
   double                        dTractPopulation, dCategoryTotal;
+  count_t                       iTractCaseCount;
 
   try {
     if (bStartAsPopDt)
@@ -596,24 +597,31 @@ void TractHandler::tiCheckCasesHavePopulations() const {
 
     for (i=0; i < (int)gvTractDescriptors.size(); i++) {
        dTractPopulation = 0;
+       iTractCaseCount = 0;
        pCategoryDescriptor = gvTractDescriptors[i]->GetCategoryDescriptorList();
        while (pCategoryDescriptor) {
           dCategoryTotal = 0;
+          iTractCaseCount += pCategoryDescriptor->GetCaseCount();
           for (j=nPStartIndex; j <= nPEndIndex; j++)
              dCategoryTotal += pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
           dTractPopulation += dCategoryTotal;
           if (dCategoryTotal == 0 && pCategoryDescriptor->GetCaseCount() > 0) {
-            gpPrintDirection->SatScanPrintWarning("  Warning: %s %s has %d cases but zero population.\n",
-                            gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer),
-                            gpCategories->catGetCategoriesString(pCategoryDescriptor->GetCategoryIndex(), sBuffer2),
-                            pCategoryDescriptor->GetCaseCount());
+            if (gpCategories->catNumCats() > 1)
+              //If there is only one covariate, then this warning is redundant as the error
+              //message below will be displayed with same information. So we only want to
+              //show this warning if there is more than one covariate for this location.
+              gpPrintDirection->SatScanPrintWarning("Warning: Tract %s  covariate %s has %d cases but zero population.\n",
+                                gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer),
+                                gpCategories->catGetCategoriesString(pCategoryDescriptor->GetCategoryIndex(), sBuffer2),
+                                pCategoryDescriptor->GetCaseCount());
           }
           pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();
        }
 
-       if (dTractPopulation == 0)
-         ZdGenerateException("Total population is zero for tract %s", "tiCheckCasesHavePopulations()",
-                             gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer));
+       if (dTractPopulation == 0 && iTractCaseCount > 0)
+         ZdGenerateException("Error: Total population is zero for tract %s but has %d cases.",
+                             "tiCheckCasesHavePopulations()",
+                             gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer), iTractCaseCount);
     }
   }
   catch (SSException & x) {
