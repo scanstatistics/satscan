@@ -94,7 +94,7 @@ void DisplayVersion(FILE* fp=stdout, int nPos=0)
 {
   if (nPos==1)
     fprintf(fp,"                        ");
-  fprintf(fp, "SaTScan V.2.1.4\n");
+  fprintf(fp, "SaTScan V.3 beta\n");
 }
 
 /**********************************************************************
