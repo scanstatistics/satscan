@@ -34,7 +34,7 @@ DBaseOutput::~DBaseOutput() {
    }
    catch (...) { /* munch munch */ }		
 }		
-
+/*
 // create the output file
 // pre: sFileName is name of the dbf file needing to be created
 // post: creates the dbf file with the appropraite fields
@@ -65,48 +65,7 @@ void DBaseOutput::CreateDBFFile() {
       throw;
    }
 }
-/*
-// fills the output file with the appropraite records
-// pre: sFileName is the name of the dbf file, the structure of the dbf file has already been
-//      setup
-// post: the dbf file is filled with the appropraite analysis data
-void DBaseOutput::FillDBFFile() {
-   DBFFile*		pFile = 0;
-   DBFRec*		pRecord = 0;
-   ZdTransaction *	pTransaction = 0;
 
-   try {
-      pFile = new DBFFile(gsFileName.GetCString(), ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
-
-      pTransaction = pFile->BeginTransaction();
-
-      for(unsigned int i = 0; i < DBFFile->GetNumFields(); ++i) {
-         pRecord = pFile->GetNewRecord();
-         // define record data
-
-         pFile->AppendRecord(*pTransaction, *pRecord);
-         delete pRecord;
-      }
-
-      pFile->EndTransaction(pTransaction);
-      pFile->Close();
-      delete pTransaction;
-      delete pFile;
-   }
-   catch (ZdException &x) {
-      if(pFile) {
-         if(pTransaction)
-            pFile->EndTransaction(pTransaction);
-         pFile->Close();
-      }
-      delete pFile; pFile = 0;
-      delete pTransaction; pTransaction = 0;
-      delete pRecord; pRecord = 0;
-      x.AddCallpath("FillDBFFile()", "DBaseOutput");
-      throw;
-   }
-}
-  */
 // sets up the ZdFields and puts them into the vector
 // pre: pass in an empty vector
 // post: vector will be defined using the names and field types provided by the descendant classes
@@ -138,19 +97,39 @@ void DBaseOutput::GetFields(ZdVector<ZdField*>& vFields) {
       x.AddCallpath("GetFields()", "DBaseOutput");
       throw;
    }
-}
+}  */
 
 // global inits
 void DBaseOutput::Init() {
+   glRunNumber = 0;
 }	
 
 // internal setup function
 void DBaseOutput::Setup(const ZdString& sFileName) {
+   TXDFile	        *pFile = 0;
+   ZdFileRecord         *pLastRecord = 0;
+   unsigned long        ulLastRecordNumber;
+
    try {
+      pFile = new TXDFile("AnalysisHistory.txd", ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
+
+      // get a record buffer, input data and append the record
+      ulLastRecordNumber = pFile->GotoLastRecord(pLastRecord);
+      // if there's records in the file
+      if(ulLastRecordNumber)
+         pLastRecord->GetField(0, glRunNumber);
+      delete pLastRecord;
+      pFile->Close();
+
+      delete pFile;
+
       gsFileName = sFileName;
-      CreateDBFFile();
    }
    catch(ZdException &x) {
+      if(pFile)
+         pFile->Close();
+      delete pFile; pFile = 0;
+      delete pLastRecord; pLastRecord = 0;
       x.AddCallpath("Setup()", "DBaseOutput");
       throw;
    }		
