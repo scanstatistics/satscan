@@ -48,7 +48,7 @@ SVTTClusterStreamData::~SVTTClusterStreamData() {
 SVTTClusterStreamData & SVTTClusterStreamData::operator=(const SVTTClusterStreamData& rhs) {
   gCases = rhs.gCases;
   gMeasure = rhs.gMeasure;
-  gSqMeasure = rhs.gSqMeasure;
+//  gSqMeasure = rhs.gSqMeasure;
   giAllocationSize = rhs.giAllocationSize;
   memcpy(gpCasesInsideCluster, rhs.gpCasesInsideCluster, giAllocationSize * sizeof(count_t));
   memcpy(gpMeasureInsideCluster, rhs.gpMeasureInsideCluster, giAllocationSize * sizeof(measure_t));
@@ -70,7 +70,7 @@ SVTTClusterStreamData * SVTTClusterStreamData::Clone() const {
 void SVTTClusterStreamData::Init() {
   gCases=0;
   gMeasure=0;
-  gSqMeasure=0;
+//  gSqMeasure=0;
   gtTotalCasesInsideCluster=0;
   gtTotalMeasureInsideCluster=0;
   gtTotalCasesOutsideCluster=0;
@@ -113,7 +113,7 @@ void SVTTClusterStreamData::Setup() {
 }
 
 /** constructor for DataStreamGateway - used with calculating most likely clusters */
-CSVTTCluster::CSVTTCluster(const DataStreamGateway & DataGateway, int iNumTimeIntervals, BasePrint *pPrintDirection)
+CSVTTCluster::CSVTTCluster(const AbtractDataStreamGateway & DataGateway, int iNumTimeIntervals, BasePrint *pPrintDirection)
              :CCluster(pPrintDirection){
   try {
     Init();
@@ -175,13 +175,12 @@ CSVTTCluster& CSVTTCluster::operator=(const CSVTTCluster& rhs) {
   m_nStartDate                  = rhs.m_nStartDate;
   m_nEndDate                    = rhs.m_nEndDate;
   giTotalIntervals              = rhs.giTotalIntervals;
-  m_bClusterDefined             = rhs.m_bClusterDefined;
   gvStreamData                  = rhs.gvStreamData;
   return *this;
 }
 
 /** add neighbor tract data from DataGateway */
-void CSVTTCluster::AddNeighbor(tract_t tNeighbor, const DataStreamGateway & DataGateway) {
+void CSVTTCluster::AddNeighbor(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway) {
   ++m_nTracts;
   for (size_t tStream=0; tStream < DataGateway.GetNumInterfaces(); ++tStream)
     AddNeighbor(tNeighbor, DataGateway.GetDataStreamInterface(tStream), tStream);
@@ -210,8 +209,6 @@ void CSVTTCluster::AddNeighbor(tract_t tNeighbor, const DataStreamInterface & In
 //    m_nCases += ppCasesNC[i][tNeighbor];
 //    m_nMeasure += ppMeasureNC[i][tNeighbor];
 //  }
-
-  m_bClusterDefined = true; // KR990421 - What about this? PS-Yes, ST-No?
 }
 
 /** returns newly cloned CSVTTCluster */
@@ -247,6 +244,12 @@ count_t CSVTTCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& D
   return Data.GetDataStreamHandler().GetStream(0/*for now*/).GetCaseArray()[0][tTract];
 }
 
+
+AbstractClusterData * CSVTTCluster::GetClusterData() {
+ ZdGenerateException("GetClusterData() not implemented.","CSVTTCluster");
+ return 0;
+}
+
 /** Returns the measure for tract as defined by cluster.
     NOTE: Hard coded to return the measure from first data stream.
           This will need modification when the reporting aspect of multiple
@@ -261,7 +264,7 @@ void CSVTTCluster::Init() {
 }
 
 /** re-initializes cluster data */
-void CSVTTCluster::InitializeSVTT(tract_t nCenter, const DataStreamGateway & DataGateway) {
+void CSVTTCluster::InitializeSVTT(tract_t nCenter, const AbtractDataStreamGateway & DataGateway) {
   CCluster::Initialize(nCenter);
   for (size_t t=0; t < gvStreamData.size(); ++t)
      gvStreamData[t].InitializeSVTTData(DataGateway.GetDataStreamInterface(t));
@@ -286,7 +289,7 @@ void CSVTTCluster::SetTimeTrend(int nIntervalUnits, double nIntervalLen) {
 }
 
 /** internal setup function for DataStreamGateway */
-void CSVTTCluster::Setup(const DataStreamGateway & DataGateway, int iNumTimeIntervals) {
+void CSVTTCluster::Setup(const AbtractDataStreamGateway & DataGateway, int iNumTimeIntervals) {
   try {
     giTotalIntervals = iNumTimeIntervals;
     gvStreamData.resize(DataGateway.GetNumInterfaces(), SVTTClusterStreamData(iNumTimeIntervals));
