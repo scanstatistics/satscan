@@ -109,7 +109,7 @@ IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=4
 MinorVer=0
-Release=2
+Release=3
 Build=0
 Debug=0
 PreRelease=0
@@ -122,14 +122,14 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=SaTScan
 FileDescription=SaTScan - Spatial and Space-Time Scan Statistics
-FileVersion=4.0.2.0
+FileVersion=4.0.3.0
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=SaTScan
-ProductVersion=4.0.2
-Comments=Released November 10, 2003
+ProductVersion=4.0.3
+Comments=Released February 2, 2004
 
 [Excluded Packages]
 $(BCB)\Bin\dcl31w50.bpl=Delphi 1.0 Compatibility Components
@@ -160,14 +160,15 @@ Count=1
 Item0=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd540;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
 
 [HistoryLists\hlConditionals]
-Count=1
+Count=2
 Item0=INTEL_BASED;__BATCH_COMPILE
+Item1=INTEL_BASED;__BATCH_COMPILE;_DEBUG
 
 [Debugging]
 DebugSourceDirs=
 
 [Parameters]
-RunParams=&quot;C:\Prj\SaTScan Project\SaTScan Data Sets\adjustments_test\nm.prm&quot;
+RunParams=&quot;C:\Prj\SaTScan Project\SaTScan Data Sets\installed\nm.prm&quot;
 HostApplication=C:\SatScan v3.0\calc\Satscan.exe
 RemoteHost=
 RemotePath=

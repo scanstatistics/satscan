@@ -189,7 +189,7 @@ object frmAbout: TfrmAbout
         
           'Services Inc., SaTScan v4.0: Software for the spatial and space-' +
           'time scan'
-        'statistics. http://www.satscan.org/, 2003. '
+        'statistics. http://www.satscan.org/, 2004. '
         ''
         
           'For suggested methodological citations, see the accompanying SaT' +
