@@ -59,7 +59,8 @@
       ..\calculation\Output\stsAreaSpecificData.obj 
       ..\calculation\Output\stsOutputFileWriter.obj 
       ..\calculation\Output\stsDBaseFileWriter.obj 
-      ..\calculation\Output\stsASCIIFileWriter.obj stsBaseAnalysisChildForm.obj"/>
+      ..\calculation\Output\stsASCIIFileWriter.obj stsBaseAnalysisChildForm.obj 
+      ..\calculation\cluster\PurelySpatialProspectiveCluster.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
@@ -105,7 +106,7 @@ IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=3
 MinorVer=1
-Release=0
+Release=1
 Build=0
 Debug=0
 PreRelease=0
@@ -118,14 +119,14 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=SaTScan
 FileDescription=SaTScan - Spatial and Space-Time Scan Statistics
-FileVersion=3.1.0.0
+FileVersion=3.1.1.0
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=
-ProductVersion=3.1
-Comments=Released June 9, 2003
+ProductVersion=3.1.1
+Comments=Released June 13, 2003
 
 [HistoryLists\hlIncludePath]
 Count=28

@@ -58,6 +58,7 @@ USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
 USELIB("..\..\zero dimension\zdannex540.lib");
 USELIB("..\..\zero dimension\zd540.lib");
 USERES("SaTScanBatch.res");
+USEUNIT("..\calculation\cluster\PurelySpatialProspectiveCluster.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

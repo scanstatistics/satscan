@@ -77,6 +77,7 @@ USEUNIT("stsBaseAnalysisChildForm.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
 USELIB("..\..\zero dimension\zdannex540.lib");
 USELIB("..\..\zero dimension\zd540.lib");
+USEUNIT("..\calculation\cluster\PurelySpatialProspectiveCluster.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         try {
