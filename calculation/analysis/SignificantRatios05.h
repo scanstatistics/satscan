@@ -13,8 +13,8 @@ class CSignificantRatios05
     void   Initialize();
     bool   AddRatio(double r);
     void   CalcAlphas();
-    const double& GetAlpha01() const;
-    const double& GetAlpha05() const;
+    const double GetAlpha01() const;
+    const double GetAlpha05() const;
 
   private:
     int     m_nTotalReplications;

@@ -54,12 +54,12 @@ bool CSignificantRatios05::AddRatio(double r)
   return bAdded;
 }
 
-const double& CSignificantRatios05::GetAlpha01()  const
+const double CSignificantRatios05::GetAlpha01()  const
 {
    return (m_pRatiosList[(m_nRatios/5)-1]);
 }
 
-const double& CSignificantRatios05::GetAlpha05() const
+const double CSignificantRatios05::GetAlpha05() const
 {
    return (m_pRatiosList[m_nRatios-1]);
 }
