@@ -9,14 +9,13 @@ CSaTScanData::CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection)
    long lCurrentEllipse = 0;
 
    try {
-      gpPrintDirection = pPrintDirection;
+      gpPrint = pPrintDirection;
       m_pParameters = pParameters;
       m_nNumEllipsoids = pParameters->GetNumRequestedEllipses();
 
       Init();
 
-      gpCats = new Cats(pPrintDirection);            // DTG
-      gpTInfo = new TractHandler(*gpCats, *pPrintDirection);  // DTG
+      gpTInfo = new TractHandler(gPopulationCategories, *pPrintDirection);  // DTG
       gpGInfo = new GInfo(pPrintDirection);          // DTG
 
       switch (m_pParameters->GetProbabiltyModelType()) {
@@ -104,7 +103,6 @@ CSaTScanData::~CSaTScanData() {
   if (m_pSimCases)
      DeAllocSimCases();
 
-   delete gpCats;            // DTG
    delete gpTInfo;          // DTG
    delete gpGInfo;
 }
@@ -139,7 +137,7 @@ void CSaTScanData::AdjustNeighborCounts() {
                     m_pMeasure[0], m_nMaxCircleSize, m_nMaxCircleSize, m_NeighborCounts,
                     m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                     m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
-                    m_pParameters->GetMaxGeographicClusterSizeType(), gpPrintDirection);
+                    m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
     }
   }
   catch (ZdException & x) {
@@ -150,10 +148,10 @@ void CSaTScanData::AdjustNeighborCounts() {
 
 void CSaTScanData::AllocSimCases() {
    try {
-      m_pSimCases = (count_t**)Smalloc(m_nTimeIntervals * sizeof(count_t *), gpPrintDirection);
+      m_pSimCases = (count_t**)Smalloc(m_nTimeIntervals * sizeof(count_t *), gpPrint);
       memset(m_pSimCases, 0, m_nTimeIntervals * sizeof(count_t *));
       for(int i = 0; i < m_nTimeIntervals; ++i)
-         m_pSimCases[i] = (count_t*)Smalloc(m_nTracts * sizeof(count_t), gpPrintDirection);
+         m_pSimCases[i] = (count_t*)Smalloc(m_nTracts * sizeof(count_t), gpPrint);
    }
    catch (SSException & x) {
       x.AddCallpath("GetNeighbor()", "CSaTScanData");
@@ -223,25 +221,25 @@ bool CSaTScanData::FindNeighbors() {
    try {
       //then use an unsigned short...
       if (m_nTracts < 65536) {
-         m_pSortedUShort = (unsigned short ***)Smalloc(sizeof(unsigned short *) * (lTotalNumEllipses+1), gpPrintDirection);
+         m_pSortedUShort = (unsigned short ***)Smalloc(sizeof(unsigned short *) * (lTotalNumEllipses+1), gpPrint);
          for (i = 0; i <= lTotalNumEllipses; ++i )
-            m_pSortedUShort[i] = (unsigned short **)Smalloc(sizeof(unsigned short *) * m_nGridTracts, gpPrintDirection);
+            m_pSortedUShort[i] = (unsigned short **)Smalloc(sizeof(unsigned short *) * m_nGridTracts, gpPrint);
          for (i = 0; i <= lTotalNumEllipses; ++i)                                          //memset here ???
             for (j = 0; j < m_nGridTracts; ++j)
                m_pSortedUShort[i][j] = 0;
       }
       else {
-         m_pSortedInt = (tract_t ***)Smalloc(sizeof(tract_t *) * (lTotalNumEllipses+1), gpPrintDirection);
+         m_pSortedInt = (tract_t ***)Smalloc(sizeof(tract_t *) * (lTotalNumEllipses+1), gpPrint);
          for (i = 0; i <= lTotalNumEllipses; ++i )
-            m_pSortedInt[i] = (tract_t **)Smalloc(sizeof(tract_t *) * m_nGridTracts, gpPrintDirection);
+            m_pSortedInt[i] = (tract_t **)Smalloc(sizeof(tract_t *) * m_nGridTracts, gpPrint);
          for (i = 0; i <= lTotalNumEllipses; ++i)                                          //memset here ???
             for (j = 0; j < m_nGridTracts; ++j)
                m_pSortedInt[i][j] = 0;
          }
       //m_NeighborCounts = (tract_t**)Smalloc(m_nNumEllipsoids * m_nGridTracts * sizeof(tract_t));          //DTG --  change this to multiply in the number of ellipsoids
-      m_NeighborCounts = (tract_t**)Smalloc((lTotalNumEllipses + 1) * sizeof(tract_t *), gpPrintDirection);
+      m_NeighborCounts = (tract_t**)Smalloc((lTotalNumEllipses + 1) * sizeof(tract_t *), gpPrint);
       for(i = 0; i <= lTotalNumEllipses; ++i) {
-         m_NeighborCounts[i] = (tract_t*)Smalloc(m_nGridTracts * sizeof(tract_t), gpPrintDirection);
+         m_NeighborCounts[i] = (tract_t*)Smalloc(m_nGridTracts * sizeof(tract_t), gpPrint);
          for (j = 0; j < m_nGridTracts; ++j)
             m_NeighborCounts[i][j] = 0;                // USE MEMSET HERE...
       }
@@ -251,13 +249,13 @@ bool CSaTScanData::FindNeighbors() {
                       m_pMeasure[0], m_nMaxCircleSize, m_nTotalMeasure, m_NeighborCounts,
                       m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                       m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
-                      m_pParameters->GetMaxGeographicClusterSizeType(), gpPrintDirection);
+                      m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
       else
         MakeNeighbors(gpTInfo, gpGInfo, m_pSortedInt, m_pSortedUShort, m_nTracts, m_nGridTracts,
                       m_pMeasure[0], m_nMaxCircleSize, m_nMaxCircleSize, m_NeighborCounts,
                       m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                       m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
-                      m_pParameters->GetMaxGeographicClusterSizeType(), gpPrintDirection);
+                      m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
 
    }
    catch (SSException & x) {
@@ -308,7 +306,6 @@ tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness
 }
 
 void CSaTScanData::Init() {
-      gpCats = 0;            // DTG
       gpTInfo = 0;          // DTG
       gpGInfo = 0;
       m_pModel = 0;
@@ -349,7 +346,7 @@ void CSaTScanData::PrintNeighbors() {
 
    try {
       if ((pFile = fopen("c:\\SatScan V.2.1.4\\Borland Calc\\neighbors.txt", "w")) == NULL)
-       gpPrintDirection->SatScanPrintf("  Error: Unable to open neighbors file.\n");
+       gpPrint->SatScanPrintf("  Error: Unable to open neighbors file.\n");
       else {
         for (i = 0; i <= m_pParameters->GetNumTotalEllipses(); ++i )
           for (j = 0; j < m_nGridTracts; ++j) {
@@ -390,41 +387,62 @@ void CSaTScanData::ReadDataFromFiles() {
   }
 }
 
+/* Calculates the number of time intervals to include in potential clusters
+   without exceeding the maximum cluster size with respect to time.*/
 void CSaTScanData::SetIntervalCut() {
-  /* Calculates the number of time intervals to include in potential clusters */
-  /* without exceeding the maximum cluster size with respect to time.         */
-  /* gpPrintDirection->SatScanPrintf("Calculate number of time intervals...\n"); /*KR-6/22/97*/
-   long lTimeBetween;
+  ZdString      sIntervalCutMessage, sTimeIntervalType;
+  long          lMaxTemporalLength, lStudyPeriodLength;
 
-   try {
-      if (m_nTimeIntervals == 1)
-         m_nIntervalCut = 1;
-      else if (m_nTimeIntervals > 1) {
-//         if (m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
-           lTimeBetween = TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->GetTimeIntervalUnitsType())*m_pParameters->GetMaximumTemporalClusterSize()/100.0;
-           m_nIntervalCut = lTimeBetween / m_pParameters->GetTimeIntervalLength();
-//         }
-//        else
-//           m_nIntervalCut = m_pParameters->GetMaximumTemporalClusterSize() / m_pParameters->GetTimeIntervalLength();
-      }
+  try {
+    if (m_nTimeIntervals == 1)
+      m_nIntervalCut = 1;
+    else if (m_nTimeIntervals > 1) {
+      lStudyPeriodLength = TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->GetTimeIntervalUnitsType());
+      lMaxTemporalLength = lStudyPeriodLength * m_pParameters->GetMaximumTemporalClusterSize()/100.0;
+      m_nIntervalCut = lMaxTemporalLength / m_pParameters->GetTimeIntervalLength();
+    }
 
-      if (m_nIntervalCut==0) {
-         char sMessage[200];
-         strcpy(sMessage, "Error: The interval length is longer than the maximum cluster size with respect to time.\n");
-         strcat(sMessage, "       No clusters can be found.\n");
-         ZdGenerateException(sMessage, "SetIntervalCut()");
+    if (m_nIntervalCut==0) {
+      switch (m_pParameters->GetTimeIntervalUnitsType()) {
+          case YEAR  : sTimeIntervalType = "year"; break;
+          case MONTH : sTimeIntervalType = "month"; break;
+          case DAY   : sTimeIntervalType = "day"; break;
+          // if we get here, there is an error somewhere else
+          default: sTimeIntervalType = "none"; break;
+        };
+
+        if (m_pParameters->GetInitialMaxTemporalClusterSizeType() == TIMETYPE ) {
+          sIntervalCutMessage << "Error: A maximum temporal cluster size of %g %s%s is less than one\n";
+          sIntervalCutMessage << "       time interval of length %d %s%s. No clusters can be found.\n";
+          ZdException::Generate(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
+                                m_pParameters->GetInitialMaxTemporalClusterSize(), sTimeIntervalType.GetCString(),
+                                (m_pParameters->GetInitialMaxTemporalClusterSize() == 1 ? "" : "s"),
+                                m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString(),
+                                (m_pParameters->GetTimeIntervalLength() == 1 ? "" : "s"));
+        }
+        else if (m_pParameters->GetInitialMaxTemporalClusterSizeType() == PERCENTAGETYPE) {
+          sIntervalCutMessage << "Error: A maximum temporal cluster size that is %g percent of a study\n";
+          sIntervalCutMessage << "       period that is %d %s%s long, equates to %d %s%s which is less\n";
+          sIntervalCutMessage << "       than one time interval of length %d %s%s. No clusters can be found.\n";
+          ZdException::Generate(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
+                                m_pParameters->GetInitialMaxTemporalClusterSize(),
+                                lStudyPeriodLength, sTimeIntervalType.GetCString(), (lStudyPeriodLength == 1 ? "" : "s"),
+                                lMaxTemporalLength, sTimeIntervalType.GetCString(), (lMaxTemporalLength == 1 ? "" : "s"),
+                                m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString(),
+                                (m_pParameters->GetTimeIntervalLength() == 1 ? "" : "s"));
+        }
       }
    }
-   catch (SSException & x) {
-      x.AddCallpath("SetIntervalCut()", "CSaTScanData");
-      throw;
-   }
+  catch (ZdException &x) {
+    x.AddCallpath("SetIntervalCut()","CSaTScanData");
+    throw;
+  }
 }
 
 void CSaTScanData::SetIntervalStartTimes() {
    // Not neccessary for purely spatial?
    try {
-      m_pIntervalStartTimes = (Julian*) Smalloc((m_nTimeIntervals+1)*sizeof(Julian), gpPrintDirection);
+      m_pIntervalStartTimes = (Julian*) Smalloc((m_nTimeIntervals+1)*sizeof(Julian), gpPrint);
 
       m_pIntervalStartTimes[0] = m_nStartDate;
       m_pIntervalStartTimes[m_nTimeIntervals] = m_nEndDate+1;
@@ -440,34 +458,27 @@ void CSaTScanData::SetIntervalStartTimes() {
 
 /** Causes maximum circle size to be set based on parameters settings. */
 void CSaTScanData::SetMaxCircleSize() {
-   try
-     {
-     if (m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE)
-       m_nMaxCircleSize = (m_pParameters->GetMaximumGeographicClusterSize() / 100.0) * m_nTotalMeasure;
-     else if (m_pParameters->GetMaxGeographicClusterSizeType() == DISTANCETYPE)
-       m_nMaxCircleSize = m_pParameters->GetMaximumGeographicClusterSize();
-     else
-       SSGenerateException("Unknown maximum spatial cluster type: \"%i\".",
-                           "SetMaxCircleSize()", m_pParameters->GetMaxGeographicClusterSizeType());
-     }
-   catch (SSException & x)
-     {
-     x.AddCallpath("SetMaxCircleSize()", "CSaTScanData");
-     throw;
-     }
+  try {
+    switch (m_pParameters->GetMaxGeographicClusterSizeType()) {
+      case PERCENTAGEOFMEASURETYPE :
+           m_nMaxCircleSize = (m_pParameters->GetMaximumGeographicClusterSize() / 100.0) * m_nTotalMeasure;
+           break;
+      case DISTANCETYPE :
+           m_nMaxCircleSize = m_pParameters->GetMaximumGeographicClusterSize();
+           break;
+      default : ZdException::Generate("Unknown maximum spatial cluster type: '%i'.", "SetMaxCircleSize()",
+                                      m_pParameters->GetMaxGeographicClusterSizeType());
+    };
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetMaxCircleSize()","CSaTScanData");
+    throw;
+  }
 }
 
 void CSaTScanData::SetNumTimeIntervals() {
-   try {
-      long nTime = TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->GetTimeIntervalUnitsType());
-
-      m_nTimeIntervals = (int)ceil((float) nTime /
-                               (float) m_pParameters->GetTimeIntervalLength());
-   }
-   catch (SSException & x) {
-      x.AddCallpath("SetNumTimeIntervals()", "CSaTScanData");
-      throw;
-   }
+  long nTime = TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->GetTimeIntervalUnitsType());
+  m_nTimeIntervals = (int)ceil((float)nTime / (float)m_pParameters->GetTimeIntervalLength());
 }
 
 /* Calculates which time interval the prospectice space-time start date is in.*/
@@ -477,78 +488,86 @@ void CSaTScanData::SetProspectiveIntervalStart() {
   Julian  lProspStartDate;
 
   try {
-      lProspStartDate = m_pParameters->GetProspectiveStartDateAsJulian();
-      lTime = TimeBetween(m_nStartDate, lProspStartDate, m_pParameters->GetTimeIntervalUnitsType());
+    lProspStartDate = m_pParameters->GetProspectiveStartDateAsJulian();
+    lTime = TimeBetween(m_nStartDate, lProspStartDate, m_pParameters->GetTimeIntervalUnitsType());
+    m_nProspectiveIntervalStart = (int)ceil((float)lTime / (float)m_pParameters->GetTimeIntervalLength());
 
-      m_nProspectiveIntervalStart = (int)ceil((float) lTime /
-                               (float) m_pParameters->GetTimeIntervalLength());
-      if (m_nProspectiveIntervalStart < 0)
-         SSGenerateException("  Error: The Start Date of Prospective Space-Time is prior to the Study Begin Date.\n", "SetProspectiveIntervalStart");
-      else if (m_nProspectiveIntervalStart > m_nTimeIntervals)
-         SSGenerateException("  Error: The Start Date of Prospective Space-Time is after the Study End Date.\n", "SetProspectiveIntervalStart");
+    if (m_nProspectiveIntervalStart < 0)
+      ZdException::Generate("Error: The prospective start date '%s' is prior to the study period start date '%s'.\n",
+                            "SetProspectiveIntervalStart()", m_pParameters->GetProspectiveStartDate().c_str(),
+                            m_pParameters->GetStudyPeriodStartDate().c_str());
+    if (m_nProspectiveIntervalStart > m_nTimeIntervals)
+      ZdException::Generate("Error: The prospective start date '%s' is prior to the study period end date '%s'.\n",
+                            "SetProspectiveIntervalStart", m_pParameters->GetProspectiveStartDate().c_str(),
+                            m_pParameters->GetStudyPeriodEndDate().c_str());
   }
-   catch (SSException & x) {
-      x.AddCallpath("SetProspectiveIntervalStart()", "CSaTScanData");
-      throw;
-   }
+  catch (ZdException &x) {
+    x.AddCallpath("SetProspectiveIntervalStart()","CSaTScanData");
+    throw;
+  }
 }
 
 void CSaTScanData::SetPurelyTemporalCases() {
-   try {
-      m_pPTCases = (count_t*) Smalloc((m_nTimeIntervals+1)*sizeof(count_t), gpPrintDirection);
+  int   i, j;
 
-      for (int i=0; i<m_nTimeIntervals; ++i) {
-         m_pPTCases[i] = 0;
+  try {
+    m_pPTCases = (count_t*) Smalloc((m_nTimeIntervals+1)*sizeof(count_t), gpPrint);
 
-         for (int t=0; t<m_nTracts; ++t)
-            m_pPTCases[i] += m_pCases[i][t];
-      }
-   }
-   catch (SSException & x) {
-      x.AddCallpath("SetPurelyTemporalCases()", "CSaTScanData");
-      throw;
-   }
+    for (i=0; i < m_nTimeIntervals; ++i) {
+       m_pPTCases[i] = 0;
+       for (j=0; j < m_nTracts; ++j)
+          m_pPTCases[i] += m_pCases[i][j];
+    }
+  }
+  catch (SSException &x) {
+    x.AddCallpath("SetPurelyTemporalCases()","CSaTScanData");
+    throw;
+  }
 }
 
 void CSaTScanData::SetPurelyTemporalMeasures() {
-   try {
-      m_pPTMeasure = (measure_t*)Smalloc((m_nTimeIntervals+1) * sizeof(measure_t), gpPrintDirection);
+  int   i, j;
 
-      for (int i=0; i<m_nTimeIntervals; ++i) {
-         m_pPTMeasure[i] = 0;
-         for (int t=0; t<m_nTracts; ++t)
-            m_pPTMeasure[i] += m_pMeasure[i][t];
-      }
-   }
-   catch (SSException & x) {
-      x.AddCallpath("SetPurelyTemporalMeasures()", "CSaTScanData");
-      throw;
-   }
+  try {
+    m_pPTMeasure = (measure_t*)Smalloc((m_nTimeIntervals+1) * sizeof(measure_t), gpPrint);
+
+    for (i=0; i < m_nTimeIntervals; ++i) {
+       m_pPTMeasure[i] = 0;
+       for (j=0; j < m_nTracts; ++j)
+          m_pPTMeasure[i] += m_pMeasure[i][j];
+    }
+  }
+  catch (SSException &x) {
+    x.AddCallpath("SetPurelyTemporalMeasures()","CSaTScanData");
+    throw;
+  }
 }
 
 void CSaTScanData::SetPurelyTemporalSimCases() {
-   try {
-      for (int i = 0; i < m_nTimeIntervals; ++i) {
-         m_pPTSimCases[i] = 0;
-         for (int t = 0; t < m_nTracts; ++t)
-            m_pPTSimCases[i] += m_pSimCases[i][t];
-      }
-   }
-   catch (SSException & x) {
-      x.AddCallpath("SetPurelyTemporalSimCases()", "CSaTScanData");
-      throw;
-   }
+  int   i, j;
+
+  try {
+    for (i=0; i < m_nTimeIntervals; ++i) {
+       m_pPTSimCases[i] = 0;
+       for (j=0; j < m_nTracts; ++j)
+          m_pPTSimCases[i] += m_pSimCases[i][j];
+    }
+  }
+  catch (SSException &x) {
+    x.AddCallpath("SetPurelyTemporalSimCases()","CSaTScanData");
+    throw;
+  }
 }
 
 void CSaTScanData::SetStartAndEndDates() {
-   try {
-      m_nStartDate = m_pParameters->GetStudyPeriodStartDateAsJulian();
-      m_nEndDate   = m_pParameters->GetStudyPeriodEndDateAsJulian();
-   }
-   catch (SSException & x) {
-      x.AddCallpath("SetStartAndEndDates()", "CSaTScanData");
-      throw;
-   }
+  try {
+    m_nStartDate = m_pParameters->GetStudyPeriodStartDateAsJulian();
+    m_nEndDate   = m_pParameters->GetStudyPeriodEndDateAsJulian();
+  }
+  catch (SSException &x) {
+    x.AddCallpath("SetStartAndEndDates()","CSaTScanData");
+    throw;
+  }
 }
 
 

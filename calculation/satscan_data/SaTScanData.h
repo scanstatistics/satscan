@@ -15,20 +15,30 @@
 
 class CModel;
 
-class CSaTScanData
-{
-  protected:
-     BasePrint  *gpPrintDirection;
-     double     m_nAnnualRatePop;
+class CSaTScanData {
+  private:
+    void                        Init();
 
-     void               Init();
-     void               SetStartAndEndDates();
-     virtual void       SetNumTimeIntervals();
-     virtual void       SetIntervalCut();
-     virtual void       SetIntervalStartTimes();
-     void               SetProspectiveIntervalStart();
-     void               SetPurelyTemporalCases();
-     void               SetPurelyTemporalMeasures();
+  protected:
+    BasePrint                 * gpPrint;
+    double                      m_nAnnualRatePop;
+    PopulationCategories        gPopulationCategories;
+
+
+    void                        AllocateCountStructure(count_t***  pCounts);
+    void                        DeallocateCountStructure(count_t***  pCounts);
+    bool                        ReadCartesianCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
+                                                         int & iScanCount, int iWordOffSet, long lRecNum, const char * sSourceFile);
+    bool                        ReadCounts(ZdIO & SourceFile, const char* szDescription, count_t**  pCounts);
+    bool                        ReadLatitudeLongitudeCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
+                                                                 int iWordOffSet, long lRecNum, const char * sSourceFile);
+    void                        SetStartAndEndDates();
+    virtual void                SetNumTimeIntervals();
+    virtual void                SetIntervalCut();
+    virtual void                SetIntervalStartTimes();
+    void                        SetProspectiveIntervalStart();
+    void                        SetPurelyTemporalCases();
+    void                        SetPurelyTemporalMeasures();
 
   public:
     CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection);
@@ -36,7 +46,6 @@ class CSaTScanData
 
     CParameters* m_pParameters;
     CModel*      m_pModel;
-    Cats *gpCats;            // DTG
     TractHandler *gpTInfo;          // DTG
     GInfo *gpGInfo;          // DTG
 
@@ -77,12 +86,12 @@ class CSaTScanData
     virtual void DisplaySimCases(FILE* pFile);
 
 
-    void        AdjustNeighborCounts(); // For sequential analysis, after top cluster removed
-    inline Cats *GetCats() { return gpCats; };           // DTG
-    int         ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate);
-    bool        ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, Julian & JulianDate);
-    void        DisplaySummary(FILE* fp);
-    void        DisplaySummary2(FILE* fp);
+    void                                AdjustNeighborCounts(); // For sequential analysis, after top cluster removed
+    const PopulationCategories        & GetPopulationCategories() const {return gPopulationCategories;}
+    int                                 ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate);
+    bool                                ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, Julian & JulianDate);
+    void                                DisplaySummary(FILE* fp);
+    void                                DisplaySummary2(FILE* fp);
 
     double      GetAnnualRate() const;
     double      GetAnnualRateAtStart() const;
@@ -94,19 +103,20 @@ class CSaTScanData
     inline const GInfo *GetGInfo() const { return gpGInfo;} ;
 
     void        IncrementCount(tract_t nTID, int nCount, Julian nDate, count_t** pCounts);
-    bool        ParseCountLine(const char*  szDescription, int nRec, char* szData, tract_t& tid, count_t& nCount, Julian& nDate);
+    bool        ParseCountLine(const char*  szDescription, int nRec, StringParser & Parser, tract_t& tid, count_t& nCount, Julian& nDate);
     bool        ParseCountLineCategories(const char*   szDescription, const int     nRec, char*   szData, const int     nCats,
                                   const int     nDataElements, const tract_t tid, const count_t nCount, const Julian  nDate);
     void        PrintNeighbors();
 
-    bool        ReadCounts(const char* szCountFilename, const char* szDescription, count_t***  pCounts);
-    bool        ReadGrid();
-    bool        ReadGridLatLong();
-    bool        ReadGridCoords();
-    bool        ReadGeo();
-    bool        ReadGeoLatLong();
-    bool        ReadGeoCoords();
-    bool        ReadPops();
+    bool        ReadCaseFile();
+    bool        ReadControlFile();
+    bool        ReadCoordinatesFile();
+    bool        ReadCoordinatesFileAsLatitudeLongitude();
+    bool        ReadCoordinatesFileAsCartesian();
+    bool        ReadGridFile();
+    bool        ReadGridFileAsCartiesian();
+    bool        ReadGridFileAsLatitudeLongitude();
+    bool        ReadPopulationFile();
 
     void        SetPurelyTemporalSimCases();
     void        SetMaxCircleSize();
