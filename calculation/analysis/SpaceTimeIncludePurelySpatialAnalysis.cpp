@@ -54,7 +54,7 @@ void C_ST_PS_Analysis::AllocateSimulationObjects(const AbtractDataStreamGateway 
       }
       else {
         //create cluster object used as comparator when iterating over centroids and time intervals
-//        gpPSClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, (int)m_pParameters->GetAreaScanRateType());
+        gpPSClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, (int)gParameters.GetAreaScanRateType());
         //initialize list of top circle/ellipse clusters
         gpPSTopShapeClusters->SetTopClusters(*gpPSClusterComparator);
       }
