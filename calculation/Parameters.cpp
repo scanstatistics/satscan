@@ -338,7 +338,7 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
   try {
     switch (geAnalysisType) {
       case PURELYSPATIAL             : fprintf(fp, "Purely Spatial analysis\n"); break;
-      case PURELYTEMPORAL            : fprintf(fp, "Purely Temporal analysis\n"); break;
+      case PURELYTEMPORAL            : fprintf(fp, "Retrospective Purely Temporal analysis\n"); break;
       case SPACETIME                 : fprintf(fp, "Retrospective Space-Time analysis\n"); break;
       case PROSPECTIVESPACETIME      : fprintf(fp, "Prospective Space-Time analysis\n"); break;
       case SPATIALVARTEMPTREND       : fprintf(fp, "Spatial Variation of Temporal Trends analysis\n"); break;
