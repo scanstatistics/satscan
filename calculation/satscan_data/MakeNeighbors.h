@@ -63,8 +63,6 @@ void MakeNeighbors(const TractHandler* pTInfo, const GInfo* pGInfo, tract_t***  
                    const std::vector<double>& vEllipseShapes, const std::vector<int>& vNumEllipseRotations,
                    int iSpatialMaxType, BasePrint* pPrintDirection);
 
-void PrintNeighbors(long lTotalEllipses, tract_t GridTracts, tract_t ***Sorted, BasePrint *pPrintDirection);
-
 /** MK 5.2001 - This function transforms the x and y coordinates so that circles
     in the transformed space represent ellipsoids in the original space.
     The input is the old X and Y coordinates, the angle of the longest

@@ -128,14 +128,14 @@ void MakeNeighbors(const TractHandler* pTInfo, const GInfo* pGInfo, tract_t*** S
 
         if (SortedInt)
            {
-           SortedInt[0][t] = (tract_t*)Smalloc(NeighborCounts[0][t] * sizeof(tract_t), pPrintDirection);
+           SortedInt[0][t] = new tract_t[NeighborCounts[0][t]];
            /* copy tract numbers */
            for (j = NeighborCounts[0][t]-1; j >= 0; j--)
              SortedInt[0][t][j] = vTractDistances[j].GetTractNumber();
            }
         else
            {
-           SortedUShort[0][t] = (unsigned short*)Smalloc(NeighborCounts[0][t] * sizeof(unsigned short), pPrintDirection);
+           SortedUShort[0][t] = new unsigned short[NeighborCounts[0][t]];
            /* copy tract numbers */
            for (j = NeighborCounts[0][t]-1; j >= 0; j--)
              SortedUShort[0][t][j] = vTractDistances[j].GetTractNumber();
@@ -198,14 +198,14 @@ void MakeNeighbors(const TractHandler* pTInfo, const GInfo* pGInfo, tract_t*** S
 
                    if (SortedInt)
                       {
-                      SortedInt[lCurrentEllipse][t] = (tract_t*)Smalloc(NeighborCounts[lCurrentEllipse][t] * sizeof(tract_t), pPrintDirection);
+                      SortedInt[lCurrentEllipse][t] = new tract_t[NeighborCounts[lCurrentEllipse][t]];
                       /* copy tract numbers */
                       for (j = NeighborCounts[lCurrentEllipse][t]-1; j >= 0; j--)
                          SortedInt[lCurrentEllipse][t][j] = vTractDistances[j].GetTractNumber();
                       }
                    else
                       {
-                      SortedUShort[lCurrentEllipse][t] = (unsigned short*)Smalloc(NeighborCounts[lCurrentEllipse][t] * sizeof(unsigned short), pPrintDirection);
+                      SortedUShort[lCurrentEllipse][t] = new unsigned short[NeighborCounts[lCurrentEllipse][t]];
                       /* copy tract numbers */
                       for (j = NeighborCounts[lCurrentEllipse][t]-1; j >= 0; j--)
                          SortedUShort[lCurrentEllipse][t][j] = vTractDistances[j].GetTractNumber();
@@ -233,33 +233,6 @@ void MakeNeighbors(const TractHandler* pTInfo, const GInfo* pGInfo, tract_t*** S
       }
 }
 
-void PrintNeighbors(long lTotalNumEllipses, tract_t GridTracts, tract_t ***Sorted, BasePrint *pPrintDirection)
-{
-   FILE* pFile;
-   int i, j, k;
-
-   try
-      {
-      if ((pFile = fopen("c:\\SatScan V.2.1.4\\Borland Calc\\neighbors.txt", "w")) == NULL)
-         ZdGenerateException("Error: Unable to open neighbors file.\n", "PrintNeighbors()");
-      else
-         {
-         for (i = 0; i <= lTotalNumEllipses; i ++)
-            for (j = 0; j < GridTracts; j++)
-               {
-               k = 0;
-               while (Sorted[i][j][k] >= 0)
-                  fprintf(pFile, "was here %i \n", Sorted[i][j][k++]);
-               }
-         fclose(pFile);
-         }
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("PrintNeighbors()", "MakeNeighbors.cpp");
-      throw;
-      }
-}
 
 //---------------------------------------------------------- MK 5.2001 -
 // This function transforms the x and y coordinates so that circles
