@@ -80,26 +80,64 @@ void CSaTScanData::DisplayNeighbors(FILE* pFile) {
 }
 
 void CSaTScanData::DisplaySummary(FILE* fp) {
-  fprintf(fp, "________________________________________________________________\n\n");
+  ZdString              sBuffer, sWork;
+  AsciiPrintFormat      PrintFormat(gpDataStreams->GetNumStreams() == 1);
+  unsigned int          i;
+
+
+  PrintFormat.SetMarginsAsSummarySection();
+
+  PrintFormat.PrintSectionSeparatorString(fp, 0, 2);
   fprintf(fp, "SUMMARY OF DATA\n\n");
-  fprintf(fp, "Study period .........: %s - %s\n",
-              m_pParameters->GetStudyPeriodStartDate().c_str(),
-              m_pParameters->GetStudyPeriodEndDate().c_str());
-  fprintf(fp, "Number of census areas: %ld\n", (long) m_nTracts);
-  if (m_pParameters->GetProbabiltyModelType() == POISSON || m_pParameters->GetProbabiltyModelType() == BERNOULLI)
-    fprintf(fp, "Total population .....: %.0f\n", gpDataStreams->GetStream(0/*for now*/).GetTotalPopulation());
-  fprintf(fp, "Total cases ..........: %ld\n",  gpDataStreams->GetStream(0/*for now*/).GetTotalCasesAtStart());
-  if (m_pParameters->GetProbabiltyModelType() == POISSON)
-    fprintf(fp, "Annual cases / %.0f.: %.1f\n",
-                GetAnnualRatePop(), GetAnnualRateAtStart());
+
+  PrintFormat.PrintSectionLabel(fp, "Study period", false, false);
+  fprintf(fp,"%s - %s\n",
+          m_pParameters->GetStudyPeriodStartDate().c_str(),
+          m_pParameters->GetStudyPeriodEndDate().c_str());
+
+  PrintFormat.PrintSectionLabel(fp, "Number of census areas", false, false);
+  fprintf(fp, "%ld\n", (long) m_nTracts);
+
+  if (m_pParameters->GetProbabiltyModelType() == POISSON || m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
+    PrintFormat.PrintSectionLabel(fp, "Total population", true, false);
+    sBuffer.printf("%.0f", gpDataStreams->GetStream(0).GetTotalPopulation());
+    for (i=1; i < gpDataStreams->GetNumStreams(); ++i) {
+      sWork.printf(", %.0f", gpDataStreams->GetStream(i).GetTotalPopulation());
+      sBuffer << sWork;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+  }
+
+  PrintFormat.PrintSectionLabel(fp, "Total cases", true, false);
+  sBuffer.printf("%ld", gpDataStreams->GetStream(0).GetTotalCasesAtStart());
+  for (i=1; i < gpDataStreams->GetNumStreams(); ++i) {
+     sWork.printf(", %ld", gpDataStreams->GetStream(i).GetTotalCasesAtStart());
+     sBuffer << sWork;
+  }
+  PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+
+  if (m_pParameters->GetProbabiltyModelType() == POISSON) {
+    sBuffer.printf("Annual cases / %.0f",  GetAnnualRatePop());
+    PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), true, false);
+    sBuffer.printf("%.1f", GetAnnualRateAtStart(0));
+    for (i=1; i < gpDataStreams->GetNumStreams(); ++i) {
+       sWork.printf(", %.1f", GetAnnualRateAtStart(i));
+       sBuffer << sWork;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+  }
+
   if (m_pParameters->GetAnalysisType() == SPATIALVARTEMPTREND) {
     double nAnnualTT = gpDataStreams->GetStream(0/*for now*/).GetTimeTrend().SetAnnualTimeTrend(m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
     if (gpDataStreams->GetStream(0/*for now*/).GetTimeTrend().IsNegative())
-      fprintf(fp, "Annual decrease.......: %.3lf%%\n", nAnnualTT);
+      sBuffer = "Annual decrease";
     else
-      fprintf(fp, "Annual increase.......: %.3lf%%\n", nAnnualTT);
+      sBuffer = "Annual increase";
+    PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), false, false);
+    fprintf(fp, "%.3lf%%\n", nAnnualTT);
+    fprintf(fp, "\n");
   }
-  fprintf(fp, "________________________________________________________________\n");
+  PrintFormat.PrintSectionSeparatorString(fp, 0, 1);
 }
 
 void CSaTScanData::DisplaySummary2(FILE* fp) {
@@ -117,7 +155,7 @@ void CSaTScanData::DisplaySummary2(FILE* fp) {
     fprintf(fp, "TotalMeasure........: %.0f\n", gpDataStreams->GetStream(t).GetTotalMeasure());
     fprintf(fp, "MaxCircleSize.......: %.2f\n", m_nMaxCircleSize);
   }
-  fprintf(fp, "________________________________________________________________\n");
+  AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 1);
 }
 
 // formats the information necessary in the relative risk output file and prints to the specified format
