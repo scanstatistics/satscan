@@ -660,7 +660,7 @@ void CSaTScanData::SetAdditionalCaseArrays(RealDataStream & thisStream) {
   try {
     if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
         gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
-      thisStream.SetCasesByTimeInterval();  
+      thisStream.SetCasesPerTimeIntervalArray();  
   }
   catch (ZdException &x) {
     x.AddCallpath("SetAdditionalCaseArrays()","CSaTScanData");
