@@ -612,9 +612,9 @@ void CAnalysis::PerformSimulations() {
 
         // assign replication format string here to prevent another check in loop
         if (m_pParameters->m_nModel == SPACETIMEPERMUTATION)
-          sReplicationFormatString = "Test statistic for #%ld of %ld Replications: %7.2f\n";
+          sReplicationFormatString = "SaTScan test statistic for #%ld of %ld replications: %7.2f\n";
         else
-          sReplicationFormatString = "Log Likelihood Ratio for #%ld of %ld Replications: %7.2f\n";
+          sReplicationFormatString = "SaTScan log likelihood ratio for #%ld of %ld replications: %7.2f\n";
 
         if (m_pParameters->m_bSaveSimLogLikelihoods || m_pParameters->GetDBaseOutputLogLikeli())
            pLLRData.reset( new LogLikelihoodData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str()) );
