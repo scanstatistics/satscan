@@ -732,13 +732,38 @@ void __fastcall TfrmAnalysis::FormActivate(TObject *Sender) {
 
 //---------------------------------------------------------------------------
 /** form close event - added parameter filename to history list */
-void __fastcall TfrmAnalysis::FormClose(TObject *Sender, TCloseAction &Action) {
-  Action = caFree;
+void __fastcall TfrmAnalysis::FormClose(TObject *Sender , TCloseAction &Action) {
   try {
-    GetToolkit().AddParameterToHistory(gParameters.GetSourceFileName().c_str());
-    frmMainForm->RefreshOpenList();
+    if ((Action = (gbPromptOnExist ? (QueryWindowCanClose() ? caFree : caNone) : caFree)) == caFree) {
+      GetToolkit().AddParameterToHistory(gParameters.GetSourceFileName().c_str());
+      frmMainForm->RefreshOpenList();
+    }
   }
   catch(...){}
+}
+
+/** Determines whether window can be closed by comparing parameter settings contained
+    in window verse intial parameter settings. */
+bool TfrmAnalysis::QueryWindowCanClose() {
+  bool  bReturn=true;
+
+    SaveParameterSettings();
+    if (gParameters != gInitialParameters) {
+      BringToFront();
+      switch (Application->MessageBox("Parameter settings have changed. Do you want to save?", "Save?", MB_YESNOCANCEL)) {
+        case IDYES    : if (WriteSession())
+                          gbPromptOnExist = false;
+                        else
+                          bReturn = false;
+                        break;
+        case IDCANCEL : bReturn = false;
+                        break;
+        case IDNO     :                 
+        default       : gbPromptOnExist = false;
+                        break;
+      }
+    }
+    return bReturn;
 }
 
 //---------------------------------------------------------------------------
@@ -877,6 +902,7 @@ DatePrecisionType TfrmAnalysis::GetTimeAggregationControlType() const {
 /** class initialization */
 void TfrmAnalysis::Init() {
   gpfrmAdvancedParameters = 0;
+  gbPromptOnExist = true;
 }
 //---------------------------------------------------------------------------
 /** returns whether replications are correct */
@@ -1113,17 +1139,22 @@ void __fastcall TfrmAnalysis::rgpPrecisionTimesClick(TObject *Sender) {
 
 //---------------------------------------------------------------------------
 /** launches 'save as' dialog to permit user saving current settings to parameter file */
-void TfrmAnalysis::SaveAs() {
+bool TfrmAnalysis::SaveAs() {
+  bool  bSaved=true;
+
   try {
     if (SaveDialog->Execute()) {
       WriteSession(SaveDialog->FileName.c_str());
       Caption = SaveDialog->FileName;
     }
+    else
+     bSaved = false; 
   }
   catch (ZdException & x) {
     x.AddCallpath("SaveAs()", "TfrmAnalysis");
     throw;
   }
+  return bSaved;
 }
 
 //---------------------------------------------------------------------------
@@ -1338,6 +1369,7 @@ void TfrmAnalysis::Setup(const char * sParameterFileName) {
     }
     DefaultHiddenParameters();
     SetupInterface();
+    gInitialParameters = gParameters;
   }
   catch (ZdException & x) {
     x.AddCallpath("Setup()", "TfrmAnalysis");
@@ -1570,13 +1602,14 @@ bool TfrmAnalysis::ValidateParams() {
 
 //---------------------------------------------------------------------------
 /** Writes the session information to disk */
-void TfrmAnalysis::WriteSession(const char * sParameterFilename) {
+bool TfrmAnalysis::WriteSession(const char * sParameterFilename) {
   std::string   sFilename;
+  bool          bSaved=true;
 
   try {
     sFilename = (sParameterFilename ? sParameterFilename : gParameters.GetSourceFileName().c_str());
     if (sFilename.empty())
-      SaveAs();
+      bSaved = SaveAs();
     else {
       if (!access(sFilename.c_str(), 00) && access(sFilename.c_str(), 02))
         ZdException::GenerateNotification("Unable to save session parameters.\n"
@@ -1584,13 +1617,14 @@ void TfrmAnalysis::WriteSession(const char * sParameterFilename) {
                                           "WriteSession()");
       SaveParameterSettings();
       ParameterAccessCoordinator(gParameters).Write(sFilename.c_str(), gNullPrint);
+      gInitialParameters = gParameters;
     }
   }
   catch (ZdException & x) {
     x.AddCallpath("WriteSession()", "TfrmAnalysis");
     throw;
   }
+  return bSaved;
 }
 //---------------------------------------------------------------------------
-
 

@@ -80,13 +80,13 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TRadioButton *rdoHighRates;
    TRadioButton *rdoLowRates;
    TRadioButton *rdoHighLowRates;
-        TGroupBox *rgpTimeAggregationUnits;
-        TLabel *lblTimeAggregationUnits;
-        TLabel *lblTimeAggregationLength;
-        TRadioButton *rdoTimeAggregationYear;
-        TRadioButton *rdoTimeAggregationMonths;
-        TRadioButton *rdoTimeAggregationDay;
-        TEdit *edtTimeAggregationLength;
+   TGroupBox *rgpTimeAggregationUnits;
+   TLabel *lblTimeAggregationUnits;
+   TLabel *lblTimeAggregationLength;
+   TRadioButton *rdoTimeAggregationYear;
+   TRadioButton *rdoTimeAggregationMonths;
+   TRadioButton *rdoTimeAggregationDay;
+   TEdit *edtTimeAggregationLength;
    TLabel *Label11;
    TLabel *Label13;
    TGroupBox *grpCountData;
@@ -122,7 +122,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TBitBtn *btnCoordImport;
    TBitBtn *btnGridImport;
    TStaticText *stUnitText;
-        TRadioButton *rdoOrdinalModel;
+   TRadioButton *rdoOrdinalModel;
    
    void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
    void __fastcall rgpPrecisionTimesClick(TObject *Sender);
@@ -162,7 +162,9 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
   private:
     PrintNull                   gNullPrint;
     CParameters                 gParameters;
+    CParameters                 gInitialParameters;
     TfrmAdvancedParameters    * gpfrmAdvancedParameters;
+    bool                        gbPromptOnExist;
 
     double                      CalculateTimeAggregationUnitsInStudyPeriod() const;
     void                        CheckAnalysisParams();
@@ -213,7 +215,8 @@ public:		// User declarations
     const char                * GetFileName();
     CParameters               * GetSession();
     void                        LaunchImporter(const char * sFileName, InputFileType eFileType) ;
-    void                        SaveAs();
+    bool                        QueryWindowCanClose();
+    bool                        SaveAs();
     void                        SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsByRelativeRisksFileName);
     void                        SetCaseFile(const char * sCaseFileName);
     void                        SetControlFile(const char * sControlFileName);
@@ -229,7 +232,7 @@ public:		// User declarations
     static void                 StoreEditText(TEdit& Month, TEdit& Day);
     static void                 ValidateDate(TEdit& YearControl, TEdit& MonthControl, TEdit& DayControl);
     bool                        ValidateParams();
-    void                        WriteSession(const char * sParameterFilename=0);
+    bool                        WriteSession(const char * sParameterFilename=0);
 };
 //---------------------------------------------------------------------------
 #endif
