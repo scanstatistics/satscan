@@ -7,213 +7,24 @@ const int POPULATION_DATE_PRECISION_MONTH_DEFAULT_DAY   = 15;
 const int POPULATION_DATE_PRECISION_YEAR_DEFAULT_DAY    = 1;
 const int POPULATION_DATE_PRECISION_YEAR_DEFAULT_MONTH  = 7;
 
-void DeleteCVEC(char **cvec, int nCats);
+/** Allocates two dimensional array (number time intervals by locations) */
+void CSaTScanData::AllocateCountStructure(count_t***  pCounts) {
+  int   j, i=0;
 
-bool CSaTScanData::ReadCounts(const char* szCountFilename, const char* szDescription, count_t***  pCounts) {
-   int   nRec = 0;
-   bool  bValid = true, bEmpty = true;
-   FILE* fp;
-   char  szData[MAX_LINESIZE];
-   count_t nCount;
-   Julian  nDate;
-   tract_t tid;
-
-   try {
-     gpPrintDirection->SatScanPrintf("Reading the %s file\n", szDescription);
-
-     if ((fp = fopen(szCountFilename, "r")) == NULL) {
-        gpPrintDirection->SatScanPrintWarning("  Error: Could not open %s.\n", szCountFilename);
-        return false;
-     }
-
-      // Allocate for counts
-      *pCounts = (count_t**)Smalloc(m_nTimeIntervals * sizeof(count_t *), gpPrintDirection);
-      for(int i = 0; i < m_nTimeIntervals; ++i) {
-        (*pCounts)[i] = (count_t*)Smalloc(m_nTracts * sizeof(count_t), gpPrintDirection);
-        // Initialize counts
-         for(int j = 0; j < m_nTracts; ++j)
-            (*pCounts)[i][j]=0;
-      }
-
-      while (fgets(szData, MAX_LINESIZE, fp)) {
-        ++nRec;
-        if (GetWord(szData, 0, gpPrintDirection) != 0) {
-          bEmpty = false;
-
-          if (!ParseCountLine(szDescription, nRec, szData, tid, nCount, nDate))
-            bValid = false;
-          else
-            IncrementCount(tid, nCount, nDate, *pCounts);
-        }
-      }
-
-      if (bEmpty) {
-        gpPrintDirection->SatScanPrintWarning("  Error: File with %s data is empty.\n", szDescription);
-        bValid = false;
-      }
-    
-      fclose(fp);
-   }
-   catch (SSException & x) {
-      x.AddCallpath("ReadCounts()", "CSaTScanData");
-      throw;
-   }
-  return bValid;
-};
-
-bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* szData, tract_t& tid, count_t& nCount, Julian& nDate) {
-   unsigned int 	nYear, nMonth = 1, nDay = 1;
-   float        	fTempCount; 
-   int    		i, cat, nScanResult, nDataElements=3, nCats=gpCats->catGetNumEls();
-   bool   		bCatsMissing=false;
-   long   		count;
-   char	             ** cvec, szTid[MAX_LINEITEMSIZE];
-   BasePrint::eInputFileType       eFileType;
-
-   try {
-      cvec = (char**)Smalloc(nCats * sizeof(char *), gpPrintDirection);
-      //set all pointers to zero, so you can clean up appropriately later
-      memset(cvec, 0, nCats * sizeof(char *));
-
-      //Parse tract id, count, & date from record
-      switch (m_pParameters->GetPrecisionOfTimesType()) {
-        case 0: nScanResult=sscanf(szData, "%s %f", szTid, &fTempCount);
-                JulianToMDY(&nMonth, &nDay, &nYear, m_nStartDate);
-                nDataElements--;
-                break;
-        case 1: nScanResult=sscanf(szData, "%s %f %d", szTid, &fTempCount, &nYear); break;
-        case 2: nScanResult=sscanf(szData, "%s %f %d/%d", szTid, &fTempCount, &nYear, &nMonth); break;
-        case 3: nScanResult=sscanf(szData, "%s %f %d/%d/%d", szTid, &fTempCount, &nYear, &nMonth, &nDay); break;
-      }
-      // Value read from sscanf for nCount might be a float, in which case, preventing sscanf
-      // from reading remaining variables correctly. 
-      nCount = static_cast<count_t>(fTempCount);
-
-      eFileType = (!strcmp(szDescription, "case") ? BasePrint::CASEFILE : BasePrint::CONTROLFILE);
-
-      //Check: tract, count, & date exist
-      if (nScanResult < m_pParameters->GetPrecisionOfTimesType() + 2) {
-        free(cvec);
-        gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Invalid record in %s file, line %d.\n", szDescription, nRec);
-        gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "         Please see '%s file format' in the help file.\n", szDescription);
-        return false;
-      }
-    
-      //Check: tract id valid
-      tid = gpTInfo->tiGetTractIndex(szTid);
-    
-      if (tid == -1) {
-        free(cvec);
-        gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Invalid tract ID in %s file, line %d.\n", szDescription, nRec);
-        gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "         This ID is not found in the coordinates file.\n");
-        return false;
-      }
-    
-      //Check: count >= 0
-      if (nCount < 0) {
-        free(cvec);
-        gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Negative (or very large) count found in %s file, line %d.\n",szDescription, nRec);
-        return false;
-      }
-    
-      //Ensure four digit years
-      int nYear4 = Ensure4DigitYear(nYear, const_cast<char*>(m_pParameters->GetStudyPeriodStartDate().c_str()), const_cast<char*>(m_pParameters->GetStudyPeriodEndDate().c_str()));
-      switch (nYear4) {
-          case -1:gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Due to study period greater than 100 years, unable\n"
-                                                                            "         to convert two digit year in %s file, line %d.\n"
-                                                                            "         Please use four digit years.\n", szDescription, nRec);
-                  free(cvec);
-                  return false;
-          case -2:fprintf(stderr,"  Error: Invalid year in %s file, line %d.\n", szDescription, nRec);
-                  gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Invalid year in %s file, line %d.\n", szDescription, nRec);
-                  free(cvec);
-                  return false;
-      }
-    
-      //Check: startdate <= date <= enddate
-      nDate = MDYToJulian(nMonth, nDay, nYear4);
-    
-      if (!(m_nStartDate <= nDate && nDate <= m_nEndDate)) {
-        free(cvec);
-        gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Out of range time in %s file, line %d.\n"
-                                                                  "         Times must correspond to study period specified on the Analysis Tab.\n" ,szDescription, nRec);
-        return false;
-      }
-
-      //Parse line for categories
-      if ((m_pParameters->GetProbabiltyModelType()==POISSON) ||
-          (m_pParameters->GetProbabiltyModelType()==SPACETIMEPERMUTATION && m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE) ||
-          (m_pParameters->GetProbabiltyModelType()==BERNOULLI && strcmp(szDescription,"control")==0)) {
-        i            = 0;
-
-        while (i < nCats && !bCatsMissing) {
-          char* p = GetWord(szData, i + nDataElements, gpPrintDirection);
-          if (p == 0)
-            bCatsMissing = true;
-          else
-            Sstrcpy(&cvec[i],p, gpPrintDirection);
-          ++i;
-        }
-    
-        //Check: category missing?
-        if (bCatsMissing) {
-          DeleteCVEC(cvec, nCats);
-          gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Missing category variable in %s file, line %d.\n"
-                                                                    "         Category combinations must correspond to those specified\n"
-                                                                    "         in the population file.\n",szDescription,nRec);
-          return false;
-        }
-    
-        //Check: extra categories?
-        if (GetWord(szData, nCats + nDataElements, gpPrintDirection)) {
-          DeleteCVEC(cvec, nCats);
-          gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Extra data in %s file, line %d.\n"
-                                                                    "         Please see '%s file format' in the help file.\n", szDescription, nRec, szDescription);
-          return false;
-        }
-
-        if (m_pParameters->GetProbabiltyModelType() == POISSON ||
-            (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION &&
-             m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE)) {
-          //Check: categories correct?
-          cat = gpCats->catGetCat(cvec);
-          if (cat == -1) {
-            DeleteCVEC(cvec, nCats);
-            gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Invalid category in %s file, line %d.\n"
-                                                                      "         Category combinations must correspond to those specified\n"
-                                                                      "         in the population file.\n" ,szDescription, nRec);
-            return false;
-          }
-
-          if (!gpTInfo->tiAddCount(tid, cat, nCount)) {
-            // KR (980916) : Aren't all these errors trapped above?
-            DeleteCVEC(cvec, nCats);
-            gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Record in %s file with no matching population record, line %d.\n", szDescription, nRec);
-            return false;
-          }
-        }
-      }
-      DeleteCVEC(cvec, nCats);
-
+  try {
+    // Allocate for counts 
+    *pCounts = (count_t**)Smalloc(m_nTimeIntervals * sizeof(count_t *), gpPrint);
+    for (; i < m_nTimeIntervals; ++i) {
+       (*pCounts)[i] = (count_t*)Smalloc(m_nTracts * sizeof(count_t), gpPrint);
+       for (j=0; j < m_nTracts; ++j) (*pCounts)[i][j]=0; //initialize to zero
+    }   
   }
-   catch (SSException & x) {
-      DeleteCVEC(cvec, nCats);
-      x.AddCallpath("ParseCountLine()", "CSaTScanData");
-      throw;
+  catch(ZdException &x) {
+    //free any allocated memory
+    while (*pCounts && --i >= 0) free((*pCounts)[i]);
+    free(*pCounts); *pCounts=0;
+    throw;
   }
-  return true;
-}
-
-void DeleteCVEC(char **cvec, int nCats) {
-   for (int i = 0; i < nCats; ++i)
-    free(cvec[i]);
-  free(cvec);
-}
-
-void CSaTScanData::IncrementCount(tract_t nTID, int nCount, Julian nDate, count_t** pCounts) {
-  pCounts[0][nTID] += nCount;
-  for (int i=1; nDate >= m_pIntervalStartTimes[i]; ++i)
-        pCounts[i][nTID] += nCount;
 }
 
 /** Converts passed string specifiying a population date to a julian date.
@@ -246,20 +57,22 @@ bool CSaTScanData::ConvertPopulationDateToJulian(const char * sDateString, int i
                 break;
       default : bValidDate = false;
     }
-
     if (! bValidDate)
-      gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Invalid date \"%s\" in population file, line %d.\n", sDateString, iRecordNumber);
+      gpPrint->PrintInputWarning("Error: Invalid date '%s' in population file, record %d.\n", sDateString, iRecordNumber);
     else {
       iYear = Ensure4DigitYear(iYear, const_cast<char*>(m_pParameters->GetStudyPeriodStartDate().c_str()), const_cast<char*>(m_pParameters->GetStudyPeriodEndDate().c_str()));
       switch (iYear) {
-        case -1 : gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Due to the study period being greater than 100 years, unable\n");
-                  gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "         to determine century for two digit year \"%d\" in population file, line %d.\n",
-                                                                  iYear, iRecordNumber);
-                  gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "         Please use four digit years.\n");
+        case -1 : gpPrint->PrintInputWarning("Error: Due to the study period being greater than 100 years, unable\n");
+                  gpPrint->PrintInputWarning("       to determine century for two digit year '%d' in population file, record %d.\n",
+                                                      iYear, iRecordNumber);
+                  gpPrint->PrintInputWarning("       Please use four digit years.\n");
                   bValidDate = false;
-        case -2 : gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Invalid year \"%d\" in population file, line %d.\n", iYear, iRecordNumber);
+        case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in population file, record %d.\n", iYear, iRecordNumber);
                   bValidDate = false;
-        default : JulianDate = MDYToJulian(iMonth, iDay, iYear);
+        default : if ((JulianDate = MDYToJulian(iMonth, iDay, iYear)) == 0) {
+                    gpPrint->PrintInputWarning("Error: Invalid date '%s' in population file, record %d.\n", sDateString, iRecordNumber);
+                    bValidDate = false;
+                  }
       }
     }
   }
@@ -270,676 +83,816 @@ bool CSaTScanData::ConvertPopulationDateToJulian(const char * sDateString, int i
   return bValidDate;
 }
 
-/**********************************************************************
- Read the population file
- The number of category variables is determined by the first record.
- Any records deviating from this number will cause an error.
- Also, if the program is unable to read the tract-id, year, or population
- for a record, the program will issue an error.  The tract-id MUST match
- one read in ReadGeo().
- Return value:
-   1 = success
-   0 = errors encountered
- **********************************************************************/
-bool CSaTScanData::ReadPops() {
-  FILE                          * fp; // Ptr to population file
-  std::vector<Julian>             vPopulationDates;
-  std::vector<Julian>::iterator   itrdates;
-  char                          * ptr, ** cvec = 0,
-                                  sDateString[MAX_LINEITEMSIZE], szData[MAX_LINESIZE], szTid[MAX_LINEITEMSIZE];
-  int                             i, iCategoryIndex, iNumCategories;
-  bool                            bValid=true, bEmpty=true;
-  tract_t                         nRec=0, nNonBlankLines, tract;
-  float                           fPopulation;
-  Julian                          PopulationDate;
+/** Dellocates two dimensional array (number time intervals by locations) */
+void CSaTScanData::DeallocateCountStructure(count_t***  pCounts) {
+  try {
+    for (int i=0; *pCounts && i < m_nTimeIntervals; ++i)
+       free((*pCounts)[i]);
+    free(*pCounts); *pCounts=0;
+  }
+  catch(...) {pCounts=0;/*this will cause memory leak but prevent problems in destructor*/}
+}
+
+/** Increments count for tract, at index, and date cumulatively. */
+void CSaTScanData::IncrementCount(tract_t tTractIndex, int nCount, Julian nDate, count_t** pCounts) {
+  pCounts[0][tTractIndex] += nCount;
+  for (int i=1; nDate >= m_pIntervalStartTimes[i]; ++i)
+        pCounts[i][tTractIndex] += nCount;
+}
+
+/** Attempts to parses passed string into tract identifier, count,
+    and based upon settings, date and covariate information.
+    Returns whether parse completed without errors. */
+bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringParser & Parser,
+                                  tract_t& tid, count_t& nCount, Julian& nDate) {
+  UINT   	               uiYear4, uiYear, uiMonth=1, uiDay=1;
+  int                          i, iCategoryIndex, iCategoryOffSet, iScanPrecision, iNumCovariatesScanned=0;
+  std::vector<std::string>     vCategoryCovariates;
+  const char                 * pCovariate;  
 
   try {
-    gpPrintDirection->SatScanPrintf("Reading the population file\n");
-    if ((fp = fopen(m_pParameters->GetPopulationFileName().c_str(), "r")) == NULL) {
-      gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Could not open population file.\n", "ReadPops()");
+    //read and validate that tract identifier exists in coordinates file
+    //caller function already checked that there is at least one record
+    if ((tid = gpTInfo->tiGetTractIndex(Parser.GetWord(0))) == -1) {
+      gpPrint->PrintInputWarning("Error: Unknown location id in %s file, record %d.\n", szDescription, nRec);
+      gpPrint->PrintInputWarning("       Location '%s' was not specified in the coordinates file.\n", Parser.GetWord(0));
       return false;
     }
-
-    //1st Pass -- determine all the population dates.
-    while (fgets(szData, MAX_LINESIZE, fp)) {
-        ++nRec;
-        if (GetWord(szData, 0, gpPrintDirection) == 0)                 // Skip blank lines
-          continue;
-        else
-          bEmpty=false;
-
-        //Check for a tract id, year, and population count
-        if (sscanf(szData, "%s %s %f", szTid, sDateString, &fPopulation) < 3) {
-          /** WE MIGHT BE ABLE TO PRODUCE A BETTER ERROR MESSAGE HERE*/
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Invalid record in population file, line %d.\n", nRec);
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "         Please see 'population file format' in the help file.\n");
-          bValid = false;
-          continue;
-        }
-
-        if (fPopulation < 0) {
-          /** WE MIGHT BE ABLE TO PRODUCE A BETTER ERROR MESSAGE HERE - LIKE THE INVALID POPULATION */
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Negative (or very large) value in population file, line %d.\n", nRec);
-          bValid = false;
-          continue;
-        }
-
-        bValid = ConvertPopulationDateToJulian(sDateString, nRec, PopulationDate);
-        if (! bValid)
-          continue;
-        itrdates = lower_bound(vPopulationDates.begin(), vPopulationDates.end(), PopulationDate);
-        if (! (itrdates != vPopulationDates.end() && (*itrdates) == PopulationDate))
-          vPopulationDates.insert(itrdates, PopulationDate);
-      }//  while - 1st Pass
-
-    if (bEmpty) {
-      gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Population data is empty.\n");
-      if (nRec)
-        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "         Population file contains %d invalid records.\n");
+    //read and validate count
+    if (Parser.GetWord(1) != 0) {
+      if (!sscanf(Parser.GetWord(1), "%i", &nCount)) {
+       gpPrint->PrintInputWarning("Error: Value '%s' of record %d in %s file could not be read as count.\n", Parser.GetWord(1), nRec, szDescription);
+       gpPrint->PrintInputWarning("       Count must be an integer.\n");
+       return false;
+      }
+    }
+    else {
+      gpPrint->PrintInputWarning("Error: Record %d in %s file does not contain %s count.\n", nRec, szDescription, szDescription);
+      return false;
+    }
+    if (nCount < 0) {//validate that count is not negative or exceeds type precision
+      if (strstr(Parser.GetWord(1), "-"))
+        gpPrint->PrintInputWarning("Error: Negative count in record %d of %s file.\n", nRec, szDescription);
       else
-        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "         Population file is empty.\n");
-      bValid = false;
+        gpPrint->PrintInputWarning("Error: Count '%s' exceeds maximum value of %i in record %d of %s file.\n",
+                                   Parser.GetWord(1), std::numeric_limits<count_t>::max(), nRec, szDescription);
+      return false;
     }
-
-
-    // Perform Check: When a prospective analysis is conducted and if a population file is
-    //                used, and if the population for a tract is defined at more than one
-    //                time period, error message should be shown in the running window and
-    //                the application terminated.
-    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME &&
-        m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE && vPopulationDates.size() > 1) {
-        bValid = false;
-        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE,
-                                                       "\n  ERROR: For the prospective space-time analysis to be correct,\n"
-                                                       "           it is critical that the scanning spatial window is the\n"
-                                                       "           same for each of the analysis performed over time. If \n"
-                                                       "           there are multiple years in the population file, so that\n"
-                                                       "           the population size changes over time, as it does in your\n"
-                                                       "           data, then you must define the maximum circle size in\n"
-                                                       "           terms of a specific geographical radius rather than as a\n"
-                                                       "           percent of the total population at risk.\n\n\n");
+    //read and validate date
+    switch (m_pParameters->GetPrecisionOfTimesType()) {
+      case NONE  : JulianToMDY(&uiMonth, &uiDay, &uiYear, m_nStartDate); iScanPrecision = 3; break;
+      case YEAR  : iScanPrecision = sscanf(Parser.GetWord(2), "%d", &uiYear); break;
+      case MONTH : iScanPrecision = sscanf(Parser.GetWord(2), "%d/%d", &uiYear, &uiMonth); break;
+      case DAY   : iScanPrecision = sscanf(Parser.GetWord(2), "%d/%d/%d", &uiYear, &uiMonth, &uiDay); break;
+      default : ZdException::Generate("Unknown precision of time type '%d'.","ParseCountLine()", m_pParameters->GetPrecisionOfTimesType());
+    };
+    if (iScanPrecision < m_pParameters->GetPrecisionOfTimesType()) {
+      gpPrint->PrintInputWarning("Error: Value '%s' of record %d in %s file, could not be read as date with precision '%s'.\n",
+                                 Parser.GetWord(2), nRec, szDescription,
+                                 m_pParameters->GetDatePrecisionAsString(m_pParameters->GetPrecisionOfTimesType()));
+      return false;
     }
-
-    // 2nd Pass -- read data in structures
-    if (bValid) {
-      gpTInfo->tiSetupPopDates(vPopulationDates, m_nStartDate, m_nEndDate);
-      fseek(fp, 0L, SEEK_SET);
-      nRec = 0;
-      nNonBlankLines = 0;
-
-      while (fgets(szData, MAX_LINESIZE, fp)) {
-          ++nRec;
-
-          // Skip Blank Lines
-          if (GetWord(szData, 0, gpPrintDirection) == 0)
-            continue;
-          else
-            ++nNonBlankLines;
-
-          // Get tract id, year, and population count
-          sscanf(szData, "%s %s %f", szTid, sDateString, &fPopulation);
-          bValid = ConvertPopulationDateToJulian(sDateString, nRec, PopulationDate);
-          if (! bValid)
-            continue;
-
-          // Determine number of categories from first record
-          if (nNonBlankLines == 1) {
-            iNumCategories = 0;
-            while (GetWord(szData, iNumCategories + 3, gpPrintDirection))
-              ++iNumCategories;
-            cvec = (char**)Smalloc(iNumCategories * sizeof(char *), gpPrintDirection);
-            memset(cvec, 0, iNumCategories * sizeof(char *));
-            gpCats->catSetNumEls(iNumCategories);
-          }
-
-          // Read categories into cvec
-          for (i=0; i < iNumCategories; ++i) {
-            char *p = GetWord(szData, i + 3, gpPrintDirection);
-            if (p == 0) {
-              gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Too few categories in population file, line %d.\n",nRec);
-              bValid = false;
-              break;
-            }
-            Sstrcpy(&cvec[i],p, gpPrintDirection);
-          }
-
-          if (bValid == 0)
-            continue;
-
-          // Check for extraneous characters after the expected number of cats
-          if (GetWord(szData, iNumCategories + 3, gpPrintDirection)) {
-            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Extra data in population file, line %d.\n", nRec);
-            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "         Please see 'population file format' in the help file.\n");
-            bValid = false;
-            continue;
-          }
-
-          // Assign / Get category number
-          iCategoryIndex = gpCats->catMakeCat(cvec);
-          for (i = 0; i < iNumCategories; ++i)
-            free(cvec[i]);
-
-          // Check to see if tract is valid
-          tract = gpTInfo->tiGetTractIndex(szTid);
-          if (tract == -1) {
-            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Invalid tract ID in population file, line line %d.\n", nRec);
-            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "         This ID is not found in the coordinates file.\n");
-            bValid = false;
-            continue;
-          }
-
-          // Add population count for this tract/category/year
-          gpTInfo->tiAddCategoryToTract(tract, iCategoryIndex, PopulationDate, fPopulation);
-        } // while - 2nd pass
-      } // if
-
-      if (bValid && iNumCategories > 0)
-       free(cvec);
-
-      fclose(fp);
+    //Ensure four digit years 
+    uiYear4 = Ensure4DigitYear(uiYear, m_pParameters->GetStudyPeriodStartDate().c_str(), m_pParameters->GetStudyPeriodEndDate().c_str());
+    switch (uiYear4) {
+      case -1 : gpPrint->PrintInputWarning("Error: Due to study period greater than 100 years, unable\n"
+                                                    "       to convert two digit year '%d' in %s file, record %d.\n"
+                                                    "       Please use four digit years.\n", uiYear, szDescription, nRec);
+                return false;
+      case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in %s file, record %d.\n", uiYear, szDescription, nRec);
+                return false;
+    }
+    //validate that date is between study period start and end dates
+    nDate = MDYToJulian(uiMonth, uiDay, uiYear4);
+    if (!(m_nStartDate <= nDate && nDate <= m_nEndDate)) {
+      gpPrint->PrintInputWarning("Error: Date '%s' in record %d of %s file is not\n", Parser.GetWord(2), nRec, szDescription);
+      gpPrint->PrintInputWarning("       within study period beginning %s and ending %s.\n",
+                                 m_pParameters->GetStudyPeriodStartDate().c_str(), m_pParameters->GetStudyPeriodEndDate().c_str());
+      return false;
+    }
+    //Parse file for categories but conditionally:
+    //Poisson - always scan for covariates, the number of covariates per category should always
+    //          be the same as defined in population category class(.i.e as read from population file).
+    //Space-Time Permutation - if maximum spatial cluster size is defined as a percentage of the population
+    //                         at risk, then this is the same same Poisson. Else covariate information is not
+    //                         pertinent for analysis, so any extra information on line is assumed
+    //                         to be covariates and will be ignored.
+    //Bernoulli - for the case file, this is the same as Space-Time Permutation as far as ignoring
+    //            non-pertinent covariates. For the control file, any extra information will be assumed
+    //            to be covariates. This is an error as covaraites are not supported currently for
+    //            Bernoulli model.
+    if (m_pParameters->GetProbabiltyModelType() == POISSON ||
+        (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION && m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE) ||
+        (m_pParameters->GetProbabiltyModelType() == BERNOULLI && strcmp(szDescription,"control")==0)) {
+      //scan covariates into vector
+      iCategoryOffSet = m_pParameters->GetPrecisionOfTimesType() == NONE ? 2 : 3;
+      while ((pCovariate = Parser.GetWord(iNumCovariatesScanned + iCategoryOffSet)) != 0) {
+           vCategoryCovariates.push_back(pCovariate);
+           iNumCovariatesScanned++;
+      }
+      if (m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
+        if (iNumCovariatesScanned) {
+          gpPrint->PrintInputWarning("Error: Record %d of control file contains extra information.\n", nRec);
+          gpPrint->PrintInputWarning("       Note that the Bernoulli probability model does not support covariates.\n");
+          return false;
+        }
+      }
+      else if (iNumCovariatesScanned != gPopulationCategories.GetNumPopulationCategoryCovariates()) {
+        gpPrint->PrintInputWarning("Error: Record %d of case file contains %d covariates but the population file\n",
+                                            nRec, iNumCovariatesScanned);
+        gpPrint->PrintInputWarning("       defined the number of covariates as %d.\n",
+                                            gPopulationCategories.GetNumPopulationCategoryCovariates());
+        return false;
+      }
+      //Now we only want to attempt to add covariate information to population categories
+      //and count information to tract handler if model is Poisson or Space-Time Permutation
+      //with maximum spatial cluster size is percentage of population. These two situations
+      //are the only ones that use this information in the calculate measure routines.
+      if (m_pParameters->GetProbabiltyModelType() == POISSON ||
+          (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION && m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE)) {
+        //category should already exist
+        if ((iCategoryIndex = gPopulationCategories.GetPopulationCategoryIndex(vCategoryCovariates)) == -1) {
+          gpPrint->PrintInputWarning("Error: Record %d of case file refers to a population category that\n", nRec);
+          gpPrint->PrintInputWarning("       does not match an existing category as read from population file.");
+          return false;
+        }
+        //Add count to tract for category. This could return false if record's tract
+        //identifier / covariates together don't match an existing population record. 
+        if (! gpTInfo->tiAddCount(tid, iCategoryIndex, nCount)) {
+          std::string sBuffer;
+          gpPrint->PrintInputWarning("Error: Record %d of case file refers to location '%s' with population category '%s',\n",
+                                              nRec, Parser.GetWord(0), gPopulationCategories.GetPopulationCategoryAsString(iCategoryIndex, sBuffer));
+          gpPrint->PrintInputWarning("       but no matching population record with this combination exists.\n");
+          return false;
+        }
+      }
+    }
   }
-  catch (SSException & x) {
-    if (cvec) DeleteCVEC(cvec, iNumCategories);
-    x.AddCallpath("ReadPops()", "CSaTScanData");
+  catch (ZdException &x) {
+    x.AddCallpath("ParseCountLine()","CSaTScanData");
+    throw;
+  }
+  return true;
+}
+
+/** Reads cartesian coordinates into vector.
+    Note: coordinate vector should already be sized to defined dimensions.
+    Returns indication of whether words in passed string could be converted to
+    coordinates. Tracks number of words successfully scanned, the caller of
+    function will use this information to confirm that coordinates scanned is
+    not less than defined dimensions. The reason we don't check scanned dimensions
+    here is that a generic error message could not be implemented. */
+bool CSaTScanData::ReadCartesianCoordinates(StringParser & Parser, std::vector<double>& vCoordinates, int & iScanCount,
+                                            int iWordOffSet, long lRecNum, const char * sSourceFile) {
+
+  const char  * pCoordinate;
+  int           i;
+
+  for (i=0, iScanCount=0; i < m_pParameters->GetDimensionsOfData(); ++i, ++iWordOffSet)
+     if ((pCoordinate = Parser.GetWord(iWordOffSet)) != 0) {
+       if (sscanf(pCoordinate, "%lf", &(vCoordinates[i])))
+         iScanCount++; //track num successful scans, caller of function wants this information
+       else {
+         //unable to read word as double, print error to print direction and return false
+         gpPrint->PrintInputWarning("Error: Value '%s' of record %d in %s file could not be read as ",
+                                             pCoordinate, lRecNum, sSourceFile);
+         //we can be specific about which dimension we are attending to read to                                    
+         if (i < 2)
+           gpPrint->PrintInputWarning("%s-coordinate.\n", (i == 0 ? "x" : "y"));
+         else if (m_pParameters->GetDimensionsOfData() == 3)
+           gpPrint->PrintInputWarning("z-coordinate.\n");
+         else
+           gpPrint->PrintInputWarning("z%d-coordinate.\n", i - 1);
+         return false;
+       }
+     }
+  return true;          
+}
+
+/** Read the case data file.
+    If invalid data is found in the file, an error message is printed,
+    that record is ignored, and reading continues.
+    Return value: true = success, false = errors encountered           */
+bool CSaTScanData::ReadCaseFile() {
+  bool          bValid=true;
+  ZdIO          SourceFile;
+
+  try {
+    gpPrint->SatScanPrintf("Reading the case file\n");
+    SourceFile.Open(m_pParameters->GetCaseFileName().c_str(), ZDIO_OPEN_READ);
+    gpPrint->SetImpliedInputFileType(BasePrint::CASEFILE);
+    AllocateCountStructure(&m_pCases);
+    bValid = ReadCounts(SourceFile, "case", m_pCases);
+  }
+  catch (ZdFileOpenFailedException & x ) {
+    gpPrint->SatScanPrintWarning("Error: Could not open case file:\n%s.\n", m_pParameters->GetCaseFileName().c_str());
+    return false;
+  }
+  catch (ZdException & x) {
+    DeallocateCountStructure(&m_pCases);
+    x.AddCallpath("ReadCaseFile()","CSaTScanData");
     throw;
   }
   return bValid;
 }
 
-/**********************************************************************
-  Read the geographic data file.  This function now just calls either
-  ReadGeoLatLong() or ReadGeoCoords depending on the coordinate data
-**********************************************************************/
-bool CSaTScanData::ReadGeo() {
-   bool bValid = true;
+/** Read the control data file.
+    If invalid data is found in the file, an error message is printed,
+    that record is ignored, and reading continues.
+    Return value: true = success, false = errors encountered           */
+bool CSaTScanData::ReadControlFile() {
+  bool          bValid=true;
+  ZdIO          SourceFile;
 
-   try {
-      bValid = ((m_pParameters->GetCoordinatesType() == CARTESIAN) ? ReadGeoCoords() : ReadGeoLatLong());
-   }
-   catch (SSException & x) {
-      x.AddCallpath("ReadGeo()", "CSaTScanData");
-      throw;
-   }
+  try {
+    gpPrint->SatScanPrintf("Reading the control file\n");
+    SourceFile.Open(m_pParameters->GetControlFileName().c_str(), ZDIO_OPEN_READ);
+    gpPrint->SetImpliedInputFileType(BasePrint::CONTROLFILE);
+    AllocateCountStructure(&m_pControls);
+    bValid = ReadCounts(SourceFile, "control", m_pControls);
+  }
+  catch (ZdFileOpenFailedException & x ) {
+    gpPrint->SatScanPrintWarning("Error: Could not open case file:\n%s.\n", m_pParameters->GetControlFileName().c_str());
+    return false;
+  }
+  catch (ZdException & x) {
+    DeallocateCountStructure(&m_pControls);
+    x.AddCallpath("ReadControlFile()","CSaTScanData");
+    throw;
+  }
   return bValid;
 }
 
-/**********************************************************************
- Read the latitude/longitude geographic data file.  Allocate & fill the
- "Tinfo" array. If invalid data is found in the file, an error message
- is printed, that record is ignored, and reading continues.
- Return value:
-   1 = success
-   0 = errors encountered
- **********************************************************************/
-bool CSaTScanData::ReadGeoLatLong() {
-   bool    bValid = true,  bEmpty = true;
-   char    szData[MAX_LINESIZE], szTid[MAX_LINEITEMSIZE];
-   int     nScanCount;                        // Num of items on input line
-   tract_t nRec = 0;                              // File record number
-   double   Latitude, Longitude, pCoords[3];													 // 3-dimensional coords
-   FILE*   fp;                                // Ptr to coordinates file
+/** Read the geographic data file. Calls particular function for coordinate type. */
+bool CSaTScanData::ReadCoordinatesFile() {
+  bool  bReturn;
 
-   try {
-      gpPrintDirection->SatScanPrintf("Reading the geographic coordinates file (lat/lon).\n");
-
-      if ((fp = fopen(m_pParameters->GetCoordinatesFileName().c_str(), "r")) == NULL) {
-        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Could not open coordinates file (lat/long).\n");
-        return false;
-      }
-    
-      m_pParameters->SetDimensionsOfData(3);
-      gpTInfo->tiSetDimensions(m_pParameters->GetDimensionsOfData());
-      gpGInfo->giSetDimensions(m_pParameters->GetDimensionsOfData());
-    
-      while (fgets(szData, MAX_LINESIZE, fp)) {
-        ++nRec;
-        if (GetWord(szData, 0, gpPrintDirection) == 0)
-          continue;
-        else
-          bEmpty=false;
-
-        nScanCount = sscanf(szData, "%s %lf %lf", szTid, &Latitude, &Longitude);
-        if (nScanCount - 2 /* m_pParameters->GetDimensionsOfData() */ < 1) {
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Invalid record in coordinates file (lat/lon), line %ld.\n", (long) nRec);
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Please see 'coordinates file format' in the help file.\n");
-          bValid = false;
-          continue;
-        }
-    
-        // Check for extra coordinates
-        if (GetWord(szData, 3, gpPrintDirection)) {
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Extra data in coordinate file (lat/lon), line %ld.\n", (long) nRec);
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Please see 'coordinates file format' in the help file.\n");
-          bValid = false;
-        }
-    
-        //Check for correct ranges of latitude and longitude values
-        if ((fabs(Latitude) > 90.0)) {
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Latitude range error in coordinates file (2nd column), line %ld.\n", (long) nRec);
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Latitude must be between -90 and 90.\n");
-          bValid = false;
-          continue;
-        }
-
-        if ((fabs(Longitude) > 180.0)) {
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Longitude range error in coordinates file (3rd column), line %ld.\n", (long) nRec);
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Longitude must be between -180 and 180.\n");
-          bValid = false;
-          continue;
-        }
-
-        // Convert to 3 dimensions then can add tracts
-        ConvertFromLatLong(Latitude, Longitude, pCoords);
-    
-        // Add the tract
-        if (!gpTInfo->tiInsertTnode(szTid, pCoords)) {
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Duplicate tract ID in coordinates file (lat/lon), line %d.\n",nRec);
-          bValid = false;
-          continue;
-        }
-    
-        // Store tracts as grid if no special grid file specified.
-        if (!m_pParameters->UseSpecialGrid()) {
-          if (!gpGInfo->giInsertGnode(szTid, pCoords)) {
-            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Duplicate tract ID in coordinates file (lat/lon), line %d.\n",nRec);
-            bValid = false;
-          }
-        }
-    
-      } // while fgets()
-    
-      if (bEmpty) {
-        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Coordinates file is empty (lat/lon).\n", "ReadGeoLatLong()");
-        bValid = false;
-      }
-      else if (gpTInfo->tiGetNumTracts() == 1) {
-        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Coordinates file has only one record (lat/lon).\n", "ReadGeoLatLong()");
-        bValid = false;
-      }
-    
-      m_nTracts = gpTInfo->tiGetNumTracts();
-      if (!m_pParameters->UseSpecialGrid())
-        m_nGridTracts = gpGInfo->giGetNumTracts();
-    
-      fclose(fp); 
-   }
-   catch (SSException & x) {
-      x.AddCallpath("ReadGeoLatLong()", "CSaTScanData");
-      throw;
-   }
-   return bValid;
+  try {
+    switch (m_pParameters->GetCoordinatesType()) {
+      case CARTESIAN : bReturn = ReadCoordinatesFileAsCartesian(); break;
+      case LATLON    : bReturn = ReadCoordinatesFileAsLatitudeLongitude(); break;
+      default : ZdException::Generate("Unknown coordinate type '%d'.","ReadCoordinatesFile()",m_pParameters->GetCoordinatesType());
+    };
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadCoordinatesFile()","CSaTScanData");
+    throw;
+  }
+  return bReturn;
 }
 
-/**********************************************************************
- Read the geographic data file.  Allocate & fill the "Tinfo" array.
- If invalid data is found in the file, an error message is printed,
- that record is ignored, and reading continues.
- Return value:
-   1, true = success
-   0, false = errors encountered
- **********************************************************************/
-bool CSaTScanData::ReadGeoCoords() {
-   bool    bValid = true, bEmpty = true;
-   char    szData[MAX_LINESIZE], szFirstLine[MAX_LINESIZE], szTid[MAX_LINEITEMSIZE];
-   int     i, nScanCount = 0;                        // Num of items on input line
-   tract_t nRec = 0;                              // File record number
-   double*  pCoords = NULL;                    // Ptr to Tract coords
-   FILE*   fp;                             // Ptr to coordinates file
+/** Read the geographic data file in Cartesian coordinate system.
+    If invalid data is found in the file, an error message is printed,
+    that record is ignored, and reading continues.
+    Return value: true = success, false = errors encountered           */
+bool CSaTScanData::ReadCoordinatesFileAsCartesian() {
+  int                           i, iScanCount=0;
+  long                          lRecNum=0;
+  bool                          bValidRecord, bValid=true, bEmpty=true;
+  const char                  * pCoordinate, * pDimension;
+  ZdIO                          SourceFile;
+  ZdString                      sDataBuffer, TractIdentifier;
+  std::vector<double>           vCoordinates;
+  StringParser                  Parser(sDataBuffer);
 
-   try {
-      gpPrintDirection->SatScanPrintf("Reading the geographic coordinates file\n");
+  try {
+    gpPrint->SatScanPrintf("Reading the geographic coordinates file\n");
+    SourceFile.Open(m_pParameters->GetCoordinatesFileName().c_str(), ZDIO_OPEN_READ);
+    gpPrint->SetImpliedInputFileType(BasePrint::COORDFILE);
 
-      if ((fp = fopen(m_pParameters->GetCoordinatesFileName().c_str(), "r")) == NULL) {
-        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Could not open coordinates file.\n", "ReadGeoCoords()");
-        return false;
-      }
-    
-      // This section added 5/27/98 G. Gherman to take into account an arbitrary
-      // number of dimensions WITHOUT specifying them.
-      // Handle first non-blank line to determine number of dimensions.  This
-      // record must have correct data.
-      // Modified 6/23/98
-      while (bEmpty && fgets(szFirstLine, MAX_LINESIZE, fp)) {
-        if (GetWord(szFirstLine, 0, gpPrintDirection) == 0)
-        	continue;
-        else {
-        	bEmpty     = false;
-     	 	nRec       = 1;
-     	 	nScanCount = 0;
-
-          // Initial pass to determine # of dimensions
-          while (GetWord(szFirstLine, nScanCount, gpPrintDirection) != NULL)
-            ++nScanCount;
-
-          // Indicates no coords or only 1
-          if (nScanCount < 3) {
-            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Invalid data (< 3 items) in first record of coordinates file.\n");
-            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Please see 'coordinates file format' in the help file.\n");
-            return false;
-          }
-    
-          #if (DEBUG)
-         gpPrintDirection->SatScanPrintf("Number of dimensions in coordinates file = %d.\n",nScanCount-1);
-          #endif
-    
-          m_pParameters->SetDimensionsOfData(nScanCount - 1);
-          gpTInfo->tiSetDimensions(m_pParameters->GetDimensionsOfData());
-          gpGInfo->giSetDimensions(m_pParameters->GetDimensionsOfData());
-          pCoords = (double*)Smalloc(m_pParameters->GetDimensionsOfData() * sizeof(double), gpPrintDirection);
-    
-          sscanf(GetWord(szFirstLine, 0, gpPrintDirection), "%s", szTid);
-    
-          // Re-use nScanCount to determine if data is valid
-          nScanCount = 1;
-
-          for (i=0; i<m_pParameters->GetDimensionsOfData(); ++i) {
-            nScanCount += sscanf(GetWord(szFirstLine,i+1, gpPrintDirection),"%lf",&pCoords[i]);
-    	  }
-
-       	  if (nScanCount - m_pParameters->GetDimensionsOfData() < 1) {
-           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Invalid data in first line of coordinates file.\n");
-           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Please see 'coordinates file format' in the help file.\n");
-           return false;
-          }
-    
-          // Add the tract
-          gpTInfo->tiInsertTnode(szTid, pCoords);
-
-          // Store tracts as grid if no special grid file specified.
-          if (!m_pParameters->UseSpecialGrid())
-            gpGInfo->giInsertGnode(szTid, pCoords);
-    
-#if (DEBUG)
-      	  printf("First line of data from coordinates file:\n");
-          gpPrintDirection->SatScanPrintf("Tract id = %s\n",szTid);
-          for (i=0; i< (m_pParameters->GetDimensionsOfData()); ++i)
-            gpPrintDirection->SatScanPrintf("Coords[%d] = %f\n", i, pCoords[i]);
-#endif
-    
-        } // else
-      } // while(bEmpty && fgets(szFirstLine...))
-
-      // Get rest of data
-      while (fgets(szData, MAX_LINESIZE, fp) && !bEmpty) {
-        ++nRec;
-        if (GetWord(szData, 0, gpPrintDirection) == 0)
-          continue;
-        else
-          bEmpty=false;
-    
-        sscanf(GetWord(szData, 0, gpPrintDirection), "%s", szTid);
-        nScanCount = 1;
-    
-        for (i=0; i<m_pParameters->GetDimensionsOfData(); ++i)
-      		nScanCount += sscanf(GetWord(szData,i+1, gpPrintDirection),"%lf",&pCoords[i]);
-
-#if(DEBUG)
-       gpPrintDirection->SatScanPrintf("%d line of data from coordinates file:\n", nRec);
-       gpPrintDirection->SatScanPrintf("Tract id = %s\n",szTid);
-        for (i=0; i< (m_pParameters->GetDimensionsOfData()); ++i)
-         gpPrintDirection->SatScanPrintf("Coords[%d] = %f\n", i, pCoords[i]);
-#endif
-
-        if (nScanCount - m_pParameters->GetDimensionsOfData() < 1) {
-           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Invalid record in coordinates file, line %ld.\n", (long) nRec);
-           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Please see 'coordinates file format' in the help file.\n");
-           bValid = false;
+    while (SourceFile.ReadLine(sDataBuffer)) {
+         Parser.StringReloaded();
+     	 lRecNum++;
+         //skip records with no data
+         if (!Parser.HasWords())
            continue;
-        }
-    
-        // Add the tract
-        if (!gpTInfo->tiInsertTnode(szTid, pCoords)) {
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Duplicate tract ID in coordinates file, line %d.\n",nRec);
-          bValid = false;
-          continue;
-        }
-
-        // Store tracts as grid if no special grid file specified.
-        if (!m_pParameters->UseSpecialGrid()) {
-           if (!gpGInfo->giInsertGnode(szTid, pCoords)) {
-             gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Duplicate tract ID in coordinates file, line %d.\n",nRec);
-             bValid = false;
+         //if empty and this record has data, then this is the first record w/ data
+         if (bEmpty) {
+           bEmpty = false;
+           //determine number of dimensions from first record, 2 or more is valid
+           iScanCount = Parser.GetNumberWords();
+           //there must be at least two dimensions
+           if (iScanCount < 3) {
+             gpPrint->PrintInputWarning("Error: First record of coordinates file contains %s.\n",
+                                                 iScanCount == 1 ? "only x-coordinate" : "no coordinates");
+             return false;
            }
+           //ok, first record indicates that there are iScanCount - 1 dimensions (first scan is tract identifier)
+           //data still could be invalid, but this will be determined like the remaining records
+           m_pParameters->SetDimensionsOfData(iScanCount - 1);
+           gpTInfo->tiSetDimensions(m_pParameters->GetDimensionsOfData());
+           gpGInfo->giSetDimensions(m_pParameters->GetDimensionsOfData());
+           vCoordinates.resize(m_pParameters->GetDimensionsOfData(), 0);
+         }
+         //read and validate dimensions skip to next record if error reading coordinates as double
+         if (! ReadCartesianCoordinates(Parser, vCoordinates, iScanCount, 1, lRecNum, "coordinates")) {
+           bValid = false;
+           continue;
+         }
+         //validate that we read the correct number of coordinates
+         if (iScanCount < m_pParameters->GetDimensionsOfData()) {
+           //Note: since the first record defined the number of dimensions, this error could not happen.
+           gpPrint->PrintInputWarning("Error: Record %d in coordinates file contains %d dimension%s but the\n",
+                                               lRecNum, iScanCount, (iScanCount == 1 ? "" : "s"));
+           gpPrint->PrintInputWarning("       first record defined the number of dimensions as %d.\n", m_pParameters->GetDimensionsOfData());
+           bValid = false;
+           continue;
+         }
+         //add the tract identifier and coordinates to trac handler
+         if (! gpTInfo->tiInsertTnode(Parser.GetWord(0), vCoordinates)) {
+           gpPrint->PrintInputWarning("Error: For record %d in coordinates file, location '%s' already exists.\n", lRecNum, Parser.GetWord(0));
+           bValid = false;
+           continue;
+         }
+         //add tract identifier and coordinates as centroid if a special grid file is not being used
+         if (! m_pParameters->UseSpecialGrid())
+           //no need to check return, we would have already gotten error from tract handler
+           //for duplicate tract identifier
+           gpGInfo->giInsertGnode(Parser.GetWord(0), vCoordinates);
+    }
+    //if invalid at this point then read encountered problems with data format,
+    //inform user of section to refer to in user guide for assistance
+    if (! bValid)
+      gpPrint->PrintInputWarning("Please see 'coordinate file format' in the user guide for help.\n");
+    //print indication if file contained no data
+    else if (bEmpty) {
+      gpPrint->PrintInputWarning("Error: Coordinates file contains no data.\n");
+      bValid = false;
+    }
+    //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
+    else if (gpTInfo->tiGetNumTracts() == 1 && m_pParameters->GetAnalysisType() != PURELYTEMPORAL) {
+      gpPrint->PrintInputWarning("Error: For a %s analysis, the coordinates file must contain more than one location.\n",
+                                          m_pParameters->GetAnalysisTypeAsString());
+      bValid = false;
+    }
+    //record number of locations read
+    m_nTracts = gpTInfo->tiGetNumTracts();
+    //record number of centroids read
+    m_nGridTracts = gpGInfo->giGetNumTracts();
+  }
+  catch (ZdFileOpenFailedException &x){
+    gpPrint->SatScanPrintWarning("Error: Coordinates file '%s' could not be opened.\n",
+                                          m_pParameters->GetCoordinatesFileName().c_str());
+    return false;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadCoordinatesFileAsCartesian()", "CSaTScanData");
+    throw;
+  }
+  return bValid;
+}
+
+/** Read the latitude/longitude geographic data file.
+    If invalid data is found in the file, an error message
+    is printed, that record is ignored, and reading continues.
+    Return value: true = success, false = errors encountered   */
+bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude() {
+  int                           iScanCount;
+  long                          lRecNum=0;
+  const char                  * pCoordinate;
+  bool                          bValid=true, bEmpty=true;
+  ZdIO                          SourceFile;
+  ZdString                      sDataBuffer, TractIdentifier;
+  std::vector<double>           vCoordinates;
+  StringParser                  Parser(sDataBuffer);
+
+  try {
+    gpPrint->SatScanPrintf("Reading the geographic coordinates file (lat/lon).\n");
+    SourceFile.Open(m_pParameters->GetCoordinatesFileName().c_str(), ZDIO_OPEN_READ);
+    gpPrint->SetImpliedInputFileType(BasePrint::COORDFILE);
+    vCoordinates.resize(3/*for conversion*/, 0);
+
+    m_pParameters->SetDimensionsOfData(3/*for conversion*/);
+    gpTInfo->tiSetDimensions(m_pParameters->GetDimensionsOfData());
+    gpGInfo->giSetDimensions(m_pParameters->GetDimensionsOfData());
+    while (SourceFile.ReadLine(sDataBuffer)) {
+         Parser.StringReloaded();
+         ++lRecNum;
+        //skip records with no data 
+        if (! Parser.HasWords())
+          continue;
+        bEmpty=false;
+        if (! ReadLatitudeLongitudeCoordinates(Parser, vCoordinates, 1, lRecNum, "coordinates")) {
+           bValid = false;
+           continue;
         }
-
-      } // while fgets(szData...)
-
-      if (bEmpty) {
-        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Coordinates file is empty.\n", "ReadGeoCoords()");
-        bValid = false;
-      }
-      else if (gpTInfo->tiGetNumTracts()==1 && m_pParameters->GetAnalysisType() != PURELYTEMPORAL) {
-      // This modified 6/25/98 so that one tract allowed for Purely Temporal analysis
-        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Coordinates file has only one record.\n", "ReadGeoCoords()");
-        bValid = false;
-      }
-
-      m_nTracts = gpTInfo->tiGetNumTracts();
-      if (!m_pParameters->UseSpecialGrid())
-        m_nGridTracts = gpGInfo->giGetNumTracts();
-
-      fclose(fp);
-
-      // Clean up pCoords
-      if (pCoords != NULL)
-        free(pCoords);
-   }
-   catch (SSException & x) {
-      free(pCoords);
-      x.AddCallpath("ReadGeoCoords()", "CSaTScanData");
-      throw;
-   }
-   return bValid;
+        //add the tract identifier and coordinates to trac handler
+        if (! gpTInfo->tiInsertTnode(Parser.GetWord(0), vCoordinates)) {
+          gpPrint->PrintInputWarning("Error: For record %d in coordinates file, location '%s' already exists.\n", lRecNum, Parser.GetWord(0));
+          bValid = false;
+          continue;
+        }
+        //add tract identifier and coordinates as centroid if a special grid file is not being used
+        if (! m_pParameters->UseSpecialGrid())
+          //no need to check return, we would have already gotten error from tract handler
+          //for duplicate tract identifier
+          gpGInfo->giInsertGnode(Parser.GetWord(0), vCoordinates);
+    }
+    //if invalid at this point then read encountered problems with data format,
+    //inform user of section to refer to in user guide for assistance
+    if (! bValid)
+      gpPrint->PrintInputWarning("Please see 'coordinates file format' in the user guide for help.\n");
+    //print indication if file contained no data
+    else if (bEmpty) {
+      gpPrint->PrintInputWarning("Error: Coordinates file contains no data.\n");
+      bValid = false;
+    }
+    //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
+    else if (gpTInfo->tiGetNumTracts() == 1 && m_pParameters->GetAnalysisType() != PURELYTEMPORAL) {
+      gpPrint->PrintInputWarning("Error: For a %s analysis, the coordinates file must contain more than one record.\n",
+                                          m_pParameters->GetAnalysisTypeAsString());
+      bValid = false;
+    }
+    //record number of locations read
+    m_nTracts = gpTInfo->tiGetNumTracts();
+    //record number of centroids read
+    m_nGridTracts = gpGInfo->giGetNumTracts();
+  }
+  catch (ZdFileOpenFailedException &x){
+    gpPrint->SatScanPrintWarning("Error: Could not open coordinates file:\n'%s'.\n", m_pParameters->GetCoordinatesFileName().c_str());
+    return false;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadCoordinatesFileAsLatitudeLongitude()", "CSaTScanData");
+    throw;
+  }
+  return bValid;
 }
 
-/**********************************************************************
-  Read the special grid file.  This function now just calls either
-  ReadGridLatLong() or ReadGridCoords depending on the coordinate data
-**********************************************************************/
-bool CSaTScanData::ReadGrid() {
-   bool bValid = true;
+/** Read the count(either case or control) data file.
+    If invalid data is found in the file, an error message is printed,
+    that record is ignored, and reading continues.
+    Return value: true = success, false = errors encountered           */
+bool CSaTScanData::ReadCounts(ZdIO & SourceFile, const char* szDescription, count_t**  pCounts) {
+  int           i, j, iRecNum=0;
+  bool          bValid=true, bEmpty=true;
+  ZdString      sDataBuffer;
+  count_t       Count;
+  Julian        Date;
+  tract_t       TractIdentifierIndex;
+  StringParser  Parser(sDataBuffer);
 
-   try {
-      bValid = ( (m_pParameters->GetCoordinatesType() == CARTESIAN) ? ReadGridCoords() : ReadGridLatLong() );
-   }
-   catch (SSException & x)
-      {
-      x.AddCallpath("ReadGrid()", "CSaTScanData");
-      throw;
-      }
-   return bValid;
+  try {
+    //Read data, parse and if no errors, increment count for tract at date.
+    while (SourceFile.ReadLine(sDataBuffer)) {
+         Parser.StringReloaded();
+         ++iRecNum;
+         if (Parser.HasWords()) {
+           bEmpty = false;
+           if (ParseCountLine(szDescription, iRecNum, Parser, TractIdentifierIndex, Count, Date))
+             IncrementCount(TractIdentifierIndex, Count, Date, pCounts);
+           else
+             bValid = false;
+         }
+    }
+    //if invalid at this point then read encountered problems with data format,
+    //inform user of section to refer to in user guide for assistance
+    if (! bValid)
+      gpPrint->PrintInputWarning("Please see '%s file format' in the user guide for help.\n", szDescription);
+    //print indication if file contained no data
+    else if (bEmpty) {
+      gpPrint->SatScanPrintWarning("Error: %s file does not contain data.\n", szDescription);
+      bValid = false;
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ReadCounts()","CSaTScanData");
+    throw;
+  }
+  return bValid;
+};
+
+/** Read the special grid file.  Calls particular read given coordinate type. */
+bool CSaTScanData::ReadGridFile() {
+  bool  bReturn;
+
+  try {
+    switch (m_pParameters->GetCoordinatesType()) {
+      case CARTESIAN : bReturn = ReadGridFileAsCartiesian(); break;
+      case LATLON    : bReturn = ReadGridFileAsLatitudeLongitude(); break;
+      default : ZdException::Generate("Unknown coordinate type '%d'.","ReadGrid()",m_pParameters->GetCoordinatesType());
+    };  
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadGridFile()", "CSaTScanData");
+    throw;
+  }
+  return bReturn;
 }
 
-/**********************************************************************
- Read the special grid data file.  Allocate & fill the "Ginfo" array.
- If invalid data is found in the file, an error message is printed,
- that record is ignored, and reading continues.
- Return value:
-   1 = success
-   0 = errors encountered
- **********************************************************************/
-bool CSaTScanData::ReadGridCoords() {
-   bool    bValid = true, bEmpty = true;
-   char    szData[MAX_LINESIZE], szTid[MAX_LINEITEMSIZE];
-   int     i, nScanCount = 0;                        // Num of items on input line
-   tract_t nRec = 0;                              // File record number
-   double*   pCoords = 0;                           // Ptr to Grid tract coords
-   FILE*   fp;                                // Ptr to grid file
+/** Read the special grid data file as Cartesian coordinates.
+   If invalid data is found in the file, an error message is printed,
+   that record is ignored, and reading continues.
+   Return value: true = success, false = errors encountered          */
+bool CSaTScanData::ReadGridFileAsCartiesian() {
+  bool                          bValidRecord, bValid=true, bEmpty=true;
+  char                          sTractIdentifier[64];
+  int                           i, iScanCount;
+  long                          lRecNum=0;
+  const char                  * pCoordinate;
+  ZdIO                          SourceFile;
+  ZdString                      sDataBuffer;
+  std::vector<double>           vCoordinates;
+  StringParser                  Parser(sDataBuffer);
    
-   try {
-      gpPrintDirection->SatScanPrintf("Reading the grid file\n");
+  try {
+    gpPrint->SatScanPrintf("Reading the grid file\n");
+    SourceFile.Open(m_pParameters->GetSpecialGridFileName().c_str(), ZDIO_OPEN_READ);
+    gpPrint->SetImpliedInputFileType(BasePrint::GRIDFILE);
+    vCoordinates.resize(m_pParameters->GetDimensionsOfData(), 0);
 
-      if ((fp = fopen(m_pParameters->GetSpecialGridFileName().c_str(), "r")) == NULL) {
-        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Could not open special grid file.\n", "ReadGridCoords()");
-        return false;
-      }
-
-      pCoords = (double*)Smalloc(m_pParameters->GetDimensionsOfData() * sizeof(double), gpPrintDirection);
-
-      while (fgets(szData, MAX_LINESIZE, fp)) {
-        ++nRec;
-
-        if (GetWord(szData, 0, gpPrintDirection) == 0)                     // ignore blank lines
+    while (SourceFile.ReadLine(sDataBuffer)) {
+        Parser.StringReloaded();
+        ++lRecNum;
+        //skip blank lines
+        if (!Parser.HasWords())
           continue;
-        else
-          bEmpty = false;
-
-        // Can't read too far so check for correct number of coordinates:
-        if (!GetWord(szData, (m_pParameters->GetDimensionsOfData()-1), gpPrintDirection) || GetWord(szData, m_pParameters->GetDimensionsOfData(), gpPrintDirection)) {
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Invalid record in grid file, line %d.\n",nRec);
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "         Please see 'grid file format' in the help file.\n");
+        //there are records with data, but not necessarily valid
+        bEmpty = false;
+         //read and vaidate dimensions skip to next record if error reading coordinates as double
+         if (! ReadCartesianCoordinates(Parser, vCoordinates, iScanCount, 0, lRecNum, "grid")) {
+           bValid = false;
+           continue;
+         }
+        //validate that we read the correct number of coordinates as defined by coordinates system or coordinates file
+        if (iScanCount < m_pParameters->GetDimensionsOfData()) {
+          gpPrint->PrintInputWarning("Error: Record %d in grid file contains %d dimension%s but the\n",
+                                     lRecNum, iScanCount, (iScanCount == 1 ? "" : "s"));
+          gpPrint->PrintInputWarning("       coordinates file defined the number of dimensions as %d.\n",
+                                     m_pParameters->GetDimensionsOfData());
           bValid = false;
           continue;
         }
-        // What if too many coordinates in grid file???
-
-        // Modified 6/25/98 to make sure of valid (non-alpha) data
-        for (i = 0; i < m_pParameters->GetDimensionsOfData(); ++i)
-      	   nScanCount += sscanf(GetWord(szData,i, gpPrintDirection),"%lf",&pCoords[i]);
-
-#if(DEBUG)
-     	gpPrintDirection->SatScanPrintf("%d line of data from grid file:\n", nRec);
-     	gpPrintDirection->SatScanPrintf("Tract id = %s\n",szTid);
-        for (i = 0; i < (m_pParameters->GetDimensionsOfData()); ++i)
-         gpPrintDirection->SatScanPrintf("Coords[%d] = %f\n", i, pCoords[i]);
-#endif
-
-        itoa(nRec, szTid, 10);
-
-        if (nScanCount < m_pParameters->GetDimensionsOfData()) {
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Invalid record in grid file, line %d.\n",nRec);
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "         Please see 'grid file format' in the help file.\n");
-          bValid = false;
-          continue;
-        }
-
-        //*******************************************************************
-        // v2.2 Ignor duplicate grid file coordinates
-        //
-        // just print a message in the warnings box and only print it once.
-        // DO NOT END JOB....
-        //*******************************************************************
-        if (!gpGInfo->giInsertGnode(szTid, pCoords)) {
-          char sMessage[100];
-          sprintf(sMessage, "  Error: Duplicate tract ID in grid file, line %d.\n",nRec);
-          SSGenerateWarning(sMessage, "ReadGridCoords()");
-          bValid = false;
-        }
-      } // while fgets()
-
-      if (bEmpty) {
-        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Grid file is empty.\n", "ReadGridCoords()");
-        bValid = false;
-      }
-
-      m_nGridTracts = gpGInfo->giGetNumTracts();
-
-      fclose(fp);
-      free(pCoords);
-   }
-   catch (SSException & x) {
-      free(pCoords);
-      x.AddCallpath("ReadGridCoords()", "CSaTScanData");
-      throw;
-   }
-   return bValid;
+        //add created tract identifer(record number) and read coordinates to structure that mantains list of centroids
+        if (! gpGInfo->giInsertGnode(itoa(lRecNum, sTractIdentifier, 10), vCoordinates))
+          //If there are problems adding then either some other code has errored by
+          //adding to this structure previously or this routine is doing something wrong.
+          //When a special grid file is used to supply centroids, only the routines
+          //read the special grid file should be adding to this structure.
+          ZdException::Generate("Error: Duplicate identifier encountered reading centroids.","ReadGridFileAsCartiesian()");
+    }
+    //if invalid at this point then read encountered problems with data format,
+    //inform user of section to refer to in user guide for assistance
+    if (! bValid)
+      gpPrint->PrintInputWarning("Please see 'grid file format' in the user guide for help.\n");
+    //print indication if file contained no data
+    else if (bEmpty) {
+      gpPrint->PrintInputWarning("Error: Grid file does not contain data.\n");
+      bValid = false;
+    }
+    //record number of centroids read
+    m_nGridTracts = gpGInfo->giGetNumTracts();
+  }
+  catch (ZdFileOpenFailedException &x){
+    gpPrint->SatScanPrintWarning("Error: Cound not open grid file:\n'%s'.\n", m_pParameters->GetSpecialGridFileName().c_str());
+    return false;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadGridFileAsCartiesian()","CSaTScanData");
+    throw;
+  }
+  return bValid;
 }
 
+/** Read the special grid data file as latitude/longitude coordinates.
+   If invalid data is found in the file, an error message is printed,
+   that record is ignored, and reading continues.
+   Return value: true = success, false = errors encountered           */
+bool CSaTScanData::ReadGridFileAsLatitudeLongitude() {
+  bool    	                bValid=true, bEmpty=true;
+  long                          lRecNum=0;
+  const char                  * pCoordinate;
+  char                          szTid[MAX_LINEITEMSIZE];
+  ZdIO                          SourceFile;
+  ZdString                      sDataBuffer;
+  std::vector<double>           vCoordinates;
+  StringParser                  Parser(sDataBuffer);
 
-bool CSaTScanData::ReadGridLatLong() {
-   bool    	bValid=true, bEmpty=true;
-   char    	szData[MAX_LINESIZE], szTid[MAX_LINEITEMSIZE];
-   int     	nScanCount;                                 // Num of items on input line
-   tract_t 	nRec = 0;                                   // File record number
-   double   	Latitude, Longitude, * pCoords=0;
-   FILE       * fp;                                         // Ptr to grid file
+  try {
+    gpPrint->SatScanPrintf("Reading the grid file (lat/lon).\n");
+    SourceFile.Open(m_pParameters->GetSpecialGridFileName().c_str(), ZDIO_OPEN_READ);
+    gpPrint->SetImpliedInputFileType(BasePrint::GRIDFILE);
+    vCoordinates.resize(3/*for conversion*/, 0);
 
-   try {
-      gpPrintDirection->SatScanPrintf("Reading the grid file (lat/lon).\n");
-
-      if ((fp = fopen(m_pParameters->GetSpecialGridFileName().c_str(), "r")) == NULL) {
-        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Could not open special grid file (lat/lon).\n", "ReadGridLatLong()");
-        return false;
-      }
-    
-      pCoords = (double*)Smalloc(3 * sizeof(double), gpPrintDirection);
-    
-      while (fgets(szData, MAX_LINESIZE, fp)) {
-        ++nRec;
-    
-        if (GetWord(szData, 0, gpPrintDirection) == 0)                     // ignore blank lines
+    while (SourceFile.ReadLine(sDataBuffer)) {
+        Parser.StringReloaded();
+        ++lRecNum;
+        //skip lines with no data
+        if (!Parser.HasWords())
           continue;
-        else
-          bEmpty=false;
-
-        nScanCount = sscanf(szData, "%lf %lf",&Latitude, &Longitude);
-        itoa(nRec, szTid, 10);
-
-        if (nScanCount < 2) {
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Invalid record in grid file (lat/lon), line %d.\n",nRec);
-          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "         Please see 'grid file format' in the help file.\n");
-          bValid = false;
-          continue;
-        }
-    
-        // Check for extra coordinates
-        if (GetWord(szData, 2, gpPrintDirection)) {
-           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Extra data in grid file (lat/lon), line %ld.\n", (long) nRec);
-           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "         Please see 'grid file format' in the help file.\n");
-           bValid = false;
-        }
-
-        //Check for correct ranges of latitude and longitude values
-        if ((fabs(Latitude) > 90.0)) {
-           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Latitude range error in grid file (1st column), line %ld.\n", (long) nRec);
-           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "         Latitude must be between -90 and 90.\n");
+        //there are records with data, but not necessarily valid
+        bEmpty=false;
+        if (! ReadLatitudeLongitudeCoordinates(Parser, vCoordinates, 0, lRecNum, "grid")) {
            bValid = false;
            continue;
         }
-
-        if ((fabs(Longitude) > 180.0)) {
-           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Longitude range error in grid file (2nd column), line %ld.\n", (long) nRec);
-           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "         Longitude must be between -180 and 180.\n");
-           bValid = false;
-           continue;
-        }
-    
-        // Convert to 3 dimensions then can add tracts
-        ConvertFromLatLong(Latitude, Longitude, pCoords);
-
-        //*******************************************************************
-        // v2.2 Ignor duplicate grid file coordinates
-        //
-        // just print a message in the warnings box and only print it once.
-        // DO NOT END JOB....
-        //*******************************************************************
-        if (!gpGInfo->giInsertGnode(szTid, pCoords)) {
-          // if (! bPrintDuplicateWarning)
-          //    gpPrintDirection->SatScanPrintWarning("Note: The grid file has multiple identical coordinates.\nThis does not effect the results, but the program will run faster if duplicates are removed.");
-           //bPrintDuplicateWarning = true;
-           char sMessage[100];
-          sprintf(sMessage,"  Error: Duplicate tract ID in grid file (lat/lon), line %d.\n",nRec);
-          SSGenerateWarning(sMessage, "ReadGridLatLong()");
-          bValid = false;
-        }
-      } // while fgets()
-    
-      if (bEmpty) {
-        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Grid file is empty (lat/lon).\n", "ReadGridLatLong()");
-        bValid = false;
-      }
-
-      m_nGridTracts = gpGInfo->giGetNumTracts();
-    
-      fclose(fp);
-      free(pCoords);
-   }
-   catch (SSException & x) {
-      free(pCoords);
-      x.AddCallpath("ReadGridLatLong()", "CSaTScanData");
-      throw;
-   }
-   return bValid;
+        //add created tract identifer(record number) and read coordinates to structure that mantains list of centroids
+        if (!gpGInfo->giInsertGnode(itoa(lRecNum, szTid, 10), vCoordinates))
+          //If there are problems adding then either some other code has errored by
+          //adding to this structure previously or this routine is doing something wrong.
+          //When a special grid file is used to supply centroids, only the routines
+          //read the special grid file should be adding to this structure.
+          ZdException::Generate("Error: Duplicate identifier encountered reading centroids.","ReadGridFileAsLatitudeLongitude()");
+    }
+    //if invalid at this point then read encountered problems with data format,
+    //inform user of section to refer to in user guide for assistance
+    if (! bValid)
+      gpPrint->PrintInputWarning("Please see 'grid file format' in the user guide for help.\n");
+    //print indication if file contained no data
+    else if (bEmpty) {
+      gpPrint->PrintInputWarning("Error: Grid file is contains no data.\n");
+      bValid = false;
+    }
+    //record number of centroids
+    m_nGridTracts = gpGInfo->giGetNumTracts();
+  }
+  catch (ZdFileOpenFailedException &x) {
+    gpPrint->SatScanPrintWarning("Error: Special Grid file '%s' could not be opened.\n",
+                                          m_pParameters->GetSpecialGridFileName().c_str());
+    return false;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadGridFileAsLatitudeLongitude()","CSaTScanData");
+    throw;
+  }
+  return bValid;
 }
 
+/** Reads latitude/longitude coordinates into vector.
+    Note: coordinate vector should already be sized to 3 dimensions.
+    Returns indication of whether words in passed string could be converted to
+    coordinates. Checks that coordinates are in range and converts to cartesian
+    coordinates. */
+bool CSaTScanData::ReadLatitudeLongitudeCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
+                                                    int iWordOffSet, long lRecNum, const char * sSourceFile) {
+  const char  * pCoordinate;
+  double        dLatitude, dLongitude;
 
+  //read latitude, validating that string can be converted to double
+  if ((pCoordinate = Parser.GetWord(iWordOffSet)) != 0)
+    if (! sscanf(pCoordinate, "%lf", &dLatitude)) {
+      gpPrint->PrintInputWarning("Error: Value '%s' of record %d in %s file could not be read as latitude.\n",
+                                          pCoordinate, lRecNum, sSourceFile);
+      return false;
+    }
+  //read longitude, validating that string can be converted to double
+  if ((pCoordinate = Parser.GetWord(++iWordOffSet)) != 0)
+    if (! sscanf(pCoordinate, "%lf", &dLongitude)) {
+      gpPrint->PrintInputWarning("Error: Value '%s' of record %d in %s file could not be read as longitude.\n",
+                                          pCoordinate, lRecNum, sSourceFile);
+      return false;
+    }
+  //validate that there is not extra data for record
+  if ((pCoordinate = Parser.GetWord(++iWordOffSet)) != 0) {
+    gpPrint->PrintInputWarning("Error: Record %d in %s file contains extra data: '%s'.\n", lRecNum, sSourceFile, pCoordinate);
+    return false;
+  }
+  //validate range of latitude value
+  if ((fabs(dLatitude) > 90.0)) {
+    gpPrint->PrintInputWarning("Error: Latitude %lf, for record %d in %s file, is out of range.\n",
+                                        dLatitude, lRecNum, sSourceFile);
+    gpPrint->PrintInputWarning("       Latitude must be between -90 and 90.\n");
+    return false;
+  }
+  //validate range of longitude value
+  if ((fabs(dLongitude) > 180.0)) {
+    gpPrint->PrintInputWarning("Error: Longitude %lf, for record %d in %s file, is out of range.\n",
+                                        dLongitude, lRecNum, sSourceFile);
+    gpPrint->PrintInputWarning("       Longitude must be between -180 and 180.\n");
+    return false;
+  }
+  //convert to 3 dimensions then can add tracts
+  ConvertFromLatLong(dLatitude, dLongitude, vCoordinates);
+  return true;
+}
+
+/** Read the population file.
+    The number of category variables is determined by the first record.
+    Any records deviating from this number will cause an error.
+    If invalid data is found in the file, an error message is printed,
+    that record is ignored, and reading continues. The tract-id MUST match
+    one read in ReadCoordinatesFile().
+    Return value: true = success, false = errors encountered */
+bool CSaTScanData::ReadPopulationFile() {
+  int                           iCategoryIndex, iRecNum=0;
+  bool                          bValid=true, bEmpty=true;
+  tract_t                       TractIdentifierIndex;
+  float                         fPopulation;
+  Julian                        PopulationDate;
+  ZdIO                          SourceFile;
+  ZdString                      sDataBuffer;
+  std::vector<Julian>           vPopulationDates;
+  std::vector<Julian>::iterator itrdates;
+  StringParser                  Parser(sDataBuffer);  
+
+  try {
+    gpPrint->SatScanPrintf("Reading the population file...\n");
+    SourceFile.Open(m_pParameters->GetPopulationFileName().c_str(), ZDIO_OPEN_READ);
+    gpPrint->SetImpliedInputFileType(BasePrint::POPFILE);
+
+    //1st pass, determine unique population dates. Notes errors with records and continues reading.
+    while (SourceFile.ReadLine(sDataBuffer)) {
+        Parser.StringReloaded();
+        ++iRecNum;
+        //skip lines that do not contain data
+        if (!Parser.HasWords())
+          continue;
+        bEmpty=false;
+        //scan values and validate - population file records must contain tract id, date and population.
+        if (!Parser.GetWord(1)) {
+            gpPrint->PrintInputWarning("Error: Record %d of population file missing date.\n", iRecNum);
+            bValid = false;
+            continue;
+        }
+        if (!ConvertPopulationDateToJulian(Parser.GetWord(1), iRecNum, PopulationDate)) {
+            bValid = false;
+            continue;
+        }
+        //if date is unique, add it to the list
+        itrdates = lower_bound(vPopulationDates.begin(), vPopulationDates.end(), PopulationDate);
+        if (! (itrdates != vPopulationDates.end() && (*itrdates) == PopulationDate))
+          vPopulationDates.insert(itrdates, PopulationDate);
+    }
+    // When a prospective analysis is conducted and if a population file is used,
+    //and if the population for a tract is defined at more than one time period,
+    //error message should be shown in the running window and the application terminated.
+    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME &&
+        m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE && vPopulationDates.size() > 1) {
+        bValid = false;
+        gpPrint->PrintInputWarning("Error: For the prospective space-time analysis to be correct,\n"
+                                   "       it is critical that the scanning spatial window is the\n"
+                                   "       same for each of the analysis performed over time. If \n"
+                                   "       there are multiple years in the population file, so that\n"
+                                   "       the population size changes over time, as it does in your\n"
+                                   "       data, then you must define the maximum circle size in\n"
+                                   "       terms of a specific geographical radius rather than as a\n"
+                                   "       percent of the total population at risk.\n\n\n");
+    }
+    //2nd pass, read data in structures.
+    if (bValid && !bEmpty) {
+      //Set tract handlers population date structures since we already now all the dates from above.
+      gpTInfo->tiSetupPopDates(vPopulationDates, m_nStartDate, m_nEndDate);
+      //reset for second read
+      SourceFile.Seek(0L);
+      iRecNum = 0;
+      //We can ignore error checking for population date and population since we already did this above.
+      while (SourceFile.ReadLine(sDataBuffer)) {
+          Parser.StringReloaded();
+          ++iRecNum;
+          if (!Parser.HasWords()) // Skip Blank Lines
+            continue;
+          ConvertPopulationDateToJulian(Parser.GetWord(1), iRecNum, PopulationDate);
+          if (!Parser.GetWord(2)) {
+            gpPrint->PrintInputWarning("Error: Record %d of population file missing population.\n", iRecNum);
+            bValid = false;
+            continue;
+          }
+          sscanf(Parser.GetWord(2), "%f", &fPopulation);
+          //validate that population is not negative or exceeding type precision
+          if (fPopulation < 0) {//validate that count is not negative or exceeds type precision
+            if (strstr(Parser.GetWord(2), "-"))
+              gpPrint->PrintInputWarning("Error: Negative population in record %d of population file.\n", iRecNum);
+            else
+              gpPrint->PrintInputWarning("Error: Population '%s' exceeds maximum value of %i in record %d of population file.\n",
+                                         Parser.GetWord(2), std::numeric_limits<float>::max(), iRecNum);
+            bValid = false;
+            continue;
+          }
+          //Scan for covariates to create population categories or find index.
+          //First category created sets precedence as to how many covariates remaining records must have.
+          if ((iCategoryIndex = gPopulationCategories.MakePopulationCategory(Parser, iRecNum, *gpPrint)) == -1) {
+            bValid = false;
+            continue;
+          }
+          //Validate that tract identifer is one of those defined in the coordinates file.
+          if ((TractIdentifierIndex = gpTInfo->tiGetTractIndex(Parser.GetWord(0))) == -1) {
+            gpPrint->PrintInputWarning("Error: Unknown location identifier in population file, record %d.\n", iRecNum);
+            gpPrint->PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
+            bValid = false;
+            continue;
+          }
+          //Add population count for this tract/category/year
+          gpTInfo->tiAddCategoryToTract(TractIdentifierIndex, iCategoryIndex, PopulationDate, fPopulation);
+      }
+    }
+    //if invalid at this point then read encountered problems with data format,
+    //inform user of section to refer to in user guide for assistance
+    if (! bValid)
+      gpPrint->PrintInputWarning("Please see 'population file format' in the user guide for help.\n");
+    //print indication if file contained no data
+    else if (bEmpty) {
+      gpPrint->PrintInputWarning("Error: Population file contains no data.\n");
+      bValid = false;
+    }
+  }
+  catch (ZdFileOpenFailedException &x){
+    gpPrint->SatScanPrintWarning("Error: Could not open population file:\n'%s'.\n",
+                                          m_pParameters->GetPopulationFileName().c_str());
+    return false;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadPopulationFile()", "CSaTScanData");
+    throw;
+  }
+  return bValid;
+}
