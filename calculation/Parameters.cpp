@@ -1348,11 +1348,8 @@ bool CParameters::ValidateParameters() {
       m_nDimension  = 0;
 
       // if no filename defined in the parameters file then we'll use the current working directory
-      if( !ValidHistoryFileName(gsRunHistoryFilename) ) {
-         getcwd(sBuffer, 256);
-         ZdFileName sFileName(sBuffer);
-         gsRunHistoryFilename << ZdString::reset << sFileName.GetLocation() << ANALYSIS_HISTORY_FILE;
-      }
+      if( !ValidHistoryFileName(gsRunHistoryFilename) )
+         gsRunHistoryFilename << ZdString::reset << ZdFileName(_argv[0]).GetLocation() << ANALYSIS_HISTORY_FILE;
    }
    catch (ZdException & x) {
       x.AddCallpath("ValidateParameters()", "CParameters");
