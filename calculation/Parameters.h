@@ -156,7 +156,7 @@ class CParameters
       bool      ValidateDateString(char* szDate, int nDateType);
       bool      ValidHistoryFileName(ZdString& sRunHistoryFilename);
       bool      ValueIsYes(const ZdString& sTestValue);
-      void      VerifyIniFileSetup(const ZdString& sFileName, bool bCreateIfMissing = false);
+      void      VerifyIniFileSetup(ZdIniFile& file, bool bCreateIfMissing = false);
 
   public:
     CParameters();

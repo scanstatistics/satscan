@@ -1240,9 +1240,9 @@ void CParameters::ReadFromIniFile(ZdString sFileName) {
    try {
       // verify all the keys exist in the file so we can safely call the findkey() here without worrying
       // about it returning a -1  -- AJV 10/24/2002
-      VerifyIniFileSetup(sFileName, true);
-      SetSourceFileName(sFileName.GetCString());
       ZdIniFile file(sFileName.GetCString());
+      VerifyIniFileSetup(file, true);
+      SetSourceFileName(sFileName.GetCString());
       ReadInputFilesSectionFromIni(file);
       ReadModelInfoSectionFromIni(file);
       ReadSequentialScanSectionFromIni(file);
@@ -2398,9 +2398,9 @@ bool CParameters::ValueIsYes(const ZdString& sTestValue) {
 // checks the format of the ini file to be read to ensure that the correct lines exist
 // pre: sFileName is the name of the ini file
 // post: will throw an exception if one of the required ini lines is missing
-void CParameters::VerifyIniFileSetup(const ZdString& sFileName, bool bCreateIfMissing) {
+void CParameters::VerifyIniFileSetup(ZdIniFile& file, bool bCreateIfMissing) {
    try {
-      ZdIniFile file(sFileName.GetCString());
+ //     ZdIniFile file(sFileName.GetCString());
 
       CheckIniSectionsExist(file, bCreateIfMissing);
       CheckInputFileSection(file, bCreateIfMissing);
@@ -2410,7 +2410,7 @@ void CParameters::VerifyIniFileSetup(const ZdString& sFileName, bool bCreateIfMi
       CheckOutputFileIniSection(file, bCreateIfMissing);
 
   //    if(bCreateIfMissing)
-         file.Write();
+  //       file.Write();
    }
    catch (ZdException &x) {
       x.AddCallpath("VerifyIniFileSetup()", "CParameters");
@@ -2423,9 +2423,9 @@ void CParameters::VerifyIniFileSetup(const ZdString& sFileName, bool bCreateIfMi
 // post: saves the parameters to an .ini file
 void CParameters::Write(const char * sParameterFileName) {
    try {
-      VerifyIniFileSetup(ZdString(sParameterFileName), true);
-
       ZdIniFile file(sParameterFileName);
+      VerifyIniFileSetup(file, true);
+
       SetSourceFileName(sParameterFileName);
       SaveInputFileSection(file);
       SaveModelInfoSection(file);
