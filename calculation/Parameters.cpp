@@ -2336,7 +2336,7 @@ void CParameters::SetDefaults() {
   gsEndRangeEndDate                     = gsStudyPeriodEndDate;
   gsStartRangeStartDate                 = gsStudyPeriodStartDate;
   gsStartRangeEndDate                   = gsStudyPeriodEndDate;
-  gdTimeTrendConverge			= 0.001;
+  gdTimeTrendConverge			= 0.00000001;
   gbEarlyTerminationSimulations         = false;
   gbRestrictReportedClusters            = false;
   gfMaxReportedGeographicClusterSize    = gfMaxGeographicClusterSize;
