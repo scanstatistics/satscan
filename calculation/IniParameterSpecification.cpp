@@ -225,6 +225,7 @@ void IniParameterSpecification::Build_5_1_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"SpatialAdjustmentType"));
   gvParameterInfo.push_back(std::make_pair(MultipleDataSets, (const char*)"MultipleDataSetsPurposeType"));
   gvParameterInfo.push_back(std::make_pair(System, (const char*)"Version"));
+  gvParameterInfo.push_back(std::make_pair(BatchModeFeatures, (const char*)"RandomSeed"));
 
   gvMultipleParameterInfo[CASEFILE] = std::make_pair(MultipleDataSets, (const char*)"CaseFile");
   gvMultipleParameterInfo[CONTROLFILE] = std::make_pair(MultipleDataSets, (const char*)"ControlFile");

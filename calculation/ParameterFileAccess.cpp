@@ -129,6 +129,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case MULTI_DATASET_PURPOSE_TYPE : sDefaultValue = gParameters.GetMultipleDataStreamPurposeType(); break;
       case CREATION_VERSION         : sDefaultValue.printf("%u.%u.%u", gParameters.GetCreationVersion().iMajor,
                                                            gParameters.GetCreationVersion().iMinor, gParameters.GetCreationVersion().iRelease); break;
+      case RANDOMIZATION_SEED       : break; //this parameter is not advertised                                                     
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -477,6 +478,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case MULTI_DATASET_PURPOSE_TYPE: iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, MULTIVARIATE, ADJUSTMENT);
                                        gParameters.SetMultipleDataStreamPurposeType((MultipleStreamPurposeType)ReadInt(sParameter, eParameterType)); break;
       case CREATION_VERSION          : ReadVersion(sParameter); break;
+      case RANDOMIZATION_SEED        : gParameters.SetRandomizationSeed(ReadInt(sParameter, eParameterType)); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","SetParameter()", eParameterType);
     };
   }

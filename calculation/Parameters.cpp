@@ -5,6 +5,7 @@
 #include "Parameters.h"
 #include "DataStreamHandler.h"
 #include "ParameterFileAccess.h"
+#include "RandomNumberGenerator.h"
 
 #define INCLUDE_RUN_HISTORY
 
@@ -24,7 +25,7 @@ const char*      SPACETIME_PERMUTATION_MODEL    	= "Space-Time Permutation";
 const char*      NORMAL_MODEL                           = "Normal";
 const char*      SURVIVAL_MODEL                         = "Survival";
 const char*      RANK_MODEL                             = "Rank";
-int CParameters::giNumParameters 			= 68;
+int CParameters::giNumParameters 			= 69;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -159,6 +160,7 @@ void CParameters::Copy(const CParameters &rhs) {
     geMultipleStreamPurposeType         = rhs.geMultipleStreamPurposeType;
     gCreationVersion                    = rhs.gCreationVersion;
     gbUsePopulationFile                 = rhs.gbUsePopulationFile;
+    glRandomizationSeed                 = rhs.glRandomizationSeed;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -383,6 +385,9 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
     fprintf(fp, "  End Date   : %s\n\n", gsStudyPeriodEndDate.c_str());
 
     fprintf(fp, "  Number of Replications : %u\n", giReplications);
+
+    if (glRandomizationSeed != RandomNumberGenerator::glDefaultSeed)
+       fprintf(fp, "  Randomization Seed     : %ld", glRandomizationSeed);
 
     if (giNumberEllipses > 0) {
       fprintf(fp, "\nEllipses\n");
@@ -1040,6 +1045,7 @@ void CParameters::SetAsDefaulted() {
   gCreationVersion.iMinor               = 0;
   gCreationVersion.iRelease             = 3;
   gbUsePopulationFile                   = false;
+  glRandomizationSeed                   = RandomNumberGenerator::glDefaultSeed;
 }
 
 /** Sets dimensions of input data. */
@@ -1367,6 +1373,12 @@ void CParameters::SetProspectiveStartDate(const char * sProspectiveStartDate) {
     x.AddCallpath("SetProspectiveStartDate()","CParameters");
     throw;
   }
+}
+
+/** Set seed used by randomization process. */
+void CParameters::SetRandomizationSeed(long lSeed) {
+  //Validity of setting is checked in ValidateParameters().
+  glRandomizationSeed = lSeed;
 }
 
 /** Sets risk type. Throws exception if out of range. */
@@ -2108,6 +2120,12 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
       //validate simulation options
       if (! ValidateSimulationDataParameters(PrintDirection))
         bValid = false;
+
+      //validate hidden parameter which specifies randomization seed
+      if (!(0 < glRandomizationSeed && glRandomizationSeed < RandomNumberGenerator::glM)) {
+         bValid = false;
+         PrintDirection.SatScanPrintWarning("Error: Randomization seed out of range [1 - %ld].\n", RandomNumberGenerator::glM);
+      }
     }
     else {
       PrintDirection.SatScanPrintWarning("Warning: Parameters will not be validated, in accordance with the setting of the validation\n"

@@ -85,7 +85,8 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
       //      of the parameter file can no longer be maintained like the ini version unless the settings
       //      only specify one data set.
       case MULTI_DATASET_PURPOSE_TYPE: return "Multiple Data Stream Purpose Type (line 67)";  
-      case CREATION_VERSION          : return "Sotware Version Created (line 68)";  
+      case CREATION_VERSION          : return "Sotware Version Created (line 68)";
+      case RANDOMIZATION_SEED        : return "Randomization Seed (line 69)";
       default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
     };
   }
