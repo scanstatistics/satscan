@@ -2,312 +2,1234 @@
 #pragma hdrstop
 #include "Tracts.h"
 
-/**********************************************************************
- file: tinfo.c
- This file abstracts data as it is read from a file:  separate geographic
- tracts, each containing multiple populations (different categories).
- Each population cell has a population and a case count.
-
- DATA REPRESENTATION (internal):
- Each geographic tract is represented by a "struct tnode" in an array,
- sorted by increasing tract-id.
- The tnode records the tract-id, coordinates, and the head of a linked list
- of category records for that tract.
-
- Each category record ("struct cnode") contains the category number, the
- population, and the case count for that node.  They are stored as linked
- lists within each tract, on the theory that there will not be many
- categories in a given analysis.
- **********************************************************************/
-// Changes made 2/98 - K.Rand
-//   1) Calls to salloc routines cast to appropriate types.
-
-/* ============================ Tract Routines ============================= */
-
-TInfo::TInfo(Cats *pCats, BasePrint *pPrintDirection)
-{
-   Init();
-   gpCats = pCats;
-   gpPrintDirection = pPrintDirection;
+/** Constructor */
+CategoryDescriptor::CategoryDescriptor(int iPopulationDatesCount, int iCategoryIndex) : gpNextDescriptor(0), gpPopulationList(0) {
+  try {
+    Init();
+    Setup(iPopulationDatesCount, iCategoryIndex);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("constructor()", "CategoryDescriptor");
+    throw;
+  }
 }
-TInfo::~TInfo()
-{
-   Free();
+
+/** Destructor */
+CategoryDescriptor::~CategoryDescriptor() {
+  try {
+    delete gpNextDescriptor; gpNextDescriptor=0;
+    delete[] gpPopulationList; gpPopulationList=0;
+  }
+  catch(...){}
 }
-void TInfo::Init()
-{
-   TractInfo     = 0;
-   ti_length     = 0;
-   NumTracts     = 0;
-   pPopDates     = 0;
-   nPopDates     = 0;
-   bStartAsPopDt = false;
-   bEndAsPopDt   = false;
-   nDimensions   = 0;
+
+/** Adds population to existing population for date index. */
+void CategoryDescriptor::AddPopulationAtDateIndex(long lPopluation, int iDateIndex, const TractHandler & theTractHandler) {
+  try {
+    if (0 > iDateIndex || iDateIndex > theTractHandler.tiGetNumPopDates() - 1)
+      ZdGenerateException("Index %d out of range(0 - %d).","AddPopulationAtDateIndex()",
+                          ZdException::Normal, iDateIndex, theTractHandler.tiGetNumPopDates() -1);
+    gpPopulationList[iDateIndex] += lPopluation;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("AddPopulationAtDateIndex()","CategoryDescriptor");
+    throw;
+  }
 }
-void TInfo::Free()
-{
-   // DO NOT need to delete gpCats;
-   tiCleanup();
+
+/** Combines passed category descriptor data with this descriptor. Throws exception
+    if category indexes are different. Does not bother next pointer.                */
+void CategoryDescriptor::Combine(const CategoryDescriptor * pCategoryDescriptor, const TractHandler & theTractHandler) {
+  int   i;
+
+  try {
+    if (! pCategoryDescriptor || giCategoryIndex != pCategoryDescriptor->giCategoryIndex)
+      ZdGenerateException("Unable to combine category descriptors with different indexes(%d/%d).",
+                          "Combine()", ZdException::Normal, giCategoryIndex, pCategoryDescriptor->giCategoryIndex);
+
+    for (i=0; i < theTractHandler.tiGetNumPopDates(); i++)
+      gpPopulationList[i] += pCategoryDescriptor->gpPopulationList[i];
+    gtCaseCount += pCategoryDescriptor->gtCaseCount;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Combine()","CategoryDescriptor");
+    throw;
+  }
 }
-/**********************************************************************
- Insert a tract into the vector.
- Parameters:
-   tid   - tract ID
-   x, y, z  - tract coordinates
- Return value:
-   0 = duplicate tract ID
-   1 = success
- **********************************************************************/
-int TInfo::tiInsertTnode(char *tid, double* pCoords)
-{
-   try
-      {
-      tract_t t = NumTracts - 1;
-      int i;
-    
-       /* Grow TractInfo, if needed */
-      if (NumTracts >= ti_length)
-      {
-        ti_length += TI_GROW;
-        TractInfo = (tnode*)Srealloc(TractInfo, ti_length * sizeof(struct tnode), gpPrintDirection);
-      }
-    
-      /* Find insertion point */
-      while (t >= 0 && strcmp(tid, TractInfo[t].tid) < 0)
-      {
-        TractInfo[t + 1] = TractInfo[t];
-        --t;
-      }
-    
-      /* if duplicate */
-      if (t >= 0 && !strcmp(tid, TractInfo[t].tid))
-        return 0;
-    
-      t++;
-    
-      TractInfo[t].tid = (char*) malloc(strlen(tid)+1);
-      strcpy(TractInfo[t].tid, tid);
-    
-      /*   TractInfo[t].tid  = Sstrdup(tid); */
-      /*   TractInfo[t].x    = (double)x;
-      TractInfo[t].y    = (double)y;
-      TractInfo[t].z    = (double)z;  */
-      TractInfo[t].pCoords = (double*)malloc(nDimensions * sizeof(double));
-      for (i=0; i < nDimensions; i++)
-      {
-      	TractInfo[t].pCoords[i] =  pCoords[i];
-      }
-      TractInfo[t].cats = 0;
-    
-      NumTracts++;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiInsertTnode()", "TInfo");
-      throw;
-      }
-   return(1);
-} /* tiInsertTnode() */
 
-/**********************************************************************
- Returns the number of tracts observed
- **********************************************************************/
-tract_t TInfo::tiGetNumTracts(void) const
-{
-   return(NumTracts);
-} /* tiGetNumTracts() */
+/** Returns population at date index. */
+long CategoryDescriptor::GetPopulationAtDateIndex(int iDateIndex, const TractHandler & theTractHandler) const {
+  try {
+    if (0 > iDateIndex || iDateIndex > theTractHandler.tiGetNumPopDates() - 1)
+      ZdGenerateException("Index %d out of range(0 - %d).","", ZdException::Normal, iDateIndex, theTractHandler.tiGetNumPopDates() - 1);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetPopulationAtDateIndex()","CategoryDescriptor");
+    throw;
+  }
+  return gpPopulationList[iDateIndex];
+}
 
-/**********************************************************************
- Searches TractInfo for tract-id "tid".  Returns the index,
- or -1 if not found.
- Uses binary search.
- **********************************************************************/
-tract_t TInfo::tiGetTractNum(char *tid)
-{
-   tract_t a = 0;                              /* start of array to search */
-   tract_t b = NumTracts - 1;                    /* end of array to search */
-   tract_t m;                                                  /* midpoint */
+/** Allocates next CategoryDescriptor. Returns pointer to allocated object. */
+CategoryDescriptor * CategoryDescriptor::SetNextDescriptor(int iPopulationListSize, int iCategoryIndex) {
+  try {
+    delete gpNextDescriptor; gpNextDescriptor=0;
+    gpNextDescriptor = new CategoryDescriptor(iPopulationListSize, iCategoryIndex);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetNextDescriptor()","CategoryDescriptor");
+    throw;
+  }
+  return gpNextDescriptor;
+}
 
-   try
-      {
-      while (b - a > 1)
-        {
-        m = (a + b) / 2;
-        if (strcmp(tid, TractInfo[m].tid) < 0)
-           b = m - 1;
-        else
-          a = m;
-        }
+/** Sets population at date index. */
+void CategoryDescriptor::SetPopulationAtDateIndex(long lPopluation, int iDateIndex, const TractHandler & theTractHandler) {
+  try {
+    if (0 > iDateIndex || iDateIndex > theTractHandler.tiGetNumPopDates() - 1)
+      ZdGenerateException("Index %d out of range(0 - %d).","", ZdException::Normal, iDateIndex, theTractHandler.tiGetNumPopDates() - 1);
+    gpPopulationList[iDateIndex] = lPopluation;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetPopulationAtDateIndex()","CategoryDescriptor");
+    throw;
+  }
+}
 
-      if (!strcmp(tid, TractInfo[a].tid))
-         return(a);
-      if (!strcmp(tid, TractInfo[b].tid))
-         return(b);
+/** Allocates and intializes population list. */
+void CategoryDescriptor::SetPopulationListSize(int iPopulationListSize) {
+  try {
+    if (gpPopulationList) {delete [] gpPopulationList; gpPopulationList=0;}
+    gpPopulationList = new long[iPopulationListSize];
+    memset(gpPopulationList, 0, iPopulationListSize * sizeof(long));
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetPopulationListSize()","CategoryDescriptor");
+    delete[] gpPopulationList; gpPopulationList=0;
+    throw;
+  }
+}
+
+/** Internal setup function */
+void CategoryDescriptor::Setup(int iPopulationListSize, int iCategoryIndex) {
+  try {
+    SetPopulationListSize(iPopulationListSize);
+    SetCategoryIndex(iCategoryIndex);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Setup()","CategoryDescriptor");
+    throw;
+  }
+}
+
+/** Constructor */
+TractDescriptor::TractDescriptor(const char * sTractIdentifier, const double* pCoordinates, int iDimensions) {
+  try {
+    Init();
+    Setup(sTractIdentifier, pCoordinates, iDimensions);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("TractDescriptor()","TractDescriptor");
+    throw;
+  }
+}
+
+/** Destructor */
+TractDescriptor::~TractDescriptor() {
+  try {
+    delete gpCategoryDescriptorsList;
+    delete[] gsTractIdentifiers;
+    delete[] gpCoordinates;
+  }
+  catch(...){}
+}
+
+/** Adds additional tract identifier for tract at coordinates.
+    Multiple identifiers are provided by tab delimiting. */
+void TractDescriptor::AddTractIdentifier(const char * sTractIdentifier) {
+  try {
+    ZdString   sTemporary(gsTractIdentifiers);
+
+    sTemporary << '\t' << sTractIdentifier;
+    delete[] gsTractIdentifiers; gsTractIdentifiers=0;
+    gsTractIdentifiers = new char[sTemporary.GetLength() + 1];
+    strcpy(gsTractIdentifiers, sTemporary.GetCString());
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("AddTractIdentifier()", "TractDescriptor");
+    throw;
+  }
+}
+
+/** Combines passed tract descriptor with this descriptor. Combines all like categories
+    and creates new categories in list for those that don't exist in this descriptor
+    but do exist in passed descriptor. */
+void TractDescriptor::Combine(const TractDescriptor * pTractDescriptor, const TractHandler & theTractHandler) {
+  int                           i;
+  const CategoryDescriptor    * p2;
+
+  try {
+    if (! pTractDescriptor)
+      ZdGenerateException("Null pointer.","Combine()");
+
+    AddTractIdentifier(pTractDescriptor->GetTractIdentifier());
+    for (i=0; i < theTractHandler.tiGetNumCategories(); i++) {
+       p2 = pTractDescriptor->GetCategoryDescriptor(i);
+       if (p2)
+         GetCategoryDescriptor(i, theTractHandler.tiGetNumPopDates()).Combine(p2, theTractHandler);
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Combine()", "TractDescriptor");
+    throw;
+  }
+}
+
+/** Returns whether coordinate are equal. */
+bool TractDescriptor::CompareCoordinates(const TractDescriptor & Descriptor, const TractHandler & theTractHandler) const {
+  return !memcmp(GetCoordinates(), Descriptor.GetCoordinates(), theTractHandler.tiGetDimensions() * sizeof(double));
+}
+
+/** Returns whether coordinate are equal. */
+bool TractDescriptor::CompareCoordinates(const double * pCoordinates, int iDimensions) const {
+  return !memcmp(GetCoordinates(), pCoordinates, iDimensions * sizeof(double));
+}
+
+/** Returns referance to category descriptor for tract with iCategoryIndex.
+    If descriptor not found, a new node is created for category and appended to list. */
+CategoryDescriptor & TractDescriptor::GetCategoryDescriptor(int iCategoryIndex, int iPopulationListSize) {
+  CategoryDescriptor          * pCurrentDescriptor, * pPreviousDescriptor;
+  bool                          bFound=false;
+
+  try {
+    if (! gpCategoryDescriptorsList) {
+      gpCategoryDescriptorsList = new CategoryDescriptor(iPopulationListSize, iCategoryIndex);
+      pCurrentDescriptor = gpCategoryDescriptorsList;
+    }
+    else {
+      pCurrentDescriptor = gpCategoryDescriptorsList;
+      while (pCurrentDescriptor && !bFound) {
+           if (pCurrentDescriptor->GetCategoryIndex() == iCategoryIndex)
+             bFound = true;
+           else {
+             pPreviousDescriptor = pCurrentDescriptor;
+             pCurrentDescriptor = pPreviousDescriptor->GetNextDescriptor();
+           }
       }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiGetTractNum()", "TInfo");
-      throw;
-      }
-  return(-1);
-} /* tiGetTractNum() */
+
+      if (! bFound)
+        pCurrentDescriptor = pPreviousDescriptor->SetNextDescriptor(iPopulationListSize, iCategoryIndex);
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetCategoryDescriptor()", "TractDescriptor");
+    throw;
+  }
+  return *pCurrentDescriptor;
+}
+
+/** Returns pointer to category class with iCategoryIndex. Returns null pointer if not found. */
+CategoryDescriptor * TractDescriptor::GetCategoryDescriptor(int iCategoryIndex) {
+  CategoryDescriptor  * pCategoryDescriptor;
+  bool                  bDone=false;
+
+  pCategoryDescriptor = gpCategoryDescriptorsList;
+  while (pCategoryDescriptor && !bDone) {
+       if (pCategoryDescriptor->GetCategoryIndex() == iCategoryIndex)
+         bDone = true;
+       else
+         pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();
+  }
+  return pCategoryDescriptor;
+}
+
+/** Returns const pointer to category class with iCategoryIndex. Returns null pointer if not found. */
+const CategoryDescriptor * TractDescriptor::GetCategoryDescriptor(int iCategoryIndex) const {
+  const CategoryDescriptor  * pCategoryDescriptor;
+  bool                        bDone=false;
+
+  pCategoryDescriptor = gpCategoryDescriptorsList;
+  while (pCategoryDescriptor && !bDone) {
+       if (pCategoryDescriptor->GetCategoryIndex() == iCategoryIndex)
+         bDone = true;
+       else
+         pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();
+  }
+  return pCategoryDescriptor;
+}
+
+/** Returns pointer to category list head. */
+CategoryDescriptor * TractDescriptor::GetCategoryDescriptorList() {
+  return gpCategoryDescriptorsList;
+}
+
+/** Returns const pointer to category list head. */
+const CategoryDescriptor * TractDescriptor::GetCategoryDescriptorList() const {
+  return gpCategoryDescriptorsList;
+}
+
+/** Returns coordinates of tract. */
+double * TractDescriptor::GetCoordinates(double* pCoordinates, const TractHandler & theTractHandler) const {
+  try {
+    if (! pCoordinates)
+      ZdGenerateException("Null pointer.","GetCoordinates(double*)");
+
+    memcpy(pCoordinates, gpCoordinates, theTractHandler.tiGetDimensions() * sizeof(double));
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetCoordinates()","TractDescriptor");
+    throw;
+  }
+  return pCoordinates;
+}
+
+/** Returns coordinate at dimension. */
+double TractDescriptor::GetCoordinatesAtDimension(int iDimension, const TractHandler & theTractHandler) const {
+  try {
+    if (0 > iDimension || iDimension > theTractHandler.tiGetDimensions() - 1)
+      ZdGenerateException("Index %d out of range(0 - %d).","", ZdException::Normal, iDimension, theTractHandler.tiGetDimensions() - 1);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetCoordinatesAtDimension()", "TractDescriptor");
+    throw;
+  }
+  return gpCoordinates[iDimension];
+}
+
+/** Returns number of tract identifiers. */
+int TractDescriptor::GetNumTractIdentifiers() const {
+  int   iNumIdentifiers;
+
+  try {
+    ZdStringTokenizer Tokenizer(gsTractIdentifiers, "\t");
+
+    iNumIdentifiers = (int)Tokenizer.GetNumTokens();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetNumTractIdentifiers()","TractDescriptor");
+    throw;
+  }
+  return iNumIdentifiers;
+}
+
+/** Returns indexed tract identifier. */
+const char * TractDescriptor::GetTractIdentifier(int iTractIdentifierIndex, std::string & sIndentifier) {
+  try {
+    ZdStringTokenizer Tokenizer(gsTractIdentifiers, "\t");
+
+    if (0 > iTractIdentifierIndex || iTractIdentifierIndex > (int)Tokenizer.GetNumTokens() - 1)
+      ZdGenerateException("Index %d out of range(0 - %d).","GetTractIdentifier()", ZdException::Normal,
+                          iTractIdentifierIndex, (int)Tokenizer.GetNumTokens() - 1);
+
+    sIndentifier = Tokenizer.GetToken(iTractIdentifierIndex).GetCString();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetTractIdentifier()", "TractDescriptor");
+    throw;
+  }
+  return gsTractIdentifiers;
+}
+
+/** Returns all tract identifiers. */
+void TractDescriptor::GetTractIdentifiers(std::vector<std::string>& vIdentifiers) const {
+  try {
+    vIdentifiers.clear();
+    ZdStringTokenizer Tokenizer(gsTractIdentifiers, "\t");
+    while (Tokenizer.HasMoreTokens())
+         vIdentifiers.push_back(Tokenizer.GetNextToken().GetCString());
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetTractIdentifier()", "TractDescriptor");
+    throw;
+  }
+}
+
+/** Set tract coordinates. */
+void TractDescriptor::SetCoordinates(const double* pCoordinates, int iDimensions) {
+  try {
+    if (! pCoordinates)
+      ZdGenerateException("Null pointer.","SetCoordinates(const double*,int)");
+
+    if (gpCoordinates) {delete[] gpCoordinates; gpCoordinates=0;}
+    gpCoordinates = new double[iDimensions];
+    memcpy(gpCoordinates, pCoordinates, iDimensions * sizeof(double));
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetCoordinates()","TractDescriptor");
+    delete[] gpCoordinates; gpCoordinates=0;
+    throw;
+  }
+}
+
+/** Sets tract identifier. Clears previous identifier settings. */
+void TractDescriptor::SetTractIdentifier(const char * sTractIdentifier) {
+  try {
+    if (! sTractIdentifier)
+      ZdGenerateException("Null pointer.","SetTractIdentifier()");
+
+    if (gsTractIdentifiers) {delete[] gsTractIdentifiers; gsTractIdentifiers=0;}
+    gsTractIdentifiers = new char[strlen(sTractIdentifier) + 1];
+    strcpy(gsTractIdentifiers, sTractIdentifier);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetTractIdentifier()","TractDescriptor");
+    delete[] gsTractIdentifiers; gsTractIdentifiers=0;
+    throw;
+  }
+}
+
+/** Internal setup function */
+void TractDescriptor::Setup(const char * sTractIdentifier, const double* pCoordinates, int iDimensions) {
+  try {
+    SetTractIdentifier(sTractIdentifier);
+    SetCoordinates(pCoordinates, iDimensions);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Setup()","TractDescriptor");
+    throw;
+  }
+}
+
+/** Constructor*/
+TractHandler::TractHandler(Cats & Categories, BasePrint & PrintDirection) {
+  Init();
+  Setup(Categories, PrintDirection);
+}
+
+/** Destructor */
+TractHandler::~TractHandler() {
+  try {
+    delete gpSearchTractDescriptor;
+  }
+  catch(...){}
+}
+
+/** Internal initialization. */
+void TractHandler::Init() {
+  bStartAsPopDt = false;
+  bEndAsPopDt   = false;
+  nDimensions   = 0;
+  gpSearchTractDescriptor=0;
+}
+
+/** Adds a category to the tract info structure. */
+void TractHandler::tiAddCategoryToTract(tract_t tTractIndex, int iCategoryIndex, Julian PopulationDate, long lPopulation) {
+  try {
+    if (0 > tTractIndex || tTractIndex > (tract_t)gvTractDescriptors.size() - 1 )
+      ZdGenerateException("Index %d out of range(0 - %d).","tiAddCategoryToTract()",
+                          ZdException::Normal, tTractIndex, gvTractDescriptors.size() - 1);
+
+    CategoryDescriptor & thisDescriptor =
+           gvTractDescriptors[tTractIndex]->GetCategoryDescriptor(iCategoryIndex, (int)gvPopulationDates.size());
+    tiAssignPopulation(thisDescriptor, PopulationDate, lPopulation);
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiAddCategoryToTract()", "TractHandler");
+    throw;
+  }
+}
+
+///** Sets the case count for tract category.
+//    Returns 1 if tract category found else 0. */
+int TractHandler::tiAddCount(tract_t t, int iCategoryIndex, count_t Count) {
+  int                      iReturn=0;
+  CategoryDescriptor     * pCategoryDescriptor;
+
+  try {
+    if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
+       ZdException::Generate("Index %d out of range(0 - %d)", "tiAddCount()", t, gvTractDescriptors.size() - 1);
+
+   pCategoryDescriptor = gvTractDescriptors[t]->GetCategoryDescriptor(iCategoryIndex);
+    if (pCategoryDescriptor) {
+       iReturn = 1;
+       pCategoryDescriptor->AddCaseCount(Count);
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiAddCount()", "TractHandler");
+    throw;
+  }
+  return iReturn;
+}
+
+/** Assigns a population count to the appropriate location in the population list.
+    Note: An exception probably should be thrown here when population date index
+          if not found, but previous code did not.
+          Is this correct behavior?
+          Should an exception be thrown or will that break previous program design? */
+void TractHandler::tiAssignPopulation(CategoryDescriptor & thisCategoryDescriptor, Julian PopulationDate, long lPopulation) {
+  int iPopulationDateIndex, iNumPopulationDates;
+
+  try {
+    iPopulationDateIndex = tiGetPopDateIndex(PopulationDate);
+    if (iPopulationDateIndex != -1) {
+      iNumPopulationDates = (int)gvPopulationDates.size();
+      thisCategoryDescriptor.AddPopulationAtDateIndex(lPopulation, iPopulationDateIndex, *this);
 
 
-/**********************************************************************
- Returns the tract name (tid) for the given tract_t index.
- **********************************************************************/
-char *TInfo::tiGetTid(tract_t t) const
-{
-   char *Tid = 0;
+      if (iPopulationDateIndex == 1 && bStartAsPopDt)
+        thisCategoryDescriptor.AddPopulationAtDateIndex(lPopulation, 0L, *this);
+    
+      if (iPopulationDateIndex == iNumPopulationDates - 2 && bEndAsPopDt)
+        thisCategoryDescriptor.AddPopulationAtDateIndex(lPopulation, iNumPopulationDates - 1, *this);
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiAssignPopulation()", "TractHandler");
+    throw;
+  }
+}
 
-   try
-     {
-     if (0 <= t && t < NumTracts)
-        Tid = (TractInfo[t].tid);
+/** These calculations assumes that the population of a given day refers to the beginning of that day.
+    Returns array that indicates population dates percentage of the whole study period.               */
+void TractHandler::tiCalculateAlpha(double** pAlpha, Julian StartDate, Julian EndDate) const {
+  int                   nPopDates = (int)gvPopulationDates.size();
+  int                   n, N = nPopDates-2;
+  long                  nTotalYears = TimeBetween(StartDate, EndDate, DAY)/*EndDate-StartDate*/ ;
+  double                sumalpha;
+
+   try {
+     *pAlpha = (double*)Smalloc((nPopDates+1) * sizeof(double), gpPrintDirection);
+
+     if (N==0) {
+       (*pAlpha)[0] = 0.5*((gvPopulationDates[1]-StartDate)+(gvPopulationDates[1]-(EndDate+1)))/(double)(gvPopulationDates[1]-gvPopulationDates[0]);
+       (*pAlpha)[1] = 0.5*((StartDate-gvPopulationDates[0])+((EndDate+1)-gvPopulationDates[0]))/(double)(gvPopulationDates[1]-gvPopulationDates[0]);
      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiGetTractNum()", "TInfo");
-      throw;
-      }
-   return Tid;
-} /* tiGetTid() */
+     else if(N==1) {
+       (*pAlpha)[0] = (0.5*((double)(gvPopulationDates[1]-StartDate)/(gvPopulationDates[1]-gvPopulationDates[0]))*(gvPopulationDates[1]-StartDate)) / (double)nTotalYears;
+       (*pAlpha)[1] = (0.5*(gvPopulationDates[1]-StartDate)*(1+((double)(StartDate-gvPopulationDates[0])/(gvPopulationDates[1]-gvPopulationDates[0])))) / (double)nTotalYears
+                       + (0.5*(double)(EndDate+1-gvPopulationDates[N])*(1+((double)(gvPopulationDates[N+1]-(EndDate+1))/(gvPopulationDates[N+1]-gvPopulationDates[N])))) /  (double)nTotalYears;
+       (*pAlpha)[N+1] = (0.5*((double)(EndDate+1-gvPopulationDates[N])/(gvPopulationDates[N+1]-gvPopulationDates[N]))*(EndDate+1-gvPopulationDates[N])) / nTotalYears;
+     }
+     else {
+       (*pAlpha)[0] = (0.5*((double)(gvPopulationDates[1]-StartDate)/(gvPopulationDates[1]-gvPopulationDates[0]))*(gvPopulationDates[1]-StartDate)) / (double)nTotalYears;
+       (*pAlpha)[1] = (0.5*(gvPopulationDates[2]-gvPopulationDates[1]) + 0.5*(gvPopulationDates[1]-StartDate)*(1+((double)(StartDate-gvPopulationDates[0])/(gvPopulationDates[1]-gvPopulationDates[0])))) / (double)nTotalYears;
+       for (n = 2; n < N; n++) {
+         (*pAlpha)[n] = 0.5*(double)(gvPopulationDates[n+1] - gvPopulationDates[n-1]) / (double)nTotalYears;
+       }
+       (*pAlpha)[N]   = (0.5*(gvPopulationDates[N]-gvPopulationDates[N-1]) + 0.5*(double)(EndDate+1-gvPopulationDates[N])*(1+((double)(gvPopulationDates[N+1]-(EndDate+1))/(gvPopulationDates[N+1]-gvPopulationDates[N])))) /  (double)nTotalYears;
+       (*pAlpha)[N+1] = (0.5*((double)(EndDate+1-gvPopulationDates[N])/(gvPopulationDates[N+1]-gvPopulationDates[N]))*(EndDate+1-gvPopulationDates[N])) / nTotalYears;
+     }
 
-/**********************************************************************
- Returns the tract coords for the given tract_t index.
- **********************************************************************/
-void TInfo::tiGetCoords(tract_t t, double** pCoords) const
-{
-   try
-      {
-      *pCoords = (double*)Smalloc(nDimensions * sizeof(double), gpPrintDirection);             // DTG nDimensions is a global value... Rename as "gnDimensions"
-      int i;
+#if 0 /* DEBUG */
+     printf("\nTotal years = %ld, N=%ld\n", nTotalYears, N);
+     gpPrintDirection->SatScanPrintf("Pop\nIndex   PopDates        Alpha\n");
+     for (n=0;n<=N+1;n++) {
+       JulianToChar(szDate,pPopDates[n]);
+       gpPrintDirection->SatScanPrintf("%i       %s        %f\n",n, szDate, (*pAlpha)[n]);
+     }
+     gpPrintDirection->SatScanPrintf("\n");
+#endif
 
-      if (0 <= t && t < NumTracts)
-         {
-         //  *x = TractInfo[t].x;
-         //  *y = TractInfo[t].y;
-         //  *z = TractInfo[t].z;
-         for (i=0; i < nDimensions; i++)
-            {
-            (*pCoords)[i] = TractInfo[t].pCoords[i];
+     /* Bug check, seeing that alpha values add to one. */
+     sumalpha = 0;
+     for (n = 0; n <= N+1; n++) sumalpha = sumalpha + (*pAlpha)[n];
+     if (sumalpha>1.0001 || sumalpha<0.9999) {
+       char sMessage[200], sTmp[50];
+       strcpy(sMessage, "\n\n  Error: Alpha values not calculated correctly in");
+       strcat(sMessage, "\n  file tinfo.c, function tiCalcAlpha. The sum of the ");
+       sprintf(sTmp, "\n  alpha values is %8.6lf rather than 1.\n", sumalpha);
+       strcat(sMessage, sTmp);
+       SSGenerateException(sMessage, "tiCalculateAlpha()");
+     }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiCalculateAlpha()", "TractHandler");
+    throw;
+  }
+}
+
+/** Prints warning if there are tract categories with cases but no population.
+    Throws exception if total population for tract is zero. */
+void TractHandler::tiCheckCasesHavePopulations() const {
+  int                           i, j, nPEndIndex, iTractPopulation, nPopTotal, nPStartIndex = 0;
+  const CategoryDescriptor *    pCategoryDescriptor;
+  std::string                   sBuffer, sBuffer2;
+
+  try {
+    if (bStartAsPopDt)
+      nPStartIndex = 1;
+    if (bEndAsPopDt)
+      nPEndIndex = (int)gvPopulationDates.size() - 2;
+    else
+      nPEndIndex = (int)gvPopulationDates.size() - 1;
+
+    for (i=0; i < (int)gvTractDescriptors.size(); i++) {
+       iTractPopulation = 0;
+       pCategoryDescriptor = gvTractDescriptors[i]->GetCategoryDescriptorList();
+       while (pCategoryDescriptor) {
+          nPopTotal = 0;
+          for (j=nPStartIndex; j <= nPEndIndex; j++)
+             nPopTotal += pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
+          iTractPopulation += nPopTotal;
+          if (nPopTotal == 0 && pCategoryDescriptor->GetCaseCount() > 0) {
+            gpPrintDirection->SatScanPrintWarning("  Warning: %s %s has %d cases but zero population.\n",
+                            gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer),
+                            gpCategories->catGetCategoriesString(pCategoryDescriptor->GetCategoryIndex(), sBuffer2),
+                            pCategoryDescriptor->GetCaseCount());
+          }
+          pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();
+       }
+
+       if (iTractPopulation == 0)
+         ZdGenerateException("Total population is zero for tract %s",
+                             gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer));
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiCheckCasesHavePopulations()", "TractHandler");
+    throw;
+  }
+}
+
+/** Check to see that no years have a total population of zero. */
+bool TractHandler::tiCheckZeroPopulations(FILE *pDisplay) const {
+  UInt                          month, day, year;
+  bool                          bValid = true;
+  long                        * PopTotalsArray = 0;
+  int                           i, j, nPEndIndex, nPStartIndex = 0;
+  const CategoryDescriptor    * pCategoryDescriptor;  
+
+  try {
+    if (bStartAsPopDt)
+      nPStartIndex = 1;
+    if (bEndAsPopDt)
+      nPEndIndex = (int)gvPopulationDates.size()-2;
+    else
+      nPEndIndex = (int)gvPopulationDates.size()-1;
+
+    PopTotalsArray = (long*)Smalloc((int)gvPopulationDates.size() *sizeof(long), gpPrintDirection);
+    memset(PopTotalsArray, 0, (int)gvPopulationDates.size() * sizeof(long));
+
+    for (i=0; i < (int)gvTractDescriptors.size(); i++) {
+       pCategoryDescriptor = gvTractDescriptors[i]->GetCategoryDescriptorList();
+       while (pCategoryDescriptor) {
+          for (j=nPStartIndex; j <= nPEndIndex; j++)
+             PopTotalsArray[j]+= pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
+          pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();
+       }
+    }
+
+    for (j=nPStartIndex; j<=nPEndIndex; j++) {
+       if (PopTotalsArray[j]==0) {
+          bValid = false;
+          JulianToMDY(&month, &day, &year, gvPopulationDates[j]);
+          fprintf(pDisplay, "  Error: Population of zero found for all tracts in %d.\n", year);
+          gpPrintDirection->SatScanPrintWarning("  Error: Population of zero found for all tracts in %d.\n", year);
+       }
+    }
+
+    free (PopTotalsArray);
+  }
+  catch (SSException & x) {
+    free (PopTotalsArray);
+    x.AddCallpath("tiCheckZeroPopulations()", "TractHandler");
+    throw;
+  }
+  return bValid;
+}
+
+/** Prints error when duplicate coordinates are found.
+    Returns whether duplicates coordinate where found. */
+tract_t TractHandler::tiCombineDuplicatesByCoordinates() {
+  ZdPointerVector<TractDescriptor>::iterator         itrMajor, itrMinor;
+
+  try {
+    itrMajor = gvTractDescriptors.begin();
+    while (itrMajor != gvTractDescriptors.end()) {
+         itrMinor = itrMajor;
+         itrMinor++;
+         while (itrMinor != gvTractDescriptors.end()) {
+              if ((*itrMajor)->CompareCoordinates(*(*itrMinor), *this)) {
+                (*itrMajor)->Combine((*itrMinor), *this);
+                itrMinor = gvTractDescriptors.erase(itrMinor);
+              }
+              else
+                itrMinor++;
+         }
+         itrMajor++;
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiCombineDuplicatesByCoordinates()", "TractHandler");
+    throw;
+  }
+  return (tract_t)gvTractDescriptors.size();
+}
+
+/** Combines tract identifiers for tracts that mapped to same coordinates.
+    Note that this function should be called once after data files are read. */
+void TractHandler::tiConcaticateDuplicateTractIdentifiers() {
+  std::map<std::string,TractDescriptor*>::iterator     itrmap;
+
+  try {
+    for (itrmap=gmDuplicateTracts.begin(); itrmap != gmDuplicateTracts.end(); itrmap++)
+       itrmap->second->AddTractIdentifier(itrmap->first.c_str());
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiConcaticateDuplicateTractIdentifiers()", "TractHandler");
+    throw;
+  }
+}
+
+/** Determines which available population years should be used. */
+void TractHandler::tiFindPopDatesToUse(std::vector<Julian>& PopulationDates, Julian StartDate, Julian EndDate,
+                                       int* pnSourceOffset, int* pnDestOffset, bool* pbAddStart, bool* pbAddEnd,
+                                       int* pnDatesUsed, int* pnPopDates) {
+  int    n, nLastIndex, nDates;
+  bool   bStartFound=false, bEndFound=false;
+
+  try {
+    *pnSourceOffset = 0;
+    *pnDestOffset   = 0;
+    *pbAddStart     = false;
+    *pbAddEnd       = false;
+
+    /* Determine which pop dates to use */
+    nDates = (int)PopulationDates.size();
+    for (n=0; n < nDates; n++) {
+       if (!bStartFound) {
+         if (PopulationDates[n] > StartDate) {
+           bStartFound = true;
+           if (n==0) {
+             *pbAddStart = true;
+             *pnDestOffset = 1;
+           }
+         }
+         else
+          *pnSourceOffset = n;
+       }
+
+       if (!bEndFound) {
+         nLastIndex = n;
+         if (PopulationDates[n] > EndDate)
+           bEndFound = true;
+       }
+    }
+
+    *pnDatesUsed = nLastIndex - *pnSourceOffset + 1;
+    *pnPopDates  = *pnDatesUsed;
+
+    if (*pbAddStart)
+      *pnPopDates = *pnPopDates+1;
+
+    if (!bEndFound && nLastIndex==(nDates-1)) {
+      *pbAddEnd = true;
+      *pnPopDates = *pnPopDates+1;
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiFindPopDatesToUse()", "TractHandler");
+    throw;
+  }
+}
+
+/** Returns the population for category of tract between date intervals. */
+double TractHandler::tiGetAlphaAdjustedPopulation(double & dPopulation, tract_t t, int iCategoryIndex,
+                                                  int iStartPopulationDateIndex, int iEndPopulationDateIndex,
+                                                  double Alpha[]) const {
+  int                           j;
+  const CategoryDescriptor    * pCategoryDescriptor;
+
+  try {
+    if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
+      ZdException::Generate("Index %d out of range(0 - %d)", "tiGetAlphaAdjustedPopulation()", t, gvTractDescriptors.size() - 1);
+
+    pCategoryDescriptor = gvTractDescriptors[t]->GetCategoryDescriptor(iCategoryIndex);
+    if (pCategoryDescriptor) {
+      for (j=iStartPopulationDateIndex; j < iEndPopulationDateIndex; j++)
+         dPopulation = dPopulation + (Alpha[j] * pCategoryDescriptor->GetPopulationAtDateIndex(j, *this));
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiGetAlphaAdjustedPopulation()", "TractHandler");
+    throw;
+  }
+  return dPopulation;
+}
+
+/** Returns the tract coords for the given tract_t index.
+    Allocate memory for array - caller is responsible for freeing. */
+void TractHandler::tiGetCoords(tract_t t, double** pCoords) const {
+  try {
+    *pCoords = (double*)Smalloc(nDimensions * sizeof(double), gpPrintDirection);
+
+    if (0 <= t && t < (tract_t)gvTractDescriptors.size())
+      gvTractDescriptors[t]->GetCoordinates(*pCoords, *this);
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiGetCoords()", "TractHandler");
+    throw;
+  }
+}
+
+/** Returns the tract coords for the given tract_t index. */
+void TractHandler::tiGetCoords2(tract_t t, double* pCoords) const {
+  try {
+    if (0 <= t || t < (tract_t)gvTractDescriptors.size())
+      gvTractDescriptors[t]->GetCoordinates(pCoords, *this);
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiGetCoords2()", "TractHandler");
+    throw;
+  }
+}
+
+/** Returns the case count for a given category in a given tract
+    Returns 0 if category for tract does not exist.               */
+count_t TractHandler::tiGetCount(tract_t t, int iCategoryIndex) const {
+  count_t                       tValue=0;
+  const CategoryDescriptor    * pCategoryDescriptor;
+
+  try {
+    if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
+       ZdException::Generate("Index %d out of range(0 - %d)", "tiGetCount()", t, gvTractDescriptors.size() - 1);
+
+
+   pCategoryDescriptor = gvTractDescriptors[t]->GetCategoryDescriptor(iCategoryIndex);
+    if (pCategoryDescriptor)
+      tValue = pCategoryDescriptor->GetCaseCount();
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiGetCount()", "TractHandler");
+    throw;
+  }
+  return tValue;
+}
+
+/** Compute distance sqaured between 2 tracts. */
+double TractHandler::tiGetDistanceSq(double* pCoords, double* pCoords2) const {
+  int           i;
+  double        dDistanceSquared=0;
+
+  for (i=0; i < nDimensions; i++)
+     dDistanceSquared += (pCoords[i] - pCoords2[i]) * (pCoords[i] - pCoords2[i]);
+
+  return dDistanceSquared;
+}
+
+/** Returns the population date for a given index into the Pop date array. */
+Julian TractHandler::tiGetPopDate(int iPopulationDateIndex) const {
+  Julian        ReturnDate;
+
+  try {
+    //NOTE: This section of code is a bit strange. Julian is defined as unsigned long
+    //      but here we are potentially assigning it a negative number. Only code in
+    //      AssignMeasure() functions access this function currently. In return section
+    //      , value as a Julian is compared against -1. 
+    if (0 > iPopulationDateIndex || iPopulationDateIndex > (int)gvPopulationDates.size() - 1)
+      ReturnDate = -1;
+    else
+      ReturnDate = gvPopulationDates[iPopulationDateIndex];
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiGetPop()", "TractHandler");
+    throw;
+  }
+  return ReturnDate;
+}
+
+/** Returns the index into the Pop date array for a given date. */
+int TractHandler::tiGetPopDateIndex(Julian Date) {
+  int  i, iReturn=-1;
+
+  try {
+    for (i=0; i < tiGetNumPopDates() && iReturn == -1; i++)
+       if (Date == gvPopulationDates[i])
+         iReturn = i;
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiGetPopDateIndex()", "TractHandler");
+    throw;
+  }
+  return iReturn;
+} 
+
+/** Returns the population for a given year and category in a given tract
+    Returns 0 if no population for category.                              */
+unsigned long TractHandler::tiGetPopulation(tract_t t, int iCategoryIndex, int iPopulationDateIndex) const {
+  unsigned long                 ulValue=0;
+  const CategoryDescriptor    * pCategoryDescriptor;
+
+  try {
+    if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
+       ZdException::Generate("Index %d out of range(0 - %d)", "tiGetPop()", t, gvTractDescriptors.size() - 1);
+
+    pCategoryDescriptor = gvTractDescriptors[t]->GetCategoryDescriptor(iCategoryIndex);
+    if (pCategoryDescriptor)
+      ulValue = pCategoryDescriptor->GetPopulationAtDateIndex(iPopulationDateIndex, *this);
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiGetPopulation()", "TractHandler");
+    throw;
+  }
+  return ulValue;
+}
+
+/** Returns the indeces to population dates that bound a given interval date. */
+int TractHandler::tiGetPopUpLowIndex(Julian* pDates, int nDateIndex, int nMaxDateIndex,
+                                     int* nUpIndex, int* nLowIndex) const {
+  int   i, index;
+  bool  bUpFound = false;
+
+  try {
+    /*  if (nDateIndex == nMaxDateIndex)
+          return(0);
+    */
+
+    for (i=0; i < tiGetNumPopDates(); i++) {
+       if (gvPopulationDates[i] <= pDates[nDateIndex])
+         *nLowIndex = i;
+
+       if (nDateIndex == nMaxDateIndex)
+         index = nDateIndex;
+       else
+         index = nDateIndex+1;
+
+       if (!bUpFound && (gvPopulationDates[i] >= pDates[index])) {
+         bUpFound = true;
+         *nUpIndex = i;
+       }
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiGetPopUpLowIndex()", "TractHandler");
+    throw;
+  }
+  return 1;
+}
+
+/** Returns the population for population date index of tract for all categories. */
+double TractHandler::tiGetRiskAdjustedPopulation(measure_t & dMeanPopulation, tract_t t, int iPopulationDateIndex, double Risk[]) const {
+  const CategoryDescriptor    * pCategoryDescriptor;
+
+  try {
+    if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
+      ZdException::Generate("Index %d out of range(0 - %d)", "tiGetRiskAdjustedPopulation()", t, gvTractDescriptors.size() - 1);
+
+    dMeanPopulation = 0.0;
+    pCategoryDescriptor = gvTractDescriptors[t]->GetCategoryDescriptorList();
+    while (pCategoryDescriptor) {
+         dMeanPopulation = dMeanPopulation + Risk[pCategoryDescriptor->GetCategoryIndex()] *
+                              pCategoryDescriptor->GetPopulationAtDateIndex(iPopulationDateIndex, *this);
+         pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();               
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiGetRiskAdjustedPopulation()", "TractHandler");
+    throw;
+  }
+  return dMeanPopulation;
+}
+
+/** Returns first identifier for tract. */
+const char * TractHandler::tiGetTid(tract_t t, std::string& sFirst) const {
+  try {
+    if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
+      ZdException::Generate("Index %d out of range(0 - %d)", "tiGetTid()", t, gvTractDescriptors.size() - 1);
+
+    gvTractDescriptors[t]->GetTractIdentifier(0, sFirst);
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiGetTid()", "TractHandler");
+    throw;
+  }
+  return sFirst.c_str();
+}
+
+
+///** Returns first tract name (tid)for the given tract_t index. */
+//const char * TractHandler::tiGetTid(tract_t t) const {
+//  try {
+//    if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
+//      ZdException::Generate("Index %d out of range(0 - %d)", "tiGetTid()", t, gvTractDescriptors.size() - 1);
+//  }
+//  catch (SSException & x) {
+//    x.AddCallpath("tiGetTid()", "TractHandler");
+//    throw;
+//  }
+// return gvTractDescriptors[t]->GetTractIdentifier();
+//}
+
+/** Returns coordinate for tract at specified dimension. */
+double TractHandler::tiGetTractCoordinate(tract_t t, int iDimension) const {
+  double        dReturn;
+
+  try {
+    if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
+       ZdException::Generate("Index %d out of range(0 - %d)", "tiGetTractCoordinate()", t, gvTractDescriptors.size() - 1);
+
+    dReturn = gvTractDescriptors[t]->GetCoordinatesAtDimension(iDimension, *this);
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiGetTractCoordinate()", "TractHandler");
+    throw;
+  }
+  return dReturn;
+}
+
+void TractHandler::tiGetTractIdentifiers(tract_t t, std::vector<std::string>& vIdentifiers) const {
+  try {
+    if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
+       ZdException::Generate("Index %d out of range(0 - %d)", "tiGetTid()", t, gvTractDescriptors.size() - 1);
+
+    gvTractDescriptors[t]->GetTractIdentifiers(vIdentifiers);
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiGetTractIdentifiers()", "TractHandler");
+    throw;
+  }
+}
+
+/** Searches tract-id "tid".  Returns the index, or -1 if not found.                                                          */
+tract_t TractHandler::tiGetTractIndex(char *tid) {
+   ZdPointerVector<TractDescriptor>::iterator           itr;
+   std::map<std::string,TractDescriptor*>::iterator     itrmap;
+   tract_t                                              tPosReturn;
+
+  try {
+    //check for tract identifier is duplicates map
+    itrmap = gmDuplicateTracts.find(std::string(tid));
+    if (itrmap != gmDuplicateTracts.end()) {// if found, return position of descriptor in vector
+      itr = std::find(gvTractDescriptors.begin(), gvTractDescriptors.end(), itrmap->second);
+      tPosReturn =  std::distance(gvTractDescriptors.begin(), itr);
+    }
+    else {//search for tract identifier in vector
+      gpSearchTractDescriptor->SetTractIdentifier(tid);
+      itr = lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), gpSearchTractDescriptor, CompareTractDescriptorIdentifier());
+      if (itr != gvTractDescriptors.end() && !strcmp((*itr)->GetTractIdentifier(),tid))      
+        tPosReturn = std::distance(gvTractDescriptors.begin(), itr);
+      else
+        tPosReturn = -1;
+    }
+  }
+  catch (SSException & x)  {
+    x.AddCallpath("tiGetTractIndex()", "TractHandler");
+    throw;
+  }
+  return tPosReturn;
+}
+
+/** Insert a tract into the vector sorting by tract identifier.
+    Sorted insert appears to be done solely for TractHandler::tiGetTractIndex(char *tid).
+
+    Return value: 0 = duplicate tract ID 1 = success */
+int TractHandler::tiInsertTnode(char *tid, double* pCoordinates) {
+  ZdPointerVector<TractDescriptor>::iterator    itr;
+  TractDescriptor                             * pTractDescriptor=0;
+  bool                                          bDuplicate=false;
+
+  try {
+    //does this tract already exist?
+    if (tiGetTractIndex(tid) != -1)
+      ZdException::Generate("Error:\nTract %s is specified multiple times in geographical file.", "tiInsertTnode()", tid);
+
+    //check that coordinates are not duplicate
+    for (itr=gvTractDescriptors.begin(); itr != gvTractDescriptors.end() && !bDuplicate; itr++)
+       if ((*itr)->CompareCoordinates(pCoordinates, nDimensions)) {
+         gmDuplicateTracts[tid] = (*itr);
+         bDuplicate = true;
+       }
+
+    if (! bDuplicate) {
+      pTractDescriptor = new TractDescriptor(tid, pCoordinates, nDimensions);
+      itr = lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), pTractDescriptor, CompareTractDescriptorIdentifier());
+      gvTractDescriptors.insert(itr, pTractDescriptor);
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiInsertTnode()", "TractHandler");
+    delete pTractDescriptor;
+    throw;
+  }
+  return(1);
+}
+
+/** Prints indication, to file, of tracts that had identical coordinates which
+    where combined into one tract. */
+void TractHandler::tiReportDuplicateTracts(FILE * fDisplay) const {
+  std::map<std::string,TractDescriptor*>::const_iterator       itr;
+  std::vector<TractDescriptor*>                                vTractsDescriptors;
+  std::vector<TractDescriptor*>::iterator                      tract_itr;
+  std::vector<std::string>                                     vTractIdentifiers;
+  size_t                                                       t;
+  const char * sSeperator = "---------------------------------------------------------------";
+  unsigned int                                                 iPos, iIdLength, iIndent, iMaxWidth;
+
+  try {
+    if (gmDuplicateTracts.size()) {
+      fprintf(fDisplay, "\nNote: The geographical file contains locations with matching\n");
+      fprintf(fDisplay, "coordinates that where combined into one location.\n");
+      fprintf(fDisplay, "When creating additional outputs, combined locations are\n");
+      fprintf(fDisplay, "treated as one location.\n");
+      fprintf(fDisplay, sSeperator);
+      iMaxWidth = strlen(sSeperator);
+
+      for (itr=gmDuplicateTracts.begin(); itr != gmDuplicateTracts.end(); itr++)
+         if (std::find(vTractsDescriptors.begin(), vTractsDescriptors.end(), itr->second) == vTractsDescriptors.end())
+           vTractsDescriptors.push_back(itr->second);
+
+      for (tract_itr=vTractsDescriptors.begin(); tract_itr != vTractsDescriptors.end(); tract_itr++) {
+         (*tract_itr)->GetTractIdentifiers(vTractIdentifiers);
+         for (t=0; t < vTractIdentifiers.size(); t++) {
+            if (t == 0) {
+              fprintf(fDisplay, "\n%s : ", vTractIdentifiers[t].c_str());
+              iPos = strlen(vTractIdentifiers[t].c_str()) + 3/*other characters*/;
+              iIndent = iPos;
+            }
+            else if (t < vTractIdentifiers.size() - 1) {
+              iIdLength = strlen(vTractIdentifiers[t].c_str()) + 1/*comma*/;
+              if (iPos  + iIdLength > iMaxWidth) {
+                fprintf(fDisplay, "\n");
+                iPos = 0;
+                while (++iPos <= iIndent)
+                     fprintf(fDisplay, " ");
+                iPos = iIdLength + 2/*two spaces*/;
+              }
+              else
+                iPos += iIdLength;
+              fprintf(fDisplay, "%s, ", vTractIdentifiers[t].c_str());
+            }
+            else {
+               if (iPos + 2/*other characters*/ + strlen(vTractIdentifiers[t].c_str()) > iMaxWidth) {
+                fprintf(fDisplay, "\n");
+                iPos = 0;
+                while (++iPos <= iIndent)
+                     fprintf(fDisplay, " ");
+               }
+              fprintf(fDisplay, "%s", vTractIdentifiers[t].c_str());
             }
          }
       }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiGetCoords()", "TInfo");
-      throw;
-      }
-} /* tiGetCoords() */
+      fprintf(fDisplay, "\n");
+    }
+  }
+  catch (SSException & x)  {
+    x.AddCallpath("tiReportDuplicateTracts()", "TractHandler");
+    throw;
+  }
+}
 
-/**********************************************************************
- Returns the tract coords for the given tract_t index.
- **********************************************************************/
-void TInfo::tiGetCoords2(tract_t t, double* pCoords) const
-{
-   int i;
+/** Look for and display tracts with zero population for any population year. */
+void TractHandler::tiReportZeroPops(FILE *pDisplay) const {
+  int                           i, j, nPEndIndex, nPStartIndex = 0;
+  UInt                          month, day, year;
+  bool                          bZeroFound = false;
+  long                        * PopTotalsArray = 0;
+  std::string                   sBuffer;
+  char                          sDateBuffer[20];
+  const CategoryDescriptor    * pCategoryDescriptor;
 
-   try
-      {
-      if (0 <= t && t < NumTracts)
-         {
-         for (i=0; i < nDimensions; i++)
-            pCoords[i] = TractInfo[t].pCoords[i];
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiGetCoords2()", "TInfo");
-      throw;
-      }
-} /* tiGetCoords2() */
+  try {
+    if (bStartAsPopDt)
+      nPStartIndex = 1;
+    if (bEndAsPopDt)
+      nPEndIndex = tiGetNumPopDates() - 2;
+    else
+      nPEndIndex = tiGetNumPopDates() - 1;
 
-/* =========================== Category Routines =========================== */
+    PopTotalsArray = (long*)Smalloc(tiGetNumPopDates() *sizeof(long), gpPrintDirection);
 
-/**********************************************************************
- Adds a category to the tract info structure.
- **********************************************************************/
-void TInfo::tiAddCat(tract_t t, int cat, Julian popDate, long pop)
-{
-   int i;
-   //int popIndex;
+    for (i=0; i < (int)gvTractDescriptors.size(); i++) {
+       memset(PopTotalsArray, 0, tiGetNumPopDates() * sizeof(long));
+       pCategoryDescriptor = gvTractDescriptors[i]->GetCategoryDescriptorList();
+       while (pCategoryDescriptor) {
+          for (j=nPStartIndex; j <= nPEndIndex; j++)
+             PopTotalsArray[j]+= pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
+          pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();   
+       }
 
-   try
-      {
-      struct cnode* node = TractInfo[t].cats;
-    
-      while (node && node->cat != cat)
-        node = node->next;
-      if (node)
-        {
-        tiAssignPop(&node->pPopList, popDate, pop);
-        }
-      else
-        {
-        node = (cnode*)Smalloc(sizeof(struct cnode), gpPrintDirection);
-        node->cat = cat;
-        node->count = 0;
-    
-        node->pPopList = (long*)Smalloc(nPopDates * sizeof(long), gpPrintDirection);
-        for (i=0; i<nPopDates; i++)
-        {
-          node->pPopList[i] = 0L;
-        }
-    
-        tiAssignPop(&node->pPopList, popDate, pop);
-    
-        node->next = TractInfo[t].cats;
-        TractInfo[t].cats = node;
-        }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiAddCat()", "TInfo");
-      throw;
-      }
-} /* tiAddCat() */
+       for (j=nPStartIndex; j<=nPEndIndex; j++) {
+          if (PopTotalsArray[j]==0) {
+            if (!bZeroFound) {
+              bZeroFound = true;
+              fprintf(pDisplay,"\n________________________________________________________________\n\n");
+              fprintf(pDisplay,"Warning: According to the input data, the following tracts have a \n");
+              fprintf(pDisplay,"         population totaling zero for the specified date(s).\n\n");
+              gpPrintDirection->SatScanPrintWarning("\n________________________________________________________________\n\n");
+              gpPrintDirection->SatScanPrintWarning("Warning: According to the input data, the following tracts have a \n");
+              gpPrintDirection->SatScanPrintWarning("         population totaling zero for the specified date(s).\n\n");
+            }
+            //JulianToMDY(&month, &day, &year, gvPopulationDates[j]);
+            JulianToChar(sDateBuffer, gvPopulationDates[j]);
+            fprintf(pDisplay,"         Tract %s, %s\n", gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer), sDateBuffer);
+            gpPrintDirection->SatScanPrintWarning("         Tract %s, %s\n", gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer), sDateBuffer);
+          }
+       }
+    }
 
+    free (PopTotalsArray);
+  }
+  catch (SSException & x) {
+    free (PopTotalsArray);
+    x.AddCallpath("tiReportZeroPops()", "TractHandler");
+    throw;
+  }
+}
 
-/* ========================== Population Routines ========================== */
+///** Sets the case count for tract category.
+//    Returns 1 if tract category found else 0. */
+int TractHandler::tiSetCount(tract_t t, int iCategoryIndex, count_t Count) {
+  int                      iReturn=0;
+  CategoryDescriptor     * pCategoryDescriptor;
 
-/**********************************************************************
- Initializes the Population dates vector.
- **********************************************************************/
-void TInfo::tiSetupPopDates(Julian* pDates, int nDates, Julian StartDate, Julian EndDate)
-{
-   //char c;
-   int  n;
-   int  nSourceOffset;
-   int  nDestOffset;
-   int  nDatesUsed;
-   //struct cnode* cats;
-   //char szDate[MAX_DT_STR];
+  try {
+    if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
+       ZdException::Generate("Index %d out of range(0 - %d)", "tiSetCount()", t, gvTractDescriptors.size() - 1);
 
-   try
-      {
-      Sort(&pDates, 0, nDates-1);
-    
-      tiFindPopDatesToUse(pDates, nDates, StartDate, EndDate,
-                          &nSourceOffset, &nDestOffset, &bStartAsPopDt, &bEndAsPopDt,
-                          &nDatesUsed, &nPopDates);
-    
-      pPopDates = (unsigned long*)Smalloc(nPopDates * sizeof(Julian), gpPrintDirection);
-    
-      if (bStartAsPopDt)
-        pPopDates[0] = StartDate;
-    
-      for (n=0; n<nDatesUsed; n++)
-        pPopDates[n + nDestOffset] = pDates[n + nSourceOffset];
-    
-      if (bEndAsPopDt)
-        pPopDates[nPopDates-1] = EndDate+1;
+   pCategoryDescriptor = gvTractDescriptors[t]->GetCategoryDescriptor(iCategoryIndex);
+    if (pCategoryDescriptor) {
+       iReturn = 1;
+       pCategoryDescriptor->SetCaseCount(Count);
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("tiSetCount()", "TractHandler");
+    throw;
+  }
+  return iReturn;
+}
+
+/** Internal setup function. */
+void TractHandler::Setup(Cats & Categories, BasePrint & PrintDirection) {
+  double Coordinates[1] ={0}; 
+
+  try {
+    gpCategories = &Categories;
+    gpPrintDirection = &PrintDirection;
+    gpSearchTractDescriptor = new TractDescriptor(" ", Coordinates, 1);
+  }
+  catch (SSException & x) {
+    x.AddCallpath("Setup()", "TractHandler");
+    delete gpSearchTractDescriptor; gpSearchTractDescriptor=0;
+    throw;
+  }
+}
+
+/** Initializes the Population dates vector. */
+void TractHandler::tiSetupPopDates(std::vector<Julian>& PopulationDates, Julian StartDate, Julian EndDate) {
+  int  n, nSourceOffset, nDestOffset, nDatesUsed, nPopDates;
+
+  try {
+    tiFindPopDatesToUse(PopulationDates, StartDate, EndDate,
+                        &nSourceOffset, &nDestOffset, &bStartAsPopDt, &bEndAsPopDt,
+                        &nDatesUsed, &nPopDates);
+
+    gvPopulationDates.resize(nPopDates);
+
+    if (bStartAsPopDt)
+      gvPopulationDates[0] = StartDate;
+
+    for (n=0; n<nDatesUsed; n++)
+       gvPopulationDates[n + nDestOffset] = PopulationDates[n + nSourceOffset];
+
+    if (bEndAsPopDt)
+      gvPopulationDates[nPopDates-1] = EndDate+1;
 
 /* debug */
 #if 0
        DisplayDatesArray(pDates, nDates, "Array of Potential Pop Dates", stdout);
-     
+
        JulianToChar(szDate, StartDate);
       gpPrintDirection->SatScanPrintf("\nStart Date = %s\n", szDate);
        JulianToChar(szDate, EndDate);
@@ -327,828 +1249,8 @@ void TInfo::tiSetupPopDates(Julian* pDates, int nDates, Julian StartDate, Julian
        DisplayDatesArray(pPopDates, nPopDates, "Array of Selected Pop Dates", stdout);
 #endif
       }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiSetupPopDates()", "TInfo");
-      throw;
-      }
-} /* tiSetupPopDates */
-
-/**********************************************************************
- Determines which available population years should be used.
- **********************************************************************/
-void TInfo::tiFindPopDatesToUse(Julian* pDates, int nDates, Julian StartDate, Julian EndDate,
-                         int* pnSourceOffset, int* pnDestOffset, bool* pbAddStart, bool* pbAddEnd,
-                         int* pnDatesUsed, int* pnPopDates)
-{
-   int    n;
-   int    nLastIndex;
-   bool   bStartFound = false;
-   bool   bEndFound   = false;
-
-   try
-      {
-      *pnSourceOffset = 0;
-      *pnDestOffset   = 0;
-      *pbAddStart     = false;
-      *pbAddEnd       = false;
-    
-      /* Determine which pop dates to use */
-      for (n=0; n<nDates; n++)
-      {
-        if (!bStartFound)
-        {
-          if (pDates[n] > StartDate)
-          {
-            bStartFound = true;
-            if (n==0)
-            {
-              *pbAddStart = true;
-              *pnDestOffset = 1;
-            }
-          }
-          else
-            *pnSourceOffset = n;
-        }
-    
-        if (!bEndFound)
-        {
-          nLastIndex = n;
-          if (pDates[n] > EndDate)
-            bEndFound = true;
-        }
-      }
-    
-      *pnDatesUsed = nLastIndex - *pnSourceOffset + 1;
-      *pnPopDates  = *pnDatesUsed;
-    
-      if (*pbAddStart)
-        *pnPopDates = *pnPopDates+1;
-    
-      if (!bEndFound && nLastIndex==(nDates-1))
-        {
-        *pbAddEnd = true;
-        *pnPopDates = *pnPopDates+1;
-        }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiFindPopDatesToUse()", "TInfo");
-      throw;
-      }
-} /* tiFindPopDatesToUse */
-
-/******************************************************************************
- Assigns a population count to the appropriate location in the population list.
- ******************************************************************************/
-int TInfo::tiAssignPop(long** pPopList, Julian nPopDate, long nPop)
-{
-   int nPopIndex;
-
-   try
-      {
-      nPopIndex = tiGetPopDateIndex(nPopDate);
-      if (nPopIndex == -1)
-      {
-      /* gpPrintDirection->SatScanPrintf("Population Year is not in the index.\n"); */
-        return(-1);
-      }
-    
-      (*pPopList)[nPopIndex] += nPop;
-    
-      if ((nPopIndex == 1) && (bStartAsPopDt))
-        (*pPopList)[0] += nPop;
-    
-      if ((nPopIndex == nPopDates-2) && (bEndAsPopDt))
-        (*pPopList)[nPopDates-1] += nPop;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiAssignPop()", "TInfo");
-      throw;
-      }
-  return(0);
-} /* tiAssignPop */
-
-/**********************************************************************
- Returns the population for a given year and category in a given tract
- (0 if the cell does not exist).
- **********************************************************************/
-unsigned long TInfo::tiGetPop(tract_t t, int cat, int nPopIndex) const
-{
-  struct cnode *node = TractInfo[t].cats;
-  unsigned long ulValue;
-  try
-     {
-     while (node && node->cat != cat)
-       node = node->next;
-
-     if (node && nPopIndex>=0 && nPopIndex<nPopDates)
-       ulValue = (node->pPopList[nPopIndex]);
-     else
-       ulValue = 0;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiGetPop()", "TInfo");
-      throw;
-      }
-   return ulValue;
-} /* tiGetPop() */
-
-/**********************************************************************
- Returns the population date for a given index into the Pop date array.
-***********************************************************************/
-Julian TInfo::tiGetPopDate(int nIndex) const
-{
-  if (!(nIndex >= 0 && nIndex < nPopDates))
-    return(-1);
-
-  return(pPopDates[nIndex]);
-} /* tiGetPopDate */
-
-/**********************************************************************
- Returns the number of dates in the population date array.
-***********************************************************************/
-int TInfo::tiGetNumPopDates() const
-{
-  return(nPopDates);
-} /* tiGetNumPopDates */
-
-/**********************************************************************
- Returns the index into the Pop date array for a given date.
-***********************************************************************/
-int TInfo::tiGetPopDateIndex(Julian nDate)
-{
-   int  retVal;
-   int i = 0;
-   bool bDateFound = false;
-
-   try
-      {
-      while (i < nPopDates && !bDateFound)
-        {
-        bDateFound = (nDate == pPopDates[i]);
-        i++;
-        }
-
-      if (bDateFound)
-         retVal = i-1;
-      else
-         retVal = -1;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiGetPopDateIndex()", "TInfo");
-      throw;
-      }
-  return (retVal);
-} /* tiGetPopDateIndex */
-
-/*************************************************************************
- Returns the indeces to population dates that bound a given interval date.
-**************************************************************************/
-int TInfo::tiGetPopUpLowIndex(Julian* pDates, int nDateIndex, int nMaxDateIndex, int* nUpIndex, int* nLowIndex) const
-{
-   int i, index;
-   bool bUpFound = false;
-
-   try
-      {
-      /*  if (nDateIndex == nMaxDateIndex)
-            return(0);
-      */
-      for (i=0; i<nPopDates; i++)
-        {
-        if (pPopDates[i] <= pDates[nDateIndex])
-          *nLowIndex = i;
-    
-        if (nDateIndex == nMaxDateIndex)
-          index = nDateIndex;
-        else
-          index = nDateIndex+1;
-    
-        if (!bUpFound && (pPopDates[i] >= pDates[index]))
-          {
-          bUpFound = true;
-          *nUpIndex = i;
-          }
-        }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiGetPopUpLowIndex()", "TInfo");
-      throw;
-      }
-   return(1);
-} /* tiGetPopUpLowIndex */
-
-/*************************************************************************
- Calculates....
- These calculations assumes that the population of a given day refers to
- the beginning of that day.
-**************************************************************************/
-/** returns array that indicates, for each population date, population dates
-    percentage of the whole study period - Scott Hostovich @ July 16,2002*/
-void TInfo::tiCalcAlpha(double** pAlpha, Julian StartDate, Julian EndDate) const
-{
-   int  n;
-   int  N           = nPopDates-2;
-   long nTotalYears = TimeBetween(StartDate, EndDate, DAY)/*EndDate-StartDate*/ ;
-   double sumalpha;
-   //char szDate[MAX_DT_STR];
-
-   try
-     {
-     *pAlpha = (double*)Smalloc((nPopDates+1) * sizeof(double), gpPrintDirection);
-   
-     if(N==0) {
-        (*pAlpha)[0] = 0.5*((pPopDates[1]-StartDate)+(pPopDates[1]-(EndDate+1)))/(double)(pPopDates[1]-pPopDates[0]);
-        (*pAlpha)[1] = 0.5*((StartDate-pPopDates[0])+((EndDate+1)-pPopDates[0]))/(double)(pPopDates[1]-pPopDates[0]);
-        }
-     else if(N==1) {
-        (*pAlpha)[0] = (0.5*((double)(pPopDates[1]-StartDate)/(pPopDates[1]-pPopDates[0]))*(pPopDates[1]-StartDate)) / (double)nTotalYears;
-        (*pAlpha)[1] = (0.5*(pPopDates[1]-StartDate)*(1+((double)(StartDate-pPopDates[0])/(pPopDates[1]-pPopDates[0])))) / (double)nTotalYears
-                     + (0.5*(double)(EndDate+1-pPopDates[N])*(1+((double)(pPopDates[N+1]-(EndDate+1))/(pPopDates[N+1]-pPopDates[N])))) /  (double)nTotalYears;
-        (*pAlpha)[N+1] = (0.5*((double)(EndDate+1-pPopDates[N])/(pPopDates[N+1]-pPopDates[N]))*(EndDate+1-pPopDates[N])) / nTotalYears;
-        }
-     else {
-        (*pAlpha)[0] = (0.5*((double)(pPopDates[1]-StartDate)/(pPopDates[1]-pPopDates[0]))*(pPopDates[1]-StartDate)) / (double)nTotalYears;
-        (*pAlpha)[1] = (0.5*(pPopDates[2]-pPopDates[1]) + 0.5*(pPopDates[1]-StartDate)*(1+((double)(StartDate-pPopDates[0])/(pPopDates[1]-pPopDates[0])))) / (double)nTotalYears;
-        for (n = 2; n < N; n++) {
-          (*pAlpha)[n] = 0.5*(double)(pPopDates[n+1] - pPopDates[n-1]) / (double)nTotalYears;
-          }
-        (*pAlpha)[N]   = (0.5*(pPopDates[N]-pPopDates[N-1]) + 0.5*(double)(EndDate+1-pPopDates[N])*(1+((double)(pPopDates[N+1]-(EndDate+1))/(pPopDates[N+1]-pPopDates[N])))) /  (double)nTotalYears;
-        (*pAlpha)[N+1] = (0.5*((double)(EndDate+1-pPopDates[N])/(pPopDates[N+1]-pPopDates[N]))*(EndDate+1-pPopDates[N])) / nTotalYears;
-        }
-
-#if 0 /* DEBUG */
-     printf("\nTotal years = %ld, N=%ld\n", nTotalYears, N);
-      gpPrintDirection->SatScanPrintf("Pop\nIndex   PopDates        Alpha\n");
-       for (n=0;n<=N+1;n++) {
-         JulianToChar(szDate,pPopDates[n]);
-        gpPrintDirection->SatScanPrintf("%i       %s        %f\n",n, szDate, (*pAlpha)[n]);
-         }
-      gpPrintDirection->SatScanPrintf("\n");
-#endif
-
-
-      /* Bug check, seeing that alpha values add to one. */
-      sumalpha = 0;
-      for (n = 0; n <= N+1; n++) sumalpha = sumalpha + (*pAlpha)[n];
-      if(sumalpha>1.0001 || sumalpha<0.9999)
-         {
-         char sMessage[200], sTmp[50];
-         strcpy(sMessage, "\n\n  Error: Alpha values not calculated correctly in");
-         strcat(sMessage, "\n  file tinfo.c, function tiCalcAlpha. The sum of the ");
-         sprintf(sTmp, "\n  alpha values is %8.6lf rather than 1.\n", sumalpha);
-         strcat(sMessage, sTmp);
-         SSGenerateException(sMessage, "tiCalcAlpha");
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiCalcAlpha()", "TInfo");
-      throw;
-      }
-} /* tiCalcAlpha */
-
-/* ========================== Case Count Routines ========================== */
-
-/**********************************************************************
- Sets the case count for a given cell.
- Return value:
-   1 = OK
-   0 = cell does not exist; not added
- **********************************************************************/
-int TInfo::tiSetCount(tract_t t, int cat, count_t count)
-{
-   struct cnode *node = TractInfo[t].cats;
-   int iValue;
-
-   try
-      {
-      while (node && node->cat != cat)
-         node = node->next;
-
-      if (node)
-         {
-         node->count = count;
-         iValue = 1;
-         }
-      else
-         iValue = 0;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiSetCount()", "TInfo");
-      throw;
-      }
-   return iValue;
-} /* tiSetCount() */
-
-/**********************************************************************
- Returns the case count for a given category in a given tract
- (0 if the cell does not exist).
- **********************************************************************/
-count_t TInfo::tiGetCount(tract_t t, int cat) const
-{
-   struct cnode *node = TractInfo[t].cats;
-   count_t tValue;
-
-   try
-      {
-      while (node && node->cat != cat)
-         node = node->next;
-
-      if (node)
-         tValue = node->count;
-      else
-         tValue = 0;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiGetCount()", "TInfo");
-      throw;
-      }
-   return tValue;
-} /* tiGetCount() */
-
-
-/* =========================== Display Routines ============================ */
-
-/**********************************************************************
- Display an array of Julian dates.
- **********************************************************************/
-void TInfo::DisplayDatesArray(Julian* pDates, int nDates, char* szTitle, FILE* pDisplay)
-{
-   int n;
-   //char c;
-   char szDate[MAX_DT_STR];
-
-   try
-      {
-      fprintf(pDisplay, "\n%s\n", szTitle);
-      for (n=0; n<nDates; n++)
-        {
-        JulianToChar(szDate, pDates[n]);
-        fprintf(pDisplay, "%i  %s\n", n, szDate);
-        }
-    
-      if (pDisplay == stdout || pDisplay == stderr)
-        {
-        fprintf(pDisplay, "<Press any key to continue>\n");
-        getc(stdin);
-        }
-      else
-        fprintf(pDisplay, "\n");
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("DisplayDatesArray()", "TInfo");
-      throw;
-      }
-}
-
-/**********************************************************************
- Display the array of Population dates.
- **********************************************************************/
-void TInfo::DisplayPopDatesArray(FILE* pDisplay)
-{
-   int n;
-   //char c;
-   char szDate[MAX_DT_STR];
-
-   try
-      {
-      fprintf(pDisplay, "\nPopulation Dates\n");
-      for (n=0; n<nPopDates; n++)
-        {
-        JulianToChar(szDate, pPopDates[n]);
-        fprintf(pDisplay, "%i  %s\n", n, szDate);
-        }
-    
-      if (pDisplay == stdout || pDisplay == stderr)
-        {
-        fprintf(pDisplay, "<Press any key to continue>\n");
-        getc(stdin);
-        }
-      else
-        fprintf(pDisplay, "\n");
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("DisplayPopDatesArray()", "TInfo");
-      throw;
-      }
-}
-
-/**********************************************************************
- Display tract info - x, y, z coordinates.
- **********************************************************************/
-void TInfo::DisplayTractInfo()
-{
-   //int i;
-   try
-      {
-      gpPrintDirection->SatScanPrintf("TID        x           y          z\n");
-      // Temporarily disable this
-      //for (i=0; i<NumTracts; i++)
-      //{
-      //  gpPrintDirection->SatScanPrintf("%s   %f   %f   %f\n", TractInfo[i].tid, TractInfo[i].x,
-      //                                 TractInfo[i].y, TractInfo[i].z);
-      //}
-      gpPrintDirection->SatScanPrintf("\n");
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("DisplayTractInfo()", "TInfo");
-      throw;
-      }
-} /* DisplayTractInfo */
-
-/**********************************************************************
- Loop through and display all tract info - categories, case counts and
- populations.
- **********************************************************************/
-void TInfo::DisplayAllTractInfo(FILE* pDisplay)
-{
-   int i, j;
-   struct cnode* cats;
-   //char c;
-
-   try
-      {
-      fprintf(pDisplay, "\nTID   Cat Count   Populations\n");
-     
-      for (i=0; i<NumTracts; i++)
-        {
-        cats = TractInfo[i].cats;
-        while (cats)
-          {
-          fprintf(pDisplay, "%s   %d   %i       ", TractInfo[i].tid, cats->cat, cats->count);
-          for (j=0; j<nPopDates; j++)
-            {
-             fprintf(pDisplay, "%li ", cats->pPopList[j]);     /* change to Julian */
-            }
-          cats = cats->next;
-          if (pDisplay == stdout)
-            getc(stdin);
-          else
-            fprintf(pDisplay, "\n");
-          }
-        }
-      fprintf(pDisplay, "\n");
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("DisplayAllTractInfo()", "TInfo");
-      throw;
-      }
-} /* Display All Info */
-
-
-/* ============================ Misc. Routines ============================= */
-
-/**********************************************************************
- Cleanup all tract storage.
- **********************************************************************/
-void TInfo::tiCleanup()
-{
-   struct cnode* pCurrCat;
-   struct cnode* pNextCat;
-
-   int i;
-   //int j, k;
-
-   /*  for (i=0; i<ti_length; i++)*/
-   if (TractInfo)
-      {
-      for (i=0; i<NumTracts; i++)
-        {
-        pCurrCat = TractInfo[i].cats;
-
-        while (pCurrCat != NULL)
-           {
-           pNextCat = pCurrCat->next;
-           free(pCurrCat->pPopList);
-           free(pCurrCat);
-           pCurrCat = pNextCat;
-           }
-       free(TractInfo[i].tid);
-       free(TractInfo[i].pCoords);
-       /*    free(TractInfo + i);*/
-       }
-    }
-
-  free(TractInfo);
-  free(pPopDates);
-
-
-} /*tiCleanup */
-
-/**********************************************************************
- Sort function comparison.
- **********************************************************************/
-/*KR-12/9/97int sort_function( const void *a, const void *b)
-{
-   return( ! strcmp((char *)a,(char *)b) );
-} /* sort_function */
-
-/**********************************************************************
-Look for tracts with identical x,y,z coordinates.  7/8/97, K. Rand
- **********************************************************************/
-bool TInfo::tiFindDuplicateCoords(FILE* pDisplay)
-{
-   bool bStop = false;
-   double* pCoords;
-   double* pCoords2;
-   tract_t i=0;
-   tract_t j;
-   int nDims;							// Counter for dimensions
-
-   try
-      {
-      while (!bStop && i<NumTracts)
-        {
-        tiGetCoords(i, &pCoords);
-        j = i+1;
-    
-        while (!bStop && j<NumTracts)
-          {
-          tiGetCoords(j, &pCoords2);
-          nDims = 0;
-          while (nDims < nDimensions && (pCoords[nDims] == pCoords2[nDims]))
-            {
-          	nDims++;
-            }
-          if (nDims == nDimensions)
-          	bStop=true;
-          else
-          	j++;
-    
-          free(pCoords2);
-          }
-    
-        if (!bStop)
-          {
-          free(pCoords);
-          i++;
-          }
-        }
-    
-      if (bStop)
-        {
-        fprintf(pDisplay, "  Error: Duplicate coordinates found for tracts %s and %s Coords=(",
-             	TractInfo[i].tid, TractInfo[j].tid);
-        gpPrintDirection->SatScanPrintWarning("  Error: Duplicate coordinates found for tracts %s and %s Coords=(",
-             	TractInfo[i].tid, TractInfo[j].tid);
-        for (nDims=0; nDims<(nDimensions-1); nDims++)
-          {
-        	fprintf(pDisplay, "%.0f, ", pCoords[nDims]);
-          }
-        fprintf(pDisplay, "%.0f).\n\n", pCoords[nDimensions-1]);
-        gpPrintDirection->SatScanPrintWarning("%.0f).\n\n", pCoords[nDimensions-1]);
-        //NO NEED TO THROW AN EXCEPTION HERE... DONE UPON RETURN TO MAIN FUNCTION...
-        free(pCoords);
-        }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiFindDuplicateCoords()", "TInfo");
-      throw;
-      }
-  return (bStop);
-}
-
-/**********************************************************************
-Look for and display tracts with zero population for any population year.  7/8/97, K. Rand
- **********************************************************************/
-void TInfo::tiReportZeroPops(FILE *pDisplay) const
-{
-   int i, j;
-   UInt month, day, year;
-   bool bZeroFound = false;
-   struct cnode* cats;
-   long* PopTotalsArray = 0;
-   int   nPStartIndex = 0;
-   int   nPEndIndex;
-
-   try
-      {
-      if (bStartAsPopDt)
-        nPStartIndex = 1;
-      if (bEndAsPopDt)
-        nPEndIndex = nPopDates-2;
-      else
-        nPEndIndex = nPopDates-1;
-    
-      PopTotalsArray = (long*)Smalloc(nPopDates *sizeof(long), gpPrintDirection);
-    
-      for (i=0; i<NumTracts; i++)
-      {
-        for (j=nPStartIndex; j<=nPEndIndex; j++)
-          PopTotalsArray[j]=0;
-    
-        cats = TractInfo[i].cats;
-        while (cats)
-        {
-          for (j=nPStartIndex; j<=nPEndIndex; j++)
-            PopTotalsArray[j]+= cats->pPopList[j];
-          cats = cats->next;
-        }
-    
-        for (j=nPStartIndex; j<=nPEndIndex; j++)
-        {
-          if (PopTotalsArray[j]==0)
-          {
-            if (!bZeroFound)
-            {
-              bZeroFound = true;
-              fprintf(pDisplay,"\n________________________________________________________________\n\n");
-              fprintf(pDisplay,"Warning: According to the input data, the following tracts have a \n");
-              fprintf(pDisplay,"         population totaling zero for the specified year(s).\n\n");
-              gpPrintDirection->SatScanPrintWarning("\n________________________________________________________________\n\n");
-              gpPrintDirection->SatScanPrintWarning("Warning: According to the input data, the following tracts have a \n");
-              gpPrintDirection->SatScanPrintWarning("         population totaling zero for the specified year(s).\n\n");
-            }
-            JulianToMDY(&month, &day, &year, pPopDates[j]);
-            fprintf(pDisplay,"         Tract %s, %d\n", TractInfo[i].tid, year);
-          }
-        }
-    
-      } /* i=0-<NumTracts */
-    
-      free (PopTotalsArray);
-      }
-   catch (SSException & x)
-      {
-      free (PopTotalsArray);
-      x.AddCallpath("tiReportZeroPops()", "TInfo");
-      throw;
-      }
-}
-
-/*******************************************************************************
-Add dimension size (of coordinates) to model
-*******************************************************************************/
-void TInfo::tiSetDimensions(int nDim)
-{
-   nDimensions = nDim;
-}
-
-/*******************************************************************************
-Compute distance sqaured between 2 tracts
-*******************************************************************************/
-double TInfo::tiGetDistanceSq(double* pCoords, double* pCoords2) const
-{
-   int i;
-   double sum=0;
-
-   try
-      {
-      for (i=0; i<nDimensions; i++)
-        sum += (pCoords[i] - pCoords2[i]) * (pCoords[i] - pCoords2[i]);
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiGetDistanceSq()", "TInfo");
-      throw;
-      }
-  return(sum);
-}
-
-/*******************************************************************************
-Check to see that no cases were found for tracts that have no population
-*******************************************************************************/
-bool TInfo::tiCheckCasesHavePop() const
-{
-   int i, j;
-   //UInt month, day, year;
-   bool bValid = true;
-   struct cnode* cats;
-   long  nPopTotal;
-   int   nPStartIndex = 0;
-   int   nPEndIndex, iTractPopulation;
-   char  szCategories[100], sMessage[100];
-
-   try
-      {
-      if (bStartAsPopDt)
-        nPStartIndex = 1;
-      if (bEndAsPopDt)
-        nPEndIndex = nPopDates-2;
-      else
-        nPEndIndex = nPopDates-1;
-    
-      for (i=0; i<NumTracts; i++)
-        {
-        iTractPopulation = 0;
-        cats = TractInfo[i].cats;
-        while (cats)
-          {
-          strcpy(szCategories, "\0");
-          nPopTotal   = 0;
-          for (j=nPStartIndex; j<=nPEndIndex; j++)
-            nPopTotal += cats->pPopList[j];
-          iTractPopulation += nPopTotal;
-          if (nPopTotal==0 && cats->count>0)
-            {
-            //DTG -- was asked to set this as a warning and not an error
-            // Categories can have zero pops, but pop has to be greater than zero for entire tract
-            //
-           // bValid = false;
-            gpPrintDirection->SatScanPrintWarning("  Warning: %s %s has cases but zero population.\n",
-            TractInfo[i].tid, gpCats->catGetCategoriesString(cats->cat, szCategories));
-            }
-
-          cats = cats->next;
-          }
-        if (iTractPopulation == 0)
-           {
-           sprintf(sMessage,"Total population is zero for tract %s", TractInfo[i].tid);
-           SSGenerateException(sMessage, "TInfo");
-           }
-    
-        } /* i=0-<NumTracts */
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("tiCheckCasesHavePop()", "TInfo");
-      throw;
-      }
-  return bValid;
-}
-
-bool TInfo::tiCheckZeroPops(FILE *pDisplay) const
-/*******************************************************************************
-Check to see that no years have a total population of zero.
-*******************************************************************************/
-{
-   int i, j;
-   UInt month, day, year;
-   bool bValid = true;
-   struct cnode* cats;
-   long* PopTotalsArray = 0;
-   int   nPStartIndex = 0;
-   int   nPEndIndex;
-
-   try
-      {
-      if (bStartAsPopDt)
-        nPStartIndex = 1;
-      if (bEndAsPopDt)
-        nPEndIndex = nPopDates-2;
-      else
-        nPEndIndex = nPopDates-1;
-    
-      PopTotalsArray = (long*)Smalloc(nPopDates *sizeof(long), gpPrintDirection);
-    
-      for (j=nPStartIndex; j<=nPEndIndex; j++)
-        PopTotalsArray[j]=0;
-    
-      for (i=0; i<NumTracts; i++)
-        {
-        cats = TractInfo[i].cats;
-        while (cats)
-          {
-          for (j=nPStartIndex; j<=nPEndIndex; j++)
-            PopTotalsArray[j]+= cats->pPopList[j];
-          cats = cats->next;
-          }
-        }
-    
-      for (j=nPStartIndex; j<=nPEndIndex; j++)
-        {
-        if (PopTotalsArray[j]==0)
-          {
-          bValid = false;
-          JulianToMDY(&month, &day, &year, pPopDates[j]);
-          fprintf(pDisplay, "  Error: Population of zero found for all tracts in %d.\n", year);
-          gpPrintDirection->SatScanPrintWarning("  Error: Population of zero found for all tracts in %d.\n", year);
-          }
-        }
-    
-      free (PopTotalsArray);
-      }
-   catch (SSException & x)
-      {
-      free (PopTotalsArray);
-      x.AddCallpath("tiCheckZeroPops()", "TInfo");
-      throw;
-      }
-  return bValid;
-}
-
-/* Returns coordinate for tract at specified dimension. */
-double TInfo::tiGetTractCoordinate(tract_t t, int iDimension) const {
-  try {
-    if ((0 > t && t >= NumTracts) || (0 > iDimension && iDimension >= nDimensions))
-      ZdGenerateException("Index out of range","tiGetTractCoordinate()");
-  }
   catch (SSException & x) {
-    x.AddCallpath("tiGetTractCoordinate()", "TInfo");
+    x.AddCallpath("tiSetupPopDates()", "TractHandler");
     throw;
   }
-  return TractInfo[t].pCoords[iDimension];
 }
