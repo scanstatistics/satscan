@@ -96,15 +96,17 @@ object frmAbout: TfrmAbout
     Top = 140
     Width = 169
     Height = 17
+    Cursor = crHandPoint
     AutoSize = False
     Caption = 'satscan@nih.gov'
     Font.Charset = ANSI_CHARSET
-    Font.Color = clBlack
+    Font.Color = clBlue
     Font.Height = -13
     Font.Name = 'MS Sans Serif'
-    Font.Style = []
+    Font.Style = [fsUnderline]
     ParentFont = False
     WordWrap = True
+    OnClick = lblEmailClick
   end
   object Label9: TLabel
     Left = 24
@@ -152,15 +154,17 @@ object frmAbout: TfrmAbout
     Top = 118
     Width = 313
     Height = 17
+    Cursor = crHandPoint
     AutoSize = False
     Caption = 'http://srab.cancer.gov/satscan/'
     Font.Charset = ANSI_CHARSET
-    Font.Color = clBlack
+    Font.Color = clBlue
     Font.Height = -13
     Font.Name = 'MS Sans Serif'
-    Font.Style = []
+    Font.Style = [fsUnderline]
     ParentFont = False
     WordWrap = True
+    OnClick = lblWebSiteClick
   end
   object Label2: TLabel
     Left = 24
