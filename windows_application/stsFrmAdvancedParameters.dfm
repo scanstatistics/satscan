@@ -27,7 +27,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     TabOrder = 0
     object btnOk: TButton
       Left = 6
-      Top = 19
+      Top = 22
       Width = 72
       Height = 24
       Caption = '&Close'
@@ -37,19 +37,18 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     end
   end
   object PageControl: TPageControl
-    Left = 0
-    Top = 0
-    Width = 412
-    Height = 348
+    Left = 2
+    Top = 2
+    Width = 410
+    Height = 344
     ActivePage = tsAdjustmentsTabSheet
-    Align = alClient
     TabOrder = 1
     object tsAdjustmentsTabSheet: TTabSheet
       Caption = 'Adjustments'
       object rdgTemporalTrendAdj: TRadioGroup
         Left = 6
         Top = 3
-        Width = 392
+        Width = 390
         Height = 121
         Caption = 'Temporal Adjustments'
         Enabled = False
@@ -86,12 +85,12 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object grpAdjustments: TGroupBox
         Left = 6
         Top = 131
-        Width = 392
+        Width = 390
         Height = 95
         Caption = 'Temporal, Spatial and/or Space-Time Adjustments'
         TabOrder = 3
         object lblAdjustmentsByRelativeRisksFile: TLabel
-          Left = 8
+          Left = 12
           Top = 45
           Width = 163
           Height = 13
@@ -99,9 +98,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Adjustment For Relative Risks File:'
         end
         object edtAdjustmentsByRelativeRisksFile: TEdit
-          Left = 8
-          Top = 64
-          Width = 343
+          Left = 12
+          Top = 63
+          Width = 335
           Height = 21
           Anchors = []
           ParentShowHint = False
@@ -110,8 +109,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnChange = edtAdjustmentsByRelativeRisksFileChange
         end
         object btnBrowseAdjustmentsFile: TButton
-          Left = 357
-          Top = 64
+          Left = 353
+          Top = 63
           Width = 25
           Height = 21
           Hint = 'browse for adjustments file'
@@ -129,7 +128,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = btnBrowseAdjustmentsFileClick
         end
         object chkAdjustForKnownRelativeRisks: TCheckBox
-          Left = 8
+          Left = 12
           Top = 20
           Width = 233
           Height = 17
@@ -145,8 +144,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object grpInputFiles: TGroupBox
         Left = 6
         Top = 3
-        Width = 392
-        Height = 73
+        Width = 390
+        Height = 72
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Input Files'
         TabOrder = 0
@@ -159,8 +158,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtMaxCirclePopulationFilename: TEdit
           Left = 12
-          Top = 39
-          Width = 337
+          Top = 40
+          Width = 335
           Height = 21
           Anchors = [akLeft, akRight]
           ParentShowHint = False
@@ -169,8 +168,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnChange = edtMaxCirclePopulationFilenameChange
         end
         object btnBrowseMaxCirclePopFile: TButton
-          Left = 355
-          Top = 39
+          Left = 353
+          Top = 40
           Width = 25
           Height = 21
           Hint = 'browse for special population file'
@@ -191,7 +190,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object grpAnalysis: TGroupBox
         Left = 6
         Top = 81
-        Width = 392
+        Width = 390
         Height = 50
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Analysis'
@@ -199,7 +198,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object chkTerminateEarly: TCheckBox
           Left = 12
           Top = 22
-          Width = 253
+          Width = 251
           Height = 17
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Terminate replications early for large p-values'
@@ -209,7 +208,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       object grpScanningWindow: TGroupBox
         Left = 6
         Top = 137
-        Width = 392
+        Width = 390
         Height = 111
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Scanning Window'
@@ -234,7 +233,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtStartRangeStartYear: TEdit
           Left = 154
           Top = 46
-          Width = 39
+          Width = 37
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           MaxLength = 4
@@ -246,7 +245,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtStartRangeStartMonth: TEdit
           Left = 197
           Top = 46
-          Width = 25
+          Width = 23
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           Enabled = False
@@ -259,7 +258,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtStartRangeStartDay: TEdit
           Left = 226
           Top = 46
-          Width = 25
+          Width = 23
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           Enabled = False
@@ -272,7 +271,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtStartRangeEndYear: TEdit
           Left = 284
           Top = 46
-          Width = 39
+          Width = 37
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           MaxLength = 4
@@ -284,7 +283,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtStartRangeEndMonth: TEdit
           Left = 327
           Top = 46
-          Width = 25
+          Width = 23
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           Enabled = False
@@ -297,7 +296,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtStartRangeEndDay: TEdit
           Left = 356
           Top = 46
-          Width = 25
+          Width = 23
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           Enabled = False
@@ -327,7 +326,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtEndRangeStartYear: TEdit
           Left = 154
           Top = 78
-          Width = 39
+          Width = 37
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           MaxLength = 4
@@ -339,7 +338,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtEndRangeStartMonth: TEdit
           Left = 197
           Top = 78
-          Width = 25
+          Width = 23
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           Enabled = False
@@ -352,7 +351,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtEndRangeStartDay: TEdit
           Left = 226
           Top = 78
-          Width = 25
+          Width = 23
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           Enabled = False
@@ -373,7 +372,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtEndRangeEndYear: TEdit
           Left = 284
           Top = 78
-          Width = 39
+          Width = 37
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           MaxLength = 4
@@ -385,7 +384,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtEndRangeEndMonth: TEdit
           Left = 327
           Top = 78
-          Width = 25
+          Width = 23
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           Enabled = False
@@ -398,7 +397,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object edtEndRangeEndDay: TEdit
           Left = 356
           Top = 78
-          Width = 25
+          Width = 23
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           Enabled = False
@@ -413,7 +412,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 6
         Top = 253
         Width = 391
-        Height = 61
+        Height = 58
         Caption = 'Output'
         TabOrder = 3
         object lblReportSmallerClusters: TLabel
