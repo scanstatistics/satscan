@@ -10,10 +10,8 @@
 void DeleteCVEC(char **cvec, int nCats);
 
 bool CSaTScanData::ReadCounts(const char* szCountFilename, const char* szDescription, count_t***  pCounts) {
-   int   i, j;
-   int   nRec;
-   bool  bValid;
-   bool  bEmpty;
+   int   nRec = 0;
+   bool  bValid = true, bEmpty = true;
    FILE* fp;
    char  szData[MAX_LINESIZE];
    count_t nCount;
@@ -30,19 +28,15 @@ bool CSaTScanData::ReadCounts(const char* szCountFilename, const char* szDescrip
 
       // Allocate for counts
       *pCounts = (count_t**)Smalloc(m_nTimeIntervals * sizeof(count_t *), gpPrintDirection);
-      for(i = 0; i < m_nTimeIntervals; ++i)
+      for(int i = 0; i < m_nTimeIntervals; ++i) {
         (*pCounts)[i] = (count_t*)Smalloc(m_nTracts * sizeof(count_t), gpPrintDirection);
-
-      // Initialize counts
-      for(i = 0; i < m_nTimeIntervals; ++i)
-         for(j = 0; j < m_nTracts; ++j)
+        // Initialize counts
+     // }
+     //  for(i = 0; i < m_nTimeIntervals; ++i) {
+         for(int j = 0; j < m_nTracts; ++j)
             (*pCounts)[i][j]=0;
+      }
 
-      //Read and validate records in counts file
-      nRec   = 0;
-      bValid = true;
-      bEmpty = true;
-    
       while (fgets(szData, MAX_LINESIZE, fp)) {
         ++nRec;
         if (GetWord(szData, 0, gpPrintDirection) != 0) {
@@ -76,7 +70,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
    int          nCats = gpCats->catGetNumEls();
    int    i;
    int    cat;
-   bool   bCatsMissing;
+   bool   bCatsMissing = false;
    long   count;
    char** cvec;// = (char**)Smalloc(nCats * sizeof(char *), gpPrintDirection);
 
@@ -149,12 +143,11 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
       if ((m_pParameters->m_nModel==POISSON)
           || (m_pParameters->m_nModel==BERNOULLI && strcmp(szDescription,"control")==0)) {
         i            = 0;
-        bCatsMissing = 0;
 
         while (i < nCats && !bCatsMissing) {
           char* p = GetWord(szData, i + nDataElements, gpPrintDirection);
           if (p == 0)
-            bCatsMissing = 1;
+            bCatsMissing = true;
           else
             Sstrcpy(&cvec[i],p, gpPrintDirection);
           ++i;
@@ -231,25 +224,13 @@ void CSaTScanData::IncrementCount(tract_t nTID, int nCount, Julian nDate, count_
    0 = errors encountered
  **********************************************************************/
 bool CSaTScanData::ReadPops() {
-   bool    bValid = true;                            // File is valid, no errors found?
-   bool    bEmpty = true;                            // File is empty?
-   char    szData[MAX_LINESIZE];              // Line input from file
-   char    szTid[MAX_LINESIZE];               // Tract ID
-   tract_t nRec = 0;                              // File record number
-   tract_t nNonBlankLines;
-   tract_t tract;                             // tract number
-   int     cat;                               // category number
-   int     year;                              // pop year
+   bool    bValid = true, bEmpty = true, bDateFound = false;
+   char    szData[MAX_LINESIZE], szTid[MAX_LINESIZE];
+   tract_t nRec = 0, nNonBlankLines, tract;
+   int     i = 0, cat, year, ncats, nYear4, nDates = 0;
    long    pop;
-   //  double  pop;                               // population
-   int     ncats;                             // number of category vars
-   char**  cvec = 0;                              // category-variable vector
-   bool    bDateFound;
-   int     nYear4;
-   int     nDates = 0;
-   Julian  nPopDate;
-   Julian  tempPopDateArray[MAX_POP_DATES];
-   int     i;
+   char**  cvec = 0;
+   Julian  nPopDate, tempPopDateArray[MAX_POP_DATES];
    FILE*   fp;                                // Ptr to population file
 
    try {
@@ -302,8 +283,8 @@ bool CSaTScanData::ReadPops() {
         }
     
         // Add Year to list of dates
-        i = 0;
         bDateFound = false;
+        i = 0;
         nPopDate = MDYToJulian(POP_MONTH, POP_DAY, nYear4);
     
         // Use search algorithm !!!!!!
@@ -457,14 +438,11 @@ bool CSaTScanData::ReadGeo() {
    0 = errors encountered
  **********************************************************************/
 bool CSaTScanData::ReadGeoLatLong() {
-   bool    bValid = true;                            // File is valid, no errors found?
-   bool    bEmpty = true;                            // File is empty?
-   char    szData[MAX_LINESIZE];              // Line input from file
-   char    szTid[MAX_LINESIZE];               // Tract ID
+   bool    bValid = true,  bEmpty = true;
+   char    szData[MAX_LINESIZE], szTid[MAX_LINESIZE];
    int     nScanCount;                        // Num of items on input line
    tract_t nRec = 0;                              // File record number
-   double   Latitude, Longitude;               // Lat/Long coords
-   double		pCoords[3];													 // 3-dimensional coords
+   double   Latitude, Longitude, pCoords[3];													 // 3-dimensional coords
    FILE*   fp;                                // Ptr to coordinates file
 
    try {
@@ -567,16 +545,12 @@ bool CSaTScanData::ReadGeoLatLong() {
    0, false = errors encountered
  **********************************************************************/
 bool CSaTScanData::ReadGeoCoords() {
-   bool    bValid = true;                            // File is valid, no errors found?
-   bool    bEmpty = true;                            // File is empty?
-   char    szData[MAX_LINESIZE];              // Line input from file
-   char    szFirstLine[MAX_LINESIZE];         // First Line input from file
-   char    szTid[MAX_LINESIZE];               // Tract ID
-   int     nScanCount;                        // Num of items on input line
+   bool    bValid = true, bEmpty = true;
+   char    szData[MAX_LINESIZE], szFirstLine[MAX_LINESIZE], szTid[MAX_LINESIZE];
+   int     i, nScanCount = 0;                        // Num of items on input line
    tract_t nRec = 0;                              // File record number
    double*  pCoords = NULL;                    // Ptr to Tract coords
    FILE*   fp;                             // Ptr to coordinates file
-   int     i;
 
    try {
       gpPrintDirection->SatScanPrintf("Reading the geographic coordinates file\n");
@@ -751,15 +725,12 @@ bool CSaTScanData::ReadGrid() {
    0 = errors encountered
  **********************************************************************/
 bool CSaTScanData::ReadGridCoords() {
-   bool    bValid = true;                            // File is valid, no errors found?
-   bool    bEmpty = true;                            // File is empty?
-   char    szData[MAX_LINESIZE];              // Line input from file
-   char    szTid[MAX_LINESIZE];               // Grid tract ID
-   int     nScanCount = 0;                        // Num of items on input line
+   bool    bValid = true, bEmpty = true;
+   char    szData[MAX_LINESIZE], szTid[MAX_LINESIZE];
+   int     i, nScanCount = 0;                        // Num of items on input line
    tract_t nRec = 0;                              // File record number
    double*   pCoords = 0;                           // Ptr to Grid tract coords
    FILE*   fp;                                // Ptr to grid file
-   int i;
    
    try {
       gpPrintDirection->SatScanPrintf("Reading the grid file\n");
@@ -843,22 +814,18 @@ bool CSaTScanData::ReadGridCoords() {
 
 
 bool CSaTScanData::ReadGridLatLong() {
-   bool    bValid = true;                            // File is valid, no errors found?
-   bool    bEmpty = true;                            // File is empty?
-   char    szData[MAX_LINESIZE];              // Line input from file
-   char    szTid[MAX_LINESIZE];               // Grid tract ID
+   bool    bValid = true, bEmpty = true;
+   char    szData[MAX_LINESIZE], szTid[MAX_LINESIZE];
    int     nScanCount;                        // Num of items on input line
    tract_t nRec = 0;                              // File record number
    float   Latitude, Longitude;
    double*	 pCoords = 0;                           // Ptr to Grid tract coords
    FILE*   fp;                                // Ptr to grid file
 
-   try
-      {
+   try {
       gpPrintDirection->SatScanPrintf("Reading the grid file (lat/lon).\n");
 
-      if ((fp = fopen(m_pParameters->m_szGridFilename, "r")) == NULL)
-      {
+      if ((fp = fopen(m_pParameters->m_szGridFilename, "r")) == NULL) {
         gpPrintDirection->SatScanPrintWarning("  Error: Could not open special grid file (lat/lon).\n", "ReadGridLatLong()");
         return false;
       }
