@@ -48,7 +48,7 @@ __fastcall TfrmAnalysis::~TfrmAnalysis() {
 // case file selector
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
-  BFTFImportDescriptor  * pBFTFPointer = 0;
+  BFTFImportDescriptor  ImportDescriptor;
   ZdFileName            sFileName;
   ZdString              sFileNamePrefix("Case_");
   char                  sBuffer[1024];
@@ -62,9 +62,8 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
       sFileName = OpenDialog1->FileName.c_str();
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-         pBFTFPointer = new BFTFImportDescriptor();
-         pBFTFPointer->SetGenerateReport(false);
-         SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
+         ImportDescriptor.SetGenerateReport(false);
+         SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
          // create destination file in user's temp directory
          GetTempPath(sizeof(sBuffer), sBuffer);
          sFileName.SetLocation(sBuffer);
@@ -72,12 +71,11 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
          // Prefix filename so that we know this sessions created imported files are unique.
          sFileNamePrefix << sFileName.GetFileName();
          sFileName.SetFileName(sFileNamePrefix);
-         pBFTFPointer->SetDestinationFile(sFileName.GetFullPath());
+         ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
          CreateTXDFile(sFileName, gvCaseFileFieldDescriptors);
-         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, pBFTFPointer));
+         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
          pImporter->ShowModal();
-         delete pBFTFPointer;
       }
 
       //Why is this here? KMC 8/30/2002
@@ -88,7 +86,6 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
     }
   }
   catch (ZdException & x) {
-    delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnCaseBrowseClick()", "TfrmAnalysis");
     DisplayBasisException(this, x);
   }
@@ -97,7 +94,7 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
 // Control file selector -- *.ctl files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
-  BFTFImportDescriptor  * pBFTFPointer = 0;
+  BFTFImportDescriptor  ImportDescriptor;
   ZdFileName            sFileName;
   ZdString              sFileNamePrefix("Control_");
   char                  sBuffer[1024];
@@ -111,9 +108,8 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
       sFileName = OpenDialog1->FileName.c_str();
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-         pBFTFPointer = new BFTFImportDescriptor();
-         pBFTFPointer->SetGenerateReport(false);
-         SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
+         ImportDescriptor.SetGenerateReport(false);
+         SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
          // create destination file in user's temp directory
          GetTempPath(sizeof(sBuffer), sBuffer);
          sFileName.SetLocation(sBuffer);
@@ -121,12 +117,11 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
          // Prefix filename so that we know this sessions created imported files are unique.
          sFileNamePrefix << sFileName.GetFileName();
          sFileName.SetFileName(sFileNamePrefix);
-         pBFTFPointer->SetDestinationFile(sFileName.GetFullPath());
+         ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
          CreateTXDFile(sFileName, gvControlFileFieldDescriptors);
-         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, pBFTFPointer));
+         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
          pImporter->ShowModal();
-         delete pBFTFPointer;
       }
 
       //Why is this here? KMC 8/30/2002
@@ -137,7 +132,6 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
      }
   }
   catch (ZdException & x) {
-    delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnControlBrowseClick()", "TfrmAnalysis");
     DisplayBasisException(this, x);
   }
@@ -146,7 +140,7 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
 // Geographic file selector -- *.geo files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
-  BFTFImportDescriptor  * pBFTFPointer = 0;
+  BFTFImportDescriptor  ImportDescriptor;
   ZdFileName            sFileName;
   ZdString              sFileNamePrefix("Geographical_");
   char                  sBuffer[1024];
@@ -160,9 +154,8 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
       sFileName = OpenDialog1->FileName.c_str();
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-         pBFTFPointer = new BFTFImportDescriptor();
-         pBFTFPointer->SetGenerateReport(false);
-         SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
+         ImportDescriptor.SetGenerateReport(false);
+         SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
          // create destination file in user's temp directory
          GetTempPath(sizeof(sBuffer), sBuffer);
          sFileName.SetLocation(sBuffer);
@@ -170,12 +163,11 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
          // Prefix filename so that we know this sessions created imported files are unique.
          sFileNamePrefix << sFileName.GetFileName();
          sFileName.SetFileName(sFileNamePrefix);
-         pBFTFPointer->SetDestinationFile(sFileName.GetFullPath());
+         ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
          CreateTXDFile(sFileName, gvGeoFileFieldDescriptors);
-         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, pBFTFPointer));
+         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
          pImporter->ShowModal();
-         delete pBFTFPointer;
       }
 
       //Why is this here? KMC 8/30/2002
@@ -186,7 +178,6 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
     }
   }
   catch (ZdException & x) {
-    delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnCoordBrowseClick()", "TfrmAnalysis");
     DisplayBasisException(this, x);
   }
@@ -195,7 +186,7 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
 //  Grid file selector -- *.grd files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
-  BFTFImportDescriptor  * pBFTFPointer = 0;
+  BFTFImportDescriptor  ImportDescriptor;
   ZdFileName            sFileName;
   ZdString              sFileNamePrefix("SpecialGrid_");
   char                  sBuffer[1024];
@@ -209,22 +200,20 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
       sFileName = OpenDialog1->FileName.c_str();
       //Detect dbf file and launch importer if detected
       if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-         pBFTFPointer = new BFTFImportDescriptor();
-         pBFTFPointer->SetGenerateReport(false);
-         SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
+         ImportDescriptor.SetGenerateReport(false);
+         SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
          // create destination file in user's temp directory
          GetTempPath(sizeof(sBuffer), sBuffer);
          sFileName.SetLocation(sBuffer);
          sFileName.SetExtension(TXD_EXT);
-         pBFTFPointer->SetDestinationFile(sFileName.GetFullPath());
+         ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
          // Prefix filename so that we know this sessions created imported files are unique.
          sFileNamePrefix << sFileName.GetFileName();
          sFileName.SetFileName(sFileNamePrefix);
          CreateTXDFile(sFileName, gvGridFileFieldDescriptors);
-         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, pBFTFPointer));
+         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
          pImporter->ShowModal();
-         delete pBFTFPointer;
       }
 
       //Why is this here? KMC 8/30/2002
@@ -235,7 +224,6 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
     }
   }
   catch (ZdException & x) {
-    delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnGridBrowseClick()", "TfrmAnalysis");
     DisplayBasisException(this, x);
   }
@@ -244,7 +232,7 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
 // Population file selector -- *.pop files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
-  BFTFImportDescriptor  * pBFTFPointer = 0;
+  BFTFImportDescriptor  ImportDescriptor;
   ZdFileName            sFileName;
   ZdString              sFileNamePrefix("Population_");
   char                  sBuffer[1024];
@@ -258,22 +246,20 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
        sFileName = OpenDialog1->FileName.c_str();
        //Detect dbf file and launch importer if detected
        if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
-          pBFTFPointer = new BFTFImportDescriptor();
-          pBFTFPointer->SetGenerateReport(false);
-          SetupImportDescriptor(*pBFTFPointer, OpenDialog1->FileName.c_str());
+          ImportDescriptor.SetGenerateReport(false);
+          SetupImportDescriptor(ImportDescriptor, OpenDialog1->FileName.c_str());
           // create destination file in user's temp directory
           GetTempPath(sizeof(sBuffer), sBuffer);
           sFileName.SetLocation(sBuffer);
           sFileName.SetExtension(TXD_EXT);
-          pBFTFPointer->SetDestinationFile(sFileName.GetFullPath());
+          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
           // Prefix filename so that we know this sessions created imported files are unique.
           sFileNamePrefix << sFileName.GetFileName();
           sFileName.SetFileName(sFileNamePrefix);
           CreateTXDFile(sFileName, gvPopFileFieldDescriptors);
-          auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, pBFTFPointer));
+          auto_ptr<TBdlgImporter>pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, &ImportDescriptor));
           pImporter->ShowOptionalPanels(false, false, false);
           pImporter->ShowModal();
-          delete pBFTFPointer;
        }
 
       //Why is this here? KMC 8/30/2002
@@ -284,7 +270,6 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
     }
   }
   catch (ZdException & x) {
-    delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnPopBrowseClick()", "TfrmAnalysis");
     DisplayBasisException(this, x);
   }
@@ -301,7 +286,6 @@ void __fastcall TfrmAnalysis::btnResultFileBrowseClick(TObject *Sender) {
     if (OpenDialog1->Execute()) {
       strcpy(gpParams->m_szOutputFilename, OpenDialog1->FileName.c_str());
       edtResultFile->Text = OpenDialog1->FileName.c_str();
-      //UpdateData(false);
     }
   }
   catch (ZdException & x) {
@@ -697,29 +681,25 @@ void TfrmAnalysis::ConvertPurelySpacialIntervals() {
 // post: will create a txd file with padded spaces delimiting the fields
 void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<const char*>& vFieldNames) {
    ZdVector<ZdField*>	        vFields;
-   ZdField*		        pField = 0;
-   TXDFile*                     pFile = 0;
+   ZdField		        Field;
+   TXDFile                      File;
    unsigned short               uwOffset = 0, uwLength = 128;
 
    try {
-      // create a TXD file with a space delimiter
-      pFile = new TXDFile();
-
       // creates the field vector from the provided field names
       for(unsigned long i = 0; i < vFieldNames.GetNumElements(); ++i) {
-      	 pField = pFile->GetNewField();
-         pField->SetName(vFieldNames[i]);
+      	 Field = *(File.GetNewField());
+         Field.SetName(vFieldNames[i]);
          if(!i)     // need a better system here to define which fields are required
-            pField->SetRequired(true);
+            Field.SetRequired(true);
           // field 1 the only alpha field in the input so allow to greater width here, consider
           // other options for this in the future - AJV 9/4/2002
-         pField->SetType(ZD_ALPHA_FLD);
-         uwLength = (!i ? 200 : 50);      
-         pField->SetOffset(uwOffset);
-         pField->SetLength(uwLength);
-         pField->SetIndexCount(0);
-         vFields.AddElement(pField->Clone());
-         delete pField; pField=0;
+         Field.SetType(ZD_ALPHA_FLD);
+         uwLength = (!i ? 200 : 50);
+         Field.SetOffset(uwOffset);
+         Field.SetLength(uwLength);
+         Field.SetIndexCount(0);
+         vFields.AddElement(Field.Clone());
          // NOTE: Our original design would simply make gaps in the fields offsets
          //       to allow created ZdTXD file to work like current SaTScan data files.
          //       But, unfortunetly, those gaps would have value 0x00 causing problems
@@ -731,23 +711,17 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<con
 
       // don't pack fields or else you'll lose the offset!!! AJV 9/5/2002
       // BUGBUG - we'll temporarily delete the txd file if it already exists - AJV 9/5/2002
-      pFile->Delete(sFileName.GetFullPath());
-      pFile->SetTitle(sFileName.GetFileName());
-      pFile->Create(sFileName.GetFullPath(), vFields, 0);
-      pFile->Close();
+      File.Delete(sFileName.GetFullPath());
+      File.SetTitle(sFileName.GetFileName());
+      File.Create(sFileName.GetFullPath(), vFields, 0);
+      File.Close();
 
       for(int i = vFields.GetNumElements() - 1; i > 0; --i) {
          delete vFields[0]; vFields[0] = 0;
          vFields.RemoveElement(0);
       }
-
-      delete pFile;
    }
    catch (ZdException &x) {
-      if(pFile)
-         pFile->Close();
-      delete pFile; pFile = 0;
-      delete pField; pField = 0;
       for(int i = vFields.GetNumElements() - 1; i > 0; --i) {
          delete vFields[0]; vFields[0] = 0;
          vFields.RemoveElement(0);
