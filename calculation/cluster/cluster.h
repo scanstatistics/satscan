@@ -34,6 +34,7 @@ class CCluster {
     CCluster                    & operator=(const CCluster& rhs);
     //pure virtual functions
     virtual AbstractClusterData * GetClusterData() = 0;
+    virtual const AbstractClusterData * GetClusterData() const = 0;
     virtual ClusterType           GetClusterType() const = 0;
     //public data members - speed considerations
     double                        m_nRatio;             // Likelihood ratio

@@ -66,8 +66,6 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iRepo
     DisplayTimeFrame(fp, DataHub, PrintFormat);
     DisplayPopulation(fp, DataHub, PrintFormat);
     DisplayCaseInformation(fp, DataHub, PrintFormat);
-    DisplayAnnualCaseInformation(fp, DataHub, PrintFormat);
-    DisplayRelativeRisk(fp, DataHub, PrintFormat);
     DisplayRatio(fp, DataHub, PrintFormat);
     DisplayMonteCarloInformation(fp, DataHub, PrintFormat, iNumSimsCompleted);
     DisplayNullOccurrence(fp, DataHub, iNumSimsCompleted, PrintFormat);
@@ -85,11 +83,11 @@ void CCluster::DisplayAnnualCaseInformation(FILE* fp, const CSaTScanData& DataHu
   ZdString                      sWork, sBuffer;
   const DataStreamHandler     & Streams = DataHub.GetDataStreamHandler();
 
-  if (DataHub.GetParameters().GetProbabiltyModelType() == POISSON && DataHub.GetParameters().UsePopulationFile()) {
+  if (DataHub.GetParameters().GetProbabilityModelType() == POISSON && DataHub.GetParameters().UsePopulationFile()) {
     sBuffer.printf("Annual cases / %.0f", DataHub.GetAnnualRatePop());
     PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
     sBuffer.printf("%.1f", DataHub.GetAnnualRateAtStart(0) * GetRelativeRisk(DataHub.GetMeasureAdjustment(0), 0));
-    for (i=1; i < Streams.GetNumStreams(); ++i) {
+    for (i=1; i < Streams.GetNumDataSets(); ++i) {
        sWork.printf(", %.1f", DataHub.GetAnnualRateAtStart(i) * GetRelativeRisk(DataHub.GetMeasureAdjustment(i), i));
        sBuffer << sWork;
     }
@@ -100,13 +98,59 @@ void CCluster::DisplayAnnualCaseInformation(FILE* fp, const CSaTScanData& DataHu
 /** Prints number of observed and expected cases to file stream is in format
     required by result output file. */
 void CCluster::DisplayCaseInformation(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  unsigned int                  i;
+  unsigned int                  i, j, k;
   ZdString                      sWork, sBuffer;
-  const DataStreamHandler     & Streams = DataHub.GetDataStreamHandler();
+  const DataStreamHandler     & DataSets = DataHub.GetDataStreamHandler();
 
+  if (DataHub.GetParameters().GetProbabilityModelType() == ORDINAL) {
+    for (i=0; i < DataSets.GetNumDataSets(); ++i) {
+       const RealDataStream& RealSet = DataSets.GetStream(i);
+       //print data set number if more than data set 
+       if (DataSets.GetNumDataSets() > 1) {
+         sWork.printf("Data Set #%ld", i + 1);
+         PrintFormat.PrintSectionLabel(fp, sWork.GetCString(), false, true);
+         PrintFormat.PrintAlignedMarginsDataString(fp, ZdString());
+       }
+       //print category ordinal values
+       PrintFormat.PrintSectionLabel(fp, "Category", false, true);
+       sBuffer.printf("%g", RealSet.GetPopulationData().GetOrdinalCategoryValue(0));
+       for (k=1; k < RealSet.GetPopulationData().GetNumOrdinalCategories(); ++k) {
+         sWork.printf(", %g", RealSet.GetPopulationData().GetOrdinalCategoryValue(k));
+         sBuffer << sWork;
+       }
+       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+       //print observed case data per category
+       PrintFormat.PrintSectionLabel(fp, "Number of cases", false, true);
+       sBuffer.printf("%ld", GetClusterData()->GetCategoryCaseCount(0, i));
+       for (k=1; k < RealSet.GetPopulationData().GetNumOrdinalCategories(); ++k) {
+         sWork.printf(", %ld", GetClusterData()->GetCategoryCaseCount(k, i));
+         sBuffer << sWork;
+       }
+       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+       //print expected case data per category
+       //$$ This process should be similar to Bernoulli.
+       //$$
+       //$$ category 'z'
+       //$$ RemaingCases = 0;
+       //$$ for (k=1; k < RealSet.GetPopulationData().GetNumOrdinalCategories(); ++k)
+       //$$   if (k != z)
+       //$$     RemaingCases += GetClusterData()->GetCategoryCaseCount(k, i);
+       //$$ (RealSet.GetPopulationData().GetNumOrdinalCategoryCases(z) * RealSet.GetTotalCases()) * RemaingCases;
+       //$$
+       PrintFormat.PrintSectionLabel(fp, "Expected cases", false, true);
+       sBuffer = "?";
+       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+       //print observed div expected case data per category
+       //$$ Waiting on Martin for details.
+       PrintFormat.PrintSectionLabel(fp, "Observed / expected", false, true);
+       sBuffer = "?";
+       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    }
+  }
+  else {
     PrintFormat.PrintSectionLabel(fp, "Number of cases", false, true);
     sBuffer.printf("%ld", GetCaseCount(0));
-    for (i=1; i < Streams.GetNumStreams(); ++i) {
+    for (i=1; i < DataSets.GetNumDataSets(); ++i) {
        sWork.printf(", %ld", GetCaseCount(i));
        sBuffer << sWork;
     }
@@ -115,11 +159,14 @@ void CCluster::DisplayCaseInformation(FILE* fp, const CSaTScanData& DataHub, con
     PrintFormat.PrintSectionLabel(fp, "Expected cases", false, true);
     //print expected cases
     sBuffer.printf("%.2f", DataHub.GetMeasureAdjustment(0) * GetMeasure(0));
-    for (i=1; i < Streams.GetNumStreams(); ++i) {
+    for (i=1; i < DataSets.GetNumDataSets(); ++i) {
        sWork.printf(", %.2f", DataHub.GetMeasureAdjustment(i) * GetMeasure(i));
        sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    DisplayAnnualCaseInformation(fp, DataHub, PrintFormat);
+    DisplayRelativeRisk(fp, DataHub, PrintFormat);
+  }
 }
 
 /** Writes cluster location identifiers to file stream in format required by result output file  */
@@ -157,14 +204,14 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
   tract_t                       i, tTract;
   ZdString                      sLocations;
   std::vector<std::string>      vTractIdentifiers;
-  measure_t                  ** ppMeasure(Data.GetDataStreamHandler().GetStream(0/*for now*/).GetMeasureArray());
+//$$  measure_t                  ** ppMeasure(Data.GetDataStreamHandler().GetStream(0/*for now*/).GetMeasureArray());
 
   try {
     for (i=nFirstTract; i <= nLastTract; ++i) {
        //get i'th neighbor tracts index
        tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, i);
        //suppress printing of this location if total measure for tract is less than nMinMeasure
-       if (ppMeasure[0][tTract] > nMinMeasure) {
+//$$       if (ppMeasure[0][tTract] > nMinMeasure) {
          //get all locations ids for tract at index tTract -- might be more than one if combined
          Data.GetTInfo()->tiGetTractIdentifiers(tTract, vTractIdentifiers);
          for (k=0; k < vTractIdentifiers.size(); ++k) {
@@ -172,7 +219,7 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
               sLocations << ", ";
             sLocations << vTractIdentifiers[k].c_str();
          }
-       }
+//$$       }
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sLocations);
   }
@@ -357,11 +404,11 @@ void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, const Ascii
   const DataStreamHandler     & Streams = Data.GetDataStreamHandler();
   double                        dPopulation;
 
-  if ((Data.GetParameters().GetProbabiltyModelType() == POISSON && Data.GetParameters().UsePopulationFile()) 
-      || Data.GetParameters().GetProbabiltyModelType() == BERNOULLI) {
+  if ((Data.GetParameters().GetProbabilityModelType() == POISSON && Data.GetParameters().UsePopulationFile())
+      || Data.GetParameters().GetProbabilityModelType() == BERNOULLI) {
     PrintFormat.PrintSectionLabel(fp, "Population", false, true);
 
-    for (i=0; i < Streams.GetNumStreams(); ++i) {
+    for (i=0; i < Streams.GetNumDataSets(); ++i) {
       dPopulation = Data.GetProbabilityModel().GetPopulation(i, m_iEllipseOffset, m_Center,
                                                              m_nTracts, m_nFirstInterval, m_nLastInterval);
       if (dPopulation < .5)
@@ -378,7 +425,7 @@ void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, const Ascii
 
 /** Writes clusters log likelihood ratio/test statistic in format required by result output file. */
 void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  if (DataHub.GetParameters().GetProbabiltyModelType() == SPACETIMEPERMUTATION) {
+  if (DataHub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION) {
      PrintFormat.PrintSectionLabel(fp, "Test statistic", false, true);
      fprintf(fp, "%lf\n", m_nRatio);
   }
@@ -400,7 +447,7 @@ void CCluster::DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataHub, const 
 
   PrintFormat.PrintSectionLabel(fp, "Observed / expected", false, true);
   sBuffer.printf("%.3f", GetRelativeRisk(DataHub.GetMeasureAdjustment(0), 0));
-  for (i=1; i < Streams.GetNumStreams(); ++i) {
+  for (i=1; i < Streams.GetNumDataSets(); ++i) {
     sWork.printf(", %.3f", GetRelativeRisk(DataHub.GetMeasureAdjustment(i), i));
     sBuffer << sWork;
   }
