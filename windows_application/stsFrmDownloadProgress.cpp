@@ -18,16 +18,16 @@ void TfrmDownloadProgress::Add(std::pair<ZdString, ZdString>& FileInfo) {
 /** downloads files */
 void TfrmDownloadProgress::DownloadFiles() {
   ZdFileName    fDownloadFile;
+  ZdString      s;
 
-  try {
+  try {                                  
     Show();
     // Download the new files
     for (giCurrentDownload=0; giCurrentDownload < gvDownloads.size(); ++giCurrentDownload) {
-       LabelStep->Caption.printf("Downloading %s ...", gvDownloads[giCurrentDownload].first.GetCString());
-       LabelStep->Update();
        GetFullPath(gvDownloads[giCurrentDownload].first, fDownloadFile);
        ZdIOInterface::Delete(fDownloadFile.GetFullPath());
        NMWebDownload->Body = fDownloadFile.GetFullPath();
+       gbUpdateProgressCaption = true;
        try {
          NMWebDownload->Get(gvDownloads[giCurrentDownload].second.GetCString());
        }
@@ -70,12 +70,11 @@ void __fastcall TfrmDownloadProgress::OnCancelClick(TObject *Sender) {
 
 void __fastcall TfrmDownloadProgress::OnPacketReceived(TObject *Sender) {
   try {
-    if (!gbHasTotal) {
+    if (gbUpdateProgressCaption) {
       ZdString      s;
-      s.printf("Downloading %s (%i) bytes ...",
-               gvDownloads[giCurrentDownload].first.GetCString(), NMWebDownload->BytesTotal);
+      s.printf("Downloading file %d of %d (%i bytes) ...", giCurrentDownload + 1, gvDownloads.size(), NMWebDownload->BytesTotal);
       LabelStep->Caption = s.GetCString();
-      gbHasTotal = true;
+      gbUpdateProgressCaption = false;
     }
     ProgressBarDownload->Position = (NMWebDownload->BytesRecvd * 100) / NMWebDownload->BytesTotal;
   }

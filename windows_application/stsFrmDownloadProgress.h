@@ -24,11 +24,11 @@ __published:	// IDE-managed Components
    void __fastcall OnCommandFailure(CmdType Cmd);
    
   private:	// User declarations
-    void                                        Init() {gbCompleted=false; gbHasTotal=false; giCurrentDownload=0;}
+    void                                        Init() {gbCompleted=false; gbUpdateProgressCaption=false; giCurrentDownload=0;}
 
-    size_t                                      giCurrentDownload; 
+    size_t                                      giCurrentDownload;
     bool                                        gbCompleted;
-    bool                                        gbHasTotal;
+    bool                                        gbUpdateProgressCaption;
     std::vector<std::pair<ZdString,ZdString> >  gvDownloads;
 
     ZdFileName                                & GetFullPath(const ZdString& sFileName, ZdFileName& Filename);
