@@ -275,6 +275,7 @@ void CParameters::Copy(const CParameters &rhs) {
     geSpatialAdjustmentType             = rhs.geSpatialAdjustmentType;
     geMultipleStreamPurposeType         = rhs.geMultipleStreamPurposeType;
     gCreationVersion                    = rhs.gCreationVersion;
+    gbUsePopulationFile                 = rhs.gbUsePopulationFile;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -415,7 +416,8 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
     }
 
     switch (geProbabiltyModelType) {
-      case POISSON              : if (gvPopulationFilenames.size() == 1)
+      case POISSON              : if (!UsePopulationFile()) break;
+                                  if (gvPopulationFilenames.size() == 1)
                                     fprintf(fp, "  Population File              : %s\n", gvPopulationFilenames[0].c_str());
                                   else {
                                     for (t=0; t < gvPopulationFilenames.size(); ++t)
@@ -2439,6 +2441,7 @@ void CParameters::SetDefaults() {
   gCreationVersion.iMajor               = 4;
   gCreationVersion.iMinor               = 0;
   gCreationVersion.iRelease             = 3;
+  gbUsePopulationFile                   = false;
 }
 
 /** Sets dimensions of input data. */
@@ -3245,7 +3248,7 @@ bool CParameters::ValidateEllipseParameters(BasePrint & PrintDirection) {
 }
 
 /** Validates input/output file parameters. */
-bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
+bool CParameters::ValidateFileParameters(BasePrint& PrintDirection) {
   bool          bValid=true;
   size_t        t;
 
@@ -3265,16 +3268,43 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
        }
     }
     //validate population file for a poisson model.
-    if (geProbabiltyModelType == POISSON) {
-      if (!gvPopulationFilenames.size()) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: For the Poisson model, a population file must be specified.\n");
+    if (geProbabiltyModelType == POISSON ) {
+      //special processing for purely temporal analyses - population file is optional
+      if (GetIsPurelyTemporalAnalysis()) {
+         //either all data streams omit the population file or specify a filename
+         unsigned int iNumStreamsWithoutPopFile=0;
+         for (t=0; t < gvPopulationFilenames.size(); ++t)
+            if (gvPopulationFilenames[0].empty())
+              ++iNumStreamsWithoutPopFile;
+         if (iNumStreamsWithoutPopFile && iNumStreamsWithoutPopFile != gvPopulationFilenames.size()) {
+            bValid = false;
+            PrintDirection.SatScanPrintWarning("Error: For the Poisson model with purely temporal analyses, the population file\n");
+            PrintDirection.SatScanPrintWarning("       is optional but all data streams must either specify a population file or omit it.\n");
+         }
+         else if (!iNumStreamsWithoutPopFile) {
+           gbUsePopulationFile = true;
+           for (t=0; t < gvPopulationFilenames.size(); ++t) {
+              if (access(gvPopulationFilenames[t].c_str(), 00)) {
+                bValid = false;
+                PrintDirection.SatScanPrintWarning("Error: The population file '%s' does not exist.\n", gvPopulationFilenames[t].c_str());
+                PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+              }
+           }
+         }
       }
-      for (t=0; t < gvPopulationFilenames.size(); ++t) {
-        if (access(gvPopulationFilenames[t].c_str(), 00)) {
+      else {
+        gbUsePopulationFile = true;
+        if (!gvPopulationFilenames.size()) {
           bValid = false;
-          PrintDirection.SatScanPrintWarning("Error: The population file '%s' does not exist.\n", gvPopulationFilenames[t].c_str());
-          PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+          PrintDirection.SatScanPrintWarning("Error: For the Poisson model, a population file must be specified unless analysis\n");
+          PrintDirection.SatScanPrintWarning("       is purely temporal. In which case the population file is optional.\n");
+        }
+        for (t=0; t < gvPopulationFilenames.size(); ++t) {
+          if (access(gvPopulationFilenames[t].c_str(), 00)) {
+            bValid = false;
+            PrintDirection.SatScanPrintWarning("Error: The population file '%s' does not exist.\n", gvPopulationFilenames[t].c_str());
+            PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+          }
         }
       }
     }

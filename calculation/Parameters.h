@@ -245,6 +245,8 @@ class CParameters {
     std::vector<std::string>            gvCaseFilenames;                        /** case data source filenames */
     std::vector<std::string>            gvControlFilenames;                     /** control data source filenames */
     std::vector<std::string>            gvPopulationFilenames;                  /** population data source filenames */
+    bool                                gbUsePopulationFile;                    /** indicates whether population data will be read
+                                                                                    given other parameter settings */
     std::string                         gsCoordinatesFileName;                  /** coordinates data source filename */
     std::string                         gsSpecialGridFileName;                  /** special grid data source filename */
     bool                                gbUseSpecialGridFile;                   /** indicator of special grid file usage */
@@ -509,6 +511,7 @@ class CParameters {
     bool                                ValidateParameters(BasePrint & PrintDirection);
     bool                                UseAdjustmentForRelativeRisksFile() const {return gbUseAdjustmentsForRRFile;}
     bool                                UseMaxCirclePopulationFile() const;
+    bool                                UsePopulationFile() const {return gbUsePopulationFile;}
     bool                                UseSpecialGrid() const {return gbUseSpecialGridFile;}
     void                                Write(const char * sParameterFileName);
 };
