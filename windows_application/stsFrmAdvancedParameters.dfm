@@ -63,13 +63,13 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Top = 0
     Width = 450
     Height = 311
-    ActivePage = tsDataStreams
+    ActivePage = tsDataSets
     Align = alClient
     TabOrder = 0
-    object tsDataStreams: TTabSheet
+    object tsDataSets: TTabSheet
       Caption = 'Multiple Data Sets'
       ImageIndex = 5
-      object grpDataStreams: TGroupBox
+      object grpDataSets: TGroupBox
         Left = 8
         Top = 8
         Width = 425
@@ -201,7 +201,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             0000}
           NumGlyphs = 2
         end
-        object lstInputStreams: TListBox
+        object lstInputDataSets: TListBox
           Left = 8
           Top = 32
           Width = 95
@@ -211,9 +211,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ParentShowHint = False
           ShowHint = True
           TabOrder = 0
-          OnClick = lstInputStreamsClick
+          OnClick = lstInputDataSetsClick
         end
-        object btnNewStream: TButton
+        object btnNewDataSet: TButton
           Left = 8
           Top = 116
           Width = 47
@@ -225,7 +225,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           TabOrder = 1
           OnClick = btnNewClick
         end
-        object btnRemoveStream: TButton
+        object btnRemoveDataSet: TButton
           Left = 57
           Top = 116
           Width = 47
@@ -235,7 +235,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ParentShowHint = False
           ShowHint = True
           TabOrder = 2
-          OnClick = btnRemoveStreamClick
+          OnClick = btnRemoveDataSetClick
         end
         object edtCaseFileName: TEdit
           Left = 112
@@ -324,7 +324,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           TabOrder = 4
           OnClick = btnCaseBrowseClick
         end
-        object lblMultipleStreamPurpose: TStaticText
+        object lblMultipleDataSetPurpose: TStaticText
           Left = 8
           Top = 152
           Width = 147
@@ -343,7 +343,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           TabStop = True
           OnClick = OnControlExit
         end
-        object rdoAdjustmentByStreams: TRadioButton
+        object rdoAdjustmentByDataSets: TRadioButton
           Left = 24
           Top = 200
           Width = 297

@@ -90,8 +90,8 @@ __published:	// IDE-managed Components
    TEdit *edtProspectiveStartDateDay;
    TCheckBox *chkAdjustForEarlierAnalyses;
    TButton *btnSetDefaults;
-   TTabSheet *tsDataStreams;
-   TGroupBox *grpDataStreams;
+        TTabSheet *tsDataSets;
+        TGroupBox *grpDataSets;
    TLabel *Label3;
    TLabel *Label1;
    TLabel *Label2;
@@ -100,9 +100,9 @@ __published:	// IDE-managed Components
    TBitBtn *btnPopImport;
    TBitBtn *btnControlImport;
    TBitBtn *btnCaseImport;
-   TListBox *lstInputStreams;
-   TButton *btnNewStream;
-   TButton *btnRemoveStream;
+        TListBox *lstInputDataSets;
+        TButton *btnNewDataSet;
+        TButton *btnRemoveDataSet;
    TEdit *edtCaseFileName;
    TEdit *edtControlFileName;
    TEdit *edtPopFileName;
@@ -112,9 +112,9 @@ __published:	// IDE-managed Components
    TBitBtn *btnImportMaxCirclePopFile;
    TBitBtn *btnImportAdjustmentsFile;
    TRadioGroup *rdgSpatialAdjustments;
-   TStaticText *lblMultipleStreamPurpose;
+        TStaticText *lblMultipleDataSetPurpose;
    TRadioButton *rdoMultivariate;
-   TRadioButton *rdoAdjustmentByStreams;
+        TRadioButton *rdoAdjustmentByDataSets;
    TCheckBox *chkInclPureTempClust;
    TCheckBox *chkIncludePureSpacClust;
 
@@ -161,8 +161,8 @@ __published:	// IDE-managed Components
    void __fastcall rdoMaxSpatialTypeClick(TObject *Sender);
    void __fastcall btnSetDefaultsClick(TObject *Sender);
    void __fastcall OnControlExit(TObject *Sender);
-   void __fastcall lstInputStreamsClick(TObject *Sender);
-   void __fastcall btnRemoveStreamClick(TObject *Sender);
+   void __fastcall lstInputDataSetsClick(TObject *Sender);
+   void __fastcall btnRemoveDataSetClick(TObject *Sender);
    void __fastcall edtCaseFileNameChange(TObject *Sender);
    void __fastcall edtControlFileNameChange(TObject *Sender);
    void __fastcall edtPopFileNameChange(TObject *Sender);
@@ -175,7 +175,7 @@ __published:	// IDE-managed Components
    std::vector<AnsiString>  gvCaseFiles;
    std::vector<AnsiString>  gvControlFiles;
    std::vector<AnsiString>  gvPopFiles;
-   int                      giStreamNum;             /** number of additional input streams added
+   int                      giDataSetNum;             /** number of additional input datasets added
                                                          does not go down with removals */
    static const int         MAXIMUM_ADDITIONAL_SETS;         /* maximum number of additional input sets */
 
@@ -183,8 +183,8 @@ __published:	// IDE-managed Components
    void                     EnableAdjustmentsGroup(bool bEnable);
    void                     EnableAdjustmentForSpatialOptionsGroup(bool bEnable, bool bEnableStratified);
    void                     EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage, bool bCalculatedLog);
-   void                     EnableDataStreamList(bool bEnable);
-   void                     EnableDataStreamPurposeControls(bool bEnable);
+   void                     EnableDataSetList(bool bEnable);
+   void                     EnableDataSetPurposeControls(bool bEnable);
    void                     EnableNewButton();
    void                     EnableRemoveButton();
    void                     EnableInputFileEdits(bool bEnable);

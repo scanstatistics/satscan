@@ -21,15 +21,15 @@ class CSpaceTimeAnalysis : public CAnalysis {
     CMeasureList                      * gpMeasureList;       /** measure list object utilized in calculated simulation ratio */
     CTimeIntervals                    * gpTimeIntervals;     /** iterates through temporal windows of cluster data */
 
-    virtual void                        AllocateSimulationObjects(const AbtractDataStreamGateway& DataGateway);
-    virtual void                        AllocateTopClustersObjects(const AbtractDataStreamGateway& DataGateway);
-    virtual const CCluster &            CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway& DataGateway);
+    virtual void                        AllocateSimulationObjects(const AbtractDataSetGateway& DataGateway);
+    virtual void                        AllocateTopClustersObjects(const AbtractDataSetGateway& DataGateway);
+    virtual const CCluster &            CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway& DataGateway);
 
   public:
     CSpaceTimeAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CSpaceTimeAnalysis();
 
-    virtual double                      MonteCarlo(const DataStreamInterface& Interface);
+    virtual double                      MonteCarlo(const DataSetInterface& Interface);
 };
 //***********************************************************************************
 #endif

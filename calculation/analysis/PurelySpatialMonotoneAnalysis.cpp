@@ -22,18 +22,18 @@ CPSMonotoneAnalysis::~CPSMonotoneAnalysis() {
     for each simulation.
     NOTE: This analysis has not been optimized to 'pre' allocate objects used in
           simulation process. This function is only a shell.                     */
-void CPSMonotoneAnalysis::AllocateSimulationObjects(const AbtractDataStreamGateway& DataGateway) {}
+void CPSMonotoneAnalysis::AllocateSimulationObjects(const AbtractDataSetGateway& DataGateway) {}
 
 /** Allocates objects used during calculation of most likely clusters, instead
     of repeated allocations for each simulation.
     NOTE: This analysis has not been optimized to 'pre' allocate objects used in
           process of finding most likely clusters. This function is only a shell. */
-void CPSMonotoneAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGateway& DataGateway) {}
+void CPSMonotoneAnalysis::AllocateTopClustersObjects(const AbtractDataSetGateway& DataGateway) {}
 
 /** Returns cluster centered at grid point nCenter, with the greatest loglikelihood ratio.
     Caller should not assume that returned reference is persistent, but should either call
     Clone() method or overloaded assignment operator. */
-const CCluster & CPSMonotoneAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway& DataGateway) {
+const CCluster & CPSMonotoneAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway& DataGateway) {
   CPSMonotoneCluster          * C_High = 0;
   CPSMonotoneCluster          * C_Low = 0;
   count_t                    ** ppCases(DataGateway.GetDataSetInterface(0/*for now*/).GetCaseArray());
@@ -85,7 +85,7 @@ const CCluster & CPSMonotoneAnalysis::CalculateTopCluster(tract_t tCenter, const
 }
 
 /** Returns loglikelihood ratio for Monte Carlo replication. */
-double CPSMonotoneAnalysis::MonteCarlo(const DataStreamInterface& Interface) {
+double CPSMonotoneAnalysis::MonteCarlo(const DataSetInterface& Interface) {
    CPSMonotoneCluster           MaxCluster(gpClusterDataFactory, Interface, gParameters.GetAreaScanRateType());
    CPSMonotoneCluster           C(gpClusterDataFactory, Interface, gParameters.GetAreaScanRateType());
    CPSMonotoneCluster           C_High(gpClusterDataFactory, Interface, HIGH);

@@ -3,9 +3,9 @@
 #ifndef stsMonteCarloSimFunctorH
 #define stsMonteCarloSimFunctorH
 
-//#include "DataStreamHandler.h"
+//#include "DataSetHandler.h"
 #include "stsLogLikelihood.h"
-//#include "DataStreamGateway.h"
+//#include "DataSetGateway.h"
 #include "AnalysisRun.h"
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/mutex.hpp"
@@ -24,7 +24,7 @@ public:
 private:
   boost::mutex                       & gMutex;
   CSaTScanData const &                 gDataHub;
-  boost::shared_ptr<AbtractDataStreamGateway> gpDataGateway;
+  boost::shared_ptr<AbtractDataSetGateway> gpDataGateway;
   boost::shared_ptr<CAnalysis>         gpAnalysis;
   boost::shared_ptr<SimulationDataContainer_t> gpSimulationDataContainer;
   boost::shared_ptr<RandomizerContainer_t>     gpRandomizationContainer;
@@ -41,11 +41,11 @@ public:
      gpRandomizationContainer(pRandomizationContainer)
   {
     //get container for simulation data - this data will be modified in the randomize process
-    gDataHub.GetDataStreamHandler().GetSimulationDataContainer(*gpSimulationDataContainer);
+    gDataHub.GetDataSetHandler().GetSimulationDataContainer(*gpSimulationDataContainer);
     //get container of data randomizers - these will modify the simulation data
-    gDataHub.GetDataStreamHandler().GetRandomizerContainer(*gpRandomizationContainer);
+    gDataHub.GetDataSetHandler().GetRandomizerContainer(*gpRandomizationContainer);
     //get data gateway given data stream handler's real data and simulated data structures
-    gpDataGateway.reset(gDataHub.GetDataStreamHandler().GetNewSimulationDataGateway(*gpSimulationDataContainer));
+    gpDataGateway.reset(gDataHub.GetDataSetHandler().GetNewSimulationDataGateway(*gpSimulationDataContainer));
     //allocate appropriate data members for simulation algorithm
     gpAnalysis->AllocateSimulationObjects(*gpDataGateway);
   }

@@ -246,7 +246,7 @@ void IniParameterFileAccess::ReadMultipleDataSetsSettings(const ZdIniFile& Sourc
     //Synchronize collections of data stream filesnames so that we can ask for
     //any file of a particular stream, even if blank. This keeps the same behavior
     //as when there was only one data stream.
-    gParameters.SetNumDataStreams(iMostStreams);
+    gParameters.SetNumDataSets(iMostStreams);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadMultipleDataSetsSettings()","IniParameterFileAccess");
@@ -576,25 +576,25 @@ void IniParameterFileAccess::WriteMultipleDataSetsSettings(ZdIniFile& WriteFile)
   const char  * sSectionName, * sBaseKey;
 
   try {
-    WriteIniParameter(WriteFile, MULTI_DATASET_PURPOSE_TYPE, AsString(s, gParameters.GetMultipleDataStreamPurposeType()),
+    WriteIniParameter(WriteFile, MULTI_DATASET_PURPOSE_TYPE, AsString(s, gParameters.GetMultipleDataSetPurposeType()),
                       " multiple data sets purpose type (multivariate=0, adjustment=1)");
 
     if (GetSpecifications().GetMultipleParameterIniInfo(CASEFILE, &sSectionName, &sBaseKey)) {
-      for (size_t t=1; t < gParameters.GetNumDataStreams(); ++t) {
+      for (size_t t=1; t < gParameters.GetNumDataSets(); ++t) {
          s.printf("%s%i", sBaseKey, t + 1);
          sComment.printf(" case data filename (additional data set %i)", t + 1);
          WriteIniParameterAsKey(WriteFile, sSectionName, s.GetCString(), gParameters.GetCaseFileName(t + 1).c_str(), sComment.GetCString());
       }
     }
     if (GetSpecifications().GetMultipleParameterIniInfo(CONTROLFILE, &sSectionName, &sBaseKey)) {
-      for (size_t t=1; t < gParameters.GetNumDataStreams(); ++t) {
+      for (size_t t=1; t < gParameters.GetNumDataSets(); ++t) {
          s.printf("%s%i", sBaseKey, t + 1);
          sComment.printf(" control data filename (additional data set %i)", t + 1);
          WriteIniParameterAsKey(WriteFile, sSectionName, s.GetCString(), gParameters.GetControlFileName(t + 1).c_str(), sComment.GetCString());
       }
     }
     if (GetSpecifications().GetMultipleParameterIniInfo(POPFILE, &sSectionName, &sBaseKey)) {
-      for (size_t t=1; t < gParameters.GetNumDataStreams(); ++t) {
+      for (size_t t=1; t < gParameters.GetNumDataSets(); ++t) {
          s.printf("%s%i", sBaseKey, t + 1);
          sComment.printf(" population data filename (additional data set %i)", t + 1);
          WriteIniParameterAsKey(WriteFile, sSectionName, s.GetCString(), gParameters.GetPopulationFileName(t + 1).c_str(), sComment.GetCString());

@@ -23,7 +23,7 @@ C_ST_PS_PT_Analysis::~C_ST_PS_PT_Analysis() {
 /** Allocates objects used during simulations, instead of repeated allocations
     for each simulation. Which objects that are allocated depends on whether
     the simluations process uses same process as real data or uses measure list. */
-void C_ST_PS_PT_Analysis::AllocateSimulationObjects(const AbtractDataStreamGateway& DataGateway) {
+void C_ST_PS_PT_Analysis::AllocateSimulationObjects(const AbtractDataSetGateway& DataGateway) {
   IncludeClustersType           eIncludeClustersType;
 
   try {
@@ -55,7 +55,7 @@ void C_ST_PS_PT_Analysis::AllocateSimulationObjects(const AbtractDataStreamGatew
 /** Given data gate way, calculates and collects most likely clusters about
     each grid point. Collection of clusters are sorted by loglikelihood ratio
     and condensed based upon overlapping parameter settings.                */
-void C_ST_PS_PT_Analysis::FindTopClusters(const AbtractDataStreamGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
+void C_ST_PS_PT_Analysis::FindTopClusters(const AbtractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
   IncludeClustersType           eIncludeClustersType;
 
   //calculate top cluster over all space-time
@@ -80,7 +80,7 @@ void C_ST_PS_PT_Analysis::FindTopClusters(const AbtractDataStreamGateway& DataGa
 }
 
 /** Returns greatest calculated log likelihood ratio. */
-double C_ST_PS_PT_Analysis::FindTopRatio(const AbtractDataStreamGateway& DataGateway) {
+double C_ST_PS_PT_Analysis::FindTopRatio(const AbtractDataSetGateway& DataGateway) {
   int                   i;
   double                dMaxLogLikelihoodRatio=0;
 
@@ -101,7 +101,7 @@ void C_ST_PS_PT_Analysis::Init() {
 }
 
 /** Returns loglikelihood for Monte Carlo replication. */
-double C_ST_PS_PT_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
+double C_ST_PS_PT_Analysis::MonteCarlo(const DataSetInterface & Interface) {
   tract_t                       k, i, * pNeighborCounts, ** ppSorted_Tract_T;
   unsigned short             ** ppSorted_UShort_T;
 
@@ -130,7 +130,7 @@ double C_ST_PS_PT_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
 }
 
 /** Returns loglikelihood for Monte Carlo Prospective replication. */
-double C_ST_PS_PT_Analysis::MonteCarloProspective(const DataStreamInterface & Interface) {
+double C_ST_PS_PT_Analysis::MonteCarloProspective(const DataSetInterface & Interface) {
   tract_t                 k, i, * pNeighborCounts, ** ppSorted_Tract_T;
   unsigned short       ** ppSorted_UShort_T;
 

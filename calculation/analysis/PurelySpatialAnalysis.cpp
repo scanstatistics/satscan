@@ -30,7 +30,7 @@ CPurelySpatialAnalysis::~CPurelySpatialAnalysis(){
 
 /** Allocates objects used during Monte Carlo simulations instead of repeated
     allocations for each simulation. This method must be called prior to MonteCarlo(). */
-void CPurelySpatialAnalysis::AllocateSimulationObjects(const AbtractDataStreamGateway& DataGateway) {
+void CPurelySpatialAnalysis::AllocateSimulationObjects(const AbtractDataSetGateway& DataGateway) {
   try {
     delete gpClusterComparator; gpClusterComparator=0;
     //create simulation objects based upon which process used to perform simulations
@@ -54,7 +54,7 @@ void CPurelySpatialAnalysis::AllocateSimulationObjects(const AbtractDataStreamGa
 
 /** Allocates objects used during calculation of most likely clusters, instead
     of repeated allocations. This method must be called prior to CalculateTopCluster(). */
-void CPurelySpatialAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGateway& DataGateway) {
+void CPurelySpatialAnalysis::AllocateTopClustersObjects(const AbtractDataSetGateway& DataGateway) {
   try {
     delete gpClusterComparator; gpClusterComparator=0;
     gpClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, gParameters.GetAreaScanRateType());
@@ -70,7 +70,7 @@ void CPurelySpatialAnalysis::AllocateTopClustersObjects(const AbtractDataStreamG
 /** Returns cluster centered at grid point nCenter, with the greatest loglikelihood ratio.
     Caller should not assume that returned reference is persistent, but should either call
     Clone() method or overloaded assignment operator. */
-const CCluster& CPurelySpatialAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway& DataGateway) {
+const CCluster& CPurelySpatialAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway& DataGateway) {
   int                           i, j;
 
   gpTopShapeClusters->Reset(tCenter);
@@ -93,7 +93,7 @@ void CPurelySpatialAnalysis::Init() {
 }
 
 /** Returns loglikelihood ratio for Monte Carlo replication. */
-double CPurelySpatialAnalysis::MonteCarlo(const DataStreamInterface& Interface) {
+double CPurelySpatialAnalysis::MonteCarlo(const DataSetInterface& Interface) {
   tract_t               k, i, * pNeighborCounts, ** ppSorted_Tract_T;
   unsigned short     ** ppSorted_UShort_T;
 

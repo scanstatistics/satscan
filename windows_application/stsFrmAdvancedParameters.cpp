@@ -9,7 +9,7 @@
 #pragma link "TSGrid"
 #pragma resource "*.dfm"
 
-/** Maximum number of additional input streams permitted. */
+/** Maximum number of additional input datasets permitted. */
 const int TfrmAdvancedParameters::MAXIMUM_ADDITIONAL_SETS = 3;
 
 /** class constructor */
@@ -202,10 +202,10 @@ void __fastcall TfrmAdvancedParameters::btnPopImportClick(TObject *Sender) {
 void __fastcall TfrmAdvancedParameters::btnNewClick(TObject *Sender) {
    try {
      // add new name to list box
-     EnableDataStreamList(true);
-     EnableDataStreamPurposeControls(true);
-     lstInputStreams->Items->Add("Data Set " + IntToStr(giStreamNum++));
-     lstInputStreams->ItemIndex = (lstInputStreams->Items->Count-1);
+     EnableDataSetList(true);
+     EnableDataSetPurposeControls(true);
+     lstInputDataSets->Items->Add("Data Set " + IntToStr(giDataSetNum++));
+     lstInputDataSets->ItemIndex = (lstInputDataSets->Items->Count-1);
 
      // enable and clear the edit boxes
      EnableInputFileEdits(true);
@@ -222,54 +222,54 @@ void __fastcall TfrmAdvancedParameters::btnNewClick(TObject *Sender) {
    }
    catch (ZdException &x) {
      x.AddCallpath("btnNewClick()","TfrmAdvancedParameters");
-     EnableDataStreamList(lstInputStreams->Items->Count);
-     EnableDataStreamPurposeControls(lstInputStreams->Items->Count);
+     EnableDataSetList(lstInputDataSets->Items->Count);
+     EnableDataSetPurposeControls(lstInputDataSets->Items->Count);
      DisplayBasisException(this, x);
    }
 }
 //---------------------------------------------------------------------------
-// when user clicks on an input streams name, and the Remove button, remove the
-// details and the input stream name
-void __fastcall TfrmAdvancedParameters::btnRemoveStreamClick(TObject *Sender){
-   int iStreamNum = -1;
+// when user clicks on an input dataset name, and the Remove button, remove the
+// details and the input dataset name
+void __fastcall TfrmAdvancedParameters::btnRemoveDataSetClick(TObject *Sender){
+   int iDataSetNum = -1;
 
    try {
-      // determine the input stream selected
-      iStreamNum = lstInputStreams->ItemIndex;
+      // determine the input dataset selected
+      iDataSetNum = lstInputDataSets->ItemIndex;
       // remove files
       edtCaseFileName->Text = "";
-      gvCaseFiles.erase(gvCaseFiles.begin() + iStreamNum);
+      gvCaseFiles.erase(gvCaseFiles.begin() + iDataSetNum);
       edtControlFileName->Text = "";
-      gvControlFiles.erase(gvControlFiles.begin() + iStreamNum);
+      gvControlFiles.erase(gvControlFiles.begin() + iDataSetNum);
       edtPopFileName->Text = "";
-      gvPopFiles.erase(gvPopFiles.begin() + iStreamNum);
+      gvPopFiles.erase(gvPopFiles.begin() + iDataSetNum);
 
       // update remaining list box names
-      for (int i=iStreamNum+1; i < lstInputStreams->Items->Count ;i++) {
-         AnsiString s = (lstInputStreams->Items->Strings[i]);
+      for (int i=iDataSetNum+1; i < lstInputDataSets->Items->Count ;i++) {
+         AnsiString s = (lstInputDataSets->Items->Strings[i]);
          int num = s.SubString(10, 2).ToInt();
-         lstInputStreams->Items->Strings[i] = ("Data Set " + IntToStr(--num));
+         lstInputDataSets->Items->Strings[i] = ("Data Set " + IntToStr(--num));
       }
       // remove list box name
-      lstInputStreams->Items->Delete(iStreamNum);
-      EnableDataStreamList(lstInputStreams->Items->Count);
-      EnableDataStreamPurposeControls(lstInputStreams->Items->Count);
+      lstInputDataSets->Items->Delete(iDataSetNum);
+      EnableDataSetList(lstInputDataSets->Items->Count);
+      EnableDataSetPurposeControls(lstInputDataSets->Items->Count);
       // select/highlight previous name in box
-      if (lstInputStreams->Items->Count) {
-         iStreamNum = (iStreamNum > 0) ? iStreamNum-1 : 0;
-         lstInputStreams->ItemIndex = iStreamNum;
-         lstInputStreams->OnClick(this);
+      if (lstInputDataSets->Items->Count) {
+         iDataSetNum = (iDataSetNum > 0) ? iDataSetNum-1 : 0;
+         lstInputDataSets->ItemIndex = iDataSetNum;
+         lstInputDataSets->OnClick(this);
       }
       else
          EnableInputFileEdits(false);
-      giStreamNum--;
+      giDataSetNum--;
 
       EnableNewButton();
       EnableRemoveButton();
       DoControlExit();
    }
    catch (ZdException &x) {
-     x.AddCallpath("lstInputStreamsClick()","TfrmAdvancedParameters");
+     x.AddCallpath("lstInputDataSetsClick()","TfrmAdvancedParameters");
      DisplayBasisException(this, x);
    }
 }
@@ -346,12 +346,12 @@ void __fastcall TfrmAdvancedParameters::edtAdjustmentsByRelativeRisksFileChange(
 
 /** Event triggered when TEdit for case file changes. */
 void __fastcall TfrmAdvancedParameters::edtCaseFileNameChange(TObject *Sender) {
-  gvCaseFiles.at(lstInputStreams->ItemIndex) = edtCaseFileName->Text;
+  gvCaseFiles.at(lstInputDataSets->ItemIndex) = edtCaseFileName->Text;
 }
 
 /** Event triggered when TEdit for control file changes. */
 void __fastcall TfrmAdvancedParameters::edtControlFileNameChange(TObject *Sender) {
-  gvControlFiles.at(lstInputStreams->ItemIndex) = edtControlFileName->Text;
+  gvControlFiles.at(lstInputDataSets->ItemIndex) = edtControlFileName->Text;
 }
 
 /** event triggered when end window end ranges year, month or day control is exited */
@@ -437,7 +437,7 @@ void __fastcall TfrmAdvancedParameters::edtMaxTemporalClusterSizeUnitsExit(TObje
 
 /** Event triggered when TEdit for population file changes. */
 void __fastcall TfrmAdvancedParameters::edtPopFileNameChange(TObject *Sender) {
-  gvPopFiles.at(lstInputStreams->ItemIndex) = edtPopFileName->Text;
+  gvPopFiles.at(lstInputDataSets->ItemIndex) = edtPopFileName->Text;
 }
 
 //---------------------------------------------------------------------------
@@ -575,16 +575,16 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
 }
 //---------------------------------------------------------------------------
 /** Enables/disables TListBox that list defined data sets */
-void TfrmAdvancedParameters::EnableDataStreamList(bool bEnable) {
-  lstInputStreams->Enabled = bEnable;
-  lstInputStreams->Color = lstInputStreams->Enabled ? clWindow : clInactiveBorder;
+void TfrmAdvancedParameters::EnableDataSetList(bool bEnable) {
+  lstInputDataSets->Enabled = bEnable;
+  lstInputDataSets->Color = lstInputDataSets->Enabled ? clWindow : clInactiveBorder;
 }
 
 /** Enables/disables controls that indicate purpose of additional data sets. */
-void TfrmAdvancedParameters::EnableDataStreamPurposeControls(bool bEnable) {
-  lblMultipleStreamPurpose->Enabled = bEnable;
+void TfrmAdvancedParameters::EnableDataSetPurposeControls(bool bEnable) {
+  lblMultipleDataSetPurpose->Enabled = bEnable;
   rdoMultivariate->Enabled = bEnable;
-  rdoAdjustmentByStreams->Enabled = bEnable;
+  rdoAdjustmentByDataSets->Enabled = bEnable;
 }
 
 /** Enables dates of flexible temporal window and prospective surveillance groups.
@@ -664,7 +664,7 @@ void TfrmAdvancedParameters::EnableInputFileEdits(bool bEnable) {
 //---------------------------------------------------------------------------
 //** enables or disables the New button on the Input tab
 void TfrmAdvancedParameters::EnableNewButton() {
-  btnNewStream->Enabled = (lstInputStreams->Items->Count < MAXIMUM_ADDITIONAL_SETS) ? true: false;
+  btnNewDataSet->Enabled = (lstInputDataSets->Items->Count < MAXIMUM_ADDITIONAL_SETS) ? true: false;
 }
 //---------------------------------------------------------------------------
 /** enables adjustment options controls */
@@ -713,7 +713,7 @@ void TfrmAdvancedParameters::EnableProspectiveSurveillanceGroup(bool bEnable) {
 //---------------------------------------------------------------------------
 //** enables or disables the New button on the Input tab
 void TfrmAdvancedParameters::EnableRemoveButton() {
-  btnRemoveStream->Enabled = (lstInputStreams->Items->Count > 0) ? true: false;
+  btnRemoveDataSet->Enabled = (lstInputDataSets->Items->Count > 0) ? true: false;
 }
 //---------------------------------------------------------------------------
 /** enables or disables the spatial options group control */
@@ -893,7 +893,7 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
 bool TfrmAdvancedParameters::GetDefaultsSetForInputOptions() {
    bool bReturn = true;
 
-   bReturn &= (lstInputStreams->Items->Count == 0);
+   bReturn &= (lstInputDataSets->Items->Count == 0);
    bReturn &= (rdoMultivariate->Checked);
 
    return bReturn;
@@ -973,7 +973,7 @@ void TfrmAdvancedParameters::Init() {
   gpFocusControl=0;
   rdgCriteriaSecClusters->ItemIndex = 0;
   giCategory = 0;
-  giStreamNum = 2;
+  giDataSetNum = 2;
 }
 //---------------------------------------------------------------------------
 /** Modally shows import dialog. */
@@ -1005,22 +1005,22 @@ void TfrmAdvancedParameters::LaunchImporter(const char * sFileName, InputFileTyp
 }
 
 //---------------------------------------------------------------------------
-// when user clicks on an input streams name, display the details in the edit
+// when user clicks on an input dataset name, display the details in the edit
 // boxes above the list box
-void __fastcall TfrmAdvancedParameters::lstInputStreamsClick(TObject *Sender) {
-   int iStreamNum = -1;
+void __fastcall TfrmAdvancedParameters::lstInputDataSetsClick(TObject *Sender) {
+   int iDataSetNum = -1;
 
    try {
-      // determine the input stream selected
-      iStreamNum = lstInputStreams->ItemIndex;
+      // determine the input dataset selected
+      iDataSetNum = lstInputDataSets->ItemIndex;
       // set the files
       EnableInputFileEdits(true);
-      edtCaseFileName->Text = gvCaseFiles.at(iStreamNum);
-      edtControlFileName->Text = gvControlFiles.at(iStreamNum);
-      edtPopFileName->Text = gvPopFiles.at(iStreamNum);
+      edtCaseFileName->Text = gvCaseFiles.at(iDataSetNum);
+      edtControlFileName->Text = gvControlFiles.at(iDataSetNum);
+      edtPopFileName->Text = gvPopFiles.at(iDataSetNum);
    }
    catch (ZdException &x) {
-     x.AddCallpath("lstInputStreamsClick()","TfrmAdvancedParameters");
+     x.AddCallpath("lstInputDataSetsClick()","TfrmAdvancedParameters");
      DisplayBasisException(this, x);
    }
 }
@@ -1147,15 +1147,15 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
     ref.SetCriteriaForReportingSecondaryClusters((CriteriaSecondaryClustersType)rdgCriteriaSecClusters->ItemIndex);
 
     // save the input files on Input tab
-    ref.SetNumDataStreams(lstInputStreams->Items->Count + 1);
-    if (lstInputStreams->Items->Count) {
-       for (int i = 0; i < lstInputStreams->Items->Count; i++) {
+    ref.SetNumDataSets(lstInputDataSets->Items->Count + 1);
+    if (lstInputDataSets->Items->Count) {
+       for (int i = 0; i < lstInputDataSets->Items->Count; i++) {
           ref.SetCaseFileName((gvCaseFiles.at(i)).c_str(), false, i+2);
           ref.SetControlFileName((gvControlFiles.at(i)).c_str(), false, i+2);
           ref.SetPopulationFileName((gvPopFiles.at(i)).c_str(), false, i+2);
        }
     }
-    ref.SetMultipleDataStreamPurposeType(rdoAdjustmentByStreams->Checked ? ADJUSTMENT: MULTIVARIATE);
+    ref.SetMultipleDataSetPurposeType(rdoAdjustmentByDataSets->Checked ? ADJUSTMENT: MULTIVARIATE);
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveParameterSettings()","TfrmAdvancedParameters");
@@ -1221,15 +1221,15 @@ void TfrmAdvancedParameters::SetDefaultsForInputTab() {
    edtCaseFileName->Text = "";
    edtControlFileName->Text = "";
    edtPopFileName->Text = "";
-   lstInputStreams->Items->Clear();
-   EnableDataStreamList(lstInputStreams->Items->Count);
-   EnableDataStreamPurposeControls(lstInputStreams->Items->Count);
+   lstInputDataSets->Items->Clear();
+   EnableDataSetList(lstInputDataSets->Items->Count);
+   EnableDataSetPurposeControls(lstInputDataSets->Items->Count);
 
    // clear the non-visual components
    gvCaseFiles.clear();
    gvControlFiles.clear();
    gvPopFiles.clear();
-   giStreamNum = 2;
+   giDataSetNum = 2;
    EnableNewButton();
    EnableRemoveButton();
    EnableInputFileEdits(false);
@@ -1411,18 +1411,18 @@ void TfrmAdvancedParameters::Setup() {
 
       // Input tab
       EnableInputFileEdits(false);
-      for (unsigned int i = 1; i < ref.GetNumDataStreams(); i++) { // multiple data sets
-         lstInputStreams->Items->Add("Data Set " + IntToStr(i+1));
+      for (unsigned int i = 1; i < ref.GetNumDataSets(); i++) { // multiple data sets
+         lstInputDataSets->Items->Add("Data Set " + IntToStr(i+1));
          gvCaseFiles.push_back(AnsiString(ref.GetCaseFileName(i+1).c_str()));
          gvControlFiles.push_back(AnsiString(ref.GetControlFileName(i+1).c_str()));
          gvPopFiles.push_back(AnsiString(ref.GetPopulationFileName(i+1).c_str()));
-         giStreamNum++;
+         giDataSetNum++;
       }
-      EnableDataStreamList(lstInputStreams->Items->Count);
-      EnableDataStreamPurposeControls(lstInputStreams->Items->Count);
-      lstInputStreams->ItemIndex = -1;
-      rdoMultivariate->Checked = ref.GetMultipleDataStreamPurposeType() == MULTIVARIATE;
-      rdoAdjustmentByStreams->Checked = ref.GetMultipleDataStreamPurposeType() == ADJUSTMENT;
+      EnableDataSetList(lstInputDataSets->Items->Count);
+      EnableDataSetPurposeControls(lstInputDataSets->Items->Count);
+      lstInputDataSets->ItemIndex = -1;
+      rdoMultivariate->Checked = ref.GetMultipleDataSetPurposeType() == MULTIVARIATE;
+      rdoAdjustmentByDataSets->Checked = ref.GetMultipleDataSetPurposeType() == ADJUSTMENT;
     }
     catch (ZdException &x) {
       x.AddCallpath("Setup()","TfrmAdvancedParameters");
@@ -1446,9 +1446,9 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
         for (i=1; i < PageControl->PageCount; i++)
            PageControl->Pages[i]->TabVisible=false;
         // give control to list box if it contains items but none are selected
-        if (lstInputStreams->Items->Count && lstInputStreams->ItemIndex == -1) {
-           lstInputStreams->ItemIndex = 0;
-           lstInputStreams->OnClick(this);
+        if (lstInputDataSets->Items->Count && lstInputDataSets->ItemIndex == -1) {
+           lstInputDataSets->ItemIndex = 0;
+           lstInputDataSets->OnClick(this);
         }
         EnableNewButton();
         EnableRemoveButton();
@@ -1595,35 +1595,35 @@ void TfrmAdvancedParameters::ValidateInputFilesAtInput() {
 void TfrmAdvancedParameters::ValidateInputFiles() {
   bool bAnalysisIsPurelyTemporal = gAnalysisSettings.GetAnalysisControlType() == PURELYTEMPORAL ||
                                    gAnalysisSettings.GetAnalysisControlType() == PROSPECTIVEPURELYTEMPORAL;
-  bool bFirstDataStreamHasPopulationFile = !gAnalysisSettings.edtPopFileName->Text.IsEmpty();
+  bool bFirstDataSetHasPopulationFile = !gAnalysisSettings.edtPopFileName->Text.IsEmpty();
 
   try {
     for (unsigned int i=0; i < gvCaseFiles.size(); i++){
-       //Ensure that controls have this data stream display, should we need to
+       //Ensure that controls have this dataset display, should we need to
        //show window regarding an error with settings.
-       lstInputStreams->ItemIndex = i;
-       lstInputStreams->OnClick(this);
-       //validate the case file for this data stream
+       lstInputDataSets->ItemIndex = i;
+       lstInputDataSets->OnClick(this);
+       //validate the case file for this dataset
        if (gvCaseFiles.at(i).IsEmpty())
           GenerateAFException("Please specify a case file for this additional data set.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
        if (!File_Exists(gvCaseFiles.at(i).c_str()))
          GenerateAFException("Case file could not be opened for this additional data set.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
-       //validate the control file for this data stream - Bernoulli model only
+       //validate the control file for this dataset - Bernoulli model only
        if (gAnalysisSettings.GetModelControlType() == BERNOULLI) {
          if (gvControlFiles.at(i).IsEmpty())
            GenerateAFException("For the Bernoulli model, please specify a control file for this additional data set.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
          if (!File_Exists(gvControlFiles.at(i).c_str()))
            GenerateAFException("Control file could not be opened for this additional data set.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
        }
-       //validate the population file for this data stream-  Poisson model only
+       //validate the population file for this dataset-  Poisson model only
        if (gAnalysisSettings.GetModelControlType() == POISSON) {
          //For purely temporal analyses, the population file is optional. But if one first
-         //data stream does or does not supply a population file; the other data streams must do the same.
+         //dataset does or does not supply a population file; the other dataset must do the same.
          if (bAnalysisIsPurelyTemporal) {
-           if ((gvPopFiles.at(i).IsEmpty() && bFirstDataStreamHasPopulationFile) ||
-                (!gvPopFiles.at(i).IsEmpty() && !bFirstDataStreamHasPopulationFile))
+           if ((gvPopFiles.at(i).IsEmpty() && bFirstDataSetHasPopulationFile) ||
+                (!gvPopFiles.at(i).IsEmpty() && !bFirstDataSetHasPopulationFile))
              GenerateAFException("For the Poisson model with purely temporal analyses, the population file is optional but all data\n"
-                                 "streams must either specify a population file or omit it.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
+                                 "sets must either specify a population file or omit it.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
            else if (!gvPopFiles.at(i).IsEmpty() && !File_Exists(gvPopFiles.at(i).c_str()))
              GenerateAFException("Population file could not be opened for this additional data set.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
          }

@@ -20,15 +20,15 @@ class CPurelySpatialAnalysis : public CAnalysis {
     void                        Setup();
 
   protected:
-    virtual void                AllocateTopClustersObjects(const AbtractDataStreamGateway& DataGateway);
-    virtual void                AllocateSimulationObjects(const AbtractDataStreamGateway& DataGateway);
-    virtual const CCluster    & CalculateTopCluster(tract_t nCenter, const AbtractDataStreamGateway& DataGateway);
+    virtual void                AllocateTopClustersObjects(const AbtractDataSetGateway& DataGateway);
+    virtual void                AllocateSimulationObjects(const AbtractDataSetGateway& DataGateway);
+    virtual const CCluster    & CalculateTopCluster(tract_t nCenter, const AbtractDataSetGateway& DataGateway);
 
   public:
     CPurelySpatialAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CPurelySpatialAnalysis();
 
-    virtual double              MonteCarlo(const DataStreamInterface& Interface);
+    virtual double              MonteCarlo(const DataSetInterface& Interface);
 };
 //*****************************************************************************
 #endif

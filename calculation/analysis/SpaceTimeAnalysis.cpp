@@ -32,7 +32,7 @@ CSpaceTimeAnalysis::~CSpaceTimeAnalysis() {
 /** Allocates objects used during simulations, instead of repeated allocations
     for each simulation. Which objects that are allocated depends on whether
     the simluations process uses same process as real data or uses measure list. */
-void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbtractDataStreamGateway& DataGateway) {
+void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbtractDataSetGateway& DataGateway) {
   IncludeClustersType           eIncludeClustersType;
 
   try {
@@ -73,7 +73,7 @@ void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbtractDataStreamGatewa
 
 /** Allocates objects used during calculation of most likely clusters, instead
     of repeated allocations for each grid point.                             */
-void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGateway& DataGateway) {
+void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbtractDataSetGateway& DataGateway) {
   IncludeClustersType           eIncludeClustersType;
 
   try {
@@ -102,7 +102,7 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGatew
     likelihood ratio . Caller should not assume that returned reference is
     persistent, but should either call Clone() method or overloaded assignment
     operator. */
-const CCluster & CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway& DataGateway) {
+const CCluster & CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway& DataGateway) {
   tract_t       k;
 
   gpTopShapeClusters->Reset(tCenter);
@@ -128,7 +128,7 @@ void CSpaceTimeAnalysis::Init() {
 }
 
 /** Returns log likelihood ratio for Monte Carlo replication. */
-double CSpaceTimeAnalysis::MonteCarlo(const DataStreamInterface& Interface) {
+double CSpaceTimeAnalysis::MonteCarlo(const DataSetInterface& Interface) {
   tract_t                       k, i, * pNeighborCounts, ** ppSorted_Tract_T;
   unsigned short             ** ppSorted_UShort_T;
 
