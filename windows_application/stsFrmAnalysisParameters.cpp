@@ -1340,7 +1340,7 @@ void TfrmAnalysis::SetMaxTemporalClusterSizeControl(float fMaxSize) {
     case TIMETYPE       : if (fMaxSize <= 0)
                             edtMaxTemporalClusterSizeUnits->Text = 1;
                           else
-                            edtMaxTemporalClusterSizeUnits->Text = fMaxSize;
+                            edtMaxTemporalClusterSizeUnits->Text = static_cast<int>(fMaxSize);
                           break;
     case PERCENTAGETYPE :
     default             : if (fMaxSize <= 0 || fMaxSize > 50)
@@ -1720,71 +1720,81 @@ void TfrmAnalysis::ValidateTemoralClusterSize() {
 
   try {
     //check whether we are specifiying temporal information
-    if (edtMaxTemporalClusterSize->Enabled) {
-      if (!edtMaxTemporalClusterSize->Text.Length() || atof(edtMaxTemporalClusterSize->Text.c_str()) == 0)
-        ZdException::GenerateNotification("Please specify a maximum temporal cluster size.","ValidateTemoralClusterSize()");
-
-      //check maximum temporal cluster size(as percentage pf population) is less
-      //than maximum for given probabilty model
-      if (rdoPercentageTemproal->Checked) {
-        dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
-        if (!(dValue > 0.0 && dValue <= (GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90))) {
-          sErrorMessage << "For the " << gParameters.GetProbabiltyModelTypeAsString(GetModelControlType());
-          sErrorMessage << " model, the maximum temporal cluster size, as a percent of study period, is ";
-          sErrorMessage << (GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90) << " percent.";
-          ZdException::GenerateNotification(sErrorMessage.GetCString(), "ValidateTemoralClusterSize()");
-        }
+    if (rdgTemporalOptions->Enabled) {
+      switch (GetMaxTemporalClusterSizeControlType()) {
+        case PERCENTAGETYPE :
+           if (!edtMaxTemporalClusterSize->Text.Length() || atof(edtMaxTemporalClusterSize->Text.c_str()) == 0) {
+             PageControl1->ActivePage = tbScanningWindow;
+             edtMaxTemporalClusterSize->SetFocus();
+             ZdException::GenerateNotification("Please specify a maximum temporal cluster size.","ValidateTemoralClusterSize()");
+           }
+           //check maximum temporal cluster size(as percentage pf population) is less
+           //than maximum for given probabilty model
+           dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
+           if (!(dValue > 0.0 && dValue <= (GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90))) {
+             sErrorMessage << "For the " << gParameters.GetProbabiltyModelTypeAsString(GetModelControlType());
+             sErrorMessage << " model, the maximum temporal cluster size, as a percent of study period, is ";
+             sErrorMessage << (GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90) << " percent.";
+             PageControl1->ActivePage = tbScanningWindow;
+             edtMaxTemporalClusterSize->SetFocus();
+             ZdException::GenerateNotification(sErrorMessage.GetCString(), "ValidateTemoralClusterSize()");
+           }
+           break;
+        case TIMETYPE :
+           if (!edtMaxTemporalClusterSizeUnits->Text.Length() || atof(edtMaxTemporalClusterSizeUnits->Text.c_str()) == 0) {
+             PageControl1->ActivePage = tbScanningWindow;
+             edtMaxTemporalClusterSizeUnits->SetFocus();
+             ZdException::GenerateNotification("Please specify a maximum temporal cluster size.","ValidateTemoralClusterSize()");
+           }
+           //check that maximum temporal cluster size(in time units) is less than
+           //maximum for probabilty model. Determine the number of days the maximum
+           //temporal cluster can be. Compare that against start date plus interval
+           //length units.
+           GetStudyPeriodStartDate(StartDate);
+           GetStudyPeriodEndDate(EndDate);
+           //to make start and end day inclusive - add 1 to EndDate date
+           EndDatePlusOne = EndDate;
+           EndDatePlusOne.AddDays(1);
+           ulMaxClusterDays = EndDatePlusOne.GetJulianDayFromCalendarStart() - StartDate.GetJulianDayFromCalendarStart();
+           ulMaxClusterDays = (GetModelControlType() == SPACETIMEPERMUTATION ? ulMaxClusterDays * 0.5 : ulMaxClusterDays * 0.9);
+           StartPlusIntervalDate = StartDate;
+           //add time interval length as units to modified start date
+           switch (GetTimeIntervalControlType()) {
+              case (YEAR)  : StartPlusIntervalDate.AddYears(static_cast<unsigned short>(atoi(edtMaxTemporalClusterSizeUnits->Text.c_str())));
+                             strcpy(Buffer,"year(s)");
+                             break;
+              case (MONTH) : StartPlusIntervalDate.AddMonths(static_cast<unsigned short>(atoi(edtMaxTemporalClusterSizeUnits->Text.c_str())));
+                             //to make start and end day inclusive - add one day to interval
+                             StartPlusIntervalDate.AddDays(1);
+                             strcpy(Buffer,"month(s)");
+                             break;
+              case (DAY)   : //to make start and end day inclusive - add interval length minus 1
+                             StartPlusIntervalDate.AddDays(static_cast<unsigned short>(atoi(edtMaxTemporalClusterSizeUnits->Text.c_str())));
+                             strcpy(Buffer,"day(s)");
+                             break;
+              default      : ZdGenerateException("Unknown interval unit \"%d\"", "ValidateTemoralClusterSize()", GetTimeIntervalControlType());
+           };
+           ulIntervalLengthInDays = StartPlusIntervalDate.GetJulianDayFromCalendarStart() - StartDate.GetJulianDayFromCalendarStart();
+           if (ulIntervalLengthInDays > ulMaxClusterDays) {
+             DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), StartDate.GetRawDate());
+             sErrorMessage << "For the study period starting on " << FilterBuffer << " and ending on ";
+             DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), EndDate.GetRawDate());
+             sErrorMessage << FilterBuffer << ",\na maximum temporal cluster size of " << edtMaxTemporalClusterSizeUnits->Text.c_str();
+             sErrorMessage << " " << Buffer << " is greater than " << (GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90);
+             sErrorMessage << " percent of study period.";
+             PageControl1->ActivePage = tbScanningWindow;
+             edtMaxTemporalClusterSizeUnits->SetFocus();
+             ZdException::GenerateNotification(sErrorMessage.GetCString(), "ValidateTemoralClusterSize()");
+           }
+           break;
+        default :
+          ZdException::GenerateNotification("Unknown temporal percentage type: %d.",
+                                            "ValidateTemoralClusterSize()", GetMaxTemporalClusterSizeControlType());
       }
-      //check that maximum temporal cluster size(in time units) is less than
-      //maximum for probabilty model. Determine the number of days the maximum
-      //temporal cluster can be. Compare that against start date plus interval
-      //length units.
-      else if (rdoTimeTemproal->Checked) {
-        GetStudyPeriodStartDate(StartDate);
-        GetStudyPeriodEndDate(EndDate);
-
-        //to make start and end day inclusive - add 1 to EndDate date
-        EndDatePlusOne = EndDate;
-        EndDatePlusOne.AddDays(1);
-        ulMaxClusterDays = EndDatePlusOne.GetJulianDayFromCalendarStart() - StartDate.GetJulianDayFromCalendarStart();
-        ulMaxClusterDays = (GetModelControlType() == SPACETIMEPERMUTATION ? ulMaxClusterDays * 0.5 : ulMaxClusterDays * 0.9);
-
-        StartPlusIntervalDate = StartDate;
-        //add time interval length as units to modified start date
-        switch (GetTimeIntervalControlType()) {
-            case      (YEAR)      : StartPlusIntervalDate.AddYears(static_cast<unsigned short>(atoi(edtMaxTemporalClusterSize->Text.c_str())));
-                                    strcpy(Buffer,"year(s)");
-                                    break;
-            case      (MONTH)     : StartPlusIntervalDate.AddMonths(static_cast<unsigned short>(atoi(edtMaxTemporalClusterSize->Text.c_str())));
-                                    //to make start and end day inclusive - add one day to interval
-                                    StartPlusIntervalDate.AddDays(1);
-                                    strcpy(Buffer,"month(s)");
-                                    break;
-            case      (DAY)       : //to make start and end day inclusive - add interval length minus 1
-                                    StartPlusIntervalDate.AddDays(static_cast<unsigned short>(atoi(edtMaxTemporalClusterSize->Text.c_str())));
-                                    strcpy(Buffer,"day(s)");
-                                    break;
-            default               : ZdGenerateException("Unknown interval unit \"%d\"", "ValidateTemoralClusterSize()", GetTimeIntervalControlType());
-        };
-        ulIntervalLengthInDays = StartPlusIntervalDate.GetJulianDayFromCalendarStart() - StartDate.GetJulianDayFromCalendarStart();
-        if (ulIntervalLengthInDays > ulMaxClusterDays) {
-          DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), StartDate.GetRawDate());
-          sErrorMessage << "For the study period starting on " << FilterBuffer << " and ending on ";
-          DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), EndDate.GetRawDate());
-          sErrorMessage << FilterBuffer << ",\na maximum temporal cluster size of " << edtMaxTemporalClusterSize->Text.c_str();
-          sErrorMessage << " " << Buffer << " is greater than " << (GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90);
-          sErrorMessage << " percent of study period.";
-          ZdException::GenerateNotification(sErrorMessage.GetCString(), "ValidateTemoralClusterSize()");
-        }
-      }
-      else
-        ZdException::GenerateNotification("Type specified as neither percentage nor time.", "ValidateTemoralClusterSize()");
-    }
+    }  
   }
   catch (ZdException & x) {
     x.AddCallpath("ValidateTemoralClusterSize()","TfrmAnalysis");
-    PageControl1->ActivePage = tbScanningWindow;
-    edtMaxTemporalClusterSize->SetFocus();
     throw;
   }
 }

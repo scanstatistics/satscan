@@ -923,7 +923,7 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 3
           Text = '1'
           OnExit = edtMaxTemporalClusterSizeUnitsExit
-          OnKeyPress = PositiveFloatKeyPress
+          OnKeyPress = NaturalNumberKeyPress
         end
       end
     end
