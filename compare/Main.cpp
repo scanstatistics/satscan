@@ -411,6 +411,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
         gvParameterResultsInfo.push_back(ParameterResultsInfo(sBuffer.c_str()));
         if (! FileExists(gvParameterResultsInfo.back().GetFilenameString())) {
           AddList("Parameter File Missing");
+          iItemIndex++;
           continue;
         }
 
