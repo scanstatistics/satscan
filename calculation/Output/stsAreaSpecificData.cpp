@@ -182,9 +182,26 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& pCluster, const CSaT
             pRecord = new AreaSpecificRecord(gbPrintPVal, gbIncludeRunHistory);
 
             pRecord->SetLocationID(vIdentifiers[j].c_str());
-            for(int i = 1; i < GetNumFields(); ++i) 
-               pRecord->SetFieldIsBlank(i, true);
 
+            // set the area specific fields to blank
+            pRecord->SetFieldIsBlank(GetFieldNumber(AREA_OBS_FIELD), true);
+            pRecord->SetFieldIsBlank(GetFieldNumber(AREA_EXP_FIELD), true);
+            pRecord->SetFieldIsBlank(GetFieldNumber(AREA_RSK_FIELD), true);
+
+            pRecord->SetClusterExpected(pCluster.m_nMeasure);
+            pRecord->SetClusterNumber(iClusterNumber);
+            pRecord->SetClusterObserved(pCluster.m_nCases);
+            pRecord->SetClusterRelativeRisk(pCluster.GetRelativeRisk(pData.GetMeasureAdjustment()));
+
+            // p value
+            if(gbPrintPVal) {
+               float fPVal = (float) pCluster.GetPVal(pData.m_pParameters->m_nReplicas);
+               pRecord->SetPValue(fPVal);
+            }
+
+            if (gbIncludeRunHistory)
+               pRecord->SetRunNumber(glRunNumber);
+               
             BaseOutputStorageClass::AddRecord(pRecord);
          }   // end for each identifier
       }
@@ -204,7 +221,7 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& pCluster, const CSaT
             float fPVal = (float) pCluster.GetPVal(pData.m_pParameters->m_nReplicas);
             pRecord->SetPValue(fPVal);
          }
-      
+
          if (gbIncludeRunHistory)
             pRecord->SetRunNumber(glRunNumber);
       
@@ -268,7 +285,7 @@ void stsAreaSpecificData::SetupFields() {
          ::CreateField(gvFields, P_VALUE_FLD, ZD_NUMBER_FLD, 12, 5, uwOffset);
       ::CreateField(gvFields, AREA_OBS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
       ::CreateField(gvFields, AREA_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      ::CreateField(gvFields, AREA_RSK_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);      
+      ::CreateField(gvFields, AREA_RSK_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupFields()", "stsAreaSpecificData");

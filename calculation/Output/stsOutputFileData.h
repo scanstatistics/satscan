@@ -63,6 +63,7 @@ class BaseOutputStorageClass {
 
       BasePrint*                        GetBasePrinter()        { return gpPrintDirection; }
       ZdField*                          GetField(unsigned short uwFieldNumber);
+      const unsigned short              GetFieldNumber(const ZdString& sFieldName);
       const ZdVector<ZdField*>&	        GetFields() { return gvFields; }
       const ZdString&			GetFileName() { return gsFileName; }
       const unsigned short		GetNumFields() { return gvFields.size(); }

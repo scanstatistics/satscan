@@ -135,6 +135,30 @@ ZdField* BaseOutputStorageClass::GetField(unsigned short uwFieldNumber) {
    return gvFields[uwFieldNumber];
 }
 
+// function to get the field number of a field given its name
+// pre: none
+// post: if field with given name exists in the vector then will return the position, else will
+//       throw a not found exception
+const unsigned short BaseOutputStorageClass::GetFieldNumber(const ZdString& sFieldName) {
+   bool                 bFound(false);
+   unsigned short       uwPosition = -1;
+
+   try {
+      for( size_t i = 0; i < gvFields.size() && !bFound; ++i) {
+         bFound = (!strcmp(gvFields[i]->GetName(), sFieldName));
+         ++uwPosition;
+      }
+
+      if (!bFound)
+         ZdException::GenerateNotification("Field name %s not found in the field vector.", "Error!", sFieldName.GetCString());
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("GetFieldNumber()", "BaseOutputStorageClass");
+      throw;
+   }
+   return uwPosition;
+}
+
 // returns a pointer to the record at iPosition in the global vector
 // pre : none
 // post : if iPosition not in valid index range then exception, else returns
