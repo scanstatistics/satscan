@@ -205,7 +205,7 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
       if (m_pParameters->m_bMostLikelyClusters || m_pParameters->GetOutputClusterLevelDBF()) {
          pData.reset( new stsClusterData(gpPrintDirection, m_pParameters->GetOutputFileName().c_str(), lReportHistoryRunNumber, GetCoordinateType(),
                                     m_pParameters->m_nModel, m_pParameters->m_nDimension, m_pParameters->m_nReplicas > 99,
-                                    m_pParameters->m_nNumEllipses > 0) );
+                                    m_pParameters->m_nNumEllipses > 0, m_pParameters->m_bDuczmalCorrectEllipses) );
 
          for (int i = 0; i < m_nClustersRetained; ++i) {
             // print out user notification every 20 recorded clusters to let user know program is still working - AJV 10/3/2002
