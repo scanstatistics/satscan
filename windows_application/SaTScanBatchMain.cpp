@@ -98,11 +98,23 @@ int main(int argc, char *argv[]) {
     delete pData; pData=0;
     BasisExit();
   }
-  catch (ZdException & x) {
+  catch (SSException & x) {
     delete pAnalysis;
     delete pData;
     ConsolePrint.SatScanPrintf(x.GetErrorMessage());
     ConsolePrint.SatScanPrintf("\n\nJob cancelled.");
+    BasisExit();
+    exit(1);
+  }
+  catch (ZdException & x) {
+    delete pAnalysis;
+    delete pData;
+    ConsolePrint.SatScanPrintf("Job cancelled due to an unexpected program error.\n");
+    ConsolePrint.SatScanPrintf("Please contact technical support with the following information.\n");
+    ConsolePrint.SatScanPrintf("Program Error:\n");
+    ConsolePrint.SatScanPrintf(x.GetErrorMessage());
+    ConsolePrint.SatScanPrintf("\n\nCallpath:\n");
+    ConsolePrint.SatScanPrintf(x.GetCallpath());
     BasisExit();
     exit(1);
   }

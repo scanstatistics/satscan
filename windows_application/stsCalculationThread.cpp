@@ -85,7 +85,7 @@ void __fastcall CalcThread::Execute() {
        case PURELYTEMPORAL       : gpData = new CPurelyTemporalData(gpParams, gpPrintWindow); break;
        case SPACETIME            : gpData = new CSpaceTimeData(gpParams, gpPrintWindow);      break;
        case PROSPECTIVESPACETIME : gpData = new CSpaceTimeData(gpParams, gpPrintWindow);break;
-       default                   : SSGenerateException("Invalid Analysis Type Encountered.", "Execute()");
+       default                   : ZdGenerateException("Invalid Analysis Type '%d'.", "Execute()", gpParams->GetAnalysisType());
     };
 
     if (! IsCancelled()) {
@@ -139,9 +139,20 @@ void __fastcall CalcThread::Execute() {
       // with it(i.e. we won't we accessing gpFormStatus anymore).
       Synchronize((TThreadMethod)&ProcessAcknowledgesCancellation);
   }
-  catch (ZdException & x) {
+  catch (SSException & x) {
+    //handle exceptions that occured from user or data errors
     x.AddCallpath("Execute()", "CalcThread");
-//    gpPrintWindow->SatScanPrintWarning(x.GetCallpath());
+    gpPrintWindow->SatScanPrintWarning(x.GetErrorMessage());
+    gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
+    Synchronize((TThreadMethod)&ResetProgressCloseButton);
+    Synchronize((TThreadMethod)&EnableProgressPrintButton);
+    CancellJob();
+  }
+  catch (ZdException & x) {
+    //handle exceptions that occured from unexcepted program error
+    //we will want to include more information, like the callpath, in the future
+    x.AddCallpath("Execute()", "CalcThread");
+    gpPrintWindow->SatScanPrintWarning("\nProgram Error:\n");
     gpPrintWindow->SatScanPrintWarning(x.GetErrorMessage());
     gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
