@@ -4,10 +4,10 @@
   <MACROS>
     <VERSION value="BCB.05.03"/>
     <PROJECT value="updater.exe"/>
-    <OBJFILES value="updater.obj uprMain.obj uprException.obj"/>
+    <OBJFILES value="updater.obj uprMain.obj uprException.obj dlgULA.obj"/>
     <RESFILES value="updater.res"/>
     <DEFFILE value=""/>
-    <RESDEPEN value="$(RESFILES) uprMain.dfm"/>
+    <RESDEPEN value="$(RESFILES) uprMain.dfm dlgULA.dfm"/>
     <LIBFILES value="ziplib\zziplibrary\zziplibrary.lib ziplib\zziplibrary\zlib.lib"/>
     <LIBRARIES value="Vcl50.lib"/>
     <SPARELIBS value="Vcl50.lib"/>
@@ -47,7 +47,7 @@
 IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=1
-MinorVer=0
+MinorVer=1
 Release=0
 Build=0
 Debug=0
@@ -61,13 +61,13 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=SaTScan
 FileDescription=SaTScan Updater
-FileVersion=1.0.0.0 Beta 1
+FileVersion=1.1.0.0
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=
-ProductVersion=1.0.0.0 Beta 1
+ProductVersion=1.1.0.0
 Comments=not released
 
 [HistoryLists\hlIncludePath]
@@ -105,7 +105,7 @@ Item3=_DEBUG
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
-RunParams=C:\Prj\zziplib\tar-1.13.tar.gz &quot;C:\Prj\SaTScan Project\SatScan\windows_application\StsWinPrj.exe&quot;
+RunParams=C:\Prj\zziplib\tar-1.13.tar.gz &quot;C:\Prj\SaTScan Project\SatScan\windows_application\StsWinPrj.exe&quot; -ver_id
 HostApplication=
 RemoteHost=
 RemotePath=
