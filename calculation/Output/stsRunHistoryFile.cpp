@@ -305,27 +305,27 @@ void stsRunHistoryFile::SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&
 
       field.first.first = "Prob_Model";
       field.first.second = ZD_LONG_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Rates";
       field.first.second = ZD_LONG_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Coord_Type";
       field.first.second = ZD_LONG_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Analysis_Type";
       field.first.second = ZD_LONG_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Number_Cases";
       field.first.second = ZD_LONG_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Total_Pop";
@@ -335,27 +335,27 @@ void stsRunHistoryFile::SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&
 
       field.first.first = "Num_Geo_Areas";
       field.first.second = ZD_LONG_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Precis_Times";
       field.first.second = ZD_LONG_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Max_Geo_Extent";
       field.first.second = ZD_LONG_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Max_Temp_Extent";
       field.first.second = ZD_LONG_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Time_Adjust";
       field.first.second = ZD_LONG_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Grid_File";
@@ -365,12 +365,12 @@ void stsRunHistoryFile::SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&
 
       field.first.first = "Start_Date";
       field.first.second = ZD_ALPHA_FLD;
-      field.second = 32;
+      field.second = 16;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "End_Date";
       field.first.second = ZD_ALPHA_FLD;
-      field.second = 32;
+      field.second = 16;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Alive_Only";
@@ -380,32 +380,32 @@ void stsRunHistoryFile::SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&
 
       field.first.first = "Interv_Units";
       field.first.second = ZD_LONG_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Interv_Len";
       field.first.second = ZD_LONG_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Monte_Carlo";
       field.first.second = ZD_LONG_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "001_CutOff";
       field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "005_CutOff";
       field.first.second = ZD_NUMBER_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Num_Signif_005";
       field.first.second = ZD_LONG_FLD;
-      field.second = 12;
+      field.second = 8;
       vFieldDescrip.AddElement(field);
    }
    catch (ZdException &x) {
