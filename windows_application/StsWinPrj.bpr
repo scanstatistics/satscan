@@ -77,7 +77,7 @@
     <MAINSOURCE value="StsWinPrj.cpp"/>
     <INCLUDEPATH value="&quot;..\..\zero dimension&quot;;..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\..\basisdev\include;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\topgrid;.."/>
     <LIBPATH value="&quot;..\..\zero dimension&quot;;..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;$(BCB)\topgrid;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;..\..\basisdev\source\vcldep;..\..\basisdev\source\nonvcl;..\..\basisdev\include;$(BCB)\lib\obj;$(BCB)\lib;.."/>
-    <WARNINGS value="-w-par -w-8027 -w-8026"/>
+    <WARNINGS value="-w-par -w-8027 -w-8026 -w-aus"/>
   </MACROS>
   <OPTIONS>
     <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl50.csm -Hc -Q -Vx -Ve -fp -X- -a8 -5 -b- -k- -vi -c 

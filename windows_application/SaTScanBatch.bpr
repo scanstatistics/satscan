@@ -74,7 +74,7 @@
     <MAINSOURCE value="SaTScanBatch.bpf"/>
     <INCLUDEPATH value="&quot;..\..\zero dimension&quot;;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
     <LIBPATH value="&quot;..\..\zero dimension&quot;;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
-    <WARNINGS value="-w-par -w-8027 -w-8026"/>
+    <WARNINGS value="-w-par -w-8027 -w-8026 -w-aus"/>
   </MACROS>
   <OPTIONS>
     <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl51.csm -Hc -Q -Vx -Ve -ff -X- -a8 -5 -b- -k- -vi -tWC 
