@@ -6,7 +6,7 @@
 
 /** constructor */
 OrdinalLikelihoodCalculator::OrdinalLikelihoodCalculator(const CSaTScanData& Data)
-                            :AbstractLikelihoodCalculator(Data) {srand(1234567);}
+                            :AbstractLikelihoodCalculator(Data) {}
 
 /** destructor */
 OrdinalLikelihoodCalculator::~OrdinalLikelihoodCalculator() {}
@@ -26,11 +26,11 @@ double OrdinalLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_t 
 double OrdinalLikelihoodCalculator::CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>& vOrdinalCases, const std::vector<count_t>& vOrdinalTotalCases) const {
 
   //$$ This method might have to call a function pointer which is determined by scanning rate. This method will
-  //   always be called, with outside method calculating whether acculation is significant; as other models do.
-  //   Martin indicated that: for high rates, the order is inorder sequencial (cases in category 1 - category 2 - category 3)
-  //                          for low rates, the order is reverse order sequencial (cases in category 3 - category 2 - category 1)
-  //                          for both rates, take the maximum of high and low rates
-  return (rand() % 100) * .025;
+  //$$ always be called, with outside method calculating whether acculation is significant; as other models do.
+  //$$ Martin indicated that: for high rates, the order is inorder sequencial (cases in category 1 - category 2 - category 3)
+  //$$                        for low rates, the order is reverse order sequencial (cases in category 3 - category 2 - category 1)
+  //$$                        for both rates, take the maximum of high and low rates
+  return gRandomNumberGenerator.GetRandomDouble() * log(gRandomNumberGenerator.GetRandomDouble()) * -1;
 }
 
 /** returns log likelihood for total */

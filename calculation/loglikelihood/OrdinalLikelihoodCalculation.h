@@ -3,9 +3,13 @@
 #define __OrdinalLikelihoodCalculation_H
 //******************************************************************************
 #include "LikelihoodCalculation.h"
+#include "RandomNumberGenerator.h"
 
 /** Ordinal log likelihood calculator. */
 class OrdinalLikelihoodCalculator : public AbstractLikelihoodCalculator {
+  private:
+    RandomNumberGenerator	gRandomNumberGenerator;
+
   public:
     OrdinalLikelihoodCalculator(const CSaTScanData& Data);
     virtual ~OrdinalLikelihoodCalculator();
