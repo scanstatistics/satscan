@@ -39,10 +39,10 @@ CPurelyTemporalCluster* C_ST_PT_Analysis::GetTopPTCluster() {
 
   try {
     // if Prospective Space-Time then Alive Clusters Only.
-    if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
+    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
       bAliveCluster = true;
     else
-      bAliveCluster = m_pParameters->m_bAliveClustersOnly;
+      bAliveCluster = m_pParameters->GetAliveClustersOnly();
 
     MaxCluster = new CPurelyTemporalCluster(bAliveCluster, m_pData->m_nTimeIntervals,
                                             m_pData->m_nIntervalCut, gpPrintDirection);
@@ -50,7 +50,7 @@ CPurelyTemporalCluster* C_ST_PT_Analysis::GetTopPTCluster() {
                                 m_pData->m_nIntervalCut, gpPrintDirection);
 
     MaxCluster->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
-    C_PT.SetRate(m_pParameters->m_nAreas);
+    C_PT.SetRate(m_pParameters->GetAreaScanRateType());
     C_PT.InitTimeIntervalIndeces();
 
     while (C_PT.SetNextTimeInterval(m_pData->m_pPTCases, m_pData->m_pPTMeasure)) {
@@ -83,14 +83,14 @@ double C_ST_PT_Analysis::MonteCarlo() {
   tract_t               i, j;
 
   try {
-    CPurelyTemporalCluster C_PT(m_pParameters->m_bAliveClustersOnly, m_pData->m_nTimeIntervals,
+    CPurelyTemporalCluster C_PT(m_pParameters->GetAliveClustersOnly(), m_pData->m_nTimeIntervals,
                                 m_pData->m_nIntervalCut, gpPrintDirection);
-    CSpaceTimeCluster C_ST(m_pParameters->m_bAliveClustersOnly, m_pData->m_nTimeIntervals,
+    CSpaceTimeCluster C_ST(m_pParameters->GetAliveClustersOnly(), m_pData->m_nTimeIntervals,
                            m_pData->m_nIntervalCut, gpPrintDirection);
     
-    C_ST.SetRate(m_pParameters->m_nAreas);
+    C_ST.SetRate(m_pParameters->GetAreaScanRateType());
     dMaxLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
-    switch (m_pParameters->m_nAreas) {
+    switch (m_pParameters->GetAreaScanRateType()) {
       case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
                         break;
       case LOW        : pMeasureList = new CMaxMeasureList(*m_pData, *gpPrintDirection);
@@ -98,19 +98,19 @@ double C_ST_PT_Analysis::MonteCarlo() {
       case HIGHANDLOW : pMeasureList = new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
                         break;
       default         : ZdGenerateException("Unknown incidence rate specifier \"%d\".", "MonteCarlo()",
-                                             m_pParameters->m_nAreas);
+                                             m_pParameters->GetAreaScanRateType());
     }
 
     //Add measure values for purely space first - so that this cluster's values
     //will be calculated with circle's measure values.
     C_PT.Initialize(0);
-    C_PT.SetRate(m_pParameters->m_nAreas);
+    C_PT.SetRate(m_pParameters->GetAreaScanRateType());
     C_PT.InitTimeIntervalIndeces();
     while (C_PT.SetNextTimeInterval(m_pData->m_pPTSimCases, m_pData->m_pPTMeasure))
          pMeasureList->AddMeasure(C_PT.m_nCases, C_PT.m_nMeasure);
 
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-    for (k=0; k <= m_pParameters->m_lTotalNumEllipses; k++) {
+    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
        for (i=0; i < m_pData->m_nGridTracts; i++) {
           C_ST.Initialize(i);
           for (j=1; j <= m_pData->m_NeighborCounts[k][i]; j++) {
@@ -148,9 +148,9 @@ double C_ST_PT_Analysis::MonteCarloProspective() {
     CPurelyTemporalCluster C_PT(false, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
     CSpaceTimeCluster C_ST(false, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
 
-    C_ST.SetRate(m_pParameters->m_nAreas);
+    C_ST.SetRate(m_pParameters->GetAreaScanRateType());
     dMaxLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
-    switch (m_pParameters->m_nAreas) {
+    switch (m_pParameters->GetAreaScanRateType()) {
       case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
                         break;
       case LOW        : pMeasureList = new CMaxMeasureList(*m_pData, *gpPrintDirection);
@@ -158,19 +158,19 @@ double C_ST_PT_Analysis::MonteCarloProspective() {
       case HIGHANDLOW : pMeasureList = new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
                         break;
       default        :  ZdGenerateException("Unknown incidence rate specifier \"%d\".", "MonteCarloProspective()",
-                                             m_pParameters->m_nAreas);
+                                             m_pParameters->GetAreaScanRateType());
     }
 
     //Add measure values for purely space first - so that this cluster's values
     //will be calculated with circle's measure values.
     C_PT.Initialize(0);
-    C_PT.SetRate(m_pParameters->m_nAreas);
+    C_PT.SetRate(m_pParameters->GetAreaScanRateType());
     C_PT.InitTimeIntervalIndeces();
     while (C_PT.SetNextTimeInterval(m_pData->m_pPTSimCases, m_pData->m_pPTMeasure))
          pMeasureList->AddMeasure(C_PT.m_nCases, C_PT.m_nMeasure);
 
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-    for (k=0; k <= m_pParameters->m_lTotalNumEllipses; k++) {  
+    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
        for (i=0; i < m_pData->m_nGridTracts; i++) {
           C_ST.Initialize(i);
           for (tract_t j=1; j<=m_pData->m_NeighborCounts[k][i]; j++) {
@@ -183,7 +183,7 @@ double C_ST_PT_Analysis::MonteCarloProspective() {
                 //and the Begin Study Date
                 iThisStartInterval = m_pData->ComputeNewCutoffInterval(m_pData->m_nStartDate,jCurrentDate);
                 //Now compute a new Current Date by subtracting the interval duration
-                jCurrentDate = DecrementDate(jCurrentDate, m_pParameters->m_nIntervalUnits, m_pParameters->m_nIntervalLength);
+                jCurrentDate = DecrementDate(jCurrentDate, m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
                 C_ST.InitTimeIntervalIndeces(iThisStartInterval, n);
                 while (C_ST.SetNextProspTimeInterval())
                      pMeasureList->AddMeasure(C_ST.m_nCases, C_ST.m_nMeasure);

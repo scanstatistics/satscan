@@ -21,7 +21,7 @@ CCluster* CPSMonotoneAnalysis::GetTopCluster(tract_t nCenter)
 
    try
      {
-     if (m_pParameters->m_nAreas == HIGHANDLOW)
+     if (m_pParameters->GetAreaScanRateType() == HIGHANDLOW)
      {
        C_High = new CPSMonotoneCluster(gpPrintDirection);
        C_High->SetCenter(nCenter);
@@ -53,7 +53,7 @@ CCluster* CPSMonotoneAnalysis::GetTopCluster(tract_t nCenter)
        MaxCluster = new CPSMonotoneCluster(gpPrintDirection);
        MaxCluster->SetCenter(nCenter);
        MaxCluster->AllocateForMaxCircles(m_pData->m_NeighborCounts[0][nCenter]+1);
-       MaxCluster->SetRate(m_pParameters->m_nAreas);
+       MaxCluster->SetRate(m_pParameters->GetAreaScanRateType());
        MaxCluster->DefineTopCluster(*m_pData, m_pData->m_pCases);
      }
    
@@ -91,7 +91,7 @@ double CPSMonotoneAnalysis::MonteCarlo()
     
       for (int i = 0; i<m_pData->m_nGridTracts; i++)
         {
-        if (m_pParameters->m_nAreas == HIGHANDLOW)
+        if (m_pParameters->GetAreaScanRateType() == HIGHANDLOW)
           {
           C_High.Initialize(i);
           C_High.SetRate(HIGH);
@@ -114,7 +114,7 @@ double CPSMonotoneAnalysis::MonteCarlo()
         else
           {
           C.Initialize(i);
-          C.SetRate(m_pParameters->m_nAreas);
+          C.SetRate(m_pParameters->GetAreaScanRateType());
           C.DefineTopCluster(*m_pData, m_pData->m_pSimCases);
     
           //if (C.m_nLogLikelihood > MaxCluster.m_nLogLikelihood)
@@ -149,7 +149,7 @@ double CPSMonotoneAnalysis::MonteCarloProspective()
     
       for (int i = 0; i<m_pData->m_nGridTracts; i++)
         {
-        if (m_pParameters->m_nAreas == HIGHANDLOW)
+        if (m_pParameters->GetAreaScanRateType() == HIGHANDLOW)
           {
           C_High.Initialize(i);
           C_High.SetRate(HIGH);
@@ -172,7 +172,7 @@ double CPSMonotoneAnalysis::MonteCarloProspective()
         else
           {
           C.Initialize(i);
-          C.SetRate(m_pParameters->m_nAreas);
+          C.SetRate(m_pParameters->GetAreaScanRateType());
           C.DefineTopCluster(*m_pData, m_pData->m_pSimCases);
     
           //if (C.m_nLogLikelihood > MaxCluster.m_nLogLikelihood)

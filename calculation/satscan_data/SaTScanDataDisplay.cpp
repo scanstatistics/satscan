@@ -67,13 +67,13 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
   fprintf(fp, "________________________________________________________________\n\n");
   fprintf(fp, "SUMMARY OF DATA\n\n");
   fprintf(fp, "Study period .........: %s - %s\n",
-              m_pParameters->m_szStartDate,
-              m_pParameters->m_szEndDate);
+              m_pParameters->GetStudyPeriodStartDate().c_str(),
+              m_pParameters->GetStudyPeriodEndDate().c_str());
   fprintf(fp, "Number of census areas: %ld\n", (long) m_nTracts);
-  if (m_pParameters->m_nModel != SPACETIMEPERMUTATION)
+  if (m_pParameters->GetProbabiltyModelType() != SPACETIMEPERMUTATION)
     fprintf(fp, "Total population .....: %.0f\n", m_nTotalPop);
   fprintf(fp, "Total cases ..........: %ld\n",  m_nTotalCasesAtStart);
-  if (m_pParameters->m_nModel == POISSON)
+  if (m_pParameters->GetProbabiltyModelType() == POISSON)
     fprintf(fp, "Annual cases / %.0f.: %.1f\n",
                 GetAnnualRatePop(), GetAnnualRateAtStart());
   fprintf(fp, "________________________________________________________________\n");

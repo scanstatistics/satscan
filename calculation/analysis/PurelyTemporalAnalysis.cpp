@@ -38,10 +38,10 @@ CCluster* CPurelyTemporalAnalysis::GetTopCluster(tract_t nCenter) {
 
   try {
     // if Prospective Space-Time then Alive Clusters Only.
-    if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
+    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
       bAliveCluster = true;
     else
-      bAliveCluster = m_pParameters->m_bAliveClustersOnly;
+      bAliveCluster = m_pParameters->GetAliveClustersOnly();
 
     gpPrintDirection->SatScanPrintf("Get Top P.T. Cluster.\n");
     pMaxCluster = new CPurelyTemporalCluster(bAliveCluster, m_pData->m_nTimeIntervals,
@@ -51,7 +51,7 @@ CCluster* CPurelyTemporalAnalysis::GetTopCluster(tract_t nCenter) {
     
     pMaxCluster->CCluster::SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
     thisCluster.SetCenter(nCenter);
-    thisCluster.SetRate(m_pParameters->m_nAreas);
+    thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
     thisCluster.InitTimeIntervalIndeces();
     
     while (thisCluster.SetNextTimeInterval(((CPurelyTemporalData*)(m_pData))->m_pPTCases,
@@ -80,11 +80,11 @@ double CPurelyTemporalAnalysis::MonteCarlo() {
   double                dMaxLogLikelihood;
 
   try {
-    CPurelyTemporalCluster C(m_pParameters->m_bAliveClustersOnly, m_pData->m_nTimeIntervals,
+    CPurelyTemporalCluster C(m_pParameters->GetAliveClustersOnly(), m_pData->m_nTimeIntervals,
                              m_pData->m_nIntervalCut, gpPrintDirection);
-    C.SetRate(m_pParameters->m_nAreas);
+    C.SetRate(m_pParameters->GetAreaScanRateType());
     dMaxLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
-    switch (m_pParameters->m_nAreas) {
+    switch (m_pParameters->GetAreaScanRateType()) {
       case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
                         break;
       case LOW        : pMeasureList = new CMaxMeasureList(*m_pData, *gpPrintDirection);
@@ -92,7 +92,7 @@ double CPurelyTemporalAnalysis::MonteCarlo() {
       case HIGHANDLOW : pMeasureList = new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
                         break;
       default         : ZdGenerateException("Unknown incidence rate specifier \"%d\".", "MonteCarlo()",
-                                             m_pParameters->m_nAreas);
+                                             m_pParameters->GetAreaScanRateType());
     }
 
     C.Initialize(0);
@@ -117,11 +117,11 @@ double CPurelyTemporalAnalysis::MonteCarloProspective() {
   double                        dMaxLogLikelihood;
 
   try {
-    CPurelyTemporalCluster C(m_pParameters->m_bAliveClustersOnly, m_pData->m_nTimeIntervals,
+    CPurelyTemporalCluster C(m_pParameters->GetAliveClustersOnly(), m_pData->m_nTimeIntervals,
                              m_pData->m_nIntervalCut, gpPrintDirection);
-    C.SetRate(m_pParameters->m_nAreas);
+    C.SetRate(m_pParameters->GetAreaScanRateType());
     dMaxLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
-    switch (m_pParameters->m_nAreas) {
+    switch (m_pParameters->GetAreaScanRateType()) {
       case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
                         break;
       case LOW        : pMeasureList = new CMaxMeasureList(*m_pData, *gpPrintDirection);
@@ -129,7 +129,7 @@ double CPurelyTemporalAnalysis::MonteCarloProspective() {
       case HIGHANDLOW : pMeasureList = new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
                         break;
       default        : ZdGenerateException("Unknown incidence rate specifier \"%d\".", "MonteCarloProspective()",
-                                             m_pParameters->m_nAreas);
+                                             m_pParameters->GetAreaScanRateType());
     }
     
     C.Initialize(0);

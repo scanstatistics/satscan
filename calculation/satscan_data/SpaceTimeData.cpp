@@ -20,7 +20,7 @@ void CSpaceTimeData::SetIntervalCut()
       /* Avoids double calculations of the loglikelihood when IPS==1 and     */
       /* IntervalCut==nTimeIntervals. Increases speed in functions Cluster2() */
       /* and Montercarlo2().                                                 */
-      if (m_pParameters->m_bIncludePurelySpatial)
+      if (m_pParameters->GetIncludePurelySpatialClusters())
          if (m_nTimeIntervals == m_nIntervalCut)
             m_nIntervalCut--;
       }
@@ -36,7 +36,7 @@ void CSpaceTimeData::ReadDataFromFiles()
    try
       {
       CSaTScanData::ReadDataFromFiles();
-      if (m_pParameters->m_bIncludePurelyTemporal)
+      if (m_pParameters->GetIncludePurelyTemporalClusters())
          SetPurelyTemporalCases();
       }
    catch (SSException & x)
@@ -53,7 +53,7 @@ bool CSpaceTimeData::CalculateMeasure()
   try
      {
      bResult = CSaTScanData::CalculateMeasure();
-     if (m_pParameters->m_bIncludePurelyTemporal)
+     if (m_pParameters->GetIncludePurelyTemporalClusters())
         SetPurelyTemporalMeasures();
       }
    catch (SSException & x)
@@ -69,7 +69,7 @@ void CSpaceTimeData::AllocSimCases()
    try
       {
       CSaTScanData::AllocSimCases();
-      if (m_pParameters->m_bIncludePurelyTemporal)
+      if (m_pParameters->GetIncludePurelyTemporalClusters())
          m_pPTSimCases = (count_t*)Smalloc(m_nTimeIntervals * sizeof(count_t), gpPrintDirection);
       }
    catch (SSException & x)
@@ -84,7 +84,7 @@ void CSpaceTimeData::DeAllocSimCases()
    try
       {
       CSaTScanData::DeAllocSimCases();
-      if (m_pParameters->m_bIncludePurelyTemporal)
+      if (m_pParameters->GetIncludePurelyTemporalClusters())
          free(m_pPTSimCases);
       }
    catch (SSException & x)
@@ -99,7 +99,7 @@ void CSpaceTimeData::MakeData(int iSimulationNumber)
    try
       {
       CSaTScanData::MakeData(iSimulationNumber);
-      if (m_pParameters->m_bIncludePurelyTemporal)
+      if (m_pParameters->GetIncludePurelyTemporalClusters())
          SetPurelyTemporalSimCases();
       }
    catch (SSException & x)

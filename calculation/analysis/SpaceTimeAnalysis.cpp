@@ -19,21 +19,21 @@ CCluster* CSpaceTimeAnalysis::GetTopCluster(tract_t nCenter) {
 
   try {
     // if Prospective Space-Time then Alive Clusters Only.
-    if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
+    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
       bAliveCluster = true;
     else
-      bAliveCluster = m_pParameters->m_bAliveClustersOnly;
+      bAliveCluster = m_pParameters->GetAliveClustersOnly();
 
     MaxCluster = new CSpaceTimeCluster(bAliveCluster, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
     MaxCluster->CCluster::SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
 
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-    for (k=0; k <= m_pParameters->m_lTotalNumEllipses; k++) {
+    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
        CSpaceTimeCluster thisCluster(bAliveCluster, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
        thisCluster.SetCenter(nCenter);
-       thisCluster.SetRate(m_pParameters->m_nAreas);
+       thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
        thisCluster.SetEllipseOffset(k);
-       thisCluster.SetDuczmalCorrection((k == 0 || !m_pParameters->m_bDuczmalCorrectEllipses ? 1 : m_pData->mdE_Shapes[k - 1]));
+       thisCluster.SetDuczmalCorrection((k == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->mdE_Shapes[k - 1]));
        for (i=1; i <= m_pData->m_NeighborCounts[k][nCenter]; i++) {
           thisCluster.AddNeighbor(k, *m_pData, m_pData->m_pCases, i);
           thisCluster.InitTimeIntervalIndeces();
@@ -64,11 +64,11 @@ double CSpaceTimeAnalysis::MonteCarlo() {
   tract_t         i, j;
 
   try {
-    CSpaceTimeCluster C(m_pParameters->m_bAliveClustersOnly, m_pData->m_nTimeIntervals,
+    CSpaceTimeCluster C(m_pParameters->GetAliveClustersOnly(), m_pData->m_nTimeIntervals,
                         m_pData->m_nIntervalCut, gpPrintDirection);
-    C.SetRate(m_pParameters->m_nAreas);
+    C.SetRate(m_pParameters->GetAreaScanRateType());
     dMaxLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
-    switch (m_pParameters->m_nAreas) {
+    switch (m_pParameters->GetAreaScanRateType()) {
      case HIGH      : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
                       break;
      case LOW       : pMeasureList = new CMaxMeasureList(*m_pData, *gpPrintDirection);
@@ -76,11 +76,11 @@ double CSpaceTimeAnalysis::MonteCarlo() {
      case HIGHANDLOW: pMeasureList = new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
                       break;
      default        : ZdGenerateException("Unknown incidence rate specifier \"%d\".","MonteCarlo()",
-                                          m_pParameters->m_nAreas);
+                                          m_pParameters->GetAreaScanRateType());
     }
     
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-    for (k=0; k <= m_pParameters->m_lTotalNumEllipses; k++) {
+    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
        for (i=0; i < m_pData->m_nGridTracts; i++) {
           C.Initialize(i);
           for (j=1; j<=m_pData->m_NeighborCounts[k][i]; j++) {
@@ -113,10 +113,10 @@ double CSpaceTimeAnalysis::MonteCarloProspective() {
     //for prospective Space-Time, m_bAliveClustersOnly should be false..
     //m_bAliveClustersOnly is the first parameter into the CSpaceTimeCluster class
     CSpaceTimeCluster C(false, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
-    C.SetRate(m_pParameters->m_nAreas);
+    C.SetRate(m_pParameters->GetAreaScanRateType());
     dMaxLogLikelihood = m_pData->m_pModel->GetLogLikelihoodForTotal();
 
-    switch (m_pParameters->m_nAreas) {
+    switch (m_pParameters->GetAreaScanRateType()) {
      case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
                        break;
      case LOW        : pMeasureList = new CMaxMeasureList(*m_pData, *gpPrintDirection);
@@ -124,10 +124,10 @@ double CSpaceTimeAnalysis::MonteCarloProspective() {
      case HIGHANDLOW : pMeasureList = new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
                        break;
      default         : ZdGenerateException("Unknown incidence rate specifier \"%d\".","MonteCarloProspective()",
-                       m_pParameters->m_nAreas);
+                       m_pParameters->GetAreaScanRateType());
     }
 
-    for (k=0; k <= m_pParameters->m_lTotalNumEllipses; k++) {  //circle is 0 offset... (always there)
+    for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {  //circle is 0 offset... (always there)
        for (tract_t i = 0; i<m_pData->m_nGridTracts; i++) {
           C.Initialize(i);
           for (tract_t j=1; j<=m_pData->m_NeighborCounts[k][i]; j++) {
@@ -140,7 +140,7 @@ double CSpaceTimeAnalysis::MonteCarloProspective() {
                 //and the Begin Study Date.  Must use time percent specified by user...
                 iThisStartInterval = m_pData->ComputeNewCutoffInterval(m_pData->m_nStartDate,jCurrentDate);
                 //Now compute a new Current Date by subtracting the interval duration
-                jCurrentDate = DecrementDate(jCurrentDate, m_pParameters->m_nIntervalUnits, m_pParameters->m_nIntervalLength);
+                jCurrentDate = DecrementDate(jCurrentDate, m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
                 C.InitTimeIntervalIndeces(iThisStartInterval, n);
                 while (C.SetNextProspTimeInterval())
                      pMeasureList->AddMeasure(C.m_nCases, C.m_nMeasure);

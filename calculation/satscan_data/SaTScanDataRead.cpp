@@ -76,7 +76,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
       memset(cvec, 0, nCats * sizeof(char *));
 
       //Parse tract id, count, & date from record
-      switch (m_pParameters->m_nPrecision) {
+      switch (m_pParameters->GetPrecisionOfTimesType()) {
         case 0: nScanResult=sscanf(szData, "%s %f", szTid, &fTempCount);
                 JulianToMDY(&nMonth, &nDay, &nYear, m_nStartDate);
                 nDataElements--;
@@ -92,7 +92,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
       eFileType = (!strcmp(szDescription, "case") ? BasePrint::CASEFILE : BasePrint::CONTROLFILE);
 
       //Check: tract, count, & date exist
-      if (nScanResult < m_pParameters->m_nPrecision+2) {
+      if (nScanResult < m_pParameters->GetPrecisionOfTimesType() + 2) {
         free(cvec);
         gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Invalid record in %s file, line %d.\n", szDescription, nRec);
         gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "         Please see '%s file format' in the help file.\n", szDescription);
@@ -117,7 +117,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
       }
     
       //Ensure four digit years
-      int nYear4 = Ensure4DigitYear(nYear, m_pParameters->m_szStartDate, m_pParameters->m_szEndDate);
+      int nYear4 = Ensure4DigitYear(nYear, const_cast<char*>(m_pParameters->GetStudyPeriodStartDate().c_str()), const_cast<char*>(m_pParameters->GetStudyPeriodEndDate().c_str()));
       switch (nYear4) {
           case -1:gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Due to study period greater than 100 years, unable\n"
                                                                             "         to convert two digit year in %s file, line %d.\n"
@@ -141,9 +141,9 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
       }
 
       //Parse line for categories
-      if ((m_pParameters->m_nModel==POISSON) ||
-          (m_pParameters->m_nModel==SPACETIMEPERMUTATION && m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE) ||
-          (m_pParameters->m_nModel==BERNOULLI && strcmp(szDescription,"control")==0)) {
+      if ((m_pParameters->GetProbabiltyModelType()==POISSON) ||
+          (m_pParameters->GetProbabiltyModelType()==SPACETIMEPERMUTATION && m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE) ||
+          (m_pParameters->GetProbabiltyModelType()==BERNOULLI && strcmp(szDescription,"control")==0)) {
         i            = 0;
 
         while (i < nCats && !bCatsMissing) {
@@ -172,9 +172,9 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
           return false;
         }
 
-        if (m_pParameters->m_nModel == POISSON ||
-            (m_pParameters->m_nModel==SPACETIMEPERMUTATION &&
-             m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)) {
+        if (m_pParameters->GetProbabiltyModelType() == POISSON ||
+            (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION &&
+             m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE)) {
           //Check: categories correct?
           cat = gpCats->catGetCat(cvec);
           if (cat == -1) {
@@ -250,7 +250,7 @@ bool CSaTScanData::ConvertPopulationDateToJulian(const char * sDateString, int i
     if (! bValidDate)
       gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Invalid date \"%s\" in population file, line %d.\n", sDateString, iRecordNumber);
     else {
-      iYear = Ensure4DigitYear(iYear, m_pParameters->m_szStartDate, m_pParameters->m_szEndDate);
+      iYear = Ensure4DigitYear(iYear, const_cast<char*>(m_pParameters->GetStudyPeriodStartDate().c_str()), const_cast<char*>(m_pParameters->GetStudyPeriodEndDate().c_str()));
       switch (iYear) {
         case -1 : gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Due to the study period being greater than 100 years, unable\n");
                   gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "         to determine century for two digit year \"%d\" in population file, line %d.\n",
@@ -346,8 +346,8 @@ bool CSaTScanData::ReadPops() {
     //                used, and if the population for a tract is defined at more than one
     //                time period, error message should be shown in the running window and
     //                the application terminated.
-    if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME &&
-        m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE && vPopulationDates.size() > 1) {
+    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME &&
+        m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE && vPopulationDates.size() > 1) {
         bValid = false;
         gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE,
                                                        "\n  ERROR: For the prospective space-time analysis to be correct,\n"
@@ -454,7 +454,7 @@ bool CSaTScanData::ReadGeo() {
    bool bValid = true;
 
    try {
-      bValid = ((m_pParameters->m_nCoordType == CARTESIAN) ? ReadGeoCoords() : ReadGeoLatLong());
+      bValid = ((m_pParameters->GetCoordinatesType() == CARTESIAN) ? ReadGeoCoords() : ReadGeoLatLong());
    }
    catch (SSException & x) {
       x.AddCallpath("ReadGeo()", "CSaTScanData");
@@ -487,9 +487,9 @@ bool CSaTScanData::ReadGeoLatLong() {
         return false;
       }
     
-      m_pParameters->m_nDimension = 3;
-      gpTInfo->tiSetDimensions(m_pParameters->m_nDimension);
-      gpGInfo->giSetDimensions(m_pParameters->m_nDimension);
+      m_pParameters->SetDimensionsOfData(3);
+      gpTInfo->tiSetDimensions(m_pParameters->GetDimensionsOfData());
+      gpGInfo->giSetDimensions(m_pParameters->GetDimensionsOfData());
     
       while (fgets(szData, MAX_LINESIZE, fp)) {
         ++nRec;
@@ -499,7 +499,7 @@ bool CSaTScanData::ReadGeoLatLong() {
           bEmpty=false;
 
         nScanCount = sscanf(szData, "%s %lf %lf", szTid, &Latitude, &Longitude);
-        if (nScanCount - 2 /* m_pParameters->m_nDimension */ < 1) {
+        if (nScanCount - 2 /* m_pParameters->GetDimensionsOfData() */ < 1) {
           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Invalid record in coordinates file (lat/lon), line %ld.\n", (long) nRec);
           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Please see 'coordinates file format' in the help file.\n");
           bValid = false;
@@ -622,21 +622,21 @@ bool CSaTScanData::ReadGeoCoords() {
          gpPrintDirection->SatScanPrintf("Number of dimensions in coordinates file = %d.\n",nScanCount-1);
           #endif
     
-          m_pParameters->m_nDimension = nScanCount - 1;
-          gpTInfo->tiSetDimensions(m_pParameters->m_nDimension);
-          gpGInfo->giSetDimensions(m_pParameters->m_nDimension);
-          pCoords = (double*)Smalloc(m_pParameters->m_nDimension * sizeof(double), gpPrintDirection);
+          m_pParameters->SetDimensionsOfData(nScanCount - 1);
+          gpTInfo->tiSetDimensions(m_pParameters->GetDimensionsOfData());
+          gpGInfo->giSetDimensions(m_pParameters->GetDimensionsOfData());
+          pCoords = (double*)Smalloc(m_pParameters->GetDimensionsOfData() * sizeof(double), gpPrintDirection);
     
           sscanf(GetWord(szFirstLine, 0, gpPrintDirection), "%s", szTid);
     
           // Re-use nScanCount to determine if data is valid
           nScanCount = 1;
 
-          for (i=0; i<m_pParameters->m_nDimension; ++i) {
+          for (i=0; i<m_pParameters->GetDimensionsOfData(); ++i) {
             nScanCount += sscanf(GetWord(szFirstLine,i+1, gpPrintDirection),"%lf",&pCoords[i]);
     	  }
 
-       	  if (nScanCount - m_pParameters->m_nDimension < 1) {
+       	  if (nScanCount - m_pParameters->GetDimensionsOfData() < 1) {
            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Invalid data in first line of coordinates file.\n");
            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Please see 'coordinates file format' in the help file.\n");
            return false;
@@ -652,7 +652,7 @@ bool CSaTScanData::ReadGeoCoords() {
 #if (DEBUG)
       	  printf("First line of data from coordinates file:\n");
           gpPrintDirection->SatScanPrintf("Tract id = %s\n",szTid);
-          for (i=0; i< (m_pParameters->m_nDimension); ++i)
+          for (i=0; i< (m_pParameters->GetDimensionsOfData()); ++i)
             gpPrintDirection->SatScanPrintf("Coords[%d] = %f\n", i, pCoords[i]);
 #endif
     
@@ -670,17 +670,17 @@ bool CSaTScanData::ReadGeoCoords() {
         sscanf(GetWord(szData, 0, gpPrintDirection), "%s", szTid);
         nScanCount = 1;
     
-        for (i=0; i<m_pParameters->m_nDimension; ++i)
+        for (i=0; i<m_pParameters->GetDimensionsOfData(); ++i)
       		nScanCount += sscanf(GetWord(szData,i+1, gpPrintDirection),"%lf",&pCoords[i]);
 
 #if(DEBUG)
        gpPrintDirection->SatScanPrintf("%d line of data from coordinates file:\n", nRec);
        gpPrintDirection->SatScanPrintf("Tract id = %s\n",szTid);
-        for (i=0; i< (m_pParameters->m_nDimension); ++i)
+        for (i=0; i< (m_pParameters->GetDimensionsOfData()); ++i)
          gpPrintDirection->SatScanPrintf("Coords[%d] = %f\n", i, pCoords[i]);
 #endif
 
-        if (nScanCount - m_pParameters->m_nDimension < 1) {
+        if (nScanCount - m_pParameters->GetDimensionsOfData() < 1) {
            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Invalid record in coordinates file, line %ld.\n", (long) nRec);
            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Please see 'coordinates file format' in the help file.\n");
            bValid = false;
@@ -708,7 +708,7 @@ bool CSaTScanData::ReadGeoCoords() {
         gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Coordinates file is empty.\n", "ReadGeoCoords()");
         bValid = false;
       }
-      else if (gpTInfo->tiGetNumTracts()==1 && m_pParameters->m_nAnalysisType != PURELYTEMPORAL) {
+      else if (gpTInfo->tiGetNumTracts()==1 && m_pParameters->GetAnalysisType() != PURELYTEMPORAL) {
       // This modified 6/25/98 so that one tract allowed for Purely Temporal analysis
         gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Coordinates file has only one record.\n", "ReadGeoCoords()");
         bValid = false;
@@ -740,7 +740,7 @@ bool CSaTScanData::ReadGrid() {
    bool bValid = true;
 
    try {
-      bValid = ( (m_pParameters->m_nCoordType == CARTESIAN) ? ReadGridCoords() : ReadGridLatLong() );
+      bValid = ( (m_pParameters->GetCoordinatesType() == CARTESIAN) ? ReadGridCoords() : ReadGridLatLong() );
    }
    catch (SSException & x)
       {
@@ -774,7 +774,7 @@ bool CSaTScanData::ReadGridCoords() {
         return false;
       }
 
-      pCoords = (double*)Smalloc(m_pParameters->m_nDimension * sizeof(double), gpPrintDirection);
+      pCoords = (double*)Smalloc(m_pParameters->GetDimensionsOfData() * sizeof(double), gpPrintDirection);
 
       while (fgets(szData, MAX_LINESIZE, fp)) {
         ++nRec;
@@ -785,7 +785,7 @@ bool CSaTScanData::ReadGridCoords() {
           bEmpty = false;
 
         // Can't read too far so check for correct number of coordinates:
-        if (!GetWord(szData, (m_pParameters->m_nDimension-1), gpPrintDirection) || GetWord(szData, m_pParameters->m_nDimension, gpPrintDirection)) {
+        if (!GetWord(szData, (m_pParameters->GetDimensionsOfData()-1), gpPrintDirection) || GetWord(szData, m_pParameters->GetDimensionsOfData(), gpPrintDirection)) {
           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Invalid record in grid file, line %d.\n",nRec);
           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "         Please see 'grid file format' in the help file.\n");
           bValid = false;
@@ -794,19 +794,19 @@ bool CSaTScanData::ReadGridCoords() {
         // What if too many coordinates in grid file???
 
         // Modified 6/25/98 to make sure of valid (non-alpha) data
-        for (i = 0; i < m_pParameters->m_nDimension; ++i)
+        for (i = 0; i < m_pParameters->GetDimensionsOfData(); ++i)
       	   nScanCount += sscanf(GetWord(szData,i, gpPrintDirection),"%lf",&pCoords[i]);
 
 #if(DEBUG)
      	gpPrintDirection->SatScanPrintf("%d line of data from grid file:\n", nRec);
      	gpPrintDirection->SatScanPrintf("Tract id = %s\n",szTid);
-        for (i = 0; i < (m_pParameters->m_nDimension); ++i)
+        for (i = 0; i < (m_pParameters->GetDimensionsOfData()); ++i)
          gpPrintDirection->SatScanPrintf("Coords[%d] = %f\n", i, pCoords[i]);
 #endif
 
         itoa(nRec, szTid, 10);
 
-        if (nScanCount < m_pParameters->m_nDimension) {
+        if (nScanCount < m_pParameters->GetDimensionsOfData()) {
           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Invalid record in grid file, line %d.\n",nRec);
           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "         Please see 'grid file format' in the help file.\n");
           bValid = false;
