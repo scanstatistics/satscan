@@ -338,10 +338,9 @@ bool CParameters::SetParameter(int nParam, const char* szParam)
 
 int CParameters::LoadEShapes(const char* szParam)
 {
-   int          nCount = 0, nScanCount, iLineLength;
-   double       dDummyValue;
-   bool         bOk = true;
-   char *       sTempLine = 0;
+   int          nCount=1, nScanCount, iLineLength;
+   bool         bOk=true;
+   char *       sTempLine=0;
 
    try {
       //Example is   "1.5 2"      DOUBLES
@@ -367,20 +366,7 @@ int CParameters::LoadEShapes(const char* szParam)
       }
       if ( ! bOk )
           SSGenerateException("Not enough ellipsoid shape specifications in parameter file","LoadEShapes");
-      // make sure that there are not too many ellipsoid shapes...
-      else {
-         if (! sTempLine) {
-            iLineLength = strlen(szParam);
-            sTempLine = new char [ iLineLength + 2 ];
-            strcpy(sTempLine, szParam);
-         }
-         TrimLeft(sTempLine);
-         nScanCount=sscanf(sTempLine, "%lf", &dDummyValue);
-         if (nScanCount == 1)
-            SSGenerateException("Too many ellipsoid shape specifications in parameter file.","LoadEShapes");
-         else
-            nCount = 1;
-      }
+
       delete [] sTempLine;
    }
    catch (ZdException & x) {
@@ -394,10 +380,9 @@ int CParameters::LoadEShapes(const char* szParam)
 
 int CParameters::LoadEAngles(const char* szParam)
 {
-   int i, nCount = 0, nScanCount, iLineLength;
-   double dDummyValue;
+   int i, nCount=1, nScanCount, iLineLength;
    bool bOk = true;
-   char *sTempLine = 0;
+   char *sTempLine=0;
 
    try {
       //Example is   "1.5 2"      DOUBLES
@@ -425,20 +410,7 @@ int CParameters::LoadEAngles(const char* szParam)
       }
       if ( ! bOk )
           SSGenerateException("Not enough ellipsoid angle specifications in parameter file.","LoadEAngles()");
-      // make sure that there are not too many ellipsoid shapes...
-      else  {
-         if (! sTempLine) {
-            iLineLength = strlen(szParam);
-            sTempLine = new char [ iLineLength + 2 ];
-            strcpy(sTempLine, szParam);
-         }
-         TrimLeft(sTempLine);
-         nScanCount=sscanf(sTempLine, "%lf", &dDummyValue);
-         if (nScanCount == 1)
-            SSGenerateException("Too many ellipsoid angle specifications in parameter file.","LoadEShapes");
-         else
-            nCount = 1;
-      }
+
       delete [] sTempLine;
    }
    catch (ZdException & x) {
