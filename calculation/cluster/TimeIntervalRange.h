@@ -6,13 +6,16 @@
 #include "JulianDates.h"
 #include "TimeIntervals.h"
 #include "DataStream.h"
+#include "ClusterData.h"
+#include "NormalClusterData.h"
+#include "MutlipleStreamClusterData.h"
 
 class CSaTScanData;
 class CCluster;
 
 class TimeIntervalRange : public CTimeIntervals {
   private:
-    void                        Setup(const CSaTScanData& Data);
+    void                        Setup(const CSaTScanData& Data, IncludeClustersType  eIncludeClustersType);
     void                        ValidateWindowRanges(const CSaTScanData& Data);
 
   protected:
@@ -23,20 +26,46 @@ class TimeIntervalRange : public CTimeIntervals {
     const CSaTScanData        & gData;
 
   public:
-    TimeIntervalRange(const CSaTScanData& Data);
+    TimeIntervalRange(const CSaTScanData& Data, IncludeClustersType  eIncludeClustersType);
     TimeIntervalRange(const TimeIntervalRange & rhs);
-    ~TimeIntervalRange() {}
+    virtual ~TimeIntervalRange() {}
 
     TimeIntervalRange         & operator=(const TimeIntervalRange& rhs);
     virtual TimeIntervalRange * Clone() const;
-    virtual void                CompareClusters(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData);
-    virtual void                CompareClustersEx(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData);
-    virtual void                CompareDataStreamClusters(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData);
-    virtual void                CompareDataStreamClustersEx(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData);
-    virtual void                ComputeBestMeasures(AbstractTemporalClusterStreamData * pStreamData, CMeasureList & MeasureList);
+
+
+    virtual IncludeClustersType GetType() const {return CLUSTERSINRANGE;}
     virtual count_t             GetCaseCountForTract(const CCluster & Cluster, tract_t tTract, count_t** pCases) const;
     virtual measure_t           GetMeasureForTract(const CCluster & Cluster, tract_t tTract, measure_t** pMeasure) const;
-    virtual IncludeClustersType GetType() const {return CLUSTERSINRANGE;}
+
+    virtual void                CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList * pMeasureList);
+    virtual void                CompareClusters(CCluster & Running, CCluster & TopCluster);
+};
+
+class NormalTimeIntervalRange : public TimeIntervalRange {
+  public:
+    NormalTimeIntervalRange(const CSaTScanData& Data, IncludeClustersType  eIncludeClustersType);
+    NormalTimeIntervalRange(const NormalTimeIntervalRange & rhs);
+    virtual ~NormalTimeIntervalRange() {}
+
+    NormalTimeIntervalRange         & operator=(const NormalTimeIntervalRange& rhs);
+    virtual NormalTimeIntervalRange * Clone() const;
+
+    virtual void                CompareClusters(CCluster & Running, CCluster & TopCluster);
+    virtual void                CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList * pMeasureList);
+};
+
+class MultiStreamTimeIntervalRange : public TimeIntervalRange {
+  public:
+    MultiStreamTimeIntervalRange(const CSaTScanData& Data, IncludeClustersType  eIncludeClustersType);
+    MultiStreamTimeIntervalRange(const MultiStreamTimeIntervalRange & rhs);
+    virtual ~MultiStreamTimeIntervalRange() {}
+
+    MultiStreamTimeIntervalRange         & operator=(const MultiStreamTimeIntervalRange& rhs);
+    virtual MultiStreamTimeIntervalRange * Clone() const;
+
+    virtual void                CompareClusters(CCluster & Running, CCluster & TopCluster);
+    virtual void                CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList * pMeasureList);
 };
 //*****************************************************************************
 #endif

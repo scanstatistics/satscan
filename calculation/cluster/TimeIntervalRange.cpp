@@ -6,10 +6,10 @@
 #include "Cluster.h"
 
 /** constructor */
-TimeIntervalRange::TimeIntervalRange(const CSaTScanData& Data)
+TimeIntervalRange::TimeIntervalRange(const CSaTScanData& Data, IncludeClustersType  eIncludeClustersType)
                   :CTimeIntervals(Data.m_nTimeIntervals, Data.m_nIntervalCut, Data.GetParameters().GetAreaScanRateType()),
                    gData(Data) {
-  Setup(Data);
+  Setup(Data, eIncludeClustersType);
 }	
 
 /** copy constructor */
@@ -31,16 +31,13 @@ TimeIntervalRange * TimeIntervalRange::Clone() const {
  return new TimeIntervalRange(*this);
 }
 
-/** Iterates through all possible time windows for runnning cluster, comparing
-    against current top cluster. Reassigns top cluster if running cluster ever
-    has a greater loglikelihood.*/
-void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData) {
-
+void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluster) {
   int           iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
   CModel      & Model(gData.GetProbabilityModel());
   count_t       tCases, tTotalCases(gData.GetTotalCases());
   measure_t     tMeasure, tTotalMeasure(gData.GetTotalMeasure());
-  AbstractTemporalClusterStreamData * pStreamData = StreamData[0];
+
+  TemporalData * pData = (TemporalData*)Running.GetClusterData();  //dynamic cast?
 
   //iterate through windows
   iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
@@ -48,124 +45,26 @@ void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopShapeC
      iWindowStart = std::max(iWindowEnd - giMaxWindowLength, giStartRange_Start);
      iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
-        tCases = pStreamData->gpCases[iWindowStart] - pStreamData->gpCases[iWindowEnd];
-        tMeasure = pStreamData->gpMeasure[iWindowStart] - pStreamData->gpMeasure[iWindowEnd];
-        if (fRateOfInterest(tCases, tMeasure, tTotalCases, tTotalMeasure)) {
-          Running.m_nRatio = Model.CalcLogLikelihoodRatio(tCases, tMeasure, tTotalCases, tTotalMeasure, Running.m_DuczmalCorrection);
-          if (Running.m_nRatio  > TopShapeCluster.m_nRatio) {
-            TopShapeCluster.AssignAsType(Running);
-            TopShapeCluster.m_nFirstInterval = iWindowStart;
-            TopShapeCluster.m_nLastInterval = iWindowEnd;
-            TopShapeCluster.SetCaseCount(0, tCases);
-            TopShapeCluster.SetMeasure(0, tMeasure);
+        pData->gtCases = pData->gpCases[iWindowStart] - pData->gpCases[iWindowEnd];
+        pData->gtMeasure = pData->gpMeasure[iWindowStart] - pData->gpMeasure[iWindowEnd];
+        if (fRateOfInterest(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure)) {
+          Running.m_nRatio = Model.CalcLogLikelihoodRatio(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure);
+          if (Running.m_nRatio  > TopCluster.m_nRatio) {
+            TopCluster.AssignAsType(Running);
+            TopCluster.m_nFirstInterval = iWindowStart;
+            TopCluster.m_nLastInterval = iWindowEnd;
           }
         }
      }
   }
 }
 
-/** Iterates through all possible time windows for runnning cluster, comparing
-    against current top cluster. Reassigns top cluster if running cluster ever
-    has a greater loglikelihood.*/
-void TimeIntervalRange::CompareClustersEx(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData) {
-
-  int           iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  CModel      & Model(gData.GetProbabilityModel());
-  count_t       tCases, tTotalCases(gData.GetTotalCases());
-  measure_t     tMeasure, tMeasure2, tTotalMeasure(gData.GetTotalMeasure());
-  AbstractTemporalClusterStreamData * pStreamData = StreamData[0];
-
-  //iterate through windows
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - giMaxWindowLength, giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
-     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
-        tCases = pStreamData->gpCases[iWindowStart] - pStreamData->gpCases[iWindowEnd];
-        tMeasure = pStreamData->gpMeasure[iWindowStart] - pStreamData->gpMeasure[iWindowEnd];
-        tMeasure2 = pStreamData->gpSqMeasure[iWindowStart] - pStreamData->gpSqMeasure[iWindowEnd];
-        if (fRateOfInterest(tCases, tMeasure, tTotalCases, tTotalMeasure)) {
-          //calculate with second measure
-          Running.m_nRatio = Model.CalcLogLikelihoodRatioEx(tCases, tMeasure, tTotalCases, tTotalMeasure, tMeasure2, Running.m_DuczmalCorrection);
-          if (Running.m_nRatio  > TopShapeCluster.m_nRatio) {
-            TopShapeCluster.AssignAsType(Running);
-            TopShapeCluster.m_nFirstInterval = iWindowStart;
-            TopShapeCluster.m_nLastInterval = iWindowEnd;
-            TopShapeCluster.SetCaseCount(0, tCases);
-            TopShapeCluster.SetMeasure(0, tMeasure);
-            //set second measure ?
-          }
-        }
-     }
-  }
-}
-
-void TimeIntervalRange::CompareDataStreamClusters(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData) {
-
-  int                                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  CModel                              & ProbabilityModel(gData.GetProbabilityModel());
-  AbstractTemporalClusterStreamData   * pStreamData;
-  unsigned int                          iStreamSize = StreamData.size();
-
-  //iterate through windows
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - giMaxWindowLength, giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
-     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
-        Running.m_nRatio = 0;
-        for (size_t t=0; t < iStreamSize; ++t) {                           
-          pStreamData = StreamData[t];
-          pStreamData->gCases = pStreamData->gpCases[iWindowStart] - pStreamData->gpCases[iWindowEnd];
-          pStreamData->gMeasure = pStreamData->gpMeasure[iWindowStart] - pStreamData->gpMeasure[iWindowEnd];
-          if (fRateOfInterest(pStreamData->gCases, pStreamData->gMeasure, pStreamData->gTotalCases, pStreamData->gTotalMeasure))
-            Running.m_nRatio += ProbabilityModel.CalcLogLikelihoodRatio(pStreamData->gCases, pStreamData->gMeasure, pStreamData->gTotalCases, pStreamData->gTotalMeasure, Running.m_DuczmalCorrection);
-        }
-        if (Running.m_nRatio && Running.m_nRatio > TopShapeCluster.m_nRatio) {
-          TopShapeCluster.AssignAsType(Running);
-          TopShapeCluster.m_nFirstInterval = iWindowStart;
-          TopShapeCluster.m_nLastInterval = iWindowEnd;
-        }
-     }
-  }
-}
-
-void TimeIntervalRange::CompareDataStreamClustersEx(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData) {
-
-  int                                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  CModel                              & ProbabilityModel(gData.GetProbabilityModel());
-  AbstractTemporalClusterStreamData   * pStreamData;
-  unsigned int                          iStreamSize = StreamData.size();
-
-  //iterate through windows
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - giMaxWindowLength, giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
-     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
-        Running.m_nRatio = 0;
-        for (size_t t=0; t < iStreamSize; ++t) {
-          pStreamData = StreamData[t];
-          pStreamData->gCases = pStreamData->gpCases[iWindowStart] - pStreamData->gpCases[iWindowEnd];
-          pStreamData->gMeasure = pStreamData->gpMeasure[iWindowStart] - pStreamData->gpMeasure[iWindowEnd];
-          pStreamData->gSqMeasure = pStreamData->gpSqMeasure[iWindowStart] - pStreamData->gpSqMeasure[iWindowEnd];
-          if (fRateOfInterest(pStreamData->gCases, pStreamData->gMeasure, pStreamData->gTotalCases, pStreamData->gTotalMeasure))
-            //calculate with second measure
-            Running.m_nRatio += ProbabilityModel.CalcLogLikelihoodRatioEx(pStreamData->gCases, pStreamData->gMeasure, pStreamData->gSqMeasure, pStreamData->gTotalCases, pStreamData->gTotalMeasure, Running.m_DuczmalCorrection);
-        }
-        if (Running.m_nRatio && Running.m_nRatio > TopShapeCluster.m_nRatio) {
-          TopShapeCluster.AssignAsType(Running);
-          TopShapeCluster.m_nFirstInterval = iWindowStart;
-          TopShapeCluster.m_nLastInterval = iWindowEnd;
-        }
-     }
-  }
-}
-
-void TimeIntervalRange::ComputeBestMeasures(AbstractTemporalClusterStreamData * pStreamData, CMeasureList & MeasureList) {
-
+void TimeIntervalRange::CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList * pMeasureList) {
   int                                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
   AbstractMaxWindowLengthIndicator    * pMWL_Indicator = gData.gpMaxWindowLengthIndicator;
+
+  TemporalData * pData = (TemporalData*)pStreamData;  //dynamic cast?
+  
 
   //iterate through windows
   pMWL_Indicator->Reset();
@@ -174,8 +73,8 @@ void TimeIntervalRange::ComputeBestMeasures(AbstractTemporalClusterStreamData * 
      iWindowStart = std::max(iWindowEnd - pMWL_Indicator->GetNextWindowLength(), giStartRange_Start);
      iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart)
-        MeasureList.AddMeasure(pStreamData->gpCases[iWindowStart] - pStreamData->gpCases[iWindowEnd],
-                               pStreamData->gpMeasure[iWindowStart] - pStreamData->gpMeasure[iWindowEnd]);
+        pMeasureList->AddMeasure(pData->gpCases[iWindowStart] - pData->gpCases[iWindowEnd],
+                                 pData->gpMeasure[iWindowStart] - pData->gpMeasure[iWindowEnd]);
   }
 }
 
@@ -204,36 +103,31 @@ measure_t TimeIntervalRange::GetMeasureForTract(const CCluster & Cluster, tract_
 }
 
 /** internal setup function */
-void TimeIntervalRange::Setup(const CSaTScanData& Data) {
-  switch(Data.GetParameters().GetAnalysisType()) {
-    case PROSPECTIVEPURELYTEMPORAL :
-    case PROSPECTIVESPACETIME      : giStartRange_Start = 0;
-                                     giStartRange_End = Data.m_nTimeIntervals;
-                                     giEndRange_Start = Data.m_nProspectiveIntervalStart;
-                                     giEndRange_End = Data.m_nTimeIntervals; break;
-    case PURELYTEMPORAL :
-    case SPACETIME      : switch (Data.GetParameters().GetIncludeClustersType()) {
-                            case ALLCLUSTERS     : giStartRange_Start = 0;
-                                                   giStartRange_End = Data.m_nTimeIntervals;
-                                                   giEndRange_Start = 1;
-                                                   giEndRange_End = Data.m_nTimeIntervals; break;
-                            case ALIVECLUSTERS   : //you can create 'windows' for alive clusters with this class,
-                                                   //but it will be slower that using CTIAlive class.
-                                                   giStartRange_Start = 0;
-                                                   giStartRange_End = Data.m_nTimeIntervals;
-                                                   giEndRange_Start = Data.m_nTimeIntervals;
-                                                   giEndRange_End = Data.m_nTimeIntervals; break;
-                            case CLUSTERSINRANGE : giStartRange_Start = Data.m_nStartRangeStartDateIndex;
-                                                   giStartRange_End = Data.m_nStartRangeEndDateIndex;
-                                                   giEndRange_Start = Data.m_nEndRangeStartDateIndex;
-                                                   giEndRange_End = Data.m_nEndRangeEndDateIndex; break;
-                            default : ZdGenerateException("Unknown cluster inclusion type: '%d'.",
-                                                          "Setup()", Data.GetParameters().GetIncludeClustersType());
-                          };
-                          break;
-    default : ZdGenerateException("Unknown analysis type for range intervals: '%d';",
-                                  "Setup()", Data.GetParameters().GetAnalysisType());
-  };
+void TimeIntervalRange::Setup(const CSaTScanData& Data, IncludeClustersType  eIncludeClustersType) {
+  if (Data.GetParameters().GetIsProspectiveAnalysis() && eIncludeClustersType == ALLCLUSTERS) {
+    giStartRange_Start = 0;
+    giStartRange_End = Data.m_nTimeIntervals;
+    giEndRange_Start = Data.m_nProspectiveIntervalStart;
+    giEndRange_End = Data.m_nTimeIntervals;
+  }
+  else {
+    switch (eIncludeClustersType) {
+      case ALLCLUSTERS     : giStartRange_Start = 0;
+                             giStartRange_End = Data.m_nTimeIntervals;
+                             giEndRange_Start = 1;
+                             giEndRange_End = Data.m_nTimeIntervals; break;
+      case ALIVECLUSTERS   : giStartRange_Start = 0;
+                             giStartRange_End = Data.m_nTimeIntervals;
+                             giEndRange_Start = Data.m_nTimeIntervals;
+                             giEndRange_End = Data.m_nTimeIntervals; break;
+      case CLUSTERSINRANGE : giStartRange_Start = Data.m_nStartRangeStartDateIndex;
+                             giStartRange_End = Data.m_nStartRangeEndDateIndex;
+                             giEndRange_Start = Data.m_nEndRangeStartDateIndex;
+                             giEndRange_End = Data.m_nEndRangeEndDateIndex; break;
+      default :
+        ZdGenerateException("Unknown cluster inclusion type: '%d'.", "Setup()", Data.GetParameters().GetIncludeClustersType());
+    };
+  }
 }
 
 /** validates that the defined window */
@@ -294,4 +188,118 @@ void TimeIntervalRange::ValidateWindowRanges(const CSaTScanData& Data) {
 //  }
 }
 
+
+
+
+/** constructor */
+NormalTimeIntervalRange::NormalTimeIntervalRange(const CSaTScanData& Data, IncludeClustersType eIncludeClustersType)
+                  : TimeIntervalRange(Data, eIncludeClustersType) {}
+
+/** copy constructor */
+NormalTimeIntervalRange::NormalTimeIntervalRange(const NormalTimeIntervalRange & rhs)
+                        :TimeIntervalRange(rhs) {}
+
+/** overloaded assignment operator */
+NormalTimeIntervalRange & NormalTimeIntervalRange::operator=(const NormalTimeIntervalRange& rhs) {
+  giStartRange_End = rhs.giStartRange_End;
+  giEndRange_Start = rhs.giEndRange_Start;
+  giEndRange_End = rhs.giEndRange_End;
+  giMaxWindowLength = rhs.giMaxWindowLength;
+  return *this;
+}
+
+/** returns newly cloned TimeIntervalRange object */
+NormalTimeIntervalRange * NormalTimeIntervalRange::Clone() const {
+ return new NormalTimeIntervalRange(*this);
+}
+
+void NormalTimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluster) {
+  int           iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  CModel      & Model(gData.GetProbabilityModel());
+  count_t       tCases, tTotalCases(gData.GetTotalCases());
+  measure_t     tMeasure, tMeasure2, tTotalMeasure(gData.GetTotalMeasure());
+
+  NormalTemporalData * pData = (NormalTemporalData*)Running.GetClusterData(); //dynamic cast ?
+
+  //iterate through windows
+  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - giMaxWindowLength, giStartRange_Start);
+     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+        pData->gtCases = pData->gpCases[iWindowStart] - pData->gpCases[iWindowEnd];
+        pData->gtMeasure = pData->gpMeasure[iWindowStart] - pData->gpMeasure[iWindowEnd];
+        pData->gtSqMeasure = pData->gpSqMeasure[iWindowStart] - pData->gpSqMeasure[iWindowEnd];
+        if (fRateOfInterest(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure)) {
+          Running.m_nRatio = Model.CalcLogLikelihoodRatioEx(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure, pData->gtSqMeasure);
+          if (Running.m_nRatio  > TopCluster.m_nRatio) {
+            TopCluster.AssignAsType(Running);
+            TopCluster.m_nFirstInterval = iWindowStart;
+            TopCluster.m_nLastInterval = iWindowEnd;
+          }
+        }
+     }
+  }
+}
+
+void NormalTimeIntervalRange::CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList * pMeasureList) {
+  ZdGenerateException("CompareMeasures() not implemented.","NormalTimeIntervalRange");
+}
+
+
+
+/** constructor */
+MultiStreamTimeIntervalRange::MultiStreamTimeIntervalRange(const CSaTScanData& Data, IncludeClustersType eIncludeClustersType)
+                             :TimeIntervalRange(Data, eIncludeClustersType) {}
+
+/** copy constructor */
+MultiStreamTimeIntervalRange::MultiStreamTimeIntervalRange(const MultiStreamTimeIntervalRange & rhs)
+                             :TimeIntervalRange(rhs) {}
+
+/** overloaded assignment operator */
+MultiStreamTimeIntervalRange & MultiStreamTimeIntervalRange::operator=(const MultiStreamTimeIntervalRange& rhs) {
+  giStartRange_End = rhs.giStartRange_End;
+  giEndRange_Start = rhs.giEndRange_Start;
+  giEndRange_End = rhs.giEndRange_End;
+  giMaxWindowLength = rhs.giMaxWindowLength;
+  return *this;
+}
+
+/** returns newly cloned TimeIntervalRange object */
+MultiStreamTimeIntervalRange * MultiStreamTimeIntervalRange::Clone() const {
+ return new MultiStreamTimeIntervalRange(*this);
+}
+
+void MultiStreamTimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluster) {
+  int                                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  CModel                              & ProbabilityModel(gData.GetProbabilityModel());
+
+  MutlipleStreamTemporalData * pData = (MutlipleStreamTemporalData*)Running.GetClusterData(); //dynamic cast ?
+
+  //iterate through windows
+  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - giMaxWindowLength, giStartRange_Start);
+     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+        Running.m_nRatio = 0;
+        for (size_t t=0; t < pData->gvStreamData.size(); ++t) {
+          TemporalData & Datum = *pData->gvStreamData[t];
+          Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
+          Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
+          if (fRateOfInterest(Datum.gtCases, Datum.gtMeasure, Datum.gtTotalCases, Datum.gtTotalMeasure))
+            Running.m_nRatio += ProbabilityModel.CalcLogLikelihoodRatio(Datum.gtCases, Datum.gtMeasure, Datum.gtTotalCases, Datum.gtTotalMeasure);
+        }
+        if (Running.m_nRatio && Running.m_nRatio > TopCluster.m_nRatio) {
+          TopCluster.AssignAsType(Running);
+          TopCluster.m_nFirstInterval = iWindowStart;
+          TopCluster.m_nLastInterval = iWindowEnd;
+        }
+     }
+  }
+}
+
+void MultiStreamTimeIntervalRange::CompareMeasures(AbstractTemporalClusterData * pStreamData, CMeasureList * pMeasureList) {
+  ZdGenerateException("CompareMeasures() not implemented.","MultiStreamTimeIntervalRange");
+}
 
