@@ -564,39 +564,44 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
 
       fprintf(fp, "  Time Aggregation Length : %i\n\n", glTimeAggregationLength);
 
-      fprintf(fp, "  Temporal Adjustment : ");
-      switch (geTimeTrendAdjustType) {
-         case NOTADJUSTED :
-           fprintf(fp, "None\n"); break;
-         case NONPARAMETRIC :
-           fprintf(fp, "Nonparametric\n"); break;
-         case LOGLINEAR_PERC :
-           fprintf(fp, "Log linear with %g%% per year\n", gdTimeTrendAdjustPercentage);
-           break;
-         case CALCULATED_LOGLINEAR_PERC :
-           fprintf(fp, "Log linear with automatically calculated trend\n");
-           break;
-         case STRATIFIED_RANDOMIZATION :
-           fprintf(fp, "Nonparametric, with time stratified randomization\n");
-           break;
-         default :
-           ZdException::Generate("Unknown time trend adjustment type '%d'.\n", "DisplayParameters()", geTimeTrendAdjustType);
+      if (geProbabiltyModelType == POISSON) {
+        fprintf(fp, "  Temporal Adjustment : ");
+        switch (geTimeTrendAdjustType) {
+           case NOTADJUSTED :
+             fprintf(fp, "None\n"); break;
+           case NONPARAMETRIC :
+             fprintf(fp, "Nonparametric\n"); break;
+           case LOGLINEAR_PERC :
+             fprintf(fp, "Log linear with %g%% per year\n", gdTimeTrendAdjustPercentage);
+             break;
+           case CALCULATED_LOGLINEAR_PERC :
+             fprintf(fp, "Log linear with automatically calculated trend\n");
+             break;
+           case STRATIFIED_RANDOMIZATION :
+             fprintf(fp, "Nonparametric, with time stratified randomization\n");
+             break;
+           default :
+             ZdException::Generate("Unknown time trend adjustment type '%d'.\n", "DisplayParameters()", geTimeTrendAdjustType);
+        }
       }
     }
+
+    if (geProbabiltyModelType == POISSON && (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
+      fprintf(fp, "  Spatial Adjustment  : ");
+      switch (geSpatialAdjustmentType) {
+        case NO_SPATIAL_ADJUSTMENT :
+          fprintf(fp, "None\n"); break;
+        case SPATIALLY_STRATIFIED_RANDOMIZATION :
+          fprintf(fp, "Spatial adjustment by stratified randomization\n"); break;
+        default :
+          ZdException::Generate("Unknown spatial adjustment type '%d'.\n", "DisplayParameters()", geSpatialAdjustmentType);
+      }
+    }  
 
     if (geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == PROSPECTIVEPURELYTEMPORAL) {
       fprintf(fp, "  Adjusted for Earlier Analyses : %s\n", (gbAdjustForEarlierAnalyses ? "Yes" : "No"));
       if (gbAdjustForEarlierAnalyses)
         fprintf(fp, "  Prospective Start Date : %s\n", gsProspectiveStartDate.c_str());
-    }
-    fprintf(fp, "  Spatial Adjustment : ");
-    switch (geSpatialAdjustmentType) {
-      case NO_SPATIAL_ADJUSTMENT :
-        fprintf(fp, "None\n"); break;
-      case SPATIALLY_STRATIFIED_RANDOMIZATION :
-        fprintf(fp, "Spatial adjustment by stratified randomization\n"); break;
-      default :
-        ZdException::Generate("Unknown spatial adjustment type '%d'.\n", "DisplayParameters()", geSpatialAdjustmentType);
     }
 
     fprintf(fp, "\nOutput\n");
