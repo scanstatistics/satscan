@@ -233,16 +233,16 @@ void IniParameterFileAccess::ReadMultipleDataSetsSettings(const ZdIniFile& Sourc
     ReadIniParameter(SourceFile, MULTI_DATASET_PURPOSE_TYPE);
     ReadIniParameter(SourceFile, CASEFILE, vFilenames);
     for (t=0; t < vFilenames.size(); ++t)
-      gParameters.SetCaseFileName(vFilenames[t].GetCString(), false, t + 2);
+      gParameters.SetCaseFileName(vFilenames[t].GetCString(), true, t + 2);
     iMostStreams = std::max(iMostStreams, vFilenames.size() + 1);
     ReadIniParameter(SourceFile, CONTROLFILE, vFilenames);
     iMostStreams = std::max(iMostStreams, vFilenames.size() + 1);
     for (t=0; t < vFilenames.size(); ++t)
-      gParameters.SetControlFileName(vFilenames[t].GetCString(), false, t + 2);
+      gParameters.SetControlFileName(vFilenames[t].GetCString(), true, t + 2);
     ReadIniParameter(SourceFile, POPFILE, vFilenames);
     iMostStreams = std::max(iMostStreams, vFilenames.size() + 1);
     for (t=0; t < vFilenames.size(); ++t)
-      gParameters.SetPopulationFileName(vFilenames[t].GetCString(), false, t + 2);
+      gParameters.SetPopulationFileName(vFilenames[t].GetCString(), true, t + 2);
     //Synchronize collections of data stream filesnames so that we can ask for
     //any file of a particular stream, even if blank. This keeps the same behavior
     //as when there was only one data stream.
