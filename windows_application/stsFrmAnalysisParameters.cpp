@@ -478,6 +478,17 @@ void __fastcall TfrmAnalysis::edtEndDayExit(TObject *Sender) {
     edtEndDay->SetFocus();
   }
 }
+
+/** Resets parameters that are not present in interface to default value.
+    Hidden features are to be used soley in dos version at this time.     */
+void TfrmAnalysis::DefaultHiddenParameters() {
+  gParameters.SetSequentialScanning(false);
+  gParameters.SetNumberEllipses(0);
+  gParameters.SetRiskType(STANDARDRISK);
+  gParameters.SetPowerCalculation(false);
+  gParameters.SetValidatePriorToCalculation(true);
+}
+
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::edtEndMonthExit(TObject *Sender) {
   try {
@@ -1212,6 +1223,7 @@ void TfrmAnalysis::Setup(const char * sParameterFileName) {
     if (sParameterFileName) {
       gsParamFileName = sParameterFileName;
       gParameters.Read(sParameterFileName, gNullPrint);
+      DefaultHiddenParameters();
     }  
     SetupInterface();
   }

@@ -200,6 +200,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     bool                CheckReplicas(int iReplicas);
     bool                CheckScanningWindowParams();
     bool                CheckTimeParams();
+    void                DefaultHiddenParameters();
     void                EnablePSTDate(bool bEnable);
     void                EnableSpatial(bool bEnable, bool bEnableCheckbox, bool bEnableSpatialPercentage);
     void                EnableStartAndEndYear(bool bEnable);
