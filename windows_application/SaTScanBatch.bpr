@@ -69,14 +69,7 @@
       ..\calculation\analysis\PurelyTemporalAnalysis.obj 
       ..\calculation\analysis\SVTTAnalysis.obj 
       ..\calculation\Output\stsRunHistoryFile.obj 
-      ..\calculation\Output\stsASCIIFileWriter.obj 
-      ..\calculation\Output\stsClusterData.obj 
       ..\calculation\Output\stsDBaseFileWriter.obj 
-      ..\calculation\Output\stsLogLikelihood.obj 
-      ..\calculation\Output\stsOutputFileData.obj 
-      ..\calculation\Output\stsOutputFileWriter.obj 
-      ..\calculation\Output\stsRelativeRisk.obj 
-      ..\calculation\Output\stsAreaSpecificData.obj 
       ..\calculation\Output\AsciiPrintFormat.obj 
       ..\calculation\randomization\Randomizer.obj 
       ..\calculation\randomization\SpaceTimeRandomizer.obj 
@@ -121,7 +114,13 @@
       ..\calculation\probability_model\ExponentialModel.obj 
       ..\calculation\cluster\MultiSetClusterData.obj 
       ..\calculation\satscan_data\ExponentialDataSetHandler.obj 
-      ..\calculation\randomization\ExponentialRandomizer.obj"/>
+      ..\calculation\randomization\ExponentialRandomizer.obj 
+      ..\calculation\Output\AbstractDataFileWriter.obj 
+      ..\calculation\Output\ClusterInformationWriter.obj 
+      ..\calculation\Output\LocationInformationWriter.obj 
+      ..\calculation\Output\LocationRiskEstimateWriter.obj 
+      ..\calculation\Output\LoglikelihoodRatioWriter.obj 
+      ..\calculation\Output\stsASCIIFileWriter.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>

@@ -95,12 +95,6 @@ USEUNIT("..\calculation\analysis\PurelySpatialMonotoneAnalysis.cpp");
 USEUNIT("..\calculation\analysis\PurelyTemporalAnalysis.cpp");
 USEUNIT("..\calculation\analysis\SVTTAnalysis.cpp");
 USEUNIT("..\calculation\Output\stsRunHistoryFile.cpp");
-USEUNIT("..\calculation\Output\stsRelativeRisk.cpp");
-USEUNIT("..\calculation\Output\stsClusterData.cpp");
-USEUNIT("..\calculation\Output\stsLogLikelihood.cpp");
-USEUNIT("..\calculation\Output\stsOutputFileData.cpp");
-USEUNIT("..\calculation\Output\stsAreaSpecificData.cpp");
-USEUNIT("..\calculation\Output\stsOutputFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsDBaseFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsASCIIFileWriter.cpp");
 USEUNIT("..\calculation\Output\AsciiPrintFormat.cpp");
@@ -148,6 +142,11 @@ USEUNIT("..\calculation\cluster\NormalClusterDataFactory.cpp");
 USEUNIT("..\calculation\loglikelihood\LoglikelihoodRatioUnifier.cpp");
 USEUNIT("..\calculation\loglikelihood\OrdinalLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\randomization\ExponentialRandomizer.cpp");
+USEUNIT("..\calculation\Output\AbstractDataFileWriter.cpp");
+USEUNIT("..\calculation\Output\LoglikelihoodRatioWriter.cpp");
+USEUNIT("..\calculation\Output\ClusterInformationWriter.cpp");
+USEUNIT("..\calculation\Output\ClusterLocationsWriter.cpp");
+USEUNIT("..\calculation\Output\LocationRiskEstimateWriter.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;

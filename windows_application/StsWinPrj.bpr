@@ -81,12 +81,6 @@
       ..\calculation\analysis\PurelyTemporalAnalysis.obj 
       ..\calculation\analysis\SVTTAnalysis.obj 
       ..\calculation\Output\stsRunHistoryFile.obj 
-      ..\calculation\Output\stsRelativeRisk.obj 
-      ..\calculation\Output\stsClusterData.obj 
-      ..\calculation\Output\stsLogLikelihood.obj 
-      ..\calculation\Output\stsOutputFileData.obj 
-      ..\calculation\Output\stsAreaSpecificData.obj 
-      ..\calculation\Output\stsOutputFileWriter.obj 
       ..\calculation\Output\stsDBaseFileWriter.obj 
       ..\calculation\Output\stsASCIIFileWriter.obj 
       ..\calculation\Output\AsciiPrintFormat.obj 
@@ -130,7 +124,12 @@
       ..\calculation\cluster\NormalClusterDataFactory.obj 
       ..\calculation\loglikelihood\LoglikelihoodRatioUnifier.obj 
       ..\calculation\loglikelihood\OrdinalLikelihoodCalculation.obj 
-      ..\calculation\randomization\ExponentialRandomizer.obj"/>
+      ..\calculation\randomization\ExponentialRandomizer.obj 
+      ..\calculation\Output\AbstractDataFileWriter.obj 
+      ..\calculation\Output\LoglikelihoodRatioWriter.obj 
+      ..\calculation\Output\ClusterInformationWriter.obj 
+      ..\calculation\Output\ClusterLocationsWriter.obj 
+      ..\calculation\Output\LocationRiskEstimateWriter.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
