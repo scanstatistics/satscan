@@ -230,15 +230,17 @@ public:
 class AdvancedFeaturesException : public virtual ZdException {
   private:
     TWinControl       & gFocusControl;
+    int                 giTabCategory; // type of tab showing - input, analysis, output
 
   public:
-    AdvancedFeaturesException(va_list varArgs, const char *sMessage, const char *sSourceModule, Level iLevel, TWinControl& FocusControl);
+    AdvancedFeaturesException(va_list varArgs, const char *sMessage, const char *sSourceModule, Level iLevel, TWinControl& FocusControl, int iTabCategory);
     virtual ~AdvancedFeaturesException();
 
     TWinControl       & GetFocusControl() const {return gFocusControl;}
+    int                 GetTabCategory()  const {return giTabCategory;}
 };
 
-void GenerateAFException(const char * sMessage, const char * sSourceModule, TWinControl & FocusControl, ...);
+void GenerateAFException(const char * sMessage, const char * sSourceModule, TWinControl & FocusControl, int iTabCategory, ...);
 
 //---------------------------------------------------------------------------
 #endif

@@ -272,6 +272,11 @@ void __fastcall TfrmAdvancedParameters::edtAdjustmentsByRelativeRisksFileChange(
   edtAdjustmentsByRelativeRisksFile->Hint = edtAdjustmentsByRelativeRisksFile->Text;
 }
 //---------------------------------------------------------------------------
+void __fastcall TfrmAdvancedParameters::edtFileNameExit(TObject *Sender)
+{
+   UpdateInputFiles();
+}
+//---------------------------------------------------------------------------
 /** event triggered when text of maximum circle edit control changes */
 void __fastcall TfrmAdvancedParameters::edtMaxCirclePopulationFilenameChange(TObject *Sender) {
   edtMaxCirclePopulationFilename->Hint = edtMaxCirclePopulationFilename->Text;
@@ -1143,31 +1148,8 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
   bool          bFound=false;
   int           i;
 
-  for (i=0; i < PageControl->PageCount && !bFound; ++i) {
-     if (PageControl->Pages[i]->ContainsControl(pFocusControl)) {
-       PageControl->ActivePage = PageControl->Pages[i];
-       gpFocusControl = pFocusControl;
-       bFound=true;
-     }
-  }
-
-  if (!bFound) {
-    gpFocusControl=0;
-    //PageControl->ActivePage = PageControl->FindNextPage(NULL, true, true);// PAG - find first visible page
-    PageControl->ActivePage = PageControl->Pages[0]; // first page
-  }
   // PAG - not the best coding here but am trying to show/hide only
   // certain pages/tabs of page control
-  if (iCategory < 0) {     // as in error - Advanced Exception
-     switch (PageControl->ActivePageIndex) {
-        case 0: iCategory = INPUT_TABS; break;
-        case 1:
-        case 2:
-        case 3:
-        case 4: iCategory = ANALYSIS_TABS; break;
-        case 5: iCategory = OUTPUT_TABS; break;
-     }
-  }
   giCategory = iCategory;
 
   switch (iCategory){
@@ -1197,6 +1179,20 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
            PageControl->Pages[i]->TabVisible=false;
         PageControl->Pages[PageControl->PageCount-1]->TabVisible=true;
         break;
+  }
+  // locate the page the passed in control in on - that should be page to display
+  for (i=0; i < PageControl->PageCount && !bFound; ++i) {
+     if (PageControl->Pages[i]->ContainsControl(pFocusControl)) {
+       PageControl->ActivePage = PageControl->Pages[i];
+       gpFocusControl = pFocusControl;
+       bFound=true;
+     }
+  }
+
+  if (!bFound) { // if no passed-in control or it wasn't found
+    gpFocusControl=0;
+    PageControl->ActivePage = PageControl->FindNextPage(NULL, true, true);
+    //PageControl->ActivePage = PageControl->Pages[0]; // first page
   }
 
   //reporting clusters text dependent on maximum spatial cluster size
@@ -1237,10 +1233,10 @@ void TfrmAdvancedParameters::ValidateAdjustmentSettings() {
     if (chkAdjustForKnownRelativeRisks->Enabled && chkAdjustForKnownRelativeRisks->Checked) {
       if (edtAdjustmentsByRelativeRisksFile->Text.IsEmpty())
         GenerateAFException("Please specify an adjustments file.",
-                            "ValidateAdjustmentSettings()", *edtAdjustmentsByRelativeRisksFile);
+                            "ValidateAdjustmentSettings()", *edtAdjustmentsByRelativeRisksFile, ANALYSIS_TABS);
       if (!File_Exists(edtAdjustmentsByRelativeRisksFile->Text.c_str()))
         GenerateAFException("Adjustments file could not be opened.",
-                            "ValidateAdjustmentSettings()", *edtAdjustmentsByRelativeRisksFile);
+                            "ValidateAdjustmentSettings()", *edtAdjustmentsByRelativeRisksFile, ANALYSIS_TABS);
     }
   }
   catch (ZdException &x) {
@@ -1255,22 +1251,22 @@ void TfrmAdvancedParameters::ValidateInputFilesAtInput() {
     //validate the case file
     if (edtCaseFileName->Text.IsEmpty()) {
       edtCaseFileName->SetFocus();
-      GenerateAFException("Please specify a case file.", "ValidateInputFiles()",*edtCaseFileName);
+      GenerateAFException("Please specify a case file.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
     }
     if (!File_Exists(edtCaseFileName->Text.c_str())) {
       edtCaseFileName->SetFocus();
-      GenerateAFException("Case file could not be opened.", "ValidateInputFiles()",*edtCaseFileName);
+      GenerateAFException("Case file could not be opened.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
     }
 
     //validate the control file - Bernoulli model only
     if (gAnalysisSettings.GetModelControlType() == BERNOULLI) {
       if (edtControlFileName->Text.IsEmpty()) {
         edtControlFileName->SetFocus();
-        GenerateAFException("For the Bernoulli model, please specify a control file.","ValidateInputFiles()", *edtControlFileName);
+        GenerateAFException("For the Bernoulli model, please specify a control file.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
       }
       if (!File_Exists(edtControlFileName->Text.c_str())) {
         edtControlFileName->SetFocus();
-        GenerateAFException("Control file could not be opened.","ValidateInputFiles()", *edtControlFileName);
+        GenerateAFException("Control file could not be opened.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
       }
     }
 
@@ -1278,11 +1274,11 @@ void TfrmAdvancedParameters::ValidateInputFilesAtInput() {
     if (gAnalysisSettings.GetModelControlType() == POISSON) {
       if (edtPopFileName->Text.IsEmpty()) {
         edtPopFileName->SetFocus();
-        GenerateAFException("For the Poisson model, please specify a population file.","ValidateInputFiles()", *edtPopFileName);
+        GenerateAFException("For the Poisson model, please specify a population file.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
       }
       if (!File_Exists(edtPopFileName->Text.c_str())) {
         edtPopFileName->SetFocus();
-        GenerateAFException("Population file could not be opened.","ValidateInputFiles()", *edtPopFileName);
+        GenerateAFException("Population file could not be opened.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
       }
     }
   }
@@ -1299,29 +1295,29 @@ void TfrmAdvancedParameters::ValidateInputFiles() {
        lstInputStreams->OnClick(this);
        //validate the case file
        if (gvCaseFiles.GetElement(i).IsEmpty()) {
-          GenerateAFException("Please specify a case file for this additional input stream.", "ValidateInputFiles()",*edtCaseFileName);
+          GenerateAFException("Please specify a case file for this additional input stream.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
        }
        if (!File_Exists(gvCaseFiles.GetElement(i).c_str())) {
-         GenerateAFException("Case file could not be opened for this additional input stream.", "ValidateInputFiles()",*edtCaseFileName);
+         GenerateAFException("Case file could not be opened for this additional input stream.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
        }
 
        //validate the control file - Bernoulli model only
        if (gAnalysisSettings.GetModelControlType() == BERNOULLI) {
           if (gvControlFiles.GetElement(i).IsEmpty()) {
-             GenerateAFException("For the Bernoulli model, please specify a control file for this additional input stream.","ValidateInputFiles()", *edtControlFileName);
+             GenerateAFException("For the Bernoulli model, please specify a control file for this additional input stream.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
           }
           if (!File_Exists(gvControlFiles.GetElement(i).c_str())) {
-             GenerateAFException("Control file could not be opened for this additional input stream.","ValidateInputFiles()", *edtControlFileName);
+             GenerateAFException("Control file could not be opened for this additional input stream.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
           }
        }
 
        //validate the population file -  Poisson model only
        if (gAnalysisSettings.GetModelControlType() == POISSON) {
           if (gvPopFiles.GetElement(i).IsEmpty()) {
-             GenerateAFException("For the Poisson model, please specify a population file for this additional input stream.","ValidateInputFiles()", *edtPopFileName);
+             GenerateAFException("For the Poisson model, please specify a population file for this additional input stream.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
           }
           if (!File_Exists(gvPopFiles.GetElement(i).c_str())) {
-             GenerateAFException("Population file could not be opened for this additional input stream.","ValidateInputFiles()", *edtPopFileName);
+             GenerateAFException("Population file could not be opened for this additional input stream.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
           }
        }
     }  //for loop
@@ -1341,13 +1337,13 @@ void TfrmAdvancedParameters::ValidateProspDateRange() {
 
   try {
     if (edtProspectiveStartDateYear->Text.IsEmpty())
-       GenerateAFException("Please specify a year.","ValidateProspDateRange()", *edtProspectiveStartDateYear);
+       GenerateAFException("Please specify a year.","ValidateProspDateRange()", *edtProspectiveStartDateYear, ANALYSIS_TABS);
 
     if (edtProspectiveStartDateMonth->Text.IsEmpty())
-       GenerateAFException("Please specify a month.","ValidateProspDateRange()", *edtProspectiveStartDateMonth);
+       GenerateAFException("Please specify a month.","ValidateProspDateRange()", *edtProspectiveStartDateMonth, ANALYSIS_TABS);
 
     if (edtProspectiveStartDateDay->Text.IsEmpty())
-       GenerateAFException("Please specify a day.","ValidateProspDateRange()", *edtProspectiveStartDateDay);
+       GenerateAFException("Please specify a day.","ValidateProspDateRange()", *edtProspectiveStartDateDay, ANALYSIS_TABS);
 
     Start = MDYToJulian(atoi(gAnalysisSettings.edtStudyPeriodStartDateMonth->Text.c_str()),
                         atoi(gAnalysisSettings.edtStudyPeriodStartDateDay->Text.c_str()),
@@ -1362,7 +1358,7 @@ void TfrmAdvancedParameters::ValidateProspDateRange() {
 
     if ((Prosp < Start) || (Prosp > End)) {
       GenerateAFException("The prospective start date must be between the study period start and end dates.",
-                           "ValidateProspDateRange()", *edtProspectiveStartDateYear);
+                           "ValidateProspDateRange()", *edtProspectiveStartDateYear, ANALYSIS_TABS);
     }
   }
   catch (ZdException & x) {
@@ -1378,13 +1374,13 @@ void TfrmAdvancedParameters::ValidateReportedSpatialClusterSize() {
       if (!edtReportClustersSmallerThan->Text.Length() || atof(edtReportClustersSmallerThan->Text.c_str()) == 0)
         GenerateAFException("Please specify a maximum cluster size for reported clusters\n"
                             "greater than 0 and less than or equal to the maximum spatial cluster size of %g.",
-                            "ValidateReportedSpatialClusterSize()", *edtReportClustersSmallerThan,
+                            "ValidateReportedSpatialClusterSize()", *edtReportClustersSmallerThan, OUTPUT_TABS,
                             atof(edtMaxSpatialClusterSize->Text.c_str()));
 
 
       if (atof(edtReportClustersSmallerThan->Text.c_str()) > GetMaxSpatialClusterSizeFromControl())
         GenerateAFException("The maximum cluster size for reported clusters can not be greater than the maximum spatial cluster size.\n",
-                            "ValidateReportedSpatialClusterSize()", *edtReportClustersSmallerThan);
+                            "ValidateReportedSpatialClusterSize()", *edtReportClustersSmallerThan, OUTPUT_TABS);
     }
   }
   catch (ZdException & x) {
@@ -1422,25 +1418,25 @@ void TfrmAdvancedParameters::ValidateScanningWindowRanges() {
       //check that scanning ranges are within study period
       if (StartRangeStartDate < StudyPeriodStartDate || StartRangeStartDate > StudyPeriodEndDate)
         GenerateAFException("The scanning window start range does not occur within study period.",
-                            "ValidateScanningWindowRanges()", *edtStartRangeStartYear);
+                            "ValidateScanningWindowRanges()", *edtStartRangeStartYear, ANALYSIS_TABS);
       if (StartRangeEndDate < StudyPeriodStartDate || StartRangeEndDate > StudyPeriodEndDate)
         GenerateAFException("The scanning window start range does not occur within study period.",
-                            "ValidateScanningWindowRanges()", *edtStartRangeEndYear);
+                            "ValidateScanningWindowRanges()", *edtStartRangeEndYear, ANALYSIS_TABS);
       if (StartRangeStartDate > StartRangeEndDate)
         GenerateAFException("The scanning window start range dates conflict.",
-                            "ValidateScanningWindowRanges()", *edtStartRangeStartYear);
+                            "ValidateScanningWindowRanges()", *edtStartRangeStartYear, ANALYSIS_TABS);
       if (EndRangeStartDate < StudyPeriodStartDate || EndRangeStartDate > StudyPeriodEndDate)
         GenerateAFException("The scanning window end range does not occur within study period.",
-                            "ValidateScanningWindowRanges()", *edtEndRangeStartYear);
+                            "ValidateScanningWindowRanges()", *edtEndRangeStartYear, ANALYSIS_TABS);
       if (EndRangeEndDate < StudyPeriodStartDate || EndRangeEndDate > StudyPeriodEndDate)
         GenerateAFException("The scanning window end range does not occur within study period.",
-                            "ValidateScanningWindowRanges()", *edtEndRangeEndYear);
+                            "ValidateScanningWindowRanges()", *edtEndRangeEndYear, ANALYSIS_TABS);
       if (EndRangeStartDate > EndRangeEndDate)
         GenerateAFException("The scanning window end range dates conflict.",
-                            "ValidateScanningWindowRanges()", *edtEndRangeStartYear);
+                            "ValidateScanningWindowRanges()", *edtEndRangeStartYear, ANALYSIS_TABS);
       if (StartRangeStartDate >= EndRangeEndDate)
         GenerateAFException("The scanning window start range does not occur before end range.",
-                            "ValidateScanningWindowRanges()", *edtStartRangeStartYear);
+                            "ValidateScanningWindowRanges()", *edtStartRangeStartYear, ANALYSIS_TABS);
     }
   }
   catch (ZdException & x) {
@@ -1455,34 +1451,34 @@ void TfrmAdvancedParameters::ValidateSpatialClusterSize() {
       switch (GetMaxSpatialClusterSizeControlType()) {
         case PERCENTOFPOPULATIONTYPE :
           if (!edtMaxSpatialClusterSize->Text.Length() || atof(edtMaxSpatialClusterSize->Text.c_str()) == 0) {
-             GenerateAFException("Please specify a maximum spatial cluster size greater than zero.","ValidateSpatialClusterSize()",*edtMaxSpatialClusterSize);
+             GenerateAFException("Please specify a maximum spatial cluster size greater than zero.","ValidateSpatialClusterSize()",*edtMaxSpatialClusterSize, ANALYSIS_TABS);
           }
           if (atof(edtMaxSpatialClusterSize->Text.c_str()) > 50.0) {
              GenerateAFException("Please specify a maximum spatial cluster size no greater than 50.",
-                                  "ValidateSpatialClusterSize()", *edtMaxSpatialClusterSize);
+                                  "ValidateSpatialClusterSize()", *edtMaxSpatialClusterSize, ANALYSIS_TABS);
           }
           break;
         case DISTANCETYPE :
           if (!edtMaxSpatialRadius->Text.Length() || atof(edtMaxSpatialRadius->Text.c_str()) == 0) {
-             GenerateAFException("Please specify a maximum spatial cluster size greater than zero.","ValidateSpatialClusterSize()", *edtMaxSpatialRadius);
+             GenerateAFException("Please specify a maximum spatial cluster size greater than zero.","ValidateSpatialClusterSize()", *edtMaxSpatialRadius, ANALYSIS_TABS);
           }
           break;
         case PERCENTOFPOPULATIONFILETYPE :
           if (!edtMaxSpatialPercentFile->Text.Length() || atof(edtMaxSpatialPercentFile->Text.c_str()) == 0) {
-             GenerateAFException("Please specify a maximum spatial cluster size greater than zero.","ValidateSpatialClusterSize()", *edtMaxSpatialPercentFile);
+             GenerateAFException("Please specify a maximum spatial cluster size greater than zero.","ValidateSpatialClusterSize()", *edtMaxSpatialPercentFile, ANALYSIS_TABS);
           }
           if (atof(edtMaxSpatialPercentFile->Text.c_str()) > 50.0) {
              GenerateAFException("Please specify a maximum spatial cluster size no greater than 50.",
-                                  "ValidateSpatialClusterSize()", *edtMaxSpatialPercentFile);
+                                  "ValidateSpatialClusterSize()", *edtMaxSpatialPercentFile, ANALYSIS_TABS);
           }
           if (edtMaxCirclePopulationFilename->Text.IsEmpty() || !File_Exists(edtMaxCirclePopulationFilename->Text.c_str())) {
-             GenerateAFException("Max circle size file could not be opened.","ValidateSpatialClusterSize()", *edtMaxCirclePopulationFilename);
+             GenerateAFException("Max circle size file could not be opened.","ValidateSpatialClusterSize()", *edtMaxCirclePopulationFilename, ANALYSIS_TABS);
           }
           break;
         default :
            ZdString sErrorMessage;
            sErrorMessage << "Unknown maximum spatial clutser size type:" << GetMaxSpatialClusterSizeControlType() << ".";
-           GenerateAFException(sErrorMessage.GetCString(), "ValidateSpatialClusterSize()", *rdgSpatialOptions);
+           GenerateAFException(sErrorMessage.GetCString(), "ValidateSpatialClusterSize()", *rdgSpatialOptions, ANALYSIS_TABS);
       }
     }
   }
@@ -1507,7 +1503,7 @@ void TfrmAdvancedParameters::ValidateTemporalClusterSize() {
         switch (GetMaxTemporalClusterSizeControlType()) {
            case PERCENTAGETYPE :
               if (!edtMaxTemporalClusterSize->Text.Length() || atof(edtMaxTemporalClusterSize->Text.c_str()) == 0) {
-                GenerateAFException("Please specify a maximum temporal cluster size.","ValidateTemporalClusterSize()", *edtMaxTemporalClusterSize);
+                GenerateAFException("Please specify a maximum temporal cluster size.","ValidateTemporalClusterSize()", *edtMaxTemporalClusterSize, ANALYSIS_TABS);
               }
               //check maximum temporal cluster size(as percentage pf population) is less
               //than maximum for given probabilty model
@@ -1516,13 +1512,13 @@ void TfrmAdvancedParameters::ValidateTemporalClusterSize() {
                  sErrorMessage << "For the " << gAnalysisSettings.gParameters.GetProbabiltyModelTypeAsString(gAnalysisSettings.GetModelControlType());
                  sErrorMessage << " model, the maximum temporal cluster size, as a percent of study period, is ";
                  sErrorMessage << (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90) << " percent.";
-                 GenerateAFException(sErrorMessage.GetCString(), "ValidateTemporalClusterSize()", *edtMaxTemporalClusterSize);
+                 GenerateAFException(sErrorMessage.GetCString(), "ValidateTemporalClusterSize()", *edtMaxTemporalClusterSize, ANALYSIS_TABS);
               }
               break;
            case TIMETYPE :
               if (!edtMaxTemporalClusterSizeUnits->Text.Length() || atof(edtMaxTemporalClusterSizeUnits->Text.c_str()) == 0) {
                 GenerateAFException("Please specify a maximum temporal cluster size.",
-                                    "ValidateTemoralClusterSize()", *edtMaxTemporalClusterSizeUnits);
+                                    "ValidateTemoralClusterSize()", *edtMaxTemporalClusterSizeUnits, ANALYSIS_TABS);
               }
               //check that maximum temporal cluster size(in time units) is less than
               //maximum for probabilty model. Determine the number of days the maximum
@@ -1555,7 +1551,7 @@ void TfrmAdvancedParameters::ValidateTemporalClusterSize() {
                  break;
               default  :
                  sErrorMessage << "Unknown interval unit " << gAnalysisSettings.GetTimeIntervalControlType() << ".";
-                 GenerateAFException(sErrorMessage, "ValidateTemporalClusterSize()", *edtMaxTemporalClusterSizeUnits);
+                 GenerateAFException(sErrorMessage, "ValidateTemporalClusterSize()", *edtMaxTemporalClusterSizeUnits, ANALYSIS_TABS);
                  sErrorMessage = 0;
               };
               ulIntervalLengthInDays = StartPlusIntervalDate.GetJulianDayFromCalendarStart() - StartDate.GetJulianDayFromCalendarStart();
@@ -1566,7 +1562,7 @@ void TfrmAdvancedParameters::ValidateTemporalClusterSize() {
                 sErrorMessage << FilterBuffer << ",\na maximum temporal cluster size of " << edtMaxTemporalClusterSizeUnits->Text.c_str();
                 sErrorMessage << " " << Buffer << " is greater than " << (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90);
                 sErrorMessage << " percent of study period.";
-                GenerateAFException(sErrorMessage.GetCString(), "ValidateTemporalClusterSize()", *edtMaxTemporalClusterSizeUnits);
+                GenerateAFException(sErrorMessage.GetCString(), "ValidateTemporalClusterSize()", *edtMaxTemporalClusterSizeUnits, ANALYSIS_TABS);
               }
               break;
            default :
@@ -1614,8 +1610,8 @@ void __fastcall TfrmAdvancedParameters::btnShowAllClick(TObject *Sender)
 /**  Construct. This is an alternate constructor for when the varArgs list for sMessage
      has already been prepared. Primarily, this will be used by derived classes.        */
 AdvancedFeaturesException::AdvancedFeaturesException(va_list varArgs, const char *sMessage,
-                                                     const char *sSourceModule, Level iLevel, TWinControl& FocusControl)
-          : ZdException(varArgs, sMessage, sSourceModule, iLevel), gFocusControl(FocusControl) {
+                                                     const char *sSourceModule, Level iLevel, TWinControl& FocusControl, int iTabCategory)
+          : ZdException(varArgs, sMessage, sSourceModule, iLevel), gFocusControl(FocusControl), giTabCategory(iTabCategory) {
    SetData(varArgs, sMessage, sSourceModule, iLevel);
 }
 
@@ -1625,19 +1621,14 @@ AdvancedFeaturesException::~AdvancedFeaturesException() {}
 /**  This function will throw the exception with the parameters.  It is equivalent to
      throw ZdException(...), but includes the ability to format the message string.
      This function should be used to generate all Zd Exceptions within ZD.             */
-void GenerateAFException(const char * sMessage, const char * sSourceModule, TWinControl& FocusControl, ...) {
+void GenerateAFException(const char * sMessage, const char * sSourceModule, TWinControl& FocusControl, int iTabCategory, ...) {
   va_list      varArgs;
   va_start (varArgs, sSourceModule);
 
-  AdvancedFeaturesException  theException(varArgs, sMessage, sSourceModule, ZdException::Notify, FocusControl);
+  AdvancedFeaturesException  theException(varArgs, sMessage, sSourceModule, ZdException::Notify, FocusControl, iTabCategory);
   va_end(varArgs);
 
   throw theException;
 }
 
-void __fastcall TfrmAdvancedParameters::edtFileNameExit(TObject *Sender)
-{
-   UpdateInputFiles();
-}
-//---------------------------------------------------------------------------
 
