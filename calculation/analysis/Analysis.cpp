@@ -210,7 +210,9 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
       if (m_pParameters->m_bMostLikelyClusters)
          OpenGridOutputFile(fpMCL, "w");
       if(m_pParameters->GetOutputClusterLevelDBF())
-         pDBFClusterReport.reset(new stsClusterLevelDBF(lReportHistoryRunNumber, GetCoordinateType(), m_pParameters->m_szOutputFilename, m_pParameters->m_nDimension));
+         pDBFClusterReport.reset(new stsClusterLevelDBF(lReportHistoryRunNumber, GetCoordinateType(),
+                                                        m_pParameters->m_szOutputFilename, m_pParameters->m_nDimension,
+                                                        m_pParameters->m_nReplicas > 99));
 
       for (int i = 0; i < m_nClustersRetained; ++i) {
       	 if (m_pParameters->m_bMostLikelyClusters) {
@@ -238,7 +240,7 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
             //also prints the coordinates, SEMI-MINOR AXIS, shape, and angle
             // for the circle, it will print coordinates, Radius, and 1.0 for shape, and 0.0 for angle
             if (m_pParameters->m_nCoordType == CARTESIAN)
-         	    m_pTopClusters[i]->WriteCoordinates(fpMCL, m_pData);
+               m_pTopClusters[i]->WriteCoordinates(fpMCL, m_pData);
             else
                m_pTopClusters[i]->WriteLatLongCoords(fpMCL, m_pData);
 
@@ -357,7 +359,9 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
 
    try {
       if(m_pParameters->GetOutputAreaSpecificDBF())
-         pDBFAreaReport.reset(new stsAreaSpecificDBF( lReportHistoryRunNumber, GetCoordinateType(), m_pParameters->m_szOutputFilename ));
+         pDBFAreaReport.reset(new stsAreaSpecificDBF( lReportHistoryRunNumber, GetCoordinateType(),
+                                                      m_pParameters->m_szOutputFilename,
+                                                      m_pParameters->m_nReplicas > 99 ));
       measure_t nMinMeasure = 0;
 
       if (m_nClustersRetained == 0)
@@ -405,7 +409,8 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
       measure_t nMinMeasure = -1;
 
       if(m_pParameters->GetOutputAreaSpecificDBF())
-         pDBFAreaReport.reset(new stsAreaSpecificDBF(lReportHistoryRunNumber, GetCoordinateType(), m_pParameters->m_szOutputFilename));
+         pDBFAreaReport.reset(new stsAreaSpecificDBF(lReportHistoryRunNumber, GetCoordinateType(),
+                                                     m_pParameters->m_szOutputFilename, m_pParameters->m_nReplicas > 99));
 
       dSignifRatio05 = SimRatios.GetAlpha05();
 
