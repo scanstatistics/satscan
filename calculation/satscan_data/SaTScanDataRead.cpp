@@ -10,7 +10,7 @@ const int POPULATION_DATE_PRECISION_YEAR_DEFAULT_MONTH  = 7;
 /** Adjusts measure in interval  by relative risk
     -- returns false if adjustment could not occur because relative risk
        is zero but there are cases in adjustment interval. */
-bool CSaTScanData::AdjustMeasure(tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate) {
+bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate) {
   int           i, j, iMaxTract, iStartInterval, iEndInterval;
   Julian        EndDayMin, StartDayMax, PeriodDays;
   measure_t     Adjustment_t, fP;
@@ -28,12 +28,12 @@ bool CSaTScanData::AdjustMeasure(tract_t Tract, double dRelativeRisk, Julian Sta
   EndDayMin = min(m_nEndDate, m_pIntervalStartTimes[iEndInterval]-1);
   PeriodDays = (m_pIntervalStartTimes[iEndInterval] - 1) - m_pIntervalStartTimes[iStartInterval] + 1;
   fP = (measure_t)(EndDayMin - StartDayMax + 1)/(measure_t)PeriodDays;
-  Adjustment_t = (fP == 1 ? dRelativeRisk : (1 + fP * dRelativeRisk));
+  Adjustment_t = 1 + fP * (dRelativeRisk - 1);
   j = (Tract == -1 ? 0 : Tract);
   iMaxTract = (Tract == -1 ? m_nTracts : Tract + 1);
   for (; j < iMaxTract; ++j)
-     for (i=iStartInterval; i < iEndInterval; ++i)
-        gpMeasureHandler->GetArray()[i][j] *= Adjustment_t;
+     for (i=iStartInterval; i < iEndInterval; ++i)          
+        pNonCumulativeMeasure[i][j] *= Adjustment_t;
 
   return true;
 }
@@ -345,7 +345,13 @@ bool CSaTScanData::ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, c
         return false;
       }
     }
-    else if (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION || m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
+    else if (m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
+      // For the Bernoulli model, ignore covariates in the case and control files
+      // -- this feature needs further design consideration, may never be implemented
+      //    because algorithm may cause execution time to be too long. 
+      iCategoryIndex = 0;
+    }
+    else if (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION) {
         //First category created sets precedence as to how many covariates remaining records must have.
         if ((iCategoryIndex = gPopulationCategories.MakePopulationCategory(szDescription, Parser, iCovariatesOffset, *gpPrint)) == -1)
           return false;
@@ -364,9 +370,10 @@ bool CSaTScanData::ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, c
     -- unlike other input files of system, records read from relative risks
        file are applied directly to the measure structure, just post calculation
        of measure and prior to temporal adjustments and making cumulative. */
-bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
+bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativeMeasure) {                                         
   bool                          bValid=true, bEmpty=true;
   tract_t                       t, TractIndex;
+  measure_t                     c, AdjustedTotalMeasure_t;        
   double                        dRelativeRisk;
   Julian                        StartDate, EndDate;
   FILE                        * fp=0;
@@ -438,7 +445,7 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
           ConvertAdjustmentDateToJulian(Parser, EndDate, false);
         }
         //perform adjustment
-        if (!AdjustMeasure(TractIndex, dRelativeRisk, StartDate, EndDate)) {
+        if (!AdjustMeasure(pNonCumulativeMeasure, TractIndex, dRelativeRisk, StartDate, EndDate)) {
           gpPrint->PrintInputWarning("Error: Record %d, of adjustment file, indicates a zero relative risk\n", Parser.GetReadCount());
           gpPrint->PrintInputWarning("       but cases exist for location in specified interval.\n");
           bValid = false;
@@ -456,15 +463,19 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
       bValid = false;
     }
 
-    //recalculate total measure
-    m_nTotalMeasure = 0;
+    // calculate total adjusted measure
+    for (AdjustedTotalMeasure_t=0, i=0; i < m_nTimeIntervals; ++i)
+       for (t=0; t < m_nTracts; ++t)
+          AdjustedTotalMeasure_t += pNonCumulativeMeasure[i][t];
+    //Mutlipy the measure for each interval/tract by constant (c) to obtain total
+    //adjusted measure (AdjustedTotalMeasure_t) equal to previous total measure (m_nTotalMeasure).
+    c = m_nTotalMeasure/AdjustedTotalMeasure_t;
     for (i=0; i < m_nTimeIntervals; ++i)
        for (t=0; t < m_nTracts; ++t)
-          m_nTotalMeasure += gpMeasureHandler->GetArray()[i][t];
+          pNonCumulativeMeasure[i][t] *= c;
   }
   catch (ZdException &x) {
-    //close file pointer
-    if (fp) fclose(fp);
+    if (fp) fclose(fp); //close file pointer
     x.AddCallpath("ReadAdjustmentsByRelativeRisksFile()", "CSaTScanData");
     throw;
   }

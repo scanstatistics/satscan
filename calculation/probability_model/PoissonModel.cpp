@@ -101,15 +101,9 @@ void CPoissonModel::AdjustForLLPercentage(measure_t ** pNonCumulativeMeasure, do
   /* total adjusted measure (nAdjustedMeasure) equal to previous total     */
   /* measure (gData.m_nTotalMeasure).                                             */
   c = (double)(gData.m_nTotalMeasure)/nAdjustedMeasure;
-  nAdjustedMeasure=0;
-
-  for (i=0; i<gData.m_nTimeIntervals; i++)
-    for (t=0; t<gData.m_nTracts; t++)
-    {
-      (pNonCumulativeMeasure)[i][t] = (pNonCumulativeMeasure)[i][t]*c;
-      nAdjustedMeasure += (pNonCumulativeMeasure)[i][t];
-    }
-
+  for (i=0; i<gData.m_nTimeIntervals; ++i)
+    for (t=0; t<gData.m_nTracts; ++t)
+     pNonCumulativeMeasure[i][t] *= c;
 }
 
 void CPoissonModel::AdjustForLogLinear(measure_t ** pNonCumulativeMeasure)
@@ -131,23 +125,39 @@ void CPoissonModel::AdjustForLogLinear(measure_t ** pNonCumulativeMeasure)
   AdjustForLLPercentage(pNonCumulativeMeasure, gData.m_nTimeTrend.m_nBeta);  // Adjust Measure             */
 }
 
-void CPoissonModel::AdjustMeasure(measure_t ** pMeasure) {
+void CPoissonModel::AdjustMeasure(measure_t ** pNonCumulativeMeasure) {
+  measure_t     AdjustedTotalMeasure_t=0;
+  int           i;
+  tract_t       t;
+
   try {
+    if (!gData.ReadAdjustmentsByRelativeRisksFile(pNonCumulativeMeasure))
+      SSGenerateException("\nProblem encountered reading in data.", "AdjustMeasure()");
+
     if (gData.m_nTimeIntervals > 1) {
       switch (gParameters.GetTimeTrendAdjustmentType()) {
         case NOTADJUSTED               : break;
-        case NONPARAMETRIC             : AdjustForNonParameteric(pMeasure); break;
-        case LOGLINEAR_PERC            : AdjustForLLPercentage(pMeasure, gParameters.GetTimeTrendAdjustmentPercentage()); break;
-        case CALCULATED_LOGLINEAR_PERC : gData.SetMeasureByTimeIntervalArray(pMeasure);
-                                         AdjustForLogLinear(pMeasure); break;
-        case STRATIFIED_RANDOMIZATION  : AdjustForNonParameteric(pMeasure); break;//this adjustment occurs during randomization also
+        case NONPARAMETRIC             : AdjustForNonParameteric(pNonCumulativeMeasure); break;
+        case LOGLINEAR_PERC            : AdjustForLLPercentage(pNonCumulativeMeasure, gParameters.GetTimeTrendAdjustmentPercentage()); break;
+        case CALCULATED_LOGLINEAR_PERC : gData.SetMeasureByTimeIntervalArray(pNonCumulativeMeasure);
+                                         AdjustForLogLinear(pNonCumulativeMeasure); break;
+        case STRATIFIED_RANDOMIZATION  : AdjustForNonParameteric(pNonCumulativeMeasure); break;//this adjustment occurs during randomization also
         default : ZdGenerateException("Unknown time trend adjustment type: '%d'.",
                                       "AdjustMeasure()", gParameters.GetTimeTrendAdjustmentType());
       }
     }
+
+    // Bug check, to ensure that adjusted  total measure equals previously determined total measure
+    for (AdjustedTotalMeasure_t=0, i=0; i < gData.m_nTimeIntervals; ++i)
+       for (t=0; t < gData.m_nTracts; ++t)
+          AdjustedTotalMeasure_t += pNonCumulativeMeasure[i][t];
+
+    if (fabs(AdjustedTotalMeasure_t - gData.m_nTotalMeasure) > 0.0001)
+      ZdGenerateException("Error: The adjusted total measure '%8.6lf' is not equal to the total measure '%8.6lf'.\n",
+                          "AdjustMeasure()", AdjustedTotalMeasure_t, gData.m_nTotalMeasure);
   }
   catch (ZdException &x) {
-    x.AddCallpath("AdjustMeasure","CPoissonModel");
+    x.AddCallpath("AdjustMeasure()","CPoissonModel");
     throw;
   }
 }
@@ -186,7 +196,7 @@ int CPoissonModel::AssignMeasure(measure_t ** ppMeasure) {
   Julian                              * IntervalDates=0;
 
   try {
-    TwoDimensionArrayHandler<measure_t>   Calcm_ArrayHandler(nPops, nTracts);
+    TwoDimensionArrayHandler<measure_t>   Calcm_ArrayHandler(nPops, nTracts, 0);
     /* Create & Use array of interval dates where last interval date = EndDate */
     IntervalDates = (unsigned long*)Smalloc((gData.m_nTimeIntervals+1)*sizeof(Julian), &gPrintDirection);
     memcpy(IntervalDates, gData.GetTimeIntervalStartTimes(), (gData.m_nTimeIntervals+1)*sizeof(Julian));
@@ -394,7 +404,6 @@ bool CPoissonModel::CalculateMeasure() {
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
       gData.gpMeasureNonCumulativeHandler = new TwoDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals+1/*no sure why + 1*/, gData.m_nTracts);
       bResult = AssignMeasure(gData.gpMeasureNonCumulativeHandler->GetArray());
-      gData.ReadAdjustmentsByRelativeRisksFile(); // -- check with Martin about this for SVTT  
       //adjust non-cumulative measure
       AdjustMeasure(gData.gpMeasureNonCumulativeHandler->GetArray());
       //create cumulative measure from non-cumulative measure
@@ -405,8 +414,6 @@ bool CPoissonModel::CalculateMeasure() {
     else {
       gData.gpMeasureHandler = new TwoDimensionArrayHandler<measure_t>(gData.m_nTimeIntervals+1/*no sure why + 1*/, gData.m_nTracts);
       bResult = AssignMeasure(gData.gpMeasureHandler->GetArray());
-      if (!gData.ReadAdjustmentsByRelativeRisksFile())
-        SSGenerateException("\nProblem encountered reading in data.", "CalculateMeasure");
       AdjustMeasure(gData.gpMeasureHandler->GetArray());
       if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
           gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
@@ -414,6 +421,10 @@ bool CPoissonModel::CalculateMeasure() {
         gData.SetMeasureByTimeIntervalArray(gData.gpMeasureHandler->GetArray());
       gData.SetMeasureAsCumulative(gData.gpMeasureHandler->GetArray());
     }
+    // Bug check, to ensure that TotalCases=TotalMeasure
+    if (fabs(gData.m_nTotalCases - gData.m_nTotalMeasure) > 0.0001)
+      ZdGenerateException("Error: The total measure '%8.6lf' is not equal to the total number of cases '%ld'.\n",
+                          "CalculateMeasure()", gData.m_nTotalMeasure, gData.m_nTotalCases);
   }
   catch (ZdException &x) {
     delete gData.gpMeasureNonCumulativeHandler; gData.gpMeasureNonCumulativeHandler=0;

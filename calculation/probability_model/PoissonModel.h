@@ -41,7 +41,7 @@ class CPoissonModel : public CModel {
     virtual void                AdjustForNonParameteric(measure_t ** pNonCumulativeMeasure);
     virtual void                AdjustForLLPercentage(measure_t ** pNonCumulativeMeasure, double nPercentage);
     virtual void                AdjustForLogLinear(measure_t ** pNonCumulativeMeasure);
-    void                        AdjustMeasure(measure_t ** pMeasure);
+    void                        AdjustMeasure(measure_t ** pNonCumulativeMeasure);
     virtual double              CalcLogLikelihood(count_t n, measure_t u);
     virtual double              CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster);
     virtual double              CalcSVTTLogLikelihood(CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend);
