@@ -2787,11 +2787,9 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
       //time interval units 
       if (geTimeIntervalUnitsType == NONE) {
         bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Time interval units in %s is more precise than precision of Case file dates in %s.\n",
-                                           GetDatePrecisionAsString(geTimeIntervalUnitsType),
-                                           GetDatePrecisionAsString(gePrecisionOfTimesType));
+        PrintDirection.SatScanPrintWarning("Error: Time interval units can not be 'none' for a temporal analysis.\n");
       }
-      else if (geTimeIntervalUnitsType < gePrecisionOfTimesType) {
+      else if (geTimeIntervalUnitsType > gePrecisionOfTimesType) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Time interval units in %s is more precise than precision of Case file dates in %s.\n",
                                            GetDatePrecisionAsString(geTimeIntervalUnitsType),
