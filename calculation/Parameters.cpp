@@ -1043,7 +1043,7 @@ void CParameters::DisplayParameters(FILE* fp) {
      }
 
      // LLR Files
-     if (gbLogLikelihoodDBF) {
+     if (gbLogLikelihoodDBF || m_bSaveSimLogLikelihoods) {
         sASCIIName = fileName.GetFullPath();
         if(strlen(fileName.GetExtension()) != 0)
            sASCIIName.Replace(fileName.GetExtension(), ".llr");
@@ -2492,8 +2492,10 @@ bool CParameters::ValidHistoryFileName(ZdString& sRunHistoryFilename) {
             else
                sRunHistoryFilename.Replace(sExt.GetCString(), ".dbf");
          }
-
-         bValid = true;
+         
+         if(access(sRunHistoryFilename.GetCString(), 00) == NULL)
+            if(access(sRunHistoryFilename.GetCString(), 06) == NULL)
+               bValid = true;
       }
    }
    catch (ZdException &x) {
