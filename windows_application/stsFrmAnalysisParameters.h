@@ -129,9 +129,13 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    void __fastcall btnCaseBrowseClick(TObject *Sender);
    void __fastcall btnCaseImportClick(TObject *Sender);
    void __fastcall btnControlBrowseClick(TObject *Sender);
+   void __fastcall btnControlImportClick(TObject *Sender);
    void __fastcall btnPopBrowseClick(TObject *Sender);
+   void __fastcall btnPopImportClick(TObject *Sender);
    void __fastcall btnCoordBrowseClick(TObject *Sender);
+   void __fastcall btnCoordImportClick(TObject *Sender);
    void __fastcall btnGridBrowseClick(TObject *Sender);
+   void __fastcall btnGridImportClick(TObject *Sender);
    void __fastcall btnResultFileBrowseClick(TObject *Sender);
    void __fastcall rdoAnalysisTypeClick(TObject *Sender);
    void __fastcall rdoProbabilityModelClick(TObject *Sender);
@@ -208,7 +212,7 @@ public:		// User declarations
 
     const char                * GetFileName();
     CParameters               * GetSession();
-    const char                * LaunchImporter(const char * sFileName, InputFileType eFileType) ;
+    void                        LaunchImporter(const char * sFileName, InputFileType eFileType) ;
     void                        SaveAs();
     void                        SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsByRelativeRisksFileName);
     void                        SetCaseFile(const char * sCaseFileName);

@@ -77,20 +77,16 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
 //---------------------------------------------------------------------------
 /** Button click event for case file import
     Shows open file dialog to select file to import as a case file; then
-    launches the import wizard to guide the user through the import process.
-    Finally, the appropriate case file interface controls are set.*/
+    launches the import wizard to guide the user through the import process.*/
 void __fastcall TfrmAnalysis::btnCaseImportClick(TObject *Sender) {
   InputFileType eType = Case;
-  const char * sFile;
-  
+
   try {
     OpenDialog1->FileName =  "";
     OpenDialog1->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Case files (*.cas)|*.cas|Text files (*.txt)|*.txt|All files (*.*)|*.*";
     OpenDialog1->Title = "Select Source Case File";
     if (OpenDialog1->Execute()) {
-       sFile = LaunchImporter(OpenDialog1->FileName.c_str(), eType);
-       //if (strlen(sFile))
-       //   SetCaseFile(sFile);
+       LaunchImporter(OpenDialog1->FileName.c_str(), eType);
     }
   }
   catch (ZdException & x) {
@@ -117,6 +113,26 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
   }
 }
 //---------------------------------------------------------------------------
+/** Button click event for control file import
+    Shows open file dialog to select file to import as a control file; then
+    launches the import wizard to guide the user through the import process.*/
+void __fastcall TfrmAnalysis::btnControlImportClick(TObject *Sender) {
+  InputFileType eType = Control;
+
+  try {
+    OpenDialog1->FileName =  "";
+    OpenDialog1->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Text files (*.txt)|*.txt|Control files (*.ctl)|*.ctl|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog1->Title = "Select Source Control File";
+    if (OpenDialog1->Execute()) {
+       LaunchImporter(OpenDialog1->FileName.c_str(), eType);
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("btnControlImportClick()", "TfrmAnalysis");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
 /** button click event for coordinates file browse
     - shows open dialog and sets appropriate coordinates file interface controls */
 void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
@@ -131,6 +147,26 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
   }
   catch (ZdException & x) {
     x.AddCallpath("btnCoordBrowseClick()", "TfrmAnalysis");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
+/** Button click event for coordinate file import
+    Shows open file dialog to select file to import as a coordinate file; then
+    launches the import wizard to guide the user through the import process.*/
+void __fastcall TfrmAnalysis::btnCoordImportClick(TObject *Sender) {
+  InputFileType eType = Coordinates;
+
+  try {
+    OpenDialog1->FileName =  "";
+    OpenDialog1->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Coordinates files (*.geo)|*.geo|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog1->Title = "Select Source Coordinates File";
+    if (OpenDialog1->Execute()) {
+       LaunchImporter(OpenDialog1->FileName.c_str(), eType);
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("btnCoordImportClick()", "TfrmAnalysis");
     DisplayBasisException(this, x);
   }
 }
@@ -153,6 +189,26 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
   }
 }
 //---------------------------------------------------------------------------
+/** Button click event for grid file import
+    Shows open file dialog to select file to import as a grid file; then
+    launches the import wizard to guide the user through the import process.*/
+void __fastcall TfrmAnalysis::btnGridImportClick(TObject *Sender) {
+  InputFileType eType = SpecialGrid;
+
+  try {
+    OpenDialog1->FileName =  "";
+    OpenDialog1->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Special Grid files (*.grd)|*.grd|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog1->Title = "Select Source Special Grid File";
+    if (OpenDialog1->Execute()) {
+       LaunchImporter(OpenDialog1->FileName.c_str(), eType);
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("btnGridImportClick()", "TfrmAnalysis");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
 /** button click event for population file browse
     - shows open dialog and sets appropriate population file interface controls */
 void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
@@ -167,6 +223,26 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
   }
   catch (ZdException & x) {
     x.AddCallpath("btnPopBrowseClick()", "TfrmAnalysis");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
+/** Button click event for pop file import
+    Shows open file dialog to select file to import as a pop file; then
+    launches the import wizard to guide the user through the import process.*/
+void __fastcall TfrmAnalysis::btnPopImportClick(TObject *Sender) {
+  InputFileType eType = Population;
+
+  try {
+    OpenDialog1->FileName =  "";
+    OpenDialog1->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog1->Title = "Select Source Population File";
+    if (OpenDialog1->Execute()) {
+       LaunchImporter(OpenDialog1->FileName.c_str(), eType);
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("btnPopImportClick()", "TfrmAnalysis");
     DisplayBasisException(this, x);
   }
 }
@@ -816,27 +892,35 @@ bool TfrmAnalysis::IsValidReplicationRequest(int iReplications) {
 
 //---------------------------------------------------------------------------
 /** Modally shows import dialog. */
-const char * TfrmAnalysis::LaunchImporter(const char * sFileName, InputFileType eFileType) {
-  const char *sNewFile = "";
+void TfrmAnalysis::LaunchImporter(const char * sFileName, InputFileType eFileType) {
+  ZdString sNewFile = "";
 
   try {
     std::auto_ptr<TBDlgDataImporter> pDialog(new TBDlgDataImporter(this, sFileName, eFileType, (CoordinatesType)rgpCoordinates->ItemIndex));
     if (pDialog->ShowModal() == mrOk) {
-       // set parameters
-       switch (eFileType) {
-          case Case :  SetCaseFile(pDialog->GetDestinationFilename());
-                       SetPrecisionOfTimesControl(pDialog->GetDateFieldImported()? DAY : NONE);
-                       break;
+       switch (eFileType) {  // set parameters
+          case Case :       SetCaseFile(pDialog->GetDestinationFilename(sNewFile));
+                            SetPrecisionOfTimesControl(pDialog->GetDateFieldImported()? DAY : NONE);
+                            break;
+          case Control :    SetControlFile(pDialog->GetDestinationFilename(sNewFile));
+                            SetPrecisionOfTimesControl(pDialog->GetDateFieldImported()? DAY : NONE);
+                            break;
+          case Population : SetPopulationFile(pDialog->GetDestinationFilename(sNewFile));
+                            break;
+          case Coordinates: SetCoordinateFile(pDialog->GetDestinationFilename(sNewFile));
+                            SetCoordinateType(pDialog->GetCoorinatesControlType());
+                            break;
+          case SpecialGrid: SetSpecialGridFile(pDialog->GetDestinationFilename(sNewFile));
+                            SetCoordinateType(pDialog->GetCoorinatesControlType());
+                            break;
+          default :         ZdGenerateException("Unknown file type index: \"%d\"","LaunchImporter()", eFileType);
        };
-       // return file name to calling function to set in appropriate control
-       //sNewFile = ;
     }
   }
   catch (ZdException & x) {
     x.AddCallpath("LaunchImporter()", "TfrmAnalysis");
     throw;
   }
-  return sNewFile;
 }
 
 //---------------------------------------------------------------------------
