@@ -83,7 +83,7 @@ void CPurelyTemporalData::DisplayMeasure(FILE* pFile) {
   try {
     fprintf(pFile, "PT Measures (m_pPTMeasure)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
     for (int i = 0; i < m_nTimeIntervals; i++)
-       fprintf(pFile, "PTMeasure [%i] = %f\n", i,m_pPTMeasure[i]);
+       fprintf(pFile, "PTMeasure [%i] = %f\n", i, m_pPTMeasure[i]);
     fprintf(pFile, "\n\n");
   }
   catch (ZdException &x) {
@@ -119,10 +119,6 @@ void CPurelyTemporalData::MakeData(int iSimulationNumber) {
     x.AddCallpath("MakeData()", "CPurelyTemporalData");
     throw;
   }
-}
-
-void CPurelyTemporalData::PrintNeighbors() {
-  ZdGenerateException("PrintNeighbors() not implemented for CPurelyTemporalData.","PrintNeighbors()");
 }
 
 void CPurelyTemporalData::ReadDataFromFiles() {

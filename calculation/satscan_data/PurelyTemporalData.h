@@ -22,7 +22,6 @@ class CPurelyTemporalData : public CSaTScanData {
     virtual bool        FindNeighbors(bool bSimulations) {return true;/** no action - all locations included */}
     virtual tract_t     GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
     virtual void        MakeData(int iSimulationNumber);
-    virtual void        PrintNeighbors();
     virtual void        ReadDataFromFiles();
 };
 
