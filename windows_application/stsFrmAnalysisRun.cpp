@@ -110,24 +110,25 @@ void TfrmAnalysisRun::LaunchThread() {
 
 /** Loads analysis results from file into memo control */
 void TfrmAnalysisRun::LoadFromFile(const char * sFileName) {
-   int  iHandle;
-   long lFileLength;
+//   int  iHandle;
+//   long lFileLength;
 
-   //see if the file is too big... set some limit and adhere to it.
-   iHandle = open(sFileName, O_RDONLY);
-   lFileLength = filelength(iHandle);
-   /* close the file */
-   close(iHandle);
-   if (lFileLength > 500000)
-      {
-      rteAnalysisBox->Clear();
-      rteAnalysisBox->Lines->Add("The output results file is too big for SaTScan to view.");
-      rteAnalysisBox->Lines->Add("Please use an independent text viewer to review the results file.");
-      rteAnalysisBox->Lines->Add(" ");
-      rteAnalysisBox->Lines->Add(sFileName);
-      }
-   else
+//   //see if the file is too big... set some limit and adhere to it.
+//   iHandle = open(sFileName, O_RDONLY);
+//   lFileLength = filelength(iHandle);
+//   /* close the file */
+//   close(iHandle);
+//   if (lFileLength > 500000)
+//      {
+//      rteAnalysisBox->Clear();
+//      rteAnalysisBox->Lines->Add("The output results file is too big for SaTScan to view.");
+//      rteAnalysisBox->Lines->Add("Please use an independent text viewer to review the results file.");
+//      rteAnalysisBox->Lines->Add(" ");
+//      rteAnalysisBox->Lines->Add(sFileName);
+//     }
+//   else
       rteAnalysisBox->Lines->LoadFromFile(sFileName);
+      Caption = sFileName;
 
    gRegistry.Release(gsOutputFileName);
 }
