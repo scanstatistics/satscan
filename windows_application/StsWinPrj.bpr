@@ -90,7 +90,7 @@
       ..\calculation\Output\stsASCIIFileWriter.obj 
       ..\calculation\randomization\SpaceTimeRandomizer.obj 
       ..\calculation\randomization\ContinuousVariableRandomizer.obj 
-      ..\calculation\randomization\DenominaterDataRandomizer.obj 
+      ..\calculation\randomization\DenominatorDataRandomizer.obj 
       ..\calculation\randomization\PermutationDataRandomizer.obj 
       ..\calculation\randomization\PoissonRandomizer.obj 
       ..\calculation\randomization\Randomizer.obj 

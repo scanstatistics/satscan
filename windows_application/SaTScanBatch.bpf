@@ -84,7 +84,7 @@ USEUNIT("..\calculation\randomization\SpaceTimeRandomizer.cpp");
 USEUNIT("..\calculation\randomization\ContinuousVariableRandomizer.cpp");
 USEUNIT("..\calculation\randomization\BernoulliRandomizer.cpp");
 USEUNIT("..\calculation\randomization\PoissonRandomizer.cpp");
-USEUNIT("..\calculation\randomization\DenominaterDataRandomizer.cpp");
+USEUNIT("..\calculation\randomization\DenominatorDataRandomizer.cpp");
 USEUNIT("..\calculation\randomization\PermutationDataRandomizer.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib");

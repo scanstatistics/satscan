@@ -104,7 +104,7 @@ USEUNIT("..\calculation\Output\stsDBaseFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsASCIIFileWriter.cpp");
 USEUNIT("..\calculation\randomization\SpaceTimeRandomizer.cpp");
 USEUNIT("..\calculation\randomization\ContinuousVariableRandomizer.cpp");
-USEUNIT("..\calculation\randomization\DenominaterDataRandomizer.cpp");
+USEUNIT("..\calculation\randomization\DenominatorDataRandomizer.cpp");
 USEUNIT("..\calculation\randomization\PermutationDataRandomizer.cpp");
 USEUNIT("..\calculation\randomization\PoissonRandomizer.cpp");
 USEUNIT("..\calculation\randomization\Randomizer.cpp");

@@ -84,7 +84,7 @@
       ..\calculation\randomization\ContinuousVariableRandomizer.obj 
       ..\calculation\randomization\BernoulliRandomizer.obj 
       ..\calculation\randomization\PoissonRandomizer.obj 
-      ..\calculation\randomization\DenominaterDataRandomizer.obj 
+      ..\calculation\randomization\DenominatorDataRandomizer.obj 
       ..\calculation\randomization\PermutationDataRandomizer.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
