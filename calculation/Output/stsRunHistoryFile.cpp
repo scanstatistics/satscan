@@ -116,23 +116,6 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
    }
 }
 
-// formats the alive clusters only string to be written to file
-// pre:  eAnalysisType type is an element of (PURELYSPATIAL, PURELYTEMPORAL, ...) enum defined in CParamaters
-// post: will return a "n/a" string if PurelySpatial or Prospective SpaceTime analysis, else will return
-//       "true" or "false" string
-void stsRunHistoryFile::GetAliveClustersOnlyString(ZdString& sTempValue, AnalysisType eAnalysisType, bool bAliveOnly) {
-   try {
-      if (eAnalysisType == PURELYSPATIAL || eAnalysisType == PROSPECTIVESPACETIME)
-         sTempValue = "n/a";
-      else
-         sTempValue = (bAliveOnly ? "true" : "false");
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetAliveClustersOnlyString()", "stsRunHistoryFile");
-      throw;
-   }
-}
-
 // converter function to turn the iType into a legible string for printing
 // pre :  eAnalysisType is contained in (PURELYSPATIAL, PURELYTEMPORAL, SPACETIME, PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE)
 // post : string will be assigned a formatted value based on iType
@@ -179,6 +162,23 @@ void stsRunHistoryFile::GetCasePrecisionString(ZdString& sTempValue, int iPrecis
    }
    catch (ZdException &x) {
       x.AddCallpath("GetCasePrecisionString()", "stsRunHistoryFile");
+      throw;
+   }
+}
+
+// formats include clusters type to string to be written to file
+// pre:  eAnalysisType type is an element of (PURELYSPATIAL, PURELYTEMPORAL, ...) enum defined in CParamaters
+// post: will return a "n/a" string if PurelySpatial or Prospective SpaceTime analysis, else will return
+//       "true" or "false" string
+void stsRunHistoryFile::GetIncludeClustersTypeString(ZdString& sTempValue, AnalysisType eAnalysisType, IncludeClustersType eIncludeClustersType) {
+   try {
+      if (eAnalysisType == PURELYSPATIAL || eAnalysisType == PROSPECTIVESPACETIME)
+         sTempValue = "n/a";
+      else
+         sTempValue = (eIncludeClustersType == ALIVECLUSTERS ? "true" : "false");
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("GetIncludeClustersTypeString()", "stsRunHistoryFile");
       throw;
    }
 }
@@ -439,7 +439,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetStringField(*pRecord, params.GetStudyPeriodStartDate().c_str(), GetFieldNumber(gvFields, START_DATE_FIELD));  // start date field
       SetStringField(*pRecord, params.GetStudyPeriodEndDate().c_str(), GetFieldNumber(gvFields, END_DATE_FIELD)); // end date field
 
-      GetAliveClustersOnlyString(sTempValue, params.GetAnalysisType(), params.GetAliveClustersOnly());
+      GetIncludeClustersTypeString(sTempValue, params.GetAnalysisType(), params.GetIncludeClustersType());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ALIVE_ONLY_FIELD)); // alive clusters only field
 
       // interval field

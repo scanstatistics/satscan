@@ -37,9 +37,9 @@ class stsRunHistoryFile {
       BasePrint*                        gpPrintDirection;
       bool                              gbPrintPVal, gbSequential;
 
-      void      GetAliveClustersOnlyString(ZdString& sTempValue, AnalysisType eAnalysisType, bool bAliveOnly);
       void      GetAnalysisTypeString(ZdString& sTempValue, AnalysisType eAnalysisType);
       void      GetCasePrecisionString(ZdString& sTempValue, int iPrecision);
+      void      GetIncludeClustersTypeString(ZdString& sTempValue, AnalysisType eAnalysisType, IncludeClustersType eIncludeClustersType);
       void      GetIntervalUnitsString(ZdString& sTempValue, int iUnits, long lLength, AnalysisType eAnalysisType);
       void      GetMaxGeoExtentString(ZdString& sTempValue, const CParameters& params);
       void      GetMaxTemporalExtentString(ZdString& sTempValue, const CParameters& params);
