@@ -183,81 +183,84 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                                          bool bIncludePVal, int nLeftMargin, int nRightMargin, char cDeliminator,
                                          char* szSpacesOnLeft, bool bFormat)
 {
-   int   pos  = nLeftMargin;
-   const char* tid;
-   int   nCount=0;
+  int                                  pos  = nLeftMargin, nCount=0;
+  tract_t                              tTract;
+  const char                         * tid;
+  std::vector<std::string>             vTractIdentifiers;
 
-   try {
-      for (int i = nFirstTract; i <= nLastTract; i++)
-      {
-           //if (Data.m_pMeasure[0][Data.GetNeighbor(0, m_Center, i)]>nMinMeasure)       // access over-run here
-           //if (Data.m_pMeasure[m_iEllipseOffset][Data.GetNeighbor(m_iEllipseOffset, m_Center, i)]>nMinMeasure) // access over-run here
+  try {
+    for (int i = nFirstTract; i <= nLastTract; i++) {
+       //if (Data.m_pMeasure[0][Data.GetNeighbor(0, m_Center, i)]>nMinMeasure)       // access over-run here
+       //if (Data.m_pMeasure[m_iEllipseOffset][Data.GetNeighbor(m_iEllipseOffset, m_Center, i)]>nMinMeasure) // access over-run here
 
-           // the first dimension of m_pMeasure is Time Interval !!!
-           tract_t tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, i);
-           if (Data.m_pMeasure[0][tTract]>nMinMeasure) {
-             nCount++;
-             tid = (Data.GetTInfo())->tiGetTid(tTract);
-
-             if(fp != NULL) {        // if we have a file to print to
-                pos += strlen(tid) + 2;
-
-                if (nCount>1 && pos>nRightMargin)    // strange and sad but true print formatting
-                {
-                  pos = nLeftMargin + strlen(tid) + 2;
-                  fprintf(fp, "\n");
-                  for (int j=0; j<nLeftMargin; ++j)
+       // the first dimension of m_pMeasure is Time Interval !!!
+       tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, i);
+       if (Data.m_pMeasure[0][tTract] > nMinMeasure) {
+         Data.GetTInfo()->tiGetTractIdentifiers(tTract, vTractIdentifiers);
+         if (fp != NULL) {
+            for (int k=0; k < (int)vTractIdentifiers.size(); k++) {
+               pos += strlen(vTractIdentifiers[k].c_str()) + 2;
+               if (nCount>1 && pos>nRightMargin) {   // strange and sad but true print formatting
+                 pos = nLeftMargin + strlen(vTractIdentifiers[k].c_str()) + 2;
+                 fprintf(fp, "\n");
+                 for (int j=0; j<nLeftMargin; ++j)
                     fprintf(fp, " ");
-                }
+               }
+               if (bFormat)
+                 fprintf(fp, "%s", vTractIdentifiers[k].c_str());
+               else
+                fprintf(fp, "%-29s", vTractIdentifiers[k].c_str());
+               if (k < (int)vTractIdentifiers.size() - 1)
+                 fprintf(fp, "%c ", cDeliminator);
+               nCount++;
+            }
 #ifdef INCLUDE_RUN_HISTORY
-                // run history number
-                if (bIncludeRelRisk)
-                   fprintf(fp, "%-12d", lReportHistoryRunNumber);
+            // run history number
+            if (bIncludeRelRisk)
+              fprintf(fp, "%-12d", lReportHistoryRunNumber);
 #endif
                 // tract name
-                if (bFormat)
-                   fprintf(fp, "%s", tid);
-                else
-                   fprintf(fp, "%-29s", tid);
+//                if (bFormat)
+//                   fprintf(fp, "%s", tid);
+//                else
+//                   fprintf(fp, "%-29s", tid);
 
-                // cluster number
-                if (nCluster > -1)
-                  fprintf(fp, "%-5d ", nCluster);
+            // cluster number
+            if (nCluster > -1)
+              fprintf(fp, "%i         ", nCluster);
 
-                  // relative risk
-                if (bIncludeRelRisk) {
-                  fprintf(fp, "  %-08d", m_nCases);      // cluster level Observed
-                  fprintf(fp, " %-012.2f", m_nMeasure);    // cluster level expected
-                  fprintf(fp, " %-012.3f", GetRelativeRisk(Data.GetMeasureAdjustment()));  // cluster level rel risk
-                }
-                if (bIncludePVal)    // this is only displayed if Reps > 99
-                {
-                  fprintf(fp, "     ");
-                  DisplayPVal(fp, nReplicas, szSpacesOnLeft);
-                }
-                if (bIncludeRelRisk)   // if we include the cluster rel risk, then we also include obs, exp, and rel_risk as well
-                {
-                  fprintf(fp, "\t %-12i", GetCaseCountForTract(tTract, Data));      // area level obeserved clusters
-                  fprintf(fp, "\t %-12.3f", GetMeasureForTract(tTract, Data));      // area level expected clusters
-                  fprintf(fp, "\t %12.3f", GetRelativeRiskForTract(tTract, Data));   // area level relative risk
-                }
-                if (i < nLastTract)
-                  fprintf(fp, "%c ", cDeliminator);
-              }     // end if fp
-           }
+            // relative risk
+            if (bIncludeRelRisk) {
+              fprintf(fp, "  %i", m_nCases);      // cluster level Observed
+              fprintf(fp, "   %-12.2f", m_nMeasure);    // cluster level expected
+              fprintf(fp, "   %-12.3f", GetRelativeRisk(Data.GetMeasureAdjustment()));  // cluster level rel risk
+            }
+            if (bIncludePVal) {    // this is only displayed if Reps > 99
+              fprintf(fp, "     ");
+              DisplayPVal(fp, nReplicas, szSpacesOnLeft);
+            }
+            if (bIncludeRelRisk) {  // if we include the cluster rel risk, then we also include obs, exp, and rel_risk as well
+              fprintf(fp, "\t %12i", GetCaseCountForTract(tTract, Data));      // area level obeserved clusters
+              fprintf(fp, "\t %12.3f", GetMeasureForTract(tTract, Data));      // area level expected clusters
+              fprintf(fp, "\t %12.3f", GetRelativeRiskForTract(tTract, Data));   // area level relative risk
+            }
+            if (i < nLastTract)
+              fprintf(fp, "%c ", cDeliminator);
+         }     // end if fp
+       }
 
        // record DBF output data - AJV
        if(gpAreaDBFReport && Data.m_pParameters->GetOutputAreaSpecificDBF())
           gpAreaDBFReport->RecordClusterData(*this, Data, nCluster, tTract);
-      }
-      if(fp != NULL)
-         fprintf(fp, "\n");
-   }
-   catch (SSException & x)
-      {
-      x.AddCallpath("DisplayCensusTractsInStep()", "CCluster");
-      throw;
-      }
+    }
+
+    if (fp != NULL)
+      fprintf(fp, "\n");
+  }
+  catch (SSException & x) {
+    x.AddCallpath("DisplayCensusTractsInStep()", "CCluster");
+    throw;
+  }
 }
 
 void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
