@@ -68,6 +68,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
    bool   		bCatsMissing=false;
    long   		count;
    char	             ** cvec, szTid[MAX_LINESIZE];
+   BasePrint::eInputFileType       eFileType;
 
    try {
       cvec = (char**)Smalloc(nCats * sizeof(char *), gpPrintDirection);
@@ -88,11 +89,13 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
       // from reading remaining variables correctly. 
       nCount = static_cast<count_t>(fTempCount);
 
+      eFileType = (!strcmp(szDescription, "case") ? BasePrint::CASEFILE : BasePrint::CONTROLFILE);
+
       //Check: tract, count, & date exist
       if (nScanResult < m_pParameters->m_nPrecision+2) {
         free(cvec);
-        gpPrintDirection->SatScanPrintWarning("  Error: Invalid record in %s file, line %d.\n", szDescription, nRec);
-        gpPrintDirection->SatScanPrintWarning("         Please see '%s file format' in the help file.\n", szDescription);
+        gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Invalid record in %s file, line %d.\n", szDescription, nRec);
+        gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "         Please see '%s file format' in the help file.\n", szDescription);
         return false;
       }
     
@@ -101,28 +104,28 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
     
       if (tid == -1) {
         free(cvec);
-        gpPrintDirection->SatScanPrintWarning("  Error: Invalid tract ID in %s file, line %d.\n", szDescription, nRec);
-        gpPrintDirection->SatScanPrintWarning("         This ID is not found in the coordinates file.\n");
+        gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Invalid tract ID in %s file, line %d.\n", szDescription, nRec);
+        gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "         This ID is not found in the coordinates file.\n");
         return false;
       }
     
       //Check: count >= 0
       if (nCount < 0) {
         free(cvec);
-        gpPrintDirection->SatScanPrintWarning("  Error: Negative (or very large) count found in %s file, line %d.\n",szDescription, nRec);
+        gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Negative (or very large) count found in %s file, line %d.\n",szDescription, nRec);
         return false;
       }
     
       //Ensure four digit years
       int nYear4 = Ensure4DigitYear(nYear, m_pParameters->m_szStartDate, m_pParameters->m_szEndDate);
       switch (nYear4) {
-          case -1:gpPrintDirection->SatScanPrintWarning("  Error: Due to study period greater than 100 years, unable\n");
-                  gpPrintDirection->SatScanPrintWarning("         to convert two digit year in %s file, line %d.\n", szDescription, nRec);
-                  gpPrintDirection->SatScanPrintWarning("         Please use four digit years.\n");
+          case -1:gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Due to study period greater than 100 years, unable\n"
+                                                                            "         to convert two digit year in %s file, line %d.\n"
+                                                                            "         Please use four digit years.\n", szDescription, nRec);
                   free(cvec);
                   return false;
           case -2:fprintf(stderr,"  Error: Invalid year in %s file, line %d.\n", szDescription, nRec);
-                  gpPrintDirection->SatScanPrintWarning("  Error: Invalid year in %s file, line %d.\n", szDescription, nRec);
+                  gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Invalid year in %s file, line %d.\n", szDescription, nRec);
                   free(cvec);
                   return false;
       }
@@ -132,8 +135,8 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
     
       if (!(m_nStartDate <= nDate && nDate <= m_nEndDate)) {
         free(cvec);
-        gpPrintDirection->SatScanPrintWarning("  Error: Out of range time in %s file, line %d.\n",szDescription, nRec);
-        gpPrintDirection->SatScanPrintWarning("         Times must correspond to study period specified on the Analysis Tab.\n");
+        gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Out of range time in %s file, line %d.\n"
+                                                                  "         Times must correspond to study period specified on the Analysis Tab.\n" ,szDescription, nRec);
         return false;
       }
 
@@ -155,17 +158,17 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
         //Check: category missing?
         if (bCatsMissing) {
           DeleteCVEC(cvec, nCats);
-          gpPrintDirection->SatScanPrintWarning("  Error: Missing category variable in %s file, line %d.\n",szDescription,nRec);
-          gpPrintDirection->SatScanPrintWarning("         Category combinations must correspond to those specified\n");
-          gpPrintDirection->SatScanPrintWarning("         in the population file.\n");
+          gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Missing category variable in %s file, line %d.\n"
+                                                                    "         Category combinations must correspond to those specified\n"
+                                                                    "         in the population file.\n",szDescription,nRec);
           return false;
         }
     
         //Check: extra categories?
         if (GetWord(szData, nCats + nDataElements, gpPrintDirection)) {
           DeleteCVEC(cvec, nCats);
-          gpPrintDirection->SatScanPrintWarning("  Error: Extra data in %s file, line %d.\n", szDescription, nRec);
-          gpPrintDirection->SatScanPrintWarning("         Please see '%s file format' in the help file.\n", szDescription);
+          gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Extra data in %s file, line %d.\n"
+                                                                    "         Please see '%s file format' in the help file.\n", szDescription, nRec, szDescription);
           return false;
         }
 
@@ -176,16 +179,16 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
           cat = gpCats->catGetCat(cvec);
           if (cat == -1) {
             DeleteCVEC(cvec, nCats);
-            gpPrintDirection->SatScanPrintWarning("  Error: Invalid category in %s file, line %d.\n",szDescription, nRec);
-            gpPrintDirection->SatScanPrintWarning("         Category combinations must correspond to those specified\n");
-            gpPrintDirection->SatScanPrintWarning("         in the population file.\n");
+            gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Invalid category in %s file, line %d.\n"
+                                                                      "         Category combinations must correspond to those specified\n"
+                                                                      "         in the population file.\n" ,szDescription, nRec);
             return false;
           }
 
           if (!gpTInfo->tiAddCount(tid, cat, nCount)) {
             // KR (980916) : Aren't all these errors trapped above?
             DeleteCVEC(cvec, nCats);
-            gpPrintDirection->SatScanPrintWarning("  Error: Record in %s file with no matching population record, line %d.\n", szDescription, nRec);
+            gpPrintDirection->SatScanPrintInputFileWarning(eFileType, "  Error: Record in %s file with no matching population record, line %d.\n", szDescription, nRec);
             return false;
           }
         }
@@ -245,16 +248,16 @@ bool CSaTScanData::ConvertPopulationDateToJulian(const char * sDateString, int i
     }
 
     if (! bValidDate)
-      gpPrintDirection->SatScanPrintWarning("  Error: Invalid date \"%s\" in population file, line %d.\n", sDateString, iRecordNumber);
+      gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Invalid date \"%s\" in population file, line %d.\n", sDateString, iRecordNumber);
     else {
       iYear = Ensure4DigitYear(iYear, m_pParameters->m_szStartDate, m_pParameters->m_szEndDate);
       switch (iYear) {
-        case -1 : gpPrintDirection->SatScanPrintWarning("  Error: Due to the study period being greater than 100 years, unable\n");
-                  gpPrintDirection->SatScanPrintWarning("         to determine century for two digit year \"%d\" in population file, line %d.\n",
+        case -1 : gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Due to the study period being greater than 100 years, unable\n");
+                  gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "         to determine century for two digit year \"%d\" in population file, line %d.\n",
                                                                   iYear, iRecordNumber);
-                  gpPrintDirection->SatScanPrintWarning("         Please use four digit years.\n");
+                  gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "         Please use four digit years.\n");
                   bValidDate = false;
-        case -2 : gpPrintDirection->SatScanPrintWarning("  Error: Invalid year \"%d\" in population file, line %d.\n", iYear, iRecordNumber);
+        case -2 : gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Invalid year \"%d\" in population file, line %d.\n", iYear, iRecordNumber);
                   bValidDate = false;
         default : JulianDate = MDYToJulian(iMonth, iDay, iYear);
       }
@@ -294,7 +297,7 @@ bool CSaTScanData::ReadPops() {
   try {
     gpPrintDirection->SatScanPrintf("Reading the population file\n");
     if ((fp = fopen(m_pParameters->m_szPopFilename, "r")) == NULL) {
-      gpPrintDirection->SatScanPrintWarning("  Error: Could not open population file.\n", "ReadPops()");
+      gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Could not open population file.\n", "ReadPops()");
       return false;
     }
 
@@ -309,15 +312,15 @@ bool CSaTScanData::ReadPops() {
         //Check for a tract id, year, and population count
         if (sscanf(szData, "%s %s %f", szTid, sDateString, &fPopulation) < 3) {
           /** WE MIGHT BE ABLE TO PRODUCE A BETTER ERROR MESSAGE HERE*/
-          gpPrintDirection->SatScanPrintWarning("  Error: Invalid record in population file, line %d.\n", nRec);
-          gpPrintDirection->SatScanPrintWarning("         Please see 'population file format' in the help file.\n");
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Invalid record in population file, line %d.\n", nRec);
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "         Please see 'population file format' in the help file.\n");
           bValid = false;
           continue;
         }
 
         if (fPopulation < 0) {
           /** WE MIGHT BE ABLE TO PRODUCE A BETTER ERROR MESSAGE HERE - LIKE THE INVALID POPULATION */
-          gpPrintDirection->SatScanPrintWarning("  Error: Negative (or very large) value in population file, line %d.\n", nRec);
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Negative (or very large) value in population file, line %d.\n", nRec);
           bValid = false;
           continue;
         }
@@ -331,11 +334,11 @@ bool CSaTScanData::ReadPops() {
       }//  while - 1st Pass
 
     if (bEmpty) {
-      gpPrintDirection->SatScanPrintWarning("  Error: Population data is empty.\n");
+      gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Population data is empty.\n");
       if (nRec)
-        gpPrintDirection->SatScanPrintWarning("         Population file contains %d invalid records.\n");
+        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "         Population file contains %d invalid records.\n");
       else
-        gpPrintDirection->SatScanPrintWarning("         Population file is empty.\n");
+        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "         Population file is empty.\n");
       bValid = false;
     }
 
@@ -378,7 +381,7 @@ bool CSaTScanData::ReadPops() {
           for (i=0; i < iNumCategories; ++i) {
             char *p = GetWord(szData, i + 3, gpPrintDirection);
             if (p == 0) {
-              gpPrintDirection->SatScanPrintWarning("  Error: Too few categories in population file, line %d.\n",nRec);
+              gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Too few categories in population file, line %d.\n",nRec);
               bValid = false;
               break;
             }
@@ -390,8 +393,8 @@ bool CSaTScanData::ReadPops() {
 
           // Check for extraneous characters after the expected number of cats
           if (GetWord(szData, iNumCategories + 3, gpPrintDirection)) {
-            gpPrintDirection->SatScanPrintWarning("  Error: Extra data in population file, line %d.\n", nRec);
-            gpPrintDirection->SatScanPrintWarning("         Please see 'population file format' in the help file.\n");
+            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Extra data in population file, line %d.\n", nRec);
+            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "         Please see 'population file format' in the help file.\n");
             bValid = false;
             continue;
           }
@@ -404,8 +407,8 @@ bool CSaTScanData::ReadPops() {
           // Check to see if tract is valid
           tract = gpTInfo->tiGetTractIndex(szTid);
           if (tract == -1) {
-            gpPrintDirection->SatScanPrintWarning("  Error: Invalid tract ID in population file, line line %d.\n", nRec);
-            gpPrintDirection->SatScanPrintWarning("         This ID is not found in the coordinates file.\n");
+            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "  Error: Invalid tract ID in population file, line line %d.\n", nRec);
+            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "         This ID is not found in the coordinates file.\n");
             bValid = false;
             continue;
           }
@@ -430,15 +433,14 @@ bool CSaTScanData::ReadPops() {
 
       if (InvalidForProspective)  {
         bValid = false;
-        gpPrintDirection->SatScanPrintWarning("\n  ERROR: For the prospective space-time analysis to be correct,\n");
-        gpPrintDirection->SatScanPrintWarning("           it is critical that the scanning spatial window is the\n");
-        gpPrintDirection->SatScanPrintWarning("           same for each of the analysis performed over time. If \n");
-        gpPrintDirection->SatScanPrintWarning("           there are multiple years in the population file, so that\n");
-        gpPrintDirection->SatScanPrintWarning("           the population size changes over time, as it does in your\n");
-        gpPrintDirection->SatScanPrintWarning("           data, then you must define the maximum circle size in\n");
-        gpPrintDirection->SatScanPrintWarning("           terms of a specific geographical radius rather than as a\n");
-        gpPrintDirection->SatScanPrintWarning("           percent of the total population at risk.\n");
-        gpPrintDirection->SatScanPrintWarning("\n\n");
+        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "\n  ERROR: For the prospective space-time analysis to be correct,\n"
+                                                                           "           it is critical that the scanning spatial window is the\n"
+                                                                           "           same for each of the analysis performed over time. If \n"
+                                                                           "           there are multiple years in the population file, so that\n"
+                                                                           "           the population size changes over time, as it does in your\n"
+                                                                           "           data, then you must define the maximum circle size in\n"
+                                                                           "           terms of a specific geographical radius rather than as a\n"
+                                                                           "           percent of the total population at risk.\n\n\n");
       }
       if (bValid && iNumCategories > 0)
        free(cvec);
@@ -490,7 +492,7 @@ bool CSaTScanData::ReadGeoLatLong() {
       gpPrintDirection->SatScanPrintf("Reading the geographic coordinates file (lat/lon).\n");
 
       if ((fp = fopen(m_pParameters->m_szCoordFilename, "r")) == NULL) {
-        gpPrintDirection->SatScanPrintWarning("  Error: Could not open coordinates file (lat/long).\n");
+        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Could not open coordinates file (lat/long).\n");
         return false;
       }
     
@@ -507,30 +509,30 @@ bool CSaTScanData::ReadGeoLatLong() {
 
         nScanCount = sscanf(szData, "%s %lf %lf", szTid, &Latitude, &Longitude);
         if (nScanCount - 2 /* m_pParameters->m_nDimension */ < 1) {
-          gpPrintDirection->SatScanPrintWarning("  Error: Invalid record in coordinates file (lat/lon), line %ld.\n", (long) nRec);
-          gpPrintDirection->SatScanPrintWarning("         Please see 'coordinates file format' in the help file.\n");
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Invalid record in coordinates file (lat/lon), line %ld.\n", (long) nRec);
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Please see 'coordinates file format' in the help file.\n");
           bValid = false;
           continue;
         }
     
         // Check for extra coordinates
         if (GetWord(szData, 3, gpPrintDirection)) {
-          gpPrintDirection->SatScanPrintWarning("  Error: Extra data in coordinate file (lat/lon), line %ld.\n", (long) nRec);
-          gpPrintDirection->SatScanPrintWarning("         Please see 'coordinates file format' in the help file.\n");
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Extra data in coordinate file (lat/lon), line %ld.\n", (long) nRec);
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Please see 'coordinates file format' in the help file.\n");
           bValid = false;
         }
     
         //Check for correct ranges of latitude and longitude values
         if ((fabs(Latitude) > 90.0)) {
-          gpPrintDirection->SatScanPrintWarning("  Error: Latitude range error in coordinates file (2nd column), line %ld.\n", (long) nRec);
-          gpPrintDirection->SatScanPrintWarning("         Latitude must be between -90 and 90.\n");
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Latitude range error in coordinates file (2nd column), line %ld.\n", (long) nRec);
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Latitude must be between -90 and 90.\n");
           bValid = false;
           continue;
         }
 
         if ((fabs(Longitude) > 180.0)) {
-          gpPrintDirection->SatScanPrintWarning("  Error: Longitude range error in coordinates file (3rd column), line %ld.\n", (long) nRec);
-          gpPrintDirection->SatScanPrintWarning("         Longitude must be between -180 and 180.\n");
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Longitude range error in coordinates file (3rd column), line %ld.\n", (long) nRec);
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Longitude must be between -180 and 180.\n");
           bValid = false;
           continue;
         }
@@ -540,7 +542,7 @@ bool CSaTScanData::ReadGeoLatLong() {
     
         // Add the tract
         if (!gpTInfo->tiInsertTnode(szTid, pCoords)) {
-          gpPrintDirection->SatScanPrintWarning("  Error: Duplicate tract ID in coordinates file (lat/lon), line %d.\n",nRec);
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Duplicate tract ID in coordinates file (lat/lon), line %d.\n",nRec);
           bValid = false;
           continue;
         }
@@ -548,7 +550,7 @@ bool CSaTScanData::ReadGeoLatLong() {
         // Store tracts as grid if no special grid file specified.
         if (!m_pParameters->m_bSpecialGridFile) {
           if (!gpGInfo->giInsertGnode(szTid, pCoords)) {
-            gpPrintDirection->SatScanPrintWarning("  Error: Duplicate tract ID in coordinates file (lat/lon), line %d.\n",nRec);
+            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Duplicate tract ID in coordinates file (lat/lon), line %d.\n",nRec);
             bValid = false;
           }
         }
@@ -556,11 +558,11 @@ bool CSaTScanData::ReadGeoLatLong() {
       } // while fgets()
     
       if (bEmpty) {
-        gpPrintDirection->SatScanPrintWarning("  Error: Coordinates file is empty (lat/lon).\n", "ReadGeoLatLong()");
+        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Coordinates file is empty (lat/lon).\n", "ReadGeoLatLong()");
         bValid = false;
       }
       else if (gpTInfo->tiGetNumTracts() == 1) {
-        gpPrintDirection->SatScanPrintWarning("  Error: Coordinates file has only one record (lat/lon).\n", "ReadGeoLatLong()");
+        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Coordinates file has only one record (lat/lon).\n", "ReadGeoLatLong()");
         bValid = false;
       }
     
@@ -597,7 +599,7 @@ bool CSaTScanData::ReadGeoCoords() {
       gpPrintDirection->SatScanPrintf("Reading the geographic coordinates file\n");
 
       if ((fp = fopen(m_pParameters->m_szCoordFilename, "r")) == NULL) {
-        gpPrintDirection->SatScanPrintWarning("  Error: Could not open coordinates file.\n", "ReadGeoCoords()");
+        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Could not open coordinates file.\n", "ReadGeoCoords()");
         return false;
       }
     
@@ -620,8 +622,8 @@ bool CSaTScanData::ReadGeoCoords() {
 
           // Indicates no coords or only 1
           if (nScanCount < 3) {
-            gpPrintDirection->SatScanPrintWarning("  Error: Invalid data (< 3 items) in first record of coordinates file.\n");
-            gpPrintDirection->SatScanPrintWarning("         Please see 'coordinates file format' in the help file.\n");
+            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Invalid data (< 3 items) in first record of coordinates file.\n");
+            gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Please see 'coordinates file format' in the help file.\n");
             return false;
           }
     
@@ -644,8 +646,8 @@ bool CSaTScanData::ReadGeoCoords() {
     	  }
 
        	  if (nScanCount - m_pParameters->m_nDimension < 1) {
-           gpPrintDirection->SatScanPrintWarning("  Error: Invalid data in first line of coordinates file.\n");
-           gpPrintDirection->SatScanPrintWarning("         Please see 'coordinates file format' in the help file.\n");
+           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Invalid data in first line of coordinates file.\n");
+           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Please see 'coordinates file format' in the help file.\n");
            return false;
           }
     
@@ -688,15 +690,15 @@ bool CSaTScanData::ReadGeoCoords() {
 #endif
 
         if (nScanCount - m_pParameters->m_nDimension < 1) {
-           gpPrintDirection->SatScanPrintWarning("  Error: Invalid record in coordinates file, line %ld.\n", (long) nRec);
-           gpPrintDirection->SatScanPrintWarning("         Please see 'coordinates file format' in the help file.\n");
+           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Invalid record in coordinates file, line %ld.\n", (long) nRec);
+           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "         Please see 'coordinates file format' in the help file.\n");
            bValid = false;
            continue;
         }
     
         // Add the tract
         if (!gpTInfo->tiInsertTnode(szTid, pCoords)) {
-          gpPrintDirection->SatScanPrintWarning("  Error: Duplicate tract ID in coordinates file, line %d.\n",nRec);
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Duplicate tract ID in coordinates file, line %d.\n",nRec);
           bValid = false;
           continue;
         }
@@ -704,7 +706,7 @@ bool CSaTScanData::ReadGeoCoords() {
         // Store tracts as grid if no special grid file specified.
         if (!m_pParameters->m_bSpecialGridFile) {
            if (!gpGInfo->giInsertGnode(szTid, pCoords)) {
-             gpPrintDirection->SatScanPrintWarning("  Error: Duplicate tract ID in coordinates file, line %d.\n",nRec);
+             gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Duplicate tract ID in coordinates file, line %d.\n",nRec);
              bValid = false;
            }
         }
@@ -712,12 +714,12 @@ bool CSaTScanData::ReadGeoCoords() {
       } // while fgets(szData...)
 
       if (bEmpty) {
-        gpPrintDirection->SatScanPrintWarning("  Error: Coordinates file is empty.\n", "ReadGeoCoords()");
+        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Coordinates file is empty.\n", "ReadGeoCoords()");
         bValid = false;
       }
       else if (gpTInfo->tiGetNumTracts()==1 && m_pParameters->m_nAnalysisType != PURELYTEMPORAL) {
       // This modified 6/25/98 so that one tract allowed for Purely Temporal analysis
-        gpPrintDirection->SatScanPrintWarning("  Error: Coordinates file has only one record.\n", "ReadGeoCoords()");
+        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::COORDFILE, "  Error: Coordinates file has only one record.\n", "ReadGeoCoords()");
         bValid = false;
       }
 
@@ -777,7 +779,7 @@ bool CSaTScanData::ReadGridCoords() {
       gpPrintDirection->SatScanPrintf("Reading the grid file\n");
 
       if ((fp = fopen(m_pParameters->m_szGridFilename, "r")) == NULL) {
-        gpPrintDirection->SatScanPrintWarning("  Error: Could not open special grid file.\n", "ReadGridCoords()");
+        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Could not open special grid file.\n", "ReadGridCoords()");
         return false;
       }
 
@@ -792,10 +794,9 @@ bool CSaTScanData::ReadGridCoords() {
           bEmpty = false;
 
         // Can't read too far so check for correct number of coordinates:
-        if (!GetWord(szData, (m_pParameters->m_nDimension-1), gpPrintDirection)
-             || GetWord(szData, m_pParameters->m_nDimension, gpPrintDirection)) {
-          gpPrintDirection->SatScanPrintWarning("  Error: Invalid record in grid file, line %d.\n",nRec);
-          gpPrintDirection->SatScanPrintWarning("         Please see 'grid file format' in the help file.\n");
+        if (!GetWord(szData, (m_pParameters->m_nDimension-1), gpPrintDirection) || GetWord(szData, m_pParameters->m_nDimension, gpPrintDirection)) {
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Invalid record in grid file, line %d.\n",nRec);
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "         Please see 'grid file format' in the help file.\n");
           bValid = false;
           continue;
         }
@@ -815,8 +816,8 @@ bool CSaTScanData::ReadGridCoords() {
         itoa(nRec, szTid, 10);
 
         if (nScanCount < m_pParameters->m_nDimension) {
-          gpPrintDirection->SatScanPrintWarning("  Error: Invalid record in grid file, line %d.\n",nRec);
-          gpPrintDirection->SatScanPrintWarning("         Please see 'grid file format' in the help file.\n");
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Invalid record in grid file, line %d.\n",nRec);
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "         Please see 'grid file format' in the help file.\n");
           bValid = false;
           continue;
         }
@@ -836,7 +837,7 @@ bool CSaTScanData::ReadGridCoords() {
       } // while fgets()
 
       if (bEmpty) {
-        gpPrintDirection->SatScanPrintWarning("  Error: Grid file is empty.\n", "ReadGridCoords()");
+        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Grid file is empty.\n", "ReadGridCoords()");
         bValid = false;
       }
 
@@ -866,7 +867,7 @@ bool CSaTScanData::ReadGridLatLong() {
       gpPrintDirection->SatScanPrintf("Reading the grid file (lat/lon).\n");
 
       if ((fp = fopen(m_pParameters->m_szGridFilename, "r")) == NULL) {
-        gpPrintDirection->SatScanPrintWarning("  Error: Could not open special grid file (lat/lon).\n", "ReadGridLatLong()");
+        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Could not open special grid file (lat/lon).\n", "ReadGridLatLong()");
         return false;
       }
     
@@ -884,30 +885,30 @@ bool CSaTScanData::ReadGridLatLong() {
         itoa(nRec, szTid, 10);
 
         if (nScanCount < 2) {
-          gpPrintDirection->SatScanPrintWarning("  Error: Invalid record in grid file (lat/lon), line %d.\n",nRec);
-          gpPrintDirection->SatScanPrintWarning("         Please see 'grid file format' in the help file.\n");
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Invalid record in grid file (lat/lon), line %d.\n",nRec);
+          gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "         Please see 'grid file format' in the help file.\n");
           bValid = false;
           continue;
         }
     
         // Check for extra coordinates
         if (GetWord(szData, 2, gpPrintDirection)) {
-           gpPrintDirection->SatScanPrintWarning("  Error: Extra data in grid file (lat/lon), line %ld.\n", (long) nRec);
-           gpPrintDirection->SatScanPrintWarning("         Please see 'grid file format' in the help file.\n");
+           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Extra data in grid file (lat/lon), line %ld.\n", (long) nRec);
+           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "         Please see 'grid file format' in the help file.\n");
            bValid = false;
         }
 
         //Check for correct ranges of latitude and longitude values
         if ((fabs(Latitude) > 90.0)) {
-           gpPrintDirection->SatScanPrintWarning("  Error: Latitude range error in grid file (1st column), line %ld.\n", (long) nRec);
-           gpPrintDirection->SatScanPrintWarning("         Latitude must be between -90 and 90.\n");
+           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Latitude range error in grid file (1st column), line %ld.\n", (long) nRec);
+           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "         Latitude must be between -90 and 90.\n");
            bValid = false;
            continue;
         }
 
         if ((fabs(Longitude) > 180.0)) {
-           gpPrintDirection->SatScanPrintWarning("  Error: Longitude range error in grid file (2nd column), line %ld.\n", (long) nRec);
-           gpPrintDirection->SatScanPrintWarning("         Longitude must be between -180 and 180.\n");
+           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Longitude range error in grid file (2nd column), line %ld.\n", (long) nRec);
+           gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "         Longitude must be between -180 and 180.\n");
            bValid = false;
            continue;
         }
@@ -933,7 +934,7 @@ bool CSaTScanData::ReadGridLatLong() {
       } // while fgets()
     
       if (bEmpty) {
-        gpPrintDirection->SatScanPrintWarning("  Error: Grid file is empty (lat/lon).\n", "ReadGridLatLong()");
+        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::GRIDFILE, "  Error: Grid file is empty (lat/lon).\n", "ReadGridLatLong()");
         bValid = false;
       }
 
