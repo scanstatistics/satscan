@@ -123,6 +123,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TBitBtn *btnGridImport;
    TStaticText *stUnitText;
    TRadioButton *rdoOrdinalModel;
+   TRadioButton *rdoExponentialModel;
    
    void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
    void __fastcall rgpPrecisionTimesClick(TObject *Sender);

@@ -586,7 +586,8 @@ void TfrmAnalysis::EnableAnalysisControlForModelType() {
     switch (GetModelControlType()) {
       case POISSON   		:
       case BERNOULLI            :
-      case ORDINAL              : rdoRetrospectivePurelySpatial->Enabled = true;
+      case ORDINAL              :
+      case EXPONENTIAL          : rdoRetrospectivePurelySpatial->Enabled = true;
                                   rdoRetrospectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
                                   rdoRetrospectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
                                   rdoProspectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
@@ -823,6 +824,8 @@ ProbabilityModelType TfrmAnalysis::GetModelControlType() const {
     eReturn = SPACETIMEPERMUTATION;
   else if (rdoOrdinalModel->Checked)
     eReturn = ORDINAL;
+  else if (rdoExponentialModel->Checked)
+    eReturn = EXPONENTIAL;
   else
     ZdGenerateException("Probability model type not selected.","GetModelControlType()");
 
@@ -995,7 +998,8 @@ void TfrmAnalysis::OnProbabilityModelClick() {
     switch (GetModelControlType()) {
       case POISSON   		:
       case BERNOULLI            :
-      case ORDINAL              : lblSimulatedLogLikelihoodRatios->Caption = "Simulated Log Likelihood Ratios";
+      case ORDINAL              :
+      case EXPONENTIAL          : lblSimulatedLogLikelihoodRatios->Caption = "Simulated Log Likelihood Ratios";
                                   gpfrmAdvancedParameters->lblPercentageOfStudyPeriod->Caption = "percent of the study period (<= 90%, default = 50%)";
                                   break;
       case SPACETIMEPERMUTATION : lblSimulatedLogLikelihoodRatios->Caption = "Simulated Test Statistics";
@@ -1308,6 +1312,7 @@ void TfrmAnalysis::SetModelControl(ProbabilityModelType eProbabilityModelType) {
     case BERNOULLI            : rdoBernoulliModel->Checked = true; break;
     case SPACETIMEPERMUTATION : rdoSpaceTimePermutationModel->Checked = true; break;
     case ORDINAL              : rdoOrdinalModel->Checked = true; break;
+    case EXPONENTIAL          : rdoExponentialModel->Checked = true; break;
     case POISSON              :
     default                   : rdoPoissonModel->Checked = true;
   }

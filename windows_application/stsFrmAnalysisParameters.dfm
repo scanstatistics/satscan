@@ -687,6 +687,15 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 3
           OnClick = rdoProbabilityModelClick
         end
+        object rdoExponentialModel: TRadioButton
+          Left = 13
+          Top = 225
+          Width = 82
+          Height = 17
+          Caption = 'Exponential'
+          TabOrder = 4
+          OnClick = rdoProbabilityModelClick
+        end
       end
       object rgpTypeAnalysis: TGroupBox
         Left = 8
