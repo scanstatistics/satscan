@@ -532,14 +532,16 @@ void TfrmAnalysis::EnableAdditionalOutFilesOptionsGroup(bool bRelativeRisks) {
 
 /** enables analysis control based upon the setting in probability model control */
 void TfrmAnalysis::EnableAnalysisControlForModelType() {
+  DatePrecisionType     eDatePrecisionType(GetPrecisionOfTimesControlType());
+
   try {
     switch (GetModelControlType()) {
       case POISSON   		:
       case BERNOULLI            : rdoRetrospectivePurelySpatial->Enabled = true;
-                                  rdoRetrospectivePurelyTemporal->Enabled = true;
-                                  rdoRetrospectiveSpaceTime->Enabled = true;
-                                  rdoProspectivePurelyTemporal->Enabled = true;
-                                  rdoProspectiveSpaceTime->Enabled = true;
+                                  rdoRetrospectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
+                                  rdoRetrospectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
+                                  rdoProspectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
+                                  rdoProspectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
                                   break;
       case SPACETIMEPERMUTATION : rdoRetrospectivePurelySpatial->Enabled = false;
                                   rdoRetrospectivePurelyTemporal->Enabled = false;
@@ -1010,6 +1012,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
 /** method called in response to 'precision of times' radio group click event */
 void TfrmAnalysis::OnPrecisionTimesClick() {
   DatePrecisionType     eDatePrecisionType(GetPrecisionOfTimesControlType());
+
   try {
     //disable analyses that don't match precision
     rdoRetrospectivePurelySpatial->Enabled = true;
