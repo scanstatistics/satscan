@@ -312,10 +312,12 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
    ZdString             sTempValue, sInterval;
    std::auto_ptr<DBFFile>    pFile;
    bool                 bFound(false);
-
+   
    try {
       std::auto_ptr<TCriticalSection> pSection(new TCriticalSection());
       pSection->Acquire();
+
+      const CParameters    params(*(pAnalysis.GetSatScanData()->m_pParameters));
 
       // NOTE: I'm going to document the heck out of this section for two reasons :
       // 1) in case they change the run specs on us at any time
@@ -346,26 +348,26 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, RUN_TIME_FIELD));
 
       // output file name field
-      sTempValue = pAnalysis.GetSatScanData()->m_pParameters->GetOutputFileName().c_str();
+      sTempValue = params.GetOutputFileName().c_str();
       StripCRLF(sTempValue);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, OUTPUT_FILE_FIELD));
-      SetAdditionalOutputFileNameString(sTempValue, *(pAnalysis.GetSatScanData()->m_pParameters));
+      SetAdditionalOutputFileNameString(sTempValue, params);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ADDITIONAL_OUTPUT_FILES_FIELD));
 
       // probability model field
-      GetProbabilityModelString(sTempValue, pAnalysis.GetSatScanData()->m_pParameters->m_nModel);
+      GetProbabilityModelString(sTempValue, params.m_nModel);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, PROB_MODEL_FIELD));
 
       // rates(high, low or both) field
-      GetRatesString(sTempValue, pAnalysis.GetSatScanData()->m_pParameters->m_nAreas);
+      GetRatesString(sTempValue, params.m_nAreas);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, RATES_FIELD));
 
       // coordinate type field
-      sTempValue = ((pAnalysis.GetSatScanData()->m_pParameters->m_nCoordType == CARTESIAN) ? "Cartesian" : "LatLong");
+      sTempValue = ((params.m_nCoordType == CARTESIAN) ? "Cartesian" : "LatLong");
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, COORD_TYPE_FIELD));
 
       // analysis type field
-      GetAnalysisTypeString(sTempValue, pAnalysis.GetSatScanData()->m_pParameters->m_nAnalysisType);
+      GetAnalysisTypeString(sTempValue, params.m_nAnalysisType);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ANALYSIS_TYPE_FIELD));
 
       SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->m_nTotalCases, GetFieldNumber(gvFields, NUM_CASES_FIELD));   // total number of cases field
@@ -373,34 +375,34 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->m_nTracts, GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));     // number of geographic areas field
 
       // precision of case times field
-      GetCasePrecisionString(sTempValue, pAnalysis.GetSatScanData()->m_pParameters->m_nPrecision);
+      GetCasePrecisionString(sTempValue, params.m_nPrecision);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, PRECISION_TIMES_FIELD));
 
       //  max geographic extent field
-      GetMaxGeoExtentString(sTempValue, *(pAnalysis.GetSatScanData()->m_pParameters));
+      GetMaxGeoExtentString(sTempValue, params);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, MAX_GEO_EXTENT_FIELD));
 
       // max temporal extent field
-      GetMaxTemporalExtentString(sTempValue, *(pAnalysis.GetSatScanData()->m_pParameters));
+      GetMaxTemporalExtentString(sTempValue, params);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, MAX_TIME_EXTENT_FIELD));
  //     SetDoubleField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_nInitialMaxClusterSizeType, GetFieldNumber(gvFields, MAX_GEO_EXTENT_FIELD));   //
  //     SetDoubleField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_nInitialMaxTemporalClusterSize, GetFieldNumber(gvFields, MAX_TIME_EXTENT_FIELD));
 
       // time trend adjustment field
-      GetTimeAdjustmentString(sTempValue, pAnalysis.GetSatScanData()->m_pParameters->m_nTimeAdjustType);
+      GetTimeAdjustmentString(sTempValue, params.m_nTimeAdjustType);
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, TIME_TREND_ADJUSTMENT_FIELD));
 
       // covariates number
       SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->gpCats->catGetNumEls(), GetFieldNumber(gvFields, COVARIATES_FIELD));
 
-      SetBoolField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->UseSpecialGrid(), GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field
-      SetStringField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_szStartDate, GetFieldNumber(gvFields, START_DATE_FIELD));  // start date field
-      SetStringField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_szEndDate, GetFieldNumber(gvFields, END_DATE_FIELD)); // end date field
-      SetBoolField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_bAliveClustersOnly, GetFieldNumber(gvFields, ALIVE_ONLY_FIELD)); // alive clusters only field
+      SetBoolField(*pRecord, params.UseSpecialGrid(), GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field
+      SetStringField(*pRecord, params.m_szStartDate, GetFieldNumber(gvFields, START_DATE_FIELD));  // start date field
+      SetStringField(*pRecord, params.m_szEndDate, GetFieldNumber(gvFields, END_DATE_FIELD)); // end date field
+      SetBoolField(*pRecord, params.m_bAliveClustersOnly, GetFieldNumber(gvFields, ALIVE_ONLY_FIELD)); // alive clusters only field
 
       // interval field
-      GetIntervalUnitsString(sTempValue, pAnalysis.GetSatScanData()->m_pParameters->m_nIntervalUnits);
-      sInterval << pAnalysis.GetSatScanData()->m_pParameters->m_nIntervalLength << " " << sTempValue;
+      GetIntervalUnitsString(sTempValue, params.m_nIntervalUnits);
+      sInterval << params.m_nIntervalLength << " " << sTempValue;
       SetStringField(*pRecord, sInterval, GetFieldNumber(gvFields, INTERVAL_FIELD));
 
       // p-value field
@@ -408,18 +410,18 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
          SetDoubleField(*pRecord, dVal, GetFieldNumber(gvFields, P_VALUE_FIELD));
       else
          pRecord->PutBlank(GetFieldNumber(gvFields, P_VALUE_FIELD));
-      SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->m_pParameters->m_nReplicas, GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
+      SetDoubleField(*pRecord, (double)params.m_nReplicas, GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
 
       if(gbPrintPVal) {    // only print 0.01 and 0.05 cutoffs if pVals are printed, else this would result in access underrun - AJV
          SetDoubleField(*pRecord, pAnalysis.GetSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
          SetDoubleField(*pRecord, pAnalysis.GetSimRatio05(), GetFieldNumber(gvFields, CUTOFF_005_FIELD)); // 0.05 cutoff field
+         SetDoubleField(*pRecord, (double)uwSignificantAt005, GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));  // number of clusters significant at tthe .05 llr cutoff field
       }
       else {
          pRecord->PutBlank(GetFieldNumber(gvFields, CUTOFF_001_FIELD));
          pRecord->PutBlank(GetFieldNumber(gvFields, CUTOFF_005_FIELD));
+         pRecord->PutBlank(GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));
       }
-
-      SetDoubleField(*pRecord, (double)uwSignificantAt005, GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));  // number of clusters significant at tthe .05 llr cutoff field
 
       pTransaction = (pFile->BeginTransaction());
       pFile->SaveRecord(*pTransaction, pFile->GetCurrentRecordNumber(),*pRecord);
