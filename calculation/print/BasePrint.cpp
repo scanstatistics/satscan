@@ -5,25 +5,17 @@
 //---------------------------------------------------------------------------
 BasePrint::BasePrint()
 {
-   gsMessage = 0;
+   gsMessage = new char[1];
+   gsMessage[0] = 0;
 }
 //---------------------------------------------------------------------------
-BasePrint::~BasePrint()
-{
-   if (gsMessage)
-      delete [] gsMessage;
+BasePrint::~BasePrint() {
+  try {
+    delete [] gsMessage;
+  }
+  catch (...){}
 }
-//---------------------------------------------------------------------------
-/*bool BasePrint::GetIsCanceled()
-{
-   return false;
-} */
-//---------------------------------------------------------------------------
-/*void BasePrint::PrintLine(char *s)
-{
-   printf(s);
-} */
-//---------------------------------------------------------------------------
+
 void BasePrint::SatScanPrintf(const char * sMessage, ... )
 {
    va_list   varArgs;
@@ -54,50 +46,34 @@ void BasePrint::SatScanPrintWarning(const char * sMessage, ... )
 #ifdef INTEL_BASED
 // This function sets the current exception message.  If a NULL is passed in, the current
 // message is cleared.
-void BasePrint::PrintMessage(va_list varArgs, const char * sMessage)
-{
-   int   iStringLength;   // Holds the length of the formatted output
+void BasePrint::PrintMessage(va_list varArgs, const char * sMessage) {
+  int   iStringLength;   // Holds the length of the formatted output
 
-   try
-      {
-      if (sMessage)
-         {
-         // vsnprintf will calculate the required length, not including the NULL,
-         // for the format string when given a NULL pointer and a zero length as
-         // the first two parameters.
-         if (gsMessage)
-            delete [] gsMessage;
-         iStringLength = vsnprintf ( 0, 0, sMessage, varArgs );
-         gsMessage = new char[iStringLength + 1];
-         vsnprintf ( gsMessage, iStringLength + 1, sMessage, varArgs );
-         //PrintLine(sNewMessage);
-         //delete [] sNewMessage; sNewMessage = 0;
-         }
-      }
-   catch (...) {};
+  try {
+    // vsnprintf will calculate the required length, not including the NULL,
+    // for the format string when given a NULL pointer and a zero length as
+    // the first two parameters.
+    delete [] gsMessage; gsMessage=0;
+    iStringLength = vsnprintf ( 0, 0, sMessage, varArgs );
+    gsMessage = new char[iStringLength + 1];
+    vsnprintf ( gsMessage, iStringLength + 1, sMessage, varArgs );
+  }
+  catch (...) {}
 }
 #else
 // This function sets the current exception message.  If a NULL is passed in, the current
 // message is cleared.
-void BasePrint::PrintMessage(va_list varArgs, const char * sMessage )
-{
-   int   iStringLength;   // Holds the length of the formatted output
-   char  * sNewMessage = 0;
+void BasePrint::PrintMessage(va_list varArgs, const char * sMessage ) {
+  int   iStringLength;   // Holds the length of the formatted output
+  char  * sNewMessage = 0;
 
-   try
-      {
-      if (sMessage)
-         {
-         if (gsMessage)
-            delete [] gsMessage;
-         // vsnprintf will always return the length needed to format the string.
-         iStringLength = vsnprintf ( sNewMessage, iCurrentLength + 1, sMessage, varArgs );
-         gsMessage = new char[iStringLength + 1];
-         vsnprintf ( gsMessage, iStringLength + 1, sMessage, varArgs );
-         //printf(sNewMessage); //new line
-         //delete [] sNewMessage; sNewMessage = 0;
-         }
-      }
-   catch (...) {};
+  try {
+    delete [] gsMessage; gsMessage=0;
+    // vsnprintf will always return the length needed to format the string.
+    iStringLength = vsnprintf ( sNewMessage, iCurrentLength + 1, sMessage, varArgs );
+    gsMessage = new char[iStringLength + 1];
+    vsnprintf ( gsMessage, iStringLength + 1, sMessage, varArgs );
+  }
+  catch (...) {}
 }
 #endif
