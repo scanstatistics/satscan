@@ -11,12 +11,11 @@ ScanLineParameterFileAccess::ScanLineParameterFileAccess(CParameters& Parameters
 /** destructor */
 ScanLineParameterFileAccess::~ScanLineParameterFileAccess() {}
 
-/** Returns a string which describes the parameter for error reporting on read. */
-/** TODO: document - implement */
+/** Returns a string which describes the parameter (for error reporting on read). */
 const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParameterType) const {
   try {
     switch (eParameterType) {
-      case ANALYSISTYPE              : return "Analysis Type (line 1)";  
+      case ANALYSISTYPE              : return "Analysis Type (line 1)";
       case SCANAREAS                 : return "Scan Areas Type (line 2)";  
       case CASEFILE                  : return "Case Filename (line 3)";  
       case POPFILE                   : return "Population Filename (line 4)";  
@@ -171,19 +170,19 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
       }
     }
 
-    //Mark defaulted values.
-   if (iLinesRead != gParameters.GetNumReadParameters())
-      while (++iLinesRead <= gParameters.GetNumReadParameters())
-          MarkAsMissingDefaulted((ParameterType)iLinesRead, gPrintDirection);
+   ////Mark defaulted values.
+   //if (iLinesRead != gParameters.GetNumReadParameters())
+   //   while (++iLinesRead <= gParameters.GetNumReadParameters())
+   //       MarkAsMissingDefaulted((ParameterType)iLinesRead, gPrintDirection);
   }
   catch (ZdException & x) {
-    x.AddCallpath("ReadScanningLineParameterFile()", "ScanLineParameterFileAccess");
+    x.AddCallpath("Read()", "ScanLineParameterFileAccess");
     throw;
   }
   return gbReadStatusError;
 }
 
-/** TODO: document - implement */
+/** Write parameters to file - not implemented, throws ZdException. */
 void ScanLineParameterFileAccess::Write(const char * sFilename) {
   ZdException::Generate("Write() not implemented for line scanned version.","ScanLineParameterFileAccess");
 }
