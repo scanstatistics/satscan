@@ -108,7 +108,7 @@ class CSaTScanData
     bool        ReadPops();
 
     void        SetPurelyTemporalSimCases();
-    void        SetMaxCircleSize() {m_nMaxCircleSize = (m_pParameters->m_nMaxGeographicClusterSize / 100.0) * m_nTotalMeasure;};
+    void        SetMaxCircleSize();
 };
 
 //*****************************************************************************

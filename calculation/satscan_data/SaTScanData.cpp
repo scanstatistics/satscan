@@ -228,12 +228,14 @@ bool CSaTScanData::FindNeighbors() {
         MakeNeighbors(gpTInfo, gpGInfo, m_pSortedInt, m_pSortedUShort, m_nTracts, m_nGridTracts,
                       m_pMeasure[0], m_nMaxCircleSize, m_nTotalMeasure, m_NeighborCounts,
                       m_pParameters->m_nDimension, m_pParameters->m_nNumEllipses,
-                      m_pParameters->mp_dEShapes, m_pParameters->mp_nENumbers, gpPrintDirection);
+                      m_pParameters->mp_dEShapes, m_pParameters->mp_nENumbers,
+                      m_pParameters->m_nMaxSpatialClusterSizeType, gpPrintDirection);
       else
         MakeNeighbors(gpTInfo, gpGInfo, m_pSortedInt, m_pSortedUShort, m_nTracts, m_nGridTracts,
                       m_pMeasure[0], m_nMaxCircleSize, m_nMaxCircleSize, m_NeighborCounts,
                       m_pParameters->m_nDimension, m_pParameters->m_nNumEllipses,
-                      m_pParameters->mp_dEShapes, m_pParameters->mp_nENumbers, gpPrintDirection);
+                      m_pParameters->mp_dEShapes, m_pParameters->mp_nENumbers,
+                      m_pParameters->m_nMaxSpatialClusterSizeType, gpPrintDirection);
 
    }
    catch (SSException & x) {
@@ -415,6 +417,25 @@ void CSaTScanData::SetIntervalStartTimes() {
       x.AddCallpath("SetIntervalStartTimes()", "CSaTScanData");
       throw;
    }
+}
+
+/** Causes maximum circle size to be set based on parameters settings. */
+void CSaTScanData::SetMaxCircleSize() {
+   try
+     {
+     if (m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)
+       m_nMaxCircleSize = (m_pParameters->m_nMaxGeographicClusterSize / 100.0) * m_nTotalMeasure;
+     else if (m_pParameters->m_nMaxSpatialClusterSizeType == DISTANCETYPE)
+       m_nMaxCircleSize = m_pParameters->m_nMaxGeographicClusterSize;
+     else
+       SSGenerateException("Unknown maximum spatial cluster type: \"%i\".",
+                           "SetMaxCircleSize()", m_pParameters->m_nMaxSpatialClusterSizeType );
+     }
+   catch (SSException & x)
+     {
+     x.AddCallpath("SetMaxCircleSize()", "CSaTScanData");
+     throw;
+     }
 }
 
 void CSaTScanData::SetNumTimeIntervals() {
