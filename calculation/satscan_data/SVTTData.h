@@ -19,7 +19,7 @@ class CSVTTData : public CSaTScanData {
     virtual bool        CalculateMeasure();
     virtual void        SetAdditionalCaseArrays();
     virtual void        SetNumTimeIntervals();
-    void                SetCaseArrays(count_t**  pCases, count_t*** pCases_NC, count_t**  pCasesByTimeInt);
+    void                SetCaseArrays(count_t**  pCases, count_t** pCases_NC, count_t*  pCasesByTimeInt);
 
   public:
     CSVTTData(CParameters* pParameters, BasePrint *pPrintDirection);
