@@ -1,64 +1,37 @@
+//***************************************************************************
 #ifndef stsAreaSpecificData_h
 #define stsAreaSpecificData_h
-
+//***************************************************************************
 #include "stsOutputFileData.h"
-
-extern const char *	AREA_SPECIFIC_FILE_EXT;
+#include "Parameters.h"
 
 class CCluster;
 class CSaTScanData;
 
+/** This class is responsible for the storage of the area specific data for output.
+    This class defines the fields which make up the the data contained therein.
+    The class is derived from the base class BaseOutputStorageClass.            */
 class stsAreaSpecificData : public BaseOutputStorageClass {
    private:
-      long	glRunNumber;
-      bool	gbPrintPVal, gbIncludeRunHistory;
-       
-      void	Init();
-      void	Setup(const ZdString& sOutputFileName, const long lRunNumber, const bool bPrintPVal);
+      virtual void              SetupFields();
+
    protected:
-      virtual void   SetupFields();
+      static const char       * AREA_SPECIFIC_FILE_EXT;
+      static const char       * AREA_OBS_FIELD;
+      static const char       * AREA_EXP_FIELD;
+      static const char       * AREA_RSK_FIELD;
+      static const char       * CLU_OBS_FIELD;
+      static const char       * CLU_EXP_FIELD;
+      const CParameters       & gParameters;
+      bool                      gbExcludePValueField;
+
    public:
-      stsAreaSpecificData(BasePrint *pPrintDirection, const ZdString& sOutputFileName, const long lRunNumber, const bool bPrintPVal);
+      stsAreaSpecificData(const CParameters& Parameters, bool bExcludePValueField);
       virtual ~stsAreaSpecificData();
 
-      virtual void   RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, tract_t tTract, unsigned int iNumSimsCompleted);
+      virtual const char      * GetOutputExtension() const {return AREA_SPECIFIC_FILE_EXT;}
+      virtual void              RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData,
+                                                  int iClusterNumber, tract_t tTract, unsigned int iNumSimsCompleted);
 };
-
-class AreaSpecificRecord : public BaseOutputRecord {
-   private:
-      long 	glRunNumber;
-      ZdString 	gsLocationID;
-      int 	giClusterNumber;
-      long 	glClusterObserved;
-      double 	gdClusterExpected;
-      double 	gdRelRisk;
-      double 	gdPValue;
-      long 	glAreaObserved;
-      double 	gdAreaExpected;
-      double 	gdAreaRelRisk;
-
-      bool	gbPrintPVal, gbIncludeRunHistory;
-      void 	Init();
-   public :
-      AreaSpecificRecord(const bool bPrintPVal = true, const bool bIncludeRunHistory = true);
-      virtual ~AreaSpecificRecord();
-
-      virtual bool GetFieldIsBlank(int iFieldNumber);
-      virtual int GetNumFields();
-      virtual ZdFieldValue GetValue(int iFieldNumber);
-
-      void      SetFieldIsBlank(int iFieldNumber, bool bBlank = true);
-
-      void	SetAreaExpected(const double dAreaExpected) { gdAreaExpected = dAreaExpected; }
-      void	SetAreaObserved(const long lAreaObserved) { glAreaObserved = lAreaObserved; }  
-      void	SetAreaRelativeRisk(const double dAreaRelRisk) { gdAreaRelRisk = dAreaRelRisk; }
-      void	SetClusterExpected(const double dClusterExpected) { gdClusterExpected = dClusterExpected; }
-      void	SetClusterNumber(const int iClusterNumber) { giClusterNumber = iClusterNumber; }
-      void	SetClusterObserved(const long lClusterObserved) { glClusterObserved = lClusterObserved; }
-      void	SetClusterRelativeRisk(const double dRelRisk) { gdRelRisk = dRelRisk; }
-      void	SetLocationID(const ZdString& sLocationID) { gsLocationID = sLocationID; } 
-      void	SetPValue(const double dPValue) { gdPValue = dPValue; }
-      void  	SetRunNumber(const long lRunNumber) { glRunNumber = lRunNumber; }   
-}; 
-
+//***************************************************************************
 #endif
