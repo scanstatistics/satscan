@@ -1063,7 +1063,7 @@ void TfrmAnalysis::ParseDate(const char * szDate, TEdit *pYear, TEdit *pMonth, T
   if ((iPrecision = CharToMDY(&uiMonth, &uiDay, &uiYear, szDate)) > 0) {
     switch (iPrecision) {
       case 3 : if (uiYear >= MIN_YEAR && uiYear <= MAX_YEAR &&
-                   uiMonth >= 1 && uiMonth <= 12 &&  uiDay > 1 && uiDay <= DaysThisMonth(uiYear, uiMonth)) {
+                   uiMonth >= 1 && uiMonth <= 12 &&  uiDay >= 1 && uiDay <= DaysThisMonth(uiYear, uiMonth)) {
                   pYear->Text = uiYear;
                   pMonth->Text = uiMonth;
                   pDay->Text = uiDay;
