@@ -29,6 +29,7 @@ class CModel {
     virtual double              CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster);
     virtual bool                CalculateMeasure() = 0;
     virtual double              CalcSVTTLogLikelihood(CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend);
+    virtual bool                DoesReadMaxCirclePopulationFile();
     virtual double              GetLogLikelihoodForTotal() const = 0;
     virtual double              GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
                                               int nStartInterval, int nStopInterval) = 0;
