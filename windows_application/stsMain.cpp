@@ -185,19 +185,19 @@ void __fastcall TfrmMainForm::NewSessionActionExecute(TObject *Sender) {
 void __fastcall TfrmMainForm::OnFormActivate(TObject *Sender) {
   try {
     if (gbShowStartWindow) {
-      frmStartWindow = new TfrmStartWindow(this);
-      if (frmStartWindow->ShowModal() == mrOk) {
-         switch (frmStartWindow->GetSelectedItemIndex()) {
-           case 0  : new TfrmAnalysis(this, ActionList); break;
-           case 1  : OpenAFile(); break;
-           case 2  : if (!File_Exists(const_cast<char*>(GetToolkit().GetParameterHistory()[0].c_str())))
-                       ZdException::GenerateNotification("Cannot open file '%s'.", "FormActivate()",
-                                                         GetToolkit().GetParameterHistory()[0].c_str());
-                     new TfrmAnalysis(this, ActionList, const_cast<char*>(GetToolkit().GetParameterHistory()[0].c_str()));
-                     break;
-           default : ZdException::GenerateNotification("Unknown operation index % d.",
-                                                       "OnFormActivate()", frmStartWindow->GetSelectedItemIndex());
-         }
+      TfrmStartWindow * frmStartWindow = new TfrmStartWindow(this);
+      frmStartWindow->ShowModal();
+      switch (frmStartWindow->GetOpenType()) {
+        case TfrmStartWindow::NEW    : new TfrmAnalysis(this, ActionList); break;
+        case TfrmStartWindow::SAVED  : OpenAFile(); break;
+        case TfrmStartWindow::LAST   : if (!File_Exists(const_cast<char*>(GetToolkit().GetParameterHistory()[0].c_str())))
+                                         ZdException::GenerateNotification("Cannot open file '%s'.", "FormActivate()",
+                                                                           GetToolkit().GetParameterHistory()[0].c_str());
+                                       new TfrmAnalysis(this, ActionList, const_cast<char*>(GetToolkit().GetParameterHistory()[0].c_str()));
+                                       break;
+        case TfrmStartWindow::CANCEL : break;
+        default : ZdException::GenerateNotification("Unknown operation index % d.",
+                                                     "OnFormActivate()", frmStartWindow->GetOpenType());
       }
       delete frmStartWindow; frmStartWindow=0;
       gbShowStartWindow = false;
