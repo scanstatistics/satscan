@@ -113,17 +113,18 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
          sFileName.SetFileName(sFileNamePrefix);
          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
          CreateTXDFile(sFileName, gvCaseFileFieldDescriptors);
-         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, &ImportDescriptor));
+         auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
-         if (pImporter->ShowModal())         
+         if (pImporter->ShowModal() == mrOk) {
            AttemptFilterDateFields(sFileName.GetFullPath(), "%y/%m/%d", 2);
+           strcpy(gpParams->m_szCaseFilename, sFileName.GetFullPath());
+           edtCaseFileName->Text = sFileName.GetFullPath();
+         }
       }
-
-      //Why is this here? KMC 8/30/2002
-      // sets the global paramater to store the filename and also sets the editbox to display the filename - AJV 9/4/2002
-      strcpy(gpParams->m_szCaseFilename, sFileName.GetFullPath());
-      edtCaseFileName->Text = sFileName.GetFullPath();
-      strcpy(gpParams->m_szCaseFilename, edtCaseFileName->Text.c_str());
+      else {
+        strcpy(gpParams->m_szCaseFilename, sFileName.GetFullPath());
+        edtCaseFileName->Text = sFileName.GetFullPath();
+      }
     }
   }
   catch (ZdException & x) {
@@ -160,19 +161,20 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
          sFileName.SetFileName(sFileNamePrefix);
          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
          CreateTXDFile(sFileName, gvControlFileFieldDescriptors);
-         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, &ImportDescriptor));
+         auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
          pImporter->ShowModal();
-         if (pImporter->ShowModal())
+         if (pImporter->ShowModal() == mrOk) {
            AttemptFilterDateFields(sFileName.GetFullPath(), "%y/%m/%d", 2);
+           strcpy(gpParams->m_szControlFilename, sFileName.GetFullPath());
+           edtControlFileName->Text = sFileName.GetFullPath();
+         }
       }
-
-      //Why is this here? KMC 8/30/2002
-      // sets the global paramater to store the filename and also sets the editbox to display the filename - AJV 9/4/2002
-      strcpy(gpParams->m_szControlFilename, sFileName.GetFullPath());
-      edtControlFileName->Text = sFileName.GetFullPath();
-      strcpy(gpParams->m_szControlFilename, edtControlFileName->Text.c_str());
-     }
+      else {
+        strcpy(gpParams->m_szControlFilename, sFileName.GetFullPath());
+        edtControlFileName->Text = sFileName.GetFullPath();
+      }
+    }
   }
   catch (ZdException & x) {
     x.AddCallpath("btnControlBrowseClick()", "TfrmAnalysis");
@@ -208,16 +210,17 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
          sFileName.SetFileName(sFileNamePrefix);
          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
          CreateTXDFile(sFileName, gvGeoFileFieldDescriptors);
-         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, &ImportDescriptor));
+         auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
-         pImporter->ShowModal();
+         if (pImporter->ShowModal() == mrOk) {
+           strcpy(gpParams->m_szCoordFilename, sFileName.GetFullPath());
+           edtCoordinateFileName->Text = sFileName.GetFullPath();
+         }
       }
-
-      //Why is this here? KMC 8/30/2002
-      // sets the global paramater to store the filename and also sets the editbox to display the filename - AJV 9/4/2002
-      strcpy(gpParams->m_szCoordFilename, sFileName.GetFullPath());
-      edtCoordinateFileName->Text = sFileName.GetFullPath();
-      strcpy(gpParams->m_szCoordFilename, edtCoordinateFileName->Text.c_str());
+      else {
+        strcpy(gpParams->m_szCoordFilename, sFileName.GetFullPath());
+        edtCoordinateFileName->Text = sFileName.GetFullPath();
+      }
     }
   }
   catch (ZdException & x) {
@@ -254,16 +257,17 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
          sFileName.SetFileName(sFileNamePrefix);
          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
          CreateTXDFile(sFileName, gvGridFileFieldDescriptors);
-         auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, &ImportDescriptor));
+         auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
-         pImporter->ShowModal();
+         if (pImporter->ShowModal() ==mrOk) {
+           strcpy(gpParams->m_szGridFilename, sFileName.GetFullPath());
+           edtGridFileName->Text = sFileName.GetFullPath();
+         }
       }
-
-      //Why is this here? KMC 8/30/2002
-      // sets the global paramater to store the filename and also sets the editbox to display the filename - AJV 9/4/2002
-      strcpy(gpParams->m_szGridFilename, sFileName.GetFullPath());
-      edtGridFileName->Text = sFileName.GetFullPath();
-      strcpy(gpParams->m_szGridFilename, edtGridFileName->Text.c_str());
+      else {
+        strcpy(gpParams->m_szGridFilename, sFileName.GetFullPath());
+        edtGridFileName->Text = sFileName.GetFullPath();
+      }  
     }
   }
   catch (ZdException & x) {
@@ -300,16 +304,17 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
           sFileNamePrefix << sFileName.GetFileName();
           sFileName.SetFileName(sFileNamePrefix);
           CreateTXDFile(sFileName, gvPopFileFieldDescriptors);
-          auto_ptr<TBdlgImporter>pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, &ImportDescriptor));
+          auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
           pImporter->ShowOptionalPanels(false, false, false);
-          pImporter->ShowModal();
+          if (pImporter->ShowModal() == mrOk) {
+            strcpy(gpParams->m_szPopFilename, sFileName.GetFullPath());
+            edtPopFileName->Text = sFileName.GetFullPath();
+          }
        }
-
-      //Why is this here? KMC 8/30/2002
-      // sets the global paramater to store the filename and also sets the editbox to display the filename - AJV 9/4/2002
-      strcpy(gpParams->m_szPopFilename, sFileName.GetFullPath());
-      edtPopFileName->Text = sFileName.GetFullPath();
-      strcpy(gpParams->m_szPopFilename, edtPopFileName->Text.c_str());
+       else {
+         strcpy(gpParams->m_szPopFilename, sFileName.GetFullPath());
+         edtPopFileName->Text = sFileName.GetFullPath();
+       }
     }
   }
   catch (ZdException & x) {
@@ -803,7 +808,7 @@ bool TfrmAnalysis::DetermineIfDbfExtension(AnsiString sFileName) {
   bool bDbfStatus = false;
 
   try {
-     bDbfStatus = ! std::strcmp(((sFileName.SubString(sFileName.Length() - 3, 4)).LowerCase()).c_str(), ".dbf");
+     bDbfStatus = !strcmp(((sFileName.SubString(sFileName.Length() - 3, 4)).LowerCase()).c_str(), ".dbf");
   }
   catch (ZdException & x) {
     x.AddCallpath("DetermineIfDbaseFile(AnsiString & sFileName)", "TfrmAnalysis");
