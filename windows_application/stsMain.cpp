@@ -9,7 +9,10 @@
 
 TfrmMainForm *frmMainForm;
 //---------------------------------------------------------------------------
-__fastcall TfrmMainForm::TfrmMainForm(TComponent* Owner): TForm(Owner){ EnableActions(true); }
+__fastcall TfrmMainForm::TfrmMainForm(TComponent* Owner): TForm(Owner){
+  EnableActions(true);
+  RefreshReopenList();
+}
 
 __fastcall TfrmMainForm::~TfrmMainForm() {}
 
@@ -226,6 +229,28 @@ void __fastcall TfrmMainForm::PrintSetupActionExecute(TObject *Sender) {
   PrinterSetupDialog1->Execute();
 }
 //---------------------------------------------------------------------------
+void TfrmMainForm::RefreshReopenList() {
+  SaTScanToolkit::ParameterHistory_t::const_iterator     itr;
+  TMenuItem                                            * pItem=0;
+  size_t                                                 t=1;
+
+  mitReopen->Clear();
+  const SaTScanToolkit::ParameterHistory_t & Parameters = GetToolkit().GetParameterHistory();
+  mitReopen->Enabled = !Parameters.empty();
+  for (t=0; t < Parameters.size(); t++) {
+     pItem = new TMenuItem(mitReopen);
+     pItem->OnClick = ActionReopen->OnExecute;
+     if (Parameters[t].size() < 100)
+       pItem->Caption.printf("&%i  %s", t, Parameters[t].c_str());
+     else {
+       ZdFileName File(Parameters[t].c_str());
+       pItem->Caption.printf("&%i  %s\\ ... %s", t, File.GetDrive(), Parameters[t].substr(Parameters[t].size() - 100).c_str());
+     }
+     pItem->Tag = t;
+     mitReopen->Add(pItem);
+  }
+}
+//---------------------------------------------------------------------------
 void TfrmMainForm::Save() {
   TfrmAnalysis *frmBaseForm;
   AnsiString    sFileName;
@@ -288,6 +313,25 @@ void __fastcall TfrmMainForm::SaveSessionAsActionExecute(TObject *Sender){
 //---------------------------------------------------------------------------
 void __fastcall TfrmMainForm::UsingHelpActionExecute(TObject *Sender) {
   WinHelp(0, "winhelp.hlp", HELP_HELPONHELP, 0L);
+}
+//---------------------------------------------------------------------------
+void __fastcall TfrmMainForm::ActionReopenExecute(TObject *Sender) {
+  TMenuItem     * pItem;
+  std::string     sFileName;
+
+  try {
+    pItem = dynamic_cast<TMenuItem *>(Sender);
+    if (pItem) {
+      sFileName = GetToolkit().GetParameterHistory()[pItem->Tag];
+      if (!File_Exists(const_cast<char*>(sFileName.c_str())))
+        ZdException::GenerateNotification("Cannot open file '%s'.","mitReopenClick()", sFileName.c_str());
+      new TfrmAnalysis(this, ActionList, const_cast<char*>(sFileName.c_str()));
+    }  
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("mitReopenClick", "TfrmMainForm");
+    DisplayBasisException(this, x);
+  }
 }
 //---------------------------------------------------------------------------
 

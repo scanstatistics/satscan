@@ -69,6 +69,9 @@ class TfrmMainForm : public TForm{
         TBevel *Bevel5;
         TSpeedButton *btnImportInputFile;
         TAction *ImportAction;
+        TBevel *Bevel6;
+        TMenuItem *mitReopen;
+        TAction *ActionReopen;
         void __fastcall PrintSessionActionExecute(TObject *Sender);
         void __fastcall OutputTextFile1Click(TObject *Sender);
         void __fastcall NewSessionActionExecute(TObject *Sender);
@@ -83,6 +86,7 @@ class TfrmMainForm : public TForm{
         void __fastcall UsingHelpActionExecute(TObject *Sender);
         void __fastcall AboutSatscanActionExecute(TObject *Sender);
         void __fastcall ImportActionExecute(TObject *Sender);
+        void __fastcall ActionReopenExecute(TObject *Sender);
   private:	// User declarations
     void __fastcall             OpenAFile();
     void                        EnableActions(bool bEnable);
@@ -90,10 +94,12 @@ class TfrmMainForm : public TForm{
     void                        Save();
     void                        SaveAs();
     stsOutputFileRegister       gRegistry;
-    
+
   public:		// User declarations
     __fastcall TfrmMainForm(TComponent* Owner);
     virtual __fastcall ~TfrmMainForm();
+
+    void                        RefreshReopenList();
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfrmMainForm *frmMainForm;

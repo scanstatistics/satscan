@@ -23,6 +23,13 @@ object frmMainForm: TfrmMainForm
     Height = 2
     Align = alTop
   end
+  object Bevel6: TBevel
+    Left = 0
+    Top = 33
+    Width = 775
+    Height = 2
+    Align = alTop
+  end
   object barStatusBar: TStatusBar
     Left = 0
     Top = 459
@@ -50,7 +57,7 @@ object frmMainForm: TfrmMainForm
     TabOrder = 1
     object sbOpen: TSpeedButton
       Left = 48
-      Top = 4
+      Top = 3
       Width = 25
       Height = 25
       Action = OpenParameterFileAction
@@ -72,7 +79,7 @@ object frmMainForm: TfrmMainForm
     end
     object sbSave: TSpeedButton
       Left = 80
-      Top = 4
+      Top = 3
       Width = 25
       Height = 25
       Action = SaveSessionAction
@@ -94,7 +101,7 @@ object frmMainForm: TfrmMainForm
     end
     object sbHelp: TSpeedButton
       Left = 197
-      Top = 4
+      Top = 3
       Width = 25
       Height = 25
       Action = HelpAction
@@ -116,7 +123,7 @@ object frmMainForm: TfrmMainForm
     end
     object sbExecute: TSpeedButton
       Left = 120
-      Top = 4
+      Top = 3
       Width = 25
       Height = 25
       Action = ExecuteAction
@@ -138,7 +145,7 @@ object frmMainForm: TfrmMainForm
     end
     object sbEditSession: TSpeedButton
       Left = 8
-      Top = 4
+      Top = 3
       Width = 25
       Height = 25
       Action = NewSessionAction
@@ -162,31 +169,31 @@ object frmMainForm: TfrmMainForm
     end
     object Bevel2: TBevel
       Left = 40
-      Top = 4
+      Top = 3
       Width = 2
       Height = 23
     end
     object Bevel3: TBevel
       Left = 112
-      Top = 4
+      Top = 3
       Width = 2
       Height = 23
     end
     object Bevel4: TBevel
       Left = 152
-      Top = 4
+      Top = 3
       Width = 2
       Height = 23
     end
     object Bevel5: TBevel
       Left = 189
-      Top = 4
+      Top = 3
       Width = 2
       Height = 23
     end
     object btnImportInputFile: TSpeedButton
       Left = 159
-      Top = 4
+      Top = 3
       Width = 25
       Height = 25
       Action = ImportAction
@@ -214,8 +221,9 @@ object frmMainForm: TfrmMainForm
     end
   end
   object MainMenu1: TMainMenu
-    Left = 8
-    Top = 40
+    AutoHotkeys = maManual
+    Left = 16
+    Top = 408
     object File1: TMenuItem
       Caption = '&File'
       object mitOpenSession: TMenuItem
@@ -234,6 +242,9 @@ object frmMainForm: TfrmMainForm
           Visible = False
           OnClick = OutputTextFile1Click
         end
+      end
+      object mitReopen: TMenuItem
+        Caption = '&Reopen'
       end
       object Close1: TMenuItem
         Action = CloseSessionAction
@@ -269,14 +280,14 @@ object frmMainForm: TfrmMainForm
       end
       object ImportInputFile1: TMenuItem
         Action = ImportAction
-        Caption = 'Import Files'
+        Caption = '&Import Files'
       end
     end
     object Help1: TMenuItem
       Caption = '&Help'
       object Contents1: TMenuItem
         Action = HelpAction
-        Caption = 'Contents'
+        Caption = '&Contents'
       end
       object UsingHelp1: TMenuItem
         Action = UsingHelpAction
@@ -291,21 +302,21 @@ object frmMainForm: TfrmMainForm
   end
   object OpenDialog1: TOpenDialog
     Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
-    Left = 8
-    Top = 72
+    Left = 48
+    Top = 408
   end
   object SaveDialog1: TSaveDialog
-    Left = 8
-    Top = 96
+    Left = 48
+    Top = 344
   end
   object PrinterSetupDialog1: TPrinterSetupDialog
-    Left = 8
-    Top = 160
+    Left = 48
+    Top = 376
   end
   object ActionList: TActionList
     Images = ImageList
-    Left = 8
-    Top = 192
+    Left = 16
+    Top = 376
     object NewSessionAction: TAction
       Category = 'All'
       Hint = 'New Session'
@@ -395,10 +406,16 @@ object frmMainForm: TfrmMainForm
       ShortCut = 16457
       OnExecute = ImportActionExecute
     end
+    object ActionReopen: TAction
+      Category = 'All'
+      Caption = 'ActionReopen'
+      Hint = 'Reopen parameter file'
+      OnExecute = ActionReopenExecute
+    end
   end
   object ImageList: TImageList
-    Left = 8
-    Top = 128
+    Left = 16
+    Top = 344
     Bitmap = {
       494C010106000900040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001001000000000000018

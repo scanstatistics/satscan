@@ -7,6 +7,10 @@
 const char * SaTScanToolkit::gsSystemIniFileName = "system.ini";
 /** ini section property name for run history filename */
 const char * SaTScanToolkit::gsHistoryFileNameProperty = "[RunHistory].FileName";
+/** ini section property name for parameter history filenames */
+const char * SaTScanToolkit::gsParameterNameProperty = "[ParameterHistory].Parameter";
+/** maximum number of parameter history items to record */
+const size_t SaTScanToolkit::giMaximumParameterHistoryItems = 10;
 /** ini section property name for logging run history */
 //const char * SaTScanToolkit::gsLoggingProperty = "[RunHistory].LogHistory";
 /** ini section property name for website */
@@ -43,6 +47,35 @@ SaTScanToolkit::SaTScanToolkit(const char * sApplicationFullPath):BToolkit() {
 
 /** destructor */
 SaTScanToolkit::~SaTScanToolkit() {}
+
+/** Adds parameter filename to parameter history. */
+void SaTScanToolkit::AddParameterToHistory(const char * sParameterFileName) {
+  std::vector<std::string>::iterator      itr;
+
+  try {
+    if (gvParameterHistory.empty())
+      gvParameterHistory.push_back(sParameterFileName);
+    else {
+       itr = std::find(gvParameterHistory.begin(), gvParameterHistory.end(), sParameterFileName);
+       if (itr == gvParameterHistory.begin())
+         return;
+       else if (itr == gvParameterHistory.end()) {
+         if (gvParameterHistory.size() == giMaximumParameterHistoryItems)
+           gvParameterHistory.pop_back();
+         gvParameterHistory.insert(gvParameterHistory.begin(), sParameterFileName);
+       }
+       else {
+         gvParameterHistory.erase(itr);
+         gvParameterHistory.insert(gvParameterHistory.begin(), sParameterFileName);
+       }
+    }
+    WriteParametersHistory();
+  }
+  catch (ZdException& x) {
+    x.AddCallpath("AddParameterToHistory()", "SaTScanToolkit");
+    throw;
+  }
+}
 
 /** Returns indicator of run history logging. */
 bool SaTScanToolkit::GetLogRunHistory() const {
@@ -212,6 +245,30 @@ void SaTScanToolkit::InsureSessionStructure() {
   }
 }
 
+/** reads parameter history from ini file */
+void SaTScanToolkit::ReadParametersHistory() {
+  long                  lPosition;
+  BSessionProperty    * pProperty;
+  ZdString              sParameterSectionName;
+  int                   iItem=0;
+
+  try {
+    sParameterSectionName.printf("%s%i", gsParameterNameProperty, iItem++);
+    lPosition = GetSession().FindProperty(sParameterSectionName.GetCString());
+    while (lPosition != -1) {
+      pProperty = GetSession().GetProperty(lPosition);
+      if (pProperty->GetValue() && strlen(pProperty->GetValue()))
+        gvParameterHistory.push_back(pProperty->GetValue());
+      sParameterSectionName.printf("%s%i", gsParameterNameProperty, iItem++);
+      lPosition = GetSession().FindProperty(sParameterSectionName.GetCString());
+    }
+  }
+  catch (ZdException& x) {
+    x.AddCallpath("ReadParametersHistory()","SaTScanToolkit");
+    throw;
+  }
+}
+
 /** internal setup */
 void SaTScanToolkit::Setup(const char * sApplicationFullPath) {
   try {
@@ -230,9 +287,29 @@ void SaTScanToolkit::Setup(const char * sApplicationFullPath) {
 
     InsureSessionStructure();
     SetErrorReportDestination(GetTechnicalSupportEmail());
+    ReadParametersHistory();
   }
   catch (ZdException& x) {
     x.AddCallpath("Setup()", "SaTScanToolkit");
+    throw;
+  }
+}
+
+/** Writes parameter history to ini file */
+void SaTScanToolkit::WriteParametersHistory() {
+  ZdString                        sParameterSectionName;
+  ParameterHistory_t::iterator    itr;
+  int                             iItem=0;
+
+  try {
+    for (itr=gvParameterHistory.begin(); itr != gvParameterHistory.end(); itr++) {
+       sParameterSectionName.printf("%s%i", gsParameterNameProperty, iItem++);
+       GetSession().AddProperty(sParameterSectionName.GetCString(), itr->c_str());
+    }
+    GetSession().Write(gsSystemFileName.GetCString());
+  }
+  catch (ZdException& x) {
+    x.AddCallpath("WriteParametersHistory()","SaTScanToolkit");
     throw;
   }
 }

@@ -3,13 +3,18 @@
 #define __SaTScanToolkit_H
 //*****************************************************************************
 #include "DBFFile.h"
-//#include <io.h>
+#include <list>
 
 class SaTScanToolkit : public BToolkit {
+  public:
+    typedef std::vector<std::string> ParameterHistory_t;
+  
   private:
     // system file
     static const char         * gsSystemIniFileName;
     static const char         * gsHistoryFileNameProperty;
+    static const char         * gsParameterNameProperty;
+    static const size_t         giMaximumParameterHistoryItems;
 
     // default defines
     static const char         * gsDefaultRunHistoryFileName;
@@ -19,19 +24,24 @@ class SaTScanToolkit : public BToolkit {
 
     ZdString                    gsSystemFileName;
     ZdString                    gsApplicationFullPath;
+    ParameterHistory_t          gvParameterHistory;
 
     bool                        InsureRunHistoryFileName();
     bool                        InsureSessionProperty(const char * sSessionProperty, const char * sDefaultValue);
     void                        InsureSessionStructure();
+    void                        ReadParametersHistory();
     void                        Setup(const char * sApplicationFullPath);
+    void                        WriteParametersHistory();
 
   public:
     SaTScanToolkit(const char * sApplicationFullPath);
     virtual ~SaTScanToolkit();
 
+   void                         AddParameterToHistory(const char * sParameterFileName);
    const char                 * GetAcknowledgment(ZdString & Acknowledgment) const;
-   const char                 * GetApplicationFullPath() const;  
+   const char                 * GetApplicationFullPath() const;
    bool                         GetLogRunHistory() const;
+   const ParameterHistory_t   & GetParameterHistory() const {return gvParameterHistory;}
    const char                 * GetRunHistoryFileName() /*const*/;
    const char                 * GetSubstantiveSupportEmail() const;
    const char                 * GetTechnicalSupportEmail() const;

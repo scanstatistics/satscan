@@ -774,6 +774,11 @@ void __fastcall TfrmAnalysis::FloatKeyPress(TObject *Sender, char &Key) {
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::FormClose(TObject *Sender, TCloseAction &Action) {
   Action = caFree;
+  try {
+    GetToolkit().AddParameterToHistory(gsParamFileName.c_str());
+    frmMainForm->RefreshReopenList();
+  }
+  catch(...){}
 }
 
 //---------------------------------------------------------------------------
