@@ -98,6 +98,11 @@ void DisplayVersion(FILE* fp=stdout, int nPos=0)
   fprintf(fp, "SaTScan V.3\n");
 }
 
+/** Return Duczmal Compactness Correction coefficient. */
+double GetDuczmalCorrection(double dEllipseShape) {
+  return ( 4*dEllipseShape/(pow(dEllipseShape + 1, 2)) );
+}
+
 /**********************************************************************
  Returns a pointer to the "num"-th whitespace-delimited word in a string
  (starting at word number 0).
