@@ -54,7 +54,7 @@ class CCluster {
     CCluster(BasePrint *pPrintDirection);
     virtual ~CCluster();
 
-    virtual CCluster          * Clone() const;
+    virtual CCluster          * Clone() const = 0;
     CCluster                  & operator=(const CCluster& rhs);
 
     virtual count_t             GetCaseCount(unsigned int iStream) const {return 0;}
@@ -71,8 +71,6 @@ class CCluster {
     double                      m_nLogLikelihood;     // Log Likelihood
     long                        m_nRank;              // Rank based on results of simulations
     double                      m_DuczmalCorrection;  // Duczmal compactness correction, for ellipses
-    tract_t                     m_nSteps;             // Number of concentric steps in cluster
-                                     //  (Monotone)
     // Temporal variables
     int                         m_nFirstInterval;     // Index # of first time interval
     int                         m_nLastInterval;      // Index # of last time interval
@@ -80,7 +78,6 @@ class CCluster {
     Julian                      m_nEndDate;           // End time of cluster
     // Flag variables
     bool                        m_bClusterDefined;    // Has cluster been defined? (tracts, TI's)
-    int                         m_nClusterType;       // Type of cluster
     RATE_FUNCPTRTYPE            m_pfRateOfInterest;
 
     MEAURE_DETERMINANT          gMeasure;
@@ -125,11 +122,10 @@ class CCluster {
     virtual void        DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType);
     virtual void        DisplayTimeTrend(FILE* fp, char* szSpacesOnLeft) {/*stub - no action*/}
     virtual count_t     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {return 0;}
-    const int           GetClusterType() const  {return m_nClusterType;}
+    virtual int         GetClusterType() const = 0;
     double              GetDuczmalCorrectedLogLikelihoodRatio() const;
     double              GetLogLikelihood() {return m_nLogLikelihood;}
     virtual measure_t   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {return 0;}
-    tract_t             GetNumCircles()    {return m_nSteps;}
     virtual tract_t     GetNumTractsInnerCircle() { return m_nTracts; }
     const double        GetPVal(int nReps) const {return (double)m_nRank/(double)(nReps+1);}
     const double        GetRelativeRisk(double nMeasureAdjustment) const;

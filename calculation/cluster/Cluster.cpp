@@ -17,14 +17,6 @@ CCluster::CCluster(BasePrint *pPrintDirection) {
 /** destructor */
 CCluster::~CCluster() {}
 
-/** returns newly cloned CCluster */
-CCluster * CCluster::Clone() const {
-  //Note: Replace this code with copy constructor...
-  CCluster * pClone = new CCluster(gpPrintDirection);
-  *pClone = *this;
-  return pClone;
-}
-
 /** initializes cluster data  */
 void CCluster::Initialize(tract_t nCenter) {
   m_Center         = nCenter;
@@ -37,9 +29,7 @@ void CCluster::Initialize(tract_t nCenter) {
   m_nLastInterval  = 0;
   m_nStartDate     = 0;
   m_nEndDate       = 0;
-  m_nSteps       = 0;
   m_bClusterDefined= false;
-  m_nClusterType   = 0;
   m_iEllipseOffset = 0;         // use to be -1, but bombed when R = 1
   gfPValue = 0.0;
   gpAreaData = 0;
@@ -57,9 +47,7 @@ CCluster& CCluster::operator=(const CCluster& rhs) {
   m_nLastInterval       = rhs.m_nLastInterval;
   m_nStartDate          = rhs.m_nStartDate;
   m_nEndDate            = rhs.m_nEndDate;
-  m_nSteps              = rhs.m_nSteps;
   m_bClusterDefined     = rhs.m_bClusterDefined;
-  m_nClusterType        = rhs.m_nClusterType;
   m_iEllipseOffset      = rhs.m_iEllipseOffset;
 
   return *this;
