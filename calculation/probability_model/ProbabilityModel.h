@@ -11,6 +11,7 @@
 
 class CPSMonotoneCluster;
 class CSaTScanData;
+class CCluster;
 class CSVTTCluster;
 class CTimeTrend;
 
@@ -28,9 +29,10 @@ class CModel {
     virtual ~CModel();
 
     virtual void                CalculateMeasure(RealDataSet& DataSet) = 0;
-    virtual double              GetPopulation(size_t iSetIndex, int m_iEllipseOffset,
-                                              tract_t nCenter, tract_t nTracts,
-                                              int nStartInterval, int nStopInterval) const;
+    virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster) const;
+//    virtual double              GetPopulation(size_t iSetIndex, int m_iEllipseOffset,
+//                                              tract_t nCenter, tract_t nTracts,
+//                                              int nStartInterval, int nStopInterval) const;
 };
 //******************************************************************************
 #endif

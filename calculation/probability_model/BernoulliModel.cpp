@@ -55,16 +55,15 @@ void CBernoulliModel::CalculateMeasure(RealDataSet& DataSet) {
   }
 }
 
-/** returns population for a given ellipse offset, grid point and time interval period */
-double CBernoulliModel::GetPopulation(size_t tSetIndex, int m_iEllipseOffset, tract_t nCenter,
-                                      tract_t nTracts, int nStartInterval, int nStopInterval) const {
+/** Returns population as defined in CCluster object. */
+double CBernoulliModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster) const {
   double                nPop=0.0;
   count_t               nNeighbor;
   measure_t          ** ppMeasure(gDataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray());
 
-  for (int i=1; i <= nTracts; ++i) {
-     nNeighbor = gDataHub.GetNeighbor(m_iEllipseOffset, nCenter, i);
-     nPop += ppMeasure[nStartInterval][nNeighbor] - ppMeasure[nStopInterval][nNeighbor];
+  for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
+     nNeighbor = gDataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i);
+     nPop += ppMeasure[Cluster.m_nFirstInterval][nNeighbor] - ppMeasure[Cluster.m_nLastInterval][nNeighbor];
   }
 
   return nPop;

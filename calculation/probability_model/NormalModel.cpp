@@ -15,7 +15,8 @@ void CNormalModel::CalculateMeasure(RealDataSet&) {
   /* no action here */
 }
 
-double CNormalModel::GetPopulation(size_t, int, tract_t, tract_t, int, int) const {
+/** Returns population as defined in CCluster object. Not implemeneted yet - throws exception. */
+double CNormalModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster) const {
   ZdGenerateException("GetPopulation() not implementated.","CNormalModel");
   return 0;
 }

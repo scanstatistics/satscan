@@ -31,8 +31,8 @@ CModel::~CModel() {
 #endif
 }
 
-/** not implemented - throws exception */
-double CModel::GetPopulation(size_t, int, tract_t, tract_t, int, int) const {
+/** Returns population as defined in CCluster object. Not implemented - throws exception. */
+double CModel::GetPopulation(size_t, const CCluster&) const {
   ZdGenerateException("GetPopulation() not implementated.","CModel");
   return 0;
 }

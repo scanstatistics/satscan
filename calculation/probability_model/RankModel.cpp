@@ -16,8 +16,8 @@ void CRankModel::CalculateMeasure(RealDataSet&) {
   /* no action here */
 }
 
-/** not implemented - throws exception */
-double CRankModel::GetPopulation(size_t, int, tract_t, tract_t, int, int) const {
+/** Returns population as defined in CCluster object. Not implemeneted yet - throws exception. */
+double CRankModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster) const {
   ZdGenerateException("GetPopulation() not implementated.","CRankModel");
   return 0;
 }

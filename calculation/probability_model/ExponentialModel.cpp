@@ -16,7 +16,8 @@ void ExponentialModel::CalculateMeasure(RealDataSet&) {
   /* no action here */
 }
 
-double ExponentialModel::GetPopulation(size_t, int, tract_t, tract_t, int, int) const {
+/** Returns population as defined in CCluster object. Not implemeneted yet - throws exception. */
+double ExponentialModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster) const {
   ZdGenerateException("GetPopulation() not implementated YET!!!.","ExponentialModel");
   return 0;
 }

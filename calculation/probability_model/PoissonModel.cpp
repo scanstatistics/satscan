@@ -251,13 +251,12 @@ void CPoissonModel::CalculateMeasure(RealDataSet& DataSet) {
   }
 }
 
-/** */
-double CPoissonModel::GetPopulation(size_t iSetIndex, int m_iEllipseOffset, tract_t nCenter,
-                                    tract_t nTracts, int nStartInterval, int nStopInterval) const {
+/** Returns population as defined in CCluster object. */
+double CPoissonModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster) const {
   tract_t T, t;
   int     c, n;
   std::vector<double>   vAlpha;
-  const PopulationData & Population = gDataHub.GetDataSetHandler().GetDataSet(iSetIndex).GetPopulationData();
+  const PopulationData & Population = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPopulationData();
   int     ncats;
   int     nPops;
   double  nPopulation = 0.0;
@@ -267,9 +266,9 @@ double CPoissonModel::GetPopulation(size_t iSetIndex, int m_iEllipseOffset, trac
     nPops = Population.GetNumPopulationDates();
     Population.CalculateAlpha(vAlpha, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate());
 
-      for (T = 1; T <= nTracts; T++)
+      for (T = 1; T <= Cluster.GetNumTractsInnerCircle(); T++)
       {
-         t = gDataHub.GetNeighbor(m_iEllipseOffset, nCenter, T);
+         t = gDataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), T);
          for (c = 0; c < ncats; c++)
             Population.GetAlphaAdjustedPopulation(nPopulation, t, c, 0, nPops, vAlpha);
       }
