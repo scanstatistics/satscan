@@ -1398,3 +1398,5 @@ void TfrmAnalysis::WriteSession(const char * sParameterFilename) {
 }
 //---------------------------------------------------------------------------
 
+
+

@@ -94,7 +94,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TRadioButton *rdoUnitMonths;
    TRadioButton *rdoUnitDay;
    TEdit *edtTimeIntervalLength;
-   TButton *btnAdvanced;
    TGroupBox *gbxStudyPeriod;
    TLabel *Label8;
    TLabel *Label9;
@@ -107,6 +106,8 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TEdit *edtStudyPeriodEndDateMonth;
    TEdit *edtStudyPeriodStartDateDay;
    TEdit *edtStudyPeriodEndDateDay;
+   TButton *btnAdvanced1;
+   TButton *btnAdvanced2;
    
    void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
    void __fastcall rgpPrecisionTimesClick(TObject *Sender);
