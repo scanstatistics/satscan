@@ -111,6 +111,9 @@ const char*      YEAR_PRECISION_TYPE            	= "years";
 const char*      MONTH_PRECISION_TYPE           	= "months";
 const char*      DAY_PRECISION_TYPE             	= "days";
 
+/** width of ASCII results file line */
+const unsigned int PRINT_WIDTH                          = 65;
+
 int CParameters::giNumParameters 			= 65;
 
 char mgsVariableLabels[66][100] = {
@@ -487,22 +490,14 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
          case NONPARAMETRIC :
            fprintf(fp, "Nonparametric\n"); break;
          case LOGLINEAR_PERC :
-           fprintf(fp, "Log linear with %g%% per year\n", gdTimeTrendAdjustPercentage); break;
+           fprintf(fp, "Log linear with %g%% per year\n", gdTimeTrendAdjustPercentage);
+           break;
          case CALCULATED_LOGLINEAR_PERC :
-           //each data stream has own calculated time trend
-           if (StreamHandler.GetNumStreams() == 1)
-             fprintf(fp, "Log linear with calculated trend of %g%% per year\n",
-                     StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage());
-           else {
-             fprintf(fp, "Log linear with calculated trend of %g%% per year in stream 1\n",
-                     StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage());
-             for (size_t t=1; t < StreamHandler.GetNumStreams(); ++t)
-               fprintf(fp, "                              Log linear with calculated trend of %g%% per year in stream %u\n",
-                       StreamHandler.GetStream(t).GetCalculatedTimeTrendPercentage(), t + 1);
-           }
+           fprintf(fp, "Log linear with automatically calculated trend\n");
            break;
          case STRATIFIED_RANDOMIZATION :
-           fprintf(fp, "Nonparametric, with time stratified randomization\n"); break;
+           fprintf(fp, "Nonparametric, with time stratified randomization\n");
+           break;
          default :
            ZdException::Generate("Unknown time trend adjustment type '%d'.\n", "DisplayParameters()", geTimeTrendAdjustType);
       }
@@ -582,6 +577,102 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
   }
 }
 
+/** Prints calculated time trend adjustment parameters, in a particular format, to passed ascii file. */
+void CParameters::DisplayCalculatedTimeTrend(FILE* fp, const DataStreamHandler& StreamHandler) const {
+  unsigned int                  t, iStart, iScan;
+  ZdString                      sPrintString, sWorkString;
+  std::deque<unsigned int>      TrendIncrease, TrendDecrease;
+
+  if (geTimeTrendAdjustType != CALCULATED_LOGLINEAR_PERC)
+    return;
+
+  //NOTE: Each data stream has own calculated time trend.
+
+  if (StreamHandler.GetNumStreams() == 1) {
+    if (StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage() < 0)
+      sPrintString.printf("Adjusted for time trend with an annual decrease ");
+    else
+      sPrintString.printf("Adjusted for time trend with an annual increase ");
+    sWorkString.printf("of %0.2f%%.", fabs(StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage()));
+    sPrintString << sWorkString;
+  }
+  else {//multiple streams print
+    //count number of increasing and decreasing trends
+    for (t=0; t < StreamHandler.GetNumStreams(); ++t) {
+       if (StreamHandler.GetStream(t).GetCalculatedTimeTrendPercentage() < 0)
+         TrendDecrease.push_back(t);
+       else
+         TrendIncrease.push_back(t);
+    }
+    //now print
+    sPrintString.printf("Adjusted for time trend with an annual ");
+    //print increasing trends first
+    if (TrendIncrease.size()) {
+       sWorkString.printf("increase of %0.2f%%",
+                          fabs(StreamHandler.GetStream(TrendIncrease.front()).GetCalculatedTimeTrendPercentage()));
+       sPrintString << sWorkString;
+       for (t=1; t < TrendIncrease.size(); ++t) {
+          sWorkString.printf((t < TrendIncrease.size() - 1) ? ", %0.2f%%" : " and %0.2f%%",
+                             fabs(StreamHandler.GetStream(TrendIncrease[t]).GetCalculatedTimeTrendPercentage()));
+          sPrintString << sWorkString;
+       }
+       sWorkString.printf(" for data stream%s %u", (TrendIncrease.size() == 1 ? "" : "s"), TrendIncrease.front() + 1);
+       sPrintString << sWorkString;
+       for (t=1; t < TrendIncrease.size(); ++t) {
+          sWorkString.printf((t < TrendIncrease.size() - 1 ? ", %u" : " and %u"), TrendIncrease[t] + 1);
+          sPrintString << sWorkString;
+       }
+       sWorkString.printf((TrendIncrease.size() > 1 ? " respectively" : ""));
+       sPrintString << sWorkString;
+       sWorkString.printf((TrendDecrease.size() > 0 ? " and an annual " : "."));
+       sPrintString << sWorkString;
+    }
+    //print decreasing trends
+    if (TrendDecrease.size()) {
+      sWorkString.printf("decrease of %0.2f%%",
+                         fabs(StreamHandler.GetStream(TrendDecrease.front()).GetCalculatedTimeTrendPercentage()));
+      sPrintString << sWorkString;
+      for (t=1; t < TrendDecrease.size(); ++t) {
+         sWorkString.printf((t < TrendDecrease.size() - 1) ? ", %0.2f%%" : " and %0.2f%%",
+                            fabs(StreamHandler.GetStream(TrendDecrease[t]).GetCalculatedTimeTrendPercentage()));
+         sPrintString << sWorkString;
+      }
+      sWorkString.printf(" for data stream%s %u", (TrendDecrease.size() == 1 ? "" : "s"), TrendDecrease.front() + 1);
+      sPrintString << sWorkString;
+      for (t=1; t < TrendDecrease.size(); ++t) {
+         sWorkString.printf((t < TrendDecrease.size() - 1 ? ", %u" : " and %u"), TrendDecrease[t] + 1);
+         sPrintString << sWorkString;
+      }
+      sWorkString.printf((TrendDecrease.size() > 1 ? " respectively." : "."));
+      sPrintString << sWorkString;
+    }
+    //now insert newline characters to make string wrap PRINT_WIDTH or less characters
+    iStart=0;
+    while (iStart + PRINT_WIDTH < sPrintString.GetLength()) {
+         //scan backwards from iStart + PRINT_WIDTH, looking for blank to replace
+         iScan = iStart + PRINT_WIDTH;
+         while (iScan > iStart) {
+              if (sPrintString.GetCharAt(iScan) == ' ') {
+                sPrintString.SetCharAt(iScan, '\n');
+                iStart = iScan + 1;
+                 break;
+              }
+              iScan--;
+         }
+         //no blank found, insert newline
+         if (iScan == iStart) {
+           sPrintString.Insert('\n', iStart + PRINT_WIDTH - 1, 1);
+           iStart += PRINT_WIDTH;
+         }
+    }
+  }
+  //now print to file stream
+  fprintf(fp, sPrintString.GetCString());
+  if (!sPrintString.EndsWith('\n'))
+    fprintf(fp, "\n");
+}
+
+
 /** Prints time trend adjustment parameters, in a particular format, to passed ascii file. */
 void CParameters::DisplayTimeAdjustments(FILE* fp, const DataStreamHandler& StreamHandler) const {
   try {
@@ -598,30 +689,8 @@ void CParameters::DisplayTimeAdjustments(FILE* fp, const DataStreamHandler& Stre
         fprintf(fp, "of %0.2f%% per year.\n", fabs(gdTimeTrendAdjustPercentage));
         break;
       case CALCULATED_LOGLINEAR_PERC :
-        //each data stream has own calculated time trend
-        if (StreamHandler.GetNumStreams() == 1) {
-          if (StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage() < 0)
-            fprintf(fp, "Adjusted for time with a decrease ");
-          else
-            fprintf(fp, "Adjusted for time with an increase ");
-          fprintf(fp, "of %0.2f%% per year.\n", fabs(StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage()));
-        }
-        else {
-          if (StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage() < 0)
-            fprintf(fp, "Adjusted for time with a decrease ");
-          else
-            fprintf(fp, "Adjusted for time with an increase ");
-          fprintf(fp, "of %0.2f%% per year in stream 1.\n", fabs(StreamHandler.GetStream(0).GetCalculatedTimeTrendPercentage()));
-          for (size_t t=1; t < StreamHandler.GetNumStreams(); ++t) {
-            if (StreamHandler.GetStream(t).GetCalculatedTimeTrendPercentage() < 0)
-              fprintf(fp, "Adjusted for time with a decrease ");
-            else
-              fprintf(fp, "Adjusted for time with an increase ");
-            fprintf(fp, "of %0.2f%% per year in stream %u.\n",
-                    fabs(StreamHandler.GetStream(t).GetCalculatedTimeTrendPercentage()), t + 1);
-          }
-        }
-      break;  
+        DisplayCalculatedTimeTrend(fp, StreamHandler);
+        break;
       case STRATIFIED_RANDOMIZATION  :
         fprintf(fp, "Adjusted for time by stratified randomization.\n");
         break;

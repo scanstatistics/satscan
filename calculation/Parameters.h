@@ -126,6 +126,8 @@ extern const char*      YEAR_PRECISION_TYPE;
 extern const char*      MONTH_PRECISION_TYPE;
 extern const char*      DAY_PRECISION_TYPE;
 
+extern const unsigned int PRINT_WIDTH;
+
 /** parameter types
     - parameters that are read from file with the exception of: DIMENSION, EXACTTIMES, and RUN_HISTORY_FILENAME */
 enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE, COORDFILE, OUTPUTFILE,
@@ -270,7 +272,7 @@ class CParameters {
     ZdString                          & AsString(ZdString & ref, double d) {ref = d;return ref;}
     void                                ConvertRelativePath(std::string & sInputFilename);
     void                                Copy(const CParameters &rhs);
-    const char                        * GetParameterLineLabel(ParameterType eParameterType, ZdString & sParameterLineLabel, bool bIniSectionName=true) const;  
+    const char                        * GetParameterLineLabel(ParameterType eParameterType, ZdString & sParameterLineLabel, bool bIniSectionName=true) const;
     void                                MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint & PrintDirection);
     void                                ReadAdvancedFeatures(ZdIniFile& file, BasePrint & PrintDirection);
     void                                ReadAnalysisSection(ZdIniFile& file, BasePrint & PrintDirection);
@@ -323,6 +325,7 @@ class CParameters {
 
     CParameters                       & operator=(const CParameters &rhs);
     void                                DisplayAnalysisType(FILE* fp) const;
+    void                                DisplayCalculatedTimeTrend(FILE* fp, const DataStreamHandler& StreamHandler) const;
     void                                DisplayParameters(FILE* fp, unsigned int iNumSimulationsCompleted, const DataStreamHandler& StreamHandler) const;
     void                                DisplayTimeAdjustments(FILE* fp, const DataStreamHandler& StreamHandler) const;
     bool                                GetAdjustForEarlierAnalyses() const {return gbAdjustForEarlierAnalyses;}
