@@ -4,21 +4,52 @@
 //*****************************************************************************
 #include "SaTScan.h"
 #include "Tracts.h"
+#include "Parameters.h"
 #include "TimeEstimate.h"
 #include "GridTractCoordinates.h"
 
-// ?Eventually move to data.cpp?
+/** Eventually this code will be moved to SaTScanData.cpp */
 
-struct tdist {        /* tract-distance structure for calculating Sorted[] */
-   tract_t t;     /* tract number     */
-	float   dsq;   /* distance squared */
+/** tract-distance class for accumulating neighbors */
+class TractDistance {
+   private:
+     tract_t m_tTractNumber;     /* tract number     */
+     float   m_fDistance;        /* distance squared */
+
+   public:
+     TractDistance(tract_t t=0, float f=0) {SetTractNumber(t);
+                                            SetDistance(f);}
+     virtual ~TractDistance() {}
+
+     const float      & GetDistance() const {return m_fDistance;}
+     const tract_t    & GetTractNumber() const {return m_tTractNumber;}
+     void               SetDistance(float f) {m_fDistance=f;}
+     void               SetTractNumber(tract_t t) {m_tTractNumber=t;}
 };
 
-short min2(short v1, short v2);
+/** Function object used to compare TractDistance objects by m_fDistance. */
+class CompareTractDistance {
+  public:
+    bool operator() (const TractDistance& lhs, const TractDistance& rhs)
+           {
+           return ( lhs.GetDistance() < rhs.GetDistance() );
+           }
+};
 
-static int CompTd(const void *td1, const void *td2);
-void Transform(double Xold, double Yold, float EllipseAngle, float EllipseShape, double* pXnew, double* pYnew);
+/** Counts neighbors through expected number of cases using measure array. */
+tract_t CountNeighborsByMeasure(std::vector<TractDistance>& vTractDistances,
+	                        measure_t Measure[], measure_t MaxCircleSize,
+                                measure_t nMaxMeasure);
 
+/** Count neighbors through accumulated distance. */
+tract_t CountNeighborsByDistance(std::vector<TractDistance>& vTractDistances,
+                                 measure_t MaxCircleSize);
+/** For the circle [e = 0] and each ellipsoid [e = 1, 2, ... n], calculate
+    the Sorted[] matrix, such that Sorted[e][a][b] is the b-th
+    closest neighbor to a, and Sorted[a][0] == a.
+    e = circle or ellipse1, ellipse2, etc.
+    a = grid point
+    b = neighbor tacts ( sorted closest to farthest.. up to maxcirclesize) */
 void MakeNeighbors(TInfo *pTInfo,
                    GInfo *pGInfo,
                    tract_t***  SortedInt,
@@ -33,9 +64,18 @@ void MakeNeighbors(TInfo *pTInfo,
                    int         iNumEllipses,
                    double     *pdEShapes,
                    int        *piEAngles,
-                   BasePrint *pPrintDirection);
+                   int         iSpatialMaxType,
+                   BasePrint  *pPrintDirection);
 
 void PrintNeighbors(long lTotalEllipses, tract_t GridTracts, tract_t ***Sorted, BasePrint *pPrintDirection);
+
+/** MK 5.2001 - This function transforms the x and y coordinates so that circles
+    in the transformed space represent ellipsoids in the original space.
+    The input is the old X and Y coordinates, the angle of the longest
+   axis of the ellipsoid (0<=EllipseAngle<pi), and the EllipseShape (>1),
+   which is defined as the length divided by the width.
+   The output is the new X and Y coordinates. */
+void Transform(double Xold, double Yold, float EllipseAngle, float EllipseShape, double* pXnew, double* pYnew);
 
 //*****************************************************************************
 #endif

@@ -2,68 +2,41 @@
 #pragma hdrstop
 #include "MakeNeighbors.h"
 
-short min2(short v1, short v2)
+/** Counts neighbors through expected number of cases using measure array. */
+tract_t CountNeighborsByMeasure(std::vector<TractDistance>& vTractDistances,
+			        measure_t Measure[], measure_t MaxCircleSize, measure_t nMaxMeasure)
 {
-  if (v1 < v2)
-    return(v1);
-  else
-    return(v2);
+   measure_t cummeasure=0;
+   tract_t   tCount=0;
+   size_t    i;
+
+   for (i=0; (i < vTractDistances.size()) &&
+             (cummeasure + Measure[vTractDistances[i].GetTractNumber()] <= nMaxMeasure); i++)
+     {
+     cummeasure += Measure[vTractDistances[i].GetTractNumber()];
+     if (cummeasure <= MaxCircleSize)
+       tCount++;
+     }
+   return tCount;
 }
 
-/**********************************************************************
- Compare two struct td's, according to dsq.
- **********************************************************************/
-static int CompTd(const void *td1, const void *td2)
+/** Counts neighbors through accumulated distance. */
+tract_t CountNeighborsByDistance(std::vector<TractDistance>& vTractDistances,
+                                 measure_t MaxCircleSize)
 {
-   double rtn = (((struct tdist *)td1)->dsq - ((struct tdist *)td2)->dsq);
-   if (rtn < 0)   return -1;
-   if (rtn > 0)   return 1;
-   return 0;
-} /* CompTd() */
+   float     fCummulatedDistance=0;
+   size_t    i;
+   tract_t   tCount=0;
 
-//---------------------------------------------------------- MK 5.2001 -
-// This function transforms the x and y coordinates so that circles 
-//   in the transformed space represent ellipsoids in the original space.
-// The input is the old X and Y coordinates, the angle of the longest
-//   axis of the ellipsoid (0<=EllipseAngle<pi), and the EllipseShape (>1),
-//   which is defined as the length divided by the width.
-// The output is the new X and Y coordinates.
-//----------------------------------------------------------------------
-
-void Transform(double Xold, double Yold, float EllipseAngle, float EllipseShape, double* pXnew, double* pYnew)
-{
-   double Xnew;
-   double Ynew;
-   float beta;    // slope of the line perpendicular to the ellipsoids longest axis, y=beta*x
-   double Xp,Yp;   // projection of (Xold,Yold) onto the line perpendicular to the ellipsoids longest axis
-   float Weight;
-
-   try
-      {
-      Weight=1/EllipseShape;
-
-      if(EllipseAngle==0)
-         {
-         Xnew=Xold*Weight;
-         Ynew=Yold;
-         }
-      else
-         {
-         beta=-cos(EllipseAngle)/sin(EllipseAngle);
-         Xp=(Xold+beta*Yold)/(1+beta*beta);
-         Yp=beta*Xp;
-         Xnew=Xold*Weight+Xp*(1-Weight);
-         Ynew=Yold*Weight+Yp*(1-Weight);
-         }
-      *pXnew=Xnew;
-      *pYnew=Ynew;
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("Transform()", "MakeNeighbors.cpp");
-      throw;
-      }
-} /* void Transform */
+   for (i=0; (i < vTractDistances.size()) &&
+             (fCummulatedDistance + vTractDistances[i].GetDistance() <= MaxCircleSize/*nMaxMeasure*/); i++)
+     {
+     fCummulatedDistance += vTractDistances[i].GetDistance();
+     if (fCummulatedDistance <= MaxCircleSize)
+       tCount++;
+     }
+   return tCount;
+}
 
 /**********************************************************************
  For the circle [e = 0] and each ellipsoid [e = 1, 2, ... n], calculate
@@ -87,6 +60,7 @@ void MakeNeighbors(TInfo *pTInfo,
                    int       iNumEllipses,
                    double   *pdEShapes,
                    int      *piEAngles,
+                   int       iSpatialMaxType,
                    BasePrint *pPrintDirection)
 {
    tract_t t;                                         /* reference tract */
@@ -95,7 +69,6 @@ void MakeNeighbors(TInfo *pTInfo,
    double *pCoords2 = 0;  /* coordinates */
    measure_t cummeasure;
    clock_t nStartTime;
-   struct tdist *td = (tdist*)Smalloc(NumTracts * sizeof(struct tdist), pPrintDirection);
    measure_t nMaxMeasure;
    double *pNewXCoord = 0, *pNewYCoord = 0;
    float EllipseAngle;
@@ -103,6 +76,10 @@ void MakeNeighbors(TInfo *pTInfo,
    double Xnew,Ynew;
    long   lTotalIterations = 0, lCurrentEllipse = 0;
    int es,ea;
+
+   std::vector<TractDistance> vTractDistances;
+   vTractDistances.reserve(NumTracts);
+
 
    try
       {
@@ -113,7 +90,11 @@ void MakeNeighbors(TInfo *pTInfo,
         nMaxMeasure = nMaxMeasureToKeep;
       else
         nMaxMeasure = MaxCircleSize;
-    
+
+      // Initialize Tract Distamce vector
+      for (tract_t t=0; t < NumTracts; t++)
+         vTractDistances.push_back(TractDistance());
+
       nStartTime = clock();
 
       pCoords = (double*)Smalloc(pGInfo->giGetNumDimensions() * sizeof(double), pPrintDirection);
@@ -125,29 +106,25 @@ void MakeNeighbors(TInfo *pTInfo,
         pGInfo->giGetCoords2(t, pCoords);
         for (i = 0; i < NumTracts; i++)  // find distances
         {
-          td[i].t = i;
+          vTractDistances[i].SetTractNumber(i);
           pTInfo->tiGetCoords2(i, pCoords2);
-          td[i].dsq = pTInfo->tiGetDistanceSq(pCoords, pCoords2);
-          //free(pCoords2);    //DTG - create pCoords2 before loop and free after.
-                               //Same size for all loops of the array
+          vTractDistances[i].SetDistance(pTInfo->tiGetDistanceSq(pCoords, pCoords2));
         }
-        qsort(td, NumTracts, sizeof(struct tdist), CompTd);
-    
-        // find number of neighbors, allocate memory
-        cummeasure = 0;
-        for (i=0; i < NumTracts && cummeasure+Measure[td[i].t] <= nMaxMeasure; i++)
-        {
-          cummeasure += Measure[td[i].t];
-          if (cummeasure <= MaxCircleSize)
-            NeighborCounts[0][t]++;
-        }
+        std::sort(vTractDistances.begin(), vTractDistances.end(), CompareTractDistance());
+        if (iSpatialMaxType == PERCENTAGEOFMEASURETYPE)
+          NeighborCounts[0][t] += CountNeighborsByMeasure(vTractDistances, Measure, MaxCircleSize, nMaxMeasure);
+        else if (iSpatialMaxType == DISTANCETYPE)
+          NeighborCounts[0][t] += CountNeighborsByDistance(vTractDistances, MaxCircleSize);
+        else
+          SSGenerateException("Unknown spatial maximum type.", "MakeNeighbors()" );
+
         if (SortedInt)
            {
            //SortedInt[0][t] = (tract_t*)Smalloc((i+1) * sizeof(tract_t), pPrintDirection);  /*NeighborCounts[t] could be used instead of i */
            SortedInt[0][t] = (tract_t*)Smalloc(i * sizeof(tract_t), pPrintDirection);
            /* copy tract numbers */
            for (j = i-1; j >= 0; j--)   /*NeighborCounts[t]-1 could be used instead of i-1 */
-             SortedInt[0][t][j] = td[j].t;
+             SortedInt[0][t][j] = vTractDistances[j].GetTractNumber();
            //SortedInt[0][t][i] = -1;           //DTG - temp line and also modified Smalloc to be ( i + 1)
            }
         else
@@ -156,7 +133,7 @@ void MakeNeighbors(TInfo *pTInfo,
            SortedUShort[0][t] = (unsigned short*)Smalloc(i * sizeof(unsigned short), pPrintDirection);
            /* copy tract numbers */
            for (j = i-1; j >= 0; j--)   /*NeighborCounts[t]-1 could be used instead of i-1 */
-             SortedUShort[0][t][j] = td[j].t;
+             SortedUShort[0][t][j] = vTractDistances[j].GetTractNumber();
            //SortedUShort[0][t][i] = 0;           //DTG - USE TO BE -1 temp line and also modified Smalloc to be ( i + 1)
            }
 
@@ -166,7 +143,6 @@ void MakeNeighbors(TInfo *pTInfo,
 
         //free(pCoords);
       } /* for t */
-
 
        //Ellipsoid calculations.
        if (iNumEllipses>0)
@@ -203,30 +179,26 @@ void MakeNeighbors(TInfo *pTInfo,
 
                    for (i = 0; i < NumTracts; i++)  // find distances
                       {
-                      td[i].t = i;
-                      // tiGetCoords2(i, pCoords2);
+                      vTractDistances[i].SetTractNumber(i);
                       pCoords2[0] = pNewXCoord[i];
                       pCoords2[1] = pNewYCoord[i];
-                      td[i].dsq = pTInfo->tiGetDistanceSq(pCoords, pCoords2);   //"pCoords" should be from Xnew and Ynew!!!!!!
-                                                             //"pCoords2" should be from the NewXCoord and NewYCoord!!!!!
+                      vTractDistances[i].SetDistance(pTInfo->tiGetDistanceSq(pCoords, pCoords2));
                       }
-                   qsort(td, NumTracts, sizeof(struct tdist), CompTd);
+                   std::sort(vTractDistances.begin(), vTractDistances.end(), CompareTractDistance());
+                   if (iSpatialMaxType == PERCENTAGEOFMEASURETYPE)
+                     NeighborCounts[0][t] += CountNeighborsByMeasure(vTractDistances, Measure, MaxCircleSize, nMaxMeasure);
+                   else if (iSpatialMaxType == DISTANCETYPE)
+                     NeighborCounts[0][t] += CountNeighborsByDistance(vTractDistances, MaxCircleSize);
+                   else
+                     SSGenerateException("Unknown spatial maximum type.", "MakeNeighbors()" );
 
-                   // find number of neighbors, allocate memory
-                   cummeasure = 0;
-                   for (i=0; i < NumTracts && cummeasure+Measure[td[i].t] <= nMaxMeasure; i++)
-                      {
-                      cummeasure += Measure[td[i].t];
-                      if (cummeasure <= MaxCircleSize)
-                         NeighborCounts[lCurrentEllipse][t]++;               // Needs to be saved as a 2-dimensional array!!!!!
-                      }
                    if (SortedInt)
                       {
                       //SortedInt[lCurrentEllipse][t] = (tract_t*)Smalloc((i + 1) * sizeof(tract_t), pPrintDirection); /*NeighborCounts[t] could be used instead of i */
                       SortedInt[lCurrentEllipse][t] = (tract_t*)Smalloc(i * sizeof(tract_t), pPrintDirection);
                       /* copy tract numbers */
                       for (j = i-1/*NeighborCounts[t]-1*/; j >= 0; j--)
-                         SortedInt[lCurrentEllipse][t][j] = td[j].t;
+                         SortedInt[lCurrentEllipse][t][j] = vTractDistances[j].GetTractNumber();
                       //SortedInt[lCurrentEllipse][t][i] = 0;    //DTG - temp for printing sorted list - also updated Smalloc to be (i + 1)
                       }
                    else
@@ -235,7 +207,7 @@ void MakeNeighbors(TInfo *pTInfo,
                       SortedUShort[lCurrentEllipse][t] = (unsigned short*)Smalloc(i * sizeof(unsigned short), pPrintDirection);
                       /* copy tract numbers */
                       for (j = i-1/*NeighborCounts[t]-1*/; j >= 0; j--)
-                         SortedUShort[lCurrentEllipse][t][j] = td[j].t;
+                         SortedUShort[lCurrentEllipse][t][j] = vTractDistances[j].GetTractNumber();
                       //SortedUShort[lCurrentEllipse][t][i] = 0;                // DTG - USE TO BE  -1   temp for printing sorted list - also updated Smalloc to be (i + 1)
                       }
                    //free(pCoords);    //    needed????
@@ -249,8 +221,7 @@ void MakeNeighbors(TInfo *pTInfo,
           }
        free(pCoords); pCoords = 0;
        free(pCoords2);pCoords2 = 0;
-       free(td);      td = 0;
-    
+
      //temporary print function to view contents of sorted array
      // PrintNeighbors((iNumEllipses + 1), NumTracts, Sorted);
      }
@@ -260,7 +231,6 @@ void MakeNeighbors(TInfo *pTInfo,
       delete [] pNewYCoord;
       free(pCoords);
       free(pCoords2);
-      free(td);
       x.AddCallpath("MakeNeighbors()", "MakeNeighbors.cpp");
       throw;
       }
@@ -294,5 +264,45 @@ void PrintNeighbors(long lTotalNumEllipses, tract_t GridTracts, tract_t ***Sorte
       }
 }
 
+//---------------------------------------------------------- MK 5.2001 -
+// This function transforms the x and y coordinates so that circles
+//   in the transformed space represent ellipsoids in the original space.
+// The input is the old X and Y coordinates, the angle of the longest
+//   axis of the ellipsoid (0<=EllipseAngle<pi), and the EllipseShape (>1),
+//   which is defined as the length divided by the width.
+// The output is the new X and Y coordinates.
+//----------------------------------------------------------------------
+void Transform(double Xold, double Yold, float EllipseAngle, float EllipseShape, double* pXnew, double* pYnew)
+{
+   double Xnew;
+   double Ynew;
+   float beta;    // slope of the line perpendicular to the ellipsoids longest axis, y=beta*x
+   double Xp,Yp;   // projection of (Xold,Yold) onto the line perpendicular to the ellipsoids longest axis
+   float Weight;
 
+   try
+      {
+      Weight=1/EllipseShape;
 
+      if(EllipseAngle==0)
+         {
+         Xnew=Xold*Weight;
+         Ynew=Yold;
+         }
+      else
+         {
+         beta=-cos(EllipseAngle)/sin(EllipseAngle);
+         Xp=(Xold+beta*Yold)/(1+beta*beta);
+         Yp=beta*Xp;
+         Xnew=Xold*Weight+Xp*(1-Weight);
+         Ynew=Yold*Weight+Yp*(1-Weight);
+         }
+      *pXnew=Xnew;
+      *pYnew=Ynew;
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("Transform()", "MakeNeighbors.cpp");
+      throw;
+      }
+} /* void Transform */
