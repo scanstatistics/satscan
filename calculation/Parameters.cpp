@@ -352,20 +352,22 @@ void CParameters::DisplayParameters(FILE* fp) const {
     fprintf(fp, "Input Files\n");
     fprintf(fp, "-----------\n");
 
-    fprintf(fp, "  Case File        : %s\n", gsCaseFileName.c_str());
+    fprintf(fp, "  Case File               : %s\n", gsCaseFileName.c_str());
 
     switch (geProbabiltyModelType) {
-      case POISSON              : fprintf(fp, "  Population File  : %s\n", gsPopulationFileName.c_str()); break;
-      case BERNOULLI            : fprintf(fp, "  Control File     : %s\n", gsControlFileName.c_str()); break;
+      case POISSON              : fprintf(fp, "  Population File         : %s\n", gsPopulationFileName.c_str()); break;
+      case BERNOULLI            : fprintf(fp, "  Control File            : %s\n", gsControlFileName.c_str()); break;
       case SPACETIMEPERMUTATION : if (geMaxGeographicClusterSizeType == PERCENTAGEOFMEASURETYPE)
-                                    fprintf(fp, "  Population File  : %s\n", gsPopulationFileName.c_str());
+                                    fprintf(fp, "  Population File         : %s\n", gsPopulationFileName.c_str());
                                   break;
       default : ZdException::Generate("Unknown probabilty model type '%d'.\n", "DisplayParameters()", geProbabiltyModelType);
     }
 
-    fprintf(fp, "  Coordinates File : %s\n", gsCoordinatesFileName.c_str());
+    if (gbUseSpecialPopulationFile)
+      fprintf(fp, "  Special Population File : %s\n", gsSpecialPopulationFileName.c_str());
+    fprintf(fp, "  Coordinates File        : %s\n", gsCoordinatesFileName.c_str());
     if (gbUseSpecialGridFile)
-      fprintf(fp, "  Special Grid File: %s\n", gsSpecialGridFileName.c_str());
+      fprintf(fp, "  Special Grid File       : %s\n", gsSpecialGridFileName.c_str());
 
     fprintf(fp, "\n  Precision of Times : %s\n", GetDatePrecisionAsString(gePrecisionOfTimesType));
 
