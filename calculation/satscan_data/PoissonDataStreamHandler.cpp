@@ -6,26 +6,27 @@
 #include "SaTScanData.h"
 #include "DateStringParser.h"
 
-/** constructor */
+/** class constructor */
 PoissonDataStreamHandler::PoissonDataStreamHandler(CSaTScanData & Data, BasePrint * pPrint)
                          :DataStreamHandler(Data, pPrint) {}
 
-/** destructor */
+/** class destructor */
 PoissonDataStreamHandler::~PoissonDataStreamHandler() {}
 
-/** Converts passed string specifiying a population date to a julian date.
-    Precision is determined by date formats( YYYY/MM/DD, YYYY/MM, YYYY, YY/MM/DD,
-    YY/MM, YY ) which is the complete set of valid formats that SaTScan currently
-    supports. Since we accumulate errors/warnings when reading input files,
-    indication of a bad date is returned and any messages sent to print direction. */
-bool PoissonDataStreamHandler::ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, Julian & JulianDate) {
+/** Converts passed string specifiying a population date to a julian date using
+    DateStringParser object. Since we accumulate errors/warnings when reading
+    input files, indication of a bad date is returned as false and message
+    sent to print direction. Caller is responsible for ensuring that passed
+    'const char *' points to a valid string. */
+bool PoissonDataStreamHandler::ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber,
+                                                             std::pair<Julian, DatePrecisionType>& PopulationDate) {
   bool                                  bValidDate=true;
   DateStringParser                      DateParser;
   DateStringParser::ParserStatus        eStatus;
 
   try {
     eStatus = DateParser.ParsePopulationDateString(sDateString, gDataHub.GetStudyPeriodStartDate(),
-                                                   gDataHub.GetStudyPeriodStartDate(), JulianDate);
+                                                   gDataHub.GetStudyPeriodStartDate(), PopulationDate.first, PopulationDate.second);
     switch (eStatus) {
       case DateStringParser::VALID_DATE       :
         bValidDate = true; break;
@@ -51,7 +52,10 @@ bool PoissonDataStreamHandler::ConvertPopulationDateToJulian(const char * sDateS
   return bValidDate;
 }
 
-/** returns new data gateway for real data */
+/** Returns newly allocated data gateway object that references structures
+    utilized in calculating most likely clusters (real data) for the Poisson
+    probablity model, analysis type and possibly inclusion purely temporal
+    clusters. Caller is responsible for destructing returned object. */
 AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewDataGateway() const {
   AbtractDataStreamGateway    * pDataStreamGateway=0;
   DataStreamInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
@@ -108,7 +112,10 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewDataGateway() const {
   return pDataStreamGateway;
 }
 
-/** returns new data gateway for simulation data */
+/** Returns newly allocated data gateway object that references structures
+    utilized in performing simulations (Monte Carlo) for the Poisson
+    probablity model, analysis type and possibly inclusion purely temporal
+    clusters. Caller is responsible for destructing returned object. */
 AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const {
   AbtractDataStreamGateway    * pDataStreamGateway=0;
   DataStreamInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
@@ -166,8 +173,9 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewSimulationDataGateway
   return pDataStreamGateway;
 }
 
-/** Returns a collection of cloned randomizers maintained by data stream handler.
-    All previous elements of list are deleted. */
+/** Returns a collection of cloned randomizers maintained internally. Number of
+    randomizers cloned equals the number of data streams. All previous elements
+    of container are deleted. */
 RandomizerContainer_t& PoissonDataStreamHandler::GetRandomizerContainer(RandomizerContainer_t& Container) const {
   ZdPointerVector<AbstractRandomizer>::const_iterator itr;
 
@@ -183,8 +191,9 @@ RandomizerContainer_t& PoissonDataStreamHandler::GetRandomizerContainer(Randomiz
   return Container;
 }
 
-/** Fills passed container with simulation data objects, with appropriate members
-    of data object allocated. */
+/** Return a collection of new created simulation data stream objects for the
+    Poisson probability model, analysis type and possibly inclusion purely
+    temporal clusters.                                                        */
 SimulationDataContainer_t& PoissonDataStreamHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
   Container.clear();
   for (unsigned int t=0; t < gParameters.GetNumDataStreams(); ++t)
@@ -223,7 +232,11 @@ SimulationDataContainer_t& PoissonDataStreamHandler::GetSimulationDataContainer(
   return Container;
 }
 
-/** */
+/** Refined process for reading input data from files into respective data
+    streams. For the Poisson probability model, inputs file of interest are the
+    case and population. Prior to reading input data randomization objects are
+    allocated. Echos progress and warnings/errors during read to BasePrint
+    object. It is not recommended to call this function more than once. */
 bool PoissonDataStreamHandler::ReadData() {
   try {
     SetRandomizers();
@@ -250,22 +263,29 @@ bool PoissonDataStreamHandler::ReadData() {
   return true;
 }
 
-/** Read the population file.
-    The number of category variables is determined by the first record.
-    Any records deviating from this number will cause an error.
-    If invalid data is found in the file, an error message is printed,
-    that record is ignored, and reading continues. The tract-id MUST match
-    one read in ReadCoordinatesFile().
-    Return value: true = success, false = errors encountered */
+/** Reads data from population file into data stream structures. Reading of the
+    file is done in two passes:
+    - first pass  ; Determines all unique population dates specified in file.
+                    Then adjusts list in accordance with study period and later
+                    needs for interpolation.
+    - second pass ; Updates PopulationData object (of data stream) structures for
+                    each population record. Each record is validated with
+                    warnings/errors printed to BasePrint object.
+    Returns indication of successful read (true = valid, false = errors).
+    Location identifiers of population file are matched to location identifiers
+    specifed in coordinates file; so this function should not be called before
+    the coordinates file has been read.                                         */
 bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
-  int                           iCategoryIndex;
-  bool                          bValid=true, bEmpty=true;
-  tract_t                       TractIdentifierIndex;
-  float                         fPopulation;
-  Julian                        PopulationDate;
-  FILE                        * fp=0; // Ptr to population file
-  std::vector<Julian>           vPopulationDates;
-  std::vector<Julian>::iterator itrdates;
+  int                                                           iCategoryIndex;
+  bool                                                          bValid=true, bEmpty=true;
+  tract_t                                                       TractIdentifierIndex;
+  float                                                         fPopulation;
+  Julian                                                        PopulationDate;
+  FILE                                                        * fp=0; // Ptr to population file
+  std::pair<Julian, DatePrecisionType>                          prPopulationDate;
+  std::vector<std::pair<Julian, DatePrecisionType> >            vprPopulationDates;
+  std::vector<std::pair<Julian, DatePrecisionType> >::iterator  itr;
+  ComparePopulationDates                                        JulianCompare;  
 
   try {
     RealDataStream& thisStream = *gvDataStreams[tStream];
@@ -291,28 +311,33 @@ bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
             bValid = false;
             continue;
         }
-        if (!ConvertPopulationDateToJulian(Parser.GetWord(1), Parser.GetReadCount(), PopulationDate)) {
+        if (!ConvertPopulationDateToJulian(Parser.GetWord(1), Parser.GetReadCount(), prPopulationDate)) {
             bValid = false;
             continue;
         }
-        //if date is unique, add it to the list in sorted order
-        itrdates = lower_bound(vPopulationDates.begin(), vPopulationDates.end(), PopulationDate);
-        if (! (itrdates != vPopulationDates.end() && (*itrdates) == PopulationDate))
-          vPopulationDates.insert(itrdates, PopulationDate);
+        //Insert population date in sorted order.
+        itr = std::lower_bound(vprPopulationDates.begin(), vprPopulationDates.end(), prPopulationDate, JulianCompare);
+        if (itr == vprPopulationDates.end()) //List is empty, just add.
+          vprPopulationDates.push_back(prPopulationDate);
+        else if ((*itr).first == prPopulationDate.first) //replace more precise dates
+          (*itr).second = std::max((*itr).second, prPopulationDate.second);
+        else //insert into sorted position
+          vprPopulationDates.insert(itr, prPopulationDate);
     }
 
     //2nd pass, read data in structures.
     if (bValid && !bEmpty) {
       //Set tract handlers population date structures since we already now all the dates from above.
-      thisStream.GetPopulationData().SetupPopDates(vPopulationDates, gParameters.GetStudyPeriodStartDateAsJulian(),
-                                                   gParameters.GetStudyPeriodEndDateAsJulian(), gpPrint);
+      thisStream.GetPopulationData().SetPopulationDates(vprPopulationDates, gParameters.GetStudyPeriodStartDateAsJulian(),
+                                                        gParameters.GetStudyPeriodEndDateAsJulian());
+      vprPopulationDates.clear(); //dump memory                                                  
       //reset for second read
       fseek(fp, 0L, SEEK_SET);
       //We can ignore error checking for population date and population since we already did this above.
       while (Parser.ReadString(fp)) {
           if (!Parser.HasWords()) // Skip Blank Lines
             continue;
-          ConvertPopulationDateToJulian(Parser.GetWord(1), Parser.GetReadCount(), PopulationDate);
+          ConvertPopulationDateToJulian(Parser.GetWord(1), Parser.GetReadCount(), prPopulationDate);
           if (!Parser.GetWord(2)) {
             gpPrint->PrintInputWarning("Error: Record %d of %s missing population.\n",
                                        Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
@@ -352,7 +377,7 @@ bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
             continue;
           }
           //Add population count for this tract/category/year
-          thisStream.GetPopulationData().AddCategoryToTract(TractIdentifierIndex, iCategoryIndex, PopulationDate, fPopulation);
+          thisStream.GetPopulationData().AddCategoryToTract(TractIdentifierIndex, iCategoryIndex, prPopulationDate, fPopulation);
       }
     }
     //close file pointer
@@ -366,7 +391,7 @@ bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
       gpPrint->SatScanPrintWarning("Error: %s contains no data.\n", gpPrint->GetImpliedFileTypeString().c_str());
       bValid = false;
     }
-    if (!thisStream.GetPopulationData().CheckZeroPopulations(stderr, gpPrint))
+    if (!thisStream.GetPopulationData().CheckZeroPopulations(stderr, *gpPrint))
       return false;
   }
   catch (ZdException &x) {
@@ -378,9 +403,11 @@ bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
   return bValid;
 }
 
-/** allocates randomizers for each data stream */
+/** Allocates randomizers for each data stream. Type of randomizer instantiated
+    is determined by parameter settings. */
 void PoissonDataStreamHandler::SetRandomizers() {
   try {
+    gvDataStreamRandomizers.DeleteAllElements();
     gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
