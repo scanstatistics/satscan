@@ -44,7 +44,7 @@ CCluster* C_ST_PS_Analysis::GetTopCluster(tract_t nCenter) {
     C_PS_MAX = new CPurelySpatialCluster(gpPrintDirection);
     C_PS_MAX->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
     gp_PS_TopShapeClusters->SetTopClusters(*C_PS_MAX);
-    C_ST_MAX = new CSpaceTimeCluster(eIncludeClustersType, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
+    C_ST_MAX = new CSpaceTimeCluster(eIncludeClustersType, *m_pData, *gpPrintDirection);
     C_ST_MAX->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
     gp_ST_TopShapeClusters->SetTopClusters(*C_ST_MAX);
     for (j=0 ;j <= m_pParameters->GetNumTotalEllipses(); j++) {
@@ -55,7 +55,7 @@ CCluster* C_ST_PS_Analysis::GetTopCluster(tract_t nCenter) {
         C_PS.SetEllipseOffset(j);
         C_PS.SetDuczmalCorrection((j == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->mdE_Shapes[j - 1]));
         //set space-time cluster
-        CSpaceTimeCluster C_ST(eIncludeClustersType, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
+        CSpaceTimeCluster C_ST(eIncludeClustersType, *m_pData, *gpPrintDirection);
         C_ST.SetCenter(nCenter);
         C_ST.SetRate(m_pParameters->GetAreaScanRateType());
         C_ST.SetEllipseOffset(j);
@@ -73,14 +73,7 @@ CCluster* C_ST_PS_Analysis::GetTopCluster(tract_t nCenter) {
            }
            //now find best space-time cluster for iteration
            C_ST.AddNeighbor(j, *m_pData, m_pData->m_pCases, i);                            
-           C_ST.InitTimeIntervalIndeces();
-           while (C_ST.SetNextTimeInterval()) {
-                if (C_ST.RateIsOfInterest(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure)) {
-                  C_ST.m_nLogLikelihood = m_pData->m_pModel->CalcLogLikelihood(C_ST.m_nCases, C_ST.m_nMeasure);
-                  if (C_ST.m_nLogLikelihood > Top_ST_ShapeCluster.m_nLogLikelihood)
-                    Top_ST_ShapeCluster  = C_ST;
-                }
-           }
+           C_ST.CompareTopCluster(Top_ST_ShapeCluster, *m_pData);
         }
     }
 
@@ -123,8 +116,7 @@ double C_ST_PS_Analysis::MonteCarlo() {
   tract_t                       i, j;
 
   try {
-    CSpaceTimeCluster C_ST(m_pParameters->GetIncludeClustersType(), m_pData->m_nTimeIntervals,
-                           m_pData->m_nIntervalCut, gpPrintDirection);
+    CSpaceTimeCluster C_ST(m_pParameters->GetIncludeClustersType(), *m_pData, *gpPrintDirection);
     C_PS.SetRate(m_pParameters->GetAreaScanRateType());
     C_ST.SetRate(m_pParameters->GetAreaScanRateType());
     switch (m_pParameters->GetAreaScanRateType()) {
@@ -147,9 +139,7 @@ double C_ST_PS_Analysis::MonteCarlo() {
             C_PS.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);
             pMeasureList->AddMeasure(C_PS.m_nCases, C_PS.m_nMeasure);
             C_ST.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);
-            C_ST.InitTimeIntervalIndeces();
-            while (C_ST.SetNextTimeInterval())
-                 pMeasureList->AddMeasure(C_ST.m_nCases, C_ST.m_nMeasure);
+            C_ST.ComputeBestMeasures(*pMeasureList);
           }
        }
        pMeasureList->SetForNextIteration(k);
@@ -169,7 +159,6 @@ double C_ST_PS_Analysis::MonteCarlo() {
 /** Returns loglikelihood for Monte Carlo Prospective replication. */
 double C_ST_PS_Analysis::MonteCarloProspective() {
   CMeasureList                * pMeasureList = 0;
-  CPurelySpatialCluster         C_PS(gpPrintDirection);
   double                        dMaxLogLikelihoodRatio;
   long                          lTime;
   Julian                        jCurrentDate;
@@ -179,7 +168,8 @@ double C_ST_PS_Analysis::MonteCarloProspective() {
   try {
     //for prospective Space-Time, m_bAliveClustersOnly should be false..
     //m_bAliveClustersOnly is the first parameter into the CSpaceTimeCluster class
-    CSpaceTimeCluster     C_ST(ALLCLUSTERS, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
+    CPurelySpatialProspectiveCluster C_PS(*m_pData, gpPrintDirection);
+    CSpaceTimeCluster     C_ST(ALLCLUSTERS, *m_pData, *gpPrintDirection);
     C_PS.SetRate(m_pParameters->GetAreaScanRateType());
     C_ST.SetRate(m_pParameters->GetAreaScanRateType());
     switch (m_pParameters->GetAreaScanRateType()) {
@@ -200,19 +190,9 @@ double C_ST_PS_Analysis::MonteCarloProspective() {
           C_ST.Initialize(i);
            for (tract_t j=1; j<=m_pData->m_NeighborCounts[k][i]; j++) {
               C_PS.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);
-              pMeasureList->AddMeasure(C_PS.m_nCases, C_PS.m_nMeasure);
+              C_PS.ComputeBestMeasures(*pMeasureList);
               C_ST.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);    // k use to be "0"
-              //Need to keep track of the current date as you loop through intervals
-              jCurrentDate = m_pData->m_nEndDate;
-              // Loop from study end date back to Prospective start date -- loop by interval
-              for (n = m_pData->m_nTimeIntervals; n >= m_pData->m_nProspectiveIntervalStart; n--) {
-                //Need to re-compute duration due to by using current date (whatever date loop "n" is at)
-                //and the Begin Study Date
-                iThisStartInterval = std::max(0, n - m_pData->ComputeNewCutoffInterval(m_pData->m_nStartDate,jCurrentDate));
-                C_ST.InitTimeIntervalIndeces(iThisStartInterval, n);
-                while (C_ST.SetNextProspTimeInterval())
-                     pMeasureList->AddMeasure(C_ST.m_nCases, C_ST.m_nMeasure);
-              }
+              C_ST.ComputeBestMeasures(*pMeasureList);
            }
        }
        pMeasureList->SetForNextIteration(k);

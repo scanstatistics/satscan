@@ -38,13 +38,13 @@ CCluster* CSpaceTimeAnalysis::GetTopCluster(tract_t nCenter) {
     else
       eIncludeClustersType = m_pParameters->GetIncludeClustersType();
 
-    pTopCluster = new CSpaceTimeCluster(eIncludeClustersType, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
+    pTopCluster = new CSpaceTimeCluster(eIncludeClustersType, *m_pData, *gpPrintDirection);
     pTopCluster->CCluster::SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
     gpTopShapeClusters->SetTopClusters(*pTopCluster);
 
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
     for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
-       CSpaceTimeCluster thisCluster(eIncludeClustersType, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
+       CSpaceTimeCluster thisCluster(eIncludeClustersType, *m_pData, *gpPrintDirection);
        thisCluster.SetCenter(nCenter);
        thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
        thisCluster.SetEllipseOffset(k);
@@ -52,14 +52,7 @@ CCluster* CSpaceTimeAnalysis::GetTopCluster(tract_t nCenter) {
        CSpaceTimeCluster & TopShapeCluster = (CSpaceTimeCluster&)(gpTopShapeClusters->GetTopCluster(k));
        for (i=1; i <= m_pData->m_NeighborCounts[k][nCenter]; ++i) {
           thisCluster.AddNeighbor(k, *m_pData, m_pData->m_pCases, i);
-          thisCluster.InitTimeIntervalIndeces();
-          while (thisCluster.SetNextTimeInterval()) {
-              if (thisCluster.RateIsOfInterest(m_pData->m_nTotalCases, m_pData->m_nTotalMeasure)) {
-                thisCluster.m_nLogLikelihood = m_pData->m_pModel->CalcLogLikelihood(thisCluster.m_nCases, thisCluster.m_nMeasure);
-                if (thisCluster.m_nLogLikelihood  > TopShapeCluster.m_nLogLikelihood)
-                  TopShapeCluster = thisCluster;
-              }
-          }
+          thisCluster.CompareTopCluster(TopShapeCluster, *m_pData);
        }
     }
     //get copy of best cluster over all iterations
@@ -81,8 +74,7 @@ double CSpaceTimeAnalysis::MonteCarlo() {
   tract_t         i, j;
 
   try {
-    CSpaceTimeCluster C(m_pParameters->GetIncludeClustersType(), m_pData->m_nTimeIntervals,
-                        m_pData->m_nIntervalCut, gpPrintDirection);
+    CSpaceTimeCluster C(m_pParameters->GetIncludeClustersType(), *m_pData, *gpPrintDirection);
     C.SetRate(m_pParameters->GetAreaScanRateType());
     switch (m_pParameters->GetAreaScanRateType()) {
      case HIGH      : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
@@ -101,9 +93,7 @@ double CSpaceTimeAnalysis::MonteCarlo() {
           C.Initialize(i);
           for (j=1; j<=m_pData->m_NeighborCounts[k][i]; j++) {
              C.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);
-             C.InitTimeIntervalIndeces();
-             while (C.SetNextTimeInterval())
-               pMeasureList->AddMeasure(C.m_nCases, C.m_nMeasure);
+             C.ComputeBestMeasures(*pMeasureList);
           }
        }
        pMeasureList->SetForNextIteration(k);
@@ -129,7 +119,7 @@ double CSpaceTimeAnalysis::MonteCarloProspective() {
   try {
     //for prospective Space-Time, m_bAliveClustersOnly should be false..
     //m_bAliveClustersOnly is the first parameter into the CSpaceTimeCluster class
-    CSpaceTimeCluster C(ALLCLUSTERS, m_pData->m_nTimeIntervals, m_pData->m_nIntervalCut, gpPrintDirection);
+    CSpaceTimeCluster C(ALLCLUSTERS, *m_pData, *gpPrintDirection);
     C.SetRate(m_pParameters->GetAreaScanRateType());
     switch (m_pParameters->GetAreaScanRateType()) {
      case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
@@ -147,17 +137,7 @@ double CSpaceTimeAnalysis::MonteCarloProspective() {
           C.Initialize(i);
           for (tract_t j=1; j<=m_pData->m_NeighborCounts[k][i]; j++) {
              C.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);
-             //Need to keep track of the current date as you loop through intervals
-             jCurrentDate = m_pData->m_nEndDate;
-             // Loop from study end date back to Prospective start date -- loop by interval
-             for (n = m_pData->m_nTimeIntervals; n >= m_pData->m_nProspectiveIntervalStart; n--) {
-                //Need to re-compute duration by using current date (whatever date loop "n" is at)
-                //and the Begin Study Date.  Must use time percent specified by user...
-                iThisStartInterval = std::max(0, n - m_pData->ComputeNewCutoffInterval(m_pData->m_nStartDate,jCurrentDate));
-                C.InitTimeIntervalIndeces(iThisStartInterval, n);
-                while (C.SetNextProspTimeInterval())
-                     pMeasureList->AddMeasure(C.m_nCases, C.m_nMeasure);
-             }
+             C.ComputeBestMeasures(*pMeasureList);
           }
        }
        pMeasureList->SetForNextIteration(k);
