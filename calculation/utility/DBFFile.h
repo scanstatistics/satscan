@@ -407,10 +407,5 @@ private:
    static DBFFileType gDefaultInstance;
 };
 
-//global instance:
-ZdDBFFileTypeInstance
-
-
-
 #endif
 
