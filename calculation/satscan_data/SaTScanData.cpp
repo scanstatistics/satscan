@@ -483,7 +483,6 @@ void CSaTScanData::ReadDataFromFiles() {
     if (!bReadSuccess)
       SSGenerateException("\nProblem encountered reading in data.", "ReadDataFromFiles");
     gpTInfo->tiConcaticateDuplicateTractIdentifiers();
-    gpGInfo->giFindDuplicateCoords(stderr);
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadDataFromFiles()", "CSaTScanData");
@@ -899,7 +898,7 @@ void CSaTScanData::Setup(const CParameters* pParameters, BasePrint *pPrintDirect
     m_pParameters = pParameters;
 
     gpTInfo = new TractHandler(*pPrintDirection); 
-    gpGInfo = new GInfo(pPrintDirection);
+    gpGInfo = new GInfo();
     //SetProbabilityModel();
     //For now, compute the angle and store the angle and shape
     //for each ellipsoid.  Maybe transfer info to a different location in the
