@@ -1,6 +1,8 @@
 //---------------------------------------------------------------------------
+#include "xbDlgException.h"      // curious but for some reason this is needed here AJV 9/5/2002
+
 #include "stsSaTScan.h"
-#include "DBFFile.h"//need for registration of filetype.  Maybe it should go in stsSaTScan.h ?
+#include "DBFFile.h"		//need for registration of filetype.  Maybe it should go in stsSaTScan.h ?
 #pragma hdrstop
 //---------------------------------------------------------------------------
 
@@ -63,25 +65,9 @@ USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
 USEUNIT("..\calculation\SaTScanBasis.cpp");
 USEUNIT("..\calculation\Output\stsRunHistoryFile.cpp");
 USEUNIT("..\calculation\utility\DBFFile.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\xdate.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\exp.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\expfunc.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\expproc.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\fields.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\html.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\index.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\lock.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\memo.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\ndx.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\ntx.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\stack.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\xbase.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\xbexcept.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\xbfilter.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\xbstring.cpp");
-USEUNIT("..\xbase\xbase_2.0.0\xbase\dbf.cpp");
 USEUNIT("..\calculation\Output\stsAreaSpecificDBF.cpp");
 USEUNIT("..\calculation\Output\stsClusterLevelDBF.cpp");
+USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -97,12 +83,15 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                  BasisExit();
         }
         catch (ZdException &x) {
-           //DisplayBasisException(Application, x);
+           DisplayBasisException(Application, x);
            BasisExit();
         }
         catch (Exception &exception)
         {
            Application->ShowException(&exception);
+           BasisExit();
+        }
+        catch(...) {
            BasisExit();
         }
         return 0;
