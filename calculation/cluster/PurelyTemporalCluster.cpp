@@ -83,9 +83,9 @@ measure_t CPurelyTemporalCluster::GetMeasure(unsigned int iStream) const {
     NOTE: Hard coded to return the number of cases from first data stream.
           This will need modification when the reporting aspect of multiple
           data streams is hashed out.                                        */
-count_t CPurelyTemporalCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {
+count_t CPurelyTemporalCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
   count_t      tCaseCount,
-            ** ppCases = Data.GetDataStreamHandler().GetStream(0/*for now*/).GetCaseArray();
+            ** ppCases = Data.GetDataStreamHandler().GetStream(iStream).GetCaseArray();
 
   if (m_nLastInterval == Data.GetNumTimeIntervals())
     tCaseCount = ppCases[m_nFirstInterval][tTract];
@@ -99,9 +99,9 @@ count_t CPurelyTemporalCluster::GetCaseCountForTract(tract_t tTract, const CSaTS
     NOTE: Hard coded to return the measure from first data stream.
           This will need modification when the reporting aspect of multiple
           data streams is hashed out.                                       */
-measure_t CPurelyTemporalCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {
+measure_t CPurelyTemporalCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
   measure_t      tMeasure,
-              ** ppMeasure = Data.GetDataStreamHandler().GetStream(0/*for now*/).GetMeasureArray();
+              ** ppMeasure = Data.GetDataStreamHandler().GetStream(iStream).GetMeasureArray();
 
   if (m_nLastInterval == Data.GetNumTimeIntervals())
     tMeasure = ppMeasure[m_nFirstInterval][tTract];

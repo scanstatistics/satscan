@@ -33,11 +33,11 @@ class CPurelyTemporalCluster : public CCluster {
     virtual void                        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {}
     virtual void                        DisplayPopulation(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {};
     virtual count_t                     GetCaseCount(unsigned int iStream) const;
-    virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const;
     virtual AbstractClusterData       * GetClusterData() {return gpClusterData;}
-    virtual int                         GetClusterType() const {return PURELYTEMPORAL;}
+    virtual ClusterType                 GetClusterType() const {return PURELYTEMPORALCLUSTER;}
     virtual measure_t                   GetMeasure(unsigned int iStream) const;
-    virtual measure_t                   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual measure_t                   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const;
     virtual void                        Initialize(tract_t nCenter=0);
     virtual void                        Write(stsAreaSpecificData& AreaData, const CSaTScanData& Data,
                                               unsigned int iClusterNumber, unsigned int iNumSimsCompleted) const {/*nop*/}

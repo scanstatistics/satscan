@@ -77,13 +77,10 @@ CSpaceTimeCluster * CSpaceTimeCluster::Clone() const {
   return new CSpaceTimeCluster(*this);
 }
 
-/** returns the number of cases for tract as defined by cluster
-    NOTE: Hard coded to return the number of cases from first data stream.
-          This will need modification when the reporting aspect of multiple
-          data streams is hashed out.                                        */
-count_t CSpaceTimeCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {
+/** returns the number of cases for tract as defined by cluster */
+count_t CSpaceTimeCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
   count_t      tCaseCount,
-            ** ppCases = Data.GetDataStreamHandler().GetStream(0/*for now*/).GetCaseArray();
+            ** ppCases = Data.GetDataStreamHandler().GetStream(iStream).GetCaseArray();
 
   if (m_nLastInterval == Data.GetNumTimeIntervals())
     tCaseCount = ppCases[m_nFirstInterval][tTract];
@@ -93,20 +90,17 @@ count_t CSpaceTimeCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanDa
   return tCaseCount;
 }
 
-/** Returns the measure for tract as defined by cluster.
-    NOTE: Hard coded to return the measure from first data stream.
-          This will need modification when the reporting aspect of multiple
-          data streams is hashed out.                                       */
-measure_t CSpaceTimeCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {
+/** Returns the measure for tract as defined by cluster. */
+measure_t CSpaceTimeCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
   measure_t      tMeasure,
-              ** ppMeasure = Data.GetDataStreamHandler().GetStream(0/*for now*/).GetMeasureArray();
+              ** ppMeasure = Data.GetDataStreamHandler().GetStream(iStream).GetMeasureArray();
 
   if (m_nLastInterval == Data.GetNumTimeIntervals())
     tMeasure = ppMeasure[m_nFirstInterval][tTract];
   else
     tMeasure  = ppMeasure[m_nFirstInterval][tTract] - ppMeasure[m_nLastInterval][tTract];
 
-  return Data.GetMeasureAdjustment() * tMeasure;
+  return Data.GetMeasureAdjustment(iStream) * tMeasure;
 }
 
 /** re-initializes cluster data */
