@@ -42,7 +42,7 @@ const char*      MAX_TEMP_INTERPRET_LINE        = "MaxTemporalSizeInterpretation
 const char*      INCLUDE_PURELY_SPATIAL_LINE    = "IncludePurelySpatial";
 const char*      ALIVE_CLUSTERS_LINE            = "AliveClustersOnly";
 
-const char*      OUTPUT_FILES_SECTION           = "[OutputFiles]";
+const char*      OUTPUT_FILES_SECTION           = "[Output Files]";
 const char*      RESULTS_FILE_LINE              = "ResultsFile";
 const char*      MOST_LIKELY_CLUSTER_LINE       = "MostLikelyClusterEachCentroidASCII";
 const char*      DBASE_CLUSTER_LINE             = "MostLikelyClusterEachCentroidDBase";
@@ -54,12 +54,12 @@ const char*      INCLUDE_REL_RISKS_LINE         = "IncludeRelativeRisksCensusAre
 const char*      DBASE_RELATIVE_RISKS           = "IncludeRelativeRisksCensusAreasDBase";
 const char*      CRIT_REPORT_SEC_CLUSTERS_LINE  = "CriteriaForReportingSecondaryClusters";
 
-const char*      SEQUENTIAL_SCAN_SECTION        = "[SequentialScan]";
+const char*      SEQUENTIAL_SCAN_SECTION        = "[Sequential Scan]";
 const char*      SEQUENTIAL_SCAN_LINE           = "SequentialScan";
 const char*      SEQUENTIAL_MAX_ITERS_LINE      = "SequentialScanMaxIterations";
 const char*      SEQUENTIAL_MAX_PVALUE_LINE     = "SequentialScanMaxPValue";
 
-const char*      ELLIPSES_SECTION               = "[EllipticScan]";
+const char*      ELLIPSES_SECTION               = "[Elliptic Scan]";
 const char*      NUMBER_ELLIPSES_LINE           = "NumberOfEllipses";
 const char*      ELLIPSE_SHAPES_LINE            = "EllipseShapes";
 const char*      ELLIPSE_ANGLES_LINE            = "EllipseAngles";
