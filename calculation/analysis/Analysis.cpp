@@ -394,7 +394,7 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
              ++guwSignificantAt005;
           
           // if doing dBase output, set the report pointer - not the most effective way to do this, but the least intrusive - AJV
-          if(m_pParameters->GetOutputAreaSpecificDBF())
+          if(m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
              m_pTopClusters[i]->SetAreaReport(pData.get());
 
           // if were are doing census areas and theres a file pointer OR we are doing dBase output
