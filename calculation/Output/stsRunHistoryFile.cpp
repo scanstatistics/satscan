@@ -103,12 +103,12 @@ void stsRunHistoryFile::LogNewHistory(const unsigned short& uwSignificantAt005) 
 // pre: none
 // post: opens/creates the run history file and writes to it
 void stsRunHistoryFile::OpenRunHistoryFile(const unsigned short& uwSignificantAt005) {
-   ZdTransaction	*pTransaction = 0;
-   ZdFileRecord         *pRecord = 0, *pLastRecord = 0;
+   ZdTransaction	*pTransaction;
    unsigned long        ulLastRecordNumber;
    unsigned short       uwFieldNumber = 0;
    ZdString             sTempValue;
    ZdFieldValue         fv;
+   auto_ptr<ZdFileRecord> pLastRecord, pRecord;
 
    try {
       // if we don't have one then create it
@@ -118,19 +118,18 @@ void stsRunHistoryFile::OpenRunHistoryFile(const unsigned short& uwSignificantAt
       TXDFile File(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
 
       // get a record buffer, input data and append the record
-      pLastRecord = File.GetNewRecord();
-      ulLastRecordNumber = File.GotoLastRecord(pLastRecord);
+      pLastRecord.reset(File.GetNewRecord());
+      ulLastRecordNumber = File.GotoLastRecord(&(*pLastRecord));
       // if there's records in the file
       if(ulLastRecordNumber)
          pLastRecord->GetField(0, glRunNumber);
-      delete pLastRecord; pLastRecord = 0;
 
       pTransaction = (File.BeginTransaction());
 
       // note: I'm going to document the heck out of this section in case they can't the run
       // specs on us at any time and that way I can interpret my assumptions in case any just so
       // happen to be incorrect, so bear with me - AJV 9/3/2002
-      pRecord = File.GetNewRecord();
+      pRecord.reset(File.GetNewRecord());
       //  run number field -- increment the run number so that we have a new unique run number - AJV 9/4/2002
       fv.SetType(pRecord->GetFieldType(uwFieldNumber));
       fv.AsDouble() = ++glRunNumber;
@@ -229,7 +228,21 @@ void stsRunHistoryFile::OpenRunHistoryFile(const unsigned short& uwSignificantAt
 
       // precision of case times field
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsLong() = gpAnalysis->GetSatScanData()->m_pParameters->m_nPrecision;
+      switch (gpAnalysis->GetSatScanData()->m_pParameters->m_nPrecision) {
+         case 0:
+            sTempValue << ZdString::reset << "None";
+            break;
+         case 1:
+            sTempValue << ZdString::reset << "Year";
+            break;
+         case 2:
+            sTempValue << ZdString::reset << "Month";
+            break;
+         case 3:
+            sTempValue << ZdString::reset << "Day";
+            break;
+      }
+      fv.AsZdString() = sTempValue;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // max geographic extent field
@@ -323,14 +336,10 @@ void stsRunHistoryFile::OpenRunHistoryFile(const unsigned short& uwSignificantAt
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       File.AppendRecord(*pTransaction, *pRecord);
-      delete pRecord; pRecord = 0;
-
       File.EndTransaction(pTransaction);
       File.Close();
    }
    catch(ZdException &x) {
-      delete pRecord; pRecord = 0;
-      delete pLastRecord; pLastRecord = 0;
       x.AddCallpath("OpenRunHistoryFile()", "stsRunHistoryFile");
       throw;
    }
@@ -339,7 +348,6 @@ void stsRunHistoryFile::OpenRunHistoryFile(const unsigned short& uwSignificantAt
 // internal setup
 void stsRunHistoryFile::Setup(const CAnalysis* pAnalysis, const ZdString& sFileName) {
    try {
-//      gsFilename = ANALYSIS_HISTORY_FILE;
       gsFilename = sFileName;
       gpAnalysis = const_cast<CAnalysis*>(pAnalysis);
    }
@@ -407,8 +415,8 @@ void stsRunHistoryFile::SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Precis_Times";
-      field.first.second = ZD_LONG_FLD;
-      field.second = 8;
+      field.first.second = ZD_ALPHA_FLD;
+      field.second = 16;
       vFieldDescrip.AddElement(field);
 
       field.first.first = "Max_Geo_Extent";
