@@ -2,7 +2,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 //---------------------------------------------------------------------------
-#include "DenominaterDataRandomizer.h"
+#include "DenominatorDataRandomizer.h"
 
 /** constructor */
 AbstractDenominaterDataRandomizer::AbstractDenominaterDataRandomizer()

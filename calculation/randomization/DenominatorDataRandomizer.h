@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
-#ifndef DenominaterDataRandomizerH
-#define DenominaterDataRandomizerH
+#ifndef DenominatorDataRandomizerH
+#define DenominatorDataRandomizerH
 //---------------------------------------------------------------------------
 #include "Randomizer.h"
 
