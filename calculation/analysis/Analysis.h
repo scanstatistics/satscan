@@ -51,7 +51,7 @@ class CAnalysis {
     bool                                gbMeasureListReplications;
 
     void                                AllocateLikelihoodObject();
-    virtual const CCluster            & CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway) = 0;
+    virtual const CCluster            & CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway & DataGateway) = 0;
     CMeasureList                      * GetNewMeasureListObject() const;
     CTimeIntervals                    * GetNewTemporalDataEvaluatorObject(IncludeClustersType eType) const;
 
@@ -59,12 +59,12 @@ class CAnalysis {
     CAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection);
     virtual ~CAnalysis();
 
-    virtual void                        AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway)  = 0;
-    virtual void                        AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway) = 0;
-    double                              ExecuteSimulation(const AbtractDataStreamGateway& DataGateway);
-    virtual void                        FindTopClusters(const AbtractDataStreamGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer);
-    virtual double                      FindTopRatio(const AbtractDataStreamGateway & DataGateway);
-    virtual double                      MonteCarlo(const DataStreamInterface & Interface) = 0;
+    virtual void                        AllocateSimulationObjects(const AbtractDataSetGateway & DataGateway)  = 0;
+    virtual void                        AllocateTopClustersObjects(const AbtractDataSetGateway & DataGateway) = 0;
+    double                              ExecuteSimulation(const AbtractDataSetGateway& DataGateway);
+    virtual void                        FindTopClusters(const AbtractDataSetGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer);
+    virtual double                      FindTopRatio(const AbtractDataSetGateway & DataGateway);
+    virtual double                      MonteCarlo(const DataSetInterface & Interface) = 0;
 };
 //*****************************************************************************
 #endif

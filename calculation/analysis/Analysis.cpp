@@ -8,7 +8,6 @@
 #include "BernoulliLikelihoodCalculation.h"
 #include "WilcoxonLikelihoodCalculation.h"
 #include "NormalLikelihoodCalculation.h"
-#include "ExponentialLikelihoodCalculation.h"
 #include "OrdinalLikelihoodCalculation.h"
 #include "MeasureList.h"
 
@@ -131,18 +130,22 @@ CAnalysis::~CAnalysis() {
 void CAnalysis::AllocateLikelihoodObject() {
   try {
     //create likelihood calculator
-    if (gParameters.GetProbabilityModelType() == BERNOULLI)
-      gpLikelihoodCalculator = new BernoulliLikelihoodCalculator(gDataHub);
-    else if (gParameters.GetProbabilityModelType() == NORMAL)
-      gpLikelihoodCalculator = new NormalLikelihoodCalculator(gDataHub);
-    else if (gParameters.GetProbabilityModelType() == ORDINAL)
-      gpLikelihoodCalculator = new OrdinalLikelihoodCalculator(gDataHub);
-    else if (gParameters.GetProbabilityModelType() == SURVIVAL)
-      gpLikelihoodCalculator = new ExponentialLikelihoodCalculator(gDataHub);
-    else if (gParameters.GetProbabilityModelType() == RANK)
-      gpLikelihoodCalculator = new WilcoxonLikelihoodCalculator(gDataHub);
-    else
-      gpLikelihoodCalculator = new PoissonLikelihoodCalculator(gDataHub);
+    switch (gParameters.GetProbabilityModelType()) {
+      case POISSON :
+      case SPACETIMEPERMUTATION :
+      case EXPONENTIAL :
+        gpLikelihoodCalculator = new PoissonLikelihoodCalculator(gDataHub); break;
+      case BERNOULLI :
+       gpLikelihoodCalculator = new BernoulliLikelihoodCalculator(gDataHub); break;
+      case NORMAL :
+       gpLikelihoodCalculator = new NormalLikelihoodCalculator(gDataHub); break;
+      case ORDINAL :
+       gpLikelihoodCalculator = new OrdinalLikelihoodCalculator(gDataHub); break;
+      case RANK :
+       gpLikelihoodCalculator = new WilcoxonLikelihoodCalculator(gDataHub); break;
+      default :
+       ZdGenerateException("Unknown probability model '%d'.", "AllocateLikelihoodObject()", gParameters.GetProbabilityModelType());
+    };
   }
   catch (ZdException &x) {
     delete gpLikelihoodCalculator;
@@ -154,7 +157,7 @@ void CAnalysis::AllocateLikelihoodObject() {
 /** Executes simulation. Calls MonteCarlo() for analyses that can utilize
     TMeasureList class or FindTopRatio() for analyses which must perform
     simulations by the same algorithm as the real data. */
-double CAnalysis::ExecuteSimulation(const AbtractDataStreamGateway& DataGateway) {
+double CAnalysis::ExecuteSimulation(const AbtractDataSetGateway& DataGateway) {
   if (gbMeasureListReplications)
     return MonteCarlo(DataGateway.GetDataSetInterface(0));
   else
@@ -164,7 +167,7 @@ double CAnalysis::ExecuteSimulation(const AbtractDataStreamGateway& DataGateway)
 /** Given data gate way, calculates and collects most likely clusters about
     each grid point. Collection of clusters are sorted by loglikelihood ratio
     and condensed based upon overlapping geographical areas.                */
-void CAnalysis::FindTopClusters(const AbtractDataStreamGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
+void CAnalysis::FindTopClusters(const AbtractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
   int                   i;
   clock_t               tStartTime;
 
@@ -187,7 +190,7 @@ void CAnalysis::FindTopClusters(const AbtractDataStreamGateway& DataGateway, Mos
 }
 
 /** calculates greatest loglikelihood ratio about each centroid(grid point) */
-double CAnalysis::FindTopRatio(const AbtractDataStreamGateway & DataGateway) {
+double CAnalysis::FindTopRatio(const AbtractDataSetGateway & DataGateway) {
   int                   i;
   double                dMaxLogLikelihoodRatio=0;
 
@@ -214,12 +217,12 @@ CTimeIntervals * CAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClustersTyp
   if (gParameters.GetProbabilityModelType() == NORMAL)
     return new NormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
   else if (gParameters.GetProbabilityModelType() == ORDINAL) {
-    if (gParameters.GetNumDataStreams() == 1)
+    if (gParameters.GetNumDataSets() == 1)
       return new CategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
     else
       return new MultiSetCategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
   }
-  else if (gParameters.GetNumDataStreams() > 1)
+  else if (gParameters.GetNumDataSets() > 1)
     return new MultiSetTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
   else
     return new TemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
@@ -242,12 +245,12 @@ void CAnalysis::Setup() {
     }
     else if (gParameters.GetProbabilityModelType() == ORDINAL) {
       gbMeasureListReplications = false;
-      if (gParameters.GetNumDataStreams() == 1)
+      if (gParameters.GetNumDataSets() == 1)
         gpClusterDataFactory = new CategoricalClusterDataFactory();
       else
         gpClusterDataFactory = new MultiSetsCategoricalClusterDataFactory(gParameters);
     }
-    else if (gParameters.GetNumDataStreams() > 1) {
+    else if (gParameters.GetNumDataSets() > 1) {
       gpClusterDataFactory = new MultiSetClusterDataFactory(gParameters);
       gbMeasureListReplications = false;
     }
