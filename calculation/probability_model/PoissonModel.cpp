@@ -591,7 +591,7 @@ void CPoissonModel::MakeData_AlternateHypothesis() {
      gpRelativeRisks[t] = 1.0;
 
   //read in the RR's for those tracts with higher risks
-  RelativeRiskFile.open(gParameters.GetPowerEstimationFilename().c_str());
+  RelativeRiskFile.open(gParameters.GetRelativeRisksFilename().c_str());
   while (!RelativeRiskFile.eof()) {
        RelativeRiskFile >> sTractId;
        if ((tractIndex = gData.GetTInfo()->tiGetTractIndex(sTractId.c_str())) == -1)
