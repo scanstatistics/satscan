@@ -109,8 +109,8 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
       // ellipse shape and angle      
       if(gbPrintEllipses) {
          SetEllipseString(sAngle, sShape, pCluster, pData);
-         SetStringField(*pRecord, sShape.c_str(), GetFieldNumber(gvFields, "E_SHAPE"));
-         SetStringField(*pRecord, sAngle.c_str(), GetFieldNumber(gvFields, "E_ANGLE"));
+         SetStringField(*pRecord, sShape.c_str(), GetFieldNumber(gvFields, E_SHAPE));
+         SetStringField(*pRecord, sAngle.c_str(), GetFieldNumber(gvFields, E_ANGLE));
       }
 
       pTransaction= File.BeginTransaction();
@@ -283,8 +283,8 @@ void stsClusterLevelDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
 
    try {
       CreateNewField(vFields, RUN_NUM, ZD_NUMBER_FLD, 8, 0, uwOffset);
-      CreateNewField(vFields, CLUST_NUM, ZD_NUMBER_FLD, 5, 0, uwOffset);
       CreateNewField(vFields, LOC_ID, ZD_ALPHA_FLD, 30, 0, uwOffset);
+      CreateNewField(vFields, CLUST_NUM, ZD_NUMBER_FLD, 5, 0, uwOffset);
       CreateNewField(vFields, (giCoordType != CARTESIAN) ? COORD_LAT : COORD_X, ZD_ALPHA_FLD, 16, 0, uwOffset);
       CreateNewField(vFields, (giCoordType != CARTESIAN) ? COORD_LONG : COORD_Y, ZD_ALPHA_FLD, 16, 0, uwOffset);
 
@@ -301,8 +301,8 @@ void stsClusterLevelDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
       CreateNewField(vFields, RADIUS, ZD_ALPHA_FLD, 12, 0, uwOffset);
 
       if(gbPrintEllipses) {    // whether or not to print ellipse descriptors
-         CreateNewField(vFields, "E_ANGLE", ZD_ALPHA_FLD, 16, 0, uwOffset);
-         CreateNewField(vFields, "E_SHAPE", ZD_ALPHA_FLD, 16, 0, uwOffset);
+         CreateNewField(vFields, E_ANGLE, ZD_ALPHA_FLD, 16, 0, uwOffset);
+         CreateNewField(vFields, E_SHAPE, ZD_ALPHA_FLD, 16, 0, uwOffset);
       }
 
       CreateNewField(vFields, NUM_AREAS, ZD_NUMBER_FLD, 12, 0, uwOffset);

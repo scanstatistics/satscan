@@ -36,6 +36,8 @@ const char *    RADIUS		        = "RADIUS";
 const char *    AREA_OBS                = "AREA_OBS";
 const char *    AREA_EXP                = "AREA_EXP";
 const char *    AREA_RSK                = "AREA_RSK";
+const char *    E_ANGLE                 = "E_ANGLE";
+const char *    E_SHAPE                 = "E_SHAPE";
 
 // constructor
 __fastcall DBaseOutput::DBaseOutput(const long lRunNumber, const bool bPrintPVal, const int iCoordType) {
