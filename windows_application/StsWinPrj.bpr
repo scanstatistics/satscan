@@ -22,7 +22,7 @@
       ..\calculation\utility\MultipleDimensionArrayHandler.obj 
       ..\calculation\print\BasePrint.obj ..\calculation\print\PrintScreen.obj 
       ..\calculation\print\PrintQueue.obj 
-      ..\calculation\probability_model\SurvivalModel.obj 
+      ..\calculation\probability_model\ExponentialModel.obj 
       ..\calculation\probability_model\RankModel.obj 
       ..\calculation\probability_model\NormalModel.obj 
       ..\calculation\probability_model\BernoulliModel.obj 
@@ -42,17 +42,17 @@
       ..\calculation\satscan_data\SVTTData.obj 
       ..\calculation\satscan_data\MaxWindowLengthIndicator.obj 
       ..\calculation\satscan_data\AdjustmentHandler.obj 
-      ..\calculation\satscan_data\DataStream.obj 
-      ..\calculation\satscan_data\DataStreamInterface.obj 
-      ..\calculation\satscan_data\DataStreamGateway.obj 
-      ..\calculation\satscan_data\DataStreamHandler.obj 
+      ..\calculation\satscan_data\DataSet.obj 
+      ..\calculation\satscan_data\DataSetInterface.obj 
+      ..\calculation\satscan_data\DataSetGateway.obj 
+      ..\calculation\satscan_data\DataSetHandler.obj 
       ..\calculation\satscan_data\PopulationData.obj 
-      ..\calculation\satscan_data\SpaceTimePermutationDataStreamHandler.obj 
-      ..\calculation\satscan_data\NormalDataStreamHandler.obj 
-      ..\calculation\satscan_data\PoissonDataStreamHandler.obj 
-      ..\calculation\satscan_data\RankDataStreamHandler.obj 
-      ..\calculation\satscan_data\BernoulliDataStreamHandler.obj 
-      ..\calculation\satscan_data\SurvivalDataStreamHandler.obj 
+      ..\calculation\satscan_data\SpaceTimePermutationDataSetHandler.obj 
+      ..\calculation\satscan_data\NormalDataSetHandler.obj 
+      ..\calculation\satscan_data\PoissonDataSetHandler.obj 
+      ..\calculation\satscan_data\RankDataSetHandler.obj 
+      ..\calculation\satscan_data\BernoulliDataSetHandler.obj 
+      ..\calculation\satscan_data\ExponentialDataSetHandler.obj 
       ..\calculation\cluster\Cluster.obj 
       ..\calculation\cluster\SpaceTimeCluster.obj 
       ..\calculation\cluster\TimeEstimate.obj 
@@ -67,7 +67,7 @@
       ..\calculation\cluster\NormalClusterData.obj 
       ..\calculation\cluster\ClusterData.obj 
       ..\calculation\cluster\ClusterDataFactory.obj 
-      ..\calculation\cluster\MultipleStreamClusterData.obj 
+      ..\calculation\cluster\MultiSetClusterData.obj 
       ..\calculation\cluster\AbstractClusterData.obj 
       ..\calculation\analysis\MeasureList.obj 
       ..\calculation\analysis\Analysis.obj 
@@ -101,7 +101,6 @@
       ..\calculation\loglikelihood\LikelihoodCalculation.obj 
       ..\calculation\loglikelihood\PoissonLikelihoodCalculation.obj 
       ..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.obj 
-      ..\calculation\loglikelihood\ExponentialLikelihoodCalculation.obj 
       ..\calculation\loglikelihood\NormalLikelihoodCalculation.obj 
       ..\calculation\analysis_run\AnalysisRun.obj 
       ..\calculation\analysis_run\MostLikelyClustersContainer.obj 
@@ -130,7 +129,8 @@
       ..\calculation\cluster\MultiSetCategoricalClusterData.obj 
       ..\calculation\cluster\NormalClusterDataFactory.obj 
       ..\calculation\loglikelihood\LoglikelihoodRatioUnifier.obj 
-      ..\calculation\loglikelihood\OrdinalLikelihoodCalculation.obj"/>
+      ..\calculation\loglikelihood\OrdinalLikelihoodCalculation.obj 
+      ..\calculation\randomization\ExponentialRandomizer.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
@@ -151,7 +151,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED;WIN32"/>
+    <USERDEFINES value="INTEL_BASED;WIN32;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="StsWinPrj.cpp"/>
     <INCLUDEPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\..\basisdev\include;..\..\boost\release_1_29_0;..\..\boost\release_1_29_0\libs\thread\src;..\..\zero.dimension;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\topgrid;.."/>
@@ -159,12 +159,12 @@
     <WARNINGS value="-w-par -w-8027 -w-8026 -w-aus"/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -H=vcl_trunk_gui.csm -Hc -Q -Vx -Ve -fp -X- -a8 -5 -b- -k- -vi -c -tW 
-      -tWM"/>
-    <PFLAGS value="-$Y- -$L- -$D- -v -JPHNE -M"/>
+    <CFLAG1 value="-Od -H=vcl_trunk_gui.csm -Hc -Q -Vx -Ve -fp -X- -r- -a8 -5 -b- -k -y -v 
+      -vi- -c -tW -tWM"/>
+    <PFLAGS value="-$Y+ -$W -$O- -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zn"/>
-    <LFLAGS value="-D&quot;&quot; -aa -Tpe -GD -x -GF:LARGEADDRESSAWARE"/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-D&quot;&quot; -aa -Tpe -GD -x -v -GF:LARGEADDRESSAWARE"/>
   </OPTIONS>
   <LINKER>
     <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
@@ -222,8 +222,8 @@ Item1=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\imsdev\zd\zd543;C:\Pr
 
 [HistoryLists\hlConditionals]
 Count=3
-Item0=INTEL_BASED;WIN32
-Item1=INTEL_BASED;WIN32;_DEBUG
+Item0=INTEL_BASED;WIN32;_DEBUG
+Item1=INTEL_BASED;WIN32
 Item2=INTEL_BASED;WIN32;PARALLEL_SIMULATIONS
 
 [Debugging]
