@@ -10,7 +10,7 @@ DataStreamGateway::DataStreamGateway() : AbtractDataStreamGateway() {}
 DataStreamGateway::~DataStreamGateway() {}
 
 /** adds data stream interface to list of interfaces */
-void DataStreamGateway::AddDataStreamInterface(DataStreamInterface & Interface) {
+void DataStreamGateway::AddDataSetInterface(DataStreamInterface& Interface) {
   gInterface = Interface;
 }
 
@@ -23,7 +23,7 @@ MultipleDataStreamGateway::MultipleDataStreamGateway() : AbtractDataStreamGatewa
 MultipleDataStreamGateway::~MultipleDataStreamGateway() {}
 
 /** adds data stream interface to list of interfaces */
-void MultipleDataStreamGateway::AddDataStreamInterface(DataStreamInterface & Interface) {
-  gvDataStreams.push_back(Interface);
+void MultipleDataStreamGateway::AddDataSetInterface(DataStreamInterface & Interface) {
+  gvDataSetInterfaces.push_back(Interface);
 }
 

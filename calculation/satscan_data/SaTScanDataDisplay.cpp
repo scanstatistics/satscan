@@ -9,7 +9,7 @@
 
 void CSaTScanData::DisplayCases(FILE* pFile) {
   int                   i, j;
-  count_t            ** ppCases(gpDataStreams->GetStream(0/*for now*/).GetCaseArray());
+  count_t            ** ppCases(gpDataSets->GetStream(0/*for now*/).GetCaseArray());
 
   fprintf(pFile, "Case counts (Cases Array)\n\n");
   for (i = 0; i < m_nTimeIntervals; ++i)
@@ -21,7 +21,7 @@ void CSaTScanData::DisplayCases(FILE* pFile) {
 
 void CSaTScanData::DisplayControls(FILE* pFile) {
   int                   i, j;
-  count_t            ** ppControls(gpDataStreams->GetStream(0/*for now*/).GetControlArray());
+  count_t            ** ppControls(gpDataSets->GetStream(0/*for now*/).GetControlArray());
 
   fprintf(pFile, "Control counts (Controls Array)\n\n");
 
@@ -34,7 +34,7 @@ void CSaTScanData::DisplayControls(FILE* pFile) {
 
 void CSaTScanData::DisplaySimCases(FILE* pFile) {
 //  int                   i, j;
-//  count_t            ** ppSimCases(gpDataStreams->GetStream(0/*for now*/).GetSimCaseArray());
+//  count_t            ** ppSimCases(gpDataSets->GetStream(0/*for now*/).GetSimCaseArray());
 //
 //  fprintf(pFile, "Simulated Case counts (Simulated Cases Array)\n\n");
 //
@@ -47,7 +47,7 @@ void CSaTScanData::DisplaySimCases(FILE* pFile) {
 
 void CSaTScanData::DisplayMeasure(FILE* pFile) {
   int           i, j;
-  measure_t  ** ppMeasure(gpDataStreams->GetStream(0/*for now*/).GetMeasureArray());
+  measure_t  ** ppMeasure(gpDataSets->GetStream(0/*for now*/).GetMeasureArray());
 
   fprintf(pFile, "Measures (Measure Array)\n\n");
 
@@ -83,7 +83,7 @@ void CSaTScanData::DisplayNeighbors(FILE* pFile) {
 
 void CSaTScanData::DisplaySummary(FILE* fp) {
   ZdString              sBuffer, sWork;
-  AsciiPrintFormat      PrintFormat(gpDataStreams->GetNumStreams() == 1);
+  AsciiPrintFormat      PrintFormat(gpDataSets->GetNumDataSets() == 1);
   unsigned int          i;
 
 
@@ -100,30 +100,31 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
   PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
   fprintf(fp, "%ld\n", (long) m_nTracts);
 
-  if ((gParameters.GetProbabiltyModelType() == POISSON && gParameters.UsePopulationFile())
-       || gParameters.GetProbabiltyModelType() == BERNOULLI) {
+  //$$ This section might be displayed for Ordinal model also. Need to ask Martin is this is true.
+  if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile())
+       || gParameters.GetProbabilityModelType() == BERNOULLI) {
     PrintFormat.PrintSectionLabel(fp, "Total population", true, false);
-    sBuffer.printf("%.0f", gpDataStreams->GetStream(0).GetTotalPopulation());
-    for (i=1; i < gpDataStreams->GetNumStreams(); ++i) {
-      sWork.printf(", %.0f", gpDataStreams->GetStream(i).GetTotalPopulation());
+    sBuffer.printf("%.0f", gpDataSets->GetStream(0).GetTotalPopulation());
+    for (i=1; i < gpDataSets->GetNumDataSets(); ++i) {
+      sWork.printf(", %.0f", gpDataSets->GetStream(i).GetTotalPopulation());
       sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   }
 
   PrintFormat.PrintSectionLabel(fp, "Total cases", true, false);
-  sBuffer.printf("%ld", gpDataStreams->GetStream(0).GetTotalCasesAtStart());
-  for (i=1; i < gpDataStreams->GetNumStreams(); ++i) {
-     sWork.printf(", %ld", gpDataStreams->GetStream(i).GetTotalCasesAtStart());
+  sBuffer.printf("%ld", gpDataSets->GetStream(0).GetTotalCasesAtStart());
+  for (i=1; i < gpDataSets->GetNumDataSets(); ++i) {
+     sWork.printf(", %ld", gpDataSets->GetStream(i).GetTotalCasesAtStart());
      sBuffer << sWork;
   }
   PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
 
-  if (gParameters.GetProbabiltyModelType() == POISSON && gParameters.UsePopulationFile()) {
+  if (gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile()) {
     sBuffer.printf("Annual cases / %.0f",  GetAnnualRatePop());
     PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), true, false);
     sBuffer.printf("%.1f", GetAnnualRateAtStart(0));
-    for (i=1; i < gpDataStreams->GetNumStreams(); ++i) {
+    for (i=1; i < gpDataSets->GetNumDataSets(); ++i) {
        sWork.printf(", %.1f", GetAnnualRateAtStart(i));
        sBuffer << sWork;
     }
@@ -131,8 +132,8 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
   }
 
   if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-    double nAnnualTT = gpDataStreams->GetStream(0/*for now*/).GetTimeTrend().SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-    if (gpDataStreams->GetStream(0/*for now*/).GetTimeTrend().IsNegative())
+    double nAnnualTT = gpDataSets->GetStream(0/*for now*/).GetTimeTrend().SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
+    if (gpDataSets->GetStream(0/*for now*/).GetTimeTrend().IsNegative())
       sBuffer = "Annual decrease";
     else
       sBuffer = "Annual increase";
@@ -149,13 +150,13 @@ void CSaTScanData::DisplaySummary2(FILE* fp) {
   fprintf(fp, "m_nGridTracts..........: %i\n", m_nGridTracts);
   fprintf(fp, "m_nTimeIntervals.......: %i\n", m_nTimeIntervals);
   fprintf(fp, "m_nIntervalCut.........: %i\n", m_nIntervalCut);
-  for (size_t t=0; t < gpDataStreams->GetNumStreams(); ++t) {
+  for (size_t t=0; t < gpDataSets->GetNumDataSets(); ++t) {
     fprintf(fp, "Stream %i Summary...\n", t + 1);
-    fprintf(fp, "TotalCasesAtStart...: %ld\n", gpDataStreams->GetStream(t).GetTotalCasesAtStart());
-    fprintf(fp, "TotalCases..........: %ld\n", gpDataStreams->GetStream(t).GetTotalCases());
-    fprintf(fp, "TotalPop............: %.0f\n", gpDataStreams->GetStream(t).GetTotalPopulation());
-    fprintf(fp, "TotalMeasureAtStart.: %.0f\n", gpDataStreams->GetStream(t).GetTotalMeasureAtStart());
-    fprintf(fp, "TotalMeasure........: %.0f\n", gpDataStreams->GetStream(t).GetTotalMeasure());
+    fprintf(fp, "TotalCasesAtStart...: %ld\n", gpDataSets->GetStream(t).GetTotalCasesAtStart());
+    fprintf(fp, "TotalCases..........: %ld\n", gpDataSets->GetStream(t).GetTotalCases());
+    fprintf(fp, "TotalPop............: %.0f\n", gpDataSets->GetStream(t).GetTotalPopulation());
+    fprintf(fp, "TotalMeasureAtStart.: %.0f\n", gpDataSets->GetStream(t).GetTotalMeasureAtStart());
+    fprintf(fp, "TotalMeasure........: %.0f\n", gpDataSets->GetStream(t).GetTotalMeasure());
     fprintf(fp, "MaxCircleSize.......: %.2f\n", m_nMaxCircleSize);
   }
   AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 1);
