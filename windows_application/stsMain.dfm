@@ -232,19 +232,12 @@ object frmMainForm: TfrmMainForm
         Action = NewSessionAction
         Caption = '&New Session'
       end
-      object mitOpen: TMenuItem
-        Caption = '&Open'
-        object mitOpenParameterFile: TMenuItem
-          Action = OpenParameterFileAction
-          Caption = '&Open Session File'
-        end
-        object OutputTextFile1: TMenuItem
-          Caption = 'Output Text File'
-          Enabled = False
-        end
+      object mitOpenParameterFile: TMenuItem
+        Action = OpenParameterFileAction
+        Caption = '&Open Session File'
       end
       object mitReopen: TMenuItem
-        Caption = '&Reopen'
+        Caption = '&Reopen Session File'
       end
       object Close1: TMenuItem
         Action = CloseSessionAction
@@ -415,7 +408,7 @@ object frmMainForm: TfrmMainForm
     object ReopenAction: TAction
       Category = 'All'
       Caption = 'ReopenAction'
-      Hint = 'Reopen parameter file'
+      Hint = 'Reopen Session File'
       OnExecute = ReopenActionExecute
     end
     object UpdateAction: TAction

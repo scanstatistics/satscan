@@ -20,7 +20,6 @@ class TfrmMainForm : public TForm{
         TMainMenu *MainMenu1;
         TMenuItem *File1;
         TMenuItem *Help1;
-        TMenuItem *mitOpen;
         TMenuItem *Save1;
         TMenuItem *Exit1;
         TMenuItem *Session1;
