@@ -47,7 +47,7 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CS
        if (!gbExcludePValueField)
          pRecord->GetFieldValue(GetFieldNumber(P_VALUE_FLD)).AsDouble() = theCluster.GetPValue(iNumSimsCompleted);
        //area and location information fields are only present for one dataset
-       if (gParameters.GetNumDataSets() == 1) {
+       if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
          //When there is more than one identifiers for a tract, this indicates
          //that locations where combined. Print a record for each location but
          //leave area specific information blank.
@@ -85,7 +85,7 @@ void stsAreaSpecificData::SetupFields() {
   try {
     CreateField(gvFields, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
     CreateField(gvFields, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
-    if (gParameters.GetNumDataSets() == 1) {
+    if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
       //these fields will no be supplied for analyses with more than one dataset
       CreateField(gvFields, CLU_OBS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
       CreateField(gvFields, CLU_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
@@ -93,7 +93,7 @@ void stsAreaSpecificData::SetupFields() {
     }
     if (!gbExcludePValueField)
       CreateField(gvFields, P_VALUE_FLD, ZD_NUMBER_FLD, 12, 5, uwOffset);
-    if (gParameters.GetNumDataSets() == 1) {
+    if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
       //these fields will no be supplied for analyses with more than one dataset
       CreateField(gvFields, LOC_OBS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
       CreateField(gvFields, LOC_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
