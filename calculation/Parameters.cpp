@@ -3325,12 +3325,12 @@ bool CParameters::ValidateSequentialScanParameters(BasePrint & PrintDirection) {
 
   try {
     if (gbSequentialRuns && giNumSequentialRuns > 0) {
-      if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL) {
-        //since the current implementation of sequential scan removes the locations of the
-        //top cluster for successive scans, purely temporal analyses don't make sense.
-        gbSequentialRuns = false;
+      //if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL) {
+      if (geAnalysisType != PURELYSPATIAL) {
+        //code only implemented for purley spatial analyses
         giNumSequentialRuns = 0;
-        PrintDirection.SatScanPrintWarning("Warning: Sequential scans not implemented for purely temporal analyses.\n");
+        PrintDirection.SatScanPrintWarning("Error: Sequential scans implemented for purely spatial analysis only.\n");
+        return false;
       }
       if (giNumSequentialRuns > MAXIMUM_SEQUENTIAL_ANALYSES) {
         bValid = false;
