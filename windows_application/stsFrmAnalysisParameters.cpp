@@ -1417,6 +1417,7 @@ bool TfrmAnalysis::ValidateParams() {
       bDataOk = CheckScanningWindowParams();
     if (bDataOk)
       bDataOk = CheckTimeParams();
+    gpfrmAdvancedParameters->ValidateAdjustmentSettings();
     if (bDataOk)
       bDataOk = CheckOutputParams();
   }
