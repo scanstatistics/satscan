@@ -3,6 +3,7 @@
 #define __SaTScanToolkit_H
 //*****************************************************************************
 #include "DBFFile.h"
+#include <io.h>
 
 class SaTScanToolkit : public BToolkit {
   private:

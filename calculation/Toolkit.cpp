@@ -111,18 +111,22 @@ bool SaTScanToolkit::InsureRunHistoryFileName() {
         bUpdatedSection = true;
       }
       else {
-        //Check that file extension and filename exists,these will be the only attributes
-        //of filename that we will correct for them. Invalid file path and permissions
-        //will be encountered and handled during logging.
         FileName.SetFullPath(pProperty->GetValue());
+        //validate extension
         if (strcmp(FileName.GetExtension(), DBFFileType::GetDefaultInstance().GetFileTypeExtension())) {
           FileName.SetExtension(DBFFileType::GetDefaultInstance().GetFileTypeExtension());
           pProperty->SetValue(FileName.GetFullPath());
           bUpdatedSection = true;
         }
+        //validate filename
         if (!strlen(FileName.GetFileName())) {
           FileName.SetFileName(gsDefaultRunHistoryFileName);
           pProperty->SetValue(FileName.GetFullPath());
+          bUpdatedSection = true;
+        }
+        //validate path
+        if (access(FileName.GetLocation(), 00) < 0) {
+          pProperty->SetValue(sDefaultHistoryFileName);
           bUpdatedSection = true;
         }
       }
