@@ -6,58 +6,74 @@
 #include "stsDBaseFileWriter.h"
 
 void CSaTScanData::DisplayCases(FILE* pFile) {
-  fprintf(pFile, "Case counts (m_pCases)\n\n");
+  int                   i, j;
+  count_t            ** ppCases(gpCasesHandler->GetArray());
 
-  for (int i = 0; i < m_nTimeIntervals; ++i)
-    for (int j = 0; j < m_nTracts; ++j)
-      fprintf(pFile, "Case [%i][%i] = %i\n", i,j,m_pCases[i][j]);
+  fprintf(pFile, "Case counts (Cases Array)\n\n");
+  for (i = 0; i < m_nTimeIntervals; ++i)
+    for (j = 0; j < m_nTracts; ++j)
+      fprintf(pFile, "Case [%i][%i] = %i\n", i, j, ppCases[i][j]);
 
   fprintf(pFile, "\n");
 }
 
 void CSaTScanData::DisplayControls(FILE* pFile) {
-  fprintf(pFile, "Control counts (m_pControls)\n\n");
+  int                   i, j;
+  count_t            ** ppControls(gpControlsHandler->GetArray());
 
-  for (int i = 0; i < m_nTimeIntervals; ++i)
-    for (int j = 0; j < m_nTracts; ++j)
-      fprintf(pFile, "Controls [%i][%i] = %i\n", i,j,m_pControls[i][j]);
+  fprintf(pFile, "Control counts (Controls Array)\n\n");
+
+  for (i=0; i < m_nTimeIntervals; ++i)
+    for (j=0; j < m_nTracts; ++j)
+      fprintf(pFile, "Controls [%i][%i] = %i\n", i, j, ppControls[i][j]);
 
   fprintf(pFile, "\n");
 }
 
 void CSaTScanData::DisplaySimCases(FILE* pFile) {
-  fprintf(pFile, "Simulated Case counts (m_pSimCases)\n\n");
+  int                   i, j;
+  count_t            ** ppSimCases(gpSimCasesHandler->GetArray());
 
-  for (int i = 0; i < m_nTimeIntervals; ++i)
-    for (int j = 0; j < m_nTracts; ++j)
-      fprintf(pFile, "Cases [%i][%i] = %i\n", i,j,m_pSimCases[i][j]);
+  fprintf(pFile, "Simulated Case counts (Simulated Cases Array)\n\n");
+
+  for (i = 0; i < m_nTimeIntervals; ++i)
+    for (j = 0; j < m_nTracts; ++j)
+      fprintf(pFile, "Cases [%i][%i] = %i\n", i, j, ppSimCases[i][j]);
 
   fprintf(pFile, "\n");
 }
 
 void CSaTScanData::DisplayMeasure(FILE* pFile) {
-  fprintf(pFile, "Measures (m_pMeasure)\n\n");
+  int           i, j;
+  measure_t  ** ppMeasure(gpMeasureHandler->GetArray());
 
-  for (int i = 0; i < m_nTimeIntervals; ++i)
-    for (int j = 0; j < m_nTracts; ++j)
-      fprintf(pFile, "Measure [%i][%i] = %12.25f\n", i,j,m_pMeasure[i][j]);
+  fprintf(pFile, "Measures (Measure Array)\n\n");
+
+  for (i=0; i < m_nTimeIntervals; ++i)
+    for (j=0; j < m_nTracts; ++j)
+      fprintf(pFile, "Measure [%i][%i] = %12.25f\n", i, j, ppMeasure[i][j]);
 
   fprintf(pFile, "\n");
 }
 
 void CSaTScanData::DisplayNeighbors(FILE* pFile) {
-  std::string sBuffer;
+  int                   i, j;
+  std::string           sBuffer;
+  tract_t            ** ppNeighborCount(gpNeighborCountHandler->GetArray());
+  unsigned short    *** pppSortedUShort((gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0));
+  tract_t           *** pppSortedInt((gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0));
+
   fprintf(pFile, "Neighbors (m_pSorted)   m_nGridTracts=%i\n\n", m_nGridTracts);
 
-  for (int i = 0; i < m_nGridTracts; ++i) {
+  for (i=0; i < m_nGridTracts; ++i) {
     fprintf(pFile, "Grid Point # %i : ", i);
-    if (m_pSortedInt)
-       for (int j = 0; j < m_NeighborCounts[0][i]; ++j)
-         fprintf(pFile, "%s ", gpTInfo->tiGetTid(m_pSortedInt[0][i][j], sBuffer));
+    if (pppSortedInt)
+       for (j=0; j < ppNeighborCount[0][i]; ++j)
+         fprintf(pFile, "%s ", gpTInfo->tiGetTid(pppSortedInt[0][i][j], sBuffer));
     else
-       for (int j = 0; j < m_NeighborCounts[0][i]; ++j)
-         fprintf(pFile, "%s ", gpTInfo->tiGetTid(m_pSortedUShort[0][i][j], sBuffer));
-    fprintf(pFile, "(# of neighbors=%i)\n", m_NeighborCounts[0][i]);
+       for (j=0; j < ppNeighborCount[0][i]; ++j)
+         fprintf(pFile, "%s ", gpTInfo->tiGetTid(pppSortedUShort[0][i][j], sBuffer));
+    fprintf(pFile, "(# of neighbors=%i)\n", ppNeighborCount[0][i]);
   }
 
   fprintf(pFile,"\n");
@@ -105,22 +121,24 @@ void CSaTScanData::DisplaySummary2(FILE* fp) {
 // pre: none
 // post: prints the relative risk data to the output file
 void CSaTScanData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, const bool bDBaseOutput) {
-   std::string                          sBuffer;
-   ZdString                             sRisk, sLocation;
-   std::vector<std::string>             vIdentifiers;
+  std::string                          sBuffer;
+  ZdString                             sRisk, sLocation;
+  std::vector<std::string>             vIdentifiers;
+  count_t                           ** ppCases(gpCasesHandler->GetArray());
+  measure_t                         ** ppMeasure(gpMeasureHandler->GetArray());
 
    try {
       std::auto_ptr<RelativeRiskData> pData( new RelativeRiskData(gpPrint, *m_pParameters) );
       for(int i = 0; i < m_nTracts; ++i) {
-         if (GetMeasureAdjustment() && m_pMeasure[0][i])
-            sRisk.printf("%12.3f", ((double)(m_pCases[0][i]))/(GetMeasureAdjustment()*m_pMeasure[0][i]));
+         if (GetMeasureAdjustment() && ppMeasure[0][i])
+            sRisk.printf("%12.3f", ((double)(ppCases[0][i]))/(GetMeasureAdjustment()*ppMeasure[0][i]));
          else
             sRisk = "n/a";
          gpTInfo->tiGetTractIdentifiers(i, vIdentifiers);
          sLocation = gpTInfo->tiGetTid(i, sBuffer);
          if (vIdentifiers.size() > 1)
             sLocation << " et al";
-         pData->SetRelativeRiskData(sLocation, m_pCases[0][i], GetMeasureAdjustment()*m_pMeasure[0][i], sRisk);
+         pData->SetRelativeRiskData(sLocation, ppCases[0][i], GetMeasureAdjustment()*ppMeasure[0][i], sRisk);
       }
       if (bASCIIOutput)
          ASCIIFileWriter(pData.get()).Print();
