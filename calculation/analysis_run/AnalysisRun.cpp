@@ -804,12 +804,12 @@ void AnalysisRunner::Setup() {
   try {
     //create data hub
     switch (gParameters.GetAnalysisType()) {
-      case PURELYSPATIAL             : gpDataHub = new CPurelySpatialData(&gParameters, &gPrintDirection);  break;
+      case PURELYSPATIAL             : gpDataHub = new CPurelySpatialData(gParameters, gPrintDirection);  break;
       case PURELYTEMPORAL            :
-      case PROSPECTIVEPURELYTEMPORAL : gpDataHub = new CPurelyTemporalData(&gParameters, &gPrintDirection); break;
+      case PROSPECTIVEPURELYTEMPORAL : gpDataHub = new CPurelyTemporalData(gParameters, gPrintDirection); break;
       case SPACETIME                 :
-      case PROSPECTIVESPACETIME      : gpDataHub = new CSpaceTimeData(&gParameters, &gPrintDirection);break;
-      case SPATIALVARTEMPTREND       : gpDataHub = new CSVTTData(&gParameters, &gPrintDirection); break;
+      case PROSPECTIVESPACETIME      : gpDataHub = new CSpaceTimeData(gParameters, gPrintDirection);break;
+      case SPATIALVARTEMPTREND       : gpDataHub = new CSVTTData(gParameters, gPrintDirection); break;
       default : ZdGenerateException("Unknown Analysis Type '%d'.", "Setup()", gParameters.GetAnalysisType());
     };
   }

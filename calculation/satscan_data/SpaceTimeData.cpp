@@ -11,8 +11,8 @@
 #include "RankModel.h"
 
 /** class constructor */
-CSpaceTimeData::CSpaceTimeData(const CParameters* pParameters, BasePrint *pPrintDirection)
-               :CSaTScanData(pParameters, pPrintDirection) {
+CSpaceTimeData::CSpaceTimeData(const CParameters& Parameters, BasePrint& PrintDirection)
+               :CSaTScanData(Parameters, PrintDirection) {
   try {
     SetProbabilityModel();
   }
@@ -31,7 +31,7 @@ CSpaceTimeData::~CSpaceTimeData() {}
 void CSpaceTimeData::CalculateMeasure(RealDataStream& thisStream) {
   try {
     CSaTScanData::CalculateMeasure(thisStream);
-    if (m_pParameters->GetIncludePurelyTemporalClusters())
+    if (gParameters.GetIncludePurelyTemporalClusters())
       gpDataStreams->SetPurelyTemporalMeasureData(thisStream);
   }
   catch (ZdException &x) {
@@ -46,7 +46,7 @@ void CSpaceTimeData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
                                    unsigned int iSimulationNumber) const {
   try {
     CSaTScanData::RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
-    if (m_pParameters->GetIncludePurelyTemporalClusters())
+    if (gParameters.GetIncludePurelyTemporalClusters())
       for (size_t t=0; t < SimDataContainer.size(); ++t)
         SimDataContainer[t]->SetPTCasesArray();
   }
@@ -62,7 +62,7 @@ void CSpaceTimeData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
 void CSpaceTimeData::ReadDataFromFiles() {
   try {
     CSaTScanData::ReadDataFromFiles();
-    if (m_pParameters->GetIncludePurelyTemporalClusters())
+    if (gParameters.GetIncludePurelyTemporalClusters())
       SetPurelyTemporalCases();
   }
   catch (ZdException &x) {
@@ -78,7 +78,7 @@ void CSpaceTimeData::ReadDataFromFiles() {
 void CSpaceTimeData::SetIntervalCut() {
   try {
     CSaTScanData::SetIntervalCut();
-    if (m_pParameters->GetIncludePurelySpatialClusters() && m_nTimeIntervals == m_nIntervalCut)
+    if (gParameters.GetIncludePurelySpatialClusters() && m_nTimeIntervals == m_nIntervalCut)
       //This code supposedly prevents calculating a purely temporal cluster twice, once
       //expliciatly by user's request; another when the maximum temporal window is equal
       //to the number of time interval slices. I'm not sure if the latter is possible.
@@ -93,15 +93,15 @@ void CSpaceTimeData::SetIntervalCut() {
 /** Allocates probability model object.  */
 void CSpaceTimeData::SetProbabilityModel() {
   try {
-    switch (m_pParameters->GetProbabiltyModelType()) {
-       case POISSON              : m_pModel = new CPoissonModel(*m_pParameters, *this, *gpPrint);   break;
-       case BERNOULLI            : m_pModel = new CBernoulliModel(*m_pParameters, *this, *gpPrint); break;
-       case NORMAL               : m_pModel = new CNormalModel(*m_pParameters, *this, *gpPrint); break;
-       case SURVIVAL             : m_pModel = new CSurvivalModel(*m_pParameters, *this, *gpPrint); break;
-       case RANK                 : m_pModel = new CRankModel(*m_pParameters, *this, *gpPrint); break;
-       case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(*m_pParameters, *this, *gpPrint); break;
+    switch (gParameters.GetProbabiltyModelType()) {
+       case POISSON              : m_pModel = new CPoissonModel(gParameters, *this, gPrint);   break;
+       case BERNOULLI            : m_pModel = new CBernoulliModel(gParameters, *this, gPrint); break;
+       case NORMAL               : m_pModel = new CNormalModel(gParameters, *this, gPrint); break;
+       case SURVIVAL             : m_pModel = new CSurvivalModel(gParameters, *this, gPrint); break;
+       case RANK                 : m_pModel = new CRankModel(gParameters, *this, gPrint); break;
+       case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(gParameters, *this, gPrint); break;
        default : ZdException::Generate("Unknown probability model type: '%d'.\n",
-                                       "SetProbabilityModel()", m_pParameters->GetProbabiltyModelType());
+                                       "SetProbabilityModel()", gParameters.GetProbabiltyModelType());
     }
   }
   catch (ZdException &x) {

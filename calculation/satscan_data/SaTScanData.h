@@ -22,11 +22,11 @@ class CSaTScanData {
   private:
     void                                        Init();
     virtual void                                SetProbabilityModel() = 0;
-    void                                        Setup(const CParameters* pParameters, BasePrint *pPrintDirection);
+    void                                        Setup();
 
   protected:
-    BasePrint                                 * gpPrint;
-    const CParameters                         * m_pParameters;
+    BasePrint                                 & gPrint;
+    const CParameters                         & gParameters;
     CModel                                    * m_pModel;
     DataStreamHandler                         * gpDataStreams;
 
@@ -80,7 +80,7 @@ class CSaTScanData {
     void                                        SetTimeIntervalRangeIndexes();
 
   public:
-    CSaTScanData(const CParameters* pParameters, BasePrint *pPrintDirection);
+    CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection);
     virtual ~CSaTScanData();
 
     tract_t                                     m_nGridTracts;
@@ -117,7 +117,7 @@ class CSaTScanData {
     inline size_t                               GetNumDataStreams() const {return gpDataStreams->GetNumStreams();}
     inline int                                  GetNumTimeIntervals() const {return m_nTimeIntervals;}
     inline tract_t                              GetNumTracts() const {return m_nTracts;}
-    const CParameters                         & GetParameters() const {return *m_pParameters;}
+    const CParameters                         & GetParameters() const {return gParameters;}
     CModel                                    & GetProbabilityModel() const {return *m_pModel;}
     const double                              * GetShapesArray() const {return mdE_Shapes;}
     Julian                                      GetStudyPeriodEndDate() const {return m_nEndDate;}

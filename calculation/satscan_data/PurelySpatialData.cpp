@@ -11,8 +11,8 @@
 #include "RankModel.h"
 
 /** class constructor */
-CPurelySpatialData::CPurelySpatialData(const CParameters* pParameters, BasePrint *pPrintDirection)
-                   :CSaTScanData(pParameters, pPrintDirection) {
+CPurelySpatialData::CPurelySpatialData(const CParameters& Parameters, BasePrint& PrintDirection)
+                   :CSaTScanData(Parameters, PrintDirection) {
   try {
     SetProbabilityModel();
   }
@@ -38,16 +38,16 @@ void CPurelySpatialData::SetIntervalStartTimes() {
     type is space-time permutation. */
 void CPurelySpatialData::SetProbabilityModel() {
   try {
-    switch (m_pParameters->GetProbabiltyModelType()) {
-       case POISSON              : m_pModel = new CPoissonModel(*m_pParameters, *this, *gpPrint);   break;
-       case BERNOULLI            : m_pModel = new CBernoulliModel(*m_pParameters, *this, *gpPrint); break;
-       case NORMAL               : m_pModel = new CNormalModel(*m_pParameters, *this, *gpPrint); break;
-       case SURVIVAL             : m_pModel = new CSurvivalModel(*m_pParameters, *this, *gpPrint); break;
-       case RANK                 : m_pModel = new CRankModel(*m_pParameters, *this, *gpPrint); break;
+    switch (gParameters.GetProbabiltyModelType()) {
+       case POISSON              : m_pModel = new CPoissonModel(gParameters, *this, gPrint);   break;
+       case BERNOULLI            : m_pModel = new CBernoulliModel(gParameters, *this, gPrint); break;
+       case NORMAL               : m_pModel = new CNormalModel(gParameters, *this, gPrint); break;
+       case SURVIVAL             : m_pModel = new CSurvivalModel(gParameters, *this, gPrint); break;
+       case RANK                 : m_pModel = new CRankModel(gParameters, *this, gPrint); break;
        case SPACETIMEPERMUTATION : ZdException::Generate("Purely Spatial analysis not implemented for Space-Time Permutation model.\n",
                                                          "SetProbabilityModel()");
        default : ZdException::Generate("Unknown probability model type: '%d'.\n", "SetProbabilityModel()",
-                                       m_pParameters->GetProbabiltyModelType());
+                                       gParameters.GetProbabiltyModelType());
     }
   }
   catch (ZdException &x) {

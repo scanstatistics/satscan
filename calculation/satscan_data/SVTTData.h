@@ -26,7 +26,7 @@ class CSVTTData : public CSaTScanData {
     virtual void        SetIntervalStartTimes();
 
   public:
-    CSVTTData(const CParameters* pParameters, BasePrint *pPrintDirection);
+    CSVTTData(const CParameters& Parameters, BasePrint& PrintDirection);
     virtual ~CSVTTData();
 
     virtual void        DisplayCases(FILE* pFile);

@@ -11,8 +11,8 @@
 #include "stsDBaseFileWriter.h"
 
 /** class constructor */
-CSVTTData::CSVTTData(const CParameters* pParameters, BasePrint *pPrintDirection)
-          :CSaTScanData(pParameters, pPrintDirection) {
+CSVTTData::CSVTTData(const CParameters& Parameters, BasePrint& PrintDirection)
+          :CSaTScanData(Parameters, PrintDirection) {
   try {
     SetProbabilityModel();
   }
@@ -32,7 +32,7 @@ void CSVTTData::CalculateMeasure(RealDataStream & thisStream) {
   //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
   //      has not been decided yet.
   thisStream.GetTimeTrend().CalculateAndSet(thisStream.GetPTCasesArray(), thisStream.GetPTMeasureArray(),
-                                            m_nTimeIntervals, m_pParameters->GetTimeTrendConvergence());
+                                            m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
 }
 
 /** Debug utility function - prints case counts for all data streams. Caller is
@@ -109,12 +109,12 @@ void CSVTTData::DisplayMeasures(FILE* pFile) {
 // formats the information necessary in the relative risk output file and prints to the specified format
 void CSVTTData::DisplayRelativeRisksForEachTract() const {
   try {
-    RelativeRiskData  RelRiskData(*m_pParameters);
+    RelativeRiskData  RelRiskData(gParameters);
     RelRiskData.RecordRelativeRiskData(*this);
-    if (m_pParameters->GetOutputRelativeRisksAscii())
-      ASCIIFileWriter(RelRiskData, *gpPrint, *m_pParameters);
-    if (m_pParameters->GetOutputRelativeRisksDBase())
-      DBaseFileWriter(RelRiskData, *gpPrint, *m_pParameters);
+    if (gParameters.GetOutputRelativeRisksAscii())
+      ASCIIFileWriter(RelRiskData, gPrint, gParameters);
+    if (gParameters.GetOutputRelativeRisksDBase())
+      DBaseFileWriter(RelRiskData, gPrint, gParameters);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayRelativeRisksForEachTract()","CSVTTData");
@@ -149,7 +149,7 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
        SimDataContainer[t]->GetTimeTrend().CalculateAndSet(gpDataStreams->GetStream(t).GetPTCasesArray(),
                                                            gpDataStreams->GetStream(t).GetPTMeasureArray(),
                                                            m_nTimeIntervals,
-                                                           m_pParameters->GetTimeTrendConvergence());
+                                                           gParameters.GetTimeTrendConvergence());
        //QUESTION: Should the purely temporal case array passed to CalculateAndSet() be from
        //          the simulated data stream? It doesn't seem to make sense otherwise.
     }
@@ -187,8 +187,8 @@ void CSVTTData::SetIntervalStartTimes() {
     model type except Poisson. */
 void CSVTTData::SetProbabilityModel() {
   try {
-    switch (m_pParameters->GetProbabiltyModelType()) {
-       case POISSON              : m_pModel = new CPoissonModel(*m_pParameters, *this, *gpPrint);   break;
+    switch (gParameters.GetProbabiltyModelType()) {
+       case POISSON              : m_pModel = new CPoissonModel(gParameters, *this, gPrint);   break;
        case BERNOULLI            : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Bernoulli model.\n",
                                                          "SetProbabilityModel()");
        case SPACETIMEPERMUTATION : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Space-Time Permutation model.\n",
@@ -200,7 +200,7 @@ void CSVTTData::SetProbabilityModel() {
        case RANK                 : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Rank model.\n",
                                                          "SetProbabilityModel()");
        default : ZdException::Generate("Unknown probability model type: '%d'.\n",
-                                       "SetProbabilityModel()", m_pParameters->GetProbabiltyModelType());
+                                       "SetProbabilityModel()", gParameters.GetProbabiltyModelType());
     }
   }
   catch (ZdException &x) {

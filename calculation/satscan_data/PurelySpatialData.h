@@ -14,7 +14,7 @@ class CPurelySpatialData : public CSaTScanData {
     virtual void        SetIntervalStartTimes();
 
   public:
-    CPurelySpatialData(const CParameters* pParameters, BasePrint *pPrintDirection);
+    CPurelySpatialData(const CParameters& Parameters, BasePrint& PrintDirection);
     virtual ~CPurelySpatialData();
 };
 //******************************************************************************

@@ -16,7 +16,7 @@ class CPurelyTemporalData : public CSaTScanData {
     virtual void        SetProbabilityModel();
 
   public:
-    CPurelyTemporalData(const CParameters* pParameters, BasePrint *pPrintDirection);
+    CPurelyTemporalData(const CParameters& Parameters, BasePrint& PrintDirection);
     virtual ~CPurelyTemporalData();
 
     virtual void        AdjustNeighborCounts();

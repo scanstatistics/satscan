@@ -20,7 +20,7 @@ class CSpaceTimeData : public CSaTScanData {
     virtual void        SetProbabilityModel();
 
   public:
-    CSpaceTimeData(const CParameters* pParameters, BasePrint *pPrintDirection);
+    CSpaceTimeData(const CParameters& Parameters, BasePrint& PrintDirection);
     virtual ~CSpaceTimeData();
 
     virtual void        RandomizeData(RandomizerContainer_t& RandomizerContainer,

@@ -1,5 +1,7 @@
+//---------------------------------------------------------------------------
 #include "SaTScan.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 #include "SaTScanData.h"
 #include "stsRelativeRisk.h"
 #include "stsASCIIFileWriter.h"
@@ -92,13 +94,13 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
 
   PrintFormat.PrintSectionLabel(fp, "Study period", false, false);
   fprintf(fp,"%s - %s\n",
-          m_pParameters->GetStudyPeriodStartDate().c_str(),
-          m_pParameters->GetStudyPeriodEndDate().c_str());
+          gParameters.GetStudyPeriodStartDate().c_str(),
+          gParameters.GetStudyPeriodEndDate().c_str());
 
   PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
   fprintf(fp, "%ld\n", (long) m_nTracts);
 
-  if (m_pParameters->GetProbabiltyModelType() == POISSON || m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
+  if (gParameters.GetProbabiltyModelType() == POISSON || gParameters.GetProbabiltyModelType() == BERNOULLI) {
     PrintFormat.PrintSectionLabel(fp, "Total population", true, false);
     sBuffer.printf("%.0f", gpDataStreams->GetStream(0).GetTotalPopulation());
     for (i=1; i < gpDataStreams->GetNumStreams(); ++i) {
@@ -116,7 +118,7 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
   }
   PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
 
-  if (m_pParameters->GetProbabiltyModelType() == POISSON) {
+  if (gParameters.GetProbabiltyModelType() == POISSON) {
     sBuffer.printf("Annual cases / %.0f",  GetAnnualRatePop());
     PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), true, false);
     sBuffer.printf("%.1f", GetAnnualRateAtStart(0));
@@ -127,8 +129,8 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   }
 
-  if (m_pParameters->GetAnalysisType() == SPATIALVARTEMPTREND) {
-    double nAnnualTT = gpDataStreams->GetStream(0/*for now*/).GetTimeTrend().SetAnnualTimeTrend(m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
+  if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+    double nAnnualTT = gpDataStreams->GetStream(0/*for now*/).GetTimeTrend().SetAnnualTimeTrend(gParameters.GetTimeIntervalUnitsType(), gParameters.GetTimeIntervalLength());
     if (gpDataStreams->GetStream(0/*for now*/).GetTimeTrend().IsNegative())
       sBuffer = "Annual decrease";
     else
@@ -163,12 +165,12 @@ void CSaTScanData::DisplaySummary2(FILE* fp) {
 // post: prints the relative risk data to the output file
 void CSaTScanData::DisplayRelativeRisksForEachTract() const {
   try {
-    RelativeRiskData RelRiskData(*m_pParameters);
+    RelativeRiskData RelRiskData(gParameters);
     RelRiskData.RecordRelativeRiskData(*this);
-    if (m_pParameters->GetOutputRelativeRisksAscii())
-      ASCIIFileWriter(RelRiskData, *gpPrint, *m_pParameters);
-    if (m_pParameters->GetOutputRelativeRisksDBase())
-      DBaseFileWriter(RelRiskData, *gpPrint, *m_pParameters);
+    if (gParameters.GetOutputRelativeRisksAscii())
+      ASCIIFileWriter(RelRiskData, gPrint, gParameters);
+    if (gParameters.GetOutputRelativeRisksDBase())
+      DBaseFileWriter(RelRiskData, gPrint, gParameters);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayRelativeRisksForEachTract()", "CSaTScanData");

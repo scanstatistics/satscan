@@ -12,15 +12,16 @@
 #include "SpaceTimePermutationDataStreamHandler.h"
 
 /** class constructor */
-CSaTScanData::CSaTScanData(const CParameters* pParameters, BasePrint *pPrintDirection)
-             : m_nStartDate(pParameters->GetStudyPeriodStartDateAsJulian()),
-               m_nEndDate(pParameters->GetStudyPeriodEndDateAsJulian()) {
+CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection)
+             : gParameters(Parameters), gPrint(PrintDirection),
+               m_nStartDate(Parameters.GetStudyPeriodStartDateAsJulian()),
+               m_nEndDate(Parameters.GetStudyPeriodEndDateAsJulian()) {
   try {
     Init();
-    Setup(pParameters, pPrintDirection);
+    Setup();
   }
   catch (ZdException & x) {
-    x.AddCallpath("CSaTScanData(CParameters *)", "CSaTScanData");
+    x.AddCallpath("constructor", "CSaTScanData");
     throw;
   }
 }
@@ -141,7 +142,7 @@ bool CSaTScanData::AdjustMeasure(RealDataStream& thisStream, measure_t ** pNonCu
 void CSaTScanData::AdjustNeighborCounts() {
   try {
     //Deallocate neighbor information in sorted structures.
-    if (m_pParameters->GetMaxGeoClusterSizeTypeIsPopulationBased()) {
+    if (gParameters.GetMaxGeoClusterSizeTypeIsPopulationBased()) {
       //Free/clear previous interation's neighbor information.
       if (gpSortedUShortHandler)
         gpSortedUShortHandler->FreeThirdDimension();
@@ -155,9 +156,9 @@ void CSaTScanData::AdjustNeighborCounts() {
                     static_cast<tract_t>(m_nTotalTractsAtStart), m_nGridTracts,
                     (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpDataStreams->GetStream(0/*for now*/).GetMeasureArray()[0]),
                     m_nMaxCircleSize, m_nMaxCircleSize,
-                    gpNeighborCountHandler->GetArray(), m_pParameters->GetDimensionsOfData(),
-                    m_pParameters->GetNumRequestedEllipses(), m_pParameters->GetEllipseShapes(),
-                    m_pParameters->GetEllipseRotations(), m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
+                    gpNeighborCountHandler->GetArray(), gParameters.GetDimensionsOfData(),
+                    gParameters.GetNumRequestedEllipses(), gParameters.GetEllipseShapes(),
+                    gParameters.GetEllipseRotations(), gParameters.GetMaxGeographicClusterSizeType(), &gPrint);
     }
   }
   catch (ZdException & x) {
@@ -170,7 +171,7 @@ void CSaTScanData::AdjustNeighborCounts() {
     for each shape/grid point combination. */
 void CSaTScanData::AllocateNeighborArray() {
   try {
-    gpNeighborCountHandler = new TwoDimensionArrayHandler<tract_t>(m_pParameters->GetNumTotalEllipses() + 1, m_nGridTracts, 0);
+    gpNeighborCountHandler = new TwoDimensionArrayHandler<tract_t>(gParameters.GetNumTotalEllipses() + 1, m_nGridTracts, 0);
   }
   catch (ZdException &x) {
     x.AddCallpath("AllocateNeighborArray()","CSaTScanData");
@@ -187,9 +188,9 @@ void CSaTScanData::AllocateNeighborArray() {
 void CSaTScanData::AllocateSortedArray() {
   try {
     if (m_nTracts < std::numeric_limits<unsigned short>::max())
-      gpSortedUShortHandler = new ThreeDimensionArrayHandler<unsigned short>(m_pParameters->GetNumTotalEllipses()+1, m_nGridTracts, 0);
+      gpSortedUShortHandler = new ThreeDimensionArrayHandler<unsigned short>(gParameters.GetNumTotalEllipses()+1, m_nGridTracts, 0);
     else
-      gpSortedIntHandler = new ThreeDimensionArrayHandler<tract_t>(m_pParameters->GetNumTotalEllipses()+1, m_nGridTracts, 0);
+      gpSortedIntHandler = new ThreeDimensionArrayHandler<tract_t>(gParameters.GetNumTotalEllipses()+1, m_nGridTracts, 0);
   }
   catch (ZdException &x) {
     delete gpSortedUShortHandler; gpSortedUShortHandler=0;
@@ -241,7 +242,7 @@ measure_t CSaTScanData::CalcMeasureForTimeInterval(PopulationData & Population, 
 void CSaTScanData::CalculateExpectedCases() {
   size_t        t;
 
-  gpPrint->SatScanPrintf("Calculating the expected number of cases\n");
+  gPrint.SatScanPrintf("Calculating the expected number of cases\n");
   //calculates expected cases for each data stream
   for (t=0; t < gpDataStreams->GetNumStreams(); ++t) {
      CalculateMeasure(gpDataStreams->GetStream(t));
@@ -308,7 +309,7 @@ void CSaTScanData::FindNeighbors(bool bSimulations) {
       AllocateSortedArray();
       AllocateNeighborArray();
       //for real data, settings my indicate to report only smaller clusters
-      dMaxCircleSize = (m_pParameters->GetRestrictingMaximumReportedGeoClusterSize() ? m_nMaxReportedCircleSize : m_nMaxCircleSize);
+      dMaxCircleSize = (gParameters.GetRestrictingMaximumReportedGeoClusterSize() ? m_nMaxReportedCircleSize : m_nMaxCircleSize);
     }
     else {
       //when this functions is called for simualtions, we need to deallocate memory that
@@ -323,22 +324,22 @@ void CSaTScanData::FindNeighbors(bool bSimulations) {
 
     //NOTE: The measure from first data stream is used when calculating neighbors,
     //      at least for the time being.
-    if (m_pParameters->GetIsSequentialScanning())
+    if (gParameters.GetIsSequentialScanning())
         MakeNeighbors(&gTractHandler, &gCentroidsHandler, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
                       (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0), m_nTracts, m_nGridTracts,
                       (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpDataStreams->GetStream(0).GetMeasureArray()[0]),
                       dMaxCircleSize, gpDataStreams->GetStream(0).GetTotalMeasure(),
-                      gpNeighborCountHandler->GetArray(), m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
-                      m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
-                      m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
+                      gpNeighborCountHandler->GetArray(), gParameters.GetDimensionsOfData(), gParameters.GetNumRequestedEllipses(),
+                      gParameters.GetEllipseShapes(), gParameters.GetEllipseRotations(),
+                      gParameters.GetMaxGeographicClusterSizeType(), &gPrint);
     else
         MakeNeighbors(&gTractHandler, &gCentroidsHandler, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
                       (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0), m_nTracts, m_nGridTracts,
                       (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpDataStreams->GetStream(0).GetMeasureArray()[0]),
                       dMaxCircleSize, dMaxCircleSize, gpNeighborCountHandler->GetArray(),
-                      m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
-                      m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
-                      m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
+                      gParameters.GetDimensionsOfData(), gParameters.GetNumRequestedEllipses(),
+                      gParameters.GetEllipseShapes(), gParameters.GetEllipseRotations(),
+                      gParameters.GetMaxGeographicClusterSizeType(), &gPrint);
 
    }
    catch (ZdException & x) {
@@ -368,7 +369,7 @@ count_t CSaTScanData::GetCaseCount(count_t ** ppCumulativeCases, int iInterval, 
 /** For Bernoulli model, returns ratio of total cases / total population for
     iStream'th data stream. For all other models, returns 1.*/
 double CSaTScanData::GetMeasureAdjustment(unsigned int iStream) const {
-  if (m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
+  if (gParameters.GetProbabiltyModelType() == BERNOULLI) {
     double dTotalCases = gpDataStreams->GetStream(iStream).GetTotalCases();
     double dTotalPopulation = gpDataStreams->GetStream(iStream).GetTotalPopulation();
     return dTotalCases / dTotalPopulation;
@@ -435,12 +436,12 @@ bool CSaTScanData::ReadBernoulliData() {
     if (!ReadCoordinatesFile())
       return false;
 
-    gpDataStreams = new BernoulliDataStreamHandler(*this, gpPrint);
+    gpDataStreams = new BernoulliDataStreamHandler(*this, gPrint);
     if (!gpDataStreams->ReadData())
       return false;
-    if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
-    if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
+    if (gParameters.UseSpecialGrid() && !ReadGridFile())
       return false;
   }
   catch (ZdException &x) {
@@ -465,9 +466,9 @@ void CSaTScanData::ReadDataFromFiles() {
     SetIntervalStartTimes();
     SetIntervalCut();
     SetTimeIntervalRangeIndexes();
-    if (m_pParameters->GetIsProspectiveAnalysis())
+    if (gParameters.GetIsProspectiveAnalysis())
       SetProspectiveIntervalStart();
-    switch (m_pParameters->GetProbabiltyModelType()) {
+    switch (gParameters.GetProbabiltyModelType()) {
       case POISSON              : bReadSuccess = ReadPoissonData(); break;
       case BERNOULLI            : bReadSuccess = ReadBernoulliData(); break;
       case SPACETIMEPERMUTATION : bReadSuccess = ReadSpaceTimePermutationData(); break;
@@ -475,7 +476,7 @@ void CSaTScanData::ReadDataFromFiles() {
       case SURVIVAL             : bReadSuccess = ReadSurvivalData(); break;
       case RANK                 : bReadSuccess = ReadRankData(); break;
       default :
-        ZdGenerateException("Unknown probability model type '%d'.","ReadDataFromFiles()", m_pParameters->GetProbabiltyModelType());
+        ZdGenerateException("Unknown probability model type '%d'.","ReadDataFromFiles()", gParameters.GetProbabiltyModelType());
     };
     if (!bReadSuccess)
       GenerateResolvableException("\nProblem encountered when reading the data from the input files.", "ReadDataFromFiles");
@@ -495,12 +496,12 @@ bool CSaTScanData::ReadNormalData() {
   try {
     if (!ReadCoordinatesFile())
       return false;
-    gpDataStreams = new NormalDataStreamHandler(*this, gpPrint);
+    gpDataStreams = new NormalDataStreamHandler(*this, gPrint);
     if (!gpDataStreams->ReadData())
       return false;
-    if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
-    if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
+    if (gParameters.UseSpecialGrid() && !ReadGridFile())
       return false;
   }
   catch (ZdException &x) {
@@ -519,14 +520,14 @@ bool CSaTScanData::ReadPoissonData() {
     if (!ReadCoordinatesFile())
       return false;
 
-    gpDataStreams = new PoissonDataStreamHandler(*this, gpPrint);
+    gpDataStreams = new PoissonDataStreamHandler(*this, gPrint);
     if (!gpDataStreams->ReadData())
       return false;
-    if (m_pParameters->UseAdjustmentForRelativeRisksFile() && !ReadAdjustmentsByRelativeRisksFile())
+    if (gParameters.UseAdjustmentForRelativeRisksFile() && !ReadAdjustmentsByRelativeRisksFile())
       return false;
-    if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
-    if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
+    if (gParameters.UseSpecialGrid() && !ReadGridFile())
       return false;
   }
   catch (ZdException &x) {
@@ -544,12 +545,12 @@ bool CSaTScanData::ReadRankData() {
   try {
     if (!ReadCoordinatesFile())
       return false;
-    gpDataStreams = new RankDataStreamHandler(*this, gpPrint);
+    gpDataStreams = new RankDataStreamHandler(*this, gPrint);
     if (!gpDataStreams->ReadData())
       return false;
-    if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
-    if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
+    if (gParameters.UseSpecialGrid() && !ReadGridFile())
       return false;
   }
   catch (ZdException &x) {
@@ -567,12 +568,12 @@ bool CSaTScanData::ReadSpaceTimePermutationData() {
   try {
     if (!ReadCoordinatesFile())
       return false;
-    if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
        return false;
-    gpDataStreams = new SpaceTimePermutationDataStreamHandler(*this, gpPrint);
+    gpDataStreams = new SpaceTimePermutationDataStreamHandler(*this, gPrint);
     if (!gpDataStreams->ReadData())
       return false;
-    if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
+    if (gParameters.UseSpecialGrid() && !ReadGridFile())
       return false;
   }
   catch (ZdException &x) {
@@ -590,12 +591,12 @@ bool CSaTScanData::ReadSurvivalData() {
   try {
     if (!ReadCoordinatesFile())
       return false;
-    gpDataStreams = new SurvivalDataStreamHandler(*this, gpPrint);
+    gpDataStreams = new SurvivalDataStreamHandler(*this, gPrint);
     if (!gpDataStreams->ReadData())
       return false;
-    if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
-    if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
+    if (gParameters.UseSpecialGrid() && !ReadGridFile())
       return false;
   }
   catch (ZdException &x) {
@@ -624,7 +625,7 @@ void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
        tTotalMeasure -= thisStream.GetMeasureArray()[0][tTractIndex];
        thisStream.GetMeasureArray()[0][tTractIndex] = 0;
        thisStream.SetTotalMeasure(tTotalMeasure);
-       if (m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
+       if (gParameters.GetProbabiltyModelType() == BERNOULLI) {
          tTotalControls = thisStream.GetTotalControls();
          tTotalControls -= thisStream.GetControlArray()[0][tTractIndex];
          thisStream.GetControlArray()[0][tTractIndex] = 0;
@@ -645,8 +646,8 @@ void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
 /** Conditionally allocates and sets additional case arrays. */
 void CSaTScanData::SetAdditionalCaseArrays(RealDataStream & thisStream) {
   try {
-    if (m_pParameters->GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
-        m_pParameters->GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
+    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
+        gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
       thisStream.SetCasesByTimeInterval();  
   }
   catch (ZdException &x) {
@@ -665,17 +666,17 @@ void CSaTScanData::SetIntervalCut() {
     if (m_nTimeIntervals == 1)
       m_nIntervalCut = 1;
     else if (m_nTimeIntervals > 1) {
-      if (m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
-        lStudyPeriodLength = TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->GetTimeIntervalUnitsType());
-        lMaxTemporalLength = static_cast<long>(floor(lStudyPeriodLength * m_pParameters->GetMaximumTemporalClusterSize()/100.0));
-        m_nIntervalCut = static_cast<int>(floor(lMaxTemporalLength / m_pParameters->GetTimeIntervalLength()));
+      if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
+        lStudyPeriodLength = TimeBetween(m_nStartDate, m_nEndDate, gParameters.GetTimeIntervalUnitsType());
+        lMaxTemporalLength = static_cast<long>(floor(lStudyPeriodLength * gParameters.GetMaximumTemporalClusterSize()/100.0));
+        m_nIntervalCut = static_cast<int>(floor(lMaxTemporalLength / gParameters.GetTimeIntervalLength()));
       }
       else
-        m_nIntervalCut = static_cast<int>(m_pParameters->GetMaximumTemporalClusterSize() / m_pParameters->GetTimeIntervalLength());
+        m_nIntervalCut = static_cast<int>(gParameters.GetMaximumTemporalClusterSize() / gParameters.GetTimeIntervalLength());
     }
 
     if (m_nIntervalCut==0) {
-      switch (m_pParameters->GetTimeIntervalUnitsType()) {
+      switch (gParameters.GetTimeIntervalUnitsType()) {
           case YEAR  : sTimeIntervalType = "year"; break;
           case MONTH : sTimeIntervalType = "month"; break;
           case DAY   : sTimeIntervalType = "day"; break;
@@ -683,23 +684,23 @@ void CSaTScanData::SetIntervalCut() {
           default: sTimeIntervalType = "none"; break;
         };
 
-        if (m_pParameters->GetMaximumTemporalClusterSizeType() == TIMETYPE) {
+        if (gParameters.GetMaximumTemporalClusterSizeType() == TIMETYPE) {
           sIntervalCutMessage << "Error: A maximum temporal cluster size of %g %s%s is less than one %d %s time interval.\n";
           sIntervalCutMessage << "       No clusters can be found.\n";
           GenerateResolvableException(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
-                                      m_pParameters->GetMaximumTemporalClusterSize(), sTimeIntervalType.GetCString(),
-                                      (m_pParameters->GetMaximumTemporalClusterSize() == 1 ? "" : "s"),
-                                      m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
+                                      gParameters.GetMaximumTemporalClusterSize(), sTimeIntervalType.GetCString(),
+                                      (gParameters.GetMaximumTemporalClusterSize() == 1 ? "" : "s"),
+                                      gParameters.GetTimeIntervalLength(), sTimeIntervalType.GetCString());
         }
-        else if (m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
+        else if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
           sIntervalCutMessage << "Error: A maximum temporal cluster size that is %g percent of a %d %s study period\n";
           sIntervalCutMessage << "       equates to %d %s%s, which is less than one %d %s time interval.\n";
           sIntervalCutMessage << "       No clusters can be found.\n";
           GenerateResolvableException(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
-                                      m_pParameters->GetMaximumTemporalClusterSize(),
+                                      gParameters.GetMaximumTemporalClusterSize(),
                                       lStudyPeriodLength, sTimeIntervalType.GetCString(),
                                       lMaxTemporalLength, sTimeIntervalType.GetCString(), (lMaxTemporalLength == 1 ? "" : "s"),
-                                      m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
+                                      gParameters.GetTimeIntervalLength(), sTimeIntervalType.GetCString());
         }
       }
    }
@@ -721,13 +722,13 @@ void CSaTScanData::SetIntervalStartTimes() {
   //latest interval start time is the day after study period end date
   gvTimeIntervalStartTimes.push_back(IntervalStartingDate);
   //find the next prior interval start time from previous, given length of time intervals
-  IntervalStartingDate = DecrementDate(IntervalStartingDate, m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
+  IntervalStartingDate = DecrementDate(IntervalStartingDate, gParameters.GetTimeIntervalUnitsType(), gParameters.GetTimeIntervalLength());
   //continue decrementing from current interval start time until study period start date boundry hit 
   while (IntervalStartingDate > m_nStartDate) {
       //push interval start time onto vector
       gvTimeIntervalStartTimes.push_back(IntervalStartingDate);
       //find the next prior interval start time from current, given length of time intervals
-      IntervalStartingDate = DecrementDate(IntervalStartingDate, m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
+      IntervalStartingDate = DecrementDate(IntervalStartingDate, gParameters.GetTimeIntervalUnitsType(), gParameters.GetTimeIntervalLength());
   }
   //push study period start date onto vector
   gvTimeIntervalStartTimes.push_back(m_nStartDate);
@@ -736,7 +737,7 @@ void CSaTScanData::SetIntervalStartTimes() {
   //record number of time intervals, not including 'study period end date + 1' date
   m_nTimeIntervals = (int)gvTimeIntervalStartTimes.size() - 1;
 
-  if (m_pParameters->GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION && m_nTimeIntervals <= 1)
+  if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION && m_nTimeIntervals <= 1)
     GenerateResolvableException("Error: The time stratified randomization adjustment requires more than\n"
                                 "       one time interval.\n", "SetIntervalStartTimes()");
 }
@@ -748,24 +749,24 @@ void CSaTScanData::SetMaxCircleSize() {
   measure_t tTotalMeasure = gpDataStreams->GetStream(0).GetTotalMeasure();
 
   try {
-    switch (m_pParameters->GetMaxGeographicClusterSizeType()) {
+    switch (gParameters.GetMaxGeographicClusterSizeType()) {
       case PERCENTOFPOPULATIONFILETYPE :
-           m_nMaxCircleSize = (m_pParameters->GetMaximumGeographicClusterSize() / 100.0) * m_nTotalMaxCirclePopulation;
-           if (m_pParameters->GetRestrictingMaximumReportedGeoClusterSize())
-             m_nMaxReportedCircleSize = (m_pParameters->GetMaximumReportedGeoClusterSize() / 100.0) * m_nTotalMaxCirclePopulation;
+           m_nMaxCircleSize = (gParameters.GetMaximumGeographicClusterSize() / 100.0) * m_nTotalMaxCirclePopulation;
+           if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
+             m_nMaxReportedCircleSize = (gParameters.GetMaximumReportedGeoClusterSize() / 100.0) * m_nTotalMaxCirclePopulation;
            break;
       case PERCENTOFPOPULATIONTYPE :
-           m_nMaxCircleSize = (m_pParameters->GetMaximumGeographicClusterSize() / 100.0) * tTotalMeasure;
-           if (m_pParameters->GetRestrictingMaximumReportedGeoClusterSize())
-             m_nMaxReportedCircleSize = (m_pParameters->GetMaximumReportedGeoClusterSize() / 100.0) * tTotalMeasure;
+           m_nMaxCircleSize = (gParameters.GetMaximumGeographicClusterSize() / 100.0) * tTotalMeasure;
+           if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
+             m_nMaxReportedCircleSize = (gParameters.GetMaximumReportedGeoClusterSize() / 100.0) * tTotalMeasure;
            break;
       case DISTANCETYPE :
-           m_nMaxCircleSize = m_pParameters->GetMaximumGeographicClusterSize();
-           if (m_pParameters->GetRestrictingMaximumReportedGeoClusterSize())
-             m_nMaxReportedCircleSize = m_pParameters->GetMaximumReportedGeoClusterSize();
+           m_nMaxCircleSize = gParameters.GetMaximumGeographicClusterSize();
+           if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
+             m_nMaxReportedCircleSize = gParameters.GetMaximumReportedGeoClusterSize();
            break;
       default : ZdException::Generate("Unknown maximum spatial cluster type: '%i'.", "SetMaxCircleSize()",
-                                      m_pParameters->GetMaxGeographicClusterSizeType());
+                                      gParameters.GetMaxGeographicClusterSizeType());
     };
   }
   catch (ZdException &x) {
@@ -781,18 +782,18 @@ void CSaTScanData::SetProspectiveIntervalStart() {
   Julian  lProspStartDate;
 
   try {
-    lProspStartDate = m_pParameters->GetProspectiveStartDateAsJulian();
-    lTime = TimeBetween(lProspStartDate, m_nEndDate, m_pParameters->GetTimeIntervalUnitsType());
-    m_nProspectiveIntervalStart = m_nTimeIntervals - (int)ceil((float)lTime/(float)m_pParameters->GetTimeIntervalLength()) + 1;
+    lProspStartDate = gParameters.GetProspectiveStartDateAsJulian();
+    lTime = TimeBetween(lProspStartDate, m_nEndDate, gParameters.GetTimeIntervalUnitsType());
+    m_nProspectiveIntervalStart = m_nTimeIntervals - (int)ceil((float)lTime/(float)gParameters.GetTimeIntervalLength()) + 1;
 
     if (m_nProspectiveIntervalStart < 0)
       GenerateResolvableException("Error: : The start date for prospective analyses '%s' is prior to the study period start date '%s'.\n",
-                                  "SetProspectiveIntervalStart()", m_pParameters->GetProspectiveStartDate().c_str(),
-                                  m_pParameters->GetStudyPeriodStartDate().c_str());
+                                  "SetProspectiveIntervalStart()", gParameters.GetProspectiveStartDate().c_str(),
+                                  gParameters.GetStudyPeriodStartDate().c_str());
     if (m_nProspectiveIntervalStart > m_nTimeIntervals)
       GenerateResolvableException("Error: The start date for prospective analyses '%s' occurs after the study period end date '%s'.\n",
-                                  "SetProspectiveIntervalStart", m_pParameters->GetProspectiveStartDate().c_str(),
-                                  m_pParameters->GetStudyPeriodEndDate().c_str());
+                                  "SetProspectiveIntervalStart", gParameters.GetProspectiveStartDate().c_str(),
+                                  gParameters.GetStudyPeriodEndDate().c_str());
   }
   catch (ZdException &x) {
     x.AddCallpath("SetProspectiveIntervalStart()","CSaTScanData");
@@ -841,19 +842,19 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
   char          sDateWST[50], sDateMaxWET[50]; 
   int           iMaxEndWindow, iWindowStart;
 
-  if (m_pParameters->GetIncludeClustersType() == CLUSTERSINRANGE) {
+  if (gParameters.GetIncludeClustersType() == CLUSTERSINRANGE) {
     //find start range date indexes
-    SetScanningWindowStartRangeIndex(m_pParameters->GetStartRangeDateAsJulian(m_pParameters->GetStartRangeStartDate()), m_nStartRangeStartDateIndex);
-    SetScanningWindowStartRangeIndex(m_pParameters->GetStartRangeDateAsJulian(m_pParameters->GetStartRangeEndDate()), m_nStartRangeEndDateIndex);
+    SetScanningWindowStartRangeIndex(gParameters.GetStartRangeDateAsJulian(gParameters.GetStartRangeStartDate()), m_nStartRangeStartDateIndex);
+    SetScanningWindowStartRangeIndex(gParameters.GetStartRangeDateAsJulian(gParameters.GetStartRangeEndDate()), m_nStartRangeEndDateIndex);
     //find end range date indexes
-    SetScanningWindowEndRangeIndex(m_pParameters->GetEndRangeDateAsJulian(m_pParameters->GetEndRangeStartDate()), m_nEndRangeStartDateIndex);
-    SetScanningWindowEndRangeIndex(m_pParameters->GetEndRangeDateAsJulian(m_pParameters->GetEndRangeEndDate()), m_nEndRangeEndDateIndex);
+    SetScanningWindowEndRangeIndex(gParameters.GetEndRangeDateAsJulian(gParameters.GetEndRangeStartDate()), m_nEndRangeStartDateIndex);
+    SetScanningWindowEndRangeIndex(gParameters.GetEndRangeDateAsJulian(gParameters.GetEndRangeEndDate()), m_nEndRangeEndDateIndex);
     //validate windows will be evaluated
     //check that there will be clusters evaluated...
     iMaxEndWindow = std::min(m_nEndRangeEndDateIndex, m_nStartRangeEndDateIndex + m_nIntervalCut);
     iWindowStart = std::max(m_nEndRangeStartDateIndex - m_nIntervalCut, m_nStartRangeStartDateIndex);
     if (iWindowStart >= iMaxEndWindow) {
-      sTimeIntervalType = m_pParameters->GetDatePrecisionAsString(m_pParameters->GetTimeIntervalUnitsType());
+      sTimeIntervalType = gParameters.GetDatePrecisionAsString(gParameters.GetTimeIntervalUnitsType());
       sTimeIntervalType.ToLowercase();
       JulianToChar(sDateWST, gvTimeIntervalStartTimes[iWindowStart]);
       JulianToChar(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1);
@@ -862,48 +863,44 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
                                   "       the temporal window scanned has a start time of %s (end range\n"
                                   "       ending time minus %i %s) and a maximum window end time of %s\n"
                                   "       (start range ending time plus %i %s), which results in no windows scanned.",
-                                  "Setup()", m_nIntervalCut * m_pParameters->GetTimeIntervalLength(),
+                                  "Setup()", m_nIntervalCut * gParameters.GetTimeIntervalLength(),
                                   sTimeIntervalType.GetCString(), sDateWST,
-                                  m_nIntervalCut * m_pParameters->GetTimeIntervalLength(),
+                                  m_nIntervalCut * gParameters.GetTimeIntervalLength(),
                                   sTimeIntervalType.GetCString(), sDateMaxWET,
-                                  m_nIntervalCut * m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
+                                  m_nIntervalCut * gParameters.GetTimeIntervalLength(), sTimeIntervalType.GetCString());
     }
     //The parameter validation checked already whether the end range dates conflicted,
     //but the maxium temporal cluster size may actually cause the range dates to be
     //different than the user defined.
     if (m_nEndRangeStartDateIndex > iMaxEndWindow) {
-      sTimeIntervalType = m_pParameters->GetDatePrecisionAsString(m_pParameters->GetTimeIntervalUnitsType());
+      sTimeIntervalType = gParameters.GetDatePrecisionAsString(gParameters.GetTimeIntervalUnitsType());
       sTimeIntervalType.ToLowercase();
       JulianToChar(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1);
       GenerateResolvableException("Error: No clusters will be evaluated.\n"
                                   "       With the incorporation of a maximum temporal cluster size of %i %s\n"
                                   "       the maximum window end time becomes %s (start range ending\n"
                                   "       time plus %i %s), which does not intersect with scanning window end range.\n","Setup()",
-                                  m_nIntervalCut * m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString(),
-                                  sDateMaxWET, m_nIntervalCut * m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
+                                  m_nIntervalCut * gParameters.GetTimeIntervalLength(), sTimeIntervalType.GetCString(),
+                                  sDateMaxWET, m_nIntervalCut * gParameters.GetTimeIntervalLength(), sTimeIntervalType.GetCString());
     }
   }
 }
 
 /** internal setup function */
-void CSaTScanData::Setup(const CParameters* pParameters, BasePrint *pPrintDirection) {
+void CSaTScanData::Setup() {
   long  lCurrentEllipse=0;
 
   try {
-    gpPrint = pPrintDirection;
-    m_pParameters = pParameters;
-
-    //SetProbabilityModel();
     //For now, compute the angle and store the angle and shape
     //for each ellipsoid.  Maybe transfer info to a different location in the
     //application or compute "on the fly" prior to printing.
-    if (m_pParameters->GetNumTotalEllipses() > 0) {
-      mdE_Angles = new double[m_pParameters->GetNumTotalEllipses()];
-      mdE_Shapes = new double[m_pParameters->GetNumTotalEllipses()];
-      for (int es = 0; es < pParameters->GetNumRequestedEllipses(); ++es) {
-         for (int ea = 0; ea < m_pParameters->GetEllipseRotations()[es]; ++ea) {
-            mdE_Angles[lCurrentEllipse]=PI*ea/m_pParameters->GetEllipseRotations()[es];
-            mdE_Shapes[lCurrentEllipse]= m_pParameters->GetEllipseShapes()[es];
+    if (gParameters.GetNumTotalEllipses() > 0) {
+      mdE_Angles = new double[gParameters.GetNumTotalEllipses()];
+      mdE_Shapes = new double[gParameters.GetNumTotalEllipses()];
+      for (int es = 0; es < gParameters.GetNumRequestedEllipses(); ++es) {
+         for (int ea = 0; ea < gParameters.GetEllipseRotations()[es]; ++ea) {
+            mdE_Angles[lCurrentEllipse]=PI*ea/gParameters.GetEllipseRotations()[es];
+            mdE_Shapes[lCurrentEllipse]= gParameters.GetEllipseShapes()[es];
             ++lCurrentEllipse;
          }
       }
