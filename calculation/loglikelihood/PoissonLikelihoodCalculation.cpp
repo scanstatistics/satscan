@@ -7,7 +7,7 @@
 #include "SVTTCluster.h"
 
 /** constructor */
-PoissonLikelihoodCalculator::PoissonLikelihoodCalculator(CSaTScanData & Data)
+PoissonLikelihoodCalculator::PoissonLikelihoodCalculator(const CSaTScanData& Data)
                             :AbstractLikelihoodCalculator(Data.GetTotalCases(), Data.GetTotalMeasure()),
                              gData(Data), gParameters(Data.GetParameters()) {}
 

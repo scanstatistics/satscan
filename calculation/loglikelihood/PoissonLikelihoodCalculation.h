@@ -8,13 +8,13 @@
 class PoissonLikelihoodCalculator : public AbstractLikelihoodCalculator {
   protected:
     const CParameters         & gParameters;
-    CSaTScanData              & gData;
+    const CSaTScanData        & gData;
 
     double                      CalcSVTTLogLikelihood(count_t* pCases, measure_t* pMeasure,
                                                       count_t pTotalCases, double nAlpha,
                                                       double nBeta, int nStatus);  
   public:
-    PoissonLikelihoodCalculator(CSaTScanData & Data);
+    PoissonLikelihoodCalculator(const CSaTScanData& Data);
     virtual ~PoissonLikelihoodCalculator();
 
     virtual double      CalcLogLikelihood(count_t n, measure_t u);
