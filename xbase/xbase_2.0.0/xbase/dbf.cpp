@@ -1,5 +1,5 @@
 #pragma hdrstop
-/*  $Id: dbf.cpp,v 1.2 2002-09-05 13:19:19 hostovic Exp $
+/*  $Id: dbf.cpp,v 1.3 2003-03-20 16:29:16 hostovic Exp $
 
     Xbase project source code
    
@@ -872,7 +872,7 @@ xbShort xbDbf::DumpHeader( xbShort Option )
       \end{tabular}
     \endlatexonly
 */
-xbShort xbDbf::OpenDatabase( const char * TableName )
+xbShort xbDbf::OpenDatabase( const char * TableName, const char * Mode )
 {
    xbShort i, j, NameLen, rc;
    char buf[33];
@@ -900,7 +900,7 @@ xbShort xbDbf::OpenDatabase( const char * TableName )
       DatabaseName += ".DBF";
    
    /* open the file */
-   if(( fp = fopen(DatabaseName, "r+b")) == NULL )
+   if(( fp = fopen(DatabaseName, Mode/*"r+b"*/)) == NULL )
       xb_open_error(DatabaseName);
       
 #ifdef XB_LOCKING_ON
@@ -2146,7 +2146,7 @@ xbShort xbDbf::PackDatafiles(void (*statusFunc)(xbLong itemNum, xbLong numItems)
 #endif   /* XB_MEMO_FIELDS */
 
    /* reopen as database */
-   if(( rc = Temp.OpenDatabase( TempDbfName )) != XB_NO_ERROR )
+   if(( rc = Temp.OpenDatabase( TempDbfName, "r+b" )) != XB_NO_ERROR )
      return rc;
 
    Temp.ResetNoOfRecs();

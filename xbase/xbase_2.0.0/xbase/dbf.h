@@ -1,4 +1,4 @@
-/*  $Id: dbf.h,v 1.1 2002-09-04 19:54:09 simpson Exp $
+/*  $Id: dbf.h,v 1.2 2003-03-20 16:29:16 hostovic Exp $
 
     Xbase project source code
 
@@ -260,7 +260,7 @@ public:
    xbShort   NameSuffixMissing( xbShort, const char * );
    xbLong    NoOfRecords( void );
    xbLong    PhysicalNoOfRecords(void);
-   xbShort   OpenDatabase( const char * );
+   xbShort   OpenDatabase( const char * , const char *);
    xbShort   PackDatabase(xbShort LockWaitOption,
                           void (*packStatusFunc)(xbLong itemNum, xbLong numItems) = 0,
                           void (*indexStatusFunc)(xbLong itemNum, xbLong numItems) = 0);
