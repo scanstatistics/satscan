@@ -1051,8 +1051,7 @@ void CAnalysis::AllocateTopClusterList()
       m_pTopClusters = new CCluster* [m_nMaxClusters + 1];
       if (m_pTopClusters == 0)
          SSGenerateException("Could not allocate memory for m_pTopClusters.", "CAnalysis");
-      for (i = 0; i < (m_nMaxClusters + 1); i++)
-         m_pTopClusters[i] = 0;
+      memset(m_pTopClusters, 0, m_nMaxClusters+1);
       }
    catch (SSException & x)
       {
