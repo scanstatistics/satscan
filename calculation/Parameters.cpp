@@ -642,6 +642,37 @@ void CParameters::ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporal
   }
 }
 
+/** If passed filenames path does not indicate a valid file, then attempts
+    to determine if filename is relative to executables location.*/
+void CParameters::ConvertRelativePath(std::string & sInputFilename) {
+  ZdFileName    fFilename;
+  std::string   sFile;
+
+  try {
+    if (! sInputFilename.empty()) {
+      //If file does not exist -
+      // attempt to determine if passed filename is relative to executable location.
+      if (access(sInputFilename.c_str(), 0)) {
+        fFilename.SetFullPath(_argv[0]);
+        sFile = fFilename.GetLocation();
+        //If slash exists, exclude from path since ZdFilename already has it.
+        if (sInputFilename[0] == ZDFILENAME_SLASH)
+          sFile += sInputFilename.substr(1).c_str();
+        else
+          sFile += sInputFilename.c_str();
+
+        //Does file exist at relative path?
+        if (! access(sFile.c_str(), 0))
+          sInputFilename = sFile;
+      }
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ConvertRelativePath()", "CParameters");
+    throw;
+  }
+}
+
 //------------------------------------------------------------------------------
 // copies all class variables from the given CParameters object (rhs) into this one
 //------------------------------------------------------------------------------
@@ -682,16 +713,19 @@ void CParameters::copy(const CParameters &rhs) {
     m_nTimeAdjPercent           = rhs.m_nTimeAdjPercent;
     m_bIncludePurelySpatial     = rhs.m_bIncludePurelySpatial;
     m_bIncludePurelyTemporal    = rhs.m_bIncludePurelyTemporal;
-    strcpy(m_szCaseFilename,rhs.m_szCaseFilename);
-    strcpy(m_szControlFilename,rhs.m_szControlFilename);
-    strcpy(m_szPopFilename,rhs.m_szPopFilename);
-    strcpy(m_szCoordFilename,rhs.m_szCoordFilename);
-    strcpy(m_szGridFilename,rhs.m_szGridFilename);
+    m_sCaseFileName = rhs.m_sCaseFileName;
+    m_sControlFileName = rhs.m_sControlFileName;
+    m_sPopulationFileName = rhs.m_sPopulationFileName;
+    m_sPopulationFileName = rhs.m_sPopulationFileName;
+    m_sCoordinatesFileName = rhs.m_sCoordinatesFileName;
+    m_sCoordinatesFileName = rhs.m_sCoordinatesFileName;
+    m_sSpecialGridFileName = rhs.m_sSpecialGridFileName;
+    m_sSpecialGridFileName = rhs.m_sSpecialGridFileName;
     m_bSpecialGridFile = rhs.m_bSpecialGridFile;
     m_nPrecision                = rhs.m_nPrecision;
     m_nDimension                = rhs.m_nDimension;
     m_nCoordType                = rhs.m_nCoordType;
-    strcpy(m_szOutputFilename,rhs.m_szOutputFilename);
+    m_sOutputFileName = rhs.m_sOutputFileName;
     m_bSaveSimLogLikelihoods    = rhs.m_bSaveSimLogLikelihoods;
     m_bOutputRelRisks           = rhs.m_bOutputRelRisks;
     m_bSequential               = rhs.m_bSequential;
@@ -771,7 +805,7 @@ bool CParameters::DisplayParamError(int nLine) {
 }
 
 void CParameters::DisplayParameters(FILE* fp) {
-   ZdFileName   fileName(m_szOutputFilename);
+   ZdFileName   fileName(m_sOutputFileName.c_str());
    ZdString     sASCIIName, sDBaseName;
 
    try {
@@ -781,16 +815,16 @@ void CParameters::DisplayParameters(FILE* fp) {
      fprintf(fp, "Input Files\n");
      fprintf(fp, "-----------\n");
 
-     fprintf(fp, "  Case File        : %s\n", m_szCaseFilename);
+     fprintf(fp, "  Case File        : %s\n", m_sCaseFileName.c_str());
    
      if (m_nModel == POISSON || (m_nModel == SPACETIMEPERMUTATION && m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE))
-       fprintf(fp, "  Population File  : %s\n", m_szPopFilename);
+       fprintf(fp, "  Population File  : %s\n", m_sPopulationFileName.c_str());
      else if (m_nModel == BERNOULLI)
-       fprintf(fp, "  Control File     : %s\n", m_szControlFilename);
-   
-     fprintf(fp, "  Coordinates File : %s\n", m_szCoordFilename);
+       fprintf(fp, "  Control File     : %s\n", m_sControlFileName.c_str());
+
+     fprintf(fp, "  Coordinates File : %s\n", m_sCoordinatesFileName.c_str());
      if (m_bSpecialGridFile)
-       fprintf(fp, "  Special Grid File: %s\n", m_szGridFilename);
+       fprintf(fp, "  Special Grid File: %s\n", m_sSpecialGridFileName.c_str());
 
      fprintf(fp, "\n  Precision of Times : ");
      switch (m_nPrecision) {
@@ -936,7 +970,7 @@ void CParameters::DisplayParameters(FILE* fp) {
 #ifdef INCLUDE_RUN_HISTORY
      fprintf(fp, "  Run History File  : %s\n", gsRunHistoryFilename.GetCString());
 #endif
-     fprintf(fp, "  Results File      : %s\n", m_szOutputFilename);
+     fprintf(fp, "  Results File      : %s\n", m_sOutputFileName.c_str());
 
      // gis files
      if (gbOutputAreaSpecificDBF || m_bOutputCensusAreas) {
@@ -1210,12 +1244,11 @@ void CParameters::ReadFromIniFile(ZdString sFileName) {
 void CParameters::ReadInputFilesSectionFromIni(ZdIniFile& file){
    try {
       ZdIniSection* pSection = file.GetSection(INPUT_FILES_SECTION);
-      strcpy(m_szCaseFilename, pSection->GetLine(pSection->FindKey(CASE_FILE_LINE))->GetValue());
-      strcpy(m_szControlFilename, pSection->GetLine(pSection->FindKey(CONTROL_FILE_LINE))->GetValue());
-      strcpy(m_szPopFilename, pSection->GetLine(pSection->FindKey(POP_FILE_LINE))->GetValue());
-      strcpy(m_szCoordFilename, pSection->GetLine(pSection->FindKey(COORD_FILE_LINE))->GetValue());
-      strcpy(m_szGridFilename, pSection->GetLine(pSection->FindKey(GRID_FILE_LINE))->GetValue());
-      m_bSpecialGridFile = strlen(m_szGridFilename);
+      SetCaseFileName(pSection->GetLine(pSection->FindKey(CASE_FILE_LINE))->GetValue(), true);
+      SetControlFileName(pSection->GetLine(pSection->FindKey(CONTROL_FILE_LINE))->GetValue(), true);
+      SetPopulationFileName(pSection->GetLine(pSection->FindKey(POP_FILE_LINE))->GetValue(), true);
+      SetCoordinatesFileName(pSection->GetLine(pSection->FindKey(COORD_FILE_LINE))->GetValue(), true);
+      SetSpecialGridFileName(pSection->GetLine(pSection->FindKey(GRID_FILE_LINE))->GetValue(), true);
    }
    catch (ZdException &x) {
       x.AddCallpath("ReadInputFilesSectionFromIni", "CParameters");
@@ -1268,7 +1301,7 @@ void CParameters::ReadModelInfoSectionFromIni(ZdIniFile& file) {
 void CParameters::ReadOutputFileSectionFromIni(ZdIniFile& file) {
    try {
       ZdIniSection* pSection = file.GetSection(OUTPUT_FILES_SECTION);
-      strcpy(m_szOutputFilename, pSection->GetLine(pSection->FindKey(RESULTS_FILE_LINE))->GetValue());
+      SetOutputFileName(pSection->GetLine(pSection->FindKey(RESULTS_FILE_LINE))->GetValue(), true);
       m_bSaveSimLogLikelihoods = ValueIsYes(pSection->GetLine(pSection->FindKey(SAVE_SIM_LLRS))->GetValue());
       m_bOutputCensusAreas = ValueIsYes(pSection->GetLine(pSection->FindKey(CENSUS_REPORT_CLUSTERS_LINE))->GetValue());
       m_bMostLikelyClusters = ValueIsYes(pSection->GetLine(pSection->FindKey(MOST_LIKELY_CLUSTER_LINE))->GetValue());
@@ -1352,11 +1385,11 @@ void CParameters::SaveEllipseSection(ZdIniFile& file) {
 void CParameters::SaveInputFileSection(ZdIniFile& file) {
    try {
       ZdIniSection* pSection = file.GetSection(INPUT_FILES_SECTION);
-      pSection->GetLine(pSection->FindKey(CASE_FILE_LINE))->SetValue(m_szCaseFilename);
-      pSection->GetLine(pSection->FindKey(CONTROL_FILE_LINE))->SetValue(m_szControlFilename);
-      pSection->GetLine(pSection->FindKey(POP_FILE_LINE))->SetValue(m_szPopFilename);
-      pSection->GetLine(pSection->FindKey(COORD_FILE_LINE))->SetValue(m_szCoordFilename);
-      pSection->GetLine(pSection->FindKey(GRID_FILE_LINE))->SetValue(m_szGridFilename);
+      pSection->GetLine(pSection->FindKey(CASE_FILE_LINE))->SetValue(m_sCaseFileName.c_str());
+      pSection->GetLine(pSection->FindKey(CONTROL_FILE_LINE))->SetValue(m_sControlFileName.c_str());
+      pSection->GetLine(pSection->FindKey(POP_FILE_LINE))->SetValue(m_sPopulationFileName.c_str());
+      pSection->GetLine(pSection->FindKey(COORD_FILE_LINE))->SetValue(m_sCoordinatesFileName.c_str());
+      pSection->GetLine(pSection->FindKey(GRID_FILE_LINE))->SetValue(m_sSpecialGridFileName.c_str());
    }
    catch (ZdException &x) {
       x.AddCallpath("SaveInputFileSection()", "CParameters");
@@ -1416,7 +1449,7 @@ void CParameters::SaveModelInfoSection(ZdIniFile& file) {
 void CParameters::SaveOutputFileSection(ZdIniFile& file) {
    try {
       ZdIniSection* pSection = file.GetSection(OUTPUT_FILES_SECTION);
-      pSection->GetLine(pSection->FindKey(RESULTS_FILE_LINE))->SetValue(m_szOutputFilename);
+      pSection->GetLine(pSection->FindKey(RESULTS_FILE_LINE))->SetValue(m_sOutputFileName.c_str());
       pSection->GetLine(pSection->FindKey(ANALYSIS_HISTORY_LINE))->SetValue(gsRunHistoryFilename.GetCString());
       pSection->SetString(CENSUS_REPORT_CLUSTERS_LINE, m_bOutputCensusAreas ? YES : NO);
       pSection->SetString(DBASE_CLUSTER_LINE, gbOutputClusterLevelDBF ? YES : NO);
@@ -1488,18 +1521,75 @@ void CParameters::SaveToIniFile(ZdString sFileName) {
    }
 }
 
+/** Sets case data file name. 
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file
+    does not exist. */
+void CParameters::SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath) {
+  try {
+    if (! sCaseFileName)
+      ZdGenerateException("Null pointer.", "SetCaseFileName()");
+
+    m_sCaseFileName = sCaseFileName;
+    if (bCorrectForRelativePath)
+      ConvertRelativePath(m_sCaseFileName);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetCaseFileName()", "CParameters");
+    throw;
+  }
+}
+
+/** Sets control data file name. 
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file
+    does not exist. */
+void CParameters::SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath) {
+  try {
+    if (! sControlFileName)
+      ZdGenerateException("Null pointer.", "SetControlFileName()");
+
+    m_sControlFileName = sControlFileName;
+    if (bCorrectForRelativePath)
+      ConvertRelativePath(m_sControlFileName);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetControlFileName()", "CParameters");
+    throw;
+  }
+}
+
+/** Sets coordinates data file name. 
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file
+    does not exist. */
+void CParameters::SetCoordinatesFileName(const char * sCoordinatesFileName, bool bCorrectForRelativePath) {
+  try {
+    if (! sCoordinatesFileName)
+      ZdGenerateException("Null pointer.", "SetCoordinatesFileName()");
+
+    m_sCoordinatesFileName = sCoordinatesFileName;
+    if (bCorrectForRelativePath)
+      ConvertRelativePath(m_sCoordinatesFileName);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetCoordinatesFileName()", "CParameters");
+    throw;
+  }
+}
+
 // initializes global variables to default values
 void CParameters::SetDefaults() {
   m_nAnalysisType             = PURELYSPATIAL;
   m_nAreas                    = HIGH;
-  strcpy(m_szCaseFilename, "");
-  strcpy(m_szPopFilename, "");
-  strcpy(m_szCoordFilename, "");
-  strcpy(m_szOutputFilename, "");
+  m_sCaseFileName = "";
+  m_sPopulationFileName = "";
+  m_sCoordinatesFileName = "";
+  m_sOutputFileName = "";
   m_nPrecision                = YEAR;
   m_nDimension                = 0;
   m_bSpecialGridFile          = false;
-  strcpy(m_szGridFilename, "");
+  m_sSpecialGridFileName = "";
   m_nMaxGeographicClusterSize = 50.0; //GG980716
   m_nMaxSpatialClusterSizeType = PERCENTAGEOFMEASURETYPE;
   strcpy(m_szStartDate, "1900/01/01");
@@ -1531,7 +1621,7 @@ void CParameters::SetDefaultsV2() {
   m_nTimeAdjustType        = NOTADJUSTED;
   m_nTimeAdjPercent        = 0;
   m_bIncludePurelyTemporal = false;
-  strcpy(m_szControlFilename, "");
+  m_sControlFileName = "";
   m_nCoordType             = CARTESIAN;
   m_bSaveSimLogLikelihoods = false;
   m_bSequential            = false;
@@ -1684,31 +1774,60 @@ void CParameters::SetIntValue(int &iValue, const ZdString& sValueFromFile, int i
    }
 }
 
+/** Sets output data file name. 
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file
+    does not exist. */
+void CParameters::SetOutputFileName(const char * sOutPutFileName, bool bCorrectForRelativePath) {
+  try {
+    if (! sOutPutFileName)
+      ZdGenerateException("Null pointer.", "SetOutputFileName()");
+
+    m_sOutputFileName = sOutPutFileName;
+    if (bCorrectForRelativePath)
+      ConvertRelativePath(m_sOutputFileName);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetOutputFileName()", "CParameters");
+    throw;
+  }
+}
+
 // old method of setting the parameters from the old parameter file
 bool CParameters::SetParameter(int nParam, const char* szParam) {
    bool bValid = false;
    int  nScanCount, nTemp;
-   char sTemp[MAX_STR_LEN];
+   char sTemp[MAX_LINEITEMSIZE];
 
    try {
       switch (nParam) {
         case ANALYSISTYPE : nScanCount=sscanf(szParam, "%i", &m_nAnalysisType); break;
         case SCANAREAS    : nScanCount=sscanf(szParam, "%i", &m_nAreas); break;
-        case CASEFILE     : strncpy(m_szCaseFilename, szParam, strlen(szParam)-1);
-                            m_szCaseFilename[strlen(szParam)-1]='\0'; nScanCount=1; break;
-        case POPFILE      : strncpy(m_szPopFilename, szParam, strlen(szParam)-1);
-                            m_szPopFilename[strlen(szParam)-1]='\0'; nScanCount=1; break;
-        case COORDFILE    : strncpy(m_szCoordFilename, szParam, strlen(szParam)-1);
-                            m_szCoordFilename[strlen(szParam)-1]='\0'; nScanCount=1; break;
-        case OUTPUTFILE   : strncpy(m_szOutputFilename, szParam, strlen(szParam)-1);
-                            m_szOutputFilename[strlen(szParam)-1]='\0'; nScanCount=1; break;
+        case CASEFILE     : strncpy(sTemp, szParam, strlen(szParam)-1);
+                            sTemp[strlen(szParam)-1]='\0';
+                            SetCaseFileName(sTemp, true);
+                            nScanCount=1; break;
+        case POPFILE      : strncpy(sTemp, szParam, strlen(szParam)-1);
+                            sTemp[strlen(szParam)-1]='\0';
+                            SetPopulationFileName(sTemp, true);
+                            nScanCount=1; break;
+        case COORDFILE    : strncpy(sTemp, szParam, strlen(szParam)-1);
+                            sTemp[strlen(szParam)-1]='\0';
+                            SetCoordinatesFileName(sTemp, true);
+                            nScanCount=1; break;
+        case OUTPUTFILE   : strncpy(sTemp, szParam, strlen(szParam)-1);
+                            sTemp[strlen(szParam)-1]='\0';
+                            SetOutputFileName(sTemp, true);
+                            nScanCount=1; break;
         case PRECISION    : nScanCount=sscanf(szParam, "%i", &m_nPrecision); break;
         case DIMENSION    : nScanCount=sscanf(szParam, "%i", &m_nDimension); break;
         case SPECIALGRID  : nScanCount=sscanf(szParam, "%i", &nTemp);
                             m_bSpecialGridFile = (nTemp ? true : false);
                             break;
-        case GRIDFILE     : strncpy(m_szGridFilename, szParam, strlen(szParam)-1);
-                            m_szGridFilename[strlen(szParam)-1]='\0'; nScanCount=1; break;
+        case GRIDFILE     : strncpy(sTemp, szParam, strlen(szParam)-1);
+                            sTemp[strlen(szParam)-1]='\0';
+                            SetSpecialGridFileName(sTemp, true);
+                            nScanCount=1; break;
         case GEOSIZE      : nScanCount=sscanf(szParam, "%f", &m_nMaxGeographicClusterSize); break;
         case STARTDATE    : nScanCount=sscanf(szParam, "%s", &m_szStartDate); break;
         case ENDDATE      : nScanCount=sscanf(szParam, "%s", &m_szEndDate); break;
@@ -1737,8 +1856,10 @@ bool CParameters::SetParameter(int nParam, const char* szParam) {
         case PURETEMPORAL : nScanCount=sscanf(szParam, "%i", &nTemp);
                             m_bIncludePurelyTemporal = (nTemp ? true : false);
                             break;
-        case CONTROLFILE  : strncpy(m_szControlFilename, szParam, strlen(szParam)-1);
-                            m_szControlFilename[strlen(szParam)-1]='\0'; nScanCount=1; break;
+        case CONTROLFILE  : strncpy(sTemp, szParam, strlen(szParam)-1);
+                            sTemp[strlen(szParam)-1]='\0';
+                            SetControlFileName(sTemp, true);
+                            nScanCount=1; break;
         case COORDTYPE    : nScanCount=sscanf(szParam, "%i", &m_nCoordType); break;
         case SAVESIMLL    : nScanCount=sscanf(szParam, "%i", &nTemp);
                             m_bSaveSimLogLikelihoods = (nTemp ? true : false);
@@ -1871,9 +1992,51 @@ bool CParameters::SetParameters(const char* szFilename, bool bValidate) {
    return bValid;
 }
 
+/** Sets coordinates data file name. 
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file
+    does not exist. */
+void CParameters::SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath) {
+  try {
+    if (! sPopulationFileName)
+      ZdGenerateException("Null pointer.", "SetPopulationFileName()");
+
+    m_sPopulationFileName = sPopulationFileName;
+    if (bCorrectForRelativePath)
+      ConvertRelativePath(m_sPopulationFileName);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetPopulationFileName()", "CParameters");
+    throw;
+  }
+}
+
 // sets the global print direction pointer
 void CParameters::SetPrintDirection(BasePrint *pPrintDirection) {
    gpPrintDirection = pPrintDirection;
+}
+
+/** Sets special grid data file name.
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file
+    does not exist. */
+void CParameters::SetSpecialGridFileName(const char * sSpecialGridFileName, bool bCorrectForRelativePath) {
+  try {
+    if (! sSpecialGridFileName)
+      ZdGenerateException("Null pointer.", "SetSpecialGridFileName()");
+
+    m_sSpecialGridFileName = sSpecialGridFileName;
+    if (bCorrectForRelativePath)
+      ConvertRelativePath(m_sSpecialGridFileName);
+    //If empty, then definately not using special grid. But someone could have
+    //the special grid filename specified but turned using it off in parameters file.  
+    if (m_sSpecialGridFileName.empty())
+      m_bSpecialGridFile = false;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetSpecialGridFileName()", "CParameters");
+    throw;
+  }
 }
 
 // trims the left whitespace from the char string
@@ -2069,40 +2232,44 @@ bool CParameters::ValidateParameters() {
         }
       }
 
-      if (strlen(m_szCaseFilename)==0 || (pFile = fopen(m_szCaseFilename, "r")) == NULL) {
+      if (m_sCaseFileName.empty() || (pFile = fopen(m_sCaseFileName.c_str(), "r")) == NULL) {
         bValid = false;
         if (m_bDisplayErrors)
-          gpPrintDirection->SatScanPrintWarning("Unable to open the case file %s. Please check to make sure the path is correct.\n", m_szCaseFilename);
+          gpPrintDirection->SatScanPrintWarning("Unable to open the case file %s. Please check to make sure the path is correct.\n",
+                                                m_sCaseFileName.c_str());
       }
       else
         fclose(pFile);
-    
+
       if (m_nModel == POISSON) {
-        if (strlen(m_szPopFilename)==0 || (pFile = fopen(m_szPopFilename, "r")) == NULL) {
+        if (m_sPopulationFileName.empty() || (pFile = fopen(m_sPopulationFileName.c_str(), "r")) == NULL) {
            bValid = false;
            if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Unable to open the population file %s. Please check to make sure the path is correct.\n", m_szPopFilename);
+              gpPrintDirection->SatScanPrintWarning("Unable to open the population file %s. Please check to make sure the path is correct.\n",
+                                                    m_sPopulationFileName.c_str());
         }
         else
           fclose(pFile);
-        strcpy(m_szControlFilename, "");
+        m_sControlFileName = "";
       }
       else if (m_nModel == BERNOULLI) {
-        if (strlen(m_szControlFilename)==0 || (pFile = fopen(m_szControlFilename, "r")) == NULL) {
+        if (m_sControlFileName.empty() || (pFile = fopen(m_sControlFileName.c_str(), "r")) == NULL) {
           bValid = false;
           if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Unable to open the population file %s. Please check to make sure the path is correct.\n", m_szControlFilename);
+              gpPrintDirection->SatScanPrintWarning("Unable to open the population file %s. Please check to make sure the path is correct.\n",
+                                                    m_sControlFileName.c_str());
         }
         else
           fclose(pFile);
-        strcpy(m_szPopFilename, "");
+        m_sPopulationFileName = "";
       }
       else if (m_nModel == SPACETIMEPERMUTATION) {
         if (m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)
-          if (strlen(m_szPopFilename)==0 || (pFile = fopen(m_szPopFilename, "r")) == NULL) {
+          if (m_sPopulationFileName.empty() || (pFile = fopen(m_sPopulationFileName.c_str(), "r")) == NULL) {
             bValid = false;
             if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Unable to open the population file %s. Please check to make sure the path is correct.\n", m_szPopFilename);
+              gpPrintDirection->SatScanPrintWarning("Unable to open the population file %s. Please check to make sure the path is correct.\n",
+                                                    m_sPopulationFileName.c_str());
           }
           else
             fclose(pFile);
@@ -2128,31 +2295,34 @@ bool CParameters::ValidateParameters() {
         }
       }
 
-      if (strlen(m_szCoordFilename)==0 || (pFile = fopen(m_szCoordFilename, "r")) == NULL) {
+      if (m_sCoordinatesFileName.empty() || (pFile = fopen(m_sCoordinatesFileName.c_str(), "r")) == NULL) {
         bValid = false;
         if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Unable to open Coordinate file: %s. Please check to make sure the path is correct.\n", m_szCoordFilename);
+              gpPrintDirection->SatScanPrintWarning("Unable to open Coordinate file: %s. Please check to make sure the path is correct.\n",
+                                                    m_sCoordinatesFileName.c_str());
       }
       else
         fclose(pFile);
 
       if (m_bSpecialGridFile) {
-        if (strlen(m_szGridFilename)==0 || (pFile = fopen(m_szGridFilename, "r")) == NULL) {
+        if (m_sSpecialGridFileName.empty() || (pFile = fopen(m_sSpecialGridFileName.c_str(), "r")) == NULL) {
           bValid = false;
           if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Unable to open Grid file: %s. Please check to make sure the path is correct.\n", m_szGridFilename);
+              gpPrintDirection->SatScanPrintWarning("Unable to open Grid file: %s. Please check to make sure the path is correct.\n",
+                                                    m_sSpecialGridFileName.c_str());
         }
         else
           fclose(pFile);
       }
       else
-        strcpy(m_szGridFilename, "");
+        m_sSpecialGridFileName = "";
 
-      if (strlen(m_szOutputFilename)==0 || (pFile = fopen(m_szOutputFilename, "r")) == NULL) {
-        if ((pFile = fopen(m_szOutputFilename, "w")) == NULL) {
+      if (m_sOutputFileName.empty() || (pFile = fopen(m_sOutputFileName.c_str(), "r")) == NULL) {
+        if ((pFile = fopen(m_sOutputFileName.c_str(), "w")) == NULL) {
           bValid = false;
           if (m_bDisplayErrors)
-              gpPrintDirection->SatScanPrintWarning("Unable to open Results file: %s. Please check to make sure the path is correct.\n", m_szOutputFilename);
+              gpPrintDirection->SatScanPrintWarning("Unable to open Results file: %s. Please check to make sure the path is correct.\n",
+                                                    m_sOutputFileName.c_str());
         }
         else
           fclose(pFile);
