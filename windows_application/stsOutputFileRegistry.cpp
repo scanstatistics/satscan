@@ -10,8 +10,6 @@
 #include "stsSaTScan.h"
 #pragma hdrstop
 
-#include "stsOutputFileRegistry.h"
-
 // constructor
 stsOutputFileRegister::stsOutputFileRegister() {
 }
