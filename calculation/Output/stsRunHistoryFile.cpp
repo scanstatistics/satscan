@@ -47,7 +47,7 @@ stsRunHistoryFile::stsRunHistoryFile(const ZdString& sFileName, BasePrint& Print
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsRunHistoryFile");
       PrintDirection.SatScanPrintWarning("\nUnable to log analysis information:\n");
-      PrintDirection.SatScanPrintWarning(x.GetCallpath());
+//      PrintDirection.SatScanPrintWarning(x.GetCallpath());
       PrintDirection.SatScanPrintWarning(x.GetErrorMessage());
       PrintDirection.SatScanPrintWarning("\n");
    }

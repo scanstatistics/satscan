@@ -142,7 +142,7 @@ void __fastcall CalcThread::Execute() {
   }
   catch (ZdException & x) {
     x.AddCallpath("Execute()", "CalcThread");
-    gpPrintWindow->SatScanPrintWarning(x.GetCallpath());
+//    gpPrintWindow->SatScanPrintWarning(x.GetCallpath());
     gpPrintWindow->SatScanPrintWarning(x.GetErrorMessage());
     gpPrintWindow->SatScanPrintf("\nProgram terminated.");
     gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
