@@ -268,7 +268,7 @@ void __fastcall TfrmAnalysis::btnResultFileBrowseClick(TObject *Sender) {
 /** Validates time interval length is not less than zero. */
 void TfrmAnalysis::Check_IntervalLength() {
   ZdDate        StartDate, EndDate;
-  float         fTime;
+  double        dTime;
 
   try {
     //report error if control is empty or specified interval length is less than one.
@@ -286,10 +286,15 @@ void TfrmAnalysis::Check_IntervalLength() {
       case SPACETIME                 :
       case PROSPECTIVESPACETIME      :
       case SPATIALVARTEMPTREND       :
-        fTime = TimeBetween(GetStudyPeriodStartDate(StartDate).GetJulianDayFromCalendarStart(),
-                            GetStudyPeriodEndDate(EndDate).GetJulianDayFromCalendarStart(),
+        dTime = TimeBetween(GetStudyPeriodStartDate(StartDate).GetJulianDayFromCalendarStart() + ceil(1721424.5),
+                            GetStudyPeriodEndDate(EndDate).GetJulianDayFromCalendarStart() + ceil(1721424.5),
                             GetTimeIntervalControlType());
-        if ((int)ceil(fTime/(float)edtTimeIntervalLength->Text.ToInt()) <= 1) {
+        if (dTime < edtTimeIntervalLength->Text.ToDouble()) {
+          PageControl1->ActivePage = tbAnalysis;
+          edtTimeIntervalLength->SetFocus();
+          ZdException::GenerateNotification("The specified time interval length is greater than the study period.\n","Check_IntervalLength()");
+        }
+        if (ceil(dTime/edtTimeIntervalLength->Text.ToDouble()) <= 1) {
           PageControl1->ActivePage = tbAnalysis;
           edtTimeIntervalLength->SetFocus();
           ZdException::GenerateNotification("For the specified study period and time interval length,\n"

@@ -869,10 +869,10 @@ object frmAnalysis: TfrmAnalysis
         object edtTimeIntervalLength: TEdit
           Left = 62
           Top = 88
-          Width = 25
+          Width = 48
           Height = 21
           Enabled = False
-          MaxLength = 3
+          MaxLength = 6
           TabOrder = 3
           Text = '1'
           OnExit = edtTimeIntervalLengthExit
