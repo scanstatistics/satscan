@@ -45,7 +45,7 @@ class CPoissonModel : public CModel {
     virtual double              CalcLogLikelihood(count_t n, measure_t u);
     virtual double              CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure, double dCompactnessCorrection);
     virtual double              CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster);
-    virtual double              CalcSVTTLogLikelihood(size_t tStream, CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend);
+    virtual double              CalcSVTTLogLikelihoodRatio(size_t tStream, CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend);
     virtual bool                CalculateMeasure(DataStream & thisStream);
     virtual double              GetLogLikelihoodForTotal() const;
     virtual double              GetPopulation(int m_iEllipseOffset, tract_t nCenter,

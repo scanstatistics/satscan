@@ -324,31 +324,33 @@ double CPoissonModel::CalcSVTTLogLikelihood(count_t*   pCases,
 
 
 /** NEEDS DOCUMENTATION */
-double CPoissonModel::CalcSVTTLogLikelihood(size_t tStream, CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend)
+double CPoissonModel::CalcSVTTLogLikelihoodRatio(size_t tStream, CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend)
 {
   double nLogLikelihood   = 0.0;
   double nGlobalAlphaIn   = 0.0;
   double nGlobalAlphaOut = 0.0;
 
-  Cluster->gTimeTrendInside.CalculateAndSet(Cluster->gpCasesInsideCluster->GetArray()[tStream],         // Inside Cluster
-                                            Cluster->gpMeasureInsideCluster->GetArray()[tStream],
-                                            gData.m_nTimeIntervals,
-                                            gParameters.GetTimeTrendConvergence());
+  SVTTClusterStreamData & StreamData = Cluster->GetStream(tStream);
 
-  nGlobalAlphaIn = Cluster->gTimeTrendInside.Alpha(Cluster->gpTotalCasesInsideCluster[tStream],
-                                                   Cluster->gpMeasureInsideCluster->GetArray()[tStream],
-                                                   gData.m_nTimeIntervals,
-                                                   GlobalTimeTrend.m_nBeta);
+  StreamData.gTimeTrendInside.CalculateAndSet(StreamData.gpCasesInsideCluster,         // Inside Cluster
+                                              StreamData.gpMeasureInsideCluster,
+                                              gData.m_nTimeIntervals,
+                                              gParameters.GetTimeTrendConvergence());
 
-  Cluster->gTimeTrendOutside.CalculateAndSet(Cluster->gpCasesOutsideCluster->GetArray()[tStream],         // Outside Cluster
-                                             Cluster->gpMeasureOutsideCluster->GetArray()[tStream],
-                                             gData.m_nTimeIntervals,
-                                             gParameters.GetTimeTrendConvergence());
-
-  nGlobalAlphaOut = Cluster->gTimeTrendOutside.Alpha(Cluster->gpTotalCasesOutsideCluster[tStream],
-                                                     Cluster->gpMeasureOutsideCluster->GetArray()[tStream],
+  nGlobalAlphaIn = StreamData.gTimeTrendInside.Alpha(StreamData.gtTotalCasesInsideCluster,
+                                                     StreamData.gpMeasureInsideCluster,
                                                      gData.m_nTimeIntervals,
                                                      GlobalTimeTrend.m_nBeta);
+
+  StreamData.gTimeTrendOutside.CalculateAndSet(StreamData.gpCasesOutsideCluster,         // Outside Cluster
+                                               StreamData.gpMeasureOutsideCluster,
+                                               gData.m_nTimeIntervals,
+                                               gParameters.GetTimeTrendConvergence());
+
+  nGlobalAlphaOut = StreamData.gTimeTrendOutside.Alpha(StreamData.gtTotalCasesOutsideCluster,
+                                                       StreamData.gpMeasureOutsideCluster,
+                                                       gData.m_nTimeIntervals,
+                                                       GlobalTimeTrend.m_nBeta);
   #if DEBUGMODEL
   fprintf(m_pDebugModelFile, "Inside                Outside\n");
   fprintf(m_pDebugModelFile, "Cases    Msr          Cases    Msr\n");
@@ -365,33 +367,33 @@ double CPoissonModel::CalcSVTTLogLikelihood(size_t tStream, CSVTTCluster* Cluste
 //          GlobalTimeTrend.m_nAlpha, GlobalTimeTrend.m_nBeta);
   #endif
 
-  nLogLikelihood = (CalcSVTTLogLikelihood(Cluster->gpCasesInsideCluster->GetArray()[tStream],
-                                          Cluster->gpMeasureInsideCluster->GetArray()[tStream],
-                                          Cluster->gpTotalCasesInsideCluster[tStream],
-                                          Cluster->gTimeTrendInside.m_nAlpha,
-                                          Cluster->gTimeTrendInside.m_nBeta,
-                                          Cluster->gTimeTrendInside.m_nStatus)
+  nLogLikelihood = (CalcSVTTLogLikelihood(StreamData.gpCasesInsideCluster,
+                                          StreamData.gpMeasureInsideCluster,
+                                          StreamData.gtTotalCasesInsideCluster,
+                                          StreamData.gTimeTrendInside.m_nAlpha,
+                                          StreamData.gTimeTrendInside.m_nBeta,
+                                          StreamData.gTimeTrendInside.m_nStatus)
                     +
-                    CalcSVTTLogLikelihood(Cluster->gpCasesOutsideCluster->GetArray()[tStream],
-                                          Cluster->gpMeasureOutsideCluster->GetArray()[tStream],
-                                          Cluster->gpTotalCasesOutsideCluster[tStream],
-                                          Cluster->gTimeTrendOutside.m_nAlpha,
-                                          Cluster->gTimeTrendOutside.m_nBeta,
-                                          Cluster->gTimeTrendOutside.m_nStatus))
+                    CalcSVTTLogLikelihood(StreamData.gpCasesOutsideCluster,
+                                          StreamData.gpMeasureOutsideCluster,
+                                          StreamData.gtTotalCasesOutsideCluster,
+                                          StreamData.gTimeTrendOutside.m_nAlpha,
+                                          StreamData.gTimeTrendOutside.m_nBeta,
+                                          StreamData.gTimeTrendOutside.m_nStatus))
                     -
-                   (CalcSVTTLogLikelihood(Cluster->gpCasesInsideCluster->GetArray()[tStream],
-                                          Cluster->gpMeasureInsideCluster->GetArray()[tStream],
-                                          Cluster->gpTotalCasesInsideCluster[tStream],
+                   (CalcSVTTLogLikelihood(StreamData.gpCasesInsideCluster,
+                                          StreamData.gpMeasureInsideCluster,
+                                          StreamData.gtTotalCasesInsideCluster,
                                           nGlobalAlphaIn,
                                           GlobalTimeTrend.m_nBeta,
-                                          Cluster->gTimeTrendInside.m_nStatus)
+                                          StreamData.gTimeTrendInside.m_nStatus)
                     +
-                    CalcSVTTLogLikelihood(Cluster->gpCasesOutsideCluster->GetArray()[tStream],
-                                          Cluster->gpMeasureOutsideCluster->GetArray()[tStream],
-                                          Cluster->gpTotalCasesOutsideCluster[tStream],
+                    CalcSVTTLogLikelihood(StreamData.gpCasesOutsideCluster,
+                                          StreamData.gpMeasureOutsideCluster,
+                                          StreamData.gtTotalCasesOutsideCluster,
                                           nGlobalAlphaOut,
                                           GlobalTimeTrend.m_nBeta,
-                                          Cluster->gTimeTrendOutside.m_nStatus));
+                                          StreamData.gTimeTrendOutside.m_nStatus));
 
 
   #if DEBUGMODEL
