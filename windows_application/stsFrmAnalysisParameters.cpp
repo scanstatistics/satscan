@@ -649,7 +649,7 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<con
    ZdVector<ZdField*>	        vFields;
    ZdField*		        pField = 0;
    TXDFile*                     pFile = 0;
-   unsigned short               uwOffset = 0, uwLength = 64;
+   unsigned short               uwOffset = 0, uwLength = 128;
 
    try {
       // create a TXD file with a space delimiter
@@ -659,11 +659,11 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<con
       for(unsigned long i = 0; i < vFieldNames.GetNumElements(); ++i) {
       	 pField = pFile->GetNewField();
          pField->SetName(vFieldNames[i]);
-         if(!i)
+         if(!i)     // need a better system here to define which fields are required
             pField->SetRequired(true);
           // field 1 the only alpha field in the input so allow to greater width here, consider
           // other options for this in the future - AJV 9/4/2002
-         uwLength = (!i ? 64 : 32);      
+         uwLength = (!i ? 128 : 32);      
          pField->SetOffset(uwOffset);
          pField->SetLength(uwLength);
          vFields.AddElement(pField->Clone());
@@ -672,7 +672,10 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<con
       }
 
       // don't pack fields or else you'll lose the offset!!! AJV 9/5/2002
-      pFile->Create(sFileName.GetFullPath(), vFields, 1);
+      // BUGBUG - we'll temporarily delete the txd file if it already exists - AJV 9/5/2002
+      if(ZdIO::Exists(sFileName.GetFullPath()))
+         ZdIO::Delete(sFileName.GetFullPath());
+      pFile->Create(sFileName.GetFullPath(), vFields, 0);
       pFile->Close();
 
       for(unsigned int i = vFields.GetNumElements() - 1; i > 0; --i) {
