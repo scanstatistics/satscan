@@ -46,21 +46,19 @@ class CSpaceTimeCluster : public CCluster {
 
     CSpaceTimeCluster         & operator =(const CSpaceTimeCluster& cluster);
 
-    virtual count_t             GetCaseCount(unsigned int iStream) const {return gStreamData[iStream]->gCases;}
-    virtual measure_t           GetMeasure(unsigned int iStream) const {return gStreamData[iStream]->gMeasure;}
-    virtual void                SetCaseCount(unsigned int iStream, count_t tCount) {gStreamData[iStream]->gCases = tCount;}
-    virtual void                SetMeasure(unsigned int iStream, measure_t tMeasure) {gStreamData[iStream]->gMeasure = tMeasure;}
-
-
     inline virtual void         AssignAsType(const CCluster& rhs) {*this = (CSpaceTimeCluster&)rhs;}
     void                        AddNeighbor(tract_t tNeighbor, const DataStreamGateway & DataGateway);
-    void                        AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream);
+    void                        AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream=0);
     virtual CSpaceTimeCluster * Clone() const;
     inline virtual void         CompareTopCluster(CSpaceTimeCluster & TopShapeCluster, const CSaTScanData & Data);
     inline virtual void         ComputeBestMeasures(CMeasureList & MeasureList);
+    virtual count_t             GetCaseCount(unsigned int iStream) const {return gStreamData[iStream]->gCases;}
     virtual count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual measure_t           GetMeasure(unsigned int iStream) const {return gStreamData[iStream]->gMeasure;}
     virtual measure_t           GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual void                Initialize(tract_t nCenter);
+    virtual void                SetCaseCount(unsigned int iStream, count_t tCount) {gStreamData[iStream]->gCases = tCount;}
+    virtual void                SetMeasure(unsigned int iStream, measure_t tMeasure) {gStreamData[iStream]->gMeasure = tMeasure;}
 };
 //*****************************************************************************
 #endif
