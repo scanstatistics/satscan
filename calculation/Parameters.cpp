@@ -430,18 +430,21 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
     if(geSimulationType == HA_RANDOMIZATION || gbUseAdjustmentsForRRFile)
       fprintf(fp, "  Adjustments File           : %s\n", gsAdjustmentsByRelativeRisksFileName.c_str());
 
+    DatePrecisionType ePrecision;
     fprintf(fp, "\n  Time Precision     : ");
+    //Display precision, keeping in mind the v4 behavior.
     if (gePrecisionOfTimesType == NONE)
-      fprintf(fp, "None\n");
-    else {
-      DatePrecisionType eType = (gCreationVersion.iMajor == 4 ? geTimeAggregationUnitsType : gePrecisionOfTimesType);
-      switch (eType) {
-        case YEAR  : fprintf(fp, "Year\n"); break;
-        case MONTH : fprintf(fp, "Month\n"); break;
-        case DAY   : fprintf(fp, "Day\n"); break;
-        default : ZdException::Generate("Unknown date precision type '%d'.\n", "DisplayParameters()", eType);
-      }
-    }  
+      ePrecision = NONE;
+    else if (gCreationVersion.iMajor == 4)
+      ePrecision = (geAnalysisType == PURELYSPATIAL ? YEAR : geTimeAggregationUnitsType);
+    else
+      ePrecision =  gePrecisionOfTimesType;
+    switch (ePrecision) {
+      case YEAR  : fprintf(fp, "Year\n"); break;
+      case MONTH : fprintf(fp, "Month\n"); break;
+      case DAY   : fprintf(fp, "Day\n"); break;
+      default    : fprintf(fp, "None\n"); break;;
+    }
 
     fprintf(fp, "  Coordinates        : ");
     switch (geCoordinatesType) {
@@ -3111,14 +3114,9 @@ bool CParameters::ValidateDateParameters(BasePrint& PrintDirection) const {
    messages to BasePrint object.                                              */
 bool CParameters::ValidateStudyPeriodEndDate(BasePrint& PrintDirection) const {
   UInt                  nYear, nMonth, nDay;
-  DatePrecisionType     ePrecision = (gCreationVersion.iMajor == 4 ? geTimeAggregationUnitsType : gePrecisionOfTimesType);
+  DatePrecisionType     ePrecision;
 
   try {
-    if (gCreationVersion.iMajor == 4 && gePrecisionOfTimesType != NONE)
-      ePrecision = geTimeAggregationUnitsType;
-    else
-      ePrecision = gePrecisionOfTimesType;
-
     //parse date in parts
     if (CharToMDY(&nMonth, &nDay, &nYear, gsStudyPeriodEndDate.c_str()) != 3) {
       PrintDirection.SatScanPrintWarning("Error: The study period end date, '%s', is not valid.\n"
@@ -3130,7 +3128,13 @@ bool CParameters::ValidateStudyPeriodEndDate(BasePrint& PrintDirection) const {
       PrintDirection.SatScanPrintWarning("Error: The study period end date, '%s', is not a valid date.\n", gsStudyPeriodEndDate.c_str());
       return false;
     }
+
     //validate against precision of times
+    if (gCreationVersion.iMajor == 4)
+      // no date precision validation needed for purely spatial
+      ePrecision = (geAnalysisType == PURELYSPATIAL ? NONE : geTimeAggregationUnitsType);
+    else
+      ePrecision = gePrecisionOfTimesType;
     switch (ePrecision) {
       case YEAR  :
         if (nMonth != 12 || nDay != 31) {
@@ -3904,14 +3908,9 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
    messages to BasePrint object.                                              */
 bool CParameters::ValidateStudyPeriodStartDate(BasePrint& PrintDirection) const {
   UInt                  nYear, nMonth, nDay;
-  DatePrecisionType     ePrecision = (gCreationVersion.iMajor == 4 ? geTimeAggregationUnitsType : gePrecisionOfTimesType);
+  DatePrecisionType     ePrecision;
 
   try {
-    if (gCreationVersion.iMajor == 4 && gePrecisionOfTimesType != NONE)
-      ePrecision = geTimeAggregationUnitsType;
-    else
-      ePrecision = gePrecisionOfTimesType;
-
     //parse date in parts
     if (CharToMDY(&nMonth, &nDay, &nYear, gsStudyPeriodStartDate.c_str()) != 3) {
       PrintDirection.SatScanPrintWarning("Error: The study period start date, '%s', is not valid.\n"
@@ -3924,6 +3923,11 @@ bool CParameters::ValidateStudyPeriodStartDate(BasePrint& PrintDirection) const 
       return false;
     }
     //validate against precision of times
+    if (gCreationVersion.iMajor == 4)
+      // no date precision validation needed for purely spatial
+      ePrecision = (geAnalysisType == PURELYSPATIAL ? NONE : geTimeAggregationUnitsType);
+    else
+      ePrecision = gePrecisionOfTimesType;
     switch (ePrecision) {
       case YEAR  :
         if (nMonth != 1 || nDay != 1) {
