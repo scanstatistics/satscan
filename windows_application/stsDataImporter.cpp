@@ -225,19 +225,6 @@ bool SaTScanFileImporter::PutTokenToRecord(ZdFileRecord & Record, ZdString & sTo
 /** Internal setup function. */
 void SaTScanFileImporter::Setup() {
   try {
-    //dBase files require the date fields to formatted before token
-    //is put to record.
-    if (geSourceDataFileType == dBase) {
-      switch(geFileType) {
-        case Case       : gwDateFilteredField = 2;
-                          break;
-        case Control    : gwDateFilteredField = 2;
-                          break;
-        case Population : gwDateFilteredField = 1;
-                          break;
-        default         : gwDateFilteredField = -1;
-      };
-    }
     gDateFilter.SetFormat("%y/%m/%d");
   }
   catch (ZdException &x) {

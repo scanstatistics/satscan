@@ -4,18 +4,17 @@
 //---------------------------------------------------------------------------
 #include "ScanfFile.h"
 
-enum InputFileType      {Case=0, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation};
+enum InputFileType      {Case=0, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation, RelativeRisks};
 enum SourceDataFileType {Delimited=0, Fixed_Column, dBase};
 
 class SaTScanFileImporter : public BZdFileImporter {
   private:
-     void                       Init() {gwDateFilteredField=-1;}
+     void                       Init() {}
      void                       Setup();
 
   protected:
     InputFileType               geFileType;
     SourceDataFileType          geSourceDataFileType;
-    short                       gwDateFilteredField;
     ZdDateFilter                gDateFilter;
     char                        gsFilterBuffer[1024];
     ZdIniFile                 & gFileDefinition;
