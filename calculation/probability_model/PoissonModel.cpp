@@ -1,14 +1,7 @@
-// CPoissonModel.cpp
-
+#pragma hdrstop
 #include "PoissonModel.h"
-#include "CalcMsr.h"
-#include "randdist.h"
-#include "tinfo.h"
-#include "cats.h"
 
-#include <iostream>
 using std::ios;
-#include <fstream>
 using std::ifstream;
 
 CPoissonModel::CPoissonModel(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)

@@ -1,12 +1,6 @@
-// CBernoulliModel.cpp
-
+#pragma hdrstop
 #include "BernoulliModel.h"
-#include "data.h"
-#include "randdist.h"
-#include "tinfo.h"
-#include "cats.h"
-#include "rng.h"
-#include "display.h"
+
 #define DEBUG 1
 
 CBernoulliModel::CBernoulliModel(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)

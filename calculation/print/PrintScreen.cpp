@@ -1,6 +1,5 @@
-//---------------------------------------------------------------------------
+#pragma hdrstop
 #include "PrintScreen.h"
-
 
 PrintScreen::PrintScreen()
             : BasePrint()

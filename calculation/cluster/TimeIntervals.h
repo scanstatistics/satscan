@@ -1,9 +1,8 @@
-// TimeIntervals.h
-
+//*****************************************************************************
 #ifndef __TIMEINTERVALS_H
 #define __TIMEINTERVALS_H
-
-#include "spatscan.h"
+//*****************************************************************************
+#include "SaTScan.h"
 
 class CTimeIntervals
 {

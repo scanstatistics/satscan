@@ -1,10 +1,14 @@
-// CPoissonModel.h
-
-#include "model.h"
-#include "spatscan.h"
-
+//*****************************************************************************
 #ifndef __POISSONMODEL_H
 #define __POISSONMODEL_H
+//*****************************************************************************
+#include "SaTScan.h"
+#include "ProbabilityModel.h"
+#include "CalculateMeasure.h"
+#include "RandomDistribution.h"
+#include "PurelySpatialMonotoneCluster.h"
+#include <iostream>
+#include <fstream>
 
 class CPoissonModel : public CModel
 {
@@ -23,5 +27,6 @@ class CPoissonModel : public CModel
 
 };
 
+//*****************************************************************************
 #endif
 

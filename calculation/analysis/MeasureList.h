@@ -1,11 +1,9 @@
-// MeasureList.h
-
+//*****************************************************************************
 #ifndef __MEASURELIST_H
 #define __MEASURELIST_H
-
-#include "spatscan.h"
-#include "data.h"
-#include "baseprint.h"
+//*****************************************************************************
+#include "SaTScanData.h"
+#include <malloc.h>
 
 class CMeasureList
 {
@@ -71,5 +69,5 @@ class CMinMaxMeasureList : public CMeasureList
     measure_t* m_pMaxMeasures;
 
 };
-
+//*****************************************************************************
 #endif

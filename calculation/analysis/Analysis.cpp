@@ -1,14 +1,5 @@
-// analysis.cpp
-
-#include <float.h>
-#include "SSException.h" 
-#include "analysis.h"
-#include "PoissonModel.h"
-#include "BernoulliModel.h"
-#include "TimeEstimate.h"
-#include "display.h"
-#include "ginfo.h"
-#include "tinfo.h"
+#pragma hdrstop
+#include "Analysis.h"
 
 //static int CompClust(const void *a, const void *b);
 

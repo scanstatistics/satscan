@@ -1,13 +1,10 @@
-// analysis.h
-
+//*****************************************************************************
 #ifndef __ANALYSIS_H
 #define __ANALYSIS_H
-
-#include "param.h"
-#include "data.h"
-//#include "model.h"
-#include "cluster.h"
-#include "SigRatios05.h"
+//*****************************************************************************
+#include "Cluster.h"
+#include "TimeEstimate.h"
+#include "SignificantRatios05.h"
 
 //#define  DEBUGANALYSIS 0
 
@@ -92,5 +89,5 @@ class CAnalysis
     bool FinalizeReport(time_t RunTime);
 
 };
-
+//*****************************************************************************
 #endif

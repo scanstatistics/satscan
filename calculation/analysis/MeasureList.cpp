@@ -1,9 +1,5 @@
-// MeasureList.cpp
-
+#pragma hdrstop
 #include "MeasureList.h"
-#include "Model.h"
-#include "display.h"
-#include <malloc.h>
 
 CMeasureList::CMeasureList(count_t N, BasePrint *pPrintDirection)
 {

@@ -1,10 +1,11 @@
-// CBernoulliModel.h
-
+//*****************************************************************************
 #ifndef __BERNOULLIMODEL_H
 #define __BERNOULLIMODEL_H
-
-#include "model.h"
-#include "ssexception.h"
+//*****************************************************************************
+#include "ProbabilityModel.h"
+#include "PurelySpatialMonotoneCluster.h"
+#include "RandomDistribution.h"
+#include "RandomNumberGenerator.h"
 
 class CBernoulliModel : public CModel
 {
@@ -23,5 +24,6 @@ class CBernoulliModel : public CModel
                                  int nStartInterval, int nStopInterval);
 };
 
+//*****************************************************************************
 #endif
 

@@ -1,11 +1,10 @@
-// cluster.h
-
+//*****************************************************************************
 #ifndef __CLUSTER_H
 #define __CLUSTER_H
-
-#include "spatscan.h"
-#include "data.h"
-#include "rate.h"
+//*****************************************************************************
+#include "SaTScan.h"
+#include "SaTScanData.h"
+#include "IncidentRate.h"
 
 class CCluster
 {
@@ -111,4 +110,5 @@ class CCluster
      void WriteLatLongCoords(FILE* fp, CSaTScanData* pData);
 };
 
+//*****************************************************************************
 #endif

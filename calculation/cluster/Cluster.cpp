@@ -1,14 +1,5 @@
-// Cluster.cpp
-
-#include <stdio.h>
-#include <float.h>
+#pragma hdrstop
 #include "Cluster.h"
-#include "Param.h"
-#include "Cats.h"
-#include "tinfo.h"
-#include "ginfo.h"
-#include "Model.h"
-#include "LatLong.h"
 
 CCluster::CCluster(BasePrint *pPrintDirection)
 {

@@ -1,7 +1,4 @@
-// TimeEstimate.cpp
-
-#include <stdio.h>
-#include <math.h>
+#pragma hdrstop
 #include "TimeEstimate.h"
 
 void ReportTimeEstimate(clock_t nStartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection)
