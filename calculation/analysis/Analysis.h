@@ -48,7 +48,7 @@ class CAnalysis
     virtual void                SetMaxNumClusters() {m_nMaxClusters=m_pData->m_nGridTracts;};
     void                        SortTopClusters();
     void                        UpdatePowerCounts(double r);
-    bool                        UpdateReport(const ZdString& sReportHistoryFilename);
+    bool                        UpdateReport(const long& lReportHistoryRunNumber);
     void                        UpdateTopClustersRank(double r);
 
 //    CModel*       m_pModel;
@@ -62,17 +62,17 @@ class CAnalysis
     void                        DisplayFindClusterHeading();
     void                        DisplayTopClusterLogLikelihood();
     void                        DisplayTopClustersLogLikelihoods(FILE* fp);
-    virtual void                DisplayTopClusters(double nMinRatio, int nReps, FILE* fp=stdout, FILE* fpGIS=NULL, const ZdString& sReportHistoryFilename = "");
-    virtual void                DisplayTopCluster(double nMinRatio, int nReps, FILE* fp=stdout, FILE* fpGIS=NULL, const ZdString& sReportHistoryFilename = "");
+    virtual void                DisplayTopClusters(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp=stdout, FILE* fpGIS=NULL);
+    virtual void                DisplayTopCluster(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp=stdout, FILE* fpGIS=NULL);
 
     bool                        Execute(time_t RunTime);
 
-    const CSaTScanData*         GetSatScanData() const;
-    const double&               GetSimRatio01() const;
-    const double&               GetSimRatio05() const;
-    const ZdString&             GetStartTime() const;
+    const CSaTScanData*         GetSatScanData() const { return m_pData; }
+    const double&               GetSimRatio01() const { return SimRatios.GetAlpha01(); }
+    const double&               GetSimRatio05() const { return SimRatios.GetAlpha05(); }
+    const ZdString&             GetStartTime() const { return gsStartTime; }
     virtual CCluster*           GetTopCluster(tract_t nCenter) = 0;
-    const int&                  GetCoordinateType() const;
+    const int&                  GetCoordinateType() const { return m_pParameters->m_nCoordType; }
 
 };
 //*****************************************************************************

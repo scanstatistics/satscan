@@ -14,8 +14,8 @@
 #include <DBFFile.h>
 
 // constructor
-__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const ZdString& sReportHistoryFileName, const int& iCoordType, const ZdFileName& sOutputFileName)
-                             : DBaseOutput(sReportHistoryFileName, iCoordType) {
+__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const long& lRunNumber, const int& iCoordType, const ZdFileName& sOutputFileName)
+                             : DBaseOutput(lRunNumber, iCoordType) {
    try {
       Init();
       Setup(sOutputFileName.GetLocation());
@@ -47,10 +47,10 @@ void stsAreaSpecificDBF::GetFields() {
 
       for(unsigned int i = 0; i < vFields.size(); ++i) {
          pField = (File.GetNewField());
-         pField->SetName(vFields[i].sFieldName.c_str());
-         pField->SetType(vFields[i].cFieldType);
-         pField->SetLength(vFields[i].wLength);
-         pField->SetPrecision(vFields[i].wPrecision);
+         pField->SetName(vFields[i].gsFieldName.c_str());
+         pField->SetType(vFields[i].gcFieldType);
+         pField->SetLength(vFields[i].gwLength);
+         pField->SetPrecision(vFields[i].gwPrecision);
          gvFields.AddElement(pField);  ;
       }
    }
@@ -80,39 +80,25 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 
       // define record data
       // run number - from run history file AJV 9/4/2002
-      fv.SetType(pRecord->GetFieldType(uwFieldNumber));
-      fv.AsDouble() = glRunNumber;
-      pRecord->PutFieldValue(uwFieldNumber, fv);
+      SetDoubleField(*pRecord, double(glRunNumber), (uwFieldNumber));
 
       // cluster number
-      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsDouble() = iClusterNumber;
-      pRecord->PutFieldValue(uwFieldNumber, fv);
+      SetDoubleField(*pRecord, iClusterNumber, (++uwFieldNumber));
 
       // area id
-      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsDouble() = pCluster->m_Center;
-      pRecord->PutFieldValue(uwFieldNumber, fv);
+      SetDoubleField(*pRecord, pCluster->m_Center, (++uwFieldNumber));
 
       // p value
-      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsDouble() = pCluster->gfPValue;
-      pRecord->PutFieldValue(uwFieldNumber, fv);
+      SetDoubleField(*pRecord, pCluster->gfPValue, (++uwFieldNumber));
 
       // observed
-      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsDouble() = pCluster->m_nCases;
-      pRecord->PutFieldValue(uwFieldNumber, fv);
+      SetDoubleField(*pRecord, pCluster->m_nCases, (++uwFieldNumber));
 
       // expected
-      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsDouble() = pCluster->m_nMeasure;
-      pRecord->PutFieldValue(uwFieldNumber, fv);
+      SetDoubleField(*pRecord, pCluster->m_nMeasure, (++uwFieldNumber));
 
       // relative risk
-      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsDouble() = pCluster->GetRelativeRisk(pData->GetMeasureAdjustment());
-      pRecord->PutFieldValue(uwFieldNumber, fv);
+      SetDoubleField(*pRecord, pCluster->GetRelativeRisk(pData->GetMeasureAdjustment()), (++uwFieldNumber));
 
       File.AppendRecord(*pTransaction, *pRecord);
 
@@ -144,48 +130,11 @@ void stsAreaSpecificDBF::Setup(const ZdString& sOutputFileName) {
 // post : returns through reference a vector filled with field_t structs to be used
 //        to create the ZdVector of ZdField* required to create the DBF file
 void stsAreaSpecificDBF::SetupFields(std::vector<field_t>& vFields) {
-      field_t   field;
-
-      field.sFieldName = "RUN_NUM";
-      field.cFieldType = ZD_NUMBER_FLD;
-      field.wLength = 8;
-      field.wPrecision = 0;
-      vFields.push_back(field);
-
-
-      field.sFieldName = "CLUST_NUM";
-      field.cFieldType = ZD_NUMBER_FLD;
-      field.wLength = 8;
-      field.wPrecision = 0;
-      vFields.push_back(field);
-
-      field.sFieldName = "AREA_ID";
-      field.cFieldType = ZD_NUMBER_FLD;
-      field.wLength = 8;
-      field.wPrecision = 0;
-      vFields.push_back(field);
-
-      field.sFieldName = "P_VALUE";
-      field.cFieldType = ZD_NUMBER_FLD;
-      field.wLength = 12;
-      field.wPrecision = 3;
-      vFields.push_back(field);
-
-      field.sFieldName = "OBSERVED";
-      field.cFieldType = ZD_NUMBER_FLD;
-      field.wLength = 12;
-      field.wPrecision = 2;
-      vFields.push_back(field);
-
-      field.sFieldName = "EXPECTED";
-      field.cFieldType = ZD_NUMBER_FLD;
-      field.wLength = 12;
-      field.wPrecision = 2;
-      vFields.push_back(field);
-
-      field.sFieldName = "REL_RISK";
-      field.cFieldType = ZD_NUMBER_FLD;
-      field.wLength = 12;
-      field.wPrecision = 6;
-      vFields.push_back(field);
+   vFields.push_back(field_t("RUN_NUM", ZD_NUMBER_FLD, 8, 0));
+   vFields.push_back(field_t("CLUST_NUM", ZD_NUMBER_FLD, 8, 0));
+   vFields.push_back(field_t("AREA_ID", ZD_NUMBER_FLD, 8, 0));
+   vFields.push_back(field_t("P_VALUE", ZD_NUMBER_FLD, 12, 3));
+   vFields.push_back(field_t("OBSERVED", ZD_NUMBER_FLD, 12, 2));
+   vFields.push_back(field_t("EXPECTED", ZD_NUMBER_FLD, 12, 2));
+   vFields.push_back(field_t("REL_RISK", ZD_NUMBER_FLD, 12, 4));
 }

@@ -13,10 +13,10 @@
 #include "stsRunHistoryFile.h"
 
 // constructor
-stsRunHistoryFile::stsRunHistoryFile(const CAnalysis* pAnalysis, const ZdString& sFileName) {
+stsRunHistoryFile::stsRunHistoryFile(const ZdString& sFileName) {
    try {
       Init();
-      Setup(pAnalysis, sFileName);
+      Setup(sFileName);
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsRunHistoryFile");
@@ -68,11 +68,13 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
          pField->SetLength(vFieldDescriptors[i].gwFieldLength);
          pField->SetOffset(uwOffset);
          uwOffset += vFieldDescriptors[i].gwFieldLength;
+         if(!i)                    // first field needs to be indexed in order to use GotoRecordByKeys() = AJV 9/24/2002
+            pField->SetIndexCount(1);
          vFields.AddElement(pField);
       }
 
       File.PackFields(vFields);
-      File.Create(gsFilename, vFields, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
+      File.Create(gsFilename, vFields, 1);
       File.Close();
 
       CleanupFieldVector(vFields);
@@ -84,14 +86,8 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
    }
 }
 
-// returns the filename of the run history file
-const ZdString& stsRunHistoryFile::GetRunHistoryFileName() const {
-   return gsFilename;
-}
-
 // global initializations
 void stsRunHistoryFile::Init() {
-   gpAnalysis = 0;
    glRunNumber = 0;
 }
 
@@ -99,52 +95,44 @@ void stsRunHistoryFile::Init() {
 // tries to open the run history file if one exists, if not creates the file
 // pre: none
 // post: opens/creates the run history file and records the run history
-void stsRunHistoryFile::LogNewHistory(const unsigned short& uwSignificantAt005, BasePrint& PrintDirection) {
-   ZdTransaction	*pTransaction;
-   unsigned long        ulLastRecordNumber;
+void stsRunHistoryFile::LogNewHistory(const CAnalysis* pAnalysis, const unsigned short& uwSignificantAt005, BasePrint& PrintDirection) {
+   ZdTransaction	*pTransaction = 0;
    unsigned short       uwFieldNumber = 0;
    ZdString             sTempValue;
-   auto_ptr<ZdFileRecord> pLastRecord, pRecord;
+   auto_ptr<ZdFileRecord> pRecord;
    auto_ptr<TXDFile>    pFile;
 
    try {
-      // if we don't have one then create it
-      if(!ZdIO::Exists(gsFilename.GetCString()))
-         CreateRunHistoryFile();
-
       pFile.reset(new TXDFile(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE));
-
-      // get a record buffer, input data and append the record
-      pLastRecord.reset(pFile->GetNewRecord());
-      ulLastRecordNumber = pFile->GotoLastRecord(&(*pLastRecord));
-      // if there's records in the file
-      if(ulLastRecordNumber)
-         pLastRecord->GetField(0, glRunNumber);
 
       pTransaction = (pFile->BeginTransaction());
 
       // note: I'm going to document the heck out of this section in case they can't the run
       // specs on us at any time and that way I can interpret my assumptions in case any just so
       // happen to be incorrect, so bear with me - AJV 9/3/2002
+
       pRecord.reset(pFile->GetNewRecord());
-      
+      pRecord->PutField(0, glRunNumber);
+      if(!pFile->GotoRecordByKeys(&(*pRecord), &(*pRecord)))
+         ZdException::GenerateNotification("Error! Run number not found in the run history file.", "LogNewhistory()");
+
       //  run number field -- increment the run number so that we have a new unique run number - AJV 9/4/2002
-      SetDoubleField(*pRecord, double((++glRunNumber)), uwFieldNumber);
+      SetDoubleField(*pRecord, double(glRunNumber), uwFieldNumber);
 
       // run time and date field
-      sTempValue << gpAnalysis->GetStartTime();    // hack here because txd files don't like embedded \r or \n AJV
+      sTempValue << pAnalysis->GetStartTime();    // hack here because txd files don't like embedded \r or \n AJV
       sTempValue.Replace("\n", "", true);
       sTempValue.Replace("\r", "", true);
       SetStringField(*pRecord, sTempValue, (++uwFieldNumber));
 
       // output file name field
-      sTempValue << ZdString::reset << gpAnalysis->GetSatScanData()->m_pParameters->m_szOutputFilename;      // hack here because txd files don't like embedded \r or \n AJV
+      sTempValue << ZdString::reset << pAnalysis->GetSatScanData()->m_pParameters->m_szOutputFilename;      // hack here because txd files don't like embedded \r or \n AJV
       sTempValue.Replace("\r", "", true);
       sTempValue.Replace("\n", "", true);
       SetStringField(*pRecord, sTempValue, (++uwFieldNumber));
 
       // probability model field
-      switch(gpAnalysis->GetSatScanData()->m_pParameters->m_nModel) {
+      switch(pAnalysis->GetSatScanData()->m_pParameters->m_nModel) {
          case POISSON :
             sTempValue << ZdString::reset << "Poisson";
             break;
@@ -158,7 +146,7 @@ void stsRunHistoryFile::LogNewHistory(const unsigned short& uwSignificantAt005, 
       SetStringField(*pRecord, sTempValue, (++uwFieldNumber));
 
       // rates(high, low or both) field
-      switch (gpAnalysis->GetSatScanData()->m_pParameters->m_nAreas) {
+      switch (pAnalysis->GetSatScanData()->m_pParameters->m_nAreas) {
          case HIGH :
             sTempValue << ZdString::reset << "High";
             break;
@@ -172,11 +160,11 @@ void stsRunHistoryFile::LogNewHistory(const unsigned short& uwSignificantAt005, 
       SetStringField(*pRecord, sTempValue, (++uwFieldNumber));
 
       // coordinate type field
-      sTempValue << ZdString::reset << ((gpAnalysis->GetSatScanData()->m_pParameters->m_nCoordType == CARTESIAN) ? "Cartesian" : "LongLat");
+      sTempValue << ZdString::reset << ((pAnalysis->GetSatScanData()->m_pParameters->m_nCoordType == CARTESIAN) ? "Cartesian" : "LongLat");
       SetStringField(*pRecord, sTempValue, (++uwFieldNumber));
 
       // analysis type field
-      switch(gpAnalysis->GetSatScanData()->m_pParameters->m_nAnalysisType) {
+      switch(pAnalysis->GetSatScanData()->m_pParameters->m_nAnalysisType) {
          case PURELYSPATIAL :
             sTempValue << ZdString::reset << "Purely Spatial";
             break;
@@ -194,12 +182,12 @@ void stsRunHistoryFile::LogNewHistory(const unsigned short& uwSignificantAt005, 
             break;
       }
       SetStringField(*pRecord, sTempValue, (++uwFieldNumber));
-      SetLongField(*pRecord, gpAnalysis->GetSatScanData()->m_nTotalCases, (++uwFieldNumber));   // total number of cases field
-      SetLongField(*pRecord, gpAnalysis->GetSatScanData()->m_nTotalPop, (++uwFieldNumber));  // total population field
-      SetLongField(*pRecord, gpAnalysis->GetSatScanData()->m_nTracts, (++uwFieldNumber));     // number of geographic areas field
+      SetLongField(*pRecord, pAnalysis->GetSatScanData()->m_nTotalCases, (++uwFieldNumber));   // total number of cases field
+      SetLongField(*pRecord, pAnalysis->GetSatScanData()->m_nTotalPop, (++uwFieldNumber));  // total population field
+      SetLongField(*pRecord, pAnalysis->GetSatScanData()->m_nTracts, (++uwFieldNumber));     // number of geographic areas field
 
       // precision of case times field
-      switch (gpAnalysis->GetSatScanData()->m_pParameters->m_nPrecision) {
+      switch (pAnalysis->GetSatScanData()->m_pParameters->m_nPrecision) {
          case 0:
             sTempValue << ZdString::reset << "None";
             break;
@@ -214,11 +202,11 @@ void stsRunHistoryFile::LogNewHistory(const unsigned short& uwSignificantAt005, 
             break;
       }
       SetStringField(*pRecord, sTempValue, (++uwFieldNumber));
-      SetLongField(*pRecord, gpAnalysis->GetSatScanData()->m_pParameters->m_nMaxGeographicClusterSize, (++uwFieldNumber));   // max geographic extent field
-      SetLongField(*pRecord, gpAnalysis->GetSatScanData()->m_pParameters->m_nMaxTemporalClusterSize, (++uwFieldNumber));   // max temporal extent field
+      SetLongField(*pRecord, pAnalysis->GetSatScanData()->m_pParameters->m_nMaxGeographicClusterSize, (++uwFieldNumber));   // max geographic extent field
+      SetLongField(*pRecord, pAnalysis->GetSatScanData()->m_pParameters->m_nMaxTemporalClusterSize, (++uwFieldNumber));   // max temporal extent field
 
       // time trend adjustment field
-      switch(gpAnalysis->GetSatScanData()->m_pParameters->m_nTimeAdjustType) {
+      switch(pAnalysis->GetSatScanData()->m_pParameters->m_nTimeAdjustType) {
          case NOTADJUSTED :
             sTempValue << ZdString::reset << "None";
             break;
@@ -230,13 +218,13 @@ void stsRunHistoryFile::LogNewHistory(const unsigned short& uwSignificantAt005, 
             break;
       }
       SetStringField(*pRecord, sTempValue, (++uwFieldNumber));
-      SetBoolField(*pRecord, gpAnalysis->GetSatScanData()->m_pParameters->m_bSpecialGridFile, (++uwFieldNumber)); // special grid file used field
-      SetStringField(*pRecord, gpAnalysis->GetSatScanData()->m_pParameters->m_szStartDate, (++uwFieldNumber));  // start date field
-      SetStringField(*pRecord, gpAnalysis->GetSatScanData()->m_pParameters->m_szEndDate, (++uwFieldNumber)); // end date field
-      SetBoolField(*pRecord, gpAnalysis->GetSatScanData()->m_pParameters->m_bAliveClustersOnly, (++uwFieldNumber)); // alive clusters only field
+      SetBoolField(*pRecord, pAnalysis->GetSatScanData()->m_pParameters->m_bSpecialGridFile, (++uwFieldNumber)); // special grid file used field
+      SetStringField(*pRecord, pAnalysis->GetSatScanData()->m_pParameters->m_szStartDate, (++uwFieldNumber));  // start date field
+      SetStringField(*pRecord, pAnalysis->GetSatScanData()->m_pParameters->m_szEndDate, (++uwFieldNumber)); // end date field
+      SetBoolField(*pRecord, pAnalysis->GetSatScanData()->m_pParameters->m_bAliveClustersOnly, (++uwFieldNumber)); // alive clusters only field
 
       // interval units field
-      switch (gpAnalysis->GetSatScanData()->m_pParameters->m_nIntervalUnits) {
+      switch (pAnalysis->GetSatScanData()->m_pParameters->m_nIntervalUnits) {
          case 0:
             sTempValue << ZdString::reset << "None";
             break;
@@ -251,13 +239,13 @@ void stsRunHistoryFile::LogNewHistory(const unsigned short& uwSignificantAt005, 
             break;
       }
       SetStringField(*pRecord, sTempValue, (++uwFieldNumber));
-      SetLongField(*pRecord, gpAnalysis->GetSatScanData()->m_pParameters->m_nIntervalLength, (++uwFieldNumber)); // intervals length field
-      SetLongField(*pRecord, gpAnalysis->GetSatScanData()->m_pParameters->m_nReplicas, (++uwFieldNumber));  // monte carlo  replications field
-      SetDoubleField(*pRecord, gpAnalysis->GetSimRatio01(), (++uwFieldNumber)); // 0.01 cutoff field
-      SetDoubleField(*pRecord, gpAnalysis->GetSimRatio05(), (++uwFieldNumber)); // 0.05 cutoff field
+      SetLongField(*pRecord, pAnalysis->GetSatScanData()->m_pParameters->m_nIntervalLength, (++uwFieldNumber)); // intervals length field
+      SetLongField(*pRecord, pAnalysis->GetSatScanData()->m_pParameters->m_nReplicas, (++uwFieldNumber));  // monte carlo  replications field
+      SetDoubleField(*pRecord, pAnalysis->GetSimRatio01(), (++uwFieldNumber)); // 0.01 cutoff field
+      SetDoubleField(*pRecord, pAnalysis->GetSimRatio05(), (++uwFieldNumber)); // 0.05 cutoff field
       SetLongField(*pRecord, (long)uwSignificantAt005, (++uwFieldNumber));  // number of clusters significant at tthe .05 llr cutoff field
 
-      pFile->AppendRecord(*pTransaction, *pRecord);
+      pFile->UpdateRecord(*pTransaction, *pRecord);
       pFile->EndTransaction(pTransaction); pTransaction = 0;
       pFile->Close();
    }
@@ -363,6 +351,52 @@ void stsRunHistoryFile::SetLongField(ZdFileRecord& record, const long& lValue, c
    }
 }
 
+// sets the global variable glRunNumber and secures a unique run number in the file
+// by adding a record with that run number to fix the multithreading issue
+// pre: glRunNumber = 0
+// post: sets the run number and adds a record to the file with that number
+void stsRunHistoryFile::SetRunNumber() {
+   ZdTransaction	*pTransaction = 0;
+   ZdString             sTempValue;
+   auto_ptr<TXDRec>     pLastRecord, pRecord;
+   auto_ptr<TXDFile>    pFile;
+
+   try {
+      // if we don't have one then create it
+      if(!ZdIO::Exists(gsFilename.GetCString()))
+         CreateRunHistoryFile();
+
+      pFile.reset(new TXDFile(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE));
+
+      // get a record buffer, input data and append the record
+      pLastRecord.reset(pFile->GetNewRecord());
+      // if there's records in the file
+      if(pFile->GotoLastRecord(&(*pLastRecord)))
+         pLastRecord->GetField(0, glRunNumber);
+      ++glRunNumber;
+
+      pTransaction = pFile->BeginTransaction();
+      pRecord.reset(pFile->GetNewRecord());
+      pRecord->Clear();
+      pRecord->PutField(0, glRunNumber);       // run number field
+      pRecord->PutField(2, "Run started, but not completed.");   // output filename field, but for now a text field
+                                                                 // that I can use to display this message - will let
+                                                                 // the user know if an anlysis failed or was cancelled - AJV 9/24/2002
+
+      pFile->AppendRecord(*pTransaction, *pRecord);
+      pFile->EndTransaction(pTransaction); pTransaction = 0;
+      pFile->Close();
+   }
+   catch (ZdException &x) {
+      if(pTransaction)
+            pFile->EndTransaction(pTransaction);
+         pTransaction = 0;
+      pFile->Close();
+      x.AddCallpath("SetRunNumber()", "stsRunHistoryFile");
+      throw;
+   }
+}
+
 // function to set the value of string fields
 // pre: record has been allocated
 // post: sets the values in the FieldNumber field of the record
@@ -381,10 +415,10 @@ void stsRunHistoryFile::SetStringField(ZdFileRecord& record, const ZdString& sVa
 }
 
 // internal setup
-void stsRunHistoryFile::Setup(const CAnalysis* pAnalysis, const ZdString& sFileName) {
+void stsRunHistoryFile::Setup(const ZdString& sFileName) {
    try {
       gsFilename = sFileName;
-      gpAnalysis = const_cast<CAnalysis*>(pAnalysis);
+      SetRunNumber();
    }
    catch (ZdException &x) {
       x.AddCallpath("Setup()", "stsRunHistoryFile");

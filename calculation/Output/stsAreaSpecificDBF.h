@@ -11,7 +11,7 @@ class stsAreaSpecificDBF : public DBaseOutput {
       virtual void              GetFields();
       virtual void              SetupFields(std::vector<field_t>& vFields);
    public:
-      __fastcall stsAreaSpecificDBF(const ZdString& sReportHistoryFileName, const int& iCoordType, const ZdFileName& sOutputFileName);
+      __fastcall stsAreaSpecificDBF(const long& lRunNumber, const int& iCoordType, const ZdFileName& sOutputFileName);
       virtual ~stsAreaSpecificDBF();
 
       virtual void              RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber);

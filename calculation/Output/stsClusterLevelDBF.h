@@ -11,7 +11,7 @@ class stsClusterLevelDBF : public DBaseOutput {
       virtual void              GetFields();
       virtual void              SetupFields(std::vector<field_t>& vFields);
    public:
-      __fastcall stsClusterLevelDBF(const ZdString& sReportHistoryFileName, const int& iCoordType, const ZdFileName& sOutputFileName);
+      __fastcall stsClusterLevelDBF(const long& lRunNumber, const int& iCoordType, const ZdFileName& sOutputFileName);
       virtual ~stsClusterLevelDBF();
 
       void              RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber);

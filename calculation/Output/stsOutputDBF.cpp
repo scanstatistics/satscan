@@ -16,10 +16,10 @@ const char *    CLUSTER_LEVEL_DBF_FILE  =       "ClusterLevel.dbf";
 const char *    AREA_SPECIFIC_DBF_FILE  =       "AreaSpecific.dbf";
 
 // constructor
-__fastcall DBaseOutput::DBaseOutput(const ZdString& sReportHistoryFileName, const int& iCoordType) {
+__fastcall DBaseOutput::DBaseOutput(const long& lRunNumber, const int& iCoordType) {
    try {
       Init();
-      Setup(sReportHistoryFileName, iCoordType);	
+      Setup(lRunNumber, iCoordType);
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "DBaseOutput");
@@ -79,31 +79,77 @@ void DBaseOutput::Init() {
    giCoordType = 0;
 }	
 
-// internal setup function
-void DBaseOutput::Setup(const ZdString& sReportHistoryFileName, const int& iCoordType) {
-   try{
-      giCoordType = iCoordType;
+// function to set the value of boolean fields
+// pre: record has been allocated
+// post: sets the values in the FieldNumber field of the record
+void DBaseOutput::SetBoolField(ZdFileRecord& record, const bool& bValue, const unsigned long& uwFieldNumber) {
+   ZdFieldValue fv;
 
-      // ugly hack to get the run number from the history file - need a new way to do this - AJV 9/7/2002
-      // consider making GetRunHistoryNumber or something of the like a function of the RunHistory file - AJV 9/9/2002
-      if(ZdIO::Exists(sReportHistoryFileName))  {
-         TXDFile File(sReportHistoryFileName, ZDIO_OPEN_READ);
-
-         // if there's records in the file
-         unsigned long ulNumRecords = File.GetNumRecords();
-         if(ulNumRecords) {
-            auto_ptr<ZdFileRecord> pLastRecord;
-            pLastRecord.reset(File.GetNewRecord());
-            File.GotoRecord(ulNumRecords, &(*pLastRecord));
-            glRunNumber = pLastRecord->GetLong((long)0);       
-         }
-         File.Close();
-      }
-      ++glRunNumber;    // add one here to signify a new run - AJV
+   try {
+      fv.SetType(record.GetFieldType(uwFieldNumber));
+      fv.AsBool() = bValue;
+      record.PutFieldValue(uwFieldNumber, fv);
    }
-   catch(ZdException &x) {
-      x.AddCallpath("Setup()", "DBaseOutput");
+   catch (ZdException &x) {
+      x.AddCallpath("SetBoolField()", "DBaseOutput");
       throw;
    }
+}
+
+// function to set the value of double fields
+// pre: record has been allocated
+// post: sets the values in the FieldNumber field of the record
+void DBaseOutput::SetDoubleField(ZdFileRecord& record, const double& dValue, const unsigned long& uwFieldNumber) {
+   ZdFieldValue fv;
+
+   try {
+      fv.SetType(record.GetFieldType(uwFieldNumber));
+      fv.AsDouble() = dValue;
+      record.PutFieldValue(uwFieldNumber, fv);
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("SetDoubleField()", "DBaseOutput");
+      throw;
+   }
+}
+
+// function to set the value of long fields
+// pre: record has been allocated
+// post: sets the values in the FieldNumber field of the record
+void DBaseOutput::SetLongField(ZdFileRecord& record, const long& lValue, const unsigned long& uwFieldNumber) {
+   ZdFieldValue fv;
+
+   try {
+      fv.SetType(record.GetFieldType(uwFieldNumber));
+      fv.AsLong() = lValue;
+      record.PutFieldValue(uwFieldNumber, fv);
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("SetLongField()", "DBaseOutput");
+      throw;
+   }
+}
+
+// function to set the value of string fields
+// pre: record has been allocated
+// post: sets the values in the FieldNumber field of the record
+void DBaseOutput::SetStringField(ZdFileRecord& record, const ZdString& sValue, const unsigned long& uwFieldNumber) {
+   ZdFieldValue fv;
+
+   try {
+      fv.SetType(record.GetFieldType(uwFieldNumber));
+      fv.AsZdString() = sValue;
+      record.PutFieldValue(uwFieldNumber, fv);
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("SetStringField()", "DBaseOutput");
+      throw;
+   }
+}
+
+// internal setup function
+void DBaseOutput::Setup(const long& lRunNumber, const int& iCoordType) {
+   giCoordType = iCoordType;
+   glRunNumber = lRunNumber;
 }	
 

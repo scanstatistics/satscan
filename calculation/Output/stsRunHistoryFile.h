@@ -17,12 +17,12 @@ class history_field_t {
 class stsRunHistoryFile {
    private:
       ZdString          gsFilename;
-      CAnalysis         *gpAnalysis;
       long              glRunNumber;
 
       void      CleanupFieldVector(ZdVector<ZdField*>& vFields);
       void	Init();
-      void	Setup(const CAnalysis* pAnalysis, const ZdString& sFileName);
+      void      SetRunNumber();
+      void	Setup(const ZdString& sFileName);
    protected:
       void      CreateRunHistoryFile();
       void      SetupFields(std::vector<history_field_t>&  vFieldDescrip );
@@ -32,11 +32,12 @@ class stsRunHistoryFile {
       void      SetLongField(ZdFileRecord& record, const long& lValue, const unsigned long& uwFieldNumber);
       void      SetStringField(ZdFileRecord& record, const ZdString& sValue, const unsigned long& uwFieldNumber);
    public:
-      stsRunHistoryFile(const CAnalysis* pAnalysis, const ZdString& sFileName = "");
+      stsRunHistoryFile(const ZdString& sFileName);
       ~stsRunHistoryFile();
 
-      const ZdString&   GetRunHistoryFileName() const;
-      void              LogNewHistory(const unsigned short& uwSignificantAt005, BasePrint& PrintDirection);
+      const long&       GetRunNumber() const {return glRunNumber;}
+      const ZdString&   GetRunHistoryFileName() const {return gsFilename;}
+      void              LogNewHistory(const CAnalysis* pAnalysis, const unsigned short& uwSignificantAt005, BasePrint& PrintDirection);
 };
 
 //---------------------------------------------------------------------------
