@@ -8,7 +8,7 @@
 
 double 			CalcLogLikelihood(count_t n, measure_t u, count_t N, measure_t U);
 void 			ConvertFromLatLong(double Latitude, double Longitude, std::vector<double>& vCoordinates);
-void 			ConvertToLatLong(double* Latitude, double* Longitude, double* pCoords);
+void 			ConvertToLatLong(float* Latitude, float* Longitude, double* pCoords);
 void 			DisplayVersion(FILE* fp, int nPos);
 double                  GetDuczmalCorrection(double dEllipseShape);
 

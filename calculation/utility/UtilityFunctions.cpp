@@ -36,11 +36,17 @@ void ConvertFromLatLong(double Latitude, double Longitude, std::vector<double>& 
   vCoordinates[2] = (RADIUS * sin(Latitude*PI/180.0));														// z coordinate
 }
 
-void ConvertToLatLong(double* Latitude, double* Longitude, double* pCoords) {
-  double RADIUS = 6367; // Constant; radius of earth in km)
+/** converts passed coordinates to latitude/longitude
+    NOTE: This function takes doubles and converts to floats. To keep
+          consistancy with output, this function is intentionally left this way.
+          Currently, this function is used soley for reporting of cluster
+          coordinates in results and cluster data output files. Switching to
+          doubles causes different output results due to greater precision. */
+void ConvertToLatLong(float* Latitude, float* Longitude, double* pCoords) {
+  float RADIUS = 6367; // Constant; radius of earth in km)
 
   if (pCoords[0] != 0) {
-    *Longitude = (atan(pCoords[1] / pCoords[0]) * 180.0 / PI);
+    *Longitude = (float)(atan(pCoords[1] / pCoords[0]) * 180.0 / PI);
     if (pCoords[0] < 0 && pCoords[1] > 0)
       *Longitude += 180.0;
     else if (pCoords[0] < 0 && pCoords[1] < 0)
@@ -53,8 +59,8 @@ void ConvertToLatLong(double* Latitude, double* Longitude, double* pCoords) {
   else if (pCoords[1] == 0)
     *Longitude = 0.0;
 
-  double tmp = sqrt((pCoords[0]*pCoords[0] + pCoords[1]*pCoords[1])/(RADIUS*RADIUS));
-  *Latitude = ((pCoords[2] >= 0 ? (1.0) : (-1.0)) * acos(tmp) * 180.0 / PI);
+  float tmp = (float)sqrt((pCoords[0]*pCoords[0] + pCoords[1]*pCoords[1])/(RADIUS*RADIUS));
+  *Latitude = (float)((pCoords[2] >= 0 ? (1.0) : (-1.0)) * acos(tmp) * 180.0 / PI);
 }
 
 void DisplayVersion(FILE* fp=stdout, int nPos=0)
