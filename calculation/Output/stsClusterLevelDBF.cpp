@@ -15,8 +15,9 @@
 #include "Cluster.h"
 
 // constructor
-__fastcall stsClusterLevelDBF::stsClusterLevelDBF(const long lRunNumber, const int iCoordType, const ZdFileName& sOutputFileName, const int iDimension)
-                             : DBaseOutput(lRunNumber, iCoordType) {
+__fastcall stsClusterLevelDBF::stsClusterLevelDBF(const long lRunNumber, const int iCoordType,
+                                                  const ZdFileName& sOutputFileName, const int iDimension,
+                                                  const bool bPrintPVal) : DBaseOutput(lRunNumber, bPrintPVal, iCoordType) {
    try {
       Init();
       Setup(sOutputFileName.GetFullPath(), iDimension);
@@ -46,7 +47,7 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
    float                        fRadius = 0.0, fLatitude = 0.0, fLongitude = 0.0, fPVal;
    ZdString                     sTempValue;
    ZdTransaction*               pTransaction = 0;
-   char                         sStartDate[15], sEndDate[15];
+   std::string                  sStartDate, sEndDate;
    DBFFile                      File(gsFileName.GetCString());
    std::vector<float>           vAdditCoords;
 
@@ -57,13 +58,10 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
       // run number field  - from the run history file  AJV 9/4/2002
       SetDoubleField(*pRecord, double(glRunNumber), GetFieldNumber(gvFields, RUN_NUM));
 
-      // cluster start date
-      JulianToChar(sStartDate, pCluster.m_nStartDate);
-      SetStringField(*pRecord, sStartDate, GetFieldNumber(gvFields, START_DATE));
-
-      // cluster end date
-      JulianToChar(sEndDate, pCluster.m_nEndDate);
-      SetStringField(*pRecord, sEndDate, GetFieldNumber(gvFields, END_DATE));
+      // cluster start and end date
+      SetStartAndEndDates(sStartDate, sEndDate, pCluster, pData);
+      SetStringField(*pRecord, sStartDate.c_str(), GetFieldNumber(gvFields, START_DATE));
+      SetStringField(*pRecord, sEndDate.c_str(), GetFieldNumber(gvFields, END_DATE));
 
       // cluster number
       SetDoubleField(*pRecord, iClusterNumber, GetFieldNumber(gvFields, CLUST_NUM));
@@ -81,8 +79,10 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
       SetDoubleField(*pRecord, pCluster.m_nLogLikelihood, GetFieldNumber(gvFields, LOG_LIKL));
 	
       // p value
-      fPVal = (float) pCluster.GetPVal(pData.m_pParameters->m_nReplicas);
-      SetDoubleField(*pRecord, fPVal, GetFieldNumber(gvFields, P_VALUE));
+      if (gbPrintPVal) {
+         fPVal = (float) pCluster.GetPVal(pData.m_pParameters->m_nReplicas);
+         SetDoubleField(*pRecord, fPVal, GetFieldNumber(gvFields, P_VALUE));
+      }
 
       // number of areas in the cluster
       SetDoubleField(*pRecord, pCluster.m_nTracts, GetFieldNumber(gvFields, NUM_AREAS));
@@ -156,6 +156,33 @@ void stsClusterLevelDBF::SetCoordinates(float& fLatitude, float& fLongitude, flo
    }
 }
 
+// function to determine the correct start and end dates to print to the file - for all but purely spatial
+// analysis we'll use the cluster start and end dates but for purely spatial we'll use study begin and end dates -
+// this is the same method used in the ASCII file so we'll follow their lead - AJV 10/2/2002
+// pre : pCluster and pData are initialized with the correct data
+// post : will set sStartDate and sEndDate with the appropriate value based upon the analysis type
+void stsClusterLevelDBF::SetStartAndEndDates(std::string& sStartDate, std::string& sEndDate, const CCluster& pCluster, const CSaTScanData& pData) {
+   char       sStart[15], sEnd[15];
+
+   try {
+      if (pData.m_pParameters->m_nAnalysisType != PURELYSPATIAL) {
+         JulianToChar(sStart, pCluster.m_nStartDate);
+         JulianToChar(sEnd, pCluster.m_nEndDate);
+         sStartDate = sStart;
+         sEndDate = sEnd;
+      }
+      else {
+         sStartDate = pData.m_pParameters->m_szStartDate;
+         sEndDate = pData.m_pParameters->m_szEndDate;
+      }
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("SetStartAndEndDates()", "stsClusterLevelDBF");
+      throw;
+   }
+}
+
+
 // internal setup
 void stsClusterLevelDBF::Setup(const ZdString& sOutputFileName, const int iDimension) {
    try {
@@ -190,7 +217,10 @@ void stsClusterLevelDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
       CreateNewField(vFields, (giCoordType != CARTESIAN) ? COORD_LAT : COORD_X, ZD_NUMBER_FLD, 12, 6, uwOffset);
       CreateNewField(vFields, (giCoordType != CARTESIAN) ? COORD_LONG : COORD_Y, ZD_NUMBER_FLD, 12, 6, uwOffset);
 
-      if(giDimension > 2) {
+      // Only Cartesian coordinates have more than two dimensions. Lat/Long is consistently assigned to 3 dims
+      // throughout the program eventhough the third dim is never used. When you print the third it is blank
+      // and meaningless and thus does not need to be included here. - AJV 10/2/2002
+      if(giCoordType == CARTESIAN && giDimension > 2) {
          for(int i = 3; i <= giDimension; ++i) {
             sTemp << ZdString::reset << COORD_Z << (i-2);
             CreateNewField(vFields, sTemp.GetCString(), ZD_NUMBER_FLD, 12, 6, uwOffset);
@@ -203,7 +233,9 @@ void stsClusterLevelDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
       CreateNewField(vFields, EXPECTED, ZD_NUMBER_FLD, 12, 2, uwOffset);
       CreateNewField(vFields, REL_RISK, ZD_NUMBER_FLD, 12, 3, uwOffset);
       CreateNewField(vFields, LOG_LIKL, ZD_NUMBER_FLD, 16, 6, uwOffset);
-      CreateNewField(vFields, P_VALUE, ZD_NUMBER_FLD, 12, 5, uwOffset);
+
+      if(gbPrintPVal)
+         CreateNewField(vFields, P_VALUE, ZD_NUMBER_FLD, 12, 5, uwOffset);
       CreateNewField(vFields, START_DATE, ZD_ALPHA_FLD, 16, 0, uwOffset);
       CreateNewField(vFields, END_DATE, ZD_ALPHA_FLD, 16, 0, uwOffset);
    }

@@ -10,11 +10,12 @@ class stsClusterLevelDBF : public DBaseOutput {
       void	Init();
       void      SetCoordinates(float& fLatitude, float& fLongitude, float& fRadius, std::vector<float>& vAdditCoords,
                                const CCluster& pCluster, const CSaTScanData& pData);
+      void      SetStartAndEndDates(std::string& sStartDate, std::string& sEndDate, const CCluster& pCluster, const CSaTScanData& pData);                         
       void	Setup(const ZdString& sOutputFileName, const int iDimension);
    protected:
       virtual void  SetupFields(ZdPointerVector<ZdField>& vFields);
    public:
-      __fastcall stsClusterLevelDBF(const long lRunNumber, const int iCoordType, const ZdFileName& sOutputFileName, const int iDimension = 2);
+      __fastcall stsClusterLevelDBF(const long lRunNumber, const int iCoordType, const ZdFileName& sOutputFileName, const int iDimension = 2, const bool bPrintPVal = true);
       virtual ~stsClusterLevelDBF();
 
       virtual void  RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, tract_t tTract = 0);
