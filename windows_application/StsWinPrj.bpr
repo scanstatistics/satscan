@@ -8,6 +8,8 @@
       stsFrmAnalysisRun.obj stsUtilityFunctions.obj stsCalculationThread.obj 
       stsPrintWindow.obj stsFrmOutPutViewer.obj stsDataImporter.obj 
       stsDlgDataImporter.obj stsOutputFileRegistry.obj 
+      stsFrmDownloadProgress.obj stsFrmUpdateCheck.obj 
+      stsBaseAnalysisChildForm.obj stsFrmStartWindow.obj 
       ..\calculation\Parameters.obj ..\calculation\Toolkit.obj 
       ..\calculation\SaTScanBasis.obj ..\calculation\utility\ScanfFile.obj 
       ..\calculation\utility\UtilityFunctions.obj 
@@ -59,23 +61,20 @@
       ..\calculation\Output\stsAreaSpecificData.obj 
       ..\calculation\Output\stsOutputFileWriter.obj 
       ..\calculation\Output\stsDBaseFileWriter.obj 
-      ..\calculation\Output\stsASCIIFileWriter.obj stsBaseAnalysisChildForm.obj 
+      ..\calculation\Output\stsASCIIFileWriter.obj 
       ..\calculation\cluster\TimeIntervalRange.obj 
       ..\calculation\cluster\TimeTrend.obj 
       ..\calculation\cluster\SVTTCluster.obj ..\calculation\satscan_data\SVTTData.obj 
       ..\calculation\analysis\SVTTAnalysis.obj 
       ..\calculation\cluster\PurelySpatialProspectiveCluster.obj 
-      stsFrmStartWindow.obj 
-      ..\calculation\utility\MultipleDimensionArrayHandler.obj 
-      stsFrmDownloadProgress.obj stsFrmUpdateCheck.obj"/>
+      ..\calculation\utility\MultipleDimensionArrayHandler.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
       stsFrmAnalysisRun.dfm stsFrmOutPutViewer.dfm stsDlgDataImporter.dfm 
-      stsFrmStartWindow.dfm stsFrmDownloadProgress.dfm stsFrmUpdateCheck.dfm"/>
-    <LIBFILES value="&quot;C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib&quot; 
-      &quot;C:\Program Files\Borland\CBuilder5\Lib\zd540.lib&quot; 
-      ..\xbase\xbase_2.0.0\xbase\xbase.lib"/>
+      stsFrmDownloadProgress.dfm stsFrmUpdateCheck.dfm stsFrmStartWindow.dfm"/>
+    <LIBFILES value="..\xbase\xbase_2.0.0\xbase\xbase.lib 
+      &quot;C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib&quot; &quot;C:\Program Files\Borland\CBuilder5\Lib\zd540.lib&quot;"/>
     <LIBRARIES value="NMFast50.lib TSGC5201.lib vcldb50.lib vclbde50.lib vclx50.lib Qrpt50.lib 
       Vcl50.lib"/>
     <SPARELIBS value="Vcl50.lib Qrpt50.lib vclx50.lib vclbde50.lib vcldb50.lib TSGC5201.lib 
