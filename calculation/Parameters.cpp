@@ -3159,7 +3159,7 @@ bool CParameters::ValidateDateParameters(BasePrint & PrintDirection) {
       //check that study period start and end dates are chronologically correct
       StudyPeriodStartDate = GetStudyPeriodStartDateAsJulian();
       StudyPeriodEndDate = GetStudyPeriodEndDateAsJulian();
-      if (StudyPeriodStartDate >= StudyPeriodEndDate) {
+      if (StudyPeriodStartDate > StudyPeriodEndDate) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Study period start date '%s' does not occur before study period end date '%s'.\n",
                                            gsStudyPeriodStartDate.c_str(), gsStudyPeriodEndDate.c_str());
@@ -3891,6 +3891,13 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
       }
       //validate that the time interval length is less than or equal to length of study period  ### this one needs work, too vague ####
       lStudyPeriodLength = TimeBetween(GetStudyPeriodStartDateAsJulian(), GetStudyPeriodEndDateAsJulian(), geTimeIntervalUnitsType);
+
+      if ((int)ceil(lStudyPeriodLength/(float)glTimeIntervalLength) <= 1) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: For the specified study period and time interval length, the resulting number\n"
+                                           "       of time intervals is 1. Time based analyses can not be performed with less\n"
+                                           "       than 2 time intervals.");
+      }
       if (glTimeIntervalLength > lStudyPeriodLength) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: For a study period starting '%s' and ending '%s',\n",

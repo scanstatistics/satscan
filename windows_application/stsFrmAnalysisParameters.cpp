@@ -267,10 +267,42 @@ void __fastcall TfrmAnalysis::btnResultFileBrowseClick(TObject *Sender) {
 //---------------------------------------------------------------------------
 /** Validates time interval length is not less than zero. */
 void TfrmAnalysis::Check_IntervalLength() {
-  if (edtTimeIntervalLength->Text.IsEmpty() || atoi(edtTimeIntervalLength->Text.c_str()) < 1) {
-    PageControl1->ActivePage = tbAnalysis;
-    edtTimeIntervalLength->SetFocus();
-    ZdException::GenerateNotification("Please specify an interval length greater than zero.","Check_IntervalLength()");
+  ZdDate        StartDate, EndDate;
+  float         fTime;
+
+  try {
+    //report error if control is empty or specified interval length is less than one.
+    if (edtTimeIntervalLength->Text.IsEmpty() || atoi(edtTimeIntervalLength->Text.c_str()) < 1) {
+      PageControl1->ActivePage = tbAnalysis;
+      edtTimeIntervalLength->SetFocus();
+      ZdException::GenerateNotification("Please specify an interval length greater than zero.","Check_IntervalLength()");
+    }
+    //report error when specified time length is invalid
+    switch (GetAnalysisControlType()) {
+      case PURELYSPATIAL             :
+        break; //above if statement provides validation for this analysis type
+      case PURELYTEMPORAL            :
+      case PROSPECTIVEPURELYTEMPORAL :
+      case SPACETIME                 :
+      case PROSPECTIVESPACETIME      :
+      case SPATIALVARTEMPTREND       :
+        fTime = TimeBetween(GetStudyPeriodStartDate(StartDate).GetJulianDayFromCalendarStart(),
+                            GetStudyPeriodEndDate(EndDate).GetJulianDayFromCalendarStart(),
+                            GetTimeIntervalControlType());
+        if ((int)ceil(fTime/(float)edtTimeIntervalLength->Text.ToInt()) <= 1) {
+          PageControl1->ActivePage = tbAnalysis;
+          edtTimeIntervalLength->SetFocus();
+          ZdException::GenerateNotification("For the specified study period and time interval length,\n"
+                                            "the resulting number of time intervals is 1. Time based\n"
+                                            "analyses can not be performed with less than 2 time intervals.","Check_IntervalLength()");
+        }
+        break;
+      default : ZdGenerateException("Unknown analysis type '%d'.","Check_IntervalLength()", GetAnalysisControlType());
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Check_IntervalLength()","TfrmAnalysis");
+    throw;
   }
 }
 //---------------------------------------------------------------------------
@@ -362,7 +394,7 @@ void TfrmAnalysis::CheckStudyPeriodDatesRange() {
     GetStudyPeriodEndDate(EndDate);
 
     //check that start date is before end date
-    if (StartDate >= EndDate) {
+    if (StartDate > EndDate) {
       DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), StartDate.GetRawDate());
       sErrorMessage << "The study period start date of " << FilterBuffer;
       DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), EndDate.GetRawDate());
@@ -421,7 +453,7 @@ void TfrmAnalysis::DefaultHiddenParameters() {
   if (gParameters.GetTimeTrendAdjustmentType() == NONPARAMETRIC)
     gParameters.SetTimeTrendAdjustmentType(STRATIFIED_RANDOMIZATION);
   // PAG - April 2, 2004:  as per Scott, add next line and remove next two
-  gParameters.SetTimeTrendConvergence(.0000001); //default value in CParameters*/
+  gParameters.SetTimeTrendConvergence(.0000001); //default value in CParameters
   //if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
   //  gParameters.SetTimeTrendAdjustmentType(NOTADJUSTED);
   gParameters.SetSimulationType(STANDARD);
