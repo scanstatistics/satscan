@@ -668,33 +668,28 @@ void CSaTScanData::SetAdditionalCaseArrays(RealDataStream & thisStream) {
   }
 }
 
-/* Calculates the number of time intervals to include in potential clusters
-   without exceeding the maximum cluster size with respect to time.*/
+/* Calculates the number of time aggregation units to include in potential clusters
+   without exceeding the maximum temporal cluster size.*/
 void CSaTScanData::SetIntervalCut() {
-  ZdString      sIntervalCutMessage, sTimeIntervalType;
   double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
 
   try {
-    if (m_nTimeIntervals == 1)
-      m_nIntervalCut = 1;
-    else if (m_nTimeIntervals > 1) {
-      if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
-        //calculate the number of time interval units which comprise the maximum
-        //temporal cluster size in the study period
-        dStudyPeriodLengthInUnits = CalculateNumberOfTimeIntervals(m_nStartDate, m_nEndDate, gParameters.GetTimeAggregationUnitsType(), 1);
-        dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * gParameters.GetMaximumTemporalClusterSize()/100.0);
-        //now calculate number of those time units a cluster can contain with respects to the specified aggregation length
-        m_nIntervalCut = static_cast<int>(floor(dMaxTemporalLengthInUnits / gParameters.GetTimeAggregationLength()));
-      }
-      else
-        m_nIntervalCut = static_cast<int>(gParameters.GetMaximumTemporalClusterSize() / gParameters.GetTimeAggregationLength());
+    if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
+      //calculate the number of time interval units which comprise the maximum
+      //temporal cluster size in the study period
+      dStudyPeriodLengthInUnits = CalculateNumberOfTimeIntervals(m_nStartDate, m_nEndDate, gParameters.GetTimeAggregationUnitsType(), 1);
+      dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * gParameters.GetMaximumTemporalClusterSize()/100.0);
+      //now calculate number of those time units a cluster can contain with respects to the specified aggregation length
+      m_nIntervalCut = static_cast<int>(floor(dMaxTemporalLengthInUnits / gParameters.GetTimeAggregationLength()));
     }
+    else
+      m_nIntervalCut = static_cast<int>(gParameters.GetMaximumTemporalClusterSize() / gParameters.GetTimeAggregationLength());
 
     if (m_nIntervalCut==0)
       //Validation in CParameters should have produced error before this body of code.
       //Only a program error or user selecting not to validate parameters should cause
       //this error to occur.
-      ZdException::Generate("The calculated number of time aggregation units is zero.","SetIntervalCut()");
+      ZdException::Generate("The calculated number of time aggregations units in potential clusters is zero.","SetIntervalCut()");
    }
   catch (ZdException &x) {
     x.AddCallpath("SetIntervalCut()","CSaTScanData");
@@ -730,9 +725,11 @@ void CSaTScanData::SetIntervalStartTimes() {
 
 //  PrintJulianDates(gvTimeIntervalStartTimes, "c:\\StartDates.txt");
 
-  if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION && m_nTimeIntervals <= 1)
-    GenerateResolvableException("Error: The time stratified randomization adjustment requires more than\n"
-                                "       one time interval.\n", "SetIntervalStartTimes()");
+  if (m_nTimeIntervals <= 1)
+    //This error should be catch in the CParameters validation process.
+    ZdException::Generate("The number of time intervals was calculated as one. Temporal\n"
+                          "and space-time analyses can not be performed on less than one\n"
+                          "time interval.\n", "SetIntervalStartTimes()");
 }
 
 /** Causes maximum circle size to be set based on parameters settings. */
