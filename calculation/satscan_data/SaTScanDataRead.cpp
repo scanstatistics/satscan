@@ -3,9 +3,9 @@
 #include "SaTScanData.h"
 
 #define MAXWORDBUFFER 256
-#define MAX_POP_DATES 200
-#define POP_MONTH     7
-#define POP_DAY       1
+const int POPULATION_DATE_PRECISION_MONTH_DEFAULT_DAY   = 15;
+const int POPULATION_DATE_PRECISION_YEAR_DEFAULT_DAY    = 1;
+const int POPULATION_DATE_PRECISION_YEAR_DEFAULT_MONTH  = 7;
 
 void DeleteCVEC(char **cvec, int nCats);
 
@@ -31,8 +31,6 @@ bool CSaTScanData::ReadCounts(const char* szCountFilename, const char* szDescrip
       for(int i = 0; i < m_nTimeIntervals; ++i) {
         (*pCounts)[i] = (count_t*)Smalloc(m_nTracts * sizeof(count_t), gpPrintDirection);
         // Initialize counts
-     // }
-     //  for(i = 0; i < m_nTimeIntervals; ++i) {
          for(int j = 0; j < m_nTracts; ++j)
             (*pCounts)[i][j]=0;
       }
@@ -99,7 +97,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
       }
     
       //Check: tract id valid
-      tid = gpTInfo->tiGetTractNum(szTid);
+      tid = gpTInfo->tiGetTractIndex(szTid);
     
       if (tid == -1) {
         free(cvec);
@@ -184,8 +182,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
             return false;
           }
 
-          count = gpTInfo->tiGetCount(tid, cat);
-          if (!gpTInfo->tiSetCount(tid, cat, count + nCount)) {
+          if (!gpTInfo->tiAddCount(tid, cat, nCount)) {
             // KR (980916) : Aren't all these errors trapped above?
             DeleteCVEC(cvec, nCats);
             gpPrintDirection->SatScanPrintWarning("  Error: Record in %s file with no matching population record, line %d.\n", szDescription, nRec);
@@ -194,6 +191,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, char* sz
         }
       }
       DeleteCVEC(cvec, nCats);
+
   }
    catch (SSException & x) {
       DeleteCVEC(cvec, nCats);
@@ -215,6 +213,60 @@ void CSaTScanData::IncrementCount(tract_t nTID, int nCount, Julian nDate, count_
         pCounts[i][nTID] += nCount;
 }
 
+/** Converts passed string specifiying a population date to a julian date.
+    Precision is determined by date formats( YYYY/MM/DD, YYYY/MM, YYYY, YY/MM/DD,
+    YY/MM, YY ) which is the complete set of valid formats that SaTScan currently
+    supports. Since we accumulate errors/warnings when reading input files,
+    indication of a bad date is returned and any messages sent to print direction. */
+bool CSaTScanData::ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, Julian & JulianDate) {
+  bool          bValidDate=true;
+  int           iYear, iMonth, iDay, iPrecision=0;
+  const char  * ptr;
+
+  try {
+    //determine precision
+    ptr = strchr(sDateString, '/');
+    while (ptr) {
+         iPrecision++;
+         ptr = strchr(++ptr, '/');
+    }
+    //scan string
+    switch (iPrecision) {
+      case 0  : iMonth = POPULATION_DATE_PRECISION_YEAR_DEFAULT_MONTH;
+                iDay = POPULATION_DATE_PRECISION_YEAR_DEFAULT_DAY;
+                bValidDate = (sscanf(sDateString, "%d", &iYear) == 1 && iYear > 0);
+                break;
+      case 1  : iDay = POPULATION_DATE_PRECISION_MONTH_DEFAULT_DAY;
+                bValidDate = (sscanf(sDateString, "%d/%d", &iYear, &iMonth) == 2 && iYear > 0 && iMonth > 0);
+                break;
+      case 2  : bValidDate = (sscanf(sDateString, "%d/%d/%d", &iYear, &iMonth, &iDay) == 3 && iYear > 0 && iMonth > 0 && iDay > 0);
+                break;
+      default : bValidDate = false;
+    }
+
+    if (! bValidDate)
+      gpPrintDirection->SatScanPrintWarning("  Error: Invalid date \"%s\" in population file, line %d.\n", sDateString, iRecordNumber);
+    else {
+      iYear = Ensure4DigitYear(iYear, m_pParameters->m_szStartDate, m_pParameters->m_szEndDate);
+      switch (iYear) {
+        case -1 : gpPrintDirection->SatScanPrintWarning("  Error: Due to the study period being greater than 100 years, unable\n");
+                  gpPrintDirection->SatScanPrintWarning("         to determine century for two digit year \"%d\" in population file, line %d.\n",
+                                                                  iYear, iRecordNumber);
+                  gpPrintDirection->SatScanPrintWarning("         Please use four digit years.\n");
+                  bValidDate = false;
+        case -2 : gpPrintDirection->SatScanPrintWarning("  Error: Invalid year \"%d\" in population file, line %d.\n", iYear, iRecordNumber);
+                  bValidDate = false;
+        default : JulianDate = MDYToJulian(iMonth, iDay, iYear);
+      }
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ConvertPopulationDateToJulian()","CSaTScanData");
+    throw;
+  }
+  return bValidDate;
+}
+
 /**********************************************************************
  Read the population file
  The number of category variables is determined by the first record.
@@ -227,108 +279,76 @@ void CSaTScanData::IncrementCount(tract_t nTID, int nCount, Julian nDate, count_
    0 = errors encountered
  **********************************************************************/
 bool CSaTScanData::ReadPops() {
-   bool                                 bValid=true, bEmpty=true, bDateFound=false, InvalidForProspective=false;
-   char                                 szData[MAX_LINESIZE], szTid[MAX_LINESIZE];
-   tract_t                              nRec=0, nNonBlankLines, tract, t;
-   int                                  i=0, cat, year, ncats, nYear4, nDates=0, iDateIndex;
-   long                                 pop;
-   char                                 ** cvec = 0;
-   Julian                               nPopDate, tempPopDateArray[MAX_POP_DATES];
-   FILE                                 * fp; // Ptr to population file
-   std::vector<int>                     vFirstTractDateIndex;
-   std::vector<tract_t>                 vInvalidTractIndex;
+//  std::vector<int>                 vFirstTractDateIndex;
+  Julian                          PopulationDate;
+  FILE                          * fp; // Ptr to population file
+  std::vector<Julian>             vPopulationDates;
+  std::vector<Julian>::iterator   itrdates;
+  char                          * ptr, ** cvec = 0,
+                                  sDateString[MAX_LINESIZE], szData[MAX_LINESIZE], szTid[MAX_LINESIZE];
+  int                             i, iCategoryIndex, iNumCategories, iPopulation, iDatePrecision, iMonth, iDay;
+  bool                            bValid=true, bEmpty=true, InvalidForProspective=false;
+  tract_t                         nRec=0, nNonBlankLines, tract, t;
 
-   try {
-      gpPrintDirection->SatScanPrintf("Reading the population file\n");
+  try {
+    gpPrintDirection->SatScanPrintf("Reading the population file\n");
+    if ((fp = fopen(m_pParameters->m_szPopFilename, "r")) == NULL) {
+      gpPrintDirection->SatScanPrintWarning("  Error: Could not open population file.\n", "ReadPops()");
+      return false;
+    }
 
-      if ((fp = fopen(m_pParameters->m_szPopFilename, "r")) == NULL) {
-        gpPrintDirection->SatScanPrintWarning("  Error: Could not open population file.\n", "ReadPops()");
-        return false;
-      }
-
-      // 1st Pass
-      while (fgets(szData, MAX_LINESIZE, fp)) {
+    //1st Pass -- determine all the population dates.
+    while (fgets(szData, MAX_LINESIZE, fp)) {
         ++nRec;
-    
         if (GetWord(szData, 0, gpPrintDirection) == 0)                 // Skip blank lines
           continue;
         else
           bEmpty=false;
 
-        // Check for a tract id, year, and population count
-        if (sscanf(szData, "%s %d %ld", szTid, &year, &pop) < 3) {
+        //Check for a tract id, year, and population count
+        if (sscanf(szData, "%s %s %ld", szTid, sDateString, &iPopulation) < 3) {
+          /** WE MIGHT BE ABLE TO PRODUCE A BETTER ERROR MESSAGE HERE*/
           gpPrintDirection->SatScanPrintWarning("  Error: Invalid record in population file, line %d.\n", nRec);
           gpPrintDirection->SatScanPrintWarning("         Please see 'population file format' in the help file.\n");
           bValid = false;
           continue;
         }
-    
-        if (pop < 0) {
+
+        if (iPopulation < 0) {
+          /** WE MIGHT BE ABLE TO PRODUCE A BETTER ERROR MESSAGE HERE - LIKE THE INVALID POPULATION */
           gpPrintDirection->SatScanPrintWarning("  Error: Negative (or very large) value in population file, line %d.\n", nRec);
           bValid = false;
           continue;
         }
-    
-        if (year < 0) {
-          gpPrintDirection->SatScanPrintWarning("  Error: Invalid year in population file, line %d.\n", nRec);
-          bValid = false;
-          continue;
-        }
 
-        //Ensure four digit years
-        nYear4 = Ensure4DigitYear(year, m_pParameters->m_szStartDate, m_pParameters->m_szEndDate);
-        switch (nYear4) {
-          case -1: gpPrintDirection->SatScanPrintWarning("  Error: Due to study period greater than 100 years, unable\n");
-                   gpPrintDirection->SatScanPrintWarning("         to convert two digit year in population file, line %d.\n", nRec);
-                   gpPrintDirection->SatScanPrintWarning("         Please use four digit years.\n");
-                   bValid = false; continue;
-          case -2: fprintf(stderr,"  Error: Invalid year in population file, line %d.\n", nRec);
-                   gpPrintDirection->SatScanPrintWarning("  Error: Invalid year in population file, line %d.\n", nRec);
-                   bValid = false; continue;
-        }
-    
-        // Add Year to list of dates
-        bDateFound = false;
-        i = 0;
-        nPopDate = MDYToJulian(POP_MONTH, POP_DAY, nYear4);
-    
-        // Use search algorithm !!!!!!
-        while (i < nDates && !bDateFound) {
-          bDateFound = (nPopDate == tempPopDateArray[i]);
-          ++i;
-        }
-    
-        if (!bDateFound) {
-          if (i>=MAX_POP_DATES) {
-            bValid = false;
-            gpPrintDirection->SatScanPrintWarning("  Error: Maximum number of population years (%i) has been exceeded.\n", MAX_POP_DATES);
-          }
-          else {
-            tempPopDateArray[i] = nPopDate;
-            ++nDates;
-          }
-        }
+        bValid = ConvertPopulationDateToJulian(sDateString, nRec, PopulationDate);
+        if (! bValid)
+          continue;
+        itrdates = lower_bound(vPopulationDates.begin(), vPopulationDates.end(), PopulationDate);
+        if (! (itrdates != vPopulationDates.end() && (*itrdates) == PopulationDate))
+          vPopulationDates.insert(itrdates, PopulationDate);
       }//  while - 1st Pass
 
-      if (bEmpty) {
-        gpPrintDirection->SatScanPrintWarning("  Error: File with population data is empty.\n", "ReadPops()");
-        bValid = false;
-      }
+    if (bEmpty) {
+      gpPrintDirection->SatScanPrintWarning("  Error: Population data is empty.\n");
+      if (nRec)
+        gpPrintDirection->SatScanPrintWarning("         Population file contains %d invalid records.\n");
+      else
+        gpPrintDirection->SatScanPrintWarning("         Population file is empty.\n");
+      bValid = false;
+    }
 
-      // 2nd Pass
-      if (bValid) {
-        // Initialize population years list
-        gpTInfo->tiSetupPopDates(tempPopDateArray, nDates, m_nStartDate, m_nEndDate);
-        // initialize vector for prospective check
-        if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
-          for (t=0; t < gpTInfo->tiGetNumTracts(); t++)
-             vFirstTractDateIndex.push_back(-2);
+    // 2nd Pass -- read data in structures
+    if (bValid) {
+      gpTInfo->tiSetupPopDates(vPopulationDates, m_nStartDate, m_nEndDate);
+      //if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
+      //  vFirstTractDateIndex.resize(gpTInfo->tiGetNumTracts(), -1);
 
-        fseek(fp, 0L, SEEK_SET);
-        nRec = 0;
-        nNonBlankLines = 0;
+      fseek(fp, 0L, SEEK_SET);
+      nRec = 0;
+      nNonBlankLines = 0;
 
-        while (fgets(szData, MAX_LINESIZE, fp)) {
+      while (fgets(szData, MAX_LINESIZE, fp)) {
           ++nRec;
 
           // Skip Blank Lines
@@ -338,32 +358,24 @@ bool CSaTScanData::ReadPops() {
             ++nNonBlankLines;
 
           // Get tract id, year, and population count
-          sscanf(szData, "%s %d %ld", szTid, &year, &pop);
+          sscanf(szData, "%s %s %ld", szTid, sDateString, &iPopulation);
 
-          //Ensure four digit years
-          nYear4 = Ensure4DigitYear(year, m_pParameters->m_szStartDate, m_pParameters->m_szEndDate);
-          switch (nYear4) {
-            case -1: gpPrintDirection->SatScanPrintWarning("  Error: Due to study period greater than 100 years, unable\n");
-                     gpPrintDirection->SatScanPrintWarning("         to convert two digit year in population file, line %d.\n", nRec);
-                     gpPrintDirection->SatScanPrintWarning("         Please use four digit years.\n");
-                     bValid = false; continue;
-            case -2: fprintf(stderr,"  Error: Invalid year in population file, line %d.\n", nRec);
-                     gpPrintDirection->SatScanPrintWarning("  Error: Invalid year in population file, line %d.\n", nRec);
-                     bValid = false; continue;
-          }
+          bValid = ConvertPopulationDateToJulian(sDateString, nRec, PopulationDate);
+          if (! bValid)
+            continue;
 
           // Determine number of categories from first record
           if (nNonBlankLines == 1) {
-            ncats = 0;
-            while (GetWord(szData, ncats + 3, gpPrintDirection))
-              ++ncats;
-            cvec = (char**)Smalloc(ncats * sizeof(char *), gpPrintDirection);
-            memset(cvec, 0, ncats * sizeof(char *));
-            gpCats->catSetNumEls(ncats);
+            iNumCategories = 0;
+            while (GetWord(szData, iNumCategories + 3, gpPrintDirection))
+              ++iNumCategories;
+            cvec = (char**)Smalloc(iNumCategories * sizeof(char *), gpPrintDirection);
+            memset(cvec, 0, iNumCategories * sizeof(char *));
+            gpCats->catSetNumEls(iNumCategories);
           }
 
           // Read categories into cvec
-          for (i = 0; i < ncats; ++i) {
+          for (i=0; i < iNumCategories; ++i) {
             char *p = GetWord(szData, i + 3, gpPrintDirection);
             if (p == 0) {
               gpPrintDirection->SatScanPrintWarning("  Error: Too few categories in population file, line %d.\n",nRec);
@@ -377,7 +389,7 @@ bool CSaTScanData::ReadPops() {
             continue;
 
           // Check for extraneous characters after the expected number of cats
-          if (GetWord(szData, ncats + 3, gpPrintDirection)) {
+          if (GetWord(szData, iNumCategories + 3, gpPrintDirection)) {
             gpPrintDirection->SatScanPrintWarning("  Error: Extra data in population file, line %d.\n", nRec);
             gpPrintDirection->SatScanPrintWarning("         Please see 'population file format' in the help file.\n");
             bValid = false;
@@ -385,12 +397,12 @@ bool CSaTScanData::ReadPops() {
           }
 
           // Assign / Get category number
-          cat = gpCats->catMakeCat(cvec);
-          for (i = 0; i < ncats; ++i)
+          iCategoryIndex = gpCats->catMakeCat(cvec);
+          for (i = 0; i < iNumCategories; ++i)
             free(cvec[i]);
 
           // Check to see if tract is valid
-          tract = gpTInfo->tiGetTractNum(szTid);
+          tract = gpTInfo->tiGetTractIndex(szTid);
           if (tract == -1) {
             gpPrintDirection->SatScanPrintWarning("  Error: Invalid tract ID in population file, line line %d.\n", nRec);
             gpPrintDirection->SatScanPrintWarning("         This ID is not found in the coordinates file.\n");
@@ -398,34 +410,26 @@ bool CSaTScanData::ReadPops() {
             continue;
           }
 
-          nPopDate = MDYToJulian(POP_MONTH, POP_DAY, nYear4);
-
           // Perform Check: When a prospective analysis is conducted and if a population file is
           //                used, and if the population for a tract is defined at more than one
           //                time period, error message should be shown in the running window and
           //                the application terminated.
-          if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME && m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)
-            {
+          if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME && m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE) {
             //iDateIndex = gpTInfo->tiGetPopDateIndex(nPopDate);
-            //if (vFirstTractDateIndex[tract] == -2/* -1 is unknown */ || vFirstTractDateIndex[tract] == iDateIndex)
+            //if (vFirstTractDateIndex[tract] == -1 || vFirstTractDateIndex[tract] == iDateIndex)
             //  vFirstTractDateIndex[tract] = iDateIndex;
             //else
-            //  {// track invalid tracts
-            //  if (std::find(vInvalidTractIndex.begin(), vInvalidTractIndex.end(), tract) == vInvalidTractIndex.end())
-            //    vInvalidTractIndex.push_back(tract);
               InvalidForProspective = true;
-            //  }
-            }
+          }
 
           // Add Category to the tract
           // Add population count for this tract/category/year
-          gpTInfo->tiAddCat(tract, cat, nPopDate, pop);
+          gpTInfo->tiAddCategoryToTract(tract, iCategoryIndex, PopulationDate, iPopulation);
 
         } // while - 2nd pass
       } // if
 
-      if (InvalidForProspective)
-        {
+      if (InvalidForProspective)  {
         bValid = false;
         gpPrintDirection->SatScanPrintWarning("\n  ERROR: For the prospective space-time analysis to be correct,\n");
         gpPrintDirection->SatScanPrintWarning("           it is critical that the scanning spatial window is the\n");
@@ -434,29 +438,19 @@ bool CSaTScanData::ReadPops() {
         gpPrintDirection->SatScanPrintWarning("           the population size changes over time, as it does in your\n");
         gpPrintDirection->SatScanPrintWarning("           data, then you must define the maximum circle size in\n");
         gpPrintDirection->SatScanPrintWarning("           terms of a specific geographical radius rather than as a\n");
-        gpPrintDirection->SatScanPrintWarning("           percent of the total population at risk.");
-
-// removed as per Martin's request - AJV 10/03/2002
-/*        for (size_t t=0; t < vInvalidTractIndex.size(); t++)
-           if (t==0)
-             gpPrintDirection->SatScanPrintWarning("         Following tract are invalid: %s\n", gpTInfo->tiGetTid(vInvalidTractIndex[t]));
-           else
-             gpPrintDirection->SatScanPrintWarning("                                      %s\n", gpTInfo->tiGetTid(vInvalidTractIndex[t]));
-*/
-      gpPrintDirection->SatScanPrintWarning("\n\n");
-
+        gpPrintDirection->SatScanPrintWarning("           percent of the total population at risk.\n");
+       gpPrintDirection->SatScanPrintWarning("\n\n");
       }
-      if (bValid && ncats > 0)
+      if (bValid && iNumCategories > 0)
        free(cvec);
 
       fclose(fp);
-   }
-   catch (SSException & x) {
-      if (cvec)
-         DeleteCVEC(cvec, ncats);
-      x.AddCallpath("ReadPops()", "CSaTScanData");
-      throw;
-   }
+  }
+  catch (SSException & x) {
+    if (cvec) DeleteCVEC(cvec, iNumCategories);
+    x.AddCallpath("ReadPops()", "CSaTScanData");
+    throw;
+  }
   return bValid;
 }
 
