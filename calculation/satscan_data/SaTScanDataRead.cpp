@@ -791,14 +791,19 @@ bool CSaTScanData::ReadCounts(FILE * fp, const char* szDescription) {
              //record count in structure(s) based upon population category
              switch (m_pParameters->GetProbabiltyModelType()) {
                case POISSON :
-                 //Add count to tract for category. This could return false if record's tract
-                 //identifier / covariates together don't match an existing population record.
-                 if (! gpTInfo->tiAddCount(TractIndex, iCategoryIndex, Count)) {
-                   gpPrint->PrintInputWarning("Error: Record %ld of case file refers to location '%s' with population category '%s',\n",
-                                              Parser.GetReadCount(), Parser.GetWord(0), gPopulationCategories.GetPopulationCategoryAsString(iCategoryIndex, sBuffer));
-                   gpPrint->PrintInputWarning("       but no matching population record with this combination exists.\n");
-                   return false;
-                 }
+                 //NOTE: The tract handler no longer records the number of cases for
+                 //      location/category. There will be modifications to design
+                 //      of categories related code. Most functionality of tract handler
+                 //      in commented out code below is replaced by PopulationCategories functionality.
+
+                 ////Add count to tract for category. This could return false if record's tract
+                 ////identifier / covariates together don't match an existing population record.
+                 //if (! gpTInfo->tiAddCount(TractIndex, iCategoryIndex, Count)) {
+                 //  gpPrint->PrintInputWarning("Error: Record %ld of case file refers to location id '%s',\n",
+                 //                             Parser.GetReadCount(), Parser.GetWord(0));
+                 //  gpPrint->PrintInputWarning("       but no matching population record exists for this location id.\n");
+                 //  bValid = false;
+                 //}
                  break;
                case SPACETIMEPERMUTATION :
                  if (iCategoryIndex >= static_cast<int>(pCategoryCounts->Get3rdDimension()))
