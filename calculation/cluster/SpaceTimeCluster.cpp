@@ -16,11 +16,11 @@ CSpaceTimeCluster::CSpaceTimeCluster(int nTIType, int nIntervals, int nIntervalC
         case (ALIVECLUSTERS) : TI = new CTIAlive(nIntervals, nIntervalCut); break;
         default              : break;
       }
-    
+
       // need to keep both of these?
       m_nTotalIntervals = nIntervals;
       m_nIntervalCut    = nIntervalCut;
-    
+
       m_pCumCases   = (count_t*) Smalloc((m_nTotalIntervals)*sizeof(count_t), gpPrintDirection);
       m_pCumMeasure = (measure_t*) Smalloc((m_nTotalIntervals)*sizeof(measure_t), gpPrintDirection);
 
@@ -35,45 +35,12 @@ CSpaceTimeCluster::CSpaceTimeCluster(int nTIType, int nIntervals, int nIntervalC
 
 CSpaceTimeCluster::~CSpaceTimeCluster()
 {
-  delete TI;
-
-  if (m_pCumCases != NULL)
-    free(m_pCumCases);
-  if (m_pCumMeasure != NULL)
-    free(m_pCumMeasure);
-}
-
-void CSpaceTimeCluster::Initialize(tract_t nCenter = 0)
-{
-   try
-      {
-      CCluster::Initialize(nCenter);
-    
-      m_nClusterType = SPACETIME;
-   
-      memset(m_pCumCases, 0, sizeof(count_t) * m_nTotalIntervals);
-      memset(m_pCumMeasure, 0, sizeof(measure_t) * m_nTotalIntervals);
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("Initialize()", "CSpaceTimeCluster");
-      throw;
-      }
-}
-
-void CSpaceTimeCluster::DeAllocCumulativeCounts()
-{
-  if (m_pCumCases != NULL)
-  {
-    free(m_pCumCases);
-    m_pCumCases = NULL;
-  }
-
-  if (m_pCumMeasure != NULL)
-  {
-    free(m_pCumMeasure);
-    m_pCumMeasure = NULL;
-  }
+  try
+     {
+     delete TI;
+     DeAllocCumulativeCounts();
+     }
+  catch(...){}
 }
 
 CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& cluster)
@@ -132,6 +99,47 @@ void CSpaceTimeCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, coun
       }
 }
 
+void CSpaceTimeCluster::DeAllocCumulativeCounts()
+{
+  if (m_pCumCases != NULL)
+  {
+    free(m_pCumCases);
+    m_pCumCases = NULL;
+  }
+
+  if (m_pCumMeasure != NULL)
+  {
+    free(m_pCumMeasure);
+    m_pCumMeasure = NULL;
+  }
+}
+
+void CSpaceTimeCluster::GetMeasure()
+{
+     TI->GetNextTimeIntervalProsp(m_pCumCases,
+                                 m_pCumMeasure,
+                                 m_nCases,
+                                 m_nMeasure);
+}
+
+void CSpaceTimeCluster::Initialize(tract_t nCenter = 0)
+{
+   try
+      {
+      CCluster::Initialize(nCenter);
+
+      m_nClusterType = SPACETIME;
+
+      memset(m_pCumCases, 0, sizeof(count_t) * m_nTotalIntervals);
+      memset(m_pCumMeasure, 0, sizeof(measure_t) * m_nTotalIntervals);
+      }
+   catch (SSException & x)
+      {
+      x.AddCallpath("Initialize()", "CSpaceTimeCluster");
+      throw;
+      }
+}
+
 void CSpaceTimeCluster::InitTimeIntervalIndeces()
 {
    try
@@ -158,34 +166,6 @@ void CSpaceTimeCluster::InitTimeIntervalIndeces(int nLow, int nHigh)
       }
 }
 
-bool CSpaceTimeCluster::SetNextTimeInterval()
-{
-   bool bRetVal;
-
-   m_bClusterDefined = true;
-   bRetVal = (TI->GetNextTimeInterval(m_pCumCases,
-                                 m_pCumMeasure,
-                                 m_nCases,
-                                 m_nMeasure,
-                                 m_nFirstInterval,
-                                 m_nLastInterval));
-   return bRetVal;
-}
-
-void CSpaceTimeCluster::GetMeasure()
-{
-     TI->GetNextTimeIntervalProsp(m_pCumCases,
-                                 m_pCumMeasure,
-                                 m_nCases,
-                                 m_nMeasure);
-     /*TI->GetNextTimeIntervalProsp(m_pCumCases,
-                                 m_pCumMeasure,
-                                 m_nCases,
-                                 m_nMeasure,
-                                 m_nFirstInterval,
-                                 m_nLastInterval); */
-}
-
 bool CSpaceTimeCluster::SetNextProspTimeInterval()
 {
    bool bRetVal;
@@ -197,18 +177,26 @@ bool CSpaceTimeCluster::SetNextProspTimeInterval()
                                  m_pCumMeasure,
                                  m_nCases,
                                  m_nMeasure));
-      /*bRetVal = (TI->GetNextTimeIntervalProsp(m_pCumCases,
-                                 m_pCumMeasure,
-                                 m_nCases,
-                                 m_nMeasure,
-                                 m_nFirstInterval,
-                                 m_nLastInterval)); */
       }
    catch (SSException & x)
       {
       x.AddCallpath("SetNextProspTimeInterval()", "CSpaceTimeCluster");
       throw;
       }
+   return bRetVal;
+}
+
+bool CSpaceTimeCluster::SetNextTimeInterval()
+{
+   bool bRetVal;
+
+   m_bClusterDefined = true;
+   bRetVal = (TI->GetNextTimeInterval(m_pCumCases,
+                                 m_pCumMeasure,
+                                 m_nCases,
+                                 m_nMeasure,
+                                 m_nFirstInterval,
+                                 m_nLastInterval));
    return bRetVal;
 }
 //------------------------------------------------------------------------------
