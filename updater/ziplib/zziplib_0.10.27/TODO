@@ -1,0 +1,14 @@
+
+Add checking of local header of file, Now just uses the info provided
+in directory and the (empirically studied) fact that extra field
+has 2 bytes more info in local header than in directory -- this may
+not be true in all cases.  **DONE** **DONE** **DONE** **DONE** **DONE**
+
+Check the CRC value at the end of read...
+
+Add more error codes.
+
+Do more test. Currently use only with tested "friendly" archives.
+inflate interface code needs most testing.
+
+More documentation.
