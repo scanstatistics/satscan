@@ -169,7 +169,7 @@ class TfrmAnalysis : public TForm {
   private:	// User declarations
     CParameters       * gpParams;
     AnsiString          gsParamFileName;
-    ZdVector<const char*>       gvGeoFileFieldDescriptors,
+    ZdVector<std::string>       gvGeoFileFieldDescriptors,
                                 gvCaseFileFieldDescriptors,
                                 gvGridFileFieldDescriptors,
                                 gvPopFileFieldDescriptors,
@@ -196,7 +196,7 @@ class TfrmAnalysis : public TForm {
     bool                CheckScanningWindowParams();
     bool                CheckTimeParams();
     void                ConvertPurelySpacialIntervals();
-    void                CreateTXDFile(const ZdFileName& sFileName, const ZdVector<const char*>& vFieldNames);
+    void                CreateTXDFile(const ZdFileName& sFileName, const ZdVector<std::string>& vFieldNames);
     void                DataExchange();
     bool                DetermineIfDbfExtension(AnsiString sFileName);
     void                EnableAdditionalAsciiFileOptions();

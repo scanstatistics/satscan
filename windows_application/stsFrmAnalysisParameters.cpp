@@ -731,7 +731,7 @@ void TfrmAnalysis::ConvertPurelySpacialIntervals() {
 // create the TXD file with the appropriate field names - AJV 8/29/2002
 // pre: sFilename has a txd extension and vFieldNames has been filled with the appropraite field names
 // post: will create a txd file with padded spaces delimiting the fields
-void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<const char*>& vFieldNames) {
+void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<std::string>& vFieldNames) {
    ZdVector<ZdField*>	        vFields;
    ZdField		        Field;
    TXDFile                      File;
@@ -741,7 +741,7 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<con
       // creates the field vector from the provided field names
       for(unsigned long i = 0; i < vFieldNames.GetNumElements(); ++i) {
       	 Field = *(File.GetNewField());
-         Field.SetName(vFieldNames[i]);
+         Field.SetName(vFieldNames[i].c_str());
          if(!i)     // need a better system here to define which fields are required
             Field.SetRequired(true);
           // field 1 the only alpha field in the input so allow to greater width here, consider
@@ -768,6 +768,7 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<con
       File.Create(sFileName.GetFullPath(), vFields, 0);
       File.Close();
 
+      // this prob should be a for loop but oh well, for now - AJV
       for(int i = vFields.GetNumElements() - 1; i > 0; --i) {
          delete vFields[0]; vFields[0] = 0;
          vFields.RemoveElement(0);
