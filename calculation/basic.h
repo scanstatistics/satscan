@@ -11,22 +11,22 @@
 #include <math.h>
 #include <time.h>
 
-#ifndef TRUE
-  #ifndef FALSE
-    #ifndef BOOL
-      #define BOOL unsigned int
-      #define TRUE   1
-      #define FALSE  0
-    #endif
-  #endif
-#endif
+//#ifndef TRUE
+//  #ifndef FALSE
+//    #ifndef BOOL
+//      #define BOOL unsigned int
+//      #define TRUE   1
+//      #define FALSE  0
+//    #endif
+//  #endif
+//#endif
 
 #define MAX_STR_LEN 150//150
 
 /*#define PARAMFILENAME "STSDOS.TXT"*/
 #define PARAMFILENAME "STSPARAM.PRM"
 
-enum { STRING, INTEGER, ENUM, FILENAME, DATE, REPLICA };
+enum { enSTRING, enINTEGER, enENUM, enFILENAME, enDATE, ebREPLICA };
 
 enum { NONE, YEAR=1, MONTH, DAY };
 

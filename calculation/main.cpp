@@ -1,15 +1,8 @@
-// satscan.cpp
-
-#pragma hdrstop
-
+// main.cpp
 //---------------------------------------------------------------------------
-
-#pragma argsused
-
 
 #include <time.h>
 #include <process.h>
-#include "error.h"
 #include "display.h"
 #include "param.h"
 #include "PSanalysis.h"
@@ -22,89 +15,118 @@
 #include "PSdata.h"
 #include "PTdata.h"
 #include "STdata.h"
+#include "printscreen.h"
 
 //#define PROFILE_RUN 0
 
 int main(int argc, char *argv[])
 {
-  char szOutputFilename[400];
+   char szOutputFilename[400];
+   time_t RunTime;
+   char c;
+   CSaTScanData* pData        = 0;
+   CAnalysis*    pAnalysis    = 0;
+   CParameters*  pParams      = 0;
+   PrintScreen  *pPrintScreen = 0;
 
-  time_t RunTime;
-  time(&RunTime);         // Pass to analysis to include in report
+   try
+      {
+      time(&RunTime); // Pass to analysis to include in report
 
-  DisplayVersion(stdout, 0);
-  fprintf(stdout, "\n");
+      DisplayVersion(stdout, 0);
+      fprintf(stdout, "\n");
 
-/*  if (argc != 2)
-  {
-    FatalError("  Error: Invalid Number of Arguments on Command Line.\n");
-  }
-  */
+      pParams = new CParameters(true);
+      pPrintScreen = new PrintScreen();
+      pParams->SetPrintDirection(pPrintScreen);
+      
+      if (argc != 2)
+         SSGenerateException("  Error: Invalid Number of Arguments on Command Line.\n","main.cpp");
 
-//  CParameters* pParameters = new CParameters(argv[1]);
-  CParameters* pParameters = new CParameters(true);
-//  if (!(pParameters->SetParameters(argv[1])))               // DTG - UNCOMMENT LATER
-//    FatalError("");                                         // DTG
+      //pParameters = new CParameters(argv[1]);
 
- if (!(pParameters->SetParameters("c:\\SatScan\\SatScan V.2.1.3\\SatScan\\stsparam.prm")))
-    FatalError("");
+      //the SetParameters() function calls ValidateParameters !!
+      if (!(pParams->SetParameters(argv[1])))
+         SSGenerateException("Invalid parameter file.","main.cpp");
 
-  CSaTScanData* pData;
+      switch (pParams->m_nAnalysisType)
+         {
+         case PURELYSPATIAL  : pData = new CPurelySpatialData(pParams, pPrintScreen);  break;
+         case PURELYTEMPORAL : pData = new CPurelyTemporalData(pParams, pPrintScreen); break;
+         case SPACETIME      : pData = new CSpaceTimeData(pParams, pPrintScreen);      break;
+         case PROSPECTIVESPACETIME : pData = new CSpaceTimeData(pParams, pPrintScreen);break;
+         default:
+             SSGenerateException("Invalid Analysis Type Encountered.", "main.cpp");
+         };
 
-  switch (pParameters->m_nAnalysisType)
-  {
-    case PURELYSPATIAL  : pData = new CPurelySpatialData(pParameters);  break;
-    case PURELYTEMPORAL : pData = new CPurelyTemporalData(pParameters); break;
-    case SPACETIME      : pData = new CSpaceTimeData(pParameters);      break;
-  };
+      pData->ReadDataFromFiles();
 
-  pData->ReadDataFromFiles();
+      switch (pParams->m_nAnalysisType)
+         {
+         case PURELYSPATIAL  : if (pParams->m_nRiskFunctionType == STANDARDRISK)
+                                  pAnalysis = new CPurelySpatialAnalysis(pParams, pData, pPrintScreen);
+                               else if (pParams->m_nRiskFunctionType == MONOTONERISK)
+                                  pAnalysis = new CPSMonotoneAnalysis(pParams, pData, pPrintScreen);
+                               break;
+         case PURELYTEMPORAL : pAnalysis = new CPurelyTemporalAnalysis(pParams, pData, pPrintScreen);
+                               break;
+         case SPACETIME      : if (pParams->m_bIncludePurelySpatial &&
+                                   pParams->m_bIncludePurelyTemporal)
+                                  pAnalysis = new C_ST_PS_PT_Analysis(pParams, pData, pPrintScreen);
+                               else if (pParams->m_bIncludePurelySpatial)
+                                  pAnalysis = new C_ST_PS_Analysis(pParams, pData, pPrintScreen);
+                               else if (pParams->m_bIncludePurelyTemporal)
+                                  pAnalysis = new C_ST_PT_Analysis(pParams, pData, pPrintScreen);
+                               else
+                                  pAnalysis = new CSpaceTimeAnalysis(pParams, pData, pPrintScreen);
+                                break;
+         case PROSPECTIVESPACETIME      : if (pParams->m_bIncludePurelySpatial &&
+                                   pParams->m_bIncludePurelyTemporal)
+                                  pAnalysis = new C_ST_PS_PT_Analysis(pParams, pData, pPrintScreen);
+                               else if (pParams->m_bIncludePurelySpatial)
+                                  pAnalysis = new C_ST_PS_Analysis(pParams, pData, pPrintScreen);
+                               else if (pParams->m_bIncludePurelyTemporal)
+                                  pAnalysis = new C_ST_PT_Analysis(pParams, pData, pPrintScreen);
+                               else
+                                  pAnalysis = new CSpaceTimeAnalysis(pParams, pData, pPrintScreen);
+                                break;
+         }
 
-  CAnalysis* pAnalysis;
-
-  switch (pParameters->m_nAnalysisType)
-  {
-    case PURELYSPATIAL  : if (pParameters->m_nRiskFunctionType == STANDARDRISK)
-                            pAnalysis = new CPurelySpatialAnalysis(pParameters, pData);
-                          else if (pParameters->m_nRiskFunctionType == MONOTONERISK)
-                            pAnalysis = new CPSMonotoneAnalysis(pParameters, pData);
-                          break;
-    case PURELYTEMPORAL : pAnalysis = new CPurelyTemporalAnalysis(pParameters, pData);
-                          break;
-    case SPACETIME      : if (pParameters->m_bIncludePurelySpatial &&
-                              pParameters->m_bIncludePurelyTemporal)
-                            pAnalysis = new C_ST_PS_PT_Analysis(pParameters, pData);
-                          else if (pParameters->m_bIncludePurelySpatial)
-                            pAnalysis = new C_ST_PS_Analysis(pParameters, pData);
-                          else if (pParameters->m_bIncludePurelyTemporal)
-                            pAnalysis = new C_ST_PT_Analysis(pParameters, pData);
-                          else
-                            pAnalysis = new CSpaceTimeAnalysis(pParameters, pData);
-                          break;
-  };
-
-  if (!pAnalysis->Execute(RunTime))
-    FatalError(0);
-  else
-  {
-    printf("\nSaTScan completed successfully.\n");
-    printf("The results have been written to: \n");
-    printf("  %s\n\n",pParameters->m_szOutputFilename);
-
+      if (!pAnalysis->Execute(RunTime))
+         SSGenerateException("An Error has occured within the Calculation Module.", "main.cpp");
+      else
+         {
+         pPrintScreen->SatScanPrintf("\nSaTScan completed successfully.\n");
+         pPrintScreen->SatScanPrintf("The results have been written to: \n");
+         pPrintScreen->SatScanPrintf("  %s\n\n",pParams->m_szOutputFilename);
+         pPrintScreen->SatScanPrintf("\nPress <Enter> to exit the SaTScan program.");
+         getc(stdin);
 //  #if !PROFILE_RUN
 //  HoldForEnter();
 //  #endif
 
-    strcpy(szOutputFilename, pParameters->m_szOutputFilename);
-
-    delete pAnalysis;
-    delete pData;
-    delete pParameters;
-
-    execlp("Notepad.exe", "Notepad.exe", szOutputFilename, NULL);
-
-    return 0;
-  }
+         delete pAnalysis;    pAnalysis = 0;
+         delete pData;        pData = 0;
+         delete pParams;      pParams=0;
+         delete pPrintScreen; pPrintScreen=0;
+         }
+      }
+   catch (SSException & x)
+      {
+      delete pAnalysis;
+      delete pData;
+      delete pParams;
+      pPrintScreen->SatScanPrintf("\nAn error has occured!!\n");
+      pPrintScreen->SatScanPrintf(x.GetCallpath());
+      pPrintScreen->SatScanPrintf(" \n ");
+      pPrintScreen->SatScanPrintf(x.GetErrorMessage());
+      pPrintScreen->SatScanPrintf("\nProgram terminated.");
+      //then print this....
+      pPrintScreen->SatScanPrintf("\nPress <Enter> to exit the SaTScan program.");
+      getc(stdin);
+      delete pPrintScreen;
+      exit(1);
+      }
   return 1;
 } /* main() */
 

@@ -13,6 +13,10 @@
 #include "date.h"
 #include "basic.h"
 
+// New defines for ellipsoid calculations.
+#define MAXELLIPSESHAPES 10
+#define PI 3.1415926535898
+
 /* Maximum number of time intervals allowed */
 /* Moved from montecarlo.c and cluster.c KR-6/20/97 */
 #define MAXTIMEINTERVALS 400 /*KR-6/20/97 120  */
@@ -44,6 +48,7 @@
 typedef long            count_t;                   /* used for case counts */
 typedef double          measure_t;                    /* used for measures */
 typedef /*short*/int    tract_t;     /* used for tract indeces (not names) */
+typedef unsigned short ushort_tract_t; /* used to create and reference sorted array */
 
 //typedef struct {                                           /* cluster data */
 //   double    cd_ratio;        /* likelihood ratio              */
