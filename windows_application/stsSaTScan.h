@@ -18,7 +18,4 @@
 #include "stsMain.h"
 
 #define TECH_EMAIL "SaTScan@nih.gov"
-#define VERSION_NUMBER "v 3.0.2"
-#define VERSION_DATE "December 10, 2002"
-
 #endif
