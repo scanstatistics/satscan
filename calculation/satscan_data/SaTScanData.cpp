@@ -22,6 +22,7 @@ CSaTScanData::CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection)
         case POISSON              : m_pModel = new CPoissonModel(*pParameters, *this, *pPrintDirection);   break;
         case BERNOULLI            : m_pModel = new CBernoulliModel(*pParameters, *this, *pPrintDirection); break;
         case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(*pParameters, *this, *pPrintDirection); break;
+        default : ZdException::Generate("Unknown probability model type: '%d'.\n","CSaTScanData()", m_pParameters->GetProbabiltyModelType());
       }
 
       //For now, compute the angle and store the angle and shape
@@ -34,12 +35,12 @@ CSaTScanData::CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection)
             for(int ea = 0; ea < m_pParameters->GetEllipseRotations()[es]; ++ea) {
                mdE_Angles[lCurrentEllipse]=PI*ea/m_pParameters->GetEllipseRotations()[es];
                mdE_Shapes[lCurrentEllipse]= m_pParameters->GetEllipseShapes()[es];
-               ++lCurrentEllipse ;
+               ++lCurrentEllipse;
             }
          }
       }
    }
-   catch (SSException & x) {
+   catch (ZdException & x) {
       x.AddCallpath("CSaTScanData(CParameters *)", "CSaTScanData");
       throw;
    }
@@ -153,7 +154,7 @@ void CSaTScanData::AllocSimCases() {
       for(int i = 0; i < m_nTimeIntervals; ++i)
          m_pSimCases[i] = (count_t*)Smalloc(m_nTracts * sizeof(count_t), gpPrint);
    }
-   catch (SSException & x) {
+   catch (ZdException & x) {
       x.AddCallpath("GetNeighbor()", "CSaTScanData");
       throw;
    }
@@ -173,7 +174,7 @@ bool CSaTScanData::CalculateMeasure() {
 
       SetMaxCircleSize();
    }
-   catch (SSException & x) {
+   catch (ZdException & x) {
       x.AddCallpath("CalculateMeasure()", "CSaTScanData");
       throw;
    }
@@ -198,7 +199,7 @@ int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate) {
          iIntervalCut = lTimeBetween / m_pParameters->GetTimeIntervalLength();
       }
    }
-   catch (SSException & x) {
+   catch (ZdException & x) {
       x.AddCallpath("ComputeNewCutoffInterval()", "CSaTScanData");
       throw;
    }
@@ -258,7 +259,7 @@ bool CSaTScanData::FindNeighbors() {
                       m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
 
    }
-   catch (SSException & x) {
+   catch (ZdException & x) {
       x.AddCallpath("FindNeighbors()", "CSaTScanData");
       throw;
    }
@@ -334,7 +335,7 @@ void CSaTScanData::MakeData(int iSimulationNumber) {
    try {
       m_pModel->MakeData(iSimulationNumber);
    }
-   catch (SSException & x) {
+   catch (ZdException & x) {
       x.AddCallpath("MakeData()", "CSaTScanData");
       throw;
    }
@@ -359,7 +360,7 @@ void CSaTScanData::PrintNeighbors() {
          fclose(pFile);
       }
    }
-   catch (SSException & x) {
+   catch (ZdException & x) {
       x.AddCallpath("PrintNeighbors()", "CSaTScanData");
       throw;
    }
@@ -381,7 +382,7 @@ void CSaTScanData::ReadDataFromFiles() {
     gpTInfo->tiConcaticateDuplicateTractIdentifiers();
     gpGInfo->giFindDuplicateCoords(stderr);
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("ReadDataFromFiles()", "CSaTScanData");
     throw;
   }
@@ -414,20 +415,20 @@ void CSaTScanData::SetIntervalCut() {
         if (m_pParameters->GetInitialMaxTemporalClusterSizeType() == TIMETYPE ) {
           sIntervalCutMessage << "Error: A maximum temporal cluster size of %g %s%s is less than one %d %s time interval.\n";
           sIntervalCutMessage << "       No clusters can be found.\n";
-          ZdException::Generate(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
-                                m_pParameters->GetInitialMaxTemporalClusterSize(), sTimeIntervalType.GetCString(),
-                                (m_pParameters->GetInitialMaxTemporalClusterSize() == 1 ? "" : "s"),
-                                m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
+          SSGenerateException(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
+                              m_pParameters->GetInitialMaxTemporalClusterSize(), sTimeIntervalType.GetCString(),
+                              (m_pParameters->GetInitialMaxTemporalClusterSize() == 1 ? "" : "s"),
+                              m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
         }
         else if (m_pParameters->GetInitialMaxTemporalClusterSizeType() == PERCENTAGETYPE) {
           sIntervalCutMessage << "Error: A maximum temporal cluster size that is %g percent of a %d %s study period \n";
           sIntervalCutMessage << "       equates to %d %s%s, which is less than one %d %s time interval.\n";
           sIntervalCutMessage << "       No clusters can be found.\n";
-          ZdException::Generate(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
-                                m_pParameters->GetInitialMaxTemporalClusterSize(),
-                                lStudyPeriodLength, sTimeIntervalType.GetCString(),
-                                lMaxTemporalLength, sTimeIntervalType.GetCString(), (lMaxTemporalLength == 1 ? "" : "s"),
-                                m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
+          SSGenerateException(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
+                              m_pParameters->GetInitialMaxTemporalClusterSize(),
+                              lStudyPeriodLength, sTimeIntervalType.GetCString(),
+                              lMaxTemporalLength, sTimeIntervalType.GetCString(), (lMaxTemporalLength == 1 ? "" : "s"),
+                              m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
         }
       }
    }
@@ -448,7 +449,7 @@ void CSaTScanData::SetIntervalStartTimes() {
       for (int i = m_nTimeIntervals-1; i > 0; --i)
          m_pIntervalStartTimes[i] = DecrementDate(m_pIntervalStartTimes[i+1], m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
    }
-   catch (SSException & x) {
+   catch (ZdException & x) {
       x.AddCallpath("SetIntervalStartTimes()", "CSaTScanData");
       throw;
    }
@@ -491,13 +492,13 @@ void CSaTScanData::SetProspectiveIntervalStart() {
     m_nProspectiveIntervalStart = (int)ceil((float)lTime / (float)m_pParameters->GetTimeIntervalLength());
 
     if (m_nProspectiveIntervalStart < 0)
-      ZdException::Generate("Error: The prospective start date '%s' is prior to the study period start date '%s'.\n",
-                            "SetProspectiveIntervalStart()", m_pParameters->GetProspectiveStartDate().c_str(),
-                            m_pParameters->GetStudyPeriodStartDate().c_str());
+      SSGenerateException("Error: The prospective start date '%s' is prior to the study period start date '%s'.\n",
+                          "SetProspectiveIntervalStart()", m_pParameters->GetProspectiveStartDate().c_str(),
+                          m_pParameters->GetStudyPeriodStartDate().c_str());
     if (m_nProspectiveIntervalStart > m_nTimeIntervals)
-      ZdException::Generate("Error: The prospective start date '%s' is prior to the study period end date '%s'.\n",
-                            "SetProspectiveIntervalStart", m_pParameters->GetProspectiveStartDate().c_str(),
-                            m_pParameters->GetStudyPeriodEndDate().c_str());
+      SSGenerateException("Error: The prospective start date '%s' is prior to the study period end date '%s'.\n",
+                          "SetProspectiveIntervalStart", m_pParameters->GetProspectiveStartDate().c_str(),
+                          m_pParameters->GetStudyPeriodEndDate().c_str());
   }
   catch (ZdException &x) {
     x.AddCallpath("SetProspectiveIntervalStart()","CSaTScanData");
@@ -517,7 +518,7 @@ void CSaTScanData::SetPurelyTemporalCases() {
           m_pPTCases[i] += m_pCases[i][j];
     }
   }
-  catch (SSException &x) {
+  catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalCases()","CSaTScanData");
     throw;
   }
@@ -535,7 +536,7 @@ void CSaTScanData::SetPurelyTemporalMeasures() {
           m_pPTMeasure[i] += m_pMeasure[i][j];
     }
   }
-  catch (SSException &x) {
+  catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalMeasures()","CSaTScanData");
     throw;
   }
@@ -551,7 +552,7 @@ void CSaTScanData::SetPurelyTemporalSimCases() {
           m_pPTSimCases[i] += m_pSimCases[i][j];
     }
   }
-  catch (SSException &x) {
+  catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalSimCases()","CSaTScanData");
     throw;
   }
@@ -562,7 +563,7 @@ void CSaTScanData::SetStartAndEndDates() {
     m_nStartDate = m_pParameters->GetStudyPeriodStartDateAsJulian();
     m_nEndDate   = m_pParameters->GetStudyPeriodEndDateAsJulian();
   }
-  catch (SSException &x) {
+  catch (ZdException &x) {
     x.AddCallpath("SetStartAndEndDates()","CSaTScanData");
     throw;
   }
