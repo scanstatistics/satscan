@@ -19,7 +19,7 @@ class CPurelyTemporalData : public CSaTScanData {
     virtual void        DisplayCases(FILE* pFile);
     virtual void        DisplayMeasure(FILE* pFile);
     virtual void        DisplaySimCases(FILE* pFile);
-    virtual bool        FindNeighbors() {return true;/** no action - all locations included */}
+    virtual bool        FindNeighbors(bool bSimulations) {return true;/** no action - all locations included */}
     virtual tract_t     GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
     virtual void        MakeData(int iSimulationNumber);
     virtual void        PrintNeighbors();
