@@ -462,17 +462,16 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
                                   char cDeliminator, char* szSpacesOnLeft)
 {
    double *pCoords, *pCoords2;
-   double nRadius;
-   int   pos = nLeftMargin;
-   double Latitude, Longitude;
-   char  cNorthSouth, cEastWest;
+   int     pos = nLeftMargin;
+   float   Latitude, Longitude, nRadius;
+   char    cNorthSouth, cEastWest;
 
    try
       {
       (Data.GetGInfo())->giGetCoords(m_Center, &pCoords);
       (Data.GetTInfo())->tiGetCoords(Data.GetNeighbor(0, m_Center, m_nTracts), &pCoords2);
     
-      nRadius = sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
+      nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
 
       ConvertToLatLong(&Latitude, &Longitude, pCoords);
 
@@ -480,14 +479,14 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
       Longitude >= 0 ? cEastWest = 'W' : cEastWest = 'E';
 
       // use to be .3f
-      fprintf(fp, "%sCoordinates...........: (%.6lf %c, %.6lf %c)\n",
+      fprintf(fp, "%sCoordinates...........: (%.6f %c, %.6f %c)\n",
                    szSpacesOnLeft, fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
       fprintf(fp, "%sRadius for each step..: ", szSpacesOnLeft);
 
       for (int i=0; i<m_nSteps; i++)
       {
         (Data.GetTInfo())->tiGetCoords(Data.GetNeighbor(0, m_Center, m_pLastNeighborList[i]), &pCoords2);
-        nRadius = sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
+        nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
         free(pCoords2);
         pos += 10;
 
@@ -499,11 +498,11 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
             fprintf(fp, " ");
         }
 
-        fprintf(fp,"%5.2lf km", nRadius);
-    
+        fprintf(fp,"%5.2f km", nRadius);
+
         if (i < m_nSteps-1)
           fprintf(fp, "%c ", cDeliminator);
-    
+
       }
     
       fprintf(fp, "\n");

@@ -309,7 +309,7 @@ void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, Z
                                     const CCluster& pCluster, const CSaTScanData& pData) {
   int          i;
   double     * pCoords=0, * pCoords2=0;
-  double       fLatitude, fLongitude, fRadius;
+  float        fLatitude, fLongitude, fRadius;
   char         sAdditBuffer[64], sRadBuffer[64];
 
    try {
@@ -337,15 +337,13 @@ void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, Z
                           }
                           break;
          case LATLON    : ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
-                          fLatitude = static_cast<float>(fLatitude);
-                          fLongitude = static_cast<float>(fLongitude);
-                          sLongitude.printf("%lf", fLongitude);
-                          sLatitude.printf("%lf", fLatitude);
+                          sLongitude.printf("%f", fLongitude);
+                          sLatitude.printf("%f", fLatitude);
                           break;
          default : ZdGenerateException("Unknown coordinate type '%d'.","SetCoordinates()", giCoordType);
        }
-       fRadius = static_cast<float>(sqrt((pData.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2)));
-       sRadius.printf("%5.2lf", fRadius);
+       fRadius = (float)(sqrt((pData.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2)));
+       sRadius.printf("%5.2f", fRadius);
        free(pCoords);
        free(pCoords2);
      }
