@@ -173,7 +173,7 @@ object frmAbout: TfrmAbout
       Font.Name = 'MS Sans Serif'
       Font.Style = []
       Lines.Strings = (
-        'Authors: Martin Kulldorff, University of Connecticut,'
+        'Authors: Martin Kulldorff, Harvard Medical School,'
         
           'and Information Management Services Inc, Silver Spring, Maryland' +
           '.'
