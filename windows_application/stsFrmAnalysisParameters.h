@@ -222,6 +222,4 @@ public:		// User declarations
     void                        WriteSession(const char * sParameterFilename=0);
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TfrmAnalysis *frmAnalysis;
-//---------------------------------------------------------------------------
 #endif

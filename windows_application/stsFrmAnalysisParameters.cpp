@@ -5,7 +5,6 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TfrmAnalysis *frmAnalysis;
 
 //ClassDesc Begin TfrmAnalysis
 // This class contains all the main interface controls and relationships.
@@ -980,7 +979,7 @@ void TfrmAnalysis::SaveAs() {
   try {
     if (SaveDialog->Execute()) {
       WriteSession(SaveDialog->FileName.c_str());
-      frmAnalysis->Caption = SaveDialog->FileName;
+      Caption = SaveDialog->FileName;
     }
   }
   catch (ZdException & x) {
