@@ -53,7 +53,7 @@ CPurelyTemporalCluster* C_ST_PT_Analysis::GetTopPTCluster() {
     pTopCluster = new CPurelyTemporalCluster(eIncludeClustersType, *m_pData, *gpPrintDirection);
     CPurelyTemporalCluster C_PT(eIncludeClustersType, *m_pData, *gpPrintDirection);
 
-    pTopCluster->SetLogLikelihood(m_pData->m_pModel->GetLogLikelihoodForTotal());
+    pTopCluster->SetLogLikelihood(m_pData->GetProbabilityModel().GetLogLikelihoodForTotal());
     C_PT.SetRate(m_pParameters->GetAreaScanRateType());
     C_PT.CompareTopCluster(*pTopCluster, *m_pData);
     pTopCluster->SetRatioAndDates(*m_pData);
@@ -71,7 +71,8 @@ double C_ST_PT_Analysis::MonteCarlo() {
   CMeasureList        * pMeasureList=0;
   double                dMaxLogLikelihoodRatio;
   int                   k;
-  tract_t               i, j;
+  tract_t               i, j, iNumNeighbors;
+  count_t            ** ppSimCases(m_pData->GetSimCasesArray());
 
   try {
     CPurelyTemporalCluster C_PT(m_pParameters->GetIncludeClustersType(), *m_pData, *gpPrintDirection);
@@ -93,14 +94,15 @@ double C_ST_PT_Analysis::MonteCarlo() {
     //will be calculated with circle's measure values.
     C_PT.Initialize(0);
     C_PT.SetRate(m_pParameters->GetAreaScanRateType());
-    C_PT.ComputeBestMeasures(m_pData->m_pPTSimCases, m_pData->m_pPTMeasure, *pMeasureList);
+    C_PT.ComputeBestMeasures(m_pData->GetSimCasesPTArray(), m_pData->GetMeasurePTArray(), *pMeasureList);
 
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
     for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
        for (i=0; i < m_pData->m_nGridTracts; i++) {
           C_ST.Initialize(i);
-          for (j=1; j <= m_pData->m_NeighborCounts[k][i]; j++) {
-             C_ST.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);
+          iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];
+          for (j=1; j <= iNumNeighbors; j++) {
+             C_ST.AddNeighbor(k, *m_pData, ppSimCases, j);
              C_ST.ComputeBestMeasures(*pMeasureList);
           }
        }
@@ -119,12 +121,11 @@ double C_ST_PT_Analysis::MonteCarlo() {
 
 /** Returns loglikelihood for Monte Carlo Prospective replication. */
 double C_ST_PT_Analysis::MonteCarloProspective() {
-  CMeasureList                * pMeasureList=0;
-  double                        dMaxLogLikelihoodRatio;
-  long                          lTime;
-  Julian                        jCurrentDate;
-  int                           iThisStartInterval, n, m, k;
-  tract_t                       i, j;
+  CMeasureList        * pMeasureList=0;
+  double                dMaxLogLikelihoodRatio;
+  int                   k;
+  tract_t               i, j, iNumNeighbors;
+  count_t            ** ppSimCases(m_pData->GetSimCasesArray());
 
   try {
     //for prospective Space-Time, m_bAliveClustersOnly should be false..
@@ -148,14 +149,15 @@ double C_ST_PT_Analysis::MonteCarloProspective() {
     //will be calculated with circle's measure values.
     C_PT.Initialize(0);
     C_PT.SetRate(m_pParameters->GetAreaScanRateType());
-    C_PT.ComputeBestMeasures(m_pData->m_pPTSimCases, m_pData->m_pPTMeasure, *pMeasureList);
+    C_PT.ComputeBestMeasures(m_pData->GetSimCasesPTArray(), m_pData->GetMeasurePTArray(), *pMeasureList);
 
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
     for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
        for (i=0; i < m_pData->m_nGridTracts; i++) {
           C_ST.Initialize(i);
-          for (tract_t j=1; j<=m_pData->m_NeighborCounts[k][i]; j++) {
-             C_ST.AddNeighbor(k, *m_pData, m_pData->m_pSimCases, j);
+          iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];
+          for (tract_t j=1; j <= iNumNeighbors ; j++) {
+             C_ST.AddNeighbor(k, *m_pData, ppSimCases, j);
              C_ST.ComputeBestMeasures(*pMeasureList);
           }
        }

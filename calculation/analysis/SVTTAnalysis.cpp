@@ -25,24 +25,27 @@ CSpatialVarTempTrendAnalysis::~CSpatialVarTempTrendAnalysis() {
 CCluster* CSpatialVarTempTrendAnalysis::GetTopCluster(tract_t nCenter) {
   CSVTTCluster        * pTopCluster=0;
   int                   k;
-  tract_t               i;
+  tract_t               i, iNumNeighbors;
+  count_t            ** ppCasesNC(m_pData->GetCasesNonCumulativeArray());
+  CModel              & ProbModel(m_pData->GetProbabilityModel());  
 
   try {
-    pTopCluster = new CSVTTCluster(*m_pData, m_pData->m_pCases_TotalByTimeInt, gpPrintDirection);
+    pTopCluster = new CSVTTCluster(*m_pData, m_pData->GetCasesByTimeInterlalArray(), gpPrintDirection);
     pTopCluster->SetLogLikelihood(0.0);
     gpTopShapeClusters->SetTopClusters(*pTopCluster);
 
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
     for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
-       CSVTTCluster thisCluster(*m_pData, m_pData->m_pCases_TotalByTimeInt, gpPrintDirection);
+       CSVTTCluster thisCluster(*m_pData, m_pData->GetCasesByTimeInterlalArray(), gpPrintDirection);
        thisCluster.SetCenter(nCenter);
        thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
        thisCluster.SetEllipseOffset(k);
-       thisCluster.SetDuczmalCorrection((k == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->mdE_Shapes[k - 1]));
+       thisCluster.SetDuczmalCorrection((k == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[k - 1]));
        CSVTTCluster & TopShapeCluster = (CSVTTCluster&)(gpTopShapeClusters->GetTopCluster(k));
-       for (i=1; i <= m_pData->m_NeighborCounts[k][nCenter]; i++) {
-          thisCluster.AddNeighbor(k, *m_pData, m_pData->m_pCases_NC, i);
-          thisCluster.m_nLogLikelihood = m_pData->m_pModel->CalcSVTTLogLikelihood(&thisCluster, m_pData->m_nTimeTrend);
+       iNumNeighbors = m_pData->GetNeighborCountArray()[k][nCenter];	
+       for (i=1; i <= iNumNeighbors; i++) {
+          thisCluster.AddNeighbor(k, *m_pData, ppCasesNC, i);
+          thisCluster.m_nLogLikelihood = ProbModel.CalcSVTTLogLikelihood(&thisCluster, m_pData->m_nTimeTrend);
           if (/*i==1 ||*/ thisCluster.m_nLogLikelihood > TopShapeCluster.m_nLogLikelihood)
            TopShapeCluster = thisCluster;
        }
@@ -62,24 +65,27 @@ CCluster* CSpatialVarTempTrendAnalysis::GetTopCluster(tract_t nCenter) {
 
 double CSpatialVarTempTrendAnalysis::MonteCarlo() {
   int           k;
-  tract_t       i, j;
+  tract_t       i, j, iNumNeighbors;
   double        dMaximumLogLikelihoodRatio;
+  count_t    ** ppCasesNC(m_pData->GetSimCasesNCArray());
+  CModel     & ProbModel(m_pData->GetProbabilityModel());  
 
   try {
-    gpTopShapeClusters->SetTopClusters(CSVTTCluster(*m_pData, m_pData->m_pCases_TotalByTimeInt, gpPrintDirection));
+    gpTopShapeClusters->SetTopClusters(CSVTTCluster(*m_pData, m_pData->GetCasesByTimeInterlalArray(), gpPrintDirection));
 
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
     for (k=0; k <= m_pParameters->GetNumTotalEllipses(); k++) {
-       CSVTTCluster thisCluster(*m_pData, m_pData->m_pCases_TotalByTimeInt, gpPrintDirection);
+       CSVTTCluster thisCluster(*m_pData, m_pData->GetCasesByTimeInterlalArray(), gpPrintDirection);
        thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
        thisCluster.SetEllipseOffset(k);
-       thisCluster.SetDuczmalCorrection((k == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->mdE_Shapes[k - 1]));
+       thisCluster.SetDuczmalCorrection((k == 0 || !m_pParameters->GetDuczmalCorrectEllipses() ? 1 : m_pData->GetShapesArray()[k - 1]));
        CSVTTCluster & TopShapeCluster = (CSVTTCluster&)(gpTopShapeClusters->GetTopCluster(k));
        for (i=0; i < m_pData->m_nGridTracts; i++) {
-          thisCluster.InitializeSVTT(i, *m_pData, m_pData->m_pSimCases_TotalByTimeInt);
-          for (j=1; j <= m_pData->m_NeighborCounts[k][i]; j++) {
-             thisCluster.AddNeighbor(k,*m_pData, m_pData->m_pSimCases_NC, j);
-             thisCluster.m_nLogLikelihood = m_pData->m_pModel->CalcSVTTLogLikelihood(&thisCluster, m_pData->m_nTimeTrend_Sim);
+          thisCluster.InitializeSVTT(i, *m_pData, m_pData->GetSimCasesByTimeIntervalArray());
+          iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];	
+          for (j=1; j <= iNumNeighbors; j++) {
+             thisCluster.AddNeighbor(k, *m_pData, ppCasesNC, j);
+             thisCluster.m_nLogLikelihood = ProbModel.CalcSVTTLogLikelihood(&thisCluster, m_pData->m_nTimeTrend_Sim);
              if (/*i==1 ||*/ thisCluster.m_nLogLikelihood > TopShapeCluster.m_nLogLikelihood)
                TopShapeCluster = thisCluster;
           }
