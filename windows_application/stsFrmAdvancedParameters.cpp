@@ -388,6 +388,71 @@ TimeTrendAdjustmentType TfrmAdvancedParameters::GetAdjustmentTimeTrendControlTyp
   return eReturn;
 }
 //---------------------------------------------------------------------------
+//** Checks to determine if only default values are set in the dialog
+//** Returns true if only default values are set
+//** Returns false if user specified a value other than a default
+bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
+   bool bReturn = true;
+
+   // Inference tab
+   bReturn &= (chkAdjustForEarlierAnalyses->Checked == false);
+   bReturn &= (chkTerminateEarly->Checked == false);
+   bReturn &= (edtProspectiveStartDateYear->Text.ToInt() == 1900);
+   bReturn &= (edtProspectiveStartDateMonth->Text.ToInt() == 12);
+   bReturn &= (edtProspectiveStartDateDay->Text.ToInt() == 31);
+
+   // Spatial Window tab
+   bReturn &= (GetMaxSpatialClusterSizeControlType()==PERCENTOFPOPULATIONTYPE);
+   bReturn &= (edtMaxSpatialClusterSize->Text.ToInt() == 50);
+   bReturn &= (edtMaxSpatialPercentFile->Text.ToInt() == 50);
+   bReturn &= (edtMaxSpatialRadius->Text.ToInt() == 1);
+   bReturn &= (edtMaxCirclePopulationFilename->Text == "");
+   bReturn &= (chkInclPureTempClust->Checked == false);
+
+   // Temporal tab
+   bReturn &= (GetMaxTemporalClusterSizeControlType()==PERCENTAGETYPE);
+   bReturn &= (edtMaxTemporalClusterSize->Text.ToDouble() == 50);
+   bReturn &= (edtMaxTemporalClusterSizeUnits->Text.ToInt() == 1);
+   bReturn &= (chkIncludePureSpacClust->Checked == false);
+
+   bReturn &= (edtStartRangeStartYear->Text.ToInt() == 1900);
+   bReturn &= (edtStartRangeStartMonth->Text.ToInt() == 1);
+   bReturn &= (edtStartRangeStartDay->Text.ToInt() == 1);
+   bReturn &= (edtStartRangeEndYear->Text.ToInt() == 1900);
+   bReturn &= (edtStartRangeEndMonth->Text.ToInt() == 1);
+   bReturn &= (edtStartRangeEndDay->Text.ToInt() == 1);
+   bReturn &= (edtEndRangeStartYear->Text.ToInt() == 1900);
+   bReturn &= (edtEndRangeStartMonth->Text.ToInt() == 12);
+   bReturn &= (edtEndRangeStartDay->Text.ToInt() == 31);
+   bReturn &= (edtEndRangeEndYear->Text.ToInt() == 1900);
+   bReturn &= (edtEndRangeEndMonth->Text.ToInt() == 12);
+   bReturn &= (edtEndRangeEndDay->Text.ToInt() == 31);
+   bReturn &= (chkRestrictTemporalRange->Checked == false);
+
+   // Risk tab
+   bReturn &= (chkAdjustForKnownRelativeRisks->Checked == false);
+   bReturn &= (edtAdjustmentsByRelativeRisksFile->Text == "");
+   bReturn &= (rdgTemporalTrendAdj->ItemIndex == 0);
+   bReturn &= (edtLogLinear->Text.ToInt() == 0);
+
+   return bReturn;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//** Checks to determine if only default values are set in the dialog
+//** Returns true if only default values are set
+//** Returns false if user specified a value other than a default
+bool TfrmAdvancedParameters::GetDefaultsSetForOutputOptions() {
+   bool bReturn = true;
+
+   // Output tab
+   bReturn &= (chkRestrictReportedClusters->Checked == false);
+   bReturn &= (rdgCriteriaSecClusters->ItemIndex == NOGEOOVERLAP);
+   bReturn &= (edtReportClustersSmallerThan->Text.ToDouble() == 50.0);
+
+   return bReturn;
+}
+//-----------------------------------------------------------------------------
 /** returns maximum spatial cluster size type for control */
 SpatialSizeType TfrmAdvancedParameters::GetMaxSpatialClusterSizeControlType() const {
   SpatialSizeType   eReturn;
@@ -563,7 +628,6 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
 /** Sets default values for Analysis related tabs and their respective controls
     PAG:  pulled these default values from the CParameter class */
 void TfrmAdvancedParameters::SetDefaultsForAnalysisTabs() {
-   CParameters & ref = gAnalysisSettings.gParameters;
 
    // Inference tab
    // PAG - moved to first position since other controls dependent on the 'earlier analyses' control

@@ -12,6 +12,7 @@
 #include <ComCtrls.hpp>
 //---------------------------------------------------------------------------
 class TfrmAdvancedParameters : public TForm {
+
 __published:	// IDE-managed Components
    TPanel *pnlButtons;
    TButton *btnOk;
@@ -123,60 +124,63 @@ __published:	// IDE-managed Components
    void __fastcall rdoMaxSpatialTypeClick(TObject *Sender);
    void __fastcall btnSetDefaultsClick(TObject *Sender);
 
-  private:
-    TfrmAnalysis              & gAnalysisSettings;
-    TWinControl               * gpFocusControl;
-    bool                        gbAnalysisShow;
-    bool                        gbEnableRangeYears;  /** stores enable dictated by main interface */
-    bool                        gbEnableRangeMonths; /** stores enable dictated by main interface */
-    bool                        gbEnableRangeDays;   /** stores enable dictated by main interface */
-    bool                        gbEnableAdjustmentsByRR; /** stores enable dictated by main interface */
+ private:
 
-    TimeTrendAdjustmentType     GetAdjustmentTimeTrendControlType() const;
-    void                        Init();
-    void                        ParseDate(const std::string& sDate, TEdit& Year, TEdit& Month, TEdit& Day, bool bStartRange);
-    void                        RefreshTemporalRangesEnables();
-    void                        SetDefaultsForAnalysisTabs();
-    void                        SetDefaultsForOutputTab();
-    void                        Setup();
-    void                        ValidateProspDateRange();
-    void                        ValidateReportedSpatialClusterSize();
-    void                        ValidateScanningWindowRanges();
-    void                        ValidateSpatialClusterSize();
-    void                        ValidateTemporalClusterSize();
+   TfrmAnalysis             & gAnalysisSettings;
+   TWinControl              * gpFocusControl;
+   bool                     gbAnalysisShow;
+   bool                     gbEnableRangeYears;  /** stores enable dictated by main interface */
+   bool                     gbEnableRangeMonths; /** stores enable dictated by main interface */
+   bool                     gbEnableRangeDays;   /** stores enable dictated by main interface */
+   bool                     gbEnableAdjustmentsByRR; /** stores enable dictated by main interface */
 
-  public:
-    __fastcall TfrmAdvancedParameters(TfrmAnalysis & AnalysisSettings);
+   TimeTrendAdjustmentType  GetAdjustmentTimeTrendControlType() const;
+   void                     Init();
+   void                     ParseDate(const std::string& sDate, TEdit& Year, TEdit& Month, TEdit& Day, bool bStartRange);
+   void                     RefreshTemporalRangesEnables();
+   void                     SetDefaultsForAnalysisTabs();
+   void                     SetDefaultsForOutputTab();
+   void                     Setup();
+   void                     ValidateProspDateRange();
+   void                     ValidateReportedSpatialClusterSize();
+   void                     ValidateScanningWindowRanges();
+   void                     ValidateSpatialClusterSize();
+   void                     ValidateTemporalClusterSize();
 
-    void                        EnableAdjustmentsGroup(bool bEnable);
-    void                        EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage);
-    void                        EnableOutputOptions(bool bEnable);
-    void                        EnableProspectiveStartDate(bool bEnable);
-    void                        EnableProspectiveSurveillanceGroup(bool bEnable);
-    void                        EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal, bool bEnablePercentage);
-    void                        EnableSpatialOutputOptions(bool bEnable);
-    void                        EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges);
-    void                        EnableTemporalRanges(bool bEnable, bool bEnableRanges);
-    SpatialSizeType             GetMaxSpatialClusterSizeControlType() const;
-    float                       GetMaxSpatialClusterSizeFromControl() const;
-    TemporalSizeType            GetMaxTemporalClusterSizeControlType() const;
-    float                       GetMaxTemporalClusterSizeFromControl() const;
-    void                        SaveParameterSettings();
-    void                        SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName);
-    void                        SetMaxSpatialClusterSizeControl(float fMaxSize);
-    void                        SetMaxSpatialClusterSizeTypeControl(SpatialSizeType eSpatialSizeType);
-    void                        SetMaxTemporalClusterSizeControl(float fMaxSize);
-    void                        SetMaxTemporalClusterSizeTypeControl(TemporalSizeType eTemporalSizeType);
-    void                        SetRangeDateEnables(bool bYear, bool bMonth, bool bDay);
-    void                        SetReportingClustersText(const ZdString& sText);
-    void                        SetReportingSmallerClustersText();
-    void                        SetSpatialDistanceCaption();
-    void                        SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
-    void                        ShowDialog(TWinControl * pFocusControl=0, bool bAnalysis=true);
-    void                        Validate();
-    void                        ValidateAdjustmentSettings();
-    void                        ValidateOutputSettings();
-    void                        ValidateTemporalWindowSettings();
+public:
+   __fastcall TfrmAdvancedParameters(TfrmAnalysis & AnalysisSettings);
+
+   void                  EnableAdjustmentsGroup(bool bEnable);
+   void                  EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage);
+   void                  EnableOutputOptions(bool bEnable);
+   void                  EnableProspectiveStartDate(bool bEnable);
+   void                  EnableProspectiveSurveillanceGroup(bool bEnable);
+   void                  EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal, bool bEnablePercentage);
+   void                  EnableSpatialOutputOptions(bool bEnable);
+   void                  EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges);
+   void                  EnableTemporalRanges(bool bEnable, bool bEnableRanges);
+   bool                  GetDefaultsSetForAnalysisOptions();
+   bool                  GetDefaultsSetForOutputOptions();
+   SpatialSizeType       GetMaxSpatialClusterSizeControlType() const;
+   float                 GetMaxSpatialClusterSizeFromControl() const;
+   TemporalSizeType      GetMaxTemporalClusterSizeControlType() const;
+   float                 GetMaxTemporalClusterSizeFromControl() const;
+   void                  SaveParameterSettings();
+   void                  SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName);
+   void                  SetMaxSpatialClusterSizeControl(float fMaxSize);
+   void                  SetMaxSpatialClusterSizeTypeControl(SpatialSizeType eSpatialSizeType);
+   void                  SetMaxTemporalClusterSizeControl(float fMaxSize);
+   void                  SetMaxTemporalClusterSizeTypeControl(TemporalSizeType eTemporalSizeType);
+   void                  SetRangeDateEnables(bool bYear, bool bMonth, bool bDay);
+   void                  SetReportingClustersText(const ZdString& sText);
+   void                  SetReportingSmallerClustersText();
+   void                  SetSpatialDistanceCaption();
+   void                  SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
+   void                  ShowDialog(TWinControl * pFocusControl=0, bool bAnalysis=true);
+   void                  Validate();
+   void                  ValidateAdjustmentSettings();
+   void                  ValidateOutputSettings();
+   void                  ValidateTemporalWindowSettings();
 };
 
 class AdvancedFeaturesException : public virtual ZdException {

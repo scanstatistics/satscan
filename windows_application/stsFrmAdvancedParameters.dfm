@@ -61,7 +61,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Top = 6
     Width = 419
     Height = 283
-    ActivePage = TabSheet1
+    ActivePage = tsOther
     TabOrder = 0
     object TabSheet2: TTabSheet
       Caption = 'Spatial Window'
