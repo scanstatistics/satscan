@@ -11,7 +11,7 @@
 #include <math.h>
 #include <time.h>
 #include <float.h>
-#ifdef INTEL_BASED
+#ifdef __BORLANDC__
   #include <io.h>
 #else
   #include <unistd.h>
@@ -45,11 +45,11 @@
 #define VERSION_ID      "6"  /** incremental version identifier - this value must
                                  be incremented for each released version in order
                                  for update feature to function correctly */
-#define VERSION_MAJOR   "5"
-#define VERSION_MINOR   "1"
+#define VERSION_MAJOR   "6"
+#define VERSION_MINOR   "0"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE   "" /** testing phase name - leave blank for release */
-#define VERSION_DATE    "December 30, 2004"
+#define VERSION_PHASE   "dev" /** testing phase name - leave blank for release */
+#define VERSION_DATE    "Not Released"
 /** New defines for ellipsoid calculations. */
 #define MAXELLIPSESHAPES 10
 /** PI declaration - this is now defined in math.h but changing may cause
