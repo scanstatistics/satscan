@@ -497,6 +497,8 @@ void TfrmAnalysis::DefaultHiddenParameters() {
     gParameters.SetIncludeClustersType(ALLCLUSTERS);
   if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
     gParameters.SetTimeTrendAdjustmentType(NOTADJUSTED);
+  gParameters.SetSimulationType(STANDARD);
+  gParameters.SetOutputSimulationData(false);  
 }
 
 //---------------------------------------------------------------------------
