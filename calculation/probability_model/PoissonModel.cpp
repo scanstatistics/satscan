@@ -3,7 +3,7 @@
 #include "PoissonModel.h"
 
 /** constructor */
-CPoissonModel::CPoissonModel(CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection)
+CPoissonModel::CPoissonModel(const CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection)
               :CModel(Parameters, Data, PrintDirection) {}
 
 /** destructor */
@@ -17,7 +17,7 @@ CPoissonModel::~CPoissonModel() {}
     These operations are done on the raw measure matrix rather than the
     later on constructed cumulative measure matrix, while the cumulative
     case matrix is used.                                                */
-void CPoissonModel::AdjustForNonParameteric(DataStream & thisStream, measure_t ** pNonCumulativeMeasure) {
+void CPoissonModel::AdjustForNonParameteric(RealDataStream & thisStream, measure_t ** pNonCumulativeMeasure) {
   int                   i, j, jj, k, tract, AdjustIntervals;
   double                sumcases,summeasure;
   count_t            ** ppCases(thisStream.GetCaseArray());
@@ -64,7 +64,7 @@ void CPoissonModel::AdjustForNonParameteric(DataStream & thisStream, measure_t *
 }
 
 /** */
-void CPoissonModel::AdjustForLLPercentage(DataStream & thisStream, measure_t ** pNonCumulativeMeasure, double nPercentage)
+void CPoissonModel::AdjustForLLPercentage(RealDataStream & thisStream, measure_t ** pNonCumulativeMeasure, double nPercentage)
 {
   int    i,t;
   double c;
@@ -98,7 +98,7 @@ void CPoissonModel::AdjustForLLPercentage(DataStream & thisStream, measure_t ** 
 
 /** Calculates time trend for data stream, calls CParameters::SetTimeTrendAdjustmentPercentage()
     with calculated value, and calls AdjustForLLPercentage(). */
-void CPoissonModel::AdjustForLogLinear(DataStream& thisStream, measure_t ** pNonCumulativeMeasure) {
+void CPoissonModel::AdjustForLogLinear(RealDataStream& thisStream, measure_t ** pNonCumulativeMeasure) {
   //Calculate time trend for whole dataset
   thisStream.GetTimeTrend().CalculateAndSet(thisStream.GetPTCasesArray(),
                                             thisStream.GetPTMeasureArray(),
@@ -126,11 +126,11 @@ void CPoissonModel::AdjustForLogLinear(DataStream& thisStream, measure_t ** pNon
   // display in the report.
   //TODO: How should this be handled with mutliple data streams?
   //       - last streams calculated percenatage reported only, as it stands
-  gParameters.SetTimeTrendAdjustmentPercentage(thisStream.GetTimeTrend().GetBeta());
+  const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(thisStream.GetTimeTrend().GetBeta());
   AdjustForLLPercentage(thisStream, pNonCumulativeMeasure, thisStream.GetTimeTrend().GetBeta());  // Adjust Measure             */
 }
 
-void CPoissonModel::AdjustMeasure(DataStream & thisStream, measure_t ** ppNonCumulativeMeasure) {
+void CPoissonModel::AdjustMeasure(RealDataStream & thisStream, measure_t ** ppNonCumulativeMeasure) {
   measure_t     AdjustedTotalMeasure_t=0;
   int           i;
   tract_t       t;
@@ -168,7 +168,7 @@ void CPoissonModel::AdjustMeasure(DataStream & thisStream, measure_t ** ppNonCum
 }
 
 /** Calculates and sets non-cumulative measure array. */
-void CPoissonModel::AssignMeasure(DataStream & thisStream, measure_t ** ppNonCumulativeMeasure) {
+void CPoissonModel::AssignMeasure(RealDataStream & thisStream, measure_t ** ppNonCumulativeMeasure) {
   int           i, interval;
   tract_t       tract;
   Julian      * pIntervalDates=0;
@@ -215,8 +215,7 @@ void CPoissonModel::AssignMeasure(DataStream & thisStream, measure_t ** ppNonCum
   }
 }
 
-bool CPoissonModel::CalculateMeasure(DataStream & thisStream) {
-  bool                  bResult=true;
+void CPoissonModel::CalculateMeasure(RealDataStream & thisStream) {
   double              * pAlpha=0, * pRisk=0;
   PopulationData      & Population = thisStream.GetPopulationData();
 
@@ -278,7 +277,6 @@ bool CPoissonModel::CalculateMeasure(DataStream & thisStream) {
     x.AddCallpath("CalculateMeasure()","CPoissonModel");
     throw;
   }
-  return bResult;
 }
 
 double CPoissonModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
