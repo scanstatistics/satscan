@@ -92,7 +92,7 @@
       ..\calculation\loglikelihood\BernoulliLikelihoodCalculation.obj 
       ..\calculation\loglikelihood\ExponentialLikelihoodCalculation.obj 
       ..\calculation\loglikelihood\NormalLikelihoodCalculation.obj 
-      ..\calculation\loglikelihood\WillcoxomLikelihoodCalculation.obj"/>
+      ..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>

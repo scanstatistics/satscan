@@ -92,7 +92,7 @@ USEUNIT("..\calculation\loglikelihood\PoissonLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\loglikelihood\BernoulliLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\loglikelihood\ExponentialLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\loglikelihood\NormalLikelihoodCalculation.cpp");
-USEUNIT("..\calculation\loglikelihood\WillcoxomLikelihoodCalculation.cpp");
+USEUNIT("..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib");
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");

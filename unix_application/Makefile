@@ -117,7 +117,7 @@ SRC         := Main.cpp \
 	       ../calculation/loglikelihood/LikelihoodCalculation.cpp \
 	       ../calculation/loglikelihood/NormalLikelihoodCalculation.cpp \
 	       ../calculation/loglikelihood/PoissonLikelihoodCalculation.cpp \
-	       ../calculation/loglikelihood/WillcoxomLikelihoodCalculation.cpp \
+	       ../calculation/loglikelihood/WilcoxonLikelihoodCalculation.cpp \
 	       ../calculation/randomization/SpaceTimeRandomizer.cpp \
 	       ../calculation/satscan_data/GridTractCoordinates.cpp \
 	       ../calculation/satscan_data/MakeNeighbors.cpp \

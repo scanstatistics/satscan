@@ -99,7 +99,7 @@
       ..\calculation\loglikelihood\BernoulliLikelihoodCalculation.obj 
       ..\calculation\loglikelihood\LikelihoodCalculation.obj 
       ..\calculation\loglikelihood\PoissonLikelihoodCalculation.obj 
-      ..\calculation\loglikelihood\WillcoxomLikelihoodCalculation.obj 
+      ..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.obj 
       ..\calculation\loglikelihood\ExponentialLikelihoodCalculation.obj 
       ..\calculation\loglikelihood\NormalLikelihoodCalculation.obj"/>
     <RESFILES value="StsWinPrj.res"/>

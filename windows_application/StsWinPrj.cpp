@@ -113,7 +113,7 @@ USEUNIT("..\calculation\randomization\BernoulliRandomizer.cpp");
 USEUNIT("..\calculation\loglikelihood\BernoulliLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\loglikelihood\LikelihoodCalculation.cpp");
 USEUNIT("..\calculation\loglikelihood\PoissonLikelihoodCalculation.cpp");
-USEUNIT("..\calculation\loglikelihood\WillcoxomLikelihoodCalculation.cpp");
+USEUNIT("..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\loglikelihood\ExponentialLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\loglikelihood\NormalLikelihoodCalculation.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
