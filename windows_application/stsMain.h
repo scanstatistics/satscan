@@ -43,12 +43,10 @@ class TfrmMainForm : public TForm{
         TMenuItem *Close1;
         TMenuItem *N2;
         TMenuItem *SaveAs1;
-        TMenuItem *mitPrint;
         TMenuItem *mitPrintSetup;
         TMenuItem *N3;
         TOpenDialog *OpenDialog1;
         TSaveDialog *SaveDialog1;
-        TPrintDialog *PrintDialog1;
         TPrinterSetupDialog *PrinterSetupDialog1;
         TMenuItem *mitOpenParameterFile;
         TMenuItem *OutputTextFile1;

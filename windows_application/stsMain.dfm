@@ -180,8 +180,8 @@ object frmMainForm: TfrmMainForm
     end
   end
   object MainMenu1: TMainMenu
-    Left = 40
-    Top = 72
+    Left = 8
+    Top = 40
     object File1: TMenuItem
       Caption = '&File'
       object mitOpenSession: TMenuItem
@@ -215,9 +215,6 @@ object frmMainForm: TfrmMainForm
       end
       object Exit1: TMenuItem
         Caption = '-'
-      end
-      object mitPrint: TMenuItem
-        Action = PrintSessionAction
       end
       object mitPrintSetup: TMenuItem
         Action = PrintSetupAction
@@ -255,25 +252,21 @@ object frmMainForm: TfrmMainForm
   end
   object OpenDialog1: TOpenDialog
     Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
-    Left = 88
+    Left = 8
     Top = 72
   end
   object SaveDialog1: TSaveDialog
-    Left = 128
-    Top = 72
-  end
-  object PrintDialog1: TPrintDialog
-    Left = 176
-    Top = 72
+    Left = 8
+    Top = 96
   end
   object PrinterSetupDialog1: TPrinterSetupDialog
-    Left = 216
-    Top = 72
+    Left = 8
+    Top = 160
   end
   object ActionList: TActionList
     Images = ImageList
-    Left = 352
-    Top = 96
+    Left = 8
+    Top = 192
     object NewSessionAction: TAction
       Hint = 'New Session'
       ImageIndex = 4
@@ -313,7 +306,6 @@ object frmMainForm: TfrmMainForm
     end
     object PrintSetupAction: TAction
       Caption = 'Print Setup'
-      Enabled = False
       Hint = 'Print Setup'
       ShortCut = 16466
       OnExecute = PrintSetupActionExecute
@@ -349,8 +341,8 @@ object frmMainForm: TfrmMainForm
     end
   end
   object ImageList: TImageList
-    Left = 96
-    Top = 160
+    Left = 8
+    Top = 128
     Bitmap = {
       494C010106000900040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001001000000000000018
