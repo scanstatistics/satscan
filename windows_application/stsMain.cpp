@@ -22,9 +22,9 @@ void __fastcall TfrmMainForm::ExecuteActionExecute(TObject *Sender) {
   try {
     ExecuteSession();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("ExecuteActionExecute", "TfrmMainForm");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -51,7 +51,7 @@ void TfrmMainForm::ExecuteSession() {
       }
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("ExecuteSession()", "TfrmMainForm");
     throw;
   }
@@ -69,9 +69,9 @@ void __fastcall TfrmMainForm::NewSessionActionExecute(TObject *Sender) {
   try {
     new TfrmAnalysis(this);
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("NewSessionActionExecute", "TfrmMainForm");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -84,7 +84,7 @@ void __fastcall TfrmMainForm::OpenAFile(){
     if (OpenDialog1->Execute())
       new TfrmAnalysis(this, OpenDialog1->FileName.c_str());
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("OpenAFile()", "TfrmMainForm");
     throw;
   }
@@ -94,9 +94,9 @@ void __fastcall TfrmMainForm::OpenParameterFileActionExecute(TObject *Sender) {
   try {
     OpenAFile();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("OpenParameterFileActionExecute", "TfrmMainForm");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -121,7 +121,7 @@ void __fastcall TfrmMainForm::OutputTextFile1Click(TObject *Sender) {
         new TfrmOutputViewer(this, OpenDialog1->FileName.c_str());
       }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("OutputTextFile1Click", "TfrmMainForm");
     throw;
   }
@@ -153,10 +153,10 @@ void __fastcall TfrmMainForm::PrintSessionActionExecute(TObject *Sender) {
          //    frmAnalysisRun->PrintTarget();
          }
       }
-   catch (SSException & x)
+   catch (ZdException & x)
       {
       x.AddCallpath("PrintSessionActionExecute", "TfrmMainForm");
-      DisplayException(this, x);
+      DisplayBasisException(this, x);
       }  */
 }
 //---------------------------------------------------------------------------
@@ -184,7 +184,7 @@ void TfrmMainForm::Save() {
       }
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("Save()", "TfrmMainForm");
     throw;
   }
@@ -198,7 +198,7 @@ void TfrmMainForm::SaveAs() {
     if (frmBaseForm)
       frmBaseForm->SaveAs();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("SaveAs()", "TfrmMainForm");
     throw;
    }
@@ -208,9 +208,9 @@ void __fastcall TfrmMainForm::SaveSessionActionExecute(TObject *Sender) {
   try {
     Save();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("SaveSessionActionExecute", "TfrmMainForm");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
@@ -218,9 +218,9 @@ void __fastcall TfrmMainForm::SaveSessionAsActionExecute(TObject *Sender){
   try {
     SaveAs();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("SaveSessionAsActionExecute", "TfrmMainForm");
-    DisplayException(this, x);
+    DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
