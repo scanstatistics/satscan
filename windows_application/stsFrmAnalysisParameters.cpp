@@ -40,18 +40,16 @@ __fastcall TfrmAnalysis::TfrmAnalysis(TComponent* Owner, char *sParamFileName)
    catch (SSException & x)
       {
       x.AddCallpath("constructor", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
 }
 //---------------------------------------------------------------------------
 // Closes the form and frees up all memory associated with the session obj
 //---------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::FormClose(TObject *Sender,
-      TCloseAction &Action)
-{
-   if (gpParams)
-      delete gpParams;
-   Action = caFree;
+void __fastcall TfrmAnalysis::FormClose(TObject *Sender, TCloseAction &Action) {
+  if (gpParams)
+    delete gpParams;
+  Action = caFree;
 }
 //---------------------------------------------------------------------------
 // THIS FUNCTIONS IS THE MAIN CONTROLLING FUNCTION FOR CHECKING RELATIONSHIPS
@@ -107,7 +105,7 @@ bool TfrmAnalysis::ValidateParams()
    catch (SSException & x)
       {
       x.AddCallpath("ValidateParams", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
   return bDataOk;
 }
@@ -124,7 +122,7 @@ CParameters * TfrmAnalysis::GetSession()
    catch (SSException & x)
       {
       x.AddCallpath("GetSession", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
    return gpParams;
 }
@@ -172,7 +170,7 @@ bool TfrmAnalysis::ReadSession(char *sFileName)
    catch (SSException & x)
       {
       x.AddCallpath("ReadSession", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
    return bSessionOk;
 }
@@ -194,7 +192,7 @@ bool TfrmAnalysis::WriteSession()
    catch (SSException & x)
       {
       x.AddCallpath("WriteSession", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
    return bWriteOk;   
 }
@@ -241,7 +239,7 @@ bool TfrmAnalysis::SaveAs()
    catch (SSException & x)
       {
       x.AddCallpath("SaveAs", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
    return bGotFileName;
 }
@@ -269,6 +267,7 @@ void TfrmAnalysis::SaveTextParameters()
       //Scanning Window Tab
       gpParams->m_nMaxGeographicClusterSize  = atof(edtMaxClusterSize->Text.c_str());
       gpParams->m_nMaxTemporalClusterSize    = atof(edtMaxTemporalClusterSize->Text.c_str());
+      gpParams->m_nMaxClusterSizeType = (rdoPercentageTemproal->Checked ? PERCENTAGETYPE : TIMETYPE);
    
       //Time Parameter Tab
       gpParams->m_nIntervalLength  = atoi(edtUnitLength->Text.c_str());
@@ -281,7 +280,7 @@ void TfrmAnalysis::SaveTextParameters()
    catch (SSException & x)
       {
       x.AddCallpath("SaveTextParameters", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
 }
 //---------------------------------------------------------------------------
@@ -326,6 +325,8 @@ void TfrmAnalysis::SetupInterface()
       edtMaxClusterSize->Text         = gpParams->m_nMaxGeographicClusterSize;
       chkInclPurTempClust->Checked    = gpParams->m_bIncludePurelyTemporal;
       edtMaxTemporalClusterSize->Text = gpParams->m_nMaxTemporalClusterSize;
+      rdoPercentageTemproal->Checked = gpParams->m_nMaxClusterSizeType == PERCENTAGETYPE;
+      rdoTimeTemproal->Checked = gpParams->m_nMaxClusterSizeType == TIMETYPE;
       chkIncludePurSpacClust->Checked = gpParams->m_bIncludePurelySpatial;
       rgClustersToInclude->ItemIndex  = (gpParams->m_bAliveClustersOnly ? 1:0);  // IS THIS RETURNING THE RIGHT INDEX OR SHOULD I SWITCH IT AROUND ???
       if (gpParams->m_nAnalysisType == PROSPECTIVESPACETIME)
@@ -365,7 +366,7 @@ void TfrmAnalysis::SetupInterface()
    catch (SSException & x)
       {
       x.AddCallpath("SetupInterface", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }      
 }
 //---------------------------------------------------------------------------
@@ -564,7 +565,7 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("btnCaseBrowseClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
 }
 //---------------------------------------------------------------------------
@@ -590,7 +591,7 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("btnControlBrowseClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
 }
 //---------------------------------------------------------------------------
@@ -616,7 +617,7 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("btnPopBrowseClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
 }
 //---------------------------------------------------------------------------
@@ -642,7 +643,7 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("btnCoordBrowseClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
 }
 //---------------------------------------------------------------------------
@@ -668,7 +669,7 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("btnGridBrowseClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
 }
 //---------------------------------------------------------------------------
@@ -812,7 +813,7 @@ void __fastcall TfrmAnalysis::rgCoordinatesClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("rgCoordinatesClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }    
 }
 //------------------------------------------------------------------------------
@@ -863,7 +864,7 @@ void __fastcall TfrmAnalysis::rgTypeAnalysisClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("rgTypeAnalysisClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }  
   
 }
@@ -881,7 +882,7 @@ void __fastcall TfrmAnalysis::rgProbabilityClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("rgProbabilityClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }        
 }
 //------------------------------------------------------------------------------
@@ -898,7 +899,7 @@ void __fastcall TfrmAnalysis::rgScanAreasClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("rgScanAreasClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
 }
 //------------------------------------------------------------------------------
@@ -1156,7 +1157,7 @@ void __fastcall TfrmAnalysis::btnResultFileBrowseClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("btnResultFileBrowseClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }
 }
 //------------------------------------------------------------------------------
@@ -1191,7 +1192,7 @@ void __fastcall TfrmAnalysis::chkInclRelRiskEstClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("chkInclRelRiskEstClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }        
 }
 //------------------------------------------------------------------------------
@@ -1207,7 +1208,7 @@ void __fastcall TfrmAnalysis::chkInclSimLogLikClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("chkInclSimLogLikClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }        
 }
 //------------------------------------------------------------------------------
@@ -1386,7 +1387,7 @@ void __fastcall TfrmAnalysis::rbUnitYearClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("rbUnitYearClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }        
 }
 //------------------------------------------------------------------------------
@@ -1402,7 +1403,7 @@ void __fastcall TfrmAnalysis::rbUnitMonthsClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("rbUnitMonthsClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }        
 }
 //------------------------------------------------------------------------------
@@ -1418,7 +1419,7 @@ void __fastcall TfrmAnalysis::rbUnitDayClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("rbUnitDayClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }  
 }
 //------------------------------------------------------------------------------
@@ -1450,7 +1451,7 @@ void __fastcall TfrmAnalysis::rgTemporalTrendAdjClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("rgTemporalTrendAdjClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }    
 }
 //------------------------------------------------------------------------------
@@ -1520,6 +1521,14 @@ void TfrmAnalysis::EnableScanningWindow()
 
    edtMaxTemporalClusterSize->Enabled = bTemporal;
    edtMaxTemporalClusterSize->Color = (bTemporal ? clWindow:clInactiveBorder);
+   rdoPercentageTemproal->Enabled = bTemporal;
+   rdoTimeTemproal->Enabled = bTemporal;
+   if (rbUnitYear->Checked)
+     rdoTimeTemproal->Caption = "Time in years";
+   else if (rbUnitMonths->Checked)
+     rdoTimeTemproal->Caption = "Time in months";
+   else
+     rdoTimeTemproal->Caption = "Time in days";
    chkIncludePurSpacClust->Enabled = (((gpParams->m_nAnalysisType == PURELYSPATIAL) || (gpParams->m_nAnalysisType == SPACETIME)) && bTemporal);
 
    rgClustersToInclude->Enabled = bTemporalNotCountingProspST;
@@ -1527,39 +1536,121 @@ void TfrmAnalysis::EnableScanningWindow()
 //------------------------------------------------------------------------------
 // Checks the validity of the scanning tab controls
 //------------------------------------------------------------------------------
-bool TfrmAnalysis::CheckScanningWindowParams()
-{
-   bool bParamsOk = true;
-   double dValue;
+bool TfrmAnalysis::CheckScanningWindowParams() {
+  bool bParamsOk = true;
+  double dValue, dTimeBetween;
 
-   try
-      {
-      if (edtMaxClusterSize->Enabled)
-         {
-         dValue = atof(edtMaxClusterSize->Text.c_str());
-         if ( ! (dValue > 0.0 && dValue <= 50.0))
-            {
-            MessageBox(NULL, "Invalid maximum geographic size specified.", "Parameter Error" , MB_OK);
-            bParamsOk = false;
-            }
-         }
-      if (bParamsOk && edtMaxTemporalClusterSize->Enabled) // check
-         {
-         dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
-         if ( ! (dValue > 0.0 && dValue <= 90.0))
-            {
-            MessageBox(NULL, "Invalid maximum time size specified.", "Parameter Error" , MB_OK);
-            bParamsOk = false;
-            }
-         }
+  try {
+    //validate maximum spatial cluster size
+    if (edtMaxClusterSize->Enabled) {
+      dValue = atof(edtMaxClusterSize->Text.c_str());
+      if (!(dValue > 0.0 && dValue <= 50.0)) {
+        MessageBox(NULL, "Invalid maximum geographic size specified.", "Parameter Error" , MB_OK);
+        bParamsOk = false;
       }
-   catch (SSException & x)
-      {
-      x.AddCallpath("CheckScanningWindowParams", "TfrmAnalysis");
-      throw;
-      }
+    }
+
+    //validate maximum temporal cluster size
+    bParamsOk = ValidateTemoralClusterSize();
+    //if (bParamsOk && edtMaxTemporalClusterSize->Enabled) {
+    //  if (rdoPercentageTemproal->Checked) {
+    //    dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
+    //    if (!(dValue > 0.0 && dValue <= 90.0)) {
+    //      MessageBox(NULL, "Invalid maximum time size specified.", "Parameter Error" , MB_OK);
+    //      bParamsOk = false;
+    //    }
+    //  }
+    //  else if (rdoTimeTemproal->Checked) {
+    //    if (edtUnitLength->Text <= edtMaxTemporalClusterSize->Text) {
+    //      dTimeBetween = TimeBetween(CharToJulian(gpParams->m_szStartDate),CharToJulian(gpParams->m_szEndDate),gpParams->m_nIntervalUnits);
+    //      dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
+    //      if (dValue > dTimeBetween) {
+    //        MessageBox(NULL, "Maximum temporal cluster size must be less than duration of study period.", "Parameter Error" , MB_OK);
+    //       bParamsOk = false;
+    //      }
+    //    }
+    //    else {
+    //      MessageBox(NULL, "Maximum temporal cluster size must be greater than interval length.", "Parameter Error" , MB_OK);
+    //      bParamsOk = false;
+    //    }
+    //  }
+    //  else {
+    //    MessageBox(NULL, "Type specified as neither percentage nor time.", "Parameter Error" , MB_OK);
+    //    bParamsOk = false;
+    //  }
+    //}
+   }
+   catch (SSException & x) {
+     x.AddCallpath("CheckScanningWindowParams", "TfrmAnalysis");
+     throw;
+   }
    return bParamsOk;
 }
+
+bool TfrmAnalysis::ValidateTemoralClusterSize() {
+  bool          bParamsOk = true;
+  double        dValue, dTimeBetween;
+  AnsiString    sMessage;
+
+  try {
+    if (edtMaxTemporalClusterSize->Enabled) {
+      if (rdoPercentageTemproal->Checked) {
+        dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
+        if (!(dValue > 0.0 && dValue <= 90.0)) {
+          MessageBox(NULL, "Invalid maximum time size specified.", "Parameter Error" , MB_OK);
+          bParamsOk = false;
+        }
+      }
+      else if (rdoTimeTemproal->Checked) {
+         if (atof(edtUnitLength->Text.c_str()) <= atof(edtMaxTemporalClusterSize->Text.c_str())) {
+          dTimeBetween = TimeBetween(CharToJulian(gpParams->m_szStartDate),CharToJulian(gpParams->m_szEndDate),gpParams->m_nIntervalUnits);
+          dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
+          if (dValue > dTimeBetween) {
+            MessageBox(NULL, "Maximum temporal cluster size must be less than duration of study period.", "Parameter Error" , MB_OK);
+            bParamsOk = false;
+          }
+          if (floor(dValue/dTimeBetween*100) < 1) {
+            sMessage = "Invalid maximum temoral cluster size specified.\nWith study period spanning from year ";
+            sMessage += gpParams->m_szStartDate;
+            sMessage += " to year ";
+            sMessage += gpParams->m_szEndDate;
+            sMessage += " ,\nmaximum cluster size of ";
+            sMessage += dValue;
+            if (rbUnitYear->Checked)
+              sMessage += " year(s) ";
+            if (rbUnitMonths->Checked)
+              sMessage += " month(s) ";
+            if (rbUnitDay->Checked)
+              sMessage += " days(s) ";
+            sMessage += " is less than 1 percent of study period.";
+
+            MessageBox(NULL, sMessage.c_str(), "Parameter Error" , MB_OK);
+            bParamsOk = false;
+          }
+        }
+        else {
+          MessageBox(NULL, "Maximum temporal cluster size must be greater than interval length.", "Parameter Error" , MB_OK);
+          bParamsOk = false;
+        }
+      }
+      else {
+        MessageBox(NULL, "Type specified as neither percentage nor time.", "Parameter Error" , MB_OK);
+        bParamsOk = false;
+      }
+    }
+
+    if (! bParamsOk) {
+      PageControl1->ActivePage = tbScanningWindow;
+      edtMaxTemporalClusterSize->SetFocus();
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("ValidateTemoralClusterSize", "TfrmAnalysis");
+    throw;
+  }
+  return bParamsOk;
+}
+
 //------------------------------------------------------------------------------
 // Include Purely Temporal Clusters selection control
 //------------------------------------------------------------------------------
@@ -1573,454 +1664,252 @@ void __fastcall TfrmAnalysis::chkInclPurTempClustClick(TObject *Sender)
    catch (SSException & x)
       {
       x.AddCallpath("chkInclPurTempClustClick", "TfrmAnalysis");
-      DisplayBasisException(x);
+      DisplayException(this, x);
       }  
 }
 //------------------------------------------------------------------------------
 // Include Purely Spacial Clusters selection control
 //------------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::chkIncludePurSpacClustClick(TObject *Sender)
-{
-   try
-      {
-      gpParams->m_bIncludePurelySpatial = chkIncludePurSpacClust->Checked;
-      DataExchange();
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("chkIncludePurSpacClustClick", "TfrmAnalysis");
-      DisplayBasisException(x);
-      }  
+void __fastcall TfrmAnalysis::chkIncludePurSpacClustClick(TObject *Sender) {
+  try {
+    gpParams->m_bIncludePurelySpatial = chkIncludePurSpacClust->Checked;
+    DataExchange();
+  }
+  catch (SSException & x) {
+    x.AddCallpath("chkIncludePurSpacClustClick()", "TfrmAnalysis");
+    DisplayException(this, x);
+  }
 }
 //------------------------------------------------------------------------------
 //  Control to include "Alive" clusters
 //------------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::rgClustersToIncludeClick(TObject *Sender)
-{
-   try
-      {
-      gpParams->m_bAliveClustersOnly = (rgClustersToInclude->ItemIndex == 0 ? 0:1);
-      DataExchange();
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("rgClustersToIncludeClick", "TfrmAnalysis");
-      DisplayBasisException(x);
-      }  
+void __fastcall TfrmAnalysis::rgClustersToIncludeClick(TObject *Sender) {
+  try {
+    gpParams->m_bAliveClustersOnly = (rgClustersToInclude->ItemIndex == 0 ? 0:1);
+    DataExchange();
+  }
+  catch (SSException & x) {
+    x.AddCallpath("rgClustersToIncludeClick()", "TfrmAnalysis");
+    DisplayException(this, x);
+  }  
 }
 //------------------------------------------------------------------------------
 //  Validates value entered for Maximum Temporal Cluster Size
 //------------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtMaxTemporalClusterSizeExit(
-      TObject *Sender)
-{
-   double dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
+void __fastcall TfrmAnalysis::edtMaxTemporalClusterSizeExit(TObject *Sender) {
+  //double dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
 
-   try
-      {
-      if ( ! (dValue > 0.0 && dValue <= 90.0))
-         {
-         MessageBox(NULL, "Invalid maximum time size specified.", "Parameter Error" , MB_OK);
-         PageControl1->ActivePage = tbScanningWindow;
-         edtMaxTemporalClusterSize->SetFocus();
-         }
-      else
-         gpParams->m_nMaxTemporalClusterSize = atof(edtMaxTemporalClusterSize->Text.c_str());
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("edtMaxTemporalClusterSizeExit", "TfrmAnalysis");
-      DisplayBasisException(x);
-      }        
+  try {
+    //ValidateTemoralClusterSize();
+    //  if ( ! (dValue > 0.0 && dValue <= 90.0))
+    //     {
+    //     MessageBox(NULL, "Invalid maximum time size specified.", "Parameter Error" , MB_OK);
+    //     PageControl1->ActivePage = tbScanningWindow;
+    //     edtMaxTemporalClusterSize->SetFocus();
+    //     }
+    //  else
+    //     gpParams->m_nMaxTemporalClusterSize = atof(edtMaxTemporalClusterSize->Text.c_str());
+   }
+   catch (SSException & x) {
+     x.AddCallpath("edtMaxTemporalClusterSizeExit", "TfrmAnalysis");
+     DisplayException(this, x);
+   }        
 }
 //------------------------------------------------------------------------------
 // Validates value entered for Cluster size
 //------------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtMaxClusterSizeExit(TObject *Sender)
-{
-   double dValue = atof(edtMaxClusterSize->Text.c_str());
+void __fastcall TfrmAnalysis::edtMaxClusterSizeExit(TObject *Sender) {
+  double dValue = atof(edtMaxClusterSize->Text.c_str());
 
-   try
-      {
-      if ( ! (dValue > 0.0 && dValue <= 50.0))
-         {
-         MessageBox(NULL, "Invalid maximum geographic size specified.", "Parameter Error" , MB_OK);
-         PageControl1->ActivePage = tbScanningWindow;
-         edtMaxClusterSize->SetFocus();
-         }
-      else
-         gpParams->m_nMaxGeographicClusterSize = atof(edtMaxClusterSize->Text.c_str());
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("edtMaxClusterSizeExit", "TfrmAnalysis");
-      DisplayBasisException(x);
-      }
+  try {
+    if ( ! (dValue > 0.0 && dValue <= 50.0)) {
+      MessageBox(NULL, "Invalid maximum geographic size specified.", "Parameter Error" , MB_OK);
+      PageControl1->ActivePage = tbScanningWindow;
+      edtMaxClusterSize->SetFocus();
+    }
+    else
+      gpParams->m_nMaxGeographicClusterSize = atof(edtMaxClusterSize->Text.c_str());
+  }
+  catch (SSException & x) {
+    x.AddCallpath("edtMaxClusterSizeExit()", "TfrmAnalysis");
+    DisplayException(this, x);
+  }
 }
 //------------------------------------------------------------------------------
 // Validates Number of Monte Carlo reps value
 //------------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtMontCarloRepsExit(TObject *Sender)
-{
-   try 
-      {
-      if ( ! CheckReplicas(atoi(edtMontCarloReps->Text.c_str())))
-         {
-         PageControl1->ActivePage = tbAnalysis;
-         edtMontCarloReps->SetFocus();
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("edtMontCarloRepsExit", "TfrmAnalysis");
-      DisplayBasisException(x);
-      }  
+void __fastcall TfrmAnalysis::edtMontCarloRepsExit(TObject *Sender) {
+  try {
+     if (! CheckReplicas(atoi(edtMontCarloReps->Text.c_str()))) {
+       PageControl1->ActivePage = tbAnalysis;
+       edtMontCarloReps->SetFocus();
+     }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("edtMontCarloRepsExit()", "TfrmAnalysis");
+    DisplayException(this, x);
+  }  
 }
 //------------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtMontCarloRepsKeyPress(TObject *Sender,
-      char &Key)
-{
-
-   if (!strchr("0123456789\b",Key))
-   	{
-      Key = 0;
-      }
+void __fastcall TfrmAnalysis::NaturalNumberKeyPress(TObject *Sender, char &Key) {
+  if (!strchr("0123456789\b",Key))
+    Key = 0;
 }
 //------------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtEndDayKeyPress(TObject *Sender, char &Key)
-{
-
-   if (!strchr("0123456789\b",Key))
-   	{
-      Key = 0;
-      }
-}
-//------------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtStartDayKeyPress(TObject *Sender,
-      char &Key)
-{
-
-   if (!strchr("0123456789\b",Key))
-   	{
-      Key = 0;
-      }        
+void __fastcall TfrmAnalysis::PositiveFloatKeyPress(TObject *Sender, char &Key) {
+  if (!strchr("0123456789.\b",Key))
+    Key = 0;
 }
 //---------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtStartMonthKeyPress(TObject *Sender,
-      char &Key)
-{
-
-   if (!strchr("0123456789\b",Key))
-   	{
-      Key = 0;
-      }
+void __fastcall TfrmAnalysis::FloatKeyPress(TObject *Sender, char &Key) {
+  if (!strchr("-0123456789.\b",Key))
+    Key = 0;
 }
 //---------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtEndMonthKeyPress(TObject *Sender,
-      char &Key)
-{
-
-   if (!strchr("0123456789\b",Key))
-   	{
-      Key = 0;
-      }
+void __fastcall TfrmAnalysis::edtStartMonthExit(TObject *Sender) {
+  try {
+    if ( ! Check_Month(atoi(edtStartMonth->Text.c_str()), "Study Period Start Month")) {
+      PageControl1->ActivePage = tbAnalysis;
+      edtStartMonth->SetFocus();
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("edtStartMonthExit()", "TfrmAnalysis");
+    DisplayException(this, x);
+  }
 }
 //---------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtStartYearKeyPress(TObject *Sender,
-      char &Key)
-{
-
-   if (!strchr("0123456789\b",Key))
-   	{
-      Key = 0;
-      }
+void __fastcall TfrmAnalysis::edtStartYearExit(TObject *Sender) {
+  try {
+    if ( ! Check_Year(atoi(edtStartYear->Text.c_str()), "Study Period Start Year")) {
+      PageControl1->ActivePage = tbAnalysis;
+      edtStartYear->SetFocus();
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("edtStartYearExit()", "TfrmAnalysis");
+    DisplayException(this, x);
+  }  
 }
 //---------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtEndYearKeyPress(TObject *Sender,
-      char &Key)
-{
-
-   if (!strchr("0123456789\b",Key))
-   	{      
-      Key = 0;
-      }        
+void __fastcall TfrmAnalysis::edtEndMonthExit(TObject *Sender) {
+  try {
+    if ( ! Check_Month(atoi(edtEndMonth->Text.c_str()), "Study Period End Month")) {
+      PageControl1->ActivePage = tbAnalysis;
+      edtStartMonth->SetFocus();
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("edtEndMonthExit", "TfrmAnalysis");
+    DisplayException(this, x);
+  }  
 }
 //---------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtMaxClusterSizeKeyPress(TObject *Sender,
-      char &Key)
-{
-
-   if (!strchr("0123456789.\b",Key))
-   	{
-      Key = 0;
-      }
+void __fastcall TfrmAnalysis::edtEndYearExit(TObject *Sender) {
+  try {
+    if ( ! Check_Year(atoi(edtEndYear->Text.c_str()), "Study Period End Year")) {
+      PageControl1->ActivePage = tbAnalysis;
+      edtEndYear->SetFocus();
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("edtEndYearExit()", "TfrmAnalysis");
+    DisplayException(this, x);
+  }  
 }
 //---------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtMaxTemporalClusterSizeKeyPress(
-      TObject *Sender, char &Key)
-{
-
-   if (!strchr("0123456789.\b",Key))
-   	{
-      Key = 0;
-      }
+void __fastcall TfrmAnalysis::edtStartDayExit(TObject *Sender) {
+  try {
+    if ((atoi(edtStartDay->Text.c_str()) < 1) || (atoi(edtStartDay->Text.c_str()) > 31)) {
+      MessageBox(NULL, "Please specify a valid day.", "Parameter Error" , MB_OK);
+      PageControl1->ActivePage = tbAnalysis;
+      edtStartDay->SetFocus();
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("edtStartDayExit()", "TfrmAnalysis");
+    DisplayException(this, x);
+  }
 }
 //---------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtUnitLengthKeyPress(TObject *Sender,
-      char &Key)
-{
-
-   if (!strchr("0123456789\b",Key))
-   	{
-      Key = 0;
-      }        
+void __fastcall TfrmAnalysis::edtEndDayExit(TObject *Sender) {
+  try {
+    if ((atoi(edtEndDay->Text.c_str()) < 1) || (atoi(edtEndDay->Text.c_str()) > 31)) {
+      PageControl1->ActivePage = tbAnalysis;
+      edtEndDay->SetFocus();
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("edtEndDayExit()", "TfrmAnalysis");
+    DisplayException(this, x);
+  }  
 }
 //---------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtLogPerYearKeyPress(TObject *Sender,
-      char &Key)
-{
-   //NEGATIVE VALUES ALLOWED FOR THIS...
-   if (!strchr("-0123456789.\b",Key))
-   	{      
-      Key = 0;
-      }
+void __fastcall TfrmAnalysis::edtProspYearExit(TObject *Sender) {
+  try {
+    if ( ! Check_Year(atoi(edtProspYear->Text.c_str()), "Prospective Space-Time Start Year")) {
+      PageControl1->ActivePage = tbTimeParameter;
+      edtProspYear->SetFocus();
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("edtProspYearExit()", "TfrmAnalysis");
+    DisplayException(this, x);
+  }
 }
 //---------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtStartMonthExit(TObject *Sender)
-{
-   try
-      {
-      if ( ! Check_Month(atoi(edtStartMonth->Text.c_str()), "Study Period Start Month"))
-         {
-         PageControl1->ActivePage = tbAnalysis;
-         edtStartMonth->SetFocus();
-         }
-      }
-   catch (SSException & x)
-      {
-       x.AddCallpath("edtStartMonthExit", "TfrmAnalysis");
-      DisplayBasisException(x);
-      }
+void __fastcall TfrmAnalysis::edtProspMonthExit(TObject *Sender) {
+  try {
+    if ( ! Check_Month(atoi(edtProspMonth->Text.c_str()), "Prospective Space-Time Start Month")) {
+      PageControl1->ActivePage = tbTimeParameter;
+      edtProspMonth->SetFocus();
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("edtProspMonthExit()", "TfrmAnalysis");
+    DisplayException(this, x);
+  }
 }
 //---------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::edtStartYearExit(TObject *Sender)
-{
-   try
-      {
-      if ( ! Check_Year(atoi(edtStartYear->Text.c_str()), "Study Period Start Year"))
-         {
-         PageControl1->ActivePage = tbAnalysis;
-         edtStartYear->SetFocus();
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("edtStartYearExit", "TfrmAnalysis");
-      DisplayBasisException(x);
-      }  
+void __fastcall TfrmAnalysis::edtProspDayExit(TObject *Sender) {
+  try {
+    if ((atoi(edtProspDay->Text.c_str()) < 1) || (atoi(edtProspDay->Text.c_str()) > 31)) {
+      MessageBox(NULL, "Please specify a valid day.", "Parameter Error" , MB_OK);
+      PageControl1->ActivePage = tbTimeParameter;
+      edtProspDay->SetFocus();
+    }
+  }
+  catch (SSException & x) {
+    x.AddCallpath("edtProspDayExit()", "TfrmAnalysis");
+    DisplayException(this, x);
+  }
 }
 //---------------------------------------------------------------------------
-
-void __fastcall TfrmAnalysis::edtEndMonthExit(TObject *Sender)
-{
-   try
-      {
-      if ( ! Check_Month(atoi(edtEndMonth->Text.c_str()), "Study Period End Month"))
-         {
-         PageControl1->ActivePage = tbAnalysis;
-         edtStartMonth->SetFocus();
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("edtEndMonthExit", "TfrmAnalysis");
-      DisplayBasisException(x);
-      }  
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfrmAnalysis::edtEndYearExit(TObject *Sender)
-{
-   try
-      {
-      if ( ! Check_Year(atoi(edtEndYear->Text.c_str()), "Study Period End Year"))
-         {
-         PageControl1->ActivePage = tbAnalysis;
-         edtEndYear->SetFocus();
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("edtEndYearExit", "TfrmAnalysis");
-      DisplayBasisException(x);
-      }  
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfrmAnalysis::edtStartDayExit(TObject *Sender)
-{
-   try
-      {
-      if ((atoi(edtStartDay->Text.c_str()) < 1) || (atoi(edtStartDay->Text.c_str()) > 31))
-         {
-         MessageBox(NULL, "Please specify a valid day.", "Parameter Error" , MB_OK);
-         PageControl1->ActivePage = tbAnalysis;
-         edtStartDay->SetFocus();
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("edtStartDayExit", "TfrmAnalysis");
-      DisplayBasisException(x);
-      }
-}
-//---------------------------------------------------------------------------
-
-
-void __fastcall TfrmAnalysis::edtEndDayExit(TObject *Sender)
-{
-   try
-      {	
-      if ((atoi(edtEndDay->Text.c_str()) < 1) || (atoi(edtEndDay->Text.c_str()) > 31))
-         {
-         PageControl1->ActivePage = tbAnalysis;
-         edtEndDay->SetFocus();
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("edtEndDayExit", "TfrmAnalysis");
-      DisplayBasisException(x);
-      }  
-}
-//---------------------------------------------------------------------------
-
-
-
-void __fastcall TfrmAnalysis::edtProspYearKeyPress(TObject *Sender,
-      char &Key)
-{
-
-   if (!strchr("0123456789\b",Key))
-   	{
-      Key = 0;
-      }
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfrmAnalysis::edtProspMonthKeyPress(TObject *Sender,
-      char &Key)
-{
-
-   if (!strchr("0123456789\b",Key))
-   	{
-      Key = 0;
-      }
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfrmAnalysis::edtProspDayKeyPress(TObject *Sender,
-      char &Key)
-{
-
-   if (!strchr("0123456789\b",Key))
-   	{
-      Key = 0;
-      }
-}
-//---------------------------------------------------------------------------
-
-
-void __fastcall TfrmAnalysis::edtProspYearExit(TObject *Sender)
-{
-   try
-      {
-      if ( ! Check_Year(atoi(edtProspYear->Text.c_str()), "Prospective Space-Time Start Year"))
-         {
-         PageControl1->ActivePage = tbTimeParameter;
-         edtProspYear->SetFocus();
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("edtProspYearExit", "TfrmAnalysis");
-      DisplayBasisException(x);
-      }  
-}
-//---------------------------------------------------------------------------
-
-
-void __fastcall TfrmAnalysis::edtProspMonthExit(TObject *Sender)
-{
-   try
-      {
-      if ( ! Check_Month(atoi(edtProspMonth->Text.c_str()), "Prospective Space-Time Start Month"))
-         {
-         PageControl1->ActivePage = tbTimeParameter;
-         edtProspMonth->SetFocus();
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("edtProspMonthExit", "TfrmAnalysis");
-      DisplayBasisException(x);
-      }  
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfrmAnalysis::edtProspDayExit(TObject *Sender)
-{
-   try
-      {
-      if ((atoi(edtProspDay->Text.c_str()) < 1) || (atoi(edtProspDay->Text.c_str()) > 31))
-         {
-         MessageBox(NULL, "Please specify a valid day.", "Parameter Error" , MB_OK);
-         PageControl1->ActivePage = tbTimeParameter;
-         edtProspDay->SetFocus();
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("edtProspDayExit", "TfrmAnalysis");
-      DisplayBasisException(x);
-      }  
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfrmAnalysis::chkCensusAreasClick(TObject *Sender)
-{
+void __fastcall TfrmAnalysis::chkCensusAreasClick(TObject *Sender) {
    gpParams->m_bOutputCensusAreas = chkCensusAreas->Checked;
 }
 //---------------------------------------------------------------------------
-
-void __fastcall TfrmAnalysis::chkLikelyClustersClick(TObject *Sender)
-{
+void __fastcall TfrmAnalysis::chkLikelyClustersClick(TObject *Sender) {
    gpParams->m_bMostLikelyClusters = chkLikelyClusters->Checked;
 }
 //---------------------------------------------------------------------------
-
-void __fastcall TfrmAnalysis::rgCriteriaSecClustersClick(TObject *Sender)
-{
+void __fastcall TfrmAnalysis::rgCriteriaSecClustersClick(TObject *Sender) {
    gpParams->m_iCriteriaSecondClusters = rgCriteriaSecClusters->ItemIndex;
 }
 //---------------------------------------------------------------------------
-
-void __fastcall TfrmAnalysis::edtUnitLengthExit(TObject *Sender)
-{
+void __fastcall TfrmAnalysis::edtUnitLengthExit(TObject *Sender) {
    bool bParamsOk;
    bParamsOk = Check_IntervalLength(atoi(edtStartYear->Text.c_str()), atoi(edtStartMonth->Text.c_str()), atoi(edtStartDay->Text.c_str()),
                 atoi(edtEndYear->Text.c_str()), atoi(edtEndMonth->Text.c_str()), atoi(edtEndDay->Text.c_str()),
                 gpParams->m_nIntervalUnits, atoi(edtUnitLength->Text.c_str()));
-   if (!bParamsOk)             
+   if (!bParamsOk)
       {
       PageControl1->ActivePage = tbTimeParameter;
       edtUnitLength->SetFocus();
       }
 }
 //---------------------------------------------------------------------------
-
-void __fastcall TfrmAnalysis::edtLogPerYearExit(TObject *Sender)
-{
+void __fastcall TfrmAnalysis::edtLogPerYearExit(TObject *Sender) {
    double dValue = atof(edtLogPerYear->Text.c_str());
    if (edtLogPerYear->Text.IsEmpty())
       {
@@ -2035,7 +1924,4 @@ void __fastcall TfrmAnalysis::edtLogPerYearExit(TObject *Sender)
       }
 }
 //---------------------------------------------------------------------------
-
-
-
 

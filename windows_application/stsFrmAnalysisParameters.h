@@ -104,6 +104,8 @@ __published:	// IDE-managed Components
         TCheckBox *chkInclRelRiskEst;
         TCheckBox *chkInclSimLogLik;
         TRadioGroup *rgCriteriaSecClusters;
+        TRadioButton *rdoPercentageTemproal;
+        TRadioButton *rdoTimeTemproal;
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall rgPrecisionTimesClick(TObject *Sender);
         void __fastcall btnCaseBrowseClick(TObject *Sender);
@@ -128,29 +130,15 @@ __published:	// IDE-managed Components
         void __fastcall edtMaxTemporalClusterSizeExit(TObject *Sender);
         void __fastcall edtMaxClusterSizeExit(TObject *Sender);
         void __fastcall edtMontCarloRepsExit(TObject *Sender);
-        void __fastcall edtMontCarloRepsKeyPress(TObject *Sender,
-          char &Key);
-        void __fastcall edtEndDayKeyPress(TObject *Sender, char &Key);
-        void __fastcall edtStartDayKeyPress(TObject *Sender, char &Key);
-        void __fastcall edtStartMonthKeyPress(TObject *Sender, char &Key);
-        void __fastcall edtEndMonthKeyPress(TObject *Sender, char &Key);
-        void __fastcall edtStartYearKeyPress(TObject *Sender, char &Key);
-        void __fastcall edtEndYearKeyPress(TObject *Sender, char &Key);
-        void __fastcall edtMaxClusterSizeKeyPress(TObject *Sender,
-          char &Key);
-        void __fastcall edtMaxTemporalClusterSizeKeyPress(TObject *Sender,
-          char &Key);
-        void __fastcall edtUnitLengthKeyPress(TObject *Sender, char &Key);
-        void __fastcall edtLogPerYearKeyPress(TObject *Sender, char &Key);
+        void __fastcall NaturalNumberKeyPress(TObject *Sender, char &Key);
+        void __fastcall PositiveFloatKeyPress(TObject *Sender, char &Key);
+        void __fastcall FloatKeyPress(TObject *Sender, char &Key);
         void __fastcall edtStartMonthExit(TObject *Sender);
         void __fastcall edtStartYearExit(TObject *Sender);
         void __fastcall edtEndMonthExit(TObject *Sender);
         void __fastcall edtEndYearExit(TObject *Sender);
         void __fastcall edtStartDayExit(TObject *Sender);
         void __fastcall edtEndDayExit(TObject *Sender);
-        void __fastcall edtProspYearKeyPress(TObject *Sender, char &Key);
-        void __fastcall edtProspMonthKeyPress(TObject *Sender, char &Key);
-        void __fastcall edtProspDayKeyPress(TObject *Sender, char &Key);
         void __fastcall edtProspYearExit(TObject *Sender);
         void __fastcall edtProspMonthExit(TObject *Sender);
         void __fastcall edtProspDayExit(TObject *Sender);
@@ -165,7 +153,7 @@ private:	// User declarations
         enum Precision { enNone, enYear, enMonth, enDay };
         enum ScanAreas { enHigh, enLow, enHighAndLow };
         enum Model  { enPoisson, enBernoulli };
-        
+
         // general functions
         void DataExchange();
         bool ReadSession(char *sFileName);
@@ -179,9 +167,9 @@ private:	// User declarations
         bool CheckTimeParams();
         bool CheckOutputParams();
 
-        void  EnablePrecision();
-        void  EnableAnalysisType(bool bValue);
-        bool  ValidateInputFiles();
+        void EnablePrecision();
+        void EnableAnalysisType(bool bValue);
+        bool ValidateInputFiles();
 
         //Analysis Tab
         bool Check_Month(int iMonth, char *sDateName);
@@ -209,6 +197,7 @@ private:	// User declarations
         
         //scanning tab
         void EnableScanningWindow();
+        bool ValidateTemoralClusterSize();
 
 public:		// User declarations
         __fastcall TfrmAnalysis(TComponent* Owner, char *sParamFileName = 0);

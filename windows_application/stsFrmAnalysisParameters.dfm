@@ -1,6 +1,6 @@
 object frmAnalysis: TfrmAnalysis
-  Left = 369
-  Top = 156
+  Left = 351
+  Top = 155
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SaTScan'
@@ -24,7 +24,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbAnalysis
+    ActivePage = tbTimeParameter
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -354,7 +354,7 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 0
           Text = '1900'
           OnExit = edtStartYearExit
-          OnKeyPress = edtStartYearKeyPress
+          OnKeyPress = NaturalNumberKeyPress
         end
         object edtEndYear: TEdit
           Left = 120
@@ -365,7 +365,7 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 1
           Text = '1900'
           OnExit = edtEndYearExit
-          OnKeyPress = edtEndYearKeyPress
+          OnKeyPress = NaturalNumberKeyPress
         end
         object edtStartMonth: TEdit
           Left = 171
@@ -378,7 +378,7 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 2
           Text = '1'
           OnExit = edtStartMonthExit
-          OnKeyPress = edtStartMonthKeyPress
+          OnKeyPress = NaturalNumberKeyPress
         end
         object edtEndMonth: TEdit
           Left = 171
@@ -391,7 +391,7 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 3
           Text = '12'
           OnExit = edtEndMonthExit
-          OnKeyPress = edtEndMonthKeyPress
+          OnKeyPress = NaturalNumberKeyPress
         end
         object edtStartDay: TEdit
           Left = 208
@@ -404,7 +404,7 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 4
           Text = '1'
           OnExit = edtStartDayExit
-          OnKeyPress = edtStartDayKeyPress
+          OnKeyPress = NaturalNumberKeyPress
         end
         object edtEndDay: TEdit
           Left = 208
@@ -417,7 +417,7 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 5
           Text = '31'
           OnExit = edtEndDayExit
-          OnKeyPress = edtEndDayKeyPress
+          OnKeyPress = NaturalNumberKeyPress
         end
       end
       object edtMontCarloReps: TEdit
@@ -429,7 +429,7 @@ object frmAnalysis: TfrmAnalysis
         TabOrder = 4
         Text = '999'
         OnExit = edtMontCarloRepsExit
-        OnKeyPress = edtMontCarloRepsKeyPress
+        OnKeyPress = NaturalNumberKeyPress
       end
     end
     object tbScanningWindow: TTabSheet
@@ -437,7 +437,7 @@ object frmAnalysis: TfrmAnalysis
       ImageIndex = 2
       object GroupBox4: TGroupBox
         Left = 16
-        Top = 16
+        Top = 8
         Width = 457
         Height = 73
         Caption = 'Spatial'
@@ -459,7 +459,7 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 0
           Text = '50'
           OnExit = edtMaxClusterSizeExit
-          OnKeyPress = edtMaxClusterSizeKeyPress
+          OnKeyPress = PositiveFloatKeyPress
         end
         object chkInclPurTempClust: TCheckBox
           Left = 24
@@ -474,20 +474,20 @@ object frmAnalysis: TfrmAnalysis
       end
       object GroupBox5: TGroupBox
         Left = 16
-        Top = 104
+        Top = 92
         Width = 457
-        Height = 73
+        Height = 89
         Caption = 'Temporal'
         TabOrder = 1
         object Label18: TLabel
           Left = 24
           Top = 22
-          Width = 199
+          Width = 158
           Height = 13
-          Caption = 'Maximum Temporal Cluster Size (<=90%):  '
+          Caption = 'Maximum Temporal Cluster Size:  '
         end
         object edtMaxTemporalClusterSize: TEdit
-          Left = 224
+          Left = 184
           Top = 16
           Width = 38
           Height = 21
@@ -497,11 +497,11 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 0
           Text = '50'
           OnExit = edtMaxTemporalClusterSizeExit
-          OnKeyPress = edtMaxTemporalClusterSizeKeyPress
+          OnKeyPress = PositiveFloatKeyPress
         end
         object chkIncludePurSpacClust: TCheckBox
           Left = 24
-          Top = 48
+          Top = 59
           Width = 297
           Height = 17
           Caption = 'Include Purely Spatial Clusters (Temporal Size = 100%)'
@@ -509,10 +509,28 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 1
           OnClick = chkIncludePurSpacClustClick
         end
+        object rdoPercentageTemproal: TRadioButton
+          Left = 232
+          Top = 14
+          Width = 129
+          Height = 17
+          Caption = 'Percentage ( <= 90% )'
+          Checked = True
+          TabOrder = 2
+          TabStop = True
+        end
+        object rdoTimeTemproal: TRadioButton
+          Left = 232
+          Top = 34
+          Width = 217
+          Height = 17
+          Caption = 'Time in days - months - years'
+          TabOrder = 3
+        end
       end
       object rgClustersToInclude: TRadioGroup
         Left = 16
-        Top = 200
+        Top = 192
         Width = 457
         Height = 81
         Caption = 'Clusters to Include'
@@ -594,7 +612,7 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 3
           Text = '1'
           OnExit = edtUnitLengthExit
-          OnKeyPress = edtUnitLengthKeyPress
+          OnKeyPress = NaturalNumberKeyPress
         end
       end
       object rgTemporalTrendAdj: TRadioGroup
@@ -623,7 +641,7 @@ object frmAnalysis: TfrmAnalysis
         TabOrder = 2
         Text = '0'
         OnExit = edtLogPerYearExit
-        OnKeyPress = edtLogPerYearKeyPress
+        OnKeyPress = FloatKeyPress
       end
       object Edit1: TEdit
         Left = 168
@@ -697,7 +715,7 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 0
           Text = '1900'
           OnExit = edtProspYearExit
-          OnKeyPress = edtProspYearKeyPress
+          OnKeyPress = NaturalNumberKeyPress
         end
         object edtProspMonth: TEdit
           Left = 100
@@ -710,7 +728,7 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 1
           Text = '1'
           OnExit = edtProspMonthExit
-          OnKeyPress = edtProspMonthKeyPress
+          OnKeyPress = NaturalNumberKeyPress
         end
         object edtProspDay: TEdit
           Left = 146
@@ -723,7 +741,7 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 2
           Text = '1'
           OnExit = edtProspDayExit
-          OnKeyPress = edtProspDayKeyPress
+          OnKeyPress = NaturalNumberKeyPress
         end
       end
     end
