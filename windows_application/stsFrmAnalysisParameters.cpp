@@ -482,12 +482,18 @@ void __fastcall TfrmAnalysis::edtEndDayExit(TObject *Sender) {
 /** Resets parameters that are not present in interface to default value.
     Hidden features are to be used soley in dos version at this time.     */
 void TfrmAnalysis::DefaultHiddenParameters() {
+  if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND || gParameters.GetAnalysisType() == PURELYSPATIALMONOTONE)
+    gParameters.SetAnalysisType(PURELYSPATIAL);
   gParameters.SetSequentialScanning(false);
   gParameters.SetNumberEllipses(0);
   gParameters.SetDuczmalCorrectionEllipses(false);
   gParameters.SetRiskType(STANDARDRISK);
   gParameters.SetPowerCalculation(false);
   gParameters.SetValidatePriorToCalculation(true);
+  if (gParameters.GetIncludeClustersType() == CLUSTERSINRANGE)
+    gParameters.SetIncludeClustersType(ALLCLUSTERS);
+  if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC || gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
+    gParameters.SetTimeTrendAdjustmentType(NOTADJUSTED);
 }
 
 //---------------------------------------------------------------------------
@@ -1049,12 +1055,12 @@ void TfrmAnalysis::OnTemporalTrendClick() {
    try {
       gParameters.SetTimeTrendAdjustmentType((TimeTrendAdjustmentType)rgTemporalTrendAdj->ItemIndex);
       switch (rgTemporalTrendAdj->ItemIndex) {
-       case 0:                           // none
-       case 1:                           // non-parametric
+       case NOTADJUSTED:                           // none
+       case NONPARAMETRIC:                           // non-parametric
          edtLogPerYear->Enabled = false;
          edtLogPerYear->Color = clInactiveBorder;
          break;
-       case 2:                             // log linear
+       case LOGLINEAR_PERC:                             // log linear
          edtLogPerYear->Enabled = true;
          edtLogPerYear->Color = clWindow;
          break;
