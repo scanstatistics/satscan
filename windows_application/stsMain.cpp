@@ -66,6 +66,35 @@ void __fastcall TfrmMainForm::AdvancedParametersActionExecute(TObject *Sender) {
   }
 }
 
+/** Attempt to close parameter settings windows. Returns false if any windows would
+    not close, otherwise true. */
+bool TfrmMainForm::CloseParameterSettingsWindows() {
+  TfrmAnalysis  *  pOpenSettingsWindow;
+
+  for (int i=0; i < MDIChildCount; ++i)
+     if ((pOpenSettingsWindow = dynamic_cast<TfrmAnalysis*>(MDIChildren[i])) != 0) {
+       if (!pOpenSettingsWindow->QueryWindowCanClose())
+          return false;
+       else
+        pOpenSettingsWindow->Close();   
+     }
+
+  return true;
+}
+
+/** closes all running analysis child windows -- this method is primarily used when closing the
+    application and the user has indicated to close regardless of executing analyses. */
+void TfrmMainForm::CloseRunningAnalysesWindows() {
+  TfrmAnalysisRun  * pRunningAnalysisWindow;
+
+  try {
+    for (int i=0; i < MDIChildCount; ++i)
+       if ((pRunningAnalysisWindow = dynamic_cast<TfrmAnalysisRun*>(MDIChildren[i])) != 0)
+         pRunningAnalysisWindow->ForceClose();
+  }
+  catch (...){}
+}
+
 /** close child window action event - triggers active child window's close event */
 void __fastcall TfrmMainForm::CloseSessionActionExecute(TObject *Sender) {
   if (ActiveMDIChild)
@@ -130,24 +159,6 @@ void __fastcall TfrmMainForm::ExecuteActionExecute(TObject *Sender) {
 /** close form action event -- triggers main form close event */
 void __fastcall TfrmMainForm::ExitActionExecute(TObject *Sender) {
   Close();
-}
-
-/** closes all child windows -- this method is primarily used when closing the
-    application and the user has indicated to close regardless of executing analyses. */
-void TfrmMainForm::ForceClose() {
-  stsBaseAnalysisChildForm   * pBaseForm;
-  int                          i;
-
-  try {
-    for (i=0; i < MDIChildCount; ++i) {
-       pBaseForm = dynamic_cast<stsBaseAnalysisChildForm*>(MDIChildren[i]);
-       if (pBaseForm)
-         pBaseForm->CloseForm(true);
-       else
-         MDIChildren[i]->Close();
-    }
-  }
-  catch (...){}
 }
 
 /** returns whether there are actively running analyses */
@@ -250,8 +261,10 @@ void __fastcall TfrmMainForm::OnFormClose(TObject *Sender, TCloseAction &Action)
         TBMessageBox::Response(this, "Warning", "There are analyses currently executing. "
                                                 "Are you sure you want to exit SaTScan?", XBMB_YES|XBMB_CANCEL) == mrCancel)
       Action = caNone;
+    else if (CloseParameterSettingsWindows())
+      CloseRunningAnalysesWindows();
     else
-      ForceClose();
+      Action = caNone;
   }
   catch (...){}
 }

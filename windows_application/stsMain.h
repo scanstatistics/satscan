@@ -94,10 +94,11 @@ class TfrmMainForm : public TForm{
     bool                        gbShowStartWindow;
     stsOutputFileRegister       gRegistry;
 
+    bool                        CloseParameterSettingsWindows();
+    void                        CloseRunningAnalysesWindows();
     void                        EnableActions(bool bEnable);
-    void                        ForceClose();
     bool                        GetAnalysesRunning();
-    void                        Init() {gbShowStartWindow=true;} 
+    void                        Init() {gbShowStartWindow=true;}
     void                        OpenAFile();
     void                        Save();
     void                        SaveAs();
