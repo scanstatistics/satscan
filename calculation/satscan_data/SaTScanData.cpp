@@ -271,7 +271,7 @@ void CSaTScanData::CalculateMeasure(RealDataStream & thisStream) {
 /** Calculates time interval indexes given study period and other time aggregation
     settings. */
 void CSaTScanData::CalculateTimeIntervalIndexes() {
-  int           giNumCollapsedIntervals;
+  int           iNumCollapsibleIntervals;
   double        dProspectivePeriodLength, dMaxTemporalLengthInUnits;
 
   // calculate time interval start time indexes
@@ -283,38 +283,52 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
   // calculate date index for prospective surveillance start date
   if (gParameters.GetIsProspectiveAnalysis()) {
     m_nProspectiveIntervalStart = CalculateProspectiveIntervalStart();
-    // For prospective analyses, not all time intervals will always be evaluated; consequently some of the
-    // initial intervals can be combined into one interval. When evaluating real data, we will only
-    // consider 'alive' clusters (clusters where the end date equals the study period end date). For
-    // the simulated data, we will consider historical clusters from prospective start date.
-    if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE && gParameters.GetNumReplicationsRequested() > 0) {
-      // If the maximum temporal cluster size is defined as a percentage of the population at risk,
-      // then the maximum cluster size must be calculated for each prospective period; this is if
-      // any simulations were requested.
-      for (int iWindowEnd=m_nProspectiveIntervalStart; iWindowEnd <= m_nTimeIntervals; ++iWindowEnd) {
-         dProspectivePeriodLength = CalculateNumberOfTimeIntervals(m_nStartDate, gvTimeIntervalStartTimes[iWindowEnd] - 1,
-                                                                   gParameters.GetTimeAggregationUnitsType(), 1);
-         dMaxTemporalLengthInUnits = floor(dProspectivePeriodLength * gParameters.GetMaximumTemporalClusterSize()/100.0);
-         //now calculate number of those time units a cluster can contain with respects to the specified aggregation length
-         gvProspectiveIntervalCuts.push_back(static_cast<int>(floor(dMaxTemporalLengthInUnits / gParameters.GetTimeAggregationLength())));
+    // If analysis performs simulations and adjusts for earlier analyses, then we can potentially
+    // collapse unused time intervals into one based upon the prospective start date and maximum
+    // temporal cluster size.
+    if (gParameters.GetNumReplicationsRequested() > 0 && gParameters.GetAdjustForEarlierAnalyses()) {
+      // For prospective analyses, not all time intervals may be evaluated; consequently some of the
+      // initial intervals can be combined into one interval. When evaluating real data, we will only
+      // consider 'alive' clusters (clusters where the end date range equals the study period end date). For
+      // the simulated data, we will consider historical clusters from prospective start date.
+      if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
+        // If the maximum temporal cluster size is defined as a percentage of the population at risk,
+        // then the maximum cluster size must be calculated for each prospective period.
+        for (int iWindowEnd=m_nProspectiveIntervalStart; iWindowEnd <= m_nTimeIntervals; ++iWindowEnd) {
+           dProspectivePeriodLength = CalculateNumberOfTimeIntervals(m_nStartDate, gvTimeIntervalStartTimes[iWindowEnd] - 1,
+                                                                     gParameters.GetTimeAggregationUnitsType(), 1);
+           dMaxTemporalLengthInUnits = floor(dProspectivePeriodLength * gParameters.GetMaximumTemporalClusterSize()/100.0);
+           //now calculate number of those time units a cluster can contain with respects to the specified aggregation length
+           gvProspectiveIntervalCuts.push_back(static_cast<int>(floor(dMaxTemporalLengthInUnits / gParameters.GetTimeAggregationLength())));
+        }
+        // Now we know the index of the earliest accessed time interval, we can determine the
+        // number of time intervals that can be collapsed.
+        iNumCollapsibleIntervals = m_nProspectiveIntervalStart - *(gvProspectiveIntervalCuts.begin());
       }
-      // Now we know the index of the earliest accessed time interval, we can determine the
-      // number of time intervals that can be collapsed.
-      giNumCollapsedIntervals = m_nProspectiveIntervalStart - *(gvProspectiveIntervalCuts.begin());
+      else
+        // When the maximum temporal cluster size is a fixed period, the number of intervals
+        // to collapse is simplier to calculate.
+        iNumCollapsibleIntervals = m_nProspectiveIntervalStart - m_nIntervalCut;
     }
-    else {
-      // When the maximum temporal cluster size is a fixed period, the number of intervals
-      // to collapse is simplier to calculate. 
-      giNumCollapsedIntervals = m_nProspectiveIntervalStart - m_nIntervalCut;
-    }
-    // Removes collaped intervals from the data structure which details time interval start times.
-    // When input data is read, what would have gone into the respective second interval, third, etc.
-    // will be cummulated into first interval.
-    gvTimeIntervalStartTimes.erase(gvTimeIntervalStartTimes.begin() + 1, gvTimeIntervalStartTimes.begin() + giNumCollapsedIntervals);
-    // Re-calculate number of time intervals.
-    m_nTimeIntervals = gvTimeIntervalStartTimes.size() - 1;
-    // Re-calculate index of prospective start date
-    m_nProspectiveIntervalStart = CalculateProspectiveIntervalStart();
+    else
+      // Else we are either not performing simulations, and therefore not evaluating prospective clusters,
+      // or we are not adjusting for previous analyses, and therefore only evaluating 'alive' clusters
+      // in both real data and simulated data.
+      iNumCollapsibleIntervals = m_nTimeIntervals - m_nIntervalCut;
+
+    // If iNumCollapsedIntervals is at least two, them collapse intervals. The reason we don't collapse when
+    // iNumCollapsedIntervals is one is because iNumCollapsedIntervals does not take into account the
+    // first time interval, which will be the bucket for the collapsed intervals.
+    if ((iNumCollapsibleIntervals = std::max(iNumCollapsibleIntervals, 0)) > 1) {
+      // Removes collaped intervals from the data structure which details time interval start times.
+      // When input data is read, what would have gone into the respective second interval, third, etc.
+      // will be cummulated into first interval.
+      gvTimeIntervalStartTimes.erase(gvTimeIntervalStartTimes.begin() + 1, gvTimeIntervalStartTimes.begin() + iNumCollapsibleIntervals);
+      // Re-calculate number of time intervals.
+      m_nTimeIntervals = gvTimeIntervalStartTimes.size() - 1;
+      // Re-calculate index of prospective start date
+      m_nProspectiveIntervalStart = CalculateProspectiveIntervalStart();
+    }  
   }
 }
 
@@ -866,8 +880,7 @@ void CSaTScanData::SetPurelyTemporalCases() {
 
 /** Sets indexes of time interval ranges into interval start time array. */
 void CSaTScanData::SetTimeIntervalRangeIndexes() {
-  ZdString      sTimeIntervalType, sMessage;
-  char          sDateWST[50], sDateMaxWET[50]; 
+  ZdString      sTimeIntervalType, sMessage, sDateWST, sDateMaxWET; 
   int           iMaxEndWindow, iWindowStart;
 
   if (gParameters.GetIncludeClustersType() == CLUSTERSINRANGE) {
@@ -877,23 +890,22 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
     //find end range date indexes
     m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetEndRangeStartDate().c_str()));
     m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetEndRangeEndDate().c_str()));
-    //validate windows will be evaluated
-    //check that there will be clusters evaluated...
+    //validate windows will be evaluated - check that there will be clusters evaluated...
     iMaxEndWindow = std::min(m_nFlexibleWindowEndRangeEndIndex, m_nFlexibleWindowStartRangeEndIndex + m_nIntervalCut);
     iWindowStart = std::max(m_nFlexibleWindowEndRangeStartIndex - m_nIntervalCut, m_nFlexibleWindowStartRangeStartIndex);
     if (iWindowStart >= iMaxEndWindow) {
       GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sTimeIntervalType, true, false);
-      JulianToChar(sDateWST, gvTimeIntervalStartTimes[iWindowStart]);
-      JulianToChar(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1);
+      JulianToString(sDateWST, gvTimeIntervalStartTimes[iWindowStart]);
+      JulianToString(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1);
       GenerateResolvableException("Error: No clusters will be evaluated.\n"
                                   "       With the incorporation of a maximum temporal cluster size of %i %s,\n"
                                   "       the temporal window scanned has a start time of %s (end range\n"
                                   "       ending time minus %i %s) and a maximum window end time of %s\n"
                                   "       (start range ending time plus %i %s), which results in no windows scanned.",
                                   "Setup()", m_nIntervalCut * gParameters.GetTimeAggregationLength(),
-                                  sTimeIntervalType.GetCString(), sDateWST,
+                                  sTimeIntervalType.GetCString(), sDateWST.GetCString(),
                                   m_nIntervalCut * gParameters.GetTimeAggregationLength(),
-                                  sTimeIntervalType.GetCString(), sDateMaxWET,
+                                  sTimeIntervalType.GetCString(), sDateMaxWET.GetCString(),
                                   m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.GetCString());
     }
     //The parameter validation checked already whether the end range dates conflicted,
@@ -901,14 +913,27 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
     //different than the user defined.
     if (m_nFlexibleWindowEndRangeStartIndex > iMaxEndWindow) {
       GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sTimeIntervalType, true, false);
-      JulianToChar(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1);
+      JulianToString(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1);
       GenerateResolvableException("Error: No clusters will be evaluated.\n"
                                   "       With the incorporation of a maximum temporal cluster size of %i %s\n"
                                   "       the maximum window end time becomes %s (start range ending\n"
                                   "       time plus %i %s), which does not intersect with scanning window end range.\n","Setup()",
                                   m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.GetCString(),
-                                  sDateMaxWET, m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.GetCString());
+                                  sDateMaxWET.GetCString(), m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.GetCString());
     }
+
+    // Collapse unused time intervals at end of study period, if possible.
+    if (m_nTimeIntervals - iMaxEndWindow > 1)
+      gvTimeIntervalStartTimes.erase(gvTimeIntervalStartTimes.end() - (m_nTimeIntervals - iMaxEndWindow), gvTimeIntervalStartTimes.end() - 1);
+    // Collapse unused time intervals at beginning of study period, if possible.
+    if (iWindowStart > 1)
+      gvTimeIntervalStartTimes.erase(gvTimeIntervalStartTimes.begin() + 1, gvTimeIntervalStartTimes.begin() + iWindowStart);
+    m_nTimeIntervals = gvTimeIntervalStartTimes.size() - 1;
+    // recalculate flexable window indexes
+    m_nFlexibleWindowStartRangeStartIndex = GetTimeIntervalOfDate(CharToJulian(gParameters.GetStartRangeStartDate().c_str()));
+    m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(CharToJulian(gParameters.GetStartRangeEndDate().c_str()));
+    m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetEndRangeStartDate().c_str()));
+    m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetEndRangeEndDate().c_str()));
   }
 }
 
