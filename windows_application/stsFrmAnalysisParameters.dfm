@@ -4,8 +4,8 @@ object frmAnalysis: TfrmAnalysis
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SaTScan'
-  ClientHeight = 340
-  ClientWidth = 505
+  ClientHeight = 325
+  ClientWidth = 493
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,8 +21,8 @@ object frmAnalysis: TfrmAnalysis
   PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
-    Left = 8
-    Top = 8
+    Left = 2
+    Top = 2
     Width = 489
     Height = 321
     ActivePage = tbInputFiles
@@ -76,9 +76,9 @@ object frmAnalysis: TfrmAnalysis
         end
         object rgPrecisionTimes: TRadioGroup
           Left = 333
-          Top = 22
+          Top = 23
           Width = 121
-          Height = 76
+          Height = 75
           Caption = 'Time Included'
           ItemIndex = 0
           Items.Strings = (
@@ -250,9 +250,9 @@ object frmAnalysis: TfrmAnalysis
         end
         object rgCoordinates: TRadioGroup
           Left = 333
-          Top = 22
+          Top = 23
           Width = 121
-          Height = 76
+          Height = 75
           Caption = 'Coordinates'
           ItemIndex = 0
           Items.Strings = (
@@ -595,7 +595,7 @@ object frmAnalysis: TfrmAnalysis
         object Label8: TLabel
           Left = 56
           Top = 39
-          Width = 52
+          Width = 51
           Height = 13
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Start Date:'
@@ -603,7 +603,7 @@ object frmAnalysis: TfrmAnalysis
         object Label9: TLabel
           Left = 56
           Top = 71
-          Width = 49
+          Width = 48
           Height = 13
           Anchors = [akLeft, akTop, akRight]
           Caption = 'End Date:'
@@ -611,7 +611,7 @@ object frmAnalysis: TfrmAnalysis
         object Label10: TLabel
           Left = 120
           Top = 13
-          Width = 23
+          Width = 22
           Height = 13
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Year'
@@ -619,7 +619,7 @@ object frmAnalysis: TfrmAnalysis
         object Label12: TLabel
           Left = 171
           Top = 13
-          Width = 31
+          Width = 30
           Height = 13
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Month'
@@ -627,7 +627,7 @@ object frmAnalysis: TfrmAnalysis
         object Label14: TLabel
           Left = 208
           Top = 13
-          Width = 20
+          Width = 19
           Height = 13
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Day'
