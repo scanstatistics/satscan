@@ -11,7 +11,7 @@ USEFORM("stsFrmAnalysisRun.cpp", frmAnalysisRun);
 USEUNIT("stsUtilityFunctions.cpp");
 USEUNIT("stsCalculationThread.cpp");
 USEUNIT("stsPrintWindow.cpp");
-USEFORM("stsDlgException.cpp", BdlgException);
+USEFORM("stsDlgException.cpp", DlgException);
 USEFORM("stsFrmOutPutViewer.cpp", frmOutputViewer);
 USEUNIT("..\calculation\utility\UtilityFunctions.cpp");
 USEUNIT("..\calculation\utility\JulianDates.cpp");
