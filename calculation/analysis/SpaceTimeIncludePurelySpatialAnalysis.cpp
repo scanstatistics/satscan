@@ -89,8 +89,9 @@ void C_ST_PS_Analysis::AllocateTopClustersObjects(const AbtractDataStreamGateway
   }
 }
 
-/** Returns cluster centered at grid point nCenter, with the greatest loglikelihood.
-    Caller is responsible for deleting returned cluster. */
+/** Returns cluster centered at grid point nCenter, with the greatest log likelihood
+    ratio. Caller should not assume that returned reference is persistent, but should
+    either call Clone() method or overloaded assignment operator. */
 const CCluster& C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway) {
   int           j;
 

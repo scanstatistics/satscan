@@ -9,6 +9,8 @@
 #include "SpaceTimeData.h"
 #include "MeasureList.h"
 
+/** Derives from base class to re-define methods for a space-time analysis that
+    includes purely temporal clusters. */
 class C_ST_PT_Analysis : public CSpaceTimeAnalysis {
   private:
     CPurelyTemporalCluster      * gpTopPurelyTemporalCluster;

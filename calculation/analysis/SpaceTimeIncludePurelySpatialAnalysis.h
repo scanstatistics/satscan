@@ -9,13 +9,15 @@
 #include "ProbabilityModel.h"
 #include "PurelySpatialProspectiveCluster.h"
 
+/** Derives from base class to re-define methods for a space-time analysis that
+    include purely spatial clusters. */
 class C_ST_PS_Analysis : public CSpaceTimeAnalysis {
   private:
     void                                Init();
     void                                Setup();
 
   protected:
-    TopClustersContainer              * gpPSTopShapeClusters;
+    TopClustersContainer              * gpPSTopShapeClusters;   
     CPurelySpatialCluster             * gpPSClusterComparator;
     CPurelySpatialProspectiveCluster  * gpPSPClusterComparator;
     SpatialData                       * gpPSClusterData;
