@@ -1561,6 +1561,11 @@ void TfrmAnalysis::SetupInterface() {
       gpParams->m_nIntervalLength = 1;
     }
 
+    // because precision times has the heirarchal affect on model and analysis type, we need to set these two
+    // gui controls before we get to the precision time control setting - AJV 10/23/2002
+    rgTypeAnalysis->ItemIndex = gpParams->m_nAnalysisType - 1;
+    rgProbability->ItemIndex = gpParams->m_nModel;
+
     //Input File Tab
     edtCaseFileName->Text = gpParams->m_szCaseFilename;
     edtControlFileName->Text = gpParams->m_szControlFilename;
@@ -1570,8 +1575,6 @@ void TfrmAnalysis::SetupInterface() {
     edtGridFileName->Text = gpParams->m_szGridFilename;
     rgCoordinates->ItemIndex = gpParams->m_nCoordType;
     //Analysis Tab
-    rgTypeAnalysis->ItemIndex = gpParams->m_nAnalysisType - 1;
-    rgProbability->ItemIndex = gpParams->m_nModel;
     rgScanAreas->ItemIndex = gpParams->m_nAreas - 1;
     ParseDate(gpParams->m_szStartDate, edtStartYear, edtStartMonth, edtStartDay);
     ParseDate(gpParams->m_szEndDate, edtEndYear, edtEndMonth, edtEndDay);
