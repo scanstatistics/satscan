@@ -25,8 +25,6 @@ class AbstractClusterData {
     virtual void        InitializeData() = 0;
 };
 
-class CSaTScanData; /** forward class declaration */
-
 /** abstract class representing accumulated data of spatial clustering */
 class AbstractSpatialClusterData : public AbstractClusterData {
   protected:

@@ -4,22 +4,21 @@
 #include "AbstractClusterData.h"
 //---------------------------------------------------------------------------
 
-//void AbstractClusterData::AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway) {
-//  ZdGenerateException("AddNeighborData(tract_t, const DataStreamInterface&, size_t) not implemented.","AbstractClusterData");
-//}
-
-double AbstractClusterData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
-  ZdGenerateException("CalculateLoglikelihoodRatio() not implemented.","AbstractClusterData");
-  return 0;
-}
-
 /** constructor */
 AbstractClusterData::AbstractClusterData() {}
 
 /** destructor */
 AbstractClusterData::~AbstractClusterData() {}
 
-/** constructor */
+/** Calculates the log likelihood ratio of accumulated data through
+    AbstractLikelihoodCalculator object. Not implementated in base class, throws
+    ZdException. */
+double AbstractClusterData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
+  ZdGenerateException("CalculateLoglikelihoodRatio() not implemented.","AbstractClusterData");
+  return 0;
+}
+
+/** class constructor */
 AbstractSpatialClusterData::AbstractSpatialClusterData(int iRate) : AbstractClusterData() {
   switch (iRate) {
     case LOW        : gfRateOfInterest = LowRate;       break;
@@ -29,12 +28,12 @@ AbstractSpatialClusterData::AbstractSpatialClusterData(int iRate) : AbstractClus
   };
 }
 
-/** destructor */
+/** class destructor */
 AbstractSpatialClusterData::~AbstractSpatialClusterData() {}
 
-/** constructor */
+/** class constructor */
 AbstractTemporalClusterData::AbstractTemporalClusterData() : AbstractClusterData() {}
 
-/** destructor */
+/** class destructor */
 AbstractTemporalClusterData::~AbstractTemporalClusterData() {}
 
