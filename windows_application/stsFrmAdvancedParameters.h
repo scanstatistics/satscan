@@ -21,9 +21,6 @@ __published:	// IDE-managed Components
         TGroupBox *grpAnalysis;
         TCheckBox *chkTerminateEarly;
         TGroupBox *grpScanningWindow;
-        TLabel *lblReportSmallerClusters;
-        TCheckBox *chkRestrictReportedClusters;
-        TEdit *edtReportClustersSmallerThan;
         TButton *btnOk;
         TCheckBox *chkRestrictTemporalRange;
         TStaticText *stStartRangeTo;
@@ -43,6 +40,10 @@ __published:	// IDE-managed Components
         TEdit *edtEndRangeEndYear;
         TEdit *edtEndRangeEndMonth;
         TEdit *edtEndRangeEndDay;
+        TGroupBox *grpOutput;
+        TCheckBox *chkRestrictReportedClusters;
+        TEdit *edtReportClustersSmallerThan;
+        TLabel *lblReportSmallerClusters;
         void __fastcall FormKeyPress(TObject *Sender, char &Key);
         void __fastcall chkRestrictTemporalRangeClick(TObject *Sender);
         void __fastcall btnBrowseMaxCirclePopFileClick(TObject *Sender);
@@ -70,7 +71,7 @@ __published:	// IDE-managed Components
   public:
     __fastcall TfrmAdvancedParameters(TfrmAnalysis & AnalysisSettings);
 
-    void                        EnableSpatialOptions(bool bEnable);
+    void                        EnableSpatialOutputOptions(bool bEnable);
     void                        EnableTemporalOptions(bool bEnable, bool bEnableRanges);
     void                        SaveParameterSettings();
     void                        SetMaximumCirclePopulationFile(const char * sMaximumCirclePopulationFileName);

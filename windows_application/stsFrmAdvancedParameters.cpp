@@ -48,7 +48,7 @@ void __fastcall TfrmAdvancedParameters::chkRestrictReportedClustersClick(TObject
 void __fastcall TfrmAdvancedParameters::chkRestrictTemporalRangeClick(TObject *Sender) {
   AnalysisType  eType = gAnalysisSettings.GetAnalysisControlType();
   
-  EnableSpatialOptions(gAnalysisSettings.rdgSpatialOptions->Enabled);
+  EnableSpatialOutputOptions(gAnalysisSettings.rdgSpatialOptions->Enabled);
   EnableTemporalOptions(gAnalysisSettings.rdgTemporalOptions->Enabled, eType == PURELYTEMPORAL || eType == SPACETIME);
 }
 
@@ -99,8 +99,8 @@ void __fastcall TfrmAdvancedParameters::edtStartRangeStartDateExit(TObject *Send
   ValidateDate(*edtStartRangeStartYear, *edtStartRangeStartMonth, *edtStartRangeStartDay);
 }
 
-/** enables spatial options controls */
-void TfrmAdvancedParameters::EnableSpatialOptions(bool bEnable) {
+/** enables output options controls */
+void TfrmAdvancedParameters::EnableSpatialOutputOptions(bool bEnable) {
   chkRestrictReportedClusters->Enabled = bEnable;
   edtReportClustersSmallerThan->Enabled = bEnable && chkRestrictReportedClusters->Checked;
   edtReportClustersSmallerThan->Color = bEnable && chkRestrictReportedClusters->Checked ? clWindow : clInactiveBorder;
