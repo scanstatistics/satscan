@@ -1,7 +1,7 @@
-#ifndef  _SSEXCEPTION_H
-#define  _SSEXCEPTION_H
-
-//#include <stdarg.h>
+//*****************************************************************************
+#ifndef  __EXCEPTIONCLASS_H
+#define  __EXCEPTIONCLASS_H
+//*****************************************************************************
 #include <algorithm>
 #include <cstdarg>
 #include <cmath>
@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <typeinfo>
 #include <vector>
+#include <stdio.h>
 
 #ifdef INTEL_BASED
    #include <limits>     //*** Solaris doesn't have the C++ limits!
@@ -81,4 +82,6 @@ public:
 void SSGenerateException(const char * sMessage, const char * sSourceModule, ... );
 void SSGenerateWarning(const char * sMessage, const char * sSourceModule, ... );
 void ssGenerateOSException ( const char *sMessage, bool bPrepend, const char *sSourceModule, ... );
+
+//*****************************************************************************
 #endif

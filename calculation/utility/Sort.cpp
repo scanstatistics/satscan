@@ -1,7 +1,5 @@
-/* Sort.cpp */
-
-#include "sort.h"
-#include "basic.h"
+#pragma hdrstop
+#include "Sort.h"
 
 void Sort(unsigned long** pData, int low, int high)
 {

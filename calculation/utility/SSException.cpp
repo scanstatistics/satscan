@@ -1,12 +1,11 @@
+#pragma hdrstop
+#include "SSException.h" 
 //------------------------------------------------------------------------------
 // THIS IS JUST A COPY OF THE ZD EXCEPTION CLASS...   THIS PROJECT DOES NOT
 // USE ZD, BUT THE EXCEPTION CLASS IS NICE AND WAS INCLUDED HERE...
 //  ALL I DID WAS RENAME THE CLASS...  SINCE I COULD NOT DERIVE IT OFF OF ZD
 //------------------------------------------------------------------------------
 //Author Kevin J. Meagher
-
-#include <stdio.h>
-#include "SSException.h"  //main header
 
 //ClassDesc Begin ZdException
 // This is the class for all ZdExceptions.  It contains two strings, a message and a module,

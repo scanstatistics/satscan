@@ -1,15 +1,14 @@
+#pragma hdrstop
+#include "Salloc.h"
+
 /**********************************************************************
- file: salloc.c
+ file: Salloc.c
  "Safe allocation" functions -- they duplicate
  standard "malloc()", etc., but are guaranteed always to succeed.  If
  they cannot return a good value, they will call "SallocError()", and
  return its return value.  The default SallocError() function prints
  a message on stderr, and exits.
  **********************************************************************/
-
-#include <stdio.h>
-#include <string.h>
-#include "salloc.h"
 
 static void *AllocationError(size_t size, BasePrint *pPrintDirection);
 
