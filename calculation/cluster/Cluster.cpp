@@ -160,6 +160,7 @@ void CCluster::Display(FILE*     fp,
         DisplayPVal(fp, Parameters.m_nReplicas, szSpacesOnLeft);
         fprintf(fp, "\n");
         }
+      DisplayNullOccurrence(fp, Data, szSpacesOnLeft);
       }
    catch (SSException & x)
       {
@@ -403,6 +404,69 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
       x.AddCallpath("DisplayLatLongCoords()", "CCluster");
       throw;
       }
+}
+
+/** Prints null occurrence rate for cluster given time interval units. */
+void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft) {
+  float         fDaysInOccurrence, fYears, fMonths, fDays;
+  Julian        ProspectiveStartDate;
+
+  try {
+
+    if (Data.m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME && Data.m_pParameters->m_nReplicas > 99) {
+      ProspectiveStartDate = CharToJulian(Data.m_pParameters->m_szProspStartDate);
+      fprintf(fp, "%sNull Occurrence.......: ", szSpacesOnLeft);
+      switch (Data.m_pParameters->m_nIntervalUnits) {
+        case YEAR   : fDaysInOccurrence = (TimeBetween(ProspectiveStartDate, Data.m_nEndDate, DAY) + AVERAGE_DAYS_IN_YEAR) / GetPVal(Data.m_pParameters->m_nReplicas);
+                      fYears = fDaysInOccurrence/AVERAGE_DAYS_IN_YEAR;
+                      fprintf(fp, "Once in %.1f year%s\n", fYears, (fYears > 1 ? "s" : ""));
+                      break;
+        case MONTH  : fDaysInOccurrence = (TimeBetween(ProspectiveStartDate, Data.m_nEndDate, DAY) + AVERAGE_DAYS_IN_MONTH) / GetPVal(Data.m_pParameters->m_nReplicas);
+                      fYears = floor(fDaysInOccurrence/AVERAGE_DAYS_IN_YEAR);
+                      fDays = fDaysInOccurrence - fYears * AVERAGE_DAYS_IN_YEAR;
+                      fMonths = fDays/AVERAGE_DAYS_IN_MONTH;
+                      /*Round now for values that cause months to goto 12 or down to 0.*/
+                      if (fMonths >= 11.5) {
+                        ++fYears;
+                        fMonths = 0;
+                      }
+                      else if (fMonths < .5)
+                        fMonths = 0;
+                      //Print correctly formatted statement.
+                      if (fMonths == 0)
+                        fprintf(fp, "Once in %.0f year%s\n", fYears, (fYears == 1 ? "" : "s"));
+                      else if (fYears == 0)
+                        fprintf(fp, "Once in %.0f month%s\n", fMonths, (fMonths < 1.5 ? "" : "s"));
+                      else /*Having both zero month and year should never happen.*/
+                        fprintf(fp, "Once in %.0f year%s and %0.f month%s\n", fYears, (fYears == 1 ? "" : "s"), fMonths, (fMonths < 1.5 ? "" : "s"));
+                      break;
+        case DAY    : fDaysInOccurrence = (TimeBetween(ProspectiveStartDate, Data.m_nEndDate, DAY) + 1) / GetPVal(Data.m_pParameters->m_nReplicas);
+                      fYears = floor(fDaysInOccurrence/AVERAGE_DAYS_IN_YEAR);
+                      fDays = fDaysInOccurrence - fYears * AVERAGE_DAYS_IN_YEAR;
+                      /*Round now for values that cause days to go 365 or down to 0.*/
+                      if (fDays >= 364.5) {
+                        ++fYears;
+                        fDays = 0;
+                      }
+                      else if (fDays < .5)
+                        fDays = 0;
+                      //Print correctly formatted statement.
+                      if (fDays == 0)
+                        fprintf(fp, "Once in %.0f year%s\n", fYears, (fYears == 1 ? "" : "s"));
+                      else if (fYears == 0)
+                        fprintf(fp, "Once in %.0f day%s\n", fDays, (fDays < 1.5 ? "" : "s"));
+                      else /*Having both zero day and year should never happen.*/
+                        fprintf(fp, "Once in %.0f year%s and %.0f day%s\n", fYears, (fYears == 1 ? "" : "s"), fDays, (fDays < 1.5 ? "" : "s"));
+                      break;
+        default     : ZdGenerateException("Invalid time interval index \"%d\" for prospective analysis.",
+                                          "DisplayNullOccurrence()", Data.m_pParameters->m_nIntervalUnits);
+      }
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("DisplayNullOccurrence()","CCluster");
+    throw;
+  }
 }
 
 void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft)

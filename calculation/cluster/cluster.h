@@ -80,6 +80,7 @@ class CCluster {
     virtual void        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
                                         int nLeftMargin, int nRightMargin,
                                         char cDeliminator, char* szSpacesOnLeft);
+    virtual void        DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft);
     virtual void        DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft);
 
     virtual void        DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft);
