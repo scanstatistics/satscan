@@ -1583,7 +1583,7 @@ void TfrmAnalysis::WriteSession(const char * sParameterFilename) {
                                           "The file is either read only or you do not have write privledges to the directory.",
                                           "WriteSession()");
       SaveParameterSettings();
-      gParameters.Write(sFilename.c_str());
+      gParameters.Write(sFilename.c_str(), gNullPrint);
     }
   }
   catch (ZdException & x) {
