@@ -367,6 +367,8 @@ void TfrmAdvancedParameters::EnableAdjustmentForTimeTrendOptionsGroup(bool bEnab
   edtLogLinear->Color = edtLogLinear->Enabled ? clWindow : clInactiveBorder;
   if (bEnable && !bLogYearPercentage && eTimeTrendAdjustmentType == LOGLINEAR_PERC)
     SetTemporalTrendAdjustmentControl(NOTADJUSTED);
+
+  rdgTemporalTrendAdj->Controls[3]->Enabled = (gAnalysisSettings.GetModelControlType() == POISSON);
 }
 //---------------------------------------------------------------------------
 /** enables adjustment options controls */
@@ -533,6 +535,7 @@ TimeTrendAdjustmentType TfrmAdvancedParameters::GetAdjustmentTimeTrendControlTyp
     case 0  : eReturn = NOTADJUSTED; break;
     case 1  : eReturn = STRATIFIED_RANDOMIZATION; break;
     case 2  : eReturn = LOGLINEAR_PERC; break;
+    case 3  : eReturn = CALCULATED_LOGLINEAR_PERC; break;
     default : ZdGenerateException("Unknown index type '%d'.", "GetAdjustmentTimeTrendControlType()", rdgTemporalTrendAdj->ItemIndex);
   }
   return eReturn;
@@ -862,6 +865,9 @@ void TfrmAdvancedParameters::SetDefaultsForInputTab() {
    gvControlFiles.RemoveAllElements();
    gvPopFiles.RemoveAllElements();
    giStreamNum = 0;
+
+   // clear any saved CParameters class components
+
 }
 //---------------------------------------------------------------------------
 /** Sets adjustments filename in interface */
@@ -991,6 +997,7 @@ void TfrmAdvancedParameters::SetTemporalTrendAdjustmentControl(TimeTrendAdjustme
     case NOTADJUSTED               : rdgTemporalTrendAdj->ItemIndex = 0; break;
     case NONPARAMETRIC             : rdgTemporalTrendAdj->ItemIndex = 1; break;
     case LOGLINEAR_PERC            : rdgTemporalTrendAdj->ItemIndex = 2; break;
+    case CALCULATED_LOGLINEAR_PERC : rdgTemporalTrendAdj->ItemIndex = 3; break;
     case STRATIFIED_RANDOMIZATION  : rdgTemporalTrendAdj->ItemIndex = 1; break;
     default                        : rdgTemporalTrendAdj->ItemIndex = 0;
   }
@@ -1072,6 +1079,11 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
         PageControl->Pages[0]->TabVisible=true;
         for (i=1; i < PageControl->PageCount; i++)
            PageControl->Pages[i]->TabVisible=false;
+        // give control to list box if anything in it
+        if (lstInputStreams->Items->Count) {
+           lstInputStreams->ItemIndex = 0;
+           lstInputStreams->OnClick(this);
+        }
         break;
      case ANALYSIS_TABS:    // show Analysis pages
         Caption = "Advanced Analysis Features";

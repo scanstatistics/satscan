@@ -320,8 +320,10 @@ void TfrmAnalysis::DefaultHiddenParameters() {
   //non-parametric removed from interface, replaced with time stratified
   if (gParameters.GetTimeTrendAdjustmentType() == NONPARAMETRIC)
     gParameters.SetTimeTrendAdjustmentType(STRATIFIED_RANDOMIZATION);
-  if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
-    gParameters.SetTimeTrendAdjustmentType(NOTADJUSTED);
+  // PAG - April 2, 2004:  as per Scott, add next line and remove next two
+  gParameters.SetTimeTrendConvergence(.0000001); //default value in CParameters*/
+  //if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
+  //  gParameters.SetTimeTrendAdjustmentType(NOTADJUSTED);
   gParameters.SetSimulationType(STANDARD);
   gParameters.SetOutputSimulationData(false);
   //since 'clusters to include' feature no longer in interface, adjust settings so that analysis is equivalent

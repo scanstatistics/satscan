@@ -77,23 +77,26 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object Label3: TLabel
           Left = 16
           Top = 16
-          Width = 24
+          Width = 46
           Height = 13
-          Caption = 'Case'
+          Hint = 'Additional Case File Name'
+          Caption = 'Case File:'
+          ParentShowHint = False
+          ShowHint = False
         end
         object Label1: TLabel
           Left = 16
           Top = 54
-          Width = 33
+          Width = 55
           Height = 13
-          Caption = 'Control'
+          Caption = 'Control File:'
         end
         object Label2: TLabel
           Left = 16
           Top = 92
-          Width = 50
+          Width = 72
           Height = 13
-          Caption = 'Population'
+          Caption = 'Population File:'
         end
       end
       object edtCaseFileName: TEdit
@@ -101,6 +104,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Top = 36
         Width = 336
         Height = 21
+        Hint = 'Additional Case File Name'
         ParentShowHint = False
         ShowHint = True
         TabOrder = 2
@@ -128,6 +132,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Top = 74
         Width = 336
         Height = 21
+        Hint = 'Additional Control File Name'
         ParentShowHint = False
         ShowHint = True
         TabOrder = 4
@@ -155,6 +160,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Top = 113
         Width = 336
         Height = 21
+        Hint = 'Additional Population File Name'
         ParentShowHint = False
         ShowHint = True
         TabOrder = 6
@@ -189,7 +195,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 28
           Width = 75
           Height = 25
+          Hint = 'Add an Additional Input Stream'
           Caption = 'Add'
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 1
           OnClick = btnAddClick
         end
@@ -198,7 +207,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 64
           Width = 75
           Height = 25
+          Hint = 'Remove an Additional Input Stream'
           Caption = 'Remove'
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 2
           OnClick = btnRemoveStreamClick
         end
@@ -207,7 +219,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 24
           Width = 285
           Height = 69
+          Hint = 'All Additional Input Streams'
           ItemHeight = 13
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 0
           OnClick = lstInputStreamsClick
         end
@@ -640,14 +655,18 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 8
         Top = 8
         Width = 390
-        Height = 113
+        Height = 141
+        Hint = 'Temporal Trend Adjustments'
         Caption = 'Temporal Adjustments'
         Enabled = False
         ItemIndex = 0
         Items.Strings = (
           'None'
           'Nonparametric, with time stratified randomization'
-          'Log linear with')
+          'Log linear with'
+          'Log linear with automatically calculated trend')
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 0
         OnClick = rdgTemporalTrendAdjClick
         OnExit = OnControlExit
@@ -665,8 +684,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         OnKeyPress = FloatKeyPress
       end
       object lblLogLinear: TStaticText
-        Left = 140
-        Top = 92
+        Left = 136
+        Top = 90
         Width = 67
         Height = 17
         AutoSize = False
@@ -675,7 +694,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object grpAdjustments: TGroupBox
         Left = 8
-        Top = 155
+        Top = 159
         Width = 390
         Height = 102
         Caption = 'Temporal, Spatial and/or Space-Time Adjustments'
