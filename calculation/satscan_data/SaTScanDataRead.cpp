@@ -7,22 +7,35 @@ const int POPULATION_DATE_PRECISION_MONTH_DEFAULT_DAY   = 15;
 const int POPULATION_DATE_PRECISION_YEAR_DEFAULT_DAY    = 1;
 const int POPULATION_DATE_PRECISION_YEAR_DEFAULT_MONTH  = 7;
 
-/** Allocates two dimensional array (number time intervals by locations) */
-void CSaTScanData::AllocateCountStructure(count_t***  pCounts) {
-  int   j, i=0;
-
+/** Allocates count structures */
+void CSaTScanData::AllocateCaseStructures() {
   try {
-    // Allocate for counts 
-    *pCounts = (count_t**)Smalloc(m_nTimeIntervals * sizeof(count_t *), gpPrint);
-    for (; i < m_nTimeIntervals; ++i) {
-       (*pCounts)[i] = (count_t*)Smalloc(m_nTracts * sizeof(count_t), gpPrint);
-       for (j=0; j < m_nTracts; ++j) (*pCounts)[i][j]=0; //initialize to zero
-    }   
+    gpCasesHandler = new TwoDimensionArrayHandler<count_t>(m_nTimeIntervals, m_nTracts, 0);
+    if (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION || m_pParameters->GetProbabiltyModelType() == BERNOULLI)
+      gpCategoryCasesHandler = new ThreeDimensionArrayHandler<count_t>(m_nTimeIntervals, m_nTracts, 1/*assume only one category -- i.e. no covariates*/, 0);
+    if (m_pParameters->GetProbabiltyModelType() == BERNOULLI && m_pParameters->GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
+      gpCasesByTimeByCategoryHandler = new TwoDimensionArrayHandler<count_t>(m_nTimeIntervals, 1/*assume only one category -- i.e. no covariates*/, 0);
   }
   catch(ZdException &x) {
-    //free any allocated memory
-    while (*pCounts && --i >= 0) free((*pCounts)[i]);
-    free(*pCounts); *pCounts=0;
+    delete gpCasesHandler; gpCasesHandler=0;
+    delete gpCategoryCasesHandler; gpCategoryCasesHandler=0;
+    delete gpCasesByTimeByCategoryHandler; gpCasesByTimeByCategoryHandler=0;
+    throw;
+  }
+}
+
+void CSaTScanData::AllocateControlStructures() {
+  try {
+    gpControlsHandler = new TwoDimensionArrayHandler<count_t>(m_nTimeIntervals, m_nTracts, 0);
+    if (m_pParameters->GetProbabiltyModelType() == BERNOULLI)
+      gpCategoryControlsHandler = new ThreeDimensionArrayHandler<count_t>(m_nTimeIntervals, m_nTracts, 1/*assume only one category -- i.e. no covariates*/, 0);
+    if (m_pParameters->GetProbabiltyModelType() == BERNOULLI && m_pParameters->GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
+      gpControlsByTimeByCategoryHandler = new TwoDimensionArrayHandler<count_t>(m_nTimeIntervals, 1/*assume only one category -- i.e. no covariates*/, 0);
+  }
+  catch(ZdException &x) {
+    delete gpControlsHandler; gpControlsHandler=0;
+    delete gpCategoryControlsHandler; gpCategoryControlsHandler=0;
+    delete gpControlsByTimeByCategoryHandler; gpControlsByTimeByCategoryHandler=0;
     throw;
   }
 }
@@ -83,32 +96,13 @@ bool CSaTScanData::ConvertPopulationDateToJulian(const char * sDateString, int i
   return bValidDate;
 }
 
-/** Dellocates two dimensional array (number time intervals by locations) */
-void CSaTScanData::DeallocateCountStructure(count_t***  pCounts) {
-  try {
-    for (int i=0; *pCounts && i < m_nTimeIntervals; ++i)
-       free((*pCounts)[i]);
-    free(*pCounts); *pCounts=0;
-  }
-  catch(...) {pCounts=0;/*this will cause memory leak but prevent problems in destructor*/}
-}
-
-/** Increments count for tract, at index, and date cumulatively. */
-void CSaTScanData::IncrementCount(tract_t tTractIndex, int nCount, Julian nDate, count_t** pCounts) {
-  pCounts[0][tTractIndex] += nCount;
-  for (int i=1; nDate >= m_pIntervalStartTimes[i]; ++i)
-        pCounts[i][tTractIndex] += nCount;
-}
-
 /** Attempts to parses passed string into tract identifier, count,
     and based upon settings, date and covariate information.
     Returns whether parse completed without errors. */
 bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringParser & Parser,
-                                  tract_t& tid, count_t& nCount, Julian& nDate) {
+                                  tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex) {
   UInt   	               uiYear4, uiYear, uiMonth=1, uiDay=1;
-  int                          i, iCategoryIndex, iCategoryOffSet, iScanPrecision, iNumCovariatesScanned=0;
-  std::vector<std::string>     vCategoryCovariates;
-  const char                 * pCovariate;  
+  int                          iCategoryOffSet, iScanPrecision;
 
   try {
     //read and validate that tract identifier exists in coordinates file
@@ -175,60 +169,53 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringPa
                                  m_pParameters->GetStudyPeriodStartDate().c_str(), m_pParameters->GetStudyPeriodEndDate().c_str());
       return false;
     }
-    //Parse file for categories but conditionally:
-    //Poisson - always scan for covariates, the number of covariates per category should always
-    //          be the same as defined in population category class(.i.e as read from population file).
-    //Space-Time Permutation - ignore extra data, assumed to be covariates.
-    //Bernoulli - For the case file, ignoring non-pertinent covariates. For the control file, any extra
-    //            information will be assumed to be covariates. This is an error as covariates are not
-    //            supported currently for Bernoulli model.
-    if (m_pParameters->GetProbabiltyModelType() == POISSON ||
-        (m_pParameters->GetProbabiltyModelType() == BERNOULLI && strcmp(szDescription,"control")==0)) {
-      //scan covariates into vector
-      iCategoryOffSet = m_pParameters->GetPrecisionOfTimesType() == NONE ? 2 : 3;
-      while ((pCovariate = Parser.GetWord(iNumCovariatesScanned + iCategoryOffSet)) != 0) {
-           vCategoryCovariates.push_back(pCovariate);
-           iNumCovariatesScanned++;
-      }
-      if (m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
-        if (iNumCovariatesScanned) {
-          gpPrint->PrintInputWarning("Error: Record %ld of control file contains extra information.\n", nRec);
-          gpPrint->PrintInputWarning("       Note that the Bernoulli probability model does not support covariates.\n");
-          return false;
-        }
-      }
-      else if (iNumCovariatesScanned != gPopulationCategories.GetNumPopulationCategoryCovariates()) {
-        gpPrint->PrintInputWarning("Error: Record %ld of case file contains %d covariate%s but the population file\n",
-                                            nRec, iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"));
-        gpPrint->PrintInputWarning("       defined the number of covariates as %d.\n",
-                                            gPopulationCategories.GetNumPopulationCategoryCovariates());
+    iCategoryOffSet = m_pParameters->GetPrecisionOfTimesType() == NONE ? 2 : 3;
+    if (! ParseCovariates(iCategoryIndex, iCategoryOffSet, szDescription, nRec, Parser))
         return false;
-      }
-      //Now we only want to attempt to add covariate information to population categories
-      //and count information to tract handler if model is Poisson or Space-Time Permutation
-      //with maximum spatial cluster size is percentage of population. These two situations
-      //are the only ones that use this information in the calculate measure routines.
-      if (m_pParameters->GetProbabiltyModelType() == POISSON) {
-        //category should already exist
-        if ((iCategoryIndex = gPopulationCategories.GetPopulationCategoryIndex(vCategoryCovariates)) == -1) {
-          gpPrint->PrintInputWarning("Error: Record %ld of case file refers to a population category that\n", nRec);
-          gpPrint->PrintInputWarning("       does not match an existing category as read from population file.");
-          return false;
-        }
-        //Add count to tract for category. This could return false if record's tract
-        //identifier / covariates together don't match an existing population record. 
-        if (! gpTInfo->tiAddCount(tid, iCategoryIndex, nCount)) {
-          std::string sBuffer;
-          gpPrint->PrintInputWarning("Error: Record %ld of case file refers to location '%s' with population category '%s',\n",
-                                              nRec, Parser.GetWord(0), gPopulationCategories.GetPopulationCategoryAsString(iCategoryIndex, sBuffer));
-          gpPrint->PrintInputWarning("       but no matching population record with this combination exists.\n");
-          return false;
-        }
-      }
-    }
   }
   catch (ZdException &x) {
     x.AddCallpath("ParseCountLine()","CSaTScanData");
+    throw;
+  }
+  return true;
+}
+
+/** Parses count file data line to determine category index given covariates contained in line.*/
+bool CSaTScanData::ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, const char*  szDescription, int nRec, StringParser & Parser) {
+  int                          iNumCovariatesScanned=0;
+  std::vector<std::string>     vCategoryCovariates;
+  const char                 * pCovariate;
+
+  try {
+
+    if (m_pParameters->GetProbabiltyModelType() == POISSON) {
+      while ((pCovariate = Parser.GetWord(iNumCovariatesScanned + iCovariatesOffset)) != 0) {
+           vCategoryCovariates.push_back(pCovariate);
+           iNumCovariatesScanned++;
+      }
+      if (iNumCovariatesScanned != gPopulationCategories.GetNumPopulationCategoryCovariates()) {
+        gpPrint->PrintInputWarning("Error: Record %ld of case file contains %d covariate%s but the population file\n",
+                                   nRec, iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"));
+        gpPrint->PrintInputWarning("       defined the number of covariates as %d.\n", gPopulationCategories.GetNumPopulationCategoryCovariates());
+        return false;
+      }
+      //category should already exist
+      if ((iCategoryIndex = gPopulationCategories.GetPopulationCategoryIndex(vCategoryCovariates)) == -1) {
+        gpPrint->PrintInputWarning("Error: Record %ld of case file refers to a population category that\n", nRec);
+        gpPrint->PrintInputWarning("       does not match an existing category as read from population file.");
+        return false;
+      }
+    }
+    else if (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION || m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
+        //First category created sets precedence as to how many covariates remaining records must have.
+        if ((iCategoryIndex = gPopulationCategories.MakePopulationCategory(szDescription, Parser, nRec, iCovariatesOffset, *gpPrint)) == -1)
+          return false;
+    }
+    else
+      ZdGenerateException("Unknown probability model type '%d'.","ParseCovariates()", m_pParameters->GetProbabiltyModelType());
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ParseCovariates()","CSaTScanData");
     throw;
   }
   return true;
@@ -284,13 +271,12 @@ bool CSaTScanData::ReadCaseFile() {
       return false;
     }
     gpPrint->SetImpliedInputFileType(BasePrint::CASEFILE);
-    AllocateCountStructure(&m_pCases);
-    bValid = ReadCounts(fp, "case", m_pCases);
+    AllocateCaseStructures();
+    bValid = ReadCounts(fp, "case");
     fclose(fp); fp=0;
   }
   catch (ZdException & x) {
     if (fp) fclose(fp);
-    DeallocateCountStructure(&m_pCases);
     x.AddCallpath("ReadCaseFile()","CSaTScanData");
     throw;
   }
@@ -313,13 +299,12 @@ bool CSaTScanData::ReadControlFile() {
       return false;
     }
     gpPrint->SetImpliedInputFileType(BasePrint::CONTROLFILE);
-    AllocateCountStructure(&m_pControls);
-    bValid = ReadCounts(fp, "control", m_pControls);
+    AllocateControlStructures();
+    bValid = ReadCounts(fp, "control");
     fclose(fp); fp=0;
   }
   catch (ZdException & x) {
     if (fp) fclose(fp);
-    DeallocateCountStructure(&m_pControls);
     x.AddCallpath("ReadControlFile()","CSaTScanData");
     throw;
   }
@@ -517,22 +502,73 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
     If invalid data is found in the file, an error message is printed,
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
-bool CSaTScanData::ReadCounts(FILE * fp, const char* szDescription, count_t**  pCounts) {
-  int           i, j, iRecNum=0;
-  bool          bValid=true, bEmpty=true;
-  count_t       Count;
-  Julian        Date;
-  tract_t       TractIdentifierIndex;
-  StringParser  Parser;
+bool CSaTScanData::ReadCounts(FILE * fp, const char* szDescription) {
+  int                                   i, j, iCategoryIndex, iRecNum=0;
+  bool                                  bCaseFile, bValid=true, bEmpty=true;
+  Julian                                Date;
+  tract_t                               TractIndex;
+  StringParser                          Parser;
+  std::string                           sBuffer;
+  count_t                               Count, ** pCounts;
+  TwoDimensionArrayHandler<count_t>   * pCountsByTimeByCategory;
+  ThreeDimensionArrayHandler<count_t> * pCategoryCounts;
 
   try {
+    bCaseFile = !strcmp(szDescription, "case");
+    pCounts = (bCaseFile ? gpCasesHandler->GetArray() : gpControlsHandler->GetArray());
+    pCountsByTimeByCategory = (bCaseFile ? gpCasesByTimeByCategoryHandler : gpControlsByTimeByCategoryHandler);
+    pCategoryCounts = (bCaseFile ? gpCategoryCasesHandler : gpCategoryControlsHandler);
+
     //Read data, parse and if no errors, increment count for tract at date.
     while (Parser.ReadString(fp)) {
          ++iRecNum;
          if (Parser.HasWords()) {
            bEmpty = false;
-           if (ParseCountLine(szDescription, iRecNum, Parser, TractIdentifierIndex, Count, Date))
-             IncrementCount(TractIdentifierIndex, Count, Date, pCounts);
+           if (ParseCountLine(szDescription, iRecNum, Parser, TractIndex, Count, Date, iCategoryIndex)) {
+             //cumulatively add count to time by location structure
+             pCounts[0][TractIndex] += Count;
+             for (int i=1; Date >= m_pIntervalStartTimes[i]; ++i)
+               pCounts[i][TractIndex] += Count;
+             //record count as a case or control  
+             if (bCaseFile)
+               gPopulationCategories.AddCaseCount(iCategoryIndex, Count);
+             else
+               gPopulationCategories.AddControlCount(iCategoryIndex, Count);
+             //record count in structure(s) based upon population category
+             switch (m_pParameters->GetProbabiltyModelType()) {
+               case POISSON :
+                 //Add count to tract for category. This could return false if record's tract
+                 //identifier / covariates together don't match an existing population record.
+                 if (! gpTInfo->tiAddCount(TractIndex, iCategoryIndex, Count)) {
+                   gpPrint->PrintInputWarning("Error: Record %ld of case file refers to location '%s' with population category '%s',\n",
+                                              iRecNum, Parser.GetWord(0), gPopulationCategories.GetPopulationCategoryAsString(iCategoryIndex, sBuffer));
+                   gpPrint->PrintInputWarning("       but no matching population record with this combination exists.\n");
+                   return false;
+                 }
+                 break;
+               case SPACETIMEPERMUTATION :
+                 if (iCategoryIndex >= static_cast<int>(pCategoryCounts->Get3rdDimension()))
+                   pCategoryCounts->ExpandThirdDimension(0);
+                 pCategoryCounts->GetArray()[0][TractIndex][iCategoryIndex] += Count;
+                 for (i=1; Date >= m_pIntervalStartTimes[i]; ++i)
+                    pCategoryCounts->GetArray()[i][TractIndex][iCategoryIndex] += Count;
+                 break;
+               case BERNOULLI :
+                 if (iCategoryIndex >= static_cast<int>(pCategoryCounts->Get3rdDimension()))
+                   pCategoryCounts->ExpandThirdDimension(0);
+                 pCategoryCounts->GetArray()[0][TractIndex][iCategoryIndex] += Count;
+                 for (i=1; Date >= m_pIntervalStartTimes[i]; ++i)
+                    pCategoryCounts->GetArray()[i][TractIndex][iCategoryIndex] += Count;
+                 if (m_pParameters->GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION) {
+                   if (iCategoryIndex >= static_cast<int>(pCountsByTimeByCategory->Get2ndDimension()))
+                     pCountsByTimeByCategory->ExpandSecondDimension(0);
+                   pCountsByTimeByCategory->GetArray()[0][iCategoryIndex] += Count;
+                   for (i=1; Date >= m_pIntervalStartTimes[i]; ++i)
+                      pCountsByTimeByCategory->GetArray()[i][iCategoryIndex] += Count;
+                 }
+                 break;
+             }
+           }
            else
              bValid = false;
          }
@@ -857,7 +893,7 @@ bool CSaTScanData::ReadPopulationFile() {
           }
           //Scan for covariates to create population categories or find index.
           //First category created sets precedence as to how many covariates remaining records must have.
-          if ((iCategoryIndex = gPopulationCategories.MakePopulationCategory(Parser, iRecNum, *gpPrint)) == -1) {
+          if ((iCategoryIndex = gPopulationCategories.MakePopulationCategory("population", Parser, iRecNum, 3, *gpPrint)) == -1) {
             bValid = false;
             continue;
           }
