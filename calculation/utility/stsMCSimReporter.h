@@ -5,6 +5,7 @@
 //---------------------------------------------------------------------------
 #include "AnalysisRun.h"
 #include "stsMCSimContinuationPolicy.h"
+#include "LoglikelihoodRatioWriter.h"
 #pragma warn -8012
 #pragma warn -8008
 #pragma warn -8066
@@ -34,6 +35,8 @@ private:
   CSignificantRatios05 & grSignificantRatios;
   BasePrint & grPrintDirection;
   const char * gszReplicationFormatString;
+  std::auto_ptr<LoglikelihoodRatioWriter> gRatioWriter;
+  AnalysisRunner & grRunner;
 
   boost::dynamic_bitset<> gResultRegistrationConditions;//contains bits for only the first guaShortCircuitCheckPoints[guShortCircuitCheckIndex] bits.
   bool gbShortCircuitConditionExists;
@@ -49,6 +52,7 @@ public:
     ,MostLikelyClustersContainer & theMLCs
     ,BasePrint & thePrintDirection
     ,const char * szReplicationFormatString
+    ,AnalysisRunner & Runner
    );
 
   void Report_SubcontractLet(unsigned job_idx,boost::dynamic_bitset<> const & result_registration_conditions,std::deque< std::pair<params_type, results_type> > const & jobs)

@@ -47,6 +47,7 @@ stsMCSimReporter::stsMCSimReporter
     ,MostLikelyClustersContainer & theMLCs
     ,BasePrint & thePrintDirection
     ,const char * szReplicationFormatString
+    ,AnalysisRunner & Runner
    )
    : grContinuationPolicy(rCtPlcy)
    , grSignificantRatios(theSignificantRatios)
@@ -56,6 +57,7 @@ stsMCSimReporter::stsMCSimReporter
    , gbShortCircuitConditionExists(false)
    , guShortCircuitCheckIdx(0)
    , guResultsNotShortCircuitedCount(0)
+   , grRunner(Runner)
 {
   guShortCircuitCheckCount = 0;
   if (rParameters.GetTerminateSimulationsEarly()) {
@@ -64,11 +66,19 @@ stsMCSimReporter::stsMCSimReporter
     }
   }
   gResultRegistrationConditions.resize(guShortCircuitCheckIdx < guShortCircuitCheckCount ? guaShortCircuitCheckPoints[guShortCircuitCheckIdx] : rParameters.GetNumReplicationsRequested());
+
+  if (rParameters.GetOutputSimLoglikeliRatiosFiles())
+    gRatioWriter.reset(new LoglikelihoodRatioWriter(rParameters));
 }
 
 void stsMCSimReporter::Report_ResultsRegistered(unsigned job_idx,boost::dynamic_bitset<> const & result_registration_conditions,std::deque< std::pair<params_type, results_type> > const & jobs)
 {
   try {
+    results_type result(jobs[job_idx].second);
+    if(gRatioWriter.get()) gRatioWriter->Write(result);
+    //update power calculations
+    grRunner.UpdatePowerCounts(result);
+    
     if (guShortCircuitCheckIdx < guShortCircuitCheckCount) {//if we're checking for short-circuit conditions...
       if (!gbShortCircuitConditionExists) {
         if (job_idx < guaShortCircuitCheckPoints[guShortCircuitCheckIdx]) {
