@@ -178,6 +178,7 @@ public:
 //   void                     AddField(const char * sFieldName, const char * sMappedFieldName, unsigned short wPosition);
 //   inline void              AddIndex(unsigned short wField, short wNumFields, bool bPrimary, char * sViolTblName, short wIndexVersion, ZdProgressInterface *pProgress);
    virtual void             AddIndex(unsigned short wField, short wNumFields = 1, bool bPrimary = true, char * sViolTblName = 0, short wIndexVersion = ZDINDEX_VERSION, ZdProgressInterface &Progress = ZdNullProgress::GetDefaultInstance() ) { ZdException::Generate("not implemented: AddIndex", "ScanfFile"); }
+   virtual void             AddIndex(unsigned short wField, bool bMaintenanceBuild = false, short wNumFields = 1, bool bPrimary = true, char * sViolTblName = 0, short wIndexVersion = ZDINDEX_VERSION, ZdProgressInterface &Progress = ZdNullProgress::GetDefaultInstance() ) { ZdException::Generate("not implemented: AddIndex", "ScanfFile"); }
 //   void                     AddRecord ( ZdTransaction &theTransaction, const ZdFileRecord &theRecord );
 //   void                     AllRecords();
 //   inline unsigned long     AppendRecord ( ZdTransaction *pTransaction, ZdFileRecord *pRecordBuffer = 0 );
