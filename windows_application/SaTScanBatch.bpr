@@ -63,7 +63,8 @@
       ..\calculation\cluster\TimeIntervalRange.obj 
       ..\calculation\cluster\PurelySpatialProspectiveCluster.obj 
       ..\calculation\utility\MultipleDimensionArrayHandler.obj 
-      ..\calculation\satscan_data\MaxWindowLengthIndicator.obj"/>
+      ..\calculation\satscan_data\MaxWindowLengthIndicator.obj 
+      ..\calculation\satscan_data\AdjustmentHandler.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -108,7 +109,7 @@ IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=4
 MinorVer=0
-Release=1
+Release=2
 Build=0
 Debug=0
 PreRelease=0
@@ -121,14 +122,14 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=SaTScan
 FileDescription=SaTScan - Spatial and Space-Time Scan Statistics
-FileVersion=4.0.1.0
+FileVersion=4.0.2.0
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=SaTScan
-ProductVersion=4.0.1
-Comments=Released October 23, 2003
+ProductVersion=4.0.2
+Comments=Released November 10, 2003
 
 [Excluded Packages]
 $(BCB)\Bin\dcl31w50.bpl=Delphi 1.0 Compatibility Components
@@ -143,14 +144,16 @@ $(BCB)\Bin\mfcwizard.bpl=MFC Wizard
 C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\TSGDCLC5.bpl=Top Support TopGrid Components
 
 [HistoryLists\hlIncludePath]
-Count=2
-Item0=C:\Prj\SaTScan Project\4.0\zero dimension;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;C:\Prj\SaTScan Project\4.0\basisdev\include;C:\Prj\SaTScan Project\4.0\basisdev\source\nonvcl;C:\Prj\SaTScan Project\4.0\basisdev\source\vcldep;..\xbase\xbase_2.0.0;$(BCB)\include;$(BCB)\include\vcl
-Item1=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0
+Count=3
+Item0=..\..\zero dimension;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;$(BCB)\include;$(BCB)\include\vcl
+Item1=C:\Prj\SaTScan Project\4.0\zero dimension;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;C:\Prj\SaTScan Project\4.0\basisdev\include;C:\Prj\SaTScan Project\4.0\basisdev\source\nonvcl;C:\Prj\SaTScan Project\4.0\basisdev\source\vcldep;..\xbase\xbase_2.0.0;$(BCB)\include;$(BCB)\include\vcl
+Item2=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0
 
 [HistoryLists\hlLibraryPath]
-Count=2
-Item0=C:\Prj\SaTScan Project\4.0\zero dimension;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;C:\Prj\SaTScan Project\4.0\basisdev\include;C:\Prj\SaTScan Project\4.0\basisdev\source\nonvcl;C:\Prj\SaTScan Project\4.0\basisdev\source\vcldep;..\xbase\xbase_2.0.0
-Item1=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0
+Count=3
+Item0=..\..\zero dimension;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0
+Item1=C:\Prj\SaTScan Project\4.0\zero dimension;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;C:\Prj\SaTScan Project\4.0\basisdev\include;C:\Prj\SaTScan Project\4.0\basisdev\source\nonvcl;C:\Prj\SaTScan Project\4.0\basisdev\source\vcldep;..\xbase\xbase_2.0.0
+Item2=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
@@ -164,7 +167,7 @@ Item0=INTEL_BASED;__BATCH_COMPILE
 DebugSourceDirs=
 
 [Parameters]
-RunParams=&quot;C:\Program Files\SaTScan\SaTScan 3.1\Sample Data\nm.prm
+RunParams=&quot;C:\Prj\SaTScan Project\SaTScan Data Sets\adjustments_test\nm.prm&quot;
 HostApplication=C:\SatScan v3.0\calc\Satscan.exe
 RemoteHost=
 RemotePath=

@@ -88,6 +88,7 @@ USEUNIT("..\calculation\Output\stsASCIIFileWriter.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
 USELIB("..\..\zero dimension\zdannex540.lib");
 USELIB("..\..\zero dimension\zd540.lib");
+USEUNIT("..\calculation\satscan_data\AdjustmentHandler.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;
