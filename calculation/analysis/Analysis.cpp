@@ -464,7 +464,7 @@ void CAnalysis::DisplayTopClusterLogLikelihood() {
    try {
       if (m_nClustersRetained > 0) {
          gpPrintDirection->SatScanPrintf("  %s for the most likely cluster: %7.2f\n\n",
-                                         (m_pParameters->m_nModel == SPACETIMEPERMUTATION ? "Test statistic" : "Log likelihood ratio" ),
+                                         (m_pParameters->m_nModel == SPACETIMEPERMUTATION ? "SaTScan test statistic" : "SaTScan log likelihood ratio" ),
                                          m_pTopClusters[0]->m_nRatio);
       }
    }
