@@ -1788,7 +1788,7 @@ void TfrmAnalysis::SetupInterface() {
     rdoPercentageTemproal->Checked = gpParams->m_nMaxClusterSizeType == PERCENTAGETYPE;
     rdoTimeTemproal->Checked = gpParams->m_nMaxClusterSizeType == TIMETYPE;
     chkIncludePurSpacClust->Checked = gpParams->m_bIncludePurelySpatial;
-    rdoSpatialPercentage->Checked = gpParams->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE;
+    rdoSpatialPercentage->Checked = gpParams->m_nMaxSpatialClusterSizeType != DISTANCETYPE; // default checked
     rdoSpatialDistance->Checked = gpParams->m_nMaxSpatialClusterSizeType == DISTANCETYPE;
     EnablePopulationFileInput();
     SetSpatialDistanceCaption();
