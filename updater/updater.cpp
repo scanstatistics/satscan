@@ -25,8 +25,10 @@ static const char VER_ID_OPTION_STRING[] = "-ver_id";
                  ++ppcOmitULA_Parameter;
                if (ppcOmitULA_Parameter == (_argv+_argc)) {//option "-ver_id" not found
                  std::auto_ptr<TssDlgULA> pula(new TssDlgULA(Application));
-                 if (pula->ShowModal() != mrYes)
+                 if (pula->ShowModal() != mrYes) {
+                   remove(_argv[1]); // delete the archive file
                    throw update_cancelled("User License Agreement not accepted.");
+                 }
                }
                else {//option "-ver_id" found: no logic right now.  Later we might check for "=something".
                }
