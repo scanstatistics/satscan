@@ -201,7 +201,6 @@ bool TfrmAnalysis::CheckOutputParams() {
 bool TfrmAnalysis::CheckProspDateRange() {
   bool          bRangeOk = true;
   Julian        Start, End, Prosp;
-  ZdString      sAnalysisName;
   int           iProspYear, iProspMonth, iProspDay;
 
   try {
@@ -217,9 +216,8 @@ bool TfrmAnalysis::CheckProspDateRange() {
     Prosp = MDYToJulian(iProspMonth, iProspDay, iProspYear);
 
     if ((Prosp < Start) || (Prosp > End)) {
-      sAnalysisName.printf("The start date of %s analysis must be between the study period start and end dates.",
-                            rgTypeAnalysis->Items->Strings[rgTypeAnalysis->ItemIndex].c_str());
-      Application->MessageBox(sAnalysisName.GetCString(), "Notification" , MB_OK);
+      Application->MessageBox("The prospective start date must be between the study period start and end dates.",
+                              "Notification" , MB_OK);
       PageControl1->ActivePage = tbTimeParameter;
       edtProspectiveStartDateYear->SetFocus();
       bRangeOk = false;
@@ -638,24 +636,61 @@ void __fastcall TfrmAnalysis::FormClose(TObject *Sender, TCloseAction &Action) {
   catch(...){}
 }
 
-/** returns analysis type for analysis control index */
+/** returns analysis type for analysis control group */
 AnalysisType TfrmAnalysis::GetAnalysisControlType() const {
   AnalysisType eReturn;
 
-  switch (rgTypeAnalysis->ItemIndex) {
-    case 0  : eReturn = PURELYSPATIAL; break;
-    case 1  : eReturn = PURELYTEMPORAL; break;
-    case 2  : eReturn = PROSPECTIVEPURELYTEMPORAL; break;
-    case 3  : eReturn = SPACETIME; break;
-    case 4  : eReturn = PROSPECTIVESPACETIME; break;
-    default : ZdGenerateException("Unknown index type '%d'.", "GetAnalysisControlType()", rgTypeAnalysis->ItemIndex);
-  }
+  if (rdoRetrospectivePurelySpatial->Checked)
+    eReturn = PURELYSPATIAL;
+  else if (rdoRetrospectivePurelyTemporal->Checked)
+    eReturn = PURELYTEMPORAL;
+  else if (rdoRetrospectiveSpaceTime->Checked)
+    eReturn = SPACETIME;
+  else if (rdoProspectivePurelyTemporal->Checked)
+    eReturn = PROSPECTIVEPURELYTEMPORAL;
+  else if (rdoProspectiveSpaceTime->Checked)
+    eReturn = PROSPECTIVESPACETIME;
+  else
+    ZdGenerateException("Analysis type not selected.","GetAnalysisControlType()");
+
+  return eReturn;
+}
+
+/** returns area scan rate type for control group */
+AreaRateType TfrmAnalysis::GetAreaScanRateControlType() const {
+  AreaRateType  eReturn;
+
+  if (rdoHighRates->Checked)
+    eReturn = HIGH;
+  else if (rdoLowRates->Checked)
+    eReturn = LOW;
+  else if (rdoHighLowRates->Checked)
+    eReturn = HIGHANDLOW;
+  else
+    ZdGenerateException("Scan for areas type not selected.","GetAreaScanRateControlType()");
+
   return eReturn;
 }
 
 /** Returns parameter filename fullpath. */
 const char * TfrmAnalysis::GetFileName() {
   return gParameters.GetSourceFileName().c_str();
+}
+
+/** returns probability type for model control group */
+ProbabiltyModelType TfrmAnalysis::GetModelControlType() const {
+  ProbabiltyModelType   eReturn;
+
+  if (rdoPoissonModel->Checked)
+    eReturn = POISSON;
+  else if (rdoBernoulliModel->Checked)
+    eReturn = BERNOULLI;
+  else if (rdoSpaceTimePermutationModel->Checked)
+    eReturn = SPACETIMEPERMUTATION;
+  else
+    ZdGenerateException("Probability model type not selected.","GetModelControlType()");
+
+  return eReturn;
 }
 
 /** returns precision of time type for precision control index */
@@ -750,9 +785,9 @@ void __fastcall TfrmAnalysis::NaturalNumberKeyPress(TObject *Sender, char &Key) 
 
 /** method called in response to 'type of analysis' radio group click event */
 void TfrmAnalysis::OnAnalysisTypeClick() {
-  bool  bPoisson(rgProbability->ItemIndex == POISSON),
-        bBernoulli(rgProbability->ItemIndex == BERNOULLI),
-        bSpaceTimePermutation(rgProbability->ItemIndex == SPACETIMEPERMUTATION);
+  bool  bPoisson(GetModelControlType() == POISSON),
+        bBernoulli(GetModelControlType() == BERNOULLI),
+        bSpaceTimePermutation(GetModelControlType() == SPACETIMEPERMUTATION);
 
   try {
     switch (GetAnalysisControlType()) {
@@ -800,11 +835,11 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
   DatePrecisionType     eDatePrecisionType(GetPrecisionOfTimesControlType());
   try {
     // disable probability models that don't match precision of time/analysis type combination
-    rgProbability->Controls[SPACETIMEPERMUTATION]->Enabled = eDatePrecisionType != NONE;
+    rdoSpaceTimePermutationModel->Enabled = eDatePrecisionType != NONE;
     if (eDatePrecisionType == NONE) {
       // if none was selected and space-time permutation was selected, reset model to Poisson
-      if (rgProbability->ItemIndex == SPACETIMEPERMUTATION)
-        rgProbability->ItemIndex = POISSON;
+      if (GetModelControlType() == SPACETIMEPERMUTATION)
+        SetModelControl(POISSON);
       // switch analysis type to purely spatial if no dates in input data
       if (GetAnalysisControlType() != PURELYSPATIAL)
         SetAnalysisControl(PURELYSPATIAL);
@@ -824,22 +859,22 @@ void TfrmAnalysis::OnProbabilityModelClick() {
   AnalysisType          eAnalysisType;
 
   try {
-    switch (rgProbability->ItemIndex) {
+    switch (GetModelControlType()) {
       case POISSON   		: 
-      case BERNOULLI            : rgTypeAnalysis->Controls[0]->Enabled = true;
-                                  rgTypeAnalysis->Controls[1]->Enabled = eDatePrecisionType != NONE;
-                                  rgTypeAnalysis->Controls[2]->Enabled = eDatePrecisionType != NONE;
-                                  rgTypeAnalysis->Controls[3]->Enabled = eDatePrecisionType != NONE;
-                                  rgTypeAnalysis->Controls[4]->Enabled = eDatePrecisionType != NONE;
+      case BERNOULLI            : rdoRetrospectivePurelySpatial->Enabled = true;
+                                  rdoRetrospectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
+                                  rdoRetrospectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
+                                  rdoProspectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
+                                  rdoProspectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
                                   EnableAdditionalOutFilesOptionsGroup(true);
                                   rdoPercentageTemproal->Caption = "Percent of Study Period (<= 90%)";
                                   lblSimulatedLogLikelihoodRatios->Caption = "Simulated Log Likelihood Ratios";
                                   break;
-      case SPACETIMEPERMUTATION : rgTypeAnalysis->Controls[0]->Enabled = false;
-                                  rgTypeAnalysis->Controls[1]->Enabled = false;
-                                  rgTypeAnalysis->Controls[2]->Enabled = false;
-                                  rgTypeAnalysis->Controls[3]->Enabled = true;
-                                  rgTypeAnalysis->Controls[4]->Enabled = true;
+      case SPACETIMEPERMUTATION : rdoRetrospectivePurelySpatial->Enabled = false;
+                                  rdoRetrospectivePurelyTemporal->Enabled = false;
+                                  rdoRetrospectiveSpaceTime->Enabled = true;
+                                  rdoProspectivePurelyTemporal->Enabled = false;
+                                  rdoProspectiveSpaceTime->Enabled = true;
                                   eAnalysisType = GetAnalysisControlType();
                                   if (!(eAnalysisType == SPACETIME || eAnalysisType == PROSPECTIVESPACETIME))
                                     SetAnalysisControl(SPACETIME);
@@ -847,10 +882,9 @@ void TfrmAnalysis::OnProbabilityModelClick() {
                                   rdoPercentageTemproal->Caption = "Percent of Study Period (<= 50%)";
                                   lblSimulatedLogLikelihoodRatios->Caption = "Simulated Test Statistics";
                                   break;
-      default : ZdGenerateException("Unknown probabilty model index '%d'.",
-                                    "OnProbablityModelClick()", rgProbability->ItemIndex);
+      default : ZdGenerateException("Unknown probabilty model '%d'.", "OnProbablityModelClick()", GetModelControlType());
     }
-    gpfrmAdvancedParameters->EnableAdjustmentsGroup(rgProbability->ItemIndex == POISSON);
+    gpfrmAdvancedParameters->EnableAdjustmentsGroup(GetModelControlType() == POISSON);
     // simulate analysis type control click to synchronize controls
     OnAnalysisTypeClick();
   }
@@ -953,7 +987,7 @@ void __fastcall TfrmAnalysis::rgPrecisionTimesClick(TObject *Sender) {
 }
 
 /** event triggered when 'probability model' type control clicked */
-void __fastcall TfrmAnalysis::rgProbabilityClick(TObject *Sender) {
+void __fastcall TfrmAnalysis::rdoProbabilityModelClick(TObject *Sender) {
   try {
      OnProbabilityModelClick();
   }
@@ -964,7 +998,7 @@ void __fastcall TfrmAnalysis::rgProbabilityClick(TObject *Sender) {
 }
 
 /** event triggered when 'analysis' type control clicked */
-void __fastcall TfrmAnalysis::rgTypeAnalysisClick(TObject *Sender) {
+void __fastcall TfrmAnalysis::rdoAnalysisTypeClick(TObject *Sender) {
   try {
      OnAnalysisTypeClick();
   }
@@ -1004,8 +1038,8 @@ void TfrmAnalysis::SaveParameterSettings() {
     gParameters.SetCoordinatesType((CoordinatesType)rgCoordinates->ItemIndex);
     //Analysis Tab
     gParameters.SetAnalysisType(GetAnalysisControlType());
-    gParameters.SetProbabilityModelType((ProbabiltyModelType)rgProbability->ItemIndex);
-    gParameters.SetAreaRateType((AreaRateType)(rgScanAreas->ItemIndex + 1));
+    gParameters.SetProbabilityModelType(GetModelControlType());
+    gParameters.SetAreaRateType(GetAreaScanRateControlType());
     sString.printf("%i/%i/%i", atoi(edtStudyPeriodStartDateYear->Text.c_str()),
                    atoi(edtStudyPeriodStartDateMonth->Text.c_str()), atoi(edtStudyPeriodStartDateDay->Text.c_str()));
     gParameters.SetStudyPeriodStartDate(sString.GetCString());
@@ -1054,14 +1088,24 @@ void TfrmAnalysis::SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsBy
 /** sets analysis type control for AnalysisType */
 void TfrmAnalysis::SetAnalysisControl(AnalysisType eAnalysisType) {
   switch (eAnalysisType) {
-    case PURELYSPATIAL                  : rgTypeAnalysis->ItemIndex = 0; break;
-    case PURELYTEMPORAL                 : rgTypeAnalysis->ItemIndex = 1; break;
-    case PROSPECTIVEPURELYTEMPORAL      : rgTypeAnalysis->ItemIndex = 2; break;
-    case SPACETIME                      : rgTypeAnalysis->ItemIndex = 3; break;
-    case PROSPECTIVESPACETIME           : rgTypeAnalysis->ItemIndex = 4; break;
+    case PURELYTEMPORAL                 : rdoRetrospectivePurelyTemporal->Checked = true; break;
+    case SPACETIME                      : rdoRetrospectiveSpaceTime->Checked = true; break;
+    case PROSPECTIVEPURELYTEMPORAL      : rdoProspectivePurelyTemporal->Checked = true; break;
+    case PROSPECTIVESPACETIME           : rdoProspectiveSpaceTime->Checked = true; break;
     case SPATIALVARTEMPTREND            :
-    case PURELYSPATIALMONOTONE          : //not in interface -- default
-    default                             : rgTypeAnalysis->ItemIndex = 0;
+    case PURELYSPATIALMONOTONE          : 
+    case PURELYSPATIAL                  :
+    default                             : rdoRetrospectivePurelySpatial->Checked = true;
+  }
+}
+
+/** sets area scan rate type control */
+void TfrmAnalysis::SetAreaScanRateControl(AreaRateType eAreaRateType) {
+  switch (eAreaRateType) {
+    case LOW        : rdoLowRates->Checked = true; break;
+    case HIGHANDLOW : rdoHighLowRates->Checked = true; break;
+    case HIGH       : 
+    default         : rdoHighRates->Checked = true;
   }
 }
 
@@ -1088,6 +1132,16 @@ void TfrmAnalysis::SetCoordinateType(CoordinatesType eCoordinatesType) {
 /** Sets special population filename in interface */
 void TfrmAnalysis::SetMaximumCirclePopulationFile(const char * sMaximumCirclePopulationFileName) {
   gpfrmAdvancedParameters->SetMaximumCirclePopulationFile(sMaximumCirclePopulationFileName);
+}
+
+/** sets probaiity model type control for ProbabiltyModelType */
+void TfrmAnalysis::SetModelControl(ProbabiltyModelType eProbabiltyModelType) {
+  switch (eProbabiltyModelType) {
+    case BERNOULLI            : rdoBernoulliModel->Checked = true; break;
+    case SPACETIMEPERMUTATION : rdoSpaceTimePermutationModel->Checked = true; break;
+    case POISSON              : 
+    default                   : rdoPoissonModel->Checked = true;
+  }
 }
 
 /** Sets population filename in interface */
@@ -1174,9 +1228,9 @@ void TfrmAnalysis::SetupInterface() {
     edtGridFileName->Text = gParameters.GetSpecialGridFileName().c_str();
     rgCoordinates->ItemIndex = gParameters.GetCoordinatesType();
     //Analysis Tab
-    rgProbability->ItemIndex = gParameters.GetProbabiltyModelType();
+    SetModelControl(gParameters.GetProbabiltyModelType());
     SetAnalysisControl(gParameters.GetAnalysisType());
-    rgScanAreas->ItemIndex = (int)gParameters.GetAreaScanRateType() - 1;
+    SetAreaScanRateControl(gParameters.GetAreaScanRateType());
     ParseDate(gParameters.GetStudyPeriodStartDate().c_str(), edtStudyPeriodStartDateYear, edtStudyPeriodStartDateMonth, edtStudyPeriodStartDateDay);
     ParseDate(gParameters.GetStudyPeriodEndDate().c_str(), edtStudyPeriodEndDateYear, edtStudyPeriodEndDateMonth, edtStudyPeriodEndDateDay);
     edtMontCarloReps->Text = gParameters.GetNumReplicationsRequested();
@@ -1290,7 +1344,7 @@ bool TfrmAnalysis::ValidateInputFiles() {
       }
     }
     //Control file for Bernoulli model only
-    if (bOk & (rgProbability->ItemIndex==1)) {// Control file edit box enabled
+    if (bOk & GetModelControlType() == BERNOULLI) {// Control file edit box enabled
       if (edtControlFileName->Text.IsEmpty()) {
         Application->MessageBox("For the Bernoulli model, please specify a control file.", "Parameter Error" , MB_OK);
         bOk = false;
@@ -1304,7 +1358,7 @@ bool TfrmAnalysis::ValidateInputFiles() {
       }
     }
     //Pop file for Poisson model only
-    if (bOk & (rgProbability->ItemIndex==0)) {// Population file edit box enabled
+    if (bOk & GetModelControlType() == POISSON) {// Population file edit box enabled
       if (edtPopFileName->Text.IsEmpty()) {
         Application->MessageBox("For the Poisson model, please specify a population file.", "Parameter Error" , MB_OK);
         bOk = false;
@@ -1425,10 +1479,10 @@ bool TfrmAnalysis::ValidateTemoralClusterSize() {
       //than maximum for given probabilty model
       if (rdoPercentageTemproal->Checked) {
         dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
-        if (!(dValue > 0.0 && dValue <= (rgProbability->ItemIndex == SPACETIMEPERMUTATION ? 50 : 90))) {
-          sErrorMessage << "For the " << rgProbability->Items->Strings[rgProbability->ItemIndex].c_str();
+        if (!(dValue > 0.0 && dValue <= (GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90))) {
+          sErrorMessage << "For the " << gParameters.GetProbabiltyModelTypeAsString(GetModelControlType());
           sErrorMessage << " model, the maximum temporal cluster size as a percent of study period is ";
-          sErrorMessage << (rgProbability->ItemIndex == SPACETIMEPERMUTATION ? 50 : 90);
+          sErrorMessage << (GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90);
           sErrorMessage << " percent.\nPlease review settings.";
           ZdException::GenerateNotification(sErrorMessage.GetCString(), "ValidateTemoralClusterSize()");
         }
@@ -1445,7 +1499,7 @@ bool TfrmAnalysis::ValidateTemoralClusterSize() {
         EndDatePlusOne = EndDate;
         EndDatePlusOne.AddDays(1);
         ulMaxClusterDays = EndDatePlusOne.GetJulianDayFromCalendarStart() - StartDate.GetJulianDayFromCalendarStart();
-        ulMaxClusterDays = (rgProbability->ItemIndex == SPACETIMEPERMUTATION ? ulMaxClusterDays * 0.5 : ulMaxClusterDays * 0.9);
+        ulMaxClusterDays = (GetModelControlType() == SPACETIMEPERMUTATION ? ulMaxClusterDays * 0.5 : ulMaxClusterDays * 0.9);
 
         StartPlusIntervalDate = StartDate;
         //add time interval length as units to modified start date
@@ -1470,7 +1524,7 @@ bool TfrmAnalysis::ValidateTemoralClusterSize() {
           sErrorMessage << "For the study period starting on " << FilterBuffer << " and ending on ";
           DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), EndDate.GetRawDate());
           sErrorMessage << FilterBuffer << ",\na maximum temporal cluster size of " << edtMaxTemporalClusterSize->Text.c_str();
-          sErrorMessage << " " << Buffer << " is greater than " << (rgProbability->ItemIndex == SPACETIMEPERMUTATION ? 50 : 90);
+          sErrorMessage << " " << Buffer << " is greater than " << (GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90);
           sErrorMessage << " percent of study period.\nPlease review settings.";
           ZdGenerateException(sErrorMessage.GetCString(), "ValidateTemoralClusterSize()");
         }
@@ -1517,4 +1571,5 @@ void __fastcall TfrmAnalysis::edtMaxSpatialClusterSizeChange(TObject *Sender) {
   if (edtMaxSpatialClusterSize->Text.Length())
     SetReportingSmallerClustersText();
 }
+
 
