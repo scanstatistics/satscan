@@ -45,7 +45,7 @@ private:
          DBFRecord & gR;
          xbDbf     & gF;
       public:
-         RecordManipulationExpediter(DBFRecord & r, xbDbf & f) : gR(r), gF(f) { gR.BufferDbfRecordData(gF); }
+         RecordManipulationExpediter(DBFRecord & r, xbDbf & f) : gR(r), gF(f) { gR.BufferDbfRecordData(gF); gR.UpdateDbfRecordData(gF); }
          ~RecordManipulationExpediter() { gR.CopyDbfRecordData(gF); gR.RestoreDbfRecordData(gF); }
       };
 
@@ -188,10 +188,10 @@ protected:
    // of the file.
    //This functionality is offloaded to xbDbf, so these will be defined to be empty.  They
    //should never be called.
-   virtual void          FileMaintenanceAdd     ( unsigned long ulRecordNum, const ZdFileRecord &theRecord ) { ZdException::Generate("not implemented: FileMaintenanceAdd", "DBFFile"); }
-   virtual void          FileMaintenanceDelete  ( unsigned long ulRecordNum ) { ZdException::Generate("not implemented: FileMaintenanceDelete", "DBFFile"); }
-   virtual void          FileMaintenanceModify  ( unsigned long ulRecordNum, const ZdFileRecord &oldRec, const ZdFileRecord &newRec ) { ZdException::Generate("not implemented: FileMaintenanceModify", "DBFFile"); }
-   virtual void          FileMaintenanceReplace ( unsigned long ulRemoveRecordNum, unsigned long ulAddRecordNum, const ZdFileRecord &removeRec, const ZdFileRecord &addRec ) { ZdException::Generate("not implemented: FileMaintenanceReplace", "DBFFile"); }
+   virtual void          FileMaintenanceAdd     ( unsigned long ulRecordNum, const ZdFileRecord &theRecord ) {  }
+   virtual void          FileMaintenanceDelete  ( unsigned long ulRecordNum ) {  }
+   virtual void          FileMaintenanceModify  ( unsigned long ulRecordNum, const ZdFileRecord &oldRec, const ZdFileRecord &newRec ) {  }
+   virtual void          FileMaintenanceReplace ( unsigned long ulRemoveRecordNum, unsigned long ulAddRecordNum, const ZdFileRecord &removeRec, const ZdFileRecord &addRec ) {  }
 
    // Functions to assist in the serialization of file classes
 //   bool          ReadBase ( ZdInputStreamInterface &theStream );

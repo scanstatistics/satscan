@@ -20,6 +20,11 @@ DBFRecord::DBFRecord( DBFFile & associatedFile, xbDbf & associatedDbf, const ZdV
 
       ResizeBuffers(associatedDbf.GetRecordLen());
 
+         {
+         RecordManipulationExpediter rme(*this, GetAssociatedDbf());
+         GetAssociatedDbf().BlankRecord();
+         }
+
       //register this record with 'associatedFile'
       }
    catch (ZdException & e)
@@ -903,7 +908,7 @@ void DBFFile::Create(const char * sFilename, ZdVector<ZdField*> &vFields, unsign
 
 // Save 'Record' as the last record in the file.
 //<br>require
-//<br>  type_conformant_record: dynamic_cast<DBFRecord *>(&Record) != 0
+//<br>  type_conformant_record: dynamic_cast<const DBFRecord *>(&Record) != 0
 unsigned long DBFFile::DataAppend  ( const ZdFileRecord &Record )
 {
    unsigned long ulResult;
