@@ -1226,9 +1226,6 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
                   edtStartDay->Text = "1";
                   edtEndMonth->Text = "12";
                   edtEndDay->Text = "31";
-
-                  //Temporal RadioGroup label Same Precision
-                  rdoTimeTemproal->Caption = "Years";
                   break;
       case MONTH  :  //Study Period same precision
                   edtStartYear->Enabled  = true;   edtStartYear->Color = clWindow;
@@ -1239,8 +1236,6 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
                   edtEndDay->Enabled     = false;  edtEndDay->Color = clInactiveBorder;
                   edtEndDay->Text = DaysThisMonth(atoi(edtEndYear->Text.c_str()), atoi(edtEndMonth->Text.c_str()));
                   edtStartDay->Text = "1";
-                  //Temporal RadioGroup label Same Precision
-                  rdoTimeTemproal->Caption = "Months";
                   break;
       case DAY    : //Study Period same precision
                   edtStartYear->Enabled  = true;  edtStartYear->Color = clWindow;
@@ -1249,8 +1244,6 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
                   edtEndYear->Enabled    = true;  edtEndYear->Color = clWindow;
                   edtEndMonth->Enabled   = true;  edtEndMonth->Color = clWindow;
                   edtEndDay->Enabled     = true;  edtEndDay->Color = clWindow;
-                  //Temporal RadioGroup label Same Precision
-                  rdoTimeTemproal->Caption = "Days";
                   break;
     }
 
@@ -1381,7 +1374,7 @@ void TfrmAnalysis::ParseDate(char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *
         iLoc = theDate.Pos("/");
         if (iLoc == 0)
           ZdException::GenerateNotification("Invalid date found in parameter file.", "ParseDate()");
-        else {
+        else {  
           thePart = theDate.SubString(1,iLoc-1);
           pMonth->Text = thePart;
           theDate.Delete(1, iLoc);
@@ -1957,18 +1950,21 @@ void __fastcall TfrmAnalysis::rdoSpatialPercentageClick(TObject *Sender) {
 //------------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::rbUnitDayClick(TObject *Sender) {
     gpParams->m_nIntervalUnits = 3; // use to be 2
+    rdoTimeTemproal->Caption = "Days";
 }
 //------------------------------------------------------------------------------
 // Specific Months unit control
 //------------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::rbUnitMonthsClick(TObject *Sender) {
     gpParams->m_nIntervalUnits = 2; // use to be 1
+    rdoTimeTemproal->Caption = "Months";
 }
 //------------------------------------------------------------------------------
 // Specific Year unit control
 //------------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::rbUnitYearClick(TObject *Sender) {
     gpParams->m_nIntervalUnits = 1; // use to be 0
+    rdoTimeTemproal->Caption = "Years";
 }
 //------------------------------------------------------------------------------
 //  Control to include "Alive" clusters
