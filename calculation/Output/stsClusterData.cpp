@@ -44,7 +44,7 @@ ZdString& stsClusterData::GetAreaID(ZdString& sAreaId, const CCluster& thisClust
   tract_t       tTractIndex;
 
   try {
-    if (thisCluster.GetClusterType() == PURELYTEMPORAL)
+    if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
       sAreaId = "All";
     else {
       tTractIndex = DataHub.GetNeighbor(thisCluster.GetEllipseOffset(), thisCluster.GetCentroidIndex(), 1);
@@ -59,7 +59,7 @@ ZdString& stsClusterData::GetAreaID(ZdString& sAreaId, const CCluster& thisClust
 }
 
 ZdString& stsClusterData::GetEllipseAngle(ZdString& sAngle, const CCluster& thisCluster, const CSaTScanData& DataHub) const {
-  if (thisCluster.GetClusterType() == PURELYTEMPORAL)
+  if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
     sAngle = "n/a";
   else if (thisCluster.GetEllipseOffset() == 0)
     sAngle = "0.000";
@@ -70,7 +70,7 @@ ZdString& stsClusterData::GetEllipseAngle(ZdString& sAngle, const CCluster& this
 }
 
 ZdString& stsClusterData::GetEllipseShape(ZdString& sShape, const CCluster& thisCluster, const CSaTScanData& DataHub) const {
-  if (thisCluster.GetClusterType() == PURELYTEMPORAL)
+  if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
     sShape = "n/a";
   else if (thisCluster.GetEllipseOffset() == 0)
     sShape = "1.000";
@@ -95,7 +95,7 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
     pRecord->GetFieldValue(GetFieldNumber(CLUST_NUM_FIELD)).AsDouble() = iClusterNumber;
     WriteCoordinates(*pRecord, theCluster, theData);
     pRecord->GetFieldValue(GetFieldNumber(NUM_AREAS_FIELD)).AsDouble() =
-        theCluster.GetClusterType() == PURELYTEMPORAL ? theData.GetNumTracts() : theCluster.GetNumTractsInnerCircle();
+        theCluster.GetClusterType() == PURELYTEMPORALCLUSTER ? theData.GetNumTracts() : theCluster.GetNumTractsInnerCircle();
     if (gParameters.GetNumRequestedEllipses()) { // ellipse shape and angle - if requested
       pRecord->GetFieldValue(GetFieldNumber(E_ANGLE_FIELD)).AsZdString() = GetEllipseAngle(sBuffer, theCluster, theData);
       pRecord->GetFieldValue(GetFieldNumber(E_SHAPE_FIELD)).AsZdString() = GetEllipseShape(sBuffer, theCluster, theData);
@@ -104,9 +104,9 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
     if (gParameters.GetNumDataStreams() == 1) {
       pRecord->GetFieldValue(GetFieldNumber(OBSERVED_FIELD)).AsDouble() = theCluster.GetCaseCount(0);
       pRecord->GetFieldValue(GetFieldNumber(EXPECTED_FIELD)).AsDouble() =
-                                                           theData.GetMeasureAdjustment() * theCluster.GetMeasure(0);
+                                                           theData.GetMeasureAdjustment(0) * theCluster.GetMeasure(0);
       pRecord->GetFieldValue(GetFieldNumber(REL_RISK_FIELD)).AsDouble() =
-                                                           theCluster.GetRelativeRisk(theData.GetMeasureAdjustment());
+                                                           theCluster.GetRelativeRisk(theData.GetMeasureAdjustment(0));
     }
     else {
       for (i=0; i < gParameters.GetNumDataStreams(); ++i) {
@@ -114,10 +114,10 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
         pRecord->GetFieldValue(GetFieldNumber(sBuffer.GetCString())).AsDouble() = theCluster.GetCaseCount(i);
         sBuffer.printf("%s%i", STREAM_EXPECTED_FIELD, i + 1);
         pRecord->GetFieldValue(GetFieldNumber(sBuffer.GetCString())).AsDouble() =
-                                                           theData.GetMeasureAdjustment() * theCluster.GetMeasure(i);
+                                                           theData.GetMeasureAdjustment(i) * theCluster.GetMeasure(i);
         sBuffer.printf("%s%i", STREAM_REL_RISK_FIELD, i + 1);
         pRecord->GetFieldValue(GetFieldNumber(sBuffer.GetCString())).AsDouble() =
-                                                           theCluster.GetRelativeRisk(theData.GetMeasureAdjustment(), i);
+                                                           theCluster.GetRelativeRisk(theData.GetMeasureAdjustment(i), i);
       }
     }
     if (gParameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION)
@@ -155,7 +155,7 @@ void stsClusterData::WriteCoordinates(OutputRecord& Record, const CCluster& this
      iFirstCoordIndex = GetFieldNumber(gParameters.GetCoordinatesType() != CARTESIAN ? COORD_LAT_FIELD : COORD_X_FIELD);
      iSecondCoordIndex = GetFieldNumber(gParameters.GetCoordinatesType() != CARTESIAN ? COORD_LONG_FIELD : COORD_Y_FIELD);
 
-     if (thisCluster.GetClusterType() == PURELYTEMPORAL) {
+     if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER) {
        Record.GetFieldValue(iFirstCoordIndex).AsZdString() = "n/a";
        Record.GetFieldValue(iSecondCoordIndex).AsZdString() = "n/a";
        if (gParameters.GetCoordinatesType() == CARTESIAN) {
