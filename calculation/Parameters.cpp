@@ -3197,12 +3197,6 @@ bool CParameters::ValidateEllipseParameters(BasePrint & PrintDirection) {
         PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting for ellipses.\n");
         PrintDirection.SatScanPrintWarning("       SaTScan currently does not support ellipses with lat/long coordinates.\n");
       }
-      if (geCriteriaSecondClustersType == NOGEOOVERLAP) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting for criteria for reporting secondary clusters.\n"
-                                           "       Analyses with ellipses can not be restricted to reporting clusters with\n"
-                                           "       no geographical overlap.\n");
-      }
       if (giNumberEllipses != (int)gvEllipseShapes.size()) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting, %d ellipses requested but %d shapes specified.\n",
