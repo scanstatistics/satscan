@@ -51,13 +51,12 @@ const double CCluster::ConvertAngleToDegrees(double dAngle) const {
 }
 
 /** Writes cluster properties to file stream in format required by result output file  */
-void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iReportedCluster,
-                       measure_t nMinMeasure, unsigned int iNumSimsCompleted) const {
+void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const {
   try {
     AsciiPrintFormat PrintFormat;
     PrintFormat.SetMarginsAsClusterSection(iReportedCluster);
     fprintf(fp, "%u.", iReportedCluster);
-    DisplayCensusTracts(fp, DataHub, nMinMeasure, PrintFormat);
+    DisplayCensusTracts(fp, DataHub, PrintFormat);
     DisplaySteps(fp, PrintFormat);
     if (DataHub.GetParameters().GetCoordinatesType() == CARTESIAN)
       DisplayCoordinates(fp, DataHub, PrintFormat);
@@ -99,7 +98,7 @@ void CCluster::DisplayAnnualCaseInformation(FILE* fp, const CSaTScanData& DataHu
     required by result output file. */
 void CCluster::DisplayCaseInformation(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   unsigned int                  i, j, k;
-  ZdString                      sWork, sBuffer;
+  ZdString                      sWork, sBuffer, sNullString;
   const DataStreamHandler     & DataSets = DataHub.GetDataStreamHandler();
 
   if (DataHub.GetParameters().GetProbabilityModelType() == ORDINAL) {
@@ -109,7 +108,7 @@ void CCluster::DisplayCaseInformation(FILE* fp, const CSaTScanData& DataHub, con
        if (DataSets.GetNumDataSets() > 1) {
          sWork.printf("Data Set #%ld", i + 1);
          PrintFormat.PrintSectionLabel(fp, sWork.GetCString(), false, true);
-         PrintFormat.PrintAlignedMarginsDataString(fp, ZdString());
+         PrintFormat.PrintAlignedMarginsDataString(fp, sNullString);
        }
        //print category ordinal values
        PrintFormat.PrintSectionLabel(fp, "Category", false, true);
@@ -170,11 +169,10 @@ void CCluster::DisplayCaseInformation(FILE* fp, const CSaTScanData& DataHub, con
 }
 
 /** Writes cluster location identifiers to file stream in format required by result output file  */
-void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, measure_t nMinMeasure,
-                                   const AsciiPrintFormat& PrintFormat) const {
+void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
   try {
     PrintFormat.PrintSectionLabel(fp, "Location IDs included", false, false);  
-    DisplayCensusTractsInStep(fp, Data, 1, m_nTracts, nMinMeasure, PrintFormat);
+    DisplayCensusTractsInStep(fp, Data, 1, m_nTracts, PrintFormat);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayCensusTracts()","CCluster");
@@ -182,45 +180,33 @@ void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, measure_t
   }
 }
 
-/** Writes clusters location information in format required by result output file.
-    NOTE: Locations contained in cluster might be suppressed from printing if
-          their total measure is less than nMinMeasure. There isn't any
-          documentation indicating why this feature is present, but one possible
-          reason is this:
-          This calling of this function is generally in the subroutines spawned
-          by CCluster::Display(...). For non-sequential scan analyses, nMinMeasure
-          is assigned -1; which is not a possible expected value. So when
-          nMinMeasure = -1, all locations will always be printed. For the sequential
-          scan feature, nMinMeasure is assigned 0. This corrects for locations
-          contained in cluster that were actually removed in previous iterations
-          of sequential scan but are geographically in defined cluster. Note that
-          "removed from previous iterations" means that measure and cases are set
-          to zero.                                                                 */
-void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
-                                         tract_t nFirstTract, tract_t nLastTract,
-                                         measure_t nMinMeasure, const AsciiPrintFormat& PrintFormat) const {
+/** Writes clusters location information in format required by result output file. */
+void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& DataHub, tract_t nFirstTract, tract_t nLastTract, const AsciiPrintFormat& PrintFormat) const {
 
   unsigned int                  k;
   tract_t                       i, tTract;
   ZdString                      sLocations;
   std::vector<std::string>      vTractIdentifiers;
-//$$  measure_t                  ** ppMeasure(Data.GetDataStreamHandler().GetStream(0/*for now*/).GetMeasureArray());
 
   try {
     for (i=nFirstTract; i <= nLastTract; ++i) {
        //get i'th neighbor tracts index
-       tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, i);
-       //suppress printing of this location if total measure for tract is less than nMinMeasure
-//$$       if (ppMeasure[0][tTract] > nMinMeasure) {
+       tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i);
+       // Print location identifiers if location data has not been removed in sequential scan.
+       if (!DataHub.GetIsNullifiedLocation(tTract)) {
          //get all locations ids for tract at index tTract -- might be more than one if combined
-         Data.GetTInfo()->tiGetTractIdentifiers(tTract, vTractIdentifiers);
+         DataHub.GetTInfo()->tiGetTractIdentifiers(tTract, vTractIdentifiers);
          for (k=0; k < vTractIdentifiers.size(); ++k) {
             if (sLocations.GetLength())
               sLocations << ", ";
             sLocations << vTractIdentifiers[k].c_str();
          }
-//$$       }
+       }
     }
+    // There should be at least one location printed, else there is likely a bug in the sequential scan code.
+    if (!sLocations.GetLength())
+      ZdGenerateException("Attempting to print cluster with no location identifiers.","DisplayCensusTractsInStep()");
+
     PrintFormat.PrintAlignedMarginsDataString(fp, sLocations);
   }
   catch (ZdException &x) {

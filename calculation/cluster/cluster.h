@@ -43,18 +43,15 @@ class CCluster {
 
     virtual bool                  ClusterDefined() const {return m_nTracts;}
     const double                  ConvertAngleToDegrees(double dAngle) const;
-    virtual void                  Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iReportedCluster,
-                                          measure_t nMinMeasure, unsigned int iNumSimsCompleted) const;
+    virtual void                  Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const;
     virtual void                  DisplayAnnualCaseInformation(FILE* fp, const CSaTScanData& DataHub,
                                                                const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const {/*stub - no action*/}
     virtual void                  DisplayCaseInformation(FILE* fp, const CSaTScanData& DataHub,
                                                          const AsciiPrintFormat& PrintFormat) const;
-    virtual void                  DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, measure_t nMinMeasure,
-                                                      const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     void                          DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data, tract_t nFirstTract,
-                                                            tract_t nLastTract, measure_t nMinMeasure,
-                                                            const AsciiPrintFormat& PrintFormat) const;
+                                                            tract_t nLastTract, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
                                                      const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
