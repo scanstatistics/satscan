@@ -2,7 +2,7 @@
 #ifndef __SIGNIFICANTRATIOS05_H
 #define __SIGNIFICANTRATIOS05_H
 //**********************************************************************************
-#include "SatScan.h"
+#include "SaTScan.h"
 
 class CSignificantRatios05
 {
