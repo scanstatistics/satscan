@@ -21,7 +21,7 @@ DEBUG       := -gstabs+
 CALCULATION    := $(SATSCAN)/calculation/
 ANALYSIS       := $(SATSCAN)/calculation/analysis/
 CLUSTER        := $(SATSCAN)/calculation/cluster/
-OUTPUT         := $(SATSCAN)/calculation/output/
+OUTPUT         := $(SATSCAN)/calculation/Output/
 PRINT          := $(SATSCAN)/calculation/print/
 PROBMODEL      := $(SATSCAN)/calculation/probability_model/
 SATDATA        := $(SATSCAN)/calculation/satscan_data/
@@ -80,15 +80,15 @@ SRC         := Main.cpp \
 	       ../calculation/cluster/ClusterDataFactory.cpp \
 	       ../calculation/cluster/MultipleStreamClusterData.cpp \
 	       ../calculation/cluster/NormalClusterData.cpp \
-	       ../calculation/output/stsAreaSpecificData.cpp \
-               ../calculation/output/stsASCIIFileWriter.cpp \
-               ../calculation/output/stsClusterData.cpp \
-               ../calculation/output/stsDBaseFileWriter.cpp \
-               ../calculation/output/stsLogLikelihood.cpp \
-               ../calculation/output/stsOutputFileData.cpp \
-               ../calculation/output/stsOutputFileWriter.cpp \
-               ../calculation/output/stsRelativeRisk.cpp \
-	       ../calculation/output/stsRunHistoryFile.cpp \
+	       ../calculation/Output/stsAreaSpecificData.cpp \
+               ../calculation/Output/stsASCIIFileWriter.cpp \
+               ../calculation/Output/stsClusterData.cpp \
+               ../calculation/Output/stsDBaseFileWriter.cpp \
+               ../calculation/Output/stsLogLikelihood.cpp \
+               ../calculation/Output/stsOutputFileData.cpp \
+               ../calculation/Output/stsOutputFileWriter.cpp \
+               ../calculation/Output/stsRelativeRisk.cpp \
+	       ../calculation/Output/stsRunHistoryFile.cpp \
 	       ../calculation/print/BasePrint.cpp \
 	       ../calculation/print/PrintScreen.cpp \
 	       ../calculation/print/PrintQueue.cpp \
