@@ -974,6 +974,7 @@ void TInfo::tiReportZeroPops(FILE *pDisplay) const
             }
             JulianToMDY(&month, &day, &year, pPopDates[j]);
             fprintf(pDisplay,"         Tract %s, %d\n", TractInfo[i].tid, year);
+            gpPrintDirection->SatScanPrintWarning("         Tract %s, %d\n", TractInfo[i].tid, year);
           }
         }
     
@@ -1028,9 +1029,10 @@ bool TInfo::tiCheckCasesHavePop() const
    bool bValid = true;
    struct cnode* cats;
    long  nPopTotal;
+   count_t iTotalTractCaseCount;
    int   nPStartIndex = 0;
    int   nPEndIndex, iTractPopulation;
-   char  szCategories[100], sMessage[100];
+   char  szCategories[100], sMessage[500];
 
    try
       {
@@ -1040,10 +1042,11 @@ bool TInfo::tiCheckCasesHavePop() const
         nPEndIndex = nPopDates-2;
       else
         nPEndIndex = nPopDates-1;
-    
+
       for (i=0; i<NumTracts; i++)
         {
         iTractPopulation = 0;
+        iTotalTractCaseCount = 0;
         cats = TractInfo[i].cats;
         while (cats)
           {
@@ -1051,6 +1054,8 @@ bool TInfo::tiCheckCasesHavePop() const
           nPopTotal   = 0;
           for (j=nPStartIndex; j<=nPEndIndex; j++)
             nPopTotal += cats->pPopList[j];
+
+          iTotalTractCaseCount += cats->count;
           iTractPopulation += nPopTotal;
           if (nPopTotal==0 && cats->count>0)
             {
@@ -1058,15 +1063,22 @@ bool TInfo::tiCheckCasesHavePop() const
             // Categories can have zero pops, but pop has to be greater than zero for entire tract
             //
            // bValid = false;
-            gpPrintDirection->SatScanPrintWarning("  Warning: %s %s has cases but zero population.\n",
-            TractInfo[i].tid, gpCats->catGetCategoriesString(cats->cat, szCategories));
+            if (gpCats->catNumCats() > 1)
+              //If there is only one covariate, then this warning is redundant as the error
+              //message below will be displayed with same information. So we only want to
+              //show this warning if there is more than one covariate for this location.
+              gpPrintDirection->SatScanPrintWarning("Warning: Location %s  covariate %s has cases but zero population.\n",
+                                                    TractInfo[i].tid, gpCats->catGetCategoriesString(cats->cat, szCategories));
             }
 
           cats = cats->next;
           }
-        if (iTractPopulation == 0)
+
+        //Now we check that there isn't a situation where there are cases but no population  for this location.
+        //Note: Having more cases than population is purposely not generating an error.
+        if (iTractPopulation == 0 && iTotalTractCaseCount > 0)
            {
-           sprintf(sMessage,"Total population is zero for tract %s", TractInfo[i].tid);
+           sprintf(sMessage,"Error: Location %s has no population but has %d cases.", TractInfo[i].tid, iTotalTractCaseCount);
            SSGenerateException(sMessage, "TInfo");
            }
     
