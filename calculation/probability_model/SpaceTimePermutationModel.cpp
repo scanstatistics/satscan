@@ -2,79 +2,6 @@
 #pragma hdrstop
 #include "SpaceTimePermutationModel.h"
 
-/** Allocates randomization structures used by MakeData() routine. Must be called
-prior to called MakeData(). */
-void SpaceTimeRandomizer::InitializeStructures(DataStream & thisStream, int iTimeIntervals, int iTracts) {
-  int	                i, j, k, c, iNumCases,
-                        iNumCategories(thisStream.GetPopulationData().GetNumPopulationCategories());
-  std::vector<int>      vCummulatedCases;
-  count_t               iMaxCasesPerCategory,
-                     ** ppCases(thisStream.GetCaseArray()),
-                    *** pppCategoryCases(thisStream.GetCategoryCaseArray());
-
-  try {
-    gvCategoryCaseLocationTimes.resize(iNumCategories);
-    vCummulatedCases.resize(iTracts);
-    for (c=0; c < iNumCategories; ++c) {
-       std::vector<CCaseLocationTimes>& thisCategory = gvCategoryCaseLocationTimes[c];
-       memset(&vCummulatedCases[0], 0, iTracts*sizeof(int));
-       for (i=iTimeIntervals - 1; i >= 0; --i) {
-          for (j=0; j < iTracts; ++j) {
-             iNumCases = pppCategoryCases[i][j][c] - vCummulatedCases[j];
-             for (k=0; k < iNumCases; ++k)
-                thisCategory.push_back(CCaseLocationTimes(i,j));
-             vCummulatedCases[j] += iNumCases;
-          }
-       }
-    }
-
-    // allocate time randomizer to the maximum number of cases in all categories 
-    for (c=0, iMaxCasesPerCategory=0; c < iNumCategories; ++c)
-       iMaxCasesPerCategory = std::max(iMaxCasesPerCategory, thisStream.GetPopulationData().GetNumCategoryCases(c));
-    gvTimeIntervalRandomizer.resize(iMaxCasesPerCategory, CSimulationTimeRandomizer());
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("InitializeRandomizationStructures()", "SpaceTimeRandomizer");
-    gvCategoryCaseLocationTimes.clear();
-    gvTimeIntervalRandomizer.clear();
-    throw;
-  }
-}
-
-/** Creates simulation data. Permutates the cases occurance dates through random sorting. */
-void SpaceTimeRandomizer::MakeData(int iSimulationNumber, DataStreamInterface & DataInterface) {
-  int                   i, k, c;
-  size_t                t, tNumCategoryCases;
-  count_t            ** ppSimCases(DataInterface.GetCaseArray());
-
-  try {
-    //reset seed to simulation number
-    gRandomNumberGenerator.SetSeed(iSimulationNumber + gRandomNumberGenerator.GetDefaultSeed());
-    // reset simulation cases to zero
-    DataInterface.ResetCaseArray(0);
-    
-    for (c=0; c < (int)gvCategoryCaseLocationTimes.size(); ++c) {
-       const std::vector<CCaseLocationTimes>& thisCategory = gvCategoryCaseLocationTimes[c];
-       tNumCategoryCases = thisCategory.size();
-       for (t=0; t < tNumCategoryCases; ++t) {
-         // assign random number
-         gvTimeIntervalRandomizer[t].SetRandomNumber(gRandomNumberGenerator.GetRandomFloat());
-         // assign tract index to original order
-         gvTimeIntervalRandomizer[t].SetTimeIntervalIndex(thisCategory[t].GetTimeIntervalIndex());
-       }
-       // sort based on random number
-       std::sort(gvTimeIntervalRandomizer.begin(), gvTimeIntervalRandomizer.begin() + tNumCategoryCases, CompareSimulationTimeRandomizer());
-       // re-assign simulation data
-       for (t=0; t < tNumCategoryCases; t++)
-         for (k=gvTimeIntervalRandomizer[t].GetTimeIntervalIndex(); k >= 0; k--)
-             ppSimCases[k][thisCategory[t].GetTractIndex()]++;
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("MakeData()", "SpaceTimeRandomizer");
-    throw;
-  }
-}
 
 /** constructor */
 CSpaceTimePermutationModel::CSpaceTimePermutationModel(CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection)
@@ -100,7 +27,7 @@ double CSpaceTimePermutationModel::CalcLogLikelihood(count_t n, measure_t u) {
 }
 
 /** Calculates loglikelihood, this routine is identical to Possion model. */
-double CSpaceTimePermutationModel::CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure, double dCompactnessCorrection) {
+double CSpaceTimePermutationModel::CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure) {
   double    dLogLikelihood;
 
   // calculate the loglikelihood
@@ -111,8 +38,8 @@ double CSpaceTimePermutationModel::CalcLogLikelihoodRatio(count_t tCases, measur
   else
     dLogLikelihood = tCases*log(tCases/tMeasure);
 
-  // return the logliklihood ratio (loglikelihood - loglikelihood for total) * duczmal compactness correction
-  return (dLogLikelihood - (tTotalCases * log(tTotalCases/tTotalMeasure))) * dCompactnessCorrection;
+  // return the logliklihood ratio (loglikelihood - loglikelihood for total)
+  return (dLogLikelihood - (tTotalCases * log(tTotalCases/tTotalMeasure)));
 }
 
 /** Determines the expected number of cases for each time interval/tract.
@@ -190,20 +117,6 @@ double CSpaceTimePermutationModel::GetLogLikelihoodForTotal() const
   return N*log(N/U);
 }
 
-/** Allocates randomization structures used by MakeData() routine. Must be called
-prior to called MakeData(). */
-void CSpaceTimePermutationModel::InitializeRandomizationStructures() {
-  try {
-    gvRandomizers.resize(gData.GetDataStreamHandler().GetNumStreams());
-    for (size_t t=0; t < gvRandomizers.size(); ++t)
-       gvRandomizers[t].InitializeStructures(gData.GetDataStreamHandler().GetStream(t), gData.GetNumTimeIntervals(), gData.GetNumTracts());
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("InitializeRandomizationStructures()", "CSpaceTimePermutationModel");
-    throw;
-  }
-}
-
 /** Throws exception. Defined in parent class as pure virtual. */
 double CSpaceTimePermutationModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
                                                  int nStartInterval, int nStopInterval)
@@ -211,33 +124,5 @@ double CSpaceTimePermutationModel::GetPopulation(int m_iEllipseOffset, tract_t n
   SSGenerateException("Function GetPopulation() not implemented in CSpaceTimePermutationModel",
                       "GetPopulation() of CSpaceTimePermutationModel");
   return 0;
-}
-
-/** Creates simulation data. Permutates the cases occurance dates through random sorting. */
-void CSpaceTimePermutationModel::MakeData(int iSimulationNumber, DataStreamInterface & DataInterface, unsigned int tInterface) {
-  try {
-    gvRandomizers[tInterface].MakeData(iSimulationNumber, DataInterface);
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("MakeData()", "CSpaceTimePermutationModel");
-    throw;
-  }
-}
-
-/** Reads data from files(geographical, case and special grid) into data structures.
-    Initializes randomization structures. */
-bool CSpaceTimePermutationModel::ReadData() {
-  try {
-    if (!gData.ReadSpaceTimePermutationData())
-      return false;
-
-    if (gData.GetParameters().GetNumReplicationsRequested() > 0)
-      InitializeRandomizationStructures();
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadData()", "CSpaceTimePermutationModel");
-    throw;
-  }
-  return true;
 }
 

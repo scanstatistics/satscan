@@ -2,22 +2,12 @@
 #pragma hdrstop
 #include "PoissonModel.h"
 
-using std::ios;
-using std::ifstream;
-
 /** constructor */
 CPoissonModel::CPoissonModel(CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection)
-              :CModel(Parameters, Data, PrintDirection){               
-  Init();
-}
+              :CModel(Parameters, Data, PrintDirection) {}
 
 /** destructor */
-CPoissonModel::~CPoissonModel() {
-  try {
-    DeallocateAlternateHypothesisStructures();
-  }
-  catch(...){}
-}
+CPoissonModel::~CPoissonModel() {}
 
 /** Adjusts the expected number of cases for a time trend, using the data
     itself. For each adjustment interval, which has to be fewer than the
@@ -160,31 +150,6 @@ void CPoissonModel::AdjustMeasure(DataStream & thisStream, measure_t ** ppNonCum
   }
 }
 
-/** allocates alternative hypothesis data structures */
-void CPoissonModel::AllocateAlternateHypothesisStructures() {
-  int   i;
-
-  try {
-    if (!gpRelativeRisks) { //find better method later
-      gpRelativeRisks = new float[static_cast<long>(gData.m_nTotalTractsAtStart)];
-      gpMeasure = new measure_t[static_cast<long>(gData.m_nTotalTractsAtStart)];
-      gpAlternativeMeasure = (double**)Smalloc((gData.m_nTimeIntervals)*sizeof(measure_t*), &gPrintDirection);
-      memset(gpAlternativeMeasure, 0, (gData.m_nTimeIntervals)*sizeof(measure_t*));
-      for (i=0; i < gData.m_nTimeIntervals; i++)
-         gpAlternativeMeasure[i] = (double*)Smalloc(static_cast<long>(gData.m_nTotalTractsAtStart)*sizeof(measure_t), &gPrintDirection);
-    }
-  }
-  catch (ZdException &x) {
-    //free any allocated memory
-    delete gpRelativeRisks; gpRelativeRisks=0;
-    delete gpMeasure; gpMeasure=0;
-    while (gpAlternativeMeasure && --i >= 0) {delete gpAlternativeMeasure[i]; gpAlternativeMeasure[i]=0;}
-    delete gpAlternativeMeasure; gpAlternativeMeasure=0;
-    x.AddCallpath("AllocateAlternativeMeasure","CPoissonModel");
-    throw;
-  }
-}
-
 /** Calculates and sets non-cumulative measure array. */
 void CPoissonModel::AssignMeasure(DataStream & thisStream, measure_t ** ppNonCumulativeMeasure) {
   int           i, interval;
@@ -249,7 +214,7 @@ double CPoissonModel::CalcLogLikelihood(count_t n, measure_t u) {
 }
 
 /** calculates the Poisson loglikelihood ratio */
-double CPoissonModel::CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure, double dCompactnessCorrection) {
+double CPoissonModel::CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure) {
   double    dLogLikelihood;
 
   // calculate the loglikelihood
@@ -260,8 +225,8 @@ double CPoissonModel::CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure,
   else
     dLogLikelihood = tCases*log(tCases/tMeasure);
 
-  // return the logliklihood ratio (loglikelihood - loglikelihood for total) * duczmal compactness correction
-  return (dLogLikelihood - (tTotalCases * log(tTotalCases/tTotalMeasure))) * dCompactnessCorrection;
+  // return the logliklihood ratio (loglikelihood - loglikelihood for total)
+  return (dLogLikelihood - (tTotalCases * log(tTotalCases/tTotalMeasure)));
 }
 
 double CPoissonModel::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster)
@@ -469,23 +434,6 @@ bool CPoissonModel::CalculateMeasure(DataStream & thisStream) {
   return bResult;
 }
 
-/** deallocates alternative hypothesis data structures */
-void CPoissonModel::DeallocateAlternateHypothesisStructures() {
-  try {
-    delete gpRelativeRisks; gpRelativeRisks=0;
-    delete gpMeasure; gpMeasure=0;
-    if (gpAlternativeMeasure) {
-      for (int i=0; i < gData.m_nTimeIntervals; i++)
-         delete gpAlternativeMeasure[i];
-      delete gpAlternativeMeasure;
-    }  
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("DeallocateAlternativeMeasure()","CPoissonModel");
-    throw;
-  }
-}
-
 double CPoissonModel::GetLogLikelihoodForTotal() const
 {
   count_t   N = gData.GetTotalCases();
@@ -525,260 +473,4 @@ double CPoissonModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract
       throw;
       }
    return nPopulation;
-}
-
-/** Sets simulated data. */
-void CPoissonModel::MakeData(int iSimulationNumber, DataStreamInterface & DataInterface, unsigned int tInterface) {
-  try {
-    //reset seed to simulation number
-    m_RandomNumberGenerator.SetSeed(iSimulationNumber + m_RandomNumberGenerator.GetDefaultSeed());
-    switch(gParameters.GetSimulationType()) {
-      case STANDARD         : if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
-                                MakeDataTimeStratified(DataInterface);
-                              else
-                                MakeDataUnderNullHypothesis(DataInterface);
-                              break;
-      case HA_RANDOMIZATION : if (iSimulationNumber == 1)
-                                AllocateAlternateHypothesisStructures();
-                              MakeData_AlternateHypothesis(DataInterface); break;
-      case FILESOURCE       : ReadSimulationDataFromFile(DataInterface); break;
-      default : ZdGenerateException("Unknown simulation type '%d'.","MakeData()",gParameters.GetSimulationType());
-    };
-
-    if (gParameters.GetOutputSimulationData())
-      PrintSimulationDateToFile(iSimulationNumber, DataInterface);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("MakeData()", "CPoissonModel");
-    throw;
-  }
-}
-
-/** Generate case counts using time stratified algorithm. */
-void CPoissonModel::MakeDataTimeStratified(DataStreamInterface & DataInterface) {
-  tract_t               tract;
-  count_t               c, cumcases=0,
-                      * pPTCases(DataInterface.GetPTCaseArray()), ** ppSimCases(DataInterface.GetCaseArray());
-  measure_t             cummeasure=0,
-                      * pPTMeasure(DataInterface.GetPTMeasureArray()), ** ppMeasure(DataInterface.GetMeasureArray());
-  int                   interval;      // current time interval
-
-  interval = gData.m_nTimeIntervals - 1;
-  for (tract=0; tract < gData.m_nTotalTractsAtStart; ++tract) {
-     if (pPTCases[interval] - cumcases > 0)
-       c = gBinomialGenerator.GetBinomialDistributedVariable(pPTCases[interval] - cumcases,
-                                                             ppMeasure[interval][tract]/(pPTMeasure[interval] - cummeasure),
-                                                             m_RandomNumberGenerator);
-     else
-       c = 0;
-     cumcases += c;
-     cummeasure += ppMeasure[interval][tract];
-     ppSimCases[interval][tract] = c;
-  }
-  for (interval--; interval >= 0; --interval) { //For each other interval, from 2nd to last until the first:
-     cumcases = 0;
-     cummeasure = 0;
-     for (tract=0; tract < gData.m_nTotalTractsAtStart; ++tract) { //For each tract:
-        if (pPTCases[interval] - cumcases > 0)
-          c = gBinomialGenerator.GetBinomialDistributedVariable(pPTCases[interval] - cumcases,
-                      (ppMeasure[interval][tract] - ppMeasure[interval + 1][tract])/(pPTMeasure[interval] - cummeasure),
-                      m_RandomNumberGenerator);
-        else
-          c = 0;
-        cumcases += c;
-        cummeasure += (ppMeasure[interval][tract] - ppMeasure[interval + 1][tract]);
-        ppSimCases[interval][tract] = c + ppSimCases[interval + 1][tract];
-     }
-  }
-}
-
-/** Generate case counts under the null hypothesis (standard) */
-void CPoissonModel::MakeDataUnderNullHypothesis(DataStreamInterface & DataInterface) {
-  tract_t               t;
-  count_t               c, d, cumcases=0, tTotalCases(DataInterface.GetTotalCasesCount()),
-                     ** ppSimCases(DataInterface.GetCaseArray());
-  measure_t             cummeasure=0, tTotalMeasure(DataInterface.GetTotalMeasureCount()),
-                     ** ppMeasure(DataInterface.GetMeasureArray());
-  int                   i;
-
-  for (t=0; t < gData.m_nTotalTractsAtStart; ++t) {
-     if (tTotalMeasure - cummeasure > 0)
-       c = gBinomialGenerator.GetBinomialDistributedVariable(tTotalCases - cumcases,
-                              ppMeasure[0][t] / (tTotalMeasure - cummeasure), m_RandomNumberGenerator);
-     else
-       c = 0;
-     ppSimCases[0][t] = c;
-     cumcases += c;
-     cummeasure += ppMeasure[0][t];
-     for (i=0; i < gData.m_nTimeIntervals-1; ++i) {
-        if (ppMeasure[i][t] > 0)
-          d = gBinomialGenerator.GetBinomialDistributedVariable(ppSimCases[i][t],
-                                                                1 - ppMeasure[i+1][t] / ppMeasure[i][t],
-                                                                m_RandomNumberGenerator);
-        else
-          d = 0;
-        ppSimCases[i+1][t] = ppSimCases[i][t] - d;
-     }
-  }
-}
-
-/** Generates simulated cases under an alternative hypothesis model.
-    NOTE: Reading of the power estimation file data is not validated, potentially
-          leading to bad program behavior.                                        */
-void CPoissonModel::MakeData_AlternateHypothesis(DataStreamInterface & DataInterface) {
-  int                   i, j, iInterval;
-  std::ifstream         RelativeRiskFile;
-  std::string           sTractId;
-  tract_t               t, tractIndex;
-  measure_t             TotalMeasure(DataInterface.GetTotalMeasureCount()), cummeasure=0,
-                     ** ppMeasure(DataInterface.GetMeasureArray());
-  count_t               c, d, cumcases=0, ** ppSimCases(DataInterface.GetCaseArray());  
-
-  //duplicate the  ppMeasure[][] into gpAlternativeMeasure[][], gpAlternativeMeasure[][] will be changed depending upon
-  //the gpRelativeRisks[], and ppMeasure[][] remains the same as the expected measure
-  for (t=0; t < gData.m_nTotalTractsAtStart; ++t)
-     for (i=0; i < gData.m_nTimeIntervals; ++i)
-        gpAlternativeMeasure[i][t] = ppMeasure[i][t];
-
-  //initialize the gpRelativeRisks[] to be 1.0
-  for (t=0; t < gData.m_nTotalTractsAtStart; ++t)
-     gpRelativeRisks[t] = 1.0;
-
-  //read in the RR's for those tracts with higher risks
-  RelativeRiskFile.open(gParameters.GetAdjustmentsByRelativeRisksFilename().c_str());
-  while (!RelativeRiskFile.eof()) {
-       RelativeRiskFile >> sTractId;
-       if ((tractIndex = gData.GetTInfo()->tiGetTractIndex(sTractId.c_str())) == -1)
-         SSGenerateException("Unknown location identifier '%s', in power estimation file.",
-                             "MakeData_AlternateHypothesis()", sTractId.c_str());
-        RelativeRiskFile >> gpRelativeRisks[tractIndex];
-  }
-  RelativeRiskFile.close();
-
-  //modify the measures
-  for (t=0; t < gData.m_nTotalTractsAtStart; ++t) {
-     gpMeasure[t] = ppMeasure[0][t];
-     for (i=gData.m_nTimeIntervals-1; i >= 30/* ??? */ ; i--) {
-        if (i == gData.m_nTimeIntervals-1) {//if the last interval, the cummulative measure is the measure itself
-          gpMeasure[t] = gpMeasure[t] + ppMeasure[i][t] * (gpRelativeRisks[t]-1);
-          TotalMeasure = TotalMeasure + ppMeasure[i][t] * (gpRelativeRisks[t]-1);
-          for (j=0; j <= i; ++j)
-             gpAlternativeMeasure[j][t] += ppMeasure[i][t] * (gpRelativeRisks[t]-1);
-        }
-        else {
-          //if not the last interval, the measure belongs to the interval  is the difference between
-          //the measure of this interval and the measure for next interval, measure[] and TotalMeasure
-          //should change accordingly.
-          gpMeasure[t] = gpMeasure[t] + (ppMeasure[i][t] - ppMeasure[i+1][t]) * (gpRelativeRisks[t]-1);
-          TotalMeasure = TotalMeasure + (ppMeasure[i][t] - ppMeasure[i+1][t]) * (gpRelativeRisks[t]-1);
-          for (j=0; j <= i; ++j)
-             gpAlternativeMeasure[j][t] += (ppMeasure[i][t] - ppMeasure[i+1][t]) * (gpRelativeRisks[t]-1);
-        }
-     }
-  }
-
-   //start alternative simulations
-  for (t=0; t < gData.m_nTotalTractsAtStart; ++t) {
-    if (TotalMeasure-cummeasure > 0)
-        c = gBinomialGenerator.GetBinomialDistributedVariable(DataInterface.GetTotalCasesCount() - cumcases,
-                                                              gpMeasure[t] / (TotalMeasure-cummeasure),
-                                                              m_RandomNumberGenerator);
-    else
-      c = 0;
-    ppSimCases[0][t] = c;
-    cumcases += c;
-    cummeasure += gpMeasure[t];
-
-    for (i=0; i < gData.m_nTimeIntervals-1; ++i) {
-       if (gpAlternativeMeasure[i][t] > 0)
-        d = gBinomialGenerator.GetBinomialDistributedVariable(ppSimCases[i][t],
-              1 - gpAlternativeMeasure[i+1][t] / gpAlternativeMeasure[i][t],m_RandomNumberGenerator);
-      else
-        d = 0;
-
-      ppSimCases[i+1][t] = ppSimCases[i][t] - d;
-    }
-  }
-}
-
-/** Prints the simulated data to a file. Format printed to file matches
-    format expected for read as simulation data source. Truncates file
-    when first opened for each analysis(i.e. first simulation). */
-void CPoissonModel::PrintSimulationDateToFile(int iSimulationNumber, DataStreamInterface & DataInterface) {
-  std::ofstream         SimulationOutputFile;
-  tract_t               tract;
-  int                   interval;
-  count_t            ** ppSimCases(DataInterface.GetCaseArray());
-
-  //NOTE: Since this is a hidden feature
-  SimulationOutputFile.open(gParameters.GetSimulationDataOutputFilename().c_str(), (iSimulationNumber == 1 ? ios::trunc : ios::ate));
-  if (!SimulationOutputFile)
-    SSGenerateException("Error: Could not open file simulation output file '%s'.\n", "PrintSimulationDateToFile()",
-                        gParameters.GetSimulationDataOutputFilename().c_str());
-
-  if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME || gParameters.GetAnalysisType() == SPACETIME ||
-      gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL) {
-    for (tract=0; tract < gData.m_nTotalTractsAtStart; tract++) {
-       for (interval=0; interval < gData.m_nTimeIntervals;interval++)
-           SimulationOutputFile << ppSimCases[interval][tract] << " ";
-       SimulationOutputFile << "\n";
-    }
-    SimulationOutputFile << "\n";
-  }
-  else if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
-    for (tract = 0; tract < gData.m_nTotalTractsAtStart; tract++)
-       SimulationOutputFile << ppSimCases[0][tract] << " ";
-    SimulationOutputFile << "\n";
-  }
-  else
-    SSGenerateException("Error: Printing simulation data to file not implemented for %s analysis.\n",
-                        "ReadSimulationDataFromFile()", gParameters.GetAnalysisTypeAsString());
-}
-
-bool CPoissonModel::ReadData() {
-  try {
-    if (!gData.ReadPoissonData())
-      return false;
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadData()", "CPoissonModel");
-    throw;
-  }
-  return true;
-}
-
-/** Reads number of simulated cases from a text file rather than generating them randomly.
-    NOTE: Data read from the file is not validated. This means that there is potential
-          for the program to behave badly if:
-          1) the data read from file does not match dimensions of gData.m_pSimCases
-          2) the case counts read from file is inappropriate given real data -- probably access violations
-          3) file does not actually contains numerical data
-          Use of this feature should be discouraged except from someone who has
-          detailed knowledge of how code works.                                                                 */
-void CPoissonModel::ReadSimulationDataFromFile(DataStreamInterface & DataInterface) {
-  tract_t               t;
-  int                   i;
-  count_t               c;
-  count_t            ** ppSimCases(DataInterface.GetCaseArray());
-
-  if (!gSimulationDataInputFile.is_open())
-    gSimulationDataInputFile.open(gParameters.GetSimulationDataSourceFilename().c_str());
-  if (!gSimulationDataInputFile)
-    SSGenerateException("Error: Could not open file '%s' to read simulated data.\n",
-                        "ReadSimulationDataFromFile()", gParameters.GetSimulationDataSourceFilename().c_str());
-
-  if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME || gParameters.GetAnalysisType() == SPACETIME ||
-      gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL) {
-     for (t=0; t < gData.m_nTotalTractsAtStart; ++t) {
-        for (i=0; i < gData.m_nTimeIntervals; ++i)
-           gSimulationDataInputFile >> ppSimCases[i][t];
-     }
-  }
-  else if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
-     for (t=0; t < gData.m_nTotalTractsAtStart; ++t)
-        gSimulationDataInputFile >> ppSimCases[0][t];
-  }
-  else
-    SSGenerateException("Error: Reading simulation data from file not implemented for %s analysis.\n",
-                        "ReadSimulationDataFromFile()", gParameters.GetAnalysisTypeAsString());
 }
