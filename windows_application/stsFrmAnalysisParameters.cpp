@@ -305,10 +305,10 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
           //GetLongPathName(sBuffer, sBuffer, sizeof(sBuffer));
           sFileName.SetLocation(sBuffer);
           sFileName.SetExtension(TXD_EXT);
-          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
           // Prefix filename so that we know this sessions created imported files are unique.
           sFileNamePrefix << sFileName.GetFileName();
           sFileName.SetFileName(sFileNamePrefix);
+          ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
           CreateTXDFile(sFileName, gvPopFileFieldDescriptors);
           auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
           pImporter->ShowOptionalPanels(false, false, false);
