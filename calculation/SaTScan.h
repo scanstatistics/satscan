@@ -46,9 +46,9 @@
                                  be incremented for each released version in order
                                  for update feature to function correctly */
 #define VERSION_MAJOR   "5"
-#define VERSION_MINOR   "0"
+#define VERSION_MINOR   "1"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE   "" /** testing phase name - leave blank for release */
+#define VERSION_PHASE   "dev" /** testing phase name - leave blank for release */
 #define VERSION_DATE    "September 21, 2004"
 /** New defines for ellipsoid calculations. */
 #define MAXELLIPSESHAPES 10
