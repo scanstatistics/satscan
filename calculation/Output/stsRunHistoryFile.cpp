@@ -1,14 +1,24 @@
+// class stsRunHistoryFile
+// Adam J Vaughn
+// 9/4/2002
+
+// This class keeps a CSV file log for each run of the SaTScan program which includes information
+// specified by the client. For each run the class will record a new run number in the file and
+// record the pertinent data along with that run.
+
 #include "SaTScan.h"
 #pragma hdrstop
 
 #include "Analysis.h"
 #include "stsRunHistoryFile.h"
 
+const char*      ANALYSIS_HISTORY_FILE  = "AnalysisHistory.csv";
+
 // constructor
-stsRunHistoryFile::stsRunHistoryFile(const ZdString& sFilename, const CAnalysis* pAnalysis) {
+stsRunHistoryFile::stsRunHistoryFile(const CAnalysis* pAnalysis) {
    try {
       Init();
-      Setup(sFilename, pAnalysis);
+      Setup(pAnalysis);
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsRunHistoryFile");
@@ -34,7 +44,7 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
    CSVFile              *pFile = 0;
 
    try {
-      pFile = new CSVFile(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE | ZDIO_OPEN_CREATE);
+      pFile = new CSVFile();
       SetupFields(vFieldNames, vFieldTypes);
       for(unsigned int i = 0; i < vFieldNames.GetNumElements(); ++i) {
          pField = pFile->GetNewField();
@@ -45,7 +55,6 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
       }
 
       pFile->PackFields(vFields);
-      pFile->Close();
       pFile->Create(gsFilename, vFields, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
       pFile->Close();
 
@@ -76,6 +85,23 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
 // global initializations
 void stsRunHistoryFile::Init() {
    gpAnalysis = 0;
+   glRunNumber = 0;
+}
+
+// although the name implies an oxymoron, this function will record a new run into the history file
+// I am also aware that this function is just a facade for the OpenReportHistory function but I prefer
+// the name of this function to be used by the user because it is more intuitive and I didn't feel like
+// renaming the function OpenReportHistoryFile - AJV 9/4/2002
+// pre: none
+// post: records the run history
+void stsRunHistoryFile::LogNewHistory() {
+   try {
+      OpenRunHistoryFile();
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("LogNewHistory()", "stsRunHistoryFile");
+      throw;
+   }
 }
 
 // tries to open the run history file if one exists, if not creates the file
@@ -86,7 +112,6 @@ void stsRunHistoryFile::OpenRunHistoryFile() {
    ZdTransaction*	pTransaction = 0;
    CSVRecord            *pRecord = 0, *pLastRecord = 0;
    unsigned long        ulLastRecordNumber;
-   long                 lStore = 0;
    unsigned short       uwFieldNumber = 0;
 
    try {
@@ -101,18 +126,18 @@ void stsRunHistoryFile::OpenRunHistoryFile() {
       ulLastRecordNumber = pFile->GotoLastRecord(pLastRecord);
       // if there's records in the file
       if(ulLastRecordNumber)
-         pLastRecord->GetField(0, lStore);
+         pLastRecord->GetField(0, glRunNumber);
       delete pLastRecord;
 
       // note: I'm going to document the heck out of this section in case they can't the run
       // specs on us at any time and that way I can interpret my assumptions in case any just so
       // happen to be incorrect, so bear with me - AJV 9/3/2002
       pRecord = pFile->GetNewRecord();
-      //  run number field
-      pRecord->PutField(uwFieldNumber, ++lStore);
+      //  run number field -- increment the run number so that we have a new unique run number - AJV 9/4/2002
+      pRecord->PutField(uwFieldNumber, ++glRunNumber);
 
       // run time and date field
-//      pRecord->PutField(++uwFieldNumber, gpAnalysis->GetSatScanData()->m_pParameters.);
+      pRecord->PutField(++uwFieldNumber, gpAnalysis->GetStartTime());
 
       // output file name field
       pRecord->PutAlpha(++uwFieldNumber, gpAnalysis->GetSatScanData()->m_pParameters->m_szOutputFilename);
@@ -204,9 +229,9 @@ void stsRunHistoryFile::OpenRunHistoryFile() {
 }
 
 // internal setup
-void stsRunHistoryFile::Setup(const ZdString& sFilename, const CAnalysis* pAnalysis) {
+void stsRunHistoryFile::Setup(const CAnalysis* pAnalysis) {
    try {
-      gsFilename = sFilename;
+      gsFilename = ANALYSIS_HISTORY_FILE;;
       gpAnalysis = const_cast<CAnalysis*>(pAnalysis);
    }
    catch (ZdException &x) {
