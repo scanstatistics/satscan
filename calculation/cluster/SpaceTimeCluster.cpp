@@ -52,7 +52,8 @@ SpaceTimeClusterStreamData * SpaceTimeClusterStreamData::Clone() const {
 }
 
 void SpaceTimeClusterStreamData::InitializeData() {
-  gCases=gMeasure=gSqMeasure=0;
+  gCases=0;
+  gMeasure=gSqMeasure=0;
   memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
   memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
   memset(gpSqMeasure, 0, sizeof(measure_t) * giAllocationSize);
