@@ -31,6 +31,7 @@ const char*      INTERVAL_LENGTH_LINE           	= "IntervalLength";
 const char*      PROSPECT_START_LINE            	= "ProspectiveStartDate";
 const char*      TIME_TREND_ADJ_LINE            	= "TimeTrendAdjustmentType";
 const char*      TIME_TREND_PERCENT_LINE        	= "TimeTrendPercentage";
+const char*      TIME_TREND_CONVERGENCE_LINE            = "TimeTrendConvergence";
 
 const char*      SCANNING_WINDOW_SECTION        	= "[Scanning Window]";
 const char*      MAX_GEO_SIZE_LINE              	= "MaxGeographicSize";
@@ -40,6 +41,8 @@ const char*      MAX_TEMP_SIZE_LINE             	= "MaxTemporalSize";
 const char*      MAX_TEMP_INTERPRET_LINE       		= "MaxTemporalSizeInterpretation";
 const char*      INCLUDE_PURELY_SPATIAL_LINE    	= "IncludePurelySpatial";
 const char*      INLCUDE_CLUSTERS_LINE            	= "IncludeClusters";
+const char*      STARTRANGE_LINE                        = "IntervalStartRange";
+const char*      ENDRANGE_LINE                          = "IntervalEndRange";
 
 const char*      OUTPUT_FILES_SECTION           	= "[Output Files]";
 const char*      RESULTS_FILE_LINE              	= "ResultsFile";
@@ -79,6 +82,7 @@ const char*      PURELY_TEMPORAL_ANALYSIS       	= "Purely Temporal";
 const char*      RETROSPECTIVE_SPACETIME_ANALYSIS 	= "Retrospective Space-Time";
 const char*      PROSPECTIVE_SPACETIME_ANALYSIS 	= "Prospective Space-Time";
 const char*      PURELY_SPATIAL_MONOTONE_ANALYSIS 	= "Purely Spatial Monotone";
+const char*      SPATIALVARIATION_TEMPORALTREND         =  "Spatial Variation of Temporal Trends";
 
 const char*      POISSON_MODEL                 		= "Poisson";
 const char*      BERNOULLI_MODEL                	= "Bernoulli";
@@ -89,9 +93,9 @@ const char*      YEAR_PRECISION_TYPE            	= "Years";
 const char*      MONTH_PRECISION_TYPE           	= "Months";
 const char*      DAY_PRECISION_TYPE             	= "Days";
 
-int CParameters::giNumParameters 			= 51;
+int CParameters::giNumParameters 			= 54;
 
-char mgsVariableLabels[51][100] = {
+char mgsVariableLabels[54][100] = {
    "Analysis Type",
    "Scan Areas",
    "Case File",
@@ -142,7 +146,10 @@ char mgsVariableLabels[51][100] = {
    "Output Location Information DBase Format",
    "Output Relative Risks DBase Format",
    "Output Simulated Loglikelihood Ratios DBase Format",
-   "Ellipsoid Duczmal Compactness Correction"
+   "Ellipsoid Duczmal Compactness Correction",
+   "Interval Start Range",
+   "Interval End Range"
+   "Time Trend Convergence"
 };
 
 /** Constructor */   
@@ -261,6 +268,11 @@ void CParameters::Copy(const CParameters &rhs) {
     gsRunHistoryFilename                = rhs.gsRunHistoryFilename;
     gbLogRunHistory                     = rhs.gbLogRunHistory;
     gsParametersSourceFileName          = rhs.gsParametersSourceFileName;
+    gsEndRangeStartDate                 = rhs.gsEndRangeStartDate;
+    gsEndRangeEndDate                   = rhs.gsEndRangeEndDate;
+    gsStartRangeStartDate               = rhs.gsStartRangeStartDate;
+    gsStartRangeEndDate                 = rhs.gsStartRangeEndDate;
+    gbTimeTrendConverge			= rhs.gbTimeTrendConverge;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -276,6 +288,7 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
       case PURELYTEMPORAL       : fprintf(fp, "Purely Temporal analysis\n"); break;
       case SPACETIME            : fprintf(fp, "Retrospective Space-Time analysis\n"); break;
       case PROSPECTIVESPACETIME : fprintf(fp, "Prospective Space-Time analysis\n"); break;
+      case SPATIALVARTEMPTREND  : fprintf(fp, "Spatial Variation of Temporal Trends analysis\n"); break;
       default : ZdException::Generate("Unknown analysis type '%d'.\n", "DisplayAnalysisType()", geAnalysisType);
     }
 
@@ -359,13 +372,15 @@ void CParameters::DisplayParameters(FILE* fp) const {
 
     fprintf(fp, "  Type of Analysis    : %s\n", GetAnalysisTypeAsString());
     fprintf(fp, "  Probability Model   : %s\n", GetProbabiltyModelTypeAsString());
-   
-    fprintf(fp, "  Scan for Areas with : ");
-    switch (geAreaScanRate) {
-      case HIGH       : fprintf(fp, "High Rates\n"); break;
-      case LOW        : fprintf(fp, "Low Rates\n"); break;
-      case HIGHANDLOW : fprintf(fp, "High or Low Rates\n"); break;
-      default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "DisplayParameters()", geAreaScanRate);
+
+    if (geAnalysisType != SPATIALVARTEMPTREND) {
+      fprintf(fp, "  Scan for Areas with : ");
+      switch (geAreaScanRate) {
+        case HIGH       : fprintf(fp, "High Rates\n"); break;
+        case LOW        : fprintf(fp, "Low Rates\n"); break;
+        case HIGHANDLOW : fprintf(fp, "High or Low Rates\n"); break;
+        default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "DisplayParameters()", geAreaScanRate);
+      }
     }
 
     fprintf(fp, "\n  Start Date : %s\n", gsStudyPeriodStartDate.c_str());
@@ -389,7 +404,8 @@ void CParameters::DisplayParameters(FILE* fp) const {
     fprintf(fp, "\n\nScanning Window\n");
     fprintf(fp, "---------------\n");
 
-    if (geAnalysisType == PURELYSPATIAL || geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME) {
+    if (geAnalysisType == PURELYSPATIAL || geAnalysisType == SPACETIME ||
+        geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == SPATIALVARTEMPTREND) {
       fprintf(fp, "  Maximum Spatial Cluster Size          : %.2f", gfMaxGeographicClusterSize);
       switch (geMaxGeographicClusterSizeType) {
         case PERCENTAGEOFMEASURETYPE : fprintf(fp, " %%\n"); break;
@@ -419,11 +435,20 @@ void CParameters::DisplayParameters(FILE* fp) const {
 
     //The "Clusters to Include" do not apply to PROSPECTIVESPACETIME
     if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME)  {
-      fprintf(fp, "  Clusters to Include : ");
-      fprintf(fp, (geIncludeClustersType == ALIVECLUSTERS ? "Only those including the study end date\n" : "All\n"));
+      fprintf(fp, "  Clusters to Include                   : ");
+      switch (geIncludeClustersType) {
+         case ALIVECLUSTERS   : fprintf(fp, "Only those including the study end date\n"); break;
+         case ALLCLUSTERS     : fprintf(fp, "All\n"); break;
+         case CLUSTERSINRANGE : fprintf(fp, "Start Range %s - %s\n",
+                                        gsStartRangeStartDate.c_str(), gsStartRangeEndDate.c_str());
+                                fprintf(fp, "                                          End Range   %s - %s\n",
+                                        gsEndRangeStartDate.c_str(), gsEndRangeEndDate.c_str()); break;
+         default : ZdException::Generate("Inclusion cluster type '%d'.\n", "DisplayParameters()", geIncludeClustersType);
+      };
     }
 
-    if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME || (geAnalysisType == PROSPECTIVESPACETIME)) {
+    if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME ||
+        geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == SPATIALVARTEMPTREND) {
       fprintf(fp, "\nTime Parameters\n");
       fprintf(fp, "---------------\n");
 
@@ -432,9 +457,11 @@ void CParameters::DisplayParameters(FILE* fp) const {
 
       fprintf(fp, "\n  Adjustment for Time Trend : ");
       switch (geTimeTrendAdjustType) {
-         case NOTADJUSTED   : fprintf(fp, "None\n"); break;
-         case NONPARAMETRIC : fprintf(fp, "Nonparametric\n"); break;
-         case LINEAR        : fprintf(fp, "Linear with %0.2f%% per year\n", gbTimeTrendAdjustPercentage); break;
+         case NOTADJUSTED               : fprintf(fp, "None\n"); break;
+         case NONPARAMETRIC             : fprintf(fp, "Nonparametric\n"); break;
+         case LOGLINEAR_PERC            : fprintf(fp, "Linear with %0.2f%% per year\n", gbTimeTrendAdjustPercentage); break;
+         case CALCULATED_LOGLINEAR_PERC : fprintf(fp, "Log linear\n"); break;
+         case STRATIFIED_RANDOMIZATION  : fprintf(fp, "Time Stratified Randomization\n"); break;
          default : ZdException::Generate("Unknown time trend adjustment type '%d'.\n", "DisplayParameters()", geTimeTrendAdjustType);
       }
     }
@@ -523,14 +550,16 @@ void CParameters::DisplayParameters(FILE* fp) const {
 void CParameters::DisplayTimeAdjustments(FILE* fp) const {
   try {
     switch (geTimeTrendAdjustType) {
-      case NOTADJUSTED   : break;
-      case NONPARAMETRIC : fprintf(fp, "Adjusted for time nonparametrically.\n"); break;
-      case LINEAR        : if (gbTimeTrendAdjustPercentage < 0)
-                             fprintf(fp, "Adjusted for time with a decrease ");
-                           else
-                             fprintf(fp, "Adjusted for time with an increase ");
-                           fprintf(fp, "of %0.2f%% per year.\n", fabs(gbTimeTrendAdjustPercentage));
-                           break;
+      case NOTADJUSTED               : break;
+      case NONPARAMETRIC             : fprintf(fp, "Adjusted for time nonparametrically.\n"); break;
+      case LOGLINEAR_PERC            :
+      case CALCULATED_LOGLINEAR_PERC : if (gbTimeTrendAdjustPercentage < 0)
+                                         fprintf(fp, "Adjusted for time with a decrease ");
+                                       else
+                                         fprintf(fp, "Adjusted for time with an increase ");
+                                       fprintf(fp, "of %0.2f%% per year.\n", fabs(gbTimeTrendAdjustPercentage));
+                                       break;
+      case STRATIFIED_RANDOMIZATION  : fprintf(fp, "Adjusted for time by stratified randomization.\n"); break;
       default : ZdException::Generate("Unknown time trend adjustment type '%d'\n.", "DisplayTimeAdjustments()", geTimeTrendAdjustType);
     }
   }
@@ -551,6 +580,7 @@ const char * CParameters::GetAnalysisTypeAsString() const {
       case SPACETIME             : sAnalysisType = RETROSPECTIVE_SPACETIME_ANALYSIS; break;
       case PROSPECTIVESPACETIME  : sAnalysisType = PROSPECTIVE_SPACETIME_ANALYSIS; break;
       case PURELYSPATIALMONOTONE : sAnalysisType = PURELY_SPATIAL_MONOTONE_ANALYSIS; break;
+      case SPATIALVARTEMPTREND   : sAnalysisType = SPATIALVARIATION_TEMPORALTREND; break;
       default : ZdException::Generate("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", geAnalysisType);
     }
   }
@@ -662,6 +692,9 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
         case OUTPUT_RR_DBASE           : sParameterLineLabel = OUTPUT_REL_RISKS_DBASE_LINE; break;
         case OUTPUT_SIM_LLR_DBASE      : sParameterLineLabel = OUTPUT_SIM_LLR_DBASE_LINE; break;
         case DUCZMAL_COMPACTNESS       : sParameterLineLabel = ELLIPSE_DUCZMAL_COMPACT_LINE; break;
+	case INTERVAL_STARTRANGE       : sParameterLineLabel = STARTRANGE_LINE; break;			
+	case INTERVAL_ENDRANGE         : sParameterLineLabel = ENDRANGE_LINE; break;			
+        case TIMETRENDCONVRG           : sParameterLineLabel = TIME_TREND_CONVERGENCE_LINE; break;
         default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLineLabel()", eParameterType);
       };
     }
@@ -730,6 +763,74 @@ Julian CParameters::GetProspectiveStartDateAsJulian() /*const*/ {
     throw;
   }
   return ProspectiveStartDate;
+}
+
+Julian CParameters::GetEndRangeDateAsJulian(const std::string & sEndRangeDate) /*const*/ {
+  int           iPrecision;
+  UInt          uiYear, uiMonth, uiDay, uiDefaultMonth=12;
+  Julian        EndDate;
+
+  try {
+    if (sEndRangeDate.empty())
+      InvalidParameterException::Generate("Error: The end range end date is not empty.\n","GetEndRangeDateAsJulian()");
+
+    iPrecision = CharToMDY(&uiMonth, &uiDay, &uiYear, sEndRangeDate.c_str());
+    switch (iPrecision) {
+      case 0  : InvalidParameterException::Generate("Error: The end range end date, '%s', does not appear to be a valid date.\n",
+                                                    "GetEndRangeDateAsJulian()", sEndRangeDate.c_str());
+      case 1  : uiMonth = uiDefaultMonth;
+                uiDay = DaysThisMonth(uiYear, uiDefaultMonth);
+                break;
+      case 2  : uiDay = DaysThisMonth(uiYear, uiMonth);
+                break;
+      case 3  : break;
+      default : ZdException::Generate("Precision of '%d' is not defined.\n", "GetEndRangeDateAsJulian()", iPrecision);
+    }
+
+    //If values could not be converted to julian, JulianStartDate will be zero.
+    if ((EndDate = MDYToJulian(uiMonth, uiDay, uiYear)) == 0)
+     InvalidParameterException::Generate("Error: The end range end date value of '%s' does not appear to be a valid date.\n",
+                                         "GetEndRangeDateAsJulian()", sEndRangeDate.c_str());
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("GetEndRangeDateAsJulian()","CParameters");
+    throw;
+  }
+  return EndDate;
+}
+
+Julian CParameters::GetStartRangeDateAsJulian(const std::string & sStartRangeDate) /*const*/ {
+  int           iPrecision;
+  UInt          uiYear, uiMonth, uiDay, uiDefaultMonth=1, uiDefaultDay=1;
+  Julian        StartDate;
+
+  try {
+    if (sStartRangeDate.empty())
+      return 0;
+      
+    iPrecision = CharToMDY(&uiMonth, &uiDay, &uiYear, sStartRangeDate.c_str());
+    switch (iPrecision) {
+      case 0  : InvalidParameterException::Generate("Error: The start range start date, '%s', does not appear to be a valid date.\n",
+                                                    "GetStartRangeDateAsJulian()", sStartRangeDate.c_str());
+      case 1  : uiMonth = uiDefaultMonth;
+                uiDay = uiDefaultDay;
+                break;
+      case 2  : uiDay = uiDefaultDay;
+                break;
+      case 3  : break;
+      default : ZdException::Generate("Precision of '%d' is not defined.\n", "GetStartRangeDateAsJulian()", iPrecision);
+    }
+
+    //If values could not be converted to julian, JulianStartDate will be zero.
+    if ((StartDate = MDYToJulian(uiMonth, uiDay, uiYear)) == 0)
+     InvalidParameterException::Generate("Error: The start range start date value of '%s' does not appear to be a valid date.\n",
+                                         "GetStartRangeDateAsJulian()", sStartRangeDate.c_str());
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("GetStartRangeDateAsJulian()","CParameters");
+    throw;
+  }
+  return StartDate;
 }
 
 /** Returns study period end date as a julian date.
@@ -857,6 +958,11 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case OUTPUT_RR_DBASE           : sDefaultValue = (gbOutputRelativeRisksDBase ? YES : NO); break;
       case OUTPUT_SIM_LLR_DBASE      : sDefaultValue = (gbOutputSimLogLikeliRatiosDBase ? YES : NO); break;
       case DUCZMAL_COMPACTNESS       : sDefaultValue = (gbDuczmalCorrectEllipses ? YES : NO); break;
+      case INTERVAL_STARTRANGE       : sDefaultValue.printf("%s,%s", gsStartRangeStartDate.c_str(), gsStartRangeEndDate.c_str());
+                                       break;
+      case INTERVAL_ENDRANGE         : sDefaultValue.printf("%s,%s", gsEndRangeStartDate.c_str(), gsEndRangeEndDate.c_str());
+                                       break;
+      case TIMETRENDCONVRG	     : sDefaultValue = gbTimeTrendConverge; break;	                                 
       default : ZdException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -976,22 +1082,22 @@ bool CParameters::ReadBoolean(const ZdString & sValue, ParameterType eParameterT
 void CParameters::ReadDate(const ZdString & sValue, ParameterType eParameterType) {
  try {
    switch (eParameterType) {
-     case START_PROSP_SURV : //As a legacy of the old parameters code,
-                             //we need to check that the length of the
-                             //string is not one. The prospective start
-                             //date took the line position of an extra
-                             //parameter as seen in old file
-                             //"0                     // Extra Parameter #4".
-                             //We don't want to produce an error for
-                             //an invalid parameter that the user didn't
-                             //miss set. So, treat a value of "0" as blank.
-                             if (sValue == "0")
-                               SetProspectiveStartDate("");
-                             else
-                               SetProspectiveStartDate(sValue);
-                             break;
-     case STARTDATE        : SetStudyPeriodStartDate(sValue); break;
-     case ENDDATE          : SetStudyPeriodEndDate(sValue); break;
+     case START_PROSP_SURV      : //As a legacy of the old parameters code,
+                                  //we need to check that the length of the
+                                  //string is not one. The prospective start
+                                  //date took the line position of an extra
+                                  //parameter as seen in old file
+                                  //"0                     // Extra Parameter #4".
+                                  //We don't want to produce an error for
+                                  //an invalid parameter that the user didn't
+                                  //miss set. So, treat a value of "0" as blank.
+                                  if (sValue == "0")
+                                    SetProspectiveStartDate("");
+                                  else
+                                    SetProspectiveStartDate(sValue);
+                                  break;
+     case STARTDATE             : SetStudyPeriodStartDate(sValue); break;
+     case ENDDATE               : SetStudyPeriodEndDate(sValue); break;
      default : ZdException::Generate("Parameter enumeration '%d' is not listed for date read.\n","ReadDate()", eParameterType);
    };
   }
@@ -1139,6 +1245,31 @@ void CParameters::ReadEllipseShapes(const ZdString & sParameter) {
   }
 }
 
+/**  Reads date range for the end range of cluster time interval. */
+void CParameters::ReadEndIntervalRange(const ZdString & sParameter) {
+  int                   i, iNumTokens;
+  ZdString              sLabel;
+  ZdStringTokenizer     Tokenizer("", ",");
+
+  try {
+    if (sParameter.GetLength()) {
+      Tokenizer.SetString(sParameter);
+      iNumTokens = Tokenizer.GetNumTokens();
+      if (iNumTokens != 2)
+        InvalidParameterException::Generate("Error: For parameter '%s', start interval range contains '%d' values but should have 2.\n",
+                                            "ReadEndIntervalRange()",
+                                            GetParameterLineLabel(INTERVAL_STARTRANGE, sLabel, geReadType == INI),
+                                           iNumTokens);
+      SetEndRangeStartDate(Tokenizer.GetNextToken().GetCString());
+      SetEndRangeEndDate(Tokenizer.GetNextToken().GetCString());
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ReadEndIntervalRange()","CParameters");
+    throw;
+  }
+}
+
 /** Attempts to interpret passed string as a float value. Throws exception. */
 float CParameters::ReadFloat(const ZdString & sValue, ParameterType eParameterType) {
   float         fReadResult;
@@ -1262,6 +1393,73 @@ void CParameters::ReadInputFilesSection(ZdIniFile& file, BasePrint & PrintDirect
   }
 }
 
+/** . */
+void CParameters::ReadStartIntervalRange(const ZdString & sParameter) {
+  int                   i, iNumTokens;
+  ZdString              sLabel;
+  ZdStringTokenizer     Tokenizer("", ",");
+
+  try {
+    if (sParameter.GetLength()) {
+      Tokenizer.SetString(sParameter);
+      iNumTokens = Tokenizer.GetNumTokens();
+      if (iNumTokens != 2)
+        InvalidParameterException::Generate("Error: For parameter '%s', end interval range contains '%d' values but should have 2.\n",
+                                            "ReadStartIntervalRange()",
+                                            GetParameterLineLabel(INTERVAL_ENDRANGE, sLabel, geReadType == INI),
+                                            iNumTokens);
+      SetStartRangeStartDate(Tokenizer.GetNextToken().GetCString());
+      SetStartRangeEndDate(Tokenizer.GetNextToken().GetCString());
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ReadStartIntervalRange()","CParameters");
+    throw;
+  }
+}
+
+/** Sets start range start date. Throws exception. */
+void CParameters::SetStartRangeStartDate(const char * sStartRangeStartDate) {
+  ZdString      sLabel;
+
+  try {
+    if (!sStartRangeStartDate)
+      ZdException::Generate("Null pointer.","SetStartRangeStartDate()");
+
+    if (strspn(sStartRangeStartDate,"0123456789/") < strlen(sStartRangeStartDate))
+      InvalidParameterException::Generate("Error: For parameter %s, setting '%s' does not appear to be a date.\n",
+                                          "SetStartRangeStartDate()",
+                                          GetParameterLineLabel(INTERVAL_STARTRANGE, sLabel, geReadType == INI),
+                                          sStartRangeStartDate);
+    gsStartRangeStartDate = sStartRangeStartDate;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetStartRangeStartDate()","CParameters");
+    throw;
+  }
+}
+
+/** Sets start range start date. Throws exception. */
+void CParameters::SetStartRangeEndDate(const char * sStartRangeEndDate) {
+  ZdString      sLabel;
+
+  try {
+    if (!sStartRangeEndDate)
+      ZdException::Generate("Null pointer.","SetStartRangeEndDate()");
+
+    if (strspn(sStartRangeEndDate,"0123456789/") < strlen(sStartRangeEndDate))
+      InvalidParameterException::Generate("Error: For parameter %s, setting '%s' does not appear to be a date.\n",
+                                          "SetStartRangeEndDate()",
+                                          GetParameterLineLabel(INTERVAL_STARTRANGE, sLabel, geReadType == INI),
+                                          sStartRangeEndDate);
+    gsStartRangeEndDate = sStartRangeEndDate;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetStartRangeEndDate()","CParameters");
+    throw;
+  }
+}
+
 /** Calls appropriate read/or set function for parameter type to set parameter from a string. */
 void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & sParameter, BasePrint & PrintDirection) {
   try {
@@ -1321,6 +1519,9 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case OUTPUT_RR_DBASE           : SetOutputRelativeRisksDBase(ReadBoolean(sParameter, eParameterType)); break;
       case OUTPUT_SIM_LLR_DBASE      : SetOutputSimLogLikeliRatiosDBase(ReadBoolean(sParameter, eParameterType)); break;
       case DUCZMAL_COMPACTNESS       : SetDuczmalCorrectionEllipses(ReadBoolean(sParameter, eParameterType)); break;
+      case INTERVAL_STARTRANGE       : ReadStartIntervalRange(sParameter); break;
+      case INTERVAL_ENDRANGE         : ReadEndIntervalRange(sParameter); break;
+      case TIMETRENDCONVRG           : SetTimeTrendConvergence(ReadDouble(sParameter, eParameterType)); break;
       default : ZdException::Generate("Unknown parameter enumeration %d.","ReadParameter()", eParameterType);
     };
   }
@@ -1465,6 +1666,8 @@ void CParameters::ReadScanningWindowSection(ZdIniFile& file, BasePrint & PrintDi
     ReadIniParameter(*pSection, INCLUDE_PURE_TEMP_LINE, PURETEMPORAL, PrintDirection);
     ReadIniParameter(*pSection, MAX_TEMP_INTERPRET_LINE, MAX_TEMPORAL_TYPE, PrintDirection);
     ReadIniParameter(*pSection, MAX_GEO_INTERPRET_LINE, MAX_SPATIAL_TYPE, PrintDirection);
+    ReadIniParameter(*pSection, STARTRANGE_LINE, INTERVAL_STARTRANGE, PrintDirection);
+    ReadIniParameter(*pSection, ENDRANGE_LINE, INTERVAL_ENDRANGE, PrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadScanningWindowSection()", "CParameters");
@@ -1509,6 +1712,7 @@ void CParameters::ReadTimeParametersSection(ZdIniFile& file, BasePrint & PrintDi
     ReadIniParameter(*pSection, TIME_TREND_ADJ_LINE, TIMETREND, PrintDirection);
     ReadIniParameter(*pSection, TIME_TREND_PERCENT_LINE, TIMETRENDPERC, PrintDirection);
     ReadIniParameter(*pSection, PROSPECT_START_LINE, START_PROSP_SURV, PrintDirection);
+    ReadIniParameter(*pSection, TIME_TREND_CONVERGENCE_LINE, TIMETRENDCONVRG, PrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadTimeParametersSection()", "CParameters");
@@ -1549,15 +1753,15 @@ void CParameters::SaveAnalysisSection(ZdIniFile& file) {
 
   try {
     pSection = file.GetSection(ANALYSIS_SECTION);
-    pSection->AddComment(" analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time)");
+    pSection->AddComment(" analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time, 5=Spatial Variation/Temporal Trends, 6=PurelySpatialMonotone)");
     pSection->AddLine(ANALYSIS_TYPE_LINE, AsString(sValue, geAnalysisType));
     pSection->AddComment(" model type (0=Poisson, 1=Bernoulli, 2=Space-Time Permutation)");
     pSection->AddLine(MODEL_TYPE_LINE, AsString(sValue, geProbabiltyModelType));
     pSection->AddComment(" scan areas (1=High, 2=Low, 3=High or Low)");
     pSection->AddLine(SCAN_AREAS_LINE, AsString(sValue, geAreaScanRate));
-    pSection->AddComment(" start date (YYYY/MM/DD)");
+    pSection->AddComment(" study period start date (YYYY/MM/DD)");
     pSection->AddLine(START_DATE_LINE, gsStudyPeriodStartDate.c_str());
-    pSection->AddComment(" end date (YYYY/MM/DD)");
+    pSection->AddComment(" study period end date (YYYY/MM/DD)");
     pSection->AddLine(END_DATE_LINE, gsStudyPeriodEndDate.c_str());
     pSection->AddComment(" Monte Carlo reps (0, 9, 999, n999)");
     pSection->AddLine(MONTE_CARLO_REPS_LINE, AsString(sValue, giReplications));
@@ -1682,8 +1886,14 @@ void CParameters::SaveScanningWindowSection(ZdIniFile& file) {
     pSection->AddLine(MAX_TEMP_INTERPRET_LINE, AsString(sValue, geMaxTemporalClusterSizeType));
     pSection->AddComment(" include purely spatial clusters (y/n)");
     pSection->AddLine(INCLUDE_PURELY_SPATIAL_LINE, gbIncludePurelySpatialClusters ? YES : NO);
-    pSection->AddComment(" clusters to include (0=All, 1=Alive)");
+    pSection->AddComment(" clusters to include (0=All, 1=Alive, 2=Range)");
     pSection->AddLine(INLCUDE_CLUSTERS_LINE, AsString(sValue, geIncludeClustersType));
+    pSection->AddComment(" start range interval of window (YYYY/MM/DD,YYYY/MM/DD)");
+    sValue.printf("%s,%s", gsStartRangeStartDate.c_str(), gsStartRangeEndDate.c_str());  
+    pSection->AddLine(STARTRANGE_LINE, sValue.GetCString());
+    pSection->AddComment(" end range interval of window (YYYY/MM/DD,YYYY/MM/DD)");
+    sValue.printf("%s,%s", gsEndRangeStartDate.c_str(), gsEndRangeEndDate.c_str());
+    pSection->AddLine(ENDRANGE_LINE, sValue.GetCString());
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveScanningWindowSection()","CParameters");
@@ -1728,10 +1938,12 @@ void CParameters::SaveTimeParametersSection(ZdIniFile& file) {
     pSection->AddLine(INTERVAL_LENGTH_LINE, AsString(sValue, (int)glTimeIntervalLength));
     pSection->AddComment(" prospective surveillance start date (YYYY/MM/DD)");
     pSection->AddLine(PROSPECT_START_LINE, gsProspectiveStartDate.c_str());
-    pSection->AddComment(" Time trend adjustment type (0=None, 1=Nonparametric, 2=LogLinear)");
+    pSection->AddComment(" Time trend adjustment type (0=None, 1=Nonparametric, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization)");
     pSection->AddLine(TIME_TREND_ADJ_LINE, AsString(sValue, geTimeTrendAdjustType));
     pSection->AddComment(" time trend adjustment percentage (>-100)");
     pSection->AddLine(TIME_TREND_PERCENT_LINE, AsString(sValue, GetTimeTrendAdjustmentPercentage()));
+    pSection->AddComment(" time trend convergence (> 0)");
+    pSection->AddLine(TIME_TREND_CONVERGENCE_LINE, AsString(sValue, gbTimeTrendConverge));
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveTimeParametersSection()","CParameters");
@@ -1918,6 +2130,11 @@ void CParameters::SetDefaults() {
   gbDuczmalCorrectEllipses              = false;
   gbReadStatusError                     = false;
   geReadType                            = SCAN;
+  gsEndRangeStartDate                   = gsStudyPeriodStartDate;
+  gsEndRangeEndDate                     = gsStudyPeriodEndDate;
+  gsStartRangeStartDate                 = gsStudyPeriodStartDate;
+  gsStartRangeEndDate                   = gsStudyPeriodEndDate;
+  gbTimeTrendConverge			= 0;
 }
 
 /** Sets dimensions of input data. */
@@ -1950,16 +2167,58 @@ void CParameters::SetEllipsoidShape(double dShape, int iEllipsoidIndex) {
   }
 }
 
+/** Sets start range start date. Throws exception. */
+void CParameters::SetEndRangeEndDate(const char * sEndRangeEndDate) {
+  ZdString      sLabel;
+
+  try {
+    if (!sEndRangeEndDate)
+      ZdException::Generate("Null pointer.","SetEndRangeEndDate()");
+
+    if (strspn(sEndRangeEndDate,"0123456789/") < strlen(sEndRangeEndDate))
+      InvalidParameterException::Generate("Error: For parameter %s, setting '%s' does not appear to be a date.\n",
+                                          "SetEndRangeEndDate()",
+                                          GetParameterLineLabel(INTERVAL_ENDRANGE, sLabel, geReadType == INI),
+                                          sEndRangeEndDate);
+    gsEndRangeEndDate = sEndRangeEndDate;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetEndRangeEndDate()","CParameters");
+    throw;
+  }
+}
+
+/** Sets end range start date. Throws exception. */
+void CParameters::SetEndRangeStartDate(const char * sEndRangeStartDate) {
+  ZdString      sLabel;
+
+  try {
+    if (!sEndRangeStartDate)
+      ZdException::Generate("Null pointer.","SetEndRangeStartDate()");
+
+    if (strspn(sEndRangeStartDate,"0123456789/") < strlen(sEndRangeStartDate))
+      InvalidParameterException::Generate("Error: For parameter %s, setting '%s' does not appear to be a date.\n",
+                                          "SetEndRangeStartDate()",
+                                          GetParameterLineLabel(INTERVAL_ENDRANGE, sLabel, geReadType == INI),
+                                          sEndRangeStartDate);
+    gsEndRangeStartDate = sEndRangeStartDate;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetEndRangeStartDate()","CParameters");
+    throw;
+  }
+}
+
 /** Sets clusters to include type. Throws exception if out of range. */
 void CParameters::SetIncludeClustersType(IncludeClustersType eIncludeClustersType) {
   ZdString      sLabel;
 
   try {
-    if (ALLCLUSTERS > eIncludeClustersType || ALIVECLUSTERS < eIncludeClustersType)
+    if (ALLCLUSTERS > eIncludeClustersType || CLUSTERSINRANGE < eIncludeClustersType)
       InvalidParameterException::Generate("Error: For parameter '%s', setting '%d' is out of range(%d - %d).\n",
                                           "SetIncludeClustersType()",
                                           GetParameterLineLabel(CLUSTERS, sLabel, geReadType == INI),
-                                          eIncludeClustersType, ALLCLUSTERS, ALIVECLUSTERS);
+                                          eIncludeClustersType, ALLCLUSTERS, CLUSTERSINRANGE);
     geIncludeClustersType = eIncludeClustersType;
   }
   catch (ZdException &x) {
@@ -2327,17 +2586,24 @@ void CParameters::SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendA
   ZdString      sLabel;
 
   try {
-    if (eTimeTrendAdjustmentType < NOTADJUSTED || eTimeTrendAdjustmentType > LINEAR)
+    if (eTimeTrendAdjustmentType < NOTADJUSTED || eTimeTrendAdjustmentType > STRATIFIED_RANDOMIZATION)
       InvalidParameterException::Generate("Error: For parameter %s, setting '%d' is out of range(%d - %d).\n",
                                           "SetTimeTrendAdjustmentType()",
                                           GetParameterLineLabel(TIMETREND, sLabel, geReadType == INI),
-                                          eTimeTrendAdjustmentType, NOTADJUSTED, LINEAR);
+                                          eTimeTrendAdjustmentType, NOTADJUSTED, STRATIFIED_RANDOMIZATION);
     geTimeTrendAdjustType = eTimeTrendAdjustmentType;
   }
   catch (ZdException &x) {
     x.AddCallpath("SetTimeTrendAdjustmentType()","CParameters");
     throw;
   }
+}
+
+/** Sets time trend convergence variable. */
+void CParameters::SetTimeTrendConvergence(double dTimeTrendConvergence) {
+  //Validity of setting is checked in ValidateParameters() since this setting
+  //might not be pertinent in calculation.
+   gbTimeTrendConverge = dTimeTrendConvergence;
 }
 
 /** Validates date parameters based upon current settings. Error messages
@@ -2378,7 +2644,7 @@ bool CParameters::ValidateDateParameters(BasePrint & PrintDirection) {
         PrintDirection.SatScanPrintWarning("Error: Study period start date '%s' does not occur before study period end date '%s'.\n",
                                            gsStudyPeriodStartDate.c_str(), gsStudyPeriodEndDate.c_str());
       }
-      if (geAnalysisType == PROSPECTIVESPACETIME && bProspectiveDateValid) {
+      if (bValid && geAnalysisType == PROSPECTIVESPACETIME && bProspectiveDateValid) {
         //validate prospective start date
         ProspectiveStartDate = GetProspectiveStartDateAsJulian();
         if (ProspectiveStartDate < StudyPeriodStartDate || ProspectiveStartDate > StudyPeriodEndDate) {
@@ -2386,7 +2652,7 @@ bool CParameters::ValidateDateParameters(BasePrint & PrintDirection) {
           PrintDirection.SatScanPrintWarning("Error: Prospective start date '%s' does not occur within ", gsProspectiveStartDate.c_str());
           PrintDirection.SatScanPrintWarning("specified study period '%s' to '%s'.\n", gsStudyPeriodStartDate.c_str(),gsStudyPeriodEndDate.c_str());
         }
-      }  
+      }
     }
   }
   catch (ZdException &x) {
@@ -2596,6 +2862,9 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
           PrintDirection.SatScanPrintWarning("Error: Relative risks output files can not be produced for %s model.\n", GetProbabiltyModelTypeAsString());
         }
       }
+      //validate range parameters
+      if (! ValidateRangeParameters(PrintDirection))
+        bValid = false;
 
       //validate sequential scan parameters
       if (! ValidateSequentialScanParameters(PrintDirection))
@@ -2609,6 +2878,10 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
       if (! ValidateEllipseParameters(PrintDirection))
         bValid = false;
     }
+    else {
+      PrintDirection.SatScanPrintWarning("Warning: Parameters will not be validated, in accordance with settings.\n");
+      PrintDirection.SatScanPrintWarning("         Note that this may have adverse effects on analysis results and/or program operation.\n\n");
+    }  
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateParameters()","CParameters");
@@ -2638,6 +2911,100 @@ bool CParameters::ValidatePowerCalculationParameters(BasePrint & PrintDirection)
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidatePowerCalculationParameters()","CParameters");
+    throw;
+  }
+  return bValid;
+}
+
+/** Validates parameters used in optional start and end ranges for time windows.
+    Prints errors to print direction and returns whether values are vaild.*/
+bool CParameters::ValidateRangeParameters(BasePrint & PrintDirection) {
+  bool          bValid=true;
+  Julian        StudyPeriodStartDate, StudyPeriodEndDate,
+                StartRangeStartDate, StartRangeEndDate,
+                EndRangeStartDate, EndRangeEndDate;
+
+  try {
+    if (geIncludeClustersType == CLUSTERSINRANGE && (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME)) {
+      //validate start range start date
+      if (!ValidateStudyPeriodDateString(gsStartRangeStartDate, STARTDATE/*same behavior*/)) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: The scanning window start range date, '%s', does not appear to be a valid date.\n",
+                                           gsStartRangeStartDate.c_str());
+      }
+      //validate start range end date
+      if (!ValidateStudyPeriodDateString(gsStartRangeEndDate, ENDDATE/*same behavior*/)) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: The scanning window start range date, '%s', does not appear to be a valid date.\n",
+                                           gsStartRangeEndDate.c_str());
+      }
+      //validate end range start date
+      if (!ValidateStudyPeriodDateString(gsEndRangeStartDate, STARTDATE/*same behavior*/)) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: The scanning window end range date, '%s', does not appear to be a valid date.\n",
+                                           gsEndRangeStartDate.c_str());
+      }
+      //validate end range end date
+      if (!ValidateStudyPeriodDateString(gsEndRangeEndDate, ENDDATE/*same behavior*/)) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: The scanning window end range date, '%s', does not appear to be a valid date.\n",
+                                           gsEndRangeEndDate.c_str());
+      }
+      //now valid that range dates are within study period start and end dates
+      if (bValid) {
+        StudyPeriodStartDate = GetStudyPeriodStartDateAsJulian();
+        StudyPeriodEndDate = GetStudyPeriodEndDateAsJulian();
+
+        EndRangeStartDate = GetEndRangeDateAsJulian(gsEndRangeStartDate);
+        EndRangeEndDate = GetEndRangeDateAsJulian(gsEndRangeEndDate);
+        if (EndRangeStartDate > EndRangeEndDate) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: Invalid scanning window end range.\n");
+          PrintDirection.SatScanPrintWarning("       Range date '%s' occurs after date '%s'.\n",
+                                             gsEndRangeStartDate.c_str(), gsEndRangeEndDate.c_str());
+        }
+        else {
+          if (EndRangeStartDate < StudyPeriodStartDate || EndRangeStartDate > StudyPeriodEndDate) {
+            bValid = false;
+            PrintDirection.SatScanPrintWarning("Error: The scanning window end range date '%s',\n",  gsEndRangeStartDate.c_str());
+            PrintDirection.SatScanPrintWarning("       is not within study period (%s - %s).\n", gsStudyPeriodStartDate.c_str(), gsStudyPeriodEndDate.c_str());
+          }
+          if (EndRangeEndDate < StudyPeriodStartDate || EndRangeEndDate > StudyPeriodEndDate) {
+            bValid = false;
+            PrintDirection.SatScanPrintWarning("Error: The scanning window end range date '%s',\n",  gsEndRangeEndDate.c_str());
+            PrintDirection.SatScanPrintWarning("       is not within study period (%s - %s) \n", gsStudyPeriodStartDate.c_str(), gsStudyPeriodEndDate.c_str());
+          }
+        }
+
+        StartRangeStartDate = GetStartRangeDateAsJulian(gsStartRangeStartDate);
+        StartRangeEndDate = GetStartRangeDateAsJulian(gsStartRangeEndDate);
+        if (StartRangeStartDate > StartRangeEndDate) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: Invalid scanning window start range.\n");
+          PrintDirection.SatScanPrintWarning("       Range date '%s' occurs after date '%s'.\n",
+                                             gsStartRangeStartDate.c_str(), gsStartRangeEndDate.c_str());
+        }
+        else {                                             
+          if (StartRangeStartDate < StudyPeriodStartDate || StartRangeStartDate > StudyPeriodEndDate) {
+            bValid = false;
+            PrintDirection.SatScanPrintWarning("Error: The scanning window start range date '%s',\n",  gsStartRangeStartDate.c_str());
+            PrintDirection.SatScanPrintWarning("       is not within study period (%s - %s).\n", gsStudyPeriodStartDate.c_str(), gsStudyPeriodEndDate.c_str());
+          }
+          if (StartRangeEndDate < StudyPeriodStartDate || StartRangeEndDate > StudyPeriodEndDate) {
+            bValid = false;
+            PrintDirection.SatScanPrintWarning("Error: The scanning window start range date '%s',\n",  gsStartRangeEndDate.c_str());
+            PrintDirection.SatScanPrintWarning("       is not within study period (%s - %s) \n", gsStudyPeriodStartDate.c_str(), gsStudyPeriodEndDate.c_str());
+          }
+        }
+        if (StartRangeStartDate >= EndRangeEndDate) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: The scanning window start range does not occur before end range.\n");
+        }
+      }
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ValidateRangeParameters()","CParameters");
     throw;
   }
   return bValid;
@@ -2701,7 +3068,8 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
 
   try {
     //validate spatial options
-    if (geAnalysisType == PURELYSPATIAL || geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME) {
+    if (geAnalysisType == PURELYSPATIAL || geAnalysisType == SPACETIME ||
+        geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == SPATIALVARTEMPTREND) {
       if (gfMaxGeographicClusterSize <= 0) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Maximum geographical cluster size of '%2g%%' is invalid. Value must be greater than zero.\n", gfMaxGeographicClusterSize);
@@ -2787,17 +3155,31 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
 
   try {
     //validate temporal options
-    if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME) {
+    if (geAnalysisType == PROSPECTIVESPACETIME && geMaxTemporalClusterSizeType != TIMETYPE) {
+      PrintDirection.SatScanPrintWarning("Error: Maximum temporal cluster size can only be defined as a fixed\n");
+      PrintDirection.SatScanPrintWarning("       amount of time for a Prospective Space-Time analysis.");
+      return false;
+    }
+
+    if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME ||
+        geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == SPATIALVARTEMPTREND) {
       //maximum temporal cluster size
-      if (0.0 >= gfMaxTemporalClusterSize) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Maximum temporal cluster size of '%2g' is invalid. Value must be greater than zero.\n", gfMaxTemporalClusterSize);
+      if (geAnalysisType != SPATIALVARTEMPTREND) {
+        if (0.0 >= gfMaxTemporalClusterSize) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: Maximum temporal cluster size of '%2g' is invalid. Value must be greater than zero.\n", gfMaxTemporalClusterSize);
+        }
+        if (geMaxTemporalClusterSizeType == PERCENTAGETYPE && gfMaxTemporalClusterSize > (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90)) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: For the %s model, the maximum temporal cluster size of '%2g%%' exceeds maximum value of %d%%.\n",
+                                             GetProbabiltyModelTypeAsString(), gfMaxTemporalClusterSize,
+                                             geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90);
+        }
       }
-      if (geMaxTemporalClusterSizeType == PERCENTAGETYPE && gfMaxTemporalClusterSize > (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90)) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: For the %s model, the maximum temporal cluster size of '%2g%%' exceeds maximum value of %d%%.\n",
-                                           GetProbabiltyModelTypeAsString(), gfMaxTemporalClusterSize,
-                                           geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90);
+      else {
+        gfMaxTemporalClusterSize           = 50.0;
+        geMaxTemporalClusterSizeType       = PERCENTAGETYPE;
+        geIncludeClustersType              = ALLCLUSTERS;
       }
       //time interval units 
       if (geTimeIntervalUnitsType == NONE) {
@@ -2826,7 +3208,15 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
       }
       //time trend adjustment
       switch (geProbabiltyModelType) {
-        case BERNOULLI            :
+        case BERNOULLI            : if (geTimeTrendAdjustType == CALCULATED_LOGLINEAR_PERC && geAnalysisType == SPATIALVARTEMPTREND) {
+                                      if (gbTimeTrendConverge < 0.0) {
+                                        bValid = false;
+                                        PrintDirection.SatScanPrintWarning("Error: Time trend convergence value of '%2g' is less than zero.\n", gbTimeTrendConverge);
+                                      }
+                                      break;
+                                    }
+                                    if (geTimeTrendAdjustType == STRATIFIED_RANDOMIZATION)
+                                      break;
         case SPACETIMEPERMUTATION : geTimeTrendAdjustType = NOTADJUSTED;
                                     gbTimeTrendAdjustPercentage = 0.0;
                                     break;
@@ -2835,10 +3225,25 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
                                       PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting for time adjustment type.\n");
                                       PrintDirection.SatScanPrintWarning("       You may not use non-parametric time in a Purely Temporal analysis.\n");
                                     }
-                                    if (geTimeTrendAdjustType == LINEAR && -100.0 >= gbTimeTrendAdjustPercentage) {
+                                    if (geTimeTrendAdjustType == LOGLINEAR_PERC && -100.0 >= gbTimeTrendAdjustPercentage) {
                                       bValid = false;
                                       PrintDirection.SatScanPrintWarning("Error: Time adjustment percentage of '%2g' is not greater than -100.\n",
                                                                          gbTimeTrendAdjustPercentage);
+                                    }
+                                    if (geTimeTrendAdjustType == NOTADJUSTED) {
+                                      gbTimeTrendAdjustPercentage = 0;
+                                      if (geAnalysisType != SPATIALVARTEMPTREND)
+                                        gbTimeTrendConverge = 0.0;
+                                    }
+                                    if (geTimeTrendAdjustType == CALCULATED_LOGLINEAR_PERC && geAnalysisType == PURELYSPATIAL) {
+                                      bValid = false;
+                                      PrintDirection.SatScanPrintWarning("Error: Time trend adjustment .\n", gbTimeTrendConverge);
+                                    }
+                                    if (geTimeTrendAdjustType == CALCULATED_LOGLINEAR_PERC || geAnalysisType == SPATIALVARTEMPTREND) {
+                                      if (gbTimeTrendConverge < 0.0) {
+                                        bValid = false;
+                                        PrintDirection.SatScanPrintWarning("Error: Time trend convergence value of '%2g' is less than zero.\n", gbTimeTrendConverge);
+                                      }
                                     }
                                     break;
          default : ZdException::Generate("Unknown model type '%d'.","ValidateTemporalParameters()", geProbabiltyModelType);

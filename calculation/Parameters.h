@@ -35,6 +35,7 @@ extern const char*      INTERVAL_LENGTH_LINE;
 extern const char*      TIME_TREND_ADJ_LINE;
 extern const char*      TIME_TREND_PERCENT_LINE;
 extern const char*      PROSPECT_START_LINE;
+extern const char*      TIME_TREND_CONVERGENCE_LINE;
 
 /** scanning window ini section */
 extern const char*      SCANNING_WINDOW_SECTION;
@@ -45,6 +46,8 @@ extern const char*      INLCUDE_CLUSTERS_LINE;
 extern const char*      INCLUDE_PURE_TEMP_LINE;
 extern const char*      MAX_TEMP_INTERPRET_LINE;
 extern const char*      MAX_GEO_INTERPRET_LINE;
+extern const char*      STARTRANGE_LINE;
+extern const char*      ENDRANGE_LINE;
 
 /** advanced features ini section */
 extern const char*      ADVANCED_FEATURES_SECTION;
@@ -95,6 +98,7 @@ extern const char*      PURELY_TEMPORAL_ANALYSIS;
 extern const char*      RETROSPECTIVE_SPACETIME_ANALYSIS;
 extern const char*      PROSPECTIVE_SPACETIME_ANALYSIS;
 extern const char*      PURELY_SPATIAL_MONOTONE_ANALYSIS;
+extern const char*      SPATIALVARIATION_TEMPORALTREND;
 
 /** probabilty model type names */
 extern const char*      POISSON_MODEL;
@@ -118,17 +122,20 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     ENUMBERS, START_PROSP_SURV, OUTPUT_AREAS_ASCII, OUTPUT_MLC_ASCII,
                                     CRITERIA_SECOND_CLUSTERS, MAX_TEMPORAL_TYPE, MAX_SPATIAL_TYPE,
                                     RUN_HISTORY_FILENAME, OUTPUT_MLC_DBASE, OUTPUT_AREAS_DBASE, OUTPUT_RR_DBASE,
-                                    OUTPUT_SIM_LLR_DBASE, DUCZMAL_COMPACTNESS};
+                                    OUTPUT_SIM_LLR_DBASE, DUCZMAL_COMPACTNESS, INTERVAL_STARTRANGE, 
+                                    INTERVAL_ENDRANGE, TIMETRENDCONVRG};
 /** analysis and cluster types */
-enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE};
+enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
+                                    SPATIALVARTEMPTREND, PURELYSPATIALMONOTONE};
 /** probabilty model types */
 enum ProbabiltyModelType           {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION};
-enum IncludeClustersType           {ALLCLUSTERS=0, ALIVECLUSTERS};
+enum IncludeClustersType           {ALLCLUSTERS=0, ALIVECLUSTERS, CLUSTERSINRANGE};
 enum RiskType                      {STANDARDRISK=0, MONOTONERISK};
 /** area incidence rate types */
 enum AreaRateType                  {HIGH=1, LOW, HIGHANDLOW};
 /** time trend adjustment types */
-enum TimeTrendAdjustmentType       {NOTADJUSTED=0, NONPARAMETRIC, LINEAR};
+enum TimeTrendAdjustmentType       {NOTADJUSTED=0, NONPARAMETRIC, LOGLINEAR_PERC,
+                                    CALCULATED_LOGLINEAR_PERC, STRATIFIED_RANDOMIZATION};
 enum CoordinatesType               {CARTESIAN=0, LATLON};
 /** criteria for reporting secondary clusters types */
 enum CriteriaSecondaryClustersType {NOGEOOVERLAP=0, NOCENTROIDSINOTHER, NOCENTROIDSINMORELIKE,
@@ -205,6 +212,10 @@ class CParameters {
     std::string                         gsProspectiveStartDate;                 /** prospective start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
     std::string                         gsStudyPeriodStartDate;                 /** study period start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
     std::string                         gsStudyPeriodEndDate;                   /** study period end date in YYYY/MM/DD, YYYY/MM, or YYYY format */
+    std::string                         gsEndRangeStartDate;
+    std::string                         gsEndRangeEndDate;
+    std::string                         gsStartRangeStartDate;
+    std::string                         gsStartRangeEndDate;
         /* Parameter validation variables */
     ReadType                            geReadType;                             /** how data members have/are beening read */
     std::vector<int>                    gvParametersMissingDefaulted;           /** collection of missing ParameterTypes on read from file */
@@ -217,6 +228,8 @@ class CParameters {
                                                                                     to false has an implied disclaimer, you may get strange
                                                                                     occurances programmatically and statically. */
     static int                          giNumParameters;                        /** number enumerated parameters */
+
+    double                              gbTimeTrendConverge;                    /** time trend convergence value */
 
     ZdString                          & AsString(ZdString & ref, int i) {ref = i; return ref;}
     ZdString                          & AsString(ZdString & ref, float f) {ref = f;return ref;}
@@ -233,6 +246,7 @@ class CParameters {
     void                                ReadEllipseRotations(const ZdString & sParameter);
     void                                ReadEllipseSection(ZdIniFile& file, BasePrint & PrintDirection);
     void                                ReadEllipseShapes(const ZdString & sParameter);
+    void                                ReadEndIntervalRange(const ZdString & sParameter);
     float                               ReadFloat(const ZdString & sValue, ParameterType eParameterType);
     void                                ReadIniParameter(const ZdIniSection & IniSection, const char * sSectionName, ParameterType eParameterType, BasePrint & PrintDirection);
     void                                ReadIniParameterFile(const ZdString sFileName, BasePrint & PrintDirection);
@@ -251,6 +265,7 @@ class CParameters {
     void                                SaveOutputFileSection(ZdIniFile& file);
     void                                SaveScanningWindowSection(ZdIniFile& file);
     void                                SaveSequentialScanSection(ZdIniFile& file);
+    void                                ReadStartIntervalRange(const ZdString & sParameter);
     void                                SaveTimeParametersSection(ZdIniFile& file);
     void                                SetDefaults();
     void                                SetSourceFileName(const char * sParametersSourceFileName);
@@ -259,6 +274,7 @@ class CParameters {
     bool                                ValidateFileParameters(BasePrint & PrintDirection);
     bool                                ValidatePowerCalculationParameters(BasePrint & PrintDirection);
     bool                                ValidateProspectiveDateString();
+    bool                                ValidateRangeParameters(BasePrint & PrintDirection);
     bool                                ValidateSequentialScanParameters(BasePrint & PrintDirection);
     bool                                ValidateSpatialParameters(BasePrint & PrintDirection);
     bool                                ValidateStudyPeriodDateString(std::string & sDateString, ParameterType eDateType);
@@ -286,6 +302,9 @@ class CParameters {
     bool                                GetDuczmalCorrectEllipses() const {return gbDuczmalCorrectEllipses;}
     const std::vector<int>            & GetEllipseRotations() const {return gvEllipseRotations;}
     const std::vector<double>         & GetEllipseShapes() const {return gvEllipseShapes;}
+    const std::string                 & GetEndRangeEndDate() const {return gsEndRangeEndDate;}
+    Julian                              GetEndRangeDateAsJulian(const std::string & sEndRangeDate) /*const*/;
+    const std::string                 & GetEndRangeStartDate() const {return gsEndRangeStartDate;}
     bool                                GetErrorOnRead() {return gbReadStatusError;}
     IncludeClustersType                 GetIncludeClustersType() const {return geIncludeClustersType;}
     bool                                GetIncludePurelySpatialClusters() const {return gbIncludePurelySpatialClusters;}
@@ -325,9 +344,12 @@ class CParameters {
     Julian                              GetProspectiveStartDateAsJulian() /*const*/;
     RiskType                            GetRiskType() const {return geRiskFunctionType;}
     const ZdString                    & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
-    double                              GetSequentialCutOffPValue() {return gbSequentialCutOffPValue;} 
+    double                              GetSequentialCutOffPValue() {return gbSequentialCutOffPValue;}
     const std::string                 & GetSpecialGridFileName() const { return gsSpecialGridFileName; }
     const std::string                 & GetSourceFileName() const { return gsParametersSourceFileName; }
+    const std::string                 & GetStartRangeEndDate() const {return gsStartRangeEndDate;}
+    Julian                              GetStartRangeDateAsJulian(const std::string & sStartRangeDate) /*const*/;
+    const std::string                 & GetStartRangeStartDate() const {return gsStartRangeStartDate;}
     const std::string                 & GetStudyPeriodEndDate() const {return gsStudyPeriodEndDate;}
     Julian                              GetStudyPeriodEndDateAsJulian() /*const*/;
     const std::string                 & GetStudyPeriodStartDate() const {return gsStudyPeriodStartDate;}
@@ -336,10 +358,13 @@ class CParameters {
     DatePrecisionType                   GetTimeIntervalUnitsType() const {return geTimeIntervalUnitsType;}
     double                              GetTimeTrendAdjustmentPercentage() const {return gbTimeTrendAdjustPercentage;}
     TimeTrendAdjustmentType             GetTimeTrendAdjustmentType() const {return geTimeTrendAdjustType;}
+    double                              GetTimeTrendConvergence() const {return gbTimeTrendConverge;}
     void                                Read(const char* szFilename, BasePrint & PrintDirection);
     void                                SetAnalysisType(AnalysisType eAnalysisType);
     void                                SetAreaRateType(AreaRateType eAreaRateType);
     void                                SetDimensionsOfData(int iDimensions);
+    void                                SetEndRangeEndDate(const char * sEndRangeEndDate);    
+    void                                SetEndRangeStartDate(const char * sEndRangeStartDate);
     void                                SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath=false);
     void                                SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath=false);
     void                                SetCoordinatesFileName(const char * sCoordinatesFileName, bool bCorrectForRelativePath=false);
@@ -381,12 +406,15 @@ class CParameters {
     void                                SetSequentialCutOffPValue(double dPValue); 
     void                                SetSpecialGridFileName(const char * sSpecialGridFileName, bool bCorrectForRelativePath=false, bool bSetUsingFlag=false);
     bool                                UseSpecialGrid() const { return gbUseSpecialGridFile; }
+    void                                SetStartRangeEndDate(const char * sStartRangeEndDate);    
+    void                                SetStartRangeStartDate(const char * sStartRangeStartDate);
     void                                SetStudyPeriodEndDate(const char * sStudyPeriodEndDate);
     void                                SetStudyPeriodStartDate(const char * sStudyPeriodStartDate);
     void                                SetTimeIntervalLength(long lTimeIntervalLength);
     void                                SetTimeIntervalUnitsType(DatePrecisionType eTimeIntervalUnits);
     void                                SetTimeTrendAdjustmentPercentage(double dPercentage);
     void                                SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
+    void                                SetTimeTrendConvergence(double dTimeTrendConvergence);
     void                                SetUseSpecialGrid(bool b) {gbUseSpecialGridFile = b;}
     void                                SetValidatePriorToCalculation(bool b) {gbValidatePriorToCalc = b;}
     bool                                ValidateParameters(BasePrint & PrintDirection);
