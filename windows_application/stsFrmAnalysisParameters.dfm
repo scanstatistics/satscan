@@ -25,7 +25,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbScanningWindow
+    ActivePage = tbInputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -318,10 +318,10 @@ object frmAnalysis: TfrmAnalysis
         ItemIndex = 0
         Items.Strings = (
           'Purely Spatial'
-          'Retrospective Purely Temporal'
-          'Prospective Purely Temporal'
-          'Retrospective Space-Time '
-          'Prospective Space-Time')
+          'Purely Temporal, Retrospective'
+          'Purely Temporal, Prospective'
+          'Space-Time, Retrospective'
+          'Space-Time, Prospective')
         TabOrder = 0
         OnClick = rgTypeAnalysisClick
       end
