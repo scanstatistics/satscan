@@ -9,12 +9,14 @@
 #include "ClusterData.h"
 #include "NormalClusterData.h"
 #include "MultipleStreamClusterData.h"
+#include "MaxWindowLengthIndicator.h"
 
 class CSaTScanData;
 class CCluster;
 
 class TimeIntervalRange : public CTimeIntervals {
   private:
+    void                        Init() {gpMaxWindowLengthIndicator=0;}
     void                        Setup(const CSaTScanData& Data, IncludeClustersType  eIncludeClustersType);
     void                        ValidateWindowRanges(const CSaTScanData& Data);
 
@@ -24,11 +26,13 @@ class TimeIntervalRange : public CTimeIntervals {
     int				giEndRange_Start;
     int				giEndRange_End;
     const CSaTScanData        & gData;
+    AbstractLikelihoodCalculator & gLikelihoodCalculator;
+    AbstractMaxWindowLengthIndicator * gpMaxWindowLengthIndicator;
 
   public:
-    TimeIntervalRange(const CSaTScanData& Data, IncludeClustersType  eIncludeClustersType);
+    TimeIntervalRange(const CSaTScanData& Data, AbstractLikelihoodCalculator & Calculator, IncludeClustersType  eIncludeClustersType);
     TimeIntervalRange(const TimeIntervalRange & rhs);
-    virtual ~TimeIntervalRange() {}
+    virtual ~TimeIntervalRange();
 
     TimeIntervalRange         & operator=(const TimeIntervalRange& rhs);
     virtual TimeIntervalRange * Clone() const;
@@ -44,7 +48,7 @@ class TimeIntervalRange : public CTimeIntervals {
 
 class NormalTimeIntervalRange : public TimeIntervalRange {
   public:
-    NormalTimeIntervalRange(const CSaTScanData& Data, IncludeClustersType  eIncludeClustersType);
+    NormalTimeIntervalRange(const CSaTScanData& Data, AbstractLikelihoodCalculator & Calculator, IncludeClustersType  eIncludeClustersType);
     NormalTimeIntervalRange(const NormalTimeIntervalRange & rhs);
     virtual ~NormalTimeIntervalRange() {}
 
@@ -57,7 +61,7 @@ class NormalTimeIntervalRange : public TimeIntervalRange {
 
 class MultiStreamTimeIntervalRange : public TimeIntervalRange {
   public:
-    MultiStreamTimeIntervalRange(const CSaTScanData& Data, IncludeClustersType  eIncludeClustersType);
+    MultiStreamTimeIntervalRange(const CSaTScanData& Data, AbstractLikelihoodCalculator & Calculator, IncludeClustersType  eIncludeClustersType);
     MultiStreamTimeIntervalRange(const MultiStreamTimeIntervalRange & rhs);
     virtual ~MultiStreamTimeIntervalRange() {}
 
