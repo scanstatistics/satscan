@@ -7,7 +7,7 @@
 #include "BernoulliModel.h"
 #include "SpaceTimePermutationModel.h"
 #include "NormalModel.h"
-#include "SurvivalModel.h"
+#include "ExponentialModel.h"
 #include "RankModel.h"
 #include "OrdinalModel.h"
 
@@ -27,13 +27,13 @@ CSpaceTimeData::CSpaceTimeData(const CParameters& Parameters, BasePrint& PrintDi
 CSpaceTimeData::~CSpaceTimeData() {}
 
 /** Calls base class CSaTScanData::CalculateMeasure(). If purely temporal
-    clusters were requested, ensures that each data streams' corresponding
+    clusters were requested, ensures that each datasets' corresponding
     temporal data structures are allocated and set. */
-void CSpaceTimeData::CalculateMeasure(RealDataStream& thisStream) {
+void CSpaceTimeData::CalculateMeasure(RealDataSet& DataSet) {
   try {
-    CSaTScanData::CalculateMeasure(thisStream);
+    CSaTScanData::CalculateMeasure(DataSet);
     if (gParameters.GetIncludePurelyTemporalClusters() && gParameters.GetProbabilityModelType() != ORDINAL)
-      gpDataSets->SetPurelyTemporalMeasureData(thisStream);
+      gpDataSets->SetPurelyTemporalMeasureData(DataSet);
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateMeasure()","CSpaceTimeData");
@@ -63,7 +63,7 @@ void CSpaceTimeData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
 }
 
 /** Calls base class CSaTScanData::ReadDataFromFiles().If purely temporal
-    clusters were requested, ensures that each data streams' corresponding
+    clusters were requested, ensures that each datasets' corresponding
     data structures are allocated and set. */
 void CSpaceTimeData::ReadDataFromFiles() {
   try {
@@ -103,7 +103,7 @@ void CSpaceTimeData::SetProbabilityModel() {
        case POISSON              : m_pModel = new CPoissonModel(gParameters, *this, gPrint);   break;
        case BERNOULLI            : m_pModel = new CBernoulliModel(gParameters, *this, gPrint); break;
        case ORDINAL              : m_pModel = new OrdinalModel(gParameters, *this, gPrint); break;
-       case SURVIVAL             : m_pModel = new CSurvivalModel(gParameters, *this, gPrint); break;
+       case EXPONENTIAL          : m_pModel = new ExponentialModel(gParameters, *this, gPrint); break;
        case NORMAL               : m_pModel = new CNormalModel(gParameters, *this, gPrint); break;
        case RANK                 : m_pModel = new CRankModel(gParameters, *this, gPrint); break;
        case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(gParameters, *this, gPrint); break;

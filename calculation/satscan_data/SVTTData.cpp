@@ -25,27 +25,27 @@ CSVTTData::CSVTTData(const CParameters& Parameters, BasePrint& PrintDirection)
 /** class destructor */
 CSVTTData::~CSVTTData() {}
 
-void CSVTTData::CalculateMeasure(RealDataStream & thisStream) {
-  CSaTScanData::CalculateMeasure(thisStream);
-  //calculate time trend for stream data set
+void CSVTTData::CalculateMeasure(RealDataSet& DataSet) {
+  CSaTScanData::CalculateMeasure(DataSet);
+  //calculate time trend for dataset data set
   //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
   //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
   //      has not been decided yet.
-  thisStream.GetTimeTrend().CalculateAndSet(thisStream.GetCasesPerTimeIntervalArray(), thisStream.GetMeasurePerTimeIntervalArray(),
+  DataSet.GetTimeTrend().CalculateAndSet(DataSet.GetCasesPerTimeIntervalArray(), DataSet.GetMeasurePerTimeIntervalArray(),
                                             m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
 }
 
-/** Debug utility function - prints case counts for all data streams. Caller is
+/** Debug utility function - prints case counts for all datasets. Caller is
     responsible for ensuring that passed file pointer points to valid, open file
     handle. */
 void CSVTTData::DisplayCases(FILE* pFile) {
   unsigned int i;
 
   for (i=0; i < gpDataSets->GetNumDataSets(); ++i) {
-     fprintf(pFile, "Data Stream %u:\n", i);
-     DisplayCounts(pFile, gpDataSets->GetStream(i).GetCaseArray(), "Cases Array",
-                   gpDataSets->GetStream(i).GetNCCaseArray(), "Cases Non-Cumulative Array",
-                   gpDataSets->GetStream(i).GetPTCasesArray(), "Cases_TotalByTimeInt");
+     fprintf(pFile, "Data Set %u:\n", i);
+     DisplayCounts(pFile, gpDataSets->GetDataSet(i).GetCaseArray(), "Cases Array",
+                   gpDataSets->GetDataSet(i).GetNCCaseArray(), "Cases Non-Cumulative Array",
+                   gpDataSets->GetDataSet(i).GetPTCasesArray(), "Cases_TotalByTimeInt");
   }                 
 }
 
@@ -77,7 +77,7 @@ void CSVTTData::DisplayCounts(FILE* pFile,
   fprintf(pFile, "\n");
 }
 
-/** Debug utility function - prints expected counts for for all data streams.
+/** Debug utility function - prints expected counts for for all datasets.
     Caller is responsible for ensuring that passed file pointer points to valid,
     open file handle. */
 void CSVTTData::DisplayMeasures(FILE* pFile) {
@@ -87,9 +87,9 @@ void CSVTTData::DisplayMeasures(FILE* pFile) {
   fprintf(pFile, "Measures                        Measures - Not Accumulated\n\n");
 
   for (k=0; k < gpDataSets->GetNumDataSets(); ++k) {
-     fprintf(pFile, "Data Stream %u:\n", k);
-     ppMeasure = gpDataSets->GetStream(k).GetMeasureArray();
-     ppMeasureNC = gpDataSets->GetStream(k).GetNCMeasureArray();
+     fprintf(pFile, "Data Set %u:\n", k);
+     ppMeasure = gpDataSets->GetDataSet(k).GetMeasureArray();
+     ppMeasureNC = gpDataSets->GetDataSet(k).GetNCMeasureArray();
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
         for (j=0; j < (unsigned int)m_nTracts; ++j) {
            fprintf(pFile, "ppMeasure [%i][%i] = %12.5f     ", i, j, ppMeasure[i][j]);
@@ -99,9 +99,9 @@ void CSVTTData::DisplayMeasures(FILE* pFile) {
 
   fprintf(pFile, "\nMeasures Accumulated by Time Interval\n\n");
   for (k=0; k < gpDataSets->GetNumDataSets(); ++k) {
-     fprintf(pFile, "Data Stream %u:\n", k);
+     fprintf(pFile, "Data Set %u:\n", k);
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
-       fprintf(pFile, "Measure_TotalByTimeInt [%i] = %12.5f\n", i, gpDataSets->GetStream(k).GetPTMeasureArray()[i]);
+       fprintf(pFile, "Measure_TotalByTimeInt [%i] = %12.5f\n", i, gpDataSets->GetDataSet(k).GetPTMeasureArray()[i]);
      fprintf(pFile, "\n");
   }
 }
@@ -127,10 +127,10 @@ void CSVTTData::DisplaySimCases(FILE* pFile) {
 //  unsigned int i;                                             
 //
 //  for (i=0; i < gpDataSets->GetNumDataSets(); ++i) {
-//     fprintf(pFile, "Data Stream %u:\n", i);
-//     DisplayCounts(pFile, gpDataSets->GetStream(i).GetSimCaseArray(), "Simulated Cases Array",
-//                   gpDataSets->GetStream(i).GetNCSimCaseArray(), "Simulated Non-Cumulative Cases Array",
-//                   gpDataSets->GetStream(i).GetPTSimCasesArray(), "SimCases_TotalByTimeInt");
+//     fprintf(pFile, "Data Set %u:\n", i);
+//     DisplayCounts(pFile, gpDataSets->GetDataSet(i).GetSimCaseArray(), "Simulated Cases Array",
+//                   gpDataSets->GetDataSet(i).GetNCSimCaseArray(), "Simulated Non-Cumulative Cases Array",
+//                   gpDataSets->GetDataSet(i).GetPTSimCasesArray(), "SimCases_TotalByTimeInt");
 //  }
 }
 
@@ -146,12 +146,12 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
        //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
        //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
        //      has not been decided yet.
-       SimDataContainer[t]->GetTimeTrend().CalculateAndSet(gpDataSets->GetStream(t).GetCasesPerTimeIntervalArray(),
-                                                           gpDataSets->GetStream(t).GetMeasurePerTimeIntervalArray(),
+       SimDataContainer[t]->GetTimeTrend().CalculateAndSet(gpDataSets->GetDataSet(t).GetCasesPerTimeIntervalArray(),
+                                                           gpDataSets->GetDataSet(t).GetMeasurePerTimeIntervalArray(),
                                                            m_nTimeIntervals,
                                                            gParameters.GetTimeTrendConvergence());
        //QUESTION: Should the purely temporal case array passed to CalculateAndSet() be from
-       //          the simulated data stream? It doesn't seem to make sense otherwise.
+       //          the simulated dataset? It doesn't seem to make sense otherwise.
     }
   }
   catch (ZdException &x) {
@@ -160,12 +160,12 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
   }
 }
 
-/** Redefines base class method to call data stream method
-    DataStream::SetNonCumulativeCaseArrays() which allocates and sets cases
+/** Redefines base class method to call dataset method
+    DataSet::SetNonCumulativeCaseArrays() which allocates and sets cases
     per time interval array and non cumulative case array. */
-void CSVTTData::SetAdditionalCaseArrays(RealDataStream& thisStream) {
+void CSVTTData::SetAdditionalCaseArrays(RealDataSet& DataSet) {
   try {
-    thisStream.SetNonCumulativeCaseArrays();
+    DataSet.SetNonCumulativeCaseArrays();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetAdditionalCaseArrays()","CSVTTData");
@@ -185,7 +185,7 @@ void CSVTTData::SetProbabilityModel() {
                                                          "SetProbabilityModel()");
        case ORDINAL              : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Ordinal model.\n",
                                                          "SetProbabilityModel()");
-       case SURVIVAL             : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Survival model.\n",
+       case EXPONENTIAL          : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Exponential model.\n",
                                                          "SetProbabilityModel()");
        case NORMAL               : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Normal model.\n",
                                                          "SetProbabilityModel()");

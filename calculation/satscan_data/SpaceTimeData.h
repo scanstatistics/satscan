@@ -9,12 +9,12 @@
     The code to generate data structures for 'number of cases', 'number of
     expected cases', 'simulated cases', etc. is designed to modify a multiple
     dimension array (time intervals by tracts) in a cumulative manner(in respect
-    to time). The primary purpose of this class is to direct data streams to set
+    to time). The primary purpose of this class is to direct datasets to set
     corresponding temporal structures from data of multiple dimension array IF
     purely temporal clusters were requested. */
 class CSpaceTimeData : public CSaTScanData {
   protected:
-    virtual void        CalculateMeasure(RealDataStream& thisStream);
+    virtual void        CalculateMeasure(RealDataSet& DataSet);
     virtual void        ReadDataFromFiles();
     virtual void        SetIntervalCut();
     virtual void        SetProbabilityModel();
