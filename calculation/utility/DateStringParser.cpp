@@ -198,7 +198,7 @@ DateStringParser::ParserStatus DateStringParser::ParsePopulationDateString(const
   if (eDateFormat == MDY) {
     switch (ePrecision) {
       case YEAR  : return GetAsJulian(POP_PRECISION_YEAR_DEFAULT_MONTH, POP_PRECISION_YEAR_DEFAULT_DAY, iOne, theDate);
-      case MONTH : return GetAsJulian(iOne, POP_PRECISION_YEAR_DEFAULT_DAY, iTwo, theDate);
+      case MONTH : return GetAsJulian(iOne, POP_PRECISION_MONTH_DEFAULT_DAY, iTwo, theDate);
       case DAY   : return GetAsJulian(iOne, iTwo, iThree, theDate);
       default    : return INVALID_DATE;
     };
@@ -206,7 +206,7 @@ DateStringParser::ParserStatus DateStringParser::ParsePopulationDateString(const
   else {
     switch (ePrecision) {
       case YEAR  : return GetAsJulian(POP_PRECISION_YEAR_DEFAULT_MONTH, POP_PRECISION_YEAR_DEFAULT_DAY, iOne, theDate);
-      case MONTH : return GetAsJulian(iTwo, POP_PRECISION_YEAR_DEFAULT_DAY, iOne, theDate);
+      case MONTH : return GetAsJulian(iTwo, POP_PRECISION_MONTH_DEFAULT_DAY, iOne, theDate);
       case DAY   : return GetAsJulian(iTwo, iThree, iOne, theDate);
       default    : return INVALID_DATE;
     };
