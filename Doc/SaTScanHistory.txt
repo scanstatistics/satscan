@@ -1,0 +1,40 @@
+History
+                         
+     The SaTScan system was originally developed several years ago by Dr. Martin Kulldorff
+while he was a member of the Biometry Research Group of the National Cancer Institute's
+Division of Cancer Prevention.  Its purpose is to evaluate spatial, temporal, or space-time point
+data for statistical significance.  The scan statistic itself was also created by Dr. Kulldorff.  The
+SaTScan system computerized this scan statistic for the following objectives: testing the statistical
+significance of reported spatial or space-time disease clusters; detecting areas with statistically
+high or low disease rates, also known as geographical surveillance; and testing whether a disease
+is randomly distributed over space, over time, or over space and time.  The SaTScan system
+performs its statistical calculation using one of three different probabilistic models.  The first is a 
+Poisson-based model where the number of events is Poisson distributed under the null hypothesis. 
+The second is a Bernoulli-based model with 0/1 event data such as cases and controls.  The last
+model is a space-time permutation model which evaluates case data for space-time interaction
+clusters.  This model was not available in the earliest versions of SaTScan.  With all of these
+models, the system adjusts for the underlying in homogeneity of the population.  And, with the
+Poisson model, the system can also adjust for a number of covariates as specified by the user.
+     The first version of SaTScan was developed by Information Management Services, Inc.
+(IMS) in 1994 from Dr. Kulldorff's proof of concept pseudo code.  It was a command-line
+program written in the C language for use in DOS.  The system then evolved under IMS's
+direction to include a graphical user interface (GUI).  The GUI allowed users to easily input all
+the parameters for an analysis, and then invoked the command line program for computation of
+the statistic.  The current version of the program is only slightly less separated than its
+predecessor.  The GUI still allows the user to easily input the parameters required for an analysis. 
+The application then prepares a parameter file and starts the calculation engine which uses that
+parameter file.  The code for the calculation engine can be compiled separately from the GUI to
+create a command line program if desired.
+     The SaTScan system is currently being used for similar problems in a variety of other
+fields both related and unrelated to the original cancer surveillance purpose.  These areas include
+biology, ecology, history, economics, and astronomy.  While there is widespread interest in the
+current system, there is perhaps greater interest in a system that can provide real-time surveillance
+of infectious disease outbreaks.  Dr. Kulldorff, with help from NYCDOH, has already made some
+modifications to his statistical approach so the system could be used for surveillance of the West
+Nile virus, influenza, and bioterrorism.  Further adaptations are required for the desired real-time
+surveillance.  There are few other existing software programs available to researchers and health
+departments for the detection of infectious disease outbreaks and bioterrorist attacks.  The past
+year has demonstrated the need, and hence the demand, for this type of surveillance.  The goal,
+then, of improving and expanding the current version of the SaTScan system is to provide this
+type of disease surveillance so that it can be distributed to health departments both nationally and
+internationally at little or no cost.
