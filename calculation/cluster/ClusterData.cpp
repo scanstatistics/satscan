@@ -63,9 +63,9 @@ void SpatialData::AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGate
     it is determined that data fits scanning area of interest (high, low, both).
     Returns zero if rate not of interest else returns loglikelihood ratio as
     calculated by probability model. */
-double SpatialData::CalculateLoglikelihoodRatio(CModel & Model) {
+double SpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
   if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
-    return Model.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure);
+    return Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure);
   return 0;  
 }
 
@@ -293,14 +293,14 @@ void ProspectiveSpatialData::AddNeighborData(tract_t tNeighbor, const AbtractDat
     it is determined that data fits scanning area of interest (high, low, both).
     Returns zero if all windows rates not of interest else returns greatest
     loglikelihood ratio as calculated by probability model. */
-double ProspectiveSpatialData::CalculateLoglikelihoodRatio(CModel & Model) {
+double ProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
   unsigned int  iWindowEnd;
   double        dLoglikelihood, dMaxLoglikelihood=0;
 
   gtCases = gpCases[0];
   gtMeasure =  gpMeasure[0];
   if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure)) {
-    dLoglikelihood = Model.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure);
+    dLoglikelihood = Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure);
     dMaxLoglikelihood = std::max(dMaxLoglikelihood, dLoglikelihood);
   }
 
@@ -308,19 +308,11 @@ double ProspectiveSpatialData::CalculateLoglikelihoodRatio(CModel & Model) {
     gtCases = gpCases[0] - gpCases[iWindowEnd];
     gtMeasure =  gpMeasure[0] - gpMeasure[iWindowEnd];
     if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure)) {
-      dLoglikelihood = Model.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure);
+      dLoglikelihood = Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure);
       dMaxLoglikelihood = std::max(dMaxLoglikelihood, dLoglikelihood);
     }
   }
   return dMaxLoglikelihood;
-}
-
-/** re-initialize data */
-void ProspectiveSpatialData::InitializeData() {
-  gtCases=0;
-  gtMeasure=0;
-  memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
-  memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
 }
 
 /** internal setup function */
@@ -466,14 +458,6 @@ void SpaceTimeData::AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGa
      gpCases[i] += ppCases[i][tNeighbor];
      gpMeasure[i] += ppMeasure[i][tNeighbor];
   }
-}
-
-/** re-initialize data*/
-void SpaceTimeData::InitializeData() {
-  gtCases=0;
-  gtMeasure=0;
-  memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
-  memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
 }
 
 /** internal setup function */

@@ -21,7 +21,7 @@ class MultipleStreamSpatialData : public AbstractSpatialClusterData {
 
     virtual void                                AddMeasureList(CMeasureList * pMeasureList, tract_t tNeighbor, const DataStreamInterface & Interface);
     virtual void                                AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
-    virtual double                              CalculateLoglikelihoodRatio(CModel & Model);
+    virtual double                              CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator);
     virtual count_t                             GetCaseCount(unsigned int iStream=0) const;
     virtual measure_t                           GetMeasure(unsigned int iStream=0) const;
     virtual void                                InitializeData();
@@ -72,7 +72,7 @@ class MultipleStreamProspectiveSpatialData : public AbstractMultipleStreamTempor
     virtual MultipleStreamProspectiveSpatialData * Clone() const;
 
     virtual void                                   AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
-    virtual double                                 CalculateLoglikelihoodRatio(CModel & Model);
+    virtual double                                 CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator);
     virtual count_t                                GetCaseCount(unsigned int iStream=0) const;
     virtual measure_t                              GetMeasure(unsigned int iStream=0) const;
     virtual void                                   InitializeData();

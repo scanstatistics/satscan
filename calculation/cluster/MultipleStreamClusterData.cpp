@@ -42,11 +42,11 @@ void MultipleStreamSpatialData::AddNeighborData(tract_t tNeighbor, const Abtract
 
 /** Calculates loglikelihood ratio given current accumulated cluster data in
     each data stream and adds together. */
-double MultipleStreamSpatialData::CalculateLoglikelihoodRatio(CModel & Model) {
+double MultipleStreamSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
   double        dLogLikelihoodRatio=0;
 
   for (gitr=gvStreamData.begin(); gitr != gvStreamData.end(); ++gitr)
-     dLogLikelihoodRatio += (*gitr)->CalculateLoglikelihoodRatio(Model);
+     dLogLikelihoodRatio += (*gitr)->CalculateLoglikelihoodRatio(Calculator);
 
   return dLogLikelihoodRatio;
 }
@@ -151,7 +151,7 @@ void MultipleStreamProspectiveSpatialData::AddNeighborData(tract_t tNeighbor, co
 
 /** Calculates loglikelihood ratio given current accumulated cluster data in
     each data stream and adds together.*/
-double MultipleStreamProspectiveSpatialData::CalculateLoglikelihoodRatio(CModel & Model) {
+double MultipleStreamProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
   unsigned int  iWindowEnd, iAllocationSize;
   double        dLoglikelihood, dMaxLoglikelihood=0;
 
@@ -160,7 +160,7 @@ double MultipleStreamProspectiveSpatialData::CalculateLoglikelihoodRatio(CModel 
     (*gitr)->gtCases = (*gitr)->gpCases[0];
     (*gitr)->gtMeasure =  (*gitr)->gpMeasure[0];
     if (gfRateOfInterest((*gitr)->gtCases, (*gitr)->gtMeasure, (*gitr)->gtTotalCases, (*gitr)->gtTotalMeasure))
-      dLoglikelihood += Model.CalcLogLikelihoodRatio((*gitr)->gtCases, (*gitr)->gtMeasure, (*gitr)->gtTotalCases, (*gitr)->gtTotalMeasure);
+      dLoglikelihood += Calculator.CalcLogLikelihoodRatio((*gitr)->gtCases, (*gitr)->gtMeasure, (*gitr)->gtTotalCases, (*gitr)->gtTotalMeasure);
   }
   dMaxLoglikelihood = std::max(dMaxLoglikelihood, dLoglikelihood);
 
@@ -170,7 +170,7 @@ double MultipleStreamProspectiveSpatialData::CalculateLoglikelihoodRatio(CModel 
         (*gitr)->gtCases = (*gitr)->gpCases[0] - (*gitr)->gpCases[iWindowEnd];
         (*gitr)->gtMeasure =  (*gitr)->gpMeasure[0] - (*gitr)->gpMeasure[iWindowEnd];
         if (gfRateOfInterest((*gitr)->gtCases, (*gitr)->gtMeasure, (*gitr)->gtTotalCases, (*gitr)->gtTotalMeasure))
-         dLoglikelihood += Model.CalcLogLikelihoodRatio((*gitr)->gtCases, (*gitr)->gtMeasure, (*gitr)->gtTotalCases, (*gitr)->gtTotalMeasure);
+         dLoglikelihood += Calculator.CalcLogLikelihoodRatio((*gitr)->gtCases, (*gitr)->gtMeasure, (*gitr)->gtTotalCases, (*gitr)->gtTotalMeasure);
      }
      dMaxLoglikelihood = std::max(dMaxLoglikelihood, dLoglikelihood);
   }

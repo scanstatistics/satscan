@@ -22,9 +22,9 @@ class SpatialData : public AbstractSpatialClusterData {
     virtual SpatialData * Clone() const;
     SpatialData         & operator=(const SpatialData& rhs);
 
-    inline virtual void   AddMeasureList(const DataStreamInterface & Interface, CMeasureList * pMeasureList, const CSaTScanData * pData);
+    inline /*virtual*/ void   AddMeasureList(const DataStreamInterface & Interface, CMeasureList * pMeasureList, const CSaTScanData * pData);
     virtual void          AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
-    virtual double        CalculateLoglikelihoodRatio(CModel & Model);
+    virtual double        CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator);
     virtual count_t       GetCaseCount(unsigned int iStream=0) const;
     virtual measure_t     GetMeasure(unsigned int iStream=0) const;
     inline virtual void   InitializeData();
@@ -34,7 +34,7 @@ class SpatialData : public AbstractSpatialClusterData {
 inline void SpatialData::AddMeasureList(const DataStreamInterface & Interface, CMeasureList * pMeasureList, const CSaTScanData * pData) {
   tract_t       t, tNeighbor, tNumNeighbors = pData->GetImpliedNeighborCount();
 
-  InitializeData(); //replace with direct code ?
+  gtCases=0;gtMeasure=0; //initialize data
   for (t=1; t <= tNumNeighbors; ++t) {
     tNeighbor = pData->GetNeighborTractIndex(t);
     gtCases += Interface.gpPSCaseArray[tNeighbor];
@@ -105,12 +105,20 @@ class ProspectiveSpatialData : public TemporalData {
     virtual ProspectiveSpatialData * Clone() const;
     ProspectiveSpatialData         & operator=(const ProspectiveSpatialData& rhs);
 
-    virtual void                     AddMeasureList(const DataStreamInterface & Interface, CMeasureList * pMeasureList, const CSaTScanData * pData);
+    /*virtual*/ void                     AddMeasureList(const DataStreamInterface & Interface, CMeasureList * pMeasureList, const CSaTScanData * pData);
     virtual void                     AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
-    virtual double                   CalculateLoglikelihoodRatio(CModel & Model);
+    virtual double                   CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator);
     virtual unsigned int             GetAllocationSize() const {return giAllocationSize;}
-    virtual void                     InitializeData();
+    inline virtual void              InitializeData();
 };
+
+/** re-initialize data */
+inline void ProspectiveSpatialData::InitializeData() {
+  gtCases=0;
+  gtMeasure=0;
+  memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
+  memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
+}
 
 class CTimeIntervals; /** forward class declaration */
 /** class representing accumulated data of space-time clustering */
@@ -132,12 +140,20 @@ class SpaceTimeData : public TemporalData {
     virtual SpaceTimeData     * Clone() const;
     SpaceTimeData             & operator=(const SpaceTimeData& rhs);
 
-    virtual void                AddNeighborDataAndCompare(const DataStreamInterface & Interface,
+    /*virtual*/ void                AddNeighborDataAndCompare(const DataStreamInterface & Interface,
                                                           const CSaTScanData * pData,
                                                           CTimeIntervals * pTimeIntervals,
                                                           CMeasureList * pMeasureList);
     virtual void                AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
-    virtual void                InitializeData();
+    inline virtual void         InitializeData();
 };
+
+/** re-initialize data*/
+inline void SpaceTimeData::InitializeData() {
+  gtCases=0;
+  gtMeasure=0;
+  memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
+  memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
+}
 //---------------------------------------------------------------------------
 #endif
