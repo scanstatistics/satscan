@@ -7,6 +7,19 @@
 #pragma link "Grids_ts"
 #pragma link "TSGrid"
 #pragma resource "*.dfm"
+
+/** Constructor */
+SourceViewController::SourceViewController(TtsGrid * pTopGrid, BGridZdAbstractFileModel * pGridDataModel)
+                     :BZdFileViewController(pTopGrid, pGridDataModel) {}
+
+void SourceViewController::OnCellLoaded(int DataCol, int DataRow, Variant &Value) {
+  try {
+    BZdFileViewController::OnCellLoaded(DataCol, DataRow, Value);
+  }
+  catch(ZdException &x) {/*trap to prevent repeating exception*/}
+}
+
+
 /** Constructor. */
 __fastcall TBDlgDataImporter::TBDlgDataImporter(TComponent* Owner, TfrmAnalysis & AnalysisForm)
                              :TForm(Owner), gAnalysisForm(AnalysisForm) {
@@ -1074,7 +1087,7 @@ void TBDlgDataImporter::OpenSourceFile() {
       }
       AdjustFileSourceFileAttributes(*gpImportFile);
       gpDataModel = new BGridZdSingleFileModel(gpImportFile);
-      gpController = new BZdFileViewController(tsImportFileGrid, gpDataModel);
+      gpController = new SourceViewController(tsImportFileGrid, gpDataModel);
       gpController->SetGridMode(Tsgrid::gmBrowse);
      }
      catch (ZdException &x) {

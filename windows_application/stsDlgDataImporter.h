@@ -1,4 +1,4 @@
-// $Revision: 1.5 $
+// $Revision: 1.6 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -14,6 +14,15 @@
 #include <StdCtrls.hpp>
 //------------------------------------------------------------------------------
 #include "ScanfFile.h"
+
+class SourceViewController : public BZdFileViewController {
+  protected:
+    virtual void         OnCellLoaded(int DataCol, int DataRow, Variant &Value);
+
+  public:
+            SourceViewController(TtsGrid * pTopGrid, BGridZdAbstractFileModel * pGridDataModel);
+    virtual ~SourceViewController() {}
+};
 
 class TfrmAnalysis;
 class TBDlgDataImporter : public TForm {
@@ -106,7 +115,7 @@ class TBDlgDataImporter : public TForm {
   protected:
      BFileSourceDescriptor                      gSourceDescriptor;
      BFileDestDescriptor                        gDestDescriptor;
-     BZdFileViewController                    * gpController;
+     SourceViewController                     * gpController;
      BGridZdSingleFileModel                   * gpDataModel;
      ZdFile                                   * gpImportFile;
      ZdVector<int>                              gvPanels;
