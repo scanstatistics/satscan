@@ -730,7 +730,8 @@ void IniParameterFileAccess::WriteSystemSettings(ZdIniFile& WriteFile) {
 
   try {
     s.printf("%s.%s.%s", VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE);
-    WriteIniParameter(WriteFile, CREATION_VERSION, s.GetCString());
+    WriteIniParameter(WriteFile, CREATION_VERSION, s.GetCString(),
+                      " system setting - do not modify");
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSystemSettings()","IniParameterFileAccess");
