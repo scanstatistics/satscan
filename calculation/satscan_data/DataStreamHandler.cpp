@@ -47,7 +47,7 @@ bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, Julian &
   //units as specifier for date precision. This was the behavior in v4 but it
   //was decided to revert to time precision units.
   if (gParameters.GetCreationVersionMajor() == 4)
-    ePrecision = gParameters.GetTimeIntervalUnitsType();
+    ePrecision = gParameters.GetTimeAggregationUnitsType();
   else
     ePrecision =  gParameters.GetPrecisionOfTimesType();
 
@@ -76,15 +76,16 @@ bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, Julian &
                                  "       Please use four digit years.\n",
                                  gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
         return false;
-      case DateStringParser::LESSER_PRECISION :
+      case DateStringParser::LESSER_PRECISION : {
+         ZdString sBuffer;
          //Dates in the case/control files must be at least as precise as ePrecision units.
          gPrint.PrintInputWarning("Error: The date '%s' of record %ld in the %s must be precise to %s,\n"
                                   "       as specified by %s units.\n",
                                   Parser.GetWord(COUNT_DATE_OFFSET), Parser.GetReadCount(),
                                   gPrint.GetImpliedFileTypeString().c_str(),
-                                  gParameters.GetDatePrecisionAsString(ePrecision),
+                                  GetDatePrecisionAsString(ePrecision, sBuffer, false, false),
                                   (gParameters.GetCreationVersionMajor() == 4 ? "time interval" : "time precision"));
-        return false;
+        return false; }
       case DateStringParser::INVALID_DATE     :
       default                                 :
         gPrint.PrintInputWarning("Error: Invalid date '%s' in the %s, record %ld.\n", Parser.GetWord(COUNT_DATE_OFFSET),
