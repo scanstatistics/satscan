@@ -20,33 +20,20 @@ private:
    mutable xbDbf * gpAssociatedDbf;
    ZdFileName gAssociatedFileName;
 
-   // The following classes are used in all functions that get data from or put data
-   // into the record.
+   // The following class is used in all functions that get data from or put data
+   // into the record.  It uses scoping rules to ensure that a call to BeginAccess
+   // is matched with a call to either EndAccess or EndManipulation, depending on
+   // the value of bIsManipulative, as passed to the constructor.
    class AccessExpediter;
-   class ManipulationExpediter;
    friend class AccessExpediter;
-   friend class ManipulationExpediter;
    class AccessExpediter
       {
-      // Implements initial buffering and updating of the RecBuf and final restoring
-      // of the initially buffered data to it.
       private:
          const DBFRecord & gR;
-               xbDbf     & gF;
+         bool gbIsManipulative;
       public:
-         AccessExpediter(const DBFRecord & r, xbDbf & f) : gR(r), gF(f) { gR.BufferDbfRecordData(gF); gR.UpdateDbfRecordData(gF); }
-         ~AccessExpediter() { gR.RestoreDbfRecordData(gF); }
-      };
-   class ManipulationExpediter
-      {
-      // Implements initial buffering of the RecBuf and final copying and restoring
-      // of the initially buffered data to it.
-      private:
-         DBFRecord & gR;
-         xbDbf     & gF;
-      public:
-         ManipulationExpediter(DBFRecord & r, xbDbf & f) : gR(r), gF(f) { gR.BufferDbfRecordData(gF); gR.UpdateDbfRecordData(gF); }
-         ~ManipulationExpediter() { gR.CopyDbfRecordData(gF); gR.RestoreDbfRecordData(gF); }
+         AccessExpediter(const DBFRecord & r, bool bIsManipulative = false) : gR(r), gbIsManipulative(bIsManipulative) { gR.BeginAccess(); }
+         ~AccessExpediter() { if (gbIsManipulative) const_cast<DBFRecord &>(gR).EndManipulation(); else gR.EndAccess(); }
       };
 
    void AssertSufficientBufferSize(unsigned long ulReqdSize) const;
@@ -60,6 +47,20 @@ protected:
    void CopyDbfRecordData(xbDbf & theDbf);
    void RestoreDbfRecordData(xbDbf & theDbf) const;
    void UpdateDbfRecordData(xbDbf & theDbf) const;
+
+   //all functions that retrieve a value from the record or set a value in the record
+   //must call BeginAccess before they do anything else.  It copies the xbDbf::RecBuf to
+   //a temporary location and copies gBuffer into the xbDbf::RecBuf.  This allows
+   //all access to be implemented in terms of xbDbf.
+   //These functions must end by calling one of the End... functions.  If it is a
+   //retrieval, call EndAccess.  If it is a manipulation, call EndManipulation.
+   //Both of these functions write the temporary copy of xbDbf::RecBuf (made by BeginAccess)
+   //back into the xbDbf::RecBuf, but EndManipulation first copies the xbDbf::RecBuf
+   //back into gBuffer (since it has been changed, so gBuffer must be updated with
+   //the changes).  See class DBFRecord::AccessExpediter for a helper.
+   void BeginAccess() const;
+   void EndAccess() const;
+   void EndManipulation();
 
    //these functions are called by DBFFile.
    void SetAsCurrentDbfRecord(xbDbf & theDbf);
