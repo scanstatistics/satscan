@@ -459,28 +459,6 @@ void CCluster::DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisTyp
       }
 }
 
-/** Returns the number of case for tract as defined by cluster. */
-count_t CCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const
-{
-  count_t       tCaseCount=0;
-
-  if (m_nFirstInterval != m_nLastInterval)
-     tCaseCount = Data.m_pCases[m_nFirstInterval][tTract];
-
-  return tCaseCount;
-}
-
-/** Returns the measure for tract as defined by cluster. */
-measure_t CCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const
-{
-  measure_t     tMeasure=0;
-
-  if (m_nFirstInterval != m_nLastInterval)
-     tMeasure = Data.m_pMeasure[m_nFirstInterval][tTract];
-
-  return tMeasure;
-}
-
 double CCluster::GetRelativeRisk(double nMeasureAdjustment)
 {
   double        dRelativeRisk=0;
@@ -643,8 +621,8 @@ void CCluster::WriteCoordinates(FILE* fp, CSaTScanData* pData)
             fprintf(fp, " %12.2f",nRadius);
 
             //PRINT SHAPE AND ANGLE
-            fprintf(fp, " %8.3f", ConvertAngleToDegrees(pData->mdE_Angles[m_iEllipseOffset-1]));
             fprintf(fp, " %8.3f", pData->mdE_Shapes[m_iEllipseOffset-1]);
+            fprintf(fp, " %8.3f", ConvertAngleToDegrees(pData->mdE_Angles[m_iEllipseOffset-1]));
             }
          }
 
