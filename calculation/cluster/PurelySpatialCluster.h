@@ -2,7 +2,7 @@
 #ifndef __PURELYSPATIALCLUSTER_H
 #define __PURELYSPATIALCLUSTER_H
 //*****************************************************************************
-#include "Cluster.h"
+#include "cluster.h"
 #include "UtilityFunctions.h"
 #include "MeasureList.h"
 #include "ClusterDataFactory.h"

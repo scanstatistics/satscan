@@ -2,7 +2,7 @@
 #ifndef __SVTTCLUSTER_H
 #define __SVTTCLUSTER_H
 //*****************************************************************************
-#include "Cluster.h"
+#include "cluster.h"
 #include "TimeTrend.h"
 
 class ClusterStreamData {

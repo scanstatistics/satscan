@@ -6,7 +6,7 @@
 #pragma hdrstop
 
 #include "stsAreaSpecificData.h"
-#include "Cluster.h"
+#include "cluster.h"
 
 const char *	AREA_SPECIFIC_FILE_EXT		= ".gis";
 

@@ -3,7 +3,7 @@
 #define __PURELYTTEMPORALCLUSTER_H
 //*****************************************************************************
 #include "Tracts.h"
-#include "Cluster.h"
+#include "cluster.h"
 //#include "TimeIntervalAll.h"
 //#include "TimeIntervalAlive.h"
 #include "Parameters.h"

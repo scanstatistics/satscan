@@ -3,7 +3,7 @@
 #include "TimeIntervalRange.h"
 #include "SaTScanData.h"
 #include "MeasureList.h"
-#include "Cluster.h"
+#include "cluster.h"
 
 // under borland, the stl re-defines max/min to std::max/std::min
 // - but I'm not so sure that the functions are actually inlined.

@@ -4,7 +4,7 @@
 //*****************************************************************************
 #include "SaTScan.h"
 #include "Parameters.h"
-#include "Cluster.h"
+#include "cluster.h"
 #include "AbstractClusterData.h"
 
 class CMeasureList;

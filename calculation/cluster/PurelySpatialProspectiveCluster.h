@@ -2,7 +2,7 @@
 #ifndef __PURELYSPATIALPROSPECTIVECLUSTER_H
 #define __PURELYSPATIALPROSPECTIVECLUSTER_H
 //*****************************************************************************
-#include "Cluster.h"
+#include "cluster.h"
 #include "ClusterDataFactory.h"
 #include "UtilityFunctions.h"
 

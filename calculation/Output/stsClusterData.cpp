@@ -6,7 +6,7 @@
 #pragma hdrstop
 
 #include "stsClusterData.h"
-#include "Cluster.h"
+#include "cluster.h"
 
 const char *	CLUSTER_FILE_EXT	= ".col";
 

@@ -2,7 +2,7 @@
 #ifndef __SPACETIMECLUSTER_H
 #define __SPACETIMECLUSTER_H
 //*****************************************************************************
-#include "Cluster.h"
+#include "cluster.h"
 //#include "TimeIntervalAll.h"
 //#include "TimeIntervalAlive.h"
 #include "TimeIntervalRange.h"

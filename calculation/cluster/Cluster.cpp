@@ -1,7 +1,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 
-#include "Cluster.h"
+#include "cluster.h"
 #include "stsAreaSpecificData.h"
 
 /** constructor */

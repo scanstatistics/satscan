@@ -2,7 +2,7 @@
 #ifndef __ANALYSIS_H
 #define __ANALYSIS_H
 //*****************************************************************************
-#include "Cluster.h"
+#include "cluster.h"
 #include "DataStream.h"
 #include "TimeEstimate.h"
 #include "TimeIntervalRange.h"
