@@ -1,15 +1,15 @@
 //---------------------------------------------------------------------------
 #include "stsSaTScan.h"
 #pragma hdrstop
-//** Constructor */
+
+/** Constructor */
 PrintWindow::PrintWindow(CalcThread & CalculationThread)
             :BasePrint(), gCalculationThread(CalculationThread) {}
 
-//** Destructor */
+/** Destructor */
 PrintWindow::~PrintWindow(){}
 
-/** Returns whether analysis has been cancelled through run analysis window
-     via calculation thread . */
+/** Returns whether analysis has been cancelled through run analysis window via calculation thread . */
 bool PrintWindow::GetIsCanceled() {
   return gCalculationThread.IsCancelled();
 }
@@ -23,7 +23,7 @@ void PrintWindow::PrintLine(char *s) {
   }
 }
 
-/** Prints tet to run analysis window via calculation thread. */
+/** Prints to run analysis window via calculation thread. */
 void PrintWindow::PrintWarningLine(char *s) {
   if (s) {//if "s" ends with a "\n" then remove it...
     if (s[strlen(s)-1] == '\n')
