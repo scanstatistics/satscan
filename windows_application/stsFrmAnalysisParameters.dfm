@@ -86,7 +86,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 10
           Width = 121
           Height = 66
-          Caption = 'Precision of Times'
+          Caption = 'Time Included'
           Columns = 2
           ItemIndex = 0
           Items.Strings = (
