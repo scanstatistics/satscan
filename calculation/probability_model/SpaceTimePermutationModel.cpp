@@ -157,7 +157,7 @@ void CSpaceTimePermutationModel::MakeData(int iSimulationNumber)
 
       // reset simulation cases to zero
       for (i=0; i < m_pData->m_nTimeIntervals; i++)
-         for (k=0; k < m_pData->m_nTracts; k++)
+         for (k=0; k < m_pData->m_nTotalTractsAtStart; k++)
             m_pData->m_pSimCases[i][k] = 0;
 
       RandomizerSize = m_vTimeIntervalRandomizer.size();
