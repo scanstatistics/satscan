@@ -23,7 +23,7 @@ void CTIAlive::CompareClusters(CCluster & Running, CCluster & TopShapeCluster, c
   int           iWindowStart, iWindowEnd;
   CModel      & ProbabilityModel(Data.GetProbabilityModel());
   count_t       tTotalCases(Data.GetNumCases());
-  double	dTotalMeasure(Data.GetTotalMeasure();
+  double	dTotalMeasure(Data.GetTotalMeasure());
 
   //iterate through all possible 'alive' windows
   iWindowStart = giNumIntervals - giMaxWindowLength;

@@ -38,7 +38,7 @@ void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopShapeC
   int           iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
   CModel      & ProbabilityModel(Data.GetProbabilityModel());
   count_t       tTotalCases(Data.GetNumCases());
-  double	dTotalMeasure(Data.GetTotalMeasure();
+  double	dTotalMeasure(Data.GetTotalMeasure());
 
   //iterate through 'alive' windows separately, so we don't have to conditionally
   //check whether we need to do a subtraction.
