@@ -306,17 +306,18 @@ void TBDlgDataImporter::CreateDestinationInformation() {
     sFileName.SetLocation(sBuffer);
     //File extension to file type.
     switch (rdgInputFileType->ItemIndex) {
-      case Case        : sFileName.SetExtension(".cas");
-                         break;
-      case Control     : sFileName.SetExtension(".ctl");
-                         break;
-      case Population  : sFileName.SetExtension(".pop");
-                         break;
-      case Coordinates : sFileName.SetExtension(".geo");
-                         break;
-      case SpecialGrid : sFileName.SetExtension(".grd");
-                         break;
-      default  : ZdGenerateException("Unknown file type : \"%d\"", "ConvertImportedDataFile()", rdgInputFileType->ItemIndex);
+      case Case              : sFileName.SetExtension(".cas");
+                               break;
+      case Control           : sFileName.SetExtension(".ctl");
+                               break;
+      case Population        :
+      case SpecialPopulation : sFileName.SetExtension(".pop");
+                               break;
+      case Coordinates       : sFileName.SetExtension(".geo");
+                               break;
+      case SpecialGrid       : sFileName.SetExtension(".grd");
+                               break;
+      default : ZdGenerateException("Unknown file type : \"%d\"", "ConvertImportedDataFile()", rdgInputFileType->ItemIndex);
     };
     gDestDescriptor.SetDestinationFile(sFileName.GetFullPath());
 
@@ -575,16 +576,18 @@ void TBDlgDataImporter::LoadMappingPanel() {
 void TBDlgDataImporter::LoadResultFileNameIntoAnalysis() {
   try {
     switch (rdgInputFileType->ItemIndex) {
-      case Case        : gAnalysisForm.SetCaseFile(gDestDescriptor.GetDestinationFileName());
-                         break;
-      case Control     : gAnalysisForm.SetControlFile(gDestDescriptor.GetDestinationFileName());
-                         break;
-      case Population  : gAnalysisForm.SetPopulationFile(gDestDescriptor.GetDestinationFileName());
-                         break;
-      case Coordinates : gAnalysisForm.SetCoordinateFile(gDestDescriptor.GetDestinationFileName());
-                         break;
-      case SpecialGrid : gAnalysisForm.SetSpecialGridFile(gDestDescriptor.GetDestinationFileName());
-                         break;
+      case Case              : gAnalysisForm.SetCaseFile(gDestDescriptor.GetDestinationFileName());
+                               break;
+      case Control           : gAnalysisForm.SetControlFile(gDestDescriptor.GetDestinationFileName());
+                               break;
+      case Population        : gAnalysisForm.SetPopulationFile(gDestDescriptor.GetDestinationFileName());
+                               break;
+      case Coordinates       : gAnalysisForm.SetCoordinateFile(gDestDescriptor.GetDestinationFileName());
+                               break;
+      case SpecialGrid       : gAnalysisForm.SetSpecialGridFile(gDestDescriptor.GetDestinationFileName());
+                               break;
+      case SpecialPopulation : gAnalysisForm.SetSpecialPopulationFile(gDestDescriptor.GetDestinationFileName());
+                               break;
       default : ZdGenerateException("Unknown file type index: \"%d\"", "LoadResultFileNameIntoAnalysis()", rdgInputFileType->ItemIndex);
     };
   }
@@ -730,26 +733,30 @@ void TBDlgDataImporter::OnExitStartPanel() {
     SetPanelsToShow();
     gitrCurrentPanel = gvPanels.begin();
     switch (rdgInputFileType->ItemIndex) {
-      case Case        : SetupCaseFileVariableDescriptors();
-                         rdoCoordinates->Enabled = false;
-                         pnlBottomPanelTopAligned->Visible = false;
-                         break;
-      case Control     : SetupControlFileVariableDescriptors();
-                         rdoCoordinates->Enabled = false;
-                         pnlBottomPanelTopAligned->Visible = false;
-                         break;
-      case Population  : SetupPopFileVariableDescriptors();
-                         rdoCoordinates->Enabled = false;
-                         pnlBottomPanelTopAligned->Visible = false;
-                         break;
-      case Coordinates : SetupGeoFileVariableDescriptors();
-                         rdoCoordinates->Enabled = true;
-                         pnlBottomPanelTopAligned->Visible = true;
-                         break;
-      case SpecialGrid : SetupGridFileVariableDescriptors();
-                         rdoCoordinates->Enabled = true;
-                         pnlBottomPanelTopAligned->Visible = true;
-                         break;
+      case Case              : SetupCaseFileVariableDescriptors();
+                               rdoCoordinates->Enabled = false;
+                               pnlBottomPanelTopAligned->Visible = false;
+                               break;
+      case Control           : SetupControlFileVariableDescriptors();
+                               rdoCoordinates->Enabled = false;
+                               pnlBottomPanelTopAligned->Visible = false;
+                               break;
+      case Population        : SetupPopFileVariableDescriptors();
+                               rdoCoordinates->Enabled = false;
+                               pnlBottomPanelTopAligned->Visible = false;
+                               break;
+      case Coordinates       : SetupGeoFileVariableDescriptors();
+                               rdoCoordinates->Enabled = true;
+                               pnlBottomPanelTopAligned->Visible = true;
+                               break;
+      case SpecialGrid       : SetupGridFileVariableDescriptors();
+                               rdoCoordinates->Enabled = true;
+                               pnlBottomPanelTopAligned->Visible = true;
+                               break;
+      case SpecialPopulation : SetupSpecialPopFileVariableDescriptors();                   
+                               rdoCoordinates->Enabled = false;
+                               pnlBottomPanelTopAligned->Visible = false;
+                               break;
       default : ZdGenerateException("Unknown file type index: \"%d\"","OnExitStartPanel()", rdgInputFileType->ItemIndex);
     };
   }
@@ -1039,21 +1046,24 @@ void TBDlgDataImporter::ShowFileTypeFormatPanel(int iFileType) {
 void TBDlgDataImporter::SelectImportFile() {
   try {
     switch (rdgInputFileType->ItemIndex) {
-      case Case        : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Case files (*.cas)|*.cas|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                         OpenDialog->Title = "Select Source Case File";
-                         break;
-      case Control     : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Text files (*.txt)|*.txt|Control files (*.ctl)|*.ctl|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                         OpenDialog->Title = "Select Source Control File";
-                         break;
-      case Population  : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                         OpenDialog->Title = "Select Source Population File";
-                         break;
-      case Coordinates : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Coordinates files (*.geo)|*.geo|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                         OpenDialog->Title = "Select Source Coordinates File";
-                         break;
-      case SpecialGrid : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Special Grid files (*.grd)|*.grd|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                         OpenDialog->Title = "Select Source Special Grid File";
-                         break;
+      case Case               : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Case files (*.cas)|*.cas|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+                                OpenDialog->Title = "Select Source Case File";
+                                break;
+      case Control            : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Text files (*.txt)|*.txt|Control files (*.ctl)|*.ctl|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+                                OpenDialog->Title = "Select Source Control File";
+                                break;
+      case Population         : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+                                OpenDialog->Title = "Select Source Population File";
+                                break;
+      case Coordinates        : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Coordinates files (*.geo)|*.geo|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+                                OpenDialog->Title = "Select Source Coordinates File";
+                                break;
+      case SpecialGrid        : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Special Grid files (*.grd)|*.grd|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+                                OpenDialog->Title = "Select Source Special Grid File";
+                                break;
+      case SpecialPopulation  : OpenDialog->Filter = "dBase files (*.dbf)|*.dbf|Delimited files (*.csv)|*.csv|Population files (*.pop)|*.pop|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+                                OpenDialog->Title = "Select Source Special Population File";
+                                break;
       default : ZdGenerateException("Unknown file type index: \"%d\"","SetImportFields()", rdgInputFileType->ItemIndex);
     };
 
@@ -1263,6 +1273,19 @@ void TBDlgDataImporter::SetupPopFileVariableDescriptors() {
   }
   catch (ZdException &x) {
     x.AddCallpath("SetupPopFileVariableDescriptors()", "TBDlgDataImporter");
+    throw;
+  }
+}
+
+/** Setup field descriptors for population file. */
+void TBDlgDataImporter::SetupSpecialPopFileVariableDescriptors() {
+  try {
+    gvSaTScanVariables.clear();
+    gvSaTScanVariables.push_back(SaTScanVariable("Tract ID", 0, true));
+    gvSaTScanVariables.push_back(SaTScanVariable("Population", 1, true));
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetupSpecialPopFileVariableDescriptors()", "TBDlgDataImporter");
     throw;
   }
 }

@@ -1,4 +1,4 @@
-// $Revision: 1.7 $
+// $Revision: 1.8 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -208,6 +208,7 @@ class TBDlgDataImporter : public TForm {
      void                            SetupGeoFileVariableDescriptors();
      void                            SetupGridFileVariableDescriptors();
      void                            SetupPopFileVariableDescriptors();
+     void                            SetupSpecialPopFileVariableDescriptors();
      void                            ShowFileTypeFormatPanel(int iFileType);
      void                            ShowFirstPanel();
      void                            ShowNextPanel();
