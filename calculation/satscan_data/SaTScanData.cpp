@@ -96,6 +96,7 @@ bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tra
                            "       of cases in the period %s to %s to be zero, but there\n"
                            "       are cases in that interval.\n"
                            "       If the expected is zero, the number of cases must also be zero.\n",
+                           "AdjustMeasure()",
                            (Tract == -1 ? "All" : gpTInfo->tiGetTid(Tract, sId)),
                            JulianToString(sStart, StartDate).GetCString(),
                            JulianToString(sEnd, EndDate).GetCString());
