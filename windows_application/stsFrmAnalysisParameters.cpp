@@ -123,12 +123,12 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
          pImporter->ShowOptionalPanels(false, false, false);
          if (pImporter->ShowModal() == mrOk) {
            AttemptFilterDateFields(sFileName.GetFullPath(), "%y/%m/%d", 2);
-           strcpy(gpParams->m_szCaseFilename, sFileName.GetFullPath());
+           gpParams->SetCaseFileName(sFileName.GetFullPath());
            edtCaseFileName->Text = sFileName.GetFullPath();
          }
       }
       else {
-        strcpy(gpParams->m_szCaseFilename, sFileName.GetFullPath());
+        gpParams->SetCaseFileName(sFileName.GetFullPath());
         edtCaseFileName->Text = sFileName.GetFullPath();
       }
     }
@@ -175,12 +175,12 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
          pImporter->ShowOptionalPanels(false, false, false);
          if (pImporter->ShowModal() == mrOk) {
            AttemptFilterDateFields(sFileName.GetFullPath(), "%y/%m/%d", 2);
-           strcpy(gpParams->m_szControlFilename, sFileName.GetFullPath());
+           gpParams->SetControlFileName(sFileName.GetFullPath());
            edtControlFileName->Text = sFileName.GetFullPath();
          }
       }
       else {
-        strcpy(gpParams->m_szControlFilename, sFileName.GetFullPath());
+        gpParams->SetControlFileName(sFileName.GetFullPath());
         edtControlFileName->Text = sFileName.GetFullPath();
       }
     }
@@ -226,12 +226,12 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
          auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
          if (pImporter->ShowModal() == mrOk) {
-           strcpy(gpParams->m_szCoordFilename, sFileName.GetFullPath());
+           gpParams->SetCoordinatesFileName(sFileName.GetFullPath());
            edtCoordinateFileName->Text = sFileName.GetFullPath();
          }
       }
       else {
-        strcpy(gpParams->m_szCoordFilename, sFileName.GetFullPath());
+        gpParams->SetCoordinatesFileName(sFileName.GetFullPath());
         edtCoordinateFileName->Text = sFileName.GetFullPath();
       }
     }
@@ -277,12 +277,12 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
          auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
          if (pImporter->ShowModal() ==mrOk) {
-           strcpy(gpParams->m_szGridFilename, sFileName.GetFullPath());
+           gpParams->SetSpecialGridFileName(sFileName.GetFullPath());
            edtGridFileName->Text = sFileName.GetFullPath();
          }
       }
       else {
-        strcpy(gpParams->m_szGridFilename, sFileName.GetFullPath());
+        gpParams->SetSpecialGridFileName(sFileName.GetFullPath());
         edtGridFileName->Text = sFileName.GetFullPath();
       }  
     }
@@ -328,12 +328,13 @@ void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
           auto_ptr<TBdlgImporter> pImporter(new TBdlgImporter(0, 0, &ImportDescriptor));
           pImporter->ShowOptionalPanels(false, false, false);
           if (pImporter->ShowModal() == mrOk) {
-            strcpy(gpParams->m_szPopFilename, sFileName.GetFullPath());
+            AttemptFilterDateFields(sFileName.GetFullPath(), "%y/%m/%d", 1);
+            gpParams->SetPopulationFileName(sFileName.GetFullPath());
             edtPopFileName->Text = sFileName.GetFullPath();
           }
        }
        else {
-         strcpy(gpParams->m_szPopFilename, sFileName.GetFullPath());
+         gpParams->SetPopulationFileName(sFileName.GetFullPath());
          edtPopFileName->Text = sFileName.GetFullPath();
        }
     }
@@ -354,7 +355,7 @@ void __fastcall TfrmAnalysis::btnResultFileBrowseClick(TObject *Sender) {
     OpenDialog1->FilterIndex = 0;
     OpenDialog1->Title = "Select Results File";
     if (OpenDialog1->Execute()) {
-      strcpy(gpParams->m_szOutputFilename, OpenDialog1->FileName.c_str());
+      gpParams->SetOutputFileName(OpenDialog1->FileName.c_str());
       edtResultFile->Text = OpenDialog1->FileName.c_str();
     }
   }
@@ -1074,8 +1075,7 @@ void TfrmAnalysis::Init() {
 //------------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::mitClearSpecialGridEditClick(TObject *Sender) {
   edtGridFileName->Clear();
-  strcpy(gpParams->m_szGridFilename, "");
-  gpParams->m_bSpecialGridFile = false;
+  gpParams->SetSpecialGridFileName("");
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::NaturalNumberKeyPress(TObject *Sender, char &Key) {
@@ -1391,12 +1391,11 @@ void TfrmAnalysis::SaveTextParameters() {
 
   try {
     //Input File Tab
-    strcpy(gpParams->m_szCaseFilename,edtCaseFileName->Text.c_str());
-    strcpy(gpParams->m_szControlFilename,edtControlFileName->Text.c_str());
-    strcpy(gpParams->m_szPopFilename,edtPopFileName->Text.c_str());
-    strcpy(gpParams->m_szCoordFilename,edtCoordinateFileName->Text.c_str());
-    strcpy(gpParams->m_szGridFilename,edtGridFileName->Text.c_str());
-    gpParams->m_bSpecialGridFile = edtGridFileName->Text.Length();
+    gpParams->SetCaseFileName(edtCaseFileName->Text.c_str());
+    gpParams->SetControlFileName(edtControlFileName->Text.c_str());
+    gpParams->SetPopulationFileName(edtPopFileName->Text.c_str());
+    gpParams->SetCoordinatesFileName(edtCoordinateFileName->Text.c_str());
+    gpParams->SetSpecialGridFileName(edtGridFileName->Text.c_str());
     //Analysis Tab
     sprintf(gpParams->m_szStartDate, "%i/%i/%i", atoi(edtStartYear->Text.c_str()), atoi(edtStartMonth->Text.c_str()), atoi(edtStartDay->Text.c_str()));
     sprintf(gpParams->m_szEndDate, "%i/%i/%i", atoi(edtEndYear->Text.c_str()), atoi(edtEndMonth->Text.c_str()), atoi(edtEndDay->Text.c_str()));
@@ -1417,7 +1416,7 @@ void TfrmAnalysis::SaveTextParameters() {
     gpParams->m_nTimeAdjustType = (gpParams->m_nModel == POISSON ? gpParams->m_nTimeAdjustType : NOTADJUSTED);
     sprintf(gpParams->m_szProspStartDate, "%i/%i/%i", atoi(edtProspYear->Text.c_str()), atoi(edtProspMonth->Text.c_str()), atoi(edtProspDay->Text.c_str()));
     //Output File Tab
-    strcpy(gpParams->m_szOutputFilename, edtResultFile->Text.c_str());
+    gpParams->SetOutputFileName(edtResultFile->Text.c_str());
 
     gpParams->m_bOutputRelRisks = chkRelativeRiskEstimatesAreaAscii->Enabled && chkRelativeRiskEstimatesAreaAscii->Checked;
 
@@ -1573,12 +1572,12 @@ void TfrmAnalysis::SetupInterface() {
     rgProbability->ItemIndex = gpParams->m_nModel;
 
     //Input File Tab
-    edtCaseFileName->Text = gpParams->m_szCaseFilename;
-    edtControlFileName->Text = gpParams->m_szControlFilename;
+    edtCaseFileName->Text = gpParams->GetCaseFileName().c_str();
+    edtControlFileName->Text = gpParams->GetControlFileName().c_str();
     rgPrecisionTimes->ItemIndex = gpParams->m_nPrecision;
-    edtPopFileName->Text = gpParams->m_szPopFilename;
-    edtCoordinateFileName->Text = gpParams->m_szCoordFilename;
-    edtGridFileName->Text = gpParams->m_szGridFilename;
+    edtPopFileName->Text = gpParams->GetPopulationFileName().c_str();
+    edtCoordinateFileName->Text = gpParams->GetCoordinatesFileName().c_str();
+    edtGridFileName->Text = gpParams->GetSpecialGridFileName().c_str();
     rgCoordinates->ItemIndex = gpParams->m_nCoordType;
     //Analysis Tab
     rgScanAreas->ItemIndex = gpParams->m_nAreas - 1;
@@ -1618,7 +1617,7 @@ void TfrmAnalysis::SetupInterface() {
     if (strlen(gpParams->m_szProspStartDate) > 0)
       ParseDate(gpParams->m_szProspStartDate, edtProspYear, edtProspMonth, edtProspDay);
     //Output File Tab
-    edtResultFile->Text        = gpParams->m_szOutputFilename;
+    edtResultFile->Text = gpParams->GetOutputFileName().c_str();
     chkRelativeRiskEstimatesAreaAscii->Checked = gpParams->m_bOutputRelRisks;
     chkRelativeRiskEstimatesAreaDBase->Checked = gpParams->GetDBaseOutputRelRisks();
     chkSimulatedLogLikelihoodRatiosAscii->Checked  = gpParams->m_bSaveSimLogLikelihoods;
