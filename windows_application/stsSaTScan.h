@@ -19,6 +19,6 @@
 
 #define TECH_EMAIL "satscan@nih.gov"
 #define VERSION_NUMBER "v 3.0.0 beta"
-#define VERSION_DATE "July 1, 2002"
+#define VERSION_DATE "September 20, 2002"
 
 #endif
