@@ -259,7 +259,7 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
            pRecord->SetTestStat(theCluster.GetDuczmalCorrectedLogLikelihoodRatio());
       }
 
-      pRecord->SetNumAreas(theCluster.m_nTracts);
+      pRecord->SetNumAreas(theCluster.GetClusterType() == PURELYTEMPORAL ? theData.GetNumTracts() : theCluster.m_nTracts);
            
       // p value
       if (gbPrintPVal) {
@@ -316,8 +316,9 @@ void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, Z
      if (pCluster.m_nClusterType == PURELYTEMPORAL) {
        sLatitude = "n/a";
        sLongitude = "n/a";
-       for (i=2; i < pData.GetParameters().GetDimensionsOfData(); ++i)
-          vAdditCoords.push_back("n/a");
+       if (giCoordType == CARTESIAN)
+         for (i=2; i < pData.GetParameters().GetDimensionsOfData(); ++i)
+            vAdditCoords.push_back("n/a");
        sRadius = "n/a";
      }
      else {
