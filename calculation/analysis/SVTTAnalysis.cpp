@@ -30,14 +30,14 @@ CSpatialVarTempTrendAnalysis::~CSpatialVarTempTrendAnalysis() {
     for each simulation.
     NOTE: This analysis has not been optimized to 'pre' allocate objects used in
           simulation process. This function is only a shell.                     */
-void CSpatialVarTempTrendAnalysis::AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway) {
+void CSpatialVarTempTrendAnalysis::AllocateSimulationObjects(const AbtractDataSetGateway & DataGateway) {
 }
 
 /** Allocates objects used during calculation of most likely clusters, instead
     of repeated allocations for each simulation.
     NOTE: This analysis has not been optimized to 'pre' allocate objects used in
           process of finding most likely clusters. */
-void CSpatialVarTempTrendAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway) {
+void CSpatialVarTempTrendAnalysis::AllocateTopClustersObjects(const AbtractDataSetGateway & DataGateway) {
   try {
     CSVTTCluster thisCluster(DataGateway, gDataHub.GetNumTimeIntervals());
     thisCluster.InitializeSVTT(0, DataGateway);
@@ -50,7 +50,7 @@ void CSpatialVarTempTrendAnalysis::AllocateTopClustersObjects(const AbtractDataS
 }
 
 /** calculates most likely cluster about central location 'tCenter' */
-const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway) {
+const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway & DataGateway) {
   int                   k;
   tract_t               i, iNumNeighbors;
 
@@ -67,7 +67,7 @@ const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCent
        iNumNeighbors = gDataHub.GetNeighborCountArray()[k][tCenter];
        for (i=1; i <= iNumNeighbors; ++i) {
           thisCluster.AddNeighbor(gDataHub.GetNeighbor(k, tCenter, i), DataGateway);
-          //TODO: -- Calculate loglikelihood ratio for all data streams.
+          //TODO: -- Calculate loglikelihood ratio for all datasets.
           thisCluster.m_nRatio = gpLikelihoodCalculator->CalcSVTTLogLikelihood(0, &thisCluster, *(DataGateway.GetDataSetInterface(0).GetTimeTrend()));
           if (thisCluster.m_nRatio > TopShapeCluster.m_nRatio)
            TopShapeCluster = thisCluster;
@@ -86,9 +86,9 @@ const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCent
   return gpTopShapeClusters->GetTopCluster();
 }
 
-/** calculates loglikelihood ratio for simulated data pointed to by DataStreamInterface
+/** calculates loglikelihood ratio for simulated data pointed to by DataSetInterface
     in a retrospective manner */
-double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
+double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataSetInterface & Interface) {
   int           k;
   tract_t       i, j, iNumNeighbors;
   double        dMaximumLogLikelihoodRatio;

@@ -54,27 +54,27 @@ AnalysisRunner::~AnalysisRunner() {
 /** calculates most likely clusters in real data */
 void AnalysisRunner::CalculateMostLikelyClusters() {
   CAnalysis                  * pAnalysis=0;
-  AbtractDataStreamGateway   * pDataStreamGateway=0;
+  AbtractDataSetGateway      * pDataSetGateway=0;
 
   try {
     //display process heading
     DisplayFindClusterHeading();
     //allocate date gateway object
-    pDataStreamGateway = gpDataHub->GetDataStreamHandler().GetNewDataGateway();
+    pDataSetGateway = gpDataHub->GetDataSetHandler().GetNewDataGateway();
     //get analysis object
     pAnalysis = GetNewAnalysisObject();
     //allocate objects used in 'FindTopClusters()' process
-    pAnalysis->AllocateTopClustersObjects(*pDataStreamGateway);
+    pAnalysis->AllocateTopClustersObjects(*pDataSetGateway);
     //calculate most likely clusters
-    pAnalysis->FindTopClusters(*pDataStreamGateway, gTopClustersContainer);
-    delete pDataStreamGateway; pDataStreamGateway=0;
+    pAnalysis->FindTopClusters(*pDataSetGateway, gTopClustersContainer);
+    delete pDataSetGateway; pDataSetGateway=0;
     delete pAnalysis; pAnalysis=0;
     //display the loglikelihood of most likely cluster
     if (!gPrintDirection.GetIsCanceled())
       DisplayTopClusterLogLikelihood();
   }
   catch (ZdException &x) {
-    delete pDataStreamGateway;
+    delete pDataSetGateway;
     delete pAnalysis;
     x.AddCallpath("CalculateMostLikelyClusters()","CAnalysis");
     throw;
@@ -167,7 +167,7 @@ void AnalysisRunner::CreateReport() {
     sStartTime = ctime(&gStartTime);
     fprintf(fp,"\nProgram run on: %s\n", sStartTime.GetCString());
     gParameters.DisplayAnalysisSummary(fp);
-    gParameters.DisplayAdjustments(fp, gpDataHub->GetDataStreamHandler());
+    gParameters.DisplayAdjustments(fp, gpDataHub->GetDataSetHandler());
     gpDataHub->DisplaySummary(fp);
     fclose(fp);
   }
@@ -327,8 +327,8 @@ void AnalysisRunner::Execute() {
     //calculate expected cases
     gpDataHub->CalculateExpectedCases();
     //validate that data set contains cases
-    for (unsigned int i=0; i < gpDataHub->GetDataStreamHandler().GetNumDataSets(); ++i)
-       if (gpDataHub->GetDataStreamHandler().GetStream(i).GetTotalCases() == 0)
+    for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
+       if (gpDataHub->GetDataSetHandler().GetDataSet(i).GetTotalCases() == 0)
          GenerateResolvableException("Error: No cases found in data set %u.\n","Execute()", i);
     //detect user cancellation
     if (gPrintDirection.GetIsCanceled())
@@ -426,10 +426,10 @@ void AnalysisRunner::FinalizeReport() {
     }
 
     if (gParameters.GetProbabilityModelType() == POISSON)
-      gpDataHub->GetDataStreamHandler().ReportZeroPops(*gpDataHub, fp, &gPrintDirection);
+      gpDataHub->GetDataSetHandler().ReportZeroPops(*gpDataHub, fp, &gPrintDirection);
 
     gpDataHub->GetTInfo()->tiReportDuplicateTracts(fp);
-    gParameters.DisplayParameters(fp, giNumSimsExecuted, gpDataHub->GetDataStreamHandler());
+    gParameters.DisplayParameters(fp, giNumSimsExecuted, gpDataHub->GetDataSetHandler());
     time(&CompletionTime);
     nTotalTime = difftime(CompletionTime, gStartTime);
     nHours     = floor(nTotalTime/(60*60));
@@ -540,7 +540,7 @@ void AnalysisRunner::PerformParallelSimulations() {
   unsigned int                         iSimulationNumber;
   char                               * sReplicationFormatString;
   std::auto_ptr<LogLikelihoodData>     pLLRData;
-  AbtractDataStreamGateway           * pDataGateway=0;
+  AbtractDataSetGateway              * pDataGateway=0;
   CAnalysis                          * pAnalysis=0;
   SimulationDataContainer_t            SimulationDataContainer;
   RandomizerContainer_t                RandomizationContainer;
@@ -614,7 +614,7 @@ void AnalysisRunner::PerformSerializedSimulations() {
   unsigned int                         iSimulationNumber;
   char                               * sReplicationFormatString;
   std::auto_ptr<LogLikelihoodData>     pLLRData;
-  AbtractDataStreamGateway           * pDataGateway=0;
+  AbtractDataSetGateway              * pDataGateway=0;
   CAnalysis                          * pAnalysis=0;
   SimulationDataContainer_t            SimulationDataContainer;
   RandomizerContainer_t                RandomizationContainer;
@@ -633,11 +633,11 @@ void AnalysisRunner::PerformSerializedSimulations() {
     //set/reset loglikelihood ratio significance indicator
     gSimulatedRatios.Initialize();
     //get container for simulation data - this data will be modified in the randomize process
-    GetDataHub().GetDataStreamHandler().GetSimulationDataContainer(SimulationDataContainer);
+    GetDataHub().GetDataSetHandler().GetSimulationDataContainer(SimulationDataContainer);
     //get container of data randomizers - these will modify the simulation data
-    GetDataHub().GetDataStreamHandler().GetRandomizerContainer(RandomizationContainer);
-    //get data gateway given data stream handler's real data and simulated data structures
-    pDataGateway = GetDataHub().GetDataStreamHandler().GetNewSimulationDataGateway(SimulationDataContainer);
+    GetDataHub().GetDataSetHandler().GetRandomizerContainer(RandomizationContainer);
+    //get data gateway given dataset handler's real data and simulated data structures
+    pDataGateway = GetDataHub().GetDataSetHandler().GetNewSimulationDataGateway(SimulationDataContainer);
     //get new analysis object for which to defined simulation algorithm
     pAnalysis = GetNewAnalysisObject();
     //allocate appropriate data members for simulation algorithm

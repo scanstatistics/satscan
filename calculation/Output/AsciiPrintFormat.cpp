@@ -4,21 +4,21 @@
 //***************************************************************************
 #include "AsciiPrintFormat.h"
 
-/** width of label with one data stream */
-const unsigned int AsciiPrintFormat::giOneStreamLabelWidth          = 22;
-/** width of label for cluster section with multiple data streams */
-const unsigned int AsciiPrintFormat::giMultiStreamClusterLabelWidth = 32;
-/** width of label for summary section with multiple data streams */
-const unsigned int AsciiPrintFormat::giMultiStreamSummaryLabelWidth = 38;
+/** width of label with one dataset */
+const unsigned int AsciiPrintFormat::giOneDataSetLabelWidth          = 22;
+/** width of label for cluster section with multiple datasets */
+const unsigned int AsciiPrintFormat::giMultiDataSetClusterLabelWidth = 32;
+/** width of label for summary section with multiple datasets */
+const unsigned int AsciiPrintFormat::giMultiDataSetSummaryLabelWidth = 38;
 /** width of output area - this value is untested below 64 */
 const unsigned int AsciiPrintFormat::giRightMargin                  = 64;
 /** width of version header section */
 const unsigned int AsciiPrintFormat::giVersionHeaderWidth           = 29;
-/** text appended to label for multiple streams */
-const char * AsciiPrintFormat::gsPerStreamText                      = "per data set";
+/** text appended to label for multiple dataset */
+const char * AsciiPrintFormat::gsPerDataSetText                     = "per data set";
 
 /** constructor */
-AsciiPrintFormat::AsciiPrintFormat(bool bOneStream) : gbOneStream(bOneStream) {
+AsciiPrintFormat::AsciiPrintFormat(bool bOneDataSet) : gbOneDataSet(bOneDataSet) {
   SetMarginsAsOverviewSection();
 }
 
@@ -80,7 +80,7 @@ void AsciiPrintFormat::PrintAlignedMarginsDataString(FILE* fp, ZdString& sDataSt
 }
 
 /** Prints section label to file stream. */
-void AsciiPrintFormat::PrintSectionLabel(FILE* fp, const char * sText, bool bStreamParticular, bool bPadLeftMargin) const {
+void AsciiPrintFormat::PrintSectionLabel(FILE* fp, const char * sText, bool bDataSetParticular, bool bPadLeftMargin) const {
   unsigned int   iStringLength, iFillLength, iPad=0;
 
   iStringLength = 0;
@@ -91,9 +91,9 @@ void AsciiPrintFormat::PrintSectionLabel(FILE* fp, const char * sText, bool bStr
   }
   //add label
   iStringLength += fprintf(fp, sText);
-  //add 'per stream' text if requested and there is more than one stream
-  if (bStreamParticular && !gbOneStream)
-    iStringLength += fprintf(fp, " %s", gsPerStreamText);
+  //add 'per data set' text if requested and there is more than one dataset
+  if (bDataSetParticular && !gbOneDataSet)
+    iStringLength += fprintf(fp, " %s", gsPerDataSetText);
   //check that created label isn't greater than defined maximum width of label
   if (iStringLength > (bPadLeftMargin ? giLabelWidth + giLeftMargin : giLabelWidth))
     ZdGenerateException("Label text has length of %u, but defined max length is %u.\n", "GetClusterSectionText()",
@@ -163,8 +163,8 @@ void AsciiPrintFormat::SetMarginsAsClusterSection(unsigned int iNumber) {
       n = (int)floor(((double)n)/10);
   }
   //set margin for data print
-  giDataLeftMargin = (gbOneStream ? giOneStreamLabelWidth : giMultiStreamClusterLabelWidth) + giLeftMargin + strlen(": ");
-  giLabelWidth = (gbOneStream ? giOneStreamLabelWidth : giMultiStreamClusterLabelWidth);
+  giDataLeftMargin = (gbOneDataSet ? giOneDataSetLabelWidth : giMultiDataSetClusterLabelWidth) + giLeftMargin + strlen(": ");
+  giLabelWidth = (gbOneDataSet ? giOneDataSetLabelWidth : giMultiDataSetClusterLabelWidth);
 }
 
 /** Adjusts margins for run overview section. The overview section contains
@@ -178,7 +178,7 @@ void AsciiPrintFormat::SetMarginsAsOverviewSection() {
     label width and data margins are calculated. */
 void AsciiPrintFormat::SetMarginsAsSummarySection() {
   giLeftMargin = 0;
-  giLabelWidth = (gbOneStream ? giOneStreamLabelWidth : giMultiStreamSummaryLabelWidth);
+  giLabelWidth = (gbOneDataSet ? giOneDataSetLabelWidth : giMultiDataSetSummaryLabelWidth);
   giDataLeftMargin = giLabelWidth + giLeftMargin + strlen(": ");
 }
 

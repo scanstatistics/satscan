@@ -181,22 +181,22 @@ void IniParameterFileAccess::ReadIniParameter(const ZdIniFile& SourceFile, Param
 
 /** Reads parameter from ini file and returns all found key values in vector for
     those parameters that have optional additional keys, such as files with
-    multiple data streams. */
+    multiple datasets. */
 std::vector<ZdString>& IniParameterFileAccess::ReadIniParameter(const ZdIniFile& SourceFile, ParameterType eParameterType, std::vector<ZdString>& vParameters) const {
   long                  lSectionIndex, lKeyIndex;
   ZdString              sNextKey;
   const char          * sSectionName, * sKey;
-  size_t                iStream=2;
+  size_t                iDataSets=2;
 
   vParameters.clear();
   if (GetSpecifications().GetMultipleParameterIniInfo(eParameterType, &sSectionName, &sKey)) {
-    //read possibly other data stream case source
+    //read possibly other dataset case source
     if ((lSectionIndex = SourceFile.GetSectionIndex(sSectionName)) > -1) {
       const ZdIniSection  * pSection = SourceFile.GetSection(lSectionIndex);
-      sNextKey.printf("%s%i", sKey, iStream);
+      sNextKey.printf("%s%i", sKey, iDataSets);
       while ((lKeyIndex = pSection->FindKey(sNextKey)) > -1) {
            vParameters.push_back(ZdString(pSection->GetLine(lKeyIndex)->GetValue()));
-           sNextKey.printf("%s%i", sKey, ++iStream);
+           sNextKey.printf("%s%i", sKey, ++iDataSets);
       }
     }
   }
@@ -227,26 +227,26 @@ void IniParameterFileAccess::ReadInputSettings(const ZdIniFile& SourceFile) {
 /** Reads parameter settings grouped under 'Mutliple Data Sets'. */
 void IniParameterFileAccess::ReadMultipleDataSetsSettings(const ZdIniFile& SourceFile) {
   std::vector<ZdString>         vFilenames;
-  size_t                        t, iMostStreams=1;
+  size_t                        t, iMostDataSets=1;
 
   try {
     ReadIniParameter(SourceFile, MULTI_DATASET_PURPOSE_TYPE);
     ReadIniParameter(SourceFile, CASEFILE, vFilenames);
     for (t=0; t < vFilenames.size(); ++t)
       gParameters.SetCaseFileName(vFilenames[t].GetCString(), true, t + 2);
-    iMostStreams = std::max(iMostStreams, vFilenames.size() + 1);
+    iMostDataSets = std::max(iMostDataSets, vFilenames.size() + 1);
     ReadIniParameter(SourceFile, CONTROLFILE, vFilenames);
-    iMostStreams = std::max(iMostStreams, vFilenames.size() + 1);
+    iMostDataSets = std::max(iMostDataSets, vFilenames.size() + 1);
     for (t=0; t < vFilenames.size(); ++t)
       gParameters.SetControlFileName(vFilenames[t].GetCString(), false, t + 2);
     ReadIniParameter(SourceFile, POPFILE, vFilenames);
-    iMostStreams = std::max(iMostStreams, vFilenames.size() + 1);
+    iMostDataSets = std::max(iMostDataSets, vFilenames.size() + 1);
     for (t=0; t < vFilenames.size(); ++t)
       gParameters.SetPopulationFileName(vFilenames[t].GetCString(), false, t + 2);
-    //Synchronize collections of data stream filesnames so that we can ask for
-    //any file of a particular stream, even if blank. This keeps the same behavior
-    //as when there was only one data stream.
-    gParameters.SetNumDataSets(iMostStreams);
+    //Synchronize collections of dataset filesnames so that we can ask for
+    //any file of a particular dataset, even if blank. This keeps the same behavior
+    //as when there was only one dataset.
+    gParameters.SetNumDataSets(iMostDataSets);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadMultipleDataSetsSettings()","IniParameterFileAccess");

@@ -23,7 +23,7 @@ RelativeRiskData::~RelativeRiskData() {}
 
 const char * RelativeRiskData::REL_RISK_EXT                     = ".rr";
 const char * RelativeRiskData::TIME_TREND_FIELD                 = "TIME_TREND";
-const char * RelativeRiskData::DATASTREAM_FIELD                 = "STREAM";
+const char * RelativeRiskData::DATASET_FIELD                    = "SET";
 const char * RelativeRiskData::OBSERVED_DIV_EXPECTED_FIELD      = "ODE";
 const char * RelativeRiskData::RELATIVE_RISK_FIELD              = "REL_RISK";
 
@@ -51,21 +51,21 @@ void RelativeRiskData::RecordRelativeRiskData(const CSaTScanData& DataHub) {
   double                dExpected, dDenominator, dNumerator;
 
   try {
-    for (i=0; i < gParameters.GetNumDataStreams(); ++i) {
-       pCases = DataHub.GetDataStreamHandler().GetStream(i).GetCaseArray()[0];
-       pMeasure = DataHub.GetDataStreamHandler().GetStream(i).GetMeasureArray()[0];
+    for (i=0; i < gParameters.GetNumDataSets(); ++i) {
+       pCases = DataHub.GetDataSetHandler().GetDataSet(i).GetCaseArray()[0];
+       pMeasure = DataHub.GetDataSetHandler().GetDataSet(i).GetMeasureArray()[0];
        for (t=0; t < DataHub.GetNumTracts(); ++t) {
           pRecord = new OutputRecord(gvFields);
           pRecord->GetFieldValue(GetFieldNumber(LOC_ID_FIELD)).AsZdString() = GetLocationId(sBuffer, t, DataHub);
-          if (gParameters.GetNumDataStreams() > 1)
-            pRecord->GetFieldValue(GetFieldNumber(DATASTREAM_FIELD)).AsDouble() = i + 1;
+          if (gParameters.GetNumDataSets() > 1)
+            pRecord->GetFieldValue(GetFieldNumber(DATASET_FIELD)).AsDouble() = i + 1;
           pRecord->GetFieldValue(GetFieldNumber(OBSERVED_FIELD)).AsDouble() = pCases[t];
           dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
           pRecord->GetFieldValue(GetFieldNumber(EXPECTED_FIELD)).AsDouble() = dExpected;
           if (dExpected) {
             pRecord->GetFieldValue(GetFieldNumber(OBSERVED_DIV_EXPECTED_FIELD)).AsDouble() = ((double)pCases[t])/dExpected;
-            dDenominator = DataHub.GetDataStreamHandler().GetStream(i).GetTotalCases() - dExpected;
-            dNumerator = DataHub.GetDataStreamHandler().GetStream(i).GetTotalCases() - pCases[t];
+            dDenominator = DataHub.GetDataSetHandler().GetDataSet(i).GetTotalCases() - dExpected;
+            dNumerator = DataHub.GetDataSetHandler().GetDataSet(i).GetTotalCases() - pCases[t];
             if (dDenominator && dNumerator/dDenominator)
               pRecord->GetFieldValue(GetFieldNumber(RELATIVE_RISK_FIELD)).AsDouble() = (((double)pCases[t])/dExpected)/(dNumerator/dDenominator);
             else
@@ -101,23 +101,23 @@ void RelativeRiskData::RecordRelativeRiskData(const CSVTTData& DataHub) {
   CTimeTrend                    TractTimeTrend;
 
   try {
-    for (i=0; i < gParameters.GetNumDataStreams(); ++i) {
-       pCases = DataHub.GetDataStreamHandler().GetStream(i).GetCaseArray()[0];
-       pMeasure = DataHub.GetDataStreamHandler().GetStream(i).GetMeasureArray()[0];
-       ppCasesNC = DataHub.GetDataStreamHandler().GetStream(i).GetNCCaseArray();
-       ppMeasureNC = DataHub.GetDataStreamHandler().GetStream(i).GetNCMeasureArray();
+    for (i=0; i < gParameters.GetNumDataSets(); ++i) {
+       pCases = DataHub.GetDataSetHandler().GetDataSet(i).GetCaseArray()[0];
+       pMeasure = DataHub.GetDataSetHandler().GetDataSet(i).GetMeasureArray()[0];
+       ppCasesNC = DataHub.GetDataSetHandler().GetDataSet(i).GetNCCaseArray();
+       ppMeasureNC = DataHub.GetDataSetHandler().GetDataSet(i).GetNCMeasureArray();
        for (t=0; t < DataHub.GetNumTracts(); ++t) {
           pRecord = new OutputRecord(gvFields);
           pRecord->GetFieldValue(GetFieldNumber(LOC_ID_FIELD)).AsZdString() = GetLocationId(sBuffer, t, DataHub);
-          if (gParameters.GetNumDataStreams() > 1)
-            pRecord->GetFieldValue(GetFieldNumber(DATASTREAM_FIELD)).AsDouble() = i + 1;
+          if (gParameters.GetNumDataSets() > 1)
+            pRecord->GetFieldValue(GetFieldNumber(DATASET_FIELD)).AsDouble() = i + 1;
           pRecord->GetFieldValue(GetFieldNumber(OBSERVED_FIELD)).AsDouble() = pCases[t];
           dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
           pRecord->GetFieldValue(GetFieldNumber(EXPECTED_FIELD)).AsDouble() = dExpected;
           if (dExpected) {
             pRecord->GetFieldValue(GetFieldNumber(OBSERVED_DIV_EXPECTED_FIELD)).AsDouble() = ((double)pCases[t])/dExpected;
-            dDenominator = DataHub.GetDataStreamHandler().GetStream(i).GetTotalCases() - dExpected;
-            dNumerator = DataHub.GetDataStreamHandler().GetStream(i).GetTotalCases() - pCases[t];
+            dDenominator = DataHub.GetDataSetHandler().GetDataSet(i).GetTotalCases() - dExpected;
+            dNumerator = DataHub.GetDataSetHandler().GetDataSet(i).GetTotalCases() - pCases[t];
             if (dDenominator && dNumerator/dDenominator)
               pRecord->GetFieldValue(GetFieldNumber(RELATIVE_RISK_FIELD)).AsDouble() = (((double)pCases[t])/dExpected)/(dNumerator/dDenominator);
             else
@@ -155,8 +155,8 @@ void RelativeRiskData::SetupFields() {
 
   try {
     CreateField(gvFields, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
-    if (gParameters.GetNumDataStreams() > 1)
-      CreateField(gvFields, DATASTREAM_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
+    if (gParameters.GetNumDataSets() > 1)
+      CreateField(gvFields, DATASET_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
     CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
     CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
     CreateField(gvFields, OBSERVED_DIV_EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);

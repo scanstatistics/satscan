@@ -62,15 +62,15 @@ AbstractLoglikelihoodRatioUnifier & AbstractLikelihoodCalculator::GetUnifier() c
 /** Internal class setup */
 void AbstractLikelihoodCalculator::Setup() {
   try {
-    if (gData.GetParameters().GetNumDataStreams() > 1) {
-      switch (gData.GetParameters().GetMultipleDataStreamPurposeType()) {
+    if (gData.GetParameters().GetNumDataSets() > 1) {
+      switch (gData.GetParameters().GetMultipleDataSetPurposeType()) {
         case MULTIVARIATE :
           gpUnifier = new MultivariateUnifier(gData.GetParameters().GetAreaScanRateType()); break;
         case ADJUSTMENT :
           gpUnifier = new AdjustmentUnifier(gData.GetParameters().GetAreaScanRateType()); break;
         default :
           ZdGenerateException("Unknown purpose for multiple data sets '%d'.","GetUnifier",
-                              gData.GetParameters().GetMultipleDataStreamPurposeType());
+                              gData.GetParameters().GetMultipleDataSetPurposeType());
       }
     }
   }

@@ -33,9 +33,9 @@ const char * stsClusterData::COORD_X_FIELD	        = "X";
 const char * stsClusterData::COORD_Y_FIELD              = "Y";
 const char * stsClusterData::COORD_Z_FIELD              = "Z";
 const char * stsClusterData::OBS_DIV_EXP_FIELD	        = "ODE";
-const char * stsClusterData::STREAM_OBSERVED_FIELD      = "OBS_DS";
-const char * stsClusterData::STREAM_EXPECTED_FIELD      = "EXP_DS";
-const char * stsClusterData::STREAM_OBS_DIV_EXP_FIELD   = "ODE_DS";
+const char * stsClusterData::SET_OBSERVED_FIELD         = "OBS_DS";
+const char * stsClusterData::SET_EXPECTED_FIELD         = "EXP_DS";
+const char * stsClusterData::SET_OBS_DIV_EXP_FIELD      = "ODE_DS";
 
 // formats the string for the Area ID
 // pre: none
@@ -80,7 +80,7 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
       WriteEllipseShape(*pRecord, theCluster, theData);
     }
 
-    if (gParameters.GetNumDataStreams() == 1) {
+    if (gParameters.GetNumDataSets() == 1) {
       pRecord->GetFieldValue(GetFieldNumber(OBSERVED_FIELD)).AsDouble() = theCluster.GetCaseCount(0);
       pRecord->GetFieldValue(GetFieldNumber(EXPECTED_FIELD)).AsDouble() =
                                                            theData.GetMeasureAdjustment(0) * theCluster.GetMeasure(0);
@@ -88,13 +88,13 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
                                                            theCluster.GetRelativeRisk(theData.GetMeasureAdjustment(0));
     }
     else {
-      for (i=0; i < gParameters.GetNumDataStreams(); ++i) {
-        sBuffer.printf("%s%i", STREAM_OBSERVED_FIELD, i + 1);
+      for (i=0; i < gParameters.GetNumDataSets(); ++i) {
+        sBuffer.printf("%s%i", SET_OBSERVED_FIELD, i + 1);
         pRecord->GetFieldValue(GetFieldNumber(sBuffer.GetCString())).AsDouble() = theCluster.GetCaseCount(i);
-        sBuffer.printf("%s%i", STREAM_EXPECTED_FIELD, i + 1);
+        sBuffer.printf("%s%i", SET_EXPECTED_FIELD, i + 1);
         pRecord->GetFieldValue(GetFieldNumber(sBuffer.GetCString())).AsDouble() =
                                                            theData.GetMeasureAdjustment(i) * theCluster.GetMeasure(i);
-        sBuffer.printf("%s%i", STREAM_OBS_DIV_EXP_FIELD, i + 1);
+        sBuffer.printf("%s%i", SET_OBS_DIV_EXP_FIELD, i + 1);
         pRecord->GetFieldValue(GetFieldNumber(sBuffer.GetCString())).AsDouble() =
                                                            theCluster.GetRelativeRisk(theData.GetMeasureAdjustment(i), i);
       }
@@ -228,18 +228,18 @@ void stsClusterData::SetupFields() {
       CreateField(gvFields, E_SHAPE_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
     }
     CreateField(gvFields, NUM_LOCATIONS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
-    if (gParameters.GetNumDataStreams() == 1) {
+    if (gParameters.GetNumDataSets() == 1) {
       CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
       CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
       CreateField(gvFields, OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
     }
     else {
-      for (i=1; i <= gParameters.GetNumDataStreams(); ++i) {
-        sBuffer.printf("%s%i", STREAM_OBSERVED_FIELD, i);
+      for (i=1; i <= gParameters.GetNumDataSets(); ++i) {
+        sBuffer.printf("%s%i", SET_OBSERVED_FIELD, i);
         CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 0, uwOffset);
-        sBuffer.printf("%s%i", STREAM_EXPECTED_FIELD, i);
+        sBuffer.printf("%s%i", SET_EXPECTED_FIELD, i);
         CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 2, uwOffset);
-        sBuffer.printf("%s%i", STREAM_OBS_DIV_EXP_FIELD, i);
+        sBuffer.printf("%s%i", SET_OBS_DIV_EXP_FIELD, i);
         CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 2, uwOffset);
       }
     }

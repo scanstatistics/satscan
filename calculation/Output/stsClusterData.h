@@ -29,9 +29,9 @@ class stsClusterData : public BaseOutputStorageClass {
       static const char       * COORD_Y_FIELD;
       static const char       * COORD_Z_FIELD;
       static const char       * OBS_DIV_EXP_FIELD;
-      static const char       * STREAM_OBSERVED_FIELD;
-      static const char       * STREAM_EXPECTED_FIELD;
-      static const char       * STREAM_OBS_DIV_EXP_FIELD;
+      static const char       * SET_OBSERVED_FIELD;
+      static const char       * SET_EXPECTED_FIELD;
+      static const char       * SET_OBS_DIV_EXP_FIELD;
       const CParameters       & gParameters;
       bool                      gbExcludePValueField;
 

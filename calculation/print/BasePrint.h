@@ -30,7 +30,7 @@ class BasePrint {
     virtual void                        PrintWarningLine(char *) = 0;
     void                                SatScanPrintf(const char * sMessage, ... );
     void                                SatScanPrintWarning(const char * sMessage, ... );
-    void                                SetImpliedInputFileType(eInputFileType eType, unsigned int iStream=0);
+    void                                SetImpliedInputFileType(eInputFileType eType, unsigned int iDataSet=0);
 };
 
 //*****************************************************************************

@@ -44,7 +44,7 @@ public:
     gDataHub.GetDataSetHandler().GetSimulationDataContainer(*gpSimulationDataContainer);
     //get container of data randomizers - these will modify the simulation data
     gDataHub.GetDataSetHandler().GetRandomizerContainer(*gpRandomizationContainer);
-    //get data gateway given data stream handler's real data and simulated data structures
+    //get data gateway given dataset handler's real data and simulated data structures
     gpDataGateway.reset(gDataHub.GetDataSetHandler().GetNewSimulationDataGateway(*gpSimulationDataContainer));
     //allocate appropriate data members for simulation algorithm
     gpAnalysis->AllocateSimulationObjects(*gpDataGateway);

@@ -81,10 +81,10 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
       case ADJ_FOR_EALIER_ANALYSES   : return "Adjust for Earlier Analyses (line 64)";  
       case USE_ADJ_BY_RR_FILE        : return "Use Known Relative Risks? (line 65)";  
       case SPATIAL_ADJ_TYPE          : return "Spatial Adjustments Type (line 66)";  
-      //NOTE: The next parameter involves multiple data streams - this inidicates where the line based version
+      //NOTE: The next parameter involves multiple datasets - this inidicates where the line based version
       //      of the parameter file can no longer be maintained like the ini version unless the settings
       //      only specify one data set.
-      case MULTI_DATASET_PURPOSE_TYPE: return "Multiple Data Stream Purpose Type (line 67)";  
+      case MULTI_DATASET_PURPOSE_TYPE: return "Multiple Data Set Purpose Type (line 67)";  
       case CREATION_VERSION          : return "Sotware Version Created (line 68)";  
       default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
     };

@@ -8,7 +8,7 @@
     where each line is associated with particular parameter. This process is
     maintained to permit parameter files created with version prior to 3.1.0 (in
     which the structure was switched to an ini format). Note that until the
-    implementation of mutliple data streams, this reader provided the same read
+    implementation of mutliple datasets, this reader provided the same read
     functionality as ini version.*/
 class ScanLineParameterFileAccess : public AbtractParameterFileAccess {
   private:

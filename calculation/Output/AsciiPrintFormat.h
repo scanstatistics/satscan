@@ -13,20 +13,20 @@ class AsciiPrintFormat {
      unsigned int               giLeftMargin;
      unsigned int               giDataLeftMargin;
      unsigned int               giLabelWidth;
-     bool                       gbOneStream;
-     static const char *        gsPerStreamText;
-     static const unsigned int  giOneStreamLabelWidth;
-     static const unsigned int  giMultiStreamClusterLabelWidth;
-     static const unsigned int  giMultiStreamSummaryLabelWidth;
+     bool                       gbOneDataSet;
+     static const char *        gsPerDataSetText;
+     static const unsigned int  giOneDataSetLabelWidth;
+     static const unsigned int  giMultiDataSetClusterLabelWidth;
+     static const unsigned int  giMultiDataSetSummaryLabelWidth;
      static const unsigned int  giRightMargin;
      static const unsigned int  giVersionHeaderWidth;
 
    public:
-     AsciiPrintFormat(bool bOneStream=true);
+     AsciiPrintFormat(bool bOneDataSet=true);
      virtual ~AsciiPrintFormat();
 
      void                       PrintAlignedMarginsDataString(FILE* fp, ZdString& sDataString, unsigned int iPostNewlines=1) const;
-     void                       PrintSectionLabel(FILE* fp, const char* sText, bool bStreamParticular, bool bPadLeftMargin) const;
+     void                       PrintSectionLabel(FILE* fp, const char* sText, bool bDataSetParticular, bool bPadLeftMargin) const;
      static void                PrintSectionSeparatorString(FILE* fp, unsigned int iPreNewlines=0, unsigned int iPostNewlines=1, char cSeparator='_');
      static void                PrintVersionHeader(FILE* fp);
      void                       SetMarginsAsClusterSection(unsigned int iNumber);

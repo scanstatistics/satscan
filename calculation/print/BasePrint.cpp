@@ -143,7 +143,7 @@ void BasePrint::PrintMessage(va_list varArgs, const char * sMessage ) {
 }
 #endif
 
-void BasePrint::SetImpliedInputFileType(eInputFileType eType, unsigned int iStream) {
+void BasePrint::SetImpliedInputFileType(eInputFileType eType, unsigned int) {
   geInputFileType = eType;
   switch (eType) {
     case CASEFILE         : gsInputFileString = "case file"; break;
@@ -156,12 +156,12 @@ void BasePrint::SetImpliedInputFileType(eInputFileType eType, unsigned int iStre
     default : ZdException::GenerateNotification("Invalid input file type warning message!", "SetImpliedInputFileType()");
   }
 
-//  if (iStream) {
+//  if (iDataSet) {
 //    ZdString s;
-//    s.printf("%s (input stream %u)", gsInputFileString.c_str(), iStream);
+//    s.printf("%s (input set %u)", gsInputFileString.c_str(), iDataSet);
 //    gsInputFileString = s.GetCString();
-//    gsInputFileString += "(input stream ";
-//    gsInputFileString += itoa(iStream;
+//    gsInputFileString += "(input set ";
+//    gsInputFileString += itoa(iDataSet;
 //    gsInputFileString += ")";
 //  }
 }
