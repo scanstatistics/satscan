@@ -190,9 +190,7 @@ CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& rhs) {
   m_nTotalIntervals             = rhs.m_nTotalIntervals;
   m_nIntervalCut                = rhs.m_nIntervalCut;
   m_nTIType                     = rhs.m_nTIType;
-  m_nSteps                      = rhs.m_nSteps;
   m_bClusterDefined             = rhs.m_bClusterDefined;
-  m_nClusterType                = rhs.m_nClusterType;
   m_iEllipseOffset              = rhs.m_iEllipseOffset;
   *TI                           = *(rhs.TI);
   gStreamData                   = rhs.gStreamData;
@@ -243,18 +241,12 @@ CSpaceTimeCluster * CSpaceTimeCluster::Clone() const {
 /** compares this cluster definition to passed cluster definition */
 void CSpaceTimeCluster::CompareTopCluster(CSpaceTimeCluster & TopShapeCluster, const CSaTScanData & Data) {
   m_bClusterDefined = true;
-  if (Data.GetNumDataStreams() > 1)
-    TI->CompareDataStreamClusters(*this, TopShapeCluster, gStreamData);
-  else {
-    AbstractTemporalClusterStreamData * pStreamData = (*gStreamData.begin());
-    TI->CompareClusters(*this, TopShapeCluster, pStreamData->gpCases, pStreamData->gpMeasure, pStreamData->gpSqMeasure);
-  }
+  (TI->*fCompareClusters)(*this, TopShapeCluster, gStreamData);
 }
 
 /** modifies measure list given this cluster definition */
 void CSpaceTimeCluster::ComputeBestMeasures(CMeasureList & MeasureList) {
-  AbstractTemporalClusterStreamData * pStreamData = gStreamData[0];
-  TI->ComputeBestMeasures(pStreamData->gpCases, pStreamData->gpMeasure, pStreamData->gpSqMeasure, MeasureList);
+  TI->ComputeBestMeasures(gStreamData[0], MeasureList);
 }
 
 /** returns the number of cases for tract as defined by cluster
@@ -283,12 +275,13 @@ void CSpaceTimeCluster::Init() {
 
 /** re-initializes cluster data */
 void CSpaceTimeCluster::Initialize(tract_t nCenter = 0) {
-  StreamDataContainerIterator_t         itr;
-  
-  CCluster::Initialize(nCenter);
-  m_nClusterType = SPACETIME;
-  for (itr=gStreamData.begin(); itr != gStreamData.end(); ++itr)
-     (*itr)->InitializeData();
+  m_Center = nCenter;
+  m_nTracts = 0;
+  m_bClusterDefined = false;
+  m_nRatio = 0;
+  m_nLogLikelihood = 0; //may go away
+  for (gitr=gStreamData.begin(); gitr != gStreamData.end(); ++gitr)
+     (*gitr)->InitializeData();
 }
 
 /** internal setup function */
@@ -296,9 +289,11 @@ void CSpaceTimeCluster::Setup(IncludeClustersType eIncludeClustersType, const CS
   AbstractTemporalClusterStreamData * pStreamData;
 
   try {
-    //set AddNeihbor function pointer - for Normal model we will set to AddNeighborDataEx
+    //set AddNeighbor function pointer - for Normal model we will set to AddNeighborDataEx
     fAddNeighborData = &CSpaceTimeCluster::AddNeighborData;
-  
+    //set CTimeIntervals function pointers - for Normal model we will set to SomeFuncEx
+    fCompareClusters = (Data.GetNumDataStreams() == 1 ? &CTimeIntervals::CompareClusters : &CTimeIntervals::CompareDataStreamClusters);
+
     m_nTotalIntervals = Data.m_nTimeIntervals;
     m_nIntervalCut = Data.m_nIntervalCut;
     m_nTIType = eIncludeClustersType;

@@ -52,11 +52,13 @@ class CSpaceTimeCluster : public CCluster {
 
   protected:
     StreamDataContainer_t       gStreamData;
+    StreamDataContainerIterator_t         gitr;
     int                         m_nTotalIntervals;
     int                         m_nIntervalCut;
     IncludeClustersType         m_nTIType;
     CTimeIntervals            * TI;
     ADDNEIGHBOR                 fAddNeighborData;
+    CTimeIntervals::COMPARECLUSTERS             fCompareClusters;
 
   public:
     CSpaceTimeCluster(IncludeClustersType eIncludeClustersType, const CSaTScanData & Data, BasePrint & PrintDirection);
@@ -74,6 +76,7 @@ class CSpaceTimeCluster : public CCluster {
     inline virtual void         ComputeBestMeasures(CMeasureList & MeasureList);
     virtual count_t             GetCaseCount(unsigned int iStream) const {return gStreamData[iStream]->gCases;}
     virtual count_t             GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual int                 GetClusterType() const {return SPACETIME;}
     virtual measure_t           GetMeasure(unsigned int iStream) const {return gStreamData[iStream]->gMeasure;}
     virtual measure_t           GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual void                Initialize(tract_t nCenter);

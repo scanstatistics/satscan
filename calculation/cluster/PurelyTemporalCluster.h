@@ -8,7 +8,6 @@
 #include "TimeIntervalAlive.h"
 #include "Parameters.h"
 #include "TimeIntervalRange.h"
-#include <deque>
 
 class TemporalClusterStreamData : public AbstractTemporalClusterStreamData {
    public:
@@ -22,6 +21,8 @@ class TemporalClusterStreamData : public AbstractTemporalClusterStreamData {
 /** cluster class for purely temporal analysis and purely temporal cluster
     of space-time analysis */
 class CPurelyTemporalCluster : public CCluster {
+  typedef void (CPurelyTemporalCluster::* COMPARETOPCLUSTERS)(CPurelyTemporalCluster & TopShapeCluster, const CSaTScanData & Data);
+
   private:
     void                                Init() {m_TI=0;}
     void                                Setup(const DataStreamGateway & DataGateway, IncludeClustersType eIncludeClustersType, const CSaTScanData & Data);
@@ -35,6 +36,7 @@ class CPurelyTemporalCluster : public CCluster {
     int                                 m_nIntervalCut;
     IncludeClustersType                 m_nTIType;
     CTimeIntervals                    * m_TI;
+    CTimeIntervals::COMPARECLUSTERS     fCompareClusters;
 
   public:
     CPurelyTemporalCluster(const DataStreamGateway & DataGateway, IncludeClustersType eIncludeClustersType,
@@ -63,6 +65,7 @@ class CPurelyTemporalCluster : public CCluster {
     virtual void                        DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft) {};
     virtual count_t                     GetCaseCount(unsigned int iStream) const;
     virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual int                         GetClusterType() const {return PURELYTEMPORAL;}
     virtual measure_t                   GetMeasure(unsigned int iStream) const;
     virtual measure_t                   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual void                        Initialize(tract_t nCenter=0);

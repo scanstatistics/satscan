@@ -81,9 +81,7 @@ CPurelyTemporalCluster& CPurelyTemporalCluster::operator=(const CPurelyTemporalC
   m_nTotalIntervals     = rhs.m_nTotalIntervals;
   m_nIntervalCut        = rhs.m_nIntervalCut;
   m_nTIType             = rhs.m_nTIType;
-  m_nSteps              = rhs.m_nSteps;
   m_bClusterDefined     = rhs.m_bClusterDefined;
-  m_nClusterType        = rhs.m_nClusterType;
   *m_TI                 = *(rhs.m_TI);
   gStreamData           = rhs.gStreamData;
   return *this;
@@ -97,19 +95,12 @@ CPurelyTemporalCluster * CPurelyTemporalCluster::Clone() const {
 /** compares this cluster definition to passed cluster definition */
 void CPurelyTemporalCluster::CompareTopCluster(CPurelyTemporalCluster & TopShapeCluster, const CSaTScanData & Data) {
   m_bClusterDefined = true;
-
-  if (Data.GetNumDataStreams() > 1)
-    m_TI->CompareDataStreamClusters(*this, TopShapeCluster, gStreamData);
-  else {
-    AbstractTemporalClusterStreamData * pStreamData = gStreamData[0];
-    m_TI->CompareClusters(*this, TopShapeCluster, pStreamData->gpCases, pStreamData->gpMeasure, pStreamData->gpSqMeasure);
-  }
+  (m_TI->*fCompareClusters)(*this, TopShapeCluster, gStreamData);
 }
 
 /** modifies measure list given this cluster definition */
 void CPurelyTemporalCluster::ComputeBestMeasures(const CSaTScanData& Data, CMeasureList & MeasureList) {
-  AbstractTemporalClusterStreamData * pStreamData = gStreamData[0];
-  m_TI->ComputeBestMeasures(pStreamData->gpCases, pStreamData->gpMeasure, pStreamData->gpSqMeasure, MeasureList);
+  m_TI->ComputeBestMeasures(gStreamData[0], MeasureList);
 }
 
 void CPurelyTemporalCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, int nCluster,
@@ -142,7 +133,6 @@ void CPurelyTemporalCluster::Initialize(tract_t nCenter) {
   size_t        t;
 
   CCluster::Initialize(nCenter);
-  m_nClusterType = PURELYTEMPORAL;
   for (t=0; t < gStreamData.size(); ++t)
      gStreamData[t]->InitializeData();
 }
@@ -174,6 +164,9 @@ measure_t CPurelyTemporalCluster::GetMeasureForTract(tract_t tTract, const CSaTS
 /** internal setup function */
 void CPurelyTemporalCluster::Setup(const DataStreamGateway & DataGateway, IncludeClustersType eIncludeClustersType, const CSaTScanData & Data) {
   try {
+    //set CTimeIntervals function pointers - for Normal model we will set to SomeFuncEx
+    fCompareClusters = (Data.GetNumDataStreams() == 1 ? &CTimeIntervals::CompareClusters : &CTimeIntervals::CompareDataStreamClusters);
+
     m_nTotalIntervals = Data.m_nTimeIntervals;
     m_nIntervalCut = Data.m_nIntervalCut;
     m_nTIType = eIncludeClustersType;
@@ -203,6 +196,9 @@ void CPurelyTemporalCluster::Setup(const DataStreamGateway & DataGateway, Includ
 /** internal setup function */
 void CPurelyTemporalCluster::Setup(const DataStreamInterface & Interface, IncludeClustersType eIncludeClustersType, const CSaTScanData & Data) {
   try {
+    //set CTimeIntervals function pointers - for Normal model we will set to SomeFuncEx
+    fCompareClusters = &CTimeIntervals::CompareClusters;
+
     m_nTotalIntervals = Data.m_nTimeIntervals;
     m_nIntervalCut = Data.m_nIntervalCut;
     m_nTIType = eIncludeClustersType;
