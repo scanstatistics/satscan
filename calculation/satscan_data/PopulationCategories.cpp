@@ -109,7 +109,7 @@ const char * PopulationCategories::GetPopulationCategoryAsString(int iCategoryIn
 }
 
 /** Creates new population category and returns category index. */
-int PopulationCategories::MakePopulationCategory(const char* szDescription, StringParser & Parser, int iLineNumber, int iScanOffset, BasePrint & PrintDirection) {
+int PopulationCategories::MakePopulationCategory(const char* szDescription, StringParser & Parser, int iScanOffset, BasePrint & PrintDirection) {
   int                                           iCategoryIndex, iNumCovariatesScanned=0;
   std::vector<int>                              vPopulationCategory;
   const char                                  * pCovariate;
@@ -143,7 +143,7 @@ int PopulationCategories::MakePopulationCategory(const char* szDescription, Stri
   }
   else if (iNumCovariatesScanned != giNumberCovariates){
     PrintDirection.PrintInputWarning("Error: Record %d of %s file contains %d covariate%s but expecting %d covariate%s.",
-                                     iLineNumber, szDescription,
+                                     Parser.GetReadCount(), szDescription,
                                      iNumCovariatesScanned,(iNumCovariatesScanned == 1 ? "" : "s"),
                                      giNumberCovariates, (giNumberCovariates == 1 ? "" : "s"));
     iCategoryIndex = -1;

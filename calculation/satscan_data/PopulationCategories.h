@@ -35,7 +35,7 @@ class PopulationCategories {
     const char                        * GetPopulationCategoryAsString(int iCategoryIndex, std::string & sBuffer) const;
     int                                 GetNumPopulationCategories() const {return (int)gvPopulationCategories.size();}
     int                                 GetNumPopulationCategoryCovariates() const {return giNumberCovariates;}
-    int                                 MakePopulationCategory(const char* szDescription, StringParser & Parser, int iLineNumber, int iScanOffset, BasePrint & PrintDirection);
+    int                                 MakePopulationCategory(const char* szDescription, StringParser & Parser, int iScanOffset, BasePrint & PrintDirection);
 };
 //*****************************************************************************
 #endif
