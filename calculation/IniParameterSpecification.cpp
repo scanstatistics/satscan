@@ -120,7 +120,7 @@ void IniParameterSpecification::Build_4_0_x_ParameterList() {
   //Versions 4.0.x made no name changes, only defined more parameters
   gvParameterInfo.push_back(std::make_pair(ScanningWindow, (const char*)"IntervalStartRange"));
   gvParameterInfo.push_back(std::make_pair(ScanningWindow, (const char*)"IntervalEndRange"));
-  gvParameterInfo.push_back(std::make_pair(NotUsed, NotUsed);
+  gvParameterInfo.push_back(std::make_pair(NotUsed, NotUsed));
   gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"MaxCirclePopulationFile"));
   gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, (const char*)"EarlySimulationTermination"));
   gvParameterInfo.push_back(std::make_pair(OutputFiles, (const char*)"MaxReportedGeoClusterSize"));
