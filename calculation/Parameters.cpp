@@ -445,9 +445,8 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
          case ALIVECLUSTERS   : fprintf(fp, "  Clusters to Include                   : ");
                                 fprintf(fp, "Only those including the study end date\n"); break;
          case ALLCLUSTERS     : /*fprintf(fp, "All\n");
-                                  -- since this feature is now longer in the gui, ALLCLUSTERS
-                                     is default and only others are should be shown are exception when
-                                     specified in hand edited parameter file */ break;
+                                  -- geIncludeClustersType parameter no longer visible in GUI, 
+                                     defaulted to ALLCLUSTERS, so don't print setting */ break;
          case CLUSTERSINRANGE : fprintf(fp, "  Clusters to Include                   : ");
                                 fprintf(fp, "Start Range %s - %s\n",
                                         gsStartRangeStartDate.c_str(), gsStartRangeEndDate.c_str());
