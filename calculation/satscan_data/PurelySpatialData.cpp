@@ -4,6 +4,9 @@
 #include "PoissonModel.h"
 #include "BernoulliModel.h"
 #include "SpaceTimePermutationModel.h"
+#include "NormalModel.h"
+#include "SurvivalModel.h"
+#include "RankModel.h"
 
 /** constructor */
 CPurelySpatialData::CPurelySpatialData(CParameters* pParameters, BasePrint *pPrintDirection)
@@ -26,6 +29,9 @@ void CPurelySpatialData::SetProbabilityModel() {
     switch (m_pParameters->GetProbabiltyModelType()) {
        case POISSON              : m_pModel = new CPoissonModel(*m_pParameters, *this, *gpPrint);   break;
        case BERNOULLI            : m_pModel = new CBernoulliModel(*m_pParameters, *this, *gpPrint); break;
+       case NORMAL               : m_pModel = new CNormalModel(*m_pParameters, *this, *gpPrint); break;
+       case SURVIVAL             : m_pModel = new CSurvivalModel(*m_pParameters, *this, *gpPrint); break;
+       case RANK                 : m_pModel = new CRankModel(*m_pParameters, *this, *gpPrint); break;
        case SPACETIMEPERMUTATION : ZdException::Generate("Purely Spatial analysis not implemented for Space-Time Permutation model.\n",
                                                          "SetProbabilityModel()");
        default : ZdException::Generate("Unknown probability model type: '%d'.\n", "SetProbabilityModel()",
