@@ -126,11 +126,15 @@ object frmMain: TfrmMain
       Columns = <
         item
           Caption = 'Parameter Filename'
-          Width = 360
+          Width = 260
         end
         item
-          Caption = 'Comparison Results'
-          Width = 399
+          Caption = 'Results'
+          Width = 250
+        end
+        item
+          Caption = 'Simulated Loglikelihoods'
+          Width = 250
         end>
       HideSelection = False
       ReadOnly = True
@@ -235,8 +239,42 @@ object frmMain: TfrmMain
       Top = 2
       Width = 23
       Height = 23
-      Hint = 'Compare Results'
       Action = ActionCompareResultFiles
+      Glyph.Data = {
+        DE010000424DDE01000000000000760000002800000024000000120000000100
+        0400000000006801000000000000000000001000000000000000000000000000
+        80000080000000808000800000008000800080800000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
+        6666666666666666666666660000666666000000000066666666888888888866
+        000066666687777777706666666687777777786600006666668FBFBFBF706666
+        66668F7F7F7F786600006666668BFBFBFB706666666687F7F7F7786600006666
+        668FBFBFBF70666666668F7F7F7F786600006000008BFBFBFB706668888887F7
+        F7F7786600006877778FBFBFBF70666877778F7F7F7F7866000068FFFF8BFBFB
+        FB706668777787F7F7F77866000068FFFF8FBFBF0000666877778F7F7F888866
+        000068FFFF8BFBFB7F866668777787F7F78F8666000068FFFF8FBFBF78666668
+        77778F7F7F886666000068FFFF888888866666687777888888866666000068FF
+        FFFFFF06666666687777777786666666000068FFFFF000066666666877777888
+        86666666000068FFFFF7F866666666687777787866666666000068FFFFF78666
+        6666666877777886666666660000688888886666666666688888886666666666
+        0000}
+      NumGlyphs = 2
+      ParentShowHint = False
+      ShowHint = True
+    end
+    object ToolButton3: TToolButton
+      Left = 105
+      Top = 2
+      Width = 12
+      Caption = 'ToolButton3'
+      ImageIndex = 3
+      Style = tbsSeparator
+    end
+    object sbtnCompareLLR: TSpeedButton
+      Left = 117
+      Top = 2
+      Width = 23
+      Height = 23
+      Action = ActionCompareLLRFiles
       Glyph.Data = {
         DE010000424DDE01000000000000760000002800000024000000120000000100
         0400000000006801000000000000000000001000000000000000000000000000
@@ -260,6 +298,8 @@ object frmMain: TfrmMain
     end
   end
   object OpenDialog: TOpenDialog
+    DefaultExt = '.txt'
+    Filter = 'Text Files (*.txt)|*.txt|All Files (*.*)|*.*'
     Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
     Left = 16
     Top = 200
@@ -357,11 +397,18 @@ object frmMain: TfrmMain
       OnExecute = ActionSaveResultsExecute
     end
     object ActionCompareResultFiles: TAction
+      Hint = 'Compare Results'
       ShortCut = 16451
       OnExecute = ActionCompareResultFilesExecute
     end
+    object ActionCompareLLRFiles: TAction
+      Hint = 'Compare Simulated Loglikelihoods'
+      OnExecute = ActionCompareLLRFilesExecute
+    end
   end
   object SaveDialog: TSaveDialog
+    DefaultExt = '.txt'
+    Filter = 'Text Files (*.txt)|*.txt|All Files (*.*)|*.*'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Left = 16
     Top = 301

@@ -51,6 +51,9 @@ __published:	// IDE-managed Components
         TSpeedButton *sbtnCompare;
         TToolButton *ToolButton1;
         TAction *ActionCompareResultFiles;
+        TToolButton *ToolButton3;
+        TSpeedButton *sbtnCompareLLR;
+        TAction *ActionCompareLLRFiles;
         void __fastcall btnBrowseBatchExecutableClick(TObject *Sender);
         void __fastcall btnBrowseParametersListFileClick(TObject *Sender);
         void __fastcall ActionStartExecute(TObject *Sender);
@@ -60,6 +63,7 @@ __published:	// IDE-managed Components
         void __fastcall lstDisplaySelectItem(TObject *Sender,
           TListItem *Item, bool Selected);
         void __fastcall FormShow(TObject *Sender);
+        void __fastcall ActionCompareLLRFilesExecute(TObject *Sender);
    
   private:
     std::vector<ZdFileName>     gvParameterList;
@@ -71,14 +75,16 @@ __published:	// IDE-managed Components
     static const char         * COMPARE_APP_DATA;
     static const char         * COMPARE_FILE_EXTENSION;
 
-    void                        AddList(const char * sParameterFilename, const char * sMessage, bool bError);
+    void                        AddList(const char * sParameterFilename, const char * sResults, const char * sLLR, bool bError);
     bool                        CompareResultFiles(std::string & sCorrectFile, std::string & sFileToValidate);
-    void                        EnableCompareResultFilesAction();
+    void                        EnableCompareActions();
     void                        EnableSaveResultsAction();
     void                        EnableStartAction();
     bool                        Execute(const AnsiString & sCommandLine);
     std::string               & GetCompareFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename);
     std::string               & GetResultFileName(const ZdFileName & ParameterFilename, std::string & sResultFilename);
+    std::string               & GetSimulatedLLRFileName(const std::string & sResultFilename, std::string & sSimulatedLLrFilename);
+    bool                        OutputSimulatedLoglikelihoodRatios(const ZdFileName & ParameterFilename);
 
   public:
      __fastcall TfrmMain(TComponent* Owner);

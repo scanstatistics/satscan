@@ -31,7 +31,7 @@ __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner) {
   }
   delete pRegistry;
   EnableSaveResultsAction();
-  EnableCompareResultFilesAction();
+  EnableCompareActions();
 }
 
 /** destructor */
@@ -82,6 +82,41 @@ void __fastcall TfrmMain::ActionCompareResultFilesExecute(TObject *Sender) {
 
 }
 
+/** launches compare program for viewing differences in simulated loglikelihood files */
+void __fastcall TfrmMain::ActionCompareLLRFilesExecute(TObject *Sender) {
+  std::string   sOriginal, sCandidate;
+  AnsiString    sParameters;
+
+  if (!lstDisplay->Selected)
+    return;
+
+  ZdFileName & ref = gvParameterList[lstDisplay->Selected->Index];
+  if (OutputSimulatedLoglikelihoodRatios(ref)) {
+    if (gsComparisonProgram.empty()) {
+      OpenDialog->FileName =  "";
+      OpenDialog->DefaultExt = "*.exe";
+      OpenDialog->Filter = "Executable files (*.exe)|*.exe|All files (*.*)|*.*";
+      OpenDialog->FilterIndex = 0;
+      OpenDialog->Title = "Select Comparison Program";
+      if (OpenDialog->Execute())
+        gsComparisonProgram = OpenDialog->FileName.c_str();
+      else
+        return;
+    }
+
+    GetResultFileName(ref, sOriginal);
+    GetSimulatedLLRFileName(sOriginal, sOriginal);
+    GetCompareFilename(ref, sCandidate);
+    GetSimulatedLLRFileName(sCandidate, sCandidate);
+    //launch comparison program
+    sParameters.sprintf("\"%s\" \"%s\"", sOriginal.c_str(), sCandidate.c_str());
+
+    HINSTANCE hInst = ShellExecute(NULL, "open", gsComparisonProgram.c_str(), sParameters.c_str(), 0, 0);
+    if ((int)hInst <= 32)
+      Application->MessageBox("Unable to launch comparison program.", "Error", MB_OK);
+  }
+}
+
 /** saves results of comparison to file */
 void __fastcall TfrmMain::ActionSaveResultsExecute(TObject *Sender) {
  int            i, iNumMisMatch=0;
@@ -106,18 +141,19 @@ void __fastcall TfrmMain::ActionSaveResultsExecute(TObject *Sender) {
     for (i=0; i < lstDisplay->Items->Count; i++) {
        pListItem = lstDisplay->Items->Item[i];
        Output << "Parameter List Item " << i + 1 << ")" << endl << "   Parameter Filename: "
-              << pListItem->Caption.c_str() << endl << "   Comparison Results: "
-              << pListItem->SubItems->Strings[0].c_str() << endl << endl;
+              << pListItem->Caption.c_str() << endl << "   Results: "
+              << pListItem->SubItems->Strings[0].c_str() << endl
+              << "   Simulations:" << pListItem->SubItems->Strings[1].c_str() << endl << endl;
     }
   }
 }
 
 /** starts process of comparing output files */
 void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
-   std::string  sBuffer, sCorrectOutputFile, sCompareFilename;
+   std::string  sBuffer, sCorrectOutputFile, sCompareFilename, sSimulatedText;
    AnsiString   sCommand;
    ifstream     ParameterListFile;
-   bool         bResultsIdentical;
+   bool         bResultsIdentical, bOutSimulations, bSimulationsIdential;
 
    //open the file that contains names and parameter files
    ParameterListFile.open((edtParameterListFile->Text).c_str(), ios::in);
@@ -133,13 +169,13 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
         std::getline(ParameterListFile, sBuffer);
         gvParameterList.push_back(ZdFileName(sBuffer.c_str()));
         if (! FileExists(gvParameterList.back().GetFullPath())) {
-          AddList(gvParameterList.back().GetCompleteFileName(), "Parameter file does not exist.", true);
+          AddList(gvParameterList.back().GetCompleteFileName(), "Parameter file does not exist.", "",true);
           continue;
         }
         //get result filename that parameter file specifies
         GetResultFileName(gvParameterList.back(), sCorrectOutputFile);
         if (access(sCorrectOutputFile.c_str(), 00)) {
-          AddList(gvParameterList.back().GetCompleteFileName(), "Original output file missing, nothing to compare against.", true);
+          AddList(gvParameterList.back().GetCompleteFileName(), "Master File Missing", "", true);
           continue;
         }
         //get filename that will be the result file created for comparison
@@ -150,12 +186,29 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
         //execute analysis
         if (Execute(sCommand.c_str())) {
           bResultsIdentical = CompareResultFiles(sCorrectOutputFile, sCompareFilename);
-          AddList(gvParameterList.back().GetCompleteFileName(),
-                  (bResultsIdentical ? "Identical Results" : "Results do not agree!"),
-                  (bResultsIdentical ? false : true));
+          bOutSimulations = OutputSimulatedLoglikelihoodRatios(gvParameterList.back());
+          if (bOutSimulations) {
+            std::string sCorrectLLRFile, sCompareLLRFile;
+
+            GetSimulatedLLRFileName(sCorrectOutputFile, sCorrectLLRFile);
+            GetSimulatedLLRFileName(sCompareFilename, sCompareLLRFile);
+            if (access(sCorrectLLRFile.c_str(), 00)) {
+              sSimulatedText = "Master File Missing";
+              bSimulationsIdential = false;
+            }
+            else {
+              bSimulationsIdential = CompareResultFiles(sCorrectLLRFile, sCompareLLRFile);
+              sSimulatedText = (bSimulationsIdential ? "Identical" : "Not Identical");
+            }
+          }
+          else
+            sSimulatedText = "Not Generated";
+
+          AddList(gvParameterList.back().GetCompleteFileName(), (bResultsIdentical ? "Identical" : "Not Identical"),
+                  sSimulatedText.c_str(), (bResultsIdentical && (bOutSimulations ? bSimulationsIdential : true)? false : true));
         }
         else
-          AddList(gvParameterList.back().GetCompleteFileName(), "Program Failed", true);
+          AddList(gvParameterList.back().GetCompleteFileName(), "Program Failed/Cancelled", "", true);
 
         Application->ProcessMessages();
         ParameterListFile >> ws;
@@ -165,11 +218,12 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
 }
 
 /** adds new listview item */
-void TfrmMain::AddList(const char * sParameterFilename, const char * sMessage, bool bError) {
+void TfrmMain::AddList(const char * sParameterFilename, const char * sResults, const char * sLLR, bool bError) {
   TListItem * pListItem = lstDisplay->Items->Add();
   pListItem->Caption = sParameterFilename;
   pListItem->ImageIndex = (bError ? 0 : 1);
-  pListItem->SubItems->Add(sMessage);
+  pListItem->SubItems->Add(sResults);
+  pListItem->SubItems->Add(sLLR);
 }
 
 /** Sets open dialog filters and displays for selecting executable. */
@@ -198,8 +252,9 @@ void __fastcall TfrmMain::btnBrowseParametersListFileClick(TObject *Sender) {
 bool TfrmMain::CompareResultFiles(std::string & sCorrectFile, std::string & sFileToValidate) {
   ifstream correctOutput(sCorrectFile.c_str(), ios::in), output(sFileToValidate.c_str(), ios::in);
   string correctStr, Str;
-  bool bEqual=true;
+  bool bEqual;
 
+  bEqual = output && correctOutput;
   while (output && correctOutput && bEqual) {
        //ignore whitespace
        output >> ws;
@@ -218,8 +273,9 @@ void __fastcall TfrmMain::edtChangeInput(TObject *Sender) {
 }
 
 /** enables compare results action */
-void TfrmMain::EnableCompareResultFilesAction() {
+void TfrmMain::EnableCompareActions() {
   ActionCompareResultFiles->Enabled = lstDisplay->SelCount;
+  ActionCompareLLRFiles->Enabled = lstDisplay->SelCount;
 }
 
 /** enables save results action */
@@ -292,7 +348,7 @@ std::string & TfrmMain::GetResultFileName(const ZdFileName & ParameterFilename, 
   if (IniFile.GetNumSections())
     sResultFilename = IniFile.GetSection("[Output Files]")->GetString("ResultsFile");
   else {
-    //open parameter file and scan to the 7th line, which is the results filename
+    //open parameter file and scan to the 6th line, which is the results filename
     ifstream ParameterFile(ParameterFilename.GetFullPath(), ios::in);
     while (++count < 7)
          std::getline(ParameterFile, sResultFilename);
@@ -304,7 +360,38 @@ std::string & TfrmMain::GetResultFileName(const ZdFileName & ParameterFilename, 
 
   return sResultFilename;
 }
-void __fastcall TfrmMain::lstDisplaySelectItem(TObject *Sender, TListItem *Item, bool Selected) {
-  EnableCompareResultFilesAction();
+
+/** returns simulated loglikelihood output filename */
+std::string & TfrmMain::GetSimulatedLLRFileName(const std::string & sResultFilename, std::string & sSimulatedLLrFilename) {
+  sSimulatedLLrFilename = sResultFilename;
+  sSimulatedLLrFilename.insert(sSimulatedLLrFilename.find_last_of("."),".llr");
+
+  return sSimulatedLLrFilename;
 }
+
+/** returns whether parameter file settings indicate that simulated LLR's file is generated. */
+bool TfrmMain::OutputSimulatedLoglikelihoodRatios(const ZdFileName & ParameterFilename) {
+  int           iPos, count=0;
+  std::string   s;
+
+  //Determine the location of master results file
+  ZdIniFile IniFile(ParameterFilename.GetFullPath());
+  if (IniFile.GetNumSections())
+    s = IniFile.GetSection("[Output Files]")->GetString("SaveSimLLRsASCII");
+  else {
+    //open parameter file and scan to the 31th line, which is the results filename
+    ifstream ParameterFile(ParameterFilename.GetFullPath(), ios::in);
+    while (++count < 32)
+         std::getline(ParameterFile, s);
+    if ((iPos = s.find("//")) > -1)
+      s = Trim(s.substr(0, iPos).c_str()).c_str();
+  }
+
+  return (!stricmp(s.c_str(),"y") || !stricmp(s.c_str(),"yes") || !stricmp(s.c_str(),"1"));
+}
+
+void __fastcall TfrmMain::lstDisplaySelectItem(TObject *Sender, TListItem *Item, bool Selected) {
+  EnableCompareActions();
+}
+
 
