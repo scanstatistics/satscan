@@ -11,6 +11,7 @@ class CPurelySpatialData : public CSaTScanData {
     virtual void        SetProbabilityModel();
 
   protected:
+    virtual void        SetIntervalCut() {m_nIntervalCut = 1;}
     virtual void        SetIntervalStartTimes();
 
   public:
