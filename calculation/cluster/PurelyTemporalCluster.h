@@ -40,7 +40,9 @@ class CPurelyTemporalCluster : public CCluster {
                                                             int nLeftMargin, int nRightMargin,
                                                             char cDeliminator, char* szSpacesOnLeft, bool bFormat = true);
     virtual void                        DisplayCoordinates(FILE* fp, const CSaTScanData& Data, int nLeftMargin,
-                                                           int nRightMargin, char cDeliminator, char* szSpacesOnLeft) {};
+                                                           int nRightMargin, char cDeliminator, char* szSpacesOnLeft) {}
+    virtual void                        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, int nLeftMargin,
+                                                             int nRightMargin, char cDeliminator, char* szSpacesOnLeft) {}
     virtual void                        DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft) {};
     virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual measure_t                   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
