@@ -208,7 +208,7 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
 
    try {
       if (m_pParameters->m_bMostLikelyClusters || m_pParameters->GetOutputClusterLevelDBF()) {
-         pData.reset( new stsClusterData(m_pParameters->m_szOutputFilename, lReportHistoryRunNumber, GetCoordinateType(),
+         pData.reset( new stsClusterData(gpPrintDirection, m_pParameters->m_szOutputFilename, lReportHistoryRunNumber, GetCoordinateType(),
                                     m_pParameters->m_nModel, m_pParameters->m_nDimension, m_pParameters->m_nReplicas > 99,
                                     m_pParameters->m_nNumEllipses > 0) );
 
@@ -303,7 +303,7 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
 
    try {
       if(m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
-         pData.reset(new stsAreaSpecificData(m_pParameters->m_szOutputFilename, lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
+         pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->m_szOutputFilename, lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
 
       measure_t nMinMeasure = 0;
 
@@ -364,7 +364,7 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
       measure_t nMinMeasure = -1;
       
       if(m_pParameters->GetOutputAreaSpecificDBF() || m_pParameters->m_bOutputCensusAreas)
-         pData.reset(new stsAreaSpecificData(m_pParameters->m_szOutputFilename, lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
+         pData.reset(new stsAreaSpecificData(gpPrintDirection, m_pParameters->m_szOutputFilename, lReportHistoryRunNumber, m_pParameters->m_nReplicas > 99));
 
       dSignifRatio05 = SimRatios.GetAlpha05();
 
@@ -618,7 +618,7 @@ void CAnalysis::PerformSimulations() {
         sReplicationFormatString = "Log Likelihood Ratio for #%ld of %ld Replications: %7.2f\n";
 
       if (m_pParameters->m_bSaveSimLogLikelihoods || m_pParameters->GetDBaseOutputLogLikeli())
-         pLLRData.reset( new LogLikelihoodData(m_pParameters->m_szOutputFilename) );
+         pLLRData.reset( new LogLikelihoodData(gpPrintDirection, m_pParameters->m_szOutputFilename) );
 
       clock_t nStartTime = clock();
       SimRatios.Initialize();

@@ -100,7 +100,7 @@ void CSaTScanData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, con
    ZdString             sRisk;
 
    try {
-      pData = new RelativeRiskData(m_pParameters->m_szOutputFilename);
+      pData = new RelativeRiskData(gpPrintDirection, m_pParameters->m_szOutputFilename);
       for(int i = 0; i < m_nTracts; ++i) {
          if (GetMeasureAdjustment() && m_pMeasure[0][i])
             sRisk.printf("%12.3f", ((double)(m_pCases[0][i]))/(GetMeasureAdjustment()*m_pMeasure[0][i]));
