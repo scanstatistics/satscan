@@ -1,13 +1,10 @@
 //---------------------------------------------------------------------------
 #include "SaTScan.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 #include "PoissonDataStreamHandler.h"
 #include "SaTScanData.h"
-//---------------------------------------------------------------------------
-const int POPULATION_DATE_PRECISION_MONTH_DEFAULT_DAY   = 15;
-const int POPULATION_DATE_PRECISION_YEAR_DEFAULT_DAY    = 1;
-const int POPULATION_DATE_PRECISION_YEAR_DEFAULT_MONTH  = 7;
-//---------------------------------------------------------------------------
+#include "DateStringParser.h"
 
 /** constructor */
 PoissonDataStreamHandler::PoissonDataStreamHandler(CSaTScanData & Data, BasePrint * pPrint)
@@ -22,51 +19,30 @@ PoissonDataStreamHandler::~PoissonDataStreamHandler() {}
     supports. Since we accumulate errors/warnings when reading input files,
     indication of a bad date is returned and any messages sent to print direction. */
 bool PoissonDataStreamHandler::ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, Julian & JulianDate) {
-  bool          bValidDate=true;
-  int           iYear, iMonth, iDay, iPrecision=0;
-  const char  * ptr;
+  bool                                  bValidDate=true;
+  DateStringParser                      DateParser;
+  DateStringParser::ParserStatus        eStatus;
 
   try {
-    //determine precision
-    ptr = strchr(sDateString, '/');
-    while (ptr) {
-         iPrecision++;
-         ptr = strchr(++ptr, '/');
-    }
-    //scan string
-    switch (iPrecision) {
-      case 0  : iMonth = POPULATION_DATE_PRECISION_YEAR_DEFAULT_MONTH;
-                iDay = POPULATION_DATE_PRECISION_YEAR_DEFAULT_DAY;
-                bValidDate = (sscanf(sDateString, "%d", &iYear) == 1 && iYear > 0);
-                break;
-      case 1  : iDay = POPULATION_DATE_PRECISION_MONTH_DEFAULT_DAY;
-                bValidDate = (sscanf(sDateString, "%d/%d", &iYear, &iMonth) == 2 && iYear > 0 && iMonth > 0);
-                break;
-      case 2  : bValidDate = (sscanf(sDateString, "%d/%d/%d", &iYear, &iMonth, &iDay) == 3 && iYear > 0 && iMonth > 0 && iDay > 0);
-                break;
-      default : bValidDate = false;
-    }
-    if (! bValidDate)
-      gpPrint->PrintInputWarning("Error: Invalid date '%s' in %s, record %ld.\n",
-                                 sDateString, gpPrint->GetImpliedFileTypeString().c_str(), iRecordNumber);
-    else {
-      iYear = Ensure4DigitYear(iYear, const_cast<char*>(gParameters.GetStudyPeriodStartDate().c_str()), const_cast<char*>(gParameters.GetStudyPeriodEndDate().c_str()));
-      switch (iYear) {
-        case -1 : gpPrint->PrintInputWarning("Error: Due to the study period being greater than 100 years, unable\n");
-                  gpPrint->PrintInputWarning("       to determine century for two digit year '%d' in %s, record %ld.\n",
-                                                      iYear, gpPrint->GetImpliedFileTypeString().c_str(), iRecordNumber);
-                  gpPrint->PrintInputWarning("       Please use four digit years.\n");
-                  bValidDate = false;
-        case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in %s, record %ld.\n",
-                                             iYear, gpPrint->GetImpliedFileTypeString().c_str(), iRecordNumber);
-                  bValidDate = false;
-        default : if ((JulianDate = MDYToJulian(iMonth, iDay, iYear)) == 0) {
-                    gpPrint->PrintInputWarning("Error: Invalid date '%s' in %s, record %ld.\n",
-                                               sDateString, gpPrint->GetImpliedFileTypeString().c_str(), iRecordNumber);
-                    bValidDate = false;
-                  }
-      }
-    }
+    eStatus = DateParser.ParsePopulationDateString(sDateString, gDataHub.GetStudyPeriodStartDate(),
+                                                   gDataHub.GetStudyPeriodStartDate(), JulianDate);
+    switch (eStatus) {
+      case DateStringParser::VALID_DATE       :
+        bValidDate = true; break;
+      case DateStringParser::AMBIGUOUS_YEAR   :
+        gpPrint->PrintInputWarning("Error: Due to the study period being greater than 100 years, unable\n"
+                                   "       to determine century for two digit year in %s, record %ld.\n"
+                                   "       Please use four digit years.\n",
+                                   gpPrint->GetImpliedFileTypeString().c_str(), iRecordNumber);
+                                   bValidDate = false;
+                                   break;
+      case DateStringParser::INVALID_DATE     :
+      case DateStringParser::LESSER_PRECISION :
+      default                                 :
+        gpPrint->PrintInputWarning("Error: Invalid date '%s' in %s, record %ld.\n",
+                                   sDateString, gpPrint->GetImpliedFileTypeString().c_str(), iRecordNumber);
+        bValidDate = false;                           
+    };
   }
   catch (ZdException & x) {
     x.AddCallpath("ConvertPopulationDateToJulian()","PoissonDataStreamHandler");

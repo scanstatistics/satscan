@@ -21,6 +21,7 @@ class DataStreamHandler {
     BasePrint                         * gpPrint;                /** pointer to print direction */
     CSaTScanData                      & gDataHub;               /** reference to data hub */
     RealDataContainer_t                 gvDataStreams;          /** collection of data streams */
+    static const short                  COUNT_DATE_OFFSET;      /** field index of date in case/control files */
 
     virtual void                        AllocateCaseStructures(unsigned int iStream);
     bool                                ConvertCountDateToJulian(StringParser & Parser, Julian & JulianDate);

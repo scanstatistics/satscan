@@ -4,6 +4,7 @@
 //***************************************************************************
 #include "SaTScanData.h"
 #include "AdjustmentHandler.h"
+#include "DateStringParser.h"
 
 /** Converts passed string specifiying a adjustment file date to a julian date.
     Precision is determined by date formats( YYYY/MM/DD, YYYY/MM, YYYY, YY/MM/DD,
@@ -11,10 +12,9 @@
     supports. Since we accumulate errors/warnings when reading input files,
     indication of a bad date is returned and any messages sent to print direction. */
 bool CSaTScanData::ConvertAdjustmentDateToJulian(StringParser & Parser, Julian & JulianDate, bool bStartDate) {
-  bool          bValidDate=true;
-  int           iDateIndex, iYear, iMonth=1, iDay=1, iPrecision=1;
-  const char  * ptr;
-
+  int                                   iDateIndex;
+  DateStringParser                      DateParser;
+  DateStringParser::ParserStatus        eStatus;
 
   if (m_pParameters->GetPrecisionOfTimesType() == NONE)
     JulianDate = (bStartDate ? m_nStartDate: m_nEndDate);
@@ -27,53 +27,35 @@ bool CSaTScanData::ConvertAdjustmentDateToJulian(StringParser & Parser, Julian &
                                  (bStartDate ? "start": "end"));
       return false;
     }
-    //determine precision 
-    ptr = strchr(Parser.GetWord(iDateIndex), '/');
-    while (ptr) {
-         iPrecision++;
-         ptr = strchr(++ptr, '/');
-    }
-    switch (iPrecision) {
-      case YEAR  : bValidDate = (sscanf(Parser.GetWord(iDateIndex), "%d", &iYear) == 1 && iYear > 0); break;
-      case MONTH : bValidDate = (sscanf(Parser.GetWord(iDateIndex), "%d/%d", &iYear, &iMonth) == 2 && iYear > 0 && iMonth > 0); break;
-      case DAY   : bValidDate = (sscanf(Parser.GetWord(iDateIndex), "%d/%d/%d", &iYear, &iMonth, &iDay) == 3 && iYear > 0 && iMonth > 0 && iDay > 0); break;
-      default    : bValidDate = false;
-    };
-    if (! bValidDate)
-      gpPrint->PrintInputWarning("Error: Invalid %s date '%s' in %s, record %ld.\n",
-                                 (bStartDate ? "start": "end"), Parser.GetWord(iDateIndex),
-                                 gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
-    else {
-      //Ensure four digit years
-      iYear = Ensure4DigitYear(iYear, m_pParameters->GetStudyPeriodStartDate().c_str(), m_pParameters->GetStudyPeriodEndDate().c_str());
-      switch (iYear) {
-        case -1 : gpPrint->PrintInputWarning("Error: Due to study period greater than 100 years, unable\n"
-                                             "       to convert two digit year '%d' in %s, record %ld.\n"
-                                             "       Please use four digit years.\n", iYear,
-                                             gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
-                  return false;
-        case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in %s, record %ld.\n", iYear,
-                                             gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
-                  return false;
-      }
-      //default as needed given either start or end date and precision of date
-      switch (iPrecision) {
-        case YEAR  : iMonth = (bStartDate ? 1 : 12);
-        case MONTH : iDay = (bStartDate ? 1 : DaysThisMonth(iYear, iMonth));
-      };
-      //validate that date is between study period start and end dates
-      JulianDate = MDYToJulian(iMonth, iDay, iYear);
-      if (!(m_nStartDate <= JulianDate && JulianDate <= m_nEndDate)) {
-        gpPrint->PrintInputWarning("Error: Date '%s' in record %ld of %s is not\n", Parser.GetWord(iDateIndex),
-                                   Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
-        gpPrint->PrintInputWarning("       within study period beginning %s and ending %s.\n",
-                                   m_pParameters->GetStudyPeriodStartDate().c_str(),
-                                   m_pParameters->GetStudyPeriodEndDate().c_str());
+    eStatus = DateParser.ParseAdjustmentDateString(Parser.GetWord(iDateIndex), m_nStartDate, m_nEndDate, JulianDate, bStartDate);
+    switch (eStatus) {
+      case DateStringParser::VALID_DATE       : break;
+      case DateStringParser::AMBIGUOUS_YEAR   :
+        gpPrint->PrintInputWarning("Error: Due to the study period being greater than 100 years, unable\n"
+                                   "       to determine century for two digit year in %s, record %ld.\n"
+                                   "       Please use four digit years.\n",
+                                   gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
         return false;
-      }
-    }  
+      case DateStringParser::INVALID_DATE     :
+      case DateStringParser::LESSER_PRECISION :
+      default                                 :
+        gpPrint->PrintInputWarning("Error: Invalid %s date '%s' in %s, record %ld.\n",
+                                   (bStartDate ? "start": "end"), Parser.GetWord(iDateIndex),
+                                   gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
+        return false;
+    };
+    //validate that date is between study period start and end dates
+    if (!(m_nStartDate <= JulianDate && JulianDate <= m_nEndDate)) {
+      gpPrint->PrintInputWarning("Error: Date '%s' in record %ld of %s is not\n"
+                                 "       within study period beginning %s and ending %s.\n",
+                                 Parser.GetWord(iDateIndex), Parser.GetReadCount(),
+                                 gpPrint->GetImpliedFileTypeString().c_str(),
+                                 m_pParameters->GetStudyPeriodStartDate().c_str(),
+                                 m_pParameters->GetStudyPeriodEndDate().c_str());
+      return false;
+    }
   }
-  return bValidDate;
+  return true;
 }
 
 /** Read the relative risks file
