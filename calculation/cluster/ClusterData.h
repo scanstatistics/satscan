@@ -76,8 +76,6 @@ class TemporalData : public AbstractTemporalClusterData {
     virtual count_t             GetCaseCount(unsigned int iStream=0) const;
     virtual measure_t           GetMeasure(unsigned int iStream=0) const;
     virtual void                InitializeData() {gtCases=0;gtMeasure=0;}
-    virtual void                SetCaseCount(count_t tCases, unsigned int iStream=0) {gtCases = tCases;}
-    virtual void                SetMeasure(measure_t tMeasure, unsigned int iStream=0) {gtMeasure = tMeasure;}
 };
 
 /** class representing accumulated data of prospective spatial clustering

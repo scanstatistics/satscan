@@ -48,9 +48,6 @@ class AbstractTemporalClusterData : public AbstractClusterData {
 
     virtual void                          Assign(const AbstractTemporalClusterData& rhs) = 0;
     virtual AbstractTemporalClusterData * Clone() const = 0;
-
-    virtual void        SetCaseCount(count_t tCases, unsigned int iStream=0) = 0;
-    virtual void        SetMeasure(measure_t tMeasure, unsigned int iStream=0) = 0;
 };
 //---------------------------------------------------------------------------
 #endif

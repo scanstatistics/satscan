@@ -52,8 +52,6 @@ class MultipleStreamTemporalData : public AbstractMultipleStreamTemporalData {
     virtual count_t                      GetCaseCount(unsigned int iStream=0) const;
     virtual measure_t                    GetMeasure(unsigned int iStream=0) const;
     virtual void                         InitializeData();
-    virtual void                         SetCaseCount(count_t tCases, unsigned int iStream=0) {gvStreamData[iStream]->gtCases = tCases;}
-    virtual void                         SetMeasure(measure_t tMeasure, unsigned int iStream=0) {gvStreamData[iStream]->gtMeasure = tMeasure;}
 };
 
 /** class representing accumulated data of prospective spatial clustering
@@ -76,8 +74,6 @@ class MultipleStreamProspectiveSpatialData : public AbstractMultipleStreamTempor
     virtual count_t                                GetCaseCount(unsigned int iStream=0) const;
     virtual measure_t                              GetMeasure(unsigned int iStream=0) const;
     virtual void                                   InitializeData();
-    virtual void                                   SetCaseCount(count_t tCases, unsigned int iStream=0) {gvStreamData[iStream]->gtCases = tCases;}
-    virtual void                                   SetMeasure(measure_t tMeasure, unsigned int iStream=0) {gvStreamData[iStream]->gtMeasure = tMeasure;}
 };
 
 /** class representing accumulated data of space-time clustering in multiple data streams */
@@ -93,8 +89,6 @@ class MultipleStreamSpaceTimeData : public AbstractMultipleStreamTemporalData {
     virtual count_t     GetCaseCount(unsigned int iStream=0) const;
     virtual measure_t   GetMeasure(unsigned int iStream=0) const;
     virtual void        InitializeData();
-    virtual void        SetCaseCount(count_t tCases, unsigned int iStream=0) {gvStreamData[iStream]->gtCases = tCases;}
-    virtual void        SetMeasure(measure_t tMeasure, unsigned int iStream=0) {gvStreamData[iStream]->gtMeasure = tMeasure;}
 };
 //---------------------------------------------------------------------------
 #endif

@@ -48,8 +48,6 @@ class CPurelyTemporalCluster : public CCluster {
     virtual measure_t                   GetMeasure(unsigned int iStream) const;
     virtual measure_t                   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual void                        Initialize(tract_t nCenter=0);
-    virtual void                        SetCaseCount(unsigned int iStream, count_t tCount) {gpClusterData->SetCaseCount(iStream, tCount);}
-    virtual void                        SetMeasure(unsigned int iStream, measure_t tMeasure) {gpClusterData->SetMeasure(iStream, tMeasure);}
 };
 //*****************************************************************************
 #endif

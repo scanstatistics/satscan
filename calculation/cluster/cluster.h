@@ -26,8 +26,6 @@ class CCluster {
 
     virtual count_t             GetCaseCount(unsigned int iStream) const {return 0;}
     virtual measure_t           GetMeasure(unsigned int iStream) const {return 0;}
-    virtual void                SetCaseCount(unsigned int iStream, count_t tCount) {}
-    virtual void                SetMeasure(unsigned int iStream, measure_t tMeasure) {}
 
     float                       gfPValue;               // p value of the cluster
     tract_t                     m_Center;             // Center of cluster (index to grid)
