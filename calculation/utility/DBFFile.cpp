@@ -34,6 +34,7 @@
 // scope at the end of the block, its destructor executes a call to either EndAccess()
 // or (in this case, since 'true' was passed to the constructor) EndManipulation().
 
+#pragma option push -w-8070
 
 //construct
 //use an empty field array
@@ -1760,7 +1761,7 @@ DBFFile *DBFFileType::InstantiateFromStream ( ZdInputStreamInterface &theStream)
 //Here it is!
 DBFFileType  ZdDBFFileType;
 
-
+#pragma option pop
 
 
 

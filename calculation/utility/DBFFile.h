@@ -360,11 +360,11 @@ public:
 //to be implemented:   virtual ZdTransaction *  StartTransaction ( unsigned long ulUserID, const char *sDescription = 0 );
 
 //default implementation is fine:   virtual bool             Unlock ( ZdIOFlag iType );
-   inline void              UnsetDatabase();
-   void                     UpdateRecord ( ZdTransaction &theTransaction, const ZdFileRecord &theRecord );
-   inline void              VerifyIndexExists(bool bForceRebuild, ZdProgressInterface *pProgress, short wIndexVersion = ZDINDEX_VERSION);
-   void                     VerifyIndexExists(bool bForceRebuild, ZdProgressInterface &Progress = ZdNullProgress::GetDefaultInstance(), short wIndexVersion = ZDINDEX_VERSION);
-   inline void              VerifySelectedRecord();
+//   inline void              UnsetDatabase();
+//   void                     UpdateRecord ( ZdTransaction &theTransaction, const ZdFileRecord &theRecord );
+//   inline void              VerifyIndexExists(bool bForceRebuild, ZdProgressInterface *pProgress, short wIndexVersion = ZDINDEX_VERSION);
+//   void                     VerifyIndexExists(bool bForceRebuild, ZdProgressInterface &Progress = ZdNullProgress::GetDefaultInstance(), short wIndexVersion = ZDINDEX_VERSION);
+//   inline void              VerifySelectedRecord();
 
    void                     WriteDerivedZdFile ( ZdOutputStreamInterface &theStream ) const;
    virtual void             Write ( ZdOutputStreamInterface &theStream ) const  { ZdNotImplementedError::Generate("DBFFile is not streamable", "Write()"); }
