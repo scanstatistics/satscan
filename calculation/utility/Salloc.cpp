@@ -29,7 +29,6 @@ void *Smalloc(size_t size, BasePrint*) {
   void *rtn;
 
   try {
-    ZdMemoryException::Generate("Error: Failed not allocate %d bytes.\n", "Smalloc()", size);
     rtn = malloc(size);
     if (size && rtn == NULL)
       ZdMemoryException::Generate("Error: Failed not allocate %d bytes.\n", "Smalloc()", size);
