@@ -32,7 +32,6 @@ class AnalysisRunner {
     void                                DisplayFindClusterHeading();
     void                                DisplayTopClusterLogLikelihood();
     virtual void                        CalculateMostLikelyClusters();
-    virtual void                        ContractSimiulations();
     virtual void                        CreateClusterInformationFile(long lReportHistoryRunNumber);
     virtual void                        CreateRelativeRiskFile();
     void                                CreateReport();
@@ -40,11 +39,11 @@ class AnalysisRunner {
     virtual void                        DisplayTopCluster(long lReportHistoryRunNumber);
     void                                FinalizeReport();
     void                                OpenReportFile(FILE*& fp, bool bOpenAppend);
+    virtual void                        PerformParallelSimulations();
+    virtual void                        PerformSerializedSimulations();
     virtual void                        PerformSimulations();
     void                                RemoveTopClusterData();
     bool                                RepeatAnalysis();
-    virtual void                        PerformSerializedSimulations();
-    virtual void                        PerformParallelSimulations();
     void                                UpdatePowerCounts(double r);
     void                                UpdateReport(const long lReportHistoryRunNumber);
 
