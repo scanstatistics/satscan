@@ -1244,35 +1244,24 @@ bool ScanfFile::IsValidZdFieldType(char cCandidate)
 
 // Creates a ZDS which indicates all ALPHA fields
 ZdIniFile *ScanfFile::MakeAlphaZDS ( const char *sFileName, bool bHasFieldNames ) const {
-   ZdIniFile *pIniFile  ( 0 );
+   ZdIniFile                   *pIniFile(0);
+   ZdString                     sName, sScanBuffer, sFormatString;
+   ZdPointerVector<ZdField>     vFields;
+   ZdIO                         tempFile;
+   int                          iMatchedCharCount(0), iScannedParmCount(0), iCurrentFieldIndex(0);
+   const char                 * pReadHead;
+   ZdResizableChunk             argumentBuffer(ScanfRecord::MAX_RECORD_BUFFER_LENGTH);
 
    try {
-     ZdPointerVector<ZdField> vFields;
-     ZdIO     tempFile ( sFileName, ZDIO_OPEN_READ );          // Temporary io object used to access the file
-     ZdString sName;                                           // Used to hold the field names
-
-//   ZdResizableChunk recordBuffer(ScanfRecord::MAX_RECORD_BUFFER_LENGTH);
-   ZdResizableChunk argumentBuffer(ScanfRecord::MAX_RECORD_BUFFER_LENGTH);
-   ZdString sScanBuffer;
-   ZdString sFormatString;
-   int iMatchedCharCount(0);
-   int iScannedParmCount(0);
-   int iCurrentFieldIndex;
-   const char * pReadHead;
-   ZdFieldValue FieldValue;
-
-//   try    {
-     sFormatString << "%" << ScanfRecord::MAX_RECORD_BUFFER_LENGTH - 1 << "s";
-     sFormatString << "%n";
-
+     tempFile.Open( sFileName, ZDIO_OPEN_READ );          // Temporary io object used to access the file
+     sFormatString << "%" << ScanfRecord::MAX_RECORD_BUFFER_LENGTH - 1 << "s" << "%n";
      //setup for reading field values:
-     iCurrentFieldIndex = 0;
      tempFile.ReadLine(sScanBuffer);
      pReadHead = sScanBuffer.GetCString();
      //read first field value:
      iScannedParmCount = std::sscanf(pReadHead, sFormatString.GetCString(), argumentBuffer.AsCharPtr(), &iMatchedCharCount);
      //load and read remaining field values:
-     while ( (iScannedParmCount != EOF) ) {
+     while ((iScannedParmCount != EOF)) {
          if (bHasFieldNames)
            vFields.push_back(new ZdField(argumentBuffer.AsCharPtr(), iCurrentFieldIndex, ZD_ALPHA_FLD, ZD_MAXFIELD_LEN));
          else {
