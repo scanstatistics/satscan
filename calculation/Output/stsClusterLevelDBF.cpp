@@ -39,7 +39,7 @@ stsClusterLevelDBF::~stsClusterLevelDBF() {
 // post: field vector is empty and all of the pointers are deleted
 void stsClusterLevelDBF::CleanupFieldVector() {
    try {
-      for(unsigned int i = gvFields.GetNumElements() - 1; i > 0; --i) {
+      for(int i = gvFields.GetNumElements() - 1; i > 0; --i) {
          delete gvFields[0]; gvFields[0] = 0;
          gvFields.RemoveElement(0);
       }
@@ -129,6 +129,7 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
    unsigned short       uwFieldNumber = 0;
    float                fRadius = 0;
    double               *pCoords = 0, *pCoords2 = 0;
+   ZdFieldValue         fv;
 
    try {
       pFile = new DBFFile(gsFileName.GetCString());
@@ -136,55 +137,85 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
       pTransaction = pFile->BeginTransaction();
 
       pRecord = pFile->GetNewRecord();
-
+    
       // define record data
       // run number field  - from the run history file  AJV 9/4/2002
-      pRecord->PutNumber(uwFieldNumber, glRunNumber);
+      fv.SetType(pRecord->GetFieldType(uwFieldNumber));
+      fv.AsDouble() = ++glRunNumber;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // cluster start date
-      pRecord->PutNumber(++uwFieldNumber, pCluster->m_nStartDate);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsZdString() = (char*)pCluster->m_nStartDate;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // cluster end date
-      pRecord->PutNumber(++uwFieldNumber, pCluster->m_nEndDate);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsZdString() = (char*)pCluster->m_nEndDate;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // cluster number
-      pRecord->PutNumber(++uwFieldNumber, iClusterNumber);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsDouble() = iClusterNumber;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // observed
-      pRecord->PutNumber(++uwFieldNumber, pCluster->m_nCases);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsDouble() = pCluster->m_nCases;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // expected
-      pRecord->PutNumber(++uwFieldNumber, pCluster->m_nMeasure);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsDouble() = pCluster->m_nMeasure;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // relative risk
-      pRecord->PutNumber(++uwFieldNumber, pCluster->m_nRatio);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsDouble() = pCluster->m_nRatio;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // log likliehood
-      pRecord->PutNumber(++uwFieldNumber, pCluster->m_nLogLikelihood);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsDouble() = pCluster->m_nLogLikelihood;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // p value
-      pRecord->PutNumber(++uwFieldNumber, pCluster->gfPValue);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsDouble() = pCluster->gfPValue;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // number of areas in the cluster
-      pRecord->PutNumber(++uwFieldNumber, pCluster->m_nTracts);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsDouble() = pCluster->m_nTracts;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // central area id
-      pRecord->PutNumber(++uwFieldNumber, pCluster->m_Center);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsDouble() = pCluster->m_Center;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // coord north
-      pRecord->PutAlpha(++uwFieldNumber, "");
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsZdString() = "";
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // coord west
-      pRecord->PutAlpha(++uwFieldNumber, "");
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsZdString() = "";
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // additional coords
-      pRecord->PutAlpha(++uwFieldNumber, "");
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsZdString() = "";
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // radius
       (pData->GetGInfo())->giGetCoords(pCluster->m_Center, &pCoords);
       (pData->GetTInfo())->tiGetCoords(pData->GetNeighbor(pCluster->m_iEllipseOffset, pCluster->m_Center, pCluster->m_nTracts), &pCoords2);
       fRadius = (float)sqrt((pData->GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
-      pRecord->PutNumber(++uwFieldNumber, fRadius);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsDouble() = fRadius;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       pFile->AppendRecord(*pTransaction, *pRecord);
       delete pRecord;
@@ -215,18 +246,19 @@ void stsClusterLevelDBF::Setup(const ZdString& sFileName) {
    unsigned long        ulLastRecordNumber;
 
    try {
-      pFile = new TXDFile("AnalysisHistory.txd", ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
+      if(ZdIO::Exists("AnalysisHistory.txd") && ZdIO::Exists("AnalysisHistory.zds"))  {
+         pFile = new TXDFile("AnalysisHistory.txd", ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
 
-      // get a record buffer, input data and append the record
-      ulLastRecordNumber = pFile->GotoLastRecord(pLastRecord);
-      // if there's records in the file
-      if(ulLastRecordNumber)
-         pLastRecord->GetField(0, glRunNumber);
-      delete pLastRecord;
-      pFile->Close();
+         // get a record buffer, input data and append the record
+         ulLastRecordNumber = pFile->GotoLastRecord(pLastRecord);
+         // if there's records in the file
+         if(ulLastRecordNumber)
+            pLastRecord->GetField(1, glRunNumber);
+         delete pLastRecord;
+         pFile->Close();
 
-      delete pFile;
-
+         delete pFile;
+      }
       gsFileName = sFileName;
 
       CreateDBFFile();

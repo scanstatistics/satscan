@@ -38,7 +38,7 @@ stsAreaSpecificDBF::~stsAreaSpecificDBF() {
 // post: field vector is empty and all of the pointers are deleted
 void stsAreaSpecificDBF::CleanupFieldVector() {
    try {
-      for(unsigned int i = gvFields.GetNumElements() - 1; i > 0; --i) {
+      for(int i = gvFields.GetNumElements() - 1; i > 0; --i) {
          delete gvFields[0]; gvFields[0] = 0;
          gvFields.RemoveElement(0);
       }
@@ -126,6 +126,7 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
    ZdFileRecord*	pRecord = 0;
    ZdTransaction *	pTransaction = 0;
    unsigned long        uwFieldNumber = 0;
+   ZdFieldValue         fv;
 
    try {
       pFile = new DBFFile(gsFileName.GetCString());
@@ -134,25 +135,39 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 
       // define record data
       // run number - from run history file AJV 9/4/2002
-       pRecord->PutNumber(uwFieldNumber, glRunNumber);
+      fv.SetType(pRecord->GetFieldType(uwFieldNumber));
+      fv.AsDouble() = ++glRunNumber;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // cluster number
-      pRecord->PutNumber(++uwFieldNumber, iClusterNumber);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsDouble() = iClusterNumber;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // area id
-      pRecord->PutNumber(++uwFieldNumber, pCluster->m_Center);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsDouble() = pCluster->m_Center;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // p value
-      pRecord->PutNumber(++uwFieldNumber, pCluster->gfPValue);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsDouble() = pCluster->gfPValue;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // observed
-      pRecord->PutNumber(++uwFieldNumber, pCluster->m_nCases);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsDouble() = pCluster->m_nCases;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // expected
-      pRecord->PutNumber(++uwFieldNumber, pCluster->m_nMeasure);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsDouble() = pCluster->m_nMeasure;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // relative risk
-      pRecord->PutNumber(++uwFieldNumber, pCluster->m_nRatio);
+      fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
+      fv.AsDouble() = pCluster->m_nRatio;
+      pRecord->PutFieldValue(uwFieldNumber, fv);
 
       pFile->AppendRecord(*pTransaction, *pRecord);
       delete pRecord;
@@ -183,17 +198,19 @@ void stsAreaSpecificDBF::Setup(const ZdString& sFileName) {
    unsigned long        ulLastRecordNumber;
 
    try {
-      pFile = new TXDFile("AnalysisHistory.txd", ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
+      if(ZdIO::Exists("AnalysisHistory.txd") && ZdIO::Exists("AnalysisHistory.zds"))  {
+         pFile = new TXDFile("AnalysisHistory.txd", ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
 
-      // get a record buffer, input data and append the record
-      ulLastRecordNumber = pFile->GotoLastRecord(pLastRecord);
-      // if there's records in the file
-      if(ulLastRecordNumber)
-         pLastRecord->GetField(0, glRunNumber);
-      delete pLastRecord;
-      pFile->Close();
+         // get a record buffer, input data and append the record
+         ulLastRecordNumber = pFile->GotoLastRecord(pLastRecord);
+         // if there's records in the file
+         if(ulLastRecordNumber)
+            pLastRecord->GetField(1, glRunNumber);
+         delete pLastRecord;
+         pFile->Close();
 
-      delete pFile;
+         delete pFile;
+      }
 
       gsFileName = sFileName;
 
