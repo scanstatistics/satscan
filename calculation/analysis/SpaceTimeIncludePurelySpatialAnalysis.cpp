@@ -120,9 +120,9 @@ double C_ST_PS_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
           C_ST.Initialize(i);
           iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];
           for (j=1; j <= iNumNeighbors; j++) {
-            C_PS.AddNeighbor(m_pData->GetNeighbor(k, i, j), Interface);
+            C_PS.AddNeighborData(m_pData->GetNeighbor(k, i, j), Interface);
             C_PS.ComputeBestMeasures(*pMeasureList);
-            C_ST.AddNeighbor(m_pData->GetNeighbor(k, i, j), Interface);
+            C_ST.AddNeighborData(m_pData->GetNeighbor(k, i, j), Interface);
             C_ST.ComputeBestMeasures(*pMeasureList);
           }
        }
@@ -174,9 +174,9 @@ double C_ST_PS_Analysis::MonteCarloProspective(const DataStreamInterface & Inter
           C_ST.Initialize(i);
           iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];
           for (tract_t j=1; j <= iNumNeighbors; j++) {
-              C_PS.AddNeighbor(m_pData->GetNeighbor(k, i, j), Interface);
+              C_PS.AddNeighborData(m_pData->GetNeighbor(k, i, j), Interface);
               C_PS.ComputeBestMeasures(*pMeasureList);
-              C_ST.AddNeighbor(m_pData->GetNeighbor(k, i, j), Interface);    
+              C_ST.AddNeighborData(m_pData->GetNeighbor(k, i, j), Interface);    
               C_ST.ComputeBestMeasures(*pMeasureList);
           }
        }
