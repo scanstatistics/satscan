@@ -70,8 +70,11 @@ void __fastcall CalcThread::EnableProgressPrintButton(void) {
 
 /** Main Thread execution function. */
 void __fastcall CalcThread::Execute() {
+  time_t        RunTime;
+  ZdString      Acknowledgment;
+
   try {
-    time_t      RunTime;
+    gpPrintWindow->SatScanPrintf(GetToolkit().GetAcknowledgment(Acknowledgment));
 
     time(&RunTime);         // Pass to analysis to include in report
     if (!gpParams->ValidateParameters())

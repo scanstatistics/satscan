@@ -30,8 +30,8 @@ int main(int argc, char *argv[]) {
   try {
     BasisInit(); //initialize basis/zero dimension libraries
     BasisSetToolkit(new SaTScanToolkit()); //Set toolkit
-    ZdGetFileTypeArray()->AddElement( &(DBFFileType::GetDefaultInstance()) );
-    ConsolePrint.SatScanPrintf("\nSaTScan %s\n\n", VERSION_NUMBER);
+    ZdGetFileTypeArray()->AddElement(&(DBFFileType::GetDefaultInstance()));
+    ConsolePrint.SatScanPrintf(GetToolkit().GetAcknowledgment(sMessage));
     Parameters.SetPrintDirection(&ConsolePrint);
     if (argc < 2)
       ZdGenerateException("No parameter file specified.\nusage: %s parameter file\n", "main(int,char*)", argv[0]);
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     //Convert maximum temporal cluster size to percentage of population.
     Parameters.ConvertMaxTemporalClusterSizeToType(PERCENTAGETYPE);
     if (! Parameters.ValidateParameters()) {
-      sMessage << "The parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
+      sMessage << ZdString::reset << "The parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
       ZdGenerateException(sMessage.GetCString(),"main(int,char*)");
     }
