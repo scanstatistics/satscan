@@ -3,7 +3,6 @@
 #define __TRACTS_H
 //*****************************************************************************
 #include "SaTScan.h"
-#include "Sort.h"
 #include "JulianDates.h"
 #include "PopulationCategories.h"
 
