@@ -233,7 +233,7 @@ void IniParameterFileAccess::ReadMultipleDataSetsSettings(const ZdIniFile& Sourc
     ReadIniParameter(SourceFile, MULTI_DATASET_PURPOSE_TYPE);
     ReadIniParameter(SourceFile, CASEFILE, vFilenames);
     for (t=0; t < vFilenames.size(); ++t)
-      gParameters.SetCaseFileName(vFilenames[t].GetCString(), false, t + 2);
+      gParameters.SetCaseFileName(vFilenames[t].GetCString(), true, t + 2);
     iMostStreams = std::max(iMostStreams, vFilenames.size() + 1);
     ReadIniParameter(SourceFile, CONTROLFILE, vFilenames);
     iMostStreams = std::max(iMostStreams, vFilenames.size() + 1);
@@ -404,8 +404,8 @@ void IniParameterFileAccess::WriteAnalysisSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, ANALYSISTYPE, AsString(s, gParameters.GetAnalysisType()),
                       " analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective"
                       " Space-Time, 4=Prospective Space-Time, 5=N/A, 6=Prospective Purely Temporal)");
-    WriteIniParameter(WriteFile, MODEL, AsString(s, gParameters.GetProbabiltyModelType()),
-                      " model type (0=Poisson, 1=Bernoulli, 2=Space-Time Permutation)");
+    WriteIniParameter(WriteFile, MODEL, AsString(s, gParameters.GetProbabilityModelType()),
+                      " model type (0=Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Ordinal)");
     WriteIniParameter(WriteFile, SCANAREAS, AsString(s, gParameters.GetAreaScanRateType()),
                       " scan areas (1=High, 2=Low, 3=High or Low)");
     WriteIniParameter(WriteFile, TIME_AGGREGATION_UNITS, AsString(s, gParameters.GetTimeAggregationUnitsType()),
