@@ -13,6 +13,7 @@
 
 #include "JulianDates.h"
 #include "Parameters.h"
+#include <Menus.hpp>
 
 //---------------------------------------------------------------------------
 class TfrmAnalysis : public TForm {
@@ -112,6 +113,8 @@ class TfrmAnalysis : public TForm {
         TCheckBox *chkDbaseFile2;
         TRadioButton *rdoSpatialPercentage;
         TRadioButton *rdoSpatialDistance;
+        TPopupMenu *SpecialGridPopupMenu;
+        TMenuItem *mitClearSpecialGridEdit;
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall rgPrecisionTimesClick(TObject *Sender);
         void __fastcall btnCaseBrowseClick(TObject *Sender);
@@ -161,6 +164,7 @@ class TfrmAnalysis : public TForm {
         void __fastcall cboCriteriaSecClustersChange(TObject *Sender);
         void __fastcall rdoSpatialPercentageClick(TObject *Sender);
         void __fastcall rdoSpatialDistanceClick(TObject *Sender);
+        void __fastcall mitClearSpecialGridEditClick(TObject *Sender);
 
   private:	// User declarations
     CParameters       * gpParams;

@@ -1215,7 +1215,10 @@ void TfrmAnalysis::Init() {
 }
 
 //------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
+void __fastcall TfrmAnalysis::mitClearSpecialGridEditClick(TObject *Sender) {
+  edtGridFileName->Clear();
+}
+//---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::NaturalNumberKeyPress(TObject *Sender, char &Key) {
   if (!strchr("0123456789\b",Key))
     Key = 0;

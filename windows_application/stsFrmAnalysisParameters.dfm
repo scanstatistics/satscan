@@ -24,7 +24,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbOutputFiles
+    ActivePage = tbInputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -213,6 +213,7 @@ object frmAnalysis: TfrmAnalysis
           Width = 273
           Height = 21
           ParentShowHint = False
+          PopupMenu = SpecialGridPopupMenu
           ReadOnly = True
           ShowHint = True
           TabOrder = 1
@@ -960,5 +961,12 @@ object frmAnalysis: TfrmAnalysis
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Title = 'Save Parameter File As'
     Left = 440
+  end
+  object SpecialGridPopupMenu: TPopupMenu
+    Left = 472
+    object mitClearSpecialGridEdit: TMenuItem
+      Caption = 'Clear'
+      OnClick = mitClearSpecialGridEditClick
+    end
   end
 end
