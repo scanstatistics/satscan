@@ -141,12 +141,12 @@ ZdField* BaseOutputStorageClass::GetField(unsigned short uwFieldNumber) {
 //       throw a not found exception
 const unsigned short BaseOutputStorageClass::GetFieldNumber(const ZdString& sFieldName) {
    bool                 bFound(false);
-   unsigned short       uwPosition = -1;
+   unsigned short       uwPosition;
 
    try {
       for( size_t i = 0; i < gvFields.size() && !bFound; ++i) {
          bFound = (!strcmp(gvFields[i]->GetName(), sFieldName));
-         ++uwPosition;
+         uwPosition = i;
       }
 
       if (!bFound)

@@ -105,7 +105,7 @@ static void CreateNewField(ZdPointerVector<ZdField>& vFields, const std::string&
 // pre : global field vector has been established
 // post : will return the position of the field in the vector
 static unsigned short GetFieldNumber(const ZdPointerVector<ZdField>& vFields, const char* sFieldName) {
-   unsigned short       uwFieldNumber = -1;
+   unsigned short       uwFieldNumber;
    bool                 bFound = false;
 
    try {
