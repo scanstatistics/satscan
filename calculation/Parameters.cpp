@@ -489,7 +489,7 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
         AdditionalOutputFile.SetExtension(".col.txt");
         fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
       }
-      if (gbOutputClusterLevelAscii) {
+      if (gbOutputClusterLevelDBase) {
         AdditionalOutputFile.SetExtension(".col.dbf");
         fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
       }
