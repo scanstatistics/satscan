@@ -65,7 +65,8 @@ class CSaTScanData {
     TwoDimensionArrayHandler<tract_t>         * gpNeighborCountHandler;
     TwoDimensionArrayHandler<measure_t>       * gpMeasureHandler,
                                               * gpMeasureNonCumulativeHandler,
-                                              * gpMeasureByTimeByCategoryHandler;
+                                              * gpMeasureByTimeByCategoryHandler,
+                                              * gpPopulationMeasureHandler;
     measure_t                                   m_nTotalMaxCirclePopulation,    /** total population as defined in max circle population file */
                                                 m_nTotalMeasure,
                                                 m_nTotalMeasureAtStart,
@@ -83,10 +84,13 @@ class CSaTScanData {
     void                                        AllocateControlStructures();
     void                                        AllocateNeighborArray();
     void                                        AllocateSortedArray();
-    bool                                        CasesExist(tract_t Tract, int iStartInterval, int iEndInterval);
+    measure_t                                   CalcMeasureForTimeInterval(measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate);
     bool                                        ConvertAdjustmentDateToJulian(StringParser & Parser, Julian & JulianDate, bool bStartDate);
     bool                                        ConvertCountDateToJulian(StringParser & Parser, const char * szDescription, Julian & JulianDate);
     bool                                        ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, Julian & JulianDate);
+    measure_t                                   DateMeasure(measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract);    
+    count_t                                     GetCaseCount(int iInterval, tract_t tTract) const;
+    int                                         LowerPopIndex(Julian Date) const;
     bool                                        ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativeMeasure);
     bool                                        ReadCartesianCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
                                                                          int & iScanCount, int iWordOffSet, const char * sSourceFile);
@@ -115,6 +119,8 @@ class CSaTScanData {
     void                                        SetScanningWindowStartRangeIndex(Julian StartRangeDate, int & iStartRangeDateIndex);
     void                                        SetStartAndEndDates();
     void                                        SetTimeIntervalRangeIndexes();
+    int                                         UpperPopIndex(Julian Date) const;
+    virtual void                                ValidateObservedToExpectedCases(measure_t ** ppNonCumulativeMeasure) const;
 
   public:
     CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection);
@@ -186,6 +192,7 @@ class CSaTScanData {
     inline count_t                           ** GetSimCasesNCArray() const {return gpSimCasesNonCumulativeHandler->GetArray();}
     const count_t                             * GetSimCasesPTArray() const {return m_pPTSimCases;}
     Julian                                      GetStudyPeriodStartDate() const {return m_nStartDate;}
+    int                                         GetTimeIntervalOfDate(Julian Date) const;
     const Julian                              * GetTimeIntervalStartTimes() const {return m_pIntervalStartTimes;}
     inline const TractHandler                 * GetTInfo() const { return gpTInfo;}
     inline measure_t                            GetTotalMeasure() const {return m_nTotalMeasure;}
