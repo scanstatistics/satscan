@@ -33,6 +33,7 @@ PROBMODEL      := $(SATSCAN)/calculation/probability_model/
 SATDATA        := $(SATSCAN)/calculation/satscan_data/
 UTILITY        := $(SATSCAN)/calculation/utility/
 RANDOMIZER     := $(SATSCAN)/calculation/randomization/
+LOGLIKELIHOOD  := $(SATSCAN)/calculation/loglikelihood/
 
 
 ZDANNEX     := /sprj/imsdev/zd
@@ -47,7 +48,7 @@ XBASEDIR2   := $(SATSCAN)/xbase/xbase_2.0.0
 
 INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(ZDDIR) -I$(ZDANNEX) -I$(CLUSTER) -I$(UTILITY) -I$(XBASEDIR) -I$(XBASEDIR2)\
                -I$(BASIS)/include -I$(BASIS)/source/nonvcl -I$(BASIS)/source/vcldep -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL)\
-	       -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER)
+	       -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD)
 
 DEFINES     := -D__BASIS_NO_VCL \
                -D__BATCH_COMPILE
@@ -111,6 +112,12 @@ SRC         := Main.cpp \
 	       ../calculation/randomization/DenominatorDataRandomizer.cpp \
 	       ../calculation/randomization/PermutationDataRandomizer.cpp \
 	       ../calculation/randomization/Randomizer.cpp \
+	       ../calculation/loglikelihood/BernoulliLikelihoodCalculation.cpp \
+	       ../calculation/loglikelihood/ExponentialLikelihoodCalculation.cpp \
+	       ../calculation/loglikelihood/LikelihoodCalculation.cpp \
+	       ../calculation/loglikelihood/NormalLikelihoodCalculation.cpp \
+	       ../calculation/loglikelihood/PoissonLikelihoodCalculation.cpp \
+	       ../calculation/loglikelihood/WillcoxomLikelihoodCalculation.cpp \
 	       ../calculation/randomization/SpaceTimeRandomizer.cpp \
 	       ../calculation/satscan_data/GridTractCoordinates.cpp \
 	       ../calculation/satscan_data/MakeNeighbors.cpp \
