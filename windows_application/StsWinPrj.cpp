@@ -1,5 +1,6 @@
 //---------------------------------------------------------------------------
 #include "stsSaTScan.h"
+#include "DBFFile.h"//need for registration of filetype.  Maybe it should go in stsSaTScan.h ?
 #pragma hdrstop
 //---------------------------------------------------------------------------
 
@@ -87,6 +88,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         try
         {
                  BasisInit();
+                 ZdGetFileTypeArray()->AddElement( &(DBFFileType::GetDefaultInstance()) );
                  Application->Initialize();
                  Application->Title = "SaTScan";
                  Application->HelpFile = "Stswinprj.HLP";
