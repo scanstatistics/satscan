@@ -10,6 +10,7 @@
 #pragma hdrstop
 
 #include "Analysis.h"
+#include "stsOutputDBF.h"
 #include "stsRunHistoryFile.h"
 
 // constructor
@@ -31,31 +32,15 @@ stsRunHistoryFile::~stsRunHistoryFile() {
    catch (...) {/* munch munch */}
 }
 
-// deletes the memory allocated to the ZdField pointer vector  - AJV 9/23/2002
-// pre : an allocated vector of ZdField pointers
-// post: deletes the memory allocated to the vector and removes all elements
-void stsRunHistoryFile::CleanupFieldVector(ZdVector<ZdField*>& vFields) {
-   try {
-      while (vFields.GetNumElements()) {
-         delete vFields[0]; vFields[0] = 0;
-         vFields.RemoveElement(0);
-      }
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("CleanupFieldVector()", "stsRunHistoryFile");
-      throw;
-   }
-}
-
 // creates the run history file
 // pre: txd file doesn't not already exist
 // post: will create the txd file with the appropraite fields
 void stsRunHistoryFile::CreateRunHistoryFile() {
    ZdField		                *pField = 0;
-   ZdVector<ZdField*>	                vFields;
+   ZdPointerVector<ZdField>	        vFields;
    TXDFile                              File;
    unsigned short                       uwOffset = 0;
-   std::vector<history_field_t>         vFieldDescriptors;
+   std::vector<field_t>                 vFieldDescriptors;
 
    try {
       SetupFields(vFieldDescriptors);
@@ -64,9 +49,10 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
          pField = File.GetNewField();
          pField->SetName(vFieldDescriptors[i].gsFieldName.c_str());
          pField->SetType(vFieldDescriptors[i].gcFieldType);
-         pField->SetLength(vFieldDescriptors[i].gwFieldLength);
+         pField->SetLength(vFieldDescriptors[i].gwLength);
+         pField->SetPrecision(vFieldDescriptors[i].gwPrecision);
          pField->SetOffset(uwOffset);
-         uwOffset += vFieldDescriptors[i].gwFieldLength;
+         uwOffset += vFieldDescriptors[i].gwLength;
          if(i == 0)                    // first field needs to be indexed in order to use GotoRecordByKeys() = AJV 9/24/2002
             pField->SetIndexCount(1);
          vFields.AddElement(pField);
@@ -75,11 +61,8 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
       File.PackFields(vFields);
       File.Create(gsFilename, vFields, 1);
       File.Close();
-
-      CleanupFieldVector(vFields);
    }
-   catch (ZdException &x) {   
-      CleanupFieldVector(vFields);
+   catch (ZdException &x) {
       x.AddCallpath("CreateRunHistoryFile()", "stsRunHistoryFile");
       throw;
    }
@@ -363,85 +346,34 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
    }
 }
 
-// function to set the value of boolean fields
-// pre: record has been allocated
-// post: sets the values in the FieldNumber field of the record
-void stsRunHistoryFile::SetBoolField(ZdFileRecord& record, const bool bValue, const unsigned long uwFieldNumber) {
-   ZdFieldValue fv;
-
-   try {
-      fv.SetType(record.GetFieldType(uwFieldNumber));
-      fv.AsBool() = bValue;
-      record.PutFieldValue(uwFieldNumber, fv);
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("SetBoolField()", "stsRunHistoryFile");
-      throw;
-   }
-}
-
-// function to set the value of double fields
-// pre: record has been allocated
-// post: sets the values in the FieldNumber field of the record
-void stsRunHistoryFile::SetDoubleField(ZdFileRecord& record, const double dValue, const unsigned long uwFieldNumber) {
-   ZdFieldValue fv;
-
-   try {
-      fv.SetType(record.GetFieldType(uwFieldNumber));
-      fv.AsDouble() = dValue;
-      record.PutFieldValue(uwFieldNumber, fv);
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("SetDoubleField()", "stsRunHistoryFile");
-      throw;
-   }
-}
-
 // creates the history_field_t's and adds them to the vector
 // pre: pass in an empty vector of history_field_t
 // post: passes back through reference the filled vector of history_field_t
-void stsRunHistoryFile::SetupFields(std::vector<history_field_t>&  vFieldDescrip ) {
-   vFieldDescrip.push_back(history_field_t("Run_Number", ZD_LONG_FLD, 8));
-   vFieldDescrip.push_back(history_field_t("Run_Time", ZD_ALPHA_FLD, 32));
-   vFieldDescrip.push_back(history_field_t("Output_File", ZD_ALPHA_FLD, 254));
-   vFieldDescrip.push_back(history_field_t("Prob_Model", ZD_ALPHA_FLD, 32));
-   vFieldDescrip.push_back(history_field_t("Rates", ZD_ALPHA_FLD, 16));
-   vFieldDescrip.push_back(history_field_t("Coord_Type", ZD_ALPHA_FLD, 16));
-   vFieldDescrip.push_back(history_field_t("Analysis_Type", ZD_ALPHA_FLD, 32));
-   vFieldDescrip.push_back(history_field_t("Number_Cases", ZD_LONG_FLD, 8));
-   vFieldDescrip.push_back(history_field_t("Total_Pop", ZD_NUMBER_FLD, 16));
-   vFieldDescrip.push_back(history_field_t("Num_Geo_Areas", ZD_LONG_FLD, 8));
-   vFieldDescrip.push_back(history_field_t("Precis_Times", ZD_ALPHA_FLD, 16));
-   vFieldDescrip.push_back(history_field_t("Max_Geo_Extent", ZD_NUMBER_FLD, 16));
-   vFieldDescrip.push_back(history_field_t("Max_Temp_Extent", ZD_NUMBER_FLD, 16));
-   vFieldDescrip.push_back(history_field_t("Time_Trend_Adjust", ZD_ALPHA_FLD, 20));
-   vFieldDescrip.push_back(history_field_t("Grid_File", ZD_BOOLEAN_FLD, 1));
-   vFieldDescrip.push_back(history_field_t("Start_Date", ZD_ALPHA_FLD, 16));
-   vFieldDescrip.push_back(history_field_t("End_Date", ZD_ALPHA_FLD, 16));
-   vFieldDescrip.push_back(history_field_t("Alive_Only", ZD_BOOLEAN_FLD, 1));
-   vFieldDescrip.push_back(history_field_t("Interv_Units", ZD_ALPHA_FLD, 16));
-   vFieldDescrip.push_back(history_field_t("Interv_Len", ZD_LONG_FLD, 8));
-   vFieldDescrip.push_back(history_field_t("Monte_Carlo", ZD_LONG_FLD, 8));
-   vFieldDescrip.push_back(history_field_t("001_CutOff", ZD_NUMBER_FLD, 8));
-   vFieldDescrip.push_back(history_field_t("005_CutOff", ZD_NUMBER_FLD, 8));
-   vFieldDescrip.push_back(history_field_t("Num_Signif_005", ZD_LONG_FLD, 8));
-}
-
-// function to set the value of long fields
-// pre: record has been allocated
-// post: sets the values in the FieldNumber field of the record
-void stsRunHistoryFile::SetLongField(ZdFileRecord& record, const long lValue, const unsigned long uwFieldNumber) {
-   ZdFieldValue fv;
-
-   try {
-      fv.SetType(record.GetFieldType(uwFieldNumber));
-      fv.AsLong() = lValue;
-      record.PutFieldValue(uwFieldNumber, fv);
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("SetLongField()", "stsRunHistoryFile");
-      throw;
-   }
+void stsRunHistoryFile::SetupFields(std::vector<field_t>&  vFieldDescrip ) {
+   vFieldDescrip.push_back(field_t("Run_Number", ZD_LONG_FLD, 8, 0));
+   vFieldDescrip.push_back(field_t("Run_Time", ZD_ALPHA_FLD, 32, 0));
+   vFieldDescrip.push_back(field_t("Output_File", ZD_ALPHA_FLD, 254, 0));
+   vFieldDescrip.push_back(field_t("Prob_Model", ZD_ALPHA_FLD, 32, 0));
+   vFieldDescrip.push_back(field_t("Rates", ZD_ALPHA_FLD, 16, 0));
+   vFieldDescrip.push_back(field_t("Coord_Type", ZD_ALPHA_FLD, 16, 0));
+   vFieldDescrip.push_back(field_t("Analysis_Type", ZD_ALPHA_FLD, 32, 0));
+   vFieldDescrip.push_back(field_t("Number_Cases", ZD_LONG_FLD, 8, 0));
+   vFieldDescrip.push_back(field_t("Total_Pop", ZD_NUMBER_FLD, 16, 3));
+   vFieldDescrip.push_back(field_t("Num_Geo_Areas", ZD_LONG_FLD, 8, 0));
+   vFieldDescrip.push_back(field_t("Precis_Times", ZD_ALPHA_FLD, 16, 0));
+   vFieldDescrip.push_back(field_t("Max_Geo_Extent", ZD_NUMBER_FLD, 16, 3));
+   vFieldDescrip.push_back(field_t("Max_Temp_Extent", ZD_NUMBER_FLD, 16, 3));
+   vFieldDescrip.push_back(field_t("Time_Trend_Adjust", ZD_ALPHA_FLD, 20, 3));
+   vFieldDescrip.push_back(field_t("Grid_File", ZD_BOOLEAN_FLD, 1, 0));
+   vFieldDescrip.push_back(field_t("Start_Date", ZD_ALPHA_FLD, 16, 0));
+   vFieldDescrip.push_back(field_t("End_Date", ZD_ALPHA_FLD, 16, 0));
+   vFieldDescrip.push_back(field_t("Alive_Only", ZD_BOOLEAN_FLD, 1, 0));
+   vFieldDescrip.push_back(field_t("Interv_Units", ZD_ALPHA_FLD, 16, 0));
+   vFieldDescrip.push_back(field_t("Interv_Len", ZD_LONG_FLD, 8, 0));
+   vFieldDescrip.push_back(field_t("Monte_Carlo", ZD_LONG_FLD, 8, 0));
+   vFieldDescrip.push_back(field_t("001_CutOff", ZD_NUMBER_FLD, 8, 3));
+   vFieldDescrip.push_back(field_t("005_CutOff", ZD_NUMBER_FLD, 8, 3));
+   vFieldDescrip.push_back(field_t("Num_Signif_005", ZD_LONG_FLD, 8, 0));
 }
 
 // sets the global variable glRunNumber and secures a unique run number in the file
@@ -489,23 +421,6 @@ void stsRunHistoryFile::SetRunNumber() {
    }
 }
 
-// function to set the value of string fields
-// pre: record has been allocated
-// post: sets the values in the FieldNumber field of the record
-void stsRunHistoryFile::SetStringField(ZdFileRecord& record, const ZdString& sValue, const unsigned long uwFieldNumber) {
-   ZdFieldValue fv;
-
-   try {
-      fv.SetType(record.GetFieldType(uwFieldNumber));
-      fv.AsZdString() = sValue;
-      record.PutFieldValue(uwFieldNumber, fv);
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("SetStringField()", "stsRunHistoryFile");
-      throw;
-   }
-}
-
 // internal setup
 void stsRunHistoryFile::Setup(const ZdString& sFileName) {
    try {
@@ -517,5 +432,4 @@ void stsRunHistoryFile::Setup(const ZdString& sFileName) {
       throw;
    }
 }
-
 
