@@ -434,7 +434,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
       switch (geMaxGeographicClusterSizeType) {
         case PERCENTOFPOPULATIONFILETYPE :
         case PERCENTOFPOPULATIONTYPE     : fprintf(fp, " %%\n"); break;
-        case DISTANCETYPE            : fprintf(fp, (geCoordinatesType == CARTESIAN ? " cartesian units\n" : " km\n")); break;
+        case DISTANCETYPE            : fprintf(fp, (geCoordinatesType == CARTESIAN ? " Cartesian units\n" : " km\n")); break;
         default : ZdException::Generate("Unknown maximum spatial cluster size type '%d'.\n", "DisplayParameters()", geMaxGeographicClusterSizeType);
       }
     }
@@ -580,7 +580,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
     if (gbRestrictReportedClusters)
       fprintf(fp, "  Only clusters smaller than %g %s reported.\n", gfMaxReportedGeographicClusterSize,
                   (geMaxGeographicClusterSizeType == DISTANCETYPE ?
-                    (geCoordinatesType == CARTESIAN ? "cartesian units" : "km") : "percent of population at risk"));
+                    (geCoordinatesType == CARTESIAN ? "Cartesian units" : "km") : "percent of population at risk"));
 
     AsciiPrintFormat::PrintSectionSeparatorString(fp, 1, 1);
   }
