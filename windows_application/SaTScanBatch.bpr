@@ -64,7 +64,7 @@
       ..\calculation\cluster\PurelySpatialProspectiveCluster.obj 
       ..\calculation\utility\MultipleDimensionArrayHandler.obj 
       ..\calculation\satscan_data\MaxWindowLengthIndicator.obj"/>
-    <RESFILES value=""/>
+    <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value="&quot;C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib&quot; 
@@ -83,7 +83,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE;_DEBUG"/>
+    <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="SaTScanBatch.bpf"/>
     <INCLUDEPATH value="..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;..\xbase\xbase_2.0.0"/>
@@ -91,12 +91,12 @@
     <WARNINGS value="-w-par -w-8027 -w-8026 -w-aus"/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=vcl_trunk_batch.csm -Hc -Q -Vx -Ve -ff -X- -r- -a8 -5 -b- -k -y -v 
-      -vi- -tWC -tWM- -c"/>
-    <PFLAGS value="-$Y+ -$W -$O- -v -JPHNE -M"/>
+    <CFLAG1 value="-O2 -H=vcl_trunk_batch.csm -Hc -Q -Vx -Ve -ff -X- -a8 -5 -b- -k- -vi -tWC 
+      -tWM- -c"/>
+    <PFLAGS value="-$Y- -$L- -$D- -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn -v"/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn"/>
   </OPTIONS>
   <LINKER>
     <ALLOBJ value="c0x32.obj $(OBJFILES)"/>
@@ -105,9 +105,9 @@
   </LINKER>
   <IDEOPTIONS>
 [Version Info]
-IncludeVerInfo=0
+IncludeVerInfo=1
 AutoIncBuild=0
-MajorVer=1
+MajorVer=4
 MinorVer=0
 Release=0
 Build=0
@@ -120,28 +120,28 @@ Locale=1033
 CodePage=1252
 
 [Version Info Keys]
-CompanyName=
-FileDescription=
-FileVersion=1.0.0.0
+CompanyName=SaTScan
+FileDescription=pre-beta Aug. 12, 2003
+FileVersion=4.0.0.0
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
-ProductName=
-ProductVersion=1.0.0.0
-Comments=
+ProductName=SaTScan
+ProductVersion=4.0
+Comments=4.0 pre-beta Aug. 12, 2003
 
 [Excluded Packages]
 $(BCB)\Bin\dcl31w50.bpl=Delphi 1.0 Compatibility Components
+$(BCB)\Bin\dclqrt50.bpl=QuickReport Components
+$(BCB)\Bin\dcltee50.bpl=TeeChart 5.0 Components
 $(BCB)\Bin\dcltqr50.bpl=TeeChart 5.0 for QuickReport Components Design Package
 $(BCB)\Bin\dclib50.bpl=InterBase Data Access Components
 $(BCB)\Bin\DBWEBXPRT.BPL=Borland Web Wizard Package
 $(BCB)\Bin\DCLNMF50.bpl=NetMasters Fastnet Tools
-C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\TSGDCLC5.bpl=Top Support TopGrid Components
 $(BCB)\Bin\dclocx50.bpl=Borland Sample Imported ActiveX Controls
 $(BCB)\Bin\mfcwizard.bpl=MFC Wizard
-$(BCB)\Bin\dclqrt50.bpl=QuickReport 3 Package
-$(BCB)\Bin\dcltee50.bpl=TeeChart 5.0 Components
+C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\TSGDCLC5.bpl=Top Support TopGrid Components
 
 [HistoryLists\hlIncludePath]
 Count=10
@@ -183,8 +183,8 @@ Item7=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=6
-Item0=INTEL_BASED;__BATCH_COMPILE;_DEBUG
-Item1=INTEL_BASED;__BATCH_COMPILE
+Item0=INTEL_BASED;__BATCH_COMPILE
+Item1=INTEL_BASED;__BATCH_COMPILE;_DEBUG
 Item2=INTEL_BASED;_DEBUG;__BATCH_COMPILE
 Item3=INTEL_BASED;_DEBUG
 Item4=INTEL_BASED
@@ -194,7 +194,7 @@ Item5=_DEBUG
 DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\home\hostovic\prj\basisdev\include;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd540;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
 
 [Parameters]
-RunParams=&quot;C:\Program Files\SaTScan\SaTScan 3.1\Sample Data\nm.prm&quot; -v -o  &quot;C:\Program Files\SaTScan\SaTScan 3.1\Sample Data\nm.out2.txt&quot;
+RunParams=&quot;C:\Program Files\SaTScan\SaTScan 3.1\Sample Data\nm.sample.prm
 HostApplication=C:\SatScan v3.0\calc\Satscan.exe
 RemoteHost=
 RemotePath=
