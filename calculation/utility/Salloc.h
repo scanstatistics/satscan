@@ -17,13 +17,8 @@
  a message on stderr, and exits.
  **********************************************************************/
 
-extern void *(*SallocError)(size_t size, BasePrint *pPrintDirection);
-
-void *Scalloc(size_t, size_t, BasePrint *pPrintDirection);
-void *Smalloc(size_t, BasePrint *pPrintDirection);
-void *Srealloc(void *, size_t, BasePrint *pPrintDirection);
-char *Sstrdup(char *s, BasePrint *pPrintDirection);
-char* Sstrcpy(char** s1, char* s2, BasePrint *pPrintDirection);
-
+void *Scalloc(size_t, size_t, BasePrint*);
+void *Smalloc(size_t, BasePrint*);
+void *Srealloc(void *, size_t, BasePrint*);
 //*****************************************************************************
 #endif
