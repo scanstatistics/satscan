@@ -21,11 +21,12 @@ stsAreaSpecificData::stsAreaSpecificData(const CParameters& Parameters, bool bEx
 stsAreaSpecificData::~stsAreaSpecificData() {}
 
 const char * stsAreaSpecificData::AREA_SPECIFIC_FILE_EXT    = ".gis";
-const char * stsAreaSpecificData::AREA_OBS_FIELD            = "AREA_OBS";
-const char * stsAreaSpecificData::AREA_EXP_FIELD            = "AREA_EXP";
-const char * stsAreaSpecificData::AREA_RSK_FIELD            = "AREA_RSK";
+const char * stsAreaSpecificData::LOC_OBS_FIELD             = "LOC_OBS";
+const char * stsAreaSpecificData::LOC_EXP_FIELD             = "LOC_EXP";
+const char * stsAreaSpecificData::LOC_OBS_DIV_EXP_FIELD     = "LOC_ODE";
 const char * stsAreaSpecificData::CLU_OBS_FIELD             = "CLU_OBS";
 const char * stsAreaSpecificData::CLU_EXP_FIELD             = "CLU_EXP";
+const char * stsAreaSpecificData::CLU_OBS_DIV_EXP_FIELD     = "CLU_ODE";
 
 // records the calculated data from the cluster into the dBase file
 // pre: pCluster has been initialized with calculated data
@@ -51,18 +52,18 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CS
          //that locations where combined. Print a record for each location but
          //leave area specific information blank.
          if (vIdentifiers.size() == 1) {
-           pRecord->GetFieldValue(GetFieldNumber(AREA_OBS_FIELD)).AsDouble() = theCluster.GetCaseCountForTract(tTract, theData);
-           pRecord->GetFieldValue(GetFieldNumber(AREA_EXP_FIELD)).AsDouble() = theCluster.GetMeasureForTract(tTract, theData);
-           pRecord->GetFieldValue(GetFieldNumber(AREA_RSK_FIELD)).AsDouble() = theCluster.GetRelativeRiskForTract(tTract, theData);
+           pRecord->GetFieldValue(GetFieldNumber(LOC_OBS_FIELD)).AsDouble() = theCluster.GetCaseCountForTract(tTract, theData);
+           pRecord->GetFieldValue(GetFieldNumber(LOC_EXP_FIELD)).AsDouble() = theCluster.GetMeasureForTract(tTract, theData);
+           pRecord->GetFieldValue(GetFieldNumber(LOC_OBS_DIV_EXP_FIELD)).AsDouble() = theCluster.GetRelativeRiskForTract(tTract, theData);
          }
          else {
-           pRecord->SetFieldIsBlank(GetFieldNumber(AREA_OBS_FIELD), true);
-           pRecord->SetFieldIsBlank(GetFieldNumber(AREA_EXP_FIELD), true);
-           pRecord->SetFieldIsBlank(GetFieldNumber(AREA_RSK_FIELD), true);
+           pRecord->SetFieldIsBlank(GetFieldNumber(LOC_OBS_FIELD), true);
+           pRecord->SetFieldIsBlank(GetFieldNumber(LOC_EXP_FIELD), true);
+           pRecord->SetFieldIsBlank(GetFieldNumber(LOC_OBS_DIV_EXP_FIELD), true);
          }
          pRecord->GetFieldValue(GetFieldNumber(CLU_OBS_FIELD)).AsDouble() = theCluster.GetCaseCount(0);
          pRecord->GetFieldValue(GetFieldNumber(CLU_EXP_FIELD)).AsDouble() = theData.GetMeasureAdjustment(0) * theCluster.GetMeasure(0);
-         pRecord->GetFieldValue(GetFieldNumber(REL_RISK_FIELD)).AsDouble() = theCluster.GetRelativeRisk(theData.GetMeasureAdjustment(0));
+         pRecord->GetFieldValue(GetFieldNumber(CLU_OBS_DIV_EXP_FIELD)).AsDouble() = theCluster.GetRelativeRisk(theData.GetMeasureAdjustment(0));
        }
        BaseOutputStorageClass::AddRecord(pRecord);
     }
@@ -88,15 +89,15 @@ void stsAreaSpecificData::SetupFields() {
       //these fields will no be supplied for analyses with more than one stream
       CreateField(gvFields, CLU_OBS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
       CreateField(gvFields, CLU_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      CreateField(gvFields, REL_RISK_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateField(gvFields, CLU_OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
     }
     if (!gbExcludePValueField)
       CreateField(gvFields, P_VALUE_FLD, ZD_NUMBER_FLD, 12, 5, uwOffset);
     if (gParameters.GetNumDataStreams() == 1) {
       //these fields will no be supplied for analyses with more than one stream
-      CreateField(gvFields, AREA_OBS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
-      CreateField(gvFields, AREA_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      CreateField(gvFields, AREA_RSK_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateField(gvFields, LOC_OBS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
+      CreateField(gvFields, LOC_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
+      CreateField(gvFields, LOC_OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
     }
   }
   catch (ZdException &x) {

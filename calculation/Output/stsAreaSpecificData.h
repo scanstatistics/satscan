@@ -17,11 +17,12 @@ class stsAreaSpecificData : public BaseOutputStorageClass {
 
    protected:
       static const char       * AREA_SPECIFIC_FILE_EXT;
-      static const char       * AREA_OBS_FIELD;
-      static const char       * AREA_EXP_FIELD;
-      static const char       * AREA_RSK_FIELD;
+      static const char       * LOC_OBS_FIELD;
+      static const char       * LOC_EXP_FIELD;
+      static const char       * LOC_OBS_DIV_EXP_FIELD;
       static const char       * CLU_OBS_FIELD;
       static const char       * CLU_EXP_FIELD;
+      static const char       * CLU_OBS_DIV_EXP_FIELD;
       const CParameters       & gParameters;
       bool                      gbExcludePValueField;
 
