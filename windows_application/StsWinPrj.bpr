@@ -10,14 +10,16 @@
       stsDlgDataImporter.obj stsOutputFileRegistry.obj 
       stsFrmDownloadProgress.obj stsFrmUpdateCheck.obj 
       stsBaseAnalysisChildForm.obj stsFrmStartWindow.obj 
-      ..\calculation\Parameters.obj ..\calculation\Toolkit.obj 
-      ..\calculation\SaTScanBasis.obj ..\calculation\utility\ScanfFile.obj 
+      stsFrmAdvancedParameters.obj ..\calculation\Parameters.obj 
+      ..\calculation\Toolkit.obj ..\calculation\SaTScanBasis.obj 
+      ..\calculation\utility\ScanfFile.obj 
       ..\calculation\utility\UtilityFunctions.obj 
       ..\calculation\utility\JulianDates.obj 
       ..\calculation\utility\RandomNumberGenerator.obj 
       ..\calculation\utility\Salloc.obj 
       ..\calculation\utility\RandomDistribution.obj 
       ..\calculation\utility\SSException.obj ..\calculation\utility\DBFFile.obj 
+      ..\calculation\utility\MultipleDimensionArrayHandler.obj 
       ..\calculation\print\BasePrint.obj ..\calculation\print\PrintScreen.obj 
       ..\calculation\probability_model\BernoulliModel.obj 
       ..\calculation\probability_model\CalculateMeasure.obj 
@@ -34,6 +36,8 @@
       ..\calculation\satscan_data\PurelyTemporalData.obj 
       ..\calculation\satscan_data\SaTScanDataRead.obj 
       ..\calculation\satscan_data\SpaceTimeData.obj 
+      ..\calculation\satscan_data\SVTTData.obj 
+      ..\calculation\satscan_data\MaxWindowLengthIndicator.obj 
       ..\calculation\cluster\Cluster.obj 
       ..\calculation\cluster\SpaceTimeCluster.obj 
       ..\calculation\cluster\TimeIntervalAlive.obj 
@@ -43,6 +47,10 @@
       ..\calculation\cluster\PurelySpatialCluster.obj 
       ..\calculation\cluster\PurelyTemporalCluster.obj 
       ..\calculation\cluster\PurelySpatialMonotoneCluster.obj 
+      ..\calculation\cluster\SVTTCluster.obj 
+      ..\calculation\cluster\PurelySpatialProspectiveCluster.obj 
+      ..\calculation\cluster\TimeIntervalRange.obj 
+      ..\calculation\cluster\TimeTrend.obj 
       ..\calculation\analysis\MeasureList.obj 
       ..\calculation\analysis\Analysis.obj 
       ..\calculation\analysis\SignificantRatios05.obj 
@@ -53,6 +61,7 @@
       ..\calculation\analysis\PurelySpatialAnalysis.obj 
       ..\calculation\analysis\PurelySpatialMonotoneAnalysis.obj 
       ..\calculation\analysis\PurelyTemporalAnalysis.obj 
+      ..\calculation\analysis\SVTTAnalysis.obj 
       ..\calculation\Output\stsRunHistoryFile.obj 
       ..\calculation\Output\stsRelativeRisk.obj 
       ..\calculation\Output\stsClusterData.obj 
@@ -61,15 +70,7 @@
       ..\calculation\Output\stsAreaSpecificData.obj 
       ..\calculation\Output\stsOutputFileWriter.obj 
       ..\calculation\Output\stsDBaseFileWriter.obj 
-      ..\calculation\Output\stsASCIIFileWriter.obj 
-      ..\calculation\cluster\TimeIntervalRange.obj 
-      ..\calculation\cluster\TimeTrend.obj 
-      ..\calculation\cluster\SVTTCluster.obj ..\calculation\satscan_data\SVTTData.obj 
-      ..\calculation\analysis\SVTTAnalysis.obj 
-      ..\calculation\cluster\PurelySpatialProspectiveCluster.obj 
-      ..\calculation\utility\MultipleDimensionArrayHandler.obj 
-      ..\calculation\satscan_data\MaxWindowLengthIndicator.obj 
-      stsFrmAdvancedParameters.obj"/>
+      ..\calculation\Output\stsASCIIFileWriter.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
