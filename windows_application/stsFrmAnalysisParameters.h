@@ -199,6 +199,7 @@ class TfrmAnalysis : public TForm {
     void                SetupControlFileFieldDescriptors();
     void                SetupGeoFileFieldDescriptors();
     void                SetupGridFileFieldDescriptors();
+    void                SetupImportDescriptor(BFTFImportDescriptor& descrip, const ZdString& sImportFileName);
     void                SetupPopFileFieldDescriptors();
     void                SetupInterface();
     bool                ValidateInputFiles();

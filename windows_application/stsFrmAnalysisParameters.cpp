@@ -1493,6 +1493,28 @@ void TfrmAnalysis::SetupGridFileFieldDescriptors() {
    }
 }
 
+// sets up the appropriate options for the FTFImportDescriptor
+// pre: create and pass in a default FTFDescriptor and a .dbf ImportFileName
+// post: function will modify the FTFDescriptor to contain the appropraite import options for our purposes
+void TfrmAnalysis::SetupImportDescriptor(BFTFImportDescriptor& descrip, const ZdString& sImportFileName) {
+   ZdString     sDestFile;
+
+   try {
+      descrip.SetDestinationType(BFileDestDescriptor::SingleFile);
+      descrip.SetModifyType(BFileDestDescriptor::OverWriteExistingData);
+      descrip.SetImportFile(sImportFileName);
+      sDestFile = sImportFileName;
+      // these here should probably be defines later on, also there should be some type of checking to make
+      // sure that we are getting a dbf extension file - AJV 8/30/2002
+      sDestFile.Replace(".dbf", ".csv");
+      descrip.SetDestinationFile(sDestFile);
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("SetupImportDescriptor()", "TfrmAnalysis");
+      throw;
+   }
+}
+
 // fill the Geo File field descriptor vector with the appropriate field names for a geo file
 void TfrmAnalysis::SetupPopFileFieldDescriptors() {
    try {
