@@ -214,6 +214,12 @@ TimeTrendAdjustmentType TfrmAdvancedParameters::GetAdjustmentTimeTrendControlTyp
   }
   return eReturn;
 }
+//---------------------------------------------------------------------------
+/** class initialization */
+void TfrmAdvancedParameters::Init() {
+  gpFocusControl=0;
+  cmbCriteriaSecClusters->ItemIndex = 0;
+}
 
 /** event triggered when key pressed for control that can contain natural numbers */
 void __fastcall TfrmAdvancedParameters::NaturalNumberKeyPress(TObject *Sender, char &Key) {
@@ -301,6 +307,7 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
                                atoi(edtEndRangeEndMonth->Text.c_str()),
                                atoi(edtEndRangeEndDay->Text.c_str()));
     ref.SetEndRangeEndDate(sString.GetCString());
+    ref.SetCriteriaForReportingSecondaryClusters((CriteriaSecondaryClustersType)cmbCriteriaSecClusters->ItemIndex);
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveParameterSettings()","TfrmAdvancedParameters");
@@ -364,6 +371,8 @@ void TfrmAdvancedParameters::Setup() {
       ParseDate(ref.GetEndRangeStartDate(), *edtEndRangeStartYear, *edtEndRangeStartMonth, *edtEndRangeStartDay, false);
     if (ref.GetEndRangeEndDate().length() > 0)
       ParseDate(ref.GetEndRangeEndDate(), *edtEndRangeEndYear, *edtEndRangeEndMonth, *edtEndRangeEndDay, false);
+
+    cmbCriteriaSecClusters->ItemIndex = ref.GetCriteriaSecondClustersType();
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()","TfrmAdvancedParameters");
@@ -372,9 +381,22 @@ void TfrmAdvancedParameters::Setup() {
 }
 
 /** sets control to focus when form shows then shows form modal */
-void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl) {
+void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, bool bAnalysis) {
   bool          bFound=false;
-  int           i;      
+  int           i;
+
+  // PAG - not the best coding here but am trying to show/hide only
+  // certain pages/tabs of page control
+  if (bAnalysis) {  // show Analysis pages
+     for (i=0; i < PageControl->PageCount-1; i++)
+        PageControl->Pages[i]->TabVisible=true;
+     PageControl->Pages[PageControl->PageCount-1]->TabVisible=false;
+  }
+  else {           // show Output pages
+     for (i=0; i < PageControl->PageCount-1; i++)
+        PageControl->Pages[i]->TabVisible=false;
+     PageControl->Pages[PageControl->PageCount-1]->TabVisible=true;
+  }
 
   for (i=0; i < PageControl->PageCount && !bFound; ++i) {
      if (PageControl->Pages[i]->ContainsControl(pFocusControl)) {
@@ -386,7 +408,9 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl) {
 
   if (!bFound) {
     gpFocusControl=0;
-    PageControl->ActivePage = PageControl->Pages[0];
+    //PageControl->ActivePage = PageControl->Pages[0];
+    // PAG - find first visible page
+    PageControl->ActivePage = PageControl->FindNextPage(0, true, true);
   }
   //reporting clusters text dependent on maximum spatial cluster size
   //-- ensure that it has text
@@ -529,4 +553,13 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
 }
 
 
+
+void __fastcall TfrmAdvancedParameters::btnShowAllClick(TObject *Sender)
+{
+   int i;
+
+   for (i=0; i < PageControl->PageCount; i++)
+      PageControl->Pages[i]->TabVisible=true;
+}
+//---------------------------------------------------------------------------
 

@@ -19,8 +19,6 @@ __published:	// IDE-managed Components
         TPageControl *PageControl;
         TTabSheet *tsAdjustmentsTabSheet;
         TTabSheet *tsOther;
-        TGroupBox *grpAnalysis;
-        TCheckBox *chkTerminateEarly;
         TGroupBox *grpScanningWindow;
         TCheckBox *chkRestrictTemporalRange;
         TStaticText *stStartRangeTo;
@@ -39,10 +37,6 @@ __published:	// IDE-managed Components
         TEdit *edtEndRangeEndYear;
         TEdit *edtEndRangeEndMonth;
         TEdit *edtEndRangeEndDay;
-        TGroupBox *grpOutput;
-        TLabel *lblReportSmallerClusters;
-        TCheckBox *chkRestrictReportedClusters;
-        TEdit *edtReportClustersSmallerThan;
         TRadioGroup *rdgTemporalTrendAdj;
         TEdit *edtLogLinear;
         TStaticText *lblLogLinear;
@@ -51,6 +45,17 @@ __published:	// IDE-managed Components
         TEdit *edtAdjustmentsByRelativeRisksFile;
         TButton *btnBrowseAdjustmentsFile;
         TCheckBox *chkAdjustForKnownRelativeRisks;
+   TTabSheet *TabSheet1;
+   TGroupBox *gbxCriteriaSecClusters;
+   TComboBox *cmbCriteriaSecClusters;
+   TTabSheet *TabSheet2;
+   TCheckBox *chkRestrictReportedClusters;
+   TEdit *edtReportClustersSmallerThan;
+   TLabel *lblReportSmallerClusters;
+   TTabSheet *TabSheet3;
+   TGroupBox *grpAnalysis;
+   TCheckBox *chkTerminateEarly;
+   TButton *btnShowAll;
         void __fastcall FormKeyPress(TObject *Sender, char &Key);
         void __fastcall chkRestrictTemporalRangeClick(TObject *Sender);
         void __fastcall chkRestrictReportedClustersClick(TObject *Sender);
@@ -68,6 +73,7 @@ __published:	// IDE-managed Components
         void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
         void __fastcall edtAdjustmentsByRelativeRisksFileChange(TObject *Sender);
         void __fastcall chkAdjustForKnownRelativeRisksClick(TObject *Sender);
+   void __fastcall btnShowAllClick(TObject *Sender);
 
   private:
     TfrmAnalysis              & gAnalysisSettings;
@@ -78,7 +84,7 @@ __published:	// IDE-managed Components
     bool                        gbEnableAdjustmentsByRR; /** stores enable dictated by main interface */
 
     TimeTrendAdjustmentType     GetAdjustmentTimeTrendControlType() const;
-    void                        Init() {gpFocusControl=0;}
+    void                        Init();
     void                        ParseDate(const std::string& sDate, TEdit& Year, TEdit& Month, TEdit& Day, bool bStartRange);
     void                        RefreshTemporalOptionsEnables();
     void                        Setup();
@@ -97,7 +103,7 @@ __published:	// IDE-managed Components
     void                        SetRangeDateEnables(bool bYear, bool bMonth, bool bDay);
     void                        SetReportingClustersText(const ZdString& sText);
     void                        SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
-    void                        ShowDialog(TWinControl * pFocusControl=0);
+    void                        ShowDialog(TWinControl * pFocusControl=0, bool bAnalysis=true);
     void                        ValidateAdjustmentSettings();
     void                        ValidateScanningWindowSettings();
 };
