@@ -240,7 +240,7 @@ bool SpaceTimePermutationDataStreamHandler::ReadData() {
 
 void SpaceTimePermutationDataStreamHandler::SetRandomizers() {
   try {
-    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), SpaceTimeRandomizer());
+    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), SpaceTimeRandomizer(gParameters.GetRandomizationSeed()));
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()","SpaceTimePermutationDataStreamHandler");

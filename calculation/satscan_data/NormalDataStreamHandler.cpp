@@ -371,7 +371,7 @@ void NormalDataStreamHandler::SetPurelyTemporalSimulationData(SimulationDataCont
 
 void NormalDataStreamHandler::SetRandomizers() {
   try {
-    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), NormalRandomizer());
+    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), NormalRandomizer(gParameters.GetRandomizationSeed()));
   }
   catch (ZdException &x) {
     x.AddCallpath("SetRandomizers()","NormalDataStreamHandler");

@@ -335,7 +335,7 @@ void RankDataStreamHandler::SetPurelyTemporalSimulationData(SimulationDataContai
 void RankDataStreamHandler::SetRandomizers() {
   try {
     for (size_t t=0; t < gParameters.GetNumDataStreams(); ++t)
-      gvDataStreamRandomizers.push_back(new RankRandomizer());
+      gvDataStreamRandomizers.push_back(new RankRandomizer(gParameters.GetRandomizationSeed()));
   }
   catch (ZdException &x) {
     x.AddCallpath("SetRandomizers()","RankDataStreamHandler");

@@ -357,7 +357,7 @@ void SurvivalDataStreamHandler::SetPurelyTemporalSimulationData(SimulationDataCo
 
 void SurvivalDataStreamHandler::SetRandomizers() {
   try {
-    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), SurvivalRandomizer());
+    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), SurvivalRandomizer(gParameters.GetRandomizationSeed()));
   }
   catch (ZdException &x) {
     x.AddCallpath("SetRandomizers()","SurvivalDataStreamHandler");

@@ -447,17 +447,17 @@ void PoissonDataStreamHandler::SetRandomizers() {
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
           if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
-            gvDataStreamRandomizers[0] = new PoissonTimeStratifiedRandomizer(gParameters);
+            gvDataStreamRandomizers[0] = new PoissonTimeStratifiedRandomizer(gParameters.GetRandomizationSeed(), gParameters);
           else if (gParameters.GetSpatialAdjustmentType() == SPATIALLY_STRATIFIED_RANDOMIZATION)
-            gvDataStreamRandomizers[0] = new PoissonSpatialStratifiedRandomizer(gParameters);
+            gvDataStreamRandomizers[0] = new PoissonSpatialStratifiedRandomizer(gParameters.GetRandomizationSeed(), gParameters);
           else
-            gvDataStreamRandomizers[0] = new PoissonNullHypothesisRandomizer(gParameters);
+            gvDataStreamRandomizers[0] = new PoissonNullHypothesisRandomizer(gParameters.GetRandomizationSeed(), gParameters);
           break;
       case HA_RANDOMIZATION :
-          gvDataStreamRandomizers[0] = new AlternateHypothesisRandomizer(gDataHub);
+          gvDataStreamRandomizers[0] = new AlternateHypothesisRandomizer(gParameters.GetRandomizationSeed(), gDataHub);
           break;
       case FILESOURCE :
-          gvDataStreamRandomizers[0] = new FileSourceRandomizer(gParameters);
+          gvDataStreamRandomizers[0] = new FileSourceRandomizer(gParameters.GetRandomizationSeed(), gParameters);
           break;
       default :
           ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());

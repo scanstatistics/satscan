@@ -233,7 +233,7 @@ bool BernoulliDataStreamHandler::ReadData() {
 /** allocates randomizers for each data stream */
 void BernoulliDataStreamHandler::SetRandomizers() {
   try {
-    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), BernoulliNullHypothesisRandomizer());
+    gvDataStreamRandomizers.resize(gParameters.GetNumDataStreams(), BernoulliNullHypothesisRandomizer(gParameters.GetRandomizationSeed()));
   }
   catch (ZdException &x) {
     x.AddCallpath("SetRandomizers()","BernoulliDataStreamHandler");
