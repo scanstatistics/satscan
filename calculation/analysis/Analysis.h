@@ -8,6 +8,9 @@
 
 //#define  DEBUGANALYSIS 0
 
+extern const char *    CLUSTER_LEVEL_DBF_FILE;
+extern const char *    AREA_SPECIFIC_DBF_FILE;
+
 class CAnalysis
 {
   public:

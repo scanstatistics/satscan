@@ -2,7 +2,13 @@
 #pragma hdrstop
 #include "Analysis.h"
 
+#include "stsClusterLevelDBF.h"
+#include "stsAreaSpecificDBF.h"
+#include "stsRunHistoryFile.h"
 //static int CompClust(const void *a, const void *b);
+
+const char *    CLUSTER_LEVEL_DBF_FILE  =       "ClusterLevel.txd";
+const char *    AREA_SPECIFIC_DBF_FILE  =       "AreaSpecific.txd";
 
 CAnalysis::CAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection)
           :SimRatios(pParameters->m_nReplicas, pPrintDirection)
@@ -70,9 +76,15 @@ CAnalysis::~CAnalysis()
 bool CAnalysis::Execute(time_t RunTime)
 {
    bool bContinue;
+   stsClusterLevelDBF*  pDBFClusterReport = 0;
+   stsAreaSpecificDBF*  pDBFAreaReport = 0;
 
    try
       {
+      // AJV 9/5/2002
+      pDBFClusterReport = new stsClusterLevelDBF(CLUSTER_LEVEL_DBF_FILE);
+      pDBFAreaReport = new stsAreaSpecificDBF(AREA_SPECIFIC_DBF_FILE);
+
       SetMaxNumClusters();
       //Allocate array which will store most likely clusters.
       AllocateTopClusterList();
@@ -146,7 +158,12 @@ bool CAnalysis::Execute(time_t RunTime)
     
         if (gpPrintDirection->GetIsCanceled() || !UpdateReport())
           return false;
-    
+
+        if(m_pParameters->GetOutputClusterLevelDBF())
+           pDBFClusterReport->RecordClusterData(m_pTopClusters[0], m_pData, m_nAnalysisCount);
+        if(m_pParameters->GetOutputAreaSpecificDBF())
+           pDBFAreaReport->RecordClusterData(m_pTopClusters[0], m_pData, m_nAnalysisCount);
+
         bContinue = RepeatAnalysis();
         if (bContinue)
           RemoveTopClusterData();
@@ -155,12 +172,18 @@ bool CAnalysis::Execute(time_t RunTime)
            return false;
     
       } while (bContinue);
-    
+
+      delete pDBFClusterReport;
+      delete pDBFAreaReport;
+//      stsRunHistoryFile historyFile(this);
+//      historyFile.LogNewHistory();
       m_pData->DeAllocSimCases();
       FinalizeReport(RunTime);
       }
    catch (SSException & x)
       {
+      delete pDBFAreaReport; pDBFAreaReport = 0; 
+      delete pDBFClusterReport; pDBFClusterReport = 0;
       x.AddCallpath("Execute(time_t)", "CAnalysis");
       throw;
       }
