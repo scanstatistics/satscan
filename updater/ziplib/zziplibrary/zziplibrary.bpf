@@ -1,0 +1,18 @@
+//---------------------------------------------------------------------------
+
+#include <vcl.h>
+#pragma hdrstop
+USEUNIT("..\zziplib_0.10.27\zzip-file.c");
+USEUNIT("..\zziplib_0.10.27\zzdir.c");
+USEUNIT("..\zziplib_0.10.27\zzip-dir.c");
+USEUNIT("..\zziplib_0.10.27\zzip-err.c");
+USEUNIT("..\zziplib_0.10.27\zzcat.c");
+USEUNIT("..\zziplib_0.10.27\zzip-info.c");
+USEUNIT("..\zziplib_0.10.27\zzip-stat.c");
+USEUNIT("..\zziplib_0.10.27\zzip-zip.c");
+USEUNIT("..\untar_1.4\untar.cpp");
+//---------------------------------------------------------------------------
+#define Library
+
+// To add a file to the library use the Project menu 'Add to Project'.
+

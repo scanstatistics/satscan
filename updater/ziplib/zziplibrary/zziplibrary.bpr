@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="zziplibrary.lib"/>
+    <OBJFILES value="..\zziplib_0.10.27\zzip-file.obj ..\zziplib_0.10.27\zzdir.obj 
+      ..\zziplib_0.10.27\zzip-dir.obj ..\zziplib_0.10.27\zzip-err.obj 
+      ..\zziplib_0.10.27\zzcat.obj ..\zziplib_0.10.27\zzip-info.obj 
+      ..\zziplib_0.10.27\zzip-stat.obj ..\zziplib_0.10.27\zzip-zip.obj 
+      ..\untar_1.4\untar.obj"/>
+    <RESFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value=""/>
+    <PACKAGES value=""/>
+    <PATHCPP value=".;..\zziplib_0.10.27;..\untar_1.4"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <LINKER value="TLib"/>
+    <USERDEFINES value="WIN32;_DEBUG"/>
+    <SYSDEFINES value="NO_STRICT"/>
+    <MAINSOURCE value="zziplibrary.bpf"/>
+    <INCLUDEPATH value="..\untar_1.4;..\zziplib_0.10.27;$(BCB)\include;$(BCB)\include\vcl;."/>
+    <LIBPATH value="..\untar_1.4;..\zziplib_0.10.27;$(BCB)\lib\obj;$(BCB)\lib;."/>
+    <WARNINGS value="-w-8065 -w-par"/>
+    <LISTFILE value=""/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-Od -Q -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c -tW -tWM"/>
+    <PFLAGS value="-$Y+ -$W -$O- -v -JPHNE -M"/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="$(OBJFILES)"/>
+    <ALLLIB value=""/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1033
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[HistoryLists\hlIncludePath]
+Count=11
+Item0=..\untar_1.4;..\zziplib_0.10.27;$(BCB)\include;$(BCB)\include\vcl;.
+Item1=..\untar-1.4;..\zziplib-0.10.27;$(BCB)\include;$(BCB)\include\vcl;.
+Item2=..\untar-1.4;..\zziplib-0.10.27;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\untar-1.4;..\zziplib-0.10.27;..\;..\..\dos;$(BCB)\include;$(BCB)\include\vcl;.;..\..\..\zipios
+Item4=..\dos;$(BCB)\include;$(BCB)\include\vcl;.;C:\Prj\zipios
+Item5=..\dos;$(BCB)\include;$(BCB)\include\vcl;.;..\..\zero dimension library\zd540\zlib
+Item6=$(BCB)\include;$(BCB)\include\vcl;.;..\..\zero dimension library\zd540\zlib
+Item7=$(BCB)\include;$(BCB)\include\vcl;.;C:\Documents and Settings\Windows 2000 User\My Documents\Scott\prj\zero dimension library\zd540\zlib
+Item8=$(BCB)\include;$(BCB)\include\vcl;.
+Item9=$(BCB)\include;$(BCB)\include\vcl
+Item10=$(BCB)\include;$(BCB)\include\vcl;C:\Documents and Settings\Windows 2000 User\My Documents\Scott\prj\zziplib\zziplib-0.10.27
+
+[HistoryLists\hlLibraryPath]
+Count=11
+Item0=..\untar_1.4;..\zziplib_0.10.27;$(BCB)\lib\obj;$(BCB)\lib;.
+Item1=..\untar-1.4;..\zziplib-0.10.27;$(BCB)\lib\obj;$(BCB)\lib;.
+Item2=..\untar-1.4;..\zziplib-0.10.27;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\untar-1.4;..\zziplib-0.10.27;..\;..\..\dos;$(BCB)\lib\obj;$(BCB)\lib;.;..\..\..\zipios
+Item4=..\dos;$(BCB)\lib\obj;$(BCB)\lib;.;C:\Prj\zipios
+Item5=..\dos;$(BCB)\lib\obj;$(BCB)\lib;.;..\..\zero dimension library\zd540\zlib
+Item6=$(BCB)\lib\obj;$(BCB)\lib;.;..\..\zero dimension library\zd540\zlib
+Item7=$(BCB)\lib\obj;$(BCB)\lib;.;C:\Documents and Settings\Windows 2000 User\My Documents\Scott\prj\zero dimension library\zd540\zlib
+Item8=$(BCB)\lib\obj;$(BCB)\lib;.
+Item9=$(BCB)\lib\obj;$(BCB)\lib
+Item10=$(BCB)\lib\obj;$(BCB)\lib;C:\Documents and Settings\Windows 2000 User\My Documents\Scott\prj\zziplib\zziplib-0.10.27
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=6
+Item0=WIN32;_DEBUG
+Item1=WIN32
+Item2=_DEBUG;WIN32
+Item3=_DEBUG;WIN32;__cplusplus
+Item4=_DEBUG;WIN32;__BORLANDC__
+Item5=_DEBUG
+
+[HistoryLists\hlTlibPageSize]
+Count=1
+Item0=0x0010
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>
