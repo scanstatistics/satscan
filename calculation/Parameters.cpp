@@ -3313,12 +3313,7 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
     }
     //validate adjustment for known relative risks file
     if (geProbabiltyModelType == POISSON) {
-      if (gbUseAdjustmentsForRRFile && GetNumDataStreams() > 1) {
-        bValid = false;
-        PrintDirection.SatScanPrintWarning("Error: Adjustments for known relative risks is currently permitted with only one data stream.\n");
-        PrintDirection.SatScanPrintWarning("       Parameter settings indicate that there are %i data streams.\n", GetNumDataStreams());
-      }
-      else if (gbUseAdjustmentsForRRFile && gsAdjustmentsByRelativeRisksFileName.empty()) {
+      if (gbUseAdjustmentsForRRFile && gsAdjustmentsByRelativeRisksFileName.empty()) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Settings indicate to use an Adjustment file, but file name not specified.\n");
       }
@@ -3792,12 +3787,12 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
       if (!(geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Spatial adjustment by stratified randomization is valid for\n"
-                                           "       either retrospective or prospectove space-time analyses only\n.");
+                                           "       either retrospective or prospectove space-time analyses only.\n");
       }
       if (geTimeTrendAdjustType == STRATIFIED_RANDOMIZATION) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Spatial adjustment by stratified randomization can not be performed\n"
-                                           "       in conjunction with the temporal adjustment by stratified randomization\n.");
+                                           "       in conjunction with the temporal adjustment by stratified randomization.\n");
       }
       if (gbIncludePurelySpatialClusters) {
         bValid = false;
