@@ -4,8 +4,7 @@
 //***************************************************************************
 #include "Parameters.h"
 
-/** Defines base interface for retrieving ini section and key name for parameters.
-    more ... */
+/** Defines interface for retrieving ini section and key name for parameters. */
 class IniParameterSpecification {
   public:
     typedef std::vector<std::pair<const char*, const char*> > ParameterInfo_t;

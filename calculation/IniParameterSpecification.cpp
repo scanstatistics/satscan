@@ -39,7 +39,7 @@ IniParameterSpecification::IniParameterSpecification(const ZdIniFile& SourceFile
   long                          lSectionIndex, lKeyIndex;
   CParameters::CreationVersion  Version = {4, 0, 3};
 
-  if ((lSectionIndex = SourceFile.GetSectionIndex("[System]")) > -1) {
+  if ((lSectionIndex = SourceFile.GetSectionIndex(System)) > -1) {
     const ZdIniSection * pSection = SourceFile.GetSection(lSectionIndex);
     if ((lKeyIndex = pSection->FindKey("Version")) > -1)
       sscanf(pSection->GetLine(lKeyIndex)->GetValue(), "%u.%u.%u", &Version.iMajor, &Version.iMinor, &Version.iRelease);
@@ -56,6 +56,7 @@ IniParameterSpecification::IniParameterSpecification(const ZdIniFile& SourceFile
 /** destructor */
 IniParameterSpecification::~IniParameterSpecification() {}
 
+/** Version 3.0.5 and priot parameter section/keys. */
 void IniParameterSpecification::BuildPrimaryParameterList() {
   // Order in vector is essential - should identical to ParameterType enumeration.
   gvParameterInfo.push_back(std::make_pair(Analysis, "AnalysisType"));
@@ -111,6 +112,7 @@ void IniParameterSpecification::BuildPrimaryParameterList() {
   gvParameterInfo.push_back(std::make_pair(EllipticScan, "DuczmalCompactnessCorrection"));
 }
 
+/** Version 4.0.x parameter section/keys. */
 void IniParameterSpecification::Build_4_0_x_ParameterList() {
   BuildPrimaryParameterList();
   //Versions 4.0.x made no name changes, only defined more parameters
@@ -130,6 +132,7 @@ void IniParameterSpecification::Build_4_0_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(AdvancedFeatures, "UseAdjustmentsByRRFile"));
 }
 
+/** Version 5.0 parameter section/keys. */
 void IniParameterSpecification::Build_5_0_x_ParameterList() {
   Build_4_0_x_ParameterList();
   //Version 5.0.0 updated these three ini key names and defined several more parameters
@@ -149,8 +152,6 @@ void IniParameterSpecification::Build_5_0_x_ParameterList() {
    ini format. Since the desire is to allows mimic the graphical interface within the
    paramter file, we need to move sections around accordingly. */
 void IniParameterSpecification::Build_5_1_x_ParameterList() {
-
-//  -------- not done -- only copied
 
   // Order in vector is essential - should identical to ParameterType enumeration.
   gvParameterInfo.push_back(std::make_pair(Analysis, "AnalysisType"));
