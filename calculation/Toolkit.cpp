@@ -20,9 +20,7 @@ const char * SaTScanToolkit::gsHistoryFileNameProperty = "[RunHistory].FileName"
 /** analysis history filename */
 const char * SaTScanToolkit::gsDefaultRunHistoryFileName = "AnalysisHistory";
 /** Default website. */
-const char * SaTScanToolkit::gsDefaultSaTScanWebSite = "http:/\/srab.cancer.gov/satscan/";
-/** Default website of licence. */
-const char * SaTScanToolkit::gsDefaultSaTScanLicenceWebSite = "http:/\/srab.cancer.gov/satscan/license.html";
+const char * SaTScanToolkit::gsDefaultSaTScanWebSite = "http:/\/www.satscan.org/";
 /** Default Substantive Support Email. */
 const char * SaTScanToolkit::gsDefaultSubstantiveSupportEmail = "satscan@nih.gov";
 /** Default Technical Support Email. */
@@ -42,21 +40,15 @@ SaTScanToolkit::SaTScanToolkit():BToolkit() {
 /** destructor */
 SaTScanToolkit::~SaTScanToolkit() {}
 
-/** Returns license URL. */
-const char * SaTScanToolkit::GetLicenceWebSite() /*const*/ {
-  //return GetSession().GetProperty(gsSaTScanLicenceWebSiteProperty)->GetValue();
-  return gsDefaultSaTScanLicenceWebSite;
-}
-
 /** Returns indicator of run history logging. */
-bool SaTScanToolkit::GetLogRunHistory() /*const*/ {
+bool SaTScanToolkit::GetLogRunHistory() const {
   /** NOTE: This is not a requested feature, the hook is in place. */
   return true;//GetSession().GetProperty(gsLoggingProperty)->GetBool(true);
 }
 
 /** Returns acknowledgment statement indicating program version, website, and
     brief declaration of usage agreement. */
-const char * SaTScanToolkit::GetAcknowledgment(ZdString & Acknowledgment) /*const*/ {
+const char * SaTScanToolkit::GetAcknowledgment(ZdString & Acknowledgment) const {
   try {
     Acknowledgment << ZdString::reset << "You are running SaTScan v" << VERSION_NUMBER;
     Acknowledgment << ".\n\nSaTScan is free, available for download from\n";
@@ -77,18 +69,18 @@ const char * SaTScanToolkit::GetRunHistoryFileName() /*const*/ {
 }
 
 /** Returns substantive support email address. */
-const char * SaTScanToolkit::GetSubstantiveSupportEmail() /*const*/ {
+const char * SaTScanToolkit::GetSubstantiveSupportEmail() const {
   //return GetSession().GetProperty(gsSubstantiveSupportEmailProperty)->GetValue();
   return gsDefaultSubstantiveSupportEmail;
 }
 /** Returns substantive support email address. */
-const char * SaTScanToolkit::GetTechnicalSupportEmail() /*const*/ {
+const char * SaTScanToolkit::GetTechnicalSupportEmail() const {
   //return GetSession().GetProperty(gsTechnicalSupportEmailProperty)->GetValue();
   return gsDefaultTechnicalSupportEmail;
 }
 
 /** Returns website URL. */
-const char * SaTScanToolkit::GetWebSite() /*const*/ {
+const char * SaTScanToolkit::GetWebSite() const {
   //return GetSession().GetProperty(gsSaTScanWebSiteProperty)->GetValue();
   return gsDefaultSaTScanWebSite;
 }
@@ -184,8 +176,6 @@ void SaTScanToolkit::InsureSessionStructure() {
     //  bNeedsWrite = true;
     //if (InsureSessionProperty(gsSaTScanWebSiteProperty, gsDefaultSaTScanWebSite))
     // bNeedsWrite = true;
-    //if (InsureSessionProperty(gsSaTScanLicenceWebSiteProperty, gsDefaultSaTScanLicenceWebSite))
-    //  bNeedsWrite = true;
     //if (InsureSessionProperty(gsSubstantiveSupportEmailProperty, gsDefaultSubstantiveSupportEmail))
     //  bNeedsWrite = true;
     //if (InsureSessionProperty(gsTechnicalSupportEmailProperty, gsDefaultTechnicalSupportEmail))

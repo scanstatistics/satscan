@@ -9,16 +9,10 @@ class SaTScanToolkit : public BToolkit {
     // system file
     static const char         * gsSystemIniFileName;
     static const char         * gsHistoryFileNameProperty;
-    //static const char         * gsLoggingProperty;
-    //static const char         * gsSaTScanWebSiteProperty;
-    //static const char         * gsSaTScanLicenceWebSiteProperty;
-    //static const char         * gsSubstantiveSupportEmailProperty;
-    //static const char         * gsTechnicalSupportEmailProperty;
 
     // default defines
     static const char         * gsDefaultRunHistoryFileName;
     static const char         * gsDefaultSaTScanWebSite;
-    static const char         * gsDefaultSaTScanLicenceWebSite;
     static const char         * gsDefaultSubstantiveSupportEmail;
     static const char         * gsDefaultTechnicalSupportEmail;
 
@@ -33,13 +27,12 @@ class SaTScanToolkit : public BToolkit {
     SaTScanToolkit();
     virtual ~SaTScanToolkit();
 
-   const char                 * GetAcknowledgment(ZdString & Acknowledgment) /*const*/;  
-   const char                 * GetLicenceWebSite() /*const*/;
-   bool                         GetLogRunHistory() /*const*/;
+   const char                 * GetAcknowledgment(ZdString & Acknowledgment) const;
+   bool                         GetLogRunHistory() const;
    const char                 * GetRunHistoryFileName() /*const*/;
-   const char                 * GetSubstantiveSupportEmail() /*const*/;
-   const char                 * GetTechnicalSupportEmail() /*const*/;
-   const char                 * GetWebSite() /*const*/;
+   const char                 * GetSubstantiveSupportEmail() const;
+   const char                 * GetTechnicalSupportEmail() const;
+   const char                 * GetWebSite() const;
 };
 
 SaTScanToolkit & GetToolkit();
