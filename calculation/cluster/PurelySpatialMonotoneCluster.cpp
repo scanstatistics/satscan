@@ -232,7 +232,7 @@ void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, count_t** pC
       //  AddNeighbor(Data, pCases, i);
       //  while (i<=Data.m_NeighborCounts[m_Center] &&
       //         m_nMeasure <= Data.m_nMaxCircleSize)
-      //for (int k = 0; k <= m_pParameters->m_lTotalNumEllipses; k++)   //circle is 0 offset... (always there)
+      //for (int k = 0; k <= m_pParameters->GetNumTotalEllipses(); k++)   //circle is 0 offset... (always there)
       //  {
       for (int i=1; i<=Data.m_NeighborCounts[0][m_Center]; i++)
         {
@@ -380,20 +380,20 @@ void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
       {
       (Data.GetGInfo())->giGetCoords(m_Center, &pCoords);
       //fprintf(fp, "  Coordinates...................: (%g,%g)\n",x1,y1);
-      if(Data.m_pParameters->m_nDimension < 5)
+      if(Data.m_pParameters->GetDimensionsOfData() < 5)
       {
       	fprintf(fp, "%sCoordinates...........: (", szSpacesOnLeft);
-      	for (i=0; i<(Data.m_pParameters->m_nDimension)-1; i++)
+      	for (i=0; i<(Data.m_pParameters->GetDimensionsOfData())-1; i++)
       	{
       		fprintf(fp, "%g,",pCoords[i]);
       	}
-      	fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->m_nDimension)-1]);
+      	fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1]);
       }
       else /* More than four dimensions: need to wrap output */
       {
       	fprintf(fp, "%sCoordinates...........: (", szSpacesOnLeft);
         int count = 0;
-        for (i=0; i<(Data.m_pParameters->m_nDimension)-1; i++)
+        for (i=0; i < (Data.m_pParameters->GetDimensionsOfData())-1; i++)
         {
         	if (count < 4) // This is a magic number: if 5 dimensions they
           							 // all print on one line; if more, 4 per line
@@ -411,7 +411,7 @@ void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
           	count = 1;
           }
         }
-        fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->m_nDimension)-1]);
+        fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1]);
       }
       fprintf(fp, "%sRadius for each step..: ", szSpacesOnLeft);
     

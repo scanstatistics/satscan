@@ -116,22 +116,22 @@ void CCluster::Display(FILE*     fp,
       //  fprintf(fp, "Census areas included");
       fprintf(fp, "Census areas ");
       DisplayCensusTracts(fp, Data, -1, nMinMeasure,
-                          Parameters.m_nReplicas, 0, false, false,
+                          Parameters.GetNumReplicationsRequested(), 0, false, false,
                           nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
     
-      if (Parameters.m_nCoordType == CARTESIAN)
+      if (Parameters.GetCoordinatesType() == CARTESIAN)
       	DisplayCoordinates(fp, Data, nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
       else
       	DisplayLatLongCoords(fp, Data, nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
 
-      DisplayTimeFrame(fp, szSpacesOnLeft, Parameters.m_nAnalysisType);
-      if (Parameters.m_nModel != SPACETIMEPERMUTATION)
+      DisplayTimeFrame(fp, szSpacesOnLeft, Parameters.GetAnalysisType());
+      if (Parameters.GetProbabiltyModelType() != SPACETIMEPERMUTATION)
         DisplayPopulation(fp, Data, szSpacesOnLeft);
 
       fprintf(fp, "%sNumber of cases.......: %ld", szSpacesOnLeft, m_nCases);
       fprintf(fp, "          (%.2f expected)\n", Data.GetMeasureAdjustment()*m_nMeasure);
     
-      if (Parameters.m_nModel == POISSON)
+      if (Parameters.GetProbabiltyModelType() == POISSON)
         fprintf(fp, "%sAnnual cases / %.0f.: %.1f\n",
                      szSpacesOnLeft, Data.GetAnnualRatePop(),
                      Data.GetAnnualRateAtStart()*GetRelativeRisk(Data.GetMeasureAdjustment()));
@@ -139,25 +139,25 @@ void CCluster::Display(FILE*     fp,
       DisplayRelativeRisk(fp, Data.GetMeasureAdjustment(), nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
 
       //Print Loglikelihood/Test Statistic
-      if (Parameters.m_nModel == SPACETIMEPERMUTATION) {
-        if (m_iEllipseOffset != 0 /*i.e. is ellipse*/ && Parameters.m_bDuczmalCorrectEllipses)
+      if (Parameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION) {
+        if (m_iEllipseOffset != 0 /*i.e. is ellipse*/ && Parameters.GetDuczmalCorrectEllipses())
           fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, GetDuczmalCompactnessCorrection());
         else
           fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, m_nRatio);
       }
       else {
         fprintf(fp, "%sLog likelihood ratio..: %f\n", szSpacesOnLeft, m_nRatio);
-        if (m_iEllipseOffset != 0 /*i.e. is ellipse*/ && Parameters.m_bDuczmalCorrectEllipses)
+        if (m_iEllipseOffset != 0 /*i.e. is ellipse*/ && Parameters.GetDuczmalCorrectEllipses())
           fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, GetDuczmalCompactnessCorrection());
       }
 
-      if (Parameters.m_nReplicas)
-        fprintf(fp, "%sMonte Carlo rank......: %ld/%ld\n", szSpacesOnLeft, m_nRank, Parameters.m_nReplicas+1);
+      if (Parameters.GetNumReplicationsRequested())
+        fprintf(fp, "%sMonte Carlo rank......: %ld/%ld\n", szSpacesOnLeft, m_nRank, Parameters.GetNumReplicationsRequested()+1);
 
-      if (Parameters.m_nReplicas > 99)
+      if (Parameters.GetNumReplicationsRequested() > 99)
         {
         fprintf(fp, "%sP-value...............: ", szSpacesOnLeft);
-        DisplayPVal(fp, Parameters.m_nReplicas, szSpacesOnLeft);
+        DisplayPVal(fp, Parameters.GetNumReplicationsRequested(), szSpacesOnLeft);
         fprintf(fp, "\n");
         }
       DisplayNullOccurrence(fp, Data, szSpacesOnLeft);
@@ -293,21 +293,21 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
       //fprintf(fp, "  Coordinates / radius..........: (%g,%g) / %5.2f\n",
                    //x1, y1, nRadius);
     
-      if(Data.m_pParameters->m_nDimension < 5)
+      if(Data.m_pParameters->GetDimensionsOfData() < 5)
       {
          if ( m_iEllipseOffset == 0 )
             {
             fprintf(fp, "%sCoordinates / radius..: (", szSpacesOnLeft);
-      	    for (i=0; i<(Data.m_pParameters->m_nDimension)-1; i++)
+      	    for (i=0; i<(Data.m_pParameters->GetDimensionsOfData())-1; i++)
       	       fprintf(fp, "%g,",pCoords[i]);
-      	    fprintf(fp, "%g) / %-5.2f\n",pCoords[(Data.m_pParameters->m_nDimension)-1],nRadius);
+      	    fprintf(fp, "%g) / %-5.2f\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1],nRadius);
             }
          else
             {
             fprintf(fp, "%sCoordinates...........: (", szSpacesOnLeft);
-            for (i=0; i<(Data.m_pParameters->m_nDimension)-1; i++)
+            for (i=0; i<(Data.m_pParameters->GetDimensionsOfData())-1; i++)
       	       fprintf(fp, "%g,",pCoords[i]);
-            fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->m_nDimension)-1]);
+            fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1]);
             fprintf(fp, "%sEllipse Semiminor axis: %-6.3f\n", szSpacesOnLeft, nRadius);
             //Print the ellipse dimensions....
             fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
@@ -319,7 +319,7 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
       {
         fprintf(fp, "%sCoordinates...........: (", szSpacesOnLeft);
         int count = 0;
-        for (i=0; i<(Data.m_pParameters->m_nDimension)-1; i++)
+        for (i=0; i<(Data.m_pParameters->GetDimensionsOfData())-1; i++)
         {
           if (count < 4) // This is a magic number: if 5 dimensions they
           							 // all print on one line; if more, 4 per line
@@ -337,7 +337,7 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
             count = 1;
           }
         }
-        fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->m_nDimension)-1]);
+        fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1]);
         if (m_iEllipseOffset == 0)
            fprintf(fp, "%sRadius................: %-5.2f\n", szSpacesOnLeft, nRadius);
         else
@@ -413,15 +413,15 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, char* s
 
   try {
 
-    if (Data.m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME && Data.m_pParameters->m_nReplicas > 99) {
-      ProspectiveStartDate = CharToJulian(Data.m_pParameters->m_szProspStartDate);
+    if (Data.m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME && Data.m_pParameters->GetNumReplicationsRequested() > 99) {
+      ProspectiveStartDate = CharToJulian(Data.m_pParameters->GetProspectiveStartDate().c_str());
       fprintf(fp, "%sNull Occurrence.......: ", szSpacesOnLeft);
-      switch (Data.m_pParameters->m_nIntervalUnits) {
-        case YEAR   : fDaysInOccurrence = (TimeBetween(ProspectiveStartDate, Data.m_nEndDate, DAY) + AVERAGE_DAYS_IN_YEAR) / GetPVal(Data.m_pParameters->m_nReplicas);
+      switch (Data.m_pParameters->GetTimeIntervalUnitsType()) {
+        case YEAR   : fDaysInOccurrence = (TimeBetween(ProspectiveStartDate, Data.m_nEndDate, DAY) + AVERAGE_DAYS_IN_YEAR) / GetPVal(Data.m_pParameters->GetNumReplicationsRequested());
                       fYears = fDaysInOccurrence/AVERAGE_DAYS_IN_YEAR;
                       fprintf(fp, "Once in %.1f year%s\n", fYears, (fYears > 1 ? "s" : ""));
                       break;
-        case MONTH  : fDaysInOccurrence = (TimeBetween(ProspectiveStartDate, Data.m_nEndDate, DAY) + AVERAGE_DAYS_IN_MONTH) / GetPVal(Data.m_pParameters->m_nReplicas);
+        case MONTH  : fDaysInOccurrence = (TimeBetween(ProspectiveStartDate, Data.m_nEndDate, DAY) + AVERAGE_DAYS_IN_MONTH) / GetPVal(Data.m_pParameters->GetNumReplicationsRequested());
                       fYears = floor(fDaysInOccurrence/AVERAGE_DAYS_IN_YEAR);
                       fDays = fDaysInOccurrence - fYears * AVERAGE_DAYS_IN_YEAR;
                       fMonths = fDays/AVERAGE_DAYS_IN_MONTH;
@@ -440,7 +440,7 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, char* s
                       else /*Having both zero month and year should never happen.*/
                         fprintf(fp, "Once in %.0f year%s and %0.f month%s\n", fYears, (fYears == 1 ? "" : "s"), fMonths, (fMonths < 1.5 ? "" : "s"));
                       break;
-        case DAY    : fDaysInOccurrence = (TimeBetween(ProspectiveStartDate, Data.m_nEndDate, DAY) + 1) / GetPVal(Data.m_pParameters->m_nReplicas);
+        case DAY    : fDaysInOccurrence = (TimeBetween(ProspectiveStartDate, Data.m_nEndDate, DAY) + 1) / GetPVal(Data.m_pParameters->GetNumReplicationsRequested());
                       fYears = floor(fDaysInOccurrence/AVERAGE_DAYS_IN_YEAR);
                       fDays = fDaysInOccurrence - fYears * AVERAGE_DAYS_IN_YEAR;
                       /*Round now for values that cause days to go 365 or down to 0.*/
@@ -459,7 +459,7 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, char* s
                         fprintf(fp, "Once in %.0f year%s and %.0f day%s\n", fYears, (fYears == 1 ? "" : "s"), fDays, (fDays < 1.5 ? "" : "s"));
                       break;
         default     : ZdGenerateException("Invalid time interval index \"%d\" for prospective analysis.",
-                                          "DisplayNullOccurrence()", Data.m_pParameters->m_nIntervalUnits);
+                                          "DisplayNullOccurrence()", Data.m_pParameters->GetTimeIntervalUnitsType());
       }
     }
   }
@@ -639,13 +639,13 @@ void CCluster::WriteCoordinates(FILE* fp, CSaTScanData* pData)
          {
          if (GetClusterType() == PURELYTEMPORAL)
             {
-            for (i=0; i<=(pData->m_pParameters->m_nDimension)-1; i++)
+            for (i=0; i<=(pData->m_pParameters->GetDimensionsOfData())-1; i++)
                fprintf(fp, " %14s","n/a");
             fprintf(fp, " %12s ","n/a");
             }
          else
             {
-            for (i=0; i<=(pData->m_pParameters->m_nDimension)-1; i++)
+            for (i=0; i<=(pData->m_pParameters->GetDimensionsOfData())-1; i++)
                fprintf(fp, " %14.6g",pCoords[i]);
             fprintf(fp, " %12.2f",nRadius);
             }
@@ -664,7 +664,7 @@ void CCluster::WriteCoordinates(FILE* fp, CSaTScanData* pData)
          {
          if (GetClusterType() == PURELYTEMPORAL)
             {
-            for (i=0; i<=(pData->m_pParameters->m_nDimension)-1; i++)
+            for (i=0; i<=(pData->m_pParameters->GetDimensionsOfData())-1; i++)
                fprintf(fp, " %14s", "n/a");
             fprintf(fp, " %12s","n/a");
 
@@ -672,7 +672,7 @@ void CCluster::WriteCoordinates(FILE* fp, CSaTScanData* pData)
             }
          else
             {
-            for (i=0; i<=(pData->m_pParameters->m_nDimension)-1; i++)
+            for (i=0; i<=(pData->m_pParameters->GetDimensionsOfData())-1; i++)
                fprintf(fp, " %14.6g",pCoords[i]);
 
             //just print the nRadius value here...
@@ -687,14 +687,14 @@ void CCluster::WriteCoordinates(FILE* fp, CSaTScanData* pData)
          }
 
       // If Space-Time analysis...  put Start and End of Cluster
-     /* if (pData->m_pParameters->m_nAnalysisType != PURELYSPATIAL)
+     /* if (pData->m_pParameters->GetAnalysisType() != PURELYSPATIAL)
          {
          JulianToChar(sStartDate, m_nStartDate);
          JulianToChar(sEndDate, m_nEndDate);
          fprintf(fp, " %11s %11s", sStartDate, sEndDate);
          }
       else //purely spacial - print study begin and end dates
-         fprintf(fp, " %11s %11s", pData->m_pParameters->m_szStartDate, pData->m_pParameters->m_szEndDate);
+         fprintf(fp, " %11s %11s", pData->m_pParameters->GetStudyPeriodStartDate().c_str(), pData->m_pParameters->GetStudyPeriodEndDate().c_str());
        */
       free(pCoords);
       free(pCoords2);

@@ -195,7 +195,7 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& pCluster, const CSaT
 
             // p value
             if(gbPrintPVal) {
-               float fPVal = (float) pCluster.GetPVal(pData.m_pParameters->m_nReplicas);
+               float fPVal = (float) pCluster.GetPVal(pData.m_pParameters->GetNumReplicationsRequested());
                pRecord->SetPValue(fPVal);
             }
 
@@ -218,7 +218,7 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& pCluster, const CSaT
 
          // p value
          if(gbPrintPVal) {
-            float fPVal = (float) pCluster.GetPVal(pData.m_pParameters->m_nReplicas);
+            float fPVal = (float) pCluster.GetPVal(pData.m_pParameters->GetNumReplicationsRequested());
             pRecord->SetPValue(fPVal);
          }
 

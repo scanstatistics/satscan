@@ -62,14 +62,14 @@ bool CSpaceTimePermutationModel::CalculateMeasure()
 
    try
       {
-      if (m_pData->m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)
+      if (m_pData->m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE)
         {
          bResult = AssignMeasure(m_pData->GetTInfo(), m_pData->GetCats(), m_pData->m_pCases,
                                  m_pData->m_pTimes, m_pData->m_nTracts, m_pData->m_nStartDate,
                                  m_pData->m_nEndDate, m_pData->m_pIntervalStartTimes,
-                                 m_pParameters->m_bExactTimes, m_pParameters->m_nTimeAdjustType,
-                                 m_pParameters->m_nTimeAdjPercent, m_pData->m_nTimeIntervals,
-                                 m_pParameters->m_nIntervalUnits,  m_pParameters->m_nIntervalLength,
+                                 false/*m_pParameters->m_bExactTimes*/, m_pParameters->GetTimeTrendAdjustmentType(),
+                                 m_pParameters->GetTimeTrendAdjustmentPercentage(), m_pData->m_nTimeIntervals,
+                                 m_pParameters->GetTimeIntervalUnitsType(),  m_pParameters->GetTimeIntervalLength(),
                                  &m_pData->m_pMeasure, &m_pData->m_nTotalCases,
                                  &m_pData->m_nTotalPop, &m_pData->m_nTotalMeasure, gpPrintDirection);
          m_eMeasureType = PopulationBased;
@@ -191,7 +191,7 @@ bool CSpaceTimePermutationModel::ReadData()
       if (!m_pData->ReadGeo())
         return false;
 
-      if (m_pData->m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)
+      if (m_pData->m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE)
         if (!m_pData->ReadPops())
           return false;
 
