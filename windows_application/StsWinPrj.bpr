@@ -6,7 +6,7 @@
     <PROJECT value="StsWinPrj.exe"/>
     <OBJFILES value="StsWinPrj.obj stsMain.obj stsFrmAnalysisParameters.obj stsFrmAbout.obj 
       stsFrmAnalysisRun.obj stsUtilityFunctions.obj stsCalculationThread.obj 
-      stsPrintWindow.obj stsDlgException.obj stsFrmOutPutViewer.obj 
+      stsPrintWindow.obj stsFrmOutPutViewer.obj 
       ..\calculation\utility\UtilityFunctions.obj 
       ..\calculation\utility\JulianDates.obj 
       ..\calculation\utility\RandomNumberGenerator.obj 
@@ -51,29 +51,22 @@
       ..\calculation\probability_model\SpaceTimePermutationModel.obj 
       ..\calculation\SaTScanBasis.obj 
       ..\calculation\Output\stsRunHistoryFile.obj ..\calculation\utility\DBFFile.obj 
-      ..\xbase\xbase_2.0.0\xbase\xdate.obj ..\xbase\xbase_2.0.0\xbase\exp.obj 
-      ..\xbase\xbase_2.0.0\xbase\expfunc.obj 
-      ..\xbase\xbase_2.0.0\xbase\expproc.obj 
-      ..\xbase\xbase_2.0.0\xbase\fields.obj ..\xbase\xbase_2.0.0\xbase\html.obj 
-      ..\xbase\xbase_2.0.0\xbase\index.obj ..\xbase\xbase_2.0.0\xbase\lock.obj 
-      ..\xbase\xbase_2.0.0\xbase\memo.obj ..\xbase\xbase_2.0.0\xbase\ndx.obj 
-      ..\xbase\xbase_2.0.0\xbase\ntx.obj ..\xbase\xbase_2.0.0\xbase\stack.obj 
-      ..\xbase\xbase_2.0.0\xbase\xbase.obj 
-      ..\xbase\xbase_2.0.0\xbase\xbexcept.obj 
-      ..\xbase\xbase_2.0.0\xbase\xbfilter.obj 
-      ..\xbase\xbase_2.0.0\xbase\xbstring.obj ..\xbase\xbase_2.0.0\xbase\dbf.obj"/>
+      ..\calculation\Output\stsAreaSpecificDBF.obj 
+      ..\calculation\Output\stsClusterLevelDBF.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
-      stsFrmAnalysisRun.dfm stsDlgException.dfm stsFrmOutPutViewer.dfm"/>
-    <LIBFILES value="&quot;C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib&quot; &quot;C:\Program Files\Borland\CBuilder5\Lib\zd540.lib&quot;"/>
+      stsFrmAnalysisRun.dfm stsFrmOutPutViewer.dfm"/>
+    <LIBFILES value="&quot;C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib&quot; 
+      &quot;C:\Program Files\Borland\CBuilder5\Lib\zd540.lib&quot; 
+      ..\xbase\xbase_2.0.0\xbase\xbase.lib"/>
     <LIBRARIES value="vcldb50.lib vclbde50.lib vclx50.lib Qrpt50.lib Vcl50.lib"/>
     <SPARELIBS value="Vcl50.lib Qrpt50.lib vclx50.lib vclbde50.lib vcldb50.lib"/>
     <PACKAGES value="Vcl50.bpi bcb2kaxserver50.bpi VCLDB50.bpi VCLBDE50.bpi Vclx50.bpi 
       vcldbx50.bpi vclie50.bpi Inetdb50.bpi Inet50.bpi TeeUI50.bpi TeeDB50.bpi 
       Tee50.bpi bcbsmp50.bpi ibsmp50.bpi bcbie50.bpi dclocx50.bpi NMFast50.bpi 
       Qrpt50.bpi VCLIB50.bpi TeeQR50.bpi TSGC5201.bpi TSDGC5201.bpi"/>
-    <PATHCPP value=".;..\calculation\utility;..\calculation\print;..\calculation\probability_model;..\calculation\satscan_data;..\calculation\cluster;..\calculation\analysis;..\calculation;..\calculation\Output;..\xbase\xbase_2.0.0\xbase"/>
+    <PATHCPP value=".;..\calculation\utility;..\calculation\print;..\calculation\probability_model;..\calculation\satscan_data;..\calculation\cluster;..\calculation\analysis;..\calculation;..\calculation\Output"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
