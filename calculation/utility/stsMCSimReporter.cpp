@@ -43,14 +43,12 @@ const float stsMCSimReporter::guaShortCircuitCheckCutoffValues[] = { 0.5, 0.4, 0
 stsMCSimReporter::stsMCSimReporter
    ( CParameters const & rParameters
     ,stsMCSimContinuationPolicy & rCtPlcy
-    ,CSignificantRatios05 & theSignificantRatios
     ,MostLikelyClustersContainer & theMLCs
     ,BasePrint & thePrintDirection
     ,const char * szReplicationFormatString
     ,AnalysisRunner & Runner
    )
    : grContinuationPolicy(rCtPlcy)
-   , grSignificantRatios(theSignificantRatios)
    , grMLCs(theMLCs)
    , grPrintDirection(thePrintDirection)
    , gszReplicationFormatString(szReplicationFormatString)
@@ -74,11 +72,6 @@ stsMCSimReporter::stsMCSimReporter
 void stsMCSimReporter::Report_ResultsRegistered(unsigned job_idx,boost::dynamic_bitset<> const & result_registration_conditions,std::deque< std::pair<params_type, results_type> > const & jobs)
 {
   try {
-    results_type result(jobs[job_idx].second);
-    if(gRatioWriter.get()) gRatioWriter->Write(result);
-    //update power calculations
-    grRunner.UpdatePowerCounts(result);
-    
     if (guShortCircuitCheckIdx < guShortCircuitCheckCount) {//if we're checking for short-circuit conditions...
       if (!gbShortCircuitConditionExists) {
         if (job_idx < guaShortCircuitCheckPoints[guShortCircuitCheckIdx]) {
@@ -90,7 +83,10 @@ void stsMCSimReporter::Report_ResultsRegistered(unsigned job_idx,boost::dynamic_
               //update most likely clusters given latest simulated loglikelihood ratio
               grMLCs.UpdateTopClustersRank(current_result);
               //update significance indicator
-              grSignificantRatios.AddRatio(current_result);
+              grRunner.UpdateSignificantRatiosList(current_result);
+              if (gRatioWriter.get()) gRatioWriter->Write(current_result);
+              //update power calculations
+              grRunner.UpdatePowerCounts(current_result);
             }
             gbShortCircuitConditionExists = grContinuationPolicy.gbShortCircuitConditionExists = grMLCs.GetTopRankedCluster().GetPValue(gResultRegistrationConditions.size()) > guaShortCircuitCheckCutoffValues[guShortCircuitCheckIdx];
             if (!gbShortCircuitConditionExists) {
@@ -108,7 +104,10 @@ void stsMCSimReporter::Report_ResultsRegistered(unsigned job_idx,boost::dynamic_
                     //update most likely clusters given latest simulated loglikelihood ratio
                     grMLCs.UpdateTopClustersRank(current_result);
                     //update significance indicator
-                    grSignificantRatios.AddRatio(current_result);
+                    grRunner.UpdateSignificantRatiosList(current_result);
+                    if (gRatioWriter.get()) gRatioWriter->Write(current_result);
+                    //update power calculations
+                    grRunner.UpdatePowerCounts(current_result);
                   }
                 }
               }
@@ -123,7 +122,10 @@ void stsMCSimReporter::Report_ResultsRegistered(unsigned job_idx,boost::dynamic_
       //update most likely clusters given latest simulated loglikelihood ratio
       grMLCs.UpdateTopClustersRank(current_result);
       //update significance indicator
-      grSignificantRatios.AddRatio(current_result);
+      grRunner.UpdateSignificantRatiosList(current_result);
+      if (gRatioWriter.get()) gRatioWriter->Write(current_result);
+      //update power calculations
+      grRunner.UpdatePowerCounts(current_result);
     }
     //if appropriate, estimate time required to complete all jobs and report it.
     grPrintDirection.SatScanPrintf(gszReplicationFormatString, result_registration_conditions.count(), result_registration_conditions.size(), jobs[job_idx].second);

@@ -32,7 +32,6 @@ private:
 //  CParameters const & grParameters;
   stsMCSimContinuationPolicy & grContinuationPolicy;
   MostLikelyClustersContainer & grMLCs;
-  CSignificantRatios05 & grSignificantRatios;
   BasePrint & grPrintDirection;
   const char * gszReplicationFormatString;
   std::auto_ptr<LoglikelihoodRatioWriter> gRatioWriter;
@@ -48,7 +47,6 @@ public:
   stsMCSimReporter
    ( CParameters const & rParameters
     ,stsMCSimContinuationPolicy & rCtPlcy
-    ,CSignificantRatios05 & theSignificantRatios
     ,MostLikelyClustersContainer & theMLCs
     ,BasePrint & thePrintDirection
     ,const char * szReplicationFormatString
