@@ -563,7 +563,7 @@ void DBFRecord::OverwriteDbfRecordAt(xbDbf & theDbf, unsigned long ulPosition) c
    xbShort rc;
    try
       {
-      if ((ulPosition == 0) || (ulPosition > theDbf.NoOfRecords()))
+      if ((ulPosition == 0) || (ulPosition > (unsigned long)theDbf.NoOfRecords()))
          ZdException::Generate("ulPosition (value=%d) is out of range [%d, %d].", "DBFRecord", ulPosition, 1, theDbf.NoOfRecords());
 
          {
@@ -884,7 +884,7 @@ DBFFile::~DBFFile()
 void DBFFile::AssertLegalFieldname(const ZdString & sCandidate)
 {
    if (! DBFFile::IsLegalFieldname(sCandidate))
-      ZdException::Generate("The string, \"%c\", is not legal for use as the name of a field in a DBF file.", "DBFFile");
+      ZdException::Generate("The string, \"%c\", is not legal for use as the name of a field in a DBF file.", "DBFFile", sCandidate.GetCString());
 }
 
 // Throw an exception if GetIsOpen() returns 'false'.
