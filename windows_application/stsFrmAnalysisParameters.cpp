@@ -1444,8 +1444,15 @@ void TfrmAnalysis::SetSpecialGridFile(const char * sSpecialGridFileName) {
 void TfrmAnalysis::Setup(const char * sParameterFileName) {
   try {
     PageControl1->ActivePage = tbInputFiles;
-    if (sParameterFileName)
-      gParameters.Read(sParameterFileName, gNullPrint);
+    try {
+      if (sParameterFileName)
+        gParameters.Read(sParameterFileName, gNullPrint);
+    }
+    catch (ZdException &x) {
+      x.SetLevel(ZdException::Notify);
+      x.SetErrorMessage((const char*)"SaTScan is unable to read parameters from file \"%s\".\n", sParameterFileName);
+      throw;
+    }
     DefaultHiddenParameters();
     SetupInterface();
   }

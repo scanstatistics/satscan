@@ -1011,7 +1011,7 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
 void CParameters::Read(const char* szFilename, BasePrint & PrintDirection) {
   try {
     if (access(szFilename, 04) == -1)
-      SSGenerateException("Error: Unable to open parameter file '%s'.\n", "Read()", szFilename);
+      SSGenerateException("Unable to open parameter file '%s'.\n", "Read()", szFilename);
 
     ZdIniFile file(szFilename, true, false);
     if (file.GetNumSections())
@@ -1019,14 +1019,8 @@ void CParameters::Read(const char* szFilename, BasePrint & PrintDirection) {
     else
       ReadScanningLineParameterFile(szFilename, PrintDirection);
   }
-  catch (ZdFileOpenFailedException & x ){
-    x.SetErrorMessage("Error: Unable to open parameter file.\n");
-    x.AddCallpath("Read()", "CParameters");
-    throw;
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("Read()", "CParameters");
-    throw;
+  catch (ZdException &x) {
+    SSGenerateException("Unable to read parameters from file '%s'.\n", "Read()", szFilename);
   }
 }
 
