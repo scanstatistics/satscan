@@ -15,10 +15,10 @@
 
 
 // constructor
-__fastcall stsClusterLevelDBF::stsClusterLevelDBF(const ZdString& sFileName) : DBaseOutput(sFileName) {
+__fastcall stsClusterLevelDBF::stsClusterLevelDBF(const ZdString& sFileName, const int& iCoordType) : DBaseOutput(sFileName, iCoordType) {
    try {
       Init();
-      Setup(sFileName);
+      Setup();
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsClusterLevelDBF");
@@ -63,28 +63,26 @@ void stsClusterLevelDBF::GetFields() {
 
 // global inits
 void stsClusterLevelDBF::Init() {
-   glRunNumber = 0;
 }
 
 // records the calculated data from the cluster into the dBase file
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
 void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber) {
-   DBFFile*		pFile = 0;
-   ZdFileRecord*	pRecord = 0;
-   ZdTransaction *	pTransaction = 0;
    unsigned short       uwFieldNumber = 0;
-   float                fRadius = 0;
+   float                fRadius = 0, fLatitude = 0, fLongitude = 0;
    double               *pCoords = 0, *pCoords2 = 0;
    ZdFieldValue         fv;
+   ZdString             sAdditCoords;
 
    try {
-      pFile = new DBFFile(gsFileName.GetCString());
+      DBFFile File(gsFileName.GetCString());
+      auto_ptr<ZdTransaction> pTransaction;
+      pTransaction.reset(File.BeginTransaction());
 
-      pTransaction = pFile->BeginTransaction();
+      auto_ptr<ZdFileRecord> pRecord;
+      pRecord.reset(File.GetNewRecord());
 
-      pRecord = pFile->GetNewRecord();
-    
       // define record data
       // run number field  - from the run history file  AJV 9/4/2002
       fv.SetType(pRecord->GetFieldType(uwFieldNumber));
@@ -141,53 +139,61 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
       fv.AsDouble() = pCluster->m_Center;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
+      (pData->GetGInfo())->giGetCoords(pCluster->m_Center, &pCoords);
+      (pData->GetTInfo())->tiGetCoords(pData->GetNeighbor(pCluster->m_iEllipseOffset, pCluster->m_Center, pCluster->m_nTracts), &pCoords2);
+      fRadius = (float)sqrt((pData->GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
+      if(giCoordType == CARTESIAN) {
+         for (int i = 0; i < (pData->m_pParameters->m_nDimension)-1; ++i) {
+            if (i == 0)
+               fLatitude = pCoords[i];
+            else if (i == 1)
+               fLongitude = pCoords[i];
+            else
+               sAdditCoords << pCoords[i] << ", ";
+         }
+         if(sAdditCoords.GetLength() > 0)
+            sAdditCoords = sAdditCoords.Remove(sAdditCoords.GetLength()-2, 1);    // strip off the last comma AJV 9/9/2002
+      }
+      else
+         ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
+
       // coord north
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsZdString() = "";
+      fv.AsDouble() = fLatitude;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // coord west
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsZdString() = "";
+      fv.AsDouble() = fLongitude;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // additional coords
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
-      fv.AsZdString() = "";
+      fv.AsZdString() = sAdditCoords;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // radius
-      (pData->GetGInfo())->giGetCoords(pCluster->m_Center, &pCoords);
-      (pData->GetTInfo())->tiGetCoords(pData->GetNeighbor(pCluster->m_iEllipseOffset, pCluster->m_Center, pCluster->m_nTracts), &pCoords2);
-      fRadius = (float)sqrt((pData->GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
       fv.SetType(pRecord->GetFieldType(++uwFieldNumber));
       fv.AsDouble() = fRadius;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
-      pFile->AppendRecord(*pTransaction, *pRecord);
-      delete pRecord;
+      File.AppendRecord(*pTransaction, *pRecord);
+      File.EndTransaction(&(*pTransaction));
+      File.Close();
 
-      pFile->EndTransaction(pTransaction);  pTransaction = 0;
-      pFile->Close();
-      delete pFile;
+      free(pCoords);
+      free(pCoords2);
    }
    catch (ZdException &x) {
-      if(pFile) {
-         if(pTransaction)
-            pFile->EndTransaction(pTransaction);
-         pFile->Close();
-      }
-      pTransaction = 0;    // can't delete transactions, this is done by pFile->EndTransaction which smudges the pointer
-      delete pRecord; pRecord = 0;
-      delete pFile; pFile = 0;
-
+      free(pCoords);
+      free(pCoords2);
       x.AddCallpath("RecordClusterData()", "stsClusterLevelDBF");
       throw;
    }
 }
 
 // internal setup
-void stsClusterLevelDBF::Setup(const ZdString& sFileName) {
+void stsClusterLevelDBF::Setup() {
    try {
       GetFields();
       CreateDBFFile();
@@ -284,14 +290,14 @@ void stsClusterLevelDBF::SetupFields(ZdVector<std::pair<ZdString, char> >& vFiel
       vFieldSizes.AddElement(fieldsize);
 
       field.first = "COORD_NOR";
-      field.second = ZD_ALPHA_FLD;
+      field.second = ZD_NUMBER_FLD;
       fieldsize.first = 16;
       fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
       vFieldSizes.AddElement(fieldsize);
 
       field.first = "COORD_WES";
-      field.second = ZD_ALPHA_FLD;
+      field.second = ZD_NUMBER_FLD;
       fieldsize.first = 16;
       fieldsize.second = 0;
       vFieldDescrips.AddElement(field);
@@ -316,3 +322,5 @@ void stsClusterLevelDBF::SetupFields(ZdVector<std::pair<ZdString, char> >& vFiel
       throw;
    }
 }
+
+

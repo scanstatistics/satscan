@@ -13,10 +13,10 @@
 #include "stsOutputDBF.h"
 
 // constructor
-__fastcall DBaseOutput::DBaseOutput(const ZdString& sFileName) {
+__fastcall DBaseOutput::DBaseOutput(const ZdString& sFileName, const int& iCoordType) {
    try {
       Init();
-      Setup(sFileName);	
+      Setup(sFileName, iCoordType);	
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "DBaseOutput");
@@ -73,14 +73,14 @@ void DBaseOutput::CreateDBFFile() {
 // global inits
 void DBaseOutput::Init() {
    glRunNumber = 0;
+   giCoordType = 0;
 }	
 
 // internal setup function
-void DBaseOutput::Setup(const ZdString& sFileName) {
-   ZdFileRecord         *pLastRecord = 0;
-
+void DBaseOutput::Setup(const ZdString& sFileName, const int& iCoordType) {
    try{
       gsFileName = sFileName;
+      giCoordType = iCoordType;
 
       // ugly hack to get the run number from the history file - need a new way to do this - AJV 9/7/2002
       // consider making GetRunHistoryNumber or something of the like a function of the RunHistory file - AJV 9/9/2002
@@ -90,17 +90,16 @@ void DBaseOutput::Setup(const ZdString& sFileName) {
          // if there's records in the file
          unsigned long ulNumRecords = File.GetNumRecords();
          if(ulNumRecords) {
-            pLastRecord = File.GetNewRecord();
-            File.GotoRecord(ulNumRecords, pLastRecord);
+            auto_ptr<ZdFileRecord> pLastRecord;
+            pLastRecord.reset(File.GetNewRecord());
+            File.GotoRecord(ulNumRecords, &(*pLastRecord));
             glRunNumber = pLastRecord->GetLong((long)0);       
          }
-         delete pLastRecord; pLastRecord = 0;
          File.Close();
       }
       ++glRunNumber;    // add one here to signify a new run - AJV
    }
    catch(ZdException &x) {
-      delete pLastRecord; pLastRecord = 0;
       x.AddCallpath("Setup()", "DBaseOutput");
       throw;
    }

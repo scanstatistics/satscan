@@ -14,10 +14,10 @@
 #include <DBFFile.h>
 
 // constructor
-__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const ZdString& sFileName) : DBaseOutput(sFileName) {
+__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const ZdString& sFileName, const int& iCoordType) : DBaseOutput(sFileName, iCoordType) {
    try {
       Init();
-      Setup(sFileName);
+      Setup();
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsAreaSpecificDBF");
@@ -62,23 +62,21 @@ void stsAreaSpecificDBF::GetFields() {
 
 // global inits
 void stsAreaSpecificDBF::Init() {
-   glRunNumber = 0;
 }
 
 // records the calculated data from the cluster into the dBase file
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
 void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber) {
-   DBFFile*		pFile = 0;
-   ZdFileRecord*	pRecord = 0;
-   ZdTransaction *	pTransaction = 0;
    unsigned long        uwFieldNumber = 0;
    ZdFieldValue         fv;
 
    try {
-      pFile = new DBFFile(gsFileName.GetCString());
-      pTransaction = pFile->BeginTransaction();
-      pRecord = pFile->GetNewRecord();
+      DBFFile File(gsFileName.GetCString());
+      auto_ptr<ZdTransaction> pTransaction;
+      pTransaction.reset(File.BeginTransaction());
+      auto_ptr<ZdFileRecord> pRecord;
+      pRecord.reset(File.GetNewRecord());
 
       // define record data
       // run number - from run history file AJV 9/4/2002
@@ -116,29 +114,19 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
       fv.AsDouble() = pCluster->m_nRatio;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
-      pFile->AppendRecord(*pTransaction, *pRecord);
-      delete pRecord; pRecord = 0;
+      File.AppendRecord(*pTransaction, *pRecord);
 
-      pFile->EndTransaction(pTransaction); pTransaction = 0;
-      pFile->Close();
-      delete pFile;  pFile = 0;
+      File.EndTransaction(&(*pTransaction)); 
+      File.Close();
    }
    catch (ZdException &x) {
-      if(pFile) {
-         if(pTransaction)
-            pFile->EndTransaction(pTransaction);
-         pFile->Close();
-      }
-      delete pFile; pFile = 0;
-      pTransaction = 0;
-      delete pRecord; pRecord = 0;
       x.AddCallpath("RecordClusterData()", "stsAreaSpecificDBF");
       throw;
    }
 }
 
 // internal setup
-void stsAreaSpecificDBF::Setup(const ZdString& sFileName) {
+void stsAreaSpecificDBF::Setup() {
    try {
       GetFields();
       CreateDBFFile();
