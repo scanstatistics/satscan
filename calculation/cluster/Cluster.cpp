@@ -529,8 +529,8 @@ double CCluster::GetRelativeRiskForTract(tract_t tTract, const CSaTScanData & Da
   tCaseCount = GetCaseCountForTract(tTract, Data);
   tMeasure = GetMeasureForTract(tTract, Data);
 
-  if (tMeasure*Data.GetMeasureAdjustment())
-    dRelativeRisk = ((double)(tCaseCount))/(tMeasure*Data.GetMeasureAdjustment());
+  if (tMeasure)
+    dRelativeRisk = ((double)(tCaseCount))/tMeasure;
   return dRelativeRisk;
 }
 
