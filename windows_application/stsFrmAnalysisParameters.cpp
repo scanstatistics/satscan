@@ -657,19 +657,19 @@ bool TfrmAnalysis::CheckTimeParams() {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::chkCensusAreasClick(TObject *Sender) {
-   gpParams->m_bOutputCensusAreas = chkCensusAreas->Checked;
+void __fastcall TfrmAnalysis::chkCensusAreasReportedClustersAsciiClick(TObject *Sender) {
+   gpParams->m_bOutputCensusAreas = chkCensusAreasReportedClustersAscii->Checked;
 }
 //------------------------------------------------------------------------------
 // Include relative risks in output
 //------------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::chkInclRelRiskEstClick(TObject *Sender) {
+void __fastcall TfrmAnalysis::chkRelativeRiskEstimatesAreaAsciiClick(TObject *Sender) {
   try {
-    gpParams->m_bOutputRelRisks = chkInclRelRiskEst->Checked;
+    gpParams->m_bOutputRelRisks = chkRelativeRiskEstimatesAreaAscii->Checked;
     DataExchange();
   }
   catch (ZdException & x) {
-    x.AddCallpath("chkInclRelRiskEstClick()", "TfrmAnalysis");
+    x.AddCallpath("chkRelativeRiskEstimatesAreaAsciiClick()", "TfrmAnalysis");
     DisplayBasisException(this, x);
   }
 }
@@ -702,20 +702,20 @@ void __fastcall TfrmAnalysis::chkInclPurTempClustClick(TObject *Sender) {
 //------------------------------------------------------------------------------
 // Simulated Log likelihood ratio set
 //------------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::chkInclSimLogLikClick(TObject *Sender) {
+void __fastcall TfrmAnalysis::chkSimulatedLogLikelihoodRatiosAsciiClick(TObject *Sender) {
   try {
-    gpParams->m_bSaveSimLogLikelihoods = chkInclSimLogLik->Checked;
+    gpParams->m_bSaveSimLogLikelihoods = chkSimulatedLogLikelihoodRatiosAscii->Checked;
     DataExchange();
   }
   catch (ZdException & x) {
-    x.AddCallpath("chkInclSimLogLikClick()", "TfrmAnalysis");
+    x.AddCallpath("chkSimulatedLogLikelihoodRatiosAsciiClick()", "TfrmAnalysis");
     DisplayBasisException(this, x);
   }
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void __fastcall TfrmAnalysis::chkLikelyClustersClick(TObject *Sender) {
-   gpParams->m_bMostLikelyClusters = chkLikelyClusters->Checked;
+void __fastcall TfrmAnalysis::chkClustersInColumnFormatAsciiClick(TObject *Sender) {
+   gpParams->m_bMostLikelyClusters = chkClustersInColumnFormatAscii->Checked;
 }
 //---------------------------------------------------------------------------
 // This function mimics the Visual C++ inteface.  It changed the parameters
@@ -999,9 +999,9 @@ void __fastcall TfrmAnalysis::edtUnitLengthExit(TObject *Sender) {
 // Enables 'Additional Ascii File Options' based on current settings.
 //---------------------------------------------------------------------------
 void TfrmAnalysis::EnableAdditionalAsciiFileOptions() {
-  chkInclRelRiskEst->Enabled = gpParams->m_nModel != SPACETIMEPERMUTATION;
-  if (! chkInclRelRiskEst->Enabled)
-     chkInclRelRiskEst->Checked = false;
+  chkRelativeRiskEstimatesAreaAscii->Enabled = gpParams->m_nModel != SPACETIMEPERMUTATION;
+  if (! chkRelativeRiskEstimatesAreaAscii->Enabled)
+     chkRelativeRiskEstimatesAreaAscii->Checked = false;
 }
 //------------------------------------------------------------------------------
 // Purely spacial runs are always available, but other times the other
@@ -1592,8 +1592,8 @@ void TfrmAnalysis::SaveTextParameters() {
     //Output File Tab
     strcpy(gpParams->m_szOutputFilename, edtResultFile->Text.c_str());
 
-    gpParams->SetOutputClusterLevelDBF(chkDbaseFile1->Checked);
-    gpParams->SetOutputAreaSpecificDBF(chkDbaseFile2->Checked);
+    gpParams->SetOutputClusterLevelDBF(chkClustersInColumnFormatDBase->Checked);
+    gpParams->SetOutputAreaSpecificDBF(chkCensusAreasReportedClustersDBase->Checked);
   }
   catch (ZdException & x) {
     x.AddCallpath("SaveTextParameters()", "TfrmAnalysis");
@@ -1812,13 +1812,13 @@ void TfrmAnalysis::SetupInterface() {
       ParseDate(gpParams->m_szProspStartDate, edtProspYear, edtProspMonth, edtProspDay);
     //Output File Tab
     edtResultFile->Text        = gpParams->m_szOutputFilename;
-    chkInclRelRiskEst->Checked = gpParams->m_bOutputRelRisks;
-    chkInclSimLogLik->Checked  = gpParams->m_bSaveSimLogLikelihoods;
-    chkCensusAreas->Checked    = gpParams->m_bOutputCensusAreas;  // Output Census areas in Reported Clusters
-    chkLikelyClusters->Checked = gpParams->m_bMostLikelyClusters;  // Output Most Likely Cluster for each Centroid
+    chkRelativeRiskEstimatesAreaAscii->Checked = gpParams->m_bOutputRelRisks;
+    chkSimulatedLogLikelihoodRatiosAscii->Checked  = gpParams->m_bSaveSimLogLikelihoods;
+    chkCensusAreasReportedClustersAscii->Checked    = gpParams->m_bOutputCensusAreas;  // Output Census areas in Reported Clusters
+    chkClustersInColumnFormatAscii->Checked = gpParams->m_bMostLikelyClusters;  // Output Most Likely Cluster for each Centroid
     cboCriteriaSecClusters->ItemIndex = gpParams->m_iCriteriaSecondClusters;
-    chkDbaseFile1->Checked = gpParams->GetOutputClusterLevelDBF();
-    chkDbaseFile2->Checked = gpParams->GetOutputAreaSpecificDBF();
+    chkClustersInColumnFormatDBase->Checked = gpParams->GetOutputClusterLevelDBF();
+    chkCensusAreasReportedClustersDBase->Checked = gpParams->GetOutputAreaSpecificDBF();
     //now enable or disable controls appropriately
     DataExchange();
   }

@@ -1,6 +1,6 @@
 object frmAnalysis: TfrmAnalysis
-  Left = 228
-  Top = 196
+  Left = 350
+  Top = 190
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SaTScan'
@@ -845,52 +845,140 @@ object frmAnalysis: TfrmAnalysis
         TabOrder = 1
         OnClick = btnResultFileBrowseClick
       end
-      object grpB1: TGroupBox
+      object grpAdditionalOutputFiles: TGroupBox
         Left = 16
-        Top = 62
+        Top = 61
         Width = 449
-        Height = 101
-        Caption = 'Create Additional ASCII Output Files with (all optional):'
+        Height = 153
+        Caption = 'Additional Optional Output Files:'
         TabOrder = 2
-        object chkCensusAreas: TCheckBox
-          Left = 10
-          Top = 36
-          Width = 241
-          Height = 17
-          Caption = 'Census Areas in Reported Clusters'
-          Checked = True
-          State = cbChecked
-          TabOrder = 0
-          OnClick = chkCensusAreasClick
+        object lblClustersInColumnFormat: TLabel
+          Left = 16
+          Top = 48
+          Width = 121
+          Height = 13
+          Caption = 'Clusters in Column Format'
         end
-        object chkLikelyClusters: TCheckBox
-          Left = 10
-          Top = 16
-          Width = 241
+        object lblCensusAreasReportedClusters: TLabel
+          Left = 16
+          Top = 72
+          Width = 163
+          Height = 13
+          Caption = 'Census Areas in Reported Clusters'
+        end
+        object lblRelativeRiskEstimatesArea: TLabel
+          Left = 16
+          Top = 96
+          Width = 217
+          Height = 13
+          Caption = 'Relative Risk Estimates for Each Census Area'
+        end
+        object lblSimulatedLogLikelihoodRatios: TLabel
+          Left = 16
+          Top = 120
+          Width = 151
+          Height = 13
+          Caption = 'Simulated Log Likelihood Ratios'
+        end
+        object ASCII: TLabel
+          Left = 312
+          Top = 23
+          Width = 27
+          Height = 13
+          Caption = 'ASCII'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsUnderline]
+          ParentFont = False
+        end
+        object lbldBaseOutput: TLabel
+          Left = 381
+          Top = 23
+          Width = 30
+          Height = 13
+          Caption = 'dBase'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsUnderline]
+          ParentFont = False
+        end
+        object chkCensusAreasReportedClustersAscii: TCheckBox
+          Left = 318
+          Top = 72
+          Width = 15
+          Height = 17
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 2
+          OnClick = chkCensusAreasReportedClustersAsciiClick
+        end
+        object chkClustersInColumnFormatAscii: TCheckBox
+          Left = 318
+          Top = 48
+          Width = 15
           Height = 17
           BiDiMode = bdLeftToRight
-          Caption = 'Clusters in Column Format'
+          ParentBiDiMode = False
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 0
+          OnClick = chkClustersInColumnFormatAsciiClick
+        end
+        object chkRelativeRiskEstimatesAreaAscii: TCheckBox
+          Left = 318
+          Top = 96
+          Width = 16
+          Height = 17
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 4
+          OnClick = chkRelativeRiskEstimatesAreaAsciiClick
+        end
+        object chkSimulatedLogLikelihoodRatiosAscii: TCheckBox
+          Left = 318
+          Top = 120
+          Width = 16
+          Height = 17
+          TabOrder = 6
+          OnClick = chkSimulatedLogLikelihoodRatiosAsciiClick
+        end
+        object chkClustersInColumnFormatDBase: TCheckBox
+          Left = 388
+          Top = 48
+          Width = 16
+          Height = 17
+          BiDiMode = bdLeftToRight
           ParentBiDiMode = False
           TabOrder = 1
-          OnClick = chkLikelyClustersClick
         end
-        object chkInclRelRiskEst: TCheckBox
-          Left = 10
-          Top = 56
-          Width = 241
+        object chkCensusAreasReportedClustersDBase: TCheckBox
+          Left = 388
+          Top = 72
+          Width = 16
           Height = 17
-          Caption = 'Relative Risk Estimates for Each Census Area'
-          TabOrder = 2
-          OnClick = chkInclRelRiskEstClick
-        end
-        object chkInclSimLogLik: TCheckBox
-          Left = 10
-          Top = 76
-          Width = 241
-          Height = 17
-          Caption = 'Simulated Log Likelihood Ratios'
+          BiDiMode = bdLeftToRight
+          ParentBiDiMode = False
           TabOrder = 3
-          OnClick = chkInclSimLogLikClick
+        end
+        object chkRelativeRiskEstimatesAreaDBase: TCheckBox
+          Left = 389
+          Top = 96
+          Width = 16
+          Height = 17
+          Enabled = False
+          TabOrder = 5
+        end
+        object chkSimulatedLogLikelihoodRatiosDBase: TCheckBox
+          Left = 389
+          Top = 120
+          Width = 16
+          Height = 17
+          Enabled = False
+          TabOrder = 7
         end
       end
       object grpCriteriaSecClusters: TGroupBox
@@ -916,36 +1004,6 @@ object frmAnalysis: TfrmAnalysis
             'No Cluster Centers in Less Likely Clusters'
             'No Pairs of Centers Both in Each Others Clusters'
             'No Restrictions = Most Likely Cluster for Each Grid Point')
-        end
-      end
-      object grpB2: TGroupBox
-        Left = 16
-        Top = 169
-        Width = 449
-        Height = 59
-        Caption = 'Create Additional dBase (.dbf) Output Files with (all optional):'
-        TabOrder = 4
-        object chkDbaseFile1: TCheckBox
-          Left = 10
-          Top = 16
-          Width = 423
-          Height = 17
-          BiDiMode = bdLeftToRight
-          Caption = 'Cluster Level'
-          ParentBiDiMode = False
-          TabOrder = 0
-          OnClick = chkLikelyClustersClick
-        end
-        object chkDbaseFile2: TCheckBox
-          Left = 10
-          Top = 36
-          Width = 423
-          Height = 17
-          BiDiMode = bdLeftToRight
-          Caption = 'Area Specific'
-          ParentBiDiMode = False
-          TabOrder = 1
-          OnClick = chkLikelyClustersClick
         end
       end
     end
