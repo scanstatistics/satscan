@@ -61,10 +61,14 @@ class CCaseLocationTimes
     Calculates loglikelihood identically to Poisson model. */
 class CSpaceTimePermutationModel : public CModel
 {
+  public:
+    enum        MeasureType {NotSet, PopulationBased, CaseBased};
   private:
+    MeasureType                                 m_eMeasureType;
     std::vector<CCaseLocationTimes>             m_vCaseLocationTimes;
     std::vector<CSimulationTimeRandomizer>      m_vTimeIntervalRandomizer;
 
+    void                        Init() {m_eMeasureType=NotSet;}
     void                        InitializeRandomizationStructures();
 
   public:
@@ -79,6 +83,7 @@ class CSpaceTimePermutationModel : public CModel
                                               int nStartInterval, int nStopInterval);
     virtual void   	        MakeData();
     virtual bool   	        ReadData();
+    virtual bool                ReCalculateMeasure();
 };
 
 //*****************************************************************************
