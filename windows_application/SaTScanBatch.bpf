@@ -42,7 +42,8 @@ USEUNIT("..\calculation\analysis\PurelySpatialAnalysis.cpp");
 USEUNIT("..\calculation\analysis\PurelySpatialMonotoneAnalysis.cpp");
 USEUNIT("..\calculation\analysis\PurelyTemporalAnalysis.cpp");
 USEUNIT("..\calculation\Parameters.cpp");
-//---------------------------------------------------------------------------
-This file is used by the project manager only and should be treated like the project file
+USEUNIT("..\calculation\probability_model\SpaceTimePermutationModel.cpp");
+T//---------------------------------------------------------------------------
+his file is used by the project manager only and should be treated like the project file
 
 main
