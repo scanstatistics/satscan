@@ -5,7 +5,9 @@
 #include "SatScan.h"
 #include "JulianDates.h"
 
-#define PARAMETERS 45
+#define PARAMETERS 46
+
+extern const char*      ANALYSIS_HISTORY_FILE;
 
 enum {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE, COORDFILE, OUTPUTFILE, PRECISION,
       DIMENSION, SPECIALGRID, GRIDFILE, GEOSIZE, STARTDATE, ENDDATE,
@@ -16,7 +18,7 @@ enum {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE, COORDFILE, OUTPUTFILE, PRECI
       SEQUENTIAL, SEQNUM, SEQPVAL,
       VALIDATE, OUTPUTRR, ELLIPSES, ESHAPES, ENUMBERS, START_PROSP_SURV,
       OUTPUT_CENSUS_AREAS, OUTPUT_MOST_LIKE_CLUSTERS, CRITERIA_SECOND_CLUSTERS,
-      MAX_TEMPORAL_TYPE,MAX_SPATIAL_TYPE};
+      MAX_TEMPORAL_TYPE,MAX_SPATIAL_TYPE, RUN_HISTORY_FILENAME};
 enum {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE}; //analysis, clusters
 enum {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION};
 enum {ALLCLUSTERS=0, ALIVECLUSTERS};   // Clusers
@@ -33,9 +35,14 @@ enum SpatialSizeType {PERCENTAGEOFMEASURETYPE=0, DISTANCETYPE}; // How Max Tempo
 class CParameters
 {
   private:
-     BasePrint *gpPrintDirection;         /** where to direct 'console' output */
-     bool       gbOutputClusterLevelDBF, gbOutputAreaSpecificDBF;
+      BasePrint *gpPrintDirection;         /** where to direct 'console' output */
+      bool       gbOutputClusterLevelDBF, gbOutputAreaSpecificDBF;
+      ZdString   gsRunHistoryFilename;
 
+      void copy(const CParameters &rhs);
+      void FindDelimiter(char *sString, char cDelimiter);
+      void TrimLeft(char *sString);
+      
   public:
     CParameters(bool bDisplayErrors);
     CParameters(const CParameters &other);
@@ -53,8 +60,7 @@ class CParameters
     int    m_nReplicas;                   /** Number of MonteCarlo replicas. */
 
     bool   m_bPowerCalc;
-    double m_nPower_X;
-    double m_nPower_Y;
+    double m_nPower_X, m_nPower_Y;
 
     // Study dates
     char   m_szStartDate [MAX_STR_LEN];   /** Character start date (YYYY/MM/DD). */
@@ -76,17 +82,13 @@ class CParameters
     double m_nTimeAdjPercent;
 
     // Combined temporal and spatial options (Space-Time analysis only)
-    bool   m_bIncludePurelySpatial;
-    bool   m_bIncludePurelyTemporal;
+    bool   m_bIncludePurelySpatial, m_bIncludePurelyTemporal;
 
     // Data
-    char   m_szCaseFilename [MAX_STR_LEN];
-    char   m_szControlFilename [MAX_STR_LEN];
-    char   m_szPopFilename [MAX_STR_LEN];
-    char   m_szCoordFilename [MAX_STR_LEN];
-    char   m_szGridFilename [MAX_STR_LEN];
+    char   m_szCaseFilename [MAX_STR_LEN], m_szControlFilename [MAX_STR_LEN],
+           m_szPopFilename [MAX_STR_LEN], m_szCoordFilename [MAX_STR_LEN], m_szGridFilename [MAX_STR_LEN];
 
-    bool   m_bSpecialGridFile; 
+    bool   m_bSpecialGridFile;
 
     int    m_nPrecision;                  /** Precision of case data: none, years, mon, days. */
     int    m_nDimension;                  /** Dimensions in geographic data */
@@ -100,8 +102,7 @@ class CParameters
     char   m_szMLClusterFilename[MAX_STR_LEN]; /** most likely cluster for each centroid */
     char   m_szRelRiskFilename[MAX_STR_LEN];   /** relative risk estimates for each census area */
 
-    bool   m_bSaveSimLogLikelihoods;
-    bool   m_bOutputRelRisks;
+    bool   m_bSaveSimLogLikelihoods, m_bOutputRelRisks;
 
    // Sequential Analysis
     bool      m_bSequential;        // Sequential analysis? T/F
@@ -109,11 +110,8 @@ class CParameters
     double    m_nCutOffPVal;        // P-Value used to exit seq analysis
 
     // Internal options
-    bool   m_bExactTimes;
+    bool   m_bExactTimes, m_bValidatePriorToCalc, m_bDisplayErrors;
     int    m_nClusterType;      // Is this used? KR-980606
-
-    bool   m_bValidatePriorToCalc;
-
 
     //int    m_nExtraParam4;
     char     m_szProspStartDate[MAX_STR_LEN]; /** Character Prospective start date (YYYY/MM/DD). */
@@ -121,53 +119,50 @@ class CParameters
     bool     m_bMostLikelyClusters;           /** Output Most Likely Cluster for each Centroid */
     int      m_iCriteriaSecondClusters;       /** Criteria for Reporting Secondary Clusters */
 
-    bool   m_bDisplayErrors;
 
-    const bool&         GetOutputClusterLevelDBF() const;
-    const bool&         GetOutputAreaSpecificDBF() const;
-
-    void                SetOutputClusterLevelDBF(const bool& bOutput);
-    void                SetOutputAreaSpecificDBF(const bool& bOutput);
-
-    void Free();
-
-    int  LoadEAngles(const char* szParam);
-    int  LoadEShapes(const char* szParam);
-    
-    void SetDefaults();
-    void SetDefaultsV2();
-    void SetDefaultsV3();
-    bool SetParameters(const char* szFilename, bool bValidate=true);
-    bool SetParameter(int nParam, const char* szParam);
-    bool SetGISFilename();
-    bool SetLLRFilename();
-    bool SetMLCFilename();
-    bool SetRelRiskFilename();
-
-    bool ValidateParameters();
-    bool ValidateDateString(char* szDate, int nDateType);
-    bool ValidateReplications(int nReps);
-    bool ValidateProspectiveStartDate(char* szProspDate, char *szStartDate, char *szEndDate);
-    bool CheckProspDateRange(int iStartYear, int iStartMonth, int iStartDay,
-                                  int iEndYear, int iEndMonth, int iEndDay,
-                                  int iProspYear, int iProspMonth, int iProspDay);
-
-    bool DisplayParamError(int nLine);
-    void DisplayParameters(FILE* fp);
-    void DisplayAnalysisType(FILE* fp);
-    void DisplayTimeAdjustments(FILE* fp);
-
-    bool SaveParameters(char* szFilename);
-    void SetDisplayParameters(bool bValue);
-    void ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporalSizeType);
 
     //Overloaded operators
-   CParameters &operator= (const CParameters &rhs);
-    void SetPrintDirection(BasePrint *pPrintDirection);
-   private:
-      void copy(const CParameters &rhs);
-      void FindDelimiter(char *sString, char cDelimiter);
-      void TrimLeft(char *sString);
+    CParameters &operator= (const CParameters &rhs);
+    
+
+    bool                CheckProspDateRange(int iStartYear, int iStartMonth, int iStartDay,
+                                            int iEndYear, int iEndMonth, int iEndDay,
+                                            int iProspYear, int iProspMonth, int iProspDay);
+    void                ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporalSizeType);
+    void                DisplayAnalysisType(FILE* fp);
+    bool                DisplayParamError(int nLine);
+    void                DisplayParameters(FILE* fp);
+    void                DisplayTimeAdjustments(FILE* fp);
+
+    void                Free();
+    const bool&         GetOutputClusterLevelDBF() const;
+    const bool&         GetOutputAreaSpecificDBF() const;
+    const ZdString&     GetRunHistoryFilename() const  {return gsRunHistoryFilename;}
+
+    int                 LoadEAngles(const char* szParam);
+    int                 LoadEShapes(const char* szParam);
+    bool                SaveParameters(char* szFilename);
+
+    void                SetDefaults();
+    void                SetDefaultsV2();
+    void                SetDefaultsV3();
+    void                SetDisplayParameters(bool bValue);
+    bool                SetParameters(const char* szFilename, bool bValidate=true);
+    bool                SetParameter(int nParam, const char* szParam);
+    bool                SetGISFilename();
+    bool                SetLLRFilename();
+    bool                SetMLCFilename();
+    void                SetOutputClusterLevelDBF(const bool& bOutput);
+    void                SetOutputAreaSpecificDBF(const bool& bOutput);
+    void                SetPrintDirection(BasePrint *pPrintDirection);
+    bool                SetRelRiskFilename();
+    void                SetRunHistoryFilename(const ZdString& sFilename) {gsRunHistoryFilename = sFilename;}
+
+    bool                ValidateParameters();
+    bool                ValidateDateString(char* szDate, int nDateType);
+    bool                ValidateReplications(int nReps);
+    bool                ValidateProspectiveStartDate(char* szProspDate, char *szStartDate, char *szEndDate);
+
 };
 
 //*****************************************************************************
