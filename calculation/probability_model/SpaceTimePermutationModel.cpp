@@ -249,7 +249,7 @@ bool CSpaceTimePermutationModel::ReCalculateMeasure()
        /* Ensure that TotalCases=TotalMeasure */
        if (fabs(gData.m_nTotalCases - gData.m_nTotalMeasure)>0.0001)
          {
-         string sMessage;
+         std::string sMessage;
          sMessage = "\nError: The total measure is not equal to the total number of cases.";
          sMessage += "\nTotalCases="; sMessage += gData.m_nTotalCases;
          sMessage += ", TotalMeasure="; sMessage += gData.m_nTotalMeasure; sMessage += "\n";
