@@ -12,121 +12,138 @@ CPurelyTemporalAnalysis::CPurelyTemporalAnalysis(CParameters*  pParameters, CSaT
 CPurelyTemporalAnalysis::~CPurelyTemporalAnalysis() {
   try {
     delete gpTopCluster;
+    delete gpClusterData;
+    delete gpMeasureList;
+    delete gpTimeIntervals;
+    delete gpClusterComparator;
   }
   catch (...){}
 }
 
-/** Returns cluster centered at grid point nCenter, with the greatest loglikelihood.
-    Caller is responsible for deleting returned cluster. */
-void CPurelyTemporalAnalysis::CalculateTopCluster(tract_t tCenter, const DataStreamGateway & DataGateway, bool bSimulation) {
-  IncludeClustersType                   eIncludeClustersType;
+/** Allocates objects used during simulations, instead of repeated allocations
+    for each simulation. Which objects that are allocated depends on whether
+    the simluations process uses same process as real data or uses measure list. */
+void CPurelyTemporalAnalysis::AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway) {
+  IncludeClustersType           eIncludeClustersType;
 
   try {
-    // if Prospective Space-Time then Alive Clusters Only.
+    //create new time intervals object - delete existing object used during real data process
+    delete gpTimeIntervals; gpTimeIntervals=0;
     if (m_pParameters->GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)
-      eIncludeClustersType = (bSimulation ? ALLCLUSTERS : ALIVECLUSTERS);
+      eIncludeClustersType = ALLCLUSTERS;
     else
       eIncludeClustersType = m_pParameters->GetIncludeClustersType();
+    gpTimeIntervals = GetNewTimeIntervalsObject(eIncludeClustersType);
 
-    gpTopCluster = new CPurelyTemporalCluster(DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
-    CPurelyTemporalCluster thisCluster(DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
-    
-    thisCluster.SetRate(m_pParameters->GetAreaScanRateType());
-    thisCluster.CompareTopCluster(*gpTopCluster, *m_pData);
+    //create simulation objects based upon which process used to perform simulations
+    if (gbMeasureListReplications) {
+      //create new cluster data object
+      gpClusterData = new TemporalData(DataGateway);
+      //create new measure list object
+      gpMeasureList = GetNewMeasureListObject();
+    }
+    else { //simulations performed using same process as real data set
+      gpTopCluster = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
+      gpClusterComparator = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
+    }
   }
   catch (ZdException &x) {
-    delete gpTopCluster; gpTopCluster=0;
-    x.AddCallpath("CalculateTopCluster()","CPurelyTemporalAnalysis");
+    delete gpClusterData; gpClusterData=0;
+    delete gpMeasureList; gpMeasureList=0;
+    delete gpTimeIntervals; gpTimeIntervals=0;
+    delete gpClusterComparator; gpClusterComparator=0;
+    delete gpTopCluster;gpTopCluster=0;
+    x.AddCallpath("AllocateSimulationObjects()","CPurelyTemporalAnalysis");
     throw;
   }
 }
 
-/** Finds top cluster. */
-bool CPurelyTemporalAnalysis::FindTopClusters() {
-  DataStreamGateway   * pDataStreamGateway=0;
+/** Allocates objects used during calculation of most likely clusters, instead
+    of repeated allocations for each simulation.
+    NOTE: No action taken in this function for this class. Objects are allocated
+          directly in CPurelyTemporalAnalysis::FindTopClusters(). */
+void CPurelyTemporalAnalysis::AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway) {
+  //no action taken for purely temporal analysis
+}
+
+const CCluster & CPurelyTemporalAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway) {
+  ZdGenerateException("CalculateTopCluster() can not be called for CPurelyTemporalAnalysis.","CPurelyTemporalAnalysis");
+  return *gpTopCluster;
+}
+
+/** Calculate most likely, purely temporal, cluster and adds clone
+    of top cluster to top cluster array. */
+bool CPurelyTemporalAnalysis::FindTopClusters(const AbtractDataStreamGateway & DataGateway) {
+  IncludeClustersType           eIncludeClustersType;
+  CTimeIntervals              * pTimeIntervals=0;  
 
   try {
-    gpPrintDirection->SatScanPrintf("Finding the most likely clusters\n");
-    pDataStreamGateway = m_pData->GetDataStreamHandler().GetNewDataGateway();
-    CalculateTopCluster(0, *pDataStreamGateway, false);
-    if (gpTopCluster->ClusterDefined()) {
+    //determine the type of clusters to compare
+    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+      eIncludeClustersType = ALIVECLUSTERS;
+    else
+      eIncludeClustersType = m_pParameters->GetIncludeClustersType();
+    //create cluster objects
+    CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
+    CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
+    //get new time intervals objects
+    pTimeIntervals = GetNewTimeIntervalsObject(eIncludeClustersType);
+    //iterate through time intervals, finding top cluster
+    pTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
+    //if any interesting clusters found, add to top cluster array
+    if (TopCluster.ClusterDefined()) {
       ++m_nClustersRetained;
-      m_pTopClusters[0] = gpTopCluster->Clone();
+      m_pTopClusters[0] = TopCluster.Clone();
       m_pTopClusters[0]->SetStartAndEndDates(m_pData->GetTimeIntervalStartTimes(), m_pData->m_nTimeIntervals);
     }
-    else {
-      gpTopCluster; gpTopCluster=0;
-    }
-    delete pDataStreamGateway; pDataStreamGateway=0;
+    delete pTimeIntervals; pTimeIntervals=0;
   }
   catch (ZdException &x) {
-    delete pDataStreamGateway;
+    delete pTimeIntervals;
     x.AddCallpath("FindTopClusters()","CPurelyTemporalAnalysis");
     throw;
   }
   return true;
 }
 
+/** calculates greatest loglikelihood ratio for a temporal cluster */
+double CPurelyTemporalAnalysis::FindTopRatio(const AbtractDataStreamGateway&) {
+  //re-initialize comparator cluster and top cluster
+  gpClusterComparator->Initialize();
+  gpTopCluster->Initialize();
+  //iterate through time intervals, finding top cluster
+  gpTimeIntervals->CompareClusters(*gpClusterComparator, *gpTopCluster);
+  //return ratio of top cluster
+  return gpTopCluster->m_nRatio;
+}
+
+/** internal initialization */
+void CPurelyTemporalAnalysis::Init() {
+  gpTopCluster=0;
+  gpClusterData=0;
+  gpMeasureList=0;
+  gpTimeIntervals=0;
+  gpClusterComparator=0;
+}
+
 /** Returns loglikelihood for Monte Carlo replication. */
 double CPurelyTemporalAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
-  CMeasureList        * pMeasureList=0;
-  double                dMaxLogLikelihoodRatio;
+  double                        dMaxLogLikelihoodRatio;
 
-  try {
-    CPurelyTemporalCluster C(Interface, m_pParameters->GetIncludeClustersType(), *m_pData, *gpPrintDirection);
-    C.SetRate(m_pParameters->GetAreaScanRateType());
-    switch (m_pParameters->GetAreaScanRateType()) {
-      case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
-                        break;
-      case LOW        : pMeasureList = new CMaxMeasureList(*m_pData, *gpPrintDirection);
-                        break;
-      case HIGHANDLOW : pMeasureList = new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
-                        break;
-      default         : ZdGenerateException("Unknown incidence rate specifier \"%d\".", "MonteCarlo()",
-                                             m_pParameters->GetAreaScanRateType());
-    }
-
-    C.ComputeBestMeasures(*m_pData, *pMeasureList);
-
-    dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
-    delete pMeasureList;
-  }
-  catch (ZdException & x) {
-    delete pMeasureList;
-    x.AddCallpath("MonteCarlo()", "CPurelyTemporalAnalysis");
-    throw;
-  }
-  return dMaxLogLikelihoodRatio;
+  gpClusterData->InitializeData();
+  gpMeasureList->Reset();
+  gpTimeIntervals->CompareMeasures(gpClusterData, gpMeasureList);
+  return gpMeasureList->GetMaximumLogLikelihoodRatio();
 }
 
 /** For purely temporal analysis, prospective monte carlo is the same as monte carlo. */
 double CPurelyTemporalAnalysis::MonteCarloProspective(const DataStreamInterface & Interface) {
-  CMeasureList                * pMeasureList=0;
   double                        dMaxLogLikelihoodRatio;
 
-  try {
-    CPurelyTemporalCluster C(Interface, ALLCLUSTERS, *m_pData, *gpPrintDirection);
-    C.SetRate(m_pParameters->GetAreaScanRateType());
-    switch (m_pParameters->GetAreaScanRateType()) {
-      case HIGH       : pMeasureList = new CMinMeasureList(*m_pData, *gpPrintDirection);
-                        break;
-      case LOW        : pMeasureList = new CMaxMeasureList(*m_pData, *gpPrintDirection);
-                        break;
-      case HIGHANDLOW : pMeasureList = new CMinMaxMeasureList(*m_pData, *gpPrintDirection);
-                        break;
-      default        : ZdGenerateException("Unknown incidence rate specifier \"%d\".", "MonteCarloProspective()",
-                                             m_pParameters->GetAreaScanRateType());
-    }
-
-    C.ComputeBestMeasures(*m_pData, *pMeasureList);
-
-    dMaxLogLikelihoodRatio = pMeasureList->GetMaximumLogLikelihoodRatio();
-    delete pMeasureList;
-  }
-  catch (ZdException & x) {
-    delete pMeasureList;
-    x.AddCallpath("MonteCarloProspective()", "CPurelyTemporalAnalysis");
-    throw;
-  }
-  return dMaxLogLikelihoodRatio;
+  gpClusterData->InitializeData();
+  gpMeasureList->Reset();
+  gpTimeIntervals->CompareMeasures(gpClusterData, gpMeasureList);
+  return gpMeasureList->GetMaximumLogLikelihoodRatio();
 }
+
+

@@ -3,25 +3,32 @@
 #define __PURELYTEMPORALANALYSIS_H
 //*****************************************************************************
 #include "Analysis.h"
-#include "PurelyTemporalCluster.h"
-#include "PurelyTemporalData.h"
 #include "MeasureList.h"
+#include "TimeIntervalRange.h"
+#include "PurelyTemporalData.h"
+#include "PurelyTemporalCluster.h"
 
 class CPurelyTemporalAnalysis : public CAnalysis {
   private:
-    CPurelyTemporalCluster    * gpTopCluster;
+    CPurelyTemporalCluster      * gpTopCluster;
+    CPurelyTemporalCluster      * gpClusterComparator;
+    TemporalData                * gpClusterData;
+    CMeasureList                * gpMeasureList;
+    CTimeIntervals              * gpTimeIntervals;    
 
-    void                        Init() {gpTopCluster=0;}
-    virtual double              MonteCarlo(const DataStreamInterface & Interface);
-    virtual double              MonteCarloProspective(const DataStreamInterface & Interface);
-    void                        SetMaxNumClusters() {m_nMaxClusters = 1;}
+    void                          Init();
+    void                          SetMaxNumClusters() {m_nMaxClusters = 1;}
+    void                          Setup();
 
   protected:
-    virtual void                CalculateTopCluster(tract_t tCenter, const DataStreamGateway & DataGateway, bool bSimulation);
-    virtual bool                FindTopClusters();
-    virtual CCluster          & GetTopCalculatedCluster() {return *gpTopCluster;}
-    virtual void                SetTopClusters(const DataStreamGateway & DataGateway, bool bSimulation) {/*no action*/}
-  
+    virtual void                  AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway);
+    virtual void                  AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway);
+    virtual const CCluster     &  CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway);
+    virtual bool                  FindTopClusters(const AbtractDataStreamGateway & DataGateway);
+    virtual double                FindTopRatio(const AbtractDataStreamGateway & DataGateway);
+    virtual double                MonteCarlo(const DataStreamInterface & Interface);
+    virtual double                MonteCarloProspective(const DataStreamInterface & Interface);
+
   public:
     CPurelyTemporalAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
     virtual ~CPurelyTemporalAnalysis();
