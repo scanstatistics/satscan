@@ -418,10 +418,7 @@ void TfrmAnalysis::CheckReplicas() {
 /** Checks the relationship between a start date and end date.
     Display message box regarding errors when appropriate. Return whether relationship is valid. */
 void TfrmAnalysis::CheckStudyPeriodDatesRange() {
-  ZdString      sErrorMessage;
   ZdDate        StartDate, EndDate;
-  ZdDateFilter  DateFilter("%4y/%02m/%02d");
-  char          FilterBuffer[11];
 
   try {
     CheckDate("study period start date", *edtStudyPeriodStartDateYear, *edtStudyPeriodStartDateMonth,
@@ -433,16 +430,9 @@ void TfrmAnalysis::CheckStudyPeriodDatesRange() {
     GetStudyPeriodEndDate(EndDate);
 
     //check that start date is before end date
-    if (StartDate > EndDate) {
-      DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), StartDate.GetRawDate());
-      sErrorMessage << "The study period start date of " << FilterBuffer;
-      DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), EndDate.GetRawDate());
-      sErrorMessage << " does not occur before study period end date of " << FilterBuffer;
-      sErrorMessage << ".\nPlease review settings.";
-      PageControl1->ActivePage = tbInputFiles;
-      edtStudyPeriodStartDateYear->SetFocus();
-      ZdException::GenerateNotification(sErrorMessage.GetCString(),"CheckStudyPeriodDatesRange()");
-    }
+    if (StartDate > EndDate)
+      ZdException::GenerateNotification("The study period start date can not be greater than the end date.",
+                                        "CheckStudyPeriodDatesRange()");
   }
   catch (ZdException &x) {
     x.AddCallpath("CheckStudyPeriodDatesRange()","TfrmAnalysis");
@@ -1174,7 +1164,8 @@ void TfrmAnalysis::SaveParameterSettings() {
     //Time Parameter Tab
     gParameters.SetTimeAggregationUnitsType(GetTimeAggregationControlType());
     gParameters.SetTimeAggregationLength(atoi(edtTimeAggregationLength->Text.c_str()));
-    gParameters.SetAdjustForEarlierAnalyses(gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked);
+    gParameters.SetAdjustForEarlierAnalyses(gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Enabled &&
+                                            gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked);
     if (gpfrmAdvancedParameters->gbxProspectiveSurveillance->Enabled && !gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked)
       sString.printf("%i/%i/%i", atoi(edtStudyPeriodEndDateYear->Text.c_str()),
                      atoi(edtStudyPeriodEndDateMonth->Text.c_str()), atoi(edtStudyPeriodEndDateDay->Text.c_str()));
