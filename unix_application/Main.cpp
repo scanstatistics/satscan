@@ -12,6 +12,7 @@
 #include "PrintScreen.h"
 #include "DBFFile.h"
 #include "AnalysisRun.h"
+#include "ParameterFileAccess.h"
 
 int main(int argc, char *argv[]) {
   int                   i;
@@ -28,8 +29,8 @@ int main(int argc, char *argv[]) {
     if (argc < 2)
       GenerateUsageException(argv[0]);
     time(&RunTime); //get start time
-    Parameters.Read(argv[1], ConsolePrint);
-    if (Parameters.GetErrorOnRead()) {
+
+    if (ParameterAccessCoordinator(Parameters).Read(argv[1], ConsolePrint)) {
       sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
       GenerateResolvableException(sMessage.GetCString(),"main(int,char*)");

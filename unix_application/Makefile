@@ -157,6 +157,10 @@ SRC         := Main.cpp \
 	       $(CALCULATION)/Parameters.cpp \
 	       $(CALCULATION)/SaTScanBasis.cpp \
 	       $(CALCULATION)/Toolkit.cpp \
+	       $(CALCULATION)/ParameterFileAccess.cpp \
+	       $(CALCULATION)/ScanLineParameterFileAccess.cpp \
+	       $(CALCULATION)/IniParameterSpecification.cpp \
+	       $(CALCULATION)/IniParameterFileAccess.cpp \
 	       $(BOOSTDIR)/libs/thread/src/xtime.cpp \
 	       $(BOOSTDIR)/libs/thread/src/exceptions.cpp \
 	       $(BOOSTDIR)/libs/thread/src/mutex.cpp \
