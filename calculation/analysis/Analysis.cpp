@@ -212,18 +212,21 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
    char *szTID;
    float fExpectedCases, fRelativeRisk, fPVal;
    char sStartDate[15], sEndDate[15];
-   auto_ptr<stsClusterLevelDBF> pDBFClusterReport;
+   auto_ptr<stsClusterLevelDBF> pDBFClusterReport;    // dbf cluster report
 
    try {
       if (m_pParameters->m_bMostLikelyClusters)
          OpenGridOutputFile(fpMCL, "w");
       if(m_pParameters->GetOutputClusterLevelDBF())
          pDBFClusterReport.reset(new stsClusterLevelDBF(lReportHistoryRunNumber, GetCoordinateType(),
-                                                        m_pParameters->m_szOutputFilename, m_pParameters->m_nDimension,
+                                                        m_pParameters->m_szOutputFilename,
+                                                        m_pParameters->m_nModel,
+                                                        m_pParameters->m_nDimension,
                                                         m_pParameters->m_nReplicas > 99,
                                                         m_pParameters->m_nNumEllipses > 0));
 
       for (int i = 0; i < m_nClustersRetained; ++i) {
+         // print out user notification every 20 recorded clusters to let user know program is still working - AJV 10/3/2002
          if((i%20) == 0)
                gpPrintDirection->SatScanPrintf("%i out of %i records recorded to cluster file so far...", i, m_nClustersRetained);
       	 if (m_pParameters->m_bMostLikelyClusters) {
@@ -403,7 +406,7 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
 
 void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lReportHistoryRunNumber, FILE* fp, FILE* fpGIS) {
    double       dSignifRatio05 = 0.0;
-   auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;
+   auto_ptr<stsAreaSpecificDBF> pDBFAreaReport;     // area specific dbf report gets set and sent into each cluster for reporting - AJV 10/3/2002
 
    try {
       m_nClustersReported = 0;
@@ -416,6 +419,7 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
       dSignifRatio05 = SimRatios.GetAlpha05();
 
       for (tract_t i=0; i<m_nClustersRetained; ++i) {
+        // print out user notification for every 15th cluster recorded so user knows program is still working - AJV 10/3/2002
         if((i%15)== 0)
              gpPrintDirection->SatScanPrintf("%i out of %i clusters recorded so far...", i, m_nClustersRetained);
 
@@ -434,7 +438,7 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
           if(m_pTopClusters[i]->m_nLogLikelihood >= dSignifRatio05)
              ++guwSignificantAt005;
           
-          // if doing dBase output, set the report pointer
+          // if doing dBase output, set the report pointer - not the most effective way to do this, but the least intrusive - AJV
           if(m_pParameters->GetOutputAreaSpecificDBF())
              m_pTopClusters[i]->SetAreaReport(pDBFAreaReport.get());
 
