@@ -3788,7 +3788,7 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
       if (!(geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Spatial adjustment by stratified randomization is valid for\n"
-                                           "       either retrospective or prospectove space-time analyses only.\n");
+                                           "       either retrospective or prospective space-time analyses only.\n");
       }
       if (geTimeTrendAdjustType == STRATIFIED_RANDOMIZATION) {
         bValid = false;
