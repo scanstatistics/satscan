@@ -356,7 +356,7 @@ void AnalysisRunner::Execute() {
       UpdateReport();
       //log history for first analysis run
       if (giAnalysisCount == 1) {
-        gPrintDirection.SatScanPrintf("Logging run history...");
+        gPrintDirection.SatScanPrintf("Logging run history...\n");
         stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
       }
       //report additional output file: 'cluster information'
