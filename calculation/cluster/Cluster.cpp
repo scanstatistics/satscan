@@ -375,8 +375,8 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
                                   char cDeliminator, char* szSpacesOnLeft)
 {
    double *pCoords = 0, *pCoords2 = 0;
-   float nRadius;
-   float Latitude, Longitude;
+   double nRadius;
+   double Latitude, Longitude;
    char  cNorthSouth, cEastWest;
 
    try
@@ -384,7 +384,7 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
       (Data.GetGInfo())->giGetCoords(m_Center, &pCoords);
       (Data.GetTInfo())->tiGetCoords(Data.GetNeighbor(0, m_Center, m_nTracts), &pCoords2);
 
-      nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
+      nRadius = sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
 
       ConvertToLatLong(&Latitude, &Longitude, pCoords);
 
@@ -395,7 +395,7 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
     //               fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
 
       // use to be .3f
-      fprintf(fp, "%sCoordinates / radius..: (%.6f %c, %.6f %c) / %5.2f km\n",
+      fprintf(fp, "%sCoordinates / radius..: (%.6lf %c, %.6lf %c) / %5.2lf km\n",
                    szSpacesOnLeft, fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, nRadius);
 
       free(pCoords);
@@ -678,8 +678,8 @@ void CCluster::WriteCoordinates(FILE* fp, CSaTScanData* pData)
 void CCluster::WriteLatLongCoords(FILE* fp, CSaTScanData* pData)
 {
    double *pCoords = 0, *pCoords2 = 0;
-   float nRadius;
-   float Latitude, Longitude;
+   double nRadius;
+   double Latitude, Longitude;
    //char  cNorthSouth, cEastWest;
 
    try
@@ -687,14 +687,14 @@ void CCluster::WriteLatLongCoords(FILE* fp, CSaTScanData* pData)
       (pData->GetGInfo())->giGetCoords(m_Center, &pCoords);
       (pData->GetTInfo())->tiGetCoords(pData->GetNeighbor(0, m_Center, m_nTracts), &pCoords2);
 
-      nRadius = (float)sqrt((pData->GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
+      nRadius = sqrt((pData->GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
 
       ConvertToLatLong(&Latitude, &Longitude, pCoords);
 
      // Latitude >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
      // Longitude >= 0 ? cEastWest = 'E' : cEastWest = 'W';
 
-      fprintf(fp, " %lf %lf %5.2f", Latitude, Longitude, nRadius);
+      fprintf(fp, " %lf %lf %5.2lf", Latitude, Longitude, nRadius);
 
       // use to be .3f
       //fprintf(fp, " %.6f %c, %.6f %c) / %5.2f\n",

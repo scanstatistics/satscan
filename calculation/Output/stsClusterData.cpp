@@ -309,7 +309,7 @@ void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, Z
                                     const CCluster& pCluster, const CSaTScanData& pData) {
   int          i;
   double     * pCoords=0, * pCoords2=0;
-  float        fLatitude, fLongitude, fRadius;
+  double       fLatitude, fLongitude, fRadius;
   char         sAdditBuffer[64], sRadBuffer[64];
 
    try {
@@ -327,11 +327,11 @@ void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, Z
        switch (giCoordType) {
          case CARTESIAN : for (i=0; i < pData.GetParameters().GetDimensionsOfData(); ++i) {
                              if (i == 0)
-                               sLatitude.printf("%12.2f", pCoords[i]);
+                               sLatitude.printf("%12.2lf", pCoords[i]);
                              else if (i == 1)
-                               sLongitude.printf("%12.2f", pCoords[i]);
+                               sLongitude.printf("%12.2lf", pCoords[i]);
                              else  {
-                               sprintf(sAdditBuffer, "%12.2f", pCoords[i]);
+                               sprintf(sAdditBuffer, "%12.2lf", pCoords[i]);
                                vAdditCoords.push_back(sAdditBuffer);
                              }
                           }
@@ -342,8 +342,8 @@ void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, Z
                           break;
          default : ZdGenerateException("Unknown coordinate type '%d'.","SetCoordinates()", giCoordType);
        }
-       fRadius = (float)sqrt((pData.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
-       sRadius.printf("%5.2f", fRadius);
+       fRadius = sqrt((pData.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
+       sRadius.printf("%5.2lf", fRadius);
        free(pCoords);
        free(pCoords2);
      }
