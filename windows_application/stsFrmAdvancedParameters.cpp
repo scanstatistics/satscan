@@ -1143,9 +1143,32 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
   bool          bFound=false;
   int           i;
 
+  for (i=0; i < PageControl->PageCount && !bFound; ++i) {
+     if (PageControl->Pages[i]->ContainsControl(pFocusControl)) {
+       PageControl->ActivePage = PageControl->Pages[i];
+       gpFocusControl = pFocusControl;
+       bFound=true;
+     }
+  }
+
+  if (!bFound) {
+    gpFocusControl=0;
+    PageControl->ActivePage = PageControl->FindNextPage(0, true, true);// PAG - find first visible page
+  }
   // PAG - not the best coding here but am trying to show/hide only
   // certain pages/tabs of page control
+  if (iCategory < 0) {     // as in error - Advanced Exception
+     switch (PageControl->ActivePageIndex) {
+        case 0: iCategory = INPUT_TABS; break;
+        case 1:
+        case 2:
+        case 3:
+        case 4: iCategory = ANALYSIS_TABS; break;
+        case 5: iCategory = OUTPUT_TABS; break;
+     }
+  }
   giCategory = iCategory;
+
   switch (iCategory){
      case INPUT_TABS:       // show Input page
         Caption = "Advanced Input Features";
@@ -1175,19 +1198,6 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
         break;
   }
 
-  for (i=0; i < PageControl->PageCount && !bFound; ++i) {
-     if (PageControl->Pages[i]->ContainsControl(pFocusControl)) {
-       PageControl->ActivePage = PageControl->Pages[i];
-       gpFocusControl = pFocusControl;
-       bFound=true;
-     }
-  }
-
-  if (!bFound) {
-    gpFocusControl=0;
-    // PAG - find first visible page
-    PageControl->ActivePage = PageControl->FindNextPage(0, true, true);
-  }
   //reporting clusters text dependent on maximum spatial cluster size
   //-- ensure that it has text
   if (!edtMaxSpatialClusterSize->Text.Length())

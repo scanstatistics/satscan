@@ -220,7 +220,7 @@ public:
    void                  SetReportingSmallerClustersText();
    void                  SetSpatialDistanceCaption();
    void                  SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
-   void                  ShowDialog(TWinControl * pFocusControl=0, int iCategory=ANALYSIS_TABS);
+   void                  ShowDialog(TWinControl * pFocusControl=0, int iCategory=-1);
    void                  Validate();
    void                  ValidateAdjustmentSettings();
    void                  ValidateOutputSettings();
