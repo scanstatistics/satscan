@@ -114,7 +114,7 @@ class CSaTScanData {
     const DataStreamHandler                   & GetDataStreamHandler() const {return *gpDataStreams;}
     inline const GInfo                        * GetGInfo() const { return gpGInfo;}
     double                                      GetMaxCircleSize() {return m_nMaxCircleSize;}
-    double                                      GetMeasureAdjustment() const;
+    double                                      GetMeasureAdjustment(unsigned int iStream) const;
 
     inline virtual tract_t                      GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
 

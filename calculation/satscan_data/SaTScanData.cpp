@@ -334,14 +334,12 @@ count_t CSaTScanData::GetCaseCount(count_t ** ppCumulativeCases, int iInterval, 
     return ppCumulativeCases[iInterval][tTract] - ppCumulativeCases[iInterval + 1][tTract];
 }
 
-//Measure Adjustment used when calculating relative risk/expected counts
-//to disply in report file.
-double CSaTScanData::GetMeasureAdjustment() const {
+/** For Bernoulli model, returns ratio of total cases / total population for
+    iStream'th data stream. For all other models, returns 1.*/
+double CSaTScanData::GetMeasureAdjustment(unsigned int iStream) const {
   if (m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
-    //NOTE: This function is hard code to report only the measure adjustment
-    //      based upon data from first data stream, at least for the time being.
-    double dTotalCases = gpDataStreams->GetStream(0).GetTotalCases();
-    double dTotalPopulation = gpDataStreams->GetStream(0).GetTotalPopulation();
+    double dTotalCases = gpDataStreams->GetStream(iStream).GetTotalCases();
+    double dTotalPopulation = gpDataStreams->GetStream(iStream).GetTotalPopulation();
     return dTotalCases / dTotalPopulation;
   }
   else
