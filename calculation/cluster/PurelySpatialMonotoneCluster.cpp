@@ -8,7 +8,7 @@
 CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory,
                                        const AbtractDataStreamGateway & DataGateway,
                                        int iRate)
-                   :CPurelySpatialCluster(pClusterFactory, DataGateway, iRate) {
+                   :CCluster() {
   m_nMaxCircles        = 0;
   m_pCasesList         = NULL;
   m_pMeasureList       = NULL;
@@ -20,7 +20,7 @@ CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClust
 CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory,
                                        const DataStreamInterface & Interface,
                                        int iRate)
-                   :CPurelySpatialCluster(pClusterFactory, Interface, iRate) {
+                   :CCluster() {
   m_nMaxCircles        = 0;
   m_pCasesList         = NULL;
   m_pMeasureList       = NULL;
@@ -29,7 +29,7 @@ CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClust
 
   Initialize(0);
 }
-CPSMonotoneCluster::CPSMonotoneCluster(const CPSMonotoneCluster& rhs) : CPurelySpatialCluster(rhs){
+CPSMonotoneCluster::CPSMonotoneCluster(const CPSMonotoneCluster& rhs) : CCluster(rhs){
   m_nMaxCircles        = 0;
   m_pCasesList         = NULL;
   m_pMeasureList       = NULL;
@@ -39,8 +39,7 @@ CPSMonotoneCluster::CPSMonotoneCluster(const CPSMonotoneCluster& rhs) : CPurelyS
   *this = rhs;
 }
 
-CPSMonotoneCluster::~CPSMonotoneCluster()
-{
+CPSMonotoneCluster::~CPSMonotoneCluster() {
   if (m_pCasesList != NULL)
     free(m_pCasesList);
   if (m_pMeasureList != NULL)
@@ -68,6 +67,10 @@ void CPSMonotoneCluster::Initialize(tract_t nCenter=0) {
   CCluster::Initialize(nCenter);
   m_bRatioSet = false;
   m_nLastInterval = 1;
+  m_nCases = 0;
+  m_nMeasure = 0;
+  m_nLogLikelihood = 0;
+  m_nSteps = 0;
   for (int i=0; i<m_nMaxCircles; i++) {
      m_pCasesList[i]         = 0;
      m_pMeasureList[i]       = 0;
@@ -327,9 +330,9 @@ void CPSMonotoneCluster::DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataH
     if (m_nSteps == 1)
       return;
     PrintFormat.PrintSectionLabel(fp, "Relative risk by step", false, true);
-    sBuffer.printf("%.3f", GetRelativeRisk(0, DataHub.GetMeasureAdjustment()));
+    sBuffer.printf("%.3f", GetRelativeRisk(0, DataHub.GetMeasureAdjustment(0)));
     for (i=1; i < m_nSteps; ++i) {
-       sWork.printf(", %.3f", GetRelativeRisk(i, DataHub.GetMeasureAdjustment()));
+       sWork.printf(", %.3f", GetRelativeRisk(i, DataHub.GetMeasureAdjustment(0)));
        sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
@@ -422,13 +425,15 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
 
 void CPSMonotoneCluster::Write(stsAreaSpecificData& AreaData, const CSaTScanData& Data,
                      unsigned int iClusterNumber, unsigned int iNumSimsCompleted) const {
-  tract_t       tTract;
+  tract_t       t, tTract;
   int           i;
 
-  try {         
-    for (i=m_pFirstNeighborList[i]; i <= m_pLastNeighborList[i]; i++) {
-       tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, i);
-       AreaData.RecordClusterData(*this, Data, iClusterNumber, tTract, iNumSimsCompleted);
+  try {
+    for (i=0; i < m_nSteps; ++i) {
+       for (t=m_pFirstNeighborList[i]; t <= m_pLastNeighborList[i]; t++) {
+         tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, t);
+         AreaData.RecordClusterData(*this, Data, iClusterNumber, tTract, iNumSimsCompleted);
+       }  
     }   
   }
   catch (ZdException &x) {
@@ -437,5 +442,23 @@ void CPSMonotoneCluster::Write(stsAreaSpecificData& AreaData, const CSaTScanData
   }
 }
 
+/** returns the number of cases for tract as defined by cluster */
+count_t CPSMonotoneCluster::GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
+  return Data.GetDataStreamHandler().GetStream(iStream).GetCaseArray()[0][tTract];
+}
 
+/** Returns the measure for tract as defined by cluster. */
+measure_t CPSMonotoneCluster::GetMeasureForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream) const {
+  return Data.GetMeasureAdjustment(iStream) * Data.GetDataStreamHandler().GetStream(iStream).GetMeasureArray()[0][tTract];
+}
+
+/** returns end date of defined cluster as formated string */
+ZdString& CPSMonotoneCluster::GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1);
+}
+
+/** returns start date of defined cluster as formated string */
+ZdString& CPSMonotoneCluster::GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[0]);
+}
 
