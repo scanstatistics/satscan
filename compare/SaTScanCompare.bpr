@@ -22,7 +22,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED"/>
+    <USERDEFINES value="INTEL_BASED;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="SaTScanCompare.cpp"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl;\\Nfse\imsdev\zd;$(BCB)\TopGrid"/>
@@ -30,11 +30,12 @@
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -X- -a8 -5 -b- -k- -vi -c -tW -tWM"/>
-    <PFLAGS value="-$Y- -$L- -$D- -v -JPHNE -M"/>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl50.csm -Hc -Q -Vx -Ve -X- -r- -a8 -5 -b- -k -y -v 
+      -vi- -c -tW -tWM"/>
+    <PFLAGS value="-$Y+ -$W -$O- -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zn"/>
-    <LFLAGS value="-D&quot;&quot; -aa -Tpe -x -Gn"/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-D&quot;&quot; -aa -Tpe -x -Gn -v"/>
   </OPTIONS>
   <LINKER>
     <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
@@ -103,8 +104,8 @@ Item1=$(BCB)\source\vcl;Z:\zd540
 
 [HistoryLists\hlConditionals]
 Count=4
-Item0=INTEL_BASED
-Item1=INTEL_BASED;_DEBUG
+Item0=INTEL_BASED;_DEBUG
+Item1=INTEL_BASED
 Item2=_DEBUG;INTEL_BASED
 Item3=_DEBUG
 
