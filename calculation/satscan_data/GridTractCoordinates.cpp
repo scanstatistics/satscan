@@ -95,7 +95,7 @@ int GInfo::giInsertGnode(const char *gid, std::vector<double>& vCoordinates)
 /**********************************************************************
  Returns the number of tracts observed
  **********************************************************************/
-int GInfo::giGetNumDimensions()
+int GInfo::giGetNumDimensions() const
 {
    return nDimensions;
 }

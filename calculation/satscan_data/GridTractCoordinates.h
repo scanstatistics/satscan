@@ -38,7 +38,7 @@ tract_t giGetTractNum(const char *gid);
 char*   giGetGid(tract_t t) const;
 void    giGetCoords(tract_t t, double** pCoords) const ;
 void    giGetCoords2(tract_t t, double* pCoord) const ;
-int     giGetNumDimensions();
+int     giGetNumDimensions() const;
 
 /* Display Routines */
 void giDisplayGridTractInfo();
