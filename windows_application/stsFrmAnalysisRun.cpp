@@ -65,8 +65,8 @@ void TfrmAnalysisRun::EnableActions(bool bEnable) {
 }
 
 /** triggers TForm::Close() -- if bForce is true, the thread is forced to terminate */
-void TfrmAnalysisRun::CloseForm(bool bForce) {
-  if (bForce) ForceThreadTermination();
+void TfrmAnalysisRun::ForceClose() {
+  ForceThreadTermination();
   Close();
 }
 

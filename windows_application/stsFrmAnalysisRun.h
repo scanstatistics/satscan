@@ -58,7 +58,7 @@ class TfrmAnalysisRun : public stsBaseAnalysisChildForm  {
                                        stsOutputFileRegister & Registry, TActionList* theList);
     virtual __fastcall ~TfrmAnalysisRun();
 
-    virtual void                CloseForm(bool bForce=false);
+    virtual void                ForceClose();
     bool                        GetCanClose() const {return gbCanClose;}
     void                        LaunchThread();
     void                        Print();
