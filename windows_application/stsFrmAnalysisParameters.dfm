@@ -25,7 +25,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 2
     Width = 489
     Height = 321
-    ActivePage = tbInputFiles
+    ActivePage = tbTimeParameter
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -534,11 +534,11 @@ object frmAnalysis: TfrmAnalysis
           Caption = 'Start Date of Prospective Surveillance:'
         end
         object lblAdjustForEarlierAnalyses: TLabel
-          Left = 52
+          Left = 36
           Top = 30
-          Width = 119
+          Width = 200
           Height = 13
-          Caption = 'Adjust for earlier analyses'
+          Caption = 'Adjust for earlier analyses performed since:'
         end
         object edtProspectiveStartDateYear: TEdit
           Left = 52
@@ -577,7 +577,7 @@ object frmAnalysis: TfrmAnalysis
           OnKeyPress = NaturalNumberKeyPress
         end
         object chkAdjustForEarlierAnalyses: TCheckBox
-          Left = 30
+          Left = 14
           Top = 28
           Width = 15
           Height = 17
