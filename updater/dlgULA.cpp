@@ -68,6 +68,7 @@ void __fastcall TssDlgULA::pnlULAAndExplanatoryTextResize(
     rdtULA->Height = rdtULA->Height - iHeightChange;
   }
 }
+#pragma option -w-8010
 //---------------------------------------------------------------------------
 //To create the following string:
 //1. Take the original file and export it to "rtf".
