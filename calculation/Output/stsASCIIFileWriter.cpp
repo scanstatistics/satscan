@@ -1,33 +1,34 @@
-// Adam J Vaughn
-// November 2002
-//
-// This class object is used to print out an OutputFileData type in ASCII format.
-
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-
+//***************************************************************************
 #include "stsASCIIFileWriter.h"
 
-const char *	ASCII_FILE_EXT		= ".txt";
+const char * ASCIIFileWriter::ASCII_FILE_EXT		= ".txt";
 
 // constructor
-ASCIIFileWriter::ASCIIFileWriter(BaseOutputStorageClass* pOutputFileData, const bool bAppend)
-                 : OutputFileWriter(pOutputFileData, bAppend) {
-   try {
-      Setup();
-   }
-   catch (ZdException &x) {
-      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning(x.GetErrorMessage());
-      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning("\nWarning - Unable to create ASCII output file.\n");
-   }
+ASCIIFileWriter::ASCIIFileWriter(BaseOutputStorageClass& OutputFileData, BasePrint& PrintDirection,
+                                 const CParameters& Parameters, bool bAppend)
+                 : OutputFileWriter(OutputFileData, PrintDirection) {
+  try {
+    Setup(Parameters, bAppend);
+    Print();
+  }
+  catch (ZdException &x) {
+    gPrintDirection.SatScanPrintWarning(x.GetErrorMessage());
+    gPrintDirection.SatScanPrintWarning("\nWarning - Unable to create ASCII output file.\n");
+  }
 }
+
+/** class destructor */
+ASCIIFileWriter::~ASCIIFileWriter() {}
 
 // creates a blank string of the length of the specified field
 // pre: 0 <= iFieldNumber < vFields.size()
 // post: sFormatString conatins field length number of spaces
 void ASCIIFileWriter::CreateBlankString(ZdString& sFormatString, int iFieldNumber) {
    try {
-      ZdField* pField = gpOutputFileData->GetField(iFieldNumber);
+      const ZdField* pField = gOutputFileData.GetField(iFieldNumber);
 
       for(int i = 0; i < pField->GetLength(); ++i)
          sFormatString << " ";
@@ -45,11 +46,11 @@ void ASCIIFileWriter::CreateBlankString(ZdString& sFormatString, int iFieldNumbe
 void ASCIIFileWriter::CreateFormatString(ZdString& sValue, const int iFieldNumber, const ZdFieldValue& fv) {
    ZdString             sFormat, sTemp;
    unsigned long        ulStringLength = 0;
-   ZdField*             pField = 0;
+   const ZdField      * pField = 0;
 
    try {
       sFormat << "%";
-      pField = gpOutputFileData->GetField(iFieldNumber);
+      pField = gOutputFileData.GetField(iFieldNumber);
 
       switch(fv.GetType()) {
          case ZD_ALPHA_FLD :
@@ -93,18 +94,18 @@ void ASCIIFileWriter::CreateOutputFile() {
 // dBase file      
 void ASCIIFileWriter::Print() {
    ZdString             sFormatString;
-   BaseOutputRecord*    pRecord = 0;
+   const OutputRecord * pRecord = 0;
    FILE*                pFile = 0;
 
    try {
       if ((pFile = fopen(gsFileName, "a")) == NULL)
          ZdGenerateException("Unable to open/create file %s", "Error!", gsFileName.GetCString());
-      for(unsigned long i = 0; i < gpOutputFileData->GetNumRecords(); ++i) {
-         pRecord = gpOutputFileData->GetRecord(i);
-         for(unsigned short j = 0; j < pRecord->GetNumFields(); ++j) {
+      for(unsigned int i = 0; i < gOutputFileData.GetNumRecords(); ++i) {
+         pRecord = gOutputFileData.GetRecord(i);
+         for(unsigned int j = 0; j < pRecord->GetNumFields(); ++j) {
             sFormatString << ZdString::reset;
             if (!pRecord->GetFieldIsBlank(j))
-               CreateFormatString(sFormatString, j, pRecord->GetValue(j));
+               CreateFormatString(sFormatString, j, pRecord->GetFieldValue(j));
             else
                CreateBlankString(sFormatString, j);
             fprintf(pFile, "%s ", sFormatString.GetCString());
@@ -115,17 +116,16 @@ void ASCIIFileWriter::Print() {
    }
    catch (ZdException &x) {
       fclose(pFile);
-      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning(x.GetErrorMessage());
-      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning("\nWarning - Unable to write record to ASCII file: %s.\n", gsFileName.GetCString());
+      gPrintDirection.SatScanPrintWarning(x.GetErrorMessage());
+      gPrintDirection.SatScanPrintWarning("\nWarning - Unable to write record to ASCII file: %s.\n", gsFileName.GetCString());
    }
 }
 
 // setup
-void ASCIIFileWriter::Setup() {
-   gsFileName = gpOutputFileData->GetFileName();
-   gsFileName << ASCII_FILE_EXT;
-   if(!gbAppend)
-      CreateOutputFile();
+void ASCIIFileWriter::Setup(const CParameters& Parameters, bool bAppend) {
+   SetOutputFileName(Parameters.GetOutputFileName().c_str(), ASCII_FILE_EXT);
+   if (!bAppend)
+     CreateOutputFile();
 }
 
    

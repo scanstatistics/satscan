@@ -1,25 +1,23 @@
-// Adam J Vaughn
-// November 2002
-//
-// This class object is used to print out an OutputFileData type in dBase format.
-
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-
+//***************************************************************************
 #include "stsDBaseFileWriter.h"
 #include <DBFFile.h>
 
-const char * 	DBASE_FILE_EXT	= ".dbf";
+const char * DBaseFileWriter::DBASE_FILE_EXT    = ".dbf";
 
-DBaseFileWriter::DBaseFileWriter(BaseOutputStorageClass* pOutputFileData, const bool bAppend)
-                 : OutputFileWriter(pOutputFileData, bAppend) {
-   try {
-      Setup();
-   }
-   catch (ZdException &x) {
-      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning(x.GetErrorMessage());
-      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning("\nWarning - Unable to create dBase output file.\n");
-   }
+DBaseFileWriter::DBaseFileWriter(BaseOutputStorageClass& OutputFileData, BasePrint& PrintDirection,
+                                 const CParameters& Parameters, bool bAppend)
+                :OutputFileWriter(OutputFileData, PrintDirection) {
+  try {
+    Setup(Parameters, bAppend);
+    Print();
+  }
+  catch (ZdException &x) {
+    gPrintDirection.SatScanPrintWarning(x.GetErrorMessage());
+    gPrintDirection.SatScanPrintWarning("\nWarning - Unable to create dBase output file.\n");
+  }
 }
 
 // creates the dBase file with the appropraite fields, if the file already exists it
@@ -31,7 +29,7 @@ void DBaseFileWriter::CreateOutputFile() {
       if (ZdIO::Exists(gsFileName))
          ZdIO::Delete(gsFileName);
       DBFFile file;
-      ZdVector<ZdField*> vFields(gpOutputFileData->GetFields());
+      ZdVector<ZdField*> vFields(gOutputFileData.GetFields());
       file.PackFields(vFields);
       file.Create(gsFileName, vFields);
       file.Close();
@@ -47,18 +45,18 @@ void DBaseFileWriter::CreateOutputFile() {
 void DBaseFileWriter::Print() {
    std::auto_ptr<DBFRecord>	pDBaseRecord;
    std::auto_ptr<DBFFile>       pFile;
-   ZdTransaction*               pTransaction = 0;
-   BaseOutputRecord*            pRecord = 0;
+   ZdTransaction              * pTransaction = 0;
+   const OutputRecord         * pRecord = 0;
 
    try {
       pFile.reset(new DBFFile(gsFileName.GetCString()));
       pTransaction = pFile->BeginTransaction();
-      for(unsigned long i = 0; i < gpOutputFileData->GetNumRecords(); ++i) {
-         pRecord = gpOutputFileData->GetRecord(i);
+      for(unsigned int i = 0; i < gOutputFileData.GetNumRecords(); ++i) {
+         pRecord = gOutputFileData.GetRecord(i);
          pDBaseRecord.reset(pFile->GetNewRecord());
-         for (unsigned short j = 0; j < pRecord->GetNumFields(); ++j) {
+         for (unsigned int j = 0; j < pRecord->GetNumFields(); ++j) {
             if (!pRecord->GetFieldIsBlank(j))
-               pDBaseRecord->PutFieldValue(j, pRecord->GetValue(j));
+               pDBaseRecord->PutFieldValue(j, pRecord->GetFieldValue(j));
             else
                pDBaseRecord->PutBlank(j);
          }
@@ -71,15 +69,14 @@ void DBaseFileWriter::Print() {
    catch (ZdException &x) {
       if (pTransaction)
          pFile->EndTransaction(pTransaction);
-      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning(x.GetErrorMessage());
-      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning("\nWarning - Unable to write record to dBase file %s.\n", gsFileName.GetCString());
+      gPrintDirection.SatScanPrintWarning(x.GetErrorMessage());
+      gPrintDirection.SatScanPrintWarning("\nWarning - Unable to write record to dBase file %s.\n", gsFileName.GetCString());
    }
 }
 
 // setup
-void DBaseFileWriter::Setup() {
-   gsFileName = gpOutputFileData->GetFileName();
-   gsFileName << DBASE_FILE_EXT;
-   if(!gbAppend)
-      CreateOutputFile();
+void DBaseFileWriter::Setup(const CParameters& Parameters, bool bAppend) {
+   SetOutputFileName(Parameters.GetOutputFileName().c_str(), DBASE_FILE_EXT);
+   if (!bAppend)
+     CreateOutputFile();
 }
