@@ -336,4 +336,5 @@ void TestOutputClass::SetTestValues(const ZdString& sStringTestValue, const long
       gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
       gpPrintDirection->SatScanPrintWarning("Warning - ERROR encountered adding test record in Test output data class.\n");
    }   		
-}                                    		
+}
+                                  		
