@@ -67,6 +67,11 @@ USEUNIT("..\calculation\Output\stsAreaSpecificDBF.cpp");
 USEUNIT("..\calculation\Output\stsClusterLevelDBF.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
 USEUNIT("..\calculation\Output\stsOutputDBF.cpp");
+USEUNIT("..\calculation\Output\stsRelativeRisk.cpp");
+USEUNIT("..\calculation\Output\stsClusterData.cpp");
+USEUNIT("..\calculation\Output\stsLogLikelihood.cpp");
+USEUNIT("..\calculation\Output\stsOutputFileData.cpp");
+USEUNIT("..\calculation\Output\stsAreaSpecificData.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         try {
@@ -79,7 +84,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
            BasisGetToolkit().SetErrorReportDestination(TECH_EMAIL);
            Application->HelpFile = "";
            Application->CreateForm(__classid(TfrmMainForm), &frmMainForm);
-           Application->Run();
+                 Application->Run();
            BasisExit();
         }
         catch (ZdException &x) {
