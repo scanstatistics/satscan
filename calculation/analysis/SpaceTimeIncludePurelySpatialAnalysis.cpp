@@ -155,7 +155,10 @@ void C_ST_PS_Analysis::Init() {
 /** Returns loglikelihood for Monte Carlo replication. */
 double C_ST_PS_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
   double                        dMaxLogLikelihoodRatio;
-  tract_t                       k, i, j, iNumNeighbors;
+  tract_t                       k, i;
+
+  if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+    return MonteCarloProspective(Interface);
 
   gpMeasureList->Reset();
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.

@@ -18,7 +18,7 @@ class C_ST_PS_PT_Analysis : public C_ST_PS_Analysis {
     virtual bool                FindTopClusters(const AbtractDataStreamGateway & DataGateway);
     virtual double              FindTopRatio(const AbtractDataStreamGateway & DataGateway);
     virtual double              MonteCarlo(const DataStreamInterface & Interface);
-    virtual double              MonteCarloProspective(const DataStreamInterface & Interface);
+    double                      MonteCarloProspective(const DataStreamInterface & Interface);
 
   public:
     C_ST_PS_PT_Analysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);

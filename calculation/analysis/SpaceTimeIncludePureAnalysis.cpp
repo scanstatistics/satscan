@@ -112,8 +112,11 @@ void C_ST_PS_PT_Analysis::Init() {
 /** Returns loglikelihood for Monte Carlo replication. */
 double C_ST_PS_PT_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
   double                        dMaxLogLikelihoodRatio;
-  tract_t                       k, i, j, iNumNeighbors;
+  tract_t                       k, i;
 
+  if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+    return MonteCarloProspective(Interface);
+    
   gpMeasureList->Reset();
   //Add measure values for purely space first - so that this cluster's values
   //will be calculated with circle's measure values.
@@ -133,7 +136,7 @@ double C_ST_PS_PT_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
 /** Returns loglikelihood for Monte Carlo Prospective replication. */
 double C_ST_PS_PT_Analysis::MonteCarloProspective(const DataStreamInterface & Interface) {
   double                        dMaxLogLikelihoodRatio;
-  tract_t                       k, i, j, iNumNeighbors;
+  tract_t                       k, i;
 
   gpMeasureList->Reset();
   //Add measure values for purely space first - so that this cluster's values
