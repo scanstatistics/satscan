@@ -75,6 +75,8 @@ CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& cluste
   m_bRatioSet      = cluster.m_bRatioSet;
   m_nClusterType   = cluster.m_nClusterType;
 
+  m_iEllipseOffset = cluster.m_iEllipseOffset;
+
   return *this;
 }
 
