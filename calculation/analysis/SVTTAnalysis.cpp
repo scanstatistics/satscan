@@ -43,10 +43,10 @@ void CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCenter, const Da
        iNumNeighbors = m_pData->GetNeighborCountArray()[k][tCenter];
        for (i=1; i <= iNumNeighbors; ++i) {
           thisCluster.AddNeighbor(m_pData->GetNeighbor(k, tCenter, i), DataGateway);
-          thisCluster.m_nLogLikelihood = 0;
+          thisCluster.m_nRatio = 0;
           for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
-            thisCluster.m_nLogLikelihood += ProbModel.CalcSVTTLogLikelihood(t, &thisCluster, *(DataGateway.GetDataStreamInterface(t).GetTimeTrend()));
-          if (thisCluster.m_nLogLikelihood && thisCluster.m_nLogLikelihood > TopShapeCluster.m_nLogLikelihood)
+            thisCluster.m_nRatio += ProbModel.CalcSVTTLogLikelihoodRatio(t, &thisCluster, *(DataGateway.GetDataStreamInterface(t).GetTimeTrend()));
+          if (thisCluster.m_nRatio > TopShapeCluster.m_nRatio)
            TopShapeCluster = thisCluster;
        }
     }
@@ -64,7 +64,7 @@ void CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCenter, const Da
 /** returns most likely cluster about a centroid, as calculated from last call to CalculateTopCluster() */
 CCluster & CSpatialVarTempTrendAnalysis::GetTopCalculatedCluster() {
   CSVTTCluster & Cluster = (CSVTTCluster&)(gpTopShapeClusters->GetTopCluster());
-  Cluster.gTimeTrendInside.SetAnnualTimeTrend(m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
+  Cluster.SetTimeTrend(m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
   return Cluster;
 }
 
@@ -91,8 +91,8 @@ double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataStreamInterface & Inte
           iNumNeighbors = m_pData->GetNeighborCountArray()[k][i];	
           for (j=1; j <= iNumNeighbors; j++) {
              thisCluster.AddNeighbor(m_pData->GetNeighbor(k, i, j), Interface, 0);
-             thisCluster.m_nLogLikelihood = ProbModel.CalcSVTTLogLikelihood(0, &thisCluster, *(Interface.GetTimeTrend()));
-             if (/*i==1 ||*/ thisCluster.m_nLogLikelihood > TopShapeCluster.m_nLogLikelihood)
+             thisCluster.m_nRatio = ProbModel.CalcSVTTLogLikelihoodRatio(0, &thisCluster, *(Interface.GetTimeTrend()));
+             if (thisCluster.m_nRatio > TopShapeCluster.m_nRatio)
                TopShapeCluster = thisCluster;
           }
        }
