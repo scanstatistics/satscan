@@ -10,7 +10,7 @@
 
 const char*      ANALYSIS_HISTORY_FILE  = "AnalysisHistory.txd";
 
-char mgsVariableLabels[45][100] = {
+char mgsVariableLabels[46][100] = {
    "Analysis Type",
    "Scan Areas",
    "Case File",
@@ -54,8 +54,9 @@ char mgsVariableLabels[45][100] = {
    "Output Census areas in Reported Clusters",
    "Output Most Likely Cluster for each Centroid",
    "Criteria for Reporting Secondary Clusters",
-   "How Max Temporal Size Should Be Interperated"
-   "How Max Spatial Size Should Be Interperated"
+   "How Max Temporal Size Should Be Interperated",
+   "How Max Spatial Size Should Be Interperated",
+   "Analysis Run History File"
    };
 
 CParameters::CParameters(bool bDisplayErrors)
@@ -314,7 +315,7 @@ bool CParameters::SetParameter(int nParam, const char* szParam)
         case CRITERIA_SECOND_CLUSTERS: nScanCount=sscanf(szParam, "%i", &m_iCriteriaSecondClusters); break;
         case MAX_TEMPORAL_TYPE: nScanCount=sscanf(szParam, "%i", &m_nMaxClusterSizeType); break;
         case MAX_SPATIAL_TYPE: nScanCount=sscanf(szParam, "%i", &m_nMaxSpatialClusterSizeType); break;
-        case RUN_HISTORY_FILENAME: nScanCount = sscanf(szParam, "%s", gsRunHistoryFilename); break;
+        case RUN_HISTORY_FILENAME: nScanCount = sscanf(szParam, "%s", gsRunHistoryFilename.GetCString()); break;
       }
     
       if (nParam==POPFILE || nParam==GRIDFILE || nParam==CONTROLFILE)
@@ -885,7 +886,7 @@ bool CParameters::ValidateParameters()
       if(gsRunHistoryFilename.GetIsEmpty()) {
          getcwd(sBuffer, 256);
          ZdFileName sFileName(sBuffer);
-         gsRunHistoryFilename << sFileName.GetDirectory() << ANALYSIS_HISTORY_FILE;
+         gsRunHistoryFilename << sFileName.GetLocation() << ANALYSIS_HISTORY_FILE;
       }
    }
    catch (ZdException & x) {
