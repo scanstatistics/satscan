@@ -11,7 +11,6 @@ void 			ConvertFromLatLong(float Latitude, float Longitude, std::vector<double>&
 void 			ConvertToLatLong(float* Latitude, float* Longitude, double* pCoords);
 void 			DisplayVersion(FILE* fp, int nPos);
 double                  GetDuczmalCorrection(double dEllipseShape);
-const char	      * GetWord(const char *s, int num, BasePrint *pPrintDirection);
 
 /** The data read routines of CSaTScanData used to use function:
     const char * GetWord(const char *s, int num, BasePrint *pPrintDirection)
