@@ -95,34 +95,35 @@ void CSaTScanData::DisplaySummary2(FILE* fp) {
 }
 
 void CSaTScanData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, const bool bDBaseOutput) {
-   RelativeRiskData     *pData = 0;
-   std::string          sBuffer;
-   ZdString             sRisk;
+   std::string                          sBuffer;
+   ZdString                             sRisk, sLocation;
+   std::vector<std::string>             vIdentifiers;
 
    try {
-      pData = new RelativeRiskData(gpPrintDirection, m_pParameters->m_szOutputFilename);
+      std::auto_ptr<RelativeRiskData> pData( new RelativeRiskData(gpPrintDirection, m_pParameters->m_szOutputFilename) );
       for(int i = 0; i < m_nTracts; ++i) {
          if (GetMeasureAdjustment() && m_pMeasure[0][i])
             sRisk.printf("%12.3f", ((double)(m_pCases[0][i]))/(GetMeasureAdjustment()*m_pMeasure[0][i]));
          else
             sRisk = "n/a";
-         pData->SetRelativeRiskData(gpTInfo->tiGetTid(i, sBuffer), m_pCases[0][i],
+         gpTInfo->tiGetTractIdentifiers(i, vIdentifiers);
+         sLocation = gpTInfo->tiGetTid(i, sBuffer);
+         if (vIdentifiers.size() > 1)
+            sLocation << " et al";
+         pData->SetRelativeRiskData(sLocation, m_pCases[0][i],
                                     GetMeasureAdjustment()*m_pMeasure[0][i],
                                     sRisk);
       }
       if (bASCIIOutput) {
-         ASCIIFileWriter Awriter(pData);
+         ASCIIFileWriter Awriter(pData.get());
          Awriter.Print();
       }
       if (bDBaseOutput) {
-         DBaseFileWriter DWriter(pData);
+         DBaseFileWriter DWriter(pData.get());
          DWriter.Print();
       }
-
-      delete pData; pData = 0;
    }
    catch (ZdException &x) {
-      delete pData; pData = 0;
       x.AddCallpath("DisplayRelativeRisksForEachTract()", "CSaTScanData");
       throw;
    }
