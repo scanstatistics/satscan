@@ -30,7 +30,7 @@ DataStream::~DataStream() {
     delete gpCategoryMeasureHandler;
     delete gpCategoryCasesHandler;
     delete gpCategoryMeasureHandler;
-    delete gpMeasureSquaredHandler;
+    delete gpSqMeasureHandler;
     delete gpPopulationMeasureHandler;
     FreeSimulationStructures();
   }
@@ -93,6 +93,54 @@ void DataStream::AllocateSimMeasureArray() {
   }
   catch (ZdException &x) {
     x.AddCallpath("AllocateSimMeasureArray()","DataStream");
+    throw;
+  }
+}
+
+void DataStream::AllocateSqMeasureArray() {
+  try {
+    if (!gpSqMeasureHandler)
+      gpSqMeasureHandler = new TwoDimensionArrayHandler<measure_t>(giNumTimeIntervals+1, giNumTracts);
+    gpSqMeasureHandler->Set(0);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("AllocateSqMeasureArray()","DataStream");
+    throw;
+  }
+}
+
+void DataStream::AllocateSqSimMeasureArray() {
+  try {
+    if (!gpSimSqMeasureHandler)
+      gpSimSqMeasureHandler = new TwoDimensionArrayHandler<measure_t>(giNumTimeIntervals+1, giNumTracts);
+    gpSimSqMeasureHandler->Set(0);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("AllocateSimSqMeasureArray()","DataStream");
+    throw;
+  }
+}
+
+void DataStream::AllocatePTSimMeasureArray() {
+  try {
+    if (!gpPTSimMeasureArray)
+      gpPTSimMeasureArray = new measure_t[giNumTimeIntervals+1];
+    memset(gpPTSimMeasureArray, 0, (giNumTimeIntervals+1) * sizeof(measure_t));
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("AllocatePTSimMeasureArray()","DataStream");
+    throw;
+  }
+}
+
+void DataStream::AllocatePTSimSqMeasureArray() {
+  try {
+    if (!gpPTSimSqMeasureArray)
+      gpPTSimSqMeasureArray = new measure_t[giNumTimeIntervals+1];
+    memset(gpPTSimSqMeasureArray, 0, (giNumTimeIntervals+1) * sizeof(measure_t));
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("AllocatePTSimSqMeasureArray()","DataStream");
     throw;
   }
 }
@@ -194,9 +242,22 @@ void DataStream::FreeSimulationStructures() {
     delete gpNCSimCasesHandler; gpNCSimCasesHandler=0;
     delete gpSimMeasureHandler; gpSimMeasureHandler=0;
     delete[] gpPTSimMeasureArray; gpPTSimMeasureArray=0;
-    delete gpSimMeasureSquaredHandler; gpSimMeasureSquaredHandler=0;
+    delete[] gpPTSimSqMeasureArray; gpPTSimSqMeasureArray=0;
+    delete gpSimSqMeasureHandler; gpSimSqMeasureHandler=0;
   }
   catch(...){}
+}
+
+ThreeDimCountArray_t & DataStream::GetCategoryCaseArrayHandler() {
+  try {
+    if (!gpCategoryCasesHandler)
+      ZdGenerateException("Category cases handler not allocated.","GetCategoryCaseArrayHandler()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetCategoryCaseArrayHandler()","DataStream");
+    throw;
+  }
+  return *gpCategoryCasesHandler;
 }
 
 count_t * DataStream::GetPTCasesArray() const {
@@ -273,6 +334,66 @@ count_t ** DataStream::GetSimCaseArray() const {
     throw;
   }
   return gpSimCasesHandler->GetArray();
+}
+
+measure_t ** DataStream::GetSimMeasureArray() const {
+  try {
+    if (!gpSimMeasureHandler)
+      ZdGenerateException("Simulation measure array not allocated.","GetSimMeasureArray()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetSimMeasureArray()","DataStream");
+    throw;
+  }
+  return gpSimMeasureHandler->GetArray();
+}
+
+TwoDimMeasureArray_t & DataStream::GetSimMeasureArrayHandler() {
+  try {
+    if (!gpSimMeasureHandler)
+      ZdGenerateException("Simulation measure array not allocated.","GetSimMeasureArrayHandler()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetSimMeasureArrayHandler()","DataStream");
+    throw;
+  }
+  return *gpSimMeasureHandler;
+}
+
+TwoDimMeasureArray_t & DataStream::GetSimSqMeasureArrayHandler() {
+  try {
+    if (!gpSimSqMeasureHandler)
+      ZdGenerateException("Simulation square measure array not allocated.","GetSimSqMeasureArrayHandler()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetSimSqMeasureArrayHandler()","DataStream");
+    throw;
+  }
+  return *gpSimSqMeasureHandler;
+}
+
+measure_t ** DataStream::GetSimSqMeasureArray() {
+  try {
+    if (!gpSimSqMeasureHandler)
+      ZdGenerateException("Simulation squared measure array not allocated.","GetSimSqMeasureArray()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetSimSqMeasureArray()","DataStream");
+    throw;
+  }
+  return gpSimSqMeasureHandler->GetArray();
+}
+
+measure_t ** DataStream::GetSqMeasureArray() {
+  try {
+    if (!gpSqMeasureHandler)
+      ZdGenerateException("Squared measure array not allocated.","GetSqMeasureArray()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetSqMeasureArray()","DataStream");
+    throw;
+  }
+  return gpSqMeasureHandler->GetArray();
 }
 
 /** returns pointer to two-dimensional array representing cases in a cumulative state. */
@@ -374,10 +495,12 @@ void DataStream::Init() {
   gpCategoryMeasureHandler=0;
   gpSimMeasureHandler=0;
   gpPTSimMeasureArray=0;
-  gpMeasureSquaredHandler=0;             
-  gpSimMeasureSquaredHandler=0;
+  gpPTSimSqMeasureArray=0;
+  gpSqMeasureHandler=0;
+  gpSimSqMeasureHandler=0;
   gpPTMeasureArray=0;
   gpPopulationMeasureHandler=0;
+  gpPTSqMeasureArray=0;
 }
 
 void DataStream::ResetCumulativeSimCaseArray() {
@@ -393,6 +516,8 @@ void DataStream::ResetCumulativeSimCaseArray() {
   }
 }
 
+/** Allocates and sets two dimensional non-cumulative case array and purely
+    temporal case array. */
 void DataStream::SetCaseArrays() {
   try {
     if (!gpNCCasesHandler)
@@ -407,15 +532,17 @@ void DataStream::SetCaseArrays() {
   }
 }
 
-void DataStream::SetCaseArrays(count_t** pCases, count_t** pCases_NC, count_t* pCasesByTimeInt) {
+/** Given two dimensional cumulative case array 'ppCases' - sets elements of
+    non-cumulative two dimensional case array and purely temporal case array. */
+void DataStream::SetCaseArrays(count_t** ppCases, count_t** pCases_NC, count_t* pCasesByTimeInt) {
   int   i, j;
 
   memset(pCasesByTimeInt, 0, sizeof(count_t) * (giNumTimeIntervals+1));
   for (i=0; i < (int)giNumTracts; ++i)  {
-    pCases_NC[giNumTimeIntervals-1][i] = pCases[giNumTimeIntervals-1][i];
+    pCases_NC[giNumTimeIntervals-1][i] = ppCases[giNumTimeIntervals-1][i];
     pCasesByTimeInt[giNumTimeIntervals-1] += pCases_NC[giNumTimeIntervals-1][i];
     for (j=giNumTimeIntervals-2; j >= 0; --j) {
-      pCases_NC[j][i] = pCases[j][i] - pCases[j+1][i];
+      pCases_NC[j][i] = ppCases[j][i] - ppCases[j+1][i];
       pCasesByTimeInt[j] += pCases_NC[j][i];
     }
   }
@@ -547,13 +674,12 @@ void DataStream::SetPTCasesArray() {
     if (!gpCasesHandler)
       ZdGenerateException("Cumulative measure array not allocated.","SetPTMeasureArray()");
 
-    delete gpPTCasesArray; gpPTCasesArray=0;
-    gpPTCasesArray = new count_t[giNumTimeIntervals+1];
-    memset(gpPTCasesArray, 0, (giNumTimeIntervals+1)*sizeof(count_t));
+    if (!gpPTCasesArray)
+      gpPTCasesArray = new count_t[giNumTimeIntervals+1];
 
     ppCases = gpCasesHandler->GetArray();
     for (i=0; i < (int)giNumTimeIntervals; ++i)
-       for (j=0; j < (int)giNumTracts; ++j)
+       for (gpPTCasesArray[i]=0, j=0; j < (int)giNumTracts; ++j)
           gpPTCasesArray[i] += ppCases[i][j];
   }
   catch (ZdException &x) {
@@ -570,7 +696,7 @@ void DataStream::SetPTMeasureArray() {
     if (!gpMeasureHandler)
       ZdGenerateException("Cumulative measure array not allocated.","SetPTMeasureArray()");
 
-    delete[] gpPTMeasureArray; gpPTMeasureArray=0;
+//     delete[] gpPTMeasureArray; gpPTMeasureArray=0;
     gpPTMeasureArray = new measure_t[giNumTimeIntervals+1];
     memset(gpPTMeasureArray, 0, (giNumTimeIntervals+1)*sizeof(measure_t));
 
@@ -585,16 +711,81 @@ void DataStream::SetPTMeasureArray() {
   }
 }
 
+void DataStream::SetPTSqMeasureArray() {
+  int           i, j;
+  measure_t  ** ppMeasure;
+
+  try {
+    if (!gpSqMeasureHandler)
+      ZdGenerateException("Cumulative square measure array not allocated.","SetPTSqMeasureArray()");
+
+//     delete[] gpPTMeasureArray; gpPTMeasureArray=0;
+    gpPTSqMeasureArray = new measure_t[giNumTimeIntervals+1];
+    memset(gpPTSqMeasureArray, 0, (giNumTimeIntervals+1)*sizeof(measure_t));
+
+    ppMeasure = gpSqMeasureHandler->GetArray();
+    for (i=0; i < (int)giNumTimeIntervals; ++i)
+       for (j=0; j < (int)giNumTracts; ++j)
+          gpPTSqMeasureArray[i] += ppMeasure[i][j];
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetPTSqMeasureArray()","DataStream");
+    throw;
+  }
+}
+
+void DataStream::SetPTSimMeasureArray() {
+  int           i, j;
+  measure_t  ** ppMeasure;
+
+  try {
+    if (!gpSimMeasureHandler)
+      ZdGenerateException("Cumulative simulation measure array not allocated.","SetPTSimMeasureArray()");
+    if (!gpPTSimMeasureArray)
+      AllocatePTSimMeasureArray();
+
+    ppMeasure = gpMeasureHandler->GetArray();
+    for (i=0; i < (int)giNumTimeIntervals; ++i)
+       for (gpPTMeasureArray[i]=0, j=0; j < (int)giNumTracts; ++j)
+          gpPTMeasureArray[i] += ppMeasure[i][j];
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetPTSimMeasureArray()","DataStream");
+    throw;
+  }
+}
+
+void DataStream::SetPTSqSimMeasureArray() {
+  int           i, j;
+  measure_t  ** ppMeasure;
+
+  try {
+    if (!gpSimSqMeasureHandler)
+      ZdGenerateException("Cumulative simulation square measure array not allocated.","SetPTSqSimMeasureArray()");
+    if (!gpPTSimSqMeasureArray)
+      AllocatePTSimSqMeasureArray();
+
+    ppMeasure = gpSimSqMeasureHandler->GetArray();
+    for (i=0; i < (int)giNumTimeIntervals; ++i)
+       for (gpPTSimSqMeasureArray[i]=0, j=0; j < (int)giNumTracts; ++j)
+          gpPTSimSqMeasureArray[i] += ppMeasure[i][j];
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetPTSqSimMeasureArray()","DataStream");
+    throw;
+  }
+}
+
 void DataStream::SetPTSimCasesArray() {
   int           i, j;
   count_t    ** ppSimCases;
 
   try {
-    if (!gpPTSimCasesArray)
-      AllocateSimulationPTCasesArray();
-
     if (!gpSimCasesHandler)
       ZdGenerateException("Cumulative simulation case array not allocated.","SetPTSimCasesArray()");
+
+    if (!gpPTSimCasesArray)
+      AllocateSimulationPTCasesArray();
 
     ppSimCases = gpSimCasesHandler->GetArray();
     for (i=0; i < (int)giNumTimeIntervals; ++i)

@@ -7,7 +7,6 @@
 #include "MultipleDimensionArrayHandler.h"
 #include "PopulationData.h"
 #include "TimeTrend.h"
-#include <deque>
 
 typedef TwoDimensionArrayHandler<count_t>      TwoDimCountArray_t;
 typedef ThreeDimensionArrayHandler<count_t>    ThreeDimCountArray_t;
@@ -17,7 +16,8 @@ typedef ThreeDimensionArrayHandler<measure_t>  ThreeDimMeasureArray_t;
 class CSaTScanData;
 class DataStreamHandler;
 
-/** Encapsulates data for each stream of data. */
+/** Encapsulates data for each stream of data.
+    NOTE: Look into derived DataStream classes for each handler class. */
 class DataStream {
   friend class DataStreamHandler;
   private:
@@ -34,10 +34,8 @@ class DataStream {
     count_t                     gtTotalCasesAtStart;                    /** number of cases as defined at analysis start */
     count_t                     gtTotalControls;                        /** number of controls in data stream */
     count_t                     gtTotalControlsAtStart;                 /** number of controls as defined at analysis start */
-    count_t                   * gpPTCasesArray;                         /** number of cases, stratified by time intervals
-                                                                            - *** we should combine this variable with 'gpCases_TotalByTimeInt' */
-    count_t                   * gpPTSimCasesArray;                      /** number of simulated cases, stratified by time intervals
-                                                                            - *** we should combine this variable with 'gpSimCases_TotalByTimeInt' */
+    count_t                   * gpPTCasesArray;                         /** number of cases, stratified by time intervals */
+    count_t                   * gpPTSimCasesArray;                      /** number of simulated cases, stratified by time intervals */
     TwoDimCountArray_t        * gpCasesHandler;                         /** number of cases stratified with respect to time intervals by tract index
                                                                             - cases are distributed in time intervals cumulatively */
     TwoDimCountArray_t        * gpNCCasesHandler;                       /** number of cases stratified with respect to time intervals by tract index
@@ -49,15 +47,22 @@ class DataStream {
     TwoDimCountArray_t        * gpNCSimCasesHandler;                    /** number of simulated cases stratified with respect to time intervals by tract index
                                                                             - simulated cases are NOT distributed in time intervals cumulatively */
     measure_t                   gtTotalMeasureAtStart;                  /** number of expected cases as defined at analysis start */
-    measure_t                 * gpPTMeasureArray;                        /** number of expected cases, stratified by time intervals
-                                                                            - *** we should combine this variable with 'gpMeasure_TotalByTimeInt' */
+    measure_t                 * gpPTMeasureArray;                       /** number of expected cases, stratified by time intervals */
+    measure_t                 * gpPTSqMeasureArray;                     /** number of expected cases squared, stratified by time intervals and
+                                                                            as gotten from gpSqMeasureHandler */
     measure_t                 * gpPTSimMeasureArray;                    /** number of simulated expected cases, stratified by time intervals */
     TwoDimMeasureArray_t      * gpMeasureHandler;                       /** number of expected cases stratified with respect to time intervals by tract index
                                                                             - expected cases are distributed in time intervals cumulatively */
-    TwoDimMeasureArray_t      * gpSimMeasureHandler;                     /** number of simulated expected cases stratified with respect to time intervals by tract index
-                                                                            - expected cases are distributed in time intervals cumulatively */
-    TwoDimMeasureArray_t      * gpMeasureSquaredHandler;                 /**  */
-    TwoDimMeasureArray_t      * gpSimMeasureSquaredHandler;              /**  */
+    TwoDimMeasureArray_t      * gpSimMeasureHandler;                    /** number of simulated expected cases stratified with respect to time intervals by tract index
+                                                                           - expected cases are distributed in time intervals cumulatively */
+    TwoDimMeasureArray_t      * gpSqMeasureHandler;                     /** number of expected cases stratified with respect to time intervals by tract index
+                                                                            - expected cases are distributed in time intervals cumulatively and are the square
+                                                                              of entries accumulated in gpMeasureHandler */
+    TwoDimMeasureArray_t      * gpSimSqMeasureHandler;                  /** number of simulated expected cases stratified with respect to time intervals by tract index
+                                                                            - expected cases are distributed in time intervals cumulatively and are the square
+                                                                              of entries accumulated in gpSimMeasureHandler */
+    measure_t                 * gpPTSimSqMeasureArray;                  /** number of simulated expected cases, stratified by time intervals
+                                                                            -are the square of entries accumulated in gpPTSimMeasureArray */
     TwoDimMeasureArray_t      * gpNCMeasureHandler;                     /** number of expected cases stratified with respect to time intervals by tract index
                                                                             - expected cases are NOT distributed in time intervals cumulatively */
     TwoDimMeasureArray_t      * gpCategoryMeasureHandler;               /** number of expected cases stratified with respect to time intervals by category index
@@ -70,7 +75,7 @@ class DataStream {
 
     void                        SetCaseArrays(count_t** pCases, count_t** pCases_NC, count_t* pCasesByTimeInt);
   public:
-            DataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts);
+    DataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts);
     virtual ~DataStream();
 
     void                        AllocateCategoryCasesArray();
@@ -78,7 +83,11 @@ class DataStream {
     void                        AllocateControlsArray();
     void                        AllocateMeasureArray();
     void                        AllocateSimMeasureArray();
+    void                        AllocateSqMeasureArray();    
+    void                        AllocateSqSimMeasureArray();
     void                        AllocatePTMeasureArray();
+    void                        AllocatePTSimMeasureArray();
+    void                        AllocatePTSimSqMeasureArray();
     void                        AllocateNCMeasureArray();
     void                        AllocatePopulationMeasureArray();
     void                        AllocateSimulationCasesArray();    
@@ -88,21 +97,32 @@ class DataStream {
     void                        FreePopulationMeasureArray();
     void                        FreeSimulationStructures();
     count_t                 *** GetCategoryCaseArray();
+    ThreeDimCountArray_t      & GetCategoryCaseArrayHandler();
     count_t                  ** GetCaseArray() const;
     count_t                  ** GetNCCaseArray() const;
     count_t                  ** GetControlArray()const;
     measure_t                ** GetMeasureArray() const;
     count_t                  ** GetSimCaseArray() const;
+    measure_t                ** GetSimMeasureArray() const;
+    TwoDimMeasureArray_t      & GetSimMeasureArrayHandler();
+    TwoDimMeasureArray_t      & GetSimSqMeasureArrayHandler();
     count_t                  ** GetNCSimCaseArray() const;
     measure_t                ** GetNCMeasureArray() const;
+    inline unsigned int         GetNumTimeIntervals() const {return giNumTimeIntervals;}
+    inline unsigned int         GetNumTracts() const {return giNumTracts;}
     measure_t                ** GetPopulationMeasureArray() const;
     PopulationData            & GetPopulationData() {return gPopulation;}
     const PopulationData      & GetPopulationData() const {return gPopulation;}
     count_t                   * GetPTCasesArray() const;
     measure_t                 * GetPTMeasureArray() const;
+    measure_t                 * GetPTSimMeasureArray() const {return gpPTSimMeasureArray;}
+    measure_t                 * GetPTSqMeasureArray() const {return gpPTSqMeasureArray;}
     count_t                   * GetPTSimCasesArray() const;
     CTimeTrend                & GetTimeTrend() {return gTimeTrend;}
     CTimeTrend                & GetSimTimeTrend() {return gSimTimeTrend;}
+    measure_t                 * GetSimPTSqMeasureArray() const {return gpPTSimSqMeasureArray;}
+    measure_t                ** GetSimSqMeasureArray();
+    measure_t                ** GetSqMeasureArray();
     count_t                     GetTotalCases() const {return gtTotalCases;}
     count_t                     GetTotalCasesAtStart() const {return gtTotalCasesAtStart;}
     count_t                     GetTotalControls() const {return gtTotalControls;}
@@ -121,7 +141,10 @@ class DataStream {
     void                        SetNonCumulativeMeasureArrayFromCumulative();
     void                        SetPTCasesArray();
     void                        SetPTMeasureArray();
+    void                        SetPTSqMeasureArray();
     void                        SetPTSimCasesArray();
+    void                        SetPTSimMeasureArray();
+    void                        SetPTSqSimMeasureArray();
     void                        SetTotalCases(count_t tTotalCases) {gtTotalCases = tTotalCases;}
     void                        SetTotalCasesAtStart(count_t tTotalCases) {gtTotalCasesAtStart = tTotalCases;}
     void                        SetTotalControls(count_t tTotalControls) {gtTotalControls = tTotalControls;}
