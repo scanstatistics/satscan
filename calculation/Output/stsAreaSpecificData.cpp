@@ -1,12 +1,14 @@
+//***************************************************************************
+#include "SaTScan.h"
+#pragma hdrstop
+//***************************************************************************
+#include "stsAreaSpecificData.h"
+#include "cluster.h"
+
 // Class stsAreaSpecificData
 // Adam J Vaughn
 // November 2002
  
-#include "SaTScan.h"
-#pragma hdrstop
-
-#include "stsAreaSpecificData.h"
-#include "cluster.h"
 
 const char *	AREA_SPECIFIC_FILE_EXT		= ".gis";
 
@@ -171,7 +173,7 @@ void stsAreaSpecificData::Init() {
 // records the calculated data from the cluster into the dBase file
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
-void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, tract_t tTract, int iNumSimulations) {
+void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CSaTScanData& theData, int iClusterNumber, tract_t tTract, unsigned int iNumSimsCompleted) {
    ZdString             sTempValue;
    std::string          sBuffer;
    AreaSpecificRecord*	pRecord = 0;
@@ -199,7 +201,7 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CS
 
             // p value
             if(gbPrintPVal) {
-               float fPVal = (float) theCluster.GetPVal(iNumSimulations);
+               float fPVal = (float) theCluster.GetPValue(iNumSimsCompleted);
                pRecord->SetPValue(fPVal);
             }
 
@@ -222,7 +224,7 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& theCluster, const CS
 
          // p value
          if(gbPrintPVal) {
-            float fPVal = (float) theCluster.GetPVal(iNumSimulations);
+            float fPVal = (float) theCluster.GetPValue(iNumSimsCompleted);
             pRecord->SetPValue(fPVal);
          }
 
