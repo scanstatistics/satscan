@@ -10,7 +10,7 @@ class CPurelySpatialCluster : public CCluster
   public:
     CPurelySpatialCluster(BasePrint *pPrintDirection);
     CPurelySpatialCluster(int nRate, tract_t nCircles);
-    ~CPurelySpatialCluster();
+    virtual ~CPurelySpatialCluster();
 
     virtual void                        AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n);
     virtual CPurelySpatialCluster     * Clone() const;

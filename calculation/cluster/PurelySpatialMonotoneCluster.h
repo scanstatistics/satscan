@@ -10,7 +10,7 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
 
     CPSMonotoneCluster(BasePrint *pPrintDirection);
     CPSMonotoneCluster(int nRate, tract_t nCircles);
-    ~CPSMonotoneCluster();
+    virtual ~CPSMonotoneCluster();
 
     friend class CPoissonModel;
     friend class CBernoulliModel;
