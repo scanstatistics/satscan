@@ -37,15 +37,17 @@ void CSpaceTimePermutationModel::CalculateMeasure(RealDataStream & thisStream) {
     // T = number of cases in temporal domain irrespective of location
     // C = total number of cases
     for (c=0; c < iNumCategories; ++c) {
-       for (i=0; i < gData.m_nTimeIntervals; ++i) {
-         T_C = pppCategoryCases[i][0][c];
-         //Calculate T/C
-         for (j=1; j < gData.m_nTracts; ++j)
-            T_C += pppCategoryCases[i][j][c];
-         T_C /= Population.GetNumCategoryCases(c);
-         //Multiply T/C by S and add to measure
-         for (j=0; j < gData.m_nTracts; ++j)
-           ppMeasure[i][j] += T_C * pppCategoryCases[0][j][c];
+       if (Population.GetNumCategoryCases(c)) {
+         for (i=0; i < gData.m_nTimeIntervals; ++i) {
+            T_C = pppCategoryCases[i][0][c];
+            //Calculate T/C
+            for (j=1; j < gData.m_nTracts; ++j)
+               T_C += pppCategoryCases[i][j][c];
+            T_C /= Population.GetNumCategoryCases(c);
+            //Multiply T/C by S and add to measure
+            for (j=0; j < gData.m_nTracts; ++j)
+               ppMeasure[i][j] += T_C * pppCategoryCases[0][j][c];
+         }
        }
     }
 
