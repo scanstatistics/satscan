@@ -25,6 +25,10 @@ CSVTTData::~CSVTTData() {}
 
 void CSVTTData::CalculateMeasure(RealDataStream & thisStream) {
   CSaTScanData::CalculateMeasure(thisStream);
+  //calculate time trend for stream data set
+  //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
+  //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
+  //      has not been decided yet.
   thisStream.GetTimeTrend().CalculateAndSet(thisStream.GetPTCasesArray(), thisStream.GetPTMeasureArray(),
                                             m_nTimeIntervals, m_pParameters->GetTimeTrendConvergence());
 }
@@ -155,6 +159,8 @@ void CSVTTData::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsig
                                                            gpDataStreams->GetStream(t).GetPTMeasureArray(),
                                                            m_nTimeIntervals,
                                                            m_pParameters->GetTimeTrendConvergence());
+       //QUESTION: Should the purely temporal case array passed to CalculateAndSet() be from
+       //          the simulated data stream? It doesn't seem to make sense otherwise.
     }
   }
   catch (ZdException &x) {
@@ -179,6 +185,8 @@ void CSVTTData::RandomizeIsolatedData(RandomizerContainer_t& RandomizerContainer
                                                            gpDataStreams->GetStream(t).GetPTMeasureArray(),
                                                            m_nTimeIntervals,
                                                            m_pParameters->GetTimeTrendConvergence());
+       //QUESTION: Should the purely temporal case array passed to CalculateAndSet() be from
+       //          the simulated data stream? It doesn't seem to make sense otherwise.
     }
   }
   catch (ZdException &x) {
