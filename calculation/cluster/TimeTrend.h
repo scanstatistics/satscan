@@ -10,6 +10,7 @@ class CTimeTrend {
     enum Status                 {TREND_UNDEF=0,        /** trend undefined */
                                  TREND_INF,            /** trend is infinite */
                                  TREND_NOTCONVERGED,   /** trend did not converge */
+                                 TREND_NEGATIVE,       /** negative beta calculated */
                                  TREND_CONVERGED       /** trend converged */
                                  };
 

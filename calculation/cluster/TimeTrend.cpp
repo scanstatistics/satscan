@@ -65,7 +65,7 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
   double nSumTimeSquare = 0; 
   double nSumTime = 0;
   int t;
-  double nBetaStart, nBetaOld, nBetaNew; 
+  double nBetaStart, nBetaOld, nBetaNew, nLeastSquareBeta; 
   double FirstDerivative, SecondDerivative;
   bool bConvergence = false;
   bool bGoodBetaStart = false;
@@ -73,7 +73,7 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
 
   // Preliminary calculations that only need to be done once.
   // ********************************************************
-  for (t=0; t<(nTimeIntervals); t++) {
+  for (t=0; t < nTimeIntervals; t++) {
     nSumCases += pCases[t];
     nSumTime_Cases += t * pCases[t];
   }
@@ -95,12 +95,13 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
   // ********************************************************************************
   for (t=0; t < nTimeIntervals; t++) {
     nSumCasesMinusMsr += pCases[t]-pMeasure[t];
-    nSumTimeCasesMinusMsr += t*(pCases[t]-pMeasure[t]);
+    nSumTimeCasesMinusMsr += t * (pCases[t]-pMeasure[t]);
     nSumTime += t;
-    nSumTimeSquare += t*t;
+    nSumTimeSquare += t * t;
   }
-  nBetaStart = (nTimeIntervals*nSumTimeCasesMinusMsr - nSumCasesMinusMsr*nSumTime)
+  nLeastSquareBeta = (nTimeIntervals*nSumTimeCasesMinusMsr - nSumCasesMinusMsr*nSumTime)
                / (nTimeIntervals*nSumTimeSquare-(nSumTime*nSumTime));
+  nBetaStart = nLeastSquareBeta / (nSumCases/nTimeIntervals);
 
   // Ensures that the start value for beta (nBetaStart) is good, and if not, adds one to it.
   // If the second derivative is positive, the iterations will go in the wrong direction,
@@ -179,7 +180,8 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
       nSumMsr_ExpBeta += pMeasure[t] * exp(nBetaNew * t);
     gdAlpha = Alpha(nSumCases,nSumMsr_ExpBeta);
     gdBeta = nBetaNew;
-    gStatus = TREND_CONVERGED;
+    //Set status, a negative beta is not likely, but perform check regardless.
+    gStatus = (gdBeta < -1 ? TREND_NEGATIVE : TREND_CONVERGED);
   }
   else
     gStatus = TREND_NOTCONVERGED;
@@ -210,7 +212,7 @@ double CTimeTrend::S(double nSC, double nSTC, double nSTME, double nST2ME) const
   return (nSTC * nSTME) - (nSC * nST2ME);
 }
 
-/** Calculates annual time trend. */
+/** Calculates annual time trend given specfied time interval precision and length. */
 double CTimeTrend::SetAnnualTimeTrend(DatePrecisionType eDatePrecision, double nIntervalLen) {
   double nUnits;
 
@@ -222,7 +224,7 @@ double CTimeTrend::SetAnnualTimeTrend(DatePrecisionType eDatePrecision, double n
                                      "SetAnnualTimeTrend()", eDatePrecision);
   }
 
-  gdAnnualTimeTrend = (pow(1+fabs(gdBeta), 1/(nIntervalLen/nUnits))-1) * 100;
+  gdAnnualTimeTrend = (pow(1 + gdBeta, nUnits/nIntervalLen) - 1) * 100;
   return gdAnnualTimeTrend;
 }
 
