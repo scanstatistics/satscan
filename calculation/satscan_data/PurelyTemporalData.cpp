@@ -25,6 +25,10 @@ CPurelyTemporalData::~CPurelyTemporalData() {
   catch(...){}  
 }
 
+void CPurelyTemporalData::AdjustNeighborCounts() {
+  ZdGenerateException("AdjustNeighborCounts() not implemented for CPurelyTemporalData.","AdjustNeighborCounts()");
+}
+
 void CPurelyTemporalData::AllocSimCases() {
   try {
     CSaTScanData::AllocSimCases();  // Use until MakePurelyTemporalData implemented
@@ -101,6 +105,11 @@ void CPurelyTemporalData::DisplaySimCases(FILE* pFile) {
   }
 }
 
+tract_t CPurelyTemporalData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const {
+  ZdGenerateException("GetNeighbor() not implemented for CPurelyTemporalData.","GetNeighbor()");
+  return 0;
+}
+
 void CPurelyTemporalData::MakeData(int iSimulationNumber) {
   try {
     CSaTScanData::MakeData(iSimulationNumber);
@@ -110,6 +119,10 @@ void CPurelyTemporalData::MakeData(int iSimulationNumber) {
     x.AddCallpath("MakeData()", "CPurelyTemporalData");
     throw;
   }
+}
+
+void CPurelyTemporalData::PrintNeighbors() {
+  ZdGenerateException("PrintNeighbors() not implemented for CPurelyTemporalData.","PrintNeighbors()");
 }
 
 void CPurelyTemporalData::ReadDataFromFiles() {
