@@ -108,9 +108,9 @@ void TBDlgDataImporter::BringPanelToFront(int iWhich) {
     file field to import from. Displays message if variables are missings. */
 void TBDlgDataImporter::CheckForRequiredVariables() {
   size_t                t;
-  ZdString              sMessage, ExclusiveError;
+  ZdString              sMessage/*, ExclusiveError*/;
   std::vector<size_t>   vMissingFieldIndex;
-  bool                  bLatitudeBlank, bLongitudeBlank, bXBlank, bYBlank, bAllOptionalBlank=true;
+  //bool                  bLatitudeBlank, bLongitudeBlank, bXBlank, bYBlank, bAllOptionalBlank=true;
 
   try {
     switch (rdgInputFileType->ItemIndex) {
@@ -125,78 +125,82 @@ void TBDlgDataImporter::CheckForRequiredVariables() {
                               vMissingFieldIndex.push_back(t);
                          break;
       case Coordinates : //Coordinates file requires first field but also requires
-                         //either cartesian variables or lat/long variables, not both.  
-                         if (*gvImportingFields[0] == gsBlank)
-                           vMissingFieldIndex.push_back(0);
-                         bLatitudeBlank = (!tsfieldGrid->RowVisible[2] || *gvImportingFields[1] == gsBlank);
-                         bLongitudeBlank = (!tsfieldGrid->RowVisible[3] || *gvImportingFields[2] == gsBlank);
-                         bXBlank = (!tsfieldGrid->RowVisible[4] || *gvImportingFields[3] == gsBlank);
-                         bYBlank  = (!tsfieldGrid->RowVisible[5] || *gvImportingFields[4] == gsBlank);
-                         for (t=5; t < gvImportingFields.size() && bAllOptionalBlank; t++)
-                            bAllOptionalBlank = (!tsfieldGrid->RowVisible[t+1] || *gvImportingFields[t] == gsBlank);
-                         if (((bLatitudeBlank && !bLongitudeBlank) || (!bLatitudeBlank && bLongitudeBlank)) && (bXBlank && bYBlank && bAllOptionalBlank)) {
-                           //User has selected one of the lat/long fields but none of cartesian fields.
-                           //Indicate that one of them is missing. 
-                           vMissingFieldIndex.push_back((bLatitudeBlank ? 1 : 2));
-                         }
-                         else if ((bLatitudeBlank && bLongitudeBlank) && ((!bXBlank && bYBlank) || (bXBlank && !bYBlank))) {
-                           //User has selected one of the required cartesian fields but none of lat/long fields.
-                           //Indicate that one of them is missing.
-                           vMissingFieldIndex.push_back((bXBlank ? 3 : 4));
-                         }
-                         else if (bLatitudeBlank && bLongitudeBlank && bXBlank && bYBlank && !bAllOptionalBlank) {
-                           //User has selected one of the required cartesian fields but none of lat/long fields.
-                           //Indicate that one of them is missing.
-                           vMissingFieldIndex.push_back(3);
-                           vMissingFieldIndex.push_back(4);
-                         }
-                         else if (bLatitudeBlank && bLongitudeBlank && bXBlank && bYBlank && bAllOptionalBlank) {
-                           //User has selected neither cartesian and lat/long fields.
-                           ExclusiveError << "Either cartesian variables and latitude/longitude variables must be ";
-                           ExclusiveError << "selected before import can proceed.\n";
-                         }
-                         else if (!((!bLatitudeBlank && !bLongitudeBlank && bXBlank && bYBlank && bAllOptionalBlank) ||
-                                  (bLatitudeBlank && bLongitudeBlank && !bXBlank && !bYBlank))) {
-                           //User has selected a combination of cartesian and lat/long fields.
-                           ExclusiveError << "Note that both cartesian variables and latitude/longitude variables can not be ";
-                           ExclusiveError << "selected together.\n";
-                         }
+                         //either cartesian variables or lat/long variables, not both.
+                         for (t=0; t < 5; t++)
+                            if (tsfieldGrid->RowVisible[t+1] && *gvImportingFields[t] == gsBlank)
+                               vMissingFieldIndex.push_back(t);
+                         //bLatitudeBlank = (!tsfieldGrid->RowVisible[2] || *gvImportingFields[1] == gsBlank);
+                         //bLongitudeBlank = (!tsfieldGrid->RowVisible[3] || *gvImportingFields[2] == gsBlank);
+                         //bXBlank = (!tsfieldGrid->RowVisible[4] || *gvImportingFields[3] == gsBlank);
+                         //bYBlank  = (!tsfieldGrid->RowVisible[5] || *gvImportingFields[4] == gsBlank);
+                         //for (t=5; t < gvImportingFields.size() && bAllOptionalBlank; t++)
+                         //   bAllOptionalBlank = (!tsfieldGrid->RowVisible[t+1] || *gvImportingFields[t] == gsBlank);
+                         //if (((bLatitudeBlank && !bLongitudeBlank) || (!bLatitudeBlank && bLongitudeBlank)) && (bXBlank && bYBlank && bAllOptionalBlank)) {
+                         //  //User has selected one of the lat/long fields but none of cartesian fields.
+                         //  //Indicate that one of them is missing.
+                         //  vMissingFieldIndex.push_back((bLatitudeBlank ? 1 : 2));
+                         //}
+                         //else if ((bLatitudeBlank && bLongitudeBlank) && ((!bXBlank && bYBlank) || (bXBlank && !bYBlank))) {
+                         //  //User has selected one of the required cartesian fields but none of lat/long fields.
+                         //  //Indicate that one of them is missing.
+                         //  vMissingFieldIndex.push_back((bXBlank ? 3 : 4));
+                         //}
+                         //else if (bLatitudeBlank && bLongitudeBlank && bXBlank && bYBlank && !bAllOptionalBlank) {
+                         //  //User has selected one of the required cartesian fields but none of lat/long fields.
+                         //  //Indicate that one of them is missing.
+                         //  vMissingFieldIndex.push_back(3);
+                         //  vMissingFieldIndex.push_back(4);
+                         //}
+                         //else if (bLatitudeBlank && bLongitudeBlank && bXBlank && bYBlank && bAllOptionalBlank) {
+                         //  //User has selected neither cartesian and lat/long fields.
+                         //  ExclusiveError << "Either cartesian variables and latitude/longitude variables must be ";
+                         //  ExclusiveError << "selected before import can proceed.\n";
+                         //}
+                         //else if (!((!bLatitudeBlank && !bLongitudeBlank && bXBlank && bYBlank && bAllOptionalBlank) ||
+                         //         (bLatitudeBlank && bLongitudeBlank && !bXBlank && !bYBlank))) {
+                         //  //User has selected a combination of cartesian and lat/long fields.
+                         //  ExclusiveError << "Note that both cartesian variables and latitude/longitude variables can not be ";
+                         //  ExclusiveError << "selected together.\n";
+                         //}
                          break;
       case SpecialGrid : //Coordinates file requires either cartesian variables
                          //or lat/long variables, not both.  
-                         bLatitudeBlank = (!tsfieldGrid->RowVisible[1] || *gvImportingFields[0] == gsBlank);
-                         bLongitudeBlank = (!tsfieldGrid->RowVisible[2] || *gvImportingFields[1] == gsBlank);
-                         bXBlank = (!tsfieldGrid->RowVisible[3] || *gvImportingFields[2] == gsBlank);
-                         bYBlank  = (!tsfieldGrid->RowVisible[4] || *gvImportingFields[3] == gsBlank);
-                         for (t=4; t < gvImportingFields.size() && bAllOptionalBlank; t++)
-                            bAllOptionalBlank = (!tsfieldGrid->RowVisible[t+1] || *gvImportingFields[t] == gsBlank);
-                         if (((bLatitudeBlank && !bLongitudeBlank) || (!bLatitudeBlank && bLongitudeBlank)) && (bXBlank && bYBlank && bAllOptionalBlank)) {
-                           //User has selected one of the lat/long fields but none of cartesian fields.
-                           //Indicate that one of them is missing. 
-                           vMissingFieldIndex.push_back((bLatitudeBlank ? 0 : 1));
-                         }
-                         else if ((bLatitudeBlank && bLongitudeBlank) && ((!bXBlank && bYBlank) || (bXBlank && !bYBlank))) {
-                           //User has selected one of the required cartesian fields but none of lat/long fields.
-                           //Indicate that one of them is missing.
-                           vMissingFieldIndex.push_back((bXBlank ? 2 : 3));
-                         }
-                         else if (bLatitudeBlank && bLongitudeBlank && bXBlank && bYBlank && !bAllOptionalBlank) {
-                           //User has selected one of the required cartesian fields but none of lat/long fields.
-                           //Indicate that one of them is missing.
-                           vMissingFieldIndex.push_back(2);
-                           vMissingFieldIndex.push_back(3);
-                         }
-                         else if (bLatitudeBlank && bLongitudeBlank && bXBlank && bYBlank && bAllOptionalBlank) {
-                           //User has selected neither cartesian and lat/long fields.
-                           ExclusiveError << "Either cartesian variables and latitude/longitude variables must be ";
-                           ExclusiveError << "selected before import can proceed.\n";
-                         }
-                         else if (!((!bLatitudeBlank && !bLongitudeBlank && bXBlank && bYBlank && bAllOptionalBlank) ||
-                                  (bLatitudeBlank && bLongitudeBlank && !bXBlank && !bYBlank))) {
-                           //User has selected a combination of cartesian and lat/long fields.
-                           ExclusiveError << "Note that both cartesian variables and latitude/longitude variables can not be ";
-                           ExclusiveError << "selected together.\n";
-                         }
+                         for (t=0; t < 4; t++)
+                            if (tsfieldGrid->RowVisible[t+1] && *gvImportingFields[t] == gsBlank)
+                               vMissingFieldIndex.push_back(t);
+                         //bLatitudeBlank = (!tsfieldGrid->RowVisible[1] || *gvImportingFields[0] == gsBlank);
+                         //bLongitudeBlank = (!tsfieldGrid->RowVisible[2] || *gvImportingFields[1] == gsBlank);
+                         //bXBlank = (!tsfieldGrid->RowVisible[3] || *gvImportingFields[2] == gsBlank);
+                         //bYBlank  = (!tsfieldGrid->RowVisible[4] || *gvImportingFields[3] == gsBlank);
+                         //for (t=4; t < gvImportingFields.size() && bAllOptionalBlank; t++)
+                         //   bAllOptionalBlank = (!tsfieldGrid->RowVisible[t+1] || *gvImportingFields[t] == gsBlank);
+                         //if (((bLatitudeBlank && !bLongitudeBlank) || (!bLatitudeBlank && bLongitudeBlank)) && (bXBlank && bYBlank && bAllOptionalBlank)) {
+                         //  //User has selected one of the lat/long fields but none of cartesian fields.
+                         //  //Indicate that one of them is missing.
+                         //  vMissingFieldIndex.push_back((bLatitudeBlank ? 0 : 1));
+                         //}
+                         //else if ((bLatitudeBlank && bLongitudeBlank) && ((!bXBlank && bYBlank) || (bXBlank && !bYBlank))) {
+                         //  //User has selected one of the required cartesian fields but none of lat/long fields.
+                         // //Indicate that one of them is missing.
+                         //  vMissingFieldIndex.push_back((bXBlank ? 2 : 3));
+                         //}
+                         //else if (bLatitudeBlank && bLongitudeBlank && bXBlank && bYBlank && !bAllOptionalBlank) {
+                         //  //User has selected one of the required cartesian fields but none of lat/long fields.
+                         //  //Indicate that one of them is missing.
+                         //  vMissingFieldIndex.push_back(2);
+                         //  vMissingFieldIndex.push_back(3);
+                         //}
+                         //else if (bLatitudeBlank && bLongitudeBlank && bXBlank && bYBlank && bAllOptionalBlank) {
+                         //  //User has selected neither cartesian and lat/long fields.
+                         //  ExclusiveError << "Either cartesian variables and latitude/longitude variables must be ";
+                         //  ExclusiveError << "selected before import can proceed.\n";
+                         //}
+                         //else if (!((!bLatitudeBlank && !bLongitudeBlank && bXBlank && bYBlank && bAllOptionalBlank) ||
+                         //         (bLatitudeBlank && bLongitudeBlank && !bXBlank && !bYBlank))) {
+                         //  //User has selected a combination of cartesian and lat/long fields.
+                         //  ExclusiveError << "Note that both cartesian variables and latitude/longitude variables can not be ";
+                         //  ExclusiveError << "selected together.\n";
+                         //}
                          break;
       default : ZdGenerateException("Unknown file type index: \"%d\"", "CheckForRequiredVariables()", rdgInputFileType->ItemIndex);
     };
@@ -213,10 +217,10 @@ void TBDlgDataImporter::CheckForRequiredVariables() {
       }
     }
 
-    if (ExclusiveError.GetLength() || sMessage.GetLength()) {
-      if (sMessage.GetLength())
-        sMessage << "\n\n";
-      sMessage << ExclusiveError;
+    if (/*ExclusiveError.GetLength() || */sMessage.GetLength()) {
+      //if (sMessage.GetLength())
+      //  sMessage << "\n\n";
+      //sMessage << ExclusiveError;
       BImporterException::GenerateException(sMessage, "CheckForRequiredVariables()", ZdException::Notify);
     }
   }
