@@ -57,6 +57,8 @@ USEUNIT("..\calculation\Output\stsOutputFileData.cpp");
 USEUNIT("..\calculation\Output\stsOutputFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsRelativeRisk.cpp");
 USEUNIT("..\calculation\Output\stsAreaSpecificData.cpp");
+USEUNIT("..\calculation\Toolkit.cpp");
+//---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

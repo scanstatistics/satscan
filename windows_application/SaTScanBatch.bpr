@@ -55,7 +55,7 @@
       ..\calculation\Output\stsOutputFileData.obj 
       ..\calculation\Output\stsOutputFileWriter.obj 
       ..\calculation\Output\stsRelativeRisk.obj 
-      ..\calculation\Output\stsAreaSpecificData.obj"/>
+      ..\calculation\Output\stsAreaSpecificData.obj ..\calculation\Toolkit.obj"/>
     <RESFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
