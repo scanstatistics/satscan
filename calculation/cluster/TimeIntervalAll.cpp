@@ -19,6 +19,32 @@ void CTIAll::InitializeRange(int nLow, int nHigh)
    m_nStop  = nHigh;
 }
 
+/** Returns the number of cases that tract attributed to accumulated case count. */
+count_t CTIAll::GetCaseCountForTract(tract_t tTract, count_t** pCases) const
+{
+   count_t      tCaseCount;
+
+   if (m_nStop == m_nTotal)
+     tCaseCount = pCases[m_nStart][tTract];
+   else
+     tCaseCount  = pCases[m_nStart][tTract] - pCases[m_nStop][tTract];
+
+   return tCaseCount;
+}
+
+/** Returns the measure that tract attributed to accumulated measure. */
+measure_t CTIAll::GetMeasureForTract(tract_t tTract, measure_t** pMeasure) const
+{
+   measure_t      tMeasure;
+
+   if (m_nStop == m_nTotal)
+     tMeasure = pMeasure[m_nStart][tTract];
+   else
+     tMeasure  = pMeasure[m_nStart][tTract] - pMeasure[m_nStop][tTract];
+
+   return tMeasure;
+}
+
 bool CTIAll::GetNextTimeInterval(const count_t*& pCases,
                                    const measure_t*& pMeasure,
                                    count_t& nCases,
