@@ -56,17 +56,23 @@ void CPurelySpatialCluster::AddNeighbor(tract_t tNeighbor, const DataStreamGatew
   ++m_nTracts;
 
   for (size_t tStream=0; tStream < DataGateway.GetNumInterfaces(); ++tStream)
-    AddNeighbor(tNeighbor, DataGateway.GetDataStreamInterface(tStream), tStream);
+    (this->*fAddNeighborData)(tNeighbor, DataGateway.GetDataStreamInterface(tStream), tStream);
   m_bClusterDefined = true;
 }
 
 /** add neighbor tract data from DataStreamInterface */
-void CPurelySpatialCluster::AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream) {
-  ClusterStreamData & StreamData = gStreamData[tStream];
-  StreamData.gCases += Interface.GetPSCaseArray()[tNeighbor];
-  StreamData.gMeasure += Interface.GetPSMeasureArray()[tNeighbor];
-  if (Interface.IsSqMeasureArray())
-    StreamData.gSqMeasure += Interface.GetPSSqMeasureArray()[tNeighbor];
+void CPurelySpatialCluster::AddNeighborData(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream) {
+  gitr = gStreamData.begin() + tStream;
+  gitr->gCases += Interface.GetPSCaseArray()[tNeighbor];
+  gitr->gMeasure += Interface.GetPSMeasureArray()[tNeighbor];
+}
+
+/** add neighbor tract data from DataStreamInterface */
+void CPurelySpatialCluster::AddNeighborDataEx(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream) {
+  gitr = gStreamData.begin() + tStream;
+  gitr->gCases += Interface.GetPSCaseArray()[tNeighbor];
+  gitr->gMeasure += Interface.GetPSMeasureArray()[tNeighbor];
+  gitr->gSqMeasure += Interface.GetPSSqMeasureArray()[tNeighbor];
 }
 
 /** returns newly cloned CPurelySpatialCluster */
@@ -76,14 +82,12 @@ CPurelySpatialCluster * CPurelySpatialCluster::Clone() const {
 
 /** compares this cluster definition to passed cluster definition */
 void CPurelySpatialCluster::CompareTopCluster(CPurelySpatialCluster & TopShapeCluster, const CSaTScanData * pData) {
-  size_t        t;
-  CModel      & Probability = pData->GetProbabilityModel();
+  CModel                              & Probability = pData->GetProbabilityModel();
 
   m_nRatio = 0;
-  for (t=0; t < gStreamData.size(); ++t) {
-     ClusterStreamData & StreamData = gStreamData[t];
-     if (RateIsOfInterest(StreamData.gCases, StreamData.gMeasure, StreamData.gTotalCases, StreamData.gTotalMeasure))
-       m_nRatio += Probability.CalcLogLikelihoodRatio(StreamData.gCases, StreamData.gMeasure, StreamData.gTotalCases, StreamData.gTotalMeasure, m_DuczmalCorrection);
+  for (gitr=gStreamData.begin(); gitr != gStreamData.end(); ++gitr) {
+     if (m_pfRateOfInterest(gitr->gCases, gitr->gMeasure, gitr->gTotalCases, gitr->gTotalMeasure))
+       m_nRatio += Probability.CalcLogLikelihoodRatio(gitr->gCases, gitr->gMeasure, gitr->gTotalCases, gitr->gTotalMeasure, m_DuczmalCorrection);
   }
 
   // NOTE: because of data streams - when only one stream, this comparison is now called regardless
@@ -93,8 +97,8 @@ void CPurelySpatialCluster::CompareTopCluster(CPurelySpatialCluster & TopShapeCl
 
 /** modifies measure list given this cluster definition */
 void CPurelySpatialCluster::ComputeBestMeasures(CMeasureList & MeasureList) {
-  ClusterStreamData & StreamData = gStreamData[0];
-  MeasureList.AddMeasure(StreamData.gCases, /*gMeasure(*/StreamData.gMeasure/*, gStreamData[0].gSqMeasure)*/);
+  gitr = gStreamData.begin();
+  MeasureList.AddMeasure(gitr->gCases, /*gMeasure(*/gitr->gMeasure/*, gStreamData[0].gSqMeasure)*/);
 }
 
 void CPurelySpatialCluster::DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType) {
@@ -122,14 +126,12 @@ measure_t CPurelySpatialCluster::GetMeasureForTract(tract_t tTract, const CSaTSc
 }
 
 /** re-initializes cluster data */
-void CPurelySpatialCluster::Initialize(tract_t nCenter=0) {
-  StreamDataContainerIterator_t   itr;
-
+void CPurelySpatialCluster::Initialize(tract_t nCenter) {
   CCluster::Initialize(nCenter);
   m_nSteps     = 1;
   m_nClusterType = PURELYSPATIAL;
-  for (itr=gStreamData.begin(); itr != gStreamData.end(); ++itr)
-     itr->InitializeData();
+  for (gitr=gStreamData.begin(); gitr != gStreamData.end(); ++gitr)
+     gitr->InitializeData();
 }
 
 void CPurelySpatialCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals) {
@@ -144,12 +146,15 @@ void CPurelySpatialCluster::Setup(const CSaTScanData & Data) {
   size_t        t, tSize=Data.GetNumDataStreams();
 
   try {
+    //set AddNeihbor function pointer - for Normal model we will set to AddNeighborDataEx
+    fAddNeighborData = &CPurelySpatialCluster::AddNeighborData;
+
     gStreamData.resize(tSize);
     for (t=0; t < tSize; ++t) {
        gStreamData[t].gTotalMeasure = Data.GetTotalDataStreamMeasure(t);
        gStreamData[t].gTotalCases = Data.GetTotalDataStreamCases(t); 
     }
-    Initialize(0);
+    Initialize();
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()","CPurelySpatialCluster");

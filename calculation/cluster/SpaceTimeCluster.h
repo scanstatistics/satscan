@@ -9,24 +9,42 @@
 
 class SpaceTimeClusterStreamData : public AbstractTemporalClusterStreamData {
    private:
-     int                giAllocationSize;
-
      void               Init() {gpCases=0;gpMeasure=0;gpSqMeasure=0;}
      void               Setup();
+
+   protected:
+     int                giAllocationSize;
 
    public:
     SpaceTimeClusterStreamData(int unsigned iAllocationSize);
     SpaceTimeClusterStreamData(const SpaceTimeClusterStreamData& rhs);
     virtual ~SpaceTimeClusterStreamData();
 
-    SpaceTimeClusterStreamData        & operator=(const SpaceTimeClusterStreamData& rhs);
-    
-    virtual SpaceTimeClusterStreamData* Clone() const;
+    virtual SpaceTimeClusterStreamData  * Clone() const;
+    SpaceTimeClusterStreamData          & operator=(const SpaceTimeClusterStreamData& rhs);
+
     virtual void                        InitializeData();
+};
+
+class SpaceTimeClusterStreamDataEx : public SpaceTimeClusterStreamData {
+   private:
+     void               Setup();
+
+   public:
+     SpaceTimeClusterStreamDataEx(int unsigned iAllocationSize);
+     SpaceTimeClusterStreamDataEx(const SpaceTimeClusterStreamDataEx& rhs);
+     virtual ~SpaceTimeClusterStreamDataEx();
+
+     virtual SpaceTimeClusterStreamDataEx * Clone() const;
+     SpaceTimeClusterStreamDataEx         & operator=(const SpaceTimeClusterStreamDataEx& rhs);
+
+     virtual void       InitializeData();
 };
 
 /** cluster class for space-time analysis (retrospective and prospective) */
 class CSpaceTimeCluster : public CCluster {
+  typedef void (CSpaceTimeCluster::* ADDNEIGHBOR)(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream=0);
+
   private:
     void                        Init();
     void                        Setup(IncludeClustersType eIncludeClustersType, const CSaTScanData & Data);
@@ -38,6 +56,7 @@ class CSpaceTimeCluster : public CCluster {
     int                         m_nIntervalCut;
     IncludeClustersType         m_nTIType;
     CTimeIntervals            * TI;
+    ADDNEIGHBOR                 fAddNeighborData;
 
   public:
     CSpaceTimeCluster(IncludeClustersType eIncludeClustersType, const CSaTScanData & Data, BasePrint & PrintDirection);
@@ -48,7 +67,8 @@ class CSpaceTimeCluster : public CCluster {
 
     inline virtual void         AssignAsType(const CCluster& rhs) {*this = (CSpaceTimeCluster&)rhs;}
     void                        AddNeighbor(tract_t tNeighbor, const DataStreamGateway & DataGateway);
-    void                        AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream=0);
+    void                        AddNeighborData(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream=0);
+    void                        AddNeighborDataEx(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream=0);
     virtual CSpaceTimeCluster * Clone() const;
     inline virtual void         CompareTopCluster(CSpaceTimeCluster & TopShapeCluster, const CSaTScanData & Data);
     inline virtual void         ComputeBestMeasures(CMeasureList & MeasureList);

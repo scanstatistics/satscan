@@ -19,11 +19,11 @@ SpaceTimeClusterStreamData::SpaceTimeClusterStreamData(const SpaceTimeClusterStr
     Init();
     gpCases = new count_t[rhs.giAllocationSize];
     gpMeasure = new measure_t[rhs.giAllocationSize];
-    gpSqMeasure = new measure_t[rhs.giAllocationSize];
+    //gpSqMeasure = new measure_t[rhs.giAllocationSize];
     *this = rhs;
   }
   catch (ZdException &x) {
-    delete[] gpCases; delete[] gpMeasure; delete[] gpSqMeasure;
+    delete[] gpCases; delete[] gpMeasure; //delete[] gpSqMeasure;
     x.AddCallpath("constructor()","SpaceTimeClusterStreamData");
     throw;
   }
@@ -31,7 +31,7 @@ SpaceTimeClusterStreamData::SpaceTimeClusterStreamData(const SpaceTimeClusterStr
 
 SpaceTimeClusterStreamData::~SpaceTimeClusterStreamData() {
   try {
-    delete[] gpCases; delete[] gpMeasure; delete[] gpSqMeasure;
+    delete[] gpCases; delete[] gpMeasure; //delete[] gpSqMeasure;
   }
   catch(...){}
 }
@@ -43,7 +43,7 @@ SpaceTimeClusterStreamData & SpaceTimeClusterStreamData::operator=(const SpaceTi
    giAllocationSize = rhs.giAllocationSize;
    memcpy(gpCases, rhs.gpCases, giAllocationSize * sizeof(count_t));
    memcpy(gpMeasure, rhs.gpMeasure, giAllocationSize * sizeof(measure_t));
-   memcpy(gpSqMeasure, rhs.gpSqMeasure, giAllocationSize * sizeof(measure_t));
+   //memcpy(gpSqMeasure, rhs.gpSqMeasure, giAllocationSize * sizeof(measure_t));
    return *this;
 }
 
@@ -56,19 +56,86 @@ void SpaceTimeClusterStreamData::InitializeData() {
   gMeasure=gSqMeasure=0;
   memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
   memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
-  memset(gpSqMeasure, 0, sizeof(measure_t) * giAllocationSize);
+  //memset(gpSqMeasure, 0, sizeof(measure_t) * giAllocationSize);
 }
 
 void SpaceTimeClusterStreamData::Setup() {
   try {
     gpCases = new count_t[giAllocationSize];
     gpMeasure = new measure_t[giAllocationSize];
-    gpSqMeasure = new measure_t[giAllocationSize];
+    //gpSqMeasure = new measure_t[giAllocationSize];
     InitializeData();
   }
   catch (ZdException &x) {
-    delete[] gpCases; delete[] gpMeasure; delete[] gpSqMeasure;
+    delete[] gpCases; delete[] gpMeasure; //delete[] gpSqMeasure;
     x.AddCallpath("Setup()","SpaceTimeClusterStreamData");
+    throw;
+  }
+}
+
+SpaceTimeClusterStreamDataEx::SpaceTimeClusterStreamDataEx(int unsigned iAllocationSize)
+                             :SpaceTimeClusterStreamData(iAllocationSize) {
+  try {
+    Setup();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("constructor()","SpaceTimeClusterStreamDataEx");
+    throw;
+  }
+}
+
+SpaceTimeClusterStreamDataEx::SpaceTimeClusterStreamDataEx(const SpaceTimeClusterStreamDataEx& rhs)
+                             :SpaceTimeClusterStreamData(rhs) {
+  try {
+    gpSqMeasure = new measure_t[rhs.giAllocationSize];
+    memcpy(gpSqMeasure, rhs.gpSqMeasure, rhs.giAllocationSize * sizeof(measure_t));
+    *this = rhs;
+  }
+  catch (ZdException &x) {
+    delete[] gpSqMeasure;
+    x.AddCallpath("constructor()","SpaceTimeClusterStreamDataEx");
+    throw;
+  }
+}
+
+SpaceTimeClusterStreamDataEx::~SpaceTimeClusterStreamDataEx() {
+  try {
+    delete[] gpSqMeasure;
+  }
+  catch(...){}
+}
+
+SpaceTimeClusterStreamDataEx & SpaceTimeClusterStreamDataEx::operator=(const SpaceTimeClusterStreamDataEx& rhs) {
+   gCases = rhs.gCases;
+   gMeasure = rhs.gMeasure;
+   gSqMeasure = rhs.gSqMeasure;
+   giAllocationSize = rhs.giAllocationSize;
+   memcpy(gpCases, rhs.gpCases, giAllocationSize * sizeof(count_t));
+   memcpy(gpMeasure, rhs.gpMeasure, giAllocationSize * sizeof(measure_t));
+   memcpy(gpSqMeasure, rhs.gpSqMeasure, giAllocationSize * sizeof(measure_t));
+   return *this;
+}
+
+SpaceTimeClusterStreamDataEx * SpaceTimeClusterStreamDataEx::Clone() const {
+  return new SpaceTimeClusterStreamDataEx(*this);
+}
+
+void SpaceTimeClusterStreamDataEx::InitializeData() {
+  gCases=0;
+  gMeasure=gSqMeasure=0;
+  memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
+  memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
+  memset(gpSqMeasure, 0, sizeof(measure_t) * giAllocationSize);
+}
+
+void SpaceTimeClusterStreamDataEx::Setup() {
+  try {
+    gpSqMeasure = new measure_t[giAllocationSize];
+    memset(gpSqMeasure, 0, sizeof(measure_t) * giAllocationSize);
+  }
+  catch (ZdException &x) {
+    delete[] gpSqMeasure;
+    x.AddCallpath("Setup()","SpaceTimeClusterStreamDataEx");
     throw;
   }
 }
@@ -137,11 +204,24 @@ void CSpaceTimeCluster::AddNeighbor(tract_t tNeighbor, const DataStreamGateway &
   ++m_nTracts;
 
   for (size_t tStream=0; tStream < DataGateway.GetNumInterfaces(); ++tStream)
-    AddNeighbor(tNeighbor, DataGateway.GetDataStreamInterface(tStream), tStream);
+    (this->*fAddNeighborData)(tNeighbor, DataGateway.GetDataStreamInterface(tStream), tStream);
 }
 
 /** add neighbor tract data from DataStreamInterface */
-void CSpaceTimeCluster::AddNeighbor(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream) {
+void CSpaceTimeCluster::AddNeighborData(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream) {
+  int           i;
+  count_t    ** ppCases = Interface.GetCaseArray(), * pStreamCases = gStreamData[tStream]->gpCases;
+  measure_t  ** ppMeasure = Interface.GetMeasureArray(), * pStreamMeasure = gStreamData[tStream]->gpMeasure;
+
+  AbstractTemporalClusterStreamData * pStreamData = gStreamData[tStream];
+  for (i=0; i < m_nTotalIntervals; ++i) {
+     pStreamCases[i]   += ppCases[i][tNeighbor];
+     pStreamMeasure[i] += ppMeasure[i][tNeighbor];
+  }
+}
+
+/** add neighbor tract data from DataStreamInterface */
+void CSpaceTimeCluster::AddNeighborDataEx(tract_t tNeighbor, const DataStreamInterface & Interface, size_t tStream) {
   int           i;
   count_t    ** ppCases = Interface.GetCaseArray();
   measure_t  ** ppMeasure = Interface.GetMeasureArray(),
@@ -151,10 +231,8 @@ void CSpaceTimeCluster::AddNeighbor(tract_t tNeighbor, const DataStreamInterface
   for (i=0; i < m_nTotalIntervals; ++i) {
      pStreamData->gpCases[i]   += ppCases[i][tNeighbor];
      pStreamData->gpMeasure[i] += ppMeasure[i][tNeighbor];
+     pStreamData->gpSqMeasure[i] += ppMeasureSquared[i][tNeighbor];
   }
-  if (ppMeasureSquared)
-    for (i=0; i < m_nTotalIntervals; ++i)
-       pStreamData->gpSqMeasure[i] += ppMeasureSquared[i][tNeighbor];
 }
 
 /** returns newly cloned CSpaceTimeCluster */
@@ -168,7 +246,7 @@ void CSpaceTimeCluster::CompareTopCluster(CSpaceTimeCluster & TopShapeCluster, c
   if (Data.GetNumDataStreams() > 1)
     TI->CompareDataStreamClusters(*this, TopShapeCluster, gStreamData);
   else {
-    AbstractTemporalClusterStreamData * pStreamData = gStreamData[0];
+    AbstractTemporalClusterStreamData * pStreamData = (*gStreamData.begin());
     TI->CompareClusters(*this, TopShapeCluster, pStreamData->gpCases, pStreamData->gpMeasure, pStreamData->gpSqMeasure);
   }
 }
@@ -205,10 +283,12 @@ void CSpaceTimeCluster::Init() {
 
 /** re-initializes cluster data */
 void CSpaceTimeCluster::Initialize(tract_t nCenter = 0) {
+  StreamDataContainerIterator_t         itr;
+  
   CCluster::Initialize(nCenter);
   m_nClusterType = SPACETIME;
-  for (size_t t=0; t < gStreamData.size(); ++t)
-     gStreamData[t]->InitializeData();
+  for (itr=gStreamData.begin(); itr != gStreamData.end(); ++itr)
+     (*itr)->InitializeData();
 }
 
 /** internal setup function */
@@ -216,6 +296,9 @@ void CSpaceTimeCluster::Setup(IncludeClustersType eIncludeClustersType, const CS
   AbstractTemporalClusterStreamData * pStreamData;
 
   try {
+    //set AddNeihbor function pointer - for Normal model we will set to AddNeighborDataEx
+    fAddNeighborData = &CSpaceTimeCluster::AddNeighborData;
+  
     m_nTotalIntervals = Data.m_nTimeIntervals;
     m_nIntervalCut = Data.m_nIntervalCut;
     m_nTIType = eIncludeClustersType;
