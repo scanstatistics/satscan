@@ -66,7 +66,8 @@ class PopulationData {
                                                                        date was introduced into gvPopulationDates */
 
     void                                AssignPopulation(PopulationCategory& thisPopulationCategory, Julian PopulationDate, float fPopulation, bool bTrueDate);
-    void                                Init() {giNumberCovariates=0;gbAggregateCategories=false;}
+    void                                Init() {giNumberCovariates=0;gbAggregateCategories=false;
+                                                gbStartAsPopDt=false;gbEndAsPopDt=false;}
 
   public:
     PopulationData();
