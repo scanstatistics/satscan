@@ -80,7 +80,7 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
       SetDoubleField(*pRecord, pCluster.GetRelativeRisk(pData.GetMeasureAdjustment()), GetFieldNumber(gvFields, REL_RISK));
 	        
       // log likliehood or tst_stat if space-time permutation
-      SetDoubleField(*pRecord, pCluster.m_nLogLikelihood, GetFieldNumber(gvFields, (giModelType != SPACETIMEPERMUTATION ? LOG_LIKL : TST_STAT)));
+      SetDoubleField(*pRecord, pCluster.m_nRatio, GetFieldNumber(gvFields, (giModelType != SPACETIMEPERMUTATION ? LOG_LIKL : TST_STAT)));
 	
       // p value
       if (gbPrintPVal) {
