@@ -66,21 +66,21 @@
       ..\calculation\analysis\SVTTAnalysis.obj 
       ..\calculation\cluster\PurelySpatialProspectiveCluster.obj 
       stsFrmStartWindow.obj 
-      ..\calculation\utility\MultipleDimensionArrayHandler.obj"/>
+      ..\calculation\utility\MultipleDimensionArrayHandler.obj 
+      stsFrmDownloadProgress.obj stsFrmUpdateCheck.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
       stsFrmAnalysisRun.dfm stsFrmOutPutViewer.dfm stsDlgDataImporter.dfm 
-      stsFrmStartWindow.dfm"/>
+      stsFrmStartWindow.dfm stsFrmDownloadProgress.dfm stsFrmUpdateCheck.dfm"/>
     <LIBFILES value="&quot;C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib&quot; 
       &quot;C:\Program Files\Borland\CBuilder5\Lib\zd540.lib&quot; 
       ..\xbase\xbase_2.0.0\xbase\xbase.lib"/>
-    <LIBRARIES value="TSGC5201.lib vcldb50.lib vclbde50.lib vclx50.lib Qrpt50.lib Vcl50.lib"/>
-    <SPARELIBS value="Vcl50.lib Qrpt50.lib vclx50.lib vclbde50.lib vcldb50.lib TSGC5201.lib"/>
-    <PACKAGES value="Vcl50.bpi bcb2kaxserver50.bpi VCLDB50.bpi VCLBDE50.bpi Vclx50.bpi 
-      vcldbx50.bpi vclie50.bpi Inetdb50.bpi Inet50.bpi TeeUI50.bpi TeeDB50.bpi 
-      Tee50.bpi bcbsmp50.bpi ibsmp50.bpi bcbie50.bpi dclocx50.bpi NMFast50.bpi 
-      Qrpt50.bpi VCLIB50.bpi TeeQR50.bpi TSGC5201.bpi TSDGC5201.bpi"/>
+    <LIBRARIES value="NMFast50.lib TSGC5201.lib vcldb50.lib vclbde50.lib vclx50.lib Qrpt50.lib 
+      Vcl50.lib"/>
+    <SPARELIBS value="Vcl50.lib Qrpt50.lib vclx50.lib vclbde50.lib vcldb50.lib TSGC5201.lib 
+      NMFast50.lib"/>
+    <PACKAGES value="Vcl50.bpi TSGC5201.bpi TSDGC5201.bpi"/>
     <PATHCPP value=".;..\calculation;..\calculation\utility;..\calculation\print;..\calculation\probability_model;..\calculation\satscan_data;..\calculation\cluster;..\calculation\analysis;..\calculation\Output"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
@@ -88,7 +88,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED;_DEBUG"/>
+    <USERDEFINES value="INTEL_BASED;_DEBUG;WIN32;"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="StsWinPrj.cpp"/>
     <INCLUDEPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;\\Nfse\home\hostovic\prj\basisdev\include;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\topgrid;.."/>
@@ -204,20 +204,24 @@ Item4=$(BCB)\source\vcl;\\Nfsd\home\hostovic\prj\basisdev;\\Nfsd\imsdev\zd\zd540
 Item5=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=13
-Item0=INTEL_BASED;_DEBUG
-Item1=INTEL_BASED
-Item2=INTEL_BASED;_DEBUG;
-Item3=INTEL_BASED;_DEBUG;DEBUGMEASURE
-Item4=INTEL_BASED;DEBUGPROSPECTIVETIME
-Item5=INTEL_BASED;DEBUGANALYSIS
-Item6=OUTPUT_TO_WINDOW;INTEL_BASED
-Item7=OUTPUT_TO_WINDOW;INTEL_BASED;DON_UPDATE
-Item8=DON_UPDATE
-Item9=OUTPUT_TO_WINDOW
-Item10=_DEBUG;OUTPUT_TO_WINDOW
-Item11=_DEBUG;OUTPUT_TO_WINDOW;INTEL_BASED
-Item12=_DEBUG
+Count=17
+Item0=INTEL_BASED;_DEBUG;WIN32;
+Item1=INTEL_BASED;_DEBUG;WIN32;__cplusplus;Z_PREFIX
+Item2=INTEL_BASED;_DEBUG;WIN32;__cplusplus;
+Item3=INTEL_BASED;_DEBUG;WIN32
+Item4=INTEL_BASED;_DEBUG
+Item5=INTEL_BASED
+Item6=INTEL_BASED;_DEBUG;
+Item7=INTEL_BASED;_DEBUG;DEBUGMEASURE
+Item8=INTEL_BASED;DEBUGPROSPECTIVETIME
+Item9=INTEL_BASED;DEBUGANALYSIS
+Item10=OUTPUT_TO_WINDOW;INTEL_BASED
+Item11=OUTPUT_TO_WINDOW;INTEL_BASED;DON_UPDATE
+Item12=DON_UPDATE
+Item13=OUTPUT_TO_WINDOW
+Item14=_DEBUG;OUTPUT_TO_WINDOW
+Item15=_DEBUG;OUTPUT_TO_WINDOW;INTEL_BASED
+Item16=_DEBUG
 
 [Debugging]
 DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\imsdev\zd\zd540;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\

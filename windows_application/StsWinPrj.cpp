@@ -3,6 +3,7 @@
 
 #include "stsSaTScan.h"
 #pragma hdrstop
+#include "stsFrmUpdateCheck.h"
 //---------------------------------------------------------------------------
 
 USERES("StsWinPrj.res");
@@ -85,17 +86,31 @@ USEUNIT("..\calculation\analysis\SVTTAnalysis.cpp");
 USEUNIT("..\calculation\cluster\PurelySpatialProspectiveCluster.cpp");
 USEFORM("stsFrmStartWindow.cpp", frmStartWindow);
 USEUNIT("..\calculation\utility\MultipleDimensionArrayHandler.cpp");
+USEFORM("stsFrmDownloadProgress.cpp", frmDownloadProgress);
+USEFORM("stsFrmUpdateCheck.cpp", frmUpdateCheck);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+        bool            bRunUpdate=false;
+        AnsiString      sUpdateParameter;
+        int i;
+
         try {
+           Application->Initialize();
            BasisInit();
            BasisSetToolkit(new SaTScanToolkit(_argv[0]));
            ZdGetFileTypeArray()->AddElement( &(DBFFileType::GetDefaultInstance()) );
-           Application->Initialize();
            Application->Title = "SaTScan";
            Application->HelpFile = "";
+           sUpdateParameter.printf("%s%s", ExtractFilePath(Application->ExeName).c_str(), TfrmUpdateCheck::gsUpdaterFilename);
+           if (!access(sUpdateParameter.c_str(), 00)) {
+             _sleep(1); // give updater moment to shutdown
+             i = remove(sUpdateParameter.c_str());
+           }
            Application->CreateForm(__classid(TfrmMainForm), &frmMainForm);
                  Application->Run();
+           if ((bRunUpdate = GetToolkit().GetRunUpdateOnTerminate()) == true)
+             sUpdateParameter.printf("\"%s%s\" \"%s\"", ExtractFilePath(Application->ExeName).c_str(),
+                                     GetToolkit().GetUpdateArchiveFilename().GetCString(), Application->ExeName.c_str());
            BasisExit();
         }
         catch (ZdException &x) {
@@ -109,6 +124,8 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         catch(...) {
            BasisExit();
         }
+        if (bRunUpdate)
+          HINSTANCE hReturn = ShellExecute(NULL, "open", TfrmUpdateCheck::gsUpdaterFilename, sUpdateParameter.c_str(), NULL, SW_SHOWNORMAL);
         return 0;
 }
 //---------------------------------------------------------------------------
