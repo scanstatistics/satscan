@@ -248,9 +248,9 @@ void stsRunHistoryFile::GetMaxTemporalExtentString(ZdString& sTempValue, const C
       if (params.GetAnalysisType() == PURELYSPATIAL)
          sTempValue = "n/a";
       else {
-         sTempValue.printf("%.2f",  params.GetInitialMaxTemporalClusterSize());
+         sTempValue.printf("%.2f",  params.GetMaximumTemporalClusterSize());
          sTempValue << " ";
-         if(params.GetInitialMaxTemporalClusterSizeType() == PERCENTAGETYPE)
+         if(params.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE)
             sTempValue << "%";
          else {
             if(params.GetTimeIntervalUnitsType() == DAY)
