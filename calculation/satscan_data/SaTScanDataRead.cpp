@@ -282,14 +282,13 @@ bool CSaTScanData::ConvertPopulationDateToJulian(const char * sDateString, int i
    0 = errors encountered
  **********************************************************************/
 bool CSaTScanData::ReadPops() {
-//  std::vector<int>                 vFirstTractDateIndex;
   FILE                          * fp; // Ptr to population file
   std::vector<Julian>             vPopulationDates;
   std::vector<Julian>::iterator   itrdates;
   char                          * ptr, ** cvec = 0,
                                   sDateString[MAX_LINEITEMSIZE], szData[MAX_LINESIZE], szTid[MAX_LINEITEMSIZE];
   int                             i, iCategoryIndex, iNumCategories;
-  bool                            bValid=true, bEmpty=true, InvalidForProspective=false;
+  bool                            bValid=true, bEmpty=true;
   tract_t                         nRec=0, nNonBlankLines, tract;
   float                           fPopulation;
   Julian                          PopulationDate;
@@ -342,12 +341,28 @@ bool CSaTScanData::ReadPops() {
       bValid = false;
     }
 
+
+    // Perform Check: When a prospective analysis is conducted and if a population file is
+    //                used, and if the population for a tract is defined at more than one
+    //                time period, error message should be shown in the running window and
+    //                the application terminated.
+    if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME &&
+        m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE && vPopulationDates.size() > 1) {
+        bValid = false;
+        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE,
+                                                       "\n  ERROR: For the prospective space-time analysis to be correct,\n"
+                                                       "           it is critical that the scanning spatial window is the\n"
+                                                       "           same for each of the analysis performed over time. If \n"
+                                                       "           there are multiple years in the population file, so that\n"
+                                                       "           the population size changes over time, as it does in your\n"
+                                                       "           data, then you must define the maximum circle size in\n"
+                                                       "           terms of a specific geographical radius rather than as a\n"
+                                                       "           percent of the total population at risk.\n\n\n");
+    }
+
     // 2nd Pass -- read data in structures
     if (bValid) {
       gpTInfo->tiSetupPopDates(vPopulationDates, m_nStartDate, m_nEndDate);
-      //if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
-      //  vFirstTractDateIndex.resize(gpTInfo->tiGetNumTracts(), -1);
-
       fseek(fp, 0L, SEEK_SET);
       nRec = 0;
       nNonBlankLines = 0;
@@ -413,35 +428,11 @@ bool CSaTScanData::ReadPops() {
             continue;
           }
 
-          // Perform Check: When a prospective analysis is conducted and if a population file is
-          //                used, and if the population for a tract is defined at more than one
-          //                time period, error message should be shown in the running window and
-          //                the application terminated.
-          if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME && m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE) {
-            //iDateIndex = gpTInfo->tiGetPopDateIndex(nPopDate);
-            //if (vFirstTractDateIndex[tract] == -1 || vFirstTractDateIndex[tract] == iDateIndex)
-            //  vFirstTractDateIndex[tract] = iDateIndex;
-            //else
-              InvalidForProspective = true;
-          }
-
           // Add population count for this tract/category/year
           gpTInfo->tiAddCategoryToTract(tract, iCategoryIndex, PopulationDate, fPopulation);
-
         } // while - 2nd pass
       } // if
 
-      if (InvalidForProspective)  {
-        bValid = false;
-        gpPrintDirection->SatScanPrintInputFileWarning(BasePrint::POPFILE, "\n  ERROR: For the prospective space-time analysis to be correct,\n"
-                                                                           "           it is critical that the scanning spatial window is the\n"
-                                                                           "           same for each of the analysis performed over time. If \n"
-                                                                           "           there are multiple years in the population file, so that\n"
-                                                                           "           the population size changes over time, as it does in your\n"
-                                                                           "           data, then you must define the maximum circle size in\n"
-                                                                           "           terms of a specific geographical radius rather than as a\n"
-                                                                           "           percent of the total population at risk.\n\n\n");
-      }
       if (bValid && iNumCategories > 0)
        free(cvec);
 
