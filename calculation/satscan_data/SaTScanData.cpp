@@ -14,89 +14,36 @@ CSaTScanData::CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection)
 }
 
 CSaTScanData::~CSaTScanData() {
-  delete m_pModel;
-
-  int i, j;
-  long lTotalNumEllipses = m_pParameters->GetNumTotalEllipses();
-
-  // it looks complicated but it cuts out about 7 loops from the original which were unnecessary - AJV 8-28-2002
-  for (i = 0; i < m_nTimeIntervals; ++i) {
-    if (m_pCases)
-       free(m_pCases[i]);
-    if (m_pCases_NC)
-      free(m_pCases_NC[i]);
-    if (m_pControls)
-       free(m_pControls[i]);
-    if (m_pMeasure)
-       free(m_pMeasure[i]);
-    if (m_pMeasure_NC)
-       free(m_pMeasure_NC[i]);
-    if (m_pSimCases_NC)
-       free(m_pSimCases_NC[i]);
-  }
-  //measure allocated to number time intervals plus one
-  if (m_pMeasure)
-    free(m_pMeasure[m_nTimeIntervals]);
-  if (m_pMeasure_NC)
-    free(m_pMeasure_NC[m_nTimeIntervals]);
-
-
-  if (m_pCases)
-     free(m_pCases);
-  if (m_pCases_NC)
-     free(m_pCases_NC);
-  if (m_pControls)
-     free(m_pControls);
-  if (m_pMeasure)
-     free(m_pMeasure);
-  if (m_pMeasure_NC)
-     free(m_pMeasure_NC);
-  if (m_pPTCases)
+  try {
+    delete m_pModel;
+    delete gpCasesHandler; gpCasesHandler=0;
+    delete gpCasesNonCumulativeHandler; gpCasesNonCumulativeHandler=0;
+    delete gpControlsHandler; gpControlsHandler=0;
+    delete gpSimCasesHandler; gpSimCasesHandler=0;
+    delete gpSimCasesNonCumulativeHandler; gpSimCasesNonCumulativeHandler=0;
+    delete gpNeighborCountHandler; gpNeighborCountHandler=0;
+    delete gpSortedIntHandler; gpSortedIntHandler=0;
+    delete gpSortedUShortHandler; gpSortedUShortHandler=0;
+    delete gpCategoryCasesHandler; gpCategoryCasesHandler=0;
+    delete gpMeasureHandler; gpMeasureHandler=0;
+    delete gpMeasureNonCumulativeHandler; gpMeasureNonCumulativeHandler=0;
+    delete gpCasesByTimeByCategoryHandler; gpCasesByTimeByCategoryHandler=0;
+    delete gpMeasureByTimeByCategoryHandler; gpMeasureByTimeByCategoryHandler=0;
+    delete gpCategoryMeasureHandler; gpCategoryMeasureHandler=0;
+    delete gpControlsByTimeByCategoryHandler; gpControlsByTimeByCategoryHandler=0;
+    delete gpCategoryControlsHandler; gpCategoryControlsHandler=0;
     free(m_pPTCases);
-  if (m_pPTMeasure)
     free(m_pPTMeasure);
-  if (m_pSimCases_NC)
-    free(m_pSimCases_NC);
-  if (m_pSimCases_TotalByTimeInt)
     free(m_pSimCases_TotalByTimeInt);
-  if (m_pCases_TotalByTimeInt)
     free(m_pCases_TotalByTimeInt);
-  if (m_pMeasure_TotalByTimeInt)
     free(m_pMeasure_TotalByTimeInt);
-
-  for (i = 0; i <= lTotalNumEllipses; ++i) {
-     for (j = 0; j < m_nGridTracts; ++j) {
-        if(m_pSortedInt)
-           free(m_pSortedInt[i][j]);
-        if (m_pSortedUShort)
-           free(m_pSortedUShort[i][j]);
-     }
-     if (m_NeighborCounts)
-         free(m_NeighborCounts[i]);
-     if(m_pSortedInt)
-         free(m_pSortedInt[i]);
-     if (m_pSortedUShort)
-         free(m_pSortedUShort[i]);
+    delete [] mdE_Angles;
+    delete [] mdE_Shapes;
+    free(m_pIntervalStartTimes);
+    delete gpTInfo;
+    delete gpGInfo;
   }
-
-  if(m_pSortedInt)
-     free(m_pSortedInt);
-  if (m_pSortedUShort)
-     free(m_pSortedUShort);
-  if (m_NeighborCounts)
-     free(m_NeighborCounts);
-
-  //delete the ellipsoid angle and shape array
-  delete [] mdE_Angles;
-  delete [] mdE_Shapes;
-
-  free(m_pIntervalStartTimes);
-
-  if (m_pSimCases)
-     DeAllocSimCases();
-
-   delete gpTInfo;          // DTG
-   delete gpGInfo;
+  catch (...){}  
 }
 
 /** Sequential analyses will call this function to clear neighbor information and
@@ -104,32 +51,24 @@ CSaTScanData::~CSaTScanData() {
     is specified as a percentage of the population that this operation need be
     performed between iterations of a sequential scan. */
 void CSaTScanData::AdjustNeighborCounts() {
-  int           i, j;
-
   try {
     //Deallocate neighbor information in sorted structures.
     if (m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE) {
       //Free/clear previous interation's neighbor information.
-      if (m_pSortedUShort) {
-        for (i=0; i <= m_pParameters->GetNumTotalEllipses(); ++i)
-           for (j=0; j < m_nGridTracts; ++j) {
-              free(m_pSortedUShort[i][j]); m_pSortedUShort[i][j]=0;
-              m_NeighborCounts[i][j]=0;
-           }
-      }
-      else {
-        for (i=0; i <= m_pParameters->GetNumTotalEllipses(); ++i)
-           for (j=0; j < m_nGridTracts; ++j) {
-              free(m_pSortedInt[i][j]); m_pSortedInt[i][j]=0;
-              m_NeighborCounts[i][j]=0;
-           }
-      }
+      if (gpSortedUShortHandler)
+        gpSortedUShortHandler->FreeThirdDimension();
+      else
+        gpSortedIntHandler->FreeThirdDimension();
+      gpNeighborCountHandler->Set(0);
+ 
       //Recompute neighbors.
-      MakeNeighbors(gpTInfo, gpGInfo, m_pSortedInt, m_pSortedUShort, m_nTotalTractsAtStart/*m_nTracts*/, m_nGridTracts,
-                    m_pMeasure[0], m_nMaxCircleSize, m_nMaxCircleSize, m_NeighborCounts,
-                    m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
-                    m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
-                    m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
+      MakeNeighbors(gpTInfo, gpGInfo, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
+                    (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0),
+                    static_cast<tract_t>(m_nTotalTractsAtStart), m_nGridTracts,
+                    gpMeasureHandler->GetArray()[0], m_nMaxCircleSize, m_nMaxCircleSize,
+                    gpNeighborCountHandler->GetArray(), m_pParameters->GetDimensionsOfData(),
+                    m_pParameters->GetNumRequestedEllipses(), m_pParameters->GetEllipseShapes(),
+                    m_pParameters->GetEllipseRotations(), m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
     }
   }
   catch (ZdException & x) {
@@ -141,21 +80,10 @@ void CSaTScanData::AdjustNeighborCounts() {
 /** allocates two-dimensional array that will track the number of neighbors
     for each shape/grid point combination. */
 void CSaTScanData::AllocateNeighborArray() {
-  int   i, j;
-
   try {
-    m_NeighborCounts = (tract_t**)Smalloc((m_pParameters->GetNumTotalEllipses() + 1) * sizeof(tract_t *), gpPrint);
-    memset(m_NeighborCounts, 0, (m_pParameters->GetNumTotalEllipses() + 1) * sizeof(tract_t *));
-    for (i=0; i <= m_pParameters->GetNumTotalEllipses(); ++i) {
-       m_NeighborCounts[i] = (tract_t*)Smalloc(m_nGridTracts * sizeof(tract_t), gpPrint);
-       memset(m_NeighborCounts[i], 0, m_nGridTracts * sizeof(tract_t));
-       //for (j=0; j < m_nGridTracts; ++j)
-       //   m_NeighborCounts[i][j] = 0;
-    }
+    gpNeighborCountHandler = new TwoDimensionArrayHandler<tract_t>(m_pParameters->GetNumTotalEllipses() + 1, m_nGridTracts, 0);
   }
   catch (ZdException &x) {
-    for (i=0; m_NeighborCounts && i <= m_pParameters->GetNumTotalEllipses(); ++i)
-       free(m_NeighborCounts[i]);
     x.AddCallpath("AllocateNeighborArray()","CSaTScanData");
     throw;
   }
@@ -164,59 +92,35 @@ void CSaTScanData::AllocateNeighborArray() {
 /** Allocates multi-dimensional array that stores tract index for each neighbor
     of each ellipse/grid point combination. */
 void CSaTScanData::AllocateSortedArray() {
-  int   i, j;
-
   try {
-    if (m_nTracts < std::numeric_limits<unsigned short>::max()) {
-      m_pSortedUShort = (unsigned short ***)Smalloc(sizeof(unsigned short*) * (m_pParameters->GetNumTotalEllipses()+1), gpPrint);
-      memset(m_pSortedUShort, 0, (m_pParameters->GetNumTotalEllipses()+1) * sizeof(unsigned short*));
-      for (i=0; i <= m_pParameters->GetNumTotalEllipses(); ++i) {
-         m_pSortedUShort[i] = (unsigned short **)Smalloc(sizeof(unsigned short*) * m_nGridTracts, gpPrint);
-         memset(m_pSortedUShort[i], 0, sizeof(unsigned short*) * m_nGridTracts);
-      }
-      //for (i=0; i <= m_pParameters->GetNumTotalEllipses(); ++i)
-      //   for (j=0; j < m_nGridTracts; ++j)
-      //      m_pSortedUShort[i][j] = 0;
-    }
-    else {
-      m_pSortedInt = (tract_t ***)Smalloc(sizeof(tract_t*) * (m_pParameters->GetNumTotalEllipses()+1), gpPrint);
-      memset(m_pSortedInt, 0, (m_pParameters->GetNumTotalEllipses()+1) * sizeof(tract_t*));
-      for (i=0; i <= m_pParameters->GetNumTotalEllipses(); ++i) {
-         m_pSortedInt[i] = (tract_t **)Smalloc(sizeof(tract_t *) * m_nGridTracts, gpPrint);
-         memset(m_pSortedInt[i], 0, sizeof(tract_t*) * m_nGridTracts);
-      }
-      //for (i=0; i <= m_pParameters->GetNumTotalEllipses(); ++i)
-      //  for (j = 0; j < m_nGridTracts; ++j)
-      //      m_pSortedInt[i][j] = 0;
-    }
-  }  
+    if (m_nTracts < std::numeric_limits<unsigned short>::max())
+      gpSortedUShortHandler = new ThreeDimensionArrayHandler<unsigned short>(m_pParameters->GetNumTotalEllipses()+1, m_nGridTracts, 0);
+    else
+      gpSortedIntHandler = new ThreeDimensionArrayHandler<tract_t>(m_pParameters->GetNumTotalEllipses()+1, m_nGridTracts, 0);
+  }
   catch (ZdException &x) {
-    for (i=0; m_pSortedUShort && i <= m_pParameters->GetNumTotalEllipses(); ++i)
-       free(m_pSortedUShort[i]);
-    for (i=0; m_pSortedInt && i <= m_pParameters->GetNumTotalEllipses(); ++i)
-       free(m_pSortedInt[i]);
+    delete gpSortedUShortHandler; gpSortedUShortHandler=0;
+    delete gpSortedIntHandler; gpSortedIntHandler=0;
     x.AddCallpath("AllocateSortedArray()","CSaTScanData");
     throw;
   }
 }
 
 void CSaTScanData::AllocSimCases() {
-   try {
-      m_pSimCases = (count_t**)Smalloc(m_nTimeIntervals * sizeof(count_t *), gpPrint);
-      memset(m_pSimCases, 0, m_nTimeIntervals * sizeof(count_t *));
-      for(int i = 0; i < m_nTimeIntervals; ++i)
-         m_pSimCases[i] = (count_t*)Smalloc(m_nTracts * sizeof(count_t), gpPrint);
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("GetNeighbor()", "CSaTScanData");
-      throw;
-   }
+  try {
+    gpSimCasesHandler = new TwoDimensionArrayHandler<count_t>(m_nTimeIntervals, m_nTracts, 0);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetNeighbor()", "CSaTScanData");
+    throw;
+  }
 }
 
 bool CSaTScanData::CalculateMeasure() {
   bool bReturn;
 
   try {
+    gpPrint->SatScanPrintf("Calculating expected number of cases\n");  
     SetAdditionalCaseArrays();
     bReturn = (m_pModel->CalculateMeasure());
     m_nTotalTractsAtStart   = m_nTracts;
@@ -249,19 +153,14 @@ int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian& jEndDate) 
 }
 
 void CSaTScanData::DeAllocSimCases() {
-  if (m_pSimCases) {
-     for (int i = 0; i < m_nTimeIntervals; ++i)
-       free(m_pSimCases[i]);
-     free(m_pSimCases);
-     m_pSimCases = 0;
-  }
+  delete gpSimCasesHandler; gpSimCasesHandler=0;
 }
 
 /** Allocates/deallocates memory to store neighbor information.
     Calls MakeNeighbor() function to calculate neighbors for each centroid. */
 bool CSaTScanData::FindNeighbors(bool bSimulations) {
-  int          i, j;
-  double       dMaxCircleSize, dTotalPopulation=0;
+  int           i, j;
+  double        dMaxCircleSize, dTotalPopulation=0;
 
   try {
     //if this iteration of call not simulations
@@ -283,31 +182,27 @@ bool CSaTScanData::FindNeighbors(bool bSimulations) {
     else {
       //when this functions is called for simualtions, we need to deallocate memory that
       //will be allocated once again in MakeNeighbors()
-      for (i=0; i <= m_pParameters->GetNumTotalEllipses(); ++i) {
-         for (j=0; j < m_nGridTracts; ++j) {
-            if (m_pSortedInt) {
-              free(m_pSortedInt[i][j]); m_pSortedInt[i][j]=0;
-            }
-            if (m_pSortedUShort) {
-              free(m_pSortedUShort[i][j]); m_pSortedUShort[i][j]=0;
-            }
-            m_NeighborCounts[i][j]=0;
-         }
-      }
+      if (gpSortedIntHandler)
+        gpSortedIntHandler->FreeThirdDimension();
+      else
+        gpSortedUShortHandler->FreeThirdDimension();
+      gpNeighborCountHandler->Set(0);
       dMaxCircleSize = m_nMaxCircleSize;
     }  
 
     if (m_pParameters->GetIsSequentialScanning())
-        MakeNeighbors(gpTInfo, gpGInfo, m_pSortedInt, m_pSortedUShort, m_nTracts, m_nGridTracts,
-                      (m_pParameters->UseMaxCirclePopulationFile() ? &gvCircleMeasure[0] : m_pMeasure[0]),
-                      dMaxCircleSize, m_nTotalMeasure, m_NeighborCounts,
+        MakeNeighbors(gpTInfo, gpGInfo, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
+                      (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0), m_nTracts, m_nGridTracts,
+                      (m_pParameters->UseMaxCirclePopulationFile() ? &gvCircleMeasure[0] : gpMeasureHandler->GetArray()[0]),
+                      dMaxCircleSize, m_nTotalMeasure, gpNeighborCountHandler->GetArray(),
                       m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                       m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
                       m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
     else
-        MakeNeighbors(gpTInfo, gpGInfo, m_pSortedInt, m_pSortedUShort, m_nTracts, m_nGridTracts,
-                      (m_pParameters->UseMaxCirclePopulationFile() ? &gvCircleMeasure[0] : m_pMeasure[0]),
-                      dMaxCircleSize, dMaxCircleSize, m_NeighborCounts,
+        MakeNeighbors(gpTInfo, gpGInfo, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
+                      (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0), m_nTracts, m_nGridTracts,
+                      (m_pParameters->UseMaxCirclePopulationFile() ? &gvCircleMeasure[0] : gpMeasureHandler->GetArray()[0]),
+                      dMaxCircleSize, dMaxCircleSize, gpNeighborCountHandler->GetArray(),
                       m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                       m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
                       m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
@@ -354,26 +249,40 @@ double CSaTScanData::GetMeasureAdjustment() const {
  (nearness == 1 returns "t").
  **********************************************************************/
 tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const {
-   if (m_pSortedUShort)
-      return (tract_t)m_pSortedUShort[iEllipse][t][nearness - 1];
+   if (gpSortedUShortHandler)
+      return (tract_t)gpSortedUShortHandler->GetArray()[iEllipse][t][nearness - 1];
    else
-      return m_pSortedInt[iEllipse][t][nearness - 1];
+      return gpSortedIntHandler->GetArray()[iEllipse][t][nearness - 1];
+}
+
+/** Returns total population count */
+double CSaTScanData::GetTotalPopulationCount() const {
+  return m_nTotalPop;
 }
 
 void CSaTScanData::Init() {
   gpTInfo = 0;
   gpGInfo = 0;
   m_pModel = 0;
-  m_pCases     = 0;
-  m_pControls  = 0;
-  m_pMeasure   = 0;
+  gpCasesHandler=0;
+  gpCasesNonCumulativeHandler=0;
+  gpControlsHandler=0;
+  gpSimCasesHandler=0;
+  gpSimCasesNonCumulativeHandler=0;
+  gpNeighborCountHandler=0;
+  gpSortedIntHandler=0;
+  gpSortedUShortHandler=0;
+  gpCategoryCasesHandler=0;
+  gpCasesByTimeByCategoryHandler=0;
+  gpMeasureHandler=0;
+  gpMeasureNonCumulativeHandler=0;
+  gpMeasureByTimeByCategoryHandler=0;
+  gpCategoryMeasureHandler=0;
+  gpControlsByTimeByCategoryHandler=0;
+  gpCategoryControlsHandler=0;
   m_pPTCases   = 0;
   m_pPTSimCases = 0;
   m_pPTMeasure = 0;
-  m_pSimCases  = 0;
-  m_pSortedInt = 0;
-  m_pSortedUShort = 0;
-  m_NeighborCounts = 0;
   m_pIntervalStartTimes = 0;
   m_nTotalCases    = 0;
   m_nTotalControls = 0;
@@ -381,9 +290,6 @@ void CSaTScanData::Init() {
   m_nAnnualRatePop = 100000;
   mdE_Angles = 0;
   mdE_Shapes = 0;
-  m_pCases_NC    = 0;
-  m_pSimCases_NC = 0;
-  m_pMeasure_NC  = 0;
   m_pCases_TotalByTimeInt = 0;
   m_pSimCases_TotalByTimeInt = 0;
   m_pMeasure_TotalByTimeInt = 0;
@@ -395,31 +301,6 @@ void CSaTScanData::MakeData(int iSimulationNumber) {
    }
    catch (ZdException & x) {
       x.AddCallpath("MakeData()", "CSaTScanData");
-      throw;
-   }
-}
-
-void CSaTScanData::PrintNeighbors() {
-   FILE* pFile;
-   int i, j, k;
-
-   try {
-      if ((pFile = fopen("c:\\SatScan V.2.1.4\\Borland Calc\\neighbors.txt", "w")) == NULL)
-       gpPrint->SatScanPrintf("  Error: Unable to open neighbors file.\n");
-      else {
-        for (i = 0; i <= m_pParameters->GetNumTotalEllipses(); ++i )
-          for (j = 0; j < m_nGridTracts; ++j) {
-            k = 0;
-            fprintf(pFile, "Ellipse Number %i, Tract  %i - ", i, j);
-            while (m_pSortedInt[i][j][k] >= 0)
-               fprintf(pFile, "%i, ", m_pSortedInt[i][j][k++]);
-            fprintf(pFile, "%i \n", m_pSortedInt[i][j][k]);
-          }
-         fclose(pFile);
-      }
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("PrintNeighbors()", "CSaTScanData");
       throw;
    }
 }
@@ -447,6 +328,17 @@ void CSaTScanData::ReadDataFromFiles() {
   }
 }
 
+void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
+  m_nTotalCases -= gpCasesHandler->GetArray()[0][tTractIndex];
+  gpCasesHandler->GetArray()[0][tTractIndex] = 0;
+  m_nTotalMeasure -= gpMeasureHandler->GetArray()[0][tTractIndex];
+  gpMeasureHandler->GetArray()[0][tTractIndex] = 0;
+  if (gpControlsHandler) {
+     m_nTotalControls -= gpControlsHandler->GetArray()[0][tTractIndex];
+     gpControlsHandler->GetArray()[0][tTractIndex] = 0;
+  } 
+}
+
 /** Conditionally allocates and sets additional case arrays. */
 void CSaTScanData::SetAdditionalCaseArrays() {
   try {
@@ -463,16 +355,17 @@ void CSaTScanData::SetAdditionalCaseArrays() {
 /** Allocates array that stores the total number of cases for each time
     interval as gotten from cumulative two dimensional case array. */
 void CSaTScanData::SetCasesByTimeIntervalArray() {
-  int   i, j;
+  int                   i, j;
+  count_t            ** ppCases(gpCasesHandler->GetArray());
 
   try {
     m_pCases_TotalByTimeInt = (count_t*)Smalloc(m_nTimeIntervals * sizeof(count_t), gpPrint);
     memset(m_pCases_TotalByTimeInt, 0, m_nTimeIntervals * sizeof(count_t));
 
     for (i=0; i < m_nTracts; i++) {
-       m_pCases_TotalByTimeInt[m_nTimeIntervals-1] += m_pCases[m_nTimeIntervals-1][i];
+       m_pCases_TotalByTimeInt[m_nTimeIntervals-1] += ppCases[m_nTimeIntervals-1][i];
        for (j=m_nTimeIntervals-2; j >= 0; j--)
-          m_pCases_TotalByTimeInt[j] += m_pCases[j][i] - m_pCases[j+1][i];
+          m_pCases_TotalByTimeInt[j] += ppCases[j][i] - ppCases[j+1][i];
     }
   }
   catch (ZdException &x) {
@@ -484,28 +377,26 @@ void CSaTScanData::SetCasesByTimeIntervalArray() {
 /** Allocates two-dimensional array to be used as cumulative measure.
     Data assembled using previously defined non-cumulative measure. */
 void CSaTScanData::SetCumulativeMeasure() {
-  int   i, tract;
+  int           i, tract;
+  measure_t  ** ppMeasure, ** ppMeasureNC(gpMeasureNonCumulativeHandler->GetArray());
 
   try {
-    if (m_pMeasure)
+    if (gpMeasureHandler)
       ZdGenerateException("Error: Cumulative measure already allocated.\n", "SetCumulativeMeasure()");
 
-    if (m_pMeasure_NC == 0)
+    if (gpMeasureNonCumulativeHandler == 0)
       ZdGenerateException("Error: Non-cumulative measure is not allocated.\n", "SetCumulativeMeasure()");
 
     /*note: measure allocated in CModel::CalculateMeasure() to m_nTimeIntervals + 1,
             not sure why but allocate this array the same way for deallocation,
-            m_pMeasure could have been the array that as passed to
-            CModel::CalculateMeasure() instead of m_pMeasire_NC. */
-    m_pMeasure = (double**)Smalloc((m_nTimeIntervals + 1) * sizeof(measure_t *), gpPrint);
-    memset(m_pMeasure, 0, (m_nTimeIntervals + 1) * sizeof(measure_t *));
-    for (i=0; i < m_nTimeIntervals; i++)
-      m_pMeasure[i] = (double*)Smalloc(m_nTracts * sizeof(measure_t), gpPrint);
-
+            ppMeasure could have been the array that as passed to
+            CModel::CalculateMeasure() instead of ppMeasureNC. */
+    gpMeasureHandler = new TwoDimensionArrayHandler<measure_t>(m_nTimeIntervals+1, m_nTracts);
+    ppMeasure = gpMeasureHandler->GetArray();
     for (tract=0; tract < m_nTracts; tract++) {
-       m_pMeasure[m_nTimeIntervals-1][tract]=m_pMeasure_NC[m_nTimeIntervals-1][tract];
+       ppMeasure[m_nTimeIntervals-1][tract] = ppMeasureNC[m_nTimeIntervals-1][tract];
        for (i=m_nTimeIntervals-2; i >= 0; i--)
-          m_pMeasure[i][tract]=m_pMeasure[i+1][tract] + m_pMeasure_NC[i][tract];
+          ppMeasure[i][tract] = ppMeasure[i+1][tract] + ppMeasureNC[i][tract];
     }
 
     // Bug check, to ensure that TotalCases=TotalMeasure
@@ -514,6 +405,7 @@ void CSaTScanData::SetCumulativeMeasure() {
                           "SetCumulativeMeasure()", m_nTotalMeasure, m_nTotalCases);
   }
   catch (ZdException &x) {
+    delete gpMeasureHandler; gpMeasureHandler=0;
     x.AddCallpath("SetCumulativeMeasure()","CSaTScanData");
     throw;
   }
@@ -522,7 +414,8 @@ void CSaTScanData::SetCumulativeMeasure() {
 /** Allocates and sets measure array that represents non-cumulative measure
     for all time intervals from cumulative measure array. */
 void CSaTScanData::SetMeasureByTimeIntervalArray() {
-  int   i, j;
+  int           i, j;
+  measure_t  ** ppMeasure(gpMeasureHandler->GetArray());
 
   try {
     if (! m_pMeasure_TotalByTimeInt)
@@ -530,9 +423,9 @@ void CSaTScanData::SetMeasureByTimeIntervalArray() {
 
     memset(m_pMeasure_TotalByTimeInt, 0, m_nTimeIntervals * sizeof(measure_t));
     for (i=0; i < m_nTracts; i++) {
-       m_pMeasure_TotalByTimeInt[m_nTimeIntervals-1] += m_pMeasure[m_nTimeIntervals-1][i];
+       m_pMeasure_TotalByTimeInt[m_nTimeIntervals-1] += ppMeasure[m_nTimeIntervals-1][i];
        for (j=m_nTimeIntervals-2; j >= 0; j--)
-          m_pMeasure_TotalByTimeInt[j] += m_pMeasure[j][i] - m_pMeasure[j+1][i];
+          m_pMeasure_TotalByTimeInt[j] += ppMeasure[j][i] - ppMeasure[j+1][i];
     }
   }
   catch (ZdException &x) {
@@ -671,22 +564,29 @@ void CSaTScanData::SetMeasureAsCumulative(measure_t ** pMeasure) {
 /** Sets non-cumulative measure from cumulative measure.
     Non-cumulative measure array should not be already allocated. */
 void CSaTScanData::SetNonCumulativeMeasure() {
-  if (m_pMeasure_NC)
-    ZdException::Generate("Non-cumulative measure array already allocated.\n","SetNonCumulativeMeasure()");
+  int           i, j;
+  measure_t  ** ppMeasureNC, ** ppMeasure(gpMeasureHandler->GetArray());
+
+  try {
+    if (gpMeasureNonCumulativeHandler)
+      ZdException::Generate("Non-cumulative measure array already allocated.\n","SetNonCumulativeMeasure()");
 
     /*note: measure allocated in CModel::CalculateMeasure() to m_nTimeIntervals + 1,
             not sure why but allocate this array the same way for deallocation,
-            m_pMeasure_NC could have been the array that as passed to
+            ppMeasureNC could have been the array that as passed to
             CModel::CalculateMeasure() instead of m_pMeasire. */
-  m_pMeasure_NC = (double**)Smalloc((m_nTimeIntervals + 1) * sizeof(measure_t *), gpPrint);
-  memset(m_pMeasure_NC, 0, (m_nTimeIntervals + 1) * sizeof(measure_t *));
-  for (int i=0; i < m_nTimeIntervals; i++)
-     m_pMeasure_NC[i] = (double*)Smalloc(m_nTracts * sizeof(measure_t), gpPrint);
-
-  for (int i=0; i < m_nTracts; i++) {
-    m_pMeasure_NC[m_nTimeIntervals-1][i] = m_pMeasure[m_nTimeIntervals-1][i];
-    for (int j=m_nTimeIntervals-2; j>=0; j--)
-      m_pMeasure_NC[j][i] = m_pMeasure[j][i] - m_pMeasure[j+1][i];
+    gpMeasureNonCumulativeHandler = new TwoDimensionArrayHandler<measure_t>(m_nTimeIntervals+1, m_nTracts);
+    ppMeasureNC = gpMeasureNonCumulativeHandler->GetArray();
+    for (i=0; i < m_nTracts; i++) {
+      ppMeasureNC[m_nTimeIntervals-1][i] = ppMeasure[m_nTimeIntervals-1][i];
+      for (j=m_nTimeIntervals-2; j>=0; j--)
+        ppMeasureNC[j][i] = ppMeasure[j][i] - ppMeasure[j+1][i];
+    }
+  }
+  catch (ZdException &x) {
+    delete gpMeasureNonCumulativeHandler; gpMeasureNonCumulativeHandler=0;
+    x.AddCallpath("SetNonCumulativeMeasure()","CSaTScanData");
+    throw;
   }
 }
 
@@ -743,7 +643,8 @@ void CSaTScanData::SetProspectiveIntervalStart() {
 }
 
 void CSaTScanData::SetPurelyTemporalCases() {
-  int   i, j;
+  int                   i, j;
+  count_t            ** ppCases(gpCasesHandler->GetArray());
 
   try {
     m_pPTCases = (count_t*) Smalloc((m_nTimeIntervals+1)*sizeof(count_t), gpPrint);
@@ -751,7 +652,7 @@ void CSaTScanData::SetPurelyTemporalCases() {
     for (i=0; i < m_nTimeIntervals; ++i) {
        m_pPTCases[i] = 0;
        for (j=0; j < m_nTracts; ++j)
-          m_pPTCases[i] += m_pCases[i][j];
+          m_pPTCases[i] += ppCases[i][j];
     }
   }
   catch (ZdException &x) {
@@ -761,15 +662,15 @@ void CSaTScanData::SetPurelyTemporalCases() {
 }
 
 void CSaTScanData::SetPurelyTemporalMeasures() {
-  int   i, j;
+  int           i, j;
+  measure_t  ** ppMeasure(gpMeasureHandler->GetArray());
 
   try {
     m_pPTMeasure = (measure_t*)Smalloc((m_nTimeIntervals+1) * sizeof(measure_t), gpPrint);
-
     for (i=0; i < m_nTimeIntervals; ++i) {
        m_pPTMeasure[i] = 0;
        for (j=0; j < m_nTracts; ++j)
-          m_pPTMeasure[i] += m_pMeasure[i][j];
+          m_pPTMeasure[i] += ppMeasure[i][j];
     }
   }
   catch (ZdException &x) {
@@ -779,13 +680,14 @@ void CSaTScanData::SetPurelyTemporalMeasures() {
 }
 
 void CSaTScanData::SetPurelyTemporalSimCases() {
-  int   i, j;
+  int                   i, j;
+  count_t            ** ppSimCases(gpSimCasesHandler->GetArray());
 
   try {
     for (i=0; i < m_nTimeIntervals; ++i) {
        m_pPTSimCases[i] = 0;
        for (j=0; j < m_nTracts; ++j)
-          m_pPTSimCases[i] += m_pSimCases[i][j];
+          m_pPTSimCases[i] += ppSimCases[i][j];
     }
   }
   catch (ZdException &x) {
@@ -891,12 +793,11 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
 
 /** internal setup function */
 void CSaTScanData::Setup(CParameters* pParameters, BasePrint *pPrintDirection) {
-  long lCurrentEllipse = 0;
+  long  lCurrentEllipse=0;
 
   try {
     gpPrint = pPrintDirection;
     m_pParameters = pParameters;
-    m_nNumEllipsoids = pParameters->GetNumRequestedEllipses();
 
     gpTInfo = new TractHandler(gPopulationCategories, *pPrintDirection); 
     gpGInfo = new GInfo(pPrintDirection);
@@ -907,7 +808,7 @@ void CSaTScanData::Setup(CParameters* pParameters, BasePrint *pPrintDirection) {
     if (m_pParameters->GetNumTotalEllipses() > 0) {
       mdE_Angles = new double[m_pParameters->GetNumTotalEllipses()];
       mdE_Shapes = new double[m_pParameters->GetNumTotalEllipses()];
-      for (int es = 0; es < m_nNumEllipsoids; ++es) {
+      for (int es = 0; es < pParameters->GetNumRequestedEllipses(); ++es) {
          for (int ea = 0; ea < m_pParameters->GetEllipseRotations()[es]; ++ea) {
             mdE_Angles[lCurrentEllipse]=PI*ea/m_pParameters->GetEllipseRotations()[es];
             mdE_Shapes[lCurrentEllipse]= m_pParameters->GetEllipseShapes()[es];
@@ -919,7 +820,6 @@ void CSaTScanData::Setup(CParameters* pParameters, BasePrint *pPrintDirection) {
   catch (ZdException &x) {
     delete gpTInfo;
     delete gpGInfo;
-    delete m_pModel;
     delete mdE_Angles;
     delete mdE_Shapes;
     x.AddCallpath("Setup()","CSaTScanData");
