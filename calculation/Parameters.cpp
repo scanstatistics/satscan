@@ -1614,10 +1614,12 @@ void CParameters::SaveEllipseSection(ZdIniFile& file) {
     pSection = file.GetSection(ELLIPSES_SECTION);
     pSection->AddComment(" number of ellipses (0-10)");
     pSection->AddLine(NUMBER_ELLIPSES_LINE, AsString(sValue, giNumberEllipses));
+    sValue << ZdString::reset;
     pSection->AddComment(" ellipse shapes");
     for (i=0; i < giNumberEllipses; ++i)
        sValue << (i == 0 ? "" : ",") << gvEllipseShapes[i];
     pSection->AddLine(ELLIPSE_SHAPES_LINE, sValue.GetCString());
+    sValue << ZdString::reset;
     pSection->AddComment(" ellipse angles");
     for (i=0; i < giNumberEllipses; ++i)
         sValue << (i == 0 ? "" : ",") << gvEllipseRotations[i];
