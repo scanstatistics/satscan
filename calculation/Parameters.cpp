@@ -2,12 +2,6 @@
 #pragma hdrstop
 #include "Parameters.h"
 
-#ifdef INTEL_BASED
-   #include <dir.h>
-#else
-   #include <unistd.h>
-#endif
-
 const char*      ANALYSIS_HISTORY_FILE  = "AnalysisHistory.txd";
 
 char mgsVariableLabels[48][100] = {
