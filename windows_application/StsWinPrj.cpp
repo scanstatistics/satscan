@@ -73,19 +73,18 @@ USEUNIT("..\calculation\Output\stsOutputFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsDBaseFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsASCIIFileWriter.cpp");
 USEUNIT("stsOutputFileRegistry.cpp");
+USEUNIT("..\calculation\Toolkit.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         try {
            BasisInit();
-           ZdFileName sAppName(Application->ExeName.c_str());
-           chdir( sAppName.GetLocation() );
+           BasisSetToolkit(new SaTScanToolkit());
            ZdGetFileTypeArray()->AddElement( &(DBFFileType::GetDefaultInstance()) );
            Application->Initialize();
            Application->Title = "SaTScan";
-           BasisGetToolkit().SetErrorReportDestination(TECHNICAL_SUPPORT_EMAIL);
            Application->HelpFile = "";
            Application->CreateForm(__classid(TfrmMainForm), &frmMainForm);
-                 Application->Run();
+           Application->Run();
            BasisExit();
         }
         catch (ZdException &x) {
