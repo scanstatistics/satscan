@@ -376,7 +376,7 @@ class CParameters {
     double                              GetPowerCalculationY() const {return gdPower_Y;}
     DatePrecisionType                   GetPrecisionOfTimesType() const {return gePrecisionOfTimesType;}
     ProbabiltyModelType                 GetProbabiltyModelType() const {return geProbabiltyModelType;}
-    const char                        * GetProbabiltyModelTypeAsString() const;
+    const char                        * GetProbabiltyModelTypeAsString(ProbabiltyModelType eProbabiltyModelType) const;
     const std::string                 & GetProspectiveStartDate() const {return gsProspectiveStartDate;}
     Julian                              GetProspectiveStartDateAsJulian() /*const*/;
     bool                                GetRestrictingMaximumReportedGeoClusterSize() const {return gbRestrictReportedClusters;}

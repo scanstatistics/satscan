@@ -372,7 +372,7 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
     fprintf(fp, "--------\n");
 
     fprintf(fp, "  Type of Analysis    : %s\n", GetAnalysisTypeAsString());
-    fprintf(fp, "  Probability Model   : %s\n", GetProbabiltyModelTypeAsString());
+    fprintf(fp, "  Probability Model   : %s\n", GetProbabiltyModelTypeAsString(geProbabiltyModelType));
 
     if (geAnalysisType != SPATIALVARTEMPTREND) {
       fprintf(fp, "  Scan for Areas with : ");
@@ -728,11 +728,11 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
 }
 
 /** Returns probabilty model type as a character array. */
-const char * CParameters::GetProbabiltyModelTypeAsString() const {
+const char * CParameters::GetProbabiltyModelTypeAsString(ProbabiltyModelType eProbabiltyModelType) const {
   const char * sProbabilityModel;
 
   try {
-    switch (geProbabiltyModelType) {
+    switch (eProbabiltyModelType) {
       case POISSON              : sProbabilityModel = POISSON_MODEL; break;
       case BERNOULLI            : sProbabilityModel = BERNOULLI_MODEL; break;
       case SPACETIMEPERMUTATION : sProbabilityModel = SPACETIME_PERMUTATION_MODEL; break;
@@ -3107,11 +3107,11 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
         if (!(geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
           bValid = false;
           PrintDirection.SatScanPrintWarning("Error: For %s model, analysis type must be either %s or %s.\n",
-                                             GetProbabiltyModelTypeAsString(), RETROSPECTIVE_SPACETIME_ANALYSIS, PROSPECTIVE_SPACETIME_ANALYSIS);
+                                             GetProbabiltyModelTypeAsString(geProbabiltyModelType), RETROSPECTIVE_SPACETIME_ANALYSIS, PROSPECTIVE_SPACETIME_ANALYSIS);
         }
         if (gbOutputRelativeRisksAscii || gbOutputRelativeRisksDBase) {
           bValid = false;
-          PrintDirection.SatScanPrintWarning("Error: Relative risks output files can not be produced for %s model.\n", GetProbabiltyModelTypeAsString());
+          PrintDirection.SatScanPrintWarning("Error: Relative risks output files can not be produced for %s model.\n", GetProbabiltyModelTypeAsString(geProbabiltyModelType));
         }
       }
       //validate range parameters
@@ -3427,7 +3427,7 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
       if (!(geProbabiltyModelType == POISSON || geProbabiltyModelType == BERNOULLI)) {
           bValid = false;
           PrintDirection.SatScanPrintWarning("Error: A purely spatial cluster can not be included for a %s model.\n",
-                                             GetProbabiltyModelTypeAsString());
+                                             GetProbabiltyModelTypeAsString(geProbabiltyModelType));
       }
       else if (!(geAnalysisType == PURELYSPATIAL || geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
         bValid = false;
@@ -3500,7 +3500,7 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
         if (geMaxTemporalClusterSizeType == PERCENTAGETYPE && gfMaxTemporalClusterSize > (geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90)) {
           bValid = false;
           PrintDirection.SatScanPrintWarning("Error: For the %s model, the maximum temporal cluster size of '%2g%%' exceeds maximum value of %d%%.\n",
-                                             GetProbabiltyModelTypeAsString(), gfMaxTemporalClusterSize,
+                                             GetProbabiltyModelTypeAsString(geProbabiltyModelType), gfMaxTemporalClusterSize,
                                              geProbabiltyModelType == SPACETIMEPERMUTATION ? 50 : 90);
         }
       }
@@ -3619,7 +3619,7 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
       if (!(geProbabiltyModelType == POISSON || geProbabiltyModelType == BERNOULLI)) {
           bValid = false;
           PrintDirection.SatScanPrintWarning("Error: A purely temporal cluster can not be included for a %s model.\n",
-                                             GetProbabiltyModelTypeAsString());
+                                             GetProbabiltyModelTypeAsString(geProbabiltyModelType));
       }
       else if (!(geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME || GetIsProspectiveAnalysis())) {
         bValid = false;
