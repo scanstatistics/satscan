@@ -64,7 +64,6 @@ USEUNIT("..\calculation\SaTScanBasis.cpp");
 USEUNIT("..\calculation\Output\stsRunHistoryFile.cpp");
 USEUNIT("..\calculation\utility\DBFFile.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
-USEUNIT("..\calculation\Output\stsOutputDBF.cpp");
 USEUNIT("..\calculation\Output\stsRelativeRisk.cpp");
 USEUNIT("..\calculation\Output\stsClusterData.cpp");
 USEUNIT("..\calculation\Output\stsLogLikelihood.cpp");
