@@ -225,16 +225,14 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
 
                 if (bIncludeRelRisk)
                   fprintf(fp, "   %-12.3f", GetRelativeRisk(Data.GetMeasureAdjustment()));
-                if (bIncludePVal)
+                if (bIncludePVal)     // if we include the pVal, then we also include obs, exp, and rel_risk as well
                 {
                   fprintf(fp, "     ");
                   DisplayPVal(fp, nReplicas, szSpacesOnLeft);
+                  fprintf(fp, "\t %12i", GetCaseCountForTract(tTract, Data));      // obeserved clusters
+                  fprintf(fp, "\t %12.3f", GetMeasureForTract(tTract, Data));      // expected clusters
+                  fprintf(fp, "\t %12.3f", GetRelativeRiskForTract(tTract, Data));   // area level relative risk
                 }
-
-                fprintf(fp, "\t %12i", GetCaseCountForTract(tTract, Data));
-                fprintf(fp, "\t %12.3f", GetMeasureForTract(tTract, Data));
-                fprintf(fp, "\t %12.3f", GetRelativeRiskForTract(tTract, Data));
-
                 if (i < nLastTract)
                   fprintf(fp, "%c ", cDeliminator);
               }     // end if fp
