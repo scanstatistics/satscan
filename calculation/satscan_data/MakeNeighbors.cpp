@@ -83,8 +83,8 @@ void MakeNeighbors(TractHandler *pTInfo,
                    tract_t** NeighborCounts,
                    int       nDimensions,
                    int       iNumEllipses,
-                   double   *pdEShapes,
-                   int      *piEAngles,
+                   const std::vector<double>& vEllipseShapes,
+                   const std::vector<int>& vNumEllipseRotations,
                    int       iSpatialMaxType,
                    BasePrint *pPrintDirection)
 {
@@ -166,31 +166,31 @@ void MakeNeighbors(TractHandler *pTInfo,
           nStartTime = clock();
           //For computation "time" - compute the number of iterations..
           for (es=0; es<iNumEllipses; es++)
-             for (ea=0; ea<piEAngles[es]; ea++)
+             for (ea=0; ea < vNumEllipseRotations[es]; ea++)
                 lTotalIterations += NumGridTracts;
 
           pNewXCoord = new double[NumTracts];
           pNewYCoord = new double[NumTracts];
           for (es=0; es<iNumEllipses; es++)
              {
-             for(ea=0; ea<piEAngles[es]; ea++)
+             for(ea=0; ea < vNumEllipseRotations[es]; ea++)
                 {
                 lCurrentEllipse++;
 
-                EllipseAngle=PI*ea/piEAngles[es];
+                EllipseAngle=PI*ea/vNumEllipseRotations[es];
                 for(k=0; k<NumTracts;k++)
                    {
                    pTInfo->tiGetCoords2(k, pCoords2);
                    //Xold=pCoords2[0];
                    //Yold=pCoords2[1];
-                   Transform(pCoords2[0],pCoords2[1],EllipseAngle,pdEShapes[es],&pNewXCoord[k],&pNewYCoord[k]);      // pointers????????
+                   Transform(pCoords2[0],pCoords2[1],EllipseAngle,vEllipseShapes[es],&pNewXCoord[k],&pNewYCoord[k]);      // pointers????????
                    }
                 for (t = 0; t < NumGridTracts; t++)  // for each grid tract, ...
                    {
                    pGInfo->giGetCoords2(t, pCoords);
                   // Xold=pCoords[0];
                   // Yold=pCoords[1];
-                   Transform(pCoords[0],pCoords[1],EllipseAngle,pdEShapes[es],&pCoords[0],&pCoords[1]);
+                   Transform(pCoords[0],pCoords[1],EllipseAngle,vEllipseShapes[es],&pCoords[0],&pCoords[1]);
 
                    for (k=0; k < NumTracts; k++)  // find distances
                       {

@@ -69,8 +69,8 @@ void MakeNeighbors(TractHandler *pTInfo,
                    tract_t**   NeighborCounts,
                    int         nDimensions,
                    int         iNumEllipses,
-                   double     *pdEShapes,
-                   int        *piEAngles,
+                   const std::vector<double>& vEllipseShapes,
+                   const std::vector<int>& vNumEllipseRotations,
                    int         iSpatialMaxType,
                    BasePrint  *pPrintDirection);
 
