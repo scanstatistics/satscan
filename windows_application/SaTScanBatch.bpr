@@ -63,7 +63,8 @@
       ..\calculation\cluster\TimeIntervalRange.obj 
       ..\calculation\cluster\PurelySpatialProspectiveCluster.obj 
       ..\calculation\utility\MultipleDimensionArrayHandler.obj 
-      ..\calculation\satscan_data\MaxWindowLengthIndicator.obj"/>
+      ..\calculation\satscan_data\MaxWindowLengthIndicator.obj 
+      ..\calculation\satscan_data\AdjustmentHandler.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
