@@ -57,12 +57,14 @@ class CSaTScanData;
 class MostLikelyClustersContainer {
   private:
     ZdPointerVector<CCluster>   gvTopClusterList;
+    static unsigned long        MAX_RANKED_CLUSTERS;
 
-    static int                  CompareClustersByRatio(const void *a, const void *b);
-    static bool                 PointLiesWithinEllipseArea(double dXPoint, double dYPoint, double dXEllipseCenter, double dYEllipseCenter, double dEllipseRadius, double dEllipseAngle, double dEllipseShape);
     static bool                 CentroidLiesWithinSphereRegion(stsClusterCentroidGeometry const & theCentroid, stsClusterCentroidGeometry const & theSphereCentroid, double dSphereRadius);
-    bool                        ShouldRetainCandidateCluster(std::vector<CCluster *> const & vRetainedClusters, CCluster const & CandidateCluster, const CSaTScanData& DataHub, CriteriaSecondaryClustersType eCriterion);
+    static int                  CompareClustersByRatio(const void *a, const void *b);
     static double               GetClusterRadius(const CSaTScanData& DataHub, CCluster const & theCluster);
+    static bool                 HasTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo);
+    static bool                 PointLiesWithinEllipseArea(double dXPoint, double dYPoint, double dXEllipseCenter, double dYEllipseCenter, double dEllipseRadius, double dEllipseAngle, double dEllipseShape);
+    bool                        ShouldRetainCandidateCluster(std::vector<CCluster *> const & vRetainedClusters, CCluster const & CandidateCluster, const CSaTScanData& DataHub, CriteriaSecondaryClustersType eCriterion);
 
   public:
     MostLikelyClustersContainer();

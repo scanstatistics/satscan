@@ -5,75 +5,18 @@
 #include "MostLikelyClustersContainer.h"
 #include "SaTScanData.h"
 
+unsigned long MostLikelyClustersContainer::MAX_RANKED_CLUSTERS  = 500;
+
+/** constructor */
 MostLikelyClustersContainer::MostLikelyClustersContainer() {}
 
+/** destructor */
 MostLikelyClustersContainer::~MostLikelyClustersContainer() {}
 
-
+/** Adds clone of passed cluster object to list of top clusters. */
 void MostLikelyClustersContainer::Add(const CCluster& Cluster) {
   gvTopClusterList.push_back(0);
   gvTopClusterList.back() = Cluster.Clone();
-}
-
-/** Comparison function for sorting clusters by descending m_ratio */
-int MostLikelyClustersContainer::CompareClustersByRatio(const void *a, const void *b) {
-  double rdif = (*(CCluster**)b)->m_nRatio - (*(CCluster**)a)->m_nRatio;
-  if (rdif < 0.0)   return -1;
-  if (rdif > 0.0)   return 1;
-  return 0;
-}
-
-/** */
-void MostLikelyClustersContainer::Empty() {
-  gvTopClusterList.DeleteAllElements();
-}
-
-/** */
-const CCluster& MostLikelyClustersContainer::GetCluster(tract_t tClusterIndex) const {
-  try {
-    if (tClusterIndex < 0 || (unsigned int)tClusterIndex > gvTopClusterList.size() - 1)
-      ZdGenerateException("Index '%d' out of range[%d-%d].","GetCluster()", 0, gvTopClusterList.size() - 1);
-  }
-  catch (ZdException &x) {
-     x.AddCallpath("GetCluster()","MostLikelyClustersContainer");
-     throw;
-  }
-  return *gvTopClusterList[tClusterIndex];
-}
-
-/**
-According to information contained in 'DataHub', what is the radius of 'theCluster'?
-*/
-double MostLikelyClustersContainer::GetClusterRadius(const CSaTScanData& DataHub, CCluster const & theCluster) {
-  double dResult;
-  std::vector<double> vCoordsOfCluster;
-  std::vector<double> vCoordsOfNeighborCluster;
-  try {
-    DataHub.GetGInfo()->giRetrieveCoords(theCluster.GetCentroidIndex(), vCoordsOfCluster);
-    DataHub.GetTInfo()->tiRetrieveCoords(
-      DataHub.GetNeighbor(theCluster.GetEllipseOffset() ,theCluster.GetCentroidIndex() ,theCluster.GetNumTractsInnerCircle())
-     ,vCoordsOfNeighborCluster
-    );
-    dResult = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(&vCoordsOfCluster.begin()[0],&vCoordsOfNeighborCluster.begin()[0]));
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("GetClusterRadius()","MostLikelyClustersContainer");
-    throw;
-  }
-  return dResult;
-}
-
-/** */
-const CCluster& MostLikelyClustersContainer::GetTopRankedCluster() const {
-  try {
-    if (gvTopClusterList.size() == 0)
-      ZdGenerateException("No clusters in container.","GetTopRankedCluster()");
-  }
-  catch (ZdException &x) {
-     x.AddCallpath("GetTopRankedCluster()","MostLikelyClustersContainer");
-     throw;
-  }
-  return *gvTopClusterList[0];
 }
 
 //Does the point at 'theCentroid' lie within the spherical region described by
@@ -95,6 +38,86 @@ bool MostLikelyClustersContainer::CentroidLiesWithinSphereRegion(stsClusterCentr
      throw;
   }
   return bResult;
+}
+
+/** Comparison function for sorting clusters by m_ratio in descending order.*/
+int MostLikelyClustersContainer::CompareClustersByRatio(const void *a, const void *b) {
+  double rdif = (*(CCluster**)b)->m_nRatio - (*(CCluster**)a)->m_nRatio;
+  if (rdif < 0.0)   return -1;
+  if (rdif > 0.0)   return 1;
+  return 0;
+}
+
+/** Removes all cluster objects from list. */
+void MostLikelyClustersContainer::Empty() {
+  gvTopClusterList.DeleteAllElements();
+}
+
+/** Returns reference to cluster object at passed index. Throws exception if index
+    is out of range.*/
+const CCluster& MostLikelyClustersContainer::GetCluster(tract_t tClusterIndex) const {
+  try {
+    if (tClusterIndex < 0 || (unsigned int)tClusterIndex > gvTopClusterList.size() - 1)
+      ZdGenerateException("Index '%d' out of range[%d-%d].","GetCluster()", 0, gvTopClusterList.size() - 1);
+  }
+  catch (ZdException &x) {
+     x.AddCallpath("GetCluster()","MostLikelyClustersContainer");
+     throw;
+  }
+  return *gvTopClusterList[tClusterIndex];
+}
+
+/** According to information contained in 'DataHub', what is the radius of 'theCluster'? */
+double MostLikelyClustersContainer::GetClusterRadius(const CSaTScanData& DataHub, CCluster const & theCluster) {
+  double dResult;
+  std::vector<double> vCoordsOfCluster;
+  std::vector<double> vCoordsOfNeighborCluster;
+  try {
+    DataHub.GetGInfo()->giRetrieveCoords(theCluster.GetCentroidIndex(), vCoordsOfCluster);
+    DataHub.GetTInfo()->tiRetrieveCoords(
+      DataHub.GetNeighbor(theCluster.GetEllipseOffset() ,theCluster.GetCentroidIndex() ,theCluster.GetNumTractsInnerCircle())
+     ,vCoordsOfNeighborCluster
+    );
+    dResult = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(&vCoordsOfCluster.begin()[0],&vCoordsOfNeighborCluster.begin()[0]));
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetClusterRadius()","MostLikelyClustersContainer");
+    throw;
+  }
+  return dResult;
+}
+
+/** Returns constant reference to most likely cluster. Throws exception if
+    there are no clusters to return. */
+const CCluster& MostLikelyClustersContainer::GetTopRankedCluster() const {
+  try {
+    if (gvTopClusterList.size() == 0)
+      ZdGenerateException("No clusters in container.","GetTopRankedCluster()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetTopRankedCluster()","MostLikelyClustersContainer");
+    throw;
+  }
+  return *gvTopClusterList[0];
+}
+
+/** Returns indication of whether geographical overlap exists between passed
+    clusters by examining tract locations to comprise the cluster.*/
+bool MostLikelyClustersContainer::HasTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo) {
+  tract_t       t, v, tTract,
+                tTwoNumTracts = ClusterTwo.GetNumTractsInnerCircle(),
+                tOneNumTracts = ClusterOne.GetNumTractsInnerCircle(),
+                tTwoCentroid = ClusterTwo.GetCentroidIndex(), tOneCentroid = ClusterOne.GetCentroidIndex();
+  int           iTwoOffset = ClusterTwo.GetEllipseOffset(), iOneOffset = ClusterOne.GetEllipseOffset();
+
+  for (t=1; t <= tTwoNumTracts; ++t) {
+     tTract = DataHub.GetNeighbor(iTwoOffset, tTwoCentroid, t);
+     for (v=1; v <= tOneNumTracts; ++v) {
+        if (tTract == DataHub.GetNeighbor(iOneOffset, tOneCentroid, v))
+          return true;
+     }
+  }  
+  return false;
 }
 
 //Does the point at (dXPoint, dYPoint) lie within the two-dimensional region
@@ -134,6 +157,7 @@ bool MostLikelyClustersContainer::PointLiesWithinEllipseArea(double dXPoint, dou
   return bResult;
 }
 
+/** Prints properties of cluster objects in top cluster list to ASCII file. */
 void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, unsigned int nHowMany) {
    FILE* pFile;
 
@@ -163,46 +187,35 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, unsig
   }
 }
 
-/**********************************************************************
- Ranks the top "NumKept" clusters, in descending cd_ratio, such that
- no ranked cluster overlaps a higher-ranked cluster.
- Ratio for TopClusters[NumKept .. NumClusters-1] is set to -DBL_MAX.
- Note: It is easy to modify the selection of clusters to be included
- by making changes in the "if(...) INCLUDE=0" line. For example:
- if(clusterdistance <= radius[j]) -> all clusters with centers not included
-                                     in a higher cluster on the list.
- if(clusterdistance <= newradius) -> all clusters not containing the center
-                                     of a higher cluster on the list.
- if(clusterdistance <= radius[j] &&
-    clusterdistance <= newradius) -> all clusters such that there is no
-                                     cluster pair both of which contain
-                                     the center point of the other.
- if(clusterdistance <= radius[j] &&
-    clusterdistance <= newradius) -> all clusters such that no center point
-                                     is contained in any other cluster with
-                                     lower or higher rank.
- if(clusterdistance <= radius[j]+
-                       newradius) -> all non-overlapping clusters
- Parameters:
-   TopClusters[]  - clusters to rank
-   NumClusters    - length of TopClusters
-   NumKept        - number to rank (<= NumClusters)
-//
- **********************************************************************/
+/** Reorders list of top cluster objects by sorting by loglikelihood ratio in
+    descending order. Clusters that are not 'defined' are removed from top
+    clusters list. Retained clusters of list are further restricted by:
+    for sequential scan
+      - only most likely cluster retained
+    reporting secondary clusters, no restrictions
+      - limit list size to the number of tract locations
+    reporting secondary clusters, all other
+      - limit list size to minimum(number of grid points, MAX_RANKED_CLUSTERS)
+      - remove clusters based upon specified criteria
+    Note that this function should not be called with cluster list containing
+    purely temporal clusters. The ranking performed is based soley on geographical
+    orientation.   */
 void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters, const CSaTScanData& DataHub) {
-   tract_t nClustersToKeepEachPass;
+   unsigned long                        u, uClustersToKeepEachPass;
+   ZdPointerVector<CCluster>::iterator  itrCurr, itrEnd;
+   CriteriaSecondaryClustersType        eClusterInclusionCriterion = Parameters.GetCriteriaSecondClustersType();
 
    try {
      if (DataHub.GetTInfo()->tiGetDimensions() < 2)
        ZdException::Generate("This function written for at least two (2) dimensions.", "MostLikelyClustersContainer");
 
       if (Parameters.GetIsSequentialScanning())
-        nClustersToKeepEachPass = 1;
+        uClustersToKeepEachPass = 1;
       else {
-        if (Parameters.GetCriteriaSecondClustersType() == NORESTRICTIONS)
-          nClustersToKeepEachPass = DataHub.GetNumTracts();
+        if (eClusterInclusionCriterion == NORESTRICTIONS)
+          uClustersToKeepEachPass = static_cast<unsigned long>(DataHub.GetNumTracts());
         else
-          nClustersToKeepEachPass = (DataHub.m_nGridTracts <= NUM_RANKED ? DataHub.m_nGridTracts : NUM_RANKED);
+          uClustersToKeepEachPass = std::min(static_cast<unsigned long>(DataHub.m_nGridTracts), MAX_RANKED_CLUSTERS);
       }
       /* Note: "Old clusters" are clusters already included on the list, while */
       /* a "new cluster" is the present candidate for inclusion.               */
@@ -211,7 +224,7 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
       qsort(&gvTopClusterList[0], gvTopClusterList.size(), sizeof(CCluster*), CompareClustersByRatio);
 
       // Remove "Undefined" clusters that have been sorted to bottom of list because ratio=-DBL_MAX
-      for (unsigned u=0; u < gvTopClusterList.size(); ) {
+      for (u=0; u < gvTopClusterList.size(); ) {
         if (gvTopClusterList[u]->ClusterDefined()) {
           ++u;//skip this cluster
         }
@@ -221,11 +234,9 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
       }
 
       if (gvTopClusterList.size() > 0) {
-        CriteriaSecondaryClustersType eClusterInclusionCriterion = Parameters.GetCriteriaSecondClustersType();
         std::vector<CCluster *> vRetainedClusters;
-
         /* Remove certain types of overlapping clusters from later printout */
-        for (ZdPointerVector<CCluster>::iterator itrCurr=gvTopClusterList.begin(), itrEnd = gvTopClusterList.end(); (vRetainedClusters.size() < (unsigned)nClustersToKeepEachPass) && (itrCurr != itrEnd); ++itrCurr) {
+        for (itrCurr=gvTopClusterList.begin(), itrEnd = gvTopClusterList.end(); (vRetainedClusters.size() < uClustersToKeepEachPass) && (itrCurr != itrEnd); ++itrCurr) {
           if (ShouldRetainCandidateCluster(vRetainedClusters, **itrCurr, DataHub, eClusterInclusionCriterion)) {
             //transfer ownership of cluster to vRetainedClusters:
             vRetainedClusters.push_back(*itrCurr);
@@ -251,22 +262,25 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
 //If the criterion is NOGEOOVERLAP then none of the clusters may be non-circular.
 //require
 //
-bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CCluster *> const & vRetainedClusters, CCluster const & CandidateCluster, const CSaTScanData& DataHub, CriteriaSecondaryClustersType eCriterion)
-{
-  bool bResult;
-  std::vector<double> vCandidateCenterCoords;
-  std::vector<double> vCurrCenterCoords;
+bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CCluster *> const & vRetainedClusters, CCluster const & CandidateCluster, const CSaTScanData& DataHub, CriteriaSecondaryClustersType eCriterion) {
+  bool                                          bResult=true;
+  double                                        dCandidateRadius, dCurrRadius;
+  std::vector<double>                           vCandidateCenterCoords, vCurrCenterCoords;
+  std::vector<CCluster*>::const_iterator        itrCurr, itrEnd;
 
   try {
+    //criteria with no restrictions includes all clusters
+    if (eCriterion == NORESTRICTIONS)
+      return true;
+    //this function currently discriminates by geographical orientation only - so candiddate cluster
+    //can not be purely temporal 
+    if (CandidateCluster.GetClusterType() == PURELYTEMPORALCLUSTER || CandidateCluster.GetClusterType() == PROSPECTIVEPURELYTEMPORALCLUSTER)
+      ZdGenerateException("ShouldRetainCandidateCluster() can not be called purely temporal clusters.","ShouldRetainCandidateCluster");
+
     DataHub.GetGInfo()->giRetrieveCoords(CandidateCluster.GetCentroidIndex(), vCandidateCenterCoords);
     stsClusterCentroidGeometry CandidateCenter(vCandidateCenterCoords);
     //validate conditions:
     switch (eCriterion) {
-      case NOGEOOVERLAP: {//no geographical overlap
-        if (CandidateCluster.GetEllipseOffset() > 0)
-          ZdException::Generate("criterion \"NOGEOOVERLAP\" is not supported for non-circular clusters", "MostLikelyClustersContainer");
-      }
-      break;
       case NOCENTROIDSINOTHER: //no cluster centroids in any other clusters
       case NOCENTROIDSINMORELIKE: //no cluster centroids in more likely clusters
       case NOCENTROIDSINLESSLIKE: //no cluster centroids in less likely clusters
@@ -274,108 +288,95 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
         if ((CandidateCluster.GetEllipseOffset() > 0) && (CandidateCenter.GetDimensionCount() > 2))
           ZdException::Generate("For ellipses, cannot have more than 2 dimensions (got %d).", "MostLikelyClustersContainer", CandidateCenter.GetDimensionCount());
       break;
-      case NORESTRICTIONS:   //No Restrictions
-      break;
-      default:  SSGenerateException("Invalid value found for Criteria for Reporting Secondary Clusters.","MostLikelyClustersContainer");
+      case NOGEOOVERLAP: break; //no geographical overlap
+      default:  ZdGenerateException("Unknown Criteria for Reporting Secondary Clusters, '%d'.","MostLikelyClustersContainer", eCriterion);
     }
 
-    double dCandidateRadius = GetClusterRadius(DataHub, CandidateCluster);
-    bResult = true;
-    for (std::vector<CCluster*>::const_iterator itrCurr = vRetainedClusters.begin(), itrEnd = vRetainedClusters.end(); bResult && (itrCurr != itrEnd); ++itrCurr) {
-      CCluster const & currCluster = **itrCurr;
-      DataHub.GetGInfo()->giRetrieveCoords(currCluster.GetCentroidIndex(), vCurrCenterCoords);
-      stsClusterCentroidGeometry currCenter(vCurrCenterCoords);
-      double dCurrRadius = GetClusterRadius(DataHub, currCluster);
-
-      switch (eCriterion) {
-        case NOGEOOVERLAP: {//no geographical overlap
-//----------------------------------float_stuff
-//These lines of code exist to force identical behavior to the previous code.
-//Comment them out and uncomment the double_stuff when you want higher precision.
-          float fDistance = (float)CandidateCenter.DistanceTo(currCenter);
-          float fRadiiSum = (float)dCurrRadius + (float)dCandidateRadius;
-          bResult = !(fDistance <= fRadiiSum);
-//----------------------------------double_stuff
-//          bResult = CandidateCenter.DistanceTo(currCenter) > (dCurrRadius + dCandidateRadius);
-        }
-        break;
-        case NOCENTROIDSINOTHER: {//no cluster centroids in any other clusters
-          if (CandidateCluster.GetEllipseOffset() > 0) {
-            if (currCluster.GetEllipseOffset() > 0) {//both are ellipses
-              bResult = !(
-                PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
-               || PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
-              );
+    dCandidateRadius = GetClusterRadius(DataHub, CandidateCluster);
+    for (itrCurr=vRetainedClusters.begin(), itrEnd=vRetainedClusters.end(); bResult && (itrCurr != itrEnd); ++itrCurr) {
+      if (eCriterion == NOGEOOVERLAP)
+        bResult = !HasTractsInCommon(DataHub, **itrCurr, CandidateCluster);
+      else {
+        CCluster const & currCluster = **itrCurr;
+        DataHub.GetGInfo()->giRetrieveCoords(currCluster.GetCentroidIndex(), vCurrCenterCoords);
+        stsClusterCentroidGeometry currCenter(vCurrCenterCoords);
+        dCurrRadius = GetClusterRadius(DataHub, currCluster);
+        switch (eCriterion) {
+          case NOCENTROIDSINOTHER: {//no cluster centroids in any other clusters
+            if (CandidateCluster.GetEllipseOffset() > 0) {
+              if (currCluster.GetEllipseOffset() > 0) {//both are ellipses
+                bResult = !(
+                  PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
+                 || PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
+                );
+              }
+              else {//candidate is ellipse, curr is circle
+                bResult = !(
+                  CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius)
+                 || PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
+                );
+              }
             }
-            else {//candidate is ellipse, curr is circle
-              bResult = !(
-                CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius)
-               || PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
-              );
-            }
-          }
-          else {
-            if (currCluster.GetEllipseOffset() > 0) {//candidate is circle, curr is ellipse
-              bResult = !(
-                PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
-               || CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius)
-              );
-            }
-            else {//both are circles
-              bResult = !(CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius) || CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius));
+            else {
+              if (currCluster.GetEllipseOffset() > 0) {//candidate is circle, curr is ellipse
+                bResult = !(
+                  PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
+                 || CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius)
+                );
+              }
+              else {//both are circles
+                bResult = !(CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius) || CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius));
+              }
             }
           }
-        }
-        break;
-        case NOCENTROIDSINMORELIKE: {//no cluster centroids in more likely clusters
-          if (currCluster.GetEllipseOffset() == 0)
-            bResult = !CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius);
-          else
-            bResult = !(PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1]));
-        }
-        break;
-        case NOCENTROIDSINLESSLIKE: {//no cluster centroids in less likely clusters
-          if (CandidateCluster.GetEllipseOffset() == 0)
-            bResult = !CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius);
-          else
-            bResult = !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1]);
-        }
-        break;
-        case NOPAIRSINEACHOTHERS: {//no pairs of centroids in each others clusters
-          //(if either center is not in the other cluster then bResult=true)
-          if (CandidateCluster.GetEllipseOffset() > 0) {
-            if (currCluster.GetEllipseOffset() > 0) {//both are ellipses
-              bResult =
-                !PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
-               || !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
-              ;
+          break;
+          case NOCENTROIDSINMORELIKE: {//no cluster centroids in more likely clusters
+            if (currCluster.GetEllipseOffset() == 0)
+              bResult = !CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius);
+            else
+              bResult = !(PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1]));
+          }
+          break;
+          case NOCENTROIDSINLESSLIKE: {//no cluster centroids in less likely clusters
+            if (CandidateCluster.GetEllipseOffset() == 0)
+              bResult = !CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius);
+            else
+              bResult = !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1]);
+          }
+          break;
+          case NOPAIRSINEACHOTHERS: {//no pairs of centroids in each others clusters
+            //(if either center is not in the other cluster then bResult=true)
+            if (CandidateCluster.GetEllipseOffset() > 0) {
+              if (currCluster.GetEllipseOffset() > 0) {//both are ellipses
+                bResult =
+                  !PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
+                 || !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
+                ;
+              }
+              else {//candidate is ellipse, curr is circle
+                bResult =
+                  !CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius)
+                 || !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
+                ;
+             }
             }
-            else {//candidate is ellipse, curr is circle
-              bResult =
-                !CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius)
-               || !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetAnglesArray()[CandidateCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[CandidateCluster.GetEllipseOffset() - 1])
-              ;
+            else {
+              if (currCluster.GetEllipseOffset() > 0) {//candidate is circle, curr is ellipse
+                bResult =
+                  !PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
+                 || !CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius)
+                ;
+              }
+              else {//both are circles
+                bResult = !CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius) || !CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius);
+              }
             }
           }
-          else {
-            if (currCluster.GetEllipseOffset() > 0) {//candidate is circle, curr is ellipse
-              bResult =
-                !PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetAnglesArray()[currCluster.GetEllipseOffset() - 1], DataHub.GetShapesArray()[currCluster.GetEllipseOffset() - 1])
-               || !CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius)
-              ;
-            }
-            else {//both are circles
-              bResult = !CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius) || !CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius);
-            }
-          }
+          break;
+          default:  ZdGenerateException("Unknown Criteria for Reporting Secondary Clusters '%d'.","MostLikelyClustersContainer", eCriterion);
         }
-        break;
-        case NORESTRICTIONS:   //No Restrictions
-          bResult = true;
-        break;
-        default:  SSGenerateException("Invalid value found for Criteria for Reporting Secondary Clusters.","MostLikelyClustersContainer");
       }
-    } // while bResult
+    } // for bResult
   }
   catch (ZdException & e) {
      e.AddCallpath("ShouldRetainCandidateCluster()", "MostLikelyClustersContainer");
