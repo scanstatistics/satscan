@@ -20,14 +20,13 @@ class RankDataStreamHandler : public DataStreamHandler {
     RankDataStreamHandler(CSaTScanData & Data, BasePrint * pPrint);
     virtual ~RankDataStreamHandler();
 
-    void                                AllocatePTSimulationMeasures();
-    virtual void                        AllocateSimulationMeasures();
-    virtual void                        AllocateSimulationStructures();
-    virtual AbtractDataStreamGateway  * GetNewDataGateway();
-    virtual AbtractDataStreamGateway  * GetNewSimulationDataGateway();
-    virtual void                        RandomizeData(unsigned int iSimulationNumber);
+    virtual AbtractDataStreamGateway  * GetNewDataGateway() const;
+    virtual AbtractDataStreamGateway  * GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const;
+    virtual RandomizerContainer_t     & GetRandomizerContainer(RandomizerContainer_t& Container) const;
+    virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const;
+    virtual void                        RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber);
     virtual bool                        ReadData();
-    virtual void                        SetPurelyTemporalSimulationData();
+    virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);
 };
 //---------------------------------------------------------------------------
 #endif
