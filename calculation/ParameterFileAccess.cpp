@@ -78,7 +78,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case PURESPATIAL              : sDefaultValue = (gParameters.GetIncludePurelySpatialClusters() ? YES : NO); break;
       case TIMESIZE                 : sDefaultValue = gParameters.GetMaximumTemporalClusterSize(); break;
       case REPLICAS                 : sDefaultValue << gParameters.GetNumReplicationsRequested(); break;
-      case MODEL                    : sDefaultValue = gParameters.GetProbabiltyModelType(); break;
+      case MODEL                    : sDefaultValue = gParameters.GetProbabilityModelType(); break;
       case RISKFUNCTION             : sDefaultValue = gParameters.GetRiskType(); break;
       case POWERCALC                : sDefaultValue = (gParameters.GetIsPowerCalculated() ? YES : NO); break;
       case POWERX                   : sDefaultValue = gParameters.GetPowerCalculationX(); break;
@@ -416,7 +416,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case TIMESIZE                  : gParameters.SetMaximumTemporalClusterSize(ReadFloat(sParameter, eParameterType)); break;
       case REPLICAS                  : gParameters.SetNumberMonteCarloReplications(ReadUnsignedInt(sParameter, eParameterType)); break;
       case MODEL                     : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, POISSON, RANK);
-                                       gParameters.SetProbabilityModelType((ProbabiltyModelType)iValue); break;
+                                       gParameters.SetProbabilityModelType((ProbabilityModelType)iValue); break;
       case RISKFUNCTION              : gParameters.SetRiskType((RiskType)ReadInt(sParameter, eParameterType)); break;
       case POWERCALC                 : gParameters.SetPowerCalculation(ReadBoolean(sParameter, eParameterType)); break;
       case POWERX                    : gParameters.SetPowerCalculationX(ReadDouble(sParameter, eParameterType)); break;
