@@ -83,7 +83,7 @@ bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, Julian &
     if (!(gDataHub.GetStudyPeriodStartDate() <= JulianDate && JulianDate <= gDataHub.GetStudyPeriodEndDate())) {
       gpPrint->PrintInputWarning("Error: Date '%s' in record %ld of %s is not\n", Parser.GetWord(2),
                                  Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
-      gpPrint->PrintInputWarning("       within study period beginning %s and ending %s.\n",
+      gpPrint->PrintInputWarning("       within the study period beginning %s and ending %s.\n",
                                  gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
       return false;
     }
@@ -114,32 +114,32 @@ bool DataStreamHandler::ParseCountLine(PopulationData & thePopulation, StringPar
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
     if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
-      gpPrint->PrintInputWarning("Error: Unknown location id in %s, record %ld.\n",
+      gpPrint->PrintInputWarning("Error: Unknown location ID in %s, record %ld.\n",
                                  gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
-      gpPrint->PrintInputWarning("       Location '%s' was not specified in the coordinates file.\n", Parser.GetWord(0));
+      gpPrint->PrintInputWarning("       Location ID '%s' was not specified in the coordinates file.\n", Parser.GetWord(0));
       return false;
     }
     //read and validate count
     if (Parser.GetWord(1) != 0) {
       if (!sscanf(Parser.GetWord(1), "%ld", &nCount)) {
-       gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s could not be read as count.\n",
+       gpPrint->PrintInputWarning("Error: The value '%s' of record %ld in %s could not be read as case count.\n",
                                   Parser.GetWord(1), Parser.GetReadCount(),
                                   gpPrint->GetImpliedFileTypeString().c_str());
-       gpPrint->PrintInputWarning("       Count must be an integer.\n");
+       gpPrint->PrintInputWarning("       Case count must be an integer.\n");
        return false;
       }
     }
     else {
-      gpPrint->PrintInputWarning("Error: Record %ld in %s does not contain count.\n",
+      gpPrint->PrintInputWarning("Error: Record %ld in %s does not contain case count.\n",
                                  Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
       return false;
     }
     if (nCount < 0) {//validate that count is not negative or exceeds type precision
       if (strstr(Parser.GetWord(1), "-"))
-        gpPrint->PrintInputWarning("Error: Negative count in record %ld of %s.\n",
+        gpPrint->PrintInputWarning("Error: Record %ld, of the %s, contains a negative case count.\n",
                                    Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
       else
-        gpPrint->PrintInputWarning("Error: Count '%s' exceeds maximum value of %ld in record %ld of %s.\n",
+        gpPrint->PrintInputWarning("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
                                    Parser.GetWord(1), std::numeric_limits<count_t>::max(), Parser.GetReadCount(),
                                    gpPrint->GetImpliedFileTypeString().c_str());
       return false;
@@ -181,7 +181,7 @@ bool DataStreamHandler::ParseCovariates(PopulationData & thePopulation, int& iCa
       if ((iCategoryIndex = thePopulation.GetPopulationCategoryIndex(vCategoryCovariates)) == -1) {
         gpPrint->PrintInputWarning("Error: Record %ld of %s refers to a population category that\n",
                                    Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
-        gpPrint->PrintInputWarning("       does not match an existing category as read from population file.");
+        gpPrint->PrintInputWarning("       does not match an existing category as read from the population file.");
         return false;
       }
     }
@@ -222,7 +222,7 @@ bool DataStreamHandler::ReadCaseFile(size_t tStream) {
 
   try {
     if ((fp = fopen(gParameters.GetCaseFileName(tStream + 1).c_str(), "r")) == NULL) {
-      gpPrint->SatScanPrintWarning("Error: Could not open case file:\n'%s'.\n",
+      gpPrint->SatScanPrintWarning("Error: Could not open the case file:\n'%s'.\n",
                                    gParameters.GetCaseFileName(tStream + 1).c_str());
       return false;
     }                                                                  
@@ -266,8 +266,8 @@ bool DataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDesc
              //cumulatively add count to time by location structure
              pCounts[0][TractIndex] += Count;
              if (pCounts[0][TractIndex] < 0)
-               SSGenerateException("Error: Total %s greater than maximum allowed of %ld.\n", "ReadCounts()",
-                                   (bCaseFile ? "cases" : "controls"), std::numeric_limits<count_t>::max());
+               GenerateResolvableException("Error: The total %s, in data stream %u, is greater than the maximum allowed of %ld.\n", "ReadCounts()",
+                                           (bCaseFile ? "cases" : "controls"), tStream, std::numeric_limits<count_t>::max());
              for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
                pCounts[i][TractIndex] += Count;
              //record count as a case or control  
@@ -283,10 +283,10 @@ bool DataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDesc
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->SatScanPrintWarning("Please see '%s file format' in the user guide for help.\n", szDescription);
+      gpPrint->SatScanPrintWarning("Please see the '%s file' section in the user guide for help.\n", szDescription);
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->SatScanPrintWarning("Error: %s file does not contain data.\n", gpPrint->GetImpliedFileTypeString().c_str());
+      gpPrint->SatScanPrintWarning("Error: The %s file does not contain data.\n", gpPrint->GetImpliedFileTypeString().c_str());
       bValid = false;
     }
   }

@@ -799,8 +799,8 @@ void SimulationDataStream::ReadSimulationData(const CParameters& Parameters, uns
   if (!InputFile.is_open())
     InputFile.open(Parameters.GetSimulationDataSourceFilename().c_str());
   if (!InputFile)
-    SSGenerateException("Error: Could not open file '%s' to read simulated data.\n",
-                        "ReadSimulationDataFromFile()", Parameters.GetSimulationDataSourceFilename().c_str());
+    GenerateResolvableException("Error: Could not open file '%s' to read the simulated data.\n",
+                                "ReadSimulationDataFromFile()", Parameters.GetSimulationDataSourceFilename().c_str());
 
   //seek line offset for reading iSimulation'th simulation data
   t = (tNumTracts + 1) * (iSimulation - 1);
@@ -819,8 +819,8 @@ void SimulationDataStream::ReadSimulationData(const CParameters& Parameters, uns
         InputFile >> ppSimCases[0][t];
   }
   else
-    SSGenerateException("Error: Reading simulation data from file not implemented for %s analysis.\n",
-                        "RandomizeData()", Parameters.GetAnalysisTypeAsString());
+    GenerateResolvableException("Error: The option to read simulated data from a file is not for %s analyses.\n",
+                                "RandomizeData()", Parameters.GetAnalysisTypeAsString());
 }
 
 /** Resets to all zero, the two dimensional array representing simulated case data,
@@ -856,8 +856,8 @@ void SimulationDataStream::WriteSimulationData(const CParameters& Parameters, in
   //open output file
   SimulationOutputFile.open(Parameters.GetSimulationDataOutputFilename().c_str(), (iSimulation == 1 ? ios::trunc : ios::ate));
   if (!SimulationOutputFile)
-    SSGenerateException("Error: Could not open file simulation output file '%s'.\n", "WriteSimulationData()",
-                        Parameters.GetSimulationDataOutputFilename().c_str());
+    GenerateResolvableException("Error: Could not open the simulated data output file '%s'.\n", "WriteSimulationData()",
+                                Parameters.GetSimulationDataOutputFilename().c_str());
 
   //print to file for time based analyses
   if (Parameters.GetAnalysisType() == PROSPECTIVESPACETIME || Parameters.GetAnalysisType() == SPACETIME ||
@@ -876,8 +876,8 @@ void SimulationDataStream::WriteSimulationData(const CParameters& Parameters, in
     SimulationOutputFile << std::endl;
   }
   else
-    SSGenerateException("Error: Printing simulation data to file not implemented for %s analysis.\n",
-                        "WriteSimulationData()", Parameters.GetAnalysisTypeAsString());
+    GenerateResolvableException("Error: The option to write the simulated data to a file is not implemented for %s analyses.\n",
+                                "WriteSimulationData()", Parameters.GetAnalysisTypeAsString());
 
   SimulationOutputFile.close(); //close file before mutex lock goes out of scope
 }

@@ -237,8 +237,8 @@ void AlternateHypothesisRandomizer::RandomizeData(const RealDataStream& thisReal
   while (!RelativeRiskFile.eof()) {
        RelativeRiskFile >> sTractId;
        if ((tractIndex = gData.GetTInfo()->tiGetTractIndex(sTractId.c_str())) == -1)
-         SSGenerateException("Unknown location identifier '%s', in power estimation file.",
-                            "MakeData_AlternateHypothesis()", sTractId.c_str());
+         GenerateResolvableException("The Location ID '%s', in power estimation file, is not specified the coordinates file.",
+                                     "RandomizeData()", sTractId.c_str());
         RelativeRiskFile >> gvRelativeRisks[tractIndex];
   }
   RelativeRiskFile.close();

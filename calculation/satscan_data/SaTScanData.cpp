@@ -101,23 +101,23 @@ bool CSaTScanData::AdjustMeasure(RealDataStream& thisStream, measure_t ** pNonCu
      MeasurePost = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentEnd+1, m_pIntervalStartTimes[interval+1]);
      //validate that data overflow will not occur
      if (MeasureDuring && (dRelativeRisk > (tMaxMeasure_tValue - MeasurePre - MeasurePost) / MeasureDuring))
-       SSGenerateException("Error: Data overflow occurs when adjusting expected number of cases.\n"
-                           "       The specified relative risk %lf in the adjustment file\n"
-                           "       is too large.\n", "AssignMeasure()", dRelativeRisk);
+       GenerateResolvableException("Error: Data overflow occurs when adjusting expected number of cases.\n"
+                                   "       The specified relative risk %lf in the adjustment file\n"
+                                   "       is too large.\n", "AssignMeasure()", dRelativeRisk);
      //assign adjusted measure                      
      pNonCumulativeMeasure[interval][Tract] = MeasurePre + dRelativeRisk * MeasureDuring + MeasurePost;
      //if measure has been adjusted to zero, check that cases adjusted interval are also zero
      if (pNonCumulativeMeasure[interval][Tract] == 0 && GetCaseCount(ppCases, interval, Tract)) {
        ZdString         sStart, sEnd;
        std::string      sId;
-       SSGenerateException("Error: For locationID '%s', you have adjusted the expected number\n"
-                           "       of cases in the period %s to %s to be zero, but there\n"
-                           "       are cases in that interval.\n"
-                           "       If the expected is zero, the number of cases must also be zero.\n",
-                           "AdjustMeasure()",
-                           (Tract == -1 ? "All" : gTractHandler.tiGetTid(Tract, sId)),
-                           JulianToString(sStart, StartDate).GetCString(),
-                           JulianToString(sEnd, EndDate).GetCString());
+       GenerateResolvableException("Error: For locationID '%s', you have adjusted the expected number\n"
+                                   "       of cases in the period %s to %s to be zero, but there\n"
+                                   "       are cases in that interval.\n"
+                                   "       If the expected is zero, the number of cases must also be zero.\n",
+                                   "AdjustMeasure()",
+                                   (Tract == -1 ? "All" : gTractHandler.tiGetTid(Tract, sId)),
+                                   JulianToString(sStart, StartDate).GetCString(),
+                                   JulianToString(sEnd, EndDate).GetCString());
        return false;
      }
   }
@@ -225,7 +225,7 @@ measure_t CSaTScanData::CalcMeasureForTimeInterval(PopulationData & Population, 
 void CSaTScanData::CalculateExpectedCases() {
   size_t        t;
 
-  gpPrint->SatScanPrintf("Calculating expected number of cases\n");
+  gpPrint->SatScanPrintf("Calculating the expected number of cases\n");
   //calculates expected cases for each data stream
   for (t=0; t < gpDataStreams->GetNumStreams(); ++t) {
      CalculateMeasure(gpDataStreams->GetStream(t));
@@ -469,7 +469,7 @@ void CSaTScanData::ReadDataFromFiles() {
         ZdGenerateException("Unknown probability model type '%d'.","ReadDataFromFiles()", m_pParameters->GetProbabiltyModelType());
     };
     if (!bReadSuccess)
-      SSGenerateException("\nProblem encountered reading in data.", "ReadDataFromFiles");
+      GenerateResolvableException("\nProblem encountered when reading the data from the input files.", "ReadDataFromFiles");
     gTractHandler.tiConcaticateDuplicateTractIdentifiers();
   }
   catch (ZdException & x) {
@@ -673,20 +673,20 @@ void CSaTScanData::SetIntervalCut() {
         if (m_pParameters->GetMaximumTemporalClusterSizeType() == TIMETYPE) {
           sIntervalCutMessage << "Error: A maximum temporal cluster size of %g %s%s is less than one %d %s time interval.\n";
           sIntervalCutMessage << "       No clusters can be found.\n";
-          SSGenerateException(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
-                              m_pParameters->GetMaximumTemporalClusterSize(), sTimeIntervalType.GetCString(),
-                              (m_pParameters->GetMaximumTemporalClusterSize() == 1 ? "" : "s"),
-                              m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
+          GenerateResolvableException(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
+                                      m_pParameters->GetMaximumTemporalClusterSize(), sTimeIntervalType.GetCString(),
+                                      (m_pParameters->GetMaximumTemporalClusterSize() == 1 ? "" : "s"),
+                                      m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
         }
         else if (m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
           sIntervalCutMessage << "Error: A maximum temporal cluster size that is %g percent of a %d %s study period\n";
           sIntervalCutMessage << "       equates to %d %s%s, which is less than one %d %s time interval.\n";
           sIntervalCutMessage << "       No clusters can be found.\n";
-          SSGenerateException(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
-                              m_pParameters->GetMaximumTemporalClusterSize(),
-                              lStudyPeriodLength, sTimeIntervalType.GetCString(),
-                              lMaxTemporalLength, sTimeIntervalType.GetCString(), (lMaxTemporalLength == 1 ? "" : "s"),
-                              m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
+          GenerateResolvableException(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
+                                      m_pParameters->GetMaximumTemporalClusterSize(),
+                                      lStudyPeriodLength, sTimeIntervalType.GetCString(),
+                                      lMaxTemporalLength, sTimeIntervalType.GetCString(), (lMaxTemporalLength == 1 ? "" : "s"),
+                                      m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
         }
       }
    }
@@ -752,8 +752,8 @@ void CSaTScanData::SetNumTimeIntervals() {
   m_nTimeIntervals = (int)ceil((float)nTime / (float)m_pParameters->GetTimeIntervalLength());
 
   if (m_pParameters->GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION && m_nTimeIntervals <= 1)
-    SSGenerateException("Error: Time stratified randomization adjustment requires more than\n"
-                        "       one time interval.\n", "SetNumTimeIntervals()");
+    GenerateResolvableException("Error: The time stratified randomization adjustment requires more than\n"
+                                "       one time interval.\n", "SetNumTimeIntervals()");
 }
 
 /* Calculates which time interval the prospectice space-time start date is in.*/
@@ -768,13 +768,13 @@ void CSaTScanData::SetProspectiveIntervalStart() {
     m_nProspectiveIntervalStart = m_nTimeIntervals - (int)ceil((float)lTime/(float)m_pParameters->GetTimeIntervalLength()) + 1;
 
     if (m_nProspectiveIntervalStart < 0)
-      SSGenerateException("Error: The prospective start date '%s' is prior to the study period start date '%s'.\n",
-                          "SetProspectiveIntervalStart()", m_pParameters->GetProspectiveStartDate().c_str(),
-                          m_pParameters->GetStudyPeriodStartDate().c_str());
+      GenerateResolvableException("Error: : The start date for prospective analyses '%s' is prior to the study period start date '%s'.\n",
+                                  "SetProspectiveIntervalStart()", m_pParameters->GetProspectiveStartDate().c_str(),
+                                  m_pParameters->GetStudyPeriodStartDate().c_str());
     if (m_nProspectiveIntervalStart > m_nTimeIntervals)
-      SSGenerateException("Error: The prospective start date '%s' occurs after the study period end date '%s'.\n",
-                          "SetProspectiveIntervalStart", m_pParameters->GetProspectiveStartDate().c_str(),
-                          m_pParameters->GetStudyPeriodEndDate().c_str());
+      GenerateResolvableException("Error: The start date for prospective analyses '%s' occurs after the study period end date '%s'.\n",
+                                  "SetProspectiveIntervalStart", m_pParameters->GetProspectiveStartDate().c_str(),
+                                  m_pParameters->GetStudyPeriodEndDate().c_str());
   }
   catch (ZdException &x) {
     x.AddCallpath("SetProspectiveIntervalStart()","CSaTScanData");
@@ -849,16 +849,16 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
       sTimeIntervalType.ToLowercase();
       JulianToChar(sDateWST, m_pIntervalStartTimes[iWindowStart]);
       JulianToChar(sDateMaxWET, m_pIntervalStartTimes[iMaxEndWindow] - 1);
-      SSGenerateException("Error: No clusters will be evaluated.\n"
-                          "       With the incorporation of a maximum temporal cluster size of %i %s,\n"
-                          "       the temporal window scanned has a start time of %s (end range\n"
-                          "       ending time minus %i %s) and a maximum window end time of %s\n"
-                          "       (start range ending time plus %i %s), which results in no windows scanned."
-                          , "Setup()", m_nIntervalCut * m_pParameters->GetTimeIntervalLength(),
-                          sTimeIntervalType.GetCString(), sDateWST,
-                          m_nIntervalCut * m_pParameters->GetTimeIntervalLength(),
-                          sTimeIntervalType.GetCString(), sDateMaxWET,
-                          m_nIntervalCut * m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
+      GenerateResolvableException("Error: No clusters will be evaluated.\n"
+                                  "       With the incorporation of a maximum temporal cluster size of %i %s,\n"
+                                  "       the temporal window scanned has a start time of %s (end range\n"
+                                  "       ending time minus %i %s) and a maximum window end time of %s\n"
+                                  "       (start range ending time plus %i %s), which results in no windows scanned.",
+                                  "Setup()", m_nIntervalCut * m_pParameters->GetTimeIntervalLength(),
+                                  sTimeIntervalType.GetCString(), sDateWST,
+                                  m_nIntervalCut * m_pParameters->GetTimeIntervalLength(),
+                                  sTimeIntervalType.GetCString(), sDateMaxWET,
+                                  m_nIntervalCut * m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
     }
     //The parameter validation checked already whether the end range dates conflicted,
     //but the maxium temporal cluster size may actually cause the range dates to be
@@ -867,12 +867,12 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
       sTimeIntervalType = m_pParameters->GetDatePrecisionAsString(m_pParameters->GetTimeIntervalUnitsType());
       sTimeIntervalType.ToLowercase();
       JulianToChar(sDateMaxWET, m_pIntervalStartTimes[iMaxEndWindow] - 1);
-      SSGenerateException("Error: No clusters will be evaluated.\n"
-                          "       With the incorporation of a maximum temporal cluster size of %i %s\n"
-                          "       the maximum window end time becomes %s (start range ending\n"
-                          "       time plus %i %s), which does not intersect with scanning window end range.\n","Setup()",
-                          m_nIntervalCut * m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString(),
-                          sDateMaxWET, m_nIntervalCut * m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
+      GenerateResolvableException("Error: No clusters will be evaluated.\n"
+                                  "       With the incorporation of a maximum temporal cluster size of %i %s\n"
+                                  "       the maximum window end time becomes %s (start range ending\n"
+                                  "       time plus %i %s), which does not intersect with scanning window end range.\n","Setup()",
+                                  m_nIntervalCut * m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString(),
+                                  sDateMaxWET, m_nIntervalCut * m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
     }
   }
 }
@@ -924,13 +924,13 @@ void CSaTScanData::ValidateObservedToExpectedCases(count_t ** ppCumulativeCases,
     for (i=0; i < m_nTimeIntervals; ++i)
        for (t=0; t < m_nTracts; ++t)
           if (!ppNonCumulativeMeasure[i][t] && GetCaseCount(ppCumulativeCases, i, t))
-            SSGenerateException("Error: For locationID '%s' in time interval %s - %s,\n"
-                                "       the expected number of cases is zero but there were cases observed.\n"
-                                "       Please review the correctness of population and case files.",
-                                "ValidateObservedToExpectedCases()",
-                                gTractHandler.tiGetTid(t, sId),
-                                JulianToString(sStart, m_pIntervalStartTimes[i]).GetCString(),
-                                JulianToString(sEnd, m_pIntervalStartTimes[i + 1] - 1).GetCString());
+            GenerateResolvableException("Error: For locationID '%s' in time interval %s - %s,\n"
+                                        "       the expected number of cases is zero but there were cases observed.\n"
+                                        "       Please review the correctness of population and case files.",
+                                        "ValidateObservedToExpectedCases()",
+                                        gTractHandler.tiGetTid(t, sId),
+                                        JulianToString(sStart, m_pIntervalStartTimes[i]).GetCString(),
+                                        JulianToString(sEnd, m_pIntervalStartTimes[i + 1] - 1).GetCString());
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateObservedToExpectedCases()","CSaTScanData");

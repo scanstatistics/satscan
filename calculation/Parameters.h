@@ -513,7 +513,7 @@ class CParameters {
     void                                Write(const char * sParameterFileName);
 };
 
-class InvalidParameterException : public SSException {
+class InvalidParameterException : public ResolvableException {
   public:
    InvalidParameterException(va_list varArgs, const char *sMessage, const char *sSourceModule, ZdException::Level iLevel);
    virtual ~InvalidParameterException() {}

@@ -181,8 +181,8 @@ bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tStream, FILE * fp
                 //cumulatively add count to time by location structure
                 pCounts[0][TractIndex] += Count;
                 if (pCounts[0][TractIndex] < 0)
-                  SSGenerateException("Error: Total case greater than maximum allowed of %ld.\n", "ReadCounts()",
-                                      std::numeric_limits<count_t>::max());
+                  GenerateResolvableException("Error: The total number of cases, in data stream %u, is greater than the maximum allowed of %ld.\n", "ReadCounts()",
+                                              tStream, std::numeric_limits<count_t>::max());
                 for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
                   pCounts[i][TractIndex] += Count;
                 //record count as a case
@@ -202,10 +202,10 @@ bool SpaceTimePermutationDataStreamHandler::ReadCounts(size_t tStream, FILE * fp
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->SatScanPrintWarning("Please see '%s file format' in the user guide for help.\n", szDescription);
+      gpPrint->SatScanPrintWarning("Please see the '%s file' section in the user guide for help.\n", szDescription);
     //print indication if file contained no data
     else if (bEmpty) {
-      gpPrint->SatScanPrintWarning("Error: %s file does not contain data.\n", szDescription);
+      gpPrint->SatScanPrintWarning("Error: The %s file does not contain data.\n", szDescription);
       bValid = false;
     }
 
@@ -226,7 +226,7 @@ bool SpaceTimePermutationDataStreamHandler::ReadData() {
        if (GetNumStreams() == 1)
          gpPrint->SatScanPrintf("Reading the case file\n");
        else
-         gpPrint->SatScanPrintf("Reading input stream %u case file\n", t + 1);
+         gpPrint->SatScanPrintf("Reading the case file for input stream %u\n", t + 1);
        if (!ReadCaseFile(t))
          return false;
     }

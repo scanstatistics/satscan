@@ -191,30 +191,30 @@ bool SurvivalDataStreamHandler::ParseCaseFileLine(StringParser & Parser, tract_t
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
     if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
-      gpPrint->PrintInputWarning("Error: Unknown location id in %s, record %ld.\n", gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
-      gpPrint->PrintInputWarning("       Location '%s' was not specified in the coordinates file.\n", Parser.GetWord(0));
+      gpPrint->PrintInputWarning("Error: Unknown location ID in the %s, record %ld.\n", gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
+      gpPrint->PrintInputWarning("       Location ID '%s' was not specified in the coordinates file.\n", Parser.GetWord(0));
       return false;
     }
     //read and validate count
     if (Parser.GetWord(1) != 0) {
       if (!sscanf(Parser.GetWord(1), "%ld", &nCount)) {
-       gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s could not be read as count.\n",
+       gpPrint->PrintInputWarning("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n",
                                   Parser.GetWord(1), Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
-       gpPrint->PrintInputWarning("       Count must be an integer.\n");
+       gpPrint->PrintInputWarning("       Case count must be an integer.\n");
        return false;
       }
     }
     else {
-      gpPrint->PrintInputWarning("Error: Record %ld in %s does not contain case count.\n",
+      gpPrint->PrintInputWarning("Error: Record %ld, in the %s, does not contain case count.\n",
                                  Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
       return false;
     }
     if (nCount <= 0) {//validate that count is not negative or exceeds type precision
       if (strstr(Parser.GetWord(1), "-"))
-        gpPrint->PrintInputWarning("Error: Count in record %ld of %s, is not greater than zero.\n",
+        gpPrint->PrintInputWarning("Error: Case count in record %ld, of the %s, is not greater than zero.\n",
                                    Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
       else
-        gpPrint->PrintInputWarning("Error: Count '%s' exceeds maximum value of %ld in record %ld of %s.\n",
+        gpPrint->PrintInputWarning("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
                                    Parser.GetWord(1), std::numeric_limits<count_t>::max(),
                                    Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
       return false;
@@ -224,26 +224,26 @@ bool SurvivalDataStreamHandler::ParseCaseFileLine(StringParser & Parser, tract_t
 
     // read continuos variable
     if (!Parser.GetWord(3)) {
-      gpPrint->PrintInputWarning("Error: Record %d of %s missing continuos variable.\n",
+      gpPrint->PrintInputWarning("Error: Record %d, of the %s, is missing the continuos variable.\n",
                                  Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
       return false;
     }
     if (sscanf(Parser.GetWord(3), "%lf", &tContinuosVariable) != 1) {
-       gpPrint->PrintInputWarning("Error: Continuos variable value '%s' in record %ld, of %s, is not a number.\n",
+       gpPrint->PrintInputWarning("Error: The continuos variable value '%s' in record %ld, of the %s, is not a number.\n",
                                   Parser.GetWord(3), Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
        return false;
     }
     //read and validate censore attribute
     if (Parser.GetWord(4) != 0) {
       if (!sscanf(Parser.GetWord(4), "%ld", &tCensored) || tCensored < 0) {
-       gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s could not be read as censored attribute.\n",
+       gpPrint->PrintInputWarning("Error: The value '%s' of record %ld, in the %s, could not be read as a censoring attribute.\n",
                                   Parser.GetWord(4), Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
-       gpPrint->PrintInputWarning("       Censored attribute must be an integer in range [0 - 1].\n");
+       gpPrint->PrintInputWarning("       Censoring attribute must be either 0 or 1.\n");
        return false;
       }
     }
     else {
-      gpPrint->PrintInputWarning("Error: Record %ld in %s does not contain censored attibute.\n",
+      gpPrint->PrintInputWarning("Error: Record %ld, in the %s, does not contain censoring attibute.\n",
                                  Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
       return false;
     }
@@ -281,8 +281,8 @@ bool SurvivalDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char
              ////cumulatively add count to time by location structure
              //ppCounts[0][TractIndex] += Count * tCensored;
              ///if (ppCounts[0][TractIndex] < 0)
-             // SSGenerateException("Error: Total cases greater than maximum allowed of %ld.\n", "ReadCounts()",
-             //                      std::numeric_limits<count_t>::max());
+             // ResolvableException("Error: The total number of cases, in data stream %u, is greater than the maximum allowed of %ld.\n", "ReadCounts()",
+             //                      tStream, std::numeric_limits<count_t>::max());
              //for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
              //  ppCounts[i][TractIndex] += Count * tCensored;
              //record count as a case or control
@@ -300,7 +300,7 @@ bool SurvivalDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gpPrint->SatScanPrintWarning("Please see 'case file format' in the user guide for help.\n");
+      gpPrint->SatScanPrintWarning("Please see the 'case file' section in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
       gpPrint->SatScanPrintWarning("Error: %s does not contain data.\n", gpPrint->GetImpliedFileTypeString().c_str());
@@ -329,7 +329,7 @@ bool SurvivalDataStreamHandler::ReadData() {
        if (GetNumStreams() == 1)
          gpPrint->SatScanPrintf("Reading the case file\n");
        else
-         gpPrint->SatScanPrintf("Reading input stream %u case file\n", t + 1);
+         gpPrint->SatScanPrintf("Reading the cae file for input stream %u\n", t + 1);
        if (!ReadCaseFile(t))
          return false;
     }
