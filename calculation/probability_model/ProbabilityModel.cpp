@@ -1,6 +1,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 #include "ProbabilityModel.h"
+#include "SaTScanData.h"
 
 /** constructor */
 CModel::CModel(CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection)
@@ -28,5 +29,16 @@ CModel::~CModel() {
 #endif
 }
 
+/** Throws exception. Defined in parent class as pure virtual. */
+double CModel::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) {
+  ZdGenerateException("CalcMonotoneLogLikelihood() not implementated.","CModel");
+  return 0;
+}
+
+/** NEEDS DOCUMENTATION */
+double CModel::CalcSVTTLogLikelihood(CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend) {
+  ZdGenerateException("CalcSVTTLogLikelihood() not implementated.","CModel");
+  return 0;
+}
 
 

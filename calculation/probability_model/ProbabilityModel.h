@@ -9,6 +9,8 @@
 
 class CPSMonotoneCluster;
 class CSaTScanData;
+class CSVTTCluster;
+class CTimeTrend;
 
 class CModel {
   protected:
@@ -23,10 +25,10 @@ class CModel {
     CModel(CParameters & Parameters, CSaTScanData & Data, BasePrint & PrintDirection);
     virtual ~CModel();
 
-
     virtual double              CalcLogLikelihood(count_t n, measure_t u) = 0;
-    virtual double              CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) = 0;
+    virtual double              CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster);
     virtual bool                CalculateMeasure() = 0;
+    virtual double              CalcSVTTLogLikelihood(CSVTTCluster* Cluster, CTimeTrend GlobalTimeTrend);
     virtual double              GetLogLikelihoodForTotal() const = 0;
     virtual double              GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract_t nTracts,
                                               int nStartInterval, int nStopInterval) = 0;
