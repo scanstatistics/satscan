@@ -72,7 +72,8 @@ void CSaTScanData::DisplaySummary(FILE* fp)
               m_pParameters->m_szStartDate,
               m_pParameters->m_szEndDate);
   fprintf(fp, "Number of census areas: %ld\n", (long) m_nTracts);
-  fprintf(fp, "Total population .....: %.0f\n", m_nTotalPop);
+  if (m_pParameters->m_nModel != SPACETIMEPERMUTATION)
+    fprintf(fp, "Total population .....: %.0f\n", m_nTotalPop);
   fprintf(fp, "Total cases ..........: %ld\n",  m_nTotalCasesAtStart);
   if (m_pParameters->m_nModel == POISSON)
     fprintf(fp, "Annual cases / %.0f.: %.1f\n",
