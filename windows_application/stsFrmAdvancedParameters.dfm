@@ -148,7 +148,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Input Files'
         TabOrder = 0
-        object Label21: TLabel
+        object lblMaxCirclePopulationFile: TLabel
           Left = 12
           Top = 22
           Width = 162

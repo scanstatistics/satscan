@@ -532,30 +532,35 @@ void TfrmAnalysis::EnableSettingsForAnalysisModelCombination() {
     switch (GetAnalysisControlType()) {
       case PURELYSPATIAL             :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(false, false, false);
+        gpfrmAdvancedParameters->EnableInputFilesGroup(true);
         EnableSpatialOptionsGroup(true, false);
         EnableTimeIntervalUnitsGroup(false);
         EnableTemporalOptionsGroup(false, false, false);
         break;
       case PURELYTEMPORAL            :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson);
+        gpfrmAdvancedParameters->EnableInputFilesGroup(false);
         EnableSpatialOptionsGroup(false, false);
         EnableTimeIntervalUnitsGroup(true);
         EnableTemporalOptionsGroup(true, false, true);
         break;
       case SPACETIME                 :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson);
+        gpfrmAdvancedParameters->EnableInputFilesGroup(true);
         EnableSpatialOptionsGroup(true, !bSpaceTimePermutation);
         EnableTimeIntervalUnitsGroup(true);
         EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
         break;
       case PROSPECTIVESPACETIME      :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson);
+        gpfrmAdvancedParameters->EnableInputFilesGroup(true);
         EnableSpatialOptionsGroup(true, !bSpaceTimePermutation);
         EnableTimeIntervalUnitsGroup(true);
         EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
         break;
       case PROSPECTIVEPURELYTEMPORAL :
         gpfrmAdvancedParameters->EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson);
+        gpfrmAdvancedParameters->EnableInputFilesGroup(false);
         EnableSpatialOptionsGroup(false, false);
         EnableTimeIntervalUnitsGroup(true);
         EnableTemporalOptionsGroup(true, false, false);

@@ -20,7 +20,7 @@ __published:	// IDE-managed Components
         TTabSheet *tsAdjustmentsTabSheet;
         TTabSheet *tsOther;
         TGroupBox *grpInputFiles;
-        TLabel *Label21;
+        TLabel *lblMaxCirclePopulationFile;
         TEdit *edtMaxCirclePopulationFilename;
         TButton *btnBrowseMaxCirclePopFile;
         TGroupBox *grpAnalysis;
@@ -96,6 +96,7 @@ __published:	// IDE-managed Components
 
     void                        EnableAdjustmentsGroup(bool bEnable);
     void                        EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage);
+    void                        EnableInputFilesGroup(bool bEnable);
     void                        EnableSpatialOutputOptions(bool bEnable);
     void                        EnableTemporalOptions(bool bEnable, bool bEnableRanges);
     void                        SaveParameterSettings();
