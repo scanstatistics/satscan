@@ -412,7 +412,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       GetAnalysisTypeString(sTempValue, params.GetAnalysisType());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ANALYSIS_TYPE_FIELD));
 
-      SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->GetNumCases(), GetFieldNumber(gvFields, NUM_CASES_FIELD));   // total number of cases field
+      SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->GetTotalCases(), GetFieldNumber(gvFields, NUM_CASES_FIELD));   // total number of cases field
       SetDoubleField(*pRecord, pAnalysis.GetSatScanData()->GetTotalPopulationCount(), GetFieldNumber(gvFields, TOTAL_POP_FIELD));  // total population field
       SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->GetNumTracts(), GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));     // number of geographic areas field
 
@@ -434,7 +434,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
 
       // covariates number
       SetDoubleField(*pRecord,
-                     (double)pAnalysis.GetSatScanData()->GetPopulationCategories().GetNumPopulationCategoryCovariates(),
+                     (double)pAnalysis.GetSatScanData()->GetDataStreamHandler().GetStream(0/*for now*/).GetPopulationData().GetNumPopulationCategoryCovariates(),
                      GetFieldNumber(gvFields, COVARIATES_FIELD));
 
       SetBoolField(*pRecord, params.UseSpecialGrid(), GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field
