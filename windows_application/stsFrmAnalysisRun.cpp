@@ -10,11 +10,9 @@
 TfrmAnalysisRun *frmAnalysisRun;
 
 //---------------------------------------------------------------------------
-__fastcall TfrmAnalysisRun::TfrmAnalysisRun(TComponent* Owner, const std::string& sOutputFileName,stsOutputFileRegister* pRegistry) : TForm(Owner) {
+__fastcall TfrmAnalysisRun::TfrmAnalysisRun(TComponent* Owner, const std::string& sOutputFileName,stsOutputFileRegister & Registry)
+                           :TForm(Owner), gRegistry(Registry) {
   Init();
-  if(!pRegistry)
-     ZdGenerateException("NULL registry object pointer passed to AnalysisRun object.", "Error!");
-  gpRegistry = pRegistry;
   gsOutputFileName = sOutputFileName;
 }
 //---------------------------------------------------------------------------
@@ -23,18 +21,7 @@ void TfrmAnalysisRun::AddLine(char *sLine) {
 }
 //---------------------------------------------------------------------------
 void TfrmAnalysisRun::AddWarningLine(char *sLine) {
-   // Since the SatScan program prints an error message for each input file
-   // record in error, just set some odd max here for now, so it does not
-   // print and print and print until it runs out of input file lines...
-   // --- This still needs to be revisited.
-   if (! gbMaximumWarningsReached) {
-     if (rteWarningsBox->Lines->Count < gbMaximumWarningsPrinted)
-       rteWarningsBox->Lines->Add(sLine);
-     else {
-       rteWarningsBox->Lines->Add("Output exceeded limit...");
-       gbMaximumWarningsReached = true;
-     }
-   }
+  rteWarningsBox->Lines->Add(sLine);
 }
 //---------------------------------------------------------------------------
 void TfrmAnalysisRun::CancelJob() {
@@ -44,7 +31,7 @@ void TfrmAnalysisRun::CancelJob() {
     rteAnalysisBox->Lines->Add("Job cancelled.");
   btnCancel->Caption = "Close";
   gbCancel = true;
-  gpRegistry->Release(gsOutputFileName);
+  gRegistry.Release(gsOutputFileName);
   SetCanClose(true);
 }
 //---------------------------------------------------------------------------
@@ -53,14 +40,12 @@ void __fastcall TfrmAnalysisRun::FormClose(TObject *Sender, TCloseAction &Action
     Action = caFree;
   else
     Action = caNone;
-  gpRegistry->Release(gsOutputFileName);
+  gRegistry.Release(gsOutputFileName);
 }
 //---------------------------------------------------------------------------
 void TfrmAnalysisRun::Init() {
   gbCanClose=false;
   gbCancel=false;
-  gbPrintWarnings=true;
-  gbMaximumWarningsReached=false;
 }
 //---------------------------------------------------------------------------
 void TfrmAnalysisRun::LoadFromFile(char *sFileName) {
@@ -83,8 +68,7 @@ void TfrmAnalysisRun::LoadFromFile(char *sFileName) {
    else
       rteAnalysisBox->Lines->LoadFromFile(sFileName);
 
-   gpRegistry->Release(gsOutputFileName);
-   FFileName = sFileName;
+   gRegistry.Release(gsOutputFileName);
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysisRun::OnCancelClick(TObject *Sender) {
@@ -94,7 +78,7 @@ void __fastcall TfrmAnalysisRun::OnCancelClick(TObject *Sender) {
     rteAnalysisBox->Lines->Add("Cancelling job, please wait...");
     gbCancel = true;
   }
-  gpRegistry->Release(gsOutputFileName);
+  gRegistry.Release(gsOutputFileName);
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysisRun::OnEMailClick(TObject *Sender) {

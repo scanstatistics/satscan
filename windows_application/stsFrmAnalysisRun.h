@@ -34,14 +34,10 @@ class TfrmAnalysisRun : public TForm {
         void __fastcall OnPrintClick(TObject *Sender);
         void __fastcall OnEMailClick(TObject *Sender);
   private:	// User declarations
-    bool                gbCancel;
-    bool                gbPrintWarnings;
-    bool                gbCanClose;
-    bool                gbMaximumWarningsReached;
-    AnsiString          FFileName;
-    static const int    gbMaximumWarningsPrinted = 300; 
-    stsOutputFileRegister*      gpRegistry;
-    std::string         gsOutputFileName;
+    bool                        gbCancel;
+    bool                        gbCanClose;
+    stsOutputFileRegister     & gRegistry;
+    std::string                 gsOutputFileName;
 
     void                Init();
 
@@ -53,10 +49,9 @@ class TfrmAnalysisRun : public TForm {
     void                LoadFromFile(char *sFileName);
     void                CancelJob();
     void                SetCanClose(bool b) {gbCanClose=b;}
-    void                SetPrintWarnings(bool b) {gbPrintWarnings = b;}
 
   public:		// User declarations
-            __fastcall TfrmAnalysisRun(TComponent* Owner, const std::string& sOutputFileName, stsOutputFileRegister* pRegistry = 0);
+            __fastcall TfrmAnalysisRun(TComponent* Owner, const std::string& sOutputFileName, stsOutputFileRegister & Registry);
     virtual __fastcall ~TfrmAnalysisRun(){}
 };
 //---------------------------------------------------------------------------
