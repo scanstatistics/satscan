@@ -366,7 +366,7 @@ const char * TractDescriptor::GetTractIdentifier(int iTractIdentifierIndex, std:
     x.AddCallpath("GetTractIdentifier()", "TractDescriptor");
     throw;
   }
-  return gsTractIdentifiers;
+  return sIndentifier.c_str();
 }
 
 /** Returns all tract identifiers. */
@@ -612,7 +612,7 @@ void TractHandler::tiCheckCasesHavePopulations() const {
        }
 
        if (dTractPopulation == 0)
-         ZdGenerateException("Total population is zero for tract %s",
+         ZdGenerateException("Total population is zero for tract %s", "tiCheckCasesHavePopulations()",
                              gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer));
     }
   }
