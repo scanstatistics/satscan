@@ -4,9 +4,7 @@
 
 /** constructor */
 CSpaceTimePermutationModel::CSpaceTimePermutationModel(CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection)
-                           :CModel(Parameters, Data, PrintDirection) {
-   Init();
-}
+                           :CModel(Parameters, Data, PrintDirection) {}
 
 /** destructor */
 CSpaceTimePermutationModel::~CSpaceTimePermutationModel() {}
@@ -28,6 +26,60 @@ double CSpaceTimePermutationModel::CalcLogLikelihood(count_t n, measure_t u)
    return (nLogLikelihood);
 }
 
+/** Determines the expected number of cases for each time interval/tract.
+    Assigns values to CSatScanData::m_pMeasure array. Calculates total measure
+    and validates that total measure equals total number of cases in set. */
+bool CSpaceTimePermutationModel::CalculateMeasure() {
+  int   i, j;
+
+  try {
+    // allocate measure two-dimensional array
+    gData.m_pMeasure = (double**)Smalloc((gData.m_nTimeIntervals+1) * sizeof(measure_t *), &gPrintDirection);
+    memset(gData.m_pMeasure, 0, (gData.m_nTimeIntervals+1) * sizeof(measure_t *));
+    for (i=0; i < gData.m_nTimeIntervals; i++)
+       gData.m_pMeasure[i] = (double*)Smalloc(gData.m_nTracts * sizeof(measure_t), &gPrintDirection);
+
+    gData.m_nTotalMeasure  = 0;
+    gData.m_nTotalPop = 0;
+
+    // set m_pMeasure[i] = S*T/C (expected number of cases in a time/tract)
+    // S = number of cases in spacial area irrespective of time
+    // T = number of cases in temporal domain irrespective of location
+    // C = total number of cases
+    for (i=0; i < gData.m_nTimeIntervals; i++) {
+       gData.m_pMeasure[i][0] = 0;
+       // Since all tracts in interval i will have the same T/C, just add up
+       // cases for all tracts in tract 0 then divide by C. After we'll distribute
+       // T/C to rest of tracts in interval i and at the same, multiply by S.
+       for (j=0; j< gData.m_nTracts; j++)
+          gData.m_pMeasure[i][0] += gData.m_pCases[i][j];
+       //divide by total number of cases
+       gData.m_pMeasure[i][0] /= gData.m_nTotalCases;
+      // Copy to rest of measure slots for interval i and rest of tracts while
+      // multiplying each by S at the same time.
+      for (j=1; j< gData.m_nTracts; j++)
+         gData.m_pMeasure[i][j] = gData.m_pMeasure[i][0] * gData.m_pCases[0][j];
+      // don't forget to multiply tract 0 by S
+      gData.m_pMeasure[i][0] = gData.m_pMeasure[i][0] * gData.m_pCases[0][0];
+    }
+
+    // calculate total measure
+    for (j=0; j< gData.m_nTracts; j++)
+       gData.m_nTotalMeasure += gData.m_pMeasure[0][j];
+
+    /* Ensure that TotalCases=TotalMeasure */
+    if (fabs(gData.m_nTotalCases - gData.m_nTotalMeasure)>0.0001)
+      SSGenerateException("Error: The total measure is not equal to the total number of cases.\n"
+                          "Total Cases = %i, Total Measure = %.2lf\n", "CalculateMeasure()",
+                          gData.m_nTotalCases, gData.m_nTotalMeasure);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("CalculateMeasure()","CSpaceTimePermutationModel");
+    throw;
+  }
+  return true;
+}
+
 /** Same log likelihood as for the Poisson model.
     It is no longer a "likelihood", but it will serve the same purpose.
     Martin Kulldorph derived the true log likelihoods, but they are too complex
@@ -40,48 +92,6 @@ double CSpaceTimePermutationModel::GetLogLikelihoodForTotal() const
   measure_t U = gData.m_nTotalMeasure;
 
   return N*log(N/U);
-}
-
-/** Calculates measure for the purpose of constructing neighbor array. If the
-    maximum spatial cluster size is defined in terms of population, then m_pMeasure
-    is constructed using same method as Poisson model. Otherwise m_pMeasure is
-    constructed by determing expected number of cases through case and geographical
-    information only.*/
-bool CSpaceTimePermutationModel::CalculateMeasure()
-{
-   bool bResult;
-   int  i;
-
-   try
-      {
-      if (gData.m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE)
-        {
-         bResult = AssignMeasure(gData.GetTInfo(), gData.m_pCases,
-                                 gData.m_pTimes, gData.m_nTracts, gData.m_nStartDate,
-                                 gData.m_nEndDate, gData.m_pIntervalStartTimes, gData.m_nTimeIntervals,
-                                 gParameters.GetTimeIntervalUnitsType(),  gParameters.GetTimeIntervalLength(),
-                                 &gData.m_pMeasure, &gData.m_nTotalCases,
-                                 &gData.m_nTotalPop, &gData.m_nTotalMeasure, &gPrintDirection);
-         gData.SetMeasureAsCumulative(gData.m_pMeasure);
-         geMeasureType = PopulationBased;
-        }
-      else
-        {
-        // allocate measure two-dimensional array
-        gData.m_pMeasure = (double**)Smalloc((gData.m_nTimeIntervals+1) * sizeof(measure_t *), &gPrintDirection);
-        for (i=0; i < gData.m_nTimeIntervals+1; i++)
-          gData.m_pMeasure[i] = (double*)Smalloc(gData.m_nTracts * sizeof(measure_t), &gPrintDirection);
-
-        bResult = ReCalculateMeasure();
-        geMeasureType = CaseBased;                        
-        }
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("CalculateMeasure()", "CPoissonModel");
-      throw;
-      }
-   return bResult;
 }
 
 /** Allocates randomization structures used by MakeData() routine. Must be called
@@ -179,13 +189,10 @@ bool CSpaceTimePermutationModel::ReadData() {
   try {
     if (!gData.ReadCoordinatesFile())
       return false;
-    if (gData.m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE && !gData.ReadPopulationFile())
-      return false;
+    if (gData.m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE && !gData.ReadMaxCirclePopulationFile())
+       return false;
     if (! gData.ReadCaseFile())
       return false;
-    if (!(gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL))
-      if (gParameters.UseMaxCirclePopulationFile() && !gData.ReadMaxCirclePopulationFile())
-        return false;
     if (gParameters.UseSpecialGrid() && !gData.ReadGridFile())
       return false;
     InitializeRandomizationStructures();
@@ -197,64 +204,3 @@ bool CSpaceTimePermutationModel::ReadData() {
   return true;
 }
 
-/** Determines the expected number of cases for each time interval/tract.
-    Assigns values to CSatScanData::m_pMeasure array. Calculates total measure
-    and validates that total measure equals total number of cases in set. */
-bool CSpaceTimePermutationModel::ReCalculateMeasure()
-{
-  int   i, j;
-
-  try
-     {
-     // Only recalculate measure if current measure setting isn't case based. 
-     if (geMeasureType != CaseBased)
-       {
-       if (! gData.m_pMeasure)
-         SSGenerateException("m_pMeasure array not allocated.", "ReCalculateMeasure()");
-       gData.m_nTotalMeasure  = 0;
-       gData.m_nTotalPop = 0;
-
-       // set m_pMeasure[i] = S*T/C (expected number of cases in a time/tract)
-       // S = number of cases in spacial area irrespective of time
-       // T = number of cases in temporal domain irrespective of location
-       // C = total number of cases
-       for (i=0; i < gData.m_nTimeIntervals; i++)
-          {
-          gData.m_pMeasure[i][0] = 0;
-          // Since all tracts in interval i will have the same T/C, just add up
-          // cases for all tracts in tract 0 then divide by C. After we'll distribute
-          // T/C to rest of tracts in interval i and at the same, multiply by S.
-          for(j=0; j< gData.m_nTracts; j++)
-             gData.m_pMeasure[i][0] += gData.m_pCases[i][j];
-          //divide by total number of cases
-          gData.m_pMeasure[i][0] /= gData.m_nTotalCases;
-          // Copy to rest of measure slots for interval i and rest of tracts will
-          // multiplying each by S at the same time.
-          for (j=1; j< gData.m_nTracts; j++)
-             gData.m_pMeasure[i][j] = gData.m_pMeasure[i][0] * gData.m_pCases[0][j];
-          // don't forget to multiply tract 0 by S
-          gData.m_pMeasure[i][0] = gData.m_pMeasure[i][0] * gData.m_pCases[0][0];
-          }
-
-       // calculate total measure
-       for (j=0; j< gData.m_nTracts; j++)
-             gData.m_nTotalMeasure += gData.m_pMeasure[0][j];
-
-       /* Ensure that TotalCases=TotalMeasure */
-       if (fabs(gData.m_nTotalCases - gData.m_nTotalMeasure)>0.0001)
-         {
-         std::string sMessage;
-         sMessage = "\nError: The total measure is not equal to the total number of cases.";
-         sMessage += "\nTotalCases="; sMessage += gData.m_nTotalCases;
-         sMessage += ", TotalMeasure="; sMessage += gData.m_nTotalMeasure; sMessage += "\n";
-         SSGenerateException(sMessage.c_str(), "ReCalculateMeasure()");
-         }
-       }
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("ReCalculateMeasure()", "CSpaceTimePermutationModel");
-      throw;
-      }
-   return true;
-}

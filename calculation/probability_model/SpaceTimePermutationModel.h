@@ -58,15 +58,11 @@ class CCaseLocationTimes {
 /** Space-time permutation model. Requires only case and geographical information.
     Calculates loglikelihood identically to Poisson model. */
 class CSpaceTimePermutationModel : public CModel {
-  public:
-    enum        MeasureType {NotSet, PopulationBased, CaseBased};
   private:
-    MeasureType                                 geMeasureType;
     std::vector<CCaseLocationTimes>             gvCaseLocationTimes;
     std::vector<CSimulationTimeRandomizer>      gvTimeIntervalRandomizer;
     RandomNumberGenerator                       gRandomNumberGenerator;
 
-    void                        Init() {geMeasureType=NotSet;}
     void                        InitializeRandomizationStructures();
 
   public:
@@ -80,7 +76,6 @@ class CSpaceTimePermutationModel : public CModel {
                                               int nStartInterval, int nStopInterval);
     virtual void   	        MakeData(int iSimulationNumber);
     virtual bool   	        ReadData();
-    virtual bool                ReCalculateMeasure();
 };
 
 //*****************************************************************************
