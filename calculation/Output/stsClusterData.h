@@ -11,7 +11,7 @@ class CSaTScanData;
 class stsClusterData : public BaseOutputStorageClass {
    private:
       int       giDimension, giModelType, giCoordType;
-      bool      gbPrintEllipses, gbPrintPVal;
+      bool      gbPrintEllipses, gbPrintPVal, gbIncludeRunHistory;
       long	glRunNumber;
       
       void	Init();
@@ -53,10 +53,10 @@ class ClusterRecord : public BaseOutputRecord {
       ZdString 			gsStartDate;
       ZdString 			gsEndDate;
 
-      bool                      gbPrintEllipses, gbPrintPVal;
+      bool                      gbPrintEllipses, gbPrintPVal, gbIncludeRunHistory;
       void		        Init();
    public:
-      ClusterRecord(const bool bPrintEllipses = true, const bool bPrintPVal = true);
+      ClusterRecord(const bool bPrintEllipses = true, const bool bPrintPVal = true, const bool bIncludeRunHistory = true);
       virtual ~ClusterRecord();
       
       virtual int GetNumFields();

@@ -12,17 +12,18 @@ const char *	CLUSTER_FILE_EXT	= ".col";
 
 // this class is a record class to store each cluster info data record
 // cluster level record class
-ClusterRecord::ClusterRecord(const bool bPrintEllipses, const bool bPrintPVal) : BaseOutputRecord() {
+ClusterRecord::ClusterRecord(const bool bPrintEllipses, const bool bPrintPVal, const bool bIncludeRunHistory) : BaseOutputRecord() {
    Init();
    gbPrintEllipses = bPrintEllipses;
    gbPrintPVal = bPrintPVal;
+   gbIncludeRunHistory = bIncludeRunHistory;
 }
 
 ClusterRecord::~ClusterRecord() {
 }
 
 int ClusterRecord::GetNumFields() {
-   return (13 + (gbPrintEllipses ? 2 : 0) + (gbPrintPVal ? 1 : 0) + gvsAdditCoords.GetNumElements());
+   return (12 + (gbIncludeRunHistory ? 1 : 0) + (gbPrintEllipses ? 2 : 0) + (gbPrintPVal ? 1 : 0) + gvsAdditCoords.GetNumElements());
 }
 
 // function to return the field value from the specified field number
@@ -34,73 +35,75 @@ ZdFieldValue ClusterRecord::GetValue(int iFieldNumber) {
    try {    
       if(iFieldNumber < 0 || iFieldNumber >= GetNumFields())
          ZdGenerateException("Invalid index, out of range", "Error!");
-      
-      if (iFieldNumber < 5) {
-         switch (iFieldNumber) {
-            case 0:
-               BaseOutputRecord::SetFieldValueAsDouble(fv, double(glRunNumber)); break;
-            case 1:
-               BaseOutputRecord::SetFieldValueAsString(fv, gsLocationID); break;
-            case 2:
-               BaseOutputRecord::SetFieldValueAsDouble(fv, double(giClusterNumber)); break;
-            case 3:
-               BaseOutputRecord::SetFieldValueAsString(fv, gsFirstCoord); break;
-            case 4:
-               BaseOutputRecord::SetFieldValueAsString(fv, gsSecondCoord); break;
-         }
+
+      // if we should include run history number then do so, else skip past to the next field   
+      if (gbIncludeRunHistory) {
+         if (iFieldNumber == 0)
+             BaseOutputRecord::SetFieldValueAsDouble(fv, double(glRunNumber));
       }
-      else {     // and this is where it starts to get messy - AJV
-         if (gvsAdditCoords.size() > 0) {
-            // fields 5 to 5+size()
-            if (iFieldNumber >= 5 && iFieldNumber < (int)(gvsAdditCoords.size() + 5) )
-               BaseOutputRecord::SetFieldValueAsString(fv, gvsAdditCoords[iFieldNumber-5]);
-         }
+      else
+         ++iFieldNumber;
+
+      switch (iFieldNumber) {
+         case 1:
+            BaseOutputRecord::SetFieldValueAsString(fv, gsLocationID); break;
+         case 2:
+            BaseOutputRecord::SetFieldValueAsDouble(fv, double(giClusterNumber)); break;
+         case 3:
+            BaseOutputRecord::SetFieldValueAsString(fv, gsFirstCoord); break;
+         case 4:
+            BaseOutputRecord::SetFieldValueAsString(fv, gsSecondCoord); break;
+      }
+         // and this is where it starts to get messy - AJV
+      if (gvsAdditCoords.size() > 0) {
+         // fields 5 to 5+size()
+         if (iFieldNumber >= 5 && iFieldNumber < (int)(gvsAdditCoords.size() + 5) )
+            BaseOutputRecord::SetFieldValueAsString(fv, gvsAdditCoords[iFieldNumber-5]);
+      }
 
          // subtract out the vector elements from the index and continue on like the vector
          // wasn't even there - AJV
-         int iFieldAfterVector = iFieldNumber - gvsAdditCoords.size();
+      int iFieldAfterVector = iFieldNumber - gvsAdditCoords.size();
 
-         if (iFieldAfterVector == 5)
-            BaseOutputRecord::SetFieldValueAsString(fv, gsRadius);
+      if (iFieldAfterVector == 5)
+         BaseOutputRecord::SetFieldValueAsString(fv, gsRadius);
 
-         // if we should print ellipses then do so, else increase the field number to skip past them 
+         // if we should print ellipses then do so, else increase the field number to skip past them
+      if (gbPrintEllipses) {
+         if (iFieldAfterVector == 6)
+            BaseOutputRecord::SetFieldValueAsString(fv, gsEllipseAngles);
+         if (iFieldAfterVector == 7)
+            BaseOutputRecord::SetFieldValueAsString(fv, gsEllipseShapes);
+      }
+      else
+         iFieldAfterVector += 2;
 
-         if (gbPrintEllipses) {
-            if (iFieldAfterVector == 6)
-               BaseOutputRecord::SetFieldValueAsString(fv, gsEllipseAngles);
-            if (iFieldAfterVector == 7)
-               BaseOutputRecord::SetFieldValueAsString(fv, gsEllipseShapes);
-         }
-         else
-            iFieldAfterVector += 2;
+      switch (iFieldAfterVector) {
+         case 8:
+            BaseOutputRecord::SetFieldValueAsDouble(fv, double(glNumAreas)); break;
+         case 9:
+            BaseOutputRecord::SetFieldValueAsDouble(fv, double(glObserved)); break;
+         case 10:
+            BaseOutputRecord::SetFieldValueAsDouble(fv, gdExpected); break;
+         case 11:
+            BaseOutputRecord::SetFieldValueAsDouble(fv, gdRelRisk); break;
+         case 12:
+            BaseOutputRecord::SetFieldValueAsDouble(fv, gdLogLikelihood); break;
+      }
 
-         switch (iFieldAfterVector) {
-            case 8:
-               BaseOutputRecord::SetFieldValueAsDouble(fv, double(glNumAreas)); break;
-            case 9:
-               BaseOutputRecord::SetFieldValueAsDouble(fv, double(glObserved)); break;
-            case 10:
-               BaseOutputRecord::SetFieldValueAsDouble(fv, gdExpected); break;
-            case 11:
-               BaseOutputRecord::SetFieldValueAsDouble(fv, gdRelRisk); break;
-            case 12:
-               BaseOutputRecord::SetFieldValueAsDouble(fv, gdLogLikelihood); break;
-         }
+      // if we need to print the pval then do so, else increase the field number to skip past it
+      if (gbPrintPVal) {
+         if(iFieldAfterVector == 13)
+            BaseOutputRecord::SetFieldValueAsDouble(fv, gdPValue);
+      }
+      else
+         ++iFieldAfterVector;
 
-         // if we need to print the pval then do so, else increase the field number to skip past it
-         if(iFieldAfterVector == 13) {
-            if (gbPrintPVal)
-               BaseOutputRecord::SetFieldValueAsDouble(fv, gdPValue);
-            else
-               ++iFieldAfterVector;
-         }            
-
-         switch (iFieldAfterVector) {
-            case 14:
-               BaseOutputRecord::SetFieldValueAsString(fv, gsStartDate); break;
-            case 15:
-               BaseOutputRecord::SetFieldValueAsString(fv, gsEndDate); break;
-         }
+      switch (iFieldAfterVector) {
+         case 14:
+            BaseOutputRecord::SetFieldValueAsString(fv, gsStartDate); break;
+         case 15:
+            BaseOutputRecord::SetFieldValueAsString(fv, gsEndDate); break;
       }
    }
    catch (ZdException &x) {
@@ -137,9 +140,8 @@ void ClusterRecord::Init() {
 //===============================================================================
 
 // constructor
-__fastcall stsClusterData::stsClusterData(const ZdString& sOutputFileName, const long lRunNumber, const int iCoordType,
-                                          const int iModelType, const int iDimension,
-                                          const bool bPrintPVal, const bool bPrintEllipses) 
+__fastcall stsClusterData::stsClusterData(const ZdString& sOutputFileName, const long lRunNumber, const int iCoordType, const int iModelType,
+                                          const int iDimension, const bool bPrintPVal, const bool bPrintEllipses)
                           : BaseOutputStorageClass() {
    try {
       Init();
@@ -161,6 +163,9 @@ void stsClusterData::Init() {
    giModelType = 0;
    glRunNumber = 0;
    giCoordType = 0;
+   gbIncludeRunHistory = false;
+   gbPrintEllipses = false;
+   gbPrintPVal = false;
 }
 
 // records the calculated data from the cluster into the dBase file
@@ -170,15 +175,14 @@ void stsClusterData::RecordClusterData(const CCluster& pCluster, const CSaTScanD
    ZdString                     sRadius, sLatitude, sLongitude;
    float                        fPVal;
    ZdString                     sTempValue, sStartDate, sEndDate, sShape, sAngle;
-   ZdVector<ZdString>        vAdditCoords;
+   ZdVector<ZdString>           vAdditCoords;
    ClusterRecord* 		pRecord = 0;
 
    try {                  
-      pRecord = new ClusterRecord(gbPrintEllipses, gbPrintPVal);
+      pRecord = new ClusterRecord(gbPrintEllipses, gbPrintPVal, gbIncludeRunHistory);
 
-#ifdef INCLUDE_RUN_HISTORY
-      pRecord->SetRunNumber(double(glRunNumber));
-#endif      
+      if (gbIncludeRunHistory)
+         pRecord->SetRunNumber(double(glRunNumber));
             
       pRecord->SetClusterNumber(iClusterNumber); 	// cluster number
 
@@ -392,6 +396,12 @@ void stsClusterData::Setup(const ZdString& sOutputFileName, const int iModelType
       glRunNumber = lRunNumber;
       gbPrintPVal = bPrintPVal;
       giCoordType = iCoordType;
+#ifdef INCLUDE_RUN_HISTORY
+      gbIncludeRunHistory = true;
+#else
+      gbIncludeRunHistory = false;
+#endif
+
       SetupFields();
    }
    catch(ZdException &x) {
@@ -409,7 +419,8 @@ void stsClusterData::SetupFields() {
 
    try {
       // please take note that this function here determines the ordering of the fields in the file
-      CreateField(gvFields, RUN_NUM_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
+      if (gbIncludeRunHistory)
+         CreateField(gvFields, RUN_NUM_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
       CreateField(gvFields, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
       CreateField(gvFields, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
       CreateField(gvFields, (giCoordType != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
