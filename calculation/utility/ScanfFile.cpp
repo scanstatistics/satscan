@@ -732,7 +732,7 @@ unsigned long ScanfFile::CalculateNumberOfRecords ( char cQuote ) const {
    char          sBuffer[8192];
    unsigned long ulRetVal = 0;      // Count of newlines
    unsigned int  uiPosition = 0;    // Current position
-   int          iTrailingNewlineCount = 0;  // Number of trailing newlines we've encountered
+   int          iTrailingNewLines = 0;  // NUmber of trailing newlines we've encountered
    int          iBlockLength;   // Length of current block
    int          iCurrent;       // Index in current block
    bool         bQuote = false;         // Currently quoted?
@@ -748,12 +748,12 @@ unsigned long ScanfFile::CalculateNumberOfRecords ( char cQuote ) const {
       while ( iBlockLength ) {
          for ( iCurrent = 0; iCurrent < iBlockLength; iCurrent++ ) {
             if ( !bQuote && ( sBuffer[iCurrent] == '\n' ) ) {
-               iTrailingNewlineCount++;
+               iTrailingNewLines++;
                ulRetVal++;
             }
             else
                if ( sBuffer[iCurrent] != '\r' )
-                  iTrailingNewlineCount = 0;
+                  iTrailingNewLines = 0;
 
             bQuote = ( bQuote ^ ( sBuffer[iCurrent] == cQuote ) );
          } // end of scanning loop
@@ -764,9 +764,9 @@ unsigned long ScanfFile::CalculateNumberOfRecords ( char cQuote ) const {
       } // end of processing loop
 
       // Fix-up the return value
-      ulRetVal -= iTrailingNewlineCount;
+      ulRetVal -= iTrailingNewLines;
 //      ulRetVal += ( gbFirstLineContainsFieldNames ) ? 0 : 1;
-//      ulRetVal += 1;//right now, the first line doesn't contain field names
+      ulRetVal += 1;//right now, the first line doesn't contain field names
    }
    catch ( ZdException &theException ) {
       theException.AddCallpath ( "CalculateNumberOfRecords()", "ScanfFile" );
@@ -1347,7 +1347,7 @@ void ScanfFile::Open(const char *sFilename, ZdIOFlag Flags, const char * sPasswo
       gFile.Open (sFilename, Flags);
       gulNumRecords = CalculateNumberOfRecords ('\0');
 //      glCurrentRecordNumber = ( gbFirstLineContainsFieldnames ) ? 0 : 1;  // We are on the first byte of the file
-      glCurrentRecordNumber = 0;  // We are on the first byte of the file
+      glCurrentRecordNumber = 1;  // We are on the first byte of the file
 
       OpenFinish();
    }
