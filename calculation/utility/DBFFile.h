@@ -255,7 +255,6 @@ public:
 
 //to be implemented:   virtual ZdFileCheckPoint *GetCheckPoint();
 
-   inline virtual const char *GetDatabaseExtension() const { ZdException::Generate("not yet implemented: GetDatabaseExtension", "DBFFile"); return 0; }
    inline virtual const char *GetDatabaseName() const { ZdException::Generate("not yet implemented: GetDatabaseName", "DBFFile"); return 0; }
 
 //   ZdField *                GetFieldInfo(const char * sFieldName) const;
