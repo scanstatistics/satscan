@@ -181,28 +181,19 @@ bool CSaTScanData::CalculateMeasure() {
   return bReturn;
 }
 
-int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate) {
-   int iIntervalCut;
+int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian& jEndDate) {
+   int  iIntervalCut;
    long lTimeBetween;
 
-   try {
-      if (m_nTimeIntervals == 1)
-         iIntervalCut = 1;
-      else if (m_nTimeIntervals > 1) {
-         iIntervalCut = 0;
-//         if (m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE)
-           lTimeBetween = (TimeBetween(jStartDate, jEndDate, m_pParameters->GetTimeIntervalUnitsType()))*m_pParameters->GetMaximumTemporalClusterSize()/100.0;
-//         else
-//           lTimeBetween = (TimeBetween(jStartDate, jEndDate, m_pParameters->GetTimeIntervalUnitsType()))*
-//                          (m_pParameters->GetMaximumTemporalClusterSize()/TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->GetTimeIntervalUnitsType()));
-//
-         iIntervalCut = lTimeBetween / m_pParameters->GetTimeIntervalLength();
-      }
+   if (m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
+     lTimeBetween = (TimeBetween(jStartDate, jEndDate, m_pParameters->GetTimeIntervalUnitsType()))*m_pParameters->GetMaximumTemporalClusterSize()/100.0;
+     iIntervalCut = lTimeBetween / m_pParameters->GetTimeIntervalLength();
+     //now compute a new Current Date by subtracting the interval duration
+     jEndDate = DecrementDate(jEndDate, m_pParameters->GetTimeIntervalUnitsType(), m_pParameters->GetTimeIntervalLength());
    }
-   catch (ZdException & x) {
-      x.AddCallpath("ComputeNewCutoffInterval()", "CSaTScanData");
-      throw;
-   }
+   else
+     iIntervalCut = m_nIntervalCut;
+
    return iIntervalCut;
 }
 
@@ -398,9 +389,13 @@ void CSaTScanData::SetIntervalCut() {
     if (m_nTimeIntervals == 1)
       m_nIntervalCut = 1;
     else if (m_nTimeIntervals > 1) {
-      lStudyPeriodLength = TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->GetTimeIntervalUnitsType());
-      lMaxTemporalLength = lStudyPeriodLength * m_pParameters->GetMaximumTemporalClusterSize()/100.0;
-      m_nIntervalCut = lMaxTemporalLength / m_pParameters->GetTimeIntervalLength();
+      if (m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
+        lStudyPeriodLength = TimeBetween(m_nStartDate, m_nEndDate, m_pParameters->GetTimeIntervalUnitsType());
+        lMaxTemporalLength = lStudyPeriodLength * m_pParameters->GetMaximumTemporalClusterSize()/100.0;
+        m_nIntervalCut = lMaxTemporalLength / m_pParameters->GetTimeIntervalLength();
+      }
+      else
+        m_nIntervalCut = m_pParameters->GetMaximumTemporalClusterSize() / m_pParameters->GetTimeIntervalLength();
     }
 
     if (m_nIntervalCut==0) {
@@ -412,20 +407,20 @@ void CSaTScanData::SetIntervalCut() {
           default: sTimeIntervalType = "none"; break;
         };
 
-        if (m_pParameters->GetInitialMaxTemporalClusterSizeType() == TIMETYPE ) {
+        if (m_pParameters->GetMaximumTemporalClusterSizeType() == TIMETYPE) {
           sIntervalCutMessage << "Error: A maximum temporal cluster size of %g %s%s is less than one %d %s time interval.\n";
           sIntervalCutMessage << "       No clusters can be found.\n";
           SSGenerateException(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
-                              m_pParameters->GetInitialMaxTemporalClusterSize(), sTimeIntervalType.GetCString(),
-                              (m_pParameters->GetInitialMaxTemporalClusterSize() == 1 ? "" : "s"),
+                              m_pParameters->GetMaximumTemporalClusterSize(), sTimeIntervalType.GetCString(),
+                              (m_pParameters->GetMaximumTemporalClusterSize() == 1 ? "" : "s"),
                               m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());
         }
-        else if (m_pParameters->GetInitialMaxTemporalClusterSizeType() == PERCENTAGETYPE) {
-          sIntervalCutMessage << "Error: A maximum temporal cluster size that is %g percent of a %d %s study period \n";
+        else if (m_pParameters->GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
+          sIntervalCutMessage << "Error: A maximum temporal cluster size that is %g percent of a %d %s study period\n";
           sIntervalCutMessage << "       equates to %d %s%s, which is less than one %d %s time interval.\n";
           sIntervalCutMessage << "       No clusters can be found.\n";
           SSGenerateException(sIntervalCutMessage.GetCString(), "SetIntervalCut()",
-                              m_pParameters->GetInitialMaxTemporalClusterSize(),
+                              m_pParameters->GetMaximumTemporalClusterSize(),
                               lStudyPeriodLength, sTimeIntervalType.GetCString(),
                               lMaxTemporalLength, sTimeIntervalType.GetCString(), (lMaxTemporalLength == 1 ? "" : "s"),
                               m_pParameters->GetTimeIntervalLength(), sTimeIntervalType.GetCString());

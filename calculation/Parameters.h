@@ -158,8 +158,6 @@ class CParameters {
         /* Maximum temporal cluster variables */
     float                               gfMaxTemporalClusterSize;               /** maximum value for temporal cluster */
     TemporalSizeType                    geMaxTemporalClusterSizeType;           /** maximum temporal cluster value type */
-    float                               gfInitialMaxTemporalClusterSize;        /** initial setting prior to convertion  */
-    TemporalSizeType                    geInitialMaxTemporalClusterSizeType;    /** initial setting prior to convertion  */
         /* Time interval variables */
     long                                glTimeIntervalLength;                   /** length of time intervals */
     DatePrecisionType                   geTimeIntervalUnitsType;                /** time interval units type */
@@ -271,7 +269,6 @@ class CParameters {
     ~CParameters();
 
     CParameters                       & operator=(const CParameters &rhs);
-    void                                ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporalSizeType);
     void                                DisplayAnalysisType(FILE* fp) const;
     void                                DisplayParameters(FILE* fp) const;
     void                                DisplayTimeAdjustments(FILE* fp) const;
@@ -292,8 +289,6 @@ class CParameters {
     IncludeClustersType                 GetIncludeClustersType() const {return geIncludeClustersType;}
     bool                                GetIncludePurelySpatialClusters() const {return gbIncludePurelySpatialClusters;}
     bool                                GetIncludePurelyTemporalClusters() const {return gbIncludePurelyTemporalClusters;}
-    const float                         GetInitialMaxTemporalClusterSize() const {return gfInitialMaxTemporalClusterSize;}
-    const TemporalSizeType              GetInitialMaxTemporalClusterSizeType() const { return geInitialMaxTemporalClusterSizeType;}
     bool                                GetIsLoggingHistory() const {return gbLogRunHistory;}
     bool                                GetIsPowerCalculated() const {return gbPowerCalculation;}
     bool                                GetIsSequentialScanning() const {return gbSequentialRuns;}

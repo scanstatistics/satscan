@@ -172,47 +172,6 @@ CParameters &CParameters::operator=(const CParameters &rhs) {
   return (*this);
 }
 
-/** Converts geMaxTemporalClusterSizeType to passed type. */
-void CParameters::ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporalSizeType) {
-  double dTemp, dPrecision = 10000, dTimeBetween;
-
-  try {
-    dTimeBetween = TimeBetween(GetStudyPeriodStartDateAsJulian(), GetStudyPeriodEndDateAsJulian(), geTimeIntervalUnitsType);
-    if (dTimeBetween <= 0)
-      SSException::Generate("Invalid study period with start date '%s' and end date '%s'.\n",
-                            "ConvertMaxTemporalClusterSizeToType()", gsStudyPeriodStartDate.c_str(), gsStudyPeriodEndDate.c_str());
-
-    // store intial type and size for parameter output display
-    gfInitialMaxTemporalClusterSize = gfMaxTemporalClusterSize;
-    geInitialMaxTemporalClusterSizeType = geMaxTemporalClusterSizeType;
-
-    switch (eTemporalSizeType) {
-       case PERCENTAGETYPE     : if (geMaxTemporalClusterSizeType == PERCENTAGETYPE)
-                                   break;
-                                 // convert from TIMETYPE to PERCENTAGETYPE
-                                 // Since some variables are hard to accurately represent
-                                 // as a double, we will cause variable to round up at some
-                                 // fixed precision.
-                                 dTemp = static_cast<double>(gfMaxTemporalClusterSize)/dTimeBetween*100 * dPrecision;
-                                 dTemp = ceil(dTemp);
-                                 gfMaxTemporalClusterSize = static_cast<float>(dTemp / dPrecision);
-                                 break;
-       case TIMETYPE           : if (geMaxTemporalClusterSizeType == TIMETYPE)
-                                   break;
-                                 // convert from PERCENTAGETYPE to TIMETYPE
-                                 //gfMaxTemporalClusterSize should be an integer from 1-90
-                                 gfMaxTemporalClusterSize = dTimeBetween * gfMaxTemporalClusterSize/100;
-                                 break;
-       default                 : ZdException::Generate("Unknown TemporalSizeType type %d.\n", "ConvertMaxTemporalClusterSizeToType()", eTemporalSizeType);
-    };
-    geMaxTemporalClusterSizeType = eTemporalSizeType;
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("ConvertMaxTemporalClusterSizeToType()", "CParameters");
-    throw;
-  }
-}
-
 /** If passed filename contains a slash, then assumes that path is complete and
     sInputFilename is not modified. If filename does not contain a slash, it is
     assumed that filename is located in same directory of parameter file.
@@ -302,8 +261,6 @@ void CParameters::Copy(const CParameters &rhs) {
     gbOutputSimLogLikeliRatiosDBase     = rhs.gbOutputSimLogLikeliRatiosDBase;
     gsRunHistoryFilename                = rhs.gsRunHistoryFilename;
     gbLogRunHistory                     = rhs.gbLogRunHistory;
-    geInitialMaxTemporalClusterSizeType = rhs.geInitialMaxTemporalClusterSizeType;
-    gfInitialMaxTemporalClusterSize     = rhs.gfInitialMaxTemporalClusterSize;
     gsParametersSourceFileName          = rhs.gsParametersSourceFileName;
   }
   catch (ZdException & x) {
@@ -448,11 +405,11 @@ void CParameters::DisplayParameters(FILE* fp) const {
     }
 
     if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME || (geAnalysisType == PROSPECTIVESPACETIME)) {
-      fprintf(fp, "  Maximum Temporal Cluster Size         : %.2f", gfInitialMaxTemporalClusterSize);
-      switch (geInitialMaxTemporalClusterSizeType) {
+      fprintf(fp, "  Maximum Temporal Cluster Size         : %.2f", gfMaxTemporalClusterSize);
+      switch (geMaxTemporalClusterSizeType) {
         case PERCENTAGETYPE : fprintf(fp, " %%\n"); break;
         case TIMETYPE       : fprintf(fp, " %s\n", GetDatePrecisionAsString(geTimeIntervalUnitsType)); break;
-        default : ZdException::Generate("Unknown maximum temporal cluster size type '%d'.\n", "DisplayParameters()", geInitialMaxTemporalClusterSizeType);
+        default : ZdException::Generate("Unknown maximum temporal cluster size type '%d'.\n", "DisplayParameters()", geMaxTemporalClusterSizeType);
       }
     }
 

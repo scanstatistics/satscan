@@ -92,7 +92,7 @@ class CSaTScanData {
 
     void                                AdjustNeighborCounts(); // For sequential analysis, after top cluster removed
     const PopulationCategories        & GetPopulationCategories() const {return gPopulationCategories;}
-    int                                 ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate);
+    int                                 ComputeNewCutoffInterval(Julian jStartDate, Julian& jEndDate);
     bool                                ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, Julian & JulianDate);
     void                                DisplaySummary(FILE* fp);
     void                                DisplaySummary2(FILE* fp);
