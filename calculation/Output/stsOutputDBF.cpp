@@ -106,32 +106,6 @@ void DBaseOutput::Init() {
 
 // internal setup function
 void DBaseOutput::Setup(const ZdString& sFileName) {
-   TXDFile	        *pFile = 0;
-   ZdFileRecord         *pLastRecord = 0;
-   unsigned long        ulLastRecordNumber;
-
-   try {
-      pFile = new TXDFile("AnalysisHistory.txd", ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
-
-      // get a record buffer, input data and append the record
-      ulLastRecordNumber = pFile->GotoLastRecord(pLastRecord);
-      // if there's records in the file
-      if(ulLastRecordNumber)
-         pLastRecord->GetField(0, glRunNumber);
-      delete pLastRecord;
-      pFile->Close();
-
-      delete pFile;
-
-      gsFileName = sFileName;
-   }
-   catch(ZdException &x) {
-      if(pFile)
-         pFile->Close();
-      delete pFile; pFile = 0;
-      delete pLastRecord; pLastRecord = 0;
-      x.AddCallpath("Setup()", "DBaseOutput");
-      throw;
-   }		
+   		
 }	
 
