@@ -49,7 +49,7 @@ void __fastcall TfrmAdvancedParameters::chkAdjustForKnownRelativeRisksClick(TObj
 /** event triggered when user selects restrict reported clusters check box */
 void __fastcall TfrmAdvancedParameters::chkRestrictReportedClustersClick(TObject *Sender) {
   edtReportClustersSmallerThan->Enabled = gAnalysisSettings.rdgSpatialOptions->Enabled && chkRestrictReportedClusters->Checked;
-  edtReportClustersSmallerThan->Color = gAnalysisSettings.edtMaxSpatialClusterSize->Enabled && chkRestrictReportedClusters->Checked ? clWindow : clInactiveBorder;
+  edtReportClustersSmallerThan->Color = gAnalysisSettings.rdgSpatialOptions->Enabled && chkRestrictReportedClusters->Checked ? clWindow : clInactiveBorder;
 }
 
 /** event triggered when user selects restrict range check box */
@@ -82,7 +82,7 @@ void __fastcall TfrmAdvancedParameters::edtAdjustmentsByRelativeRisksFileChange(
 /** event triggered when 'Report only clusters smaller than ...' edit control is exited */
 void __fastcall TfrmAdvancedParameters::edtReportClustersSmallerThanExit(TObject *Sender) {
   if (!edtReportClustersSmallerThan->Text.Length() || atof(edtReportClustersSmallerThan->Text.c_str()) == 0)
-    edtReportClustersSmallerThan->Text = gAnalysisSettings.edtMaxSpatialClusterSize->Text;
+    edtReportClustersSmallerThan->Text = gAnalysisSettings.GetMaxSpatialClusterSizeFromControl();
 }
 
 /** event triggered when key pressed for control that can contain positive real numbers */
@@ -417,7 +417,7 @@ void TfrmAdvancedParameters::ValidateAdjustmentSettings() {
 /** validates reported clusters limiting control setting - throws exception */
 void TfrmAdvancedParameters::ValidateReportedSpatialClusterSize() {
   try {
-    if (gAnalysisSettings.edtMaxSpatialClusterSize->Enabled && edtReportClustersSmallerThan->Enabled) {
+    if (gAnalysisSettings.rdgSpatialOptions->Enabled && edtReportClustersSmallerThan->Enabled) {
       if (!edtReportClustersSmallerThan->Text.Length() || atof(edtReportClustersSmallerThan->Text.c_str()) == 0)
         GenerateAFException("Please specify a maximum cluster size for reported clusters\n"
                             "greater than 0 and less than or equal to the maximum spatial cluster size of %g.",
@@ -425,7 +425,7 @@ void TfrmAdvancedParameters::ValidateReportedSpatialClusterSize() {
                             atof(gAnalysisSettings.edtMaxSpatialClusterSize->Text.c_str()));
 
 
-      if (atof(edtReportClustersSmallerThan->Text.c_str()) > atof(gAnalysisSettings.edtMaxSpatialClusterSize->Text.c_str()))
+      if (atof(edtReportClustersSmallerThan->Text.c_str()) > gAnalysisSettings.GetMaxSpatialClusterSizeFromControl())
         GenerateAFException("The maximum cluster size for reported clusters can not be greater than the maximum spatial cluster size.\n",
                             "ValidateReportedSpatialClusterSize()", *edtReportClustersSmallerThan);
     }
