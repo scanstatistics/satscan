@@ -431,7 +431,9 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, TIME_TREND_ADJUSTMENT_FIELD));
 
       // covariates number
-      SetDoubleField(*pRecord, (double)pAnalysis.GetSatScanData()->gpCats->catGetNumEls(), GetFieldNumber(gvFields, COVARIATES_FIELD));
+      SetDoubleField(*pRecord,
+                     (double)pAnalysis.GetSatScanData()->GetPopulationCategories().GetNumPopulationCategoryCovariates(),
+                     GetFieldNumber(gvFields, COVARIATES_FIELD));
 
       SetBoolField(*pRecord, params.UseSpecialGrid(), GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field
       SetStringField(*pRecord, params.GetStudyPeriodStartDate().c_str(), GetFieldNumber(gvFields, START_DATE_FIELD));  // start date field
