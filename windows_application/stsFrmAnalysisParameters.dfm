@@ -641,7 +641,7 @@ object frmAnalysis: TfrmAnalysis
           Enabled = False
           MaxLength = 2
           TabOrder = 1
-          Text = '1'
+          Text = '12'
           OnExit = edtProspMonthExit
           OnKeyPress = NaturalNumberKeyPress
         end
@@ -653,7 +653,7 @@ object frmAnalysis: TfrmAnalysis
           Enabled = False
           MaxLength = 2
           TabOrder = 2
-          Text = '1'
+          Text = '31'
           OnExit = edtProspDayExit
           OnKeyPress = NaturalNumberKeyPress
         end

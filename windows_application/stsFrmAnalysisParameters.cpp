@@ -938,7 +938,9 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
                   edtStartMonth->Text="1";
                   edtStartDay->Text = "1";
                   edtEndMonth->Text = "12";
+                  edtProspMonth->Text = edtEndMonth->Text;
                   edtEndDay->Text = "31";
+                  edtProspDay->Text = edtEndDay->Text;
                   GroupBox6->Enabled = true;
                   break;
       case MONTH  :  //Study Period same precision
@@ -946,6 +948,7 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
                   EnableStartAndEndMonth(true);
                   EnableStartAndEndDay(false);
                   edtEndDay->Text = DaysThisMonth(atoi(edtEndYear->Text.c_str()), atoi(edtEndMonth->Text.c_str()));
+                  edtProspDay->Text = DaysThisMonth(atoi(edtProspYear->Text.c_str()), atoi(edtProspMonth->Text.c_str()));
                   edtStartDay->Text = "1";
                   GroupBox6->Enabled = true;
                   break;
