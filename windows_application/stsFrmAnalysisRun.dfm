@@ -22,7 +22,7 @@ object frmAnalysisRun: TfrmAnalysisRun
   TextHeight = 14
   object Splitter1: TSplitter
     Left = 0
-    Top = 267
+    Top = 243
     Width = 505
     Height = 5
     Cursor = crVSplit
@@ -33,7 +33,7 @@ object frmAnalysisRun: TfrmAnalysisRun
     Left = 0
     Top = 0
     Width = 505
-    Height = 267
+    Height = 243
     Align = alClient
     Lines.Strings = (
       '')
@@ -47,9 +47,9 @@ object frmAnalysisRun: TfrmAnalysisRun
   end
   object Panel1: TPanel
     Left = 0
-    Top = 272
+    Top = 248
     Width = 505
-    Height = 101
+    Height = 125
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 1
@@ -71,7 +71,7 @@ object frmAnalysisRun: TfrmAnalysisRun
       Left = 0
       Top = 19
       Width = 505
-      Height = 41
+      Height = 65
       Align = alClient
       ParentShowHint = False
       ReadOnly = True
@@ -83,7 +83,7 @@ object frmAnalysisRun: TfrmAnalysisRun
     end
     object Panel2: TPanel
       Left = 0
-      Top = 60
+      Top = 84
       Width = 505
       Height = 41
       Align = alBottom
