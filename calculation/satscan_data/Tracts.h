@@ -66,17 +66,16 @@ class CompareTractDescriptorIdentifier {
 class CSaTScanData;
 class TractHandler {
   private:
-    BasePrint                                  * gpPrintDirection;
     ZdPointerVector<TractDescriptor>             gvTractDescriptors;
     int                                          nDimensions;
     TractDescriptor                            * gpSearchTractDescriptor;
     std::map<std::string,TractDescriptor*>       gmDuplicateTracts;
 
     void                                Init();
-    void                                Setup(BasePrint & PrintDirection);
+    void                                Setup();
 
   public:
-    TractHandler(BasePrint & PrintDirection);
+    TractHandler();
     ~TractHandler();
 
     tract_t                             tiCombineDuplicatesByCoordinates();

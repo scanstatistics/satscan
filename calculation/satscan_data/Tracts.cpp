@@ -196,9 +196,9 @@ void TractDescriptor::Setup(const char * sTractIdentifier, const double* pCoordi
 }
 
 /** Constructor*/
-TractHandler::TractHandler(BasePrint & PrintDirection) {
+TractHandler::TractHandler() {
   Init();
-  Setup(PrintDirection);
+  Setup();
 }
 
 /** Destructor */
@@ -262,7 +262,7 @@ void TractHandler::tiConcaticateDuplicateTractIdentifiers() {
     Allocate memory for array - caller is responsible for freeing. */
 void TractHandler::tiGetCoords(tract_t t, double** pCoords) const {
   try {
-    *pCoords = (double*)Smalloc(nDimensions * sizeof(double), gpPrintDirection);
+    *pCoords = (double*)Smalloc(nDimensions * sizeof(double));
     if (0 <= t && t < (tract_t)gvTractDescriptors.size())
       gvTractDescriptors[t]->GetCoordinates(*pCoords, *this);
   }
@@ -406,12 +406,12 @@ int TractHandler::tiInsertTnode(const char *tid, std::vector<double>& vCoordinat
     //check for tract identifier is duplicates map
     itrmap = gmDuplicateTracts.find(std::string(tid));
     if (itrmap != gmDuplicateTracts.end())
-      SSGenerateException("Error: Tract %s is specified multiple times in geographical file.", "tiInsertTnode()", tid);
+      SSGenerateException("Error: Location ID '%s' is specified multiple times in coordinates file.", "tiInsertTnode()", tid);
     else {//search for tract identifier in vector
       gpSearchTractDescriptor->SetTractIdentifier(tid);
       itrPosition = lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), gpSearchTractDescriptor, CompareTractDescriptorIdentifier());
       if (itrPosition != gvTractDescriptors.end() && !strcmp((*itrPosition)->GetTractIdentifier(),tid))
-        SSGenerateException("Error: Tract %s is specified multiple times in geographical file.", "tiInsertTnode()", tid);
+        SSGenerateException("Error: Location ID '%s' is specified multiple times in coordinates file.", "tiInsertTnode()", tid);
     }
 
     //check that coordinates are not duplicate
@@ -434,63 +434,44 @@ int TractHandler::tiInsertTnode(const char *tid, std::vector<double>& vCoordinat
   return(1);
 }
 
-/** Prints indication, to file, of tracts that had identical coordinates which
-    where combined into one tract. */
+/** Prints formatted message to file which details the locations of the coordinates
+    file that had identical coordinates and where combined into one location
+    for internal usage. */
 void TractHandler::tiReportDuplicateTracts(FILE * fDisplay) const {
   std::map<std::string,TractDescriptor*>::const_iterator       itr;
   std::vector<TractDescriptor*>                                vTractsDescriptors;
   std::vector<TractDescriptor*>::iterator                      tract_itr;
   std::vector<std::string>                                     vTractIdentifiers;
   size_t                                                       t;
-  const char * sSeperator = "---------------------------------------------------------------";
+  AsciiPrintFormat                                             PrintFormat;
+  ZdString                                                     sBuffer; 
   unsigned int                                                 iPos, iIdLength, iIndent, iMaxWidth;
 
   try {
     if (gmDuplicateTracts.size()) {
-      fprintf(fDisplay, "\nNote: The geographical file contains locations with matching\n");
-      fprintf(fDisplay, "coordinates that where combined into one location.\n");
-      fprintf(fDisplay, "When creating additional outputs, combined locations are\n");
-      fprintf(fDisplay, "treated as one location.\n");
-      fprintf(fDisplay, sSeperator);
-      iMaxWidth = strlen(sSeperator);
+      PrintFormat.SetMarginsAsOverviewSection();
+      sBuffer = "Note: The coordinates file contains location IDs with identical "
+                "coordinates that where combined into one location. In the "
+                "optional output files, combined locations are represented by a "
+                "single location ID as follows:";
+      PrintFormat.PrintAlignedMarginsDataString(fDisplay, sBuffer);
+      PrintFormat.PrintSectionSeparatorString(fDisplay, 0, 1, '-');
 
+      //Collect all unique TractDescriptor objects - gmDuplicateTracts stores
+      //location ID to object pointer.
       for (itr=gmDuplicateTracts.begin(); itr != gmDuplicateTracts.end(); itr++)
          if (std::find(vTractsDescriptors.begin(), vTractsDescriptors.end(), itr->second) == vTractsDescriptors.end())
            vTractsDescriptors.push_back(itr->second);
-
+      //Print statement detailing primary Location ID, as well as the other
+      //locations that were combined with primary. 
       for (tract_itr=vTractsDescriptors.begin(); tract_itr != vTractsDescriptors.end(); tract_itr++) {
          (*tract_itr)->GetTractIdentifiers(vTractIdentifiers);
-         for (t=0; t < vTractIdentifiers.size(); t++) {
-            if (t == 0) {
-              fprintf(fDisplay, "\n%s : ", vTractIdentifiers[t].c_str());
-              iPos = strlen(vTractIdentifiers[t].c_str()) + 3/*other characters*/;
-              iIndent = iPos;
-            }
-            else if (t < vTractIdentifiers.size() - 1) {
-              iIdLength = strlen(vTractIdentifiers[t].c_str()) + 1/*comma*/;
-              if (iPos  + iIdLength > iMaxWidth) {
-                fprintf(fDisplay, "\n");
-                iPos = 0;
-                while (++iPos <= iIndent)
-                     fprintf(fDisplay, " ");
-                iPos = iIdLength + 2/*two spaces*/;
-              }
-              else
-                iPos += iIdLength;
-              fprintf(fDisplay, "%s, ", vTractIdentifiers[t].c_str());
-            }
-            else {
-               if (iPos + 2/*other characters*/ + strlen(vTractIdentifiers[t].c_str()) > iMaxWidth) {
-                fprintf(fDisplay, "\n");
-                iPos = 0;
-                while (++iPos <= iIndent)
-                     fprintf(fDisplay, " ");
-               }
-              fprintf(fDisplay, "%s", vTractIdentifiers[t].c_str());
-            }
-         }
+         //First retrieved location ID is the location that represents all others.
+         sBuffer.printf("%s : %s", vTractIdentifiers[0].c_str(), vTractIdentifiers[1].c_str());
+         for (t=2; t < vTractIdentifiers.size(); ++t)
+            sBuffer << ", " << vTractIdentifiers[t].c_str();
+         PrintFormat.PrintAlignedMarginsDataString(fDisplay, sBuffer);
       }
-      fprintf(fDisplay, "\n");
     }
   }
   catch (ZdException & x)  {
@@ -500,11 +481,10 @@ void TractHandler::tiReportDuplicateTracts(FILE * fDisplay) const {
 }
 
 /** Internal setup function. */
-void TractHandler::Setup(BasePrint & PrintDirection) {
+void TractHandler::Setup() {
   double Coordinates[1] ={0};
 
   try {
-    gpPrintDirection = &PrintDirection;
     gpSearchTractDescriptor = new TractDescriptor(" ", Coordinates, 1);
   }
   catch (ZdException & x) {
