@@ -560,18 +560,28 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
 void TfrmAdvancedParameters::SetDefaultsForAnalysisTabs() {
    CParameters & ref = gAnalysisSettings.gParameters;
 
+   // Inference tab
+   // PAG - moved to first position since other controls dependent on the 'earlier analyses' control
+   chkAdjustForEarlierAnalyses->Checked = false;
+   chkTerminateEarly->Checked = false;
+   edtProspectiveStartDateYear->Text = "1900";
+   edtProspectiveStartDateMonth->Text = "12";
+   edtProspectiveStartDateDay->Text = "31";
+
    // Spatial Window tab
    SetMaxSpatialClusterSizeTypeControl(PERCENTOFPOPULATIONTYPE);
-   SetMaxSpatialClusterSizeControl(50.0);
+   edtMaxSpatialClusterSize->Text = "50";
+   edtMaxSpatialPercentFile->Text = "50";
+   edtMaxSpatialRadius->Text = "1";
    edtMaxCirclePopulationFilename->Text = "";
    chkInclPureTempClust->Checked = false;
    SetSpatialDistanceCaption();
-
    SetReportingSmallerClustersText();
 
    // Temporal tab
    SetMaxTemporalClusterSizeTypeControl(PERCENTAGETYPE);
-   SetMaxTemporalClusterSizeControl(50.0);
+   edtMaxTemporalClusterSize->Text = "50.0";
+   edtMaxTemporalClusterSizeUnits->Text = "1";
    chkIncludePureSpacClust->Checked = false;
 
    chkRestrictTemporalRange->Checked = false;
@@ -587,15 +597,7 @@ void TfrmAdvancedParameters::SetDefaultsForAnalysisTabs() {
    chkAdjustForKnownRelativeRisks->Checked = false;
    edtAdjustmentsByRelativeRisksFile->Text = "";
    SetTemporalTrendAdjustmentControl(NOTADJUSTED);
-   edtLogLinear->Text = 0;
-
-   // Inference tab
-   chkTerminateEarly->Checked = false;
-   edtProspectiveStartDateYear->Text = "1900";
-   edtProspectiveStartDateMonth->Text = "12";
-   edtProspectiveStartDateDay->Text = "31";
-   chkAdjustForEarlierAnalyses->Checked = false;
-
+   edtLogLinear->Text = "0";
 }
 //---------------------------------------------------------------------------
 /** Sets default values for Output related tab and respective controls

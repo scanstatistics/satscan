@@ -61,7 +61,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Top = 6
     Width = 419
     Height = 283
-    ActivePage = TabSheet3
+    ActivePage = tsOther
     TabOrder = 0
     object TabSheet2: TTabSheet
       Caption = 'Spatial Window'
@@ -499,9 +499,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         OnClick = rdgTemporalTrendAdjClick
       end
       object edtLogLinear: TEdit
-        Left = 106
+        Left = 108
         Top = 92
-        Width = 35
+        Width = 30
         Height = 21
         Enabled = False
         MaxLength = 5
