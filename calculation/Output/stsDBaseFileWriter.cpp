@@ -54,11 +54,12 @@ void DBaseFileWriter::Init() {
 // dBase file      
 void DBaseFileWriter::Print() {
    std::auto_ptr<DBFRecord>	pDBaseRecord;
-   std::auto_ptr<DBFFile>       pFile(new DBFFile(gsFileName.GetCString()));
+   std::auto_ptr<DBFFile>       pFile;
    ZdTransaction*               pTransaction = 0;
    BaseOutputRecord*            pRecord = 0;
 
    try {
+      pFile.reset(new DBFFile(gsFileName.GetCString()));
       pTransaction = pFile->BeginTransaction();
       for(unsigned long i = 0; i < gpOutputFileData->GetNumRecords(); ++i) {
          pRecord = gpOutputFileData->GetRecord(i);
@@ -78,7 +79,6 @@ void DBaseFileWriter::Print() {
    catch (ZdException &x) {
       if (pTransaction)
          pFile->EndTransaction(pTransaction);
-      pFile->Close();
       gpOutputFileData->GetBasePrinter()->SatScanPrintWarning(x.GetErrorMessage());
       gpOutputFileData->GetBasePrinter()->SatScanPrintWarning("\nWarning - Unable to write record to dBase file %s.\n", gsFileName.GetCString());
    }
