@@ -16,6 +16,8 @@ __published:	// IDE-managed Components
         TButton *btnOk;
         TButton *btnCancel;
         void __fastcall rdgOpenChoicesClick(TObject *Sender);
+        void __fastcall FormKeyDown(TObject *Sender, WORD &Key,
+          TShiftState Shift);
   private:	// User declarations
     int                 giSelectedIndex;
 

@@ -36,3 +36,9 @@ void TfrmStartWindow::Setup() {
   }
 }
 
+void __fastcall TfrmStartWindow::FormKeyDown(TObject *Sender, WORD &Key,TShiftState Shift) {
+  if (Key == VK_ESCAPE)
+    Close();
+}
+//---------------------------------------------------------------------------
+
