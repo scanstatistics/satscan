@@ -99,7 +99,7 @@ bool CSaTScanData::ConvertPopulationDateToJulian(const char * sDateString, int i
 /** Attempts to parses passed string into tract identifier, count,
     and based upon settings, date and covariate information.
     Returns whether parse completed without errors. */
-bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringParser & Parser,
+bool CSaTScanData::ParseCountLine(const char*  szDescription, StringParser & Parser,
                                   tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex) {
   UInt   	               uiYear4, uiYear, uiMonth=1, uiDay=1;
   int                          iCategoryOffSet, iScanPrecision;
@@ -108,34 +108,34 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringPa
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
     if ((tid = gpTInfo->tiGetTractIndex(Parser.GetWord(0))) == -1) {
-      gpPrint->PrintInputWarning("Error: Unknown location id in %s file, record %ld.\n", szDescription, nRec);
+      gpPrint->PrintInputWarning("Error: Unknown location id in %s file, record %ld.\n", szDescription, Parser.GetReadCount());
       gpPrint->PrintInputWarning("       Location '%s' was not specified in the coordinates file.\n", Parser.GetWord(0));
       return false;
     }
     //read and validate count
     if (Parser.GetWord(1) != 0) {
       if (!sscanf(Parser.GetWord(1), "%ld", &nCount)) {
-       gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file could not be read as count.\n", Parser.GetWord(1), nRec, szDescription);
+       gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file could not be read as count.\n", Parser.GetWord(1), Parser.GetReadCount(), szDescription);
        gpPrint->PrintInputWarning("       Count must be an integer.\n");
        return false;
       }
     }
     else {
-      gpPrint->PrintInputWarning("Error: Record %ld in %s file does not contain %s count.\n", nRec, szDescription, szDescription);
+      gpPrint->PrintInputWarning("Error: Record %ld in %s file does not contain %s count.\n", Parser.GetReadCount(), szDescription, szDescription);
       return false;
     }
     if (nCount < 0) {//validate that count is not negative or exceeds type precision
       if (strstr(Parser.GetWord(1), "-"))
-        gpPrint->PrintInputWarning("Error: Negative count in record %ld of %s file.\n", nRec, szDescription);
+        gpPrint->PrintInputWarning("Error: Negative count in record %ld of %s file.\n", Parser.GetReadCount(), szDescription);
       else
         gpPrint->PrintInputWarning("Error: Count '%s' exceeds maximum value of %ld in record %ld of %s file.\n",
-                                   Parser.GetWord(1), std::numeric_limits<count_t>::max(), nRec, szDescription);
+                                   Parser.GetWord(1), std::numeric_limits<count_t>::max(), Parser.GetReadCount(), szDescription);
       return false;
     }
     //read and validate date
     if (m_pParameters->GetPrecisionOfTimesType() > NONE && !Parser.GetWord(2)) {
       gpPrint->PrintInputWarning("Error: Record %ld in %s file does not contain a date, which is required for a precision of '%s'.\n",
-                                 nRec, szDescription, m_pParameters->GetDatePrecisionAsString(m_pParameters->GetPrecisionOfTimesType()));
+                                 Parser.GetReadCount(), szDescription, m_pParameters->GetDatePrecisionAsString(m_pParameters->GetPrecisionOfTimesType()));
       return false;
     }
     switch (m_pParameters->GetPrecisionOfTimesType()) {
@@ -147,7 +147,7 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringPa
     };
     if (iScanPrecision < m_pParameters->GetPrecisionOfTimesType()) {
       gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file, could not be read as date with precision '%s'.\n",
-                                 Parser.GetWord(2), nRec, szDescription,
+                                 Parser.GetWord(2), Parser.GetReadCount(), szDescription,
                                  m_pParameters->GetDatePrecisionAsString(m_pParameters->GetPrecisionOfTimesType()));
       return false;
     }
@@ -156,21 +156,21 @@ bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringPa
     switch (uiYear4) {
       case -1 : gpPrint->PrintInputWarning("Error: Due to study period greater than 100 years, unable\n"
                                                     "       to convert two digit year '%d' in %s file, record %ld.\n"
-                                                    "       Please use four digit years.\n", uiYear, szDescription, nRec);
+                                                    "       Please use four digit years.\n", uiYear, szDescription, Parser.GetReadCount());
                 return false;
-      case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in %s file, record %ld.\n", uiYear, szDescription, nRec);
+      case -2 : gpPrint->PrintInputWarning("Error: Invalid year '%d' in %s file, record %ld.\n", uiYear, szDescription, Parser.GetReadCount());
                 return false;
     }
     //validate that date is between study period start and end dates
     nDate = MDYToJulian(uiMonth, uiDay, uiYear4);
     if (!(m_nStartDate <= nDate && nDate <= m_nEndDate)) {
-      gpPrint->PrintInputWarning("Error: Date '%s' in record %ld of %s file is not\n", Parser.GetWord(2), nRec, szDescription);
+      gpPrint->PrintInputWarning("Error: Date '%s' in record %ld of %s file is not\n", Parser.GetWord(2), Parser.GetReadCount(), szDescription);
       gpPrint->PrintInputWarning("       within study period beginning %s and ending %s.\n",
                                  m_pParameters->GetStudyPeriodStartDate().c_str(), m_pParameters->GetStudyPeriodEndDate().c_str());
       return false;
     }
     iCategoryOffSet = m_pParameters->GetPrecisionOfTimesType() == NONE ? 2 : 3;
-    if (! ParseCovariates(iCategoryIndex, iCategoryOffSet, szDescription, nRec, Parser))
+    if (! ParseCovariates(iCategoryIndex, iCategoryOffSet, szDescription, Parser.GetReadCount(), Parser))
         return false;
   }
   catch (ZdException &x) {
@@ -229,8 +229,7 @@ bool CSaTScanData::ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, c
     not less than defined dimensions. The reason we don't check scanned dimensions
     here is that a generic error message could not be implemented. */
 bool CSaTScanData::ReadCartesianCoordinates(StringParser & Parser, std::vector<double>& vCoordinates, int & iScanCount,
-                                            int iWordOffSet, long lRecNum, const char * sSourceFile) {
-
+                                            int iWordOffSet, const char * sSourceFile) {
   const char  * pCoordinate;
   int           i;
 
@@ -241,7 +240,7 @@ bool CSaTScanData::ReadCartesianCoordinates(StringParser & Parser, std::vector<d
        else {
          //unable to read word as double, print error to print direction and return false
          gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file could not be read as ",
-                                             pCoordinate, lRecNum, sSourceFile);
+                                             pCoordinate, Parser.GetReadCount(), sSourceFile);
          //we can be specific about which dimension we are attending to read to                                    
          if (i < 2)
            gpPrint->PrintInputWarning("%s-coordinate.\n", (i == 0 ? "x" : "y"));
@@ -346,16 +345,14 @@ bool CSaTScanData::ReadCoordinatesFile() {
     Return value: true = success, false = errors encountered           */
 bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
   int                           i, iScanCount=0;
-  long                          lRecNum=0;
   bool                          bValidRecord, bValid=true, bEmpty=true;
   const char                  * pCoordinate, * pDimension;
   ZdString                      TractIdentifier;
   std::vector<double>           vCoordinates;
-  StringParser                  Parser;
+  StringParser                  Parser(gpPrint->GetImpliedInputFileType());
 
   try {
     while (Parser.ReadString(fp)) {
-     	 lRecNum++;
          //skip records with no data
          if (!Parser.HasWords())
            continue;
@@ -379,7 +376,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
            vCoordinates.resize(m_pParameters->GetDimensionsOfData(), 0);
          }
          //read and validate dimensions skip to next record if error reading coordinates as double
-         if (! ReadCartesianCoordinates(Parser, vCoordinates, iScanCount, 1, lRecNum, "coordinates")) {
+         if (! ReadCartesianCoordinates(Parser, vCoordinates, iScanCount, 1, "coordinates")) {
            bValid = false;
            continue;
          }
@@ -387,14 +384,14 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
          if (iScanCount < m_pParameters->GetDimensionsOfData()) {
            //Note: since the first record defined the number of dimensions, this error could not happen.
            gpPrint->PrintInputWarning("Error: Record %ld in coordinates file contains %d dimension%s but the\n",
-                                               lRecNum, iScanCount, (iScanCount == 1 ? "" : "s"));
+                                               Parser.GetReadCount(), iScanCount, (iScanCount == 1 ? "" : "s"));
            gpPrint->PrintInputWarning("       first record defined the number of dimensions as %d.\n", m_pParameters->GetDimensionsOfData());
            bValid = false;
            continue;
          }
          //add the tract identifier and coordinates to trac handler
          if (! gpTInfo->tiInsertTnode(Parser.GetWord(0), vCoordinates)) {
-           gpPrint->PrintInputWarning("Error: For record %ld in coordinates file, location '%s' already exists.\n", lRecNum, Parser.GetWord(0));
+           gpPrint->PrintInputWarning("Error: For record %ld in coordinates file, location '%s' already exists.\n", Parser.GetReadCount(), Parser.GetWord(0));
            bValid = false;
            continue;
          }
@@ -437,12 +434,11 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
     Return value: true = success, false = errors encountered   */
 bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
   int                           iScanCount;
-  long                          lRecNum=0;
   const char                  * pCoordinate;
   bool                          bValid=true, bEmpty=true;
   ZdString                      TractIdentifier;
   std::vector<double>           vCoordinates;
-  StringParser                  Parser;
+  StringParser                  Parser(gpPrint->GetImpliedInputFileType());
 
   try {
     vCoordinates.resize(3/*for conversion*/, 0);
@@ -450,18 +446,17 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
     gpTInfo->tiSetDimensions(m_pParameters->GetDimensionsOfData());
     gpGInfo->giSetDimensions(m_pParameters->GetDimensionsOfData());
     while (Parser.ReadString(fp)) {
-         ++lRecNum;
         //skip records with no data 
         if (! Parser.HasWords())
           continue;
         bEmpty=false;
-        if (! ReadLatitudeLongitudeCoordinates(Parser, vCoordinates, 1, lRecNum, "coordinates")) {
+        if (! ReadLatitudeLongitudeCoordinates(Parser, vCoordinates, 1, "coordinates")) {
            bValid = false;
            continue;
         }
         //add the tract identifier and coordinates to trac handler
         if (! gpTInfo->tiInsertTnode(Parser.GetWord(0), vCoordinates)) {
-          gpPrint->PrintInputWarning("Error: For record %ld in coordinates file, location '%s' already exists.\n", lRecNum, Parser.GetWord(0));
+          gpPrint->PrintInputWarning("Error: For record %ld in coordinates file, location '%s' already exists.\n", Parser.GetReadCount(), Parser.GetWord(0));
           bValid = false;
           continue;
         }
@@ -503,11 +498,11 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
 bool CSaTScanData::ReadCounts(FILE * fp, const char* szDescription) {
-  int                                   i, j, iCategoryIndex, iRecNum=0;
+  int                                   i, j, iCategoryIndex;
   bool                                  bCaseFile, bValid=true, bEmpty=true;
   Julian                                Date;
   tract_t                               TractIndex;
-  StringParser                          Parser;
+  StringParser                          Parser(gpPrint->GetImpliedInputFileType());
   std::string                           sBuffer;
   count_t                               Count, ** pCounts;
   TwoDimensionArrayHandler<count_t>   * pCountsByTimeByCategory;
@@ -521,10 +516,9 @@ bool CSaTScanData::ReadCounts(FILE * fp, const char* szDescription) {
 
     //Read data, parse and if no errors, increment count for tract at date.
     while (Parser.ReadString(fp)) {
-         ++iRecNum;
          if (Parser.HasWords()) {
            bEmpty = false;
-           if (ParseCountLine(szDescription, iRecNum, Parser, TractIndex, Count, Date, iCategoryIndex)) {
+           if (ParseCountLine(szDescription, Parser, TractIndex, Count, Date, iCategoryIndex)) {
              //cumulatively add count to time by location structure
              pCounts[0][TractIndex] += Count;
              for (i=1; Date >= m_pIntervalStartTimes[i]; ++i)
@@ -541,7 +535,7 @@ bool CSaTScanData::ReadCounts(FILE * fp, const char* szDescription) {
                  //identifier / covariates together don't match an existing population record.
                  if (! gpTInfo->tiAddCount(TractIndex, iCategoryIndex, Count)) {
                    gpPrint->PrintInputWarning("Error: Record %ld of case file refers to location '%s' with population category '%s',\n",
-                                              iRecNum, Parser.GetWord(0), gPopulationCategories.GetPopulationCategoryAsString(iCategoryIndex, sBuffer));
+                                              Parser.GetReadCount(), Parser.GetWord(0), gPopulationCategories.GetPopulationCategoryAsString(iCategoryIndex, sBuffer));
                    gpPrint->PrintInputWarning("       but no matching population record with this combination exists.\n");
                    return false;
                  }
@@ -625,37 +619,35 @@ bool CSaTScanData::ReadGridFile() {
 bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
   bool                          bValidRecord, bValid=true, bEmpty=true;
   int                           i, iScanCount;
-  long                          lRecNum=0;
   const char                  * pCoordinate;
   std::vector<double>           vCoordinates;
-  StringParser                  Parser;
+  StringParser                  Parser(gpPrint->GetImpliedInputFileType());
   ZdString                      sId;
 
   try {
     vCoordinates.resize(m_pParameters->GetDimensionsOfData(), 0);
     while (Parser.ReadString(fp)) {
-        ++lRecNum;
         //skip blank lines
         if (!Parser.HasWords())
           continue;
         //there are records with data, but not necessarily valid
         bEmpty = false;
          //read and vaidate dimensions skip to next record if error reading coordinates as double
-         if (! ReadCartesianCoordinates(Parser, vCoordinates, iScanCount, 0, lRecNum, "grid")) {
+         if (! ReadCartesianCoordinates(Parser, vCoordinates, iScanCount, 0, "grid")) {
            bValid = false;
            continue;
          }
         //validate that we read the correct number of coordinates as defined by coordinates system or coordinates file
         if (iScanCount < m_pParameters->GetDimensionsOfData()) {
           gpPrint->PrintInputWarning("Error: Record %ld in grid file contains %d dimension%s but the\n",
-                                     lRecNum, iScanCount, (iScanCount == 1 ? "" : "s"));
+                                     Parser.GetReadCount(), iScanCount, (iScanCount == 1 ? "" : "s"));
           gpPrint->PrintInputWarning("       coordinates file defined the number of dimensions as %d.\n",
                                      m_pParameters->GetDimensionsOfData());
           bValid = false;
           continue;
         }
         //add created tract identifer(record number) and read coordinates to structure that mantains list of centroids
-        sId = lRecNum;
+        sId = Parser.GetReadCount();
         if (! gpGInfo->giInsertGnode(sId.GetCString(), vCoordinates))
           //If there are problems adding then either some other code has errored by
           //adding to this structure previously or this routine is doing something wrong.
@@ -688,27 +680,25 @@ bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
    Return value: true = success, false = errors encountered           */
 bool CSaTScanData::ReadGridFileAsLatitudeLongitude(FILE * fp) {
   bool    	                bValid=true, bEmpty=true;
-  long                          lRecNum=0;
   const char                  * pCoordinate;
   std::vector<double>           vCoordinates;
-  StringParser                  Parser;
+  StringParser                  Parser(gpPrint->GetImpliedInputFileType());
   ZdString                      sId;
 
   try {
     vCoordinates.resize(3/*for conversion*/, 0);
     while (Parser.ReadString(fp)) {
-        ++lRecNum;
         //skip lines with no data
         if (!Parser.HasWords())
           continue;
         //there are records with data, but not necessarily valid
         bEmpty=false;
-        if (! ReadLatitudeLongitudeCoordinates(Parser, vCoordinates, 0, lRecNum, "grid")) {
+        if (! ReadLatitudeLongitudeCoordinates(Parser, vCoordinates, 0, "grid")) {
            bValid = false;
            continue;
         }
         //add created tract identifer(record number) and read coordinates to structure that mantains list of centroids
-        sId = lRecNum;
+        sId = Parser.GetReadCount();
         if (!gpGInfo->giInsertGnode(sId.GetCString(), vCoordinates))
           //If there are problems adding then either some other code has errored by
           //adding to this structure previously or this routine is doing something wrong.
@@ -746,46 +736,46 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude(FILE * fp) {
     coordinates. Checks that coordinates are in range and converts to cartesian
     coordinates. */
 bool CSaTScanData::ReadLatitudeLongitudeCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
-                                                    int iWordOffSet, long lRecNum, const char * sSourceFile) {
+                                                    int iWordOffSet, const char * sSourceFile) {
   const char  * pCoordinate;
   double        dLatitude, dLongitude;
 
   //read latitude, validating that string can be converted to double
   if ((pCoordinate = Parser.GetWord(iWordOffSet)) != 0) {
     if (! sscanf(pCoordinate, "%lf", &dLatitude)) {
-      gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file could not be read as latitude.\n", pCoordinate, lRecNum, sSourceFile);
+      gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file could not be read as latitude.\n", pCoordinate, Parser.GetReadCount(), sSourceFile);
       return false;
     }
   }
   else {
-    gpPrint->PrintInputWarning("Error: Record %d in %s file missing latitude and longitude coordinates.\n", lRecNum, sSourceFile);
+    gpPrint->PrintInputWarning("Error: Record %d in %s file missing latitude and longitude coordinates.\n", Parser.GetReadCount(), sSourceFile);
     return false;
   }
   //read longitude, validating that string can be converted to double
   if ((pCoordinate = Parser.GetWord(++iWordOffSet)) != 0) {
     if (! sscanf(pCoordinate, "%lf", &dLongitude)) {
-      gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file could not be read as longitude.\n", pCoordinate, lRecNum, sSourceFile);
+      gpPrint->PrintInputWarning("Error: Value '%s' of record %ld in %s file could not be read as longitude.\n", pCoordinate, Parser.GetReadCount(), sSourceFile);
       return false;
     }
   }
   else {
-    gpPrint->PrintInputWarning("Error: Record %ld in %s file missing longitude coordinate.\n", lRecNum, sSourceFile);
+    gpPrint->PrintInputWarning("Error: Record %ld in %s file missing longitude coordinate.\n", Parser.GetReadCount(), sSourceFile);
     return false;
   }
   //validate that there is not extra data for record
   if ((pCoordinate = Parser.GetWord(++iWordOffSet)) != 0) {
-    gpPrint->PrintInputWarning("Error: Record %ld in %s file contains extra data: '%s'.\n", lRecNum, sSourceFile, pCoordinate);
+    gpPrint->PrintInputWarning("Error: Record %ld in %s file contains extra data: '%s'.\n", Parser.GetReadCount(), sSourceFile, pCoordinate);
     return false;
   }
   //validate range of latitude value
   if ((fabs(dLatitude) > 90.0)) {
-    gpPrint->PrintInputWarning("Error: Latitude %lf, for record %ld in %s file, is out of range.\n",  dLatitude, lRecNum, sSourceFile);
+    gpPrint->PrintInputWarning("Error: Latitude %lf, for record %ld in %s file, is out of range.\n",  dLatitude, Parser.GetReadCount(), sSourceFile);
     gpPrint->PrintInputWarning("       Latitude must be between -90 and 90.\n");
     return false;
   }
   //validate range of longitude value
   if ((fabs(dLongitude) > 180.0)) {
-    gpPrint->PrintInputWarning("Error: Longitude %lf, for record %ld in %s file, is out of range.\n", dLongitude, lRecNum, sSourceFile);
+    gpPrint->PrintInputWarning("Error: Longitude %lf, for record %ld in %s file, is out of range.\n", dLongitude, Parser.GetReadCount(), sSourceFile);
     gpPrint->PrintInputWarning("       Longitude must be between -180 and 180.\n");
     return false;
   }
@@ -810,7 +800,7 @@ bool CSaTScanData::ReadPopulationFile() {
   FILE                        * fp=0; // Ptr to population file
   std::vector<Julian>           vPopulationDates;
   std::vector<Julian>::iterator itrdates;
-  StringParser                  Parser;
+  StringParser                  Parser(gpPrint->GetImpliedInputFileType());
 
   try {
     gpPrint->SatScanPrintf("Reading the population file\n");
@@ -937,7 +927,7 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
   tract_t                       TractIdentifierIndex;
   float                         fPopulation;
   FILE                        * fp=0; // Ptr to population file
-  StringParser                  Parser;
+  StringParser                  Parser(gpPrint->GetImpliedInputFileType());
 
   try {
     gpPrint->SatScanPrintf("Reading the maximum circle population file\n");

@@ -81,14 +81,14 @@ class CSaTScanData {
     void                                        AllocateNeighborArray();
     void                                        AllocateSortedArray();
     bool                                        ReadCartesianCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
-                                                                         int & iScanCount, int iWordOffSet, long lRecNum, const char * sSourceFile);
+                                                                         int & iScanCount, int iWordOffSet, const char * sSourceFile);
     bool                                        ReadCoordinatesFileAsCartesian(FILE * fp);
     bool                                        ReadCoordinatesFileAsLatitudeLongitude(FILE * fp);
     bool                                        ReadCounts(FILE * fp, const char* szDescription);
     bool                                        ReadGridFileAsCartiesian(FILE * fp);
     bool                                        ReadGridFileAsLatitudeLongitude(FILE * fp);
     bool                                        ReadLatitudeLongitudeCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
-                                                                                 int iWordOffSet, long lRecNum, const char * sSourceFile);
+                                                                                 int iWordOffSet, const char * sSourceFile);
     virtual void                                SetAdditionalCaseArrays();
     virtual void                                SetCasesByTimeIntervalArray();
     void                                        SetCumulativeMeasure();
@@ -180,7 +180,7 @@ class CSaTScanData {
     inline measure_t                            GetTotalMeasure() const {return m_nTotalMeasure;}
     double                                      GetTotalPopulationCount() const;
     virtual void                                MakeData(int iSimulationNumber);
-    bool                                        ParseCountLine(const char*  szDescription, int nRec, StringParser & Parser, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex);    bool                                        ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, const char*  szDescription, int nRec, StringParser & Parser);
+    bool                                        ParseCountLine(const char*  szDescription, StringParser & Parser, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex);    bool                                        ParseCovariates(int& iCategoryIndex, int iCovariatesOffset, const char*  szDescription, int nRec, StringParser & Parser);
     bool                                        ReadCaseFile();
     bool                                        ReadControlFile();
     bool                                        ReadCoordinatesFile();
