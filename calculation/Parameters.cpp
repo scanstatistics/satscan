@@ -75,6 +75,7 @@ const char*      ISOTONIC_SCAN_LINE             	= "IsotonicScan";
 const char*      PVALUE_PROSPECT_LLR_LINE       	= "PValues2PrespecifiedLLRs";
 const char*      LLR_1_LINE                     	= "LLR1";
 const char*      LLR_2_LINE                    		= "LLR2";
+const char*      EARLY_SIM_TERMINATION_LINE             = "EarlySimulationTermination";
 
 const int        MAXIMUM_SEQUENTIAL_ANALYSES    	= 32000;
 const int        MAXIMUM_ELLIPSOIDS             	= 10;
@@ -96,9 +97,9 @@ const char*      YEAR_PRECISION_TYPE            	= "Years";
 const char*      MONTH_PRECISION_TYPE           	= "Months";
 const char*      DAY_PRECISION_TYPE             	= "Days";
 
-int CParameters::giNumParameters 			= 56;
+int CParameters::giNumParameters 			= 57;
 
-char mgsVariableLabels[56][100] = {
+char mgsVariableLabels[57][100] = {
    "Analysis Type",
    "Scan Areas",
    "Case File",
@@ -154,7 +155,8 @@ char mgsVariableLabels[56][100] = {
    "Interval End Range",
    "Time Trend Convergence",
    "Special Population File",
-   "Special Population File Use"
+   "Special Population File Use",
+   "Early Termination of Simulations"
 };
 
 /** Constructor */   
@@ -279,6 +281,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gsStartRangeStartDate               = rhs.gsStartRangeStartDate;
     gsStartRangeEndDate                 = rhs.gsStartRangeEndDate;
     gbTimeTrendConverge			= rhs.gbTimeTrendConverge;
+    gbEarlyTerminationSimulations       = rhs.gbEarlyTerminationSimulations;        
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -340,7 +343,7 @@ void CParameters::DisplayAnalysisType(FILE* fp) const {
 }
 
 /** Prints parameters, in a particular format, to passed ascii file. */
-void CParameters::DisplayParameters(FILE* fp) const {
+void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
   int           i;
   ZdFileName    AsciiOutput(gsOutputFileName.c_str()), DBaseOutput(gsOutputFileName.c_str());
 
@@ -394,8 +397,11 @@ void CParameters::DisplayParameters(FILE* fp) const {
     fprintf(fp, "\n  Start Date : %s\n", gsStudyPeriodStartDate.c_str());
     fprintf(fp, "  End Date   : %s\n\n", gsStudyPeriodEndDate.c_str());
 
-    fprintf(fp, "  Number of Replications : %i\n", giReplications);
-   
+    if (iNumSimulations < giReplications)
+      fprintf(fp, "  Number of Replications : %i (requested %i)\n", iNumSimulations, giReplications);
+    else
+      fprintf(fp, "  Number of Replications : %i\n", giReplications);
+
     if (giNumberEllipses > 0) {
       fprintf(fp, "\nEllipses\n");
       fprintf(fp, "----------\n");
@@ -714,6 +720,7 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
         case TIMETRENDCONVRG           : sParameterLineLabel = TIME_TREND_CONVERGENCE_LINE; break;
         case MAXCIRCLEPOPFILE          : sParameterLineLabel = MAX_CIRCLE_POP_FILE_LINE; break;
         case USEMAXCIRCLEPOPFILE       : sParameterLineLabel = USE_MAX_CIRCLE_POP_FILE_LINE; break;
+        case EARLY_SIM_TERMINATION     : sParameterLineLabel = EARLY_SIM_TERMINATION_LINE; break;
         default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLineLabel()", eParameterType);
       };
     }
@@ -984,6 +991,7 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case TIMETRENDCONVRG	     : sDefaultValue = gbTimeTrendConverge; break;
       case MAXCIRCLEPOPFILE          : sDefaultValue = "<blank>"; break;
       case USEMAXCIRCLEPOPFILE       : sDefaultValue = (gbUseMaxCirclePopulationFile ? YES : NO); break;
+      case EARLY_SIM_TERMINATION     : sDefaultValue = (gbEarlyTerminationSimulations ? YES : NO); break;
       default : ZdException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -1039,6 +1047,7 @@ void CParameters::ReadAdvancedFeatures(ZdIniFile& file, BasePrint & PrintDirecti
     ReadIniParameter(*pSection, PVALUE_PROSPECT_LLR_LINE, POWERCALC, PrintDirection);
     ReadIniParameter(*pSection, LLR_1_LINE, POWERX, PrintDirection);
     ReadIniParameter(*pSection, LLR_2_LINE, POWERY, PrintDirection);
+    ReadIniParameter(*pSection, EARLY_SIM_TERMINATION_LINE, EARLY_SIM_TERMINATION, PrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadAdvancedFeatures()", "CParameters");
@@ -1547,6 +1556,7 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case TIMETRENDCONVRG           : SetTimeTrendConvergence(ReadDouble(sParameter, eParameterType)); break;
       case USEMAXCIRCLEPOPFILE       : SetUseMaxCirclePopulationFile(ReadBoolean(sParameter, eParameterType)); break;
       case MAXCIRCLEPOPFILE          : SetMaxCirclePopulationFileName(sParameter.GetCString(), true); break;
+      case EARLY_SIM_TERMINATION     : SetTerminateSimulationsEarly(ReadBoolean(sParameter, eParameterType)); break;
       default : ZdException::Generate("Unknown parameter enumeration %d.","ReadParameter()", eParameterType);
     };
   }
@@ -1763,6 +1773,7 @@ void CParameters::SaveAdvancedFeaturesSection(ZdIniFile& file) {
     pSection->AddLine(PVALUE_PROSPECT_LLR_LINE, gbPowerCalculation ? YES : NO);
     pSection->AddLine(LLR_1_LINE, AsString(sValue, gdPower_X));
     pSection->AddLine(LLR_2_LINE, AsString(sValue, gdPower_Y));
+    pSection->AddLine(EARLY_SIM_TERMINATION_LINE, gbEarlyTerminationSimulations ? YES : NO);
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveAdvancedFeaturesSection()","CParameters");
@@ -2166,6 +2177,7 @@ void CParameters::SetDefaults() {
   gsStartRangeStartDate                 = gsStudyPeriodStartDate;
   gsStartRangeEndDate                   = gsStudyPeriodEndDate;
   gbTimeTrendConverge			= 0;
+  gbEarlyTerminationSimulations         = false;
 }
 
 /** Sets dimensions of input data. */

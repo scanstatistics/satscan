@@ -58,6 +58,7 @@ extern const char*      ISOTONIC_SCAN_LINE;
 extern const char*      PVALUE_PROSPECT_LLR_LINE;
 extern const char*      LLR_1_LINE;
 extern const char*      LLR_2_LINE;
+extern const char*      EARLY_SIM_TERMINATION_LINE;
 
 /** sequential scan ini section */
 extern const char*      SEQUENTIAL_SCAN_SECTION;
@@ -126,7 +127,8 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     CRITERIA_SECOND_CLUSTERS, MAX_TEMPORAL_TYPE, MAX_SPATIAL_TYPE,
                                     RUN_HISTORY_FILENAME, OUTPUT_MLC_DBASE, OUTPUT_AREAS_DBASE, OUTPUT_RR_DBASE,
                                     OUTPUT_SIM_LLR_DBASE, DUCZMAL_COMPACTNESS, INTERVAL_STARTRANGE, 
-                                    INTERVAL_ENDRANGE, TIMETRENDCONVRG, MAXCIRCLEPOPFILE, USEMAXCIRCLEPOPFILE};
+                                    INTERVAL_ENDRANGE, TIMETRENDCONVRG, MAXCIRCLEPOPFILE, USEMAXCIRCLEPOPFILE,
+                                    EARLY_SIM_TERMINATION};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL, PURELYSPATIALMONOTONE};
@@ -160,6 +162,7 @@ class CParameters {
     int                                 giReplications;                         /** number of MonteCarlo replicas */
     CriteriaSecondaryClustersType       geCriteriaSecondClustersType;           /** Criteria for Reporting Secondary Clusters */
     double                              gbTimeTrendConverge;                    /** time trend convergence value */
+    bool                                gbEarlyTerminationSimulations;          /** indicates whether to stop simulations if large p-values */
         /* Power Calcution variables */
     bool                                gbPowerCalculation;                     /** indicator of whether to perform power calculations */
     double                              gdPower_X, gdPower_Y;                   /** power calculation variables */
@@ -291,7 +294,7 @@ class CParameters {
 
     CParameters                       & operator=(const CParameters &rhs);
     void                                DisplayAnalysisType(FILE* fp) const;
-    void                                DisplayParameters(FILE* fp) const;
+    void                                DisplayParameters(FILE* fp, int iNumSimulations) const;
     void                                DisplayTimeAdjustments(FILE* fp) const;
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
     const char                        * GetAnalysisTypeAsString() const;
@@ -360,6 +363,7 @@ class CParameters {
     Julian                              GetStudyPeriodEndDateAsJulian() /*const*/;
     const std::string                 & GetStudyPeriodStartDate() const {return gsStudyPeriodStartDate;}
     Julian                              GetStudyPeriodStartDateAsJulian() /*const*/;
+    bool                                GetTerminateSimulationsEarly() const {return gbEarlyTerminationSimulations;}
     long                                GetTimeIntervalLength() const {return glTimeIntervalLength;}
     DatePrecisionType                   GetTimeIntervalUnitsType() const {return geTimeIntervalUnitsType;}
     double                              GetTimeTrendAdjustmentPercentage() const {return gbTimeTrendAdjustPercentage;}
@@ -418,6 +422,7 @@ class CParameters {
     void                                SetStartRangeStartDate(const char * sStartRangeStartDate);
     void                                SetStudyPeriodEndDate(const char * sStudyPeriodEndDate);
     void                                SetStudyPeriodStartDate(const char * sStudyPeriodStartDate);
+    void                                SetTerminateSimulationsEarly(bool b) {gbEarlyTerminationSimulations = b;}
     void                                SetTimeIntervalLength(long lTimeIntervalLength);
     void                                SetTimeIntervalUnitsType(DatePrecisionType eTimeIntervalUnits);
     void                                SetTimeTrendAdjustmentPercentage(double dPercentage);
