@@ -20,6 +20,14 @@ class DataStreamInterface {
     count_t             gTotalControls;         /** number of controls in data stream */
     measure_t           gTotalMeasure;          /** number of expected cases in data stream */
 
+    void                Init();
+
+  protected:
+
+  public:
+    DataStreamInterface(unsigned int iNumTimeIntervals=0, unsigned int iNumTracts=0);
+    virtual ~DataStreamInterface();
+
     count_t          ** gppCaseArray;           /** pointer to data stream case array */
     count_t          ** gppNCCaseArray;         /** pointer to data stream non-cumulative case array */
     count_t           * gpPTCaseArray;          /** pointer to data stream temporal case array */
@@ -29,31 +37,10 @@ class DataStreamInterface {
     measure_t         * gpPTMeasureArray;       /** pointer to data stream temporal measure array */
     measure_t         * gpPSMeasureArray;       /** pointer to data stream spatial measure array */
     measure_t        ** gppSqMeasureArray;      /** */
+    measure_t         * gpPTSqMeasureArray;      /** */
     measure_t         * gpPSSqMeasureArray;     /** spatial */
     CTimeTrend        * gpTimeTrend;            /** pointer to data stream time trend structure */
-
-    void                Init();
-    virtual void        SetPurelySpatialAnalysisInterface(DataStream & thisStream, const CParameters & Parameters);
-    virtual void        SetPurelyTemporalAnalysisInterface(DataStream & thisStream, const CParameters & Parameters);
-    virtual void        SetSpaceTimeAnalysisInterface(DataStream & thisStream, const CParameters & Parameters);
-    virtual void        SetSVTTAnalysisInterface(DataStream & thisStream, const CParameters & Parameters);
-
-  protected:
-    void                SetCaseArray(count_t ** ppCases) {gppCaseArray = ppCases;gpPSCaseArray = ppCases[0];}
-    void                SetNCCaseArray(count_t ** ppCases) {gppNCCaseArray = ppCases;}
-    void                SetPTCaseArray(count_t * pPTCase) {gpPTCaseArray = pPTCase;}
-    void                SetMeasureArray(measure_t ** ppMeasure) {gppMeasureArray = ppMeasure;gpPSMeasureArray = ppMeasure[0];}
-    void                SetNCMeasureArray(measure_t ** ppMeasure) {gppNCMeasureArray = ppMeasure;}
-    void                SetPTMeasureArray(measure_t * pMeasure) {gpPTMeasureArray = pMeasure;}
-    void                SetSqMeasureArray(measure_t ** ppSqMeasure) {gppSqMeasureArray = ppSqMeasure;gpPSSqMeasureArray = ppSqMeasure[0];}
-    void                SetTimeTrend(CTimeTrend * pTimeTrend) {gpTimeTrend = pTimeTrend;}
-    void                SetTotalCasesCount(count_t tCases) {gTotalCases = tCases;}
-    void                SetTotalControlsCount(count_t tControls) {gTotalControls = tControls;}
-    void                SetTotalMeasureCount(measure_t tMeasure) {gTotalMeasure = tMeasure;}
-    
-  public:
-    DataStreamInterface(unsigned int iNumTimeIntervals, unsigned int iNumTracts);
-    virtual ~DataStreamInterface();
+ 
 
     inline count_t   ** GetCaseArray() const {return gppCaseArray;}
     inline count_t   ** GetNCCaseArray() const {return gppNCCaseArray;}
@@ -61,30 +48,30 @@ class DataStreamInterface {
     inline count_t    * GetPTCaseArray() const {return gpPTCaseArray;}
     inline measure_t ** GetMeasureArray() const {return gppMeasureArray;}
     inline measure_t ** GetNCMeasureArray() const {return gppNCMeasureArray;}
+    unsigned int        GetNumTimIntervals() const {return giNumTimeIntervals;}
     inline measure_t  * GetPSMeasureArray() const {return gpPSMeasureArray;}
     inline measure_t  * GetPTMeasureArray() const {return gpPTMeasureArray;}
     inline bool         IsSqMeasureArray() const {return gppSqMeasureArray;}
     inline measure_t ** GetSqMeasureArray() const {return gppSqMeasureArray;}
     inline measure_t  * GetPSSqMeasureArray() const {return gpPSSqMeasureArray;}
+    inline measure_t  * GetPTSqMeasureArray() const {return gpPTSqMeasureArray;}
     inline CTimeTrend * GetTimeTrend() const {return gpTimeTrend;}
     inline count_t      GetTotalCasesCount() const {return gTotalCases;}
     inline count_t      GetTotalControlsCount() const {return gTotalControls;}
     inline measure_t    GetTotalMeasureCount() const {return gTotalMeasure;}
     void                ResetCaseArray(count_t t);
-    void                Set(DataStream & thisStream, const CParameters & Parameters);
-};
-
-/** Interface for accessing simulation data stream structures. */
-class SimulationDataStreamInterface : public DataStreamInterface {
-  private:
-    virtual void        SetPurelySpatialAnalysisInterface(DataStream & thisStream, const CParameters & Parameters);
-    virtual void        SetPurelyTemporalAnalysisInterface(DataStream & thisStream, const CParameters & Parameters);
-    virtual void        SetSpaceTimeAnalysisInterface(DataStream & thisStream, const CParameters & Parameters);    
-    virtual void        SetSVTTAnalysisInterface(DataStream & thisStream, const CParameters & Parameters);
-  
-  public:
-    SimulationDataStreamInterface(unsigned int iNumTimeIntervals, unsigned int iNumTracts);
-    virtual ~SimulationDataStreamInterface();
+    void                SetCaseArray(count_t ** ppCases) {gppCaseArray = ppCases;gpPSCaseArray = ppCases[0];}
+    void                SetNCCaseArray(count_t ** ppCases) {gppNCCaseArray = ppCases;}
+    void                SetPTCaseArray(count_t * pPTCase) {gpPTCaseArray = pPTCase;}
+    void                SetMeasureArray(measure_t ** ppMeasure) {gppMeasureArray = ppMeasure;gpPSMeasureArray = ppMeasure[0];}
+    void                SetNCMeasureArray(measure_t ** ppMeasure) {gppNCMeasureArray = ppMeasure;}
+    void                SetPTMeasureArray(measure_t * pMeasure) {gpPTMeasureArray = pMeasure;}
+    void                SetPTSqMeasureArray(measure_t * pPTSqMeasure) {gpPTSqMeasureArray = pPTSqMeasure;}
+    void                SetSqMeasureArray(measure_t ** ppSqMeasure) {gppSqMeasureArray = ppSqMeasure;gpPSSqMeasureArray = ppSqMeasure[0];}
+    void                SetTimeTrend(CTimeTrend * pTimeTrend) {gpTimeTrend = pTimeTrend;}
+    void                SetTotalCasesCount(count_t tCases) {gTotalCases = tCases;}
+    void                SetTotalControlsCount(count_t tControls) {gTotalControls = tControls;}
+    void                SetTotalMeasureCount(measure_t tMeasure) {gTotalMeasure = tMeasure;}
 };
 #endif
  
