@@ -6,47 +6,46 @@
 #pragma resource "*.dfm"
 TfrmAnalysisRun *frmAnalysisRun;
 //---------------------------------------------------------------------------
-__fastcall TfrmAnalysisRun::TfrmAnalysisRun(TComponent* Owner)
-        : TForm(Owner)
-{
-   gbCancel = false;
-   gbPrintWarnings = true;
+__fastcall TfrmAnalysisRun::TfrmAnalysisRun(TComponent* Owner) : TForm(Owner) {
+  Init();
 }
 //---------------------------------------------------------------------------
-void __fastcall TfrmAnalysisRun::btnCancelClick(TObject *Sender)
-{
-   if (gbCancel || (btnCancel->Caption == "Close"))
-      Close();
-   else
-      {
-      reAnalysisBox->Lines->Add("JOB CANCELLED BY USER !!!");
-      btnCancel->Caption = "Close";
-      gbCancel = true;
-      }
-}
-bool TfrmAnalysisRun::IsJobCanceled()
-{
-   return gbCancel;
-}
-//---------------------------------------------------------------------------
-void __fastcall TfrmAnalysisRun::FormClose(TObject *Sender,
-      TCloseAction &Action)
-{
-   if (gbCancel || (btnCancel->Caption == "Close"))
-      Action = caFree;
-}
-//---------------------------------------------------------------------------
-void TfrmAnalysisRun::AddLine(char *sLine)
-{
+void TfrmAnalysisRun::AddLine(char *sLine) {
   // if (reAnalysisBox->Lines->Count < 2000)
-      reAnalysisBox->Lines->Add(sLine);
+  reAnalysisBox->Lines->Add(sLine);
 }
-
-void TfrmAnalysisRun::LoadFromFile(char *sFileName)
-{
+//---------------------------------------------------------------------------
+void TfrmAnalysisRun::AddWarningLine(char *sLine) {
+   // Since the SatScan program prints an error message for each input file
+   // record in error, just set some odd max here for now, so it does not
+   // print and print and print until it runs out of input file lines...
+   //
+   // Yes, this is not a good way to handle this...  BUT !!!!!!
+   // I DO NOT HAVE TIME TO RE-WRITE THE DATA_READ CPP !!!!!!!
+   //
+   //  SO BACK OFF !!!!
+   if (reWarningsBox->Lines->Count < 300)
+      reWarningsBox->Lines->Add(sLine);
+}
+//---------------------------------------------------------------------------
+void TfrmAnalysisRun::CancelJob() {
+  reAnalysisBox->Lines->Add("Job cancelled.");
+  btnCancel->Caption = "Close";
+  gbCancel = true;
+  SetCanClose(true);
+}
+//---------------------------------------------------------------------------
+void __fastcall TfrmAnalysisRun::FormClose(TObject *Sender, TCloseAction &Action) {
+  if (GetCanClose())
+    Action = caFree;
+  else
+    Action = caNone;
+}
+//---------------------------------------------------------------------------
+void TfrmAnalysisRun::LoadFromFile(char *sFileName) {
    int  iHandle;
    long lFileLength;
-   
+
    //see if the file is too big... set some limit and adhere to it.
    iHandle = open(sFileName, O_RDONLY);
    lFileLength = filelength(iHandle);
@@ -65,91 +64,17 @@ void TfrmAnalysisRun::LoadFromFile(char *sFileName)
 
    FFileName = sFileName;
 }
-void __fastcall TfrmAnalysisRun::btnPrintClick(TObject *Sender)
-{
-   if ( PrintDialog1->Execute() )
-      {
-      // THERE WAS A PROBLEM WITH PRINTING BOTH THE ANALYSIS RICH TEXT
-      // BOX AND THE WARNINGS/ERRORS BOX...  SOMEHOW IT WAS PRINTING OVER 1000
-      // BLANK PAGES...  I KNOW THAT THIS IS A STUPID WAY TO DO IT, BUT I
-      // NEED TO RESOLVE THIS AND GET IT OUT...
-
-      // AND THIS ACTUALLY PRODUCED THE SAME PROBLEM !!!!!
-      //
-      // IS THIS A BORLAND BUG ?????
-      
-      if (gbPrintWarnings)
-         {
-          RichEdit1->Lines->Clear();
-         // LOAD THE MEMO CONTROL WITH TEXT FROM BOTH
-         for (int i = 0; i < reAnalysisBox->Lines->Count; i++)
-            RichEdit1->Lines->Add(reAnalysisBox->Lines->Strings[i].c_str());
-         //Memo1->Lines->Add(reAnalysisBox->Lines->GetText());
-         RichEdit1->Lines->Add(" ");
-         RichEdit1->Lines->Add(" ");
-         RichEdit1->Lines->Add(" ");
-         RichEdit1->Lines->Add("WARNINGS / ERRORS ");
-         RichEdit1->Lines->Add(" ");
-         for (int i = 0; i < reWarningsBox->Lines->Count; i++)
-            RichEdit1->Lines->Add(reWarningsBox->Lines->Strings[i].c_str());
-         //Memo1->Lines->Add(reAnalysisBox->Lines->GetText());
-         //RichEdit1->Lines->Add(EOF);
-         RichEdit1->Print("SaTScan Information");
-         }
-      else
-         {
-         reAnalysisBox->Print( "Results" );
-         //if (gbPrintWarnings)
-         //   reWarningsBox->Print("Warnings/Errors");
-         }
-      //reAnalysisBox->Print( "Results" );
-      }
+//---------------------------------------------------------------------------
+void __fastcall TfrmAnalysisRun::OnCancelClick(TObject *Sender) {
+  if (btnCancel->Caption == "Close")
+    Close();
+  else {
+    reAnalysisBox->Lines->Add("Cancelling job, please wait...");
+    gbCancel = true;
+  }
 }
 //---------------------------------------------------------------------------
-
-
-void TfrmAnalysisRun::CancelJob()
-{
-   reAnalysisBox->Lines->Add("Abnormal Termination.....");
-   reAnalysisBox->Lines->Add("Job Cancelled.....");
-   btnCancel->Caption = "Close";
-   gbCancel = true;
-}
-void TfrmAnalysisRun::StopRun()
-{
-   btnCancel->Caption = "Close";
-   gbCancel = false;
-}
-//---------------------------------------------------------------------------
-void TfrmAnalysisRun::AddWarningLine(char *sLine)
-{
-   // Since the SatScan program prints an error message for each input file
-   // record in error, just set some odd max here for now, so it does not
-   // print and print and print until it runs out of input file lines...
-   //
-   // Yes, this is not a good way to handle this...  BUT !!!!!!
-   // I DO NOT HAVE TIME TO RE-WRITE THE DATA_READ CPP !!!!!!!
-   //
-   //  SO BACK OFF !!!!
-   if (reWarningsBox->Lines->Count < 300)
-      reWarningsBox->Lines->Add(sLine);
-}
-
-void TfrmAnalysisRun::SetPrintWarnings(bool bPrintWarnings)
-{
-  gbPrintWarnings = bPrintWarnings;
-}
-
-void __fastcall TfrmAnalysisRun::FormResize(TObject *Sender)
-{
-   //if (Splitter1->Top < 100)
-   //   Splitter1->Top = 100;
-   //Refresh();
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfrmAnalysisRun::btnEMailClick(TObject *Sender)
-{
+void __fastcall TfrmAnalysisRun::OnEMailClick(TObject *Sender) {
    PMapiRecipDesc   pRecipient = 0;
    TMapiMessage     theMapiMessage;
    char *           sMsgTitle = 0;
@@ -200,9 +125,46 @@ void __fastcall TfrmAnalysisRun::btnEMailClick(TObject *Sender)
    //   {
    //   Application->MessageBox("Cannot open Internet browser to view Joinpoint Web site.","Error",MB_OK);
    //   }
+}
+//---------------------------------------------------------------------------
+void __fastcall TfrmAnalysisRun::OnPrintClick(TObject *Sender){
+   if ( PrintDialog1->Execute() )
+      {
+      // THERE WAS A PROBLEM WITH PRINTING BOTH THE ANALYSIS RICH TEXT
+      // BOX AND THE WARNINGS/ERRORS BOX...  SOMEHOW IT WAS PRINTING OVER 1000
+      // BLANK PAGES...  I KNOW THAT THIS IS A STUPID WAY TO DO IT, BUT I
+      // NEED TO RESOLVE THIS AND GET IT OUT...
 
-   
+      // AND THIS ACTUALLY PRODUCED THE SAME PROBLEM !!!!!
+      //
+      // IS THIS A BORLAND BUG ?????
 
+      if (gbPrintWarnings)
+         {
+          RichEdit1->Lines->Clear();
+         // LOAD THE MEMO CONTROL WITH TEXT FROM BOTH
+         for (int i = 0; i < reAnalysisBox->Lines->Count; i++)
+            RichEdit1->Lines->Add(reAnalysisBox->Lines->Strings[i].c_str());
+         //Memo1->Lines->Add(reAnalysisBox->Lines->GetText());
+         RichEdit1->Lines->Add(" ");
+         RichEdit1->Lines->Add(" ");
+         RichEdit1->Lines->Add(" ");
+         RichEdit1->Lines->Add("WARNINGS / ERRORS ");
+         RichEdit1->Lines->Add(" ");
+         for (int i = 0; i < reWarningsBox->Lines->Count; i++)
+            RichEdit1->Lines->Add(reWarningsBox->Lines->Strings[i].c_str());
+         //Memo1->Lines->Add(reAnalysisBox->Lines->GetText());
+         //RichEdit1->Lines->Add(EOF);
+         RichEdit1->Print("SaTScan Information");
+         }
+      else
+         {
+         reAnalysisBox->Print( "Results" );
+         //if (gbPrintWarnings)
+         //   reWarningsBox->Print("Warnings/Errors");
+         }
+      //reAnalysisBox->Print( "Results" );
+      }
 }
 //---------------------------------------------------------------------------
 

@@ -12,9 +12,11 @@
 #include <ExtCtrls.hpp>
 #include <fcntl.h>
 //---------------------------------------------------------------------------
-class TfrmAnalysisRun : public TForm
-{
-__published:	// IDE-managed Components
+//class CalcThread;
+class TfrmAnalysisRun : public TForm {
+  friend class CalcThread;
+  
+  __published:	// IDE-managed Components
         TRichEdit *reAnalysisBox;
         TPrintDialog *PrintDialog1;
         TSplitter *Splitter1;
@@ -26,24 +28,31 @@ __published:	// IDE-managed Components
         TButton *btnCancel;
         TButton *btnEMail;
         TRichEdit *RichEdit1;
-        void __fastcall btnCancelClick(TObject *Sender);
+        void __fastcall OnCancelClick(TObject *Sender);
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
-        void __fastcall btnPrintClick(TObject *Sender);
-        void __fastcall FormResize(TObject *Sender);
-        void __fastcall btnEMailClick(TObject *Sender);
-private:	// User declarations
-         bool       gbCancel;
-         AnsiString FFileName;
-         bool       gbPrintWarnings;
-public:		// User declarations
-        __fastcall TfrmAnalysisRun(TComponent* Owner);
-        void  AddLine(char *sLine);
-        void  AddWarningLine(char *sLine);
-        bool  IsJobCanceled();
-        void  LoadFromFile(char *sFileName);
-        void  CancelJob();
-        void  SetPrintWarnings(bool bPrintWarnings);
-        void  StopRun();
+        void __fastcall OnPrintClick(TObject *Sender);
+        void __fastcall OnEMailClick(TObject *Sender);
+  private:	// User declarations
+    bool                gbCancel;
+    bool                gbPrintWarnings;
+    bool                gbCanClose;
+    AnsiString          FFileName;
+
+    void                Init() {gbCanClose=false; gbCancel=false; gbPrintWarnings=true;}
+
+  protected:
+    void                AddLine(char *sLine);
+    void                AddWarningLine(char *sLine);
+    bool                IsJobCanceled() const {return gbCancel;}
+    bool                GetCanClose() const {return gbCanClose;}
+    void                LoadFromFile(char *sFileName);
+    void                CancelJob();
+    void                SetCanClose(bool b) {gbCanClose=b;}
+    void                SetPrintWarnings(bool b) {gbPrintWarnings = b;}
+
+  public:		// User declarations
+            __fastcall TfrmAnalysisRun(TComponent* Owner);
+    virtual __fastcall ~TfrmAnalysisRun(){}
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfrmAnalysisRun *frmAnalysisRun;

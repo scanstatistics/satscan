@@ -1,6 +1,6 @@
 object frmAnalysisRun: TfrmAnalysisRun
-  Left = 290
-  Top = 342
+  Left = 208
+  Top = 182
   BorderStyle = bsDialog
   Caption = 'SatScan Analysis Run'
   ClientHeight = 373
@@ -18,7 +18,6 @@ object frmAnalysisRun: TfrmAnalysisRun
   Position = poMainFormCenter
   Visible = True
   OnClose = FormClose
-  OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 14
   object Splitter1: TSplitter
@@ -105,7 +104,7 @@ object frmAnalysisRun: TfrmAnalysisRun
         Font.Style = []
         ParentFont = False
         TabOrder = 0
-        OnClick = btnPrintClick
+        OnClick = OnPrintClick
       end
       object btnCancel: TButton
         Left = 406
@@ -121,7 +120,7 @@ object frmAnalysisRun: TfrmAnalysisRun
         Font.Style = []
         ParentFont = False
         TabOrder = 1
-        OnClick = btnCancelClick
+        OnClick = OnCancelClick
       end
       object btnEMail: TButton
         Left = 214
@@ -138,7 +137,7 @@ object frmAnalysisRun: TfrmAnalysisRun
         Font.Style = []
         ParentFont = False
         TabOrder = 2
-        OnClick = btnEMailClick
+        OnClick = OnEMailClick
       end
     end
   end
