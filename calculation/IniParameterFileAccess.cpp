@@ -16,10 +16,12 @@ IniParameterFileAccess::~IniParameterFileAccess() {
   catch (...){}  
 }
 
-/** TODO: document - implement */
+/** Returns key string for specified parameter type. */
 const char * IniParameterFileAccess::GetParameterLabel(ParameterType eParameterType) const {
-  ZdException::Generate("implement GetParameterLabel() ","IniParameterFileAccess");
-  return 0;
+  const char * sSectionName, * sKey;
+
+  GetSpecifications().GetParameterIniInfo(eParameterType,  &sSectionName, &sKey);
+  return sKey;
 }
 
 /** Return reference to IniParameterSpecification object. Throws exception if not allocated. */
@@ -35,7 +37,7 @@ const IniParameterSpecification & IniParameterFileAccess::GetSpecifications() co
   return *gpSpecifications;
 }
 
-/** TODO: document */
+/** Reads parameters from ini file and sets associated CParameter object. */
 bool IniParameterFileAccess::Read(const char* sFilename) {
    try {
     gvParametersMissingDefaulted.clear();
@@ -47,17 +49,26 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
     gParameters.SetAsDefaulted();
     gParameters.SetSourceFileName(sFilename);
 
-    //read settings as provided in graphical interface
     ReadSystemSettings(SourceFile);
+
+    //read settings as provided in main graphical interface
     ReadInputSettings(SourceFile);
     ReadAnalysisSettings(SourceFile);
     ReadOutputSettings(SourceFile);
+    //read settings as provided in advanced features of graphical interface
+    ReadMultipleDataSetsSettings(SourceFile);
+    ReadSpatialWindowSettings(SourceFile);
+    ReadTemporalWindowSettings(SourceFile);
+    ReadSpaceAndTimeAdjustmentSettings(SourceFile);
+    ReadInferenceSettings(SourceFile);
+    ReadClustersReportedSettings(SourceFile);
+
     //read settings as provided only through user mofication of parameter file and batch executable
-    ReadBatchModeFeaturesSettings(SourceFile);
     ReadEllipticScanSettings(SourceFile);
     ReadIsotonicScanSettings(SourceFile);
-    ReadPowerSimulationsSettings(SourceFile);
     ReadSequentialScanSettings(SourceFile);
+    ReadPowerSimulationsSettings(SourceFile);
+    ReadBatchModeFeaturesSettings(SourceFile);
   }
   catch (ZdException &x) {
     x.AddCallpath("Read()","IniParameterFileAccess");
@@ -75,10 +86,6 @@ void IniParameterFileAccess::ReadAnalysisSettings(const ZdIniFile& SourceFile) {
     ReadIniParameter(SourceFile, TIME_AGGREGATION_UNITS);
     ReadIniParameter(SourceFile, TIME_AGGREGATION);
     ReadIniParameter(SourceFile, REPLICAS);
-    ReadSpatialWindowSettings(SourceFile);
-    ReadTemporalWindowSettings(SourceFile);
-    ReadSpaceAndTimeAdjustmentSettings(SourceFile);
-    ReadInferenceSettings(SourceFile);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadAnalysisSettings()","IniParameterFileAccess");
@@ -163,8 +170,8 @@ void IniParameterFileAccess::ReadIniParameter(const ZdIniFile& SourceFile, Param
           SetParameter(eParameterType, ZdString(pSection->GetLine(lKeyIndex)->GetValue()), gPrintDirection);
       }
     }
-    if (lKeyIndex == -1)
-      MarkAsMissingDefaulted(eParameterType, gPrintDirection);
+    //if (lKeyIndex == -1)
+    //  MarkAsMissingDefaulted(eParameterType, gPrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadIniParameter()","IniParameterFileAccess");
@@ -210,7 +217,6 @@ void IniParameterFileAccess::ReadInputSettings(const ZdIniFile& SourceFile) {
     ReadIniParameter(SourceFile, COORDTYPE);
     ReadIniParameter(SourceFile, STARTDATE);
     ReadIniParameter(SourceFile, ENDDATE);
-    ReadMultipleDataSetsSettings(SourceFile);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadInputSettings()","IniParameterFileAccess");
@@ -260,7 +266,6 @@ void IniParameterFileAccess::ReadOutputSettings(const ZdIniFile& SourceFile) {
     ReadIniParameter(SourceFile, OUTPUT_AREAS_DBASE);
     ReadIniParameter(SourceFile, OUTPUT_RR_DBASE);
     ReadIniParameter(SourceFile, OUTPUT_SIM_LLR_DBASE);
-    ReadClustersReportedSettings(SourceFile);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadOutputSettings()","IniParameterFileAccess");
@@ -362,16 +367,24 @@ void IniParameterFileAccess::Write(const char* sFilename) {
     gParameters.SetSourceFileName(sFilename);
     gpSpecifications = new IniParameterSpecification();
 
-    //write settings as provided in graphical interface
+    //write settings as provided in main graphical interface
     WriteInputSettings(SaveFile);
     WriteAnalysisSettings(SaveFile);
     WriteOutputSettings(SaveFile);
+    //write settings as provided in advanced features of graphical interface
+    WriteMultipleDataSetsSettings(SaveFile);
+    WriteSpatialWindowSettings(SaveFile);
+    WriteTemporalWindowSettings(SaveFile);
+    WriteSpaceAndTimeAdjustmentSettings(SaveFile);
+    WriteInferenceSettings(SaveFile);
+    WriteClustersReportedSettings(SaveFile);
+    
     //write settings as provided only through user mofication of parameter file and batch executable
-    WriteBatchModeFeaturesSettings(SaveFile);
     WriteEllipticScanSettings(SaveFile);
     WriteIsotonicScanSettings(SaveFile);
-    WritePowerSimulationsSettings(SaveFile);
     WriteSequentialScanSettings(SaveFile);
+    WritePowerSimulationsSettings(SaveFile);
+    WriteBatchModeFeaturesSettings(SaveFile);
     WriteSystemSettings(SaveFile);
 
     SaveFile.Write();
@@ -400,11 +413,6 @@ void IniParameterFileAccess::WriteAnalysisSettings(ZdIniFile& SaveFile) {
                       " time aggregation length (positive integer)");
     WriteIniParameter(SaveFile, REPLICAS, AsString(s, gParameters.GetNumReplicationsRequested()),
                       " Monte Carlo reps (0, 9, 999, n999)");
-                      
-    WriteSpatialWindowSettings(SaveFile);
-    WriteTemporalWindowSettings(SaveFile);
-    WriteSpaceAndTimeAdjustmentSettings(SaveFile);
-    WriteInferenceSettings(SaveFile);
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteAnalysisSettings()","IniParameterFileAccess");
@@ -543,13 +551,12 @@ void IniParameterFileAccess::WriteInputSettings(ZdIniFile& SaveFile) {
     WriteIniParameter(SaveFile, CASEFILE, gParameters.GetCaseFileName().c_str(), " case data filename");
     WriteIniParameter(SaveFile, CONTROLFILE, gParameters.GetControlFileName().c_str(), " control data filename");
     WriteIniParameter(SaveFile, POPFILE, gParameters.GetPopulationFileName().c_str(), " population data filename");
-    WriteMultipleDataSetsSettings(SaveFile);
     WriteIniParameter(SaveFile, COORDFILE, gParameters.GetCoordinatesFileName().c_str(), " coordinate data filename");
     WriteIniParameter(SaveFile, SPECIALGRID, AsString(s, gParameters.UseSpecialGrid()), " use grid file? (y/n)");
     WriteIniParameter(SaveFile, GRIDFILE, gParameters.GetSpecialGridFileName().c_str(), " grid data filename");
     WriteIniParameter(SaveFile, PRECISION, AsString(s, gParameters.GetPrecisionOfTimesType()),
                       " time precision (0=None, 1=Year, 2=Month, 3=Day)");
-    WriteIniParameter(SaveFile, COORDTYPE, AsString(s, gParameters.GetPrecisionOfTimesType()),
+    WriteIniParameter(SaveFile, COORDTYPE, AsString(s, gParameters.GetCoordinatesType()),
                       " coordinate type (0=Cartesian, 1=latitude/longitude)");
     WriteIniParameter(SaveFile, STARTDATE, gParameters.GetStudyPeriodStartDate().c_str(),
                       " study period start date (YYYY/MM/DD)");
@@ -622,7 +629,6 @@ void IniParameterFileAccess::WriteOutputSettings(ZdIniFile& SaveFile) {
                       " output cluster information in ASCII format (y/n)");
     WriteIniParameter(SaveFile, OUTPUT_MLC_DBASE, AsString(s, gParameters.GetOutputClusterLevelDBase()),
                       " output cluster information in dBase format (y/n)");
-    WriteClustersReportedSettings(SaveFile);
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteOutputSettings()","IniParameterFileAccess");
