@@ -20,7 +20,7 @@ bool CSaTScanData::ReadCounts(const char* szCountFilename, const char* szDescrip
 
    try {
      gpPrintDirection->SatScanPrintf("Reading the %s file\n", szDescription);
-      
+
      if ((fp = fopen(szCountFilename, "r")) == NULL) {
         gpPrintDirection->SatScanPrintWarning("  Error: Could not open %s.\n", szCountFilename);
         return false;
@@ -41,13 +41,14 @@ bool CSaTScanData::ReadCounts(const char* szCountFilename, const char* szDescrip
         ++nRec;
         if (GetWord(szData, 0, gpPrintDirection) != 0) {
           bEmpty = false;
+
           if (!ParseCountLine(szDescription, nRec, szData, tid, nCount, nDate))
             bValid = false;
           else
             IncrementCount(tid, nCount, nDate, *pCounts);
         }
       }
-    
+
       if (bEmpty) {
         gpPrintDirection->SatScanPrintWarning("  Error: File with %s data is empty.\n", szDescription);
         bValid = false;
@@ -227,14 +228,16 @@ void CSaTScanData::IncrementCount(tract_t nTID, int nCount, Julian nDate, count_
    0 = errors encountered
  **********************************************************************/
 bool CSaTScanData::ReadPops() {
-   bool    bValid = true, bEmpty = true, bDateFound = false;
-   char    szData[MAX_LINESIZE], szTid[MAX_LINESIZE];
-   tract_t nRec = 0, nNonBlankLines, tract;
-   int     i = 0, cat, year, ncats, nYear4, nDates = 0;
-   long    pop;
-   char**  cvec = 0;
-   Julian  nPopDate, tempPopDateArray[MAX_POP_DATES];
-   FILE*   fp;                                // Ptr to population file
+   bool                                 bValid=true, bEmpty=true, bDateFound=false, InvalidForProspective=false;
+   char                                 szData[MAX_LINESIZE], szTid[MAX_LINESIZE];
+   tract_t                              nRec=0, nNonBlankLines, tract, t;
+   int                                  i=0, cat, year, ncats, nYear4, nDates=0, iDateIndex;
+   long                                 pop;
+   char                                 ** cvec = 0;
+   Julian                               nPopDate, tempPopDateArray[MAX_POP_DATES];
+   FILE                                 * fp; // Ptr to population file
+   std::vector<int>                     vFirstTractDateIndex;
+   std::vector<tract_t>                 vInvalidTractIndex;
 
    try {
       gpPrintDirection->SatScanPrintf("Reading the population file\n");
@@ -306,30 +309,29 @@ bool CSaTScanData::ReadPops() {
             ++nDates;
           }
         }
-        // Perform Check: When a prospective analysis is conducted and if a population file is 
-        //                used, and if the population is defined at more than one time period, the
-        //                following error message should be shown in the running window and the
-        //                application terminated.
-        //if (m_pParameters->)
-      } // while - 1st Pass
-    
+      }//  while - 1st Pass
+
       if (bEmpty) {
         gpPrintDirection->SatScanPrintWarning("  Error: File with population data is empty.\n", "ReadPops()");
         bValid = false;
       }
-    
+
       // 2nd Pass
       if (bValid) {
         // Initialize population years list
         gpTInfo->tiSetupPopDates(tempPopDateArray, nDates, m_nStartDate, m_nEndDate);
-    
+        // initialize vector for prospective check
+        if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
+          for (t=0; t < gpTInfo->tiGetNumTracts(); t++)
+             vFirstTractDateIndex.push_back(0);
+
         fseek(fp, 0L, SEEK_SET);
         nRec = 0;
         nNonBlankLines = 0;
-    
+
         while (fgets(szData, MAX_LINESIZE, fp)) {
           ++nRec;
-    
+
           // Skip Blank Lines
           if (GetWord(szData, 0, gpPrintDirection) == 0)
             continue;
@@ -350,7 +352,7 @@ bool CSaTScanData::ReadPops() {
                      gpPrintDirection->SatScanPrintWarning("  Error: Invalid year in population file, line %d.\n", nRec);
                      bValid = false; continue;
           }
-    
+
           // Determine number of categories from first record
           if (nNonBlankLines == 1) {
             ncats = 0;
@@ -360,7 +362,7 @@ bool CSaTScanData::ReadPops() {
             memset(cvec, 0, ncats * sizeof(char *));
             gpCats->catSetNumEls(ncats);
           }
-    
+
           // Read categories into cvec
           for (i = 0; i < ncats; ++i) {
             char *p = GetWord(szData, i + 3, gpPrintDirection);
@@ -371,10 +373,10 @@ bool CSaTScanData::ReadPops() {
             }
             Sstrcpy(&cvec[i],p, gpPrintDirection);
           }
-    
+
           if (bValid == 0)
             continue;
-    
+
           // Check for extraneous characters after the expected number of cats
           if (GetWord(szData, ncats + 3, gpPrintDirection)) {
             gpPrintDirection->SatScanPrintWarning("  Error: Extra data in population file, line %d.\n", nRec);
@@ -382,12 +384,12 @@ bool CSaTScanData::ReadPops() {
             bValid = false;
             continue;
           }
-    
+
           // Assign / Get category number
           cat = gpCats->catMakeCat(cvec);
           for (i = 0; i < ncats; ++i)
             free(cvec[i]);
-    
+
           // Check to see if tract is valid
           tract = gpTInfo->tiGetTractNum(szTid);
           if (tract == -1) {
@@ -396,18 +398,53 @@ bool CSaTScanData::ReadPops() {
             bValid = false;
             continue;
           }
-    
+
+          nPopDate = MDYToJulian(POP_MONTH, POP_DAY, nYear4);
+
+          // Perform Check: When a prospective analysis is conducted and if a population file is
+          //                used, and if the population for a tract is defined at more than one
+          //                time period, error message should be shown in the running window and
+          //                the application terminated.
+          if (m_pParameters->m_nAnalysisType == PROSPECTIVESPACETIME)
+            {
+            //nTempDate = MDYToJulian(POP_MONTH, POP_DAY, nYear4);
+            iDateIndex = gpTInfo->tiGetPopDateIndex(nPopDate);
+            if (! vFirstTractDateIndex[tract] || vFirstTractDateIndex[tract] == iDateIndex)
+              vFirstTractDateIndex[tract] = iDateIndex;
+            else
+              {// track invalid tracts 
+              if (std::find(vInvalidTractIndex.begin(), vInvalidTractIndex.end(), tract) == vInvalidTractIndex.end())
+                vInvalidTractIndex.push_back(tract);
+              InvalidForProspective = true;
+              }
+            }
+
           // Add Category to the tract
           // Add population count for this tract/category/year
-          gpTInfo->tiAddCat(tract, cat, MDYToJulian(POP_MONTH, POP_DAY, nYear4), pop);
-    
+          gpTInfo->tiAddCat(tract, cat, nPopDate, pop);
+
         } // while - 2nd pass
       } // if
-    
-    
+
+      if (InvalidForProspective)
+        {
+        bValid = false;
+        gpPrintDirection->SatScanPrintWarning("\n  ERROR: For the prospective analysis to be correct, it is critical that the\n");
+        gpPrintDirection->SatScanPrintWarning("         scanning spatial window is the same for each of the analysis performed once\n");
+        gpPrintDirection->SatScanPrintWarning("         a day, week, year, etc. If the population size changes over time, as it\n");
+        gpPrintDirection->SatScanPrintWarning("         does in your data, then you must define the maximum circle size in terms of\n");
+        gpPrintDirection->SatScanPrintWarning("         a fixed geographical distance rather than as a percent of the total population.\n");
+        for (size_t t=0; t < vInvalidTractIndex.size(); t++)
+           if (t==0)
+             gpPrintDirection->SatScanPrintWarning("         Following tract are invalid: %s", gpTInfo->tiGetTid(vInvalidTractIndex[t]));
+           else
+             gpPrintDirection->SatScanPrintWarning("                                      %s\n", gpTInfo->tiGetTid(vInvalidTractIndex[t]));
+        gpPrintDirection->SatScanPrintWarning("\n\n");
+        }
+
       if (bValid && ncats > 0)
        free(cvec);
-    
+
       fclose(fp);
    }
    catch (SSException & x) {
@@ -617,7 +654,7 @@ bool CSaTScanData::ReadGeoCoords() {
     
           // Add the tract
           gpTInfo->tiInsertTnode(szTid, pCoords);
-    
+
           // Store tracts as grid if no special grid file specified.
           if (!m_pParameters->m_bSpecialGridFile)
             gpGInfo->giInsertGnode(szTid, pCoords);
@@ -631,7 +668,7 @@ bool CSaTScanData::ReadGeoCoords() {
     
         } // else
       } // while(bEmpty && fgets(szFirstLine...))
-    
+
       // Get rest of data
       while (fgets(szData, MAX_LINESIZE, fp) && !bEmpty) {
         ++nRec;
@@ -666,7 +703,7 @@ bool CSaTScanData::ReadGeoCoords() {
           bValid = false;
           continue;
         }
-    
+
         // Store tracts as grid if no special grid file specified.
         if (!m_pParameters->m_bSpecialGridFile) {
            if (!gpGInfo->giInsertGnode(szTid, pCoords)) {
@@ -674,9 +711,9 @@ bool CSaTScanData::ReadGeoCoords() {
              bValid = false;
            }
         }
-    
+
       } // while fgets(szData...)
-    
+
       if (bEmpty) {
         gpPrintDirection->SatScanPrintWarning("  Error: Coordinates file is empty.\n", "ReadGeoCoords()");
         bValid = false;
@@ -686,13 +723,13 @@ bool CSaTScanData::ReadGeoCoords() {
         gpPrintDirection->SatScanPrintWarning("  Error: Coordinates file has only one record.\n", "ReadGeoCoords()");
         bValid = false;
       }
-    
+
       m_nTracts = gpTInfo->tiGetNumTracts();
       if (!m_pParameters->m_bSpecialGridFile)
         m_nGridTracts = gpGInfo->giGetNumTracts();
-    
+
       fclose(fp);
-    
+
       // Clean up pCoords
       if (pCoords != NULL)
         free(pCoords);
