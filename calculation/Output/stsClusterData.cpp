@@ -124,8 +124,8 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
     if (gParameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION)
       pRecord->GetFieldValue(GetFieldNumber(TST_STAT_FIELD)).AsDouble() = theCluster.m_nRatio;
     else {
-      pRecord->GetFieldValue(GetFieldNumber(LOG_LIKL_RATIO_FIELD)).AsDouble() = theCluster.m_nRatio/theCluster.GetDuczmal();
-      if (gParameters.GetDuczmalCorrectEllipses())
+      pRecord->GetFieldValue(GetFieldNumber(LOG_LIKL_RATIO_FIELD)).AsDouble() = theCluster.m_nRatio/theCluster.GetNonCompactnessPenalty();
+      if (gParameters.GetNonCompactnessPenalty())
         pRecord->GetFieldValue(GetFieldNumber(TST_STAT_FIELD)).AsDouble() = theCluster.m_nRatio;
     }
     if (iNumSimsCompleted > 98)
@@ -255,7 +255,7 @@ void stsClusterData::SetupFields() {
       CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
     else {
       CreateField(gvFields, LOG_LIKL_RATIO_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
-      if (gParameters.GetNumRequestedEllipses() && gParameters.GetDuczmalCorrectEllipses())
+      if (gParameters.GetNumRequestedEllipses() && gParameters.GetNonCompactnessPenalty())
         CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
     }
     if (!gbExcludePValueField)

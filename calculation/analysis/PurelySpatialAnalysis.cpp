@@ -74,7 +74,7 @@ const CCluster& CPurelySpatialAnalysis::CalculateTopCluster(tract_t tCenter, con
   for (j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
      gpClusterComparator->Initialize(tCenter);
      gpClusterComparator->SetEllipseOffset(j);                       // store the ellipse link in the cluster obj
-     gpClusterComparator->SetDuczmalCorrection((j == 0 || !gParameters.GetDuczmalCorrectEllipses() ? 1 : gDataHub.GetShapesArray()[j - 1]));
+     gpClusterComparator->SetNonCompactnessPenalty((j == 0 || !gParameters.GetNonCompactnessPenalty() ? 1 : gDataHub.GetShapesArray()[j - 1]));
      CPurelySpatialCluster & TopCluster = (CPurelySpatialCluster&)(gpTopShapeClusters->GetTopCluster(j));
      gpClusterComparator->AddNeighborDataAndCompare(j, tCenter, DataGateway, &gDataHub, TopCluster, *gpLikelihoodCalculator);
   }

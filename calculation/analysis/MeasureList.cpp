@@ -15,12 +15,12 @@ CMeasureList::~CMeasureList() {}
 
 //store as maximum loglikelihood for current iteration(shape)
 void CMeasureList::AddMaximumLogLikelihood(double dMaxLogLikelihood, int iIteration) {
-  double dMaxLogLikelihoodRatio, dDuczmalCorrection;
+  double dMaxLogLikelihoodRatio, dNonCompactnessPenalty;
 
   dMaxLogLikelihoodRatio = dMaxLogLikelihood - gLikelihoodCalculator.GetLogLikelihoodForTotal();
-  if (iIteration > 0 && gSaTScanData.GetParameters().GetNumRequestedEllipses() && gSaTScanData.GetParameters().GetDuczmalCorrectEllipses()) {
-    dDuczmalCorrection = GetDuczmalCorrection(gSaTScanData.GetShapesArray()[iIteration - 1]);
-    gvMaximumLogLikelihoodRatios.push_back(dMaxLogLikelihoodRatio * dDuczmalCorrection);
+  if (iIteration > 0 && gSaTScanData.GetParameters().GetNumRequestedEllipses() && gSaTScanData.GetParameters().GetNonCompactnessPenalty()) {
+    dNonCompactnessPenalty = CalculateNonCompactnessPenalty(gSaTScanData.GetShapesArray()[iIteration - 1]);
+    gvMaximumLogLikelihoodRatios.push_back(dMaxLogLikelihoodRatio * dNonCompactnessPenalty);
   }
   else
     gvMaximumLogLikelihoodRatios.push_back(dMaxLogLikelihoodRatio);
@@ -77,8 +77,8 @@ void CMeasureList::SetForNextIteration(int iIteration) {
 void CMeasureList::Setup() {
   int   iEllipse, iBoundry=0, iNumRequestedEllipses=gSaTScanData.GetParameters().GetNumRequestedEllipses();
 
-  if (gSaTScanData.GetParameters().GetDuczmalCorrectEllipses()) {
-    //If Duczmal corrected, accumulate best measure for each shape.
+  if (gSaTScanData.GetParameters().GetNonCompactnessPenalty()) {
+    //If penalizing for compactness, accumulate best measure for each shape.
     //Set calculation boundries between circle/each ellipse shape.
     gvCalculationBoundries.push_back(iBoundry); //circle
     for (iEllipse=0; iEllipse < iNumRequestedEllipses; ++iEllipse) {

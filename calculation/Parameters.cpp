@@ -71,7 +71,7 @@ const char*      ELLIPSES_SECTION               	= "[Elliptic Scan]";
 const char*      NUMBER_ELLIPSES_LINE           	= "NumberOfEllipses";
 const char*      ELLIPSE_SHAPES_LINE            	= "EllipseShapes";
 const char*      ELLIPSE_ANGLES_LINE            	= "EllipseAngles";
-const char*      ELLIPSE_DUCZMAL_COMPACT_LINE   	= "DuczmalCompactnessCorrection";
+const char*      ELLIPSE_NON_COMPACTNESS_LINE   	= "NonCompactnessPenalty";
 
 const char*      ADVANCED_FEATURES_SECTION      	= "[Advanced Features]";
 const char*      VALID_PARAMS_LINE              	= "ValidateParameters";
@@ -139,7 +139,7 @@ char mgsVariableLabels[69][100] = {
    "Analysis History File", "Output Cluster Information DBase Format",
    "Output Location Information DBase Format", "Output Relative Risks DBase Format",
    "Output Simulated Loglikelihood Ratios DBase Format",
-   "Ellipsoid Duczmal Compactness Correction", "Interval Start Range",
+   "Ellipsoid Non-Compactness Penalty", "Interval Start Range",
    "Interval End Range", "Time Trend Convergence", "Special Population File",
    "Early Termination of Simulations", "Maximum Reported Geographical Cluster Size",
    "Restrict Reported Max Geographical Cluster Size", "Simulation Method Type",
@@ -211,7 +211,7 @@ void CParameters::Copy(const CParameters &rhs) {
     giNumberEllipses                    = rhs.giNumberEllipses;
     gvEllipseShapes                     = rhs.gvEllipseShapes;
     gvEllipseRotations                  = rhs.gvEllipseRotations;
-    gbDuczmalCorrectEllipses            = rhs.gbDuczmalCorrectEllipses;
+    gbNonCompactnessPenalty             = rhs.gbNonCompactnessPenalty;
     glTotalNumEllipses                  = rhs.glTotalNumEllipses;
     geAnalysisType                      = rhs.geAnalysisType;
     geAreaScanRate                      = rhs.geAreaScanRate;
@@ -483,8 +483,8 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
       fprintf(fp, "\n  Number of Angles for Each Ellipse Shape  : ");
       for (i=0; i < giNumberEllipses; ++i)
          fprintf(fp, "%i ", gvEllipseRotations[i]);
-      fprintf(fp, "\n  Duczmal Compactness Correction           : ");
-      fprintf(fp, (gbDuczmalCorrectEllipses ? "Yes" : "No"));
+      fprintf(fp, "\n  Non-Compactness Penalty           : ");
+      fprintf(fp, (gbNonCompactnessPenalty ? "Yes" : "No"));
     }
     fprintf(fp, "\n\nScanning Window\n");
     fprintf(fp, "---------------\n");
@@ -805,7 +805,7 @@ bool CParameters::GetIsSpaceTimeAnalysis() const {
 
 /** Returns description for LLR. */
 bool CParameters::GetLogLikelihoodRatioIsTestStatistic() const {
-  return (geProbabiltyModelType == SPACETIMEPERMUTATION || (giNumberEllipses && gbDuczmalCorrectEllipses));
+  return (geProbabiltyModelType == SPACETIMEPERMUTATION || (giNumberEllipses && gbNonCompactnessPenalty));
 }
 
 /** Returns whether any area specific files are outputed. */
@@ -883,7 +883,7 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
         case OUTPUT_AREAS_DBASE        : sParameterLineLabel = OUTPUT_AREAS_DBASE_LINE; break;
         case OUTPUT_RR_DBASE           : sParameterLineLabel = OUTPUT_REL_RISKS_DBASE_LINE; break;
         case OUTPUT_SIM_LLR_DBASE      : sParameterLineLabel = OUTPUT_SIM_LLR_DBASE_LINE; break;
-        case DUCZMAL_COMPACTNESS       : sParameterLineLabel = ELLIPSE_DUCZMAL_COMPACT_LINE; break;
+        case NON_COMPACTNESS_PENALTY   : sParameterLineLabel = ELLIPSE_NON_COMPACTNESS_LINE; break;
 	case INTERVAL_STARTRANGE       : sParameterLineLabel = STARTRANGE_LINE; break;			
 	case INTERVAL_ENDRANGE         : sParameterLineLabel = ENDRANGE_LINE; break;			
         case TIMETRENDCONVRG           : sParameterLineLabel = TIME_TREND_CONVERGENCE_LINE; break;
@@ -1041,7 +1041,7 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case OUTPUT_AREAS_DBASE       : sDefaultValue = (gbOutputAreaSpecificDBase ? YES : NO); break;
       case OUTPUT_RR_DBASE          : sDefaultValue = (gbOutputRelativeRisksDBase ? YES : NO); break;
       case OUTPUT_SIM_LLR_DBASE     : sDefaultValue = (gbOutputSimLogLikeliRatiosDBase ? YES : NO); break;
-      case DUCZMAL_COMPACTNESS      : sDefaultValue = (gbDuczmalCorrectEllipses ? YES : NO); break;
+      case NON_COMPACTNESS_PENALTY  : sDefaultValue = (gbNonCompactnessPenalty ? YES : NO); break;
       case INTERVAL_STARTRANGE      : sDefaultValue.printf("%s,%s", gsStartRangeStartDate.c_str(), gsStartRangeEndDate.c_str());
                                       break;
       case INTERVAL_ENDRANGE        : sDefaultValue.printf("%s,%s", gsEndRangeStartDate.c_str(), gsEndRangeEndDate.c_str());
@@ -1271,8 +1271,8 @@ void CParameters::ReadEllipseSection(ZdIniFile& file, BasePrint & PrintDirection
     }
     else
       MarkAsMissingDefaulted(ENUMBERS, PrintDirection);
-
-    ReadIniParameter(*pSection, ELLIPSE_DUCZMAL_COMPACT_LINE, DUCZMAL_COMPACTNESS, PrintDirection);
+                        
+    ReadIniParameter(*pSection, ELLIPSE_NON_COMPACTNESS_LINE, NON_COMPACTNESS_PENALTY, PrintDirection, "DuczmalCompactnessCorrection");
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadEllipseSection()","CParameters");
@@ -1400,11 +1400,15 @@ float CParameters::ReadFloat(const ZdString & sValue, ParameterType eParameterTy
 }
 
 /** Read parameter from ini section. */
-void CParameters::ReadIniParameter(const ZdIniSection & IniSection, const char * sSectionName, ParameterType eParameterType, BasePrint & PrintDirection) {
+void CParameters::ReadIniParameter(const ZdIniSection & IniSection, const char * sSectionName,
+                                   ParameterType eParameterType, BasePrint & PrintDirection,
+                                   const char * sDeprecatedSectionName) {
   long  lIndex;
   
   try {
     if ((lIndex = IniSection.FindKey(sSectionName)) > -1)
+      ReadParameter(eParameterType, ZdString(IniSection.GetLine(lIndex)->GetValue()), PrintDirection);
+    else if (sDeprecatedSectionName && (lIndex = IniSection.FindKey(sDeprecatedSectionName)) > -1)
       ReadParameter(eParameterType, ZdString(IniSection.GetLine(lIndex)->GetValue()), PrintDirection);
     else
       MarkAsMissingDefaulted(eParameterType, PrintDirection);
@@ -1651,7 +1655,7 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case OUTPUT_AREAS_DBASE        : SetOutputAreaSpecificDBase(ReadBoolean(sParameter, eParameterType)); break;
       case OUTPUT_RR_DBASE           : SetOutputRelativeRisksDBase(ReadBoolean(sParameter, eParameterType)); break;
       case OUTPUT_SIM_LLR_DBASE      : SetOutputSimLogLikeliRatiosDBase(ReadBoolean(sParameter, eParameterType)); break;
-      case DUCZMAL_COMPACTNESS       : SetDuczmalCorrectionEllipses(ReadBoolean(sParameter, eParameterType)); break;
+      case NON_COMPACTNESS_PENALTY   : SetNonCompactnessPenalty(ReadBoolean(sParameter, eParameterType)); break;
       case INTERVAL_STARTRANGE       : ReadStartIntervalRange(sParameter); break;
       case INTERVAL_ENDRANGE         : ReadEndIntervalRange(sParameter); break;
       case TIMETRENDCONVRG           : SetTimeTrendConvergence(ReadDouble(sParameter, eParameterType)); break;
@@ -2003,8 +2007,8 @@ void CParameters::SaveEllipseSection(ZdIniFile& file) {
     for (i=0; i < giNumberEllipses; ++i)
         sValue << (i == 0 ? "" : ",") << gvEllipseRotations[i];
     pSection->AddLine(ELLIPSE_ANGLES_LINE, sValue.GetCString());
-    pSection->AddComment(" Duczmal Compactness Correction (y/n)");
-    pSection->AddLine(ELLIPSE_DUCZMAL_COMPACT_LINE, gbDuczmalCorrectEllipses ? YES : NO);
+    pSection->AddComment(" Non-Compactness Penalty (y/n)");
+    pSection->AddLine(ELLIPSE_NON_COMPACTNESS_LINE, gbNonCompactnessPenalty ? YES : NO);
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveEllipseSection()", "CParameters");
@@ -2390,7 +2394,7 @@ void CParameters::SetDefaults() {
   gbOutputClusterLevelAscii             = false;
   geCriteriaSecondClustersType          = NOGEOOVERLAP;
   glTotalNumEllipses                    = 0;
-  gbDuczmalCorrectEllipses              = false;
+  gbNonCompactnessPenalty               = false;
   gbReadStatusError                     = false;
   geReadType                            = SCAN;
   gsEndRangeStartDate                   = gsStudyPeriodStartDate;
@@ -3203,7 +3207,7 @@ bool CParameters::ValidateEllipseParameters(BasePrint & PrintDirection) {
     else {
       //If there are no ellipses, then these variables must be reset to ensure that no code that
       //accesses them will wrongly think there are elipses.
-      gbDuczmalCorrectEllipses = false;
+      gbNonCompactnessPenalty = false;
       glTotalNumEllipses = 0;
     }
   }

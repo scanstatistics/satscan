@@ -19,7 +19,7 @@ void CCluster::Initialize(tract_t nCenter) {
   m_nTracts        = 0;
   m_nRatio         = 0;
   m_nRank          = 1;
-  m_DuczmalCorrection = 1;
+  m_NonCompactnessPenalty = 1;
   m_nFirstInterval = 0;
   m_nLastInterval  = 0;
   m_iEllipseOffset = 0;
@@ -27,14 +27,14 @@ void CCluster::Initialize(tract_t nCenter) {
 
 /** overloaded assignment operator */
 CCluster& CCluster::operator=(const CCluster& rhs) {
-  m_Center              = rhs.m_Center;
-  m_nTracts             = rhs.m_nTracts;
-  m_nRatio              = rhs.m_nRatio;
-  m_nRank               = rhs.m_nRank;
-  m_DuczmalCorrection   = rhs.m_DuczmalCorrection;
-  m_nFirstInterval      = rhs.m_nFirstInterval;
-  m_nLastInterval       = rhs.m_nLastInterval;
-  m_iEllipseOffset      = rhs.m_iEllipseOffset;
+  m_Center                = rhs.m_Center;
+  m_nTracts               = rhs.m_nTracts;
+  m_nRatio                = rhs.m_nRatio;
+  m_nRank                 = rhs.m_nRank;
+  m_NonCompactnessPenalty = rhs.m_NonCompactnessPenalty;
+  m_nFirstInterval        = rhs.m_nFirstInterval;
+  m_nLastInterval         = rhs.m_nLastInterval;
+  m_iEllipseOffset        = rhs.m_iEllipseOffset;
 
   return *this;
 }
@@ -382,8 +382,8 @@ void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPr
   }
   else {
     PrintFormat.PrintSectionLabel(fp, "Log likelihood ratio", false, true);
-    fprintf(fp, "%f\n", m_nRatio/m_DuczmalCorrection);
-    if (DataHub.GetParameters().GetDuczmalCorrectEllipses()) {
+    fprintf(fp, "%f\n", m_nRatio/m_NonCompactnessPenalty);
+    if (DataHub.GetParameters().GetNonCompactnessPenalty()) {
       PrintFormat.PrintSectionLabel(fp, "Test statistic", false, true);
       fprintf(fp, "%f\n", m_nRatio);
     }
@@ -463,9 +463,9 @@ void CCluster::SetEllipseOffset(int iOffset) {
    m_iEllipseOffset = iOffset;
 }
 
-/** Sets Duczmal Compactness Correction for shape. */
-void CCluster::SetDuczmalCorrection(double dEllipseShape) {
-  m_DuczmalCorrection = GetDuczmalCorrection(dEllipseShape);
+/** Sets non compactness penalty for shape. */
+void CCluster::SetNonCompactnessPenalty(double dEllipseShape) {
+  m_NonCompactnessPenalty = CalculateNonCompactnessPenalty(dEllipseShape);
 }
 
 /** Sets scanning area rate. */

@@ -390,9 +390,7 @@ void MostLikelyClustersContainer::SortTopClusters() {
 }
 
 /** Updates rank of top clusters by comparing simulated loglikelihood ratio(LLR)
-    with each remaining clusters LLR. If the analysis contains ellipses and is
-    duczmal correcting their LLRs, then the duczmal corrected LLR is is used
-    to rank the clusters instead of LLR. */
+    with each remaining clusters LLR.  */
 void MostLikelyClustersContainer::UpdateTopClustersRank(double r) {
   ZdPointerVector<CCluster>::reverse_iterator rev(gvTopClusterList.end());
   ZdPointerVector<CCluster>::reverse_iterator rev_end(gvTopClusterList.begin());

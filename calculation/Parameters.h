@@ -80,7 +80,7 @@ extern const char*      ELLIPSES_SECTION;
 extern const char*      NUMBER_ELLIPSES_LINE;
 extern const char*      ELLIPSE_SHAPES_LINE;
 extern const char*      ELLIPSE_ANGLES_LINE;
-extern const char*      ELLIPSE_DUCZMAL_COMPACT_LINE;
+extern const char*      ELLIPSE_NON_COMPACTNESS_LINE;
 
 /** output files ini section */
 extern const char*      OUTPUT_FILES_SECTION;
@@ -143,7 +143,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     ENUMBERS, START_PROSP_SURV, OUTPUT_AREAS_ASCII, OUTPUT_MLC_ASCII,
                                     CRITERIA_SECOND_CLUSTERS, MAX_TEMPORAL_TYPE, MAX_SPATIAL_TYPE,
                                     RUN_HISTORY_FILENAME, OUTPUT_MLC_DBASE, OUTPUT_AREAS_DBASE, OUTPUT_RR_DBASE,
-                                    OUTPUT_SIM_LLR_DBASE, DUCZMAL_COMPACTNESS, INTERVAL_STARTRANGE, 
+                                    OUTPUT_SIM_LLR_DBASE, NON_COMPACTNESS_PENALTY, INTERVAL_STARTRANGE, 
                                     INTERVAL_ENDRANGE, TIMETRENDCONVRG, MAXCIRCLEPOPFILE, EARLY_SIM_TERMINATION,
                                     REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE, SIMULATION_TYPE,
                                     SIMULATION_SOURCEFILE, ADJ_BY_RR_FILE, OUTPUT_SIMULATION_DATA,
@@ -228,7 +228,7 @@ class CParameters {
     long                                glTotalNumEllipses;                     /** total number of ellipses (ellipses by number rotations) */
     std::vector<double>                 gvEllipseShapes;                        /** shape of each ellipsoid */
     std::vector<int>                    gvEllipseRotations;                     /** number of rotations for each ellipsoid */
-    bool                                gbDuczmalCorrectEllipses;               /** indicates whether narrower ellipses should be penalized */
+    bool                                gbNonCompactnessPenalty;                /** indicates whether narrower ellipses should be penalized */
         /* Pure Clusters variables */
     bool                                gbIncludePurelySpatialClusters,         /** indicates whether to include purely spatial clusters */
                                         gbIncludePurelyTemporalClusters;        /** indicates whether to include purely temporal clusters */
@@ -303,7 +303,7 @@ class CParameters {
     void                                ReadEllipseShapes(const ZdString & sParameter);
     void                                ReadEndIntervalRange(const ZdString & sParameter);
     float                               ReadFloat(const ZdString & sValue, ParameterType eParameterType);
-    void                                ReadIniParameter(const ZdIniSection & IniSection, const char * sSectionName, ParameterType eParameterType, BasePrint & PrintDirection);
+    void                                ReadIniParameter(const ZdIniSection & IniSection, const char * sSectionName, ParameterType eParameterType, BasePrint & PrintDirection, const char * sDeprecatedSectionName=0);
     void                                ReadIniParameterFile(const ZdString sFileName, BasePrint & PrintDirection);
     void                                ReadInputFilesSection(ZdIniFile& file, BasePrint & PrintDirection);
     int                                 ReadInt(const ZdString & sValue, ParameterType eParameterType);
@@ -363,7 +363,6 @@ class CParameters {
     const char                        * GetDatePrecisionAsString(DatePrecisionType eDatePrecisionType) const;
     unsigned int                        GetCreationVersionMajor() const {return gCreationVersion.iMajor;}
     int                                 GetDimensionsOfData() const {return giDimensionsOfData;}
-    bool                                GetDuczmalCorrectEllipses() const {return gbDuczmalCorrectEllipses;}
     const std::vector<int>            & GetEllipseRotations() const {return gvEllipseRotations;}
     const std::vector<double>         & GetEllipseShapes() const {return gvEllipseShapes;}
     const std::string                 & GetEndRangeEndDate() const {return gsEndRangeEndDate;}
@@ -387,7 +386,8 @@ class CParameters {
     float                               GetMaximumTemporalClusterSize() const {return gfMaxTemporalClusterSize;}
     TemporalSizeType                    GetMaximumTemporalClusterSizeType() const {return geMaxTemporalClusterSizeType;}
     float                               GetMaximumReportedGeoClusterSize() const {return gfMaxReportedGeographicClusterSize;}
-    MultipleStreamPurposeType           GetMultipleDataStreamPurposeType() const {return geMultipleStreamPurposeType;}         
+    MultipleStreamPurposeType           GetMultipleDataStreamPurposeType() const {return geMultipleStreamPurposeType;}
+    bool                                GetNonCompactnessPenalty() const {return gbNonCompactnessPenalty;}
     unsigned int                        GetNumDataStreams() const {return gvCaseFilenames.size();}
     unsigned int                        GetNumReplicationsRequested() const {return giReplications;}
     int                                 GetNumRequestedEllipses() const {return giNumberEllipses;}
@@ -451,7 +451,6 @@ class CParameters {
     void                                SetCoordinatesFileName(const char * sCoordinatesFileName, bool bCorrectForRelativePath=false);
     void                                SetCoordinatesType(CoordinatesType eCoordinatesType);
     void                                SetCriteriaForReportingSecondaryClusters(CriteriaSecondaryClustersType eCriteriaSecondaryClustersType);
-    void                                SetDuczmalCorrectionEllipses(bool b) {gbDuczmalCorrectEllipses = b;}
     void                                SetEllipsoidShape(double dShape, int iEllipsoidIndex=-1);
     void                                SetIncludeClustersType(IncludeClustersType eIncludeClustersType);
     void                                SetIncludePurelySpatialClusters(bool b) {gbIncludePurelySpatialClusters = b;}
@@ -463,7 +462,8 @@ class CParameters {
     void                                SetMaximumSpacialClusterSizeType(SpatialSizeType eSpatialSizeType);
     void                                SetMaximumTemporalClusterSize(float fMaxTemporalClusterSize);
     void                                SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSizeType);
-    void                                SetMultipleDataStreamPurposeType(MultipleStreamPurposeType eType);         
+    void                                SetMultipleDataStreamPurposeType(MultipleStreamPurposeType eType);
+    void                                SetNonCompactnessPenalty(bool b) {gbNonCompactnessPenalty = b;}
     void                                SetNumDataStreams(unsigned int iNumStreams);
     void                                SetNumberEllipses(int iNumEllipses);
     void                                SetNumberEllipsoidRotations(int iNumberRotations, int iEllipsoidIndex=-1);

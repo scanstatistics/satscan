@@ -9,7 +9,7 @@
 double 			CalcLogLikelihood(count_t n, measure_t u, count_t N, measure_t U);
 void 			ConvertFromLatLong(double Latitude, double Longitude, std::vector<double>& vCoordinates);
 void 			ConvertToLatLong(float* Latitude, float* Longitude, double* pCoords);
-double                  GetDuczmalCorrection(double dEllipseShape);
+double                  CalculateNonCompactnessPenalty(double dEllipseShape);
 
 /** The data read routines of CSaTScanData used to use function:
     const char * GetWord(const char *s, int num, BasePrint *pPrintDirection)

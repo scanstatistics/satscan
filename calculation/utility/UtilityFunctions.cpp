@@ -63,8 +63,8 @@ void ConvertToLatLong(float* Latitude, float* Longitude, double* pCoords) {
   *Latitude = (float)((pCoords[2] >= 0 ? (1.0) : (-1.0)) * acos(tmp) * 180.0 / PI);
 }
 
-/** Return Duczmal Compactness Correction coefficient. */
-double GetDuczmalCorrection(double dEllipseShape) {
+/** Return non-compactness penalty coefficient. */
+double CalculateNonCompactnessPenalty(double dEllipseShape) {
   return ( 4*dEllipseShape/(pow(dEllipseShape + 1, 2)) );
 }
 

@@ -14,7 +14,7 @@
     shape, circle and ellipses, inorder to postpone determination of top
     cluster by adjusted loglikelihood ratio until all possibilities
     have been calculated and ranked by loglikelihood. For most analyses, the
-    shape will not be be a factor, but for the Duczmal Compactness correction,
+    shape will not be be a factor, but when penalizing for non-compactness,
     the top cluster for circles and each ellipse shape will have be retained
     until all other calculations have been completed for each iteration of
     function. */

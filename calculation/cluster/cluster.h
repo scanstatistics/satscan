@@ -21,7 +21,7 @@ class CCluster {
     RATE_FUNCPTRTYPE              m_pfRateOfInterest;
     tract_t                       m_nTracts;            // Number of neighboring tracts in cluster
     unsigned int                  m_nRank;              // Rank based on results of simulations
-    double                        m_DuczmalCorrection;  // Duczmal compactness correction, for ellipses
+    double                        m_NonCompactnessPenalty;  // non-compactness penalty, for ellipses
     int                           m_iEllipseOffset;     // Link to Circle or Ellipse (top cluster)
 
   public:
@@ -73,7 +73,7 @@ class CCluster {
     virtual count_t               GetCaseCount(unsigned int iStream) const = 0;
     virtual count_t               GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data, unsigned int iStream=0) const = 0;
     virtual tract_t               GetCentroidIndex() const {return m_Center;}
-    double                        GetDuczmal() const {return m_DuczmalCorrection;}
+    double                        GetNonCompactnessPenalty() const {return m_NonCompactnessPenalty;}
     int                           GetEllipseOffset() const {return m_iEllipseOffset;}
     virtual ZdString            & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     virtual measure_t             GetMeasure(unsigned int iStream) const = 0;
@@ -89,7 +89,7 @@ class CCluster {
     virtual void                  Initialize(tract_t nCenter=0);
     void                          SetCenter(tract_t nCenter);
     void                          SetEllipseOffset(int iOffset);
-    void                          SetDuczmalCorrection(double dEllipseShape);
+    void                          SetNonCompactnessPenalty(double dEllipseShape);
     void                          SetRate(int nRate);
     virtual void                  Write(stsAreaSpecificData& AreaData, const CSaTScanData& DataHub,
                                         unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const;

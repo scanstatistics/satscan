@@ -29,7 +29,7 @@ CCluster & TopClustersContainer::GetTopCluster(int iShapeOffset) {
   CCluster    * pTopCluster=0;
   int           iEllipse, iBoundry=0;
 
-  if (iShapeOffset && gData.GetParameters().GetNumRequestedEllipses() && gData.GetParameters().GetDuczmalCorrectEllipses())
+  if (iShapeOffset && gData.GetParameters().GetNumRequestedEllipses() && gData.GetParameters().GetNonCompactnessPenalty())
     for (iEllipse=0; iEllipse < gData.GetParameters().GetNumRequestedEllipses() && !pTopCluster; ++iEllipse) {
        //Get the number of angles this ellipse shape rotates through.
        iBoundry += gData.GetParameters().GetEllipseRotations()[iEllipse];
@@ -43,7 +43,7 @@ CCluster & TopClustersContainer::GetTopCluster(int iShapeOffset) {
 }
 
 /** Returns the top cluster for all shapes, taking into account the option of
-    Duczmal Compactness correction for ellispes.
+    non-compactness penalizing for ellispes.
     NOTE: Caller should never assume that reference will remain after return from
           get CAnalysis::GetTopCluster(), as the vector is reset for each iteration
           of GetTopClusters(). Instead a copy should be made, using operator= method
@@ -56,14 +56,14 @@ CCluster & TopClustersContainer::GetTopCluster() {
   //set the maximum cluster to the circle shape initially
   pTopCluster = gvTopShapeClusters[0];
   //apply compactness correction
-  pTopCluster->m_nRatio *= pTopCluster->GetDuczmal();
+  pTopCluster->m_nRatio *= pTopCluster->GetNonCompactnessPenalty();
   //if the there are ellipses, compare current top cluster against them
   //note: we don't have to be concerned with whether we are comparing circles and ellipses,
   //     the adjusted loglikelihood ratio for a circle is just the loglikelihood ratio
   for (size_t t=1; t < gvTopShapeClusters.size(); t++) {
      if (gvTopShapeClusters[t]->ClusterDefined()) {
        //apply compactness correction
-       gvTopShapeClusters[t]->m_nRatio *= gvTopShapeClusters[t]->GetDuczmal();
+       gvTopShapeClusters[t]->m_nRatio *= gvTopShapeClusters[t]->GetNonCompactnessPenalty();
        //compare against current top cluster
        if (gvTopShapeClusters[t]->m_nRatio > pTopCluster->m_nRatio)
          pTopCluster = gvTopShapeClusters[t];
@@ -84,9 +84,9 @@ void TopClustersContainer::SetTopClusters(const CCluster& InitialCluster) {
 
   try {
     gvTopShapeClusters.DeleteAllElements();
-    //if there are ellipses and duczmal correction is true, then we need
+    //if there are ellipses and non-compactness penalty is true, then we need
     //a top cluster for the circle and each ellipse shape
-    if (gData.GetParameters().GetNumRequestedEllipses() && gData.GetParameters().GetDuczmalCorrectEllipses())
+    if (gData.GetParameters().GetNumRequestedEllipses() && gData.GetParameters().GetNonCompactnessPenalty())
       iNumTopClusters = gData.GetParameters().GetNumRequestedEllipses() + 1;
     else
     //else there is only one top cluster - regardless of whether there are ellipses

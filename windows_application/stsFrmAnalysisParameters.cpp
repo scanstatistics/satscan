@@ -450,7 +450,7 @@ void TfrmAnalysis::DefaultHiddenParameters() {
     gParameters.SetAnalysisType(PURELYSPATIAL);
   gParameters.SetSequentialScanning(false);
   gParameters.SetNumberEllipses(0);
-  gParameters.SetDuczmalCorrectionEllipses(false);
+  gParameters.SetNonCompactnessPenalty(false);
   gParameters.SetRiskType(STANDARDRISK);
   gParameters.SetPowerCalculation(false);
   gParameters.SetValidatePriorToCalculation(true);

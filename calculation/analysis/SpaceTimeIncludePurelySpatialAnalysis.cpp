@@ -102,13 +102,13 @@ const CCluster& C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const Abt
      gpClusterComparator->Initialize(tCenter);
      gpClusterComparator->SetRate(gParameters.GetAreaScanRateType());
      gpClusterComparator->SetEllipseOffset(j);
-     gpClusterComparator->SetDuczmalCorrection((j == 0 || !gParameters.GetDuczmalCorrectEllipses() ? 1 : gDataHub.GetShapesArray()[j - 1]));
+     gpClusterComparator->SetNonCompactnessPenalty((j == 0 || !gParameters.GetNonCompactnessPenalty() ? 1 : gDataHub.GetShapesArray()[j - 1]));
      CSpaceTimeCluster & Top_ST_ShapeCluster = (CSpaceTimeCluster&)(gpTopShapeClusters->GetTopCluster(j));
      if (gpPSClusterComparator) {
        gpPSClusterComparator->Initialize(tCenter);
        gpPSClusterComparator->SetRate(gParameters.GetAreaScanRateType());
        gpPSClusterComparator->SetEllipseOffset(j);
-       gpPSClusterComparator->SetDuczmalCorrection((j == 0 || !gParameters.GetDuczmalCorrectEllipses() ? 1 : gDataHub.GetShapesArray()[j - 1]));
+       gpPSClusterComparator->SetNonCompactnessPenalty((j == 0 || !gParameters.GetNonCompactnessPenalty() ? 1 : gDataHub.GetShapesArray()[j - 1]));
        CPurelySpatialCluster & Top_PS_ShapeCluster = (CPurelySpatialCluster&)(gpPSTopShapeClusters->GetTopCluster(j));
        gpPSClusterComparator->AddNeighborDataAndCompare(j, tCenter, DataGateway, &gDataHub, Top_PS_ShapeCluster, *gpLikelihoodCalculator);
      }
@@ -116,7 +116,7 @@ const CCluster& C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const Abt
        gpPSPClusterComparator->Initialize(tCenter);
        gpPSPClusterComparator->SetRate(gParameters.GetAreaScanRateType());
        gpPSPClusterComparator->SetEllipseOffset(j);
-       gpPSPClusterComparator->SetDuczmalCorrection((j == 0 || !gParameters.GetDuczmalCorrectEllipses() ? 1 : gDataHub.GetShapesArray()[j - 1]));
+       gpPSPClusterComparator->SetNonCompactnessPenalty((j == 0 || !gParameters.GetNonCompactnessPenalty() ? 1 : gDataHub.GetShapesArray()[j - 1]));
        CPurelySpatialProspectiveCluster & Top_PSP_ShapeCluster = (CPurelySpatialProspectiveCluster&)(gpPSTopShapeClusters->GetTopCluster(j));
        gpPSPClusterComparator->AddNeighborAndCompare(j, tCenter, DataGateway, &gDataHub, Top_PSP_ShapeCluster, *gpLikelihoodCalculator);
      }

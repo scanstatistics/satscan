@@ -58,14 +58,14 @@ CPurelySpatialCluster::~CPurelySpatialCluster() {
 
 /** overloaded assignment operator */
 CPurelySpatialCluster& CPurelySpatialCluster::operator=(const CPurelySpatialCluster& rhs) {
-  m_Center              = rhs.m_Center;
-  m_nTracts             = rhs.m_nTracts;
-  m_nRatio              = rhs.m_nRatio;
-  m_nRank               = rhs.m_nRank;
-  m_DuczmalCorrection   = rhs.m_DuczmalCorrection;
-  m_nFirstInterval      = rhs.m_nFirstInterval;
-  m_nLastInterval       = rhs.m_nLastInterval;
-  m_iEllipseOffset      = rhs.m_iEllipseOffset;
+  m_Center                = rhs.m_Center;
+  m_nTracts               = rhs.m_nTracts;
+  m_nRatio                = rhs.m_nRatio;
+  m_nRank                 = rhs.m_nRank;
+  m_NonCompactnessPenalty = rhs.m_NonCompactnessPenalty;
+  m_nFirstInterval        = rhs.m_nFirstInterval;
+  m_nLastInterval         = rhs.m_nLastInterval;
+  m_iEllipseOffset        = rhs.m_iEllipseOffset;
   gpClusterData->Assign(*(rhs.gpClusterData));  
   return *this;
 }
