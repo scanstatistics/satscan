@@ -153,6 +153,8 @@ bool CAnalysis::Execute(time_t RunTime) {
 #ifdef INCLUDE_RUN_HISTORY
         // log new history for each analysis run - AJV 9/10/2002
         gpPrintDirection->SatScanPrintf("\nLogging run history...");
+        
+        float fPVal = (m_nClustersRetained > 0) ? m_pTopClusters[0]->GetPVal(m_pParameters->m_nReplicas): 0.0;
         historyFile.LogNewHistory(*this, guwSignificantAt005);
         // reset the number of significants back to zero for each analysis - AJV 9/10/2002
         guwSignificantAt005 = 0;

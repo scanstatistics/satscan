@@ -260,7 +260,7 @@ void stsRunHistoryFile::Init() {
 // although the name implies an oxymoron, this function will record a new run into the history file
 // pre: none
 // post: records the run history to the file
-void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005) {
+void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005, float pVal) {
    ZdTransaction	*pTransaction = 0;
    ZdString             sTempValue, sInterval;
    std::auto_ptr<DBFFile>    pFile(new DBFFile(gsFilename));
@@ -341,7 +341,6 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       SetStringField(*pRecord, sInterval, GetFieldNumber(gvFields, INTERVAL_FIELD));
 
       // p-value field
-      float pVal = pAnalysis.GetTopCluster(0)->GetPVal(pAnalysis.GetSatScanData()->m_pParameters->m_nReplicas);
       SetDoubleField(*pRecord, pVal, GetFieldNumber(gvFields, P_VALUE_FIELD));
       SetLongField(*pRecord, pAnalysis.GetSatScanData()->m_pParameters->m_nReplicas, GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
 //      SetDoubleField(*pRecord, pAnalysis.GetSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field

@@ -51,7 +51,7 @@ class stsRunHistoryFile {
 
       const long        GetRunNumber() const {return glRunNumber;}
       const ZdString&   GetRunHistoryFileName() const {return gsFilename;}
-      void              LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005);
+      void              LogNewHistory(const CAnalysis& pAnalysis, const unsigned short uwSignificantAt005, float pVal = 0.0);
 
 };
 
