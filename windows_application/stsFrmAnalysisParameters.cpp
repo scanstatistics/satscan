@@ -471,6 +471,7 @@ void TfrmAnalysis::DefaultHiddenParameters() {
   if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION &&
       gParameters.GetSpatialAdjustmentType() == SPATIALLY_STRATIFIED_RANDOMIZATION)
     gParameters.SetSpatialAdjustmentType(NO_SPATIAL_ADJUSTMENT);
+  gParameters.SetReportCriticalValues(true);
 }
 //---------------------------------------------------------------------------
 /** event triggered when case file edit control text changes */
