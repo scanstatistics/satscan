@@ -275,9 +275,60 @@ void CParameters::Copy(const CParameters &rhs) {
     gsSimulationDataOutputFilename      = rhs.gsSimulationDataOutputFilename;
     gbAdjustForEarlierAnalyses          = rhs.gbAdjustForEarlierAnalyses;
     gbUseAdjustmentsForRRFile           = rhs.gbUseAdjustmentsForRRFile;
+    geSpatialAdjustmentType             = rhs.geSpatialAdjustmentType;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
+    throw;
+  }
+}
+
+/** Prints time trend adjustment parameters, in a particular format, to passed ascii file. */
+void CParameters::DisplayAdjustments(FILE* fp, const DataStreamHandler& StreamHandler) const {
+  ZdString              sBuffer;
+  AsciiPrintFormat      PrintFormat;
+
+  try {
+    //display temporal adjustments
+    switch (geTimeTrendAdjustType) {
+      case NOTADJUSTED :
+        break;
+      case NONPARAMETRIC :
+        sBuffer = "Adjusted for time nonparametrically."; break;
+      case LOGLINEAR_PERC :
+        sBuffer.printf("of %0.2f%% per year.", fabs(gdTimeTrendAdjustPercentage));
+        if (gdTimeTrendAdjustPercentage < 0)
+          sBuffer.Insert("Adjusted for time with a decrease ", 0);
+        else
+          sBuffer.Insert("Adjusted for time with an increase ", 0);
+        break;
+      case CALCULATED_LOGLINEAR_PERC :
+        DisplayCalculatedTimeTrend(fp, StreamHandler); break;
+      case STRATIFIED_RANDOMIZATION  :
+        sBuffer = "Adjusted for time by stratified randomization."; break;
+      default :
+        ZdException::Generate("Unknown time trend adjustment type '%d'\n.", "DisplayTimeAdjustments()", geTimeTrendAdjustType);
+    }
+    if (sBuffer.GetLength())
+      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    //display spatial adjustments
+    switch (geSpatialAdjustmentType) {
+      case NO_SPATIAL_ADJUSTMENT :
+        break;
+      case SPATIALLY_STRATIFIED_RANDOMIZATION :
+        sBuffer = "Adjusted for spatial orientation by stratified randomization.";
+        PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer); break;
+      default :
+        ZdException::Generate("Unknown time trend adjustment type '%d'\n.", "DisplayTimeAdjustments()", geTimeTrendAdjustType);
+    }
+    //display space-time adjustments
+    if (gbUseAdjustmentsForRRFile) {
+        sBuffer = "Adjusted for known relative risks.";
+        PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    }    
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("DisplayAdjustments(FILE *)","CParameters");
     throw;
   }
 }
@@ -478,9 +529,9 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
       fprintf(fp, "---------------\n");
 
       fprintf(fp, "  Time Interval Units  : %s\n", GetDatePrecisionAsString(geTimeIntervalUnitsType));
-      fprintf(fp, "  Time Interval Length : %i\n", glTimeIntervalLength);
+      fprintf(fp, "  Time Interval Length : %i\n\n", glTimeIntervalLength);
 
-      fprintf(fp, "\n  Adjustment for Time Trend : ");
+      fprintf(fp, "  Adjustment for Time Trend : ");
       switch (geTimeTrendAdjustType) {
          case NOTADJUSTED :
            fprintf(fp, "None\n"); break;
@@ -505,18 +556,14 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
       if (gbAdjustForEarlierAnalyses)
         fprintf(fp, "  Prospective Start Date : %s\n", gsProspectiveStartDate.c_str());
     }
-    if (geSpatialAdjustmentType == SPATIALLY_STRATIFIED_RANDOMIZATION) {
-      //Prevent this option from printing if no adjustment performed. This
-      //is to prevent this option from being visible from analysis run in GUI version.
-      fprintf(fp, "\n  Spatial Adjustment : ");
-      switch (geSpatialAdjustmentType) {
-         case NO_SPATIAL_ADJUSTMENT :
-           fprintf(fp, "None\n"); break;
-         case SPATIALLY_STRATIFIED_RANDOMIZATION :
-           fprintf(fp, "Spatial adjustment by stratified randomization\n"); break;
-         default :
-           ZdException::Generate("Unknown spatial adjustment type '%d'.\n", "DisplayParameters()", geSpatialAdjustmentType);
-      }
+    fprintf(fp, "  Spatial Adjustment : ");
+    switch (geSpatialAdjustmentType) {
+      case NO_SPATIAL_ADJUSTMENT :
+        fprintf(fp, "None\n"); break;
+      case SPATIALLY_STRATIFIED_RANDOMIZATION :
+        fprintf(fp, "Spatial adjustment by stratified randomization\n"); break;
+      default :
+        ZdException::Generate("Unknown spatial adjustment type '%d'.\n", "DisplayParameters()", geSpatialAdjustmentType);
     }  
 
     fprintf(fp, "\nOutput\n");
@@ -660,38 +707,6 @@ void CParameters::DisplayCalculatedTimeTrend(FILE* fp, const DataStreamHandler& 
   AsciiPrintFormat PrintFormat;
   PrintFormat.SetMarginsAsOverviewSection();
   PrintFormat.PrintAlignedMarginsDataString(fp, sPrintString);
-}
-
-
-/** Prints time trend adjustment parameters, in a particular format, to passed ascii file. */
-void CParameters::DisplayTimeAdjustments(FILE* fp, const DataStreamHandler& StreamHandler) const {
-  try {
-    switch (geTimeTrendAdjustType) {
-      case NOTADJUSTED :
-        break;
-      case NONPARAMETRIC :
-        fprintf(fp, "Adjusted for time nonparametrically.\n"); break;
-      case LOGLINEAR_PERC :
-        if (gdTimeTrendAdjustPercentage < 0)
-          fprintf(fp, "Adjusted for time with a decrease ");
-        else
-          fprintf(fp, "Adjusted for time with an increase ");
-        fprintf(fp, "of %0.2f%% per year.\n", fabs(gdTimeTrendAdjustPercentage));
-        break;
-      case CALCULATED_LOGLINEAR_PERC :
-        DisplayCalculatedTimeTrend(fp, StreamHandler);
-        break;
-      case STRATIFIED_RANDOMIZATION  :
-        fprintf(fp, "Adjusted for time by stratified randomization.\n");
-        break;
-      default :
-        ZdException::Generate("Unknown time trend adjustment type '%d'\n.", "DisplayTimeAdjustments()", geTimeTrendAdjustType);
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("DisplayTimeAdjustments(FILE *)","CParameters");
-    throw;
-  }
 }
 
 /** Returns analysis type as string. */
