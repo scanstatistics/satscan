@@ -92,6 +92,7 @@ SRC         := Main.cpp \
                ../calculation/Output/stsOutputFileWriter.cpp \
                ../calculation/Output/stsRelativeRisk.cpp \
 	       ../calculation/Output/stsRunHistoryFile.cpp \
+	       ../calculation/Output/AsciiPrintFormat.cpp \
 	       ../calculation/print/BasePrint.cpp \
 	       ../calculation/print/PrintScreen.cpp \
 	       ../calculation/print/PrintQueue.cpp \
