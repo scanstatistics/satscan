@@ -880,10 +880,10 @@ object frmAnalysis: TfrmAnalysis
         end
         object stUnitText: TStaticText
           Left = 117
-          Top = 90
-          Width = 29
+          Top = 92
+          Width = 31
           Height = 17
-          Caption = 'years'
+          Caption = 'Years'
           TabOrder = 4
         end
       end

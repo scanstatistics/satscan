@@ -761,6 +761,7 @@ void TfrmAnalysis::EnableTimeIntervalUnitsGroup(bool bEnable) {
    rdoUnitYear->Enabled =  bEnable;
    rdoUnitMonths->Enabled = bEnable;
    rdoUnitDay->Enabled = bEnable;
+   stUnitText->Enabled = bEnable;
    EnableDatesByTimeIntervalUnits();
 }
 
@@ -1093,6 +1094,7 @@ void __fastcall TfrmAnalysis::PositiveFloatKeyPress(TObject *Sender, char &Key) 
 /** event triggered when time interval unit type selected as 'day' */
 void __fastcall TfrmAnalysis::rdoUnitDayClick(TObject *Sender) {
   gpfrmAdvancedParameters->lblMaxTemporalTimeUnits->Caption = "days";
+  stUnitText->Caption = "Days";
   EnableDatesByTimeIntervalUnits();
 }
 
@@ -1100,6 +1102,7 @@ void __fastcall TfrmAnalysis::rdoUnitDayClick(TObject *Sender) {
 /** event triggered when time interval unit type selected as 'month' */
 void __fastcall TfrmAnalysis::rdoUnitMonthsClick(TObject *Sender) {
   gpfrmAdvancedParameters->lblMaxTemporalTimeUnits->Caption = "months";
+  stUnitText->Caption = "Months";
   EnableDatesByTimeIntervalUnits();
 }
 
@@ -1107,6 +1110,7 @@ void __fastcall TfrmAnalysis::rdoUnitMonthsClick(TObject *Sender) {
 /** event triggered when time interval unit type selected as 'year' */
 void __fastcall TfrmAnalysis::rdoUnitYearClick(TObject *Sender) {
     gpfrmAdvancedParameters->lblMaxTemporalTimeUnits->Caption = "years";
+    stUnitText->Caption = "Years";
     EnableDatesByTimeIntervalUnits();
 }
 //---------------------------------------------------------------------------
