@@ -208,47 +208,44 @@ void PopulationData::AssignPopulation(PopulationCategory & thisPopulationCategor
   }
 }
 
-/** Returns array that indicates population dates percentage of the whole study
+/** Returns vector that indicates population dates percentage of the whole study
     period. Calculation assumes that the population of a given day refers to the
-    beginning of that day. Caller is responsible for:
-    - ensuring passed pointer address does not point to allocated memory.
-    - deallocation of 'pAlpha', using function free(), not delete[]
-    - ensuring that StartDate <= EndDate
-    An exception is thrown if the summation of calculated pAlpha elements does
-    note equal 1.0(+/- .0001). */
-void PopulationData::CalculateAlpha(double** pAlpha, Julian StartDate, Julian EndDate) const {
+    beginning of that day. Caller is responsible for ensuring that
+    StartDate <= EndDate. A ZdException is thrown if the summation of calculated
+    vAlpha elements does not equal 1.0(+/- .0001). */
+void PopulationData::CalculateAlpha(std::vector<double>& vAlpha, Julian StartDate, Julian EndDate) const {
   int                   nPopDates = (int)gvPopulationDates.size();
   int                   n, N = nPopDates-2;
   long                  nTotalDays = TimeBetween(StartDate, EndDate, DAY);
   double                sumalpha;
 
    try {
-     *pAlpha = (double*)Smalloc((nPopDates+1) * sizeof(double), 0);
+     vAlpha.resize(nPopDates+1, 0);
 
      if (N==0) {
-       (*pAlpha)[0] = 0.5*((gvPopulationDates[1]-StartDate)+(gvPopulationDates[1]-(EndDate+1)))/(double)(gvPopulationDates[1]-gvPopulationDates[0]);
-       (*pAlpha)[1] = 0.5*((StartDate-gvPopulationDates[0])+((EndDate+1)-gvPopulationDates[0]))/(double)(gvPopulationDates[1]-gvPopulationDates[0]);
+       vAlpha[0] = 0.5*((gvPopulationDates[1]-StartDate)+(gvPopulationDates[1]-(EndDate+1)))/(double)(gvPopulationDates[1]-gvPopulationDates[0]);
+       vAlpha[1] = 0.5*((StartDate-gvPopulationDates[0])+((EndDate+1)-gvPopulationDates[0]))/(double)(gvPopulationDates[1]-gvPopulationDates[0]);
      }
      else if(N==1) {
-       (*pAlpha)[0] = (0.5*((double)(gvPopulationDates[1]-StartDate)/(gvPopulationDates[1]-gvPopulationDates[0]))*(gvPopulationDates[1]-StartDate)) / (double)nTotalDays;
-       (*pAlpha)[1] = (0.5*(gvPopulationDates[1]-StartDate)*(1+((double)(StartDate-gvPopulationDates[0])/(gvPopulationDates[1]-gvPopulationDates[0])))) / (double)nTotalDays
+       vAlpha[0] = (0.5*((double)(gvPopulationDates[1]-StartDate)/(gvPopulationDates[1]-gvPopulationDates[0]))*(gvPopulationDates[1]-StartDate)) / (double)nTotalDays;
+       vAlpha[1] = (0.5*(gvPopulationDates[1]-StartDate)*(1+((double)(StartDate-gvPopulationDates[0])/(gvPopulationDates[1]-gvPopulationDates[0])))) / (double)nTotalDays
                        + (0.5*(double)(EndDate+1-gvPopulationDates[N])*(1+((double)(gvPopulationDates[N+1]-(EndDate+1))/(gvPopulationDates[N+1]-gvPopulationDates[N])))) /  (double)nTotalDays;
-       (*pAlpha)[N+1] = (0.5*((double)(EndDate+1-gvPopulationDates[N])/(gvPopulationDates[N+1]-gvPopulationDates[N]))*(EndDate+1-gvPopulationDates[N])) / nTotalDays;
+       vAlpha[N+1] = (0.5*((double)(EndDate+1-gvPopulationDates[N])/(gvPopulationDates[N+1]-gvPopulationDates[N]))*(EndDate+1-gvPopulationDates[N])) / nTotalDays;
      }
      else {
-       (*pAlpha)[0] = (0.5*((double)(gvPopulationDates[1]-StartDate)/(gvPopulationDates[1]-gvPopulationDates[0]))*(gvPopulationDates[1]-StartDate)) / (double)nTotalDays;
-       (*pAlpha)[1] = (0.5*(gvPopulationDates[2]-gvPopulationDates[1]) + 0.5*(gvPopulationDates[1]-StartDate)*(1+((double)(StartDate-gvPopulationDates[0])/(gvPopulationDates[1]-gvPopulationDates[0])))) / (double)nTotalDays;
+       vAlpha[0] = (0.5*((double)(gvPopulationDates[1]-StartDate)/(gvPopulationDates[1]-gvPopulationDates[0]))*(gvPopulationDates[1]-StartDate)) / (double)nTotalDays;
+       vAlpha[1] = (0.5*(gvPopulationDates[2]-gvPopulationDates[1]) + 0.5*(gvPopulationDates[1]-StartDate)*(1+((double)(StartDate-gvPopulationDates[0])/(gvPopulationDates[1]-gvPopulationDates[0])))) / (double)nTotalDays;
        for (n = 2; n < N; n++) {
-         (*pAlpha)[n] = 0.5*(double)(gvPopulationDates[n+1] - gvPopulationDates[n-1]) / (double)nTotalDays;
+         vAlpha[n] = 0.5*(double)(gvPopulationDates[n+1] - gvPopulationDates[n-1]) / (double)nTotalDays;
        }
-       (*pAlpha)[N]   = (0.5*(gvPopulationDates[N]-gvPopulationDates[N-1]) + 0.5*(double)(EndDate+1-gvPopulationDates[N])*(1+((double)(gvPopulationDates[N+1]-(EndDate+1))/(gvPopulationDates[N+1]-gvPopulationDates[N])))) /  (double)nTotalDays;
-       (*pAlpha)[N+1] = (0.5*((double)(EndDate+1-gvPopulationDates[N])/(gvPopulationDates[N+1]-gvPopulationDates[N]))*(EndDate+1-gvPopulationDates[N])) / nTotalDays;
+       vAlpha[N]   = (0.5*(gvPopulationDates[N]-gvPopulationDates[N-1]) + 0.5*(double)(EndDate+1-gvPopulationDates[N])*(1+((double)(gvPopulationDates[N+1]-(EndDate+1))/(gvPopulationDates[N+1]-gvPopulationDates[N])))) /  (double)nTotalDays;
+       vAlpha[N+1] = (0.5*((double)(EndDate+1-gvPopulationDates[N])/(gvPopulationDates[N+1]-gvPopulationDates[N]))*(EndDate+1-gvPopulationDates[N])) / nTotalDays;
      }
 
      /* Bug check, seeing that alpha values add to one. */
      sumalpha = 0;
      for (n = 0; n <= N+1; ++n)
-       sumalpha = sumalpha + (*pAlpha)[n];
+       sumalpha = sumalpha + vAlpha[n];
      if (sumalpha > 1.0001 || sumalpha < 0.9999)
        ZdGenerateException("Alpha values not calculated correctly.\nThe sum of the alpha values is %8.6lf rather than 1.\n",
                            "CalculateAlpha()", sumalpha);
@@ -391,10 +388,11 @@ void PopulationData::Display(BasePrint& PrintDirection) const {
 
 /** Adds the population for category of tract between date intervals. If
     tract_t t is not a valid index, an exception id thrown. Caller is responsible
-    for ensuring that parameter 'Alpha' points to valid memory and number of elements
-    is in accordance with range [iStartPopulationDateIndex .. iEndPopulationDateIndex). */
+    for ensuring that parameter 'vAlpha' contains a number of elements is in
+    accordance with range [iStartPopulationDateIndex .. iEndPopulationDateIndex). */
 double PopulationData::GetAlphaAdjustedPopulation(double& dPopulation, tract_t t, int iCategoryIndex,
-                                                  int iStartPopulationDateIndex, int iEndPopulationDateIndex, double Alpha[]) const {
+                                                  int iStartPopulationDateIndex, int iEndPopulationDateIndex,
+                                                  const std::vector<double>& vAlpha) const {
   int                           j;
   const PopulationCategory    * pCategoryDescriptor;
 
@@ -405,7 +403,7 @@ double PopulationData::GetAlphaAdjustedPopulation(double& dPopulation, tract_t t
     pCategoryDescriptor = GetCategoryDescriptor(t, iCategoryIndex);
     if (pCategoryDescriptor) {
       for (j=iStartPopulationDateIndex; j < iEndPopulationDateIndex; j++)
-         dPopulation = dPopulation + (Alpha[j] * pCategoryDescriptor->GetPopulationAtDateIndex(j, *this));
+         dPopulation = dPopulation + (vAlpha[j] * pCategoryDescriptor->GetPopulationAtDateIndex(j, *this));
     }
   }
   catch (ZdException &x) {
@@ -683,9 +681,9 @@ void PopulationData::GetPopUpLowIndex(Julian* pDates, int nDateIndex, int nMaxDa
 
 /** Returns the risk adjusted population for population date index of tract for
     all categories. Throws ZdException if tract 't' is invalid. Caller is
-    responsible for ensuring that 'Risk' points to valid memory and contains
-    a number of elements equal to the number of population categories. */
-measure_t PopulationData::GetRiskAdjustedPopulation(measure_t& dMeanPopulation, tract_t t, int iPopulationDateIndex, double Risk[]) const {
+    responsible for ensuring that 'vRisk' contains a number of elements equal
+    to the number of population categories. */
+measure_t PopulationData::GetRiskAdjustedPopulation(measure_t& dMeanPopulation, tract_t t, int iPopulationDateIndex, const std::vector<double>& vRisk) const {
   const PopulationCategory    * pCategoryDescriptor;
 
   try {
@@ -695,7 +693,7 @@ measure_t PopulationData::GetRiskAdjustedPopulation(measure_t& dMeanPopulation, 
     dMeanPopulation = 0.0;
     pCategoryDescriptor = gTractCategories[t];
     while (pCategoryDescriptor) {
-         dMeanPopulation = dMeanPopulation + Risk[pCategoryDescriptor->GetCategoryIndex()] *
+         dMeanPopulation = dMeanPopulation + vRisk[pCategoryDescriptor->GetCategoryIndex()] *
                               pCategoryDescriptor->GetPopulationAtDateIndex(iPopulationDateIndex, *this);
          pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();               
     }

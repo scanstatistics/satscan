@@ -76,13 +76,14 @@ class PopulationData {
     void                                AddCategoryToTract(tract_t tTractIndex, unsigned int iCategoryIndex,
                                                            const std::pair<Julian, DatePrecisionType>& prPopulationDate, float fPopulation);
     void                                AddControlCount(int iCategoryIndex, count_t Count);
-    void                                CalculateAlpha(double** pAlpha, Julian StartDate, Julian EndDate) const;
+    void                                CalculateAlpha(std::vector<double>& vAlpha, Julian StartDate, Julian EndDate) const;
     void                                CheckCasesHavePopulations(const count_t * pCases, const CSaTScanData& Data) const;    
     bool                                CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirection) const;
     void                                Display(BasePrint & PrintDirection) const;
     double                              GetAlphaAdjustedPopulation(double& dPopulation, tract_t t,
                                                                    int iCategoryIndex, int iStartPopulationDateIndex,
-                                                                   int iEndPopulationDateIndex, double Alpha[]) const;
+                                                                   int iEndPopulationDateIndex,
+                                                                   const std::vector<double>& vAlpha) const;
     count_t                             GetNumCategoryCases(int iCategoryIndex) const;
     count_t                             GetNumCategoryControls(int iCategoryIndex) const;
     int                                 GetNumPopulationCategories() const {return (int)gvPopulationCategories.size();}
@@ -99,7 +100,7 @@ class PopulationData {
     void                                GetPopUpLowIndex(Julian* pDates, int nDateIndex,
                                                          int nMaxDateIndex, int& nUpIndex, int& nLowIndex) const;
     measure_t                           GetRiskAdjustedPopulation(measure_t& dMeanPopulation, tract_t t,
-                                                                  int iPopulationDateIndex, double Risk[]) const;
+                                                                  int iPopulationDateIndex, const std::vector<double>& vRisk) const;
     int                                 LowerPopIndex(Julian Date) const;                                                                  
     int                                 MakePopulationCategory(StringParser& Parser, unsigned int iScanOffset, BasePrint& PrintDirection);
     void                                ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, BasePrint& PrintDirection) const;
