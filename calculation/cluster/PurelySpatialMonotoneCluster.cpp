@@ -45,7 +45,6 @@ CPSMonotoneCluster * CPSMonotoneCluster::Clone() const {
 /** initialize cluster data */
 void CPSMonotoneCluster::Initialize(tract_t nCenter=0) {
   CCluster::Initialize(nCenter);
-  m_nClusterType = PURELYSPATIALMONOTONE;
   m_bRatioSet = false;
   for (int i=0; i<m_nMaxCircles; i++) {
      m_pCasesList[i]         = 0;
@@ -117,7 +116,6 @@ CPSMonotoneCluster& CPSMonotoneCluster::operator =(const CPSMonotoneCluster& clu
     
       m_bClusterDefined= cluster.m_bClusterDefined;
       m_bRatioSet      = cluster.m_bRatioSet;
-      m_nClusterType   = cluster.m_nClusterType;
       }
    catch (ZdException & x)
       {

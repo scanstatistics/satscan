@@ -30,7 +30,7 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
 
     count_t                     m_nCases;             // Number of cases in cluster
     measure_t                   m_nMeasure;           // Expected count for cluster
-    
+    tract_t                     m_nSteps;             // Number of concentric steps in cluster    
 
     void                AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n);
     void                AddRemainder(count_t nTotalCases, measure_t nTotalMeasure);
@@ -57,7 +57,9 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
     virtual void        DisplaySteps(FILE* fp, char* szSpacesOnLeft);
     virtual void        Initialize(tract_t nCenter);
     void                RemoveRemainder();
+    virtual int         GetClusterType() const {return PURELYSPATIALMONOTONE;}
     tract_t             GetLastCircleIndex() {return m_nSteps-1;};
+    tract_t             GetNumCircles()    {return m_nSteps;}
     virtual tract_t     GetNumTractsInnerCircle() { return m_pLastNeighborList[0]; };
     double              GetRelativeRisk(tract_t nStep, double nMeasureAdjustment);
     double              GetRatio();
