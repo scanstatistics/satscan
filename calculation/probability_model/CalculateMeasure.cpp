@@ -8,6 +8,7 @@
 static FILE* pMResult;
 #endif
 
+/** Calculates and sets non-cumulative measure array. */
 int AssignMeasure(
             const TractHandler  *pTInfo,
             count_t      *Cases[],
@@ -16,9 +17,6 @@ int AssignMeasure(
 	    Julian       StartDate,
             Julian       EndDate,
             Julian*      IntervalStart,
-            bool         bExactTimes,
-            int          nTimeAdjust,
-            double       nTimeAdjPercent,
 	    int          nTimeIntervals,
             int          nIntervalUnits,
   	    long         nIntervalLength,
@@ -63,13 +61,7 @@ int AssignMeasure(
       CalcRisk(pTInfo, &pRisk, pAlpha, iNumCategories, nTracts, nPops, pTotalPop, pTotalCases, pPrintDirection);
       Calcm(pTInfo, &m, pRisk, iNumCategories, nTracts, nPops, pPrintDirection);
       CalcMeasure(pTInfo, pMeasure, m, IntervalDates, StartDate, EndDate, iNumCategories, nTracts, nPops, nTimeIntervals, pTotalMeasure, pPrintDirection);
-      if (nTimeIntervals>1)
-        if (nTimeAdjust==1)
-          AdjustForDiscreteTimeTrend(pMeasure, Cases, nTracts, nTimeIntervals, pTotalCases, pTotalMeasure);
-        else if (nTimeAdjust==2)
-          AdjustForPercentageTimeTrend(nTimeAdjPercent, nTimeIntervals, nIntervalUnits, nIntervalLength,
-                                       nTracts, pTotalMeasure, pMeasure, pPrintDirection);
-    
+
       free(pAlpha);  pAlpha = 0;
       free(pRisk);   pRisk = 0;
 
@@ -96,33 +88,13 @@ int AssignMeasure(
        } /* endfor tract*/
 #endif
 
-
-/**** Replaces the raw Measure array with a cummulitative one **************/
-#if 0
-    for(i=0;i<nTimeIntervals;i++)pPrintDirection->SatScanPrintf("%10.6f\t",(*pMeasure)[i][0]);
-      printf("\n");
-#endif
-  for(tract=0; tract<NumTracts; tract++)
-     for(i=nTimeIntervals-2;i>=0;i--)
-        (*pMeasure)[i][tract]=(*pMeasure)[i+1][tract]+(*pMeasure)[i][tract];
-#if 0
-    for(i=0;i<nTimeIntervals;i++)pPrintDirection->SatScanPrintf("%10.2f\t",(*pMeasure)[i][0]);
-        printf("\n");
-#endif
-
 #ifdef DEBUGMEASURE
     fprintf(pMResult, "Totals: \n\n");
       fprintf(pMResult, "   Cases      = %li\n   Measure    = %f\n   Population = %f\n", *pTotalCases, *pTotalMeasure, *pTotalPop);
   fclose(pMResult);
 #endif
 
-    /* Bug check, to ensure that TotalCases=TotalMeasure */
-     if (fabs(*pTotalCases-*pTotalMeasure)>0.0001)
-       ZdGenerateException("Total measure '%8.61f' is not equal to the total number of cases '%ld'.",
-                           "AssignMeasure()", *pTotalMeasure, *pTotalCases);
-
       pPrintDirection->SatScanPrintf("\n");
-
       free(IntervalDates);
       }
    catch (ZdException & x)
