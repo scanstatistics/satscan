@@ -207,7 +207,7 @@ bool DataStreamHandler::ParseCovariates(PopulationData & thePopulation, int& iCa
 
 /** Randomizes data of passed collection of simulation streams in concert with
     real data through passed collection of passed randomizers. */
-void DataStreamHandler::RandomizeIsolatedData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const {
+void DataStreamHandler::RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const {
   for (size_t t=0; t < gvDataStreams.size(); ++t)
      Container[t]->RandomizeData(*gvDataStreams[t], *SimDataContainer[t], iSimulationNumber);
 }

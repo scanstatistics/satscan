@@ -19,10 +19,9 @@ class CPurelyTemporalData : public CSaTScanData {
     virtual void        DisplaySimCases(FILE* pFile);
     virtual void        FindNeighbors(bool bSimulations) {/** no action - all locations included */}
     virtual tract_t     GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
-    virtual void        RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber);
-    virtual void        RandomizeIsolatedData(RandomizerContainer_t& RandomizerContainer,
-                                              SimulationDataContainer_t& SimDataContainer,
-                                              unsigned int iSimulationNumber) const;
+    virtual void        RandomizeData(RandomizerContainer_t& RandomizerContainer,
+                                      SimulationDataContainer_t& SimDataContainer,
+                                      unsigned int iSimulationNumber) const;
     virtual void        ReadDataFromFiles();
 };
 

@@ -411,26 +411,18 @@ void CSaTScanData::Init() {
   gtTotalPopulation=0;
 }
 
-/** invokes randomization on all stream randomization data */ 
-void CSaTScanData::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
+/** Randomizes collection of simulation data in concert with passed collection
+    of randomizers. This method for creating randomized data is primarily
+    utilized in conjunction with threaded simulations. */
+/** Randomizes collection of simulation data in concert with passed collection of randomizers. */
+void CSaTScanData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
+                                 SimulationDataContainer_t& SimDataContainer,
+                                 unsigned int iSimulationNumber) const {
   try {
-    gpDataStreams->RandomizeData(SimDataContainer, iSimulationNumber);
+    gpDataStreams->RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CSaTScanData");
-    throw;
-  }
-}
-
-/** Randomizes collection of simulation data in concert with passed collection of randomizers. */
-void CSaTScanData::RandomizeIsolatedData(RandomizerContainer_t& RandomizerContainer,
-                                         SimulationDataContainer_t& SimDataContainer,
-                                         unsigned int iSimulationNumber) const {
-  try {
-    gpDataStreams->RandomizeIsolatedData(RandomizerContainer, SimDataContainer, iSimulationNumber);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("RandomizeIsolatedData()","CSaTScanData");
     throw;
   }
 }

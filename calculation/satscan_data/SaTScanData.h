@@ -136,10 +136,9 @@ class CSaTScanData {
     const Julian                              * GetTimeIntervalStartTimes() const {return m_pIntervalStartTimes;}
     inline const TractHandler                 * GetTInfo() const { return gpTInfo;}
     double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}
-    virtual void                                RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber);
-    virtual void                                RandomizeIsolatedData(RandomizerContainer_t& RandomizerContainer,
-                                                                      SimulationDataContainer_t& SimDataContainer,
-                                                                      unsigned int iSimulationNumber) const;
+    virtual void                                RandomizeData(RandomizerContainer_t& RandomizerContainer,
+                                                              SimulationDataContainer_t& SimDataContainer,
+                                                              unsigned int iSimulationNumber) const;
     bool                                        ReadBernoulliData();
     bool                                        ReadCoordinatesFile();
     virtual void                                ReadDataFromFiles();

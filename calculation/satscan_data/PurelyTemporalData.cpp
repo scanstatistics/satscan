@@ -84,27 +84,16 @@ tract_t CPurelyTemporalData::GetNeighbor(int iEllipse, tract_t t, unsigned int n
   return 0;
 }
 
-void CPurelyTemporalData::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
+/** Randomizes collection of simulation data in concert with passed collection of randomizers. */
+void CPurelyTemporalData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
+                                        SimulationDataContainer_t& SimDataContainer,
+                                        unsigned int iSimulationNumber) const {
   try {
-    CSaTScanData::RandomizeData(SimDataContainer, iSimulationNumber);
+    CSaTScanData::RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
     gpDataStreams->SetPurelyTemporalSimulationData(SimDataContainer);
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CPurelyTemporalData");
-    throw;
-  }
-}
-
-/** Randomizes collection of simulation data in concert with passed collection of randomizers. */
-void CPurelyTemporalData::RandomizeIsolatedData(RandomizerContainer_t& RandomizerContainer,
-                                                SimulationDataContainer_t& SimDataContainer,
-                                                unsigned int iSimulationNumber) const {
-  try {
-    CSaTScanData::RandomizeIsolatedData(RandomizerContainer, SimDataContainer, iSimulationNumber);
-    gpDataStreams->SetPurelyTemporalSimulationData(SimDataContainer);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("RandomizeIsolatedData()","CPurelyTemporalData");
     throw;
   }
 }

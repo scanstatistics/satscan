@@ -15,10 +15,9 @@ class CSpaceTimeData : public CSaTScanData {
     CSpaceTimeData(const CParameters* pParameters, BasePrint *pPrintDirection);
     virtual ~CSpaceTimeData();
 
-    virtual void        RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber);
-    virtual void        RandomizeIsolatedData(RandomizerContainer_t& RandomizerContainer,
-                                              SimulationDataContainer_t& SimDataContainer,
-                                              unsigned int iSimulationNumber) const;
+    virtual void        RandomizeData(RandomizerContainer_t& RandomizerContainer,
+                                      SimulationDataContainer_t& SimDataContainer,
+                                      unsigned int iSimulationNumber) const;
 };
 
 //**************************************************************************

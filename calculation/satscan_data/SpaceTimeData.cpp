@@ -37,31 +37,18 @@ void CSpaceTimeData::CalculateMeasure(RealDataStream & thisStream) {
   }
 }
 
-void CSpaceTimeData::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
+/** Randomizes collection of simulation data in concert with passed collection of randomizers. */
+void CSpaceTimeData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
+                                   SimulationDataContainer_t& SimDataContainer,
+                                   unsigned int iSimulationNumber) const {
   try {
-    CSaTScanData::RandomizeData(SimDataContainer, iSimulationNumber);
+    CSaTScanData::RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
     if (m_pParameters->GetIncludePurelyTemporalClusters())
       for (size_t t=0; t < SimDataContainer.size(); ++t)
         SimDataContainer[t]->SetPTCasesArray();
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CSpaceTimeData");
-    throw;
-  }
-}
-
-/** Randomizes collection of simulation data in concert with passed collection of randomizers. */
-void CSpaceTimeData::RandomizeIsolatedData(RandomizerContainer_t& RandomizerContainer,
-                                           SimulationDataContainer_t& SimDataContainer,
-                                           unsigned int iSimulationNumber) const {
-  try {
-    CSaTScanData::RandomizeIsolatedData(RandomizerContainer, SimDataContainer, iSimulationNumber);
-    if (m_pParameters->GetIncludePurelyTemporalClusters())
-      for (size_t t=0; t < SimDataContainer.size(); ++t)
-        SimDataContainer[t]->SetPTCasesArray();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("RandomizeIsolatedData()","CSpaceTimeData");
     throw;
   }
 }

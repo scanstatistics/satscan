@@ -108,9 +108,12 @@ void CSVTTData::DisplaySimCases(FILE* pFile) {
 //                gpDataStreams->GetStream(0/*for now*/).GetPTSimCasesArray(), "SimCases_TotalByTimeInt");
 }
 
-void CSVTTData::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
+/** Randomizes collection of simulation data in concert with passed collection of randomizers. */
+void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
+                              SimulationDataContainer_t& SimDataContainer,
+                              unsigned int iSimulationNumber) const {
   try {
-    CSaTScanData::RandomizeData(SimDataContainer, iSimulationNumber);
+    CSaTScanData::RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
     for (size_t t=0; t < SimDataContainer.size(); ++t) {
        SimDataContainer[t]->SetCaseArrays();
        //calculate time trend for entire randomized data set
@@ -127,32 +130,6 @@ void CSVTTData::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsig
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CSVTTData");
-    throw;
-  }
-}
-
-/** Randomizes collection of simulation data in concert with passed collection of randomizers. */
-void CSVTTData::RandomizeIsolatedData(RandomizerContainer_t& RandomizerContainer,
-                                      SimulationDataContainer_t& SimDataContainer,
-                                      unsigned int iSimulationNumber) const {
-  try {
-    CSaTScanData::RandomizeIsolatedData(RandomizerContainer, SimDataContainer, iSimulationNumber);
-    for (size_t t=0; t < SimDataContainer.size(); ++t) {
-       SimDataContainer[t]->SetCaseArrays();
-       //calculate time trend for entire randomized data set
-       //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
-       //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
-       //      has not been decided yet.
-       SimDataContainer[t]->GetTimeTrend().CalculateAndSet(gpDataStreams->GetStream(t).GetPTCasesArray(),
-                                                           gpDataStreams->GetStream(t).GetPTMeasureArray(),
-                                                           m_nTimeIntervals,
-                                                           m_pParameters->GetTimeTrendConvergence());
-       //QUESTION: Should the purely temporal case array passed to CalculateAndSet() be from
-       //          the simulated data stream? It doesn't seem to make sense otherwise.
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("RandomizeIsolatedData()","CSVTTData");
     throw;
   }
 }

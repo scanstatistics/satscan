@@ -46,8 +46,7 @@ class DataStreamHandler {
     virtual AbtractDataStreamGateway  * GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const = 0;
     virtual RandomizerContainer_t     & GetRandomizerContainer(RandomizerContainer_t& Container) const = 0;
     virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const = 0;
-    virtual void                        RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) = 0;
-    virtual void                        RandomizeIsolatedData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
+    virtual void                        RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
     virtual bool                        ReadData() = 0;
 
     size_t                              GetNumStreams() const {return gvDataStreams.size();}
