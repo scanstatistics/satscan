@@ -7,7 +7,6 @@
 
 #define PARAMETERS 51
 
-extern const char*      ANALYSIS_HISTORY_FILE;
 extern const char*      YES;
 extern const char*      NO;
 
@@ -65,7 +64,6 @@ extern const char*      ELLIPSE_DUCZMAL_COMPACT_LINE;
 // output files section
 extern const char*      OUTPUT_FILES_SECTION;
 extern const char*      RESULTS_FILE_LINE;
-extern const char*      ANALYSIS_HISTORY_LINE;
 extern const char*      DBASE_CLUSTER_LINE;
 extern const char*      DBASE_AREA_LINE;
 extern const char*      INCLUDE_REL_RISKS_LINE;
@@ -78,14 +76,14 @@ extern const char*      DBASE_LOG_LIKELI;
 enum {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE, COORDFILE, OUTPUTFILE, PRECISION,
       DIMENSION, SPECIALGRID, GRIDFILE, GEOSIZE, STARTDATE, ENDDATE,
       CLUSTERS, EXACTTIMES, INTERVALUNITS, TIMEINTLEN, PURESPATIAL,
-      TIMESIZE, REPLICAS, //ACCEPT, INTRO };
+      TIMESIZE, REPLICAS,
       MODEL, RISKFUNCTION, POWERCALC, POWERX, POWERY,
       TIMETREND, TIMETRENDPERC, PURETEMPORAL, CONTROLFILE, COORDTYPE, SAVESIMLL,
       SEQUENTIAL, SEQNUM, SEQPVAL,
       VALIDATE, OUTPUTRR, ELLIPSES, ESHAPES, ENUMBERS, START_PROSP_SURV,
       OUTPUT_CENSUS_AREAS, OUTPUT_MOST_LIKE_CLUSTERS, CRITERIA_SECOND_CLUSTERS,
       MAX_TEMPORAL_TYPE,MAX_SPATIAL_TYPE, RUN_HISTORY_FILENAME, OUTPUTCLUSTERDBF, OUTPUTAREADBF,
-      RELATIVE_RISK_DBF, LOG_LIKELI_DBF, DUCZMAL_COMPACTNESS};
+      RELATIVE_RISK_DBF, LOG_LIKELI_DBF, DUCZMAL_COMPACTNESS}; //parameters
 enum {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE}; //analysis, clusters
 enum {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION};
 enum {ALLCLUSTERS=0, ALIVECLUSTERS};   // Clusers
@@ -105,7 +103,10 @@ class CParameters
       BasePrint        *gpPrintDirection;         /** where to direct 'console' output */
       bool              gbOutputClusterLevelDBF, gbOutputAreaSpecificDBF,
                         gbRelativeRiskDBF, gbLogLikelihoodDBF;
-      ZdString          gsRunHistoryFilename;
+
+      ZdString          gsRunHistoryFilename;                   /** run history filename */
+      bool              gbLogRunHistory;                        /** indicates whether to log history */
+      
       std::vector<int>  gvDefaultedValues;
       std::string       m_sParametersSourceFileName;            /** parameters source filename */
       float             m_nInitialMaxTemporalClusterSize;       /** initial setting prior to convertion  */
@@ -240,6 +241,7 @@ class CParameters
     const bool          GetDBaseOutputLogLikeli() const { return gbLogLikelihoodDBF; }
     const float         GetInitialMaxTemporalClusterSize() const { return m_nInitialMaxTemporalClusterSize; }
     const TemporalSizeType  GetInitialMaxTemporalClusterSizeType() const { return m_nInitialMaxClusterSizeType; }
+    bool                GetIsLoggingHistory() const {return gbLogRunHistory;}
     const bool          GetOutputClusterLevelDBF() const { return gbOutputClusterLevelDBF; }
     const bool          GetOutputAreaSpecificDBF() const  { return gbOutputAreaSpecificDBF; }
     const std::string & GetOutputFileName() const { return m_sOutputFileName; }
@@ -253,6 +255,7 @@ class CParameters
     void                SetCoordinatesFileName(const char * sCoordinatesFileName, bool bCorrectForRelativePath=false);
     void                SetDBaseOutputRelRisks(bool bOutput) { gbRelativeRiskDBF = bOutput;}
     void                SetDBaseOutputLogLikeli(bool bOutput) { gbLogLikelihoodDBF = bOutput;}
+    void                SetIsLoggingHistory(bool b) {gbLogRunHistory = b;}
     void                SetOutputClusterLevelDBF(bool bOutput)  { gbOutputClusterLevelDBF = bOutput; }
     void                SetOutputAreaSpecificDBF(bool bOutput)  { gbOutputAreaSpecificDBF = bOutput; }
     void                SetOutputFileName(const char * sOutPutFileName, bool bCorrectForRelativePath=false);

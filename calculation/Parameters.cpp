@@ -5,7 +5,6 @@
 
 #define INCLUDE_RUN_HISTORY
 
-const char*      ANALYSIS_HISTORY_FILE  = "AnalysisHistory.dbf";
 const char*      YES                    = "y";
 const char*      NO                     = "n";
 
@@ -58,7 +57,6 @@ const char*      ELLIPSE_DUCZMAL_COMPACT_LINE   = "DuczmalCompactnessCorrection"
 
 const char*      OUTPUT_FILES_SECTION           = "[OutputFiles]";
 const char*      RESULTS_FILE_LINE              = "ResultsFile";
-const char*      ANALYSIS_HISTORY_LINE          = "AnalysisRunHistoryFile";
 const char*      MOST_LIKELY_CLUSTER_LINE       = "MostLikelyClusterEachCentroidASCII";
 const char*      DBASE_CLUSTER_LINE             = "MostLikelyClusterEachCentroidDBase";
 const char*      CENSUS_REPORT_CLUSTERS_LINE    = "CensusAreasReportedClustersASCII";
@@ -359,9 +357,6 @@ void CParameters::CheckOutputFileIniSection(ZdIniFile& file) {
        if ( pSection->FindKey(RESULTS_FILE_LINE) == -1 ) {
             pSection->AddLine(RESULTS_FILE_LINE, "");
       }
-      if ( pSection->FindKey(ANALYSIS_HISTORY_LINE) == -1 ) {
-            pSection->AddLine(ANALYSIS_HISTORY_LINE, "");
-      }
       if ( pSection->FindKey(MOST_LIKELY_CLUSTER_LINE) == -1 ) {
             pSection->AddComment(" output most likely clusters in ASCII format (y/n)");
             pSection->AddLine(MOST_LIKELY_CLUSTER_LINE, "");
@@ -587,6 +582,7 @@ void CParameters::copy(const CParameters &rhs) {
     gbRelativeRiskDBF           = rhs.gbRelativeRiskDBF; 
     gbLogLikelihoodDBF          = rhs.gbLogLikelihoodDBF;
     gsRunHistoryFilename        = rhs.gsRunHistoryFilename;
+    gbLogRunHistory             = rhs.gbLogRunHistory;
 
     m_nInitialMaxClusterSizeType = rhs.m_nInitialMaxClusterSizeType;
     m_nInitialMaxTemporalClusterSize = rhs.m_nInitialMaxTemporalClusterSize;
@@ -1151,7 +1147,6 @@ void CParameters::ReadOutputFileSectionFromIni(ZdIniFile& file) {
       m_bSaveSimLogLikelihoods = ValueIsYes(pSection->GetLine(pSection->FindKey(SAVE_SIM_LLRS))->GetValue());
       m_bOutputCensusAreas = ValueIsYes(pSection->GetLine(pSection->FindKey(CENSUS_REPORT_CLUSTERS_LINE))->GetValue());
       m_bMostLikelyClusters = ValueIsYes(pSection->GetLine(pSection->FindKey(MOST_LIKELY_CLUSTER_LINE))->GetValue());
-      gsRunHistoryFilename = pSection->GetLine(pSection->FindKey(ANALYSIS_HISTORY_LINE))->GetValue();
       gbOutputClusterLevelDBF = ValueIsYes(pSection->GetLine(pSection->FindKey(DBASE_CLUSTER_LINE))->GetValue());
       gbOutputAreaSpecificDBF = ValueIsYes(pSection->GetLine(pSection->FindKey(DBASE_AREA_LINE))->GetValue());
       m_bOutputRelRisks = ValueIsYes(pSection->GetLine(pSection->FindKey(INCLUDE_REL_RISKS_LINE))->GetValue());
@@ -1233,6 +1228,8 @@ void CParameters::ReadScanningLineParameterFile(const char * sParameterFileName)
           gvDefaultedValues.push_back(iLinesRead);
           ++iLinesRead;
       }
+      //run history no longer stored in parameter file, need to insure that
+      //it is not set as defaulted.
    }
    //Write as ini format.
    ParametersFile.Close();
@@ -1378,7 +1375,6 @@ void CParameters::SaveOutputFileSection(ZdIniFile& file) {
    try {
       ZdIniSection* pSection = file.GetSection(OUTPUT_FILES_SECTION);
       pSection->GetLine(pSection->FindKey(RESULTS_FILE_LINE))->SetValue(m_sOutputFileName.c_str());
-      pSection->GetLine(pSection->FindKey(ANALYSIS_HISTORY_LINE))->SetValue(gsRunHistoryFilename.GetCString());
       pSection->SetString(CENSUS_REPORT_CLUSTERS_LINE, m_bOutputCensusAreas ? YES : NO);
       pSection->SetString(DBASE_CLUSTER_LINE, gbOutputClusterLevelDBF ? YES : NO);
       pSection->SetString(MOST_LIKELY_CLUSTER_LINE, m_bMostLikelyClusters ? YES : NO);
@@ -1500,6 +1496,7 @@ void CParameters::SetDefaults() {
   gbRelativeRiskDBF           = false;
   gbLogLikelihoodDBF          = false;
   gsRunHistoryFilename        = "";
+  gbLogRunHistory             = true;  
 
   m_nModel                 = POISSON;
   m_nRiskFunctionType      = STANDARDRISK;
@@ -1702,8 +1699,8 @@ void CParameters::SetParameter(int nParam, ZdString & szParam) {
       case CRITERIA_SECOND_CLUSTERS  : nScanCount=sscanf(szParam.GetCString(), "%i", &m_iCriteriaSecondClusters); break;
       case MAX_TEMPORAL_TYPE         : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nMaxClusterSizeType); break;
       case MAX_SPATIAL_TYPE          : nScanCount=sscanf(szParam.GetCString(), "%i", &m_nMaxSpatialClusterSizeType); break;
-      case RUN_HISTORY_FILENAME      : szParam.Deblank();
-                                       gsRunHistoryFilename = szParam.GetCString();
+      case RUN_HISTORY_FILENAME      : //Run History no longer scanned from parameters file. Set through
+                                       //setters/getters and copy() only.
                                        nScanCount=1; break;
       case OUTPUTCLUSTERDBF          : nScanCount=sscanf(szParam.GetCString(), "%i", &nTemp);
                                        gbOutputClusterLevelDBF = (nTemp ? true : false); break;
@@ -2071,8 +2068,11 @@ bool CParameters::ValidateParameters() {
       m_nDimension  = 0;
 
       // if no filename defined in the parameters file then we'll use the current working directory
-      if( !ValidHistoryFileName(gsRunHistoryFilename) )
-         gsRunHistoryFilename << ZdString::reset << ZdFileName(_argv[0]).GetLocation() << ANALYSIS_HISTORY_FILE;
+      if (! ValidHistoryFileName(gsRunHistoryFilename)) {
+        gpPrintDirection->SatScanPrintWarning("Run history file \"%s\" is not accessible.\nAnalysis history will not be recorded.\n\n",
+                                              gsRunHistoryFilename.GetCString());
+        gbLogRunHistory = false;
+      }
    }
    catch (ZdException & x) {
       fclose(pFile);
