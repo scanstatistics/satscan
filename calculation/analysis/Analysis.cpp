@@ -201,8 +201,7 @@ void CAnalysis::AllocateTopClusterList() {
 void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
    FILE *fpMCL = 0;
    char *szTID;
-   float fExpectedCases, fRelativeRisk;
-   float fPVal;
+   float fExpectedCases, fRelativeRisk, fPVal;
    char sStartDate[15], sEndDate[15];
    auto_ptr<stsClusterLevelDBF> pDBFClusterReport;
 
@@ -212,7 +211,8 @@ void CAnalysis::CreateGridOutputFile(const long& lReportHistoryRunNumber) {
       if(m_pParameters->GetOutputClusterLevelDBF())
          pDBFClusterReport.reset(new stsClusterLevelDBF(lReportHistoryRunNumber, GetCoordinateType(),
                                                         m_pParameters->m_szOutputFilename, m_pParameters->m_nDimension,
-                                                        m_pParameters->m_nReplicas > 99));
+                                                        m_pParameters->m_nReplicas > 99,
+                                                        m_pParameters->m_nNumEllipses > 0));
 
       for (int i = 0; i < m_nClustersRetained; ++i) {
       	 if (m_pParameters->m_bMostLikelyClusters) {
