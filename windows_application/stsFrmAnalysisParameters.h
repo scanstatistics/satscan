@@ -112,6 +112,8 @@ class TfrmAnalysis : public TForm {
         TGroupBox *grpB2;
         TCheckBox *chkDbaseFile1;
         TCheckBox *chkDbaseFile2;
+        TRadioButton *rdoSpatialPercentage;
+        TRadioButton *rdoSpatialDistance;
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall rgPrecisionTimesClick(TObject *Sender);
         void __fastcall btnCaseBrowseClick(TObject *Sender);
@@ -159,6 +161,8 @@ class TfrmAnalysis : public TForm {
         void __fastcall edtGridFileNameChange(TObject *Sender);
         void __fastcall edtResultFileChange(TObject *Sender);
         void __fastcall cboCriteriaSecClustersChange(TObject *Sender);
+        void __fastcall rdoSpatialPercentageClick(TObject *Sender);
+        void __fastcall rdoSpatialDistanceClick(TObject *Sender);
 
   private:	// User declarations
     CParameters       * gpParams;
@@ -193,6 +197,7 @@ class TfrmAnalysis : public TForm {
     bool                DetermineIfDbfExtension(AnsiString sFileName);
     void                EnableAdditionalAsciiFileOptions();
     void                EnableAnalysisType(bool bValue);
+    void                EnablePopulationFileInput();
     void                EnablePrecision();
     void                EnableProspStartDate();
     void                EnableScanningWindow();
@@ -210,6 +215,7 @@ class TfrmAnalysis : public TForm {
     void                SetupPopFileFieldDescriptors();
     void                SetupInterface();
     bool                ValidateInputFiles();
+    bool                ValidateSpatialClusterSize();
     bool                ValidateTemoralClusterSize();
     bool                VerifyUnitAndLength();
 

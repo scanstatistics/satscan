@@ -524,20 +524,14 @@ bool TfrmAnalysis::CheckReplicas(int iReplicas) {
 //------------------------------------------------------------------------------
 bool TfrmAnalysis::CheckScanningWindowParams() {
   bool bParamsOk = true;
-  double dValue, dTimeBetween;
 
   try {
     //validate maximum spatial cluster size
-    if (edtMaxClusterSize->Enabled) {
-      dValue = atof(edtMaxClusterSize->Text.c_str());
-      if (!(dValue > 0.0 && dValue <= 50.0)) {
-        MessageBox(NULL, "Invalid maximum geographic size specified.", "Parameter Error" , MB_OK);
-        bParamsOk = false;
-      }
-    }
+    bParamsOk = ValidateSpatialClusterSize();
 
     //validate maximum temporal cluster size
-    bParamsOk = ValidateTemoralClusterSize();
+    if (bParamsOk)
+      bParamsOk = ValidateTemoralClusterSize();
   }
   catch (SSException & x) {
     x.AddCallpath("CheckScanningWindowParams()", "TfrmAnalysis");
@@ -725,6 +719,7 @@ void TfrmAnalysis::CreateTXDFile(const ZdFileName& sFileName, const ZdVector<con
 void TfrmAnalysis::DataExchange() {
   try {
     EnableScanningWindow();
+    EnablePopulationFileInput();
     EnableTimeTrendAdj();
     EnableTimeIntervals();
     EnableProspStartDate();
@@ -809,21 +804,7 @@ void __fastcall TfrmAnalysis::edtLogPerYearExit(TObject *Sender) {
 // Validates value entered for Cluster size
 //------------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::edtMaxClusterSizeExit(TObject *Sender) {
-  double dValue = atof(edtMaxClusterSize->Text.c_str());
-
-  try {
-    if ( ! (dValue > 0.0 && dValue <= 50.0)) {
-      MessageBox(NULL, "Invalid maximum geographic size specified.", "Parameter Error" , MB_OK);
-      PageControl1->ActivePage = tbScanningWindow;
-      edtMaxClusterSize->SetFocus();
-    }
-    else
-      gpParams->m_nMaxGeographicClusterSize = atof(edtMaxClusterSize->Text.c_str());
-  }
-  catch (SSException & x) {
-    x.AddCallpath("edtMaxClusterSizeExit()", "TfrmAnalysis");
-    DisplayException(this, x);
-  }
+  gpParams->m_nMaxGeographicClusterSize = atof(edtMaxClusterSize->Text.c_str());
 }
 //------------------------------------------------------------------------------
 // Validates Number of Monte Carlo reps value
@@ -844,22 +825,7 @@ void __fastcall TfrmAnalysis::edtMontCarloRepsExit(TObject *Sender) {
 //  Validates value entered for Maximum Temporal Cluster Size
 //------------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::edtMaxTemporalClusterSizeExit(TObject *Sender) {
-  double dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
-
-  try {
-    ValidateTemoralClusterSize();
-    if ( ! (dValue > 0.0 && dValue <= 90.0)) {
-      MessageBox(NULL, "Invalid maximum time size specified.", "Parameter Error" , MB_OK);
-      PageControl1->ActivePage = tbScanningWindow;
-      edtMaxTemporalClusterSize->SetFocus();
-    }
-    else
-      gpParams->m_nMaxTemporalClusterSize = atof(edtMaxTemporalClusterSize->Text.c_str());
-  }
-  catch (SSException & x) {
-    x.AddCallpath("edtMaxTemporalClusterSizeExit()", "TfrmAnalysis");
-    DisplayException(this, x);
-  }
+  gpParams->m_nMaxTemporalClusterSize = atof(edtMaxTemporalClusterSize->Text.c_str());
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::edtProspDayExit(TObject *Sender) {
@@ -976,6 +942,14 @@ void TfrmAnalysis::EnableAnalysisType(bool bValue) {
    ChildControl = rgTypeAnalysis->Controls[3];  //Prospective Space-Time
    ChildControl->Enabled = bValue;
 }
+/** Enables controls which permit user to specify population file. */
+void TfrmAnalysis::EnablePopulationFileInput()
+{
+  edtPopFileName->Enabled = ((rgProbability->ItemIndex == SPACETIMEPERMUTATION && rdoSpatialDistance->Checked)/*percentage*/ ||
+                             rgProbability->ItemIndex == BERNOULLI ? false : true);;
+  btnPopBrowse->Enabled = edtPopFileName->Enabled;
+}
+
 //---------------------------------------------------------------------------
 // Precision is enabled or disabled depending on the analysis type !!!
 //---------------------------------------------------------------------------
@@ -1053,6 +1027,8 @@ void TfrmAnalysis::EnableScanningWindow() {
   bool bTemporalNotCountingProspST = (gpParams->m_nAnalysisType == PURELYTEMPORAL) || (gpParams->m_nAnalysisType == SPACETIME);
 
   edtMaxClusterSize->Enabled =    bSpacial;
+  rdoSpatialPercentage->Enabled = bSpacial;
+  rdoSpatialDistance->Enabled = bSpacial;
   edtMaxClusterSize->Color = (bSpacial ? clWindow : clInactiveBorder);
   chkInclPurTempClust->Enabled =  (bSpacial && gpParams->m_nModel != SPACETIMEPERMUTATION && bTemporal);
 
@@ -1294,6 +1270,15 @@ void __fastcall TfrmAnalysis::rgClustersToIncludeClick(TObject *Sender) {
 void __fastcall TfrmAnalysis::rgCoordinatesClick(TObject *Sender) {
   try {
     gpParams->m_nCoordType = rgCoordinates->ItemIndex;
+    switch (rgCoordinates->ItemIndex)
+       {
+       case 0  : rdoSpatialDistance->Caption = "Distance (in kilometers)";
+                 break;
+       case 1  : rdoSpatialDistance->Caption = "Distance (data defined units)";
+                 break;
+       default : SSException::Generate("Unknown coordinates radio button index: \"%i\".",
+                                       "rgCoordinatesClick()", rgCoordinates->ItemIndex);
+       }
     DataExchange();
   }
   catch (SSException & x) {
@@ -1403,10 +1388,28 @@ void __fastcall TfrmAnalysis::rgProbabilityClick(TObject *Sender) {
     //enable buttons based on selected model
     rgTypeAnalysis->Controls[0]->Enabled = ( rgProbability->ItemIndex == SPACETIMEPERMUTATION ? false : true );
     rgTypeAnalysis->Controls[1]->Enabled = ( rgProbability->ItemIndex == SPACETIMEPERMUTATION ? false : true );
-    edtPopFileName->Enabled = ( rgProbability->ItemIndex == SPACETIMEPERMUTATION || rgProbability->ItemIndex == BERNOULLI ? false : true );
-    btnPopBrowse->Enabled = ( rgProbability->ItemIndex == SPACETIMEPERMUTATION || rgProbability->ItemIndex == BERNOULLI ? false : true );
+    EnablePopulationFileInput();
     edtControlFileName->Enabled = ( rgProbability->ItemIndex == SPACETIMEPERMUTATION || rgProbability->ItemIndex == POISSON ? false : true );;
     btnControlBrowse->Enabled = ( rgProbability->ItemIndex == SPACETIMEPERMUTATION || rgProbability->ItemIndex == POISSON ? false : true );
+    // indicate that for Space-Time Permutation model, max temporal clusters size is 50.
+    if (rgProbability->ItemIndex == SPACETIMEPERMUTATION)
+      {
+      rdoPercentageTemproal->Caption = "Percentage (<= 50%)";
+      if (atof(edtMaxTemporalClusterSize->Text.c_str()) > 50)
+        {
+        edtMaxTemporalClusterSize->Text = "50";
+        gpParams->m_nMaxTemporalClusterSize = 50;
+        if (edtMaxTemporalClusterSize->Enabled)
+          {
+          string sMessage;
+          sMessage = "For analyses using a Space-Time Permutation model, the maximum temporal cluster size is \%50.\n";
+          sMessage += "Please verify this setting on the  Scanning Window tab.";
+          MessageBox(NULL, sMessage.c_str(), "Notification" , MB_OK);
+          }
+        }
+      }
+    else
+      rdoPercentageTemproal->Caption = "Percentage (<= 90%)";
     if ( rgProbability->ItemIndex == SPACETIMEPERMUTATION && !( rgTypeAnalysis->ItemIndex + 1  == SPACETIME || rgTypeAnalysis->ItemIndex + 1 == PROSPECTIVESPACETIME ) )
       //Space-Time Permutation model only valid for space-time analysis types.
       //If analysis isn't space-time, then set to PROSPECTIVESPACETIME by default.
@@ -1709,9 +1712,12 @@ void TfrmAnalysis::SetupInterface() {
     edtMaxClusterSize->Text = gpParams->m_nMaxGeographicClusterSize;
     chkInclPurTempClust->Checked = gpParams->m_bIncludePurelyTemporal;
     edtMaxTemporalClusterSize->Text = gpParams->m_nMaxTemporalClusterSize;
-    rdoPercentageTemproal->Checked = gpParams->m_nMaxClusterSizeType != TIMETYPE;
+    rdoPercentageTemproal->Checked = gpParams->m_nMaxClusterSizeType == PERCENTAGETYPE;
     rdoTimeTemproal->Checked = gpParams->m_nMaxClusterSizeType == TIMETYPE;
     chkIncludePurSpacClust->Checked = gpParams->m_bIncludePurelySpatial;
+    rdoSpatialPercentage->Checked = gpParams->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE;
+    rdoSpatialDistance->Checked = gpParams->m_nMaxSpatialClusterSizeType == DISTANCETYPE;
+    EnablePopulationFileInput();
 
     //***************** check this code ******************************
     rgClustersToInclude->ItemIndex = (gpParams->m_bAliveClustersOnly ? 1:0);  // IS THIS RETURNING THE RIGHT INDEX OR SHOULD I SWITCH IT AROUND ???
@@ -1875,30 +1881,57 @@ bool TfrmAnalysis::ValidateParams() {
   return bDataOk;
 }
 
+bool TfrmAnalysis::ValidateSpatialClusterSize() {
+  double dValue = atof(edtMaxClusterSize->Text.c_str());
+  bool   bOkParams=true;
+
+  try {
+    if (! edtMaxClusterSize->Text.Length()) {
+      PageControl1->ActivePage = tbScanningWindow;
+      edtMaxClusterSize->SetFocus();
+      SSException::GenerateNotification("Please specify maximum geographic size.", "ValidateSpatialClusterSize()");
+    }
+
+    if (!(dValue > 0.0 && dValue <= 50.0) && rdoSpatialPercentage->Checked) {
+      SSException::GenerateNotification("Please specify valid maximum geographic size between %d - %d.",
+                                        "ValidateSpatialClusterSize()", 0, 50);
+      PageControl1->ActivePage = tbScanningWindow;
+      edtMaxClusterSize->SetFocus();
+    }
+    else
+      gpParams->m_nMaxGeographicClusterSize = atof(edtMaxClusterSize->Text.c_str());
+  }
+  catch (SSException & x) {
+    x.AddCallpath("ValidateSpatialClusterSize()", "TfrmAnalysis");
+    bOkParams = false;
+    MessageBox( NULL, x.GetErrorMessage(), "Notification", MB_OK );
+  }
+  return bOkParams;
+}
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 bool TfrmAnalysis::ValidateTemoralClusterSize() {
   bool          bParamsOk = true;
-  double        dValue, dTimeBetween;
+  float         dValue, dTimeBetween, dMaxValue;
   AnsiString    sMessage;
 
   try {
     if (edtMaxTemporalClusterSize->Enabled) {
       if (rdoPercentageTemproal->Checked) {
+        dMaxValue = (rgProbability->ItemIndex == SPACETIMEPERMUTATION ? 50 : 90);
         dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
-        if (!(dValue > 0.0 && dValue <= 90.0)) {
-          MessageBox(NULL, "Invalid maximum time size specified.", "Parameter Error" , MB_OK);
-          bParamsOk = false;
-        }
+        if (!(dValue > 0.0 && dValue <= dMaxValue))
+          SSException::GenerateNotification("Please specify valid maximum time size between %d - %.0f", "ValidateTemoralClusterSize()", 0, dMaxValue);
       }
       else if (rdoTimeTemproal->Checked) {
-         if (atof(edtUnitLength->Text.c_str()) <= atof(edtMaxTemporalClusterSize->Text.c_str())) {
+        dMaxValue = 90; 
+        if (atof(edtUnitLength->Text.c_str()) <= atof(edtMaxTemporalClusterSize->Text.c_str())) {
           dTimeBetween = TimeBetween(CharToJulian(gpParams->m_szStartDate),CharToJulian(gpParams->m_szEndDate),gpParams->m_nIntervalUnits);
           dValue = atof(edtMaxTemporalClusterSize->Text.c_str());
-          if (dTimeBetween <= 0 || dValue > dTimeBetween*.9) {
-            MessageBox(NULL, "Maximum temporal cluster size must be less than 90% of duration of study period.", "Parameter Error" , MB_OK);
-            bParamsOk = false;
-          }
+          if (dTimeBetween <= 0 || dValue > dTimeBetween*(dMaxValue/100))
+            SSException::GenerateNotification("Maximum temporal cluster size must be less than %d of duration of study period.",
+                                              "ValidateTemoralClusterSize()", dMaxValue);
           if (floor(dValue/dTimeBetween*100) < 1) {
             sMessage = "Invalid maximum temoral cluster size specified.\nWith study period spanning from year ";
             sMessage += gpParams->m_szStartDate;
@@ -1913,30 +1946,24 @@ bool TfrmAnalysis::ValidateTemoralClusterSize() {
             if (rbUnitDay->Checked)
               sMessage += " days(s) ";
             sMessage += " is less than 1 percent of study period.";
-
-            MessageBox(NULL, sMessage.c_str(), "Parameter Error" , MB_OK);
-            bParamsOk = false;
+            SSException::GenerateNotification(sMessage.c_str(), "ValidateTemoralClusterSize()");
           }
         }
-        else {
-          MessageBox(NULL, "Maximum temporal cluster size must be greater than interval length.", "Parameter Error" , MB_OK);
-          bParamsOk = false;
-        }
+        else
+          SSException::GenerateNotification("Maximum temporal cluster size must be greater than interval length.",
+                                            "ValidateTemoralClusterSize()");
       }
-      else {
-        MessageBox(NULL, "Type specified as neither percentage nor time.", "Parameter Error" , MB_OK);
-        bParamsOk = false;
-      }
-    }
-
-    if (! bParamsOk) {
-      PageControl1->ActivePage = tbScanningWindow;
-      edtMaxTemporalClusterSize->SetFocus();
+      else
+        SSException::GenerateNotification("Type specified as neither percentage nor time.",
+                                            "ValidateTemoralClusterSize()");
     }
   }
   catch (SSException & x) {
     x.AddCallpath("ValidateTemoralClusterSize()", "TfrmAnalysis");
-    throw;
+    bParamsOk = false;
+    PageControl1->ActivePage = tbScanningWindow;
+    edtMaxTemporalClusterSize->SetFocus();
+    MessageBox( NULL, x.GetErrorMessage(), "Notification", MB_OK );
   }
   return bParamsOk;
 }
@@ -1968,6 +1995,28 @@ void __fastcall TfrmAnalysis::edtResultFileChange(TObject *Sender){
 
 void __fastcall TfrmAnalysis::cboCriteriaSecClustersChange(TObject *Sender){
    gpParams->m_iCriteriaSecondClusters = cboCriteriaSecClusters->ItemIndex;
+}
+//---------------------------------------------------------------------------
+void __fastcall TfrmAnalysis::rdoSpatialPercentageClick(TObject *Sender) {
+  try {
+    EnablePopulationFileInput();
+    gpParams->m_nMaxSpatialClusterSizeType = PERCENTAGEOFMEASURETYPE;
+  }
+  catch (SSException & x) {
+    x.AddCallpath("rdoSpatialPercentageClick()", "TfrmAnalysis");
+    DisplayException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
+void __fastcall TfrmAnalysis::rdoSpatialDistanceClick(TObject *Sender){
+  try {
+    EnablePopulationFileInput();
+    gpParams->m_nMaxSpatialClusterSizeType = DISTANCETYPE;
+  }
+  catch (SSException & x) {
+    x.AddCallpath("rdoSpatialDistanceClick()", "TfrmAnalysis");
+    DisplayException(this, x);
+  }
 }
 //---------------------------------------------------------------------------
 

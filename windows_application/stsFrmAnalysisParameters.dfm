@@ -24,7 +24,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbInputFiles
+    ActivePage = tbScanningWindow
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -38,9 +38,9 @@ object frmAnalysis: TfrmAnalysis
       object Label5: TLabel
         Left = 136
         Top = 136
-        Width = 117
+        Width = 144
         Height = 13
-        Caption = '(For Poisson Model Only)'
+        Caption = '(For All Except Bernouli Model)'
       end
       object GroupBox1: TGroupBox
         Left = 16
@@ -479,18 +479,18 @@ object frmAnalysis: TfrmAnalysis
         Left = 16
         Top = 8
         Width = 457
-        Height = 73
+        Height = 87
         Caption = 'Spatial'
         TabOrder = 0
         object Label17: TLabel
           Left = 24
           Top = 22
-          Width = 187
+          Width = 146
           Height = 13
-          Caption = 'Maximum Spatial Cluster Size (<=50%):  '
+          Caption = 'Maximum Spatial Cluster Size:  '
         end
         object edtMaxClusterSize: TEdit
-          Left = 216
+          Left = 184
           Top = 16
           Width = 38
           Height = 21
@@ -503,7 +503,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object chkInclPurTempClust: TCheckBox
           Left = 24
-          Top = 48
+          Top = 57
           Width = 305
           Height = 17
           Caption = 'Include Purely Temporal Cluster (Spatial Size = 100%)'
@@ -511,10 +511,30 @@ object frmAnalysis: TfrmAnalysis
           TabOrder = 1
           OnClick = chkInclPurTempClustClick
         end
+        object rdoSpatialPercentage: TRadioButton
+          Left = 232
+          Top = 14
+          Width = 129
+          Height = 17
+          Caption = 'Percentage (<= 50%)'
+          Checked = True
+          TabOrder = 2
+          TabStop = True
+          OnClick = rdoSpatialPercentageClick
+        end
+        object rdoSpatialDistance: TRadioButton
+          Left = 232
+          Top = 34
+          Width = 186
+          Height = 17
+          Caption = 'Distance (in kilometers)'
+          TabOrder = 3
+          OnClick = rdoSpatialDistanceClick
+        end
       end
       object GroupBox5: TGroupBox
         Left = 16
-        Top = 92
+        Top = 103
         Width = 457
         Height = 89
         Caption = 'Temporal'
@@ -554,7 +574,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 14
           Width = 129
           Height = 17
-          Caption = 'Percentage ( <= 90% )'
+          Caption = 'Percentage (<= 90%)'
           Checked = True
           TabOrder = 2
           TabStop = True
@@ -570,7 +590,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object rgClustersToInclude: TRadioGroup
         Left = 16
-        Top = 192
+        Top = 199
         Width = 457
         Height = 81
         Caption = 'Clusters to Include'
