@@ -96,7 +96,7 @@ void PrintQueue::SetThreshold(long lNewThreshold)
       if (lNewThreshold < 0)//make threshold "virtually infinite"
         lNewThreshold = std::numeric_limits<long>::max();
         
-      while (gOutputLines.size() > lNewThreshold)
+      while (gOutputLines.size() > static_cast<unsigned>(lNewThreshold))
       {
          PrintWarningQualifiedLineToTarget(gOutputLines.front().first, gOutputLines.front().second.c_str());
          gOutputLines.pop_front();
@@ -146,7 +146,7 @@ void PrintQueue::PrintWarningQualifiedLine(bool bIsWarning, const char * s)
    std::pair<bool, std::string> arg_line(bIsWarning, std::string(s));
    try
    {
-      if ((gOutputLines.size() < GetThreshold()) || (GetThreshold() < 0))
+      if ((gOutputLines.size() < static_cast<unsigned>(GetThreshold())) || (GetThreshold() < 0))
       {
          gOutputLines.push_back(arg_line);
       }
