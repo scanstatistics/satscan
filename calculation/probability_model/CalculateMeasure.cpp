@@ -1,6 +1,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 #include "CalculateMeasure.h"
+#include "MultipleDimensionArrayHandler.h"
 
 //#define DEBUGMEASURE 0
 
@@ -8,200 +9,80 @@
 static FILE* pMResult;
 #endif
 
-/** Calculates and sets non-cumulative measure array. */
-int AssignMeasure(
-            const TractHandler  *pTInfo,
-            count_t      *Cases[],
-            tract_t      NumTracts,
-	    Julian       StartDate,
-            Julian       EndDate,
-            Julian*      IntervalStart,
-	    int          nTimeIntervals,
-            int          nIntervalUnits,
-  	    long         nIntervalLength,
-            measure_t*** pMeasure,
-            count_t*     pTotalCases,
-            double*      pTotalPop,
-	    measure_t*   pTotalMeasure,
-            BasePrint *pPrintDirection)
-{
-   int         i, interval, iNumCategories;
-   double*     pAlpha = 0;
-   double*     pRisk = 0;
-   int         nPops;
-   tract_t     nTracts, tract;
-   measure_t** m = 0;
-   const char       *tid;
-   Julian *IntervalDates = 0;
-
-   try
-      {
-      /* Create & Use array of interval dates where last interval date = EndDate */
-      IntervalDates = (unsigned long*)Smalloc((nTimeIntervals+1)*sizeof(Julian), pPrintDirection);
-      memcpy(IntervalDates, IntervalStart, (nTimeIntervals+1)*sizeof(Julian));
-
-      pPrintDirection->SatScanPrintf("Calculating expected number of cases\n");
-
-#ifdef DEBUGMEASURE
-      if ((pMResult = fopen("MEASURE.TXT", "w")) == NULL)
-         SSGenerateException("Error: Cannot open output file.\n","AssignMeasure()");
-#endif
-
-      pTInfo->tiCalculateAlpha(&pAlpha, StartDate, EndDate);
-    
-      nTracts = pTInfo->tiGetNumTracts();
-      nPops   = pTInfo->tiGetNumPopDates();
-      iNumCategories   = pTInfo->tiGetNumCategories();
-
-#ifdef DEBUGMEASURE
-      DisplayInitialData(StartDate, EndDate, IntervalDates, nTimeIntervals, pAlpha, nPops);
-#endif
-
-      CalcRisk(pTInfo, &pRisk, pAlpha, iNumCategories, nTracts, nPops, pTotalPop, pTotalCases, pPrintDirection);
-      Calcm(pTInfo, &m, pRisk, iNumCategories, nTracts, nPops, pPrintDirection);
-      CalcMeasure(pTInfo, pMeasure, m, IntervalDates, StartDate, EndDate, iNumCategories, nTracts, nPops, nTimeIntervals, pTotalMeasure, pPrintDirection);
-
-      free(pAlpha);  pAlpha = 0;
-      free(pRisk);   pRisk = 0;
-
-      for(i=0;i<nPops;i++)
-        free(m[i]);
-      free(m); m = 0;
-
-
-
-/* Bug report: Check to see that Measure matrix has positive entries. */
-#if 1
-    for (tract=0;tract<NumTracts;tract++) {
-       for (interval=0;interval<nTimeIntervals;interval++) {
-          if((*pMeasure)[interval][tract]<0)
-             {
-             char        sMessage[200];
-             std::string sBuffer;
-    	     tid = pTInfo->tiGetTid(tract, sBuffer);
-             sprintf(sMessage,"Error: Negative Measure (%8.4f) in function AssignMeasure(),\n\ttract %d, tractid %s, interval %d.\n",(*pMeasure)[interval][tract], tract, tid, interval);
-    	     SSGenerateException(sMessage, "AssignMeasure");
-             } /* endif Measure */
-
-          } /* endfor interval*/
-       } /* endfor tract*/
-#endif
-
-#ifdef DEBUGMEASURE
-    fprintf(pMResult, "Totals: \n\n");
-      fprintf(pMResult, "   Cases      = %li\n   Measure    = %f\n   Population = %f\n", *pTotalCases, *pTotalMeasure, *pTotalPop);
-  fclose(pMResult);
-#endif
-
-      pPrintDirection->SatScanPrintf("\n");
-      free(IntervalDates);
-      }
-   catch (ZdException & x)
-      {
-      free(pAlpha);
-      free(pRisk);
-      free(m);
-      free(IntervalDates);
-      x.AddCallpath("AssignMeasure()", "CalculateMeasure.cpp");
-      throw;
-      }
-  return(1);
-}
-
 /** calculates the risk for each category */
-int CalcRisk(const TractHandler *pTInfo, double** pRisk, double* pAlpha,
-             int nCats, tract_t nTracts, int nPops, double* pTotalPop, count_t* pTotalCases, BasePrint *pPrintDirection)
-{
-   int      c, i, n;
-   tract_t  t;
-   double   nPop;
-   count_t  nCaseCount;
+int CalcRisk(const TractHandler *pTInfo, double** pRisk, double* pAlpha, int nCats, 
+             tract_t nTracts, int nPops, double* pTotalPop, count_t* pTotalCases, BasePrint *pPrintDirection) {
+  int      c, i, n;
+  tract_t  t;
+  double   nPop;
+  count_t  nCaseCount;
 
-   try
-      {
-      *pRisk = (double*)Smalloc(nCats * sizeof(double), pPrintDirection);
-      
+  try {
+    *pRisk = (double*)Smalloc(nCats * sizeof(double), pPrintDirection);      
 #ifdef DEBUGMEASURE
       fprintf(pMResult, "Category #    Pop Count           Case Count   Risk\n");
 #endif
-
-      *pTotalCases = 0;
-      *pTotalPop   = 0;
-
-      for (c=0; c<nCats; c++)
-      {
-        nPop       = 0;
-        nCaseCount = 0;
-
-        for (t=0; t<nTracts; t++)
-        {
+    *pTotalCases = 0;
+    *pTotalPop   = 0;
+    for (c=0; c<nCats; c++) {
+       nPop       = 0;
+       nCaseCount = 0;
+       for (t=0; t<nTracts; t++) {
           nCaseCount = nCaseCount + pTInfo->tiGetCount(t, c);
-
           if (nCaseCount < 0)
             SSGenerateException("Error: Total cases is greater than maximum allowed.\n", "CalcRisk()");
           pTInfo->tiGetAlphaAdjustedPopulation(nPop, t, c, 0, nPops, pAlpha);
-        }
-        (*pRisk)[c] = (double)nCaseCount / nPop;
+       }
+       (*pRisk)[c] = (double)nCaseCount / nPop;
 #ifdef DEBUGMEASURE
        fprintf(fp, "%i             %f        %li            %12.25f\n",c, nPop, nCaseCount, (*pRisk)[c]);
 #endif
-       *pTotalCases += nCaseCount;
-       *pTotalPop   += nPop;
-       }
+      *pTotalCases += nCaseCount;
+      *pTotalPop   += nPop;
+    }
 #ifdef DEBUGMEASURE
   fprintf(pMResult, "\n");
   fprintf(pMResult, "Total Cases = %li    Total Population = %f\n\n", *pTotalCases, *pTotalPop); 
 #endif
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("CalcRisk()", "CalculateMeasure.cpp");
-      throw;
-      }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("CalcRisk()", "CalculateMeasure.cpp");
+    throw;
+  }
   return(1);
 }
 
 /** Calculates the expected number of cases at a given population date and tract for all categories.
     (*m)[n][t] = expected number of cases at population date index n and tract index t for all categories.
     Scott Hostovich @ July 16,2002 */
-int Calcm(const TractHandler *pTInfo, measure_t*** m, double* pRisk, int nCats, tract_t nTracts, int nPops, BasePrint *pPrintDirection)
-{
-   int      c, n;
-   tract_t  t;
+int Calcm(const TractHandler *pTInfo, measure_t ** m, double* pRisk, int nCats, tract_t nTracts,
+          int nPops, BasePrint *pPrintDirection) {
+  int      c, n;
+  tract_t  t;
 
-   try
-     {
-     *m = (double**)Smalloc(nPops * sizeof(measure_t *), pPrintDirection);
-     for(n=0;n<nPops;n++)
-       (*m)[n] = (double*)Smalloc(nTracts * sizeof(measure_t), pPrintDirection);
-    
-     for (n=0; n<nPops; n++)
-       for (t=0; t<nTracts; t++)
-          pTInfo->tiGetRiskAdjustedPopulation((*m)[n][t], t, n, pRisk);
-
+  try {
+    for (n=0; n < nPops; ++n)
+       for (t=0; t < nTracts; ++t)
+          pTInfo->tiGetRiskAdjustedPopulation(m[n][t], t, n, pRisk);
 #ifdef DEBUGMEASURE
-
-      fprintf(pMResult, "Pop\n");
-      fprintf(pMResult, "Index  Tract   m\n");
-      for (n=0; n<nPops; n++)
-      {
-    	 for (t=0; t<nTracts; t++)
-        {
+    fprintf(pMResult, "Pop\n");
+    fprintf(pMResult, "Index  Tract   m\n");
+    for (n=0; n < nPops; ++n) {
+       for (t=0; t<nTracts; t++) {
           if (t==0)
             fprintf(pMResult, "%i      ",n);
           else
             fprintf(pMResult, "       ");
           fprintf(pMResult, "%i       %f\n", t, (*m)[n][t]);
-        }
-      }
-      fprintf(pMResult, "\n");
+       }
+    }
+    fprintf(pMResult, "\n");
 #endif
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("Calcm()", "CalculateMeasure.cpp");
-      throw;
-      }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Calcm()", "CalculateMeasure.cpp");
+    throw;
+  }
   return(1);
 }
 
@@ -209,73 +90,51 @@ int Calcm(const TractHandler *pTInfo, measure_t*** m, double* pRisk, int nCats, 
     taking into account time interval slices.
     (*pMeasure)[i][t] = for time interval index i and tract index t, the expected number of cases for
     all categories. Scott Hostovich @ July 16,2002 */
-int CalcMeasure(const TractHandler *pTInfo, measure_t*** pMeasure, measure_t** m, Julian* IntervalDates, Julian StartDate, Julian EndDate,
-                int nCats, tract_t nTracts, int nPops, int nTimeIntervals, measure_t* pTotalMeasure, BasePrint *pPrintDirection)
-{
-   int         i;
-   int         n;
-   tract_t     t;
-   measure_t** M = 0;
-   int         lower;
-   int         upper;
-   double      tempRatio, tempSum, temp1, temp2;
-   Julian      jLowDate;
-   Julian      jLowDatePlus1;
-   int         nLowerPlus1;
-   long        nTotalYears = EndDate+1-StartDate/*TimeBetween(StartDate, EndDate, DAY)*/;
+int CalcMeasure(const TractHandler *pTInfo, measure_t ** pMeasure, measure_t** m, Julian* IntervalDates, 
+                Julian StartDate, Julian EndDate, int nCats, tract_t nTracts, int nPops, int nTimeIntervals, 
+                measure_t* pTotalMeasure, BasePrint *pPrintDirection) {
+  int           i, n, lower, upper, nLowerPlus1;
+  tract_t       t;
+  measure_t  ** ppM;
+  double        tempRatio, tempSum, temp1, temp2;
+  Julian        jLowDate, jLowDatePlus1;
+  long          nTotalYears = EndDate+1-StartDate/*TimeBetween(StartDate, EndDate, DAY)*/;
 
-   try
-      {
-      M = (double**)Smalloc((nTimeIntervals+1) * sizeof(measure_t *), pPrintDirection);
-      for(i=0;i<nTimeIntervals+1;i++)
-    	 M[i] = (double*)Smalloc(nTracts * sizeof(measure_t), pPrintDirection);
-    
-      *pMeasure = (double**)Smalloc((nTimeIntervals+1) * sizeof(measure_t *), pPrintDirection);
-      for(i=0;i<nTimeIntervals+1;i++)
-    	 (*pMeasure)[i] = (double*)Smalloc(nTracts * sizeof(measure_t), pPrintDirection);
-    
-      for (i=0; i<nTimeIntervals+1; i++)
-      {
-    	 pTInfo->tiGetPopUpLowIndex(IntervalDates, i, nTimeIntervals, &upper, &lower);
-        jLowDate      = pTInfo->tiGetPopDate(lower);
-        nLowerPlus1   = lower+1;
-        jLowDatePlus1 = pTInfo->tiGetPopDate(lower+1);
-
-        for (t=0; t<nTracts; t++)
-        {
+  try {
+    TwoDimensionArrayHandler<measure_t> M_ArrayHandler(nTimeIntervals+1, nTracts);
+    ppM = M_ArrayHandler.GetArray();
+    for (i=0; i < nTimeIntervals+1; ++i) {
+       pTInfo->tiGetPopUpLowIndex(IntervalDates, i, nTimeIntervals, &upper, &lower);
+       jLowDate = pTInfo->tiGetPopDate(lower);
+       nLowerPlus1 = lower + 1;
+       jLowDatePlus1 = pTInfo->tiGetPopDate(lower+1);
+       for (t=0; t < nTracts; ++t) {
           if (jLowDatePlus1 == static_cast<Julian>(-1))
-            M[i][t] = m[lower][t];
-    		else
-    		{
+            ppM[i][t] = m[lower][t];
+          else {
             temp1     = IntervalDates[i] - jLowDate;
             temp2     = jLowDatePlus1-jLowDate;
             tempRatio = (double)(temp1/temp2);
-            M[i][t]   = tempRatio * m[nLowerPlus1][t] + (1 - tempRatio) * m[lower][t];
-    		}
-        } /* nTracts */
-      }   /* nTimeIntervals */
+            ppM[i][t]   = tempRatio * m[nLowerPlus1][t] + (1 - tempRatio) * m[lower][t];
+    	  }
+       } /* nTracts */
+    }   /* nTimeIntervals */
     
-      *pTotalMeasure = 0.0;
-      for (i=0; i<nTimeIntervals; i++)
-      {
-        pTInfo->tiGetPopUpLowIndex(IntervalDates, i, nTimeIntervals, &upper, &lower);
-
-        for (t=0; t<nTracts; t++)
-        {
-          (*pMeasure)[i][t] = 0.0;
-    		tempSum  = 0.0;
-    		temp1    = .5*(m[lower][t] + M[i][t])*(IntervalDates[i]-pTInfo->tiGetPopDate(lower));
-          temp2    = .5*(m[upper][t] + M[i+1][t])*(pTInfo->tiGetPopDate(upper)-IntervalDates[i+1]);
-    
-          for (n=lower; n<upper; n++)
-          {
-    		  tempSum = tempSum + (((m[n][t] + m[n+1][t]) / 2) * (pTInfo->tiGetPopDate(n+1)-pTInfo->tiGetPopDate(n)));
+    *pTotalMeasure = 0.0;
+    for (i=0; i < nTimeIntervals; ++i) {
+       pTInfo->tiGetPopUpLowIndex(IntervalDates, i, nTimeIntervals, &upper, &lower);
+       for (t=0; t < nTracts; ++t) {
+          pMeasure[i][t] = 0.0;
+          tempSum  = 0.0;
+    	  temp1    = .5*(m[lower][t] + ppM[i][t])*(IntervalDates[i]-pTInfo->tiGetPopDate(lower));
+          temp2    = .5*(m[upper][t] + ppM[i+1][t])*(pTInfo->tiGetPopDate(upper)-IntervalDates[i+1]);
+          for (n=lower; n < upper; ++n) {
+    	     tempSum = tempSum + (((m[n][t] + m[n+1][t]) / 2) * (pTInfo->tiGetPopDate(n+1)-pTInfo->tiGetPopDate(n)));
           }
-          (*pMeasure)[i][t] = ((tempSum - temp1 - temp2) / nTotalYears);
-
-          *pTotalMeasure += (*pMeasure)[i][t];
-        } /* nTracts */
-      } /* nTimeIntervals */
+          pMeasure[i][t] = ((tempSum - temp1 - temp2) / nTotalYears);
+          *pTotalMeasure += pMeasure[i][t];
+       } /* nTracts */
+    } /* nTimeIntervals */
 
 #ifdef DEBUGMEASURE
       fprintf(pMResult, "Time  Lower  Upper\n");
@@ -289,28 +148,17 @@ int CalcMeasure(const TractHandler *pTInfo, measure_t*** pMeasure, measure_t** m
             fprintf(pMResult, "%i     %i      %i        ", i, lower, upper);
     		else
             fprintf(pMResult, "                      ");
-          fprintf(pMResult, "%i       %f    %f\n", t, M[i][t], (*pMeasure)[i][t]);
+          fprintf(pMResult, "%i       %f    %f\n", t, ppM[i][t], pMeasure[i][t]);
     	 }
       }
       fprintf(pMResult, "\n");
       fprintf(pMResult, "Total Measure = %f\n\n", *pTotalMeasure); 
 #endif
-
-      for(i=0;i<nTimeIntervals+1;i++)
-        free(M[i]);
-      free(M);
-      }
-   catch (ZdException & x)
-      {
-      if (M)
-         {
-         for(int i=0;i<nTimeIntervals+1;i++)
-           free(M[i]);
-         free(M);
-         }
-      x.AddCallpath("CalcMeasure()", "CalculateMeasure.cpp");
-      throw;
-      }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("CalcMeasure()", "CalculateMeasure.cpp");
+    throw;
+  }
   return(1);
 }
 

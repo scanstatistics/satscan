@@ -7,53 +7,37 @@
 #include "JulianDates.h"
 #include "PopulationCategories.h"
 
-int AssignMeasure(
-            const TractHandler  *pTInfo,
-            count_t      *Cases[],
-            tract_t      NumTracts,
-            Julian       StartDate,
-            Julian       EndDate,
-            Julian*      pStartDates,
-            int          nTimeIntervals,
-            int          nIntervalUnits,
-            long         nIntervalLength,
-            measure_t*** pMeasure,
-            count_t*     pTotalCases,
-            double*      pTotalPop,
-            measure_t*   pTotalMeasure,
-            BasePrint *pPrintDirection);
+int CalcRisk(const TractHandler       * pTInfo,
+             double                  ** pRisk,
+             double                   * pAlpha,
+             int                        nCats,
+             tract_t                    nTracts,
+             int                        nPops,
+             double                   * pTotalPop,
+             count_t                  * pTotalCases,
+             BasePrint                * pPrintDirection);
 
-int CalcRisk(const TractHandler *pTInfo,
-             double** pRisk,
-             double*  pAlpha,
-             int      nCats,
-             tract_t  nTracts,
-             int      nPops,
-             double*    pTotalPop,
-             count_t* pTotalCases,
-             BasePrint *pPrintDirection);
-
-int Calcm(const TractHandler *pTInfo,
-          measure_t*** m,
-          double*      pRisk,
-          int          nCats,
-          tract_t      nTracts,
-          int          nPops,
-          BasePrint *pPrintDirection);
+int Calcm(const TractHandler   * pTInfo,
+          measure_t           ** m,
+          double               * pRisk,
+          int                    nCats,
+          tract_t                nTracts,
+          int                    nPops,
+          BasePrint            * pPrintDirection);
 
 
-int CalcMeasure(const TractHandler *pTInfo,
-                measure_t*** pMeasure,
-                measure_t**  m,
-                Julian*      pStartDates,
-                Julian       StartDate,
-                Julian       EndDate,
-                int          nCats,
-                tract_t      nTracts,
-                int          nPops,
-                int          nTimeIntervals,
-                measure_t*   pTotalMeasure,
-                BasePrint *pPrintDirection);
+int CalcMeasure(const TractHandler    * pTInfo,
+                measure_t            ** pMeasure,
+                measure_t            ** m,
+                Julian                * pStartDates,
+                Julian                  StartDate,
+                Julian                  EndDate,
+                int                     nCats,
+                tract_t                 nTracts,
+                int                     nPops,
+                int                     nTimeIntervals,
+                measure_t             * pTotalMeasure,
+                BasePrint             * pPrintDirection);
 
 int AdjustForDiscreteTimeTrend(measure_t*** pMeasure,
                                count_t      *Cases[],
