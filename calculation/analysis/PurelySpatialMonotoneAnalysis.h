@@ -7,22 +7,21 @@
 
 class CPSMonotoneAnalysis : public CPurelySpatialAnalysis {
   private:
-    CPSMonotoneCluster* gpMaxCluster;
+    CPSMonotoneCluster     * gpMaxCluster;
 
-    void                Init() {gpMaxCluster=0;}
-    virtual double      MonteCarlo(const DataStreamInterface & Interface);
-    virtual double      MonteCarloProspective(const DataStreamInterface & Interface);
+    void                     Init() {gpMaxCluster=0;}
 
   protected:
-    virtual void        CalculateTopCluster(tract_t tCenter, const DataStreamGateway & DataGateway, bool bSimulation);
-    virtual CCluster  & GetTopCalculatedCluster();
-    virtual void        SetTopClusters(const DataStreamGateway & DataGateway, bool bSimulation);
-    
+    virtual void             AllocateSimulationObjects(const AbtractDataStreamGateway & DataGateway);
+    virtual void             AllocateTopClustersObjects(const AbtractDataStreamGateway & DataGateway);
+    virtual const CCluster & CalculateTopCluster(tract_t tCenter, const AbtractDataStreamGateway & DataGateway);
+    virtual double           MonteCarlo(const DataStreamInterface & Interface);
+    virtual double           MonteCarloProspective(const DataStreamInterface & Interface);
+
   public:
     CPSMonotoneAnalysis(CParameters* pParameters, CSaTScanData* pData, BasePrint *pPrintDirection);
     virtual ~CPSMonotoneAnalysis();
 };
-
 //*****************************************************************************
 #endif
 
