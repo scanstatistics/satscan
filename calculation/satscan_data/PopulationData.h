@@ -43,11 +43,11 @@ class OrdinalCategory {
     double      gdOrdinalNumber;
 
   public:
-    OrdinalCategory(double dOrdinalNumber, count_t tInitialCount=0)
-         : gdOrdinalNumber(dOrdinalNumber), gtTotalCases(tInitialCount) {}
-    ~OrdinalCategory() {}
+    OrdinalCategory(double dOrdinalNumber, count_t tInitialCount=0);
+    ~OrdinalCategory();
 
     void        AddCaseCount(count_t tCount) {gtTotalCases += tCount;}
+    void        DecrementCaseCount(count_t tCount);
     double      GetOrdinalNumber() const {return gdOrdinalNumber;}
     count_t     GetTotalCases() const {return gtTotalCases;}
 };
@@ -120,6 +120,7 @@ class PopulationData {
     measure_t                           GetRiskAdjustedPopulation(measure_t& dMeanPopulation, tract_t t,
                                                                   int iPopulationDateIndex, const std::vector<double>& vRisk) const;
     int                                 LowerPopIndex(Julian Date) const;
+    void                                RemoveOrdinalCategoryCases(size_t iCategoryIndex, count_t tCount);
     void                                ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, BasePrint& PrintDirection) const;
     void                                SetAggregateCovariateCategories(bool b);
     void                                SetNumTracts(unsigned int iTracts) {gCovariateCategoriesPerLocation.resize(iTracts, 0);}

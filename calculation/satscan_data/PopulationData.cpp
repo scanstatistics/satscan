@@ -1,5 +1,7 @@
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//******************************************************************************
 #include "PopulationData.h"
 #include "UtilityFunctions.h"
 #include "SaTScanData.h"
@@ -114,6 +116,21 @@ void CovariateCategory::Setup(int iPopulationListSize, int iCategoryIndex) {
   }
 }
 
+//******************************************************************************
+
+/** constructor */
+OrdinalCategory::OrdinalCategory(double dOrdinalNumber, count_t tInitialCount)
+                :gdOrdinalNumber(dOrdinalNumber), gtTotalCases(tInitialCount) {}
+
+/** destructor */
+OrdinalCategory::~OrdinalCategory() {}
+
+/** Decrements number of cases in category. */
+void OrdinalCategory::DecrementCaseCount(count_t tCount) {
+  gtTotalCases = std::max(0L, gtTotalCases - tCount); 
+}
+
+//******************************************************************************
 
 /** constructor */
 PopulationData::PopulationData()  {
@@ -832,6 +849,20 @@ int PopulationData::LowerPopIndex(Julian Date) const {
   while (GetPopulationDate(i+1) < Date)
        i++;
   return i;
+}
+
+/** Removes cases from internal count for ordinal category. */
+void PopulationData::RemoveOrdinalCategoryCases(size_t iCategoryIndex, count_t tCount) {
+  try {
+    if (iCategoryIndex >gvOrdinalCategories.size() - 1)
+      ZdGenerateException("Index '%d' out of ranges.","RemoveOrdinalCategoryCases()");
+
+    gvOrdinalCategories[iCategoryIndex].DecrementCaseCount(tCount);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("RemoveOrdinalCategoryCases()","PopulationData");
+    throw;
+  }
 }
 
 /** Scans for tracts that have population dates which have zero populations.
