@@ -7,21 +7,15 @@ bool LowRate(count_t nCases, measure_t nMeasure, count_t nTotalCases, measure_t 
   if (nMeasure == 0)
     return false;
 
-  if (nCases*nTotalMeasure  < nMeasure*nTotalCases)
-    return true;
-  else
-    return false;
+  return (nCases*nTotalMeasure  < nMeasure*nTotalCases);
 }
 
 bool HighRate(count_t nCases, measure_t nMeasure, count_t nTotalCases, measure_t nTotalMeasure)
 {
-  if (nMeasure == 0)
+ if (nMeasure == 0 || nCases < 2/*one case should not be considered a high rate*/)
     return false;
 
-  if (nCases*nTotalMeasure  > nMeasure*nTotalCases)
-    return true;
-  else
-    return false;
+  return (nCases*nTotalMeasure  > nMeasure*nTotalCases);
 }
 
 bool HighOrLowRate(count_t nCases, measure_t nMeasure, count_t nTotalCases, measure_t nTotalMeasure)
@@ -29,8 +23,5 @@ bool HighOrLowRate(count_t nCases, measure_t nMeasure, count_t nTotalCases, meas
   if (nMeasure == 0)
     return false;
 
-  if (nCases*nTotalMeasure != nMeasure*nTotalCases)
-    return true;
-  else
-    return false;
+  return (nCases*nTotalMeasure != nMeasure*nTotalCases);
 }
