@@ -102,7 +102,7 @@ void CPoissonModel::AdjustForLogLinear(RealDataStream& thisStream, measure_t ** 
   CTimeTrend    TimeTrend;
 
   //Calculate time trend for whole dataset
-  TimeTrend.CalculateAndSet(thisStream.GetPTCasesArray(), thisStream.GetPTMeasureArray(),
+  TimeTrend.CalculateAndSet(thisStream.GetCasesPerTimeIntervalArray(), thisStream.GetMeasurePerTimeIntervalArray(),
                             gData.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
 
   //Cancel analysis execution if calculation of time trend fails for various reasons.
@@ -147,7 +147,7 @@ void CPoissonModel::AdjustMeasure(RealDataStream& thisStream, measure_t** ppNonC
         case NOTADJUSTED               : break;
         case NONPARAMETRIC             : AdjustForNonParameteric(thisStream, ppNonCumulativeMeasure); break;
         case LOGLINEAR_PERC            : AdjustForLLPercentage(thisStream, ppNonCumulativeMeasure, gParameters.GetTimeTrendAdjustmentPercentage()); break;
-        case CALCULATED_LOGLINEAR_PERC : thisStream.SetMeasureByTimeIntervalsArray(ppNonCumulativeMeasure);
+        case CALCULATED_LOGLINEAR_PERC : thisStream.SetMeasurePerTimeIntervalsArray(ppNonCumulativeMeasure);
                                          AdjustForLogLinear(thisStream, ppNonCumulativeMeasure); break;
         case STRATIFIED_RANDOMIZATION  : AdjustForNonParameteric(thisStream, ppNonCumulativeMeasure); break;//this adjustment occurs during randomization also
         default : ZdGenerateException("Unknown time trend adjustment type: '%d'.",
@@ -219,7 +219,7 @@ void CPoissonModel::CalculateMeasure(RealDataStream& thisStream) {
       //create cumulative measure from non-cumulative measure
       thisStream.SetCumulativeMeasureArrayFromNonCumulative();
       //either reset or set measure by time intervals with non-cumulative measure
-      thisStream.SetMeasureByTimeIntervalsArray(thisStream.GetNCMeasureArray());
+      thisStream.SetMeasurePerTimeIntervalsArray(thisStream.GetNCMeasureArray());
     }
     else {
       thisStream.AllocateMeasureArray();
@@ -233,7 +233,7 @@ void CPoissonModel::CalculateMeasure(RealDataStream& thisStream) {
       if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
           gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
         //need measure by time intervals for time stratified adjustment in simulations
-        thisStream.SetMeasureByTimeIntervalsArray(thisStream.GetMeasureArray());
+        thisStream.SetMeasurePerTimeIntervalsArray(thisStream.GetMeasureArray());
       thisStream.SetMeasureArrayAsCumulative();
     }
     // Bug check, to ensure that TotalCases=TotalMeasure
