@@ -23,8 +23,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
   friend class TfrmAdvancedParameters;
 
   __published:  // IDE-managed Components
-   TButton *btnCaseBrowse;
-   TButton *btnControlBrowse;
    TButton *btnCoordBrowse;
    TButton *btnGridBrowse;
    TButton *btnPopBrowse;
@@ -36,13 +34,10 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TCheckBox *chkRelativeRiskEstimatesAreaDBase;
    TCheckBox *chkSimulatedLogLikelihoodRatiosAscii;
    TCheckBox *chkSimulatedLogLikelihoodRatiosDBase;
-   TEdit *edtCaseFileName;
-   TEdit *edtControlFileName;
    TEdit *edtCoordinateFileName;
    TEdit *edtGridFileName;
    TEdit *edtMontCarloReps;
    TEdit *edtPopFileName;
-   TGroupBox *GroupBox1;
    TGroupBox *GroupBox2;
    TGroupBox *gbxAdditionalOutputFiles;
    TLabel *ASCII;
@@ -51,9 +46,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TLabel *lbldBaseOutput;
    TLabel *lblRelativeRiskEstimatesArea;
    TLabel *lblSimulatedLogLikelihoodRatios;
-   TLabel *Label1;
-   TLabel *Label2;
-   TLabel *Label3;
    TLabel *Label4;
    TLabel *Label5;
    TLabel *Label6;
@@ -62,7 +54,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TOpenDialog *OpenDialog1;
    TPageControl *PageControl1;
    TRadioGroup *rgpCoordinates;
-   TRadioGroup *rgpPrecisionTimes;
    TSaveDialog *SaveDialog;
    TTabSheet *tbAnalysis;
    TTabSheet *tbInputFiles;
@@ -94,21 +85,34 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TRadioButton *rdoUnitMonths;
    TRadioButton *rdoUnitDay;
    TEdit *edtTimeIntervalLength;
-   TGroupBox *gbxStudyPeriod;
+   TButton *btnAdvanced1;
+   TButton *btnAdvanced2;
+   TButton *btnImportFile;
+   TLabel *Label11;
+   TLabel *Label13;
+   TGroupBox *GroupBox1;
+   TLabel *Label1;
+   TLabel *Label2;
+   TLabel *Label3;
    TLabel *Label8;
    TLabel *Label9;
    TLabel *Label10;
    TLabel *Label12;
    TLabel *Label14;
-   TEdit *edtStudyPeriodStartDateYear;
+   TRadioGroup *rgpPrecisionTimes;
+   TEdit *edtCaseFileName;
+   TEdit *edtControlFileName;
+   TButton *btnCaseBrowse;
+   TButton *btnControlBrowse;
    TEdit *edtStudyPeriodEndDateYear;
+   TEdit *edtStudyPeriodStartDateYear;
    TEdit *edtStudyPeriodStartDateMonth;
    TEdit *edtStudyPeriodEndDateMonth;
-   TEdit *edtStudyPeriodStartDateDay;
    TEdit *edtStudyPeriodEndDateDay;
-   TButton *btnAdvanced1;
-   TButton *btnAdvanced2;
-   TButton *btnImportFile;
+   TEdit *edtStudyPeriodStartDateDay;
+   TLabel *Label15;
+   TLabel *Label17;
+   TLabel *Label18;
    
    void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
    void __fastcall rgpPrecisionTimesClick(TObject *Sender);

@@ -254,9 +254,9 @@ void TfrmAnalysis::CheckStudyPeriodDatesRange() {
 
   try {
     CheckDate("study period start date", *edtStudyPeriodStartDateYear, *edtStudyPeriodStartDateMonth,
-              *edtStudyPeriodStartDateDay,  *tbAnalysis);
+              *edtStudyPeriodStartDateDay,  *tbInputFiles);
     CheckDate("study period end date", *edtStudyPeriodEndDateYear, *edtStudyPeriodEndDateMonth,
-              *edtStudyPeriodEndDateDay,  *tbAnalysis);
+              *edtStudyPeriodEndDateDay,  *tbInputFiles);
 
     GetStudyPeriodStartDate(StartDate);
     GetStudyPeriodEndDate(EndDate);
@@ -268,7 +268,7 @@ void TfrmAnalysis::CheckStudyPeriodDatesRange() {
       DateFilter.FilterValue(FilterBuffer, sizeof(FilterBuffer), EndDate.GetRawDate());
       sErrorMessage << " does not occur before study period end date of " << FilterBuffer;
       sErrorMessage << ".\nPlease review settings.";
-      PageControl1->ActivePage = tbAnalysis;
+      PageControl1->ActivePage = tbInputFiles;
       edtStudyPeriodStartDateYear->SetFocus();
       ZdException::GenerateNotification(sErrorMessage.GetCString(),"CheckStudyPeriodDatesRange()");
     }
@@ -476,7 +476,7 @@ void TfrmAnalysis::EnableDatesByTimeIntervalUnits() {
     gpfrmAdvancedParameters->SetRangeDateEnables(true, true, true);
   }
   else
-    ZdGenerateException("Time interval units no set.","EnableDatesByTimeIntervalUnits()");
+    ZdGenerateException("Time interval units not set.","EnableDatesByTimeIntervalUnits()");
 
   gpfrmAdvancedParameters->EnableProspectiveSurveillanceGroup(eAnalysisType == PROSPECTIVEPURELYTEMPORAL || eAnalysisType == PROSPECTIVESPACETIME);
 }
@@ -562,17 +562,21 @@ void TfrmAnalysis::EnableStudyPeriodDates(bool bYear, bool bMonth, bool bDay) {
 
    edtStudyPeriodStartDateMonth->Enabled = bMonth;
    edtStudyPeriodStartDateMonth->Color = bMonth ? clWindow : clInactiveBorder;
-   if (!bMonth) edtStudyPeriodStartDateMonth->Text= "1";
+   if (!bMonth)
+      edtStudyPeriodStartDateMonth->Text= "1";
    edtStudyPeriodEndDateMonth->Enabled = bMonth;
    edtStudyPeriodEndDateMonth->Color = bMonth ? clWindow : clInactiveBorder;
-   if (!bMonth) edtStudyPeriodEndDateMonth->Text = "12";
+   if (!bMonth)
+      edtStudyPeriodEndDateMonth->Text = "12";
 
    edtStudyPeriodStartDateDay->Enabled = bDay;
    edtStudyPeriodStartDateDay->Color = bDay ? clWindow : clInactiveBorder;
-   if (!bDay) edtStudyPeriodStartDateDay->Text = "1";
+   if (!bDay)
+      edtStudyPeriodStartDateDay->Text = "1";
    edtStudyPeriodEndDateDay->Enabled = bDay;
    edtStudyPeriodEndDateDay->Color = bDay ? clWindow : clInactiveBorder;
-   if (!bDay) edtStudyPeriodEndDateDay->Text = DaysThisMonth(atoi(edtStudyPeriodEndDateYear->Text.c_str()), atoi(edtStudyPeriodEndDateMonth->Text.c_str()));
+   if (!bDay)
+      edtStudyPeriodEndDateDay->Text = DaysThisMonth(atoi(edtStudyPeriodEndDateYear->Text.c_str()), atoi(edtStudyPeriodEndDateMonth->Text.c_str()));
 }
 
 
@@ -1283,7 +1287,7 @@ void TfrmAnalysis::ValidateDate(TEdit& YearControl, TEdit& MonthControl, TEdit& 
 /** Validates 'Input Files' tab */
 void TfrmAnalysis::ValidateInputFiles() {
   try {
-    CheckStudyPeriodDatesRange();            // study period moved here from previous 'time parameters' tab
+    CheckStudyPeriodDatesRange();
 
     //validate the case file
     if (edtCaseFileName->Text.IsEmpty()) {
@@ -1405,4 +1409,5 @@ void __fastcall TfrmAnalysis::btnImportFileClick(TObject *Sender)
    LaunchImporter();
 }
 //---------------------------------------------------------------------------
+
 
