@@ -144,10 +144,11 @@ bool TfrmMainForm::GetAnalysesRunning() {
 /** help action event -- launches html version of user guide */
 void __fastcall TfrmMainForm::HelpActionExecute(TObject *Sender) {
   HINSTANCE     hReturn;
-  ZdString      sMessage;
+  ZdString      sMessage, sUserGuide;
 
   //Attempt to open chm user guide.
-  hReturn = ShellExecute(Handle, "open", "SaTScan_Help.chm", NULL, NULL, SW_SHOWNORMAL);
+  sUserGuide.printf("%sSaTScan_Help.chm", ExtractFilePath(Application->ExeName).c_str());
+  hReturn = ShellExecute(Handle, "open", sUserGuide.GetCString(), NULL, NULL, SW_SHOWNORMAL);
   if (hReturn <= (void*)32) {
     if (hReturn == (void*)SE_ERR_NOASSOC) {
       sMessage  << "SaTScan Help was unable to open. Please note that SaTScan Help "
