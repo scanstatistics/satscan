@@ -14,8 +14,8 @@
 /** class constructor */
 CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection)
              : gParameters(Parameters), gPrint(PrintDirection),
-               m_nStartDate(Parameters.GetStudyPeriodStartDateAsJulian()),
-               m_nEndDate(Parameters.GetStudyPeriodEndDateAsJulian()) {
+               m_nStartDate(CharToJulian(Parameters.GetStudyPeriodStartDate().c_str())),
+               m_nEndDate(CharToJulian(Parameters.GetStudyPeriodEndDate().c_str())) {
   try {
     Init();
     Setup();
@@ -782,7 +782,7 @@ void CSaTScanData::SetProspectiveIntervalStart() {
   Julian  lProspStartDate;
 
   try {
-    lProspStartDate = gParameters.GetProspectiveStartDateAsJulian();
+    lProspStartDate = CharToJulian(gParameters.GetProspectiveStartDate().c_str());
     lTime = TimeBetween(lProspStartDate, m_nEndDate, gParameters.GetTimeIntervalUnitsType());
     m_nProspectiveIntervalStart = m_nTimeIntervals - (int)ceil((float)lTime/(float)gParameters.GetTimeIntervalLength()) + 1;
 
@@ -844,11 +844,11 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
 
   if (gParameters.GetIncludeClustersType() == CLUSTERSINRANGE) {
     //find start range date indexes
-    SetScanningWindowStartRangeIndex(gParameters.GetStartRangeDateAsJulian(gParameters.GetStartRangeStartDate()), m_nStartRangeStartDateIndex);
-    SetScanningWindowStartRangeIndex(gParameters.GetStartRangeDateAsJulian(gParameters.GetStartRangeEndDate()), m_nStartRangeEndDateIndex);
+    SetScanningWindowStartRangeIndex(CharToJulian(gParameters.GetStartRangeStartDate().c_str()), m_nStartRangeStartDateIndex);
+    SetScanningWindowStartRangeIndex(CharToJulian(gParameters.GetStartRangeEndDate().c_str()), m_nStartRangeEndDateIndex);
     //find end range date indexes
-    SetScanningWindowEndRangeIndex(gParameters.GetEndRangeDateAsJulian(gParameters.GetEndRangeStartDate()), m_nEndRangeStartDateIndex);
-    SetScanningWindowEndRangeIndex(gParameters.GetEndRangeDateAsJulian(gParameters.GetEndRangeEndDate()), m_nEndRangeEndDateIndex);
+    SetScanningWindowEndRangeIndex(CharToJulian(gParameters.GetEndRangeStartDate().c_str()), m_nEndRangeStartDateIndex);
+    SetScanningWindowEndRangeIndex(CharToJulian(gParameters.GetEndRangeEndDate().c_str()), m_nEndRangeEndDateIndex);
     //validate windows will be evaluated
     //check that there will be clusters evaluated...
     iMaxEndWindow = std::min(m_nEndRangeEndDateIndex, m_nStartRangeEndDateIndex + m_nIntervalCut);
