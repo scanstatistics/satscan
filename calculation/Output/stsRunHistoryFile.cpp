@@ -100,7 +100,6 @@ void stsRunHistoryFile::LogNewHistory() {
 // pre: none
 // post: opens/creates the run history file and writes to it
 void stsRunHistoryFile::OpenRunHistoryFile() {
-   TXDFile	        *pFile = 0;
    ZdTransaction	*pTransaction = 0;
    ZdFileRecord         *pRecord = 0, *pLastRecord = 0;
    unsigned long        ulLastRecordNumber;
@@ -113,21 +112,21 @@ void stsRunHistoryFile::OpenRunHistoryFile() {
       if(!ZdIO::Exists(gsFilename.GetCString()))
          CreateRunHistoryFile();
 
-      pFile = new TXDFile(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
+      TXDFile File(gsFilename, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
 
       // get a record buffer, input data and append the record
-      ulLastRecordNumber = pFile->GotoLastRecord(pLastRecord);
+      ulLastRecordNumber = File.GotoLastRecord(pLastRecord);
       // if there's records in the file
       if(ulLastRecordNumber)
          pLastRecord->GetField(0, glRunNumber);
       delete pLastRecord; pLastRecord = 0;
 
-      pTransaction = (pFile->BeginTransaction());
+      pTransaction = (File.BeginTransaction());
 
       // note: I'm going to document the heck out of this section in case they can't the run
       // specs on us at any time and that way I can interpret my assumptions in case any just so
       // happen to be incorrect, so bear with me - AJV 9/3/2002
-      pRecord = pFile->GetNewRecord();
+      pRecord = File.GetNewRecord();
       //  run number field -- increment the run number so that we have a new unique run number - AJV 9/4/2002
       fv.SetType(pRecord->GetFieldType(uwFieldNumber));
       fv.AsDouble() = ++glRunNumber;
@@ -254,20 +253,14 @@ void stsRunHistoryFile::OpenRunHistoryFile() {
       fv.AsLong() = (long)0;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
-      pFile->AppendRecord(*pTransaction, *pRecord);
+      File.AppendRecord(*pTransaction, *pRecord);
       delete pRecord; pRecord = 0;
 
-      pFile->EndTransaction(pTransaction); pTransaction = 0;
-      pFile->Close();
-      delete pFile; pFile = 0;
+      File.EndTransaction(pTransaction); pTransaction = 0;
+      File.Close();
    }
    catch(ZdException &x) {
-      if(pFile) {
-         if(pTransaction)
-            pFile->EndTransaction(pTransaction);
-         pFile->Close();
-      }
-      delete pFile; pFile = 0;
+      pTransaction = 0;
       delete pRecord; pRecord = 0;
       delete pLastRecord; pLastRecord = 0;
       x.AddCallpath("OpenRunHistoryFile()", "stsRunHistoryFile");
