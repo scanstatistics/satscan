@@ -109,26 +109,43 @@ CSaTScanData::~CSaTScanData() {
    delete gpGInfo;
 }
 
-// After each pass through sequential analysis, data on top cluster is
-// removed and neighbor counts must be adjusted to include all neighbors
-// within the maximum circle size.
+/** Sequential analyses will call this function to clear neighbor information and
+    re-calculate neighbors. Note that only when the maximum spatial cluster size
+    is specified as a percentage of the population that this operation need be
+    performed between iterations of a sequential scan. */
 void CSaTScanData::AdjustNeighborCounts() {
-   int i, j;
-   measure_t nCumMeasure;
+  int           i, j;
 
-   try {
-      for (i=0; i < m_nGridTracts; ++i) {
-         nCumMeasure = 0;
-         for (j=1; j<=m_nGridTracts && nCumMeasure+m_pMeasure[0][GetNeighbor(0, i,j)] <= m_nMaxCircleSize; ++j)
-            nCumMeasure += m_pMeasure[0][GetNeighbor(0, i,j)];
-
-         m_NeighborCounts[0][i] = j-1;
+  try {
+    //Deallocate neighbor information in sorted structures.
+    if (m_pParameters->m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE) {
+      //Free/clear previous interation's neighbor information.
+      if (m_pSortedUShort) {
+        for (i=0; i <= m_pParameters->m_lTotalNumEllipses; ++i)
+           for (j=0; j < m_nGridTracts; ++j) {
+              free(m_pSortedUShort[i][j]); m_pSortedUShort[i][j]=0;
+              m_NeighborCounts[i][j]=0;
+           }
       }
-   }
-   catch (SSException & x) {
-      x.AddCallpath("AdjustNeighborCounts()", "CSaTScanData");
-      throw;
-   }
+      else {
+        for (i=0; i <= m_pParameters->m_lTotalNumEllipses; ++i)
+           for (j=0; j < m_nGridTracts; ++j) {
+              free(m_pSortedInt[i][j]); m_pSortedInt[i][j]=0;
+              m_NeighborCounts[i][j]=0;
+           }
+      }
+      //Recompute neighbors.
+      MakeNeighbors(gpTInfo, gpGInfo, m_pSortedInt, m_pSortedUShort, m_nTotalTractsAtStart/*m_nTracts*/, m_nGridTracts,
+                    m_pMeasure[0], m_nMaxCircleSize, m_nMaxCircleSize, m_NeighborCounts,
+                    m_pParameters->m_nDimension, m_pParameters->m_nNumEllipses,
+                    m_pParameters->mp_dEShapes, m_pParameters->mp_nENumbers,
+                    m_pParameters->m_nMaxSpatialClusterSizeType, gpPrintDirection);
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("AdjustNeighborCounts()", "CSaTScanData");
+    throw;
+  }
 }
 
 void CSaTScanData::AllocSimCases() {
