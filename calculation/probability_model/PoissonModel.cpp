@@ -96,21 +96,38 @@ void CPoissonModel::AdjustForLLPercentage(DataStream & thisStream, measure_t ** 
      pNonCumulativeMeasure[i][t] *= c;
 }
 
-void CPoissonModel::AdjustForLogLinear(DataStream & thisStream, measure_t ** pNonCumulativeMeasure)
-{
-/*  #if DEBUGMODEL
-  fprintf(m_pDebugModelFile, "\nCalculate Time Trend and Adjust for Log Linear\n\n");
-  #endif
-*/
-  // Calculate time trend for whole dataset
-  thisStream.GetTimeTrend().CalculateAndSet(thisStream.GetPTCasesArray(), thisStream.GetPTMeasureArray(),
-                                            gData.m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
+/** Calculates time trend for data stream, calls CParameters::SetTimeTrendAdjustmentPercentage()
+    with calculated value, and calls AdjustForLLPercentage(). */
+void CPoissonModel::AdjustForLogLinear(DataStream& thisStream, measure_t ** pNonCumulativeMeasure) {
+  //Calculate time trend for whole dataset
+  thisStream.GetTimeTrend().CalculateAndSet(thisStream.GetPTCasesArray(),
+                                            thisStream.GetPTMeasureArray(),
+                                            gData.m_nTimeIntervals,
+                                            gParameters.GetTimeTrendConvergence());
+   //Cancel analysis execution if calculation of time trend fails for various reasons.
+   switch (thisStream.GetTimeTrend().GetStatus()) {
+     case CTimeTrend::TREND_UNDEF :
+       SSGenerateException("Note: Temporal adjustment could not be performed. The calculated time trend is undefined.\n"
+                           "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
+     case CTimeTrend::TREND_INF :
+       SSGenerateException("Note: Temporal adjustment could not be performed. The calculated time trend is infinite.\n"
+                           "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
+     case CTimeTrend::TREND_NOTCONVERGED :
+       SSGenerateException("Note: Temporal adjustment could not be performed. The time trend does not converge.\n"
+                           "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
+     case CTimeTrend::TREND_CONVERGED : break;
+     default :
+       ZdGenerateException("Unknown time trend status type '%d'.",
+                           "AdjustForLogLinear()", thisStream.GetTimeTrend().GetStatus());
+   };
 
   // Global time trend will be recalculated after the measure is adjusted.
   // Therefore this value will be lost unless retain in parameters for
   // display in the report.
-  gParameters.SetTimeTrendAdjustmentPercentage(thisStream.GetTimeTrend().m_nBeta);
-  AdjustForLLPercentage(thisStream, pNonCumulativeMeasure, thisStream.GetTimeTrend().m_nBeta);  // Adjust Measure             */
+  //TODO: How should this be handled with mutliple data streams?
+  //       - last streams calculated percenatage reported only, as it stands
+  gParameters.SetTimeTrendAdjustmentPercentage(thisStream.GetTimeTrend().GetBeta());
+  AdjustForLLPercentage(thisStream, pNonCumulativeMeasure, thisStream.GetTimeTrend().GetBeta());  // Adjust Measure             */
 }
 
 void CPoissonModel::AdjustMeasure(DataStream & thisStream, measure_t ** ppNonCumulativeMeasure) {
