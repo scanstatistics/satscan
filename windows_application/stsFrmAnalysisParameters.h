@@ -128,6 +128,10 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         TLabel *Label21;
         TEdit *edtMaxCirclePopulationFilename;
         TButton *Button1;
+        TPanel *pnlOutputFileBottom;
+        TCheckBox *chkRestrictReportedClusters;
+        TEdit *edtReportClustersSmallerThan;
+        TLabel *lblReportSmallerClusters;
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall rgPrecisionTimesClick(TObject *Sender);
         void __fastcall btnCaseBrowseClick(TObject *Sender);
@@ -181,6 +185,8 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         void __fastcall FormActivate(TObject *Sender);
         void __fastcall edtMaxCirclePopulationFilenameChange(TObject *Sender);
         void __fastcall BrowseMaxCirclePopulationFileClick(TObject *Sender);
+        void __fastcall edtReportClustersSmallerThanExit(TObject *Sender);
+        void __fastcall chkRestrictReportedClustersClick(TObject *Sender);
 
   private:	// User declarations
     PrintNull           gNullPrint;
@@ -224,11 +230,13 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                OnTemporalTrendClick();
     void                ParseDate(const char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *pDay);
     void                SaveTextParameters();
+    void                SetReportingSmallerClustersText();
     void                SetSpatialDistanceCaption();
     void                SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                Setup(const char * sParameterFileName);
     void                SetupInterface();
     bool                ValidateInputFiles();
+    bool                ValidateReportedSpatialClusterSize();
     bool                ValidateSpatialClusterSize();
     bool                ValidateTemoralClusterSize();
     bool                VerifyUnitAndLength();

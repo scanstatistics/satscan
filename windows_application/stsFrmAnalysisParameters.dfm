@@ -883,7 +883,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object grpAdditionalOutputFiles: TGroupBox
         Left = 16
-        Top = 61
+        Top = 52
         Width = 449
         Height = 153
         Caption = 'Additional Optional Output Files:'
@@ -912,9 +912,9 @@ object frmAnalysis: TfrmAnalysis
         object lblSimulatedLogLikelihoodRatios: TLabel
           Left = 16
           Top = 120
-          Width = 151
+          Width = 222
           Height = 13
-          Caption = 'Simulated Log Likelihood Ratios'
+          Caption = 'Simulated Log Likelihood Ratios/Test Statistics'
         end
         object ASCII: TLabel
           Left = 312
@@ -1017,7 +1017,7 @@ object frmAnalysis: TfrmAnalysis
       end
       object grpCriteriaSecClusters: TGroupBox
         Left = 16
-        Top = 232
+        Top = 209
         Width = 449
         Height = 50
         Caption = 'Criteria for Reporting Secondary Clusters'
@@ -1038,6 +1038,41 @@ object frmAnalysis: TfrmAnalysis
             'No Cluster Centers in Less Likely Clusters'
             'No Pairs of Centers Both in Each Others Clusters'
             'No Restrictions = Most Likely Cluster for Each Grid Point')
+        end
+      end
+      object pnlOutputFileBottom: TPanel
+        Left = 0
+        Top = 260
+        Width = 481
+        Height = 33
+        Align = alBottom
+        BevelOuter = bvNone
+        TabOrder = 4
+        object lblReportSmallerClusters: TLabel
+          Left = 238
+          Top = 8
+          Width = 134
+          Height = 13
+          Caption = 'percent of population at risk.'
+        end
+        object chkRestrictReportedClusters: TCheckBox
+          Left = 16
+          Top = 8
+          Width = 175
+          Height = 17
+          Caption = 'Report only clusters smaller than'
+          TabOrder = 0
+          OnClick = chkRestrictReportedClustersClick
+        end
+        object edtReportClustersSmallerThan: TEdit
+          Left = 194
+          Top = 6
+          Width = 40
+          Height = 18
+          TabOrder = 1
+          Text = '49'
+          OnExit = edtReportClustersSmallerThanExit
+          OnKeyPress = PositiveFloatKeyPress
         end
       end
     end

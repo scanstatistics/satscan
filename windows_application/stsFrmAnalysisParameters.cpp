@@ -397,7 +397,7 @@ bool TfrmAnalysis::CheckReplicas(int iReplicas) {
 // Checks the validity of the scanning tab controls
 //------------------------------------------------------------------------------
 bool TfrmAnalysis::CheckScanningWindowParams() {
-  return ValidateTemoralClusterSize() && ValidateSpatialClusterSize();
+  return ValidateTemoralClusterSize() && ValidateSpatialClusterSize() && ValidateReportedSpatialClusterSize();
 }
 //------------------------------------------------------------------------------
 // Checks all the time parameters
@@ -548,12 +548,13 @@ void __fastcall TfrmAnalysis::edtMaxClusterSizeExit(TObject *Sender) {
       ZdException::GenerateNotification("Please specify a maximum spatial cluster size.","edtMaxClusterSizeExit()");
     else
       gParameters.SetMaximumGeographicClusterSize(atof(edtMaxClusterSize->Text.c_str()));
+    SetReportingSmallerClustersText();
   }
   catch (ZdException & x) {
     x.AddCallpath("edtMaxClusterSizeExit()", "TfrmAnalysis");
     edtMaxClusterSize->SetFocus();
     DisplayBasisException(this, x);
-  }     
+  }
 }
 //------------------------------------------------------------------------------
 // Validates Number of Monte Carlo reps value
@@ -704,6 +705,10 @@ void TfrmAnalysis::EnableSpatial(bool bEnable, bool bEnableCheckbox, bool bEnabl
    chkInclPurTempClust->Checked = (bEnableCheckbox && gParameters.GetIncludePurelyTemporalClusters());
    edtMaxClusterSize->Enabled = bEnable;
    edtMaxClusterSize->Color = bEnable ? clWindow : clInactiveBorder;
+   chkRestrictReportedClusters->Enabled = bEnable;
+   edtReportClustersSmallerThan->Enabled = bEnable && chkRestrictReportedClusters->Checked;
+   edtReportClustersSmallerThan->Color = bEnable && chkRestrictReportedClusters->Checked ? clWindow : clInactiveBorder;
+   lblReportSmallerClusters->Enabled = bEnable;
 }
 
 // enables or disables the start and end day time interval controls
@@ -1050,6 +1055,7 @@ void TfrmAnalysis::OnProbabilityModelClick() {
            chkRelativeRiskEstimatesAreaAscii->Enabled = true;
            chkRelativeRiskEstimatesAreaDBase->Enabled = true;
            rdoPercentageTemproal->Caption = "Percent of Study Period (<= 90%)";
+           lblSimulatedLogLikelihoodRatios->Caption = "Simulated Log Likelihood Ratios";
            break;
         case 2:
            rgTypeAnalysis->Controls[0]->Enabled = false;
@@ -1062,7 +1068,10 @@ void TfrmAnalysis::OnProbabilityModelClick() {
            chkRelativeRiskEstimatesAreaAscii->Enabled = false;
            chkRelativeRiskEstimatesAreaDBase->Enabled = false;
            rdoPercentageTemproal->Caption = "Percent of Study Period (<= 50%)";
+           lblSimulatedLogLikelihoodRatios->Caption = "Simulated Test Statistics";
            break;
+         default : ZdGenerateException("Unknown probabilty model index '%d'.",
+                                       "OnProbablityModelClick()", rgProbability->ItemIndex);
      }
      OnAnalysisTypeClick();
    }
@@ -1223,7 +1232,9 @@ void TfrmAnalysis::SaveTextParameters() {
     gParameters.SetOutputAreaSpecificDBase(chkCensusAreasReportedClustersDBase->Checked);
     gParameters.SetOutputRelativeRisksDBase(chkRelativeRiskEstimatesAreaDBase->Enabled && chkRelativeRiskEstimatesAreaDBase->Checked);
     gParameters.SetOutputSimLogLikeliRatiosDBase(chkSimulatedLogLikelihoodRatiosDBase->Checked);
-  }  
+    gParameters.SetMaximumReportedGeographicalClusterSize(atof(edtReportClustersSmallerThan->Text.c_str()));
+    gParameters.SetRestrictReportedClusters(chkRestrictReportedClusters->Enabled && chkRestrictReportedClusters->Checked);
+  }
   catch (ZdException & x) {
     x.AddCallpath("SaveTextParameters()", "TfrmAnalysis");
     throw;
@@ -1252,6 +1263,19 @@ void TfrmAnalysis::SetCoordinateFile(const char * sCoordinateFileName) {
 void TfrmAnalysis::SetPopulationFile(const char * sPopulationFileName) {
   gParameters.SetPopulationFileName(sPopulationFileName);
   edtPopFileName->Text = sPopulationFileName;
+}
+
+void TfrmAnalysis::SetReportingSmallerClustersText() {
+  ZdString      sTemp;
+
+  if (rdoSpatialPercentage->Checked)
+    sTemp.printf("percent of population at risk (< %s).", edtMaxClusterSize->Text.c_str());
+  else if (rgCoordinates->ItemIndex == CARTESIAN)
+    sTemp.printf("cartesian units in radius (< %s).", edtMaxClusterSize->Text.c_str());
+  else
+    sTemp.printf("kilometers in radius (< %s).", edtMaxClusterSize->Text.c_str());
+
+  lblReportSmallerClusters->Caption = sTemp.GetCString();
 }
 
 // Sets caption of radio button that indicates maximum spatial cluster size is
@@ -1321,10 +1345,6 @@ void TfrmAnalysis::SetupInterface() {
   Caption = gsParamFileName;
 
   try {
-    // Odd SatScan changed these values... WHY ???
-    //gParameters.geAnalysisType --;
-    //gParameters.m_nAreas --;
-
     // THIS "IF" STATEMENT IS HERE JUST TO MATCH THE CODE FOUND IN THE OLD VISUAL C++ INTERFACE....
     if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
       gParameters.SetTimeIntervalUnitsType(YEAR);
@@ -1393,8 +1413,11 @@ void TfrmAnalysis::SetupInterface() {
     cboCriteriaSecClusters->ItemIndex = gParameters.GetCriteriaSecondClustersType();
     chkClustersInColumnFormatDBase->Checked = gParameters.GetOutputClusterLevelDBase();
     chkCensusAreasReportedClustersDBase->Checked = gParameters.GetOutputAreaSpecificDBase();
+    edtReportClustersSmallerThan->Text = gParameters.GetMaximumReportedGeoClusterSize();
+    chkRestrictReportedClusters->Checked = gParameters.GetRestrictingMaximumReportedGeoClusterSize();
     //now enable or disable controls appropriately
     OnPrecisionTimesClick();
+    SetReportingSmallerClustersText();
   }
   catch (ZdException & x) {
     x.AddCallpath("SetupInterface()", "TfrmAnalysis");
@@ -1512,6 +1535,32 @@ bool TfrmAnalysis::ValidateParams() {
   return bDataOk;
 }
 
+bool TfrmAnalysis::ValidateReportedSpatialClusterSize() {
+  bool   bOkParams=true;
+
+  try {
+    if (edtMaxClusterSize->Enabled && edtReportClustersSmallerThan->Enabled) {
+      if (!edtReportClustersSmallerThan->Text.Length() || atof(edtReportClustersSmallerThan->Text.c_str()) == 0)
+        ZdException::GenerateNotification("Please specify a maximum cluster size for reported clusters "
+                                          "between 0 and the maximum spatial cluster size of %g.",
+                                          "edtReportClustersSmallerThanExit()", atof(edtMaxClusterSize->Text.c_str()));
+
+
+      if (atof(edtReportClustersSmallerThan->Text.c_str()) >= atof(edtMaxClusterSize->Text.c_str()))
+        ZdException::GenerateNotification("The maximum cluster size for reported clusters must be less than the maximum spatial cluster size.\n",
+                                          "ValidateReportedSpatialClusterSize()");
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ValidateReportedSpatialClusterSize()","TfrmAnalysis");
+    PageControl1->ActivePage = tbOutputFiles;
+    edtReportClustersSmallerThan->SetFocus();
+    bOkParams = false;
+    DisplayBasisException(this, x);
+  }
+  return bOkParams;
+}
+
 bool TfrmAnalysis::ValidateSpatialClusterSize() {
   double dValue;
   bool   bOkParams=true;
@@ -1536,7 +1585,7 @@ bool TfrmAnalysis::ValidateSpatialClusterSize() {
     }
   }
   catch (ZdException & x) {
-    x.AddCallpath("ValidateSpatialClusterSize()", "TfrmAnalysis");
+    x.AddCallpath("ValidateSpatialClusterSize()","TfrmAnalysis");
     PageControl1->ActivePage = tbScanningWindow;
     edtMaxClusterSize->SetFocus();
     bOkParams = false;
@@ -1679,6 +1728,7 @@ void __fastcall TfrmAnalysis::cboCriteriaSecClustersChange(TObject *Sender){
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::rdoSpatialPercentageClick(TObject *Sender) {
    gParameters.SetMaximumSpacialClusterSizeType(PERCENTAGEOFMEASURETYPE);
+   SetReportingSmallerClustersText();
 }
 
 //------------------------------------------------------------------------------
@@ -1716,6 +1766,7 @@ void __fastcall TfrmAnalysis::rgCoordinatesClick(TObject *Sender) {
   try {
     gParameters.SetCoordinatesType((CoordinatesType)rgCoordinates->ItemIndex);
     SetSpatialDistanceCaption();
+    SetReportingSmallerClustersText();
   }
   catch (ZdException & x) {
     x.AddCallpath("rgCoordinatesClick()", "TfrmAnalysis");
@@ -1725,6 +1776,7 @@ void __fastcall TfrmAnalysis::rgCoordinatesClick(TObject *Sender) {
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::rdoSpatialDistanceClick(TObject *Sender){
    gParameters.SetMaximumSpacialClusterSizeType(DISTANCETYPE);
+   SetReportingSmallerClustersText();
 }
 //---------------------------------------------------------------------------
 
@@ -1809,6 +1861,24 @@ void __fastcall TfrmAnalysis::edtMaxCirclePopulationFilenameChange(TObject *Send
   edtMaxCirclePopulationFilename->Hint = edtMaxCirclePopulationFilename->Text;
 }
 //---------------------------------------------------------------------------
+void __fastcall TfrmAnalysis::edtReportClustersSmallerThanExit(TObject *Sender){
+  try {
+      if (!edtReportClustersSmallerThan->Text.Length() || atof(edtReportClustersSmallerThan->Text.c_str()) == 0)
+        ZdException::GenerateNotification("Please specify a maximum cluster size for reported clusters\n"
+                                          "between 0 and the maximum spatial cluster size of %g.",
+                                          "edtReportClustersSmallerThanExit()", atof(edtMaxClusterSize->Text.c_str()));
+  }
+  catch (ZdException & x) {
+    edtReportClustersSmallerThan->SetFocus();
+    x.AddCallpath("edtReportClustersSmallerThanExit()","TfrmAnalysis");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
 
-
+void __fastcall TfrmAnalysis::chkRestrictReportedClustersClick(TObject *Sender){
+  edtReportClustersSmallerThan->Enabled = edtMaxClusterSize->Enabled && chkRestrictReportedClusters->Checked;
+  edtReportClustersSmallerThan->Color = edtMaxClusterSize->Enabled && chkRestrictReportedClusters->Checked ? clWindow : clInactiveBorder;
+}
+//---------------------------------------------------------------------------
 
