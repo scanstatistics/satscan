@@ -14,10 +14,9 @@ class CTIAlive : public CTimeIntervals {
     virtual ~CTIAlive() {};
 
     virtual CTIAlive          * Clone() const;
-    virtual void                CompareDataStreamClusters(CCluster & Running, CCluster & TopShapeCluster,
-                                                          ZdPointerVector<AbstractTemporalClusterStreamData> & StreamData);
     virtual void                CompareClusters(CCluster & Running, CCluster & TopShapeCluster, const count_t* pCases,
                                                 const measure_t* pMeasure, const measure_t* pMeasureSquared);
+    virtual void                CompareDataStreamClusters(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData);
     virtual void                ComputeBestMeasures(const count_t* pCases,
                                                     const measure_t* pMeasure,
                                                     const measure_t* pMeasureSquared,

@@ -21,7 +21,7 @@ CTIAlive * CTIAlive::Clone() const {
     has a greater loglikelihood.*/
 void CTIAlive::CompareClusters(CCluster & Running, CCluster & TopShapeCluster, const count_t* pCases,
                                const measure_t* pMeasure, const measure_t* ppMeasureSquared) {
-                               
+
   int           iWindowStart, iWindowEnd;
   CModel      & ProbabilityModel(gData.GetProbabilityModel());
   count_t       tCases, tTotalCases(gData.GetTotalCases());
@@ -32,7 +32,8 @@ void CTIAlive::CompareClusters(CCluster & Running, CCluster & TopShapeCluster, c
   iWindowEnd  = giNumIntervals;
   for (; iWindowStart < iWindowEnd; ++iWindowStart) {
      tCases = pCases[iWindowStart];
-     tMeasure = Running.g_Measure_(iWindowStart, pMeasure, ppMeasureSquared);
+     tMeasure = pMeasure[iWindowStart];
+     //tMeasure = Running.g_Measure_(iWindowStart, pMeasure, ppMeasureSquared);
      if (Running.RateIsOfInterest(tCases, tMeasure, tTotalCases, tTotalMeasure)) {
        Running.m_nRatio = ProbabilityModel.CalcLogLikelihoodRatio(tCases, tMeasure, tTotalCases, tTotalMeasure, Running.m_DuczmalCorrection);
        if (Running.m_nRatio > TopShapeCluster.m_nRatio) {
@@ -49,10 +50,7 @@ void CTIAlive::CompareClusters(CCluster & Running, CCluster & TopShapeCluster, c
 /** Iterates through all possible time windows for runnning cluster, comparing
     against current top cluster. Reassigns top cluster if running cluster ever
     has a greater loglikelihood.*/
-void CTIAlive::CompareDataStreamClusters(CCluster & Running,
-                                                 CCluster & TopShapeCluster,
-                                                 ZdPointerVector<AbstractTemporalClusterStreamData> & StreamData) {
-
+void CTIAlive::CompareDataStreamClusters(CCluster & Running, CCluster & TopShapeCluster, StreamDataContainer_t & StreamData) {
   int                                   iWindowStart, iWindowEnd;
   CModel                              & Model(gData.GetProbabilityModel());
   AbstractTemporalClusterStreamData   * pStreamData;
@@ -66,7 +64,8 @@ void CTIAlive::CompareDataStreamClusters(CCluster & Running,
      for (size_t t=0; t < StreamData.size(); ++t) {
        pStreamData = StreamData[t];
        pStreamData->gCases = pStreamData->gpCases[iWindowStart];
-       pStreamData->gMeasure = Running.g_Measure_(iWindowStart, pStreamData->gpMeasure, pStreamData->gpSqMeasure);
+       pStreamData->gMeasure = pStreamData->gpMeasure[iWindowStart];
+       //pStreamData->gMeasure = Running.g_Measure_(iWindowStart, pStreamData->gpMeasure, pStreamData->gpSqMeasure);
        if (Running.RateIsOfInterest(pStreamData->gCases, pStreamData->gMeasure, pStreamData->gTotalCases, pStreamData->gTotalMeasure))
           Running.m_nRatio += Model.CalcLogLikelihoodRatio(pStreamData->gCases, pStreamData->gMeasure, pStreamData->gTotalCases, pStreamData->gTotalMeasure, Running.m_DuczmalCorrection);
      }
