@@ -1204,6 +1204,7 @@ void CParameters::ReadOutputFileSectionFromIni(ZdIniFile& file) {
       m_bOutputRelRisks = ValueIsYes(pSection->GetLine(pSection->FindKey(INCLUDE_REL_RISKS_LINE))->GetValue());
       gbRelativeRiskDBF = ValueIsYes(pSection->GetLine(pSection->FindKey(DBASE_RELATIVE_RISKS))->GetValue());
       gbLogLikelihoodDBF = ValueIsYes(pSection->GetLine(pSection->FindKey(DBASE_LOG_LIKELI))->GetValue());
+      SetIntValue(m_iCriteriaSecondClusters, pSection->GetLine(pSection->FindKey(CRIT_REPORT_SEC_CLUSTERS_LINE))->GetValue(), CRITERIA_SECOND_CLUSTERS, NOGEOOVERLAP);
    }
    catch (ZdException &x) {
       x.AddCallpath("ReadOutputFileSectionFromIni()", "CParameters");
