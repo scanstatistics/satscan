@@ -45,8 +45,13 @@ int main(int argc, char *argv[]) {
     }
     // read options
     for (i=2; i < argc; ++i) {
-       if (!stricmp(argv[i], "-v"))
-         Parameters.SetSuppressInstanceParticularOutput(true);
+       if (!stricmp(argv[i], "-v")) {
+         Parameters.SetOutputClusterLevelAscii(true);
+         Parameters.SetOutputAreaSpecificAscii(true);
+         if (Parameters.GetProbabiltyModelType() != SPACETIMEPERMUTATION)
+           Parameters.SetOutputRelativeRisksAscii(true);
+         Parameters.SetOutputSimLogLikeliRatiosAscii(true);
+       }
        else if (!stricmp(argv[i], "-o")) {
          if (argc < i + 2)
            GenerateUsageException();

@@ -355,14 +355,12 @@ bool CAnalysis::CreateReport(time_t RunTime) {
    try {
       OpenReportFile(fp, "w");
 
-      if (! m_pParameters->GetSuppressInstanceParticularOutput()) {
-        fprintf(fp, "                 _____________________________\n\n");
-        DisplayVersion(fp, 1);
-        fprintf(fp, "                 _____________________________\n\n");
+      fprintf(fp, "                 _____________________________\n\n");
+      DisplayVersion(fp, 1);
+      fprintf(fp, "                 _____________________________\n\n");
 
-        gsStartTime = ctime(&RunTime);
-        fprintf(fp,"\nProgram run on: %s\n", gsStartTime.GetCString());
-      }  
+      gsStartTime = ctime(&RunTime);
+      fprintf(fp,"\nProgram run on: %s\n", gsStartTime.GetCString());
 
       m_pParameters->DisplayAnalysisType(fp);
       m_pParameters->DisplayTimeAdjustments(fp);
@@ -590,22 +588,20 @@ bool CAnalysis::FinalizeReport(time_t RunTime) {
       nMinutes   = floor((nTotalTime - nHours*60*60)/60);
       nSeconds   = nTotalTime - (nHours*60*60) - (nMinutes*60);
 
-      if (! m_pParameters->GetSuppressInstanceParticularOutput()) {
-        fprintf(fp,"\nProgram completed  : %s", ctime(&CompletionTime));
-        if (0 < nHours && nHours < 1.5)
-          szHours = "hour";
-        if (0 < nMinutes && nMinutes < 1.5)
-      	  szMinutes = "minute";
-        if (0.5 <= nSeconds && nSeconds < 1.5)
-          szSeconds = "second";
-        if (nHours > 0)
-          fprintf(fp,"Total Running Time : %.0f %s %.0f %s %.0f %s", nHours, szHours,
-                   nMinutes, szMinutes, nSeconds, szSeconds);
-        else if (nMinutes > 0)
-          fprintf(fp,"Total Running Time : %.0f %s %.0f %s", nMinutes, szMinutes, nSeconds, szSeconds);
-        else
-          fprintf(fp,"Total Running Time : %.0f %s",nSeconds, szSeconds);
-      }
+      fprintf(fp,"\nProgram completed  : %s", ctime(&CompletionTime));
+      if (0 < nHours && nHours < 1.5)
+        szHours = "hour";
+      if (0 < nMinutes && nMinutes < 1.5)
+        szMinutes = "minute";
+      if (0.5 <= nSeconds && nSeconds < 1.5)
+        szSeconds = "second";
+      if (nHours > 0)
+        fprintf(fp,"Total Running Time : %.0f %s %.0f %s %.0f %s", nHours, szHours,
+                nMinutes, szMinutes, nSeconds, szSeconds);
+      else if (nMinutes > 0)
+        fprintf(fp,"Total Running Time : %.0f %s %.0f %s", nMinutes, szMinutes, nSeconds, szSeconds);
+      else
+        fprintf(fp,"Total Running Time : %.0f %s",nSeconds, szSeconds);
       fclose(fp);
    }
    catch (ZdException & x) {

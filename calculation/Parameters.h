@@ -258,8 +258,6 @@ class CParameters {
                                                                                     to false has an implied disclaimer, you may get strange
                                                                                     occurances programmatically and statically. */
     static int                          giNumParameters;                        /** number enumerated parameters */
-    bool                                gbSuppressInstanceParticularOutput;     /** indicates whether results of analysis should not print
-                                                                                    information such as date run, input files, etc.*/
 
     ZdString                          & AsString(ZdString & ref, int i) {ref = i; return ref;}
     ZdString                          & AsString(ZdString & ref, float f) {ref = f;return ref;}
@@ -395,7 +393,6 @@ class CParameters {
     Julian                              GetStudyPeriodEndDateAsJulian() /*const*/;
     const std::string                 & GetStudyPeriodStartDate() const {return gsStudyPeriodStartDate;}
     Julian                              GetStudyPeriodStartDateAsJulian() /*const*/;
-    bool                                GetSuppressInstanceParticularOutput() const {return gbSuppressInstanceParticularOutput;}
     bool                                GetTerminateSimulationsEarly() const {return gbEarlyTerminationSimulations;}
     long                                GetTimeIntervalLength() const {return glTimeIntervalLength;}
     DatePrecisionType                   GetTimeIntervalUnitsType() const {return geTimeIntervalUnitsType;}
@@ -461,7 +458,6 @@ class CParameters {
     void                                SetStartRangeStartDate(const char * sStartRangeStartDate);
     void                                SetStudyPeriodEndDate(const char * sStudyPeriodEndDate);
     void                                SetStudyPeriodStartDate(const char * sStudyPeriodStartDate);
-    void                                SetSuppressInstanceParticularOutput(bool b) {gbSuppressInstanceParticularOutput = b;}
     void                                SetTerminateSimulationsEarly(bool b) {gbEarlyTerminationSimulations = b;}
     void                                SetTimeIntervalLength(long lTimeIntervalLength);
     void                                SetTimeIntervalUnitsType(DatePrecisionType eTimeIntervalUnits);
