@@ -3,6 +3,7 @@
 #define __PURELYSPATIALANALYSIS_H
 //*****************************************************************************
 #include "Analysis.h"
+#include "ClusterData.h"
 #include "PurelySpatialData.h"
 #include "PurelySpatialCluster.h"
 #include "MeasureList.h"
