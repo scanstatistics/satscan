@@ -573,6 +573,8 @@ bool CPoissonModel::ReadData() {
     if (! gData.ReadCaseFile())
       return false;
     gData.GetTInfo()->tiCheckCasesHavePopulations();
+    if (gParameters.UseSpecialPopulationFile() && !gData.ReadSpecialPopulationFile())
+      return false;
     if (gParameters.UseSpecialGrid() && !gData.ReadGridFile())
       return false;
   }

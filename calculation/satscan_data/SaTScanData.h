@@ -34,6 +34,7 @@ class CSaTScanData {
     BasePrint                 * gpPrint;
     double                      m_nAnnualRatePop;
     PopulationCategories        gPopulationCategories;
+    std::vector<measure_t>      gvCircleMeasure;
 
     void                        AllocateCountStructure(count_t***  pCounts);
     void                        DeallocateCountStructure(count_t***  pCounts);
@@ -146,6 +147,7 @@ class CSaTScanData {
     bool                        ReadCoordinatesFile();
     bool                        ReadGridFile();
     bool                        ReadPopulationFile();
+    bool                        ReadSpecialPopulationFile();
     void                        SetPurelyTemporalSimCases();
     void                        SetMaxCircleSize();
 };

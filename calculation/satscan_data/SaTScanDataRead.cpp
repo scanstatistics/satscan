@@ -816,8 +816,7 @@ bool CSaTScanData::ReadPopulationFile() {
     // When a prospective analysis is conducted and if a population file is used,
     //and if the population for a tract is defined at more than one time period,
     //error message should be shown in the running window and the application terminated.
-    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME &&
-        m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE && vPopulationDates.size() > 1) {
+    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME && m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE && vPopulationDates.size() > 1) {
         bValid = false;
         gpPrint->PrintInputWarning("Error: For the prospective space-time analysis to be correct,\n"
                                    "       it is critical that the scanning spatial window is the\n"
@@ -890,6 +889,82 @@ bool CSaTScanData::ReadPopulationFile() {
     //close file pointer
     if (fp) fclose(fp);
     x.AddCallpath("ReadPopulationFile()", "CSaTScanData");
+    throw;
+  }
+  return bValid;
+}
+
+/** Read the special population that will be used to construct circles
+    about grid points(centroids).                                      */
+bool CSaTScanData::ReadSpecialPopulationFile() {
+  int                           iRecNum=0;
+  bool                          bValid=true, bEmpty=true;
+  tract_t                       TractIdentifierIndex;
+  float                         fPopulation;
+  FILE                        * fp=0; // Ptr to population file
+  StringParser                  Parser;
+
+  try {
+    gpPrint->SatScanPrintf("Reading the special population file\n");
+    if ((fp = fopen(m_pParameters->GetSpecialPopulationFileName().c_str(), "r")) == NULL) {
+      gpPrint->SatScanPrintWarning("Error: Could not open population file:\n'%s'.\n",
+                                   m_pParameters->GetSpecialPopulationFileName().c_str());
+      return false;
+    }
+    gpPrint->SetImpliedInputFileType(BasePrint::SPECIALPOPFILE);
+
+    //initialize circle-measure array
+    gvCircleMeasure.resize(m_nTracts, 0);
+
+    //1st pass, determine unique population dates. Notes errors with records and continues reading.
+    while (Parser.ReadString(fp)) {
+        ++iRecNum;
+        //skip lines that do not contain data
+        if (!Parser.HasWords())
+          continue;
+        bEmpty=false;
+        //read tract identifier
+        if ((TractIdentifierIndex = gpTInfo->tiGetTractIndex(Parser.GetWord(0))) == -1) {
+          gpPrint->PrintInputWarning("Error: Unknown location identifier in special population file, record %ld.\n", iRecNum);
+          gpPrint->PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
+          bValid = false;
+          continue;
+        }
+        //read population
+        if (!Parser.GetWord(1)) {
+          gpPrint->PrintInputWarning("Error: Record %d of special population file missing population.\n", iRecNum);
+          bValid = false;
+          continue;
+        }
+        sscanf(Parser.GetWord(1), "%f", &fPopulation);
+        //validate that population is not negative or exceeding type precision
+        if (fPopulation < 0) {//validate that count is not negative or exceeds type precision
+          if (strstr(Parser.GetWord(1), "-"))
+             gpPrint->PrintInputWarning("Error: Negative population in record %ld of special population file.\n", iRecNum);
+          else
+             gpPrint->PrintInputWarning("Error: Population '%s' exceeds maximum value of %i in record %ld of special population file.\n",
+                                        Parser.GetWord(1), std::numeric_limits<float>::max(), iRecNum);
+           bValid = false;
+           continue;
+        }
+        gvCircleMeasure[TractIdentifierIndex] += fPopulation;
+    }
+    //close file pointer
+    fclose(fp); fp=0;
+    //if invalid at this point then read encountered problems with data format,
+    //inform user of section to refer to in user guide for assistance
+    if (! bValid)
+      gpPrint->PrintWarningLine("Please see 'special population file format' in the user guide for help.\n");
+    //print indication if file contained no data
+    else if (bEmpty) {
+      gpPrint->PrintWarningLine("Error: Special Population file contains no data.\n");
+      bValid = false;
+    }
+  }
+  catch (ZdException &x) {
+    //close file pointer
+    if (fp) fclose(fp);
+    x.AddCallpath("ReadSpecialPopulationFile()", "CSaTScanData");
     throw;
   }
   return bValid;

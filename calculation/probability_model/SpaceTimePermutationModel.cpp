@@ -183,6 +183,8 @@ bool CSpaceTimePermutationModel::ReadData() {
       return false;
     if (! gData.ReadCaseFile())
       return false;
+    if (gParameters.UseSpecialPopulationFile() && !gData.ReadSpecialPopulationFile())
+      return false;
     if (gParameters.UseSpecialGrid() && !gData.ReadGridFile())
       return false;
     InitializeRandomizationStructures();

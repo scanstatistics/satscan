@@ -23,20 +23,15 @@ BasePrint::~BasePrint() {
 // pre : none
 // post : returns a string by reference of the file type name if eType is valid
 void BasePrint::GetInputFileType(eInputFileType eType, std::string& sName) {
-   switch (eType) {
-      case CASEFILE :
-         sName = "case"; break;
-      case CONTROLFILE :
-         sName = "control"; break;
-      case POPFILE :
-         sName = "population"; break;
-      case COORDFILE :
-         sName = "coordinates"; break;
-      case GRIDFILE :
-         sName = "special grid"; break;
-      default :
-         ZdException::GenerateNotification("Invalid input file type warning message!", "ERROR!");
-   }
+  switch (eType) {
+    case CASEFILE       : sName = "case"; break;
+    case CONTROLFILE    : sName = "control"; break;
+    case POPFILE        : sName = "population"; break;
+    case COORDFILE      : sName = "coordinates"; break;
+    case GRIDFILE       : sName = "special grid"; break;
+    case SPECIALPOPFILE : sName = "special population"; break;
+    default : ZdException::GenerateNotification("Invalid input file type warning message!", "GetInputFileType()");
+  }
 }
 
 void BasePrint::SatScanPrintf(const char * sMessage, ... )

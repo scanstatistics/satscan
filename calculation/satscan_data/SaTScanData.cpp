@@ -196,8 +196,9 @@ void CSaTScanData::DeAllocSimCases() {
 }
 
 bool CSaTScanData::FindNeighbors() {
-   int i, j;
-   long lTotalNumEllipses = m_pParameters->GetNumTotalEllipses();
+   int          i, j;
+   double       dTotalPopulation=0;
+   long         lTotalNumEllipses = m_pParameters->GetNumTotalEllipses();
 
    try {
       //then use an unsigned short...
@@ -225,15 +226,27 @@ bool CSaTScanData::FindNeighbors() {
             m_NeighborCounts[i][j] = 0;                // USE MEMSET HERE...
       }
 
+      //adjust special population file now that we know the total case count
+      if (m_pParameters->UseSpecialPopulationFile()) {
+        for (i=0; i < (int)gvCircleMeasure.size(); i++)
+           dTotalPopulation += gvCircleMeasure[i];
+        if (dTotalPopulation ==0)
+          SSGenerateException("Error: Total population for special population file is zero.","FindNeighbors()");
+        for (i=0; i < (int)gvCircleMeasure.size(); i++)
+          gvCircleMeasure[i] *= m_nTotalCases/dTotalPopulation;
+      }
+
       if (m_pParameters->GetIsSequentialScanning())
         MakeNeighbors(gpTInfo, gpGInfo, m_pSortedInt, m_pSortedUShort, m_nTracts, m_nGridTracts,
-                      m_pMeasure[0], m_nMaxCircleSize, m_nTotalMeasure, m_NeighborCounts,
+                      (m_pParameters->UseSpecialPopulationFile() ? &gvCircleMeasure[0] : m_pMeasure[0]),
+                      m_nMaxCircleSize, m_nTotalMeasure, m_NeighborCounts,
                       m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                       m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
                       m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
       else
         MakeNeighbors(gpTInfo, gpGInfo, m_pSortedInt, m_pSortedUShort, m_nTracts, m_nGridTracts,
-                      m_pMeasure[0], m_nMaxCircleSize, m_nMaxCircleSize, m_NeighborCounts,
+                      (m_pParameters->UseSpecialPopulationFile() ? &gvCircleMeasure[0] : m_pMeasure[0]),
+                      m_nMaxCircleSize, m_nMaxCircleSize, m_NeighborCounts,
                       m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                       m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
                       m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
@@ -287,37 +300,34 @@ tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness
 }
 
 void CSaTScanData::Init() {
-      gpTInfo = 0;          // DTG
-      gpGInfo = 0;
-      m_pModel = 0;
-      m_pCases     = 0;
-      m_pControls  = 0;
-      m_pMeasure   = 0;
-      m_pPTCases   = 0;
-      m_pPTSimCases = 0;
-      m_pPTMeasure = 0;
-      m_pSimCases  = 0;
-      m_pSortedInt = 0;
-      m_pSortedUShort = 0;
-
-      m_NeighborCounts = 0;
-      m_pTimes = 0;
-      m_pIntervalStartTimes = 0;
-      m_nTotalCases    = 0;
-      m_nTotalControls = 0;
-      m_nTotalMeasure  = 0;
-      m_nAnnualRatePop = 100000;
-      mdE_Angles = 0;
-      mdE_Shapes = 0;
-
-      m_pCases_NC    = 0;
-      m_pSimCases_NC = 0;
-      m_pMeasure_NC  = 0;
-      m_pCases_TotalByTimeInt = 0;
-      m_pSimCases_TotalByTimeInt = 0;
-      m_pMeasure_TotalByTimeInt = 0;
+  gpTInfo = 0;
+  gpGInfo = 0;
+  m_pModel = 0;
+  m_pCases     = 0;
+  m_pControls  = 0;
+  m_pMeasure   = 0;
+  m_pPTCases   = 0;
+  m_pPTSimCases = 0;
+  m_pPTMeasure = 0;
+  m_pSimCases  = 0;
+  m_pSortedInt = 0;
+  m_pSortedUShort = 0;
+  m_NeighborCounts = 0;
+  m_pTimes = 0;
+  m_pIntervalStartTimes = 0;
+  m_nTotalCases    = 0;
+  m_nTotalControls = 0;
+  m_nTotalMeasure  = 0;
+  m_nAnnualRatePop = 100000;
+  mdE_Angles = 0;
+  mdE_Shapes = 0;
+  m_pCases_NC    = 0;
+  m_pSimCases_NC = 0;
+  m_pMeasure_NC  = 0;
+  m_pCases_TotalByTimeInt = 0;
+  m_pSimCases_TotalByTimeInt = 0;
+  m_pMeasure_TotalByTimeInt = 0;
 }
-
 void CSaTScanData::MakeData(int iSimulationNumber) {
    try {
       m_pModel->MakeData(iSimulationNumber);
@@ -361,7 +371,7 @@ void CSaTScanData::ReadDataFromFiles() {
     SetIntervalStartTimes();
     SetTimeIntervalRangeIndexes();
 
-    if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
+    if (m_pParameters->GetIsProspectiveAnalysis())
       SetProspectiveIntervalStart();
 
     if (! m_pModel->ReadData())
