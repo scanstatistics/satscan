@@ -26,7 +26,7 @@ CategoryDescriptor::~CategoryDescriptor() {
 void CategoryDescriptor::AddCaseCount(count_t tCaseCount) {
   try {
     if (gtCaseCount + tCaseCount < 0)
-      ZdGenerateException("Error: Attempt to add cases of '%d' to current cases of '%d' causes data overflow.",
+      SSGenerateException("Error: Attempt to add cases of '%d' to current cases of '%d' causes data overflow.",
                           "AddCaseCount()", tCaseCount, gtCaseCount);
 
     gtCaseCount += tCaseCount;
@@ -47,7 +47,7 @@ void CategoryDescriptor::AddPopulationAtDateIndex(float fPopluation, int iDateIn
     if (gpPopulationList[iDateIndex] + fPopluation < 0) {
       char      sDateString[20];
 
-      ZdGenerateException("Error: Attempt to add population of '%.2f' to current population of '%.2f' at date '%s' causes data overflow.",
+      SSGenerateException("Error: Attempt to add population of '%.2f' to current population of '%.2f' at date '%s' causes data overflow.",
                           "AddPopulationAtDateIndex()", fPopluation, gpPopulationList[iDateIndex],
                           JulianToChar(sDateString, theTractHandler.tiGetPopDate(iDateIndex)));
     }
@@ -460,7 +460,7 @@ void TractHandler::tiAddCategoryToTract(tract_t tTractIndex, int iCategoryIndex,
            gvTractDescriptors[tTractIndex]->GetCategoryDescriptor(iCategoryIndex, (int)gvPopulationDates.size());
     tiAssignPopulation(thisDescriptor, PopulationDate, fPopulation);
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiAddCategoryToTract()", "TractHandler");
     throw;
   }
@@ -482,7 +482,7 @@ int TractHandler::tiAddCount(tract_t t, int iCategoryIndex, count_t Count) {
        pCategoryDescriptor->AddCaseCount(Count);
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiAddCount()", "TractHandler");
     throw;
   }
@@ -511,7 +511,7 @@ void TractHandler::tiAssignPopulation(CategoryDescriptor & thisCategoryDescripto
         thisCategoryDescriptor.AddPopulationAtDateIndex(fPopulation, iNumPopulationDates - 1, *this);
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiAssignPopulation()", "TractHandler");
     throw;
   }
@@ -561,16 +561,11 @@ void TractHandler::tiCalculateAlpha(double** pAlpha, Julian StartDate, Julian En
      /* Bug check, seeing that alpha values add to one. */
      sumalpha = 0;
      for (n = 0; n <= N+1; n++) sumalpha = sumalpha + (*pAlpha)[n];
-     if (sumalpha>1.0001 || sumalpha<0.9999) {
-       char sMessage[200], sTmp[50];
-       strcpy(sMessage, "\n\nError: Alpha values not calculated correctly in");
-       strcat(sMessage, "\n  file tinfo.c, function tiCalcAlpha. The sum of the ");
-       sprintf(sTmp, "\n  alpha values is %8.6lf rather than 1.\n", sumalpha);
-       strcat(sMessage, sTmp);
-       SSGenerateException(sMessage, "tiCalculateAlpha()");
-     }
+     if (sumalpha>1.0001 || sumalpha<0.9999)
+       ZdGenerateException("Alpha values not calculated correctly.\nThe sum of the alpha values is %8.6lf rather than 1.\n",
+                           "tiCalculateAlpha()", sumalpha);
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiCalculateAlpha()", "TractHandler");
     throw;
   }
@@ -617,12 +612,12 @@ void TractHandler::tiCheckCasesHavePopulations() const {
        }
 
        if (dTractPopulation == 0 && iTractCaseCount > 0)
-         ZdGenerateException("Error: Total population is zero for tract %s but has %d cases.",
+         SSGenerateException("Error: Total population is zero for tract %s but has %d cases.",
                              "tiCheckCasesHavePopulations()",
                              gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer), iTractCaseCount);
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiCheckCasesHavePopulations()", "TractHandler");
     throw;
   }
@@ -667,7 +662,7 @@ bool TractHandler::tiCheckZeroPopulations(FILE *pDisplay) const {
 
     free (PopTotalsArray);
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     free (PopTotalsArray);
     x.AddCallpath("tiCheckZeroPopulations()", "TractHandler");
     throw;
@@ -696,7 +691,7 @@ tract_t TractHandler::tiCombineDuplicatesByCoordinates() {
          itrMajor++;
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiCombineDuplicatesByCoordinates()", "TractHandler");
     throw;
   }
@@ -712,7 +707,7 @@ void TractHandler::tiConcaticateDuplicateTractIdentifiers() {
     for (itrmap=gmDuplicateTracts.begin(); itrmap != gmDuplicateTracts.end(); itrmap++)
        itrmap->second->AddTractIdentifier(itrmap->first.c_str());
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiConcaticateDuplicateTractIdentifiers()", "TractHandler");
     throw;
   }
@@ -764,7 +759,7 @@ void TractHandler::tiFindPopDatesToUse(std::vector<Julian>& PopulationDates, Jul
       *pnPopDates = *pnPopDates+1;
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiFindPopDatesToUse()", "TractHandler");
     throw;
   }
@@ -787,7 +782,7 @@ double TractHandler::tiGetAlphaAdjustedPopulation(double & dPopulation, tract_t 
          dPopulation = dPopulation + (Alpha[j] * pCategoryDescriptor->GetPopulationAtDateIndex(j, *this));
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiGetAlphaAdjustedPopulation()", "TractHandler");
     throw;
   }
@@ -803,7 +798,7 @@ void TractHandler::tiGetCoords(tract_t t, double** pCoords) const {
     if (0 <= t && t < (tract_t)gvTractDescriptors.size())
       gvTractDescriptors[t]->GetCoordinates(*pCoords, *this);
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiGetCoords()", "TractHandler");
     throw;
   }
@@ -815,7 +810,7 @@ void TractHandler::tiGetCoords2(tract_t t, double* pCoords) const {
     if (0 <= t || t < (tract_t)gvTractDescriptors.size())
       gvTractDescriptors[t]->GetCoordinates(pCoords, *this);
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiGetCoords2()", "TractHandler");
     throw;
   }
@@ -836,7 +831,7 @@ count_t TractHandler::tiGetCount(tract_t t, int iCategoryIndex) const {
     if (pCategoryDescriptor)
       tValue = pCategoryDescriptor->GetCaseCount();
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiGetCount()", "TractHandler");
     throw;
   }
@@ -868,7 +863,7 @@ Julian TractHandler::tiGetPopDate(int iPopulationDateIndex) const {
     else
       ReturnDate = gvPopulationDates[iPopulationDateIndex];
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiGetPop()", "TractHandler");
     throw;
   }
@@ -884,7 +879,7 @@ int TractHandler::tiGetPopDateIndex(Julian Date) {
        if (Date == gvPopulationDates[i])
          iReturn = i;
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiGetPopDateIndex()", "TractHandler");
     throw;
   }
@@ -905,7 +900,7 @@ float TractHandler::tiGetPopulation(tract_t t, int iCategoryIndex, int iPopulati
     if (pCategoryDescriptor)
       fValue = pCategoryDescriptor->GetPopulationAtDateIndex(iPopulationDateIndex, *this);
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiGetPopulation()", "TractHandler");
     throw;
   }
@@ -938,7 +933,7 @@ int TractHandler::tiGetPopUpLowIndex(Julian* pDates, int nDateIndex, int nMaxDat
        }
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiGetPopUpLowIndex()", "TractHandler");
     throw;
   }
@@ -961,7 +956,7 @@ double TractHandler::tiGetRiskAdjustedPopulation(measure_t & dMeanPopulation, tr
          pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();               
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiGetRiskAdjustedPopulation()", "TractHandler");
     throw;
   }
@@ -976,7 +971,7 @@ const char * TractHandler::tiGetTid(tract_t t, std::string& sFirst) const {
 
     gvTractDescriptors[t]->GetTractIdentifier(0, sFirst);
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiGetTid()", "TractHandler");
     throw;
   }
@@ -990,7 +985,7 @@ const char * TractHandler::tiGetTid(tract_t t, std::string& sFirst) const {
 //    if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
 //      ZdException::Generate("Index %d out of range(0 - %d)", "tiGetTid()", t, gvTractDescriptors.size() - 1);
 //  }
-//  catch (SSException & x) {
+//  catch (ZdException & x) {
 //    x.AddCallpath("tiGetTid()", "TractHandler");
 //    throw;
 //  }
@@ -1007,7 +1002,7 @@ double TractHandler::tiGetTractCoordinate(tract_t t, int iDimension) const {
 
     dReturn = gvTractDescriptors[t]->GetCoordinatesAtDimension(iDimension, *this);
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiGetTractCoordinate()", "TractHandler");
     throw;
   }
@@ -1021,7 +1016,7 @@ void TractHandler::tiGetTractIdentifiers(tract_t t, std::vector<std::string>& vI
 
     gvTractDescriptors[t]->GetTractIdentifiers(vIdentifiers);
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiGetTractIdentifiers()", "TractHandler");
     throw;
   }
@@ -1049,7 +1044,7 @@ tract_t TractHandler::tiGetTractIndex(const char *tid) {
         tPosReturn = -1;
     }
   }
-  catch (SSException & x)  {
+  catch (ZdException & x)  {
     x.AddCallpath("tiGetTractIndex()", "TractHandler");
     throw;
   }
@@ -1070,12 +1065,12 @@ int TractHandler::tiInsertTnode(const char *tid, std::vector<double>& vCoordinat
     //check for tract identifier is duplicates map
     itrmap = gmDuplicateTracts.find(std::string(tid));
     if (itrmap != gmDuplicateTracts.end())
-      ZdException::Generate("Error: Tract %s is specified multiple times in geographical file.", "tiInsertTnode()", tid);
+      SSGenerateException("Error: Tract %s is specified multiple times in geographical file.", "tiInsertTnode()", tid);
     else {//search for tract identifier in vector
       gpSearchTractDescriptor->SetTractIdentifier(tid);
       itrPosition = lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), gpSearchTractDescriptor, CompareTractDescriptorIdentifier());
       if (itrPosition != gvTractDescriptors.end() && !strcmp((*itrPosition)->GetTractIdentifier(),tid))
-        ZdException::Generate("Error: Tract %s is specified multiple times in geographical file.", "tiInsertTnode()", tid);
+        SSGenerateException("Error: Tract %s is specified multiple times in geographical file.", "tiInsertTnode()", tid);
     }
 
     //check that coordinates are not duplicate
@@ -1090,7 +1085,7 @@ int TractHandler::tiInsertTnode(const char *tid, std::vector<double>& vCoordinat
       gvTractDescriptors.insert(itrPosition, pTractDescriptor);
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiInsertTnode()", "TractHandler");
     delete pTractDescriptor;
     throw;
@@ -1157,7 +1152,7 @@ void TractHandler::tiReportDuplicateTracts(FILE * fDisplay) const {
       fprintf(fDisplay, "\n");
     }
   }
-  catch (SSException & x)  {
+  catch (ZdException & x)  {
     x.AddCallpath("tiReportDuplicateTracts()", "TractHandler");
     throw;
   }
@@ -1213,7 +1208,7 @@ void TractHandler::tiReportZeroPops(FILE *pDisplay) const {
 
     free (PopTotalsArray);
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     free (PopTotalsArray);
     x.AddCallpath("tiReportZeroPops()", "TractHandler");
     throw;
@@ -1236,7 +1231,7 @@ int TractHandler::tiSetCount(tract_t t, int iCategoryIndex, count_t Count) {
        pCategoryDescriptor->SetCaseCount(Count);
     }
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiSetCount()", "TractHandler");
     throw;
   }
@@ -1252,7 +1247,7 @@ void TractHandler::Setup(const PopulationCategories & thePopulationCategories, B
     gpSearchTractDescriptor = new TractDescriptor(" ", Coordinates, 1);
     gpPopulationCategories = &thePopulationCategories;
   }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("Setup()", "TractHandler");
     delete gpSearchTractDescriptor; gpSearchTractDescriptor=0;
     throw;
@@ -1302,7 +1297,7 @@ void TractHandler::tiSetupPopDates(std::vector<Julian>& PopulationDates, Julian 
        DisplayDatesArray(pPopDates, nPopDates, "Array of Selected Pop Dates", stdout);
 #endif
       }
-  catch (SSException & x) {
+  catch (ZdException & x) {
     x.AddCallpath("tiSetupPopDates()", "TractHandler");
     throw;
   }
