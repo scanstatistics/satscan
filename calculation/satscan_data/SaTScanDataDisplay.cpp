@@ -31,16 +31,16 @@ void CSaTScanData::DisplayControls(FILE* pFile) {
 }
 
 void CSaTScanData::DisplaySimCases(FILE* pFile) {
-  int                   i, j;
-  count_t            ** ppSimCases(gpDataStreams->GetStream(0/*for now*/).GetSimCaseArray());
-
-  fprintf(pFile, "Simulated Case counts (Simulated Cases Array)\n\n");
-
-  for (i = 0; i < m_nTimeIntervals; ++i)
-    for (j = 0; j < m_nTracts; ++j)
-      fprintf(pFile, "Cases [%i][%i] = %i\n", i, j, ppSimCases[i][j]);
-
-  fprintf(pFile, "\n");
+//  int                   i, j;
+//  count_t            ** ppSimCases(gpDataStreams->GetStream(0/*for now*/).GetSimCaseArray());
+//
+//  fprintf(pFile, "Simulated Case counts (Simulated Cases Array)\n\n");
+//
+//  for (i = 0; i < m_nTimeIntervals; ++i)
+//    for (j = 0; j < m_nTracts; ++j)
+//      fprintf(pFile, "Cases [%i][%i] = %i\n", i, j, ppSimCases[i][j]);
+//
+// fprintf(pFile, "\n");
 }
 
 void CSaTScanData::DisplayMeasure(FILE* pFile) {
