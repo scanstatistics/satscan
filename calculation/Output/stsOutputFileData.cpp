@@ -89,7 +89,7 @@ void BaseOutputRecord::SetFieldValueAsString(ZdFieldValue& fv, const ZdString& s
 //===============================================================================
 
 BaseOutputStorageClass::BaseOutputStorageClass(BasePrint *pPrintDirection) {
-   if (pPrintDirection)
+   if (!pPrintDirection)
       ZdGenerateException("Null BasePrint pointer passed into constructor!", "BaseStorageClass");
    gpPrintDirection = pPrintDirection;
 }
