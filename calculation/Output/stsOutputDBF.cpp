@@ -40,7 +40,7 @@ DBaseOutput::~DBaseOutput() {
 // post: field vector is empty and all of the pointers are deleted
 void DBaseOutput::CleanupFieldVector() {
    try {
-      for(int i = gvFields.GetNumElements() - 1; i > 0; --i) {
+      while (gvFields.GetNumElements()) {
          delete gvFields[0]; gvFields[0] = 0;
          gvFields.RemoveElement(0);
       }
