@@ -82,6 +82,11 @@ double * TractDescriptor::GetCoordinates(double* pCoordinates, const TractHandle
   return pCoordinates;
 }
 
+/** Get coordinates of tract. */
+std::vector<double> TractDescriptor::GetCoordinates(TractHandler const & theTractHandler) const {
+  return std::vector<double>(gpCoordinates, gpCoordinates + theTractHandler.tiGetDimensions());
+}
+
 /** Returns coordinate at dimension. */
 double TractDescriptor::GetCoordinatesAtDimension(int iDimension, const TractHandler & theTractHandler) const {
   try {
@@ -257,7 +262,6 @@ void TractHandler::tiConcaticateDuplicateTractIdentifiers() {
 void TractHandler::tiGetCoords(tract_t t, double** pCoords) const {
   try {
     *pCoords = (double*)Smalloc(nDimensions * sizeof(double), gpPrintDirection);
-
     if (0 <= t && t < (tract_t)gvTractDescriptors.size())
       gvTractDescriptors[t]->GetCoordinates(*pCoords, *this);
   }
@@ -265,6 +269,15 @@ void TractHandler::tiGetCoords(tract_t t, double** pCoords) const {
     x.AddCallpath("tiGetCoords()", "TractHandler");
     throw;
   }
+}
+
+/**
+Get the tract coords for the given tract_t index.
+*/
+std::vector<double> TractHandler::tiGetCoords(tract_t t) const {
+  if ((t < 0) || (t >= (tract_t)gvTractDescriptors.size()))
+    ZdException::Generate("index, %d, is out of bounds: [0, %d].", "TractHandler", t, gvTractDescriptors.size() - 1);
+  return gvTractDescriptors[t]->GetCoordinates(*this);
 }
 
 /** Returns the tract coords for the given tract_t index. */
@@ -279,7 +292,7 @@ void TractHandler::tiGetCoords2(tract_t t, double* pCoords) const {
   }
 }
 
-/** Compute distance sqaured between 2 tracts. */
+/** Compute distance squared between 2 tracts. */
 double TractHandler::tiGetDistanceSq(double* pCoords, double* pCoords2) const {
   int           i;
   double        dDistanceSquared=0;
@@ -487,7 +500,7 @@ void TractHandler::tiReportDuplicateTracts(FILE * fDisplay) const {
 
 /** Internal setup function. */
 void TractHandler::Setup(BasePrint & PrintDirection) {
-  double Coordinates[1] ={0}; 
+  double Coordinates[1] ={0};
 
   try {
     gpPrintDirection = &PrintDirection;
