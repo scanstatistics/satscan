@@ -97,7 +97,11 @@ extern const char*      CRIT_REPORT_SEC_CLUSTERS_LINE;
 extern const char*      REPORTED_GEOSIZE_LINE;
 extern const char*      USE_REPORTED_GEOSIZE_LINE;
 
-/** Note: Ini formatted parameter file is stored in sections that 
+/** system ini section */
+extern const char*      SYSTEM_SECTION;
+extern const char*      CREATION_VERSION_LINE;
+
+/** Note: Ini formatted parameter file is stored in sections that
           reflect grouping of parameters on gui interface tabs. */
 
 
@@ -128,8 +132,6 @@ extern const char*      YEAR_PRECISION_TYPE;
 extern const char*      MONTH_PRECISION_TYPE;
 extern const char*      DAY_PRECISION_TYPE;
 
-extern const unsigned int PRINT_WIDTH;
-
 /** parameter types
     - parameters that are read from file with the exception of: DIMENSION, EXACTTIMES, and RUN_HISTORY_FILENAME */
 enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE, COORDFILE, OUTPUTFILE,
@@ -146,7 +148,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE, SIMULATION_TYPE,
                                     SIMULATION_SOURCEFILE, ADJ_BY_RR_FILE, OUTPUT_SIMULATION_DATA,
                                     SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE,
-                                    MULTI_STREAM_PURPOSE_TYPE};
+                                    MULTI_STREAM_PURPOSE_TYPE, CREATION_VERSION};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -280,6 +282,8 @@ class CParameters {
                                                                                     occurances programmatically and statically. */
     static int                          giNumParameters;                        /** number enumerated parameters */
 
+    struct {unsigned int iMajor; unsigned int iMinor; unsigned int iRelease;} gCreationVersion;
+
     ZdString                          & AsString(ZdString & ref, int i) {ref = i; return ref;}
     ZdString                          & AsString(ZdString & ref, unsigned int i) {ref.Clear(); ref << i; return ref;}
     ZdString                          & AsString(ZdString & ref, float f) {ref = f;return ref;}
@@ -308,7 +312,9 @@ class CParameters {
     void                                ReadScanningLineParameterFile(const char * sParameterFileName, BasePrint & PrintDirection);
     void                                ReadScanningWindowSection(ZdIniFile& file, BasePrint & PrintDirection);
     void                                ReadSequentialScanSection(ZdIniFile& file, BasePrint & PrintDirection);
+    void                                ReadStartIntervalRange(const ZdString & sParameter);
     void                                ReadTimeParametersSection(ZdIniFile& file, BasePrint & PrintDirection);
+    void                                ReadSystemSection(ZdIniFile& file, BasePrint & PrintDirection);
     int                                 ReadUnsignedInt(const ZdString & sValue, ParameterType eParameterType);
     void                                SaveAdvancedFeaturesSection(ZdIniFile& file);
     void                                SaveAnalysisSection(ZdIniFile& file);
@@ -317,7 +323,7 @@ class CParameters {
     void                                SaveOutputFileSection(ZdIniFile& file);
     void                                SaveScanningWindowSection(ZdIniFile& file);
     void                                SaveSequentialScanSection(ZdIniFile& file);
-    void                                ReadStartIntervalRange(const ZdString & sParameter);
+    void                                SaveSystemSection(ZdIniFile& file);
     void                                SaveTimeParametersSection(ZdIniFile& file);
     void                                SetDefaults();
     void                                SetSourceFileName(const char * sParametersSourceFileName);
@@ -355,6 +361,7 @@ class CParameters {
     CoordinatesType                     GetCoordinatesType() const {return geCoordinatesType;}
     CriteriaSecondaryClustersType       GetCriteriaSecondClustersType() const {return geCriteriaSecondClustersType;}
     const char                        * GetDatePrecisionAsString(DatePrecisionType eDatePrecisionType) const;
+    unsigned int                        GetCreationVersionMajor() const {return gCreationVersion.iMajor;}
     int                                 GetDimensionsOfData() const {return giDimensionsOfData;}
     bool                                GetDuczmalCorrectEllipses() const {return gbDuczmalCorrectEllipses;}
     const std::vector<int>            & GetEllipseRotations() const {return gvEllipseRotations;}
@@ -502,6 +509,7 @@ class CParameters {
     void                                SetUseAdjustmentForRelativeRisksFile(bool b) {gbUseAdjustmentsForRRFile = b;}
     void                                SetUseSpecialGrid(bool b) {gbUseSpecialGridFile = b;}
     void                                SetValidatePriorToCalculation(bool b) {gbValidatePriorToCalc = b;}
+    void                                SetVersion(const ZdString & sValue);
     bool                                ValidateParameters(BasePrint & PrintDirection);
     bool                                UseAdjustmentForRelativeRisksFile() const {return gbUseAdjustmentsForRRFile;}
     bool                                UseMaxCirclePopulationFile() const;

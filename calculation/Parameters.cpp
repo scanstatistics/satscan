@@ -90,6 +90,10 @@ const char*      MAX_CIRCLE_POP_FILE_LINE               = "MaxCirclePopulationFi
 const char*      SPATIAL_ADJ_TYPE_LINE                  = "SpatialAdjustmentType";
 const char*      MULTI_STREAM_PURPOSE_TYPE_LINE         = "MultipleDataStreamPurposeType";
 
+/** system ini section */
+const char*      SYSTEM_SECTION                         = "[System]";
+const char*      CREATION_VERSION_LINE                  = "Version";
+
 const int        MAXIMUM_SEQUENTIAL_ANALYSES    	= 32000;
 const int        MAXIMUM_ELLIPSOIDS             	= 10;
 
@@ -112,12 +116,9 @@ const char*      YEAR_PRECISION_TYPE            	= "years";
 const char*      MONTH_PRECISION_TYPE           	= "months";
 const char*      DAY_PRECISION_TYPE             	= "days";
 
-/** width of ASCII results file line */
-const unsigned int PRINT_WIDTH                          = 65;
+int CParameters::giNumParameters 			= 68;
 
-int CParameters::giNumParameters 			= 67;
-
-char mgsVariableLabels[68][100] = {
+char mgsVariableLabels[69][100] = {
    "Analysis Type", "Scan Areas", "Case File", "Population File",
    "Coordinates File", "Results File", "Precision of Case Times",
    "Not applicable", "Grid File Use", "Grid File",
@@ -144,7 +145,7 @@ char mgsVariableLabels[68][100] = {
    "Restrict Reported Max Geographical Cluster Size", "Simulation Method Type",
    "Simulated Data Import File", "Adjustments By Known Relative Risks File", "Printing Simulated Data",
    "Simulated Data Output File", "Adjust for Earlier Analyses", "Use Adjustments By Known Relative Risks File",
-   "Spatial Adjustments Type", "Multiple Data Stream Purpose"
+   "Spatial Adjustments Type", "Multiple Data Stream Purpose", "Version Number"
 };
 
 /** Constructor */
@@ -278,6 +279,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gbUseAdjustmentsForRRFile           = rhs.gbUseAdjustmentsForRRFile;
     geSpatialAdjustmentType             = rhs.geSpatialAdjustmentType;
     geMultipleStreamPurposeType         = rhs.geMultipleStreamPurposeType;
+    gCreationVersion                    = rhs.gCreationVersion;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -898,6 +900,7 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
         case USE_ADJ_BY_RR_FILE        : sParameterLineLabel = USE_ADJUSTMENTS_BY_RR_FILE_LINE; break;
         case SPATIAL_ADJ_TYPE          : sParameterLineLabel = SPATIAL_ADJ_TYPE_LINE; break;
         case MULTI_STREAM_PURPOSE_TYPE : sParameterLineLabel = MULTI_STREAM_PURPOSE_TYPE_LINE; break;
+        case CREATION_VERSION          : sParameterLineLabel = CREATION_VERSION_LINE; break;
         default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLineLabel()", eParameterType);
       };
     }
@@ -974,7 +977,7 @@ const char * CParameters::GetRelativeToParameterName(const ZdFileName& fParamete
                                                      ZdString& sValue) const {
   ZdFileName fInputFilename(sFilename.c_str());
 
-  if (!strcmpi(fInputFilename.GetLocation(), fParameterName.GetLocation()))
+  if (!stricmp(fInputFilename.GetLocation(), fParameterName.GetLocation()))
     sValue = fInputFilename.GetCompleteFileName();
   else
     sValue = sFilename.c_str();
@@ -1057,6 +1060,7 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case USE_ADJ_BY_RR_FILE       : sDefaultValue = (gbUseAdjustmentsForRRFile ? YES : NO); break;
       case SPATIAL_ADJ_TYPE         : sDefaultValue = geSpatialAdjustmentType; break;
       case MULTI_STREAM_PURPOSE_TYPE: sDefaultValue = geMultipleStreamPurposeType; break;
+      case CREATION_VERSION         : sDefaultValue.printf("%u.%u.%u", gCreationVersion.iMajor, gCreationVersion.iMinor, gCreationVersion.iRelease); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -1431,6 +1435,7 @@ void CParameters::ReadIniParameterFile(ZdString sFileName, BasePrint & PrintDire
     ReadEllipseSection(IniFile, PrintDirection);
     ReadSequentialScanSection(IniFile, PrintDirection);
     ReadAdvancedFeatures(IniFile, PrintDirection);
+    ReadSystemSection(IniFile, PrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadIniParameterFile()","CParameters");
@@ -1663,6 +1668,7 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case USE_ADJ_BY_RR_FILE        : SetUseAdjustmentForRelativeRisksFile(ReadBoolean(sParameter, eParameterType)); break;
       case SPATIAL_ADJ_TYPE          : SetSpatialAdjustmentType((SpatialAdjustmentType)ReadInt(sParameter, eParameterType)); break;
       case MULTI_STREAM_PURPOSE_TYPE : SetMultipleDataStreamPurposeType((MultipleStreamPurposeType)ReadInt(sParameter, eParameterType)); break;
+      case CREATION_VERSION          : SetVersion(sParameter); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","ReadParameter()", eParameterType);
     };
   }
@@ -1797,7 +1803,6 @@ void CParameters::ReadScanningLineParameterFile(const char * sParameterFileName,
 // post: will set the global variables from the ini file
 void CParameters::ReadScanningWindowSection(ZdIniFile& file, BasePrint & PrintDirection) {
   const ZdIniSection  * pSection;
-  long                  lIndex;
 
   try {
     //Get scanning window section, add if non-existant.
@@ -1824,7 +1829,6 @@ void CParameters::ReadScanningWindowSection(ZdIniFile& file, BasePrint & PrintDi
 // post: will set the global variables from the ini file
 void CParameters::ReadSequentialScanSection(ZdIniFile& file, BasePrint & PrintDirection) {
   const ZdIniSection  * pSection;
-  long                  lIndex;
 
   try {
     //Get sequential scan section, add if non-existant.
@@ -1840,12 +1844,27 @@ void CParameters::ReadSequentialScanSection(ZdIniFile& file, BasePrint & PrintDi
   }
 }
 
+/** Reads 'system' ini section */
+void CParameters::ReadSystemSection(ZdIniFile& file, BasePrint & PrintDirection) {
+  const ZdIniSection  * pSection;
+
+  try {
+    //Get sequential scan section, add if non-existant.
+    pSection = file.GetSection(SYSTEM_SECTION);
+
+    ReadIniParameter(*pSection, CREATION_VERSION_LINE, CREATION_VERSION, PrintDirection);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadSystemSection()", "CParameters");
+    throw;
+  }
+}
+
 // sets the global TimeParameters variables read in from the ini file
 // pre: file is an open ini parameter file
 // post: will set the global variables from the ini file
 void CParameters::ReadTimeParametersSection(ZdIniFile& file, BasePrint & PrintDirection) {
   const ZdIniSection  * pSection;
-  long                  lIndex;
 
   try {
     //Get time parameters section, add if non-existant.
@@ -2028,7 +2047,7 @@ void CParameters::SaveInputFileSection(ZdIniFile& file) {
     pSection->AddLine(GRID_FILE_LINE, gsSpecialGridFileName.c_str());
     pSection->AddComment(" use grid file? (y/n)");
     pSection->AddLine(USE_GRID_FILE_LINE, gbUseSpecialGridFile ? YES : NO);
-    pSection->AddComment(" precision of case times (0=No, 1-3=Yes)");
+    pSection->AddComment(" time precision (0=None, 1=Year, 2=Month, 3=Day)");
     pSection->AddLine(PRECISION_TIMES_LINE, AsString(sValue, gePrecisionOfTimesType));
     pSection->AddComment(" coordinate type (0=Cartesian, 1=Lat/Long)");
     pSection->AddLine(COORD_TYPE_LINE, AsString(sValue, geCoordinatesType));
@@ -2132,6 +2151,22 @@ void CParameters::SaveSequentialScanSection(ZdIniFile& file) {
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveSequentialScanSection()","CParameters");
+    throw;
+  }
+}
+
+/** saves the system parameters section to the ini file */
+void CParameters::SaveSystemSection(ZdIniFile& file) {
+  ZdString              sValue;
+  ZdIniSection        * pSection;
+
+  try {
+    pSection = file.GetSection(SYSTEM_SECTION);
+    sValue.printf("%s.%s.%s", VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE);
+    pSection->AddLine(CREATION_VERSION_LINE, sValue.GetCString());
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SaveSystemSection()","CParameters");
     throw;
   }
 }
@@ -2374,7 +2409,11 @@ void CParameters::SetDefaults() {
   gbAdjustForEarlierAnalyses            = false;
   gbUseAdjustmentsForRRFile             = false;
   geSpatialAdjustmentType               = NO_SPATIAL_ADJUSTMENT;
-  geMultipleStreamPurposeType           = MULTIVARIATE;        
+  geMultipleStreamPurposeType           = MULTIVARIATE;
+  //default to 4.0.3, the last version prior to 'version' parameter
+  gCreationVersion.iMajor               = 4;
+  gCreationVersion.iMinor               = 0;
+  gCreationVersion.iRelease             = 3;
 }
 
 /** Sets dimensions of input data. */
@@ -2989,6 +3028,16 @@ void CParameters::SetTimeTrendConvergence(double dTimeTrendConvergence) {
    gdTimeTrendConverge = dTimeTrendConvergence;
 }
 
+/** Set version number that indicates what version of SaTScan created these parameters. */
+void CParameters::SetVersion(const ZdString& sValue) {
+  sscanf(sValue.GetCString(), "%u.%u.%u", &gCreationVersion.iMajor, &gCreationVersion.iMinor, &gCreationVersion.iRelease);
+//  if (gCreationVersion.iMajor > (unsigned int)atoi(VERSION_MAJOR)) {
+//    gCreationVersion.iMajor = atoi(VERSION_MAJOR);
+//    gCreationVersion.iMinor = atoi(VERSION_MINOR);
+//    gCreationVersion.iRelease = atoi(VERSION_RELEASE);
+//  }
+}
+
 bool CParameters::UseMaxCirclePopulationFile() const {
   bool  bRequiredForProspective, bAskForByUser;
 
@@ -3047,7 +3096,7 @@ bool CParameters::ValidateDateParameters(BasePrint& PrintDirection) const {
   catch (ZdException &x) {
     x.AddCallpath("ValidateDateParameters()","CParameters");
     throw;
-  }
+  }                                                         
   return bValid;
 }
 
@@ -3062,6 +3111,7 @@ bool CParameters::ValidateDateParameters(BasePrint& PrintDirection) const {
 bool CParameters::ValidateEndDate(const std::string& sDateString, const std::string& sDateDescription, BasePrint& PrintDirection) const {
   UInt                  nYear, nMonth, nDay;
   int                   nScanCount;
+  DatePrecisionType     ePrecision = (gCreationVersion.iMajor == 4 ? geTimeIntervalUnitsType : gePrecisionOfTimesType);
 
   try {
     //parse date in parts
@@ -3076,22 +3126,24 @@ bool CParameters::ValidateEndDate(const std::string& sDateString, const std::str
     if (!IsDateValid(nMonth, nDay, nYear))
         return false;
     //validate against precision of times
-    switch (gePrecisionOfTimesType) {
+    switch (ePrecision) {
       case YEAR  :
         if (nMonth != 12 || nDay != 31) {
           PrintDirection.SatScanPrintWarning("Error: The %s, '%s', is not valid.\n"
-                                             "       With the setting for precision of times as years, the date\n"
+                                             "       With the setting for %s as years, the date\n"
                                              "       must be the last day of respective year.\n",
-                                             sDateDescription.c_str(), sDateString.c_str());
+                                             sDateDescription.c_str(), sDateString.c_str(),
+                                             (gCreationVersion.iMajor == 4 ? "time interval units" : "time precision"));
           return false;
         }
         break;
       case MONTH :
         if (nDay != DaysThisMonth(nYear, nMonth)) {
           PrintDirection.SatScanPrintWarning("Error: The %s, '%s', is not valid.\n"
-                                             "       With the setting for precision of times as months, the date\n"
+                                             "       With the setting for %s as months, the date\n"
                                              "       must be the last day of respective month.\n",
-                                             sDateDescription.c_str(), sDateString.c_str());
+                                             sDateDescription.c_str(), sDateString.c_str(),
+                                             (gCreationVersion.iMajor == 4 ? "time interval units" : "time precision"));
           return false;
         }
       case DAY   :
@@ -3722,6 +3774,7 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
 bool CParameters::ValidateStartDate(const std::string& sDateString, const std::string& sDateDescription, BasePrint& PrintDirection) const {
   UInt                  nYear, nMonth, nDay;
   int                   nScanCount;
+  DatePrecisionType     ePrecision = (gCreationVersion.iMajor == 4 ? geTimeIntervalUnitsType : gePrecisionOfTimesType);
 
   try {
     //parse date in parts
@@ -3736,22 +3789,24 @@ bool CParameters::ValidateStartDate(const std::string& sDateString, const std::s
     if (!IsDateValid(nMonth, nDay, nYear))
         return false;
     //validate against precision of times
-    switch (gePrecisionOfTimesType) {
+    switch (ePrecision) {
       case YEAR  :
         if (nMonth != 1 || nDay != 1) {
           PrintDirection.SatScanPrintWarning("Error: The %s, '%s', is not valid.\n"
-                                             "       With the setting for precision of times as years, the date\n"
+                                             "       With the setting for %s as years, the date\n"
                                              "       must be the first day of respective year.\n",
-                                             sDateDescription.c_str(), sDateString.c_str());
+                                             sDateDescription.c_str(), sDateString.c_str(),
+                                             (gCreationVersion.iMajor == 4 ? "time interval units" : "time precision"));
           return false;
         }
         break;
       case MONTH :
         if (nDay != 1) {
           PrintDirection.SatScanPrintWarning("Error: The %s, '%s', is not valid.\n"
-                                             "       With the setting for precision of times as months, the date\n"
+                                             "       With the setting for %s as months, the date\n"
                                              "       must be the first day of respective month.\n",
-                                             sDateDescription.c_str(), sDateString.c_str());
+                                             sDateDescription.c_str(), sDateString.c_str(),
+                                             (gCreationVersion.iMajor == 4 ? "time interval units" : "time precision"));
           return false;
         }
       case DAY   :
@@ -3948,7 +4003,7 @@ void CParameters::Write(const char * sParameterFileName) {
       SaveEllipseSection(file);
       SaveSequentialScanSection(file);
       SaveAdvancedFeaturesSection(file);
-
+      SaveSystemSection(file);
       file.Write();
    }
    catch (ZdException &x) {
