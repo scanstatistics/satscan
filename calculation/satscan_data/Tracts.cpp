@@ -1023,10 +1023,10 @@ void TractHandler::tiGetTractIdentifiers(tract_t t, std::vector<std::string>& vI
 }
 
 /** Searches tract-id "tid".  Returns the index, or -1 if not found. */
-tract_t TractHandler::tiGetTractIndex(const char *tid) {
-  ZdPointerVector<TractDescriptor>::iterator           itr;
-  std::map<std::string,TractDescriptor*>::iterator     itrmap;
-  tract_t                                              tPosReturn;
+tract_t TractHandler::tiGetTractIndex(const char *tid) const {
+  ZdPointerVector<TractDescriptor>::const_iterator           itr;
+  std::map<std::string,TractDescriptor*>::const_iterator     itrmap;
+  tract_t                                                    tPosReturn;
 
   try {
     //check for tract identifier is duplicates map
