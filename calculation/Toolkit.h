@@ -3,7 +3,7 @@
 #define __SaTScanToolkit_H
 //*****************************************************************************
 #include "DBFFile.h"
-#include <io.h>
+//#include <io.h>
 
 class SaTScanToolkit : public BToolkit {
   private:
@@ -18,17 +18,19 @@ class SaTScanToolkit : public BToolkit {
     static const char         * gsDefaultTechnicalSupportEmail;
 
     ZdString                    gsSystemFileName;
+    ZdString                    gsApplicationFullPath;
 
     bool                        InsureRunHistoryFileName();
     bool                        InsureSessionProperty(const char * sSessionProperty, const char * sDefaultValue);
     void                        InsureSessionStructure();
-    void                        Setup();
+    void                        Setup(const char * sApplicationFullPath);
 
   public:
-    SaTScanToolkit();
+    SaTScanToolkit(const char * sApplicationFullPath);
     virtual ~SaTScanToolkit();
 
    const char                 * GetAcknowledgment(ZdString & Acknowledgment) const;
+   const char                 * GetApplicationFullPath() const;  
    bool                         GetLogRunHistory() const;
    const char                 * GetRunHistoryFileName() /*const*/;
    const char                 * GetSubstantiveSupportEmail() const;

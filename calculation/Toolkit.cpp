@@ -20,16 +20,20 @@ const char * SaTScanToolkit::gsHistoryFileNameProperty = "[RunHistory].FileName"
 /** analysis history filename */
 const char * SaTScanToolkit::gsDefaultRunHistoryFileName = "AnalysisHistory";
 /** Default website. */
+#ifdef INTEL_BASED
 const char * SaTScanToolkit::gsDefaultSaTScanWebSite = "http:/\/www.satscan.org/";
+#else
+const char * SaTScanToolkit::gsDefaultSaTScanWebSite = "http://www.satscan.org/";
+#endif
 /** Default Substantive Support Email. */
 const char * SaTScanToolkit::gsDefaultSubstantiveSupportEmail = "kulldorff@satscan.org";
 /** Default Technical Support Email. */
 const char * SaTScanToolkit::gsDefaultTechnicalSupportEmail = "satscan@imsweb.com";
 
 /** constructor */
-SaTScanToolkit::SaTScanToolkit():BToolkit() {
+SaTScanToolkit::SaTScanToolkit(const char * sApplicationFullPath):BToolkit() {
   try {
-    Setup();
+    Setup(sApplicationFullPath);
   }
   catch (ZdException& x) {
     x.AddCallpath("constructor()", "SaTScanToolkit");
@@ -63,6 +67,11 @@ const char * SaTScanToolkit::GetAcknowledgment(ZdString & Acknowledgment) const 
   return Acknowledgment.GetCString();
 }
 
+/** Returns applications full path */
+const char * SaTScanToolkit::GetApplicationFullPath() const {
+  return gsApplicationFullPath.GetCString();
+}
+
 /** Returns run history filename. */
 const char * SaTScanToolkit::GetRunHistoryFileName() /*const*/ {
   return GetSession().GetProperty(gsHistoryFileNameProperty)->GetValue();
@@ -94,7 +103,7 @@ bool SaTScanToolkit::InsureRunHistoryFileName() {
   bool                  bUpdatedSection=false;
 
   try {
-    sDefaultHistoryFileName << ZdFileName(_argv[0]).GetLocation() << gsDefaultRunHistoryFileName;
+    sDefaultHistoryFileName << ZdFileName(gsApplicationFullPath.GetCString()).GetLocation() << gsDefaultRunHistoryFileName;
     sDefaultHistoryFileName << DBFFileType::GetDefaultInstance().GetFileTypeExtension();
 
     //run history filename property
@@ -204,10 +213,12 @@ void SaTScanToolkit::InsureSessionStructure() {
 }
 
 /** internal setup */
-void SaTScanToolkit::Setup() {
+void SaTScanToolkit::Setup(const char * sApplicationFullPath) {
   try {
+    //set application full path
+    gsApplicationFullPath = sApplicationFullPath;
     //Set system ini located at same directory as executable.
-    gsSystemFileName << ZdFileName(_argv[0]).GetLocation() << gsSystemIniFileName;
+    gsSystemFileName << ZdFileName(gsApplicationFullPath.GetCString()).GetLocation() << gsSystemIniFileName;
     
     try {
       //Open or create system ini file.
