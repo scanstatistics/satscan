@@ -23,6 +23,9 @@ double OrdinalModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster) co
   tract_t               tNeighborIndex;
   count_t            ** ppCases;
 
+  if (gDataHub.GetParameters().GetIsPurelyTemporalAnalysis())
+    return gDataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetTotalPopulation();
+
   const PopulationData& Population = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPopulationData();
   for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
      ppCases = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetCategoryCaseArray(t);
