@@ -16,7 +16,9 @@ FixedMaxWindowLengthIndicator::~FixedMaxWindowLengthIndicator() {}
 /** constructor */
 ProspectiveMaxWindowLengthIndicator::ProspectiveMaxWindowLengthIndicator(const CSaTScanData & Data)
                                    :AbstractMaxWindowLengthIndicator() {
-  int iMaxEndWindow, iWindowEnd, iIntervalCut, lTimeBetween;
+  int                   iMaxEndWindow, iWindowEnd, iIntervalCut;
+  double                dProspectivePeriodLength, dMaxTemporalLengthInUnits;
+  const CParameters   & Parameters(Data.GetParameters());
 
 
   if (Data.GetParameters().GetMaximumTemporalClusterSizeType() == TIMETYPE)
@@ -26,14 +28,16 @@ ProspectiveMaxWindowLengthIndicator::ProspectiveMaxWindowLengthIndicator(const C
   gvMaxWindowLengths.push_back(0); //dummy entry
 
   //prospective analyses always use time range class, provided we are doing replications
-  if (Data.GetParameters().GetIsProspectiveAnalysis() && Data.GetParameters().GetNumReplicationsRequested() > 0) {
+  if (Parameters.GetIsProspectiveAnalysis() && Parameters.GetNumReplicationsRequested() > 0) {
     iMaxEndWindow = Data.m_nTimeIntervals;
     for (iWindowEnd=Data.m_nProspectiveIntervalStart; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-       lTimeBetween = static_cast<int>(floor(TimeBetween(Data.GetStudyPeriodStartDate(),
-                                             Data.GetTimeIntervalStartTimes()[iWindowEnd] - 1,
-                                             Data.GetParameters().GetTimeIntervalUnitsType())));
-       lTimeBetween = static_cast<int>(lTimeBetween * (Data.GetParameters().GetMaximumTemporalClusterSize()/100.0));
-       iIntervalCut = static_cast<int>(floor(lTimeBetween / Data.GetParameters().GetTimeIntervalLength()));
+       dProspectivePeriodLength = CalculateNumberOfTimeIntervals(Data.GetStudyPeriodStartDate(),
+                                                                 Data.GetTimeIntervalStartTimes()[iWindowEnd] - 1,
+                                                                 Parameters.GetTimeAggregationUnitsType(), 1);
+                                                     
+       dMaxTemporalLengthInUnits = floor(dProspectivePeriodLength * Parameters.GetMaximumTemporalClusterSize()/100.0);
+       //now calculate number of those time units a cluster can contain with respects to the specified aggregation length
+       iIntervalCut = static_cast<int>(floor(dMaxTemporalLengthInUnits / Parameters.GetTimeAggregationLength()));
        gvMaxWindowLengths.push_back(iIntervalCut);
     }
   }
