@@ -2,7 +2,7 @@ object frmStartWindow: TfrmStartWindow
   Left = 390
   Top = 336
   BorderStyle = bsDialog
-  Caption = '        Welcome to SaTScan'
+  Caption = 'Welcome to SaTScan'
   ClientHeight = 144
   ClientWidth = 174
   Color = clBtnFace
