@@ -291,7 +291,7 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, int nLeftM
     Data.GetGInfo()->giGetCoords(m_Center, &pCoords);
     Data.GetTInfo()->tiGetCoords(Data.GetNeighbor(m_iEllipseOffset, m_Center, m_nTracts), &pCoords2);
     nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
-    
+
     if (Data.m_pParameters->GetDimensionsOfData() < 5) {
       //print coordinates differently for the circles and ellipses
       if (m_iEllipseOffset == 0)  {
@@ -311,10 +311,10 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, int nLeftM
         for (i=0; i<(Data.m_pParameters->GetDimensionsOfData())-1; i++)
       	   fprintf(fp, "%g,",pCoords[i]);
         fprintf(fp, "%g)\n",pCoords[(Data.m_pParameters->GetDimensionsOfData())-1]);
-        fprintf(fp, "%sEllipse Semiminor axis: %-6.3f\n", szSpacesOnLeft, nRadius);
+        fprintf(fp, "%sEllipse Semiminor axis: %-g\n", szSpacesOnLeft, nRadius);
         fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
-        fprintf(fp, "%sAngle (degrees).......: %-6.3f\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
-        fprintf(fp, "%sShape.................: %-6.3f\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
+        fprintf(fp, "%sAngle (degrees).......: %-g\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
+        fprintf(fp, "%sShape.................: %-g\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
       }
     }
     else {/* More than four dimensions: need to wrap output */
@@ -343,10 +343,10 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, int nLeftM
         }
       }
       else {
-        fprintf(fp, "%sEllipse Semiminor axis: %-6.3f\n", szSpacesOnLeft, nRadius);
+        fprintf(fp, "%sEllipse Semiminor axis: %-g\n", szSpacesOnLeft, nRadius);
         fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
-        fprintf(fp, "%sAngle (degrees).......: %-6.3f\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
-        fprintf(fp, "%sShape.................: %-6.3f\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
+        fprintf(fp, "%sAngle (degrees).......: %-g\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
+        fprintf(fp, "%sShape.................: %-g\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
       }
     }
 
