@@ -56,7 +56,7 @@ stsRunHistoryFile::stsRunHistoryFile(const ZdString& sFileName, BasePrint& Print
 // destructor
 stsRunHistoryFile::~stsRunHistoryFile() {
    try {
-      gvFields.RemoveAllElements();
+      gvFields.DeleteAllElements();
    }
    catch (...) {/* munch munch */}
 }
@@ -249,7 +249,7 @@ void stsRunHistoryFile::GetTimeAdjustmentString(ZdString& sTempValue, int iType)
 // global initializations
 void stsRunHistoryFile::Init() {
    glRunNumber = 0;
-   gvFields.RemoveAllElements();
+   gvFields.DeleteAllElements();
    gpPrintDirection = 0;
 }
 

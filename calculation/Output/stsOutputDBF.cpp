@@ -66,7 +66,7 @@ DBaseOutput::~DBaseOutput() {
 // post: field vector is empty and all of the pointers are deleted
 void DBaseOutput::CleanupFieldVector() {
    try {
-      gvFields.RemoveAllElements();
+      gvFields.DeleteAllElements();
    }
    catch(ZdException &x) {
       x.AddCallpath("CleanupFieldVector()", "stsClusterLevelDBF");
