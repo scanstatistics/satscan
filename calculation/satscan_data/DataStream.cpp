@@ -6,8 +6,8 @@
 #include "SaTScanData.h"
 
 /** constructor */
-DataStream::DataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts)
-           : giNumTimeIntervals(iNumTimeIntervals), giNumTracts(iNumTracts)   {
+DataStream::DataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iStreamIndex)
+           : giNumTimeIntervals(iNumTimeIntervals), giNumTracts(iNumTracts), giStreamIndex(iStreamIndex)   {
   try {
     Init();
     Setup();

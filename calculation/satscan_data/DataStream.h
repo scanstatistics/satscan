@@ -74,9 +74,11 @@ class DataStream {
     CTimeTrend                  gTimeTrend;                             /** time trend data */
     CTimeTrend                  gSimTimeTrend;                          /** time trend data fore simulations */
 
+    unsigned int                giStreamIndex;
+
     void                        SetCaseArrays(count_t** pCases, count_t** pCases_NC, count_t* pCasesByTimeInt);
   public:
-    DataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts);
+    DataStream(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iStreamIndex);
     virtual ~DataStream();
 
     void                        AllocateCategoryCasesArray();
@@ -124,6 +126,7 @@ class DataStream {
     measure_t                 * GetSimPTSqMeasureArray() const {return gpPTSimSqMeasureArray;}
     measure_t                ** GetSimSqMeasureArray();
     measure_t                ** GetSqMeasureArray();
+    unsigned int                GetStreamIndex() const {return giStreamIndex;}
     count_t                     GetTotalCases() const {return gtTotalCases;}
     count_t                     GetTotalCasesAtStart() const {return gtTotalCasesAtStart;}
     count_t                     GetTotalControls() const {return gtTotalControls;}
