@@ -39,6 +39,7 @@ class CPurelySpatialCluster : public CCluster {
     virtual void                        DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType);
     virtual count_t                     GetCaseCount(unsigned int iStream) const {return gStreamData[iStream].gCases;}
     virtual count_t                     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const;
+    virtual int                         GetClusterType() const {return PURELYSPATIAL;}
     virtual measure_t                   GetMeasure(unsigned int iStream) const {return gStreamData[iStream].gMeasure;}
     virtual measure_t                   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const;
     virtual void                        Initialize(tract_t nCenter=0);

@@ -42,9 +42,7 @@ CPurelySpatialCluster& CPurelySpatialCluster::operator=(const CPurelySpatialClus
   m_nLastInterval       = rhs.m_nLastInterval;
   m_nStartDate          = rhs.m_nStartDate;
   m_nEndDate            = rhs.m_nEndDate;
-  m_nSteps              = rhs.m_nSteps;
   m_bClusterDefined     = rhs.m_bClusterDefined;
-  m_nClusterType        = rhs.m_nClusterType;
   m_iEllipseOffset      = rhs.m_iEllipseOffset;
   gStreamData           = rhs.gStreamData;
   
@@ -127,9 +125,12 @@ measure_t CPurelySpatialCluster::GetMeasureForTract(tract_t tTract, const CSaTSc
 
 /** re-initializes cluster data */
 void CPurelySpatialCluster::Initialize(tract_t nCenter) {
-  CCluster::Initialize(nCenter);
-  m_nSteps     = 1;
-  m_nClusterType = PURELYSPATIAL;
+  //CCluster::Initialize(nCenter);
+  m_Center = nCenter;
+  m_nTracts = 0;
+  m_bClusterDefined = false;
+  m_nRatio = 0;
+  m_nLogLikelihood = 0; //may go away
   for (gitr=gStreamData.begin(); gitr != gStreamData.end(); ++gitr)
      gitr->InitializeData();
 }
@@ -148,7 +149,6 @@ void CPurelySpatialCluster::Setup(const CSaTScanData & Data) {
   try {
     //set AddNeihbor function pointer - for Normal model we will set to AddNeighborDataEx
     fAddNeighborData = &CPurelySpatialCluster::AddNeighborData;
-
     gStreamData.resize(tSize);
     for (t=0; t < tSize; ++t) {
        gStreamData[t].gTotalMeasure = Data.GetTotalDataStreamMeasure(t);
