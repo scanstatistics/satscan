@@ -408,23 +408,20 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
 
 /** Prints null occurrence rate for cluster given time interval units. */
 void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft) {
-  float         fDaysInOccurrence, fYears, fMonths, fDays, fIntervals, fAdjustedP_Value;
+  float         fUnitsInOccurrence, fYears, fMonths, fDays, fIntervals, fAdjustedP_Value;
 
   try {
-
     if (Data.m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME && Data.m_pParameters->GetNumReplicationsRequested() > 99) {
       fprintf(fp, "%sNull Occurrence.......: ", szSpacesOnLeft);
       fIntervals = Data.m_nTimeIntervals - Data.m_nProspectiveIntervalStart + 1;
       fAdjustedP_Value = 1 - pow(1 - GetPVal(Data.m_pParameters->GetNumReplicationsRequested()), 1/fIntervals);
-      fDaysInOccurrence = (fIntervals * Data.m_pParameters->GetTimeIntervalLength())/fAdjustedP_Value;
+      fUnitsInOccurrence = (fIntervals * Data.m_pParameters->GetTimeIntervalLength())/fAdjustedP_Value;
       switch (Data.m_pParameters->GetTimeIntervalUnitsType()) {
-        case YEAR   : fYears = fDaysInOccurrence/AVERAGE_DAYS_IN_YEAR;
-                      fprintf(fp, "Once in %.1f year%s\n", fYears, (fYears > 1 ? "s" : ""));
+        case YEAR   : fprintf(fp, "Once in %.1f year%s\n", fUnitsInOccurrence, (fUnitsInOccurrence > 1 ? "s" : ""));
                       break;
-        case MONTH  : fYears = floor(fDaysInOccurrence/AVERAGE_DAYS_IN_YEAR);
-                      fDays = fDaysInOccurrence - fYears * AVERAGE_DAYS_IN_YEAR;
-                      fMonths = fDays/AVERAGE_DAYS_IN_MONTH;
-                      /*Round now for values that cause months to goto 12 or down to 0.*/
+        case MONTH  : fYears = floor(fUnitsInOccurrence/12);
+                      fMonths = fUnitsInOccurrence - (fYears * 12);
+                      //we don't want to print "Once in 5 years and 12 months", so round months for it
                       if (fMonths >= 11.5) {
                         ++fYears;
                         fMonths = 0;
@@ -439,14 +436,10 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, char* s
                       else /*Having both zero month and year should never happen.*/
                         fprintf(fp, "Once in %.0f year%s and %0.f month%s\n", fYears, (fYears == 1 ? "" : "s"), fMonths, (fMonths < 1.5 ? "" : "s"));
                       break;
-        case DAY    : fYears = floor(fDaysInOccurrence/AVERAGE_DAYS_IN_YEAR);
-                      fDays = fDaysInOccurrence - fYears * AVERAGE_DAYS_IN_YEAR;
-                      /*Round now for values that cause days to go 365 or down to 0.*/
-                      if (fDays >= 364.5) {
-                        ++fYears;
-                        fDays = 0;
-                      }
-                      else if (fDays < .5)
+        case DAY    : fYears = floor(fUnitsInOccurrence/AVERAGE_DAYS_IN_YEAR);
+                      fDays = fUnitsInOccurrence - (fYears * AVERAGE_DAYS_IN_YEAR);
+                      //we don't want to print "Once in 5 years and 0 days", so round days for it
+                      if (fDays < .5)
                         fDays = 0;
                       //Print correctly formatted statement.
                       if (fDays == 0)
