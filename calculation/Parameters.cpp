@@ -1564,7 +1564,7 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case USE_REPORTED_GEOSIZE      : SetRestrictReportedClusters(ReadBoolean(sParameter, eParameterType)); break;
       case SIMULATION_TYPE           : SetSimulationType((SimulationType)ReadInt(sParameter, eParameterType)); break;
       case SIMULATION_SOURCEFILE     : SetSimulationDataSourceFileName(sParameter.GetCString(), true); break;
-      case SIM_RELATIVE_RISKS_FILE   : SetRelativeRisksFileName(sParameter.GetCString(), true); break;
+      case SIM_RELATIVE_RISKS_FILE   : SetRelativeRisksFilename(sParameter.GetCString(), true); break;
       case OUTPUT_SIMULATION_DATA    : SetOutputSimulationData(ReadBoolean(sParameter, eParameterType)); break;
       case SIMULATION_DATA_OUTFILE   : SetSimulationDataOutputFileName(sParameter.GetCString(), true); break;
       case ADJUST_ANALYSES           : SetAdjustForEarlierAnalyses(ReadBoolean(sParameter, eParameterType)); break;
@@ -2474,17 +2474,17 @@ void CParameters::SetPowerCalculationY(double dPowerY) {
 /** Sets relative risks data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
-void CParameters::SetRelativeRisksFileName(const char * sSourceFileName, bool bCorrectForRelativePath) {
+void CParameters::SetRelativeRisksFilename(const char * sSourceFileName, bool bCorrectForRelativePath) {
   try {
     if (! sSourceFileName)
-      ZdGenerateException("Null pointer.", "SetRelativeRisksFileName()");
+      ZdGenerateException("Null pointer.", "SetRelativeRisksFilename()");
 
     gsRelativeRisksSourceFileName = sSourceFileName;
     if (bCorrectForRelativePath)
       ConvertRelativePath(gsRelativeRisksSourceFileName);
   }
   catch (ZdException &x) {
-    x.AddCallpath("SetRelativeRisksFileName()", "CParameters");
+    x.AddCallpath("SetRelativeRisksFilename()", "CParameters");
     throw;
   }
 }

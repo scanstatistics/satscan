@@ -371,12 +371,12 @@ class CParameters {
     const std::string                 & GetPopulationFileName() const {return gsPopulationFileName;}
     double                              GetPowerCalculationX() const {return gdPower_X;}
     double                              GetPowerCalculationY() const {return gdPower_Y;}
-    const std::string                 & GetPowerEstimationFilename() const {return gsRelativeRisksSourceFileName;}  
     DatePrecisionType                   GetPrecisionOfTimesType() const {return gePrecisionOfTimesType;}
     ProbabiltyModelType                 GetProbabiltyModelType() const {return geProbabiltyModelType;}
     const char                        * GetProbabiltyModelTypeAsString() const;
     const std::string                 & GetProspectiveStartDate() const {return gsProspectiveStartDate;}
     Julian                              GetProspectiveStartDateAsJulian() /*const*/;
+    const std::string                 & GetRelativeRisksFilename() const {return gsRelativeRisksSourceFileName;}  
     bool                                GetRestrictingMaximumReportedGeoClusterSize() const {return gbRestrictReportedClusters;}
     RiskType                            GetRiskType() const {return geRiskFunctionType;}
     const ZdString                    & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
@@ -441,10 +441,10 @@ class CParameters {
     void                                SetPowerCalculation(bool b) {gbPowerCalculation = b;}
     void                                SetPowerCalculationX(double dPowerX);
     void                                SetPowerCalculationY(double dPowerY);
-    void                                SetRelativeRisksFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType);
     void                                SetProbabilityModelType(ProbabiltyModelType eProbabiltyModelType);
     void                                SetProspectiveStartDate(const char * sProspectiveStartDate);
+    void                                SetRelativeRisksFilename(const char * sRelativeRisksFileName, bool bCorrectForRelativePath=false);  
     void                                SetRestrictReportedClusters(bool b) {gbRestrictReportedClusters = b;}
     void                                SetRiskType(RiskType eRiskType);
     void                                SetRunHistoryFilename(const ZdString& sFilename) {gsRunHistoryFilename = sFilename;}
