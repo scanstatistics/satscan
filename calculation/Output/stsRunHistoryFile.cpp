@@ -31,6 +31,23 @@ stsRunHistoryFile::~stsRunHistoryFile() {
    catch (...) {/* munch munch */}
 }
 
+// deletes the memory allocated to the ZdField pointer vector because I do
+// not trust ZdPointerVector I prefer this method - AJV 9/23/2002
+// pre : an allocated vector of ZdField pointers
+// post: deletes the memory allocated to the vector and removes all elements
+void stsRunHistoryFile::CleanupFieldVector(ZdVector<ZdField*>& vFields) {
+   try {
+      while (vFields.GetNumElements()) {
+         delete vFields[0]; vFields[0] = 0;
+         vFields.RemoveElement(0);
+      }
+   }
+   catch (ZdException &x) {
+      x.AddCallpath("CleanupFieldVector()", "stsRunHistoryFile");
+      throw;
+   }
+}
+
 // creates the run history file
 // pre: txd file doesn't not already exist
 // post: will create the csv file with the appropraite fields
@@ -49,7 +66,7 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
          Field.SetType(vFieldDescrip[i].first.second);
          Field.SetLength(vFieldDescrip[i].second);
          Field.SetOffset(uwOffset);
-         uwOffset += (2 + vFieldDescrip[i].second);
+         uwOffset += vFieldDescrip[i].second;
          vFields.AddElement(Field.Clone());
       }
 
@@ -57,16 +74,10 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
       File.Create(gsFilename, vFields, ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
       File.Close();
 
-      for (int i = vFields.GetNumElements() - 1; i > 0; --i) {
-         delete vFields[0]; vFields[0] = 0;
-         vFields.RemoveElement(0);
-      }
+      CleanupFieldVector(vFields);
    }
    catch (ZdException &x) {   
-      for (int i = vFields.GetNumElements() - 1; i > 0; --i) {
-         delete vFields[0]; vFields[0] = 0;
-         vFields.RemoveElement(0);
-      }
+      CleanupFieldVector(vFields);
       x.AddCallpath("CreateRunHistoryFile()", "stsRunHistoryFile");
       throw;
    }
@@ -492,3 +503,4 @@ void stsRunHistoryFile::SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&
       throw;
    }
 }
+

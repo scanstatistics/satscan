@@ -9,6 +9,7 @@ class stsRunHistoryFile {
       CAnalysis         *gpAnalysis;
       long              glRunNumber;
 
+      void      CleanupFieldVector(ZdVector<ZdField*>& vFields);
       void	Init();
       void	Setup(const CAnalysis* pAnalysis, const ZdString& sFileName);
    protected:
