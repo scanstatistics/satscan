@@ -2,6 +2,7 @@
 #define stsClusterFile_H
 
 #include "stsOutputFileData.h"
+#include "Parameters.h"
 
 extern const char *	CLUSTER_FILE_EXT;
 
@@ -10,7 +11,8 @@ class CSaTScanData;
 
 class stsClusterData : public BaseOutputStorageClass {
    private:
-      int       giDimension, giModelType, giCoordType;
+      ProbabiltyModelType       geProbabiltyModelType;
+      int       giDimension, giCoordType;
       bool      gbPrintEllipses, gbPrintPVal, gbIncludeRunHistory, gbDuczmalCorrect;
       long	glRunNumber;
       
@@ -25,7 +27,11 @@ class stsClusterData : public BaseOutputStorageClass {
       void  	SetupFields();
 
    public:
-      __fastcall stsClusterData(BasePrint *pPrintDirection, const ZdString& sOutputFileName, const long lRunNumber, const int iCoordType, const int iModelType, const int iDimension = 2, const bool bPrintPVal = true, const bool bPrintEllipses = false, const bool bDuczmalCorrect = false);
+      __fastcall stsClusterData(BasePrint *pPrintDirection, const ZdString& sOutputFileName,
+                                const long lRunNumber, const int iCoordType,
+                                ProbabiltyModelType eProbabiltyModelType, const int iDimension = 2,
+                                const bool bPrintPVal = true, const bool bPrintEllipses = false,
+                                const bool bDuczmalCorrect = false);
       virtual    ~stsClusterData();
 
       void      RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber);

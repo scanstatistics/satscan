@@ -174,10 +174,14 @@ void ClusterRecord::SetFieldIsBlank(int iFieldNumber, bool bBlank) {
 //===============================================================================
 
 // constructor
-__fastcall stsClusterData::stsClusterData(BasePrint *pPrintDirection, const ZdString& sOutputFileName, const long lRunNumber, const int iCoordType, const int iModelType,
-                                          const int iDimension, const bool bPrintPVal, const bool bPrintEllipses, const bool bDuczmalCorrect)
-                          : BaseOutputStorageClass(pPrintDirection) , gbPrintEllipses(bPrintEllipses), giModelType(iModelType), giDimension(iDimension),
-                                                                      glRunNumber(lRunNumber), gbPrintPVal(bPrintPVal), giCoordType(iCoordType), gbDuczmalCorrect(bDuczmalCorrect) {
+__fastcall stsClusterData::stsClusterData(BasePrint *pPrintDirection, const ZdString& sOutputFileName,
+                                          const long lRunNumber, const int iCoordType,
+                                          ProbabiltyModelType eProbabiltyModelType, const int iDimension,
+                                          const bool bPrintPVal, const bool bPrintEllipses, const bool bDuczmalCorrect)
+                          : BaseOutputStorageClass(pPrintDirection), gbPrintEllipses(bPrintEllipses),
+                            geProbabiltyModelType(eProbabiltyModelType), giDimension(iDimension),
+                            glRunNumber(lRunNumber), gbPrintPVal(bPrintPVal), giCoordType(iCoordType),
+                            gbDuczmalCorrect(bDuczmalCorrect) {
    try {
       Init();
       Setup(sOutputFileName);
@@ -211,7 +215,7 @@ void stsClusterData::RecordClusterData(const CCluster& pCluster, const CSaTScanD
    ClusterRecord* 		pRecord = 0;
 
    try {                  
-      pRecord = new ClusterRecord(gbPrintEllipses, gbPrintPVal, gbIncludeRunHistory, giModelType == SPACETIMEPERMUTATION, gbDuczmalCorrect);
+      pRecord = new ClusterRecord(gbPrintEllipses, gbPrintPVal, gbIncludeRunHistory, geProbabiltyModelType == SPACETIMEPERMUTATION, gbDuczmalCorrect);
 
       if (gbIncludeRunHistory)
          pRecord->SetRunNumber(double(glRunNumber));
@@ -238,7 +242,7 @@ void stsClusterData::RecordClusterData(const CCluster& pCluster, const CSaTScanD
       pRecord->SetLocationID(sTempValue);
             
       // log likliehood or tst_stat if space-time permutation
-      if(giModelType == SPACETIMEPERMUTATION) {
+      if(geProbabiltyModelType == SPACETIMEPERMUTATION) {
          if(pCluster.m_iEllipseOffset !=0 && gbDuczmalCorrect)
             pRecord->SetTestStat(pCluster.GetDuczmalCompactnessCorrection());
          else
@@ -258,7 +262,7 @@ void stsClusterData::RecordClusterData(const CCluster& pCluster, const CSaTScanD
            
       // p value
       if (gbPrintPVal) {
-         fPVal = (float) pCluster.GetPVal(pData.m_pParameters->m_nReplicas);
+         fPVal = (float) pCluster.GetPVal(pData.m_pParameters->GetNumReplicationsRequested());
          pRecord->SetPValue(fPVal);
       }
                  
@@ -318,7 +322,7 @@ void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, Z
 
       if(giCoordType == CARTESIAN) {        // if cartesian coords
          if(pCluster.m_nClusterType != PURELYTEMPORAL) {
-            for (int i = 0; i < pData.m_pParameters->m_nDimension; ++i) {
+            for (int i = 0; i < pData.m_pParameters->GetDimensionsOfData(); ++i) {
                if (i == 0) {
                   sprintf(sLatBuffer, "%12.2f", pCoords[i]);
                   sLatitude = sLatBuffer;
@@ -336,7 +340,7 @@ void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, Z
          else {              // else we are doing a cartesian purely temporal, print out all n/a's
             sLatitude = "n/a";
             sLongitude = "n/a";
-            for (int i = 2; i < pData.m_pParameters->m_nDimension; ++i)
+            for (int i = 2; i < pData.m_pParameters->GetDimensionsOfData(); ++i)
                vAdditCoords.push_back("n/a");
             sRadius = "n/a";
          }
@@ -405,15 +409,15 @@ void stsClusterData::SetStartAndEndDates(ZdString& sStartDate, ZdString& sEndDat
    char       sStart[64], sEnd[64];
 
    try {
-      if (pData.m_pParameters->m_nAnalysisType != PURELYSPATIAL) {
+      if (pData.m_pParameters->GetAnalysisType() != PURELYSPATIAL) {
          JulianToChar(sStart, pCluster.m_nStartDate);
          JulianToChar(sEnd, pCluster.m_nEndDate);
          sStartDate = sStart;
          sEndDate = sEnd;
       }
       else {
-         sStartDate = pData.m_pParameters->m_szStartDate;
-         sEndDate = pData.m_pParameters->m_szEndDate;
+         sStartDate = pData.m_pParameters->GetStudyPeriodStartDate().c_str();
+         sEndDate = pData.m_pParameters->GetStudyPeriodEndDate().c_str();
       }
    }
    catch (ZdException &x) {
@@ -487,7 +491,7 @@ void stsClusterData::SetupFields() {
       CreateField(gvFields, REL_RISK_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
       
       // if model is space time permutation then tst_stat, else log likelihood
-      if(giModelType == SPACETIMEPERMUTATION)
+      if(geProbabiltyModelType == SPACETIMEPERMUTATION)
          CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 16, 6, uwOffset);
       else {
          CreateField(gvFields, LOG_LIKL_FIELD, ZD_NUMBER_FLD, 16, 6, uwOffset);
