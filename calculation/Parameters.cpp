@@ -892,7 +892,7 @@ void CParameters::SetOutputAreaSpecificDBF(const bool& bOutput) {
 bool CParameters::SetParameter(int nParam, const char* szParam) {
    bool bValid = false;
    int  nScanCount, nTemp;
-   char sTemp[255];
+   char sTemp[MAX_STR_LEN];
 
    try {
       switch (nParam) {
@@ -975,8 +975,10 @@ bool CParameters::SetParameter(int nParam, const char* szParam) {
         case CRITERIA_SECOND_CLUSTERS: nScanCount=sscanf(szParam, "%i", &m_iCriteriaSecondClusters); break;
         case MAX_TEMPORAL_TYPE: nScanCount=sscanf(szParam, "%i", &m_nMaxClusterSizeType); break;
         case MAX_SPATIAL_TYPE: nScanCount=sscanf(szParam, "%i", &m_nMaxSpatialClusterSizeType); break;
-        case RUN_HISTORY_FILENAME: nScanCount = sscanf(szParam, "%s", sTemp);
-                                   gsRunHistoryFilename << ZdString::reset << sTemp;
+        case RUN_HISTORY_FILENAME: strncpy(sTemp, szParam, strlen(szParam)-1);
+                                   sTemp[strlen(szParam)-1]='\0';
+                                   nScanCount=1;
+                                   gsRunHistoryFilename = sTemp;
                                    break;
         case OUTPUTCLUSTERDBF: nScanCount=sscanf(szParam, "%i", &nTemp);
                                gbOutputClusterLevelDBF = (nTemp ? true : false);
