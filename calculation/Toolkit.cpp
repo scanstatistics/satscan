@@ -22,7 +22,7 @@ const char * SaTScanToolkit::gsDefaultRunHistoryFileName = "AnalysisHistory";
 /** Default website. */
 const char * SaTScanToolkit::gsDefaultSaTScanWebSite = "http:/\/www.satscan.org/";
 /** Default Substantive Support Email. */
-const char * SaTScanToolkit::gsDefaultSubstantiveSupportEmail = "satscan@nih.gov";
+const char * SaTScanToolkit::gsDefaultSubstantiveSupportEmail = "kulldorff@satscan.org";
 /** Default Technical Support Email. */
 const char * SaTScanToolkit::gsDefaultTechnicalSupportEmail = "satscan@imsweb.com";
 
