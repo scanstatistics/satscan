@@ -249,15 +249,19 @@ ProspectiveSpatialData & ProspectiveSpatialData::operator=(const ProspectiveSpat
 }
 
 /** adds neigbor data to accumulation and updates measure list */
-void ProspectiveSpatialData::AddMeasureList(tract_t tEllipseOffset, tract_t tCentroid, const DataStreamInterface & Interface, CMeasureList * pMeasureList, const CSaTScanData * pData) {
+void ProspectiveSpatialData::AddMeasureList(tract_t tCentroid, const DataStreamInterface & Interface,
+                                            CMeasureList * pMeasureList, tract_t tNumNeighbors,
+                                            unsigned short ** ppSorted_UShort_T, tract_t ** ppSorted_Tract_T) {
   unsigned int           i, j, iWindowEnd;
   count_t             ** ppCases = Interface.GetCaseArray();
   measure_t           ** ppMeasure = Interface.GetMeasureArray();
-  tract_t                t, tNeighbor, tNumNeighbors = pData->GetNeighborCountArray()[tEllipseOffset][tCentroid];
+  tract_t                t, tNeighbor;
 
-  InitializeData(); //replace with direct code ?
-  for (t=1; t <= tNumNeighbors; ++t) {
-    tNeighbor = pData->GetNeighbor(tEllipseOffset, tCentroid, t);
+  // reset accumulated case/measure data
+  memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
+  memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
+  for (t=0; t < tNumNeighbors; ++t) {
+    tNeighbor = (ppSorted_UShort_T ? (tract_t)ppSorted_UShort_T[tCentroid][t] : ppSorted_Tract_T[tCentroid][t]);
     //update accumulated data
     gpCases[0]   += ppCases[0][tNeighbor]; //set cases for entire period added by this neighbor
     gpMeasure[0] += ppMeasure[0][tNeighbor];
@@ -425,26 +429,29 @@ SpaceTimeData & SpaceTimeData::operator=(const SpaceTimeData& rhs) {
 }
 
 /** adds neighbor data to accumulation */
-void SpaceTimeData::AddNeighborDataAndCompare(tract_t tEllipseOffset,
-                                              tract_t tCentroid,
-                                              const DataStreamInterface & Interface,
-                                              const CSaTScanData * pData,
-                                              CTimeIntervals * pTimeIntervals,
-                                              CMeasureList * pMeasureList) {
+void SpaceTimeData::AddNeighborDataAndCompare(tract_t tCentroid,
+                                              const DataStreamInterface& Interface,
+                                              tract_t tNumNeighbors,
+                                              unsigned short ** ppSorted_UShort_T,
+                                              tract_t ** ppSorted_Tract_T,
+                                              CTimeIntervals& TimeIntervals,
+                                              CMeasureList& MeasureList) {
 
   unsigned int  i, iIntervals = giAllocationSize - 1;
   count_t    ** ppCases = Interface.GetCaseArray();
   measure_t  ** ppMeasure = Interface.GetMeasureArray();
-  tract_t       t, tNeighbor, tNumNeighbors = pData->GetNeighborCountArray()[tEllipseOffset][tCentroid];
+  tract_t       t, tNeighbor;
 
-  InitializeData(); //replace with direct code ?
-  for (t=1; t <= tNumNeighbors; t++) {
-     tNeighbor = pData->GetNeighbor(tEllipseOffset, tCentroid, t);
+  //reset accumulated case/measure data
+  memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
+  memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
+  for (t=0; t < tNumNeighbors; t++) {
+     tNeighbor = (ppSorted_UShort_T ? (tract_t)ppSorted_UShort_T[tCentroid][t] : ppSorted_Tract_T[tCentroid][t]);
      for (i=0; i < iIntervals; i++) {
        gpCases[i] += ppCases[i][tNeighbor];
        gpMeasure[i] += ppMeasure[i][tNeighbor];
      }
-     pTimeIntervals->CompareMeasures(this, pMeasureList);
+     TimeIntervals.CompareMeasures(this, MeasureList);
   }
 }
 

@@ -22,7 +22,9 @@ class SpatialData : public AbstractSpatialClusterData {
     virtual SpatialData * Clone() const;
     SpatialData         & operator=(const SpatialData& rhs);
 
-    inline /*virtual*/ void   AddMeasureList(tract_t tEllipseOffset, tract_t tCentroid, const DataStreamInterface & Interface, CMeasureList * pMeasureList, const CSaTScanData * pData);
+    inline /*virtual*/ void   AddMeasureList(tract_t tCentroid, const DataStreamInterface & Interface,
+                                             CMeasureList * pMeasureList, tract_t tNumNeighbors,
+                                             unsigned short ** ppSorted_UShort_T, tract_t ** ppSorted_Tract_T);
     virtual void          AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
     virtual double        CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator);
     virtual count_t       GetCaseCount(unsigned int iStream=0) const;
@@ -31,12 +33,15 @@ class SpatialData : public AbstractSpatialClusterData {
 };
 
 /** adds neighbor data to accumulation and updates measure list */
-inline void SpatialData::AddMeasureList(tract_t tEllipseOffset, tract_t tCentroid, const DataStreamInterface & Interface, CMeasureList * pMeasureList, const CSaTScanData * pData) {
-  tract_t       t, tNeighbor, tNumNeighbors = pData->GetNeighborCountArray()[tEllipseOffset][tCentroid];
+inline void SpatialData::AddMeasureList(tract_t tCentroid,
+                                        const DataStreamInterface & Interface, CMeasureList * pMeasureList,
+                                        tract_t tNumNeighbors, unsigned short ** ppSorted_UShort_T,
+                                        tract_t ** ppSorted_Tract_T) {
+  tract_t       t, tNeighbor;
 
   gtCases=0;gtMeasure=0; //initialize data
-  for (t=1; t <= tNumNeighbors; ++t) {
-    tNeighbor = pData->GetNeighbor(tEllipseOffset, tCentroid, t);
+  for (t=0; t < tNumNeighbors; ++t) {
+    tNeighbor = (ppSorted_UShort_T ? (tract_t)ppSorted_UShort_T[tCentroid][t] : ppSorted_Tract_T[tCentroid][t]);
     gtCases += Interface.gpPSCaseArray[tNeighbor];
     gtMeasure += Interface.gpPSMeasureArray[tNeighbor];
     pMeasureList->AddMeasure(gtCases, gtMeasure);
@@ -103,7 +108,9 @@ class ProspectiveSpatialData : public TemporalData {
     virtual ProspectiveSpatialData * Clone() const;
     ProspectiveSpatialData         & operator=(const ProspectiveSpatialData& rhs);
 
-    /*virtual*/ void                 AddMeasureList(tract_t tEllipseOffset, tract_t tCentroid, const DataStreamInterface & Interface, CMeasureList * pMeasureList, const CSaTScanData * pData);
+    /*virtual*/ void                 AddMeasureList(tract_t tCentroid, const DataStreamInterface & Interface,
+                                                    CMeasureList * pMeasureList, tract_t tNumNeighbors,
+                                                    unsigned short ** ppSorted_UShort_T, tract_t ** ppSorted_Tract_T);
     virtual void                     AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
     virtual double                   CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator);
     virtual unsigned int             GetAllocationSize() const {return giAllocationSize;}
@@ -138,12 +145,13 @@ class SpaceTimeData : public TemporalData {
     virtual SpaceTimeData     * Clone() const;
     SpaceTimeData             & operator=(const SpaceTimeData& rhs);
 
-    /*virtual*/ void                AddNeighborDataAndCompare(tract_t tEllipseOffset,
-                                                              tract_t tCentroid,
+    /*virtual*/ void                AddNeighborDataAndCompare(tract_t tCentroid,
                                                               const DataStreamInterface & Interface,
-                                                              const CSaTScanData * pData,
-                                                              CTimeIntervals * pTimeIntervals,
-                                                              CMeasureList * pMeasureList);
+                                                              tract_t tNumNeighbors,
+                                                              unsigned short ** ppSorted_UShort_T,
+                                                              tract_t ** ppSorted_Tract_T,
+                                                              CTimeIntervals& TimeIntervals,
+                                                              CMeasureList& MeasureList);
     virtual void                AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
     inline virtual void         InitializeData();
 };
