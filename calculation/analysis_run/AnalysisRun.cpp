@@ -66,7 +66,7 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
     delete pDataStreamGateway; pDataStreamGateway=0;
     delete pAnalysis; pAnalysis=0;
     //display the loglikelihood of most likely cluster
-    if (gPrintDirection.GetIsCanceled())
+    if (!gPrintDirection.GetIsCanceled())
       DisplayTopClusterLogLikelihood();
   }
   catch (ZdException &x) {
@@ -112,7 +112,7 @@ bool AnalysisRunner::CheckForEarlyTermination(unsigned int iNumSimulationsComple
     parameter settings. If no clusters of significance are found, file will still
     be created, but will be empty. Files types creates are ASCII text and dBase,
     with the user's parameter settings indicating which. */
-void AnalysisRunner::CreateClusterInformationFile(long lReportHistoryRunNumber) {
+void AnalysisRunner::CreateClusterInformationFile() {
   try {
     if (gParameters.GetOutputClusterLevelFiles()) {
       //create file record data buffers
@@ -209,7 +209,7 @@ void AnalysisRunner::DisplayTopClusterLogLikelihood() {
     iteration of the sequential scan. 
     If user requested 'location information' output file(s), they are created
     simultaneously with reported clusters. */
-void AnalysisRunner::DisplayTopCluster(long lReportHistoryRunNumber) {
+void AnalysisRunner::DisplayTopCluster() {
   measure_t                             nMinMeasure = 0;
   std::auto_ptr<stsAreaSpecificData>    pData;
   FILE                                * fp=0;
@@ -259,7 +259,7 @@ void AnalysisRunner::DisplayTopCluster(long lReportHistoryRunNumber) {
 /** Prints most likely cluster information, if any retained, to result file. 
     If user requested 'location information' output file(s), they are created
     simultaneously with reported clusters. */
-void AnalysisRunner::DisplayTopClusters(long lReportHistoryRunNumber) {
+void AnalysisRunner::DisplayTopClusters() {
   double                               dSignifRatio05;
   std::auto_ptr<stsAreaSpecificData>   pData;
   clock_t                              lStartTime;
@@ -318,7 +318,6 @@ void AnalysisRunner::DisplayTopClusters(long lReportHistoryRunNumber) {
 /** starts analysis execution */
 void AnalysisRunner::Execute() {
   bool  bContinue;
-  long  lRunNumber=0;
 
   try {
     //read data
@@ -329,21 +328,16 @@ void AnalysisRunner::Execute() {
     for (unsigned int i=0; i < gpDataHub->GetDataStreamHandler().GetNumStreams(); ++i)
        if (gpDataHub->GetDataStreamHandler().GetStream(i).GetTotalCases() == 0)
          SSGenerateException("Error: No cases found in input stream %u.\n","Execute()", i);
-    //detect user cancellation  
+    //detect user cancellation
     if (gPrintDirection.GetIsCanceled())
       return;
     //calculate number of neighboring locations about each centroid
-    gpDataHub->FindNeighbors(false);  
-    //detect cancellation  
+    gpDataHub->FindNeighbors(false);
+    //detect cancellation
     if (gPrintDirection.GetIsCanceled())
       return;
-    //create result file report  
-    CreateReport();  
-    //open run history file
-    stsRunHistoryFile historyFile(gParameters, gPrintDirection);
-    //get run number to refer to later                              
-    lRunNumber = historyFile.GetRunNumber();
-
+    //create result file report
+    CreateReport();
     //start analyzing data
     do {
       ++giAnalysisCount;
@@ -358,15 +352,15 @@ void AnalysisRunner::Execute() {
       //detect user cancellation
       if (gPrintDirection.GetIsCanceled())
         return;
-      //update report  
-      UpdateReport(lRunNumber);
+      //update report
+      UpdateReport();
       //log history for first analysis run
       if (giAnalysisCount == 1) {
-        gPrintDirection.SatScanPrintf("Logging run history...\n");
-        historyFile.LogNewHistory(*this);
+        gPrintDirection.SatScanPrintf("Logging run history...");
+        stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
       }
       //report additional output file: 'cluster information'
-      CreateClusterInformationFile(lRunNumber);
+      CreateClusterInformationFile();
       //report additional output file: 'relative risks for each location'
       CreateRelativeRiskFile();
       //repeat analysis - sequential scan
@@ -749,15 +743,15 @@ void AnalysisRunner::UpdatePowerCounts(double r) {
     - significant loglikelihood ratio indicator
     - power calculation results, if option requested by user
     - indication of when simulations terminated early */
-void AnalysisRunner::UpdateReport(const long lReportHistoryRunNumber) {
+void AnalysisRunner::UpdateReport() {
   FILE         * fp=0;
 
   try {
     gPrintDirection.SatScanPrintf("\nRecording results to file...\n");
     if (gParameters.GetIsSequentialScanning())
-      DisplayTopCluster(lReportHistoryRunNumber);
+      DisplayTopCluster();
     else
-      DisplayTopClusters(lReportHistoryRunNumber);
+      DisplayTopClusters();
     //open result output file stream  
     OpenReportFile(fp, true);
     if (giNumSimsExecuted >= 19 && giClustersReported > 0) {
