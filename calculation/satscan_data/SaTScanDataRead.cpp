@@ -280,15 +280,16 @@ bool CSaTScanData::ConvertPopulationDateToJulian(const char * sDateString, int i
  **********************************************************************/
 bool CSaTScanData::ReadPops() {
 //  std::vector<int>                 vFirstTractDateIndex;
-  Julian                          PopulationDate;
   FILE                          * fp; // Ptr to population file
   std::vector<Julian>             vPopulationDates;
   std::vector<Julian>::iterator   itrdates;
   char                          * ptr, ** cvec = 0,
                                   sDateString[MAX_LINESIZE], szData[MAX_LINESIZE], szTid[MAX_LINESIZE];
-  int                             i, iCategoryIndex, iNumCategories, iPopulation, iDatePrecision, iMonth, iDay;
+  int                             i, iCategoryIndex, iNumCategories;
   bool                            bValid=true, bEmpty=true, InvalidForProspective=false;
-  tract_t                         nRec=0, nNonBlankLines, tract, t;
+  tract_t                         nRec=0, nNonBlankLines, tract;
+  float                           fPopulation;
+  Julian                          PopulationDate;
 
   try {
     gpPrintDirection->SatScanPrintf("Reading the population file\n");
@@ -306,7 +307,7 @@ bool CSaTScanData::ReadPops() {
           bEmpty=false;
 
         //Check for a tract id, year, and population count
-        if (sscanf(szData, "%s %s %ld", szTid, sDateString, &iPopulation) < 3) {
+        if (sscanf(szData, "%s %s %f", szTid, sDateString, &fPopulation) < 3) {
           /** WE MIGHT BE ABLE TO PRODUCE A BETTER ERROR MESSAGE HERE*/
           gpPrintDirection->SatScanPrintWarning("  Error: Invalid record in population file, line %d.\n", nRec);
           gpPrintDirection->SatScanPrintWarning("         Please see 'population file format' in the help file.\n");
@@ -314,7 +315,7 @@ bool CSaTScanData::ReadPops() {
           continue;
         }
 
-        if (iPopulation < 0) {
+        if (fPopulation < 0) {
           /** WE MIGHT BE ABLE TO PRODUCE A BETTER ERROR MESSAGE HERE - LIKE THE INVALID POPULATION */
           gpPrintDirection->SatScanPrintWarning("  Error: Negative (or very large) value in population file, line %d.\n", nRec);
           bValid = false;
@@ -358,8 +359,7 @@ bool CSaTScanData::ReadPops() {
             ++nNonBlankLines;
 
           // Get tract id, year, and population count
-          sscanf(szData, "%s %s %ld", szTid, sDateString, &iPopulation);
-
+          sscanf(szData, "%s %s %f", szTid, sDateString, &fPopulation);
           bValid = ConvertPopulationDateToJulian(sDateString, nRec, PopulationDate);
           if (! bValid)
             continue;
@@ -422,9 +422,8 @@ bool CSaTScanData::ReadPops() {
               InvalidForProspective = true;
           }
 
-          // Add Category to the tract
           // Add population count for this tract/category/year
-          gpTInfo->tiAddCategoryToTract(tract, iCategoryIndex, PopulationDate, iPopulation);
+          gpTInfo->tiAddCategoryToTract(tract, iCategoryIndex, PopulationDate, fPopulation);
 
         } // while - 2nd pass
       } // if
@@ -439,7 +438,7 @@ bool CSaTScanData::ReadPops() {
         gpPrintDirection->SatScanPrintWarning("           data, then you must define the maximum circle size in\n");
         gpPrintDirection->SatScanPrintWarning("           terms of a specific geographical radius rather than as a\n");
         gpPrintDirection->SatScanPrintWarning("           percent of the total population at risk.\n");
-       gpPrintDirection->SatScanPrintWarning("\n\n");
+        gpPrintDirection->SatScanPrintWarning("\n\n");
       }
       if (bValid && iNumCategories > 0)
        free(cvec);
