@@ -15,7 +15,7 @@ void AbstractPermutedDataRandomizer::RandomizeData(const RealDataStream& thisRea
                                                    SimulationDataStream& thisSimulationStream,
                                                    unsigned int iSimulation) {
   //set seed for simulation number
-  gRandomNumberGenerator.SetSeed(iSimulation + gRandomNumberGenerator.GetDefaultSeed());
+  SetSeed(iSimulation, thisSimulationStream.GetStreamIndex());
   //assign random numbers to permuted attribute and sort
   SortPermutedAttribute();
   //re-assign data stream's simulation data

@@ -9,7 +9,10 @@
 /** abstract randomizer class to randomize data for replications */
 class AbstractRandomizer {
   protected:
+    static const long           glStreamSeedOffSet;
     RandomNumberGenerator	gRandomNumberGenerator;  /** generates random numbers */
+
+    void                        SetSeed(unsigned int iSimulationIndex, unsigned int iDataStreamIndex);
 
   public:
     AbstractRandomizer();

@@ -55,7 +55,7 @@ void BernoulliNullHypothesisRandomizer::RandomizeData(const RealDataStream& this
   std::vector<count_t>          RandCounts;
 
   // reset seed of random number generator
-  gRandomNumberGenerator.SetSeed(iSimulation + gRandomNumberGenerator.GetDefaultSeed());
+  SetSeed(iSimulation, thisSimulationStream.GetStreamIndex());
   // reset simulation cases to zero
   thisSimulationStream.ResetCumulativeCaseArray();
 
