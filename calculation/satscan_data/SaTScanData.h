@@ -151,7 +151,18 @@ class CSaTScanData {
     virtual void                                DisplayControls(FILE* pFile);
     virtual void                                DisplayMeasure(FILE* pFile);
     virtual void                                DisplaySimCases(FILE* pFile);
+
+    inline tract_t                           ** GetSortedArrayAsTract_T(int iEllipse) const;
+    inline unsigned short                    ** GetSortedArrayAsUShort_T(int iEllipse) const;
 };
+
+inline tract_t ** CSaTScanData::GetSortedArrayAsTract_T(int iEllipse) const {
+  return (gpSortedIntHandler ? gpSortedIntHandler->GetArray()[iEllipse] : 0);
+}
+
+inline unsigned short ** CSaTScanData::GetSortedArrayAsUShort_T(int iEllipse) const {
+  return (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray()[iEllipse] : 0);
+}
 
 /** Return "nearness"-th closest neighbor to "t" (nearness == 1 returns "t"). */
 inline tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const {
