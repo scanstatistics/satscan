@@ -44,8 +44,8 @@ const char* P_VALUE_FIELD               = "P_VALUE";
 const char* ADDITIONAL_OUTPUT_FILES_FIELD        = "ADDIT_OUT";
 
 // constructor
-stsRunHistoryFile::stsRunHistoryFile(const ZdString& sFileName, BasePrint& PrintDirection, bool bPrintPVal)
-                 : gpPrintDirection(&PrintDirection) , gbPrintPVal(bPrintPVal) {
+stsRunHistoryFile::stsRunHistoryFile(const ZdString& sFileName, BasePrint& PrintDirection, const bool bPrintPVal, const bool bSequential)
+                 : gpPrintDirection(&PrintDirection) , gbPrintPVal(bPrintPVal) , gbSequential(bSequential) {
    try {
       Init();
       SetFileName(sFileName);
@@ -448,7 +448,7 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
          pRecord->PutBlank(GetFieldNumber(gvFields, P_VALUE_FIELD));
       SetDoubleField(*pRecord, (double)params.m_nReplicas, GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
 
-      if(gbPrintPVal) {    // only print 0.01 and 0.05 cutoffs if pVals are printed, else this would result in access underrun - AJV
+      if(!gbSequential && gbPrintPVal) {    // only print 0.01 and 0.05 cutoffs if pVals are printed, else this would result in access underrun - AJV
          SetDoubleField(*pRecord, pAnalysis.GetSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
          SetDoubleField(*pRecord, pAnalysis.GetSimRatio05(), GetFieldNumber(gvFields, CUTOFF_005_FIELD)); // 0.05 cutoff field
          SetDoubleField(*pRecord, (double)uwSignificantAt005, GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));  // number of clusters significant at tthe .05 llr cutoff field

@@ -35,7 +35,7 @@ class stsRunHistoryFile {
       long                              glRunNumber;
       ZdPointerVector<ZdField>	        gvFields;
       BasePrint*                        gpPrintDirection;
-      bool                              gbPrintPVal;
+      bool                              gbPrintPVal, gbSequential;
 
       void      GetAliveClustersOnlyString(ZdString& sTempValue, int iAnalysisType, bool bAliveOnly);
       void      GetAnalysisTypeString(ZdString& sTempValue, int iType);
@@ -55,7 +55,7 @@ class stsRunHistoryFile {
    protected:
       void      CreateRunHistoryFile();
    public:
-      stsRunHistoryFile(const ZdString& sFileName, BasePrint& PrintDirection, bool bPrintPVal = true);
+      stsRunHistoryFile(const ZdString& sFileName, BasePrint& PrintDirection, const bool bPrintPVal = true, const bool bSequential = false);
       ~stsRunHistoryFile();
 
       const long        GetRunNumber() const {return glRunNumber;}
