@@ -72,6 +72,9 @@ USEUNIT("..\calculation\Output\stsClusterData.cpp");
 USEUNIT("..\calculation\Output\stsLogLikelihood.cpp");
 USEUNIT("..\calculation\Output\stsOutputFileData.cpp");
 USEUNIT("..\calculation\Output\stsAreaSpecificData.cpp");
+USEUNIT("..\calculation\Output\stsOutputFileWriter.cpp");
+USEUNIT("..\calculation\Output\stsDBaseFileWriter.cpp");
+USEUNIT("..\calculation\Output\stsASCIIFileWriter.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         try {
