@@ -852,7 +852,17 @@ void CAnalysis::RemoveTopClusterData() {
           m_pData->m_pControls[0][nNeighbor]   = 0;
         }
 
-        --m_pData->m_nTracts;
+        //The next statement is believed to have been a mistake. There was no
+        //documentation as to it's purpose but I believe the coder was intending
+        //to remove the actual tract from the total tracts. Thinking this, the
+        //statement is actually assuming that tracts of cluster are always the
+        //last x tracts in set. The only results that are effected by its removal
+        //are the Relative Risks output file. But reporting the file has been moved
+        //to just after the first iteration of sequential scan. So, this file now
+        //reports all tracts relative risks before any data manipulation occurs.
+        //Also, potentially after many iterations of scan, the number of tracts
+        //could be negative.
+        //--m_pData->m_nTracts;
       }
 
       InitializeTopClusterList();
