@@ -1400,3 +1400,9 @@ void TfrmAnalysis::WriteSession(const char * sParameterFilename) {
 
 
 
+void __fastcall TfrmAnalysis::btnImportFileClick(TObject *Sender)
+{
+   LaunchImporter();
+}
+//---------------------------------------------------------------------------
+

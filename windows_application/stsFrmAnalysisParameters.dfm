@@ -1,6 +1,6 @@
 object frmAnalysis: TfrmAnalysis
-  Left = 159
-  Top = 79
+  Left = 201
+  Top = 83
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SaTScan Analysis Settings'
@@ -265,7 +265,7 @@ object frmAnalysis: TfrmAnalysis
       object gbxStudyPeriod: TGroupBox
         Left = 8
         Top = 292
-        Width = 465
+        Width = 337
         Height = 85
         Caption = 'Study Period'
         TabOrder = 4
@@ -374,6 +374,15 @@ object frmAnalysis: TfrmAnalysis
           OnExit = edtStudyPeriodEndDateExit
           OnKeyPress = NaturalNumberKeyPress
         end
+      end
+      object btnImportFile: TButton
+        Left = 400
+        Top = 344
+        Width = 72
+        Height = 24
+        Caption = 'Import File'
+        TabOrder = 5
+        OnClick = btnImportFileClick
       end
     end
     object tbAnalysis: TTabSheet

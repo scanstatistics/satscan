@@ -108,6 +108,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TEdit *edtStudyPeriodEndDateDay;
    TButton *btnAdvanced1;
    TButton *btnAdvanced2;
+   TButton *btnImportFile;
    
    void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
    void __fastcall rgpPrecisionTimesClick(TObject *Sender);
@@ -138,6 +139,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    void __fastcall edtResultFileChange(TObject *Sender);
    void __fastcall FormActivate(TObject *Sender);
    void __fastcall btnAdvancedParametersClick(TObject *Sender);
+   void __fastcall btnImportFileClick(TObject *Sender);
 
   private:
     PrintNull                   gNullPrint;
