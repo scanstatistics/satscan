@@ -56,35 +56,30 @@ void C_ST_PT_Analysis::AllocateSimulationObjects(const AbtractDataStreamGateway 
     cluster. */
 bool C_ST_PT_Analysis::FindTopClusters(const AbtractDataStreamGateway & DataGateway) {
   IncludeClustersType           eIncludeClustersType;
-  CTimeIntervals              * pTimeIntervals=0;
 
   try {
     //calculate top cluster over all space-time
     if (!CSpaceTimeAnalysis::FindTopClusters(DataGateway))
       return false;
-      
+
     //calculate top purely temporal cluster
     if (m_pParameters->GetAnalysisType() == PROSPECTIVESPACETIME)
       eIncludeClustersType = ALIVECLUSTERS;
     else
       eIncludeClustersType = m_pParameters->GetIncludeClustersType();
-    //get new time intervals object  
-    pTimeIntervals = GetNewTimeIntervalsObject(eIncludeClustersType);
     //create top cluster
     CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
     //create comparator cluster
     CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, *m_pData, *gpPrintDirection);
-    pTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
+    gpTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
     if (TopCluster.ClusterDefined()) {
       m_pTopClusters[m_nClustersRetained] = TopCluster.Clone();
       m_pTopClusters[m_nClustersRetained]->SetStartAndEndDates(m_pData->GetTimeIntervalStartTimes(), m_pData->m_nTimeIntervals);
       m_nClustersRetained++;
       SortTopClusters();
     }
-    delete pTimeIntervals; pTimeIntervals=0;
   }
   catch (ZdException &x) {
-    delete pTimeIntervals;
     x.AddCallpath("FindTopClusters()","C_ST_PT_Analysis");
     throw;
   }
