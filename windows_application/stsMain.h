@@ -72,6 +72,9 @@ class TfrmMainForm : public TForm{
         TBevel *Bevel6;
         TMenuItem *mitReopen;
         TAction *ActionReopen;
+        TAction *ActionUpdateCheck;
+        TMenuItem *N4;
+        TMenuItem *SaveSessionAs1;
         void __fastcall PrintSessionActionExecute(TObject *Sender);
         void __fastcall OutputTextFile1Click(TObject *Sender);
         void __fastcall NewSessionActionExecute(TObject *Sender);
@@ -89,6 +92,7 @@ class TfrmMainForm : public TForm{
         void __fastcall ActionReopenExecute(TObject *Sender);
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall FormActivate(TObject *Sender);
+        void __fastcall ActionUpdateCheckExecute(TObject *Sender);
   private:	// User declarations
     bool                        gbShowStartWindow;
     stsOutputFileRegister       gRegistry;

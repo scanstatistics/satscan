@@ -7,6 +7,8 @@
 
 #include "stsOutputFileRegistry.h"
 #include "stsFrmStartWindow.h"
+#include "stsFrmUpdateCheck.h"
+#include "stsFrmDownloadProgress.h"
 
 TfrmMainForm *frmMainForm;
 //---------------------------------------------------------------------------
@@ -381,6 +383,42 @@ void __fastcall TfrmMainForm::FormActivate(TObject *Sender) {
   }
 }
 //---------------------------------------------------------------------------
+void __fastcall TfrmMainForm::ActionUpdateCheckExecute(TObject *Sender) {
+  TfrmUpdateCheck             * frmUpdateCheck=0;
+  TfrmDownloadProgress        * frmDownloadProgress=0;
+  ZdString                      sMessage;
 
+  try {
+    frmUpdateCheck = new TfrmUpdateCheck(this);
+    frmUpdateCheck->ConnectToServerForUpdateCheck();
+    if (frmUpdateCheck->HasUpdates()) {
+      sMessage.printf("SaTScan v%s is available.\n\nDo you want to install now?"
+                      "  (This will cause SaTScan to restart.)", frmUpdateCheck->GetUpdateVersion().GetCString());
+      if (TBMessageBox::Response(this, "SaTScan Update Available", sMessage.GetCString(), MB_YESNO) == IDYES) {
+        frmDownloadProgress = new TfrmDownloadProgress(this);
+        frmDownloadProgress->Add(frmUpdateCheck->GetUpdateApplicationInfo());
+        frmDownloadProgress->Add(frmUpdateCheck->GetUpdateArchiveInfo());
+        frmDownloadProgress->DownloadFiles();
+        if (frmDownloadProgress->GetDownloadCompleted()) {
+          GetToolkit().SetUpdateArchiveFilename(frmUpdateCheck->GetUpdateArchiveInfo().first.GetCString());
+          GetToolkit().SetRunUpdateOnTerminate(true);
+          /**  what about running threads? **/
+          Close();
+        }
+      }
+    }
+    else
+      TBMessageBox::Response(this, "No Updates", "No updates at this time. Please try again later.", MB_OK);
 
+    delete frmDownloadProgress; frmDownloadProgress=0;
+    delete frmUpdateCheck; frmUpdateCheck=0;
+  }
+  catch (ZdException &x) {
+    delete frmDownloadProgress;
+    delete frmUpdateCheck;
+    x.AddCallpath("ActionUpdateCheckExecute", "TfrmMainForm");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
 
