@@ -596,6 +596,10 @@ bool TfrmMain::Execute(const AnsiString & sCommandLine) {
 
 void __fastcall TfrmMain::FormShow(TObject *Sender) {
   lstDisplay->SetFocus();
+  if (_argc > 2)
+    edtParameterListFile->Text = _argv[2];
+  if (_argc > 1 && !stricmp(_argv[1],"-auto_start") && !edtBatchExecutableName->Text.IsEmpty() && !edtParameterListFile->Text.IsEmpty())
+    ActionStartExecute(this);  
 }
 
 /** Gets filename of file that will be the alternate results to compare to original */
