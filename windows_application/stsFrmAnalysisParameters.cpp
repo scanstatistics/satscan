@@ -559,8 +559,19 @@ bool TfrmAnalysis::CheckOutputParams() {
   bool bReturn = true;
 
   try {
-    if (edtResultFile->Enabled)
-      bReturn = ValidateFileCanCreate(edtResultFile->Text, "Output");
+    if (edtResultFile->Text.Length() == 0)
+      ZdException::GenerateNotification("Results File not specified.\nNote that file need not currently exist but path must be valid.",
+                                        "CheckOutputParams()");
+
+    try {
+      ZdIO(edtResultFile->Text.c_str(), ZDIO_OPEN_WRITE|ZDIO_OPEN_READ|ZDIO_OPEN_CREATE);
+    }
+    catch (ZdException & x) {
+      x.SetErrorMessage((const char*)"Results File: \"%s\" could not be opened or created.\nNote that file need not currently exist but path must be valid.",
+                         edtResultFile->Text.c_str());
+      x.SetLevel(ZdException::Notify);
+      throw;
+    }
   }
   catch (ZdException & x) {
     x.AddCallpath("CheckOutputParams", "TfrmAnalysis");
@@ -1767,6 +1778,7 @@ bool TfrmAnalysis::ValidateParams() {
   }
   catch (ZdException & x) {
     x.AddCallpath("ValidateParams()", "TfrmAnalysis");
+    bDataOk = false;
     DisplayBasisException(this, x);
   }
   return bDataOk;
