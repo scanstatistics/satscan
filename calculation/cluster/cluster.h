@@ -11,92 +11,102 @@
 
 class stsAreaSpecificData;
 
+/** ASCII result file print conditions for CCluster object */
+class ClusterPrintFormat {
+   private:
+     int    giLeftMargin;
+     int    giRightMargin;
+     char   gcDeliminator;
+     char   gsSpacesOnLeft[100];
+
+   public:
+     ClusterPrintFormat(int iLeftMargin=26, int iRightMargin=67, char cDeliminator=',');
+     ~ClusterPrintFormat();
+
+     char               GetDeliminator() const {return gcDeliminator;}
+     int                GetLeftMargin() const {return giLeftMargin;}
+     int                GetRightMargin() const {return giRightMargin;}
+     const char       * GetSpacesOnLeft() const {return gsSpacesOnLeft;}
+     char             * GetSpacesOnLeft() {return gsSpacesOnLeft;}
+     void               SetLeftMargin(unsigned int iClusterNumber);
+};
+
+/** Defines properties of each potential cluster evaluated by analysis. Provides
+    functionality for printing cluster properties to file stream in predefined
+    format. */
 class CCluster {
   protected:
-    stsAreaSpecificData       * gpAreaData;
+    tract_t                       m_Center;             // Center of cluster (index to grid)
+    RATE_FUNCPTRTYPE              m_pfRateOfInterest;
+    tract_t                       m_nTracts;            // Number of neighboring tracts in cluster
+    unsigned int                  m_nRank;              // Rank based on results of simulations
+    double                        m_DuczmalCorrection;  // Duczmal compactness correction, for ellipses
+    int                           m_iEllipseOffset;     // Link to Circle or Ellipse (top cluster)
 
   public:
     CCluster();
     virtual ~CCluster();
 
-    inline virtual void         AssignAsType(const CCluster& rhs) {*this = rhs;}
-    virtual CCluster          * Clone() const = 0;
-    CCluster                  & operator=(const CCluster& rhs);
-
-    virtual count_t             GetCaseCount(unsigned int iStream) const {return 0;}
-    virtual measure_t           GetMeasure(unsigned int iStream) const {return 0;}
-
-    float                       gfPValue;               // p value of the cluster
-    tract_t                     m_Center;             // Center of cluster (index to grid)
-    int                         m_iEllipseOffset;     // Link to Circle or Ellipse (top cluster)
-
-    tract_t                     m_nTracts;            // Number of neighboring tracts in cluster
-    double                      m_nRatio;             // Likelihood ratio
-    long                        m_nRank;              // Rank based on results of simulations
-    double                      m_DuczmalCorrection;  // Duczmal compactness correction, for ellipses
-    // Temporal variables
-    int                         m_nFirstInterval;     // Index # of first time interval
-    int                         m_nLastInterval;      // Index # of last time interval
-    Julian                      m_nStartDate;         // Start time of cluster
-    Julian                      m_nEndDate;           // End time of cluster
-
-
-    RATE_FUNCPTRTYPE            m_pfRateOfInterest;
-
-    virtual bool        ClusterDefined() {return m_nTracts;}
-    const double        ConvertAngleToDegrees(double dAngle) const;
-    virtual void        Display(FILE* fp, const     CParameters& Parameters,
-                                const CSaTScanData& Data, int nCluster,
-                                measure_t nMinMeasure, int iNumSimulations);
-    virtual void        DisplayAnnualTimeTrendWithoutTitle(FILE* fp) {/*stub - no action*/}
-    virtual void        DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
-                                            int nCluster,  measure_t nMinMeasure,
-                                            int iNumSimulations, long lReportHistoryRunNumber,
-                                            bool bIncludeRelRisk, bool bIncludePVal,
-                                            int nLeftMargin, int nRightMargin,
-                                            char cDeliminator, char* szSpacesOnLeft,
-                                            bool bFormat = true);
-    void                DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
-                                                tract_t nFirstTract, tract_t nLastTract,
-                                                int nCluster, measure_t nMinMeasure,
-                                                int iNumSimulations, long lReportHistoryRunNumber,
-                                                bool bIncludeRelRisk, bool bIncludePVal,
-                                                int nLeftMargin, int nRightMargin,
-                                                char cDeliminator, char* szSpacesOnLeft,
-                                                bool bFormat = true);
-    virtual void        DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
-                                        int nLeftMargin, int nRightMargin,
-                                        char cDeliminator, char* szSpacesOnLeft);
-    virtual void        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
-                                        int nLeftMargin, int nRightMargin,
-                                        char cDeliminator, char* szSpacesOnLeft);
-    virtual void        DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, int iNumSimulations, char* szSpacesOnLeft);
-    virtual void        DisplayPopulation(FILE* fp, const CSaTScanData& Data, char* szSpacesOnLeft);
-    virtual void        DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft);
-    virtual void        DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment,
-                                        int nLeftMargin, int nRightMargin,
-                                        char cDeliminator, char* szSpacesOnLeft);
-    virtual void        DisplaySteps(FILE* fp, char* szSpacesOnLeft) {};
-    virtual void        DisplayTimeFrame(FILE* fp, char* szSpacesOnLeft, int nAnalysisType);
-    virtual void        DisplayTimeTrend(FILE* fp, char* szSpacesOnLeft) {/*stub - no action*/}
-    virtual count_t     GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {return 0;}
+    //assignment operations
+    inline virtual void           AssignAsType(const CCluster& rhs) {*this = rhs;}
+    virtual CCluster            * Clone() const = 0;
+    CCluster                    & operator=(const CCluster& rhs);
+    //pure virtual functions
     virtual AbstractClusterData * GetClusterData() = 0;
-    virtual int         GetClusterType() const = 0;
-    virtual measure_t   GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {return 0;}
-    virtual tract_t     GetNumTractsInnerCircle() { return m_nTracts; }
-    const double        GetPVal(int nReps) const {return (double)m_nRank/(double)(nReps+1);}
-    const double        GetRelativeRisk(double nMeasureAdjustment) const;
-    virtual double      GetRelativeRiskForTract(tract_t tTract, const CSaTScanData & Data) const;
-    virtual void        Initialize(tract_t nCenter=0);
-    void                SetAreaReport(stsAreaSpecificData* pAreaData) { gpAreaData = pAreaData; }
-    void                SetCenter(tract_t nCenter);
-    void                SetEllipseOffset(int iOffset);
-    void                SetDuczmalCorrection(double dEllipseShape);
-    void                SetRate(int nRate);
-    virtual void        SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals);
-    void                WriteCoordinates(FILE* fp, CSaTScanData* pData);
-    void                WriteLatLongCoords(FILE* fp, CSaTScanData* pData);
-};
+    virtual int                   GetClusterType() const = 0;
+    //public data members - speed considerations
+    double                        m_nRatio;             // Likelihood ratio
+    int                           m_nFirstInterval;     // Index # of first time interval
+    int                           m_nLastInterval;      // Index # of last time interval
 
+    virtual bool                  ClusterDefined() const {return m_nTracts;}
+    const double                  ConvertAngleToDegrees(double dAngle) const;
+    virtual void                  Display(FILE* fp, const CParameters& Parameters, const CSaTScanData& Data,
+                                          unsigned int iReportedCluster, measure_t nMinMeasure,
+                                          unsigned int iNumSimsCompleted) const;
+    virtual void                  DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const {/*stub - no action*/}
+    virtual void                  DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, measure_t nMinMeasure,
+                                                      const ClusterPrintFormat& PrintFormat) const;
+    void                          DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data, tract_t nFirstTract,
+                                                            tract_t nLastTract, measure_t nMinMeasure,
+                                                            const ClusterPrintFormat& PrintFormat) const;
+    virtual void                  DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
+                                                     const ClusterPrintFormat& PrintFormat) const;
+    virtual void                  DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
+                                                       const ClusterPrintFormat& PrintFormat) const;
+    virtual void                  DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigned int iNumSimulations,
+                                                        const ClusterPrintFormat& PrintFormat) const;
+    virtual void                  DisplayPopulation(FILE* fp, const CSaTScanData& Data, const ClusterPrintFormat& PrintFormat) const ;
+    virtual void                  DisplayPValue(FILE* fp, unsigned int uiNumSimualtionsCompleted,
+                                                const ClusterPrintFormat& PrintFormat) const;
+    virtual void                  DisplayRelativeRisk(FILE* fp, double nMeasureAdjustment,
+                                                      const ClusterPrintFormat& PrintFormat) const;
+    virtual void                  DisplaySteps(FILE* fp, const ClusterPrintFormat& PrintFormat) const {/*stub - no action*/}
+    virtual void                  DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const ClusterPrintFormat& PrintFormat) const;
+    virtual void                  DisplayTimeTrend(FILE* fp, const ClusterPrintFormat& PrintFormat) const {/*stub - no action*/}
+    virtual count_t               GetCaseCount(unsigned int iStream) const {return 0;}
+    virtual count_t               GetCaseCountForTract(tract_t tTract, const CSaTScanData& Data) const {return 0;}
+    virtual tract_t               GetCentroidIndex() const {return m_Center;}
+    double                        GetDuczmal() const {return m_DuczmalCorrection;}
+    int                           GetEllipseOffset() const {return m_iEllipseOffset;}
+    virtual ZdString            & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
+    virtual measure_t             GetMeasure(unsigned int iStream) const {return 0;}
+    virtual measure_t             GetMeasureForTract(tract_t tTract, const CSaTScanData& Data) const {return 0;}
+    virtual tract_t               GetNumTractsInnerCircle() const {return m_nTracts;}
+    const double                  GetPValue(unsigned int uiNumSimulationsCompleted) const;
+    unsigned int                  GetRank() const {return m_nRank;}
+    double                        GetRatio() const {return m_nRatio;}
+    const double                  GetRelativeRisk(double nMeasureAdjustment) const;
+    virtual double                GetRelativeRiskForTract(tract_t tTract, const CSaTScanData& DataHub) const;
+    virtual ZdString            & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
+    void                          IncrementRank() {m_nRank++;}
+    virtual void                  Initialize(tract_t nCenter=0);
+    void                          SetCenter(tract_t nCenter);
+    void                          SetEllipseOffset(int iOffset);
+    void                          SetDuczmalCorrection(double dEllipseShape);
+    void                          SetRate(int nRate);
+    virtual void                  Write(stsAreaSpecificData& AreaData, const CSaTScanData& DataHub,
+                                        unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const;
+};
 //*****************************************************************************
 #endif
