@@ -138,9 +138,9 @@
 [Version Info]
 IncludeVerInfo=1
 AutoIncBuild=0
-MajorVer=4
+MajorVer=5
 MinorVer=0
-Release=1
+Release=0
 Build=0
 Debug=0
 PreRelease=0
@@ -153,14 +153,14 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=SaTScan
 FileDescription=SaTScan - Spatial and Space-Time Scan Statistics
-FileVersion=4.0.1.0
+FileVersion=5.0.0.0
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=SaTScan
-ProductVersion=4.0.1
-Comments=Released October 23, 2003
+ProductVersion=5.0 Alpha 1
+Comments=Not Released
 
 [Excluded Packages]
 $(BCB)\Bin\dcl31w50.bpl=Delphi 1.0 Compatibility Components

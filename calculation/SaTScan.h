@@ -27,8 +27,8 @@
  This file contains header information for all SaTScan program files
  **********************************************************************/
 /** Current version information. */
-#define VERSION_ID "3"
-#define VERSION_NUMBER "4.1_dev"
+#define VERSION_ID "50" /*50 inorder to prevent update of Alpha*/
+#define VERSION_NUMBER "5.0 Alpha 1"
 #define VERSION_DATE "Not Released"
 /** New defines for ellipsoid calculations. */
 #define MAXELLIPSESHAPES 10
