@@ -138,10 +138,19 @@ void CCluster::Display(FILE*     fp,
 
       DisplayRelativeRisk(fp, Data.GetMeasureAdjustment(), nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
 
-      // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
-      fprintf(fp, "%s%s: %f\n", szSpacesOnLeft,
-              (Parameters.m_nModel == SPACETIMEPERMUTATION ? "Test statistic........" : "Log likelihood ratio.."),
-              m_nRatio);
+      //Print Loglikelihood/Test Statistic
+      if (Parameters.m_nModel == SPACETIMEPERMUTATION) {
+        if (m_iEllipseOffset != 0 /*i.e. is ellipse*/ && Parameters.m_bDuczmalCorrectEllipses)
+          fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, GetDuczmalCompactnessCorrection());
+        else
+          fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, m_nRatio);
+      }
+      else {
+        fprintf(fp, "%sLog likelihood ratio..: %f\n", szSpacesOnLeft, m_nRatio);
+        if (m_iEllipseOffset != 0 /*i.e. is ellipse*/ && Parameters.m_bDuczmalCorrectEllipses)
+          fprintf(fp, "%sTest statistic........: %f\n", szSpacesOnLeft, GetDuczmalCompactnessCorrection());
+      }
+
       if (Parameters.m_nReplicas)
         fprintf(fp, "%sMonte Carlo rank......: %ld/%ld\n", szSpacesOnLeft, m_nRank, Parameters.m_nReplicas+1);
 
@@ -303,10 +312,6 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
             fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
             fprintf(fp, "%sAngle (degrees).......: %-6.3f\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
             fprintf(fp, "%sShape.................: %-6.3f\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
-            if (Data.m_pParameters->m_bDuczmalCorrectEllipses)
-              fprintf(fp, "%sDuczmal................: %-6.3f\n", szSpacesOnLeft, GetDuczmalCompactnessCorrection());
-            //fprintf(fp, "%s              Width...: \n", szSpacesOnLeft);
-            //fprintf(fp, "%s              Length..: \n", szSpacesOnLeft);
             }
       }
       else /* More than four dimensions: need to wrap output */
@@ -340,10 +345,6 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
            fprintf(fp, "%sEllipse Parameters....:\n", szSpacesOnLeft);
            fprintf(fp, "%sAngle (degrees).......: %-6.3f\n", szSpacesOnLeft, ConvertAngleToDegrees(Data.mdE_Angles[m_iEllipseOffset-1]));
            fprintf(fp, "%sShape.................: %-6.3f\n", szSpacesOnLeft, Data.mdE_Shapes[m_iEllipseOffset-1]);
-            if (Data.m_pParameters->m_bDuczmalCorrectEllipses)
-           fprintf(fp, "%sDuczmal................: %-6.3f\n", szSpacesOnLeft, GetDuczmalCompactnessCorrection());
-           //fprintf(fp, "%s              Width...: \n", szSpacesOnLeft);
-           //fprintf(fp, "%s              Length..: \n", szSpacesOnLeft);
            }
       }
 
