@@ -222,7 +222,7 @@ class CParameters
                                             int iEndYear, int iEndMonth, int iEndDay,
                                             int iProspYear, int iProspMonth, int iProspDay);
     void                ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporalSizeType);
-    void                ConvertRelativePath(std::string & sInputFilename, bool bNeedNotExist=false);
+    void                ConvertRelativePath(std::string & sInputFilename);
     void                DisplayAnalysisType(FILE* fp);
     bool                DisplayParamError(int nLine);
     void                DisplayParameters(FILE* fp);

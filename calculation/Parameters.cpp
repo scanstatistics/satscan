@@ -645,12 +645,11 @@ void CParameters::ConvertMaxTemporalClusterSizeToType(TemporalSizeType eTemporal
 /** If passed filename contains a slash, then assumes that path is complete and
     sInputFilename is not modified.
     If filename does not contain a slash, it is assumed that filename is located
-    in same directory of parameter file. sInputFilename is reset to this
-    location if existance is confirmed or if bNeedNotExist is true.
+    in same directory of parameter file. sInputFilename is reset to this location.
     Note that the primary reason for implementing this feature was to permit
     the program to be installed in any location and sample parameter files
     run immediately with no modifications to settings. */
-void CParameters::ConvertRelativePath(std::string & sInputFilename, bool bNeedNotExist) {
+void CParameters::ConvertRelativePath(std::string & sInputFilename) {
   ZdFileName    fParameterFilename;                              
   ZdFileName    fFilename;
   std::string   sFile;
@@ -660,13 +659,11 @@ void CParameters::ConvertRelativePath(std::string & sInputFilename, bool bNeedNo
       //Assume that if slashes exist, then this is a complete file path, so
       //we'll make no attempts to determine what path might be otherwise.
       if (sInputFilename.find(ZDFILENAME_SLASH) == sInputFilename.npos) {
-        //If no slashes then this file is assumed to be in same directory
-        //as parameters file. But let confirm this.
+        //If no slashes, then this file is assumed to be in same directory as parameters file.
         fParameterFilename.SetFullPath(GetSourceFileName().c_str());
         fFilename.SetFullPath(sInputFilename.c_str());
         fFilename.SetLocation(fParameterFilename.GetLocation());
-        if (access(fFilename.GetFullPath(), 0) == 0 || bNeedNotExist)
-          sInputFilename = fFilename.GetFullPath();
+        sInputFilename = fFilename.GetFullPath();
       }
     }
   }
@@ -1790,7 +1787,7 @@ void CParameters::SetOutputFileName(const char * sOutPutFileName, bool bCorrectF
 
     m_sOutputFileName = sOutPutFileName;
     if (bCorrectForRelativePath)
-      ConvertRelativePath(m_sOutputFileName, true);
+      ConvertRelativePath(m_sOutputFileName);
   }
   catch (ZdException &x) {
     x.AddCallpath("SetOutputFileName()", "CParameters");
