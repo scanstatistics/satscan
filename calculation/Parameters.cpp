@@ -361,7 +361,7 @@ void CParameters::CheckOutputFileIniSection(ZdIniFile& file) {
          pSection->AddLine(DBASE_RELATIVE_RISKS, "");
       }
       if ( pSection->FindKey(CRIT_REPORT_SEC_CLUSTERS_LINE) == -1 ) {
-         pSection->AddComment(" criteria for reporting secondary clusters(0=NoGeoOverlap, ..., 5=NoRestrictions)");
+         pSection->AddComment(" criteria for reporting secondary clusters(0=NoGeoOverlap, 1=NoCentersInOther, 2=NoCentersInMostLikely, 3=NoCentersInLessLikely, 4=NoPairsCentersEachOther, 5=NoRestrictions)");
          pSection->AddLine(CRIT_REPORT_SEC_CLUSTERS_LINE, "");
       }
    }

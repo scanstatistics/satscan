@@ -102,7 +102,7 @@ enum {NONSEQUENTIAL=0, SEQUENTIALANALYSIS};    // Analysis
 enum {HIGH=1, LOW, HIGHANDLOW};             // Rates
 enum {NOTADJUSTED=0, NONPARAMETRIC, LINEAR}; // Time Trends
 enum {CARTESIAN=0, LATLON};                 // Coords Type
-enum {NOGEOOVERLAP, NOCENTROIDSINOTHER, NOCENTROIDSINMORELIKE,
+enum {NOGEOOVERLAP=0, NOCENTROIDSINOTHER, NOCENTROIDSINMORELIKE,
       NOCENTROIDSINLESSLIKE, NOPAIRSINEACHOTHERS, NORESTRICTIONS}; // Criteria for reporting secondary clusters
 enum TemporalSizeType {PERCENTAGETYPE=0, TIMETYPE}; // How Max Temporal Size Should Be Interperated
 enum SpatialSizeType {PERCENTAGEOFMEASURETYPE=0, DISTANCETYPE}; // How Max Temporal Size Should Be Interperated
