@@ -352,8 +352,12 @@ bool GInfo::giFindDuplicateCoords(FILE* pDisplay)
            //   fprintf(pDisplay, "%.0f, ", pCoords[nDims]);
            // }
            //fprintf(pDisplay, "%.0f).\n\n", pCoords[nDimensions-1]);
+
+           /** PAG - March 17, 2004:  as per Martin K. - warning is not needed
+           /** since this is the user's intention if there are duplicate grid coordinates
            gpPrintDirection->SatScanPrintWarning("Note: The grid file has multiple identical coordinates.\n");
            gpPrintDirection->SatScanPrintWarning("      This does not effect the results, but the program will run faster if duplicates are removed.\n\n");
+           **/
            }
         free(pCoords);
         i++;
