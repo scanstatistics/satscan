@@ -2184,7 +2184,7 @@ void CParameters::SetDefaults() {
   gdTimeTrendAdjustPercentage           = 0;
   gbIncludePurelyTemporalClusters       = false;
   gsControlFileName                     = "";
-  geCoordinatesType                     = CARTESIAN;
+  geCoordinatesType                     = LATLON;
   gbOutputSimLogLikeliRatiosAscii       = false;
   gbSequentialRuns                      = false;
   giNumSequentialRuns                   = 0;
