@@ -125,12 +125,9 @@ void CPurelyTemporalAnalysis::Init() {
 }
 
 /** Returns loglikelihood for Monte Carlo replication. */
-double CPurelyTemporalAnalysis::MonteCarlo(const DataStreamInterface & Interface) {
-  double                        dMaxLogLikelihoodRatio;
-
-  gpClusterData->InitializeData();
+double CPurelyTemporalAnalysis::MonteCarlo(const DataStreamInterface&) {
   gpMeasureList->Reset();
-  gpTimeIntervals->CompareMeasures(gpClusterData, gpMeasureList);
+  gpTimeIntervals->CompareMeasures(gpClusterData, *gpMeasureList);
   return gpMeasureList->GetMaximumLogLikelihoodRatio();
 }
 
