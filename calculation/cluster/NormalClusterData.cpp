@@ -49,7 +49,7 @@ void NormalSpatialData::AddNeighborData(tract_t tNeighbor, const AbtractDataStre
 double NormalSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
   if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
     return Calculator.CalcLogLikelihoodRatioEx(gtCases, gtMeasure, gtSqMeasure, gtTotalCases, gtTotalMeasure);
-  return -std::numeric_limits<double>::max();  
+  return 0;  
 }
 
 
@@ -204,7 +204,7 @@ void NormalProspectiveSpatialData::AddNeighborData(tract_t tNeighbor, const Abtr
     loglikelihood ratio as calculated by probability model. */
 double NormalProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
   unsigned int  iWindowEnd;
-  double        dMaxLoglikelihoodRatio=-std::numeric_limits<double>::max();
+  double        dMaxLoglikelihoodRatio=0;
 
   gtCases = gpCases[0];
   gtMeasure = gpMeasure[0];

@@ -126,7 +126,7 @@ void CPurelySpatialCluster::Initialize(tract_t nCenter) {
   //CCluster::Initialize(nCenter);
   m_Center = nCenter;
   m_nTracts = 0;
-  m_nRatio = -std::numeric_limits<double>::max();
+  m_nRatio = 0;
   m_nLastInterval = 1;
   gpClusterData->InitializeData();
 }

@@ -17,7 +17,7 @@ CCluster::~CCluster() {}
 void CCluster::Initialize(tract_t nCenter) {
   m_Center         = nCenter;
   m_nTracts        = 0;
-  m_nRatio         = -std::numeric_limits<double>::max();
+  m_nRatio         = 0;
   m_nRank          = 1;
   m_NonCompactnessPenalty = 1;
   m_nFirstInterval = 0;

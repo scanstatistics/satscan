@@ -66,7 +66,7 @@ void SpatialData::AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGate
 double SpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
   if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
     return Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure);
-  return -std::numeric_limits<double>::max();  
+  return 0;  
 }
 
 /** returns number of cases accumulated in cluster data */
@@ -295,7 +295,7 @@ void ProspectiveSpatialData::AddNeighborData(tract_t tNeighbor, const AbtractDat
     loglikelihood ratio as calculated by probability model. */
 double ProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator) {
   unsigned int  iWindowEnd;
-  double        dMaxLoglikelihoodRatio=-std::numeric_limits<double>::max();
+  double        dMaxLoglikelihoodRatio=0;
 
   gtCases = gpCases[0];
   gtMeasure =  gpMeasure[0];
