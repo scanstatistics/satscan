@@ -266,12 +266,7 @@ void TfrmMainForm::RefreshOpenList() {
   for (t=0; t < Parameters.size(); t++) {
      pItem = new TMenuItem(mitReopen);
      pItem->OnClick = ReopenAction->OnExecute;
-     if (Parameters[t].size() < 100)
-       pItem->Caption.printf("&%i  %s", t, Parameters[t].c_str());
-     else {
-       ZdFileName File(Parameters[t].c_str());
-       pItem->Caption.printf("&%i  %s\\ ... %s", t, File.GetDrive(), Parameters[t].substr(Parameters[t].size() - 100).c_str());
-     }
+     pItem->Caption = MinimizeName(Parameters[t].c_str(), Canvas, std::max(Screen->Width/2, 200));
      pItem->Tag = t;
      mitReopen->Add(pItem);
   }
