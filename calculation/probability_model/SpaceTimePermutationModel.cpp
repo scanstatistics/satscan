@@ -64,7 +64,7 @@ bool CSpaceTimePermutationModel::CalculateMeasure()
       {
       if (m_pData->m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE)
         {
-         bResult = AssignMeasure(m_pData->GetTInfo(), m_pData->GetCats(), m_pData->m_pCases,
+         bResult = AssignMeasure(m_pData->GetTInfo(), m_pData->m_pCases,
                                  m_pData->m_pTimes, m_pData->m_nTracts, m_pData->m_nStartDate,
                                  m_pData->m_nEndDate, m_pData->m_pIntervalStartTimes,
                                  false/*m_pParameters->m_bExactTimes*/, m_pParameters->GetTimeTrendAdjustmentType(),
@@ -184,31 +184,23 @@ void CSpaceTimePermutationModel::MakeData(int iSimulationNumber)
 
 /** Reads data from files(geographical, case and special grid) into data structures.
     Initializes randomization structures. */
-bool CSpaceTimePermutationModel::ReadData()
-{
-   try
-      {
-      if (!m_pData->ReadGeo())
-        return false;
-
-      if (m_pData->m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE)
-        if (!m_pData->ReadPops())
-          return false;
-
-      if (!m_pData->ReadCounts(m_pParameters->GetCaseFileName().c_str(), "case", &m_pData->m_pCases))
-        return false;
-    
-      if (m_pParameters->UseSpecialGrid() && !m_pData->ReadGrid())
-        return false;
-
-      InitializeRandomizationStructures();  
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("ReadData()", "CSpaceTimePermutationModel");
-      throw;
-      }
-   return true;
+bool CSpaceTimePermutationModel::ReadData() {
+  try {
+    if (!m_pData->ReadCoordinatesFile())
+      return false;
+    if (m_pData->m_pParameters->GetMaxGeographicClusterSizeType() == PERCENTAGEOFMEASURETYPE && !m_pData->ReadPopulationFile())
+      return false;
+    if (! m_pData->ReadCaseFile())
+      return false;
+    if (m_pParameters->UseSpecialGrid() && !m_pData->ReadGridFile())
+      return false;
+    InitializeRandomizationStructures();
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ReadData()", "CSpaceTimePermutationModel");
+    throw;
+  }
+  return true;
 }
 
 /** Determines the expected number of cases for each time interval/tract.

@@ -10,36 +10,25 @@ CPoissonModel::CPoissonModel(CParameters* pParameters, CSaTScanData* pData, Base
 
 CPoissonModel::~CPoissonModel(){}
 
-bool CPoissonModel::ReadData()
-{
-   try
-      {
-      if (!m_pData->ReadGeo())
-        return false;
-    
-      if (!m_pData->ReadPops())
-        return false;
-    
-      if (!(m_pData->GetTInfo())->tiCheckZeroPopulations(stderr))
-        return false;
-    
-      if (!m_pData->ReadCounts(m_pParameters->GetCaseFileName().c_str(), "case", &m_pData->m_pCases))
-        return false;
-    
-      m_pData->GetTInfo()->tiCheckCasesHavePopulations();
-    
-      if (m_pParameters->UseSpecialGrid())
-      {
-        if (!m_pData->ReadGrid())
-          return false;
-      }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("ReadData()", "CPoissonModel");
-      throw;
-      }
-   return true;
+bool CPoissonModel::ReadData() {
+  try {
+    if (!m_pData->ReadCoordinatesFile())
+      return false;
+    if (!m_pData->ReadPopulationFile())
+      return false;
+    if (!(m_pData->GetTInfo())->tiCheckZeroPopulations(stderr))
+      return false;
+    if (! m_pData->ReadCaseFile())
+      return false;
+    m_pData->GetTInfo()->tiCheckCasesHavePopulations();
+    if (m_pParameters->UseSpecialGrid() && !m_pData->ReadGridFile())
+      return false;
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ReadData()", "CPoissonModel");
+    throw;
+  }
+  return true;
 }
 
 bool CPoissonModel::CalculateMeasure()
@@ -49,7 +38,6 @@ bool CPoissonModel::CalculateMeasure()
    try
       {
       bResult = AssignMeasure(m_pData->GetTInfo(),
-                       m_pData->GetCats(),
                        m_pData->m_pCases,
                        m_pData->m_pTimes,
                        m_pData->m_nTracts,
@@ -331,7 +319,7 @@ double CPoissonModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract
    tract_t T, t;
    int     c, n;
    double* pAlpha = 0;
-   int     ncats = (m_pData->GetCats())->catNumCats();
+   int     ncats = m_pData->GetPopulationCategories().GetNumPopulationCategories();
    int     nPops = (m_pData->GetTInfo())->tiGetNumPopDates();
    double  nPopulation = 0.0;
 
