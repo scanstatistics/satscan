@@ -63,7 +63,7 @@ void CPoissonModel::AdjustForNonParameteric(RealDataStream & thisStream, measure
 
 }
 
-/** */
+/** Adjusts passed non-cumulative measure given passed log linear percentage. */
 void CPoissonModel::AdjustForLLPercentage(RealDataStream & thisStream, measure_t ** pNonCumulativeMeasure, double nPercentage)
 {
   int    i,t;
@@ -130,15 +130,18 @@ void CPoissonModel::AdjustForLogLinear(RealDataStream& thisStream, measure_t ** 
   thisStream.SetCalculatedTimeTrendPercentage(TimeTrend.GetAnnualTimeTrend());
 }
 
-void CPoissonModel::AdjustMeasure(RealDataStream & thisStream, measure_t ** ppNonCumulativeMeasure) {
+/** Adjusts passed non-cumulative measure for parameter specified temporal,
+    spatial, and space-time adjustments.                                      */
+void CPoissonModel::AdjustMeasure(RealDataStream& thisStream, measure_t** ppNonCumulativeMeasure) {
   measure_t     AdjustedTotalMeasure_t=0;
   int           i;
   tract_t       t;
 
   try {
-    if (!gData.ReadAdjustmentsByRelativeRisksFile(ppNonCumulativeMeasure))
-      SSGenerateException("\nProblem encountered reading in data.", "AdjustMeasure()");
-
+    //adjust measure for known realtive risks
+    if (gParameters.UseAdjustmentForRelativeRisksFile())
+      gData.AdjustForKnownRelativeRisks(thisStream, ppNonCumulativeMeasure);
+    //adjustment measure temporally
     if (gData.m_nTimeIntervals > 1) {
       switch (gParameters.GetTimeTrendAdjustmentType()) {
         case NOTADJUSTED               : break;
@@ -151,19 +154,17 @@ void CPoissonModel::AdjustMeasure(RealDataStream & thisStream, measure_t ** ppNo
                                       "AdjustMeasure()", gParameters.GetTimeTrendAdjustmentType());
       }
     }
-
+    //adjust measure spatially
     switch (gParameters.GetSpatialAdjustmentType()) {
       case NO_SPATIAL_ADJUSTMENT : break;
       case SPATIALLY_STRATIFIED_RANDOMIZATION : StratifiedSpatialAdjustment(thisStream, ppNonCumulativeMeasure); break;
       default : ZdGenerateException("Unknown spatial adjustment type: '%d'.",
                                     "AdjustMeasure()", gParameters.GetSpatialAdjustmentType());
     }
-
     // Bug check, to ensure that adjusted  total measure equals previously determined total measure
     for (AdjustedTotalMeasure_t=0, i=0; i < gData.m_nTimeIntervals; ++i)
        for (t=0; t < gData.m_nTracts; ++t)
           AdjustedTotalMeasure_t += ppNonCumulativeMeasure[i][t];
-
     if (fabs(AdjustedTotalMeasure_t - thisStream.GetTotalMeasure()) > 0.0001)
       ZdGenerateException("Error: The adjusted total measure '%8.6lf' is not equal to the total measure '%8.6lf'.\n",
                           "AdjustMeasure()", AdjustedTotalMeasure_t, thisStream.GetTotalMeasure());
@@ -222,7 +223,8 @@ void CPoissonModel::AssignMeasure(RealDataStream & thisStream, measure_t ** ppNo
   }
 }
 
-void CPoissonModel::CalculateMeasure(RealDataStream & thisStream) {
+/** Calculates the expected number of cases for data stream. */
+void CPoissonModel::CalculateMeasure(RealDataStream& thisStream) {
   double              * pAlpha=0, * pRisk=0;
   PopulationData      & Population = thisStream.GetPopulationData();
 
