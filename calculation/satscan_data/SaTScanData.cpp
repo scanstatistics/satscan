@@ -16,35 +16,17 @@ CSaTScanData::CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection)
 
 CSaTScanData::~CSaTScanData() {
   try {
+    delete gpDataStreams; gpDataStreams=0;
     delete m_pModel;
-    delete gpCasesHandler; gpCasesHandler=0;
-    delete gpCasesNonCumulativeHandler; gpCasesNonCumulativeHandler=0;
-    delete gpControlsHandler; gpControlsHandler=0;
-    delete gpSimCasesHandler; gpSimCasesHandler=0;
-    delete gpSimCasesNonCumulativeHandler; gpSimCasesNonCumulativeHandler=0;
     delete gpNeighborCountHandler; gpNeighborCountHandler=0;
     delete gpSortedIntHandler; gpSortedIntHandler=0;
     delete gpSortedUShortHandler; gpSortedUShortHandler=0;
-    delete gpCategoryCasesHandler; gpCategoryCasesHandler=0;
-    delete gpMeasureHandler; gpMeasureHandler=0;
-    delete gpMeasureNonCumulativeHandler; gpMeasureNonCumulativeHandler=0;
-    delete gpCasesByTimeByCategoryHandler; gpCasesByTimeByCategoryHandler=0;
-    delete gpMeasureByTimeByCategoryHandler; gpMeasureByTimeByCategoryHandler=0;
-    delete gpCategoryMeasureHandler; gpCategoryMeasureHandler=0;
-    delete gpControlsByTimeByCategoryHandler; gpControlsByTimeByCategoryHandler=0;
-    delete gpCategoryControlsHandler; gpCategoryControlsHandler=0;
-    free(m_pPTCases);
-    free(m_pPTMeasure);
-    free(m_pSimCases_TotalByTimeInt);
-    free(m_pCases_TotalByTimeInt);
-    free(m_pMeasure_TotalByTimeInt);
     delete [] mdE_Angles;
     delete [] mdE_Shapes;
     free(m_pIntervalStartTimes);
     delete gpTInfo;
     delete gpGInfo;
     delete gpMaxWindowLengthIndicator; gpMaxWindowLengthIndicator=0;
-    delete gpPopulationMeasureHandler; gpPopulationMeasureHandler=0;
   }
   catch (...){}  
 }
@@ -68,19 +50,22 @@ bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tra
 
   tMaxMeasure_tValue = measure_limit.max();
 
-  if (!gpPopulationMeasureHandler)
-    ZdGenerateException("Population dates based measure array not allocated.","AssignMeasure()");
-  pp_m = gpPopulationMeasureHandler->GetArray();
+  //NOTE: The adjustment for known relative risks is hard coded to the first
+  //      data stream for the time being.
+  DataStream & thisStream = gpDataStreams->GetStream(0);
+  PopulationData & Population = thisStream.GetPopulationData();
+  pp_m = thisStream.GetPopulationMeasureArray();
+  count_t ** ppCases = thisStream.GetCaseArray();
 
   for (interval=GetTimeIntervalOfDate(StartDate); interval <= GetTimeIntervalOfDate(EndDate); ++interval) {
      AdjustmentStart = max(StartDate, m_pIntervalStartTimes[interval]);
      AdjustmentEnd = min(EndDate, m_pIntervalStartTimes[interval+1] - 1);
      //calculate measure for lower interval date to adjustment start date
-     MeasurePre = CalcMeasureForTimeInterval(pp_m, Tract, m_pIntervalStartTimes[interval], AdjustmentStart);
+     MeasurePre = CalcMeasureForTimeInterval(Population, pp_m, Tract, m_pIntervalStartTimes[interval], AdjustmentStart);
      //calculate measure for adjustment period
-     MeasureDuring = CalcMeasureForTimeInterval(pp_m, Tract, AdjustmentStart, AdjustmentEnd+1);
+     MeasureDuring = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentStart, AdjustmentEnd+1);
      //calculate measure for adjustment end date to upper interval date
-     MeasurePost = CalcMeasureForTimeInterval(pp_m, Tract, AdjustmentEnd+1, m_pIntervalStartTimes[interval+1]);
+     MeasurePost = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentEnd+1, m_pIntervalStartTimes[interval+1]);
      //validate that data overflow will not occur
      if (MeasureDuring && (dRelativeRisk > (tMaxMeasure_tValue - MeasurePre - MeasurePost) / MeasureDuring))
        SSGenerateException("Error: Data overflow occurs when adjusting expected number of cases.\n"
@@ -89,7 +74,7 @@ bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tra
      //assign adjusted measure                      
      pNonCumulativeMeasure[interval][Tract] = MeasurePre + dRelativeRisk * MeasureDuring + MeasurePost;
      //if measure has been adjusted to zero, check that cases adjusted interval are also zero
-     if (pNonCumulativeMeasure[interval][Tract] == 0 && GetCaseCount(interval, Tract)) {
+     if (pNonCumulativeMeasure[interval][Tract] == 0 && GetCaseCount(ppCases, interval, Tract)) {
        ZdString         sStart, sEnd;
        std::string      sId;
        SSGenerateException("Error: For locationID '%s', you have adjusted the expected number\n"
@@ -125,7 +110,7 @@ void CSaTScanData::AdjustNeighborCounts() {
       MakeNeighbors(gpTInfo, gpGInfo, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
                     (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0),
                     static_cast<tract_t>(m_nTotalTractsAtStart), m_nGridTracts,
-                    (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpMeasureHandler->GetArray()[0]),
+                    (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpDataStreams->GetStream(0/*for now*/).GetMeasureArray()[0]),
                     m_nMaxCircleSize, m_nMaxCircleSize,
                     gpNeighborCountHandler->GetArray(), m_pParameters->GetDimensionsOfData(),
                     m_pParameters->GetNumRequestedEllipses(), m_pParameters->GetEllipseShapes(),
@@ -167,12 +152,20 @@ void CSaTScanData::AllocateSortedArray() {
   }
 }
 
-void CSaTScanData::AllocSimCases() {
+void CSaTScanData::AllocateSimulationStructures() {
+  ProbabiltyModelType   eProbabiltyModelType(m_pParameters->GetProbabiltyModelType());
+  AnalysisType          eAnalysisType(m_pParameters->GetAnalysisType());
+
   try {
-    gpSimCasesHandler = new TwoDimensionArrayHandler<count_t>(m_nTimeIntervals, m_nTracts, 0);
+    //allocate simulation case arrays
+    if (eProbabiltyModelType != 10/*normal*/ && eProbabiltyModelType != 11/*rank*/)
+      gpDataStreams->AllocateSimulationCases();
+    //allocate simulation measure arrays
+    if (eProbabiltyModelType == 10/*normal*/ || eProbabiltyModelType == 11/*rank*/ || eProbabiltyModelType == 12/*survival*/)
+      gpDataStreams->AllocateSimulationMeasure();
   }
   catch (ZdException &x) {
-    x.AddCallpath("AllocSimCases()", "CSaTScanData");
+    x.AddCallpath("AllocateSimulationStructures()","CSaTScanData");
     throw;
   }
 }
@@ -185,46 +178,61 @@ Time Interval = [StartDate , EndDate]; EndDate = NextStartDate-1
 Note: The measure 'M' is the same measure used for the population points, which is later
 calibrated before being put into the measure array.
 **************************************************************************************/
-measure_t CSaTScanData::CalcMeasureForTimeInterval(measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate) {
+measure_t CSaTScanData::CalcMeasureForTimeInterval(PopulationData & Population, measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate) {
   int           i, iStartUpperIndex, iNextLowerIndex;
   long          nTotalDays = m_nEndDate+1 - m_nStartDate;
   measure_t     SumMeasure;
 
   if (StartDate >= NextStartDate )
-    return 0;
+    return 0;                            
 
   SumMeasure = 0;
-  iStartUpperIndex = UpperPopIndex(StartDate);
-  iNextLowerIndex = LowerPopIndex(NextStartDate);
+  iStartUpperIndex = Population.UpperPopIndex(StartDate);
+  iNextLowerIndex = Population.LowerPopIndex(NextStartDate);
 
   if (iStartUpperIndex <= iNextLowerIndex) {
-    SumMeasure += 0.5 * (DateMeasure(ppPopulationMeasure, StartDate, Tract) + ppPopulationMeasure[iStartUpperIndex][Tract]) *
-                  (GetTInfo()->tiGetPopDate(iStartUpperIndex) - StartDate);
+    SumMeasure += 0.5 * (DateMeasure(Population, ppPopulationMeasure, StartDate, Tract) + ppPopulationMeasure[iStartUpperIndex][Tract]) *
+                  (Population.GetPopulationDate(iStartUpperIndex) - StartDate);
     for (i=iStartUpperIndex; i < iNextLowerIndex; ++i)
        SumMeasure += 0.5 * (ppPopulationMeasure[i][Tract] + ppPopulationMeasure[i+1][Tract] ) *
-                    (GetTInfo()->tiGetPopDate(i+1) - GetTInfo()->tiGetPopDate(i));
-    SumMeasure += 0.5 * (DateMeasure(ppPopulationMeasure, NextStartDate, Tract) + ppPopulationMeasure[iNextLowerIndex][Tract])
-                  * (NextStartDate - GetTInfo()->tiGetPopDate(iNextLowerIndex));
+                    (Population.GetPopulationDate(i+1) - Population.GetPopulationDate(i));
+    SumMeasure += 0.5 * (DateMeasure(Population, ppPopulationMeasure, NextStartDate, Tract) + ppPopulationMeasure[iNextLowerIndex][Tract])
+                  * (NextStartDate - Population.GetPopulationDate(iNextLowerIndex));
   }
   else
-    SumMeasure += 0.5 * (DateMeasure(ppPopulationMeasure, StartDate,Tract) +
-                        DateMeasure(ppPopulationMeasure, NextStartDate,Tract)) * (NextStartDate - StartDate);
+    SumMeasure += 0.5 * (DateMeasure(Population, ppPopulationMeasure, StartDate,Tract) +
+                        DateMeasure(Population, ppPopulationMeasure, NextStartDate,Tract)) * (NextStartDate - StartDate);
 
    return SumMeasure / nTotalDays;
 }
 
-bool CSaTScanData::CalculateMeasure() {
+/** calculates expected number of cases */
+bool CSaTScanData::CalculateExpectedCases() {
+  size_t        t;
+  bool          bReturn=true;
+
+  gpPrint->SatScanPrintf("Calculating expected number of cases\n");
+  //calculates expected cases for each data stream
+  for (t=0; t < gpDataStreams->GetNumStreams() && bReturn; ++t) {
+     bReturn = CalculateMeasure(gpDataStreams->GetStream(t));
+     gtTotalMeasure += gpDataStreams->GetStream(t).GetTotalMeasure();
+     gtTotalCases += gpDataStreams->GetStream(t).GetTotalCases();
+     gtTotalPopulation += gpDataStreams->GetStream(t).GetTotalPopulation(); 
+  }
+  SetMaxCircleSize();
+
+  return bReturn;
+}
+
+bool CSaTScanData::CalculateMeasure(DataStream & thisStream) {
   bool bReturn;
 
   try {
-    gpPrint->SatScanPrintf("Calculating expected number of cases\n");  
-    SetAdditionalCaseArrays();
-    bReturn = (m_pModel->CalculateMeasure());
-    m_nTotalTractsAtStart   = m_nTracts;
-    m_nTotalCasesAtStart    = m_nTotalCases;
-    m_nTotalControlsAtStart = m_nTotalControls;
-    m_nTotalMeasureAtStart  = m_nTotalMeasure;
-    SetMaxCircleSize();
+    SetAdditionalCaseArrays(thisStream);
+    bReturn = (m_pModel->CalculateMeasure(thisStream));
+    thisStream.SetTotalCasesAtStart(thisStream.GetTotalCases());
+    thisStream.SetTotalControlsAtStart(thisStream.GetTotalControls());
+    thisStream.SetTotalMeasureAtStart(thisStream.GetTotalMeasure());
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateMeasure()","CSaTScanData");
@@ -251,29 +259,27 @@ int CSaTScanData::ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate) {
   Finds the measure M for a requested tract and date.
   Input: Date, Tracts, #PopPoints
  ********************************************************************/
-measure_t CSaTScanData::DateMeasure(measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract) {
-  int           iPopDateIndex=0, iNumPopDates = GetTInfo()->tiGetNumPopDates();
+measure_t CSaTScanData::DateMeasure(PopulationData & Population, measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract) {
+  int           iPopDateIndex=0, iNumPopDates;
   measure_t     tRelativePosition;
 
-  if (Date <= GetTInfo()->tiGetPopDate(0))
+  iNumPopDates = Population.GetNumPopulationDates();
+  
+  if (Date <= Population.GetPopulationDate(0))
     return ppPopulationMeasure[0][Tract];
-  else if (Date >= GetTInfo()->tiGetPopDate(iNumPopDates - 1))
+  else if (Date >= Population.GetPopulationDate(iNumPopDates - 1))
     return ppPopulationMeasure[iNumPopDates - 1][Tract];
   else {
     /** Finds the index of the last PopDate before or on the Date **/
-    while (GetTInfo()->tiGetPopDate(iPopDateIndex+1) <= Date)
+    while (Population.GetPopulationDate(iPopDateIndex+1) <= Date)
         iPopDateIndex++;
     //Calculates the relative position of the Date between the Previous PopDate and
     //the following PopDate, on a scale from zero to one.
-    tRelativePosition = (measure_t)(Date - GetTInfo()->tiGetPopDate(iPopDateIndex)) /
-                        (measure_t)(GetTInfo()->tiGetPopDate(iPopDateIndex+1) - GetTInfo()->tiGetPopDate(iPopDateIndex));
+    tRelativePosition = (measure_t)(Date - Population.GetPopulationDate(iPopDateIndex)) /
+                        (measure_t)(Population.GetPopulationDate(iPopDateIndex+1) - Population.GetPopulationDate(iPopDateIndex));
     //Calculates measure M at the time of the StartDate
     return (1 - tRelativePosition) * ppPopulationMeasure[iPopDateIndex][Tract] + tRelativePosition * ppPopulationMeasure[iPopDateIndex+1][Tract];
   }
-}
-
-void CSaTScanData::DeAllocSimCases() {
-  delete gpSimCasesHandler; gpSimCasesHandler=0;
 }
 
 /** Allocates/deallocates memory to store neighbor information.
@@ -301,18 +307,20 @@ bool CSaTScanData::FindNeighbors(bool bSimulations) {
       dMaxCircleSize = m_nMaxCircleSize;
     }  
 
+    //NOTE: The measure from first data stream is used when calculating neighbors,
+    //      at least for the time being.
     if (m_pParameters->GetIsSequentialScanning())
         MakeNeighbors(gpTInfo, gpGInfo, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
                       (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0), m_nTracts, m_nGridTracts,
-                      (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpMeasureHandler->GetArray()[0]),
-                      dMaxCircleSize, m_nTotalMeasure, gpNeighborCountHandler->GetArray(),
-                      m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
+                      (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpDataStreams->GetStream(0).GetMeasureArray()[0]),
+                      dMaxCircleSize, gpDataStreams->GetStream(0).GetTotalMeasure(),
+                      gpNeighborCountHandler->GetArray(), m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                       m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
                       m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
     else
         MakeNeighbors(gpTInfo, gpGInfo, (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0),
                       (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0), m_nTracts, m_nGridTracts,
-                      (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpMeasureHandler->GetArray()[0]),
+                      (gvCircleMeasure.size() ? &gvCircleMeasure[0] : gpDataStreams->GetStream(0).GetMeasureArray()[0]),
                       dMaxCircleSize, dMaxCircleSize, gpNeighborCountHandler->GetArray(),
                       m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                       m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
@@ -327,30 +335,34 @@ bool CSaTScanData::FindNeighbors(bool bSimulations) {
 }
 
 double CSaTScanData::GetAnnualRate() const {
-// Call to TimeBetween removed so results would match V.1.0.6
-// Should TimeBetween be updated to use 365.2425?
-// And do we need TimeBetween that returns a double? KR-980325
-//  double nYears = TimeBetween(m_nStartDate, m_nEndDate, YEAR);
   double nYears      = (double)(m_nEndDate+1 - m_nStartDate) / 365.2425;
-  double nAnnualRate = (m_nAnnualRatePop*(double)m_nTotalCases) / ((double)m_nTotalPop*nYears);
+  //NOTE: This function is hard code to report only the annual rate based
+  //      upon data from first data stream, at least for the time being. 
+  double dTotalCases = gpDataStreams->GetStream(0).GetTotalCases();
+  double dTotalPopulation = gpDataStreams->GetStream(0).GetTotalPopulation();
+  double nAnnualRate = (m_nAnnualRatePop*dTotalCases) / (dTotalPopulation*nYears);
 
   return nAnnualRate;
 }
 
 double CSaTScanData::GetAnnualRateAtStart() const {
   double nYears      = (double)(m_nEndDate+1 - m_nStartDate) / 365.2425;
-  double nAnnualRate = (m_nAnnualRatePop*(double)m_nTotalCasesAtStart) / ((double)m_nTotalPop*nYears);
+  //NOTE: This function is hard code to report only the annual rate based
+  //      upon data from first data stream, at least for the time being. 
+  double dTotalCasesAtStart = gpDataStreams->GetStream(0).GetTotalCasesAtStart();
+  double dTotalPopulation = gpDataStreams->GetStream(0).GetTotalPopulation();
+  double nAnnualRate = (m_nAnnualRatePop*dTotalCasesAtStart) / (dTotalPopulation*nYears);
 
   return nAnnualRate;
 }
 
 /** Returns the number of cases for a specified tract and time interval.
     Note: iInterval and tTract should be valid indexes of the cases array .**/
-count_t CSaTScanData::GetCaseCount(int iInterval, tract_t tTract) const {
+count_t CSaTScanData::GetCaseCount(count_t ** ppCumulativeCases, int iInterval, tract_t tTract) const {
   if (iInterval + 1 == m_nTimeIntervals)
-    return gpCasesHandler->GetArray()[iInterval][tTract];
+    return ppCumulativeCases[iInterval][tTract];
   else
-    return gpCasesHandler->GetArray()[iInterval][tTract] - gpCasesHandler->GetArray()[iInterval + 1][tTract];
+    return ppCumulativeCases[iInterval][tTract] - ppCumulativeCases[iInterval + 1][tTract];
 }
 
 //Measure Adjustment used when calculating relative risk/expected counts
@@ -358,8 +370,13 @@ count_t CSaTScanData::GetCaseCount(int iInterval, tract_t tTract) const {
 double CSaTScanData::GetMeasureAdjustment() const {
   if (m_pParameters->GetProbabiltyModelType() == POISSON || m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION)
     return 1.0;
-  else if (m_pParameters->GetProbabiltyModelType() == BERNOULLI)
-    return (double)m_nTotalCases/(double)m_nTotalPop;
+  else if (m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
+    //NOTE: This function is hard code to report only the measure adjustment
+    //      based upon data from first data stream, at least for the time being.
+    double dTotalCases = gpDataStreams->GetStream(0).GetTotalCases();
+    double dTotalPopulation = gpDataStreams->GetStream(0).GetTotalPopulation();
+    return dTotalCases / dTotalPopulation;
+  }
   else
     return 0.0;
 }
@@ -392,73 +409,64 @@ int CSaTScanData::GetTimeIntervalOfDate(Julian Date) const {
   return i;
 }
 
-/** Returns total population count */
-double CSaTScanData::GetTotalPopulationCount() const {
-  return m_nTotalPop;
-}
-
 void CSaTScanData::Init() {
   gpTInfo = 0;
   gpGInfo = 0;
   m_pModel = 0;
-  gpCasesHandler=0;
-  gpCasesNonCumulativeHandler=0;
-  gpControlsHandler=0;
-  gpSimCasesHandler=0;
-  gpSimCasesNonCumulativeHandler=0;
+  gpDataStreams = 0;
   gpNeighborCountHandler=0;
   gpSortedIntHandler=0;
   gpSortedUShortHandler=0;
-  gpCategoryCasesHandler=0;
-  gpCasesByTimeByCategoryHandler=0;
-  gpMeasureHandler=0;
-  gpMeasureNonCumulativeHandler=0;
-  gpMeasureByTimeByCategoryHandler=0;
-  gpCategoryMeasureHandler=0;
-  gpControlsByTimeByCategoryHandler=0;
-  gpCategoryControlsHandler=0;
-  m_pPTCases   = 0;
-  m_pPTSimCases = 0;
-  m_pPTMeasure = 0;
   m_pIntervalStartTimes = 0;
-  m_nTotalCases    = 0;
-  m_nTotalControls = 0;
-  m_nTotalMeasure  = 0;
   m_nAnnualRatePop = 100000;
   mdE_Angles = 0;
   mdE_Shapes = 0;
-  m_pCases_TotalByTimeInt = 0;
-  m_pSimCases_TotalByTimeInt = 0;
-  m_pMeasure_TotalByTimeInt = 0;
   m_nMaxReportedCircleSize = 0;
   gpMaxWindowLengthIndicator = 0;
   m_nTotalMaxCirclePopulation = 0;
-  gpPopulationMeasureHandler = 0;
+  gtTotalMeasure=0;
+  gtTotalCases=0;
+  gtTotalPopulation=0;
 }
 
-/***********************************************************************************
-Finds the date of the largest PopDate < Date. If none exist return -1.
-***********************************************************************************/
-int CSaTScanData::LowerPopIndex(Julian Date) const {
-  int i;
-
-  if (gpTInfo->tiGetPopDate(0) >= Date )
-    return -1;
-
-  i=0;
-  while (gpTInfo->tiGetPopDate(i+1) < Date)
-       i++;
-  return i;
-}
-
-void CSaTScanData::MakeData(int iSimulationNumber) {
+void CSaTScanData::MakeData(int iSimulationNumber, DataStreamGateway & DataGateway) {
    try {
-      m_pModel->MakeData(iSimulationNumber);
+     for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
+        m_pModel->MakeData(iSimulationNumber, DataGateway.GetDataStreamInterface(t), t);
    }
    catch (ZdException & x) {
       x.AddCallpath("MakeData()", "CSaTScanData");
       throw;
    }
+}
+
+/** reads data from input files for a Bernoulli probability model */
+bool CSaTScanData::ReadBernoulliData() {
+  size_t        t;
+
+  try {
+    if (!ReadCoordinatesFile())
+      return false;
+
+    gpDataStreams = new DataStreamHandler(*this, gpPrint);
+    for (t=0; t < gpDataStreams->GetNumStreams(); ++t) {
+      gpDataStreams->GetStream(t).SetAggregateCategories(true); 
+      if (!gpDataStreams->ReadCaseFile(t))
+        return false;
+      if (!gpDataStreams->ReadControlFile(t))
+        return false;
+    }    
+    if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+        return false;
+    if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    delete gpDataStreams; gpDataStreams=0;
+    x.AddCallpath("ReadBernoulliData()","CSaTScanData");
+    throw;
+  }
+  return true;
 }
 
 void CSaTScanData::ReadDataFromFiles() {
@@ -482,19 +490,84 @@ void CSaTScanData::ReadDataFromFiles() {
   }
 }
 
-void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
+/** reads data from input files for a Poisson probability model */
+bool CSaTScanData::ReadPoissonData() {
+  size_t        t;
+
   try {
-    m_nTotalCases -= gpCasesHandler->GetArray()[0][tTractIndex];
-    gpCasesHandler->GetArray()[0][tTractIndex] = 0;
-    m_nTotalMeasure -= gpMeasureHandler->GetArray()[0][tTractIndex];
-    gpMeasureHandler->GetArray()[0][tTractIndex] = 0;
-    if (gpControlsHandler) {
-       m_nTotalControls -= gpControlsHandler->GetArray()[0][tTractIndex];
-       gpControlsHandler->GetArray()[0][tTractIndex] = 0;
+    if (!ReadCoordinatesFile())
+      return false;
+
+    gpDataStreams = new DataStreamHandler(*this, gpPrint);
+    for (t=0; t < gpDataStreams->GetNumStreams(); ++t) {
+       if (!gpDataStreams->ReadPopulationFile(t))
+         return false;
+       if (!gpDataStreams->ReadCaseFile(t))
+         return false;
+       gpDataStreams->GetStream(t).CheckPopulationDataCases(*this);
     }
-    if (gvCircleMeasure.size()) {
-      m_nTotalMaxCirclePopulation -= gvCircleMeasure[tTractIndex];
-      gvCircleMeasure[tTractIndex] = 0;
+    if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+        return false;
+    if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    delete gpDataStreams; gpDataStreams=0;
+    x.AddCallpath("ReadPoissonData()","CSaTScanData");
+    throw;
+  }
+  return true;
+}
+
+/** reads data from input files for a Space-Time Permutation probability model */
+bool CSaTScanData::ReadSpaceTimePermutationData() {
+  size_t        t;
+
+  try {
+    if (!ReadCoordinatesFile())
+      return false;
+    if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+       return false;
+    gpDataStreams = new DataStreamHandler(*this, gpPrint);
+    for (t=0; t < gpDataStreams->GetNumStreams(); ++t)
+       if (!gpDataStreams->ReadCaseFile(t))
+         return false;
+    if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    delete gpDataStreams; gpDataStreams=0;
+    x.AddCallpath("ReadSpaceTimePermutationData()","CSaTScanData");
+    throw;
+  }
+  return true;
+}
+
+void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
+  count_t       tTotalCases, tTotalControls;
+  measure_t     tTotalMeasure;
+
+  try {
+    for (size_t t=0; t < gpDataStreams->GetNumStreams(); ++t) {
+       DataStream & thisStream = gpDataStreams->GetStream(t);
+       tTotalCases = thisStream.GetTotalCases();
+       tTotalCases -= thisStream.GetCaseArray()[0][tTractIndex];
+       thisStream.GetCaseArray()[0][tTractIndex] = 0;
+       thisStream.SetTotalCases(tTotalCases);
+       tTotalMeasure = thisStream.GetTotalMeasure();
+       tTotalMeasure -= thisStream.GetMeasureArray()[0][tTractIndex];
+       thisStream.GetMeasureArray()[0][tTractIndex] = 0;
+       thisStream.SetTotalMeasure(tTotalMeasure);
+       if (m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
+         tTotalControls = thisStream.GetTotalControls();
+         tTotalControls -= thisStream.GetControlArray()[0][tTractIndex];
+         thisStream.GetControlArray()[0][tTractIndex] = 0;
+         thisStream.SetTotalControls(tTotalControls);
+       }
+       if (t == 0 && gvCircleMeasure.size()) {
+         m_nTotalMaxCirclePopulation -= gvCircleMeasure[tTractIndex];
+         gvCircleMeasure[tTractIndex] = 0;
+       }
     }
   }
   catch (ZdException & x) {
@@ -504,68 +577,14 @@ void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
 }
 
 /** Conditionally allocates and sets additional case arrays. */
-void CSaTScanData::SetAdditionalCaseArrays() {
+void CSaTScanData::SetAdditionalCaseArrays(DataStream & thisStream) {
   try {
     if (m_pParameters->GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
         m_pParameters->GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
-      SetCasesByTimeIntervalArray();
+      thisStream.SetCasesByTimeInterval();  
   }
   catch (ZdException &x) {
     x.AddCallpath("SetAdditionalCaseArrays()","CSaTScanData");
-    throw;
-  }
-}
-
-/** Allocates array that stores the total number of cases for each time
-    interval as gotten from cumulative two dimensional case array. */
-void CSaTScanData::SetCasesByTimeIntervalArray() {
-  int                   i, j;
-  count_t            ** ppCases(gpCasesHandler->GetArray());
-
-  try {
-    m_pCases_TotalByTimeInt = (count_t*)Smalloc(m_nTimeIntervals * sizeof(count_t), gpPrint);
-    memset(m_pCases_TotalByTimeInt, 0, m_nTimeIntervals * sizeof(count_t));
-
-    for (i=0; i < m_nTracts; i++) {
-       m_pCases_TotalByTimeInt[m_nTimeIntervals-1] += ppCases[m_nTimeIntervals-1][i];
-       for (j=m_nTimeIntervals-2; j >= 0; j--)
-          m_pCases_TotalByTimeInt[j] += ppCases[j][i] - ppCases[j+1][i];
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetCasesByTimeIntervalArray()","CSaTScanData");
-    throw;
-  }
-}
-
-/** Allocates two-dimensional array to be used as cumulative measure.
-    Data assembled using previously defined non-cumulative measure. */
-void CSaTScanData::SetCumulativeMeasure() {
-  int           i, tract;
-  measure_t  ** ppMeasure, ** ppMeasureNC(gpMeasureNonCumulativeHandler->GetArray());
-
-  try {
-    if (gpMeasureHandler)
-      ZdGenerateException("Error: Cumulative measure already allocated.\n", "SetCumulativeMeasure()");
-
-    if (gpMeasureNonCumulativeHandler == 0)
-      ZdGenerateException("Error: Non-cumulative measure is not allocated.\n", "SetCumulativeMeasure()");
-
-    /*note: measure allocated in CModel::CalculateMeasure() to m_nTimeIntervals + 1,
-            not sure why but allocate this array the same way for deallocation,
-            ppMeasure could have been the array that as passed to
-            CModel::CalculateMeasure() instead of ppMeasureNC. */
-    gpMeasureHandler = new TwoDimensionArrayHandler<measure_t>(m_nTimeIntervals+1, m_nTracts);
-    ppMeasure = gpMeasureHandler->GetArray();
-    for (tract=0; tract < m_nTracts; tract++) {
-       ppMeasure[m_nTimeIntervals-1][tract] = ppMeasureNC[m_nTimeIntervals-1][tract];
-       for (i=m_nTimeIntervals-2; i >= 0; i--)
-          ppMeasure[i][tract] = ppMeasure[i+1][tract] + ppMeasureNC[i][tract];
-    }
-  }
-  catch (ZdException &x) {
-    delete gpMeasureHandler; gpMeasureHandler=0;
-    x.AddCallpath("SetCumulativeMeasure()","CSaTScanData");
     throw;
   }
 }
@@ -583,49 +602,6 @@ void CSaTScanData::SetMaxTemporalWindowLengthIndicator() {
   }
   catch (ZdException &x) {
     x.AddCallpath("SetMaxTemporalWindowLengthIndicator()","CSaTScanData");
-    throw;
-  }
-}
-
-/** Allocates and sets measure array that represents non-cumulative measure
-    for all time intervals from cumulative measure array. */
-void CSaTScanData::SetMeasureByTimeIntervalArray() {
-  int           i, j;
-  measure_t  ** ppMeasure(gpMeasureHandler->GetArray());
-
-  try {
-    if (! m_pMeasure_TotalByTimeInt)
-       m_pMeasure_TotalByTimeInt = (measure_t*)Smalloc(m_nTimeIntervals * sizeof(measure_t), gpPrint);
-
-    memset(m_pMeasure_TotalByTimeInt, 0, m_nTimeIntervals * sizeof(measure_t));
-    for (i=0; i < m_nTracts; i++) {
-       m_pMeasure_TotalByTimeInt[m_nTimeIntervals-1] += ppMeasure[m_nTimeIntervals-1][i];
-       for (j=m_nTimeIntervals-2; j >= 0; j--)
-          m_pMeasure_TotalByTimeInt[j] += ppMeasure[j][i] - ppMeasure[j+1][i];
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetMeasureByTimeIntervalArray()","CSaTScanData");
-    throw;
-  }
-}
-
-/** Allocates and sets measure array that represents non-cumulative measure
-    for all time intervals from passed non-cumulative measure array. */
-void CSaTScanData::SetMeasureByTimeIntervalArray(measure_t ** pNonCumulativeMeasure) {
-  int   i, j;
-
-  try {
-    if (! m_pMeasure_TotalByTimeInt)
-       m_pMeasure_TotalByTimeInt = (measure_t*)Smalloc(m_nTimeIntervals * sizeof(measure_t), gpPrint);
-
-    memset(m_pMeasure_TotalByTimeInt, 0, m_nTimeIntervals * sizeof(measure_t));
-    for (i=0; i < m_nTimeIntervals; i++)
-       for (j=0; j < m_nTracts; j++)
-          m_pMeasure_TotalByTimeInt[i] += pNonCumulativeMeasure[i][j];
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetMeasureByTimeIntervalArray()","CSaTScanData");
     throw;
   }
 }
@@ -704,6 +680,10 @@ void CSaTScanData::SetIntervalStartTimes() {
 
 /** Causes maximum circle size to be set based on parameters settings. */
 void CSaTScanData::SetMaxCircleSize() {
+  //NOTE: The measure from the first data stream is used when calculating
+  //      the maximum circle size, at least for the time being. 
+  measure_t tTotalMeasure = gpDataStreams->GetStream(0).GetTotalMeasure();
+
   try {
     switch (m_pParameters->GetMaxGeographicClusterSizeType()) {
       case PERCENTOFPOPULATIONFILETYPE :
@@ -712,9 +692,9 @@ void CSaTScanData::SetMaxCircleSize() {
              m_nMaxReportedCircleSize = (m_pParameters->GetMaximumReportedGeoClusterSize() / 100.0) * m_nTotalMaxCirclePopulation;
            break;
       case PERCENTOFPOPULATIONTYPE :
-           m_nMaxCircleSize = (m_pParameters->GetMaximumGeographicClusterSize() / 100.0) * m_nTotalMeasure;
+           m_nMaxCircleSize = (m_pParameters->GetMaximumGeographicClusterSize() / 100.0) * tTotalMeasure;
            if (m_pParameters->GetRestrictingMaximumReportedGeoClusterSize())
-             m_nMaxReportedCircleSize = (m_pParameters->GetMaximumReportedGeoClusterSize() / 100.0) * m_nTotalMeasure;
+             m_nMaxReportedCircleSize = (m_pParameters->GetMaximumReportedGeoClusterSize() / 100.0) * tTotalMeasure;
            break;
       case DISTANCETYPE :
            m_nMaxCircleSize = m_pParameters->GetMaximumGeographicClusterSize();
@@ -727,46 +707,6 @@ void CSaTScanData::SetMaxCircleSize() {
   }
   catch (ZdException &x) {
     x.AddCallpath("SetMaxCircleSize()","CSaTScanData");
-    throw;
-  }
-}
-
-/** Sets measure array as cumulative in-place. The passed array is assumed to be
-    set with non-cumulative data. Repeatly calling this function is not suggested.*/
-void CSaTScanData::SetMeasureAsCumulative(measure_t ** pMeasure) {
-  tract_t       t;
-  int           i;
-
-  for (t=0; t < m_nTracts; t++)
-     for (i=m_nTimeIntervals-2; i >= 0; i--)
-        pMeasure[i][t]= pMeasure[i+1][t] + pMeasure[i][t];
-}
-
-/** Sets non-cumulative measure from cumulative measure.
-    Non-cumulative measure array should not be already allocated. */
-void CSaTScanData::SetNonCumulativeMeasure() {
-  int           i, j;
-  measure_t  ** ppMeasureNC, ** ppMeasure(gpMeasureHandler->GetArray());
-
-  try {
-    if (gpMeasureNonCumulativeHandler)
-      ZdException::Generate("Non-cumulative measure array already allocated.\n","SetNonCumulativeMeasure()");
-
-    /*note: measure allocated in CModel::CalculateMeasure() to m_nTimeIntervals + 1,
-            not sure why but allocate this array the same way for deallocation,
-            ppMeasureNC could have been the array that as passed to
-            CModel::CalculateMeasure() instead of m_pMeasire. */
-    gpMeasureNonCumulativeHandler = new TwoDimensionArrayHandler<measure_t>(m_nTimeIntervals+1, m_nTracts);
-    ppMeasureNC = gpMeasureNonCumulativeHandler->GetArray();
-    for (i=0; i < m_nTracts; i++) {
-      ppMeasureNC[m_nTimeIntervals-1][i] = ppMeasure[m_nTimeIntervals-1][i];
-      for (j=m_nTimeIntervals-2; j>=0; j--)
-        ppMeasureNC[j][i] = ppMeasure[j][i] - ppMeasure[j+1][i];
-    }
-  }
-  catch (ZdException &x) {
-    delete gpMeasureNonCumulativeHandler; gpMeasureNonCumulativeHandler=0;
-    x.AddCallpath("SetNonCumulativeMeasure()","CSaTScanData");
     throw;
   }
 }
@@ -824,55 +764,14 @@ void CSaTScanData::SetProspectiveIntervalStart() {
 }
 
 void CSaTScanData::SetPurelyTemporalCases() {
-  int                   i, j;
-  count_t            ** ppCases(gpCasesHandler->GetArray());
+  size_t        t;
 
   try {
-    m_pPTCases = (count_t*) Smalloc((m_nTimeIntervals+1)*sizeof(count_t), gpPrint);
-
-    for (i=0; i < m_nTimeIntervals; ++i) {
-       m_pPTCases[i] = 0;
-       for (j=0; j < m_nTracts; ++j)
-          m_pPTCases[i] += ppCases[i][j];
-    }
+    for (t=0; t < gpDataStreams->GetNumStreams(); ++t)
+      gpDataStreams->GetStream(t).SetPTCasesArray();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalCases()","CSaTScanData");
-    throw;
-  }
-}
-
-void CSaTScanData::SetPurelyTemporalMeasures() {
-  int           i, j;
-  measure_t  ** ppMeasure(gpMeasureHandler->GetArray());
-
-  try {
-    m_pPTMeasure = (measure_t*)Smalloc((m_nTimeIntervals+1) * sizeof(measure_t), gpPrint);
-    for (i=0; i < m_nTimeIntervals; ++i) {
-       m_pPTMeasure[i] = 0;
-       for (j=0; j < m_nTracts; ++j)
-          m_pPTMeasure[i] += ppMeasure[i][j];
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetPurelyTemporalMeasures()","CSaTScanData");
-    throw;
-  }
-}
-
-void CSaTScanData::SetPurelyTemporalSimCases() {
-  int                   i, j;
-  count_t            ** ppSimCases(gpSimCasesHandler->GetArray());
-
-  try {
-    for (i=0; i < m_nTimeIntervals; ++i) {
-       m_pPTSimCases[i] = 0;
-       for (j=0; j < m_nTracts; ++j)
-          m_pPTSimCases[i] += ppSimCases[i][j];
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetPurelyTemporalSimCases()","CSaTScanData");
     throw;
   }
 }
@@ -967,7 +866,7 @@ void CSaTScanData::Setup(CParameters* pParameters, BasePrint *pPrintDirection) {
     gpPrint = pPrintDirection;
     m_pParameters = pParameters;
 
-    gpTInfo = new TractHandler(gPopulationCategories, *pPrintDirection); 
+    gpTInfo = new TractHandler(*pPrintDirection); 
     gpGInfo = new GInfo(pPrintDirection);
     //SetProbabilityModel();
     //For now, compute the angle and store the angle and shape
@@ -995,40 +894,21 @@ void CSaTScanData::Setup(CParameters* pParameters, BasePrint *pPrintDirection) {
   }
 }
 
-/***********************************************************************************
-Finds the date of the smallest PopDate > Date. If none exist return -1.
-***********************************************************************************/
-int CSaTScanData::UpperPopIndex(Julian Date) const {
-  int   i, iNumPopDates = gpTInfo->tiGetNumPopDates();
-
-  if (gpTInfo->tiGetPopDate(iNumPopDates - 1) <= Date)
-    return -1;
-
-  i = iNumPopDates - 1;
-  while (gpTInfo->tiGetPopDate(i-1) > Date)
-       i--;
-
-  return i;
-}
-
 /** Throws exception if case(s) were observed for an interval/location
     but the expected number of cases for interval/location is zero. For
     the Poisson model, this situation is likely the result of incorrect
     data provided in the population file, possibly the case file. For the
     other probability models, this is probably a bug in the code itself. */
-void CSaTScanData::ValidateObservedToExpectedCases(measure_t ** ppNonCumulativeMeasure) const {
+void CSaTScanData::ValidateObservedToExpectedCases(count_t ** ppCumulativeCases, measure_t ** ppNonCumulativeMeasure) const {
   int           i;
   tract_t       t;
   ZdString      sStart, sEnd;
   std::string   sId;
 
   try {
-    if (!gpCasesHandler)
-      ZdGenerateException("Case array not allocated.", "ValidateObservedToExpectedCases()");
-
     for (i=0; i < m_nTimeIntervals; ++i)
        for (t=0; t < m_nTracts; ++t)
-          if (!ppNonCumulativeMeasure[i][t] && GetCaseCount(i, t))
+          if (!ppNonCumulativeMeasure[i][t] && GetCaseCount(ppCumulativeCases, i, t))
             SSGenerateException("Error: For locationID '%s' in time interval %s - %s,\n"
                                 "       the expected number of cases is zero but there were cases observed.\n"
                                 "       Please review the correctness of population and case files.",
@@ -1036,12 +916,9 @@ void CSaTScanData::ValidateObservedToExpectedCases(measure_t ** ppNonCumulativeM
                                 gpTInfo->tiGetTid(t, sId),
                                 JulianToString(sStart, m_pIntervalStartTimes[i]).GetCString(),
                                 JulianToString(sEnd, m_pIntervalStartTimes[i + 1] - 1).GetCString());
-
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateObservedToExpectedCases()","CSaTScanData");
     throw;
   }
 }
-
-
