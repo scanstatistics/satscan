@@ -1,5 +1,7 @@
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//***************************************************************************
 #include "SpaceTimeData.h"
 #include "PoissonModel.h"
 #include "BernoulliModel.h"
@@ -9,7 +11,7 @@
 #include "RankModel.h"
 
 /** constructor */
-CSpaceTimeData::CSpaceTimeData(CParameters* pParameters, BasePrint *pPrintDirection)
+CSpaceTimeData::CSpaceTimeData(const CParameters* pParameters, BasePrint *pPrintDirection)
                :CSaTScanData(pParameters, pPrintDirection) {
   try {
     SetProbabilityModel();
@@ -23,11 +25,9 @@ CSpaceTimeData::CSpaceTimeData(CParameters* pParameters, BasePrint *pPrintDirect
 /** desctructor */
 CSpaceTimeData::~CSpaceTimeData() {}
 
-bool CSpaceTimeData::CalculateMeasure(DataStream & thisStream) {
-  bool bResult;
-
+void CSpaceTimeData::CalculateMeasure(RealDataStream & thisStream) {
   try {
-    bResult = CSaTScanData::CalculateMeasure(thisStream);
+    CSaTScanData::CalculateMeasure(thisStream);
     if (m_pParameters->GetIncludePurelyTemporalClusters())
       gpDataStreams->SetPurelyTemporalMeasureData(thisStream);
   }
@@ -35,17 +35,33 @@ bool CSpaceTimeData::CalculateMeasure(DataStream & thisStream) {
     x.AddCallpath("CalculateMeasure()","CSpaceTimeData");
     throw;
   }
-  return bResult;
 }
 
-void CSpaceTimeData::RandomizeData(int iSimulationNumber) {
+void CSpaceTimeData::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
   try {
-    CSaTScanData::RandomizeData(iSimulationNumber);
+    CSaTScanData::RandomizeData(SimDataContainer, iSimulationNumber);
     if (m_pParameters->GetIncludePurelyTemporalClusters())
-      gpDataStreams->SetPurelyTemporalSimulationData();
+      for (size_t t=0; t < SimDataContainer.size(); ++t)
+        SimDataContainer[t].SetPTCasesArray();
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CSpaceTimeData");
+    throw;
+  }
+}
+
+/** Randomizes collection of simulation data in concert with passed collection of randomizers. */
+void CSpaceTimeData::RandomizeIsolatedData(RandomizerContainer_t& RandomizerContainer,
+                                           SimulationDataContainer_t& SimDataContainer,
+                                           unsigned int iSimulationNumber) const {
+  try {
+    CSaTScanData::RandomizeIsolatedData(RandomizerContainer, SimDataContainer, iSimulationNumber);
+    if (m_pParameters->GetIncludePurelyTemporalClusters())
+      for (size_t t=0; t < SimDataContainer.size(); ++t)
+        SimDataContainer[t].SetPTCasesArray();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("RandomizeIsolatedData()","CSpaceTimeData");
     throw;
   }
 }

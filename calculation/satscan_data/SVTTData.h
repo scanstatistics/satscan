@@ -14,19 +14,22 @@ class CSVTTData : public CSaTScanData {
     virtual void        SetProbabilityModel();
 
   protected:
-    virtual bool        CalculateMeasure(DataStream & thisStream);
-    virtual void        SetAdditionalCaseArrays(DataStream & thisStream);
+    virtual void        CalculateMeasure(RealDataStream& thisStream);
+    virtual void        SetAdditionalCaseArrays(RealDataStream & thisStream);
     virtual void        SetNumTimeIntervals();
 
   public:
-    CSVTTData(CParameters* pParameters, BasePrint *pPrintDirection);
+    CSVTTData(const CParameters* pParameters, BasePrint *pPrintDirection);
     virtual ~CSVTTData();
 
     virtual void        DisplayCases(FILE* pFile);
     virtual void        DisplaySimCases(FILE* pFile);
     virtual void        DisplayMeasures(FILE* pFile);
     virtual void        DisplayRelativeRisksForEachTract(const bool bASCIIOutput, const bool bDBaseOutput);
-    virtual void        RandomizeData(int iSimulationNumber);
+    virtual void        RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber);
+    virtual void        RandomizeIsolatedData(RandomizerContainer_t& RandomizerContainer,
+                                              SimulationDataContainer_t& SimDataContainer,
+                                              unsigned int iSimulationNumber) const;
 };
 
 #endif

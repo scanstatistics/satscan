@@ -9,7 +9,7 @@
 #include "stsDBaseFileWriter.h"
 
 /** constructor */
-CSVTTData::CSVTTData(CParameters* pParameters, BasePrint *pPrintDirection)
+CSVTTData::CSVTTData(const CParameters* pParameters, BasePrint *pPrintDirection)
           :CSaTScanData(pParameters, pPrintDirection) {
   try {
     SetProbabilityModel();
@@ -23,15 +23,10 @@ CSVTTData::CSVTTData(CParameters* pParameters, BasePrint *pPrintDirection)
 /** destructor */
 CSVTTData::~CSVTTData() {}
 
-bool CSVTTData::CalculateMeasure(DataStream & thisStream) {
-  bool bReturn = CSaTScanData::CalculateMeasure(thisStream);
-  //calculate time trend for entire data stream
-  //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
-  //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
-  //      has not been decided yet.
+void CSVTTData::CalculateMeasure(RealDataStream & thisStream) {
+  CSaTScanData::CalculateMeasure(thisStream);
   thisStream.GetTimeTrend().CalculateAndSet(thisStream.GetPTCasesArray(), thisStream.GetPTMeasureArray(),
                                             m_nTimeIntervals, m_pParameters->GetTimeTrendConvergence());
-  return bReturn;
 }
 
 void CSVTTData::DisplayCases(FILE* pFile) {
@@ -142,24 +137,24 @@ void CSVTTData::DisplayRelativeRisksForEachTract(const bool bASCIIOutput, const 
    }
 }
 void CSVTTData::DisplaySimCases(FILE* pFile) {
-  DisplayCounts(pFile, gpDataStreams->GetStream(0/*for now*/).GetSimCaseArray(), "Simulated Cases Array",
-                gpDataStreams->GetStream(0/*for now*/).GetNCSimCaseArray(), "Simulated Non-Cumulative Cases Array",
-                gpDataStreams->GetStream(0/*for now*/).GetPTSimCasesArray(), "SimCases_TotalByTimeInt");
+//  DisplayCounts(pFile, gpDataStreams->GetStream(0/*for now*/).GetSimCaseArray(), "Simulated Cases Array",
+//               gpDataStreams->GetStream(0/*for now*/).GetNCSimCaseArray(), "Simulated Non-Cumulative Cases Array",
+//                gpDataStreams->GetStream(0/*for now*/).GetPTSimCasesArray(), "SimCases_TotalByTimeInt");
 }
 
-void CSVTTData::RandomizeData(int iSimulationNumber) {
+void CSVTTData::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
   try {
-    CSaTScanData::RandomizeData(iSimulationNumber);
-    for (size_t t=0; t < gpDataStreams->GetNumStreams(); ++t) {
-       gpDataStreams->GetStream(t).SetSimCaseArrays();
+    CSaTScanData::RandomizeData(SimDataContainer, iSimulationNumber);
+    for (size_t t=0; t < SimDataContainer.size(); ++t) {
+       SimDataContainer[t].SetCaseArrays();
        //calculate time trend for entire randomized data set
        //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
        //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
        //      has not been decided yet.
-       gpDataStreams->GetStream(t).GetSimTimeTrend().CalculateAndSet(gpDataStreams->GetStream(t).GetPTCasesArray(),
-                                                                     gpDataStreams->GetStream(t).GetPTMeasureArray(),
-                                                                     m_nTimeIntervals,
-                                                                     m_pParameters->GetTimeTrendConvergence());
+       SimDataContainer[t].GetTimeTrend().CalculateAndSet(gpDataStreams->GetStream(t).GetPTCasesArray(),
+                                                          gpDataStreams->GetStream(t).GetPTMeasureArray(),
+                                                          m_nTimeIntervals,
+                                                          m_pParameters->GetTimeTrendConvergence());
     }
   }
   catch (ZdException &x) {
@@ -168,7 +163,31 @@ void CSVTTData::RandomizeData(int iSimulationNumber) {
   }
 }
 
-void CSVTTData::SetAdditionalCaseArrays(DataStream & thisStream) {
+/** Randomizes collection of simulation data in concert with passed collection of randomizers. */
+void CSVTTData::RandomizeIsolatedData(RandomizerContainer_t& RandomizerContainer,
+                                      SimulationDataContainer_t& SimDataContainer,
+                                      unsigned int iSimulationNumber) const {
+  try {
+    CSaTScanData::RandomizeIsolatedData(RandomizerContainer, SimDataContainer, iSimulationNumber);
+    for (size_t t=0; t < SimDataContainer.size(); ++t) {
+       SimDataContainer[t].SetCaseArrays();
+       //calculate time trend for entire randomized data set
+       //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
+       //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
+       //      has not been decided yet.
+       SimDataContainer[t].GetTimeTrend().CalculateAndSet(gpDataStreams->GetStream(t).GetPTCasesArray(),
+                                                          gpDataStreams->GetStream(t).GetPTMeasureArray(),
+                                                          m_nTimeIntervals,
+                                                          m_pParameters->GetTimeTrendConvergence());
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("RandomizeIsolatedData()","CSVTTData");
+    throw;
+  }
+}
+
+void CSVTTData::SetAdditionalCaseArrays(RealDataStream & thisStream) {
   try {
     thisStream.SetCaseArrays();
   }

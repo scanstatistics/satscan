@@ -1,5 +1,7 @@
+//***************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//***************************************************************************
 #include "PurelyTemporalData.h"
 #include "PoissonModel.h"
 #include "BernoulliModel.h"
@@ -9,7 +11,7 @@
 #include "RankModel.h"
 
 /** constructor */
-CPurelyTemporalData::CPurelyTemporalData(CParameters* pParameters, BasePrint *pPrintDirection)
+CPurelyTemporalData::CPurelyTemporalData(const CParameters* pParameters, BasePrint *pPrintDirection)
                     :CSaTScanData(pParameters, pPrintDirection) {
   try {
     SetProbabilityModel();
@@ -27,18 +29,15 @@ void CPurelyTemporalData::AdjustNeighborCounts() {
   ZdGenerateException("AdjustNeighborCounts() not implemented for CPurelyTemporalData.","AdjustNeighborCounts()");
 }
 
-bool CPurelyTemporalData::CalculateMeasure(DataStream & thisStream) {
-  bool bResult;
-
+void CPurelyTemporalData::CalculateMeasure(RealDataStream & thisStream) {
   try {
-    bResult = CSaTScanData::CalculateMeasure(thisStream);
+    CSaTScanData::CalculateMeasure(thisStream);
     gpDataStreams->SetPurelyTemporalMeasureData(thisStream);
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateMeasure()","CPurelyTemporalData");
     throw;
   }
-  return bResult;
 }
 
 void CPurelyTemporalData::DisplayCases(FILE* pFile) {
@@ -68,16 +67,16 @@ void CPurelyTemporalData::DisplayMeasure(FILE* pFile) {
 }
 
 void CPurelyTemporalData::DisplaySimCases(FILE* pFile) {
-  try {
-    fprintf(pFile, "PT Simulated Case counts (PTSimCases)\n\n");
-    for (int i = 0; i < m_nTimeIntervals; i++)
-       fprintf(pFile, "PTSimCases [%i] = %i\n", i, gpDataStreams->GetStream(0/*for now*/).GetPTSimCasesArray()[i]);
-    fprintf(pFile, "\n");
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("DisplaySimCases()","CPurelyTemporalData");
-    throw;
-  }
+//  try {
+//    fprintf(pFile, "PT Simulated Case counts (PTSimCases)\n\n");
+//    for (int i = 0; i < m_nTimeIntervals; i++)
+//       fprintf(pFile, "PTSimCases [%i] = %i\n", i, gpDataStreams->GetStream(0/*for now*/).GetPTSimCasesArray()[i]);
+//    fprintf(pFile, "\n");
+//  }
+//  catch (ZdException &x) {
+//    x.AddCallpath("DisplaySimCases()","CPurelyTemporalData");
+//    throw;
+//  }
 }
 
 tract_t CPurelyTemporalData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const {
@@ -85,13 +84,27 @@ tract_t CPurelyTemporalData::GetNeighbor(int iEllipse, tract_t t, unsigned int n
   return 0;
 }
 
-void CPurelyTemporalData::RandomizeData(int iSimulationNumber) {
+void CPurelyTemporalData::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
   try {
-    CSaTScanData::RandomizeData(iSimulationNumber);
-    gpDataStreams->SetPurelyTemporalSimulationData();
+    CSaTScanData::RandomizeData(SimDataContainer, iSimulationNumber);
+    gpDataStreams->SetPurelyTemporalSimulationData(SimDataContainer);
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CPurelyTemporalData");
+    throw;
+  }
+}
+
+/** Randomizes collection of simulation data in concert with passed collection of randomizers. */
+void CPurelyTemporalData::RandomizeIsolatedData(RandomizerContainer_t& RandomizerContainer,
+                                                SimulationDataContainer_t& SimDataContainer,
+                                                unsigned int iSimulationNumber) const {
+  try {
+    CSaTScanData::RandomizeIsolatedData(RandomizerContainer, SimDataContainer, iSimulationNumber);
+    gpDataStreams->SetPurelyTemporalSimulationData(SimDataContainer);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("RandomizeIsolatedData()","CPurelyTemporalData");
     throw;
   }
 }
