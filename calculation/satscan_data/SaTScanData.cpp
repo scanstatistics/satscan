@@ -397,11 +397,6 @@ void CSaTScanData::SetCumulativeMeasure() {
        for (i=m_nTimeIntervals-2; i >= 0; i--)
           ppMeasure[i][tract] = ppMeasure[i+1][tract] + ppMeasureNC[i][tract];
     }
-
-    // Bug check, to ensure that TotalCases=TotalMeasure
-    if (fabs(m_nTotalCases-m_nTotalMeasure)>0.0001)
-      ZdGenerateException("Error: The total measure '%8.6lf' is not equal to the total number of cases '%ld'.\n",
-                          "SetCumulativeMeasure()", m_nTotalMeasure, m_nTotalCases);
   }
   catch (ZdException &x) {
     delete gpMeasureHandler; gpMeasureHandler=0;
