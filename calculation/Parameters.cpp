@@ -3164,13 +3164,13 @@ bool CParameters::ValidateRangeParameters(BasePrint & PrintDirection) {
                                            gsStartRangeStartDate.c_str());
       }
       //validate start range end date
-      if (!ValidateStudyPeriodDateString(gsStartRangeEndDate, ENDDATE/*same behavior*/)) {
+      if (!ValidateStudyPeriodDateString(gsStartRangeEndDate, STARTDATE/*same behavior*/)) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: The scanning window start range date, '%s', does not appear to be a valid date.\n",
                                            gsStartRangeEndDate.c_str());
       }
       //validate end range start date
-      if (!ValidateStudyPeriodDateString(gsEndRangeStartDate, STARTDATE/*same behavior*/)) {
+      if (!ValidateStudyPeriodDateString(gsEndRangeStartDate, ENDDATE/*same behavior*/)) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: The scanning window end range date, '%s', does not appear to be a valid date.\n",
                                            gsEndRangeStartDate.c_str());
@@ -3253,9 +3253,9 @@ bool CParameters::ValidateProspectiveDateString() {
   try {
     if (!gbAdjustForEarlierAnalyses)                 //when not adjusting for earlier analyses,
       gsProspectiveStartDate = gsStudyPeriodEndDate; //prospective start date equal study period end
-    JulianToMDY(&uiMonth, &uiDay, &uiYear, GetProspectiveStartDateAsJulian());
-    sDate.printf("%i/%i/%i", uiYear, uiMonth, uiDay);
-    gsProspectiveStartDate = sDate.GetCString();
+    //validate study period end date based upon precision of times parameter setting
+    if (!ValidateStudyPeriodDateString(gsProspectiveStartDate, ENDDATE))
+      bReturnValue = false;
   }
   catch (InvalidParameterException &e) {
     bReturnValue = false;
@@ -3424,14 +3424,14 @@ bool CParameters::ValidateStudyPeriodDateString(std::string & sDateString, Param
 
   try {
     if ((nScanCount = CharToMDY(&nMonth, &nDay, &nYear, sDateString.c_str())) > 0) {
-      if (/*gePrecisionOfTimesType == YEAR ||*/ nScanCount == 1) {
+      if (geTimeIntervalUnitsType == YEAR || nScanCount == 1) {
         switch(eDateType) {
           case STARTDATE          : nMonth = 1; break;
           case ENDDATE            : nMonth = 12; break;
           default : ZdException::Generate("Unkwown date parameter type '%d'.\n", "ValidateStudyPeriodDateString()", eDateType);
         }
       }
-      if (/*gePrecisionOfTimesType == YEAR || gePrecisionOfTimesType == MONTH ||*/ nScanCount == 1 || nScanCount == 2) {
+      if (geTimeIntervalUnitsType == YEAR || geTimeIntervalUnitsType == MONTH || nScanCount == 1 || nScanCount == 2) {
         switch(eDateType) {
           case STARTDATE          : nDay = 1; break;
           case ENDDATE            : nDay = DaysThisMonth(nYear, nMonth); break;
@@ -3481,7 +3481,10 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
         geMaxTemporalClusterSizeType       = PERCENTAGETYPE;
         geIncludeClustersType              = ALLCLUSTERS;
       }
-      //time interval units 
+      //prospective analyses include only alive clusters
+      if (GetIsProspectiveAnalysis() && geIncludeClustersType != ALIVECLUSTERS)
+        geIncludeClustersType = ALIVECLUSTERS;
+      //time interval units
       if (geTimeIntervalUnitsType == NONE) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Time interval units can not be 'none' for a temporal analysis.\n");
