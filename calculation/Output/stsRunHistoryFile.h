@@ -3,6 +3,17 @@
 #define __stsRunHistoryFile_H
 //---------------------------------------------------------------------------
 
+// mini class used to temporarily store field structure - AJV 9/24/2002
+class history_field_t {
+   public:
+      std::string          gsFieldName;
+      char                 gcFieldType;
+      short                gwFieldLength;
+
+      history_field_t(std::string sFieldName, char cFieldType, short wFieldLength)
+                     {gsFieldName = sFieldName; gcFieldType = cFieldType; gwFieldLength = wFieldLength;}
+};
+
 class stsRunHistoryFile {
    private:
       ZdString          gsFilename;
@@ -14,8 +25,12 @@ class stsRunHistoryFile {
       void	Setup(const CAnalysis* pAnalysis, const ZdString& sFileName);
    protected:
       void      CreateRunHistoryFile();
-      void      OpenRunHistoryFile(const unsigned short& uwSignificantAt005);
-      void 	SetupFields(ZdVector<pair<pair<ZdString, char>, long> >&  vFieldDescrip);
+      void      SetupFields(std::vector<history_field_t>&  vFieldDescrip );
+
+      void      SetBoolField(ZdFileRecord& record, const bool& bValue, const unsigned long& uwFieldNumber);
+      void      SetDoubleField(ZdFileRecord& record, const double& dValue, const unsigned long& uwFieldNumber);
+      void      SetLongField(ZdFileRecord& record, const long& lValue, const unsigned long& uwFieldNumber);
+      void      SetStringField(ZdFileRecord& record, const ZdString& sValue, const unsigned long& uwFieldNumber);
    public:
       stsRunHistoryFile(const CAnalysis* pAnalysis, const ZdString& sFileName = "");
       ~stsRunHistoryFile();
