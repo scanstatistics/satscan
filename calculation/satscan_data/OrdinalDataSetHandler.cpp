@@ -153,6 +153,8 @@ SimulationDataContainer_t& OrdinalDataSetHandler::GetSimulationDataContainer(Sim
 }
 
 bool OrdinalDataSetHandler::ParseCaseFileLine(StringParser& Parser, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuosVariable) {
+  int   iSurvivalTimeIndex;
+
   try {
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
@@ -189,14 +191,15 @@ bool OrdinalDataSetHandler::ParseCaseFileLine(StringParser& Parser, tract_t& tid
       return false;
 
     // read continuos variable
-    if (!Parser.GetWord(3)) {
+    iSurvivalTimeIndex = gParameters.GetPrecisionOfTimesType() == NONE ? 2 : 3;
+    if (!Parser.GetWord(iSurvivalTimeIndex)) {
       gPrint.PrintInputWarning("Error: Record %d, of the %s, is missing ordinal data field.\n",
                                Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
-    if (sscanf(Parser.GetWord(3), "%lf", &tContinuosVariable) != 1) {
+    if (sscanf(Parser.GetWord(iSurvivalTimeIndex), "%lf", &tContinuosVariable) != 1) {
        gPrint.PrintInputWarning("Error: The ordinal data '%s' in record %ld, of the %s, is not a number.\n",
-                                  Parser.GetWord(3), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                                  Parser.GetWord(iSurvivalTimeIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
   }
