@@ -1522,6 +1522,7 @@ void TfrmAnalysis::SaveTextParameters() {
     strcpy(gpParams->m_szPopFilename,edtPopFileName->Text.c_str());
     strcpy(gpParams->m_szCoordFilename,edtCoordinateFileName->Text.c_str());
     strcpy(gpParams->m_szGridFilename,edtGridFileName->Text.c_str());
+    gpParams->m_bSpecialGridFile = edtGridFileName->Text.Length();
     //Analysis Tab
     sprintf(gpParams->m_szStartDate, "%i/%i/%i", atoi(edtStartYear->Text.c_str()), atoi(edtStartMonth->Text.c_str()), atoi(edtStartDay->Text.c_str()));
     sprintf(gpParams->m_szEndDate, "%i/%i/%i", atoi(edtEndYear->Text.c_str()), atoi(edtEndMonth->Text.c_str()), atoi(edtEndDay->Text.c_str()));
