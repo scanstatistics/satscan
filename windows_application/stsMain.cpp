@@ -6,12 +6,19 @@
 #pragma resource "*.dfm"
 
 #include "stsOutputFileRegistry.h"
+#include "stsFrmStartWindow.h"
 
 TfrmMainForm *frmMainForm;
 //---------------------------------------------------------------------------
 __fastcall TfrmMainForm::TfrmMainForm(TComponent* Owner): TForm(Owner){
-  EnableActions(true);
-  RefreshOpenList();
+  try {
+    Init();
+    Setup();
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("constructor()", "TfrmMainForm");
+    throw;
+  }
 }
 
 __fastcall TfrmMainForm::~TfrmMainForm() {}
@@ -140,7 +147,7 @@ void __fastcall TfrmMainForm::NewSessionActionExecute(TObject *Sender) {
   }
 }
 //---------------------------------------------------------------------------
-void __fastcall TfrmMainForm::OpenAFile(){
+void TfrmMainForm::OpenAFile(){
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.prm";
@@ -342,4 +349,38 @@ void __fastcall TfrmMainForm::FormClose(TObject *Sender, TCloseAction &Action) {
   catch (...){}
 }
 //---------------------------------------------------------------------------
+void TfrmMainForm::Setup() {
+  EnableActions(true);
+  RefreshOpenList();
+}
+
+void __fastcall TfrmMainForm::FormActivate(TObject *Sender) {
+  try {
+    if (gbShowStartWindow) {
+      frmStartWindow = new TfrmStartWindow(this);
+      if (frmStartWindow->ShowModal() == mrOk) {
+         switch (frmStartWindow->GetSelectedItemIndex()) {
+           case 0  : new TfrmAnalysis(this, ActionList); break;
+           case 1  : OpenAFile(); break;
+           case 2  : if (!File_Exists(const_cast<char*>(GetToolkit().GetParameterHistory()[0].c_str())))
+                       ZdException::GenerateNotification("Cannot open file '%s'.", "FormActivate()",
+                                                         GetToolkit().GetParameterHistory()[0].c_str());
+                     new TfrmAnalysis(this, ActionList, const_cast<char*>(GetToolkit().GetParameterHistory()[0].c_str()));
+                     break;
+           default : ZdException::GenerateNotification("Unknown operation index % d.",
+                                                       "FormActivate()", frmStartWindow->GetSelectedItemIndex());
+         }
+      }
+      delete frmStartWindow; frmStartWindow=0;
+      gbShowStartWindow = false;
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("FormActivate", "TfrmMainForm");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
+
+
 

@@ -64,11 +64,13 @@
       ..\calculation\cluster\TimeTrend.obj 
       ..\calculation\cluster\SVTTCluster.obj ..\calculation\satscan_data\SVTTData.obj 
       ..\calculation\analysis\SVTTAnalysis.obj 
-      ..\calculation\cluster\PurelySpatialProspectiveCluster.obj"/>
+      ..\calculation\cluster\PurelySpatialProspectiveCluster.obj 
+      stsFrmStartWindow.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
-      stsFrmAnalysisRun.dfm stsFrmOutPutViewer.dfm stsDlgDataImporter.dfm"/>
+      stsFrmAnalysisRun.dfm stsFrmOutPutViewer.dfm stsDlgDataImporter.dfm 
+      stsFrmStartWindow.dfm"/>
     <LIBFILES value="&quot;C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib&quot; 
       &quot;C:\Program Files\Borland\CBuilder5\Lib\zd540.lib&quot; 
       ..\xbase\xbase_2.0.0\xbase\xbase.lib"/>
@@ -85,7 +87,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED"/>
+    <USERDEFINES value="INTEL_BASED;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="StsWinPrj.cpp"/>
     <INCLUDEPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;\\Nfse\home\hostovic\prj\basisdev\source\nonvcl;\\Nfse\home\hostovic\prj\basisdev\source\vcldep;\\Nfse\home\hostovic\prj\basisdev\include;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\topgrid;.."/>
@@ -93,12 +95,12 @@
     <WARNINGS value="-w-par -w-8027 -w-8026 -w-aus"/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -H=vcl_trunk_gui.csm -Hc -Q -Vx -Ve -fp -X- -a8 -5 -b- -k- -vi -c -tW 
-      -tWM"/>
-    <PFLAGS value="-$Y- -$L- -$D- -v -JPHNE -M"/>
+    <CFLAG1 value="-Od -H=vcl_trunk_gui.csm -Hc -Q -Vx -Ve -fp -X- -r- -a8 -5 -b- -k -y -v 
+      -vi- -c -tW -tWM"/>
+    <PFLAGS value="-$Y+ -$W -$O- -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zn"/>
-    <LFLAGS value="-D&quot;&quot; -aa -Tpe -GD -x"/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-D&quot;&quot; -aa -Tpe -GD -x -v"/>
   </OPTIONS>
   <LINKER>
     <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
@@ -202,8 +204,8 @@ Item5=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=13
-Item0=INTEL_BASED
-Item1=INTEL_BASED;_DEBUG
+Item0=INTEL_BASED;_DEBUG
+Item1=INTEL_BASED
 Item2=INTEL_BASED;_DEBUG;
 Item3=INTEL_BASED;_DEBUG;DEBUGMEASURE
 Item4=INTEL_BASED;DEBUGPROSPECTIVETIME

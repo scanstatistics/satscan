@@ -88,13 +88,18 @@ class TfrmMainForm : public TForm{
         void __fastcall ImportActionExecute(TObject *Sender);
         void __fastcall ActionReopenExecute(TObject *Sender);
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
+        void __fastcall FormActivate(TObject *Sender);
   private:	// User declarations
-    void __fastcall             OpenAFile();
+    bool                        gbShowStartWindow;
+    stsOutputFileRegister       gRegistry;
+
     void                        EnableActions(bool bEnable);
     void                        ExecuteSession();
+    void                        Init() {gbShowStartWindow=true;} 
+    void                        OpenAFile();
     void                        Save();
     void                        SaveAs();
-    stsOutputFileRegister       gRegistry;
+    void                        Setup();
 
   public:		// User declarations
     __fastcall TfrmMainForm(TComponent* Owner);

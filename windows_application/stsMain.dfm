@@ -14,6 +14,7 @@ object frmMainForm: TfrmMainForm
   Menu = MainMenu1
   OldCreateOrder = False
   Position = poScreenCenter
+  OnActivate = FormActivate
   OnClose = FormClose
   PixelsPerInch = 96
   TextHeight = 13

@@ -83,6 +83,7 @@ USEUNIT("..\calculation\cluster\SVTTCluster.cpp");
 USEUNIT("..\calculation\satscan_data\SVTTData.cpp");
 USEUNIT("..\calculation\analysis\SVTTAnalysis.cpp");
 USEUNIT("..\calculation\cluster\PurelySpatialProspectiveCluster.cpp");
+USEFORM("stsFrmStartWindow.cpp", frmStartWindow);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         try {
@@ -93,7 +94,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
            Application->Title = "SaTScan";
            Application->HelpFile = "";
            Application->CreateForm(__classid(TfrmMainForm), &frmMainForm);
-                 Application->Run();
+           Application->Run();
            BasisExit();
         }
         catch (ZdException &x) {
