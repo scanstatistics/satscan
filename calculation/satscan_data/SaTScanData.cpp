@@ -138,6 +138,68 @@ void CSaTScanData::AdjustNeighborCounts() {
   }
 }
 
+/** allocates two-dimensional array that will track the number of neighbors
+    for each shape/grid point combination. */
+void CSaTScanData::AllocateNeighborArray() {
+  int   i, j;
+
+  try {
+    m_NeighborCounts = (tract_t**)Smalloc((m_pParameters->GetNumTotalEllipses() + 1) * sizeof(tract_t *), gpPrint);
+    memset(m_NeighborCounts, 0, (m_pParameters->GetNumTotalEllipses() + 1) * sizeof(tract_t *));
+    for (i=0; i <= m_pParameters->GetNumTotalEllipses(); ++i) {
+       m_NeighborCounts[i] = (tract_t*)Smalloc(m_nGridTracts * sizeof(tract_t), gpPrint);
+       memset(m_NeighborCounts[i], 0, m_nGridTracts * sizeof(tract_t));
+       //for (j=0; j < m_nGridTracts; ++j)
+       //   m_NeighborCounts[i][j] = 0;
+    }
+  }
+  catch (ZdException &x) {
+    for (i=0; m_NeighborCounts && i <= m_pParameters->GetNumTotalEllipses(); ++i)
+       free(m_NeighborCounts[i]);
+    x.AddCallpath("AllocateNeighborArray()","CSaTScanData");
+    throw;
+  }
+}
+
+/** Allocates multi-dimensional array that stores tract index for each neighbor
+    of each ellipse/grid point combination. */
+void CSaTScanData::AllocateSortedArray() {
+  int   i, j;
+
+  try {
+    if (m_nTracts < std::numeric_limits<unsigned short>::max()) {
+      m_pSortedUShort = (unsigned short ***)Smalloc(sizeof(unsigned short*) * (m_pParameters->GetNumTotalEllipses()+1), gpPrint);
+      memset(m_pSortedUShort, 0, (m_pParameters->GetNumTotalEllipses()+1) * sizeof(unsigned short*));
+      for (i=0; i <= m_pParameters->GetNumTotalEllipses(); ++i) {
+         m_pSortedUShort[i] = (unsigned short **)Smalloc(sizeof(unsigned short*) * m_nGridTracts, gpPrint);
+         memset(m_pSortedUShort[i], 0, sizeof(unsigned short*) * m_nGridTracts);
+      }
+      //for (i=0; i <= m_pParameters->GetNumTotalEllipses(); ++i)
+      //   for (j=0; j < m_nGridTracts; ++j)
+      //      m_pSortedUShort[i][j] = 0;
+    }
+    else {
+      m_pSortedInt = (tract_t ***)Smalloc(sizeof(tract_t*) * (m_pParameters->GetNumTotalEllipses()+1), gpPrint);
+      memset(m_pSortedInt, 0, (m_pParameters->GetNumTotalEllipses()+1) * sizeof(tract_t*));
+      for (i=0; i <= m_pParameters->GetNumTotalEllipses(); ++i) {
+         m_pSortedInt[i] = (tract_t **)Smalloc(sizeof(tract_t *) * m_nGridTracts, gpPrint);
+         memset(m_pSortedInt[i], 0, sizeof(tract_t*) * m_nGridTracts);
+      }
+      //for (i=0; i <= m_pParameters->GetNumTotalEllipses(); ++i)
+      //  for (j = 0; j < m_nGridTracts; ++j)
+      //      m_pSortedInt[i][j] = 0;
+    }
+  }  
+  catch (ZdException &x) {
+    for (i=0; m_pSortedUShort && i <= m_pParameters->GetNumTotalEllipses(); ++i)
+       free(m_pSortedUShort[i]);
+    for (i=0; m_pSortedInt && i <= m_pParameters->GetNumTotalEllipses(); ++i)
+       free(m_pSortedInt[i]);
+    x.AddCallpath("AllocateSortedArray()","CSaTScanData");
+    throw;
+  }
+}
+
 void CSaTScanData::AllocSimCases() {
    try {
       m_pSimCases = (count_t**)Smalloc(m_nTimeIntervals * sizeof(count_t *), gpPrint);
@@ -195,37 +257,17 @@ void CSaTScanData::DeAllocSimCases() {
   }
 }
 
-bool CSaTScanData::FindNeighbors() {
-   int          i, j;
-   double       dTotalPopulation=0;
-   long         lTotalNumEllipses = m_pParameters->GetNumTotalEllipses();
+/** Allocates/deallocates memory to store neighbor information.
+    Calls MakeNeighbor() function to calculate neighbors for each centroid. */
+bool CSaTScanData::FindNeighbors(bool bSimulations) {
+  int          i, j;
+  double       dMaxCircleSize, dTotalPopulation=0;
 
-   try {
-      //then use an unsigned short...
-      if (m_nTracts < 65536) {
-         m_pSortedUShort = (unsigned short ***)Smalloc(sizeof(unsigned short *) * (lTotalNumEllipses+1), gpPrint);
-         for (i = 0; i <= lTotalNumEllipses; ++i )
-            m_pSortedUShort[i] = (unsigned short **)Smalloc(sizeof(unsigned short *) * m_nGridTracts, gpPrint);
-         for (i = 0; i <= lTotalNumEllipses; ++i)                                          //memset here ???
-            for (j = 0; j < m_nGridTracts; ++j)
-               m_pSortedUShort[i][j] = 0;
-      }
-      else {
-         m_pSortedInt = (tract_t ***)Smalloc(sizeof(tract_t *) * (lTotalNumEllipses+1), gpPrint);
-         for (i = 0; i <= lTotalNumEllipses; ++i )
-            m_pSortedInt[i] = (tract_t **)Smalloc(sizeof(tract_t *) * m_nGridTracts, gpPrint);
-         for (i = 0; i <= lTotalNumEllipses; ++i)                                          //memset here ???
-            for (j = 0; j < m_nGridTracts; ++j)
-               m_pSortedInt[i][j] = 0;
-         }
-      //m_NeighborCounts = (tract_t**)Smalloc(m_nNumEllipsoids * m_nGridTracts * sizeof(tract_t));          //DTG --  change this to multiply in the number of ellipsoids
-      m_NeighborCounts = (tract_t**)Smalloc((lTotalNumEllipses + 1) * sizeof(tract_t *), gpPrint);
-      for(i = 0; i <= lTotalNumEllipses; ++i) {
-         m_NeighborCounts[i] = (tract_t*)Smalloc(m_nGridTracts * sizeof(tract_t), gpPrint);
-         for (j = 0; j < m_nGridTracts; ++j)
-            m_NeighborCounts[i][j] = 0;                // USE MEMSET HERE...
-      }
-
+  try {
+    //if this iteration of call not simulations
+    if (! bSimulations) {
+      AllocateSortedArray();
+      AllocateNeighborArray();
       //adjust special population file now that we know the total case count
       if (m_pParameters->UseMaxCirclePopulationFile()) {
         for (i=0; i < (int)gvCircleMeasure.size(); i++)
@@ -235,18 +277,37 @@ bool CSaTScanData::FindNeighbors() {
         for (i=0; i < (int)gvCircleMeasure.size(); i++)
           gvCircleMeasure[i] *= m_nTotalCases/dTotalPopulation;
       }
+      //for real data, settings my indicate to report only smaller clusters
+      dMaxCircleSize = (m_pParameters->GetRestrictingMaximumReportedGeoClusterSize() ? m_nMaxReportedCircleSize : m_nMaxCircleSize);
+    }
+    else {
+      //when this functions is called for simualtions, we need to deallocate memory that
+      //will be allocated once again in MakeNeighbors()
+      for (i=0; i <= m_pParameters->GetNumTotalEllipses(); ++i) {
+         for (j=0; j < m_nGridTracts; ++j) {
+            if (m_pSortedInt) {
+              free(m_pSortedInt[i][j]); m_pSortedInt[i][j]=0;
+            }
+            if (m_pSortedUShort) {
+              free(m_pSortedUShort[i][j]); m_pSortedUShort[i][j]=0;
+            }
+            m_NeighborCounts[i][j]=0;
+         }
+      }
+      dMaxCircleSize = m_nMaxCircleSize;
+    }  
 
-      if (m_pParameters->GetIsSequentialScanning())
+    if (m_pParameters->GetIsSequentialScanning())
         MakeNeighbors(gpTInfo, gpGInfo, m_pSortedInt, m_pSortedUShort, m_nTracts, m_nGridTracts,
                       (m_pParameters->UseMaxCirclePopulationFile() ? &gvCircleMeasure[0] : m_pMeasure[0]),
-                      m_nMaxCircleSize, m_nTotalMeasure, m_NeighborCounts,
+                      dMaxCircleSize, m_nTotalMeasure, m_NeighborCounts,
                       m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                       m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
                       m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
-      else
+    else
         MakeNeighbors(gpTInfo, gpGInfo, m_pSortedInt, m_pSortedUShort, m_nTracts, m_nGridTracts,
                       (m_pParameters->UseMaxCirclePopulationFile() ? &gvCircleMeasure[0] : m_pMeasure[0]),
-                      m_nMaxCircleSize, m_nMaxCircleSize, m_NeighborCounts,
+                      dMaxCircleSize, dMaxCircleSize, m_NeighborCounts,
                       m_pParameters->GetDimensionsOfData(), m_pParameters->GetNumRequestedEllipses(),
                       m_pParameters->GetEllipseShapes(), m_pParameters->GetEllipseRotations(),
                       m_pParameters->GetMaxGeographicClusterSizeType(), gpPrint);
@@ -327,6 +388,7 @@ void CSaTScanData::Init() {
   m_pCases_TotalByTimeInt = 0;
   m_pSimCases_TotalByTimeInt = 0;
   m_pMeasure_TotalByTimeInt = 0;
+  m_nMaxReportedCircleSize = 0;
 }
 void CSaTScanData::MakeData(int iSimulationNumber) {
    try {
@@ -578,9 +640,13 @@ void CSaTScanData::SetMaxCircleSize() {
     switch (m_pParameters->GetMaxGeographicClusterSizeType()) {
       case PERCENTAGEOFMEASURETYPE :
            m_nMaxCircleSize = (m_pParameters->GetMaximumGeographicClusterSize() / 100.0) * m_nTotalMeasure;
+           if (m_pParameters->GetRestrictingMaximumReportedGeoClusterSize())
+             m_nMaxReportedCircleSize = (m_pParameters->GetMaximumReportedGeoClusterSize() / 100.0) * m_nTotalMeasure;
            break;
       case DISTANCETYPE :
            m_nMaxCircleSize = m_pParameters->GetMaximumGeographicClusterSize();
+           if (m_pParameters->GetRestrictingMaximumReportedGeoClusterSize())
+             m_nMaxReportedCircleSize = m_pParameters->GetMaximumReportedGeoClusterSize();
            break;
       default : ZdException::Generate("Unknown maximum spatial cluster type: '%i'.", "SetMaxCircleSize()",
                                       m_pParameters->GetMaxGeographicClusterSizeType());

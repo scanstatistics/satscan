@@ -37,6 +37,8 @@ class CSaTScanData {
     std::vector<measure_t>      gvCircleMeasure;
 
     void                        AllocateCountStructure(count_t***  pCounts);
+    void                        AllocateNeighborArray();
+    void                        AllocateSortedArray();
     void                        DeallocateCountStructure(count_t***  pCounts);
     bool                        ReadCartesianCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
                                                          int & iScanCount, int iWordOffSet, long lRecNum, const char * sSourceFile);
@@ -87,7 +89,7 @@ class CSaTScanData {
     count_t                     m_nTotalCasesAtStart, m_nTotalControlsAtStart;
     measure_t                   m_nTotalMeasureAtStart, m_nTotalTractsAtStart;
     count_t                     m_nTotalCases, m_nTotalControls;
-    double                      m_nTotalPop, m_nMaxCircleSize;
+    double                      m_nTotalPop, m_nMaxCircleSize, m_nMaxReportedCircleSize;
     measure_t                   m_nTotalMeasure;
     count_t                  ** m_pCases,
                              ** m_pControls,
@@ -113,7 +115,7 @@ class CSaTScanData {
     virtual void                AllocSimCases();
     virtual bool                CalculateMeasure();
     virtual void                DeAllocSimCases();
-    virtual bool                FindNeighbors();
+    virtual bool                FindNeighbors(bool bSimulations);
     virtual void                MakeData(int iSimulationNumber);
     virtual void                ReadDataFromFiles();
 
