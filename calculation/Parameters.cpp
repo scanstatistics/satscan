@@ -3044,6 +3044,13 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
 
   try {
     if (gbValidatePriorToCalc) {
+      //prevent access to Spatial Variation and Temporal Trends analysis -- still in development
+      if (geAnalysisType == SPATIALVARTEMPTREND) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Please note that Spatial Variation and Temporal Trends analysis is not implemented\n");
+        PrintDirection.SatScanPrintWarning("       in this version of SaTScan.\n");
+      }
+
       //precisions of times can only be defined as 'none' for purely spatial analyses
       if (gePrecisionOfTimesType == NONE && geAnalysisType != PURELYSPATIAL) {
         bValid = false;
