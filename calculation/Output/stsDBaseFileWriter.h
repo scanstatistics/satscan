@@ -9,7 +9,7 @@ class DBaseFileWriter : public OutputFileWriter {
    private :
       void	Init();
       void	Setup();
-      
+   protected:    
       virtual void      CreateOutputFile();  
    public :
       DBaseFileWriter(BaseOutputStorageClass* pOutputFileData);

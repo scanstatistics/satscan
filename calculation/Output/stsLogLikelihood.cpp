@@ -109,7 +109,7 @@ void LogLikelihoodData::SetupFields() {
    unsigned short uwOffset = 0;     // this is altered by the create new field function, so this must be here as is-AJV 9/30/2002
    
    try {
-      ::CreateNewField(gvFields, LOG_LIKL_FIELD, ZD_NUMBER_FLD, 7, 2, uwOffset);
+      ::CreateField(gvFields, LOG_LIKL_FIELD, ZD_NUMBER_FLD, 7, 2, uwOffset);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupFields()", "LogLikelihoodData");

@@ -4,7 +4,6 @@
 #include "stsOutputFileData.h"
 
 class OutputFileWriter {
-   private:
    protected :
       ZdString                  gsFileName;
       BaseOutputStorageClass*	gpOutputFileData;

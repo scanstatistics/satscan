@@ -8,10 +8,7 @@ extern const char *	ASCII_FILE_EXT;
 class OutputFileData;
 
 class ASCIIFileWriter : public OutputFileWriter {
-   private:
    protected :
-      ZdString          gsFileName;
-
       void              CreateFormatString(ZdString& sValue, const int iFieldNumber, const ZdFieldValue& fv);
       virtual void      CreateOutputFile();
       void              Init();

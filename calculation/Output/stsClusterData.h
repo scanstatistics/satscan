@@ -58,7 +58,7 @@ class ClusterRecord : public BaseOutputRecord {
       ClusterRecord();
       virtual ~ClusterRecord();
       
-      virtual int GetNumFields() { return 16 + gvsAdditCoords.size(); }
+      virtual int GetNumFields() { return 16 + gvsAdditCoords.GetNumElements(); }
       virtual ZdFieldValue GetValue(int iFieldNumber);
     
       void	SetAdditionalCoordinates(const ZdVector<ZdString>& vsAdditCoords) { gvsAdditCoords = vsAdditCoords; }

@@ -199,22 +199,22 @@ void TestOutputRecord::Init() {
 // ============================================================================
 
 TestOutputClass::TestOutputClass():BaseOutputStorageClass() {
-   SetUpFields();
+   SetupFields();
 }
 	
 TestOutputClass::~TestOutputClass(){
 }
 
-void TestOutputClass::SetUpFields() {
+void TestOutputClass::SetupFields() {
    unsigned short uwOffset = 0;
 
    try {
-      ::CreateNewField(gvFields, "STRING", ZD_ALPHA_FLD, 255, 0, uwOffset);
-      ::CreateNewField(gvFields, "LONG", ZD_LONG_FLD, 12, 0, uwOffset);
-      ::CreateNewField(gvFields, "DOUBLE", ZD_NUMBER_FLD, 12, 6, uwOffset);
-      ::CreateNewField(gvFields, "FLOAT", ZD_NUMBER_FLD, 12, 6, uwOffset);
-      ::CreateNewField(gvFields, "INT", ZD_LONG_FLD, 12, 0, uwOffset);
-      ::CreateNewField(gvFields, "BOOL", ZD_ALPHA_FLD, 16, 0, uwOffset);	
+      ::CreateField(gvFields, "STRING", ZD_ALPHA_FLD, 255, 0, uwOffset);
+      ::CreateField(gvFields, "LONG", ZD_LONG_FLD, 12, 0, uwOffset);
+      ::CreateField(gvFields, "DOUBLE", ZD_NUMBER_FLD, 12, 6, uwOffset);
+      ::CreateField(gvFields, "FLOAT", ZD_NUMBER_FLD, 12, 6, uwOffset);
+      ::CreateField(gvFields, "INT", ZD_LONG_FLD, 12, 0, uwOffset);
+      ::CreateField(gvFields, "BOOL", ZD_ALPHA_FLD, 16, 0, uwOffset);	
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupFields()", "TestOutputClass");

@@ -29,11 +29,11 @@ ZdFieldValue ClusterRecord::GetValue(int iFieldNumber) {
       if (iFieldNumber < 5) {
          switch (iFieldNumber) {
             case 0:
-               BaseOutputRecord::SetFieldValueAsLong(fv, glRunNumber); break;
+               BaseOutputRecord::SetFieldValueAsDouble(fv, double(glRunNumber)); break;
             case 1:
                BaseOutputRecord::SetFieldValueAsString(fv, gsLocationID); break;
             case 2:
-               BaseOutputRecord::SetFieldValueAsLong(fv, giClusterNumber); break;
+               BaseOutputRecord::SetFieldValueAsDouble(fv, double(giClusterNumber)); break;
             case 3:
                BaseOutputRecord::SetFieldValueAsString(fv, gsFirstCoord); break;
             case 4:
@@ -42,42 +42,43 @@ ZdFieldValue ClusterRecord::GetValue(int iFieldNumber) {
                ZdGenerateException ("Invalid index, out of range", "Error!");
          }
       }
+      else {
+         if (gvsAdditCoords.size() > 0) {
+            // fields 5 to 5+size()
+            if (iFieldNumber >= 5 && iFieldNumber < (gvsAdditCoords.size() + 5) )
+               BaseOutputRecord::SetFieldValueAsString(fv, gvsAdditCoords[iFieldNumber-5]);
+         }
 
-      if (gvsAdditCoords.size() > 0) {
-         // fields 5 to 5+size()
-         if (iFieldNumber >= 5 && iFieldNumber < (gvsAdditCoords.size() + 5) )
-            BaseOutputRecord::SetFieldValueAsString(fv, gvsAdditCoords[iFieldNumber-5]);
-      }
-
-      // subtract out the vector elements from the index and continue on like the vector
-      // wasn't even there - AJV
-      int iFieldAfterVector = iFieldNumber - gvsAdditCoords.size();
+         // subtract out the vector elements from the index and continue on like the vector
+         // wasn't even there - AJV
+         int iFieldAfterVector = iFieldNumber - gvsAdditCoords.size();
       
-      switch (iFieldAfterVector) {
-         case 5:
-            BaseOutputRecord::SetFieldValueAsString(fv, gsRadius); break;
-         case 6:
-            BaseOutputRecord::SetFieldValueAsString(fv, gsEllipseAngles); break;
-         case 7:
-            BaseOutputRecord::SetFieldValueAsString(fv, gsEllipseShapes); break;
-         case 8:
-            BaseOutputRecord::SetFieldValueAsLong(fv, glNumAreas); break;
-         case 9:
-            BaseOutputRecord::SetFieldValueAsLong(fv, glObserved); break;
-         case 10:
-            BaseOutputRecord::SetFieldValueAsDouble(fv, gdExpected); break;
-         case 11:
-            BaseOutputRecord::SetFieldValueAsDouble(fv, gdRelRisk); break;
-         case 12:
-            BaseOutputRecord::SetFieldValueAsDouble(fv, gdLogLikelihood); break;
-         case 13:
-            BaseOutputRecord::SetFieldValueAsDouble(fv, gdPValue); break;
-         case 14:
-            BaseOutputRecord::SetFieldValueAsString(fv, gsStartDate); break;
-         case 15:
-            BaseOutputRecord::SetFieldValueAsString(fv, gsEndDate); break;
-         default:
-            ZdGenerateException("Invalid index, out of range", "Error!");      
+         switch (iFieldAfterVector) {
+            case 5:
+               BaseOutputRecord::SetFieldValueAsString(fv, gsRadius); break;
+            case 6:
+               BaseOutputRecord::SetFieldValueAsString(fv, gsEllipseAngles); break;
+            case 7:
+               BaseOutputRecord::SetFieldValueAsString(fv, gsEllipseShapes); break;
+            case 8:
+               BaseOutputRecord::SetFieldValueAsDouble(fv, double(glNumAreas)); break;
+            case 9:
+               BaseOutputRecord::SetFieldValueAsDouble(fv, double(glObserved)); break;
+            case 10:
+               BaseOutputRecord::SetFieldValueAsDouble(fv, gdExpected); break;
+            case 11:
+               BaseOutputRecord::SetFieldValueAsDouble(fv, gdRelRisk); break;
+            case 12:
+               BaseOutputRecord::SetFieldValueAsDouble(fv, gdLogLikelihood); break;
+            case 13:
+               BaseOutputRecord::SetFieldValueAsDouble(fv, gdPValue); break;
+            case 14:
+               BaseOutputRecord::SetFieldValueAsString(fv, gsStartDate); break;
+            case 15:
+               BaseOutputRecord::SetFieldValueAsString(fv, gsEndDate); break;
+            default:
+               ZdGenerateException("Invalid index, out of range", "Error!");
+         }
       }
    }
    catch (ZdException &x) {
@@ -157,7 +158,7 @@ void stsClusterData::RecordClusterData(const CCluster& pCluster, const CSaTScanD
       pRecord = new ClusterRecord();
 
 #ifdef INCLUDE_RUN_HISTORY
-      pRecord->SetRunNumber(glRunNumber);
+      pRecord->SetRunNumber(double(glRunNumber));
 #endif      
             
       pRecord->SetClusterNumber(iClusterNumber); 	// cluster number
@@ -391,13 +392,12 @@ void stsClusterData::SetupFields() {
       // please take note that this function here determines the ordering of the fields in the file
       // everything else is written generically enough that ordering does not matter due to the
       // GetFieldNumber function - AJV 10/2/2002
-#ifdef INCLUDE_RUN_HISTORY
-      CreateNewField(gvFields, RUN_NUM_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
-#endif
-      CreateNewField(gvFields, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
-      CreateNewField(gvFields, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
-      CreateNewField(gvFields, (giCoordType != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      CreateNewField(gvFields, (giCoordType != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+
+      CreateField(gvFields, RUN_NUM_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
+      CreateField(gvFields, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
+      CreateField(gvFields, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
+      CreateField(gvFields, (giCoordType != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      CreateField(gvFields, (giCoordType != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
 
       // Only Cartesian coordinates have more than two dimensions. Lat/Long is consistently assigned to 3 dims
       // throughout the program eventhough the third dim is never used. When you print the third it is blank
@@ -405,28 +405,28 @@ void stsClusterData::SetupFields() {
       if(giCoordType == CARTESIAN && giDimension > 2) {
          for(int i = 3; i <= giDimension; ++i) {
             sTemp << ZdString::reset << COORD_Z_FIELD << (i-2);
-            CreateNewField(gvFields, sTemp.GetCString(), ZD_ALPHA_FLD, 16, 0, uwOffset);
+            CreateField(gvFields, sTemp.GetCString(), ZD_ALPHA_FLD, 16, 0, uwOffset);
          }
       }
 
-      CreateNewField(gvFields, RADIUS_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
+      CreateField(gvFields, RADIUS_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
 
       if(gbPrintEllipses) {    // whether or not to print ellipse descriptors
-         CreateNewField(gvFields, E_ANGLE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-         CreateNewField(gvFields, E_SHAPE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+         CreateField(gvFields, E_ANGLE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+         CreateField(gvFields, E_SHAPE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
       }
 
-      CreateNewField(gvFields, NUM_AREAS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
-      CreateNewField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
-      CreateNewField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      CreateNewField(gvFields, REL_RISK_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateField(gvFields, NUM_AREAS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
+      CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
+      CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
+      CreateField(gvFields, REL_RISK_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
       // if model is space time permutation then tst_stat, else log likelihood
-      CreateNewField(gvFields, (giModelType != SPACETIMEPERMUTATION ? LOG_LIKL_FIELD : TST_STAT_FIELD), ZD_NUMBER_FLD, 16, 6, uwOffset);
+      CreateField(gvFields, (giModelType != SPACETIMEPERMUTATION ? LOG_LIKL_FIELD : TST_STAT_FIELD), ZD_NUMBER_FLD, 16, 6, uwOffset);
 
       if(gbPrintPVal)
-         CreateNewField(gvFields, P_VALUE_FIELD, ZD_NUMBER_FLD, 12, 5, uwOffset);
-      CreateNewField(gvFields, START_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      CreateNewField(gvFields, END_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+         CreateField(gvFields, P_VALUE_FIELD, ZD_NUMBER_FLD, 12, 5, uwOffset);
+      CreateField(gvFields, START_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      CreateField(gvFields, END_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupFields()", "stsClusterData");

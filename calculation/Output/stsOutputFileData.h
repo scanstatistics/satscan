@@ -50,7 +50,7 @@ class BaseOutputStorageClass {
       ZdPointerVector<ZdField>		gvFields;
       ZdString				gsFileName;
       
-      virtual void	SetUpFields() = 0;
+      virtual void	SetupFields() = 0;
    public :
       BaseOutputStorageClass();
       virtual ~BaseOutputStorageClass();
@@ -93,7 +93,7 @@ class TestOutputRecord : public BaseOutputRecord {
 
 class TestOutputClass : public BaseOutputStorageClass {
    protected:
-      virtual void	SetUpFields();   
+      virtual void	SetupFields();   
    public :
       TestOutputClass();
       ~TestOutputClass();
@@ -102,17 +102,17 @@ class TestOutputClass : public BaseOutputStorageClass {
                               const float fFloatTestValue, const int iIntTestValue, const bool bBoolTestValue);
 };	
 
-static      void      CreateNewField(ZdPointerVector<ZdField>& vFields, const std::string& sFieldName, const char cType, const short wLength,
+static      void      CreateField(ZdPointerVector<ZdField>& vFields, const std::string& sFieldName, const char cType, const short wLength,
                                      const short wPrecision, unsigned short& uwOffset, bool bCreateIndex = false);
 
 // allocates a new field and adds it to the vector
 // pre : none
 // post : a field is added to the pointer vector with appropraite specs
-static void CreateNewField(ZdPointerVector<ZdField>& vFields, const std::string& sFieldName, const char cType, const short wLength,
+static void CreateField(ZdPointerVector<ZdField>& vFields, const std::string& sFieldName, const char cType, const short wLength,
                                            const short wPrecision, unsigned short& uwOffset, bool bCreateIndex) {
    ZdField  *pField = 0;
    TXDFile  File;
-   
+
    try {
       pField = File.GetNewField();
       pField->SetName(sFieldName.c_str());
@@ -127,8 +127,8 @@ static void CreateNewField(ZdPointerVector<ZdField>& vFields, const std::string&
    }
    catch (ZdException &x) {
       delete pField; pField = 0;
-      x.AddCallpath("CreateNewField()", "BaseOutputStorageClass");
-      throw; 	
+      x.AddCallpath("CreateField()", "BaseOutputStorageClass");
+      throw;
    }			
 }
 

@@ -41,8 +41,7 @@ void ASCIIFileWriter::CreateFormatString(ZdString& sValue, const int iFieldNumbe
 
       switch(fv.GetType()) {
          case ZD_ALPHA_FLD :
-            sFormat << "s";
-            sValue.printf(sFormat.GetCString(), fv.AsZdString());
+            sValue = fv.AsZdString();
             break;
          case ZD_NUMBER_FLD :
             sFormat << "-" << pField->GetLength() << "." << pField->GetPrecision();
@@ -97,13 +96,16 @@ void ASCIIFileWriter::Print() {
          ZdGenerateException("Unable to open/create file %s", "Error!", gsFileName);
       for(int i = 0; i < gpOutputFileData->GetNumRecords(); ++i) {
          pRecord = gpOutputFileData->GetRecord(i);
-         for(int j = 0; j < pRecord->GetNumFields(); ++j) {
+         for(int j = 0; j < gpOutputFileData->GetNumFields(); ++j) {
             CreateFormatString(sFormatString, j, pRecord->GetValue(j));
             fprintf(pFile, "%s ", sFormatString.GetCString());
          }
+         fprintf(pFile, "\n");
       }
+      fclose(pFile); pFile = 0;
    }
    catch (ZdException &x) {
+      fclose(pFile);
       x.AddCallpath("Print()", "ASCIIFileWriter");
       throw;
    }
