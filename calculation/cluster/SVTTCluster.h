@@ -90,7 +90,7 @@ class CSVTTCluster : public CCluster  {
     virtual void                InitializeSVTT(tract_t nCenter, const AbtractDataStreamGateway & DataGateway);
     virtual void                InitializeSVTT(tract_t nCenter, const DataStreamInterface & Interface);
     virtual void                SetStartAndEndDates(const Julian* pIntervalStartTimes, int nTimeIntervals);
-    void                        SetTimeTrend(int nIntervalUnits, double nIntervalLen);
+    void                        SetTimeTrend(DatePrecisionType eDatePrecision, double nIntervalLen);
 };
 
 #endif

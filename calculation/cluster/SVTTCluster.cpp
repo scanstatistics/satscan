@@ -84,8 +84,8 @@ void SVTTClusterStreamData::Init() {
 
 /** re-intialize stream data */
 void SVTTClusterStreamData::InitializeSVTTData(const DataStreamInterface & Interface) {
-  memcpy(gpCasesInsideCluster, 0, giAllocationSize * sizeof(count_t));
-  memcpy(gpMeasureInsideCluster, 0, giAllocationSize * sizeof(measure_t));
+  memset(gpCasesInsideCluster, 0, giAllocationSize * sizeof(count_t));
+  memset(gpMeasureInsideCluster, 0, giAllocationSize * sizeof(measure_t));
   gtTotalCasesInsideCluster=0;
   gtTotalMeasureInsideCluster=0;
   memcpy(gpCasesOutsideCluster, Interface.GetPTCaseArray(), giAllocationSize * sizeof(count_t));
@@ -229,7 +229,7 @@ void CSVTTCluster::DisplayAnnualTimeTrendWithoutTitle(FILE* fp) {
 
 void CSVTTCluster::DisplayTimeTrend(FILE* fp, char* szSpacesOnLeft) {
   fprintf(fp, "%sTime trend............: %f  (%.3f%% ",
-              szSpacesOnLeft, gvStreamData[0].gTimeTrendInside.m_nBeta,
+              szSpacesOnLeft, gvStreamData[0].gTimeTrendInside.GetBeta(),
               gvStreamData[0].gTimeTrendInside.GetAnnualTimeTrend());
 
   if (gvStreamData[0].gTimeTrendInside.IsNegative())
@@ -285,9 +285,9 @@ void CSVTTCluster::SetStartAndEndDates(const Julian* pIntervalStartTimes, int nT
   m_nEndDate       = pIntervalStartTimes[m_nLastInterval]-1;
 }
 
-void CSVTTCluster::SetTimeTrend(int nIntervalUnits, double nIntervalLen) {
+void CSVTTCluster::SetTimeTrend(DatePrecisionType eDatePrecision, double nIntervalLen) {
   for (size_t t=0; t < gvStreamData.size(); ++t)
-     gvStreamData[t].gTimeTrendInside.SetAnnualTimeTrend(nIntervalUnits, nIntervalLen);
+     gvStreamData[t].gTimeTrendInside.SetAnnualTimeTrend(eDatePrecision, nIntervalLen);
 }
 
 /** internal setup function for DataStreamGateway */
