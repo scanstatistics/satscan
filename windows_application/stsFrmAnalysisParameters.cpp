@@ -44,6 +44,46 @@ __fastcall TfrmAnalysis::~TfrmAnalysis() {
   }
   catch (...){}
 }
+
+/** This a temporary hack function that formats date fields to sFormat. This is needed because satscan
+    expects dates in human readable form such as '12/08/2002' as apposed to raw data form of 20021208. 
+    This function should be removed once the zdfile interface for satscan is implementated! */
+void TfrmAnalysis::AttemptFilterDateFields(const char * sFileName, const char * sFormat, unsigned short uwField) {
+  ZdFile              * pFile=0;
+  ZdTransaction       * pTransaction=0;
+  unsigned long         u;
+  ZdFieldValue          Value;
+  ZdDateFilter          Filter(sFormat);
+  char                  sFiltered[1024];
+
+  try {
+    pFile = BasisGetToolkit().OpenZdFile(sFileName , ZDIO_OPEN_READ|ZDIO_OPEN_WRITE);
+    pTransaction = pFile->BeginTransaction();
+    for (u=1; u <= pFile->GetNumRecords(); u++) {
+       pFile->GotoRecord(u);
+       pFile->GetSystemRecord()->RetrieveFieldValue(uwField, Value);
+       try {
+         Filter.FilterValue(sFiltered, sizeof(sFiltered), Value.AsCString());
+         Value.AsZdString() = sFiltered;
+         pFile->GetSystemRecord()->PutFieldValue(uwField, Value);
+         pFile->SaveRecord(pTransaction);
+       }
+       catch (...){}
+    }
+    if (pTransaction)
+      pFile->EndTransaction(pTransaction);
+    pTransaction=0;  
+    delete pFile; pFile=0;
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("AttemptFilterDateFields()", "TfrmAnalysis");
+    if (pTransaction)
+      pFile->EndTransaction(pTransaction);
+    delete pFile;
+    throw;
+  }
+}
+
 //---------------------------------------------------------------------------
 // case file selector
 //---------------------------------------------------------------------------
@@ -75,7 +115,8 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
          CreateTXDFile(sFileName, gvCaseFileFieldDescriptors);
          auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
-         pImporter->ShowModal();
+         if (pImporter->ShowModal())         
+           AttemptFilterDateFields(sFileName.GetFullPath(), "%y/%m/%d", 2);
       }
 
       //Why is this here? KMC 8/30/2002
@@ -122,6 +163,8 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
          auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);
          pImporter->ShowModal();
+         if (pImporter->ShowModal())
+           AttemptFilterDateFields(sFileName.GetFullPath(), "%y/%m/%d", 2);
       }
 
       //Why is this here? KMC 8/30/2002
@@ -206,10 +249,10 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
          GetTempPath(sizeof(sBuffer), sBuffer);
          sFileName.SetLocation(sBuffer);
          sFileName.SetExtension(TXD_EXT);
-         ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
          // Prefix filename so that we know this sessions created imported files are unique.
          sFileNamePrefix << sFileName.GetFileName();
          sFileName.SetFileName(sFileNamePrefix);
+         ImportDescriptor.SetDestinationFile(sFileName.GetFullPath());
          CreateTXDFile(sFileName, gvGridFileFieldDescriptors);
          auto_ptr<TBdlgImporter> pImporter = auto_ptr<TBdlgImporter>(new TBdlgImporter(0, 0, &ImportDescriptor));
          pImporter->ShowOptionalPanels(false, false, false);

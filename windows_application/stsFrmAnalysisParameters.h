@@ -171,6 +171,8 @@ class TfrmAnalysis : public TForm {
                                 gvPopFileFieldDescriptors,
                                 gvControlFileFieldDescriptors;
 
+    void                AttemptFilterDateFields(const char * sFileName, const char * sFormat, unsigned short uwField);
+
     bool                Check_Days(int iYear, int iMonth, int iDay, char *sDateName);
     bool                Check_IntervalLength(int iStartYear, int iStartMonth, int iStartDay,
                                              int iEndYear, int iEndMonth, int iEndDay,
