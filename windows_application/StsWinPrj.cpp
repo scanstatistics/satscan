@@ -1,6 +1,4 @@
 //---------------------------------------------------------------------------
-//#include "xbDlgException.h"      // curious but for some reason this is needed here AJV 9/5/2002
-
 #include "stsSaTScan.h"
 #pragma hdrstop
 #include "stsFrmUpdateCheck.h"

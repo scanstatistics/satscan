@@ -11,13 +11,15 @@ __fastcall stsBaseAnalysisChildForm::stsBaseAnalysisChildForm(TComponent* Owner,
 }
 
 __fastcall stsBaseAnalysisChildForm::~stsBaseAnalysisChildForm() {
-   for(int i = 0; i < gpList->ActionCount; ++i) {
-      TAction* pAction = dynamic_cast<TAction*>(gpList->Actions[i]);
-      if (pAction) {
-         if(pAction->Category == CATEGORY_ALL)
-             pAction->Enabled = true;
-         else if(pAction->Category == CATEGORY_ANALYSIS_RUN || pAction->Category == CATEGORY_ANALYSIS)
-             pAction->Enabled = false;
-      }
-   }
+   if (frmMainForm->MDIChildCount - 1 == 0) {
+     for(int i = 0; i < gpList->ActionCount; ++i) {
+        TAction* pAction = dynamic_cast<TAction*>(gpList->Actions[i]);
+        if (pAction) {
+           if(pAction->Category == CATEGORY_ALL)
+               pAction->Enabled = true;
+           else if(pAction->Category == CATEGORY_ANALYSIS_RUN || pAction->Category == CATEGORY_ANALYSIS)
+               pAction->Enabled = false;
+        }
+     }
+   }  
 }
