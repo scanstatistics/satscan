@@ -43,16 +43,17 @@ void CSaTScanData::DisplayMeasure(FILE* pFile) {
 }
 
 void CSaTScanData::DisplayNeighbors(FILE* pFile) {
+  std::string sBuffer;
   fprintf(pFile, "Neighbors (m_pSorted)   m_nGridTracts=%i\n\n", m_nGridTracts);
 
   for (int i = 0; i < m_nGridTracts; ++i) {
     fprintf(pFile, "Grid Point # %i : ", i);
     if (m_pSortedInt)
        for (int j = 0; j < m_NeighborCounts[0][i]; ++j)
-         fprintf(pFile, "%s ", gpTInfo->tiGetTid(m_pSortedInt[0][i][j]));
+         fprintf(pFile, "%s ", gpTInfo->tiGetTid(m_pSortedInt[0][i][j], sBuffer));
     else
        for (int j = 0; j < m_NeighborCounts[0][i]; ++j)
-         fprintf(pFile, "%s ", gpTInfo->tiGetTid(m_pSortedUShort[0][i][j]));
+         fprintf(pFile, "%s ", gpTInfo->tiGetTid(m_pSortedUShort[0][i][j], sBuffer));
     fprintf(pFile, "(# of neighbors=%i)\n", m_NeighborCounts[0][i]);
   }
 
@@ -91,8 +92,10 @@ void CSaTScanData::DisplaySummary2(FILE* fp) {
 }
 
 void CSaTScanData::DisplayRelativeRisksForEachTract(FILE* pFile) {
+  std::string sBuffer;
+
   for (int i = 0; i < m_nTracts; ++i) {
-    fprintf(pFile, "%-29s", gpTInfo->tiGetTid(i));
+    fprintf(pFile, "%-29s", gpTInfo->tiGetTid(i, sBuffer));
     fprintf(pFile, "%8i", m_pCases[0][i]);
     fprintf(pFile, "%12.2f   ", GetMeasureAdjustment()*m_pMeasure[0][i]);
     if (GetMeasureAdjustment() && m_pMeasure[0][i])
