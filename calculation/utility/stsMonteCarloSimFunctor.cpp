@@ -21,7 +21,7 @@ stsMonteCarloSimFunctor::result_type stsMonteCarloSimFunctor::operator() (stsMon
          (*gpSimulationDataContainer)[t]->WriteSimulationData(gDataHub.GetParameters(), params);
     }
     //perform simulation to get loglikelihood ratio
-    temp_result = (gpAnalysis->IsMonteCarlo() ? gpAnalysis->MonteCarlo(gpDataGateway->GetDataStreamInterface(0)) : gpAnalysis->FindTopRatio(*gpDataGateway));
+    temp_result = gpAnalysis->ExecuteSimulation(*gpDataGateway);
     return temp_result;
   }
   catch (ZdException & e)
