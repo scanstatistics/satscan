@@ -114,6 +114,15 @@ char* JulianToChar(char* szDateString, Julian JNum)
   return(szDateString);
 }
 
+ZdString& JulianToString(ZdString& sDate, Julian JNum) {
+  UInt month, day, year;
+
+  JulianToMDY(&month, &day, &year, JNum);
+  sDate.printf("%u/%u/%u", year, month, day);
+
+  return sDate;
+}
+
 bool IsDateValid(UInt month, UInt day, UInt year)
 {
   unsigned d;

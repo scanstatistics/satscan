@@ -34,6 +34,7 @@ void   JulianToMDY(UInt* month, UInt* day, UInt* year, Julian JNum);
 
 void   MDYToChar(char* szDateString, UInt month, UInt day, UInt year);
 char*  JulianToChar(char* szDateString, Julian JNum);
+ZdString& JulianToString(ZdString& sDate, Julian JNum);
 
 bool   IsDateValid(UInt month, UInt day, UInt year);
 bool   IsLeapYear(UInt year);
