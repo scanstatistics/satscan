@@ -1,94 +1,93 @@
-//---------------------------------------------------------------------------
-#ifndef MultipleStreamClusterDataH
-#define MultipleStreamClusterDataH
-//---------------------------------------------------------------------------
+//******************************************************************************
+#ifndef __MultiSetClusterData_H
+#define __MultiSetClusterData_H
+//******************************************************************************
 #include "ClusterData.h"
 
 class ClusterDataFactory; /** forward class declaration */
 
-/** class representing accumulated data of spatial clustering in multiple data streams */
-class MultipleStreamSpatialData : public AbstractSpatialClusterData {
+/** Class representing accumulated data of spatial clustering in multiple data sets. */
+class MultiSetSpatialData : public AbstractSpatialClusterData {
   protected:
-    ZdPointerVector<SpatialData>             gvStreamData;
-    ZdPointerVector<SpatialData>::iterator   gitr;
+    ZdPointerVector<SpatialData>           gvSetClusterData;
+    ZdPointerVector<SpatialData>::iterator gitr;
 
   public:
-    MultipleStreamSpatialData(const ClusterDataFactory& DataFactory, const AbtractDataStreamGateway & DataGateway, int iRate);
-    virtual ~MultipleStreamSpatialData();
+    MultiSetSpatialData(const ClusterDataFactory& DataFactory, const AbtractDataStreamGateway& DataGateway, int iRate);
+    virtual ~MultiSetSpatialData();
 
-    virtual void                                Assign(const AbstractSpatialClusterData& rhs);
-    virtual MultipleStreamSpatialData         * Clone() const;
+    virtual void                  Assign(const AbstractSpatialClusterData& rhs);
+    virtual MultiSetSpatialData * Clone() const;
 
-    virtual void                                AddMeasureList(CMeasureList * pMeasureList, tract_t tNeighbor, const DataStreamInterface & Interface);
-    virtual void                                AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
-    virtual double                              CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator);
-    virtual count_t                             GetCaseCount(unsigned int iStream=0) const;
-    virtual measure_t                           GetMeasure(unsigned int iStream=0) const;
-    virtual void                                InitializeData();
+    virtual void                  AddMeasureList(CMeasureList* pMeasureList, tract_t tNeighborIndex, const DataStreamInterface& Interface);
+    virtual void                  AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex=0);
+    virtual double                CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
+    virtual count_t               GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual measure_t             GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void                  InitializeData();
 };
 
-/** abstract class representing accumulated data of temporal clustering in multiple data streams */
-class AbstractMultipleStreamTemporalData : public AbstractTemporalClusterData {
+/** Abstract class representing accumulated data of temporal clustering in multiple data sets. */
+class AbstractMultiSetTemporalData : public AbstractTemporalClusterData {
   protected:
-   ZdPointerVector<TemporalData>::iterator     gitr;
+   ZdPointerVector<TemporalData>::iterator gitr;
 
   public:
-    AbstractMultipleStreamTemporalData() : AbstractTemporalClusterData() {}
-    virtual ~AbstractMultipleStreamTemporalData() {}
+    AbstractMultiSetTemporalData() : AbstractTemporalClusterData() {}
+    virtual ~AbstractMultiSetTemporalData() {}
 
-   ZdPointerVector<TemporalData>               gvStreamData;
+   ZdPointerVector<TemporalData>           gvSetClusterData;
 };
 
-/** class representing accumulated data of temporal clustering in multiple data streams */
-class MultipleStreamTemporalData : public AbstractMultipleStreamTemporalData {
+/** Class representing accumulated data of temporal clustering in multiple data sets. */
+class MultiSetTemporalData : public AbstractMultiSetTemporalData {
   public:
-    MultipleStreamTemporalData(const ClusterDataFactory& DataFactory, const AbtractDataStreamGateway & DataGateway);
-    virtual ~MultipleStreamTemporalData();
+    MultiSetTemporalData(const ClusterDataFactory& DataFactory, const AbtractDataStreamGateway& DataGateway);
+    virtual ~MultiSetTemporalData();
 
-    virtual void                         Assign(const AbstractTemporalClusterData& rhs);
-    virtual MultipleStreamTemporalData * Clone() const;
+    virtual void                   Assign(const AbstractTemporalClusterData& rhs);
+    virtual MultiSetTemporalData * Clone() const;
 
-    virtual void                         AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
-    virtual count_t                      GetCaseCount(unsigned int iStream=0) const;
-    virtual measure_t                    GetMeasure(unsigned int iStream=0) const;
-    virtual void                         InitializeData();
+    virtual void                   AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex=0);
+    virtual count_t                GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual measure_t              GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void                   InitializeData();
 };
 
-/** class representing accumulated data of prospective spatial clustering
-    in multiple data streams                                                  */
-class MultipleStreamProspectiveSpatialData : public AbstractMultipleStreamTemporalData {
+/** Class representing accumulated data of prospective spatial clustering in
+    multiple data sets. */
+class MultiSetProspectiveSpatialData : public AbstractMultiSetTemporalData {
   protected:
-//     std::vector<ProspectiveSpatialData>           gvStreamData;
-//     std::vector<ProspectiveSpatialData>::iterator gitr;
      RATE_FUNCPTRTYPE                              gfRateOfInterest;
 
   public:
-    MultipleStreamProspectiveSpatialData(const ClusterDataFactory& DataFactory, const CSaTScanData & Data, const AbtractDataStreamGateway & DataGateway);
-    virtual ~MultipleStreamProspectiveSpatialData();
+    MultiSetProspectiveSpatialData(const ClusterDataFactory& DataFactory, const CSaTScanData& Data, const AbtractDataStreamGateway& DataGateway);
+    virtual ~MultiSetProspectiveSpatialData();
 
-    virtual void                                   Assign(const AbstractTemporalClusterData& rhs);
-    virtual MultipleStreamProspectiveSpatialData * Clone() const;
+    virtual void                             Assign(const AbstractTemporalClusterData& rhs);
+    virtual MultiSetProspectiveSpatialData * Clone() const;
 
-    virtual void                                   AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
-    virtual double                                 CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator & Calculator);
-    virtual count_t                                GetCaseCount(unsigned int iStream=0) const;
-    virtual measure_t                              GetMeasure(unsigned int iStream=0) const;
-    virtual void                                   InitializeData();
+    virtual void                             AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex=0);
+    virtual double                           CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
+    virtual count_t                          GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual measure_t                        GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void                             InitializeData();
 };
 
-/** class representing accumulated data of space-time clustering in multiple data streams */
-class MultipleStreamSpaceTimeData : public AbstractMultipleStreamTemporalData {
+/** Class representing accumulated data of space-time clustering in multiple data set. */
+class MultiSetSpaceTimeData : public AbstractMultiSetTemporalData {
   public:
-    MultipleStreamSpaceTimeData(const ClusterDataFactory& DataFactory, const AbtractDataStreamGateway & DataGateway);
-    virtual ~MultipleStreamSpaceTimeData();
+    MultiSetSpaceTimeData(const ClusterDataFactory& DataFactory, const AbtractDataStreamGateway& DataGateway);
+    virtual ~MultiSetSpaceTimeData();
 
-    virtual void                          Assign(const AbstractTemporalClusterData& rhs);
-    virtual MultipleStreamSpaceTimeData * Clone() const;
+    virtual void                    Assign(const AbstractTemporalClusterData& rhs);
+    virtual MultiSetSpaceTimeData * Clone() const;
 
-    virtual void        AddNeighborData(tract_t tNeighbor, const AbtractDataStreamGateway & DataGateway, size_t tStream=0);
-    virtual count_t     GetCaseCount(unsigned int iStream=0) const;
-    virtual measure_t   GetMeasure(unsigned int iStream=0) const;
-    virtual void        InitializeData();
+    virtual void                    AddNeighborData(tract_t tNeighborIndex, const AbtractDataStreamGateway& DataGateway, size_t tSetIndex=0);
+    virtual count_t                 GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual measure_t               GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void                    InitializeData();
 };
-//---------------------------------------------------------------------------
+//******************************************************************************
 #endif
+
