@@ -16,8 +16,6 @@ const char*      GRID_FILE_LINE                 	= "GridFile";
 const char*      USE_GRID_FILE_LINE             	= "UseGridFile";
 const char*      PRECISION_TIMES_LINE           	= "PrecisionCaseTimes";
 const char*      COORD_TYPE_LINE                	= "CoordinatesType";
-const char*      MAX_CIRCLE_POP_FILE_LINE               = "MaxCirclePopulationFile";
-const char*      USE_MAX_CIRCLE_POP_FILE_LINE           = "UseMaxCirclePopulationFile";
 
 const char*      ANALYSIS_SECTION               	= "[Analysis]";
 const char*      ANALYSIS_TYPE_LINE             	= "AnalysisType";
@@ -81,9 +79,12 @@ const char*      LLR_2_LINE                    		= "LLR2";
 const char*      EARLY_SIM_TERMINATION_LINE             = "EarlySimulationTermination";
 const char*      SIMULATION_TYPE_LINE                   = "SimulatedDataMethodType";
 const char*      SIMULATION_FILESOURCE_LINE             = "SimulatedDataInputFilename";
-const char*      SIM_RELATIVE_RISKS_FILE_LINE           = "RelativeRiskFilename";
 const char*      OUTPUT_SIMULATION_DATA_LINE            = "PrintSimulatedDataToFile";
 const char*      SIMULATION_DATA_OUTFILE_LINE           = "SimulatedDataOutputFilename";
+const char*      ADJUSTMENTS_BY_RR_FILE_LINE            = "AdjustmentsByKnownRelativeRisksFilename";
+const char*      USE_ADJUSTMENTS_BY_RR_FILE_LINE        = "UseAdjustmentsByRRFile";
+const char*      MAX_CIRCLE_POP_FILE_LINE               = "MaxCirclePopulationFile";
+const char*      USE_MAX_CIRCLE_POP_FILE_LINE           = "UseMaxCirclePopulationFile";
 
 const int        MAXIMUM_SEQUENTIAL_ANALYSES    	= 32000;
 const int        MAXIMUM_ELLIPSOIDS             	= 10;
@@ -105,9 +106,9 @@ const char*      YEAR_PRECISION_TYPE            	= "Years";
 const char*      MONTH_PRECISION_TYPE           	= "Months";
 const char*      DAY_PRECISION_TYPE             	= "Days";
 
-int CParameters::giNumParameters 			= 65;
+int CParameters::giNumParameters 			= 66;
 
-char mgsVariableLabels[65][100] = {
+char mgsVariableLabels[66][100] = {
    "Analysis Type", "Scan Areas", "Case File", "Population File",
    "Coordinates File", "Results File", "Precision of Case Times",
    "Not applicable", "Special Grid File Use", "Grid File",
@@ -122,7 +123,7 @@ char mgsVariableLabels[65][100] = {
    "Sequential Scan Max Iterations", "Sequential Scan Max p-Value",
    "Validate Parameters", "Output Relative Risks Ascii Format",
    "Number of Ellipses", "Ellipse Shapes", "Ellipse Angles",
-   "Prospective Start Date", "Output Location Information Ascii Format",
+   "Prospective Start Date", "Output Location Information Ascii Format",                        
    "Output Cluster Infomration Ascii Format", "Criteria for Reporting Secondary Clusters",
    "Maximum Temporal Cluster Size Type", "Maximum Geographic Cluster Size Type",
    "Analysis History File", "Output Cluster Information DBase Format",
@@ -133,8 +134,8 @@ char mgsVariableLabels[65][100] = {
    "Special Population File Use", "Early Termination of Simulations",
    "Maximum Reported Geographical Cluster Size",
    "Restrict Reported Max Geographical Cluster Size", "Simulation Method Type",
-   "Simulated Data Import File", "Simulation Relative Risks File", "Printing Simulated Data",
-   "Simulated Data Output File", "Adjust for Earlier Analyses"
+   "Simulated Data Import File", "Adjustments By Known Relative Risks File", "Printing Simulated Data",
+   "Simulated Data Output File", "Adjust for Earlier Analyses", "Use Adjustments By Known Relative Risks File"
 };
 
 /** Constructor */
@@ -264,7 +265,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gfMaxReportedGeographicClusterSize  = rhs.gfMaxReportedGeographicClusterSize;
     geSimulationType                    = rhs.geSimulationType;
     gsSimulationDataSourceFileName      = rhs.gsSimulationDataSourceFileName;
-    gsRelativeRisksSourceFileName       = rhs.gsRelativeRisksSourceFileName;
+    gsAdjustmentsByRelativeRisksFileName= rhs.gsAdjustmentsByRelativeRisksFileName;
     gbOutputSimulationData              = rhs.gbOutputSimulationData;
     gsSimulationDataOutputFilename      = rhs.gsSimulationDataOutputFilename;
     gbAdjustForEarlierAnalyses          = rhs.gbAdjustForEarlierAnalyses;
@@ -355,8 +356,8 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
       fprintf(fp, "  Special Grid File              : %s\n", gsSpecialGridFileName.c_str());
     if (geSimulationType == FILESOURCE)
       fprintf(fp, "  Simulated Data Import File     : %s\n", gsSimulationDataSourceFileName.c_str());
-    else if(geSimulationType == HA_RANDOMIZATION)
-      fprintf(fp, "  Relative Risks File            : %s\n", gsRelativeRisksSourceFileName.c_str());
+    if(geSimulationType == HA_RANDOMIZATION || gbUseAdjustmentsForRRFile)
+      fprintf(fp, "  Adjustments File               : %s\n", gsAdjustmentsByRelativeRisksFileName.c_str());
 
     fprintf(fp, "\n  Precision of Times : %s\n", gePrecisionOfTimesType == NONE ? "No" : "Yes");
 
@@ -708,9 +709,11 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
         case USE_REPORTED_GEOSIZE      : sParameterLineLabel = USE_REPORTED_GEOSIZE_LINE; break;
         case SIMULATION_TYPE           : sParameterLineLabel = SIMULATION_TYPE_LINE; break;
         case SIMULATION_SOURCEFILE     : sParameterLineLabel = SIMULATION_FILESOURCE_LINE; break;
-        case SIM_RELATIVE_RISKS_FILE   : sParameterLineLabel = SIM_RELATIVE_RISKS_FILE_LINE; break;
+        case ADJ_BY_RR_FILE            : sParameterLineLabel = ADJUSTMENTS_BY_RR_FILE_LINE; break;
         case OUTPUT_SIMULATION_DATA    : sParameterLineLabel = OUTPUT_SIMULATION_DATA_LINE; break;
         case SIMULATION_DATA_OUTFILE   : sParameterLineLabel = SIMULATION_DATA_OUTFILE_LINE; break;
+        case ADJ_FOR_EALIER_ANALYSES   : sParameterLineLabel = ADJUST_EALIER_ANALYSES_LINE; break;
+        case USE_ADJ_BY_RR_FILE        : sParameterLineLabel = USE_ADJUSTMENTS_BY_RR_FILE_LINE; break;
         default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLineLabel()", eParameterType);
       };
     }
@@ -986,10 +989,11 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       case USE_REPORTED_GEOSIZE     : sDefaultValue = (gbRestrictReportedClusters ? YES : NO); break;
       case SIMULATION_TYPE          : sDefaultValue = geSimulationType; break;
       case SIMULATION_SOURCEFILE    : sDefaultValue = "<blank>"; break;
-      case SIM_RELATIVE_RISKS_FILE  : sDefaultValue = "<blank>"; break;
+      case ADJ_BY_RR_FILE           : sDefaultValue = "<blank>"; break;
       case OUTPUT_SIMULATION_DATA   : sDefaultValue = (gbOutputSimulationData ? YES : NO); break;
       case SIMULATION_DATA_OUTFILE  : sDefaultValue = "<blank>"; break;
-      case ADJUST_ANALYSES          : sDefaultValue = (gbAdjustForEarlierAnalyses ? YES : NO); break;
+      case ADJ_FOR_EALIER_ANALYSES  : sDefaultValue = (gbAdjustForEarlierAnalyses ? YES : NO); break;
+      case USE_ADJ_BY_RR_FILE       : sDefaultValue = (gbUseAdjustmentsForRRFile ? YES : NO); break;
       default : ZdException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -1048,9 +1052,12 @@ void CParameters::ReadAdvancedFeatures(ZdIniFile& file, BasePrint & PrintDirecti
     ReadIniParameter(*pSection, EARLY_SIM_TERMINATION_LINE, EARLY_SIM_TERMINATION, PrintDirection);
     ReadIniParameter(*pSection, SIMULATION_TYPE_LINE, SIMULATION_TYPE, PrintDirection);
     ReadIniParameter(*pSection, SIMULATION_FILESOURCE_LINE, SIMULATION_SOURCEFILE, PrintDirection);
-    ReadIniParameter(*pSection, SIM_RELATIVE_RISKS_FILE_LINE, SIM_RELATIVE_RISKS_FILE, PrintDirection);
+    ReadIniParameter(*pSection, USE_ADJUSTMENTS_BY_RR_FILE_LINE, USE_ADJ_BY_RR_FILE, PrintDirection);
+    ReadIniParameter(*pSection, ADJUSTMENTS_BY_RR_FILE_LINE, ADJ_BY_RR_FILE, PrintDirection);
     ReadIniParameter(*pSection, OUTPUT_SIMULATION_DATA_LINE, OUTPUT_SIMULATION_DATA, PrintDirection);
     ReadIniParameter(*pSection, SIMULATION_DATA_OUTFILE_LINE, SIMULATION_DATA_OUTFILE, PrintDirection);
+    ReadIniParameter(*pSection, USE_MAX_CIRCLE_POP_FILE_LINE, USEMAXCIRCLEPOPFILE, PrintDirection);
+    ReadIniParameter(*pSection, MAX_CIRCLE_POP_FILE_LINE, MAXCIRCLEPOPFILE, PrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadAdvancedFeatures()", "CParameters");
@@ -1419,8 +1426,6 @@ void CParameters::ReadInputFilesSection(ZdIniFile& file, BasePrint & PrintDirect
     ReadIniParameter(*pSection, GRID_FILE_LINE, GRIDFILE, PrintDirection);
     ReadIniParameter(*pSection, PRECISION_TIMES_LINE, PRECISION, PrintDirection);
     ReadIniParameter(*pSection, COORD_TYPE_LINE, COORDTYPE, PrintDirection);
-    ReadIniParameter(*pSection, USE_MAX_CIRCLE_POP_FILE_LINE, USEMAXCIRCLEPOPFILE, PrintDirection);
-    ReadIniParameter(*pSection, MAX_CIRCLE_POP_FILE_LINE, MAXCIRCLEPOPFILE, PrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadInputFilesSection()", "CParameters");
@@ -1564,10 +1569,11 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case USE_REPORTED_GEOSIZE      : SetRestrictReportedClusters(ReadBoolean(sParameter, eParameterType)); break;
       case SIMULATION_TYPE           : SetSimulationType((SimulationType)ReadInt(sParameter, eParameterType)); break;
       case SIMULATION_SOURCEFILE     : SetSimulationDataSourceFileName(sParameter.GetCString(), true); break;
-      case SIM_RELATIVE_RISKS_FILE   : SetRelativeRisksFilename(sParameter.GetCString(), true); break;
+      case ADJ_BY_RR_FILE            : SetAdjustmentsByRelativeRisksFilename(sParameter.GetCString(), true); break;
       case OUTPUT_SIMULATION_DATA    : SetOutputSimulationData(ReadBoolean(sParameter, eParameterType)); break;
       case SIMULATION_DATA_OUTFILE   : SetSimulationDataOutputFileName(sParameter.GetCString(), true); break;
-      case ADJUST_ANALYSES           : SetAdjustForEarlierAnalyses(ReadBoolean(sParameter, eParameterType)); break;
+      case ADJ_FOR_EALIER_ANALYSES   : SetAdjustForEarlierAnalyses(ReadBoolean(sParameter, eParameterType)); break;
+      case USE_ADJ_BY_RR_FILE        : SetUseAdjustmentForRelativeRisksFile(ReadBoolean(sParameter, eParameterType)); break;
       default : ZdException::Generate("Unknown parameter enumeration %d.","ReadParameter()", eParameterType);
     };
   }
@@ -1762,7 +1768,7 @@ void CParameters::ReadTimeParametersSection(ZdIniFile& file, BasePrint & PrintDi
     ReadIniParameter(*pSection, TIME_TREND_PERCENT_LINE, TIMETRENDPERC, PrintDirection);
     ReadIniParameter(*pSection, PROSPECT_START_LINE, START_PROSP_SURV, PrintDirection);
     ReadIniParameter(*pSection, TIME_TREND_CONVERGENCE_LINE, TIMETRENDCONVRG, PrintDirection);
-    ReadIniParameter(*pSection, ADJUST_EALIER_ANALYSES_LINE, ADJUST_ANALYSES, PrintDirection);
+    ReadIniParameter(*pSection, ADJUST_EALIER_ANALYSES_LINE, ADJ_FOR_EALIER_ANALYSES, PrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadTimeParametersSection()", "CParameters");
@@ -1792,12 +1798,17 @@ void CParameters::SaveAdvancedFeaturesSection(ZdIniFile& file) {
     pSection->AddLine(SIMULATION_TYPE_LINE, AsString(sValue, geSimulationType));
     pSection->AddComment(" Simulated date input file name (with File Import=2)");
     pSection->AddLine(SIMULATION_FILESOURCE_LINE, gsSimulationDataSourceFileName.c_str());
-    pSection->AddComment(" Relative risk file name (with HA Randomization=1)");
-    pSection->AddLine(SIM_RELATIVE_RISKS_FILE_LINE, gsRelativeRisksSourceFileName.c_str());
+    pSection->AddComment(" use adjustments by known relative risks file? (y/n)");
+    pSection->AddLine(USE_ADJUSTMENTS_BY_RR_FILE_LINE, gbUseAdjustmentsForRRFile ? YES : NO);
+    pSection->AddComment(" Adjustments by known relative risks file name (with HA Randomization=1 or ...)");
+    pSection->AddLine(ADJUSTMENTS_BY_RR_FILE_LINE, gsAdjustmentsByRelativeRisksFileName.c_str());
     pSection->AddComment(" Print simulated data to file (y/n)");
     pSection->AddLine(OUTPUT_SIMULATION_DATA_LINE, gbOutputSimulationData ? YES : NO);
     pSection->AddComment(" Simulated data output file name");
     pSection->AddLine(SIMULATION_DATA_OUTFILE_LINE, gsSimulationDataOutputFilename.c_str());
+    pSection->AddComment(" use special population file? (y/n)");
+    pSection->AddLine(USE_MAX_CIRCLE_POP_FILE_LINE, gbUseMaxCirclePopulationFile ? YES : NO);
+    pSection->AddLine(MAX_CIRCLE_POP_FILE_LINE, gsMaxCirclePopulationFileName.c_str());
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveAdvancedFeaturesSection()","CParameters");
@@ -1876,9 +1887,6 @@ void CParameters::SaveInputFileSection(ZdIniFile& file) {
     pSection->AddLine(CASE_FILE_LINE, gsCaseFileName.c_str());
     pSection->AddLine(CONTROL_FILE_LINE, gsControlFileName.c_str());
     pSection->AddLine(POP_FILE_LINE, gsPopulationFileName.c_str());
-    pSection->AddComment(" use special population file? (y/n)");
-    pSection->AddLine(USE_MAX_CIRCLE_POP_FILE_LINE, gbUseMaxCirclePopulationFile ? YES : NO);
-    pSection->AddLine(MAX_CIRCLE_POP_FILE_LINE, gsMaxCirclePopulationFileName.c_str());
     pSection->AddLine(COORD_FILE_LINE, gsCoordinatesFileName.c_str());
     pSection->AddLine(GRID_FILE_LINE, gsSpecialGridFileName.c_str());
     pSection->AddComment(" use special grid file? (y/n)");
@@ -2209,13 +2217,14 @@ void CParameters::SetDefaults() {
   gdTimeTrendConverge			= 0.001;
   gbEarlyTerminationSimulations         = false;
   gbRestrictReportedClusters            = false;
-  gfMaxReportedGeographicClusterSize    = 49;
+  gfMaxReportedGeographicClusterSize    = gfMaxGeographicClusterSize;
   geSimulationType                      = STANDARD;
   gsSimulationDataSourceFileName        = "";
-  gsRelativeRisksSourceFileName         = "";
+  gsAdjustmentsByRelativeRisksFileName  = "";
   gbOutputSimulationData                = false;
   gsSimulationDataOutputFilename        = "";
   gbAdjustForEarlierAnalyses            = false;
+  gbUseAdjustmentsForRRFile             = false;
 }
 
 /** Sets dimensions of input data. */
@@ -2471,20 +2480,20 @@ void CParameters::SetPowerCalculationY(double dPowerY) {
   gdPower_Y = dPowerY;
 }
 
-/** Sets relative risks data file name.
+/** Sets relative risks adjustments file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
-void CParameters::SetRelativeRisksFilename(const char * sSourceFileName, bool bCorrectForRelativePath) {
+void CParameters::SetAdjustmentsByRelativeRisksFilename(const char * sFileName, bool bCorrectForRelativePath) {
   try {
-    if (! sSourceFileName)
-      ZdGenerateException("Null pointer.", "SetRelativeRisksFilename()");
+    if (! sFileName)
+      ZdGenerateException("Null pointer.", "SetAdjustmentsByRelativeRisksFilename()");
 
-    gsRelativeRisksSourceFileName = sSourceFileName;
+    gsAdjustmentsByRelativeRisksFileName = sFileName;
     if (bCorrectForRelativePath)
-      ConvertRelativePath(gsRelativeRisksSourceFileName);
+      ConvertRelativePath(gsAdjustmentsByRelativeRisksFileName);
   }
   catch (ZdException &x) {
-    x.AddCallpath("SetRelativeRisksFilename()", "CParameters");
+    x.AddCallpath("SetAdjustmentsByRelativeRisksFilename()", "CParameters");
     throw;
   }
 }
@@ -2969,6 +2978,20 @@ bool CParameters::ValidateFileParameters(BasePrint & PrintDirection) {
       PrintDirection.SatScanPrintWarning("Error: Special Grid file '%s' does not exist.\n", gsSpecialGridFileName.c_str());
       PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
     }
+    //validate adjustment for known relative risks file
+    if (geProbabiltyModelType == POISSON) {
+      if (gbUseAdjustmentsForRRFile && gsAdjustmentsByRelativeRisksFileName.empty()) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Settings indicate to use an Adjustment file, but file name not specified.\n");
+      }
+      else if (gbUseAdjustmentsForRRFile && access(gsAdjustmentsByRelativeRisksFileName.c_str(), 00)) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Adjustment file '%s' does not exist.\n", gsAdjustmentsByRelativeRisksFileName.c_str());
+        PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
+      }
+    }
+    else
+      gbUseAdjustmentsForRRFile = false;
     //validate maximum circle population file
     if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL)
       gbUseMaxCirclePopulationFile = false;
@@ -3278,14 +3301,14 @@ bool CParameters::ValidateSimulationDataParameters(BasePrint & PrintDirection) {
     if (geProbabiltyModelType == POISSON) {
       switch (geSimulationType) {
         case STANDARD           : break;
-        case HA_RANDOMIZATION   : if (gsRelativeRisksSourceFileName.empty()) {
+        case HA_RANDOMIZATION   : if (gsAdjustmentsByRelativeRisksFileName.empty()) {
                                     bValid = false;
-                                    PrintDirection.SatScanPrintWarning("Error: No relative risks source file specified.\n");
+                                    PrintDirection.SatScanPrintWarning("Error: No adjustments by known relative risks source file specified.\n");
                                   }
-                                  else if (access(gsRelativeRisksSourceFileName.c_str(), 00)) {
+                                  else if (access(gsAdjustmentsByRelativeRisksFileName.c_str(), 00)) {
                                     bValid = false;
-                                    PrintDirection.SatScanPrintWarning("Error: Relative risks source file '%s' does not exist.\n",
-                                                                       gsRelativeRisksSourceFileName.c_str());
+                                    PrintDirection.SatScanPrintWarning("Error: Adjustments by known relative risks source file '%s' does not exist.\n",
+                                                                       gsAdjustmentsByRelativeRisksFileName.c_str());
                                     PrintDirection.SatScanPrintWarning("       Please check to make sure the path is correct.\n");
                                   }
                                   break;
@@ -3382,11 +3405,13 @@ bool CParameters::ValidateSpatialParameters(BasePrint & PrintDirection) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Maximum spatial cluster size of '%2g%%' for reported clusters is invalid. Value must be greater than zero.\n", gfMaxGeographicClusterSize);
       }
-      if (gbRestrictReportedClusters && gfMaxReportedGeographicClusterSize >= gfMaxGeographicClusterSize) {
+      if (gbRestrictReportedClusters && gfMaxReportedGeographicClusterSize > gfMaxGeographicClusterSize) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting of '%2g' for maximum reported spatial cluster size.\n", gfMaxReportedGeographicClusterSize);
-        PrintDirection.SatScanPrintWarning("       Settings must be less than maximum spatial size.\n");
+        PrintDirection.SatScanPrintWarning("       Settings can not be greater than maximum spatial cluster size.\n");
       }
+      if (gbRestrictReportedClusters && gfMaxReportedGeographicClusterSize == gfMaxGeographicClusterSize)
+        gbRestrictReportedClusters = false;
     }
     else {
       //Purely temporal clusters should default maximum geographical clusters size to 50 of population.

@@ -18,8 +18,6 @@ extern const char*      CONTROL_FILE_LINE;
 extern const char*      USE_GRID_FILE_LINE;
 extern const char*      PRECISION_TIMES_LINE;
 extern const char*      COORD_TYPE_LINE;
-extern const char*      MAX_CIRCLE_POP_FILE_LINE;
-extern const char*      USE_MAX_CIRCLE_POP_FILE_LINE;
 
 /** analysis ini section */
 extern const char*      ANALYSIS_SECTION;
@@ -62,9 +60,12 @@ extern const char*      LLR_2_LINE;
 extern const char*      EARLY_SIM_TERMINATION_LINE;
 extern const char*      SIMULATION_TYPE_LINE;
 extern const char*      SIMULATION_FILESOURCE_LINE;
-extern const char*      SIM_RELATIVE_RISKS_FILE_LINE;
 extern const char*      OUTPUT_SIMULATION_DATA_LINE;
 extern const char*      SIMULATION_DATA_OUTFILE_LINE;
+extern const char*      ADJUSTMENTS_BY_RR_FILE_LINE;
+extern const char*      USE_ADJUSTMENTS_BY_RR_FILE_LINE;
+extern const char*      MAX_CIRCLE_POP_FILE_LINE;
+extern const char*      USE_MAX_CIRCLE_POP_FILE_LINE;
 
 /** sequential scan ini section */
 extern const char*      SEQUENTIAL_SCAN_SECTION;
@@ -137,8 +138,8 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     OUTPUT_SIM_LLR_DBASE, DUCZMAL_COMPACTNESS, INTERVAL_STARTRANGE, 
                                     INTERVAL_ENDRANGE, TIMETRENDCONVRG, MAXCIRCLEPOPFILE, USEMAXCIRCLEPOPFILE,
                                     EARLY_SIM_TERMINATION, REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE, SIMULATION_TYPE,
-                                    SIMULATION_SOURCEFILE, SIM_RELATIVE_RISKS_FILE, OUTPUT_SIMULATION_DATA,
-                                    SIMULATION_DATA_OUTFILE, ADJUST_ANALYSES};
+                                    SIMULATION_SOURCEFILE, ADJ_BY_RR_FILE, OUTPUT_SIMULATION_DATA,
+                                    SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL, PURELYSPATIALMONOTONE};
@@ -236,7 +237,8 @@ class CParameters {
     ZdString                            gsRunHistoryFilename;                   /** run history filename */
     bool                                gbLogRunHistory;                        /** indicates whether to log history */
     std::string                         gsSimulationDataSourceFileName;         /** simualtion data source filename */
-    std::string                         gsRelativeRisksSourceFileName;        /** relative risks for data generation of simulations */
+    bool                                gbUseAdjustmentsForRRFile;              /** indicates whether to use adjustments for known relative risks file */
+    std::string                         gsAdjustmentsByRelativeRisksFileName;   /** adjustments by known relative risks filename */
     std::string                         gsSimulationDataOutputFilename;         /** simulation data output filename */
         /* Analysis dates */
     std::string                         gsProspectiveStartDate;                 /** prospective start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
@@ -319,6 +321,7 @@ class CParameters {
     void                                DisplayParameters(FILE* fp, int iNumSimulations) const;
     void                                DisplayTimeAdjustments(FILE* fp) const;
     bool                                GetAdjustForEarlierAnalyses() const {return gbAdjustForEarlierAnalyses;}
+    const std::string                 & GetAdjustmentsByRelativeRisksFilename() const {return gsAdjustmentsByRelativeRisksFileName;}  
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
     const char                        * GetAnalysisTypeAsString() const;
     AreaRateType                        GetAreaScanRateType() const {return geAreaScanRate;}
@@ -376,7 +379,6 @@ class CParameters {
     const char                        * GetProbabiltyModelTypeAsString() const;
     const std::string                 & GetProspectiveStartDate() const {return gsProspectiveStartDate;}
     Julian                              GetProspectiveStartDateAsJulian() /*const*/;
-    const std::string                 & GetRelativeRisksFilename() const {return gsRelativeRisksSourceFileName;}  
     bool                                GetRestrictingMaximumReportedGeoClusterSize() const {return gbRestrictReportedClusters;}
     RiskType                            GetRiskType() const {return geRiskFunctionType;}
     const ZdString                    & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
@@ -444,7 +446,7 @@ class CParameters {
     void                                SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType);
     void                                SetProbabilityModelType(ProbabiltyModelType eProbabiltyModelType);
     void                                SetProspectiveStartDate(const char * sProspectiveStartDate);
-    void                                SetRelativeRisksFilename(const char * sRelativeRisksFileName, bool bCorrectForRelativePath=false);  
+    void                                SetAdjustmentsByRelativeRisksFilename(const char * sAdjustmentsByRelativeRisksFileName, bool bCorrectForRelativePath=false);  
     void                                SetRestrictReportedClusters(bool b) {gbRestrictReportedClusters = b;}
     void                                SetRiskType(RiskType eRiskType);
     void                                SetRunHistoryFilename(const ZdString& sFilename) {gsRunHistoryFilename = sFilename;}
@@ -464,10 +466,12 @@ class CParameters {
     void                                SetTimeTrendAdjustmentPercentage(double dPercentage);
     void                                SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                                SetTimeTrendConvergence(double dTimeTrendConvergence);
+    void                                SetUseAdjustmentForRelativeRisksFile(bool b) {gbUseAdjustmentsForRRFile = b;}
     void                                SetUseSpecialGrid(bool b) {gbUseSpecialGridFile = b;}
     void                                SetUseMaxCirclePopulationFile(bool b) {gbUseMaxCirclePopulationFile = b;}
     void                                SetValidatePriorToCalculation(bool b) {gbValidatePriorToCalc = b;}
     bool                                ValidateParameters(BasePrint & PrintDirection);
+    bool                                UseAdjustmentForRelativeRisksFile() const {return gbUseAdjustmentsForRRFile;}
     bool                                UseMaxCirclePopulationFile() const {return gbUseMaxCirclePopulationFile;}
     bool                                UseSpecialGrid() const {return gbUseSpecialGridFile;}
     void                                Write(const char * sParameterFileName);
