@@ -12,6 +12,7 @@
 #include "Analysis.h"
 #include "stsRunHistoryFile.h"
 #include "DBFFile.h"
+#include <syncobjs.hpp>
 
 const int       OUTPUT_FILE_FIELD_LENGTH        = 254;
 
@@ -269,6 +270,9 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
    bool                 bFound(false);
 
    try {
+      std::auto_ptr<TCriticalSection> pSection(new TCriticalSection());
+      pSection->Acquire();
+
       // NOTE: I'm going to document the heck out of this section for two reasons :
       // 1) in case they change the run specs on us at any time
       // 2) to present my assumptions about the output data in case any happen to be incorrect
@@ -370,6 +374,8 @@ void stsRunHistoryFile::LogNewHistory(const CAnalysis& pAnalysis, const unsigned
       pFile->SaveRecord(*pTransaction, pFile->GetCurrentRecordNumber(),*pRecord);
       pFile->EndTransaction(pTransaction); pTransaction = 0;
       pFile->Close();
+
+      pSection->Release();
    }
    catch(ZdException &x) {
       gpPrintDirection->SatScanPrintWarning("ERROR - Unable to record analysis information to the log history file:\n");
@@ -398,8 +404,8 @@ void stsRunHistoryFile::ReplaceExtensionAndAppend(ZdString& sOutputFileNames, co
       // to temp string, else just print ',...'
       if ((sOutputFileNames.GetLength() + sWorkString.GetLength()) < (OUTPUT_FILE_FIELD_LENGTH - 4))
          sOutputFileNames << (sOutputFileNames.GetLength() > 0 ? ", " : "") << sWorkString;
-      else
-         sOutputFileNames << (sOutputFileNames.GetLength() > 0 ? ", " : "") << "...";
+      else if(!sOutputFileNames.EndsWith("..."))
+         sOutputFileNames << (sOutputFileNames.GetLength() > 0 ? "," : "") << "...";
    }
    catch (ZdException &x) {
       x.AddCallpath("ReplaceExtensionAndAppend()", "stsRunHistoryFile");
@@ -471,6 +477,9 @@ void stsRunHistoryFile::SetRunNumber() {
    std::auto_ptr<DBFFile>       pFile;
 
    try {
+      std::auto_ptr<TCriticalSection> pSection(new TCriticalSection());
+      pSection->Acquire();
+
       // if we don't have one then create it
       if(!ZdIO::Exists(gsFilename.GetCString()))
          CreateRunHistoryFile();
@@ -499,11 +508,13 @@ void stsRunHistoryFile::SetRunNumber() {
       pFile->AppendRecord(*pTransaction, *pRecord);
       pFile->EndTransaction(pTransaction); pTransaction = 0;
       pFile->Close();
+
+      pSection->Release();
    }
    catch (ZdException &x) {
       if(pTransaction)
-            pFile->EndTransaction(pTransaction);
-         pTransaction = 0;   
+         pFile->EndTransaction(pTransaction);
+      pTransaction = 0;
       x.AddCallpath("SetRunNumber()", "stsRunHistoryFile");
       throw;
    }
