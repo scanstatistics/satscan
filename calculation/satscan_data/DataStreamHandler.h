@@ -8,6 +8,8 @@
 
 class CSaTScanData; /** forward class definition */
 
+typedef std::vector<SimulationDataStream> SimulationDataContainer_t;
+
 /** Manages all data streams. */
 class DataStreamHandler {
   private:
@@ -16,8 +18,8 @@ class DataStreamHandler {
   protected:
     const CParameters                 & gParameters;            /** reference to parameters */
     BasePrint                         * gpPrint;                /** pointer to print direction */
-    CSaTScanData                      & gData;                  /** reference to data hub */
-    std::vector<DataStream>             gvDataStreams;          /** collection of data streams */
+    CSaTScanData                      & gDataHub;               /** reference to data hub */
+    std::vector<RealDataStream>         gvDataStreams;          /** collection of data streams */
 
     virtual void                        AllocateCaseStructures(unsigned int iStream);
     bool                                ConvertCountDateToJulian(StringParser & Parser, Julian & JulianDate);
@@ -34,25 +36,23 @@ class DataStreamHandler {
     virtual void                        SetRandomizers() = 0;
 
   public:
-    DataStreamHandler(CSaTScanData & Data, BasePrint * pPrint);
+    DataStreamHandler(CSaTScanData& DataHub, BasePrint * pPrint);
     virtual ~DataStreamHandler();
 
     //pure virtual public functions
-    virtual void                        AllocateSimulationStructures() = 0;
-    virtual AbtractDataStreamGateway  * GetNewDataGateway() = 0;
-    virtual AbtractDataStreamGateway  * GetNewSimulationDataGateway() = 0;
-    virtual void                        RandomizeData(unsigned int iSimulationNumber) = 0;
+    virtual AbtractDataStreamGateway  * GetNewDataGateway() const = 0;
+    virtual AbtractDataStreamGateway  * GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const = 0;
+    virtual RandomizerContainer_t     & GetRandomizerContainer(RandomizerContainer_t& Container) const = 0;
+    virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const = 0;
+    virtual void                        RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) = 0;
+    virtual void                        RandomizeIsolatedData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
     virtual bool                        ReadData() = 0;
 
-    void                                AllocateNCSimulationCases();
-    void                                AllocatePTSimulationCases();
-    void                                AllocateSimulationCases();
-    void                                FreeSimulationStructures();
     size_t                              GetNumStreams() const {return gvDataStreams.size();}
-    const DataStream                  & GetStream(unsigned int iStream) const {return gvDataStreams[iStream];}
-    DataStream                        & GetStream(unsigned int iStream) {return gvDataStreams[iStream];}
+    const RealDataStream              & GetStream(unsigned int iStream) const {return gvDataStreams[iStream];}
+    RealDataStream                    & GetStream(unsigned int iStream) {return gvDataStreams[iStream];}
     void                                ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePrint * pPrintDirection);
-    virtual void                        SetPurelyTemporalMeasureData(DataStream & thisStream);
-    virtual void                        SetPurelyTemporalSimulationData();
+    virtual void                        SetPurelyTemporalMeasureData(RealDataStream & thisRealStream);
+    virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);
 };
 #endif

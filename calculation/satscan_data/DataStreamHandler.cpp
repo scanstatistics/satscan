@@ -6,8 +6,8 @@
 //---------------------------------------------------------------------------
 
 /** constructor */
-DataStreamHandler::DataStreamHandler(CSaTScanData & Data, BasePrint * pPrint)
-                  : gData(Data), gParameters(Data.GetParameters()), gpPrint(pPrint) {
+DataStreamHandler::DataStreamHandler(CSaTScanData& DataHub, BasePrint * pPrint)
+                  : gDataHub(DataHub), gParameters(DataHub.GetParameters()), gpPrint(pPrint) {
   try {
     Setup();
   }
@@ -31,44 +31,6 @@ void DataStreamHandler::AllocateCaseStructures(unsigned int iStream) {
   }
 }
 
-/** Allocates two dimensional array for non-cumulative case counts for all data streams. */
-void DataStreamHandler::AllocateNCSimulationCases() {
-  try {
-    for (size_t t=0; t < gvDataStreams.size(); ++t)
-       gvDataStreams[t].AllocateSimulationNCCasesArray();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateNCSimulationCases()","DataStreamHandler");
-    throw;
-  }
-}
-
-/** Allocates array for case counts in each time interval (summoned over all tracts). */
-void DataStreamHandler::AllocatePTSimulationCases() {
-  size_t        t;
-
-  try {
-    for (t=0; t < gvDataStreams.size(); ++t)
-       gvDataStreams[t].AllocateSimulationPTCasesArray();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocatePTSimulationCases()","DataStreamHandler");
-    throw;
-  }
-}
-
-/** Allocates two dimensional array for simulation case counts for all data streams. */
-void DataStreamHandler::AllocateSimulationCases() {
-  try {
-    for (size_t t=0; t < gvDataStreams.size(); ++t)
-       gvDataStreams[t].AllocateSimulationCasesArray();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateSimulationCases()","DataStreamHandler");
-    throw;
-  }
-}
-
 /** Converts passed string specifiying a count date to a julian date.
     Precision is determined by date formats( YYYY/MM/DD, YYYY/MM, YYYY, YY/MM/DD,
     YY/MM, YY ) which is the complete set of valid formats that SaTScan currently
@@ -81,7 +43,7 @@ bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, Julian &
 
 
   if (gParameters.GetPrecisionOfTimesType() == NONE)
-    JulianDate = gData.GetStudyPeriodStartDate();
+    JulianDate = gDataHub.GetStudyPeriodStartDate();
   else {
     //read and validate date
     if (!Parser.GetWord(2)) {
@@ -126,7 +88,7 @@ bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, Julian &
       }
       //validate that date is between study period start and end dates
       JulianDate = MDYToJulian(iMonth, iDay, iYear);
-      if (!(gData.GetStudyPeriodStartDate() <= JulianDate && JulianDate <= gData.GetStudyPeriodEndDate())) {
+      if (!(gDataHub.GetStudyPeriodStartDate() <= JulianDate && JulianDate <= gDataHub.GetStudyPeriodEndDate())) {
         gpPrint->PrintInputWarning("Error: Date '%s' in record %ld of %s is not\n", Parser.GetWord(2),
                                    Parser.GetReadCount(), gpPrint->GetImpliedFileTypeString().c_str());
         gpPrint->PrintInputWarning("       within study period beginning %s and ending %s.\n",
@@ -136,18 +98,6 @@ bool DataStreamHandler::ConvertCountDateToJulian(StringParser & Parser, Julian &
     }  
   }
   return bValidDate;
-}
-
-/** frees all memory allocated to simulation strcutures */
-void DataStreamHandler::FreeSimulationStructures() {
-  try {
-    for (size_t t=0; t < gvDataStreams.size(); ++t)
-       gvDataStreams[t].FreeSimulationStructures();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("FreeSimulationStructures()","DataStreamHandler");
-    throw;
-  }
 }
 
 /** Returns new data gateway. Caller is responsible for deleting object.
@@ -172,7 +122,7 @@ bool DataStreamHandler::ParseCountLine(PopulationData & thePopulation, StringPar
   try {
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
-    if ((tid = gData.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
+    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
       gpPrint->PrintInputWarning("Error: Unknown location id in %s, record %ld.\n",
                                  gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
       gpPrint->PrintInputWarning("       Location '%s' was not specified in the coordinates file.\n", Parser.GetWord(0));
@@ -264,6 +214,13 @@ bool DataStreamHandler::ParseCovariates(PopulationData & thePopulation, int& iCa
   return true;
 }
 
+/** Randomizes data of passed collection of simulation streams in concert with
+    real data through passed collection of passed randomizers. */
+void DataStreamHandler::RandomizeIsolatedData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const {
+  for (size_t t=0; t < gvDataStreams.size(); ++t)
+     Container[t]->RandomizeData(gvDataStreams[t], SimDataContainer[t], iSimulationNumber);
+}
+
 /** Read the case data file.
     If invalid data is found in the file, an error message is printed,
     that record is ignored, and reading continues.
@@ -305,7 +262,7 @@ bool DataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDesc
   count_t                               Count, ** pCounts;
 
   try {
-    DataStream & thisStream = gvDataStreams[tStream];
+    RealDataStream & thisStream = gvDataStreams[tStream];
 
     bCaseFile = !strcmp(szDescription, "case");
     pCounts = (bCaseFile ? thisStream.gpCasesHandler->GetArray() : thisStream.gpControlsHandler->GetArray());
@@ -320,7 +277,7 @@ bool DataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char* szDesc
              if (pCounts[0][TractIndex] < 0)
                SSGenerateException("Error: Total %s greater than maximum allowed of %ld.\n", "ReadCounts()",
                                    (bCaseFile ? "cases" : "controls"), std::numeric_limits<count_t>::max());
-             for (i=1; Date >= gData.GetTimeIntervalStartTimes()[i]; ++i)
+             for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
                pCounts[i][TractIndex] += Count;
              //record count as a case or control  
              if (bCaseFile)
@@ -355,9 +312,9 @@ void DataStreamHandler::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, Base
     gvDataStreams[t].GetPopulationData().ReportZeroPops(Data, pDisplay, pPrintDirection);
 }
 
-void DataStreamHandler::SetPurelyTemporalMeasureData(DataStream & thisStream) {
+void DataStreamHandler::SetPurelyTemporalMeasureData(RealDataStream & thisRealStream) {
   try {
-    thisStream.SetPTMeasureArray();
+    thisRealStream.SetPTMeasureArray();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalMeasureData()","DataStreamHandler");
@@ -366,10 +323,10 @@ void DataStreamHandler::SetPurelyTemporalMeasureData(DataStream & thisStream) {
 }
 
 /** sets temporal simulation case array from data in simulation case array */
-void DataStreamHandler::SetPurelyTemporalSimulationData() {
+void DataStreamHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer) {
   try {
-    for (size_t t=0; t < gvDataStreams.size(); ++t)
-       gvDataStreams[t].SetPTSimCasesArray();
+    for (size_t t=0; t < SimDataContainer.size(); ++t)
+       SimDataContainer[t].SetPTCasesArray();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalSimulationData()","DataStreamHandler");
@@ -381,7 +338,7 @@ void DataStreamHandler::SetPurelyTemporalSimulationData() {
 void DataStreamHandler::Setup() {
   try {
     for (unsigned int i=0; i < gParameters.GetNumDataStreams(); ++i)
-      gvDataStreams.push_back(DataStream(gData.GetNumTimeIntervals(), gData.GetNumTracts(), i + 1));
+      gvDataStreams.push_back(RealDataStream(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), i + 1));
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()","DataStreamHandler");
