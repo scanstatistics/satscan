@@ -105,7 +105,7 @@ void CSaTScanData::IncrementCount(tract_t tTractIndex, int nCount, Julian nDate,
     Returns whether parse completed without errors. */
 bool CSaTScanData::ParseCountLine(const char*  szDescription, int nRec, StringParser & Parser,
                                   tract_t& tid, count_t& nCount, Julian& nDate) {
-  UINT   	               uiYear4, uiYear, uiMonth=1, uiDay=1;
+  UInt   	               uiYear4, uiYear, uiMonth=1, uiDay=1;
   int                          i, iCategoryIndex, iCategoryOffSet, iScanPrecision, iNumCovariatesScanned=0;
   std::vector<std::string>     vCategoryCovariates;
   const char                 * pCovariate;  
@@ -594,12 +594,12 @@ bool CSaTScanData::ReadGridFile() {
    Return value: true = success, false = errors encountered          */
 bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
   bool                          bValidRecord, bValid=true, bEmpty=true;
-  char                          sTractIdentifier[64];
   int                           i, iScanCount;
   long                          lRecNum=0;
   const char                  * pCoordinate;
   std::vector<double>           vCoordinates;
   StringParser                  Parser;
+  ZdString                      sId;
 
   try {
     vCoordinates.resize(m_pParameters->GetDimensionsOfData(), 0);
@@ -625,7 +625,8 @@ bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
           continue;
         }
         //add created tract identifer(record number) and read coordinates to structure that mantains list of centroids
-        if (! gpGInfo->giInsertGnode(itoa(lRecNum, sTractIdentifier, 10), vCoordinates))
+        sId = lRecNum;
+        if (! gpGInfo->giInsertGnode(sId.GetCString(), vCoordinates))
           //If there are problems adding then either some other code has errored by
           //adding to this structure previously or this routine is doing something wrong.
           //When a special grid file is used to supply centroids, only the routines
@@ -659,9 +660,9 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude(FILE * fp) {
   bool    	                bValid=true, bEmpty=true;
   long                          lRecNum=0;
   const char                  * pCoordinate;
-  char                          szTid[MAX_LINEITEMSIZE];
   std::vector<double>           vCoordinates;
   StringParser                  Parser;
+  ZdString                      sId;
 
   try {
     vCoordinates.resize(3/*for conversion*/, 0);
@@ -677,7 +678,8 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude(FILE * fp) {
            continue;
         }
         //add created tract identifer(record number) and read coordinates to structure that mantains list of centroids
-        if (!gpGInfo->giInsertGnode(itoa(lRecNum, szTid, 10), vCoordinates))
+        sId = lRecNum;
+        if (!gpGInfo->giInsertGnode(sId.GetCString(), vCoordinates))
           //If there are problems adding then either some other code has errored by
           //adding to this structure previously or this routine is doing something wrong.
           //When a special grid file is used to supply centroids, only the routines
