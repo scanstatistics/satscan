@@ -419,7 +419,7 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
       }
     }
 
-    if ((geAnalysisType == SPACETIME) || (geAnalysisType == PROSPECTIVESPACETIME)) {
+    if (geProbabiltyModelType != SPACETIMEPERMUTATION && (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
        fprintf(fp, "  Also Include Purely Temporal Clusters : ");
        fprintf(fp, (gbIncludePurelyTemporalClusters ? "Yes\n" : "No\n"));
     }
@@ -434,7 +434,7 @@ void CParameters::DisplayParameters(FILE* fp, int iNumSimulations) const {
       }
     }
 
-    if ((geAnalysisType == SPACETIME) || (geAnalysisType == PROSPECTIVESPACETIME)) {
+    if (geProbabiltyModelType != SPACETIMEPERMUTATION && (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
       fprintf(fp, "  Also Include Purely Spatial Clusters  : ");
       fprintf(fp, (gbIncludePurelySpatialClusters ? "Yes\n" : "No\n"));
     }
