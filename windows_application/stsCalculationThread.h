@@ -5,7 +5,9 @@
 #include <Classes.hpp>
 #include <time.h>                                 
 #include <process.h>
+#include "SVTTData.h"
 #include "SpaceTimeData.h"
+#include "SVTTAnalysis.h"
 #include "PurelySpatialData.h"
 #include "PurelyTemporalData.h"
 #include "SpaceTimeAnalysis.h"

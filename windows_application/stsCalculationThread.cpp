@@ -81,33 +81,37 @@ void __fastcall CalcThread::Execute() {
        SSGenerateException("\nInvalid parameter(s) encountered. Job cancelled.", "Execute()");
 
     switch (gpParams->GetAnalysisType()) {
-       case PURELYSPATIAL        : gpData = new CPurelySpatialData(gpParams, gpPrintWindow);  break;
-       case PURELYTEMPORAL       : gpData = new CPurelyTemporalData(gpParams, gpPrintWindow); break;
-       case SPACETIME            : gpData = new CSpaceTimeData(gpParams, gpPrintWindow);      break;
-       case PROSPECTIVESPACETIME : gpData = new CSpaceTimeData(gpParams, gpPrintWindow);break;
-       default                   : ZdGenerateException("Invalid Analysis Type '%d'.", "Execute()", gpParams->GetAnalysisType());
+       case PURELYSPATIAL             : gpData = new CPurelySpatialData(gpParams, gpPrintWindow);  break;
+       case PURELYTEMPORAL            :
+       case PROSPECTIVEPURELYTEMPORAL : gpData = new CPurelyTemporalData(gpParams, gpPrintWindow); break;
+       case SPACETIME                 :
+       case PROSPECTIVESPACETIME      : gpData = new CSpaceTimeData(gpParams, gpPrintWindow);break;
+       case SPATIALVARTEMPTREND       : gpData = new CSVTTData(gpParams, gpPrintWindow); break;
+       default : ZdGenerateException("Invalid Analysis Type '%d'.", "Execute()", gpParams->GetAnalysisType());
     };
 
     if (! IsCancelled()) {
       gpData->ReadDataFromFiles();
       switch (gpParams->GetAnalysisType()) {
-         case PURELYSPATIAL        : if (gpParams->GetRiskType() == STANDARDRISK)
-                                       gpAnalysis = new CPurelySpatialAnalysis(gpParams, gpData, gpPrintWindow);
-                                     else if (gpParams->GetRiskType() == MONOTONERISK)
-                                       gpAnalysis = new CPSMonotoneAnalysis(gpParams, gpData, gpPrintWindow);
-                                     break;
-         case PURELYTEMPORAL       : gpAnalysis = new CPurelyTemporalAnalysis(gpParams, gpData, gpPrintWindow);
-                                     break;
-         case SPACETIME            : 
-         case PROSPECTIVESPACETIME : if (gpParams->GetIncludePurelySpatialClusters() && gpParams->GetIncludePurelyTemporalClusters())
-                                       gpAnalysis = new C_ST_PS_PT_Analysis(gpParams, gpData, gpPrintWindow);
-                                     else if (gpParams->GetIncludePurelySpatialClusters())
-                                       gpAnalysis = new C_ST_PS_Analysis(gpParams, gpData, gpPrintWindow);
-                                     else if (gpParams->GetIncludePurelyTemporalClusters())
-                                       gpAnalysis = new C_ST_PT_Analysis(gpParams, gpData, gpPrintWindow);
-                                     else
-                                       gpAnalysis = new CSpaceTimeAnalysis(gpParams, gpData, gpPrintWindow);
-                                     break;
+         case PURELYSPATIAL             : if (gpParams->GetRiskType() == STANDARDRISK)
+                                            gpAnalysis = new CPurelySpatialAnalysis(gpParams, gpData, gpPrintWindow);
+                                          else if (gpParams->GetRiskType() == MONOTONERISK)
+                                            gpAnalysis = new CPSMonotoneAnalysis(gpParams, gpData, gpPrintWindow);
+                                          break;
+         case PURELYTEMPORAL            :
+         case PROSPECTIVEPURELYTEMPORAL : gpAnalysis = new CPurelyTemporalAnalysis(gpParams, gpData, gpPrintWindow);
+                                          break;
+         case SPACETIME                 :
+         case PROSPECTIVESPACETIME      : if (gpParams->GetIncludePurelySpatialClusters() && gpParams->GetIncludePurelyTemporalClusters())
+                                            gpAnalysis = new C_ST_PS_PT_Analysis(gpParams, gpData, gpPrintWindow);
+                                          else if (gpParams->GetIncludePurelySpatialClusters())
+                                            gpAnalysis = new C_ST_PS_Analysis(gpParams, gpData, gpPrintWindow);
+                                          else if (gpParams->GetIncludePurelyTemporalClusters())
+                                            gpAnalysis = new C_ST_PT_Analysis(gpParams, gpData, gpPrintWindow);
+                                          else
+                                            gpAnalysis = new CSpaceTimeAnalysis(gpParams, gpData, gpPrintWindow);
+                                          break;
+       case SPATIALVARTEMPTREND         : gpAnalysis = new CSpatialVarTempTrendAnalysis(gpParams, gpData, gpPrintWindow); break;
       };
 
       if (! gpAnalysis->Execute(RunTime)) {
