@@ -7,7 +7,8 @@
 
 /** constructor */
 TimeIntervalRange::TimeIntervalRange(const CSaTScanData& Data)
-                  :CTimeIntervals(Data.m_nTimeIntervals, Data.m_nIntervalCut), gData(Data) {
+                  :CTimeIntervals(Data.m_nTimeIntervals, Data.m_nIntervalCut, Data.GetParameters().GetAreaScanRateType()),
+                   gData(Data) {
   Setup(Data);
 }	
 
@@ -50,7 +51,7 @@ void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopShapeC
         tCases = pCases[iWindowStart] - pCases[iWindowEnd];
         tMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
         //tMeasure = Running.gMeasure_(iWindowStart, iWindowEnd, pMeasure, ppMeasureSquared);
-        if (Running.RateIsOfInterest(tCases, tMeasure, tTotalCases, tTotalMeasure)) {
+        if (fRateOfInterest(tCases, tMeasure, tTotalCases, tTotalMeasure)) {
           Running.m_nRatio = Model.CalcLogLikelihoodRatio(tCases, tMeasure, tTotalCases, tTotalMeasure, Running.m_DuczmalCorrection);
           if (Running.m_nRatio  > TopShapeCluster.m_nRatio) {
             TopShapeCluster.AssignAsType(Running);
@@ -69,6 +70,7 @@ void TimeIntervalRange::CompareDataStreamClusters(CCluster & Running, CCluster &
   int                                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
   CModel                              & ProbabilityModel(gData.GetProbabilityModel());
   AbstractTemporalClusterStreamData   * pStreamData;
+  unsigned int                          iStreamSize = StreamData.size();
 
   //iterate through windows
   iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
@@ -77,12 +79,12 @@ void TimeIntervalRange::CompareDataStreamClusters(CCluster & Running, CCluster &
      iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         Running.m_nRatio = 0;
-        for (size_t t=0; t < StreamData.size(); ++t) {
+        for (size_t t=0; t < iStreamSize; ++t) {
           pStreamData = StreamData[t];
           pStreamData->gCases = pStreamData->gpCases[iWindowStart] - pStreamData->gpCases[iWindowEnd];
           pStreamData->gMeasure = pStreamData->gpMeasure[iWindowStart] - pStreamData->gpMeasure[iWindowEnd];
           //pStreamData->gMeasure = Running.gMeasure_(iWindowStart, iWindowEnd, pStreamData->gpMeasure, pStreamData->gpSqMeasure);
-          if (Running.RateIsOfInterest(pStreamData->gCases, pStreamData->gMeasure, pStreamData->gTotalCases, pStreamData->gTotalMeasure))
+          if (fRateOfInterest(pStreamData->gCases, pStreamData->gMeasure, pStreamData->gTotalCases, pStreamData->gTotalMeasure))
             Running.m_nRatio += ProbabilityModel.CalcLogLikelihoodRatio(pStreamData->gCases, pStreamData->gMeasure, pStreamData->gTotalCases, pStreamData->gTotalMeasure, Running.m_DuczmalCorrection);
         }
         if (Running.m_nRatio && Running.m_nRatio > TopShapeCluster.m_nRatio) {

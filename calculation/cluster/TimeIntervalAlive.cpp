@@ -6,7 +6,8 @@
 
 /** constructor */
 CTIAlive::CTIAlive(const CSaTScanData& Data)
-         :CTimeIntervals(Data.GetNumTimeIntervals(), Data.m_nIntervalCut), gData(Data) {}
+         :CTimeIntervals(Data.GetNumTimeIntervals(), Data.m_nIntervalCut, Data.GetParameters().GetAreaScanRateType()),
+          gData(Data) {}
 
 /** copy constructor */
 CTIAlive::CTIAlive(const CTIAlive& rhs) : CTimeIntervals(rhs), gData(rhs.gData) {}
@@ -34,7 +35,7 @@ void CTIAlive::CompareClusters(CCluster & Running, CCluster & TopShapeCluster, c
      tCases = pCases[iWindowStart];
      tMeasure = pMeasure[iWindowStart];
      //tMeasure = Running.g_Measure_(iWindowStart, pMeasure, ppMeasureSquared);
-     if (Running.RateIsOfInterest(tCases, tMeasure, tTotalCases, tTotalMeasure)) {
+     if (fRateOfInterest(tCases, tMeasure, tTotalCases, tTotalMeasure)) {
        Running.m_nRatio = ProbabilityModel.CalcLogLikelihoodRatio(tCases, tMeasure, tTotalCases, tTotalMeasure, Running.m_DuczmalCorrection);
        if (Running.m_nRatio > TopShapeCluster.m_nRatio) {
          TopShapeCluster.AssignAsType(Running);
@@ -66,7 +67,7 @@ void CTIAlive::CompareDataStreamClusters(CCluster & Running, CCluster & TopShape
        pStreamData->gCases = pStreamData->gpCases[iWindowStart];
        pStreamData->gMeasure = pStreamData->gpMeasure[iWindowStart];
        //pStreamData->gMeasure = Running.g_Measure_(iWindowStart, pStreamData->gpMeasure, pStreamData->gpSqMeasure);
-       if (Running.RateIsOfInterest(pStreamData->gCases, pStreamData->gMeasure, pStreamData->gTotalCases, pStreamData->gTotalMeasure))
+       if (fRateOfInterest(pStreamData->gCases, pStreamData->gMeasure, pStreamData->gTotalCases, pStreamData->gTotalMeasure))
           Running.m_nRatio += Model.CalcLogLikelihoodRatio(pStreamData->gCases, pStreamData->gMeasure, pStreamData->gTotalCases, pStreamData->gTotalMeasure, Running.m_DuczmalCorrection);
      }
      if (Running.m_nRatio && Running.m_nRatio > TopShapeCluster.m_nRatio) {

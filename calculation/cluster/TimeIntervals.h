@@ -14,9 +14,18 @@ class CTimeIntervals {
   protected:
     int                         giNumIntervals;         /* number of total time intervals */
     int                         giMaxWindowLength;      /* maximum window length          */
+    RATE_FUNCPTRTYPE            fRateOfInterest;
 
   public:
-    CTimeIntervals(int nTotal, int nCut) {giNumIntervals=nTotal; giMaxWindowLength=nCut;}
+    CTimeIntervals(int nTotal, int nCut, AreaRateType eType=HIGH) {
+                         giNumIntervals=nTotal;
+                         giMaxWindowLength=nCut;
+                         switch(eType) {
+                           case LOW        : fRateOfInterest = LowRate;       break;
+                           case HIGHANDLOW : fRateOfInterest = HighOrLowRate; break;
+                           default         : fRateOfInterest = HighRate;
+                         };
+                   }
     CTimeIntervals(const CTimeIntervals& rhs) {giNumIntervals = rhs.giNumIntervals;
                                                giMaxWindowLength = rhs.giMaxWindowLength;}
     virtual ~CTimeIntervals() {};
