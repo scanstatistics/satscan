@@ -8,7 +8,7 @@
 #include "PopulationCategories.h"
 
 int AssignMeasure(
-            const TInfo  *pTInfo,
+            const TractHandler  *pTInfo,
             Cats         *pCats,
             count_t      *Cases[],
             Julian**     Times,
@@ -28,7 +28,7 @@ int AssignMeasure(
             measure_t*   pTotalMeasure,
             BasePrint *pPrintDirection);
 
-int CalcRisk(const TInfo *pTInfo,
+int CalcRisk(const TractHandler *pTInfo,
              double** pRisk,
              double*  pAlpha,
              int      nCats,
@@ -38,7 +38,7 @@ int CalcRisk(const TInfo *pTInfo,
              count_t* pTotalCases,
              BasePrint *pPrintDirection);
 
-int Calcm(const TInfo *pTInfo,
+int Calcm(const TractHandler *pTInfo,
           measure_t*** m,
           double*      pRisk,
           int          nCats,
@@ -47,7 +47,7 @@ int Calcm(const TInfo *pTInfo,
           BasePrint *pPrintDirection);
 
 
-int CalcMeasure(const TInfo *pTInfo,
+int CalcMeasure(const TractHandler *pTInfo,
                 measure_t*** pMeasure,
                 measure_t**  m,
                 Julian*      pStartDates,
@@ -83,7 +83,7 @@ void DisplayInitialData(Julian  StartDate,
                         double* pAlpha,
                         int     nPops);
 
-bool ValidateMeasures(const TInfo *pTInfo,
+bool ValidateMeasures(const TractHandler *pTInfo,
                       measure_t** Measures,
 		      measure_t   nTotalMeasure,
 		      measure_t   nMaxCircleSize,

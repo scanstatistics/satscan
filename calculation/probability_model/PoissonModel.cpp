@@ -20,7 +20,7 @@ bool CPoissonModel::ReadData()
       if (!m_pData->ReadPops())
         return false;
     
-      if (!(m_pData->GetTInfo())->tiCheckZeroPops(stderr))
+      if (!(m_pData->GetTInfo())->tiCheckZeroPopulations(stderr))
         return false;
     
       if (!m_pData->ReadCounts(m_pParameters->m_szCaseFilename,
@@ -28,8 +28,7 @@ bool CPoissonModel::ReadData()
                                &m_pData->m_pCases))
         return false;
     
-      if (!((m_pData->GetTInfo())->tiCheckCasesHavePop()))
-        return false;
+      m_pData->GetTInfo()->tiCheckCasesHavePopulations();
     
       if (m_pParameters->m_bSpecialGridFile)
       {
@@ -99,41 +98,26 @@ double CPoissonModel::CalcLogLikelihood(count_t n, measure_t u)
    count_t   N = m_pData->m_nTotalCases;
    measure_t U = m_pData->m_nTotalMeasure;
 
-   try
-      {
-      if (n != N && n != 0)
-        nLogLikelihood = n*log(n/u) + (N-n)*log((N-n)/(U-u));
-      else if (n == 0)
-        nLogLikelihood = (N-n) * log((N-n)/(U-u));
-      else
-        nLogLikelihood = n*log(n/u);
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("CalcLogLikelihood()", "CPoissonModel");
-      throw;
-      }
+   if (n != N && n != 0)
+     nLogLikelihood = n*log(n/u) + (N-n)*log((N-n)/(U-u));
+   else if (n == 0)
+     nLogLikelihood = (N-n) * log((N-n)/(U-u));
+   else
+     nLogLikelihood = n*log(n/u);
+
    return (nLogLikelihood);
 }
 
 double CPoissonModel::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster)
 {
-   double nLogLikelihood = 0;
+  double nLogLikelihood = 0;
 
-   try
-      {
-      for (int i=0; i<PSMCluster.m_nSteps; i++)
-         {
-         if (PSMCluster.m_pCasesList[i] != 0)
-            nLogLikelihood += PSMCluster.m_pCasesList[i] *
-                        log(PSMCluster.m_pCasesList[i]/PSMCluster.m_pMeasureList[i]);
-         }
-      }
-   catch (SSException & x)
-      {
-      x.AddCallpath("CalcMonotoneLogLikelihood()", "CPoissonModel");
-      throw;
-      }
+  for (int i=0; i<PSMCluster.m_nSteps; i++)
+     {
+     if (PSMCluster.m_pCasesList[i] != 0)
+       nLogLikelihood += PSMCluster.m_pCasesList[i] * log(PSMCluster.m_pCasesList[i]/PSMCluster.m_pMeasureList[i]);
+     }
+
    return nLogLikelihood;
 }
 
@@ -355,14 +339,13 @@ double CPoissonModel::GetPopulation(int m_iEllipseOffset, tract_t nCenter, tract
 
    try
       {
-      (m_pData->GetTInfo())->tiCalcAlpha(&pAlpha, m_pData->m_nStartDate, m_pData->m_nEndDate);
+      (m_pData->GetTInfo())->tiCalculateAlpha(&pAlpha, m_pData->m_nStartDate, m_pData->m_nEndDate);
    
       for (T = 1; T <= nTracts; T++)
       {
          t = m_pData->GetNeighbor(m_iEllipseOffset, nCenter, T);
          for (c = 0; c < ncats; c++)
-            for (n=0; n < nPops; n++)
-               nPopulation += (pAlpha[n]*(m_pData->GetTInfo())->tiGetPop(t, c, n));
+            m_pData->GetTInfo()->tiGetAlphaAdjustedPopulation(nPopulation, t, c, 0, nPops, pAlpha);
       }
    
       free(pAlpha); pAlpha = 0;

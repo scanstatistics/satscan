@@ -9,7 +9,7 @@ static FILE* pMResult;
 #endif
 
 int AssignMeasure(
-            const TInfo  *pTInfo,
+            const TractHandler  *pTInfo,
             Cats         *pCats,
             count_t      *Cases[],
             Julian**     Times,
@@ -36,7 +36,7 @@ int AssignMeasure(
    int         nPops;
    tract_t     nTracts, tract;
    measure_t** m = 0;
-   char       *tid;
+   const char       *tid;
    Julian *IntervalDates = 0;
 
    try
@@ -55,7 +55,7 @@ int AssignMeasure(
          }
 #endif
 
-      pTInfo->tiCalcAlpha(&pAlpha, StartDate, EndDate);
+      pTInfo->tiCalculateAlpha(&pAlpha, StartDate, EndDate);
     
       nTracts = pTInfo->tiGetNumTracts();
       nPops   = pTInfo->tiGetNumPopDates();
@@ -90,8 +90,9 @@ int AssignMeasure(
        for (interval=0;interval<nTimeIntervals;interval++) {
           if((*pMeasure)[interval][tract]<0)
              {
-             char sMessage[200];
-    	     tid = pTInfo->tiGetTid(tract);
+             char        sMessage[200];
+             std::string sBuffer;
+    	     tid = pTInfo->tiGetTid(tract, sBuffer);
     	     //printf("  Error: Negative Measure (%8.4f) in function AssignMeasure(),\n\ttract %d, tractid %s, interval %d.\n",(*pMeasure)[interval][tract], tract, tid, interval);
     	     //FatalError("", pPrintDirection);
              sprintf(sMessage,"  Error: Negative Measure (%8.4f) in function AssignMeasure(),\n\ttract %d, tractid %s, interval %d.\n",(*pMeasure)[interval][tract], tract, tid, interval);
@@ -153,7 +154,7 @@ int AssignMeasure(
 }
 
 /** calculates the risk for each category - Scott Hostovich @ July 16,2002 */
-int CalcRisk(const TInfo *pTInfo, double** pRisk, double* pAlpha,
+int CalcRisk(const TractHandler *pTInfo, double** pRisk, double* pAlpha,
              int nCats, tract_t nTracts, int nPops, double* pTotalPop, count_t* pTotalCases, BasePrint *pPrintDirection)
 {
    int      c, i, n;
@@ -171,34 +172,31 @@ int CalcRisk(const TInfo *pTInfo, double** pRisk, double* pAlpha,
 
       *pTotalCases = 0;
       *pTotalPop   = 0;
-    
+
       for (c=0; c<nCats; c++)
       {
         nPop       = 0;
         nCaseCount = 0;
-    
+
         for (t=0; t<nTracts; t++)
         {
           nCaseCount = nCaseCount + pTInfo->tiGetCount(t, c);
-    
+
           if (nCaseCount < 0)
           {
             fprintf(stderr, "  Error: Total cases is greater than maximum allowed.\n");
             //FatalError(0, pPrintDirection);
             SSGenerateException("  Error: Total cases is greater than maximum allowed.\n", "CalcRisk");
           }
-    
-          for (n=0; n<nPops; n++)
-            nPop = nPop + (pAlpha[n]*pTInfo->tiGetPop(t, c, n));
+          pTInfo->tiGetAlphaAdjustedPopulation(nPop, t, c, 0, nPops, pAlpha);
         }
         (*pRisk)[c] = (double)nCaseCount / nPop;
 #ifdef DEBUGMEASURE
-       fprintf(pMResult, "%i             %f        %li            %f\n",c, nPop, nCaseCount, (*pRisk)[c]);
+       fprintf(fp, "%i             %f        %li            %12.25f\n",c, nPop, nCaseCount, (*pRisk)[c]);
 #endif
        *pTotalCases += nCaseCount;
        *pTotalPop   += nPop;
        }
-
 #ifdef DEBUGMEASURE
   fprintf(pMResult, "\n");
   fprintf(pMResult, "Total Cases = %li    Total Population = %f\n\n", *pTotalCases, *pTotalPop); 
@@ -215,7 +213,7 @@ int CalcRisk(const TInfo *pTInfo, double** pRisk, double* pAlpha,
 /** Calculates the expected number of cases at a given population date and tract for all categories.
     (*m)[n][t] = expected number of cases at population date index n and tract index t for all categories.
     Scott Hostovich @ July 16,2002 */
-int Calcm(const TInfo *pTInfo, measure_t*** m, double* pRisk, int nCats, tract_t nTracts, int nPops, BasePrint *pPrintDirection)
+int Calcm(const TractHandler *pTInfo, measure_t*** m, double* pRisk, int nCats, tract_t nTracts, int nPops, BasePrint *pPrintDirection)
 {
    int      c, n;
    tract_t  t;
@@ -228,15 +226,10 @@ int Calcm(const TInfo *pTInfo, measure_t*** m, double* pRisk, int nCats, tract_t
     
      for (n=0; n<nPops; n++)
        for (t=0; t<nTracts; t++)
-       {
-         (*m)[n][t] = 0.0;
-    
-         for (c=0; c<nCats; c++)
-           (*m)[n][t] = (*m)[n][t] + (pRisk[c]*pTInfo->tiGetPop(t, c, n));
-    
-       }
+          pTInfo->tiGetRiskAdjustedPopulation((*m)[n][t], t, n, pRisk);
 
 #ifdef DEBUGMEASURE
+
       fprintf(pMResult, "Pop\n");
       fprintf(pMResult, "Index  Tract   m\n");
       for (n=0; n<nPops; n++)
@@ -265,7 +258,7 @@ int Calcm(const TInfo *pTInfo, measure_t*** m, double* pRisk, int nCats, tract_t
     taking into account time interval slices.
     (*pMeasure)[i][t] = for time interval index i and tract index t, the expected number of cases for
     all categories. Scott Hostovich @ July 16,2002 */
-int CalcMeasure(const TInfo *pTInfo, measure_t*** pMeasure, measure_t** m, Julian* IntervalDates, Julian StartDate, Julian EndDate,
+int CalcMeasure(const TractHandler *pTInfo, measure_t*** pMeasure, measure_t** m, Julian* IntervalDates, Julian StartDate, Julian EndDate,
                 int nCats, tract_t nTracts, int nPops, int nTimeIntervals, measure_t* pTotalMeasure, BasePrint *pPrintDirection)
 {
    int         i;
@@ -299,7 +292,7 @@ int CalcMeasure(const TInfo *pTInfo, measure_t*** pMeasure, measure_t** m, Julia
 
         for (t=0; t<nTracts; t++)
         {
-          if (jLowDatePlus1 == -1)
+          if (jLowDatePlus1 == static_cast<Julian>(-1))
             M[i][t] = m[lower][t];
     		else
     		{
@@ -315,7 +308,7 @@ int CalcMeasure(const TInfo *pTInfo, measure_t*** pMeasure, measure_t** m, Julia
       for (i=0; i<nTimeIntervals; i++)
       {
         pTInfo->tiGetPopUpLowIndex(IntervalDates, i, nTimeIntervals, &upper, &lower);
-    
+
         for (t=0; t<nTracts; t++)
         {
           (*pMeasure)[i][t] = 0.0;
@@ -328,7 +321,7 @@ int CalcMeasure(const TInfo *pTInfo, measure_t*** pMeasure, measure_t** m, Julia
     		  tempSum = tempSum + (((m[n][t] + m[n+1][t]) / 2) * (pTInfo->tiGetPopDate(n+1)-pTInfo->tiGetPopDate(n)));
           }
           (*pMeasure)[i][t] = ((tempSum - temp1 - temp2) / nTotalYears);
-    
+
           *pTotalMeasure += (*pMeasure)[i][t];
         } /* nTracts */
       } /* nTimeIntervals */
@@ -397,7 +390,7 @@ int AdjustForDiscreteTimeTrend(measure_t*** pMeasure,
       AdjustIntervals=nTimeIntervals;
       k=1;j=0;jj=0;
     
-      for(i=0;i<AdjustIntervals;i++) 
+      for(i=0;i<AdjustIntervals;i++)
          {
     	 sumcases=0;
     	 summeasure=0;
@@ -538,7 +531,7 @@ void DisplayInitialData(Julian StartDate, Julian EndDate, Julian* pIntvDates, in
 /* If any measures meet this condition, the function returns a value  */
 /* false.                                                             */
 /* Function added 5/31/97 by K. Rand                                  */
-bool ValidateMeasures(const TInfo *pTInfo,
+bool ValidateMeasures(const TractHandler *pTInfo,
                       measure_t** Measures,
 		      measure_t   nTotalMeasure,
 		      measure_t   nMaxCircleSize,
@@ -549,7 +542,7 @@ bool ValidateMeasures(const TInfo *pTInfo,
 {
    int       i;
    tract_t   t;
-   char*     tid;
+   const char*     tid;
    int       nMinGeoSize;
    bool      bError = false;
    bool      bErrorThisTract;
@@ -574,7 +567,8 @@ bool ValidateMeasures(const TInfo *pTInfo,
     	 if (bErrorThisTract)
     	 {
     		bError = true;
-    		tid    = pTInfo->tiGetTid(t);
+                std::string sBuffer;
+    		tid    = pTInfo->tiGetTid(t, sBuffer);
                 char sMessage[200], sTemp[100];
     		sprintf(sMessage, "The maximum circle size is less than the expected number\n");
     		sprintf(sTemp, "  of cases in tract %s, therefore the program will not run.\n", tid);
