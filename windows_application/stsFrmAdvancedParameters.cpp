@@ -25,7 +25,10 @@ __fastcall TfrmAdvancedParameters::TfrmAdvancedParameters(TfrmAnalysis & Analysi
 //---------------------------------------------------------------------------
 void __fastcall TfrmAdvancedParameters::btnAddClick(TObject *Sender) {
    try {
-      // set case file, then clear edit box
+     // first, validate the specified files
+     ValidateInputFiles();
+     
+     // set case file, then clear edit box
      gvCaseFiles.AddElement(edtCaseFileName->Text);
      edtCaseFileName->Text = "";
      // set control file, then clear edit box
@@ -43,7 +46,7 @@ void __fastcall TfrmAdvancedParameters::btnAddClick(TObject *Sender) {
    }
    catch (ZdException &x) {
      x.AddCallpath("btnAddClick()","TfrmAdvancedParameters");
-     throw;
+     DisplayBasisException(this, x);
    }
 }
 //---------------------------------------------------------------------------
@@ -348,12 +351,13 @@ void TfrmAdvancedParameters::EnableAddButton() {
 }
 //---------------------------------------------------------------------------
 /** enables or disables the temporal time trend adjustment control group */
-void TfrmAdvancedParameters::EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage) {
+void TfrmAdvancedParameters::EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage, bool bCalculatedLog) {
   TimeTrendAdjustmentType eTimeTrendAdjustmentType(GetAdjustmentTimeTrendControlType());
 
   // trump control enables
   bTimeStratified &= bEnable;
   bLogYearPercentage &= bEnable;
+  bCalculatedLog &= bEnable;
 
   rdgTemporalTrendAdj->Enabled = bEnable;
 
@@ -368,7 +372,9 @@ void TfrmAdvancedParameters::EnableAdjustmentForTimeTrendOptionsGroup(bool bEnab
   if (bEnable && !bLogYearPercentage && eTimeTrendAdjustmentType == LOGLINEAR_PERC)
     SetTemporalTrendAdjustmentControl(NOTADJUSTED);
 
-  rdgTemporalTrendAdj->Controls[3]->Enabled = (gAnalysisSettings.GetModelControlType() == POISSON);
+  rdgTemporalTrendAdj->Controls[3]->Enabled = bCalculatedLog;
+  if (bEnable && !bCalculatedLog && eTimeTrendAdjustmentType == CALCULATED_LOGLINEAR_PERC)
+    SetTemporalTrendAdjustmentControl(NOTADJUSTED);
 }
 //---------------------------------------------------------------------------
 /** enables adjustment options controls */
@@ -1150,6 +1156,50 @@ void TfrmAdvancedParameters::ValidateAdjustmentSettings() {
     throw;
   }
 }
+//---------------------------------------------------------------------------
+/** Validates 'Input Files' */
+void TfrmAdvancedParameters::ValidateInputFiles() {
+  try {
+    //validate the case file
+    if (edtCaseFileName->Text.IsEmpty()) {
+      edtCaseFileName->SetFocus();
+      GenerateAFException("Please specify a case file.", "ValidateInputFiles()",*edtCaseFileName);
+    }
+    if (!File_Exists(edtCaseFileName->Text.c_str())) {
+      edtCaseFileName->SetFocus();
+      GenerateAFException("Case file could not be opened.", "ValidateInputFiles()",*edtCaseFileName);
+    }
+
+    //validate the control file - Bernoulli model only
+    if (gAnalysisSettings.GetModelControlType() == BERNOULLI) {
+      if (edtControlFileName->Text.IsEmpty()) {
+        edtControlFileName->SetFocus();
+        GenerateAFException("For the Bernoulli model, please specify a control file.","ValidateInputFiles()", *edtControlFileName);
+      }
+      if (!File_Exists(edtControlFileName->Text.c_str())) {
+        edtControlFileName->SetFocus();
+        GenerateAFException("Control file could not be opened.","ValidateInputFiles()", *edtControlFileName);
+      }
+    }
+
+    //validate the population file -  Poisson model only
+    if (gAnalysisSettings.GetModelControlType() == POISSON) {
+      if (edtPopFileName->Text.IsEmpty()) {
+        edtPopFileName->SetFocus();
+        GenerateAFException("For the Poisson model, please specify a population file.","ValidateInputFiles()", *edtPopFileName);
+      }
+      if (!File_Exists(edtPopFileName->Text.c_str())) {
+        edtPopFileName->SetFocus();
+        GenerateAFException("Population file could not be opened.","ValidateInputFiles()", *edtPopFileName);
+      }
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ValidateInputFiles()", "TfrmAdvancedParameters");
+    throw;
+  }
+}
+
 //---------------------------------------------------------------------------
 /** Specific prospective space-time date check
     Must be between the start and end dates of the analysis */

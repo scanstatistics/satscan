@@ -111,6 +111,8 @@ __published:	// IDE-managed Components
    TButton *btnAddStream;
    TButton *btnRemoveStream;
    TListBox *lstInputStreams;
+   TLabel *Label4;
+   TLabel *Label5;
 
    void __fastcall btnAddClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
@@ -176,6 +178,7 @@ __published:	// IDE-managed Components
    void                     SetDefaultsForInputTab();
    void                     SetDefaultsForOutputTab();
    void                     Setup();
+   void                     ValidateInputFiles();
    void                     ValidateProspDateRange();
    void                     ValidateReportedSpatialClusterSize();
    void                     ValidateScanningWindowRanges();
@@ -187,7 +190,7 @@ public:
 
    void                  EnableAddButton();
    void                  EnableAdjustmentsGroup(bool bEnable);
-   void                  EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage);
+   void                  EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage, bool bCalculatedLog);
    void                  EnableOutputOptions(bool bEnable);
    void                  EnableProspectiveStartDate(bool bEnable);
    void                  EnableProspectiveSurveillanceGroup(bool bEnable);

@@ -98,6 +98,20 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Height = 13
           Caption = 'Population File:'
         end
+        object Label4: TLabel
+          Left = 120
+          Top = 54
+          Width = 78
+          Height = 13
+          Caption = '(Bernoulli Model)'
+        end
+        object Label5: TLabel
+          Left = 120
+          Top = 92
+          Width = 75
+          Height = 13
+          Caption = '(Poisson Model)'
+        end
       end
       object edtCaseFileName: TEdit
         Left = 24
