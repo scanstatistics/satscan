@@ -14,7 +14,7 @@
 #include <DBFFile.h>
 
 // constructor
-__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const ZdString& sFileName) {
+__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const ZdString& sFileName) : DBaseOutput(sFileName) {
    try {
       Init();
       Setup(sFileName);
@@ -28,56 +28,15 @@ __fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const ZdString& sFileName) {
 // destructor
 stsAreaSpecificDBF::~stsAreaSpecificDBF() {
    try {
-      CleanupFieldVector();
    }
    catch (...) {/* munch munch, yummy*/}
-}
-
-// deletes all of the field pointers in the vector and empties the vector
-// pre: none
-// post: field vector is empty and all of the pointers are deleted
-void stsAreaSpecificDBF::CleanupFieldVector() {
-   try {
-      for(int i = gvFields.GetNumElements() - 1; i > 0; --i) {
-         delete gvFields[0]; gvFields[0] = 0;
-         gvFields.RemoveElement(0);
-      }
-   }
-   catch(ZdException &x) {
-      x.AddCallpath("CleanupFieldVector()", "stsAreaSpecificDBF");
-      throw;
-   }
-}
-
-// create the output file
-// pre: sFileName is name of the dbf file needing to be created
-// post: creates the dbf file with the appropraite fields
-void stsAreaSpecificDBF::CreateDBFFile() {
-   TXDFile		File;
-
-   try {
-      GetFields();
-
-      // pack up and create
-      File.PackFields(gvFields);
-
-      // BUGBUG
-      // for now we'll overwrite files, in the future we may wish to display an exception instead - AJV 9/4/2002
-      File.Delete(gsFileName);
-      File.Create(gsFileName, gvFields);
-      File.Close();
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("CreateDBFFile()", "DBaseOutput");
-      throw;
-   }
 }
 
 // sets up the global vecotr of ZdFields
 // pre: pass in an empty vector
 // post: vector will be defined using the names and field types provided by the descendant classes
 void stsAreaSpecificDBF::GetFields() {
-   TXDFile		File;
+   DBFFile		File;
    ZdField		Field;
    ZdVector<std::pair<ZdString, char> > vFieldDescrips;    // field name, field type
    ZdVector<std::pair<short, short> > vFieldSizes;         // field length, field precision
@@ -110,21 +69,21 @@ void stsAreaSpecificDBF::Init() {
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
 void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTScanData* pData, int iClusterNumber) {
-   TXDFile*		pFile = 0;
+   DBFFile*		pFile = 0;
    ZdFileRecord*	pRecord = 0;
    ZdTransaction *	pTransaction = 0;
    unsigned long        uwFieldNumber = 0;
    ZdFieldValue         fv;
 
    try {
-      pFile = new TXDFile(gsFileName.GetCString(), ZDIO_OPEN_READ | ZDIO_OPEN_WRITE);
+      pFile = new DBFFile(gsFileName.GetCString());
       pTransaction = pFile->BeginTransaction();
       pRecord = pFile->GetNewRecord();
 
       // define record data
       // run number - from run history file AJV 9/4/2002
       fv.SetType(pRecord->GetFieldType(uwFieldNumber));
-      fv.AsDouble() = ++glRunNumber;
+      fv.AsDouble() = glRunNumber;
       pRecord->PutFieldValue(uwFieldNumber, fv);
 
       // cluster number
@@ -180,25 +139,11 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster* pCluster, const CSaTS
 
 // internal setup
 void stsAreaSpecificDBF::Setup(const ZdString& sFileName) {
-   ZdFileRecord         *pLastRecord = 0;
-
    try {
-      if(ZdIO::Exists("c:\\AnalysisHistory.txd") && ZdIO::Exists("c:\\AnalysisHistory.zds"))  {
-         TXDFile File("c:\\AnalysisHistory.txd", ZDIO_OPEN_READ);
-
-         // if there's records in the file
-         if(File.GotoLastRecord(pLastRecord))
-            pLastRecord->GetField(1, glRunNumber);
-         delete pLastRecord; pLastRecord = 0;
-         File.Close();
-      }
-
-      gsFileName = sFileName;
-
+      GetFields();
       CreateDBFFile();
    }
    catch(ZdException &x) {
-      delete pLastRecord; pLastRecord = 0;
       x.AddCallpath("Setup()", "stsAreaSpecificDBF");
       throw;
    }
