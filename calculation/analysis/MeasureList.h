@@ -13,7 +13,10 @@ class CMeasureList {
     BasePrint                 & gPrintDirection;
     const CSaTScanData        & gSaTScanData;
     std::vector<int>            gvCalculationBoundries;
+    std::vector<double>         gvMaximumLogLikelihoodRatios;
 
+    void                        AddMaximumLogLikelihood(double dMaxLogLikelihood, int iIteration);
+    virtual void                CalculateMaximumLogLikelihood(int iIteration) = 0;
     virtual void                SetMeasures() = 0;
 
   public:
@@ -22,8 +25,8 @@ class CMeasureList {
 
     virtual void                AddMeasure(count_t n, measure_t u) = 0;
     virtual void                Display(FILE* pFile) const = 0;
-    virtual double              GetMaxLogLikelihood(double dMaxLogLikelihood, int iEllipseOffset = 0) = 0;
-    void                        SetForNextIteration(int iIteration, double & dMaxLogLikelihood);
+    double                      GetMaximumLogLikelihoodRatio();
+    void                        SetForNextIteration(int iIteration);
 };
 
 class CMinMeasureList : public CMeasureList {
@@ -34,6 +37,7 @@ class CMinMeasureList : public CMeasureList {
   protected:
     measure_t                 * gpMinMeasures;
 
+    virtual void                CalculateMaximumLogLikelihood(int iIteration);
     virtual void                SetMeasures();
 
   public:
@@ -42,7 +46,6 @@ class CMinMeasureList : public CMeasureList {
 
     inline virtual void         AddMeasure(count_t n, measure_t u);
     virtual void                Display(FILE* pFile) const;
-    virtual double              GetMaxLogLikelihood(double dMaxLogLikelihood, int iEllipseOffset = 0);
 };
 
 inline void CMinMeasureList::AddMeasure(count_t n, measure_t u) {
@@ -58,6 +61,7 @@ class CMaxMeasureList : public CMeasureList {
   protected:
     measure_t                 * gpMaxMeasures;
 
+    virtual void                CalculateMaximumLogLikelihood(int iIteration);
     virtual void                SetMeasures();
 
   public:
@@ -66,7 +70,6 @@ class CMaxMeasureList : public CMeasureList {
 
     inline virtual void         AddMeasure(count_t n, measure_t u);
     virtual void                Display(FILE* pFile) const;
-    virtual double              GetMaxLogLikelihood(double dMaxLogLikelihood, int iEllipseOffset = 0);
 };
 
 inline void CMaxMeasureList::AddMeasure(count_t n, measure_t u) {
@@ -83,6 +86,7 @@ class CMinMaxMeasureList : public CMeasureList {
     measure_t                 * gpMinMeasures;
     measure_t                 * gpMaxMeasures;
 
+    virtual void                CalculateMaximumLogLikelihood(int iIteration);
     virtual void                SetMeasures();
 
   public:
@@ -91,7 +95,6 @@ class CMinMaxMeasureList : public CMeasureList {
 
     inline virtual void         AddMeasure(count_t n, measure_t u);
     virtual void                Display(FILE* pFile) const;
-    virtual double              GetMaxLogLikelihood(double dMaxLogLikelihood, int iEllipseOffset = 0);
 };
 
 inline void CMinMaxMeasureList::AddMeasure(count_t n, measure_t u) {
