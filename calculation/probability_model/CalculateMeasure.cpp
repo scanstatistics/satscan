@@ -1,5 +1,7 @@
+//---------------------------------------------------------------------------
 #include "SaTScan.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 #include "CalculateMeasure.h"
 #include "MultipleDimensionArrayHandler.h"
 
@@ -9,27 +11,32 @@
 static FILE* pMResult;
 #endif
 
-/** calculates the risk for each category */
-int CalcRisk(RealDataStream & thisStream, double** pRisk, double* pAlpha, tract_t nTracts, BasePrint *pPrintDirection) {
+/** Calculates the risk for each population category storing results in vector
+    'vRisk'. Sets data stream's total case and population counts. */
+std::vector<double>& CalcRisk(RealDataStream& thisStream, std::vector<double>& vRisk, Julian StudyStartDate, Julian StudyEndDate) {
   int                   c, i, n;
   tract_t               t;
   double                nPop, dTotalPopulation=0;
   count_t               nCaseCount, tTotalCases=0;
+  std::vector<double>   vAlpha;
   PopulationData      & Population = thisStream.GetPopulationData();
 
   try {
-    *pRisk = (double*)Smalloc(Population.GetNumPopulationCategories() * sizeof(double), pPrintDirection);
+    vRisk.resize(Population.GetNumPopulationCategories(), 0);
+    //calculate alpha - an array that indicates each population interval's percentage of study period.
+    Population.CalculateAlpha(vAlpha, StudyStartDate, StudyEndDate);
 #ifdef DEBUGMEASURE
       fprintf(pMResult, "Category #    Pop Count           Case Count   Risk\n");
 #endif
     for (c=0; c < Population.GetNumPopulationCategories(); ++c) {
        nPop = 0;
        nCaseCount = Population.GetNumCategoryCases(c);
-       for (t=0; t < nTracts; ++t)
-          Population.GetAlphaAdjustedPopulation(nPop, t, c, 0, Population.GetNumPopulationDates(), pAlpha);
-       (*pRisk)[c] = (double)nCaseCount/ nPop;
+       for (t=0; t < (int)thisStream.GetNumTracts(); ++t)
+          Population.GetAlphaAdjustedPopulation(nPop, t, c, 0, Population.GetNumPopulationDates(), vAlpha);
+       if (nPop)
+         vRisk[c] = (double)nCaseCount/nPop;
 #ifdef DEBUGMEASURE
-       fprintf(fp, "%i             %f        %li            %12.25f\n",c, nPop, nCaseCount, (*pRisk)[c]);
+       fprintf(fp, "%i             %f        %li            %12.25f\n",c, nPop, nCaseCount, vRisk[c]);
 #endif
       tTotalCases += nCaseCount;
        // Check to see if total case or control values have wrapped
@@ -49,26 +56,35 @@ int CalcRisk(RealDataStream & thisStream, double** pRisk, double* pAlpha, tract_
     x.AddCallpath("CalcRisk()", "CalculateMeasure.cpp");
     throw;
   }
-  return(1);
+  return vRisk;
 }
 
-/** Calculates the expected number of cases at a given population date and tract for all categories.
-    (*m)[n][t] = expected number of cases at population date index n and tract index t for all categories.
-    Scott Hostovich @ July 16,2002 */
-int Calcm(PopulationData & thisPopulationData, measure_t ** m, double* pRisk, int nCats, tract_t nTracts,
-          int nPops, BasePrint *pPrintDirection) {
-  int      c, n;
-  tract_t  t;
+/** Calculates the expected number of cases at a given population date and tract
+    for all categories represented by modifying the data streams population
+    measure array such that m[n][t] = expected number of cases at population date
+    index n and tract index t, for all categories of that tract. */
+void Calcm(RealDataStream& thisStream, Julian StudyStartDate, Julian StudyEndDate) {
+  std::vector<double>   vRisk;
+  PopulationData      & Population = thisStream.GetPopulationData();
+  int                   c, n, nCats, nPops;
+  tract_t               t, nTracts = thisStream.GetNumTracts();
+  measure_t          ** m;
 
   try {
+    nPops = Population.GetNumPopulationDates();
+    //calculate risk for each population category
+    CalcRisk(thisStream, vRisk, StudyStartDate, StudyEndDate);
+    //allocate 2D array of population dates by number of tracts
+    m = thisStream.AllocatePopulationMeasureArray();
+    
     for (n=0; n < nPops; ++n)
        for (t=0; t < nTracts; ++t)
-          thisPopulationData.GetRiskAdjustedPopulation(m[n][t], t, n, pRisk);
+          Population.GetRiskAdjustedPopulation(m[n][t], t, n, vRisk);
 #ifdef DEBUGMEASURE
     fprintf(pMResult, "Pop\n");
     fprintf(pMResult, "Index  Tract   m\n");
     for (n=0; n < nPops; ++n) {
-       for (t=0; t<nTracts; t++) {
+       for (t=0; t < nTracts; t++) {
           if (t==0)
             fprintf(pMResult, "%i      ",n);
           else
@@ -80,81 +96,83 @@ int Calcm(PopulationData & thisPopulationData, measure_t ** m, double* pRisk, in
 #endif
   }
   catch (ZdException &x) {
-    x.AddCallpath("Calcm()", "CalculateMeasure.cpp");
+    x.AddCallpath("Calcm()","CalculateMeasure.cpp");
     throw;
   }
-  return(1);
 }
 
-/** Knowing the expected number of cases from 'measure_t** m', re-calculates expected number of cases
-    taking into account time interval slices.
-    (*pMeasure)[i][t] = for time interval index i and tract index t, the expected number of cases for
-    all categories. Scott Hostovich @ July 16,2002 */
-measure_t CalcMeasure(PopulationData & thisPopulationData,
-                      measure_t ** pMeasure,
-                      measure_t** m,
-                      Julian* IntervalDates,
-                      Julian StartDate,
-                      Julian EndDate,
-                      tract_t nTracts,
-                      int nTimeIntervals,
-                      BasePrint *pPrintDirection) {
+/** Translates previously calculated population measure array, with supporting
+    information, into non-cumulative measure array through interpolation.
+    Resulting array is such that:
+    ppNonCumulativeMeasure[i][t] = expected number of cases for time interval
+    at index i and tract at index t. Caller is responsible for ensuring that
+    'pIntervalDates' points to valid memory and contains a number of elements
+    equaling the number of time intervals plus one.*/
+measure_t CalcMeasure(RealDataStream& thisStream, TwoDimMeasureArray_t& NonCumulativeMeasureHandler,
+                      const Julian* pIntervalDates, Julian StartDate, Julian EndDate) {
 
-  int           i, n, lower, upper, nLowerPlus1;
-  tract_t       t;
-  measure_t  ** ppM, tTotalMeasure=0;
-  double        tempRatio, tempSum, temp1, temp2;
-  Julian        jLowDate, jLowDatePlus1;
-  long          nTotalYears = EndDate+1-StartDate/*TimeBetween(StartDate, EndDate, DAY)*/;
+  PopulationData      & thisPopulationData = thisStream.GetPopulationData();
+  int                   i, n, lower, upper, nLowerPlus1, nTimeIntervals = thisStream.GetNumTimeIntervals();
+  tract_t               t, nTracts = thisStream.GetNumTracts();                    ]
+  measure_t          ** ppM, ** pPopulationMeasure, ** ppNonCumulativeMeasure, tTotalMeasure=0;
+  double                tempRatio, tempSum, temp1, temp2;
+  Julian                jLowDate, jLowDatePlus1;
+  long                  nTotalDays = EndDate+1-StartDate/*TimeBetween(StartDate, EndDate, DAY)*/;
 
   try {
+    //get reference to data streams population measure
+    pPopulationMeasure = thisStream.GetPopulationMeasureArray();
+    //get reference to non-cummulative measure array
+    ppNonCumulativeMeasure = NonCumulativeMeasureHandler.GetArray();
+    //allocate temporary measure array to aide interpolation process
     TwoDimensionArrayHandler<measure_t> M_ArrayHandler(nTimeIntervals+1, nTracts);
     ppM = M_ArrayHandler.GetArray();
+    
     for (i=0; i < nTimeIntervals+1; ++i) {
-       thisPopulationData.GetPopUpLowIndex(IntervalDates, i, nTimeIntervals, &upper, &lower);
+       thisPopulationData.GetPopUpLowIndex(pIntervalDates, i, nTimeIntervals, upper, lower);
        jLowDate = thisPopulationData.GetPopulationDate(lower);
        nLowerPlus1 = lower + 1;
        jLowDatePlus1 = thisPopulationData.GetPopulationDate(lower+1);
        for (t=0; t < nTracts; ++t) {
           if (jLowDatePlus1 == static_cast<Julian>(-1))
-            ppM[i][t] = m[lower][t];
+            ppM[i][t] = pPopulationMeasure[lower][t];
           else {
-            temp1     = IntervalDates[i] - jLowDate;
-            temp2     = jLowDatePlus1-jLowDate;
+            temp1     = pIntervalDates[i] - jLowDate;
+            temp2     = jLowDatePlus1 - jLowDate;
             tempRatio = (double)(temp1/temp2);
-            ppM[i][t]   = tempRatio * m[nLowerPlus1][t] + (1 - tempRatio) * m[lower][t];
+            ppM[i][t]   = tempRatio * pPopulationMeasure[nLowerPlus1][t] + (1 - tempRatio) * pPopulationMeasure[lower][t];
     	  }
-       } /* nTracts */
-    }   /* nTimeIntervals */
+       }
+    }
 
     for (i=0; i < nTimeIntervals; ++i) {
-       thisPopulationData.GetPopUpLowIndex(IntervalDates, i, nTimeIntervals, &upper, &lower);
+       thisPopulationData.GetPopUpLowIndex(pIntervalDates, i, nTimeIntervals, upper, lower);
        for (t=0; t < nTracts; ++t) {
-          pMeasure[i][t] = 0.0;
+          ppNonCumulativeMeasure[i][t] = 0.0;
           tempSum  = 0.0;
-    	  temp1    = .5*(m[lower][t] + ppM[i][t])*(IntervalDates[i]-thisPopulationData.GetPopulationDate(lower));
-          temp2    = .5*(m[upper][t] + ppM[i+1][t])*(thisPopulationData.GetPopulationDate(upper)-IntervalDates[i+1]);
+    	  temp1    = .5*(pPopulationMeasure[lower][t] + ppM[i][t])*(pIntervalDates[i]-thisPopulationData.GetPopulationDate(lower));
+          temp2    = .5*(pPopulationMeasure[upper][t] + ppM[i+1][t])*(thisPopulationData.GetPopulationDate(upper)-pIntervalDates[i+1]);
           for (n=lower; n < upper; ++n) {
-    	     tempSum = tempSum + (((m[n][t] + m[n+1][t]) / 2) * (thisPopulationData.GetPopulationDate(n+1)-thisPopulationData.GetPopulationDate(n)));
+    	     tempSum = tempSum + (((pPopulationMeasure[n][t] + pPopulationMeasure[n+1][t]) / 2) * (thisPopulationData.GetPopulationDate(n+1)-thisPopulationData.GetPopulationDate(n)));
           }
-          pMeasure[i][t] = ((tempSum - temp1 - temp2) / nTotalYears);
-          tTotalMeasure += pMeasure[i][t];
-       } /* nTracts */
-    } /* nTimeIntervals */
+          ppNonCumulativeMeasure[i][t] = ((tempSum - temp1 - temp2) / nTotalDays);
+          tTotalMeasure += ppNonCumulativeMeasure[i][t];
+       }
+    }
 
 #ifdef DEBUGMEASURE
       fprintf(pMResult, "Time  Lower  Upper\n");
       fprintf(pMResult, "Intv  Index  Index    Tract   M           Measure\n");
       for (i=0; i<nTimeIntervals; i++)
       {
-    	 thisPopulationData.GetPopUpLowIndex(IntervalDates, i, nTimeIntervals, &upper, &lower);
+    	 thisPopulationData.GetPopUpLowIndex(IntervalDates, i, nTimeIntervals, upper, lower);
         for (t=0; t<nTracts; t++)
         {
           if (t==0)
             fprintf(pMResult, "%i     %i      %i        ", i, lower, upper);
     		else
             fprintf(pMResult, "                      ");
-          fprintf(pMResult, "%i       %f    %f\n", t, ppM[i][t], pMeasure[i][t]);
+          fprintf(pMResult, "%i       %f    %f\n", t, ppM[i][t], ppNonCumulativeMeasure[i][t]);
     	 }
       }
       fprintf(pMResult, "\n");

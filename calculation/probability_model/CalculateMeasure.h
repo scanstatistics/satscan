@@ -7,30 +7,18 @@
 #include "JulianDates.h"
 #include "DataStream.h"
 
-int CalcRisk(RealDataStream & thisStream,
-             double                  ** pRisk,
-             double                   * pAlpha,
-             tract_t                    nTracts,
-             BasePrint                * pPrintDirection);
+// The functions: CalcRisk(...), Calcm(...), and CalcMeasure(...) are functions
+// designed and utilized for the process of calculating the expected number of
+// cases with the Poisson probability model.
 
-int Calcm(PopulationData & thisPopulationData,
-          measure_t           ** m,
-          double               * pRisk,
-          int                    nCats,
-          tract_t                nTracts,
-          int                    nPops,
-          BasePrint            * pPrintDirection);
+std::vector<double>& CalcRisk(RealDataStream& thisStream, std::vector<double>& vRisk, Julian StudyStartDate, Julian StudyEndDate);
 
+void Calcm(RealDataStream& thisStream, Julian StudyStartDate, Julian StudyEndDate);
 
-measure_t CalcMeasure(PopulationData & thisPopulationData,
-                      measure_t            ** pMeasure,
-                      measure_t            ** m,
-                      Julian                * pStartDates,
-                      Julian                  StartDate,
-                      Julian                  EndDate,
-                      tract_t                 nTracts,
-                      int                     nTimeIntervals,
-                      BasePrint             * pPrintDirection);
+measure_t CalcMeasure(RealDataStream& thisStream, TwoDimMeasureArray_t& NonCumulativeMeasureHandler,
+                      const Julian* pIntervalDates, Julian StartDate, Julian EndDate);
+
+// The following functions are either unfinished design thoughts or deprecated.
 
 int AdjustForDiscreteTimeTrend(measure_t*** pMeasure,
                                count_t      *Cases[],
