@@ -235,9 +235,8 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
               }     // end if fp
            }
           // record DBF output data - AJV
-       if(Data.m_pParameters->GetOutputAreaSpecificDBF())
-          if(gpAreaDBFReport)
-             gpAreaDBFReport->RecordClusterData(*this, Data, i);
+       if(gpAreaDBFReport && Data.m_pParameters->GetOutputAreaSpecificDBF())
+          gpAreaDBFReport->RecordClusterData(*this, Data, i);
       }
       if(fp != NULL)
          fprintf(fp, "\n");
