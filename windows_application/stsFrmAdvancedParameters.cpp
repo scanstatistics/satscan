@@ -430,7 +430,7 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl) {
 /** validates input file settings - throws exception */
 void TfrmAdvancedParameters::ValidateInputFilesSettings() {
   try {
-    if (gAnalysisSettings.rgProbability->ItemIndex == SPACETIMEPERMUTATION &&
+    if (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION &&
         gAnalysisSettings.rdoSpatialPercentage->Checked && !edtMaxCirclePopulationFilename->Text.Length())
        GenerateAFException("For a Space-Time Permutation model with the maximum spatial cluster size defined as a\n"
                            "percentage of the population at risk, a Maximum Circle Population file must be specified.\n"
