@@ -432,10 +432,10 @@ void TfrmAdvancedParameters::ValidateAdjustmentSettings() {
   try {
     if (chkAdjustForKnownRelativeRisks->Enabled && chkAdjustForKnownRelativeRisks->Checked) {
       if (edtAdjustmentsByRelativeRisksFile->Text.IsEmpty())
-        GenerateAFException("Please specifiy an adjustment for relative risks file.",
+        GenerateAFException("Please specifiy an adjustments file.",
                             "ValidateAdjustmentSettings()", *edtAdjustmentsByRelativeRisksFile);
       if (!File_Exists(edtAdjustmentsByRelativeRisksFile->Text.c_str()))
-        GenerateAFException("Adjustment for relative risks file could not be opened.",
+        GenerateAFException("Adjustments file could not be opened.",
                             "ValidateAdjustmentSettings()", *edtAdjustmentsByRelativeRisksFile);
     }
   }

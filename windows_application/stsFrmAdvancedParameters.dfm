@@ -91,10 +91,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object lblAdjustmentsByRelativeRisksFile: TLabel
           Left = 12
           Top = 45
-          Width = 163
+          Width = 79
           Height = 13
           Anchors = []
-          Caption = 'Adjustment For Relative Risks File:'
+          Caption = 'Adjustments File:'
         end
         object edtAdjustmentsByRelativeRisksFile: TEdit
           Left = 12
