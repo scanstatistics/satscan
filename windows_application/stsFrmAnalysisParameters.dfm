@@ -782,7 +782,7 @@ object frmAnalysis: TfrmAnalysis
           Top = 34
           Width = 217
           Height = 17
-          Caption = 'days or months or years'
+          Caption = 'Years'
           TabOrder = 3
         end
       end
