@@ -415,6 +415,7 @@ void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, const Ascii
         sBuffer << sWork;
       }
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+      break;
     case ORDINAL :
       ZdGenerateException("Call DisplayPopulationOrdinal() for ordinal model.","DisplayPopulation()");
     default : break;
