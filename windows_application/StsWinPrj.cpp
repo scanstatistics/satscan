@@ -57,16 +57,21 @@ USEUNIT("..\calculation\analysis\PurelySpatialMonotoneAnalysis.cpp");
 USEUNIT("..\calculation\analysis\PurelyTemporalAnalysis.cpp");
 USEUNIT("..\calculation\Parameters.cpp");
 USEUNIT("..\calculation\probability_model\SpaceTimePermutationModel.cpp");
+USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex540.lib");
+USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
+USEUNIT("..\calculation\SaTScanBasis.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
         try
         {
+                 BasisInit();
                  Application->Initialize();
                  Application->Title = "SaTScan";
                  Application->HelpFile = "Stswinprj.HLP";
                  Application->CreateForm(__classid(TfrmMainForm), &frmMainForm);
                  Application->Run();
+                 BasisExit();
         }
         catch (Exception &exception)
         {
