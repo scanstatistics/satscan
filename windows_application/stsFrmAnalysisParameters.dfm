@@ -409,7 +409,6 @@ object frmAnalysis: TfrmAnalysis
           Top = 40
           Width = 25
           Height = 21
-          Color = clInactiveBorder
           Enabled = False
           MaxLength = 2
           TabOrder = 2
@@ -422,7 +421,6 @@ object frmAnalysis: TfrmAnalysis
           Top = 72
           Width = 25
           Height = 21
-          Color = clInactiveBorder
           Enabled = False
           MaxLength = 2
           TabOrder = 3
@@ -435,7 +433,6 @@ object frmAnalysis: TfrmAnalysis
           Top = 40
           Width = 25
           Height = 21
-          Color = clInactiveBorder
           Enabled = False
           MaxLength = 2
           TabOrder = 4
@@ -448,7 +445,6 @@ object frmAnalysis: TfrmAnalysis
           Top = 72
           Width = 25
           Height = 21
-          Color = clInactiveBorder
           Enabled = False
           MaxLength = 2
           TabOrder = 5
@@ -530,7 +526,6 @@ object frmAnalysis: TfrmAnalysis
           Top = 96
           Width = 25
           Height = 21
-          Color = clInactiveBorder
           Enabled = False
           MaxLength = 3
           TabOrder = 3
@@ -558,7 +553,6 @@ object frmAnalysis: TfrmAnalysis
         Top = 232
         Width = 41
         Height = 21
-        Color = clInactiveBorder
         Enabled = False
         MaxLength = 5
         TabOrder = 2
@@ -632,7 +626,6 @@ object frmAnalysis: TfrmAnalysis
           Top = 72
           Width = 41
           Height = 21
-          Color = clInactiveBorder
           Enabled = False
           MaxLength = 4
           TabOrder = 0
@@ -645,7 +638,6 @@ object frmAnalysis: TfrmAnalysis
           Top = 72
           Width = 25
           Height = 21
-          Color = clInactiveBorder
           Enabled = False
           MaxLength = 2
           TabOrder = 1
@@ -658,7 +650,6 @@ object frmAnalysis: TfrmAnalysis
           Top = 72
           Width = 25
           Height = 21
-          Color = clInactiveBorder
           Enabled = False
           MaxLength = 2
           TabOrder = 2

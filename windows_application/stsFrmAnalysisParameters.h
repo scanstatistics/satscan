@@ -178,6 +178,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
         void __fastcall FormActivate(TObject *Sender);
 
   private:	// User declarations
+    PrintNull           gNullPrint;
     CParameters         gParameters;
     AnsiString          gsParamFileName;
 
@@ -214,7 +215,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                OnPrecisionTimesClick();
     void                OnProbabilityModelClick();
     void                OnTemporalTrendClick();
-    void                ParseDate(char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *pDay);
+    void                ParseDate(const char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *pDay);
     void                SaveTextParameters();
     void                SetSpatialDistanceCaption();
     void                Setup(const char * sParameterFileName);
