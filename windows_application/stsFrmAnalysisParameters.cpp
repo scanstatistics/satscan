@@ -469,6 +469,7 @@ void TfrmAnalysis::DefaultHiddenParameters() {
   gParameters.SetRiskType(STANDARDRISK);
   gParameters.SetPowerCalculation(false);
   gParameters.SetValidatePriorToCalculation(true);
+  //non-parametric removed from interface, replaced with time stratified
   if (gParameters.GetTimeTrendAdjustmentType() == NONPARAMETRIC)
     gParameters.SetTimeTrendAdjustmentType(STRATIFIED_RANDOMIZATION);
   gParameters.SetSimulationType(STANDARD);
