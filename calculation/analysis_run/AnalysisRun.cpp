@@ -184,13 +184,13 @@ void AnalysisRunner::CreateReport() {
     is performing. */
 void AnalysisRunner::DisplayFindClusterHeading() {
   if (!gParameters.GetIsSequentialScanning())
-    gPrintDirection.SatScanPrintf("Finding the most likely clusters\n");
+    gPrintDirection.SatScanPrintf("Finding the most likely clusters.\n");
   else {
     switch(giAnalysisCount) {
-      case  1: gPrintDirection.SatScanPrintf("Finding the most likely cluster\n"); break;
-      case  2: gPrintDirection.SatScanPrintf("Finding the second most likely cluster\n"); break;
-      case  3: gPrintDirection.SatScanPrintf("Finding the third most likely cluster\n"); break;
-      default: gPrintDirection.SatScanPrintf("Finding the %ith most likely cluster\n", giAnalysisCount);
+      case  1: gPrintDirection.SatScanPrintf("Finding the most likely cluster.\n"); break;
+      case  2: gPrintDirection.SatScanPrintf("Finding the second most likely cluster.\n"); break;
+      case  3: gPrintDirection.SatScanPrintf("Finding the third most likely cluster.\n"); break;
+      default: gPrintDirection.SatScanPrintf("Finding the %ith most likely cluster.\n", giAnalysisCount);
     }
   }
 }
@@ -331,7 +331,7 @@ void AnalysisRunner::Execute() {
     //validate that data set contains cases
     for (unsigned int i=0; i < gpDataHub->GetDataStreamHandler().GetNumStreams(); ++i)
        if (gpDataHub->GetDataStreamHandler().GetStream(i).GetTotalCases() == 0)
-         SSGenerateException("Error: No cases found in input stream %u.\n","Execute()", i);
+         GenerateResolvableException("Error: No cases found in input stream %u.\n","Execute()", i);
     //detect user cancellation
     if (gPrintDirection.GetIsCanceled())
       return;
@@ -400,7 +400,7 @@ void AnalysisRunner::FinalizeReport() {
   char        * szSeconds = "seconds";
 
   try {
-    gPrintDirection.SatScanPrintf("Finishing up results...\n");
+    gPrintDirection.SatScanPrintf("Printing analysis settings to the results file...\n");
     OpenReportFile(fp, true);
     if (gTopClustersContainer.GetNumClustersRetained() == 0) {
       fprintf(fp, "\nNo clusters were found.\n");
@@ -839,7 +839,7 @@ void AnalysisRunner::UpdateReport() {
   FILE         * fp=0;
 
   try {
-    gPrintDirection.SatScanPrintf("\nRecording results to file...\n");
+    gPrintDirection.SatScanPrintf("\nPrinting analysis results to file...\n");
     if (gParameters.GetIsSequentialScanning())
       DisplayTopCluster();
     else
