@@ -595,14 +595,16 @@ void CPoissonModel::MakeDataTimeStratified(DataStreamInterface & DataInterface) 
 /** Generate case counts under the null hypothesis (standard) */
 void CPoissonModel::MakeDataUnderNullHypothesis(DataStreamInterface & DataInterface) {
   tract_t               t;
-  count_t               c, d, cumcases=0, ** ppSimCases(DataInterface.GetCaseArray());
-  measure_t             cummeasure=0, ** ppMeasure(DataInterface.GetMeasureArray());
+  count_t               c, d, cumcases=0, tTotalCases(DataInterface.GetTotalCasesCount()),
+                     ** ppSimCases(DataInterface.GetCaseArray());
+  measure_t             cummeasure=0, tTotalMeasure(DataInterface.GetTotalMeasureCount()),
+                     ** ppMeasure(DataInterface.GetMeasureArray());
   int                   i;
 
   for (t=0; t < gData.m_nTotalTractsAtStart; ++t) {
-     if (DataInterface.GetTotalMeasureCount() - cummeasure > 0)
-       c = gBinomialGenerator.GetBinomialDistributedVariable(DataInterface.GetTotalCasesCount() - cumcases,
-                              ppMeasure[0][t] / (DataInterface.GetTotalMeasureCount() - cummeasure), m_RandomNumberGenerator);
+     if (tTotalMeasure - cummeasure > 0)
+       c = gBinomialGenerator.GetBinomialDistributedVariable(tTotalCases - cumcases,
+                              ppMeasure[0][t] / (tTotalMeasure - cummeasure), m_RandomNumberGenerator);
      else
        c = 0;
      ppSimCases[0][t] = c;
