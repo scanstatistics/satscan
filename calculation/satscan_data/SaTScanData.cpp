@@ -2,6 +2,12 @@
 #pragma hdrstop
 #include "SaTScanData.h"
 #include "TimeIntervalRange.h"
+#include "RankDataStreamHandler.h"
+#include "SurvivalDataStreamHandler.h"
+#include "NormalDataStreamHandler.h"
+#include "PoissonDataStreamHandler.h"
+#include "BernoulliDataStreamHandler.h"
+#include "SpaceTimePermutationDataStreamHandler.h"
 
 CSaTScanData::CSaTScanData(CParameters* pParameters, BasePrint *pPrintDirection) {
   try {
@@ -148,24 +154,6 @@ void CSaTScanData::AllocateSortedArray() {
     delete gpSortedUShortHandler; gpSortedUShortHandler=0;
     delete gpSortedIntHandler; gpSortedIntHandler=0;
     x.AddCallpath("AllocateSortedArray()","CSaTScanData");
-    throw;
-  }
-}
-
-void CSaTScanData::AllocateSimulationStructures() {
-  ProbabiltyModelType   eProbabiltyModelType(m_pParameters->GetProbabiltyModelType());
-  AnalysisType          eAnalysisType(m_pParameters->GetAnalysisType());
-
-  try {
-    //allocate simulation case arrays
-    if (eProbabiltyModelType != 10/*normal*/ && eProbabiltyModelType != 11/*rank*/)
-      gpDataStreams->AllocateSimulationCases();
-    //allocate simulation measure arrays
-    if (eProbabiltyModelType == 10/*normal*/ || eProbabiltyModelType == 11/*rank*/ || eProbabiltyModelType == 12/*survival*/)
-      gpDataStreams->AllocateSimulationMeasure();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateSimulationStructures()","CSaTScanData");
     throw;
   }
 }
@@ -368,9 +356,7 @@ count_t CSaTScanData::GetCaseCount(count_t ** ppCumulativeCases, int iInterval, 
 //Measure Adjustment used when calculating relative risk/expected counts
 //to disply in report file.
 double CSaTScanData::GetMeasureAdjustment() const {
-  if (m_pParameters->GetProbabiltyModelType() == POISSON || m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION)
-    return 1.0;
-  else if (m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
+  if (m_pParameters->GetProbabiltyModelType() == BERNOULLI) {
     //NOTE: This function is hard code to report only the measure adjustment
     //      based upon data from first data stream, at least for the time being.
     double dTotalCases = gpDataStreams->GetStream(0).GetTotalCases();
@@ -378,18 +364,7 @@ double CSaTScanData::GetMeasureAdjustment() const {
     return dTotalCases / dTotalPopulation;
   }
   else
-    return 0.0;
-}
-
-/**********************************************************************
- Return "nearness"-th closest neighbor to "t"
- (nearness == 1 returns "t").
- **********************************************************************/
-tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const {
-   if (gpSortedUShortHandler)
-      return (tract_t)gpSortedUShortHandler->GetArray()[iEllipse][t][nearness - 1];
-   else
-      return gpSortedIntHandler->GetArray()[iEllipse][t][nearness - 1];
+    return 1.0;
 }
 
 /** Input: Date.                                                    **/   
@@ -427,17 +402,20 @@ void CSaTScanData::Init() {
   gtTotalMeasure=0;
   gtTotalCases=0;
   gtTotalPopulation=0;
+  gpSortedIntReference = 0;
+  gpSortedUShortReference = 0;
+  giImpliedNeighborCount = 0;
 }
 
-void CSaTScanData::MakeData(int iSimulationNumber, DataStreamGateway & DataGateway) {
-   try {
-     for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
-        m_pModel->MakeData(iSimulationNumber, DataGateway.GetDataStreamInterface(t), t);
-   }
-   catch (ZdException & x) {
-      x.AddCallpath("MakeData()", "CSaTScanData");
-      throw;
-   }
+/** invokes randomization on all stream randomization data */ 
+void CSaTScanData::RandomizeData(int iSimulationNumber) {
+  try {
+    gpDataStreams->RandomizeData(iSimulationNumber);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("RandomizeData()","CSaTScanData");
+    throw;
+  }
 }
 
 /** reads data from input files for a Bernoulli probability model */
@@ -448,14 +426,8 @@ bool CSaTScanData::ReadBernoulliData() {
     if (!ReadCoordinatesFile())
       return false;
 
-    gpDataStreams = new DataStreamHandler(*this, gpPrint);
-    for (t=0; t < gpDataStreams->GetNumStreams(); ++t) {
-      gpDataStreams->GetStream(t).SetAggregateCategories(true); 
-      if (!gpDataStreams->ReadCaseFile(t))
-        return false;
-      if (!gpDataStreams->ReadControlFile(t))
-        return false;
-    }    
+    gpDataStreams = new BernoulliDataStreamHandler(*this, gpPrint);
+    gpDataStreams->ReadData();
     if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
     if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
@@ -470,6 +442,8 @@ bool CSaTScanData::ReadBernoulliData() {
 }
 
 void CSaTScanData::ReadDataFromFiles() {
+  bool  bReadSuccess;
+
   try {
     SetStartAndEndDates();
     SetNumTimeIntervals();
@@ -479,7 +453,17 @@ void CSaTScanData::ReadDataFromFiles() {
     if (m_pParameters->GetIsProspectiveAnalysis())
       SetProspectiveIntervalStart();
     SetMaxTemporalWindowLengthIndicator();
-    if (! m_pModel->ReadData())
+    switch (m_pParameters->GetProbabiltyModelType()) {
+      case POISSON              : bReadSuccess = ReadPoissonData(); break;
+      case BERNOULLI            : bReadSuccess = ReadBernoulliData(); break;
+      case SPACETIMEPERMUTATION : bReadSuccess = ReadSpaceTimePermutationData(); break;
+      case NORMAL               : bReadSuccess = ReadNormalData(); break;
+      case SURVIVAL             : bReadSuccess = ReadSurvivalData(); break;
+      case RANK                 : bReadSuccess = ReadRankData(); break;
+      default :
+        ZdGenerateException("Unknown probability model type '%d'.","ReadDataFromFiles()", m_pParameters->GetProbabiltyModelType());
+    };
+    if (!bReadSuccess)
       SSGenerateException("\nProblem encountered reading in data.", "ReadDataFromFiles");
     gpTInfo->tiConcaticateDuplicateTractIdentifiers();
     gpGInfo->giFindDuplicateCoords(stderr);
@@ -491,6 +475,28 @@ void CSaTScanData::ReadDataFromFiles() {
 }
 
 /** reads data from input files for a Poisson probability model */
+bool CSaTScanData::ReadNormalData() {
+  size_t        t;
+
+  try {
+    if (!ReadCoordinatesFile())
+      return false;
+    gpDataStreams = new NormalDataStreamHandler(*this, gpPrint);
+    gpDataStreams->ReadData();
+    if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+        return false;
+    if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    delete gpDataStreams; gpDataStreams=0;
+    x.AddCallpath("ReadNormalData()","CSaTScanData");
+    throw;
+  }
+  return true;
+}
+
+/** reads data from input files for a Poisson probability model */
 bool CSaTScanData::ReadPoissonData() {
   size_t        t;
 
@@ -498,14 +504,8 @@ bool CSaTScanData::ReadPoissonData() {
     if (!ReadCoordinatesFile())
       return false;
 
-    gpDataStreams = new DataStreamHandler(*this, gpPrint);
-    for (t=0; t < gpDataStreams->GetNumStreams(); ++t) {
-       if (!gpDataStreams->ReadPopulationFile(t))
-         return false;
-       if (!gpDataStreams->ReadCaseFile(t))
-         return false;
-       gpDataStreams->GetStream(t).CheckPopulationDataCases(*this);
-    }
+    gpDataStreams = new PoissonDataStreamHandler(*this, gpPrint);
+    gpDataStreams->ReadData();
     if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
     if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
@@ -514,6 +514,28 @@ bool CSaTScanData::ReadPoissonData() {
   catch (ZdException &x) {
     delete gpDataStreams; gpDataStreams=0;
     x.AddCallpath("ReadPoissonData()","CSaTScanData");
+    throw;
+  }
+  return true;
+}
+
+/** reads data from input files for a Rank probability model */
+bool CSaTScanData::ReadRankData() {
+  size_t        t;
+
+  try {
+    if (!ReadCoordinatesFile())
+      return false;
+    gpDataStreams = new RankDataStreamHandler(*this, gpPrint);
+    gpDataStreams->ReadData();
+    if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+        return false;
+    if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    delete gpDataStreams; gpDataStreams=0;
+    x.AddCallpath("ReadRankData()","CSaTScanData");
     throw;
   }
   return true;
@@ -528,16 +550,36 @@ bool CSaTScanData::ReadSpaceTimePermutationData() {
       return false;
     if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
        return false;
-    gpDataStreams = new DataStreamHandler(*this, gpPrint);
-    for (t=0; t < gpDataStreams->GetNumStreams(); ++t)
-       if (!gpDataStreams->ReadCaseFile(t))
-         return false;
+    gpDataStreams = new SpaceTimePermutationDataStreamHandler(*this, gpPrint);
+    gpDataStreams->ReadData();
     if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
       return false;
   }
   catch (ZdException &x) {
     delete gpDataStreams; gpDataStreams=0;
     x.AddCallpath("ReadSpaceTimePermutationData()","CSaTScanData");
+    throw;
+  }
+  return true;
+}
+
+/** reads data from input files for a Survival probability model */
+bool CSaTScanData::ReadSurvivalData() {
+  size_t        t;
+
+  try {
+    if (!ReadCoordinatesFile())
+      return false;
+    gpDataStreams = new SurvivalDataStreamHandler(*this, gpPrint);
+    gpDataStreams->ReadData();
+    if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+        return false;
+    if (m_pParameters->UseSpecialGrid() && !ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    delete gpDataStreams; gpDataStreams=0;
+    x.AddCallpath("ReadRankData()","CSaTScanData");
     throw;
   }
   return true;
@@ -719,23 +761,6 @@ void CSaTScanData::SetNumTimeIntervals() {
     SSGenerateException("Error: Time stratified randomization adjustment requires more than\n"
                         "       one time interval.\n", "SetNumTimeIntervals()");
 }
-
-/** allocates probability model */
-/*void CSaTScanData::SetProbabilityModel() {
-  try {
-    switch (m_pParameters->GetProbabiltyModelType()) {
-       case POISSON              : m_pModel = new CPoissonModel(*m_pParameters, *this, *gpPrint);   break;
-       case BERNOULLI            : m_pModel = new CBernoulliModel(*m_pParameters, *this, *gpPrint); break;
-       case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(*m_pParameters, *this, *gpPrint); break;
-       default : ZdException::Generate("Unknown probability model type: '%d'.\n",
-                                       "SetProbabilityModel()", m_pParameters->GetProbabiltyModelType());
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetProbabilityModel()","CSaTScanData");
-    throw;
-  }
-} */
 
 /* Calculates which time interval the prospectice space-time start date is in.*/
 /* MAKE SURE THIS IS EXECUTED AFTER THE  m_nTimeIntervals VARIABLE HAS BEEN SET */

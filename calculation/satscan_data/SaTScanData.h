@@ -40,7 +40,10 @@ class CSaTScanData {
     TractHandler                              * gpTInfo;
     TwoDimensionArrayHandler<tract_t>         * gpNeighborCountHandler;
     ThreeDimensionArrayHandler<tract_t>       * gpSortedIntHandler;
+    const tract_t                             * gpSortedIntReference;
     ThreeDimensionArrayHandler<unsigned short>* gpSortedUShortHandler;
+    const unsigned short                      * gpSortedUShortReference;
+    tract_t                                     giImpliedNeighborCount;
     double                                      m_nMaxCircleSize;
     double                                      m_nMaxReportedCircleSize;
     double                                      m_nAnnualRatePop;
@@ -105,7 +108,6 @@ class CSaTScanData {
                                                 m_nProspectiveIntervalStart; // interval where start of prospective space-time begins
 
     virtual void                                AdjustNeighborCounts(); // For sequential analysis, after top cluster removed
-    virtual void                                AllocateSimulationStructures();
     virtual bool                                CalculateMeasure(DataStream & thisStream);
     bool                                        CalculateExpectedCases();
     int                                         ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate);
@@ -118,9 +120,13 @@ class CSaTScanData {
     DataStreamHandler                         & GetDataStreamHandler() {return *gpDataStreams;}
     const DataStreamHandler                   & GetDataStreamHandler() const {return *gpDataStreams;}
     inline const GInfo                        * GetGInfo() const { return gpGInfo;}
+    tract_t                                     GetImpliedNeighborCount() const {return giImpliedNeighborCount;}
     double                                      GetMaxCircleSize() {return m_nMaxCircleSize;}
     double                                      GetMeasureAdjustment() const;
-    virtual tract_t                             GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
+
+    inline virtual tract_t                      GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
+    inline virtual tract_t                      GetNeighborTractIndex(unsigned int nearness) const;
+
     inline tract_t                           ** GetNeighborCountArray() {return gpNeighborCountHandler->GetArray();}
     inline tract_t                           ** GetNeighborCountArray() const {return gpNeighborCountHandler->GetArray();}
     inline size_t                               GetNumDataStreams() const {return gpDataStreams->GetNumStreams();}
@@ -135,15 +141,19 @@ class CSaTScanData {
     const Julian                              * GetTimeIntervalStartTimes() const {return m_pIntervalStartTimes;}
     inline const TractHandler                 * GetTInfo() const { return gpTInfo;}
     double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}
-    virtual void                                MakeData(int iSimulationNumber, DataStreamGateway & DataGateway);
+    virtual void                                RandomizeData(int iSimulationNumber);
     bool                                        ReadBernoulliData();
     bool                                        ReadCoordinatesFile();
     virtual void                                ReadDataFromFiles();
     bool                                        ReadGridFile();
     bool                                        ReadMaxCirclePopulationFile();
+    bool                                        ReadNormalData();
     bool                                        ReadPoissonData();
+    bool                                        ReadRankData();
     bool                                        ReadSpaceTimePermutationData();
+    bool                                        ReadSurvivalData();
     void                                        RemoveTractSignificance(tract_t tTractIndex);
+    inline void                                 SetImpliedCentroid(int iEllipse, tract_t tCentroid);
     void                                        SetMaxCircleSize();
 
     inline measure_t                            GetTotalDataStreamMeasure(unsigned int iStream) const {return gpDataStreams->GetStream(iStream).GetTotalMeasure();}
@@ -160,5 +170,29 @@ class CSaTScanData {
     virtual void                                DisplayMeasure(FILE* pFile);
     virtual void                                DisplaySimCases(FILE* pFile);
 };
+
+/** Return "nearness"-th closest neighbor to "t" (nearness == 1 returns "t"). */
+inline tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const {
+  if (gpSortedUShortHandler)
+    return (tract_t)gpSortedUShortHandler->GetArray()[iEllipse][t][nearness - 1];
+  else
+    return gpSortedIntHandler->GetArray()[iEllipse][t][nearness - 1];
+}
+
+/** Return "nearness"-th closest neighbor to "t" (nearness == 1 returns "t"). */
+inline tract_t CSaTScanData::GetNeighborTractIndex(unsigned int nearness) const {
+  if (gpSortedUShortReference)
+    return (tract_t)gpSortedUShortReference[nearness - 1];
+  else
+    return gpSortedIntReference[nearness - 1];
+}
+
+inline void CSaTScanData::SetImpliedCentroid(int iEllipse, tract_t tCentroid) {
+  if (gpSortedUShortHandler)
+    gpSortedUShortReference = gpSortedUShortHandler->GetArray()[iEllipse][tCentroid];
+  else
+    gpSortedIntReference = gpSortedIntHandler->GetArray()[iEllipse][tCentroid];
+  giImpliedNeighborCount = gpNeighborCountHandler->GetArray()[iEllipse][tCentroid];
+}
 //*****************************************************************************
 #endif
