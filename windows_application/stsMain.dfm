@@ -93,7 +93,7 @@ object frmMainForm: TfrmMainForm
       ShowHint = True
     end
     object sbHelp: TSpeedButton
-      Left = 160
+      Left = 197
       Top = 4
       Width = 25
       Height = 25
@@ -178,6 +178,40 @@ object frmMainForm: TfrmMainForm
       Width = 2
       Height = 23
     end
+    object Bevel5: TBevel
+      Left = 189
+      Top = 4
+      Width = 2
+      Height = 23
+    end
+    object btnImportInputFile: TSpeedButton
+      Left = 159
+      Top = 4
+      Width = 25
+      Height = 25
+      Action = ImportAction
+      Flat = True
+      Glyph.Data = {
+        DE010000424DDE01000000000000760000002800000024000000120000000100
+        0400000000006801000000000000000000001000000010000000000000000000
+        80000080000000808000800000008000800080800000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
+        0000066666666666668888860000666666846668777780666666886668777788
+        0000666666644668FF7780666666688668FF77880000666844444468F7F78066
+        6888888868F7F7880000666486644668FF7780666886688668FF778800006664
+        86846668F7F780666886886668F7F7880000666486666668FF77806668866666
+        68FF778800006666666666688888806666666666688888880000000000006668
+        FF7F70888888886668FF7F780000877777706666888886877777786666888886
+        00008FBFBF7066666666668F7F7F78666666666600008BFBFB70666666666687
+        F7F778666666666600008FBFBF7066666666668F7F7F78666666666600008BFB
+        FB70666666666687F7F778666666666600008FBF000066666666668F7F888866
+        6666666600008BFB7F86666666666687F77F86666666666600008FBF78666666
+        6666668F7F786666666666660000888886666666666666888886666666666666
+        0000}
+      NumGlyphs = 2
+      ParentShowHint = False
+      ShowHint = True
+    end
   end
   object MainMenu1: TMainMenu
     Left = 8
@@ -192,11 +226,12 @@ object frmMainForm: TfrmMainForm
         Caption = '&Open'
         object mitOpenParameterFile: TMenuItem
           Action = OpenParameterFileAction
-          Caption = '&Open Parameter File'
+          Caption = '&Open Session File'
         end
         object OutputTextFile1: TMenuItem
           Caption = 'Output Text File'
           Enabled = False
+          Visible = False
           OnClick = OutputTextFile1Click
         end
       end
@@ -231,6 +266,10 @@ object frmMainForm: TfrmMainForm
       object Execute1: TMenuItem
         Action = ExecuteAction
         Caption = '&Execute'
+      end
+      object ImportInputFile1: TMenuItem
+        Action = ImportAction
+        Caption = 'Import Files'
       end
     end
     object Help1: TMenuItem
@@ -276,7 +315,7 @@ object frmMainForm: TfrmMainForm
     end
     object OpenParameterFileAction: TAction
       Category = 'All'
-      Hint = 'Open Parameter File'
+      Hint = 'Open Session File'
       ImageIndex = 0
       ShortCut = 16463
       OnExecute = OpenParameterFileActionExecute
@@ -291,7 +330,7 @@ object frmMainForm: TfrmMainForm
     object SaveSessionAsAction: TAction
       Category = 'Analysis'
       Caption = 'Save Session As'
-      Hint = 'Save As'
+      Hint = 'Save Session As'
       ShortCut = 16449
       OnExecute = SaveSessionAsActionExecute
     end
@@ -299,7 +338,7 @@ object frmMainForm: TfrmMainForm
       Category = 'Analysis'
       Caption = 'Close Session'
       Hint = 'Close Session'
-      ShortCut = 16457
+      ShortCut = 16460
       OnExecute = CloseSessionActionExecute
     end
     object PrintSessionAction: TAction
@@ -326,7 +365,7 @@ object frmMainForm: TfrmMainForm
     end
     object ExecuteAction: TAction
       Category = 'Analysis'
-      Hint = 'Execute'
+      Hint = 'Execute Session'
       ImageIndex = 2
       ShortCut = 16453
       OnExecute = ExecuteActionExecute
@@ -349,6 +388,12 @@ object frmMainForm: TfrmMainForm
       Caption = 'About SaTScan'
       Hint = 'About SaTScan'
       OnExecute = AboutSatscanActionExecute
+    end
+    object ImportAction: TAction
+      Category = 'Analysis'
+      Hint = 'Import Files'
+      ShortCut = 16457
+      OnExecute = ImportActionExecute
     end
   end
   object ImageList: TImageList

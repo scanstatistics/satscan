@@ -65,6 +65,10 @@ class TfrmMainForm : public TForm{
         TAction *HelpAction;
         TAction *UsingHelpAction;
         TAction *AboutSatscanAction;
+        TMenuItem *ImportInputFile1;
+        TBevel *Bevel5;
+        TSpeedButton *btnImportInputFile;
+        TAction *ImportAction;
         void __fastcall PrintSessionActionExecute(TObject *Sender);
         void __fastcall OutputTextFile1Click(TObject *Sender);
         void __fastcall NewSessionActionExecute(TObject *Sender);
@@ -78,6 +82,7 @@ class TfrmMainForm : public TForm{
         void __fastcall HelpActionExecute(TObject *Sender);
         void __fastcall UsingHelpActionExecute(TObject *Sender);
         void __fastcall AboutSatscanActionExecute(TObject *Sender);
+        void __fastcall ImportActionExecute(TObject *Sender);
   private:	// User declarations
     void __fastcall             OpenAFile();
     void                        ExecuteSession();

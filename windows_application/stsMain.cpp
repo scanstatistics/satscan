@@ -101,6 +101,18 @@ void __fastcall TfrmMainForm::HelpActionExecute(TObject *Sender) {
   }
 }
 //---------------------------------------------------------------------------
+void __fastcall TfrmMainForm::ImportActionExecute(TObject *Sender) {
+  try {
+    TfrmAnalysis * frmAnalysisForm = dynamic_cast<TfrmAnalysis *>(frmMainForm->ActiveMDIChild);
+    if (frmAnalysisForm)
+      frmAnalysisForm->LaunchImporter();
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ImportActionExecute()", "TfrmMainForm");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
 void __fastcall TfrmMainForm::NewSessionActionExecute(TObject *Sender) {
   try {
     new TfrmAnalysis(this);
@@ -264,6 +276,4 @@ void __fastcall TfrmMainForm::UsingHelpActionExecute(TObject *Sender) {
   WinHelp(0, "winhelp.hlp", HELP_HELPONHELP, 0L);
 }
 //---------------------------------------------------------------------------
-
-
 
