@@ -60,49 +60,57 @@ void __fastcall TfrmMainForm::ExecuteActionExecute(TObject *Sender) {
 }
 //---------------------------------------------------------------------------
 void TfrmMainForm::ExecuteSession() {
-  TfrmAnalysis                * frmBaseForm;
+  TfrmAnalysis                * frmAnalysis;
   CParameters                 * pSession;
   AnsiString                    sCaption;
   TfrmAnalysisRun             * pAnalysisRun=0;
   CalcThread                  * pThread;
-  std::string                   sFileName;
+  std::string                   sOutputFileName;
 
   try {
     //make sure window is a session window
-    frmBaseForm = dynamic_cast<TfrmAnalysis *>(frmMainForm->ActiveMDIChild);
-    if (frmBaseForm && frmBaseForm->ValidateParams()) {
-      pSession = (CParameters *)frmBaseForm->GetSession();
-      if (pSession) {
-        if (frmBaseForm->GetFileName()) {
-          sCaption = "Running ";
-          sCaption += frmBaseForm->GetFileName();
-        }
-        else
-          sCaption = "Running Unknown Session Name";
+    frmAnalysis = dynamic_cast<TfrmAnalysis *>(frmMainForm->ActiveMDIChild);
+    if (frmAnalysis && frmAnalysis->ValidateParams()) {
+      pSession = frmAnalysis->GetSession();
+      sOutputFileName = pSession->GetOutputFileName();
+      // if we don't already have a thread with the result file running then launch one
+      if (gRegistry.IsAlreadyRegistered(sOutputFileName))
+        ZdException::GenerateNotification("The filename you specified for results file is \ncurrently being written to by another analysis.\n"
+                                          "Please choose another results filename." , "Error!");
 
-        sFileName = pSession->GetOutputFileName();
-        // if we don't already have a thread with the result file running then launch one
-        if(!gRegistry.IsAlreadyRegistered(sFileName)) {
-           gRegistry.Register(sFileName);
-           pAnalysisRun = new TfrmAnalysisRun(this, sFileName, gRegistry, ActionList);
-           CalcThread * pThread = new CalcThread(true, *pSession, sCaption.c_str(), *pAnalysisRun);
-           pThread->Resume(); // starts the thread
-        }
-        else   // there's already a thread writing to this output file
-           ZdException::GenerateNotification("The filename you specified for results file is \ncurrently being written to by another analysis.\n"
-                                             "Please choose another results filename." , "Error!");
-      }  // end if session
+      sCaption.printf("Running %s", (frmAnalysis->GetFileName() ? frmAnalysis->GetFileName() : "Session"));
+      pAnalysisRun = new TfrmAnalysisRun(this, *pSession, sOutputFileName, gRegistry, ActionList);
+      pAnalysisRun->Caption = sCaption;
+      gRegistry.Register(sOutputFileName);
+      pAnalysisRun->LaunchThread();
     }
   }
   catch (ZdException & x) {
-    x.AddCallpath("ExecuteSession()", "TfrmMainForm");
+    gRegistry.Register(sOutputFileName);
     delete pAnalysisRun;
+    x.AddCallpath("ExecuteSession()", "TfrmMainForm");
     throw;
   }
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmMainForm::ExitActionExecute(TObject *Sender) {
   Close();
+}
+//---------------------------------------------------------------------------
+void TfrmMainForm::ForceClose() {
+  stsBaseAnalysisChildForm   * pBaseForm;
+  int                          i;
+
+  try {
+    for (i=0; i < MDIChildCount; ++i) {
+       pBaseForm = dynamic_cast<stsBaseAnalysisChildForm*>(MDIChildren[i]);
+       if (pBaseForm)
+         pBaseForm->CloseForm(true);
+       else
+         MDIChildren[i]->Close();
+    }
+  }
+  catch (...){}
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmMainForm::HelpActionExecute(TObject *Sender) {
@@ -345,10 +353,27 @@ void __fastcall TfrmMainForm::ActionReopenExecute(TObject *Sender) {
 //---------------------------------------------------------------------------
 void __fastcall TfrmMainForm::FormClose(TObject *Sender, TCloseAction &Action) {
   try {
-    for (int i=0; i < MDIChildCount; i++)
-       MDIChildren[i]->Close();
+    if (GetAnalysesRunning() &&
+        TBMessageBox::Response(this, "Warning", "There are analyses currently executing. "
+                                                "Are you sure you want to exit SaTScan?", XBMB_YES|XBMB_CANCEL) == mrCancel)
+      Action = caNone;
+    else
+      ForceClose();
   }
   catch (...){}
+}
+//---------------------------------------------------------------------------
+bool TfrmMainForm::GetAnalysesRunning() {
+  int                           i;
+  TfrmAnalysisRun             * pAnalysisRun;
+  bool                          bReturn(false);
+
+  //loop through to find if there are running analyses
+  for (i=0; i < MDIChildCount && !bReturn; ++i) {
+     pAnalysisRun = dynamic_cast<TfrmAnalysisRun*>(MDIChildren[i]);
+     bReturn = (pAnalysisRun && !pAnalysisRun->GetCanClose());
+  }
+  return bReturn;
 }
 //---------------------------------------------------------------------------
 void TfrmMainForm::Setup() {
@@ -392,9 +417,13 @@ void __fastcall TfrmMainForm::ActionUpdateCheckExecute(TObject *Sender) {
     frmUpdateCheck = new TfrmUpdateCheck(this);
     frmUpdateCheck->ConnectToServerForUpdateCheck();
     if (frmUpdateCheck->HasUpdates()) {
-      sMessage.printf("SaTScan v%s is available.\n\nDo you want to install now?"
-                      "  (This will cause SaTScan to restart.)", frmUpdateCheck->GetUpdateVersion().GetCString());
+      sMessage.printf("SaTScan v%s is available.\nDo you want to install now?", frmUpdateCheck->GetUpdateVersion().GetCString());
       if (TBMessageBox::Response(this, "SaTScan Update Available", sMessage.GetCString(), MB_YESNO) == IDYES) {
+        if (GetAnalysesRunning()) {
+            TBMessageBox::Response(this, "Error", "SaTScan can not update will analyses are executing.\n"
+                                                  "Please cancel or wait for analyses to complete before attempting to update.", XBMB_OK);
+          return;
+        }
         frmDownloadProgress = new TfrmDownloadProgress(this);
         frmDownloadProgress->Add(frmUpdateCheck->GetUpdateApplicationInfo());
         frmDownloadProgress->Add(frmUpdateCheck->GetUpdateArchiveInfo());
@@ -402,13 +431,12 @@ void __fastcall TfrmMainForm::ActionUpdateCheckExecute(TObject *Sender) {
         if (frmDownloadProgress->GetDownloadCompleted()) {
           GetToolkit().SetUpdateArchiveFilename(frmUpdateCheck->GetUpdateArchiveInfo().first.GetCString());
           GetToolkit().SetRunUpdateOnTerminate(true);
-          /**  what about running threads? **/
           Close();
         }
       }
     }
     else
-      TBMessageBox::Response(this, "No Updates", "No updates at this time. Please try again later.", MB_OK);
+      TBMessageBox::Response(this, "No Updates", "There are no updates at this time. Please try again later.", MB_OK);
 
     delete frmDownloadProgress; frmDownloadProgress=0;
     delete frmUpdateCheck; frmUpdateCheck=0;

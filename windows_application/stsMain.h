@@ -99,6 +99,8 @@ class TfrmMainForm : public TForm{
 
     void                        EnableActions(bool bEnable);
     void                        ExecuteSession();
+    void                        ForceClose();
+    bool                        GetAnalysesRunning();
     void                        Init() {gbShowStartWindow=true;} 
     void                        OpenAFile();
     void                        Save();
