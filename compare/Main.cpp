@@ -12,7 +12,7 @@ TfrmMain *frmMain;
 ParameterResultsInfo::ParameterResultsInfo(const char * sParameterFilename)
                      :geClusterInformation(UNKNOWN), geLocationInformation(UNKNOWN), geRelativeRisks(UNKNOWN),
                       geSimulatedRatios(UNKNOWN), geTimeDifferenceType(INCOMPLETE), guHoursDifferent(0),
-                      guMinutesDifferent(0), guSecondsDifferent(0) {
+                      guMinutesDifferent(0), guSecondsDifferent(0), gfTimeDifferencePercentage(0) {
   gParameterFilename = sParameterFilename;
 }
 
@@ -506,9 +506,12 @@ void TfrmMain::CompareTimes() {
     uiMasterTime = (uHoursM * 10000) + (uMinutesM * 100 ) + uSecondsM;
     uiCompareTime = (uHoursC * 10000) + (uMinutesC * 100) + uSecondsC;
 
-    if (uiMasterTime == uiCompareTime)
+    if (uiMasterTime == uiCompareTime) {
       gvParameterResultsInfo.back().SetTimeDifference(uHoursC, uMinutesC, uSecondsC, SAME);
+      gvParameterResultsInfo.back().SetTimeDifferencePercentage(0);
+    }
     else if (uiMasterTime > uiCompareTime) {
+      gvParameterResultsInfo.back().SetTimeDifferencePercentage(1 - (float)uiCompareTime/(float)uiMasterTime);
       uiMasterTime = uiMasterTime - uiCompareTime;
       uHoursM = uiMasterTime/10000;
       uMinutesM = (uiMasterTime - (uHoursM * 10000))/100;
@@ -516,6 +519,7 @@ void TfrmMain::CompareTimes() {
       gvParameterResultsInfo.back().SetTimeDifference(uHoursM, uMinutesM, uSecondsM, FASTER);
     }
     else {
+      gvParameterResultsInfo.back().SetTimeDifferencePercentage(1 - (float)uiMasterTime/(float)uiCompareTime);
       uiCompareTime = uiCompareTime - uiMasterTime;
       uHoursC = uiCompareTime/10000;
       uMinutesC = (uiCompareTime - (uHoursC * 10000))/100;
@@ -619,14 +623,16 @@ AnsiString & TfrmMain::GetDisplayTime(AnsiString & sDisplay) {
     case INCOMPLETE : sDisplay.printf("%i hr %i min % i sec - ?", Ref.GetHoursDifferent(),
                                       Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent());
                       break;
-    case SLOWER     : sDisplay.printf("%i hr %i min % i sec - slower", Ref.GetHoursDifferent(),
-                                      Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent());
+    case SLOWER     : sDisplay.printf("%i hr %i min % i sec - slower by %.2f%%", Ref.GetHoursDifferent(),
+                                      Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent(),
+                                      Ref.GetTimeDifferencePercentage());
                       break;
     case SAME       : sDisplay.printf("%i hr %i min % i sec - same", Ref.GetHoursDifferent(),
                                       Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent());
                       break;
-    case FASTER     : sDisplay.printf("%i hr %i min % i sec - faster", Ref.GetHoursDifferent(),
-                                      Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent());
+    case FASTER     : sDisplay.printf("%i hr %i min % i sec - faster by %.2f%%", Ref.GetHoursDifferent(),
+                                      Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent(),
+                                      Ref.GetTimeDifferencePercentage());
                       break;
     //default : error
   };

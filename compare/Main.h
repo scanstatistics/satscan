@@ -38,6 +38,7 @@ class ParameterResultsInfo {
     unsigned short      guHoursDifferent;
     unsigned short      guMinutesDifferent;
     unsigned short      guSecondsDifferent;
+    float               gfTimeDifferencePercentage;
 
   public:
     ParameterResultsInfo(const char * sParameterFilename);
@@ -54,11 +55,13 @@ class ParameterResultsInfo {
     CompareType         GetRelativeRisksType() const {return geRelativeRisks;}
     unsigned short      GetSecondsDifferent() const {return guSecondsDifferent;}
     CompareType         GetSimulatedRatiosType() const {return geSimulatedRatios;}
+    float               GetTimeDifferencePercentage() const {return gfTimeDifferencePercentage;}
     TimeDifferenceType  GetTimeDifferenceType() const {return geTimeDifferenceType;}
     void                SetClusterInformationType(CompareType eCompareType) {geClusterInformation = eCompareType;}
     void                SetLocationInformationType(CompareType eCompareType) {geLocationInformation = eCompareType;}
     void                SetRelativeRisksType(CompareType eCompareType) {geRelativeRisks = eCompareType;}
     void                SetSimulatedRatiosType(CompareType eCompareType) {geSimulatedRatios = eCompareType;}
+    void                SetTimeDifferencePercentage(float fPercentage) {gfTimeDifferencePercentage = fPercentage;}
     void                SetTimeDifference(unsigned short uHours, unsigned short uMinutes, unsigned short uSeconds, TimeDifferenceType geTimeDifferenceType);
 };
 
