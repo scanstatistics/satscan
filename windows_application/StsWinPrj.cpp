@@ -116,6 +116,8 @@ USEUNIT("..\calculation\loglikelihood\PoissonLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\loglikelihood\ExponentialLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\loglikelihood\NormalLikelihoodCalculation.cpp");
+USEUNIT("..\calculation\analysis_run\AnalysisRun.cpp");
+USEUNIT("..\calculation\analysis_run\MostLikelyClustersContainer.cpp");
 USELIB("..\xbase\xbase_2.0.0\xbase\xbase.lib");
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd543.lib");
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zdannex543.lib");
