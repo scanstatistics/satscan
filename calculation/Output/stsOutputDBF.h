@@ -8,7 +8,7 @@ extern const char * AREA_SPECIFIC_EXT;
 
 extern const char * RUN_NUM;	
 extern const char * CLUST_NUM;
-extern const char * AREA_ID;  
+extern const char * LOC_ID;  
 extern const char * P_VALUE;  
 extern const char * OBSERVED; 
 extern const char * EXPECTED; 

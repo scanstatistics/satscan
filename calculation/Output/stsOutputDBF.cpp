@@ -18,7 +18,7 @@ const char *    AREA_SPECIFIC_EXT       = ".col.dbf";
 
 const char *    RUN_NUM		        = "RUN_NUM";
 const char *    CLUST_NUM 		= "CLUST_NUM";
-const char *    AREA_ID   		= "AREA_ID";
+const char *    LOC_ID   		= "LOC_ID";
 const char *    P_VALUE  		= "P_VALUE";
 const char *    START_DATE		= "START_DATE";
 const char *    END_DATE		= "END_DATE";

@@ -63,7 +63,7 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
 
       // area id
       sTempValue = (pData.GetTInfo())->tiGetTid(pData.GetNeighbor(pCluster.m_iEllipseOffset, pCluster.m_Center, iClusterNumber));
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, AREA_ID));
+      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, LOC_ID));
 
       // p value
       fPVal = (float) pCluster.GetPVal(pData.m_pParameters->m_nReplicas);
@@ -119,7 +119,7 @@ void stsAreaSpecificDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
    try {
       CreateNewField(vFields, RUN_NUM, ZD_NUMBER_FLD, 8, 0, uwOffset);
       CreateNewField(vFields, CLUST_NUM, ZD_NUMBER_FLD, 5, 0, uwOffset);
-      CreateNewField(vFields, AREA_ID, ZD_ALPHA_FLD, 30, 0, uwOffset);
+      CreateNewField(vFields, LOC_ID, ZD_ALPHA_FLD, 30, 0, uwOffset);
       CreateNewField(vFields, P_VALUE, ZD_NUMBER_FLD, 12, 5, uwOffset);
       CreateNewField(vFields, OBSERVED, ZD_NUMBER_FLD, 12, 2, uwOffset);
       CreateNewField(vFields, EXPECTED, ZD_NUMBER_FLD, 12, 2, uwOffset);

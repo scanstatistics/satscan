@@ -90,7 +90,7 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
 
       // central area id
       SetAreaID(sTempValue, pCluster, pData);
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, AREA_ID));
+      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, LOC_ID));
 
       SetCoordinates(fLatitude, fLongitude, fRadius, vAdditCoords, pCluster, pData);
 
@@ -99,7 +99,7 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
       SetDoubleField(*pRecord, fLongitude, GetFieldNumber(gvFields, (giCoordType != CARTESIAN) ? COORD_LONG : COORD_Y));
 
       // additional coords
-      for(int i = 0; i < vAdditCoords.size(); ++i) {
+      for(size_t i = 0; i < vAdditCoords.size(); ++i) {
          sTempValue << ZdString::reset << COORD_Z << (i+1);
          SetDoubleField(*pRecord, vAdditCoords[i], GetFieldNumber(gvFields, sTempValue.GetCString()));
       }
@@ -186,17 +186,8 @@ void stsClusterLevelDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
 
    try {
       CreateNewField(vFields, RUN_NUM, ZD_NUMBER_FLD, 8, 0, uwOffset);
-      CreateNewField(vFields, START_DATE, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      CreateNewField(vFields, END_DATE, ZD_ALPHA_FLD, 16, 0, uwOffset);
       CreateNewField(vFields, CLUST_NUM, ZD_NUMBER_FLD, 5, 0, uwOffset);
-      CreateNewField(vFields, OBSERVED, ZD_NUMBER_FLD, 12, 0, uwOffset);
-      CreateNewField(vFields, EXPECTED, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      CreateNewField(vFields, REL_RISK, ZD_NUMBER_FLD, 12, 3, uwOffset);
-      CreateNewField(vFields, LOG_LIKL, ZD_NUMBER_FLD, 16, 6, uwOffset);
-      CreateNewField(vFields, P_VALUE, ZD_NUMBER_FLD, 12, 5, uwOffset);
-      CreateNewField(vFields, NUM_AREAS, ZD_NUMBER_FLD, 12, 0, uwOffset);
-      CreateNewField(vFields, AREA_ID, ZD_ALPHA_FLD, 30, 0, uwOffset);
-
+      CreateNewField(vFields, LOC_ID, ZD_ALPHA_FLD, 30, 0, uwOffset);
       CreateNewField(vFields, (giCoordType != CARTESIAN) ? COORD_LAT : COORD_X, ZD_NUMBER_FLD, 12, 6, uwOffset);
       CreateNewField(vFields, (giCoordType != CARTESIAN) ? COORD_LONG : COORD_Y, ZD_NUMBER_FLD, 12, 6, uwOffset);
 
@@ -208,6 +199,14 @@ void stsClusterLevelDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
       }
 
       CreateNewField(vFields, RADIUS, ZD_NUMBER_FLD, 12, 2, uwOffset);
+      CreateNewField(vFields, NUM_AREAS, ZD_NUMBER_FLD, 12, 0, uwOffset);
+      CreateNewField(vFields, OBSERVED, ZD_NUMBER_FLD, 12, 0, uwOffset);
+      CreateNewField(vFields, EXPECTED, ZD_NUMBER_FLD, 12, 2, uwOffset);
+      CreateNewField(vFields, REL_RISK, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateNewField(vFields, LOG_LIKL, ZD_NUMBER_FLD, 16, 6, uwOffset);
+      CreateNewField(vFields, P_VALUE, ZD_NUMBER_FLD, 12, 5, uwOffset);
+      CreateNewField(vFields, START_DATE, ZD_ALPHA_FLD, 16, 0, uwOffset);
+      CreateNewField(vFields, END_DATE, ZD_ALPHA_FLD, 16, 0, uwOffset);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupFields()", "stsClusterLevelDBF");
