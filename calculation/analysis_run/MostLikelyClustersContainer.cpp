@@ -158,7 +158,7 @@ bool MostLikelyClustersContainer::PointLiesWithinEllipseArea(double dXPoint, dou
 }
 
 /** Prints properties of cluster objects in top cluster list to ASCII file. */
-void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, unsigned int nHowMany) {
+void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, size_t nHowMany) {
    FILE* pFile;
 
    try {

@@ -1501,7 +1501,7 @@ int CParameters::ReadInt(const ZdString & sValue, ParameterType eParameterType) 
 void CParameters::ReadInputFilesSection(ZdIniFile& file, BasePrint & PrintDirection){
   const ZdIniSection  * pSection;
   long                  lIndex;
-  unsigned int          iStream, iMostStreams=1;
+  size_t                iStream, iMostStreams=1;
   ZdString              sSectionName;
 
   try {
