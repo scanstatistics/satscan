@@ -22,7 +22,7 @@
  **********************************************************************/
 
 /** Current version information. */ 
-#define VERSION_NUMBER "3.1 beta"
+#define VERSION_NUMBER "3.1"
 #define VERSION_DATE "October 17, 2002"
 /** New defines for ellipsoid calculations. */
 #define MAXELLIPSESHAPES 10
