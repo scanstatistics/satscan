@@ -289,7 +289,7 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
 void stsClusterData::SetAreaID(ZdString& sTempValue, const CCluster& pCluster, const CSaTScanData& pData) {
    try {
       if (pCluster.GetClusterType() == PURELYTEMPORAL)
-          sTempValue = "n/a";
+          sTempValue = "All";
       else
          sTempValue = pData.GetGInfo()->giGetGid(pCluster.m_Center);
    }
@@ -299,66 +299,50 @@ void stsClusterData::SetAreaID(ZdString& sTempValue, const CCluster& pCluster, c
    }
 }
 
-// this a a very ugly function, I will be the first to admit, but it is borrowed code from the
-// way SatScan uses to calculate and print these Coordinate values, so don't blame me that it
-// stinks cause someone else wrote it, I just plagurized it - AJV 9/25/2002
-// by the way, all of the sprintf's and bouncing back and forth between floats and strings here
-// is necessary because the customer wishes to print the float if applicable but a "n/a" if not which
-// forces me to make the field a ALPHA_FLD and requires me to do this ugliness - AJV 10/2/2002
-// pre : none that I can think of
+// pre : none
 // post : sets the values for long, lat, sAdditCoords, and radius
 void stsClusterData::SetCoordinates(ZdString& sLatitude, ZdString& sLongitude, ZdString& sRadius,
                                     std::vector<std::string>& vAdditCoords,
                                     const CCluster& pCluster, const CSaTScanData& pData) {
-   double       *pCoords = 0, *pCoords2 = 0;
-   float        fLatitude, fLongitude, fRadius;
-   char         sLatBuffer[64], sLongBuffer[64], sAdditBuffer[64], sRadBuffer[64];
+  int          i;
+  double     * pCoords=0, * pCoords2=0;
+  float        fLatitude, fLongitude, fRadius;
+  char         sAdditBuffer[64], sRadBuffer[64];
 
    try {
-      (pData.GetGInfo())->giGetCoords(pCluster.m_Center, &pCoords);
-      (pData.GetTInfo())->tiGetCoords(pData.GetNeighbor(pCluster.m_iEllipseOffset, pCluster.m_Center, pCluster.m_nTracts), &pCoords2);
-
-      if(giCoordType == CARTESIAN) {        // if cartesian coords
-         if(pCluster.m_nClusterType != PURELYTEMPORAL) {
-            for (int i = 0; i < pData.m_pParameters->GetDimensionsOfData(); ++i) {
-               if (i == 0) {
-                  sprintf(sLatBuffer, "%12.2f", pCoords[i]);
-                  sLatitude = sLatBuffer;
-               }
-               else if (i == 1) {
-                  sprintf(sLongBuffer, "%12.2f", pCoords[i]);
-                  sLongitude = sLongBuffer;
-               }
-               else  {
-                  sprintf(sAdditBuffer, "%12.2f", pCoords[i]);
-                  vAdditCoords.push_back(sAdditBuffer);
-               }
-            }
-         }
-         else {              // else we are doing a cartesian purely temporal, print out all n/a's
-            sLatitude = "n/a";
-            sLongitude = "n/a";
-            for (int i = 2; i < pData.m_pParameters->GetDimensionsOfData(); ++i)
-               vAdditCoords.push_back("n/a");
-            sRadius = "n/a";
-         }
-      }
-      else {
-         ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
-         sprintf(sLongBuffer, "%lf", fLongitude);
-         sLongitude = sLongBuffer;
-         sprintf(sLatBuffer, "%lf", fLatitude);
-         sLatitude = sLatBuffer;
-      }
-
-      if(giCoordType != CARTESIAN || (giCoordType == CARTESIAN && pCluster.m_nClusterType != PURELYTEMPORAL)) {
-         fRadius = (float)sqrt((pData.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
-         sprintf(sRadBuffer, "%5.2f", fRadius);
-         sRadius = sRadBuffer;
-      }
-
-      free(pCoords);
-      free(pCoords2);
+     if (pCluster.m_nClusterType == PURELYTEMPORAL) {
+       sLatitude = "n/a";
+       sLongitude = "n/a";
+       for (i=2; i < pData.m_pParameters->GetDimensionsOfData(); ++i)
+          vAdditCoords.push_back("n/a");
+       sRadius = "n/a";
+     }
+     else {
+       pData.GetGInfo()->giGetCoords(pCluster.m_Center, &pCoords);
+       pData.GetTInfo()->tiGetCoords(pData.GetNeighbor(pCluster.m_iEllipseOffset, pCluster.m_Center, pCluster.m_nTracts), &pCoords2);
+       switch (giCoordType) {
+         case CARTESIAN : for (i=0; i < pData.m_pParameters->GetDimensionsOfData(); ++i) {
+                             if (i == 0)
+                               sLatitude.printf("%12.2f", pCoords[i]);
+                             else if (i == 1)
+                               sLongitude.printf("%12.2f", pCoords[i]);
+                             else  {
+                               sprintf(sAdditBuffer, "%12.2f", pCoords[i]);
+                               vAdditCoords.push_back(sAdditBuffer);
+                             }
+                          }
+                          break;
+         case LATLON    : ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
+                          sLongitude.printf("%lf", fLongitude);
+                          sLatitude.printf("%lf", fLatitude);
+                          break;
+         default : ZdGenerateException("Unknown coordinate type '%d'.","SetCoordinates()", giCoordType);
+       }
+       fRadius = (float)sqrt((pData.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
+       sRadius.printf("%5.2f", fRadius);
+       free(pCoords);
+       free(pCoords2);
+     }
    }
    catch (ZdException &x) {
       free(pCoords);
