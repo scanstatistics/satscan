@@ -805,7 +805,7 @@ void SimulationDataStream::ReadSimulationData(const CParameters& Parameters, uns
   //seek line offset for reading iSimulation'th simulation data
   t = (tNumTracts + 1) * (iSimulation - 1);
   for (i=0; i < t; ++i)
-    InputFile.ignore(std::numeric_limits<int>::max(), InputFile.widen('\n'));
+    InputFile.ignore(std::numeric_limits<int>::max(), '\n'/*InputFile.widen('\n')*/);
 
   if (Parameters.GetAnalysisType() == PROSPECTIVESPACETIME || Parameters.GetAnalysisType() == SPACETIME ||
       Parameters.GetAnalysisType() == PURELYTEMPORAL || Parameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL) {
