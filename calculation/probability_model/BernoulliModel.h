@@ -7,8 +7,7 @@
 #include "RandomDistribution.h"
 #include "RandomNumberGenerator.h"
 
-class CBernoulliModel : public CModel
-{
+class CBernoulliModel : public CModel {
   private:
     BinomialGenerator           gBinomialGenerator;
     RandomNumberGenerator       m_RandomNumberGenerator;
@@ -24,7 +23,7 @@ class CBernoulliModel : public CModel
     virtual double              GetPopulation(int m_iEllipseOffset, tract_t nCenter,
                                               tract_t nTracts, int nStartInterval, int nStopInterval);
     virtual void                MakeData(int iSimulationNumber);
-    virtual count_t           * MakeDataB(count_t nTotalCounts, count_t* RandCounts);
+    void                        MakeDataB(count_t tTotalCounts, measure_t tTotalMeasure, std::vector<count_t>& RandCounts);    
     void                        MakeDataTimeStratified();
     void                        MakeDataUnderNullHypothesis();
     virtual bool                ReadData();
