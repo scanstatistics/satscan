@@ -75,26 +75,29 @@ void TimeIntervalRange::CompareMeasures(TemporalData& StreamData, CMeasureList& 
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
- iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
   for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
      iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
      iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart)
         MeasureList.AddMeasure(pCases[iWindowStart] - pCases[iWindowEnd], pMeasure[iWindowStart] - pMeasure[iWindowEnd]);
- }
+  }
 }
 
 /** internal setup function */
 void TimeIntervalRange::Setup(const CSaTScanData& Data, IncludeClustersType  eIncludeClustersType) {
   try {
     if (Data.GetParameters().GetIsProspectiveAnalysis() && eIncludeClustersType == ALLCLUSTERS) {
+      // For a prospective analysis with IncludeClustersType of ALLCLUSTERS, this situation indicates
+      // that this object is being constructed for use in simulations. Perhaps there should be another
+      // enumeration item such as ALIVEPROSPECTIVECLUSTERS to remove confusion?  
       giStartRange_Start = 0;
       giStartRange_End = Data.GetNumTimeIntervals();
       giEndRange_Start = Data.GetProspectiveStartIndex();
       giEndRange_End = Data.GetNumTimeIntervals();
       //the maximum window length varies when the analysis is prospective and
       //the maximum is defined as percentage of study period
-      if (Data.GetParameters().GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE)
+      if (Data.GetParameters().GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE && Data.GetParameters().GetAdjustForEarlierAnalyses())
         gpMaxWindowLengthIndicator = new ProspectiveMaxWindowLengthIndicator(Data);
       else
         gpMaxWindowLengthIndicator = new FixedMaxWindowLengthIndicator(Data);
