@@ -96,7 +96,7 @@ class DataStream {
     void                        CheckPopulationDataCases(CSaTScanData& Data);
     void                        FreePopulationMeasureArray();
     void                        FreeSimulationStructures();
-    count_t                 *** GetCategoryCaseArray();
+    count_t                 *** GetCategoryCaseArray() const;
     ThreeDimCountArray_t      & GetCategoryCaseArrayHandler();
     count_t                  ** GetCaseArray() const;
     count_t                  ** GetNCCaseArray() const;

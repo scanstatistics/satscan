@@ -272,7 +272,7 @@ count_t * DataStream::GetPTCasesArray() const {
   return gpPTCasesArray;
 }
 
-count_t *** DataStream::GetCategoryCaseArray() {
+count_t *** DataStream::GetCategoryCaseArray() const {
   try {
     if (!gpCategoryCasesHandler)
       ZdGenerateException("Category case array not allocated.","GetCategoryCaseArray()");
