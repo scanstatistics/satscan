@@ -402,9 +402,9 @@ void IniParameterFileAccess::WriteAnalysisSettings(ZdIniFile& SaveFile) {
   try {
     WriteIniParameter(SaveFile, ANALYSISTYPE, AsString(s, gParameters.GetAnalysisType()),
                       " analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective"
-                      " Space-Time, 4=Prospective Space-Time, 5=Spatial Variation/Temporal Trends, 6=Prospective Purely Temporal)");
+                      " Space-Time, 4=Prospective Space-Time, 5=N/A, 6=Prospective Purely Temporal)");
     WriteIniParameter(SaveFile, MODEL, AsString(s, gParameters.GetProbabiltyModelType()),
-                      " model type (0=Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Normal, 4=Survival, 5=Rank)");
+                      " model type (0=Poisson, 1=Bernoulli, 2=Space-Time Permutation)");
     WriteIniParameter(SaveFile, SCANAREAS, AsString(s, gParameters.GetAreaScanRateType()),
                       " scan areas (1=High, 2=Low, 3=High or Low)");
     WriteIniParameter(SaveFile, TIME_AGGREGATION_UNITS, AsString(s, gParameters.GetTimeAggregationUnitsType()),
@@ -412,7 +412,7 @@ void IniParameterFileAccess::WriteAnalysisSettings(ZdIniFile& SaveFile) {
     WriteIniParameter(SaveFile, TIME_AGGREGATION, AsString(s, (int)gParameters.GetTimeAggregationLength()),
                       " time aggregation length (positive integer)");
     WriteIniParameter(SaveFile, REPLICAS, AsString(s, gParameters.GetNumReplicationsRequested()),
-                      " Monte Carlo reps (0, 9, 999, n999)");
+                      " Monte Carlo replications (0, 9, 999, n999)");
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteAnalysisSettings()","IniParameterFileAccess");
