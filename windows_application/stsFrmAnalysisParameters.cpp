@@ -48,18 +48,32 @@ __fastcall TfrmAnalysis::~TfrmAnalysis() {
 // case file selector
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
+  TBdlgImporter         * pImporter = 0;
+  BFTFImportDescriptor  * pBFTFPointer = 0;
+
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.cas";
-    OpenDialog1->Filter = "CAS Files (*.cas)|*.cas|All files (*.*)|*.*";
+    OpenDialog1->Filter = "CAS Files (*.cas)|*.cas|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
     OpenDialog1->Title = "Select Case File";
     if (OpenDialog1->Execute()) {
+      //Detect dbf file and launch importer if detected
+      if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
+         pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
+         pImporter->ShowOptionalPanels(false, false, false);
+         pImporter->ShowModal();
+         delete pImporter;
+      }
+
+      //Why is this here? KMC 8/30/2002
       strcpy(gpParams->m_szCaseFilename, OpenDialog1->FileName.c_str());
       edtCaseFileName->Text = OpenDialog1->FileName.c_str();
       strcpy(gpParams->m_szCaseFilename, edtCaseFileName->Text.c_str());
     }
   }
   catch (SSException & x) {
+    delete pImporter; pImporter = 0;
+    delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnCaseBrowseClick()", "TfrmAnalysis");
     DisplayException(this, x);
   }
@@ -68,18 +82,32 @@ void __fastcall TfrmAnalysis::btnCaseBrowseClick(TObject *Sender) {
 // Control file selector -- *.ctl files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
+  TBdlgImporter         * pImporter = 0;
+  BFTFImportDescriptor  * pBFTFPointer = 0;
+
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.ctl";
-    OpenDialog1->Filter = "CTL Files (*.ctl)|*.ctl|All files (*.*)|*.*";
+    OpenDialog1->Filter = "CTL Files (*.ctl)|*.ctl|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
     OpenDialog1->Title = "Select Control File";
     if (OpenDialog1->Execute()) {
+      //Detect dbf file and launch importer if detected
+      if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
+         pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
+         pImporter->ShowOptionalPanels(false, false, false);
+         pImporter->ShowModal();
+         delete pImporter;
+      }
+
+      //Why is this here? KMC 8/30/2002
       strcpy(gpParams->m_szControlFilename, OpenDialog1->FileName.c_str());
       edtControlFileName->Text = OpenDialog1->FileName.c_str();
       strcpy(gpParams->m_szControlFilename, edtControlFileName->Text.c_str());
      }
   }
   catch (SSException & x) {
+    delete pImporter; pImporter = 0;
+    delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnControlBrowseClick()", "TfrmAnalysis");
     DisplayException(this, x);
   }
@@ -88,18 +116,33 @@ void __fastcall TfrmAnalysis::btnControlBrowseClick(TObject *Sender) {
 // Geographic file selector -- *.geo files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
+  TBdlgImporter         * pImporter = 0;
+  BFTFImportDescriptor  * pBFTFPointer = 0;
+
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.geo";
-    OpenDialog1->Filter = "GEO Files (*.geo)|*.geo|All files (*.*)|*.*";
+    OpenDialog1->Filter = "GEO Files (*.geo)|*.geo|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
     OpenDialog1->Title = "Select Coordinates File";
     if (OpenDialog1->Execute()) {
+      //Detect dbf file and launch importer if detected
+      if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
+         
+         pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
+         pImporter->ShowOptionalPanels(false, false, false);
+         pImporter->ShowModal();
+         delete pImporter;
+      }
+
+      //Why is this here? KMC 8/30/2002
       strcpy(gpParams->m_szCoordFilename, OpenDialog1->FileName.c_str());
       edtCoordinateFileName->Text = OpenDialog1->FileName.c_str();
       strcpy(gpParams->m_szCoordFilename, edtCoordinateFileName->Text.c_str());
     }
   }
   catch (SSException & x) {
+    delete pImporter; pImporter = 0;
+    delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnCoordBrowseClick()", "TfrmAnalysis");
     DisplayException(this, x);
   }
@@ -108,18 +151,32 @@ void __fastcall TfrmAnalysis::btnCoordBrowseClick(TObject *Sender) {
 //  Grid file selector -- *.grd files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
+  TBdlgImporter         * pImporter = 0;
+  BFTFImportDescriptor  * pBFTFPointer = 0;
+
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.grd";
-    OpenDialog1->Filter = "GRD Files (*.grd)|*.grd|All files (*.*)|*.*";
+    OpenDialog1->Filter = "GRD Files (*.grd)|*.grd|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
     OpenDialog1->Title = "Select Special Grid File";
     if (OpenDialog1->Execute()) {
+      //Detect dbf file and launch importer if detected
+      if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
+         pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
+         pImporter->ShowOptionalPanels(false, false, false);
+         pImporter->ShowModal();
+         delete pImporter;
+      }
+
+      //Why is this here? KMC 8/30/2002
       strcpy(gpParams->m_szGridFilename, OpenDialog1->FileName.c_str());
       edtGridFileName->Text = OpenDialog1->FileName.c_str();
       strcpy(gpParams->m_szGridFilename, edtGridFileName->Text.c_str());
     }
   }
   catch (SSException & x) {
+    delete pImporter; pImporter = 0;
+    delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnGridBrowseClick()", "TfrmAnalysis");
     DisplayException(this, x);
   }
@@ -128,18 +185,32 @@ void __fastcall TfrmAnalysis::btnGridBrowseClick(TObject *Sender) {
 // Population file selector -- *.pop files
 //---------------------------------------------------------------------------
 void __fastcall TfrmAnalysis::btnPopBrowseClick(TObject *Sender) {
+  TBdlgImporter         * pImporter = 0;
+  BFTFImportDescriptor  * pBFTFPointer = 0;
+
   try {
     OpenDialog1->FileName = "";
     OpenDialog1->DefaultExt = "*.pop";
-    OpenDialog1->Filter = "POP Files (*.pop)|*.pop|All files (*.*)|*.*";
+    OpenDialog1->Filter = "POP Files (*.pop)|*.pop|DBase Files (*.dbf)|*.dbf|All files (*.*)|*.*";
     OpenDialog1->Title = "Select Population File";
     if (OpenDialog1->Execute()) {
+      //Detect dbf file and launch importer if detected
+      if ( DetermineIfDbfExtension(OpenDialog1->FileName) ) {
+         pImporter = new TBdlgImporter(0, 0, pBFTFPointer);
+         pImporter->ShowOptionalPanels(false, false, false);
+         pImporter->ShowModal();
+         delete pImporter;
+      }
+
+      //Why is this here? KMC 8/30/2002
       strcpy(gpParams->m_szPopFilename, OpenDialog1->FileName.c_str());
       edtPopFileName->Text = OpenDialog1->FileName.c_str();
       strcpy(gpParams->m_szPopFilename, edtPopFileName->Text.c_str());
     }
   }
   catch (SSException & x) {
+    delete pImporter; pImporter = 0;
+    delete pBFTFPointer; pBFTFPointer = 0;
     x.AddCallpath("btnPopBrowseClick()", "TfrmAnalysis");
     DisplayException(this, x);
   }
@@ -611,6 +682,21 @@ void TfrmAnalysis::DataExchange() {
   }
 }
 //---------------------------------------------------------------------------
+
+bool TfrmAnalysis::DetermineIfDbfExtension(AnsiString sFileName) {
+  bool bDbfStatus = false;
+
+  try {
+     bDbfStatus = ! std::strcmp(((sFileName.SubString(sFileName.Length() - 3, 4)).LowerCase()).c_str(), ".dbf");
+  }
+  catch (SSException & x) {
+    x.AddCallpath("DetermineIfDbaseFile(AnsiString & sFileName)", "TfrmAnalysis");
+    throw;
+  }
+   return bDbfStatus;
+}
+//---------------------------------------------------------------------------
+
 void __fastcall TfrmAnalysis::edtEndDayExit(TObject *Sender) {
   try {
     if ((atoi(edtEndDay->Text.c_str()) < 1) || (atoi(edtEndDay->Text.c_str()) > 31)) {

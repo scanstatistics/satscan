@@ -104,7 +104,11 @@ class TfrmAnalysis : public TForm {
         TCheckBox *chkInclSimLogLik;
         TRadioButton *rdoPercentageTemproal;
         TRadioButton *rdoTimeTemproal;
+        TGroupBox *grpCriteriaSecClusters;
         TComboBox *cboCriteriaSecClusters;
+        TGroupBox *grpB2;
+        TCheckBox *chkDbaseFile1;
+        TCheckBox *chkDbaseFile2;
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall rgPrecisionTimesClick(TObject *Sender);
         void __fastcall btnCaseBrowseClick(TObject *Sender);
@@ -183,6 +187,7 @@ class TfrmAnalysis : public TForm {
     void                ConvertPurelySpacialIntervals();
     void                CreateCSVFile(const ZdFileName& sFileName, const ZdVector<const char*>& vFieldNames);
     void                DataExchange();
+    bool                DetermineIfDbfExtension(AnsiString sFileName);
     void                EnableAdditionalAsciiFileOptions();
     void                EnableAnalysisType(bool bValue);
     void                EnablePrecision();
