@@ -18,7 +18,6 @@
 #define MAX_MONTH 12
 #define MIN_DAY   1
 #define MAX_DAY   31
-#define EMPTY_DT_STR "0000/00/00"
 
 typedef unsigned long Julian;
 
@@ -46,8 +45,6 @@ Julian DecrementDate(Julian nDate, int nUnits, long nValue);
 void   ShowJulianRange();
 
 double IntervalInYears(int nUnits, long nLength);
-UInt Ensure4DigitYear(UInt y, const char* szLowerBoundDt, const char* szUpperBoundDt);
-
 #ifdef __cplusplus
 }
 #endif

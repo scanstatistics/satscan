@@ -230,45 +230,4 @@ double IntervalInYears(int nUnits, long nLength)
   return (nInterval);
 }
 
-// V.2.0.4.4
-UInt Ensure4DigitYear(UInt y, const char* szLowerBoundDt, const char* szUpperBoundDt)
-{
-  UInt month, day;
-  UInt nLowerBound;
-  UInt nUpperBound;
-  UInt nLowerC;
-  UInt nUpperC;
-  UInt nLowerD;
-  UInt nUpperD;
-
-  UInt nYear4;
-
-  CharToMDY(&month, &day, &nLowerBound, szLowerBoundDt);
-  CharToMDY(&month, &day, &nUpperBound, szUpperBoundDt);
-
-  nLowerC = (UInt) floor (nLowerBound / 100);
-  nUpperC = (UInt) floor (nUpperBound / 100);
-  nLowerD = nLowerBound - nLowerC*100;
-  nUpperD = nUpperBound - nUpperC*100;
-
-  if (y > MIN_YEAR)                              // Return y if 4 digit
-    nYear4 = y;
-  else if (y > 99)
-    nYear4 = -2;
-  else if (nLowerBound == 0 && nUpperBound == 0) // Assum 1900's if no
-    nYear4 = 1900+y;                             // bound specified
-  else if (nLowerC == nUpperC)                   // Bound in same century
-    nYear4 = nLowerC*100 + y;
-  else if (nUpperBound - nLowerBound >= 100)     // Time period > 99 years,
-      nYear4 = -1;                               // century can not be determined
-  else if (y >= nLowerD)                         // Date in Lower century
-    nYear4 = nLowerC*100 + y;
-  else if (y <= nUpperD)                         // Date in Upper century
-    nYear4 = nUpperC*100 + y;
-  else
-    nYear4 = -2;
-
-  return nYear4;
-}
-// V.2.0.4.4
 
