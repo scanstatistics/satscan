@@ -21,9 +21,11 @@ RelativeRiskData::RelativeRiskData(const CParameters& Parameters)
 /** class destructor */
 RelativeRiskData::~RelativeRiskData() {}
 
-const char * RelativeRiskData::REL_RISK_EXT                = ".rr";
-const char * RelativeRiskData::TIME_TREND_FIELD            = "TIME_TREND";
-const char * RelativeRiskData::DATASTREAM_FIELD            = "STREAM";
+const char * RelativeRiskData::REL_RISK_EXT                     = ".rr";
+const char * RelativeRiskData::TIME_TREND_FIELD                 = "TIME_TREND";
+const char * RelativeRiskData::DATASTREAM_FIELD                 = "STREAM";
+const char * RelativeRiskData::OBSERVED_DIV_EXPECTED_FIELD      = "ODE";
+const char * RelativeRiskData::RELATIVE_RISK_FIELD              = "REL_RISK";
 
 /** Returns location identifier for tract at tTractIndex. If tTractIndex refers
     to more than one location identifier, string returned contains first
@@ -45,7 +47,7 @@ void RelativeRiskData::RecordRelativeRiskData(const CSaTScanData& DataHub) {
   ZdString              sBuffer;
   count_t             * pCases;
   measure_t           * pMeasure;
-  double                dExpected;
+  double                dExpected, dDenominator, dNumerator;
 
   try {
     for (i=0; i < gParameters.GetNumDataStreams(); ++i) {
@@ -59,11 +61,19 @@ void RelativeRiskData::RecordRelativeRiskData(const CSaTScanData& DataHub) {
           pRecord->GetFieldValue(GetFieldNumber(OBSERVED_FIELD)).AsDouble() = pCases[t];
           dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
           pRecord->GetFieldValue(GetFieldNumber(EXPECTED_FIELD)).AsDouble() = dExpected;
-          if (dExpected)
-            pRecord->GetFieldValue(GetFieldNumber(REL_RISK_FIELD)).AsZdString().printf("%12.3f",
+          if (dExpected) {
+            pRecord->GetFieldValue(GetFieldNumber(OBSERVED_DIV_EXPECTED_FIELD)).AsZdString().printf("%12.3f",
                                                                                        ((double)pCases[t])/dExpected);
-          else
-            pRecord->GetFieldValue(GetFieldNumber(REL_RISK_FIELD)).AsZdString() = "n/a";
+            dDenominator = DataHub.GetDataStreamHandler().GetStream(i).GetTotalCases() - dExpected;
+            dNumerator = DataHub.GetDataStreamHandler().GetStream(i).GetTotalCases() - pCases[t];
+            if (dDenominator && dNumerator/dDenominator)
+              pRecord->GetFieldValue(GetFieldNumber(RELATIVE_RISK_FIELD)).AsZdString().printf("%12.3f",
+                (((double)pCases[t])/dExpected)/(dNumerator/dDenominator));
+          }
+          else {
+            pRecord->GetFieldValue(GetFieldNumber(OBSERVED_DIV_EXPECTED_FIELD)).AsZdString() = "n/a";
+            pRecord->GetFieldValue(GetFieldNumber(RELATIVE_RISK_FIELD)).AsZdString() = "n/a";
+          }
           BaseOutputStorageClass::AddRecord(pRecord);
        }
     }
@@ -84,7 +94,7 @@ void RelativeRiskData::RecordRelativeRiskData(const CSVTTData& DataHub) {
   std::vector<count_t>          vTemporalTractCases(DataHub.GetNumTimeIntervals());
   measure_t                   * pMeasure, ** ppMeasureNC;
   std::vector<measure_t>        vTemporalTractObserved(DataHub.GetNumTimeIntervals());
-  double                        dExpected;
+  double                        dExpected, dDenominator, dNumerator;
   CTimeTrend                    TractTimeTrend;
 
   try {
@@ -101,11 +111,19 @@ void RelativeRiskData::RecordRelativeRiskData(const CSVTTData& DataHub) {
           pRecord->GetFieldValue(GetFieldNumber(OBSERVED_FIELD)).AsDouble() = pCases[t];
           dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
           pRecord->GetFieldValue(GetFieldNumber(EXPECTED_FIELD)).AsDouble() = dExpected;
-          if (dExpected)
-            pRecord->GetFieldValue(GetFieldNumber(REL_RISK_FIELD)).AsZdString().printf("%12.3f",
+          if (dExpected) {
+            pRecord->GetFieldValue(GetFieldNumber(OBSERVED_DIV_EXPECTED_FIELD)).AsZdString().printf("%12.3f",
                                                                                        ((double)pCases[t])/dExpected);
-          else
-            pRecord->GetFieldValue(GetFieldNumber(REL_RISK_FIELD)).AsZdString() = "n/a";
+            dDenominator = DataHub.GetDataStreamHandler().GetStream(i).GetTotalCases() - dExpected;
+            dNumerator = DataHub.GetDataStreamHandler().GetStream(i).GetTotalCases() - pCases[t];
+            if (dDenominator && dNumerator/dDenominator)
+              pRecord->GetFieldValue(GetFieldNumber(RELATIVE_RISK_FIELD)).AsZdString().printf("%12.3f",
+                (((double)pCases[t])/dExpected)/(dNumerator/dDenominator));
+          }
+          else {
+            pRecord->GetFieldValue(GetFieldNumber(OBSERVED_DIV_EXPECTED_FIELD)).AsZdString() = "n/a";
+            pRecord->GetFieldValue(GetFieldNumber(RELATIVE_RISK_FIELD)).AsZdString() = "n/a";
+          }
           //calculate total cases by time intervals for this tract
           for (j=0; j < (unsigned int)DataHub.GetNumTimeIntervals(); ++j) {
              vTemporalTractCases[j] = ppCasesNC[j][t];
@@ -139,7 +157,8 @@ void RelativeRiskData::SetupFields() {
       CreateField(gvFields, DATASTREAM_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
     CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
     CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-    CreateField(gvFields, REL_RISK_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
+    CreateField(gvFields, OBSERVED_DIV_EXPECTED_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
+    CreateField(gvFields, RELATIVE_RISK_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
       CreateField(gvFields, TIME_TREND_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
   }
