@@ -2,7 +2,7 @@
 #pragma hdrstop
 #include "Parameters.h"
 
-char mgsVariableLabels[44][100] = {
+char mgsVariableLabels[45][100] = {
    "Analysis Type",
    "Scan Areas",
    "Case File",
@@ -47,6 +47,7 @@ char mgsVariableLabels[44][100] = {
    "Output Most Likely Cluster for each Centroid",
    "Criteria for Reporting Secondary Clusters",
    "How Max Temporal Size Should Be Interperated"
+   "How Max Spatial Size Should Be Interperated"
    };
 
 CParameters::CParameters(bool bDisplayErrors)
@@ -152,6 +153,7 @@ void CParameters::copy(const CParameters &rhs)
     m_iCriteriaSecondClusters = rhs.m_iCriteriaSecondClusters;
 
     m_nMaxClusterSizeType = rhs.m_nMaxClusterSizeType;
+    m_nMaxSpatialClusterSizeType = rhs.m_nMaxSpatialClusterSizeType;
 }
 
 void CParameters::Free()
@@ -178,6 +180,11 @@ bool CParameters::SetParameters(const char* szFilename, bool bValidate)
       int  i    = 1;
       bool bEOF = false;
 
+      // set defaults for newer parameters -- this section of code, in fact this whole unit,
+      // needs to be revised. Backward compatibility may be a thorn in our side.
+      m_nMaxClusterSizeType = PERCENTAGETYPE;
+      m_nMaxSpatialClusterSizeType = PERCENTAGEOFMEASURETYPE;
+
       while (i<=PARAMETERS && !bEOF)
         {
         if (fgets(szTemp, MAX_STR_LEN, pFile) == NULL)
@@ -186,15 +193,15 @@ bool CParameters::SetParameters(const char* szFilename, bool bValidate)
           bValid = false;
         i++;
         }
-    
+
       fclose(pFile);
-    
+
       if (bEOF && ((i-1)==MODEL))              // Accept V.1 parameter files
         SetDefaultsV2();
       else if (bEOF && ((i-2) < CRITERIA_SECOND_CLUSTERS))      // Accept V.1.3 parameter files
          SetDefaultsV3();
-      else if ( (bEOF && (i-2) < MAX_TEMPORAL_TYPE) || (!bEOF && (i-1) < MAX_TEMPORAL_TYPE ) )
-         m_nMaxClusterSizeType = PERCENTAGETYPE;
+      //else if ( (bEOF && (i-2) < MAX_TEMPORAL_TYPE) || (!bEOF && (i-1) < MAX_TEMPORAL_TYPE ) )
+      //   m_nMaxClusterSizeType = PERCENTAGETYPE;
 
       if (!SetGISFilename())   //Census areas in reported clusters
         bValid = false;
@@ -283,6 +290,7 @@ bool CParameters::SetParameter(int nParam, const char* szParam)
         case OUTPUT_MOST_LIKE_CLUSTERS: nScanCount=sscanf(szParam, "%i", &nTemp); m_bMostLikelyClusters = nTemp?true:false; break;;
         case CRITERIA_SECOND_CLUSTERS: nScanCount=sscanf(szParam, "%i", &m_iCriteriaSecondClusters); break;
         case MAX_TEMPORAL_TYPE: nScanCount=sscanf(szParam, "%i", &m_nMaxClusterSizeType); break;
+        case MAX_SPATIAL_TYPE: nScanCount=sscanf(szParam, "%i", &m_nMaxSpatialClusterSizeType); break;
       }
     
       if (nParam==POPFILE || nParam==GRIDFILE || nParam==CONTROLFILE)
@@ -758,16 +766,16 @@ bool CParameters::ValidateParameters()
         // Spatial Options
         if ((m_nAnalysisType == PURELYSPATIAL) || (m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME))
         {
-          if (!(0.0 < m_nMaxGeographicClusterSize && m_nMaxGeographicClusterSize <= 50.0)) //GG980716
+          if (m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE && !(0.0 < m_nMaxGeographicClusterSize && m_nMaxGeographicClusterSize <= 50.0))
           bValid = DisplayParamError(GEOSIZE);
         }
         else
           m_nMaxGeographicClusterSize = 50.0; //KR980707 0 GG980716;
-    
+
         // Temporal Options
         if ((m_nAnalysisType == PURELYTEMPORAL) || (m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME))
         {
-          if (!(0.0 < m_nMaxTemporalClusterSize && m_nMaxTemporalClusterSize <= 90.0)) //GG980716
+          if (m_nMaxClusterSizeType == PERCENTAGETYPE && !(0.0 < m_nMaxTemporalClusterSize && m_nMaxTemporalClusterSize <= 90.0))
             bValid = DisplayParamError(TIMESIZE);
           if ((!PROSPECTIVESPACETIME) && (!(m_bAliveClustersOnly==0 || m_bAliveClustersOnly==1)))
             bValid = DisplayParamError(CLUSTERS);
@@ -841,6 +849,9 @@ bool CParameters::ValidateParameters()
       }
       else if (m_nModel == SPACETIMEPERMUTATION)
       {
+        if (m_nMaxSpatialClusterSizeType == PERCENTAGEOFMEASURETYPE)
+          if (strlen(m_szPopFilename)==0 || (pFile = fopen(m_szPopFilename, "r")) == NULL)
+            bValid = DisplayParamError(POPFILE);
         if (!(m_nAnalysisType == SPACETIME || m_nAnalysisType == PROSPECTIVESPACETIME))
           bValid = DisplayParamError(ANALYSISTYPE);
         if (m_bIncludePurelySpatial==1)
@@ -1209,9 +1220,8 @@ bool CParameters::SaveParameters(char* szFilename)
       fprintf(pFile, "%i                 // Output File: Census Areas in Reported Clusters\n", m_bOutputCensusAreas);
       fprintf(pFile, "%i                 // Output File: Clusters in Column Format\n", m_bMostLikelyClusters);
       fprintf(pFile, "%i                 //Criteria for Reporting Secondary Clusters\n", m_iCriteriaSecondClusters);
-
-      fprintf(pFile, "%i                 //How Max Temporal Size Should Be Interperated - enum {PERCENTAGETYPE=0, TIMETYPE}\n", m_nMaxClusterSizeType);
-
+      fprintf(pFile, "%i                 //How Max Temporal Size Should Be Interperated - enum {PERCENTAGETYPE=0, TIMETYPE=1}\n", m_nMaxClusterSizeType);
+      fprintf(pFile, "%i                 //How Max Spatial Size Should Be Interperated - enum {PERCENTAGEOFMEASURETYPE=0, DISTANCETYPE=1}\n", m_nMaxSpatialClusterSizeType);
       fclose(pFile);
        }
    catch (SSException & x)
@@ -1315,7 +1325,13 @@ void CParameters::DisplayParameters(FILE* fp)
      fprintf(fp, "---------------\n");
    
      if (m_nAnalysisType == PURELYSPATIAL || m_nAnalysisType == SPACETIME || m_nAnalysisType == PROSPECTIVESPACETIME)
-       fprintf(fp, "  Maximum Spatial Cluster Size : %.2f\n", m_nMaxGeographicClusterSize);
+       fprintf(fp, "  Maximum Spatial Cluster Size : %.2f", m_nMaxGeographicClusterSize);
+     switch (m_nMaxSpatialClusterSizeType)
+        {
+          case    PERCENTAGEOFMEASURETYPE    : fprintf(fp, " as Percentage\n"); break;
+          case    DISTANCETYPE               : fprintf(fp, " as Distance Unit\n"); break;
+          default                            : fprintf(fp, "\n"); break;
+        }
      if ((m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME))
      {
        fprintf(fp, "  Also Include Purely Temporal Clusters : ");
@@ -1327,7 +1343,13 @@ void CParameters::DisplayParameters(FILE* fp)
      }
    
      if (m_nAnalysisType == PURELYTEMPORAL || m_nAnalysisType == SPACETIME || (m_nAnalysisType == PROSPECTIVESPACETIME))
-       fprintf(fp, "  Maximum Temporal Cluster Size : %.2f\n", m_nMaxTemporalClusterSize);
+       fprintf(fp, "  Maximum Temporal Cluster Size : %.2f", m_nMaxTemporalClusterSize);
+     switch (m_nMaxClusterSizeType)
+        {
+          case    PERCENTAGETYPE : fprintf(fp, " as Percentage\n"); break;
+          case    TIMETYPE       : fprintf(fp, " as Time Interval Unit\n"); break;
+          default                : fprintf(fp, "\n"); break;
+        }
      if ((m_nAnalysisType == SPACETIME) || (m_nAnalysisType == PROSPECTIVESPACETIME))
      {
        fprintf(fp, "  Also Include Purely Spatial Clusters : ");

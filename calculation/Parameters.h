@@ -5,7 +5,7 @@
 #include "SatScan.h"
 #include "JulianDates.h"
 
-#define PARAMETERS 44
+#define PARAMETERS 45
 
 enum {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE, COORDFILE, OUTPUTFILE, PRECISION,
       DIMENSION, SPECIALGRID, GRIDFILE, GEOSIZE, STARTDATE, ENDDATE,
@@ -16,7 +16,7 @@ enum {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE, COORDFILE, OUTPUTFILE, PRECI
       SEQUENTIAL, SEQNUM, SEQPVAL,
       VALIDATE, OUTPUTRR, ELLIPSES, ESHAPES, ENUMBERS, START_PROSP_SURV,
       OUTPUT_CENSUS_AREAS, OUTPUT_MOST_LIKE_CLUSTERS, CRITERIA_SECOND_CLUSTERS,
-      MAX_TEMPORAL_TYPE};
+      MAX_TEMPORAL_TYPE,MAX_SPATIAL_TYPE};
 enum {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME, PURELYSPATIALMONOTONE}; //analysis, clusters
 enum {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION};
 enum {ALLCLUSTERS=0, ALIVECLUSTERS};   // Clusers
@@ -28,6 +28,7 @@ enum {CARTESIAN=0, LATLON};                 // Coords Type
 enum {NOGEOOVERLAP, NOCENTROIDSINOTHER, NOCENTROIDSINMORELIKE,
       NOCENTROIDSINLESSLIKE, NOPAIRSINEACHOTHERS, NORESTRICTIONS}; // Criteria for reporting secondary clusters
 enum TemporalSizeType {PERCENTAGETYPE=0, TIMETYPE}; // How Max Temporal Size Should Be Interperated
+enum SpatialSizeType {PERCENTAGEOFMEASURETYPE=0, DISTANCETYPE}; // How Max Temporal Size Should Be Interperated
 
 class CParameters
 {
@@ -59,11 +60,12 @@ class CParameters
 
     // Spatial options
     float  m_nMaxGeographicClusterSize;
+    int    m_nMaxSpatialClusterSizeType;  /** How Max Spatial Size Should Be Interperated - enum {PERCENTAGEOFMEASURETYPE=0, DISTANCETYPE} */
 
     // Temporal options
     float  m_nMaxTemporalClusterSize;
     bool   m_bAliveClustersOnly;          /** Use alive clusters only? */
-    int    m_nMaxClusterSizeType;         /** How Max Temporal Size Should Be Interperated - enum {PERCENTAGETYPE=0, TIMETYPE} */  
+    int    m_nMaxClusterSizeType;         /** How Max Temporal Size Should Be Interperated - enum {PERCENTAGETYPE=0, TIMETYPE} */
 
     int    m_nIntervalUnits;              /** Interval Units (0=None, 1=Year, 2=Month, 3=Day) */
     long   m_nIntervalLength;
