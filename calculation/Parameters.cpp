@@ -625,6 +625,11 @@ const char * CParameters::GetDatePrecisionAsString(DatePrecisionType eDatePrecis
   return sDatePrecisionType;
 }
 
+/** Returns description for LLR. */
+bool CParameters::GetLogLikelihoodRatioIsTestStatistic() const {
+  return (geProbabiltyModelType == SPACETIMEPERMUTATION || (giNumberEllipses && gbDuczmalCorrectEllipses));
+}
+
 /** Returns whether any area specific files are outputed. */
 bool CParameters::GetOutputAreaSpecificFiles() const  {
   return gbOutputAreaSpecificAscii || gbOutputAreaSpecificDBase;

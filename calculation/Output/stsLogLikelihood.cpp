@@ -111,8 +111,7 @@ void LogLikelihoodData::SetupFields() {
    unsigned short uwOffset = 0;     // this is altered by the create new field function, so this must be here as is-AJV 9/30/2002
    
    try {
-     if (gParameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION ||
-         (gParameters.GetNumRequestedEllipses() && gParameters.GetDuczmalCorrectEllipses()))
+     if (gParameters.GetLogLikelihoodRatioIsTestStatistic())
        ::CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 7, 2, uwOffset);
      else  
        ::CreateField(gvFields, LOG_LIKL_FIELD, ZD_NUMBER_FLD, 7, 2, uwOffset);

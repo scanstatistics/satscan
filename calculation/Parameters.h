@@ -297,6 +297,7 @@ class CParameters {
     bool                                GetIsLoggingHistory() const {return gbLogRunHistory;}
     bool                                GetIsPowerCalculated() const {return gbPowerCalculation;}
     bool                                GetIsSequentialScanning() const {return gbSequentialRuns;}
+    bool                                GetLogLikelihoodRatioIsTestStatistic() const;
     float                               GetMaximumGeographicClusterSize() const {return gfMaxGeographicClusterSize;}
     SpatialSizeType                     GetMaxGeographicClusterSizeType() const {return geMaxGeographicClusterSizeType;}
     float                               GetMaximumTemporalClusterSize() const {return gfMaxTemporalClusterSize;}

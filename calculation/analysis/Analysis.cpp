@@ -488,12 +488,9 @@ void CAnalysis::DisplayTopClusterLogLikelihood() {
   try {
     //if any clusters were retained, display either loglikelihood or test statistic
     if (m_nClustersRetained > 0) {
-      if (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION)
+      if (m_pParameters->GetLogLikelihoodRatioIsTestStatistic())
         gpPrintDirection->SatScanPrintf("  SaTScan test statistic for the most likely cluster: %7.2f\n\n",
                                         m_pTopClusters[0]->m_nRatio);
-      else if (m_pParameters->GetNumRequestedEllipses() && m_pParameters->GetDuczmalCorrectEllipses())
-        gpPrintDirection->SatScanPrintf("  SaTScan test statistic for the most likely cluster: %7.2f\n\n",
-                                        m_pTopClusters[0]->GetDuczmalCorrectedLogLikelihoodRatio());
       else
         gpPrintDirection->SatScanPrintf("  SaTScan log likelihood ratio for the most likely cluster: %7.2f\n\n",
                                         m_pTopClusters[0]->m_nRatio);
@@ -511,7 +508,7 @@ void CAnalysis::DisplayTopClustersLogLikelihoods(FILE* fp) {
   try {
      for (tract_t i = 0; i<m_nClustersRetained; ++i) {
        fprintf(fp,"  %s for the most likely cluster: %7.21f\n\n",
-            (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION ? "Test statistic" : "Log likelihood ratio" ),
+            (m_pParameters->GetLogLikelihoodRatioIsTestStatistic() ? "Test statistic" : "Log likelihood ratio" ),
             m_pTopClusters[i]->m_nRatio);
      }
      fprintf(fp, "\n");
@@ -704,7 +701,7 @@ void CAnalysis::PerformSimulations() {
           m_pData->DisplaySimCases(m_pDebugFile);
           // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
           fprintf(m_pDebugFile, "%s = %7.21f\n\n",
-                  (Parameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION ? "Test statistic" : "Log Likelihood Ratio"), r);
+                  (Parameters.GetLogLikelihoodRatioIsTestStatistic() ? "Test statistic" : "Log Likelihood Ratio"), r);
  #endif
           if (iSimulationNumber==1) {
             ReportTimeEstimate(nStartTime, m_pParameters->GetNumReplicationsRequested(), iSimulationNumber, gpPrintDirection);
@@ -1036,7 +1033,7 @@ bool CAnalysis::UpdateReport(const long lReportHistoryRunNumber) {
       if (m_pParameters->GetNumReplicationsRequested() >= 19 && m_nClustersReported > 0) {
         // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
         fprintf(fp, "The %s value required for an observed\n",
-               (m_pParameters->GetProbabiltyModelType() == SPACETIMEPERMUTATION ? "test statistic" : "log likelihood ratio"));
+               (m_pParameters->GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"));
         fprintf(fp, "cluster to be significant at level\n");
         if (m_pParameters->GetNumReplicationsRequested() >= 99)
           fprintf(fp,"... 0.01: %f\n", SimRatios.GetAlpha01());
