@@ -121,7 +121,7 @@ void CCluster::Display(FILE*     fp,
       //  fprintf(fp, "Census areas included");
       fprintf(fp, "Census areas ");
       DisplayCensusTracts(fp, Data, -1, nMinMeasure,
-                          Parameters.m_nReplicas, false, false,
+                          Parameters.m_nReplicas, 0, false, false,
                           nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft);
     
       if (Parameters.m_nCoordType == CARTESIAN)
@@ -165,16 +165,17 @@ void CCluster::Display(FILE*     fp,
 }
 
 void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
-                                   int nCluster, measure_t nMinMeasure, int nReplicas, bool bIncludeRelRisk,
-                                   bool bIncludePVal, int nLeftMargin, int nRightMargin, char cDeliminator,
-                                   char* szSpacesOnLeft, bool bFormat)
+                                   int nCluster, measure_t nMinMeasure, int nReplicas,
+                                   long lReportHistoryRunNumber,
+                                   bool bIncludeRelRisk, bool bIncludePVal, int nLeftMargin, int nRightMargin,
+                                   char cDeliminator, char* szSpacesOnLeft, bool bFormat)
 {
    try {
       if (nLeftMargin > 0 && fp != NULL)
          fprintf(fp, "included.: ");
 
        DisplayCensusTractsInStep(fp, Data, 1, m_nTracts, nCluster, nMinMeasure,
-                            nReplicas, bIncludeRelRisk, bIncludePVal,
+                            nReplicas, lReportHistoryRunNumber, bIncludeRelRisk, bIncludePVal,
                             nLeftMargin, nRightMargin, cDeliminator, szSpacesOnLeft, bFormat);
    }
    catch (SSException & x) {
@@ -185,7 +186,7 @@ void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
 
 void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                                          tract_t nFirstTract, tract_t nLastTract,
-                                         int nCluster, measure_t nMinMeasure, int nReplicas, bool bIncludeRelRisk,
+                                         int nCluster, measure_t nMinMeasure, int nReplicas, long lReportHistoryRunNumber, bool bIncludeRelRisk,
                                          bool bIncludePVal, int nLeftMargin, int nRightMargin, char cDeliminator,
                                          char* szSpacesOnLeft, bool bFormat)
 {
@@ -216,6 +217,9 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                     fprintf(fp, " ");
                 }
 
+                if (bIncludeRelRisk)
+                   fprintf(fp, "%-12d", lReportHistoryRunNumber);
+                   
                 if (nCluster > -1)
                   fprintf(fp, "%i         ", nCluster);
                 if (bFormat)

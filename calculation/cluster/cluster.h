@@ -60,6 +60,7 @@ class CCluster {
                                  measure_t nMinMeasure);
     virtual void        DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
                                             int nCluster,  measure_t nMinMeasure, int nReplicas,
+                                            long lReportHistoryRunNumber,
                                             bool bIncludeRelRisk, bool bIncludePVal,
                                             int nLeftMargin, int nRightMargin,
                                             char cDeliminator, char* szSpacesOnLeft,
@@ -67,6 +68,7 @@ class CCluster {
     void                DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data,
                                                 tract_t nFirstTract, tract_t nLastTract,
                                                 int nCluster, measure_t nMinMeasure, int nReplicas,
+                                                long lReportHistoryRunNumber,
                                                 bool bIncludeRelRisk, bool bIncludePVal,
                                                 int nLeftMargin, int nRightMargin,
                                                 char cDeliminator, char* szSpacesOnLeft,

@@ -99,7 +99,7 @@ bool CPurelyTemporalCluster::SetNextTimeInterval(const count_t*& pCases,
 
 void CPurelyTemporalCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
                                                  int nCluster,  measure_t nMinMeasure,
-                                                 int nReplicas,
+                                                 int nReplicas, long lReportHistoryRunNumber,
                                                  bool bIncludeRelRisk, bool bIncludePVal,
                                                  int nLeftMargin, int nRightMargin,
                                                  char cDeliminator, char* szSpacesOnLeft,

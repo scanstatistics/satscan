@@ -384,7 +384,7 @@ void CAnalysis::DisplayTopCluster(double nMinRatio, int nReps, const long& lRepo
         // if we are doing dBase or ASCII   
         if(m_pParameters->GetOutputAreaSpecificDBF() || fpGIS != NULL) {	                              
             m_pTopClusters[0]->DisplayCensusTracts(fpGIS, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
-                                                     true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);                                      
+                                                     lReportHistoryRunNumber, true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);                                      
         }
       }
 
@@ -433,7 +433,7 @@ void CAnalysis::DisplayTopClusters(double nMinRatio, int nReps, const long& lRep
                                                   || m_pParameters->GetOutputAreaSpecificDBF()) {
               	             
               m_pTopClusters[i]->DisplayCensusTracts(fpGIS, *m_pData, m_nClustersReported, nMinMeasure, m_pParameters->m_nReplicas,
-                                                   true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);
+                                                   lReportHistoryRunNumber, true, m_pParameters->m_nReplicas>99, 0, 0, ' ', NULL, false);
           }
         }   // end if top cluster > minratio
       }   // end for loop

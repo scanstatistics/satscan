@@ -51,7 +51,7 @@ class CPSMonotoneCluster : public CPurelySpatialCluster
                                      char cDeliminator, char* szSpacesOnLeft);
     virtual void DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
                                      int nCluster, measure_t nMinMeasure,
-                                     int nReplicas,
+                                     int nReplicas, long lReportHistoryRunNumber,
                                      bool bIncludeRelRisk, bool bIncludePVal,
                                      int nLeftMargin, int nRightMargin,
                                      char cDeliminator, char* szSpacesOnLeft,
