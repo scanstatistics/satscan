@@ -17,7 +17,7 @@
 #include "stsCalculationThread.h"
 #include "stsMain.h"
 
-#define TECH_EMAIL "satscan@nih.gov"
+#define TECH_EMAIL "SaTScan@nih.gov"
 #define VERSION_NUMBER "v 3.0.0 beta : Build 2"
 #define VERSION_DATE "September 20, 2002"
 
