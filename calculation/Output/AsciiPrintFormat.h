@@ -1,6 +1,6 @@
 //***************************************************************************
-#ifndef AsciiPrintFormatH
-#define AsciiPrintFormatH
+#ifndef __AsciiPrintFormat_H
+#define __AsciiPrintFormat_H
 //***************************************************************************
 /** Print formatter for aiding in the process of creating the primary ASCII
     results output file.
