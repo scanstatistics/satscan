@@ -16,41 +16,6 @@ PoissonDataStreamHandler::PoissonDataStreamHandler(CSaTScanData & Data, BasePrin
 /** destructor */
 PoissonDataStreamHandler::~PoissonDataStreamHandler() {}
 
-/** allocates structures used during simulations - based particularly upon analysis type */
-void PoissonDataStreamHandler::AllocateSimulationStructures() {
-  try {
-    switch (gParameters.GetAnalysisType()) {
-       case PURELYSPATIAL :
-         AllocateSimulationCases();
-         break;
-       case PURELYSPATIALMONOTONE :
-         ZdGenerateException("AllocateSimulationStructures() not implemented for purely spatial monotone analysis.","AllocateSimulationStructures()");
-       case PURELYTEMPORAL :
-       case PROSPECTIVEPURELYTEMPORAL :
-         AllocateSimulationCases();
-         AllocatePTSimulationCases();
-         break;
-       case SPACETIME :
-       case PROSPECTIVESPACETIME :
-         AllocateSimulationCases();
-         if (gParameters.GetIncludePurelyTemporalClusters())
-           AllocatePTSimulationCases();
-         break;
-       case SPATIALVARTEMPTREND :
-         AllocateSimulationCases();
-         AllocatePTSimulationCases();
-         AllocateNCSimulationCases();
-         break;
-      default :
-         ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationStructures()", gParameters.GetAnalysisType());
-   };
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateSimulationStructures()","PoissonDataStreamHandler");
-    throw;
-  }
-}
-
 /** Converts passed string specifiying a population date to a julian date.
     Precision is determined by date formats( YYYY/MM/DD, YYYY/MM, YYYY, YY/MM/DD,
     YY/MM, YY ) which is the complete set of valid formats that SaTScan currently
@@ -111,16 +76,16 @@ bool PoissonDataStreamHandler::ConvertPopulationDateToJulian(const char * sDateS
 }
 
 /** returns new data gateway for real data */
-AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewDataGateway() {
+AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewDataGateway() const {
   AbtractDataStreamGateway    * pDataStreamGateway=0;
-  DataStreamInterface           Interface(gData.GetNumTimeIntervals(), gData.GetNumTracts());
+  DataStreamInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
     for (t=0; t < gvDataStreams.size(); ++t) {
       //get reference to stream
-      DataStream & thisStream = gvDataStreams[t];
+      const RealDataStream& thisStream = gvDataStreams[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisStream.GetTotalCases());
       Interface.SetTotalMeasureCount(thisStream.GetTotalMeasure());
@@ -152,7 +117,7 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewDataGateway() {
           Interface.SetMeasureArray(thisStream.GetMeasureArray());
           Interface.SetNCMeasureArray(thisStream.GetNCMeasureArray());
           Interface.SetPTMeasureArray(thisStream.GetPTMeasureArray());
-          Interface.SetTimeTrend(&thisStream.GetTimeTrend());
+          Interface.SetTimeTrend(&(const_cast<RealDataStream&>(thisStream)).GetTimeTrend());
           break;
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
@@ -169,48 +134,49 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewDataGateway() {
 }
 
 /** returns new data gateway for simulation data */
-AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewSimulationDataGateway() {
+AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const {
   AbtractDataStreamGateway    * pDataStreamGateway=0;
-  DataStreamInterface           Interface(gData.GetNumTimeIntervals(), gData.GetNumTracts());
+  DataStreamInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
     for (t=0; t < gvDataStreams.size(); ++t) {
       //get reference to stream
-      DataStream & thisStream = gvDataStreams[t];
+      const RealDataStream& thisRealStream = gvDataStreams[t];
+      const SimulationDataStream& thisSimulationStream = Container[t];
       //set total cases and measure
-      Interface.SetTotalCasesCount(thisStream.GetTotalCases());
-      Interface.SetTotalMeasureCount(thisStream.GetTotalMeasure());
+      Interface.SetTotalCasesCount(thisRealStream.GetTotalCases());
+      Interface.SetTotalMeasureCount(thisRealStream.GetTotalMeasure());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
         case PURELYSPATIALMONOTONE      :
-          Interface.SetCaseArray(thisStream.GetSimCaseArray());
-          Interface.SetMeasureArray(thisStream.GetMeasureArray());
+          Interface.SetCaseArray(thisSimulationStream.GetCaseArray());
+          Interface.SetMeasureArray(thisRealStream.GetMeasureArray());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          Interface.SetPTCaseArray(thisStream.GetPTSimCasesArray());
-          Interface.SetPTMeasureArray(thisStream.GetPTMeasureArray());
+          Interface.SetPTCaseArray(thisSimulationStream.GetPTCasesArray());
+          Interface.SetPTMeasureArray(thisRealStream.GetPTMeasureArray());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCaseArray(thisStream.GetSimCaseArray());
-          Interface.SetMeasureArray(thisStream.GetMeasureArray());
+          Interface.SetCaseArray(thisSimulationStream.GetCaseArray());
+          Interface.SetMeasureArray(thisRealStream.GetMeasureArray());
           if (gParameters.GetIncludePurelyTemporalClusters()) {
-            Interface.SetPTCaseArray(thisStream.GetPTSimCasesArray());
-            Interface.SetPTMeasureArray(thisStream.GetPTMeasureArray());
+            Interface.SetPTCaseArray(thisSimulationStream.GetPTCasesArray());
+            Interface.SetPTMeasureArray(thisRealStream.GetPTMeasureArray());
           }
           break;
         case SPATIALVARTEMPTREND        :
-          Interface.SetCaseArray(thisStream.GetSimCaseArray());
-          Interface.SetNCCaseArray(thisStream.GetNCSimCaseArray());
-          Interface.SetPTCaseArray(thisStream.GetPTSimCasesArray());
-          Interface.SetMeasureArray(thisStream.GetMeasureArray());
-          Interface.SetNCMeasureArray(thisStream.GetNCMeasureArray());
-          Interface.SetPTMeasureArray(thisStream.GetPTMeasureArray());
-          Interface.SetTimeTrend(&thisStream.GetSimTimeTrend());
+          Interface.SetCaseArray(thisSimulationStream.GetCaseArray());
+          Interface.SetNCCaseArray(thisSimulationStream.GetNCCaseArray());
+          Interface.SetPTCaseArray(thisSimulationStream.GetPTCasesArray());
+          Interface.SetMeasureArray(thisRealStream.GetMeasureArray());
+          Interface.SetNCMeasureArray(thisRealStream.GetNCMeasureArray());
+          Interface.SetPTMeasureArray(thisRealStream.GetPTMeasureArray());
+          Interface.SetTimeTrend(&(const_cast<SimulationDataStream&>(thisSimulationStream).GetTimeTrend()));
           break;
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
@@ -226,10 +192,70 @@ AbtractDataStreamGateway * PoissonDataStreamHandler::GetNewSimulationDataGateway
   return pDataStreamGateway;
 }
 
+/** Returns a collection of cloned randomizers maintained by data stream handler.
+    All previous elements of list are deleted. */
+RandomizerContainer_t& PoissonDataStreamHandler::GetRandomizerContainer(RandomizerContainer_t& Container) const {
+  ZdPointerVector<AbstractRandomizer>::const_iterator itr;
+
+  try {
+    Container.DeleteAllElements();
+    for (itr=gvDataStreamRandomizers.begin(); itr != gvDataStreamRandomizers.end(); ++itr)
+       Container.push_back((*itr)->Clone());
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetRandomizerContainer()","PoissonDataStreamHandler");
+    throw;
+  }
+  return Container;
+}
+
+/** Fills passed container with simulation data objects, with appropriate members
+    of data object allocated. */
+SimulationDataContainer_t& PoissonDataStreamHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
+  Container.clear();
+  for (unsigned int t=0; t < gParameters.GetNumDataStreams(); ++t)
+    Container.push_back(SimulationDataStream(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
+
+  switch (gParameters.GetAnalysisType()) {
+    case PURELYSPATIAL :
+        for (size_t t=0; t < Container.size(); ++t)
+          Container[t].AllocateCasesArray();
+        break;
+    case PURELYSPATIALMONOTONE :
+        ZdGenerateException("GetSimulationDataContainer() not implemented for purely spatial monotone analysis.","GetSimulationDataContainer()");
+    case PURELYTEMPORAL :
+    case PROSPECTIVEPURELYTEMPORAL :
+        for (size_t t=0; t < Container.size(); ++t) {
+          Container[t].AllocateCasesArray();
+          Container[t].AllocatePTCasesArray();
+        }
+        break;
+    case SPACETIME :
+    case PROSPECTIVESPACETIME :
+        for (size_t t=0; t < Container.size(); ++t) {
+          Container[t].AllocateCasesArray();
+          if (gParameters.GetIncludePurelyTemporalClusters())
+            Container[t].AllocatePTCasesArray();
+        }
+        break;
+    case SPATIALVARTEMPTREND :
+        for (size_t t=0; t < Container.size(); ++t) {
+          Container[t].AllocateCasesArray();
+          Container[t].AllocateNCCasesArray();
+          if (gParameters.GetIncludePurelyTemporalClusters())
+            Container[t].AllocatePTCasesArray();
+        }
+        break;
+    default :
+        ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataContainer()", gParameters.GetAnalysisType());
+  };
+  return Container;
+}
+
 /** randomizes each data streams */
-void PoissonDataStreamHandler::RandomizeData(unsigned int iSimulationNumber) {
+void PoissonDataStreamHandler::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
   for (size_t t=0; t < gvDataStreams.size(); ++t)
-     gvDataStreamRandomizers[t]->RandomizeData(gvDataStreams[t], iSimulationNumber);
+     gvDataStreamRandomizers[t]->RandomizeData(gvDataStreams[t], SimDataContainer[t], iSimulationNumber);
 }
 
 /** */
@@ -249,7 +275,7 @@ bool PoissonDataStreamHandler::ReadData() {
          gpPrint->SatScanPrintf("Reading input stream %u case file\n", t + 1);
        if (!ReadCaseFile(t))
          return false;
-       GetStream(t).CheckPopulationDataCases(gData);
+       GetStream(t).CheckPopulationDataCases(gDataHub);
     }
   }
   catch (ZdException & x) {
@@ -277,7 +303,7 @@ bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
   std::vector<Julian>::iterator itrdates;
 
   try {
-    DataStream & thisStream = gvDataStreams[tStream];
+    RealDataStream & thisStream = gvDataStreams[tStream];
     gpPrint->SetImpliedInputFileType(BasePrint::POPFILE, (GetNumStreams() == 1 ? 0 : tStream + 1));
     StringParser Parser(*gpPrint);
 
@@ -354,7 +380,7 @@ bool PoissonDataStreamHandler::ReadPopulationFile(size_t tStream) {
             continue;
           }
           //Validate that tract identifer is one of those defined in the coordinates file.
-          if ((TractIdentifierIndex = gData.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
+          if ((TractIdentifierIndex = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
             gpPrint->PrintInputWarning("Error: Unknown location identifier in %s, record %ld.\n",
                                        gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
             gpPrint->PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
@@ -400,10 +426,10 @@ void PoissonDataStreamHandler::SetRandomizers() {
             gvDataStreamRandomizers[0] = new PoissonNullHypothesisRandomizer(gParameters);
           break;
       case HA_RANDOMIZATION :
-          gvDataStreamRandomizers[0] = new AlternateHypothesisRandomizer(gData);
+          gvDataStreamRandomizers[0] = new AlternateHypothesisRandomizer(gDataHub);
           break;
       case FILESOURCE :
-          gvDataStreamRandomizers[0] = new FileSourceRandomizer(gData);
+          gvDataStreamRandomizers[0] = new FileSourceRandomizer(gDataHub);
           break;
       default :
           ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());

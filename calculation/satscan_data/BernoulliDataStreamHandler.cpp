@@ -1,9 +1,9 @@
 //---------------------------------------------------------------------------
 #include "SaTScan.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 #include "SaTScanData.h"
 #include "BernoulliDataStreamHandler.h"
-//---------------------------------------------------------------------------
 
 /** constructor */
 BernoulliDataStreamHandler::BernoulliDataStreamHandler(CSaTScanData & Data, BasePrint * pPrint)
@@ -23,49 +23,17 @@ void BernoulliDataStreamHandler::AllocateControlStructures(unsigned int iStream)
   }
 }
 
-/** allocates structures used during simulations - based particularly upon analysis type */
-void BernoulliDataStreamHandler::AllocateSimulationStructures() {
-  try {
-    switch (gParameters.GetAnalysisType()) {
-       case PURELYSPATIAL :
-         AllocateSimulationCases();
-         break;
-       case PURELYSPATIALMONOTONE :
-         ZdGenerateException("AllocateSimulationStructures() not implemented for purely spatial monotone analysis.","AllocateSimulationStructures()");
-       case PURELYTEMPORAL :
-       case PROSPECTIVEPURELYTEMPORAL :
-         AllocateSimulationCases();
-         AllocatePTSimulationCases();
-         break;
-       case SPACETIME :
-       case PROSPECTIVESPACETIME :
-         AllocateSimulationCases();
-         if (gParameters.GetIncludePurelyTemporalClusters())
-           AllocatePTSimulationCases();
-         break;
-       case SPATIALVARTEMPTREND :
-         ZdGenerateException("AllocateSimulationStructures() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationStructures()");
-      default :
-         ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationStructures()", gParameters.GetAnalysisType());
-   };
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateSimulationStructures()","BernoulliDataStreamHandler");
-    throw;
-  }
-}
-
 /** returns new data gateway for real data */
-AbtractDataStreamGateway * BernoulliDataStreamHandler::GetNewDataGateway() {
+AbtractDataStreamGateway * BernoulliDataStreamHandler::GetNewDataGateway() const {
   AbtractDataStreamGateway    * pDataStreamGateway=0;
-  DataStreamInterface           Interface(gData.GetNumTimeIntervals(), gData.GetNumTracts());
+  DataStreamInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
     for (t=0; t < gvDataStreams.size(); ++t) {
       //get reference to stream
-      DataStream & thisStream = gvDataStreams[t];
+      const RealDataStream& thisStream = gvDataStreams[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisStream.GetTotalCases());
       Interface.SetTotalMeasureCount(thisStream.GetTotalMeasure());
@@ -108,39 +76,40 @@ AbtractDataStreamGateway * BernoulliDataStreamHandler::GetNewDataGateway() {
 }
 
 /** returns new data gateway for simulation data */
-AbtractDataStreamGateway * BernoulliDataStreamHandler::GetNewSimulationDataGateway() {
+AbtractDataStreamGateway * BernoulliDataStreamHandler::GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const {
   AbtractDataStreamGateway    * pDataStreamGateway=0;
-  DataStreamInterface           Interface(gData.GetNumTimeIntervals(), gData.GetNumTracts());
+  DataStreamInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
     for (t=0; t < gvDataStreams.size(); ++t) {
       //get reference to stream
-      DataStream & thisStream = gvDataStreams[t];
+      const RealDataStream& thisRealStream = gvDataStreams[t];
+      const SimulationDataStream& thisSimulationStream = Container[t];
       //set total cases and measure
-      Interface.SetTotalCasesCount(thisStream.GetTotalCases());
-      Interface.SetTotalMeasureCount(thisStream.GetTotalMeasure());
+      Interface.SetTotalCasesCount(thisRealStream.GetTotalCases());
+      Interface.SetTotalMeasureCount(thisRealStream.GetTotalMeasure());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          Interface.SetCaseArray(thisStream.GetSimCaseArray());
-          Interface.SetMeasureArray(thisStream.GetMeasureArray());
+          Interface.SetCaseArray(thisSimulationStream.GetCaseArray());
+          Interface.SetMeasureArray(thisRealStream.GetMeasureArray());
           break;
         case PURELYSPATIALMONOTONE      :
           ZdGenerateException("GetNewDataGateway() not implemented for purely spatial monotone analysis.","GetNewDataGateway()");
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          Interface.SetPTCaseArray(thisStream.GetPTSimCasesArray());
-          Interface.SetPTMeasureArray(thisStream.GetPTMeasureArray());
+          Interface.SetPTCaseArray(thisSimulationStream.GetPTCasesArray());
+          Interface.SetPTMeasureArray(thisRealStream.GetPTMeasureArray());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCaseArray(thisStream.GetSimCaseArray());
-          Interface.SetMeasureArray(thisStream.GetMeasureArray());
+          Interface.SetCaseArray(thisSimulationStream.GetCaseArray());
+          Interface.SetMeasureArray(thisRealStream.GetMeasureArray());
           if (gParameters.GetIncludePurelyTemporalClusters()) {
-            Interface.SetPTCaseArray(thisStream.GetPTSimCasesArray());
-            Interface.SetPTMeasureArray(thisStream.GetPTMeasureArray());
+            Interface.SetPTCaseArray(thisSimulationStream.GetPTCasesArray());
+            Interface.SetPTMeasureArray(thisRealStream.GetPTMeasureArray());
           }
           break;
         case SPATIALVARTEMPTREND        :
@@ -159,10 +128,64 @@ AbtractDataStreamGateway * BernoulliDataStreamHandler::GetNewSimulationDataGatew
   return pDataStreamGateway;
 }
 
+/** Returns a collection of cloned randomizers maintained by data stream handler.
+    All previous elements of list are deleted. */
+RandomizerContainer_t& BernoulliDataStreamHandler::GetRandomizerContainer(RandomizerContainer_t& Container) const {
+  std::vector<BernoulliNullHypothesisRandomizer>::const_iterator itr;
+
+  try {
+    Container.DeleteAllElements();
+    for (itr=gvDataStreamRandomizers.begin(); itr != gvDataStreamRandomizers.end(); ++itr)
+       Container.push_back(itr->Clone());
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetRandomizerContainer()","BernoulliDataStreamHandler");
+    throw;
+  }
+  return Container;
+}
+
+/** Fills passed container with simulation data objects, with appropriate members
+    of data object allocated. */
+SimulationDataContainer_t& BernoulliDataStreamHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
+  Container.clear(); 
+  for (unsigned int t=0; t < gParameters.GetNumDataStreams(); ++t)
+    Container.push_back(SimulationDataStream(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
+
+  switch (gParameters.GetAnalysisType()) {
+    case PURELYSPATIAL :
+        for (size_t t=0; t < Container.size(); ++t)
+          Container[t].AllocateCasesArray();
+        break;
+    case PURELYSPATIALMONOTONE :
+        ZdGenerateException("GetSimulationDataContainer() not implemented for purely spatial monotone analysis.","GetSimulationDataContainer()");
+    case PURELYTEMPORAL :
+    case PROSPECTIVEPURELYTEMPORAL :
+        for (size_t t=0; t < Container.size(); ++t) {
+          Container[t].AllocateCasesArray();
+          Container[t].AllocatePTCasesArray();
+        }
+        break;
+    case SPACETIME :
+    case PROSPECTIVESPACETIME :
+        for (size_t t=0; t < Container.size(); ++t) {
+          Container[t].AllocateCasesArray();
+          if (gParameters.GetIncludePurelyTemporalClusters())
+            Container[t].AllocatePTCasesArray();
+        }
+        break;
+    case SPATIALVARTEMPTREND :
+        ZdGenerateException("GetSimulationDataContainer() not implemented for spatial variation and temporal trends analysis.","GetSimulationDataContainer()");
+    default :
+        ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataContainer()", gParameters.GetAnalysisType());
+  };
+  return Container;
+}
+
 /** randomizes each data streams */
-void BernoulliDataStreamHandler::RandomizeData(unsigned int iSimulationNumber) {
+void BernoulliDataStreamHandler::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
   for (size_t t=0; t < gvDataStreams.size(); ++t)
-     gvDataStreamRandomizers[t].RandomizeData(gvDataStreams[t], iSimulationNumber);
+     gvDataStreamRandomizers[t].RandomizeData(gvDataStreams[t], SimDataContainer[t], iSimulationNumber);
 }
 
 /** Read the control data file.

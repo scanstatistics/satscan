@@ -24,78 +24,17 @@ void SurvivalDataStreamHandler::AllocateCaseStructures(unsigned int iStream) {
   }
 }
 
-void SurvivalDataStreamHandler::AllocatePTSimulationMeasures() {
-  try {
-    for (size_t t=0; t < gvDataStreams.size(); ++t)
-       gvDataStreams[t].AllocatePTSimMeasureArray();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocatePTSimulationMeasures()","SurvivalDataStreamHandler");
-    throw;
-  }
-}
-
-/** Allocates two dimensional array for expected case counts (number of time intervals by number of tracts). */
-void SurvivalDataStreamHandler::AllocateSimulationMeasures() {
-  try {
-    for (size_t t=0; t < gvDataStreams.size(); ++t)
-       gvDataStreams[t].AllocateSimMeasureArray();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateSimulationMeasure()","SurvivalDataStreamHandler");
-    throw;
-  }
-}
-
-/** allocates structures used during simulations - based particularly upon analysis type */
-void SurvivalDataStreamHandler::AllocateSimulationStructures() {
-  try {
-    switch (gParameters.GetAnalysisType()) {
-       case PURELYSPATIAL :
-         AllocateSimulationCases();
-         AllocateSimulationMeasures();
-         break;
-       case PURELYSPATIALMONOTONE :
-         ZdGenerateException("AllocateSimulationStructures() not implemented for purely spatial monotone analysis.","AllocateSimulationStructures()");
-       case PURELYTEMPORAL :
-       case PROSPECTIVEPURELYTEMPORAL :
-         AllocateSimulationCases();
-         AllocatePTSimulationCases();
-         AllocateSimulationMeasures();
-         AllocatePTSimulationMeasures();
-         break;
-       case SPACETIME :
-       case PROSPECTIVESPACETIME :
-         AllocateSimulationCases();
-         AllocateSimulationMeasures();
-         if (gParameters.GetIncludePurelyTemporalClusters()) {
-           AllocatePTSimulationMeasures();
-           AllocatePTSimulationCases();
-         }
-         break;
-       case SPATIALVARTEMPTREND :
-         ZdGenerateException("AllocateSimulationStructures() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationStructures()");
-      default :
-        ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationStructures()", gParameters.GetAnalysisType());
-   };
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateSimulationStructures()","SurvivalDataStreamHandler");
-    throw;
-  }
-}
-
 /** returns new data gateway for real data */
-AbtractDataStreamGateway * SurvivalDataStreamHandler::GetNewDataGateway() {
+AbtractDataStreamGateway * SurvivalDataStreamHandler::GetNewDataGateway() const {
   AbtractDataStreamGateway    * pDataStreamGateway=0;
-  DataStreamInterface           Interface(gData.GetNumTimeIntervals(), gData.GetNumTracts());
+  DataStreamInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
     for (t=0; t < gvDataStreams.size(); ++t) {
       //get reference to stream
-      DataStream & thisStream = gvDataStreams[t];
+      const RealDataStream& thisStream = gvDataStreams[t];
       //set total cases and measure
       Interface.SetTotalCasesCount(thisStream.GetTotalCases());
       Interface.SetTotalMeasureCount(thisStream.GetTotalMeasure());
@@ -138,39 +77,40 @@ AbtractDataStreamGateway * SurvivalDataStreamHandler::GetNewDataGateway() {
 }
 
 /** returns new data gateway for simulation data */
-AbtractDataStreamGateway * SurvivalDataStreamHandler::GetNewSimulationDataGateway() {
+AbtractDataStreamGateway * SurvivalDataStreamHandler::GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const {
   AbtractDataStreamGateway    * pDataStreamGateway=0;
-  DataStreamInterface           Interface(gData.GetNumTimeIntervals(), gData.GetNumTracts());
+  DataStreamInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 
   try {
     pDataStreamGateway = GetNewDataGatewayObject();
     for (t=0; t < gvDataStreams.size(); ++t) {
       //get reference to stream
-      DataStream & thisStream = gvDataStreams[t];
+      const RealDataStream& thisRealStream = gvDataStreams[t];
+      const SimulationDataStream& thisSimulationStream = Container[t];
       //set total cases and measure
-      Interface.SetTotalCasesCount(thisStream.GetTotalCases());
-      Interface.SetTotalMeasureCount(thisStream.GetTotalMeasure());
+      Interface.SetTotalCasesCount(thisRealStream.GetTotalCases());
+      Interface.SetTotalMeasureCount(thisRealStream.GetTotalMeasure());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          Interface.SetCaseArray(thisStream.GetSimCaseArray());
-          Interface.SetMeasureArray(thisStream.GetSimMeasureArray());
+          Interface.SetCaseArray(thisSimulationStream.GetCaseArray());
+          Interface.SetMeasureArray(thisSimulationStream.GetMeasureArray());
           break;
         case PURELYSPATIALMONOTONE      :
           ZdGenerateException("GetNewDataGateway() not implemented for purely spatial monotone analysis.","GetNewDataGateway()");
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          Interface.SetPTCaseArray(thisStream.GetPTSimCasesArray());
-          Interface.SetPTMeasureArray(thisStream.GetPTSimMeasureArray());
+          Interface.SetPTCaseArray(thisSimulationStream.GetPTCasesArray());
+          Interface.SetPTMeasureArray(thisSimulationStream.GetPTMeasureArray());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCaseArray(thisStream.GetSimCaseArray());
-          Interface.SetMeasureArray(thisStream.GetSimMeasureArray());
+          Interface.SetCaseArray(thisSimulationStream.GetCaseArray());
+          Interface.SetMeasureArray(thisSimulationStream.GetMeasureArray());
           if (gParameters.GetIncludePurelyTemporalClusters()) {
-            Interface.SetPTCaseArray(thisStream.GetPTSimCasesArray());
-            Interface.SetPTMeasureArray(thisStream.GetPTSimMeasureArray());
+            Interface.SetPTCaseArray(thisSimulationStream.GetPTCasesArray());
+            Interface.SetPTMeasureArray(thisSimulationStream.GetPTMeasureArray());
           }
           break;
         case SPATIALVARTEMPTREND        :
@@ -189,13 +129,74 @@ AbtractDataStreamGateway * SurvivalDataStreamHandler::GetNewSimulationDataGatewa
   return pDataStreamGateway;
 }
 
+/** Returns a collection of cloned randomizers maintained by data stream handler.
+    All previous elements of list are deleted. */
+RandomizerContainer_t& SurvivalDataStreamHandler::GetRandomizerContainer(RandomizerContainer_t& Container) const {
+  std::vector<SurvivalRandomizer>::const_iterator itr;
+
+  try {
+    Container.DeleteAllElements();
+    for (itr=gvDataStreamRandomizers.begin(); itr != gvDataStreamRandomizers.end(); ++itr)
+       Container.push_back(itr->Clone());
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetRandomizerContainer()","SurvivalDataStreamHandler");
+    throw;
+  }
+  return Container;
+}
+
+/** Fills passed container with simulation data objects, with appropriate members
+    of data object allocated. */
+SimulationDataContainer_t& SurvivalDataStreamHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
+  Container.clear();
+  for (unsigned int t=0; t < gParameters.GetNumDataStreams(); ++t)
+    Container.push_back(SimulationDataStream(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
+
+  switch (gParameters.GetAnalysisType()) {
+    case PURELYSPATIAL :
+        for (size_t t=0; t < Container.size(); ++t) {
+          Container[t].AllocateCasesArray();
+          Container[t].AllocateMeasureArray();
+        }
+        break;
+    case PURELYSPATIALMONOTONE :
+        ZdGenerateException("GetSimulationDataContainer() not implemented for purely spatial monotone analysis.","GetSimulationDataContainer()");
+    case PURELYTEMPORAL :
+    case PROSPECTIVEPURELYTEMPORAL :
+        for (size_t t=0; t < Container.size(); ++t) {
+          Container[t].AllocateCasesArray();
+          Container[t].AllocatePTCasesArray();
+          Container[t].AllocateMeasureArray();
+          Container[t].AllocatePTMeasureArray();
+        }
+        break;
+    case SPACETIME :
+    case PROSPECTIVESPACETIME :
+        for (size_t t=0; t < Container.size(); ++t) {
+          Container[t].AllocateCasesArray();
+          Container[t].AllocateMeasureArray();
+          if (gParameters.GetIncludePurelyTemporalClusters()) {
+            Container[t].AllocatePTCasesArray();
+            Container[t].AllocatePTMeasureArray();
+          }
+        }
+        break;
+    case SPATIALVARTEMPTREND :
+        ZdGenerateException("GetSimulationDataContainer() not implemented for spatial variation and temporal trends analysis.","GetSimulationDataContainer()");
+    default :
+        ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataContainer()", gParameters.GetAnalysisType());
+  };
+  return Container;
+}
+
 bool SurvivalDataStreamHandler::ParseCaseFileLine(StringParser & Parser, tract_t& tid,
                                                   count_t& nCount, Julian& nDate,
                                                   measure_t& tContinuosVariable, count_t& tCensored) {
   try {
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
-    if ((tid = gData.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
+    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
       gpPrint->PrintInputWarning("Error: Unknown location id in %s, record %ld.\n", gpPrint->GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
       gpPrint->PrintInputWarning("       Location '%s' was not specified in the coordinates file.\n", Parser.GetWord(0));
       return false;
@@ -261,9 +262,9 @@ bool SurvivalDataStreamHandler::ParseCaseFileLine(StringParser & Parser, tract_t
 }
 
 /** randomizes each data streams */
-void SurvivalDataStreamHandler::RandomizeData(unsigned int iSimulationNumber) {
+void SurvivalDataStreamHandler::RandomizeData(SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) {
   for (size_t t=0; t < gvDataStreams.size(); ++t)
-     gvDataStreamRandomizers[t].RandomizeData(gvDataStreams[t], iSimulationNumber);
+     gvDataStreamRandomizers[t].RandomizeData(gvDataStreams[t], SimDataContainer[t], iSimulationNumber);
 }
 
 /** Read the case data file.
@@ -279,7 +280,7 @@ bool SurvivalDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char
   measure_t     tContinuosVariable, ** ppMeasure, ** ppSqMeasure, tTotalMeasure=0;
 
   try {
-    DataStream & thisStream = gvDataStreams[tStream];
+    RealDataStream & thisStream = gvDataStreams[tStream];
     StringParser Parser(*gpPrint);
     SurvivalRandomizer & Randomizer = gvDataStreamRandomizers[tStream];
 
@@ -294,12 +295,12 @@ bool SurvivalDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char
              ///if (ppCounts[0][TractIndex] < 0)
              // SSGenerateException("Error: Total cases greater than maximum allowed of %ld.\n", "ReadCounts()",
              //                      std::numeric_limits<count_t>::max());
-             //for (i=1; Date >= gData.GetTimeIntervalStartTimes()[i]; ++i)
+             //for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
              //  ppCounts[i][TractIndex] += Count * tCensored;
              //record count as a case or control
 //           //  thisStream.GetPopulationData().AddCaseCount(0, Count);
              for (i=0; i < Count; ++i)
-                Randomizer.AddCase(gData.GetTimeIntervalOfDate(Date), TractIndex, tContinuosVariable, tCensored);
+                Randomizer.AddCase(gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuosVariable, tCensored);
 
              tTotalCases += Count * tCensored;
              tTotalMeasure += tContinuosVariable;
@@ -323,6 +324,7 @@ bool SurvivalDataStreamHandler::ReadCounts(size_t tStream, FILE * fp, const char
      thisStream.SetTotalCases(tTotalCases);
      thisStream.SetTotalMeasure(tTotalMeasure);
     }
+
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadCounts()","SurvivalDataStreamHandler");
@@ -352,17 +354,17 @@ bool SurvivalDataStreamHandler::ReadData() {
 }
 
 /** sets purely temporal structures used in simulations */
-void SurvivalDataStreamHandler::SetPurelyTemporalSimulationData() {
+void SurvivalDataStreamHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer) {
   try {
-    for (size_t t=0; t < gvDataStreams.size(); ++t) {
-       gvDataStreams[t].SetPTSimCasesArray();
-       gvDataStreams[t].SetPTSimMeasureArray();
+    for (size_t t=0; t < SimDataContainer.size(); ++t) {
+       SimDataContainer[t].SetPTCasesArray();
+       SimDataContainer[t].SetPTMeasureArray();
     }
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalSimulationData()","SurvivalDataStreamHandler");
     throw;
-  }
+ }
 }
 
 void SurvivalDataStreamHandler::SetRandomizers() {
