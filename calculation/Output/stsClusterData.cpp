@@ -221,7 +221,7 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
       pRecord = new ClusterRecord(gbPrintEllipses, gbPrintPVal, gbIncludeRunHistory, geProbabiltyModelType == SPACETIMEPERMUTATION, gbDuczmalCorrect);
 
       if (gbIncludeRunHistory)
-         pRecord->SetRunNumber(double(glRunNumber));
+         pRecord->SetRunNumber(glRunNumber);
             
       pRecord->SetClusterNumber(iClusterNumber); 	// cluster number
 
