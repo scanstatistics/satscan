@@ -1459,6 +1459,12 @@ bool TfrmAnalysis::ValidateSpatialClusterSize() {
                                           "ValidateSpatialClusterSize()", 0, 50);
 
       gParameters.SetMaximumGeographicClusterSize(atof(edtMaxClusterSize->Text.c_str()));
+
+      if (rgProbability->ItemIndex == SPACETIMEPERMUTATION && rdoSpatialPercentage->Checked && !edtPopFileName->Text.Length())
+        ZdException::GenerateNotification("For a Space-Time Permutation model with the maximum spatial cluster size defined\n"
+                                          "as a percentage of the population at risk, a Population file must be specified.\n"
+                                          "Alternatively you may choose to specify the maximum as a fixed radius, in which\n"
+                                          "no Population file is required.","ValidateSpatialClusterSize()");
     }
   }
   catch (ZdException & x) {
