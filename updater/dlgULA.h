@@ -28,11 +28,19 @@ private:
   static int const VERT_PIXELS_BETWEEN_ULA_AND_EXPLANATION = 6;
   static int const VERT_PIXELS_BETWEEN_LINES_IN_EXPLANATION = 3;
   int giLastObservedExplanationLineCount;//the number of lines used to display the explanation last time anyone looked.
-  
+
+public:
+  static const char RICH_TEXT_DATA[];
+  static const unsigned RICH_TEXT_DATA_LENGTH;
+
 public:
 	virtual __fastcall TssDlgULA(TComponent* AOwner);
 };
 //----------------------------------------------------------------------------
 extern PACKAGE TssDlgULA *ssDlgULA;
 //----------------------------------------------------------------------------
-#endif    
+
+
+
+#endif
+

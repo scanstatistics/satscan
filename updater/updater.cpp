@@ -15,7 +15,6 @@ USEFORM("dlgULA.cpp", ssDlgULA);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 static const char VER_ID_OPTION_STRING[] = "-ver_id";
-static const char ULA_RTF_FILENAME[] = "SaTScanLicenseAgreement.rtf";
              try {
                Application->Initialize();
                if (_argc < 3)
@@ -25,10 +24,7 @@ static const char ULA_RTF_FILENAME[] = "SaTScanLicenseAgreement.rtf";
                while ( (ppcOmitULA_Parameter < (_argv + _argc)) && (strnicmp(*ppcOmitULA_Parameter, VER_ID_OPTION_STRING, sizeof(VER_ID_OPTION_STRING)-1)) )
                  ++ppcOmitULA_Parameter;
                if (ppcOmitULA_Parameter == (_argv+_argc)) {//option "-ver_id" not found
-                 if(access(ULA_RTF_FILENAME, 0)!=0)//ULA file doesn't exist
-                   throw std::runtime_error("User License Agreement file not available.");
                  std::auto_ptr<TssDlgULA> pula(new TssDlgULA(Application));
-                 pula->rdtULA->Lines->LoadFromFile(ULA_RTF_FILENAME);
                  if (pula->ShowModal() != mrYes)
                    throw update_cancelled("User License Agreement not accepted.");
                }
