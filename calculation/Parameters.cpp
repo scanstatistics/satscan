@@ -894,12 +894,12 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
       default : ZdException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
-    if (sDefaultValue.GetLength()) {
-      gvParametersMissingDefaulted.push_back(static_cast<int>(eParameterType)); //and default retained.
-      PrintDirection.SatScanPrintWarning("Warning: The parameter '%s' is missing from parameter file, defaulted value '%s' assigned.\n",
-                                         GetParameterLineLabel(eParameterType, sParameterLineLabel, geReadType == INI),
-                                         sDefaultValue.GetCString());
-    }
+//    if (sDefaultValue.GetLength()) {
+//      gvParametersMissingDefaulted.push_back(static_cast<int>(eParameterType)); //and default retained.
+//      PrintDirection.SatScanPrintWarning("Warning: The parameter '%s' is missing from parameter file,\n",
+//                                         GetParameterLineLabel(eParameterType, sParameterLineLabel, geReadType == INI));
+//      PrintDirection.SatScanPrintWarning("         defaulted value '%s' assigned.\n", sDefaultValue.GetCString());
+//    }
   }
   catch (ZdException & x) {
     x.AddCallpath("MarkAsMissingDefaulted()","CParameters");
