@@ -1258,6 +1258,7 @@ void TfrmAnalysis::OnProbabilityModelClick() {
         case 0:  // drop through, same as 1
         case 1:
            chkRelativeRiskEstimatesAreaAscii->Enabled = true;
+           chkRelativeRiskEstimatesAreaDBase->Enabled = true;
            rdoPercentageTemproal->Caption = "Percent of Study Period (<= 90%)";
            break;
         case 2:
@@ -1268,6 +1269,7 @@ void TfrmAnalysis::OnProbabilityModelClick() {
            if(rgTypeAnalysis->ItemIndex == 0 || rgTypeAnalysis->ItemIndex == 1)
               rgTypeAnalysis->ItemIndex = 2;
            chkRelativeRiskEstimatesAreaAscii->Enabled = false;
+           chkRelativeRiskEstimatesAreaDBase->Enabled = false;
            rdoPercentageTemproal->Caption = "Percent of Study Period (<= 50%)";
            break;
      }
@@ -1422,7 +1424,9 @@ void TfrmAnalysis::SaveTextParameters() {
 
     gpParams->SetOutputClusterLevelDBF(chkClustersInColumnFormatDBase->Checked);
     gpParams->SetOutputAreaSpecificDBF(chkCensusAreasReportedClustersDBase->Checked);
-  }
+    gpParams->SetDBaseOutputRelRisks(chkRelativeRiskEstimatesAreaDBase->Enabled && chkRelativeRiskEstimatesAreaDBase->Checked);
+    gpParams->SetDBaseOutputLogLikeli(chkSimulatedLogLikelihoodRatiosDBase->Checked);
+  }  
   catch (ZdException & x) {
     x.AddCallpath("SaveTextParameters()", "TfrmAnalysis");
     throw;
@@ -1617,7 +1621,9 @@ void TfrmAnalysis::SetupInterface() {
     //Output File Tab
     edtResultFile->Text        = gpParams->m_szOutputFilename;
     chkRelativeRiskEstimatesAreaAscii->Checked = gpParams->m_bOutputRelRisks;
+    chkRelativeRiskEstimatesAreaDBase->Checked = gpParams->GetDBaseOutputRelRisks();
     chkSimulatedLogLikelihoodRatiosAscii->Checked  = gpParams->m_bSaveSimLogLikelihoods;
+    chkSimulatedLogLikelihoodRatiosDBase->Checked = gpParams->GetDBaseOutputLogLikeli();
     chkCensusAreasReportedClustersAscii->Checked    = gpParams->m_bOutputCensusAreas;  // Output Census areas in Reported Clusters
     chkClustersInColumnFormatAscii->Checked = gpParams->m_bMostLikelyClusters;  // Output Most Likely Cluster for each Centroid
     cboCriteriaSecClusters->ItemIndex = gpParams->m_iCriteriaSecondClusters;
@@ -2009,3 +2015,6 @@ void __fastcall TfrmAnalysis::rgTypeAnalysisClick(TObject *Sender) {
     DisplayBasisException(this, x);
   }
 }
+
+
+

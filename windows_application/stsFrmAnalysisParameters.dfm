@@ -24,7 +24,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 8
     Width = 489
     Height = 321
-    ActivePage = tbScanningWindow
+    ActivePage = tbOutputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input Files'
@@ -966,7 +966,6 @@ object frmAnalysis: TfrmAnalysis
           Top = 96
           Width = 16
           Height = 17
-          Enabled = False
           TabOrder = 5
         end
         object chkSimulatedLogLikelihoodRatiosDBase: TCheckBox
@@ -974,7 +973,6 @@ object frmAnalysis: TfrmAnalysis
           Top = 120
           Width = 16
           Height = 17
-          Enabled = False
           TabOrder = 7
         end
       end

@@ -442,10 +442,7 @@ void CAnalysis::DisplayTopClustersLogLikelihoods(FILE* fp) {
 bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumber) {
    FILE* fp;
    time_t CompletionTime;
-   double nTotalTime;
-   double nSeconds;
-   double nMinutes;
-   double nHours;
+   double nTotalTime,  nSeconds,  nMinutes,  nHours;
    char* szHours = "hours";
    char* szMinutes = "minutes";
    char* szSeconds = "seconds";
@@ -488,8 +485,8 @@ bool CAnalysis::FinalizeReport(time_t RunTime, const long& lReportHistoryRunNumb
 
       m_pData->GetTInfo()->tiReportDuplicateTracts(fp);
 
-      if (m_pParameters->m_bOutputRelRisks)
-        m_pData->DisplayRelativeRisksForEachTract(true, false);
+      if (m_pParameters->m_bOutputRelRisks || m_pParameters->GetDBaseOutputRelRisks())
+        m_pData->DisplayRelativeRisksForEachTract(m_pParameters->m_bOutputRelRisks, m_pParameters->GetDBaseOutputRelRisks());
 
       //if (m_pParameters->m_bOutputCensusAreas)
       //   {
@@ -625,7 +622,7 @@ void CAnalysis::PerformSimulations() {
       else
         sReplicationFormatString = "Log Likelihood Ratio for #%ld of %ld Replications: %7.2f\n";
 
-      if (m_pParameters->m_bSaveSimLogLikelihoods) {
+      if (m_pParameters->m_bSaveSimLogLikelihoods || m_pParameters->GetDBaseOutputLogLikeli()) {
          pLLRData = new LogLikelihoodData(m_pParameters->m_szOutputFilename);
       }
 
@@ -663,8 +660,12 @@ void CAnalysis::PerformSimulations() {
       }
 
       if (m_pParameters->m_bSaveSimLogLikelihoods) {
-         ASCIIFileWriter writer(pLLRData);
-         writer.Print();
+         ASCIIFileWriter Awriter(pLLRData);
+         Awriter.Print();
+      }
+      if (m_pParameters->GetDBaseOutputLogLikeli()) {
+         DBaseFileWriter Dwriter(pLLRData);
+         Dwriter.Print();
       }
 
        delete pLLRData; pLLRData = 0;
