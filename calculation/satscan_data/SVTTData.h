@@ -22,12 +22,11 @@ class CSVTTData : public CSaTScanData {
     CSVTTData(CParameters* pParameters, BasePrint *pPrintDirection);
     virtual ~CSVTTData();
 
-    virtual void        AllocateSimulationStructures();
     virtual void        DisplayCases(FILE* pFile);
     virtual void        DisplaySimCases(FILE* pFile);
     virtual void        DisplayMeasures(FILE* pFile);
     virtual void        DisplayRelativeRisksForEachTract(const bool bASCIIOutput, const bool bDBaseOutput);
-    virtual void        MakeData(int iSimulationNumber, DataStreamGateway & DataGateway);
+    virtual void        RandomizeData(int iSimulationNumber);
 };
 
 #endif

@@ -23,27 +23,6 @@ CSVTTData::CSVTTData(CParameters* pParameters, BasePrint *pPrintDirection)
 /** destructor */
 CSVTTData::~CSVTTData() {}
 
-void CSVTTData::AllocateSimulationStructures() {
-  ProbabiltyModelType   eProbabiltyModelType(m_pParameters->GetProbabiltyModelType());
-  AnalysisType          eAnalysisType(m_pParameters->GetAnalysisType());
-
-  try {
-    //allocate simulation case arrays
-    if (eProbabiltyModelType != 10/*normal*/ && eProbabiltyModelType != 11/*rank*/)
-      gpDataStreams->AllocateSimulationCases();
-    //allocate simulation measure arrays
-    if (eProbabiltyModelType == 10/*normal*/ || eProbabiltyModelType == 11/*rank*/ || eProbabiltyModelType == 12/*survival*/)
-      gpDataStreams->AllocateSimulationMeasure();
-
-    gpDataStreams->AllocateNCSimCases();
-    gpDataStreams->AllocatePTSimCases();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateSimulationStructures()","CSaTScanData");
-    throw;
-  }
-}
-
 bool CSVTTData::CalculateMeasure(DataStream & thisStream) {
   bool bReturn = CSaTScanData::CalculateMeasure(thisStream);
   thisStream.GetTimeTrend().CalculateAndSet(thisStream.GetPTCasesArray(), thisStream.GetPTMeasureArray(),
@@ -160,16 +139,19 @@ void CSVTTData::DisplaySimCases(FILE* pFile) {
                 gpDataStreams->GetStream(0/*for now*/).GetPTSimCasesArray(), "SimCases_TotalByTimeInt");
 }
 
-void CSVTTData::MakeData(int iSimulationNumber, DataStreamGateway & DataGateway) {
+void CSVTTData::RandomizeData(int iSimulationNumber) {
   try {
-    CSaTScanData::MakeData(iSimulationNumber, DataGateway);
-    gpDataStreams->GetStream(0/*for now*/).SetSimCaseArrays();
-    gpDataStreams->GetStream(0/*for now*/).GetSimTimeTrend().CalculateAndSet(gpDataStreams->GetStream(0/*for now*/).GetPTCasesArray(),
-                                              gpDataStreams->GetStream(0/*for now*/).GetPTMeasureArray(),
-                                              m_nTimeIntervals, m_pParameters->GetTimeTrendConvergence());
+    CSaTScanData::RandomizeData(iSimulationNumber);
+    for (size_t t=0; t < gpDataStreams->GetNumStreams(); ++t) {
+       gpDataStreams->GetStream(t).SetSimCaseArrays();
+       gpDataStreams->GetStream(t).GetSimTimeTrend().CalculateAndSet(gpDataStreams->GetStream(t).GetPTCasesArray(),
+                                                                     gpDataStreams->GetStream(t).GetPTMeasureArray(),
+                                                                     m_nTimeIntervals,
+                                                                     m_pParameters->GetTimeTrendConvergence());
+    }
   }
   catch (ZdException &x) {
-    x.AddCallpath("MakeData()","CSVTTData");
+    x.AddCallpath("RandomizeData()","CSVTTData");
     throw;
   }
 }
@@ -199,6 +181,12 @@ void CSVTTData::SetProbabilityModel() {
        case BERNOULLI            : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Bernoulli model.\n",
                                                          "SetProbabilityModel()");
        case SPACETIMEPERMUTATION : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Space-Time Permutation model.\n",
+                                                         "SetProbabilityModel()");
+       case NORMAL               : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Normal model.\n",
+                                                         "SetProbabilityModel()");
+       case SURVIVAL             : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Survival model.\n",
+                                                         "SetProbabilityModel()");
+       case RANK                 : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Rank model.\n",
                                                          "SetProbabilityModel()");
        default : ZdException::Generate("Unknown probability model type: '%d'.\n",
                                        "SetProbabilityModel()", m_pParameters->GetProbabiltyModelType());
