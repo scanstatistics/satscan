@@ -238,11 +238,11 @@ void IniParameterFileAccess::ReadMultipleDataSetsSettings(const ZdIniFile& Sourc
     ReadIniParameter(SourceFile, CONTROLFILE, vFilenames);
     iMostDataSets = std::max(iMostDataSets, vFilenames.size() + 1);
     for (t=0; t < vFilenames.size(); ++t)
-      gParameters.SetControlFileName(vFilenames[t].GetCString(), false, t + 2);
+      gParameters.SetControlFileName(vFilenames[t].GetCString(), true, t + 2);
     ReadIniParameter(SourceFile, POPFILE, vFilenames);
     iMostDataSets = std::max(iMostDataSets, vFilenames.size() + 1);
     for (t=0; t < vFilenames.size(); ++t)
-      gParameters.SetPopulationFileName(vFilenames[t].GetCString(), false, t + 2);
+      gParameters.SetPopulationFileName(vFilenames[t].GetCString(), true, t + 2);
     //Synchronize collections of dataset filesnames so that we can ask for
     //any file of a particular dataset, even if blank. This keeps the same behavior
     //as when there was only one dataset.
