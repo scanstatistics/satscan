@@ -140,6 +140,7 @@ void IniParameterFileAccess::ReadInferenceSettings(const ZdIniFile& SourceFile) 
     ReadIniParameter(SourceFile, START_PROSP_SURV);
     ReadIniParameter(SourceFile, EARLY_SIM_TERMINATION);
     ReadIniParameter(SourceFile, ADJ_FOR_EALIER_ANALYSES);
+    ReadIniParameter(SourceFile, REPORT_CRITICAL_VALUES);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadInferenceSettings()","IniParameterFileAccess");
@@ -500,6 +501,8 @@ void IniParameterFileAccess::WriteInferenceSettings(ZdIniFile& WriteFile) {
                       " terminate simulations early for large p-values? (y/n)");
     WriteIniParameter(WriteFile, ADJ_FOR_EALIER_ANALYSES, AsString(s, gParameters.GetAdjustForEarlierAnalyses()),
                       " adjust for earlier analyses(prospective analyses only)? (y/n)");
+    WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, AsString(s, gParameters.GetReportCriticalValues()),
+                      " report critical values for .01 and .05? (y/n)");
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");

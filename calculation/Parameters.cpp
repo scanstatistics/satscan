@@ -13,7 +13,7 @@ const char*      YES                            	= "y";
 const char*      NO                             	= "n";
 const int        MAXIMUM_SEQUENTIAL_ANALYSES    	= 32000;
 const int        MAXIMUM_ELLIPSOIDS             	= 10;
-int CParameters::giNumParameters 			= 69;
+int CParameters::giNumParameters 			= 70;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -118,6 +118,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   //if (gCreationVersion                    != rhs.gCreationVersion) return false;
   if (gbUsePopulationFile                 != rhs.gbUsePopulationFile) return false;
   //if (glRandomizationSeed                 != rhs.glRandomizationSeed) return false;
+  if (gbReportCriticalValues              != rhs.gbReportCriticalValues) return false;
   return true;
 }
 
@@ -234,6 +235,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gCreationVersion                    = rhs.gCreationVersion;
     gbUsePopulationFile                 = rhs.gbUsePopulationFile;
     glRandomizationSeed                 = rhs.glRandomizationSeed;
+    gbReportCriticalValues              = rhs.gbReportCriticalValues;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -462,7 +464,9 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
     fprintf(fp, "  Number of Replications : %u\n", giReplications);
 
     if (glRandomizationSeed != RandomNumberGenerator::glDefaultSeed)
-       fprintf(fp, "  Randomization Seed     : %ld", glRandomizationSeed);
+       fprintf(fp, "  Randomization Seed     : %ld\n", glRandomizationSeed);
+    if (!gbReportCriticalValues)
+       fprintf(fp, "  Report Critical Values : No\n");
 
     if (giNumberEllipses > 0) {
       fprintf(fp, "\nEllipses\n");
@@ -1122,6 +1126,7 @@ void CParameters::SetAsDefaulted() {
   gCreationVersion.iRelease             = 3;
   gbUsePopulationFile                   = false;
   glRandomizationSeed                   = RandomNumberGenerator::glDefaultSeed;
+  gbReportCriticalValues                = true;
 }
 
 /** Sets dimensions of input data. */
