@@ -144,7 +144,6 @@ void __fastcall CalcThread::Execute() {
     x.AddCallpath("Execute()", "CalcThread");
 //    gpPrintWindow->SatScanPrintWarning(x.GetCallpath());
     gpPrintWindow->SatScanPrintWarning(x.GetErrorMessage());
-    gpPrintWindow->SatScanPrintf("\nProgram terminated.");
     gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
     Synchronize((TThreadMethod)&EnableProgressPrintButton);
@@ -221,7 +220,7 @@ void __fastcall CalcThread::PrintWarningLineToProgress(void) {
     for cancelling by posting message to run analysis window. */
 void __fastcall CalcThread::ProcessAcknowledgesCancellation(void) {
   try {
-    gpFormStatus->AddLine("Job cancelled by user.");
+    gpFormStatus->AddLine("Analysis cancelled by user.");
   }
   catch (...){/* Put Synchronized exception catch here later - for now just eat errors. */ }
 }
