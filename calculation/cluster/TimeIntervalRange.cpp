@@ -5,11 +5,6 @@
 #include "MeasureList.h"
 #include "cluster.h"
 
-// under borland, the stl re-defines max/min to std::max/std::min
-// - but I'm not so sure that the functions are actually inlined.
-#define sts_max(a, b)  (((a) > (b)) ? (a) : (b))
-#define sts_min(a, b)  (((a) < (b)) ? (a) : (b))
-
 /** constructor */
 TimeIntervalRange::TimeIntervalRange(const CSaTScanData& Data,
                                      AbstractLikelihoodCalculator & Calculator,
@@ -55,10 +50,10 @@ void TimeIntervalRange::CompareClusters(CCluster & Running, CCluster & TopCluste
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = sts_min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
   for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = sts_max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = sts_min(giStartRange_End + 1, iWindowEnd);
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         pData->gtCases = pData->gpCases[iWindowStart] - pData->gpCases[iWindowEnd];
         pData->gtMeasure = pData->gpMeasure[iWindowStart] - pData->gpMeasure[iWindowEnd];
@@ -81,10 +76,10 @@ void TimeIntervalRange::CompareMeasures(AbstractTemporalClusterData * pStreamDat
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = sts_min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
   for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = sts_max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = sts_min(giStartRange_End + 1, iWindowEnd);
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart)
         pMeasureList->AddMeasure(pData->gpCases[iWindowStart] - pData->gpCases[iWindowEnd],
                                  pData->gpMeasure[iWindowStart] - pData->gpMeasure[iWindowEnd]);
@@ -250,10 +245,10 @@ void NormalTimeIntervalRange::CompareClusters(CCluster & Running, CCluster & Top
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = sts_min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
   for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = sts_max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = sts_min(giStartRange_End + 1, iWindowEnd);
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         pData->gtCases = pData->gpCases[iWindowStart] - pData->gpCases[iWindowEnd];
         pData->gtMeasure = pData->gpMeasure[iWindowStart] - pData->gpMeasure[iWindowEnd];
@@ -306,10 +301,10 @@ void MultiStreamTimeIntervalRange::CompareClusters(CCluster & Running, CCluster 
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = sts_min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
   for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = sts_max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = sts_min(giStartRange_End + 1, iWindowEnd);
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         Running.m_nRatio = 0;
         for (size_t t=0; t < pData->gvStreamData.size(); ++t) {
