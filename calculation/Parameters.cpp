@@ -1197,9 +1197,10 @@ bool CParameters::ValidateParameters() {
         if (!ValidateReplications(m_nReplicas))
           bValid = DisplayParamError(REPLICAS);
 
-        if (m_nAnalysisType == PURELYSPATIAL)
+        if (m_nAnalysisType == PURELYSPATIAL) {
           if (!(NONE <= m_nPrecision && m_nPrecision <= DAY))
             bValid = DisplayParamError(PRECISION);
+        }    
         else
           if (!(YEAR <= m_nPrecision && m_nPrecision <= DAY))  // Change to DAYS, YEARS
             bValid = DisplayParamError(PRECISION);
