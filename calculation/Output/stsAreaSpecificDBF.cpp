@@ -15,8 +15,8 @@
 #include "Cluster.h"
 
 // constructor
-__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const long lRunNumber, const int iCoordType, const ZdFileName& sOutputFileName)
-                             : DBaseOutput(lRunNumber, iCoordType) {
+__fastcall stsAreaSpecificDBF::stsAreaSpecificDBF(const long lRunNumber, const int iCoordType, const ZdFileName& sOutputFileName, const bool bPrintPVal)
+                             : DBaseOutput(lRunNumber, bPrintPVal, iCoordType) {
    try {
       Init();
       Setup(sOutputFileName.GetFullPath());
@@ -65,8 +65,10 @@ void stsAreaSpecificDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, LOC_ID));
 
       // p value
-      fPVal = (float) pCluster.GetPVal(pData.m_pParameters->m_nReplicas);
-      SetDoubleField(*pRecord, fPVal, GetFieldNumber(gvFields, P_VALUE));
+      if(gbPrintPVal) {
+         fPVal = (float) pCluster.GetPVal(pData.m_pParameters->m_nReplicas);
+         SetDoubleField(*pRecord, fPVal, GetFieldNumber(gvFields, P_VALUE));
+      }
 
       // area observed
       SetDoubleField(*pRecord, pCluster.GetCaseCountForTract(tTract, pData), GetFieldNumber(gvFields, AREA_OBS));
@@ -130,7 +132,9 @@ void stsAreaSpecificDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
       CreateNewField(vFields, CLUST_NUM, ZD_NUMBER_FLD, 5, 0, uwOffset);
       CreateNewField(vFields, LOC_ID, ZD_ALPHA_FLD, 30, 0, uwOffset);
       CreateNewField(vFields, REL_RISK, ZD_NUMBER_FLD, 12, 3, uwOffset);
-      CreateNewField(vFields, P_VALUE, ZD_NUMBER_FLD, 12, 5, uwOffset);
+
+      if(gbPrintPVal)
+         CreateNewField(vFields, P_VALUE, ZD_NUMBER_FLD, 12, 5, uwOffset);
       CreateNewField(vFields, AREA_OBS, ZD_NUMBER_FLD, 12, 0, uwOffset);
       CreateNewField(vFields, AREA_EXP, ZD_NUMBER_FLD, 12, 2, uwOffset);
       CreateNewField(vFields, AREA_RSK, ZD_NUMBER_FLD, 12, 3, uwOffset);

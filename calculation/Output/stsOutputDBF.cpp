@@ -38,10 +38,10 @@ const char *    AREA_EXP                = "AREA_EXP";
 const char *    AREA_RSK                = "AREA_RSK";
 
 // constructor
-__fastcall DBaseOutput::DBaseOutput(const long lRunNumber, const int iCoordType) {
+__fastcall DBaseOutput::DBaseOutput(const long lRunNumber, const bool bPrintPVal, const int iCoordType) {
    try {
       Init();
-      Setup(lRunNumber, iCoordType);
+      Setup(lRunNumber, bPrintPVal, iCoordType);
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "DBaseOutput");
@@ -115,8 +115,9 @@ void DBaseOutput::SetAreaID(ZdString& sTempValue, const CCluster& pCluster, cons
 }
 
 // internal setup function
-void DBaseOutput::Setup(const long lRunNumber, const int iCoordType) {
+void DBaseOutput::Setup(const long lRunNumber, const bool bPrintPVal, const int iCoordType) {
    giCoordType = iCoordType;
    glRunNumber = lRunNumber;
+   gbPrintPVal = bPrintPVal;
 }	
 

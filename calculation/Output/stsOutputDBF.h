@@ -34,20 +34,23 @@ class CSaTScanData;
 class DBaseOutput {
    private:
       void	Init();
-      void	Setup(const long lRunNumber, const int iCoordType = 0);
+      void	Setup(const long lRunNumber, const bool bPrintPVal = true, const int iCoordType = 0);
    protected:
       ZdPointerVector<ZdField>  gvFields;
       long                      glRunNumber;  // unique run number assigned in Run History file and sent to dbf to be recorded - AJV 9/24/2002
       int                       giCoordType;
       ZdString                  gsFileName;  // although it is not defined in this class, it is set by the decendant classes
                                              // and used in this class, therefore since its used by both I factored it up - AJV 9/24/2002
+      bool                      gbPrintPVal; // this variable will determine whether or not to print the pVal out to the dBase
+                                             // output files. Throughout the program consistently pVal is not printed for Monte
+                                             // Carlo replications less than 99, so to maintain consistency here we will do the same - AJV 10/2/2002
 
       virtual void      CleanupFieldVector();
       virtual void      CreateDBFFile();
       virtual void      SetAreaID(ZdString& sTempValue, const CCluster& pCluster, const CSaTScanData& pData);
       virtual void      SetupFields(ZdPointerVector<ZdField>& vFields) = 0;
    public:
-      __fastcall DBaseOutput(const long lRunNumber, const int iCoordType = 0);
+      __fastcall DBaseOutput(const long lRunNumber, const bool bPrintPVal = true, const int iCoordType = 0);
       virtual ~DBaseOutput();
 
       virtual void      RecordClusterData(const CCluster& pCluster, const CSaTScanData& pData, int iClusterNumber, tract_t tTract = 0) = 0;

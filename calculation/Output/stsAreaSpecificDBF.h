@@ -10,7 +10,7 @@ class stsAreaSpecificDBF : public DBaseOutput {
    protected:
       virtual void              SetupFields(ZdPointerVector<ZdField>& vFields);
    public:
-      __fastcall stsAreaSpecificDBF(const long lRunNumber, const int iCoordType, const ZdFileName& sOutputFileName);
+      __fastcall stsAreaSpecificDBF(const long lRunNumber, const int iCoordType, const ZdFileName& sOutputFileName, const bool bPrintPVal);
       __fastcall stsAreaSpecificDBF();
       virtual ~stsAreaSpecificDBF();
 
