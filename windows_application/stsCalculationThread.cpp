@@ -79,7 +79,7 @@ void __fastcall CalcThread::Execute() {
     //run by the Dos app when the parameter file is read in.
     gpParams->SetDisplayParameters(true);
     if (!gpParams->ValidateParameters())
-       SSGenerateException("Invalid parameter Encountered.", "Execute()");
+       SSGenerateException("\nInvalid parameter(s) encountered. Job cancelled.", "Execute()");
 
     switch (gpParams->m_nAnalysisType) {
        case PURELYSPATIAL        : gpData = new CPurelySpatialData(gpParams, gpPrintWindow);  break;
