@@ -14,6 +14,7 @@
 #include "TimeTrend.h"
 #include "MultipleDimensionArrayHandler.h"
 #include "DataStreamHandler.h"
+#include "AdjustmentHandler.h"
 
 class CPoissonModel;
 class CBernoulliModel;
@@ -55,16 +56,16 @@ class CSaTScanData {
     measure_t                                   gtTotalMeasure;                 /** total measure for all data streams */
     count_t                                     gtTotalCases;                   /** total cases for all data streams */
     measure_t                                   gtTotalPopulation;              /** total population for all streams */
+    RelativeRiskAdjustmentHandler               gRelativeRiskAdjustments;
 
-    bool                                        AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate);
+    bool                                        AdjustMeasure(RealDataStream& thisStream, measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate);
     void                                        AllocateNeighborArray();
     void                                        AllocateSortedArray();
     measure_t                                   CalcMeasureForTimeInterval(PopulationData & Population, measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate);
-    bool                                        ConvertAdjustmentDateToJulian(StringParser & Parser, Julian & JulianDate, bool bStartDate);
-    measure_t                                   DateMeasure(PopulationData & Population, measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract);    
+    measure_t                                   DateMeasure(PopulationData & Population, measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract);
     count_t                                     GetCaseCount(count_t ** ppCumulativeCases, int iInterval, tract_t tTract) const;
     int                                         LowerPopIndex(Julian Date) const;
-    bool                                        ReadAdjustmentsByRelativeRisksFile(measure_t ** pNonCumulativeMeasure);
+    bool                                        ReadAdjustmentsByRelativeRisksFile();
     bool                                        ReadCartesianCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
                                                                          int & iScanCount, int iWordOffSet);
     bool                                        ReadCoordinatesFileAsCartesian(FILE * fp);
@@ -100,15 +101,18 @@ class CSaTScanData {
                                                 m_nIntervalCut, // Maximum time intervals allowed in a cluster (base on TimeSize)
                                                 m_nProspectiveIntervalStart; // interval where start of prospective space-time begins
 
+    virtual void                                AdjustForKnownRelativeRisks(RealDataStream& thisStream, measure_t ** ppNonCumulativeMeasure);
     virtual void                                AdjustNeighborCounts(); // For sequential analysis, after top cluster removed
-    virtual void                                CalculateMeasure(RealDataStream & thisStream);
+    virtual void                                CalculateMeasure(RealDataStream& thisStream);
     void                                        CalculateExpectedCases();
     int                                         ComputeNewCutoffInterval(Julian jStartDate, Julian jEndDate);
+    bool                                        ConvertAdjustmentDateToJulian(StringParser & Parser, Julian & JulianDate, bool bStartDate);
     virtual void                                DisplayNeighbors(FILE* pFile);
     virtual void                                DisplayRelativeRisksForEachTract() const;
     void                                        DisplaySummary(FILE* fp);
     void                                        DisplaySummary2(FILE* fp);
     virtual void                                FindNeighbors(bool bSimulations);
+    void                                        FreeRelativeRisksAdjustments() {gRelativeRiskAdjustments.Empty();}
     const double                              * GetAnglesArray() const {return mdE_Angles;}
     DataStreamHandler                         & GetDataStreamHandler() {return *gpDataStreams;}
     const DataStreamHandler                   & GetDataStreamHandler() const {return *gpDataStreams;}

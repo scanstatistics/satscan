@@ -38,6 +38,35 @@ CSaTScanData::~CSaTScanData() {
   catch (...){}  
 }
 
+void CSaTScanData::AdjustForKnownRelativeRisks(RealDataStream& thisStream, measure_t ** ppNonCumulativeMeasure) {
+  measure_t                             c, AdjustedTotalMeasure_t;
+  int                                   i;
+  tract_t                               t;  
+  AdjustmentsIterator_t                 itr;
+  TractContainerIteratorConst_t         itr_deque;
+
+  //apply adjustments to relative risks
+  for (itr=gRelativeRiskAdjustments.GetAdjustments().begin(); itr != gRelativeRiskAdjustments.GetAdjustments().end(); ++itr) {
+     const TractContainer_t & tract_deque = itr->second;
+     for (itr_deque=tract_deque.begin(); itr_deque != tract_deque.end(); ++itr_deque)
+        AdjustMeasure(thisStream, ppNonCumulativeMeasure, itr->first, (*itr_deque).GetRelativeRisk(),
+                      (*itr_deque).GetStartDate(), (*itr_deque).GetEndDate());
+  }
+
+  // calculate total adjusted measure
+  for (AdjustedTotalMeasure_t=0, i=0; i < m_nTimeIntervals; ++i)
+     for (t=0; t < m_nTracts; ++t)
+        AdjustedTotalMeasure_t += ppNonCumulativeMeasure[i][t];
+  //Mutlipy the measure for each interval/tract by constant (c) to obtain total
+  //adjusted measure (AdjustedTotalMeasure_t) equal to previous total measure (m_nTotalMeasure).
+  c = thisStream.GetTotalMeasure()/AdjustedTotalMeasure_t;
+  for (i=0; i < m_nTimeIntervals; ++i)
+     for (t=0; t < m_nTracts; ++t)
+        ppNonCumulativeMeasure[i][t] *= c;
+}
+
+
+
 /**************************************************************************************
 Adjusts the measure for a particular tract and a set of time intervals, reflecting an
 increased or decreased relative risk in a specified adjustment time period. For time
@@ -47,7 +76,7 @@ only that proportion is multiplied by the relative risk, and the other proportio
 the same, after which they are added.
 Input: Tract, Adjustment Time Period, Relative Risk
 *****************************************************************************************/
-bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate) {
+bool CSaTScanData::AdjustMeasure(RealDataStream& thisStream, measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate) {
   int                                   interval;
   Julian                                AdjustmentStart, AdjustmentEnd, IntervalLength;
   measure_t                             Adjustment_t, fProportionAdjusted, tMaxMeasure_tValue;
@@ -59,7 +88,6 @@ bool CSaTScanData::AdjustMeasure(measure_t ** pNonCumulativeMeasure, tract_t Tra
 
   //NOTE: The adjustment for known relative risks is hard coded to the first
   //      data stream for the time being.
-  RealDataStream & thisStream = gpDataStreams->GetStream(0);
   PopulationData & Population = thisStream.GetPopulationData();
   pp_m = thisStream.GetPopulationMeasureArray();
   count_t ** ppCases = thisStream.GetCaseArray();
@@ -208,6 +236,7 @@ void CSaTScanData::CalculateExpectedCases() {
      gtTotalPopulation += gpDataStreams->GetStream(t).GetTotalPopulation();
   }
   SetMaxCircleSize();
+  FreeRelativeRisksAdjustments();
 }
 
 void CSaTScanData::CalculateMeasure(RealDataStream & thisStream) {
@@ -495,6 +524,8 @@ bool CSaTScanData::ReadPoissonData() {
 
     gpDataStreams = new PoissonDataStreamHandler(*this, gpPrint);
     if (!gpDataStreams->ReadData())
+      return false;
+    if (m_pParameters->UseAdjustmentForRelativeRisksFile() && !ReadAdjustmentsByRelativeRisksFile())
       return false;
     if (m_pParameters->UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
