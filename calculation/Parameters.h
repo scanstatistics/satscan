@@ -18,6 +18,8 @@ extern const char*      CONTROL_FILE_LINE;
 extern const char*      USE_GRID_FILE_LINE;
 extern const char*      PRECISION_TIMES_LINE;
 extern const char*      COORD_TYPE_LINE;
+extern const char*      SPECIAL_POP_FILE_LINE;
+extern const char*      USE_SPECIAL_POP_FILE_LINE;
 
 /** analysis ini section */
 extern const char*      ANALYSIS_SECTION;
@@ -99,6 +101,7 @@ extern const char*      RETROSPECTIVE_SPACETIME_ANALYSIS;
 extern const char*      PROSPECTIVE_SPACETIME_ANALYSIS;
 extern const char*      PURELY_SPATIAL_MONOTONE_ANALYSIS;
 extern const char*      SPATIALVARIATION_TEMPORALTREND;
+extern const char*      PROSPECTIVE_PURELY_TEMPORAL_ANALYSIS;
 
 /** probabilty model type names */
 extern const char*      POISSON_MODEL;
@@ -123,10 +126,10 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     CRITERIA_SECOND_CLUSTERS, MAX_TEMPORAL_TYPE, MAX_SPATIAL_TYPE,
                                     RUN_HISTORY_FILENAME, OUTPUT_MLC_DBASE, OUTPUT_AREAS_DBASE, OUTPUT_RR_DBASE,
                                     OUTPUT_SIM_LLR_DBASE, DUCZMAL_COMPACTNESS, INTERVAL_STARTRANGE, 
-                                    INTERVAL_ENDRANGE, TIMETRENDCONVRG};
+                                    INTERVAL_ENDRANGE, TIMETRENDCONVRG, SPECIALPOPFILE, USESPECIALPOPFILE};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
-                                    SPATIALVARTEMPTREND, PURELYSPATIALMONOTONE};
+                                    SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL, PURELYSPATIALMONOTONE};
 /** probabilty model types */
 enum ProbabiltyModelType           {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION};
 enum IncludeClustersType           {ALLCLUSTERS=0, ALIVECLUSTERS, CLUSTERSINRANGE};
@@ -156,6 +159,7 @@ class CParameters {
     IncludeClustersType                 geIncludeClustersType;
     int                                 giReplications;                         /** number of MonteCarlo replicas */
     CriteriaSecondaryClustersType       geCriteriaSecondClustersType;           /** Criteria for Reporting Secondary Clusters */
+    double                              gbTimeTrendConverge;                    /** time trend convergence value */
         /* Power Calcution variables */
     bool                                gbPowerCalculation;                     /** indicator of whether to perform power calculations */
     double                              gdPower_X, gdPower_Y;                   /** power calculation variables */
@@ -205,6 +209,8 @@ class CParameters {
     std::string                         gsCoordinatesFileName;                  /** coordinates data source filename */
     std::string                         gsSpecialGridFileName;                  /** special grid data source filename */
     bool                                gbUseSpecialGridFile;                   /** indicator of special grid file usage */
+    std::string                         gsSpecialPopulationFileName;            /** special population file for constructing circles only */
+    bool                                gbUseSpecialPopulationFile;             /** indicator of special population file usage */
     std::string                         gsOutputFileName;                       /** results output filename */
     ZdString                            gsRunHistoryFilename;                   /** run history filename */
     bool                                gbLogRunHistory;                        /** indicates whether to log history */
@@ -228,8 +234,6 @@ class CParameters {
                                                                                     to false has an implied disclaimer, you may get strange
                                                                                     occurances programmatically and statically. */
     static int                          giNumParameters;                        /** number enumerated parameters */
-
-    double                              gbTimeTrendConverge;                    /** time trend convergence value */
 
     ZdString                          & AsString(ZdString & ref, int i) {ref = i; return ref;}
     ZdString                          & AsString(ZdString & ref, float f) {ref = f;return ref;}
@@ -311,6 +315,7 @@ class CParameters {
     bool                                GetIncludePurelyTemporalClusters() const {return gbIncludePurelyTemporalClusters;}
     bool                                GetIsLoggingHistory() const {return gbLogRunHistory;}
     bool                                GetIsPowerCalculated() const {return gbPowerCalculation;}
+    bool                                GetIsProspectiveAnalysis() const;
     bool                                GetIsSequentialScanning() const {return gbSequentialRuns;}
     bool                                GetLogLikelihoodRatioIsTestStatistic() const;
     float                               GetMaximumGeographicClusterSize() const {return gfMaxGeographicClusterSize;}
@@ -345,8 +350,9 @@ class CParameters {
     RiskType                            GetRiskType() const {return geRiskFunctionType;}
     const ZdString                    & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
     double                              GetSequentialCutOffPValue() {return gbSequentialCutOffPValue;}
-    const std::string                 & GetSpecialGridFileName() const { return gsSpecialGridFileName; }
-    const std::string                 & GetSourceFileName() const { return gsParametersSourceFileName; }
+    const std::string                 & GetSpecialGridFileName() const {return gsSpecialGridFileName;}
+    const std::string                 & GetSpecialPopulationFileName() const {return gsSpecialPopulationFileName;}
+    const std::string                 & GetSourceFileName() const {return gsParametersSourceFileName;}
     const std::string                 & GetStartRangeEndDate() const {return gsStartRangeEndDate;}
     Julian                              GetStartRangeDateAsJulian(const std::string & sStartRangeDate) /*const*/;
     const std::string                 & GetStartRangeStartDate() const {return gsStartRangeStartDate;}
@@ -405,8 +411,10 @@ class CParameters {
     void                                SetSequentialScanning(bool b) {gbSequentialRuns = b;}
     void                                SetSequentialCutOffPValue(double dPValue); 
     void                                SetSpecialGridFileName(const char * sSpecialGridFileName, bool bCorrectForRelativePath=false, bool bSetUsingFlag=false);
-    bool                                UseSpecialGrid() const { return gbUseSpecialGridFile; }
-    void                                SetStartRangeEndDate(const char * sStartRangeEndDate);    
+    void                                SetSpecialPopulationFileName(const char * sSpecialPopulationFileName, bool bCorrectForRelativePath=false, bool bSetUsingFlag=false);
+    bool                                UseSpecialGrid() const {return gbUseSpecialGridFile;}
+    bool                                UseSpecialPopulationFile() const {return gbUseSpecialPopulationFile;}
+    void                                SetStartRangeEndDate(const char * sStartRangeEndDate);
     void                                SetStartRangeStartDate(const char * sStartRangeStartDate);
     void                                SetStudyPeriodEndDate(const char * sStudyPeriodEndDate);
     void                                SetStudyPeriodStartDate(const char * sStudyPeriodStartDate);
@@ -416,6 +424,7 @@ class CParameters {
     void                                SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                                SetTimeTrendConvergence(double dTimeTrendConvergence);
     void                                SetUseSpecialGrid(bool b) {gbUseSpecialGridFile = b;}
+    void                                SetUseSpecialPopulationFile(bool b) {gbUseSpecialPopulationFile = b;}
     void                                SetValidatePriorToCalculation(bool b) {gbValidatePriorToCalc = b;}
     bool                                ValidateParameters(BasePrint & PrintDirection);
     void                                Write(const char * sParameterFileName);

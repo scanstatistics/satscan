@@ -16,6 +16,8 @@ const char*      GRID_FILE_LINE                 	= "GridFile";
 const char*      USE_GRID_FILE_LINE             	= "UseGridFile";
 const char*      PRECISION_TIMES_LINE           	= "PrecisionCaseTimes";
 const char*      COORD_TYPE_LINE                	= "CoordinatesType";
+const char*      SPECIAL_POP_FILE_LINE                  = "SpecialPopulationFile";
+const char*      USE_SPECIAL_POP_FILE_LINE              = "UseSpecialPopulationFile";
 
 const char*      ANALYSIS_SECTION               	= "[Analysis]";
 const char*      ANALYSIS_TYPE_LINE             	= "AnalysisType";
@@ -82,7 +84,8 @@ const char*      PURELY_TEMPORAL_ANALYSIS       	= "Purely Temporal";
 const char*      RETROSPECTIVE_SPACETIME_ANALYSIS 	= "Retrospective Space-Time";
 const char*      PROSPECTIVE_SPACETIME_ANALYSIS 	= "Prospective Space-Time";
 const char*      PURELY_SPATIAL_MONOTONE_ANALYSIS 	= "Purely Spatial Monotone";
-const char*      SPATIALVARIATION_TEMPORALTREND         =  "Spatial Variation of Temporal Trends";
+const char*      SPATIALVARIATION_TEMPORALTREND         = "Spatial Variation of Temporal Trends";
+const char*      PROSPECTIVE_PURELY_TEMPORAL_ANALYSIS   = "Prospective Purely Temporal";
 
 const char*      POISSON_MODEL                 		= "Poisson";
 const char*      BERNOULLI_MODEL                	= "Bernoulli";
@@ -93,9 +96,9 @@ const char*      YEAR_PRECISION_TYPE            	= "Years";
 const char*      MONTH_PRECISION_TYPE           	= "Months";
 const char*      DAY_PRECISION_TYPE             	= "Days";
 
-int CParameters::giNumParameters 			= 54;
+int CParameters::giNumParameters 			= 56;
 
-char mgsVariableLabels[54][100] = {
+char mgsVariableLabels[56][100] = {
    "Analysis Type",
    "Scan Areas",
    "Case File",
@@ -148,8 +151,10 @@ char mgsVariableLabels[54][100] = {
    "Output Simulated Loglikelihood Ratios DBase Format",
    "Ellipsoid Duczmal Compactness Correction",
    "Interval Start Range",
-   "Interval End Range"
-   "Time Trend Convergence"
+   "Interval End Range",
+   "Time Trend Convergence",
+   "Special Population File",
+   "Special Population File Use"
 };
 
 /** Constructor */   
@@ -245,6 +250,8 @@ void CParameters::Copy(const CParameters &rhs) {
     gsSpecialGridFileName               = rhs.gsSpecialGridFileName;
     gsSpecialGridFileName               = rhs.gsSpecialGridFileName;
     gbUseSpecialGridFile                = rhs.gbUseSpecialGridFile;
+    gsSpecialPopulationFileName         = rhs.gsSpecialPopulationFileName;
+    gbUseSpecialPopulationFile          = rhs.gbUseSpecialPopulationFile;
     gePrecisionOfTimesType              = rhs.gePrecisionOfTimesType;
     giDimensionsOfData                  = rhs.giDimensionsOfData;
     geCoordinatesType                   = rhs.geCoordinatesType;
@@ -284,11 +291,13 @@ void CParameters::Copy(const CParameters &rhs) {
 void CParameters::DisplayAnalysisType(FILE* fp) const {
   try {
     switch (geAnalysisType) {
-      case PURELYSPATIAL        : fprintf(fp, "Purely Spatial analysis\n"); break;
-      case PURELYTEMPORAL       : fprintf(fp, "Purely Temporal analysis\n"); break;
-      case SPACETIME            : fprintf(fp, "Retrospective Space-Time analysis\n"); break;
-      case PROSPECTIVESPACETIME : fprintf(fp, "Prospective Space-Time analysis\n"); break;
-      case SPATIALVARTEMPTREND  : fprintf(fp, "Spatial Variation of Temporal Trends analysis\n"); break;
+      case PURELYSPATIAL             : fprintf(fp, "Purely Spatial analysis\n"); break;
+      case PURELYTEMPORAL            : fprintf(fp, "Purely Temporal analysis\n"); break;
+      case SPACETIME                 : fprintf(fp, "Retrospective Space-Time analysis\n"); break;
+      case PROSPECTIVESPACETIME      : fprintf(fp, "Prospective Space-Time analysis\n"); break;
+      case SPATIALVARTEMPTREND       : fprintf(fp, "Spatial Variation of Temporal Trends analysis\n"); break;
+      case PROSPECTIVEPURELYTEMPORAL : fprintf(fp, "Prospective Purely Temporal analysis\n"); break;
+      case PURELYSPATIALMONOTONE     : fprintf(fp, "Purely Spatial Monotone analysis\n"); break;
       default : ZdException::Generate("Unknown analysis type '%d'.\n", "DisplayAnalysisType()", geAnalysisType);
     }
 
@@ -419,7 +428,8 @@ void CParameters::DisplayParameters(FILE* fp) const {
        fprintf(fp, (gbIncludePurelyTemporalClusters ? "Yes\n" : "No\n"));
     }
 
-    if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME || (geAnalysisType == PROSPECTIVESPACETIME)) {
+    if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL ||
+        geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME) {
       fprintf(fp, "  Maximum Temporal Cluster Size         : %.2f", gfMaxTemporalClusterSize);
       switch (geMaxTemporalClusterSizeType) {
         case PERCENTAGETYPE : fprintf(fp, " %%\n"); break;
@@ -447,7 +457,7 @@ void CParameters::DisplayParameters(FILE* fp) const {
       };
     }
 
-    if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME ||
+    if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVEPURELYTEMPORAL||
         geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == SPATIALVARTEMPTREND) {
       fprintf(fp, "\nTime Parameters\n");
       fprintf(fp, "---------------\n");
@@ -466,7 +476,7 @@ void CParameters::DisplayParameters(FILE* fp) const {
       }
     }
 
-    if (geAnalysisType == PROSPECTIVESPACETIME)
+    if (geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == PROSPECTIVEPURELYTEMPORAL)
       fprintf(fp, "  Prospective Start Date : %s\n", gsProspectiveStartDate.c_str());
 
     fprintf(fp, "\nOutput\n");
@@ -528,15 +538,17 @@ void CParameters::DisplayParameters(FILE* fp) const {
          fprintf(fp, "  LLR File(s)       : %s\n", DBaseOutput.GetFullPath());
     }
 
-    fprintf(fp, "\n  Criteria for Reporting Secondary Clusters : ");
-    switch (geCriteriaSecondClustersType) {
-       case NOGEOOVERLAP          : fprintf(fp, "No Geographical Overlap\n"); break;
-       case NOCENTROIDSINOTHER    : fprintf(fp, "No Cluster Centroids in Other Clusters\n"); break;
-       case NOCENTROIDSINMORELIKE : fprintf(fp, "No Cluster Centroids in More Likely Clusters\n"); break;
-       case NOCENTROIDSINLESSLIKE : fprintf(fp, "No Cluster Centroids in Less Likely Clusters\n"); break;
-       case NOPAIRSINEACHOTHERS   : fprintf(fp, "No Pairs of Centroids Both in Each Others Clusters\n"); break;
-       case NORESTRICTIONS        : fprintf(fp, "No Restrictions = Most Likely Cluster for Each Centroid\n"); break;
-       default : ZdException::Generate("Unknown secondary clusters type '%d'.\n", "DisplayParameters()", geCriteriaSecondClustersType);
+    if (!(geAnalysisType == PURELYTEMPORAL || geAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
+      fprintf(fp, "\n  Criteria for Reporting Secondary Clusters : ");
+      switch (geCriteriaSecondClustersType) {
+         case NOGEOOVERLAP          : fprintf(fp, "No Geographical Overlap\n"); break;
+         case NOCENTROIDSINOTHER    : fprintf(fp, "No Cluster Centroids in Other Clusters\n"); break;
+         case NOCENTROIDSINMORELIKE : fprintf(fp, "No Cluster Centroids in More Likely Clusters\n"); break;
+         case NOCENTROIDSINLESSLIKE : fprintf(fp, "No Cluster Centroids in Less Likely Clusters\n"); break;
+         case NOPAIRSINEACHOTHERS   : fprintf(fp, "No Pairs of Centroids Both in Each Others Clusters\n"); break;
+         case NORESTRICTIONS        : fprintf(fp, "No Restrictions = Most Likely Cluster for Each Centroid\n"); break;
+         default : ZdException::Generate("Unknown secondary clusters type '%d'.\n", "DisplayParameters()", geCriteriaSecondClustersType);
+      }
     }
     fprintf(fp, "\n________________________________________________________________\n");
   }
@@ -575,12 +587,13 @@ const char * CParameters::GetAnalysisTypeAsString() const {
 
   try {
     switch (geAnalysisType) {
-      case PURELYSPATIAL         : sAnalysisType = PURELY_SPATIAL_ANALYSIS; break;
-      case PURELYTEMPORAL        : sAnalysisType = PURELY_TEMPORAL_ANALYSIS; break;
-      case SPACETIME             : sAnalysisType = RETROSPECTIVE_SPACETIME_ANALYSIS; break;
-      case PROSPECTIVESPACETIME  : sAnalysisType = PROSPECTIVE_SPACETIME_ANALYSIS; break;
-      case PURELYSPATIALMONOTONE : sAnalysisType = PURELY_SPATIAL_MONOTONE_ANALYSIS; break;
-      case SPATIALVARTEMPTREND   : sAnalysisType = SPATIALVARIATION_TEMPORALTREND; break;
+      case PURELYSPATIAL             : sAnalysisType = PURELY_SPATIAL_ANALYSIS; break;
+      case PURELYTEMPORAL            : sAnalysisType = PURELY_TEMPORAL_ANALYSIS; break;
+      case SPACETIME                 : sAnalysisType = RETROSPECTIVE_SPACETIME_ANALYSIS; break;
+      case PROSPECTIVESPACETIME      : sAnalysisType = PROSPECTIVE_SPACETIME_ANALYSIS; break;
+      case PURELYSPATIALMONOTONE     : sAnalysisType = PURELY_SPATIAL_MONOTONE_ANALYSIS; break;
+      case SPATIALVARTEMPTREND       : sAnalysisType = SPATIALVARIATION_TEMPORALTREND; break;
+      case PROSPECTIVEPURELYTEMPORAL : sAnalysisType = PROSPECTIVE_PURELY_TEMPORAL_ANALYSIS; break;
       default : ZdException::Generate("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", geAnalysisType);
     }
   }
@@ -609,6 +622,11 @@ const char * CParameters::GetDatePrecisionAsString(DatePrecisionType eDatePrecis
     throw;
   }
   return sDatePrecisionType;
+}
+
+/** Returns whether analysis is a prospective analysis. */
+bool CParameters::GetIsProspectiveAnalysis() const {
+  return (geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == PROSPECTIVEPURELYTEMPORAL);
 }
 
 /** Returns description for LLR. */
@@ -695,6 +713,8 @@ const char * CParameters::GetParameterLineLabel(ParameterType eParameterType, Zd
 	case INTERVAL_STARTRANGE       : sParameterLineLabel = STARTRANGE_LINE; break;			
 	case INTERVAL_ENDRANGE         : sParameterLineLabel = ENDRANGE_LINE; break;			
         case TIMETRENDCONVRG           : sParameterLineLabel = TIME_TREND_CONVERGENCE_LINE; break;
+        case SPECIALPOPFILE            : sParameterLineLabel = SPECIAL_POP_FILE_LINE; break;
+        case USESPECIALPOPFILE         : sParameterLineLabel = USE_SPECIAL_POP_FILE_LINE; break;
         default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLineLabel()", eParameterType);
       };
     }
@@ -962,7 +982,9 @@ void CParameters::MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint
                                        break;
       case INTERVAL_ENDRANGE         : sDefaultValue.printf("%s,%s", gsEndRangeStartDate.c_str(), gsEndRangeEndDate.c_str());
                                        break;
-      case TIMETRENDCONVRG	     : sDefaultValue = gbTimeTrendConverge; break;	                                 
+      case TIMETRENDCONVRG	     : sDefaultValue = gbTimeTrendConverge; break;
+      case SPECIALPOPFILE            : sDefaultValue = "<blank>"; break;
+      case USESPECIALPOPFILE         : sDefaultValue = (gbUseSpecialPopulationFile ? YES : NO); break;
       default : ZdException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -1382,10 +1404,12 @@ void CParameters::ReadInputFilesSection(ZdIniFile& file, BasePrint & PrintDirect
     ReadIniParameter(*pSection, CONTROL_FILE_LINE, CONTROLFILE, PrintDirection);
     ReadIniParameter(*pSection, POP_FILE_LINE, POPFILE, PrintDirection);
     ReadIniParameter(*pSection, COORD_FILE_LINE, COORDFILE, PrintDirection);
-    ReadIniParameter(*pSection, GRID_FILE_LINE, GRIDFILE, PrintDirection);
     ReadIniParameter(*pSection, USE_GRID_FILE_LINE, SPECIALGRID, PrintDirection);
+    ReadIniParameter(*pSection, GRID_FILE_LINE, GRIDFILE, PrintDirection);
     ReadIniParameter(*pSection, PRECISION_TIMES_LINE, PRECISION, PrintDirection);
     ReadIniParameter(*pSection, COORD_TYPE_LINE, COORDTYPE, PrintDirection);
+    ReadIniParameter(*pSection, USE_SPECIAL_POP_FILE_LINE, USESPECIALPOPFILE, PrintDirection);
+    ReadIniParameter(*pSection, SPECIAL_POP_FILE_LINE, SPECIALPOPFILE, PrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadInputFilesSection()", "CParameters");
@@ -1522,6 +1546,8 @@ void CParameters::ReadParameter(ParameterType eParameterType, const ZdString & s
       case INTERVAL_STARTRANGE       : ReadStartIntervalRange(sParameter); break;
       case INTERVAL_ENDRANGE         : ReadEndIntervalRange(sParameter); break;
       case TIMETRENDCONVRG           : SetTimeTrendConvergence(ReadDouble(sParameter, eParameterType)); break;
+      case USESPECIALPOPFILE         : SetUseSpecialPopulationFile(ReadBoolean(sParameter, eParameterType)); break;
+      case SPECIALPOPFILE            : SetSpecialPopulationFileName(sParameter.GetCString(), true); break;
       default : ZdException::Generate("Unknown parameter enumeration %d.","ReadParameter()", eParameterType);
     };
   }
@@ -1586,7 +1612,8 @@ void CParameters::ReadScanningLineParameterFile(const char * sParameterFileName,
            //Pre-process parameters that have descriptions, strip decription off.
            if (!((ParameterType)iLinesRead == CASEFILE || (ParameterType)iLinesRead == POPFILE ||
                  (ParameterType)iLinesRead == COORDFILE || (ParameterType)iLinesRead == OUTPUTFILE ||
-                 (ParameterType)iLinesRead == GRIDFILE || (ParameterType)iLinesRead == CONTROLFILE)) {
+                 (ParameterType)iLinesRead == GRIDFILE || (ParameterType)iLinesRead == CONTROLFILE ||
+                 (ParameterType)iLinesRead == SPECIALPOPFILE)) {
               if ((iPos = sLineBuffer.Find("//")) > -1)
                 sLineBuffer.Truncate(iPos);
            }
@@ -1815,6 +1842,9 @@ void CParameters::SaveInputFileSection(ZdIniFile& file) {
     pSection->AddLine(CASE_FILE_LINE, gsCaseFileName.c_str());
     pSection->AddLine(CONTROL_FILE_LINE, gsControlFileName.c_str());
     pSection->AddLine(POP_FILE_LINE, gsPopulationFileName.c_str());
+    pSection->AddComment(" use special population file? (y/n)");
+    pSection->AddLine(USE_SPECIAL_POP_FILE_LINE, gbUseSpecialPopulationFile ? YES : NO);
+    pSection->AddLine(SPECIAL_POP_FILE_LINE, gsSpecialPopulationFileName.c_str());
     pSection->AddLine(COORD_FILE_LINE, gsCoordinatesFileName.c_str());
     pSection->AddLine(GRID_FILE_LINE, gsSpecialGridFileName.c_str());
     pSection->AddComment(" use special grid file? (y/n)");
@@ -2082,9 +2112,11 @@ void CParameters::SetDefaults() {
   gsPopulationFileName                  = "";
   gsCoordinatesFileName                 = "";
   gsOutputFileName                      = "";
+  gsSpecialPopulationFileName           = "";
   gePrecisionOfTimesType                = YEAR;
   giDimensionsOfData                    = 0;
   gbUseSpecialGridFile                  = false;
+  gbUseSpecialPopulationFile            = false;
   gsSpecialGridFileName                 = "";
   gfMaxGeographicClusterSize            = 50.0; //GG980716
   geMaxGeographicClusterSizeType        = PERCENTAGEOFMEASURETYPE;
@@ -2351,10 +2383,9 @@ void CParameters::SetOutputFileName(const char * sOutPutFileName, bool bCorrectF
   }
 }
 
-/** Sets coordinates data file name.
+/** Sets population data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
-    to path relative to executable. This is only attempted if current file
-    does not exist. */
+    to path relative to executable. This is only attempted if current file does not exist. */
 void CParameters::SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath) {
   try {
     if (! sPopulationFileName)
@@ -2507,6 +2538,34 @@ void CParameters::SetSpecialGridFileName(const char * sSpecialGridFileName, bool
   }
 }
 
+/** Sets special population data file name.
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file does not exist. */
+void CParameters::SetSpecialPopulationFileName(const char * sSpecialPopulationFileName, bool bCorrectForRelativePath, bool bSetUsingFlag) {
+  try {
+    if (! sSpecialPopulationFileName)
+      ZdGenerateException("Null pointer.", "SetSpecialPopulationFileName()");
+
+    gsSpecialPopulationFileName = sSpecialPopulationFileName;
+    if (bCorrectForRelativePath)
+      ConvertRelativePath(gsSpecialPopulationFileName);
+
+    if (gsSpecialPopulationFileName.empty())
+      gbUseSpecialPopulationFile = false; //If empty, then definately not using special grid.
+    else if (bSetUsingFlag)
+      gbUseSpecialPopulationFile = true;
+      //Permits setting special population filename in GUI interface
+      //where obviously the use of special population file is the desire.
+      //else gbUseSpecialPopulationFile is as set from parameters read. This permits
+      //the situation where user has modified the paramters file manually so that
+      //there is a named special population file but they turned off option to use it.
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetSpecialPopulationFileName()", "CParameters");
+    throw;
+  }
+}
+
 /** Sets study period start date. Throws exception if out of range. */
 void CParameters::SetStudyPeriodEndDate(const char * sStudyPeriodEndDate) {
   ZdString      sLabel;
@@ -2628,7 +2687,7 @@ bool CParameters::ValidateDateParameters(BasePrint & PrintDirection) {
                                          gsStudyPeriodEndDate.c_str());
     }
     //validate prospective start date based upon precision of times parameter setting
-    if (geAnalysisType == PROSPECTIVESPACETIME && !ValidateProspectiveDateString()) {
+    if (GetIsProspectiveAnalysis() && !ValidateProspectiveDateString()) {
       bValid = false;
       bProspectiveDateValid = false;
       PrintDirection.SatScanPrintWarning("Error: Prospective start date value of '%s' does not appear to be a valid date.\n",
@@ -2644,7 +2703,7 @@ bool CParameters::ValidateDateParameters(BasePrint & PrintDirection) {
         PrintDirection.SatScanPrintWarning("Error: Study period start date '%s' does not occur before study period end date '%s'.\n",
                                            gsStudyPeriodStartDate.c_str(), gsStudyPeriodEndDate.c_str());
       }
-      if (bValid && geAnalysisType == PROSPECTIVESPACETIME && bProspectiveDateValid) {
+      if (bValid && GetIsProspectiveAnalysis() && bProspectiveDateValid) {
         //validate prospective start date
         ProspectiveStartDate = GetProspectiveStartDateAsJulian();
         if (ProspectiveStartDate < StudyPeriodStartDate || ProspectiveStartDate > StudyPeriodEndDate) {
@@ -3155,14 +3214,14 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
 
   try {
     //validate temporal options
-    if (geAnalysisType == PROSPECTIVESPACETIME && geMaxTemporalClusterSizeType != TIMETYPE) {
+    if (GetIsProspectiveAnalysis() && geMaxTemporalClusterSizeType != TIMETYPE) {
       PrintDirection.SatScanPrintWarning("Error: Maximum temporal cluster size can only be defined as a fixed\n");
-      PrintDirection.SatScanPrintWarning("       amount of time for a Prospective Space-Time analysis.");
+      PrintDirection.SatScanPrintWarning("       amount of time for a prospective analysis.");
       return false;
     }
 
     if (geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME ||
-        geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == SPATIALVARTEMPTREND) {
+        GetIsProspectiveAnalysis() || geAnalysisType == SPATIALVARTEMPTREND) {
       //maximum temporal cluster size
       if (geAnalysisType != SPATIALVARTEMPTREND) {
         if (0.0 >= gfMaxTemporalClusterSize) {
@@ -3268,7 +3327,7 @@ bool CParameters::ValidateTemporalParameters(BasePrint & PrintDirection) {
           PrintDirection.SatScanPrintWarning("Error: A purely temporal cluster can not be included for a %s model.\n",
                                              GetProbabiltyModelTypeAsString());
       }
-      else if (!(geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME)) {
+      else if (!(geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME || GetIsProspectiveAnalysis())) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: A purely temporal cluster can only be included for time based analyses.\n");
       }
