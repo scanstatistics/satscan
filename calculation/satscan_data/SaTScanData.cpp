@@ -1,15 +1,15 @@
-//***************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//***************************************************************************
+//******************************************************************************
 #include "SaTScanData.h"
 #include "TimeIntervalRange.h"
-#include "RankDataStreamHandler.h"
-#include "SurvivalDataStreamHandler.h"
-#include "NormalDataStreamHandler.h"
-#include "PoissonDataStreamHandler.h"
-#include "BernoulliDataStreamHandler.h"
-#include "SpaceTimePermutationDataStreamHandler.h"
+#include "RankDataSetHandler.h"
+#include "ExponentialDataSetHandler.h"
+#include "NormalDataSetHandler.h"
+#include "PoissonDataSetHandler.h"
+#include "BernoulliDataSetHandler.h"
+#include "SpaceTimePermutationDataSetHandler.h"
 #include "OrdinalDataSetHandler.h"
 
 /** class constructor */
@@ -42,11 +42,11 @@ CSaTScanData::~CSaTScanData() {
 /** Adjusts passed non cumulative measure are for known relative risks, as
     previously read from user specified file. Caller is responsible for ensuring:
     - that passed 'measure **' points to a multiple dimensional array contained
-      by passed RealDataStream object.
+      by passed RealDataSet object.
     - passed 'measure **' is in fact non-cumulative
     - passed 'measure **' points to valid memory, allocated to dimensions (number
       of time intervals plus one by number of tracts)                            */
-void CSaTScanData::AdjustForKnownRelativeRisks(RealDataStream& thisStream, measure_t ** ppNonCumulativeMeasure) {
+void CSaTScanData::AdjustForKnownRelativeRisks(RealDataSet& DataSet, measure_t ** ppNonCumulativeMeasure) {
   measure_t                             c, AdjustedTotalMeasure_t;
   int                                   i;
   tract_t                               t;  
@@ -57,7 +57,7 @@ void CSaTScanData::AdjustForKnownRelativeRisks(RealDataStream& thisStream, measu
   for (itr=gRelativeRiskAdjustments.GetAdjustments().begin(); itr != gRelativeRiskAdjustments.GetAdjustments().end(); ++itr) {
      const TractContainer_t & tract_deque = itr->second;
      for (itr_deque=tract_deque.begin(); itr_deque != tract_deque.end(); ++itr_deque)
-        AdjustMeasure(thisStream, ppNonCumulativeMeasure, itr->first, (*itr_deque).GetRelativeRisk(),
+        AdjustMeasure(DataSet, ppNonCumulativeMeasure, itr->first, (*itr_deque).GetRelativeRisk(),
                       (*itr_deque).GetStartDate(), (*itr_deque).GetEndDate());
   }
 
@@ -67,7 +67,7 @@ void CSaTScanData::AdjustForKnownRelativeRisks(RealDataStream& thisStream, measu
         AdjustedTotalMeasure_t += ppNonCumulativeMeasure[i][t];
   //Mutlipy the measure for each interval/tract by constant (c) to obtain total
   //adjusted measure (AdjustedTotalMeasure_t) equal to previous total measure (m_nTotalMeasure).
-  c = thisStream.GetTotalMeasure()/AdjustedTotalMeasure_t;
+  c = DataSet.GetTotalMeasure()/AdjustedTotalMeasure_t;
   for (i=0; i < m_nTimeIntervals; ++i)
      for (t=0; t < m_nTracts; ++t)
         ppNonCumulativeMeasure[i][t] *= c;
@@ -84,7 +84,7 @@ only that proportion is multiplied by the relative risk, and the other proportio
 the same, after which they are added.
 Input: Tract, Adjustment Time Period, Relative Risk
 *****************************************************************************************/
-bool CSaTScanData::AdjustMeasure(RealDataStream& thisStream, measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate) {
+bool CSaTScanData::AdjustMeasure(RealDataSet& DataSet, measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate) {
   int                                   interval;
   Julian                                AdjustmentStart, AdjustmentEnd, IntervalLength;
   measure_t                             Adjustment_t, fProportionAdjusted, tMaxMeasure_tValue;
@@ -95,10 +95,10 @@ bool CSaTScanData::AdjustMeasure(RealDataStream& thisStream, measure_t ** pNonCu
   tMaxMeasure_tValue = measure_limit.max();
 
   //NOTE: The adjustment for known relative risks is hard coded to the first
-  //      data stream for the time being.
-  PopulationData & Population = thisStream.GetPopulationData();
-  pp_m = thisStream.GetPopulationMeasureArray();
-  count_t ** ppCases = thisStream.GetCaseArray();
+  //      dataset for the time being.
+  PopulationData & Population = DataSet.GetPopulationData();
+  pp_m = DataSet.GetPopulationMeasureArray();
+  count_t ** ppCases = DataSet.GetCaseArray();
 
   for (interval=GetTimeIntervalOfDate(StartDate); interval <= GetTimeIntervalOfDate(EndDate); ++interval) {
      AdjustmentStart = std::max(StartDate, gvTimeIntervalStartTimes[interval]);
@@ -222,33 +222,33 @@ measure_t CSaTScanData::CalcMeasureForTimeInterval(PopulationData & Population, 
    return SumMeasure / nTotalDays;
 }
 
-/** Calculates expected number of cases for each data stream. Records total
-    measure, cases, and population for all streams. Calls method to determines
+/** Calculates expected number of cases for each dataset. Records total
+    measure, cases, and population for all datasets. Calls method to determines
     the maximum spatial cluster size. */
 void CSaTScanData::CalculateExpectedCases() {
   size_t        t;
 
   gPrint.SatScanPrintf("Calculating the expected number of cases\n");
-  //calculates expected cases for each data stream
+  //calculates expected cases for each dataset
   for (t=0; t < gpDataSets->GetNumDataSets(); ++t) {
-     CalculateMeasure(gpDataSets->GetStream(t));
-     gtTotalMeasure += gpDataSets->GetStream(t).GetTotalMeasure();
-     gtTotalCases += gpDataSets->GetStream(t).GetTotalCases();
-     gtTotalPopulation += gpDataSets->GetStream(t).GetTotalPopulation();
+     CalculateMeasure(gpDataSets->GetDataSet(t));
+     gtTotalMeasure += gpDataSets->GetDataSet(t).GetTotalMeasure();
+     gtTotalCases += gpDataSets->GetDataSet(t).GetTotalCases();
+     gtTotalPopulation += gpDataSets->GetDataSet(t).GetTotalPopulation();
   }
   SetMaxCircleSize();
   FreeRelativeRisksAdjustments();
 }
 
-/** Calculates expected number of cases for data stream. */
-void CSaTScanData::CalculateMeasure(RealDataStream & thisStream) {
+/** Calculates expected number of cases for dataset. */
+void CSaTScanData::CalculateMeasure(RealDataSet& DataSet) {
   try {
-    SetAdditionalCaseArrays(thisStream);
-    m_pModel->CalculateMeasure(thisStream);
+    SetAdditionalCaseArrays(DataSet);
+    m_pModel->CalculateMeasure(DataSet);
     //record totals at start, the optional sequential scan feature modifies start values
-    thisStream.SetTotalCasesAtStart(thisStream.GetTotalCases());
-    thisStream.SetTotalControlsAtStart(thisStream.GetTotalControls());
-    thisStream.SetTotalMeasureAtStart(thisStream.GetTotalMeasure());
+    DataSet.SetTotalCasesAtStart(DataSet.GetTotalCases());
+    DataSet.SetTotalControlsAtStart(DataSet.GetTotalControls());
+    DataSet.SetTotalMeasureAtStart(DataSet.GetTotalMeasure());
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateMeasure()","CSaTScanData");
@@ -362,10 +362,10 @@ void CSaTScanData::FindNeighbors(bool bSimulations) {
   }
 }
 
-double CSaTScanData::GetAnnualRateAtStart(unsigned int iStream) const {
+double CSaTScanData::GetAnnualRateAtStart(size_t tSetIndex) const {
   double nYears      = (double)(m_nEndDate+1 - m_nStartDate) / 365.2425;
-  double dTotalCasesAtStart = gpDataSets->GetStream(iStream).GetTotalCasesAtStart();
-  double dTotalPopulation = gpDataSets->GetStream(iStream).GetTotalPopulation();
+  double dTotalCasesAtStart = gpDataSets->GetDataSet(tSetIndex).GetTotalCasesAtStart();
+  double dTotalPopulation = gpDataSets->GetDataSet(tSetIndex).GetTotalPopulation();
   double nAnnualRate = (m_nAnnualRatePop*dTotalCasesAtStart) / (dTotalPopulation*nYears);
 
   return nAnnualRate;
@@ -401,16 +401,16 @@ bool CSaTScanData::GetIsNullifiedLocation(tract_t tLocationIndex) const {
 }
 
 /** For Bernoulli model, returns ratio of total cases / total population for
-    iStream'th data stream. For all other models, returns 1.*/
-double CSaTScanData::GetMeasureAdjustment(unsigned int iStream) const {
+    iDataSet'th dataset. For all other models, returns 1.*/
+double CSaTScanData::GetMeasureAdjustment(size_t tSetIndex) const {
   if (gParameters.GetProbabilityModelType() == BERNOULLI) {
-    double dTotalCases = gpDataSets->GetStream(iStream).GetTotalCases();
-    double dTotalPopulation = gpDataSets->GetStream(iStream).GetTotalPopulation();
+    double dTotalCases = gpDataSets->GetDataSet(tSetIndex).GetTotalCases();
+    double dTotalPopulation = gpDataSets->GetDataSet(tSetIndex).GetTotalPopulation();
     return dTotalCases / dTotalPopulation;
   }
 //  else if (gParameters.GetProbabilityModelType() == ORDINAL) {
-//    double dTotalCases = gpDataSets->GetStream(iStream).GetTotalCases();
-//    double dTotalPopulation = gpDataSets->GetStream(iStream).GetTotalPopulation();
+//    double dTotalCases = gpDataSets->GetDataSet(tSetIndex).GetTotalCases();
+//    double dTotalPopulation = gpDataSets->GetDataSet(tSetIndex).GetTotalPopulation();
 //    return dTotalCases / dTotalPopulation;
 //  }
   else
@@ -489,7 +489,7 @@ bool CSaTScanData::ReadBernoulliData() {
     if (!ReadCoordinatesFile())
       return false;
 
-    gpDataSets = new BernoulliDataStreamHandler(*this, gPrint);
+    gpDataSets = new BernoulliDataSetHandler(*this, gPrint);
     if (!gpDataSets->ReadData())
       return false;
     if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
@@ -523,7 +523,7 @@ void CSaTScanData::ReadDataFromFiles() {
       case BERNOULLI            : bReadSuccess = ReadBernoulliData(); break;
       case SPACETIMEPERMUTATION : bReadSuccess = ReadSpaceTimePermutationData(); break;
       case ORDINAL              : bReadSuccess = ReadOrdinalData(); break;
-      case SURVIVAL             : bReadSuccess = ReadSurvivalData(); break;
+      case EXPONENTIAL          : bReadSuccess = ReadExponentialData(); break;
       case NORMAL               : bReadSuccess = ReadNormalData(); break;
       case RANK                 : bReadSuccess = ReadRankData(); break;
       default :
@@ -547,7 +547,7 @@ bool CSaTScanData::ReadNormalData() {
   try {
     if (!ReadCoordinatesFile())
       return false;
-    gpDataSets = new NormalDataStreamHandler(*this, gPrint);
+    gpDataSets = new NormalDataSetHandler(*this, gPrint);
     if (!gpDataSets->ReadData())
       return false;
     if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
@@ -595,7 +595,7 @@ bool CSaTScanData::ReadPoissonData() {
     if (!ReadCoordinatesFile())
       return false;
 
-    gpDataSets = new PoissonDataStreamHandler(*this, gPrint);
+    gpDataSets = new PoissonDataSetHandler(*this, gPrint);
     if (!gpDataSets->ReadData())
       return false;
     if (gParameters.UseAdjustmentForRelativeRisksFile() && !ReadAdjustmentsByRelativeRisksFile())
@@ -620,7 +620,7 @@ bool CSaTScanData::ReadRankData() {
   try {
     if (!ReadCoordinatesFile())
       return false;
-    gpDataSets = new RankDataStreamHandler(*this, gPrint);
+    gpDataSets = new RankDataSetHandler(*this, gPrint);
     if (!gpDataSets->ReadData())
       return false;
     if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
@@ -645,7 +645,7 @@ bool CSaTScanData::ReadSpaceTimePermutationData() {
       return false;
     if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
        return false;
-    gpDataSets = new SpaceTimePermutationDataStreamHandler(*this, gPrint);
+    gpDataSets = new SpaceTimePermutationDataSetHandler(*this, gPrint);
     if (!gpDataSets->ReadData())
       return false;
     if (gParameters.UseSpecialGrid() && !ReadGridFile())
@@ -659,14 +659,14 @@ bool CSaTScanData::ReadSpaceTimePermutationData() {
   return true;
 }
 
-/** reads data from input files for a Survival probability model */
-bool CSaTScanData::ReadSurvivalData() {
+/** reads data from input files for a Exponential probability model */
+bool CSaTScanData::ReadExponentialData() {
   size_t        t;
 
   try {
     if (!ReadCoordinatesFile())
       return false;
-    gpDataSets = new SurvivalDataStreamHandler(*this, gPrint);
+    gpDataSets = new ExponentialDataSetHandler(*this, gPrint);
     if (!gpDataSets->ReadData())
       return false;
     if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
@@ -676,7 +676,7 @@ bool CSaTScanData::ReadSurvivalData() {
   }
   catch (ZdException &x) {
     delete gpDataSets; gpDataSets=0;
-    x.AddCallpath("ReadSurvivalData()","CSaTScanData");
+    x.AddCallpath("ReadExponentialData()","CSaTScanData");
     throw;
   }
   return true;
@@ -695,29 +695,29 @@ void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
       return;
 
     for (size_t t=0; t < gpDataSets->GetNumDataSets(); ++t) {
-       RealDataStream& thisSet = gpDataSets->GetStream(t);
-       PopulationData& thisPopulation = thisSet.GetPopulationData();
+       RealDataSet& DataSet = gpDataSets->GetDataSet(t);
+       PopulationData& thisPopulation = DataSet.GetPopulationData();
 
-       //$$ This process will likely need further updates for the Survival, Normal
+       //$$ This process will likely need further updates for the Exponential, Normal
        //$$ and possibly the Rank model. Might be more fitting to have a virtual
-       //$$ method in DataStreamHandler classes.
+       //$$ method in DataSetHandler classes.
        switch (gParameters.GetProbabilityModelType()) {
          case BERNOULLI :
            // Remove controls for location from data set
-           tTotalControls = thisSet.GetTotalControls();
-           tTotalControls -= thisSet.GetControlArray()[0][tTractIndex];
-           thisSet.GetControlArray()[0][tTractIndex] = 0;
-           thisSet.SetTotalControls(tTotalControls);
+           tTotalControls = DataSet.GetTotalControls();
+           tTotalControls -= DataSet.GetControlArray()[0][tTractIndex];
+           DataSet.GetControlArray()[0][tTractIndex] = 0;
+           DataSet.SetTotalControls(tTotalControls);
          POISSON :
            // Remove observed and expected cases for location from data set
-           tTotalCases = thisSet.GetTotalCases();
-           tTotalCases -= thisSet.GetCaseArray()[0][tTractIndex];
-           thisSet.GetCaseArray()[0][tTractIndex] = 0;
-           thisSet.SetTotalCases(tTotalCases);
-           tTotalMeasure = thisSet.GetTotalMeasure();
-           tTotalMeasure -= thisSet.GetMeasureArray()[0][tTractIndex];
-           thisSet.GetMeasureArray()[0][tTractIndex] = 0;
-           thisSet.SetTotalMeasure(tTotalMeasure);
+           tTotalCases = DataSet.GetTotalCases();
+           tTotalCases -= DataSet.GetCaseArray()[0][tTractIndex];
+           DataSet.GetCaseArray()[0][tTractIndex] = 0;
+           DataSet.SetTotalCases(tTotalCases);
+           tTotalMeasure = DataSet.GetTotalMeasure();
+           tTotalMeasure -= DataSet.GetMeasureArray()[0][tTractIndex];
+           DataSet.GetMeasureArray()[0][tTractIndex] = 0;
+           DataSet.SetTotalMeasure(tTotalMeasure);
            break;
          case SPACETIMEPERMUTATION :
            // Since space-time permutation model only permitted with space-time analyses, this
@@ -726,15 +726,15 @@ void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
                                "RemoveTractSignificance()");
          case ORDINAL :
            // Remove observed cases for location from data set ordinal categories
-           tTotalCases = thisSet.GetTotalCases();
-           for (size_t t=0; t < thisSet.GetCasesByCategory().size(); ++t) {
-              tTotalCases -= thisSet.GetCategoryCaseArray(t)[0][tTractIndex];
+           tTotalCases = DataSet.GetTotalCases();
+           for (size_t t=0; t < DataSet.GetCasesByCategory().size(); ++t) {
+              tTotalCases -= DataSet.GetCategoryCaseArray(t)[0][tTractIndex];
               //$$ NOTE: Depending on what information is to be printed for results, it might be
               //$$       necessary to store the initial number of category cases separately.  
-              thisPopulation.RemoveOrdinalCategoryCases(t, thisSet.GetCategoryCaseArray(t)[0][tTractIndex]);
-              thisSet.GetCategoryCaseArray(t)[0][tTractIndex] = 0;
+              thisPopulation.RemoveOrdinalCategoryCases(t, DataSet.GetCategoryCaseArray(t)[0][tTractIndex]);
+              DataSet.GetCategoryCaseArray(t)[0][tTractIndex] = 0;
            }
-           thisSet.SetTotalCases(tTotalCases);
+           DataSet.SetTotalCases(tTotalCases);
            break;
           default :
            ZdGenerateException("Unknown probability model type '%d'.", "RemoveTractSignificance()", gParameters.GetProbabilityModelType());
@@ -756,11 +756,11 @@ void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
 }
 
 /** Conditionally allocates and sets additional case arrays. */
-void CSaTScanData::SetAdditionalCaseArrays(RealDataStream & thisStream) {
+void CSaTScanData::SetAdditionalCaseArrays(RealDataSet& DataSet) {
   try {
     if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
         gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
-      thisStream.SetCasesPerTimeIntervalArray();  
+      DataSet.SetCasesPerTimeIntervalArray();  
   }
   catch (ZdException &x) {
     x.AddCallpath("SetAdditionalCaseArrays()","CSaTScanData");
@@ -844,12 +844,12 @@ void CSaTScanData::SetMaxCircleSize() {
              m_nMaxReportedCircleSize = (gParameters.GetMaximumReportedGeoClusterSize() / 100.0) * m_nTotalMaxCirclePopulation;
            break;
       case PERCENTOFPOPULATIONTYPE :
-           //NOTE: The measure from the first data stream is used when calculating
+           //NOTE: The measure from the first dataset is used when calculating
            //      the maximum circle size; at least for the time being.
            if (gParameters.GetProbabilityModelType() == ORDINAL)
-             tTotalPopulation = gpDataSets->GetStream(0).GetTotalCases();
+             tTotalPopulation = gpDataSets->GetDataSet(0).GetTotalCases();
            else
-             tTotalPopulation = gpDataSets->GetStream(0).GetTotalMeasure();
+             tTotalPopulation = gpDataSets->GetDataSet(0).GetTotalMeasure();
 
            m_nMaxCircleSize = (gParameters.GetMaximumGeographicClusterSize() / 100.0) * tTotalPopulation;
            if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
@@ -894,17 +894,17 @@ int CSaTScanData::CalculateProspectiveIntervalStart() const {
   return iDateIndex;
 }
 
-/** For all data streams, causes temporal structures to be allocated and set. */
+/** For all datasets, causes temporal structures to be allocated and set. */
 void CSaTScanData::SetPurelyTemporalCases() {
   size_t        t;
 
   try {
     if (gParameters.GetProbabilityModelType() == ORDINAL)
       for (t=0; t < gpDataSets->GetNumDataSets(); ++t)
-        gpDataSets->GetStream(t).SetPTCategoryCasesArray();
+        gpDataSets->GetDataSet(t).SetPTCategoryCasesArray();
     else
       for (t=0; t < gpDataSets->GetNumDataSets(); ++t)
-        gpDataSets->GetStream(t).SetPTCasesArray();
+        gpDataSets->GetDataSet(t).SetPTCasesArray();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalCases()","CSaTScanData");

@@ -1,7 +1,7 @@
-//*****************************************************************************
+//******************************************************************************
 #ifndef __SATSCANDATA_H
 #define __SATSCANDATA_H
-//*****************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #include "Tracts.h"
 #include "Parameters.h"
@@ -13,7 +13,7 @@
 #include "MakeNeighbors.h"
 #include "TimeTrend.h"
 #include "MultipleDimensionArrayHandler.h"
-#include "DataStreamHandler.h"
+#include "DataSetHandler.h"
 #include "AdjustmentHandler.h"
 
 /** Central data hub class which contains all data either read or created from
@@ -28,7 +28,7 @@ class CSaTScanData {
     BasePrint                                 & gPrint;
     const CParameters                         & gParameters;
     CModel                                    * m_pModel;
-    DataStreamHandler                         * gpDataSets;
+    DataSetHandler                           * gpDataSets;
 
     GInfo                                       gCentroidsHandler;
     TractHandler                                gTractHandler;
@@ -47,9 +47,9 @@ class CSaTScanData {
     tract_t                                     m_nTracts;
     measure_t                                   m_nTotalTractsAtStart;
     measure_t                                   m_nTotalMaxCirclePopulation;    /** total population as defined in max circle population file */
-    measure_t                                   gtTotalMeasure;                 /** total measure for all data streams */
-    count_t                                     gtTotalCases;                   /** total cases for all data streams */
-    measure_t                                   gtTotalPopulation;              /** total population for all streams */
+    measure_t                                   gtTotalMeasure;                 /** total measure for all data sets */
+    count_t                                     gtTotalCases;                   /** total cases for all data sets */
+    measure_t                                   gtTotalPopulation;              /** total population for all sets */
     RelativeRiskAdjustmentHandler               gRelativeRiskAdjustments;
     std::vector<int>                            gvProspectiveIntervalCuts;
     int                                         m_nProspectiveIntervalStart; // interval where start of prospective space-time begins
@@ -60,7 +60,7 @@ class CSaTScanData {
     int                                         m_nFlexibleWindowEndRangeEndIndex;
     std::vector<tract_t>                        gvNullifiedLocations;
 
-    bool                                        AdjustMeasure(RealDataStream& thisStream, measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate);
+    bool                                        AdjustMeasure(RealDataSet& DataSet, measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate);
     measure_t                                   CalcMeasureForTimeInterval(PopulationData & Population, measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate);
     int                                         CalculateProspectiveIntervalStart() const;
     void                                        CalculateTimeIntervalIndexes();
@@ -76,7 +76,7 @@ class CSaTScanData {
     bool                                        ReadGridFileAsLatitudeLongitude(FILE * fp);
     bool                                        ReadLatitudeLongitudeCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
                                                                                  int iWordOffSet, const char * sSourceFile);
-    virtual void                                SetAdditionalCaseArrays(RealDataStream & thisStream);
+    virtual void                                SetAdditionalCaseArrays(RealDataSet & thisSet);
     virtual void                                SetIntervalCut();
     virtual void                                SetIntervalStartTimes();
     void                                        SetMeasureByTimeIntervalArray();
@@ -94,19 +94,19 @@ class CSaTScanData {
     tract_t                                     m_nGridTracts;
     int                                         m_nTimeIntervals;
 
-    virtual void                                AdjustForKnownRelativeRisks(RealDataStream& thisStream, measure_t ** ppNonCumulativeMeasure);
+    virtual void                                AdjustForKnownRelativeRisks(RealDataSet& DataSet, measure_t ** ppNonCumulativeMeasure);
     virtual void                                AdjustNeighborCounts(); // For sequential analysis, after top cluster removed
-    virtual void                                CalculateMeasure(RealDataStream& thisStream);
+    virtual void                                CalculateMeasure(RealDataSet& thisSet);
     void                                        CalculateExpectedCases();
-    bool                                        ConvertAdjustmentDateToJulian(StringParser & Parser, Julian & JulianDate, bool bStartDate);
+    bool                                        ConvertAdjustmentDateToJulian(StringParser& Parser, Julian& JulianDate, bool bStartDate);
     virtual void                                DisplayNeighbors(FILE* pFile);
     virtual void                                DisplayRelativeRisksForEachTract() const;
     void                                        DisplaySummary(FILE* fp);
     void                                        DisplaySummary2(FILE* fp);
     virtual void                                FindNeighbors(bool bSimulations);
     void                                        FreeRelativeRisksAdjustments() {gRelativeRiskAdjustments.Empty();}
-    DataStreamHandler                         & GetDataStreamHandler() {return *gpDataSets;}
-    const DataStreamHandler                   & GetDataStreamHandler() const {return *gpDataSets;}
+    DataSetHandler                            & GetDataSetHandler() {return *gpDataSets;}
+    const DataSetHandler                      & GetDataSetHandler() const {return *gpDataSets;}
     double                                      GetEllipseAngle(int iEllipseIndex) const;
     double                                      GetEllipseShape(int iEllipseIndex) const;
     int                                         GetFlexibleWindowEndRangeEndIndex() const {return m_nFlexibleWindowEndRangeEndIndex;}
@@ -118,11 +118,11 @@ class CSaTScanData {
     double                                      GetMaxCircleSize() const {return m_nMaxCircleSize;}
     const std::vector<measure_t>              & GetPopulationArray() const {return gvCircleMeasure;}
     double                                      GetMaxReportedCircleSize() const {return m_nMaxReportedCircleSize;}
-    double                                      GetMeasureAdjustment(unsigned int iStream) const;
+    double                                      GetMeasureAdjustment(size_t iSetIndex) const;
     inline virtual tract_t                      GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
     inline tract_t                           ** GetNeighborCountArray() {return gpNeighborCountHandler->GetArray();}
     inline tract_t                           ** GetNeighborCountArray() const {return gpNeighborCountHandler->GetArray();}
-    inline size_t                               GetNumDataStreams() const {return gpDataSets->GetNumDataSets();}
+    inline size_t                               GetNumDataSets() const {return gpDataSets->GetNumDataSets();}
     inline int                                  GetNumTimeIntervals() const {return m_nTimeIntervals;}
     inline tract_t                              GetNumTracts() const {return m_nTracts;}
     const CParameters                         & GetParameters() const {return gParameters;}
@@ -137,9 +137,7 @@ class CSaTScanData {
     const std::vector<Julian>                 & GetTimeIntervalStartTimes() const {return gvTimeIntervalStartTimes;}
     inline const TractHandler                 * GetTInfo() const {return &gTractHandler;}
     double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}
-    virtual void                                RandomizeData(RandomizerContainer_t& RandomizerContainer,
-                                                              SimulationDataContainer_t& SimDataContainer,
-                                                              unsigned int iSimulationNumber) const;
+    virtual void                                RandomizeData(RandomizerContainer_t& RandomizerContainer, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
     bool                                        ReadBernoulliData();
     bool                                        ReadCoordinatesFile();
     virtual void                                ReadDataFromFiles();
@@ -150,16 +148,16 @@ class CSaTScanData {
     bool                                        ReadPoissonData();
     bool                                        ReadRankData();
     bool                                        ReadSpaceTimePermutationData();
-    bool                                        ReadSurvivalData();
+    bool                                        ReadExponentialData();
     void                                        RemoveTractSignificance(tract_t tTractIndex);
     void                                        SetMaxCircleSize();
     virtual void                                ValidateObservedToExpectedCases(count_t ** ppCumulativeCases, measure_t ** ppNonCumulativeMeasure) const;
 
-    inline measure_t                            GetTotalDataStreamMeasure(unsigned int iStream) const {return gpDataSets->GetStream(iStream).GetTotalMeasure();}
+    inline measure_t                            GetTotalDataSetMeasure(size_t iSetIndex) const {return gpDataSets->GetDataSet(iSetIndex).GetTotalMeasure();}
     inline measure_t                            GetTotalMeasure() const {return gtTotalMeasure;}
     inline count_t                              GetTotalCases() const {return gtTotalCases;}
-    inline count_t                              GetTotalDataStreamCases(unsigned int iStream) const {return gpDataSets->GetStream(iStream).GetTotalCases();}
-    double                                      GetAnnualRateAtStart(unsigned int iStream) const;
+    inline count_t                              GetTotalDataSetCases(size_t iSetIndex) const {return gpDataSets->GetDataSet(iSetIndex).GetTotalCases();}
+    double                                      GetAnnualRateAtStart(size_t iSetIndex) const;
     double                                      GetAnnualRatePop() const {return m_nAnnualRatePop;}
 
     virtual void                                DisplayCases(FILE* pFile);

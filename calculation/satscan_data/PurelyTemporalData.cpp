@@ -7,7 +7,7 @@
 #include "BernoulliModel.h"
 #include "SpaceTimePermutationModel.h"
 #include "NormalModel.h"
-#include "SurvivalModel.h"
+#include "ExponentialModel.h"
 #include "RankModel.h"
 #include "OrdinalModel.h"
 
@@ -31,14 +31,14 @@ void CPurelyTemporalData::AdjustNeighborCounts() {
   ZdGenerateException("AdjustNeighborCounts() not implemented for CPurelyTemporalData.","AdjustNeighborCounts()");
 }
 
-/** Calls base class CSaTScanData::CalculateMeasure(). Sets data stream object's
+/** Calls base class CSaTScanData::CalculateMeasure(). Sets dataset object's
     temporal data structures. */
-void CPurelyTemporalData::CalculateMeasure(RealDataStream& thisStream) {
+void CPurelyTemporalData::CalculateMeasure(RealDataSet& DataSet) {
   try {
-    CSaTScanData::CalculateMeasure(thisStream);
+    CSaTScanData::CalculateMeasure(DataSet);
     //Set temporal structures
     if (gParameters.GetProbabilityModelType() != ORDINAL)
-      gpDataSets->SetPurelyTemporalMeasureData(thisStream);
+      gpDataSets->SetPurelyTemporalMeasureData(DataSet);
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateMeasure()","CPurelyTemporalData");
@@ -46,7 +46,7 @@ void CPurelyTemporalData::CalculateMeasure(RealDataStream& thisStream) {
   }
 }
 
-/** Debug utility function - prints case counts for all data streams. Caller is
+/** Debug utility function - prints case counts for all datasets. Caller is
     responsible for ensuring that passed file pointer points to valid, open file
     handle. */
 void CPurelyTemporalData::DisplayCases(FILE* pFile) {
@@ -54,14 +54,14 @@ void CPurelyTemporalData::DisplayCases(FILE* pFile) {
 
   fprintf(pFile, "PT Case counts (PTCases)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
   for (j=0; j <  gpDataSets->GetNumDataSets(); ++j) {
-     fprintf(pFile, "Data Stream %u:\n", j);
+     fprintf(pFile, "Data Set %u:\n", j);
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
-        fprintf(pFile, "PTCases [%u] = %i\n", i, gpDataSets->GetStream(j).GetPTCasesArray()[i]);
+        fprintf(pFile, "PTCases [%u] = %i\n", i, gpDataSets->GetDataSet(j).GetPTCasesArray()[i]);
      fprintf(pFile, "\n\n");
   }
 }
 
-/** Debug utility function - prints expected case counts for all data streams.
+/** Debug utility function - prints expected case counts for all datasets.
     Caller is responsible for ensuring that passed file pointer points to valid,
     open file handle. */
 void CPurelyTemporalData::DisplayMeasure(FILE* pFile) {
@@ -69,9 +69,9 @@ void CPurelyTemporalData::DisplayMeasure(FILE* pFile) {
 
   fprintf(pFile, "PT Measures (PTMeasure)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
   for (j=0; j <  gpDataSets->GetNumDataSets(); ++j) {
-     fprintf(pFile, "Data Stream %u:\n", j);
+     fprintf(pFile, "Data Set %u:\n", j);
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
-        fprintf(pFile, "PTMeasure [%u] = %lf\n", i, gpDataSets->GetStream(j).GetPTMeasureArray()[i]);
+        fprintf(pFile, "PTMeasure [%u] = %lf\n", i, gpDataSets->GetDataSet(j).GetPTMeasureArray()[i]);
      fprintf(pFile, "\n\n");
   }
 }
@@ -82,9 +82,9 @@ void CPurelyTemporalData::DisplaySimCases(FILE* pFile) {
 //
 //  fprintf(pFile, "PT Simulated Case counts (PTSimCases)\n\n");
 // for (j=0; j <  gpDataSets->GetNumDataSets(); ++j) {
-//     fprintf(pFile, "Data Stream %u:\n", j);
+//     fprintf(pFile, "Data Set %u:\n", j);
 //     for (i=0; i < m_nTimeIntervals; ++i)
-//        fprintf(pFile, "PTSimCases [%u] = %i\n", i, gpDataSets->GetStream(j).GetPTSimCasesArray()[i]);
+//        fprintf(pFile, "PTSimCases [%u] = %i\n", i, gpDataSets->GetDataSet(j).GetPTSimCasesArray()[i]);
 //     fprintf(pFile, "\n\n");
 //  }
 }
@@ -109,7 +109,7 @@ void CPurelyTemporalData::RandomizeData(RandomizerContainer_t& RandomizerContain
   }
 }
 
-/** Calls base class CSaTScanData::ReadDataFromFiles(). Sets data stream objects'
+/** Calls base class CSaTScanData::ReadDataFromFiles(). Sets dataset objects'
     temporal data structures. */
 void CPurelyTemporalData::ReadDataFromFiles() {
   try {
@@ -130,7 +130,7 @@ void CPurelyTemporalData::SetProbabilityModel() {
        case POISSON              : m_pModel = new CPoissonModel(gParameters, *this, gPrint);   break;
        case BERNOULLI            : m_pModel = new CBernoulliModel(gParameters, *this, gPrint); break;
        case ORDINAL              : m_pModel = new OrdinalModel(gParameters, *this, gPrint); break;
-       case SURVIVAL             : m_pModel = new CSurvivalModel(gParameters, *this, gPrint); break;
+       case EXPONENTIAL          : m_pModel = new ExponentialModel(gParameters, *this, gPrint); break;
        case NORMAL               : m_pModel = new CNormalModel(gParameters, *this, gPrint); break;
        case RANK                 : m_pModel = new CRankModel(gParameters, *this, gPrint); break;
        case SPACETIMEPERMUTATION : ZdException::Generate("Purely Temporal analysis not implemented for Space-Time Permutation model.\n",

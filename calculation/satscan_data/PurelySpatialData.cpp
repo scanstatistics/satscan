@@ -7,7 +7,7 @@
 #include "BernoulliModel.h"
 #include "SpaceTimePermutationModel.h"
 #include "NormalModel.h"
-#include "SurvivalModel.h"
+#include "ExponentialModel.h"
 #include "RankModel.h"
 #include "OrdinalModel.h"
 
@@ -43,7 +43,7 @@ void CPurelySpatialData::SetProbabilityModel() {
        case POISSON              : m_pModel = new CPoissonModel(gParameters, *this, gPrint);   break;
        case BERNOULLI            : m_pModel = new CBernoulliModel(gParameters, *this, gPrint); break;
        case ORDINAL              : m_pModel = new OrdinalModel(gParameters, *this, gPrint); break;
-       case SURVIVAL             : m_pModel = new CSurvivalModel(gParameters, *this, gPrint); break;
+       case EXPONENTIAL          : m_pModel = new ExponentialModel(gParameters, *this, gPrint); break;
        case NORMAL               : m_pModel = new CNormalModel(gParameters, *this, gPrint); break;
        case RANK                 : m_pModel = new CRankModel(gParameters, *this, gPrint); break;
        case SPACETIMEPERMUTATION : ZdException::Generate("Purely Spatial analysis not implemented for Space-Time Permutation model.\n",
