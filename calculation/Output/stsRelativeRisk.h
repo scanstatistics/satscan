@@ -10,7 +10,7 @@ class RelativeRiskRecord : public BaseOutputRecord {
       ZdString 	gsLocationID;
       long 	glObserved;
       double 	gdExpected;
-      double 	gdRelRisk;
+      ZdString 	gsRelRisk;
       
       void 	Init(); 
    public :
@@ -23,7 +23,7 @@ class RelativeRiskRecord : public BaseOutputRecord {
       void	SetExpected(const double dExpected) { gdExpected = dExpected; }
       void	SetLocationID(const ZdString& sLocationID) { gsLocationID = sLocationID; }
       void	SetObserved(const long lObserved) { glObserved = lObserved; }
-      void	SetRelativeRisk(const double dRelRisk) { gdRelRisk = dRelRisk; }  
+      void	SetRelativeRisk(const ZdString& sRelRisk) { gsRelRisk = sRelRisk; }
 };  
 
 
@@ -37,7 +37,7 @@ class RelativeRiskData : public BaseOutputStorageClass {
       __fastcall RelativeRiskData(const ZdString& sOutputFileName);
       virtual ~RelativeRiskData();
 
-      void      SetRelativeRiskData(const ZdString& sLocationID, const long lObserved, const double dExpected, const double dRelRisk);   
+      void      SetRelativeRiskData(const ZdString& sLocationID, const long lObserved, const double dExpected, const ZdString& sRelRisk);   
 };
 
 #endif

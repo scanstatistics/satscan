@@ -27,13 +27,13 @@ ZdFieldValue RelativeRiskRecord::GetValue(int iFieldNumber) {
          ZdGenerateException ("Index out of range!", "Error!");
       switch (iFieldNumber) {
          case 0:
-            BaseOutputRecord::SetFieldValueAsString(fv, gsLocationID);  break; 
+            BaseOutputRecord::SetFieldValueAsString(fv, gsLocationID);  break;
          case 1:
-            BaseOutputRecord::SetFieldValueAsLong(fv, glObserved);  break;
+            BaseOutputRecord::SetFieldValueAsDouble(fv, double(glObserved));  break;
          case 2:
             BaseOutputRecord::SetFieldValueAsDouble(fv, gdExpected);  break;
          case 3:
-            BaseOutputRecord::SetFieldValueAsDouble(fv, gdRelRisk);  break;
+            BaseOutputRecord::SetFieldValueAsString(fv, gsRelRisk);  break;
          default :
             ZdGenerateException ("Invalid index, out of range", "Error!");
       } 
@@ -49,7 +49,7 @@ void RelativeRiskRecord::Init() {
    gsLocationID = "";
    glObserved = 0;
    gdExpected = 0.0;
-   gdRelRisk = 0.0;
+   gsRelRisk = 0.0;
 }
 
 // ============================================================================
@@ -81,16 +81,16 @@ void RelativeRiskData::Init() {
 
 //
 void RelativeRiskData::SetRelativeRiskData(const ZdString& sLocationID, const long lObserved, 
-                                           const double dExpected, const double dRelRisk) {
+                                           const double dExpected, const ZdString& sRelRisk) {
    RelativeRiskRecord*	pRecord = 0;
-   
+
    try {
       pRecord = new RelativeRiskRecord();
       pRecord->SetExpected(dExpected);
       pRecord->SetLocationID(sLocationID);
       pRecord->SetObserved(lObserved);
-      pRecord->SetRelativeRisk(dRelRisk);
-      BaseOutputStorageClass::AddRecord(pRecord);	
+      pRecord->SetRelativeRisk(sRelRisk);
+      BaseOutputStorageClass::AddRecord(pRecord);
    }  
    catch (ZdException &x) {
       delete pRecord;	
@@ -128,7 +128,7 @@ void RelativeRiskData::SetupFields() {
       ::CreateField(gvFields, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
       ::CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
       ::CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      ::CreateField(gvFields, REL_RISK_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      ::CreateField(gvFields, REL_RISK_FIELD, ZD_ALPHA_FLD, 12, 0, uwOffset);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupFields()", "RelativeRiskData");
