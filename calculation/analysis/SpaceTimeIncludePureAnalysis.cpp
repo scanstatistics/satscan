@@ -110,7 +110,7 @@ double C_ST_PS_PT_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
   gpMeasureList->Reset();
   //Add measure values for purely space first - so that this cluster's values
   //will be calculated with circle's measure values.
-  gpTimeIntervals->CompareMeasures(gpPTClusterData, *gpMeasureList);
+  gpTimeIntervals->CompareMeasures(*gpPTClusterData, *gpMeasureList);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
      ppSorted_Tract_T = gDataHub.GetSortedArrayAsTract_T(k);
@@ -136,7 +136,7 @@ double C_ST_PS_PT_Analysis::MonteCarloProspective(const DataStreamInterface & In
   gpMeasureList->Reset();
   //Add measure values for purely space first - so that this cluster's values
   //will be calculated with circle's measure values.
-  gpTimeIntervals->CompareMeasures(gpPTClusterData, *gpMeasureList);
+  gpTimeIntervals->CompareMeasures(*gpPTClusterData, *gpMeasureList);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
      ppSorted_Tract_T = gDataHub.GetSortedArrayAsTract_T(k);

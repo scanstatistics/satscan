@@ -112,7 +112,7 @@ double C_ST_PT_Analysis::MonteCarlo(const DataStreamInterface & Interface) {
 
   gpMeasureList->Reset();
   //compare purely temporal cluster in same ratio correction as circle
-  gpTimeIntervals->CompareMeasures(gpPTClusterData, *gpMeasureList);
+  gpTimeIntervals->CompareMeasures(*gpPTClusterData, *gpMeasureList);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
      ppSorted_Tract_T = gDataHub.GetSortedArrayAsTract_T(k);

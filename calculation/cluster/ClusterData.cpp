@@ -451,7 +451,7 @@ void SpaceTimeData::AddNeighborDataAndCompare(tract_t tCentroid,
        gpCases[i] += ppCases[i][tNeighbor];
        gpMeasure[i] += ppMeasure[i][tNeighbor];
      }
-     TimeIntervals.CompareMeasures(this, MeasureList);
+     TimeIntervals.CompareMeasures(*this, MeasureList);
   }
 }
 
