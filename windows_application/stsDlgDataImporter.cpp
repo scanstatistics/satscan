@@ -568,13 +568,6 @@ TModalResult TBDlgDataImporter::ImportFile() {
   ZdString                      sMessage;
 
   CreateDestinationInformation();
-  if (access(edtOutputDirectory->Text.c_str(), 02)) {
-    sMessage << "The import wizard is unable to create import file. This is likely because you\n"
-             << "don't have permissions to write to the specified directory.";
-    SetCurrentDir(GetToolkit().GetLastDirectory());         
-    BImporterException::GenerateException(sMessage, "ImportFile()", ZdException::Notify);
-  }
-
   if (chkFirstRowIsName->Checked)
     gSourceDescriptor.SetNumberOfRowsToIgnore(1);
   else
