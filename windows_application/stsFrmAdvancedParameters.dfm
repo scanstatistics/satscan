@@ -65,14 +65,14 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     ActivePage = tsInput
     TabOrder = 0
     object tsInput: TTabSheet
-      Caption = 'Input'
+      Caption = 'Multiple Data Streams'
       ImageIndex = 5
       object GroupBox1: TGroupBox
         Left = 8
         Top = 8
         Width = 401
         Height = 189
-        Caption = 'Additional Input Streams'
+        Caption = 'Additional Input Data Streams'
         TabOrder = 0
         object Label3: TLabel
           Left = 110
