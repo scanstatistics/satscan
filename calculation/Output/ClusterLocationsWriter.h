@@ -29,4 +29,3 @@ class LocationInformationWriter : public AbstractDataFileWriter {
 };
 //******************************************************************************
 #endif
- 

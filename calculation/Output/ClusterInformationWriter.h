@@ -47,4 +47,3 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
 };
 //******************************************************************************
 #endif
- 

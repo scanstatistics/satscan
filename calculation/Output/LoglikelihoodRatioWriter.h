@@ -23,4 +23,3 @@ class LoglikelihoodRatioWriter : public AbstractDataFileWriter {
 };
 //******************************************************************************
 #endif
- 
