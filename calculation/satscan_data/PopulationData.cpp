@@ -32,12 +32,13 @@ void PopulationCategory::AddPopulationAtDateIndex(float fPopluation, unsigned in
       ZdGenerateException("Index %d out of range(0 - %d).","AddPopulationAtDateIndex()",
                           iDateIndex, thePopulation.GetNumPopulationDates() -1);
 
-    if (gpPopulationList[iDateIndex] + fPopluation < 0) {
+    if (fPopluation > std::numeric_limits<float>::max() - gpPopulationList[iDateIndex]) {
       char      sDateString[20];
 
-      SSGenerateException("Error: Attempt to add population of '%.2f' to current population of '%.2f' at date '%s' causes data overflow.",
-                          "AddPopulationAtDateIndex()", fPopluation, gpPopulationList[iDateIndex],
-                          JulianToChar(sDateString, thePopulation.GetPopulationDate(iDateIndex)));
+      GenerateResolvableException("Error: An internal attempt to add the population of '%.2f' to the current\n"
+                                  "       population of '%.2f', at date '%s', causes data overflow.\n",
+                                  "AddPopulationAtDateIndex()", fPopluation, gpPopulationList[iDateIndex],
+                                  JulianToChar(sDateString, thePopulation.GetPopulationDate(iDateIndex)));
     }
 
     gpPopulationList[iDateIndex] += fPopluation;
@@ -137,7 +138,7 @@ void PopulationData::AddCaseCount(int iCategoryIndex, count_t Count) {
     ZdGenerateException("Index '%d' out of range.","AddCaseCount()", iCategoryIndex);
   gvCategoryCasesCount[iCategoryIndex] += Count;
   if (gvCategoryCasesCount[iCategoryIndex] < 0)
-    SSGenerateException("Error: Total cases greater than maximum allowed of %ld.\n", "AddCaseCount()", std::numeric_limits<count_t>::max());
+    GenerateResolvableException("Error: The total number of cases is greater than the maximum allowed of %ld.\n", "AddCaseCount()", std::numeric_limits<count_t>::max());
 }
 
 /** Adds category data to the tract info structure. Caller is responsible for ensuring that
@@ -173,7 +174,7 @@ void PopulationData::AddControlCount(int iCategoryIndex, count_t Count) {
     ZdGenerateException("Index '%d' out of range.","AddControlCount()", iCategoryIndex);
   gvCategoryControlsCount[iCategoryIndex] += Count;
   if (gvCategoryControlsCount[iCategoryIndex] < 0)
-    SSGenerateException("Error: Total controls greater than maximum allowed of %ld.\n", "AddControlCount()", std::numeric_limits<count_t>::max());
+    GenerateResolvableException("Error: The total number of controls is greater than the maximum of %ld.\n", "AddControlCount()", std::numeric_limits<count_t>::max());
 }
 
 /** Adds population count to categories population list. Passing bTrueDate == true
@@ -303,9 +304,9 @@ void PopulationData::CheckCasesHavePopulations(const count_t * pCases, const CSa
        }
 
        if (dTractPopulation == 0 && pCases[i] > 0)
-         SSGenerateException("Error: Total population is zero for tract %s but has %d cases.",
-                             "CheckCasesHavePopulations()",
-                             Data.GetTInfo()->tiGetTid(i, sBuffer), pCases[i]);
+         GenerateResolvableException("Error: The total population is zero for location ID %s but it has %d cases.",
+                                     "CheckCasesHavePopulations()",
+                                     Data.GetTInfo()->tiGetTid(i, sBuffer), pCases[i]);
     }
   }
   catch (ZdException &x) {
@@ -350,8 +351,8 @@ bool PopulationData::CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirect
           bValid = false;
           JulianToMDY(&month, &day, &year, gvPopulationDates[j]);
           if (pDisplay)
-            fprintf(pDisplay, "Error: Population of zero found for all tracts in %d.\n", year);
-          PrintDirection.SatScanPrintWarning("Error: Population of zero found for all tracts in %d.\n", year);
+            fprintf(pDisplay, "Error: The population is zero for all location IDs in %d.\n", year);
+          PrintDirection.SatScanPrintWarning("Error: The population is zero for all location IDs in %d.\n", year);
        }
     }
 
