@@ -18,8 +18,8 @@ DBaseFileWriter::DBaseFileWriter(BaseOutputStorageClass* pOutputFileData)
       Setup();
    }
    catch (ZdException &x) {
-      x.AddCallpath("Constructor", "DBaseFileWriter");
-      throw;
+      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning(x.GetErrorMessage());
+      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning("\nWarning - Unable to create dBase output file.\n");
    }
 }
 
@@ -79,8 +79,8 @@ void DBaseFileWriter::Print() {
       if (pTransaction)
          pFile->EndTransaction(pTransaction);
       pFile->Close();
-      x.AddCallpath("Print()", "DBaseFileWriter");
-      throw;
+      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning(x.GetErrorMessage());
+      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning("\nWarning - Unable to write record to dBase file %s.\n", gsFileName);
    }
 }
 

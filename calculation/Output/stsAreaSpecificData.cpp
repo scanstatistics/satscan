@@ -146,8 +146,10 @@ __fastcall stsAreaSpecificData::stsAreaSpecificData(BasePrint *pPrintDirection, 
       Setup(sOutputFileName, lRunNumber, bPrintPVal);
    }
    catch (ZdException &x) {
-      x.AddCallpath("Constructor", "stsAreaSpecificData");
-      throw;
+      if(pPrintDirection) {
+         pPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
+         pPrintDirection->SatScanPrintWarning("\nWarning - Unable to create location specific data for GIS file.\n");
+      }
    }
 }
 
@@ -215,8 +217,8 @@ void stsAreaSpecificData::RecordClusterData(const CCluster& pCluster, const CSaT
    }
    catch (ZdException &x) {
       delete pRecord; 	 
-      x.AddCallpath("RecordClusterData()", "stsAreaSpecificData");
-      throw;
+      gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
+      gpPrintDirection->SatScanPrintWarning("\nWarning - Unable to record location specific data for GIS file.\n");
    }  
 }     
       

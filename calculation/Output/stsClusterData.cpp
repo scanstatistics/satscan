@@ -148,8 +148,10 @@ __fastcall stsClusterData::stsClusterData(BasePrint *pPrintDirection, const ZdSt
       Setup(sOutputFileName, iModelType, iDimension, iCoordType, lRunNumber, bPrintEllipses,bPrintPVal);
    }
    catch (ZdException &x) {
-      x.AddCallpath("Constructor", "stsClusterData");
-      throw;
+      if(pPrintDirection) {
+         pPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
+         pPrintDirection->SatScanPrintWarning("\nWarning - Unable to create most likely cluster data for output file.\n");
+      }
    }
 }
 
@@ -229,8 +231,8 @@ void stsClusterData::RecordClusterData(const CCluster& pCluster, const CSaTScanD
    }
    catch (ZdException &x) {
       delete pRecord; 	 
-      x.AddCallpath("RecordClusterData()", "stsClusterData");
-      throw;
+      gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
+      gpPrintDirection->SatScanPrintWarning("\nWarning - Unable to record most likely cluster data for output file.\n");
    }
 }
 

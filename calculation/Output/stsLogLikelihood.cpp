@@ -51,9 +51,11 @@ __fastcall LogLikelihoodData::LogLikelihoodData(BasePrint *pPrintDirection, cons
       Setup(sOutputFileName);
    }
    catch (ZdException &x) {
-      x.AddCallpath("Constructor", "LogLikelihoodData");
-      throw;
-   }                          
+      if(pPrintDirection) {
+         pPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
+         pPrintDirection->SatScanPrintWarning("\nWarning - Unable to create data for Log Likelihood file.\n");
+      }
+   }
 }
 
 // destructor
@@ -75,8 +77,8 @@ void LogLikelihoodData::AddLikelihood(const double dLikelihood) {
    }
    catch(ZdException &x) {
       delete pRecord;	
-      x.AddCallpath("AddLikelihood()", "LogLikelihoodData");
-      throw;
+      gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
+      gpPrintDirection->SatScanPrintWarning("\nWarning - Unable to record data for Log Likelihood output file.\n");
    }			
 }
 

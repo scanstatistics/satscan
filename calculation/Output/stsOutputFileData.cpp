@@ -90,7 +90,7 @@ void BaseOutputRecord::SetFieldValueAsString(ZdFieldValue& fv, const ZdString& s
 
 BaseOutputStorageClass::BaseOutputStorageClass(BasePrint *pPrintDirection) {
    if (!pPrintDirection)
-      ZdGenerateException("Null BasePrint pointer passed into constructor!", "BaseStorageClass");
+      ZdGenerateWarning("ERROR - Null BasePrint pointer passed into constructor!", "BaseStorageClass");
    gpPrintDirection = pPrintDirection;
 }
 
@@ -236,8 +236,16 @@ void TestOutputRecord::SetFieldIsBlank(int iFieldNumber, bool bBlank) {
 // ============================================================================
 
 TestOutputClass::TestOutputClass(BasePrint *pPrintDirection, const ZdString& sOutputFileName):BaseOutputStorageClass(pPrintDirection) {
-   gsFileName << sOutputFileName << ".test";
-   SetupFields();
+   try {
+      gsFileName << sOutputFileName << ".test";
+      SetupFields();
+   }
+   catch (ZdException &x) {
+      if(pPrintDirection) {
+         pPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
+         pPrintDirection->SatScanPrintWarning("Warning - Error encountered in test output data class.\n");
+      }
+   }
 }
 	
 TestOutputClass::~TestOutputClass(){
@@ -256,8 +264,8 @@ void TestOutputClass::AddBlankRecord() {
       BaseOutputStorageClass::AddRecord(pRecord);   
    }
    catch (ZdException &x) {
-      x.AddCallpath("AddBlankRecord()", "TestOutputClass");
-      throw;
+      gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
+      gpPrintDirection->SatScanPrintWarning("Warning - ERROR encountered adding blank record in Test output data class.\n");
    }
 }
 
@@ -300,7 +308,7 @@ void TestOutputClass::SetTestValues(const ZdString& sStringTestValue, const long
    }
    catch (ZdException &x) {
       delete pRecord;	
-      x.AddCallpath("SetTestValues()", "TestOutputClass");
-      throw;
+      gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
+      gpPrintDirection->SatScanPrintWarning("Warning - ERROR encountered adding test record in Test output data class.\n");
    }   		
 }                                    		

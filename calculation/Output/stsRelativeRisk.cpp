@@ -64,9 +64,11 @@ __fastcall RelativeRiskData::RelativeRiskData(BasePrint *pPrintDirection, const 
       Setup(sOutputFileName);
    }
    catch (ZdException &x) {
-      x.AddCallpath("Constructor", "RelativeRiskData");
-      throw;
-   }                          
+      if(pPrintDirection) {
+         pPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
+         pPrintDirection->SatScanPrintWarning("\nWarning - Unable to create relative risk output file.\n");
+      }
+   }
 }
 
 // destructor
@@ -93,9 +95,9 @@ void RelativeRiskData::SetRelativeRiskData(const ZdString& sLocationID, const lo
       BaseOutputStorageClass::AddRecord(pRecord);
    }  
    catch (ZdException &x) {
-      delete pRecord;	
-      x.AddCallpath("RecordClusterData()", "RelativeRiskDBF");
-      throw;	
+      delete pRecord;
+      gpPrintDirection->SatScanPrintWarning(x.GetErrorMessage());
+      gpPrintDirection->SatScanPrintWarning("\nWarning - Unable to record relative risk output data.\n");
    }	 	
 } 
 

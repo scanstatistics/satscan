@@ -18,8 +18,8 @@ ASCIIFileWriter::ASCIIFileWriter(BaseOutputStorageClass* pOutputFileData)
       Setup();
    }
    catch (ZdException &x) {
-      x.AddCallpath("Constructor", "ASCIIFileWriter");
-      throw;
+      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning(x.GetErrorMessage());
+      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning("\nWarning - Unable to create ASCII output file.\n");
    }
 }
 
@@ -55,7 +55,6 @@ void ASCIIFileWriter::CreateFormatString(ZdString& sValue, const int iFieldNumbe
 
    try {
       sFormat << "%";
-
       pField = gpOutputFileData->GetField(iFieldNumber);
 
       switch(fv.GetType()) {
@@ -130,8 +129,8 @@ void ASCIIFileWriter::Print() {
    }
    catch (ZdException &x) {
       fclose(pFile);
-      x.AddCallpath("Print()", "ASCIIFileWriter");
-      throw;
+      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning(x.GetErrorMessage());
+      gpOutputFileData->GetBasePrinter()->SatScanPrintWarning("\nWarning - Unable to write record to ASCII file: %s.\n", gsFileName.GetCString());
    }
 }
 
