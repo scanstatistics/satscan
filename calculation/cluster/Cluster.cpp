@@ -37,6 +37,8 @@ void CCluster::Initialize(tract_t nCenter)
   m_bRatioSet      = false;
   m_nClusterType   = 0;
   m_iEllipseOffset = 0;         // use to be -1, but bombed when R = 1
+
+  gfPValue = 0.0;
 }
 
 void CCluster::SetCenter(tract_t nCenter)
@@ -641,6 +643,7 @@ void CCluster::DisplayPVal(FILE* fp, int nReplicas, char* szSpacesOnLeft)
    try
       {	
       float pVal = (float)GetPVal(nReplicas);
+      gfPValue = pVal;
 
       if (nReplicas > 9999)
          fprintf(fp, "%.5f", pVal);

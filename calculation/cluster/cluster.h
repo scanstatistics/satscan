@@ -14,6 +14,8 @@ class CCluster
     CCluster(BasePrint *pPrintDirection);
     virtual ~CCluster();
 
+    float       gfPValue;               // p value of the cluster
+
     tract_t    m_Center;             // Center of cluster (index to grid)
 
     int        m_iEllipseOffset;     // Link to Circle or Ellipse (top cluster)
