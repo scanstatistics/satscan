@@ -25,5 +25,3 @@ class CSpatialVarTempTrendAnalysis : public CAnalysis {
 };
 
 #endif
-
-

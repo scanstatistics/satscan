@@ -24,4 +24,3 @@ class BernoulliDataStreamHandler : public DataStreamHandler {
     virtual bool                        ReadData();
 };
 #endif
- 

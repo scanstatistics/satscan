@@ -74,4 +74,3 @@ class DataStreamInterface {
     void                SetTotalMeasureCount(measure_t tMeasure) {gTotalMeasure = tMeasure;}
 };
 #endif
- 

@@ -209,4 +209,3 @@ static void SetStringField(ZdFileRecord& record, const ZdString& sValue, const u
 
 //---------------------------------------------------------------------------
 #endif
- 

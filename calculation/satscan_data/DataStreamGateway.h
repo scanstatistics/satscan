@@ -45,4 +45,3 @@ class MultipleDataStreamGateway : public AbtractDataStreamGateway {
     inline virtual size_t                      GetNumInterfaces() const {return gvDataStreams.size();}
 };
 #endif
- 

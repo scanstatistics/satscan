@@ -61,4 +61,3 @@ typedef unsigned int    UInt;
 enum DatePrecisionType { NONE, YEAR=1, MONTH, DAY };
 //*****************************************************************************
 #endif
-

@@ -90,4 +90,3 @@ bool ValidateAllPTCountsArePossitive(tract_t  nTracts,
 
 //*****************************************************************************
 #endif
-

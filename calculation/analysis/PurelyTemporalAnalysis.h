@@ -34,4 +34,3 @@ class CPurelyTemporalAnalysis : public CAnalysis {
 };
 //*****************************************************************************
 #endif
-

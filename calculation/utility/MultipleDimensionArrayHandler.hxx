@@ -315,4 +315,3 @@ void ThreeDimensionArrayHandler<T>::SynchronizeThirdDimension(ThreeDimensionArra
   else if (lhs.Get3rdDimension() > rhs.Get3rdDimension())
     rhs.ResizeThirdDimension(lhs.Get3rdDimension(), t);
 }
-

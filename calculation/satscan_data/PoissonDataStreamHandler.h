@@ -24,4 +24,3 @@ class PoissonDataStreamHandler : public DataStreamHandler {
     virtual bool                        ReadData();
 };
 #endif
- 
