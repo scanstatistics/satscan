@@ -1120,6 +1120,7 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           rgPrecisionTimes->Controls[0]->Enabled = true;
           // disable time trend adjustment
           rgTemporalTrendAdj->Enabled = false;
+          edtLogPerYear->Enabled = false;
           // disable clusters to include
           rgClustersToInclude->Enabled = false;
           // enable spatial but not checkbox
@@ -1135,7 +1136,8 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           // disable None option in case precision time
           rgPrecisionTimes->Controls[0]->Enabled = false;
           // Enables Time Trend Adjust without Non-Param
-          rgTemporalTrendAdj->Enabled = true;
+          rgTemporalTrendAdj->Enabled = gpParams->m_nModel == POISSON ? true : false;
+          edtLogPerYear->Enabled = (gpParams->m_nModel == POISSON && rgTemporalTrendAdj->ItemIndex == 2) ? true : false;
           rgTemporalTrendAdj->Controls[1]->Enabled = false;
           rgTemporalTrendAdj->ItemIndex = ((rgTemporalTrendAdj->ItemIndex != 1) ? gpParams->m_nTimeAdjustType : 0 );
           // Enables Clusters to include
@@ -1154,8 +1156,9 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
           // disable None option in case precision time
           rgPrecisionTimes->Controls[0]->Enabled = false;
           //Enables Time Trend Adjust
-          rgTemporalTrendAdj->Enabled = gpParams->m_nModel == 2 ? false : true;
-          rgTemporalTrendAdj->Controls[1]->Enabled = gpParams->m_nModel == 2 ? false : true;
+          rgTemporalTrendAdj->Enabled = gpParams->m_nModel == POISSON ? true : false;
+          rgTemporalTrendAdj->Controls[1]->Enabled = gpParams->m_nModel == POISSON ? true : false;
+          edtLogPerYear->Enabled = (gpParams->m_nModel == POISSON && rgTemporalTrendAdj->ItemIndex == 2) ? true : false;
           rgTemporalTrendAdj->ItemIndex = gpParams->m_nTimeAdjustType;
           //Enables clusters to include
           rgClustersToInclude->Enabled = true;
@@ -1172,11 +1175,12 @@ void TfrmAnalysis::OnAnalysisTypeClick() {
        case 3:                     // prospective space-time
           rgPrecisionTimes->Controls[0]->Enabled = false;
           //Enables Time Trend Adjust
-          rgTemporalTrendAdj->Enabled = gpParams->m_nModel == 2 ? false : true;
-          rgTemporalTrendAdj->Controls[1]->Enabled = gpParams->m_nModel == 2 ? false : true;
+          rgTemporalTrendAdj->Enabled = gpParams->m_nModel == POISSON ? true : false;
+          rgTemporalTrendAdj->Controls[1]->Enabled = gpParams->m_nModel == POISSON ? true : false;
+          edtLogPerYear->Enabled = (gpParams->m_nModel == POISSON && rgTemporalTrendAdj->ItemIndex == 2) ? true : false;
           rgTemporalTrendAdj->ItemIndex = gpParams->m_nTimeAdjustType;
           //disables clusters to include
-          rgClustersToInclude->Enabled = false; 
+          rgClustersToInclude->Enabled = false;
           //Enables Spatial % box disable
           EnableSpatial(true, !(gpParams->m_nModel == 2), false);
           //Enables time intervals
@@ -1458,6 +1462,10 @@ void TfrmAnalysis::SaveTextParameters() {
     //Time Parameter Tab
     gpParams->m_nIntervalLength  = atoi(edtUnitLength->Text.c_str());
     gpParams->m_nTimeAdjPercent = atof(edtLogPerYear->Text.c_str());
+    //rest time adjustment type if needed - something needs to be worked out so that this isn't needed.
+    //Also, this changes settings so that the next time a parameter file is opened, the settings
+    //of time trend adjustment are potentially different for model types other than Poisson.
+    gpParams->m_nTimeAdjustType = (gpParams->m_nModel == POISSON ? gpParams->m_nTimeAdjustType : NOTADJUSTED);
     sprintf(gpParams->m_szProspStartDate, "%i/%i/%i", atoi(edtProspYear->Text.c_str()), atoi(edtProspMonth->Text.c_str()), atoi(edtProspDay->Text.c_str()));
     //Output File Tab
     strcpy(gpParams->m_szOutputFilename, edtResultFile->Text.c_str());
