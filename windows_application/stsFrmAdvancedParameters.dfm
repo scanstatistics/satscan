@@ -67,7 +67,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Align = alClient
     TabOrder = 0
     object tsDataStreams: TTabSheet
-      Caption = 'Multiple Data Streams'
+      Caption = 'Multiple Data Sets'
       ImageIndex = 5
       object grpDataStreams: TGroupBox
         Left = 8
@@ -77,7 +77,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Caption = 'Additional Input Data Sets'
         TabOrder = 0
         object Label3: TLabel
-          Left = 110
+          Left = 112
           Top = 18
           Width = 46
           Height = 13
@@ -87,28 +87,28 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ShowHint = False
         end
         object Label1: TLabel
-          Left = 110
+          Left = 112
           Top = 60
           Width = 55
           Height = 13
           Caption = 'Control File:'
         end
         object Label2: TLabel
-          Left = 110
+          Left = 112
           Top = 102
           Width = 72
           Height = 13
           Caption = 'Population File:'
         end
         object Label4: TLabel
-          Left = 216
+          Left = 218
           Top = 60
           Width = 78
           Height = 13
           Caption = '(Bernoulli Model)'
         end
         object Label5: TLabel
-          Left = 216
+          Left = 218
           Top = 102
           Width = 75
           Height = 13
@@ -204,7 +204,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object lstInputStreams: TListBox
           Left = 8
           Top = 32
-          Width = 93
+          Width = 95
           Height = 78
           Hint = 'All Additional Input Sets'
           ItemHeight = 13
@@ -216,7 +216,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object btnNewStream: TButton
           Left = 8
           Top = 116
-          Width = 45
+          Width = 47
           Height = 22
           Hint = 'Add an Additional Input Set'
           Caption = 'Add'
@@ -226,19 +226,19 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = btnNewClick
         end
         object btnRemoveStream: TButton
-          Left = 56
+          Left = 57
           Top = 116
-          Width = 45
+          Width = 47
           Height = 22
           Hint = 'Remove an Additional Input Set'
-          Caption = 'Delete'
+          Caption = 'Remove'
           ParentShowHint = False
           ShowHint = True
           TabOrder = 2
           OnClick = btnRemoveStreamClick
         end
         object edtCaseFileName: TEdit
-          Left = 110
+          Left = 112
           Top = 32
           Width = 250
           Height = 21
@@ -249,7 +249,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnChange = edtCaseFileNameChange
         end
         object edtControlFileName: TEdit
-          Left = 110
+          Left = 112
           Top = 74
           Width = 250
           Height = 21
@@ -260,7 +260,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnChange = edtControlFileNameChange
         end
         object edtPopFileName: TEdit
-          Left = 110
+          Left = 112
           Top = 117
           Width = 250
           Height = 21
@@ -792,7 +792,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
     end
     object tsAdjustments: TTabSheet
-      Caption = 'Adjustments'
+      Caption = 'Space and Time Adjustments'
       object rdgTemporalTrendAdj: TRadioGroup
         Left = 8
         Top = 8
