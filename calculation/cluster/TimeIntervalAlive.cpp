@@ -41,8 +41,8 @@ measure_t CTIAlive::GetMeasureForTract(tract_t tTract, measure_t** pMeasure) con
    return tMeasure;
 }
 
-bool CTIAlive::GetNextTimeInterval(const count_t*& pCases,
-                                   const measure_t*& pMeasure,
+bool CTIAlive::GetNextTimeInterval(const count_t* pCases,
+                                   const measure_t* pMeasure,
                                    count_t& nCases,
                                    measure_t& nMeasure,
                                    int& nStart,
@@ -72,8 +72,8 @@ bool CTIAlive::GetNextTimeInterval(const count_t*& pCases,
                                    measure_t& nMeasure,
                                    int& nStart,
                                    int& nStop) */
-bool CTIAlive::GetNextTimeIntervalProsp(const count_t*& pCases,
-                                   const measure_t*& pMeasure,
+bool CTIAlive::GetNextTimeIntervalProsp(const count_t* pCases,
+                                   const measure_t* pMeasure,
                                    count_t& nCases,
                                    measure_t& nMeasure)
 {
