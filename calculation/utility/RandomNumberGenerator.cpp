@@ -16,58 +16,45 @@
          Communications of the ACM, October, 1988
  **********************************************************************/
 
-#define M      2147483647                      /* DO NOT CHANGE THIS VALUE */
-#define MAX    (M - 1)
-#define A      48271
-#define CHECK  399268537
-#define Q      (M / A)                 /* Used for stepping through values */
-#define R      (M % A)
+/** Lehmer generator which returns a pseudo-random real number uniformly
+    distributed between 0 and 1.                                         */
+double RandomNumberGenerator::GetRandomDouble() {
+  long  t;
 
-static long seed = 12345678;                               /* initial seed */
+  t = glA * (glSeed % (glM / glA)) - (glM % glA) * (glSeed / (glM / glA));
+  if (t > 0)
+    glSeed = t;
+  else
+    glSeed = t + glM;
+  return (double) glSeed /  (double) glM;
+}
 
- 
-double rngRand(void)
-{
-   long t;
+/** Lehmer generator which returns a pseudo-random real number uniformly
+    distributed between 0 and 1.                                         */
+float RandomNumberGenerator::GetRandomFloat() {
+  long  t;
 
-   t = A * (seed % Q) - R * (seed / Q);
-   if (t > 0)
-      seed = t;
-   else
-      seed = t + M;
-   return (double) seed /  (double) M;
-} /* rngRand() */
+  t = glA * (glSeed % (glM / glA)) - (glM % glA) * (glSeed / (glM / glA));
+  if (t > 0)
+    glSeed = t;
+  else
+    glSeed = t + glM;
+  return (float) glSeed / (float) glM;
+}
 
-float rngRandFloat(void)
-{
-   long t;
+/** Sets the random number generator seed.  Note: 0 < lSeed < glM */
+void RandomNumberGenerator::SetSeed(long lSeed) {
+  glSeed = ((0 < lSeed && lSeed < glM) ? lSeed : glDefaultSeed);
+}
 
-   t = A * (seed % Q) - R * (seed / Q);
-   if (t > 0)
-      seed = t;
-   else
-      seed = t + M;
-   return (float) seed / (float) M;
-} /* rngRandFloat() */
+/** Tests for a correct implementation.
+    Return value: 1 = Correct
+                  0 = incorrect         */
+int RandomNumberGenerator::Test() {
+  long  l;
 
-long rngGetSeed(void)
-{
-   return seed;
-} /* rngGetSeed() */
-
-
-void rngPutSeed(long newseed)
-{
-   if (0 < newseed && newseed < M)
-      seed = newseed;
-} /* rngPutSeed() */
-
-int rngTestRand(void)
-{
-   long i;
-
-   rngPutSeed(1);
-   for (i = 1; i <= 10000; i++)
-      rngRand();
-   return (rngGetSeed() == CHECK);
-} /* rngTestRand() */
+  SetSeed(1);
+  for (l=1; l <= 10000; l++)
+     GetRandomDouble();
+  return (GetSeed() == glCheck);
+}

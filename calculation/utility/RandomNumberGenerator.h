@@ -19,25 +19,42 @@
          Communications of the ACM, October, 1988
  **********************************************************************/
 
+class RandomNumberGenerator {
+  private:
+    long                glSeed;
+    static const long   glDefaultSeed = 12345678;       /** default seed                */
+    static const long   glCheck       = 399268537;      /** value to check test against */
+    static const long   glM           = 2147483647;     /** maximum signed 32 bit long  */
+    static const long   glA           = 48271;          /** ???                         */
 
+  public:
+    RandomNumberGenerator(long lSeed=glDefaultSeed) {SetSeed(lSeed);}
+    ~RandomNumberGenerator() {}
+
+    double      GetRandomDouble();
+    float       GetRandomFloat();
+    long        GetSeed() const {return glSeed;}
+    void        SetSeed(long lSeed);
+    int         Test();
+};
 
 /**********************************************************************
  Lehmer generator which returns a pseudo-random real number uniformly
  distributed between 0 and 1.
  **********************************************************************/
-double rngRand(void);
-float rngRandFloat(void);
+//double rngRand(void);
+//float rngRandFloat(void);
 
 /**********************************************************************
  Returns the current random number generator seed.
  **********************************************************************/
-long rngGetSeed(void);
+//long rngGetSeed(void);
 
 /**********************************************************************
  Sets the random number generator seed.  Note:
    0 < newseed < m (see top of file)
  **********************************************************************/
-void rngPutSeed(long newseed);
+//void rngPutSeed(long newseed);
 
 /**********************************************************************
  Tests for a correct implementation.
@@ -45,7 +62,7 @@ void rngPutSeed(long newseed);
    1 = Correct
    0 = incorrect
  **********************************************************************/
-int rngTestRand(void);
+//int rngTestRand(void);
 
 //*****************************************************************************
 #endif
