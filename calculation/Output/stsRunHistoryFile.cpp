@@ -14,7 +14,7 @@
 #include "AnalysisRun.h"
 #include "stsRunHistoryFile.h"
 #include "DBFFile.h"
-#ifdef INTEL_BASED
+#ifdef __BORLANDC__
   #include <syncobjs.hpp>
 #endif  
 
@@ -270,9 +270,9 @@ void stsRunHistoryFile::GetMaxTemporalExtentString(ZdString& sTempValue, const C
 // a converter function to convert the stored int into a legible string to be printed
 // pre: eProbabiltyModelType conatined in (POISSON, BERNOULLI, SPACETIMEPERMUTATION) and sTempValue allocated
 // post : string will contain the formatted value for printing
-void stsRunHistoryFile::GetProbabilityModelString(ZdString& sTempValue, ProbabiltyModelType eProbabiltyModelType) {
+void stsRunHistoryFile::GetProbabilityModelString(ZdString& sTempValue, ProbabilityModelType eProbabilityModelType) {
    try {
-      switch(eProbabiltyModelType) {
+      switch(eProbabilityModelType) {
          case POISSON :
             sTempValue = "Poisson";  break;
          case BERNOULLI :
@@ -285,6 +285,8 @@ void stsRunHistoryFile::GetProbabilityModelString(ZdString& sTempValue, Probabil
             sTempValue = "Survival"; break;
          case RANK :
             sTempValue = "Rank"; break;
+         case ORDINAL :
+            sTempValue = "Ordinal"; break;
          default :
             ZdException::GenerateNotification("Invalid probability model in the run history file.", "stsRunHistoryFile");   
       }
@@ -321,13 +323,13 @@ void stsRunHistoryFile::GetRatesString(ZdString& sTempValue, AnalysisType eAnaly
 //  pre : iType is conatined in (NOTADJUSTED, NONPARAMETRIC, LOGLINEAR_PERC, CALCULATED_LOGLINEAR_PERC)
 // post : string will be assigned a formatted value based upon iType
 void stsRunHistoryFile::GetTimeAdjustmentString(ZdString& sTempValue, int iType, AnalysisType eAnalysisType,
-                                                ProbabiltyModelType eProbabiltyModelType) {
+                                                ProbabilityModelType eProbabilityModelType) {
   try {
-    if (eProbabiltyModelType == SPACETIMEPERMUTATION)
+    if (eProbabilityModelType == SPACETIMEPERMUTATION)
       sTempValue = "n/a";
-    else if (eProbabiltyModelType == POISSON && eAnalysisType == PURELYSPATIAL)
+    else if (eProbabilityModelType == POISSON && eAnalysisType == PURELYSPATIAL)
       sTempValue = "n/a";
-    else if (eProbabiltyModelType == BERNOULLI && eAnalysisType != SPATIALVARTEMPTREND)
+    else if (eProbabilityModelType == BERNOULLI && eAnalysisType != SPATIALVARTEMPTREND)
       sTempValue = "n/a";
     else {
       switch(iType) {
@@ -362,7 +364,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
    double                       dTopClusterRatio=0;
    
    try {
-#ifdef INTEL_BASED
+#ifdef __BORLANDC__
       std::auto_ptr<TCriticalSection> pSection(new TCriticalSection());
       pSection->Acquire();
 #endif      
@@ -405,7 +407,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ADDITIONAL_OUTPUT_FILES_FIELD));
 
       // probability model field
-      GetProbabilityModelString(sTempValue, params.GetProbabiltyModelType());
+      GetProbabilityModelString(sTempValue, params.GetProbabilityModelType());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, PROB_MODEL_FIELD));
 
       // rates(high, low or both) field
@@ -437,12 +439,12 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, MAX_TIME_EXTENT_FIELD));
 
       // time trend adjustment field
-      GetTimeAdjustmentString(sTempValue, params.GetTimeTrendAdjustmentType(), params.GetAnalysisType(), params.GetProbabiltyModelType());
+      GetTimeAdjustmentString(sTempValue, params.GetTimeTrendAdjustmentType(), params.GetAnalysisType(), params.GetProbabilityModelType());
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, TIME_TREND_ADJUSTMENT_FIELD));
 
       // covariates number
       SetDoubleField(*pRecord,
-                     (double)AnalysisRun.GetDataHub().GetDataStreamHandler().GetStream(0/*for now*/).GetPopulationData().GetNumPopulationCategoryCovariates(),
+                     (double)AnalysisRun.GetDataHub().GetDataStreamHandler().GetStream(0/*for now*/).GetPopulationData().GetNumCovariateCategories(),
                      GetFieldNumber(gvFields, COVARIATES_FIELD));
 
       SetBoolField(*pRecord, params.UseSpecialGrid(), GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field
@@ -482,7 +484,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
       pFile->EndTransaction(pTransaction); pTransaction = 0;
       pFile->Close();
 
-#ifdef INTEL_BASED
+#ifdef __BORLANDC__
       pSection->Release();
 #endif      
    }
@@ -586,7 +588,7 @@ void stsRunHistoryFile::SetRunNumber() {
    std::auto_ptr<DBFFile>       pFile;
 
    try {
-#ifdef INTEL_BASED
+#ifdef __BORLANDC__
       std::auto_ptr<TCriticalSection> pSection(new TCriticalSection());
       pSection->Acquire();
 #endif
@@ -619,7 +621,7 @@ void stsRunHistoryFile::SetRunNumber() {
       pFile->EndTransaction(pTransaction); pTransaction = 0;
       pFile->Close();
 
-#ifdef INTEL_BASED
+#ifdef __BORLANDC__
       pSection->Release();
 #endif      
    }
