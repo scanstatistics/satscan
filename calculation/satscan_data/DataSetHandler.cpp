@@ -117,6 +117,15 @@ AbtractDataSetGateway * DataSetHandler::GetNewDataGatewayObject() const {
     return new DataSetGateway();
 }
 
+/** Returns const pointer to randomizer object associated with data set at iSetIndex. */
+const AbstractRandomizer * DataSetHandler::GetRandomizer(size_t iSetIndex) const {
+   if (iSetIndex >= gvDataSetRandomizers.size())
+     ZdGenerateException("Index '%u' is out of range, %u randomizers exist.","GetRandomizer()",
+                         iSetIndex, gvDataSetRandomizers.size());
+
+   return gvDataSetRandomizers[iSetIndex];
+}
+
 /** Returns a collection of cloned randomizers maintained by data set handler.
     All previous elements of list are deleted. */
 RandomizerContainer_t& DataSetHandler::GetRandomizerContainer(RandomizerContainer_t& Container) const {
