@@ -572,20 +572,26 @@ void TBDlgDataImporter::LoadMappingPanel() {
     throw;
   }
 }
-
+                                        
 /** Sets TfrmAnalysis data members to reflect import. */
 void TBDlgDataImporter::LoadResultFileNameIntoAnalysis() {
   try {
     switch (rdgInputFileType->ItemIndex) {
       case Case                : gAnalysisForm.SetCaseFile(gDestDescriptor.GetDestinationFileName());
+                                 gAnalysisForm.SetPrecisionOfTimesControl((gvSaTScanVariables[2].GetIsMappedToInputFileVariable() ? DAY : NONE));
                                  break;
       case Control             : gAnalysisForm.SetControlFile(gDestDescriptor.GetDestinationFileName());
+                                 gAnalysisForm.SetPrecisionOfTimesControl((gvSaTScanVariables[2].GetIsMappedToInputFileVariable() ? DAY : NONE));
                                  break;
       case Population          : gAnalysisForm.SetPopulationFile(gDestDescriptor.GetDestinationFileName());
                                  break;
       case Coordinates         : gAnalysisForm.SetCoordinateFile(gDestDescriptor.GetDestinationFileName());
+                                 //set analysis interface coordinates control to match importers
+                                 gAnalysisForm.SetCoordinateType((CoordinatesType)rdoCoordinates->ItemIndex);
                                  break;
       case SpecialGrid         : gAnalysisForm.SetSpecialGridFile(gDestDescriptor.GetDestinationFileName());
+                                 //set analysis interface coordinates control to match importers
+                                 gAnalysisForm.SetCoordinateType((CoordinatesType)rdoCoordinates->ItemIndex);
                                  break;
       case MaxCirclePopulation : gAnalysisForm.SetMaximumCirclePopulationFile(gDestDescriptor.GetDestinationFileName());
                                break;
