@@ -27,10 +27,7 @@
 
 /** constructor */
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
-               :gParameters(Parameters),
-                gStartTime(StartTime),
-                gPrintDirection(PrintDirection),
-                gSimulatedRatios(Parameters.GetNumReplicationsRequested(), &PrintDirection) {
+               :gParameters(Parameters), gStartTime(StartTime), gPrintDirection(PrintDirection) {
   try {
     Init();
     Setup();
@@ -45,6 +42,7 @@ AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, 
 AnalysisRunner::~AnalysisRunner() {
   try {
     delete gpDataHub;
+    delete gpSignificantRatios;
   }
   catch (...) {}
 }
@@ -229,7 +227,7 @@ void AnalysisRunner::DisplayTopCluster() {
         //print cluster definition to file stream
         TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
         //check track of whether this cluster was significant in top five percentage
-        if (TopCluster.m_nRatio > gSimulatedRatios.GetAlpha05())
+        if (GetIsCalculatingSignificantRatios() && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
           ++guwSignificantAt005;
         //print cluster definition to 'location information' record buffer
         if (gParameters.GetOutputAreaSpecificFiles())
@@ -280,7 +278,7 @@ void AnalysisRunner::DisplayTopClusters() {
          //print cluster definition to file stream
          TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
          //check track of whether this cluster was significant in top five percentage
-         if (TopCluster.m_nRatio > gSimulatedRatios.GetAlpha05())
+         if (GetIsCalculatingSignificantRatios() && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
            ++guwSignificantAt005;
          //print cluster definition to 'location information' record buffer
          if (gParameters.GetOutputAreaSpecificFiles())
@@ -471,6 +469,13 @@ CAnalysis * AnalysisRunner::GetNewAnalysisObject() const {
   return 0;
 }
 
+double AnalysisRunner::GetSimRatio01() const {
+  return gpSignificantRatios ? gpSignificantRatios->GetAlpha01() : 0;
+}
+double AnalysisRunner::GetSimRatio05() const {
+  return gpSignificantRatios ? gpSignificantRatios->GetAlpha05() : 0;
+}
+
 /** class initialization */
 void AnalysisRunner::Init() {
   gpDataHub=0;
@@ -480,6 +485,7 @@ void AnalysisRunner::Init() {
   gdMinRatioToReport=0.001;
   guwSignificantAt005=0;
   giClustersReported=0;
+  gpSignificantRatios=0;
 }
 
 /** Attempts to open result output file stream and assign to passed file pointer
@@ -533,7 +539,7 @@ void AnalysisRunner::PerformParallelSimulations() {
     else
       sReplicationFormatString = "SaTScan log likelihood ratio for #%u of %u replications: %7.2lf\n";
     //set/reset loglikelihood ratio significance indicator
-    gSimulatedRatios.Initialize();
+    if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
     giNumSimsExecuted = 0;
 
     std::deque< std::pair<unsigned int, double> > qParamsAndResults;
@@ -542,7 +548,7 @@ void AnalysisRunner::PerformParallelSimulations() {
        qParamsAndResults.push_back(std::make_pair(ui + 1,0));
     }
     stsMCSimContinuationPolicy CtPlcy(gPrintDirection);
-    stsMCSimReporter Rptr(gParameters, CtPlcy, gSimulatedRatios, gTopClustersContainer, gPrintDirection, sReplicationFormatString, *this);
+    stsMCSimReporter Rptr(gParameters, CtPlcy, gTopClustersContainer, gPrintDirection, sReplicationFormatString, *this);
     typedef contractor<unsigned int, double, stsMCSimReporter, stsMCSimContinuationPolicy> contractor_type;
     contractor_type theContractor(qParamsAndResults, Rptr, CtPlcy);
     //run threads:
@@ -590,7 +596,7 @@ void AnalysisRunner::PerformSerializedSimulations() {
     if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
       RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
     //set/reset loglikelihood ratio significance indicator
-    gSimulatedRatios.Initialize();
+    if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
     //get container for simulation data - this data will be modified in the randomize process
     GetDataHub().GetDataSetHandler().GetSimulationDataContainer(SimulationDataContainer);
     //get container of data randomizers - these will modify the simulation data
@@ -619,7 +625,7 @@ void AnalysisRunner::PerformSerializedSimulations() {
         //update most likely clusters given latest simulated loglikelihood ratio
         gTopClustersContainer.UpdateTopClustersRank(dSimulatedRatio);
         //update significance indicator
-        gSimulatedRatios.AddRatio(dSimulatedRatio);
+        UpdateSignificantRatiosList(dSimulatedRatio);
         //update power calculations
         UpdatePowerCounts(dSimulatedRatio);
         //update simulated loglikelihood record buffer
@@ -762,8 +768,12 @@ void AnalysisRunner::Setup() {
       case SPATIALVARTEMPTREND       : gpDataHub = new CSVTTData(gParameters, gPrintDirection); break;
       default : ZdGenerateException("Unknown Analysis Type '%d'.", "Setup()", gParameters.GetAnalysisType());
     };
+    if (gParameters.GetReportCriticalValues() && gParameters.GetNumReplicationsRequested() >= 19)
+      gpSignificantRatios = new CSignificantRatios05(gParameters.GetNumReplicationsRequested());
   }
   catch (ZdException &x) {
+    delete gpSignificantRatios; gpSignificantRatios=0;
+    delete gpDataHub; gpDataHub=0;
     x.AddCallpath("Setup()","AnalysisRunner");
     throw;
   }
@@ -801,10 +811,10 @@ void AnalysisRunner::UpdateReport() {
       fprintf(fp, "The %s value required for an observed\n",
              (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"));
       fprintf(fp, "cluster to be significant at level\n");
-      if (giNumSimsExecuted >= 99)
-        fprintf(fp,"... 0.01: %f\n", gSimulatedRatios.GetAlpha01());
-      if (giNumSimsExecuted >= 19)
-        fprintf(fp,"... 0.05: %f\n", gSimulatedRatios.GetAlpha05());
+      if (GetIsCalculatingSignificantRatios() && giNumSimsExecuted >= 99)
+        fprintf(fp,"... 0.01: %f\n", gpSignificantRatios->GetAlpha01());
+      if (GetIsCalculatingSignificantRatios() && giNumSimsExecuted >= 19)
+        fprintf(fp,"... 0.05: %f\n", gpSignificantRatios->GetAlpha05());
       fprintf(fp, "\n");
     }
     if (gParameters.GetIsPowerCalculated()) {
@@ -826,5 +836,10 @@ void AnalysisRunner::UpdateReport() {
     x.AddCallpath("UpdateReport()","AnalysisRunner");
     throw;
   }
+}
+
+/** Updates list of significant ratio, if structure allocated. */
+void AnalysisRunner::UpdateSignificantRatiosList(double dRatio) {
+  if (gpSignificantRatios) gpSignificantRatios->AddRatio(dRatio);
 }
 

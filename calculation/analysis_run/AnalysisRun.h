@@ -20,7 +20,7 @@ class AnalysisRunner {
     const CParameters                 & gParameters;
     BasePrint                         & gPrintDirection;
     CSaTScanData                      * gpDataHub;
-    CSignificantRatios05                gSimulatedRatios;
+    CSignificantRatios05              * gpSignificantRatios;
     unsigned short                      guwSignificantAt005;
     time_t                              gStartTime;
     double                              gdMinRatioToReport;
@@ -48,6 +48,7 @@ class AnalysisRunner {
     bool                                RepeatAnalysis();
     void                                UpdatePowerCounts(double r);
     void                                UpdateReport();
+    void                                UpdateSignificantRatiosList(double dRatio);
 
   public:
     AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection);
@@ -57,11 +58,12 @@ class AnalysisRunner {
     virtual void                        Execute();
     const MostLikelyClustersContainer & GetClusterContainer() const {return gTopClustersContainer;}
     const CSaTScanData                & GetDataHub() const {return *gpDataHub;}
+    bool                                GetIsCalculatingSignificantRatios() const {return gpSignificantRatios;}
     CAnalysis                         * GetNewAnalysisObject() const;
     unsigned short                      GetNumSignificantAt005() const {return guwSignificantAt005;}
     unsigned int                        GetNumSimulationsExecuted() const {return giNumSimsExecuted;}
-    const double                        GetSimRatio01() const {return gSimulatedRatios.GetAlpha01();}
-    const double                        GetSimRatio05() const {return gSimulatedRatios.GetAlpha05();}
+    double                              GetSimRatio01() const;
+    double                              GetSimRatio05() const;
     const time_t                      * GetStartTime() const {return &gStartTime;}
 };
 //***************************************************************************
