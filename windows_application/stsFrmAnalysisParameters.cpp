@@ -307,7 +307,7 @@ void TfrmAnalysis::CheckStudyPeriodDatesRange() {
 }
 //---------------------------------------------------------------------------
 /** Resets parameters that are not present in interface to default value.
-    Hidden features are to be used soley in dos version at this time.     */
+    Hidden features are to be used soley in command line version at this time. */
 void TfrmAnalysis::DefaultHiddenParameters() {
   if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND || gParameters.GetAnalysisType() == PURELYSPATIALMONOTONE)
     gParameters.SetAnalysisType(PURELYSPATIAL);
@@ -338,6 +338,7 @@ void TfrmAnalysis::DefaultHiddenParameters() {
   //if still ALIVECLUSTERS, default to ALLCLUSTERS
   if (gParameters.GetIncludeClustersType() == ALIVECLUSTERS)
     gParameters.SetIncludeClustersType(ALLCLUSTERS);
+  gParameters.SetSpatialAdjustmentType(NO_SPATIAL_ADJUSTMENT);
 }
 //---------------------------------------------------------------------------
 /** event triggered when case file edit control text changes */
