@@ -50,9 +50,9 @@ class DBaseOutput {
                                              // output files. Throughout the program consistently pVal is not printed for Monte
                                              // Carlo replications less than 99, so to maintain consistency here we will do the same - AJV 10/2/2002
 
-      virtual void      CleanupFieldVector();
-      virtual void      CreateDBFFile();
-      virtual void      SetAreaID(ZdString& sTempValue, const CCluster& pCluster, const CSaTScanData& pData);
+      void              CleanupFieldVector();
+      void              CreateDBFFile();
+      void              SetAreaID(ZdString& sTempValue, const CCluster& pCluster, const CSaTScanData& pData);
       virtual void      SetupFields(ZdPointerVector<ZdField>& vFields) = 0;
    public:
       __fastcall DBaseOutput(const long lRunNumber, const bool bPrintPVal = true, const int iCoordType = 0);
