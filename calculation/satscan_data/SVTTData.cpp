@@ -173,16 +173,6 @@ void CSVTTData::SetAdditionalCaseArrays(RealDataStream& thisStream) {
   }
 }
 
-/** Calculates time interval start times through base class method
-    CSaTScanData::SetIntervalStartTimes(). Throws ResolvableException if the
-    number of calculated time intervals is less than two. */
-void CSVTTData::SetIntervalStartTimes() {
-  CSaTScanData::SetIntervalStartTimes();
-  if (m_nTimeIntervals <= 1)
-    GenerateResolvableException("Error: A spatial variation of temporal trends analysis requires\n"
-                                "       more than one time interval.\n", "SetIntervalStartTimes()");
-}
-
 /** Allocates probability model obect. Throws ZdException for all probability
     model type except Poisson. */
 void CSVTTData::SetProbabilityModel() {

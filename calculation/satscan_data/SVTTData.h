@@ -23,7 +23,6 @@ class CSVTTData : public CSaTScanData {
   protected:
     virtual void        CalculateMeasure(RealDataStream& thisStream);
     virtual void        SetAdditionalCaseArrays(RealDataStream & thisStream);
-    virtual void        SetIntervalStartTimes();
 
   public:
     CSVTTData(const CParameters& Parameters, BasePrint& PrintDirection);
