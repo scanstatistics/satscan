@@ -1068,7 +1068,8 @@ void TfrmAnalysis::OnTemporalTrendClick() {
 
 //---------------------------------------------------------------------------
 // parses up a date string and places it into the given month, day, year
-// interace text control (TEdit *).
+// interace text control (TEdit *). Defaults prospective survallience start
+// date to months/days to like study period end date.
 //---------------------------------------------------------------------------
 void TfrmAnalysis::ParseDate(const char * szDate, TEdit *pYear, TEdit *pMonth, TEdit *pDay) {
   UInt  uiMonth, uiDay, uiYear;
@@ -1087,10 +1088,22 @@ void TfrmAnalysis::ParseDate(const char * szDate, TEdit *pYear, TEdit *pMonth, T
       case 2 : if (uiYear >= MIN_YEAR && uiYear <= MAX_YEAR && uiMonth >= 1 && uiMonth <= 12) {
                  pYear->Text = uiYear;
                  pMonth->Text = uiMonth;
+                 if (pYear == edtProspYear)
+                   pDay->Text = std::min(static_cast<unsigned int>(atoi(edtEndDay->Text.c_str())), DaysThisMonth(uiYear, uiMonth));
+                 else if (pYear == edtEndYear)
+                   pDay->Text = DaysThisMonth(uiYear, uiMonth);
+                 else
+                   pDay->Text = 1;
                }
                break;
-      case 1 : if (uiYear >= MIN_YEAR && uiYear <= MAX_YEAR)
+      case 1 : if (uiYear >= MIN_YEAR && uiYear <= MAX_YEAR) {
                  pYear->Text = uiYear;
+                 if (pYear == edtProspYear) {
+                   pMonth->Text = edtEndMonth->Text;
+                   pDay->Text = std::min(static_cast<unsigned int>(atoi(edtEndDay->Text.c_str())),
+                                         DaysThisMonth(uiYear, static_cast<unsigned int>(atoi(edtEndMonth->Text.c_str()))));
+                 }
+               }
                break;
     };
   }
