@@ -38,8 +38,8 @@ class CSaTScanData {
     double                                      m_nMaxCircleSize;
     double                                      m_nMaxReportedCircleSize;
     double                                      m_nAnnualRatePop;
-    double                                    * mdE_Angles;
-    double                                    * mdE_Shapes;                     /* temp storage for the angles, shapes of each "possible" ellipsoid */
+    std::vector<double>                         gvEllipseAngles;
+    std::vector<double>                         gvEllipseShapes;                /* temp storage for the angles, shapes of each "possible" ellipsoid */
     const Julian                                m_nStartDate;
     const Julian                                m_nEndDate;                     /* study period start/end dates */
     std::vector<Julian>                         gvTimeIntervalStartTimes;       /* time interval start times */
@@ -51,11 +51,20 @@ class CSaTScanData {
     count_t                                     gtTotalCases;                   /** total cases for all data streams */
     measure_t                                   gtTotalPopulation;              /** total population for all streams */
     RelativeRiskAdjustmentHandler               gRelativeRiskAdjustments;
+    std::vector<int>                            gvProspectiveIntervalCuts;
+    int                                         m_nProspectiveIntervalStart; // interval where start of prospective space-time begins
+    int                                         m_nIntervalCut; // Maximum time intervals allowed in a cluster (base on TimeSize)
+    int                                         m_nFlexibleWindowStartRangeStartIndex;
+    int                                         m_nFlexibleWindowStartRangeEndIndex;
+    int                                         m_nFlexibleWindowEndRangeStartIndex;
+    int                                         m_nFlexibleWindowEndRangeEndIndex;
 
     bool                                        AdjustMeasure(RealDataStream& thisStream, measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate);
     void                                        AllocateNeighborArray();
     void                                        AllocateSortedArray();
     measure_t                                   CalcMeasureForTimeInterval(PopulationData & Population, measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate);
+    int                                         CalculateProspectiveIntervalStart() const;
+    void                                        CalculateTimeIntervalIndexes();
     measure_t                                   DateMeasure(PopulationData & Population, measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract);
     count_t                                     GetCaseCount(count_t ** ppCumulativeCases, int iInterval, tract_t tTract) const;
     int                                         LowerPopIndex(Julian Date) const;
@@ -73,7 +82,6 @@ class CSaTScanData {
     virtual void                                SetIntervalStartTimes();
     void                                        SetMeasureByTimeIntervalArray();
     void                                        SetMeasureByTimeIntervalArray(measure_t ** pNonCumulativeMeasure);
-    void                                        SetProspectiveIntervalStart();
     void                                        SetPurelyTemporalCases();
     void                                        SetTimeIntervalRangeIndexes();
 
@@ -82,13 +90,7 @@ class CSaTScanData {
     virtual ~CSaTScanData();
 
     tract_t                                     m_nGridTracts;
-    int                                         m_nTimeIntervals,
-                                                m_nStartRangeStartDateIndex,
-                                                m_nStartRangeEndDateIndex,
-                                                m_nEndRangeStartDateIndex,
-                                                m_nEndRangeEndDateIndex,
-                                                m_nIntervalCut, // Maximum time intervals allowed in a cluster (base on TimeSize)
-                                                m_nProspectiveIntervalStart; // interval where start of prospective space-time begins
+    int                                         m_nTimeIntervals;
 
     virtual void                                AdjustForKnownRelativeRisks(RealDataStream& thisStream, measure_t ** ppNonCumulativeMeasure);
     virtual void                                AdjustNeighborCounts(); // For sequential analysis, after top cluster removed
@@ -101,9 +103,14 @@ class CSaTScanData {
     void                                        DisplaySummary2(FILE* fp);
     virtual void                                FindNeighbors(bool bSimulations);
     void                                        FreeRelativeRisksAdjustments() {gRelativeRiskAdjustments.Empty();}
-    const double                              * GetAnglesArray() const {return mdE_Angles;}
     DataStreamHandler                         & GetDataStreamHandler() {return *gpDataStreams;}
     const DataStreamHandler                   & GetDataStreamHandler() const {return *gpDataStreams;}
+    double                                      GetEllipseAngle(int iEllipseIndex) const;
+    double                                      GetEllipseShape(int iEllipseIndex) const;
+    int                                         GetFlexibleWindowEndRangeEndIndex() const {return m_nFlexibleWindowEndRangeEndIndex;}
+    int                                         GetFlexibleWindowEndRangeStartIndex() const {return m_nFlexibleWindowEndRangeStartIndex;}
+    int                                         GetFlexibleWindowStartRangeEndIndex() const {return m_nFlexibleWindowStartRangeEndIndex;}
+    int                                         GetFlexibleWindowStartRangeStartIndex() const {return m_nFlexibleWindowStartRangeStartIndex;}
     inline const GInfo                        * GetGInfo() const { return &gCentroidsHandler;}
     double                                      GetMaxCircleSize() {return m_nMaxCircleSize;}
     double                                      GetMeasureAdjustment(unsigned int iStream) const;
@@ -115,11 +122,13 @@ class CSaTScanData {
     inline tract_t                              GetNumTracts() const {return m_nTracts;}
     const CParameters                         & GetParameters() const {return gParameters;}
     CModel                                    & GetProbabilityModel() const {return *m_pModel;}
-    const double                              * GetShapesArray() const {return mdE_Shapes;}
+    const std::vector<int>                    & GetProspectiveIntervalCuts() const {return gvProspectiveIntervalCuts;}
+    int                                         GetProspectiveStartIndex() const {return m_nProspectiveIntervalStart;}  
     Julian                                      GetStudyPeriodEndDate() const {return m_nEndDate;}
     Julian                                      GetStudyPeriodStartDate() const {return m_nStartDate;}
     int                                         GetTimeIntervalOfDate(Julian Date) const;
     int                                         GetTimeIntervalOfEndDate(Julian EndDate) const;
+    int                                         GetTimeIntervalCut() const {return m_nIntervalCut;}
     const std::vector<Julian>                 & GetTimeIntervalStartTimes() const {return gvTimeIntervalStartTimes;}
     inline const TractHandler                 * GetTInfo() const {return &gTractHandler;}
     double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}

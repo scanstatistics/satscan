@@ -34,8 +34,6 @@ CSaTScanData::~CSaTScanData() {
     delete gpNeighborCountHandler; gpNeighborCountHandler=0;
     delete gpSortedIntHandler; gpSortedIntHandler=0;
     delete gpSortedUShortHandler; gpSortedUShortHandler=0;
-    delete [] mdE_Angles;
-    delete [] mdE_Shapes;
   }
   catch (...){}  
 }
@@ -270,6 +268,56 @@ void CSaTScanData::CalculateMeasure(RealDataStream & thisStream) {
   }
 }
 
+/** Calculates time interval indexes given study period and other time aggregation
+    settings. */
+void CSaTScanData::CalculateTimeIntervalIndexes() {
+  int           giNumCollapsedIntervals;
+  double        dProspectivePeriodLength, dMaxTemporalLengthInUnits;
+
+  // calculate time interval start time indexes
+  SetIntervalStartTimes();
+  // calculate maximum temporal cluster size, in terms of interval indexes
+  SetIntervalCut();
+  // calculate date indexes for flexible scanning window
+  SetTimeIntervalRangeIndexes();
+  // calculate date index for prospective surveillance start date
+  if (gParameters.GetIsProspectiveAnalysis()) {
+    m_nProspectiveIntervalStart = CalculateProspectiveIntervalStart();
+    // For prospective analyses, not all time intervals will always be evaluated; consequently some of the
+    // initial intervals can be combined into one interval. When evaluating real data, we will only
+    // consider 'alive' clusters (clusters where the end date equals the study period end date). For
+    // the simulated data, we will consider historical clusters from prospective start date.
+    if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE && gParameters.GetNumReplicationsRequested() > 0) {
+      // If the maximum temporal cluster size is defined as a percentage of the population at risk,
+      // then the maximum cluster size must be calculated for each prospective period; this is if
+      // any simulations were requested.
+      for (int iWindowEnd=m_nProspectiveIntervalStart; iWindowEnd <= m_nTimeIntervals; ++iWindowEnd) {
+         dProspectivePeriodLength = CalculateNumberOfTimeIntervals(m_nStartDate, gvTimeIntervalStartTimes[iWindowEnd] - 1,
+                                                                   gParameters.GetTimeAggregationUnitsType(), 1);
+         dMaxTemporalLengthInUnits = floor(dProspectivePeriodLength * gParameters.GetMaximumTemporalClusterSize()/100.0);
+         //now calculate number of those time units a cluster can contain with respects to the specified aggregation length
+         gvProspectiveIntervalCuts.push_back(static_cast<int>(floor(dMaxTemporalLengthInUnits / gParameters.GetTimeAggregationLength())));
+      }
+      // Now we know the index of the earliest accessed time interval, we can determine the
+      // number of time intervals that can be collapsed.
+      giNumCollapsedIntervals = m_nProspectiveIntervalStart - *(gvProspectiveIntervalCuts.begin());
+    }
+    else {
+      // When the maximum temporal cluster size is a fixed period, the number of intervals
+      // to collapse is simplier to calculate. 
+      giNumCollapsedIntervals = m_nProspectiveIntervalStart - m_nIntervalCut;
+    }
+    // Removes collaped intervals from the data structure which details time interval start times.
+    // When input data is read, what would have gone into the respective second interval, third, etc.
+    // will be cummulated into first interval.
+    gvTimeIntervalStartTimes.erase(gvTimeIntervalStartTimes.begin() + 1, gvTimeIntervalStartTimes.begin() + giNumCollapsedIntervals);
+    // Re-calculate number of time intervals.
+    m_nTimeIntervals = gvTimeIntervalStartTimes.size() - 1;
+    // Re-calculate index of prospective start date
+    m_nProspectiveIntervalStart = CalculateProspectiveIntervalStart();
+  }
+}
+
 /********************************************************************
   Finds the measure M for a requested tract and date.
   Input: Date, Tracts, #PopPoints
@@ -366,6 +414,20 @@ count_t CSaTScanData::GetCaseCount(count_t ** ppCumulativeCases, int iInterval, 
     return ppCumulativeCases[iInterval][tTract] - ppCumulativeCases[iInterval + 1][tTract];
 }
 
+/** Returns angle to referenced ellipse at index. Caller is responsible for ensuring
+    that iEllipseIndex is within validate range where if ellipses where requested,
+    the valid range is 0 to gParameters.GetNumTotalEllipses() - 1. */
+double CSaTScanData::GetEllipseAngle(int iEllipseIndex) const {
+  return gvEllipseAngles[iEllipseIndex - 1];
+}
+
+/** Returns shape to referenced ellipse at index. Caller is responsible for ensuring
+    that iEllipseIndex is within validate range where if ellipses where requested,
+    the valid range is 0 to gParameters.GetNumTotalEllipses() - 1 */
+double CSaTScanData::GetEllipseShape(int iEllipseIndex) const {
+  return gvEllipseShapes[iEllipseIndex - 1];
+}
+
 /** For Bernoulli model, returns ratio of total cases / total population for
     iStream'th data stream. For all other models, returns 1.*/
 double CSaTScanData::GetMeasureAdjustment(unsigned int iStream) const {
@@ -415,13 +477,15 @@ void CSaTScanData::Init() {
   gpSortedIntHandler=0;
   gpSortedUShortHandler=0;
   m_nAnnualRatePop = 100000;
-  mdE_Angles = 0;
-  mdE_Shapes = 0;
   m_nMaxReportedCircleSize = 0;
   m_nTotalMaxCirclePopulation = 0;
   gtTotalMeasure=0;
   gtTotalCases=0;
   gtTotalPopulation=0;
+  m_nFlexibleWindowStartRangeStartIndex=0;
+  m_nFlexibleWindowStartRangeEndIndex=0;
+  m_nFlexibleWindowEndRangeStartIndex=0;
+  m_nFlexibleWindowEndRangeEndIndex=0;
 }
 
 /** Randomizes collection of simulation data in concert with passed collection
@@ -475,11 +539,8 @@ void CSaTScanData::ReadDataFromFiles() {
   bool  bReadSuccess;
 
   try {
-    SetIntervalStartTimes();
-    SetIntervalCut();
-    SetTimeIntervalRangeIndexes();
-    if (gParameters.GetIsProspectiveAnalysis())
-      SetProspectiveIntervalStart();
+    // First calculate time interval indexes, these values will be utilized by data read process.
+    CalculateTimeIntervalIndexes();
     switch (gParameters.GetProbabiltyModelType()) {
       case POISSON              : bReadSuccess = ReadPoissonData(); break;
       case BERNOULLI            : bReadSuccess = ReadBernoulliData(); break;
@@ -767,23 +828,26 @@ void CSaTScanData::SetMaxCircleSize() {
 
 /* Calculates which time interval the prospectice space-time start date is in.*/
 /* MAKE SURE THIS IS EXECUTED AFTER THE  m_nTimeIntervals VARIABLE HAS BEEN SET */
-void CSaTScanData::SetProspectiveIntervalStart() {
-  try {
-    m_nProspectiveIntervalStart = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetProspectiveStartDate().c_str()));
+int CSaTScanData::CalculateProspectiveIntervalStart() const {
+  int   iDateIndex;
 
-    if (m_nProspectiveIntervalStart < 0)
+  try {
+    iDateIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetProspectiveStartDate().c_str()));
+
+    if (iDateIndex < 0)
       GenerateResolvableException("Error: : The start date for prospective analyses '%s' is prior to the study period start date '%s'.\n",
                                   "SetProspectiveIntervalStart()", gParameters.GetProspectiveStartDate().c_str(),
                                   gParameters.GetStudyPeriodStartDate().c_str());
-    if (m_nProspectiveIntervalStart > m_nTimeIntervals)
+    if (iDateIndex > m_nTimeIntervals)
       GenerateResolvableException("Error: The start date for prospective analyses '%s' occurs after the study period end date '%s'.\n",
                                   "SetProspectiveIntervalStart", gParameters.GetProspectiveStartDate().c_str(),
                                   gParameters.GetStudyPeriodEndDate().c_str());
   }
   catch (ZdException &x) {
-    x.AddCallpath("SetProspectiveIntervalStart()","CSaTScanData");
+    x.AddCallpath("CalculateProspectiveIntervalStart()","CSaTScanData");
     throw;
   }
+  return iDateIndex;
 }
 
 /** For all data streams, causes temporal structures to be allocated and set. */
@@ -808,15 +872,15 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
 
   if (gParameters.GetIncludeClustersType() == CLUSTERSINRANGE) {
     //find start range date indexes
-    m_nStartRangeStartDateIndex = GetTimeIntervalOfDate(CharToJulian(gParameters.GetStartRangeStartDate().c_str()));
-    m_nStartRangeEndDateIndex = GetTimeIntervalOfDate(CharToJulian(gParameters.GetStartRangeEndDate().c_str()));
+    m_nFlexibleWindowStartRangeStartIndex = GetTimeIntervalOfDate(CharToJulian(gParameters.GetStartRangeStartDate().c_str()));
+    m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(CharToJulian(gParameters.GetStartRangeEndDate().c_str()));
     //find end range date indexes
-    m_nEndRangeStartDateIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetEndRangeStartDate().c_str()));
-    m_nEndRangeEndDateIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetEndRangeEndDate().c_str()));
+    m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetEndRangeStartDate().c_str()));
+    m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetEndRangeEndDate().c_str()));
     //validate windows will be evaluated
     //check that there will be clusters evaluated...
-    iMaxEndWindow = std::min(m_nEndRangeEndDateIndex, m_nStartRangeEndDateIndex + m_nIntervalCut);
-    iWindowStart = std::max(m_nEndRangeStartDateIndex - m_nIntervalCut, m_nStartRangeStartDateIndex);
+    iMaxEndWindow = std::min(m_nFlexibleWindowEndRangeEndIndex, m_nFlexibleWindowStartRangeEndIndex + m_nIntervalCut);
+    iWindowStart = std::max(m_nFlexibleWindowEndRangeStartIndex - m_nIntervalCut, m_nFlexibleWindowStartRangeStartIndex);
     if (iWindowStart >= iMaxEndWindow) {
       GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sTimeIntervalType, true, false);
       JulianToChar(sDateWST, gvTimeIntervalStartTimes[iWindowStart]);
@@ -835,7 +899,7 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
     //The parameter validation checked already whether the end range dates conflicted,
     //but the maxium temporal cluster size may actually cause the range dates to be
     //different than the user defined.
-    if (m_nEndRangeStartDateIndex > iMaxEndWindow) {
+    if (m_nFlexibleWindowEndRangeStartIndex > iMaxEndWindow) {
       GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sTimeIntervalType, true, false);
       JulianToChar(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1);
       GenerateResolvableException("Error: No clusters will be evaluated.\n"
@@ -850,29 +914,21 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
 
 /** internal setup function */
 void CSaTScanData::Setup() {
-  long  lCurrentEllipse=0;
+  int es, ea, lCurrentEllipse=0;
 
-  try {
-    //For now, compute the angle and store the angle and shape
-    //for each ellipsoid.  Maybe transfer info to a different location in the
-    //application or compute "on the fly" prior to printing.
-    if (gParameters.GetNumTotalEllipses() > 0) {
-      mdE_Angles = new double[gParameters.GetNumTotalEllipses()];
-      mdE_Shapes = new double[gParameters.GetNumTotalEllipses()];
-      for (int es = 0; es < gParameters.GetNumRequestedEllipses(); ++es) {
-         for (int ea = 0; ea < gParameters.GetEllipseRotations()[es]; ++ea) {
-            mdE_Angles[lCurrentEllipse]=PI*ea/gParameters.GetEllipseRotations()[es];
-            mdE_Shapes[lCurrentEllipse]= gParameters.GetEllipseShapes()[es];
-            ++lCurrentEllipse;
-         }
-      }
+  //For now, compute the angle and store the angle and shape
+  //for each ellipsoid.  Maybe transfer info to a different location in the
+  //application or compute "on the fly" prior to printing.
+  if (gParameters.GetNumTotalEllipses() > 0) {
+    gvEllipseAngles.resize(gParameters.GetNumTotalEllipses());
+    gvEllipseShapes.resize(gParameters.GetNumTotalEllipses());
+    for (es=0; es < gParameters.GetNumRequestedEllipses(); ++es) {
+       for (ea=0; ea < gParameters.GetEllipseRotations()[es]; ++ea) {
+          gvEllipseAngles[lCurrentEllipse] = PI * ea/gParameters.GetEllipseRotations()[es];
+          gvEllipseShapes[lCurrentEllipse] = gParameters.GetEllipseShapes()[es];
+          ++lCurrentEllipse;
+       }
     }
-  }
-  catch (ZdException &x) {
-    delete mdE_Angles;
-    delete mdE_Shapes;
-    x.AddCallpath("Setup()","CSaTScanData");
-    throw;
   }
 }
 
@@ -904,3 +960,4 @@ void CSaTScanData::ValidateObservedToExpectedCases(count_t ** ppCumulativeCases,
     throw;
   }
 }
+
