@@ -16,11 +16,11 @@
 
 // constructor
 __fastcall stsClusterLevelDBF::stsClusterLevelDBF(const long lRunNumber, const int iCoordType,
-                                                  const ZdFileName& sOutputFileName, const int iDimension,
+                                                  const ZdFileName& sOutputFileName, const int iModelType, const int iDimension,
                                                   const bool bPrintPVal, const bool bPrintEllipses) : DBaseOutput(lRunNumber, bPrintPVal, iCoordType) {
    try {
       Init();
-      Setup(sOutputFileName.GetFullPath(), iDimension, bPrintEllipses);
+      Setup(sOutputFileName.GetFullPath(), iModelType, iDimension, bPrintEllipses);
    }
    catch (ZdException &x) {
       x.AddCallpath("Constructor", "stsClusterLevelDBF");
@@ -38,6 +38,7 @@ stsClusterLevelDBF::~stsClusterLevelDBF() {
 // global inits
 void stsClusterLevelDBF::Init() {
    giDimension = 0;
+   giModelType = 0;
 }
 
 // records the calculated data from the cluster into the dBase file
@@ -78,8 +79,8 @@ void stsClusterLevelDBF::RecordClusterData(const CCluster& pCluster, const CSaTS
       // relative risk
       SetDoubleField(*pRecord, pCluster.GetRelativeRisk(pData.GetMeasureAdjustment()), GetFieldNumber(gvFields, REL_RISK));
 	        
-      // log likliehood
-      SetDoubleField(*pRecord, pCluster.m_nLogLikelihood, GetFieldNumber(gvFields, LOG_LIKL));
+      // log likliehood or tst_stat if space-time permutation
+      SetDoubleField(*pRecord, pCluster.m_nLogLikelihood, GetFieldNumber(gvFields, (giModelType != SPACETIMEPERMUTATION ? LOG_LIKL : TST_STAT)));
 	
       // p value
       if (gbPrintPVal) {
@@ -257,7 +258,7 @@ void stsClusterLevelDBF::SetStartAndEndDates(std::string& sStartDate, std::strin
 
 
 // internal setup
-void stsClusterLevelDBF::Setup(const ZdString& sOutputFileName, const int iDimension, const bool bPrintEllipses) {
+void stsClusterLevelDBF::Setup(const ZdString& sOutputFileName, const int iModelType, const int iDimension, const bool bPrintEllipses) {
    try {
       // cluster level dbf has same filename as output file with cluster level extension - AJV 9/30/2002
       ZdString sTempName(sOutputFileName);
@@ -268,6 +269,7 @@ void stsClusterLevelDBF::Setup(const ZdString& sOutputFileName, const int iDimen
          sTempName << CLUSTER_LEVEL_EXT;
       gsFileName = sTempName;
       gbPrintEllipses = bPrintEllipses;
+      giModelType = iModelType;
       giDimension = iDimension;
       SetupFields(gvFields);
       CreateDBFFile();
@@ -320,7 +322,8 @@ void stsClusterLevelDBF::SetupFields(ZdPointerVector<ZdField>& vFields) {
       CreateNewField(vFields, OBSERVED, ZD_NUMBER_FLD, 12, 0, uwOffset);
       CreateNewField(vFields, EXPECTED, ZD_NUMBER_FLD, 12, 2, uwOffset);
       CreateNewField(vFields, REL_RISK, ZD_NUMBER_FLD, 12, 3, uwOffset);
-      CreateNewField(vFields, LOG_LIKL, ZD_NUMBER_FLD, 16, 6, uwOffset);
+      // if model is space time permutation then tst_stat, else log likelihood
+      CreateNewField(vFields, (giModelType != SPACETIMEPERMUTATION ? LOG_LIKL : TST_STAT), ZD_NUMBER_FLD, 16, 6, uwOffset);
 
       if(gbPrintPVal)
          CreateNewField(vFields, P_VALUE, ZD_NUMBER_FLD, 12, 5, uwOffset);

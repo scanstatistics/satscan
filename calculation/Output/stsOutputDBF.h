@@ -31,6 +31,7 @@ extern const char * E_ANGLE;
 extern const char * E_SHAPE;
 extern const char * CLU_OBS;
 extern const char * CLU_EXP;
+extern const char * TST_STAT;
 
 class CCluster;
 class CSaTScanData;

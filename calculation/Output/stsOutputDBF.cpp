@@ -40,6 +40,7 @@ const char *    E_ANGLE                 = "E_ANGLE";
 const char *    E_SHAPE                 = "E_SHAPE";
 const char *    CLU_OBS                 = "CLU_OBS";
 const char *    CLU_EXP                 = "CLU_EXP";
+const char *    TST_STAT                = "TST_STAT";
 
 // constructor
 __fastcall DBaseOutput::DBaseOutput(const long lRunNumber, const bool bPrintPVal, const int iCoordType) {
