@@ -1,8 +1,8 @@
 object frmMainForm: TfrmMainForm
-  Left = 16
-  Top = 51
-  Width = 781
-  Height = 535
+  Left = 9
+  Top = 10
+  Width = 784
+  Height = 557
   Caption = 'SaTScan'
   Color = clGray
   Font.Charset = DEFAULT_CHARSET
@@ -22,21 +22,21 @@ object frmMainForm: TfrmMainForm
   object Bevel1: TBevel
     Left = 0
     Top = 0
-    Width = 773
+    Width = 776
     Height = 2
     Align = alTop
   end
   object Bevel6: TBevel
     Left = 0
     Top = 33
-    Width = 773
+    Width = 776
     Height = 2
     Align = alTop
   end
   object barStatusBar: TStatusBar
     Left = 0
-    Top = 465
-    Width = 773
+    Top = 487
+    Width = 776
     Height = 24
     Panels = <
       item
@@ -53,7 +53,7 @@ object frmMainForm: TfrmMainForm
   object pnlSpeedButton: TPanel
     Left = 0
     Top = 2
-    Width = 773
+    Width = 776
     Height = 31
     Align = alTop
     BevelOuter = bvNone
