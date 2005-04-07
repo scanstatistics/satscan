@@ -41,16 +41,16 @@ bool CSignificantRatios05::AddRatio(double dRatio) {
   return bAdded;
 }
 
-/** Returns loglikelihood ratio at the top 1%. If number of replications is
-    less than 99, zero is returned. */
+/** Returns loglikelihood ratio at the top 1%. Calling this function with having
+    specifed less than 6 simulations results in zero being returned. */
 double CSignificantRatios05::GetAlpha01()  const {
-  return (gvRatiosList.size() >= 99 ? gvRatiosList[gvRatiosList.size()/5 - 1] : 0);
+  return (gvRatiosList.size() >= 6 ? gvRatiosList[gvRatiosList.size()/5 - 1] : 0);
 }
 
-/** Returns loglikelihood ratio at the top 5%. If number of replications is
-    less than 19, zero is returned. */
+/** Returns loglikelihood ratio at the top 5%. Calling this function with having
+    specifed zero simulations results in zero being returned. */
 double CSignificantRatios05::GetAlpha05() const {
-  return (gvRatiosList.size() >= 19 ? gvRatiosList[gvRatiosList.size() - 1] : 0);
+  return (gvRatiosList.size() ? gvRatiosList[gvRatiosList.size() - 1] : 0);
 }
 
 
