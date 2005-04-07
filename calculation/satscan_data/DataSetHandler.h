@@ -17,12 +17,16 @@ class DataSetHandler {
     void                                Setup();
   
   protected:
-    const CParameters                 & gParameters;       /** reference to parameters */
-    BasePrint                         & gPrint;            /** pointer to print direction */
-    CSaTScanData                      & gDataHub;          /** reference to data hub */
-    RealDataContainer_t                 gvDataSets;        /** collection of data sets */
-    static const short                  COUNT_DATE_OFFSET; /** field index of date in case/control files */
-    RandomizerContainer_t               gvDataSetRandomizers;
+    static const short                  guLocationIndex;           /** input record index for location */
+    static const short                  guCountIndex;              /** input record index for count in case/control files */
+    static const short                  guCountDateIndex;          /** input record index for date in case/control files */
+    static const short                  guCountCategoryIndexNone;  /** input record index for category in case/control files w/ no date field */
+    static const short                  guCountCategoryIndex;      /** input record index for category in case/control files */
+    const CParameters                 & gParameters;               /** reference to parameters */
+    BasePrint                         & gPrint;                    /** pointer to print direction */
+    CSaTScanData                      & gDataHub;                  /** reference to data hub */
+    RealDataContainer_t                 gvDataSets;                /** collection of data sets */
+    RandomizerContainer_t               gvDataSetRandomizers;      /** collection of randomizers, one for each data set */
 
     virtual void                        AllocateCaseStructures(size_t iSetIndex);
     bool                                ConvertCountDateToJulian(StringParser& Parser, Julian& JulianDate);

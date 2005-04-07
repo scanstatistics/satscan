@@ -6,7 +6,11 @@
 #include "SaTScanData.h"
 #include "DateStringParser.h"
 
-const short DataSetHandler::COUNT_DATE_OFFSET        = 2;
+const short DataSetHandler::guLocationIndex             = 0;
+const short DataSetHandler::guCountIndex                = 1;
+const short DataSetHandler::guCountDateIndex            = 2;
+const short DataSetHandler::guCountCategoryIndexNone    = 2;
+const short DataSetHandler::guCountCategoryIndex        = 3;
 
 /** constructor */
 DataSetHandler::DataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
@@ -64,13 +68,13 @@ bool DataSetHandler::ConvertCountDateToJulian(StringParser & Parser, Julian & Ju
     ePrecision =  gParameters.GetPrecisionOfTimesType();
 
   //Parameter settings indicate that there should be a date in each case record.
-  if (!Parser.GetWord(COUNT_DATE_OFFSET)) {
+  if (!Parser.GetWord(guCountDateIndex)) {
     gPrint.PrintInputWarning("Error: Record %ld in %s does not contain a date.\n",
                               Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
     return false;
   }
   //Attempt to convert string into Julian equivalence.
-  eStatus = DateParser.ParseCountDateString(Parser.GetWord(COUNT_DATE_OFFSET), ePrecision,
+  eStatus = DateParser.ParseCountDateString(Parser.GetWord(guCountDateIndex), ePrecision,
                                             gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodStartDate(), JulianDate);
   switch (eStatus) {
     case DateStringParser::VALID_DATE       : break;
@@ -85,14 +89,14 @@ bool DataSetHandler::ConvertCountDateToJulian(StringParser & Parser, Julian & Ju
        //Dates in the case/control files must be at least as precise as ePrecision units.
        gPrint.PrintInputWarning("Error: The date '%s' of record %ld in the %s must be precise to %s,\n"
                                 "       as specified by %s units.\n",
-                                Parser.GetWord(COUNT_DATE_OFFSET), Parser.GetReadCount(),
+                                Parser.GetWord(guCountDateIndex), Parser.GetReadCount(),
                                 gPrint.GetImpliedFileTypeString().c_str(),
                                 GetDatePrecisionAsString(ePrecision, sBuffer, false, false),
                                 (gParameters.GetCreationVersionMajor() == 4 ? "time interval" : "time precision"));
       return false; }
     case DateStringParser::INVALID_DATE     :
     default                                 :
-      gPrint.PrintInputWarning("Error: Invalid date '%s' in the %s, record %ld.\n", Parser.GetWord(COUNT_DATE_OFFSET),
+      gPrint.PrintInputWarning("Error: Invalid date '%s' in the %s, record %ld.\n", Parser.GetWord(guCountDateIndex),
                                gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
       return false;
   };
@@ -151,17 +155,17 @@ bool DataSetHandler::ParseCountLine(PopulationData & thePopulation, StringParser
   try {
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
-    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
+    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(guLocationIndex))) == -1) {
       gPrint.PrintInputWarning("Error: Unknown location ID in %s, record %ld.\n",
                                  gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
-      gPrint.PrintInputWarning("       Location ID '%s' was not specified in the coordinates file.\n", Parser.GetWord(0));
+      gPrint.PrintInputWarning("       Location ID '%s' was not specified in the coordinates file.\n", Parser.GetWord(guLocationIndex));
       return false;
     }
     //read and validate count
-    if (Parser.GetWord(1) != 0) {
+    if (Parser.GetWord(guCountIndex) != 0) {
       if (!sscanf(Parser.GetWord(1), "%ld", &nCount)) {
        gPrint.PrintInputWarning("Error: The value '%s' of record %ld in %s could not be read as case count.\n",
-                                  Parser.GetWord(1), Parser.GetReadCount(),
+                                  Parser.GetWord(guCountIndex), Parser.GetReadCount(),
                                   gPrint.GetImpliedFileTypeString().c_str());
        gPrint.PrintInputWarning("       Case count must be an integer.\n");
        return false;
@@ -173,7 +177,7 @@ bool DataSetHandler::ParseCountLine(PopulationData & thePopulation, StringParser
       return false;
     }
     if (nCount < 0) {//validate that count is not negative or exceeds type precision
-      if (strstr(Parser.GetWord(1), "-"))
+      if (strstr(Parser.GetWord(guCountIndex), "-"))
         gPrint.PrintInputWarning("Error: Record %ld, of the %s, contains a negative case count.\n",
                                    Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       else
@@ -184,7 +188,7 @@ bool DataSetHandler::ParseCountLine(PopulationData & thePopulation, StringParser
     }
     if (!ConvertCountDateToJulian(Parser, nDate))
       return false;
-    iCategoryOffSet = gParameters.GetPrecisionOfTimesType() == NONE ? 2 : 3;
+    iCategoryOffSet = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;
     if (! ParseCovariates(thePopulation, iCategoryIndex, iCategoryOffSet, Parser))
         return false;
   }
