@@ -7,6 +7,8 @@
 
 class OrdinalDataSetHandler : public DataSetHandler {
   protected:
+    static const size_t                 gtMinimumCategories;
+
     virtual void                        AllocateCaseStructures(size_t tSetIndex);
     virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid,
                                                           count_t& nCount, Julian& nDate, measure_t& tContinuosVariable);
@@ -17,8 +19,8 @@ class OrdinalDataSetHandler : public DataSetHandler {
     OrdinalDataSetHandler(CSaTScanData& DataHub, BasePrint& Print);
     virtual ~OrdinalDataSetHandler();
 
-    virtual AbtractDataSetGateway  * GetNewDataGateway() const;
-    virtual AbtractDataSetGateway  * GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const;
+    virtual AbtractDataSetGateway     * GetNewDataGateway() const;
+    virtual AbtractDataSetGateway     * GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const;
     virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const;
     virtual bool                        ReadData();
     virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);

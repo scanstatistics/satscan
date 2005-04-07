@@ -5,6 +5,8 @@
 #include "SaTScanData.h"
 #include "OrdinalDataSetHandler.h"
 
+const size_t OrdinalDataSetHandler::gtMinimumCategories        = 3;
+
 /** constructor */
 OrdinalDataSetHandler::OrdinalDataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
                          :DataSetHandler(DataHub, Print) {}
@@ -144,21 +146,21 @@ SimulationDataContainer_t& OrdinalDataSetHandler::GetSimulationDataContainer(Sim
 }
 
 bool OrdinalDataSetHandler::ParseCaseFileLine(StringParser& Parser, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuosVariable) {
-  int   iSurvivalTimeIndex;
+  int   iCategoryIndex;
 
   try {
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
-    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
+    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(guLocationIndex))) == -1) {
       gPrint.PrintInputWarning("Error: Unknown location ID in the %s, record %ld.\n", gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
-      gPrint.PrintInputWarning("       Location ID '%s' was not specified in the coordinates file.\n", Parser.GetWord(0));
+      gPrint.PrintInputWarning("       Location ID '%s' was not specified in the coordinates file.\n", Parser.GetWord(guLocationIndex));
       return false;
     }
     //read and validate count
-    if (Parser.GetWord(1) != 0) {
+    if (Parser.GetWord(guCountIndex) != 0) {
       if (!sscanf(Parser.GetWord(1), "%ld", &nCount)) {
        gPrint.PrintInputWarning("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n",
-                                  Parser.GetWord(1), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                                  Parser.GetWord(guCountIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        gPrint.PrintInputWarning("       Case count must be an integer.\n");
        return false;
       }
@@ -174,7 +176,7 @@ bool OrdinalDataSetHandler::ParseCaseFileLine(StringParser& Parser, tract_t& tid
                                    Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       else
         gPrint.PrintInputWarning("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
-                                   Parser.GetWord(1), std::numeric_limits<count_t>::max(),
+                                   Parser.GetWord(guCountIndex), std::numeric_limits<count_t>::max(),
                                    Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
@@ -182,15 +184,15 @@ bool OrdinalDataSetHandler::ParseCaseFileLine(StringParser& Parser, tract_t& tid
       return false;
 
     // read continuos variable
-    iSurvivalTimeIndex = gParameters.GetPrecisionOfTimesType() == NONE ? 2 : 3;
-    if (!Parser.GetWord(iSurvivalTimeIndex)) {
+    iCategoryIndex = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;
+    if (!Parser.GetWord(iCategoryIndex)) {
       gPrint.PrintInputWarning("Error: Record %d, of the %s, is missing ordinal data field.\n",
                                Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
-    if (sscanf(Parser.GetWord(iSurvivalTimeIndex), "%lf", &tContinuosVariable) != 1) {
+    if (sscanf(Parser.GetWord(iCategoryIndex), "%lf", &tContinuosVariable) != 1) {
        gPrint.PrintInputWarning("Error: The ordinal data '%s' in record %ld, of the %s, is not a number.\n",
-                                  Parser.GetWord(iSurvivalTimeIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                                  Parser.GetWord(iCategoryIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
   }
@@ -248,6 +250,12 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
     //print indication if file contained no data
     else if (bEmpty) {
       gPrint.SatScanPrintWarning("Error: %s does not contain data.\n", gPrint.GetImpliedFileTypeString().c_str());
+      bValid = false;
+    }
+    else if (DataSet.GetPopulationData().GetNumOrdinalCategories() < gtMinimumCategories) {
+      gPrint.SatScanPrintWarning("Error: Data set contains %i categories but a minimum of %i categories\n"
+                                 "       are required for the ordinal probabililty model.\n",
+                                 DataSet.GetPopulationData().GetNumOrdinalCategories(), gtMinimumCategories);
       bValid = false;
     }
     else {
