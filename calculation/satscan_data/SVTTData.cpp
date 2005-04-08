@@ -171,7 +171,7 @@ void CSVTTData::SetAdditionalCaseArrays(RealDataSet& DataSet) {
 void CSVTTData::SetProbabilityModel() {
   try {
     switch (gParameters.GetProbabilityModelType()) {
-       case POISSON              : m_pModel = new CPoissonModel(gParameters, *this, gPrint);   break;
+       case POISSON              : m_pModel = new CPoissonModel(*this);   break;
        case BERNOULLI            : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Bernoulli model.\n",
                                                          "SetProbabilityModel()");
        case SPACETIMEPERMUTATION : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Space-Time Permutation model.\n",

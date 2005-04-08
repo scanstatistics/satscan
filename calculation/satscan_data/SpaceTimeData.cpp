@@ -100,13 +100,13 @@ void CSpaceTimeData::SetIntervalCut() {
 void CSpaceTimeData::SetProbabilityModel() {
   try {
     switch (gParameters.GetProbabilityModelType()) {
-       case POISSON              : m_pModel = new CPoissonModel(gParameters, *this, gPrint);   break;
-       case BERNOULLI            : m_pModel = new CBernoulliModel(gParameters, *this, gPrint); break;
-       case ORDINAL              : m_pModel = new OrdinalModel(gParameters, *this, gPrint); break;
-       case EXPONENTIAL          : m_pModel = new ExponentialModel(gParameters, *this, gPrint); break;
-       case NORMAL               : m_pModel = new CNormalModel(gParameters, *this, gPrint); break;
-       case RANK                 : m_pModel = new CRankModel(gParameters, *this, gPrint); break;
-       case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(gParameters, *this, gPrint); break;
+       case POISSON              : m_pModel = new CPoissonModel(*this);   break;
+       case BERNOULLI            : m_pModel = new CBernoulliModel(); break;
+       case ORDINAL              : m_pModel = new OrdinalModel(); break;
+       case EXPONENTIAL          : m_pModel = new ExponentialModel(); break;
+       case NORMAL               : m_pModel = new CNormalModel(); break;
+       case RANK                 : m_pModel = new CRankModel(); break;
+       case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(); break;
        default : ZdException::Generate("Unknown probability model type: '%d'.\n",
                                        "SetProbabilityModel()", gParameters.GetProbabilityModelType());
     }
