@@ -27,22 +27,25 @@ CovariateCategory::~CovariateCategory() {
   catch(...){}
 }
 
-/** Adds population to existing population for date index. */
+/** Adds population to existing population for date index.
+    Throws ZdException if population date index is out of range.
+    Throws GenerateResolvableException if fPopluation causes population at
+    population date index to exceeds numeric limits of float data type. */
 void CovariateCategory::AddPopulationAtDateIndex(float fPopluation, unsigned int iDateIndex, const PopulationData& thePopulation) {
   try {
+    //validate population date index
     if (iDateIndex > thePopulation.GetNumPopulationDates() - 1)
       ZdGenerateException("Index %d out of range(0 - %d).","AddPopulationAtDateIndex()",
                           iDateIndex, thePopulation.GetNumPopulationDates() -1);
-
+    //check numeric limits of data type will not be exceeded
     if (fPopluation > std::numeric_limits<float>::max() - gpPopulationList[iDateIndex]) {
       char      sDateString[20];
-
       GenerateResolvableException("Error: An internal attempt to add the population of '%.2f' to the current\n"
                                   "       population of '%.2f', at date '%s', causes data overflow.\n",
                                   "AddPopulationAtDateIndex()", fPopluation, gpPopulationList[iDateIndex],
                                   JulianToChar(sDateString, thePopulation.GetPopulationDate(iDateIndex)));
     }
-
+    //add population to total at population date index
     gpPopulationList[iDateIndex] += fPopluation;
   }
   catch (ZdException &x) {
@@ -125,6 +128,21 @@ OrdinalCategory::OrdinalCategory(double dOrdinalNumber, count_t tInitialCount)
 /** destructor */
 OrdinalCategory::~OrdinalCategory() {}
 
+/** Adds case count to cumulative total for ordinal category.
+    Throws ZdException if tCount is negative.
+    Throws GenerateResolvableException if category cases exceeds positive
+    limits for count_t(long) */
+void OrdinalCategory::AddCaseCount(count_t tCount) {
+  // validate count is not negative
+  if (tCount < 0)
+    ZdGenerateException("Negative case count specifed '%ld'.","AddCaseCount()", tCount);
+  gtTotalCases += tCount;
+  // check that addition of category case did not exceed numeric limits of data type
+  if (gtTotalCases < 0)
+    GenerateResolvableException("Error: The total number of cases exceeds the maximum of %ld.\n",
+                                "AddCaseCount()", std::numeric_limits<count_t>::max());
+}
+
 /** Decrements number of cases in category. */
 void OrdinalCategory::DecrementCaseCount(count_t tCount) {
   gtTotalCases = std::max(0L, gtTotalCases - tCount); 
@@ -147,30 +165,38 @@ PopulationData::~PopulationData() {
 }
 
 /** Adds case count to internal structure that records counts by population category.
-    Throws ZdException if category index is invalid or category cases exceeds positive
-    limits for count_t(signed int). Caller of function is responsible for ensuring
-    that parameter 'Count' is a postive count_t(signed int). */
-void PopulationData::AddCovariateCategoryCaseCount(int iCategoryIndex, count_t Count) {
+    Throws ZdException if category index is invalid or tCount is negative.
+    Throws GenerateResolvableException if category cases exceeds positive
+    limits for count_t(long) */
+void PopulationData::AddCovariateCategoryCaseCount(int iCategoryIndex, count_t tCount) {
+  // validate category index
   if (iCategoryIndex < 0 || iCategoryIndex > (int)gvCovariateCategoryCaseCount.size() - 1)
     ZdGenerateException("Index '%d' out of range.","AddCovariateCategoryCaseCount()", iCategoryIndex);
-
-  gvCovariateCategoryCaseCount[iCategoryIndex] += Count;
-
+  // validate count is not negative
+  if (tCount < 0)
+    ZdGenerateException("Negative case count specifed '%ld'.","AddCovariateCategoryCaseCount()", tCount);
+  // add to cumulative variable for category at index
+  gvCovariateCategoryCaseCount[iCategoryIndex] += tCount;
+  // check that addition of category case did not exceed numeric limits of data type
   if (gvCovariateCategoryCaseCount[iCategoryIndex] < 0)
-    GenerateResolvableException("Error: The total number of cases is greater than the maximum allowed of %ld.\n",
+    GenerateResolvableException("Error: The total number of cases is greater than the maximum of %ld.\n",
                                 "AddCovariateCategoryCaseCount()", std::numeric_limits<count_t>::max());
 }
 
 /** Adds control count to internal structure that records counts by population category.
-    Throws ZdException if category index is invalid or category controls exceeds positive
-    limits for count_t(signed int). Caller of function is responsible for ensuring
-    that parameter 'Count' is a postive count_t(signed int). */
+    Throws ZdException if category index is invalid or tCount is negative.
+    Throws GenerateResolvableException if category cases exceeds positive
+    limits for count_t(long) */
 void PopulationData::AddCovariateCategoryControlCount(int iCategoryIndex, count_t Count) {
+  // validate category index
   if (iCategoryIndex < 0 || iCategoryIndex > (int)gvCovariateCategoryControlCount.size() - 1)
     ZdGenerateException("Index '%d' out of range.","AddCovariateCategoryControlCount()", iCategoryIndex);
-    
+  // validate count is not negative
+  if (Count < 0)
+    ZdGenerateException("Negative control count specifed '%ld'.","AddCovariateCategoryControlCount()", Count);
+  // add to cumulative variable for category at index
   gvCovariateCategoryControlCount[iCategoryIndex] += Count;
-
+  // check that addition of category control did not exceed numeric limits of data type
   if (gvCovariateCategoryControlCount[iCategoryIndex] < 0)
     GenerateResolvableException("Error: The total number of controls is greater than the maximum of %ld.\n",
                                 "AddCovariateCategoryControlCount()", std::numeric_limits<count_t>::max());

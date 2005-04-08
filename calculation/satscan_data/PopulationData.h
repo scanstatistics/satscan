@@ -46,7 +46,7 @@ class OrdinalCategory {
     OrdinalCategory(double dOrdinalNumber, count_t tInitialCount=0);
     ~OrdinalCategory();
 
-    void        AddCaseCount(count_t tCount) {gtTotalCases += tCount;}
+    void        AddCaseCount(count_t tCount);
     void        DecrementCaseCount(count_t tCount);
     double      GetOrdinalNumber() const {return gdOrdinalNumber;}
     count_t     GetTotalCases() const {return gtTotalCases;}
