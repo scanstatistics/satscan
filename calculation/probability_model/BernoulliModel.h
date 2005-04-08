@@ -9,11 +9,11 @@
 
 class CBernoulliModel : public CModel {
   public:
-    CBernoulliModel(const CParameters& Parameters, CSaTScanData& Data, BasePrint& PrintDirection);
+    CBernoulliModel();
     virtual ~CBernoulliModel();
 
     virtual void                CalculateMeasure(RealDataSet& DataSet);
-    virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster) const;
+    virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const;
 };
 
 //******************************************************************************

@@ -7,11 +7,11 @@
 /** Rank data model. */
 class CRankModel : public CModel {
   public:
-    CRankModel(const CParameters& Parameters, CSaTScanData& DataHub, BasePrint& PrintDirection);
+    CRankModel();
     virtual ~CRankModel();
 
     virtual void                CalculateMeasure(RealDataSet& DataSet);
-    virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster) const;
+    virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHug) const;
 };
 //******************************************************************************
 #endif

@@ -13,6 +13,8 @@
 class CPoissonModel : public CModel {
   private:
     static const double         gTimeTrendConvergence; /* time trend convergence variable */
+    const CParameters         & gParameters;
+    CSaTScanData              & gDataHub; 
 
     void                        AdjustForNonParameteric(RealDataSet& DataSet, measure_t ** pNonCumulativeMeasure);
     void                        AdjustForLLPercentage(RealDataSet& DataSet, measure_t ** pNonCumulativeMeasure, double nPercentage);
@@ -22,11 +24,11 @@ class CPoissonModel : public CModel {
     void                        StratifiedSpatialAdjustment(RealDataSet& DataSet, measure_t ** ppNonCumulativeMeasure);
 
   public:
-    CPoissonModel(const CParameters& Parameters, CSaTScanData& DataHub, BasePrint& PrintDirection);
+    CPoissonModel(CSaTScanData& DataHub);
     virtual ~CPoissonModel();
 
     virtual void                CalculateMeasure(RealDataSet& DataSet);
-    virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster) const;
+    virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const;
 };
 //*****************************************************************************
 #endif

@@ -7,11 +7,11 @@
 /** normal data model. */
 class CNormalModel : public CModel {
   public:
-    CNormalModel(const CParameters& Parameters, CSaTScanData& DataHub, BasePrint& PrintDirection);
+    CNormalModel();
     virtual ~CNormalModel();
 
     virtual void                CalculateMeasure(RealDataSet& DataSet);
-    virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster) const;
+    virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const;
 };
 //******************************************************************************
 #endif
