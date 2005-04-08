@@ -392,20 +392,20 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
 }
 
 /** Writes clusters population in format required by result output file. */
-void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
+void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   unsigned int           i;
   ZdString               sWork, sBuffer;
-  const DataSetHandler & DataSets = Data.GetDataSetHandler();
+  const DataSetHandler & DataSets = DataHub.GetDataSetHandler();
   double                 dPopulation;
 
-  switch (Data.GetParameters().GetProbabilityModelType()) {
+  switch (DataHub.GetParameters().GetProbabilityModelType()) {
     case POISSON :
-      if (!Data.GetParameters().UsePopulationFile())
+      if (!DataHub.GetParameters().UsePopulationFile())
         break;
     case BERNOULLI :
       PrintFormat.PrintSectionLabel(fp, "Population", false, true);
       for (i=0; i < DataSets.GetNumDataSets(); ++i) {
-        dPopulation = Data.GetProbabilityModel().GetPopulation(i, *this);
+        dPopulation = DataHub.GetProbabilityModel().GetPopulation(i, *this, DataHub);
         if (dPopulation < .5)
           sWork.printf("%s%g", (i > 0 ? ", " : ""), dPopulation); // display all decimals for populations less than .5
         else if (dPopulation < 1)
@@ -429,7 +429,7 @@ void CCluster::DisplayPopulationOrdinal(FILE* fp, const CSaTScanData& DataHub, c
 
   //print population data per category
   PrintFormat.PrintSectionLabel(fp, "Total cases", false, true);
-  dPopulation = DataHub.GetProbabilityModel().GetPopulation(DataSet.GetSetIndex() - 1, *this);
+  dPopulation = DataHub.GetProbabilityModel().GetPopulation(DataSet.GetSetIndex() - 1, *this, DataHub);
   GetPopulationAsString(sBuffer, dPopulation);
   PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
 }
@@ -490,7 +490,7 @@ measure_t CCluster::GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t 
 
   const RealDataSet& DataSet = DataHub.GetDataSetHandler().GetDataSet(tSetIndex);
 
-  return DataHub.GetProbabilityModel().GetPopulation(tSetIndex, *this) *
+  return DataHub.GetProbabilityModel().GetPopulation(tSetIndex, *this, DataHub) *
              DataSet.GetPopulationData().GetNumOrdinalCategoryCases(iCategoryIndex) / DataSet.GetTotalPopulation();
 
 }
