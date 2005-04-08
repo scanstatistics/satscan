@@ -7,32 +7,37 @@
 #include "cluster.h"
 
 /** constructor */
-OrdinalModel::OrdinalModel(const CParameters& Parameters, CSaTScanData& DataHub, BasePrint& PrintDirection)
-             :CModel(Parameters, DataHub, PrintDirection) {}
+OrdinalModel::OrdinalModel() : CModel() {}
 
 /** destructor */
 OrdinalModel::~OrdinalModel() {}
 
-void OrdinalModel::CalculateMeasure(RealDataSet&) {
-   /* no action here */
-}
+/** empty function - for the ordinal model, the routine to calculate expected cases
+    is not needed (generally the measure array) since calculation of loglikelihood
+    based upon cases in each category and total cases in each category */
+void OrdinalModel::CalculateMeasure(RealDataSet&) {/* no action here */}
 
-/** Returns population as defined in CCluster object. */
-double OrdinalModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster) const {
+/** Returns population as defined in CCluster object for data set at index. */
+double OrdinalModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const {
   double                dPopulation=0;
   tract_t               tNeighborIndex;
-  count_t            ** ppCases;
 
-  if (gDataHub.GetParameters().GetIsPurelyTemporalAnalysis())
-    return gDataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetTotalPopulation();
+  const PopulationData& Population = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPopulationData();
 
-  const PopulationData& Population = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPopulationData();
-  for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
-     ppCases = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetCategoryCaseArray(t);
-     for (int j=1; j <= Cluster.GetNumTractsInnerCircle(); ++j) {
-        tNeighborIndex = gDataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), j);
-        dPopulation += ppCases[Cluster.m_nFirstInterval][tNeighborIndex] - ppCases[Cluster.m_nLastInterval][tNeighborIndex];
-     }
+  if (DataHub.GetParameters().GetIsPurelyTemporalAnalysis()) {
+    for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
+       count_t * pCases = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPTCategoryCasesArray()[t];
+       dPopulation += pCases[Cluster.m_nFirstInterval] - pCases[Cluster.m_nLastInterval];
+    }
+  }
+  else {
+    for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
+       count_t ** ppCases = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetCategoryCaseArray(t);
+       for (int j=1; j <= Cluster.GetNumTractsInnerCircle(); ++j) {
+          tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), j);
+          dPopulation += ppCases[Cluster.m_nFirstInterval][tNeighborIndex] - ppCases[Cluster.m_nLastInterval][tNeighborIndex];
+       }
+    }
   }
   return dPopulation;
 }
