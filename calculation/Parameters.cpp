@@ -465,8 +465,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
 
     if (glRandomizationSeed != RandomNumberGenerator::glDefaultSeed)
        fprintf(fp, "  Randomization Seed     : %ld\n", glRandomizationSeed);
-    if (!gbReportCriticalValues)
-       fprintf(fp, "  Report Critical Values : No\n");
+    fprintf(fp, "  Report Critical Values : %s\n", (gbReportCriticalValues ? "Yes" : "No"));
 
     if (giNumberEllipses > 0) {
       fprintf(fp, "\nEllipses\n");
@@ -1126,7 +1125,7 @@ void CParameters::SetAsDefaulted() {
   gCreationVersion.iRelease             = 3;
   gbUsePopulationFile                   = false;
   glRandomizationSeed                   = RandomNumberGenerator::glDefaultSeed;
-  gbReportCriticalValues                = true;
+  gbReportCriticalValues                = false;
 }
 
 /** Sets dimensions of input data. */
