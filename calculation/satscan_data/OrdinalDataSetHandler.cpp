@@ -211,13 +211,14 @@ bool OrdinalDataSetHandler::ParseCaseFileLine(StringParser& Parser, tract_t& tid
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
 bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*) {
-  bool          bReadSuccessful=true, bEmpty=true;
-  Julian        Date;
-  tract_t       tLocationIndex;
-  int           i, iDateIndex;
-  count_t       tCount, tTotalCases=0, ** ppCategoryCounts;
-  measure_t     tOrdinalVariable;
-  size_t        tOrdinalCategoryIndex;
+  bool                  bReadSuccessful=true, bEmpty=true;
+  Julian                Date;
+  tract_t               tLocationIndex;
+  int                   i, iDateIndex;
+  count_t               tCount, tTotalCases=0, ** ppCategoryCounts;
+  measure_t             tOrdinalVariable;
+  size_t                tOrdinalCategoryIndex;
+  std::vector<double>   vReadCategories;
 
   try {
     //get reference to RealDataSet object at index
@@ -231,6 +232,10 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
            bEmpty = false;
            //parse record into parts: location index, # of cases, date, ordinal catgory
            if (ParseCaseFileLine(Parser, tLocationIndex, tCount, Date, tOrdinalVariable)) {
+             //note each category read from file. since we are ignoring records with zero cases,
+             //we might need this information for error reporting
+             if (vReadCategories.end() == std::find(vReadCategories.begin(), vReadCategories.end(), tOrdinalVariable))
+               vReadCategories.push_back(tOrdinalVariable);
              if (tCount > 0) { //ignore records with zero cases
                //add count to cumulative total
                tTotalCases += tCount;
@@ -243,7 +248,7 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
                //record count and get category's 2-D array pointer
                ppCategoryCounts = DataSet.AddOrdinalCategoryCaseCount(tOrdinalVariable, tCount);
                //update location case counts such that 'tCount' is reprented cumulatively through
-               //time from start date through specifed date in record 
+               //time from start date through specifed date in record
                ppCategoryCounts[0][tLocationIndex] += tCount;
                for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
                   ppCategoryCounts[i][tLocationIndex] += tCount;
@@ -264,10 +269,19 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
     }
     //validate that input data contained minimum number of ordinal categories
     else if (DataSet.GetPopulationData().GetNumOrdinalCategories() < gtMinimumCategories) {
-      gPrint.SatScanPrintWarning("Error: Data set contains %i categories but a minimum of %i categories\n"
-                                 "       are required for the ordinal probabililty model.\n",
-                                 DataSet.GetPopulationData().GetNumOrdinalCategories(), gtMinimumCategories);
-      bReadSuccessful = false;
+      if (DataSet.GetPopulationData().GetNumOrdinalCategories() == vReadCategories.size()) {
+        gPrint.SatScanPrintWarning("Error: Data set case file specifies %i categories with cases but a minimum\n"
+                                   "       of %i categories is required.\n",
+                                   DataSet.GetPopulationData().GetNumOrdinalCategories(), gtMinimumCategories);
+        bReadSuccessful = false;
+      }
+      else {
+        gPrint.SatScanPrintWarning("Error: The number of categories with cases is required to be a mimumum of %i.\n"
+                                   "       Data set case file specifies %i categories with %i of them containing no cases.\n",
+                                   gtMinimumCategories, vReadCategories.size(),
+                                   vReadCategories.size() - DataSet.GetPopulationData().GetNumOrdinalCategories());
+        bReadSuccessful = false;
+      }
     }
     //else if (data set does not contain minimum number of cases either in total or in each category) {
     //  gPrint.SatScanPrintWarning("Error: \n");
