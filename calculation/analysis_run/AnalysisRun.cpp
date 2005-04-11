@@ -796,7 +796,9 @@ void AnalysisRunner::UpdatePowerCounts(double r) {
     - power calculation results, if option requested by user
     - indication of when simulations terminated early */
 void AnalysisRunner::UpdateReport() {
-  FILE         * fp=0;
+  FILE                * fp=0;
+  AsciiPrintFormat      PrintFormat;
+  ZdString              sBuffer;
 
   try {
     gPrintDirection.SatScanPrintf("\nPrinting analysis results to file...\n");
@@ -804,13 +806,15 @@ void AnalysisRunner::UpdateReport() {
       DisplayTopCluster();
     else
       DisplayTopClusters();
-    //open result output file stream  
+    //open result output file stream
     OpenReportFile(fp, true);
+    PrintFormat.SetMarginsAsOverviewSection();
     if (giNumSimsExecuted >= 19 && giClustersReported > 0) {
       // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
-      fprintf(fp, "The %s value required for an observed\n",
-             (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"));
-      fprintf(fp, "cluster to be significant at level\n");
+      sBuffer.printf("A cluster is statistically significant when its %s "
+                     "is greater than the critical value, which is, for significance level:",
+                     (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"));
+      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);             
       if (GetIsCalculatingSignificantRatios() && giNumSimsExecuted >= 99)
         fprintf(fp,"... 0.01: %f\n", gpSignificantRatios->GetAlpha01());
       if (GetIsCalculatingSignificantRatios() && giNumSimsExecuted >= 19)
@@ -818,7 +822,8 @@ void AnalysisRunner::UpdateReport() {
       fprintf(fp, "\n");
     }
     if (gParameters.GetIsPowerCalculated()) {
-      fprintf(fp,"Percentage of Monte Carlo replications with a likelihood greater than\n");
+      sBuffer = "Percentage of Monte Carlo replications with a likelihood greater than";
+      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
       fprintf(fp,"... X (%f) : %f\n", gParameters.GetPowerCalculationX(),
               ((double)giPower_X_Count)/giNumSimsExecuted);
       fprintf(fp,"... Y (%f) : %f\n\n", gParameters.GetPowerCalculationY(),
