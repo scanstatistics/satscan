@@ -809,15 +809,15 @@ void AnalysisRunner::UpdateReport() {
     //open result output file stream
     OpenReportFile(fp, true);
     PrintFormat.SetMarginsAsOverviewSection();
-    if (giNumSimsExecuted >= 19 && giClustersReported > 0) {
+    if (GetIsCalculatingSignificantRatios() && giNumSimsExecuted >= 19 && giClustersReported > 0) {
       // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
       sBuffer.printf("A cluster is statistically significant when its %s "
                      "is greater than the critical value, which is, for significance level:",
                      (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"));
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);             
-      if (GetIsCalculatingSignificantRatios() && giNumSimsExecuted >= 99)
+      if (giNumSimsExecuted >= 99)
         fprintf(fp,"... 0.01: %f\n", gpSignificantRatios->GetAlpha01());
-      if (GetIsCalculatingSignificantRatios() && giNumSimsExecuted >= 19)
+      if (giNumSimsExecuted >= 19)
         fprintf(fp,"... 0.05: %f\n", gpSignificantRatios->GetAlpha05());
       fprintf(fp, "\n");
     }
