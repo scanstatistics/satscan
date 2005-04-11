@@ -54,11 +54,14 @@ double OrdinalLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_t 
   return 0;
 }
 
+/** Calculates loglikelihood ratio for ordinal data of data set 'tSetIndex', defined in vOrdinalCases.
+    When scannnig for high and low rates, returns the maximum of low and high ratios. Returns zero if
+    llr can not be calculated. */
 double OrdinalLikelihoodCalculator::CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) const {
-  double lowLL=0, LL=0, dRatio=0;
+  double lowLL=0, LL=0;
   bool   bLoglikelihoodCalculated=false;
 
-  if (gbScanHighRates && CalculatePandQs(vOrdinalCases, gvDataSetTotalCasesPerCategory[tSetIndex], &OrdinalLikelihoodCalculator::CompareRatioForHighScanningArea)) {
+  if (gbScanHighRates && CalculateLoglikelihoodInsideAndOutside(vOrdinalCases, gvDataSetTotalCasesPerCategory[tSetIndex], &OrdinalLikelihoodCalculator::CompareRatioForHighScanningArea)) {
     // calculate loglikelihood
     for (size_t k=0; k < vOrdinalCases.size(); ++k) {
       // Formula is: LL += vOrdinalCases[k] * log(gvP[k]) + (vOrdinalTotalCases[k] - vOrdinalCases[k]) * log(gvQ[k]),
@@ -70,7 +73,7 @@ double OrdinalLikelihoodCalculator::CalcLogLikelihoodRatioOrdinal(const std::vec
     }
     bLoglikelihoodCalculated = true;
   }
-  if (gbScanLowRates && CalculatePandQs(vOrdinalCases, gvDataSetTotalCasesPerCategory[tSetIndex], &OrdinalLikelihoodCalculator::CompareRatioForLowScanningArea)) {
+  if (gbScanLowRates && CalculateLoglikelihoodInsideAndOutside(vOrdinalCases, gvDataSetTotalCasesPerCategory[tSetIndex], &OrdinalLikelihoodCalculator::CompareRatioForLowScanningArea)) {
     // calculate loglikelihood
     for (size_t k=0; k < vOrdinalCases.size(); ++k) {
       // Formula is: LL += vOrdinalCases[k] * log(gvP[k]) + (vOrdinalTotalCases[k] - vOrdinalCases[k]) * log(gvQ[k]),
@@ -88,14 +91,60 @@ double OrdinalLikelihoodCalculator::CalcLogLikelihoodRatioOrdinal(const std::vec
   return (bLoglikelihoodCalculated ? LL - gvDataSetLogLikelihoodUnderNull[tSetIndex] : 0);
 }
 
+/** Calculates loglikelihood ratio for ordinal data of data set 'tSetIndex', defined in vOrdinalCases;
+    scannnig for high rates. Returns zero if llr can not be calculated. */
+double OrdinalLikelihoodCalculator::CalcLogLikelihoodRatioOrdinalHighRate(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) const {
+  double LL=0;
+
+  if (CalculateLoglikelihoodInsideAndOutside(vOrdinalCases, gvDataSetTotalCasesPerCategory[tSetIndex], &OrdinalLikelihoodCalculator::CompareRatioForHighScanningArea)) {
+    // calculate loglikelihood
+    for (size_t k=0; k < vOrdinalCases.size(); ++k) {
+      // Formula is: LL += vOrdinalCases[k] * log(gvP[k]) + (vOrdinalTotalCases[k] - vOrdinalCases[k]) * log(gvQ[k]),
+      // but gvP[k] or gvQ[k] could be zero. So add to loglikelihood in parts, after check for zero.
+      if (gvP[k])
+        LL += vOrdinalCases[k] * log(gvP[k]);
+      if (gvQ[k])
+        LL += (gvDataSetTotalCasesPerCategory[tSetIndex][k] - vOrdinalCases[k]) * log(gvQ[k]);
+    }
+    // return calculated loglikelihood ratio
+    return LL - gvDataSetLogLikelihoodUnderNull[tSetIndex];
+  }
+  // return zero - default if not calculated
+  return 0;  
+}
+
+/** Calculates loglikelihood ratio for ordinal data of data set 'tSetIndex', defined in vOrdinalCases;
+    scannnig for low rates. Returns zero if llr can not be calculated. */
+double OrdinalLikelihoodCalculator::CalcLogLikelihoodRatioOrdinalLowRate(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) const {
+  double LL=0;
+
+  if (CalculateLoglikelihoodInsideAndOutside(vOrdinalCases, gvDataSetTotalCasesPerCategory[tSetIndex], &OrdinalLikelihoodCalculator::CompareRatioForLowScanningArea)) {
+    // calculate loglikelihood
+    for (size_t k=0; k < vOrdinalCases.size(); ++k) {
+      // Formula is: LL += vOrdinalCases[k] * log(gvP[k]) + (vOrdinalTotalCases[k] - vOrdinalCases[k]) * log(gvQ[k]),
+      // but gvP[k] or gvQ[k] could be zero. So add to loglikelihood in parts, after check for zero.
+      if (gvP[k])
+        LL += vOrdinalCases[k] * log(gvP[k]);
+      if (gvQ[k])
+        LL += (gvDataSetTotalCasesPerCategory[tSetIndex][k] - vOrdinalCases[k]) * log(gvQ[k]);
+    }
+    // return calculated loglikelihood ratio
+    return LL - gvDataSetLogLikelihoodUnderNull[tSetIndex];
+  }
+  // return zero - default if not calculated
+  return 0;  
+}
+
 /** returns log likelihood for total  - not implemented - throws exception */
 double OrdinalLikelihoodCalculator::GetLogLikelihoodForTotal() const {
   ZdGenerateException("GetLogLikelihoodForTotal() not implementated.","OrdinalLikelihoodCalculator");
   return 0;
 }
 
-/** Calculates Ps and Qs. Returns indication of whether values could be calculated. */
-bool OrdinalLikelihoodCalculator::CalculatePandQs(const std::vector<count_t>& vOrdinalCases, const std::vector<double>& vOrdinalTotalCases, COMPARE_RATIOS_METHOD pCompareMethod) const {
+/** Calculates that a case is inside or outside clustering.
+    pk is the probability that a case inside the window belongs to category k
+    qk is the probability that a case outside the window belongs to category k */
+bool OrdinalLikelihoodCalculator::CalculateLoglikelihoodInsideAndOutside(const std::vector<count_t>& vOrdinalCases, const std::vector<double>& vOrdinalTotalCases, COMPARE_RATIOS_METHOD pCompareMethod) const {
   double       W=0; // total cases inside window
   double       U=0; // total cases outside window
   double       dP, dQ;
@@ -136,16 +185,18 @@ bool OrdinalLikelihoodCalculator::CalculatePandQs(const std::vector<count_t>& vO
      }
   }
 
+// -- bug test -- 
 //  double Sp=0;
 //  for (size_t t=0; t < vOrdinalCases.size(); ++t)
 //     Sp += gvP[t];
 //  if (abs(1 - Sp) > .0001)
-//    ZdGenerateException("%lf difference with Ps.", "CalculatePandQs()", 1 - Sp);
+//    ZdGenerateException("%lf difference with Ps.", "CalculateLoglikelihoodInsideAndOutside()", 1 - Sp);
 // double Sq=0;
 //  for (size_t t=0; t < vOrdinalCases.size(); ++t)
 //     Sq += gvQ[t];
 //  if (abs(1 - Sq) > .0001)
-//    ZdGenerateException("%lf difference with Qs.", "CalculatePandQs()", 1 - Sq);
+//    ZdGenerateException("%lf difference with Qs.", "CalculateLoglikelihoodInsideAndOutside()", 1 - Sq);
+// -- bug test -- 
 
   return true;  
 }
