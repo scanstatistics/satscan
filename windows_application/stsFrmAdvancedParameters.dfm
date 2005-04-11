@@ -1043,6 +1043,23 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = chkAdjustForEarlierAnalysesClick
         end
       end
+      object grpReportCriticalValues: TGroupBox
+        Left = 8
+        Top = 194
+        Width = 421
+        Height = 50
+        Caption = 'Critical Values'
+        TabOrder = 2
+        object chkReportCriticalValues: TCheckBox
+          Left = 12
+          Top = 22
+          Width = 389
+          Height = 17
+          Caption = 'Report critical values for an observed cluster to be significant'
+          TabOrder = 0
+          OnClick = OnControlExit
+        end
+      end
     end
     object tsClustersReported: TTabSheet
       Caption = 'Clusters Reported'

@@ -90,8 +90,8 @@ __published:	// IDE-managed Components
    TEdit *edtProspectiveStartDateDay;
    TCheckBox *chkAdjustForEarlierAnalyses;
    TButton *btnSetDefaults;
-        TTabSheet *tsDataSets;
-        TGroupBox *grpDataSets;
+   TTabSheet *tsDataSets;
+   TGroupBox *grpDataSets;
    TLabel *Label3;
    TLabel *Label1;
    TLabel *Label2;
@@ -100,9 +100,9 @@ __published:	// IDE-managed Components
    TBitBtn *btnPopImport;
    TBitBtn *btnControlImport;
    TBitBtn *btnCaseImport;
-        TListBox *lstInputDataSets;
-        TButton *btnNewDataSet;
-        TButton *btnRemoveDataSet;
+   TListBox *lstInputDataSets;
+   TButton *btnNewDataSet;
+   TButton *btnRemoveDataSet;
    TEdit *edtCaseFileName;
    TEdit *edtControlFileName;
    TEdit *edtPopFileName;
@@ -112,11 +112,13 @@ __published:	// IDE-managed Components
    TBitBtn *btnImportMaxCirclePopFile;
    TBitBtn *btnImportAdjustmentsFile;
    TRadioGroup *rdgSpatialAdjustments;
-        TStaticText *lblMultipleDataSetPurpose;
+   TStaticText *lblMultipleDataSetPurpose;
    TRadioButton *rdoMultivariate;
-        TRadioButton *rdoAdjustmentByDataSets;
+   TRadioButton *rdoAdjustmentByDataSets;
    TCheckBox *chkInclPureTempClust;
    TCheckBox *chkIncludePureSpacClust;
+   TGroupBox *grpReportCriticalValues;
+   TCheckBox *chkReportCriticalValues;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
@@ -166,7 +168,7 @@ __published:	// IDE-managed Components
    void __fastcall edtCaseFileNameChange(TObject *Sender);
    void __fastcall edtControlFileNameChange(TObject *Sender);
    void __fastcall edtPopFileNameChange(TObject *Sender);
-        void __fastcall rdgSpatialAdjustmentsClick(TObject *Sender);
+   void __fastcall rdgSpatialAdjustmentsClick(TObject *Sender);
 
  private:
    const TfrmAnalysis     & gAnalysisSettings;

@@ -1121,6 +1121,7 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
     else
       ref.SetSpatialAdjustmentType(NO_SPATIAL_ADJUSTMENT);
     ref.SetTerminateSimulationsEarly(chkTerminateEarly->Checked);
+    ref.SetReportCriticalValues(chkReportCriticalValues->Checked);
     ref.SetRestrictReportedClusters(chkRestrictReportedClusters->Enabled && chkRestrictReportedClusters->Checked);
     ref.SetMaximumReportedGeographicalClusterSize(atof(edtReportClustersSmallerThan->Text.c_str()));
     if (chkRestrictTemporalRange->Enabled && chkRestrictTemporalRange->Checked)
@@ -1400,6 +1401,7 @@ void TfrmAdvancedParameters::Setup() {
 
       // Inference tab
       chkTerminateEarly->Checked = ref.GetTerminateSimulationsEarly();
+      chkReportCriticalValues->Checked = ref.GetReportCriticalValues();
 
       // Output tab
       chkRestrictReportedClusters->Checked = ref.GetRestrictingMaximumReportedGeoClusterSize();
