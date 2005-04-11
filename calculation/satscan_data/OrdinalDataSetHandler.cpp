@@ -6,6 +6,7 @@
 #include "OrdinalDataSetHandler.h"
 
 const size_t OrdinalDataSetHandler::gtMinimumCategories        = 3;
+const count_t OrdinalDataSetHandler::gtMinimumCases            = 4;
 
 /** constructor */
 OrdinalDataSetHandler::OrdinalDataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
@@ -283,10 +284,12 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
         bReadSuccessful = false;
       }
     }
-    //else if (data set does not contain minimum number of cases either in total or in each category) {
-    //  gPrint.SatScanPrintWarning("Error: \n");
-    //  bReadSuccessful = false;
-    //}
+    //validate that data set contains at least minimum number of cases
+    else if (tTotalCases < gtMinimumCases) {
+      gPrint.SatScanPrintWarning("Error: Data set contains %i cases but a minimum of %i cases is required for ordinal data.\n",
+                                 tTotalCases, gtMinimumCases);
+      bReadSuccessful = false;
+    }
     //record total cases and total population to data set object
     else {
       DataSet.SetTotalCases(tTotalCases);

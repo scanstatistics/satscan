@@ -8,6 +8,7 @@
 class OrdinalDataSetHandler : public DataSetHandler {
   protected:
     static const size_t                 gtMinimumCategories;
+    static const count_t                gtMinimumCases;
 
     virtual void                        AllocateCaseStructures(size_t tSetIndex);
     virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid,
