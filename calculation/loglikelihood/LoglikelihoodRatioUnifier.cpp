@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "LoglikelihoodRatioUnifier.h"
 #include "LikelihoodCalculation.h"
+#include "OrdinalLikelihoodCalculation.h"
 
 /** class constructor */
 MultivariateUnifier::MultivariateUnifier(AreaRateType eScanningArea)
@@ -25,8 +26,13 @@ void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
     gdHighRateRatios += Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tTotalCases, tTotalMeasure);
 }
 
+/** Calculates loglikelihood ratio given ordinal data; accumulating like high
+    and low rate separately. */
 void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) {
-  gdLowRateRatios += Calculator.CalcLogLikelihoodRatioOrdinal(vOrdinalCases, tSetIndex);
+  if (gbScanLowRates)
+    gdLowRateRatios += ((OrdinalLikelihoodCalculator&)Calculator).CalcLogLikelihoodRatioOrdinalLowRate(vOrdinalCases, tSetIndex);
+  if (gbScanHighRates)
+    gdHighRateRatios += ((OrdinalLikelihoodCalculator&)Calculator).CalcLogLikelihoodRatioOrdinalHighRate(vOrdinalCases, tSetIndex);
 }
 
 /** Returns the largest calculated loglikelihood ratio by comparing summed ratios
@@ -63,7 +69,8 @@ void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
 }
 
 void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) {
-    gdRatio += Calculator.CalcLogLikelihoodRatioOrdinal(vOrdinalCases, tSetIndex);
+  ZdGenerateException("AdjoinRatio() not implementated yet for Adjustment option!","AdjustmentUnifier");
+  //gdRatio += Calculator.CalcLogLikelihoodRatioOrdinal(vOrdinalCases, tSetIndex);
 }
 
 /** Returns calculated loglikelihood ratio that is the sum of adjoined values.
