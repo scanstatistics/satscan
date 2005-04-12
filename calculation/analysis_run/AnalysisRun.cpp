@@ -217,7 +217,7 @@ void AnalysisRunner::DisplayTopCluster() {
       if (gParameters.GetOutputAreaSpecificFiles())
         ClusterLocationWriter.reset(new LocationInformationWriter(gParameters, gParameters.GetNumReplicationsRequested() < 99));
       //only report clutser if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
-      if (TopCluster.m_nRatio > gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank()  <= giNumSimsExecuted)) {
+      if (TopCluster.m_nRatio >= gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank()  <= giNumSimsExecuted)) {
         ++giClustersReported;
         switch(giAnalysisCount) {
           case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
@@ -268,7 +268,7 @@ void AnalysisRunner::DisplayTopClusters() {
        if (i==1)
          ReportTimeEstimate(lStartTime, tNumClustersToDisplay, i, &gPrintDirection);
        //only report clutser if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
-       if (TopCluster.m_nRatio > gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank()  <= giNumSimsExecuted)) {
+       if (TopCluster.m_nRatio >= gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank()  <= giNumSimsExecuted)) {
          ++giClustersReported;
          switch (giClustersReported) {
            case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
@@ -368,39 +368,50 @@ void AnalysisRunner::Execute() {
     - if the number of simulations are less 98, reported that the reported
       clusters intentially do not contain p-values */
 void AnalysisRunner::FinalizeReport() {
-  FILE        * fp=0;
-  time_t        CompletionTime;
-  double        nTotalTime,  nSeconds,  nMinutes,  nHours;
-  char        * szHours = "hours";
-  char        * szMinutes = "minutes";
-  char        * szSeconds = "seconds";
+  FILE              * fp=0;
+  time_t              CompletionTime;
+  double              nTotalTime,  nSeconds,  nMinutes,  nHours;
+  const char        * szHours = "hours";
+  const char        * szMinutes = "minutes";
+  const char        * szSeconds = "seconds";
+  AsciiPrintFormat    PrintFormat;
+  ZdString            sBuffer;
 
   try {
     gPrintDirection.SatScanPrintf("Printing analysis settings to the results file...\n");
     OpenReportFile(fp, true);
+    PrintFormat.SetMarginsAsOverviewSection();
+    //if zero clusters retained in real data, then no clusters of significance were retained.  
     if (gTopClustersContainer.GetNumClustersRetained() == 0) {
       fprintf(fp, "\nNo clusters were found.\n");
       if (gParameters.GetAreaScanRateType() == HIGH)
-        fprintf(fp, "All areas scanned had equal or fewer cases than expected.\n");
+        sBuffer = "All areas scanned had either only one case or equal or fewer cases than expected.";
       else if (gParameters.GetAreaScanRateType() == LOW)
-        fprintf(fp, "All areas scanned had equal or greater cases than expected.\n");
+        sBuffer = "All areas scanned had either only one case or equal or greater cases than expected.";
       else
-        fprintf(fp, "All areas scanned had cases equal to expected.\n");
+        sBuffer = "All areas scanned had either only one case or cases equal to expected.";
+      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);  
     }
     else if (giClustersReported == 0) {
       fprintf(fp, "\nNo clusters reported.\n");
-      fprintf(fp, "All clusters had a ratio less than %lf or\n"
-                  "a rank greater than %i.\n", gdMinRatioToReport, gParameters.GetNumReplicationsRequested());
+      if (gTopClustersContainer.GetTopRankedCluster().GetRatio() < gdMinRatioToReport)
+        sBuffer.printf("All clusters had a ratio less than %g.\n", gdMinRatioToReport);
+      else
+        sBuffer.printf("All clusters had a rank greater than %i.\n", gParameters.GetNumReplicationsRequested());
+      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);  
     }
     else if (gParameters.GetNumReplicationsRequested() == 0) {
-      fprintf(fp, "\nNote: As the number of Monte Carlo replications was set to\n");
-      fprintf(fp, "zero, no hypothesis testing was done and no p-values were\n");
-      fprintf(fp, "printed.\n");
+      fprintf(fp, "\n");
+      sBuffer = "Note: As the number of Monte Carlo replications was set to "
+                "zero, no hypothesis testing was done and no p-values were printed.";
+      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
     }
     else if (gParameters.GetNumReplicationsRequested() <= 98) {
-      fprintf(fp, "\nNote: The number of Monte Carlo replications was set too low,\n");
-      fprintf(fp, "and a meaningful hypothesis test cannot be done.  Consequently,\n");
-      fprintf(fp, "no p-values were printed.\n");
+      fprintf(fp, "\n");
+      sBuffer = "Note: The number of Monte Carlo replications was set too low, "
+                "and a meaningful hypothesis test cannot be done. Consequently, "
+                "no p-values were printed.";
+      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
     }
 
     if (gParameters.GetProbabilityModelType() == POISSON)
@@ -819,7 +830,6 @@ void AnalysisRunner::UpdateReport() {
         fprintf(fp,"... 0.01: %f\n", gpSignificantRatios->GetAlpha01());
       if (giNumSimsExecuted >= 19)
         fprintf(fp,"... 0.05: %f\n", gpSignificantRatios->GetAlpha05());
-      fprintf(fp, "\n");
     }
     if (gParameters.GetIsPowerCalculated()) {
       sBuffer = "Percentage of Monte Carlo replications with a likelihood greater than";
