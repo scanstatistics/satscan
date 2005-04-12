@@ -844,6 +844,7 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
 
    // Inference tab
    bReturn &= (chkAdjustForEarlierAnalyses->Checked == false);
+   bReturn &= (chkReportCriticalValues->Checked == false);
    bReturn &= (chkTerminateEarly->Checked == false);
    bReturn &= (edtProspectiveStartDateYear->Text.ToInt() == 1900 || edtProspectiveStartDateYear->Text.ToInt() == 2000);
    bReturn &= (edtProspectiveStartDateMonth->Text.ToInt() == 12);
@@ -1176,6 +1177,7 @@ void TfrmAdvancedParameters::SetDefaultsForAnalysisTabs() {
    edtProspectiveStartDateYear->Text = "2000";
    edtProspectiveStartDateMonth->Text = "12";
    edtProspectiveStartDateDay->Text = "31";
+   chkReportCriticalValues->Checked = false;
 
    // Spatial Window tab
    SetMaxSpatialClusterSizeTypeControl(PERCENTOFPOPULATIONTYPE);
