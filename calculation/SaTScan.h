@@ -42,14 +42,14 @@
  This file contains header information for all SaTScan program files
  **********************************************************************/
 /** Current version information. */
-#define VERSION_ID      "8"  /** incremental version identifier - this value must
+#define VERSION_ID      "9"  /** incremental version identifier - this value must
                                  be incremented for each released version in order
                                  for update feature to function correctly */
 #define VERSION_MAJOR   "5"
 #define VERSION_MINOR   "1"
-#define VERSION_RELEASE "2"
+#define VERSION_RELEASE "3"
 #define VERSION_PHASE   "" /** testing phase name - leave blank for release */
-#define VERSION_DATE    "March 24, 2005"
+#define VERSION_DATE    "April 18, 2005"
 /** New defines for ellipsoid calculations. */
 #define MAXELLIPSESHAPES 10
 /** PI declaration - this is now defined in math.h but changing may cause
