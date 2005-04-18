@@ -11,6 +11,8 @@ CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * 
                       :CCluster() {
   try {
     gpClusterData = pClusterFactory->GetNewSpatialClusterData(DataGateway, iRate);
+    //for a purely spatial cluster, the last time interval is the last time calculated interval index
+    m_nLastInterval = DataGateway.GetDataStreamInterface(0).GetNumTimIntervals();
   }
   catch (ZdException &x) {
     delete gpClusterData;
@@ -26,6 +28,8 @@ CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * 
                       :CCluster() {
   try {
     gpClusterData = pClusterFactory->GetNewSpatialClusterData(Interface, iRate);
+    //for a purely spatial cluster, the last time interval is the last time calculated interval index
+    m_nLastInterval = Interface.GetNumTimIntervals();
   }
   catch (ZdException &x) {
     delete gpClusterData;
@@ -127,7 +131,7 @@ void CPurelySpatialCluster::Initialize(tract_t nCenter) {
   m_Center = nCenter;
   m_nTracts = 0;
   m_nRatio = 0;
-  m_nLastInterval = 1;
+//  m_nLastInterval = 1;
   gpClusterData->InitializeData();
 }
 
