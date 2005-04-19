@@ -35,9 +35,9 @@ class CCluster {
     virtual CCluster            * Clone() const = 0;
     CCluster                    & operator=(const CCluster& rhs);
     //pure virtual functions
-    virtual AbstractClusterData * GetClusterData() = 0;
+    virtual AbstractClusterData       * GetClusterData() = 0;
     virtual const AbstractClusterData * GetClusterData() const = 0;
-    virtual ClusterType           GetClusterType() const = 0;
+    virtual ClusterType                 GetClusterType() const = 0;
     //public data members - speed considerations
     double                        m_nRatio;             // Likelihood ratio
     int                           m_nFirstInterval;     // Index # of first time interval
@@ -52,6 +52,8 @@ class CCluster {
     virtual void                  DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     void                          DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& Data, tract_t nFirstTract,
                                                             tract_t nLastTract, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataHub,
+                                                                const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub,
                                                             const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
@@ -66,10 +68,8 @@ class CCluster {
     virtual void                  DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigned int iNumSimulations,
                                                         const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayPopulation(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
-    virtual void                  DisplayPopulationOrdinal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat, const RealDataSet& DataSet) const;
     virtual void                  DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
-    virtual void                  DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataHub,
-                                                      const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayObservedDivExpected(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplaySteps(FILE* fp, const AsciiPrintFormat& PrintFormat) const {/*stub - no action*/}
     virtual void                  DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintFormat) const {/*stub - no action*/}
