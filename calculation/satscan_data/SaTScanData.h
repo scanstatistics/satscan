@@ -28,7 +28,7 @@ class CSaTScanData {
     BasePrint                                 & gPrint;
     const CParameters                         & gParameters;
     CModel                                    * m_pModel;
-    DataSetHandler                           * gpDataSets;
+    DataSetHandler                            * gpDataSets;
 
     GInfo                                       gCentroidsHandler;
     TractHandler                                gTractHandler;
@@ -43,10 +43,10 @@ class CSaTScanData {
     const Julian                                m_nStartDate;
     const Julian                                m_nEndDate;                     /* study period start/end dates */
     std::vector<Julian>                         gvTimeIntervalStartTimes;       /* time interval start times */
-    std::vector<measure_t>                      gvCircleMeasure;
+    std::vector<measure_t>                      gvMaxCirclePopulation;          /* population by locations */
     tract_t                                     m_nTracts;
     measure_t                                   m_nTotalTractsAtStart;
-    measure_t                                   m_nTotalMaxCirclePopulation;    /** total population as defined in max circle population file */
+    measure_t                                   m_nTotalMaxCirclePopulation;    /** total population as defined in gvMaxCirclePopulation */
     measure_t                                   gtTotalMeasure;                 /** total measure for all data sets */
     count_t                                     gtTotalCases;                   /** total cases for all data sets */
     measure_t                                   gtTotalPopulation;              /** total population for all sets */
@@ -115,8 +115,8 @@ class CSaTScanData {
     int                                         GetFlexibleWindowStartRangeStartIndex() const {return m_nFlexibleWindowStartRangeStartIndex;}
     inline const GInfo                        * GetGInfo() const { return &gCentroidsHandler;}
     bool                                        GetIsNullifiedLocation(tract_t tLocationIndex) const;
+    const std::vector<measure_t>              & GetMaxCirclePopulationArray() const {return gvMaxCirclePopulation;}
     double                                      GetMaxCircleSize() const {return m_nMaxCircleSize;}
-    const std::vector<measure_t>              & GetPopulationArray() const {return gvCircleMeasure;}
     double                                      GetMaxReportedCircleSize() const {return m_nMaxReportedCircleSize;}
     double                                      GetMeasureAdjustment(size_t iSetIndex) const;
     inline virtual tract_t                      GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
@@ -141,6 +141,7 @@ class CSaTScanData {
     bool                                        ReadBernoulliData();
     bool                                        ReadCoordinatesFile();
     virtual void                                ReadDataFromFiles();
+    bool                                        ReadExponentialData();
     bool                                        ReadGridFile();
     bool                                        ReadMaxCirclePopulationFile();
     bool                                        ReadNormalData();
@@ -148,7 +149,6 @@ class CSaTScanData {
     bool                                        ReadPoissonData();
     bool                                        ReadRankData();
     bool                                        ReadSpaceTimePermutationData();
-    bool                                        ReadExponentialData();
     void                                        RemoveTractSignificance(tract_t tTractIndex);
     void                                        SetMaxCircleSize();
     virtual void                                ValidateObservedToExpectedCases(count_t ** ppCumulativeCases, measure_t ** ppNonCumulativeMeasure) const;

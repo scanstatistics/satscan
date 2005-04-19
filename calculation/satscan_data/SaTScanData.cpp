@@ -408,11 +408,6 @@ double CSaTScanData::GetMeasureAdjustment(size_t tSetIndex) const {
     double dTotalPopulation = gpDataSets->GetDataSet(tSetIndex).GetTotalPopulation();
     return dTotalCases / dTotalPopulation;
   }
-//  else if (gParameters.GetProbabilityModelType() == ORDINAL) {
-//    double dTotalCases = gpDataSets->GetDataSet(tSetIndex).GetTotalCases();
-//    double dTotalPopulation = gpDataSets->GetDataSet(tSetIndex).GetTotalPopulation();
-//    return dTotalCases / dTotalPopulation;
-//  }
   else
     return 1.0;
 }
@@ -540,6 +535,29 @@ void CSaTScanData::ReadDataFromFiles() {
   }
 }
 
+/** reads data from input files for a Exponential probability model */
+bool CSaTScanData::ReadExponentialData() {
+  size_t                        t;
+
+  try {
+    if (!ReadCoordinatesFile())
+      return false;
+    gpDataSets = new ExponentialDataSetHandler(*this, gPrint);
+    if (!gpDataSets->ReadData())
+      return false;
+    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+      return false;
+    if (gParameters.UseSpecialGrid() && !ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    delete gpDataSets; gpDataSets=0;
+    x.AddCallpath("ReadExponentialData()","CSaTScanData");
+    throw;
+  }
+  return true;
+}
+
 /** reads data from input files for a normal probability model */
 bool CSaTScanData::ReadNormalData() {
   size_t        t;
@@ -659,29 +677,6 @@ bool CSaTScanData::ReadSpaceTimePermutationData() {
   return true;
 }
 
-/** reads data from input files for a Exponential probability model */
-bool CSaTScanData::ReadExponentialData() {
-  size_t        t;
-
-  try {
-    if (!ReadCoordinatesFile())
-      return false;
-    gpDataSets = new ExponentialDataSetHandler(*this, gPrint);
-    if (!gpDataSets->ReadData())
-      return false;
-    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
-        return false;
-    if (gParameters.UseSpecialGrid() && !ReadGridFile())
-      return false;
-  }
-  catch (ZdException &x) {
-    delete gpDataSets; gpDataSets=0;
-    x.AddCallpath("ReadExponentialData()","CSaTScanData");
-    throw;
-  }
-  return true;
-}
-
 /** For tract at tTractIndex - zeros case, control, and population data from data
     set structures. This function is utilized by the optional sequential scan
     feature and is designed only for purely spatial analyses at this time.*/
@@ -730,21 +725,23 @@ void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
            for (size_t t=0; t < DataSet.GetCasesByCategory().size(); ++t) {
               tTotalCases -= DataSet.GetCategoryCaseArray(t)[0][tTractIndex];
               //$$ NOTE: Depending on what information is to be printed for results, it might be
-              //$$       necessary to store the initial number of category cases separately.  
+              //$$       necessary to store the initial number of category cases separately.
               thisPopulation.RemoveOrdinalCategoryCases(t, DataSet.GetCategoryCaseArray(t)[0][tTractIndex]);
               DataSet.GetCategoryCaseArray(t)[0][tTractIndex] = 0;
            }
            DataSet.SetTotalCases(tTotalCases);
            break;
-          default :
+         case EXPONENTIAL :
+           // removes cases from case array, measure array and from randomizers (if not file source) -- not implemented yet(on hold)
+         default :
            ZdGenerateException("Unknown probability model type '%d'.", "RemoveTractSignificance()", gParameters.GetProbabilityModelType());
        };
     }
 
     // Remove location population data as specified in maximum circle population file
-    if (gvCircleMeasure.size()) {
-       m_nTotalMaxCirclePopulation -= gvCircleMeasure[tTractIndex];
-       gvCircleMeasure[tTractIndex] = 0;
+    if (gvMaxCirclePopulation.size()) {
+       m_nTotalMaxCirclePopulation -= gvMaxCirclePopulation[tTractIndex];
+       gvMaxCirclePopulation[tTractIndex] = 0;
     }
     // Add location to collection of nullified locations - note that we're just removing locations' data, not the location.
     gvNullifiedLocations.push_back(tTractIndex);
@@ -848,6 +845,8 @@ void CSaTScanData::SetMaxCircleSize() {
            //      the maximum circle size; at least for the time being.
            if (gParameters.GetProbabilityModelType() == ORDINAL)
              tTotalPopulation = gpDataSets->GetDataSet(0).GetTotalCases();
+           else if (gParameters.GetProbabilityModelType() == EXPONENTIAL)
+             tTotalPopulation = gpDataSets->GetDataSet(0).GetTotalPopulation();
            else
              tTotalPopulation = gpDataSets->GetDataSet(0).GetTotalMeasure();
 
