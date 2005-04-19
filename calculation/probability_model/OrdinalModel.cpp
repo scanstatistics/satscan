@@ -22,23 +22,46 @@ double OrdinalModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, co
   double                dPopulation=0;
   tract_t               tNeighborIndex;
 
-  const PopulationData& Population = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPopulationData();
+  try {
+    const PopulationData& Population = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPopulationData();
 
-  if (DataHub.GetParameters().GetIsPurelyTemporalAnalysis()) {
-    for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
-       count_t * pCases = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPTCategoryCasesArray()[t];
-       dPopulation += pCases[Cluster.m_nFirstInterval] - pCases[Cluster.m_nLastInterval];
+    switch (Cluster.GetClusterType()) {
+     case PURELYTEMPORALCLUSTER            :
+        for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
+          count_t * pCases = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPTCategoryCasesArray()[t];
+          dPopulation += pCases[Cluster.m_nFirstInterval] - pCases[Cluster.m_nLastInterval];
+        }
+        break;
+     case PURELYSPATIALCLUSTER             :
+        for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
+          count_t ** ppCases = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetCategoryCaseArray(t);
+          for (int j=1; j <= Cluster.GetNumTractsInnerCircle(); ++j) {
+             tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), j);
+             dPopulation += ppCases[0][tNeighborIndex];
+          }
+        }
+        break;
+     case SPACETIMECLUSTER                 :
+        for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
+          count_t ** ppCases = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetCategoryCaseArray(t);
+          for (int j=1; j <= Cluster.GetNumTractsInnerCircle(); ++j) {
+             tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), j);
+             dPopulation += ppCases[Cluster.m_nFirstInterval][tNeighborIndex] - ppCases[Cluster.m_nLastInterval][tNeighborIndex];
+          }
+        }
+        break;
+     case PURELYSPATIALMONOTONECLUSTER     :
+     case SPATIALVARTEMPTRENDCLUSTER       :
+     case PURELYSPATIALPROSPECTIVECLUSTER  :
+     default                               :
+       ZdException::GenerateNotification("Unknown cluster type '%d'.","GetPopulation()", Cluster.GetClusterType());
     }
   }
-  else {
-    for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
-       count_t ** ppCases = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetCategoryCaseArray(t);
-       for (int j=1; j <= Cluster.GetNumTractsInnerCircle(); ++j) {
-          tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), j);
-          dPopulation += ppCases[Cluster.m_nFirstInterval][tNeighborIndex] - ppCases[Cluster.m_nLastInterval][tNeighborIndex];
-       }
-    }
+  catch (ZdException &x) {
+    x.AddCallpath("GetPopulation()","OrdinalModel");
+    throw;
   }
+  
   return dPopulation;
 }
 
