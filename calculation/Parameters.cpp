@@ -2143,6 +2143,10 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Ordinal probablility model does not permit isotonic purely spatial analyses.\n");
       }
+      if (geProbabilityModelType == EXPONENTIAL && geRiskFunctionType == MONOTONERISK) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Exponential probablility model does not permit isotonic purely spatial analyses.\n");
+      }
       if (geProbabilityModelType == NORMAL && GetNumDataSets() > 1) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Multiple data sets are not permitted with the normal probablility model\n");
@@ -2430,6 +2434,11 @@ bool CParameters::ValidateSimulationDataParameters(BasePrint & PrintDirection) {
         }
         break;
       case FILESOURCE       :
+        if (geProbabilityModelType == EXPONENTIAL) {
+          bValid = false;
+          PrintDirection.SatScanPrintWarning("Error: The feature to read simulated data from a file is not implemented for\n"
+                                             "       the exponential probability model.\n");
+        }
         if (GetNumDataSets() > 1){
           bValid = false;
           PrintDirection.SatScanPrintWarning("Error: The feature to read simulated data from a file is not implemented for analyses\n"
@@ -2474,7 +2483,7 @@ bool CParameters::ValidateSequentialScanParameters(BasePrint & PrintDirection) {
       }
       if (!(geProbabilityModelType == POISSON || geProbabilityModelType == BERNOULLI || geProbabilityModelType == ORDINAL)) {
         //code only implemented for Poisson or Bernoulli models
-        PrintDirection.SatScanPrintWarning("Error: The sequential scan feature is only implemented for Poisson, Bernoulli and Ordinal models only.\n");
+        PrintDirection.SatScanPrintWarning("Error: The sequential scan feature is implemented for Poisson, Bernoulli and Ordinal models only.\n");
         return false;
       }
       if (giNumSequentialRuns > MAXIMUM_SEQUENTIAL_ANALYSES) {
