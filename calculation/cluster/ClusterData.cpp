@@ -482,7 +482,7 @@ void SpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSet
 /** internal setup function */
 void SpaceTimeData::Setup(const DataSetInterface& Interface) {
   try {
-    giAllocationSize = Interface.GetNumTimIntervals() + 1; 
+    giAllocationSize = Interface.GetNumTimeIntervals() + 1; 
     gtTotalCases = Interface.GetTotalCasesCount();
     gtTotalMeasure = Interface.GetTotalMeasureCount();
     gpCases = new count_t[giAllocationSize];

@@ -373,7 +373,7 @@ void CategoricalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const Abt
 /** internal setup function */
 void CategoricalSpaceTimeData::Setup(const DataSetInterface& Interface) {
   try {
-    gpCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(Interface.GetNumOrdinalCategories(), Interface.GetNumTimIntervals() + 1, 0);
+    gpCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(Interface.GetNumOrdinalCategories(), Interface.GetNumTimeIntervals() + 1, 0);
     gppCategoryCases = gpCategoryCasesHandler->GetArray();
   }
   catch (ZdException &x) {

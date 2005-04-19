@@ -384,7 +384,7 @@ void NormalSpaceTimeData::InitializeData() {
 /** internal setup function */
 void NormalSpaceTimeData::Setup(const DataSetInterface& Interface) {
   try {
-    giAllocationSize = Interface.GetNumTimIntervals() + 1; 
+    giAllocationSize = Interface.GetNumTimeIntervals() + 1; 
     gtTotalCases = Interface.GetTotalCasesCount();
     gtTotalMeasure = Interface.GetTotalMeasureCount();
     gpCases = new count_t[giAllocationSize];

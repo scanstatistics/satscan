@@ -54,7 +54,7 @@ class DataSetInterface {
     inline measure_t                  ** GetMeasureArray() const {return gppMeasureArray;}
     inline measure_t                  ** GetNCMeasureArray() const {return gppNCMeasureArray;}
     unsigned int                         GetNumOrdinalCategories() const {return giNumOrdinalCategories;}
-    unsigned int                         GetNumTimIntervals() const {return giNumTimeIntervals;}
+    unsigned int                         GetNumTimeIntervals() const {return giNumTimeIntervals;}
     inline measure_t                   * GetPSMeasureArray() const {return gpPSMeasureArray;}
     inline measure_t                   * GetPTMeasureArray() const {return gpPTMeasureArray;}
     inline measure_t                  ** GetSqMeasureArray() const {return gppSqMeasureArray;}
