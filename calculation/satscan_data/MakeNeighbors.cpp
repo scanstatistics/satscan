@@ -4,6 +4,7 @@
 //*****************************************************************************
 #include "MakeNeighbors.h"
 #include "SaTScanData.h"
+#include "ExponentialRandomizer.h"
 
 /** Comparison function for LocationDistance objects. */
 bool CompareLocationDistance::operator() (const LocationDistance& lhs, const LocationDistance& rhs) {
@@ -275,13 +276,14 @@ CentroidNeighborCalculatorByPopulation::CentroidNeighborCalculatorByPopulation(C
   int           j;
 
   if (gDataHub.GetParameters().GetMaxGeographicClusterSizeType() == PERCENTOFPOPULATIONFILETYPE)
-    gpLocationsPopulation = const_cast<measure_t*>((&gDataHub.GetPopulationArray()[0]));
+    gpLocationsPopulation = const_cast<measure_t*>((&gDataHub.GetMaxCirclePopulationArray()[0]));
   else if (gDataHub.GetParameters().GetProbabilityModelType() == ORDINAL) {
-    //For the Ordinal and Exponential models, populations for each location is calculated by adding up the
+    //For the Ordinal model, populations for each location is calculated by adding up the
     //total individuals represented in the catgory case arrays.
     gvCalculatedPopulations.resize(gDataHub.GetNumTracts(), 0);
-    for (unsigned int k=0; k < gDataHub.GetDataSetHandler().GetDataSet(0).GetCasesByCategory().size(); ++k) {
-       ppCases = gDataHub.GetDataSetHandler().GetDataSet(0).GetCasesByCategory()[k]->GetArray();
+    //Population is calculated from first data set - even when multiple data sets are defined.
+    for (unsigned int k=0; k < gDataHub.GetDataSetHandler().GetDataSet().GetCasesByCategory().size(); ++k) {
+       ppCases = gDataHub.GetDataSetHandler().GetDataSet().GetCasesByCategory()[k]->GetArray();
        for (j=0; j < gDataHub.GetNumTracts(); ++j)
           gvCalculatedPopulations[j] += ppCases[0][j];
     }
@@ -289,10 +291,15 @@ CentroidNeighborCalculatorByPopulation::CentroidNeighborCalculatorByPopulation(C
     gpLocationsPopulation = &gvCalculatedPopulations[0];
   }
   else if (gDataHub.GetParameters().GetProbabilityModelType() == EXPONENTIAL) {
-    ZdGenerateException("Don't know how to get data for Exponential yet.","constructor()");
+    // consider population as cases and non-censored cases
+    gvCalculatedPopulations.assign(gDataHub.GetNumTracts(), 0);
+    //Population is calculated from first data set - even when multiple data sets are defined.
+    ((ExponentialRandomizer*)(gDataHub.GetDataSetHandler().GetRandomizer(0)))->CalculateMaxCirclePopulationArray(gvCalculatedPopulations);
+    gpLocationsPopulation = &gvCalculatedPopulations[0];
   }
   else
-    gpLocationsPopulation = gDataHub.GetDataSetHandler().GetDataSet(0).GetMeasureArray()[0];
+    //Population is calculated from first data set - even when multiple data sets are defined.
+    gpLocationsPopulation = gDataHub.GetDataSetHandler().GetDataSet().GetMeasureArray()[0];
 }
 
 /** destructor */
