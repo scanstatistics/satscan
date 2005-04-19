@@ -56,15 +56,42 @@ void CBernoulliModel::CalculateMeasure(RealDataSet& DataSet) {
 
 /** Returns population as defined in CCluster object. */
 double CBernoulliModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const {
-  double                nPop=0.0;
+  double                dPopulation=0.0;
   count_t               nNeighbor;
-  measure_t          ** ppMeasure(DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray());
+  measure_t           * pPTMeasure, ** ppMeasure;
 
-  for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
-     nNeighbor = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i);
-     nPop += ppMeasure[Cluster.m_nFirstInterval][nNeighbor] - ppMeasure[Cluster.m_nLastInterval][nNeighbor];
+  try {
+    switch (Cluster.GetClusterType()) {
+     case PURELYTEMPORALCLUSTER            :
+          pPTMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPTMeasureArray();
+          dPopulation = pPTMeasure[Cluster.m_nFirstInterval] - pPTMeasure[Cluster.m_nLastInterval];
+        break;
+     case PURELYSPATIALCLUSTER             :
+     case PURELYSPATIALMONOTONECLUSTER     :
+        ppMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray();
+        for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
+          nNeighbor = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i);
+          dPopulation += ppMeasure[0][nNeighbor];
+        }
+        break;
+     case SPACETIMECLUSTER                 :
+        ppMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray();
+        for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
+          nNeighbor = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i);
+          dPopulation += ppMeasure[Cluster.m_nFirstInterval][nNeighbor] - ppMeasure[Cluster.m_nLastInterval][nNeighbor];
+        }
+        break;
+     case SPATIALVARTEMPTRENDCLUSTER       :
+     case PURELYSPATIALPROSPECTIVECLUSTER  :
+     default                               :
+       ZdException::GenerateNotification("Unknown cluster type '%d'.","GetPopulation()", Cluster.GetClusterType());
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetPopulation()","CBernoulliModel");
+    throw;
   }
 
-  return nPop;
+  return dPopulation;
 }
 
