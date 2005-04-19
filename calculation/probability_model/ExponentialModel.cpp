@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "ExponentialModel.h"
 #include "SaTScanData.h"
+#include "cluster.h"
 
 /** constructor */
 ExponentialModel::ExponentialModel() : CModel() {}
@@ -14,9 +15,47 @@ ExponentialModel::~ExponentialModel() {}
 /** TODO: document */
 void ExponentialModel::CalculateMeasure(RealDataSet&) {/* no action here */}
 
-/** Returns population as defined in CCluster object. Not implemeneted yet - throws exception. */
-double ExponentialModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData&) const {
-  ZdGenerateException("GetPopulation() not implementated YET!!!.","ExponentialModel");
-  return 0;
+/** Returns population as defined in CCluster object. */
+double ExponentialModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const {
+  double       dPopulation=0.0;
+  tract_t      tNeighborIndex;
+  count_t   ** ppCases(DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray()),
+            ** ppCensoredCases(DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetCensoredCasesArray());
+
+  try {
+    switch (Cluster.GetClusterType()) {
+     case PURELYTEMPORALCLUSTER            :
+        for (tract_t t=0; t < DataHub.GetNumTracts(); ++t) {
+           dPopulation += ppCases[Cluster.m_nFirstInterval][t] - ppCases[Cluster.m_nLastInterval][t];
+           dPopulation += ppCensoredCases[Cluster.m_nFirstInterval][t] - ppCensoredCases[Cluster.m_nLastInterval][t];
+        }
+        break;
+     case PURELYSPATIALCLUSTER             :
+        for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
+           tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i);
+           dPopulation += ppCases[0][tNeighborIndex];
+           dPopulation += ppCensoredCases[0][tNeighborIndex];
+        }
+        break;
+     case SPACETIMECLUSTER                 :
+        for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
+           tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i);
+           dPopulation += ppCases[Cluster.m_nFirstInterval][tNeighborIndex] - ppCases[Cluster.m_nLastInterval][tNeighborIndex];
+           dPopulation += ppCensoredCases[Cluster.m_nFirstInterval][tNeighborIndex] - ppCensoredCases[Cluster.m_nLastInterval][tNeighborIndex];
+        }
+        break;
+     case PURELYSPATIALMONOTONECLUSTER     :
+     case SPATIALVARTEMPTRENDCLUSTER       :
+     case PURELYSPATIALPROSPECTIVECLUSTER  :
+     default                               :
+       ZdException::GenerateNotification("Unknown cluster type '%d'.","GetPopulation()", Cluster.GetClusterType());
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetPopulation()","ExponentialModel");
+    throw;
+  }
+
+  return dPopulation;
 }
 
