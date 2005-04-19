@@ -47,14 +47,8 @@ void CSpaceTimeData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
                                    unsigned int iSimulationNumber) const {
   try {
     CSaTScanData::RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
-    if (gParameters.GetIncludePurelyTemporalClusters()) {
-      if (gParameters.GetProbabilityModelType() == ORDINAL)
-        for (size_t t=0; t < SimDataContainer.size(); ++t)
-           SimDataContainer[t]->SetPTCategoryCasesArray();
-      else
-        for (size_t t=0; t < SimDataContainer.size(); ++t)
-           SimDataContainer[t]->SetPTCasesArray();
-    }
+    if (gParameters.GetIncludePurelyTemporalClusters())
+      gpDataSets->SetPurelyTemporalSimulationData(SimDataContainer);
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CSpaceTimeData");
