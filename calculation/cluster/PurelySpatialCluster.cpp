@@ -11,21 +11,10 @@ CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * 
                       :CCluster() {
   try {
     gpClusterData = pClusterFactory->GetNewSpatialClusterData(DataGateway, iRate);
-  }
-  catch (ZdException &x) {
-    delete gpClusterData;
-    x.AddCallpath("constructor()","CPurelySpatialCluster");
-    throw;
-  }
-}
-
-/** constructor */
-CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                             const DataSetInterface & Interface,
-                                             int iRate)
-                      :CCluster() {
-  try {
-    gpClusterData = pClusterFactory->GetNewSpatialClusterData(Interface, iRate);
+    //The last time interval for a purely spatial cluster equals the number of
+    //calculated time intervals. This would be 1 for a purely spatial analysis but
+    //for a space-time analysis, the index would be dependent on # of intervals requested.
+    m_nLastInterval = DataGateway.GetDataSetInterface().GetNumTimeIntervals();
   }
   catch (ZdException &x) {
     delete gpClusterData;
@@ -123,32 +112,9 @@ ZdString& CPurelySpatialCluster::GetStartDate(ZdString& sDateString, const CSaTS
 
 /** re-initializes cluster data */
 void CPurelySpatialCluster::Initialize(tract_t nCenter) {
-  //CCluster::Initialize(nCenter);
   m_Center = nCenter;
   m_nTracts = 0;
   m_nRatio = 0;
-  m_nLastInterval = 1;
   gpClusterData->InitializeData();
-}
-
-/** internal setup routine */
-void CPurelySpatialCluster::Setup(const CSaTScanData & Data) {
-  try {
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("Setup()","CPurelySpatialCluster");
-    throw;
-  }
-}
-
-/** internal setup routine for copy constructor */
-void CPurelySpatialCluster::Setup(const CPurelySpatialCluster& rhs) {
-  try {
-    Initialize(0);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("Setup()","CPurelySpatialCluster");
-    throw;
-  }
 }
 

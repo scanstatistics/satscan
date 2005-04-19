@@ -13,12 +13,8 @@ class CPurelySpatialCluster : public CCluster {
   private:
     AbstractSpatialClusterData        * gpClusterData;
 
-    void                                Setup(const CSaTScanData & Data);
-    void                                Setup(const CPurelySpatialCluster& rhs);
-
   public:
     CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway, int iRate);
-    CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory, const DataSetInterface & Interface, int iRate);
     CPurelySpatialCluster(const CPurelySpatialCluster& rhs);
     virtual ~CPurelySpatialCluster();
 
