@@ -619,7 +619,7 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
     }
 
     //initialize circle-measure array
-    gvCircleMeasure.resize(m_nTracts, 0);
+    gvMaxCirclePopulation.resize(m_nTracts, 0);
 
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
     while (Parser.ReadString(fp)) {
@@ -661,7 +661,7 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
            bValid = false;
            continue;
         }
-        gvCircleMeasure[TractIdentifierIndex] += fPopulation;
+        gvMaxCirclePopulation[TractIdentifierIndex] += fPopulation;
         m_nTotalMaxCirclePopulation += fPopulation;
     }
     //close file pointer
