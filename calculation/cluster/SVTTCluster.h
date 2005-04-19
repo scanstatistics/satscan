@@ -80,7 +80,6 @@ class CSVTTCluster : public CCluster  {
     void                        AddNeighbor(tract_t tNeighbor, const DataSetInterface & Interface, size_t tSetIndex);    
     virtual CSVTTCluster      * Clone() const;
     virtual void                DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const;
-    virtual void                DisplayPopulationOrdinal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat, const RealDataSet& DataSet) const {}
     virtual void                DisplayTimeFrame(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {};
     virtual void                DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintFormat) const;
     virtual AbstractClusterData * GetClusterData();
