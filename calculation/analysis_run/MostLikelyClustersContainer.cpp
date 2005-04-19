@@ -273,7 +273,7 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
       return true;
     //this function currently discriminates by geographical orientation only - so candiddate cluster
     //can not be purely temporal 
-    if (CandidateCluster.GetClusterType() == PURELYTEMPORALCLUSTER || CandidateCluster.GetClusterType() == PROSPECTIVEPURELYTEMPORALCLUSTER)
+    if (CandidateCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
       ZdGenerateException("ShouldRetainCandidateCluster() can not be called purely temporal clusters.","ShouldRetainCandidateCluster");
 
     DataHub.GetGInfo()->giRetrieveCoords(CandidateCluster.GetCentroidIndex(), vCandidateCenterCoords);
