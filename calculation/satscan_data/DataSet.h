@@ -120,6 +120,8 @@ class RealDataSet : public DataSet {
     measure_t                   gtTotalMeasureAtStart;                  /** number of expected cases as defined at analysis start */
     TwoDimCountArray_t        * gpControlsHandler;                      /** number of controls stratified with respect to time intervals by tract index
                                                                             - controls are distributed in time intervals cumulatively */
+    TwoDimCountArray_t        * gpCensoredCasesHandler;                 /** number of censored individuals stratified with respect to time intervals by tract index
+                                                                            - cases are distributed in time intervals cumulatively */
     TwoDimMeasureArray_t      * gpPopulationMeasureHandler;             /** expected number of cases in time intervals by population dates */
     double                      gdCalculatedTimeTrendPercentage;        /** calculated time trend percentage used to temporal adjust expected cases*/
 
@@ -127,6 +129,7 @@ class RealDataSet : public DataSet {
     RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iSetIndex);
     virtual ~RealDataSet();
 
+    void                        AllocateCensoredCasesArray();
     void                        AllocateControlsArray();
     measure_t                ** AllocatePopulationMeasureArray();
     count_t                  ** AddOrdinalCategoryCaseCount(double dOrdinalNumber, count_t Count);
@@ -135,6 +138,8 @@ class RealDataSet : public DataSet {
     double                      GetCalculatedTimeTrendPercentage() const {return gdCalculatedTimeTrendPercentage;}
     count_t                  ** GetCategoryCaseArray(unsigned int iCategoryIndex) const;
     count_t                  ** GetCategoryCaseArray(unsigned int iCategoryIndex, bool bCreateable=false);
+    count_t                  ** GetCensoredCasesArray() const;
+    TwoDimCountArray_t        & GetCensoredCasesArrayHandler();
     count_t                  ** GetControlArray() const;
     measure_t                ** GetPopulationMeasureArray() const;
     PopulationData            & GetPopulationData() {return gPopulation;}

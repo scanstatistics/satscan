@@ -576,8 +576,26 @@ RealDataSet::~RealDataSet() {
   try {
     delete gpControlsHandler;
     delete gpPopulationMeasureHandler;
+    delete gpCensoredCasesHandler;
   }
   catch(...){}
+}
+
+/** Creates a two dimensional array for storing censored cases information, stratified
+    by time interval index / location index. Initializes data to zero. If array
+    already exists, only initialization occurs.
+    Note that data in this array will be cumulated with respect to time intervals
+    such that each earlier time interval will include later intervals data. */
+void RealDataSet::AllocateCensoredCasesArray() {
+  try {
+    if (!gpCensoredCasesHandler)
+      gpCensoredCasesHandler = new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals+1, giNumTracts);
+    gpCensoredCasesHandler->Set(0);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("AllocateCensoredCasesArray()","RealDataSet");
+    throw;
+  }
 }
 
 /** Creates a two dimensional array for storing control information, stratified
@@ -669,6 +687,39 @@ count_t ** RealDataSet::GetCategoryCaseArray(unsigned int iCategoryIndex, bool b
   return gvCasesByCategory[iCategoryIndex]->GetArray();
 }
 
+/** Returns reference to object to manages the two dimensional array representing
+    censored case data stratified by time interval index / location index.
+    Throws exception of not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
+TwoDimCountArray_t & RealDataSet::GetCensoredCasesArrayHandler() {
+  try {
+    if (!gpCensoredCasesHandler)
+      ZdGenerateException("Censored case array not allocated.","GetCensoredCasesArrayHandler()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetCensoredCasesArrayHandler()","RealDataSet");
+    throw;
+  }
+  return *gpCensoredCasesHandler;
+}
+
+/** Returns pointer to two dimensional array representing control data stratified
+    by time interval index / location index. Throws exception of not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
+count_t ** RealDataSet::GetCensoredCasesArray() const {
+  try {
+    if (!gpCensoredCasesHandler)
+      ZdGenerateException("Cumulative censored cases array not allocated.","GetCensoredCasesArray()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetCensoredCasesArray()","RealDataSet");
+    throw;
+  }
+  return gpCensoredCasesHandler->GetArray();
+}
+
 /** Returns pointer to two dimensional array representing control data stratified
     by time interval index / location index. Throws exception of not allocated.
     Note that data in this array is cumulated with respect to time intervals
@@ -713,6 +764,7 @@ void RealDataSet::Init() {
   gtTotalMeasureAtStart=0;
   gpPopulationMeasureHandler=0;
   gdCalculatedTimeTrendPercentage=0;
+  gpCensoredCasesHandler=0;
 }
 
 /** Allocates and sets array that stores the total number of cases for each time
