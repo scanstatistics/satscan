@@ -174,8 +174,8 @@ void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, AbstractLike
       SetRatio(Calculator.GetLogLikelihoodForTotal());
       if (Data.GetTotalCases() != m_nCases)
         RemoveRemainder();
-      // Recalc Total Cases, Measure, and Tracts to  account for
-      // outer tracts absorbed into remainder
+      // Recalc Total Cases, Measure, and Tracts to account for
+      // outer tracts absorbed into remainder.
       SetCasesAndMeasures();
       SetTotalTracts();
   }
@@ -278,13 +278,13 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
   }
 }
 
-/** Prints relative risk of cluster to file pointer in ACSII format. */
-void CPSMonotoneCluster::DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+/** Prints observed divided by expected and relative risk of cluster to file pointer in ACSII format. */
+void CPSMonotoneCluster::DisplayObservedDivExpected(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   ZdString      sBuffer, sWork;
   int           i;
 
   try {
-    CCluster::DisplayRelativeRisk(fp, DataHub, PrintFormat);
+    CCluster::DisplayObservedDivExpected(fp, DataHub, PrintFormat);
     if (m_nSteps == 1)
       return;
     PrintFormat.PrintSectionLabel(fp, "Relative risk by step", false, true);
@@ -296,7 +296,7 @@ void CPSMonotoneCluster::DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataH
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   }
   catch (ZdException &x) {
-    x.AddCallpath("DisplayRelativeRisk()","CPSMonotoneCluster");
+    x.AddCallpath("DisplayObservedDivExpected()","CPSMonotoneCluster");
     throw;
   }
 }
