@@ -5,6 +5,8 @@
 #include "SaTScanData.h"
 #include "ExponentialDataSetHandler.h"
 
+const count_t ExponentialDataSetHandler::gtMinimumNotCensoredCases         = 1;
+
 /** constructor */
 ExponentialDataSetHandler::ExponentialDataSetHandler(CSaTScanData& Data, BasePrint& Print)
                           :DataSetHandler(Data, Print) {}
@@ -16,6 +18,7 @@ ExponentialDataSetHandler::~ExponentialDataSetHandler() {}
 void ExponentialDataSetHandler::AllocateCaseStructures(size_t tSetIndex) {
   try {
     gvDataSets[tSetIndex]->AllocateCasesArray();
+    gvDataSets[tSetIndex]->AllocateCensoredCasesArray();
     gvDataSets[tSetIndex]->AllocateMeasureArray();
   }
   catch(ZdException &x) {
@@ -167,9 +170,15 @@ SimulationDataContainer_t& ExponentialDataSetHandler::GetSimulationDataContainer
   return Container;
 }
 
+/** Parses current file record contained in StringParser object in expected
+    parts: location, case count, date, survival time and censored attribute. Returns true if no
+    errors in data were found, else returns false and prints error messages to
+    BasePrint object. */
 bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t& tid,
                                                   count_t& nCount, Julian& nDate,
                                                   measure_t& tContinuosVariable, count_t& tCensored) {
+  int   iContiVariableIndex, iCensoredAttributeIndex;
+
   try {
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
@@ -192,9 +201,9 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
                                  Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
-    if (nCount <= 0) {//validate that count is not negative or exceeds type precision
+    if (nCount < 0) {//validate that count is not negative or exceeds type precision
       if (strstr(Parser.GetWord(1), "-"))
-        gPrint.PrintInputWarning("Error: Case count in record %ld, of the %s, is not greater than zero.\n",
+        gPrint.PrintInputWarning("Error: Case count in record %ld, of the %s, is negative.\n",
                                    Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       else
         gPrint.PrintInputWarning("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
@@ -206,14 +215,15 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
       return false;
 
     // read continuos variable
-    if (!Parser.GetWord(3)) {
+    iContiVariableIndex = gParameters.GetPrecisionOfTimesType() == NONE ? 2 : 3;
+    if (!Parser.GetWord(iContiVariableIndex)) {
       gPrint.PrintInputWarning("Error: Record %d, of the %s, is missing the continuos variable.\n",
                                  Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
-    if (sscanf(Parser.GetWord(3), "%lf", &tContinuosVariable) != 1) {
+    if (sscanf(Parser.GetWord(iContiVariableIndex), "%lf", &tContinuosVariable) != 1) {
        gPrint.PrintInputWarning("Error: The continuos variable value '%s' in record %ld, of the %s, is not a number.\n",
-                                Parser.GetWord(3), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                                Parser.GetWord(iContiVariableIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
     if (tContinuosVariable <= 0) {
@@ -221,11 +231,13 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
                                 tContinuosVariable, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
+
     //read and validate censore attribute
-    if (Parser.GetWord(4) != 0) {
-      if (!sscanf(Parser.GetWord(4), "%ld", &tCensored) || tCensored < 0) {
+    iCensoredAttributeIndex = gParameters.GetPrecisionOfTimesType() == NONE ? 3 : 4;
+    if (Parser.GetWord(iCensoredAttributeIndex) != 0) {
+      if (!sscanf(Parser.GetWord(iCensoredAttributeIndex), "%ld", &tCensored) || tCensored < 0) {
        gPrint.PrintInputWarning("Error: The value '%s' of record %ld, in the %s, could not be read as a censoring attribute.\n",
-                                  Parser.GetWord(4), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                                  Parser.GetWord(iCensoredAttributeIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        gPrint.PrintInputWarning("       Censoring attribute must be either 0 or 1.\n");
        return false;
       }
@@ -247,65 +259,81 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
     If invalid data is found in the file, an error message is printed,
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
-bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char* szDescription) {
-  bool          bValid=true, bEmpty=true;
-  Julian        Date;
-  tract_t       TractIndex;
-  int           i;
-  count_t       Count, tCensored, ** ppCounts, tTotalCases=0;
-  measure_t     tContinuosVariable, ** ppMeasure, ** ppSqMeasure, tTotalMeasure=0;
+bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*) {
+  bool                   bReadSuccessful=true, bEmpty=true;
+  Julian                 Date;
+  tract_t                tTractIndex;
+  count_t                tPatients, tCensored, tTotalPopuation=0, tTotalCases=0;
+  measure_t              tContinuosVariable, tTotalMeasure=0;
+  ExponentialRandomizer* pRandomizer;
 
   try {
     RealDataSet& DataSet = *gvDataSets[tSetIndex];
     StringParser Parser(gPrint);
 
-    ppCounts = DataSet.GetCaseArray();
+    // if randomization data created by reading from file, we'll need to use temporary randomizer to create real data set
+    pRandomizer = (ExponentialRandomizer*)gvDataSetRandomizers[tSetIndex];
     //Read data, parse and if no errors, increment count for tract at date.
     while (Parser.ReadString(fp)) {
          if (Parser.HasWords()) {
            bEmpty = false;
-           if (ParseCaseFileLine(Parser, TractIndex, Count, Date, tContinuosVariable, tCensored)) {
-             if (gParameters.GetSimulationType() != FILESOURCE)
-               for (i=0; i < Count; ++i)
-                  ((ExponentialRandomizer*)gvDataSetRandomizers[tSetIndex])->AddCase(gDataHub.GetTimeIntervalOfDate(Date),
-                                                                                     TractIndex, tContinuosVariable, tCensored);
-
-             tTotalCases += Count * tCensored;
+           if (ParseCaseFileLine(Parser, tTractIndex, tPatients, Date, tContinuosVariable, tCensored)) {
+             pRandomizer->AddPatients(tPatients, gDataHub.GetTimeIntervalOfDate(Date), tTractIndex, tContinuosVariable, tCensored);
+             tTotalPopuation += tPatients;
+             //check that addition did not exceed data type limitations
+             if (tTotalPopuation < 0)
+               GenerateResolvableException("Error: The total number of non-censored cases in dataset is greater than the maximum allowed of %ld.\n",
+                                           "ReadCounts()", std::numeric_limits<count_t>::max());
+             tTotalCases += tPatients * tCensored;
+             //check that addition did not exceed data type limitations
+             if (tTotalCases < 0)
+               GenerateResolvableException("Error: The total number of non-censored cases in dataset is greater than the maximum allowed of %ld.\n",
+                                           "ReadCounts()", std::numeric_limits<count_t>::max());
+             //check numeric limits of data type will not be exceeded
+             if (tContinuosVariable > std::numeric_limits<measure_t>::max() - tTotalMeasure)
+               GenerateResolvableException("Error: The total summation of survival times exceeds the maximum value allowed of %ld.\n",
+                                           "ReadCounts()", std::numeric_limits<measure_t>::max());
              tTotalMeasure += tContinuosVariable;
            }
            else
-             bValid = false;
+             bReadSuccessful = false;
          }
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
-    if (! bValid)
+    if (! bReadSuccessful)
       gPrint.SatScanPrintWarning("Please see the 'case file' section in the user guide for help.\n");
     //print indication if file contained no data
     else if (bEmpty) {
       gPrint.SatScanPrintWarning("Error: %s does not contain data.\n", gPrint.GetImpliedFileTypeString().c_str());
-      bValid = false;
+      bReadSuccessful = false;
     }
-    else if (gParameters.GetSimulationType() != FILESOURCE) {
-     //$$ calibrate measure -- multiply by (tTotalCases/tTotalMeasure)
-
-     ((ExponentialRandomizer*)gvDataSetRandomizers[tSetIndex])->Assign(DataSet.GetCaseArray(),
-                                                                     DataSet.GetMeasureArray(),
-                                                                     DataSet.GetNumTimeIntervals(),
-                                                                     DataSet.GetNumTracts());
-     DataSet.SetTotalCases(tTotalCases);
-     DataSet.SetTotalMeasure(tTotalMeasure);
+    //validate that data set contains minimum number of non-censored cases
+    else if (tTotalCases < gtMinimumNotCensoredCases) {
+      gPrint.SatScanPrintWarning("Error: Data set does not contain the required minimum of %i non-censored case%s.\n",
+                                 gtMinimumNotCensoredCases, (gtMinimumNotCensoredCases == 1 ? "" : "s"));
+      bReadSuccessful = false;
     }
-
+    else {
+      //calibrate measure -- multiply by (tTotalCases/tTotalMeasure)
+      pRandomizer->Calibrate(tTotalCases/tTotalMeasure);
+      //assign data accumulated in randomizer to data set case and measure arrays
+      pRandomizer->Assign(DataSet.GetCaseArray(), DataSet.GetMeasureArray(), DataSet.GetNumTimeIntervals(), DataSet.GetNumTracts());
+      //assign data accumulated in randomizer to data set censored case array
+      pRandomizer->AssignCensoredIndividuals(DataSet.GetCensoredCasesArrayHandler());
+      DataSet.SetTotalCases(tTotalCases); //total non-censored cases
+      DataSet.SetTotalMeasure(tTotalMeasure); //total survival times
+      DataSet.SetTotalPopulation(tTotalPopuation); //total censored and non-censored cases
+    }
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadCounts()","ExponentialDataSetHandler");
     throw;
   }
-  return bValid;
+  return bReadSuccessful;
 }
 
-
+/** Allocated data randomizer for each data set and reads case input data for each data set. */
 bool ExponentialDataSetHandler::ReadData() {
   try {
     SetRandomizers();
@@ -339,6 +367,7 @@ void ExponentialDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataCo
  }
 }
 
+/** Allocates randomizer object for each data set. */
 void ExponentialDataSetHandler::SetRandomizers() {
   try {
     gvDataSetRandomizers.DeleteAllElements();
@@ -348,8 +377,6 @@ void ExponentialDataSetHandler::SetRandomizers() {
           gvDataSetRandomizers[0] = new ExponentialRandomizer(gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
-          gvDataSetRandomizers[0] = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());
-          break;
       case HA_RANDOMIZATION :
       default :
           ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());

@@ -7,6 +7,8 @@
 
 class ExponentialDataSetHandler : public DataSetHandler {
   protected:
+    static const count_t                gtMinimumNotCensoredCases;
+
     virtual void                        AllocateCaseStructures(size_t tSetIndex);
     virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid,
                                                           count_t& nCount, Julian& nDate,
@@ -19,8 +21,8 @@ class ExponentialDataSetHandler : public DataSetHandler {
     ExponentialDataSetHandler(CSaTScanData& DataHub, BasePrint& Print);
     virtual ~ExponentialDataSetHandler();
 
-    virtual AbtractDataSetGateway  * GetNewDataGateway() const;
-    virtual AbtractDataSetGateway  * GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const;
+    virtual AbtractDataSetGateway     * GetNewDataGateway() const;
+    virtual AbtractDataSetGateway     * GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const;
     virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const;
     virtual bool                        ReadData();
     virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);
