@@ -7,20 +7,15 @@
 #include "LoglikelihoodRatioUnifier.h"
 
 /** class constructor */
-AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& Data)
-                             :gData(Data),
-                              gtTotalCasesInDataSet(Data.GetTotalCases()),
-                              gtTotalMeasureInDataSet(Data.GetTotalMeasure()) {
-  Init();
+AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& DataHub)
+                             :gDataHub(DataHub), gpUnifier(0),
+                              gtTotalCasesInFirstDataSet(DataHub.GetDataSetHandler().GetDataSet().GetTotalCases()),
+                              gtTotalMeasureInFirstDataSet(DataHub.GetDataSetHandler().GetDataSet().GetTotalMeasure()) {
   Setup();
 }
 
 /** class destructor */
-AbstractLikelihoodCalculator::~AbstractLikelihoodCalculator() {
-  try {
-  }
-  catch (...){}
-}
+AbstractLikelihoodCalculator::~AbstractLikelihoodCalculator() {}
 
 /** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) const {
@@ -61,15 +56,15 @@ AbstractLoglikelihoodRatioUnifier & AbstractLikelihoodCalculator::GetUnifier() c
 /** Internal class setup */
 void AbstractLikelihoodCalculator::Setup() {
   try {
-    if (gData.GetParameters().GetNumDataSets() > 1) {
-      switch (gData.GetParameters().GetMultipleDataSetPurposeType()) {
+    if (gDataHub.GetParameters().GetNumDataSets() > 1) {
+      switch (gDataHub.GetParameters().GetMultipleDataSetPurposeType()) {
         case MULTIVARIATE :
-          gpUnifier = new MultivariateUnifier(gData.GetParameters().GetAreaScanRateType()); break;
+          gpUnifier = new MultivariateUnifier(gDataHub.GetParameters().GetAreaScanRateType()); break;
         case ADJUSTMENT :
-          gpUnifier = new AdjustmentUnifier(gData.GetParameters().GetAreaScanRateType()); break;
+          gpUnifier = new AdjustmentUnifier(gDataHub.GetParameters().GetAreaScanRateType()); break;
         default :
           ZdGenerateException("Unknown purpose for multiple data sets '%d'.","GetUnifier",
-                              gData.GetParameters().GetMultipleDataSetPurposeType());
+                              gDataHub.GetParameters().GetMultipleDataSetPurposeType());
       }
     }
   }
