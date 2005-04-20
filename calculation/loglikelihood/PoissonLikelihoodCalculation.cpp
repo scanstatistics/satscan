@@ -7,16 +7,17 @@
 #include "SVTTCluster.h"
 
 /** constructor */
-PoissonLikelihoodCalculator::PoissonLikelihoodCalculator(const CSaTScanData& Data)
-                            :AbstractLikelihoodCalculator(Data), gParameters(Data.GetParameters()) {}
+PoissonLikelihoodCalculator::PoissonLikelihoodCalculator(const CSaTScanData& DataHub)
+                            :AbstractLikelihoodCalculator(DataHub), gParameters(DataHub.GetParameters()) {}
 
 /** destructor */
 PoissonLikelihoodCalculator::~PoissonLikelihoodCalculator() {}
 
-/** calculates the Poisson log likelihood given the number of observed and expected cases */
+/** calculates the Poisson log likelihood given the number of observed and expected cases
+    - the total cases and expected cases used are that of first data set */
 double PoissonLikelihoodCalculator::CalcLogLikelihood(count_t n, measure_t u) const {
-   count_t   N = gtTotalCasesInDataSet;
-   measure_t U = gtTotalMeasureInDataSet;
+   count_t   N = gtTotalCasesInFirstDataSet;
+   measure_t U = gtTotalMeasureInFirstDataSet;
 
    if (n != N && n != 0)
      return n*log(n/u) + (N-n)*log((N-n)/(U-u));
@@ -78,7 +79,7 @@ double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(count_t*   pCases, mea
     double nSum3 = 0;
     int i;
 
-    for (i=0; i<(gData.m_nTimeIntervals); i++)
+    for (i=0; i < (gDataHub.m_nTimeIntervals); i++)
     {
       nSum1 += pCases[i] * (log(pMeasure[i]) + nAlpha + (nBeta)*i);
       nSum2 += pMeasure[i] * exp(nAlpha + (nBeta)*i);
@@ -108,12 +109,12 @@ double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tSetIndex, CSVT
   //      has not been decided yet.
   DataSet.gTimeTrendInside.CalculateAndSet(DataSet.gpCasesInsideCluster,         // Inside Cluster
                                            DataSet.gpMeasureInsideCluster,
-                                           gData.m_nTimeIntervals,
+                                           gDataHub.m_nTimeIntervals,
                                            gParameters.GetTimeTrendConvergence());
 
   nGlobalAlphaIn = DataSet.gTimeTrendInside.Alpha(DataSet.gtTotalCasesInsideCluster,
                                                   DataSet.gpMeasureInsideCluster,
-                                                  gData.m_nTimeIntervals,
+                                                  gDataHub.m_nTimeIntervals,
                                                   GlobalTimeTrend.GetBeta());
 
   //calculate time trend outside of clusters tSetIndex'th dataset
@@ -122,12 +123,12 @@ double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tSetIndex, CSVT
   //      has not been decided yet.
   DataSet.gTimeTrendOutside.CalculateAndSet(DataSet.gpCasesOutsideCluster,         // Outside Cluster
                                             DataSet.gpMeasureOutsideCluster,
-                                            gData.m_nTimeIntervals,
+                                            gDataHub.m_nTimeIntervals,
                                             gParameters.GetTimeTrendConvergence());
 
   nGlobalAlphaOut = DataSet.gTimeTrendOutside.Alpha(DataSet.gtTotalCasesOutsideCluster,
                                                     DataSet.gpMeasureOutsideCluster,
-                                                    gData.m_nTimeIntervals,
+                                                    gDataHub.m_nTimeIntervals,
                                                     GlobalTimeTrend.GetBeta());
   #if DEBUGMODEL
   fprintf(m_pDebugModelFile, "Inside                Outside\n");
@@ -181,10 +182,11 @@ double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tSetIndex, CSVT
   return nLogLikelihood;
 }
 
-/** returns log likelihood for total */
+/** returns log likelihood for total
+    - the total cases and expected cases used are that of first data set */
 double PoissonLikelihoodCalculator::GetLogLikelihoodForTotal() const {
-  count_t   N = gtTotalCasesInDataSet;
-  measure_t U = gtTotalMeasureInDataSet;
+  count_t   N = gtTotalCasesInFirstDataSet;
+  measure_t U = gtTotalMeasureInFirstDataSet;
 
   return N*log(N/U);
 }

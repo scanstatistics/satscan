@@ -6,16 +6,17 @@
 #include "PurelySpatialMonotoneCluster.h"
 
 /** constructor */
-BernoulliLikelihoodCalculator::BernoulliLikelihoodCalculator(const CSaTScanData& Data)
-                              :AbstractLikelihoodCalculator(Data) {}
+BernoulliLikelihoodCalculator::BernoulliLikelihoodCalculator(const CSaTScanData& DataHub)
+                              :AbstractLikelihoodCalculator(DataHub) {}
 
 /** destructor */
 BernoulliLikelihoodCalculator::~BernoulliLikelihoodCalculator() {}
 
-/** calculates the Bernoulli log likelihood given the number of observed and expected cases */
+/** calculates the Bernoulli log likelihood given the number of observed and expected cases
+    - the total cases and expected cases used are that of first data set */
 double BernoulliLikelihoodCalculator::CalcLogLikelihood(count_t n, measure_t u) const {
-  count_t   N = gtTotalCasesInDataSet;
-  measure_t U = gtTotalMeasureInDataSet;
+  count_t   N = gtTotalCasesInFirstDataSet;
+  measure_t U = gtTotalMeasureInFirstDataSet;
 
   double    nLL_A = 0.0;
   double    nLL_B = 0.0;
@@ -58,10 +59,11 @@ double BernoulliLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_
   return dLogLikelihood - (N*log(N/U) + (U-N)*log((U-N)/U));
 }
 
-/** returns log likelihood for total */
+/** returns log likelihood for total
+    - the total cases and expected cases used are that of first data set */
 double BernoulliLikelihoodCalculator::GetLogLikelihoodForTotal() const {
-  count_t   N = gtTotalCasesInDataSet;
-  measure_t U = gtTotalMeasureInDataSet;
+  count_t   N = gtTotalCasesInFirstDataSet;
+  measure_t U = gtTotalMeasureInFirstDataSet;
   
   return (N*log(N/U) + (U-N)*log((U-N)/U));
 }

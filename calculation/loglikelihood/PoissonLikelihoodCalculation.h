@@ -14,7 +14,7 @@ class PoissonLikelihoodCalculator : public AbstractLikelihoodCalculator {
                                               count_t pTotalCases, double nAlpha,
                                               double nBeta, int nStatus) const;
   public:
-    PoissonLikelihoodCalculator(const CSaTScanData& Data);
+    PoissonLikelihoodCalculator(const CSaTScanData& DataHub);
     virtual ~PoissonLikelihoodCalculator();
 
     virtual double      CalcLogLikelihood(count_t n, measure_t u) const;

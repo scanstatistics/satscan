@@ -7,7 +7,7 @@
 /** Bernoulli log likelihood calculator. */
 class BernoulliLikelihoodCalculator : public AbstractLikelihoodCalculator {
   public:
-    BernoulliLikelihoodCalculator(const CSaTScanData& Data);
+    BernoulliLikelihoodCalculator(const CSaTScanData& DataHub);
     virtual ~BernoulliLikelihoodCalculator();
 
     virtual double      CalcLogLikelihood(count_t n, measure_t u) const;
