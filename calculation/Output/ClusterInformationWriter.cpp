@@ -305,7 +305,7 @@ void ClusterInformationWriter::WriteCountDataStandard(RecordBuffer& Record, cons
        Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedCount(i);
        sBuffer.printf("%s%s%i", EXP_FIELD_PART, SET_FIELD_PART, i + 1);
        Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetExpectedCount(gDataHub, i);
-       sBuffer.printf("%s%s%i", OBS_FIELD_PART, SET_FIELD_PART, i + 1);
+       sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, i + 1);
        Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedDivExpected(gDataHub, i);
     }
   }
