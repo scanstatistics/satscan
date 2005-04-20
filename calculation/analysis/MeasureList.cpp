@@ -119,7 +119,7 @@ void CMinMeasureList::Display(FILE* pFile) const {
   int   i;
 
   fprintf(pFile, "Min Measure List\n");
-  for (i=0; i < gSaTScanData.GetTotalCases() + 1; i++)
+  for (i=0; i < gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases() + 1; i++)
      fprintf(pFile, "m_pMinMeasures[%i] = %f\n", i, gpMinMeasures[i]);
 }
 
@@ -127,9 +127,10 @@ void CMinMeasureList::Display(FILE* pFile) const {
     probability model is Bernoulli. Calls AddMaximumLogLikelihood() to add
     result to internal list. */
 void CMinMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
-  int           i, iHalfListSize = gSaTScanData.GetTotalCases()/2, iListSize = gSaTScanData.GetTotalCases();
-  double        dLogLikelihood, dMaxExcess(0), dTotalMeasure(gSaTScanData.GetTotalMeasure()),
-                dRisk(gSaTScanData.GetTotalCases()/gSaTScanData.GetTotalMeasure()),
+  int           i, iHalfListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases()/2,
+                iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
+  double        dLogLikelihood, dMaxExcess(0), dTotalMeasure(gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalMeasure()),
+                dRisk(gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases()/gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalMeasure()),
                 dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
   i = 2; //Start case index at two -- don't want to consider simulations
@@ -162,7 +163,8 @@ void CMinMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
 /** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood()
     to add result to internal list. */
 void CMinMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
-  int           i, iHalfListSize = gSaTScanData.GetTotalCases()/2, iListSize = gSaTScanData.GetTotalCases();
+  int           i, iHalfListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases()/2,
+                iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
   double        dLogLikelihood, dMaxExcess(0),
                 dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
   i = 2; //Start case index at two -- don't want to consider simulations
@@ -199,12 +201,14 @@ void CMinMeasureList::Init() {
 
 /** Set/Resets measure arrays. */
 void CMinMeasureList::SetMeasures() {
-  int   i, iListSize = gSaTScanData.GetTotalCases() + 1;
+  int           i, iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases() + 1;
+  count_t       tTotalCases = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
+  measure_t     tTotalMeasure = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalMeasure();
 
   if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI)
     //Bernoulli model has cases + controls = total measure
     for (i=0; i < iListSize; ++i)
-       gpMinMeasures[i] = (gSaTScanData.GetTotalMeasure() *  i) / gSaTScanData.GetTotalCases();
+       gpMinMeasures[i] = (tTotalMeasure *  i) / tTotalCases;
   else
     for (i=0; i < iListSize; ++i)
        gpMinMeasures[i] = i;
@@ -213,7 +217,7 @@ void CMinMeasureList::SetMeasures() {
 /** Internal setup */
 void CMinMeasureList::Setup() {
   try {
-    gpMinMeasures = new measure_t [gSaTScanData.GetTotalCases() + 1];
+    gpMinMeasures = new measure_t [gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases() + 1];
     SetMeasures();
   }
   catch (ZdException & x) {
@@ -247,15 +251,15 @@ void CMaxMeasureList::Display(FILE* pFile) const {
   int   i;
 
   fprintf(pFile, "Max Measure List\n");
-  for (i=0; i< gSaTScanData.GetTotalCases() + 1; i++)
+  for (i=0; i< gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases() + 1; i++)
     fprintf(pFile, "m_pMaxMeasures[%i] = %f\n", i, gpMaxMeasures[i]);
 }
 
 /** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood()
     to add result to internal list. */
 void CMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
-  int           i, iListSize = gSaTScanData.GetTotalCases();
-  double        dLogLikelihood, dTotalMeasure(gSaTScanData.GetTotalMeasure()),
+  int           i, iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
+  double        dLogLikelihood, dTotalMeasure(gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalMeasure()),
                 dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
   for (i=0; i <= iListSize; i++) {
@@ -273,8 +277,8 @@ void CMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
 /** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood()
     to add result to internal list. */
 void CMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
-  int           i, iListSize = gSaTScanData.GetTotalCases();
-  double        dLogLikelihood, dTotalMeasure(gSaTScanData.GetTotalMeasure()),
+  int           i, iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
+  double        dLogLikelihood, dTotalMeasure(gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalMeasure()),
                 dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
   for (i=0; i <= iListSize; i++) {
@@ -296,12 +300,14 @@ void CMaxMeasureList::Init() {
 
 /** Set/Resets measure arrays. */
 void CMaxMeasureList::SetMeasures() {
-  int   i, iListSize = gSaTScanData.GetTotalCases() + 1;
+  int           i, iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases() + 1;
+  count_t       tTotalCases = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
+  measure_t     tTotalMeasure = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalMeasure();
 
   if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI)
     //Bernoulli model has cases + controls = total measure
     for (i=0; i < iListSize; ++i)
-       gpMaxMeasures[i] = (gSaTScanData.GetTotalMeasure() * i) / gSaTScanData.GetTotalCases();
+       gpMaxMeasures[i] = (tTotalMeasure * i) / tTotalCases;
   else
     for (i=0; i < iListSize; ++i)
        gpMaxMeasures[i] = i;
@@ -310,7 +316,7 @@ void CMaxMeasureList::SetMeasures() {
 /** Internal initialization */
 void CMaxMeasureList::Setup() {
   try {
-    gpMaxMeasures = new measure_t [gSaTScanData.GetTotalCases() + 1];
+    gpMaxMeasures = new measure_t [gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases() + 1];
     SetMeasures();
   }
   catch (ZdException & x) {
@@ -345,12 +351,12 @@ void CMinMaxMeasureList::Display(FILE* pFile) const {
   int i;
 
   fprintf(pFile, "Min Measure List\n");
-  for (i=0; i < gSaTScanData.GetTotalCases() + 1; i++)
+  for (i=0; i < gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases() + 1; i++)
      fprintf(pFile, "m_pMinMeasures[%i] = %f\n", i, gpMinMeasures[i]);
   fprintf(pFile, "\n");
 
   fprintf(pFile, "Max Measure List\n");
-  for (i=0; i < gSaTScanData.GetTotalCases() + 1; i++)
+  for (i=0; i < gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases() + 1; i++)
      fprintf(pFile, "m_pMaxMeasures[%i] = %f\n", i, gpMaxMeasures[i]);
   fprintf(pFile, "\n");
 }
@@ -358,9 +364,11 @@ void CMinMaxMeasureList::Display(FILE* pFile) const {
 /** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood()
     to add result to internal list. */
 void CMinMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
-  int           i, iHalfListSize = gSaTScanData.GetTotalCases()/2, iListSize = gSaTScanData.GetTotalCases();
-  double        dLogLikelihood, dMaxExcess(0), dTotalMeasure(gSaTScanData.GetTotalMeasure()),
-                dRisk(gSaTScanData.GetTotalCases()/gSaTScanData.GetTotalMeasure()),
+  int           i, iHalfListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases()/2,
+                iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
+  double        dLogLikelihood, dMaxExcess(0),
+                dTotalMeasure(gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalMeasure()),
+                dRisk(gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases()/gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalMeasure()),
   		dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
   //Calculating the LLR for less than half the cases can use a trick where the
@@ -403,7 +411,8 @@ void CMinMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) 
 /** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood()
     to add result to internal list. */
 void CMinMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
-  int           i, iHalfListSize = gSaTScanData.GetTotalCases()/2, iListSize = gSaTScanData.GetTotalCases();
+  int           i, iHalfListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases()/2,
+                iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
   double        dLogLikelihood, dMaxExcess(0),
   		dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
@@ -450,12 +459,14 @@ void CMinMaxMeasureList::Init() {
 
 /** Set/Resets measure arrays. */
 void CMinMaxMeasureList::SetMeasures() {
-  int   i, iListSize = gSaTScanData.GetTotalCases() + 1;
+  int           i, iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases() + 1;
+  count_t       tTotalCases = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
+  measure_t     tTotalMeasure = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalMeasure();
 
   if (gSaTScanData.GetParameters().GetProbabilityModelType() == BERNOULLI)
     //Bernoulli model has cases + controls = total measure
     for (i=0; i < iListSize; ++i)
-       gpMaxMeasures[i] = gpMinMeasures[i] = (gSaTScanData.GetTotalMeasure() * i) / gSaTScanData.GetTotalCases();
+       gpMaxMeasures[i] = gpMinMeasures[i] = (tTotalMeasure * i) / tTotalCases;
   else
     for (i=0; i < iListSize; ++i)
        gpMaxMeasures[i] = gpMinMeasures[i] = i;
@@ -464,8 +475,8 @@ void CMinMaxMeasureList::SetMeasures() {
 /** Internal setup */
 void CMinMaxMeasureList::Setup() {
   try {
-    gpMinMeasures = new measure_t [gSaTScanData.GetTotalCases() + 1];
-    gpMaxMeasures = new measure_t [gSaTScanData.GetTotalCases() + 1];
+    gpMinMeasures = new measure_t [gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases() + 1];
+    gpMaxMeasures = new measure_t [gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases() + 1];
     SetMeasures();
   }
   catch (ZdException & x) {
