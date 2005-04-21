@@ -2152,6 +2152,11 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
         PrintDirection.SatScanPrintWarning("Error: Multiple data sets are not permitted with the normal probablility model\n");
         PrintDirection.SatScanPrintWarning("       in this version of SaTScan.\n");
       }
+      if (geProbabilityModelType == ORDINAL && GetNumDataSets() > 1 && geMultipleSetPurposeType == ADJUSTMENT) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: Adjustment purpose for multiple data sets is not permitted\n"
+                                           "       with ordinal probability model in this version of SaTScan.\n");
+      }
 
       //validate dates
       if (! ValidateDateParameters(PrintDirection))
