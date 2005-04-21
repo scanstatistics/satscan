@@ -207,7 +207,6 @@ __published:	// IDE-managed Components
    void                     SetDefaultsForOutputTab();
    void                     Setup();
    void                     ValidateAdjustmentSettings();
-   void                     ValidateInputFilesAtInput();
    void                     ValidateInputFiles();
    void                     ValidateOutputSettings();
    void                     ValidateProspDateRange();

@@ -1547,54 +1547,6 @@ void TfrmAdvancedParameters::ValidateAdjustmentSettings() {
     throw;
   }
 }
-//---------------------------------------------------------------------------
-/** Validates 'Input Files' */
-void TfrmAdvancedParameters::ValidateInputFilesAtInput() {
-  try {
-    //validate the case file
-    if (edtCaseFileName->Text.IsEmpty()) {
-      edtCaseFileName->SetFocus();
-      GenerateAFException("Please specify a case file.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
-    }
-    if (!File_Exists(edtCaseFileName->Text.c_str())) {
-      edtCaseFileName->SetFocus();
-      GenerateAFException("Case file could not be opened.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
-    }
-
-    //validate the control file - Bernoulli model only
-    if (gAnalysisSettings.GetModelControlType() == BERNOULLI) {
-      if (edtControlFileName->Text.IsEmpty()) {
-        edtControlFileName->SetFocus();
-        GenerateAFException("For the Bernoulli model, please specify a control file.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
-      }
-      if (!File_Exists(edtControlFileName->Text.c_str())) {
-        edtControlFileName->SetFocus();
-        GenerateAFException("Control file could not be opened.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
-      }
-    }
-
-    //validate the population file -  Poisson model only
-    if (gAnalysisSettings.GetModelControlType() == POISSON) {
-      if (edtPopFileName->Text.IsEmpty()) {
-        if (gAnalysisSettings.GetAnalysisControlType() != PURELYTEMPORAL && gAnalysisSettings.GetAnalysisControlType() != PROSPECTIVEPURELYTEMPORAL) {
-          edtPopFileName->SetFocus();
-          GenerateAFException("For the Poisson model, please specify a population file.\n"
-                              "Note that for purely temporal analyses, if the risk does\n"
-                              "not change over time, the population file is optional."
-                              ,"ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
-        }
-      }
-      else if (!File_Exists(edtPopFileName->Text.c_str())) {
-        edtPopFileName->SetFocus();
-        GenerateAFException("Population file could not be opened.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
-      }
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("ValidateInputFilesAtInput()", "TfrmAdvancedParameters");
-    throw;
-  }
-}
 //------------------------------------------------------------------
 void TfrmAdvancedParameters::ValidateInputFiles() {
   bool bAnalysisIsPurelyTemporal = gAnalysisSettings.GetAnalysisControlType() == PURELYTEMPORAL ||
@@ -1637,6 +1589,11 @@ void TfrmAdvancedParameters::ValidateInputFiles() {
              GenerateAFException("Population file could not be opened for this additional data set.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
        }
     }  //for loop
+
+    //validate that purpose for multiple data sets is not 'adjustment' if probability model is ordinal 
+    if (gAnalysisSettings.GetModelControlType() == ORDINAL && rdoAdjustmentByDataSets->Enabled && rdoAdjustmentByDataSets->Checked)
+      GenerateAFException("For the ordinal probability model with input data defined in multiple data sets,\n"
+                          "the purpose for multiple sets is not implemented for 'Adjustment'.","ValidateInputFiles()", *rdoAdjustmentByDataSets, INPUT_TABS);
   }
   catch (ZdException & x) {
     x.AddCallpath("ValidateInputFiles()", "TfrmAdvancedParameters");
