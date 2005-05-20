@@ -124,8 +124,8 @@ void stsClusterData::RecordClusterData(const CCluster& theCluster, const CSaTSca
 // post : sets the values for long, lat, sAdditCoords, and radius
 void stsClusterData::WriteCoordinates(OutputRecord& Record, const CCluster& thisCluster, const CSaTScanData& DataHub) {
   int           i;
-  double      * pCoords=0, * pCoords2=0;
-  float         fLatitude, fLongitude, fRadius;
+  double      * pCoords=0, * pCoords2=0, dRadius, EARTH_RADIUS = 6367/*radius of earth in km*/;
+  float         fLatitude, fLongitude;
   unsigned int  iFirstCoordIndex, iSecondCoordIndex, iThCoordIndex;
   ZdString      sBuffer;
   tract_t       tTractIndex;
@@ -159,15 +159,18 @@ void stsClusterData::WriteCoordinates(OutputRecord& Record, const CCluster& this
                              iThCoordIndex = GetFieldNumber(sBuffer);
                              Record.GetFieldValue(iThCoordIndex).AsDouble() = pCoords[i];
                           }
+                          //to mimic behavior in CCluster reporting, cast down to float
+                          dRadius = (float)(sqrt((DataHub.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2)));
+                          Record.GetFieldValue(GetFieldNumber(RADIUS_FIELD)).AsDouble() = dRadius;
                           break;
          case LATLON    : ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
                           Record.GetFieldValue(iFirstCoordIndex).AsDouble() = fLatitude;
                           Record.GetFieldValue(iSecondCoordIndex).AsDouble() = fLongitude;
+                          dRadius = 2 * EARTH_RADIUS * asin(sqrt(DataHub.GetTInfo()->tiGetDistanceSq(pCoords, pCoords2))/(2 * EARTH_RADIUS));
+                          Record.GetFieldValue(GetFieldNumber(RADIUS_FIELD)).AsDouble() = dRadius;
                           break;
          default : ZdGenerateException("Unknown coordinate type '%d'.","SetCoordinates()", gParameters.GetCoordinatesType());
        }
-       fRadius = (float)(sqrt((DataHub.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2)));
-       Record.GetFieldValue(GetFieldNumber(RADIUS_FIELD)).AsDouble() = fRadius;
        free(pCoords);
        free(pCoords2);
      }
