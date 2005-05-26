@@ -87,17 +87,17 @@ void stsAreaSpecificData::SetupFields() {
     CreateField(gvFields, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
     if (gParameters.GetNumDataStreams() == 1) {
       //these fields will no be supplied for analyses with more than one stream
-      CreateField(gvFields, CLU_OBS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
-      CreateField(gvFields, CLU_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      CreateField(gvFields, CLU_OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateField(gvFields, CLU_OBS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(gvFields, CLU_EXP_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+      CreateField(gvFields, CLU_OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     }
     if (!gbExcludePValueField)
-      CreateField(gvFields, P_VALUE_FLD, ZD_NUMBER_FLD, 12, 5, uwOffset);
+      CreateField(gvFields, P_VALUE_FLD, ZD_NUMBER_FLD, 19, 5, uwOffset);
     if (gParameters.GetNumDataStreams() == 1) {
       //these fields will no be supplied for analyses with more than one stream
-      CreateField(gvFields, LOC_OBS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
-      CreateField(gvFields, LOC_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      CreateField(gvFields, LOC_OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateField(gvFields, LOC_OBS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(gvFields, LOC_EXP_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+      CreateField(gvFields, LOC_OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     }
   }
   catch (ZdException &x) {

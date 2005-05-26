@@ -156,13 +156,13 @@ void RelativeRiskData::SetupFields() {
   try {
     CreateField(gvFields, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
     if (gParameters.GetNumDataStreams() > 1)
-      CreateField(gvFields, DATASTREAM_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
-    CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
-    CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-    CreateField(gvFields, OBSERVED_DIV_EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
-    CreateField(gvFields, RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateField(gvFields, DATASTREAM_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+    CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+    CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+    CreateField(gvFields, OBSERVED_DIV_EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+    CreateField(gvFields, RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
-      CreateField(gvFields, TIME_TREND_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateField(gvFields, TIME_TREND_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
   }
   catch (ZdException &x) {
     x.AddCallpath("SetupFields()","RelativeRiskData");

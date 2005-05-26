@@ -214,47 +214,47 @@ void stsClusterData::SetupFields() {
   try {
     CreateField(gvFields, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
     CreateField(gvFields, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
-    CreateField(gvFields, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_NUMBER_FLD, 12, 4, uwOffset);
-    CreateField(gvFields, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_NUMBER_FLD, 12, 4, uwOffset);
+    CreateField(gvFields, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
+    CreateField(gvFields, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
     // Only Cartesian coordinates have more than two dimensions. Lat/Long is consistently assigned to 3 dims
     // throughout the program eventhough the third dim is never used. When you print the third it is blank
     // and meaningless and thus does not need to be included here. - AJV 10/2/2002
     if (gParameters.GetCoordinatesType() == CARTESIAN && gParameters.GetDimensionsOfData() > 2) {
       for (i=3; i <= (unsigned int)gParameters.GetDimensionsOfData(); ++i) {
          sBuffer.printf("%s%i", COORD_Z_FIELD, i - 2);
-         CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 4, uwOffset);
+         CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 4, uwOffset);
       }
     }
-    CreateField(gvFields, RADIUS_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
+    CreateField(gvFields, RADIUS_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
     if (gParameters.GetNumRequestedEllipses()) {
-      CreateField(gvFields, E_ANGLE_FIELD, ZD_NUMBER_FLD, 16, 0, uwOffset);
-      CreateField(gvFields, E_SHAPE_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateField(gvFields, E_ANGLE_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(gvFields, E_SHAPE_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     }
     CreateField(gvFields, NUM_LOCATIONS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
     if (gParameters.GetNumDataStreams() == 1) {
-      CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
-      CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      CreateField(gvFields, OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
+      CreateField(gvFields, OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(gvFields, EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+      CreateField(gvFields, OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
     }
     else {
       for (i=1; i <= gParameters.GetNumDataStreams(); ++i) {
         sBuffer.printf("%s%i", STREAM_OBSERVED_FIELD, i);
-        CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 0, uwOffset);
+        CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 0, uwOffset);
         sBuffer.printf("%s%i", STREAM_EXPECTED_FIELD, i);
-        CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 2, uwOffset);
+        CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
         sBuffer.printf("%s%i", STREAM_OBS_DIV_EXP_FIELD, i);
-        CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 2, uwOffset);
+        CreateField(gvFields, sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
       }
     }
     if (gParameters.GetProbabiltyModelType() == SPACETIMEPERMUTATION)
-      CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
+      CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
     else {
-      CreateField(gvFields, LOG_LIKL_RATIO_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
+      CreateField(gvFields, LOG_LIKL_RATIO_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
       if (gParameters.GetNumRequestedEllipses() && gParameters.GetNonCompactnessPenalty())
-        CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
+        CreateField(gvFields, TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
     }
     if (!gbExcludePValueField)
-      CreateField(gvFields, P_VALUE_FLD, ZD_NUMBER_FLD, 12, 5, uwOffset);
+      CreateField(gvFields, P_VALUE_FLD, ZD_NUMBER_FLD, 19, 5, uwOffset);
     CreateField(gvFields, START_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
     CreateField(gvFields, END_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
   }

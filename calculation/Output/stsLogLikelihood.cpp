@@ -242,9 +242,9 @@ void LoglikelihoodRatioWriter::SetupFields() {
    
    try {
      if (gParameters.GetLogLikelihoodRatioIsTestStatistic())
-       CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
+       CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
      else
-       CreateField(LOG_LIKL_RATIO_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
+       CreateField(LOG_LIKL_RATIO_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
    }
    catch (ZdException &x) {
       x.AddCallpath("SetupFields()","LoglikelihoodRatioWriter");
