@@ -4,14 +4,13 @@
 //*****************************************************************************
 #include "Analysis.h"
 #include "SaTScanData.h"
+#include "SVTTCluster.h"
+#include "IntermediateClustersContainer.h"
 
 /** spatial variation and temporal tends analysis class */
 class CSpatialVarTempTrendAnalysis : public CAnalysis {
   private:
-    TopClustersContainer      * gpTopShapeClusters;
-
-    void                        Init() {gpTopShapeClusters=0;}
-    void                        Setup();
+    IntermediateClustersContainer<CSVTTCluster>  gTopClusters;
 
   protected:
     virtual void                AllocateTopClustersObjects(const AbtractDataSetGateway & DataGateway);
