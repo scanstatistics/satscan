@@ -45,6 +45,7 @@ CSpaceTimeCluster::~CSpaceTimeCluster() {
 CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& rhs) {
   m_Center                      = rhs.m_Center;
   m_nTracts                     = rhs.m_nTracts;
+  m_CartesianRadius             = rhs.m_CartesianRadius;  
   m_nRatio                      = rhs.m_nRatio;
   m_nRank                       = rhs.m_nRank;
   m_NonCompactnessPenalty       = rhs.m_NonCompactnessPenalty;
@@ -53,23 +54,6 @@ CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& rhs) {
   m_iEllipseOffset              = rhs.m_iEllipseOffset;
   gpClusterData->Assign(*(rhs.gpClusterData));
   return *this;
-}
-
-/** add neighbor tract data from DataGateway */
-void CSpaceTimeCluster::AddNeighborDataAndCompare(tract_t tEllipseOffset,
-                                                  tract_t tCentroid,
-                                                  const AbtractDataSetGateway & DataGateway,
-                                                  const CSaTScanData * pData,
-                                                  CSpaceTimeCluster & TopCluster,
-                                                  CTimeIntervals * pTimeIntervals) {
-                                                  
-  tract_t       t, tNumNeighbors = pData->GetNeighborCountArray()[tEllipseOffset][tCentroid];
-
-  for (t=1; t <= tNumNeighbors; ++t) {
-    ++m_nTracts;
-    gpClusterData->AddNeighborData(pData->GetNeighbor(tEllipseOffset, tCentroid, t), DataGateway);
-    pTimeIntervals->CompareClusters(*this, TopCluster);
-  }
 }
 
 /** returns newly cloned CSpaceTimeCluster */
@@ -85,7 +69,7 @@ measure_t CSpaceTimeCluster::GetExpectedCountForTract(tract_t tTractIndex, const
   if (m_nLastInterval == Data.GetNumTimeIntervals())
     tMeasure = ppMeasure[m_nFirstInterval][tTractIndex];
   else
-    tMeasure  = ppMeasure[m_nFirstInterval][tTractIndex] - ppMeasure[m_nLastInterval][tTractIndex];
+    tMeasure = ppMeasure[m_nFirstInterval][tTractIndex] - ppMeasure[m_nLastInterval][tTractIndex];
 
   return Data.GetMeasureAdjustment(tSetIndex) * tMeasure;
 }
@@ -98,9 +82,24 @@ count_t CSpaceTimeCluster::GetObservedCountForTract(tract_t tTractIndex, const C
   if (m_nLastInterval == Data.GetNumTimeIntervals())
     tCaseCount = ppCases[m_nFirstInterval][tTractIndex];
   else
-    tCaseCount  = ppCases[m_nFirstInterval][tTractIndex] - ppCases[m_nLastInterval][tTractIndex];
+    tCaseCount = ppCases[m_nFirstInterval][tTractIndex] - ppCases[m_nLastInterval][tTractIndex];
 
   return tCaseCount;
+}
+
+/** Adds neighbor tract data from DataGateway to cluster data accumulation and
+    evaluates for significant clusterings. Assigns greastest clustering to 'TopCluster'. */
+void CSpaceTimeCluster::CalculateTopClusterAboutCentroidDefinition(const AbtractDataSetGateway & DataGateway,
+                                                                   const CentroidNeighbors& CentroidDef,
+                                                                   CSpaceTimeCluster& TopCluster,
+                                                                   CTimeIntervals& TimeIntervals) {
+  tract_t       t, tNumNeighbors = CentroidDef.GetNumNeighbors();
+
+  for (t=0; t < tNumNeighbors; ++t) {
+    ++m_nTracts;
+    gpClusterData->AddNeighborData(CentroidDef.GetNeighborTractIndex(t), DataGateway);
+    TimeIntervals.CompareClusters(*this, TopCluster);
+  }
 }
 
 /** re-initializes cluster data */

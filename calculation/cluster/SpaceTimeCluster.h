@@ -23,19 +23,18 @@ class CSpaceTimeCluster : public CCluster {
     inline virtual void                   AssignAsType(const CCluster& rhs) {*this = (CSpaceTimeCluster&)rhs;}
     virtual CSpaceTimeCluster           * Clone() const;
     CSpaceTimeCluster                   & operator =(const CSpaceTimeCluster& cluster);
+
     virtual AbstractClusterData         * GetClusterData() {return gpClusterData;}
     virtual const AbstractClusterData   * GetClusterData() const {return gpClusterData;}
-
-    void                                  AddNeighborDataAndCompare(tract_t tEllipseOffset,
-                                                                    tract_t tCentroid,
-                                                                    const AbtractDataSetGateway & DataGateway,
-                                                                    const CSaTScanData * pData,
-                                                                    CSpaceTimeCluster & TopCluster,
-                                                                    CTimeIntervals * pTimeIntervals);
     virtual ClusterType                   GetClusterType() const {return SPACETIMECLUSTER;}
     virtual measure_t                     GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual count_t                       GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
+    void                                  CalculateTopClusterAboutCentroidDefinition(const AbtractDataSetGateway & DataGateway,
+                                                                                     const CentroidNeighbors& CentroidDef,
+                                                                                     CSpaceTimeCluster & TopCluster,
+                                                                                     CTimeIntervals& TimeIntervals);
     virtual void                          Initialize(tract_t nCenter=0);
 };
 //*****************************************************************************
 #endif
+

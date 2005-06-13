@@ -59,26 +59,6 @@ CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator=(co
   return *this;
 }
 
-/** add neighbor tract data from DataGateway */
-void CPurelySpatialProspectiveCluster::AddNeighborAndCompare(tract_t tEllipseOffset,
-                                                             tract_t tCentroid,
-                                                             const AbtractDataSetGateway & DataGateway,
-                                                             const CSaTScanData * pData,
-                                                             CPurelySpatialProspectiveCluster & TopCluster,
-                                                             AbstractLikelihoodCalculator & Calculator) {
-  tract_t       t, tNumNeighbors = pData->GetNeighborCountArray()[tEllipseOffset][tCentroid];
-
-  for (t=1; t <= tNumNeighbors; ++t) {
-    //update cluster data
-    ++m_nTracts;
-    gpClusterData->AddNeighborData(pData->GetNeighbor(tEllipseOffset, tCentroid, t), DataGateway);
-    //calculate loglikehood ratio and compare against current top cluster
-    m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
-    if (m_nRatio > TopCluster.m_nRatio)
-      TopCluster.AssignAsType(*this);
-  }    
-}
-
 /** returns newly cloned CPurelySpatialCluster */
 CPurelySpatialProspectiveCluster * CPurelySpatialProspectiveCluster::Clone() const {
   return new CPurelySpatialProspectiveCluster(*this);
@@ -106,6 +86,25 @@ count_t CPurelySpatialProspectiveCluster::GetObservedCountForTract(tract_t, cons
 ZdString& CPurelySpatialProspectiveCluster::GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
   sDateString.Clear();
   return sDateString;
+}
+
+/** Adds neighbor location data from DataGateway to cluster data accumulation and
+    evaluates for significant clusterings. Assigns greastest clustering to 'TopCluster'. */
+void CPurelySpatialProspectiveCluster::CalculateTopClusterAboutCentroidDefinition(const AbtractDataSetGateway& DataGateway,
+                                                                                  const CentroidNeighbors& CentroidDef,
+                                                                                  CPurelySpatialProspectiveCluster& TopCluster,
+                                                                                  AbstractLikelihoodCalculator& Calculator) {
+  tract_t       t, tNumNeighbors = CentroidDef.GetNumNeighbors();
+
+  for (t=0; t < tNumNeighbors; ++t) {
+    //update cluster data
+    ++m_nTracts;
+    gpClusterData->AddNeighborData(CentroidDef.GetNeighborTractIndex(t), DataGateway);
+    //calculate loglikehood ratio and compare against current top cluster
+    m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
+    if (m_nRatio > TopCluster.m_nRatio)
+      TopCluster.AssignAsType(*this);
+  }
 }
 
 /** re-initializes cluster data */
