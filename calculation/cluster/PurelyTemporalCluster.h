@@ -37,6 +37,8 @@ class CPurelyTemporalCluster : public CCluster {
     virtual measure_t                   GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual count_t                     GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual void                        Initialize(tract_t nCenter=0);
+    virtual void                        SetCartesianRadius(const CSaTScanData& DataHub) {/*nop*/}
+    virtual void                        SetCartesianRadius(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors) {/*nop*/}
     virtual void                        Write(LocationInformationWriter& LocationWriter, const CSaTScanData& Data,
                                               unsigned int iClusterNumber, unsigned int iNumSimsCompleted) const {/*nop*/}
 };
