@@ -67,6 +67,8 @@
 #define MAX_LINEITEMSIZE 512
 /** Growth increment for GInfo in GridTractCoordinates.cpp */
 #define TI_GROW 100
+/*radius of earth in km*/
+#define EARTH_RADIUS_km 6367
 /** case count type */
 typedef long            count_t;
 /** measure type */
