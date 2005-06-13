@@ -15,8 +15,10 @@ MostLikelyClustersContainer::~MostLikelyClustersContainer() {}
 
 /** Adds clone of passed cluster object to list of top clusters. */
 void MostLikelyClustersContainer::Add(const CCluster& Cluster) {
-  gvTopClusterList.push_back(0);
-  gvTopClusterList.back() = Cluster.Clone();
+  if (Cluster.ClusterDefined()) {
+    gvTopClusterList.push_back(0);
+    gvTopClusterList.back() = Cluster.Clone();
+  }
 }
 
 //Does the point at 'theCentroid' lie within the spherical region described by
@@ -72,13 +74,18 @@ double MostLikelyClustersContainer::GetClusterRadius(const CSaTScanData& DataHub
   double dResult;
   std::vector<double> vCoordsOfCluster;
   std::vector<double> vCoordsOfNeighborCluster;
+  
   try {
-    DataHub.GetGInfo()->giRetrieveCoords(theCluster.GetCentroidIndex(), vCoordsOfCluster);
-    DataHub.GetTInfo()->tiRetrieveCoords(
-      DataHub.GetNeighbor(theCluster.GetEllipseOffset() ,theCluster.GetCentroidIndex() ,theCluster.GetNumTractsInnerCircle())
-     ,vCoordsOfNeighborCluster
-    );
-    dResult = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(&vCoordsOfCluster.begin()[0],&vCoordsOfNeighborCluster.begin()[0]));
+    if (theCluster.GetRadiusDefined())
+      return theCluster.GetCartesianRadius(); //return radius already calculated
+    else {
+      DataHub.GetGInfo()->giRetrieveCoords(theCluster.GetCentroidIndex(), vCoordsOfCluster);
+      DataHub.GetTInfo()->tiRetrieveCoords(DataHub.GetNeighbor(theCluster.GetEllipseOffset(),
+                                                               theCluster.GetCentroidIndex(),
+                                                               theCluster.GetNumTractsInnerCircle()),
+                                                               vCoordsOfNeighborCluster);
+      dResult = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(&vCoordsOfCluster.begin()[0],&vCoordsOfNeighborCluster.begin()[0]));
+    }
   }
   catch (ZdException &x) {
     x.AddCallpath("GetClusterRadius()","MostLikelyClustersContainer");
@@ -110,11 +117,30 @@ bool MostLikelyClustersContainer::HasTractsInCommon(const CSaTScanData& DataHub,
                 tTwoCentroid = ClusterTwo.GetCentroidIndex(), tOneCentroid = ClusterOne.GetCentroidIndex();
   int           iTwoOffset = ClusterTwo.GetEllipseOffset(), iOneOffset = ClusterOne.GetEllipseOffset();
 
+  if (ClusterOne.GetRadiusDefined() && ClusterTwo.GetRadiusDefined()) {
+    //if certain relationships exist between clusters, we don't need to actually
+    //compare each location in clusters -- these two 'shortcuts' are meant to allow
+    //possible determination of overlap knowing only centroids and previously calculated
+    //radii (centric analyses).
+    std::vector<double> vClusterOneCoords, vClusterTwoCoords;
+    DataHub.GetGInfo()->giRetrieveCoords(ClusterOne.GetCentroidIndex(), vClusterOneCoords);
+    DataHub.GetGInfo()->giRetrieveCoords(ClusterTwo.GetCentroidIndex(), vClusterTwoCoords);
+    //return false if combined radius of clusters is greater than or equal to the distance between centroids
+    if (ClusterOne.GetCartesianRadius() + ClusterTwo.GetCartesianRadius() < stsClusterCentroidGeometry(vClusterOneCoords).DistanceTo(stsClusterCentroidGeometry(vClusterTwoCoords)))
+      return false;
+    //return true if center of second cluster within radius of first cluster
+    if (ClusterOne.GetCartesianRadius() >= stsClusterCentroidGeometry(vClusterOneCoords).DistanceTo(stsClusterCentroidGeometry(vClusterTwoCoords)))
+      return true;
+  }
+
   for (t=1; t <= tTwoNumTracts; ++t) {
-     tTract = DataHub.GetNeighbor(iTwoOffset, tTwoCentroid, t);
+     tTract = DataHub.GetNeighbor(iTwoOffset, tTwoCentroid, t, ClusterTwo.GetCartesianRadius());
      for (v=1; v <= tOneNumTracts; ++v) {
-        if (tTract == DataHub.GetNeighbor(iOneOffset, tOneCentroid, v))
+        if (tTract == DataHub.GetNeighbor(iOneOffset, tOneCentroid, v, ClusterOne.GetCartesianRadius())) {
+          //if neighbors for secondard centroid where re-calculated, we can delete this data now
+          DataHub.FreeNeighborInfo(tTwoCentroid);
           return true;
+        }
      }
   }  
   return false;
@@ -173,6 +199,7 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
           fprintf(pFile, "         Tracts:  %i\n", gvTopClusterList[i]->GetNumTractsInnerCircle());
           fprintf(pFile, "LikelihoodRatio:  %f\n", gvTopClusterList[i]->m_nRatio);
           fprintf(pFile, "           Rank:  %u\n", gvTopClusterList[i]->GetRank());
+          fprintf(pFile, "   Cart. Radius:  %lf\n", gvTopClusterList[i]->GetCartesianRadius());
           fprintf(pFile, " \n");
           fprintf(pFile, " \n");
         }
@@ -199,7 +226,7 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
     Note that this function should not be called with cluster list containing
     purely temporal clusters. The ranking performed is based soley on geographical
     orientation.   */
-void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters, const CSaTScanData& DataHub) {
+void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& gPrintDirection) {
    unsigned long                        u, uClustersToKeepEachPass;
    ZdPointerVector<CCluster>::iterator  itrCurr, itrEnd;
    CriteriaSecondaryClustersType        eClusterInclusionCriterion = Parameters.GetCriteriaSecondClustersType();
@@ -231,7 +258,9 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
           gvTopClusterList.DeleteElement(u);
         }
       }
-
+      if (eClusterInclusionCriterion != NORESTRICTIONS)
+        gPrintDirection.SatScanPrintf("Restricting secondary clusters by geographical overlap for %u clusters\n", gvTopClusterList.size());
+      
       if (gvTopClusterList.size() > 0) {
         std::vector<CCluster *> vRetainedClusters;
         /* Remove certain types of overlapping clusters from later printout */
@@ -274,7 +303,8 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
     //this function currently discriminates by geographical orientation only - so candiddate cluster
     //can not be purely temporal 
     if (CandidateCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
-      ZdGenerateException("ShouldRetainCandidateCluster() can not be called purely temporal clusters.","ShouldRetainCandidateCluster");
+      //always keep purely temporal cluster - we don't apply geographical overlap for these clusters
+      return true;
 
     DataHub.GetGInfo()->giRetrieveCoords(CandidateCluster.GetCentroidIndex(), vCandidateCenterCoords);
     stsClusterCentroidGeometry CandidateCenter(vCandidateCenterCoords);
@@ -293,6 +323,9 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
 
     dCandidateRadius = GetClusterRadius(DataHub, CandidateCluster);
     for (itrCurr=vRetainedClusters.begin(), itrEnd=vRetainedClusters.end(); bResult && (itrCurr != itrEnd); ++itrCurr) {
+      if ((*itrCurr)->GetClusterType() == PURELYTEMPORALCLUSTER)
+        //skip comparison against retained purely temporal cluster - can't compare
+        continue;
       if (eCriterion == NOGEOOVERLAP)
         bResult = !HasTractsInCommon(DataHub, **itrCurr, CandidateCluster);
       else {

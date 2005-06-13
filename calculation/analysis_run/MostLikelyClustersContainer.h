@@ -76,7 +76,7 @@ class MostLikelyClustersContainer {
     const CCluster            & GetCluster(tract_t tClusterIndex) const;
     const CCluster            & GetTopRankedCluster() const;
     void                        PrintTopClusters(const char * sFilename, const CSaTScanData& DataHub);
-    void                        RankTopClusters(const CParameters& Parameters, const CSaTScanData& DataHub);
+    void                        RankTopClusters(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& gPrintDirection);
     void                        SortTopClusters();
     void                        UpdateTopClustersRank(double r);
 };
